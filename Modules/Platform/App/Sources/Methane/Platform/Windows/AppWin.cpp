@@ -1,0 +1,291 @@
+/******************************************************************************
+
+Copyright 2019 Evgeny Gorodetskiy
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+*******************************************************************************
+
+FILE: Methane/Platform/Windows/AppWin.cpp
+Windows application implementation.
+
+******************************************************************************/
+
+#include <Methane/Platform/Windows/AppWin.h>
+#include <Methane/Platform/Utils.h>
+
+#include <nowide/convert.hpp>
+
+#include <cassert>
+
+using namespace Methane;
+using namespace Methane::Platform;
+
+constexpr auto WM_ALERT = WM_USER + 1;
+
+static const wchar_t* g_window_class = L"MethaneWindowClass";
+static const wchar_t* g_window_icon  = L"IDI_APP_ICON";
+
+UINT ConvertMessageTypeToFlags(AppBase::Message::Type msg_type)
+{
+    switch (msg_type)
+    {
+    case AppBase::Message::Type::Information:   return MB_ICONINFORMATION | MB_OK;
+    case AppBase::Message::Type::Warning:       return MB_ICONWARNING | MB_OK;
+    case AppBase::Message::Type::Error:         return MB_ICONERROR | MB_OK;
+    }
+    return 0;
+}
+
+AppWin::AppWin(const AppBase::Settings& settings)
+    : AppBase(settings)
+{
+}
+
+void AppWin::ParseCommandLine(const std::vector<std::string>& args)
+{
+    for (const std::string& arg : args)
+    {
+        if (arg == "-warp" || arg == "/warp")
+        {
+            m_env.use_warp_device = true;
+        }
+    }
+}
+
+int AppWin::Run(const RunArgs& args)
+{
+    const int base_return_code = AppBase::Run(args);
+    if (base_return_code)
+        return base_return_code;
+
+    // Initialize the window class.
+    WNDCLASSEX window_class     = { };
+    window_class.cbSize         = sizeof(WNDCLASSEX);
+    window_class.style          = CS_HREDRAW | CS_VREDRAW;
+    window_class.lpfnWndProc    = WindowProc;
+    window_class.hInstance      = GetModuleHandle(nullptr);
+    window_class.hCursor        = LoadCursor(NULL, IDC_ARROW);
+    window_class.lpszClassName  = g_window_class;
+    window_class.hIcon          = LoadIcon(window_class.hInstance, g_window_icon);
+
+    RegisterClassEx(&window_class);
+
+    uint32_t desktop_width = 0, desktop_height = 0;
+    Methane::Platform::Windows::GetDesktopResolution(desktop_width, desktop_height);
+
+    Data::FrameSize frame_size;
+    frame_size.width  = m_settings.width < 1.0  ? static_cast<uint32_t>(desktop_width * (m_settings.width > 0.0 ? m_settings.width : 0.7))
+                                                : static_cast<uint32_t>(m_settings.width);
+    frame_size.height = m_settings.height < 1.0 ? static_cast<uint32_t>(desktop_height * (m_settings.height > 0.0 ? m_settings.height : 0.7))
+                                                : static_cast<uint32_t>(m_settings.height);
+
+    RECT window_rect = { 0, 0, static_cast<LONG>(frame_size.width), static_cast<LONG>(frame_size.height) };
+    AdjustWindowRect(&window_rect, WS_OVERLAPPEDWINDOW, FALSE);
+    frame_size.width  = static_cast<uint32_t>(window_rect.right - window_rect.left);
+    frame_size.height = static_cast<uint32_t>(window_rect.bottom - window_rect.top);
+
+    // Create the window and store a handle to it.
+    m_env.window_handle = CreateWindowEx(NULL,
+        g_window_class,
+        nowide::widen(m_settings.name).c_str(),
+        WS_OVERLAPPEDWINDOW,
+        (desktop_width - frame_size.width) / 2,
+        (desktop_height - frame_size.height) / 2,
+        frame_size.width,
+        frame_size.height,
+        NULL, // No parent window
+        NULL, // No menus
+        window_class.hInstance,
+        this);
+
+    ShowWindow(m_env.window_handle, SW_SHOW);
+
+    bool init_failed = false;
+#ifndef _DEBUG
+    try
+    {
+#endif
+        InitContext(m_env, frame_size);
+        Init();
+#ifndef _DEBUG
+    }
+    catch (std::exception& e)
+    {
+        init_failed = true;
+        Alert({ Message::Type::Error, "Application Initialization Error", e.what() });
+    }
+    catch (...)
+    {
+        init_failed = true;
+        Alert({ Message::Type::Error, "Application Initialization Error", "Unknown exception occurred." });
+    }
+#endif
+
+    // Main message loop
+    MSG msg = { 0 };
+    while (true)
+    {
+        // Process any messages in the queue.
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+
+            if (msg.message == WM_QUIT)
+                break;
+        }
+
+        if (init_failed)
+            continue;
+
+#ifndef _DEBUG
+        try
+        {
+#endif
+            Update();
+            Render();
+#ifndef _DEBUG
+        }
+        catch (std::exception& e)
+        {
+            Alert({ Message::Type::Error, "Application Render Error", e.what() });
+        }
+        catch (...)
+        {
+            Alert({ Message::Type::Error, "Application Render Error", "Unknown exception occurred." });
+        }
+#endif
+    }
+
+    // Return this part of the WM_QUIT message to Windows.
+    return static_cast<char>(msg.wParam);
+}
+
+void AppWin::Alert(const Message& msg, bool deferred)
+{
+    AppBase::Alert(msg, deferred);
+
+    if (deferred)
+    {
+        BOOL post_result = PostMessage(m_env.window_handle, WM_ALERT, 0, 0);
+        assert(post_result != 0);
+    }
+    else
+    {
+        ShowAlert(msg);
+    }
+}
+
+LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT message_id, WPARAM w_param, LPARAM l_param)
+{
+    AppWin* p_app = reinterpret_cast<AppWin*>(GetWindowLongPtr(h_wnd, GWLP_USERDATA));
+
+#ifndef _DEBUG
+    try
+    {
+#endif
+        switch (message_id)
+        {
+        case WM_CREATE:
+        {
+            // Save the DXSample* passed in to CreateWindow.
+            LPCREATESTRUCT p_create_struct = reinterpret_cast<LPCREATESTRUCT>(l_param);
+            SetWindowLongPtr(h_wnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(p_create_struct->lpCreateParams));
+        }
+        return 0;
+
+        case WM_DESTROY:
+        {
+            PostQuitMessage(0);
+        }
+        return 0;
+
+        case WM_SIZE:
+        {
+            if (p_app)
+            {
+                RECT window_rect = {};
+                GetWindowRect(h_wnd, &window_rect);
+                p_app->ChangeWindowBounds(Data::FrameRect {
+                    Data::Point2i(window_rect.left, window_rect.top),
+                    Data::FrameSize(static_cast<uint32_t>(window_rect.right  - window_rect.left),
+                              static_cast<uint32_t>(window_rect.bottom - window_rect.top))
+                });
+
+                RECT client_rect = {};
+                GetClientRect(h_wnd, &client_rect);
+                p_app->Resize(Data::FrameSize(
+                    static_cast<uint32_t>(client_rect.right  - client_rect.left),
+                    static_cast<uint32_t>(client_rect.bottom - client_rect.top)),
+                    w_param == SIZE_MINIMIZED);
+            }
+        }
+        break;
+
+        case WM_ALERT:
+        {
+            assert(!!p_app->m_sp_deferred_message);
+            if (p_app->m_sp_deferred_message)
+            {
+                p_app->ShowAlert(*p_app->m_sp_deferred_message);
+            }
+        }
+        break;
+
+        }
+#ifndef _DEBUG
+    }
+    catch (std::exception& e)
+    {
+        p_app->Alert({ Message::Type::Error, "Application Input Error", e.what() });
+    }
+    catch (...)
+    {
+        p_app->Alert({ Message::Type::Error, "Application Input Error", "Unknown exception occurred." });
+    }
+#endif
+
+    // Handle any messages the switch statement didn't.
+    return DefWindowProc(h_wnd, message_id, w_param, l_param);
+}
+
+void AppWin::ShowAlert(const Message& msg)
+{
+    UINT msgbox_type = 0;
+    MessageBox(
+        m_env.window_handle,
+        nowide::widen(msg.information).c_str(),
+        nowide::widen(msg.title).c_str(),
+        ConvertMessageTypeToFlags(msg.type)
+    );
+
+    if (msg.type == Message::Type::Error)
+    {
+        if (m_env.window_handle)
+        {
+            BOOL post_result = PostMessage(m_env.window_handle, WM_CLOSE, 0, 0);
+            assert(post_result != 0);
+        }
+        else
+        {
+            ExitProcess(0);
+        }
+    }
+}
+
+void AppWin::SetWindowTitle(const std::string& title_text)
+{
+    BOOL set_result = SetWindowTextW(m_env.window_handle, nowide::widen(title_text).c_str());
+    assert(set_result);
+}
