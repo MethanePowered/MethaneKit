@@ -17,6 +17,6 @@ echo =========================================================
 
 rm -rf "$OUTPUT_DIR"
 mkdir -p "$BUILD_DIR"
-git submodule update --init --recursive "$SOURCE_DIR"
+git submodule update --init --depth 1 --remote --recursive "$SOURCE_DIR"
 cmake -H"$SOURCE_DIR" -B"$BUILD_DIR" -G Xcode -DCMAKE_BUILD_TYPE=$CONFIG_TYPE -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR"
 cmake --build "$BUILD_DIR" --config $CONFIG_TYPE --target install
