@@ -1,6 +1,6 @@
 # Methane Kit <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Logo/MethaneLogoNameSmall.png" width=200 align="right" valign="middle">
 
-**Cross-platform object-oriented and easy to use modern graphics API written in C++ for cross-platform applications development. Wrapper API for DirectX 12 and Metal.**
+**Easy to use modern 3D graphics API written in C++ for cross-platform applications development:**
 - **Built on top of modern native 3D graphics APIs**: DirectX 12 on Windows and Metal on MacOS.
 - **Provides high-level easy-to-use graphics API** still capable of high-performance graphics rendering on modern GPUs.
 - **Supplies completely cross-platform application infrastructure**: clean C++ code without nasty preprocessor stuff.
@@ -74,7 +74,7 @@ Note that project is in **Alpha / [MVP](https://en.wikipedia.org/wiki/Minimum_vi
 #### Windows Build
 
 To build from command prompt using "Visual Studio" generator:
-1. Start <u>"x64 Native Tools Command Prompt for VS2017"</u> (it initializes environment with VS path to Windows SDK, etc), then go to MethaneKit root directory and update git-submodules with external dependencies:
+1. Start **"x64 Native Tools Command Prompt for VS2017"** (it initializes environment with VS path to Windows SDK, etc), then go to MethaneKit root directory and update git-submodules with external dependencies:
 ```console
 cd /D <MethaneKit-Root>
 git submodule update --init --recursive
@@ -86,7 +86,7 @@ cd Build\Output\VisualStudio\Build
 cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_INSTALL_PREFIX="%cd%\..\Install" "..\..\..\.."
 cmake --build . --config Release --target install
 ```
-3. Run tutorials from the install directory `Build\Output\VisualStudio\Install\Apps\Tutorials`
+3. Run tutorials from the installation directory `Build\Output\VisualStudio\Install\Apps\Tutorials`
 
 Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) directly in Visual Studio 2017 and build it with VS built-in CMake tools using "Ninja" generator and configuration available in [CMakeSettings.json](CMakeSettings.json).
 
@@ -105,7 +105,7 @@ cd Build/Output/XCode/Build
 cmake -H../../../.. -B. -G Xcode -DCMAKE_INSTALL_PREFIX="$(pwd)/../Install"
 cmake --build . --config Release --target install
 ```
-3. Run tutorials from the install directory `Build/Output/XCode/Install/Apps/Tutorials`
+3. Run tutorials from the installation directory `Build/Output/XCode/Install/Apps/Tutorials`
 
 Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) directly in QtCreator or VSCode or any other IDE of choice and build it from there.
 
@@ -271,7 +271,7 @@ frag=PSMain
 vert=VSMain
 ```
 
-Finally, here is a build configuration [CMakeLists.txt](/Apps/Tutorials/01-HelloTriangle/CMakeLists.txt) powered by included module [Methane.cmake](CMake/Methane.cmake):
+Finally add build configuration [CMakeLists.txt](/Apps/Tutorials/01-HelloTriangle/CMakeLists.txt) powered by included module [Methane.cmake](CMake/Methane.cmake):
 ```cmake
 include(Methane)
 
