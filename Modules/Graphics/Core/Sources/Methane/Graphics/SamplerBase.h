@@ -1,0 +1,58 @@
+/******************************************************************************
+
+Copyright 2019 Evgeny Gorodetskiy
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+*******************************************************************************
+
+FILE: Methane/Graphics/SamplerBase.h
+Base implementation of the sampler interface.
+
+******************************************************************************/
+
+#pragma once
+
+#include <Methane/Graphics/Sampler.h>
+
+#include "Native/ResourceNT.h"
+
+namespace Methane
+{
+namespace Graphics
+{
+
+class ContextBase;
+
+class SamplerBase
+    : public Sampler
+    , public ResourceNT
+{
+public:
+    SamplerBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
+    virtual ~SamplerBase() override = default;
+
+    // Sampler interface
+    virtual const Settings& GetSettings() const override { return m_settings; }
+
+    // Resource interface
+    virtual void     SetData(Data::ConstRawPtr p_data, Data::Size data_size) override { }
+    virtual Data::Size GetDataSize() const override { return 0; }
+
+protected:
+    ContextBase& m_context;
+    Settings     m_settings;
+};
+
+} // namespace Graphics
+} // namespace Methane

@@ -1,0 +1,121 @@
+/******************************************************************************
+
+Copyright 2019 Evgeny Gorodetskiy
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+*******************************************************************************
+
+FILE: Methane/Data/Range.hpp
+
+Range data type representing continuos numeric multitude from start (inclusively)
+till end (exclusively): [start, end)
+
+******************************************************************************/
+
+#pragma once
+
+#include <initializer_list>
+#include <algorithm>
+#include <sstream>
+#include <cassert>
+#include <stdexcept>
+
+namespace Methane
+{
+namespace Data
+{
+
+template<typename ScalarT>
+class Range
+{
+public:
+    Range(ScalarT start, ScalarT end) : m_start(start), m_end(end) { Validate(); }
+    Range(std::initializer_list<ScalarT> init) : Range(*init.begin(), *(init.begin() + 1)) { }
+    Range(const Range& other) : Range(other.m_start, other.m_end) { }
+
+    Range<ScalarT>& operator=(const Range<ScalarT>& other) { m_start = other.m_start; m_end = other.m_end; return *this; }
+    bool operator==(const Range<ScalarT>& other) const  { return m_start == other.m_start && m_end == other.m_end; }
+    bool operator!=(const Range<ScalarT>& other) const  { return !operator==(other); }
+    bool operator< (const Range<ScalarT>& other) const  { return m_end  <= other.m_start; }
+    bool operator> (const Range<ScalarT>& other) const  { return m_start > other.end; }
+
+    ScalarT GetStart() const                            { return m_start; }
+    ScalarT GetEnd() const                              { return m_end; }
+    ScalarT GetLength() const                           { return m_end - m_start; }
+    bool    IsEmpty() const                             { return m_start == m_end; }
+
+    bool    IsAdjacent(const Range& other) const        { return m_start == other.m_end   || other.m_start == m_end; }
+    bool    IsOverlapping(const Range& other) const     { return m_start <  other.m_end   && other.m_start <  m_end;  }
+    bool    IsMergable(const Range& other) const        { return m_start <= other.m_end   && other.m_start <= m_end; }
+    bool    Contains(const Range& other) const          { return m_start <= other.m_start && other.m_end   <= m_end; }
+
+    Range operator+(const Range& other) const // merge
+    {
+        if (!IsMergable(other))
+        {
+            throw std::invalid_argument("Can not merge: ranges are not mergable.");
+        }
+        return Range(std::min(m_start, other.m_start), std::max(m_end, other.m_end));
+    }
+
+    Range operator%(const Range& other) const // intersect
+    {
+        if (!IsMergable(other))
+        {
+            throw std::invalid_argument("Can not intersect: ranges are not overlapping or adjacent.");
+        }
+        return Range(std::max(m_start, other.m_start), std::min(m_end, other.m_end));
+    }
+
+    Range operator-(const Range& other) const // subtract
+    {
+        if (!IsOverlapping(other))
+        {
+            throw std::invalid_argument("Can not subtract: ranges are not overlapping.");
+        }
+        if (Contains(other) || other.Contains(*this))
+        {
+            throw std::invalid_argument("Can not subtract: one of ranges contains another.");
+        }
+        return (m_start <= other.m_start) ? Range(m_start, other.m_start) : Range(other.m_end, m_end);
+    }
+
+    explicit operator std::string() const
+    {
+        std::stringstream ss;
+        ss << "[" << m_start << ", " << m_end << ")";
+        return ss.str();
+    }
+
+    explicit operator const char*() const
+    {
+        return std::string(*this).c_str();
+    }
+
+protected:
+    void Validate() const
+    {
+        if (m_start <= m_end)
+        {
+            return;
+        }
+        throw std::invalid_argument("Range start must be less of equal than end.");
+    }
+
+    ScalarT m_start;
+    ScalarT m_end;
+};
+
+} // namespace Data
+} // namespace Methane
