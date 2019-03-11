@@ -2,7 +2,7 @@
 
 **Easy to use modern 3D graphics API written in C++ for cross-platform applications development:**
 - **Built on top of modern native 3D graphics APIs**: DirectX 12 on Windows and Metal on MacOS.
-- **Provides high-level easy-to-use graphics API** still capable of high-performance graphics rendering on modern GPUs.
+- **Provides object-oriented graphics API** simple but capable of high-performance graphics rendering on modern GPUs.
 - **Supplies completely cross-platform application infrastructure**: clean C++ code without nasty preprocessor stuff.
 
 Note that project is in **Alpha / [MVP](https://en.wikipedia.org/wiki/Minimum_viable_product)** stage and is under active development.
@@ -77,7 +77,7 @@ To build from command prompt using "Visual Studio" generator:
 1. Start **"x64 Native Tools Command Prompt for VS2017"** (it initializes environment with VS path to Windows SDK, etc), then go to MethaneKit root directory and update git-submodules with external dependencies:
 ```console
 cd /D <MethaneKit-Root>
-git submodule update --init --recursive
+git submodule update --init --depth 1 --remote --recursive
 ```
 2. From the command prompt either start auxilarry build script [Build/Windows/Build.bat](Build/Windows/Build.bat) or use cmake manually:
 ```console
@@ -96,7 +96,7 @@ Build from terminal using "Xcode" generator:
 1. Start terminal and go to MethaneKit root directory and update git-submodules with external dependencies:
 ```console
 cd /D <MethaneKit-Root>
-git submodule update --init --recursive
+git submodule update --init --depth 1 --remote --recursive
 ```
 2. From the terminal either start auxilarry build script [Build/MacOS/Build.bat](Build/MacOS/Build.bat) or use cmake manually:
 ```console
