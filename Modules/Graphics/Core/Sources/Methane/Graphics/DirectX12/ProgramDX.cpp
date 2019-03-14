@@ -153,12 +153,19 @@ void ProgramDX::ResourceBindingsDX::Apply(CommandList& command_list) const
 {
     ITT_FUNCTION_TASK();
 
+    struct GraphicsRootDescriptorTableArgs
+    {
+        uint32_t                    root_parameter_index;
+        D3D12_GPU_DESCRIPTOR_HANDLE base_descriptor;
+    };
+
     RenderCommandListDX& render_command_list_dx = dynamic_cast<RenderCommandListDX&>(command_list);
     wrl::ComPtr<ID3D12GraphicsCommandList>& cp_command_list = render_command_list_dx.GetNativeCommandList();
     assert(!!cp_command_list);
 
     ResourceBase::Barriers resource_transition_barriers;
-    ForEachResourceBinding([&cp_command_list, &resource_transition_barriers, this](ResourceDX& resource, const DescriptorHeap::Reservation& heap_reservation, ShaderDX::ResourceBindingDX& resource_binding)
+    std::vector<GraphicsRootDescriptorTableArgs> graphics_root_descriptor_tables;
+    ForEachResourceBinding([&](ResourceDX& resource, const DescriptorHeap::Reservation& heap_reservation, ShaderDX::ResourceBindingDX& resource_binding)
     {
         const DescriptorHeapDX& dx_descriptor_heap = static_cast<const DescriptorHeapDX&>(heap_reservation.heap.get());
         const ShaderDX::ResourceBindingDX::DescriptorRange& descriptor_range = resource_binding.GetDescriptorRange();
@@ -169,13 +176,19 @@ void ProgramDX::ResourceBindingsDX::Apply(CommandList& command_list) const
                                                  : ResourceBase::State::NonPixelShaderResource;
 
         resource.SetState(resource_state, resource_transition_barriers);
-
-        cp_command_list->SetGraphicsRootDescriptorTable(descriptor_range.root_parameter_index, gpu_descriptor_handle);
+        graphics_root_descriptor_tables.push_back(GraphicsRootDescriptorTableArgs{ descriptor_range.root_parameter_index, gpu_descriptor_handle });
     });
 
+    // Set resource transition barriers before applying resource bindings
     if (!resource_transition_barriers.empty())
     {
         render_command_list_dx.SetResourceBarriers(resource_transition_barriers);
+    }
+
+    // Apply resource bindings
+    for (const GraphicsRootDescriptorTableArgs& args : graphics_root_descriptor_tables)
+    {
+        cp_command_list->SetGraphicsRootDescriptorTable(args.root_parameter_index, args.base_descriptor);
     }
 }
 
