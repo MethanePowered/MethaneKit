@@ -25,7 +25,7 @@ Note that project is in **Alpha / [MVP](https://en.wikipedia.org/wiki/Minimum_vi
   - Shaders are converted to native API shading language at build time with SPIRV-Cross toolchain
   - Shaders are prebuilt and embedded in application resources as bytecode (with preprocessor definitions support)
 - **Easy to use object-oriented graphics API**
-  - [Core wrapper interfaces](/Modules/Graphics/Core/Include/Methane/Graphics):
+  - [Core graphics interfaces](/Modules/Graphics/Core/Include/Methane/Graphics):
     - [Context](/Modules/Graphics/Core/Include/Methane/Graphics/Context.h) unifies Device and Swap-Chain under one umbrella
     - [Resource](/Modules/Graphics/Core/Include/Methane/Graphics/Resource.h) derived interfaces [Buffer](/Modules/Graphics/Core/Include/Methane/Graphics/Buffer.h), [Texture](/Modules/Graphics/Core/Include/Methane/Graphics/Texture.h), [Sampler](/Modules/Graphics/Core/Include/Methane/Graphics/Sampler.h) to work with GPU memory resources
     - [Shader](/Modules/Graphics/Core/Include/Methane/Graphics/Shader.h) and [Program](/Modules/Graphics/Core/Include/Methane/Graphics/Program.h) providing unified access to compiled shaders, input layout and uniform variables
@@ -79,6 +79,7 @@ To build from command prompt using "Visual Studio" generator:
 cd /D <MethaneKit-Root>
 git clone https://github.com/egorodet/MethaneKit.git
 git submodule update --init --depth 1 --recursive
+git pull --recurse-submodules
 ```
 2. From the command prompt either start auxilarry build script [Build/Windows/Build.bat](Build/Windows/Build.bat) or use cmake manually:
 ```console
@@ -99,6 +100,7 @@ Build from terminal using "Xcode" generator:
 cd /D <MethaneKit-Root>
 git clone https://github.com/egorodet/MethaneKit.git
 git submodule update --init --depth 1 --recursive
+git pull --recurse-submodules
 ```
 2. From the terminal either start auxilarry build script [Build/MacOS/Build.bat](Build/MacOS/Build.bat) or use cmake manually:
 ```console

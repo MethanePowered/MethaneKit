@@ -19,7 +19,11 @@
 @RD /S /Q "%CONFIG_DIR%"
 @MKDIR "%BUILD_DIR%"
 @CD "%BUILD_DIR%"
+
+@ECHO Initializing submodules and pulling latest changes
 git submodule update --init --depth 1 --recursive "%SOURCE_DIR%"
+git pull --recurse-submodules
+
 cmake -G "Visual Studio 15 2017 %PLATFORM_TYPE%" -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR% "%SOURCE_DIR%"
 cmake --build . --config %CONFIG_TYPE% --target install
 @CD "%START_DIR%"
