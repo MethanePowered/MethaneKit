@@ -61,7 +61,7 @@ std::string GetExecutableFileName()
         auto dir_separator_pos = exe_file.rfind("/");
         if (dir_separator_pos != std::string::npos)
         {
-            exe_file.erase(exe_file.begin(), dir_separator_pos + 1);
+            exe_file.erase(0, dir_separator_pos + 1);
         }
     }
     return exe_file;
