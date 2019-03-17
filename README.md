@@ -72,47 +72,55 @@ Note that project is in **Alpha / [MVP](https://en.wikipedia.org/wiki/Minimum_vi
 
 ### Build
 
-#### Windows Build
+#### Fetch Sources
 
-To build from command prompt using "Visual Studio" generator:
-1. Start **"x64 Native Tools Command Prompt for VS2017"** (it initializes environment with VS path to Windows SDK, etc), then go to MethaneKit root directory and update git-submodules with external dependencies:
+**IMPORTANT:** Do not download source code via Zip archive, since it will not allow to properly initalize External submodules. Use git as described below.
+
+- **First time initialization**
 ```console
-cd /D <MethaneKit-Root>
-git clone https://github.com/egorodet/MethaneKit.git
+mkdir <MethaneKit-Root>
+cd <MethaneKit-Root>
+git clone --recurse-submodules --depth 1 https://github.com/egorodet/MethaneKit.git
+```
+- **Update sources to latest version**
+```console
+cd <MethaneKit-Root>
+git pull --recurse-submodules
+```
+- **Update linked submodules to latest version** (for development purposes only)
+```console
+cd <MethaneKit-Root>
 git submodule update --init --depth 1 --recursive
 git pull --recurse-submodules
 ```
-2. From the command prompt either start auxilarry build script [Build/Windows/Build.bat](Build/Windows/Build.bat) or use cmake manually:
+
+#### Windows Build
+
+Start **"x64 Native Tools Command Prompt for VS2017"** (it initializes environment with VS path to Windows SDK, etc), then go to MethaneKit root directory (see instructions above to initialize repository and get latest code with submodules) and either start auxilarry build script [Build/Windows/Build.bat](Build/Windows/Build.bat) or build with cmake manually:
 ```console
 mkdir Build\Output\VisualStudio\Build
 cd Build\Output\VisualStudio\Build
 cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_INSTALL_PREFIX="%cd%\..\Install" "..\..\..\.."
 cmake --build . --config Release --target install
 ```
-3. Run tutorials from the installation directory `Build\Output\VisualStudio\Install\Apps\Tutorials`
 
-Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) directly in Visual Studio 2017 and build it with VS built-in CMake tools using "Ninja" generator and configuration available in [CMakeSettings.json](CMakeSettings.json).
+Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) directly in Visual Studio 2017 and build it with VS CMake Tools using "Ninja" generator and provided configuration file [CMakeSettings.json](CMakeSettings.json).
+
+Run tutorials from the installation directory `Build\Output\VisualStudio\Install\Apps\Tutorials`.
 
 #### MacOS Build
 
-Build from terminal using "Xcode" generator:
-1. Start terminal and go to MethaneKit root directory and update git-submodules with external dependencies:
-```console
-cd <MethaneKit-Root>
-git clone https://github.com/egorodet/MethaneKit.git
-git submodule update --init --depth 1 --recursive
-git pull --recurse-submodules
-```
-2. From the terminal either start auxilarry build script [Build/MacOS/Build.sh](Build/MacOS/Build.sh) or use cmake manually:
+Start terminal, then go to MethaneKit root directory (see instructions above to initialize repository and get latest code with submodules) and either start auxilarry build script [Build/MacOS/Build.sh](Build/MacOS/Build.sh) or build with cmake manually:
 ```console
 mkdir -p Build/Output/XCode/Build
 cd Build/Output/XCode/Build
 cmake -H../../../.. -B. -G Xcode -DCMAKE_INSTALL_PREFIX="$(pwd)/../Install"
 cmake --build . --config Release --target install
 ```
-3. Run tutorials from the installation directory `Build/Output/XCode/Install/Apps/Tutorials`
 
 Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) directly in QtCreator or VSCode or any other IDE of choice and build it from there.
+
+Run tutorials from the installation directory `Build/Output/XCode/Install/Apps/Tutorials`
 
 ### Tutorials
 
