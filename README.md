@@ -125,11 +125,11 @@ Run tutorials from the installation directory `Build/Output/XCode/Install/Apps/T
 
 ### Tutorials
 
-Tutorial / Platform | Windows (DirectX 12) | MacOS (Metal)
-------------------- | -------------------- | -------------
-[Hello Triangle](/Apps/Tutorials/01-HelloTriangle) | ![Hello Triangle on Windows](/Apps/Tutorials/01-HelloTriangle/Screenshots/HelloTriangleWinDirectX12.jpg) | ![Hello Triangle on MacOS](/Apps/Tutorials/01-HelloTriangle/Screenshots/HelloTriangleMacMetal.jpg)
-[Textured Cube](/Apps/Tutorials/02-TexturedCube) | ![Textured Cube on Windows](/Apps/Tutorials/02-TexturedCube/Screenshots/TexturedCubeWinDirectX12.jpg) | ![Textured Cube on MacOS](/Apps/Tutorials/02-TexturedCube/Screenshots/TexturedCubeMacMetal.jpg)
-[Shadow Cube](/Apps/Tutorials/03-ShadowCube) | ![Shadow Cube on Windows](/Apps/Tutorials/03-ShadowCube/Screenshots/ShadowCubeWinDirectX12.jpg) | ![Shadow Cube on MacOS](/Apps/Tutorials/03-ShadowCube/Screenshots/ShadowCubeMacMetal.jpg)
+| Tutorial / Platform | Windows (DirectX 12) | MacOS (Metal) |
+| ------------------- | -------------------- | ------------- |
+| [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) | ![Hello Triangle on Windows](/Apps/Tutorials/01-HelloTriangle/Screenshots/HelloTriangleWinDirectX12.jpg) | ![Hello Triangle on MacOS](/Apps/Tutorials/01-HelloTriangle/Screenshots/HelloTriangleMacMetal.jpg) |
+| [Textured Cube](/Apps/Tutorials/02-TexturedCube) | ![Textured Cube on Windows](/Apps/Tutorials/02-TexturedCube/Screenshots/TexturedCubeWinDirectX12.jpg) | ![Textured Cube on MacOS](/Apps/Tutorials/02-TexturedCube/Screenshots/TexturedCubeMacMetal.jpg) |
+| [Shadow Cube](/Apps/Tutorials/03-ShadowCube) | ![Shadow Cube on Windows](/Apps/Tutorials/03-ShadowCube/Screenshots/ShadowCubeWinDirectX12.jpg) | ![Shadow Cube on MacOS](/Apps/Tutorials/03-ShadowCube/Screenshots/ShadowCubeMacMetal.jpg) |
 
 ### Hello Triangle
 
