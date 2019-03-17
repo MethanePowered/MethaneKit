@@ -8,7 +8,8 @@
 Note that project is in **Alpha / [MVP](https://en.wikipedia.org/wiki/Minimum_viable_product)** stage and is under active development.
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-![Platform](https://img.shields.io/badge/platform-windows%20%7C%20macOS-purple.svg)
+![Platforms](https://img.shields.io/badge/Platforms-Windows%20%7C%20MacOS-orange.svg)
+![Languages](https://img.shields.io/badge/Languages-C++%20%7C%20ObjC-orange.svg)
 
 ## Features
 
@@ -97,12 +98,12 @@ Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) directly in Vis
 Build from terminal using "Xcode" generator:
 1. Start terminal and go to MethaneKit root directory and update git-submodules with external dependencies:
 ```console
-cd /D <MethaneKit-Root>
+cd <MethaneKit-Root>
 git clone https://github.com/egorodet/MethaneKit.git
 git submodule update --init --depth 1 --recursive
 git pull --recurse-submodules
 ```
-2. From the terminal either start auxilarry build script [Build/MacOS/Build.bat](Build/MacOS/Build.bat) or use cmake manually:
+2. From the terminal either start auxilarry build script [Build/MacOS/Build.sh](Build/MacOS/Build.sh) or use cmake manually:
 ```console
 mkdir -p Build/Output/XCode/Build
 cd Build/Output/XCode/Build
