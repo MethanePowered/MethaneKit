@@ -60,6 +60,20 @@ std::string GetExecutableDir()
     return nowide::narrow(path);
 }
 
+std::string GetExecutableFileName()
+{
+    WCHAR path[512];
+    DWORD size = GetModuleFileName(nullptr, path, _countof(path));
+
+    if (size == 0 || size == _countof(path))
+    {
+        return "";
+    }
+
+    WCHAR* last_slash = wcsrchr(path, L'\\');
+    return last_slash ? nowide::narrow(last_slash + 1) : "";
+}
+
 std::string GetResourceDir()
 {
     return GetExecutableDir();

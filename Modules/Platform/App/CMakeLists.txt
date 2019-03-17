@@ -39,6 +39,7 @@ set(LIBRARIES ${LIBRARIES}
     MethanePlatformUtils
     MethanePlatformAppView
     nowide_static
+    cxxopts
 )
 
 set(HEADERS ${PLATFORM_HEADERS}

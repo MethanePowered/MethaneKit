@@ -71,7 +71,12 @@ public:
         , m_show_hud_in_window_title(settings.show_hud_in_window_title)
         , m_screen_pass_access(screen_pass_access)
         , m_image_loader(AppDataProvider::Get())
-    { }
+    {
+        m_cmd_options.add_options()
+            ("d,hud", "Show/hide HUD in window title", cxxopts::value<int>())
+            ("v,vsync", "Enable/disable vertical synchronization", cxxopts::value<int>())
+            ("f,framebuffers", "Frame buffers count in swap-chain", cxxopts::value<uint32_t>());
+    }
 
     virtual ~App()
     {
@@ -223,7 +228,8 @@ public:
         title_ss << m_settings.name << "        " 
                  << average_fps << " FPS (" 
                  << std::fixed << average_frame_time_ms << " ms), VSync: "
-                 << (m_context_settings.vsync_enabled ? "ON" : "OFF");
+                 << (m_context_settings.vsync_enabled ? "ON" : "OFF")
+                 << ", " << m_context_settings.frame_size.width << " x " << m_context_settings.frame_size.height;
 
         SetWindowTitle(title_ss.str());
         m_title_update_timer.Reset();
@@ -233,9 +239,30 @@ public:
     bool GetShowHudInWindowTitle() const                        { return m_show_hud_in_window_title; }
 
 protected:
+
+    // AppBase interface
+
     virtual Platform::AppView GetView() const override
     {
         return m_sp_context->GetAppView();
+    }
+
+    virtual void ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result) override
+    {
+        Platform::App::ParseCommandLine(cmd_parse_result);
+
+        if (cmd_parse_result.count("hud"))
+        {
+            m_show_hud_in_window_title = cmd_parse_result["hud"].as<int>() != 0;
+        }
+        if (cmd_parse_result.count("vsync"))
+        {
+            m_context_settings.vsync_enabled = cmd_parse_result["vsync"].as<int>() != 0;
+        }
+        if (cmd_parse_result.count("framebuffers"))
+        {
+            m_context_settings.frame_buffers_count = cmd_parse_result["framebuffers"].as<uint32_t>();
+        }
     }
 
     inline FrameT& GetCurrentFrame()

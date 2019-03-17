@@ -42,9 +42,10 @@ namespace Platform
 {
 
 void PrintToDebugOutput(const std::string& msg);
-std::vector<std::string> GetCommandLineArgs(int argc, const char** argv);
 std::string GetExecutableDir();
+std::string GetExecutableFileName();
 std::string GetResourceDir();
+
 
 } // namespace Platform
 } // namespace Methane
