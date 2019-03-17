@@ -5,7 +5,7 @@ project(Methane)
 enable_testing()
 
 option(METHANE_USE_OPEN_IMAGE_IO "Enable using OpenImageIO library for images loading" OFF)
-option(METHANE_USE_ITT_INSTRUMENTATION "Enable ITT instrumentation" ON)
+option(METHANE_USE_ITT_INSTRUMENTATION "Enable ITT instrumentation" OFF)
 
 include_directories($ENV{INCLUDE})
 link_directories($ENV{LIB} ${CMAKE_LIBRARY_INPUT_DIRECTORY})
