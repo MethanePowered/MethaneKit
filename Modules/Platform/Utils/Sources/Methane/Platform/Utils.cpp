@@ -28,15 +28,5 @@ namespace Methane
 namespace Platform
 {
 
-std::vector<std::string> GetCommandLineArgs(int argc, const char* argv[])
-{
-    std::vector<std::string> args;
-    for (int argi = 0; argi < argc; ++argi)
-    {
-        args.push_back(argv[argi]);
-    }
-    return args;
-}
-
 } // namespace Platform
 } // namespace Methane

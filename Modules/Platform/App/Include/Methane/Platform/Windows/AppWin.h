@@ -49,9 +49,10 @@ public:
 
 protected:
     // AppBase interface
-    virtual void ParseCommandLine(const std::vector<std::string>& args) override;
+    virtual void ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result) override;
 
     void ShowAlert(const Message& msg);
+    void ScheduleAlert();
 
     static LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 

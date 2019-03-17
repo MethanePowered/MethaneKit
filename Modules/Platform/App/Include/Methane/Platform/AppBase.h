@@ -26,6 +26,8 @@ Base application interface and platform-independent implementation.
 #include <Methane/Platform/AppView.h>
 #include <Methane/Data/Types.h>
 
+#include <cxxopts.hpp>
+
 #include <string>
 #include <vector>
 #include <memory>
@@ -72,6 +74,7 @@ public:
     AppBase(const Settings& settings);
     virtual ~AppBase() {}
 
+    // AppBase interface
     virtual int  Run(const RunArgs& args);
     virtual void InitContext(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size) = 0;
     virtual void Init();
@@ -86,11 +89,13 @@ public:
     bool HasError() const;
 
 protected:
+    // AppBase interface
     virtual AppView GetView() const = 0;
-    virtual void  ParseCommandLine(const std::vector<std::string>& /*args*/) { }
+    virtual void ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result);
 
     Settings             m_settings;
     Data::FrameRect      m_window_bounds;
+    cxxopts::Options     m_cmd_options;
     bool                 m_initialized = false;
     Message::Ptr         m_sp_deferred_message;
 };

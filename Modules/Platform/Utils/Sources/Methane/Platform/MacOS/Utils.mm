@@ -52,6 +52,21 @@ std::string GetExecutableDir()
     return exe_dir;
 }
 
+std::string GetExecutableFileName()
+{
+    std::string exe_file;
+    @autoreleasepool
+    {
+        exe_file = [[[NSBundle mainBundle] executablePath] UTF8String];
+        auto dir_separator_pos = exe_file.rfind("/");
+        if (dir_separator_pos != std::string::npos)
+        {
+            exe_file.erase(exe_file.begin(), dir_separator_pos + 1);
+        }
+    }
+    return exe_file;
+}
+
 std::string GetResourceDir()
 {
     std::string res_dir;

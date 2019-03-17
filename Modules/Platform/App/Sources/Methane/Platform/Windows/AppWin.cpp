@@ -50,16 +50,17 @@ UINT ConvertMessageTypeToFlags(AppBase::Message::Type msg_type)
 AppWin::AppWin(const AppBase::Settings& settings)
     : AppBase(settings)
 {
+    m_cmd_options.add_options()
+        ("warp", "Render via DirectX WARP device");
 }
 
-void AppWin::ParseCommandLine(const std::vector<std::string>& args)
+void AppWin::ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result)
 {
-    for (const std::string& arg : args)
+    AppBase::ParseCommandLine(cmd_parse_result);
+
+    if (cmd_parse_result.count("warp"))
     {
-        if (arg == "-warp" || arg == "/warp")
-        {
-            m_env.use_warp_device = true;
-        }
+        m_env.use_warp_device = cmd_parse_result["warp"].as<bool>();
     }
 }
 
@@ -92,24 +93,30 @@ int AppWin::Run(const RunArgs& args)
 
     RECT window_rect = { 0, 0, static_cast<LONG>(frame_size.width), static_cast<LONG>(frame_size.height) };
     AdjustWindowRect(&window_rect, WS_OVERLAPPEDWINDOW, FALSE);
-    frame_size.width  = static_cast<uint32_t>(window_rect.right - window_rect.left);
-    frame_size.height = static_cast<uint32_t>(window_rect.bottom - window_rect.top);
+    const Data::FrameSize window_size(static_cast<uint32_t>(window_rect.right - window_rect.left),
+                                      static_cast<uint32_t>(window_rect.bottom - window_rect.top));
 
     // Create the window and store a handle to it.
     m_env.window_handle = CreateWindowEx(NULL,
         g_window_class,
         nowide::widen(m_settings.name).c_str(),
         WS_OVERLAPPEDWINDOW,
-        (desktop_width - frame_size.width) / 2,
-        (desktop_height - frame_size.height) / 2,
-        frame_size.width,
-        frame_size.height,
+        (desktop_width - window_size.width) / 2,
+        (desktop_height - window_size.height) / 2,
+        window_size.width,
+        window_size.height,
         NULL, // No parent window
         NULL, // No menus
         window_class.hInstance,
         this);
 
     ShowWindow(m_env.window_handle, SW_SHOW);
+
+    // If there's a deferred message, schedule it to show for the current window message loop
+    if (m_sp_deferred_message)
+    {
+        ScheduleAlert();
+    }
 
     bool init_failed = false;
 #ifndef _DEBUG
@@ -178,8 +185,7 @@ void AppWin::Alert(const Message& msg, bool deferred)
 
     if (deferred)
     {
-        BOOL post_result = PostMessage(m_env.window_handle, WM_ALERT, 0, 0);
-        assert(post_result != 0);
+        ScheduleAlert();
     }
     else
     {
@@ -282,6 +288,15 @@ void AppWin::ShowAlert(const Message& msg)
             ExitProcess(0);
         }
     }
+}
+
+void AppWin::ScheduleAlert()
+{
+    if (!m_env.window_handle)
+        return;
+
+    const BOOL post_result = PostMessage(m_env.window_handle, WM_ALERT, 0, 0);
+    assert(post_result != 0);
 }
 
 void AppWin::SetWindowTitle(const std::string& title_text)
