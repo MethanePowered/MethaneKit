@@ -8,7 +8,7 @@
             "inheritEnvironments": [ "msvc_x86" ],
             "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
             "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-            "cmakeCommandArgs": "",
+            "cmakeCommandArgs": "-DMETHANE_USE_ITT_INSTRUMENTATION:BOOL=ON",
             "buildCommandArgs": "-v",
             "ctestCommandArgs": ""
         },
@@ -19,7 +19,7 @@
             "inheritEnvironments": [ "msvc_x86" ],
             "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
             "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-            "cmakeCommandArgs": "",
+            "cmakeCommandArgs": "-DMETHANE_USE_ITT_INSTRUMENTATION:BOOL=ON",
             "buildCommandArgs": "-v",
             "ctestCommandArgs": ""
         },
@@ -30,7 +30,7 @@
             "inheritEnvironments": [ "msvc_x64_x64" ],
             "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
             "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-            "cmakeCommandArgs": "",
+            "cmakeCommandArgs": "-DMETHANE_USE_ITT_INSTRUMENTATION:BOOL=ON",
             "buildCommandArgs": "-v",
             "ctestCommandArgs": ""
         },
@@ -41,7 +41,7 @@
             "inheritEnvironments": [ "msvc_x64_x64" ],
             "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
             "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-            "cmakeCommandArgs": "",
+            "cmakeCommandArgs": "-DMETHANE_USE_ITT_INSTRUMENTATION:BOOL=ON",
             "buildCommandArgs": "-v",
             "ctestCommandArgs": ""
         }
