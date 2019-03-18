@@ -206,7 +206,7 @@ function(compile_metal_shaders_to_library FOR_TARGET SDK METAL_SHADERS)
             COMMENT "Compiling Metal shader " ${SHADER_METAL_FILE} " for target " ${TARGET}
             BYPRODUCTS "${SHADER_AIR_PATH}"
             DEPENDS "${SHADER_METAL_PATH}"
-            COMMAND xcrun -sdk ${SDK} metal -gcodeview -MO -c "${SHADER_METAL_PATH}" -o "${SHADER_AIR_PATH}"
+            COMMAND xcrun -sdk ${SDK} metal -gcodeview -c "${SHADER_METAL_PATH}" -o "${SHADER_AIR_PATH}"
         )
 
         set_target_properties(${SHADER_COMPILE_TARGET}
