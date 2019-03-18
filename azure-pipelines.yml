@@ -6,6 +6,14 @@
 trigger:
 - master
 
+resources:
+  repositories:
+  - repository: self
+    checkoutOptions:
+      clean: true
+      fetchDepth: 1
+      submodules: recursive
+
 jobs:
 
 - job: Windows
@@ -15,7 +23,7 @@ jobs:
     - task: CMake@1
       inputs:
         workingDirectory: 'build.common'
-        cmakeArgs: '-G \"Visual Studio 15 2017 Win64\"'
+        cmakeArgs: '-G "Visual Studio 15 2017 Win64" ..'
     - task: MSBuild@1
       inputs:
         solution: 'build.common/ALL_BUILD.vcxproj'
