@@ -6,15 +6,17 @@
 trigger:
 - master
 
+resources:
+	  repositories:
+	  - repository: self
+	    checkoutOptions:
+	      submodules: recursive
 jobs:
 
 - job: Windows
   pool:
     vmImage: 'vs2017-win2016'
   steps:
-    - checkout: self
-      fetchDepth: 1
-      submodules: recursive
     - task: CMake@1
       inputs:
         workingDirectory: 'build.common'
@@ -29,9 +31,6 @@ jobs:
   pool:
     vmImage: 'macOS-10.13'
   steps:
-    - checkout: self
-      fetchDepth: 1
-      submodules: recursive
     - script: |
         mkdir build.release
       displayName: Make Build Directories
