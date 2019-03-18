@@ -7,10 +7,11 @@ trigger:
 - master
 
 resources:
-	  repositories:
-	  - repository: self
-	    checkoutOptions:
-	      submodules: recursive
+  repositories:
+  - repository: self
+    checkoutOptions:
+      submodules: recursive
+
 jobs:
 
 - job: Windows
