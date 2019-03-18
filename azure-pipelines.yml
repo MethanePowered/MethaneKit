@@ -6,33 +6,32 @@
 trigger:
 - master
 
-resources:
-  repositories:
-  - repository: self
-    checkoutOptions:
-      clean: true
-      fetchDepth: 1
-      submodules: recursive
-
 jobs:
 
 - job: Windows
   pool:
     vmImage: 'vs2017-win2016'
   steps:
+    - checkout: self
+      fetchDepth: 1
+      submodules: recursive
     - task: CMake@1
       inputs:
         workingDirectory: 'build.common'
         cmakeArgs: '-G "Visual Studio 15 2017 Win64" ..'
-    - task: MSBuild@1
+    - task: VSBuild@1
       inputs:
-        solution: 'build.common/ALL_BUILD.vcxproj'
-        maximumCpuCount: true
+        solution: 'build.common\MethaneKit.sln'
+        configuration: Release
+        platform: x64
 
 - job: macOS
   pool:
     vmImage: 'macOS-10.13'
   steps:
+    - checkout: self
+      fetchDepth: 1
+      submodules: recursive
     - script: |
         mkdir build.release
       displayName: Make Build Directories
