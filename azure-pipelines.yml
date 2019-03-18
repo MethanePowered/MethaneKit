@@ -1,0 +1,38 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+jobs:
+
+- job: Windows
+  pool:
+    vmImage: 'vs2017-win2016'
+  steps:
+    - task: CMake@1
+      inputs:
+        workingDirectory: 'build.common'
+        cmakeArgs: '-G \"Visual Studio 15 2017 Win64\"'
+    - task: MSBuild@1
+      inputs:
+        solution: 'build.common/ALL_BUILD.vcxproj'
+        maximumCpuCount: true
+
+- job: macOS
+  pool:
+    vmImage: 'macOS-10.13'
+  steps:
+    - script: |
+        mkdir build.release
+      displayName: Make Build Directories
+    - task: CMake@1
+      inputs:
+        workingDirectory: 'build.release'
+        cmakeArgs: '-G Xcode -DCMAKE_BUILD_TYPE=Release ..'
+    - task: CMake@1
+      inputs:
+        workingDirectory: 'build.release'
+        cmakeArgs: '--build . --config Release'
