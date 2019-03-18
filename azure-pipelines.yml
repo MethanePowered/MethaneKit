@@ -16,17 +16,18 @@ jobs:
 
 - job: Windows
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-2019'
   steps:
     - task: CMake@1
+      displayName: Generating VS solution with CMake
       inputs:
         workingDirectory: 'build.common'
         cmakeArgs: '-G "Visual Studio 15 2017 Win64" ..'
-    - task: VSBuild@1
+    - task: CMake@1
+      displayName: Building VS solution
       inputs:
-        solution: 'build.common\MethaneKit.sln'
-        configuration: Release
-        platform: x64
+        workingDirectory: 'build.common'
+        cmakeArgs: '--build . --config Release'
 
 - job: macOS
   pool:
@@ -36,10 +37,12 @@ jobs:
         mkdir build.release
       displayName: Make Build Directories
     - task: CMake@1
+      displayName: Generating XCode workspace with CMake
       inputs:
         workingDirectory: 'build.release'
         cmakeArgs: '-G Xcode -DCMAKE_BUILD_TYPE=Release ..'
     - task: CMake@1
+      displayName: Building XCode workspace
       inputs:
         workingDirectory: 'build.release'
         cmakeArgs: '--build . --config Release'
