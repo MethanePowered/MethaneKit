@@ -18,13 +18,16 @@ jobs:
   pool:
     vmImage: 'vs2017-win2016'
   steps:
+    - script: |
+       call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+      displayName: Settings VS build environment
     - task: CMake@1
-      displayName: Generating VS solution with CMake
+      displayName: Generating Visual Studio 2017 solution
       inputs:
         workingDirectory: 'build.common'
         cmakeArgs: '-G "Visual Studio 15 2017 Win64" ..'
     - task: CMake@1
-      displayName: Building VS solution
+      displayName: Building Visual Studio 2017 solution
       inputs:
         workingDirectory: 'build.common'
         cmakeArgs: '--build . --config Release'
@@ -37,7 +40,7 @@ jobs:
         mkdir build.release
       displayName: Make Build Directories
     - task: CMake@1
-      displayName: Generating XCode workspace with CMake
+      displayName: Generating XCode workspace
       inputs:
         workingDirectory: 'build.release'
         cmakeArgs: '-G Xcode -DCMAKE_BUILD_TYPE=Release ..'
