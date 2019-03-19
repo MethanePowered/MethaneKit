@@ -27,65 +27,55 @@ jobs:
   pool:
     vmImage: 'vs2017-win2016'
 
+  variables:
+    platform: 'Win64'
+    configuration: 'Release'
+    vcVarsBatFile: 'vcvars64.bat'
+    generatorName: '"Visual Studio 15 2017 Win64"'
+    cmakeFlags: '-DMETHANE_USE_ITT_INSTRUMENTATION:BOOL=ON'
+    buildName: '$(platform)-$(configuration)'
+    buildDir: 'Build\Output\$(buildName)\Build'
+    installDir: 'Build\Output\$(buildName)\Install'
+    buildInstallDir: '..\Install'
+    rootDir: '..\..\..\..'
+
   steps:
+  - template: Build/Windows/AzureBuild.yml
 
-    - script: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-        mkdir build.common
-        cd build.common
-        cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_INSTALL_PREFIX:PATH=..\build.install ..
-      displayName: 'Generating Visual Studio 2017 solution'
+- job: Windows_x86
 
-    - task: CMake@1
-      displayName: 'Building Visual Studio 2017 solution'
-      inputs:
-        workingDirectory: 'build.common'
-        cmakeArgs: '--build . --config Release --target install'
+  pool:
+    vmImage: 'vs2017-win2016'
 
-    - task: CopyFiles@2
-      displayName: 'Copy Install Artifacts'
-      inputs:
-        SourceFolder: 'build.install'
-        Contents: '**\*'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  variables:
+    platform: 'Win32'
+    configuration: 'Release'
+    vcVarsBatFile: 'vcvars32.bat'
+    generatorName: '"Visual Studio 15 2017"'
+    cmakeFlags: '-DMETHANE_USE_ITT_INSTRUMENTATION:BOOL=ON'
+    buildName: '$(platform)-$(configuration)'
+    buildDir: 'Build\Output\$(buildName)\Build'
+    installDir: 'Build\Output\$(buildName)\Install'
+    buildInstallDir: '..\Install'
+    rootDir: '..\..\..\..'
 
-    - task: PublishBuildArtifacts@1
-      inputs:
-        pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        artifactName: MethaneKit-Win64
-
+  steps:
+  - template: Build/Windows/AzureBuild.yml
 
 - job: macOS
 
   pool:
     vmImage: 'macOS-10.13'
 
+  variables:
+    configuration: 'Release'
+    generatorName: 'Xcode'
+    cmakeFlags: '-DMETHANE_USE_ITT_INSTRUMENTATION:BOOL=ON'
+    buildName: 'MacOS-$(configuration)'
+    buildDir: 'Build/Output/$(buildName)/Build'
+    installDir: 'Build/Output/$(buildName)/Install'
+    buildInstallDir: '../Install'
+    rootDir: '../../../..'
+
   steps:
-
-    - script: |
-        mkdir build.release
-      displayName: 'Make Build Directories'
-
-    - task: CMake@1
-      displayName: 'Generating XCode workspace'
-      inputs:
-        workingDirectory: 'build.release'
-        cmakeArgs: '-G Xcode -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=../build.install ..'
-
-    - task: CMake@1
-      displayName: 'Building XCode workspace'
-      inputs:
-        workingDirectory: 'build.release'
-        cmakeArgs: '--build . --config Release --target install'
-
-    - task: CopyFiles@2
-      displayName: 'Copy Install Artifacts'
-      inputs:
-        SourceFolder: 'build.install'
-        Contents: '**/*'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)'
-
-    - task: PublishBuildArtifacts@1
-      inputs:
-        pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        artifactName: MethaneKit-MacOS
+  - template: Build/MacOS/AzureBuild.yml
