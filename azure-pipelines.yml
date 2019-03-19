@@ -22,7 +22,7 @@ resources:
 
 jobs:
 
-- job: Windows-x64
+- job: Windows_x64
 
   pool:
     vmImage: 'vs2017-win2016'
