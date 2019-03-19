@@ -17,14 +17,14 @@ steps:
       cmakeArgs: '--build . --config $(configuration) --target install'
 
   - task: CopyFiles@2
-    displayName: 'Copy install artifacts for $(buildName)'
+    displayName: 'Copy install artifacts for $(platform) $(configuration)'
     inputs:
       SourceFolder: $(installDir)
       Contents: '**\*'
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
   - task: PublishBuildArtifacts@1
-    displayName: 'Publish install artifacts for $(buildName)'
+    displayName: 'Publish install artifacts for $(platform) $(configuration)'
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: MethaneKit-$(buildName)
