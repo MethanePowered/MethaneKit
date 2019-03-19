@@ -1,10 +1,18 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
+# Methane Kit CI configuration
 # https://aka.ms/yaml
 
 trigger:
 - master
+
+pr:
+  branches:
+    include:
+    - master
+  paths:
+    exclude:
+    - README.md
+    - LICENSE
+    - CMakeSettings.json
 
 resources:
   repositories:
@@ -14,36 +22,70 @@ resources:
 
 jobs:
 
-- job: Windows
+- job: Windows-x64
+
   pool:
     vmImage: 'vs2017-win2016'
+
   steps:
+
     - script: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         mkdir build.common
         cd build.common
-        cmake -G "Visual Studio 15 2017 Win64" ..
-      displayName: Generating Visual Studio 2017 solution
+        cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_INSTALL_PREFIX:PATH=..\build.install ..
+      displayName: 'Generating Visual Studio 2017 solution'
+
     - task: CMake@1
-      displayName: Building Visual Studio 2017 solution
+      displayName: 'Building Visual Studio 2017 solution'
       inputs:
         workingDirectory: 'build.common'
-        cmakeArgs: '--build . --config Release'
+        cmakeArgs: '--build . --config Release --target install'
+
+    - task: CopyFiles@2
+      displayName: 'Copy Install Artifacts'
+      inputs:
+        SourceFolder: 'build.install'
+        Contents: '**\*'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: MethaneKit-Win64
+
 
 - job: macOS
+
   pool:
     vmImage: 'macOS-10.13'
+
   steps:
+
     - script: |
         mkdir build.release
-      displayName: Make Build Directories
+      displayName: 'Make Build Directories'
+
     - task: CMake@1
-      displayName: Generating XCode workspace
+      displayName: 'Generating XCode workspace'
       inputs:
         workingDirectory: 'build.release'
-        cmakeArgs: '-G Xcode -DCMAKE_BUILD_TYPE=Release ..'
+        cmakeArgs: '-G Xcode -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=../build.install ..'
+
     - task: CMake@1
-      displayName: Building XCode workspace
+      displayName: 'Building XCode workspace'
       inputs:
         workingDirectory: 'build.release'
-        cmakeArgs: '--build . --config Release'
+        cmakeArgs: '--build . --config Release --target install'
+
+    - task: CopyFiles@2
+      displayName: 'Copy Install Artifacts'
+      inputs:
+        SourceFolder: 'build.install'
+        Contents: '**/*'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: MethaneKit-MacOS
