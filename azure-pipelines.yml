@@ -68,10 +68,11 @@ jobs:
     vmImage: 'macOS-10.13'
 
   variables:
+    platform: 'MacOS'
     configuration: 'Release'
     generatorName: 'Xcode'
     cmakeFlags: '-DMETHANE_USE_ITT_INSTRUMENTATION:BOOL=ON'
-    buildName: 'MacOS-$(configuration)'
+    buildName: '$(platform)-$(configuration)'
     buildDir: 'Build/Output/$(buildName)/Build'
     installDir: 'Build/Output/$(buildName)/Install'
     buildInstallDir: '../Install'
