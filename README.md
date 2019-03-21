@@ -12,9 +12,8 @@ Note that project is in **Alpha / [MVP](https://en.wikipedia.org/wiki/Minimum_vi
 [![LoC](https://tokei.rs/b1/github/egorodet/MethaneKit)](https://github.com/egorodet/MethaneKit)
 [![Codacy](https://api.codacy.com/project/badge/Grade/25ae34bade994076bf636290791b3e0f)](https://www.codacy.com/app/egorodet/MethaneKit?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=egorodet/MethaneKit&amp;utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/egorodet/methanekit/badge)](https://www.codefactor.io/repository/github/egorodet/methanekit)
-[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/egorodet/MethaneKit/issues)
+[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-yellow.svg?style=flat)](https://github.com/egorodet/MethaneKit/issues)
 [![Join the chat at https://gitter.im/MethaneKit/community](https://badges.gitter.im/MethaneKit/community.svg)](https://gitter.im/MethaneKit/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![HitCount](http://hits.dwyl.io/egorodet/MethaneKit.svg)](http://hits.dwyl.io/egorodet/MethaneKit)
 
 |     Platform     |  Master Build Status  |
 | ---------------- | --------------------- |
@@ -322,3 +321,5 @@ All external dependencies of Methane Kit are gathered in [MethaneExternals](http
 Methane Kit is distributed under [Apache 2.0 License](LICENSE): it is free to use and open for contribution!
 
 *Copyright 2019 © Evgeny Gorodetskiy* [![Follow](https://img.shields.io/twitter/follow/egorodet.svg?style=social)](https://twitter.com/egorodet)
+
+[![HitCount](http://hits.dwyl.io/egorodet/MethaneKit.svg)](http://hits.dwyl.io/egorodet/MethaneKit)
