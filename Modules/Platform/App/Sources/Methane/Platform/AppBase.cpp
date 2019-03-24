@@ -66,18 +66,28 @@ void AppBase::ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result)
 
 int AppBase::Run(const RunArgs& args)
 {
+#ifdef __APPLE__
+    // NOTE: MacOS bundle process serial number argument must be skipped because of unsupported syntax (underscores)
+    const std::string macos_psn_arg_prefix = "-psn_";
+#endif
+    
     // Create a mutable copy of command line args to let the parser modify it
-    int mutable_args_count = args.cmd_arg_count;
+    int mutable_args_count = 0;
     std::vector<char*> mutable_arg_values(args.cmd_arg_count, nullptr);
     for (int argi = 0; argi < args.cmd_arg_count; argi++)
     {
         const size_t arg_value_size = strlen(args.cmd_arg_values[argi]) + 1;
-        mutable_arg_values[argi] = new char[arg_value_size];
+#ifdef __APPLE__
+        if (strncmp(args.cmd_arg_values[argi], macos_psn_arg_prefix.data(), std::min(arg_value_size - 1, macos_psn_arg_prefix.length())) == 0)
+            continue;
+#endif
+        mutable_arg_values[mutable_args_count] = new char[arg_value_size];
 #ifdef _WIN32
         strcpy_s(mutable_arg_values[argi], arg_value_size, args.cmd_arg_values[argi]);
 #else
         strlcpy(mutable_arg_values[argi], args.cmd_arg_values[argi], arg_value_size);
 #endif
+        mutable_args_count++;
     };
 
     // Parse command line
