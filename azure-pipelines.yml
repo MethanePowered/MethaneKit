@@ -2,7 +2,15 @@
 # https://aka.ms/yaml
 
 trigger:
-- master
+  branches:
+    include:
+    - master
+    - develop
+  paths:
+    exclude:
+    - README.md
+    - LICENSE
+    - CMakeSettings.json
 
 pr:
   branches:
