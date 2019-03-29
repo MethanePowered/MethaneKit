@@ -43,11 +43,15 @@ set(LIBRARIES ${LIBRARIES}
 )
 
 set(HEADERS ${PLATFORM_HEADERS}
+    ${INCLUDE_DIR}/Keyboard.h
+    ${INCLUDE_DIR}/Mouse.h
     ${INCLUDE_DIR}/AppBase.h
     ${INCLUDE_DIR}/App.h
 )
 
 set(SOURCES ${PLATFORM_SOURCES}
+    ${SOURCES_DIR}/Keyboard.cpp
+    ${SOURCES_DIR}/Mouse.cpp
     ${SOURCES_DIR}/AppBase.cpp
 )
 
