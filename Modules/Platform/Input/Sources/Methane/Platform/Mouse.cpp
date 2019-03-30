@@ -24,3 +24,32 @@ Platform abstraction of mouse events.
 #include <Methane/Platform/Mouse.h>
 
 using namespace Methane::Platform::Mouse;
+
+State::State(std::initializer_list<Button> pressed_buttons, const Position& position)
+    : m_position(position)
+{
+    for (Button pressed_button : pressed_buttons)
+    {
+        SetButton(pressed_button, ButtonState::Pressed);
+    }
+}
+
+State::State(const State& other)
+    : m_button_states(other.m_button_states)
+    , m_position(other.m_position)
+{
+}
+
+Buttons State::GetPressedButtons() const
+{
+    Buttons pressed_buttons;
+    for (size_t button_index = 0; button_index < m_button_states.size(); ++button_index)
+    {
+        if (m_button_states[button_index] != ButtonState::Pressed)
+            continue;
+
+        const Button button = static_cast<Button>(button_index);
+        pressed_buttons.insert(button);
+    }
+    return pressed_buttons;
+}

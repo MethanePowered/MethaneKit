@@ -1,4 +1,4 @@
-set(TARGET MethanePlatformApp)
+set(TARGET MethanePlatformInput)
 
 include(Methane)
 
@@ -7,25 +7,21 @@ get_module_dirs("Methane/Platform")
 if (WIN32)
 
     set(PLATFORM_HEADERS
-        ${INCLUDE_PLATFORM_DIR}/AppWin.h
+        #${INCLUDE_PLATFORM_DIR}/
     )
 
     set(PLATFORM_SOURCES
-        ${SOURCES_PLATFORM_DIR}/AppWin.cpp
+        #${SOURCES_PLATFORM_DIR}/
     )
 
 elseif(APPLE)
 
     set(PLATFORM_HEADERS
-        ${INCLUDE_PLATFORM_DIR}/AppMac.h
-        ${SOURCES_PLATFORM_DIR}/AppDelegate.h
-        ${SOURCES_PLATFORM_DIR}/AppViewController.h
+        #${INCLUDE_PLATFORM_DIR}/
     )
 
     set(PLATFORM_SOURCES
-        ${SOURCES_PLATFORM_DIR}/AppMac.mm
-        ${SOURCES_PLATFORM_DIR}/AppDelegate.mm
-        ${SOURCES_PLATFORM_DIR}/AppViewController.mm
+        #${SOURCES_PLATFORM_DIR}/
     )
 
     set(LIBRARIES
@@ -36,20 +32,16 @@ endif()
 
 set(LIBRARIES ${LIBRARIES}
     MethaneDataTypes
-    MethanePlatformUtils
-    MethanePlatformInput
-    MethanePlatformAppView
-    nowide_static
-    cxxopts
 )
 
 set(HEADERS ${PLATFORM_HEADERS}
-    ${INCLUDE_DIR}/AppBase.h
-    ${INCLUDE_DIR}/App.h
+    ${INCLUDE_DIR}/Keyboard.h
+    ${INCLUDE_DIR}/Mouse.h
 )
 
 set(SOURCES ${PLATFORM_SOURCES}
-    ${SOURCES_DIR}/AppBase.cpp
+    ${SOURCES_DIR}/Keyboard.cpp
+    ${SOURCES_DIR}/Mouse.cpp
 )
 
 add_library(${TARGET} STATIC
@@ -59,11 +51,6 @@ add_library(${TARGET} STATIC
 
 target_link_libraries(${TARGET}
     ${LIBRARIES}
-)
-
-target_compile_definitions(${TARGET}
-    PRIVATE
-    METHANE_RENDER_APP
 )
 
 target_include_directories(${TARGET}
@@ -89,3 +76,5 @@ install(TARGETS ${TARGET}
         DESTINATION Lib
         COMPONENT Development
 )
+
+add_subdirectory(Test)
