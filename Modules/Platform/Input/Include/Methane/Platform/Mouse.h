@@ -51,10 +51,10 @@ enum class Button : uint32_t
 
 using Buttons = std::set<Button>;
 
-enum class ButtonState : uint32_t
+enum class ButtonState : uint8_t
 {
-    Pressed     = 0,
-    Released
+    Released = 0,
+    Pressed,
 };
 
 using ButtonStates = std::array<ButtonState, static_cast<size_t>(Button::Count)>;
@@ -64,15 +64,26 @@ using Position = Data::Point2i;
 class State
 {
 public:
-    ButtonState GetButtonState(Button button) const                 { return m_button_states[static_cast<size_t>(button)];  }
-    void        SetButtonState(Button button, ButtonState state)    { m_button_states[static_cast<size_t>(button)] = state; }
+    State() = default;
+    State(std::initializer_list<Button> pressed_buttons, const Position& position = Position());
+    State(const State& other);
 
-    const Position& GetPosition() const                             { return m_position; }
-    void            SetPosition(const Position& position)           { m_position = position; }
+    const ButtonState& operator[](Button button) const          { return m_button_states[static_cast<size_t>(button)]; }
+    bool operator==(const State& other) const                   { return m_button_states == other.m_button_states && m_position == other.m_position; }
+    bool operator!=(const State& other) const                   { return !operator==(other); }
+
+    void  SetButton(Button button, ButtonState state)           { m_button_states[static_cast<size_t>(button)] = state; }
+    void  PressButton(Button button)                            { SetButton(button, ButtonState::Pressed); }
+    void  ReleaseButton(Button button)                          { SetButton(button, ButtonState::Released); }
+
+    Buttons             GetPressedButtons() const;
+    const ButtonStates& GetButtonStates() const                 { return m_button_states; }
+    const Position&     GetPosition() const                     { return m_position; }
+    void                SetPosition(const Position& position)   { m_position = position; }
 
 private:
-    ButtonStates m_button_states;
-    Position     m_position;
+    ButtonStates m_button_states{};
+    Position     m_position{};
 };
 
 } // namespace Mouse

@@ -16,11 +16,9 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/Keyboard.cpp
-Platform abstraction of keyboard events.
+FILE: Test/Main.cpp
 
 ******************************************************************************/
 
-#include <Methane/Platform/Keyboard.h>
-
-using namespace Methane::Platform::Keyboard;
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>

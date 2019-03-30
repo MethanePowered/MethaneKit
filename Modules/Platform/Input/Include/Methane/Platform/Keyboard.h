@@ -37,7 +37,6 @@ enum class Key : uint32_t
 {
     // Printable keys
     Space       = 0,
-    /*
     Apostrophe, // '
     Comma,      // ,
     Minus,      // -
@@ -162,8 +161,6 @@ enum class Key : uint32_t
     RightSuper,
     Menu,
 
-        */
-
     Count
 };
 
@@ -191,10 +188,10 @@ struct Modifier
     ~Modifier() = delete;
 };
 
-enum class KeyState : uint32_t
+enum class KeyState : uint8_t
 {
-    Pressed = 0,
-    Released
+    Released = 0,
+    Pressed,
 };
 
 using KeyStates = std::array<KeyState, static_cast<size_t>(Key::Count)>;
@@ -202,14 +199,26 @@ using KeyStates = std::array<KeyState, static_cast<size_t>(Key::Count)>;
 class State
 {
 public:
-    KeyState GetKeyState(Key key) const             { return m_key_states[static_cast<size_t>(key)]; }
-    void     SetKeyState(Key key, KeyState state)   { m_key_states[static_cast<size_t>(key)] = state; }
+    State() = default;
+    State(std::initializer_list<Key> pressed_keys);
+    State(const State& other);
 
-    Keys           GetPressedKeys() const;
-    Modifier::Mask GetModifiersMask() const { return m_modifiers_mask; }
+    const KeyState& operator[](Key key) const       { return m_key_states[static_cast<size_t>(key)]; }
+    bool operator==(const State& other) const       { return m_key_states == other.m_key_states && m_modifiers_mask == other.m_modifiers_mask; }
+    bool operator!=(const State& other) const       { return !operator==(other); }
+
+    void  SetKey(Key key, KeyState state);
+    void  PressKey(Key key)                         { SetKey(key, KeyState::Pressed); }
+    void  ReleaseKey(Key key)                       { SetKey(key, KeyState::Released); }
+
+    Keys                GetPressedKeys() const;
+    const KeyStates&    GetKeyStates() const        { return m_key_states; }
+    Modifier::Mask      GetModifiersMask() const    { return m_modifiers_mask; }
 
 private:
-    KeyStates       m_key_states;
+    void UpdateModifiersMask(Modifier::Value modifier_value, bool add_modifier);
+
+    KeyStates       m_key_states{};
     Modifier::Mask  m_modifiers_mask = Modifier::None;
 };
 
