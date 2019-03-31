@@ -27,6 +27,7 @@ Platform abstraction of mouse events.
 
 #include <array>
 #include <set>
+#include <string>
 
 namespace Methane
 {
@@ -51,6 +52,17 @@ enum class Button : uint32_t
 
 using Buttons = std::set<Button>;
 
+class ButtonHelper
+{
+public:
+    ButtonHelper(Button button) : m_button(button) { }
+    
+    std::string ToString() const;
+    
+private:
+    Button m_button;
+};
+
 enum class ButtonState : uint8_t
 {
     Released = 0,
@@ -71,20 +83,29 @@ public:
     const ButtonState& operator[](Button button) const          { return m_button_states[static_cast<size_t>(button)]; }
     bool operator==(const State& other) const                   { return m_button_states == other.m_button_states && m_position == other.m_position; }
     bool operator!=(const State& other) const                   { return !operator==(other); }
+    operator std::string() const                                { return ToString(); }
 
     void  SetButton(Button button, ButtonState state)           { m_button_states[static_cast<size_t>(button)] = state; }
     void  PressButton(Button button)                            { SetButton(button, ButtonState::Pressed); }
     void  ReleaseButton(Button button)                          { SetButton(button, ButtonState::Released); }
+    
+    const Position&     GetPosition() const                     { return m_position; }
+    void                SetPosition(const Position& position)   { m_position = position; }
 
     Buttons             GetPressedButtons() const;
     const ButtonStates& GetButtonStates() const                 { return m_button_states; }
-    const Position&     GetPosition() const                     { return m_position; }
-    void                SetPosition(const Position& position)   { m_position = position; }
+    std::string         ToString() const;
 
 private:
     ButtonStates m_button_states{};
     Position     m_position{};
 };
+
+inline std::ostream& operator<<( std::ostream& os, State const& keyboard_state)
+{
+    os << keyboard_state.ToString();
+    return os;
+}
 
 } // namespace Mouse
 } // namespace Platform
