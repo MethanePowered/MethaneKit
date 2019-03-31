@@ -38,11 +38,11 @@ target_link_libraries(${TARGET}
     CML
 )
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER Modules/Render
+    FOLDER Modules/Graphics
     PUBLIC_HEADER "${HEADERS}"
 )
 
