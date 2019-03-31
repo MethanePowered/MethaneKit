@@ -25,6 +25,7 @@ Platform abstraction of keyboard events.
 
 #include <array>
 #include <set>
+#include <string>
 
 namespace Methane
 {
@@ -36,135 +37,57 @@ namespace Keyboard
 enum class Key : uint32_t
 {
     // Printable keys
-    Space       = 0,
-    Apostrophe, // '
-    Comma,      // ,
-    Minus,      // -
-    Period,     // .
-    Slash,      // /
-    Num0,
-    Num1,
-    Num2,
-    Num3,
-    Num4,
-    Num5,
-    Num6,
-    Num7,
-    Num8,
-    Num9,
-    Semicolon,  // ;
-    Equal,      // =
-    A,
-    B,
-    C,
-    D,
-    E,
-    F,
-    G,
-    H,
-    I,
-    J,
-    K,
-    L,
-    M,
-    N,
-    O,
-    P,
-    Q,
-    R,
-    S,
-    T,
-    U,
-    V,
-    W,
-    X,
-    Y,
-    Z,
+    Space           = 0,
+    Apostrophe,     // '
+    Comma,          // ,
+    Minus,          // -
+    Period,         // .
+    Slash,          // /
+    Num0, Num1, Num2, Num3, Num4, Num5, Num6, Num7, Num8, Num9,
+    Semicolon,      // ;
+    Equal,          // =
+    A, B, C, D, E, F, G, H, I, J, K, L, M,
+    N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
     LeftBracket,    //  [
     BackSlash,      // '\'
     RightBracket,   //  ]
     GraveAccent,    //  `
-    World1,
-    World2,
+    World1, World2,
     
     // Function Keys
-    Escape,
-    Enter,
-    Tab,
-    Backspace,
-    Insert,
-    Delete,
-    Right,
-    Left,
-    Down,
-    Up,
-    PageUp,
-    PageDown,
-    Home,
-    End,
-    CapsLock,
-    ScrollLock,
-    NumLock,
-    PrintScreen,
-    Pause,
-    F1,
-    F2,
-    F3,
-    F4,
-    F5,
-    F6,
-    F7,
-    F8,
-    F9,
-    F10,
-    F11,
-    F12,
-    F13,
-    F14,
-    F15,
-    F16,
-    F17,
-    F18,
-    F19,
-    F20,
-    F21,
-    F22,
-    F23,
-    F24,
-    F25,
-    KeyPad0,
-    KeyPad1,
-    KeyPad2,
-    KeyPad3,
-    KeyPad4,
-    KeyPad5,
-    KeyPad6,
-    KeyPad7,
-    KeyPad8,
-    KeyPad9,
-    KeyPadDecimal,
-    KeyPadDivide,
-    KeyPadMultiply,
-    KeyPadSubtract,
-    KeyPadAdd,
-    KeyPadEnter,
-    KeyPadEqual,
+    Escape, Enter, Tab,  Backspace, Insert, Delete,
+    Right,  Left,  Down, Up,
+    PageUp, PageDown, Home, End,
+    CapsLock, ScrollLock, NumLock, PrintScreen, Pause,
+    F1,  F2,  F3,  F4,  F5,  F6,  F7,  F8,  F9,  F10,
+    F11, F12, F13, F14, F15, F16, F17, F18, F19, F20,
+    F21, F22, F23, F24, F25,
+    KeyPad0, KeyPad1, KeyPad2, KeyPad3, KeyPad4,
+    KeyPad5, KeyPad6, KeyPad7, KeyPad8, KeyPad9,
+    KeyPadDecimal,  KeyPadDivide, KeyPadMultiply,
+    KeyPadSubtract, KeyPadAdd,
+    KeyPadEnter,    KeyPadEqual,
     
     // Control keys
-    LeftShift,
-    LeftControl,
-    LeftAlt,
-    LeftSuper,
-    RightShift,
-    RightControl,
-    RightAlt,
-    RightSuper,
+    LeftShift,  LeftControl,  LeftAlt,  LeftSuper,
+    RightShift, RightControl, RightAlt, RightSuper,
     Menu,
 
     Count
 };
 
 using Keys = std::set<Key>;
+
+class KeyHelper
+{
+public:
+    KeyHelper(Key key) : m_key(key) { }
+    
+    std::string ToString() const;
+    
+private:
+    Key m_key;
+};
 
 struct Modifier
 {
@@ -183,6 +106,9 @@ struct Modifier
 
     using Values = std::array<Value, 6>;
     static constexpr const Values values = { Shift, Control, Alt, Super, CapsLock, NumLock };
+    
+    static std::string ToString(Value modifier);
+    static std::string ToString(Mask modifiers_mask);
 
     Modifier()  = delete;
     ~Modifier() = delete;
@@ -206,6 +132,7 @@ public:
     const KeyState& operator[](Key key) const       { return m_key_states[static_cast<size_t>(key)]; }
     bool operator==(const State& other) const       { return m_key_states == other.m_key_states && m_modifiers_mask == other.m_modifiers_mask; }
     bool operator!=(const State& other) const       { return !operator==(other); }
+    operator std::string() const                    { return ToString(); }
 
     void  SetKey(Key key, KeyState state);
     void  PressKey(Key key)                         { SetKey(key, KeyState::Pressed); }
@@ -214,6 +141,7 @@ public:
     Keys                GetPressedKeys() const;
     const KeyStates&    GetKeyStates() const        { return m_key_states; }
     Modifier::Mask      GetModifiersMask() const    { return m_modifiers_mask; }
+    std::string         ToString() const;
 
 private:
     void UpdateModifiersMask(Modifier::Value modifier_value, bool add_modifier);
@@ -221,6 +149,12 @@ private:
     KeyStates       m_key_states{};
     Modifier::Mask  m_modifiers_mask = Modifier::None;
 };
+
+inline std::ostream& operator<<( std::ostream& os, State const& keyboard_state)
+{
+    os << keyboard_state.ToString();
+    return os;
+}
 
 } // namespace Keyboard
 } // namespace Platform
