@@ -7,21 +7,21 @@ get_module_dirs("Methane/Platform")
 if (WIN32)
 
     set(PLATFORM_HEADERS
-        #${INCLUDE_PLATFORM_DIR}/
+        ${INCLUDE_PLATFORM_DIR}/KeyboardWin.h
     )
 
     set(PLATFORM_SOURCES
-        #${SOURCES_PLATFORM_DIR}/
+        ${SOURCES_PLATFORM_DIR}/KeyboardWin.cpp
     )
 
 elseif(APPLE)
 
     set(PLATFORM_HEADERS
-        #${INCLUDE_PLATFORM_DIR}/
+        ${INCLUDE_PLATFORM_DIR}/KeyboardMac.h
     )
 
     set(PLATFORM_SOURCES
-        #${SOURCES_PLATFORM_DIR}/
+        ${SOURCES_PLATFORM_DIR}/KeyboardMac.mm
     )
 
     set(LIBRARIES

@@ -32,7 +32,7 @@ using namespace Methane::Platform::Keyboard;
 const Modifier::Values Modifier::values;
 static const std::string s_keys_separator = "+";
 
-std::string KeyHelper::ToString() const
+std::string KeyConverter::ToString() const
 {
     static const std::map<Key, std::string> s_name_by_key =
     {
@@ -213,7 +213,13 @@ void State::SetKey(Key key, KeyState state)
         UpdateModifiersMask(Modifier::NumLock,   state == KeyState::Pressed);
         break;
     default:
-        m_key_states[static_cast<size_t>(key)] = state;
+        {
+            size_t key_index = static_cast<size_t>(key);
+            if (key_index < m_key_states.size())
+            {
+                m_key_states[key_index] = state;
+            }
+        }
     }
 }
 
@@ -294,7 +300,7 @@ std::string State::ToString() const
         }
         
         const Key key = static_cast<Key>(key_index);
-        ss << KeyHelper(key).ToString();
+        ss << KeyConverter(key).ToString();
         is_first_key = false;
     }
     

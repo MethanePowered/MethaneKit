@@ -52,10 +52,10 @@ enum class Button : uint32_t
 
 using Buttons = std::set<Button>;
 
-class ButtonHelper
+class ButtonConverter
 {
 public:
-    ButtonHelper(Button button) : m_button(button) { }
+    ButtonConverter(Button button) : m_button(button) { }
     
     std::string ToString() const;
     
