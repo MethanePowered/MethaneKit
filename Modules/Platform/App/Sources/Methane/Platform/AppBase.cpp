@@ -123,6 +123,20 @@ void AppBase::Init()
     m_initialized = true;
 }
 
+bool AppBase::KeyboardEvent(Keyboard::Key key, Keyboard::KeyState key_state)
+{
+    Keyboard::State prev_keyboard_state(m_keyboard_state);
+    
+    m_keyboard_state.SetKey(key, key_state);
+
+    if (m_keyboard_state != prev_keyboard_state)
+    {
+        PrintToDebugOutput(std::string("Keyboard: ") + m_keyboard_state.ToString());
+    }
+    
+    return false;
+}
+
 void AppBase::ChangeWindowBounds(const Data::FrameRect& window_bounds)
 {
     m_window_bounds = window_bounds;

@@ -97,16 +97,21 @@ using namespace Methane::Platform;
     m_p_app->Render();
 }
 
-- (void) keyDown:(NSEvent *)theEvent
+- (void) keyDown:(NSEvent *)event
 {
-    unichar characterHit = [[theEvent charactersIgnoringModifiers] characterAtIndex:0];
-    if (characterHit == 'q' || characterHit == 27)
+    assert(!!m_p_app);
+    if (!m_p_app->KeyboardEvent(Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), Keyboard::KeyState::Pressed))
     {
-        [NSApp terminate:self];
+        [super keyDown:event];
     }
-    else
+}
+
+- (void) keyUp:(NSEvent *)event
+{
+    assert(!!m_p_app);
+    if (!m_p_app->KeyboardEvent(Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), Keyboard::KeyState::Released))
     {
-        [super keyDown:theEvent];
+        [super keyUp:event];
     }
 }
 

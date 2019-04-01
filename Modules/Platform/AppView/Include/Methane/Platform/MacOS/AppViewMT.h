@@ -30,6 +30,9 @@ MacOS application view implementation.
 #import <QuartzCore/CAMetalLayer.h>
 
 @interface AppViewMT : NSView
+{
+    IBOutlet NSViewController* viewController;
+}
 
 @property (nonatomic, readonly, nullable) NSWindow* appWindow;
 @property (nonatomic, readonly, nullable) NSScreen* currentScreen;
