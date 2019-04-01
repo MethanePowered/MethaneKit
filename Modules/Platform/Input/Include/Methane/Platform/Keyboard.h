@@ -23,6 +23,16 @@ Platform abstraction of keyboard events.
 
 #pragma once
 
+#if defined _WIN32
+
+#include "Windows/KeyboardWin.h"
+
+#elif defined __APPLE__
+
+#include "MacOS/KeyboardMac.h"
+
+#endif
+
 #include <array>
 #include <set>
 #include <string>
@@ -73,20 +83,28 @@ enum class Key : uint32_t
     RightShift, RightControl, RightAlt, RightSuper,
     Menu,
 
-    Count
+    Count,
+    Unknown
 };
 
 using Keys = std::set<Key>;
+    
+struct NativeKey;
 
-class KeyHelper
+class KeyConverter
 {
 public:
-    KeyHelper(Key key) : m_key(key) { }
+    KeyConverter(Key key) : m_key(key) { }
+    KeyConverter(const NativeKey& native_key) : m_key(GetKeyByNativeCode(native_key)) { }
     
+    Key         GetKey() const      { return m_key; }
     std::string ToString() const;
     
+    // NOTE: Platform dependent function: see MacOS, Windows subdirs for implementation
+    static Key GetKeyByNativeCode(const NativeKey& native_key);
+    
 private:
-    Key m_key;
+    const Key m_key;
 };
 
 struct Modifier

@@ -52,6 +52,13 @@ TEST_CASE("Keyboard state initialization", "[keyboard-state]")
         CHECK(keyboard_state_b.GetPressedKeys() == Keys{ Key::C, Key::Up });
         CHECK(keyboard_state_b.GetModifiersMask() == (Modifier::Control | Modifier::Shift));
     }
+    
+    SECTION("Construct with unknown key")
+    {
+        const State keyboard_state = { Key::Unknown };
+        CHECK(keyboard_state.GetPressedKeys() == Keys{ });
+        CHECK(keyboard_state.GetModifiersMask() == Modifier::None);
+    }
 }
 
 TEST_CASE("Keyboard state modification", "[keyboard-state]")

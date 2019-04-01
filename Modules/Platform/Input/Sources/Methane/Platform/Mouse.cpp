@@ -31,7 +31,7 @@ using namespace Methane::Platform::Mouse;
 
 static const std::string s_buttons_separator = "+";
 
-std::string ButtonHelper::ToString() const
+std::string ButtonConverter::ToString() const
 {
     static const std::map<Button, std::string> s_name_by_button =
     {
@@ -100,7 +100,7 @@ std::string State::ToString() const
         }
         
         const Button button = static_cast<Button>(button_index);
-        ss << ButtonHelper(button).ToString();
+        ss << ButtonConverter(button).ToString();
         is_first_button = false;
     }
     
