@@ -186,6 +186,16 @@ State::State(const State& other)
 {
 }
 
+State& State::operator=(const State& other)
+{
+    if (this != &other)
+    {
+        m_key_states     = other.m_key_states;
+        m_modifiers_mask = other.m_modifiers_mask;
+    }
+    return *this;
+}
+
 void State::SetKey(Key key, KeyState state)
 {
     switch (key)

@@ -34,7 +34,8 @@ namespace Keyboard
     
 struct NativeKey
 {
-    uint32_t code;
+    unsigned int  code;
+    unsigned long flags;
 };
 
 } // namespace Keyboard

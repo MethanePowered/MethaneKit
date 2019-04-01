@@ -24,6 +24,8 @@ Base application interface and platform-independent implementation.
 #pragma once
 
 #include <Methane/Platform/AppView.h>
+#include <Methane/Platform/Keyboard.h>
+#include <Methane/Platform/Mouse.h>
 #include <Methane/Data/Types.h>
 
 #include <cxxopts.hpp>
@@ -82,6 +84,7 @@ public:
     virtual void ChangeWindowBounds(const Data::FrameRect& window_bounds);
     virtual void Update() = 0;
     virtual void Render() = 0;
+    virtual bool KeyboardEvent(Keyboard::Key key, Keyboard::KeyState key_state);
     virtual void Alert(const Message& msg, bool deferred = false);
     virtual void SetWindowTitle(const std::string& title_text) = 0;
 
@@ -98,6 +101,7 @@ protected:
     cxxopts::Options     m_cmd_options;
     bool                 m_initialized = false;
     Message::Ptr         m_sp_deferred_message;
+    Keyboard::State      m_keyboard_state;
 };
 
 } // namespace Platform
