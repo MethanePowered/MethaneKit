@@ -249,6 +249,37 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT message_id, WPARAM w_param,
         }
         break;
 
+        case WM_KEYDOWN:
+        case WM_SYSKEYDOWN:
+        case WM_KEYUP:
+        case WM_SYSKEYUP:
+        {
+            const Keyboard::Key      key       = Keyboard::KeyConverter({ w_param, l_param }).GetKey();
+            const Keyboard::KeyState key_state = ((l_param >> 31) & 1) ? Keyboard::KeyState::Released : Keyboard::KeyState::Pressed;
+
+            if (key == Keyboard::Key::Unknown)
+                break;
+
+            if (key_state == Keyboard::KeyState::Released && w_param == VK_SHIFT)
+            {
+                // HACK: Release both Shift keys on Shift up event, as when both
+                //       are pressed the first release does not emit any event
+                // NOTE: The other half of this is in _glfwPlatformPollEvents
+                p_app->KeyboardEvent(Keyboard::Key::LeftShift, key_state);
+                p_app->KeyboardEvent(Keyboard::Key::RightShift, key_state);
+            }
+            else if (w_param == VK_SNAPSHOT)
+            {
+                // HACK: Key down is not reported for the Print Screen key
+                p_app->KeyboardEvent(key, Keyboard::KeyState::Pressed);
+                p_app->KeyboardEvent(key, Keyboard::KeyState::Released);
+            }
+            else
+            {
+                p_app->KeyboardEvent(key, key_state);
+            }
+        } break;
+
         }
 #ifndef _DEBUG
     }
