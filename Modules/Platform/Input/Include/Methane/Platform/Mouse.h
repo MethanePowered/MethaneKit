@@ -80,9 +80,10 @@ public:
     State(std::initializer_list<Button> pressed_buttons, const Position& position = Position());
     State(const State& other);
 
-    const ButtonState& operator[](Button button) const          { return m_button_states[static_cast<size_t>(button)]; }
-    bool operator==(const State& other) const                   { return m_button_states == other.m_button_states && m_position == other.m_position; }
+    State& operator=(const State& other);
+    bool operator==(const State& other) const;
     bool operator!=(const State& other) const                   { return !operator==(other); }
+    const ButtonState& operator[](Button button) const          { return m_button_states[static_cast<size_t>(button)]; }
     operator std::string() const                                { return ToString(); }
 
     void  SetButton(Button button, ButtonState state)           { m_button_states[static_cast<size_t>(button)] = state; }
