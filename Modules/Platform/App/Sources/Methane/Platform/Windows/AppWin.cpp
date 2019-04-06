@@ -24,6 +24,7 @@ Windows application implementation.
 #include <Methane/Platform/Windows/AppWin.h>
 #include <Methane/Platform/Utils.h>
 
+#include <windowsx.h>
 #include <nowide/convert.hpp>
 
 #include <cassert>
@@ -193,7 +194,7 @@ void AppWin::Alert(const Message& msg, bool deferred)
     }
 }
 
-LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT message_id, WPARAM w_param, LPARAM l_param)
+LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPARAM l_param)
 {
     AppWin* p_app = reinterpret_cast<AppWin*>(GetWindowLongPtr(h_wnd, GWLP_USERDATA));
 
@@ -201,7 +202,7 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT message_id, WPARAM w_param,
     try
     {
 #endif
-        switch (message_id)
+        switch (msg_id)
         {
         case WM_CREATE:
         {
@@ -265,20 +266,73 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT message_id, WPARAM w_param,
                 // HACK: Release both Shift keys on Shift up event, as when both
                 //       are pressed the first release does not emit any event
                 // NOTE: The other half of this is in _glfwPlatformPollEvents
-                p_app->KeyboardEvent(Keyboard::Key::LeftShift, key_state);
-                p_app->KeyboardEvent(Keyboard::Key::RightShift, key_state);
+                p_app->KeyboardChanged(Keyboard::Key::LeftShift, key_state);
+                p_app->KeyboardChanged(Keyboard::Key::RightShift, key_state);
             }
             else if (w_param == VK_SNAPSHOT)
             {
                 // HACK: Key down is not reported for the Print Screen key
-                p_app->KeyboardEvent(key, Keyboard::KeyState::Pressed);
-                p_app->KeyboardEvent(key, Keyboard::KeyState::Released);
+                p_app->KeyboardChanged(key, Keyboard::KeyState::Pressed);
+                p_app->KeyboardChanged(key, Keyboard::KeyState::Released);
             }
             else
             {
-                p_app->KeyboardEvent(key, key_state);
+                p_app->KeyboardChanged(key, key_state);
             }
         } break;
+
+        case WM_LBUTTONDOWN:
+        case WM_RBUTTONDOWN:
+        case WM_MBUTTONDOWN:
+        case WM_XBUTTONDOWN:
+        case WM_LBUTTONUP:
+        case WM_RBUTTONUP:
+        case WM_MBUTTONUP:
+        case WM_XBUTTONUP:
+        {
+            Mouse::Button button = Mouse::Button::Unknonwn;
+            if (msg_id == WM_LBUTTONDOWN || msg_id == WM_LBUTTONUP)
+                button = Mouse::Button::Left;
+            else if (msg_id == WM_RBUTTONDOWN || msg_id == WM_RBUTTONUP)
+                button = Mouse::Button::Right;
+            else if (msg_id == WM_MBUTTONDOWN || msg_id == WM_MBUTTONUP)
+                button = Mouse::Button::Middle;
+            else if (GET_XBUTTON_WPARAM(w_param) == XBUTTON1)
+                button = Mouse::Button::Button4;
+            else
+                button = Mouse::Button::Button5;
+
+            const Mouse::ButtonState button_state = (msg_id == WM_LBUTTONDOWN || msg_id == WM_RBUTTONDOWN ||
+                                                     msg_id == WM_MBUTTONDOWN || msg_id == WM_XBUTTONDOWN)
+                                                  ? Mouse::ButtonState::Pressed : Mouse::ButtonState::Released;
+
+            if (p_app->m_mouse_state.GetPressedButtons().empty())
+            {
+                SetCapture(h_wnd);
+            }
+
+            p_app->MouseButtonsChanged(button, button_state);
+
+            if (p_app->m_mouse_state.GetPressedButtons().empty())
+            {
+                ReleaseCapture();
+            }
+
+            if (msg_id == WM_XBUTTONDOWN || msg_id == WM_XBUTTONUP)
+                return TRUE;
+
+            return 0;
+        }
+
+        case WM_MOUSEMOVE:
+        {
+            const int x = GET_X_LPARAM(l_param);
+            const int y = GET_Y_LPARAM(l_param);
+
+            p_app->MousePositionChanged({ x, y });
+
+            return 0;
+        }
 
         }
 #ifndef _DEBUG
@@ -294,7 +348,7 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT message_id, WPARAM w_param,
 #endif
 
     // Handle any messages the switch statement didn't.
-    return DefWindowProc(h_wnd, message_id, w_param, l_param);
+    return DefWindowProc(h_wnd, msg_id, w_param, l_param);
 }
 
 void AppWin::ShowAlert(const Message& msg)
