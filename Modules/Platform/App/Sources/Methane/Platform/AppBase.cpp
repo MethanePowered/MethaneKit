@@ -123,18 +123,53 @@ void AppBase::Init()
     m_initialized = true;
 }
 
-bool AppBase::KeyboardEvent(Keyboard::Key key, Keyboard::KeyState key_state)
+void AppBase::KeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state)
 {
     Keyboard::State prev_keyboard_state(m_keyboard_state);
-    
     m_keyboard_state.SetKey(key, key_state);
-
     if (m_keyboard_state != prev_keyboard_state)
     {
-        PrintToDebugOutput(std::string("Keyboard: ") + m_keyboard_state.ToString());
+        OnKeyboardStateChanged(m_keyboard_state);
     }
-    
-    return false;
+}
+
+void AppBase::MouseButtonsChanged(Mouse::Button button, Mouse::ButtonState button_state)
+{
+    Mouse::State prev_mouse_state(m_mouse_state);
+    m_mouse_state.SetButton(button, button_state);
+    if (m_mouse_state != prev_mouse_state)
+    {
+        OnMouseStateChanged(m_mouse_state);
+    }
+}
+
+void AppBase::MousePositionChanged(Mouse::Position mouse_position)
+{
+    Mouse::State prev_mouse_state(m_mouse_state);
+    m_mouse_state.SetPosition(mouse_position);
+    if (m_mouse_state != prev_mouse_state)
+    {
+        OnMouseStateChanged(m_mouse_state);
+    }
+}
+
+void AppBase::MouseInWindowChanged(bool is_mouse_in_window)
+{
+    if (m_mouse_in_window != is_mouse_in_window)
+    {
+        m_mouse_in_window = is_mouse_in_window;
+        OnMouseStateChanged(m_mouse_state);
+    }
+}
+
+void AppBase::OnKeyboardStateChanged(const Keyboard::State& keyboard_state)
+{
+    PrintToDebugOutput(std::string("Keyboard: ") + keyboard_state.ToString());
+}
+
+void AppBase::OnMouseStateChanged(const Mouse::State& mouse_state)
+{
+    PrintToDebugOutput(std::string(m_mouse_in_window ? "Mouse in window: " : "Mouse out of window: ") + mouse_state.ToString());
 }
 
 void AppBase::ChangeWindowBounds(const Data::FrameRect& window_bounds)

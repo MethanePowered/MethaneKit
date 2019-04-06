@@ -84,7 +84,10 @@ public:
     virtual void ChangeWindowBounds(const Data::FrameRect& window_bounds);
     virtual void Update() = 0;
     virtual void Render() = 0;
-    virtual bool KeyboardEvent(Keyboard::Key key, Keyboard::KeyState key_state);
+    virtual void KeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state);
+    virtual void MouseButtonsChanged(Mouse::Button button, Mouse::ButtonState button_state);
+    virtual void MousePositionChanged(Mouse::Position mouse_position);
+    virtual void MouseInWindowChanged(bool is_mouse_in_window);
     virtual void Alert(const Message& msg, bool deferred = false);
     virtual void SetWindowTitle(const std::string& title_text) = 0;
 
@@ -95,6 +98,8 @@ protected:
     // AppBase interface
     virtual AppView GetView() const = 0;
     virtual void ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result);
+    virtual void OnKeyboardStateChanged(const Keyboard::State& keyboard_state);
+    virtual void OnMouseStateChanged(const Mouse::State& mouse_state);
 
     Settings             m_settings;
     Data::FrameRect      m_window_bounds;
@@ -102,6 +107,8 @@ protected:
     bool                 m_initialized = false;
     Message::Ptr         m_sp_deferred_message;
     Keyboard::State      m_keyboard_state;
+    Mouse::State         m_mouse_state;
+    bool                 m_mouse_in_window = false;
 };
 
 } // namespace Platform

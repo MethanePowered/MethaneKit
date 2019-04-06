@@ -69,6 +69,22 @@ State::State(const State& other)
 {
 }
 
+State& State::operator=(const State& other)
+{
+    if (this != &other)
+    {
+        m_button_states = other.m_button_states;
+        m_position      = other.m_position;
+    }
+    return *this;
+}
+
+bool State::operator==(const State& other) const
+{
+    return m_button_states == other.m_button_states &&
+           m_position      == other.m_position;
+}
+
 Buttons State::GetPressedButtons() const
 {
     Buttons pressed_buttons;
@@ -86,7 +102,7 @@ Buttons State::GetPressedButtons() const
 std::string State::ToString() const
 {
     std::stringstream ss;
-    ss << "Mouse (" << m_position.x() << " x " << m_position.y() << ") ";
+    ss << "(" << m_position.x() << " x " << m_position.y() << ") ";
     
     bool is_first_button = true;
     for (size_t button_index = 0; button_index < m_button_states.size(); ++button_index)
