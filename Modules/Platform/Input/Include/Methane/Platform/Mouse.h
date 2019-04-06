@@ -47,7 +47,8 @@ enum class Button : uint32_t
     Button7,
     Button8,
 
-    Count
+    Count,
+    Unknonwn
 };
 
 using Buttons = std::set<Button>;
