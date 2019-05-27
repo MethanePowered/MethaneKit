@@ -18,20 +18,20 @@ OUTPUT_DIR=$SCRIPT_DIR/../Output/XCode
 INSTALL_DIR=$OUTPUT_DIR/Install
 
 if [ "$IS_ANALYZE_BUILD" == true ]; then
-	BUILD_DIR=$OUTPUT_DIR/Analyze
-	echo =========================================================
-	echo Code analysis for build Methane $CONFIG_TYPE
-	echo =========================================================
-	echo  \* Build in:   $BUILD_DIR
-	echo =========================================================
+    BUILD_DIR=$OUTPUT_DIR/Analyze
+    echo =========================================================
+    echo Code analysis for build Methane $CONFIG_TYPE
+    echo =========================================================
+    echo  \* Build in:   $BUILD_DIR
+    echo =========================================================
 else
-	BUILD_DIR=$OUTPUT_DIR/Build
-	echo =========================================================
-	echo Clean build and install Methane $CONFIG_TYPE
-	echo =========================================================
-	echo  \* Build in:   $BUILD_DIR
-	echo  \* Install to: $INSTALL_DIR
-	echo =========================================================
+    BUILD_DIR=$OUTPUT_DIR/Build
+    echo =========================================================
+    echo Clean build and install Methane $CONFIG_TYPE
+    echo =========================================================
+    echo  \* Build in:   $BUILD_DIR
+    echo  \* Install to: $INSTALL_DIR
+    echo =========================================================
 fi
 
 rm -rf "$OUTPUT_DIR"
@@ -40,22 +40,20 @@ mkdir -p "$BUILD_DIR"
 echo Pulling latest changes with submodules...
 git pull --recurse-submodules
 
+echo ---
 
 if [ "$IS_ANALYZE_BUILD" == true ]; then
-    echo ---
     echo Analyzing code with Sonar Scanner http://www.sonarcloud.io...
     build-wrapper-macosx-x86 --out-dir "$BUILD_DIR" \
-      cmake -H"$SOURCE_DIR" -B"$BUILD_DIR" -G Xcode
+        cmake -H"$SOURCE_DIR" -B"$BUILD_DIR" -G Xcode
     sonar-scanner \
-      -Dsonar.projectKey=egorodet_MethaneKit \
-      -Dsonar.organization=egorodet-github \
-      -Dsonar.sources="$SOURCE_DIR" \
-      -Dsonar.cfamily.build-wrapper-output="$BUILD_DIR" \
-      -Dsonar.host.url=https://sonarcloud.io \
-      -Dsonar.login=6e1dbce6af614f59d75f1d78f0609aaaa60caee1 \
-      -Dsonar.exclusions="Build/Output/**"
+        -Dsonar.projectKey=egorodet_MethaneKit \
+        -Dsonar.organization=egorodet-github \
+        -Dsonar.sources="$SOURCE_DIR" \
+        -Dsonar.cfamily.build-wrapper-output="$BUILD_DIR" \
+        -Dsonar.host.url=https://sonarcloud.io \
+        -Dsonar.login=6e1dbce6af614f59d75f1d78f0609aaaa60caee1 \
 else
-	echo ---
     echo Building with XCode...
     cmake -H"$SOURCE_DIR" -B"$BUILD_DIR" -G Xcode -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR"
     cmake --build "$BUILD_DIR" --config $CONFIG_TYPE --target install
