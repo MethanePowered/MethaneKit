@@ -16,39 +16,43 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/MathTypes.h
-Math types aliases.
+FILE: Methane/Graphics/ArcBallCamera.h
+Arc-ball camera implementation.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <cml/vector.h>
+#include "Camera.h"
+
 #include <cml/quaternion.h>
-
-#if defined _WIN32
-
-#include "Windows/MathTypes.h"
-
-#elif defined __APPLE__
-
-#include "MacOS/MathTypes.h"
-
-#endif
 
 namespace Methane
 {
 namespace Graphics
 {
 
-using Vector2i = cml::vector2i;
-using Vector3i = cml::vector3i;
-using Vector4i = cml::vector4i;
-using Vector2f = cml::vector2f;
-using Vector3f = cml::vector3f;
-using Vector4f = cml::vector4f;
+class ArcBallCamera : public Camera
+{
+public:
+    ArcBallCamera(float radius = 0.75, cml::AxisOrientation axis_orientation = g_axis_orientation);
 
-using Quaternionf = cml::quaternionf_ip;
+    void OnMousePressed(const Vector2f& mouse_screen_pos);
+    void OnMouseDragged(const Vector2f& mouse_screen_pos);
 
-}
-}
+protected:
+    Matrix44f GetScreenToWorldMatrix();
+    Vector3f GetSphereProjection(const Vector3f& world_pos);
+
+    float       m_radius;
+    Vector3f    m_mouse_pressed_in_world;
+    Vector3f    m_mouse_current_in_world;
+    Vector3f    m_mouse_pressed_on_sphere;
+    Vector3f    m_mouse_current_on_sphere;
+    Quaternionf m_previous_quat;
+    Quaternionf m_current_quat;
+    Quaternionf m_final_quat;
+};
+
+} // namespace Graphics
+} // namespace Methane
