@@ -48,10 +48,19 @@ void Camera::RotatePitch(float deg) noexcept
     m_current_orientation.eye = m_current_orientation.eye * rotation_matrix;
 }
 
-void Camera::GetViewProjMatrices(Methane::Graphics::Matrix44f& out_view, Methane::Graphics::Matrix44f& out_proj) noexcept
+void Camera::GetViewProjMatrices(Matrix44f& out_view, Matrix44f& out_proj) const noexcept
+{
+    GetViewMatrix(out_view);
+    GetProjMatrix(out_proj);
+}
+
+void Camera::GetViewMatrix(Matrix44f& out_view) const noexcept
 {
     cml::matrix_look_at(out_view, m_current_orientation.eye, m_current_orientation.at, m_current_orientation.up, m_axis_orientation);
+}
 
+void Camera::GetProjMatrix(Matrix44f& out_proj) const noexcept
+{
     switch (m_projection)
     {
     case Projection::Perspective:
@@ -63,7 +72,26 @@ void Camera::GetViewProjMatrices(Methane::Graphics::Matrix44f& out_view, Methane
     }
 }
 
-float Camera::GetFOVAngleY() noexcept
+Matrix44f Camera::GetViewMatrix() const noexcept
+{
+    Matrix44f view_matrix;
+    GetViewMatrix(view_matrix);
+    return view_matrix;
+}
+
+Matrix44f Camera::GetProjMatrix() const noexcept
+{
+    Matrix44f proj_matrix;
+    GetProjMatrix(proj_matrix);
+    return proj_matrix;
+}
+
+Matrix44f Camera::GetViewProjMatrix() const noexcept
+{
+    return GetViewMatrix() * GetProjMatrix();
+}
+
+float Camera::GetFOVAngleY() const noexcept
 {
     float fov_angle_y = m_parameters.fov_deg * cml::constants<float>::pi() / 180.0f;
     if (m_aspect_ratio != 0.f && m_aspect_ratio < 1.0f)

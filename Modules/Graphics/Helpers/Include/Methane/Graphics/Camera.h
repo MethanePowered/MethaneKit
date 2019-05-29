@@ -65,10 +65,15 @@ public:
     void RotatePitch(float deg) noexcept;
 
     const Orientation& GetOrientation() const noexcept           { return m_current_orientation; }
-    void GetViewProjMatrices(Matrix44f& out_view, Matrix44f& out_proj) noexcept;
+    void GetViewProjMatrices(Matrix44f& out_view, Matrix44f& out_proj) const noexcept;
+    void GetViewMatrix(Matrix44f& out_view) const noexcept;
+    void GetProjMatrix(Matrix44f& out_proj) const noexcept;
+    Matrix44f GetViewMatrix() const noexcept;
+    Matrix44f GetProjMatrix() const noexcept;
+    Matrix44f GetViewProjMatrix() const noexcept;
 
-private:
-    float GetFOVAngleY() noexcept;
+protected:
+    float GetFOVAngleY() const noexcept;
 
     const cml::AxisOrientation m_axis_orientation;
 
