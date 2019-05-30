@@ -25,6 +25,8 @@ Arc-ball camera implementation.
 
 #include "Camera.h"
 
+#include <Methane/Data/Types.h>
+
 #include <cml/quaternion.h>
 
 namespace Methane
@@ -35,15 +37,22 @@ namespace Graphics
 class ArcBallCamera : public Camera
 {
 public:
-    ArcBallCamera(float radius = 0.75, cml::AxisOrientation axis_orientation = g_axis_orientation);
+    enum class Pivot : uint32_t
+    {
+        Aim = 0,
+        Eye,
+    };
 
-    void OnMousePressed(const Vector2f& mouse_screen_pos);
-    void OnMouseDragged(const Vector2f& mouse_screen_pos);
+    ArcBallCamera(Pivot pivot = Pivot::Aim, float radius = 0.75, cml::AxisOrientation axis_orientation = g_axis_orientation);
+
+    void OnMousePressed(const Data::Point2i& mouse_screen_pos);
+    void OnMouseDragged(const Data::Point2i& mouse_screen_pos);
 
 protected:
     Matrix44f GetScreenToWorldMatrix();
     Vector3f GetSphereProjection(const Vector3f& world_pos);
 
+    Pivot       m_pivot;
     float       m_radius;
     Vector3f    m_mouse_pressed_in_world;
     Vector3f    m_mouse_current_in_world;

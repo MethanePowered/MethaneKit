@@ -35,22 +35,25 @@ Quaternionf QuaternionFromUnitSphere(const Vector3f& from, const Vector3f& to)
     return q;
 }
 
-ArcBallCamera::ArcBallCamera(float radius, cml::AxisOrientation axis_orientation)
+ArcBallCamera::ArcBallCamera(Pivot pivot, float radius, cml::AxisOrientation axis_orientation)
     : Camera(axis_orientation)
+    , m_pivot(pivot)
     , m_radius(radius)
 {
 }
 
-void ArcBallCamera::OnMousePressed(const Vector2f& mouse_screen_pos)
+void ArcBallCamera::OnMousePressed(const Methane::Data::Point2i& mouse_screen_pos)
 {
-    m_mouse_pressed_in_world  = (GetScreenToWorldMatrix() * Vector4f(mouse_screen_pos, 0.f, 1.f)).subvector(3);
+    const Vector4f mouse_screen_vector(mouse_screen_pos.x(), mouse_screen_pos.y(), 0.f, 1.f);
+    m_mouse_pressed_in_world  = (GetScreenToWorldMatrix() * mouse_screen_vector).subvector(3);
     m_mouse_pressed_on_sphere = GetSphereProjection(m_mouse_pressed_in_world);
     m_previous_quat = m_final_quat;
 }
 
-void ArcBallCamera::OnMouseDragged(const Vector2f& mouse_screen_pos)
+void ArcBallCamera::OnMouseDragged(const Methane::Data::Point2i& mouse_screen_pos)
 {
-    m_mouse_current_in_world  = (GetScreenToWorldMatrix() * Vector4f(mouse_screen_pos, 0.f, 1.f)).subvector(3);
+    const Vector4f mouse_screen_vector(mouse_screen_pos.x(), mouse_screen_pos.y(), 0.f, 1.f);
+    m_mouse_current_in_world  = (GetScreenToWorldMatrix() * mouse_screen_vector).subvector(3);
     m_mouse_current_on_sphere = GetSphereProjection(m_mouse_current_in_world);
     m_current_quat = QuaternionFromUnitSphere(m_mouse_pressed_on_sphere, m_mouse_current_on_sphere);
     m_final_quat = m_current_quat * m_previous_quat;

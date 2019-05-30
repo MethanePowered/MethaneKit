@@ -56,7 +56,7 @@ void Camera::GetViewProjMatrices(Matrix44f& out_view, Matrix44f& out_proj) const
 
 void Camera::GetViewMatrix(Matrix44f& out_view) const noexcept
 {
-    cml::matrix_look_at(out_view, m_current_orientation.eye, m_current_orientation.at, m_current_orientation.up, m_axis_orientation);
+    cml::matrix_look_at(out_view, m_current_orientation.eye, m_current_orientation.aim, m_current_orientation.up, m_axis_orientation);
 }
 
 void Camera::GetProjMatrix(Matrix44f& out_proj) const noexcept
