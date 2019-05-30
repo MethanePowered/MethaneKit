@@ -28,6 +28,9 @@ Platform abstraction of mouse events.
 #include <array>
 #include <set>
 #include <string>
+#include <sstream>
+
+static const std::string s_properies_separator = "+";
 
 namespace Methane
 {
@@ -77,6 +80,27 @@ using Position = Data::Point2i;
 class State
 {
 public:
+    struct Property
+    {
+        using Mask = uint32_t;
+        enum Value : Mask
+        {
+            None        = 0,
+            Buttons     = 1 << 0,
+            Position    = 1 << 1,
+            All         = static_cast<Mask>(~0),
+        };
+
+        using Values = std::array<Value, 2>;
+        static constexpr const Values values = { Buttons, Position };
+
+        static std::string ToString(Value property_value);
+        static std::string ToString(Mask properties_mask);
+
+        Property() = delete;
+        ~Property() = delete;
+    };
+
     State() = default;
     State(std::initializer_list<Button> pressed_buttons, const Position& position = Position());
     State(const State& other);
@@ -96,7 +120,9 @@ public:
 
     Buttons             GetPressedButtons() const;
     const ButtonStates& GetButtonStates() const                 { return m_button_states; }
+    Property::Mask      GetDiff(const State& other) const;
     std::string         ToString() const;
+    
 
 private:
     ButtonStates m_button_states{};

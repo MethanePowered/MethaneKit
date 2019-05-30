@@ -97,6 +97,7 @@ TEST_CASE("Mouse state comparison", "[mouse-state]")
         const State mouse_state_a({ Button::Left }, g_test_position);
         const State mouse_state_b({ Button::Left }, g_test_position);
         CHECK(mouse_state_a == mouse_state_b);
+        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::Property::None);
     }
 
     SECTION("States inequality in buttons")
@@ -104,6 +105,7 @@ TEST_CASE("Mouse state comparison", "[mouse-state]")
         const State mouse_state_a({ Button::Left },  g_test_position);
         const State mouse_state_b({ Button::Right }, g_test_position);
         CHECK(mouse_state_a != mouse_state_b);
+        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::Property::Buttons);
     }
 
     SECTION("States inequality in position")
@@ -111,5 +113,6 @@ TEST_CASE("Mouse state comparison", "[mouse-state]")
         const State mouse_state_a({ Button::Left }, g_test_position);
         const State mouse_state_b({ Button::Left }, { 56, 78 });
         CHECK(mouse_state_a != mouse_state_b);
+        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::Property::Position);
     }
 }

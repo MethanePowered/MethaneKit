@@ -103,6 +103,7 @@ TEST_CASE("Keyboard state comparison", "[keyboard-state]")
         const State keyboard_state_a = { Key::RightControl, Key::LeftAlt,  Key::Up, Key::Y, Key::Num5 };
         const State keyboard_state_b = { Key::LeftControl,  Key::RightAlt, Key::Up, Key::Y, Key::Num5 };
         CHECK(keyboard_state_a == keyboard_state_b);
+        CHECK(keyboard_state_a.GetDiff(keyboard_state_b) == State::Property::None);
     }
 
     SECTION("States inequality in printable keys")
@@ -110,6 +111,7 @@ TEST_CASE("Keyboard state comparison", "[keyboard-state]")
         const State keyboard_state_a = { Key::RightControl, Key::LeftAlt,   Key::Down, Key::U, Key::Num2 };
         const State keyboard_state_b = { Key::LeftControl,  Key::RightAlt,  Key::Up,   Key::Y, Key::Num5 };
         CHECK(keyboard_state_a != keyboard_state_b);
+        CHECK(keyboard_state_a.GetDiff(keyboard_state_b) == State::Property::KeyStates);
     }
 
     SECTION("States inequality in modifiers")
@@ -117,5 +119,6 @@ TEST_CASE("Keyboard state comparison", "[keyboard-state]")
         const State keyboard_state_a = { Key::RightControl, Key::LeftShift, Key::Up, Key::Y, Key::Num5 };
         const State keyboard_state_b = { Key::LeftControl,  Key::RightAlt,  Key::Up, Key::Y, Key::Num5 };
         CHECK(keyboard_state_a != keyboard_state_b);
+        CHECK(keyboard_state_a.GetDiff(keyboard_state_b) == State::Property::Modifiers);
     }
 }

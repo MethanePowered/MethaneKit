@@ -127,9 +127,10 @@ void AppBase::KeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state)
 {
     Keyboard::State prev_keyboard_state(m_keyboard_state);
     m_keyboard_state.SetKey(key, key_state);
-    if (m_keyboard_state != prev_keyboard_state)
+    Keyboard::State::Property::Mask state_changes_mask = m_keyboard_state.GetDiff(prev_keyboard_state);
+    if (state_changes_mask != Keyboard::State::Property::All)
     {
-        OnKeyboardStateChanged(m_keyboard_state);
+        OnKeyboardStateChanged(m_keyboard_state, state_changes_mask);
     }
 }
 
@@ -139,7 +140,7 @@ void AppBase::MouseButtonsChanged(Mouse::Button button, Mouse::ButtonState butto
     m_mouse_state.SetButton(button, button_state);
     if (m_mouse_state != prev_mouse_state)
     {
-        OnMouseStateChanged(m_mouse_state);
+        OnMouseStateChanged(m_mouse_state, Mouse::State::Property::Buttons);
     }
 }
 
@@ -149,7 +150,7 @@ void AppBase::MousePositionChanged(Mouse::Position mouse_position)
     m_mouse_state.SetPosition(mouse_position);
     if (m_mouse_state != prev_mouse_state)
     {
-        OnMouseStateChanged(m_mouse_state);
+        OnMouseStateChanged(m_mouse_state, Mouse::State::Property::Position);
     }
 }
 
@@ -158,16 +159,16 @@ void AppBase::MouseInWindowChanged(bool is_mouse_in_window)
     if (m_mouse_in_window != is_mouse_in_window)
     {
         m_mouse_in_window = is_mouse_in_window;
-        OnMouseStateChanged(m_mouse_state);
+        OnMouseStateChanged(m_mouse_state, Mouse::State::Property::None);
     }
 }
 
-void AppBase::OnKeyboardStateChanged(const Keyboard::State& keyboard_state)
+void AppBase::OnKeyboardStateChanged(const Keyboard::State& keyboard_state, Keyboard::State::Property::Mask state_changes_hint)
 {
     PrintToDebugOutput(std::string("Keyboard: ") + keyboard_state.ToString());
 }
 
-void AppBase::OnMouseStateChanged(const Mouse::State& mouse_state)
+void AppBase::OnMouseStateChanged(const Mouse::State& mouse_state, Keyboard::State::Property::Mask state_changes_hint)
 {
     PrintToDebugOutput(std::string(m_mouse_in_window ? "Mouse in window: " : "Mouse out of window: ") + mouse_state.ToString());
 }
