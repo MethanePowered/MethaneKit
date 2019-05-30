@@ -43,7 +43,7 @@ public:
     struct Orientation
     {
         Vector3f   eye;
-        Vector3f   at;
+        Vector3f   aim;
         Vector3f   up;
     };
 

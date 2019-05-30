@@ -337,18 +337,13 @@ void AsteroidsApp::Update()
     if (HasError())
         return;
 
-    const float elapsed_time_sec = m_timer.GetElapsedSecondsF();
-    m_timer.Reset();
-
     // Update Model, View, Projection matrices based on scene camera location
     gfx::Matrix44f scale_matrix, scene_view_matrix, scene_proj_matrix;
     cml::matrix_uniform_scale(scale_matrix, m_scene_scale);
-    m_scene_camera.RotateYaw(360.f * elapsed_time_sec / 8.f);
     m_scene_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
 
     // Update View and Projection matrices based on light camera location
     gfx::Matrix44f light_view_matrix, light_proj_matrix;
-    m_light_camera.RotateYaw(360.f * elapsed_time_sec / 4.f);
     m_light_camera.GetViewProjMatrices(light_view_matrix, light_proj_matrix);
     
     // Prepare shadow transform matrix
@@ -471,14 +466,53 @@ void AsteroidsApp::RenderScene(const RenderPass& render_pass, AsteroidsFrame::Pa
     cmd_list.Commit(render_pass.is_final_pass);
 }
 
-void AsteroidsApp::OnKeyboardStateChanged(const pal::Keyboard::State& keyboard_state, pal::Keyboard::State::Property::Mask state_changes_hint)
+void AsteroidsApp::OnKeyboardStateChanged(const pal::Keyboard::State& keyboard_state, const pal::Keyboard::State& prev_keyboard_state, pal::Keyboard::State::Property::Mask state_changes_hint)
 {
-    GraphicsApp::OnKeyboardStateChanged(keyboard_state, state_changes_hint);
+    // TODO: implement keyboard handling
+
+    GraphicsApp::OnKeyboardStateChanged(keyboard_state, prev_keyboard_state, state_changes_hint);
 }
 
-void AsteroidsApp::OnMouseStateChanged(const pal::Mouse::State& mouse_state, pal::Mouse::State::Property::Mask state_changes_hint)
+void AsteroidsApp::OnMouseStateChanged(const pal::Mouse::State& mouse_state, const pal::Mouse::State& prev_mouse_state, pal::Mouse::State::Property::Mask state_changes_hint)
 {
-    GraphicsApp::OnMouseStateChanged(mouse_state, state_changes_hint);
+    GraphicsApp::OnMouseStateChanged(mouse_state, prev_mouse_state, state_changes_hint);
+
+    if (state_changes_hint & pal::Mouse::State::Property::Buttons)
+    {
+        const pal::Mouse::Buttons pressed_mouse_buttons = mouse_state.GetPressedButtons();
+        const pal::Mouse::Buttons previous_mouse_buttons = prev_mouse_state.GetPressedButtons();
+
+        // Left mouse button is first pressed: initiate Camera rotation
+        if (pressed_mouse_buttons.count(pal::Mouse::Button::Left) &&
+            !previous_mouse_buttons.count(pal::Mouse::Button::Left))
+        {
+            m_scene_camera.OnMousePressed(mouse_state.GetPosition());
+        }
+
+        // Right mouse button is first pressed: initiate Light rotation
+        if (pressed_mouse_buttons.count(pal::Mouse::Button::Right) &&
+            !previous_mouse_buttons.count(pal::Mouse::Button::Right))
+        {
+            m_light_camera.OnMousePressed(mouse_state.GetPosition());
+        }
+    }
+
+    if (state_changes_hint & pal::Mouse::State::Property::Position)
+    {
+        const pal::Mouse::Buttons pressed_mouse_buttons = mouse_state.GetPressedButtons();
+
+        // Mouse is dragged with Left mouse button: rotate Camera
+        if (pressed_mouse_buttons.count(pal::Mouse::Button::Left))
+        {
+            m_scene_camera.OnMouseDragged(mouse_state.GetPosition());
+        }
+
+        // Mouse is dragged with Right mouse button: rotate Light
+        if (pressed_mouse_buttons.count(pal::Mouse::Button::Left))
+        {
+            m_light_camera.OnMouseDragged(mouse_state.GetPosition());
+        }
+    }
 }
 
 int main(int argc, const char* argv[])

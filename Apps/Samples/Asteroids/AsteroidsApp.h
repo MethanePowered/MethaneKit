@@ -128,17 +128,16 @@ private:
     void RenderScene(const RenderPass& render_pass, AsteroidsFrame::PassResources& render_pass_data, gfx::Texture& shadow_texture, bool is_shadow_rendering);
 
     // AppBase
-    void OnKeyboardStateChanged(const pal::Keyboard::State& keyboard_state, pal::Keyboard::State::Property::Mask state_changes_hint) override;
-    void OnMouseStateChanged(const pal::Mouse::State& mouse_state, pal::Mouse::State::Property::Mask state_changes_hint) override;
+    void OnKeyboardStateChanged(const pal::Keyboard::State& keyboard_state, const pal::Keyboard::State& prev_keyboard_state, pal::Keyboard::State::Property::Mask state_changes_hint) override;
+    void OnMouseStateChanged(const pal::Mouse::State& mouse_state, const pal::Mouse::State& prev_mouse_state, pal::Mouse::State::Property::Mask state_changes_hint) override;
 
     const gfx::BoxMesh<Vertex>  m_cube_mesh;
     const gfx::RectMesh<Vertex> m_floor_mesh;
     const float                 m_scene_scale;
     const Constants             m_scene_constants;
 
-    gfx::Timer                  m_timer;
     gfx::ArcBallCamera          m_scene_camera;
-    gfx::Camera                 m_light_camera;
+    gfx::ArcBallCamera          m_light_camera;
     gfx::Buffer::Ptr            m_sp_const_buffer;
     gfx::Texture::Ptr           m_sp_cube_texture;
     gfx::Texture::Ptr           m_sp_floor_texture;
