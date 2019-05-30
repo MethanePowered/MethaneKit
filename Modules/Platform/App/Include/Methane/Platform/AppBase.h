@@ -98,8 +98,8 @@ protected:
     // AppBase interface
     virtual AppView GetView() const = 0;
     virtual void ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result);
-    virtual void OnKeyboardStateChanged(const Keyboard::State& keyboard_state);
-    virtual void OnMouseStateChanged(const Mouse::State& mouse_state);
+    virtual void OnKeyboardStateChanged(const Keyboard::State& keyboard_state, Keyboard::State::Property::Mask state_changes_hint);
+    virtual void OnMouseStateChanged(const Mouse::State& mouse_state, Mouse::State::Property::Mask state_changes_hint);
 
     Settings             m_settings;
     Data::FrameRect      m_window_bounds;

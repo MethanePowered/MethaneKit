@@ -30,7 +30,10 @@ Platform abstraction of keyboard events.
 using namespace Methane::Platform::Keyboard;
 
 const Modifier::Values Modifier::values;
+const State::Property::Values State::Property::values;
+
 static const std::string s_keys_separator = "+";
+static const std::string s_properties_separator = "+";
 
 std::string KeyConverter::ToString() const
 {
@@ -196,6 +199,25 @@ State& State::operator=(const State& other)
     return *this;
 }
 
+bool State::operator==(const State& other) const
+{
+    return m_key_states     == other.m_key_states &&
+           m_modifiers_mask == other.m_modifiers_mask;
+}
+
+State::Property::Mask State::GetDiff(const State& other) const
+{
+    State::Property::Mask properties_diff_mask = State::Property::None;
+
+    if (m_key_states != other.m_key_states)
+        properties_diff_mask |= State::Property::KeyStates;
+
+    if (m_modifiers_mask != other.m_modifiers_mask)
+        properties_diff_mask |= State::Property::Modifiers;
+
+    return properties_diff_mask;
+}
+
 void State::SetKey(Key key, KeyState state)
 {
     switch (key)
@@ -285,6 +307,36 @@ std::string Modifier::ToString(Modifier::Mask modifiers_mask)
             ss << ToString(modifier);
             first_modifier = false;
         }
+    }
+    return ss.str();
+}
+
+std::string State::Property::ToString(State::Property::Value property_value)
+{
+    switch (property_value)
+    {
+    case All:       return "All";
+    case KeyStates: return "KeyStates";
+    case Modifiers: return "Modifiers";
+    case None:      return "None";
+    }
+}
+
+std::string State::Property::ToString(State::Property::Mask properties_mask)
+{
+    std::stringstream ss;
+    bool first_property = true;
+    for (Value property_value : values)
+    {
+        if (!(properties_mask & property_value))
+            continue;
+
+        if (!first_property)
+        {
+            ss << s_properties_separator;
+        }
+        ss << ToString(property_value);
+        first_property = false;
     }
     return ss.str();
 }

@@ -48,7 +48,7 @@ using Vector2f = cml::vector2f;
 using Vector3f = cml::vector3f;
 using Vector4f = cml::vector4f;
 
-using Quaternionf = cml::quaternionf_ip;
+using Quaternionf = cml::quaternionf;
 
 }
 }

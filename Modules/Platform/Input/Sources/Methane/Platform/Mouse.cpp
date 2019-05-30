@@ -29,7 +29,10 @@ Platform abstraction of mouse events.
 
 using namespace Methane::Platform::Mouse;
 
+const State::Property::Values State::Property::values;
+
 static const std::string s_buttons_separator = "+";
+static const std::string s_properties_separator = "+";
 
 std::string ButtonConverter::ToString() const
 {
@@ -53,6 +56,36 @@ std::string ButtonConverter::ToString() const
     }
     return button_and_name_it->second;
 };
+
+std::string State::Property::ToString(State::Property::Value property_value)
+{
+    switch (property_value)
+    {
+    case All:       return "All";
+    case Buttons:   return "Buttons";
+    case Position:  return "Position";
+    case None:      return "None";
+    }
+}
+
+std::string State::Property::ToString(State::Property::Mask properties_mask)
+{
+    std::stringstream ss;
+    bool first_property = true;
+    for (Value property_value : values)
+    {
+        if (!(properties_mask & property_value))
+            continue;
+
+        if (!first_property)
+        {
+            ss << s_properties_separator;
+        }
+        ss << ToString(property_value);
+        first_property = false;
+    }
+    return ss.str();
+}
 
 State::State(std::initializer_list<Button> pressed_buttons, const Position& position)
     : m_position(position)
@@ -83,6 +116,19 @@ bool State::operator==(const State& other) const
 {
     return m_button_states == other.m_button_states &&
            m_position      == other.m_position;
+}
+
+State::Property::Mask State::GetDiff(const State& other) const
+{
+    State::Property::Mask properties_diff_mask = State::Property::None;
+
+    if (m_button_states != other.m_button_states)
+        properties_diff_mask |= State::Property::Buttons;
+    
+    if (m_position != other.m_position)
+        properties_diff_mask |= State::Property::Position;
+
+    return properties_diff_mask;
 }
 
 Buttons State::GetPressedButtons() const
