@@ -56,8 +56,8 @@ public:
 
     Camera(cml::AxisOrientation axis_orientation = g_axis_orientation);
 
+    void Resize(float width, float height) noexcept;
     void SetProjection(Projection projection) noexcept           { m_projection = projection; }
-    void Resize(float width, float height) noexcept              { m_width = width; m_height = height; m_aspect_ratio = width / height; }
     void ResetOrientaion() noexcept                              { m_current_orientation = m_default_orientation; }
     void SetOrientation(const Orientation& orientation) noexcept { m_current_orientation = m_default_orientation = orientation; }
     void SetParamters(const Parameters& parameters) noexcept     { m_parameters = parameters; }
@@ -71,6 +71,7 @@ public:
     Matrix44f GetViewMatrix() const noexcept;
     Matrix44f GetProjMatrix() const noexcept;
     Matrix44f GetViewProjMatrix() const noexcept;
+    Matrix44f GetScreenToProjMatrix() const noexcept { return m_screen_to_proj_matrix; }
 
 protected:
     float GetFOVAngleY() const noexcept;
@@ -83,7 +84,8 @@ protected:
     float           m_aspect_ratio          = 1.0f;
     Parameters      m_parameters            = { 0.01f, 125.f, 90.f };
     Orientation     m_default_orientation   = { { 15.0f, 15.0f, -15.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } };
-    Orientation     m_current_orientation;
+    Orientation     m_current_orientation   = { };
+    Matrix44f       m_screen_to_proj_matrix = { };
 };
 
 } // namespace Graphics

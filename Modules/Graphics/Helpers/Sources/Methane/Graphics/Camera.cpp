@@ -33,6 +33,18 @@ Camera::Camera(cml::AxisOrientation axis_orientation)
     ResetOrientaion();
 }
 
+void Camera::Resize(float width, float height) noexcept
+{
+    m_width = width;
+    m_height = height;
+    m_aspect_ratio = width / height;
+
+    Matrix44f screen_scale_matrix, screen_translate_matrix;
+    cml::matrix_scale(screen_scale_matrix, 2.0f / m_width, -2.0f / m_height, 1.f);
+    cml::matrix_translation(screen_translate_matrix, -1.0f, 1.0f, 0.f);
+    m_screen_to_proj_matrix = screen_translate_matrix * screen_scale_matrix;
+}
+
 void Camera::RotateYaw(float deg) noexcept
 {
     Matrix33f rotation_matrix;

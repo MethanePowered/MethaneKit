@@ -66,6 +66,8 @@ AsteroidsApp::AsteroidsApp()
             0.2f,                                       // - light_ambient_factor
             5.f                                         // - light_specular_factor
         })
+    , m_scene_camera(gfx::ArcBallCamera::Pivot::Aim)
+    , m_light_camera(m_scene_camera, gfx::ArcBallCamera::Pivot::Aim)
 {
     m_scene_camera.SetOrientation({ { 15.0f, 22.5f, -15.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
     m_light_camera.SetOrientation({ { 0.0f,  25.0f, -25.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
