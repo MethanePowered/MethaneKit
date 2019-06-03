@@ -43,24 +43,30 @@ public:
         Eye,
     };
 
-    ArcBallCamera(Pivot pivot = Pivot::Aim, float radius = 0.75, cml::AxisOrientation axis_orientation = g_axis_orientation);
+    ArcBallCamera(Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
+    ArcBallCamera(Camera& p_view_camera, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
+
+    const Camera& GetViewCamera() const     { return m_view_camera; }
+    Pivot         GetPivot() const          { return m_pivot; }
+
+    float         GetRadius() const         { return m_radius; }
+    void          SetRadius(float radius)   { m_radius = radius; }
 
     void OnMousePressed(const Data::Point2i& mouse_screen_pos);
     void OnMouseDragged(const Data::Point2i& mouse_screen_pos);
 
 protected:
+    Vector3f& GetPivotPoint();
     Matrix44f GetScreenToWorldMatrix();
     Vector3f GetSphereProjection(const Vector3f& world_pos);
 
-    Pivot       m_pivot;
-    float       m_radius;
-    Vector3f    m_mouse_pressed_in_world;
-    Vector3f    m_mouse_current_in_world;
-    Vector3f    m_mouse_pressed_on_sphere;
-    Vector3f    m_mouse_current_on_sphere;
-    Quaternionf m_previous_quat;
-    Quaternionf m_current_quat;
-    Quaternionf m_final_quat;
+    const Camera&   m_view_camera;
+    const Pivot     m_pivot;
+    float           m_radius                    = 0.75;
+    Vector3f        m_mouse_pressed_in_world    = { };
+    Vector3f        m_mouse_pressed_on_sphere   = { };
+    Quaternionf     m_previous_quat             = { 1.f, 0.f, 0.f, 0.f };
+    Quaternionf     m_current_quat              = { 1.f, 0.f, 0.f, 0.f };
 };
 
 } // namespace Graphics
