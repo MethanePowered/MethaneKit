@@ -35,7 +35,7 @@ Camera::Camera(cml::AxisOrientation axis_orientation)
 
 void Camera::Resize(float width, float height) noexcept
 {
-    m_width = width;
+    m_width  = width;
     m_height = height;
     m_aspect_ratio = width / height;
 
@@ -47,14 +47,14 @@ void Camera::Resize(float width, float height) noexcept
 
 void Camera::RotateYaw(float deg) noexcept
 {
-    Matrix33f rotation_matrix;
+    Matrix33f rotation_matrix = { };
     cml::matrix_rotation_axis_angle(rotation_matrix, m_current_orientation.up, cml::rad(deg));
     m_current_orientation.eye = m_current_orientation.eye * rotation_matrix;
 }
 
 void Camera::RotatePitch(float deg) noexcept
 {
-    Matrix33f rotation_matrix;
+    Matrix33f rotation_matrix = { };
     auto right = cml::cross(m_current_orientation.eye, m_current_orientation.up).normalize();
     cml::matrix_rotation_axis_angle(rotation_matrix, right, cml::rad(deg));
     m_current_orientation.eye = m_current_orientation.eye * rotation_matrix;
@@ -86,14 +86,14 @@ void Camera::GetProjMatrix(Matrix44f& out_proj) const noexcept
 
 Matrix44f Camera::GetViewMatrix() const noexcept
 {
-    Matrix44f view_matrix;
+    Matrix44f view_matrix = { };
     GetViewMatrix(view_matrix);
     return view_matrix;
 }
 
 Matrix44f Camera::GetProjMatrix() const noexcept
 {
-    Matrix44f proj_matrix;
+    Matrix44f proj_matrix = { };
     GetProjMatrix(proj_matrix);
     return proj_matrix;
 }

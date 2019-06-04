@@ -63,16 +63,19 @@ void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
     const Vector4f mouse_screen_vector(mouse_screen_pos.x(), mouse_screen_pos.y(), 0.f, 1.f);
     const Vector3f mouse_current_in_world  = (GetScreenToWorldMatrix() * mouse_screen_vector).subvector(3);
     const Vector3f mouse_current_on_sphere = GetSphereProjection(mouse_current_in_world);
-    m_current_quat = QuaternionFromUnitSphere(m_mouse_pressed_on_sphere, mouse_current_on_sphere) * m_previous_quat;
+    m_current_quat = QuaternionFromUnitSphere(m_mouse_pressed_on_sphere, mouse_current_on_sphere); // *m_previous_quat;
 
     Quaternionf rotation_quat = m_current_quat;
-    rotation_quat.conjugate();
+    //rotation_quat.conjugate();
 
-    Matrix44f rotation_matrix;
+    Matrix44f rotation_matrix = { };
     cml::matrix_rotation_quaternion(rotation_matrix, rotation_quat);
 
-    Vector3f look_dir = m_current_orientation.aim - m_current_orientation.eye;
+    Vector3f  look_dir = m_current_orientation.aim - m_current_orientation.eye;
+    Vector3f& up_dir   = m_current_orientation.up;
+
     look_dir = (rotation_matrix * Vector4f(look_dir, 1.f)).subvector(3);
+    up_dir   = (rotation_matrix * Vector4f(up_dir, 1.f)).subvector(3);
 
     switch(m_pivot)
     {
@@ -83,7 +86,7 @@ void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
 
 Matrix44f ArcBallCamera::GetScreenToWorldMatrix()
 {
-    Matrix44f view_matrix, proj_matrix;
+    Matrix44f view_matrix = { }, proj_matrix = { };
     m_view_camera.GetViewProjMatrices(view_matrix, proj_matrix);
     return cml::inverse(proj_matrix * view_matrix) * m_screen_to_proj_matrix;
 }
