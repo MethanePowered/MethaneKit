@@ -44,7 +44,7 @@ public:
     };
 
     ArcBallCamera(Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
-    ArcBallCamera(Camera& p_view_camera, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
+    ArcBallCamera(Camera& view_camera, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
 
     const Camera& GetViewCamera() const     { return m_view_camera; }
     Pivot         GetPivot() const          { return m_pivot; }

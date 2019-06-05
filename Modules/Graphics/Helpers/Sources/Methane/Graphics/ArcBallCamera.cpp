@@ -104,7 +104,7 @@ Vector3f ArcBallCamera::GetSphereProjection(const Vector3f& view_pos)
     sphere_pos[2] = 0.f;
 
     const float mag = cml::dot(sphere_pos, sphere_pos);
-    if (mag > 1.0)
+    if (mag > 1.f)
     {
         // Since we are outside of the sphere, map to the visible boundary of the sphere.
         sphere_pos /= sqrtf(mag);
