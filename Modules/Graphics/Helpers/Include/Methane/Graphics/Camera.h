@@ -1,4 +1,4 @@
-/******************************************************************************
+﻿/******************************************************************************
 
 Copyright 2019 Evgeny Gorodetskiy
 
@@ -24,6 +24,9 @@ Camera helper implementation allowing to generate view and projectrion matrices.
 #pragma once
 
 #include "MathTypes.h"
+
+#include <Methane/Data/Types.h>
+
 #include <cml/mathlib/constants.h>
 
 namespace Methane
@@ -66,15 +69,18 @@ public:
 
     const Orientation& GetOrientation() const noexcept           { return m_current_orientation; }
     void GetViewProjMatrices(Matrix44f& out_view, Matrix44f& out_proj) const noexcept;
-    void GetViewMatrix(Matrix44f& out_view) const noexcept;
+    void GetViewMatrix(Matrix44f& out_view) const noexcept       { return GetViewMatrix(out_view, m_current_orientation); }
     void GetProjMatrix(Matrix44f& out_proj) const noexcept;
-    Matrix44f GetViewMatrix() const noexcept;
+    Matrix44f GetViewMatrix() const noexcept                     { return GetViewMatrix(m_current_orientation);}
     Matrix44f GetProjMatrix() const noexcept;
     Matrix44f GetViewProjMatrix() const noexcept;
-    Matrix44f GetScreenToProjMatrix() const noexcept { return m_screen_to_proj_matrix; }
+    Vector2f  GetProjFromScreenPos(const Data::Point2i& screen_pos) const noexcept;
+    Vector4f  GetViewFromScreenPos(const Data::Point2i& screen_pos) const noexcept;
 
 protected:
     float GetFOVAngleY() const noexcept;
+    void GetViewMatrix(Matrix44f& out_view, const Orientation& orientation) const noexcept;
+    Matrix44f GetViewMatrix(const Orientation& orientation) const noexcept;
 
     const cml::AxisOrientation m_axis_orientation;
 
@@ -85,7 +91,6 @@ protected:
     Parameters      m_parameters            = { 0.01f, 125.f, 90.f };
     Orientation     m_default_orientation   = { { 15.0f, 15.0f, -15.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } };
     Orientation     m_current_orientation   = { };
-    Matrix44f       m_screen_to_proj_matrix = { };
 };
 
 } // namespace Graphics

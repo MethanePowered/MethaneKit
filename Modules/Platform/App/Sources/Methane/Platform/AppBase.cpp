@@ -31,6 +31,9 @@ Base application interface and platform-independent implementation.
 using namespace Methane;
 using namespace Methane::Platform;
 
+// Uncomment define to print user input actions (keyboard, mouse) to debug output
+//#define DEBUG_USER_INPUT
+
 AppBase::AppBase(const AppBase::Settings& settings)
     : m_settings(settings)
     , m_cmd_options(GetExecutableFileName(), settings.name)
@@ -165,12 +168,16 @@ void AppBase::MouseInWindowChanged(bool is_mouse_in_window)
 
 void AppBase::OnKeyboardStateChanged(const Keyboard::State& keyboard_state, const Keyboard::State& /*prev_keyboard_state*/, Keyboard::State::Property::Mask state_changes_hint)
 {
+#ifdef DEBUG_USER_INPUT
     PrintToDebugOutput(std::string("Keyboard: ") + keyboard_state.ToString());
+#endif
 }
 
 void AppBase::OnMouseStateChanged(const Mouse::State& mouse_state, const Mouse::State& /*prev_mouse_state*/, Keyboard::State::Property::Mask state_changes_hint)
 {
+#ifdef DEBUG_USER_INPUT
     PrintToDebugOutput(std::string(m_mouse_in_window ? "Mouse in window: " : "Mouse out of window: ") + mouse_state.ToString());
+#endif
 }
 
 void AppBase::ChangeWindowBounds(const Data::FrameRect& window_bounds)
