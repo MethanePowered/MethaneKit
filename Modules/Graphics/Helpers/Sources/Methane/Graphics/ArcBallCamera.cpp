@@ -25,6 +25,13 @@ Arc-ball camera implementation.
 
 #include <cml/mathlib/mathlib.h>
 
+#define DEBUG_OUTPUT
+
+#ifdef DEBUG_OUTPUT
+    #include <Methane/Platform/Utils.h>
+    using namespace Methane::Platform;
+#endif
+
 using namespace Methane::Data;
 using namespace Methane::Graphics;
 
@@ -52,52 +59,51 @@ ArcBallCamera::ArcBallCamera(Camera& view_camera, Pivot pivot, cml::AxisOrientat
 
 void ArcBallCamera::OnMousePressed(const Point2i& mouse_screen_pos)
 {
-    const Vector4f mouse_screen_vector(mouse_screen_pos.x(), mouse_screen_pos.y(), 0.f, 1.f);
-    m_mouse_pressed_in_world  = (GetScreenToWorldMatrix() * mouse_screen_vector).subvector(3);
-    m_mouse_pressed_on_sphere = GetSphereProjection(m_mouse_pressed_in_world);
-    m_previous_quat = m_current_quat;
+    const Vector3f mouse_pressed_in_view = GetViewFromScreenPos(mouse_screen_pos).subvector(3);
+    m_mouse_pressed_orientation          = m_current_orientation;
+    m_mouse_pressed_on_sphere            = GetSphereProjection(mouse_pressed_in_view);
+
+#ifdef DEBUG_OUTPUT
+    PrintToDebugOutput("Mouse pressed: " + std::string(mouse_screen_pos) +
+                       ", in view: "    + VectorToString(mouse_pressed_in_view));
+#endif
 }
 
 void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
 {
-    const Vector4f mouse_screen_vector(mouse_screen_pos.x(), mouse_screen_pos.y(), 0.f, 1.f);
-    const Vector3f mouse_current_in_world  = (GetScreenToWorldMatrix() * mouse_screen_vector).subvector(3);
-    const Vector3f mouse_current_on_sphere = GetSphereProjection(mouse_current_in_world);
-    m_current_quat = QuaternionFromUnitSphere(m_mouse_pressed_on_sphere, mouse_current_on_sphere); // *m_previous_quat;
-
-    Quaternionf rotation_quat = m_current_quat;
-    //rotation_quat.conjugate();
+    const Vector3f mouse_current_in_view   = GetViewFromScreenPos(mouse_screen_pos).subvector(3);
+    const Vector3f mouse_current_on_sphere = GetSphereProjection(mouse_current_in_view);
+    Quaternionf    mouse_rotation_quat     = QuaternionFromUnitSphere(m_mouse_pressed_on_sphere, mouse_current_on_sphere).conjugate();
 
     Matrix44f rotation_matrix = { };
-    cml::matrix_rotation_quaternion(rotation_matrix, rotation_quat);
+    cml::matrix_rotation_quaternion(rotation_matrix, mouse_rotation_quat);
 
-    Vector3f  look_dir = m_current_orientation.aim - m_current_orientation.eye;
-    Vector3f& up_dir   = m_current_orientation.up;
-
+    Vector3f  look_dir = m_mouse_pressed_orientation.aim - m_mouse_pressed_orientation.eye;
     look_dir = (rotation_matrix * Vector4f(look_dir, 1.f)).subvector(3);
-    up_dir   = (rotation_matrix * Vector4f(up_dir, 1.f)).subvector(3);
+
+    m_current_orientation.up = (rotation_matrix * Vector4f(m_mouse_pressed_orientation.up, 1.f)).subvector(3);
 
     switch(m_pivot)
     {
-    case Pivot::Aim: m_current_orientation.eye = m_current_orientation.aim - look_dir; break;
-    case Pivot::Eye: m_current_orientation.aim = m_current_orientation.eye + look_dir; break;
+    case Pivot::Aim: m_current_orientation.eye = m_mouse_pressed_orientation.aim - look_dir; break;
+    case Pivot::Eye: m_current_orientation.aim = m_mouse_pressed_orientation.eye + look_dir; break;
     }
+
+#ifdef DEBUG_OUTPUT
+    PrintToDebugOutput("Mouse dragged: " + std::string(mouse_screen_pos) +
+        ", in view: " + VectorToString(mouse_current_in_view));
+#endif
 }
 
-Matrix44f ArcBallCamera::GetScreenToWorldMatrix()
+Vector3f ArcBallCamera::GetSphereProjection(const Vector3f& view_pos)
 {
-    Matrix44f view_matrix = { }, proj_matrix = { };
-    m_view_camera.GetViewProjMatrices(view_matrix, proj_matrix);
-    return cml::inverse(proj_matrix * view_matrix) * m_screen_to_proj_matrix;
-}
+    const Vector3f view_pivot_point = (GetViewMatrix(m_mouse_pressed_orientation) * Vector4f(GetPivotPoint(m_mouse_pressed_orientation), 1.f)).subvector(3);
 
-Vector3f ArcBallCamera::GetSphereProjection(const Vector3f& world_pos)
-{
     // (m - C) / R
-    Vector3f sphere_pos = (world_pos - GetPivotPoint()) / m_radius;
+    Vector3f sphere_pos = (view_pos - view_pivot_point) / m_radius;
     sphere_pos[2] = 0.f;
 
-    float mag = cml::dot(sphere_pos, sphere_pos);
+    const float mag = cml::dot(sphere_pos, sphere_pos);
     if (mag > 1.0)
     {
         // Since we are outside of the sphere, map to the visible boundary of the sphere.
@@ -113,11 +119,11 @@ Vector3f ArcBallCamera::GetSphereProjection(const Vector3f& world_pos)
     return sphere_pos;
 }
 
-Vector3f& ArcBallCamera::GetPivotPoint()
+const Vector3f& ArcBallCamera::GetPivotPoint(const Orientation& orientation) const
 {
     switch (m_pivot)
     {
-    case Pivot::Aim: return m_current_orientation.aim;
-    case Pivot::Eye: return m_current_orientation.eye;
+    case Pivot::Aim: return orientation.aim;
+    case Pivot::Eye: return orientation.eye;
     }
 }

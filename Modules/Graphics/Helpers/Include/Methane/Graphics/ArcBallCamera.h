@@ -56,17 +56,14 @@ public:
     void OnMouseDragged(const Data::Point2i& mouse_screen_pos);
 
 protected:
-    Vector3f& GetPivotPoint();
-    Matrix44f GetScreenToWorldMatrix();
-    Vector3f GetSphereProjection(const Vector3f& world_pos);
+    const Vector3f& GetPivotPoint(const Orientation& orientation) const;
+    Vector3f GetSphereProjection(const Vector3f& view_pos);
 
     const Camera&   m_view_camera;
     const Pivot     m_pivot;
     float           m_radius                    = 0.75;
-    Vector3f        m_mouse_pressed_in_world    = { };
     Vector3f        m_mouse_pressed_on_sphere   = { };
-    Quaternionf     m_previous_quat             = { 1.f, 0.f, 0.f, 0.f };
-    Quaternionf     m_current_quat              = { 1.f, 0.f, 0.f, 0.f };
+    Orientation     m_mouse_pressed_orientation = { };
 };
 
 } // namespace Graphics

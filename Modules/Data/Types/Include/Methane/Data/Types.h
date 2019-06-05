@@ -24,6 +24,7 @@ Common Methane primitive data types
 #pragma once
 
 #include <cml/vector.h>
+#include <string>
 #include <cstdint>
 
 namespace Methane
@@ -37,12 +38,16 @@ class Point2T : public cml::vector<T, cml::fixed<2>>
 public:
     Point2T() = default;
     Point2T(T x, T y) : cml::vector<T, cml::fixed<2>>(x, y) { }
+    Point2T(const cml::vector<T, cml::fixed<2>>& v) : cml::vector<T, cml::fixed<2>>(v) { }
     
     T x() const noexcept { return (*this)[0]; }
     T y() const noexcept { return (*this)[1]; }
     
     void setX(T x) noexcept { (*this)[0] = x; }
     void setY(T y) noexcept { (*this)[1] = y; }
+
+    operator std::string() const
+    { return "Pt(" + std::to_string(x()) + ", " + std::to_string(y()) + ")"; }
 };
 
 using Point2i = Point2T<int32_t>;
@@ -68,10 +73,16 @@ struct Rect
         { return !operator==(other); }
 
         D GetPixelsCount() const noexcept { return width * height; }
+
+        operator std::string() const
+        { return "Sz(" + std::to_string(width) + " x " + std::to_string(height) + ")"; }
     };
                                                 
     operator Rect<double, double>() const
     { return Rect<double, double> { origin, size }; }
+
+    operator std::string() const
+    { return std::string("Rt[") + origin + " + " + size + "]"; }
 
     using Point = Point2T<T>;
 

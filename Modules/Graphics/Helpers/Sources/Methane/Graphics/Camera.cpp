@@ -26,6 +26,7 @@ Camera helper implementation allowing to generate view and projectrion matrices.
 #include <cml/mathlib/mathlib.h>
 
 using namespace Methane::Graphics;
+using namespace Methane::Data;
 
 Camera::Camera(cml::AxisOrientation axis_orientation)
     : m_axis_orientation(axis_orientation)
@@ -38,11 +39,6 @@ void Camera::Resize(float width, float height) noexcept
     m_width  = width;
     m_height = height;
     m_aspect_ratio = width / height;
-
-    Matrix44f screen_scale_matrix, screen_translate_matrix;
-    cml::matrix_scale(screen_scale_matrix, 2.0f / m_width, -2.0f / m_height, 1.f);
-    cml::matrix_translation(screen_translate_matrix, -1.0f, 1.0f, 0.f);
-    m_screen_to_proj_matrix = screen_translate_matrix * screen_scale_matrix;
 }
 
 void Camera::RotateYaw(float deg) noexcept
@@ -66,9 +62,9 @@ void Camera::GetViewProjMatrices(Matrix44f& out_view, Matrix44f& out_proj) const
     GetProjMatrix(out_proj);
 }
 
-void Camera::GetViewMatrix(Matrix44f& out_view) const noexcept
+void Camera::GetViewMatrix(Matrix44f& out_view, const Orientation& orientation) const noexcept
 {
-    cml::matrix_look_at(out_view, m_current_orientation.eye, m_current_orientation.aim, m_current_orientation.up, m_axis_orientation);
+    cml::matrix_look_at(out_view, orientation.eye, orientation.aim, orientation.up, m_axis_orientation);
 }
 
 void Camera::GetProjMatrix(Matrix44f& out_proj) const noexcept
@@ -84,10 +80,10 @@ void Camera::GetProjMatrix(Matrix44f& out_proj) const noexcept
     }
 }
 
-Matrix44f Camera::GetViewMatrix() const noexcept
+Matrix44f Camera::GetViewMatrix(const Orientation& orientation) const noexcept
 {
     Matrix44f view_matrix = { };
-    GetViewMatrix(view_matrix);
+    GetViewMatrix(view_matrix, orientation);
     return view_matrix;
 }
 
@@ -102,6 +98,17 @@ Matrix44f Camera::GetViewProjMatrix() const noexcept
 {
     return GetViewMatrix() * GetProjMatrix();
 }
+
+Vector2f Camera::GetProjFromScreenPos(const Point2i& screen_pos) const noexcept
+{
+    return { 2.f * screen_pos.x() / m_width - 1.f, 1.f - 2.f * screen_pos.y() / m_height };
+}
+
+Vector4f Camera::GetViewFromScreenPos(const Point2i& screen_pos) const noexcept
+{
+    return cml::inverse(GetProjMatrix()) * Vector4f(GetProjFromScreenPos(screen_pos), 0.f, 1.f);
+}
+
 
 float Camera::GetFOVAngleY() const noexcept
 {

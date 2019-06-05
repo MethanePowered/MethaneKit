@@ -69,7 +69,7 @@ AsteroidsApp::AsteroidsApp()
     , m_scene_camera(gfx::ArcBallCamera::Pivot::Aim)
     , m_light_camera(m_scene_camera, gfx::ArcBallCamera::Pivot::Aim)
 {
-    m_scene_camera.SetRadius(50);
+    m_scene_camera.SetRadius(8.f);
     m_scene_camera.SetOrientation({ { 15.0f, 22.5f, -15.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
     m_light_camera.SetOrientation({ { 0.0f,  25.0f, -25.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
@@ -511,7 +511,7 @@ void AsteroidsApp::OnMouseStateChanged(const pal::Mouse::State& mouse_state, con
         }
 
         // Mouse is dragged with Right mouse button: rotate Light
-        if (pressed_mouse_buttons.count(pal::Mouse::Button::Left))
+        if (pressed_mouse_buttons.count(pal::Mouse::Button::Right))
         {
             m_light_camera.OnMouseDragged(mouse_state.GetPosition());
         }
