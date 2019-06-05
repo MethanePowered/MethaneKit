@@ -51,11 +51,11 @@ using Vector4f = cml::vector4f;
 
 using Quaternionf = cml::quaternionf;
 
-template<typename T, size_t vector_size>
+template<typename T, int vector_size>
 inline std::string VectorToString(const cml::vector<T, cml::fixed<vector_size>>& v)
 {
     std::string str = "V(";
-    for (size_t i = 0; i < vector_size; ++i)
+    for (int i = 0; i < vector_size; ++i)
     {
         str += std::to_string(v[i]);
         if (i < vector_size - 1)

@@ -93,7 +93,11 @@ struct Volume
         D GetPixelsCount() const noexcept { return depth * Rect<T, D>::Size::GetPixelsCount(); }
 
         operator std::string() const
-        { return "Sz(" + std::to_string(width) + " x " + std::to_string(height) + " x " + std::to_string(depth) + ")"; }
+        {
+            return "Sz(" + std::to_string(Rect<T, D>::Size::width) +
+                   " x " + std::to_string(Rect<T, D>::Size::height) +
+                   " x " + std::to_string(depth) + ")";
+        }
     };
 
     operator std::string() const
