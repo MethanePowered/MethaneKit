@@ -99,16 +99,25 @@ Matrix44f Camera::GetViewProjMatrix() const noexcept
     return GetViewMatrix() * GetProjMatrix();
 }
 
-Vector2f Camera::GetProjFromScreenPos(const Point2i& screen_pos) const noexcept
+Vector2f Camera::TransformScreenToProj(const Point2i& screen_pos) const noexcept
 {
     return { 2.f * screen_pos.x() / m_width - 1.f, 1.f - 2.f * screen_pos.y() / m_height };
 }
 
-Vector4f Camera::GetViewFromScreenPos(const Point2i& screen_pos) const noexcept
+Vector3f Camera::TransformScreenToView(const Point2i& screen_pos) const noexcept
 {
-    return cml::inverse(GetProjMatrix()) * Vector4f(GetProjFromScreenPos(screen_pos), 0.f, 1.f);
+    return (cml::inverse(GetProjMatrix()) * Vector4f(TransformScreenToProj(screen_pos), 0.f, 1.f)).subvector(3);
 }
 
+Vector4f Camera::TransformWorldToView(const Vector4f& world_pos, const Orientation& orientation) const noexcept
+{
+    return cml::inverse(GetViewMatrix(orientation)) * world_pos;
+}
+
+Vector4f Camera::TransformViewToWorld(const Vector4f& view_pos, const Orientation& orientation) const noexcept
+{
+    return GetViewMatrix(orientation) * view_pos;
+}
 
 float Camera::GetFOVAngleY() const noexcept
 {

@@ -46,6 +46,12 @@ public:
     void setX(T x) noexcept { (*this)[0] = x; }
     void setY(T y) noexcept { (*this)[1] = y; }
 
+    operator Point2T<float>() const
+    { return Point2T<float>(static_cast<float>(x()), static_cast<float>(y())); }
+
+    operator Point2T<double>() const
+    { return Point2T<double>(static_cast<double>(x()), static_cast<double>(y())); }
+
     operator std::string() const
     { return "Pt(" + std::to_string(x()) + ", " + std::to_string(y()) + ")"; }
 };
@@ -78,8 +84,11 @@ struct Rect
         { return "Sz(" + std::to_string(width) + " x " + std::to_string(height) + ")"; }
     };
                                                 
+    operator Rect<float, float>() const
+    { return { static_cast<Point2T<float>>(origin), static_cast<Rect<float, float>::Size>(size) }; }
+
     operator Rect<double, double>() const
-    { return Rect<double, double> { origin, size }; }
+    { return { static_cast<Point2T<double>>(origin), static_cast<Rect<double, double>::Size>>(size) }; }
 
     operator std::string() const
     { return std::string("Rt[") + origin + " + " + size + "]"; }
