@@ -27,8 +27,6 @@ Arc-ball camera implementation.
 
 #include <Methane/Data/Types.h>
 
-#include <cml/quaternion.h>
-
 namespace Methane
 {
 namespace Graphics
@@ -44,24 +42,20 @@ public:
     };
 
     ArcBallCamera(Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
-    ArcBallCamera(Camera& view_camera, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
 
-    const Camera& GetViewCamera() const     { return m_view_camera; }
-    Pivot         GetPivot() const          { return m_pivot; }
-
-    float         GetRadius() const         { return m_radius; }
-    void          SetRadius(float radius)   { m_radius = radius; }
+    Pivot         GetPivot() const                      { return m_pivot; }
+    float         GetRadiusRatio() const                { return m_radius_ratio; }
+    void          SetRadiusRatio(float radius_ratio)    { m_radius_ratio = radius_ratio; }
 
     void OnMousePressed(const Data::Point2i& mouse_screen_pos);
     void OnMouseDragged(const Data::Point2i& mouse_screen_pos);
 
 protected:
     const Vector3f& GetPivotPoint(const Orientation& orientation) const;
-    Vector3f GetSphereProjection(const Vector3f& view_pos);
+    Vector3f GetNormalizedSphereProjection(const Data::Point2i& mouse_screen_pos, bool is_primary) const;
 
-    const Camera&   m_view_camera;
     const Pivot     m_pivot;
-    float           m_radius                    = 0.75;
+    float           m_radius_ratio              = 0.75;
     Vector3f        m_mouse_pressed_on_sphere   = { };
     Orientation     m_mouse_pressed_orientation = { };
 };
