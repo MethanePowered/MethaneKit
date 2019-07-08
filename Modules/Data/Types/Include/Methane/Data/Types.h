@@ -36,21 +36,18 @@ template<typename T>
 class Point2T : public cml::vector<T, cml::fixed<2>>
 {
 public:
-    Point2T() = default;
-    Point2T(T x, T y) : cml::vector<T, cml::fixed<2>>(x, y) { }
-    Point2T(const cml::vector<T, cml::fixed<2>>& v) : cml::vector<T, cml::fixed<2>>(v) { }
-    
+    using Base = cml::vector<T, cml::fixed<2>>;
+    using Base::Base;
+
     T x() const noexcept { return (*this)[0]; }
     T y() const noexcept { return (*this)[1]; }
     
     void setX(T x) noexcept { (*this)[0] = x; }
     void setY(T y) noexcept { (*this)[1] = y; }
 
-    operator Point2T<float>() const
-    { return Point2T<float>(static_cast<float>(x()), static_cast<float>(y())); }
-
-    operator Point2T<double>() const
-    { return Point2T<double>(static_cast<double>(x()), static_cast<double>(y())); }
+    template<typename U>
+    explicit operator Point2T<U>() const
+    { return Point2T<U>(static_cast<U>(x()), static_cast<U>(y())); }
 
     operator std::string() const
     { return "Pt(" + std::to_string(x()) + ", " + std::to_string(y()) + ")"; }
@@ -75,6 +72,7 @@ struct Rect
         
         bool operator==(const Size& other) const
         { return width == other.width && height == other.height; }
+
         bool operator!=(const Size& other) const
         { return !operator==(other); }
 
@@ -83,12 +81,10 @@ struct Rect
         operator std::string() const
         { return "Sz(" + std::to_string(width) + " x " + std::to_string(height) + ")"; }
     };
-                                                
-    operator Rect<float, float>() const
-    { return { static_cast<Point2T<float>>(origin), static_cast<Rect<float, float>::Size>(size) }; }
-
-    operator Rect<double, double>() const
-    { return { static_cast<Point2T<double>>(origin), static_cast<Rect<double, double>::Size>>(size) }; }
+    
+    template<typename U>
+    operator Rect<U, U>() const
+    { return { static_cast<Point2T<U>>(origin), static_cast<typename Rect<U, U>::Size>(size) }; }
 
     operator std::string() const
     { return std::string("Rt[") + origin + " + " + size + "]"; }
