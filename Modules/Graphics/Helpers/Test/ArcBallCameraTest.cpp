@@ -21,8 +21,6 @@ Arc-Ball camera unit tests
 
 ******************************************************************************/
 
-#include <catch2/catch.hpp>
-
 #include <Methane/Graphics/ArcBallCamera.h>
 #include <Methane/Data/Types.h>
 
@@ -31,14 +29,13 @@ using namespace Methane::Data;
 
 static const Point2f             g_test_screen_size        = { 640.f, 480.f };
 static const Point2f             g_test_screen_center      = g_test_screen_size / 2.f;
-static const Camera::Orientation g_test_camera_orientation = { { 0.0f, 5.0f, 10.0f }, { 0.0f, 5.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } };
+static const Camera::Orientation g_test_camera_orientation = { { 0.f, 5.f, 10.f }, { 0.f, 5.f, 0.f }, { 0.f, 1.f, 0.f } };
 
 // Approximate comparison of vectors for test purposes only
-template<size_t N>
-static bool operator==(const cml::vector<float, cml::fixed<N>>& left, const cml::vector<float, cml::fixed<N>>& right)
+inline bool operator==(const Vector3f& left, const Vector3f& right)
 {
     const float epsilon = 0.00001f;
-    for(int i = 0; i < N; ++i)
+    for(int i = 0; i < 3; ++i)
     {
         if (std::fabsf(left[i] - right[i]) > epsilon)
             return false;
@@ -46,9 +43,12 @@ static bool operator==(const cml::vector<float, cml::fixed<N>>& left, const cml:
     return true;
 }
 
+// NOTE: keep crach header include after comparison overloads to make them work on Clang
+#include <catch2/catch.hpp>
+
 TEST_CASE("Arc-ball camera rotation around aim pivot", "[mouse-state]")
 {
-    SECTION("Rotate 90 degrees horizontally")
+    SECTION("Rotate 90 degrees around X axis")
     {
         ArcBallCamera camera(ArcBallCamera::Pivot::Aim);
         camera.Resize(g_test_screen_size.x(), g_test_screen_size.y());
@@ -56,13 +56,13 @@ TEST_CASE("Arc-ball camera rotation around aim pivot", "[mouse-state]")
         camera.OnMousePressed(static_cast<Point2i>(g_test_screen_center));
         camera.OnMouseDragged(static_cast<Point2i>(g_test_screen_center - Point2f(camera.GetRadiusInPixels(), 0.f)));
 
-        static const Camera::Orientation g_rotated_camera_orientation = { { 10.0f, 5.0f, 0.0f }, { 0.0f, 5.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } };
+        static const Camera::Orientation g_rotated_camera_orientation = { { 10.f, 5.f, 0.f }, { 0.f, 5.f, 0.f }, { 0.f, 1.f, 0.f } };
         CHECK(camera.GetOrientation().aim == g_rotated_camera_orientation.aim);
         CHECK(camera.GetOrientation().eye == g_rotated_camera_orientation.eye);
         CHECK(camera.GetOrientation().up  == g_rotated_camera_orientation.up);
     }
 
-    SECTION("Rotate 90 degrees vertically")
+    SECTION("Rotate 90 degrees around Y axis")
     {
         ArcBallCamera camera(ArcBallCamera::Pivot::Aim);
         camera.Resize(g_test_screen_size.x(), g_test_screen_size.y());
@@ -70,7 +70,21 @@ TEST_CASE("Arc-ball camera rotation around aim pivot", "[mouse-state]")
         camera.OnMousePressed(static_cast<Point2i>(g_test_screen_center));
         camera.OnMouseDragged(static_cast<Point2i>(g_test_screen_center + Point2f(0.f, camera.GetRadiusInPixels())));
 
-        static const Camera::Orientation g_rotated_camera_orientation = { { 0.0f, 15.0f, 0.0f }, { 0.0f, 5.0f, 0.0f }, { 0.0f, 0.0f, -1.0f } };
+        static const Camera::Orientation g_rotated_camera_orientation = { { 0.f, 15.f, 0.f }, { 0.f, 5.f, 0.f }, { 0.f, 0.f, -1.f } };
+        CHECK(camera.GetOrientation().aim == g_rotated_camera_orientation.aim);
+        CHECK(camera.GetOrientation().eye == g_rotated_camera_orientation.eye);
+        CHECK(camera.GetOrientation().up  == g_rotated_camera_orientation.up);
+    }
+    
+    SECTION("Rotate 90 degrees around Z axis")
+    {
+        ArcBallCamera camera(ArcBallCamera::Pivot::Aim);
+        camera.Resize(g_test_screen_size.x(), g_test_screen_size.y());
+        camera.SetOrientation(g_test_camera_orientation);
+        camera.OnMousePressed({ static_cast<int>(g_test_screen_center.x()), 0 });
+        camera.OnMouseDragged({ 0, static_cast<int>(g_test_screen_center.y()) });
+        
+        static const Camera::Orientation g_rotated_camera_orientation = { { 0.f, 5.f, 10.f }, { 0.f, 5.f, 0.f }, { 1.f, 0.f, 0.f } };
         CHECK(camera.GetOrientation().aim == g_rotated_camera_orientation.aim);
         CHECK(camera.GetOrientation().eye == g_rotated_camera_orientation.eye);
         CHECK(camera.GetOrientation().up  == g_rotated_camera_orientation.up);

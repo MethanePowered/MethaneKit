@@ -44,7 +44,7 @@ using Matrix33f = cml::matrix33f_r;
 using Matrix44f = cml::matrix44f_r;
 
 // Axis orientation used by Metal
-constexpr cml::AxisOrientation g_axis_orientation = cml::AxisOrientation::right_handed;
+constexpr cml::AxisOrientation g_axis_orientation = cml::AxisOrientation::left_handed;
 
 }
 }
