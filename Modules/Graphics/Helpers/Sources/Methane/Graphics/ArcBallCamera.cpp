@@ -57,7 +57,7 @@ void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
     const Vector4f look_dir_in_view(0.f, 0.f, GetAimDistance(m_mouse_pressed_orientation), 1.f);
     const Vector3f look_dir = TransformViewToWorld(view_rotation_matrix * look_dir_in_view, m_mouse_pressed_orientation).subvector(3);
 
-    const Vector4f orientation_up_in_view = TransformWorldToView(Vector4f(m_mouse_pressed_orientation.up, 1.f), m_mouse_pressed_orientation);
+    const Vector4f orientation_up_in_view(0.f, m_mouse_pressed_orientation.up.length(), 0.f, 1.f);
     m_current_orientation.up = TransformViewToWorld(view_rotation_matrix * orientation_up_in_view, m_mouse_pressed_orientation).subvector(3);
 
     switch(m_pivot)
@@ -72,17 +72,22 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
     const Point2f screen_center(m_width / 2.f, m_height / 2.f);
     Point2f screen_vector = static_cast<Point2f>(mouse_screen_pos) - screen_center;
     const float   screen_radius = screen_vector.length();
-    const float   sphere_radius = std::min(screen_center.x(), screen_center.y()) * m_radius_ratio;
+    const float   sphere_radius = GetRadiusInPixels();
+
+    float z_sign = 1.f;
+#if 1
+    const bool    inside_sphere = screen_radius < sphere_radius;
+#else
     const bool    inside_sphere =  (is_primary && screen_radius < sphere_radius) ||
                                   (!is_primary && std::fabs(m_mouse_pressed_on_sphere[2]) > std::numeric_limits<float>::lowest());
 
-    float z_sign = 1.f;
     if (!is_primary && inside_sphere && screen_radius >= sphere_radius)
     {
         screen_vector.normalize();
         screen_vector *= sphere_radius * 2.f - screen_radius;
         z_sign = -1.f;
     }
+#endif
 
     return cml::normalize(Vector3f(screen_vector, inside_sphere ? z_sign * std::sqrtf(square(sphere_radius) - screen_vector.length_squared()) : 0.f));
 }
@@ -94,4 +99,7 @@ const Vector3f& ArcBallCamera::GetPivotPoint(const Orientation& orientation) con
     case Pivot::Aim: return orientation.aim;
     case Pivot::Eye: return orientation.eye;
     }
+
+    static const Vector3f dummy_pivot = { };
+    return dummy_pivot;
 }
