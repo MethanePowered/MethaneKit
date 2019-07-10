@@ -43,9 +43,10 @@ public:
 
     ArcBallCamera(Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
 
-    Pivot         GetPivot() const                      { return m_pivot; }
-    float         GetRadiusRatio() const                { return m_radius_ratio; }
-    void          SetRadiusRatio(float radius_ratio)    { m_radius_ratio = radius_ratio; }
+    Pivot GetPivot() const                      { return m_pivot; }
+    float GetRadiusRatio() const                { return m_radius_ratio; }
+    float GetRadiusInPixels() const noexcept    { return std::min(m_width, m_height) * m_radius_ratio / 2.f; }
+    void  SetRadiusRatio(float radius_ratio)    { m_radius_ratio = radius_ratio; }
 
     void OnMousePressed(const Data::Point2i& mouse_screen_pos);
     void OnMouseDragged(const Data::Point2i& mouse_screen_pos);
@@ -55,7 +56,7 @@ protected:
     Vector3f GetNormalizedSphereProjection(const Data::Point2i& mouse_screen_pos, bool is_primary) const;
 
     const Pivot     m_pivot;
-    float           m_radius_ratio              = 0.75;
+    float           m_radius_ratio              = 0.9f;
     Vector3f        m_mouse_pressed_on_sphere   = { };
     Orientation     m_mouse_pressed_orientation = { };
 };
