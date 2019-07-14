@@ -48,8 +48,9 @@ void ArcBallCamera::OnMousePressed(const Point2i& mouse_screen_pos)
 void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
 {
     const Vector3f mouse_current_on_sphere = GetNormalizedSphereProjection(mouse_screen_pos, false);
-    const Vector3f rotation_axis  = cml::cross(m_mouse_pressed_on_sphere, mouse_current_on_sphere);
-    const float    rotation_angle = std::acosf(cml::dot(m_mouse_pressed_on_sphere, mouse_current_on_sphere));
+    const Vector3f vectors_cross  = cml::cross(m_mouse_pressed_on_sphere, mouse_current_on_sphere);
+    const Vector3f rotation_axis  = vectors_cross.normalize();
+    const float    rotation_angle = std::atan2f(vectors_cross.length(), cml::dot(m_mouse_pressed_on_sphere, mouse_current_on_sphere));
 
     Matrix44f view_rotation_matrix = { };
     cml::matrix_rotation_axis_angle(view_rotation_matrix, rotation_axis, rotation_angle);
@@ -71,23 +72,35 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
 {
     const Point2f screen_center(m_width / 2.f, m_height / 2.f);
     Point2f screen_vector = static_cast<Point2f>(mouse_screen_pos) - screen_center;
+    
+    // NOTE: reflect rotation by x coordinate for natural camera movement
+    screen_vector.setX(-screen_vector.x()); 
+
     const float   screen_radius = screen_vector.length();
     const float   sphere_radius = GetRadiusInPixels();
 
-    float z_sign = 1.f;
-#if 1
-    const bool    inside_sphere = screen_radius < sphere_radius;
-#else
-    const bool    inside_sphere =  (is_primary && screen_radius < sphere_radius) ||
-                                  (!is_primary && std::fabs(m_mouse_pressed_on_sphere[2]) > std::numeric_limits<float>::lowest());
+    // Primary screen point is used to determine if rotation is done inside sphere (around X and Y axes) or outside (around Z axis)
+    // For secondary screen point the primary result is used
+    const bool inside_sphere = ( is_primary && screen_radius <= sphere_radius) ||
+                               (!is_primary && std::fabs(m_mouse_pressed_on_sphere[2]) > 0.000001f);
 
-    if (!is_primary && inside_sphere && screen_radius >= sphere_radius)
+    // Handle rotation between 90 and 180 degrees when mouse overruns one sphere radius
+    float z_sign = 1.f;
+    if (!is_primary && inside_sphere && screen_radius > sphere_radius)
     {
-        screen_vector.normalize();
-        screen_vector *= sphere_radius * 2.f - screen_radius;
-        z_sign = -1.f;
+        const uint32_t radius_mult = static_cast<uint32_t>(std::floorf(screen_radius / sphere_radius));
+        if (radius_mult < 2)
+        {
+            const float vector_radius = sphere_radius * (radius_mult + 1) - screen_radius;
+            screen_vector = screen_vector.normalize() * vector_radius;
+            z_sign = std::powf(-1.f, radius_mult);
+        }
+        else
+        {
+            screen_vector = Point2f(0.f, 0.f);
+            z_sign = -1.f;
+        }
     }
-#endif
 
     return cml::normalize(Vector3f(screen_vector, inside_sphere ? z_sign * std::sqrtf(square(sphere_radius) - screen_vector.length_squared()) : 0.f));
 }
