@@ -33,10 +33,10 @@ using namespace Methane::Platform;
 
 @implementation AppViewController
 {
-    Methane::Platform::AppMac* m_p_app;
-    NSRect              m_frame_rect;
-    bool                m_is_initialized;
-    std::string         m_error;
+    AppMac*     m_p_app;
+    NSRect      m_frame_rect;
+    bool        m_is_initialized;
+    std::string m_error;
 }
 
 - (id) initWithApp : (Methane::Platform::AppMac*) p_app andFrameRect : (NSRect) frame_rect
@@ -117,8 +117,10 @@ using namespace Methane::Platform;
 - (void)mouseMoved:(NSEvent *)event
 {
     assert(!!m_p_app);
-    const NSPoint pos = [event locationInWindow];
-    m_p_app->MousePositionChanged({ static_cast<int>(pos.x), static_cast<int>(m_frame_rect.size.height - pos.y) });
+    NSPoint pos = [event locationInWindow];
+    pos.x *= self.view.window.backingScaleFactor;
+    pos.y = (m_frame_rect.size.height - pos.y) * self.view.window.backingScaleFactor;
+    m_p_app->MousePositionChanged({ static_cast<int>(pos.x), static_cast<int>(pos.y) });
 }
 
 - (void)mouseDown:(NSEvent *)event
