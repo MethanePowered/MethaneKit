@@ -25,6 +25,7 @@ Windows application implementation.
 
 #include <Methane/Platform/AppBase.h>
 #include <Methane/Platform/AppEnvironment.h>
+#include <Methane/Platform/Mouse.h>
 
 #include <windows.h>
 
@@ -57,6 +58,9 @@ protected:
     static LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     AppEnvironment m_env;
+
+private:
+    Mouse::State m_mouse_state;
 };
 
 } // namespace Platform

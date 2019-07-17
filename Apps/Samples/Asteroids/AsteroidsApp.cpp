@@ -22,6 +22,7 @@ Sample demonstrating parallel redering of the distinct asteroids massive
 ******************************************************************************/
 
 #include "AsteroidsApp.h"
+#include <Methane/Graphics/AppCameraController.hpp>
 
 #include <cml/mathlib/mathlib.h>
 
@@ -74,6 +75,8 @@ AsteroidsApp::AsteroidsApp()
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
     m_light_camera.SetParamters({ -200, 200.f, 90.f });
     m_light_camera.Resize(55, 55);
+
+    m_input_controllers_pool.AddController(std::make_shared<gfx::AppCameraController>(m_scene_camera, &m_light_camera));
 }
 
 AsteroidsApp::~AsteroidsApp()
@@ -466,55 +469,6 @@ void AsteroidsApp::RenderScene(const RenderPass& render_pass, AsteroidsFrame::Pa
     cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_floor_buffers.sp_index, 1);
 
     cmd_list.Commit(render_pass.is_final_pass);
-}
-
-void AsteroidsApp::OnKeyboardStateChanged(const pal::Keyboard::State& keyboard_state, const pal::Keyboard::State& prev_keyboard_state, pal::Keyboard::State::Property::Mask state_changes_hint)
-{
-    // TODO: implement keyboard handling
-
-    GraphicsApp::OnKeyboardStateChanged(keyboard_state, prev_keyboard_state, state_changes_hint);
-}
-
-void AsteroidsApp::OnMouseStateChanged(const pal::Mouse::State& mouse_state, const pal::Mouse::State& prev_mouse_state, pal::Mouse::State::Property::Mask state_changes_hint)
-{
-    GraphicsApp::OnMouseStateChanged(mouse_state, prev_mouse_state, state_changes_hint);
-
-    if (state_changes_hint & pal::Mouse::State::Property::Buttons)
-    {
-        const pal::Mouse::Buttons pressed_mouse_buttons = mouse_state.GetPressedButtons();
-        const pal::Mouse::Buttons previous_mouse_buttons = prev_mouse_state.GetPressedButtons();
-
-        // Left mouse button is first pressed: initiate Camera rotation
-        if (pressed_mouse_buttons.count(pal::Mouse::Button::Left) &&
-            !previous_mouse_buttons.count(pal::Mouse::Button::Left))
-        {
-            m_scene_camera.OnMousePressed(mouse_state.GetPosition());
-        }
-
-        // Right mouse button is first pressed: initiate Light rotation
-        if (pressed_mouse_buttons.count(pal::Mouse::Button::Right) &&
-            !previous_mouse_buttons.count(pal::Mouse::Button::Right))
-        {
-            m_light_camera.OnMousePressed(mouse_state.GetPosition());
-        }
-    }
-
-    if (state_changes_hint & pal::Mouse::State::Property::Position)
-    {
-        const pal::Mouse::Buttons pressed_mouse_buttons = mouse_state.GetPressedButtons();
-
-        // Mouse is dragged with Left mouse button: rotate Camera
-        if (pressed_mouse_buttons.count(pal::Mouse::Button::Left))
-        {
-            m_scene_camera.OnMouseDragged(mouse_state.GetPosition());
-        }
-
-        // Mouse is dragged with Right mouse button: rotate Light
-        if (pressed_mouse_buttons.count(pal::Mouse::Button::Right))
-        {
-            m_light_camera.OnMouseDragged(mouse_state.GetPosition());
-        }
-    }
 }
 
 int main(int argc, const char* argv[])

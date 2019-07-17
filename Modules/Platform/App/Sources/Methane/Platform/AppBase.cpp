@@ -31,9 +31,6 @@ Base application interface and platform-independent implementation.
 using namespace Methane;
 using namespace Methane::Platform;
 
-// Uncomment define to print user input actions (keyboard, mouse) to debug output
-//#define DEBUG_USER_INPUT
-
 AppBase::AppBase(const AppBase::Settings& settings)
     : m_settings(settings)
     , m_cmd_options(GetExecutableFileName(), settings.name)
@@ -128,56 +125,22 @@ void AppBase::Init()
 
 void AppBase::KeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state)
 {
-    Keyboard::State prev_keyboard_state(m_keyboard_state);
-    m_keyboard_state.SetKey(key, key_state);
-    Keyboard::State::Property::Mask state_changes_mask = m_keyboard_state.GetDiff(prev_keyboard_state);
-    if (state_changes_mask != Keyboard::State::Property::All)
-    {
-        OnKeyboardStateChanged(m_keyboard_state, prev_keyboard_state, state_changes_mask);
-    }
+    m_input_controllers_pool.KeyboardChanged(key, key_state);
 }
 
 void AppBase::MouseButtonsChanged(Mouse::Button button, Mouse::ButtonState button_state)
 {
-    Mouse::State prev_mouse_state(m_mouse_state);
-    m_mouse_state.SetButton(button, button_state);
-    if (m_mouse_state != prev_mouse_state)
-    {
-        OnMouseStateChanged(m_mouse_state, prev_mouse_state, Mouse::State::Property::Buttons);
-    }
+    m_input_controllers_pool.MouseButtonsChanged(button, button_state);
 }
 
 void AppBase::MousePositionChanged(Mouse::Position mouse_position)
 {
-    Mouse::State prev_mouse_state(m_mouse_state);
-    m_mouse_state.SetPosition(mouse_position);
-    if (m_mouse_state != prev_mouse_state)
-    {
-        OnMouseStateChanged(m_mouse_state, m_mouse_state, Mouse::State::Property::Position);
-    }
+    m_input_controllers_pool.MousePositionChanged(mouse_position);
 }
 
 void AppBase::MouseInWindowChanged(bool is_mouse_in_window)
 {
-    if (m_mouse_in_window != is_mouse_in_window)
-    {
-        m_mouse_in_window = is_mouse_in_window;
-        OnMouseStateChanged(m_mouse_state, m_mouse_state, Mouse::State::Property::None);
-    }
-}
-
-void AppBase::OnKeyboardStateChanged(const Keyboard::State& keyboard_state, const Keyboard::State& /*prev_keyboard_state*/, Keyboard::State::Property::Mask state_changes_hint)
-{
-#ifdef DEBUG_USER_INPUT
-    PrintToDebugOutput(std::string("Keyboard: ") + keyboard_state.ToString());
-#endif
-}
-
-void AppBase::OnMouseStateChanged(const Mouse::State& mouse_state, const Mouse::State& /*prev_mouse_state*/, Keyboard::State::Property::Mask state_changes_hint)
-{
-#ifdef DEBUG_USER_INPUT
-    PrintToDebugOutput(std::string(m_mouse_in_window ? "Mouse in window: " : "Mouse out of window: ") + mouse_state.ToString());
-#endif
+    m_input_controllers_pool.MouseInWindowChanged(is_mouse_in_window);
 }
 
 void AppBase::ChangeWindowBounds(const Data::FrameRect& window_bounds)
