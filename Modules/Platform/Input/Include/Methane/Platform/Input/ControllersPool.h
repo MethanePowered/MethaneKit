@@ -16,32 +16,33 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/InputController.h
-Abstract input controller interface for handling keyboard and mouse actions.
+FILE: Methane/Platform/Input/ControllersPool.h
+A pool of input controllers for user actions handling in separate application components.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "Keyboard.h"
-#include "Mouse.h"
+#include "Controller.h"
 
-#include <memory>
+#include <vector>
 
 namespace Methane
 {
 namespace Platform
 {
-
-struct InputController
+namespace Input
 {
-    using Ptr = std::shared_ptr<InputController>;
-
-    virtual void OnKeyboardStateChanged(const Keyboard::State& keyboard_state, const Keyboard::State& prev_keyboard_state, Keyboard::State::Property::Mask state_changes_hint) = 0;
-    virtual void OnMouseStateChanged(const Mouse::State& mouse_state, const Mouse::State& prev_mouse_state, Mouse::State::Property::Mask state_changes_hint) = 0;
-
-    virtual ~InputController() = default;
+    
+class ControllersPool
+    : public std::vector<Controller::Ptr>
+    , public IController
+{
+public:
+    void OnKeyboardStateChanged(const Keyboard::State& keyboard_state, const Keyboard::State& prev_keyboard_state, Keyboard::State::Property::Mask state_changes_hint) override;
+    void OnMouseStateChanged(const Mouse::State& mouse_state, const Mouse::State& prev_mouse_state, Mouse::State::Property::Mask state_changes_hint) override;
 };
 
+} // namespace Input
 } // namespace Platform
 } // namespace Methane

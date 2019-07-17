@@ -7,6 +7,7 @@ add_library(${TARGET} INTERFACE)
 set(HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}/App.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}/AppDataProvider.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}/AppCameraController.hpp
 )
 
 target_sources(${TARGET} INTERFACE

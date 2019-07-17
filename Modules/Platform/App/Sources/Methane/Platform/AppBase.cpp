@@ -125,22 +125,22 @@ void AppBase::Init()
 
 void AppBase::KeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state)
 {
-    m_input_controllers_pool.KeyboardChanged(key, key_state);
+    m_input_state.KeyboardChanged(key, key_state);
 }
 
 void AppBase::MouseButtonsChanged(Mouse::Button button, Mouse::ButtonState button_state)
 {
-    m_input_controllers_pool.MouseButtonsChanged(button, button_state);
+    m_input_state.MouseButtonsChanged(button, button_state);
 }
 
 void AppBase::MousePositionChanged(Mouse::Position mouse_position)
 {
-    m_input_controllers_pool.MousePositionChanged(mouse_position);
+    m_input_state.MousePositionChanged(mouse_position);
 }
 
 void AppBase::MouseInWindowChanged(bool is_mouse_in_window)
 {
-    m_input_controllers_pool.MouseInWindowChanged(is_mouse_in_window);
+    m_input_state.MouseInWindowChanged(is_mouse_in_window);
 }
 
 void AppBase::ChangeWindowBounds(const Data::FrameRect& window_bounds)
