@@ -24,7 +24,7 @@ Base application interface and platform-independent implementation.
 #pragma once
 
 #include <Methane/Platform/AppView.h>
-#include <Methane/Platform/InputControllersPool.h>
+#include <Methane/Platform/Input/State.h>
 #include <Methane/Data/Types.h>
 
 #include <cxxopts.hpp>
@@ -103,7 +103,7 @@ protected:
     cxxopts::Options     m_cmd_options;
     bool                 m_initialized = false;
     Message::Ptr         m_sp_deferred_message;
-    InputControllersPool m_input_controllers_pool;
+    Input::State         m_input_state;
 };
 
 } // namespace Platform

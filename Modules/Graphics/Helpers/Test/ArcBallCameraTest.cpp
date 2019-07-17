@@ -37,7 +37,6 @@ static const float               g_test_radius_pixels    = g_test_screen_center.
 static const Vector3f            g_axis_x               = { 1.f, 0.f, 0.f };
 static const Vector3f            g_axis_y               = { 0.f, 1.f, 0.f };
 static const Vector3f            g_axis_z               = { 0.f, 0.f, -1.f };
-static const float               g_cos_of_45_deg        = std::sqrtf(2) / 2.f;
 
 // Approximate comparison of vectors for test purposes only
 static float vectors_equal_epsilon = 0.00001f;

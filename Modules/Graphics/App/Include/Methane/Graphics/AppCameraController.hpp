@@ -23,7 +23,7 @@ Arc-ball camera interaction controller via keyboard and mouse actions handling.
 
 #pragma once
 
-#include <Methane/Platform/InputController.h>
+#include <Methane/Platform/Input/Controller.h>
 #include <Methane/Graphics/ArcBallCamera.h>
 
 namespace Methane
@@ -31,7 +31,7 @@ namespace Methane
 namespace Graphics
 {
 
-class AppCameraController : public Platform::InputController
+class AppCameraController : public Platform::Input::Controller
 {
 public:
     AppCameraController(ArcBallCamera& view_camera, ArcBallCamera* p_light_camera = nullptr)

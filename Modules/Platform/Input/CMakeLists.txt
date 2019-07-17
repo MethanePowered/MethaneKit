@@ -37,14 +37,16 @@ set(LIBRARIES ${LIBRARIES}
 set(HEADERS ${PLATFORM_HEADERS}
     ${INCLUDE_DIR}/Keyboard.h
     ${INCLUDE_DIR}/Mouse.h
-    ${INCLUDE_DIR}/InputController.h
-    ${INCLUDE_DIR}/InputControllersPool.h
+    ${INCLUDE_DIR}/Input/Controller.h
+    ${INCLUDE_DIR}/Input/ControllersPool.h
+    ${INCLUDE_DIR}/Input/State.h
 )
 
 set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/Keyboard.cpp
     ${SOURCES_DIR}/Mouse.cpp
-    ${SOURCES_DIR}/InputControllersPool.cpp
+    ${SOURCES_DIR}/Input/ControllersPool.cpp
+    ${SOURCES_DIR}/Input/State.cpp
 )
 
 add_library(${TARGET} STATIC

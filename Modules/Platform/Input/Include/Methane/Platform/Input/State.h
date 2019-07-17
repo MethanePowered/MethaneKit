@@ -16,44 +16,42 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/InputControllersPool.h
-A pool of input controllers for user actions handling in a separated model components.
+FILE: Methane/Platform/Input/State.h
+Aggregated application input state with controllers.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "InputController.h"
-
-#include <vector>
+#include "ControllersPool.h"
 
 namespace Methane
 {
 namespace Platform
 {
+namespace Input
+{
 
-class InputControllersPool
+class State
 {
 public:
-    using Controllers = std::vector<InputController::Ptr>;
-
-    const Controllers& GetControllers() const { return m_controllers; }
-    void AddController(InputController::Ptr&& sp_controller);
+    ControllersPool& Controllers() { return m_controllers; }
 
     void KeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state);
     void MouseButtonsChanged(Mouse::Button button, Mouse::ButtonState button_state);
     void MousePositionChanged(Mouse::Position mouse_position);
     void MouseInWindowChanged(bool is_mouse_in_window);
+    
+    const Keyboard::State&  GetKeyboardState() const { return m_keyboard_state; }
+    const Mouse::State&     GetMouseState() const    { return m_mouse_state; }
 
 protected:
-    void OnKeyboardStateChanged(const Keyboard::State& keyboard_state, const Keyboard::State& prev_keyboard_state, Keyboard::State::Property::Mask state_changes_hint);
-    void OnMouseStateChanged(const Mouse::State& mouse_state, const Mouse::State& prev_mouse_state, Mouse::State::Property::Mask state_changes_hint);
-
-    Controllers      m_controllers;
+    ControllersPool  m_controllers;
     Keyboard::State  m_keyboard_state;
     Mouse::State     m_mouse_state;
     bool             m_mouse_in_window = false;
 };
 
+} // namespace Input
 } // namespace Platform
 } // namespace Methane

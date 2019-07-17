@@ -76,7 +76,7 @@ AsteroidsApp::AsteroidsApp()
     m_light_camera.SetParamters({ -200, 200.f, 90.f });
     m_light_camera.Resize(55, 55);
 
-    m_input_controllers_pool.AddController(std::make_shared<gfx::AppCameraController>(m_scene_camera, &m_light_camera));
+    m_input_state.Controllers().push_back(std::make_shared<gfx::AppCameraController>(m_scene_camera, &m_light_camera));
 }
 
 AsteroidsApp::~AsteroidsApp()
