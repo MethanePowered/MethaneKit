@@ -311,6 +311,7 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
                 SetCapture(h_wnd);
             }
 
+            p_app->m_mouse_state.SetButton(button, button_state);
             p_app->MouseButtonsChanged(button, button_state);
 
             if (p_app->m_mouse_state.GetPressedButtons().empty())

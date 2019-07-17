@@ -127,10 +127,6 @@ private:
 
     void RenderScene(const RenderPass& render_pass, AsteroidsFrame::PassResources& render_pass_data, gfx::Texture& shadow_texture, bool is_shadow_rendering);
 
-    // AppBase
-    void OnKeyboardStateChanged(const pal::Keyboard::State& keyboard_state, const pal::Keyboard::State& prev_keyboard_state, pal::Keyboard::State::Property::Mask state_changes_hint) override;
-    void OnMouseStateChanged(const pal::Mouse::State& mouse_state, const pal::Mouse::State& prev_mouse_state, pal::Mouse::State::Property::Mask state_changes_hint) override;
-
     const gfx::BoxMesh<Vertex>  m_cube_mesh;
     const gfx::RectMesh<Vertex> m_floor_mesh;
     const float                 m_scene_scale;

@@ -30,8 +30,6 @@ Platform abstraction of mouse events.
 #include <string>
 #include <sstream>
 
-static const std::string s_properies_separator = "+";
-
 namespace Methane
 {
 namespace Platform
