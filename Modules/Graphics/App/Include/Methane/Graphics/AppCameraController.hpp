@@ -34,63 +34,36 @@ namespace Graphics
 class AppCameraController : public Platform::Input::Controller
 {
 public:
-    AppCameraController(ArcBallCamera& view_camera, ArcBallCamera* p_light_camera = nullptr)
-        : m_view_camera(view_camera)
-        , m_p_light_camera(p_light_camera)
+    AppCameraController(ArcBallCamera& arcball_camera, Platform::Mouse::Button rotate_mouse_button)
+        : m_arcball_camera(arcball_camera)
+        , m_rotate_mouse_button(rotate_mouse_button)
     {}
 
-    // InputController
-    void OnKeyboardStateChanged(const Platform::Keyboard::State& keyboard_state, const Platform::Keyboard::State& prev_keyboard_state, Platform::Keyboard::State::Property::Mask state_changes_hint) override
+    // Platform::Input::Controller
+    void OnMouseButtonChanged(Platform::Mouse::Button button, Platform::Mouse::ButtonState button_state, const Platform::Mouse::StateChange& state_change) override
     {
-        // TODO: not implemented yet
+        if (button == m_rotate_mouse_button &&
+            button_state == Platform::Mouse::ButtonState::Pressed)
+        {
+            // Left mouse button is first pressed: initiate Camera rotation
+            m_arcball_camera.OnMousePressed(state_change.current.GetPosition());
+        }
     }
 
-    // InputController
-    void OnMouseStateChanged(const Platform::Mouse::State& mouse_state, const Platform::Mouse::State& prev_mouse_state, Platform::Mouse::State::Property::Mask state_changes_hint) override
+    // Platform::Input::Controller
+    void OnMousePositionChanged(const Platform::Mouse::Position& mouse_position, const Platform::Mouse::StateChange& state_change) override
     {
-        if (state_changes_hint & Platform::Mouse::State::Property::Buttons)
+        const Platform::Mouse::Buttons pressed_mouse_buttons = state_change.current.GetPressedButtons();
+        if (pressed_mouse_buttons.count(m_rotate_mouse_button))
         {
-            const Platform::Mouse::Buttons pressed_mouse_buttons = mouse_state.GetPressedButtons();
-            const Platform::Mouse::Buttons previous_mouse_buttons = prev_mouse_state.GetPressedButtons();
-
-            // Left mouse button is first pressed: initiate Camera rotation
-            if (pressed_mouse_buttons.count(Platform::Mouse::Button::Left) &&
-                !previous_mouse_buttons.count(Platform::Mouse::Button::Left))
-            {
-                m_view_camera.OnMousePressed(mouse_state.GetPosition());
-            }
-
-            // Right mouse button is first pressed: initiate Light rotation
-            if (m_p_light_camera &&
-                pressed_mouse_buttons.count(Platform::Mouse::Button::Right) &&
-                !previous_mouse_buttons.count(Platform::Mouse::Button::Right))
-            {
-                m_p_light_camera->OnMousePressed(mouse_state.GetPosition());
-            }
-        }
-
-        if (state_changes_hint & Platform::Mouse::State::Property::Position)
-        {
-            const Platform::Mouse::Buttons pressed_mouse_buttons = mouse_state.GetPressedButtons();
-
             // Mouse is dragged with Left mouse button: rotate Camera
-            if (pressed_mouse_buttons.count(Platform::Mouse::Button::Left))
-            {
-                m_view_camera.OnMouseDragged(mouse_state.GetPosition());
-            }
-
-            // Mouse is dragged with Right mouse button: rotate Light
-            if (m_p_light_camera &&
-                pressed_mouse_buttons.count(Platform::Mouse::Button::Right))
-            {
-                m_p_light_camera->OnMouseDragged(mouse_state.GetPosition());
-            }
+            m_arcball_camera.OnMouseDragged(mouse_position);
         }
     }
 
 private:
-    ArcBallCamera& m_view_camera;
-    ArcBallCamera* m_p_light_camera;
+    ArcBallCamera&                m_arcball_camera;
+    const Platform::Mouse::Button m_rotate_mouse_button;
 };
 
 } // namespace Graphics

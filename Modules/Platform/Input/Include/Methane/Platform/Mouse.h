@@ -133,6 +133,19 @@ inline std::ostream& operator<<( std::ostream& os, State const& keyboard_state)
     return os;
 }
 
+struct StateChange
+{
+    StateChange(const State& in_current, const State& in_previous, State::Property::Mask in_changed_properties)
+        : current(in_current)
+        , previous(in_previous)
+        , changed_properties(in_changed_properties)
+    { }
+
+    const State& current;
+    const State& previous;
+    const State::Property::Mask changed_properties;
+};
+
 } // namespace Mouse
 } // namespace Platform
 } // namespace Methane
