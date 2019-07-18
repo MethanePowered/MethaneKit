@@ -26,7 +26,7 @@ A pool of input controllers for user actions handling in separate application co
 #include <cassert>
 
 // Uncomment define to print user input actions (keyboard, mouse) to debug output
-//#define DEBUG_USER_INPUT
+#define DEBUG_USER_INPUT
 
 #ifdef DEBUG_USER_INPUT
 #include <Methane/Platform/Utils.h>
@@ -35,10 +35,10 @@ A pool of input controllers for user actions handling in separate application co
 using namespace Methane::Platform;
 using namespace Methane::Platform::Input;
 
-void ControllersPool::OnKeyboardStateChanged(const Keyboard::State& keyboard_state, const Keyboard::State& prev_keyboard_state, Keyboard::State::Property::Mask state_changes_hint)
+void ControllersPool::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state, const Keyboard::StateChange& state_change)
 {
 #ifdef DEBUG_USER_INPUT
-    PrintToDebugOutput(std::string("Keyboard: ") + keyboard_state.ToString());
+    PrintToDebugOutput(std::string("Keyboard: ") + state_change.current.ToString());
 #endif
 
     for (const Controller::Ptr& sp_controller : *this)
@@ -47,14 +47,14 @@ void ControllersPool::OnKeyboardStateChanged(const Keyboard::State& keyboard_sta
         if (!sp_controller || !sp_controller->IsEnabled())
             continue;
         
-        sp_controller->OnKeyboardStateChanged(keyboard_state, prev_keyboard_state, state_changes_hint);
+        sp_controller->OnKeyboardChanged(key, key_state, state_change);
     }
 }
 
-void ControllersPool::OnMouseStateChanged(const Mouse::State& mouse_state, const Mouse::State& prev_mouse_state, Mouse::State::Property::Mask state_changes_hint)
+void ControllersPool::OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button_state, const Mouse::StateChange& state_change)
 {
 #ifdef DEBUG_USER_INPUT
-    PrintToDebugOutput(std::string(m_mouse_in_window ? "Mouse in window: " : "Mouse out of window: ") + mouse_state.ToString());
+    PrintToDebugOutput(std::string("Mouse (button): ") + state_change.current.ToString());
 #endif
 
     for (const Controller::Ptr& sp_controller : *this)
@@ -63,6 +63,38 @@ void ControllersPool::OnMouseStateChanged(const Mouse::State& mouse_state, const
         if (!sp_controller || !sp_controller->IsEnabled())
             continue;
         
-        sp_controller->OnMouseStateChanged(mouse_state, prev_mouse_state, state_changes_hint);
+        sp_controller->OnMouseButtonChanged(button, button_state, state_change);
+    }
+}
+
+void ControllersPool::OnMousePositionChanged(const Mouse::Position& mouse_position, const Mouse::StateChange& state_change)
+{
+#ifdef DEBUG_USER_INPUT
+    PrintToDebugOutput(std::string("Mouse (position): ") + state_change.current.ToString());
+#endif
+
+    for (const Controller::Ptr& sp_controller : *this)
+    {
+        assert(!!sp_controller);
+        if (!sp_controller || !sp_controller->IsEnabled())
+            continue;
+
+        sp_controller->OnMousePositionChanged(mouse_position, state_change);
+    }
+}
+
+void ControllersPool::OnMouseInWindowChanged(bool is_mouse_in_window, const Mouse::State& mouse_state)
+{
+#ifdef DEBUG_USER_INPUT
+    PrintToDebugOutput(std::string(is_mouse_in_window ? "Mouse in window: " : "Mouse out of window: ") + mouse_state.ToString());
+#endif
+
+    for (const Controller::Ptr& sp_controller : *this)
+    {
+        assert(!!sp_controller);
+        if (!sp_controller || !sp_controller->IsEnabled())
+            continue;
+
+        sp_controller->OnMouseInWindowChanged(is_mouse_in_window, mouse_state);
     }
 }

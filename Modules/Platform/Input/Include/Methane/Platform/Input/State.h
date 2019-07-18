@@ -35,7 +35,11 @@ namespace Input
 class State
 {
 public:
-    ControllersPool& Controllers() { return m_controllers; }
+    State() = default;
+    State(const ControllersPool& controllers) : m_controllers(controllers) {}
+
+    ControllersPool& GetControllers() { return m_controllers; }
+    void SetControllers(const Controllers& controllers) { m_controllers = controllers; }
 
     void KeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state);
     void MouseButtonsChanged(Mouse::Button button, Mouse::ButtonState button_state);

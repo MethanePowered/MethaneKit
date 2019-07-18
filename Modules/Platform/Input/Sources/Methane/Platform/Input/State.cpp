@@ -36,10 +36,10 @@ void State::KeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state)
     Keyboard::State prev_keyboard_state(m_keyboard_state);
     m_keyboard_state.SetKey(key, key_state);
     Keyboard::State::Property::Mask state_changes_mask = m_keyboard_state.GetDiff(prev_keyboard_state);
-    if (state_changes_mask == Keyboard::State::Property::All)
+    if (state_changes_mask == Keyboard::State::Property::None)
         return;
 
-    m_controllers.OnKeyboardStateChanged(m_keyboard_state, prev_keyboard_state, state_changes_mask);
+    m_controllers.OnKeyboardChanged(key, key_state, Keyboard::StateChange(m_keyboard_state, prev_keyboard_state, state_changes_mask));
 }
 
 void State::MouseButtonsChanged(Mouse::Button button, Mouse::ButtonState button_state)
@@ -52,7 +52,7 @@ void State::MouseButtonsChanged(Mouse::Button button, Mouse::ButtonState button_
     if (m_mouse_state == prev_mouse_state)
         return;
 
-    m_controllers.OnMouseStateChanged(m_mouse_state, prev_mouse_state, Mouse::State::Property::Buttons);
+    m_controllers.OnMouseButtonChanged(button, button_state, Mouse::StateChange(m_mouse_state, prev_mouse_state, Mouse::State::Property::Buttons));
 }
 
 void State::MousePositionChanged(Mouse::Position mouse_position)
@@ -65,7 +65,7 @@ void State::MousePositionChanged(Mouse::Position mouse_position)
     if (m_mouse_state == prev_mouse_state)
         return;
 
-    m_controllers.OnMouseStateChanged(m_mouse_state, m_mouse_state, Mouse::State::Property::Position);
+    m_controllers.OnMousePositionChanged(mouse_position, Mouse::StateChange(m_mouse_state, prev_mouse_state, Mouse::State::Property::Position));
 }
 
 void State::MouseInWindowChanged(bool is_mouse_in_window)
@@ -75,5 +75,5 @@ void State::MouseInWindowChanged(bool is_mouse_in_window)
 
     m_mouse_in_window = is_mouse_in_window;
     
-    m_controllers.OnMouseStateChanged(m_mouse_state, m_mouse_state, Mouse::State::Property::None);
+    m_controllers.OnMouseInWindowChanged(is_mouse_in_window, m_mouse_state);
 }

@@ -27,6 +27,7 @@ Abstract input controller interface for handling keyboard and mouse actions.
 #include <Methane/Platform/Mouse.h>
 
 #include <memory>
+#include <vector>
 
 namespace Methane
 {
@@ -34,12 +35,14 @@ namespace Platform
 {
 namespace Input
 {
-    
+
 struct IController
 {
-    virtual void OnKeyboardStateChanged(const Keyboard::State& keyboard_state, const Keyboard::State& prev_keyboard_state, Keyboard::State::Property::Mask state_changes_hint) = 0;
-    virtual void OnMouseStateChanged(const Mouse::State& mouse_state, const Mouse::State& prev_mouse_state, Mouse::State::Property::Mask state_changes_hint) = 0;
-    
+    virtual void OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button_state, const Mouse::StateChange& state_change) = 0;
+    virtual void OnMousePositionChanged(const Mouse::Position& mouse_position, const Mouse::StateChange& state_change) = 0;
+    virtual void OnMouseInWindowChanged(bool is_mouse_in_window, const Mouse::State& mouse_state) = 0;
+    virtual void OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state, const Keyboard::StateChange& state_change) = 0;
+
     virtual ~IController() = default;
 };
 
@@ -47,13 +50,21 @@ class Controller : public IController
 {
 public:
     using Ptr = std::shared_ptr<Controller>;
-    
+
     bool IsEnabled() const { return m_is_enabled; }
     void SetEnabled(bool is_enabled) { m_is_enabled = is_enabled; }
+
+    // IController - overrides are optional
+    void OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button_state, const Mouse::StateChange& state_change) override { }
+    void OnMousePositionChanged(const Mouse::Position& mouse_position, const Mouse::StateChange& state_change) override { }
+    void OnMouseInWindowChanged(bool is_mouse_in_window, const Mouse::State& mouse_state) override { }
+    void OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state, const Keyboard::StateChange& state_change) override { }
 
 private:
     bool m_is_enabled = true;
 };
+
+using Controllers = std::vector<Controller::Ptr>;
 
 } // namespace Input
 } // namespace Platform
