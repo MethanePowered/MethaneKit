@@ -26,7 +26,7 @@ A pool of input controllers for user actions handling in separate application co
 #include <cassert>
 
 // Uncomment define to print user input actions (keyboard, mouse) to debug output
-#define DEBUG_USER_INPUT
+//#define DEBUG_USER_INPUT
 
 #ifdef DEBUG_USER_INPUT
 #include <Methane/Platform/Utils.h>
