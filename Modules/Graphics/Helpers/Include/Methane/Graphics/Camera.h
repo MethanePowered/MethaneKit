@@ -1,4 +1,4 @@
-﻿/******************************************************************************
+/******************************************************************************
 
 Copyright 2019 Evgeny Gorodetskiy
 
@@ -69,6 +69,7 @@ public:
 
     const Orientation& GetOrientation() const noexcept           { return m_current_orientation; }
     float GetAimDistance() const noexcept                        { return GetAimDistance(m_current_orientation); }
+    const Data::Point2f& GetScreenSize() const noexcept          { return m_screen_size; }
 
     void GetViewProjMatrices(Matrix44f& out_view, Matrix44f& out_proj) const noexcept;
     void GetViewMatrix(Matrix44f& out_view) const noexcept       { return GetViewMatrix(out_view, m_current_orientation); }
@@ -100,8 +101,7 @@ protected:
     const cml::AxisOrientation m_axis_orientation;
 
     Projection      m_projection            = Projection::Perspective;
-    float           m_width                 = 1.0f;
-    float           m_height                = 1.0f;
+    Data::Point2f   m_screen_size           = { 1.f, 1.f };
     float           m_aspect_ratio          = 1.0f;
     Parameters      m_parameters            = { 0.01f, 125.f, 90.f };
     Orientation     m_default_orientation   = { { 15.0f, 15.0f, -15.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } };
