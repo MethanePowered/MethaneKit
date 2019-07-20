@@ -266,18 +266,18 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
                 // HACK: Release both Shift keys on Shift up event, as when both
                 //       are pressed the first release does not emit any event
                 // NOTE: The other half of this is in _glfwPlatformPollEvents
-                p_app->KeyboardChanged(Keyboard::Key::LeftShift, key_state);
-                p_app->KeyboardChanged(Keyboard::Key::RightShift, key_state);
+                p_app->InputController().OnKeyboardChanged(Keyboard::Key::LeftShift, key_state);
+                p_app->InputController().OnKeyboardChanged(Keyboard::Key::RightShift, key_state);
             }
             else if (w_param == VK_SNAPSHOT)
             {
                 // HACK: Key down is not reported for the Print Screen key
-                p_app->KeyboardChanged(key, Keyboard::KeyState::Pressed);
-                p_app->KeyboardChanged(key, Keyboard::KeyState::Released);
+                p_app->InputController().OnKeyboardChanged(key, Keyboard::KeyState::Pressed);
+                p_app->InputController().OnKeyboardChanged(key, Keyboard::KeyState::Released);
             }
             else
             {
-                p_app->KeyboardChanged(key, key_state);
+                p_app->InputController().OnKeyboardChanged(key, key_state);
             }
         } break;
 
@@ -312,7 +312,7 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
             }
 
             p_app->m_mouse_state.SetButton(button, button_state);
-            p_app->MouseButtonsChanged(button, button_state);
+            p_app->InputController().OnMouseButtonChanged(button, button_state);
 
             if (p_app->m_mouse_state.GetPressedButtons().empty())
             {
@@ -330,8 +330,42 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
             const int x = GET_X_LPARAM(l_param);
             const int y = GET_Y_LPARAM(l_param);
 
-            p_app->MousePositionChanged({ x, y });
+            p_app->InputController().OnMousePositionChanged({ x, y });
 
+            if (!p_app->GetInputState().GetMouseState().IsInWindow())
+            {
+                // Subscribe window to track WM_MOUSELEAVE
+                TRACKMOUSEEVENT tme;
+                ZeroMemory(&tme, sizeof(tme));
+                tme.cbSize = sizeof(tme);
+                tme.dwFlags = TME_LEAVE;
+                tme.hwndTrack = h_wnd;
+                TrackMouseEvent(&tme);
+
+                p_app->InputController().OnMouseInWindowChanged(true);
+            }
+
+            return 0;
+        }
+
+        case WM_MOUSELEAVE:
+        {
+            p_app->InputController().OnMouseInWindowChanged(false);
+            return 0;
+        }
+
+        case WM_MOUSEWHEEL:
+        {
+            const float wheel_delta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(w_param)) / WHEEL_DELTA;
+            p_app->InputController().OnMouseScrollChanged({ 0.f, wheel_delta });
+            return 0;
+        }
+
+        case WM_MOUSEHWHEEL: // Windows Vista and later
+        {
+            // NOTE: The X-axis is inverted for consistency with macOS and X11
+            const float wheel_delta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(w_param)) / WHEEL_DELTA;
+            p_app->InputController().OnMouseScrollChanged({ -wheel_delta, 0.f });
             return 0;
         }
 

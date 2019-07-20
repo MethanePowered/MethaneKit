@@ -83,15 +83,15 @@ public:
     virtual void ChangeWindowBounds(const Data::FrameRect& window_bounds);
     virtual void Update() = 0;
     virtual void Render() = 0;
-    virtual void KeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state);
-    virtual void MouseButtonsChanged(Mouse::Button button, Mouse::ButtonState button_state);
-    virtual void MousePositionChanged(Mouse::Position mouse_position);
-    virtual void MouseInWindowChanged(bool is_mouse_in_window);
     virtual void Alert(const Message& msg, bool deferred = false);
     virtual void SetWindowTitle(const std::string& title_text) = 0;
 
-    const Settings& GetSettings() const { return m_settings; }
-    bool HasError() const;
+    const Settings&     GetSettings() const     { return m_settings; }
+    const Input::State& GetInputState() const   { return m_input_state; }
+    bool                HasError() const;
+
+    // Entry point for user input handling from platform-specific implementation
+    Input::IActionController& InputController() { return m_input_state; }
 
 protected:
     // AppBase interface

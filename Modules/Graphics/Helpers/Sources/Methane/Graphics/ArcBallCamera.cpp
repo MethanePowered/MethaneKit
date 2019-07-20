@@ -80,11 +80,17 @@ void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
                                 ? m_p_view_camera->TransformViewToWorld(view_rotation_matrix * up_in_view).subvector(3)
                                 : TransformViewToWorld(view_rotation_matrix * up_in_view, m_mouse_pressed_orientation).subvector(3);
 
-    switch(m_pivot)
-    {
-    case Pivot::Aim: m_current_orientation.eye = m_mouse_pressed_orientation.aim - look_dir; break;
-    case Pivot::Eye: m_current_orientation.aim = m_mouse_pressed_orientation.eye + look_dir; break;
-    }
+    ApplyLookDirection(look_dir, m_mouse_pressed_orientation);
+}
+
+void ArcBallCamera::OnMouseScrolled(float scroll_delta)
+{
+    const float zoom_factor   = scroll_delta > 0.f ? 1.f - scroll_delta / m_zoom_steps_count
+                                                   : 1.f / (1.f + scroll_delta / m_zoom_steps_count);
+    const Vector3f look_dir   = m_current_orientation.aim - m_current_orientation.eye;
+    const float zoom_distance = std::min(std::max(look_dir.length() * zoom_factor, m_zoom_distance_range.first), m_zoom_distance_range.second);
+
+    ApplyLookDirection(cml::normalize(look_dir) * zoom_distance);
 }
 
 Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_screen_pos, bool is_primary) const
@@ -128,4 +134,13 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
     }
 
     return cml::normalize(Vector3f(screen_vector, inside_sphere ? z_sign * std::sqrtf(square(sphere_radius) - screen_vector.length_squared()) : 0.f));
+}
+
+void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir, const Orientation& base_orientation)
+{
+    switch (m_pivot)
+    {
+    case Pivot::Aim: m_current_orientation.eye = base_orientation.aim - look_dir; break;
+    case Pivot::Eye: m_current_orientation.aim = base_orientation.eye + look_dir; break;
+    }
 }

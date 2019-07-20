@@ -28,52 +28,58 @@ limitations under the License.
 using namespace Methane::Platform;
 using namespace Methane::Platform::Input;
 
-void State::KeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state)
+void State::OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button_state)
 {
-    if (m_controllers.empty())
-        return;
-
-    Keyboard::State prev_keyboard_state(m_keyboard_state);
-    m_keyboard_state.SetKey(key, key_state);
-    Keyboard::State::Property::Mask state_changes_mask = m_keyboard_state.GetDiff(prev_keyboard_state);
-    if (state_changes_mask == Keyboard::State::Property::None)
-        return;
-
-    m_controllers.OnKeyboardChanged(key, key_state, Keyboard::StateChange(m_keyboard_state, prev_keyboard_state, state_changes_mask));
-}
-
-void State::MouseButtonsChanged(Mouse::Button button, Mouse::ButtonState button_state)
-{
-    if (m_controllers.empty())
-        return;
-
     Mouse::State prev_mouse_state(m_mouse_state);
     m_mouse_state.SetButton(button, button_state);
+
     if (m_mouse_state == prev_mouse_state)
         return;
 
     m_controllers.OnMouseButtonChanged(button, button_state, Mouse::StateChange(m_mouse_state, prev_mouse_state, Mouse::State::Property::Buttons));
 }
 
-void State::MousePositionChanged(Mouse::Position mouse_position)
+void State::OnMousePositionChanged(const Mouse::Position& mouse_position)
 {
-    if (m_controllers.empty())
-        return;
-
     Mouse::State prev_mouse_state(m_mouse_state);
     m_mouse_state.SetPosition(mouse_position);
+
     if (m_mouse_state == prev_mouse_state)
         return;
 
     m_controllers.OnMousePositionChanged(mouse_position, Mouse::StateChange(m_mouse_state, prev_mouse_state, Mouse::State::Property::Position));
 }
 
-void State::MouseInWindowChanged(bool is_mouse_in_window)
+void State::OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_delta)
 {
-    if (m_controllers.empty() || m_mouse_in_window == is_mouse_in_window)
+    Mouse::State prev_mouse_state(m_mouse_state);
+    m_mouse_state.AddScrollDelta(mouse_scroll_delta);
+
+    if (m_mouse_state == prev_mouse_state)
         return;
 
-    m_mouse_in_window = is_mouse_in_window;
-    
-    m_controllers.OnMouseInWindowChanged(is_mouse_in_window, m_mouse_state);
+    m_controllers.OnMouseScrollChanged(mouse_scroll_delta, Mouse::StateChange(m_mouse_state, prev_mouse_state, Mouse::State::Property::Scroll));
+}
+
+void State::OnMouseInWindowChanged(bool is_mouse_in_window)
+{
+    Mouse::State prev_mouse_state(m_mouse_state);
+    m_mouse_state.SetInWindow(is_mouse_in_window);
+
+    if (m_mouse_state == prev_mouse_state)
+        return;
+
+    m_controllers.OnMouseInWindowChanged(is_mouse_in_window, Mouse::StateChange(m_mouse_state, prev_mouse_state, Mouse::State::Property::InWindow));
+}
+
+void State::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state)
+{
+    Keyboard::State prev_keyboard_state(m_keyboard_state);
+    m_keyboard_state.SetKey(key, key_state);
+    Keyboard::State::Property::Mask state_changes_mask = m_keyboard_state.GetDiff(prev_keyboard_state);
+
+    if (state_changes_mask == Keyboard::State::Property::None)
+        return;
+
+    m_controllers.OnKeyboardChanged(key, key_state, Keyboard::StateChange(m_keyboard_state, prev_keyboard_state, state_changes_mask));
 }

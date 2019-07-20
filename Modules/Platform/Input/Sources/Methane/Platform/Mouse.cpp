@@ -64,6 +64,8 @@ std::string State::Property::ToString(State::Property::Value property_value)
     case All:       return "All";
     case Buttons:   return "Buttons";
     case Position:  return "Position";
+    case Scroll:    return "Scroll";
+    case InWindow:  return "InWindow";
     case None:      return "None";
     }
 }
@@ -87,8 +89,10 @@ std::string State::Property::ToString(State::Property::Mask properties_mask)
     return ss.str();
 }
 
-State::State(std::initializer_list<Button> pressed_buttons, const Position& position)
+State::State(std::initializer_list<Button> pressed_buttons, const Position& position, const Scroll& scroll, bool in_window)
     : m_position(position)
+    , m_scroll(scroll)
+    , m_in_window(in_window)
 {
     for (Button pressed_button : pressed_buttons)
     {
@@ -99,6 +103,8 @@ State::State(std::initializer_list<Button> pressed_buttons, const Position& posi
 State::State(const State& other)
     : m_button_states(other.m_button_states)
     , m_position(other.m_position)
+    , m_scroll(other.m_scroll)
+    , m_in_window(other.m_in_window)
 {
 }
 
@@ -108,6 +114,8 @@ State& State::operator=(const State& other)
     {
         m_button_states = other.m_button_states;
         m_position      = other.m_position;
+        m_scroll        = other.m_scroll;
+        m_in_window     = other.m_in_window;
     }
     return *this;
 }
@@ -115,7 +123,9 @@ State& State::operator=(const State& other)
 bool State::operator==(const State& other) const
 {
     return m_button_states == other.m_button_states &&
-           m_position      == other.m_position;
+           m_position      == other.m_position &&
+           m_scroll        == other.m_scroll &&
+           m_in_window     == other.m_in_window;
 }
 
 State::Property::Mask State::GetDiff(const State& other) const
@@ -127,6 +137,12 @@ State::Property::Mask State::GetDiff(const State& other) const
     
     if (m_position != other.m_position)
         properties_diff_mask |= State::Property::Position;
+
+    if (m_scroll != other.m_scroll)
+        properties_diff_mask |= State::Property::Scroll;
+
+    if (m_in_window != other.m_in_window)
+        properties_diff_mask |= State::Property::InWindow;
 
     return properties_diff_mask;
 }
@@ -165,6 +181,13 @@ std::string State::ToString() const
         ss << ButtonConverter(button).ToString();
         is_first_button = false;
     }
+
+    if (m_scroll.x() > 0.1f || m_scroll.y() > 0.1f)
+    {
+        ss << ", scroll=(" << m_scroll.x() << " x " << m_scroll.y() << ")";
+    }
+
+    ss << ", " << (m_in_window ? "in window" : "out of window");
     
     return ss.str();
 }

@@ -83,10 +83,11 @@ void ControllersPool::OnMousePositionChanged(const Mouse::Position& mouse_positi
     }
 }
 
-void ControllersPool::OnMouseInWindowChanged(bool is_mouse_in_window, const Mouse::State& mouse_state)
+void ControllersPool::OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_delta, const Mouse::StateChange& state_change)
 {
 #ifdef DEBUG_USER_INPUT
-    PrintToDebugOutput(std::string(is_mouse_in_window ? "Mouse in window: " : "Mouse out of window: ") + mouse_state.ToString());
+    PrintToDebugOutput(std::string("Mouse scroll delta: ") + std::to_string(mouse_scroll_delta.x()) + " x " + std::to_string(mouse_scroll_delta.y()));
+    PrintToDebugOutput(std::string("Mouse (scroll): ") + state_change.current.ToString());
 #endif
 
     for (const Controller::Ptr& sp_controller : *this)
@@ -95,6 +96,22 @@ void ControllersPool::OnMouseInWindowChanged(bool is_mouse_in_window, const Mous
         if (!sp_controller || !sp_controller->IsEnabled())
             continue;
 
-        sp_controller->OnMouseInWindowChanged(is_mouse_in_window, mouse_state);
+        sp_controller->OnMouseScrollChanged(mouse_scroll_delta, state_change);
+    }
+}
+
+void ControllersPool::OnMouseInWindowChanged(bool is_mouse_in_window, const Mouse::StateChange& state_change)
+{
+#ifdef DEBUG_USER_INPUT
+    PrintToDebugOutput(std::string("Mouse (in-window): ") + state_change.current.ToString());
+#endif
+
+    for (const Controller::Ptr& sp_controller : *this)
+    {
+        assert(!!sp_controller);
+        if (!sp_controller || !sp_controller->IsEnabled())
+            continue;
+
+        sp_controller->OnMouseInWindowChanged(is_mouse_in_window, state_change);
     }
 }
