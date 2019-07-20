@@ -32,28 +32,29 @@ namespace Platform
 namespace Input
 {
 
-class State
+class State : public IActionController
 {
 public:
     State() = default;
     State(const ControllersPool& controllers) : m_controllers(controllers) {}
 
-    ControllersPool& GetControllers() { return m_controllers; }
-    void SetControllers(const Controllers& controllers) { m_controllers = controllers; }
+    ControllersPool& GetControllers()                               { return m_controllers; }
+    void             SetControllers(const Controllers& controllers) { m_controllers = controllers; }
 
-    void KeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state);
-    void MouseButtonsChanged(Mouse::Button button, Mouse::ButtonState button_state);
-    void MousePositionChanged(Mouse::Position mouse_position);
-    void MouseInWindowChanged(bool is_mouse_in_window);
-    
-    const Keyboard::State&  GetKeyboardState() const { return m_keyboard_state; }
-    const Mouse::State&     GetMouseState() const    { return m_mouse_state; }
+    const Keyboard::State& GetKeyboardState() const                 { return m_keyboard_state; }
+    const Mouse::State&    GetMouseState() const                    { return m_mouse_state; }
+
+    // IActionController
+    void OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button_state) override;
+    void OnMousePositionChanged(const Mouse::Position& mouse_position) override;
+    void OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_delta) override;
+    void OnMouseInWindowChanged(bool is_mouse_in_window) override;
+    void OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state) override;
 
 protected:
     ControllersPool  m_controllers;
     Keyboard::State  m_keyboard_state;
     Mouse::State     m_mouse_state;
-    bool             m_mouse_in_window = false;
 };
 
 } // namespace Input

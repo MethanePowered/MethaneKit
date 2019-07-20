@@ -103,13 +103,13 @@ using namespace Methane::Platform;
 - (void) keyDown:(NSEvent *)event
 {
     assert(!!m_p_app);
-    m_p_app->KeyboardChanged(Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), Keyboard::KeyState::Pressed);
+    m_p_app->InputController().OnKeyboardChanged(Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), Keyboard::KeyState::Pressed);
 }
 
 - (void) keyUp:(NSEvent *)event
 {
     assert(!!m_p_app);
-    m_p_app->KeyboardChanged(Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), Keyboard::KeyState::Released);
+    m_p_app->InputController().OnKeyboardChanged(Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), Keyboard::KeyState::Released);
 }
 
 // ====== Mouse event handlers ======
@@ -120,19 +120,19 @@ using namespace Methane::Platform;
     NSPoint pos = [event locationInWindow];
     pos.x *= self.view.window.backingScaleFactor;
     pos.y = (m_frame_rect.size.height - pos.y) * self.view.window.backingScaleFactor;
-    m_p_app->MousePositionChanged({ static_cast<int>(pos.x), static_cast<int>(pos.y) });
+    m_p_app->InputController().OnMousePositionChanged({ static_cast<int>(pos.x), static_cast<int>(pos.y) });
 }
 
 - (void)mouseDown:(NSEvent *)event
 {
     assert(!!m_p_app);
-    m_p_app->MouseButtonsChanged(Mouse::Button::Left, Mouse::ButtonState::Pressed);
+    m_p_app->InputController().OnMouseButtonChanged(Mouse::Button::Left, Mouse::ButtonState::Pressed);
 }
 
 - (void)mouseUp:(NSEvent *)event
 {
     assert(!!m_p_app);
-    m_p_app->MouseButtonsChanged(Mouse::Button::Left, Mouse::ButtonState::Released);
+    m_p_app->InputController().OnMouseButtonChanged(Mouse::Button::Left, Mouse::ButtonState::Released);
 }
 
 - (void)mouseDragged:(NSEvent *)event
@@ -143,13 +143,13 @@ using namespace Methane::Platform;
 - (void)rightMouseDown:(NSEvent *)event
 {
     assert(!!m_p_app);
-    m_p_app->MouseButtonsChanged(Mouse::Button::Right, Mouse::ButtonState::Pressed);
+    m_p_app->InputController().OnMouseButtonChanged(Mouse::Button::Right, Mouse::ButtonState::Pressed);
 }
 
 - (void)rightMouseUp:(NSEvent *)event
 {
     assert(!!m_p_app);
-    m_p_app->MouseButtonsChanged(Mouse::Button::Right, Mouse::ButtonState::Released);
+    m_p_app->InputController().OnMouseButtonChanged(Mouse::Button::Right, Mouse::ButtonState::Released);
 }
 
 - (void)rightMouseDragged:(NSEvent *)event
@@ -160,13 +160,13 @@ using namespace Methane::Platform;
 - (void)otherMouseDown:(NSEvent *)event
 {
     assert(!!m_p_app);
-    m_p_app->MouseButtonsChanged(static_cast<Mouse::Button>(static_cast<int>([event buttonNumber])), Mouse::ButtonState::Pressed);
+    m_p_app->InputController().OnMouseButtonChanged(static_cast<Mouse::Button>(static_cast<int>([event buttonNumber])), Mouse::ButtonState::Pressed);
 }
 
 - (void)otherMouseUp:(NSEvent *)event
 {
     assert(!!m_p_app);
-    m_p_app->MouseButtonsChanged(static_cast<Mouse::Button>(static_cast<int>([event buttonNumber])), Mouse::ButtonState::Released);
+    m_p_app->InputController().OnMouseButtonChanged(static_cast<Mouse::Button>(static_cast<int>([event buttonNumber])), Mouse::ButtonState::Released);
 }
 
 - (void)otherMouseDragged:(NSEvent *)event
@@ -176,12 +176,12 @@ using namespace Methane::Platform;
 
 - (void)mouseEntered:(NSEvent *)event
 {
-    m_p_app->MouseInWindowChanged(true);
+    m_p_app->InputController().OnMouseInWindowChanged(true);
 }
 
 - (void)mouseExited:(NSEvent *)event
 {
-    m_p_app->MouseInWindowChanged(false);
+    m_p_app->InputController().OnMouseInWindowChanged(false);
 }
 
 @end

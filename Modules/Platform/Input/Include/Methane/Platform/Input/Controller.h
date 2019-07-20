@@ -36,11 +36,23 @@ namespace Platform
 namespace Input
 {
 
+struct IActionController
+{
+    virtual void OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button_state) = 0;
+    virtual void OnMousePositionChanged(const Mouse::Position& mouse_position) = 0;
+    virtual void OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_delta) = 0;
+    virtual void OnMouseInWindowChanged(bool is_mouse_in_window) = 0;
+    virtual void OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state) = 0;
+
+    virtual ~IActionController() = default;
+};
+
 struct IController
 {
     virtual void OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button_state, const Mouse::StateChange& state_change) = 0;
     virtual void OnMousePositionChanged(const Mouse::Position& mouse_position, const Mouse::StateChange& state_change) = 0;
-    virtual void OnMouseInWindowChanged(bool is_mouse_in_window, const Mouse::State& mouse_state) = 0;
+    virtual void OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_delta, const Mouse::StateChange& state_change) = 0;
+    virtual void OnMouseInWindowChanged(bool is_mouse_in_window, const Mouse::StateChange& state_change) = 0;
     virtual void OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state, const Keyboard::StateChange& state_change) = 0;
 
     virtual ~IController() = default;
@@ -55,10 +67,11 @@ public:
     void SetEnabled(bool is_enabled) { m_is_enabled = is_enabled; }
 
     // IController - overrides are optional
-    void OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button_state, const Mouse::StateChange& state_change) override { }
-    void OnMousePositionChanged(const Mouse::Position& mouse_position, const Mouse::StateChange& state_change) override { }
-    void OnMouseInWindowChanged(bool is_mouse_in_window, const Mouse::State& mouse_state) override { }
-    void OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state, const Keyboard::StateChange& state_change) override { }
+    void OnMouseButtonChanged(Mouse::Button /*button*/, Mouse::ButtonState /*button_state*/, const Mouse::StateChange& /*state_change*/) override { }
+    void OnMousePositionChanged(const Mouse::Position& /*mouse_position*/, const Mouse::StateChange& /*state_change*/) override { }
+    void OnMouseScrollChanged(const Mouse::Scroll& /*mouse_scroll_delta*/, const Mouse::StateChange& /*state_change*/) override { }
+    void OnMouseInWindowChanged(bool /*is_mouse_in_window*/, const Mouse::StateChange& /*state_change*/) override { }
+    void OnKeyboardChanged(Keyboard::Key /*key*/, Keyboard::KeyState /*key_state*/, const Keyboard::StateChange& /*state_change*/) override { }
 
 private:
     bool m_is_enabled = true;

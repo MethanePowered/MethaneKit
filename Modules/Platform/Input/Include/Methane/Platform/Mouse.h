@@ -47,6 +47,8 @@ enum class Button : uint32_t
     Button6,
     Button7,
     Button8,
+    VScroll,
+    HScroll,
 
     Count,
     Unknonwn
@@ -74,6 +76,17 @@ enum class ButtonState : uint8_t
 using ButtonStates = std::array<ButtonState, static_cast<size_t>(Button::Count)>;
 
 using Position = Data::Point2i;
+using Scroll = Data::Point2f;
+
+
+using MouseButtonAndDelta = std::pair<Mouse::Button, float>;
+inline MouseButtonAndDelta GetScrollButtonAndDelta(const Scroll& scroll_delta)
+{
+    const float min_scroll_delta = 0.00001f;
+    return std::fabsf(scroll_delta.y()) > min_scroll_delta ? MouseButtonAndDelta(Button::VScroll, scroll_delta.y())
+        : (std::fabsf(scroll_delta.x()) > min_scroll_delta ? MouseButtonAndDelta(Button::HScroll, scroll_delta.x())
+                                                           : MouseButtonAndDelta(Button::Unknonwn, 0.f ) );
+}
 
 class State
 {
@@ -86,11 +99,13 @@ public:
             None        = 0,
             Buttons     = 1 << 0,
             Position    = 1 << 1,
+            Scroll      = 1 << 2,
+            InWindow    = 1 << 3,
             All         = static_cast<Mask>(~0),
         };
 
-        using Values = std::array<Value, 2>;
-        static constexpr const Values values = { Buttons, Position };
+        using Values = std::array<Value, 4>;
+        static constexpr const Values values = { Buttons, Position, Scroll, InWindow };
 
         static std::string ToString(Value property_value);
         static std::string ToString(Mask properties_mask);
@@ -100,7 +115,7 @@ public:
     };
 
     State() = default;
-    State(std::initializer_list<Button> pressed_buttons, const Position& position = Position());
+    State(std::initializer_list<Button> pressed_buttons, const Position& position = Position(), const Scroll& scroll = Scroll(), bool in_window = false);
     State(const State& other);
 
     State& operator=(const State& other);
@@ -116,15 +131,23 @@ public:
     const Position&     GetPosition() const                     { return m_position; }
     void                SetPosition(const Position& position)   { m_position = position; }
 
+    const Scroll&       GetScroll() const                       { return m_scroll; }
+    void                AddScrollDelta(const Scroll& delta)     { m_scroll += delta; }
+    void                ResetScroll();
+
+    bool                IsInWindow() const                      { return m_in_window; }
+    void                SetInWindow(bool in_window)             { m_in_window = in_window; }
+
     Buttons             GetPressedButtons() const;
     const ButtonStates& GetButtonStates() const                 { return m_button_states; }
     Property::Mask      GetDiff(const State& other) const;
     std::string         ToString() const;
-    
 
 private:
-    ButtonStates m_button_states{};
-    Position     m_position{};
+    ButtonStates m_button_states    = {};
+    Position     m_position         = {};
+    Scroll       m_scroll           = {};
+    bool         m_in_window        = false;
 };
 
 inline std::ostream& operator<<( std::ostream& os, State const& keyboard_state)

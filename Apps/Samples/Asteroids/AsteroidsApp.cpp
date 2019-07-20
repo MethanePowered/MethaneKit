@@ -71,14 +71,21 @@ AsteroidsApp::AsteroidsApp()
     , m_light_camera(m_scene_camera, gfx::ArcBallCamera::Pivot::Aim)
 {
     m_scene_camera.SetOrientation({ { 15.0f, 22.5f, -15.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
+    m_light_camera.SetParamters({ 0.01f, 300.f, 90.f });
+    m_scene_camera.SetZoomDistanceRange({ 15.f , 100.f });
+
     m_light_camera.SetOrientation({ { 0.0f,  25.0f, -25.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
-    m_light_camera.SetParamters({ -200, 200.f, 90.f });
+    m_light_camera.SetParamters({ -300, 300.f, 90.f });
     m_light_camera.Resize(55, 55);
 
-    m_input_state.SetControllers(pal::Input::Controllers{
-        std::make_shared<gfx::AppCameraController>(m_scene_camera, pal::Mouse::Button::Left),
-        std::make_shared<gfx::AppCameraController>(m_light_camera, pal::Mouse::Button::Right)
+    m_input_state.SetControllers({
+        std::make_shared<gfx::AppCameraController>(m_scene_camera),
+        std::make_shared<gfx::AppCameraController>(m_light_camera,
+            gfx::AppCameraController::MouseActionByButton {
+                { Platform::Mouse::Button::Right, gfx::AppCameraController::MouseAction::Rotate },
+            },
+            gfx::AppCameraController::KeyboardActionByKey{ })
     });
 }
 
