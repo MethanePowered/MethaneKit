@@ -70,6 +70,7 @@ public:
     const Orientation& GetOrientation() const noexcept           { return m_current_orientation; }
     float GetAimDistance() const noexcept                        { return GetAimDistance(m_current_orientation); }
     const Data::Point2f& GetScreenSize() const noexcept          { return m_screen_size; }
+    Vector3f GetLookDirection() const noexcept                   { return GetLookDirection(m_current_orientation); }
 
     void GetViewProjMatrices(Matrix44f& out_view, Matrix44f& out_proj) const noexcept;
     void GetViewMatrix(Matrix44f& out_view) const noexcept       { return GetViewMatrix(out_view, m_current_orientation); }
@@ -88,7 +89,9 @@ public:
 
 protected:
     float GetFOVAngleY() const noexcept;
-    float GetAimDistance(const Orientation& orientation) const noexcept { return (orientation.aim - orientation.eye).length(); }
+
+    static float GetAimDistance(const Orientation& orientation) noexcept { return (orientation.aim - orientation.eye).length(); }
+    static Vector3f GetLookDirection(const Orientation& orientation) noexcept { return orientation.aim - orientation.eye; }
 
     void GetViewMatrix(Matrix44f& out_view, const Orientation& orientation) const noexcept;
     Matrix44f GetViewMatrix(const Orientation& orientation) const noexcept;
