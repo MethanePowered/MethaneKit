@@ -30,19 +30,20 @@ using namespace Methane::Graphics;
 
 namespace Methane
 {
-static inline float square(float x) { return x * x; }
+static inline float square(float x)     { return x * x; }
+static inline float unitSign(float x) { return x / std::fabsf(x); }
 }
 
 ArcBallCamera::ArcBallCamera(Pivot pivot, cml::AxisOrientation axis_orientation)
     : Camera(axis_orientation)
-    , m_view_camera(*this)
+    , m_p_view_camera(nullptr)
     , m_pivot(pivot)
 {
 }
 
-ArcBallCamera::ArcBallCamera(Camera& view_camera, Pivot pivot, cml::AxisOrientation axis_orientation)
+ArcBallCamera::ArcBallCamera(const Camera& view_camera, Pivot pivot, cml::AxisOrientation axis_orientation)
     : Camera(axis_orientation)
-    , m_view_camera(view_camera)
+    , m_p_view_camera(&view_camera)
     , m_pivot(pivot)
 {
 }
@@ -63,16 +64,21 @@ void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
     Matrix44f view_rotation_matrix = { };
     cml::matrix_rotation_axis_angle(view_rotation_matrix, rotation_axis, rotation_angle);
 
-    const bool is_view_camera = std::addressof(*this) == std::addressof(m_view_camera);
-    const Vector4f look_dir_in_view = is_view_camera
-                                    ? Vector4f(0.f, 0.f, GetAimDistance(m_mouse_pressed_orientation), 1.f)
-                                    : m_view_camera.TransformWorldToView(Vector4f(m_mouse_pressed_orientation.aim - m_mouse_pressed_orientation.eye, 1.f));
-    const Vector3f look_dir = TransformViewToWorld(view_rotation_matrix * look_dir_in_view, m_mouse_pressed_orientation).subvector(3);
+    const Vector4f look_in_view = m_p_view_camera
+                                ? m_p_view_camera->TransformWorldToView(Vector4f(m_mouse_pressed_orientation.aim - m_mouse_pressed_orientation.eye, 1.f))
+                                : Vector4f(0.f, 0.f, GetAimDistance(m_mouse_pressed_orientation), 1.f);
+    
+    const Vector3f look_dir     = m_p_view_camera
+                                ? m_p_view_camera->TransformViewToWorld(view_rotation_matrix * look_in_view).subvector(3)
+                                : TransformViewToWorld(view_rotation_matrix * look_in_view, m_mouse_pressed_orientation).subvector(3);
 
-    const Vector4f orientation_up_in_view = is_view_camera
-                                          ? Vector4f(0.f, m_mouse_pressed_orientation.up.length(), 0.f, 1.f)
-                                          : m_view_camera.TransformWorldToView(Vector4f(m_mouse_pressed_orientation.up, 1.f));
-    m_current_orientation.up = TransformViewToWorld(view_rotation_matrix * orientation_up_in_view, m_mouse_pressed_orientation).subvector(3);
+    const Vector4f up_in_view   = m_p_view_camera
+                                ? m_p_view_camera->TransformWorldToView(Vector4f(m_mouse_pressed_orientation.up, 1.f))
+                                : Vector4f(0.f, m_mouse_pressed_orientation.up.length(), 0.f, 1.f);
+
+    m_current_orientation.up    = m_p_view_camera
+                                ? m_p_view_camera->TransformViewToWorld(view_rotation_matrix * up_in_view).subvector(3)
+                                : TransformViewToWorld(view_rotation_matrix * up_in_view, m_mouse_pressed_orientation).subvector(3);
 
     switch(m_pivot)
     {
@@ -83,20 +89,25 @@ void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
 
 Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_screen_pos, bool is_primary) const
 {
-    const Point2f& screen_size = m_view_camera.GetScreenSize();
+    const Point2f& screen_size = m_p_view_camera ? m_p_view_camera->GetScreenSize() : m_screen_size;
     const Point2f screen_center(screen_size.x() / 2.f, screen_size.y() / 2.f);
     Point2f screen_vector = static_cast<Point2f>(mouse_screen_pos) - screen_center;
-    
-    // NOTE: reflect rotation by x coordinate for natural camera movement
-    screen_vector.setX(-screen_vector.x()); 
 
-    const float   screen_radius = screen_vector.length();
-    const float   sphere_radius = GetRadiusInPixels(screen_size);
+    const float screen_radius = screen_vector.length();
+    const float sphere_radius = GetRadiusInPixels(screen_size);
 
     // Primary screen point is used to determine if rotation is done inside sphere (around X and Y axes) or outside (around Z axis)
     // For secondary screen point the primary result is used
     const bool inside_sphere = ( is_primary && screen_radius <= sphere_radius) ||
                                (!is_primary && std::fabs(m_mouse_pressed_on_sphere[2]) > 0.000001f);
+
+    // Reflect coordinates for natural camera movement
+    const Point2f mirror_multipliers = m_p_view_camera
+                                     ? Point2f(inside_sphere ? 1.f : -1.f, -1.f ) *
+                                       unitSign(cml::dot(GetLookDirection(m_mouse_pressed_orientation), m_p_view_camera->GetLookDirection()))
+                                     : Point2f(-1.f, 1.f);
+    screen_vector.setX(screen_vector.x() * mirror_multipliers.x());
+    screen_vector.setY(screen_vector.y() * mirror_multipliers.y());
 
     // Handle rotation between 90 and 180 degrees when mouse overruns one sphere radius
     float z_sign = 1.f;
@@ -117,16 +128,4 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
     }
 
     return cml::normalize(Vector3f(screen_vector, inside_sphere ? z_sign * std::sqrtf(square(sphere_radius) - screen_vector.length_squared()) : 0.f));
-}
-
-const Vector3f& ArcBallCamera::GetPivotPoint(const Orientation& orientation) const
-{
-    switch (m_pivot)
-    {
-    case Pivot::Aim: return orientation.aim;
-    case Pivot::Eye: return orientation.eye;
-    }
-
-    static const Vector3f dummy_pivot = { };
-    return dummy_pivot;
 }
