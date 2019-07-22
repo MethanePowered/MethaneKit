@@ -29,8 +29,6 @@ Tutorial demonstrating shadow-pass rendering with Methane graphics API
 
 using namespace Methane::Tutorials;
 
-const ShadowCubeApp::Vertex::FieldsArray ShadowCubeApp::Vertex::layout;
-
 // Common application settings
 static const gfx::FrameSize           g_shadow_map_size(1024, 1024);
 static const gfx::Shader::EntryTarget g_vs_main       = { "VSMain", "vs_5_1" };
