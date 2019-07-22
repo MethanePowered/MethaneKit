@@ -91,8 +91,9 @@ inline void TestViewCameraRotation(ArcBallCamera::Pivot view_pivot,
                                    const float vectors_equality_epsilon = 0.00001f)
 {
     ArcBallCamera view_camera = SetupViewCamera(view_pivot, initial_view_orientation);
-    view_camera.OnMousePressed(mouse_press_pos);
+    view_camera.OnMousePressed(mouse_press_pos, ArcBallCamera::MouseAction::Rotate);
     view_camera.OnMouseDragged(mouse_drag_pos);
+    view_camera.OnMouseReleased(mouse_drag_pos);
     CheckOrientation(view_camera.GetOrientation(), rotated_view_orientation, vectors_equality_epsilon);
 }
 
@@ -106,8 +107,9 @@ inline void TestDependentCameraRotation(ArcBallCamera::Pivot view_pivot,
 {
     ArcBallCamera view_camera      = SetupViewCamera(view_pivot, initial_view_orientation);
     ArcBallCamera dependent_camera = SetupDependentCamera(view_camera, dependent_pivot, initial_dependent_orientation);
-    dependent_camera.OnMousePressed(mouse_press_pos);
+    dependent_camera.OnMousePressed(mouse_press_pos, ArcBallCamera::MouseAction::Rotate);
     dependent_camera.OnMouseDragged(mouse_drag_pos);
+    dependent_camera.OnMouseReleased(mouse_drag_pos);
     CheckOrientation(dependent_camera.GetOrientation(), rotated_dependent_orientation, vectors_equality_epsilon);
 }
 

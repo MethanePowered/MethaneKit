@@ -48,14 +48,21 @@ ArcBallCamera::ArcBallCamera(const Camera& view_camera, Pivot pivot, cml::AxisOr
 {
 }
 
-void ArcBallCamera::OnMousePressed(const Point2i& mouse_screen_pos)
+void ArcBallCamera::OnMousePressed(const Point2i& mouse_screen_pos, MouseAction mouse_action)
 {
+    if (mouse_action != MouseAction::Rotate)
+        return;
+
+    m_mouse_action              = mouse_action;
     m_mouse_pressed_orientation = m_current_orientation;
     m_mouse_pressed_on_sphere   = GetNormalizedSphereProjection(mouse_screen_pos, true);
 }
 
 void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
 {
+    if (m_mouse_action != MouseAction::Rotate)
+        return;
+
     const Vector3f mouse_current_on_sphere = GetNormalizedSphereProjection(mouse_screen_pos, false);
     const Vector3f vectors_cross  = cml::cross(m_mouse_pressed_on_sphere, mouse_current_on_sphere);
     const Vector3f rotation_axis  = vectors_cross.normalize();
@@ -83,6 +90,11 @@ void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
     ApplyLookDirection(look_dir, m_mouse_pressed_orientation);
 }
 
+void ArcBallCamera::OnMouseReleased(const Point2i&)
+{
+    m_mouse_action = MouseAction::None;
+}
+
 void ArcBallCamera::OnMouseScrolled(float scroll_delta)
 {
     const float zoom_factor   = scroll_delta > 0.f ? 1.f - scroll_delta / m_zoom_steps_count
@@ -91,6 +103,16 @@ void ArcBallCamera::OnMouseScrolled(float scroll_delta)
     const float zoom_distance = std::min(std::max(look_dir.length() * zoom_factor, m_zoom_distance_range.first), m_zoom_distance_range.second);
 
     ApplyLookDirection(cml::normalize(look_dir) * zoom_distance);
+}
+
+void ArcBallCamera::OnKeyPressed(KeyboardAction keyboard_action)
+{
+    m_keyboard_actions.insert(keyboard_action);
+}
+
+void ArcBallCamera::OnKeyReleased(KeyboardAction keyboard_action)
+{
+    m_keyboard_actions.erase(keyboard_action);
 }
 
 Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_screen_pos, bool is_primary) const
@@ -124,7 +146,7 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
         {
             const float vector_radius = sphere_radius * (radius_mult + 1) - screen_radius;
             screen_vector = screen_vector.normalize() * vector_radius;
-            z_sign = std::powf(-1.f, radius_mult);
+            z_sign = std::powf(-1.f, static_cast<float>(radius_mult));
         }
         else
         {

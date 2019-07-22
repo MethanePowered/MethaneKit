@@ -30,8 +30,6 @@ Sample demonstrating parallel redering of the distinct asteroids massive
 
 using namespace Methane::Samples;
 
-const AsteroidsApp::Vertex::FieldsArray AsteroidsApp::Vertex::layout;
-
 // Common application settings
 static const gfx::FrameSize           g_shadow_map_size(1024, 1024);
 static const gfx::Shader::EntryTarget g_vs_main       = { "VSMain", "vs_5_1" };
@@ -83,7 +81,7 @@ AsteroidsApp::AsteroidsApp()
         std::make_shared<gfx::AppCameraController>(m_scene_camera),
         std::make_shared<gfx::AppCameraController>(m_light_camera,
             gfx::AppCameraController::MouseActionByButton {
-                { Platform::Mouse::Button::Right, gfx::AppCameraController::MouseAction::Rotate },
+                { pal::Mouse::Button::Right, gfx::ArcBallCamera::MouseAction::Rotate },
             },
             gfx::AppCameraController::KeyboardActionByKey{ })
     });

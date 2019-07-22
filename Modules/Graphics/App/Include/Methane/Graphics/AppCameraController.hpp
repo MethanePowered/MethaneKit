@@ -34,56 +34,24 @@ namespace Graphics
 class AppCameraController : public Platform::Input::Controller
 {
 public:
-    enum class MouseAction : uint32_t
-    {
-        None = 0,
-        Rotate,
-        Zoom,
-        Move,
-    };
-
-    using MouseActionByButton = std::map<Platform::Mouse::Button, MouseAction>;
-
-    enum class KeyboardAction : uint32_t
-    {
-        None,
-
-        // Move
-        MoveLeft = 0,
-        MoveRight,
-        MoveForward,
-        MoveBack,
-
-        // Rotate
-        YawLeft,
-        YawRight,
-        RollLeft,
-        RollRight,
-        PitchUp,
-        PitchDown,
-        
-        // Zoom
-        ZoomIn,
-        ZoomOut,
-    };
-
-    using KeyboardActionByKey = std::map<Platform::Keyboard::Key, KeyboardAction>;
+    using MouseActionByButton = std::map<Platform::Mouse::Button, ArcBallCamera::MouseAction>;
+    using KeyboardActionByKey = std::map<Platform::Keyboard::Key, ArcBallCamera::KeyboardAction>;
 
     inline static const MouseActionByButton default_mouse_actions_by_button = {
-        { Platform::Mouse::Button::Left,    MouseAction::Rotate },
-        { Platform::Mouse::Button::VScroll, MouseAction::Zoom   },
-        { Platform::Mouse::Button::Middle,  MouseAction::Move   },
+        { Platform::Mouse::Button::Left,    ArcBallCamera::MouseAction::Rotate },
+        { Platform::Mouse::Button::VScroll, ArcBallCamera::MouseAction::Zoom   },
+        { Platform::Mouse::Button::Middle,  ArcBallCamera::MouseAction::Move   },
     };
 
     inline static const KeyboardActionByKey default_keyboard_actions_by_key = {
-        { Platform::Keyboard::Key::W,      KeyboardAction::MoveForward },
-        { Platform::Keyboard::Key::S,      KeyboardAction::MoveBack    },
-        { Platform::Keyboard::Key::A,      KeyboardAction::MoveLeft    },
-        { Platform::Keyboard::Key::D,      KeyboardAction::MoveRight   },
-        { Platform::Keyboard::Key::Q,      KeyboardAction::RollLeft    },
-        { Platform::Keyboard::Key::E,      KeyboardAction::RollRight   },
-        { Platform::Keyboard::Key::Minus,  KeyboardAction::ZoomIn      },
-        { Platform::Keyboard::Key::Equal,  KeyboardAction::ZoomOut     },
+        { Platform::Keyboard::Key::W,       ArcBallCamera::KeyboardAction::MoveForward },
+        { Platform::Keyboard::Key::S,       ArcBallCamera::KeyboardAction::MoveBack    },
+        { Platform::Keyboard::Key::A,       ArcBallCamera::KeyboardAction::MoveLeft    },
+        { Platform::Keyboard::Key::D,       ArcBallCamera::KeyboardAction::MoveRight   },
+        { Platform::Keyboard::Key::Q,       ArcBallCamera::KeyboardAction::RollLeft    },
+        { Platform::Keyboard::Key::E,       ArcBallCamera::KeyboardAction::RollRight   },
+        { Platform::Keyboard::Key::Minus,   ArcBallCamera::KeyboardAction::ZoomIn      },
+        { Platform::Keyboard::Key::Equal,   ArcBallCamera::KeyboardAction::ZoomOut     },
     };
 
     AppCameraController(ArcBallCamera& arcball_camera,
@@ -97,63 +65,60 @@ public:
     // Platform::Input::Controller
     void OnMouseButtonChanged(Platform::Mouse::Button button, Platform::Mouse::ButtonState button_state, const Platform::Mouse::StateChange& state_change) override
     {
-        if (button_state != Platform::Mouse::ButtonState::Pressed)
-            return;
-
-        const MouseAction action = GetMouseActionByButton(button);
-        switch (action)
+        const ArcBallCamera::MouseAction action = GetMouseActionByButton(button);
+        switch (button_state)
         {
-        case MouseAction::Rotate: m_arcball_camera.OnMousePressed(state_change.current.GetPosition()); break;
-        case MouseAction::Move: /* TODO: not implemented yet */ break;
-        default: break;
+        case Platform::Mouse::ButtonState::Pressed:  m_arcball_camera.OnMousePressed(state_change.current.GetPosition(), action); break;
+        case Platform::Mouse::ButtonState::Released: m_arcball_camera.OnMouseReleased(state_change.current.GetPosition()); break;
         }
     }
 
     // Platform::Input::Controller
-    void OnMousePositionChanged(const Platform::Mouse::Position& mouse_position, const Platform::Mouse::StateChange& state_change) override
+    void OnMousePositionChanged(const Platform::Mouse::Position& mouse_position, const Platform::Mouse::StateChange&) override
     {
-        const Platform::Mouse::Buttons pressed_mouse_buttons = state_change.current.GetPressedButtons();
-        for (const Platform::Mouse::Button& pressed_mouse_button : pressed_mouse_buttons)
-        {
-            const MouseAction action = GetMouseActionByButton(pressed_mouse_button);
-            switch (action)
-            {
-            case MouseAction::Rotate: m_arcball_camera.OnMouseDragged(mouse_position); break;
-            case MouseAction::Move: /* TODO: not implemented yet */ break;
-            default: break;
-            }
-        }
+        m_arcball_camera.OnMouseDragged(mouse_position);
     }
 
     // Platform::Input::Controller
-    void OnMouseScrollChanged(const Platform::Mouse::Scroll& mouse_scroll_delta, const Platform::Mouse::StateChange& state_change) override
+    void OnMouseScrollChanged(const Platform::Mouse::Scroll& mouse_scroll_delta, const Platform::Mouse::StateChange&) override
     {
         const auto mouse_button_and_delta = Platform::Mouse::GetScrollButtonAndDelta(mouse_scroll_delta);
-        const MouseAction action = GetMouseActionByButton(mouse_button_and_delta.first);
-        if (action != MouseAction::Zoom)
-            return;
+        const ArcBallCamera::MouseAction action = GetMouseActionByButton(mouse_button_and_delta.first);
+        if (action == ArcBallCamera::MouseAction::Zoom)
+        {
+            m_arcball_camera.OnMouseScrolled(mouse_button_and_delta.second);
+        }
+    }
 
-        m_arcball_camera.OnMouseScrolled(mouse_button_and_delta.second);
+    // Platform::Input::Controller
+    void OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Platform::Keyboard::StateChange&) override
+    {
+        const ArcBallCamera::KeyboardAction action = GetKeyboardActionByKey(key);
+        switch (key_state)
+        {
+        case Platform::Keyboard::KeyState::Pressed: m_arcball_camera.OnKeyPressed(action); break;
+        case Platform::Keyboard::KeyState::Released:  m_arcball_camera.OnKeyReleased(action); break;
+        }
     }
 
 private:
-    inline MouseAction GetMouseActionByButton(Platform::Mouse::Button mouse_button) const
+    inline ArcBallCamera::MouseAction GetMouseActionByButton(Platform::Mouse::Button mouse_button) const
     {
         const auto mouse_actions_by_button_it = m_mouse_actions_by_button.find(mouse_button);
         return (mouse_actions_by_button_it != m_mouse_actions_by_button.end())
-              ? mouse_actions_by_button_it->second : MouseAction::None;
+              ? mouse_actions_by_button_it->second : ArcBallCamera::MouseAction::None;
     }
 
-    inline KeyboardAction GetKeyboardActionByKey(Platform::Keyboard::Key key) const
+    inline ArcBallCamera::KeyboardAction GetKeyboardActionByKey(Platform::Keyboard::Key key) const
     {
         const auto keyboard_actions_by_key_it = m_keyboard_actions_by_key.find(key);
         return (keyboard_actions_by_key_it != m_keyboard_actions_by_key.end())
-              ? keyboard_actions_by_key_it->second : KeyboardAction::None;
+              ? keyboard_actions_by_key_it->second : ArcBallCamera::KeyboardAction::None;
     }
 
-    ArcBallCamera&                m_arcball_camera;
-    const MouseActionByButton     m_mouse_actions_by_button;
-    const KeyboardActionByKey     m_keyboard_actions_by_key;
+    ArcBallCamera&            m_arcball_camera;
+    const MouseActionByButton m_mouse_actions_by_button;
+    const KeyboardActionByKey m_keyboard_actions_by_key;
 };
 
 } // namespace Graphics

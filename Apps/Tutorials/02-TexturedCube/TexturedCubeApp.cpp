@@ -29,8 +29,6 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 
 using namespace Methane::Tutorials;
 
-const TexturedCubeApp::Vertex::FieldsArray TexturedCubeApp::Vertex::layout;
-
 static const gfx::Shader::EntryTarget g_vs_main   = { "VSMain", "vs_5_1" };
 static const gfx::Shader::EntryTarget g_ps_main   = { "PSMain", "ps_5_1" };
 static const GraphicsApp::Settings g_app_settings = // Application settings:
