@@ -31,8 +31,6 @@ Base implementation of the resource interface.
 
 using namespace Methane::Graphics;
 
-const Resource::Usage::Values Resource::Usage::values;
-
 std::string Resource::GetTypeName(Type type) noexcept
 {
     ITT_FUNCTION_TASK();
