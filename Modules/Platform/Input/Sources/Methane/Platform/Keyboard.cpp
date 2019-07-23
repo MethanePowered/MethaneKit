@@ -29,9 +29,6 @@ Platform abstraction of keyboard events.
 
 using namespace Methane::Platform::Keyboard;
 
-const Modifier::Values Modifier::values;
-const State::Property::Values State::Property::values;
-
 static const std::string s_keys_separator = "+";
 static const std::string s_properties_separator = "+";
 
@@ -290,6 +287,7 @@ std::string Modifier::ToString(Value modifier)
         case NumLock:   return "NumLock";
         case All:       return "All";
     }
+    return "Undefined";
 }
 
 std::string Modifier::ToString(Modifier::Mask modifiers_mask)
@@ -320,6 +318,7 @@ std::string State::Property::ToString(State::Property::Value property_value)
     case Modifiers: return "Modifiers";
     case None:      return "None";
     }
+    return "Undefined";
 }
 
 std::string State::Property::ToString(State::Property::Mask properties_mask)

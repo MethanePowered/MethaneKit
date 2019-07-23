@@ -29,8 +29,6 @@ Platform abstraction of mouse events.
 
 using namespace Methane::Platform::Mouse;
 
-const State::Property::Values State::Property::values;
-
 static const std::string s_buttons_separator = "+";
 static const std::string s_properties_separator = "+";
 
@@ -68,6 +66,7 @@ std::string State::Property::ToString(State::Property::Value property_value)
     case InWindow:  return "InWindow";
     case None:      return "None";
     }
+    return "Undefined";
 }
 
 std::string State::Property::ToString(State::Property::Mask properties_mask)
