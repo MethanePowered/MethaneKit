@@ -25,9 +25,10 @@ Arc-ball camera implementation.
 
 #include "Camera.h"
 
-#include <Methane/Data/Types.h>
+#include <Methane/Data/ActionTimer.hpp>
 
 #include <set>
+#include <chrono>
 
 namespace Methane
 {
@@ -75,7 +76,6 @@ public:
         ZoomOut,
     };
 
-    using KeyboardActions = std::set<KeyboardAction>;
     using DistanceRange = std::pair<float /*min_distance*/, float /*max_distance*/>;
 
     ArcBallCamera(Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
@@ -104,6 +104,8 @@ public:
     void OnKeyReleased(KeyboardAction keyboard_action);
 
 protected:
+    using KeyboardActionTimers = std::set<Data::ActionTimer<KeyboardAction>>;
+
     Vector3f GetNormalizedSphereProjection(const Data::Point2i& mouse_screen_pos, bool is_primary) const;
 
     inline float GetRadiusInPixels(const Data::Point2f& screen_size) const noexcept
@@ -112,15 +114,15 @@ protected:
     void ApplyLookDirection(const Vector3f& look_dir, const Orientation& base_orientation);
     void ApplyLookDirection(const Vector3f& look_dir) { return ApplyLookDirection(look_dir, m_current_orientation);  }
 
-    const Camera*   m_p_view_camera;
-    const Pivot     m_pivot;
-    float           m_radius_ratio              = 0.9f;
-    uint32_t        m_zoom_steps_count          = 10;
-    DistanceRange   m_zoom_distance_range       = DistanceRange(1.f, 1000.f);
-    MouseAction     m_mouse_action              = MouseAction::None;
-    Vector3f        m_mouse_pressed_on_sphere   = { };
-    Orientation     m_mouse_pressed_orientation = { };
-    KeyboardActions m_keyboard_actions;
+    const Camera*        m_p_view_camera;
+    const Pivot          m_pivot;
+    float                m_radius_ratio              = 0.9f;
+    uint32_t             m_zoom_steps_count          = 10;
+    DistanceRange        m_zoom_distance_range       = DistanceRange(1.f, 1000.f);
+    MouseAction          m_mouse_action              = MouseAction::None;
+    Vector3f             m_mouse_pressed_on_sphere   = { };
+    Orientation          m_mouse_pressed_orientation = { };
+    KeyboardActionTimers m_keyboard_action_timers;
 };
 
 } // namespace Graphics

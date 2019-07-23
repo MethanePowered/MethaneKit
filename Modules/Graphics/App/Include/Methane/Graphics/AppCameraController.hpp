@@ -96,8 +96,8 @@ public:
         const ArcBallCamera::KeyboardAction action = GetKeyboardActionByKey(key);
         switch (key_state)
         {
-        case Platform::Keyboard::KeyState::Pressed: m_arcball_camera.OnKeyPressed(action); break;
-        case Platform::Keyboard::KeyState::Released:  m_arcball_camera.OnKeyReleased(action); break;
+        case Platform::Keyboard::KeyState::Pressed:  m_arcball_camera.OnKeyPressed(action); break;
+        case Platform::Keyboard::KeyState::Released: m_arcball_camera.OnKeyReleased(action); break;
         }
     }
 
