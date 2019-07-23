@@ -107,12 +107,12 @@ void ArcBallCamera::OnMouseScrolled(float scroll_delta)
 
 void ArcBallCamera::OnKeyPressed(KeyboardAction keyboard_action)
 {
-    m_keyboard_actions.insert(keyboard_action);
+    m_keyboard_action_timers.emplace(keyboard_action);
 }
 
 void ArcBallCamera::OnKeyReleased(KeyboardAction keyboard_action)
 {
-    m_keyboard_actions.erase(keyboard_action);
+    m_keyboard_action_timers.erase(keyboard_action);
 }
 
 Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_screen_pos, bool is_primary) const
