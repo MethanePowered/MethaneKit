@@ -23,7 +23,7 @@ FPS counter calculates frame time duration with moving average window algorithm.
 
 #pragma once
 
-#include "Timer.h"
+#include <Methane/Data/Timer.hpp>
 
 #include <cmath>
 #include <queue>
@@ -48,7 +48,7 @@ public:
     inline uint32_t GetFramesPerSecond() const noexcept        { return static_cast<uint32_t>(std::round(1.0 / GetAverageFrameTimeSec())); }
 
 private:
-    Timer              m_frame_timer;
+    Data::Timer        m_frame_timer;
     uint32_t           m_averaged_timings_count = 100;
     double             m_frame_timings_sum = 0.0;
     std::queue<double> m_frame_timings;

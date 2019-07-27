@@ -36,5 +36,6 @@ Methane graphics helpers: all headers under one umbrella.
 #include "MathTypes.h"
 #include "Camera.h"
 #include "ArcBallCamera.h"
-#include "Timer.h"
 #include "FpsCounter.h"
+
+#include <Methane/Data/Timer.hpp>

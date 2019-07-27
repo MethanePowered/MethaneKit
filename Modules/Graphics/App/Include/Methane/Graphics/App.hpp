@@ -27,11 +27,11 @@ Base frame class provides frame buffer management with resize handling.
 #include "AppDataProvider.hpp"
 
 #include <Methane/Platform/App.h>
+#include <Methane/Data/Timer.hpp>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Context.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/RenderPass.h>
-#include <Methane/Graphics/Timer.h>
 #include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Graphics/ImageLoader.h>
 
@@ -211,7 +211,7 @@ public:
     {
         // Update HUD info in window title
         if (!m_show_hud_in_window_title ||
-            m_title_update_timer.GetElapsedSeconds() < g_title_update_interval_sec)
+            m_title_update_timer.GetElapsedSecondsD() < g_title_update_interval_sec)
             return;
 
         if (!m_sp_context)
@@ -286,7 +286,7 @@ protected:
     ImageLoader                     m_image_loader;
     std::vector<FrameT>             m_frames;
     Texture::Ptr                    m_sp_depth_texture;
-    Timer                           m_title_update_timer;
+    Data::Timer                     m_title_update_timer;
 
     static constexpr double  g_title_update_interval_sec = 1;
 };

@@ -44,7 +44,7 @@ void FpsCounter::OnFramePresented()
         m_frame_timings.pop();
     }
 
-    const double frame_seconds = m_frame_timer.GetElapsedSeconds();
+    const double frame_seconds = m_frame_timer.GetElapsedSecondsD();
     m_frame_timings_sum += frame_seconds;
     m_frame_timings.push(frame_seconds);
 

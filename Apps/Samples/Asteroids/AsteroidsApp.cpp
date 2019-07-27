@@ -350,6 +350,8 @@ void AsteroidsApp::Update()
     if (HasError())
         return;
 
+    m_scene_camera.UpdateAnimations();
+
     // Update Model, View, Projection matrices based on scene camera location
     gfx::Matrix44f scale_matrix, scene_view_matrix, scene_proj_matrix;
     cml::matrix_uniform_scale(scale_matrix, m_scene_scale);

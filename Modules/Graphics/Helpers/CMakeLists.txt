@@ -8,7 +8,6 @@ set(HEADERS
     ${INCLUDE_DIR}/Helpers.h
     ${INCLUDE_DIR}/Camera.h
     ${INCLUDE_DIR}/ArcBallCamera.h
-    ${INCLUDE_DIR}/Timer.h
     ${INCLUDE_DIR}/FpsCounter.h
     ${INCLUDE_DIR}/Mesh.h
     ${INCLUDE_DIR}/MathTypes.h
@@ -19,7 +18,6 @@ set(HEADERS
 set(SOURCES
     ${SOURCES_DIR}/Camera.cpp
     ${SOURCES_DIR}/ArcBallCamera.cpp
-    ${SOURCES_DIR}/Timer.cpp
     ${SOURCES_DIR}/FpsCounter.cpp
     ${SOURCES_DIR}/Mesh.cpp
 )
