@@ -53,7 +53,7 @@ public:
     {
         m_is_running = true;
         m_start_value = m_value;
-        ActionTimerType::Reset();
+        Timer::Reset();
     }
 
     bool Update()
