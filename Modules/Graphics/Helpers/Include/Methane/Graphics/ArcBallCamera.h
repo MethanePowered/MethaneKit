@@ -25,9 +25,9 @@ Arc-ball camera implementation.
 
 #include "Camera.h"
 
-#include <Methane/Data/ActionTimer.hpp>
+#include <Methane/Data/Animation.hpp>
 
-#include <set>
+#include <map>
 #include <chrono>
 
 namespace Methane
@@ -62,6 +62,8 @@ public:
         MoveRight,
         MoveForward,
         MoveBack,
+        MoveUp,
+        MoveDown,
 
         // Rotate
         YawLeft,
@@ -81,17 +83,23 @@ public:
     ArcBallCamera(Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
     ArcBallCamera(const Camera& view_camera, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
 
-    Pivot GetPivot() const                          { return m_pivot; }
+    Pivot GetPivot() const                                          { return m_pivot; }
 
-    float GetRadiusRatio() const                    { return m_radius_ratio; }
-    void  SetRadiusRatio(float radius_ratio)        { m_radius_ratio = radius_ratio; }
-    float GetRadiusInPixels() const noexcept        { return GetRadiusInPixels(m_screen_size); }
+    float GetRadiusRatio() const                                    { return m_radius_ratio; }
+    void  SetRadiusRatio(float radius_ratio)                        { m_radius_ratio = radius_ratio; }
+    float GetRadiusInPixels() const noexcept                        { return GetRadiusInPixels(m_screen_size); }
 
-    uint32_t GetZoomStepsCount() const              { return m_zoom_steps_count; }
-    void  SetZoomStepsCount(uint32_t steps_count)   { m_zoom_steps_count = steps_count;}
+    uint32_t GetZoomStepsCount() const                              { return m_zoom_steps_count; }
+    void  SetZoomStepsCount(uint32_t steps_count)                   { m_zoom_steps_count = steps_count;}
 
     const DistanceRange& GetZoomDistanceRange() const               { return m_zoom_distance_range; }
     void SetZoomDistanceRange(const DistanceRange& distance_range)  { m_zoom_distance_range = distance_range; }
+
+    float GetMoveDistancePerSecond() const                          { return m_move_distance_per_second; }
+    void SetMoveDistancePerSecond(float distance_per_second)        { m_move_distance_per_second = distance_per_second; }
+
+    double GetKeyboardActionDurationSec() const                     { return m_keyboard_action_duration_sec; }
+    void SetKeyboardActionDurationSec(double min_duration_sec)      { m_keyboard_action_duration_sec = min_duration_sec; }
 
     // Mouse action handlers
     void OnMousePressed(const Data::Point2i& mouse_screen_pos, MouseAction mouse_action);
@@ -103,8 +111,11 @@ public:
     void OnKeyPressed(KeyboardAction keyboard_action);
     void OnKeyReleased(KeyboardAction keyboard_action);
 
+    void UpdateAnimations();
+
 protected:
-    using KeyboardActionTimers = std::set<Data::ActionTimer<KeyboardAction>>;
+    using OrientationAnimation      = Data::Animation<Orientation>;
+    using KeyboardActionAnimations  = std::map<KeyboardAction, OrientationAnimation>;
 
     Vector3f GetNormalizedSphereProjection(const Data::Point2i& mouse_screen_pos, bool is_primary) const;
 
@@ -114,15 +125,19 @@ protected:
     void ApplyLookDirection(const Vector3f& look_dir, const Orientation& base_orientation);
     void ApplyLookDirection(const Vector3f& look_dir) { return ApplyLookDirection(look_dir, m_current_orientation);  }
 
-    const Camera*        m_p_view_camera;
-    const Pivot          m_pivot;
-    float                m_radius_ratio              = 0.9f;
-    uint32_t             m_zoom_steps_count          = 10;
-    DistanceRange        m_zoom_distance_range       = DistanceRange(1.f, 1000.f);
-    MouseAction          m_mouse_action              = MouseAction::None;
-    Vector3f             m_mouse_pressed_on_sphere   = { };
-    Orientation          m_mouse_pressed_orientation = { };
-    KeyboardActionTimers m_keyboard_action_timers;
+    bool MoveAnimation(Orientation& orientation_to_update, const Orientation& start_orientation, double elapsed_seconds, const Vector3f& move_per_second) const;
+
+    const Camera*            m_p_view_camera;
+    const Pivot              m_pivot;
+    float                    m_radius_ratio                 = 0.9f;
+    uint32_t                 m_zoom_steps_count             = 10;
+    DistanceRange            m_zoom_distance_range          = DistanceRange(1.f, 1000.f);
+    float                    m_move_distance_per_second     = 5.f;
+    double                   m_keyboard_action_duration_sec = 0.3;
+    MouseAction              m_mouse_action                 = MouseAction::None;
+    Vector3f                 m_mouse_pressed_on_sphere      = { };
+    Orientation              m_mouse_pressed_orientation    = { };
+    KeyboardActionAnimations m_keyboard_action_animations;
 };
 
 } // namespace Graphics

@@ -24,6 +24,7 @@ target_link_libraries(${TARGET} INTERFACE
     MethanePlatformApp
     MethanePlatformUtils
     MethaneGraphicsCore
+    MethaneGraphicsHelpers
 )
 
 install(FILES ${HEADERS} DESTINATION ${INCLUDE_DIR})

@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Data/ActionTimer.hpp
-Input action timer for tracking the action active time
+FILE: Methane/Data/Timer.hpp
+Basic animation timer for measuring elapsed time since start.
 
 ******************************************************************************/
 
@@ -30,24 +30,29 @@ namespace Methane
 namespace Data
 {
 
-template<typename ActionType>
-class ActionTimer
+class Timer
 {
 public:
-    using TimePoint = std::chrono::high_resolution_clock::time_point;
+    using Clock = std::chrono::high_resolution_clock;
+    using TimePoint = Clock::time_point;
 
-    ActionTimer(ActionType action)
-        : m_action(action)
-        , m_time(std::chrono::high_resolution_clock::now())
-    { }
+    Timer() : m_start_time(Clock::now()) { }
 
-    bool operator<(const ActionTimer& other) const    { return m_action < other.m_action; }
-    bool operator==(const ActionTimer& other) const   { return m_action == other.m_action; }
-    bool operator!=(const ActionTimer& other) const   { return !operator==(other); }
+    void Reset() noexcept { m_start_time = Clock::now(); }
+
+    TimePoint   GetStartTime() const noexcept       { return m_start_time; }
+    uint32_t    GetElapsedSecondsU() const noexcept { return GetElapsedSeconds<uint32_t>(); }
+    double      GetElapsedSecondsD() const noexcept { return GetElapsedSeconds<double>(); }
+    float       GetElapsedSecondsF() const noexcept { return GetElapsedSeconds<float>(); }
+
+    template<typename T>
+    T GetElapsedSeconds() const noexcept
+    {
+        return std::chrono::duration_cast<std::chrono::duration<T>>(Clock::now() - m_start_time).count();
+    }
 
 private:
-    const ActionType m_action;
-    const TimePoint  m_time;
+    TimePoint m_start_time;
 };
 
 } // namespace Data

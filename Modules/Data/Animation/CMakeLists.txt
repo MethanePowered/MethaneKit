@@ -5,7 +5,8 @@ include(Methane)
 get_module_dirs("Methane/Data")
 
 set(HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}/ActionTimer.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}/Timer.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}/Animation.hpp
 )
 
 add_library(${TARGET} INTERFACE)
