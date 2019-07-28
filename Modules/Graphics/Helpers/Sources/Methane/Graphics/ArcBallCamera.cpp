@@ -37,7 +37,7 @@ static inline float square(float x)     { return x * x; }
 static inline float unitSign(float x) { return x / std::fabsf(x); }
 }
 
-ArcBallCamera::ArcBallCamera(Data::AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation)
+ArcBallCamera::ArcBallCamera(AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation)
     : Camera(axis_orientation)
     , m_animations(animations)
     , m_p_view_camera(nullptr)
@@ -45,7 +45,7 @@ ArcBallCamera::ArcBallCamera(Data::AnimationsPool& animations, Pivot pivot, cml:
 {
 }
 
-ArcBallCamera::ArcBallCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation)
+ArcBallCamera::ArcBallCamera(const Camera& view_camera, AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation)
     : Camera(axis_orientation)
     , m_animations(animations)
     , m_p_view_camera(&view_camera)
@@ -140,7 +140,7 @@ void ArcBallCamera::OnKeyPressed(KeyboardAction keyboard_action)
         }
         
         const Vector3f move_per_second = TransformViewToWorld(move_direction_it->second).normalize() * m_move_distance_per_second;
-        m_animations.push_back(std::make_shared<Data::ValueAnimation<Orientation>>(m_current_orientation,
+        m_animations.push_back(std::make_shared<ValueAnimation<Orientation>>(m_current_orientation,
             [move_per_second, this](Orientation& orientation_to_update, const Orientation&, double elapsed_seconds, double delta_seconds)
             {
                 const double acceleratio_factor = std::max(1.0, elapsed_seconds / m_keyboard_action_duration_sec);
