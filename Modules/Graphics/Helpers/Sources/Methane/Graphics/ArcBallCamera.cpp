@@ -135,8 +135,8 @@ void ArcBallCamera::OnKeyPressed(KeyboardAction keyboard_action)
             {
                 // Continue animation until key is released
                 keyboard_action_animations_it->second.lock()->SetDuration(std::numeric_limits<double>::max());
+                return;
             }
-            return;
         }
         
         const Vector3f move_per_second = TransformViewToWorld(move_direction_it->second).normalize() * m_move_distance_per_second;
