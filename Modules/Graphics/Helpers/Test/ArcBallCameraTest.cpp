@@ -38,6 +38,7 @@ static const float               g_test_radius_pixels    = g_test_screen_center.
 static const Vector3f            g_axis_x                = { 1.f, 0.f, 0.f };
 static const Vector3f            g_axis_y                = { 0.f, 1.f, 0.f };
 static const Vector3f            g_axis_z                = { 0.f, 0.f, -1.f };
+static AnimationsPool            g_animations;
 
 // Approximate comparison of vectors for test purposes only
 static float vectors_equal_epsilon = 0.00001f;
@@ -64,14 +65,14 @@ inline void SetupCamera(ArcBallCamera& camera, const Camera::Orientation& orient
 
 inline ArcBallCamera SetupViewCamera(ArcBallCamera::Pivot pivot, const Camera::Orientation& orientation)
 {
-    ArcBallCamera view_camera(pivot);
+    ArcBallCamera view_camera(g_animations, pivot);
     SetupCamera(view_camera, orientation);
     return view_camera;
 }
 
 inline ArcBallCamera SetupDependentCamera(const ArcBallCamera& view_camera, ArcBallCamera::Pivot pivot, const Camera::Orientation& orientation)
 {
-    ArcBallCamera dependent_camera(view_camera, pivot);
+    ArcBallCamera dependent_camera(view_camera, g_animations, pivot);
     SetupCamera(dependent_camera, orientation);
     return dependent_camera;
 }

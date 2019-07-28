@@ -25,7 +25,7 @@ Arc-ball camera implementation.
 
 #include "Camera.h"
 
-#include <Methane/Data/Animation.hpp>
+#include <Methane/Data/AnimationsPool.h>
 
 #include <map>
 #include <chrono>
@@ -65,7 +65,7 @@ public:
         MoveUp,
         MoveDown,
 
-        // Rotate
+        // Rotate	
         YawLeft,
         YawRight,
         RollLeft,
@@ -80,8 +80,8 @@ public:
 
     using DistanceRange = std::pair<float /*min_distance*/, float /*max_distance*/>;
 
-    ArcBallCamera(Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
-    ArcBallCamera(const Camera& view_camera, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
+    ArcBallCamera(Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
+    ArcBallCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
 
     Pivot GetPivot() const                                          { return m_pivot; }
 
@@ -114,8 +114,7 @@ public:
     void UpdateAnimations();
 
 protected:
-    using OrientationAnimation      = Data::Animation<Orientation>;
-    using KeyboardActionAnimations  = std::map<KeyboardAction, OrientationAnimation>;
+    using KeyboardActionAnimations  = std::map<KeyboardAction, Data::Animation::WeakPtr>;
 
     Vector3f GetNormalizedSphereProjection(const Data::Point2i& mouse_screen_pos, bool is_primary) const;
 
@@ -125,8 +124,7 @@ protected:
     void ApplyLookDirection(const Vector3f& look_dir, const Orientation& base_orientation);
     void ApplyLookDirection(const Vector3f& look_dir) { return ApplyLookDirection(look_dir, m_current_orientation);  }
 
-    bool MoveAnimation(Orientation& orientation_to_update, const Orientation& start_orientation, double elapsed_seconds, const Vector3f& move_per_second) const;
-
+    Data::AnimationsPool&    m_animations;
     const Camera*            m_p_view_camera;
     const Pivot              m_pivot;
     float                    m_radius_ratio                 = 0.9f;

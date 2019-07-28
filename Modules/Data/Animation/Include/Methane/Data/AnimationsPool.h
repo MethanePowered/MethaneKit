@@ -16,43 +16,28 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Data/Timer.hpp
-Basic animation timer for measuring elapsed time since start.
+FILE: Methane/Data/AnimationsPool.h
+Pool of animations for centralized updating, adding and removing in application.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <chrono>
+#include "Animation.h"
+
+#include <deque>
 
 namespace Methane
 {
 namespace Data
 {
 
-class Timer
+using Animations = std::deque<Animation::Ptr>;
+
+class AnimationsPool : public Animations
 {
 public:
-    using Clock = std::chrono::high_resolution_clock;
-    using TimePoint = Clock::time_point;
-
-    Timer() : m_start_time(Clock::now()) { }
-
-    void Reset() noexcept { m_start_time = Clock::now(); }
-
-    TimePoint   GetStartTime() const noexcept       { return m_start_time; }
-    uint32_t    GetElapsedSecondsU() const noexcept { return GetElapsedSeconds<uint32_t>(); }
-    double      GetElapsedSecondsD() const noexcept { return GetElapsedSeconds<double>(); }
-    float       GetElapsedSecondsF() const noexcept { return GetElapsedSeconds<float>(); }
-
-    template<typename T>
-    T GetElapsedSeconds() const noexcept
-    {
-        return std::chrono::duration_cast<std::chrono::duration<T>>(Clock::now() - m_start_time).count();
-    }
-
-private:
-    TimePoint m_start_time;
+    void Update();
 };
 
 } // namespace Data

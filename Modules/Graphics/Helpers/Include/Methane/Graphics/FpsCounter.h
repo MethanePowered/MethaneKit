@@ -23,7 +23,7 @@ FPS counter calculates frame time duration with moving average window algorithm.
 
 #pragma once
 
-#include <Methane/Data/Timer.hpp>
+#include <Methane/Data/Timer.h>
 
 #include <cmath>
 #include <queue>

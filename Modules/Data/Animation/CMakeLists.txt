@@ -5,23 +5,46 @@ include(Methane)
 get_module_dirs("Methane/Data")
 
 set(HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}/Timer.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}/Animation.hpp
+    ${INCLUDE_DIR}/Timer.h
+    ${INCLUDE_DIR}/Animation.h
+    ${INCLUDE_DIR}/AnimationsPool.h
+    ${INCLUDE_DIR}/ValueAnimation.hpp
 )
 
-add_library(${TARGET} INTERFACE)
-
-target_sources(${TARGET} INTERFACE
-    ${HEADERS}
+set(SOURCES
+    ${SOURCES_DIR}/AnimationsPool.cpp
 )
 
-target_include_directories(${TARGET} INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Include>
-    $<INSTALL_INTERFACE:Include>
+add_library(${TARGET} STATIC
+	${HEADERS}
+    ${SOURCES}
 )
 
-target_link_libraries(${TARGET} INTERFACE
-    MethaneDataTypes
+target_include_directories(${TARGET}
+    PRIVATE
+        Sources
+    PUBLIC
+        Include
 )
 
-install(FILES ${HEADERS} DESTINATION ${INCLUDE_DIR})
+set_target_properties(${TARGET}
+    PROPERTIES
+    FOLDER Modules/Data
+)
+
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
+
+set_target_properties(${TARGET}
+    PROPERTIES
+    FOLDER Modules/Data
+    PUBLIC_HEADER "${HEADERS}"
+)
+
+install(TARGETS ${TARGET}
+    PUBLIC_HEADER
+        DESTINATION ${INCLUDE_DIR}
+        COMPONENT Development
+    ARCHIVE
+        DESTINATION Lib
+        COMPONENT Development
+)
