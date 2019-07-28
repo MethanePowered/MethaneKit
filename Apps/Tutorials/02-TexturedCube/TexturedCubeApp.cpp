@@ -191,6 +191,8 @@ void TexturedCubeApp::Update()
 {
     if (HasError())
         return;
+    
+    GraphicsApp::Update();
 
     const float elapsed_time_sec = m_timer.GetElapsedSecondsF();
     m_timer.Reset();

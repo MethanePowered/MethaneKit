@@ -22,6 +22,7 @@ Arc-ball camera implementation.
 ******************************************************************************/
 
 #include <Methane/Graphics/ArcBallCamera.h>
+#include <Methane/Data/ValueAnimation.hpp>
 
 #include <cml/mathlib/mathlib.h>
 
@@ -36,15 +37,17 @@ static inline float square(float x)     { return x * x; }
 static inline float unitSign(float x) { return x / std::fabsf(x); }
 }
 
-ArcBallCamera::ArcBallCamera(Pivot pivot, cml::AxisOrientation axis_orientation)
+ArcBallCamera::ArcBallCamera(Data::AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation)
     : Camera(axis_orientation)
+    , m_animations(animations)
     , m_p_view_camera(nullptr)
     , m_pivot(pivot)
 {
 }
 
-ArcBallCamera::ArcBallCamera(const Camera& view_camera, Pivot pivot, cml::AxisOrientation axis_orientation)
+ArcBallCamera::ArcBallCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation)
     : Camera(axis_orientation)
+    , m_animations(animations)
     , m_p_view_camera(&view_camera)
     , m_pivot(pivot)
 {
@@ -121,15 +124,34 @@ void ArcBallCamera::OnKeyPressed(KeyboardAction keyboard_action)
     auto move_direction_it = move_in_view_direction_by_keyboard_action.find(keyboard_action);
     if (move_direction_it != move_in_view_direction_by_keyboard_action.end())
     {
-        const Vector3f move_in_view_per_sec = TransformViewToWorld(Vector3f(move_direction_it->second * m_move_distance_per_second));
-        const OrientationAnimation::FunctionType animation_func = std::bind(&ArcBallCamera::MoveAnimation,
-              this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, move_in_view_per_sec);
-        auto emplace_result = m_keyboard_action_animations.emplace(keyboard_action, OrientationAnimation(m_current_orientation, animation_func));
-        if (!emplace_result.second)
+        auto keyboard_action_animations_it = m_keyboard_action_animations.find(keyboard_action);
+        if (keyboard_action_animations_it != m_keyboard_action_animations.end())
         {
-            assert(emplace_result.first != m_keyboard_action_animations.end());
-            emplace_result.first->second.SetDuration(std::numeric_limits<double>::max());
+            if (keyboard_action_animations_it->second.expired())
+            {
+                m_keyboard_action_animations.erase(keyboard_action_animations_it);
+            }
+            else
+            {
+                // Continue animation until key is released
+                keyboard_action_animations_it->second.lock()->SetDuration(std::numeric_limits<double>::max());
+            }
+            return;
         }
+        
+        const Vector3f move_per_second = TransformViewToWorld(move_direction_it->second).normalize() * m_move_distance_per_second;
+        m_animations.push_back(std::make_shared<Data::ValueAnimation<Orientation>>(m_current_orientation,
+            [move_per_second, this](Orientation& orientation_to_update, const Orientation&, double elapsed_seconds, double delta_seconds)
+            {
+                const double acceleratio_factor = std::max(1.0, elapsed_seconds / m_keyboard_action_duration_sec);
+                const Vector3f move_vector = move_per_second * delta_seconds * acceleratio_factor;
+                orientation_to_update.aim += move_vector;
+                orientation_to_update.eye += move_vector;
+                return true;
+            }));
+        
+        auto emplace_result = m_keyboard_action_animations.emplace(keyboard_action, m_animations.back());
+        assert(emplace_result.second);
     }
 }
 
@@ -138,28 +160,15 @@ void ArcBallCamera::OnKeyReleased(KeyboardAction keyboard_action)
     auto keyboard_action_animations_it = m_keyboard_action_animations.find(keyboard_action);
     if (keyboard_action_animations_it != m_keyboard_action_animations.end())
     {
-        OrientationAnimation& animation = keyboard_action_animations_it->second;
-        animation.SetDuration(m_keyboard_action_duration_sec);
-    }
-}
-
-void ArcBallCamera::UpdateAnimations()
-{
-    if (m_keyboard_action_animations.empty())
-        return;
-
-    std::vector<KeyboardAction> completed_actions;
-    for (auto keyboard_action_and_animation : m_keyboard_action_animations)
-    {
-        if (!keyboard_action_and_animation.second.Update())
+        if (keyboard_action_animations_it->second.expired())
         {
-            completed_actions.push_back(keyboard_action_and_animation.first);
+            m_keyboard_action_animations.erase(keyboard_action_animations_it);
         }
-    }
-
-    for (KeyboardAction action : completed_actions)
-    {
-        m_keyboard_action_animations.erase(action);
+        else
+        {
+            // Stop animation in a fixed duration after it was started
+            keyboard_action_animations_it->second.lock()->SetDuration(m_keyboard_action_duration_sec);
+        }
     }
 }
 
@@ -213,11 +222,4 @@ void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir, const Orientati
     case Pivot::Aim: m_current_orientation.eye = base_orientation.aim - look_dir; break;
     case Pivot::Eye: m_current_orientation.aim = base_orientation.eye + look_dir; break;
     }
-}
-
-bool ArcBallCamera::MoveAnimation(Orientation& orientation_to_update, const Orientation& start_orientation, double elapsed_seconds, const Vector3f& move_per_second) const
-{
-    orientation_to_update.aim = start_orientation.aim + move_per_second * elapsed_seconds;
-    orientation_to_update.eye = start_orientation.eye + move_per_second * elapsed_seconds;
-    return true;
 }
