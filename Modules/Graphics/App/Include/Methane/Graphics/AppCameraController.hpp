@@ -38,26 +38,28 @@ public:
     using KeyboardActionByKey = std::map<Platform::Keyboard::Key, ArcBallCamera::KeyboardAction>;
 
     inline static const MouseActionByButton default_mouse_actions_by_button = {
-        { Platform::Mouse::Button::Left,     ArcBallCamera::MouseAction::Rotate },
-        { Platform::Mouse::Button::VScroll,  ArcBallCamera::MouseAction::Zoom   },
-        { Platform::Mouse::Button::Middle,   ArcBallCamera::MouseAction::Move   },
+        { Platform::Mouse::Button::Left,            ArcBallCamera::MouseAction::Rotate },
+        { Platform::Mouse::Button::VScroll,         ArcBallCamera::MouseAction::Zoom   },
+        { Platform::Mouse::Button::Middle,          ArcBallCamera::MouseAction::Move   },
     };
 
     inline static const KeyboardActionByKey default_keyboard_actions_by_key = {
-        { Platform::Keyboard::Key::Up,       ArcBallCamera::KeyboardAction::MoveForward },
-        { Platform::Keyboard::Key::W,        ArcBallCamera::KeyboardAction::MoveForward },
-        { Platform::Keyboard::Key::Down,     ArcBallCamera::KeyboardAction::MoveBack    },
-        { Platform::Keyboard::Key::S,        ArcBallCamera::KeyboardAction::MoveBack    },
-        { Platform::Keyboard::Key::Left,     ArcBallCamera::KeyboardAction::MoveLeft    },
-        { Platform::Keyboard::Key::A,        ArcBallCamera::KeyboardAction::MoveLeft    },
-        { Platform::Keyboard::Key::Right,    ArcBallCamera::KeyboardAction::MoveRight   },
-        { Platform::Keyboard::Key::D,        ArcBallCamera::KeyboardAction::MoveRight   },
-        { Platform::Keyboard::Key::PageUp,   ArcBallCamera::KeyboardAction::MoveUp      },
-        { Platform::Keyboard::Key::PageDown, ArcBallCamera::KeyboardAction::MoveDown    },
-        { Platform::Keyboard::Key::Q,        ArcBallCamera::KeyboardAction::RollLeft    },
-        { Platform::Keyboard::Key::E,        ArcBallCamera::KeyboardAction::RollRight   },
-        { Platform::Keyboard::Key::Minus,    ArcBallCamera::KeyboardAction::ZoomIn      },
-        { Platform::Keyboard::Key::Equal,    ArcBallCamera::KeyboardAction::ZoomOut     },
+        { Platform::Keyboard::Key::Up,              ArcBallCamera::KeyboardAction::MoveForward },
+        { Platform::Keyboard::Key::W,               ArcBallCamera::KeyboardAction::MoveForward },
+        { Platform::Keyboard::Key::Down,            ArcBallCamera::KeyboardAction::MoveBack    },
+        { Platform::Keyboard::Key::S,               ArcBallCamera::KeyboardAction::MoveBack    },
+        { Platform::Keyboard::Key::Left,            ArcBallCamera::KeyboardAction::MoveLeft    },
+        { Platform::Keyboard::Key::A,               ArcBallCamera::KeyboardAction::MoveLeft    },
+        { Platform::Keyboard::Key::Right,           ArcBallCamera::KeyboardAction::MoveRight   },
+        { Platform::Keyboard::Key::D,               ArcBallCamera::KeyboardAction::MoveRight   },
+        { Platform::Keyboard::Key::PageUp,          ArcBallCamera::KeyboardAction::MoveUp      },
+        { Platform::Keyboard::Key::PageDown,        ArcBallCamera::KeyboardAction::MoveDown    },
+        { Platform::Keyboard::Key::Q,               ArcBallCamera::KeyboardAction::RollLeft    },
+        { Platform::Keyboard::Key::E,               ArcBallCamera::KeyboardAction::RollRight   },
+        { Platform::Keyboard::Key::Minus,           ArcBallCamera::KeyboardAction::ZoomOut     },
+        { Platform::Keyboard::Key::KeyPadSubtract,  ArcBallCamera::KeyboardAction::ZoomOut     },
+        { Platform::Keyboard::Key::Equal,           ArcBallCamera::KeyboardAction::ZoomIn      },
+        { Platform::Keyboard::Key::KeyPadEqual,     ArcBallCamera::KeyboardAction::ZoomIn      },
     };
 
     AppCameraController(ArcBallCamera& arcball_camera,
