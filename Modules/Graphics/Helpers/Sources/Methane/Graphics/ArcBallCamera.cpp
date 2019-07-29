@@ -102,74 +102,41 @@ void ArcBallCamera::OnMouseReleased(const Point2i&)
 
 void ArcBallCamera::OnMouseScrolled(float scroll_delta)
 {
-    const float zoom_factor   = scroll_delta > 0.f ? 1.f - scroll_delta / m_zoom_steps_count
-                                                   : 1.f / (1.f + scroll_delta / m_zoom_steps_count);
-    const Vector3f look_dir   = GetLookDirection(m_current_orientation);
-    const float zoom_distance = std::min(std::max(look_dir.length() * zoom_factor, m_zoom_distance_range.first), m_zoom_distance_range.second);
-
-    ApplyLookDirection(cml::normalize(look_dir) * zoom_distance);
+    Zoom(scroll_delta > 0.f ? 1.f - scroll_delta / m_zoom_steps_count
+                            : 1.f / (1.f + scroll_delta / m_zoom_steps_count));
 }
 
 void ArcBallCamera::OnKeyPressed(KeyboardAction keyboard_action)
 {
-    static const std::map<KeyboardAction, Vector3f> move_in_view_direction_by_keyboard_action = {
-        { KeyboardAction::MoveLeft,     Vector3f(-1.f,  0.f,  0.f) },
-        { KeyboardAction::MoveRight,    Vector3f( 1.f,  0.f,  0.f) },
-        { KeyboardAction::MoveForward,  Vector3f( 0.f,  0.f,  1.f) },
-        { KeyboardAction::MoveBack,     Vector3f( 0.f,  0.f, -1.f) },
-        { KeyboardAction::MoveUp,       Vector3f( 0.f,  1.f,  0.f) },
-        { KeyboardAction::MoveDown,     Vector3f( 0.f, -1.f,  0.f) },
-    };
-
-    auto move_direction_it = move_in_view_direction_by_keyboard_action.find(keyboard_action);
-    if (move_direction_it != move_in_view_direction_by_keyboard_action.end())
+    switch(keyboard_action)
     {
-        auto keyboard_action_animations_it = m_keyboard_action_animations.find(keyboard_action);
-        if (keyboard_action_animations_it != m_keyboard_action_animations.end())
-        {
-            if (keyboard_action_animations_it->second.expired())
-            {
-                m_keyboard_action_animations.erase(keyboard_action_animations_it);
-            }
-            else
-            {
-                // Continue animation until key is released
-                keyboard_action_animations_it->second.lock()->SetDuration(std::numeric_limits<double>::max());
-                return;
-            }
-        }
-        
-        const Vector3f move_per_second = TransformViewToWorld(move_direction_it->second).normalize() * m_move_distance_per_second;
-        m_animations.push_back(std::make_shared<ValueAnimation<Orientation>>(m_current_orientation,
-            [move_per_second, this](Orientation& orientation_to_update, const Orientation&, double elapsed_seconds, double delta_seconds)
-            {
-                const double acceleratio_factor = std::max(1.0, elapsed_seconds / m_keyboard_action_duration_sec);
-                const Vector3f move_vector = move_per_second * delta_seconds * acceleratio_factor;
-                orientation_to_update.aim += move_vector;
-                orientation_to_update.eye += move_vector;
-                return true;
-            }));
-        
-        auto emplace_result = m_keyboard_action_animations.emplace(keyboard_action, m_animations.back());
-        assert(emplace_result.second);
+        // Move
+        case KeyboardAction::MoveLeft:      StartMoveAction(keyboard_action, Vector3f(-1.f,  0.f,  0.f)); break;
+        case KeyboardAction::MoveRight:     StartMoveAction(keyboard_action, Vector3f( 1.f,  0.f,  0.f)); break;
+        case KeyboardAction::MoveForward:   StartMoveAction(keyboard_action, Vector3f( 0.f,  0.f,  1.f)); break;
+        case KeyboardAction::MoveBack:      StartMoveAction(keyboard_action, Vector3f( 0.f,  0.f, -1.f)); break;
+        case KeyboardAction::MoveUp:        StartMoveAction(keyboard_action, Vector3f( 0.f,  1.f,  0.f)); break;
+        case KeyboardAction::MoveDown:      StartMoveAction(keyboard_action, Vector3f( 0.f, -1.f,  0.f)); break;
+            
+        // Rotate
+        case KeyboardAction::YawLeft:       break;
+        case KeyboardAction::YawRight:      break;
+        case KeyboardAction::RollLeft:      break;
+        case KeyboardAction::RollRight:     break;
+        case KeyboardAction::PitchUp:       break;
+        case KeyboardAction::PitchDown:     break;
+            
+        // Zoom
+        case KeyboardAction::ZoomIn:        StartZoomAction(keyboard_action, 0.9f); break;
+        case KeyboardAction::ZoomOut:       StartZoomAction(keyboard_action, 1.1f); break;
+            
+        default: return;
     }
 }
 
 void ArcBallCamera::OnKeyReleased(KeyboardAction keyboard_action)
 {
-    auto keyboard_action_animations_it = m_keyboard_action_animations.find(keyboard_action);
-    if (keyboard_action_animations_it != m_keyboard_action_animations.end())
-    {
-        if (keyboard_action_animations_it->second.expired())
-        {
-            m_keyboard_action_animations.erase(keyboard_action_animations_it);
-        }
-        else
-        {
-            // Stop animation in a fixed duration after it was started
-            keyboard_action_animations_it->second.lock()->SetDuration(m_keyboard_action_duration_sec);
-        }
-    }
+    StopKeyboardAction(keyboard_action);
 }
 
 Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_screen_pos, bool is_primary) const
@@ -221,5 +188,91 @@ void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir, const Orientati
     {
     case Pivot::Aim: m_current_orientation.eye = base_orientation.aim - look_dir; break;
     case Pivot::Eye: m_current_orientation.aim = base_orientation.eye + look_dir; break;
+    }
+}
+
+void ArcBallCamera::Zoom(float zoom_factor)
+{
+    const Vector3f look_dir   = GetLookDirection(m_current_orientation);
+    const float zoom_distance = std::min(std::max(look_dir.length() * zoom_factor, m_zoom_distance_range.first), m_zoom_distance_range.second);
+    ApplyLookDirection(cml::normalize(look_dir) * zoom_distance);
+}
+
+void ArcBallCamera::StartMoveAction(KeyboardAction move_action, const Vector3f& move_direction_in_view)
+{
+    if (StartKeyboardAction(move_action))
+        return;
+    
+    const Vector3f move_per_second = TransformViewToWorld(move_direction_in_view).normalize() * m_move_distance_per_second;
+    m_animations.push_back(
+        std::make_shared<ValueAnimation<Orientation>>(
+            m_current_orientation,
+            [move_per_second, this](Orientation& orientation_to_update, const Orientation&, double elapsed_seconds, double delta_seconds)
+            {
+                const double acceleratio_factor = std::max(1.0, elapsed_seconds / m_keyboard_action_duration_sec);
+                const Vector3f move_vector = move_per_second * delta_seconds * acceleratio_factor;
+                orientation_to_update.aim += move_vector;
+                orientation_to_update.eye += move_vector;
+                return true;
+            }));
+    
+    auto emplace_result = m_keyboard_action_animations.emplace(move_action, m_animations.back());
+    assert(emplace_result.second);
+}
+
+void ArcBallCamera::StartZoomAction(KeyboardAction zoom_action, float zoom_factor_per_second)
+{
+    if (StartKeyboardAction(zoom_action))
+        return;
+    
+    m_animations.push_back(
+        std::make_shared<ValueAnimation<Orientation>>(
+            m_current_orientation,
+            [zoom_factor_per_second, this](Orientation& orientation_to_update, const Orientation&, double elapsed_seconds, double delta_seconds)
+            {
+                const double acceleratio_factor = std::max(1.0, elapsed_seconds / m_keyboard_action_duration_sec);
+                Zoom(zoom_factor_per_second * delta_seconds * acceleratio_factor);
+                return true;
+            }));
+    
+    auto emplace_result = m_keyboard_action_animations.emplace(zoom_action, m_animations.back());
+    assert(emplace_result.second);
+}
+
+bool ArcBallCamera::StartKeyboardAction(KeyboardAction keyboard_action)
+{
+    auto keyboard_action_animations_it = m_keyboard_action_animations.find(keyboard_action);
+    if (keyboard_action_animations_it == m_keyboard_action_animations.end())
+        return false;
+    
+    if (keyboard_action_animations_it->second.expired())
+    {
+        m_keyboard_action_animations.erase(keyboard_action_animations_it);
+        return false;
+    }
+    else
+    {
+        // Continue animation until key is released
+        keyboard_action_animations_it->second.lock()->SetDuration(std::numeric_limits<double>::max());
+        return true;
+    }
+}
+
+bool ArcBallCamera::StopKeyboardAction(KeyboardAction keyboard_action)
+{
+    auto keyboard_action_animations_it = m_keyboard_action_animations.find(keyboard_action);
+    if (keyboard_action_animations_it == m_keyboard_action_animations.end())
+        return false;
+
+    if (keyboard_action_animations_it->second.expired())
+    {
+        m_keyboard_action_animations.erase(keyboard_action_animations_it);
+        return false;
+    }
+    else
+    {
+        // Stop animation in a fixed duration after it was started
+        keyboard_action_animations_it->second.lock()->SetDuration(m_keyboard_action_duration_sec);
+        return true;
     }
 }

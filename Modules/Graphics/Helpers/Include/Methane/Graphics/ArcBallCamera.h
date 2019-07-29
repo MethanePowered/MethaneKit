@@ -123,6 +123,14 @@ protected:
 
     void ApplyLookDirection(const Vector3f& look_dir, const Orientation& base_orientation);
     void ApplyLookDirection(const Vector3f& look_dir) { return ApplyLookDirection(look_dir, m_current_orientation);  }
+    
+    void Zoom(float zoom_factor);
+    
+    void StartMoveAction(KeyboardAction move_action, const Vector3f& move_direction_in_view);
+    void StartZoomAction(KeyboardAction zoom_action, float zoom_factor_per_second);
+    
+    bool StartKeyboardAction(KeyboardAction keyboard_action);
+    bool StopKeyboardAction(KeyboardAction keyboard_action);
 
     Data::AnimationsPool&    m_animations;
     const Camera*            m_p_view_camera;
