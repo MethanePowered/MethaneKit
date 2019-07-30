@@ -39,8 +39,10 @@ public:
     using FunctionType = std::function<bool(ValueType& value_to_update, const ValueType& start_value,
                                             double elapsed_seconds, double delta_seconds)>;
 
-    ValueAnimation(ValueType& value, const FunctionType& update_function)
-        : m_value(value)
+    ValueAnimation(ValueType& value, const FunctionType& update_function,
+                   double duration_sec = std::numeric_limits<double>::max())
+        : Animation(duration_sec)
+        , m_value(value)
         , m_start_value(value)
         , m_update_function(update_function)
     { }

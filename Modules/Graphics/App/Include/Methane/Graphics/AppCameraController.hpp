@@ -60,6 +60,7 @@ public:
         { Platform::Keyboard::Key::KeyPadSubtract,  ArcBallCamera::KeyboardAction::ZoomOut     },
         { Platform::Keyboard::Key::Equal,           ArcBallCamera::KeyboardAction::ZoomIn      },
         { Platform::Keyboard::Key::KeyPadEqual,     ArcBallCamera::KeyboardAction::ZoomIn      },
+        { Platform::Keyboard::Key::R,               ArcBallCamera::KeyboardAction::Reset       },
     };
 
     AppCameraController(ArcBallCamera& arcball_camera,

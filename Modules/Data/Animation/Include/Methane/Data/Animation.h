@@ -38,11 +38,19 @@ public:
     using Ptr     = std::shared_ptr<Animation>;
     using WeakPtr = std::weak_ptr<Animation>;
 
+    Animation(double duration_sec = std::numeric_limits<double>::max())
+        : m_duration_sec(duration_sec)
+    { }
+    
     virtual ~Animation() = default;
 
-    bool   IsRunning() const noexcept       { return m_is_running; }
-    double GetDuration() const noexcept     { return m_duration_sec; }
-    void   SetDuration(double duration_sec) { m_duration_sec = duration_sec; }
+    bool   IsRunning() const noexcept            { return m_is_running; }
+    double GetDuration() const noexcept          { return m_duration_sec; }
+    void   SetDuration(double duration_sec)      { m_duration_sec = duration_sec; }
+    void   IncreaseDuration(double duration_sec)
+    {
+        m_duration_sec = GetElapsedSecondsD() + duration_sec;
+    }
 
     virtual void Restart() noexcept
     {
