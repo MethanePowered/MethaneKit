@@ -76,6 +76,8 @@ public:
         // Zoom
         ZoomIn,
         ZoomOut,
+        
+        Reset,
     };
 
     using DistanceRange = std::pair<float /*min_distance*/, float /*max_distance*/>;
@@ -124,19 +126,25 @@ protected:
     void ApplyLookDirection(const Vector3f& look_dir, const Orientation& base_orientation);
     void ApplyLookDirection(const Vector3f& look_dir) { return ApplyLookDirection(look_dir, m_current_orientation);  }
     
+    void Move(const Vector3f& move_vector);
     void Zoom(float zoom_factor);
     
-    void StartMoveAction(KeyboardAction move_action, const Vector3f& move_direction_in_view);
-    void StartZoomAction(KeyboardAction zoom_action, float zoom_factor_per_second);
+    inline double GetAccelerationFactor(double elapsed_seconds) { return std::max(1.0, elapsed_seconds / m_keyboard_action_duration_sec); }
     
-    bool StartKeyboardAction(KeyboardAction keyboard_action);
-    bool StopKeyboardAction(KeyboardAction keyboard_action);
+    void StartMoveAction(KeyboardAction move_action, const Vector3f& move_direction_in_view,
+                         double duration_sec = std::numeric_limits<double>::max());
+    
+    void StartZoomAction(KeyboardAction zoom_action, float zoom_factor_per_second,
+                         double duration_sec = std::numeric_limits<double>::max());
+    
+    bool StartKeyboardAction(KeyboardAction keyboard_action, double duration_sec);
+    bool StopKeyboardAction(KeyboardAction keyboard_action, double duration_sec);
 
     Data::AnimationsPool&    m_animations;
     const Camera*            m_p_view_camera;
     const Pivot              m_pivot;
     float                    m_radius_ratio                 = 0.9f;
-    uint32_t                 m_zoom_steps_count             = 10;
+    uint32_t                 m_zoom_steps_count             = 1;
     DistanceRange            m_zoom_distance_range          = DistanceRange(1.f, 1000.f);
     float                    m_move_distance_per_second     = 5.f;
     double                   m_keyboard_action_duration_sec = 0.3;

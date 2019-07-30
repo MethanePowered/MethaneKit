@@ -184,4 +184,16 @@ using namespace Methane::Platform;
     m_p_app->InputController().OnMouseInWindowChanged(false);
 }
 
+- (void)scrollWheel:(NSEvent *)event
+{
+    Mouse::Scroll scroll = { [event scrollingDeltaX], -[event scrollingDeltaY] };
+    if ([event hasPreciseScrollingDeltas])
+        scroll *= 0.1f;
+    
+    if (fabs(scroll.x()) < 0.00001 && fabs(scroll.y()) > 0.00001)
+        return;
+        
+    m_p_app->InputController().OnMouseScrollChanged(scroll);
+}
+
 @end
