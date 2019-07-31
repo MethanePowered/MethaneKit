@@ -148,10 +148,10 @@ public:
         using Mask = uint32_t;
         enum Value : Mask
         {
-            None = 0,
+            None      = 0,
             KeyStates = 1 << 0,
             Modifiers = 1 << 1,
-            All = static_cast<Mask>(~0),
+            All       = static_cast<Mask>(~0),
         };
 
         using Values = std::array<Value, 2>;
