@@ -44,22 +44,26 @@ public:
     };
 
     inline static const KeyboardActionByKey default_keyboard_actions_by_key = {
-        { Platform::Keyboard::Key::Up,              ArcBallCamera::KeyboardAction::MoveForward },
+        // Move
         { Platform::Keyboard::Key::W,               ArcBallCamera::KeyboardAction::MoveForward },
-        { Platform::Keyboard::Key::Down,            ArcBallCamera::KeyboardAction::MoveBack    },
         { Platform::Keyboard::Key::S,               ArcBallCamera::KeyboardAction::MoveBack    },
-        { Platform::Keyboard::Key::Left,            ArcBallCamera::KeyboardAction::MoveLeft    },
         { Platform::Keyboard::Key::A,               ArcBallCamera::KeyboardAction::MoveLeft    },
-        { Platform::Keyboard::Key::Right,           ArcBallCamera::KeyboardAction::MoveRight   },
         { Platform::Keyboard::Key::D,               ArcBallCamera::KeyboardAction::MoveRight   },
         { Platform::Keyboard::Key::PageUp,          ArcBallCamera::KeyboardAction::MoveUp      },
         { Platform::Keyboard::Key::PageDown,        ArcBallCamera::KeyboardAction::MoveDown    },
-        { Platform::Keyboard::Key::Q,               ArcBallCamera::KeyboardAction::RollLeft    },
-        { Platform::Keyboard::Key::E,               ArcBallCamera::KeyboardAction::RollRight   },
+        // Rotate
+        { Platform::Keyboard::Key::Comma,           ArcBallCamera::KeyboardAction::RollLeft    },
+        { Platform::Keyboard::Key::Period,          ArcBallCamera::KeyboardAction::RollRight   },
+        { Platform::Keyboard::Key::Left,            ArcBallCamera::KeyboardAction::YawLeft     },
+        { Platform::Keyboard::Key::Right,           ArcBallCamera::KeyboardAction::YawRight    },
+        { Platform::Keyboard::Key::Up,              ArcBallCamera::KeyboardAction::PitchUp     },
+        { Platform::Keyboard::Key::Down,            ArcBallCamera::KeyboardAction::PitchDown   },
+        // Zoom
         { Platform::Keyboard::Key::Minus,           ArcBallCamera::KeyboardAction::ZoomOut     },
         { Platform::Keyboard::Key::KeyPadSubtract,  ArcBallCamera::KeyboardAction::ZoomOut     },
         { Platform::Keyboard::Key::Equal,           ArcBallCamera::KeyboardAction::ZoomIn      },
         { Platform::Keyboard::Key::KeyPadEqual,     ArcBallCamera::KeyboardAction::ZoomIn      },
+        // Reset
         { Platform::Keyboard::Key::R,               ArcBallCamera::KeyboardAction::Reset       },
     };
 
@@ -81,14 +85,14 @@ public:
         case Platform::Mouse::ButtonState::Released: m_arcball_camera.OnMouseReleased(state_change.current.GetPosition()); break;
         }
     }
+    
+    // Platform::Input::Controller implementation
 
-    // Platform::Input::Controller
     void OnMousePositionChanged(const Platform::Mouse::Position& mouse_position, const Platform::Mouse::StateChange&) override
     {
         m_arcball_camera.OnMouseDragged(mouse_position);
     }
 
-    // Platform::Input::Controller
     void OnMouseScrollChanged(const Platform::Mouse::Scroll& mouse_scroll_delta, const Platform::Mouse::StateChange&) override
     {
         const auto mouse_button_and_delta = Platform::Mouse::GetScrollButtonAndDelta(mouse_scroll_delta);
@@ -99,7 +103,6 @@ public:
         }
     }
 
-    // Platform::Input::Controller
     void OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Platform::Keyboard::StateChange&) override
     {
         const ArcBallCamera::KeyboardAction action = GetKeyboardActionByKey(key);

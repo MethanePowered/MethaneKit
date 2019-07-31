@@ -86,8 +86,8 @@ void ControllersPool::OnMousePositionChanged(const Mouse::Position& mouse_positi
 void ControllersPool::OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_delta, const Mouse::StateChange& state_change)
 {
 #ifdef DEBUG_USER_INPUT
-    PrintToDebugOutput(std::string("Mouse scroll delta: ") + std::to_string(mouse_scroll_delta.x()) + " x " + std::to_string(mouse_scroll_delta.y()));
-    PrintToDebugOutput(std::string("Mouse (scroll): ") + state_change.current.ToString());
+    PrintToDebugOutput(std::string("Mouse (scroll): ") + state_change.current.ToString() +
+                       ", scroll delta: " + std::to_string(mouse_scroll_delta.x()) + " x " + std::to_string(mouse_scroll_delta.y()));
 #endif
 
     for (const Controller::Ptr& sp_controller : *this)

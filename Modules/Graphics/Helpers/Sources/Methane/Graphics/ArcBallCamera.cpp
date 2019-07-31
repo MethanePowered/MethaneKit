@@ -73,26 +73,7 @@ void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
     const Vector3f rotation_axis  = vectors_cross.normalize();
     const float    rotation_angle = std::atan2f(vectors_cross.length(), cml::dot(m_mouse_pressed_on_sphere, mouse_current_on_sphere));
 
-    Matrix44f view_rotation_matrix = { };
-    cml::matrix_rotation_axis_angle(view_rotation_matrix, rotation_axis, rotation_angle);
-
-    const Vector4f look_in_view = m_p_view_camera
-                                ? m_p_view_camera->TransformWorldToView(Vector4f(GetLookDirection(m_mouse_pressed_orientation), 1.f))
-                                : Vector4f(0.f, 0.f, GetAimDistance(m_mouse_pressed_orientation), 1.f);
-    
-    const Vector3f look_dir     = m_p_view_camera
-                                ? m_p_view_camera->TransformViewToWorld(view_rotation_matrix * look_in_view).subvector(3)
-                                : TransformViewToWorld(view_rotation_matrix * look_in_view, m_mouse_pressed_orientation).subvector(3);
-
-    const Vector4f up_in_view   = m_p_view_camera
-                                ? m_p_view_camera->TransformWorldToView(Vector4f(m_mouse_pressed_orientation.up, 1.f))
-                                : Vector4f(0.f, m_mouse_pressed_orientation.up.length(), 0.f, 1.f);
-
-    m_current_orientation.up    = m_p_view_camera
-                                ? m_p_view_camera->TransformViewToWorld(view_rotation_matrix * up_in_view).subvector(3)
-                                : TransformViewToWorld(view_rotation_matrix * up_in_view, m_mouse_pressed_orientation).subvector(3);
-
-    ApplyLookDirection(look_dir, m_mouse_pressed_orientation);
+    Rotate(rotation_axis, rotation_angle, m_mouse_pressed_orientation);
 }
 
 void ArcBallCamera::OnMouseReleased(const Point2i&)
@@ -117,25 +98,26 @@ void ArcBallCamera::OnKeyPressed(KeyboardAction keyboard_action)
     switch(keyboard_action)
     {
         // Move
-        case KeyboardAction::MoveLeft:      StartMoveAction(keyboard_action, Vector3f(-1.f,  0.f,  0.f)); break;
-        case KeyboardAction::MoveRight:     StartMoveAction(keyboard_action, Vector3f( 1.f,  0.f,  0.f)); break;
-        case KeyboardAction::MoveForward:   StartMoveAction(keyboard_action, Vector3f( 0.f,  0.f,  1.f)); break;
-        case KeyboardAction::MoveBack:      StartMoveAction(keyboard_action, Vector3f( 0.f,  0.f, -1.f)); break;
-        case KeyboardAction::MoveUp:        StartMoveAction(keyboard_action, Vector3f( 0.f,  1.f,  0.f)); break;
-        case KeyboardAction::MoveDown:      StartMoveAction(keyboard_action, Vector3f( 0.f, -1.f,  0.f)); break;
+        case KeyboardAction::MoveLeft:      StartMoveAction(keyboard_action,   Vector3f(-1.f,  0.f,  0.f)); break;
+        case KeyboardAction::MoveRight:     StartMoveAction(keyboard_action,   Vector3f( 1.f,  0.f,  0.f)); break;
+        case KeyboardAction::MoveForward:   StartMoveAction(keyboard_action,   Vector3f( 0.f,  0.f,  1.f)); break;
+        case KeyboardAction::MoveBack:      StartMoveAction(keyboard_action,   Vector3f( 0.f,  0.f, -1.f)); break;
+        case KeyboardAction::MoveUp:        StartMoveAction(keyboard_action,   Vector3f( 0.f,  1.f,  0.f)); break;
+        case KeyboardAction::MoveDown:      StartMoveAction(keyboard_action,   Vector3f( 0.f, -1.f,  0.f)); break;
             
         // Rotate
-        case KeyboardAction::YawLeft:       break;
-        case KeyboardAction::YawRight:      break;
-        case KeyboardAction::RollLeft:      break;
-        case KeyboardAction::RollRight:     break;
-        case KeyboardAction::PitchUp:       break;
-        case KeyboardAction::PitchDown:     break;
+        case KeyboardAction::YawLeft:       StartRotateAction(keyboard_action, Vector3f( 0.f,  1.f,  0.f)); break;
+        case KeyboardAction::YawRight:      StartRotateAction(keyboard_action, Vector3f( 0.f, -1.f,  0.f)); break;
+        case KeyboardAction::RollLeft:      StartRotateAction(keyboard_action, Vector3f( 0.f,  0.f, -1.f)); break;
+        case KeyboardAction::RollRight:     StartRotateAction(keyboard_action, Vector3f( 0.f,  0.f,  1.f)); break;
+        case KeyboardAction::PitchUp:       StartRotateAction(keyboard_action, Vector3f( 1.f,  0.f,  0.f)); break;
+        case KeyboardAction::PitchDown:     StartRotateAction(keyboard_action, Vector3f(-1.f,  0.f,  0.f)); break;
             
         // Zoom
         case KeyboardAction::ZoomIn:        StartZoomAction(keyboard_action, 0.9f); break;
         case KeyboardAction::ZoomOut:       StartZoomAction(keyboard_action, 1.1f); break;
-            
+        
+        // Reset orientation
         case KeyboardAction::Reset:         ResetOrientaion(); break;
             
         default: return;
@@ -199,6 +181,30 @@ void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir, const Orientati
     }
 }
 
+void ArcBallCamera::Rotate(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation)
+{
+    Matrix44f view_rotation_matrix = { };
+    cml::matrix_rotation_axis_angle(view_rotation_matrix, view_axis, angle_rad);
+    
+    const Vector4f look_in_view = m_p_view_camera
+    ? m_p_view_camera->TransformWorldToView(Vector4f(GetLookDirection(base_orientation), 1.f))
+    : Vector4f(0.f, 0.f, GetAimDistance(base_orientation), 1.f);
+    
+    const Vector3f look_dir     = m_p_view_camera
+    ? m_p_view_camera->TransformViewToWorld(view_rotation_matrix * look_in_view).subvector(3)
+    : TransformViewToWorld(view_rotation_matrix * look_in_view, base_orientation).subvector(3);
+    
+    const Vector4f up_in_view   = m_p_view_camera
+    ? m_p_view_camera->TransformWorldToView(Vector4f(base_orientation.up, 1.f))
+    : Vector4f(0.f, base_orientation.up.length(), 0.f, 1.f);
+    
+    m_current_orientation.up    = m_p_view_camera
+    ? m_p_view_camera->TransformViewToWorld(view_rotation_matrix * up_in_view).subvector(3)
+    : TransformViewToWorld(view_rotation_matrix * up_in_view, base_orientation).subvector(3);
+    
+    ApplyLookDirection(look_dir, base_orientation);
+}
+
 void ArcBallCamera::Move(const Vector3f& move_vector)
 {
     m_current_orientation.aim += move_vector;
@@ -210,6 +216,26 @@ void ArcBallCamera::Zoom(float zoom_factor)
     const Vector3f look_dir   = GetLookDirection(m_current_orientation);
     const float zoom_distance = std::min(std::max(look_dir.length() * zoom_factor, m_zoom_distance_range.first), m_zoom_distance_range.second);
     ApplyLookDirection(cml::normalize(look_dir) * zoom_distance);
+}
+
+void ArcBallCamera::StartRotateAction(KeyboardAction rotate_action, const Vector3f& rotation_axis, double duration_sec)
+{
+    if (StartKeyboardAction(rotate_action, duration_sec))
+        return;
+    
+    const float angle_rad_per_second = cml::rad(m_rotate_angle_per_second);
+    m_animations.push_back(
+        std::make_shared<ValueAnimation<Orientation>>(
+            m_current_orientation,
+            [angle_rad_per_second, rotation_axis, this](Orientation&, const Orientation&, double elapsed_seconds, double delta_seconds)
+            {
+                Rotate(rotation_axis, angle_rad_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds));
+                return true;
+            },
+            duration_sec));
+    
+    auto emplace_result = m_keyboard_action_animations.emplace(rotate_action, m_animations.back());
+    assert(emplace_result.second);
 }
 
 void ArcBallCamera::StartMoveAction(KeyboardAction move_action, const Vector3f& move_direction_in_view, double duration_sec)

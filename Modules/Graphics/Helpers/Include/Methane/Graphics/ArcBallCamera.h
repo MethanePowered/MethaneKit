@@ -85,6 +85,7 @@ public:
     ArcBallCamera(Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
     ArcBallCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
 
+    // Parameters
     Pivot GetPivot() const                                          { return m_pivot; }
 
     float GetRadiusRatio() const                                    { return m_radius_ratio; }
@@ -96,6 +97,9 @@ public:
 
     const DistanceRange& GetZoomDistanceRange() const               { return m_zoom_distance_range; }
     void SetZoomDistanceRange(const DistanceRange& distance_range)  { m_zoom_distance_range = distance_range; }
+    
+    float GetRotateAnglePerSecond() const                           { return m_rotate_angle_per_second; }
+    void SetRotateAnglePerSecond(float rotate_angle_per_second)     { m_rotate_angle_per_second = rotate_angle_per_second; }
 
     float GetMoveDistancePerSecond() const                          { return m_move_distance_per_second; }
     void SetMoveDistancePerSecond(float distance_per_second)        { m_move_distance_per_second = distance_per_second; }
@@ -113,8 +117,6 @@ public:
     void OnKeyPressed(KeyboardAction keyboard_action);
     void OnKeyReleased(KeyboardAction keyboard_action);
 
-    void UpdateAnimations();
-
 protected:
     using KeyboardActionAnimations  = std::map<KeyboardAction, Data::Animation::WeakPtr>;
 
@@ -126,10 +128,15 @@ protected:
     void ApplyLookDirection(const Vector3f& look_dir, const Orientation& base_orientation);
     void ApplyLookDirection(const Vector3f& look_dir) { return ApplyLookDirection(look_dir, m_current_orientation);  }
     
+    void Rotate(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation);
+    void Rotate(const Vector3f& view_axis, float angle_rad) { Rotate(view_axis, angle_rad, m_current_orientation ); }
     void Move(const Vector3f& move_vector);
     void Zoom(float zoom_factor);
     
     inline double GetAccelerationFactor(double elapsed_seconds) { return std::max(1.0, elapsed_seconds / m_keyboard_action_duration_sec); }
+    
+    void StartRotateAction(KeyboardAction rotate_action, const Vector3f& rotation_axis,
+                           double duration_sec = std::numeric_limits<double>::max());
     
     void StartMoveAction(KeyboardAction move_action, const Vector3f& move_direction_in_view,
                          double duration_sec = std::numeric_limits<double>::max());
@@ -144,9 +151,10 @@ protected:
     const Camera*            m_p_view_camera;
     const Pivot              m_pivot;
     float                    m_radius_ratio                 = 0.9f;
-    uint32_t                 m_zoom_steps_count             = 1;
+    uint32_t                 m_zoom_steps_count             = 3;
     DistanceRange            m_zoom_distance_range          = DistanceRange(1.f, 1000.f);
     float                    m_move_distance_per_second     = 5.f;
+    float                    m_rotate_angle_per_second      = 15.f;
     double                   m_keyboard_action_duration_sec = 0.3;
     MouseAction              m_mouse_action                 = MouseAction::None;
     Vector3f                 m_mouse_pressed_on_sphere      = { };
