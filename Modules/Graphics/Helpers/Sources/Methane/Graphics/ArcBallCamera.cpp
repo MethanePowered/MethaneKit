@@ -74,6 +74,13 @@ void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
     const float    rotation_angle = std::atan2f(vectors_cross.length(), cml::dot(m_mouse_pressed_on_sphere, mouse_current_on_sphere));
 
     Rotate(rotation_axis, rotation_angle, m_mouse_pressed_orientation);
+    
+    // NOTE: fixes rotation axis flip at angles approaching to 180 degrees
+    if (std::abs(rotation_angle) > cml::rad(90.f))
+    {
+        m_mouse_pressed_orientation = m_current_orientation;
+        m_mouse_pressed_on_sphere   = mouse_current_on_sphere;
+    }
 }
 
 void ArcBallCamera::OnMouseReleased(const Point2i&)
@@ -187,20 +194,20 @@ void ArcBallCamera::Rotate(const Vector3f& view_axis, float angle_rad, const Ori
     cml::matrix_rotation_axis_angle(view_rotation_matrix, view_axis, angle_rad);
     
     const Vector4f look_in_view = m_p_view_camera
-    ? m_p_view_camera->TransformWorldToView(Vector4f(GetLookDirection(base_orientation), 1.f))
-    : Vector4f(0.f, 0.f, GetAimDistance(base_orientation), 1.f);
+                                ? m_p_view_camera->TransformWorldToView(Vector4f(GetLookDirection(base_orientation), 1.f))
+                                : Vector4f(0.f, 0.f, GetAimDistance(base_orientation), 1.f);
     
     const Vector3f look_dir     = m_p_view_camera
-    ? m_p_view_camera->TransformViewToWorld(view_rotation_matrix * look_in_view).subvector(3)
-    : TransformViewToWorld(view_rotation_matrix * look_in_view, base_orientation).subvector(3);
+                                ? m_p_view_camera->TransformViewToWorld(view_rotation_matrix * look_in_view).subvector(3)
+                                : TransformViewToWorld(view_rotation_matrix * look_in_view, base_orientation).subvector(3);
     
     const Vector4f up_in_view   = m_p_view_camera
-    ? m_p_view_camera->TransformWorldToView(Vector4f(base_orientation.up, 1.f))
-    : Vector4f(0.f, base_orientation.up.length(), 0.f, 1.f);
+                                ? m_p_view_camera->TransformWorldToView(Vector4f(base_orientation.up, 1.f))
+                                : Vector4f(0.f, base_orientation.up.length(), 0.f, 1.f);
     
     m_current_orientation.up    = m_p_view_camera
-    ? m_p_view_camera->TransformViewToWorld(view_rotation_matrix * up_in_view).subvector(3)
-    : TransformViewToWorld(view_rotation_matrix * up_in_view, base_orientation).subvector(3);
+                                ? m_p_view_camera->TransformViewToWorld(view_rotation_matrix * up_in_view).subvector(3)
+                                : TransformViewToWorld(view_rotation_matrix * up_in_view, base_orientation).subvector(3);
     
     ApplyLookDirection(look_dir, base_orientation);
 }
