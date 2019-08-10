@@ -59,11 +59,11 @@ void AppHelpController::OnKeyboardChanged(Keyboard::Key key, Platform::Keyboard:
         }
         is_first_controller = false;
 
-        std::string line_offset;
+        std::string controller_offset;
         if (!sp_controller->GetControllerName().empty())
         {
             help_stream << sp_controller->GetControllerName() << std::endl;
-            line_offset = single_offset;
+            controller_offset = single_offset;
         }
 
         bool header_present = false;
@@ -71,16 +71,17 @@ void AppHelpController::OnKeyboardChanged(Keyboard::Key key, Platform::Keyboard:
         {
             if (key_description.first.empty())
             {
-                help_stream << std::endl << line_offset << key_description.second << ":" << std::endl;
-                if (!header_present)
-                {
-                    line_offset += single_offset;
-                    header_present = true;
-                }
+                help_stream << std::endl << controller_offset << key_description.second << ":" << std::endl;
+                header_present = true;
             }
             else
             {
-                help_stream << line_offset << key_description.first;
+                help_stream << controller_offset;
+                if (header_present)
+                {
+                    help_stream << single_offset;
+                }
+                help_stream << key_description.first;
                 if (!key_description.second.empty())
                 {
                     help_stream << " - " << key_description.second << ";";

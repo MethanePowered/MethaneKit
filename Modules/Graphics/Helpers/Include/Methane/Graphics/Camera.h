@@ -82,6 +82,7 @@ public:
 
     Vector2f  TransformScreenToProj(const Data::Point2i& screen_pos) const noexcept;
     Vector3f  TransformScreenToView(const Data::Point2i& screen_pos) const noexcept;
+    Vector3f  TransformScreenToWorld(const Data::Point2i& screen_pos) const noexcept;
     Vector3f  TransformWorldToView(const Vector3f& world_pos) const noexcept { return TransformWorldToView(world_pos, m_current_orientation); }
     Vector3f  TransformViewToWorld(const Vector3f& view_pos)  const noexcept { return TransformViewToWorld(view_pos,  m_current_orientation);  }
     Vector4f  TransformWorldToView(const Vector4f& world_pos) const noexcept { return TransformWorldToView(world_pos, m_current_orientation); }

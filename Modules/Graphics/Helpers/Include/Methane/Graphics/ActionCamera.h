@@ -50,8 +50,8 @@ public:
         None = 0,
 
         Rotate,
-        Zoom,
         Move,
+        Zoom,
 
         Count // keep at end
     };
@@ -133,6 +133,9 @@ protected:
     inline float GetRadiusInPixels(const Data::Point2f& screen_size) const noexcept
     { return std::min(screen_size.x(), screen_size.y()) * m_radius_ratio / 2.f; }
 
+    inline const Camera& GetViewCamera() const noexcept
+    { return m_p_view_camera ? *m_p_view_camera : *this; }
+
     void ApplyLookDirection(const Vector3f& look_dir, const Orientation& base_orientation);
     void ApplyLookDirection(const Vector3f& look_dir) { return ApplyLookDirection(look_dir, m_current_orientation);  }
     
@@ -166,6 +169,7 @@ protected:
     double                   m_keyboard_action_duration_sec = 0.3;
     MouseAction              m_mouse_action                 = MouseAction::None;
     Vector3f                 m_mouse_pressed_on_sphere      = { };
+    Vector3f                 m_mouse_pressed_in_world       = { };
     Orientation              m_mouse_pressed_orientation    = { };
     KeyboardActionAnimations m_keyboard_action_animations;
 };
