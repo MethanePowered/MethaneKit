@@ -18,7 +18,7 @@ set(SOURCES
 )
 
 add_library(${TARGET} STATIC
-	${HEADERS}
+    ${HEADERS}
     ${SOURCES}
 )
 
@@ -27,11 +27,6 @@ target_include_directories(${TARGET}
         Sources
     PUBLIC
         Include
-)
-
-set_target_properties(${TARGET}
-    PROPERTIES
-    FOLDER Modules/Data
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
