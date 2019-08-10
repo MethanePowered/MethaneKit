@@ -24,10 +24,9 @@ Sample demonstrating parallel redering of the distinct asteroids massive
 #include "AsteroidsApp.h"
 
 #include <Methane/Platform/AppHelpController.h>
-#include <Methane/Graphics/AppCameraController.hpp>
+#include <Methane/Graphics/AppCameraController.h>
 
 #include <cml/mathlib/mathlib.h>
-
 #include <cassert>
 
 using namespace Methane::Samples;
