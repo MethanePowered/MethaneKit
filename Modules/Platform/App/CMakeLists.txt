@@ -37,18 +37,21 @@ endif()
 set(LIBRARIES ${LIBRARIES}
     MethaneDataTypes
     MethanePlatformUtils
+    MethanePlatformInput
     MethanePlatformAppView
     nowide_static
     cxxopts
 )
 
 set(HEADERS ${PLATFORM_HEADERS}
-    ${INCLUDE_DIR}/AppBase.h
     ${INCLUDE_DIR}/App.h
+    ${INCLUDE_DIR}/AppBase.h
+    ${INCLUDE_DIR}/AppHelpController.h
 )
 
 set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/AppBase.cpp
+    ${SOURCES_DIR}/AppHelpController.cpp
 )
 
 add_library(${TARGET} STATIC
@@ -72,7 +75,7 @@ target_include_directories(${TARGET}
         Include
 )
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}
     PROPERTIES

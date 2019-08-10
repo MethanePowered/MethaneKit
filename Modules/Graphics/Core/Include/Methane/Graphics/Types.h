@@ -57,6 +57,7 @@ class Point3T : public cml::vector<T, cml::fixed<3>>
 public:
     Point3T() = default;
     Point3T(T x, T y, T z) : cml::vector<T, cml::fixed<3>>(x, y, z) { }
+    Point3T(const cml::vector<T, cml::fixed<3>>& v) : cml::vector<T, cml::fixed<3>>(v) { }
     
     T x() const noexcept { return (*this)[0]; }
     T y() const noexcept { return (*this)[1]; }
@@ -65,6 +66,9 @@ public:
     void setX(T x) noexcept { (*this)[0] = x; }
     void setY(T y) noexcept { (*this)[1] = y; }
     void setZ(T z) noexcept { (*this)[2] = z; }
+
+    operator std::string() const
+    { return "Pt(" + std::to_string(x()) + ", " + std::to_string(y()) + ", " + std::to_string(z()) + ")"; }
 };
 
 using Point3i = Point3T<int32_t>;
@@ -87,7 +91,17 @@ struct Volume
         { return Rect<T, D>::Size::operator==(other) && depth == other.depth; }
 
         D GetPixelsCount() const noexcept { return depth * Rect<T, D>::Size::GetPixelsCount(); }
+
+        operator std::string() const
+        {
+            return "Sz(" + std::to_string(Rect<T, D>::Size::width) +
+                   " x " + std::to_string(Rect<T, D>::Size::height) +
+                   " x " + std::to_string(depth) + ")";
+        }
     };
+
+    operator std::string() const
+    { return std::string("Vm[") + origin + " + " + size + "]"; }
 
     using Point = Point3T<T>;
 
@@ -117,6 +131,14 @@ public:
     void setG(float g) noexcept { (*this)[1] = g; }
     void setB(float b) noexcept { (*this)[2] = b; }
     void setA(float a) noexcept { (*this)[3] = a; }
+
+    std::string ToString() const
+    {
+        return "C(R:" + std::to_string(r()) +
+               ", G:" + std::to_string(g()) +
+               ", B:" + std::to_string(b()) + 
+               ", A:" + std::to_string(a()) + ")";
+    }
 };
 
 using Depth = float;

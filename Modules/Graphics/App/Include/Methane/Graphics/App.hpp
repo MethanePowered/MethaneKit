@@ -26,12 +26,13 @@ Base frame class provides frame buffer management with resize handling.
 
 #include "AppDataProvider.hpp"
 
+#include <Methane/Data/Timer.h>
+#include <Methane/Data/AnimationsPool.h>
 #include <Methane/Platform/App.h>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Context.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/RenderPass.h>
-#include <Methane/Graphics/Timer.h>
 #include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Graphics/ImageLoader.h>
 
@@ -54,9 +55,11 @@ struct AppFrame
     AppFrame(uint32_t frame_index) : index(frame_index) { }
 };
 
-template<typename FrameT, typename = std::enable_if_t<std::is_base_of<AppFrame, FrameT>::value>>
+template<typename FrameT>
 class App : public Platform::App
 {
+    static_assert(std::is_base_of<AppFrame, FrameT>::value, "Application Frame type must be derived from AppFrame.");
+
 public:
     struct Settings
     {
@@ -78,7 +81,7 @@ public:
             ("f,framebuffers", "Frame buffers count in swap-chain", cxxopts::value<uint32_t>());
     }
 
-    virtual ~App()
+    ~App() override
     {
         // WARNING: Don't forget to make the following call in the derived Application class
         // Wait for GPU rendering is completed to release resources
@@ -86,7 +89,7 @@ public:
     }
 
     // Platform::App interface
-    virtual void InitContext(const Platform::AppEnvironment& env, const FrameSize& frame_size) override
+    void InitContext(const Platform::AppEnvironment& env, const FrameSize& frame_size) override
     {
         // Create render context of the current window size
         m_context_settings.frame_size = frame_size;
@@ -94,7 +97,7 @@ public:
         m_sp_context->SetName("Main Graphics Context");
     }
 
-    virtual void Init() override
+    void Init() override
     {
         Platform::App::Init();
 
@@ -146,7 +149,7 @@ public:
         }
     }
 
-    virtual bool Resize(const FrameSize& frame_size, bool /*is_minimized*/) override
+    bool Resize(const FrameSize& frame_size, bool /*is_minimized*/) override
     {
         struct ResourceInfo
         {
@@ -206,12 +209,17 @@ public:
 
         return true;
     }
+    
+    void Update() override
+    {
+        m_animations.Update();
+    }
 
-    virtual void Render() override
+    void Render() override
     {
         // Update HUD info in window title
         if (!m_show_hud_in_window_title ||
-            m_title_update_timer.GetElapsedSeconds() < g_title_update_interval_sec)
+            m_title_update_timer.GetElapsedSecondsD() < g_title_update_interval_sec)
             return;
 
         if (!m_sp_context)
@@ -286,7 +294,8 @@ protected:
     ImageLoader                     m_image_loader;
     std::vector<FrameT>             m_frames;
     Texture::Ptr                    m_sp_depth_texture;
-    Timer                           m_title_update_timer;
+    Data::Timer                     m_title_update_timer;
+    Data::AnimationsPool            m_animations;
 
     static constexpr double  g_title_update_interval_sec = 1;
 };

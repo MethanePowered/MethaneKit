@@ -53,7 +53,6 @@ public:
     // App interface
     virtual void Init() override;
     virtual bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
-    virtual void Update() override { }
     virtual void Render() override;
 
 private:

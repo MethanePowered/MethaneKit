@@ -113,8 +113,6 @@ public:
         return true;
     }
 
-    void Update() override { }
-
     void Render() override
     {
         if (HasError() || !m_sp_context->ReadyToRender())

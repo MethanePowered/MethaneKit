@@ -16,32 +16,28 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Timer.h
-Timer helper allows to get the number of elapsed seconds between measurements.
+FILE: Methane/Platform/Windows/KeyboardWin.h
+Windows platform specific types and implementation of Keyboard abstractions.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <chrono>
+#include <Windows.h>
 
 namespace Methane
 {
-namespace Graphics
+namespace Platform
 {
-
-class Timer
+namespace Keyboard
 {
-public:
-    Timer();
-
-    void Reset() noexcept;
-    double GetElapsedSeconds() const noexcept;
-    float GetElapsedSecondsF() const noexcept;
-
-private:
-    std::chrono::high_resolution_clock::time_point m_start_time;
+    
+struct NativeKey
+{
+    WPARAM w_param;
+    LPARAM l_param;
 };
 
-} // namespace Graphics
+} // namespace Keyboard
+} // namespace Platform
 } // namespace Methane

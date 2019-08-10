@@ -16,40 +16,37 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Timer.cpp
-Timer helper allows to get the number of elapsed seconds between measurements.
+FILE: Methane/Data/TimeAnimation.h
+Time-based animation of any external enity with an update lambda-function.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/Timer.h>
+#pragma once
 
-using namespace std::chrono;
-using namespace Methane::Graphics;
+#include "Animation.h"
 
-Timer::Timer()
+#include <functional>
+
+namespace Methane
 {
-    Reset();
-}
-
-void Timer::Reset() noexcept
+namespace Data
 {
-    m_start_time = high_resolution_clock::now();
-}
 
-template<typename T>
-T GetElapsedSeconds(high_resolution_clock::time_point start_time) noexcept
+class TimeAnimation : public Animation
 {
-    auto curr_time = high_resolution_clock::now();
-    auto time_span = duration_cast<duration<T>>(curr_time - start_time);
-    return time_span.count();
-}
+public:
+    using FunctionType = std::function<bool(double elapsed_seconds, double delta_seconds)>;
 
-double Timer::GetElapsedSeconds() const noexcept
-{
-    return ::GetElapsedSeconds<double>(m_start_time);
-}
+    TimeAnimation(const FunctionType& update_function, double duration_sec = std::numeric_limits<double>::max());
 
-float Timer::GetElapsedSecondsF() const noexcept
-{
-    return ::GetElapsedSeconds<float>(m_start_time);
-}
+    // Animation overrides
+    void Restart() noexcept override;
+    bool Update() override;
+
+private:
+    const FunctionType  m_update_function;
+    double              m_prev_elapsed_seconds = 0.0;
+};
+
+} // namespace Data
+} // namespace Methane

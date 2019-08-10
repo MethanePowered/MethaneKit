@@ -22,7 +22,6 @@ MacOS application delegate implementation.
 ******************************************************************************/
 
 #import "AppDelegate.h"
-#import "AppViewController.h"
 
 #include <Methane/Platform/MacOS/AppMac.h>
 #include <Methane/Platform/MacOS/Types.h>
@@ -33,8 +32,6 @@ using namespace Methane;
 using namespace Methane::Platform;
 
 @implementation AppDelegate
-
-AppViewController* m_p_metal_vc;
 
 @synthesize window = _window;
 
@@ -63,7 +60,7 @@ AppViewController* m_p_metal_vc;
     [_window center];
     
     NSRect backing_frame = [mainScreen convertRectToBacking:frame];
-    m_p_metal_vc = [[AppViewController alloc] initWithApp:p_app andFrameRect:backing_frame];
+    self.viewController = [[AppViewController alloc] initWithApp:p_app andFrameRect:backing_frame];
     
     p_app->SetWindow(_window);
     
@@ -72,7 +69,7 @@ AppViewController* m_p_metal_vc;
 
 - (void) run
 {
-    [self.window setContentViewController: m_p_metal_vc];
+    [self.window setContentViewController: self.viewController];
     [self.window setAcceptsMouseMovedEvents:YES];
 }
 
@@ -104,6 +101,7 @@ AppViewController* m_p_metal_vc;
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
+    [self.window makeFirstResponder: self.viewController.view];
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification

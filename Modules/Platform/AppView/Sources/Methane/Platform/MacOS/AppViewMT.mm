@@ -24,6 +24,9 @@ MacOS application view implementation.
 #import <Methane/Platform/MacOS/AppViewMT.h>
 
 @interface AppViewMT ()
+{
+    NSTrackingArea* trackingArea;
+}
 
 @property (strong) id<CAMetalDrawable> currentDrawable;
 @property (nonatomic) id <MTLDevice> device;
@@ -90,6 +93,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
         _drawableCount = drawable_count;
         _vsyncEnabled = vsync_enabled;
         _unsyncRefreshInterval = refresn_interval_sec;
+        [self updateTrackingAreas];
         [self commonInit];
     }
     
@@ -230,6 +234,74 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
     {
         CVDisplayLinkStop(_displayLink);
     }
+}
+
+- (void)setViewController:(NSViewController *)newController
+{
+    if (viewController)
+    {
+        NSResponder *controllerNextResponder = [viewController nextResponder];
+        [super setNextResponder:controllerNextResponder];
+        [viewController setNextResponder:nil];
+    }
+    
+    viewController = newController;
+    
+    if (newController)
+    {
+        NSResponder *ownNextResponder = [self nextResponder];
+        [super setNextResponder: viewController];
+        [viewController setNextResponder:ownNextResponder];
+    }
+}
+
+- (void)updateTrackingAreas
+{
+    if (trackingArea != nil)
+    {
+        [self removeTrackingArea:trackingArea];
+        [trackingArea release];
+    }
+    
+    const NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited |
+                                          NSTrackingActiveInKeyWindow |
+                                          NSTrackingEnabledDuringMouseDrag |
+                                          NSTrackingCursorUpdate |
+                                          NSTrackingInVisibleRect |
+                                          NSTrackingAssumeInside;
+    
+    trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds]
+                                                options:options
+                                                  owner:self
+                                               userInfo:nil];
+    
+    [self addTrackingArea:trackingArea];
+    [super updateTrackingAreas];
+}
+
+- (void)setNextResponder:(NSResponder *)newNextResponder
+{
+    if (viewController)
+    {
+        [viewController setNextResponder:newNextResponder];
+        return;
+    }
+    [super setNextResponder:newNextResponder];
+}
+
+- (BOOL)acceptsFirstResponder
+{
+    return YES;
+}
+
+- (BOOL)canBecomeKeyView
+{
+    return YES;
+}
+
+- (BOOL)acceptsFirstMouse:(NSEvent *)event
+{
+    return YES;
 }
 
 @end

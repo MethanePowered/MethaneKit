@@ -32,6 +32,7 @@ namespace Tutorials
 {
 
 namespace gfx = Methane::Graphics;
+namespace dat = Methane::Data;
 
 struct ShadowCubeFrame final : gfx::AppFrame
 {
@@ -131,8 +132,7 @@ private:
     const float                 m_scene_scale;
     const Constants             m_scene_constants;
 
-    gfx::Timer                  m_timer;
-    gfx::Camera                 m_scene_camera;
+    gfx::Camera                 m_view_camera;
     gfx::Camera                 m_light_camera;
     gfx::Buffer::Ptr            m_sp_const_buffer;
     gfx::Texture::Ptr           m_sp_cube_texture;

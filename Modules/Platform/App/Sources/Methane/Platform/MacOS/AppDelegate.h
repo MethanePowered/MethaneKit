@@ -21,6 +21,8 @@ MacOS application delegate implementation.
 
 ******************************************************************************/
 
+#include "AppViewController.h"
+
 #include <Methane/Platform/AppBase.h>
 
 #import <Cocoa/Cocoa.h>
@@ -29,6 +31,7 @@ namespace Methane { namespace Platform { class AppMac; } }
 
 @interface AppDelegate : NSObject<NSApplicationDelegate>
 
+@property (nonatomic, strong, nonnull) IBOutlet AppViewController* viewController;
 @property (nonatomic, readonly, nullable) NSWindow* window;
 
 - (id _Nullable) initWithApp : (Methane::Platform::AppMac* _Nonnull) p_app andSettings : (Methane::Platform::AppBase::Settings* _Nonnull) p_settings;
