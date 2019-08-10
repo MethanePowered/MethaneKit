@@ -52,6 +52,8 @@ public:
         Rotate,
         Zoom,
         Move,
+
+        Count // keep at end
     };
 
     enum class KeyboardAction : uint32_t
@@ -66,7 +68,7 @@ public:
         MoveUp,
         MoveDown,
 
-        // Rotate	
+        // Rotate
         YawLeft,
         YawRight,
         RollLeft,
@@ -79,6 +81,8 @@ public:
         ZoomOut,
         
         Reset,
+
+        Count // keep at end
     };
 
     using DistanceRange = std::pair<float /*min_distance*/, float /*max_distance*/>;
@@ -117,6 +121,9 @@ public:
     // Keyboard action handlers
     void OnKeyPressed(KeyboardAction keyboard_action);
     void OnKeyReleased(KeyboardAction keyboard_action);
+
+    static std::string GetActionName(MouseAction mouse_action);
+    static std::string GetActionName(KeyboardAction keyboard_action);
 
 protected:
     using KeyboardActionAnimations  = std::map<KeyboardAction, Data::Animation::WeakPtr>;

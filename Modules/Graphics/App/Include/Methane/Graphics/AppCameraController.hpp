@@ -67,15 +67,16 @@ public:
         { Platform::Keyboard::Key::R,               ActionCamera::KeyboardAction::Reset       },
     };
 
-    AppCameraController(ActionCamera& action_camera,
+    AppCameraController(ActionCamera& action_camera, const std::string& camera_name,
                         const MouseActionByButton& mouse_actions_by_button = default_mouse_actions_by_button,
                         const KeyboardActionByKey& keyboard_actions_by_key = default_keyboard_actions_by_key)
-        : m_action_camera(action_camera)
+        : Controller(camera_name)
+        , m_action_camera(action_camera)
         , m_mouse_actions_by_button(mouse_actions_by_button)
         , m_keyboard_actions_by_key(keyboard_actions_by_key)
     { }
 
-    // Platform::Input::Controller implementation
+    // Platform::Input::Controller overrides
 
     void OnMouseButtonChanged(Platform::Mouse::Button button, Platform::Mouse::ButtonState button_state, const Platform::Mouse::StateChange& state_change) override
     {
@@ -110,6 +111,55 @@ public:
         case Platform::Keyboard::KeyState::Pressed:  m_action_camera.OnKeyPressed(action); break;
         case Platform::Keyboard::KeyState::Released: m_action_camera.OnKeyReleased(action); break;
         }
+    }
+
+    HelpLines GetHelp() const override
+    {
+        HelpLines help_lines;
+        help_lines.reserve(m_mouse_actions_by_button.size() + m_keyboard_actions_by_key.size() + 2);
+
+        if (!m_mouse_actions_by_button.empty())
+        {
+            help_lines.push_back({ "", "Mouse actions" });
+            for (uint32_t mouse_action_index = 0; mouse_action_index < static_cast<uint32_t>(ActionCamera::MouseAction::Count); ++mouse_action_index)
+            {
+                const ActionCamera::MouseAction mouse_action = static_cast<ActionCamera::MouseAction>(mouse_action_index);
+                const auto mouse_actions_by_button_it = std::find_if(m_mouse_actions_by_button.begin(), m_mouse_actions_by_button.end(),
+                    [mouse_action](const std::pair<Platform::Mouse::Button, ActionCamera::MouseAction>& mouse_button_and_action)
+                    {
+                        return mouse_button_and_action.second == mouse_action;
+                    });
+                if (mouse_actions_by_button_it == m_mouse_actions_by_button.end())
+                    continue;
+
+                help_lines.push_back({
+                    Platform::Mouse::ButtonConverter(mouse_actions_by_button_it->first).ToString(),
+                    ActionCamera::GetActionName(mouse_actions_by_button_it->second)
+                    });
+            }
+        }
+
+        if (!m_keyboard_actions_by_key.empty())
+        {
+            help_lines.push_back({ "", "Keyboard actions" });
+            for (uint32_t keyboard_action_index = 0; keyboard_action_index < static_cast<uint32_t>(ActionCamera::KeyboardAction::Count); ++keyboard_action_index)
+            {
+                const ActionCamera::KeyboardAction keyboard_action = static_cast<ActionCamera::KeyboardAction>(keyboard_action_index);
+                const auto keyboard_actions_by_key_it = std::find_if(m_keyboard_actions_by_key.begin(), m_keyboard_actions_by_key.end(),
+                    [keyboard_action](const std::pair<Platform::Keyboard::Key, ActionCamera::KeyboardAction>& key_and_action)
+                    {
+                        return key_and_action.second == keyboard_action;
+                    });
+                if (keyboard_actions_by_key_it == m_keyboard_actions_by_key.end())
+                    continue;
+
+                help_lines.push_back({
+                    Platform::Keyboard::KeyConverter(keyboard_actions_by_key_it->first).ToString(),
+                    ActionCamera::GetActionName(keyboard_actions_by_key_it->second)
+                    });
+            }
+        }
+        return help_lines;
     }
 
 private:

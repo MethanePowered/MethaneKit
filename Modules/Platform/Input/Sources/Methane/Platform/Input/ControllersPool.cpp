@@ -115,3 +115,20 @@ void ControllersPool::OnMouseInWindowChanged(bool is_mouse_in_window, const Mous
         sp_controller->OnMouseInWindowChanged(is_mouse_in_window, state_change);
     }
 }
+
+IHelpProvider::HelpLines ControllersPool::GetHelp() const
+{
+    HelpLines all_help_lines;
+    for (const Controller::Ptr& sp_controller : *this)
+    {
+        assert(!!sp_controller);
+        if (!sp_controller || !sp_controller->IsEnabled())
+            continue;
+
+        const HelpLines help_lines = sp_controller->GetHelp();
+
+        all_help_lines.push_back({ "", sp_controller->GetControllerName() });
+        all_help_lines.insert(all_help_lines.end(), help_lines.begin(), help_lines.end());
+    }
+    return all_help_lines;
+}

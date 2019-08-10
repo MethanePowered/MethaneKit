@@ -22,6 +22,8 @@ Sample demonstrating parallel redering of the distinct asteroids massive
 ******************************************************************************/
 
 #include "AsteroidsApp.h"
+
+#include <Methane/Platform/AppHelpController.h>
 #include <Methane/Graphics/AppCameraController.hpp>
 
 #include <cml/mathlib/mathlib.h>
@@ -34,6 +36,8 @@ using namespace Methane::Samples;
 static const gfx::FrameSize           g_shadow_map_size(1024, 1024);
 static const gfx::Shader::EntryTarget g_vs_main       = { "VSMain", "vs_5_1" };
 static const gfx::Shader::EntryTarget g_ps_main       = { "PSMain", "ps_5_1" };
+static const std::string              g_app_help_text = "Asteroids sample demonstrates parallel rendering of multiple heterogeneous objects " \
+                                                        "and action camera interaction with mouse and keyboard.";
 static const GraphicsApp::Settings    g_app_settings  = // Application settings:
 {                                                       // ====================
     {                                                   // app:
@@ -65,25 +69,23 @@ AsteroidsApp::AsteroidsApp()
             0.2f,                                       // - light_ambient_factor
             5.f                                         // - light_specular_factor
         })
-    , m_scene_camera(m_animations, gfx::ActionCamera::Pivot::Aim)
-    , m_light_camera(m_scene_camera, m_animations, gfx::ActionCamera::Pivot::Aim)
+    , m_view_camera(m_animations, gfx::ActionCamera::Pivot::Aim)
+    , m_light_camera(m_view_camera, m_animations, gfx::ActionCamera::Pivot::Aim)
 {
-    m_scene_camera.SetOrientation({ { 15.0f, 22.5f, -15.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
-    m_light_camera.SetParamters({ 0.01f, 300.f, 90.f });
-    m_scene_camera.SetZoomDistanceRange({ 15.f , 100.f });
+    m_view_camera.SetOrientation({ { 15.0f, 22.5f, -15.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
+    m_view_camera.SetZoomDistanceRange({ 15.f , 100.f });
 
     m_light_camera.SetOrientation({ { 0.0f,  25.0f, -25.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
     m_light_camera.SetParamters({ -300, 300.f, 90.f });
-    m_light_camera.Resize(55, 55);
+    m_light_camera.Resize(120, 120);
 
     m_input_state.SetControllers({
-        std::make_shared<gfx::AppCameraController>(m_scene_camera),
-        std::make_shared<gfx::AppCameraController>(m_light_camera,
-            gfx::AppCameraController::MouseActionByButton {
-                { pal::Mouse::Button::Right, gfx::ActionCamera::MouseAction::Rotate },
-            },
-            gfx::AppCameraController::KeyboardActionByKey{ })
+        std::make_shared<pal::AppHelpController>(*this, g_app_help_text),
+        std::make_shared<gfx::AppCameraController>(m_view_camera, "VIEW CAMERA"),
+        std::make_shared<gfx::AppCameraController>(m_light_camera, "LIGHT SOURCE",
+            gfx::AppCameraController::MouseActionByButton { { pal::Mouse::Button::Right, gfx::ActionCamera::MouseAction::Rotate } },
+            gfx::AppCameraController::KeyboardActionByKey{ }),
     });
 }
 
@@ -103,7 +105,7 @@ void AsteroidsApp::Init()
     // Create vertex and index buffer for meshes
     m_cube_buffers.Init(m_cube_mesh,   *m_sp_context, "Cube");
     m_floor_buffers.Init(m_floor_mesh, *m_sp_context, "Floor");
-    m_scene_camera.Resize(static_cast<float>(context_settings.frame_size.width),
+    m_view_camera.Resize(static_cast<float>(context_settings.frame_size.width),
                           static_cast<float>(context_settings.frame_size.height));
 
     const Data::Size constants_data_size      = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(SceneUniforms)));
@@ -341,7 +343,7 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     m_final_pass.sp_state->SetViewports({ gfx::GetFrameViewport(frame_size) });
     m_final_pass.sp_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
 
-    m_scene_camera.Resize(static_cast<float>(frame_size.width), static_cast<float>(frame_size.height));
+    m_view_camera.Resize(static_cast<float>(frame_size.width), static_cast<float>(frame_size.height));
     return true;
 }
 
@@ -355,7 +357,7 @@ void AsteroidsApp::Update()
     // Update Model, View, Projection matrices based on scene camera location
     gfx::Matrix44f scale_matrix, scene_view_matrix, scene_proj_matrix;
     cml::matrix_uniform_scale(scale_matrix, m_scene_scale);
-    m_scene_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
+    m_view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
 
     // Update View and Projection matrices based on light camera location
     gfx::Matrix44f light_view_matrix, light_proj_matrix;
@@ -375,7 +377,7 @@ void AsteroidsApp::Update()
     assert(!!frame.sp_scene_uniforms_buffer);
 
     // Update scene uniforms
-    m_scene_uniforms.eye_position    = gfx::Vector4f(m_scene_camera.GetOrientation().eye, 1.f);
+    m_scene_uniforms.eye_position    = gfx::Vector4f(m_view_camera.GetOrientation().eye, 1.f);
     m_scene_uniforms.light_position  = m_light_camera.GetOrientation().eye;
 
     frame.sp_scene_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(m_scene_uniforms));

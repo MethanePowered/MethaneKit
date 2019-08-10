@@ -23,6 +23,8 @@ Abstract input controller interface for handling keyboard and mouse actions.
 
 #pragma once
 
+#include "HelpProvider.h"
+
 #include <Methane/Platform/Keyboard.h>
 #include <Methane/Platform/Mouse.h>
 
@@ -58,11 +60,16 @@ struct IController
     virtual ~IController() = default;
 };
 
-class Controller : public IController
+class Controller
+    : public IController
+    , public IHelpProvider
 {
 public:
     using Ptr = std::shared_ptr<Controller>;
 
+    Controller(const std::string& name) : m_name(name) { }
+
+    const std::string& GetControllerName() const { return m_name; }
     bool IsEnabled() const { return m_is_enabled; }
     void SetEnabled(bool is_enabled) { m_is_enabled = is_enabled; }
 
@@ -73,8 +80,12 @@ public:
     void OnMouseInWindowChanged(bool /*is_mouse_in_window*/, const Mouse::StateChange& /*state_change*/) override { }
     void OnKeyboardChanged(Keyboard::Key /*key*/, Keyboard::KeyState /*key_state*/, const Keyboard::StateChange& /*state_change*/) override { }
 
+    // IHelpProvider - overrides are optional
+    HelpLines GetHelp() const override { return HelpLines(); }
+
 private:
-    bool m_is_enabled = true;
+    std::string m_name;
+    bool        m_is_enabled = true;
 };
 
 using Controllers = std::vector<Controller::Ptr>;

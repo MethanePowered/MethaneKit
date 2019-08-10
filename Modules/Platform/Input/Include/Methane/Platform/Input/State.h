@@ -38,8 +38,9 @@ public:
     State() = default;
     State(const ControllersPool& controllers) : m_controllers(controllers) {}
 
-    ControllersPool& GetControllers()                               { return m_controllers; }
-    void             SetControllers(const Controllers& controllers) { m_controllers = controllers; }
+    ControllersPool&        Controllers()                                       { return m_controllers; }
+    const ControllersPool&  GetControllers() const                              { return m_controllers; }
+    void                    SetControllers(const ControllersPool& controllers)  { m_controllers = controllers; }
 
     const Keyboard::State& GetKeyboardState() const                 { return m_keyboard_state; }
     const Mouse::State&    GetMouseState() const                    { return m_mouse_state; }

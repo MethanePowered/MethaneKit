@@ -133,7 +133,7 @@ private:
     const Constants             m_scene_constants;
 
     dat::Timer                  m_timer;
-    gfx::Camera                 m_scene_camera;
+    gfx::Camera                 m_view_camera;
     gfx::Camera                 m_light_camera;
     gfx::Buffer::Ptr            m_sp_const_buffer;
     gfx::Texture::Ptr           m_sp_cube_texture;

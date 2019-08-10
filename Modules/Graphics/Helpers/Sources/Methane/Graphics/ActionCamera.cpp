@@ -237,7 +237,7 @@ void ActionCamera::StartRotateAction(KeyboardAction rotate_action, const Vector3
             m_current_orientation,
             [angle_rad_per_second, rotation_axis, this](Orientation&, const Orientation&, double elapsed_seconds, double delta_seconds)
             {
-                Rotate(rotation_axis, angle_rad_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds));
+                Rotate(rotation_axis, static_cast<float>(angle_rad_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
                 return true;
             },
             duration_sec));
@@ -276,7 +276,7 @@ void ActionCamera::StartZoomAction(KeyboardAction zoom_action, float zoom_factor
             m_current_orientation,
             [zoom_factor_per_second, this](Orientation&, const Orientation&, double elapsed_seconds, double delta_seconds)
             {
-                Zoom(1.f - (1.f - zoom_factor_per_second) * delta_seconds * GetAccelerationFactor(elapsed_seconds));
+                Zoom(1.f - static_cast<float>((1.f - zoom_factor_per_second) * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
                 return true;
             },
             duration_sec));
@@ -323,5 +323,49 @@ bool ActionCamera::StopKeyboardAction(KeyboardAction keyboard_action, double dur
         else
             keyboard_action_animations_it->second.lock()->Stop();
         return true;
+    }
+}
+
+std::string ActionCamera::GetActionName(MouseAction mouse_action)
+{
+    switch (mouse_action)
+    {
+    case MouseAction::Rotate:   return "rotate";
+    case MouseAction::Zoom:     return "zoom";
+    case MouseAction::Move:     return "move";
+    case MouseAction::None:     return "none";
+    default: assert(0);         return "";
+    }
+}
+
+std::string ActionCamera::GetActionName(KeyboardAction keyboard_action)
+{
+    switch (keyboard_action)
+    {
+    // Move
+    case KeyboardAction::MoveLeft:      return "move left";
+    case KeyboardAction::MoveRight:     return "move right";
+    case KeyboardAction::MoveForward:   return "move forward";
+    case KeyboardAction::MoveBack:      return "move backward";
+    case KeyboardAction::MoveUp:        return "move up";
+    case KeyboardAction::MoveDown:      return "move down";
+
+    // Rotate
+    case KeyboardAction::YawLeft:       return "yaw left";
+    case KeyboardAction::YawRight:      return "yaw right";
+    case KeyboardAction::RollLeft:      return "roll left";
+    case KeyboardAction::RollRight:     return "roll right";
+    case KeyboardAction::PitchUp:       return "pitch up";
+    case KeyboardAction::PitchDown:     return "pitch down";
+
+    // Zoom
+    case KeyboardAction::ZoomIn:        return "zoom in";
+    case KeyboardAction::ZoomOut:       return "zoom out";
+
+    // Reset
+    case KeyboardAction::Reset:         return "reset orientation";
+
+    case KeyboardAction::None:          return "none";
+    default: assert(0);                 return "";
     }
 }
