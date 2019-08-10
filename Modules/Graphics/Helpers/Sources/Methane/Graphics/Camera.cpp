@@ -109,6 +109,11 @@ Vector3f Camera::TransformScreenToView(const Point2i& screen_pos) const noexcept
     return (cml::inverse(GetProjMatrix()) * Vector4f(TransformScreenToProj(screen_pos), 0.f, 1.f)).subvector(3);
 }
 
+Vector3f Camera::TransformScreenToWorld(const Point2i& screen_pos) const noexcept
+{
+    return TransformViewToWorld(TransformScreenToView(screen_pos));
+}
+
 Vector4f Camera::TransformWorldToView(const Vector4f& world_pos, const Orientation& orientation) const noexcept
 {
     return cml::inverse(GetViewMatrix(orientation)) * world_pos;

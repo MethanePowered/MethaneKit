@@ -36,16 +36,16 @@ std::string ButtonConverter::ToString() const
 {
     static const std::map<Button, std::string> s_name_by_button =
     {
-        { Button::Left,     "Left mouse button"         },
-        { Button::Right,    "Right mouse button"        },
-        { Button::Middle,   "Middle mouse button"       },
-        { Button::Button4,  "Mouse button 4"            },
-        { Button::Button5,  "Mouse button 5"            },
-        { Button::Button6,  "Mouse button 6"            },
-        { Button::Button7,  "Mouse button 7"            },
-        { Button::Button8,  "Mouse button 8"            },
-        { Button::VScroll,  "Vertical mouse scroll"     },
-        { Button::HScroll,  "Horizontal mouse scroll"   },
+        { Button::Left,     "Left button"         },
+        { Button::Right,    "Right button"        },
+        { Button::Middle,   "Middle button"       },
+        { Button::Button4,  "Button 4"            },
+        { Button::Button5,  "Button 5"            },
+        { Button::Button6,  "Button 6"            },
+        { Button::Button7,  "Button 7"            },
+        { Button::Button8,  "Button 8"            },
+        { Button::VScroll,  "Vertical scroll"     },
+        { Button::HScroll,  "Horizontal scroll"   },
     };
     
     auto button_and_name_it = s_name_by_button.find(m_button);

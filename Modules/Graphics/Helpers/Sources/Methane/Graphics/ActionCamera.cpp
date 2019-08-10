@@ -56,31 +56,52 @@ ActionCamera::ActionCamera(const Camera& view_camera, AnimationsPool& animations
 
 void ActionCamera::OnMousePressed(const Point2i& mouse_screen_pos, MouseAction mouse_action)
 {
-    if (mouse_action != MouseAction::Rotate)
-        return;
-
-    m_mouse_action              = mouse_action;
+    m_mouse_action = mouse_action;
     m_mouse_pressed_orientation = m_current_orientation;
-    m_mouse_pressed_on_sphere   = GetNormalizedSphereProjection(mouse_screen_pos, true);
+
+    switch (m_mouse_action)
+    {
+    case MouseAction::Rotate:
+        m_mouse_pressed_on_sphere = GetNormalizedSphereProjection(mouse_screen_pos, true);
+        break;
+
+    case MouseAction::Move:
+        m_mouse_pressed_in_world = GetViewCamera().TransformScreenToWorld(mouse_screen_pos);
+        break;
+
+    default:
+        break;
+    }
 }
 
 void ActionCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
 {
-    if (m_mouse_action != MouseAction::Rotate)
-        return;
-
-    const Vector3f mouse_current_on_sphere = GetNormalizedSphereProjection(mouse_screen_pos, false);
-    const Vector3f vectors_cross  = cml::cross(m_mouse_pressed_on_sphere, mouse_current_on_sphere);
-    const Vector3f rotation_axis  = vectors_cross.normalize();
-    const float    rotation_angle = std::atan2f(vectors_cross.length(), cml::dot(m_mouse_pressed_on_sphere, mouse_current_on_sphere));
-
-    Rotate(rotation_axis, rotation_angle, m_mouse_pressed_orientation);
-    
-    // NOTE: fixes rotation axis flip at angles approaching to 180 degrees
-    if (std::abs(rotation_angle) > cml::rad(90.f))
+    switch (m_mouse_action)
     {
-        m_mouse_pressed_orientation = m_current_orientation;
-        m_mouse_pressed_on_sphere   = mouse_current_on_sphere;
+    case MouseAction::Rotate:
+    {
+        const Vector3f mouse_current_on_sphere = GetNormalizedSphereProjection(mouse_screen_pos, false);
+        const Vector3f vectors_cross = cml::cross(m_mouse_pressed_on_sphere, mouse_current_on_sphere);
+        const Vector3f rotation_axis = vectors_cross.normalize();
+        const float    rotation_angle = std::atan2f(vectors_cross.length(), cml::dot(m_mouse_pressed_on_sphere, mouse_current_on_sphere));
+
+        Rotate(rotation_axis, rotation_angle, m_mouse_pressed_orientation);
+
+        // NOTE: fixes rotation axis flip at angles approaching to 180 degrees
+        if (std::abs(rotation_angle) > cml::rad(90.f))
+        {
+            m_mouse_pressed_orientation = m_current_orientation;
+            m_mouse_pressed_on_sphere = mouse_current_on_sphere;
+        }
+    } break;
+
+    case MouseAction::Move:
+    {
+        const Vector3f mouse_current_in_world = GetViewCamera().TransformScreenToWorld(mouse_screen_pos);
+        Move(mouse_current_in_world - m_mouse_pressed_in_world);
+    } break;
+
+    default: return;
     }
 }
 
@@ -114,12 +135,12 @@ void ActionCamera::OnKeyPressed(KeyboardAction keyboard_action)
         case KeyboardAction::MoveDown:      StartMoveAction(keyboard_action,   Vector3f( 0.f, -1.f,  0.f)); break;
             
         // Rotate
-        case KeyboardAction::YawLeft:       StartRotateAction(keyboard_action, Vector3f( 0.f,  1.f,  0.f)); break;
-        case KeyboardAction::YawRight:      StartRotateAction(keyboard_action, Vector3f( 0.f, -1.f,  0.f)); break;
-        case KeyboardAction::RollLeft:      StartRotateAction(keyboard_action, Vector3f( 0.f,  0.f, -1.f)); break;
-        case KeyboardAction::RollRight:     StartRotateAction(keyboard_action, Vector3f( 0.f,  0.f,  1.f)); break;
-        case KeyboardAction::PitchUp:       StartRotateAction(keyboard_action, Vector3f( 1.f,  0.f,  0.f)); break;
-        case KeyboardAction::PitchDown:     StartRotateAction(keyboard_action, Vector3f(-1.f,  0.f,  0.f)); break;
+        case KeyboardAction::YawLeft:       StartRotateAction(keyboard_action, Vector3f( 0.f, -1.f,  0.f)); break;
+        case KeyboardAction::YawRight:      StartRotateAction(keyboard_action, Vector3f( 0.f,  1.f,  0.f)); break;
+        case KeyboardAction::RollLeft:      StartRotateAction(keyboard_action, Vector3f( 0.f,  0.f,  1.f)); break;
+        case KeyboardAction::RollRight:     StartRotateAction(keyboard_action, Vector3f( 0.f,  0.f, -1.f)); break;
+        case KeyboardAction::PitchUp:       StartRotateAction(keyboard_action, Vector3f(-1.f,  0.f,  0.f)); break;
+        case KeyboardAction::PitchDown:     StartRotateAction(keyboard_action, Vector3f( 1.f,  0.f,  0.f)); break;
             
         // Zoom
         case KeyboardAction::ZoomIn:        StartZoomAction(keyboard_action, 0.9f); break;
