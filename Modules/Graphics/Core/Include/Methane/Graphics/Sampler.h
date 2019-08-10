@@ -123,8 +123,6 @@ struct Sampler : virtual Resource
 
     // Sampler interface
     virtual const Settings& GetSettings() const = 0;
-
-    virtual ~Sampler() override = default;
 };
 
 } // namespace Graphics

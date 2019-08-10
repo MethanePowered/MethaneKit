@@ -44,18 +44,16 @@ public:
     {
     public:
         ReleasePoolMT();
-        virtual ~ReleasePoolMT() override = default;
 
         // ReleasePool interface
-        virtual void AddResource(ResourceBase& resource) override;
-        virtual void ReleaseResources() override;
+        void AddResource(ResourceBase& resource) override;
+        void ReleaseResources() override;
 
     private:
         std::unique_ptr<ResourceContainerMT> m_sp_mtl_resources;
     };
 
     ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
-    virtual ~ResourceMT() override = default;
 
 protected:
     ContextMT& GetContextMT() noexcept;

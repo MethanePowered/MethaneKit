@@ -41,15 +41,15 @@ class ContextMT : public ContextBase
 {
 public:
     ContextMT(const Platform::AppEnvironment& env, const Data::Provider& data_provider, const Settings& settings);
-    virtual ~ContextMT() override;
+    ~ContextMT() override;
 
     // Context interface
-    virtual bool ReadyToRender() const override;
-    virtual void OnCommandQueueCompleted(CommandQueue& cmd_queue, uint32_t frame_index) override;
-    virtual void WaitForGpu(WaitFor wait_for) override;
-    virtual void Resize(const FrameSize& frame_size) override;
-    virtual void Present() override;
-    virtual Platform::AppView GetAppView() const override { return { m_app_view }; }
+    bool ReadyToRender() const override;
+    void OnCommandQueueCompleted(CommandQueue& cmd_queue, uint32_t frame_index) override;
+    void WaitForGpu(WaitFor wait_for) override;
+    void Resize(const FrameSize& frame_size) override;
+    void Present() override;
+    Platform::AppView GetAppView() const override { return { m_app_view }; }
 
     id<CAMetalDrawable>      GetNativeDrawable()       { return m_app_view.currentDrawable; }
     id<MTLDevice>&           GetNativeDevice()         { return m_mtl_device; }

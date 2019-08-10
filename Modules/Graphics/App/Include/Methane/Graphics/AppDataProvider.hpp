@@ -60,7 +60,7 @@ public:
         return s_instance;
     }
 
-    virtual bool HasData(Type data_type, const std::string& path) const noexcept override
+    bool HasData(Type data_type, const std::string& path) const noexcept override
     {
         switch(data_type)
         {
@@ -74,7 +74,7 @@ public:
         }
     }
 
-    virtual Data::Chunk GetData(Type data_type, const std::string& path) const override
+    Data::Chunk GetData(Type data_type, const std::string& path) const override
     {
         switch(data_type)
         {

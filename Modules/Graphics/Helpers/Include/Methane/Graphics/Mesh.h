@@ -70,7 +70,6 @@ public:
     }
 
     Mesh(Type type, const VertexLayout& vertex_layout);
-    virtual ~Mesh() = default;
 
     Type                GetType() const noexcept            { return m_type; }
     const VertexLayout& GetVertexLayout() const noexcept    { return m_vertex_layout; }
@@ -119,8 +118,6 @@ public:
             throw std::invalid_argument("Size of vertex structure differs from vertex size calculated by vertex layout.");
         }
     }
-
-    virtual ~BaseMesh() override = default;
 
     const Vertices& GetVertices() const noexcept       { return m_vertices; }
     size_t          GetVertexDataSize() const noexcept { return m_vertices.size() * m_vertex_size; }
@@ -199,8 +196,6 @@ public:
         }
     }
 
-    virtual ~RectMesh() override = default;
-
     const float GetWidth() const noexcept    { return m_width; }
     const float GetHeight() const noexcept   { return m_height; }
     const float GetDepthPos() const noexcept { return m_depth_pos; }
@@ -227,8 +222,6 @@ public:
         AddFace(RectMesh<VType>(vertex_layout, height, depth,   width  / 2.f, 4, RectMesh<VType>::FaceType::YZ));
         AddFace(RectMesh<VType>(vertex_layout, height, depth,  -width  / 2.f, 5, RectMesh<VType>::FaceType::YZ));
     }
-
-    virtual ~BoxMesh() override = default;
 
     float GetDepth() const noexcept { return m_depth; }
 

@@ -52,13 +52,13 @@ public:
     public:
         ResourceBindingsBase(const Program::Ptr& sp_program, const ResourceByArgument& resource_by_argument);
         ResourceBindingsBase(const ResourceBindingsBase& other_resource_bingings, const ResourceByArgument& replace_resource_by_argument);
-        virtual ~ResourceBindingsBase() override;
+        ~ResourceBindingsBase() override;
 
         Ptr GetPtr()                            { return shared_from_this(); }
         const Arguments& GetArguments() const   { return m_arguments; }
 
         // ResourceBindings interface
-        virtual const Shader::ResourceBinding::Ptr& Get(const Argument& shader_argument) const override;
+        const Shader::ResourceBinding::Ptr& Get(const Argument& shader_argument) const override;
 
         // ResourceBindingsBase interface
         virtual void CompleteInitialization() = 0;
@@ -79,14 +79,14 @@ public:
     };
 
     ProgramBase(ContextBase& context, const Settings& settings);
-    virtual ~ProgramBase() override;
+    ~ProgramBase() override;
 
     // Program interface
-    virtual const Settings&      GetSettings() const override                       { return m_settings; }
-    virtual void                 SetName(const std::string& name) override          { m_name = name; }
-    virtual const std::string&   GetName() const override                           { return m_name; }
-    virtual const Shader::Types& GetShaderTypes() const override                    { return m_shader_types; }
-    virtual const Shader::Ptr&   GetShader(Shader::Type shader_type) const override { return m_shaders_by_type[static_cast<size_t>(shader_type)]; }
+    const Settings&      GetSettings() const override                       { return m_settings; }
+    void                 SetName(const std::string& name) override          { m_name = name; }
+    const std::string&   GetName() const override                           { return m_name; }
+    const Shader::Types& GetShaderTypes() const override                    { return m_shader_types; }
+    const Shader::Ptr&   GetShader(Shader::Type shader_type) const override { return m_shaders_by_type[static_cast<size_t>(shader_type)]; }
 
     bool         HasShader(Shader::Type shader_type) const  { return !!GetShader(shader_type); }
     ContextBase& GetContext()                               { return m_context; }

@@ -46,15 +46,13 @@ public:
         Initialize(extra_args...);
     }
 
-    virtual ~TextureDX() override = default;
-
     // Resource interface
-    virtual void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override
+    void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override
     {
         throw std::logic_error("Setting texture data is allowed for image textures only.");
     }
 
-    virtual Data::Size GetDataSize() const override
+    Data::Size GetDataSize() const override
     {
         return m_settings.dimensions.GetPixelsCount() * GetPixelSize(m_settings.pixel_format);
     }
@@ -72,8 +70,8 @@ public:
     TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg);
 
     // Resource interface
-    virtual void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override;
-    virtual Data::Size GetDataSize() const override { return m_data_size; }
+    void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override;
+    Data::Size GetDataSize() const override { return m_data_size; }
 
 protected:
     Data::Size                    m_data_size = 0;

@@ -42,13 +42,12 @@ class RenderStateBase
 {
 public:
     RenderStateBase(ContextBase& context, const Settings& settings);
-    virtual ~RenderStateBase() override = default;
 
     // RenderState interface
-    virtual const Settings& GetSettings() const override                 { return m_settings; }
-    virtual void Reset(const Settings& settings) override;
-    virtual void SetViewports(const Viewports& viewports) override;
-    virtual void SetScissorRects(const ScissorRects& scissor_rects) override;
+    const Settings& GetSettings() const override                 { return m_settings; }
+    void Reset(const Settings& settings) override;
+    void SetViewports(const Viewports& viewports) override;
+    void SetScissorRects(const ScissorRects& scissor_rects) override;
 
     // RenderStateBase interface
     virtual void Apply(RenderCommandListBase& command_list) = 0;

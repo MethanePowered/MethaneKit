@@ -36,7 +36,7 @@ class DescriptorHeapMT : public DescriptorHeap
 {
 public:
     DescriptorHeapMT(ContextBase& context, const Settings& settings);
-    virtual ~DescriptorHeapMT() override;
+    ~DescriptorHeapMT() override;
 };
 
 } // namespace Graphics

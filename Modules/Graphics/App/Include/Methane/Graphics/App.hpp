@@ -250,12 +250,12 @@ protected:
 
     // AppBase interface
 
-    virtual Platform::AppView GetView() const override
+    Platform::AppView GetView() const override
     {
         return m_sp_context->GetAppView();
     }
 
-    virtual void ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result) override
+    void ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result) override
     {
         Platform::App::ParseCommandLine(cmd_parse_result);
 

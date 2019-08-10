@@ -38,10 +38,9 @@ class RenderPassMT : public RenderPassBase
 {
 public:
     RenderPassMT(ContextBase& context, const Settings& settings);
-    virtual ~RenderPassMT() override = default;
 
     // RenderPass interface
-    virtual void Update(const Settings& settings) override;
+    void Update(const Settings& settings) override;
     
     void Reset();
     

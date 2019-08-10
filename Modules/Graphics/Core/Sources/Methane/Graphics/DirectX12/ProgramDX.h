@@ -51,13 +51,12 @@ public:
     public:
         ResourceBindingsDX(const Program::Ptr& sp_program, const ResourceByArgument& resource_by_argument);
         ResourceBindingsDX(const ResourceBindingsDX& other_resource_bindings, const ResourceByArgument& replace_resource_by_argument);
-        virtual ~ResourceBindingsDX() override = default;
 
         void Initialize();
 
         // ResourceBindings interface
-        virtual void CompleteInitialization() override;
-        virtual void Apply(CommandList& command_list) const override;
+        void CompleteInitialization() override;
+        void Apply(CommandList& command_list) const override;
 
     protected:
         using ApplyResourceBindingFunc = std::function<void(ResourceDX&, const DescriptorHeap::Reservation&, ShaderDX::ResourceBindingDX& resource_binding)>;
@@ -66,7 +65,6 @@ public:
     };
 
     ProgramDX(ContextBase& context, const Settings& settings);
-    virtual ~ProgramDX() override = default;
 
     ShaderDX& GetVertexShaderDX() noexcept;
     ShaderDX& GetPixelShaderDX() noexcept;

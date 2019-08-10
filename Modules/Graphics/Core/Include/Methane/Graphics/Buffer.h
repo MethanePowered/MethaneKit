@@ -66,8 +66,6 @@ struct Buffer : virtual Resource
     // Buffer interface
     virtual uint32_t     GetFormattedItemsCount() const = 0;
     virtual Buffer::Type GetBufferType() const noexcept = 0;
-
-    virtual ~Buffer() override = default;
 };
 
 } // namespace Graphics

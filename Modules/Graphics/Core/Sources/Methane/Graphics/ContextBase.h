@@ -49,19 +49,18 @@ class ContextBase
 {
 public:
     ContextBase(const Data::Provider& data_provider, const Settings& settings);
-    virtual ~ContextBase() override = default;
 
     // Context interface
-    virtual void                  CompleteInitialization() override;
-    virtual void                  WaitForGpu(WaitFor wait_for) override;
-    virtual void                  Resize(const FrameSize& frame_size) override;
-    virtual CommandQueue&         GetRenderCommandQueue() override;
-    virtual CommandQueue&         GetUploadCommandQueue() override;
-    virtual RenderCommandList&    GetUploadCommandList() override;
-    virtual const Data::Provider& GetDataProvider() const override      { return m_data_provider; }
-    virtual const Settings&       GetSettings() const override          { return m_settings; }
-    virtual uint32_t              GetFrameBufferIndex() const override  { return m_frame_buffer_index;  }
-    virtual const FpsCounter&     GetFpsCounter() const override        { return m_fps_counter; }
+    void                  CompleteInitialization() override;
+    void                  WaitForGpu(WaitFor wait_for) override;
+    void                  Resize(const FrameSize& frame_size) override;
+    CommandQueue&         GetRenderCommandQueue() override;
+    CommandQueue&         GetUploadCommandQueue() override;
+    RenderCommandList&    GetUploadCommandList() override;
+    const Data::Provider& GetDataProvider() const override      { return m_data_provider; }
+    const Settings&       GetSettings() const override          { return m_settings; }
+    uint32_t              GetFrameBufferIndex() const override  { return m_frame_buffer_index;  }
+    const FpsCounter&     GetFpsCounter() const override        { return m_fps_counter; }
 
     // ContextBase interface
     virtual void OnCommandQueueCompleted(CommandQueue& cmd_queue, uint32_t frame_index) = 0;

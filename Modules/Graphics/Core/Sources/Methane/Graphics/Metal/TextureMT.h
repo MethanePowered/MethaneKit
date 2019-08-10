@@ -38,14 +38,14 @@ public:
     using Ptr = std::shared_ptr<TextureMT>;
 
     TextureMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    virtual ~TextureMT() override;
+    ~TextureMT() override;
 
     // Resource interface
-    virtual void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override;
-    virtual Data::Size GetDataSize() const override;
+    void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override;
+    Data::Size GetDataSize() const override;
 
     // Object interface
-    virtual void SetName(const std::string& name) override;
+    void SetName(const std::string& name) override;
 
     void UpdateFrameBuffer();
 
