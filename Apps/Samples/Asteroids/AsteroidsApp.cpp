@@ -65,8 +65,8 @@ AsteroidsApp::AsteroidsApp()
             0.2f,                                       // - light_ambient_factor
             5.f                                         // - light_specular_factor
         })
-    , m_scene_camera(m_animations, gfx::ArcBallCamera::Pivot::Aim)
-    , m_light_camera(m_scene_camera, m_animations, gfx::ArcBallCamera::Pivot::Aim)
+    , m_scene_camera(m_animations, gfx::ActionCamera::Pivot::Aim)
+    , m_light_camera(m_scene_camera, m_animations, gfx::ActionCamera::Pivot::Aim)
 {
     m_scene_camera.SetOrientation({ { 15.0f, 22.5f, -15.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
     m_light_camera.SetParamters({ 0.01f, 300.f, 90.f });
@@ -81,7 +81,7 @@ AsteroidsApp::AsteroidsApp()
         std::make_shared<gfx::AppCameraController>(m_scene_camera),
         std::make_shared<gfx::AppCameraController>(m_light_camera,
             gfx::AppCameraController::MouseActionByButton {
-                { pal::Mouse::Button::Right, gfx::ArcBallCamera::MouseAction::Rotate },
+                { pal::Mouse::Button::Right, gfx::ActionCamera::MouseAction::Rotate },
             },
             gfx::AppCameraController::KeyboardActionByKey{ })
     });

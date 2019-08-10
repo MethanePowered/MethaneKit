@@ -16,8 +16,9 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/ArcBallCamera.h
-Arc-ball camera implementation.
+FILE: Methane/Graphics/ActionCamera.h
+Interactive action-camera for rotating, moving and zooming with mouse and keyboard.
+Implemented based on arc-ball camera rotation model.
 
 ******************************************************************************/
 
@@ -35,7 +36,7 @@ namespace Methane
 namespace Graphics
 {
 
-class ArcBallCamera : public Camera
+class ActionCamera : public Camera
 {
 public:
     enum class Pivot : uint32_t
@@ -82,8 +83,8 @@ public:
 
     using DistanceRange = std::pair<float /*min_distance*/, float /*max_distance*/>;
 
-    ArcBallCamera(Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
-    ArcBallCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
+    ActionCamera(Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
+    ActionCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
 
     // Parameters
     Pivot GetPivot() const                                          { return m_pivot; }

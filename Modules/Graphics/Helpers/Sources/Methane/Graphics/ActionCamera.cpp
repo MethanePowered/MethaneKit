@@ -16,12 +16,13 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/ArcBallCamera.cpp
-Arc-ball camera implementation.
+FILE: Methane/Graphics/ActionCamera.cpp
+Interactive action-camera for rotating, moving and zooming with mouse and keyboard.
+Implemented based on arc-ball camera rotation model.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/ArcBallCamera.h>
+#include <Methane/Graphics/ActionCamera.h>
 #include <Methane/Data/ValueAnimation.hpp>
 
 #include <cml/mathlib/mathlib.h>
@@ -37,7 +38,7 @@ static inline float square(float x)     { return x * x; }
 static inline float unitSign(float x) { return x / std::fabsf(x); }
 }
 
-ArcBallCamera::ArcBallCamera(AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation)
+ActionCamera::ActionCamera(AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation)
     : Camera(axis_orientation)
     , m_animations(animations)
     , m_p_view_camera(nullptr)
@@ -45,7 +46,7 @@ ArcBallCamera::ArcBallCamera(AnimationsPool& animations, Pivot pivot, cml::AxisO
 {
 }
 
-ArcBallCamera::ArcBallCamera(const Camera& view_camera, AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation)
+ActionCamera::ActionCamera(const Camera& view_camera, AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation)
     : Camera(axis_orientation)
     , m_animations(animations)
     , m_p_view_camera(&view_camera)
@@ -53,7 +54,7 @@ ArcBallCamera::ArcBallCamera(const Camera& view_camera, AnimationsPool& animatio
 {
 }
 
-void ArcBallCamera::OnMousePressed(const Point2i& mouse_screen_pos, MouseAction mouse_action)
+void ActionCamera::OnMousePressed(const Point2i& mouse_screen_pos, MouseAction mouse_action)
 {
     if (mouse_action != MouseAction::Rotate)
         return;
@@ -63,7 +64,7 @@ void ArcBallCamera::OnMousePressed(const Point2i& mouse_screen_pos, MouseAction 
     m_mouse_pressed_on_sphere   = GetNormalizedSphereProjection(mouse_screen_pos, true);
 }
 
-void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
+void ActionCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
 {
     if (m_mouse_action != MouseAction::Rotate)
         return;
@@ -83,12 +84,12 @@ void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
     }
 }
 
-void ArcBallCamera::OnMouseReleased(const Point2i&)
+void ActionCamera::OnMouseReleased(const Point2i&)
 {
     m_mouse_action = MouseAction::None;
 }
 
-void ArcBallCamera::OnMouseScrolled(float scroll_delta)
+void ActionCamera::OnMouseScrolled(float scroll_delta)
 {
     const KeyboardAction zoom_action = scroll_delta > 0.f
                                      ? KeyboardAction::ZoomIn : KeyboardAction::ZoomOut;
@@ -100,7 +101,7 @@ void ArcBallCamera::OnMouseScrolled(float scroll_delta)
     StartZoomAction(zoom_action, zoom_factor, m_keyboard_action_duration_sec);
 }
 
-void ArcBallCamera::OnKeyPressed(KeyboardAction keyboard_action)
+void ActionCamera::OnKeyPressed(KeyboardAction keyboard_action)
 {
     switch(keyboard_action)
     {
@@ -131,12 +132,12 @@ void ArcBallCamera::OnKeyPressed(KeyboardAction keyboard_action)
     }
 }
 
-void ArcBallCamera::OnKeyReleased(KeyboardAction keyboard_action)
+void ActionCamera::OnKeyReleased(KeyboardAction keyboard_action)
 {
     StopKeyboardAction(keyboard_action, m_keyboard_action_duration_sec);
 }
 
-Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_screen_pos, bool is_primary) const
+Vector3f ActionCamera::GetNormalizedSphereProjection(const Point2i& mouse_screen_pos, bool is_primary) const
 {
     const Point2f& screen_size = m_p_view_camera ? m_p_view_camera->GetScreenSize() : m_screen_size;
     const Point2f screen_center(screen_size.x() / 2.f, screen_size.y() / 2.f);
@@ -179,7 +180,7 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
     return cml::normalize(Vector3f(screen_vector, inside_sphere ? z_sign * std::sqrtf(square(sphere_radius) - screen_vector.length_squared()) : 0.f));
 }
 
-void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir, const Orientation& base_orientation)
+void ActionCamera::ApplyLookDirection(const Vector3f& look_dir, const Orientation& base_orientation)
 {
     switch (m_pivot)
     {
@@ -188,7 +189,7 @@ void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir, const Orientati
     }
 }
 
-void ArcBallCamera::Rotate(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation)
+void ActionCamera::Rotate(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation)
 {
     Matrix44f view_rotation_matrix = { };
     cml::matrix_rotation_axis_angle(view_rotation_matrix, view_axis, angle_rad);
@@ -212,20 +213,20 @@ void ArcBallCamera::Rotate(const Vector3f& view_axis, float angle_rad, const Ori
     ApplyLookDirection(look_dir, base_orientation);
 }
 
-void ArcBallCamera::Move(const Vector3f& move_vector)
+void ActionCamera::Move(const Vector3f& move_vector)
 {
     m_current_orientation.aim += move_vector;
     m_current_orientation.eye += move_vector;
 }
 
-void ArcBallCamera::Zoom(float zoom_factor)
+void ActionCamera::Zoom(float zoom_factor)
 {
     const Vector3f look_dir   = GetLookDirection(m_current_orientation);
     const float zoom_distance = std::min(std::max(look_dir.length() * zoom_factor, m_zoom_distance_range.first), m_zoom_distance_range.second);
     ApplyLookDirection(cml::normalize(look_dir) * zoom_distance);
 }
 
-void ArcBallCamera::StartRotateAction(KeyboardAction rotate_action, const Vector3f& rotation_axis, double duration_sec)
+void ActionCamera::StartRotateAction(KeyboardAction rotate_action, const Vector3f& rotation_axis, double duration_sec)
 {
     if (StartKeyboardAction(rotate_action, duration_sec))
         return;
@@ -245,7 +246,7 @@ void ArcBallCamera::StartRotateAction(KeyboardAction rotate_action, const Vector
     assert(emplace_result.second);
 }
 
-void ArcBallCamera::StartMoveAction(KeyboardAction move_action, const Vector3f& move_direction_in_view, double duration_sec)
+void ActionCamera::StartMoveAction(KeyboardAction move_action, const Vector3f& move_direction_in_view, double duration_sec)
 {
     if (StartKeyboardAction(move_action, duration_sec))
         return;
@@ -265,7 +266,7 @@ void ArcBallCamera::StartMoveAction(KeyboardAction move_action, const Vector3f& 
     assert(emplace_result.second);
 }
 
-void ArcBallCamera::StartZoomAction(KeyboardAction zoom_action, float zoom_factor_per_second, double duration_sec)
+void ActionCamera::StartZoomAction(KeyboardAction zoom_action, float zoom_factor_per_second, double duration_sec)
 {
     if (StartKeyboardAction(zoom_action, duration_sec))
         return;
@@ -284,7 +285,7 @@ void ArcBallCamera::StartZoomAction(KeyboardAction zoom_action, float zoom_facto
     assert(emplace_result.second);
 }
 
-bool ArcBallCamera::StartKeyboardAction(KeyboardAction keyboard_action, double duration_sec)
+bool ActionCamera::StartKeyboardAction(KeyboardAction keyboard_action, double duration_sec)
 {
     auto keyboard_action_animations_it = m_keyboard_action_animations.find(keyboard_action);
     if (keyboard_action_animations_it == m_keyboard_action_animations.end())
@@ -303,7 +304,7 @@ bool ArcBallCamera::StartKeyboardAction(KeyboardAction keyboard_action, double d
     }
 }
 
-bool ArcBallCamera::StopKeyboardAction(KeyboardAction keyboard_action, double duration_sec)
+bool ActionCamera::StopKeyboardAction(KeyboardAction keyboard_action, double duration_sec)
 {
     auto keyboard_action_animations_it = m_keyboard_action_animations.find(keyboard_action);
     if (keyboard_action_animations_it == m_keyboard_action_animations.end())
