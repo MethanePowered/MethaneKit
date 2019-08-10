@@ -23,7 +23,7 @@ Implemented based on arc-ball camera rotation model.
 ******************************************************************************/
 
 #include <Methane/Graphics/ActionCamera.h>
-#include <Methane/Data/ValueAnimation.hpp>
+#include <Methane/Data/TimeAnimation.h>
 
 #include <cml/mathlib/mathlib.h>
 
@@ -254,9 +254,7 @@ void ActionCamera::StartRotateAction(KeyboardAction rotate_action, const Vector3
     
     const float angle_rad_per_second = cml::rad(m_rotate_angle_per_second);
     m_animations.push_back(
-        std::make_shared<ValueAnimation<Orientation>>(
-            m_current_orientation,
-            [angle_rad_per_second, rotation_axis, this](Orientation&, const Orientation&, double elapsed_seconds, double delta_seconds)
+        std::make_shared<TimeAnimation>([angle_rad_per_second, rotation_axis, this](double elapsed_seconds, double delta_seconds)
             {
                 Rotate(rotation_axis, static_cast<float>(angle_rad_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
                 return true;
@@ -274,9 +272,7 @@ void ActionCamera::StartMoveAction(KeyboardAction move_action, const Vector3f& m
     
     const Vector3f move_per_second = TransformViewToWorld(move_direction_in_view).normalize() * m_move_distance_per_second;
     m_animations.push_back(
-        std::make_shared<ValueAnimation<Orientation>>(
-            m_current_orientation,
-            [move_per_second, this](Orientation&, const Orientation&, double elapsed_seconds, double delta_seconds)
+        std::make_shared<TimeAnimation>([move_per_second, this](double elapsed_seconds, double delta_seconds)
             {
                 Move(move_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds));
                 return true;
@@ -293,9 +289,7 @@ void ActionCamera::StartZoomAction(KeyboardAction zoom_action, float zoom_factor
         return;
     
     m_animations.push_back(
-        std::make_shared<ValueAnimation<Orientation>>(
-            m_current_orientation,
-            [zoom_factor_per_second, this](Orientation&, const Orientation&, double elapsed_seconds, double delta_seconds)
+        std::make_shared<TimeAnimation>([zoom_factor_per_second, this](double elapsed_seconds, double delta_seconds)
             {
                 Zoom(1.f - static_cast<float>((1.f - zoom_factor_per_second) * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
                 return true;

@@ -94,7 +94,6 @@ private:
 
     const Constants         m_shader_constants;
     Uniforms                m_shader_uniforms;
-    dat::Timer              m_timer;
     gfx::Camera             m_camera;
     gfx::BoxMesh<Vertex>    m_cube_mesh;
     float                   m_cube_scale;

@@ -55,9 +55,11 @@ struct AppFrame
     AppFrame(uint32_t frame_index) : index(frame_index) { }
 };
 
-template<typename FrameT, typename = std::enable_if_t<std::is_base_of<AppFrame, FrameT>::value>>
+template<typename FrameT>
 class App : public Platform::App
 {
+    static_assert(std::is_base_of<AppFrame, FrameT>::value, "Application Frame type must be derived from AppFrame.");
+
 public:
     struct Settings
     {
