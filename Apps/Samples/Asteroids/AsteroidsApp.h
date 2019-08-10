@@ -132,8 +132,8 @@ private:
     const float                 m_scene_scale;
     const Constants             m_scene_constants;
 
-    gfx::ArcBallCamera          m_scene_camera;
-    gfx::ArcBallCamera          m_light_camera;
+    gfx::ActionCamera           m_scene_camera;
+    gfx::ActionCamera           m_light_camera;
     gfx::Buffer::Ptr            m_sp_const_buffer;
     gfx::Texture::Ptr           m_sp_cube_texture;
     gfx::Texture::Ptr           m_sp_floor_texture;
