@@ -84,8 +84,8 @@ AsteroidsApp::AsteroidsApp()
         std::make_shared<pal::AppHelpController>(*this, g_app_help_text),
         std::make_shared<gfx::AppCameraController>(m_view_camera, "VIEW CAMERA"),
         std::make_shared<gfx::AppCameraController>(m_light_camera, "LIGHT SOURCE",
-            gfx::AppCameraController::MouseActionByButton { { pal::Mouse::Button::Right, gfx::ActionCamera::MouseAction::Rotate } },
-            gfx::AppCameraController::KeyboardActionByKey{ }),
+            gfx::AppCameraController::MouseActionByButton { { pal::Mouse::Button::Right, gfx::ActionCamera::MouseAction::Rotate   } },
+            gfx::AppCameraController::KeyboardActionByKey { { pal::Keyboard::Key::L,     gfx::ActionCamera::KeyboardAction::Reset } }),
     });
 }
 

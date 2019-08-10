@@ -132,7 +132,6 @@ private:
     const float                 m_scene_scale;
     const Constants             m_scene_constants;
 
-    dat::Timer                  m_timer;
     gfx::Camera                 m_view_camera;
     gfx::Camera                 m_light_camera;
     gfx::Buffer::Ptr            m_sp_const_buffer;

@@ -23,8 +23,9 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 
 #include "TexturedCubeApp.h"
 
-#include <cml/mathlib/mathlib.h>
+#include <Methane/Data/TimeAnimation.h>
 
+#include <cml/mathlib/mathlib.h>
 #include <cassert>
 
 using namespace Methane::Tutorials;
@@ -64,6 +65,17 @@ TexturedCubeApp::TexturedCubeApp()
 {
     m_shader_uniforms.light_position = gfx::Vector3f(0.f, 20.f, -25.f);
     m_camera.SetOrientation({ { 13.0f, 13.0f, -13.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
+
+    m_animations.push_back(
+        std::make_shared<Data::TimeAnimation>(
+            [this](double, double delta_seconds)
+            {
+                gfx::Matrix33f light_rotate_matrix;
+                cml::matrix_rotation_axis_angle(light_rotate_matrix, m_camera.GetOrientation().up, cml::rad(360.f * delta_seconds / 4.f));
+                m_shader_uniforms.light_position = m_shader_uniforms.light_position * light_rotate_matrix;
+                m_camera.RotateYaw(360.f * delta_seconds / 8.f);
+                return true;
+            }));
 }
 
 TexturedCubeApp::~TexturedCubeApp()
@@ -191,27 +203,18 @@ void TexturedCubeApp::Update()
 {
     if (HasError())
         return;
-    
-    GraphicsApp::Update();
 
-    const float elapsed_time_sec = m_timer.GetElapsedSecondsF();
-    m_timer.Reset();
+    GraphicsApp::Update();
 
     // Update Model, View, Projection matrices based on camera location
     gfx::Matrix44f model_matrix, view_matrix, proj_matrix;
     cml::matrix_uniform_scale(model_matrix, m_cube_scale);
-
-    m_camera.RotateYaw(360.f * elapsed_time_sec / 8.f);
     m_camera.GetViewProjMatrices(view_matrix, proj_matrix);
-
-    gfx::Matrix33f light_rotate_matrix;
-    cml::matrix_rotation_axis_angle(light_rotate_matrix, m_camera.GetOrientation().up, cml::rad(360.f * elapsed_time_sec / 4.f));
 
     gfx::Matrix44f mv_matrix         = model_matrix * view_matrix;
     m_shader_uniforms.mvp_matrix     = mv_matrix * proj_matrix;
     m_shader_uniforms.model_matrix   = model_matrix;
     m_shader_uniforms.eye_position   = gfx::Vector4f(m_camera.GetOrientation().eye, 1.f);
-    m_shader_uniforms.light_position = m_shader_uniforms.light_position * light_rotate_matrix;
 
     // Update constant buffer related to current frame
     TexturedCubeFrame& frame = GetCurrentFrame();

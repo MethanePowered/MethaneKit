@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Data/ValueAnimation.hpp
-Abstract value animation implementation with an update function.
+Abstract value animation based on time with an update lambda-function.
 
 ******************************************************************************/
 
