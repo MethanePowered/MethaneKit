@@ -35,16 +35,21 @@ namespace Input
 class ControllersPool
     : public Controllers
     , public IController
+    , public IHelpProvider
 {
 public:
     using Controllers::Controllers;
     using Controllers::operator=;
 
+    // IController implementation
     void OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button_state, const Mouse::StateChange& state_change) override;
     void OnMousePositionChanged(const Mouse::Position& mouse_position, const Mouse::StateChange& state_change) override;
     void OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_delta, const Mouse::StateChange& state_change) override;
     void OnMouseInWindowChanged(bool is_mouse_in_window, const Mouse::StateChange& state_change) override;
     void OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state, const Keyboard::StateChange& state_change) override;
+
+    // IHelpProvider implementation
+    HelpLines GetHelp() const override;
 };
 
 } // namespace Input

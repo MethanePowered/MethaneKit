@@ -65,7 +65,7 @@ ShadowCubeApp::ShadowCubeApp()
             5.f                                         // - light_specular_factor
         })
 {
-    m_scene_camera.SetOrientation({ { 15.0f, 22.5f, -15.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
+    m_view_camera.SetOrientation({ { 15.0f, 22.5f, -15.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
     m_light_camera.SetOrientation({ { 0.0f,  25.0f, -25.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
     m_light_camera.SetParamters({ -200, 200.f, 90.f });
@@ -88,7 +88,7 @@ void ShadowCubeApp::Init()
     // Create vertex and index buffer for meshes
     m_cube_buffers.Init(m_cube_mesh,   *m_sp_context, "Cube");
     m_floor_buffers.Init(m_floor_mesh, *m_sp_context, "Floor");
-    m_scene_camera.Resize(static_cast<float>(context_settings.frame_size.width),
+    m_view_camera.Resize(static_cast<float>(context_settings.frame_size.width),
                           static_cast<float>(context_settings.frame_size.height));
 
     const Data::Size constants_data_size      = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(SceneUniforms)));
@@ -326,7 +326,7 @@ bool ShadowCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     m_final_pass.sp_state->SetViewports({ gfx::GetFrameViewport(frame_size) });
     m_final_pass.sp_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
 
-    m_scene_camera.Resize(static_cast<float>(frame_size.width), static_cast<float>(frame_size.height));
+    m_view_camera.Resize(static_cast<float>(frame_size.width), static_cast<float>(frame_size.height));
     return true;
 }
 
@@ -343,8 +343,8 @@ void ShadowCubeApp::Update()
     // Update Model, View, Projection matrices based on scene camera location
     gfx::Matrix44f scale_matrix, scene_view_matrix, scene_proj_matrix;
     cml::matrix_uniform_scale(scale_matrix, m_scene_scale);
-    m_scene_camera.RotateYaw(360.f * elapsed_time_sec / 8.f);
-    m_scene_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
+    m_view_camera.RotateYaw(360.f * elapsed_time_sec / 8.f);
+    m_view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
 
     // Update View and Projection matrices based on light camera location
     gfx::Matrix44f light_view_matrix, light_proj_matrix;
@@ -365,7 +365,7 @@ void ShadowCubeApp::Update()
     assert(!!frame.sp_scene_uniforms_buffer);
 
     // Update scene uniforms
-    m_scene_uniforms.eye_position    = gfx::Vector4f(m_scene_camera.GetOrientation().eye, 1.f);
+    m_scene_uniforms.eye_position    = gfx::Vector4f(m_view_camera.GetOrientation().eye, 1.f);
     m_scene_uniforms.light_position  = m_light_camera.GetOrientation().eye;
 
     frame.sp_scene_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(m_scene_uniforms));
