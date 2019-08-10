@@ -40,18 +40,18 @@ class RenderStateMT : public RenderStateBase
 {
 public:
     RenderStateMT(ContextBase& context, const Settings& settings);
-    virtual ~RenderStateMT() override;
+    ~RenderStateMT() override;
     
     // RenderState interface
-    virtual void Reset(const Settings& settings) override;
-    virtual void SetViewports(const Viewports& viewports) override;
-    virtual void SetScissorRects(const ScissorRects& scissor_rects) override;
+    void Reset(const Settings& settings) override;
+    void SetViewports(const Viewports& viewports) override;
+    void SetScissorRects(const ScissorRects& scissor_rects) override;
 
     // RenderStateBase interface
-    virtual void Apply(RenderCommandListBase& command_list) override;
+    void Apply(RenderCommandListBase& command_list) override;
 
     // Object interface
-    virtual void SetName(const std::string& name) override;
+    void SetName(const std::string& name) override;
     
     id<MTLRenderPipelineState>& GetNativePipelineState();
     id<MTLDepthStencilState>&   GetNativeDepthState();

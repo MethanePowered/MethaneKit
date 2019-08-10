@@ -88,13 +88,13 @@ public:
     };
 
     ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
-    virtual ~ResourceBase() override;
+    ~ResourceBase() override;
 
     // Resource interface
-    virtual Type                     GetResourceType() const noexcept override         { return m_type; }
-    virtual Usage::Mask              GetUsageMask() const noexcept override            { return m_usage_mask; }
-    virtual const DescriptorByUsage& GetDescriptorByUsage() const noexcept override    { return m_descriptor_by_usage; }
-    virtual const Descriptor&        GetDescriptor(Usage::Value usage) const override;
+    Type                     GetResourceType() const noexcept override         { return m_type; }
+    Usage::Mask              GetUsageMask() const noexcept override            { return m_usage_mask; }
+    const DescriptorByUsage& GetDescriptorByUsage() const noexcept override    { return m_descriptor_by_usage; }
+    const Descriptor&        GetDescriptor(Usage::Value usage) const override;
 
     void                  InitializeDefaultDescriptors();
     std::string           GetUsageNames() const noexcept                                { return Resource::GetUsageNames(m_usage_mask); }

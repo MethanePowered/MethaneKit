@@ -42,13 +42,12 @@ class CommandQueueDX final : public CommandQueueBase
 {
 public:
     CommandQueueDX(ContextBase& context);
-    virtual ~CommandQueueDX() override = default;
 
     // CommandQueue interface
-    virtual void Execute(const CommandList::Refs& command_lists) override;
+    void Execute(const CommandList::Refs& command_lists) override;
 
     // Object interface
-    virtual void SetName(const std::string& name) override;
+    void SetName(const std::string& name) override;
 
     ContextDX& GetContextDX();
 

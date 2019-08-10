@@ -47,20 +47,19 @@ public:
     {
     public:
         ReleasePoolDX() = default;
-        virtual ~ReleasePoolDX() override = default;
 
-        virtual void AddResource(ResourceBase& resource) override;
-        virtual void ReleaseResources() override;
+        void AddResource(ResourceBase& resource) override;
+        void ReleaseResources() override;
 
     private:
         std::vector<wrl::ComPtr<ID3D12Resource>> m_resources;
     };
 
     ResourceDX(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
-    virtual ~ResourceDX() override;
+    ~ResourceDX() override;
 
     // Object interface
-    virtual void SetName(const std::string& name) override;
+    void SetName(const std::string& name) override;
 
     ID3D12Resource*             GetNativeResource() const noexcept                              { return m_cp_resource.Get(); }
     D3D12_GPU_VIRTUAL_ADDRESS   GetNativeGpuAddress() const noexcept                            { return m_cp_resource->GetGPUVirtualAddress(); }

@@ -67,11 +67,10 @@ public:
 
         ResourceBindingDX(ContextBase& context, const Settings& settings);
         ResourceBindingDX(const ResourceBindingDX& other) = default;
-        virtual ~ResourceBindingDX() override = default;
 
         // ResourceBinding interface
-        virtual void           SetResource(const Resource::Ptr& sp_resource) override;
-        virtual uint32_t       GetResourceCount() const override        { return m_settings_dx.count; }
+        void                   SetResource(const Resource::Ptr& sp_resource) override;
+        uint32_t               GetResourceCount() const override        { return m_settings_dx.count; }
 
         const Settings&        GetSettings() const noexcept             { return m_settings_dx; }
         const DescriptorRange& GetDescriptorRange() const noexcept      { return m_descriptor_range; }
@@ -90,10 +89,9 @@ public:
     };
 
     ShaderDX(Type type, ContextBase& context, const Settings& settings);
-    virtual ~ShaderDX() override = default;
 
     // ShaderBase
-    virtual ResourceBindings GetResourceBindings(const std::set<std::string>& constant_argument_names) const override;
+    ResourceBindings GetResourceBindings(const std::set<std::string>& constant_argument_names) const override;
 
     const wrl::ComPtr<ID3DBlob>& GetNativeByteCode() const noexcept { return m_cp_byte_code; }
     std::vector<D3D12_INPUT_ELEMENT_DESC> GetNativeProgramInputLayout(const ProgramDX& program) const;

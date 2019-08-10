@@ -55,8 +55,6 @@ struct RenderCommandList : virtual CommandList
     virtual void SetVertexBuffers(const Buffer::Refs& vertex_buffers) = 0;
     virtual void DrawIndexed(Primitive primitive, const Buffer& index_buffer, uint32_t instance_count) = 0;
     virtual void Draw(Primitive primitive, uint32_t vertex_count, uint32_t instance_count) = 0;
-
-    virtual ~RenderCommandList() override = default;
 };
 
 } // namespace Graphics

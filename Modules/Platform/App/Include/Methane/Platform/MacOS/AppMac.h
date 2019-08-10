@@ -52,13 +52,13 @@ class AppMac : public AppBase
 {
 public:
     AppMac(const AppBase::Settings& settings);
-    virtual ~AppMac() override;
+    ~AppMac() override;
 
     // AppBase interface
-    virtual void InitContext(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size) override;
-    virtual int Run(const RunArgs& args) override;
-    virtual void Alert(const Message& msg, bool deferred = false) override;
-    virtual void SetWindowTitle(const std::string& title_text) override;
+    void InitContext(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size) override;
+    int Run(const RunArgs& args) override;
+    void Alert(const Message& msg, bool deferred = false) override;
+    void SetWindowTitle(const std::string& title_text) override;
   
     void SetWindow(NSWindowType* ns_window);
     NSWindowType* GetWindow() { return m_ns_window; }

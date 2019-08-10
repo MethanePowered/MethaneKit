@@ -43,18 +43,16 @@ public:
     public:
         ResourceBindingsMT(const Program::Ptr& sp_program, const ResourceByArgument& resource_by_argument);
         ResourceBindingsMT(const ResourceBindingsMT& other_resource_bindings, const ResourceByArgument& replace_resource_by_argument);
-        
-        virtual ~ResourceBindingsMT() override = default;
 
         // ResourceBindings interface
-        virtual void Apply(CommandList& command_list) const override;
+        void Apply(CommandList& command_list) const override;
         
         // ResourceBindingsBase interface
-        virtual void CompleteInitialization() override { }
+        void CompleteInitialization() override { }
     };
 
     ProgramMT(ContextBase& context, const Settings& settings);
-    virtual ~ProgramMT() override;
+    ~ProgramMT() override;
 
     ShaderMT& GetShaderMT(Shader::Type shader_type) noexcept;
     

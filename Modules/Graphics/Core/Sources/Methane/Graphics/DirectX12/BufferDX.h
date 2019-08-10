@@ -47,10 +47,8 @@ public:
         InitializeView(view_args...);
     }
 
-    virtual ~BufferDX() override = default;
-
     // Resource interface
-    virtual void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override
+    void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override
     {
         BufferBase::SetData(p_data, data_size);
 
@@ -66,7 +64,7 @@ public:
     }
 
     // Buffer interface
-    virtual uint32_t GetFormattedItemsCount() const override { return m_formatted_items_count; }
+    uint32_t GetFormattedItemsCount() const override { return m_formatted_items_count; }
 
     const TViewNative& GetNativeView() const { return m_buffer_view; }
 

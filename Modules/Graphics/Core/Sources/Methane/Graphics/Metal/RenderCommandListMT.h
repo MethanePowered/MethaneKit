@@ -42,25 +42,24 @@ class RenderCommandListMT final : public RenderCommandListBase
 {
 public:
     RenderCommandListMT(CommandQueueBase& command_queue, RenderPassBase& render_pass);
-    virtual ~RenderCommandListMT() override = default;
 
     // CommandList interface
-    virtual void PushDebugGroup(const std::string& name) override;
-    virtual void PopDebugGroup() override;
-    virtual void Commit(bool present_drawable) override;
+    void PushDebugGroup(const std::string& name) override;
+    void PopDebugGroup() override;
+    void Commit(bool present_drawable) override;
 
     // CommandListBase interface
-    virtual void SetResourceBarriers(const ResourceBase::Barriers&) override { }
-    virtual void Execute(uint32_t frame_index) override;
+    void SetResourceBarriers(const ResourceBase::Barriers&) override { }
+    void Execute(uint32_t frame_index) override;
 
     // RenderCommandList interface
-    virtual void Reset(RenderState& render_state, const std::string& debug_group = "") override;
-    virtual void SetVertexBuffers(const Buffer::Refs& vertex_buffers) override;
-    virtual void DrawIndexed(Primitive primitive, const Buffer& index_buffer, uint32_t instance_count) override;
-    virtual void Draw(Primitive primitive, uint32_t vertex_count, uint32_t instance_count) override;
+    void Reset(RenderState& render_state, const std::string& debug_group = "") override;
+    void SetVertexBuffers(const Buffer::Refs& vertex_buffers) override;
+    void DrawIndexed(Primitive primitive, const Buffer& index_buffer, uint32_t instance_count) override;
+    void Draw(Primitive primitive, uint32_t vertex_count, uint32_t instance_count) override;
 
     // Object interface
-    virtual void SetName(const std::string& label) override;
+    void SetName(const std::string& label) override;
 
     id<MTLCommandBuffer>& GetNativeCommandBuffer() noexcept  { return m_mtl_cmd_buffer; }
     id<MTLRenderCommandEncoder>& GetNativeEncoder() noexcept { return m_mtl_cmd_encoder; }

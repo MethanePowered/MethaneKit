@@ -39,10 +39,10 @@ class CommandQueueMT final : public CommandQueueBase
 {
 public:
     CommandQueueMT(ContextBase& context);
-    virtual ~CommandQueueMT() override;
+    ~CommandQueueMT() override;
 
     // Object interface
-    virtual void SetName(const std::string& name) override;
+    void SetName(const std::string& name) override;
     
     ContextMT& GetContextMT() noexcept;
     

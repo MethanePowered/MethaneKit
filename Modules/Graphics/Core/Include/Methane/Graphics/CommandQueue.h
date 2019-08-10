@@ -45,8 +45,6 @@ struct CommandQueue : virtual Object
 
     // CommandQueue interface
     virtual void Execute(const CommandList::Refs& command_lists) = 0;
-
-    virtual ~CommandQueue() override = default;
 };
 
 } // namespace Graphics

@@ -73,7 +73,7 @@ public:
     };
 
     AppBase(const Settings& settings);
-    virtual ~AppBase() {}
+    virtual ~AppBase() = default;
 
     // AppBase interface
     virtual int  Run(const RunArgs& args);

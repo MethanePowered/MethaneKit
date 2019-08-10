@@ -41,7 +41,6 @@ class DescriptorHeapDX : public DescriptorHeap
 {
 public:
     DescriptorHeapDX(ContextBase& context, const Settings& settings);
-    virtual ~DescriptorHeapDX() override = default;
 
     ID3D12DescriptorHeap*       GetNativeDescriptorHeap() noexcept           { return m_cp_descriptor_heap.Get();  }
     D3D12_DESCRIPTOR_HEAP_TYPE  GetNativeDescriptorHeapType() const noexcept { return m_descriptor_heap_type; }
@@ -49,7 +48,7 @@ public:
     D3D12_GPU_DESCRIPTOR_HANDLE GetNativeGPUDescriptorHandle(uint32_t descriptor_index) const noexcept;
 
     // DescriptorHeap interface
-    virtual void Allocate() override;
+    void Allocate() override;
 
 protected:
     ContextDX& GetContextDX();

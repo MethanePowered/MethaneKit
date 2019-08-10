@@ -48,20 +48,20 @@ class ContextDX final : public ContextBase
 {
 public:
     ContextDX(const Platform::AppEnvironment& env, const Data::Provider& data_provider, const Settings& settings);
-    virtual ~ContextDX() override;
+    ~ContextDX() override;
 
     // Context interface
-    virtual bool ReadyToRender() const override { return true; }
-    virtual void WaitForGpu(WaitFor wait_for) override;
-    virtual void Resize(const FrameSize& frame_size) override;
-    virtual void Present() override;
-    virtual Platform::AppView GetAppView() const override { return { nullptr }; }
+    bool ReadyToRender() const override { return true; }
+    void WaitForGpu(WaitFor wait_for) override;
+    void Resize(const FrameSize& frame_size) override;
+    void Present() override;
+    Platform::AppView GetAppView() const override { return { nullptr }; }
 
     // ContextBase interface
-    virtual void OnCommandQueueCompleted(CommandQueue& cmd_list, uint32_t frame_index) override;
+    void OnCommandQueueCompleted(CommandQueue& cmd_list, uint32_t frame_index) override;
 
     // Object interface
-    virtual void SetName(const std::string& name) override;
+    void SetName(const std::string& name) override;
 
     const wrl::ComPtr<ID3D12Device>&    GetNativeDevice() const    { return m_cp_device; }
     const wrl::ComPtr<IDXGISwapChain3>& GetNativeSwapChain() const { return m_cp_swap_chain; }

@@ -50,10 +50,10 @@ class CommandQueueBase
 
 public:
     CommandQueueBase(ContextBase& context, bool execution_state_tracking);
-    virtual ~CommandQueueBase() override;
+    ~CommandQueueBase() override;
 
     // CommandQueue interface
-    virtual void Execute(const CommandList::Refs& command_lists) override;
+    void Execute(const CommandList::Refs& command_lists) override;
 
     Ptr                GetPtr()           { return shared_from_this(); }
     ContextBase&       GetContext()       { return m_context; }

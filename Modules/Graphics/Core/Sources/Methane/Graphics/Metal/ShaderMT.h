@@ -53,14 +53,13 @@ public:
         
         ResourceBindingMT(ContextBase& context, const Settings& settings);
         ResourceBindingMT(const ResourceBindingMT& other) = default;
-        virtual ~ResourceBindingMT() override = default;
         
         // ResourceBinding interface
-        virtual void SetResource(const Resource::Ptr& sp_resource) override;
-        virtual uint32_t GetResourceCount() const override { return 1; }
+        void SetResource(const Resource::Ptr& sp_resource) override;
+        uint32_t GetResourceCount() const override { return 1; }
         
         // ResourceBindingBase interface
-        virtual DescriptorHeap::Type GetDescriptorHeapType() const override;
+        DescriptorHeap::Type GetDescriptorHeapType() const override;
         
         const Settings& GetSettings() const noexcept { return m_settings; }
         
@@ -69,10 +68,10 @@ public:
     };
     
     ShaderMT(Shader::Type shader_type, ContextBase& context, const Settings& settings);
-    virtual ~ShaderMT() override;
+    ~ShaderMT() override;
     
     // ShaderBase interface
-    virtual ResourceBindings GetResourceBindings(const std::set<std::string>& constant_argument_names) const override;
+    ResourceBindings GetResourceBindings(const std::set<std::string>& constant_argument_names) const override;
     
     id<MTLFunction>& GetNativeFunction() noexcept                           { return m_mtl_function; }
     MTLVertexDescriptor* GetNativeVertexDescriptor(const ProgramMT& program) const;
