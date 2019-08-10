@@ -33,10 +33,10 @@ using namespace Methane::Platform;
 
 @implementation AppViewController
 {
-    Methane::Platform::AppMac* m_p_app;
-    NSRect              m_frame_rect;
-    bool                m_is_initialized;
-    std::string         m_error;
+    AppMac*     m_p_app;
+    NSRect      m_frame_rect;
+    bool        m_is_initialized;
+    std::string m_error;
 }
 
 - (id) initWithApp : (Methane::Platform::AppMac*) p_app andFrameRect : (NSRect) frame_rect
@@ -82,6 +82,7 @@ using namespace Methane::Platform;
         m_is_initialized = true;
         m_p_app->Init();
     }
+    m_frame_rect = [view frame];
     m_p_app->Resize( { static_cast<uint32_t>(size.width), static_cast<uint32_t>(size.height) }, false );
 }
 
@@ -97,17 +98,102 @@ using namespace Methane::Platform;
     m_p_app->Render();
 }
 
-- (void) keyDown:(NSEvent *)theEvent
+// ====== Keyboard event handlers ======
+
+- (void) keyDown:(NSEvent *)event
 {
-    unichar characterHit = [[theEvent charactersIgnoringModifiers] characterAtIndex:0];
-    if (characterHit == 'q' || characterHit == 27)
-    {
-        [NSApp terminate:self];
-    }
-    else
-    {
-        [super keyDown:theEvent];
-    }
+    assert(!!m_p_app);
+    m_p_app->InputController().OnKeyboardChanged(Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), Keyboard::KeyState::Pressed);
+}
+
+- (void) keyUp:(NSEvent *)event
+{
+    assert(!!m_p_app);
+    m_p_app->InputController().OnKeyboardChanged(Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), Keyboard::KeyState::Released);
+}
+
+// ====== Mouse event handlers ======
+
+- (void)mouseMoved:(NSEvent *)event
+{
+    assert(!!m_p_app);
+    NSPoint pos = [event locationInWindow];
+    pos.x *= self.view.window.backingScaleFactor;
+    pos.y = (m_frame_rect.size.height - pos.y) * self.view.window.backingScaleFactor;
+    m_p_app->InputController().OnMousePositionChanged({ static_cast<int>(pos.x), static_cast<int>(pos.y) });
+}
+
+- (void)mouseDown:(NSEvent *)event
+{
+    assert(!!m_p_app);
+    m_p_app->InputController().OnMouseButtonChanged(Mouse::Button::Left, Mouse::ButtonState::Pressed);
+}
+
+- (void)mouseUp:(NSEvent *)event
+{
+    assert(!!m_p_app);
+    m_p_app->InputController().OnMouseButtonChanged(Mouse::Button::Left, Mouse::ButtonState::Released);
+}
+
+- (void)mouseDragged:(NSEvent *)event
+{
+    [self mouseMoved:event];
+}
+
+- (void)rightMouseDown:(NSEvent *)event
+{
+    assert(!!m_p_app);
+    m_p_app->InputController().OnMouseButtonChanged(Mouse::Button::Right, Mouse::ButtonState::Pressed);
+}
+
+- (void)rightMouseUp:(NSEvent *)event
+{
+    assert(!!m_p_app);
+    m_p_app->InputController().OnMouseButtonChanged(Mouse::Button::Right, Mouse::ButtonState::Released);
+}
+
+- (void)rightMouseDragged:(NSEvent *)event
+{
+    [self mouseMoved:event];
+}
+
+- (void)otherMouseDown:(NSEvent *)event
+{
+    assert(!!m_p_app);
+    m_p_app->InputController().OnMouseButtonChanged(static_cast<Mouse::Button>(static_cast<int>([event buttonNumber])), Mouse::ButtonState::Pressed);
+}
+
+- (void)otherMouseUp:(NSEvent *)event
+{
+    assert(!!m_p_app);
+    m_p_app->InputController().OnMouseButtonChanged(static_cast<Mouse::Button>(static_cast<int>([event buttonNumber])), Mouse::ButtonState::Released);
+}
+
+- (void)otherMouseDragged:(NSEvent *)event
+{
+    [self mouseMoved:event];
+}
+
+- (void)mouseEntered:(NSEvent *)event
+{
+    m_p_app->InputController().OnMouseInWindowChanged(true);
+}
+
+- (void)mouseExited:(NSEvent *)event
+{
+    m_p_app->InputController().OnMouseInWindowChanged(false);
+}
+
+- (void)scrollWheel:(NSEvent *)event
+{
+    Mouse::Scroll scroll = { [event scrollingDeltaX], -[event scrollingDeltaY] };
+    if ([event hasPreciseScrollingDeltas])
+        scroll *= 0.1f;
+    
+    if (fabs(scroll.x()) < 0.00001 && fabs(scroll.y()) > 0.00001)
+        return;
+        
+    m_p_app->InputController().OnMouseScrollChanged(scroll);
 }
 
 @end

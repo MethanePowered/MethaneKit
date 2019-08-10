@@ -2,27 +2,54 @@ set(TARGET MethaneGraphicsApp)
 
 get_module_dirs("Methane/Graphics")
 
-add_library(${TARGET} INTERFACE)
-
 set(HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}/App.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}/AppDataProvider.hpp
+    ${INCLUDE_DIR}/App.hpp
+    ${INCLUDE_DIR}/AppDataProvider.hpp
+    ${INCLUDE_DIR}/AppCameraController.h
 )
 
-target_sources(${TARGET} INTERFACE
+set(SOURCES
+    ${SOURCES_DIR}/AppCameraController.cpp
+)
+
+add_library(${TARGET} STATIC
     ${HEADERS}
+    ${SOURCES}
 )
 
-target_include_directories(${TARGET} INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Include>
-    $<INSTALL_INTERFACE:Include>
+target_include_directories(${TARGET}
+    PRIVATE
+        Sources
+    PUBLIC
+        Include
 )
 
-target_link_libraries(${TARGET} INTERFACE
+target_link_libraries(${TARGET}
     MethaneDataTypes
     MethanePlatformApp
     MethanePlatformUtils
     MethaneGraphicsCore
+    MethaneGraphicsHelpers
 )
 
-install(FILES ${HEADERS} DESTINATION ${INCLUDE_DIR})
+set_target_properties(${TARGET}
+    PROPERTIES
+    FOLDER Modules/Graphics
+)
+
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
+
+set_target_properties(${TARGET}
+    PROPERTIES
+    FOLDER Modules/Data
+    PUBLIC_HEADER "${HEADERS}"
+)
+
+install(TARGETS ${TARGET}
+    PUBLIC_HEADER
+        DESTINATION ${INCLUDE_DIR}
+        COMPONENT Development
+    ARCHIVE
+        DESTINATION Lib
+        COMPONENT Development
+)

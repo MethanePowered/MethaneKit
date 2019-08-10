@@ -1,2 +1,4 @@
 ﻿/.vs
+/.scannerwork
+/.sonarqube
 /CMakeLists.txt.user

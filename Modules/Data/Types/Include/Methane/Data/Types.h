@@ -24,6 +24,7 @@ Common Methane primitive data types
 #pragma once
 
 #include <cml/vector.h>
+#include <string>
 #include <cstdint>
 
 namespace Methane
@@ -35,14 +36,21 @@ template<typename T>
 class Point2T : public cml::vector<T, cml::fixed<2>>
 {
 public:
-    Point2T() = default;
-    Point2T(T x, T y) : cml::vector<T, cml::fixed<2>>(x, y) { }
-    
+    using Base = cml::vector<T, cml::fixed<2>>;
+    using Base::Base;
+
     T x() const noexcept { return (*this)[0]; }
     T y() const noexcept { return (*this)[1]; }
     
     void setX(T x) noexcept { (*this)[0] = x; }
     void setY(T y) noexcept { (*this)[1] = y; }
+
+    template<typename U>
+    explicit operator Point2T<U>() const
+    { return Point2T<U>(static_cast<U>(x()), static_cast<U>(y())); }
+
+    operator std::string() const
+    { return "Pt(" + std::to_string(x()) + ", " + std::to_string(y()) + ")"; }
 };
 
 using Point2i = Point2T<int32_t>;
@@ -64,14 +72,22 @@ struct Rect
         
         bool operator==(const Size& other) const
         { return width == other.width && height == other.height; }
+
         bool operator!=(const Size& other) const
         { return !operator==(other); }
 
         D GetPixelsCount() const noexcept { return width * height; }
+
+        operator std::string() const
+        { return "Sz(" + std::to_string(width) + " x " + std::to_string(height) + ")"; }
     };
-                                                
-    operator Rect<double, double>() const
-    { return Rect<double, double> { origin, size }; }
+    
+    template<typename U>
+    operator Rect<U, U>() const
+    { return { static_cast<Point2T<U>>(origin), static_cast<typename Rect<U, U>::Size>(size) }; }
+
+    operator std::string() const
+    { return std::string("Rt[") + origin + " + " + size + "]"; }
 
     using Point = Point2T<T>;
 

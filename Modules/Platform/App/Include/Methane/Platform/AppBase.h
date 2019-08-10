@@ -24,6 +24,7 @@ Base application interface and platform-independent implementation.
 #pragma once
 
 #include <Methane/Platform/AppView.h>
+#include <Methane/Platform/Input/State.h>
 #include <Methane/Data/Types.h>
 
 #include <cxxopts.hpp>
@@ -85,8 +86,12 @@ public:
     virtual void Alert(const Message& msg, bool deferred = false);
     virtual void SetWindowTitle(const std::string& title_text) = 0;
 
-    const Settings& GetSettings() const { return m_settings; }
-    bool HasError() const;
+    const Settings&     GetSettings() const     { return m_settings; }
+    const Input::State& GetInputState() const   { return m_input_state; }
+    bool                HasError() const;
+
+    // Entry point for user input handling from platform-specific implementation
+    Input::IActionController& InputController() { return m_input_state; }
 
 protected:
     // AppBase interface
@@ -98,6 +103,7 @@ protected:
     cxxopts::Options     m_cmd_options;
     bool                 m_initialized = false;
     Message::Ptr         m_sp_deferred_message;
+    Input::State         m_input_state;
 };
 
 } // namespace Platform
