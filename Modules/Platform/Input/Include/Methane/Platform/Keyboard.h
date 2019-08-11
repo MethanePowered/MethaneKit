@@ -94,14 +94,14 @@ struct Modifier
     using Mask = uint32_t;
     enum Value : Mask
     {
-        None = 0,
-        Shift = 1 << 0,
-        Control = 1 << 1,
-        Alt = 1 << 2,
-        Super = 1 << 3,
+        None     = 0,
+        Shift    = 1 << 0,
+        Control  = 1 << 1,
+        Alt      = 1 << 2,
+        Super    = 1 << 3,
         CapsLock = 1 << 4,
-        NumLock = 1 << 5,
-        All = static_cast<Mask>(~0),
+        NumLock  = 1 << 5,
+        All      = static_cast<Mask>(~0),
     };
 
     using Values = std::array<Value, 6>;
@@ -119,18 +119,22 @@ struct NativeKey;
 class KeyConverter
 {
 public:
-    KeyConverter(Key key) : m_key(key) { }
-    KeyConverter(const NativeKey& native_key) : m_key(GetKeyByNativeCode(native_key)) { }
+    KeyConverter(Key key);
+    KeyConverter(Key key, Modifier::Mask modifiers);
+    KeyConverter(const NativeKey& native_key);
     
-    Key             GetKey() const noexcept { return m_key; }
-    Modifier::Value GetModifier() const noexcept;
+    Key             GetKey() const noexcept         { return m_key; }
+    Modifier::Mask  GetModifiers() const noexcept   { return m_modifiers; }
+    Modifier::Value GetModifierKey() const noexcept;
     std::string     ToString() const noexcept;
     
-    // NOTE: Platform dependent function: see MacOS, Windows subdirs for implementation
-    static Key GetKeyByNativeCode(const NativeKey& native_key);
+    // NOTE: Platform dependent functions: see MacOS, Windows subdirs for implementation
+    static Key            GetKeyByNativeCode(const NativeKey& native_key);
+    static Modifier::Mask GetModifiersByNativeCode(const NativeKey& native_key);
     
 private:
-    const Key m_key;
+    const Key            m_key;
+    const Modifier::Mask m_modifiers;
 };
 
 enum class KeyState : uint8_t
@@ -166,17 +170,18 @@ public:
     };
 
     State() = default;
-    State(std::initializer_list<Key> pressed_keys);
+    State(std::initializer_list<Key> pressed_keys, Modifier::Mask modifiers_mask = Modifier::Value::None);
     State(const State& other);
 
     State& operator=(const State& other);
-    bool operator<(const State& other) const;
-    bool operator==(const State& other) const;
-    bool operator!=(const State& other) const       { return !operator==(other); }
-    const KeyState& operator[](Key key) const       { return m_key_states[static_cast<size_t>(key)]; }
+    bool   operator<(const State& other) const;
+    bool   operator==(const State& other) const;
+    bool   operator!=(const State& other) const     { return !operator==(other); }
+    const  KeyState& operator[](Key key) const      { return m_key_states[static_cast<size_t>(key)]; }
     operator std::string() const                    { return ToString(); }
 
     void  SetKey(Key key, KeyState state);
+    void  SetModifiersMask(Modifier::Mask mask)     { m_modifiers_mask = mask; }
     void  PressKey(Key key)                         { SetKey(key, KeyState::Pressed); }
     void  ReleaseKey(Key key)                       { SetKey(key, KeyState::Released); }
 

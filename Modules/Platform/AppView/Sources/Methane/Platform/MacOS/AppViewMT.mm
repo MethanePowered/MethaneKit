@@ -169,6 +169,18 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
     }
 }
 
+- (void) setVsyncEnabled: (BOOL) vsyncEnabled
+{
+    if (_vsyncEnabled == vsyncEnabled)
+        return;
+    
+    // FIXME: probably this should be done in a separate thread
+    BOOL was_redrawing = self.redrawing;
+    self.redrawing = NO;
+    _vsyncEnabled = vsyncEnabled;
+    self.redrawing = was_redrawing;
+}
+
 - (void) setRedrawing: (BOOL) redrawing
 {
     if (_redrawing == redrawing)

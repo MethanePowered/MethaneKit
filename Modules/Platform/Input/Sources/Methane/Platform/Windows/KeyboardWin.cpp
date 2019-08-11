@@ -199,3 +199,10 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
     auto native_code_and_key_it = s_key_by_native_code.find(native_key_code);
     return native_code_and_key_it == s_key_by_native_code.end() ? Key::Unknown : native_code_and_key_it->second;
 }
+
+Modifier::Mask KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key)
+{
+    Modifier::Mask modifiers_mask = Modifier::Value::None;
+    // TODO: implement me. native_key.w_param == VK_CONTROL
+    return modifiers_mask;
+}

@@ -43,7 +43,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER Modules/Data
+    FOLDER Modules/Graphics
     PUBLIC_HEADER "${HEADERS}"
 )
 

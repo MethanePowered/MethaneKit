@@ -49,6 +49,7 @@ public:
     void WaitForGpu(WaitFor wait_for) override;
     void Resize(const FrameSize& frame_size) override;
     void Present() override;
+    bool SetVSyncEnabled(bool vsync_enabled) override;
     Platform::AppView GetAppView() const override { return { m_app_view }; }
 
     id<CAMetalDrawable>      GetNativeDrawable()       { return m_app_view.currentDrawable; }

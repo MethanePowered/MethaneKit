@@ -38,7 +38,7 @@ MacOS application view implementation.
 @property (nonatomic, readonly, nullable) NSScreen* currentScreen;
 @property (nonatomic, readonly) MTLPixelFormat pixelFormat;
 @property (nonatomic, readonly) NSUInteger drawableCount;
-@property (nonatomic, readonly) BOOL vsyncEnabled;
+@property (nonatomic, readwrite) BOOL vsyncEnabled;
 
 @property (nonatomic, readwrite) NSTimeInterval nonsyncRefreshInterval;
 @property (nonatomic, readwrite) BOOL redrawing;

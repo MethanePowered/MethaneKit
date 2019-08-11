@@ -83,3 +83,15 @@ void State::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state)
 
     m_controllers.OnKeyboardChanged(key, key_state, Keyboard::StateChange(m_keyboard_state, prev_keyboard_state, state_changes_mask));
 }
+
+void State::OnModifiersChanged(Keyboard::Modifier::Mask modifiers_mask)
+{
+    Keyboard::State prev_keyboard_state(m_keyboard_state);
+    m_keyboard_state.SetModifiersMask(modifiers_mask);
+    Keyboard::State::Property::Mask state_changes_mask = m_keyboard_state.GetDiff(prev_keyboard_state);
+    
+    if (state_changes_mask == Keyboard::State::Property::None)
+        return;
+    
+    m_controllers.OnModifiersChanged(modifiers_mask, Keyboard::StateChange(m_keyboard_state, prev_keyboard_state, state_changes_mask));
+}

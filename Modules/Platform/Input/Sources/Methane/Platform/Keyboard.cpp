@@ -32,7 +32,22 @@ using namespace Methane::Platform::Keyboard;
 static const std::string s_keys_separator = "+";
 static const std::string s_properties_separator = "+";
 
-Modifier::Value KeyConverter::GetModifier() const noexcept
+KeyConverter::KeyConverter(Key key)
+    : m_key(key)
+    , m_modifiers(GetModifierKey())
+{ }
+
+KeyConverter::KeyConverter(Key key, Modifier::Mask modifiers)
+    : m_key(key)
+    , m_modifiers(modifiers)
+{ }
+
+KeyConverter::KeyConverter(const NativeKey& native_key)
+    : m_key(GetKeyByNativeCode(native_key))
+    , m_modifiers(GetModifiersByNativeCode(native_key))
+{ }
+
+Modifier::Value KeyConverter::GetModifierKey() const noexcept
 {
     switch (m_key)
     {
@@ -192,10 +207,14 @@ std::string KeyConverter::ToString() const noexcept
         assert(0);
         return "";
     }
-    return key_and_name_it->second;
+    
+    return m_modifiers == Modifier::Value::None
+         ? key_and_name_it->second
+         : Modifier::ToString(m_modifiers) + s_keys_separator + key_and_name_it->second;
 };
 
-State::State(std::initializer_list<Key> pressed_keys)
+State::State(std::initializer_list<Key> pressed_keys, Modifier::Mask modifiers_mask)
+    : m_modifiers_mask(modifiers_mask)
 {
     for (Key pressed_key : pressed_keys)
     {
@@ -252,7 +271,7 @@ void State::SetKey(Key key, KeyState state)
     if (key == Key::Unknown)
         return;
 
-    const Modifier::Value key_modifier = KeyConverter(key).GetModifier();
+    const Modifier::Value key_modifier = KeyConverter(key).GetModifierKey();
     if (key_modifier != Modifier::Value::None)
     {
         UpdateModifiersMask(key_modifier, state == KeyState::Pressed);
