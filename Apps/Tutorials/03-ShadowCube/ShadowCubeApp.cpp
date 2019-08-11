@@ -67,6 +67,7 @@ ShadowCubeApp::ShadowCubeApp()
         })
 {
     m_view_camera.SetOrientation({ { 15.0f, 22.5f, -15.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
+
     m_light_camera.SetOrientation({ { 0.0f,  25.0f, -25.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
     m_light_camera.SetParamters({ -300, 300.f, 90.f });
@@ -76,8 +77,8 @@ ShadowCubeApp::ShadowCubeApp()
         std::make_shared<Data::TimeAnimation>(
             [this](double, double delta_seconds)
             {
-                m_view_camera.RotateYaw( 360.f * delta_seconds / 8.f);
-                m_light_camera.RotateYaw(360.f * delta_seconds / 4.f);
+                m_view_camera.RotateYaw(static_cast<float>(delta_seconds * 360.f / 8.f));
+                m_light_camera.RotateYaw(static_cast<float>(delta_seconds * 360.f / 4.f));
                 return true;
             }));
 }
