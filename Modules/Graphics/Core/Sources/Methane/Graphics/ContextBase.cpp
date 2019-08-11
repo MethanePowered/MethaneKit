@@ -97,6 +97,15 @@ RenderCommandList& ContextBase::GetUploadCommandList()
     return *m_sp_upload_cmd_list;
 }
 
+bool ContextBase::SetVSyncEnabled(bool vsync_enabled)
+{
+    if (m_settings.vsync_enabled == vsync_enabled)
+        return false;
+
+    m_settings.vsync_enabled = vsync_enabled;
+    return true;
+}
+
 void ContextBase::UploadResources()
 {
     ITT_FUNCTION_TASK();

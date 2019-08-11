@@ -61,6 +61,7 @@ public:
     const Settings&       GetSettings() const override          { return m_settings; }
     uint32_t              GetFrameBufferIndex() const override  { return m_frame_buffer_index;  }
     const FpsCounter&     GetFpsCounter() const override        { return m_fps_counter; }
+    bool                  SetVSyncEnabled(bool vsync_enabled) override;
 
     // ContextBase interface
     virtual void OnCommandQueueCompleted(CommandQueue& cmd_queue, uint32_t frame_index) = 0;

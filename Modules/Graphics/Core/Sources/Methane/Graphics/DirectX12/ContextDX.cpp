@@ -75,8 +75,6 @@ Context::Ptr Context::Create(const Platform::AppEnvironment& env, const Data::Pr
 
 ContextDX::ContextDX(const Platform::AppEnvironment& env, const Data::Provider& data_provider, const Context::Settings& settings)
     : ContextBase(data_provider, settings)
-    , m_present_sync_interval(settings.vsync_enabled ? 1 : 0)
-    , m_present_flags(0) // DXGI_PRESENT_DO_NOT_WAIT
 {
     ITT_FUNCTION_TASK();
 
@@ -213,7 +211,9 @@ void ContextDX::Present()
 {
     ITT_FUNCTION_TASK();
 
-    ThrowIfFailed(m_cp_swap_chain->Present(m_present_sync_interval, m_present_flags));
+    const uint32_t present_flags  = 0; // DXGI_PRESENT_DO_NOT_WAIT
+    const uint32_t vsync_interval = GetPresentVSyncInterval();
+    ThrowIfFailed(m_cp_swap_chain->Present(vsync_interval, present_flags));
 
     OnPresentComplete();
 }

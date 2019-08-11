@@ -32,7 +32,30 @@ using namespace Methane::Platform::Keyboard;
 static const std::string s_keys_separator = "+";
 static const std::string s_properties_separator = "+";
 
-std::string KeyConverter::ToString() const
+Modifier::Value KeyConverter::GetModifier() const noexcept
+{
+    switch (m_key)
+    {
+    case Key::LeftShift:
+    case Key::RightShift:   return Modifier::Shift;
+
+    case Key::LeftControl:
+    case Key::RightControl: return Modifier::Control;
+
+    case Key::LeftAlt:
+    case Key::RightAlt:     return Modifier::Alt;
+
+    case Key::LeftSuper:
+    case Key::RightSuper:   return Modifier::Super;
+
+    case Key::CapsLock:     return Modifier::CapsLock;
+    case Key::NumLock:      return Modifier::NumLock;
+
+    default:                return Modifier::None;
+    }
+}
+
+std::string KeyConverter::ToString() const noexcept
 {
     static const std::map<Key, std::string> s_name_by_key =
     {
@@ -196,6 +219,15 @@ State& State::operator=(const State& other)
     return *this;
 }
 
+bool State::operator<(const State& other) const
+{
+    if (m_modifiers_mask != other.m_modifiers_mask)
+    {
+        return m_modifiers_mask < other.m_modifiers_mask;
+    }
+    return m_key_states < other.m_key_states;
+}
+
 bool State::operator==(const State& other) const
 {
     return m_key_states     == other.m_key_states &&
@@ -217,37 +249,21 @@ State::Property::Mask State::GetDiff(const State& other) const
 
 void State::SetKey(Key key, KeyState state)
 {
-    switch (key)
+    if (key == Key::Unknown)
+        return;
+
+    const Modifier::Value key_modifier = KeyConverter(key).GetModifier();
+    if (key_modifier != Modifier::Value::None)
     {
-    case Key::LeftShift:
-    case Key::RightShift:
-        UpdateModifiersMask(Modifier::Shift,     state == KeyState::Pressed);
-        break;
-    case Key::LeftControl:
-    case Key::RightControl:
-        UpdateModifiersMask(Modifier::Control,   state == KeyState::Pressed);
-        break;
-    case Key::LeftAlt:
-    case Key::RightAlt:
-        UpdateModifiersMask(Modifier::Alt,       state == KeyState::Pressed);
-        break;
-    case Key::LeftSuper:
-    case Key::RightSuper:
-        UpdateModifiersMask(Modifier::Super,     state == KeyState::Pressed);
-        break;
-    case Key::CapsLock:
-        UpdateModifiersMask(Modifier::CapsLock,  state == KeyState::Pressed);
-        break;
-    case Key::NumLock:
-        UpdateModifiersMask(Modifier::NumLock,   state == KeyState::Pressed);
-        break;
-    default:
+        UpdateModifiersMask(key_modifier, state == KeyState::Pressed);
+    }
+    else
+    {
+        const size_t key_index = static_cast<size_t>(key);
+        assert(key_index < m_key_states.size());
+        if (key_index < m_key_states.size())
         {
-            size_t key_index = static_cast<size_t>(key);
-            if (key_index < m_key_states.size())
-            {
-                m_key_states[key_index] = state;
-            }
+            m_key_states[key_index] = state;
         }
     }
 }

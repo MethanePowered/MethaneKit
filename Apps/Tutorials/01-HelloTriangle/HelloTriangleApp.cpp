@@ -87,7 +87,7 @@ void HelloTriangleApp::Init()
         { // constant_argument_names
         },
         { // render_target_pixel_formats
-          m_context_settings.color_format
+            GetInitialContextSettings().color_format
         }
     });
     m_sp_program->SetName("Colored Vertices");
@@ -110,8 +110,8 @@ void HelloTriangleApp::Init()
     // Create render state
     m_sp_state = gfx::RenderState::Create(*m_sp_context, {
         m_sp_program,
-        { gfx::GetFrameViewport(m_context_settings.frame_size) },
-        { gfx::GetFrameScissorRect(m_context_settings.frame_size) },
+        { gfx::GetFrameViewport(GetInitialContextSettings().frame_size) },
+        { gfx::GetFrameScissorRect(GetInitialContextSettings().frame_size) },
     });
     m_sp_state->SetName("Frame Render Pipeline State");
 

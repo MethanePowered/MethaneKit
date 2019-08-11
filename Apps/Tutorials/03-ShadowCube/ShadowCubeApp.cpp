@@ -320,7 +320,7 @@ void ShadowCubeApp::MeshBuffers::Init(const gfx::BaseMesh<VType>& mesh_data, gfx
 
 bool ShadowCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 {
-    if (!m_initialized || m_context_settings.frame_size == frame_size)
+    if (!m_initialized || GetInitialContextSettings().frame_size == frame_size)
         return false;
 
     // Resize screen color and depth textures
