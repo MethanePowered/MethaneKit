@@ -30,10 +30,11 @@ using namespace Methane;
 using namespace Methane::Platform;
 using namespace Methane::Platform::Input;
 
-AppHelpController::AppHelpController(AppBase& application, const std::string& application_help, Keyboard::Key help_key)
+AppHelpController::AppHelpController(AppBase& application, const std::string& application_help, Keyboard::Key help_key, bool show_command_line_help)
     : Input::Controller(application_help)
     , m_application(application)
     , m_help_key(help_key)
+    , m_show_command_line_help(show_command_line_help)
 {
 }
 
@@ -88,6 +89,20 @@ void AppHelpController::OnKeyboardChanged(Keyboard::Key key, Platform::Keyboard:
                 }
                 help_stream << std::endl;
             }
+        }
+    }
+
+    if (m_show_command_line_help)
+    {
+        const std::string cmd_line_help = m_application.GetCmdOptions().help();
+        if (!cmd_line_help.empty())
+        {
+            if (!is_first_controller)
+            {
+                help_stream << std::endl;
+            }
+            help_stream << "COMMAND LINE OPTIONS" << std::endl;
+            help_stream << std::endl << cmd_line_help;
         }
     }
 
