@@ -86,9 +86,11 @@ public:
     virtual void Alert(const Message& msg, bool deferred = false);
     virtual void SetWindowTitle(const std::string& title_text) = 0;
 
-    const Settings&     GetSettings() const     { return m_settings; }
-    const Input::State& GetInputState() const   { return m_input_state; }
-    bool                HasError() const;
+    bool HasError() const;
+
+    const Settings&         GetSettings() const   { return m_settings; }
+    const Input::State&     GetInputState() const { return m_input_state; }
+    const cxxopts::Options& GetCmdOptions() const { return m_cmd_options; }
 
     // Entry point for user input handling from platform-specific implementation
     Input::IActionController& InputController() { return m_input_state; }

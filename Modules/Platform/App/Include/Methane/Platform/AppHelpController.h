@@ -34,7 +34,8 @@ class AppHelpController : public Input::Controller
 {
 public:
     AppHelpController(AppBase& application, const std::string& application_help,
-                      Keyboard::Key help_key = Platform::Keyboard::Key::F1);
+                      Keyboard::Key help_key = Platform::Keyboard::Key::F1,
+                      bool show_command_line_help = false);
 
     // Input::Controller implementation
     void OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Platform::Keyboard::StateChange&) override;
@@ -45,6 +46,7 @@ public:
 private:
     AppBase&            m_application;
     const Keyboard::Key m_help_key;
+    const bool          m_show_command_line_help;
 };
 
 } // namespace Graphics
