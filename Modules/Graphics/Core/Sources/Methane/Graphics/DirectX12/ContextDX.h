@@ -69,11 +69,10 @@ public:
 protected:
     CommandQueueDX& DefaultCommandQueueDX();
 
-    inline UINT64 GetCurrentFenceValue() const             { return m_fence_values[m_frame_buffer_index]; }
-    inline void SetCurrentFenceValue(uint64_t fence_value) { m_fence_values[m_frame_buffer_index] = fence_value; }
+    inline UINT64   GetCurrentFenceValue() const                { return m_fence_values[m_frame_buffer_index]; }
+    inline void     SetCurrentFenceValue(uint64_t fence_value)  { m_fence_values[m_frame_buffer_index] = fence_value; }
+    inline uint32_t GetPresentVSyncInterval() const             { return m_settings.vsync_enabled ? 1 : 0; }
 
-    const uint32_t               m_present_sync_interval;
-    const uint32_t               m_present_flags;
     wrl::ComPtr<ID3D12Device>    m_cp_device;
     wrl::ComPtr<IDXGISwapChain3> m_cp_swap_chain;
     wrl::ComPtr<ID3D12Fence>     m_cp_fence;

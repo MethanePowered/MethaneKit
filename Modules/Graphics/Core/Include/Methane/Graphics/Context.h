@@ -83,6 +83,8 @@ struct Context : virtual Object
     virtual const Settings&       GetSettings() const = 0;
     virtual uint32_t              GetFrameBufferIndex() const = 0;
     virtual const FpsCounter&     GetFpsCounter() const = 0;
+
+    virtual bool SetVSyncEnabled(bool vsync_enabled) = 0;
 };
 
 } // namespace Graphics

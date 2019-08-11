@@ -6,10 +6,12 @@ set(HEADERS
     ${INCLUDE_DIR}/App.hpp
     ${INCLUDE_DIR}/AppDataProvider.hpp
     ${INCLUDE_DIR}/AppCameraController.h
+    ${INCLUDE_DIR}/AppContextController.h
 )
 
 set(SOURCES
     ${SOURCES_DIR}/AppCameraController.cpp
+    ${SOURCES_DIR}/AppContextController.cpp
 )
 
 add_library(${TARGET} STATIC

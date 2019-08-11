@@ -16,38 +16,55 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/AppHelpController.h
-Help displaying controller.
+FILE: Methane/Graphics/AppContextController.h
+Graphics context controller for switching parameters in runtime.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Platform/AppBase.h>
+#include <Methane/Platform/Input/Controller.h>
+#include <Methane/Platform/Keyboard.h>
+
+#include <map>
 
 namespace Methane
 {
-namespace Platform
+namespace Graphics
 {
 
-class AppHelpController : public Input::Controller
+struct Context;
+
+class AppContextController : public Platform::Input::Controller
 {
 public:
-    AppHelpController(AppBase& application, const std::string& application_help,
-                      Keyboard::Key help_key = Platform::Keyboard::Key::F1,
-                      bool show_command_line_help = false);
+    enum class Action : uint32_t
+    {
+        None = 0,
+
+        SwitchVSync,
+
+        Count
+    };
+
+    using ActionByKeyboardState = std::map<Platform::Keyboard::State, Action>;
+
+    inline static const ActionByKeyboardState default_action_by_keyboard_state = {
+        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::V }, Action::SwitchVSync },
+    };
+
+    AppContextController(Context& context, const ActionByKeyboardState& action_by_keyboard_state = default_action_by_keyboard_state);
 
     // Input::Controller implementation
     void OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Platform::Keyboard::StateChange&) override;
-
-    // Input::IHelpProvider implementation
     HelpLines GetHelp() const override;
 
+    static std::string GetActionName(Action action);
+
 private:
-    AppBase&            m_application;
-    const Keyboard::Key m_help_key;
-    const bool          m_show_command_line_help;
+    Context&                m_context;
+    ActionByKeyboardState   m_action_by_keyboard_state;
 };
 
-} // namespace Platform
+} // namespace Graphics
 } // namespace Methane

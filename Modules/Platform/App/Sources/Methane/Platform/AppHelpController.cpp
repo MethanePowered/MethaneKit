@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/AppHelpController.cpp
-Help displaying controller
+FILE: Methane/Platform/AppHelpController.cpp
+Help displaying controller.
 
 ******************************************************************************/
 
@@ -67,6 +67,7 @@ void AppHelpController::OnKeyboardChanged(Keyboard::Key key, Platform::Keyboard:
             controller_offset = single_offset;
         }
 
+        bool first_line = true;
         bool header_present = false;
         for (const KeyDescription& key_description : help_lines)
         {
@@ -77,6 +78,10 @@ void AppHelpController::OnKeyboardChanged(Keyboard::Key key, Platform::Keyboard:
             }
             else
             {
+                if (first_line && !header_present)
+                {
+                    help_stream << std::endl;
+                }
                 help_stream << controller_offset;
                 if (header_present)
                 {
@@ -89,6 +94,7 @@ void AppHelpController::OnKeyboardChanged(Keyboard::Key key, Platform::Keyboard:
                 }
                 help_stream << std::endl;
             }
+            first_line = false;
         }
     }
 

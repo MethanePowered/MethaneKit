@@ -88,7 +88,32 @@ enum class Key : uint32_t
 };
 
 using Keys = std::set<Key>;
-    
+
+struct Modifier
+{
+    using Mask = uint32_t;
+    enum Value : Mask
+    {
+        None = 0,
+        Shift = 1 << 0,
+        Control = 1 << 1,
+        Alt = 1 << 2,
+        Super = 1 << 3,
+        CapsLock = 1 << 4,
+        NumLock = 1 << 5,
+        All = static_cast<Mask>(~0),
+    };
+
+    using Values = std::array<Value, 6>;
+    static constexpr const Values values = { Shift, Control, Alt, Super, CapsLock, NumLock };
+
+    static std::string ToString(Value modifier);
+    static std::string ToString(Mask modifiers_mask);
+
+    Modifier() = delete;
+    ~Modifier() = delete;
+};
+
 struct NativeKey;
 
 class KeyConverter
@@ -97,39 +122,15 @@ public:
     KeyConverter(Key key) : m_key(key) { }
     KeyConverter(const NativeKey& native_key) : m_key(GetKeyByNativeCode(native_key)) { }
     
-    Key         GetKey() const      { return m_key; }
-    std::string ToString() const;
+    Key             GetKey() const noexcept { return m_key; }
+    Modifier::Value GetModifier() const noexcept;
+    std::string     ToString() const noexcept;
     
     // NOTE: Platform dependent function: see MacOS, Windows subdirs for implementation
     static Key GetKeyByNativeCode(const NativeKey& native_key);
     
 private:
     const Key m_key;
-};
-
-struct Modifier
-{
-    using Mask = uint32_t;
-    enum Value : Mask
-    {
-        None        = 0,
-        Shift       = 1 << 0,
-        Control     = 1 << 1,
-        Alt         = 1 << 2,
-        Super       = 1 << 3,
-        CapsLock    = 1 << 4,
-        NumLock     = 1 << 5,
-        All         = static_cast<Mask>(~0),
-    };
-
-    using Values = std::array<Value, 6>;
-    static constexpr const Values values = { Shift, Control, Alt, Super, CapsLock, NumLock };
-    
-    static std::string ToString(Value modifier);
-    static std::string ToString(Mask modifiers_mask);
-
-    Modifier()  = delete;
-    ~Modifier() = delete;
 };
 
 enum class KeyState : uint8_t
@@ -169,6 +170,7 @@ public:
     State(const State& other);
 
     State& operator=(const State& other);
+    bool operator<(const State& other) const;
     bool operator==(const State& other) const;
     bool operator!=(const State& other) const       { return !operator==(other); }
     const KeyState& operator[](Key key) const       { return m_key_states[static_cast<size_t>(key)]; }

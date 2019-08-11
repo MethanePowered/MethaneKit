@@ -92,7 +92,7 @@ AppCameraController::HelpLines AppCameraController::GetHelp() const
             help_lines.push_back({
                 Platform::Mouse::ButtonConverter(mouse_actions_by_button_it->first).ToString(),
                 ActionCamera::GetActionName(mouse_actions_by_button_it->second)
-                });
+            });
         }
     }
 
@@ -113,7 +113,7 @@ AppCameraController::HelpLines AppCameraController::GetHelp() const
             help_lines.push_back({
                 Platform::Keyboard::KeyConverter(keyboard_actions_by_key_it->first).ToString(),
                 ActionCamera::GetActionName(keyboard_actions_by_key_it->second)
-                });
+            });
         }
     }
     return help_lines;

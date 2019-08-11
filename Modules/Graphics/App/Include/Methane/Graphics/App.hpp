@@ -25,10 +25,12 @@ Base frame class provides frame buffer management with resize handling.
 #pragma once
 
 #include "AppDataProvider.hpp"
+#include "AppContextController.h"
 
 #include <Methane/Data/Timer.h>
 #include <Methane/Data/AnimationsPool.h>
 #include <Methane/Platform/App.h>
+#include <Methane/Platform/AppHelpController.h>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Context.h>
 #include <Methane/Graphics/Texture.h>
@@ -68,17 +70,20 @@ public:
         bool                    show_hud_in_window_title;
     };
 
-    App(const Settings& settings, RenderPass::Access::Mask screen_pass_access)
+    App(const Settings& settings, RenderPass::Access::Mask screen_pass_access,
+        const std::string& help_description = "Methane Graphics Application")
         : Platform::App(settings.app)
-        , m_context_settings(settings.context)
-        , m_show_hud_in_window_title(settings.show_hud_in_window_title)
-        , m_screen_pass_access(screen_pass_access)
         , m_image_loader(AppDataProvider::Get())
+        , m_initial_context_settings(settings.context)
+        , m_screen_pass_access(screen_pass_access)
+        , m_show_hud_in_window_title(settings.show_hud_in_window_title)
     {
         m_cmd_options.add_options()
             ("d,hud", "Show/hide HUD in window title", cxxopts::value<int>())
             ("v,vsync", "Enable/disable vertical synchronization", cxxopts::value<int>())
             ("f,framebuffers", "Frame buffers count in swap-chain", cxxopts::value<uint32_t>());
+
+        m_input_state.AddControllers({ std::make_shared<Platform::AppHelpController>(*this, help_description) });
     }
 
     ~App() override
@@ -92,9 +97,11 @@ public:
     void InitContext(const Platform::AppEnvironment& env, const FrameSize& frame_size) override
     {
         // Create render context of the current window size
-        m_context_settings.frame_size = frame_size;
-        m_sp_context = Context::Create(env, AppDataProvider::Get(), m_context_settings);
+        m_initial_context_settings.frame_size = frame_size;
+        m_sp_context = Context::Create(env, AppDataProvider::Get(), m_initial_context_settings);
         m_sp_context->SetName("Main Graphics Context");
+
+        m_input_state.AddControllers({ std::make_shared<AppContextController>(*m_sp_context) });
     }
 
     void Init() override
@@ -104,14 +111,14 @@ public:
         assert(m_sp_context);
 
         // Create depth texture for FB rendering
-        if (m_context_settings.depth_stencil_format != PixelFormat::Unknown)
+        if (m_initial_context_settings.depth_stencil_format != PixelFormat::Unknown)
         {
             m_sp_depth_texture = Texture::CreateDepthStencilBuffer(*m_sp_context);
             m_sp_depth_texture->SetName("Depth Texture");
         }
 
         // Create frame resources
-        for (uint32_t frame_index = 0; frame_index < m_context_settings.frame_buffers_count; ++frame_index)
+        for (uint32_t frame_index = 0; frame_index < m_initial_context_settings.frame_buffers_count; ++frame_index)
         {
             FrameT frame(frame_index);
 
@@ -129,7 +136,7 @@ public:
                             RenderPass::Attachment::LoadAction::Clear,
                             RenderPass::Attachment::StoreAction::Store,
                         },
-                        m_context_settings.clear_color
+                        m_initial_context_settings.clear_color
                     )
                 },
                 RenderPass::DepthAttachment(
@@ -139,7 +146,7 @@ public:
                         RenderPass::Attachment::LoadAction::Clear,
                         RenderPass::Attachment::StoreAction::DontCare,
                     },
-                    m_context_settings.clear_depth
+                    m_initial_context_settings.clear_depth
                 ),
                 RenderPass::StencilAttachment(),
                 m_screen_pass_access
@@ -157,10 +164,10 @@ public:
             std::string name;
         };
 
-        if (!m_initialized || m_context_settings.frame_size == frame_size)
+        if (!m_initialized || m_initial_context_settings.frame_size == frame_size)
             return false;
 
-        m_context_settings.frame_size = frame_size;
+        m_initial_context_settings.frame_size = frame_size;
 
         // Save color texture information and delete obsolete resources for each frame buffer
         std::vector<ResourceInfo> frame_restore_info(m_frames.size());
@@ -227,17 +234,18 @@ public:
             throw std::runtime_error("Context is not initialized before rendering.");
         }
 
-        const FpsCounter& fps_counter           = m_sp_context->GetFpsCounter();
-        const uint32_t    average_fps           = fps_counter.GetFramesPerSecond();
-        const double      average_frame_time_ms = fps_counter.GetAverageFrameTimeMilSec();
+        const Context::Settings& context_settings       = m_sp_context->GetSettings();
+        const FpsCounter&        fps_counter            = m_sp_context->GetFpsCounter();
+        const uint32_t           average_fps            = fps_counter.GetFramesPerSecond();
+        const double             average_frame_time_ms  = fps_counter.GetAverageFrameTimeMilSec();
 
         std::stringstream title_ss;
         title_ss.precision(2);
         title_ss << m_settings.name << "        " 
                  << average_fps << " FPS (" 
                  << std::fixed << average_frame_time_ms << " ms), VSync: "
-                 << (m_context_settings.vsync_enabled ? "ON" : "OFF")
-                 << ", " << m_context_settings.frame_size.width << " x " << m_context_settings.frame_size.height;
+                 << (context_settings.vsync_enabled ? "ON" : "OFF")
+                 << ", " << context_settings.frame_size.width << " x " << context_settings.frame_size.height;
 
         SetWindowTitle(title_ss.str());
         m_title_update_timer.Reset();
@@ -265,11 +273,11 @@ protected:
         }
         if (cmd_parse_result.count("vsync"))
         {
-            m_context_settings.vsync_enabled = cmd_parse_result["vsync"].as<int>() != 0;
+            m_initial_context_settings.vsync_enabled = cmd_parse_result["vsync"].as<int>() != 0;
         }
         if (cmd_parse_result.count("framebuffers"))
         {
-            m_context_settings.frame_buffers_count = cmd_parse_result["framebuffers"].as<uint32_t>();
+            m_initial_context_settings.frame_buffers_count = cmd_parse_result["framebuffers"].as<uint32_t>();
         }
     }
 
@@ -280,6 +288,8 @@ protected:
         return m_frames[m_sp_context->GetFrameBufferIndex()];
     }
 
+    const Context::Settings& GetInitialContextSettings() const { return m_initial_context_settings; }
+
     static std::string IndexedName(const std::string& base_name, uint32_t index)
     {
         std::stringstream ss;
@@ -287,15 +297,17 @@ protected:
         return ss.str();
     }
 
-    Context::Settings               m_context_settings;
     Context::Ptr                    m_sp_context;
-    bool                            m_show_hud_in_window_title;
-    const RenderPass::Access::Mask  m_screen_pass_access;
     ImageLoader                     m_image_loader;
-    std::vector<FrameT>             m_frames;
     Texture::Ptr                    m_sp_depth_texture;
-    Data::Timer                     m_title_update_timer;
+    std::vector<FrameT>             m_frames;
     Data::AnimationsPool            m_animations;
+
+private:
+    Context::Settings               m_initial_context_settings;
+    const RenderPass::Access::Mask  m_screen_pass_access;
+    bool                            m_show_hud_in_window_title;
+    Data::Timer                     m_title_update_timer;
 
     static constexpr double  g_title_update_interval_sec = 1;
 };
