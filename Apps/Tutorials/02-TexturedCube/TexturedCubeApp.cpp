@@ -73,7 +73,7 @@ TexturedCubeApp::TexturedCubeApp()
                 gfx::Matrix33f light_rotate_matrix;
                 cml::matrix_rotation_axis_angle(light_rotate_matrix, m_camera.GetOrientation().up, cml::rad(360.f * delta_seconds / 4.f));
                 m_shader_uniforms.light_position = m_shader_uniforms.light_position * light_rotate_matrix;
-                m_camera.RotateYaw(360.f * delta_seconds / 8.f);
+                m_camera.RotateYaw(static_cast<float>(delta_seconds * 360.f / 8.f));
                 return true;
             }));
 }
