@@ -23,6 +23,8 @@ MacOS platform specific types and implementation of Keyboard abstractions.
 
 #include <Methane/Platform/Keyboard.h>
 
+#import <AppKit/AppKit.h>
+
 #include <map>
 
 using namespace Methane::Platform::Keyboard;
@@ -150,4 +152,29 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
     
     auto native_code_and_key_it = s_key_by_native_code.find(native_key.code);
     return native_code_and_key_it == s_key_by_native_code.end() ? Key::Unknown : native_code_and_key_it->second;
+}
+
+Modifier::Mask KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key)
+{
+    Modifier::Mask modifiers_mask = Modifier::Value::None;
+    
+    if (native_key.flags & NSEventModifierFlagShift)
+        modifiers_mask |= Modifier::Value::Shift;
+    
+    if (native_key.flags & NSEventModifierFlagControl)
+        modifiers_mask |= Modifier::Value::Control;
+    
+    if (native_key.flags & NSEventModifierFlagOption)
+        modifiers_mask |= Modifier::Value::Alt;
+    
+    if (native_key.flags & NSEventModifierFlagCommand)
+        modifiers_mask |= Modifier::Value::Super;
+    
+    if (native_key.flags & NSEventModifierFlagCapsLock)
+        modifiers_mask |= Modifier::Value::CapsLock;
+    
+    if (native_key.flags & NSEventModifierFlagNumericPad)
+        modifiers_mask |= Modifier::Value::NumLock;
+    
+    return modifiers_mask;
 }

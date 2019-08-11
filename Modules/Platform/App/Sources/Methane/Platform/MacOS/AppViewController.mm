@@ -112,6 +112,12 @@ using namespace Methane::Platform;
     m_p_app->InputController().OnKeyboardChanged(Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), Keyboard::KeyState::Released);
 }
 
+- (void) flagsChanged:(NSEvent *)event
+{
+    assert(!!m_p_app);
+    m_p_app->InputController().OnModifiersChanged(Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetModifiers());
+}
+
 // ====== Mouse event handlers ======
 
 - (void)mouseMoved:(NSEvent *)event

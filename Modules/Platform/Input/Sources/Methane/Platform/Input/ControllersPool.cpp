@@ -35,22 +35,6 @@ A pool of input controllers for user actions handling in separate application co
 using namespace Methane::Platform;
 using namespace Methane::Platform::Input;
 
-void ControllersPool::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state, const Keyboard::StateChange& state_change)
-{
-#ifdef DEBUG_USER_INPUT
-    PrintToDebugOutput(std::string("Keyboard: ") + state_change.current.ToString());
-#endif
-
-    for (const Controller::Ptr& sp_controller : *this)
-    {
-        assert(!!sp_controller);
-        if (!sp_controller || !sp_controller->IsEnabled())
-            continue;
-        
-        sp_controller->OnKeyboardChanged(key, key_state, state_change);
-    }
-}
-
 void ControllersPool::OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button_state, const Mouse::StateChange& state_change)
 {
 #ifdef DEBUG_USER_INPUT
@@ -113,6 +97,38 @@ void ControllersPool::OnMouseInWindowChanged(bool is_mouse_in_window, const Mous
             continue;
 
         sp_controller->OnMouseInWindowChanged(is_mouse_in_window, state_change);
+    }
+}
+
+void ControllersPool::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state, const Keyboard::StateChange& state_change)
+{
+#ifdef DEBUG_USER_INPUT
+    PrintToDebugOutput(std::string("Keyboard (key): ") + state_change.current.ToString());
+#endif
+    
+    for (const Controller::Ptr& sp_controller : *this)
+    {
+        assert(!!sp_controller);
+        if (!sp_controller || !sp_controller->IsEnabled())
+            continue;
+        
+        sp_controller->OnKeyboardChanged(key, key_state, state_change);
+    }
+}
+
+void ControllersPool::OnModifiersChanged(Keyboard::Modifier::Mask modifiers, const Keyboard::StateChange& state_change)
+{
+#ifdef DEBUG_USER_INPUT
+    PrintToDebugOutput(std::string("Keyboard (modifiers): ") + state_change.current.ToString());
+#endif
+    
+    for (const Controller::Ptr& sp_controller : *this)
+    {
+        assert(!!sp_controller);
+        if (!sp_controller || !sp_controller->IsEnabled())
+            continue;
+        
+        sp_controller->OnModifiersChanged(modifiers, state_change);
     }
 }
 
