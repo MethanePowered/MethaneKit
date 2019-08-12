@@ -40,7 +40,7 @@ MacOS application view implementation.
 @property (nonatomic, readonly) NSUInteger drawableCount;
 @property (nonatomic, readwrite) BOOL vsyncEnabled;
 
-@property (nonatomic, readwrite) NSTimeInterval nonsyncRefreshInterval;
+@property (nonatomic, readwrite) NSTimeInterval unsyncRefreshInterval;
 @property (nonatomic, readwrite) BOOL redrawing;
 
 @property (nonatomic, weak, nullable) id<MetalAppViewDelegate> delegate;

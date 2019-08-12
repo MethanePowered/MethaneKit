@@ -118,5 +118,7 @@ bool ContextMT::SetVSyncEnabled(bool vsync_enabled)
     if (ContextBase::SetVSyncEnabled(vsync_enabled))
     {
         m_app_view.vsyncEnabled = vsync_enabled ? YES : NO;
+        return true;
     }
+    return false;
 }
