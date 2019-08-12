@@ -30,7 +30,7 @@ MacOS application view implementation.
 
 @property (strong) id<CAMetalDrawable> currentDrawable;
 @property (nonatomic) id <MTLDevice> device;
-@property (nonatomic) NSTimer* nonsyncTimer;
+@property (nonatomic) NSTimer* unsyncTimer;
 
 @end
 
@@ -40,7 +40,7 @@ MacOS application view implementation.
 @synthesize pixelFormat = _pixelFormat;
 @synthesize drawableCount = _drawableCount;
 @synthesize vsyncEnabled = _vsyncEnabled;
-@synthesize nonsyncRefreshInterval = _unsyncRefreshInterval;
+@synthesize unsyncRefreshInterval = _unsyncRefreshInterval;
 
 CVDisplayLinkRef _displayLink;
 
@@ -53,8 +53,11 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
 {
     AppViewMT* app_view = (__bridge AppViewMT*)displayLinkContext;
     
-    // Rendering in Main thread
-    [app_view performSelectorOnMainThread:@selector(redraw) withObject:nil waitUntilDone:YES];
+    if (app_view.redrawing)
+    {
+        // Rendering in Main thread
+        [app_view performSelectorOnMainThread:@selector(redraw) withObject:nil waitUntilDone:YES];
+    }
 
     return kCVReturnSuccess;
 }
@@ -111,6 +114,12 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
     self.metalLayer.pixelFormat = self.pixelFormat;
     self.wantsLayer = YES;
     self.layerContentsRedrawPolicy = NSViewLayerContentsRedrawOnSetNeedsDisplay;
+    
+    NSNotificationCenter* notificationCenter = [NSNotificationCenter defaultCenter];
+    [notificationCenter addObserver:self
+                           selector:@selector(windowWillClose:)
+                               name:NSWindowWillCloseNotification
+                             object:self.window];
 }
 
 - (NSScreen*) currentScreen
@@ -164,8 +173,8 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
     
     if (self.redrawing && !self.vsyncEnabled)
     {
-        [self.nonsyncTimer invalidate];
-        self.nonsyncTimer = [NSTimer scheduledTimerWithTimeInterval:_unsyncRefreshInterval target:self selector:@selector(redraw) userInfo:nil repeats:YES];
+        [self.unsyncTimer invalidate];
+        self.unsyncTimer = [NSTimer scheduledTimerWithTimeInterval:_unsyncRefreshInterval target:self selector:@selector(redraw) userInfo:nil repeats:YES];
     }
 }
 
@@ -174,7 +183,6 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
     if (_vsyncEnabled == vsyncEnabled)
         return;
     
-    // FIXME: probably this should be done in a separate thread
     BOOL was_redrawing = self.redrawing;
     self.redrawing = NO;
     _vsyncEnabled = vsyncEnabled;
@@ -189,21 +197,16 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
     _redrawing = redrawing;
     
     // Stop non-sync refresh timer if it's running
-    if (self.nonsyncTimer)
+    if (self.unsyncTimer)
     {
-        [self.nonsyncTimer invalidate];
-        self.nonsyncTimer = nil;
+        [self.unsyncTimer invalidate];
+        self.unsyncTimer = nil;
     }
 
     // Enable/Disable redrawing on VSync
     if (_redrawing == YES)
     {
-        if (!_vsyncEnabled)
-        {
-            // Create non-sync refresh timer
-            self.nonsyncTimer = [NSTimer scheduledTimerWithTimeInterval:self.nonsyncRefreshInterval target:self selector:@selector(redraw) userInfo:nil repeats:YES];
-        }
-        else
+        if (_vsyncEnabled)
         {
             CVReturn cvReturn = CVDisplayLinkCreateWithActiveCGDisplays(&_displayLink);
             assert(cvReturn == kCVReturnSuccess);
@@ -212,19 +215,22 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
             assert(cvReturn == kCVReturnSuccess);
             
             cvReturn = CVDisplayLinkSetCurrentCGDisplay(_displayLink, CGMainDisplayID());
-            CVDisplayLinkStart(_displayLink);
+            assert(cvReturn == kCVReturnSuccess);
             
-            NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-            [notificationCenter addObserver:self
-                                   selector:@selector(windowWillClose:)
-                                       name:NSWindowWillCloseNotification
-                                     object:self.window];
+            CVDisplayLinkStart(_displayLink);
+        }
+        else
+        {
+            // Create non-sync refresh timer
+            self.unsyncTimer = [NSTimer scheduledTimerWithTimeInterval:_unsyncRefreshInterval target:self selector:@selector(redraw) userInfo:nil repeats:YES];
         }
     }
     else if (_displayLink)
     {
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
         CVDisplayLinkStop(_displayLink);
         CVDisplayLinkRelease(_displayLink);
+        _displayLink = nil;
     }
 }
 
@@ -242,9 +248,11 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
 {
     // Stop the display link when the window is closing because we will
     // not be able to get a drawable, but the display link may continue to fire
-    if (notification.object == self.window)
+    if (notification.object == self.window && _displayLink)
     {
         CVDisplayLinkStop(_displayLink);
+        CVDisplayLinkRelease(_displayLink);
+        _displayLink = nil;
     }
 }
 
