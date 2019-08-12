@@ -250,9 +250,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
     // not be able to get a drawable, but the display link may continue to fire
     if (notification.object == self.window && _displayLink)
     {
-        CVDisplayLinkStop(_displayLink);
-        CVDisplayLinkRelease(_displayLink);
-        _displayLink = nil;
+        self.redrawing = NO;
     }
 }
 
