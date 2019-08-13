@@ -202,7 +202,11 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
 
 Modifier::Mask KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key)
 {
-    Modifier::Mask modifiers_mask = Modifier::Value::None;
-    // TODO: implement me. native_key.w_param == VK_CONTROL
-    return modifiers_mask;
+    switch (native_key.w_param)
+    {
+    case VK_CONTROL: return Modifier::Value::Control;
+    case VK_SHIFT:   return Modifier::Value::Shift;
+    case VK_CAPITAL: return Modifier::Value::CapsLock;
+    default:         return Modifier::Value::None;
+    }
 }
