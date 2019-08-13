@@ -29,7 +29,7 @@ Native implementation alias of the shader interface.
 
 #elif defined __APPLE__
 
-#include <Methane/Graphics/Metal/ShaderMT.h>
+#include <Methane/Graphics/Metal/ShaderMT.hh>
 
 #endif
 

@@ -29,7 +29,7 @@ Native implementation alias of the descriptor heap.
 
 #elif defined __APPLE__
 
-#include <Methane/Graphics/Metal/DescriptorHeapMT.h>
+#include <Methane/Graphics/Metal/DescriptorHeapMT.hh>
 
 #endif
 

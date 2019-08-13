@@ -21,14 +21,14 @@ Metal implementation of the shader interface.
 
 ******************************************************************************/
 
-#include "ShaderMT.h"
-#include "ProgramMT.h"
-#include "ResourceMT.h"
-#include "ContextMT.h"
-#include "TypesMT.h"
+#include "ShaderMT.hh"
+#include "ProgramMT.hh"
+#include "ResourceMT.hh"
+#include "ContextMT.hh"
+#include "TypesMT.hh"
 
 #include <Methane/Graphics/Instrumentation.h>
-#include <Methane/Platform/MacOS/Types.h>
+#include <Methane/Platform/MacOS/Types.hh>
 
 using namespace Methane::Graphics;
 

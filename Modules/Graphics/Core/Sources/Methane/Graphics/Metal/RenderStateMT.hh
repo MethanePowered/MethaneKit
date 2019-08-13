@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/RenderStateMT.h
+FILE: Methane/Graphics/Metal/RenderStateMT.hh
 Metal implementation of the render state interface.
 
 ******************************************************************************/

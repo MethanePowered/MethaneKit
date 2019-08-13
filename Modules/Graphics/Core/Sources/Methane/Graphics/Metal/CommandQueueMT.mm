@@ -21,11 +21,11 @@ Metal implementation of the command queue interface.
 
 ******************************************************************************/
 
-#include "CommandQueueMT.h"
-#include "ContextMT.h"
+#include "CommandQueueMT.hh"
+#include "ContextMT.hh"
 
 #include <Methane/Graphics/Instrumentation.h>
-#include <Methane/Platform/MacOS/Types.h>
+#include <Methane/Platform/MacOS/Types.hh>
 
 using namespace Methane::Graphics;
 using namespace Methane;

@@ -29,7 +29,7 @@ Platform abstraction of keyboard events.
 
 #elif defined __APPLE__
 
-#include "MacOS/KeyboardMac.h"
+#include "MacOS/KeyboardMac.hh"
 
 #endif
 

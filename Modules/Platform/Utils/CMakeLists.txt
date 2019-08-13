@@ -4,9 +4,20 @@ include(Methane)
 
 get_module_dirs("Methane/Platform")
 
+if(WIN32)
+    set(PLATFORM_HEADERS
+        ${INCLUDE_PLATFORM_DIR}/Utils.h
+    )
+elseif(APPLE)
+    set(PLATFORM_HEADERS
+        ${INCLUDE_PLATFORM_DIR}/Types.hh
+        ${INCLUDE_PLATFORM_DIR}/Utils.hh
+    )
+endif()
+
 set(HEADERS
     ${INCLUDE_DIR}/Utils.h
-    ${INCLUDE_PLATFORM_DIR}/Utils.h
+    ${PLATFORM_HEADERS}
 )
 
 set(SOURCES
@@ -35,11 +46,7 @@ if(APPLE)
 
     target_sources(${TARGET}
         PRIVATE
-            ${INCLUDE_PLATFORM_DIR}/Types.h
-    )
-
-    set(HEADERS ${HEADERS}
-        ${INCLUDE_PLATFORM_DIR}/Types.h
+            ${INCLUDE_PLATFORM_DIR}/Types.hh
     )
 
     target_link_libraries(${TARGET}

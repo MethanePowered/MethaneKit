@@ -29,7 +29,7 @@ Native implementation alias of the render command list interface.
 
 #elif defined __APPLE__
 
-#include <Methane/Graphics/Metal/RenderCommandListMT.h>
+#include <Methane/Graphics/Metal/RenderCommandListMT.hh>
 
 #endif
 

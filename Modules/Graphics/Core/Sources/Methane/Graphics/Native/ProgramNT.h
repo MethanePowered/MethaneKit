@@ -29,7 +29,7 @@ Native implementation alias of the program interface.
 
 #elif defined __APPLE__
 
-#include <Methane/Graphics/Metal/ProgramMT.h>
+#include <Methane/Graphics/Metal/ProgramMT.hh>
 
 #endif
 

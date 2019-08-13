@@ -29,7 +29,7 @@ Native implementation alias of the context interface.
 
 #elif defined __APPLE__
 
-#include <Methane/Graphics/Metal/ContextMT.h>
+#include <Methane/Graphics/Metal/ContextMT.hh>
 
 #endif
 

@@ -16,14 +16,14 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/SamplerMT.h
-Metal implementation of the sampler interface.
+FILE: Methane/Graphics/Metal/BufferMT.hh
+Metal implementation of the buffer interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/SamplerBase.h>
+#include <Methane/Graphics/BufferBase.h>
 
 #import <Metal/Metal.h>
 
@@ -32,26 +32,31 @@ namespace Methane
 namespace Graphics
 {
 
-class ContextMT;
-
-class SamplerMT : public SamplerBase
+class BufferMT : public BufferBase
 {
 public:
-    SamplerMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
-    ~SamplerMT() override;
+    using Ptr = std::shared_ptr<BufferMT>;
+
+    BufferMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    BufferMT(ContextBase& context, const Settings& settings, Data::Size stride, PixelFormat format, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    ~BufferMT() override;
+
+    // Resource interface
+    void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override;
+    
+    // Buffer interface
+    uint32_t GetFormattedItemsCount() const override;
 
     // Object interface
     void SetName(const std::string& name) override;
     
-    const id<MTLSamplerState>& GetNativeSamplerState() const noexcept { return m_mtl_sampler_state; }
+    const id<MTLBuffer>& GetNativeBuffer() const noexcept { return m_mtl_buffer; }
+    MTLIndexType         GetNativeIndexType() const noexcept;
 
 protected:
-    void ResetSampletState();
-
-    ContextMT& GetContextMT() noexcept;
-    
-    MTLSamplerDescriptor* m_mtl_sampler_desc = nullptr;
-    id<MTLSamplerState>   m_mtl_sampler_state = nil;
+    id<MTLBuffer> m_mtl_buffer;
+    Data::Size    m_stride = 0;
+    PixelFormat   m_format = PixelFormat::Unknown;
 };
 
 } // namespace Graphics

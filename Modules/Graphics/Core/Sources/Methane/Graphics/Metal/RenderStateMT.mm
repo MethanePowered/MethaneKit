@@ -21,17 +21,17 @@ Metal implementation of the render state interface.
 
 ******************************************************************************/
 
-#include "RenderStateMT.h"
-#include "ContextMT.h"
-#include "RenderCommandListMT.h"
-#include "ProgramMT.h"
-#include "ShaderMT.h"
-#include "TypesMT.h"
+#include "RenderStateMT.hh"
+#include "ContextMT.hh"
+#include "RenderCommandListMT.hh"
+#include "ProgramMT.hh"
+#include "ShaderMT.hh"
+#include "TypesMT.hh"
 
 #include <Methane/Graphics/Instrumentation.h>
 
-#import <Methane/Platform/MacOS/AppViewMT.h>
-#import <Methane/Platform/MacOS/Types.h>
+#import <Methane/Platform/MacOS/AppViewMT.hh>
+#import <Methane/Platform/MacOS/Types.hh>
 
 #include <cassert>
 

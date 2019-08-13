@@ -28,7 +28,7 @@ MacOS application implementation.
 
 #if defined(__OBJC__) && defined(METHANE_RENDER_APP)
 
-#import <Methane/Platform/MacOS/AppDelegate.h>
+#import <Methane/Platform/MacOS/AppDelegate.hh>
 #import <AppKit/AppKit.h>
 
 using NSApplicationType = NSApplication;

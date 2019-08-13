@@ -21,10 +21,10 @@ Metal implementation of the resource interface.
 
 ******************************************************************************/
 
-#include "ResourceMT.h"
-#include "ContextMT.h"
-#include "BufferMT.h"
-#include "TextureMT.h"
+#include "ResourceMT.hh"
+#include "ContextMT.hh"
+#include "BufferMT.hh"
+#include "TextureMT.hh"
 
 #include <Methane/Graphics/Instrumentation.h>
 

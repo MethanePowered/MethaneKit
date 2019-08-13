@@ -50,31 +50,31 @@ if (WIN32)
 elseif(APPLE)
 
     set(PLATFORM_SOURCES
-        ${SOURCES_GRAPHICS_DIR}/TypesMT.h
+        ${SOURCES_GRAPHICS_DIR}/TypesMT.hh
         ${SOURCES_GRAPHICS_DIR}/TypesMT.mm
-        ${SOURCES_GRAPHICS_DIR}/ContextMT.h
+        ${SOURCES_GRAPHICS_DIR}/ContextMT.hh
         ${SOURCES_GRAPHICS_DIR}/ContextMT.mm
-        ${SOURCES_GRAPHICS_DIR}/ShaderMT.h
+        ${SOURCES_GRAPHICS_DIR}/ShaderMT.hh
         ${SOURCES_GRAPHICS_DIR}/ShaderMT.mm
-        ${SOURCES_GRAPHICS_DIR}/ProgramMT.h
+        ${SOURCES_GRAPHICS_DIR}/ProgramMT.hh
         ${SOURCES_GRAPHICS_DIR}/ProgramMT.mm
-        ${SOURCES_GRAPHICS_DIR}/RenderStateMT.h
+        ${SOURCES_GRAPHICS_DIR}/RenderStateMT.hh
         ${SOURCES_GRAPHICS_DIR}/RenderStateMT.mm
-        ${SOURCES_GRAPHICS_DIR}/ResourceMT.h
+        ${SOURCES_GRAPHICS_DIR}/ResourceMT.hh
         ${SOURCES_GRAPHICS_DIR}/ResourceMT.mm
-        ${SOURCES_GRAPHICS_DIR}/DescriptorHeapMT.h
+        ${SOURCES_GRAPHICS_DIR}/DescriptorHeapMT.hh
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapMT.mm  
-        ${SOURCES_GRAPHICS_DIR}/BufferMT.h
+        ${SOURCES_GRAPHICS_DIR}/BufferMT.hh
         ${SOURCES_GRAPHICS_DIR}/BufferMT.mm
-        ${SOURCES_GRAPHICS_DIR}/TextureMT.h
+        ${SOURCES_GRAPHICS_DIR}/TextureMT.hh
         ${SOURCES_GRAPHICS_DIR}/TextureMT.mm
-        ${SOURCES_GRAPHICS_DIR}/SamplerMT.h
+        ${SOURCES_GRAPHICS_DIR}/SamplerMT.hh
         ${SOURCES_GRAPHICS_DIR}/SamplerMT.mm
-        ${SOURCES_GRAPHICS_DIR}/RenderPassMT.h
+        ${SOURCES_GRAPHICS_DIR}/RenderPassMT.hh
         ${SOURCES_GRAPHICS_DIR}/RenderPassMT.mm
-        ${SOURCES_GRAPHICS_DIR}/CommandQueueMT.h
+        ${SOURCES_GRAPHICS_DIR}/CommandQueueMT.hh
         ${SOURCES_GRAPHICS_DIR}/CommandQueueMT.mm
-        ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.h
+        ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.hh
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.mm
     )
 

@@ -21,7 +21,7 @@ Metal "dummy" implementation of the descriptor heap.
 
 ******************************************************************************/
 
-#include "DescriptorHeapMT.h"
+#include "DescriptorHeapMT.hh"
 
 #include <Methane/Graphics/Instrumentation.h>
 

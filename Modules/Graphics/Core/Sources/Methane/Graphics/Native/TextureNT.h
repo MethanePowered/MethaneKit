@@ -29,7 +29,7 @@ Native implementation alias of the texture interface.
 
 #elif defined __APPLE__
 
-#include <Methane/Graphics/Metal/TextureMT.h>
+#include <Methane/Graphics/Metal/TextureMT.hh>
 
 #endif
 

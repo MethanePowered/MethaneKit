@@ -16,37 +16,48 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/App.h
-Methane platform application alias.
+FILE: Methane/Graphics/Metal/ResourceMT.hh
+Metal implementation of the resource interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#if defined _WIN32
+#include <Methane/Graphics/ResourceBase.h>
 
-#include <Methane/Platform/Windows/AppWin.h>
-
-#elif defined __APPLE__
-
-#include <Methane/Platform/MacOS/AppMac.hh>
-
-#endif
+#include <memory>
 
 namespace Methane
 {
-namespace Platform
+namespace Graphics
 {
 
-#if defined _WIN32
+class ContextMT;
+struct ResourceContainerMT;
 
-using App = AppWin;
+class ResourceMT : public ResourceBase
+{
+public:
+    using Ptr = std::shared_ptr<ResourceMT>;
 
-#elif defined __APPLE__
+    class ReleasePoolMT : public ReleasePool
+    {
+    public:
+        ReleasePoolMT();
 
-using App = AppMac;
+        // ReleasePool interface
+        void AddResource(ResourceBase& resource) override;
+        void ReleaseResources() override;
 
-#endif
+    private:
+        std::unique_ptr<ResourceContainerMT> m_sp_mtl_resources;
+    };
 
-} // namespace Platform
+    ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
+
+protected:
+    ContextMT& GetContextMT() noexcept;
+};
+
+} // namespace Graphics
 } // namespace Methane

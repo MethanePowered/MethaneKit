@@ -29,7 +29,7 @@ Native implementation alias of the sampler interface.
 
 #elif defined __APPLE__
 
-#include <Methane/Graphics/Metal/SamplerMT.h>
+#include <Methane/Graphics/Metal/SamplerMT.hh>
 
 #endif
 

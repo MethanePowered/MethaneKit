@@ -21,7 +21,7 @@ MacOS application view implementation.
 
 ******************************************************************************/
 
-#import <Methane/Platform/MacOS/AppViewMT.h>
+#import <Methane/Platform/MacOS/AppViewMT.hh>
 
 @interface AppViewMT ()
 {

@@ -29,7 +29,7 @@ Native implementation alias of the resource interface.
 
 #elif defined __APPLE__
 
-#include <Methane/Graphics/Metal/ResourceMT.h>
+#include <Methane/Graphics/Metal/ResourceMT.hh>
 
 #endif
 

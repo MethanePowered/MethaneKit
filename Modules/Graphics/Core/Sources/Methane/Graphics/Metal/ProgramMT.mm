@@ -16,22 +16,22 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/ProgramMT.h
+FILE: Methane/Graphics/Metal/ProgramMT.hh
 Metal implementation of the program interface.
 
 ******************************************************************************/
 
-#include "ProgramMT.h"
-#include "ShaderMT.h"
-#include "BufferMT.h"
-#include "TextureMT.h"
-#include "SamplerMT.h"
-#include "ContextMT.h"
-#include "RenderCommandListMT.h"
-#include "TypesMT.h"
+#include "ProgramMT.hh"
+#include "ShaderMT.hh"
+#include "BufferMT.hh"
+#include "TextureMT.hh"
+#include "SamplerMT.hh"
+#include "ContextMT.hh"
+#include "RenderCommandListMT.hh"
+#include "TypesMT.hh"
 
 #include <Methane/Graphics/Instrumentation.h>
-#include <Methane/Platform/MacOS/Types.h>
+#include <Methane/Platform/MacOS/Types.hh>
 
 #include <cassert>
 

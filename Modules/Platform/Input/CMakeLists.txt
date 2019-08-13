@@ -17,7 +17,7 @@ if (WIN32)
 elseif(APPLE)
 
     set(PLATFORM_HEADERS
-        ${INCLUDE_PLATFORM_DIR}/KeyboardMac.h
+        ${INCLUDE_PLATFORM_DIR}/KeyboardMac.hh
     )
 
     set(PLATFORM_SOURCES
