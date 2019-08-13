@@ -17,9 +17,9 @@ if (WIN32)
 elseif(APPLE)
 
     set(PLATFORM_HEADERS
-        ${INCLUDE_PLATFORM_DIR}/AppMac.h
-        ${SOURCES_PLATFORM_DIR}/AppDelegate.h
-        ${SOURCES_PLATFORM_DIR}/AppViewController.h
+        ${INCLUDE_PLATFORM_DIR}/AppMac.hh
+        ${SOURCES_PLATFORM_DIR}/AppDelegate.hh
+        ${SOURCES_PLATFORM_DIR}/AppViewController.hh
     )
 
     set(PLATFORM_SOURCES

@@ -21,12 +21,12 @@ Metal implementation of the texture interface.
 
 ******************************************************************************/
 
-#include "TextureMT.h"
-#include "ContextMT.h"
-#include "TypesMT.h"
+#include "TextureMT.hh"
+#include "ContextMT.hh"
+#include "TypesMT.hh"
 
 #include <Methane/Graphics/Instrumentation.h>
-#include <Methane/Platform/MacOS/Types.h>
+#include <Methane/Platform/MacOS/Types.hh>
 
 #include <algorithm>
 #include <cassert>

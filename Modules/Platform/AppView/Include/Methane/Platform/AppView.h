@@ -25,7 +25,7 @@ Methane application view used both by Context in Core API and by Methane App imp
 
 #ifdef __OBJC__
 
-#import "MacOS/AppViewMT.h"
+#import "MacOS/AppViewMT.hh"
 
 #endif
 

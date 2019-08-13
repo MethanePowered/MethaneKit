@@ -29,7 +29,7 @@ Native implementation alias of the command queue interface.
 
 #elif defined __APPLE__
 
-#include <Methane/Graphics/Metal/CommandQueueMT.h>
+#include <Methane/Graphics/Metal/CommandQueueMT.hh>
 
 #endif
 

@@ -16,26 +16,41 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/MacOS/AppDelegate.h
-MacOS application delegate implementation.
+FILE: Methane/Graphics/Metal/RenderPassMT.hh
+Metal implementation of the render pass interface.
 
 ******************************************************************************/
 
-#include "AppViewController.h"
+#pragma once
 
-#include <Methane/Platform/AppBase.h>
+#include <Methane/Graphics/RenderPassBase.h>
 
-#import <Cocoa/Cocoa.h>
+#import <Metal/Metal.h>
 
-namespace Methane { namespace Platform { class AppMac; } }
+namespace Methane
+{
+namespace Graphics
+{
 
-@interface AppDelegate : NSObject<NSApplicationDelegate>
+class ContextMT;
 
-@property (nonatomic, strong, nonnull) IBOutlet AppViewController* viewController;
-@property (nonatomic, readonly, nullable) NSWindow* window;
+class RenderPassMT : public RenderPassBase
+{
+public:
+    RenderPassMT(ContextBase& context, const Settings& settings);
 
-- (id _Nullable) initWithApp : (Methane::Platform::AppMac* _Nonnull) p_app andSettings : (Methane::Platform::AppBase::Settings* _Nonnull) p_settings;
-- (void) run;
-- (void) alert : (nonnull NSString*) ns_title withInformation: (nonnull NSString*) ns_info andStyle: (NSAlertStyle) ns_alert_style;
+    // RenderPass interface
+    void Update(const Settings& settings) override;
+    
+    void Reset();
+    
+    MTLRenderPassDescriptor* GetNativeDescriptor() { return m_mtl_pass_descriptor; }
 
-@end
+protected:
+    ContextMT& GetContextMT() noexcept;
+    
+    MTLRenderPassDescriptor* m_mtl_pass_descriptor;
+};
+
+} // namespace Graphics
+} // namespace Methane

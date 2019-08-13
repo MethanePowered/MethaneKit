@@ -21,14 +21,14 @@ Metal implementation of the context interface.
 
 ******************************************************************************/
 
-#include "ContextMT.h"
-#include "RenderStateMT.h"
-#include "RenderPassMT.h"
-#include "CommandQueueMT.h"
-#include "TypesMT.h"
+#include "ContextMT.hh"
+#include "RenderStateMT.hh"
+#include "RenderPassMT.hh"
+#include "CommandQueueMT.hh"
+#include "TypesMT.hh"
 
 #include <Methane/Graphics/Instrumentation.h>
-#include <Methane/Platform/MacOS/Types.h>
+#include <Methane/Platform/MacOS/Types.hh>
 
 using namespace Methane::Graphics;
 

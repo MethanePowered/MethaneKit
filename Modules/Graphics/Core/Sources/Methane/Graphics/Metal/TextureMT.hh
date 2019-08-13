@@ -16,27 +16,46 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/DescriptorHeapMT.h
-Metal "dummy" implementation of the descriptor heap.
+FILE: Methane/Graphics/Metal/TextureMT.hh
+Metal implementation of the texture interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/DescriptorHeap.h>
+#include <Methane/Graphics/TextureBase.h>
+
+#import <Metal/Metal.h>
 
 namespace Methane
 {
 namespace Graphics
 {
 
-class ContextBase;
-
-class DescriptorHeapMT : public DescriptorHeap
+class TextureMT : public TextureBase
 {
 public:
-    DescriptorHeapMT(ContextBase& context, const Settings& settings);
-    ~DescriptorHeapMT() override;
+    using Ptr = std::shared_ptr<TextureMT>;
+
+    TextureMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    ~TextureMT() override;
+
+    // Resource interface
+    void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override;
+    Data::Size GetDataSize() const override;
+
+    // Object interface
+    void SetName(const std::string& name) override;
+
+    void UpdateFrameBuffer();
+
+    const id<MTLTexture>& GetNativeTexture() const { return m_mtl_texture; }
+
+protected:
+    MTLTextureUsage       GetNativeTextureUsage();
+    MTLTextureDescriptor* GetNativeTextureDescriptor();
+
+    id<MTLTexture> m_mtl_texture;
 };
 
 } // namespace Graphics

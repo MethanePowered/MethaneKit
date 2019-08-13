@@ -21,13 +21,13 @@ Metal implementation of the sampler interface.
 
 ******************************************************************************/
 
-#include "SamplerMT.h"
-#include "ContextMT.h"
-#include "TypesMT.h"
+#include "SamplerMT.hh"
+#include "ContextMT.hh"
+#include "TypesMT.hh"
 
 #include <Methane/Graphics/Instrumentation.h>
 
-#import <Methane/Platform/MacOS/Types.h>
+#import <Methane/Platform/MacOS/Types.hh>
 
 using namespace Methane::Graphics;
 using namespace Methane::MacOS;

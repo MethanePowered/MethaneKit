@@ -4,10 +4,17 @@ include(Methane)
 
 get_module_dirs("Methane/Platform")
 
-if(APPLE)
+if (WIN32)
 
     set(PLATFORM_HEADERS
-        ${INCLUDE_PLATFORM_DIR}/AppViewMT.h
+        ${INCLUDE_PLATFORM_DIR}/AppEnvironment.h
+    )
+
+elseif(APPLE)
+
+    set(PLATFORM_HEADERS
+        ${INCLUDE_PLATFORM_DIR}/AppViewMT.hh
+        ${INCLUDE_PLATFORM_DIR}/AppEnvironment.hh
     )
 
     set(PLATFORM_SOURCES
@@ -32,7 +39,6 @@ endif()
 set(HEADERS ${PLATFORM_HEADERS}
     ${INCLUDE_DIR}/AppView.h
     ${INCLUDE_DIR}/AppEnvironment.h
-    ${INCLUDE_PLATFORM_DIR}/AppEnvironment.h
 )
 
 set(SOURCES ${PLATFORM_SOURCES}

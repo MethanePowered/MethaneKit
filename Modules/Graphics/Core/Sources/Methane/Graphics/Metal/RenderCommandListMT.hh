@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/RenderCommandListMT.h
+FILE: Methane/Graphics/Metal/RenderCommandListMT.hh
 Metal implementation of the render command list interface.
 
 ******************************************************************************/

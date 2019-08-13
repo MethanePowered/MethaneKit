@@ -21,10 +21,10 @@ MacOS application delegate implementation.
 
 ******************************************************************************/
 
-#import "AppDelegate.h"
+#import "AppDelegate.hh"
 
-#include <Methane/Platform/MacOS/AppMac.h>
-#include <Methane/Platform/MacOS/Types.h>
+#include <Methane/Platform/MacOS/AppMac.hh>
+#include <Methane/Platform/MacOS/Types.hh>
 
 #include <cassert>
 

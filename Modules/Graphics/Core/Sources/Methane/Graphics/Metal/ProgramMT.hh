@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/ProgramMT.h
+FILE: Methane/Graphics/Metal/ProgramMT.hh
 Metal implementation of the program interface.
 
 ******************************************************************************/

@@ -21,9 +21,9 @@ MacOS application view controller implementation.
 
 ******************************************************************************/
 
-#import "AppViewController.h"
+#import "AppViewController.hh"
 
-#include <Methane/Platform/MacOS/AppMac.h>
+#include <Methane/Platform/MacOS/AppMac.hh>
 #include <Methane/Data/Types.h>
 
 #include <string>

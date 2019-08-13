@@ -16,14 +16,14 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/CommandQueueMT.h
-Metal implementation of the command queue interface.
+FILE: Methane/Graphics/Metal/SamplerMT.hh
+Metal implementation of the sampler interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/CommandQueueBase.h>
+#include <Methane/Graphics/SamplerBase.h>
 
 #import <Metal/Metal.h>
 
@@ -32,26 +32,26 @@ namespace Methane
 namespace Graphics
 {
 
-class RenderPassMT;
 class ContextMT;
 
-class CommandQueueMT final : public CommandQueueBase
+class SamplerMT : public SamplerBase
 {
 public:
-    CommandQueueMT(ContextBase& context);
-    ~CommandQueueMT() override;
+    SamplerMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
+    ~SamplerMT() override;
 
     // Object interface
     void SetName(const std::string& name) override;
     
-    ContextMT& GetContextMT() noexcept;
-    
-    id<MTLCommandQueue>&  GetNativeCommandQueue() noexcept { return m_mtl_command_queue; }
+    const id<MTLSamplerState>& GetNativeSamplerState() const noexcept { return m_mtl_sampler_state; }
 
 protected:
-    void Reset();
+    void ResetSampletState();
+
+    ContextMT& GetContextMT() noexcept;
     
-    id<MTLCommandQueue>  m_mtl_command_queue;
+    MTLSamplerDescriptor* m_mtl_sampler_desc = nullptr;
+    id<MTLSamplerState>   m_mtl_sampler_state = nil;
 };
 
 } // namespace Graphics

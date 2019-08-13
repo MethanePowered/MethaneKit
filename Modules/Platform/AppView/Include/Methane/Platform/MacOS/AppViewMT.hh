@@ -16,14 +16,14 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/MacOS/AppViewMT.h
+FILE: Methane/Platform/MacOS/AppViewMT.hh
 MacOS application view implementation.
 
 ******************************************************************************/
 
 #pragma once
 
-#import "AppEnvironment.h"
+#import "AppEnvironment.hh"
 
 #import <AppKit/AppKit.h>
 #import <Metal/Metal.h>

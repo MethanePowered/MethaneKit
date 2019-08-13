@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/ContextMT.h
+FILE: Methane/Graphics/Metal/ContextMT.hh
 Metal implementation of the context interface.
 
 ******************************************************************************/
@@ -25,7 +25,7 @@ Metal implementation of the context interface.
 
 #include "../ContextBase.h"
 
-#import <Methane/Platform/MacOS/AppViewMT.h>
+#import <Methane/Platform/MacOS/AppViewMT.hh>
 
 #import <Metal/Metal.h>
 

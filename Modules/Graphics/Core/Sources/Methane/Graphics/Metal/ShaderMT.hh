@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/ShaderMT.h
+FILE: Methane/Graphics/Metal/ShaderMT.hh
 Metal implementation of the shader interface.
 
 ******************************************************************************/

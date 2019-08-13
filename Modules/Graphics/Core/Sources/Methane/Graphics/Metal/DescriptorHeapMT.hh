@@ -16,47 +16,27 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/ResourceMT.h
-Metal implementation of the resource interface.
+FILE: Methane/Graphics/Metal/DescriptorHeapMT.hh
+Metal "dummy" implementation of the descriptor heap.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/ResourceBase.h>
-
-#include <memory>
+#include <Methane/Graphics/DescriptorHeap.h>
 
 namespace Methane
 {
 namespace Graphics
 {
 
-class ContextMT;
-struct ResourceContainerMT;
+class ContextBase;
 
-class ResourceMT : public ResourceBase
+class DescriptorHeapMT : public DescriptorHeap
 {
 public:
-    using Ptr = std::shared_ptr<ResourceMT>;
-
-    class ReleasePoolMT : public ReleasePool
-    {
-    public:
-        ReleasePoolMT();
-
-        // ReleasePool interface
-        void AddResource(ResourceBase& resource) override;
-        void ReleaseResources() override;
-
-    private:
-        std::unique_ptr<ResourceContainerMT> m_sp_mtl_resources;
-    };
-
-    ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
-
-protected:
-    ContextMT& GetContextMT() noexcept;
+    DescriptorHeapMT(ContextBase& context, const Settings& settings);
+    ~DescriptorHeapMT() override;
 };
 
 } // namespace Graphics
