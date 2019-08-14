@@ -21,7 +21,7 @@ steps:
 
   - bash: |
       for f in *; do
-        bash "$f -r junit -o '$f_result.xml'" -H
+        ./$f -r junit -o $f_result.xml
       done
     workingDirectory: '$(installDir)/Tests'
     displayName: 'Run all unit-tests from install directory'
@@ -31,7 +31,7 @@ steps:
       testResultsFormat: 'JUnit'
       testResultsFiles:  '**/*_result.xml'
       searchFolder: '$(installDir)'
-      mergeTestResults: false
+      mergeTestResults: true
       failTaskOnFailedTests: true
       buildPlatform: $(platform)
       buildConfiguration: $(configuration)
