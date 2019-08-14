@@ -26,7 +26,7 @@ steps:
       testResultsFormat: 'JUnit'
       testResultsFiles:  '**\*_result.xml'
       searchFolder: '$(installDir)'
-      mergeTestResults: true
+      mergeTestResults: false
       failTaskOnFailedTests: true
       buildPlatform: $(platform)
       buildConfiguration: $(configuration)
