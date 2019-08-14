@@ -16,6 +16,21 @@ steps:
       workingDirectory: $(buildDir)
       cmakeArgs: '--build . --config $(configuration) --target install'
 
+  - script: |
+      cd $(installDir)\Tests
+      for /r "." %%a in (*.exe) do "%%~fa" -r junit -o "%%~fa_result.xml"
+    displayName: 'Run all unit-tests from install directory'
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles:  '**\*_result.xml'
+      searchFolder: '$(installDir)'
+      mergeTestResults: true
+      failTaskOnFailedTests: true
+      buildPlatform: $(platform)
+      buildConfiguration: $(configuration)
+
   - task: CopyFiles@2
     displayName: 'Copy install artifacts for $(platform) $(configuration)'
     inputs:
