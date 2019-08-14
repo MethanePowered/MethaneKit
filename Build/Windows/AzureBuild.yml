@@ -17,8 +17,8 @@ steps:
       cmakeArgs: '--build . --config $(configuration) --target install'
 
   - script: |
-      cd $(installDir)\Tests
       for /r "." %%a in (*.exe) do "%%~fa" -r junit -o "%%~fa_result.xml"
+    workingDirectory: '$(installDir)\Tests'
     displayName: 'Run all unit-tests from install directory'
 
   - task: PublishTestResults@2
