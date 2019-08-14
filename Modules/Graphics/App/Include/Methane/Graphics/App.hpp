@@ -285,7 +285,7 @@ protected:
     {
         const uint32_t frame_index = m_sp_context->GetFrameBufferIndex();
         assert(frame_index < m_frames.size());
-        return m_frames[m_sp_context->GetFrameBufferIndex()];
+        return m_frames[frame_index];
     }
 
     const Context::Settings& GetInitialContextSettings() const { return m_initial_context_settings; }
