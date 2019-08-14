@@ -74,6 +74,9 @@ if [ "$IS_ANALYZE_BUILD" == true ]; then
 
 else
     echo Building with XCode...
-    cmake -H"$SOURCE_DIR" -B"$BUILD_DIR" -G Xcode -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR"
+    cmake -H"$SOURCE_DIR" -B"$BUILD_DIR" -G Xcode -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" -DMETHANE_RUN_TESTS_DURING_BUILD=OFF
     cmake --build "$BUILD_DIR" --config $CONFIG_TYPE --target install
+
+    echo Running unit-tests...
+    cmake -E chdir "$BUILD_DIR" ctest --build-config $CONFIG_TYPE --output-on-failure
 fi

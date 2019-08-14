@@ -261,8 +261,10 @@ void ActionCamera::StartRotateAction(KeyboardAction rotate_action, const Vector3
             },
             duration_sec));
     
-    auto emplace_result = m_keyboard_action_animations.emplace(rotate_action, m_animations.back());
+    const auto emplace_result = m_keyboard_action_animations.emplace(rotate_action, m_animations.back());
     assert(emplace_result.second);
+    if (!emplace_result.second) // fixes unused variable warning in release build
+        return;
 }
 
 void ActionCamera::StartMoveAction(KeyboardAction move_action, const Vector3f& move_direction_in_view, double duration_sec)
@@ -279,8 +281,10 @@ void ActionCamera::StartMoveAction(KeyboardAction move_action, const Vector3f& m
             },
             duration_sec));
     
-    auto emplace_result = m_keyboard_action_animations.emplace(move_action, m_animations.back());
+    const auto emplace_result = m_keyboard_action_animations.emplace(move_action, m_animations.back());
     assert(emplace_result.second);
+    if (!emplace_result.second) // fixes unused variable warning in release build
+        return;
 }
 
 void ActionCamera::StartZoomAction(KeyboardAction zoom_action, float zoom_factor_per_second, double duration_sec)
@@ -296,13 +300,15 @@ void ActionCamera::StartZoomAction(KeyboardAction zoom_action, float zoom_factor
             },
             duration_sec));
     
-    auto emplace_result = m_keyboard_action_animations.emplace(zoom_action, m_animations.back());
+    const auto emplace_result = m_keyboard_action_animations.emplace(zoom_action, m_animations.back());
     assert(emplace_result.second);
+    if (!emplace_result.second) // fixes unused variable warning in release build
+        return;
 }
 
 bool ActionCamera::StartKeyboardAction(KeyboardAction keyboard_action, double duration_sec)
 {
-    auto keyboard_action_animations_it = m_keyboard_action_animations.find(keyboard_action);
+    const auto keyboard_action_animations_it = m_keyboard_action_animations.find(keyboard_action);
     if (keyboard_action_animations_it == m_keyboard_action_animations.end())
         return false;
     
@@ -321,7 +327,7 @@ bool ActionCamera::StartKeyboardAction(KeyboardAction keyboard_action, double du
 
 bool ActionCamera::StopKeyboardAction(KeyboardAction keyboard_action, double duration_sec)
 {
-    auto keyboard_action_animations_it = m_keyboard_action_animations.find(keyboard_action);
+    const auto keyboard_action_animations_it = m_keyboard_action_animations.find(keyboard_action);
     if (keyboard_action_animations_it == m_keyboard_action_animations.end())
         return false;
 
