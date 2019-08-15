@@ -81,6 +81,7 @@ public:
         ZoomOut,
         
         Reset,
+        ChangePivot,
 
         Count // keep at end
     };
@@ -92,6 +93,7 @@ public:
 
     // Parameters
     Pivot GetPivot() const                                          { return m_pivot; }
+    void  SetPivot(Pivot pivot)                                     { m_pivot = pivot; }
 
     float GetRadiusRatio() const                                    { return m_radius_ratio; }
     void  SetRadiusRatio(float radius_ratio)                        { m_radius_ratio = radius_ratio; }
@@ -160,7 +162,7 @@ protected:
 
     Data::AnimationsPool&    m_animations;
     const Camera*            m_p_view_camera;
-    const Pivot              m_pivot;
+    Pivot                    m_pivot;
     float                    m_radius_ratio                 = 0.9f;
     uint32_t                 m_zoom_steps_count             = 3;
     DistanceRange            m_zoom_distance_range          = DistanceRange(1.f, 1000.f);

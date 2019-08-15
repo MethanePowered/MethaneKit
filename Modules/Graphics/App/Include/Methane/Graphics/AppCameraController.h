@@ -65,6 +65,8 @@ public:
         { Platform::Keyboard::Key::KeyPadEqual,     ActionCamera::KeyboardAction::ZoomIn      },
         // Reset
         { Platform::Keyboard::Key::R,               ActionCamera::KeyboardAction::Reset       },
+        // Change pivot
+        { Platform::Keyboard::Key::P,               ActionCamera::KeyboardAction::ChangePivot },
     };
 
     AppCameraController(ActionCamera& action_camera, const std::string& camera_name,
