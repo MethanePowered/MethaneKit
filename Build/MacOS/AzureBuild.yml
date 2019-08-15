@@ -43,6 +43,7 @@ steps:
       failTaskOnFailedTests: true
       buildPlatform: $(platform)
       buildConfiguration: $(configuration)
+      testRunTitle: 'Methane Tests $(platform) $(configuration)'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish install artifacts for $(platform) $(configuration)'
