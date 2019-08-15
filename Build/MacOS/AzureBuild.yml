@@ -20,8 +20,9 @@ steps:
       cmakeArgs: '--build . --config $(configuration) --target install'
 
   - bash: |
-      for f in *; do
-        ./$f -r junit -o $f_result.xml
+      result_ext='_result.xml'
+      for test_exe in *Test
+      do ./$test_exe -r junit -o "$test_exe$result_ext"
       done
     workingDirectory: '$(installDir)/Tests'
     displayName: 'Run all unit-tests from install directory'
