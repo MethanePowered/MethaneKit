@@ -124,6 +124,8 @@ void ActionCamera::OnMouseScrolled(float scroll_delta)
 
 void ActionCamera::OnKeyPressed(KeyboardAction keyboard_action)
 {
+    const float rotation_axis_sign = m_pivot == Pivot::Aim ? 1.f : -1.f;
+
     switch(keyboard_action)
     {
         // Move
@@ -135,12 +137,12 @@ void ActionCamera::OnKeyPressed(KeyboardAction keyboard_action)
         case KeyboardAction::MoveDown:      StartMoveAction(keyboard_action,   Vector3f( 0.f, -1.f,  0.f)); break;
             
         // Rotate
-        case KeyboardAction::YawLeft:       StartRotateAction(keyboard_action, Vector3f( 0.f, -1.f,  0.f)); break;
-        case KeyboardAction::YawRight:      StartRotateAction(keyboard_action, Vector3f( 0.f,  1.f,  0.f)); break;
-        case KeyboardAction::RollLeft:      StartRotateAction(keyboard_action, Vector3f( 0.f,  0.f,  1.f)); break;
-        case KeyboardAction::RollRight:     StartRotateAction(keyboard_action, Vector3f( 0.f,  0.f, -1.f)); break;
-        case KeyboardAction::PitchUp:       StartRotateAction(keyboard_action, Vector3f(-1.f,  0.f,  0.f)); break;
-        case KeyboardAction::PitchDown:     StartRotateAction(keyboard_action, Vector3f( 1.f,  0.f,  0.f)); break;
+        case KeyboardAction::YawLeft:       StartRotateAction(keyboard_action, Vector3f( 0.f, -1.f,  0.f) * rotation_axis_sign); break;
+        case KeyboardAction::YawRight:      StartRotateAction(keyboard_action, Vector3f( 0.f,  1.f,  0.f) * rotation_axis_sign); break;
+        case KeyboardAction::RollLeft:      StartRotateAction(keyboard_action, Vector3f( 0.f,  0.f,  1.f) * rotation_axis_sign); break;
+        case KeyboardAction::RollRight:     StartRotateAction(keyboard_action, Vector3f( 0.f,  0.f, -1.f) * rotation_axis_sign); break;
+        case KeyboardAction::PitchUp:       StartRotateAction(keyboard_action, Vector3f(-1.f,  0.f,  0.f) * rotation_axis_sign); break;
+        case KeyboardAction::PitchDown:     StartRotateAction(keyboard_action, Vector3f( 1.f,  0.f,  0.f) * rotation_axis_sign); break;
             
         // Zoom
         case KeyboardAction::ZoomIn:        StartZoomAction(keyboard_action, 0.9f); break;
@@ -148,6 +150,9 @@ void ActionCamera::OnKeyPressed(KeyboardAction keyboard_action)
         
         // Reset orientation
         case KeyboardAction::Reset:         ResetOrientaion(); break;
+
+        // Change pivot point:
+        case KeyboardAction::ChangePivot:   SetPivot(m_pivot == Pivot::Aim ? Pivot::Eye : Pivot::Aim); break;
             
         default: return;
     }
@@ -247,16 +252,16 @@ void ActionCamera::Zoom(float zoom_factor)
     ApplyLookDirection(cml::normalize(look_dir) * zoom_distance);
 }
 
-void ActionCamera::StartRotateAction(KeyboardAction rotate_action, const Vector3f& rotation_axis, double duration_sec)
+void ActionCamera::StartRotateAction(KeyboardAction rotate_action, const Vector3f& rotation_axis_in_view, double duration_sec)
 {
     if (StartKeyboardAction(rotate_action, duration_sec))
         return;
     
     const float angle_rad_per_second = cml::rad(m_rotate_angle_per_second);
     m_animations.push_back(
-        std::make_shared<TimeAnimation>([angle_rad_per_second, rotation_axis, this](double elapsed_seconds, double delta_seconds)
+        std::make_shared<TimeAnimation>([this, angle_rad_per_second, rotation_axis_in_view](double elapsed_seconds, double delta_seconds)
             {
-                Rotate(rotation_axis, static_cast<float>(angle_rad_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
+                Rotate(rotation_axis_in_view, static_cast<float>(angle_rad_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
                 return true;
             },
             duration_sec));
@@ -272,10 +277,10 @@ void ActionCamera::StartMoveAction(KeyboardAction move_action, const Vector3f& m
     if (StartKeyboardAction(move_action, duration_sec))
         return;
     
-    const Vector3f move_per_second = TransformViewToWorld(move_direction_in_view).normalize() * m_move_distance_per_second;
     m_animations.push_back(
-        std::make_shared<TimeAnimation>([move_per_second, this](double elapsed_seconds, double delta_seconds)
+        std::make_shared<TimeAnimation>([this, move_direction_in_view](double elapsed_seconds, double delta_seconds)
             {
+                const Vector3f move_per_second = TransformViewToWorld(move_direction_in_view).normalize() * m_move_distance_per_second;
                 Move(move_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds));
                 return true;
             },
@@ -293,7 +298,7 @@ void ActionCamera::StartZoomAction(KeyboardAction zoom_action, float zoom_factor
         return;
     
     m_animations.push_back(
-        std::make_shared<TimeAnimation>([zoom_factor_per_second, this](double elapsed_seconds, double delta_seconds)
+        std::make_shared<TimeAnimation>([this, zoom_factor_per_second](double elapsed_seconds, double delta_seconds)
             {
                 Zoom(1.f - static_cast<float>((1.f - zoom_factor_per_second) * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
                 return true;
@@ -383,8 +388,9 @@ std::string ActionCamera::GetActionName(KeyboardAction keyboard_action)
     case KeyboardAction::ZoomIn:        return "zoom in";
     case KeyboardAction::ZoomOut:       return "zoom out";
 
-    // Reset
+    // Other
     case KeyboardAction::Reset:         return "reset orientation";
+    case KeyboardAction::ChangePivot:   return "change pivot";
 
     case KeyboardAction::None:          return "none";
     default: assert(0);                 return "";
