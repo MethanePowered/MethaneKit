@@ -23,6 +23,7 @@ Metal implementation of the sampler interface.
 
 #include "SamplerMT.hh"
 #include "ContextMT.hh"
+#include "DeviceMT.hh"
 #include "TypesMT.hh"
 
 #include <Methane/Graphics/Instrumentation.h>
@@ -151,7 +152,7 @@ void SamplerMT::ResetSampletState()
     }
     
     assert(m_mtl_sampler_desc);
-    m_mtl_sampler_state = [GetContextMT().GetNativeDevice() newSamplerStateWithDescriptor:m_mtl_sampler_desc];
+    m_mtl_sampler_state = [GetContextMT().GetDeviceMT().GetNativeDevice() newSamplerStateWithDescriptor:m_mtl_sampler_desc];
 }
 
 ContextMT& SamplerMT::GetContextMT() noexcept

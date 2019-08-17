@@ -36,11 +36,12 @@ namespace Graphics
 
 struct CommandQueue;
 class RenderPassMT;
+class DeviceMT;
 
 class ContextMT : public ContextBase
 {
 public:
-    ContextMT(const Platform::AppEnvironment& env, const Data::Provider& data_provider, const Settings& settings);
+    ContextMT(const Platform::AppEnvironment& env, const Data::Provider& data_provider, DeviceBase& device, const Settings& settings);
     ~ContextMT() override;
 
     // Context interface
@@ -53,10 +54,9 @@ public:
     Platform::AppView GetAppView() const override { return { m_app_view }; }
 
     id<CAMetalDrawable>      GetNativeDrawable()       { return m_app_view.currentDrawable; }
-    id<MTLDevice>&           GetNativeDevice()         { return m_mtl_device; }
+    DeviceMT&                GetDeviceMT();
 
 protected:
-    id<MTLDevice>           m_mtl_device;
     AppViewMT*              m_app_view;
     dispatch_semaphore_t    m_dispatch_semaphore;
 };

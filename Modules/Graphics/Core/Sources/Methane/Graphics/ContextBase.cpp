@@ -29,8 +29,9 @@ Base implementation of the context interface.
 using namespace Methane;
 using namespace Methane::Graphics;
 
-ContextBase::ContextBase(const Data::Provider& data_provider, const Settings& settings)
+ContextBase::ContextBase(const Data::Provider& data_provider, DeviceBase& device, const Settings& settings)
     : m_data_provider(data_provider)
+    , m_sp_device(device.GetPtr())
     , m_settings(settings)
     , m_resource_manager(*this)
     , m_frame_buffer_index(0)
@@ -55,6 +56,32 @@ void ContextBase::Resize(const FrameSize& frame_size)
 {
     ITT_FUNCTION_TASK();
     m_settings.frame_size = frame_size;
+}
+
+void ContextBase::Reset(Device& device)
+{
+    m_sp_device = static_cast<DeviceBase&>(device).GetPtr();
+    for(const ICallback::Ref& callback_ref : m_callbacks)
+    {
+        callback_ref.get().OnContextReset(device);
+    }
+}
+
+void ContextBase::AddCallback(ICallback& callback)
+{
+    m_callbacks.push_back(callback);
+}
+
+void ContextBase::RemoveCallback(ICallback& callback)
+{
+    const auto callback_it = std::find_if(m_callbacks.begin(), m_callbacks.end(),
+                                          [&callback](const ICallback::Ref& callback_ref)
+                                          { return std::addressof(callback_ref.get()) == std::addressof(callback); });
+    assert(callback_it != m_callbacks.end());
+    if (callback_it == m_callbacks.end())
+        return;
+    
+    m_callbacks.erase(callback_it);
 }
 
 void ContextBase::OnPresentComplete()
@@ -97,8 +124,16 @@ RenderCommandList& ContextBase::GetUploadCommandList()
     return *m_sp_upload_cmd_list;
 }
 
+Device& ContextBase::GetDevice()
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_sp_device);
+    return *m_sp_device;
+}
+
 bool ContextBase::SetVSyncEnabled(bool vsync_enabled)
 {
+    ITT_FUNCTION_TASK();
     if (m_settings.vsync_enabled == vsync_enabled)
         return false;
 
