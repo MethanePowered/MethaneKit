@@ -22,6 +22,7 @@ Metal implementation of the command queue interface.
 ******************************************************************************/
 
 #include "CommandQueueMT.hh"
+#include "DeviceMT.hh"
 #include "ContextMT.hh"
 
 #include <Methane/Graphics/Instrumentation.h>
@@ -38,7 +39,7 @@ CommandQueue::Ptr CommandQueue::Create(Context& context)
 
 CommandQueueMT::CommandQueueMT(ContextBase& context)
     : CommandQueueBase(context, true)
-    , m_mtl_command_queue([GetContextMT().GetNativeDevice() newCommandQueue])
+    , m_mtl_command_queue([GetContextMT().GetDeviceMT().GetNativeDevice() newCommandQueue])
 {
     ITT_FUNCTION_TASK();
 }

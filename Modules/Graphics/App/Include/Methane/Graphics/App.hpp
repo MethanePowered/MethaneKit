@@ -85,8 +85,6 @@ public:
             ("f,framebuffers", "Frame buffers count in swap-chain", cxxopts::value<uint32_t>());
 
         m_input_state.AddControllers({ std::make_shared<Platform::AppHelpController>(*this, help_description) });
-
-        System::Get().UpdateGpuDevices();
     }
 
     ~App() override
@@ -99,9 +97,11 @@ public:
     // Platform::App interface
     void InitContext(const Platform::AppEnvironment& env, const FrameSize& frame_size) override
     {
+        const Devices& devices = System::Get().UpdateGpuDevices();
+        
         // Create render context of the current window size
         m_initial_context_settings.frame_size = frame_size;
-        m_sp_context = Context::Create(env, AppDataProvider::Get(), m_initial_context_settings);
+        m_sp_context = Context::Create(env, AppDataProvider::Get(), *devices.front(), m_initial_context_settings);
         m_sp_context->SetName("Main Graphics Context");
 
         m_input_state.AddControllers({ std::make_shared<AppContextController>(*m_sp_context) });

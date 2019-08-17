@@ -45,7 +45,7 @@ struct RenderCommandList;
 
 struct Context : virtual Object
 {
-    using  Ptr = std::shared_ptr<Context>;
+    using Ptr = std::shared_ptr<Context>;
 
     struct Settings
     {
@@ -55,7 +55,7 @@ struct Context : virtual Object
         Color       clear_color;
         Depth       clear_depth             = 1.f;
         Stencil     clear_stencil           = 0;
-        uint32_t    frame_buffers_count     = 2;
+        uint32_t    frame_buffers_count     = 3;
         bool        vsync_enabled           = true;
         uint32_t    unsync_max_fps          = 1000; // MacOS only
     };
@@ -66,24 +66,36 @@ struct Context : virtual Object
         FramePresented,
         ResourcesUploaded
     };
+    
+    struct ICallback
+    {
+        using Ref = std::reference_wrapper<ICallback>;
+        
+        virtual void OnContextReset(Device& device) = 0;
+        
+        virtual ~ICallback() = default;
+    };
 
     // Create Context instance
-    static Ptr Create(const Platform::AppEnvironment& env, const Data::Provider& data_provider, /*const Device& device,*/ const Settings& settings);
+    static Ptr Create(const Platform::AppEnvironment& env, const Data::Provider& data_provider, Device& device, const Settings& settings);
 
     // Context interface
     virtual void CompleteInitialization() = 0;
     virtual bool ReadyToRender() const = 0;
     virtual void WaitForGpu(WaitFor wait_for) = 0;
     virtual void Resize(const FrameSize& frame_size) = 0;
+    virtual void Reset(Device& device) = 0;
     virtual void Present() = 0;
+    
+    virtual void AddCallback(ICallback& callback) = 0;
+    virtual void RemoveCallback(ICallback& callback) = 0;
 
     virtual Platform::AppView     GetAppView() const = 0;
     virtual const Data::Provider& GetDataProvider() const = 0;
-    //virtual const Device&         GetDevice() const = 0;
+    virtual Device&               GetDevice() = 0;
     virtual CommandQueue&         GetRenderCommandQueue() = 0;
     virtual CommandQueue&         GetUploadCommandQueue() = 0;
     virtual RenderCommandList&    GetUploadCommandList() = 0;
-
     virtual const Settings&       GetSettings() const = 0;
     virtual uint32_t              GetFrameBufferIndex() const = 0;
     virtual const FpsCounter&     GetFpsCounter() const = 0;

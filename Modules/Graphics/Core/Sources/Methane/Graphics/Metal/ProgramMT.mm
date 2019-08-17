@@ -27,6 +27,7 @@ Metal implementation of the program interface.
 #include "TextureMT.hh"
 #include "SamplerMT.hh"
 #include "ContextMT.hh"
+#include "DeviceMT.hh"
 #include "RenderCommandListMT.hh"
 #include "TypesMT.hh"
 
@@ -207,7 +208,7 @@ ProgramMT::ProgramMT(ContextBase& context, const Settings& settings)
     ContextMT& metal_context = static_cast<ContextMT&>(context);
     
     NSError* ns_error = nil;
-    m_mtl_dummy_pipeline_state_for_reflection = [metal_context.GetNativeDevice() newRenderPipelineStateWithDescriptor:mtl_reflection_state_desc options:MTLPipelineOptionArgumentInfo reflection:&m_mtl_render_pipeline_reflection error:&ns_error];
+    m_mtl_dummy_pipeline_state_for_reflection = [metal_context.GetDeviceMT().GetNativeDevice() newRenderPipelineStateWithDescriptor:mtl_reflection_state_desc options:MTLPipelineOptionArgumentInfo reflection:&m_mtl_render_pipeline_reflection error:&ns_error];
     
     if (ns_error != nil)
     {

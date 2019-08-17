@@ -28,6 +28,7 @@ Base implementation of the context interface.
 #include <Methane/Data/Provider.h>
 
 #include "ObjectBase.h"
+#include "DeviceBase.h"
 #include "CommandQueueBase.h"
 #include "RenderCommandListBase.h"
 #include "RenderStateBase.h"
@@ -35,7 +36,7 @@ Base implementation of the context interface.
 #include "ResourceManager.h"
 
 #include <memory>
-#include <list>
+#include <vector>
 #include <atomic>
 
 namespace Methane
@@ -48,15 +49,19 @@ class ContextBase
     , public Context
 {
 public:
-    ContextBase(const Data::Provider& data_provider, const Settings& settings);
+    ContextBase(const Data::Provider& data_provider, DeviceBase& device, const Settings& settings);
 
     // Context interface
     void                  CompleteInitialization() override;
     void                  WaitForGpu(WaitFor wait_for) override;
     void                  Resize(const FrameSize& frame_size) override;
+    void                  Reset(Device& device) override;
+    void                  AddCallback(ICallback& callback) override;
+    void                  RemoveCallback(ICallback& callback) override;
     CommandQueue&         GetRenderCommandQueue() override;
     CommandQueue&         GetUploadCommandQueue() override;
     RenderCommandList&    GetUploadCommandList() override;
+    Device&               GetDevice() override;
     const Data::Provider& GetDataProvider() const override      { return m_data_provider; }
     const Settings&       GetSettings() const override          { return m_settings; }
     uint32_t              GetFrameBufferIndex() const override  { return m_frame_buffer_index;  }
@@ -71,8 +76,11 @@ public:
 protected:
     void UploadResources();
     void OnPresentComplete();
+    
+    using Callbacks = std::vector<ICallback::Ref>;
 
     const Data::Provider&  m_data_provider;
+    DeviceBase::Ptr        m_sp_device;
     Settings               m_settings;
     ResourceManager        m_resource_manager;
     CommandQueue::Ptr      m_sp_render_cmd_queue;
@@ -80,6 +88,7 @@ protected:
     RenderCommandList::Ptr m_sp_upload_cmd_list;
     std::atomic<uint32_t>  m_frame_buffer_index;
     FpsCounter             m_fps_counter;
+    Callbacks              m_callbacks;
 };
 
 } // namespace Graphics

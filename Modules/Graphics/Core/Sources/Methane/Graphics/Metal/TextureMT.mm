@@ -23,6 +23,7 @@ Metal implementation of the texture interface.
 
 #include "TextureMT.hh"
 #include "ContextMT.hh"
+#include "DeviceMT.hh"
 #include "TypesMT.hh"
 
 #include <Methane/Graphics/Instrumentation.h>
@@ -67,7 +68,7 @@ TextureMT::TextureMT(ContextBase& context, const Settings& settings, const Descr
     : TextureBase(context, settings, descriptor_by_usage)
     , m_mtl_texture(settings.type == Texture::Type::FrameBuffer
                       ? [GetContextMT().GetNativeDrawable() texture]
-                      : [GetContextMT().GetNativeDevice()  newTextureWithDescriptor:GetNativeTextureDescriptor()])
+                      : [GetContextMT().GetDeviceMT().GetNativeDevice()  newTextureWithDescriptor:GetNativeTextureDescriptor()])
 {
     ITT_FUNCTION_TASK();
 

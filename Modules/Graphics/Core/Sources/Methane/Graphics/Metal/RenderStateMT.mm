@@ -23,6 +23,7 @@ Metal implementation of the render state interface.
 
 #include "RenderStateMT.hh"
 #include "ContextMT.hh"
+#include "DeviceMT.hh"
 #include "RenderCommandListMT.hh"
 #include "ProgramMT.hh"
 #include "ShaderMT.hh"
@@ -275,7 +276,7 @@ id<MTLRenderPipelineState>& RenderStateMT::GetNativePipelineState()
     if (!m_mtl_pipeline_state)
     {
         NSError* ns_error = nil;
-        m_mtl_pipeline_state = [GetContextMT().GetNativeDevice() newRenderPipelineStateWithDescriptor:m_mtl_pipeline_state_desc error:&ns_error];
+        m_mtl_pipeline_state = [GetContextMT().GetDeviceMT().GetNativeDevice() newRenderPipelineStateWithDescriptor:m_mtl_pipeline_state_desc error:&ns_error];
         if (!m_mtl_pipeline_state)
         {
             const std::string error_msg = MacOS::ConvertFromNSType<NSString, std::string>([ns_error localizedDescription]);
@@ -291,7 +292,7 @@ id<MTLDepthStencilState>& RenderStateMT::GetNativeDepthState()
 
     if (!m_mtl_depth_state)
     {
-        m_mtl_depth_state = [GetContextMT().GetNativeDevice() newDepthStencilStateWithDescriptor:m_mtl_depth_stencil_state_desc];
+        m_mtl_depth_state = [GetContextMT().GetDeviceMT().GetNativeDevice() newDepthStencilStateWithDescriptor:m_mtl_depth_stencil_state_desc];
         if (!m_mtl_depth_state)
         {
             throw std::runtime_error("Failed to create Metal depth state.");

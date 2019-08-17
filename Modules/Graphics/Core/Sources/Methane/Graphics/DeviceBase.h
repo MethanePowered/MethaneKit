@@ -32,16 +32,22 @@ namespace Graphics
 
 class DeviceBase
     : public Device
+    , public std::enable_shared_from_this<DeviceBase>
 {
 public:
+    using Ptr = std::shared_ptr<DeviceBase>;
+    
     DeviceBase(const std::string& name,
                Feature::Mask supported_features);
 
+    // Device interface
     const std::string&  GetName() const noexcept override                                      { return m_name; }
     Feature::Mask       GetSupportedFeatures() const noexcept override                         { return m_supported_features; }
     void                SetNotificationCallback(const NotificationCallback& callback) override { m_notification_callback = callback; }
     void                Notify(Notification notification) override;
     std::string         ToString() const noexcept override;
+    
+    Ptr GetPtr() { return shared_from_this(); }
 
 protected:
     const std::string    m_name;

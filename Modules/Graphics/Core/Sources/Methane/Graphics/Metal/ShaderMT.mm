@@ -25,6 +25,7 @@ Metal implementation of the shader interface.
 #include "ProgramMT.hh"
 #include "ResourceMT.hh"
 #include "ContextMT.hh"
+#include "DeviceMT.hh"
 #include "TypesMT.hh"
 
 #include <Methane/Graphics/Instrumentation.h>
@@ -123,7 +124,7 @@ Shader::Ptr Shader::Create(Shader::Type shader_type, Context& context, const Set
 }
 
 ShaderMT::LibraryMT::LibraryMT(ContextMT& metal_context)
-    : m_mtl_library([metal_context.GetNativeDevice() newDefaultLibrary])
+    : m_mtl_library([metal_context.GetDeviceMT().GetNativeDevice() newDefaultLibrary])
 {
     ITT_FUNCTION_TASK();
 }
