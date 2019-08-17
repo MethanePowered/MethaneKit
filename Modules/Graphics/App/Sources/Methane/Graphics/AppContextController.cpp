@@ -24,6 +24,8 @@ Graphics context controller for switching parameters in runtime.
 #include <Methane/Graphics/AppContextController.h>
 
 #include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/Device.h>
+#include <Methane/Platform/Utils.h>
 
 #include <cassert>
 
@@ -51,9 +53,16 @@ void AppContextController::OnKeyboardChanged(Keyboard::Key, Keyboard::KeyState, 
 
     switch (action_by_keyboard_state_it->second)
     {
-    case Action::SwitchVSync: m_context.SetVSyncEnabled(!m_context.GetSettings().vsync_enabled); break;
+    case Action::SwitchVSync:  m_context.SetVSyncEnabled(!m_context.GetSettings().vsync_enabled); break;
+    case Action::SwitchDevice: SwitchDevice(); break;
     default: assert(0); return;
     }
+}
+
+void AppContextController::SwitchDevice()
+{
+    System::Get().UpdateGpuDevices();
+    PrintToDebugOutput(System::Get().ToString());
 }
 
 IHelpProvider::HelpLines AppContextController::GetHelp() const
@@ -87,8 +96,9 @@ std::string AppContextController::GetActionName(Action action)
 {
     switch (action)
     {
-    case Action::None:        return "none";
-    case Action::SwitchVSync: return "switch on/off vertical synchronization";
-    default: assert(0);       return "";
+    case Action::None:         return "none";
+    case Action::SwitchVSync:  return "switch vertical synchronization";
+    case Action::SwitchDevice: return "switch device used for rendering";
+    default: assert(0);        return "";
     }
 }

@@ -52,6 +52,8 @@ elseif(APPLE)
     set(PLATFORM_SOURCES
         ${SOURCES_GRAPHICS_DIR}/TypesMT.hh
         ${SOURCES_GRAPHICS_DIR}/TypesMT.mm
+        ${SOURCES_GRAPHICS_DIR}/DeviceMT.hh
+        ${SOURCES_GRAPHICS_DIR}/DeviceMT.mm
         ${SOURCES_GRAPHICS_DIR}/ContextMT.hh
         ${SOURCES_GRAPHICS_DIR}/ContextMT.mm
         ${SOURCES_GRAPHICS_DIR}/ShaderMT.hh
@@ -101,6 +103,7 @@ set(LIBRARIES ${PLATFORM_LIBRARIES}
 )
 
 set(HEADERS
+    ${INCLUDE_DIR}/Device.h
     ${INCLUDE_DIR}/Context.h
     ${INCLUDE_DIR}/Shader.h
     ${INCLUDE_DIR}/Program.h
@@ -134,6 +137,8 @@ set(SOURCES ${PLATFORM_SOURCES}
 
     # Base implementation
     ${SOURCES_DIR}/ObjectBase.h
+    ${SOURCES_DIR}/DeviceBase.h
+    ${SOURCES_DIR}/DeviceBase.cpp
     ${SOURCES_DIR}/ContextBase.h
     ${SOURCES_DIR}/ContextBase.cpp
     ${SOURCES_DIR}/ShaderBase.h

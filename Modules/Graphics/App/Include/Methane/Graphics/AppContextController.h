@@ -43,6 +43,7 @@ public:
         None = 0,
 
         SwitchVSync,
+        SwitchDevice,
 
         Count
     };
@@ -50,7 +51,8 @@ public:
     using ActionByKeyboardState = std::map<Platform::Keyboard::State, Action>;
 
     inline static const ActionByKeyboardState default_action_by_keyboard_state = {
-        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::V }, Action::SwitchVSync },
+        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::V }, Action::SwitchVSync  },
+        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::D }, Action::SwitchDevice },
     };
 
     AppContextController(Context& context, const ActionByKeyboardState& action_by_keyboard_state = default_action_by_keyboard_state);
@@ -62,6 +64,8 @@ public:
     static std::string GetActionName(Action action);
 
 private:
+    void SwitchDevice();
+    
     Context&                m_context;
     ActionByKeyboardState   m_action_by_keyboard_state;
 };
