@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/DevicetMT.mm
+FILE: Methane/Graphics/Metal/DeviceMT.mm
 Metal implementation of the device interface.
 
 ******************************************************************************/
@@ -33,6 +33,7 @@ using namespace Methane;
 
 Device::Feature::Mask DeviceMT::GetSupportedFeatures(const id<MTLDevice>& mtl_device)
 {
+    ITT_FUNCTION_TASK();
     Device::Feature::Mask supported_featues = Device::Feature::Value::BasicRendering;
     return supported_featues;
 }
@@ -54,12 +55,14 @@ DeviceMT::~DeviceMT()
 
 System& System::Get()
 {
+    ITT_FUNCTION_TASK();
     static SystemMT s_system;
     return s_system;
 }
 
 SystemMT::~SystemMT()
 {
+    ITT_FUNCTION_TASK();
     if (m_device_observer != nil)
     {
         MTLRemoveDeviceObserver(m_device_observer);
@@ -68,13 +71,15 @@ SystemMT::~SystemMT()
 
 const Devices& SystemMT::UpdateGpuDevices(Device::Feature::Mask supported_features)
 {
+    ITT_FUNCTION_TASK();
     if (m_device_observer != nil)
     {
         MTLRemoveDeviceObserver(m_device_observer);
     }
     
     m_supported_features = supported_features;
-        
+    m_devices.clear();
+    
     NSArray<id<MTLDevice>>* mtl_devices = MTLCopyAllDevicesWithObserver(&m_device_observer,
                                                                         ^(id<MTLDevice> device, MTLDeviceNotificationName device_notification)
                                                                         {
@@ -91,6 +96,7 @@ const Devices& SystemMT::UpdateGpuDevices(Device::Feature::Mask supported_featur
 
 void SystemMT::OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificationName device_notification)
 {
+    ITT_FUNCTION_TASK();
     if (device_notification == MTLDeviceWasAddedNotification)
     {
         AddDevice(mtl_device);
@@ -107,18 +113,19 @@ void SystemMT::OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificat
 
 void SystemMT::NotifyDevice(const id<MTLDevice>& mtl_device, Device::Notification device_notification)
 {
+    ITT_FUNCTION_TASK();
     const Device::Ptr& sp_device = FindMetalDevice(mtl_device);
     if (!sp_device)
     {
         assert(0);
         return;
     }
-    
     sp_device->Notify(device_notification);
 }
 
 void SystemMT::AddDevice(const id<MTLDevice>& mtl_device)
 {
+    ITT_FUNCTION_TASK();
     Device::Feature::Mask device_supported_features = DeviceMT::GetSupportedFeatures(mtl_device);
     if (!(device_supported_features & m_supported_features))
         return;
@@ -129,6 +136,7 @@ void SystemMT::AddDevice(const id<MTLDevice>& mtl_device)
 
 const Device::Ptr& SystemMT::FindMetalDevice(const id<MTLDevice>& mtl_device) const
 {
+    ITT_FUNCTION_TASK();
     const auto device_it = std::find_if(m_devices.begin(), m_devices.end(),
                                         [mtl_device](const Device::Ptr& sp_device)
                                         {
