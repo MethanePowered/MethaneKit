@@ -25,12 +25,14 @@ Base implementation of the device interface.
 #include "Instrumentation.h"
 
 #include <sstream>
+#include <cassert>
 
 using namespace Methane;
 using namespace Methane::Graphics;
 
 std::string Device::Feature::ToString(Value feature) noexcept
 {
+    ITT_FUNCTION_TASK();
     switch(feature)
     {
     case Value::Unknown:                    return "Unknown";
@@ -38,10 +40,12 @@ std::string Device::Feature::ToString(Value feature) noexcept
     case Value::BasicRendering:             return "Basic Rendering";
     case Value::TextureAndSamplerArrays:    return "Texture and Sampler Arrays";
     }
+    return "";
 }
 
 std::string Device::Feature::ToString(Mask features) noexcept
 {
+    ITT_FUNCTION_TASK();
     std::stringstream ss;
     bool is_first_feature = true;
     for(Value value : values)
@@ -68,6 +72,7 @@ DeviceBase::DeviceBase(const std::string& name,
 
 void DeviceBase::Notify(Notification notification)
 {
+    ITT_FUNCTION_TASK();
     if (m_notification_callback)
     {
         m_notification_callback(*this, notification);
@@ -76,11 +81,15 @@ void DeviceBase::Notify(Notification notification)
 
 std::string DeviceBase::ToString() const noexcept
 {
-    return GetName() + " with features: " + Feature::ToString(m_supported_features);
+    ITT_FUNCTION_TASK();
+    std::stringstream ss;
+    ss << "GPU \"" << GetName() << "\" with features: " + Feature::ToString(m_supported_features);
+    return ss.str();
 }
 
 Device::Ptr SystemBase::GetNextGpuDevice(const Device::Ptr& sp_device) const
 {
+    ITT_FUNCTION_TASK();
     Device::Ptr sp_next_device;
     
     if (m_devices.empty())
@@ -97,8 +106,10 @@ Device::Ptr SystemBase::GetNextGpuDevice(const Device::Ptr& sp_device) const
 
 std::string SystemBase::ToString() const noexcept
 {
+    ITT_FUNCTION_TASK();
     std::stringstream ss;
-    ss << m_devices.size() << " system graphics device(s):" << std::endl;
+    ss << m_devices.size() << " system graphics device"
+       << (m_devices.size() > 1 ? "s:" : ":") << std::endl;
     for(const Device::Ptr& sp_device : m_devices)
     {
         assert(sp_device);

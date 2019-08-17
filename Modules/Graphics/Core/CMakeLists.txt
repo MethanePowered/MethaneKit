@@ -9,6 +9,8 @@ if (WIN32)
     set(PLATFORM_SOURCES
         ${SOURCES_GRAPHICS_DIR}/TypesDX.h
         ${SOURCES_GRAPHICS_DIR}/TypesDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/DeviceDX.h
+        ${SOURCES_GRAPHICS_DIR}/DeviceDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ContextDX.h
         ${SOURCES_GRAPHICS_DIR}/ContextDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ShaderDX.h

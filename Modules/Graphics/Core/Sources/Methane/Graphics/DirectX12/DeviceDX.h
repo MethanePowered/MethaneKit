@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/DeviceMT.hh
-Metal implementation of the device interface.
+FILE: Methane/Graphics/Metal/DeviceDX.h
+DirectX 12 implementation of the device interface.
 
 ******************************************************************************/
 
@@ -25,42 +25,45 @@ Metal implementation of the device interface.
 
 #include <Methane/Graphics/DeviceBase.h>
 
-#import <Metal/Metal.h>
+#include <wrl.h>
+#include <dxgi1_4.h>
+#include <d3d12.h>
+#include <d3dx12.h>
 
 namespace Methane
 {
 namespace Graphics
 {
 
-class DeviceMT final : public DeviceBase
+namespace wrl = Microsoft::WRL;
+
+class DeviceDX final : public DeviceBase
 {
 public:
-    static Device::Feature::Mask GetSupportedFeatures(const id<MTLDevice>& mtl_device);
-    
-    DeviceMT(const id<MTLDevice>& mtl_device);
-    ~DeviceMT() override;
-    
-    id<MTLDevice>& GetNativeDevice() { return m_mtl_device; }
+    static Device::Feature::Mask GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
+
+    DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
+    ~DeviceDX() override;
+
+    const wrl::ComPtr<ID3D12Device>& GetNativeDevice() const { return m_cp_device; }
 
 protected:
-    id<MTLDevice> m_mtl_device;
+    wrl::ComPtr<IDXGIAdapter> m_cp_adapter;
+    mutable wrl::ComPtr<ID3D12Device> m_cp_device;
 };
 
-class SystemMT final : public SystemBase
+class SystemDX final : public SystemBase
 {
 public:
-    ~SystemMT() override;
+    SystemDX();
+    ~SystemDX() override;
     
     const Devices& UpdateGpuDevices(Device::Feature::Mask supported_features) override;
     
 private:
-    void OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificationName device_notification);
-    void NotifyDevice(const id<MTLDevice>& mtl_device, Device::Notification device_notification);
-    void AddDevice(const id<MTLDevice>& mtl_device);
-    
-    const Device::Ptr& FindMetalDevice(const id<MTLDevice>& mtl_device) const;
-    
-    id<NSObject> m_device_observer = nil;
+    void AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
+
+    wrl::ComPtr<IDXGIFactory4> m_cp_factory;
 };
 
 } // namespace Graphics

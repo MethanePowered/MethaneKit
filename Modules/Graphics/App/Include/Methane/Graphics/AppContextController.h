@@ -52,7 +52,7 @@ public:
 
     inline static const ActionByKeyboardState default_action_by_keyboard_state = {
         { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::V }, Action::SwitchVSync  },
-        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::D }, Action::SwitchDevice },
+        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::X }, Action::SwitchDevice },
     };
 
     AppContextController(Context& context, const ActionByKeyboardState& action_by_keyboard_state = default_action_by_keyboard_state);
