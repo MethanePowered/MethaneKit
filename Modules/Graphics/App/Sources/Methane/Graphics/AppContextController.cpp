@@ -89,6 +89,9 @@ IHelpProvider::HelpLines AppContextController::GetHelp() const
         });
     }
 
+    // Add description of system graphics devices
+    help_lines.push_back({ "\n" + System::Get().ToString(), "" });
+
     return help_lines;
 }
 
