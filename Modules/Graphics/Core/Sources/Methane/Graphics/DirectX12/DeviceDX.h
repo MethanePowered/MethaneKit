@@ -55,10 +55,14 @@ protected:
 class SystemDX final : public SystemBase
 {
 public:
+    static SystemDX& Get() { return static_cast<SystemDX&>(System::Get()); }
+
     SystemDX();
     ~SystemDX() override;
     
     const Devices& UpdateGpuDevices(Device::Feature::Mask supported_features) override;
+
+    const wrl::ComPtr<IDXGIFactory4>& GetNativeFactory() { return m_cp_factory; }
     
 private:
     void AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);

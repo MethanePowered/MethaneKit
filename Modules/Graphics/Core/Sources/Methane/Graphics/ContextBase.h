@@ -73,6 +73,9 @@ public:
 
     ResourceManager&  GetResourceManager() { return m_resource_manager; }
 
+    DeviceBase& GetDeviceBase();
+    const DeviceBase& GetDeviceBase() const;
+
 protected:
     void UploadResources();
     void OnPresentComplete();

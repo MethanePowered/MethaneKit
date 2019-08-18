@@ -131,6 +131,19 @@ Device& ContextBase::GetDevice()
     return *m_sp_device;
 }
 
+DeviceBase& ContextBase::GetDeviceBase()
+{
+    ITT_FUNCTION_TASK();
+    return static_cast<DeviceBase&>(GetDevice());
+}
+
+const DeviceBase& ContextBase::GetDeviceBase() const
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_sp_device);
+    return static_cast<const DeviceBase&>(*m_sp_device);
+}
+
 bool ContextBase::SetVSyncEnabled(bool vsync_enabled)
 {
     ITT_FUNCTION_TASK();

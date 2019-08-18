@@ -41,13 +41,14 @@ namespace Graphics
 namespace wrl = Microsoft::WRL;
 
 struct AppEnvironment;
-
 class CommandQueueDX;
+class DeviceBase;
+class DeviceDX;
 
 class ContextDX final : public ContextBase
 {
 public:
-    ContextDX(const Platform::AppEnvironment& env, const Data::Provider& data_provider, const Settings& settings);
+    ContextDX(const Platform::AppEnvironment& env, const Data::Provider& data_provider, DeviceBase& device, const Settings& settings);
     ~ContextDX() override;
 
     // Context interface
@@ -63,7 +64,7 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-    const wrl::ComPtr<ID3D12Device>&    GetNativeDevice() const    { return m_cp_device; }
+    const DeviceDX& GetDeviceDX() const;
     const wrl::ComPtr<IDXGISwapChain3>& GetNativeSwapChain() const { return m_cp_swap_chain; }
 
 protected:
@@ -73,7 +74,6 @@ protected:
     inline void     SetCurrentFenceValue(uint64_t fence_value)  { m_fence_values[m_frame_buffer_index] = fence_value; }
     inline uint32_t GetPresentVSyncInterval() const             { return m_settings.vsync_enabled ? 1 : 0; }
 
-    wrl::ComPtr<ID3D12Device>    m_cp_device;
     wrl::ComPtr<IDXGISwapChain3> m_cp_swap_chain;
     wrl::ComPtr<ID3D12Fence>     m_cp_fence;
     HANDLE                       m_fence_event = nullptr;

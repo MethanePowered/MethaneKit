@@ -23,6 +23,7 @@ DirectX 12 implementation of the render state interface.
 
 #include "RenderStateDX.h"
 #include "ContextDX.h"
+#include "DeviceDX.h"
 #include "ProgramDX.h"
 #include "ShaderDX.h"
 #include "TypesDX.h"
@@ -244,7 +245,7 @@ wrl::ComPtr<ID3D12PipelineState>& RenderStateDX::GetNativePipelineState()
     ITT_FUNCTION_TASK();
     if (!m_cp_pipeline_state)
     {
-        ThrowIfFailed(GetContextDX().GetNativeDevice()->CreateGraphicsPipelineState(&m_pipeline_state_desc, IID_PPV_ARGS(&m_cp_pipeline_state)));
+        ThrowIfFailed(GetContextDX().GetDeviceDX().GetNativeDevice()->CreateGraphicsPipelineState(&m_pipeline_state_desc, IID_PPV_ARGS(&m_cp_pipeline_state)));
         SetName(GetName());
     }
     return m_cp_pipeline_state;
