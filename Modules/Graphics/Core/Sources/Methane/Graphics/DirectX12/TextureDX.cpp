@@ -23,6 +23,7 @@ DirectX 12 implementation of the texture interface.
 
 #include "TextureDX.h"
 #include "ContextDX.h"
+#include "DeviceDX.h"
 #include "DescriptorHeapDX.h"
 #include "CommandQueueDX.h"
 #include "RenderCommandListDX.h"
@@ -120,7 +121,7 @@ void FrameBufferTextureDX::Initialize(uint32_t frame_buffer_index)
         throw std::runtime_error("Frame BufferBase texture supports only Render Target usage.");
     }
 
-    GetContextDX().GetNativeDevice()->CreateRenderTargetView(m_cp_resource.Get(), nullptr, GetNativeCPUDescriptorHandle(Usage::RenderTarget));
+    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateRenderTargetView(m_cp_resource.Get(), nullptr, GetNativeCPUDescriptorHandle(Usage::RenderTarget));
 }
 
 template<>
@@ -149,7 +150,7 @@ void DepthStencilBufferTextureDX::Initialize(Depth depth_clear_value, Stencil st
     CD3DX12_CLEAR_VALUE clear_value(view_write_format, depth_clear_value, stencil_clear_value);
     InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_DEPTH_WRITE, &clear_value);
 
-    const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetNativeDevice();
+    const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
 
     for (Usage::Value usage : Usage::values)
     {
@@ -239,7 +240,7 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
 
     const UINT64 upload_buffer_size = GetRequiredIntermediateSize(m_cp_resource.Get(), 0, 1);
     ThrowIfFailed(
-        GetContextDX().GetNativeDevice()->CreateCommittedResource(
+        GetContextDX().GetDeviceDX().GetNativeDevice()->CreateCommittedResource(
             &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
             D3D12_HEAP_FLAG_NONE,
             &CD3DX12_RESOURCE_DESC::Buffer(upload_buffer_size),
@@ -249,7 +250,7 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
         )
     );
 
-    GetContextDX().GetNativeDevice()->CreateShaderResourceView(m_cp_resource.Get(), &srv_desc, GetNativeCPUDescriptorHandle(Usage::ShaderRead));
+    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateShaderResourceView(m_cp_resource.Get(), &srv_desc, GetNativeCPUDescriptorHandle(Usage::ShaderRead));
 }
 
 void ImageTextureDX::SetData(Data::ConstRawPtr p_data, Data::Size data_size)

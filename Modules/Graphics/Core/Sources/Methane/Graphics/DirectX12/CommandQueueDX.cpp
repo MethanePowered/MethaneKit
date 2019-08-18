@@ -23,6 +23,7 @@ DirectX 12 implementation of the command queue interface.
 
 #include "CommandQueueDX.h"
 #include "ContextDX.h"
+#include "DeviceDX.h"
 #include "RenderCommandListDX.h"
 
 #include <Methane/Graphics/Instrumentation.h>
@@ -45,7 +46,7 @@ CommandQueueDX::CommandQueueDX(ContextBase& context)
 {
     ITT_FUNCTION_TASK();
 
-    const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetNativeDevice();
+    const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
     assert(!!cp_device);
 
     D3D12_COMMAND_QUEUE_DESC queue_desc = {};

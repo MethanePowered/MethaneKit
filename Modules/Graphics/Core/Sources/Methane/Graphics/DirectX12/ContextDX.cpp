@@ -22,6 +22,7 @@ DirectX 12 implementation of the context interface.
 ******************************************************************************/
 
 #include "ContextDX.h"
+#include "DeviceDX.h"
 #include "RenderStateDX.h"
 #include "RenderPassDX.h"
 #include "CommandQueueDX.h"
@@ -36,77 +37,16 @@ DirectX 12 implementation of the context interface.
 using namespace Methane;
 using namespace Methane::Graphics;
 
-// Helper function for acquiring the first available hardware adapter that supports Direct3D 12.
-// If no such adapter can be found, *ppAdapter will be set to nullptr.
-void GetHardwareAdapter(_In_ IDXGIFactory4* p_factory, _Outptr_result_maybenull_ IDXGIAdapter1** pp_adapter)
+Context::Ptr Context::Create(const Platform::AppEnvironment& env, const Data::Provider& data_provider, Device& device, const Context::Settings& settings)
 {
     ITT_FUNCTION_TASK();
-
-    IDXGIAdapter1* p_adapter = nullptr;
-    *pp_adapter = nullptr;
-
-    for (UINT adapter_index = 0; DXGI_ERROR_NOT_FOUND != p_factory->EnumAdapters1(adapter_index, &p_adapter); ++adapter_index)
-    {
-        DXGI_ADAPTER_DESC1 desc;
-        p_adapter->GetDesc1(&desc);
-
-        if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
-        {
-            // Don't select the Basic Render Driver adapter.
-            // If you want a software adapter, pass in "/warp" on the command line.
-            continue;
-        }
-
-        // Check to see if the adapter supports Direct3D 12, but don't create the actual device yet.
-        if (SUCCEEDED(D3D12CreateDevice(p_adapter, D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr)))
-        {
-            break;
-        }
-    }
-
-    *pp_adapter = p_adapter;
+    return std::make_shared<ContextDX>(env, data_provider, static_cast<DeviceBase&>(device), settings);
 }
 
-Context::Ptr Context::Create(const Platform::AppEnvironment& env, const Data::Provider& data_provider, const Context::Settings& settings)
+ContextDX::ContextDX(const Platform::AppEnvironment& env, const Data::Provider& data_provider, DeviceBase& device, const Context::Settings& settings)
+    : ContextBase(data_provider, device, settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ContextDX>(env, data_provider, settings);
-}
-
-ContextDX::ContextDX(const Platform::AppEnvironment& env, const Data::Provider& data_provider, const Context::Settings& settings)
-    : ContextBase(data_provider, settings)
-{
-    ITT_FUNCTION_TASK();
-
-    UINT dxgi_factory_flags = 0;
-
-#ifdef _DEBUG
-    // Enable the D3D12 debug layer.
-    {
-        wrl::ComPtr<ID3D12Debug> cp_debug_controller;
-        if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&cp_debug_controller))))
-        {
-            cp_debug_controller->EnableDebugLayer();
-            dxgi_factory_flags |= DXGI_CREATE_FACTORY_DEBUG;
-        }
-    }
-#endif
-
-    wrl::ComPtr<IDXGIFactory4> dxgi_factory;
-    ThrowIfFailed(CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&dxgi_factory)));
-
-    if (env.use_warp_device)
-    {
-        wrl::ComPtr<IDXGIAdapter> cp_warp_adapter;
-        ThrowIfFailed(dxgi_factory->EnumWarpAdapter(IID_PPV_ARGS(&cp_warp_adapter)));
-        ThrowIfFailed(D3D12CreateDevice(cp_warp_adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_cp_device)));
-    }
-    else
-    {
-        wrl::ComPtr<IDXGIAdapter1> cp_hardware_adapter;
-        GetHardwareAdapter(dxgi_factory.Get(), &cp_hardware_adapter);
-        ThrowIfFailed(D3D12CreateDevice(cp_hardware_adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_cp_device)));
-    }
 
     // Describe and create the swap chain.
     DXGI_SWAP_CHAIN_DESC swap_chain_desc = {};
@@ -120,16 +60,22 @@ ContextDX::ContextDX(const Platform::AppEnvironment& env, const Data::Provider& 
     swap_chain_desc.SampleDesc.Count  = 1;
     swap_chain_desc.Windowed          = TRUE;
 
+    const wrl::ComPtr<IDXGIFactory4>& cp_dxgi_factory = SystemDX::Get().GetNativeFactory();
+    const wrl::ComPtr<ID3D12Device>&  cp_device       = GetDeviceDX().GetNativeDevice();
+    
+    assert(!!cp_dxgi_factory);
+    assert(!!cp_device);
+
     wrl::ComPtr<IDXGISwapChain> cp_swap_chain;
-    ThrowIfFailed(dxgi_factory->CreateSwapChain(DefaultCommandQueueDX().GetNativeCommandQueue().Get(), &swap_chain_desc, &cp_swap_chain));
+    ThrowIfFailed(cp_dxgi_factory->CreateSwapChain(DefaultCommandQueueDX().GetNativeCommandQueue().Get(), &swap_chain_desc, &cp_swap_chain));
     ThrowIfFailed(cp_swap_chain.As(&m_cp_swap_chain));
-    ThrowIfFailed(dxgi_factory->MakeWindowAssociation(env.window_handle, DXGI_MWA_NO_ALT_ENTER));
+    ThrowIfFailed(cp_dxgi_factory->MakeWindowAssociation(env.window_handle, DXGI_MWA_NO_ALT_ENTER));
 
     // Create synchronization objects to be used for frame sync
     m_frame_buffer_index = m_cp_swap_chain->GetCurrentBackBufferIndex();
     m_fence_values.resize(settings.frame_buffers_count, 0);
     const UINT64 current_fence_value = GetCurrentFenceValue();
-    ThrowIfFailed(m_cp_device->CreateFence(current_fence_value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_cp_fence)));
+    ThrowIfFailed(cp_device->CreateFence(current_fence_value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_cp_fence)));
     SetCurrentFenceValue(current_fence_value + 1);
     m_fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
     if (!m_fence_event)
@@ -158,9 +104,18 @@ void ContextDX::SetName(const std::string& name)
 
     ContextBase::SetName(name);
 
+    const wrl::ComPtr<ID3D12Device>& cp_device = GetDeviceDX().GetNativeDevice();
+    assert(!!cp_device);
+    assert(!!m_cp_fence);
+
     const std::wstring wname = nowide::widen(name);
-    m_cp_device->SetName((wname + L" Device").c_str());
+    cp_device->SetName((wname + L" Device").c_str());
     m_cp_fence->SetName((wname + L" Fence").c_str());
+}
+
+const DeviceDX& ContextDX::GetDeviceDX() const
+{
+    return static_cast<const DeviceDX&>(GetDeviceBase());
 }
 
 void ContextDX::WaitForGpu(WaitFor wait_for)

@@ -26,6 +26,7 @@ DirectX 12 implementation of the render command list interface.
 #include "RenderPassDX.h"
 #include "CommandQueueDX.h"
 #include "ContextDX.h"
+#include "DeviceDX.h"
 #include "ProgramDX.h"
 #include "ResourceDX.h"
 #include "TextureDX.h"
@@ -69,7 +70,7 @@ RenderCommandListDX::RenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPas
 {
     ITT_FUNCTION_TASK();
 
-    const wrl::ComPtr<ID3D12Device>& cp_device = GetCommandQueueDX().GetContextDX().GetNativeDevice();
+    const wrl::ComPtr<ID3D12Device>& cp_device = GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice();
     assert(!!cp_device);
 
     ThrowIfFailed(cp_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_cp_command_allocator)));

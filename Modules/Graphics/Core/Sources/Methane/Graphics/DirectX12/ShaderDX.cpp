@@ -25,6 +25,7 @@ DirectX 12 implementation of the shader interface.
 #include "ProgramDX.h"
 #include "ResourceDX.h"
 #include "ContextDX.h"
+#include "DeviceDX.h"
 #include "TypesDX.h"
 
 #include <d3dx12.h>
@@ -228,7 +229,7 @@ void ShaderDX::ResourceBindingDX::SetResource(const Resource::Ptr& sp_resource)
         }
 
         const uint32_t descriptor_index = m_p_descriptor_heap_reservation->GetRange(IsConstant()).GetStart() + m_descriptor_range.offset;
-        GetContextDX().GetNativeDevice()->CopyDescriptorsSimple(m_descriptor_range.count,
+        GetContextDX().GetDeviceDX().GetNativeDevice()->CopyDescriptorsSimple(m_descriptor_range.count,
             dx_descriptor_heap.GetNativeCPUDescriptorHandle(descriptor_index),
             dx_resource.GetNativeCPUDescriptorHandle(ResourceBase::Usage::ShaderRead),
             dx_descriptor_heap.GetNativeDescriptorHeapType());

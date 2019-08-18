@@ -22,6 +22,7 @@ DirectX 12 implementation of the program interface.
 ******************************************************************************/
 
 #include "ContextDX.h"
+#include "DeviceDX.h"
 #include "ProgramDX.h"
 #include "ShaderDX.h"
 #include "ResourceDX.h"
@@ -227,7 +228,7 @@ void ProgramDX::ResourceBindingsDX::CopyDescriptorsToGpu()
     ITT_FUNCTION_TASK();
 
     assert(!!m_sp_program);
-    const wrl::ComPtr<ID3D12Device>& cp_device = static_cast<const ProgramDX&>(*m_sp_program).GetContextDX().GetNativeDevice();
+    const wrl::ComPtr<ID3D12Device>& cp_device = static_cast<const ProgramDX&>(*m_sp_program).GetContextDX().GetDeviceDX().GetNativeDevice();
     ForEachResourceBinding([this, &cp_device](const ResourceDX& dx_resource, const DescriptorHeap::Reservation& heap_reservation, ShaderDX::ResourceBindingDX& resource_binding)
     {
         const DescriptorHeapDX& dx_descriptor_heap = static_cast<const DescriptorHeapDX&>(heap_reservation.heap.get());
@@ -325,7 +326,7 @@ void ProgramDX::InitRootSignature()
 
     D3D12_FEATURE_DATA_ROOT_SIGNATURE feature_data = {};
     feature_data.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
-    if (FAILED(GetContextDX().GetNativeDevice()->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &feature_data, sizeof(feature_data))))
+    if (FAILED(GetContextDX().GetDeviceDX().GetNativeDevice()->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &feature_data, sizeof(feature_data))))
     {
         feature_data.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
     }
@@ -333,7 +334,7 @@ void ProgramDX::InitRootSignature()
     wrl::ComPtr<ID3DBlob> root_signature_blob;
     wrl::ComPtr<ID3DBlob> error_blob;
     ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&root_signature_desc, feature_data.HighestVersion, &root_signature_blob, &error_blob), error_blob);
-    ThrowIfFailed(GetContextDX().GetNativeDevice()->CreateRootSignature(0, root_signature_blob->GetBufferPointer(), root_signature_blob->GetBufferSize(), IID_PPV_ARGS(&m_dx_root_signature)));
+    ThrowIfFailed(GetContextDX().GetDeviceDX().GetNativeDevice()->CreateRootSignature(0, root_signature_blob->GetBufferPointer(), root_signature_blob->GetBufferSize(), IID_PPV_ARGS(&m_dx_root_signature)));
     m_dx_root_signature->SetName(nowide::widen(m_name + " root signature").c_str());
 }
 
