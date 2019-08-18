@@ -45,6 +45,9 @@ public:
     DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
     ~DeviceDX() override;
 
+    // Object interface
+    void SetName(const std::string& name) override;
+
     const wrl::ComPtr<ID3D12Device>& GetNativeDevice() const { return m_cp_device; }
 
 protected:

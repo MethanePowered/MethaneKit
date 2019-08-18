@@ -23,6 +23,8 @@ Base implementation of the device interface.
 
 #pragma once
 
+#include "ObjectBase.h"
+
 #include <Methane/Graphics/Device.h>
 
 namespace Methane
@@ -32,29 +34,30 @@ namespace Graphics
 
 class DeviceBase
     : public Device
+    , public ObjectBase
     , public std::enable_shared_from_this<DeviceBase>
 {
 public:
     using Ptr = std::shared_ptr<DeviceBase>;
     
-    DeviceBase(const std::string& name,
+    DeviceBase(const std::string& adapter_name,
                Feature::Mask supported_features);
 
     // Device interface
-    const std::string&  GetName() const noexcept override                                      { return m_name; }
+    const std::string&  GetAdapterName() const noexcept override                               { return m_adapter_name; }
     Feature::Mask       GetSupportedFeatures() const noexcept override                         { return m_supported_features; }
     void                SetNotificationCallback(const NotificationCallback& callback) override { m_notification_callback = callback; }
     void                Notify(Notification notification) override;
     std::string         ToString() const noexcept override;
-    
+
     Ptr GetPtr() { return shared_from_this(); }
 
 protected:
-    const std::string    m_name;
+    const std::string    m_adapter_name;
     const Feature::Mask  m_supported_features;
     NotificationCallback m_notification_callback;
 };
-    
+
 class SystemBase : public System
 {
 public:
