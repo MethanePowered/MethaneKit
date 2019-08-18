@@ -61,9 +61,28 @@ void ContextBase::Resize(const FrameSize& frame_size)
 void ContextBase::Reset(Device& device)
 {
     m_sp_device = static_cast<DeviceBase&>(device).GetPtr();
+
     for(const ICallback::Ref& callback_ref : m_callbacks)
     {
         callback_ref.get().OnContextReset(device);
+    }
+}
+
+void ContextBase::ResetInternal(DeviceBase& device)
+{
+    m_sp_device = device.GetPtr();
+
+    if (m_sp_upload_cmd_list)
+    {
+        static_cast<RenderCommandListBase&>(*m_sp_upload_cmd_list).OnContextReset(device);
+    }
+    if (m_sp_render_cmd_queue)
+    {
+        static_cast<CommandQueueBase&>(*m_sp_render_cmd_queue).OnContextReset(device);
+    }
+    if (m_sp_upload_cmd_queue)
+    {
+        static_cast<CommandQueueBase&>(*m_sp_upload_cmd_queue).OnContextReset(device);
     }
 }
 

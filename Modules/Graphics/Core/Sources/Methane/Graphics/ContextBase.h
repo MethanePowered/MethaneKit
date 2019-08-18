@@ -77,6 +77,7 @@ public:
     const DeviceBase& GetDeviceBase() const;
 
 protected:
+    void ResetInternal(DeviceBase& device);
     void UploadResources();
     void OnPresentComplete();
     
@@ -86,12 +87,12 @@ protected:
     DeviceBase::Ptr        m_sp_device;
     Settings               m_settings;
     ResourceManager        m_resource_manager;
+    Callbacks              m_callbacks; // ORDER: Keep callbacks before resources
     CommandQueue::Ptr      m_sp_render_cmd_queue;
     CommandQueue::Ptr      m_sp_upload_cmd_queue;
     RenderCommandList::Ptr m_sp_upload_cmd_list;
     std::atomic<uint32_t>  m_frame_buffer_index;
     FpsCounter             m_fps_counter;
-    Callbacks              m_callbacks;
 };
 
 } // namespace Graphics

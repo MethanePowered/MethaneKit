@@ -61,6 +61,9 @@ public:
     // Object interface
     void SetName(const std::string& label) override;
 
+    // Context::ICallback
+    void OnContextReset(Device& device) override;
+
     id<MTLCommandBuffer>& GetNativeCommandBuffer() noexcept  { return m_mtl_cmd_buffer; }
     id<MTLRenderCommandEncoder>& GetNativeEncoder() noexcept { return m_mtl_cmd_encoder; }
 

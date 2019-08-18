@@ -45,43 +45,11 @@ Context::Ptr Context::Create(const Platform::AppEnvironment& env, const Data::Pr
 
 ContextDX::ContextDX(const Platform::AppEnvironment& env, const Data::Provider& data_provider, DeviceBase& device, const Context::Settings& settings)
     : ContextBase(data_provider, device, settings)
+    , m_platform_env(env)
 {
     ITT_FUNCTION_TASK();
 
-    // Describe and create the swap chain.
-    DXGI_SWAP_CHAIN_DESC swap_chain_desc = {};
-    swap_chain_desc.BufferCount       = settings.frame_buffers_count;
-    swap_chain_desc.BufferDesc.Width  = settings.frame_size.width;
-    swap_chain_desc.BufferDesc.Height = settings.frame_size.height;
-    swap_chain_desc.BufferDesc.Format = TypeConverterDX::DataFormatToDXGI(settings.color_format);
-    swap_chain_desc.BufferUsage       = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swap_chain_desc.SwapEffect        = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-    swap_chain_desc.OutputWindow      = env.window_handle;
-    swap_chain_desc.SampleDesc.Count  = 1;
-    swap_chain_desc.Windowed          = TRUE;
-
-    const wrl::ComPtr<IDXGIFactory4>& cp_dxgi_factory = SystemDX::Get().GetNativeFactory();
-    const wrl::ComPtr<ID3D12Device>&  cp_device       = GetDeviceDX().GetNativeDevice();
-    
-    assert(!!cp_dxgi_factory);
-    assert(!!cp_device);
-
-    wrl::ComPtr<IDXGISwapChain> cp_swap_chain;
-    ThrowIfFailed(cp_dxgi_factory->CreateSwapChain(DefaultCommandQueueDX().GetNativeCommandQueue().Get(), &swap_chain_desc, &cp_swap_chain));
-    ThrowIfFailed(cp_swap_chain.As(&m_cp_swap_chain));
-    ThrowIfFailed(cp_dxgi_factory->MakeWindowAssociation(env.window_handle, DXGI_MWA_NO_ALT_ENTER));
-
-    // Create synchronization objects to be used for frame sync
-    m_frame_buffer_index = m_cp_swap_chain->GetCurrentBackBufferIndex();
-    m_fence_values.resize(settings.frame_buffers_count, 0);
-    const UINT64 current_fence_value = GetCurrentFenceValue();
-    ThrowIfFailed(cp_device->CreateFence(current_fence_value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_cp_fence)));
-    SetCurrentFenceValue(current_fence_value + 1);
-    m_fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-    if (!m_fence_event)
-    {
-        ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
-    }
+    Initialize(GetDeviceDX());
 
     m_resource_manager.Initialize({ true });
 }
@@ -91,6 +59,59 @@ ContextDX::~ContextDX()
     ITT_FUNCTION_TASK();
 
     CloseHandle(m_fence_event);
+}
+
+void ContextDX::Initialize(const DeviceDX& device)
+{
+    ITT_FUNCTION_TASK();
+
+    // Initialize swap-chain
+
+    DXGI_SWAP_CHAIN_DESC swap_chain_desc = {};
+    swap_chain_desc.BufferCount          = m_settings.frame_buffers_count;
+    swap_chain_desc.BufferDesc.Width     = m_settings.frame_size.width;
+    swap_chain_desc.BufferDesc.Height    = m_settings.frame_size.height;
+    swap_chain_desc.BufferDesc.Format    = TypeConverterDX::DataFormatToDXGI(m_settings.color_format);
+    swap_chain_desc.BufferUsage          = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swap_chain_desc.SwapEffect           = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    swap_chain_desc.OutputWindow         = m_platform_env.window_handle;
+    swap_chain_desc.SampleDesc.Count     = 1;
+    swap_chain_desc.Windowed             = TRUE;
+
+    const wrl::ComPtr<IDXGIFactory4>& cp_dxgi_factory = SystemDX::Get().GetNativeFactory();
+    assert(!!cp_dxgi_factory);
+
+    wrl::ComPtr<ID3D12CommandQueue>& cp_command_queue = DefaultCommandQueueDX().GetNativeCommandQueue();
+    assert(!!cp_command_queue);
+
+    wrl::ComPtr<IDXGISwapChain>  cp_swap_chain;
+    ThrowIfFailed(cp_dxgi_factory->CreateSwapChain(cp_command_queue.Get(), &swap_chain_desc, &cp_swap_chain));
+    assert(!!cp_swap_chain);
+
+    ThrowIfFailed(cp_swap_chain.As(&m_cp_swap_chain));
+    ThrowIfFailed(cp_dxgi_factory->MakeWindowAssociation(m_platform_env.window_handle, DXGI_MWA_NO_ALT_ENTER));
+
+    // Initialize frame fences
+
+    assert(!!m_cp_swap_chain);
+    m_frame_buffer_index = m_cp_swap_chain->GetCurrentBackBufferIndex();
+    m_fence_values.resize(m_settings.frame_buffers_count, 0);
+
+    const wrl::ComPtr<ID3D12Device>& cp_device = device.GetNativeDevice();
+    assert(!!cp_device);
+    ThrowIfFailed(cp_device->CreateFence(GetCurrentFenceValue(), D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_cp_fence)));
+
+    IncrementCurrentFenceValue();
+
+    if (m_fence_event)
+    {
+        CloseHandle(m_fence_event);
+    }
+    m_fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+    if (!m_fence_event)
+    {
+        ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+    }
 }
 
 void ContextDX::OnCommandQueueCompleted(CommandQueue& /*cmd_list*/, uint32_t /*frame_index*/)
@@ -149,7 +170,9 @@ void ContextDX::Resize(const FrameSize& frame_size)
 {
     ITT_FUNCTION_TASK();
 
+    WaitForGpu(WaitFor::ResourcesUploaded);
     WaitForGpu(WaitFor::RenderComplete);
+    WaitForGpu(WaitFor::FramePresented);
 
     // Resize the swap chain to the desired dimensions
     DXGI_SWAP_CHAIN_DESC1 desc = {};
@@ -157,6 +180,17 @@ void ContextDX::Resize(const FrameSize& frame_size)
     ThrowIfFailed(m_cp_swap_chain->ResizeBuffers(m_settings.frame_buffers_count, frame_size.width, frame_size.height, desc.Format, desc.Flags));
 
     ContextBase::Resize(frame_size);
+}
+
+void ContextDX::Reset(Device& device)
+{
+    WaitForGpu(WaitFor::RenderComplete);
+    ContextBase::ResetInternal(static_cast<DeviceBase&>(device));
+
+    SafeRelease(m_cp_swap_chain);
+    Initialize(static_cast<DeviceDX&>(device));
+
+    ContextBase::Reset(device);
 }
 
 void ContextDX::Present()

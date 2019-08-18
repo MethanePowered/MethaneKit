@@ -36,6 +36,16 @@ namespace Graphics
 
 namespace wrl = Microsoft::WRL;
 
+template<typename T>
+inline void SafeRelease(wrl::ComPtr<T>& cp_object)
+{
+    if (cp_object)
+    {
+        cp_object->Release();
+        cp_object = nullptr;
+    }
+}
+
 inline void ThrowIfFailed(HRESULT hr)
 {
     if (FAILED(hr))

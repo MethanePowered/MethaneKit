@@ -36,6 +36,7 @@ namespace Graphics
 namespace wrl = Microsoft::WRL;
 
 class ContextDX;
+class DeviceDX;
 class RenderStateBase;
 
 class CommandQueueDX final : public CommandQueueBase
@@ -49,11 +50,16 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
+    // Context::ICallback
+    void OnContextReset(Device& device) override;
+
     ContextDX& GetContextDX();
 
     wrl::ComPtr<ID3D12CommandQueue>& GetNativeCommandQueue()     { return m_cp_command_queue; }
 
 protected:
+    void Initialize(const DeviceDX& device);
+
     wrl::ComPtr<ID3D12CommandQueue> m_cp_command_queue;
 };
 
