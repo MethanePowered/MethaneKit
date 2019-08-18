@@ -64,7 +64,6 @@ public:
     static std::string GetActionName(Action action);
 
 private:
-    void SwitchDevice();
     
     Context&                m_context;
     ActionByKeyboardState   m_action_by_keyboard_state;
