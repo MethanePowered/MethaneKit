@@ -87,7 +87,7 @@ std::string DeviceBase::ToString() const noexcept
     return ss.str();
 }
 
-Device::Ptr SystemBase::GetNextGpuDevice(const Device::Ptr& sp_device) const
+Device::Ptr SystemBase::GetNextGpuDevice(const Device& device) const
 {
     ITT_FUNCTION_TASK();
     Device::Ptr sp_next_device;
@@ -96,8 +96,8 @@ Device::Ptr SystemBase::GetNextGpuDevice(const Device::Ptr& sp_device) const
         return sp_next_device;
     
     auto device_it = std::find_if(m_devices.begin(), m_devices.end(),
-                                  [&sp_device](const Device::Ptr& sp_system_device)
-                                  { return sp_device.get() == sp_system_device.get(); });
+                                  [&device](const Device::Ptr& sp_system_device)
+                                  { return std::addressof(device) == sp_system_device.get(); });
     if (device_it == m_devices.end())
         return sp_next_device;
     

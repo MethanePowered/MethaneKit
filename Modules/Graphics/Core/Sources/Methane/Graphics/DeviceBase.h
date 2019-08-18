@@ -60,7 +60,7 @@ class SystemBase : public System
 public:
     const Devices&        GetGpuDevices() const override            { return m_devices; }
     Device::Feature::Mask GetGpuSupportedFeatures() const override  { return m_supported_features; }
-    Device::Ptr           GetNextGpuDevice(const Device::Ptr& sp_device) const override;
+    Device::Ptr           GetNextGpuDevice(const Device& device) const override;
     std::string           ToString() const noexcept override;
     
 protected:

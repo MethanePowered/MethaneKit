@@ -53,16 +53,20 @@ void AppContextController::OnKeyboardChanged(Keyboard::Key, Keyboard::KeyState, 
 
     switch (action_by_keyboard_state_it->second)
     {
-    case Action::SwitchVSync:  m_context.SetVSyncEnabled(!m_context.GetSettings().vsync_enabled); break;
-    case Action::SwitchDevice: SwitchDevice(); break;
+    case Action::SwitchVSync:
+    {
+        m_context.SetVSyncEnabled(!m_context.GetSettings().vsync_enabled);
+    } break;
+    case Action::SwitchDevice:
+    {
+        const Device::Ptr sp_next_device = System::Get().GetNextGpuDevice(m_context.GetDevice());
+        if (sp_next_device)
+        {
+            m_context.Reset(*sp_next_device);
+        }
+    } break;
     default: assert(0); return;
     }
-}
-
-void AppContextController::SwitchDevice()
-{
-    System::Get().UpdateGpuDevices();
-    PrintToDebugOutput(System::Get().ToString());
 }
 
 IHelpProvider::HelpLines AppContextController::GetHelp() const
