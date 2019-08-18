@@ -45,13 +45,19 @@ CommandQueueDX::CommandQueueDX(ContextBase& context)
     : CommandQueueBase(context, false)
 {
     ITT_FUNCTION_TASK();
+    Initialize(GetContextDX().GetDeviceDX());
+}
 
-    const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
+void CommandQueueDX::Initialize(const DeviceDX& device)
+{
+    ITT_FUNCTION_TASK();
+
+    const wrl::ComPtr<ID3D12Device>& cp_device = device.GetNativeDevice();
     assert(!!cp_device);
 
     D3D12_COMMAND_QUEUE_DESC queue_desc = {};
     queue_desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-    queue_desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+    queue_desc.Type  = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
     ThrowIfFailed(cp_device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&m_cp_command_queue)));
 }
@@ -62,6 +68,13 @@ void CommandQueueDX::SetName(const std::string& name)
 
     CommandQueueBase::SetName(name);
     m_cp_command_queue->SetName(nowide::widen(name).c_str());
+}
+
+void CommandQueueDX::OnContextReset(Device& device)
+{
+    ITT_FUNCTION_TASK();
+    SafeRelease(m_cp_command_queue);
+    Initialize(static_cast<const DeviceDX&>(device));
 }
 
 void CommandQueueDX::Execute(const CommandList::Refs& command_lists)

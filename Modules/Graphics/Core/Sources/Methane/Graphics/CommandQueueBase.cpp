@@ -38,6 +38,7 @@ CommandQueueBase::CommandQueueBase(ContextBase& context, bool execution_state_tr
     , m_execution_state_tracking(execution_state_tracking)
 {
     ITT_FUNCTION_TASK();
+    m_context.AddCallback(*this);
 }
 
 CommandQueueBase::~CommandQueueBase()
@@ -45,6 +46,7 @@ CommandQueueBase::~CommandQueueBase()
     ITT_FUNCTION_TASK();
     std::lock_guard<std::mutex> guard(m_executing_mutex);
     assert(m_executing_on_frames.empty());
+    m_context.RemoveCallback(*this);
 }
 
 void CommandQueueBase::Execute(const CommandList::Refs& command_lists)

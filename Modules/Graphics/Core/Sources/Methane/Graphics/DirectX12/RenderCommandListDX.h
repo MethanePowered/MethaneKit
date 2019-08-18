@@ -37,6 +37,7 @@ namespace wrl = Microsoft::WRL;
 
 class CommandQueueDX;
 class RenderPassDX;
+class DeviceDX;
 
 class RenderCommandListDX final : public RenderCommandListBase
 {
@@ -61,9 +62,13 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
+    // Context::ICallback
+    void OnContextReset(Device& device) override;
+
     wrl::ComPtr<ID3D12GraphicsCommandList>& GetNativeCommandList()      { return m_cp_command_list; }
 
 protected:
+    void Initialize(const DeviceDX& device);
     CommandQueueDX& GetCommandQueueDX();
     RenderPassDX&   GetPassDX();
 

@@ -55,6 +55,7 @@ public:
     bool ReadyToRender() const override { return true; }
     void WaitForGpu(WaitFor wait_for) override;
     void Resize(const FrameSize& frame_size) override;
+    void Reset(Device& device) override;
     void Present() override;
     Platform::AppView GetAppView() const override { return { nullptr }; }
 
@@ -68,16 +69,19 @@ public:
     const wrl::ComPtr<IDXGISwapChain3>& GetNativeSwapChain() const { return m_cp_swap_chain; }
 
 protected:
+    void            Initialize(const DeviceDX& device);
     CommandQueueDX& DefaultCommandQueueDX();
 
     inline UINT64   GetCurrentFenceValue() const                { return m_fence_values[m_frame_buffer_index]; }
     inline void     SetCurrentFenceValue(uint64_t fence_value)  { m_fence_values[m_frame_buffer_index] = fence_value; }
+    inline void     IncrementCurrentFenceValue()                { SetCurrentFenceValue(GetCurrentFenceValue() + 1); }
     inline uint32_t GetPresentVSyncInterval() const             { return m_settings.vsync_enabled ? 1 : 0; }
 
-    wrl::ComPtr<IDXGISwapChain3> m_cp_swap_chain;
-    wrl::ComPtr<ID3D12Fence>     m_cp_fence;
-    HANDLE                       m_fence_event = nullptr;
-    std::vector<uint64_t>        m_fence_values;
+    const Platform::AppEnvironment m_platform_env;
+    wrl::ComPtr<IDXGISwapChain3>   m_cp_swap_chain;
+    wrl::ComPtr<ID3D12Fence>       m_cp_fence;
+    HANDLE                         m_fence_event = nullptr;
+    std::vector<uint64_t>          m_fence_values;
 };
 
 } // namespace Graphics

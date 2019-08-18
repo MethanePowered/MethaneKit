@@ -69,8 +69,12 @@ RenderCommandListDX::RenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPas
     : RenderCommandListBase(cmd_buffer, render_pass)
 {
     ITT_FUNCTION_TASK();
+    Initialize(GetCommandQueueDX().GetContextDX().GetDeviceDX());
+}
 
-    const wrl::ComPtr<ID3D12Device>& cp_device = GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice();
+void RenderCommandListDX::Initialize(const DeviceDX& device)
+{
+    const wrl::ComPtr<ID3D12Device>& cp_device = device.GetNativeDevice();
     assert(!!cp_device);
 
     ThrowIfFailed(cp_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_cp_command_allocator)));
@@ -115,6 +119,15 @@ void RenderCommandListDX::SetName(const std::string& name)
 
     assert(m_cp_command_allocator);
     m_cp_command_allocator->SetName(nowide::widen(name + " allocator").c_str());
+}
+
+void RenderCommandListDX::OnContextReset(Device& device)
+{
+    ITT_FUNCTION_TASK();
+
+    SafeRelease(m_cp_command_list);
+    SafeRelease(m_cp_command_allocator);
+    Initialize(static_cast<const DeviceDX&>(device));
 }
 
 void RenderCommandListDX::PushDebugGroup(const std::string& name)

@@ -62,6 +62,12 @@ void CommandQueueMT::SetName(const std::string& name)
     m_mtl_command_queue.label = MacOS::ConvertToNSType<std::string, NSString*>(name);
 }
 
+void CommandQueueMT::OnContextReset(Device&)
+{
+    ITT_FUNCTION_TASK();
+    assert(0); // TODO: to be implemented
+}
+
 ContextMT& CommandQueueMT::GetContextMT() noexcept
 {
     ITT_FUNCTION_TASK();
