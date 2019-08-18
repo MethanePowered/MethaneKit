@@ -54,7 +54,7 @@ std::string GetAdapterName(const wrl::ComPtr<IDXGIAdapter>& cp_adapter)
 }
 
 DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level)
-    : DeviceBase(GetAdapterName(cp_adapter), GetSupportedFeatures(cp_adapter, feature_level))
+    : DeviceBase(::GetAdapterName(cp_adapter), GetSupportedFeatures(cp_adapter, feature_level))
     , m_cp_adapter(cp_adapter)
 {
     ITT_FUNCTION_TASK();
@@ -64,6 +64,13 @@ DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVE
 DeviceDX::~DeviceDX()
 {
     ITT_FUNCTION_TASK();
+}
+
+void DeviceDX::SetName(const std::string& name)
+{
+    assert(!!m_cp_device);
+    DeviceBase::SetName(name);
+    m_cp_device->SetName(nowide::widen(name).c_str());
 }
 
 System& System::Get()

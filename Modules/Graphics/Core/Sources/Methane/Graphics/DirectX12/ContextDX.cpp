@@ -101,15 +101,12 @@ void ContextDX::OnCommandQueueCompleted(CommandQueue& /*cmd_list*/, uint32_t /*f
 void ContextDX::SetName(const std::string& name)
 {
     ITT_FUNCTION_TASK();
-
     ContextBase::SetName(name);
 
-    const wrl::ComPtr<ID3D12Device>& cp_device = GetDeviceDX().GetNativeDevice();
-    assert(!!cp_device);
-    assert(!!m_cp_fence);
+    GetDevice().SetName(name + " Device");
 
+    assert(!!m_cp_fence);
     const std::wstring wname = nowide::widen(name);
-    cp_device->SetName((wname + L" Device").c_str());
     m_cp_fence->SetName((wname + L" Fence").c_str());
 }
 

@@ -249,7 +249,7 @@ public:
                  << std::fixed << average_frame_time_ms << " ms), VSync: "
                  << (context_settings.vsync_enabled ? "ON" : "OFF")
                  << ", " << context_settings.frame_size.width << " x " << context_settings.frame_size.height
-                 << ", GPU: " << m_sp_context->GetDevice().GetName();
+                 << ", GPU: " << m_sp_context->GetDevice().GetAdapterName();
 
         SetWindowTitle(title_ss.str());
         m_title_update_timer.Reset();

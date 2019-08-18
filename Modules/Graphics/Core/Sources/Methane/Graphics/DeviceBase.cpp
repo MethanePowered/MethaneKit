@@ -62,9 +62,9 @@ std::string Device::Feature::ToString(Mask features) noexcept
     return ss.str();
 }
 
-DeviceBase::DeviceBase(const std::string& name,
+DeviceBase::DeviceBase(const std::string& adapter_name,
                        Feature::Mask      supported_features)
-    : m_name(name)
+    : m_adapter_name(adapter_name)
     , m_supported_features(supported_features)
 {
     ITT_FUNCTION_TASK();
@@ -83,7 +83,7 @@ std::string DeviceBase::ToString() const noexcept
 {
     ITT_FUNCTION_TASK();
     std::stringstream ss;
-    ss << "GPU \"" << GetName() << "\" with features: " + Feature::ToString(m_supported_features);
+    ss << "GPU \"" << GetAdapterName() << "\" with features: " + Feature::ToString(m_supported_features);
     return ss.str();
 }
 

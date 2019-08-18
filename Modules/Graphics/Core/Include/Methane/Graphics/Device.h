@@ -36,7 +36,7 @@ namespace Methane
 namespace Graphics
 {
 
-struct Device : Object
+struct Device : virtual Object
 {
     using Ptr = std::shared_ptr<Device>;
     
@@ -69,13 +69,11 @@ struct Device : Object
         ~Feature() = delete;
     };
 
+    virtual const std::string& GetAdapterName() const noexcept = 0;
     virtual Feature::Mask      GetSupportedFeatures() const noexcept = 0;
     virtual void               SetNotificationCallback(const NotificationCallback& callback) = 0;
     virtual void               Notify(Notification notification) = 0;
     virtual std::string        ToString() const noexcept = 0;
-
-private:
-    void SetName(const std::string&) override { }
 };
 
 using Devices = std::vector<Device::Ptr>;
