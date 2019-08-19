@@ -95,18 +95,24 @@ void ContextDX::Initialize(const DeviceDX& device)
 
     assert(!!m_cp_swap_chain);
     m_frame_buffer_index = m_cp_swap_chain->GetCurrentBackBufferIndex();
-    m_fence_values.resize(m_settings.frame_buffers_count, 0);
+    m_frame_fences.resize(m_settings.frame_buffers_count);
 
     const wrl::ComPtr<ID3D12Device>& cp_device = device.GetNativeDevice();
     assert(!!cp_device);
-    ThrowIfFailed(cp_device->CreateFence(GetCurrentFenceValue(), D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_cp_fence)));
 
-    IncrementCurrentFenceValue();
+    uint32_t frame_index = 0;
+    for (FrameFence& frame_fence : m_frame_fences)
+    {
+        frame_fence.value = 0;
+        frame_fence.frame = frame_index++;
+        ThrowIfFailed(cp_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&frame_fence.cp_fence)));
+    }
 
     if (m_fence_event)
     {
         CloseHandle(m_fence_event);
     }
+
     m_fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
     if (!m_fence_event)
     {
@@ -126,13 +132,18 @@ void ContextDX::SetName(const std::string& name)
 
     GetDevice().SetName(name + " Device");
 
-    assert(!!m_cp_fence);
     const std::wstring wname = nowide::widen(name);
-    m_cp_fence->SetName((wname + L" Fence").c_str());
+    for (FrameFence& frame_fence : m_frame_fences)
+    {
+        assert(!!frame_fence.cp_fence);
+        if (!frame_fence.cp_fence) continue;
+        frame_fence.cp_fence->SetName((wname + L" Fence " + std::to_wstring(frame_fence.frame)).c_str());
+    }
 }
 
 const DeviceDX& ContextDX::GetDeviceDX() const
 {
+    ITT_FUNCTION_TASK();
     return static_cast<const DeviceDX&>(GetDeviceBase());
 }
 
@@ -141,9 +152,9 @@ void ContextDX::WaitForGpu(WaitFor wait_for)
     ITT_FUNCTION_TASK();
 
     // Schedule a Signal command in the queue.
-    const UINT64 current_fence_value = GetCurrentFenceValue();
+    const FrameFence& previous_frame_fence = GetCurrentFrameFence();
     CommandQueueDX& dx_command_queue = static_cast<CommandQueueDX&>(wait_for == WaitFor::ResourcesUploaded ? GetUploadCommandQueue() : GetRenderCommandQueue());
-    ThrowIfFailed(dx_command_queue.GetNativeCommandQueue()->Signal(m_cp_fence.Get(), current_fence_value));
+    ThrowIfFailed(dx_command_queue.GetNativeCommandQueue()->Signal(previous_frame_fence.cp_fence.Get(), previous_frame_fence.value));
 
     const bool switch_to_next_frame = (wait_for == WaitFor::FramePresented);
     if (switch_to_next_frame)
@@ -153,15 +164,16 @@ void ContextDX::WaitForGpu(WaitFor wait_for)
     }
 
     // If the next frame is not ready to be rendered yet, wait until it is ready.
-    const UINT64 new_fence_value = switch_to_next_frame ? GetCurrentFenceValue() : current_fence_value;
-    if (!switch_to_next_frame || m_cp_fence->GetCompletedValue() < new_fence_value)
+    FrameFence& current_frame_fence = GetCurrentFrameFence();
+    assert(!!current_frame_fence.cp_fence);
+    if (!switch_to_next_frame || current_frame_fence.cp_fence->GetCompletedValue() < current_frame_fence.value)
     {
-        ThrowIfFailed(m_cp_fence->SetEventOnCompletion(new_fence_value, m_fence_event));
+        ThrowIfFailed(current_frame_fence.cp_fence->SetEventOnCompletion(current_frame_fence.value, m_fence_event));
         WaitForSingleObjectEx(m_fence_event, INFINITE, FALSE);
     }
 
     // Set the fence value for the next frame.
-    SetCurrentFenceValue(current_fence_value + 1);
+    current_frame_fence.value++;
 
     ContextBase::WaitForGpu(wait_for);
 }
@@ -184,6 +196,8 @@ void ContextDX::Resize(const FrameSize& frame_size)
 
 void ContextDX::Reset(Device& device)
 {
+    ITT_FUNCTION_TASK();
+
     WaitForGpu(WaitFor::RenderComplete);
     ContextBase::ResetInternal(static_cast<DeviceBase&>(device));
 

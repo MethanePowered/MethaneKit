@@ -69,19 +69,26 @@ public:
     const wrl::ComPtr<IDXGISwapChain3>& GetNativeSwapChain() const { return m_cp_swap_chain; }
 
 protected:
+    struct FrameFence
+    {
+        wrl::ComPtr<ID3D12Fence> cp_fence;
+        uint64_t                 value = 0;
+        uint32_t                 frame = 0;
+    };
+
+    using FrameFences = std::vector<FrameFence>;
+
+    inline const FrameFence& GetCurrentFrameFence() const                     { return m_frame_fences[m_frame_buffer_index]; }
+    inline FrameFence&       GetCurrentFrameFence()                           { return m_frame_fences[m_frame_buffer_index]; }
+    inline uint32_t          GetPresentVSyncInterval() const                  { return m_settings.vsync_enabled ? 1 : 0; }
+
     void            Initialize(const DeviceDX& device);
     CommandQueueDX& DefaultCommandQueueDX();
 
-    inline UINT64   GetCurrentFenceValue() const                { return m_fence_values[m_frame_buffer_index]; }
-    inline void     SetCurrentFenceValue(uint64_t fence_value)  { m_fence_values[m_frame_buffer_index] = fence_value; }
-    inline void     IncrementCurrentFenceValue()                { SetCurrentFenceValue(GetCurrentFenceValue() + 1); }
-    inline uint32_t GetPresentVSyncInterval() const             { return m_settings.vsync_enabled ? 1 : 0; }
-
     const Platform::AppEnvironment m_platform_env;
     wrl::ComPtr<IDXGISwapChain3>   m_cp_swap_chain;
-    wrl::ComPtr<ID3D12Fence>       m_cp_fence;
+    FrameFences                    m_frame_fences;
     HANDLE                         m_fence_event = nullptr;
-    std::vector<uint64_t>          m_fence_values;
 };
 
 } // namespace Graphics

@@ -80,18 +80,27 @@ void CommandQueueDX::OnContextReset(Device& device)
 void CommandQueueDX::Execute(const CommandList::Refs& command_lists)
 {
     ITT_FUNCTION_TASK();
+    assert(!command_lists.empty());
+    if (command_lists.empty())
+        return;
 
     CommandQueueBase::Execute(command_lists);
 
-    std::vector<ID3D12CommandList*> dx_command_lists;
-    dx_command_lists.reserve(command_lists.size());
-    for (const CommandList::Ref& command_list_ref : command_lists)
+    D3D12CommandLists dx_command_lists = GetNativeCommandLists(command_lists);
+    m_cp_command_queue->ExecuteCommandLists(static_cast<UINT>(dx_command_lists.size()), dx_command_lists.data());
+}
+
+CommandQueueDX::D3D12CommandLists CommandQueueDX::GetNativeCommandLists(const CommandList::Refs& command_list_refs)
+{
+    ITT_FUNCTION_TASK();
+    D3D12CommandLists dx_command_lists;
+    dx_command_lists.reserve(command_list_refs.size());
+    for (const CommandList::Ref& command_list_ref : command_list_refs)
     {
         RenderCommandListDX& dx_command_list = dynamic_cast<RenderCommandListDX&>(command_list_ref.get());
         dx_command_lists.push_back(dx_command_list.GetNativeCommandList().Get());
     }
-
-    m_cp_command_queue->ExecuteCommandLists(static_cast<UINT>(dx_command_lists.size()), dx_command_lists.data());
+    return dx_command_lists;
 }
 
 ContextDX& CommandQueueDX::GetContextDX()
