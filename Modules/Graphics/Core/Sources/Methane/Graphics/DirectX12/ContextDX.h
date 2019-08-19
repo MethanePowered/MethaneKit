@@ -81,6 +81,8 @@ protected:
     inline const FrameFence& GetCurrentFrameFence() const                     { return m_frame_fences[m_frame_buffer_index]; }
     inline FrameFence&       GetCurrentFrameFence()                           { return m_frame_fences[m_frame_buffer_index]; }
     inline uint32_t          GetPresentVSyncInterval() const                  { return m_settings.vsync_enabled ? 1 : 0; }
+    void                     SignalFence(const FrameFence& frame_fence, CommandQueueDX& dx_command_queue);
+    void                     WaitFence(FrameFence& frame_fence);
 
     void            Initialize(const DeviceDX& device);
     CommandQueueDX& DefaultCommandQueueDX();
@@ -88,6 +90,7 @@ protected:
     const Platform::AppEnvironment m_platform_env;
     wrl::ComPtr<IDXGISwapChain3>   m_cp_swap_chain;
     FrameFences                    m_frame_fences;
+    FrameFence                     m_upload_fence;
     HANDLE                         m_fence_event = nullptr;
 };
 
