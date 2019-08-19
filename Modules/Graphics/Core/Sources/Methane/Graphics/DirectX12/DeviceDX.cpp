@@ -68,6 +68,7 @@ DeviceDX::~DeviceDX()
 
 void DeviceDX::SetName(const std::string& name)
 {
+    ITT_FUNCTION_TASK();
     assert(!!m_cp_device);
     DeviceBase::SetName(name);
     m_cp_device->SetName(nowide::widen(name).c_str());

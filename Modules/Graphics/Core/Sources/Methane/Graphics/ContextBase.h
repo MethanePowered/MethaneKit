@@ -87,7 +87,7 @@ protected:
     DeviceBase::Ptr        m_sp_device;
     Settings               m_settings;
     ResourceManager        m_resource_manager;
-    Callbacks              m_callbacks; // ORDER: Keep callbacks before resources
+    Callbacks              m_callbacks; // ORDER: Keep callbacks before resources for correct auto-delete
     CommandQueue::Ptr      m_sp_render_cmd_queue;
     CommandQueue::Ptr      m_sp_upload_cmd_queue;
     RenderCommandList::Ptr m_sp_upload_cmd_list;
