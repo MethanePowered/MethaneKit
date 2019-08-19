@@ -103,10 +103,16 @@ void ContextDX::Initialize(const DeviceDX& device)
     uint32_t frame_index = 0;
     for (FrameFence& frame_fence : m_frame_fences)
     {
+        if (frame_fence.cp_fence)
+        {
+            SafeRelease(frame_fence.cp_fence);
+        }
         frame_fence.value = 0;
         frame_fence.frame = frame_index++;
-        ThrowIfFailed(cp_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&frame_fence.cp_fence)));
+        ThrowIfFailed(cp_device->CreateFence(frame_fence.value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&frame_fence.cp_fence)));
     }
+
+    ThrowIfFailed(cp_device->CreateFence(m_upload_fence.value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_upload_fence.cp_fence)));
 
     if (m_fence_event)
     {
@@ -151,29 +157,24 @@ void ContextDX::WaitForGpu(WaitFor wait_for)
 {
     ITT_FUNCTION_TASK();
 
-    // Schedule a Signal command in the queue.
-    const FrameFence& previous_frame_fence = GetCurrentFrameFence();
-    CommandQueueDX& dx_command_queue = static_cast<CommandQueueDX&>(wait_for == WaitFor::ResourcesUploaded ? GetUploadCommandQueue() : GetRenderCommandQueue());
-    ThrowIfFailed(dx_command_queue.GetNativeCommandQueue()->Signal(previous_frame_fence.cp_fence.Get(), previous_frame_fence.value));
-
-    const bool switch_to_next_frame = (wait_for == WaitFor::FramePresented);
-    if (switch_to_next_frame)
+    switch (wait_for)
     {
-        // Update the frame index.
-        m_frame_buffer_index = m_cp_swap_chain->GetCurrentBackBufferIndex();
-    }
+    case WaitFor::ResourcesUploaded:
+        SignalFence(m_upload_fence, static_cast<CommandQueueDX&>(GetUploadCommandQueue()));
+        WaitFence(m_upload_fence);
+        break;
 
-    // If the next frame is not ready to be rendered yet, wait until it is ready.
-    FrameFence& current_frame_fence = GetCurrentFrameFence();
-    assert(!!current_frame_fence.cp_fence);
-    if (!switch_to_next_frame || current_frame_fence.cp_fence->GetCompletedValue() < current_frame_fence.value)
-    {
-        ThrowIfFailed(current_frame_fence.cp_fence->SetEventOnCompletion(current_frame_fence.value, m_fence_event));
-        WaitForSingleObjectEx(m_fence_event, INFINITE, FALSE);
-    }
+    case WaitFor::FramePresented:
+        WaitFence(GetCurrentFrameFence());
+        break;
 
-    // Set the fence value for the next frame.
-    current_frame_fence.value++;
+    case WaitFor::RenderComplete:
+        for (uint32_t frame_buffer_index = 0; frame_buffer_index < m_settings.frame_buffers_count; ++frame_buffer_index)
+        {
+            WaitFence(m_frame_fences[frame_buffer_index]);
+        }
+        break;
+    }
 
     ContextBase::WaitForGpu(wait_for);
 }
@@ -182,9 +183,7 @@ void ContextDX::Resize(const FrameSize& frame_size)
 {
     ITT_FUNCTION_TASK();
 
-    WaitForGpu(WaitFor::ResourcesUploaded);
     WaitForGpu(WaitFor::RenderComplete);
-    WaitForGpu(WaitFor::FramePresented);
 
     // Resize the swap chain to the desired dimensions
     DXGI_SWAP_CHAIN_DESC1 desc = {};
@@ -199,6 +198,7 @@ void ContextDX::Reset(Device& device)
     ITT_FUNCTION_TASK();
 
     WaitForGpu(WaitFor::RenderComplete);
+
     ContextBase::ResetInternal(static_cast<DeviceBase&>(device));
 
     SafeRelease(m_cp_swap_chain);
@@ -211,11 +211,43 @@ void ContextDX::Present()
 {
     ITT_FUNCTION_TASK();
 
+    // Schedule a signal command in the queue for a currently finished frame
+    SignalFence(GetCurrentFrameFence(), static_cast<CommandQueueDX&>(GetRenderCommandQueue()));
+
+    // Preset frame to screen
     const uint32_t present_flags  = 0; // DXGI_PRESENT_DO_NOT_WAIT
     const uint32_t vsync_interval = GetPresentVSyncInterval();
     ThrowIfFailed(m_cp_swap_chain->Present(vsync_interval, present_flags));
 
     OnPresentComplete();
+
+    // Update current frame buffer index
+    m_frame_buffer_index = m_cp_swap_chain->GetCurrentBackBufferIndex();
+}
+
+void ContextDX::SignalFence(const FrameFence& frame_fence, CommandQueueDX& dx_command_queue)
+{
+    wrl::ComPtr<ID3D12CommandQueue>& cp_command_queue = dx_command_queue.GetNativeCommandQueue();
+    assert(!!cp_command_queue);
+    assert(!!frame_fence.cp_fence);
+
+    ThrowIfFailed(cp_command_queue->Signal(frame_fence.cp_fence.Get(), frame_fence.value));
+}
+
+void ContextDX::WaitFence(FrameFence& frame_fence)
+{
+    assert(!!frame_fence.cp_fence);
+    assert(!!m_fence_event);
+
+    // If the next frame is not ready to be rendered yet, wait until it is ready
+    if (frame_fence.cp_fence->GetCompletedValue() < frame_fence.value)
+    {
+        ThrowIfFailed(frame_fence.cp_fence->SetEventOnCompletion(frame_fence.value, m_fence_event));
+        WaitForSingleObjectEx(m_fence_event, INFINITE, FALSE);
+    }
+
+    // Set the fence value for the next frame
+    frame_fence.value++;
 }
 
 CommandQueueDX& ContextDX::DefaultCommandQueueDX()
