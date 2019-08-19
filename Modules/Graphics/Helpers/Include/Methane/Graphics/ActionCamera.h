@@ -80,10 +80,12 @@ public:
         ZoomIn,
         ZoomOut,
         
+        // Other
         Reset,
         ChangePivot,
 
-        Count // keep at end
+        // Keep at end
+        Count
     };
 
     using DistanceRange = std::pair<float /*min_distance*/, float /*max_distance*/>;
