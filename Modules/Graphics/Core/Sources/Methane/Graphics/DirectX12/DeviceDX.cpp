@@ -56,9 +56,9 @@ std::string GetAdapterName(const wrl::ComPtr<IDXGIAdapter>& cp_adapter)
 DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level)
     : DeviceBase(::GetAdapterName(cp_adapter), GetSupportedFeatures(cp_adapter, feature_level))
     , m_cp_adapter(cp_adapter)
+    , m_feature_level(feature_level)
 {
     ITT_FUNCTION_TASK();
-    ThrowIfFailed(D3D12CreateDevice(cp_adapter.Get(), feature_level, IID_PPV_ARGS(&m_cp_device)));
 }
 
 DeviceDX::~DeviceDX()
@@ -69,9 +69,29 @@ DeviceDX::~DeviceDX()
 void DeviceDX::SetName(const std::string& name)
 {
     ITT_FUNCTION_TASK();
-    assert(!!m_cp_device);
     DeviceBase::SetName(name);
-    m_cp_device->SetName(nowide::widen(name).c_str());
+    if (m_cp_device)
+    {
+        m_cp_device->SetName(nowide::widen(name).c_str());
+    }
+}
+
+const wrl::ComPtr<ID3D12Device>& DeviceDX::GetNativeDevice() const
+{
+    if (!m_cp_device)
+    {
+        ThrowIfFailed(D3D12CreateDevice(m_cp_adapter.Get(), m_feature_level, IID_PPV_ARGS(&m_cp_device)));
+        if (!GetName().empty())
+        {
+            m_cp_device->SetName(nowide::widen(GetName()).c_str());
+        }
+    }
+    return m_cp_device;
+}
+
+void DeviceDX::ReleaseNativeDevice()
+{
+    SafeRelease(m_cp_device);
 }
 
 System& System::Get()

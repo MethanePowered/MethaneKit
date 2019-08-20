@@ -48,10 +48,12 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-    const wrl::ComPtr<ID3D12Device>& GetNativeDevice() const { return m_cp_device; }
+    const wrl::ComPtr<ID3D12Device>& GetNativeDevice() const;
+    void ReleaseNativeDevice();
 
 protected:
-    wrl::ComPtr<IDXGIAdapter> m_cp_adapter;
+    const wrl::ComPtr<IDXGIAdapter>   m_cp_adapter;
+    const D3D_FEATURE_LEVEL           m_feature_level;
     mutable wrl::ComPtr<ID3D12Device> m_cp_device;
 };
 

@@ -126,7 +126,7 @@ void ContextDX::Initialize(const DeviceDX& device)
     }
 }
 
-void ContextDX::OnCommandQueueCompleted(CommandQueue& /*cmd_list*/, uint32_t /*frame_index*/)
+void ContextDX::OnCommandQueueCompleted(CommandQueue& /*cmd_queue*/, uint32_t /*frame_index*/)
 {
     ITT_FUNCTION_TASK();
 }
@@ -196,13 +196,21 @@ void ContextDX::Resize(const FrameSize& frame_size)
 void ContextDX::Reset(Device& device)
 {
     ITT_FUNCTION_TASK();
+    if (m_sp_device && std::addressof(*m_sp_device) == std::addressof(device))
+        return;
 
     WaitForGpu(WaitFor::RenderComplete);
 
+    Device::Ptr sp_old_device = m_sp_device;
     ContextBase::ResetInternal(static_cast<DeviceBase&>(device));
 
     SafeRelease(m_cp_swap_chain);
     Initialize(static_cast<DeviceDX&>(device));
+
+    if (sp_old_device)
+    {
+        static_cast<DeviceDX&>(*sp_old_device).ReleaseNativeDevice();
+    }
 
     ContextBase::Reset(device);
 }

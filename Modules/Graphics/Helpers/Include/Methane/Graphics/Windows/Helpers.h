@@ -39,11 +39,10 @@ namespace wrl = Microsoft::WRL;
 template<typename T>
 inline void SafeRelease(wrl::ComPtr<T>& cp_object)
 {
-    if (cp_object)
-    {
-        cp_object->Release();
-        cp_object = nullptr;
-    }
+    if (!cp_object)
+        return;
+
+    cp_object = nullptr; // Release of T is called automatically by ComPtr
 }
 
 inline void ThrowIfFailed(HRESULT hr)
