@@ -25,14 +25,16 @@ Action camera controller with keyboard and mouse interactions handling.
 
 using namespace Methane;
 using namespace Methane::Graphics;
+using namespace Methane::Platform;
 
 AppCameraController::AppCameraController(ActionCamera& action_camera, const std::string& camera_name,
-                                         const MouseActionByButton& mouse_actions_by_button,
-                                         const KeyboardActionByKey& keyboard_actions_by_key)
+                                         const ActionByMouseButton&   mouse_actions_by_button,
+                                         const ActionByKeyboardState& keyboard_actions_by_state,
+                                         const ActionByKeyboardKey&   keyboard_actions_by_key)
     : Controller(camera_name)
+    , Mouse::ActionControllerBase<ActionCamera::MouseAction>(mouse_actions_by_button)
+    , Keyboard::ActionControllerBase<ActionCamera::KeyboardAction>(keyboard_actions_by_state, keyboard_actions_by_key)
     , m_action_camera(action_camera)
-    , m_mouse_actions_by_button(mouse_actions_by_button)
-    , m_keyboard_actions_by_key(keyboard_actions_by_key)
 { }
 
 void AppCameraController::OnMouseButtonChanged(Platform::Mouse::Button button, Platform::Mouse::ButtonState button_state, const Platform::Mouse::StateChange& state_change)
@@ -60,75 +62,53 @@ void AppCameraController::OnMouseScrollChanged(const Platform::Mouse::Scroll& mo
     }
 }
 
-void AppCameraController::OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Platform::Keyboard::StateChange&)
+void AppCameraController::OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Platform::Keyboard::StateChange& state_change)
 {
-    const ActionCamera::KeyboardAction action = GetKeyboardActionByKey(key);
-    switch (key_state)
-    {
-    case Platform::Keyboard::KeyState::Pressed:  m_action_camera.OnKeyPressed(action); break;
-    case Platform::Keyboard::KeyState::Released: m_action_camera.OnKeyReleased(action); break;
-    }
+    Keyboard::ActionControllerBase<ActionCamera::KeyboardAction>::OnKeyboardChanged(key, key_state, state_change);
 }
 
 AppCameraController::HelpLines AppCameraController::GetHelp() const
 {
     HelpLines help_lines;
-    help_lines.reserve(m_mouse_actions_by_button.size() + m_keyboard_actions_by_key.size() + 2);
+    help_lines.reserve(m_action_by_mouse_button.size() + m_action_by_keyboard_key.size() + m_action_by_keyboard_state.size() + 2);
 
-    if (!m_mouse_actions_by_button.empty())
+    const HelpLines mouse_help_lines = GetMouseHelp();
+    if (!mouse_help_lines.empty())
     {
         help_lines.push_back({ "", "Mouse actions" });
-        for (uint32_t mouse_action_index = 0; mouse_action_index < static_cast<uint32_t>(ActionCamera::MouseAction::Count); ++mouse_action_index)
-        {
-            const ActionCamera::MouseAction mouse_action = static_cast<ActionCamera::MouseAction>(mouse_action_index);
-            const auto mouse_actions_by_button_it = std::find_if(m_mouse_actions_by_button.begin(), m_mouse_actions_by_button.end(),
-                [mouse_action](const std::pair<Platform::Mouse::Button, ActionCamera::MouseAction>& mouse_button_and_action)
-                {
-                    return mouse_button_and_action.second == mouse_action;
-                });
-            if (mouse_actions_by_button_it == m_mouse_actions_by_button.end())
-                continue;
-
-            help_lines.push_back({
-                Platform::Mouse::ButtonConverter(mouse_actions_by_button_it->first).ToString(),
-                ActionCamera::GetActionName(mouse_actions_by_button_it->second)
-            });
-        }
+        help_lines.insert(help_lines.end(), mouse_help_lines.begin(), mouse_help_lines.end());
     }
 
-    if (!m_keyboard_actions_by_key.empty())
+    const HelpLines keyboard_help_lines = GetKeyboardHelp();
+    if (!keyboard_help_lines.empty())
     {
         help_lines.push_back({ "", "Keyboard actions" });
-        for (uint32_t keyboard_action_index = 0; keyboard_action_index < static_cast<uint32_t>(ActionCamera::KeyboardAction::Count); ++keyboard_action_index)
-        {
-            const ActionCamera::KeyboardAction keyboard_action = static_cast<ActionCamera::KeyboardAction>(keyboard_action_index);
-            const auto keyboard_actions_by_key_it = std::find_if(m_keyboard_actions_by_key.begin(), m_keyboard_actions_by_key.end(),
-                [keyboard_action](const std::pair<Platform::Keyboard::Key, ActionCamera::KeyboardAction>& key_and_action)
-                {
-                    return key_and_action.second == keyboard_action;
-                });
-            if (keyboard_actions_by_key_it == m_keyboard_actions_by_key.end())
-                continue;
-
-            help_lines.push_back({
-                Platform::Keyboard::KeyConverter(keyboard_actions_by_key_it->first).ToString(),
-                ActionCamera::GetActionName(keyboard_actions_by_key_it->second)
-            });
-        }
+        help_lines.insert(help_lines.end(), keyboard_help_lines.begin(), keyboard_help_lines.end());
     }
+    
     return help_lines;
 }
 
-ActionCamera::MouseAction AppCameraController::GetMouseActionByButton(Platform::Mouse::Button mouse_button) const
+void AppCameraController::OnKeyboardKeyAction(ActionCamera::KeyboardAction action, Platform::Keyboard::KeyState key_state)
 {
-    const auto mouse_actions_by_button_it = m_mouse_actions_by_button.find(mouse_button);
-    return (mouse_actions_by_button_it != m_mouse_actions_by_button.end())
-          ? mouse_actions_by_button_it->second : ActionCamera::MouseAction::None;
+    switch (key_state)
+    {
+        case Platform::Keyboard::KeyState::Pressed:  m_action_camera.OnKeyPressed(action); break;
+        case Platform::Keyboard::KeyState::Released: m_action_camera.OnKeyReleased(action); break;
+    }
 }
 
-ActionCamera::KeyboardAction AppCameraController::GetKeyboardActionByKey(Platform::Keyboard::Key key) const
+void AppCameraController::OnKeyboardStateAction(ActionCamera::KeyboardAction action)
 {
-    const auto keyboard_actions_by_key_it = m_keyboard_actions_by_key.find(key);
-    return (keyboard_actions_by_key_it != m_keyboard_actions_by_key.end())
-          ? keyboard_actions_by_key_it->second : ActionCamera::KeyboardAction::None;
+    m_action_camera.DoKeyboardAction(action);
+}
+
+std::string AppCameraController::GetKeyboardActionName(ActionCamera::KeyboardAction action) const
+{
+    return ActionCamera::GetActionName(action);
+}
+
+std::string AppCameraController::GetMouseActionName(ActionCamera::MouseAction action) const
+{
+    return ActionCamera::GetActionName(action);
 }

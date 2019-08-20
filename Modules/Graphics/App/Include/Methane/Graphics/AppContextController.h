@@ -24,7 +24,7 @@ Graphics context controller for switching parameters in runtime.
 #pragma once
 
 #include <Methane/Platform/Input/Controller.h>
-#include <Methane/Platform/Keyboard.h>
+#include <Methane/Platform/KeyboardActionControllerBase.hpp>
 
 #include <map>
 
@@ -34,39 +34,40 @@ namespace Graphics
 {
 
 struct Context;
+    
+enum class AppContextAction : uint32_t
+{
+    None = 0,
+    
+    SwitchVSync,
+    SwitchDevice,
+    
+    Count
+};
 
-class AppContextController : public Platform::Input::Controller
+class AppContextController final
+    : public Platform::Input::Controller
+    , public Platform::Keyboard::ActionControllerBase<AppContextAction>
 {
 public:
-    enum class Action : uint32_t
-    {
-        None = 0,
-
-        SwitchVSync,
-        SwitchDevice,
-
-        Count
-    };
-
-    using ActionByKeyboardState = std::map<Platform::Keyboard::State, Action>;
-
     inline static const ActionByKeyboardState default_action_by_keyboard_state = {
-        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::V }, Action::SwitchVSync  },
-        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::X }, Action::SwitchDevice },
+        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::V }, AppContextAction::SwitchVSync  },
+        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::X }, AppContextAction::SwitchDevice },
     };
 
     AppContextController(Context& context, const ActionByKeyboardState& action_by_keyboard_state = default_action_by_keyboard_state);
 
     // Input::Controller implementation
-    void OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Platform::Keyboard::StateChange&) override;
+    void OnKeyboardChanged(Platform::Keyboard::Key, Platform::Keyboard::KeyState, const Platform::Keyboard::StateChange& state_change) override;
     HelpLines GetHelp() const override;
-
-    static std::string GetActionName(Action action);
-
-private:
     
+protected:
+    // Keyboard::ActionControllerBase interface
+    void        OnKeyboardKeyAction(AppContextAction, Platform::Keyboard::KeyState) override { }
+    void        OnKeyboardStateAction(AppContextAction action) override;
+    std::string GetKeyboardActionName(AppContextAction action) const override;
+
     Context&                m_context;
-    ActionByKeyboardState   m_action_by_keyboard_state;
 };
 
 } // namespace Graphics

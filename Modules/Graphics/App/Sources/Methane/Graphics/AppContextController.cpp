@@ -32,80 +32,58 @@ Graphics context controller for switching parameters in runtime.
 using namespace Methane;
 using namespace Methane::Graphics;
 using namespace Methane::Platform;
-using namespace Methane::Platform::Input;
 
 AppContextController::AppContextController(Context& context, const ActionByKeyboardState& action_by_keyboard_state)
     : Controller("GRAPHICS SETTINGS")
+    , Keyboard::ActionControllerBase<AppContextAction>(action_by_keyboard_state, {})
     , m_context(context)
-    , m_action_by_keyboard_state(action_by_keyboard_state)
 {
 }
 
-void AppContextController::OnKeyboardChanged(Keyboard::Key, Keyboard::KeyState, const Keyboard::StateChange& state_change)
+void AppContextController::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state, const Keyboard::StateChange& state_change)
 {
-    if (state_change.changed_properties != Keyboard::State::Property::KeyStates &&
-        state_change.changed_properties != Keyboard::State::Property::Modifiers)
-        return;
+    Keyboard::ActionControllerBase<AppContextAction>::OnKeyboardChanged(key, key_state, state_change);
+}
 
-    const auto action_by_keyboard_state_it = m_action_by_keyboard_state.find(state_change.current);
-    if (action_by_keyboard_state_it == m_action_by_keyboard_state.end())
-        return;
-
-    switch (action_by_keyboard_state_it->second)
+void AppContextController::OnKeyboardStateAction(AppContextAction action)
+{
+    switch (action)
     {
-    case Action::SwitchVSync:
-    {
-        m_context.SetVSyncEnabled(!m_context.GetSettings().vsync_enabled);
-    } break;
-    case Action::SwitchDevice:
-    {
-        const Device::Ptr sp_next_device = System::Get().GetNextGpuDevice(m_context.GetDevice());
-        if (sp_next_device)
+        case AppContextAction::SwitchVSync:
         {
-            m_context.Reset(*sp_next_device);
-        }
-    } break;
-    default: assert(0); return;
+            m_context.SetVSyncEnabled(!m_context.GetSettings().vsync_enabled);
+        } break;
+
+        case AppContextAction::SwitchDevice:
+        {
+            const Device::Ptr sp_next_device = System::Get().GetNextGpuDevice(m_context.GetDevice());
+            if (sp_next_device)
+            {
+                m_context.Reset(*sp_next_device);
+            }
+        } break;
+
+        default: return;
     }
 }
 
-IHelpProvider::HelpLines AppContextController::GetHelp() const
+std::string AppContextController::GetKeyboardActionName(AppContextAction action) const
 {
-    HelpLines help_lines;
-    if (m_action_by_keyboard_state.empty())
-        return help_lines;
-
-    help_lines.reserve(m_action_by_keyboard_state.size());
-    for (uint32_t action_index = 0; action_index < static_cast<uint32_t>(Action::Count); ++action_index)
+    switch (action)
     {
-        const Action action = static_cast<Action>(action_index);
-        const auto action_by_keyboard_state_it = std::find_if(m_action_by_keyboard_state.begin(), m_action_by_keyboard_state.end(),
-            [action](const std::pair<Keyboard::State, Action>& keys_and_action)
-            {
-                return keys_and_action.second == action;
-            });
-        if (action_by_keyboard_state_it == m_action_by_keyboard_state.end())
-            continue;
-
-        help_lines.push_back({
-            action_by_keyboard_state_it->first.ToString(),
-            GetActionName(action_by_keyboard_state_it->second)
-        });
+        case AppContextAction::None:         return "none";
+        case AppContextAction::SwitchVSync:  return "switch vertical synchronization";
+        case AppContextAction::SwitchDevice: return "switch device used for rendering";
+        default: assert(0);                  return "";
     }
+}
+
+Input::IHelpProvider::HelpLines AppContextController::GetHelp() const
+{
+    HelpLines help_lines = GetKeyboardHelp();
 
     // Add description of system graphics devices
     help_lines.push_back({ "\n" + System::Get().ToString(), "" });
 
     return help_lines;
-}
-
-std::string AppContextController::GetActionName(Action action)
-{
-    switch (action)
-    {
-    case Action::None:         return "none";
-    case Action::SwitchVSync:  return "switch vertical synchronization";
-    case Action::SwitchDevice: return "switch device used for rendering";
-    default: assert(0);        return "";
-    }
 }

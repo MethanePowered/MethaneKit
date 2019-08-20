@@ -38,6 +38,9 @@ set(LIBRARIES ${LIBRARIES}
 set(HEADERS ${PLATFORM_HEADERS}
     ${INCLUDE_DIR}/Keyboard.h
     ${INCLUDE_DIR}/Mouse.h
+    ${INCLUDE_DIR}/KeyboardActionControllerBase.hpp
+    ${INCLUDE_DIR}/MouseActionControllerBase.hpp
+    ${INCLUDE_DIR}/Input/HelpProvider.h
     ${INCLUDE_DIR}/Input/Controller.h
     ${INCLUDE_DIR}/Input/ControllersPool.h
     ${INCLUDE_DIR}/Input/State.h

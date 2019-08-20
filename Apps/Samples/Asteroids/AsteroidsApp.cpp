@@ -82,8 +82,9 @@ AsteroidsApp::AsteroidsApp()
     m_input_state.AddControllers({
         std::make_shared<gfx::AppCameraController>(m_view_camera, "VIEW CAMERA"),
         std::make_shared<gfx::AppCameraController>(m_light_camera, "LIGHT SOURCE",
-            gfx::AppCameraController::MouseActionByButton { { pal::Mouse::Button::Right, gfx::ActionCamera::MouseAction::Rotate   } },
-            gfx::AppCameraController::KeyboardActionByKey { { pal::Keyboard::Key::L,     gfx::ActionCamera::KeyboardAction::Reset } }),
+            gfx::AppCameraController::ActionByMouseButton   { { pal::Mouse::Button::Right, gfx::ActionCamera::MouseAction::Rotate   } },
+            gfx::AppCameraController::ActionByKeyboardState { { { pal::Keyboard::Key::L }, gfx::ActionCamera::KeyboardAction::Reset } },
+            gfx::AppCameraController::ActionByKeyboardKey   { }),
     });
 }
 
