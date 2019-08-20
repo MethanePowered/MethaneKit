@@ -125,6 +125,7 @@ public:
     // Keyboard action handlers
     void OnKeyPressed(KeyboardAction keyboard_action);
     void OnKeyReleased(KeyboardAction keyboard_action);
+    void DoKeyboardAction(KeyboardAction keyboard_action);
 
     static std::string GetActionName(MouseAction mouse_action);
     static std::string GetActionName(KeyboardAction keyboard_action);

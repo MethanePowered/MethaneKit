@@ -30,19 +30,25 @@ using namespace Methane;
 using namespace Methane::Platform;
 using namespace Methane::Platform::Input;
 
-AppHelpController::AppHelpController(AppBase& application, const std::string& application_help, Keyboard::Key help_key, bool show_command_line_help)
+AppHelpController::AppHelpController(AppBase& application, const std::string& application_help, bool show_command_line_help,
+                                     const ActionByKeyboardState& action_by_keyboard_state)
     : Input::Controller(application_help)
+    , Keyboard::ActionControllerBase<AppHelpAction>(action_by_keyboard_state, {})
     , m_application(application)
-    , m_help_key(help_key)
     , m_show_command_line_help(show_command_line_help)
 {
 }
 
-void AppHelpController::OnKeyboardChanged(Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Keyboard::StateChange&)
+void AppHelpController::OnKeyboardChanged(Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Keyboard::StateChange& state_change)
 {
-    if (key != m_help_key || key_state != Keyboard::KeyState::Released)
-        return;
+    Keyboard::ActionControllerBase<AppHelpAction>::OnKeyboardChanged(key, key_state, state_change);
+}
 
+void AppHelpController::OnKeyboardStateAction(AppHelpAction action)
+{
+    if (action != AppHelpAction::ShowHelp)
+        return;
+    
     std::stringstream help_stream;
     std::string single_offset = "    ";
     bool is_first_controller = true;
@@ -50,23 +56,23 @@ void AppHelpController::OnKeyboardChanged(Keyboard::Key key, Platform::Keyboard:
     {
         assert(!!sp_controller);
         if (!sp_controller) continue;
-
+        
         const HelpLines help_lines = sp_controller->GetHelp();
         if (help_lines.empty()) continue;
-
+        
         if (!is_first_controller)
         {
             help_stream << std::endl;
         }
         is_first_controller = false;
-
+        
         std::string controller_offset;
         if (!sp_controller->GetControllerName().empty())
         {
             help_stream << sp_controller->GetControllerName() << std::endl;
             controller_offset = single_offset;
         }
-
+        
         bool first_line = true;
         bool header_present = false;
         for (const KeyDescription& key_description : help_lines)
@@ -97,7 +103,7 @@ void AppHelpController::OnKeyboardChanged(Keyboard::Key key, Platform::Keyboard:
             first_line = false;
         }
     }
-
+    
     if (m_show_command_line_help)
     {
         const std::string cmd_line_help = m_application.GetCmdOptions().help();
@@ -111,7 +117,7 @@ void AppHelpController::OnKeyboardChanged(Keyboard::Key key, Platform::Keyboard:
             help_stream << std::endl << cmd_line_help;
         }
     }
-
+    
     m_application.Alert({
         AppBase::Message::Type::Information,
         "Application Help",
@@ -119,12 +125,17 @@ void AppHelpController::OnKeyboardChanged(Keyboard::Key key, Platform::Keyboard:
     });
 }
 
+std::string AppHelpController::GetKeyboardActionName(AppHelpAction action) const
+{
+    switch (action)
+    {
+        case AppHelpAction::None:      return "none";
+        case AppHelpAction::ShowHelp:  return "show application help";
+        default: assert(0);            return "";
+    }
+}
+
 IHelpProvider::HelpLines AppHelpController::GetHelp() const
 {
-    HelpLines help_lines;
-    help_lines.push_back({
-        Keyboard::KeyConverter(m_help_key).ToString(),
-        "Show application help"
-    });
-    return help_lines;
+    return GetKeyboardHelp();
 }

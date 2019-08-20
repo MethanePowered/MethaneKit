@@ -24,28 +24,45 @@ Help displaying controller.
 #pragma once
 
 #include <Methane/Platform/AppBase.h>
+#include <Methane/Platform/KeyboardActionControllerBase.hpp>
 
 namespace Methane
 {
 namespace Platform
 {
+    
+enum class AppHelpAction : uint32_t
+{
+    None = 0,
+    
+    ShowHelp,
+    
+    Count
+};
 
-class AppHelpController : public Input::Controller
+class AppHelpController final
+    : public Input::Controller
+    , public Platform::Keyboard::ActionControllerBase<AppHelpAction>
 {
 public:
-    AppHelpController(AppBase& application, const std::string& application_help,
-                      Keyboard::Key help_key = Platform::Keyboard::Key::F1,
-                      bool show_command_line_help = false);
-
+    inline static const ActionByKeyboardState default_action_by_keyboard_state = {
+        { { Platform::Keyboard::Key::F1 }, AppHelpAction::ShowHelp  },
+    };
+    
+    AppHelpController(AppBase& application, const std::string& application_help, bool show_command_line_help = false,
+                      const ActionByKeyboardState& action_by_keyboard_state = default_action_by_keyboard_state);
+    
     // Input::Controller implementation
-    void OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Platform::Keyboard::StateChange&) override;
-
-    // Input::IHelpProvider implementation
+    void OnKeyboardChanged(Platform::Keyboard::Key, Platform::Keyboard::KeyState, const Platform::Keyboard::StateChange& state_change) override;
     HelpLines GetHelp() const override;
 
 private:
+    // Keyboard::ActionControllerBase interface
+    void        OnKeyboardKeyAction(AppHelpAction, Platform::Keyboard::KeyState) override { }
+    void        OnKeyboardStateAction(AppHelpAction action) override;
+    std::string GetKeyboardActionName(AppHelpAction action) const override;
+    
     AppBase&            m_application;
-    const Keyboard::Key m_help_key;
     const bool          m_show_command_line_help;
 };
 

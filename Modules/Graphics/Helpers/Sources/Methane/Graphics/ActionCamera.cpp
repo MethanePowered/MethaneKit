@@ -147,10 +147,6 @@ void ActionCamera::OnKeyPressed(KeyboardAction keyboard_action)
         // Zoom
         case KeyboardAction::ZoomIn:        StartZoomAction(keyboard_action, 0.9f); break;
         case KeyboardAction::ZoomOut:       StartZoomAction(keyboard_action, 1.1f); break;
-        
-        // Other
-        case KeyboardAction::Reset:         ResetOrientaion(); break;
-        case KeyboardAction::ChangePivot:   SetPivot(m_pivot == Pivot::Aim ? Pivot::Eye : Pivot::Aim); break;
             
         default: return;
     }
@@ -159,6 +155,17 @@ void ActionCamera::OnKeyPressed(KeyboardAction keyboard_action)
 void ActionCamera::OnKeyReleased(KeyboardAction keyboard_action)
 {
     StopKeyboardAction(keyboard_action, m_keyboard_action_duration_sec);
+}
+
+void ActionCamera::DoKeyboardAction(KeyboardAction keyboard_action)
+{
+    switch(keyboard_action)
+    {
+        case KeyboardAction::Reset:         ResetOrientaion(); break;
+        case KeyboardAction::ChangePivot:   SetPivot(m_pivot == Pivot::Aim ? Pivot::Eye : Pivot::Aim); break;
+            
+        default: return;
+    }
 }
 
 Vector3f ActionCamera::GetNormalizedSphereProjection(const Point2i& mouse_screen_pos, bool is_primary) const

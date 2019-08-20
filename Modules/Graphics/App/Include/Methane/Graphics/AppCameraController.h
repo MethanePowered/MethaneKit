@@ -24,6 +24,8 @@ Action camera controller with keyboard and mouse interactions handling.
 #pragma once
 
 #include <Methane/Platform/Input/Controller.h>
+#include <Methane/Platform/KeyboardActionControllerBase.hpp>
+#include <Methane/Platform/MouseActionControllerBase.hpp>
 #include <Methane/Graphics/ActionCamera.h>
 
 namespace Methane
@@ -31,19 +33,19 @@ namespace Methane
 namespace Graphics
 {
 
-class AppCameraController : public Platform::Input::Controller
+class AppCameraController final
+    : public Platform::Input::Controller
+    , public Platform::Mouse::ActionControllerBase<ActionCamera::MouseAction>
+    , public Platform::Keyboard::ActionControllerBase<ActionCamera::KeyboardAction>
 {
 public:
-    using MouseActionByButton = std::map<Platform::Mouse::Button, ActionCamera::MouseAction>;
-    using KeyboardActionByKey = std::map<Platform::Keyboard::Key, ActionCamera::KeyboardAction>;
-
-    inline static const MouseActionByButton default_mouse_actions_by_button = {
+    inline static const ActionByMouseButton default_actions_by_mouse_button = {
         { Platform::Mouse::Button::Left,            ActionCamera::MouseAction::Rotate },
         { Platform::Mouse::Button::VScroll,         ActionCamera::MouseAction::Zoom   },
         { Platform::Mouse::Button::Middle,          ActionCamera::MouseAction::Move   },
     };
-
-    inline static const KeyboardActionByKey default_keyboard_actions_by_key = {
+    
+    inline static const ActionByKeyboardKey default_actions_by_keyboard_key = {
         // Move
         { Platform::Keyboard::Key::W,               ActionCamera::KeyboardAction::MoveForward },
         { Platform::Keyboard::Key::S,               ActionCamera::KeyboardAction::MoveBack    },
@@ -63,15 +65,18 @@ public:
         { Platform::Keyboard::Key::KeyPadSubtract,  ActionCamera::KeyboardAction::ZoomOut     },
         { Platform::Keyboard::Key::Equal,           ActionCamera::KeyboardAction::ZoomIn      },
         { Platform::Keyboard::Key::KeyPadEqual,     ActionCamera::KeyboardAction::ZoomIn      },
-        // Reset
-        { Platform::Keyboard::Key::R,               ActionCamera::KeyboardAction::Reset       },
-        // Change pivot
-        { Platform::Keyboard::Key::P,               ActionCamera::KeyboardAction::ChangePivot },
+    };
+
+    inline static const ActionByKeyboardState default_actions_by_keyboard_state = {
+        // Other
+        { { Platform::Keyboard::Key::R },           ActionCamera::KeyboardAction::Reset       },
+        { { Platform::Keyboard::Key::P },           ActionCamera::KeyboardAction::ChangePivot },
     };
 
     AppCameraController(ActionCamera& action_camera, const std::string& camera_name,
-                        const MouseActionByButton& mouse_actions_by_button = default_mouse_actions_by_button,
-                        const KeyboardActionByKey& keyboard_actions_by_key = default_keyboard_actions_by_key);
+                        const ActionByMouseButton&   mouse_actions_by_button   = default_actions_by_mouse_button,
+                        const ActionByKeyboardState& keyboard_actions_by_state = default_actions_by_keyboard_state,
+                        const ActionByKeyboardKey&   keyboard_actions_by_key   = default_actions_by_keyboard_key);
 
     // Platform::Input::Controller overrides
     void OnMouseButtonChanged(Platform::Mouse::Button button, Platform::Mouse::ButtonState button_state, const Platform::Mouse::StateChange& state_change) override;
@@ -80,13 +85,16 @@ public:
     void OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Platform::Keyboard::StateChange&) override;
     HelpLines GetHelp() const override;
 
-private:
-    ActionCamera::MouseAction GetMouseActionByButton(Platform::Mouse::Button mouse_button) const;
-    ActionCamera::KeyboardAction GetKeyboardActionByKey(Platform::Keyboard::Key key) const;
+protected:
+    // Keyboard::ActionControllerBase interface
+    void        OnKeyboardKeyAction(ActionCamera::KeyboardAction, Platform::Keyboard::KeyState) override;
+    void        OnKeyboardStateAction(ActionCamera::KeyboardAction action) override;
+    std::string GetKeyboardActionName(ActionCamera::KeyboardAction action) const override;
+    
+    // Mouse::ActionControllerBase interface
+    std::string GetMouseActionName(ActionCamera::MouseAction action) const override;
 
-    ActionCamera&             m_action_camera;
-    const MouseActionByButton m_mouse_actions_by_button;
-    const KeyboardActionByKey m_keyboard_actions_by_key;
+    ActionCamera& m_action_camera;
 };
 
 } // namespace Graphics
