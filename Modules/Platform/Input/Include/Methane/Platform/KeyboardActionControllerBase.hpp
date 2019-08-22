@@ -50,8 +50,7 @@ public:
     
     void OnKeyboardChanged(Key button, KeyState key_state, const StateChange& state_change)
     {
-        if (state_change.changed_properties != State::Property::KeyStates &&
-            state_change.changed_properties != State::Property::Modifiers)
+        if (state_change.changed_properties == State::Property::None)
             return;
         
         const auto action_by_keyboard_state_it = m_action_by_keyboard_state.find(state_change.current);

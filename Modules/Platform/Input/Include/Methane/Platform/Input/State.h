@@ -52,10 +52,12 @@ public:
     void OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state) override;
     void OnModifiersChanged(Keyboard::Modifier::Mask modifiers) override;
 
+    void ReleaseAllKeys();
+
 protected:
-    ControllersPool  m_controllers;
-    Keyboard::State  m_keyboard_state;
-    Mouse::State     m_mouse_state;
+    ControllersPool     m_controllers;
+    Mouse::State        m_mouse_state;
+    Keyboard::StateExt  m_keyboard_state;
 };
 
 } // namespace Input

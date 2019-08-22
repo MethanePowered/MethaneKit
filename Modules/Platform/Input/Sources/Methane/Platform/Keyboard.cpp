@@ -266,15 +266,16 @@ State::Property::Mask State::GetDiff(const State& other) const
     return properties_diff_mask;
 }
 
-void State::SetKey(Key key, KeyState state)
+KeyType State::SetKey(Key key, KeyState state)
 {
     if (key == Key::Unknown)
-        return;
+        return KeyType::Common;
 
     const Modifier::Value key_modifier = KeyConverter(key).GetModifierKey();
     if (key_modifier != Modifier::Value::None)
     {
         UpdateModifiersMask(key_modifier, state == KeyState::Pressed);
+        return KeyType::Common;
     }
     else
     {
@@ -284,6 +285,7 @@ void State::SetKey(Key key, KeyState state)
         {
             m_key_states[key_index] = state;
         }
+        return KeyType::Modifier;
     }
 }
 
@@ -307,6 +309,30 @@ Keys State::GetPressedKeys() const
         pressed_keys.insert(key);
     }
     return pressed_keys;
+}
+
+KeyType StateExt::SetKey(Key key, KeyState state)
+{
+    const KeyType key_type = State::SetKey(key, state);
+    if (key_type == KeyType::Modifier)
+    {
+        if (state == KeyState::Pressed)
+        {
+            m_pressed_modifier_keys.insert(key);
+        }
+        else
+        {
+            m_pressed_modifier_keys.erase(key);
+        }
+    }
+    return key_type;
+}
+
+Keys StateExt::GetAllPressedKeys() const
+{
+    Keys all_pressed_keys = GetPressedKeys();
+    all_pressed_keys.insert(m_pressed_modifier_keys.begin(), m_pressed_modifier_keys.end());
+    return all_pressed_keys;
 }
 
 std::string Modifier::ToString(Value modifier)

@@ -114,6 +114,12 @@ struct Modifier
     ~Modifier() = delete;
 };
 
+enum class KeyType
+{
+    Common = 0,
+    Modifier,
+};
+
 struct NativeKey;
 
 class KeyConverter
@@ -180,10 +186,10 @@ public:
     const  KeyState& operator[](Key key) const      { return m_key_states[static_cast<size_t>(key)]; }
     operator std::string() const                    { return ToString(); }
 
-    void  SetKey(Key key, KeyState state);
-    void  SetModifiersMask(Modifier::Mask mask)     { m_modifiers_mask = mask; }
-    void  PressKey(Key key)                         { SetKey(key, KeyState::Pressed); }
-    void  ReleaseKey(Key key)                       { SetKey(key, KeyState::Released); }
+    KeyType SetKey(Key key, KeyState state);
+    void    SetModifiersMask(Modifier::Mask mask)   { m_modifiers_mask = mask; }
+    void    PressKey(Key key)                       { SetKey(key, KeyState::Pressed); }
+    void    ReleaseKey(Key key)                     { SetKey(key, KeyState::Released); }
 
     Keys                GetPressedKeys() const;
     const KeyStates&    GetKeyStates() const        { return m_key_states; }
@@ -203,6 +209,22 @@ inline std::ostream& operator<<( std::ostream& os, State const& keyboard_state)
     os << keyboard_state.ToString();
     return os;
 }
+
+// State tracks only active modifiers, but not exactly modifier keys
+// This state extension tracks exactly what modifier keys are pressed
+class StateExt : public State
+{
+public:
+    using State::State;
+
+    KeyType SetKey(Key key, KeyState state);
+
+    const Keys& GetPressedModifierKeys() const { return m_pressed_modifier_keys; }
+    Keys        GetAllPressedKeys() const;
+
+private:
+    Keys m_pressed_modifier_keys;
+};
 
 struct StateChange
 {
