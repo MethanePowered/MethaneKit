@@ -95,3 +95,12 @@ void State::OnModifiersChanged(Keyboard::Modifier::Mask modifiers_mask)
     
     m_controllers.OnModifiersChanged(modifiers_mask, Keyboard::StateChange(m_keyboard_state, prev_keyboard_state, state_changes_mask));
 }
+
+void State::ReleaseAllKeys()
+{
+    Keyboard::Keys pressed_keys = m_keyboard_state.GetAllPressedKeys();
+    for (Keyboard::Key key : pressed_keys)
+    {
+        OnKeyboardChanged(key, Keyboard::KeyState::Released);
+    }
+}

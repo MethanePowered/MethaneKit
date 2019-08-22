@@ -396,6 +396,10 @@ void AppWin::ShowAlert(const Message& msg)
         ConvertMessageTypeToFlags(msg.type)
     );
 
+    // Message box interrupts message loop so that application looses all key release events
+    // We asssume that user has released all previously pressed keys and simulate these events
+    m_input_state.ReleaseAllKeys();
+
     if (msg.type == Message::Type::Error)
     {
         if (m_env.window_handle)
