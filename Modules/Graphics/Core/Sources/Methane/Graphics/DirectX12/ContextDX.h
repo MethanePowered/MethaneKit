@@ -82,7 +82,7 @@ protected:
     inline FrameFence&       GetCurrentFrameFence()                           { return m_frame_fences[m_frame_buffer_index]; }
     inline uint32_t          GetPresentVSyncInterval() const                  { return m_settings.vsync_enabled ? 1 : 0; }
     void                     SignalFence(const FrameFence& frame_fence, CommandQueueDX& dx_command_queue);
-    void                     WaitFence(FrameFence& frame_fence);
+    void                     WaitFence(FrameFence& frame_fence, bool increment_value);
 
     void            Initialize(const DeviceDX& device);
     CommandQueueDX& DefaultCommandQueueDX();

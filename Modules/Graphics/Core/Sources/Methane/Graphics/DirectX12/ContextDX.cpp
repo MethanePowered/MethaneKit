@@ -161,17 +161,17 @@ void ContextDX::WaitForGpu(WaitFor wait_for)
     {
     case WaitFor::ResourcesUploaded:
         SignalFence(m_upload_fence, static_cast<CommandQueueDX&>(GetUploadCommandQueue()));
-        WaitFence(m_upload_fence);
+        WaitFence(m_upload_fence, true);
         break;
 
     case WaitFor::FramePresented:
-        WaitFence(GetCurrentFrameFence());
+        WaitFence(GetCurrentFrameFence(), true);
         break;
 
     case WaitFor::RenderComplete:
         for (uint32_t frame_buffer_index = 0; frame_buffer_index < m_settings.frame_buffers_count; ++frame_buffer_index)
         {
-            WaitFence(m_frame_fences[frame_buffer_index]);
+            WaitFence(m_frame_fences[frame_buffer_index], false);
         }
         break;
     }
@@ -219,13 +219,13 @@ void ContextDX::Present()
 {
     ITT_FUNCTION_TASK();
 
-    // Schedule a signal command in the queue for a currently finished frame
-    SignalFence(GetCurrentFrameFence(), static_cast<CommandQueueDX&>(GetRenderCommandQueue()));
-
     // Preset frame to screen
     const uint32_t present_flags  = 0; // DXGI_PRESENT_DO_NOT_WAIT
     const uint32_t vsync_interval = GetPresentVSyncInterval();
     ThrowIfFailed(m_cp_swap_chain->Present(vsync_interval, present_flags));
+
+    // Schedule a signal command in the queue for a currently finished frame
+    SignalFence(GetCurrentFrameFence(), static_cast<CommandQueueDX&>(GetRenderCommandQueue()));
 
     OnPresentComplete();
 
@@ -242,7 +242,7 @@ void ContextDX::SignalFence(const FrameFence& frame_fence, CommandQueueDX& dx_co
     ThrowIfFailed(cp_command_queue->Signal(frame_fence.cp_fence.Get(), frame_fence.value));
 }
 
-void ContextDX::WaitFence(FrameFence& frame_fence)
+void ContextDX::WaitFence(FrameFence& frame_fence, bool increment_value)
 {
     assert(!!frame_fence.cp_fence);
     assert(!!m_fence_event);
@@ -255,7 +255,10 @@ void ContextDX::WaitFence(FrameFence& frame_fence)
     }
 
     // Set the fence value for the next frame
-    frame_fence.value++;
+    if (increment_value)
+    {
+        frame_fence.value++;
+    }
 }
 
 CommandQueueDX& ContextDX::DefaultCommandQueueDX()
