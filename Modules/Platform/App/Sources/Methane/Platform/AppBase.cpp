@@ -136,6 +136,13 @@ void AppBase::Alert(const Message& msg, bool deferred)
     m_sp_deferred_message.reset(new Message(msg));
 }
 
+void AppBase::ShowAlert(const Message&)
+{
+    // Message box interrupts message loop so that application looses all key release events
+    // We asssume that user has released all previously pressed keys and simulate these events
+    m_input_state.ReleaseAllKeys();
+}
+
 bool AppBase::HasError() const
 {
     return m_sp_deferred_message ? m_sp_deferred_message->type == Message::Type::Error : false;
