@@ -117,4 +117,6 @@ void AppMac::ShowAlert(const Message& msg)
     [m_ns_app_delegate alert: ConvertToNSType<std::string, NSString*>(msg.title)
              withInformation: ConvertToNSType<std::string, NSString*>(msg.information)
                     andStyle: ConvertMessageTypeToNSAlertStyle(msg.type)];
+
+    AppBase::ShowAlert(msg);
 }

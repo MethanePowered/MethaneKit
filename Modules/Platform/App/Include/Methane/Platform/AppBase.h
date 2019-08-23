@@ -99,6 +99,7 @@ protected:
     // AppBase interface
     virtual AppView GetView() const = 0;
     virtual void ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result);
+    virtual void ShowAlert(const Message& msg);
 
     Settings             m_settings;
     Data::FrameRect      m_window_bounds;
