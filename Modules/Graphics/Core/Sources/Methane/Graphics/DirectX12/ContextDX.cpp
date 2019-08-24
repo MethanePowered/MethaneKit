@@ -218,6 +218,7 @@ void ContextDX::Reset(Device& device)
 void ContextDX::Present()
 {
     ITT_FUNCTION_TASK();
+    assert(m_cp_swap_chain);
 
     // Preset frame to screen
     const uint32_t present_flags  = 0; // DXGI_PRESENT_DO_NOT_WAIT
