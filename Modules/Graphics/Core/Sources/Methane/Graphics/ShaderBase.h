@@ -24,6 +24,7 @@ Base implementation of the shader interface.
 #pragma once
 
 #include <Methane/Graphics/Shader.h>
+#include <Methane/Graphics/Context.h>
 
 #include "DescriptorHeap.h"
 
@@ -42,6 +43,7 @@ class ShaderBase
 public:
     class ResourceBindingBase
         : public ResourceBinding
+        , public Context::ICallback
         , public std::enable_shared_from_this<ResourceBindingBase>
     {
     public:
@@ -53,7 +55,8 @@ public:
         };
 
         ResourceBindingBase(ContextBase& context, const Settings& settings);
-        ResourceBindingBase(const ResourceBindingBase& other) = default;
+        ResourceBindingBase(const ResourceBindingBase& other);
+        ~ResourceBindingBase() override;
 
         // ResourceBinding interface
         Shader::Type         GetShaderType() const override     { return m_settings.shader_type; }

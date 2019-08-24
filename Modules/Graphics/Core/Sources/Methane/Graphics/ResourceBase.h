@@ -23,6 +23,7 @@ Base implementation of the resource interface.
 
 #pragma once
 
+#include <Methane/Graphics/Context.h>
 #include <Methane/Graphics/Resource.h>
 
 #include "ObjectBase.h"
@@ -36,6 +37,7 @@ namespace Graphics
 class ResourceBase
     : public virtual Resource
     , public ObjectBase
+    , public Context::ICallback
     , public std::enable_shared_from_this<ResourceBase>
 {
 public:

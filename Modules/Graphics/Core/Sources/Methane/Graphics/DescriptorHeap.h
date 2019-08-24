@@ -23,6 +23,7 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps
 
 #pragma once
 
+#include <Methane/Graphics/Context.h>
 #include <Methane/Data/RangeSet.hpp>
 
 #include <memory>
@@ -38,6 +39,7 @@ class ContextBase;
 class ResourceBase;
 
 class DescriptorHeap
+    : public Context::ICallback
 {
 public:
     enum class Type : uint32_t

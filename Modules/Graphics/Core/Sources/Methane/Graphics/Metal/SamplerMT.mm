@@ -142,6 +142,11 @@ void SamplerMT::SetName(const std::string& name)
     ResetSampletState();
 }
 
+void SamplerMT::OnContextReset(Device&)
+{
+    ITT_FUNCTION_TASK();
+}
+
 void SamplerMT::ResetSampletState()
 {
     ITT_FUNCTION_TASK();

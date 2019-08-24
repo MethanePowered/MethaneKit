@@ -22,6 +22,7 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps
 ******************************************************************************/
 
 #include "DescriptorHeap.h"
+#include "ContextBase.h"
 #include "ResourceBase.h"
 #include "Instrumentation.h"
 
@@ -41,6 +42,8 @@ DescriptorHeap::DescriptorHeap(ContextBase& context, const Settings& settings)
         m_resources.reserve(m_deferred_size);
         m_free_ranges.Add({ 0, m_deferred_size });
     }
+
+    m_context.AddCallback(*this);
 }
 
 DescriptorHeap::~DescriptorHeap()
@@ -49,6 +52,8 @@ DescriptorHeap::~DescriptorHeap()
     // All descriptor ranges must be released when heap is destroyed
     assert((!m_deferred_size && m_free_ranges.IsEmpty()) ||
              m_free_ranges == RangeSet({ { 0, m_deferred_size } }));
+
+    m_context.RemoveCallback(*this);
 }
 
 int32_t DescriptorHeap::AddResource(const ResourceBase& resource)

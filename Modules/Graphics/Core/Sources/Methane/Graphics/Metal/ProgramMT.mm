@@ -231,6 +231,11 @@ ProgramMT::~ProgramMT()
     [m_mtl_vertex_desc release];
 }
 
+void ProgramMT::OnContextReset(Device&)
+{
+    ITT_FUNCTION_TASK();
+}
+
 ContextMT& ProgramMT::GetContextMT() noexcept
 {
     ITT_FUNCTION_TASK();

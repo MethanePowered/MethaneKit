@@ -50,6 +50,9 @@ public:
     // DescriptorHeap interface
     void Allocate() override;
 
+    // Context::ICallback
+    void OnContextReset(Device& device) override;
+
 protected:
     ContextDX& GetContextDX();
 

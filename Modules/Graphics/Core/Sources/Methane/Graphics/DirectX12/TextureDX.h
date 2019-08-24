@@ -57,6 +57,9 @@ public:
         return m_settings.dimensions.GetPixelsCount() * GetPixelSize(m_settings.pixel_format);
     }
 
+    // Context::ICallback
+    void OnContextReset(Device&) override { }
+
 protected:
     void Initialize(ExtraArgs...);
 };
@@ -73,13 +76,16 @@ public:
     void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override;
     Data::Size GetDataSize() const override { return m_data_size; }
 
+    // Context::ICallback
+    void OnContextReset(Device&) override { }
+
 protected:
-    Data::Size                    m_data_size = 0;
+    Data::Size                  m_data_size = 0;
     wrl::ComPtr<ID3D12Resource> m_cp_upload_resource;
 };
 
 using RenderTargetTextureDX         = TextureDX<>;
-using FrameBufferTextureDX          = TextureDX<uint32_t /* frame_buffer_index */>;
+using FrameBufferTextureDX          = TextureDX<uint32_t /*frame_buffer_index*/>;
 using DepthStencilBufferTextureDX   = TextureDX<Depth /*depth_clear_value*/, Stencil /*stencil_clear_value*/>;
 using ImageTextureDX                = TextureDX<ImageTextureArg>;
 

@@ -24,6 +24,7 @@ Base implementation of the program interface.
 #pragma once
 
 #include <Methane/Graphics/Program.h>
+#include <Methane/Graphics/Context.h>
 
 #include "ShaderBase.h"
 #include "DescriptorHeap.h"
@@ -40,6 +41,7 @@ class CommandListBase;
 
 class ProgramBase
     : public Program
+    , public Context::ICallback
     , public std::enable_shared_from_this<ProgramBase>
 {
     friend class ShaderBase;

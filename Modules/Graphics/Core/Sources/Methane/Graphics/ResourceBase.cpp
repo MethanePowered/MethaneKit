@@ -100,6 +100,8 @@ ResourceBase::ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& conte
             usage_and_descriptor.second.index = usage_and_descriptor.second.heap.AddResource(*this);
         }
     }
+
+    m_context.AddCallback(*this);
 }
 
 ResourceBase::~ResourceBase()
@@ -113,6 +115,8 @@ ResourceBase::~ResourceBase()
             usage_and_descriptor.second.heap.RemoveResource(usage_and_descriptor.second.index);
         }
     }
+
+    m_context.RemoveCallback(*this);
 }
 
 void ResourceBase::InitializeDefaultDescriptors()

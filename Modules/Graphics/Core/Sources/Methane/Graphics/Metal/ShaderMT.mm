@@ -211,6 +211,11 @@ ShaderBase::ResourceBindings ShaderMT::GetResourceBindings(const std::set<std::s
     return resource_bindings;
 }
 
+void ShaderMT::ResourceBindingMT::OnContextReset(Device&)
+{
+    ITT_FUNCTION_TASK();
+}
+
 MTLVertexDescriptor* ShaderMT::GetNativeVertexDescriptor(const ProgramMT& program) const
 {
     ITT_FUNCTION_TASK();

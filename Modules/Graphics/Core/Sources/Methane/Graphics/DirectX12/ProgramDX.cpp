@@ -338,6 +338,12 @@ void ProgramDX::InitRootSignature()
     m_dx_root_signature->SetName(nowide::widen(m_name + " root signature").c_str());
 }
 
+void ProgramDX::OnContextReset(Device& device)
+{
+    ITT_FUNCTION_TASK();
+    device;
+}
+
 ContextDX& ProgramDX::GetContextDX() noexcept
 {
     ITT_FUNCTION_TASK();

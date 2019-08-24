@@ -47,6 +47,9 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
+    // Context::ICallback
+    void OnContextReset(Device& device) override;
+
     void UpdateFrameBuffer();
 
     const id<MTLTexture>& GetNativeTexture() const { return m_mtl_texture; }

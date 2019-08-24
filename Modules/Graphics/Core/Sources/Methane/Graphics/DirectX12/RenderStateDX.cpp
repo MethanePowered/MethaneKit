@@ -240,6 +240,12 @@ void RenderStateDX::SetName(const std::string& name)
     }
 }
 
+void RenderStateDX::OnContextReset(Device& device)
+{
+    ITT_FUNCTION_TASK();
+    device;
+}
+
 wrl::ComPtr<ID3D12PipelineState>& RenderStateDX::GetNativePipelineState()
 {
     ITT_FUNCTION_TASK();
