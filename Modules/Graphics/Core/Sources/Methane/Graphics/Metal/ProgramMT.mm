@@ -234,6 +234,7 @@ ProgramMT::~ProgramMT()
 void ProgramMT::OnContextReset(Device&)
 {
     ITT_FUNCTION_TASK();
+    assert(0); // TODO: to be implemented
 }
 
 ContextMT& ProgramMT::GetContextMT() noexcept

@@ -201,4 +201,6 @@ SamplerDX::SamplerDX(ContextBase& context, const Settings& settings, const Descr
 // Context::ICallback
 void SamplerDX::OnContextReset(Device&)
 {
+    ITT_FUNCTION_TASK();
+    assert(0); // TODO: to be implemented
 }

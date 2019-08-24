@@ -272,6 +272,7 @@ void RenderStateMT::SetName(const std::string& name)
 void RenderStateMT::OnContextReset(Device&)
 {
     ITT_FUNCTION_TASK();
+    assert(0); // TODO: to be implemented
 }
 
 id<MTLRenderPipelineState>& RenderStateMT::GetNativePipelineState()
