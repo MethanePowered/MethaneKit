@@ -54,6 +54,9 @@ public:
     ProgramMT(ContextBase& context, const Settings& settings);
     ~ProgramMT() override;
 
+    // Context::ICallback
+    void OnContextReset(Device& device) override;
+
     ShaderMT& GetShaderMT(Shader::Type shader_type) noexcept;
     
     id<MTLFunction> GetNativeShaderFunction(Shader::Type shader_type) noexcept;

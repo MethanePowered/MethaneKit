@@ -23,6 +23,7 @@ Base implementation of the shader interface.
 
 #include "ShaderBase.h"
 #include "ProgramBase.h"
+#include "ContextBase.h"
 #include "Instrumentation.h"
 
 #include <cassert>
@@ -47,6 +48,22 @@ ShaderBase::ResourceBindingBase::ResourceBindingBase(ContextBase& context, const
     , m_settings(settings)
 {
     ITT_FUNCTION_TASK();
+    m_context.AddCallback(*this);
+}
+
+ShaderBase::ResourceBindingBase::ResourceBindingBase(const ResourceBindingBase& other)
+    : m_context(other.m_context)
+    , m_settings(other.m_settings)
+    , m_sp_resource(other.m_sp_resource)
+{
+    ITT_FUNCTION_TASK();
+    m_context.AddCallback(*this);
+}
+
+ShaderBase::ResourceBindingBase::~ResourceBindingBase()
+{
+    ITT_FUNCTION_TASK();
+    m_context.RemoveCallback(*this);
 }
 
 void ShaderBase::ResourceBindingBase::SetResource(const Resource::Ptr& sp_resource)
