@@ -50,8 +50,10 @@ inline void ThrowIfFailed(HRESULT hr)
 {
     if (FAILED(hr))
     {
-        const std::string error_msg = std::system_category().message(hr);
-        throw std::runtime_error("Critical runtime error has occured:\n" + error_msg);
+        std::string error_msg = "Critical runtime error has occured: ";
+        error_msg += std::system_category().message(hr);
+        OutputDebugStringA((error_msg + "\n").c_str());
+        throw std::runtime_error(error_msg);
     }
 }
 
@@ -59,15 +61,16 @@ inline void ThrowIfFailed(HRESULT hr, wrl::ComPtr<ID3DBlob>& error_blob)
 {
     if (FAILED(hr))
     {
-        std::string error_msg = std::system_category().message(hr);
+        std::string error_msg = "Critical runtime error has occured: ";
+        error_msg += std::system_category().message(hr);
         if (error_blob.Get())
         {
             error_msg += "\nError details: ";
             error_msg += static_cast<char*>(error_blob->GetBufferPointer());
-            OutputDebugStringA(error_msg.c_str());
             error_blob->Release();
         }
-        throw std::runtime_error("Critical DirectX runtime error has occured:\n" + error_msg);
+        OutputDebugStringA((error_msg + "\n").c_str());
+        throw std::runtime_error(error_msg);
     }
 }
 
