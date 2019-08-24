@@ -41,6 +41,7 @@ if (WIN32)
         D3DX12
         d3d12
         dxgi
+        dxguid
         d3dcompiler
     )
 

@@ -26,6 +26,10 @@ DirectX 12 implementation of the device interface.
 #include <Methane/Graphics/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
+#ifdef _DEBUG
+#include <dxgidebug.h>
+#endif
+
 #include <nowide/convert.hpp>
 #include <algorithm>
 #include <cassert>
@@ -117,7 +121,17 @@ SystemDX::SystemDX()
 SystemDX::~SystemDX()
 {
     ITT_FUNCTION_TASK();
+
     UnregisterAdapterChangeEvent();
+
+#ifdef _DEBUG
+    wrl::ComPtr<IDXGIDebug1> dxgi_debug;
+    if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgi_debug))))
+    {
+        assert(!!dxgi_debug);
+        dxgi_debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_SUMMARY | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
+    }
+#endif
 }
 
 void SystemDX::Initialize()
