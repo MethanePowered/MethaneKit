@@ -67,16 +67,14 @@ void ContextDX::Initialize(const DeviceDX& device)
 
     // Initialize swap-chain
 
-    DXGI_SWAP_CHAIN_DESC swap_chain_desc = {};
-    swap_chain_desc.BufferCount          = m_settings.frame_buffers_count;
-    swap_chain_desc.BufferDesc.Width     = m_settings.frame_size.width;
-    swap_chain_desc.BufferDesc.Height    = m_settings.frame_size.height;
-    swap_chain_desc.BufferDesc.Format    = TypeConverterDX::DataFormatToDXGI(m_settings.color_format);
-    swap_chain_desc.BufferUsage          = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swap_chain_desc.SwapEffect           = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-    swap_chain_desc.OutputWindow         = m_platform_env.window_handle;
-    swap_chain_desc.SampleDesc.Count     = 1;
-    swap_chain_desc.Windowed             = TRUE;
+    DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
+    swap_chain_desc.Width                 = m_settings.frame_size.width;
+    swap_chain_desc.Height                = m_settings.frame_size.height;
+    swap_chain_desc.Format                = TypeConverterDX::DataFormatToDXGI(m_settings.color_format);
+    swap_chain_desc.BufferCount           = m_settings.frame_buffers_count;
+    swap_chain_desc.BufferUsage           = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swap_chain_desc.SwapEffect            = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    swap_chain_desc.SampleDesc.Count      = 1;
 
     const wrl::ComPtr<IDXGIFactory4>& cp_dxgi_factory = SystemDX::Get().GetNativeFactory();
     assert(!!cp_dxgi_factory);
@@ -84,8 +82,8 @@ void ContextDX::Initialize(const DeviceDX& device)
     wrl::ComPtr<ID3D12CommandQueue>& cp_command_queue = DefaultCommandQueueDX().GetNativeCommandQueue();
     assert(!!cp_command_queue);
 
-    wrl::ComPtr<IDXGISwapChain>  cp_swap_chain;
-    ThrowIfFailed(cp_dxgi_factory->CreateSwapChain(cp_command_queue.Get(), &swap_chain_desc, &cp_swap_chain));
+    wrl::ComPtr<IDXGISwapChain1>  cp_swap_chain;
+    ThrowIfFailed(cp_dxgi_factory->CreateSwapChainForHwnd(cp_command_queue.Get(), m_platform_env.window_handle, &swap_chain_desc, NULL, NULL, &cp_swap_chain));
     assert(!!cp_swap_chain);
 
     ThrowIfFailed(cp_swap_chain.As(&m_cp_swap_chain));
