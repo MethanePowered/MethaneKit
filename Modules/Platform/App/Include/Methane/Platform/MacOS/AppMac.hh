@@ -59,12 +59,13 @@ public:
     int Run(const RunArgs& args) override;
     void Alert(const Message& msg, bool deferred = false) override;
     void SetWindowTitle(const std::string& title_text) override;
-  
+
     void SetWindow(NSWindowType* ns_window);
     NSWindowType* GetWindow() { return m_ns_window; }
 
 protected:
-    void ShowAlert(const Message& msg);
+    // AppBase interface
+    void ShowAlert(const Message& msg) override;
 
     NSApplicationType*  m_ns_app;
     AppDelegateType*    m_ns_app_delegate;
