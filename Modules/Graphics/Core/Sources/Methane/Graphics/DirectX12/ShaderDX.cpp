@@ -242,10 +242,10 @@ DescriptorHeap::Type ShaderDX::ResourceBindingDX::GetDescriptorHeapType() const
     return (m_settings_dx.input_type == D3D_SIT_SAMPLER)? DescriptorHeap::Type::Samplers : DescriptorHeap::Type::ShaderResources;
 }
 
-void ShaderDX::ResourceBindingDX::OnContextReset(Device& device)
+void ShaderDX::ResourceBindingDX::OnContextReset(Device&)
 {
     ITT_FUNCTION_TASK();
-    device;
+    assert(0); // TODO: to be implemented
 }
 
 void ShaderDX::ResourceBindingDX::SetDescriptorRange(const DescriptorRange& descriptor_range)

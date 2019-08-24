@@ -119,6 +119,7 @@ Data::Size TextureMT::GetDataSize() const
 void TextureMT::OnContextReset(Device&)
 {
     ITT_FUNCTION_TASK();
+    assert(0); // TODO: to be implemented
 }
 
 void TextureMT::UpdateFrameBuffer()

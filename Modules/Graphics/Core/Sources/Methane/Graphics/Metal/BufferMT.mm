@@ -132,6 +132,7 @@ uint32_t BufferMT::GetFormattedItemsCount() const
 void BufferMT::OnContextReset(Device&)
 {
     ITT_FUNCTION_TASK();
+    assert(0); // TODO: to be implemented
 }
 
 MTLIndexType BufferMT::GetNativeIndexType() const noexcept
