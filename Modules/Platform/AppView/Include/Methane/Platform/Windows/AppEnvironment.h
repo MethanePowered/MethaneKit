@@ -33,7 +33,6 @@ namespace Platform
 struct AppEnvironment
 {
     HWND window_handle = nullptr;
-    bool use_warp_device = false;
 };
 
 } // namespace Platform

@@ -42,19 +42,26 @@ Device::Feature::Mask DeviceDX::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdap
     return supported_featues;
 }
 
-std::string GetAdapterName(const wrl::ComPtr<IDXGIAdapter>& cp_adapter)
+std::string GetAdapterName(IDXGIAdapter& adapter)
 {
     ITT_FUNCTION_TASK();
-    assert(!!cp_adapter);
 
-    DXGI_ADAPTER_DESC desc;
-    cp_adapter->GetDesc(&desc);
-
+    DXGI_ADAPTER_DESC desc = {};
+    adapter.GetDesc(&desc);
     return nowide::narrow(desc.Description);
 }
 
+bool IsSoftwareAdapter(IDXGIAdapter1& adapter)
+{
+    DXGI_ADAPTER_DESC1 desc = {};
+    adapter.GetDesc1(&desc);
+    return desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE;
+}
+
 DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level)
-    : DeviceBase(::GetAdapterName(cp_adapter), GetSupportedFeatures(cp_adapter, feature_level))
+    : DeviceBase(::GetAdapterName(*cp_adapter.Get()),
+                 ::IsSoftwareAdapter(static_cast<IDXGIAdapter1&>(*cp_adapter.Get())),
+                 GetSupportedFeatures(cp_adapter, feature_level))
     , m_cp_adapter(cp_adapter)
     , m_feature_level(feature_level)
 {
@@ -140,12 +147,9 @@ const Devices& SystemDX::UpdateGpuDevices(Device::Feature::Mask supported_featur
         if (!p_adapter)
             continue;
 
-        DXGI_ADAPTER_DESC1 desc;
-        p_adapter->GetDesc1(&desc);
-
         // Don't select the Basic Render Driver adapter.
         // If you want a software adapter, pass in "/warp" on the command line.
-        if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
+        if (::IsSoftwareAdapter(*p_adapter))
             continue;
 
         AddDevice(p_adapter, dx_feature_level);

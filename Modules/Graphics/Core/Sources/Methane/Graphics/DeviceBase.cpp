@@ -62,9 +62,9 @@ std::string Device::Feature::ToString(Mask features) noexcept
     return ss.str();
 }
 
-DeviceBase::DeviceBase(const std::string& adapter_name,
-                       Feature::Mask      supported_features)
+DeviceBase::DeviceBase(const std::string& adapter_name, bool is_software_adapter, Feature::Mask supported_features)
     : m_adapter_name(adapter_name)
+    , m_is_software_adapter(is_software_adapter)
     , m_supported_features(supported_features)
 {
     ITT_FUNCTION_TASK();
@@ -102,6 +102,16 @@ Device::Ptr SystemBase::GetNextGpuDevice(const Device& device) const
         return sp_next_device;
     
     return device_it == m_devices.end() - 1 ? m_devices.front() : *(device_it + 1);
+}
+
+Device::Ptr SystemBase::GetSoftwareGpuDevice() const
+{
+    ITT_FUNCTION_TASK();
+    auto sw_device_it = std::find_if(m_devices.begin(), m_devices.end(),
+        [](const Device::Ptr& sp_system_device)
+        { return sp_system_device && sp_system_device->IsSoftwareAdapter(); });
+
+    return sw_device_it != m_devices.end() ? *sw_device_it : Device::Ptr();
 }
 
 std::string SystemBase::ToString() const noexcept

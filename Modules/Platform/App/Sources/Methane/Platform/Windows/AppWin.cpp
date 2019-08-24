@@ -51,18 +51,11 @@ UINT ConvertMessageTypeToFlags(AppBase::Message::Type msg_type)
 AppWin::AppWin(const AppBase::Settings& settings)
     : AppBase(settings)
 {
-    m_cmd_options.add_options()
-        ("warp", "Render via DirectX WARP device");
 }
 
 void AppWin::ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result)
 {
     AppBase::ParseCommandLine(cmd_parse_result);
-
-    if (cmd_parse_result.count("warp"))
-    {
-        m_env.use_warp_device = cmd_parse_result["warp"].as<bool>();
-    }
 }
 
 int AppWin::Run(const RunArgs& args)
