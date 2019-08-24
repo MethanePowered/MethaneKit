@@ -199,18 +199,16 @@ void ContextDX::Reset(Device& device)
     if (m_sp_device && std::addressof(*m_sp_device) == std::addressof(device))
         return;
 
-    WaitForGpu(WaitFor::RenderComplete);
+    if (m_sp_device)
+    {
+        WaitForGpu(WaitFor::RenderComplete);
+        static_cast<DeviceDX&>(*m_sp_device).ReleaseNativeDevice();
+    }
 
-    Device::Ptr sp_old_device = m_sp_device;
     ContextBase::ResetInternal(static_cast<DeviceBase&>(device));
 
     SafeRelease(m_cp_swap_chain);
     Initialize(static_cast<DeviceDX&>(device));
-
-    if (sp_old_device)
-    {
-        static_cast<DeviceDX&>(*sp_old_device).ReleaseNativeDevice();
-    }
 
     ContextBase::Reset(device);
 }

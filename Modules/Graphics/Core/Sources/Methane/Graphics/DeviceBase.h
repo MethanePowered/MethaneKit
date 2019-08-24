@@ -40,11 +40,11 @@ class DeviceBase
 public:
     using Ptr = std::shared_ptr<DeviceBase>;
     
-    DeviceBase(const std::string& adapter_name,
-               Feature::Mask supported_features);
+    DeviceBase(const std::string& adapter_name, bool is_software_adapter, Feature::Mask supported_features);
 
     // Device interface
     const std::string&  GetAdapterName() const noexcept override                               { return m_adapter_name; }
+    bool                IsSoftwareAdapter() const noexcept override                            { return m_is_software_adapter; }
     Feature::Mask       GetSupportedFeatures() const noexcept override                         { return m_supported_features; }
     void                SetNotificationCallback(const NotificationCallback& callback) override { m_notification_callback = callback; }
     void                Notify(Notification notification) override;
@@ -54,6 +54,7 @@ public:
 
 protected:
     const std::string    m_adapter_name;
+    const bool           m_is_software_adapter;
     const Feature::Mask  m_supported_features;
     NotificationCallback m_notification_callback;
 };
@@ -64,6 +65,7 @@ public:
     const Devices&        GetGpuDevices() const override            { return m_devices; }
     Device::Feature::Mask GetGpuSupportedFeatures() const override  { return m_supported_features; }
     Device::Ptr           GetNextGpuDevice(const Device& device) const override;
+    Device::Ptr           GetSoftwareGpuDevice() const override;
     std::string           ToString() const noexcept override;
     
 protected:

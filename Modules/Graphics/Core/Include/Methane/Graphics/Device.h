@@ -70,6 +70,7 @@ struct Device : virtual Object
     };
 
     virtual const std::string& GetAdapterName() const noexcept = 0;
+    virtual bool               IsSoftwareAdapter() const noexcept = 0;
     virtual Feature::Mask      GetSupportedFeatures() const noexcept = 0;
     virtual void               SetNotificationCallback(const NotificationCallback& callback) = 0;
     virtual void               Notify(Notification notification) = 0;
@@ -85,6 +86,7 @@ struct System
     virtual const Devices&        UpdateGpuDevices(Device::Feature::Mask supported_features = Device::Feature::Value::All) = 0;
     virtual const Devices&        GetGpuDevices() const = 0;
     virtual Device::Ptr           GetNextGpuDevice(const Device& device) const = 0;
+    virtual Device::Ptr           GetSoftwareGpuDevice() const = 0;
     virtual Device::Feature::Mask GetGpuSupportedFeatures() const = 0;
     virtual std::string           ToString() const noexcept = 0;
     
