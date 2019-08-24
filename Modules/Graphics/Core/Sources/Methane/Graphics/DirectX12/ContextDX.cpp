@@ -101,15 +101,13 @@ void ContextDX::Initialize(const DeviceDX& device)
     uint32_t frame_index = 0;
     for (FrameFence& frame_fence : m_frame_fences)
     {
-        if (frame_fence.cp_fence)
-        {
-            SafeRelease(frame_fence.cp_fence);
-        }
+        SafeRelease(frame_fence.cp_fence);
         frame_fence.value = 0;
         frame_fence.frame = frame_index++;
         ThrowIfFailed(cp_device->CreateFence(frame_fence.value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&frame_fence.cp_fence)));
     }
 
+    SafeRelease(m_upload_fence.cp_fence);
     ThrowIfFailed(cp_device->CreateFence(m_upload_fence.value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_upload_fence.cp_fence)));
 
     if (m_fence_event)
@@ -197,15 +195,17 @@ void ContextDX::Reset(Device& device)
     if (m_sp_device && std::addressof(*m_sp_device) == std::addressof(device))
         return;
 
+    WaitForGpu(WaitFor::RenderComplete);
+
+    SafeRelease(m_cp_swap_chain);
+
     if (m_sp_device)
     {
-        WaitForGpu(WaitFor::RenderComplete);
         static_cast<DeviceDX&>(*m_sp_device).ReleaseNativeDevice();
     }
 
     ContextBase::ResetInternal(static_cast<DeviceBase&>(device));
 
-    SafeRelease(m_cp_swap_chain);
     Initialize(static_cast<DeviceDX&>(device));
 
     ContextBase::Reset(device);

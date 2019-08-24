@@ -26,7 +26,7 @@ DirectX 12 implementation of the device interface.
 #include <Methane/Graphics/DeviceBase.h>
 
 #include <wrl.h>
-#include <dxgi1_4.h>
+#include <dxgi1_6.h>
 #include <d3d12.h>
 #include <d3dx12.h>
 
@@ -48,6 +48,7 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
+    const wrl::ComPtr<IDXGIAdapter>& GetNativeAdapter() const { return m_cp_adapter; }
     const wrl::ComPtr<ID3D12Device>& GetNativeDevice() const;
     void ReleaseNativeDevice();
 
@@ -64,15 +65,22 @@ public:
 
     SystemDX();
     ~SystemDX() override;
-    
+
+    // System interface
+    void           CheckForChanges() override;
     const Devices& UpdateGpuDevices(Device::Feature::Mask supported_features) override;
 
-    const wrl::ComPtr<IDXGIFactory4>& GetNativeFactory() { return m_cp_factory; }
+    const wrl::ComPtr<IDXGIFactory6>& GetNativeFactory() { return m_cp_factory; }
     
 private:
+    void Initialize();
+    void RegisterAdapterChangeEvent();
+    void UnregisterAdapterChangeEvent();
     void AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
 
-    wrl::ComPtr<IDXGIFactory4> m_cp_factory;
+    wrl::ComPtr<IDXGIFactory6> m_cp_factory;
+    HANDLE                     m_adapter_change_event = NULL;
+    DWORD                      m_adapter_change_registration_cookie = 0;
 };
 
 } // namespace Graphics

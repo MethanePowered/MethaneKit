@@ -231,6 +231,7 @@ public:
     
     void Update() override
     {
+        System::Get().CheckForChanges();
         m_animations.Update();
     }
 

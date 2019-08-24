@@ -51,6 +51,7 @@ class SystemMT final : public SystemBase
 public:
     ~SystemMT() override;
     
+    void           CheckForChanges() override {}
     const Devices& UpdateGpuDevices(Device::Feature::Mask supported_features) override;
     
 private:

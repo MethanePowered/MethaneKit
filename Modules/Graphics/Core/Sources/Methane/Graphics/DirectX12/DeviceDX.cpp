@@ -111,6 +111,18 @@ System& System::Get()
 SystemDX::SystemDX()
 {
     ITT_FUNCTION_TASK();
+    Initialize();
+}
+
+SystemDX::~SystemDX()
+{
+    ITT_FUNCTION_TASK();
+    UnregisterAdapterChangeEvent();
+}
+
+void SystemDX::Initialize()
+{
+    ITT_FUNCTION_TASK();
     UINT dxgi_factory_flags = 0;
 
 #ifdef _DEBUG
@@ -121,14 +133,78 @@ SystemDX::SystemDX()
         cp_debug_controller->EnableDebugLayer();
         dxgi_factory_flags |= DXGI_CREATE_FACTORY_DEBUG;
     }
- #endif
+#endif
 
     ThrowIfFailed(CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&m_cp_factory)));
+    assert(!!m_cp_factory);
+
+    RegisterAdapterChangeEvent();
 }
 
-SystemDX::~SystemDX()
+void SystemDX::RegisterAdapterChangeEvent()
 {
     ITT_FUNCTION_TASK();
+
+    wrl::ComPtr<IDXGIFactory7> cp_factory7;
+    if (!SUCCEEDED(m_cp_factory->QueryInterface(IID_PPV_ARGS(&cp_factory7))))
+        return;
+
+    m_adapter_change_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+    if (m_adapter_change_event == nullptr)
+    {
+        ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+    }
+
+    ThrowIfFailed(cp_factory7->RegisterAdaptersChangedEvent(m_adapter_change_event, &m_adapter_change_registration_cookie));
+}
+
+void SystemDX::UnregisterAdapterChangeEvent()
+{
+    ITT_FUNCTION_TASK();
+
+    wrl::ComPtr<IDXGIFactory7> cp_factory7;
+    if (m_adapter_change_registration_cookie == 0 ||
+        !SUCCEEDED(m_cp_factory->QueryInterface(IID_PPV_ARGS(&cp_factory7))))
+        return;
+
+    ThrowIfFailed(cp_factory7->UnregisterAdaptersChangedEvent(m_adapter_change_registration_cookie));
+    m_adapter_change_registration_cookie = 0;
+
+    CloseHandle(m_adapter_change_event);
+    m_adapter_change_event = NULL;
+}
+
+void SystemDX::CheckForChanges()
+{
+    ITT_FUNCTION_TASK();
+    const bool adapters_changed = m_adapter_change_event ? WaitForSingleObject(m_adapter_change_event, 0) == WAIT_OBJECT_0
+                                                         : !m_cp_factory->IsCurrent();
+
+    if (!adapters_changed)
+        return;
+
+    UnregisterAdapterChangeEvent();
+    Initialize();
+
+    Devices prev_devices = m_devices;
+    UpdateGpuDevices(m_supported_features);
+
+    for (const Device::Ptr& sp_prev_device : prev_devices)
+    {
+        assert(!!sp_prev_device);
+        DeviceDX& prev_device = static_cast<DeviceDX&>(*sp_prev_device);
+        auto device_it = std::find_if(m_devices.begin(), m_devices.end(),
+                                      [prev_device](const Device::Ptr& sp_device)
+                                      {
+                                          DeviceDX& device = static_cast<DeviceDX&>(*sp_device);
+                                          return prev_device.GetNativeAdapter().GetAddressOf() == device.GetNativeAdapter().GetAddressOf();
+                                      });
+
+        if (device_it == m_devices.end())
+        {
+            prev_device.Notify(Device::Notification::Removed);
+        }
+    }
 }
 
 const Devices& SystemDX::UpdateGpuDevices(Device::Feature::Mask supported_features)

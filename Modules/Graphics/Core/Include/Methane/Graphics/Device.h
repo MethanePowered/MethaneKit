@@ -83,6 +83,7 @@ struct System
 {
     static System& Get();
 
+    virtual void                  CheckForChanges() = 0;
     virtual const Devices&        UpdateGpuDevices(Device::Feature::Mask supported_features = Device::Feature::Value::All) = 0;
     virtual const Devices&        GetGpuDevices() const = 0;
     virtual Device::Ptr           GetNextGpuDevice(const Device& device) const = 0;
