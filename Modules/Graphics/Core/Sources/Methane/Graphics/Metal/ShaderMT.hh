@@ -61,6 +61,9 @@ public:
         // ResourceBindingBase interface
         DescriptorHeap::Type GetDescriptorHeapType() const override;
         
+        // Context::ICallback
+        void OnContextReset(Device&) override { }
+        
         const Settings& GetSettings() const noexcept { return m_settings; }
         
     protected:
@@ -72,9 +75,6 @@ public:
     
     // ShaderBase interface
     ResourceBindings GetResourceBindings(const std::set<std::string>& constant_argument_names) const override;
-
-    // Context::ICallback
-    void OnContextReset(Device& device) override;
     
     id<MTLFunction>& GetNativeFunction() noexcept                           { return m_mtl_function; }
     MTLVertexDescriptor* GetNativeVertexDescriptor(const ProgramMT& program) const;
