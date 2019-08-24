@@ -28,6 +28,7 @@ Windows platform graphics helpers.
 
 #include <string>
 #include <stdexcept>
+#include <system_error>
 
 namespace Methane
 {
@@ -49,7 +50,8 @@ inline void ThrowIfFailed(HRESULT hr)
 {
     if (FAILED(hr))
     {
-        throw std::runtime_error("Unknown DirectX runtime error has occured.");
+        const std::string error_msg = std::system_category().message(hr);
+        throw std::runtime_error("Critical runtime error has occured:\n" + error_msg);
     }
 }
 
@@ -57,18 +59,15 @@ inline void ThrowIfFailed(HRESULT hr, wrl::ComPtr<ID3DBlob>& error_blob)
 {
     if (FAILED(hr))
     {
-        std::string error_msg;
+        std::string error_msg = std::system_category().message(hr);
         if (error_blob.Get())
         {
-            error_msg = static_cast<char*>(error_blob->GetBufferPointer());
+            error_msg += "\nError details: ";
+            error_msg += static_cast<char*>(error_blob->GetBufferPointer());
             OutputDebugStringA(error_msg.c_str());
             error_blob->Release();
         }
-        else
-        {
-            error_msg = "Unknown DirectX runtime error has occured.";
-        }
-        throw std::runtime_error(error_msg);
+        throw std::runtime_error("Critical DirectX runtime error has occured:\n" + error_msg);
     }
 }
 
