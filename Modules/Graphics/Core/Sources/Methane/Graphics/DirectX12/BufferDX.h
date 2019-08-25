@@ -66,9 +66,6 @@ public:
     // Buffer interface
     uint32_t GetFormattedItemsCount() const override { return m_formatted_items_count; }
 
-    // Context::ICallback
-    void OnContextReset(Device&) override { }
-
     const TViewNative& GetNativeView() const { return m_buffer_view; }
 
 protected:

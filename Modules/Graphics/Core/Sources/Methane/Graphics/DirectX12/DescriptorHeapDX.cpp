@@ -106,12 +106,6 @@ void DescriptorHeapDX::Allocate()
     DescriptorHeap::Allocate();
 }
 
-void DescriptorHeapDX::OnContextReset(Device&)
-{
-    ITT_FUNCTION_TASK();
-    assert(0); // TODO: to be implemented
-}
-
 ContextDX& DescriptorHeapDX::GetContextDX()
 {
     ITT_FUNCTION_TASK();

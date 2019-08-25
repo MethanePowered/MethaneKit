@@ -42,9 +42,6 @@ public:
 
     // Object interface
     void SetName(const std::string& name) override;
-
-    // Context::ICallback
-    void OnContextReset(Device& device) override;
     
     const id<MTLSamplerState>& GetNativeSamplerState() const noexcept { return m_mtl_sampler_state; }
 

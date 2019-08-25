@@ -116,12 +116,6 @@ Data::Size TextureMT::GetDataSize() const
     throw std::logic_error("Getting of texture data size is not implemented.");
 }
 
-void TextureMT::OnContextReset(Device&)
-{
-    ITT_FUNCTION_TASK();
-    assert(0); // TODO: to be implemented
-}
-
 void TextureMT::UpdateFrameBuffer()
 {
     ITT_FUNCTION_TASK();

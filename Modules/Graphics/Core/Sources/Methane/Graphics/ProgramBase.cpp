@@ -291,13 +291,11 @@ ProgramBase::ProgramBase(ContextBase& context, const Settings& settings)
     , m_shader_types(CreateShaderTypes(settings.shaders))
 {
     ITT_FUNCTION_TASK();
-    m_context.AddCallback(*this);
 }
 
 ProgramBase::~ProgramBase()
 {
     ITT_FUNCTION_TASK();
-    m_context.RemoveCallback(*this);
 
     for (auto& heap_type_and_desc_range : m_constant_descriptor_range_by_heap_type)
     {

@@ -49,9 +49,6 @@ public:
 
     // Object interface
     void SetName(const std::string& name) override;
-
-    // Context::ICallback
-    void OnContextReset(Device& device) override;
     
     const id<MTLBuffer>& GetNativeBuffer() const noexcept { return m_mtl_buffer; }
     MTLIndexType         GetNativeIndexType() const noexcept;
