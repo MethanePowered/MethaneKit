@@ -71,6 +71,30 @@ ContextMT::~ContextMT()
     [m_app_view release];
 }
 
+void ContextMT::Release()
+{
+    ITT_FUNCTION_TASK();
+    
+    m_app_view.redrawing = NO;
+    
+    // FIXME: semaphore release causes a crash
+    // https://stackoverflow.com/questions/8287621/why-does-this-code-cause-exc-bad-instruction
+    //dispatch_release(m_dispatch_semaphore);
+    
+    ContextBase::Release();
+}
+
+void ContextMT::Initialize(Device& device)
+{
+    ITT_FUNCTION_TASK();
+    
+    m_dispatch_semaphore = dispatch_semaphore_create(m_settings.frame_buffers_count);
+    
+    ContextBase::Initialize(device);
+    
+    m_app_view.redrawing = YES;
+}
+
 bool ContextMT::ReadyToRender() const
 {
     ITT_FUNCTION_TASK();

@@ -61,9 +61,6 @@ public:
         // ResourceBindingBase interface
         DescriptorHeap::Type GetDescriptorHeapType() const override;
         
-        // Context::ICallback
-        void OnContextReset(Device&) override { }
-        
         const Settings& GetSettings() const noexcept { return m_settings; }
         
     protected:
