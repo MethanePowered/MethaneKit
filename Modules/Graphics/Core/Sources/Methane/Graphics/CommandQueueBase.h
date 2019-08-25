@@ -26,7 +26,6 @@ Base implementation of the command queue interface.
 #include "ObjectBase.h"
 #include "CommandListBase.h"
 
-#include <Methane/Graphics/Context.h>
 #include <Methane/Graphics/CommandQueue.h>
 
 #include <list>
@@ -45,7 +44,6 @@ class ContextBase;
 class CommandQueueBase
     : public ObjectBase
     , public CommandQueue
-    , public Context::ICallback
     , public std::enable_shared_from_this<CommandQueueBase>
 {
     friend class CommandListBase;

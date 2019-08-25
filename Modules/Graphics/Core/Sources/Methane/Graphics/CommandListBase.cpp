@@ -49,12 +49,6 @@ CommandListBase::CommandListBase(CommandQueueBase& command_queue)
     : m_sp_command_queue(command_queue.GetPtr())
 {
     ITT_FUNCTION_TASK();
-    command_queue.GetContext().AddCallback(*this);
-}
-
-CommandListBase::~CommandListBase()
-{
-    GetCommandQueueBase().GetContext().RemoveCallback(*this);
 }
 
 void CommandListBase::Commit(bool /*present_drawable*/)
