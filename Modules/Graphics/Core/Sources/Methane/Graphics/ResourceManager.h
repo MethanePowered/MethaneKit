@@ -52,7 +52,7 @@ public:
     ResourceManager(ContextBase& context);
     ~ResourceManager() = default;
 
-    void Initialize(const Settings& settings = Settings());
+    void Initialize(const Settings& settings);
     void CompleteInitialization();
     void Release();
 
