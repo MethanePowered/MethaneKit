@@ -61,6 +61,9 @@ public:
     virtual void Update() override;
     virtual void Render() override;
 
+    // Context::Callback interface
+    void OnContextReleased() override;
+
 private:
     struct Vertex
     {

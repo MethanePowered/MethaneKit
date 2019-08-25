@@ -60,22 +60,21 @@ void ContextBase::Resize(const FrameSize& frame_size)
 
 void ContextBase::Reset(Device& device)
 {
-    m_sp_device = static_cast<DeviceBase&>(device).GetPtr();
-    for(const ICallback::Ref& callback_ref : m_callbacks)
-    {
-        callback_ref.get().OnContextReset(device);
-    }
+    ITT_FUNCTION_TASK();
+    WaitForGpu(WaitFor::RenderComplete);
+    Release();
+    Initialize(device);
 }
 
-void ContextBase::AddCallback(ICallback& callback)
+void ContextBase::AddCallback(Callback& callback)
 {
     m_callbacks.push_back(callback);
 }
 
-void ContextBase::RemoveCallback(ICallback& callback)
+void ContextBase::RemoveCallback(Callback& callback)
 {
     const auto callback_it = std::find_if(m_callbacks.begin(), m_callbacks.end(),
-                                          [&callback](const ICallback::Ref& callback_ref)
+                                          [&callback](const Callback::Ref& callback_ref)
                                           { return std::addressof(callback_ref.get()) == std::addressof(callback); });
     assert(callback_it != m_callbacks.end());
     if (callback_it == m_callbacks.end())
@@ -88,6 +87,37 @@ void ContextBase::OnPresentComplete()
 {
     ITT_FUNCTION_TASK();
     m_fps_counter.OnFramePresented();
+}
+
+void ContextBase::Release()
+{
+    ITT_FUNCTION_TASK();
+
+    m_sp_render_cmd_queue.reset();
+    m_sp_upload_cmd_queue.reset();
+    m_sp_upload_cmd_list.reset();
+
+    for (const Callback::Ref& callback_ref : m_callbacks)
+    {
+        callback_ref.get().OnContextReleased();
+    }
+
+    m_resource_manager.Release();
+}
+
+void ContextBase::Initialize(Device& device)
+{
+    ITT_FUNCTION_TASK();
+
+    m_sp_device = static_cast<DeviceBase&>(device).GetPtr();
+    m_sp_device->SetName(GetName() + " Device");
+
+    m_resource_manager.Initialize();
+
+    for (const Callback::Ref& callback_ref : m_callbacks)
+    {
+        callback_ref.get().OnContextInitialized();
+    }
 }
 
 CommandQueue& ContextBase::GetRenderCommandQueue()
@@ -152,6 +182,13 @@ bool ContextBase::SetVSyncEnabled(bool vsync_enabled)
 
     m_settings.vsync_enabled = vsync_enabled;
     return true;
+}
+
+void ContextBase::SetName(const std::string& name)
+{
+    ITT_FUNCTION_TASK();
+    ObjectBase::SetName(name);
+    GetDevice().SetName(name + " Device");
 }
 
 void ContextBase::UploadResources()

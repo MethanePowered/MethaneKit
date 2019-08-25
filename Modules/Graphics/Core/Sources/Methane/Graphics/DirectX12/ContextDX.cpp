@@ -48,20 +48,33 @@ ContextDX::ContextDX(const Platform::AppEnvironment& env, const Data::Provider& 
     , m_platform_env(env)
 {
     ITT_FUNCTION_TASK();
-
-    Initialize(GetDeviceDX());
-
-    m_resource_manager.Initialize({ true });
+    Initialize(device);
 }
 
 ContextDX::~ContextDX()
 {
     ITT_FUNCTION_TASK();
-
-    CloseHandle(m_fence_event);
+    SafeCloseHandle(m_fence_event);
 }
 
-void ContextDX::Initialize(const DeviceDX& device)
+void ContextDX::Release()
+{
+    ITT_FUNCTION_TASK();
+
+    SafeRelease(m_cp_swap_chain);
+    SafeRelease(m_upload_fence.cp_fence);
+    SafeCloseHandle(m_fence_event);
+    m_frame_fences.clear();
+
+    if (m_sp_device)
+    {
+        static_cast<DeviceDX&>(*m_sp_device).ReleaseNativeDevice();
+    }
+
+    ContextBase::Release();
+}
+
+void ContextDX::Initialize(Device& device)
 {
     ITT_FUNCTION_TASK();
 
@@ -95,31 +108,26 @@ void ContextDX::Initialize(const DeviceDX& device)
     m_frame_buffer_index = m_cp_swap_chain->GetCurrentBackBufferIndex();
     m_frame_fences.resize(m_settings.frame_buffers_count);
 
-    const wrl::ComPtr<ID3D12Device>& cp_device = device.GetNativeDevice();
+    const wrl::ComPtr<ID3D12Device>& cp_device = static_cast<DeviceDX&>(device).GetNativeDevice();
     assert(!!cp_device);
 
     uint32_t frame_index = 0;
     for (FrameFence& frame_fence : m_frame_fences)
     {
-        SafeRelease(frame_fence.cp_fence);
         frame_fence.value = 0;
         frame_fence.frame = frame_index++;
         ThrowIfFailed(cp_device->CreateFence(frame_fence.value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&frame_fence.cp_fence)));
     }
 
-    SafeRelease(m_upload_fence.cp_fence);
     ThrowIfFailed(cp_device->CreateFence(m_upload_fence.value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_upload_fence.cp_fence)));
-
-    if (m_fence_event)
-    {
-        CloseHandle(m_fence_event);
-    }
 
     m_fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
     if (!m_fence_event)
     {
         ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
     }
+
+    ContextBase::Initialize(device);
 }
 
 void ContextDX::OnCommandQueueCompleted(CommandQueue& /*cmd_queue*/, uint32_t /*frame_index*/)
@@ -187,28 +195,6 @@ void ContextDX::Resize(const FrameSize& frame_size)
     ThrowIfFailed(m_cp_swap_chain->ResizeBuffers(m_settings.frame_buffers_count, frame_size.width, frame_size.height, desc.Format, desc.Flags));
 
     ContextBase::Resize(frame_size);
-}
-
-void ContextDX::Reset(Device& device)
-{
-    ITT_FUNCTION_TASK();
-    if (m_sp_device && std::addressof(*m_sp_device) == std::addressof(device))
-        return;
-
-    WaitForGpu(WaitFor::RenderComplete);
-
-    SafeRelease(m_cp_swap_chain);
-
-    if (m_sp_device)
-    {
-        static_cast<DeviceDX&>(*m_sp_device).ReleaseNativeDevice();
-    }
-
-    ContextBase::ResetInternal(static_cast<DeviceBase&>(device));
-
-    Initialize(static_cast<DeviceDX&>(device));
-
-    ContextBase::Reset(device);
 }
 
 void ContextDX::Present()

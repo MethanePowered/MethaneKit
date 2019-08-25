@@ -55,6 +55,9 @@ public:
     virtual bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
     virtual void Render() override;
 
+    // Context::Callback interface
+    void OnContextReleased() override;
+
 private:
     struct Vertex
     {

@@ -59,7 +59,9 @@ struct AppFrame
 };
 
 template<typename FrameT>
-class App : public Platform::App
+class App
+    : public Platform::App
+    , public Context::Callback
 {
     static_assert(std::is_base_of<AppFrame, FrameT>::value, "Application Frame type must be derived from AppFrame.");
 
@@ -82,7 +84,7 @@ public:
         m_cmd_options.add_options()
             ("d,hud", "Show/hide HUD in window title", cxxopts::value<int>())
             ("v,vsync", "Enable/disable vertical synchronization", cxxopts::value<int>())
-            ("x,adapter", "Render at adapter index, use -1 for software adapter", cxxopts::value<int>())
+            ("i,device", "Render at adapter index, use -1 for software adapter", cxxopts::value<int>())
             ("f,framebuffers", "Frame buffers count in swap-chain", cxxopts::value<uint32_t>());
 
         m_input_state.AddControllers({ std::make_shared<Platform::AppHelpController>(*this, help_description) });
@@ -93,6 +95,7 @@ public:
         // WARNING: Don't forget to make the following call in the derived Application class
         // Wait for GPU rendering is completed to release resources
         // m_sp_context->WaitForGpu(Context::WaitFor::RenderComplete);
+        m_sp_context->RemoveCallback(*this);
     }
 
     // Platform::App interface
@@ -101,10 +104,10 @@ public:
         const Devices& devices = System::Get().UpdateGpuDevices();
         assert(!devices.empty());
 
-        Device::Ptr sp_device = m_render_at_adapter_index < 0
+        Device::Ptr sp_device = m_default_device_index < 0
                       ? System::Get().GetSoftwareGpuDevice()
-                      : (static_cast<size_t>(m_render_at_adapter_index) < devices.size()
-                           ? devices[m_render_at_adapter_index]
+                      : (static_cast<size_t>(m_default_device_index) < devices.size()
+                           ? devices[m_default_device_index]
                            : devices.front());
         assert(sp_device);
         
@@ -112,6 +115,7 @@ public:
         m_initial_context_settings.frame_size = frame_size;
         m_sp_context = Context::Create(env, AppDataProvider::Get(), *sp_device, m_initial_context_settings);
         m_sp_context->SetName("Main Graphics Context");
+        m_sp_context->AddCallback(*this);
 
         m_input_state.AddControllers({ std::make_shared<AppContextController>(*m_sp_context) });
     }
@@ -266,6 +270,19 @@ public:
         m_title_update_timer.Reset();
     }
 
+    // Context::Callback interface
+    void OnContextReleased() override
+    {
+        m_frames.clear();
+        m_sp_depth_texture.reset();
+    }
+
+    // Context::Callback interface
+    void OnContextInitialized() override
+    {
+        Init();
+    }
+
     void SetShowHudInWindowTitle(bool show_hud_in_window_title) { m_show_hud_in_window_title = show_hud_in_window_title; }
     bool GetShowHudInWindowTitle() const                        { return m_show_hud_in_window_title; }
 
@@ -290,9 +307,9 @@ protected:
         {
             m_initial_context_settings.vsync_enabled = cmd_parse_result["vsync"].as<int>() != 0;
         }
-        if (cmd_parse_result.count("adapter"))
+        if (cmd_parse_result.count("device"))
         {
-            m_render_at_adapter_index = cmd_parse_result["adapter"].as<int>();
+            m_default_device_index = cmd_parse_result["device"].as<int>();
         }
         if (cmd_parse_result.count("framebuffers"))
         {
@@ -324,7 +341,7 @@ protected:
 
 private:
     Context::Settings               m_initial_context_settings;
-    int32_t                         m_render_at_adapter_index = 0;
+    int32_t                         m_default_device_index = 0;
     const RenderPass::Access::Mask  m_screen_pass_access;
     bool                            m_show_hud_in_window_title;
     Data::Timer                     m_title_update_timer;

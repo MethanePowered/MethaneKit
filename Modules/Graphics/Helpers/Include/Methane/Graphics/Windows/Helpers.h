@@ -46,6 +46,15 @@ inline void SafeRelease(wrl::ComPtr<T>& cp_object)
     cp_object = nullptr; // Release of T is called automatically by ComPtr
 }
 
+inline void SafeCloseHandle(HANDLE& handle)
+{
+    if (!handle)
+        return;
+
+    CloseHandle(handle);
+    handle = nullptr;
+}
+
 inline void ThrowIfFailed(HRESULT hr)
 {
     if (FAILED(hr))

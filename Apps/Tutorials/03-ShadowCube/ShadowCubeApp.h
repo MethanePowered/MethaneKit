@@ -71,6 +71,9 @@ public:
     virtual void Update() override;
     virtual void Render() override;
 
+    // Context::Callback interface
+    void OnContextReleased() override;
+
 private:
     struct Vertex
     {
@@ -115,6 +118,7 @@ private:
 
         template<typename VType>
         void Init(const gfx::BaseMesh<VType>& mesh_data, gfx::Context& context, const std::string& base_name);
+        void Release();
     };
 
     struct RenderPass
@@ -123,6 +127,8 @@ private:
         gfx::RenderState::Ptr   sp_state;
         std::string             command_group_name;
         bool                    is_final_pass = false;
+
+        void Release();
     };
 
     void RenderScene(const RenderPass& render_pass, ShadowCubeFrame::PassResources& render_pass_data, gfx::Texture& shadow_texture, bool is_shadow_rendering);

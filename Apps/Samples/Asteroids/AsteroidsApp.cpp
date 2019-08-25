@@ -323,6 +323,18 @@ void AsteroidsApp::MeshBuffers::Init(const gfx::BaseMesh<VType>& mesh_data, gfx:
     sp_index->SetData(reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetIndices().data()), floor_index_data_size);
 }
 
+void AsteroidsApp::MeshBuffers::Release()
+{
+    sp_index.reset();
+    sp_vertex.reset();
+}
+
+void AsteroidsApp::RenderPass::Release()
+{
+    sp_state.reset();
+    sp_program.reset();
+}
+
 bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 {
     if (!m_initialized || GetInitialContextSettings().frame_size == frame_size)
@@ -480,6 +492,22 @@ void AsteroidsApp::RenderScene(const RenderPass& render_pass, AsteroidsFrame::Pa
     cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_floor_buffers.sp_index, 1);
 
     cmd_list.Commit(render_pass.is_final_pass);
+}
+
+void AsteroidsApp::OnContextReleased()
+{
+    m_final_pass.Release();
+    m_shadow_pass.Release();
+    m_floor_buffers.Release();
+    m_cube_buffers.Release();
+
+    m_sp_shadow_sampler.reset();
+    m_sp_texture_sampler.reset();
+    m_sp_floor_texture.reset();
+    m_sp_cube_texture.reset();
+    m_sp_const_buffer.reset();
+
+    GraphicsApp::OnContextReleased();
 }
 
 int main(int argc, const char* argv[])

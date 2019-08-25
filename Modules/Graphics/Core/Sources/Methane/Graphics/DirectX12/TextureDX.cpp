@@ -121,7 +121,9 @@ void FrameBufferTextureDX::Initialize(uint32_t frame_buffer_index)
         throw std::runtime_error("Frame BufferBase texture supports only Render Target usage.");
     }
 
-    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateRenderTargetView(m_cp_resource.Get(), nullptr, GetNativeCPUDescriptorHandle(Usage::RenderTarget));
+    assert(!!m_cp_resource);
+    const D3D12_CPU_DESCRIPTOR_HANDLE descriptor_handle = GetNativeCPUDescriptorHandle(Usage::RenderTarget);
+    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateRenderTargetView(m_cp_resource.Get(), nullptr, descriptor_handle);
 }
 
 template<>

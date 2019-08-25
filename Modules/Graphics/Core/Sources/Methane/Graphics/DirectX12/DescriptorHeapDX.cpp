@@ -68,6 +68,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeCPUDescriptorHandle(uint3
 {
     ITT_FUNCTION_TASK();
     assert(!!m_cp_descriptor_heap);
+    assert(descriptor_index < m_allocated_size);
     return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_cp_descriptor_heap->GetCPUDescriptorHandleForHeapStart(), descriptor_index, m_descriptor_size);
 }
 
