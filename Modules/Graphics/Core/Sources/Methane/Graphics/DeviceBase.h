@@ -67,7 +67,7 @@ public:
     Device::Ptr           GetNextGpuDevice(const Device& device) const override;
     Device::Ptr           GetSoftwareGpuDevice() const override;
     std::string           ToString() const noexcept override;
-    
+
 protected:
     Device::Feature::Mask m_supported_features = Device::Feature::Value::All;
     Devices               m_devices;

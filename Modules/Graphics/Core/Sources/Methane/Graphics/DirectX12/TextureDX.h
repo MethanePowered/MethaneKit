@@ -26,6 +26,7 @@ DirectX 12 implementation of the texture interface.
 #include <Methane/Graphics/TextureBase.h>
 #include <Methane/Graphics/CommandListBase.h>
 #include <Methane/Graphics/Windows/Helpers.h>
+#include <Methane/Graphics/Instrumentation.h>
 
 #include <d3dx12.h>
 #include <cassert>
@@ -42,18 +43,26 @@ public:
     TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraArgs... extra_args)
         : TextureBase(context, settings, descriptor_by_usage)
     {
+        ITT_FUNCTION_TASK();
         InitializeDefaultDescriptors();
         Initialize(extra_args...);
+    }
+
+    ~TextureDX() override
+    {
+        ITT_FUNCTION_TASK();
     }
 
     // Resource interface
     void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override
     {
+        ITT_FUNCTION_TASK();
         throw std::logic_error("Setting texture data is allowed for image textures only.");
     }
 
     Data::Size GetDataSize() const override
     {
+        ITT_FUNCTION_TASK();
         return m_settings.dimensions.GetPixelsCount() * GetPixelSize(m_settings.pixel_format);
     }
 
@@ -74,7 +83,7 @@ public:
     Data::Size GetDataSize() const override { return m_data_size; }
 
 protected:
-    Data::Size                    m_data_size = 0;
+    Data::Size                  m_data_size = 0;
     wrl::ComPtr<ID3D12Resource> m_cp_upload_resource;
 };
 

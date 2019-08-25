@@ -22,6 +22,7 @@ Base implementation of the context interface.
 ******************************************************************************/
 
 #include "ContextBase.h"
+#include "DeviceBase.h"
 #include "Instrumentation.h"
 
 #include <cassert>
