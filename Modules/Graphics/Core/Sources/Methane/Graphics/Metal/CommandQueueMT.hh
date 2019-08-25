@@ -43,9 +43,6 @@ public:
 
     // Object interface
     void SetName(const std::string& name) override;
-
-    // Context::ICallback
-    void OnContextReset(Device& device) override;
     
     ContextMT& GetContextMT() noexcept;
     

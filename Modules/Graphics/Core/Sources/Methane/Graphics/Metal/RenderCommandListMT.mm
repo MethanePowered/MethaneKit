@@ -112,12 +112,6 @@ void RenderCommandListMT::SetName(const std::string& name)
     }
 }
 
-void RenderCommandListMT::OnContextReset(Device&)
-{
-    ITT_FUNCTION_TASK();
-    assert(0); // TODO: to be implemented
-}
-
 void RenderCommandListMT::PushDebugGroup(const std::string& name)
 {
     ITT_FUNCTION_TASK();

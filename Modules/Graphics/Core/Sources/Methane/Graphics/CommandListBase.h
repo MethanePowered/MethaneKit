@@ -26,7 +26,6 @@ Base implementation of the command list interface.
 #include "ObjectBase.h"
 #include "ResourceBase.h"
 
-#include <Methane/Graphics/Context.h>
 #include <Methane/Graphics/CommandList.h>
 #include <Methane/Graphics/CommandQueue.h>
 
@@ -43,7 +42,6 @@ class CommandQueueBase;
 class CommandListBase
     : public ObjectBase
     , public virtual CommandList
-    , public Context::ICallback
     , public std::enable_shared_from_this<CommandListBase>
 {
     friend class CommandQueueBase;
@@ -60,7 +58,6 @@ public:
     };
 
     CommandListBase(CommandQueueBase& command_queue);
-    ~CommandListBase() override;
 
     // CommandList interface
     void SetResourceBindings(const Program::ResourceBindings& resource_bindings) override;
