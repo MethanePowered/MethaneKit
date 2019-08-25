@@ -24,7 +24,6 @@ Base implementation of the render state interface.
 #pragma once
 
 #include <Methane/Graphics/RenderState.h>
-#include <Methane/Graphics/Context.h>
 
 #include "ObjectBase.h"
 
@@ -39,12 +38,10 @@ class RenderCommandListBase;
 class RenderStateBase
     : public ObjectBase
     , public RenderState
-    , public Context::ICallback
     , public std::enable_shared_from_this<RenderStateBase>
 {
 public:
     RenderStateBase(ContextBase& context, const Settings& settings);
-    ~RenderStateBase() override;
 
     // RenderState interface
     const Settings& GetSettings() const override                 { return m_settings; }

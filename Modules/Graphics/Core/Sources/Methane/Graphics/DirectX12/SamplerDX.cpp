@@ -197,10 +197,3 @@ SamplerDX::SamplerDX(ContextBase& context, const Settings& settings, const Descr
 
     GetContextDX().GetDeviceDX().GetNativeDevice()->CreateSampler(&dx_sampler_desc, GetNativeCPUDescriptorHandle(Usage::ShaderRead));
 }
-
-// Context::ICallback
-void SamplerDX::OnContextReset(Device&)
-{
-    ITT_FUNCTION_TASK();
-    assert(0); // TODO: to be implemented
-}

@@ -57,9 +57,6 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-    // Context::ICallback
-    void OnContextReset(Device& device) override;
-
     wrl::ComPtr<ID3D12PipelineState>& GetNativePipelineState();
 
 protected:

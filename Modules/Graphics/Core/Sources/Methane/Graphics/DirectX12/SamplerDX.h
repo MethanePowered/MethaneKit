@@ -42,9 +42,6 @@ class SamplerDX final : public SamplerBase
 public:
     SamplerDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
-    // Context::ICallback
-    void OnContextReset(Device& device) override;
-
 protected:
     // NOTE: SamplerBase descriptor is stored in heap
 };

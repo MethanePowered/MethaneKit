@@ -66,9 +66,6 @@ public:
 
     ProgramDX(ContextBase& context, const Settings& settings);
 
-    // Context::ICallback
-    void OnContextReset(Device& device) override;
-
     ShaderDX& GetVertexShaderDX() noexcept;
     ShaderDX& GetPixelShaderDX() noexcept;
 

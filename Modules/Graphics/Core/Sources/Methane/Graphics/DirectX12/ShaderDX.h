@@ -76,9 +76,6 @@ public:
         const DescriptorRange& GetDescriptorRange() const noexcept      { return m_descriptor_range; }
         DescriptorHeap::Type   GetDescriptorHeapType() const;
 
-        // Context::ICallback
-        void OnContextReset(Device& device) override;
-
         void SetDescriptorRange(const DescriptorRange& descriptor_range);
         void SetDescriptorHeapReservation(const DescriptorHeap::Reservation* p_descriptor_heap_reservation) 
         { m_p_descriptor_heap_reservation = p_descriptor_heap_reservation; }

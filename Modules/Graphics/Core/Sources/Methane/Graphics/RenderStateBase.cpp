@@ -22,7 +22,6 @@ Base implementation of the render state interface.
 ******************************************************************************/
 
 #include "RenderStateBase.h"
-#include "ContextBase.h"
 #include "Instrumentation.h"
 
 using namespace Methane::Graphics;
@@ -34,13 +33,6 @@ RenderStateBase::RenderStateBase(ContextBase& context, const Settings& settings)
     , m_settings(settings)
 {
     ITT_FUNCTION_TASK();
-    m_context.AddCallback(*this);
-}
-
-RenderStateBase::~RenderStateBase()
-{
-    ITT_FUNCTION_TASK();
-    m_context.RemoveCallback(*this);
 }
 
 void RenderStateBase::Reset(const Settings& settings)

@@ -52,10 +52,7 @@ public:
 
     // Object interface
     void SetName(const std::string& name) override;
-
-    // Context::ICallback
-    void OnContextReset(Device& device) override;
-
+    
     id<MTLRenderPipelineState>& GetNativePipelineState();
     id<MTLDepthStencilState>&   GetNativeDepthState();
     MTLCullMode                 GetNativeCullMode() const noexcept         { return m_mtl_cull_mode; }

@@ -37,9 +37,6 @@ class DescriptorHeapMT : public DescriptorHeap
 public:
     DescriptorHeapMT(ContextBase& context, const Settings& settings);
     ~DescriptorHeapMT() override;
-
-    // Context::ICallback
-    void OnContextReset(Device&) override { }
 };
 
 } // namespace Graphics
