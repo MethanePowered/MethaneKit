@@ -86,6 +86,21 @@ void ResourceManager::CompleteInitialization()
     m_deferred_resource_bindings.clear();
 }
 
+void ResourceManager::Release()
+{
+    ITT_FUNCTION_TASK();
+
+    if (m_sp_release_pool)
+    {
+        m_sp_release_pool->ReleaseResources();
+    }
+
+    for (DescriptorHeaps& desc_heaps : m_descriptor_heap_types)
+    {
+        desc_heaps.clear();
+    }
+}
+
 void ResourceManager::DeferResourceBindingsInitialization(Program::ResourceBindings& resource_bindings)
 {
     ITT_FUNCTION_TASK();

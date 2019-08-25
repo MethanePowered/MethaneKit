@@ -52,8 +52,9 @@ public:
     ResourceManager(ContextBase& context);
     ~ResourceManager() = default;
 
-    void Initialize(const Settings& settings);
+    void Initialize(const Settings& settings = Settings());
     void CompleteInitialization();
+    void Release();
 
     bool DeferredHeapAllocationEnabled() const { return m_deferred_heap_allocation; }
     void DeferResourceBindingsInitialization(Program::ResourceBindings& resource_bindings);

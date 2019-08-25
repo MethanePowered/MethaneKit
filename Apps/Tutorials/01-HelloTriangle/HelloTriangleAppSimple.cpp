@@ -131,6 +131,14 @@ public:
 
         GraphicsApp::Render();
     }
+
+    void OnContextReleased() override
+    {
+        m_sp_vertex_buffer.reset();
+        m_sp_state.reset();
+
+        GraphicsApp::OnContextReleased();
+    }
 };
 
 int main(int argc, const char* argv[])

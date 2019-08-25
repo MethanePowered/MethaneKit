@@ -164,6 +164,15 @@ void HelloTriangleApp::Render()
     GraphicsApp::Render();
 }
 
+void HelloTriangleApp::OnContextReleased()
+{
+    m_sp_vertex_buffer.reset();
+    m_sp_state.reset();
+    m_sp_program.reset();
+
+    GraphicsApp::OnContextReleased();
+}
+
 int main(int argc, const char* argv[])
 {
     return HelloTriangleApp().Run({ argc, argv });

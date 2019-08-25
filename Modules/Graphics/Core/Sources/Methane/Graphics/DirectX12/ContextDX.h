@@ -55,7 +55,6 @@ public:
     bool ReadyToRender() const override { return true; }
     void WaitForGpu(WaitFor wait_for) override;
     void Resize(const FrameSize& frame_size) override;
-    void Reset(Device& device) override;
     void Present() override;
     Platform::AppView GetAppView() const override { return { nullptr }; }
 
@@ -84,7 +83,10 @@ protected:
     void                     SignalFence(const FrameFence& frame_fence, CommandQueueDX& dx_command_queue);
     void                     WaitFence(FrameFence& frame_fence, bool increment_value);
 
-    void            Initialize(const DeviceDX& device);
+    // ContextBase overrides
+    void Release() override;
+    void Initialize(Device& device) override;
+
     CommandQueueDX& DefaultCommandQueueDX();
 
     const Platform::AppEnvironment m_platform_env;

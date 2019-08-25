@@ -257,6 +257,19 @@ void TexturedCubeApp::Render()
     GraphicsApp::Render();
 }
 
+void TexturedCubeApp::OnContextReleased()
+{
+    m_sp_texture_sampler.reset();
+    m_sp_cube_texture.reset();
+    m_sp_const_buffer.reset();
+    m_sp_index_buffer.reset();
+    m_sp_vertex_buffer.reset();
+    m_sp_state.reset();
+    m_sp_program.reset();
+
+    GraphicsApp::OnContextReleased();
+}
+
 int main(int argc, const char* argv[])
 {
     return TexturedCubeApp().Run({ argc, argv });

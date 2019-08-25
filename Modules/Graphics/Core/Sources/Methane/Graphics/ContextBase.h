@@ -56,8 +56,8 @@ public:
     void                  WaitForGpu(WaitFor wait_for) override;
     void                  Resize(const FrameSize& frame_size) override;
     void                  Reset(Device& device) override;
-    void                  AddCallback(ICallback& callback) override;
-    void                  RemoveCallback(ICallback& callback) override;
+    void                  AddCallback(Callback& callback) override;
+    void                  RemoveCallback(Callback& callback) override;
     CommandQueue&         GetRenderCommandQueue() override;
     CommandQueue&         GetUploadCommandQueue() override;
     RenderCommandList&    GetUploadCommandList() override;
@@ -71,17 +71,22 @@ public:
     // ContextBase interface
     virtual void OnCommandQueueCompleted(CommandQueue& cmd_queue, uint32_t frame_index) = 0;
 
+    // Object interface
+    void SetName(const std::string& name) override;
+
     ResourceManager&  GetResourceManager() { return m_resource_manager; }
 
     DeviceBase& GetDeviceBase();
     const DeviceBase& GetDeviceBase() const;
 
 protected:
-    void ResetInternal(DeviceBase& device);
     void UploadResources();
     void OnPresentComplete();
     
-    using Callbacks = std::vector<ICallback::Ref>;
+    virtual void Release();
+    virtual void Initialize(Device& device);
+
+    using Callbacks = std::vector<Callback::Ref>;
 
     const Data::Provider&  m_data_provider;
     DeviceBase::Ptr        m_sp_device;

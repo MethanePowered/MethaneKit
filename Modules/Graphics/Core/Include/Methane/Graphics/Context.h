@@ -67,13 +67,14 @@ struct Context : virtual Object
         ResourcesUploaded
     };
     
-    struct ICallback
+    struct Callback
     {
-        using Ref = std::reference_wrapper<ICallback>;
+        using Ref = std::reference_wrapper<Callback>;
         
-        virtual void OnContextReset(Device& device) = 0;
+        virtual void OnContextReleased() = 0;
+        virtual void OnContextInitialized() = 0;
         
-        virtual ~ICallback() = default;
+        virtual ~Callback() = default;
     };
 
     // Create Context instance
@@ -87,8 +88,8 @@ struct Context : virtual Object
     virtual void Reset(Device& device) = 0;
     virtual void Present() = 0;
     
-    virtual void AddCallback(ICallback& callback) = 0;
-    virtual void RemoveCallback(ICallback& callback) = 0;
+    virtual void AddCallback(Callback& callback) = 0;
+    virtual void RemoveCallback(Callback& callback) = 0;
 
     virtual Platform::AppView     GetAppView() const = 0;
     virtual const Data::Provider& GetDataProvider() const = 0;
