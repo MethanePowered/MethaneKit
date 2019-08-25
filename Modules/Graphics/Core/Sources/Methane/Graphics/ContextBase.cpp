@@ -110,9 +110,14 @@ void ContextBase::Initialize(Device& device)
     ITT_FUNCTION_TASK();
 
     m_sp_device = static_cast<DeviceBase&>(device).GetPtr();
-    m_sp_device->SetName(GetName() + " Device");
+    
+    const std::string& context_name = GetName();
+    if (!context_name.empty())
+    {
+        m_sp_device->SetName(context_name + " Device");
+    }
 
-    m_resource_manager.Initialize();
+    m_resource_manager.Initialize({ true });
 
     for (const Callback::Ref& callback_ref : m_callbacks)
     {
