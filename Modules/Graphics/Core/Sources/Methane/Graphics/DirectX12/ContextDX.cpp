@@ -72,6 +72,8 @@ void ContextDX::Release()
     }
 
     ContextBase::Release();
+
+    static_cast<SystemDX&>(System::Get()).ReportLiveObjects();
 }
 
 void ContextDX::Initialize(Device& device)

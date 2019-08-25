@@ -71,7 +71,8 @@ public:
     const Devices& UpdateGpuDevices(Device::Feature::Mask supported_features) override;
 
     const wrl::ComPtr<IDXGIFactory6>& GetNativeFactory() { return m_cp_factory; }
-    
+    void ReportLiveObjects();
+
 private:
     void Initialize();
     void RegisterAdapterChangeEvent();

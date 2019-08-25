@@ -124,14 +124,10 @@ SystemDX::~SystemDX()
 
     UnregisterAdapterChangeEvent();
 
-#ifdef _DEBUG
-    wrl::ComPtr<IDXGIDebug1> dxgi_debug;
-    if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgi_debug))))
-    {
-        assert(!!dxgi_debug);
-        dxgi_debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_SUMMARY | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
-    }
-#endif
+    SafeRelease(m_cp_factory);
+    m_devices.clear();
+
+    ReportLiveObjects();
 }
 
 void SystemDX::Initialize()
@@ -269,4 +265,17 @@ void SystemDX::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATUR
 
     Device::Ptr sp_device = std::make_shared<DeviceDX>(cp_adapter, feature_level);
     m_devices.push_back(sp_device);
+}
+
+void SystemDX::ReportLiveObjects()
+{
+    ITT_FUNCTION_TASK();
+#ifdef _DEBUG
+    wrl::ComPtr<IDXGIDebug1> dxgi_debug;
+    if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgi_debug))))
+    {
+        assert(!!dxgi_debug);
+        dxgi_debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_SUMMARY | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
+    }
+#endif
 }

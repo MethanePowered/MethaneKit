@@ -64,6 +64,11 @@ DescriptorHeapDX::DescriptorHeapDX(ContextBase& context, const Settings& setting
     }
 }
 
+DescriptorHeapDX::~DescriptorHeapDX()
+{
+    ITT_FUNCTION_TASK();
+}
+
 D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeCPUDescriptorHandle(uint32_t descriptor_index) const noexcept
 {
     ITT_FUNCTION_TASK();
