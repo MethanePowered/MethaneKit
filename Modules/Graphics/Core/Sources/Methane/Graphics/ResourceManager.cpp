@@ -195,6 +195,26 @@ DescriptorHeap& ResourceManager::GetDefaultShaderVisibleDescriptorHeap(Descripto
     return *sp_resource_heap;
 }
 
+ResourceManager::DescriptorHeapSizeByType ResourceManager::GetDescriptorHeapSizes(bool get_allocated_size) const
+{
+    DescriptorHeapSizeByType descriptor_heap_sizes;
+    for (uint32_t heap_type_idx = 0; heap_type_idx < static_cast<uint32_t>(DescriptorHeap::Type::Count); ++heap_type_idx)
+    {
+        const DescriptorHeap::Type  heap_type = static_cast<DescriptorHeap::Type>(heap_type_idx);
+        const DescriptorHeaps&      desc_heaps = m_descriptor_heap_types[heap_type_idx];
+        uint32_t max_heap_size = 0;
+        for (const DescriptorHeap::Ptr& sp_desc_heap : desc_heaps)
+        {
+            assert(!!sp_desc_heap);
+            assert(sp_desc_heap->GetSettings().type == heap_type);
+            const uint32_t heap_size = get_allocated_size ? sp_desc_heap->GetAllocatedSize() : sp_desc_heap->GetDeferredSize();
+            max_heap_size = std::max(max_heap_size, heap_size);
+        }
+        descriptor_heap_sizes[heap_type_idx] = max_heap_size;
+    }
+    return descriptor_heap_sizes;
+}
+
 ResourceBase::ReleasePool& ResourceManager::GetReleasePool()
 {
     ITT_FUNCTION_TASK();
