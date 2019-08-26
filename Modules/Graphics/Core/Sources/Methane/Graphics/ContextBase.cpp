@@ -103,6 +103,8 @@ void ContextBase::Release()
         callback_ref.get().OnContextReleased();
     }
 
+    m_resource_manager_init_settings.deferred_heap_allocation = false;
+    m_resource_manager_init_settings.default_heap_sizes = m_resource_manager.GetDescriptorHeapSizes(true);
     m_resource_manager.Release();
 }
 
@@ -118,7 +120,7 @@ void ContextBase::Initialize(Device& device)
         m_sp_device->SetName(context_name + " Device");
     }
 
-    m_resource_manager.Initialize({ true });
+    m_resource_manager.Initialize(m_resource_manager_init_settings);
 
     for (const Callback::Ref& callback_ref : m_callbacks)
     {
