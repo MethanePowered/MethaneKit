@@ -30,65 +30,6 @@ resources:
 
 jobs:
 
-- job: Windows_x64_ITT
-
-  pool:
-    vmImage: 'vs2017-win2016'
-
-  variables:
-    platform: 'Win64'
-    configuration: 'Release'
-    vcVarsBatFile: 'vcvars64.bat'
-    generatorName: '"Visual Studio 15 2017 Win64"'
-    cmakeFlags: '-DMETHANE_USE_ITT_INSTRUMENTATION:BOOL=ON -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF'
-    buildName: '$(platform)-$(configuration)-ITT'
-    buildDir: 'Build\Output\$(buildName)\Build'
-    installDir: 'Build\Output\$(buildName)\Install'
-    buildInstallDir: '..\Install'
-    rootDir: '..\..\..\..'
-
-  steps:
-  - template: Build/Windows/AzureBuild.yml
-
-- job: Windows_x86_ITT
-
-  pool:
-    vmImage: 'vs2017-win2016'
-
-  variables:
-    platform: 'Win32'
-    configuration: 'Release'
-    vcVarsBatFile: 'vcvars32.bat'
-    generatorName: '"Visual Studio 15 2017"'
-    cmakeFlags: '-DMETHANE_USE_ITT_INSTRUMENTATION:BOOL=ON -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF'
-    buildName: '$(platform)-$(configuration)-ITT'
-    buildDir: 'Build\Output\$(buildName)\Build'
-    installDir: 'Build\Output\$(buildName)\Install'
-    buildInstallDir: '..\Install'
-    rootDir: '..\..\..\..'
-
-  steps:
-  - template: Build/Windows/AzureBuild.yml
-
-- job: macOS_ITT
-
-  pool:
-    vmImage: 'macOS-10.13'
-
-  variables:
-    platform: 'MacOS'
-    configuration: 'Release'
-    generatorName: 'Xcode'
-    cmakeFlags: '-DMETHANE_USE_ITT_INSTRUMENTATION:BOOL=ON -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF'
-    buildName: '$(platform)-$(configuration)-ITT'
-    buildDir: 'Build/Output/$(buildName)/Build'
-    installDir: 'Build/Output/$(buildName)/Install'
-    buildInstallDir: '../Install'
-    rootDir: '../../../..'
-
-  steps:
-  - template: Build/MacOS/AzureBuild.yml
-
 - job: Windows_x64
 
   pool:
@@ -99,7 +40,7 @@ jobs:
     configuration: 'Release'
     vcVarsBatFile: 'vcvars64.bat'
     generatorName: '"Visual Studio 15 2017 Win64"'
-    cmakeFlags: '-DMETHANE_USE_ITT_INSTRUMENTATION:BOOL=OFF -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF'
+    cmakeFlags: '-DMETHANE_USE_ITT_INSTRUMENTATION:BOOL=ON -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF'
     buildName: '$(platform)-$(configuration)'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
@@ -119,7 +60,7 @@ jobs:
     configuration: 'Release'
     vcVarsBatFile: 'vcvars32.bat'
     generatorName: '"Visual Studio 15 2017"'
-    cmakeFlags: '-DMETHANE_USE_ITT_INSTRUMENTATION:BOOL=OFF -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF'
+    cmakeFlags: '-DMETHANE_USE_ITT_INSTRUMENTATION:BOOL=ON -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF'
     buildName: '$(platform)-$(configuration)'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
@@ -138,7 +79,7 @@ jobs:
     platform: 'MacOS'
     configuration: 'Release'
     generatorName: 'Xcode'
-    cmakeFlags: '-DMETHANE_USE_ITT_INSTRUMENTATION:BOOL=OFF -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF'
+    cmakeFlags: '-DMETHANE_USE_ITT_INSTRUMENTATION:BOOL=ON -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF'
     buildName: '$(platform)-$(configuration)'
     buildDir: 'Build/Output/$(buildName)/Build'
     installDir: 'Build/Output/$(buildName)/Install'
