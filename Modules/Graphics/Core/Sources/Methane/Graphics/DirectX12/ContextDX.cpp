@@ -69,6 +69,7 @@ void ContextDX::Release()
     if (m_sp_device)
     {
         static_cast<DeviceDX&>(*m_sp_device).ReleaseNativeDevice();
+        m_sp_device.reset();
     }
 
     ContextBase::Release();
@@ -79,6 +80,8 @@ void ContextDX::Release()
 void ContextDX::Initialize(Device& device)
 {
     ITT_FUNCTION_TASK();
+
+    m_sp_device = static_cast<DeviceBase&>(device).GetPtr();
 
     // Initialize swap-chain
 
