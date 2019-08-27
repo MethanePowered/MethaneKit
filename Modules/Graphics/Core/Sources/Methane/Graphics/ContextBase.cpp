@@ -103,8 +103,9 @@ void ContextBase::Release()
         callback_ref.get().OnContextReleased();
     }
 
-    m_resource_manager_init_settings.deferred_heap_allocation = false;
-    m_resource_manager_init_settings.default_heap_sizes = m_resource_manager.GetDescriptorHeapSizes(true);
+    m_resource_manager_init_settings.deferred_heap_allocation   = false;
+    m_resource_manager_init_settings.default_heap_sizes         = m_resource_manager.GetDescriptorHeapSizes(true, false);
+    m_resource_manager_init_settings.shader_visible_heap_sizes  = m_resource_manager.GetDescriptorHeapSizes(true, true);
     m_resource_manager.Release();
 }
 
