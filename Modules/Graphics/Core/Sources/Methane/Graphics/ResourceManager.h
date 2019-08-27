@@ -46,7 +46,7 @@ public:
     {
         bool                     deferred_heap_allocation = true;
         DescriptorHeapSizeByType default_heap_sizes;
-        uint32_t                 max_binding_states_count = 0;
+        DescriptorHeapSizeByType shader_visible_heap_sizes;
     };
 
     ResourceManager(ContextBase& context);
@@ -64,7 +64,7 @@ public:
     DescriptorHeap&             GetDescriptorHeap(DescriptorHeap::Type type, uint32_t heap_index = 0);
     const DescriptorHeap::Ptr&  GetDefaultShaderVisibleDescriptorHeapPtr(DescriptorHeap::Type type);
     DescriptorHeap&             GetDefaultShaderVisibleDescriptorHeap(DescriptorHeap::Type type);
-    DescriptorHeapSizeByType    GetDescriptorHeapSizes(bool get_allocated_size) const;
+    DescriptorHeapSizeByType    GetDescriptorHeapSizes(bool get_allocated_size, bool for_shader_visible_heaps) const;
     ResourceBase::ReleasePool&  GetReleasePool();
 
 protected:

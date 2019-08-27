@@ -42,8 +42,11 @@ class DescriptorHeap
 public:
     enum class Type : uint32_t
     {
+        // Shader visible heap types
         ShaderResources = 0,
         Samplers,
+
+        // Other heap types
         RenderTargets,
         DepthStencil,
 
