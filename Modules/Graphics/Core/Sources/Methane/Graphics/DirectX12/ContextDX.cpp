@@ -61,8 +61,8 @@ void ContextDX::Release()
 {
     ITT_FUNCTION_TASK();
 
-    SafeRelease(m_cp_swap_chain);
-    SafeRelease(m_upload_fence.cp_fence);
+    m_cp_swap_chain.Reset();
+    m_upload_fence.cp_fence.Reset();
     SafeCloseHandle(m_fence_event);
     m_frame_fences.clear();
 

@@ -102,7 +102,7 @@ const wrl::ComPtr<ID3D12Device>& DeviceDX::GetNativeDevice() const
 
 void DeviceDX::ReleaseNativeDevice()
 {
-    SafeRelease(m_cp_device);
+    m_cp_device.Reset();
 }
 
 System& System::Get()
@@ -124,7 +124,7 @@ SystemDX::~SystemDX()
 
     UnregisterAdapterChangeEvent();
 
-    SafeRelease(m_cp_factory);
+    m_cp_factory.Reset();
     m_devices.clear();
 
     ReportLiveObjects();
