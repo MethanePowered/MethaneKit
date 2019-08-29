@@ -97,7 +97,7 @@ void ContextDX::Initialize(Device& device)
     const wrl::ComPtr<IDXGIFactory4>& cp_dxgi_factory = SystemDX::Get().GetNativeFactory();
     assert(!!cp_dxgi_factory);
 
-    wrl::ComPtr<ID3D12CommandQueue>& cp_command_queue = DefaultCommandQueueDX().GetNativeCommandQueue();
+    wrl::ComPtr<ID3D12CommandQueue>& cp_command_queue = GetRenderCommandQueueDX().GetNativeCommandQueue();
     assert(!!cp_command_queue);
 
     wrl::ComPtr<IDXGISwapChain1>  cp_swap_chain;
@@ -169,7 +169,7 @@ void ContextDX::WaitForGpu(WaitFor wait_for)
     switch (wait_for)
     {
     case WaitFor::ResourcesUploaded:
-        SignalFence(m_upload_fence, static_cast<CommandQueueDX&>(GetUploadCommandQueue()));
+        SignalFence(m_upload_fence, GetUploadCommandQueueDX());
         WaitFence(m_upload_fence, true);
         break;
 
@@ -178,9 +178,9 @@ void ContextDX::WaitForGpu(WaitFor wait_for)
         break;
 
     case WaitFor::RenderComplete:
-        for (uint32_t frame_buffer_index = 0; frame_buffer_index < m_settings.frame_buffers_count; ++frame_buffer_index)
+        for (FrameFence& frame_fence : m_frame_fences)
         {
-            WaitFence(m_frame_fences[frame_buffer_index], false);
+            WaitFence(frame_fence, false);
         }
         break;
     }
@@ -213,7 +213,7 @@ void ContextDX::Present()
     ThrowIfFailed(m_cp_swap_chain->Present(vsync_interval, present_flags));
 
     // Schedule a signal command in the queue for a currently finished frame
-    SignalFence(GetCurrentFrameFence(), static_cast<CommandQueueDX&>(GetRenderCommandQueue()));
+    SignalFence(GetCurrentFrameFence(), GetRenderCommandQueueDX());
 
     OnPresentComplete();
 
@@ -223,6 +223,8 @@ void ContextDX::Present()
 
 void ContextDX::SignalFence(const FrameFence& frame_fence, CommandQueueDX& dx_command_queue)
 {
+    ITT_FUNCTION_TASK();
+
     wrl::ComPtr<ID3D12CommandQueue>& cp_command_queue = dx_command_queue.GetNativeCommandQueue();
     assert(!!cp_command_queue);
     assert(!!frame_fence.cp_fence);
@@ -232,6 +234,8 @@ void ContextDX::SignalFence(const FrameFence& frame_fence, CommandQueueDX& dx_co
 
 void ContextDX::WaitFence(FrameFence& frame_fence, bool increment_value)
 {
+    ITT_FUNCTION_TASK();
+
     assert(!!frame_fence.cp_fence);
     assert(!!m_fence_event);
 
@@ -249,8 +253,14 @@ void ContextDX::WaitFence(FrameFence& frame_fence, bool increment_value)
     }
 }
 
-CommandQueueDX& ContextDX::DefaultCommandQueueDX()
+CommandQueueDX& ContextDX::GetUploadCommandQueueDX()
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class CommandQueueDX&>(GetRenderCommandQueue());
+    return static_cast<CommandQueueDX&>(GetUploadCommandQueue());
+}
+
+CommandQueueDX& ContextDX::GetRenderCommandQueueDX()
+{
+    ITT_FUNCTION_TASK();
+    return static_cast<CommandQueueDX&>(GetRenderCommandQueue());
 }
