@@ -87,7 +87,8 @@ protected:
     void Release() override;
     void Initialize(Device& device) override;
 
-    CommandQueueDX& DefaultCommandQueueDX();
+    CommandQueueDX& GetUploadCommandQueueDX();
+    CommandQueueDX& GetRenderCommandQueueDX();
 
     const Platform::AppEnvironment m_platform_env;
     wrl::ComPtr<IDXGISwapChain3>   m_cp_swap_chain;
