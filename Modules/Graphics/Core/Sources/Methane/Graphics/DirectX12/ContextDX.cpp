@@ -196,6 +196,7 @@ void ContextDX::Resize(const FrameSize& frame_size)
     DXGI_SWAP_CHAIN_DESC1 desc = {};
     m_cp_swap_chain->GetDesc1(&desc);
     ThrowIfFailed(m_cp_swap_chain->ResizeBuffers(m_settings.frame_buffers_count, frame_size.width, frame_size.height, desc.Format, desc.Flags));
+    m_frame_buffer_index = m_cp_swap_chain->GetCurrentBackBufferIndex();
 }
 
 void ContextDX::Present()
