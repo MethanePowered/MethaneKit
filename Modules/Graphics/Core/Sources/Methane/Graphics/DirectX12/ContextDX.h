@@ -65,36 +65,47 @@ public:
     void SetName(const std::string& name) override;
 
     const DeviceDX& GetDeviceDX() const;
+    CommandQueueDX& GetUploadCommandQueueDX();
+    CommandQueueDX& GetRenderCommandQueueDX();
+
     const wrl::ComPtr<IDXGISwapChain3>& GetNativeSwapChain() const { return m_cp_swap_chain; }
 
 protected:
-    struct FrameFence
+    class FenceDX
     {
-        wrl::ComPtr<ID3D12Fence> cp_fence;
-        uint64_t                 value = 0;
-        uint32_t                 frame = 0;
+    public:
+        using Ptr = std::unique_ptr<FenceDX>;
+        FenceDX(CommandQueueDX& command_queue, uint32_t frame = static_cast<uint32_t>(-1));
+        ~FenceDX();
+
+        void Signal();
+        void Wait();
+        void Flush();
+
+        void     SetName(const std::string& name);
+        uint32_t GetFrame() const { return m_frame; }
+
+    private:
+        CommandQueueDX&          m_command_queue;
+        const uint32_t           m_frame = 0;
+        uint64_t                 m_value = 0;
+        wrl::ComPtr<ID3D12Fence> m_cp_fence;
+        HANDLE                   m_event = nullptr;
     };
 
-    using FrameFences = std::vector<FrameFence>;
-
-    inline const FrameFence& GetCurrentFrameFence() const                     { return m_frame_fences[m_frame_buffer_index]; }
-    inline FrameFence&       GetCurrentFrameFence()                           { return m_frame_fences[m_frame_buffer_index]; }
-    inline uint32_t          GetPresentVSyncInterval() const                  { return m_settings.vsync_enabled ? 1 : 0; }
-    void                     SignalFence(const FrameFence& frame_fence, CommandQueueDX& dx_command_queue);
-    void                     WaitFence(FrameFence& frame_fence, bool increment_value);
+    FenceDX&             GetCurrentFrameFence();
+    inline FenceDX::Ptr& GetCurrentFrameFencePtr()       { return m_frame_fences[m_frame_buffer_index]; }
+    inline uint32_t      GetPresentVSyncInterval() const { return m_settings.vsync_enabled ? 1 : 0; }
 
     // ContextBase overrides
     void Release() override;
     void Initialize(Device& device) override;
 
-    CommandQueueDX& GetUploadCommandQueueDX();
-    CommandQueueDX& GetRenderCommandQueueDX();
-
     const Platform::AppEnvironment m_platform_env;
     wrl::ComPtr<IDXGISwapChain3>   m_cp_swap_chain;
-    FrameFences                    m_frame_fences;
-    FrameFence                     m_upload_fence;
-    HANDLE                         m_fence_event = nullptr;
+    std::vector<FenceDX::Ptr>      m_frame_fences;
+    FenceDX::Ptr                   m_sp_render_fence;
+    FenceDX::Ptr                   m_sp_upload_fence;
 };
 
 } // namespace Graphics

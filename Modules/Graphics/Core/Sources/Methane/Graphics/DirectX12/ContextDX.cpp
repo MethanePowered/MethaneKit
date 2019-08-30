@@ -54,7 +54,6 @@ ContextDX::ContextDX(const Platform::AppEnvironment& env, const Data::Provider& 
 ContextDX::~ContextDX()
 {
     ITT_FUNCTION_TASK();
-    SafeCloseHandle(m_fence_event);
 }
 
 void ContextDX::Release()
@@ -62,8 +61,8 @@ void ContextDX::Release()
     ITT_FUNCTION_TASK();
 
     m_cp_swap_chain.Reset();
-    m_upload_fence.cp_fence.Reset();
-    SafeCloseHandle(m_fence_event);
+    m_sp_upload_fence.reset();
+    m_sp_render_fence.reset();
     m_frame_fences.clear();
 
     if (m_sp_device)
@@ -111,26 +110,20 @@ void ContextDX::Initialize(Device& device)
 
     assert(!!m_cp_swap_chain);
     m_frame_buffer_index = m_cp_swap_chain->GetCurrentBackBufferIndex();
-    m_frame_fences.resize(m_settings.frame_buffers_count);
 
     const wrl::ComPtr<ID3D12Device>& cp_device = static_cast<DeviceDX&>(device).GetNativeDevice();
     assert(!!cp_device);
 
-    uint32_t frame_index = 0;
-    for (FrameFence& frame_fence : m_frame_fences)
+    m_frame_fences.clear();
+    for (uint32_t frame_index = 0; frame_index < m_settings.frame_buffers_count; ++frame_index)
     {
-        frame_fence.value = 0;
-        frame_fence.frame = frame_index++;
-        ThrowIfFailed(cp_device->CreateFence(frame_fence.value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&frame_fence.cp_fence)));
+        m_frame_fences.emplace_back(std::make_unique<FenceDX>(GetRenderCommandQueueDX(), frame_index));
     }
 
-    ThrowIfFailed(cp_device->CreateFence(m_upload_fence.value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_upload_fence.cp_fence)));
+    m_sp_render_fence = std::make_unique<FenceDX>(GetRenderCommandQueueDX());
+    m_sp_upload_fence = std::make_unique<FenceDX>(GetUploadCommandQueueDX());
 
-    m_fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-    if (!m_fence_event)
-    {
-        ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
-    }
+    SetName(GetName());
 
     ContextBase::Initialize(device);
 }
@@ -148,11 +141,10 @@ void ContextDX::SetName(const std::string& name)
     GetDevice().SetName(name + " Device");
 
     const std::wstring wname = nowide::widen(name);
-    for (FrameFence& frame_fence : m_frame_fences)
+    for (FenceDX::Ptr& sp_frame_fence : m_frame_fences)
     {
-        assert(!!frame_fence.cp_fence);
-        if (!frame_fence.cp_fence) continue;
-        frame_fence.cp_fence->SetName((wname + L" Fence " + std::to_wstring(frame_fence.frame)).c_str());
+        assert(!!sp_frame_fence);
+        sp_frame_fence->SetName(name + " Fence " + std::to_string(sp_frame_fence->GetFrame()));
     }
 }
 
@@ -169,19 +161,17 @@ void ContextDX::WaitForGpu(WaitFor wait_for)
     switch (wait_for)
     {
     case WaitFor::ResourcesUploaded:
-        SignalFence(m_upload_fence, GetUploadCommandQueueDX());
-        WaitFence(m_upload_fence, true);
-        break;
-
-    case WaitFor::FramePresented:
-        WaitFence(GetCurrentFrameFence(), true);
+        assert(!!m_sp_upload_fence);
+        m_sp_upload_fence->Flush();
         break;
 
     case WaitFor::RenderComplete:
-        for (FrameFence& frame_fence : m_frame_fences)
-        {
-            WaitFence(frame_fence, false);
-        }
+        assert(m_sp_render_fence);
+        m_sp_render_fence->Flush();
+        break;
+
+    case WaitFor::FramePresented:
+        GetCurrentFrameFence().Wait();
         break;
     }
 
@@ -213,44 +203,12 @@ void ContextDX::Present()
     ThrowIfFailed(m_cp_swap_chain->Present(vsync_interval, present_flags));
 
     // Schedule a signal command in the queue for a currently finished frame
-    SignalFence(GetCurrentFrameFence(), GetRenderCommandQueueDX());
+    GetCurrentFrameFence().Signal();
 
     OnPresentComplete();
 
     // Update current frame buffer index
     m_frame_buffer_index = m_cp_swap_chain->GetCurrentBackBufferIndex();
-}
-
-void ContextDX::SignalFence(const FrameFence& frame_fence, CommandQueueDX& dx_command_queue)
-{
-    ITT_FUNCTION_TASK();
-
-    wrl::ComPtr<ID3D12CommandQueue>& cp_command_queue = dx_command_queue.GetNativeCommandQueue();
-    assert(!!cp_command_queue);
-    assert(!!frame_fence.cp_fence);
-
-    ThrowIfFailed(cp_command_queue->Signal(frame_fence.cp_fence.Get(), frame_fence.value));
-}
-
-void ContextDX::WaitFence(FrameFence& frame_fence, bool increment_value)
-{
-    ITT_FUNCTION_TASK();
-
-    assert(!!frame_fence.cp_fence);
-    assert(!!m_fence_event);
-
-    // If the next frame is not ready to be rendered yet, wait until it is ready
-    if (frame_fence.cp_fence->GetCompletedValue() < frame_fence.value)
-    {
-        ThrowIfFailed(frame_fence.cp_fence->SetEventOnCompletion(frame_fence.value, m_fence_event));
-        WaitForSingleObjectEx(m_fence_event, INFINITE, FALSE);
-    }
-
-    // Set the fence value for the next frame
-    if (increment_value)
-    {
-        frame_fence.value++;
-    }
 }
 
 CommandQueueDX& ContextDX::GetUploadCommandQueueDX()
@@ -263,4 +221,72 @@ CommandQueueDX& ContextDX::GetRenderCommandQueueDX()
 {
     ITT_FUNCTION_TASK();
     return static_cast<CommandQueueDX&>(GetRenderCommandQueue());
+}
+
+ContextDX::FenceDX& ContextDX::GetCurrentFrameFence()
+{
+    FenceDX::Ptr& sp_current_fence = GetCurrentFrameFencePtr();
+    assert(!!sp_current_fence);
+    return *sp_current_fence;
+}
+
+ContextDX::FenceDX::FenceDX(CommandQueueDX& command_queue, uint32_t frame)
+    : m_command_queue(command_queue)
+    , m_frame(frame)
+    , m_event(CreateEvent(nullptr, FALSE, FALSE, nullptr))
+{
+    ITT_FUNCTION_TASK();
+    if (!m_event)
+    {
+        ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+    }
+
+    const wrl::ComPtr<ID3D12Device>& cp_device = m_command_queue.GetContextDX().GetDeviceDX().GetNativeDevice();
+    assert(!!cp_device);
+
+    ThrowIfFailed(cp_device->CreateFence(m_value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_cp_fence)));
+}
+
+ContextDX::FenceDX::~FenceDX()
+{
+    ITT_FUNCTION_TASK();
+    SafeCloseHandle(m_event);
+}
+
+void ContextDX::FenceDX::Signal()
+{
+    ITT_FUNCTION_TASK();
+    wrl::ComPtr<ID3D12CommandQueue>& cp_command_queue = m_command_queue.GetNativeCommandQueue();
+    assert(!!cp_command_queue);
+    assert(!!m_cp_fence);
+
+    m_value++;
+    ThrowIfFailed(cp_command_queue->Signal(m_cp_fence.Get(), m_value));
+}
+
+void ContextDX::FenceDX::Wait()
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_cp_fence);
+    assert(!!m_event);
+
+    if (m_cp_fence->GetCompletedValue() < m_value)
+    {
+        ThrowIfFailed(m_cp_fence->SetEventOnCompletion(m_value, m_event));
+        WaitForSingleObjectEx(m_event, INFINITE, FALSE);
+    }
+}
+
+void ContextDX::FenceDX::Flush()
+{
+    ITT_FUNCTION_TASK();
+    Signal();
+    Wait();
+}
+
+void ContextDX::FenceDX::SetName(const std::string& name)
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_cp_fence);
+    m_cp_fence->SetName(nowide::widen(name).c_str());
 }
