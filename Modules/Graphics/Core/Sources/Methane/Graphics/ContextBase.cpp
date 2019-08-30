@@ -25,10 +25,26 @@ Base implementation of the context interface.
 #include "DeviceBase.h"
 #include "Instrumentation.h"
 
+#ifdef COMMAND_EXECUTION_LOGGING
+#include <Methane/Platform/Utils.h>
+#endif
+
 #include <cassert>
 
 using namespace Methane;
 using namespace Methane::Graphics;
+
+std::string GetWaitForName(Context::WaitFor wait_for)
+{
+    ITT_FUNCTION_TASK();
+    switch (wait_for)
+    {
+    case Context::WaitFor::RenderComplete:      return "WAIT for Render Complete";
+    case Context::WaitFor::FramePresented:      return "WAIT for Frame Present";
+    case Context::WaitFor::ResourcesUploaded:   return "WAIT for Resources Upload";
+    }
+    return "";
+}
 
 ContextBase::ContextBase(const Data::Provider& data_provider, DeviceBase& device, const Settings& settings)
     : m_data_provider(data_provider)
@@ -43,28 +59,55 @@ ContextBase::ContextBase(const Data::Provider& data_provider, DeviceBase& device
 void ContextBase::CompleteInitialization()
 {
     ITT_FUNCTION_TASK();
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("Complete initialization of context \"" + GetName() + "\"");
+#endif
+
     m_resource_manager.CompleteInitialization();
     UploadResources();
 }
 
-void ContextBase::WaitForGpu(WaitFor)
+void ContextBase::WaitForGpu(WaitFor wait_for)
 {
     ITT_FUNCTION_TASK();
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput(GetWaitForName(wait_for) + " in context \"" + GetName() + "\"");
+#endif
+
     m_resource_manager.GetReleasePool().ReleaseResources();
 }
 
 void ContextBase::Resize(const FrameSize& frame_size)
 {
     ITT_FUNCTION_TASK();
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("RESIZE context \"" + GetName() + "\" from " + static_cast<std::string>(m_settings.frame_size) + " to " + static_cast<std::string>(frame_size));
+#endif
+
     m_settings.frame_size = frame_size;
 }
 
 void ContextBase::Reset(Device& device)
 {
     ITT_FUNCTION_TASK();
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("RESET context \"" + GetName() + "\"");
+#endif
+
     WaitForGpu(WaitFor::RenderComplete);
     Release();
     Initialize(device);
+}
+
+void ContextBase::Present()
+{
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("PRESENT frame " + std::to_string(m_frame_buffer_index) + " in context \"" + GetName() + "\"");
+#endif
 }
 
 void ContextBase::AddCallback(Callback& callback)
@@ -87,12 +130,21 @@ void ContextBase::RemoveCallback(Callback& callback)
 void ContextBase::OnPresentComplete()
 {
     ITT_FUNCTION_TASK();
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("PRESENT COMPLETE for context \"" + GetName() + "\"");
+#endif
+
     m_fps_counter.OnFramePresented();
 }
 
 void ContextBase::Release()
 {
     ITT_FUNCTION_TASK();
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("RELEASE context \"" + GetName() + "\"");
+#endif
 
     m_sp_render_cmd_queue.reset();
     m_sp_upload_cmd_queue.reset();
@@ -112,6 +164,10 @@ void ContextBase::Release()
 void ContextBase::Initialize(Device& device)
 {
     ITT_FUNCTION_TASK();
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("INITIALIZE context \"" + GetName() + "\"");
+#endif
 
     m_sp_device = static_cast<DeviceBase&>(device).GetPtr();
     
@@ -203,6 +259,11 @@ void ContextBase::SetName(const std::string& name)
 void ContextBase::UploadResources()
 {
     ITT_FUNCTION_TASK();
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("UPLOAD resources for context \"" + GetName() + "\"");
+#endif
+
     GetUploadCommandList().Commit(false);
     GetUploadCommandQueue().Execute({ GetUploadCommandList() });
     WaitForGpu(WaitFor::ResourcesUploaded);

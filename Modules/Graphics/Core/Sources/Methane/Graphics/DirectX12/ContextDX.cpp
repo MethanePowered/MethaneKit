@@ -31,6 +31,10 @@ DirectX 12 implementation of the context interface.
 #include <Methane/Graphics/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
+#ifdef COMMAND_EXECUTION_LOGGING
+#include <Methane/Platform/Utils.h>
+#endif
+
 #include <nowide/convert.hpp>
 #include <cassert>
 
@@ -140,12 +144,14 @@ void ContextDX::SetName(const std::string& name)
 
     GetDevice().SetName(name + " Device");
 
-    const std::wstring wname = nowide::widen(name);
     for (FenceDX::Ptr& sp_frame_fence : m_frame_fences)
     {
         assert(!!sp_frame_fence);
-        sp_frame_fence->SetName(name + " Fence " + std::to_string(sp_frame_fence->GetFrame()));
+        sp_frame_fence->SetName(name + " Frame " + std::to_string(sp_frame_fence->GetFrame()) + " Fence");
     }
+
+    m_sp_render_fence->SetName(name + " Render Fence");
+    m_sp_upload_fence->SetName(name + " Upload Fence");
 }
 
 const DeviceDX& ContextDX::GetDeviceDX() const
@@ -184,18 +190,20 @@ void ContextDX::Resize(const FrameSize& frame_size)
 
     WaitForGpu(WaitFor::RenderComplete);
 
+    ContextBase::Resize(frame_size);
+
     // Resize the swap chain to the desired dimensions
     DXGI_SWAP_CHAIN_DESC1 desc = {};
     m_cp_swap_chain->GetDesc1(&desc);
     ThrowIfFailed(m_cp_swap_chain->ResizeBuffers(m_settings.frame_buffers_count, frame_size.width, frame_size.height, desc.Format, desc.Flags));
-
-    ContextBase::Resize(frame_size);
 }
 
 void ContextDX::Present()
 {
     ITT_FUNCTION_TASK();
     assert(m_cp_swap_chain);
+
+    ContextBase::Present();
 
     // Preset frame to screen
     const uint32_t present_flags  = 0; // DXGI_PRESENT_DO_NOT_WAIT
@@ -261,6 +269,11 @@ void ContextDX::FenceDX::Signal()
     assert(!!m_cp_fence);
 
     m_value++;
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("SIGNAL fence \"" + m_name + "\" with value " + std::to_string(m_value));
+#endif
+
     ThrowIfFailed(cp_command_queue->Signal(m_cp_fence.Get(), m_value));
 }
 
@@ -269,6 +282,10 @@ void ContextDX::FenceDX::Wait()
     ITT_FUNCTION_TASK();
     assert(!!m_cp_fence);
     assert(!!m_event);
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("WAIT fence \"" + m_name + "\" with value " + std::to_string(m_value));
+#endif
 
     if (m_cp_fence->GetCompletedValue() < m_value)
     {
@@ -287,6 +304,11 @@ void ContextDX::FenceDX::Flush()
 void ContextDX::FenceDX::SetName(const std::string& name)
 {
     ITT_FUNCTION_TASK();
+    if (m_name == name)
+        return;
+
+    m_name = name;
+
     assert(!!m_cp_fence);
     m_cp_fence->SetName(nowide::widen(name).c_str());
 }

@@ -114,7 +114,7 @@ public:
         // Create render context of the current window size
         m_initial_context_settings.frame_size = frame_size;
         m_sp_context = Context::Create(env, AppDataProvider::Get(), *sp_device, m_initial_context_settings);
-        m_sp_context->SetName("Main Graphics Context");
+        m_sp_context->SetName("App Gfx Context");
         m_sp_context->AddCallback(*this);
 
         m_input_state.AddControllers({ std::make_shared<AppContextController>(*m_sp_context) });
