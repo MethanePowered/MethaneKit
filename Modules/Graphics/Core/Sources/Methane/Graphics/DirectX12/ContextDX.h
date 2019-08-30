@@ -82,8 +82,9 @@ protected:
         void Wait();
         void Flush();
 
-        void     SetName(const std::string& name);
-        uint32_t GetFrame() const { return m_frame; }
+        uint32_t           GetFrame() const { return m_frame; }
+        const std::string& GetName() const { return m_name; }
+        void               SetName(const std::string& name);
 
     private:
         CommandQueueDX&          m_command_queue;
@@ -91,6 +92,7 @@ protected:
         uint64_t                 m_value = 0;
         wrl::ComPtr<ID3D12Fence> m_cp_fence;
         HANDLE                   m_event = nullptr;
+        std::string              m_name;
     };
 
     FenceDX&             GetCurrentFrameFence();
