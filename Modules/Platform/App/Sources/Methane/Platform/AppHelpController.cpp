@@ -46,9 +46,32 @@ void AppHelpController::OnKeyboardChanged(Keyboard::Key key, Platform::Keyboard:
 
 void AppHelpController::OnKeyboardStateAction(AppHelpAction action)
 {
-    if (action != AppHelpAction::ShowHelp)
-        return;
-    
+    switch(action)
+    {
+        case AppHelpAction::ShowHelp: ShowHelp(); break;
+        case AppHelpAction::CloseApp: m_application.Close(); break;
+        default: assert(0);
+    }
+}
+
+std::string AppHelpController::GetKeyboardActionName(AppHelpAction action) const
+{
+    switch (action)
+    {
+        case AppHelpAction::None:      return "none";
+        case AppHelpAction::ShowHelp:  return "show application help";
+        case AppHelpAction::CloseApp:  return "close application";
+        default: assert(0);            return "";
+    }
+}
+
+IHelpProvider::HelpLines AppHelpController::GetHelp() const
+{
+    return GetKeyboardHelp();
+}
+
+void AppHelpController::ShowHelp()
+{
     std::stringstream help_stream;
     std::string single_offset = "    ";
     bool is_first_controller = true;
@@ -123,19 +146,4 @@ void AppHelpController::OnKeyboardStateAction(AppHelpAction action)
         "Application Help",
         help_stream.str()
     });
-}
-
-std::string AppHelpController::GetKeyboardActionName(AppHelpAction action) const
-{
-    switch (action)
-    {
-        case AppHelpAction::None:      return "none";
-        case AppHelpAction::ShowHelp:  return "show application help";
-        default: assert(0);            return "";
-    }
-}
-
-IHelpProvider::HelpLines AppHelpController::GetHelp() const
-{
-    return GetKeyboardHelp();
 }

@@ -87,6 +87,7 @@ public:
     virtual void Alert(const Message& msg, bool deferred = false);
     virtual void SetWindowTitle(const std::string& title_text) = 0;
     virtual bool SetFullScreen(bool is_full_screen);
+    virtual void Close() = 0;
 
     bool HasError() const;
 
