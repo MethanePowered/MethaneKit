@@ -47,8 +47,8 @@ class AppHelpController final
 {
 public:
     inline static const ActionByKeyboardState default_action_by_keyboard_state = {
-        { { Platform::Keyboard::Key::F1 },                                    AppHelpAction::ShowHelp  },
-        { { Platform::Keyboard::Key::LeftSuper, Platform::Keyboard::Key::Q }, AppHelpAction::CloseApp  },
+        { { Platform::Keyboard::Key::F1 },                                       AppHelpAction::ShowHelp  },
+        { { Platform::Keyboard::OS::key_left_ctrl, Platform::Keyboard::Key::Q }, AppHelpAction::CloseApp  },
     };
     
     AppHelpController(AppBase& application, const std::string& application_help, bool show_command_line_help = false,
