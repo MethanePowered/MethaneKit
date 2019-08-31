@@ -30,7 +30,7 @@ Base frame class provides frame buffer management with resize handling.
 #include <Methane/Data/Timer.h>
 #include <Methane/Data/AnimationsPool.h>
 #include <Methane/Platform/App.h>
-#include <Methane/Platform/AppHelpController.h>
+#include <Methane/Platform/AppController.h>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Device.h>
 #include <Methane/Graphics/Context.h>
@@ -87,7 +87,7 @@ public:
             ("i,device", "Render at adapter index, use -1 for software adapter", cxxopts::value<int>())
             ("f,framebuffers", "Frame buffers count in swap-chain", cxxopts::value<uint32_t>());
 
-        m_input_state.AddControllers({ std::make_shared<Platform::AppHelpController>(*this, help_description) });
+        m_input_state.AddControllers({ std::make_shared<Platform::AppController>(*this, help_description) });
     }
 
     ~App() override

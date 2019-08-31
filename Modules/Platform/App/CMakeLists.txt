@@ -48,12 +48,12 @@ set(LIBRARIES ${LIBRARIES}
 set(HEADERS ${PLATFORM_HEADERS}
     ${INCLUDE_DIR}/App.h
     ${INCLUDE_DIR}/AppBase.h
-    ${INCLUDE_DIR}/AppHelpController.h
+    ${INCLUDE_DIR}/AppController.h
 )
 
 set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/AppBase.cpp
-    ${SOURCES_DIR}/AppHelpController.cpp
+    ${SOURCES_DIR}/AppController.cpp
 )
 
 add_library(${TARGET} STATIC

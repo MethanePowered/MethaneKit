@@ -16,12 +16,12 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/AppHelpController.cpp
-Help displaying controller.
+FILE: Methane/Platform/AppController.cpp
+Base application controller providing commands like app close and help.
 
 ******************************************************************************/
 
-#include <Methane/Platform/AppHelpController.h>
+#include <Methane/Platform/AppController.h>
 
 #include <sstream>
 #include <cassert>
@@ -30,7 +30,7 @@ using namespace Methane;
 using namespace Methane::Platform;
 using namespace Methane::Platform::Input;
 
-AppHelpController::AppHelpController(AppBase& application, const std::string& application_help, bool show_command_line_help,
+AppController::AppController(AppBase& application, const std::string& application_help, bool show_command_line_help,
                                      const ActionByKeyboardState& action_by_keyboard_state)
     : Input::Controller(application_help)
     , Keyboard::ActionControllerBase<AppHelpAction>(action_by_keyboard_state, {})
@@ -39,12 +39,12 @@ AppHelpController::AppHelpController(AppBase& application, const std::string& ap
 {
 }
 
-void AppHelpController::OnKeyboardChanged(Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Keyboard::StateChange& state_change)
+void AppController::OnKeyboardChanged(Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Keyboard::StateChange& state_change)
 {
     Keyboard::ActionControllerBase<AppHelpAction>::OnKeyboardChanged(key, key_state, state_change);
 }
 
-void AppHelpController::OnKeyboardStateAction(AppHelpAction action)
+void AppController::OnKeyboardStateAction(AppHelpAction action)
 {
     switch(action)
     {
@@ -54,7 +54,7 @@ void AppHelpController::OnKeyboardStateAction(AppHelpAction action)
     }
 }
 
-std::string AppHelpController::GetKeyboardActionName(AppHelpAction action) const
+std::string AppController::GetKeyboardActionName(AppHelpAction action) const
 {
     switch (action)
     {
@@ -65,12 +65,12 @@ std::string AppHelpController::GetKeyboardActionName(AppHelpAction action) const
     }
 }
 
-IHelpProvider::HelpLines AppHelpController::GetHelp() const
+IHelpProvider::HelpLines AppController::GetHelp() const
 {
     return GetKeyboardHelp();
 }
 
-void AppHelpController::ShowHelp()
+void AppController::ShowHelp()
 {
     std::stringstream help_stream;
     std::string single_offset = "    ";
