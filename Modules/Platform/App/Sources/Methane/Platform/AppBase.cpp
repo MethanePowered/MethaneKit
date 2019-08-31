@@ -147,3 +147,12 @@ bool AppBase::HasError() const
 {
     return m_sp_deferred_message ? m_sp_deferred_message->type == Message::Type::Error : false;
 }
+
+bool AppBase::SetFullScreen(bool is_full_screen)
+{
+    if (m_settings.is_full_screen == is_full_screen)
+        return false;
+
+    m_settings.is_full_screen = is_full_screen;
+    return true;
+}

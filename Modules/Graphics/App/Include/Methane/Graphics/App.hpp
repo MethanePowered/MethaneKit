@@ -122,8 +122,6 @@ public:
 
     void Init() override
     {
-        Platform::App::Init();
-
         assert(m_sp_context);
         const Context::Settings& context_settings = m_sp_context->GetSettings();
 
@@ -171,6 +169,8 @@ public:
 
             m_frames.emplace_back(std::move(frame));
         }
+
+        Platform::App::Init();
     }
 
     bool Resize(const FrameSize& frame_size, bool /*is_minimized*/) override
@@ -269,6 +269,9 @@ public:
 
         SetWindowTitle(title_ss.str());
         m_title_update_timer.Reset();
+
+        // Keep window full-screen mode in sync with the context
+        SetFullScreen(context_settings.is_full_screen);
     }
 
     // Context::Callback interface
@@ -276,6 +279,7 @@ public:
     {
         m_frames.clear();
         m_sp_depth_texture.reset();
+        m_initialized = false;
     }
 
     // Context::Callback interface

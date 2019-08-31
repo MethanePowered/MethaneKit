@@ -416,6 +416,54 @@ void AppWin::ScheduleAlert()
 
 void AppWin::SetWindowTitle(const std::string& title_text)
 {
+    assert(!!m_env.window_handle);
     BOOL set_result = SetWindowTextW(m_env.window_handle, nowide::widen(title_text).c_str());
     assert(set_result);
+}
+
+bool AppWin::SetFullScreen(bool is_full_screen)
+{
+    if (!AppBase::SetFullScreen(is_full_screen))
+        return false;
+
+    assert(!!m_env.window_handle);
+    
+    RECT    window_rect     = {};
+    int32_t window_style    = WS_OVERLAPPEDWINDOW;
+    int32_t window_mode     = 0;
+    HWND    window_position = nullptr;
+
+    if (m_settings.is_full_screen)
+    {
+        GetWindowRect(m_env.window_handle, &m_window_rect);
+
+        window_style   &= ~(WS_CAPTION | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_THICKFRAME);
+        window_position = HWND_TOPMOST;
+        window_mode     = SW_MAXIMIZE;
+
+        // Get resolution and location of the monitor where current window is located
+        HMONITOR    monitor_handle = MonitorFromWindow(m_env.window_handle, MONITOR_DEFAULTTONEAREST);
+        MONITORINFO monitor_info   = {};
+        monitor_info.cbSize        = sizeof(MONITORINFO);
+        GetMonitorInfo(monitor_handle, &monitor_info);
+        window_rect = monitor_info.rcMonitor;
+    }
+    else
+    {
+        window_rect     = m_window_rect;
+        window_position = HWND_NOTOPMOST;
+        window_mode     = SW_NORMAL;
+    }
+
+    m_settings.width  = window_rect.right  - window_rect.left;
+    m_settings.height = window_rect.bottom - window_rect.top;
+
+    SetWindowLong(m_env.window_handle, GWL_STYLE, window_style);
+    SetWindowPos(m_env.window_handle, window_position,
+                 window_rect.left,    window_rect.top,
+                 window_rect.right  - window_rect.left,
+                 window_rect.bottom - window_rect.top,
+                 SWP_FRAMECHANGED | SWP_NOACTIVATE);
+
+    ShowWindow(m_env.window_handle, window_mode);
 }

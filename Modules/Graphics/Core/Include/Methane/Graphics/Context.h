@@ -57,6 +57,7 @@ struct Context : virtual Object
         Stencil     clear_stencil           = 0;
         uint32_t    frame_buffers_count     = 3;
         bool        vsync_enabled           = true;
+        bool        is_full_screen          = false;
         uint32_t    unsync_max_fps          = 1000; // MacOS only
     };
 
@@ -103,6 +104,7 @@ struct Context : virtual Object
 
     virtual bool SetVSyncEnabled(bool vsync_enabled) = 0;
     virtual bool SetFrameBuffersCount(uint32_t frame_buffers_count) = 0;
+    virtual bool SetFullScreen(bool is_full_screen) = 0;
 };
 
 } // namespace Graphics
