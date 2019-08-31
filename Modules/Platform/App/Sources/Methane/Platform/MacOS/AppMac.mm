@@ -133,3 +133,8 @@ bool AppMac::SetFullScreen(bool is_full_screen)
     }
     return true;
 }
+
+void AppMac::Close()
+{
+    [m_ns_window close];
+}

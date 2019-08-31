@@ -393,15 +393,7 @@ void AppWin::ShowAlert(const Message& msg)
 
     if (msg.type == Message::Type::Error)
     {
-        if (m_env.window_handle)
-        {
-            BOOL post_result = PostMessage(m_env.window_handle, WM_CLOSE, 0, 0);
-            assert(post_result != 0);
-        }
-        else
-        {
-            ExitProcess(0);
-        }
+        Close();
     }
 }
 
@@ -466,4 +458,17 @@ bool AppWin::SetFullScreen(bool is_full_screen)
                  SWP_FRAMECHANGED | SWP_NOACTIVATE);
 
     ShowWindow(m_env.window_handle, window_mode);
+}
+
+void AppWin::Close()
+{
+    if (m_env.window_handle)
+    {
+        BOOL post_result = PostMessage(m_env.window_handle, WM_CLOSE, 0, 0);
+        assert(post_result != 0);
+    }
+    else
+    {
+        ExitProcess(0);
+    }
 }

@@ -36,6 +36,7 @@ enum class AppHelpAction : uint32_t
     None = 0,
     
     ShowHelp,
+    CloseApp,
     
     Count
 };
@@ -46,7 +47,8 @@ class AppHelpController final
 {
 public:
     inline static const ActionByKeyboardState default_action_by_keyboard_state = {
-        { { Platform::Keyboard::Key::F1 }, AppHelpAction::ShowHelp  },
+        { { Platform::Keyboard::Key::F1 },                                    AppHelpAction::ShowHelp  },
+        { { Platform::Keyboard::Key::LeftSuper, Platform::Keyboard::Key::Q }, AppHelpAction::CloseApp  },
     };
     
     AppHelpController(AppBase& application, const std::string& application_help, bool show_command_line_help = false,
@@ -55,13 +57,15 @@ public:
     // Input::Controller implementation
     void OnKeyboardChanged(Platform::Keyboard::Key, Platform::Keyboard::KeyState, const Platform::Keyboard::StateChange& state_change) override;
     HelpLines GetHelp() const override;
+    
+    void ShowHelp();
 
 private:
     // Keyboard::ActionControllerBase interface
     void        OnKeyboardKeyAction(AppHelpAction, Platform::Keyboard::KeyState) override { }
     void        OnKeyboardStateAction(AppHelpAction action) override;
     std::string GetKeyboardActionName(AppHelpAction action) const override;
-    
+
     AppBase&            m_application;
     const bool          m_show_command_line_help;
 };
