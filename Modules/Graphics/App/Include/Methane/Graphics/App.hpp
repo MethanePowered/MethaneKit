@@ -125,16 +125,17 @@ public:
         Platform::App::Init();
 
         assert(m_sp_context);
+        const Context::Settings& context_settings = m_sp_context->GetSettings();
 
         // Create depth texture for FB rendering
-        if (m_initial_context_settings.depth_stencil_format != PixelFormat::Unknown)
+        if (context_settings.depth_stencil_format != PixelFormat::Unknown)
         {
             m_sp_depth_texture = Texture::CreateDepthStencilBuffer(*m_sp_context);
             m_sp_depth_texture->SetName("Depth Texture");
         }
 
         // Create frame resources
-        for (uint32_t frame_index = 0; frame_index < m_initial_context_settings.frame_buffers_count; ++frame_index)
+        for (uint32_t frame_index = 0; frame_index < context_settings.frame_buffers_count; ++frame_index)
         {
             FrameT frame(frame_index);
 
@@ -152,7 +153,7 @@ public:
                             RenderPass::Attachment::LoadAction::Clear,
                             RenderPass::Attachment::StoreAction::Store,
                         },
-                        m_initial_context_settings.clear_color
+                        context_settings.clear_color
                     )
                 },
                 RenderPass::DepthAttachment(
@@ -162,7 +163,7 @@ public:
                         RenderPass::Attachment::LoadAction::Clear,
                         RenderPass::Attachment::StoreAction::DontCare,
                     },
-                    m_initial_context_settings.clear_depth
+                    context_settings.clear_depth
                 ),
                 RenderPass::StencilAttachment(),
                 m_screen_pass_access
@@ -260,10 +261,10 @@ public:
         title_ss.precision(2);
         title_ss << m_settings.name << "        " 
                  << average_fps << " FPS (" 
-                 << std::fixed << average_frame_time_ms << " ms), VSync: "
-                 << (context_settings.vsync_enabled ? "ON" : "OFF")
+                 << std::fixed << average_frame_time_ms << " ms)"
                  << ", " << context_settings.frame_size.width << " x " << context_settings.frame_size.height
                  << ", " << std::to_string(context_settings.frame_buffers_count) << " FBs"
+                 << ", VSync: " << (context_settings.vsync_enabled ? "ON" : "OFF")
                  << ", GPU: " << m_sp_context->GetDevice().GetAdapterName();
 
         SetWindowTitle(title_ss.str());

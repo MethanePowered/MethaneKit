@@ -63,6 +63,16 @@ void AppContextController::OnKeyboardStateAction(AppContextAction action)
             }
         } break;
 
+        case AppContextAction::AddFrameBufferToSwapChain:
+        {
+            m_context.SetFrameBuffersCount(m_context.GetSettings().frame_buffers_count + 1);
+        } break;
+
+        case AppContextAction::RemoveFrameBufferFromSwapChain:
+        {
+            m_context.SetFrameBuffersCount(m_context.GetSettings().frame_buffers_count - 1);
+        } break;
+
         default: return;
     }
 }
@@ -71,10 +81,12 @@ std::string AppContextController::GetKeyboardActionName(AppContextAction action)
 {
     switch (action)
     {
-        case AppContextAction::None:         return "none";
-        case AppContextAction::SwitchVSync:  return "switch vertical synchronization";
-        case AppContextAction::SwitchDevice: return "switch device used for rendering";
-        default: assert(0);                  return "";
+        case AppContextAction::None:                            return "none";
+        case AppContextAction::SwitchVSync:                     return "switch vertical synchronization";
+        case AppContextAction::SwitchDevice:                    return "switch device used for rendering";
+        case AppContextAction::AddFrameBufferToSwapChain:       return "add frame buffer to swap-chain";
+        case AppContextAction::RemoveFrameBufferFromSwapChain:  return "remove frame buffer from swap-chain";
+        default: assert(0);                                     return "";
     }
 }
 

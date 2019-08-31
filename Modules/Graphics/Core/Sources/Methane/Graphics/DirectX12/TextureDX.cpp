@@ -171,6 +171,7 @@ void DepthStencilBufferTextureDX::Initialize(Depth depth_clear_value, Stencil st
             srv_desc.Texture2D.MipLevels             = 1;
             cp_device->CreateShaderResourceView(m_cp_resource.Get(), &srv_desc, GetNativeCPUDescriptorHandle(desc));
         } break;
+
         case DescriptorHeap::Type::DepthStencil:
         {
             D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc   = {};
@@ -178,6 +179,7 @@ void DepthStencilBufferTextureDX::Initialize(Depth depth_clear_value, Stencil st
             dsv_desc.ViewDimension                   = GetDsvDimension(m_settings.dimensions);
             cp_device->CreateDepthStencilView(m_cp_resource.Get(), &dsv_desc, GetNativeCPUDescriptorHandle(desc));
         } break;
+
         default:
             throw std::runtime_error("Unsupported usage of Depth-Stencil buffer.");
         }
