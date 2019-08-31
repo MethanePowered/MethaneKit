@@ -52,7 +52,7 @@ ContextDX::ContextDX(const Platform::AppEnvironment& env, const Data::Provider& 
     , m_platform_env(env)
 {
     ITT_FUNCTION_TASK();
-    Initialize(device);
+    Initialize(device, true);
 }
 
 ContextDX::~ContextDX()
@@ -80,7 +80,7 @@ void ContextDX::Release()
     static_cast<SystemDX&>(System::Get()).ReportLiveObjects();
 }
 
-void ContextDX::Initialize(Device& device)
+void ContextDX::Initialize(Device& device, bool deferred_heap_allocation)
 {
     ITT_FUNCTION_TASK();
 
@@ -129,7 +129,7 @@ void ContextDX::Initialize(Device& device)
 
     SetName(GetName());
 
-    ContextBase::Initialize(device);
+    ContextBase::Initialize(device, deferred_heap_allocation);
 }
 
 void ContextDX::OnCommandQueueCompleted(CommandQueue& /*cmd_queue*/, uint32_t /*frame_index*/)

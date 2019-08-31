@@ -68,6 +68,7 @@ public:
     uint32_t              GetFrameBufferIndex() const override  { return m_frame_buffer_index;  }
     const FpsCounter&     GetFpsCounter() const override        { return m_fps_counter; }
     bool                  SetVSyncEnabled(bool vsync_enabled) override;
+    bool                  SetFrameBuffersCount(uint32_t frame_buffers_count) override;
 
     // ContextBase interface
     virtual void OnCommandQueueCompleted(CommandQueue& cmd_queue, uint32_t frame_index) = 0;
@@ -85,7 +86,7 @@ protected:
     void OnPresentComplete();
     
     virtual void Release();
-    virtual void Initialize(Device& device);
+    virtual void Initialize(Device& device, bool deferred_heap_allocation);
 
     using Callbacks = std::vector<Callback::Ref>;
 

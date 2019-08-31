@@ -101,7 +101,7 @@ protected:
 
     // ContextBase overrides
     void Release() override;
-    void Initialize(Device& device) override;
+    void Initialize(Device& device, bool deferred_heap_allocation) override;
 
     const Platform::AppEnvironment m_platform_env;
     wrl::ComPtr<IDXGISwapChain3>   m_cp_swap_chain;

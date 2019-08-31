@@ -100,7 +100,7 @@ void ContextBase::Reset(Device& device)
 
     WaitForGpu(WaitFor::RenderComplete);
     Release();
-    Initialize(device);
+    Initialize(device, false);
 }
 
 void ContextBase::Present()
@@ -155,13 +155,12 @@ void ContextBase::Release()
         callback_ref.get().OnContextReleased();
     }
 
-    m_resource_manager_init_settings.deferred_heap_allocation   = false;
     m_resource_manager_init_settings.default_heap_sizes         = m_resource_manager.GetDescriptorHeapSizes(true, false);
     m_resource_manager_init_settings.shader_visible_heap_sizes  = m_resource_manager.GetDescriptorHeapSizes(true, true);
     m_resource_manager.Release();
 }
 
-void ContextBase::Initialize(Device& device)
+void ContextBase::Initialize(Device& device, bool deferred_heap_allocation)
 {
     ITT_FUNCTION_TASK();
 
@@ -177,6 +176,12 @@ void ContextBase::Initialize(Device& device)
         m_sp_device->SetName(context_name + " Device");
     }
 
+    m_resource_manager_init_settings.deferred_heap_allocation = deferred_heap_allocation;
+    if (deferred_heap_allocation)
+    {
+        m_resource_manager_init_settings.default_heap_sizes        = {};
+        m_resource_manager_init_settings.shader_visible_heap_sizes = {};
+    }
     m_resource_manager.Initialize(m_resource_manager_init_settings);
 
     for (const Callback::Ref& callback_ref : m_callbacks)
@@ -246,6 +251,25 @@ bool ContextBase::SetVSyncEnabled(bool vsync_enabled)
         return false;
 
     m_settings.vsync_enabled = vsync_enabled;
+    return true;
+}
+
+bool ContextBase::SetFrameBuffersCount(uint32_t frame_buffers_count)
+{
+    ITT_FUNCTION_TASK();
+    frame_buffers_count = std::min(std::max(2u, frame_buffers_count), 10u);
+
+    if (m_settings.frame_buffers_count == frame_buffers_count)
+        return false;
+
+    WaitForGpu(WaitFor::RenderComplete);
+
+    DeviceBase::Ptr sp_device = m_sp_device;
+    m_settings.frame_buffers_count = frame_buffers_count;
+
+    Release();
+    Initialize(*sp_device, true);
+
     return true;
 }
 

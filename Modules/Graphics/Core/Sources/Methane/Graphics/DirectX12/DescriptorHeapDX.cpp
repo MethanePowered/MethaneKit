@@ -58,7 +58,7 @@ DescriptorHeapDX::DescriptorHeapDX(ContextBase& context, const Settings& setting
     , m_descriptor_size(GetContextDX().GetDeviceDX().GetNativeDevice()->GetDescriptorHandleIncrementSize(m_descriptor_heap_type))
 {
     ITT_FUNCTION_TASK();
-    if (!m_settings.deferred_allocation)
+    if (m_deferred_size > 0)
     {
         DescriptorHeapDX::Allocate();
     }

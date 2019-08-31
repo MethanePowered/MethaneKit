@@ -34,13 +34,15 @@ namespace Graphics
 {
 
 struct Context;
-    
+
 enum class AppContextAction : uint32_t
 {
     None = 0,
     
     SwitchVSync,
     SwitchDevice,
+    AddFrameBufferToSwapChain,
+    RemoveFrameBufferFromSwapChain,
     
     Count
 };
@@ -51,8 +53,10 @@ class AppContextController final
 {
 public:
     inline static const ActionByKeyboardState default_action_by_keyboard_state = {
-        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::V }, AppContextAction::SwitchVSync  },
-        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::X }, AppContextAction::SwitchDevice },
+        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::V     }, AppContextAction::SwitchVSync                    },
+        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::X     }, AppContextAction::SwitchDevice                   },
+        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::Equal }, AppContextAction::AddFrameBufferToSwapChain      },
+        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::Minus }, AppContextAction::RemoveFrameBufferFromSwapChain },
     };
 
     AppContextController(Context& context, const ActionByKeyboardState& action_by_keyboard_state = default_action_by_keyboard_state);
