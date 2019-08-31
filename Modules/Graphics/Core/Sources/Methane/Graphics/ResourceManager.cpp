@@ -208,8 +208,8 @@ ResourceManager::DescriptorHeapSizeByType ResourceManager::GetDescriptorHeapSize
         {
             assert(!!sp_desc_heap);
             assert(sp_desc_heap->GetSettings().type == heap_type);
-            if (for_shader_visible_heaps && !sp_desc_heap->IsShaderVisible() ||
-                !for_shader_visible_heaps && sp_desc_heap->IsShaderVisible())
+            if ( (for_shader_visible_heaps && !sp_desc_heap->IsShaderVisible()) ||
+                (!for_shader_visible_heaps &&  sp_desc_heap->IsShaderVisible()) )
                 continue;
 
             const uint32_t heap_size = get_allocated_size ? sp_desc_heap->GetAllocatedSize() : sp_desc_heap->GetDeferredSize();

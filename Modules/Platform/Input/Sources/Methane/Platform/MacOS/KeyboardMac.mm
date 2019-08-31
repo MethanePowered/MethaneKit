@@ -73,7 +73,7 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
         { 0x27, Key::Apostrophe     },
         { 0x2A, Key::BackSlash      },
         { 0x2B, Key::Comma          },
-        { 0x18, Key::KeyPadEqual    },
+        { 0x18, Key::Equal          },
         { 0x32, Key::GraveAccent    },
         { 0x21, Key::LeftBracket    },
         { 0x1B, Key::Minus          },
