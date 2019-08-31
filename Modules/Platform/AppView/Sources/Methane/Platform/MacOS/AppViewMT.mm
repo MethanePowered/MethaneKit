@@ -236,12 +236,16 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
 
 - (void) redraw
 {
-    self.currentDrawable = [self.metalLayer nextDrawable];
+    if (!self.redrawing)
+        return;
     
-    if ([self.delegate respondsToSelector:@selector(drawInView:)])
-    {
-        [self.delegate drawInView:self];
-    }
+    bool delegateCanDrawInView = [self.delegate respondsToSelector:@selector(drawInView:)];
+    assert(delegateCanDrawInView);
+    if (!delegateCanDrawInView)
+        return;
+    
+    self.currentDrawable = [self.metalLayer nextDrawable];
+    [self.delegate drawInView:self];
 }
 
 - (void) windowWillClose:(NSNotification*)notification

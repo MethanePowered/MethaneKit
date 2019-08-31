@@ -84,13 +84,13 @@ void ContextMT::Release()
     ContextBase::Release();
 }
 
-void ContextMT::Initialize(Device& device)
+void ContextMT::Initialize(Device& device, bool deferred_heap_allocation)
 {
     ITT_FUNCTION_TASK();
     
     m_dispatch_semaphore = dispatch_semaphore_create(m_settings.frame_buffers_count);
     
-    ContextBase::Initialize(device);
+    ContextBase::Initialize(device, deferred_heap_allocation);
     
     m_app_view.redrawing = YES;
 }
