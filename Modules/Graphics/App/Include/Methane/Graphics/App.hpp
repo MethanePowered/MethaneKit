@@ -118,6 +118,8 @@ public:
         m_sp_context->AddCallback(*this);
 
         m_input_state.AddControllers({ std::make_shared<AppContextController>(*m_sp_context) });
+        
+        SetFullScreen(m_initial_context_settings.is_full_screen);
     }
 
     void Init() override
@@ -272,6 +274,14 @@ public:
 
         // Keep window full-screen mode in sync with the context
         SetFullScreen(context_settings.is_full_screen);
+    }
+    
+    bool SetFullScreen(bool is_full_screen) override
+    {
+        if (m_sp_context)
+            m_sp_context->SetFullScreen(is_full_screen);
+        
+        return Platform::App::SetFullScreen(is_full_screen);
     }
 
     // Context::Callback interface

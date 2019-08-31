@@ -22,6 +22,7 @@ MacOS application delegate implementation.
 ******************************************************************************/
 
 #import "AppDelegate.hh"
+#import "WindowDelegate.hh"
 
 #include <Methane/Platform/MacOS/AppMac.hh>
 #include <Methane/Platform/MacOS/Types.hh>
@@ -54,9 +55,10 @@ using namespace Methane::Platform;
                             NSWindowStyleMaskMiniaturizable;
 
     NSBackingStoreType backing = NSBackingStoreBuffered;
-
+    
     _window = [[NSWindow alloc] initWithContentRect:frame styleMask:styleMask backing:backing defer:YES];
     _window.title = MacOS::ConvertToNSType<std::string, NSString*>(p_settings->name);
+    _window.delegate = [[WindowDelegate alloc] initWithApp:p_app];
     [_window center];
     
     NSRect backing_frame = [mainScreen convertRectToBacking:frame];
@@ -94,22 +96,36 @@ using namespace Methane::Platform;
     }
 }
 
-- (void)applicationWillFinishLaunching:(NSNotification *)notification
+- (void) applicationWillFinishLaunching:(NSNotification *)notification
 {
     [self.window makeKeyAndOrderFront:self];
 }
 
-- (void)applicationDidFinishLaunching:(NSNotification *)notification
+- (void) applicationDidFinishLaunching:(NSNotification *)notification
 {
     [self.window makeFirstResponder: self.viewController.view];
 }
 
-- (void)applicationWillTerminate:(NSNotification *)notification
+- (void) windowWillEnterFullScreen:(NSNotification *)notification
+{
+    AppMac* p_app = [self.viewController getApp];
+    assert(!!p_app);
+    p_app->SetFullScreenInternal(true);
+}
+
+- (void) windowWillExitFullScreen:(NSNotification *)notification
+{
+    AppMac* p_app = [self.viewController getApp];
+    assert(!!p_app);
+    p_app->SetFullScreenInternal(false);
+}
+
+- (void) applicationWillTerminate:(NSNotification *)notification
 {
     // Insert code here to tear down your application
 }
 
-- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender
+- (BOOL) applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender
 {
     return YES;
 }

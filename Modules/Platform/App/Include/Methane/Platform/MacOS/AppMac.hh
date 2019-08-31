@@ -63,7 +63,8 @@ public:
     void Close() override;
 
     void SetWindow(NSWindowType* ns_window);
-    NSWindowType* GetWindow() { return m_ns_window; }
+    bool SetFullScreenInternal(bool is_full_screen) { return AppBase::SetFullScreen(is_full_screen); }
+    NSWindowType* GetWindow()                       { return m_ns_window; }
 
 protected:
     // AppBase interface

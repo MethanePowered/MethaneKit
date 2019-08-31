@@ -19,12 +19,14 @@ elseif(APPLE)
     set(PLATFORM_HEADERS
         ${INCLUDE_PLATFORM_DIR}/AppMac.hh
         ${SOURCES_PLATFORM_DIR}/AppDelegate.hh
+        ${SOURCES_PLATFORM_DIR}/WindowDelegate.hh
         ${SOURCES_PLATFORM_DIR}/AppViewController.hh
     )
 
     set(PLATFORM_SOURCES
         ${SOURCES_PLATFORM_DIR}/AppMac.mm
         ${SOURCES_PLATFORM_DIR}/AppDelegate.mm
+        ${SOURCES_PLATFORM_DIR}/WindowDelegate.mm
         ${SOURCES_PLATFORM_DIR}/AppViewController.mm
     )
 

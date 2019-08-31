@@ -24,6 +24,21 @@ MacOS application implementation.
 #include <Methane/Platform/MacOS/AppMac.hh>
 #include <Methane/Platform/MacOS/Types.hh>
 
+@interface NSWindow (FullScreen)
+
+- (BOOL)mn_isFullScreen;
+
+@end
+
+@implementation NSWindow (FullScreen)
+
+- (BOOL)mn_isFullScreen
+{
+    return (([self styleMask] & NSFullScreenWindowMask) == NSFullScreenWindowMask);
+}
+
+@end
+
 using namespace Methane::Platform;
 using namespace Methane::MacOS;
 
@@ -109,7 +124,6 @@ void AppMac::SetWindowTitle(const std::string& title_text)
 void AppMac::SetWindow(NSWindow* ns_window)
 {
     m_ns_window = ns_window;
-    
 }
 
 void AppMac::ShowAlert(const Message& msg)
@@ -127,7 +141,7 @@ bool AppMac::SetFullScreen(bool is_full_screen)
     if (!AppBase::SetFullScreen(is_full_screen))
         return false;
     
-    if (m_ns_window)
+    if ([m_ns_window mn_isFullScreen] != is_full_screen)
     {
         [m_ns_window toggleFullScreen:nil];
     }
