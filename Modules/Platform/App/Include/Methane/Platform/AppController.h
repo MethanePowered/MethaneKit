@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/AppHelpController.h
-Help displaying controller.
+FILE: Methane/Platform/AppController.h
+Base application controller providing commands like app close and help.
 
 ******************************************************************************/
 
@@ -41,7 +41,7 @@ enum class AppHelpAction : uint32_t
     Count
 };
 
-class AppHelpController final
+class AppController final
     : public Input::Controller
     , public Platform::Keyboard::ActionControllerBase<AppHelpAction>
 {
@@ -51,7 +51,7 @@ public:
         { { Platform::Keyboard::OS::key_left_ctrl, Platform::Keyboard::Key::Q }, AppHelpAction::CloseApp  },
     };
     
-    AppHelpController(AppBase& application, const std::string& application_help, bool show_command_line_help = false,
+    AppController(AppBase& application, const std::string& application_help, bool show_command_line_help = false,
                       const ActionByKeyboardState& action_by_keyboard_state = default_action_by_keyboard_state);
     
     // Input::Controller implementation
