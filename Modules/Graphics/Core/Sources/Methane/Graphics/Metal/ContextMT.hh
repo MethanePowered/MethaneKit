@@ -59,7 +59,7 @@ public:
 protected:
     // ContextBase overrides
     void Release() override;
-    void Initialize(Device& device) override;
+    void Initialize(Device& device, bool deferred_heap_allocation) override;
     
     AppViewMT*              m_app_view;
     dispatch_semaphore_t    m_dispatch_semaphore;
