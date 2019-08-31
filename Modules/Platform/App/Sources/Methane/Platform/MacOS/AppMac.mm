@@ -109,6 +109,7 @@ void AppMac::SetWindowTitle(const std::string& title_text)
 void AppMac::SetWindow(NSWindow* ns_window)
 {
     m_ns_window = ns_window;
+    
 }
 
 void AppMac::ShowAlert(const Message& msg)
@@ -119,4 +120,16 @@ void AppMac::ShowAlert(const Message& msg)
                     andStyle: ConvertMessageTypeToNSAlertStyle(msg.type)];
 
     AppBase::ShowAlert(msg);
+}
+
+bool AppMac::SetFullScreen(bool is_full_screen)
+{
+    if (!AppBase::SetFullScreen(is_full_screen))
+        return false;
+    
+    if (m_ns_window)
+    {
+        [m_ns_window toggleFullScreen:nil];
+    }
+    return true;
 }

@@ -59,6 +59,7 @@ public:
     int Run(const RunArgs& args) override;
     void Alert(const Message& msg, bool deferred = false) override;
     void SetWindowTitle(const std::string& title_text) override;
+    bool SetFullScreen(bool is_full_screen) override;
 
     void SetWindow(NSWindowType* ns_window);
     NSWindowType* GetWindow() { return m_ns_window; }
