@@ -46,8 +46,9 @@ public:
     struct Settings
     {
         std::string name;
-        double      width;   // if width < 1.0 use as ratio of desktop size; else use as exact size in pixels/dots
-        double      height;  // same rule applies for height
+        double      width          = 0.8;   // if width < 1.0 use as ratio of desktop size; else use as exact size in pixels/dots
+        double      height         = 0.8;   // same rule applies for height
+        bool        is_full_screen = false;
     };
 
     struct RunArgs
@@ -85,6 +86,7 @@ public:
     virtual void Render() = 0;
     virtual void Alert(const Message& msg, bool deferred = false);
     virtual void SetWindowTitle(const std::string& title_text) = 0;
+    virtual bool SetFullScreen(bool is_full_screen);
 
     bool HasError() const;
 

@@ -39,6 +39,7 @@ enum class AppContextAction : uint32_t
 {
     None = 0,
     
+    SwitchFullScreen,
     SwitchVSync,
     SwitchDevice,
     AddFrameBufferToSwapChain,
@@ -53,6 +54,7 @@ class AppContextController final
 {
 public:
     inline static const ActionByKeyboardState default_action_by_keyboard_state = {
+        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::F     }, AppContextAction::SwitchFullScreen               },
         { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::V     }, AppContextAction::SwitchVSync                    },
         { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::X     }, AppContextAction::SwitchDevice                   },
         { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::Equal }, AppContextAction::AddFrameBufferToSwapChain      },

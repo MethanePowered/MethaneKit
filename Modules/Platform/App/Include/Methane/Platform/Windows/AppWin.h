@@ -46,6 +46,7 @@ public:
     int Run(const RunArgs& args) override;
     void Alert(const Message& msg, bool deferred = false) override;
     void SetWindowTitle(const std::string& title_text) override;
+    bool SetFullScreen(bool is_full_screen) override;
 
 protected:
     // AppBase interface
@@ -60,6 +61,7 @@ protected:
 
 private:
     Mouse::State m_mouse_state;
+    RECT         m_window_rect = {};
 };
 
 } // namespace Platform

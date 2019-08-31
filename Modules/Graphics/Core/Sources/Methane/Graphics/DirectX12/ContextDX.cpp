@@ -41,6 +41,20 @@ DirectX 12 implementation of the context interface.
 using namespace Methane;
 using namespace Methane::Graphics;
 
+void SetWindowTopMostFlag(HWND window_handle, bool is_top_most)
+{
+    ITT_FUNCTION_TASK();
+    RECT window_rect = {};
+    GetWindowRect(window_handle, &window_rect);
+
+    const HWND window_position = is_top_most ? HWND_TOPMOST : HWND_NOTOPMOST;
+    SetWindowPos(window_handle, window_position,
+                 window_rect.left,    window_rect.top,
+                 window_rect.right  - window_rect.left,
+                 window_rect.bottom - window_rect.top,
+                 SWP_FRAMECHANGED | SWP_NOACTIVATE);
+}
+
 Context::Ptr Context::Create(const Platform::AppEnvironment& env, const Data::Provider& data_provider, Device& device, const Context::Settings& settings)
 {
     ITT_FUNCTION_TASK();
@@ -86,6 +100,13 @@ void ContextDX::Initialize(Device& device, bool deferred_heap_allocation)
 
     m_sp_device = static_cast<DeviceBase&>(device).GetPtr();
 
+    // DXGI does not allow creating a swapchain targeting a window which has fullscreen styles(no border + topmost)
+    if (m_settings.is_full_screen)
+    {
+        // Temporary remove top-most flag and restore it when swap-chain is created
+        SetWindowTopMostFlag(m_platform_env.window_handle, false);
+    }
+
     // Initialize swap-chain
 
     DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
@@ -97,17 +118,32 @@ void ContextDX::Initialize(Device& device, bool deferred_heap_allocation)
     swap_chain_desc.SwapEffect            = DXGI_SWAP_EFFECT_FLIP_DISCARD;
     swap_chain_desc.SampleDesc.Count      = 1;
 
-    const wrl::ComPtr<IDXGIFactory4>& cp_dxgi_factory = SystemDX::Get().GetNativeFactory();
+    const wrl::ComPtr<IDXGIFactory6>& cp_dxgi_factory = SystemDX::Get().GetNativeFactory();
     assert(!!cp_dxgi_factory);
+
+    BOOL present_tearing_suport = FALSE;
+    ThrowIfFailed(cp_dxgi_factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &present_tearing_suport, sizeof(present_tearing_suport)));
+    if (present_tearing_suport)
+    {
+        swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+    }
 
     wrl::ComPtr<ID3D12CommandQueue>& cp_command_queue = GetRenderCommandQueueDX().GetNativeCommandQueue();
     assert(!!cp_command_queue);
 
-    wrl::ComPtr<IDXGISwapChain1>  cp_swap_chain;
+    wrl::ComPtr<IDXGISwapChain1> cp_swap_chain;
     ThrowIfFailed(cp_dxgi_factory->CreateSwapChainForHwnd(cp_command_queue.Get(), m_platform_env.window_handle, &swap_chain_desc, NULL, NULL, &cp_swap_chain));
     assert(!!cp_swap_chain);
 
+    if (m_settings.is_full_screen)
+    {
+        // Restore top-most flag
+        SetWindowTopMostFlag(m_platform_env.window_handle, true);
+    }
+
     ThrowIfFailed(cp_swap_chain.As(&m_cp_swap_chain));
+
+    // With tearing support enabled we will handle ALT+Enter key presses in the window message loop rather than let DXGI handle it by calling SetFullscreenState
     ThrowIfFailed(cp_dxgi_factory->MakeWindowAssociation(m_platform_env.window_handle, DXGI_MWA_NO_ALT_ENTER));
 
     // Initialize frame fences
@@ -196,6 +232,7 @@ void ContextDX::Resize(const FrameSize& frame_size)
     DXGI_SWAP_CHAIN_DESC1 desc = {};
     m_cp_swap_chain->GetDesc1(&desc);
     ThrowIfFailed(m_cp_swap_chain->ResizeBuffers(m_settings.frame_buffers_count, frame_size.width, frame_size.height, desc.Format, desc.Flags));
+
     m_frame_buffer_index = m_cp_swap_chain->GetCurrentBackBufferIndex();
 }
 

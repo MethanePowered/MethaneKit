@@ -138,6 +138,18 @@ void ContextBase::OnPresentComplete()
     m_fps_counter.OnFramePresented();
 }
 
+void ContextBase::ResetWithSettings(const Settings& settings)
+{
+    ITT_FUNCTION_TASK();
+    WaitForGpu(WaitFor::RenderComplete);
+
+    DeviceBase::Ptr sp_device = m_sp_device;
+    m_settings = settings;
+
+    Release();
+    Initialize(*sp_device, true);
+}
+
 void ContextBase::Release()
 {
     ITT_FUNCTION_TASK();
@@ -262,14 +274,22 @@ bool ContextBase::SetFrameBuffersCount(uint32_t frame_buffers_count)
     if (m_settings.frame_buffers_count == frame_buffers_count)
         return false;
 
-    WaitForGpu(WaitFor::RenderComplete);
+    Settings new_settings = m_settings;
+    new_settings.frame_buffers_count = frame_buffers_count;
+    ResetWithSettings(new_settings);
 
-    DeviceBase::Ptr sp_device = m_sp_device;
-    m_settings.frame_buffers_count = frame_buffers_count;
+    return true;
+}
 
-    Release();
-    Initialize(*sp_device, true);
+bool ContextBase::SetFullScreen(bool is_full_screen)
+{
+    ITT_FUNCTION_TASK();
+    if (m_settings.is_full_screen == is_full_screen)
+        return false;
 
+    // No need to reset context for switching to full-screen
+    // Application window state is kept in sync with context by the user code and handles window resizing
+    m_settings.is_full_screen = is_full_screen;
     return true;
 }
 

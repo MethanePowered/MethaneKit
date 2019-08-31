@@ -69,6 +69,7 @@ public:
     const FpsCounter&     GetFpsCounter() const override        { return m_fps_counter; }
     bool                  SetVSyncEnabled(bool vsync_enabled) override;
     bool                  SetFrameBuffersCount(uint32_t frame_buffers_count) override;
+    bool                  SetFullScreen(bool is_full_screen) override;
 
     // ContextBase interface
     virtual void OnCommandQueueCompleted(CommandQueue& cmd_queue, uint32_t frame_index) = 0;
@@ -84,7 +85,8 @@ public:
 protected:
     void UploadResources();
     void OnPresentComplete();
-    
+    void ResetWithSettings(const Settings& settings);
+
     virtual void Release();
     virtual void Initialize(Device& device, bool deferred_heap_allocation);
 

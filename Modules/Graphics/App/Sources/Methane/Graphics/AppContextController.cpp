@@ -49,10 +49,21 @@ void AppContextController::OnKeyboardStateAction(AppContextAction action)
 {
     switch (action)
     {
+        case AppContextAction::SwitchFullScreen:
+            m_context.SetFullScreen(!m_context.GetSettings().is_full_screen);
+            break;
+
         case AppContextAction::SwitchVSync:
-        {
             m_context.SetVSyncEnabled(!m_context.GetSettings().vsync_enabled);
-        } break;
+            break;
+
+        case AppContextAction::AddFrameBufferToSwapChain:
+            m_context.SetFrameBuffersCount(m_context.GetSettings().frame_buffers_count + 1);
+            break;
+
+        case AppContextAction::RemoveFrameBufferFromSwapChain:
+            m_context.SetFrameBuffersCount(m_context.GetSettings().frame_buffers_count - 1);
+            break;
 
         case AppContextAction::SwitchDevice:
         {
@@ -61,16 +72,6 @@ void AppContextController::OnKeyboardStateAction(AppContextAction action)
             {
                 m_context.Reset(*sp_next_device);
             }
-        } break;
-
-        case AppContextAction::AddFrameBufferToSwapChain:
-        {
-            m_context.SetFrameBuffersCount(m_context.GetSettings().frame_buffers_count + 1);
-        } break;
-
-        case AppContextAction::RemoveFrameBufferFromSwapChain:
-        {
-            m_context.SetFrameBuffersCount(m_context.GetSettings().frame_buffers_count - 1);
         } break;
 
         default: return;
@@ -82,6 +83,7 @@ std::string AppContextController::GetKeyboardActionName(AppContextAction action)
     switch (action)
     {
         case AppContextAction::None:                            return "none";
+        case AppContextAction::SwitchFullScreen:                return "switch full-screen mode";
         case AppContextAction::SwitchVSync:                     return "switch vertical synchronization";
         case AppContextAction::SwitchDevice:                    return "switch device used for rendering";
         case AppContextAction::AddFrameBufferToSwapChain:       return "add frame buffer to swap-chain";
