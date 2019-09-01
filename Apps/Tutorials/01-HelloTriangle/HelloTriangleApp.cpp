@@ -144,8 +144,8 @@ void HelloTriangleApp::Render()
 
     // Wait for previous frame rendering is completed and switch to next frame
     m_sp_context->WaitForGpu(gfx::Context::WaitFor::FramePresented);
-
     HelloTriangleFrame& frame = GetCurrentFrame();
+
     assert(!!frame.sp_cmd_list);
     assert(!!m_sp_vertex_buffer);
     assert(!!m_sp_state);

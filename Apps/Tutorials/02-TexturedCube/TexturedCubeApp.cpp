@@ -215,11 +215,6 @@ void TexturedCubeApp::Update()
     m_shader_uniforms.mvp_matrix     = mv_matrix * proj_matrix;
     m_shader_uniforms.model_matrix   = model_matrix;
     m_shader_uniforms.eye_position   = gfx::Vector4f(m_camera.GetOrientation().eye, 1.f);
-
-    // Update constant buffer related to current frame
-    TexturedCubeFrame& frame = GetCurrentFrame();
-    assert(!!frame.sp_uniforms_buffer);
-    frame.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(m_shader_uniforms));
 }
 
 void TexturedCubeApp::Render()
@@ -231,13 +226,17 @@ void TexturedCubeApp::Render()
 
     // Wait for previous frame rendering is completed and switch to next frame
     m_sp_context->WaitForGpu(gfx::Context::WaitFor::FramePresented);
-
     TexturedCubeFrame& frame = GetCurrentFrame();
+
+    assert(!!frame.sp_uniforms_buffer);
     assert(!!frame.sp_cmd_list);
     assert(!!frame.sp_resource_bindings);
     assert(!!m_sp_vertex_buffer);
     assert(!!m_sp_index_buffer);
     assert(!!m_sp_state);
+
+    // Update uniforms buffer related to current frame
+    frame.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(Uniforms));
 
     // Issue commands for cube rendering
     frame.sp_cmd_list->Reset(*m_sp_state, "Cube redering");

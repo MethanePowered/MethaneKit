@@ -114,7 +114,8 @@ private:
     {
         gfx::Buffer::Ptr sp_vertex;
         gfx::Buffer::Ptr sp_index;
-        MeshUniforms     uniforms = { };
+        MeshUniforms     shadow_pass_uniforms = { };
+        MeshUniforms     final_pass_uniforms  = { };
 
         template<typename VType>
         void Init(const gfx::BaseMesh<VType>& mesh_data, gfx::Context& context, const std::string& base_name);
