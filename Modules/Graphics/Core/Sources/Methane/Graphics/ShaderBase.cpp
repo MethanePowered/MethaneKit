@@ -27,7 +27,10 @@ Base implementation of the shader interface.
 
 #include <cassert>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 std::string Shader::GetTypeName(Type shader_type) noexcept
 {
@@ -86,3 +89,6 @@ std::string ShaderBase::GetCompiledEntryFunctionName() const
     }
     return entry_func_steam.str();
 }
+
+} // namespace Graphics
+} // namespace Methane

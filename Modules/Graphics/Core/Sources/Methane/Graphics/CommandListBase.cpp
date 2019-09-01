@@ -32,7 +32,10 @@ Base implementation of the command list interface.
 
 #include <cassert>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 std::string CommandListBase::GetStateName(State state)
 {
@@ -199,3 +202,6 @@ const CommandQueueBase& CommandListBase::GetCommandQueueBase() const
     assert(!!m_sp_command_queue);
     return static_cast<const CommandQueueBase&>(*m_sp_command_queue);
 }
+
+} // namespace Graphics
+} // namespace Methane

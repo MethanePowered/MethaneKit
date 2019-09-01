@@ -27,7 +27,10 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps
 
 #include <cassert>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 DescriptorHeap::DescriptorHeap(ContextBase& context, const Settings& settings)
     : m_context(context)
@@ -152,3 +155,6 @@ std::string DescriptorHeap::GetTypeName(Type heap_type)
         default:                    return "Undefined";
     }
 }
+
+} // namespace Graphics
+} // namespace Methane

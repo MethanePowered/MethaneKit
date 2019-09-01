@@ -28,8 +28,10 @@ Base implementation of the buffer interface.
 
 #include <cassert>
 
-using namespace Methane;
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 BufferBase::BufferBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : ResourceNT(Resource::Type::Buffer, settings.usage_mask, context, descriptor_by_usage)
@@ -67,3 +69,6 @@ std::string Buffer::GetBufferTypeName(Type type) noexcept
     }
     return "Unknown";
 }
+
+} // namespace Graphics
+} // namespace Methane

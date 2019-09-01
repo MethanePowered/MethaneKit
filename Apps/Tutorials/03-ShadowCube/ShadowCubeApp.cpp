@@ -28,7 +28,10 @@ Tutorial demonstrating shadow-pass rendering with Methane graphics API
 #include <cml/mathlib/mathlib.h>
 #include <cassert>
 
-using namespace Methane::Tutorials;
+namespace Methane
+{
+namespace Tutorials
+{
 
 // Common application settings
 static const gfx::FrameSize           g_shadow_map_size(1024, 1024);
@@ -505,7 +508,10 @@ void ShadowCubeApp::OnContextReleased()
     GraphicsApp::OnContextReleased();
 }
 
+} // namespace Tutorials
+} // namespace Methane
+
 int main(int argc, const char* argv[])
 {
-    return ShadowCubeApp().Run({ argc, argv });
+    return Methane::Tutorials::ShadowCubeApp().Run({ argc, argv });
 }

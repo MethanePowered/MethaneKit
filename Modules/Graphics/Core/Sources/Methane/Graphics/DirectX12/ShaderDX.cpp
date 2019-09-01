@@ -39,14 +39,10 @@ DirectX 12 implementation of the shader interface.
 #include <sstream>
 #include <cassert>
 
-using namespace Methane::Graphics;
-
-#if defined(_DEBUG)
-// Enable better shader debugging with the graphics debugging tools.
-UINT g_shader_compile_flags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-#else
-UINT g_shader_compile_flags = 0;
-#endif
+namespace Methane
+{
+namespace Graphics
+{
 
 std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type) noexcept
 {
@@ -279,6 +275,13 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
 
+#if defined(_DEBUG)
+    // Enable better shader debugging with the graphics debugging tools.
+    const UINT shader_compile_flags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#else
+    const UINT shader_compile_flags = 0;
+#endif
+
     std::vector<D3D_SHADER_MACRO> macro_definitions;
     for (const auto& definition : m_settings.compile_definitions)
     {
@@ -295,7 +298,7 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
             D3D_COMPILE_STANDARD_FILE_INCLUDE,
             m_settings.entry_target.function_name.c_str(),
             m_settings.entry_target.compile_target.c_str(),
-            g_shader_compile_flags,
+            shader_compile_flags,
             0,
             &m_cp_byte_code,
             &error_blob
@@ -452,3 +455,6 @@ ContextDX& ShaderDX::GetContextDX()
     ITT_FUNCTION_TASK();
     return static_cast<class ContextDX&>(m_context);
 }
+
+} // namespace Graphics
+} // namespace Methane

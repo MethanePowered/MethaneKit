@@ -38,8 +38,10 @@ by decoding them from popular image formats.
 
 #endif
 
-using namespace Methane;
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 ImageLoader::ImageLoader(Data::Provider& data_provider)
     : m_data_provider(data_provider)
@@ -112,3 +114,6 @@ Texture::Ptr ImageLoader::CreateImageTexture(Context& context, const std::string
 #endif
 
 }
+
+} // namespace Graphics
+} // namespace Methane

@@ -36,8 +36,10 @@ Metal implementation of the program interface.
 
 #include <cassert>
 
-using namespace Methane;
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 template<typename TMetalResource>
 void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const TMetalResource& mtl_buffer, uint32_t arg_index) noexcept;
@@ -257,3 +259,6 @@ void ProgramMT::SetNativeShaderArguments(Shader::Type shader_type, NSArray<MTLAr
         GetShaderMT(shader_type).SetNativeArguments(mtl_arguments);
     }
 }
+
+} // namespace Graphics
+} // namespace Methane

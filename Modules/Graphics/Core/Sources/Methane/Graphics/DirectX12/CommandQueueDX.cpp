@@ -33,7 +33,10 @@ DirectX 12 implementation of the command queue interface.
 
 #include <cassert>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 CommandQueue::Ptr CommandQueue::Create(Context& context)
 {
@@ -95,3 +98,6 @@ ContextDX& CommandQueueDX::GetContextDX()
     ITT_FUNCTION_TASK();
     return static_cast<class ContextDX&>(m_context);
 }
+
+} // namespace Graphics
+} // namespace Methane

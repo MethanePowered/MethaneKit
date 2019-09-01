@@ -32,19 +32,16 @@ Metal implementation of the resource interface.
 
 #import <Metal/Metal.h>
 
-namespace Methane {
-namespace Graphics {
+namespace Methane
+{
+namespace Graphics
+{
 
 struct ResourceContainerMT
 {
     std::vector<id<MTLBuffer>>  buffers;
     std::vector<id<MTLTexture>> textures;
 };
-
-}
-}
-
-using namespace Methane::Graphics;
 
 ResourceBase::ReleasePool::Ptr ResourceBase::ReleasePool::Create()
 {
@@ -104,3 +101,6 @@ ContextMT& ResourceMT::GetContextMT() noexcept
     ITT_FUNCTION_TASK();
     return static_cast<class ContextMT&>(m_context);
 }
+
+} // namespace Graphics
+} // namespace Methane

@@ -25,7 +25,10 @@ Pool of animations for centralized updating, adding and removing in application.
 
 #include <vector>
 
-using namespace Methane::Data;
+namespace Methane
+{
+namespace Data
+{
 
 void AnimationsPool::Update()
 {
@@ -50,3 +53,5 @@ void AnimationsPool::Update()
     }
 }
 
+} // namespace Data
+} // namespace Methane

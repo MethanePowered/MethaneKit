@@ -31,7 +31,7 @@ namespace Platform
 {
 namespace Keyboard
 {
-    
+
 struct NativeKey
 {
     WPARAM w_param;

@@ -28,7 +28,10 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 #include <cml/mathlib/mathlib.h>
 #include <cassert>
 
-using namespace Methane::Tutorials;
+namespace Methane
+{
+namespace Tutorials
+{
 
 static const gfx::Shader::EntryTarget g_vs_main   = { "VSMain", "vs_5_1" };
 static const gfx::Shader::EntryTarget g_ps_main   = { "PSMain", "ps_5_1" };
@@ -270,7 +273,10 @@ void TexturedCubeApp::OnContextReleased()
     GraphicsApp::OnContextReleased();
 }
 
+} // namespace Tutorials
+} // namespace Methane
+
 int main(int argc, const char* argv[])
 {
-    return TexturedCubeApp().Run({ argc, argv });
+    return Methane::Tutorials::TexturedCubeApp().Run({ argc, argv });
 }
