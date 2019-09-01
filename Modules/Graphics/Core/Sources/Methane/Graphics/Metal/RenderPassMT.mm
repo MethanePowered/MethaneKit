@@ -28,7 +28,10 @@ Metal implementation of the render pass interface.
 
 #include <Methane/Graphics/Instrumentation.h>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 MTLStoreAction GetMTLStoreAction(RenderPass::Attachment::StoreAction store_action) noexcept
 {
@@ -131,3 +134,6 @@ ContextMT& RenderPassMT::GetContextMT() noexcept
     ITT_FUNCTION_TASK();
     return static_cast<class ContextMT&>(m_context);
 }
+
+} // namespace Graphics
+} // namespace Methane

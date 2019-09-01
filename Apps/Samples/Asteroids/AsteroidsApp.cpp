@@ -28,7 +28,10 @@ Sample demonstrating parallel redering of the distinct asteroids massive
 #include <cml/mathlib/mathlib.h>
 #include <cassert>
 
-using namespace Methane::Samples;
+namespace Methane
+{
+namespace Samples
+{
 
 // Common application settings
 static const gfx::FrameSize           g_shadow_map_size(1024, 1024);
@@ -509,7 +512,10 @@ void AsteroidsApp::OnContextReleased()
     GraphicsApp::OnContextReleased();
 }
 
+} // namespace Samples
+} // namespace Methane
+
 int main(int argc, const char* argv[])
 {
-    return AsteroidsApp().Run({ argc, argv });
+    return Methane::Samples::AsteroidsApp().Run({ argc, argv });
 }

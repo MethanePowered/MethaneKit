@@ -28,7 +28,10 @@ Base implementation of the texture interface.
 
 #include <cassert>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, PixelFormat pixel_format, bool mipmapped, TextureBase::Usage::Mask usage)
 {
@@ -92,3 +95,6 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
         throw std::invalid_argument("Can not create texture with all zero dimensions.");
     }
 }
+
+} // namespace Graphics
+} // namespace Methane

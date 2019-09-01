@@ -36,7 +36,10 @@ Metal implementation of the render state interface.
 
 #include <cassert>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 MTLCullMode ConvertRasterizerCullModeToMetal(RenderState::Rasterizer::CullMode cull_mode) noexcept
 {
@@ -317,3 +320,6 @@ ContextMT& RenderStateMT::GetContextMT() noexcept
     ITT_FUNCTION_TASK();
     return static_cast<class ContextMT&>(m_context);
 }
+
+} // namespace Graphics
+} // namespace Methane

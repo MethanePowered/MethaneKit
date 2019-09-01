@@ -27,7 +27,12 @@ Platform abstraction of keyboard events.
 #include <sstream>
 #include <cassert>
 
-using namespace Methane::Platform::Keyboard;
+namespace Methane
+{
+namespace Platform
+{
+namespace Keyboard
+{
 
 static const std::string s_keys_separator = "+";
 static const std::string s_properties_separator = "+";
@@ -428,3 +433,7 @@ std::string State::ToString() const
     
     return ss.str();
 }
+
+} // namespace Keyboard
+} // namespace Platform
+} // namespace Methane

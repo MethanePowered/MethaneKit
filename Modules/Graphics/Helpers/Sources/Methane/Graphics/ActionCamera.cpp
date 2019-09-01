@@ -30,13 +30,14 @@ Implemented based on arc-ball camera rotation model.
 #include <cassert>
 
 using namespace Methane::Data;
-using namespace Methane::Graphics;
 
 namespace Methane
 {
+namespace Graphics
+{
+
 static inline float square(float x)     { return x * x; }
 static inline float unitSign(float x) { return x / std::fabsf(x); }
-}
 
 ActionCamera::ActionCamera(AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation)
     : Camera(axis_orientation)
@@ -401,3 +402,6 @@ std::string ActionCamera::GetActionName(KeyboardAction keyboard_action)
     default: assert(0);                 return "";
     }
 }
+
+} // namespace Graphics
+} // namespace Methane

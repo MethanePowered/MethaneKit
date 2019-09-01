@@ -25,8 +25,12 @@ Camera helper implementation allowing to generate view and projectrion matrices.
 
 #include <cml/mathlib/mathlib.h>
 
-using namespace Methane::Graphics;
 using namespace Methane::Data;
+
+namespace Methane
+{
+namespace Graphics
+{
 
 Camera::Camera(cml::AxisOrientation axis_orientation)
     : m_axis_orientation(axis_orientation)
@@ -133,3 +137,6 @@ float Camera::GetFOVAngleY() const noexcept
     }
     return fov_angle_y;
 }
+
+} // namespace Graphics
+} // namespace Methane

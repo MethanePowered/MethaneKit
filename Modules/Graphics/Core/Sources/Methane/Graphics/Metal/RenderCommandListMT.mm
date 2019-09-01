@@ -32,8 +32,10 @@ Metal implementation of the render command list interface.
 #include <Methane/Graphics/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
-using namespace Methane::Graphics;
-using namespace Methane;
+namespace Methane
+{
+namespace Graphics
+{
 
 MTLPrimitiveType PrimitiveTypeToMetal(RenderCommandList::Primitive primitive) noexcept
 {
@@ -228,3 +230,6 @@ RenderPassMT& RenderCommandListMT::GetPassMT()
     ITT_FUNCTION_TASK();
     return static_cast<class RenderPassMT&>(GetPass());
 }
+
+} // namespace Graphics
+} // namespace Methane

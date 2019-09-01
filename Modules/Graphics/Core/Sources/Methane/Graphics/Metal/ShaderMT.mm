@@ -31,7 +31,10 @@ Metal implementation of the shader interface.
 #include <Methane/Graphics/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 using StepType = ProgramBase::InputBufferLayout::StepType;
 MTLVertexStepFunction GetVertexStepFunction(StepType step_type) noexcept
@@ -268,3 +271,6 @@ ShaderMT::LibraryMT& ShaderMT::GetLibraryMT() noexcept
     static LibraryMT metal_library(GetContextMT());
     return metal_library;
 }
+
+} // namespace Graphics
+} // namespace Methane

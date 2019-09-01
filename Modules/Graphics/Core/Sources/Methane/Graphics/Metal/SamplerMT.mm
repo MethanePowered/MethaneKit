@@ -30,8 +30,10 @@ Metal implementation of the sampler interface.
 
 #import <Methane/Platform/MacOS/Types.hh>
 
-using namespace Methane::Graphics;
-using namespace Methane::MacOS;
+namespace Methane
+{
+namespace Graphics
+{
 
 MTLSamplerAddressMode ConvertAddressModeToMetal(const SamplerBase::Address::Mode& address_mode) noexcept
 {
@@ -160,3 +162,6 @@ ContextMT& SamplerMT::GetContextMT() noexcept
     ITT_FUNCTION_TASK();
     return static_cast<class ContextMT&>(m_context);
 }
+
+} // namespace Graphics
+} // namespace Methane

@@ -27,7 +27,10 @@ Procedural mesh generators, including rect, box, etc.
 
 #include <cassert>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 const Mesh::VertexFieldSizes Mesh::g_vertex_field_sizes = {{
     sizeof(Position), 
@@ -103,3 +106,6 @@ bool Mesh::HasVertexField(VertexField field) const noexcept
 {
     return m_vertex_field_offsets[static_cast<size_t>(field)] >= 0;
 }
+
+} // namespace Graphics
+} // namespace Methane

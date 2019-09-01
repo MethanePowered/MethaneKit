@@ -28,8 +28,10 @@ Base application interface and platform-independent implementation.
 #include <cstdlib>
 #include <cassert>
 
-using namespace Methane;
-using namespace Methane::Platform;
+namespace Methane
+{
+namespace Platform
+{
 
 AppBase::AppBase(const AppBase::Settings& settings)
     : m_settings(settings)
@@ -156,3 +158,6 @@ bool AppBase::SetFullScreen(bool is_full_screen)
     m_settings.is_full_screen = is_full_screen;
     return true;
 }
+
+} // namespace Platform
+} // namespace Methane

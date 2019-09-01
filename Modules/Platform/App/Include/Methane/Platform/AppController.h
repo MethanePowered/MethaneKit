@@ -30,7 +30,7 @@ namespace Methane
 {
 namespace Platform
 {
-    
+
 enum class AppHelpAction : uint32_t
 {
     None = 0,

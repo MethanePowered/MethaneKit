@@ -27,8 +27,10 @@ Base implementation of the device interface.
 #include <sstream>
 #include <cassert>
 
-using namespace Methane;
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 std::string Device::Feature::ToString(Value feature) noexcept
 {
@@ -128,3 +130,6 @@ std::string SystemBase::ToString() const noexcept
     }
     return ss.str();
 }
+
+} // namespace Graphics
+} // namespace Methane

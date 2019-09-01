@@ -26,13 +26,14 @@ Base application controller providing commands like app close and help.
 #include <sstream>
 #include <cassert>
 
-using namespace Methane;
-using namespace Methane::Platform;
-using namespace Methane::Platform::Input;
+namespace Methane
+{
+namespace Platform
+{
 
 AppController::AppController(AppBase& application, const std::string& application_help, bool show_command_line_help,
-                                     const ActionByKeyboardState& action_by_keyboard_state)
-    : Input::Controller(application_help)
+                             const ActionByKeyboardState& action_by_keyboard_state)
+    : Controller(application_help)
     , Keyboard::ActionControllerBase<AppHelpAction>(action_by_keyboard_state, {})
     , m_application(application)
     , m_show_command_line_help(show_command_line_help)
@@ -65,7 +66,7 @@ std::string AppController::GetKeyboardActionName(AppHelpAction action) const
     }
 }
 
-IHelpProvider::HelpLines AppController::GetHelp() const
+Input::IHelpProvider::HelpLines AppController::GetHelp() const
 {
     return GetKeyboardHelp();
 }
@@ -147,3 +148,6 @@ void AppController::ShowHelp()
         help_stream.str()
     });
 }
+
+} // namespace Platform
+} // namespace Methane

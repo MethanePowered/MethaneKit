@@ -34,8 +34,10 @@ DirectX 12 implementation of the device interface.
 #include <algorithm>
 #include <cassert>
 
-using namespace Methane::Graphics;
-using namespace Methane;
+namespace Methane
+{
+namespace Graphics
+{
 
 Device::Feature::Mask DeviceDX::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level)
 {
@@ -46,7 +48,7 @@ Device::Feature::Mask DeviceDX::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdap
     return supported_featues;
 }
 
-std::string GetAdapterName(IDXGIAdapter& adapter)
+std::string GetAdapterNameDXGI(IDXGIAdapter& adapter)
 {
     ITT_FUNCTION_TASK();
 
@@ -55,7 +57,7 @@ std::string GetAdapterName(IDXGIAdapter& adapter)
     return nowide::narrow(desc.Description);
 }
 
-bool IsSoftwareAdapter(IDXGIAdapter1& adapter)
+bool IsSoftwareAdapterDXGI(IDXGIAdapter1& adapter)
 {
     DXGI_ADAPTER_DESC1 desc = {};
     adapter.GetDesc1(&desc);
@@ -63,8 +65,8 @@ bool IsSoftwareAdapter(IDXGIAdapter1& adapter)
 }
 
 DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level)
-    : DeviceBase(::GetAdapterName(*cp_adapter.Get()),
-                 ::IsSoftwareAdapter(static_cast<IDXGIAdapter1&>(*cp_adapter.Get())),
+    : DeviceBase(GetAdapterNameDXGI(*cp_adapter.Get()),
+                 IsSoftwareAdapterDXGI(static_cast<IDXGIAdapter1&>(*cp_adapter.Get())),
                  GetSupportedFeatures(cp_adapter, feature_level))
     , m_cp_adapter(cp_adapter)
     , m_feature_level(feature_level)
@@ -235,7 +237,7 @@ const Devices& SystemDX::UpdateGpuDevices(Device::Feature::Mask supported_featur
 
         // Don't select the Basic Render Driver adapter.
         // If you want a software adapter, pass in "/warp" on the command line.
-        if (::IsSoftwareAdapter(*p_adapter))
+        if (IsSoftwareAdapterDXGI(*p_adapter))
             continue;
 
         AddDevice(p_adapter, dx_feature_level);
@@ -279,3 +281,6 @@ void SystemDX::ReportLiveObjects()
     }
 #endif
 }
+
+} // namespace Graphics
+} // namespace Methane

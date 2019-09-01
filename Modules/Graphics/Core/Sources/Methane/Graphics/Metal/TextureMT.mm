@@ -32,8 +32,10 @@ Metal implementation of the texture interface.
 #include <algorithm>
 #include <cassert>
 
-using namespace Methane;
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 Texture::Ptr Texture::CreateRenderTarget(Context& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
@@ -177,3 +179,6 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
 
     return mtl_tex_desc;
 }
+
+} // namespace Graphics
+} // namespace Methane

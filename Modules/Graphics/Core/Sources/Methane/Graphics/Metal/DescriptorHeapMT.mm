@@ -25,7 +25,10 @@ Metal "dummy" implementation of the descriptor heap.
 
 #include <Methane/Graphics/Instrumentation.h>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 DescriptorHeap::Ptr DescriptorHeap::Create(ContextBase& context, const Settings& settings)
 {
@@ -43,3 +46,6 @@ DescriptorHeapMT::~DescriptorHeapMT()
 {
     ITT_FUNCTION_TASK();
 }
+
+} // namespace Graphics
+} // namespace Methane

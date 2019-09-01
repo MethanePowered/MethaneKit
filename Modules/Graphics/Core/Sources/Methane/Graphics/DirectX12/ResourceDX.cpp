@@ -34,7 +34,10 @@ DirectX 12 implementation of the resource interface.
 #include <iterator>
 #include <cassert>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 ResourceBase::ReleasePool::Ptr ResourceBase::ReleasePool::Create()
 {
@@ -173,3 +176,6 @@ void ResourceDX::InitializeFrameBufferResource(uint32_t frame_buffer_index)
         )
     );
 }
+
+} // namespace Graphics
+} // namespace Methane
