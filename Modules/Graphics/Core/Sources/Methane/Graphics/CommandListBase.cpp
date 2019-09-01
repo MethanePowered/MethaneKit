@@ -40,6 +40,7 @@ namespace Graphics
 
 std::string CommandListBase::GetStateName(State state)
 {
+    ITT_FUNCTION_TASK();
     switch (state)
     {
     case State::Pending:   return "Pending";
@@ -107,7 +108,6 @@ void CommandListBase::Execute(uint32_t frame_index)
 void CommandListBase::Complete(uint32_t frame_index)
 {
     ITT_FUNCTION_TASK();
-
     {
         std::lock_guard<std::mutex> guard(m_state_mutex);
 

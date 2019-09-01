@@ -93,6 +93,9 @@ void DescriptorHeapDX::Allocate()
     if (m_allocated_size == m_deferred_size)
         return;
 
+    const wrl::ComPtr<ID3D12Device>&  cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
+    assert(!!cp_device);
+
     wrl::ComPtr<ID3D12DescriptorHeap> cp_old_descriptor_heap = m_cp_descriptor_heap;
 
     D3D12_DESCRIPTOR_HEAP_DESC heap_desc = {};
@@ -101,15 +104,15 @@ void DescriptorHeapDX::Allocate()
     heap_desc.Flags          = m_settings.shader_visible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
     // Allocate new descriptor heap of deferred size
-    ThrowIfFailed(GetContextDX().GetDeviceDX().GetNativeDevice()->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&m_cp_descriptor_heap)));
+    ThrowIfFailed(cp_device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&m_cp_descriptor_heap)));
 
     if (cp_old_descriptor_heap && m_allocated_size > 0)
     {
         // Copy descriptors from old heap to the new one
-        GetContextDX().GetDeviceDX().GetNativeDevice()->CopyDescriptorsSimple(m_allocated_size,
-                                                                m_cp_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),
-                                                                cp_old_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),
-                                                                m_descriptor_heap_type);
+        cp_device->CopyDescriptorsSimple(m_allocated_size,
+                                         m_cp_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),
+                                         cp_old_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),
+                                         m_descriptor_heap_type);
     }
 
     DescriptorHeap::Allocate();

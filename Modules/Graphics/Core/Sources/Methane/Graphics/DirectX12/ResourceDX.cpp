@@ -73,7 +73,6 @@ ResourceDX::~ResourceDX()
 void ResourceDX::SetName(const std::string& name)
 {
     ITT_FUNCTION_TASK();
-
     ResourceBase::SetName(name);
     
     // NOTE: there is no native resource for some resources like DX SamplerBase
@@ -150,8 +149,8 @@ void ResourceDX::InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource
                                              D3D12_RESOURCE_STATES resource_state, const D3D12_CLEAR_VALUE* p_clear_value)
 {
     ITT_FUNCTION_TASK();
-
     assert(!m_cp_resource);
+
     ThrowIfFailed(
         GetContextDX().GetDeviceDX().GetNativeDevice()->CreateCommittedResource(
             &CD3DX12_HEAP_PROPERTIES(heap_type),
@@ -167,8 +166,8 @@ void ResourceDX::InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource
 void ResourceDX::InitializeFrameBufferResource(uint32_t frame_buffer_index)
 {
     ITT_FUNCTION_TASK();
-
     assert(!m_cp_resource);
+
     ThrowIfFailed(
         GetContextDX().GetNativeSwapChain()->GetBuffer(
             frame_buffer_index,

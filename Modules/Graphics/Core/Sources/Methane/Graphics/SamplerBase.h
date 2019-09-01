@@ -45,8 +45,8 @@ public:
     const Settings& GetSettings() const override { return m_settings; }
 
     // Resource interface
-    void     SetData(Data::ConstRawPtr p_data, Data::Size data_size) override { }
-    Data::Size GetDataSize() const override { return 0; }
+    void        SetData(Data::ConstRawPtr p_data, Data::Size data_size) override    { }
+    Data::Size  GetDataSize() const override                                        { return 0; }
 
 protected:
     ContextBase& m_context;

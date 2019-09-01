@@ -91,17 +91,17 @@ public:
     ~ResourceBase() override;
 
     // Resource interface
-    Type                     GetResourceType() const noexcept override         { return m_type; }
-    Usage::Mask              GetUsageMask() const noexcept override            { return m_usage_mask; }
-    const DescriptorByUsage& GetDescriptorByUsage() const noexcept override    { return m_descriptor_by_usage; }
+    Type                     GetResourceType() const noexcept override          { return m_type; }
+    Usage::Mask              GetUsageMask() const noexcept override             { return m_usage_mask; }
+    const DescriptorByUsage& GetDescriptorByUsage() const noexcept override     { return m_descriptor_by_usage; }
     const Descriptor&        GetDescriptor(Usage::Value usage) const override;
 
-    void                  InitializeDefaultDescriptors();
-    std::string           GetUsageNames() const noexcept                                { return Resource::GetUsageNames(m_usage_mask); }
-    std::string           GetResourceTypeName() const noexcept                          { return Resource::GetTypeName(m_type); }
-    DescriptorHeap::Types GetUsedDescriptorHeapTypes() const noexcept;
+    void                     InitializeDefaultDescriptors();
+    std::string              GetUsageNames() const noexcept                     { return Resource::GetUsageNames(m_usage_mask); }
+    std::string              GetResourceTypeName() const noexcept               { return Resource::GetTypeName(m_type); }
+    DescriptorHeap::Types    GetUsedDescriptorHeapTypes() const noexcept;
 
-    State   GetState() const noexcept                                                   { return m_state;  }
+    State   GetState() const noexcept                                           { return m_state;  }
     void    SetState(State state, Barriers& out_barriers);
 
 protected:

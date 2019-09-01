@@ -202,6 +202,8 @@ DescriptorHeap& ResourceManager::GetDefaultShaderVisibleDescriptorHeap(Descripto
 
 ResourceManager::DescriptorHeapSizeByType ResourceManager::GetDescriptorHeapSizes(bool get_allocated_size, bool for_shader_visible_heaps) const
 {
+    ITT_FUNCTION_TASK();
+
     DescriptorHeapSizeByType descriptor_heap_sizes;
     for (uint32_t heap_type_idx = 0; heap_type_idx < static_cast<uint32_t>(DescriptorHeap::Type::Count); ++heap_type_idx)
     {
@@ -227,8 +229,8 @@ ResourceManager::DescriptorHeapSizeByType ResourceManager::GetDescriptorHeapSize
 ResourceBase::ReleasePool& ResourceManager::GetReleasePool()
 {
     ITT_FUNCTION_TASK();
-
     assert(!!m_sp_release_pool);
+
     return static_cast<ResourceBase::ReleasePool&>(*m_sp_release_pool);
 }
 

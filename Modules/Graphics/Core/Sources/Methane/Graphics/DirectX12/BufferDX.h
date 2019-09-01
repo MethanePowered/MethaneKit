@@ -26,6 +26,7 @@ DirectX 12 implementation of the buffer interface.
 #include <Methane/Graphics/BufferBase.h>
 #include <Methane/Graphics/DescriptorHeap.h>
 #include <Methane/Graphics/Windows/Helpers.h>
+#include <Methane/Instrumentation.h>
 
 #include <d3dx12.h>
 #include <cassert>
@@ -42,6 +43,7 @@ public:
     BufferDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraViewArgs... view_args)
         : BufferBase(context, settings, descriptor_by_usage)
     {
+        ITT_FUNCTION_TASK();
         InitializeDefaultDescriptors();
         InitializeCommittedResource(CD3DX12_RESOURCE_DESC::Buffer(settings.size), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
         InitializeView(view_args...);
@@ -50,6 +52,7 @@ public:
     // Resource interface
     void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override
     {
+        ITT_FUNCTION_TASK();
         BufferBase::SetData(p_data, data_size);
 
         assert(!!m_cp_resource);

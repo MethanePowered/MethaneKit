@@ -137,7 +137,6 @@ RenderStateDX::RenderStateDX(ContextBase& context, const Settings& settings)
 void RenderStateDX::Reset(const Settings& settings)
 {
     ITT_FUNCTION_TASK();
-
     RenderStateBase::Reset(settings);
 
     ProgramDX&         dx_program               = RenderStateDX::GetProgramDX();
@@ -216,7 +215,6 @@ void RenderStateDX::Apply(RenderCommandListBase& command_list)
 void RenderStateDX::SetViewports(const Viewports& viewports)
 {
     ITT_FUNCTION_TASK();
-
     RenderStateBase::SetViewports(viewports);
 
     m_viewports = TypeConverterDX::ViewportsToD3D(viewports);
@@ -234,7 +232,6 @@ void RenderStateDX::SetScissorRects(const ScissorRects& scissor_rects)
 void RenderStateDX::SetName(const std::string& name)
 {
     ITT_FUNCTION_TASK();
-
     RenderStateBase::SetName(name);
 
     if (m_cp_pipeline_state)

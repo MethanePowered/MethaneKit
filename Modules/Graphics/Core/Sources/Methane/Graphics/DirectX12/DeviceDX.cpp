@@ -59,6 +59,8 @@ std::string GetAdapterNameDXGI(IDXGIAdapter& adapter)
 
 bool IsSoftwareAdapterDXGI(IDXGIAdapter1& adapter)
 {
+    ITT_FUNCTION_TASK();
+
     DXGI_ADAPTER_DESC1 desc = {};
     adapter.GetDesc1(&desc);
     return desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE;
@@ -91,6 +93,7 @@ void DeviceDX::SetName(const std::string& name)
 
 const wrl::ComPtr<ID3D12Device>& DeviceDX::GetNativeDevice() const
 {
+    ITT_FUNCTION_TASK();
     if (!m_cp_device)
     {
         ThrowIfFailed(D3D12CreateDevice(m_cp_adapter.Get(), m_feature_level, IID_PPV_ARGS(&m_cp_device)));
@@ -104,6 +107,7 @@ const wrl::ComPtr<ID3D12Device>& DeviceDX::GetNativeDevice() const
 
 void DeviceDX::ReleaseNativeDevice()
 {
+    ITT_FUNCTION_TASK();
     m_cp_device.Reset();
 }
 
