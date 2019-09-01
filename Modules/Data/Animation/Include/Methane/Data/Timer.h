@@ -23,9 +23,9 @@ Basic animation timer for measuring elapsed time since start.
 
 #pragma once
 
-#include <chrono>
-
 #include <Methane/Instrumentation.h>
+
+#include <chrono>
 
 namespace Methane
 {
