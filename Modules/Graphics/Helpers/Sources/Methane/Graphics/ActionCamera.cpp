@@ -211,12 +211,12 @@ Vector3f ActionCamera::GetNormalizedSphereProjection(const Point2i& mouse_screen
     return cml::normalize(Vector3f(screen_vector, inside_sphere ? z_sign * std::sqrtf(square(sphere_radius) - screen_vector.length_squared()) : 0.f));
 }
 
-void ActionCamera::ApplyLookDirection(const Vector3f& look_dir, const Orientation& base_orientation)
+void ActionCamera::ApplyLookDirection(const Vector3f& look_dir)
 {
     switch (m_pivot)
     {
-    case Pivot::Aim: m_current_orientation.eye = base_orientation.aim - look_dir; break;
-    case Pivot::Eye: m_current_orientation.aim = base_orientation.eye + look_dir; break;
+    case Pivot::Aim: m_current_orientation.eye = m_current_orientation.aim - look_dir; break;
+    case Pivot::Eye: m_current_orientation.aim = m_current_orientation.eye + look_dir; break;
     }
 }
 
@@ -241,7 +241,7 @@ void ActionCamera::Rotate(const Vector3f& view_axis, float angle_rad, const Orie
                                 ? m_p_view_camera->TransformViewToWorld(view_rotation_matrix * up_in_view).subvector(3)
                                 : TransformViewToWorld(view_rotation_matrix * up_in_view, base_orientation).subvector(3);
     
-    ApplyLookDirection(look_dir, base_orientation);
+    ApplyLookDirection(look_dir);
 }
 
 void ActionCamera::Move(const Vector3f& move_vector)
