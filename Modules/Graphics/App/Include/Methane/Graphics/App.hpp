@@ -262,12 +262,11 @@ public:
         std::stringstream title_ss;
         title_ss.precision(2);
         title_ss << m_settings.name << "        " 
-                 << average_fps << " FPS (" 
-                 << std::fixed << average_frame_time_ms << " ms)"
+                 << average_fps << " FPS (" << std::fixed << average_frame_time_ms << " ms)"
                  << ", " << context_settings.frame_size.width << " x " << context_settings.frame_size.height
                  << ", " << std::to_string(context_settings.frame_buffers_count) << " FBs"
                  << ", VSync: " << (context_settings.vsync_enabled ? "ON" : "OFF")
-                 << ", GPU: " << m_sp_context->GetDevice().GetAdapterName();
+                 << ", GPU: "   << m_sp_context->GetDevice().GetAdapterName();
 
         SetWindowTitle(title_ss.str());
         m_title_update_timer.Reset();

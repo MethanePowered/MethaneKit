@@ -35,7 +35,7 @@ void AnimationsPool::Update()
     std::vector<size_t> completed_animation_indices;
     for (size_t animation_index = 0; animation_index < size(); ++animation_index)
     {
-    	Animation::Ptr& sp_animation = (*this)[animation_index];
+        Animation::Ptr& sp_animation = (*this)[animation_index];
         if (!sp_animation || !sp_animation->Update())
         {
             completed_animation_indices.push_back(animation_index);
@@ -43,8 +43,8 @@ void AnimationsPool::Update()
     }
 
     for (auto animation_index_it = completed_animation_indices.rbegin();
-    	      animation_index_it != completed_animation_indices.rend(); 
-    	    ++animation_index_it)
+              animation_index_it != completed_animation_indices.rend(); 
+            ++animation_index_it)
     {
         erase(begin() + *animation_index_it);
     }
