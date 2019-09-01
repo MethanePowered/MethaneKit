@@ -115,11 +115,13 @@ void ContextBase::Present()
 
 void ContextBase::AddCallback(Callback& callback)
 {
+    ITT_FUNCTION_TASK();
     m_callbacks.push_back(callback);
 }
 
 void ContextBase::RemoveCallback(Callback& callback)
 {
+    ITT_FUNCTION_TASK();
     const auto callback_it = std::find_if(m_callbacks.begin(), m_callbacks.end(),
                                           [&callback](const Callback::Ref& callback_ref)
                                           { return std::addressof(callback_ref.get()) == std::addressof(callback); });

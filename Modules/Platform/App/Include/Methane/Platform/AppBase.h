@@ -89,6 +89,7 @@ public:
     virtual bool SetFullScreen(bool is_full_screen);
     virtual void Close() = 0;
 
+    void UpdateAndRender();
     bool HasError() const;
 
     const Settings&         GetSettings() const   { return m_settings; }

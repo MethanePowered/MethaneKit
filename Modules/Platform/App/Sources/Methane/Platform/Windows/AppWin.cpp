@@ -162,8 +162,7 @@ int AppWin::Run(const RunArgs& args)
         try
         {
 #endif
-            Update();
-            Render();
+            UpdateAndRender();
 #ifndef _DEBUG
         }
         catch (std::exception& e)

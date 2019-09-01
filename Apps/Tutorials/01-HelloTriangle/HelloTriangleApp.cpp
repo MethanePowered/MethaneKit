@@ -137,10 +137,6 @@ bool HelloTriangleApp::Resize(const gfx::FrameSize& frame_size, bool is_minimize
 
 void HelloTriangleApp::Render()
 {
-    // Do not render if error has occured and is being displayed in message box
-    if (HasError())
-        return;
-
     // Render only when context is ready
     assert(!!m_sp_context);
     if (!m_sp_context->ReadyToRender())
@@ -148,8 +144,8 @@ void HelloTriangleApp::Render()
 
     // Wait for previous frame rendering is completed and switch to next frame
     m_sp_context->WaitForGpu(gfx::Context::WaitFor::FramePresented);
-
     HelloTriangleFrame& frame = GetCurrentFrame();
+
     assert(!!frame.sp_cmd_list);
     assert(!!m_sp_vertex_buffer);
     assert(!!m_sp_state);
