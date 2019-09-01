@@ -24,8 +24,6 @@ Note that project is in **Alpha / [MVP](https://en.wikipedia.org/wiki/Minimum_vi
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit&metric=alert_status)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit)
 [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit&metric=ncloc)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit)
-[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit&metric=duplicated_lines_density)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit&metric=code_smells)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit)
 
 ## Features
 
@@ -61,13 +59,13 @@ Note that project is in **Alpha / [MVP](https://en.wikipedia.org/wiki/Minimum_vi
 ## Development plans
 
 - [x] Continous integration setup
-- [ ] Application user input with mouse and keyboard
+- [x] Application user input with mouse and keyboard
+- [ ] Parallel command lists
 - [ ] Text rendering
 - [ ] User interface library
 - [ ] Improved shader conversion
 - [ ] Dynamic linking support
 - [ ] Compute pipeline
-- [ ] Parallel command lists
 
 ## Getting Started
 
@@ -100,12 +98,6 @@ git clone --recurse-submodules --depth 1 https://github.com/egorodet/MethaneKit.
 - **Update sources to latest version**
 ```console
 cd <MethaneKit-Root>
-git pull --recurse-submodules
-```
-- **Update linked submodules to latest version** (for development purposes only)
-```console
-cd <MethaneKit-Root>
-git submodule update --init --depth 1 --recursive
 git pull --recurse-submodules
 ```
 
