@@ -235,7 +235,7 @@ public:
 
     void Render() override
     {
-        if (HasError() || !m_sp_context->ReadyToRender())
+        if (!m_sp_context->ReadyToRender())
             return;
 
         m_sp_context->WaitForGpu(Context::WaitFor::FramePresented);

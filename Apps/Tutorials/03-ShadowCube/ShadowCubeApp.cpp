@@ -358,9 +358,6 @@ bool ShadowCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 
 void ShadowCubeApp::Update()
 {
-    if (HasError())
-        return;
-    
     GraphicsApp::Update();
 
     // Update Model, View, Projection matrices based on scene camera location
@@ -434,10 +431,6 @@ void ShadowCubeApp::Update()
 
 void ShadowCubeApp::Render()
 {
-    // Do not render if error has occured and is being displayed in message box
-    if (HasError())
-        return;
-
     // Render only when context is ready
     assert(!!m_sp_context);
     if (!m_sp_context->ReadyToRender())
