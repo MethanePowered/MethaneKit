@@ -104,8 +104,7 @@ using namespace Methane::Platform;
         m_is_initialized = true;
         m_p_app->Init();
     }
-    m_p_app->Update();
-    m_p_app->Render();
+    m_p_app->UpdateAndRender();
 }
 
 // ====== Keyboard event handlers ======

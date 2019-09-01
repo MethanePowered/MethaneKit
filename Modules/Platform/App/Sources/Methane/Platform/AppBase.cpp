@@ -155,6 +155,16 @@ void AppBase::ShowAlert(const Message&)
     m_input_state.ReleaseAllKeys();
 }
 
+void AppBase::UpdateAndRender()
+{
+    // Do not render if error has occured and is being displayed in message box
+    if (HasError())
+        return;
+
+    Update();
+    Render();
+}
+
 bool AppBase::HasError() const
 {
     ITT_FUNCTION_TASK();
