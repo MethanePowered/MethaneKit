@@ -25,7 +25,8 @@ Base implementation of the render command list interface.
 #include "RenderPassBase.h"
 #include "RenderStateBase.h"
 #include "BufferBase.h"
-#include "Instrumentation.h"
+
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 

@@ -33,6 +33,7 @@ endif()
 set(LIBRARIES ${LIBRARIES}
     MethaneDataTypes
     MethanePlatformUtils
+    MethaneInstrumentation
 )
 
 set(HEADERS ${PLATFORM_HEADERS}

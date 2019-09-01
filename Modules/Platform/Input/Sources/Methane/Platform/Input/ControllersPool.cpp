@@ -22,6 +22,7 @@ A pool of input controllers for user actions handling in separate application co
 ******************************************************************************/
 
 #include <Methane/Platform/Input/ControllersPool.h>
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 
@@ -41,6 +42,8 @@ namespace Input
 
 void ControllersPool::OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button_state, const Mouse::StateChange& state_change)
 {
+    ITT_FUNCTION_TASK();
+
 #ifdef DEBUG_USER_INPUT
     PrintToDebugOutput(std::string("Mouse (button): ") + state_change.current.ToString());
 #endif
@@ -57,6 +60,8 @@ void ControllersPool::OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonSt
 
 void ControllersPool::OnMousePositionChanged(const Mouse::Position& mouse_position, const Mouse::StateChange& state_change)
 {
+    ITT_FUNCTION_TASK();
+
 #ifdef DEBUG_USER_INPUT
     PrintToDebugOutput(std::string("Mouse (position): ") + state_change.current.ToString());
 #endif
@@ -73,6 +78,8 @@ void ControllersPool::OnMousePositionChanged(const Mouse::Position& mouse_positi
 
 void ControllersPool::OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_delta, const Mouse::StateChange& state_change)
 {
+    ITT_FUNCTION_TASK();
+
 #ifdef DEBUG_USER_INPUT
     PrintToDebugOutput(std::string("Mouse (scroll): ") + state_change.current.ToString() +
                        ", scroll delta: " + std::to_string(mouse_scroll_delta.x()) + " x " + std::to_string(mouse_scroll_delta.y()));
@@ -90,6 +97,8 @@ void ControllersPool::OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_del
 
 void ControllersPool::OnMouseInWindowChanged(bool is_mouse_in_window, const Mouse::StateChange& state_change)
 {
+    ITT_FUNCTION_TASK();
+
 #ifdef DEBUG_USER_INPUT
     PrintToDebugOutput(std::string("Mouse (in-window): ") + state_change.current.ToString());
 #endif
@@ -106,6 +115,8 @@ void ControllersPool::OnMouseInWindowChanged(bool is_mouse_in_window, const Mous
 
 void ControllersPool::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state, const Keyboard::StateChange& state_change)
 {
+    ITT_FUNCTION_TASK();
+
 #ifdef DEBUG_USER_INPUT
     PrintToDebugOutput(std::string("Keyboard (key): ") + state_change.current.ToString());
 #endif
@@ -122,6 +133,8 @@ void ControllersPool::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState ke
 
 void ControllersPool::OnModifiersChanged(Keyboard::Modifier::Mask modifiers, const Keyboard::StateChange& state_change)
 {
+    ITT_FUNCTION_TASK();
+
 #ifdef DEBUG_USER_INPUT
     PrintToDebugOutput(std::string("Keyboard (modifiers): ") + state_change.current.ToString());
 #endif
@@ -138,6 +151,8 @@ void ControllersPool::OnModifiersChanged(Keyboard::Modifier::Mask modifiers, con
 
 IHelpProvider::HelpLines ControllersPool::GetHelp() const
 {
+    ITT_FUNCTION_TASK();
+
     HelpLines all_help_lines;
     for (const Controller::Ptr& sp_controller : *this)
     {

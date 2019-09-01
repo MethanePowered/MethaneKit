@@ -33,7 +33,7 @@ DirectX 12 implementation of the render command list interface.
 #include "BufferDX.h"
 #include "TypesDX.h"
 
-#include <Methane/Graphics/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #include <d3dx12.h>

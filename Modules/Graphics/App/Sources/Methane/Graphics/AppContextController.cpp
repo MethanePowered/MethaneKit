@@ -26,6 +26,7 @@ Graphics context controller for switching parameters in runtime.
 #include <Methane/Graphics/Context.h>
 #include <Methane/Graphics/Device.h>
 #include <Methane/Platform/Utils.h>
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 
@@ -41,15 +42,18 @@ AppContextController::AppContextController(Context& context, const ActionByKeybo
     , Keyboard::ActionControllerBase<AppContextAction>(action_by_keyboard_state, {})
     , m_context(context)
 {
+    ITT_FUNCTION_TASK();
 }
 
 void AppContextController::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state, const Keyboard::StateChange& state_change)
 {
+    ITT_FUNCTION_TASK();
     Keyboard::ActionControllerBase<AppContextAction>::OnKeyboardChanged(key, key_state, state_change);
 }
 
 void AppContextController::OnKeyboardStateAction(AppContextAction action)
 {
+    ITT_FUNCTION_TASK();
     switch (action)
     {
         case AppContextAction::SwitchFullScreen:
@@ -83,6 +87,7 @@ void AppContextController::OnKeyboardStateAction(AppContextAction action)
 
 std::string AppContextController::GetKeyboardActionName(AppContextAction action) const
 {
+    ITT_FUNCTION_TASK();
     switch (action)
     {
         case AppContextAction::None:                            return "none";
@@ -97,6 +102,7 @@ std::string AppContextController::GetKeyboardActionName(AppContextAction action)
 
 Input::IHelpProvider::HelpLines AppContextController::GetHelp() const
 {
+    ITT_FUNCTION_TASK();
     HelpLines help_lines = GetKeyboardHelp();
 
     // Add description of system graphics devices

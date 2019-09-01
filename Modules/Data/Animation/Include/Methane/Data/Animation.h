@@ -38,31 +38,16 @@ public:
     using Ptr     = std::shared_ptr<Animation>;
     using WeakPtr = std::weak_ptr<Animation>;
 
-    Animation(double duration_sec = std::numeric_limits<double>::max())
-        : m_duration_sec(duration_sec)
-    { }
-    
-    virtual ~Animation() = default;
+    Animation(double duration_sec = std::numeric_limits<double>::max());
+    virtual ~Animation();
 
     bool   IsRunning() const noexcept            { return m_is_running; }
     double GetDuration() const noexcept          { return m_duration_sec; }
     void   SetDuration(double duration_sec)      { m_duration_sec = duration_sec; }
-    void   IncreaseDuration(double duration_sec)
-    {
-        m_duration_sec = GetElapsedSecondsD() + duration_sec;
-    }
+    void   IncreaseDuration(double duration_sec);
 
-    virtual void Restart() noexcept
-    {
-        m_is_running = true;
-        Timer::Reset();
-    }
-    
-    virtual void Stop() noexcept
-    {
-        m_is_running = false;
-    }
-
+    virtual void Restart() noexcept;
+    virtual void Stop() noexcept;
     virtual bool Update() = 0;
 
 protected:

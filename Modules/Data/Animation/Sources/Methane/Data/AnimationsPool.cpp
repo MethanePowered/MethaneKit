@@ -22,6 +22,7 @@ Pool of animations for centralized updating, adding and removing in application.
 ******************************************************************************/
 
 #include <Methane/Data/AnimationsPool.h>
+#include <Methane/Instrumentation.h>
 
 #include <vector>
 
@@ -32,6 +33,7 @@ namespace Data
 
 void AnimationsPool::Update()
 {
+    ITT_FUNCTION_TASK();
     if (empty())
         return;
 

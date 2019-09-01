@@ -102,7 +102,7 @@ set(LIBRARIES ${PLATFORM_LIBRARIES}
     MethanePlatformUtils
     MethanePlatformAppView
     MethaneGraphicsHelpers
-    IttNotify
+    MethaneInstrumentation
 )
 
 set(HEADERS
@@ -172,8 +172,6 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/DescriptorHeap.cpp
     ${SOURCES_DIR}/ResourceManager.h
     ${SOURCES_DIR}/ResourceManager.cpp
-    ${SOURCES_DIR}/Instrumentation.h
-    ${SOURCES_DIR}/Instrumentation.cpp
     ${SOURCES_DIR}/Types.cpp
 )
 

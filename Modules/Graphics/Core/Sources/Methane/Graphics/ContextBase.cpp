@@ -23,7 +23,8 @@ Base implementation of the context interface.
 
 #include "ContextBase.h"
 #include "DeviceBase.h"
-#include "Instrumentation.h"
+
+#include <Methane/Instrumentation.h>
 
 #ifdef COMMAND_EXECUTION_LOGGING
 #include <Methane/Platform/Utils.h>

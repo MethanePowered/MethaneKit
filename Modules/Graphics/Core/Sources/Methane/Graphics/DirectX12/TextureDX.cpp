@@ -29,7 +29,7 @@ DirectX 12 implementation of the texture interface.
 #include "RenderCommandListDX.h"
 #include "TypesDX.h"
 
-#include <Methane/Graphics/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 namespace Methane
@@ -276,7 +276,7 @@ void ImageTextureDX::SetData(Data::ConstRawPtr p_data, Data::Size data_size)
     texture_data.RowPitch   = m_settings.dimensions.width * GetPixelSize(m_settings.pixel_format);
     texture_data.SlicePitch = m_settings.dimensions.height * texture_data.RowPitch;
 
-    assert(texture_data.SlicePitch <= data_size);
+    assert(texture_data.SlicePitch <= static_cast<LONG_PTR>(data_size));
     m_data_size = data_size;
 
     RenderCommandListDX& upload_cmd_list = static_cast<RenderCommandListDX&>(m_context.GetUploadCommandList());

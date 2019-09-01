@@ -16,53 +16,48 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/MacOS/AppDelegate.mm
-MacOS application delegate implementation.
+FILE: Methane/Data/AnimationsPool.cpp
+Pool of animations for centralized updating, adding and removing in application.
 
 ******************************************************************************/
 
-#import "WindowDelegate.hh"
-
-#include <Methane/Platform/MacOS/AppMac.hh>
+#include <Methane/Data/Animation.h>
 #include <Methane/Instrumentation.h>
 
-#include <cassert>
-
-using namespace Methane;
-using namespace Methane::Platform;
-
-@implementation WindowDelegate
+namespace Methane
 {
-    AppMac* m_p_app;
-}
+namespace Data
+{
 
-- (id) initWithApp : (AppMac*) p_app
+Animation::Animation(double duration_sec)
+    : m_duration_sec(duration_sec)
 {
     ITT_FUNCTION_TASK();
-
-    self = [super init];
-    if (!self)
-        return nil;
-
-    m_p_app = p_app;
-    
-    return self;
 }
 
-- (void) windowDidEnterFullScreen:(NSNotification *)notification
+Animation::~Animation()
 {
     ITT_FUNCTION_TASK();
-    assert(!!m_p_app);
-
-    m_p_app->SetFullScreen(true);
 }
 
-- (void) windowDidExitFullScreen:(NSNotification *)notification
+void Animation::IncreaseDuration(double duration_sec)
 {
     ITT_FUNCTION_TASK();
-    assert(!!m_p_app);
-
-    m_p_app->SetFullScreen(false);
+    m_duration_sec = GetElapsedSecondsD() + duration_sec;
 }
 
-@end
+void Animation::Restart() noexcept
+{
+    ITT_FUNCTION_TASK();
+    m_is_running = true;
+    Timer::Reset();
+}
+
+void Animation::Stop() noexcept
+{
+    ITT_FUNCTION_TASK();
+    m_is_running = false;
+}
+
+} // namespace Data
+} // namespace Methane

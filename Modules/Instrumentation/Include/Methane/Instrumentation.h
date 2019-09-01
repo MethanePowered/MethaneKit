@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Instrumentation.h
-Common header for instrumentation of graphics core API with ITT macroses,
+FILE: Methane/Instrumentation.h
+Common header for instrumentation of the Methane Kit modules with ITT macroses,
 Defines common ITT domain required for instrumentation.
 
 ******************************************************************************/

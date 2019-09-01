@@ -22,6 +22,7 @@ Procedural mesh generators, including rect, box, etc.
 ******************************************************************************/
 
 #include <Methane/Graphics/Mesh.h>
+#include <Methane/Instrumentation.h>
 
 #include <cml/mathlib/mathlib.h>
 
@@ -68,6 +69,8 @@ const Mesh::Colors      Mesh::g_colors = {
 
 Mesh::VertexFieldOffsets Mesh::GetVertexFieldOffsets(const VertexLayout& vertex_layout)
 {
+    ITT_FUNCTION_TASK();
+
     size_t current_offset = 0;
     VertexFieldOffsets field_offsets = {};
     std::fill(field_offsets.begin(), field_offsets.end(), -1);
@@ -86,6 +89,8 @@ Mesh::VertexFieldOffsets Mesh::GetVertexFieldOffsets(const VertexLayout& vertex_
 
 size_t Mesh::GetVertexSize(const VertexLayout& vertex_layout) noexcept
 {
+    ITT_FUNCTION_TASK();
+
     size_t vertex_size = 0;
     for (VertexField vertex_field : vertex_layout)
     {
@@ -100,10 +105,12 @@ Mesh::Mesh(Type type, const VertexLayout& vertex_layout)
     , m_vertex_field_offsets(GetVertexFieldOffsets(m_vertex_layout))
     , m_vertex_size(GetVertexSize(m_vertex_layout))
 {
+    ITT_FUNCTION_TASK();
 }
 
 bool Mesh::HasVertexField(VertexField field) const noexcept
 {
+    ITT_FUNCTION_TASK();
     return m_vertex_field_offsets[static_cast<size_t>(field)] >= 0;
 }
 

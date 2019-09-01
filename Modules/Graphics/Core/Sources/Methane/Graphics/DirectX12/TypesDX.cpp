@@ -23,7 +23,7 @@ Methane graphics types convertors to DirectX 12 native types.
 
 #include "TypesDX.h"
 
-#include <Methane/Graphics/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 

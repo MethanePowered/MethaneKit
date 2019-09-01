@@ -29,7 +29,7 @@ Metal implementation of the render command list interface.
 #include "BufferMT.hh"
 #include "TypesMT.hh"
 
-#include <Methane/Graphics/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
 namespace Methane

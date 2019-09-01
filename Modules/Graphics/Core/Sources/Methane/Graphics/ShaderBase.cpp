@@ -23,7 +23,8 @@ Base implementation of the shader interface.
 
 #include "ShaderBase.h"
 #include "ProgramBase.h"
-#include "Instrumentation.h"
+
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 

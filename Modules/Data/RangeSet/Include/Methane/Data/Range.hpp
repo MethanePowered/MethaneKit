@@ -31,6 +31,8 @@ till end (exclusively): [start, end)
 #include <cassert>
 #include <stdexcept>
 
+#include <Methane/Instrumentation.h>
+
 namespace Methane
 {
 namespace Data
@@ -40,28 +42,29 @@ template<typename ScalarT>
 class Range
 {
 public:
-    Range(ScalarT start, ScalarT end) : m_start(start), m_end(end) { Validate(); }
+    Range(ScalarT start, ScalarT end) : m_start(start), m_end(end) { ITT_FUNCTION_TASK(); Validate(); }
     Range(std::initializer_list<ScalarT> init) : Range(*init.begin(), *(init.begin() + 1)) { }
     Range(const Range& other) : Range(other.m_start, other.m_end) { }
 
-    Range<ScalarT>& operator=(const Range<ScalarT>& other) { m_start = other.m_start; m_end = other.m_end; return *this; }
-    bool operator==(const Range<ScalarT>& other) const  { return m_start == other.m_start && m_end == other.m_end; }
-    bool operator!=(const Range<ScalarT>& other) const  { return !operator==(other); }
-    bool operator< (const Range<ScalarT>& other) const  { return m_end  <= other.m_start; }
-    bool operator> (const Range<ScalarT>& other) const  { return m_start > other.end; }
+    Range<ScalarT>& operator=(const Range<ScalarT>& other)         { ITT_FUNCTION_TASK(); m_start = other.m_start; m_end = other.m_end; return *this; }
+    bool            operator==(const Range<ScalarT>& other) const  { ITT_FUNCTION_TASK(); return m_start == other.m_start && m_end == other.m_end; }
+    bool            operator!=(const Range<ScalarT>& other) const  { ITT_FUNCTION_TASK(); return !operator==(other); }
+    bool            operator< (const Range<ScalarT>& other) const  { ITT_FUNCTION_TASK(); return m_end  <= other.m_start; }
+    bool            operator> (const Range<ScalarT>& other) const  { ITT_FUNCTION_TASK(); return m_start > other.end; }
 
     ScalarT GetStart() const                            { return m_start; }
     ScalarT GetEnd() const                              { return m_end; }
     ScalarT GetLength() const                           { return m_end - m_start; }
     bool    IsEmpty() const                             { return m_start == m_end; }
 
-    bool    IsAdjacent(const Range& other) const        { return m_start == other.m_end   || other.m_start == m_end; }
-    bool    IsOverlapping(const Range& other) const     { return m_start <  other.m_end   && other.m_start <  m_end;  }
-    bool    IsMergable(const Range& other) const        { return m_start <= other.m_end   && other.m_start <= m_end; }
-    bool    Contains(const Range& other) const          { return m_start <= other.m_start && other.m_end   <= m_end; }
+    bool    IsAdjacent(const Range& other) const        { ITT_FUNCTION_TASK(); return m_start == other.m_end   || other.m_start == m_end; }
+    bool    IsOverlapping(const Range& other) const     { ITT_FUNCTION_TASK(); return m_start <  other.m_end   && other.m_start <  m_end;  }
+    bool    IsMergable(const Range& other) const        { ITT_FUNCTION_TASK(); return m_start <= other.m_end   && other.m_start <= m_end; }
+    bool    Contains(const Range& other) const          { ITT_FUNCTION_TASK(); return m_start <= other.m_start && other.m_end   <= m_end; }
 
     Range operator+(const Range& other) const // merge
     {
+        ITT_FUNCTION_TASK();
         if (!IsMergable(other))
         {
             throw std::invalid_argument("Can not merge: ranges are not mergable.");
@@ -71,6 +74,7 @@ public:
 
     Range operator%(const Range& other) const // intersect
     {
+        ITT_FUNCTION_TASK();
         if (!IsMergable(other))
         {
             throw std::invalid_argument("Can not intersect: ranges are not overlapping or adjacent.");
@@ -80,6 +84,7 @@ public:
 
     Range operator-(const Range& other) const // subtract
     {
+        ITT_FUNCTION_TASK();
         if (!IsOverlapping(other))
         {
             throw std::invalid_argument("Can not subtract: ranges are not overlapping.");
@@ -93,6 +98,7 @@ public:
 
     explicit operator std::string() const
     {
+        ITT_FUNCTION_TASK();
         std::stringstream ss;
         ss << "[" << m_start << ", " << m_end << ")";
         return ss.str();
@@ -100,12 +106,14 @@ public:
 
     explicit operator const char*() const
     {
+        ITT_FUNCTION_TASK();
         return std::string(*this).c_str();
     }
 
 protected:
     void Validate() const
     {
+        ITT_FUNCTION_TASK();
         if (m_start <= m_end)
         {
             return;

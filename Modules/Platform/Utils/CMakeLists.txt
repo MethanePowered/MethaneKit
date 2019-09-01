@@ -39,6 +39,7 @@ target_include_directories(${TARGET}
 
 target_link_libraries(${TARGET}
     PUBLIC
+        MethaneInstrumentation
         nowide_static
 )
 
