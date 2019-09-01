@@ -24,7 +24,8 @@ Base implementation of the render pass interface.
 #include "RenderPassBase.h"
 #include "TextureBase.h"
 #include "RenderCommandListBase.h"
-#include "Instrumentation.h"
+
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 

@@ -26,6 +26,7 @@ and external resource files on disk.
 
 #include <Methane/Data/Provider.h>
 #include <Methane/Platform/Utils.h>
+#include <Methane/Instrumentation.h>
 
 #include <vector>
 #include <string>
@@ -56,12 +57,14 @@ class AppDataProvider : public Data::Provider
 public:
     static Provider& Get()
     {
+        ITT_FUNCTION_TASK();
         static AppDataProvider s_instance;
         return s_instance;
     }
 
     bool HasData(Type data_type, const std::string& path) const noexcept override
     {
+        ITT_FUNCTION_TASK();
         switch(data_type)
         {
 #ifdef ENABLE_SHADER_RESOURCES
@@ -76,6 +79,7 @@ public:
 
     Data::Chunk GetData(Type data_type, const std::string& path) const override
     {
+        ITT_FUNCTION_TASK();
         switch(data_type)
         {
 #ifdef ENABLE_SHADER_RESOURCES
@@ -93,11 +97,13 @@ private:
 #ifdef ENABLE_DATA_RESOURCES
     bool HasResourceData(const cmrc::embedded_filesystem& fs, const std::string& path) const noexcept
     {
+        ITT_FUNCTION_TASK();
         return fs.exists(path);
     }
 
     Data::Chunk GetResourceData(const cmrc::embedded_filesystem& fs, const std::string& path) const
     {
+        ITT_FUNCTION_TASK();
         if (!fs.exists(path))
             throw std::invalid_argument("Invalid resource path: " + path);
 
@@ -108,16 +114,19 @@ private:
 
     static std::string GetDataFilePath(const std::string& path)
     {
+        ITT_FUNCTION_TASK();
         return Platform::GetResourceDir() + "/" + path;
     }
 
     bool HasFileData(const std::string& path) const noexcept
     {
+        ITT_FUNCTION_TASK();
         return std::ifstream(GetDataFilePath(path)).good();
     }
 
     Data::Chunk GetFileData(const std::string& path) const
     {
+        ITT_FUNCTION_TASK();
         const std::string file_path = GetDataFilePath(path);
         std::ifstream fs(file_path, std::ios::binary);
         if (!fs.good())
@@ -136,6 +145,7 @@ private:
         , m_textures_fs(cmrc::Textures::get_filesystem())
 #endif
     {
+        ITT_FUNCTION_TASK();
         (void) m_initialized; // NOTE: silence unused variable warning
     }
 

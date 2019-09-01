@@ -38,6 +38,7 @@ Base frame class provides frame buffer management with resize handling.
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Graphics/ImageLoader.h>
+#include <Methane/Instrumentation.h>
 
 #include <vector>
 #include <sstream>
@@ -55,7 +56,7 @@ struct AppFrame
     Texture::Ptr    sp_screen_texture;
     RenderPass::Ptr sp_screen_pass;
 
-    AppFrame(uint32_t frame_index) : index(frame_index) { }
+    AppFrame(uint32_t frame_index) : index(frame_index) { ITT_FUNCTION_TASK(); }
 };
 
 template<typename FrameT>
@@ -81,6 +82,7 @@ public:
         , m_screen_pass_access(screen_pass_access)
         , m_show_hud_in_window_title(settings.show_hud_in_window_title)
     {
+        ITT_FUNCTION_TASK();
         m_cmd_options.add_options()
             ("d,hud", "Show/hide HUD in window title", cxxopts::value<int>())
             ("v,vsync", "Enable/disable vertical synchronization", cxxopts::value<int>())
@@ -95,12 +97,14 @@ public:
         // WARNING: Don't forget to make the following call in the derived Application class
         // Wait for GPU rendering is completed to release resources
         // m_sp_context->WaitForGpu(Context::WaitFor::RenderComplete);
+        ITT_FUNCTION_TASK();
         m_sp_context->RemoveCallback(*this);
     }
 
     // Platform::App interface
     void InitContext(const Platform::AppEnvironment& env, const FrameSize& frame_size) override
     {
+        ITT_FUNCTION_TASK();
         const Devices& devices = System::Get().UpdateGpuDevices();
         assert(!devices.empty());
 
@@ -124,6 +128,7 @@ public:
 
     void Init() override
     {
+        ITT_FUNCTION_TASK();
         assert(m_sp_context);
         const Context::Settings& context_settings = m_sp_context->GetSettings();
 
@@ -177,6 +182,7 @@ public:
 
     bool Resize(const FrameSize& frame_size, bool /*is_minimized*/) override
     {
+        ITT_FUNCTION_TASK();
         struct ResourceInfo
         {
             Resource::DescriptorByUsage descriptor_by_usage;
@@ -238,12 +244,15 @@ public:
     
     void Update() override
     {
+        ITT_FUNCTION_TASK();
         System::Get().CheckForChanges();
         m_animations.Update();
     }
 
     void Render() override
     {
+        ITT_FUNCTION_TASK();
+
         // Update HUD info in window title
         if (!m_show_hud_in_window_title ||
             m_title_update_timer.GetElapsedSecondsD() < g_title_update_interval_sec)
@@ -277,6 +286,7 @@ public:
     
     bool SetFullScreen(bool is_full_screen) override
     {
+        ITT_FUNCTION_TASK();
         if (m_sp_context)
             m_sp_context->SetFullScreen(is_full_screen);
         
@@ -286,6 +296,7 @@ public:
     // Context::Callback interface
     void OnContextReleased() override
     {
+        ITT_FUNCTION_TASK();
         m_frames.clear();
         m_sp_depth_texture.reset();
         m_initialized = false;
@@ -294,6 +305,7 @@ public:
     // Context::Callback interface
     void OnContextInitialized() override
     {
+        ITT_FUNCTION_TASK();
         Init();
     }
 
@@ -306,11 +318,13 @@ protected:
 
     Platform::AppView GetView() const override
     {
+        ITT_FUNCTION_TASK();
         return m_sp_context->GetAppView();
     }
 
     void ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result) override
     {
+        ITT_FUNCTION_TASK();
         Platform::App::ParseCommandLine(cmd_parse_result);
 
         if (cmd_parse_result.count("hud"))
@@ -333,6 +347,7 @@ protected:
 
     inline FrameT& GetCurrentFrame()
     {
+        ITT_FUNCTION_TASK();
         const uint32_t frame_index = m_sp_context->GetFrameBufferIndex();
         assert(frame_index < m_frames.size());
         return m_frames[frame_index];
@@ -342,6 +357,7 @@ protected:
 
     static std::string IndexedName(const std::string& base_name, uint32_t index)
     {
+        ITT_FUNCTION_TASK();
         std::stringstream ss;
         ss << base_name << " " << std::to_string(index);
         return ss.str();

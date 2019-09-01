@@ -43,10 +43,13 @@ public:
     
     ActionControllerBase(const ActionByMouseButton& action_by_mouse_button)
         : m_action_by_mouse_button(action_by_mouse_button)
-    { }
+    {
+        ITT_FUNCTION_TASK();
+    }
     
     Input::IHelpProvider::HelpLines GetMouseHelp() const
     {
+        ITT_FUNCTION_TASK();
         Input::IHelpProvider::HelpLines help_lines;
         if (m_action_by_mouse_button.empty())
             return help_lines;
@@ -78,6 +81,7 @@ protected:
     
     ActionEnum GetMouseActionByButton(Button mouse_button) const
     {
+        ITT_FUNCTION_TASK();
         const auto action_by_mouse_button_it = m_action_by_mouse_button.find(mouse_button);
         return (action_by_mouse_button_it != m_action_by_mouse_button.end())
               ? action_by_mouse_button_it->second : ActionEnum::None;

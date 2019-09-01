@@ -28,7 +28,7 @@ Metal implementation of the shader interface.
 #include "DeviceMT.hh"
 #include "TypesMT.hh"
 
-#include <Methane/Graphics/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
 namespace Methane

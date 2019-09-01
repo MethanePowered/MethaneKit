@@ -22,6 +22,7 @@ Windows platform specific types and implementation of Keyboard abstractions.
 ******************************************************************************/
 
 #include <Methane/Platform/Keyboard.h>
+#include <Methane/Instrumentation.h>
 
 #include <map>
 
@@ -34,6 +35,7 @@ namespace Keyboard
 
 Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
 {
+    ITT_FUNCTION_TASK();
     static const std::map<uint32_t, Key> s_key_by_native_code =
     {
         { 0x00B, Key::Num0          },
@@ -207,6 +209,7 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
 
 Modifier::Mask KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key)
 {
+    ITT_FUNCTION_TASK();
     switch (native_key.w_param)
     {
     case VK_CONTROL: return Modifier::Value::Control;

@@ -22,6 +22,7 @@ Base application controller providing commands like app close and help.
 ******************************************************************************/
 
 #include <Methane/Platform/AppController.h>
+#include <Methane/Instrumentation.h>
 
 #include <sstream>
 #include <cassert>
@@ -38,15 +39,18 @@ AppController::AppController(AppBase& application, const std::string& applicatio
     , m_application(application)
     , m_show_command_line_help(show_command_line_help)
 {
+    ITT_FUNCTION_TASK();
 }
 
 void AppController::OnKeyboardChanged(Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Keyboard::StateChange& state_change)
 {
+    ITT_FUNCTION_TASK();
     Keyboard::ActionControllerBase<AppHelpAction>::OnKeyboardChanged(key, key_state, state_change);
 }
 
 void AppController::OnKeyboardStateAction(AppHelpAction action)
 {
+    ITT_FUNCTION_TASK();
     switch(action)
     {
         case AppHelpAction::ShowHelp: ShowHelp(); break;
@@ -57,6 +61,7 @@ void AppController::OnKeyboardStateAction(AppHelpAction action)
 
 std::string AppController::GetKeyboardActionName(AppHelpAction action) const
 {
+    ITT_FUNCTION_TASK();
     switch (action)
     {
         case AppHelpAction::None:      return "none";
@@ -68,11 +73,13 @@ std::string AppController::GetKeyboardActionName(AppHelpAction action) const
 
 Input::IHelpProvider::HelpLines AppController::GetHelp() const
 {
+    ITT_FUNCTION_TASK();
     return GetKeyboardHelp();
 }
 
 void AppController::ShowHelp()
 {
+    ITT_FUNCTION_TASK();
     std::stringstream help_stream;
     std::string single_offset = "    ";
     bool is_first_controller = true;

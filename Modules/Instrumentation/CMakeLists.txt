@@ -1,21 +1,15 @@
-set(TARGET MethaneDataAnimation)
+set(TARGET MethaneInstrumentation)
 
 include(Methane)
 
-get_module_dirs("Methane/Data")
+get_module_dirs("Methane")
 
 set(HEADERS
-    ${INCLUDE_DIR}/Timer.h
-    ${INCLUDE_DIR}/Animation.h
-    ${INCLUDE_DIR}/AnimationsPool.h
-    ${INCLUDE_DIR}/TimeAnimation.h
-    ${INCLUDE_DIR}/ValueAnimation.hpp
+    ${INCLUDE_DIR}/Instrumentation.h
 )
 
 set(SOURCES
-    ${SOURCES_DIR}/Animation.cpp
-    ${SOURCES_DIR}/AnimationsPool.cpp
-    ${SOURCES_DIR}/TimeAnimation.cpp
+    ${SOURCES_DIR}/Instrumentation.cpp
 )
 
 add_library(${TARGET} STATIC
@@ -32,14 +26,15 @@ target_include_directories(${TARGET}
 
 target_link_libraries(${TARGET}
     PUBLIC
-        MethaneInstrumentation
+        IttNotify
+        nowide_static
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER Modules/Data
+    FOLDER Modules
     PUBLIC_HEADER "${HEADERS}"
 )
 

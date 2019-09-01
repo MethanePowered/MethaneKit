@@ -23,7 +23,7 @@ Methane graphics types convertors to Metal native types.
 
 #include "TypesMT.hh"
 
-#include <Methane/Graphics/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 

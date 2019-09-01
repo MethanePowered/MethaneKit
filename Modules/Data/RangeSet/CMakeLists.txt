@@ -21,6 +21,11 @@ target_include_directories(${TARGET}
         Include
 )
 
+target_link_libraries(${TARGET}
+    PUBLIC
+        MethaneInstrumentation
+)
+
 set_target_properties(${TARGET}
     PROPERTIES
     FOLDER Modules/Data

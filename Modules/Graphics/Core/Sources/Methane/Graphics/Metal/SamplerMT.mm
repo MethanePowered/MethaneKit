@@ -26,7 +26,7 @@ Metal implementation of the sampler interface.
 #include "DeviceMT.hh"
 #include "TypesMT.hh"
 
-#include <Methane/Graphics/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #import <Methane/Platform/MacOS/Types.hh>
 

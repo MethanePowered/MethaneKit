@@ -22,7 +22,8 @@ Base implementation of the render state interface.
 ******************************************************************************/
 
 #include "RenderStateBase.h"
-#include "Instrumentation.h"
+
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 

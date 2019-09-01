@@ -24,7 +24,8 @@ Base implementation of the command list interface.
 #include "CommandListBase.h"
 #include "ContextBase.h"
 #include "ResourceBase.h"
-#include "Instrumentation.h"
+
+#include <Methane/Instrumentation.h>
 
 #ifdef COMMAND_EXECUTION_LOGGING
 #include <Methane/Platform/Utils.h>

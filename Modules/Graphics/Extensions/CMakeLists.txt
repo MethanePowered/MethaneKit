@@ -21,6 +21,7 @@ add_library(${TARGET} STATIC
 target_link_libraries(${TARGET}
     MethanePlatformUtils
     MethaneGraphicsCore
+    MethaneInstrumentation
 )
 
 if (METHANE_USE_OPEN_IMAGE_IO)

@@ -23,7 +23,8 @@ and deferred releasing of GPU resource.
 ******************************************************************************/
 
 #include "ResourceManager.h"
-#include "Instrumentation.h"
+
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 
