@@ -74,9 +74,7 @@ public:
         Range constant_range;
         Range mutable_range;
 
-        Reservation(Ref in_heap, const Range& in_constant_range, const Range& in_mutable_range)
-            : heap(in_heap), constant_range(in_constant_range), mutable_range(in_mutable_range)
-        { }
+        Reservation(Ref in_heap, const Range& in_constant_range, const Range& in_mutable_range);
 
         const Range& GetRange(bool is_constant) const { return is_constant ? constant_range : mutable_range; }
     };

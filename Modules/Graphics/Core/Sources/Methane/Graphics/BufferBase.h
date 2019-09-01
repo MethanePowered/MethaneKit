@@ -40,13 +40,13 @@ public:
     BufferBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
     // Resource interface
-    Data::Size GetDataSize() const override                { return m_settings.size; }
+    Data::Size GetDataSize() const override                 { return m_settings.size; }
     void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override;
 
     // Buffer interface
-    Buffer::Type GetBufferType() const noexcept override { return m_settings.type; }
+    Buffer::Type GetBufferType() const noexcept override    { return m_settings.type; }
 
-    std::string GetBufferTypeName() const noexcept               { return Buffer::GetBufferTypeName(m_settings.type); }
+    std::string GetBufferTypeName() const noexcept          { return Buffer::GetBufferTypeName(m_settings.type); }
 
 protected:
     Settings m_settings;
