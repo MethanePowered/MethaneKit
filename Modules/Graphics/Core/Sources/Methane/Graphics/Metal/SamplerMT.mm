@@ -21,16 +21,19 @@ Metal implementation of the sampler interface.
 
 ******************************************************************************/
 
-#include "SamplerMT.h"
-#include "ContextMT.h"
-#include "TypesMT.h"
+#include "SamplerMT.hh"
+#include "ContextMT.hh"
+#include "DeviceMT.hh"
+#include "TypesMT.hh"
 
-#include <Methane/Graphics/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
-#import <Methane/Platform/MacOS/Types.h>
+#import <Methane/Platform/MacOS/Types.hh>
 
-using namespace Methane::Graphics;
-using namespace Methane::MacOS;
+namespace Methane
+{
+namespace Graphics
+{
 
 MTLSamplerAddressMode ConvertAddressModeToMetal(const SamplerBase::Address::Mode& address_mode) noexcept
 {
@@ -151,7 +154,7 @@ void SamplerMT::ResetSampletState()
     }
     
     assert(m_mtl_sampler_desc);
-    m_mtl_sampler_state = [GetContextMT().GetNativeDevice() newSamplerStateWithDescriptor:m_mtl_sampler_desc];
+    m_mtl_sampler_state = [GetContextMT().GetDeviceMT().GetNativeDevice() newSamplerStateWithDescriptor:m_mtl_sampler_desc];
 }
 
 ContextMT& SamplerMT::GetContextMT() noexcept
@@ -159,3 +162,6 @@ ContextMT& SamplerMT::GetContextMT() noexcept
     ITT_FUNCTION_TASK();
     return static_cast<class ContextMT&>(m_context);
 }
+
+} // namespace Graphics
+} // namespace Methane

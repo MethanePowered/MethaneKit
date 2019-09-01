@@ -22,13 +22,20 @@ Windows platform specific types and implementation of Keyboard abstractions.
 ******************************************************************************/
 
 #include <Methane/Platform/Keyboard.h>
+#include <Methane/Instrumentation.h>
 
 #include <map>
 
-using namespace Methane::Platform::Keyboard;
+namespace Methane
+{
+namespace Platform
+{
+namespace Keyboard
+{
 
 Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
 {
+    ITT_FUNCTION_TASK();
     static const std::map<uint32_t, Key> s_key_by_native_code =
     {
         { 0x00B, Key::Num0          },
@@ -199,3 +206,19 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
     auto native_code_and_key_it = s_key_by_native_code.find(native_key_code);
     return native_code_and_key_it == s_key_by_native_code.end() ? Key::Unknown : native_code_and_key_it->second;
 }
+
+Modifier::Mask KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key)
+{
+    ITT_FUNCTION_TASK();
+    switch (native_key.w_param)
+    {
+    case VK_CONTROL: return Modifier::Value::Control;
+    case VK_SHIFT:   return Modifier::Value::Shift;
+    case VK_CAPITAL: return Modifier::Value::CapsLock;
+    default:         return Modifier::Value::None;
+    }
+}
+
+} // namespace Keyboard
+} // namespace Platform
+} // namespace Methane

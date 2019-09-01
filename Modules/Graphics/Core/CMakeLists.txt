@@ -9,6 +9,8 @@ if (WIN32)
     set(PLATFORM_SOURCES
         ${SOURCES_GRAPHICS_DIR}/TypesDX.h
         ${SOURCES_GRAPHICS_DIR}/TypesDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/DeviceDX.h
+        ${SOURCES_GRAPHICS_DIR}/DeviceDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ContextDX.h
         ${SOURCES_GRAPHICS_DIR}/ContextDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ShaderDX.h
@@ -39,6 +41,7 @@ if (WIN32)
         D3DX12
         d3d12
         dxgi
+        dxguid
         d3dcompiler
     )
 
@@ -50,31 +53,33 @@ if (WIN32)
 elseif(APPLE)
 
     set(PLATFORM_SOURCES
-        ${SOURCES_GRAPHICS_DIR}/TypesMT.h
+        ${SOURCES_GRAPHICS_DIR}/TypesMT.hh
         ${SOURCES_GRAPHICS_DIR}/TypesMT.mm
-        ${SOURCES_GRAPHICS_DIR}/ContextMT.h
+        ${SOURCES_GRAPHICS_DIR}/DeviceMT.hh
+        ${SOURCES_GRAPHICS_DIR}/DeviceMT.mm
+        ${SOURCES_GRAPHICS_DIR}/ContextMT.hh
         ${SOURCES_GRAPHICS_DIR}/ContextMT.mm
-        ${SOURCES_GRAPHICS_DIR}/ShaderMT.h
+        ${SOURCES_GRAPHICS_DIR}/ShaderMT.hh
         ${SOURCES_GRAPHICS_DIR}/ShaderMT.mm
-        ${SOURCES_GRAPHICS_DIR}/ProgramMT.h
+        ${SOURCES_GRAPHICS_DIR}/ProgramMT.hh
         ${SOURCES_GRAPHICS_DIR}/ProgramMT.mm
-        ${SOURCES_GRAPHICS_DIR}/RenderStateMT.h
+        ${SOURCES_GRAPHICS_DIR}/RenderStateMT.hh
         ${SOURCES_GRAPHICS_DIR}/RenderStateMT.mm
-        ${SOURCES_GRAPHICS_DIR}/ResourceMT.h
+        ${SOURCES_GRAPHICS_DIR}/ResourceMT.hh
         ${SOURCES_GRAPHICS_DIR}/ResourceMT.mm
-        ${SOURCES_GRAPHICS_DIR}/DescriptorHeapMT.h
+        ${SOURCES_GRAPHICS_DIR}/DescriptorHeapMT.hh
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapMT.mm  
-        ${SOURCES_GRAPHICS_DIR}/BufferMT.h
+        ${SOURCES_GRAPHICS_DIR}/BufferMT.hh
         ${SOURCES_GRAPHICS_DIR}/BufferMT.mm
-        ${SOURCES_GRAPHICS_DIR}/TextureMT.h
+        ${SOURCES_GRAPHICS_DIR}/TextureMT.hh
         ${SOURCES_GRAPHICS_DIR}/TextureMT.mm
-        ${SOURCES_GRAPHICS_DIR}/SamplerMT.h
+        ${SOURCES_GRAPHICS_DIR}/SamplerMT.hh
         ${SOURCES_GRAPHICS_DIR}/SamplerMT.mm
-        ${SOURCES_GRAPHICS_DIR}/RenderPassMT.h
+        ${SOURCES_GRAPHICS_DIR}/RenderPassMT.hh
         ${SOURCES_GRAPHICS_DIR}/RenderPassMT.mm
-        ${SOURCES_GRAPHICS_DIR}/CommandQueueMT.h
+        ${SOURCES_GRAPHICS_DIR}/CommandQueueMT.hh
         ${SOURCES_GRAPHICS_DIR}/CommandQueueMT.mm
-        ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.h
+        ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.hh
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.mm
     )
 
@@ -97,10 +102,11 @@ set(LIBRARIES ${PLATFORM_LIBRARIES}
     MethanePlatformUtils
     MethanePlatformAppView
     MethaneGraphicsHelpers
-    IttNotify
+    MethaneInstrumentation
 )
 
 set(HEADERS
+    ${INCLUDE_DIR}/Device.h
     ${INCLUDE_DIR}/Context.h
     ${INCLUDE_DIR}/Shader.h
     ${INCLUDE_DIR}/Program.h
@@ -134,6 +140,8 @@ set(SOURCES ${PLATFORM_SOURCES}
 
     # Base implementation
     ${SOURCES_DIR}/ObjectBase.h
+    ${SOURCES_DIR}/DeviceBase.h
+    ${SOURCES_DIR}/DeviceBase.cpp
     ${SOURCES_DIR}/ContextBase.h
     ${SOURCES_DIR}/ContextBase.cpp
     ${SOURCES_DIR}/ShaderBase.h
@@ -164,8 +172,6 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/DescriptorHeap.cpp
     ${SOURCES_DIR}/ResourceManager.h
     ${SOURCES_DIR}/ResourceManager.cpp
-    ${SOURCES_DIR}/Instrumentation.h
-    ${SOURCES_DIR}/Instrumentation.cpp
     ${SOURCES_DIR}/Types.cpp
 )
 

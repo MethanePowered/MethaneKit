@@ -28,6 +28,7 @@ Base implementation of the context interface.
 #include <Methane/Data/Provider.h>
 
 #include "ObjectBase.h"
+#include "DeviceBase.h"
 #include "CommandQueueBase.h"
 #include "RenderCommandListBase.h"
 #include "RenderStateBase.h"
@@ -35,7 +36,7 @@ Base implementation of the context interface.
 #include "ResourceManager.h"
 
 #include <memory>
-#include <list>
+#include <vector>
 #include <atomic>
 
 namespace Methane
@@ -48,38 +49,60 @@ class ContextBase
     , public Context
 {
 public:
-    ContextBase(const Data::Provider& data_provider, const Settings& settings);
-    virtual ~ContextBase() override = default;
+    ContextBase(const Data::Provider& data_provider, DeviceBase& device, const Settings& settings);
 
     // Context interface
-    virtual void                  CompleteInitialization() override;
-    virtual void                  WaitForGpu(WaitFor wait_for) override;
-    virtual void                  Resize(const FrameSize& frame_size) override;
-    virtual CommandQueue&         GetRenderCommandQueue() override;
-    virtual CommandQueue&         GetUploadCommandQueue() override;
-    virtual RenderCommandList&    GetUploadCommandList() override;
-    virtual const Data::Provider& GetDataProvider() const override      { return m_data_provider; }
-    virtual const Settings&       GetSettings() const override          { return m_settings; }
-    virtual uint32_t              GetFrameBufferIndex() const override  { return m_frame_buffer_index;  }
-    virtual const FpsCounter&     GetFpsCounter() const override        { return m_fps_counter; }
+    void                  CompleteInitialization() override;
+    void                  WaitForGpu(WaitFor wait_for) override;
+    void                  Resize(const FrameSize& frame_size) override;
+    void                  Reset(Device& device) override;
+    void                  Present() override;
+    void                  AddCallback(Callback& callback) override;
+    void                  RemoveCallback(Callback& callback) override;
+    CommandQueue&         GetRenderCommandQueue() override;
+    CommandQueue&         GetUploadCommandQueue() override;
+    RenderCommandList&    GetUploadCommandList() override;
+    Device&               GetDevice() override;
+    const Data::Provider& GetDataProvider() const override      { return m_data_provider; }
+    const Settings&       GetSettings() const override          { return m_settings; }
+    uint32_t              GetFrameBufferIndex() const override  { return m_frame_buffer_index;  }
+    const FpsCounter&     GetFpsCounter() const override        { return m_fps_counter; }
+    bool                  SetVSyncEnabled(bool vsync_enabled) override;
+    bool                  SetFrameBuffersCount(uint32_t frame_buffers_count) override;
+    bool                  SetFullScreen(bool is_full_screen) override;
 
     // ContextBase interface
     virtual void OnCommandQueueCompleted(CommandQueue& cmd_queue, uint32_t frame_index) = 0;
 
+    // Object interface
+    void SetName(const std::string& name) override;
+
     ResourceManager&  GetResourceManager() { return m_resource_manager; }
+
+    DeviceBase& GetDeviceBase();
+    const DeviceBase& GetDeviceBase() const;
 
 protected:
     void UploadResources();
     void OnPresentComplete();
+    void ResetWithSettings(const Settings& settings);
 
-    const Data::Provider&  m_data_provider;
-    Settings               m_settings;
-    ResourceManager        m_resource_manager;
-    CommandQueue::Ptr      m_sp_render_cmd_queue;
-    CommandQueue::Ptr      m_sp_upload_cmd_queue;
-    RenderCommandList::Ptr m_sp_upload_cmd_list;
-    std::atomic<uint32_t>  m_frame_buffer_index;
-    FpsCounter             m_fps_counter;
+    virtual void Release();
+    virtual void Initialize(Device& device, bool deferred_heap_allocation);
+
+    using Callbacks = std::vector<Callback::Ref>;
+
+    const Data::Provider&       m_data_provider;
+    DeviceBase::Ptr             m_sp_device;
+    Settings                    m_settings;
+    ResourceManager::Settings   m_resource_manager_init_settings = { true };
+    ResourceManager             m_resource_manager;
+    Callbacks                   m_callbacks; // ORDER: Keep callbacks before resources for correct auto-delete
+    CommandQueue::Ptr           m_sp_render_cmd_queue;
+    CommandQueue::Ptr           m_sp_upload_cmd_queue;
+    RenderCommandList::Ptr      m_sp_upload_cmd_list;
+    std::atomic<uint32_t>       m_frame_buffer_index;
+    FpsCounter                  m_fps_counter;
 };
 
 } // namespace Graphics

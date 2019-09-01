@@ -25,27 +25,24 @@ DirectX 12 implementation of the shader interface.
 #include "ProgramDX.h"
 #include "ResourceDX.h"
 #include "ContextDX.h"
+#include "DeviceDX.h"
 #include "TypesDX.h"
 
 #include <d3dx12.h>
 #include <D3Dcompiler.h>
 #include <nowide/convert.hpp>
 
-#include <Methane/Graphics/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 #include <Methane/Platform/Windows/Utils.h>
 
 #include <sstream>
 #include <cassert>
 
-using namespace Methane::Graphics;
-
-#if defined(_DEBUG)
-// Enable better shader debugging with the graphics debugging tools.
-UINT g_shader_compile_flags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-#else
-UINT g_shader_compile_flags = 0;
-#endif
+namespace Methane
+{
+namespace Graphics
+{
 
 std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type) noexcept
 {
@@ -228,7 +225,7 @@ void ShaderDX::ResourceBindingDX::SetResource(const Resource::Ptr& sp_resource)
         }
 
         const uint32_t descriptor_index = m_p_descriptor_heap_reservation->GetRange(IsConstant()).GetStart() + m_descriptor_range.offset;
-        GetContextDX().GetNativeDevice()->CopyDescriptorsSimple(m_descriptor_range.count,
+        GetContextDX().GetDeviceDX().GetNativeDevice()->CopyDescriptorsSimple(m_descriptor_range.count,
             dx_descriptor_heap.GetNativeCPUDescriptorHandle(descriptor_index),
             dx_resource.GetNativeCPUDescriptorHandle(ResourceBase::Usage::ShaderRead),
             dx_descriptor_heap.GetNativeDescriptorHeapType());
@@ -278,6 +275,13 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
 
+#if defined(_DEBUG)
+    // Enable better shader debugging with the graphics debugging tools.
+    const UINT shader_compile_flags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#else
+    const UINT shader_compile_flags = 0;
+#endif
+
     std::vector<D3D_SHADER_MACRO> macro_definitions;
     for (const auto& definition : m_settings.compile_definitions)
     {
@@ -294,7 +298,7 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
             D3D_COMPILE_STANDARD_FILE_INCLUDE,
             m_settings.entry_target.function_name.c_str(),
             m_settings.entry_target.compile_target.c_str(),
-            g_shader_compile_flags,
+            shader_compile_flags,
             0,
             &m_cp_byte_code,
             &error_blob
@@ -451,3 +455,6 @@ ContextDX& ShaderDX::GetContextDX()
     ITT_FUNCTION_TASK();
     return static_cast<class ContextDX&>(m_context);
 }
+
+} // namespace Graphics
+} // namespace Methane

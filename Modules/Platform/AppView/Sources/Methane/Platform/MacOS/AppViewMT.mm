@@ -21,7 +21,9 @@ MacOS application view implementation.
 
 ******************************************************************************/
 
-#import <Methane/Platform/MacOS/AppViewMT.h>
+#import <Methane/Platform/MacOS/AppViewMT.hh>
+
+#include <Methane/Instrumentation.h>
 
 @interface AppViewMT ()
 {
@@ -30,7 +32,7 @@ MacOS application view implementation.
 
 @property (strong) id<CAMetalDrawable> currentDrawable;
 @property (nonatomic) id <MTLDevice> device;
-@property (nonatomic) NSTimer* nonsyncTimer;
+@property (nonatomic) NSTimer* unsyncTimer;
 
 @end
 
@@ -40,7 +42,7 @@ MacOS application view implementation.
 @synthesize pixelFormat = _pixelFormat;
 @synthesize drawableCount = _drawableCount;
 @synthesize vsyncEnabled = _vsyncEnabled;
-@synthesize nonsyncRefreshInterval = _unsyncRefreshInterval;
+@synthesize unsyncRefreshInterval = _unsyncRefreshInterval;
 
 CVDisplayLinkRef _displayLink;
 
@@ -51,16 +53,23 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
                                    CVOptionFlags *flagsOut,
                                    void *displayLinkContext)
 {
+    ITT_FUNCTION_TASK();
+
     AppViewMT* app_view = (__bridge AppViewMT*)displayLinkContext;
     
-    // Rendering in Main thread
-    [app_view performSelectorOnMainThread:@selector(redraw) withObject:nil waitUntilDone:YES];
+    if (app_view.redrawing)
+    {
+        // Rendering in Main thread
+        [app_view performSelectorOnMainThread:@selector(redraw) withObject:nil waitUntilDone:YES];
+    }
 
     return kCVReturnSuccess;
 }
 
 - (instancetype) initWithCoder:(NSCoder *)aDecoder
 {
+    ITT_FUNCTION_TASK();
+
     if ((self = [super initWithCoder:aDecoder]))
     {
         _appWindow = nil;
@@ -83,6 +92,8 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
                   vsyncEnabled:(BOOL) vsync_enabled
          unsyncRefreshInterval:(double) refresn_interval_sec
 {
+    ITT_FUNCTION_TASK();
+
     NSScreen* current_screen = (app_window != nil) ? [app_window screen] : [NSScreen mainScreen];
     NSRect frame = [current_screen convertRectFromBacking:backing_frame];
     if ((self = [super initWithFrame:NSRectToCGRect(frame)]))
@@ -102,29 +113,43 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
 
 - (void) dealloc
 {
+    ITT_FUNCTION_TASK();
+
     self.redrawing = NO;
     [super dealloc];
 }
 
 - (void) commonInit
 {
+    ITT_FUNCTION_TASK();
+
     self.metalLayer.pixelFormat = self.pixelFormat;
     self.wantsLayer = YES;
     self.layerContentsRedrawPolicy = NSViewLayerContentsRedrawOnSetNeedsDisplay;
+    
+    NSNotificationCenter* notificationCenter = [NSNotificationCenter defaultCenter];
+    [notificationCenter addObserver:self
+                           selector:@selector(windowWillClose:)
+                               name:NSWindowWillCloseNotification
+                             object:self.window];
 }
 
 - (NSScreen*) currentScreen
 {
+    ITT_FUNCTION_TASK();
     return self.appWindow != nil ? [self.appWindow screen] : [NSScreen mainScreen];
 }
 
 - (CAMetalLayer*) metalLayer
 {
+    ITT_FUNCTION_TASK();
     return (CAMetalLayer*) self.layer;
 }
 
 - (CALayer *) makeBackingLayer
 {
+    ITT_FUNCTION_TASK();
+
     CAMetalLayer *layer = [[CAMetalLayer alloc] init];
     layer.bounds = self.bounds;
     layer.device = self.device;
@@ -138,6 +163,8 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
 
 - (void) layout
 {
+    ITT_FUNCTION_TASK();
+
     [super layout];
     CGFloat scale = self.window ? self.window.screen.backingScaleFactor
                                 : [NSScreen mainScreen].backingScaleFactor;
@@ -157,6 +184,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
 
 - (void) setUnsyncRefreshInterval: (NSTimeInterval) unsyncRefreshInterval
 {
+    ITT_FUNCTION_TASK();
     if (_unsyncRefreshInterval == unsyncRefreshInterval)
         return;
     
@@ -164,34 +192,42 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
     
     if (self.redrawing && !self.vsyncEnabled)
     {
-        [self.nonsyncTimer invalidate];
-        self.nonsyncTimer = [NSTimer scheduledTimerWithTimeInterval:_unsyncRefreshInterval target:self selector:@selector(redraw) userInfo:nil repeats:YES];
+        [self.unsyncTimer invalidate];
+        self.unsyncTimer = [NSTimer scheduledTimerWithTimeInterval:_unsyncRefreshInterval target:self selector:@selector(redraw) userInfo:nil repeats:YES];
     }
+}
+
+- (void) setVsyncEnabled: (BOOL) vsyncEnabled
+{
+    ITT_FUNCTION_TASK();
+    if (_vsyncEnabled == vsyncEnabled)
+        return;
+    
+    BOOL was_redrawing = self.redrawing;
+    self.redrawing = NO;
+    _vsyncEnabled = vsyncEnabled;
+    self.redrawing = was_redrawing;
 }
 
 - (void) setRedrawing: (BOOL) redrawing
 {
+    ITT_FUNCTION_TASK();
     if (_redrawing == redrawing)
         return;
     
     _redrawing = redrawing;
     
     // Stop non-sync refresh timer if it's running
-    if (self.nonsyncTimer)
+    if (self.unsyncTimer)
     {
-        [self.nonsyncTimer invalidate];
-        self.nonsyncTimer = nil;
+        [self.unsyncTimer invalidate];
+        self.unsyncTimer = nil;
     }
 
     // Enable/Disable redrawing on VSync
     if (_redrawing == YES)
     {
-        if (!_vsyncEnabled)
-        {
-            // Create non-sync refresh timer
-            self.nonsyncTimer = [NSTimer scheduledTimerWithTimeInterval:self.nonsyncRefreshInterval target:self selector:@selector(redraw) userInfo:nil repeats:YES];
-        }
-        else
+        if (_vsyncEnabled)
         {
             CVReturn cvReturn = CVDisplayLinkCreateWithActiveCGDisplays(&_displayLink);
             assert(cvReturn == kCVReturnSuccess);
@@ -200,44 +236,55 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
             assert(cvReturn == kCVReturnSuccess);
             
             cvReturn = CVDisplayLinkSetCurrentCGDisplay(_displayLink, CGMainDisplayID());
-            CVDisplayLinkStart(_displayLink);
+            assert(cvReturn == kCVReturnSuccess);
             
-            NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-            [notificationCenter addObserver:self
-                                   selector:@selector(windowWillClose:)
-                                       name:NSWindowWillCloseNotification
-                                     object:self.window];
+            CVDisplayLinkStart(_displayLink);
+        }
+        else
+        {
+            // Create non-sync refresh timer
+            self.unsyncTimer = [NSTimer scheduledTimerWithTimeInterval:_unsyncRefreshInterval target:self selector:@selector(redraw) userInfo:nil repeats:YES];
         }
     }
     else if (_displayLink)
     {
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
         CVDisplayLinkStop(_displayLink);
         CVDisplayLinkRelease(_displayLink);
+        _displayLink = nil;
     }
 }
 
 - (void) redraw
 {
-    self.currentDrawable = [self.metalLayer nextDrawable];
+    ITT_FUNCTION_TASK();
+    if (!self.redrawing)
+        return;
     
-    if ([self.delegate respondsToSelector:@selector(drawInView:)])
-    {
-        [self.delegate drawInView:self];
-    }
+    bool delegateCanDrawInView = [self.delegate respondsToSelector:@selector(drawInView:)];
+    assert(delegateCanDrawInView);
+    if (!delegateCanDrawInView)
+        return;
+    
+    self.currentDrawable = [self.metalLayer nextDrawable];
+    [self.delegate drawInView:self];
 }
 
 - (void) windowWillClose:(NSNotification*)notification
 {
+    ITT_FUNCTION_TASK();
+
     // Stop the display link when the window is closing because we will
     // not be able to get a drawable, but the display link may continue to fire
-    if (notification.object == self.window)
+    if (notification.object == self.window && _displayLink)
     {
-        CVDisplayLinkStop(_displayLink);
+        self.redrawing = NO;
     }
 }
 
 - (void)setViewController:(NSViewController *)newController
 {
+    ITT_FUNCTION_TASK();
     if (viewController)
     {
         NSResponder *controllerNextResponder = [viewController nextResponder];
@@ -257,6 +304,8 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
 
 - (void)updateTrackingAreas
 {
+    ITT_FUNCTION_TASK();
+
     if (trackingArea != nil)
     {
         [self removeTrackingArea:trackingArea];
@@ -281,6 +330,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
 
 - (void)setNextResponder:(NSResponder *)newNextResponder
 {
+    ITT_FUNCTION_TASK();
     if (viewController)
     {
         [viewController setNextResponder:newNextResponder];
@@ -291,16 +341,19 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
 
 - (BOOL)acceptsFirstResponder
 {
+    ITT_FUNCTION_TASK();
     return YES;
 }
 
 - (BOOL)canBecomeKeyView
 {
+    ITT_FUNCTION_TASK();
     return YES;
 }
 
 - (BOOL)acceptsFirstMouse:(NSEvent *)event
 {
+    ITT_FUNCTION_TASK();
     return YES;
 }
 

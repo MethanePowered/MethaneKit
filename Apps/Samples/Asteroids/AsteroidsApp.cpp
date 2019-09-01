@@ -23,13 +23,15 @@ Sample demonstrating parallel redering of the distinct asteroids massive
 
 #include "AsteroidsApp.h"
 
-#include <Methane/Platform/AppHelpController.h>
 #include <Methane/Graphics/AppCameraController.h>
 
 #include <cml/mathlib/mathlib.h>
 #include <cassert>
 
-using namespace Methane::Samples;
+namespace Methane
+{
+namespace Samples
+{
 
 // Common application settings
 static const gfx::FrameSize           g_shadow_map_size(1024, 1024);
@@ -57,7 +59,7 @@ static const GraphicsApp::Settings    g_app_settings  = // Application settings:
 };
 
 AsteroidsApp::AsteroidsApp()
-    : GraphicsApp(g_app_settings, gfx::RenderPass::Access::ShaderResources | gfx::RenderPass::Access::Samplers)
+    : GraphicsApp(g_app_settings, gfx::RenderPass::Access::ShaderResources | gfx::RenderPass::Access::Samplers, g_app_help_text)
     , m_cube_mesh(gfx::Mesh::VertexLayoutFromArray(Vertex::layout), 1.f, 1.f, 1.f)
     , m_floor_mesh(gfx::Mesh::VertexLayoutFromArray(Vertex::layout), 7.f, 7.f, 0.f, 0, gfx::RectMesh<Vertex>::FaceType::XZ)
     , m_scene_scale(15.f)
@@ -79,12 +81,12 @@ AsteroidsApp::AsteroidsApp()
     m_light_camera.SetParamters({ -300, 300.f, 90.f });
     m_light_camera.Resize(120, 120);
 
-    m_input_state.SetControllers({
-        std::make_shared<pal::AppHelpController>(*this, g_app_help_text),
+    m_input_state.AddControllers({
         std::make_shared<gfx::AppCameraController>(m_view_camera, "VIEW CAMERA"),
         std::make_shared<gfx::AppCameraController>(m_light_camera, "LIGHT SOURCE",
-            gfx::AppCameraController::MouseActionByButton { { pal::Mouse::Button::Right, gfx::ActionCamera::MouseAction::Rotate   } },
-            gfx::AppCameraController::KeyboardActionByKey { { pal::Keyboard::Key::L,     gfx::ActionCamera::KeyboardAction::Reset } }),
+            gfx::AppCameraController::ActionByMouseButton   { { pal::Mouse::Button::Right, gfx::ActionCamera::MouseAction::Rotate   } },
+            gfx::AppCameraController::ActionByKeyboardState { { { pal::Keyboard::Key::L }, gfx::ActionCamera::KeyboardAction::Reset } },
+            gfx::AppCameraController::ActionByKeyboardKey   { }),
     });
 }
 
@@ -323,9 +325,21 @@ void AsteroidsApp::MeshBuffers::Init(const gfx::BaseMesh<VType>& mesh_data, gfx:
     sp_index->SetData(reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetIndices().data()), floor_index_data_size);
 }
 
+void AsteroidsApp::MeshBuffers::Release()
+{
+    sp_index.reset();
+    sp_vertex.reset();
+}
+
+void AsteroidsApp::RenderPass::Release()
+{
+    sp_state.reset();
+    sp_program.reset();
+}
+
 bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 {
-    if (!m_initialized || m_context_settings.frame_size == frame_size)
+    if (!m_initialized || GetInitialContextSettings().frame_size == frame_size)
         return false;
 
     // Resize screen color and depth textures
@@ -482,7 +496,26 @@ void AsteroidsApp::RenderScene(const RenderPass& render_pass, AsteroidsFrame::Pa
     cmd_list.Commit(render_pass.is_final_pass);
 }
 
+void AsteroidsApp::OnContextReleased()
+{
+    m_final_pass.Release();
+    m_shadow_pass.Release();
+    m_floor_buffers.Release();
+    m_cube_buffers.Release();
+
+    m_sp_shadow_sampler.reset();
+    m_sp_texture_sampler.reset();
+    m_sp_floor_texture.reset();
+    m_sp_cube_texture.reset();
+    m_sp_const_buffer.reset();
+
+    GraphicsApp::OnContextReleased();
+}
+
+} // namespace Samples
+} // namespace Methane
+
 int main(int argc, const char* argv[])
 {
-    return AsteroidsApp().Run({ argc, argv });
+    return Methane::Samples::AsteroidsApp().Run({ argc, argv });
 }

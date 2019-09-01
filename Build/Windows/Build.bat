@@ -95,10 +95,15 @@ IF %IS_ANALYZE_BUILD% EQU 1 (
 
     ECHO Building with Visual Studio 2017...
 
-    cmake -G "Visual Studio 15 2017 %PLATFORM_TYPE%" -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR% "%SOURCE_DIR%"
+    cmake -G "Visual Studio 15 2017 %PLATFORM_TYPE%" -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR% -DMETHANE_RUN_TESTS_DURING_BUILD=OFF "%SOURCE_DIR%"
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
     cmake --build . --config %CONFIG_TYPE% --target install
+    IF %ERRORLEVEL% NEQ 0 GOTO ERROR
+
+    ECHO Running tests...
+
+    ctest --build-config $CONFIG_TYPE --output-on-failure
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 )
 

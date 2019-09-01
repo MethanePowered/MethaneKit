@@ -22,15 +22,36 @@ Base implementation of the context interface.
 ******************************************************************************/
 
 #include "ContextBase.h"
-#include "Instrumentation.h"
+#include "DeviceBase.h"
+
+#include <Methane/Instrumentation.h>
+
+#ifdef COMMAND_EXECUTION_LOGGING
+#include <Methane/Platform/Utils.h>
+#endif
 
 #include <cassert>
 
-using namespace Methane;
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
-ContextBase::ContextBase(const Data::Provider& data_provider, const Settings& settings)
+std::string GetWaitForName(Context::WaitFor wait_for)
+{
+    ITT_FUNCTION_TASK();
+    switch (wait_for)
+    {
+    case Context::WaitFor::RenderComplete:      return "WAIT for Render Complete";
+    case Context::WaitFor::FramePresented:      return "WAIT for Frame Present";
+    case Context::WaitFor::ResourcesUploaded:   return "WAIT for Resources Upload";
+    }
+    return "";
+}
+
+ContextBase::ContextBase(const Data::Provider& data_provider, DeviceBase& device, const Settings& settings)
     : m_data_provider(data_provider)
+    , m_sp_device(device.GetPtr())
     , m_settings(settings)
     , m_resource_manager(*this)
     , m_frame_buffer_index(0)
@@ -41,26 +62,147 @@ ContextBase::ContextBase(const Data::Provider& data_provider, const Settings& se
 void ContextBase::CompleteInitialization()
 {
     ITT_FUNCTION_TASK();
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("Complete initialization of context \"" + GetName() + "\"");
+#endif
+
     m_resource_manager.CompleteInitialization();
     UploadResources();
 }
 
-void ContextBase::WaitForGpu(WaitFor)
+void ContextBase::WaitForGpu(WaitFor wait_for)
 {
     ITT_FUNCTION_TASK();
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput(GetWaitForName(wait_for) + " in context \"" + GetName() + "\"");
+#endif
+
     m_resource_manager.GetReleasePool().ReleaseResources();
 }
 
 void ContextBase::Resize(const FrameSize& frame_size)
 {
     ITT_FUNCTION_TASK();
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("RESIZE context \"" + GetName() + "\" from " + static_cast<std::string>(m_settings.frame_size) + " to " + static_cast<std::string>(frame_size));
+#endif
+
     m_settings.frame_size = frame_size;
+}
+
+void ContextBase::Reset(Device& device)
+{
+    ITT_FUNCTION_TASK();
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("RESET context \"" + GetName() + "\"");
+#endif
+
+    WaitForGpu(WaitFor::RenderComplete);
+    Release();
+    Initialize(device, false);
+}
+
+void ContextBase::Present()
+{
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("PRESENT frame " + std::to_string(m_frame_buffer_index) + " in context \"" + GetName() + "\"");
+#endif
+}
+
+void ContextBase::AddCallback(Callback& callback)
+{
+    m_callbacks.push_back(callback);
+}
+
+void ContextBase::RemoveCallback(Callback& callback)
+{
+    const auto callback_it = std::find_if(m_callbacks.begin(), m_callbacks.end(),
+                                          [&callback](const Callback::Ref& callback_ref)
+                                          { return std::addressof(callback_ref.get()) == std::addressof(callback); });
+    assert(callback_it != m_callbacks.end());
+    if (callback_it == m_callbacks.end())
+        return;
+    
+    m_callbacks.erase(callback_it);
 }
 
 void ContextBase::OnPresentComplete()
 {
     ITT_FUNCTION_TASK();
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("PRESENT COMPLETE for context \"" + GetName() + "\"");
+#endif
+
     m_fps_counter.OnFramePresented();
+}
+
+void ContextBase::ResetWithSettings(const Settings& settings)
+{
+    ITT_FUNCTION_TASK();
+    WaitForGpu(WaitFor::RenderComplete);
+
+    DeviceBase::Ptr sp_device = m_sp_device;
+    m_settings = settings;
+
+    Release();
+    Initialize(*sp_device, true);
+}
+
+void ContextBase::Release()
+{
+    ITT_FUNCTION_TASK();
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("RELEASE context \"" + GetName() + "\"");
+#endif
+
+    m_sp_render_cmd_queue.reset();
+    m_sp_upload_cmd_queue.reset();
+    m_sp_upload_cmd_list.reset();
+
+    for (const Callback::Ref& callback_ref : m_callbacks)
+    {
+        callback_ref.get().OnContextReleased();
+    }
+
+    m_resource_manager_init_settings.default_heap_sizes         = m_resource_manager.GetDescriptorHeapSizes(true, false);
+    m_resource_manager_init_settings.shader_visible_heap_sizes  = m_resource_manager.GetDescriptorHeapSizes(true, true);
+    m_resource_manager.Release();
+}
+
+void ContextBase::Initialize(Device& device, bool deferred_heap_allocation)
+{
+    ITT_FUNCTION_TASK();
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("INITIALIZE context \"" + GetName() + "\"");
+#endif
+
+    m_sp_device = static_cast<DeviceBase&>(device).GetPtr();
+    
+    const std::string& context_name = GetName();
+    if (!context_name.empty())
+    {
+        m_sp_device->SetName(context_name + " Device");
+    }
+
+    m_resource_manager_init_settings.deferred_heap_allocation = deferred_heap_allocation;
+    if (deferred_heap_allocation)
+    {
+        m_resource_manager_init_settings.default_heap_sizes        = {};
+        m_resource_manager_init_settings.shader_visible_heap_sizes = {};
+    }
+    m_resource_manager.Initialize(m_resource_manager_init_settings);
+
+    for (const Callback::Ref& callback_ref : m_callbacks)
+    {
+        callback_ref.get().OnContextInitialized();
+    }
 }
 
 CommandQueue& ContextBase::GetRenderCommandQueue()
@@ -97,10 +239,82 @@ RenderCommandList& ContextBase::GetUploadCommandList()
     return *m_sp_upload_cmd_list;
 }
 
+Device& ContextBase::GetDevice()
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_sp_device);
+    return *m_sp_device;
+}
+
+DeviceBase& ContextBase::GetDeviceBase()
+{
+    ITT_FUNCTION_TASK();
+    return static_cast<DeviceBase&>(GetDevice());
+}
+
+const DeviceBase& ContextBase::GetDeviceBase() const
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_sp_device);
+    return static_cast<const DeviceBase&>(*m_sp_device);
+}
+
+bool ContextBase::SetVSyncEnabled(bool vsync_enabled)
+{
+    ITT_FUNCTION_TASK();
+    if (m_settings.vsync_enabled == vsync_enabled)
+        return false;
+
+    m_settings.vsync_enabled = vsync_enabled;
+    return true;
+}
+
+bool ContextBase::SetFrameBuffersCount(uint32_t frame_buffers_count)
+{
+    ITT_FUNCTION_TASK();
+    frame_buffers_count = std::min(std::max(2u, frame_buffers_count), 10u);
+
+    if (m_settings.frame_buffers_count == frame_buffers_count)
+        return false;
+
+    Settings new_settings = m_settings;
+    new_settings.frame_buffers_count = frame_buffers_count;
+    ResetWithSettings(new_settings);
+
+    return true;
+}
+
+bool ContextBase::SetFullScreen(bool is_full_screen)
+{
+    ITT_FUNCTION_TASK();
+    if (m_settings.is_full_screen == is_full_screen)
+        return false;
+
+    // No need to reset context for switching to full-screen
+    // Application window state is kept in sync with context by the user code and handles window resizing
+    m_settings.is_full_screen = is_full_screen;
+    return true;
+}
+
+void ContextBase::SetName(const std::string& name)
+{
+    ITT_FUNCTION_TASK();
+    ObjectBase::SetName(name);
+    GetDevice().SetName(name + " Device");
+}
+
 void ContextBase::UploadResources()
 {
     ITT_FUNCTION_TASK();
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("UPLOAD resources for context \"" + GetName() + "\"");
+#endif
+
     GetUploadCommandList().Commit(false);
     GetUploadCommandQueue().Execute({ GetUploadCommandList() });
     WaitForGpu(WaitFor::ResourcesUploaded);
 }
+
+} // namespace Graphics
+} // namespace Methane

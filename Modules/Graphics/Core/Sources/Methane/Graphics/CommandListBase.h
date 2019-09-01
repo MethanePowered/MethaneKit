@@ -58,12 +58,11 @@ public:
     };
 
     CommandListBase(CommandQueueBase& command_queue);
-    virtual ~CommandListBase() override = default;
 
     // CommandList interface
-    virtual void SetResourceBindings(const Program::ResourceBindings& resource_bindings) override;
-    virtual void Commit(bool present_drawable) override;
-    virtual CommandQueue& GetCommandQueue() override;
+    void SetResourceBindings(const Program::ResourceBindings& resource_bindings) override;
+    void Commit(bool present_drawable) override;
+    CommandQueue& GetCommandQueue() override;
 
     // CommandListBase interface
     virtual void SetResourceBarriers(const ResourceBase::Barriers& resource_barriers) = 0;

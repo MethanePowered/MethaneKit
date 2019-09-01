@@ -21,19 +21,22 @@ Metal implementation of the buffer interface.
 
 ******************************************************************************/
 
-#include "BufferMT.h"
-#include "ContextMT.h"
-#include "TypesMT.h"
+#include "BufferMT.hh"
+#include "DeviceMT.hh"
+#include "ContextMT.hh"
+#include "TypesMT.hh"
 
-#include <Methane/Graphics/Instrumentation.h>
-#include <Methane/Platform/MacOS/Types.h>
+#include <Methane/Instrumentation.h>
+#include <Methane/Platform/MacOS/Types.hh>
 
 #include <algorithm>
 #include <iterator>
 #include <cassert>
 
-using namespace Methane;
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 Buffer::Ptr Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
 {
@@ -64,7 +67,7 @@ Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
 
 BufferMT::BufferMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : BufferBase(context, settings, descriptor_by_usage)
-    , m_mtl_buffer([GetContextMT().GetNativeDevice() newBufferWithLength:settings.size options:MTLResourceStorageModeManaged])
+    , m_mtl_buffer([GetContextMT().GetDeviceMT().GetNativeDevice() newBufferWithLength:settings.size options:MTLResourceStorageModeManaged])
 {
     ITT_FUNCTION_TASK();
 
@@ -133,3 +136,6 @@ MTLIndexType BufferMT::GetNativeIndexType() const noexcept
     ITT_FUNCTION_TASK();
     return TypeConverterMT::DataFormatToMetalIndexType(m_format);
 }
+
+} // namespace Graphics
+} // namespace Methane

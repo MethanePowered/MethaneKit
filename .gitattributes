@@ -1,0 +1,2 @@
+# Overrides git-hub language detection for some extensions
+*.hh linguist-language=Objective-C++

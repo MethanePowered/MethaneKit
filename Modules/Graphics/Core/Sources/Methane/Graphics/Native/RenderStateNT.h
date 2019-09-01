@@ -29,7 +29,7 @@ Native implementation alias of the render state interface.
 
 #elif defined __APPLE__
 
-#include <Methane/Graphics/Metal/RenderStateMT.h>
+#include <Methane/Graphics/Metal/RenderStateMT.hh>
 
 #endif
 

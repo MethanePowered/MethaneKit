@@ -24,19 +24,21 @@ Implemented based on arc-ball camera rotation model.
 
 #include <Methane/Graphics/ActionCamera.h>
 #include <Methane/Data/TimeAnimation.h>
+#include <Methane/Instrumentation.h>
 
 #include <cml/mathlib/mathlib.h>
 
 #include <cassert>
 
 using namespace Methane::Data;
-using namespace Methane::Graphics;
 
 namespace Methane
 {
+namespace Graphics
+{
+
 static inline float square(float x)     { return x * x; }
-static inline float unitSign(float x) { return x / std::fabsf(x); }
-}
+static inline float unitSign(float x)   { return x / std::fabsf(x); }
 
 ActionCamera::ActionCamera(AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation)
     : Camera(axis_orientation)
@@ -44,6 +46,7 @@ ActionCamera::ActionCamera(AnimationsPool& animations, Pivot pivot, cml::AxisOri
     , m_p_view_camera(nullptr)
     , m_pivot(pivot)
 {
+    ITT_FUNCTION_TASK();
 }
 
 ActionCamera::ActionCamera(const Camera& view_camera, AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation)
@@ -52,10 +55,12 @@ ActionCamera::ActionCamera(const Camera& view_camera, AnimationsPool& animations
     , m_p_view_camera(&view_camera)
     , m_pivot(pivot)
 {
+    ITT_FUNCTION_TASK();
 }
 
 void ActionCamera::OnMousePressed(const Point2i& mouse_screen_pos, MouseAction mouse_action)
 {
+    ITT_FUNCTION_TASK();
     m_mouse_action = mouse_action;
     m_mouse_pressed_orientation = m_current_orientation;
 
@@ -76,6 +81,7 @@ void ActionCamera::OnMousePressed(const Point2i& mouse_screen_pos, MouseAction m
 
 void ActionCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
 {
+    ITT_FUNCTION_TASK();
     switch (m_mouse_action)
     {
     case MouseAction::Rotate:
@@ -107,11 +113,13 @@ void ActionCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
 
 void ActionCamera::OnMouseReleased(const Point2i&)
 {
+    ITT_FUNCTION_TASK();
     m_mouse_action = MouseAction::None;
 }
 
 void ActionCamera::OnMouseScrolled(float scroll_delta)
 {
+    ITT_FUNCTION_TASK();
     const KeyboardAction zoom_action = scroll_delta > 0.f
                                      ? KeyboardAction::ZoomIn : KeyboardAction::ZoomOut;
     const float          zoom_factor = scroll_delta > 0.f
@@ -124,6 +132,9 @@ void ActionCamera::OnMouseScrolled(float scroll_delta)
 
 void ActionCamera::OnKeyPressed(KeyboardAction keyboard_action)
 {
+    ITT_FUNCTION_TASK();
+    const float rotation_axis_sign = m_pivot == Pivot::Aim ? 1.f : -1.f;
+
     switch(keyboard_action)
     {
         // Move
@@ -135,19 +146,16 @@ void ActionCamera::OnKeyPressed(KeyboardAction keyboard_action)
         case KeyboardAction::MoveDown:      StartMoveAction(keyboard_action,   Vector3f( 0.f, -1.f,  0.f)); break;
             
         // Rotate
-        case KeyboardAction::YawLeft:       StartRotateAction(keyboard_action, Vector3f( 0.f, -1.f,  0.f)); break;
-        case KeyboardAction::YawRight:      StartRotateAction(keyboard_action, Vector3f( 0.f,  1.f,  0.f)); break;
-        case KeyboardAction::RollLeft:      StartRotateAction(keyboard_action, Vector3f( 0.f,  0.f,  1.f)); break;
-        case KeyboardAction::RollRight:     StartRotateAction(keyboard_action, Vector3f( 0.f,  0.f, -1.f)); break;
-        case KeyboardAction::PitchUp:       StartRotateAction(keyboard_action, Vector3f(-1.f,  0.f,  0.f)); break;
-        case KeyboardAction::PitchDown:     StartRotateAction(keyboard_action, Vector3f( 1.f,  0.f,  0.f)); break;
+        case KeyboardAction::YawLeft:       StartRotateAction(keyboard_action, Vector3f( 0.f, -1.f,  0.f) * rotation_axis_sign); break;
+        case KeyboardAction::YawRight:      StartRotateAction(keyboard_action, Vector3f( 0.f,  1.f,  0.f) * rotation_axis_sign); break;
+        case KeyboardAction::RollLeft:      StartRotateAction(keyboard_action, Vector3f( 0.f,  0.f,  1.f) * rotation_axis_sign); break;
+        case KeyboardAction::RollRight:     StartRotateAction(keyboard_action, Vector3f( 0.f,  0.f, -1.f) * rotation_axis_sign); break;
+        case KeyboardAction::PitchUp:       StartRotateAction(keyboard_action, Vector3f(-1.f,  0.f,  0.f) * rotation_axis_sign); break;
+        case KeyboardAction::PitchDown:     StartRotateAction(keyboard_action, Vector3f( 1.f,  0.f,  0.f) * rotation_axis_sign); break;
             
         // Zoom
         case KeyboardAction::ZoomIn:        StartZoomAction(keyboard_action, 0.9f); break;
         case KeyboardAction::ZoomOut:       StartZoomAction(keyboard_action, 1.1f); break;
-        
-        // Reset orientation
-        case KeyboardAction::Reset:         ResetOrientaion(); break;
             
         default: return;
     }
@@ -155,11 +163,25 @@ void ActionCamera::OnKeyPressed(KeyboardAction keyboard_action)
 
 void ActionCamera::OnKeyReleased(KeyboardAction keyboard_action)
 {
+    ITT_FUNCTION_TASK();
     StopKeyboardAction(keyboard_action, m_keyboard_action_duration_sec);
+}
+
+void ActionCamera::DoKeyboardAction(KeyboardAction keyboard_action)
+{
+    ITT_FUNCTION_TASK();
+    switch(keyboard_action)
+    {
+        case KeyboardAction::Reset:         ResetOrientaion(); break;
+        case KeyboardAction::ChangePivot:   SetPivot(m_pivot == Pivot::Aim ? Pivot::Eye : Pivot::Aim); break;
+            
+        default: return;
+    }
 }
 
 Vector3f ActionCamera::GetNormalizedSphereProjection(const Point2i& mouse_screen_pos, bool is_primary) const
 {
+    ITT_FUNCTION_TASK();
     const Point2f& screen_size = m_p_view_camera ? m_p_view_camera->GetScreenSize() : m_screen_size;
     const Point2f screen_center(screen_size.x() / 2.f, screen_size.y() / 2.f);
     Point2f screen_vector = static_cast<Point2f>(mouse_screen_pos) - screen_center;
@@ -201,17 +223,19 @@ Vector3f ActionCamera::GetNormalizedSphereProjection(const Point2i& mouse_screen
     return cml::normalize(Vector3f(screen_vector, inside_sphere ? z_sign * std::sqrtf(square(sphere_radius) - screen_vector.length_squared()) : 0.f));
 }
 
-void ActionCamera::ApplyLookDirection(const Vector3f& look_dir, const Orientation& base_orientation)
+void ActionCamera::ApplyLookDirection(const Vector3f& look_dir)
 {
+    ITT_FUNCTION_TASK();
     switch (m_pivot)
     {
-    case Pivot::Aim: m_current_orientation.eye = base_orientation.aim - look_dir; break;
-    case Pivot::Eye: m_current_orientation.aim = base_orientation.eye + look_dir; break;
+    case Pivot::Aim: m_current_orientation.eye = m_current_orientation.aim - look_dir; break;
+    case Pivot::Eye: m_current_orientation.aim = m_current_orientation.eye + look_dir; break;
     }
 }
 
 void ActionCamera::Rotate(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation)
 {
+    ITT_FUNCTION_TASK();
     Matrix44f view_rotation_matrix = { };
     cml::matrix_rotation_axis_angle(view_rotation_matrix, view_axis, angle_rad);
     
@@ -231,78 +255,90 @@ void ActionCamera::Rotate(const Vector3f& view_axis, float angle_rad, const Orie
                                 ? m_p_view_camera->TransformViewToWorld(view_rotation_matrix * up_in_view).subvector(3)
                                 : TransformViewToWorld(view_rotation_matrix * up_in_view, base_orientation).subvector(3);
     
-    ApplyLookDirection(look_dir, base_orientation);
+    ApplyLookDirection(look_dir);
 }
 
 void ActionCamera::Move(const Vector3f& move_vector)
 {
+    ITT_FUNCTION_TASK();
     m_current_orientation.aim += move_vector;
     m_current_orientation.eye += move_vector;
 }
 
 void ActionCamera::Zoom(float zoom_factor)
 {
+    ITT_FUNCTION_TASK();
     const Vector3f look_dir   = GetLookDirection(m_current_orientation);
     const float zoom_distance = std::min(std::max(look_dir.length() * zoom_factor, m_zoom_distance_range.first), m_zoom_distance_range.second);
     ApplyLookDirection(cml::normalize(look_dir) * zoom_distance);
 }
 
-void ActionCamera::StartRotateAction(KeyboardAction rotate_action, const Vector3f& rotation_axis, double duration_sec)
+void ActionCamera::StartRotateAction(KeyboardAction rotate_action, const Vector3f& rotation_axis_in_view, double duration_sec)
 {
+    ITT_FUNCTION_TASK();
     if (StartKeyboardAction(rotate_action, duration_sec))
         return;
     
     const float angle_rad_per_second = cml::rad(m_rotate_angle_per_second);
     m_animations.push_back(
-        std::make_shared<TimeAnimation>([angle_rad_per_second, rotation_axis, this](double elapsed_seconds, double delta_seconds)
+        std::make_shared<TimeAnimation>([this, angle_rad_per_second, rotation_axis_in_view](double elapsed_seconds, double delta_seconds)
             {
-                Rotate(rotation_axis, static_cast<float>(angle_rad_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
+                Rotate(rotation_axis_in_view, static_cast<float>(angle_rad_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
                 return true;
             },
             duration_sec));
     
-    auto emplace_result = m_keyboard_action_animations.emplace(rotate_action, m_animations.back());
+    const auto emplace_result = m_keyboard_action_animations.emplace(rotate_action, m_animations.back());
     assert(emplace_result.second);
+    if (!emplace_result.second) // fixes unused variable warning in release build
+        return;
 }
 
 void ActionCamera::StartMoveAction(KeyboardAction move_action, const Vector3f& move_direction_in_view, double duration_sec)
 {
+    ITT_FUNCTION_TASK();
     if (StartKeyboardAction(move_action, duration_sec))
         return;
     
-    const Vector3f move_per_second = TransformViewToWorld(move_direction_in_view).normalize() * m_move_distance_per_second;
     m_animations.push_back(
-        std::make_shared<TimeAnimation>([move_per_second, this](double elapsed_seconds, double delta_seconds)
+        std::make_shared<TimeAnimation>([this, move_direction_in_view](double elapsed_seconds, double delta_seconds)
             {
+                const Vector3f move_per_second = TransformViewToWorld(move_direction_in_view).normalize() * m_move_distance_per_second;
                 Move(move_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds));
                 return true;
             },
             duration_sec));
     
-    auto emplace_result = m_keyboard_action_animations.emplace(move_action, m_animations.back());
+    const auto emplace_result = m_keyboard_action_animations.emplace(move_action, m_animations.back());
     assert(emplace_result.second);
+    if (!emplace_result.second) // fixes unused variable warning in release build
+        return;
 }
 
 void ActionCamera::StartZoomAction(KeyboardAction zoom_action, float zoom_factor_per_second, double duration_sec)
 {
+    ITT_FUNCTION_TASK();
     if (StartKeyboardAction(zoom_action, duration_sec))
         return;
     
     m_animations.push_back(
-        std::make_shared<TimeAnimation>([zoom_factor_per_second, this](double elapsed_seconds, double delta_seconds)
+        std::make_shared<TimeAnimation>([this, zoom_factor_per_second](double elapsed_seconds, double delta_seconds)
             {
                 Zoom(1.f - static_cast<float>((1.f - zoom_factor_per_second) * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
                 return true;
             },
             duration_sec));
     
-    auto emplace_result = m_keyboard_action_animations.emplace(zoom_action, m_animations.back());
+    const auto emplace_result = m_keyboard_action_animations.emplace(zoom_action, m_animations.back());
     assert(emplace_result.second);
+    if (!emplace_result.second) // fixes unused variable warning in release build
+        return;
 }
 
 bool ActionCamera::StartKeyboardAction(KeyboardAction keyboard_action, double duration_sec)
 {
-    auto keyboard_action_animations_it = m_keyboard_action_animations.find(keyboard_action);
+    ITT_FUNCTION_TASK();
+    const auto keyboard_action_animations_it = m_keyboard_action_animations.find(keyboard_action);
     if (keyboard_action_animations_it == m_keyboard_action_animations.end())
         return false;
     
@@ -321,7 +357,8 @@ bool ActionCamera::StartKeyboardAction(KeyboardAction keyboard_action, double du
 
 bool ActionCamera::StopKeyboardAction(KeyboardAction keyboard_action, double duration_sec)
 {
-    auto keyboard_action_animations_it = m_keyboard_action_animations.find(keyboard_action);
+    ITT_FUNCTION_TASK();
+    const auto keyboard_action_animations_it = m_keyboard_action_animations.find(keyboard_action);
     if (keyboard_action_animations_it == m_keyboard_action_animations.end())
         return false;
 
@@ -343,6 +380,7 @@ bool ActionCamera::StopKeyboardAction(KeyboardAction keyboard_action, double dur
 
 std::string ActionCamera::GetActionName(MouseAction mouse_action)
 {
+    ITT_FUNCTION_TASK();
     switch (mouse_action)
     {
     case MouseAction::Rotate:   return "rotate";
@@ -355,6 +393,7 @@ std::string ActionCamera::GetActionName(MouseAction mouse_action)
 
 std::string ActionCamera::GetActionName(KeyboardAction keyboard_action)
 {
+    ITT_FUNCTION_TASK();
     switch (keyboard_action)
     {
     // Move
@@ -377,10 +416,14 @@ std::string ActionCamera::GetActionName(KeyboardAction keyboard_action)
     case KeyboardAction::ZoomIn:        return "zoom in";
     case KeyboardAction::ZoomOut:       return "zoom out";
 
-    // Reset
+    // Other
     case KeyboardAction::Reset:         return "reset orientation";
+    case KeyboardAction::ChangePivot:   return "change pivot";
 
     case KeyboardAction::None:          return "none";
     default: assert(0);                 return "";
     }
 }
+
+} // namespace Graphics
+} // namespace Methane

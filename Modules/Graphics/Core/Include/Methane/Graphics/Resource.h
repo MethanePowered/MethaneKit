@@ -98,8 +98,6 @@ struct Resource : virtual Object
     virtual Usage::Mask               GetUsageMask() const noexcept = 0;
     virtual const DescriptorByUsage&  GetDescriptorByUsage() const noexcept = 0;
     virtual const Descriptor&         GetDescriptor(Usage::Value usage) const = 0;
-
-    virtual ~Resource() override = default;
 };
 
 } // namespace Graphics

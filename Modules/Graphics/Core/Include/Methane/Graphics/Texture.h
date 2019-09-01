@@ -79,8 +79,6 @@ struct Texture : virtual Resource
 
     // Texture interface
     virtual const Settings& GetSettings() const = 0;
-
-    virtual ~Texture() override = default;
 };
 
 } // namespace Graphics

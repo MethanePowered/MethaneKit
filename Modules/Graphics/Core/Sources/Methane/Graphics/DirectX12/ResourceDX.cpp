@@ -24,8 +24,9 @@ DirectX 12 implementation of the resource interface.
 #include "ResourceDX.h"
 #include "DescriptorHeapDX.h"
 #include "ContextDX.h"
+#include "DeviceDX.h"
 
-#include <Methane/Graphics/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #include <nowide/convert.hpp>
@@ -33,7 +34,10 @@ DirectX 12 implementation of the resource interface.
 #include <iterator>
 #include <cassert>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 ResourceBase::ReleasePool::Ptr ResourceBase::ReleasePool::Create()
 {
@@ -149,7 +153,7 @@ void ResourceDX::InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource
 
     assert(!m_cp_resource);
     ThrowIfFailed(
-        GetContextDX().GetNativeDevice()->CreateCommittedResource(
+        GetContextDX().GetDeviceDX().GetNativeDevice()->CreateCommittedResource(
             &CD3DX12_HEAP_PROPERTIES(heap_type),
             D3D12_HEAP_FLAG_NONE,
             &resource_desc,
@@ -172,3 +176,6 @@ void ResourceDX::InitializeFrameBufferResource(uint32_t frame_buffer_index)
         )
     );
 }
+
+} // namespace Graphics
+} // namespace Methane

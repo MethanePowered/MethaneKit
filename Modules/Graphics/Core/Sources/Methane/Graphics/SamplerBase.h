@@ -40,14 +40,13 @@ class SamplerBase
 {
 public:
     SamplerBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
-    virtual ~SamplerBase() override = default;
 
     // Sampler interface
-    virtual const Settings& GetSettings() const override { return m_settings; }
+    const Settings& GetSettings() const override { return m_settings; }
 
     // Resource interface
-    virtual void     SetData(Data::ConstRawPtr p_data, Data::Size data_size) override { }
-    virtual Data::Size GetDataSize() const override { return 0; }
+    void     SetData(Data::ConstRawPtr p_data, Data::Size data_size) override { }
+    Data::Size GetDataSize() const override { return 0; }
 
 protected:
     ContextBase& m_context;

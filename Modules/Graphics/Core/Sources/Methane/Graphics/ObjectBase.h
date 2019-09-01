@@ -34,11 +34,10 @@ class ObjectBase : public virtual Object
 {
 public:
     ObjectBase() = default;
-    virtual ~ObjectBase() override = default;
 
     // Object interface
-    virtual void               SetName(const std::string& name) override { m_name = name; }
-    virtual const std::string& GetName() const noexcept override         { return m_name; }
+    void               SetName(const std::string& name) override { m_name = name; }
+    const std::string& GetName() const noexcept override         { return m_name; }
 
 private:
     std::string m_name;

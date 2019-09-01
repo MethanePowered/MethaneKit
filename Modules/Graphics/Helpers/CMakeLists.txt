@@ -38,6 +38,7 @@ target_link_libraries(${TARGET}
     MethaneDataTypes
     MethaneDataAnimation
     MethanePlatformUtils
+    MethaneInstrumentation
     CML
 )
 

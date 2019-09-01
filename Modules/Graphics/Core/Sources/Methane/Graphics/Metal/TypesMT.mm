@@ -21,13 +21,16 @@ Methane graphics types convertors to Metal native types.
 
 ******************************************************************************/
 
-#include "TypesMT.h"
+#include "TypesMT.hh"
 
-#include <Methane/Graphics/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 MTLIndexType TypeConverterMT::DataFormatToMetalIndexType(PixelFormat data_format) noexcept
 {
@@ -312,3 +315,6 @@ MTLCompareFunction TypeConverterMT::CompareFunctionToMetal(Compare compare_func)
     }
     return MTLCompareFunctionNever;
 }
+
+} // namespace Graphics
+} // namespace Methane

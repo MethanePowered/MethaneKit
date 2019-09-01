@@ -6,6 +6,7 @@ enable_testing()
 
 option(METHANE_USE_OPEN_IMAGE_IO "Enable using OpenImageIO library for images loading" OFF)
 option(METHANE_USE_ITT_INSTRUMENTATION "Enable ITT instrumentation" OFF)
+option(METHANE_RUN_TESTS_DURING_BUILD "Run tests during build" ON)
 
 include_directories($ENV{INCLUDE})
 link_directories($ENV{LIB} ${CMAKE_LIBRARY_INPUT_DIRECTORY})
@@ -16,8 +17,11 @@ list(APPEND CMAKE_MODULE_PATH
     "${CMAKE_CURRENT_SOURCE_DIR}/Externals/CMRC"
 )
 
+include(ParseAndAddCatchTests)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CTEST_OUTPUT_ON_FAILURE ON)
+set(PARSE_CATCH_TESTS_VERBOSE OFF)
 
 if(MSVC)
 

@@ -80,9 +80,12 @@ public:
         ZoomIn,
         ZoomOut,
         
+        // Other
         Reset,
+        ChangePivot,
 
-        Count // keep at end
+        // Keep at end
+        Count
     };
 
     using DistanceRange = std::pair<float /*min_distance*/, float /*max_distance*/>;
@@ -92,6 +95,7 @@ public:
 
     // Parameters
     Pivot GetPivot() const                                          { return m_pivot; }
+    void  SetPivot(Pivot pivot)                                     { m_pivot = pivot; }
 
     float GetRadiusRatio() const                                    { return m_radius_ratio; }
     void  SetRadiusRatio(float radius_ratio)                        { m_radius_ratio = radius_ratio; }
@@ -121,6 +125,7 @@ public:
     // Keyboard action handlers
     void OnKeyPressed(KeyboardAction keyboard_action);
     void OnKeyReleased(KeyboardAction keyboard_action);
+    void DoKeyboardAction(KeyboardAction keyboard_action);
 
     static std::string GetActionName(MouseAction mouse_action);
     static std::string GetActionName(KeyboardAction keyboard_action);
@@ -136,9 +141,7 @@ protected:
     inline const Camera& GetViewCamera() const noexcept
     { return m_p_view_camera ? *m_p_view_camera : *this; }
 
-    void ApplyLookDirection(const Vector3f& look_dir, const Orientation& base_orientation);
-    void ApplyLookDirection(const Vector3f& look_dir) { return ApplyLookDirection(look_dir, m_current_orientation);  }
-    
+    void ApplyLookDirection(const Vector3f& look_dir);
     void Rotate(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation);
     void Rotate(const Vector3f& view_axis, float angle_rad) { Rotate(view_axis, angle_rad, m_current_orientation ); }
     void Move(const Vector3f& move_vector);
@@ -160,7 +163,7 @@ protected:
 
     Data::AnimationsPool&    m_animations;
     const Camera*            m_p_view_camera;
-    const Pivot              m_pivot;
+    Pivot                    m_pivot;
     float                    m_radius_ratio                 = 0.9f;
     uint32_t                 m_zoom_steps_count             = 3;
     DistanceRange            m_zoom_distance_range          = DistanceRange(1.f, 1000.f);

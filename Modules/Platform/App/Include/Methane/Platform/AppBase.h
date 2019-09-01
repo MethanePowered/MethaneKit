@@ -46,8 +46,9 @@ public:
     struct Settings
     {
         std::string name;
-        double      width;   // if width < 1.0 use as ratio of desktop size; else use as exact size in pixels/dots
-        double      height;  // same rule applies for height
+        double      width          = 0.8;   // if width < 1.0 use as ratio of desktop size; else use as exact size in pixels/dots
+        double      height         = 0.8;   // same rule applies for height
+        bool        is_full_screen = false;
     };
 
     struct RunArgs
@@ -73,7 +74,7 @@ public:
     };
 
     AppBase(const Settings& settings);
-    virtual ~AppBase() {}
+    virtual ~AppBase() = default;
 
     // AppBase interface
     virtual int  Run(const RunArgs& args);
@@ -85,10 +86,14 @@ public:
     virtual void Render() = 0;
     virtual void Alert(const Message& msg, bool deferred = false);
     virtual void SetWindowTitle(const std::string& title_text) = 0;
+    virtual bool SetFullScreen(bool is_full_screen);
+    virtual void Close() = 0;
 
-    const Settings&     GetSettings() const     { return m_settings; }
-    const Input::State& GetInputState() const   { return m_input_state; }
-    bool                HasError() const;
+    bool HasError() const;
+
+    const Settings&         GetSettings() const   { return m_settings; }
+    const Input::State&     GetInputState() const { return m_input_state; }
+    const cxxopts::Options& GetCmdOptions() const { return m_cmd_options; }
 
     // Entry point for user input handling from platform-specific implementation
     Input::IActionController& InputController() { return m_input_state; }
@@ -97,6 +102,7 @@ protected:
     // AppBase interface
     virtual AppView GetView() const = 0;
     virtual void ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result);
+    virtual void ShowAlert(const Message& msg);
 
     Settings             m_settings;
     Data::FrameRect      m_window_bounds;

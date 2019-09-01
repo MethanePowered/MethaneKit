@@ -41,18 +41,19 @@ class AppWin : public AppBase
 {
 public:
     AppWin(const Settings& settings);
-    virtual ~AppWin() override = default;
 
     // AppBase interface
-    virtual int Run(const RunArgs& args) override;
-    virtual void Alert(const Message& msg, bool deferred = false) override;
-    virtual void SetWindowTitle(const std::string& title_text) override;
+    int Run(const RunArgs& args) override;
+    void Alert(const Message& msg, bool deferred = false) override;
+    void SetWindowTitle(const std::string& title_text) override;
+    bool SetFullScreen(bool is_full_screen) override;
+    void Close() override;
 
 protected:
     // AppBase interface
-    virtual void ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result) override;
-
-    void ShowAlert(const Message& msg);
+    void ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result) override;
+    void ShowAlert(const Message& msg) override;
+    
     void ScheduleAlert();
 
     static LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -61,6 +62,7 @@ protected:
 
 private:
     Mouse::State m_mouse_state;
+    RECT         m_window_rect = {};
 };
 
 } // namespace Platform

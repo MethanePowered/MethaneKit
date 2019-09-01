@@ -26,13 +26,14 @@ DirectX 12 implementation of the render command list interface.
 #include "RenderPassDX.h"
 #include "CommandQueueDX.h"
 #include "ContextDX.h"
+#include "DeviceDX.h"
 #include "ProgramDX.h"
 #include "ResourceDX.h"
 #include "TextureDX.h"
 #include "BufferDX.h"
 #include "TypesDX.h"
 
-#include <Methane/Graphics/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #include <d3dx12.h>
@@ -40,8 +41,10 @@ DirectX 12 implementation of the render command list interface.
 #include <nowide/convert.hpp>
 #include <cassert>
 
-using namespace Methane::Graphics;
-
+namespace Methane
+{
+namespace Graphics
+{
 
 D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primitive primitive) noexcept
 {
@@ -69,7 +72,7 @@ RenderCommandListDX::RenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPas
 {
     ITT_FUNCTION_TASK();
 
-    const wrl::ComPtr<ID3D12Device>& cp_device = GetCommandQueueDX().GetContextDX().GetNativeDevice();
+    const wrl::ComPtr<ID3D12Device>& cp_device = GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice();
     assert(!!cp_device);
 
     ThrowIfFailed(cp_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_cp_command_allocator)));
@@ -238,3 +241,6 @@ void RenderCommandListDX::Execute(uint32_t frame_index)
     // NOTE: In DirectX there's no need for tracking command list completion, so it's completed right away
     Complete(frame_index);
 }
+
+} // namespace Graphics
+} // namespace Methane

@@ -25,6 +25,8 @@ Procedural mesh generators, including rect, box, etc.
 
 #include "MathTypes.h"
 
+#include <Methane/Instrumentation.h>
+
 #include <vector>
 #include <array>
 #include <algorithm>
@@ -66,11 +68,11 @@ public:
     template<std::size_t N>
     static VertexLayout VertexLayoutFromArray(const std::array<VertexField, N>& layout_array)
     {
+        ITT_FUNCTION_TASK();
         return VertexLayout(layout_array.begin(), layout_array.end());
     }
 
     Mesh(Type type, const VertexLayout& vertex_layout);
-    virtual ~Mesh() = default;
 
     Type                GetType() const noexcept            { return m_type; }
     const VertexLayout& GetVertexLayout() const noexcept    { return m_vertex_layout; }
@@ -114,13 +116,12 @@ public:
     BaseMesh(Type type, const VertexLayout& vertex_layout)
         : Mesh(type, vertex_layout)
     {
+        ITT_FUNCTION_TASK();
         if (sizeof(VType) != m_vertex_size)
         {
             throw std::invalid_argument("Size of vertex structure differs from vertex size calculated by vertex layout.");
         }
     }
-
-    virtual ~BaseMesh() override = default;
 
     const Vertices& GetVertices() const noexcept       { return m_vertices; }
     size_t          GetVertexDataSize() const noexcept { return m_vertices.size() * m_vertex_size; }
@@ -129,6 +130,7 @@ protected:
     template<typename FType>
     FType& GetVertexField(VType& vertex, VertexField field) noexcept
     {
+        ITT_FUNCTION_TASK();
         const int32_t field_offset = m_vertex_field_offsets[static_cast<size_t>(field)];
         assert(field_offset >= 0);
         return *reinterpret_cast<FType*>(reinterpret_cast<char*>(&vertex) + field_offset);
@@ -154,6 +156,7 @@ public:
         , m_height(height)
         , m_depth_pos(depth_pos)
     {
+        ITT_FUNCTION_TASK();
         for (size_t face_vertex_idx = 0; face_vertex_idx < Mesh::g_face_positions_2d.size(); ++face_vertex_idx)
         {
             VType vertex = {};
@@ -199,8 +202,6 @@ public:
         }
     }
 
-    virtual ~RectMesh() override = default;
-
     const float GetWidth() const noexcept    { return m_width; }
     const float GetHeight() const noexcept   { return m_height; }
     const float GetDepthPos() const noexcept { return m_depth_pos; }
@@ -221,6 +222,7 @@ public:
         : RectMesh<VType>(vertex_layout, width, height, depth / 2.f, 0, RectMesh<VType>::FaceType::XY, Mesh::Type::Box)
         , m_depth(depth)
     {
+        ITT_FUNCTION_TASK();
         AddFace(RectMesh<VType>(vertex_layout, width,  height, -depth  / 2.f, 1, RectMesh<VType>::FaceType::XY));
         AddFace(RectMesh<VType>(vertex_layout, width,  depth,   height / 2.f, 2, RectMesh<VType>::FaceType::XZ));
         AddFace(RectMesh<VType>(vertex_layout, width,  depth,  -height / 2.f, 3, RectMesh<VType>::FaceType::XZ));
@@ -228,13 +230,12 @@ public:
         AddFace(RectMesh<VType>(vertex_layout, height, depth,  -width  / 2.f, 5, RectMesh<VType>::FaceType::YZ));
     }
 
-    virtual ~BoxMesh() override = default;
-
     float GetDepth() const noexcept { return m_depth; }
 
 protected:
     void AddFace(const RectMesh<VType>& face_mesh) noexcept
     {
+        ITT_FUNCTION_TASK();
         const size_t initial_vertices_count = BaseMesh<VType>::m_vertices.size();
 
         const typename BaseMesh<VType>::Vertices& face_vertices = face_mesh.GetVertices();

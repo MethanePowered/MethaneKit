@@ -25,11 +25,15 @@ Base implementation of the render command list interface.
 #include "RenderPassBase.h"
 #include "RenderStateBase.h"
 #include "BufferBase.h"
-#include "Instrumentation.h"
+
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& pass)
     : CommandListBase(command_queue)
@@ -95,3 +99,6 @@ RenderPassBase& RenderCommandListBase::GetPass()
     assert(!!m_sp_pass);
     return static_cast<RenderPassBase&>(*m_sp_pass);
 }
+
+} // namespace Graphics
+} // namespace Methane

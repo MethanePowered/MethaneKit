@@ -23,11 +23,15 @@ and deferred releasing of GPU resource.
 ******************************************************************************/
 
 #include "ResourceManager.h"
-#include "Instrumentation.h"
+
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 ResourceManager::ResourceManager(ContextBase& context)
     : m_context(context)
@@ -55,7 +59,8 @@ void ResourceManager::Initialize(const Settings& settings)
         // GPU accessible descriptor heaps are created for program resource bindings
         if (DescriptorHeap::IsShaderVisibileHeapType(heap_type))
         {
-            const DescriptorHeap::Settings heap_settings = { heap_type, heap_size * settings.max_binding_states_count, m_deferred_heap_allocation, true };
+            const uint32_t shader_visible_heap_size = settings.shader_visible_heap_sizes[heap_type_idx];
+            const DescriptorHeap::Settings heap_settings = { heap_type, shader_visible_heap_size, m_deferred_heap_allocation, true };
             desc_heaps.push_back(DescriptorHeap::Create(m_context, heap_settings));
         }
     }
@@ -84,6 +89,21 @@ void ResourceManager::CompleteInitialization()
     }
 
     m_deferred_resource_bindings.clear();
+}
+
+void ResourceManager::Release()
+{
+    ITT_FUNCTION_TASK();
+
+    if (m_sp_release_pool)
+    {
+        m_sp_release_pool->ReleaseResources();
+    }
+
+    for (DescriptorHeaps& desc_heaps : m_descriptor_heap_types)
+    {
+        desc_heaps.clear();
+    }
 }
 
 void ResourceManager::DeferResourceBindingsInitialization(Program::ResourceBindings& resource_bindings)
@@ -180,6 +200,30 @@ DescriptorHeap& ResourceManager::GetDefaultShaderVisibleDescriptorHeap(Descripto
     return *sp_resource_heap;
 }
 
+ResourceManager::DescriptorHeapSizeByType ResourceManager::GetDescriptorHeapSizes(bool get_allocated_size, bool for_shader_visible_heaps) const
+{
+    DescriptorHeapSizeByType descriptor_heap_sizes;
+    for (uint32_t heap_type_idx = 0; heap_type_idx < static_cast<uint32_t>(DescriptorHeap::Type::Count); ++heap_type_idx)
+    {
+        const DescriptorHeap::Type  heap_type = static_cast<DescriptorHeap::Type>(heap_type_idx);
+        const DescriptorHeaps&      desc_heaps = m_descriptor_heap_types[heap_type_idx];
+        uint32_t max_heap_size = 0;
+        for (const DescriptorHeap::Ptr& sp_desc_heap : desc_heaps)
+        {
+            assert(!!sp_desc_heap);
+            assert(sp_desc_heap->GetSettings().type == heap_type);
+            if ( (for_shader_visible_heaps && !sp_desc_heap->IsShaderVisible()) ||
+                (!for_shader_visible_heaps &&  sp_desc_heap->IsShaderVisible()) )
+                continue;
+
+            const uint32_t heap_size = get_allocated_size ? sp_desc_heap->GetAllocatedSize() : sp_desc_heap->GetDeferredSize();
+            max_heap_size = std::max(max_heap_size, heap_size);
+        }
+        descriptor_heap_sizes[heap_type_idx] = max_heap_size;
+    }
+    return descriptor_heap_sizes;
+}
+
 ResourceBase::ReleasePool& ResourceManager::GetReleasePool()
 {
     ITT_FUNCTION_TASK();
@@ -187,3 +231,6 @@ ResourceBase::ReleasePool& ResourceManager::GetReleasePool()
     assert(!!m_sp_release_pool);
     return static_cast<ResourceBase::ReleasePool&>(*m_sp_release_pool);
 }
+
+} // namespace Graphics
+} // namespace Methane

@@ -29,7 +29,7 @@ Platform abstraction of keyboard events.
 
 #elif defined __APPLE__
 
-#include "MacOS/KeyboardMac.h"
+#include "MacOS/KeyboardMac.hh"
 
 #endif
 
@@ -87,49 +87,75 @@ enum class Key : uint32_t
     Unknown
 };
 
-using Keys = std::set<Key>;
-    
-struct NativeKey;
-
-class KeyConverter
+namespace OS
 {
-public:
-    KeyConverter(Key key) : m_key(key) { }
-    KeyConverter(const NativeKey& native_key) : m_key(GetKeyByNativeCode(native_key)) { }
-    
-    Key         GetKey() const      { return m_key; }
-    std::string ToString() const;
-    
-    // NOTE: Platform dependent function: see MacOS, Windows subdirs for implementation
-    static Key GetKeyByNativeCode(const NativeKey& native_key);
-    
-private:
-    const Key m_key;
-};
+#ifdef __APPLE__
+
+constexpr Key key_left_ctrl = Key::LeftSuper;
+constexpr Key key_right_ctrl = Key::RightSuper;
+
+#else
+
+constexpr Key key_left_ctrl  = Key::LeftControl;
+constexpr Key key_right_ctrl = Key::RightControl;
+
+#endif
+}
+
+using Keys = std::set<Key>;
 
 struct Modifier
 {
     using Mask = uint32_t;
     enum Value : Mask
     {
-        None        = 0,
-        Shift       = 1 << 0,
-        Control     = 1 << 1,
-        Alt         = 1 << 2,
-        Super       = 1 << 3,
-        CapsLock    = 1 << 4,
-        NumLock     = 1 << 5,
-        All         = static_cast<Mask>(~0),
+        None     = 0,
+        Shift    = 1 << 0,
+        Control  = 1 << 1,
+        Alt      = 1 << 2,
+        Super    = 1 << 3,
+        CapsLock = 1 << 4,
+        NumLock  = 1 << 5,
+        All      = static_cast<Mask>(~0),
     };
 
     using Values = std::array<Value, 6>;
     static constexpr const Values values = { Shift, Control, Alt, Super, CapsLock, NumLock };
-    
+
     static std::string ToString(Value modifier);
     static std::string ToString(Mask modifiers_mask);
 
-    Modifier()  = delete;
+    Modifier() = delete;
     ~Modifier() = delete;
+};
+
+enum class KeyType
+{
+    Common = 0,
+    Modifier,
+};
+
+struct NativeKey;
+
+class KeyConverter
+{
+public:
+    KeyConverter(Key key);
+    KeyConverter(Key key, Modifier::Mask modifiers);
+    KeyConverter(const NativeKey& native_key);
+    
+    Key             GetKey() const noexcept         { return m_key; }
+    Modifier::Mask  GetModifiers() const noexcept   { return m_modifiers; }
+    Modifier::Value GetModifierKey() const noexcept;
+    std::string     ToString() const noexcept;
+    
+    // NOTE: Platform dependent functions: see MacOS, Windows subdirs for implementation
+    static Key            GetKeyByNativeCode(const NativeKey& native_key);
+    static Modifier::Mask GetModifiersByNativeCode(const NativeKey& native_key);
+    
+private:
+    const Key            m_key;
+    const Modifier::Mask m_modifiers;
 };
 
 enum class KeyState : uint8_t
@@ -165,18 +191,20 @@ public:
     };
 
     State() = default;
-    State(std::initializer_list<Key> pressed_keys);
+    State(std::initializer_list<Key> pressed_keys, Modifier::Mask modifiers_mask = Modifier::Value::None);
     State(const State& other);
 
     State& operator=(const State& other);
-    bool operator==(const State& other) const;
-    bool operator!=(const State& other) const       { return !operator==(other); }
-    const KeyState& operator[](Key key) const       { return m_key_states[static_cast<size_t>(key)]; }
+    bool   operator<(const State& other) const;
+    bool   operator==(const State& other) const;
+    bool   operator!=(const State& other) const     { return !operator==(other); }
+    const  KeyState& operator[](Key key) const      { return m_key_states[static_cast<size_t>(key)]; }
     operator std::string() const                    { return ToString(); }
 
-    void  SetKey(Key key, KeyState state);
-    void  PressKey(Key key)                         { SetKey(key, KeyState::Pressed); }
-    void  ReleaseKey(Key key)                       { SetKey(key, KeyState::Released); }
+    KeyType SetKey(Key key, KeyState state);
+    void    SetModifiersMask(Modifier::Mask mask)   { m_modifiers_mask = mask; }
+    void    PressKey(Key key)                       { SetKey(key, KeyState::Pressed); }
+    void    ReleaseKey(Key key)                     { SetKey(key, KeyState::Released); }
 
     Keys                GetPressedKeys() const;
     const KeyStates&    GetKeyStates() const        { return m_key_states; }
@@ -196,6 +224,22 @@ inline std::ostream& operator<<( std::ostream& os, State const& keyboard_state)
     os << keyboard_state.ToString();
     return os;
 }
+
+// State tracks only active modifiers, but not exactly modifier keys
+// This state extension tracks exactly what modifier keys are pressed
+class StateExt : public State
+{
+public:
+    using State::State;
+
+    KeyType SetKey(Key key, KeyState state);
+
+    const Keys& GetPressedModifierKeys() const { return m_pressed_modifier_keys; }
+    Keys        GetAllPressedKeys() const;
+
+private:
+    Keys m_pressed_modifier_keys;
+};
 
 struct StateChange
 {

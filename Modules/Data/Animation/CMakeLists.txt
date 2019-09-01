@@ -13,6 +13,7 @@ set(HEADERS
 )
 
 set(SOURCES
+    ${SOURCES_DIR}/Animation.cpp
     ${SOURCES_DIR}/AnimationsPool.cpp
     ${SOURCES_DIR}/TimeAnimation.cpp
 )
@@ -27,6 +28,11 @@ target_include_directories(${TARGET}
         Sources
     PUBLIC
         Include
+)
+
+target_link_libraries(${TARGET}
+    PUBLIC
+        MethaneInstrumentation
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})

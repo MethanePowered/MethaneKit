@@ -21,14 +21,17 @@ Metal implementation of the render pass interface.
 
 ******************************************************************************/
 
-#include "RenderPassMT.h"
-#include "ContextMT.h"
-#include "TextureMT.h"
-#include "TypesMT.h"
+#include "RenderPassMT.hh"
+#include "ContextMT.hh"
+#include "TextureMT.hh"
+#include "TypesMT.hh"
 
-#include <Methane/Graphics/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 MTLStoreAction GetMTLStoreAction(RenderPass::Attachment::StoreAction store_action) noexcept
 {
@@ -131,3 +134,6 @@ ContextMT& RenderPassMT::GetContextMT() noexcept
     ITT_FUNCTION_TASK();
     return static_cast<class ContextMT&>(m_context);
 }
+
+} // namespace Graphics
+} // namespace Methane

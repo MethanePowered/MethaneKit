@@ -21,7 +21,8 @@ MacOS platform utilitary functions.
 
 ******************************************************************************/
 
-#include <Methane/Platform/MacOS/Utils.h>
+#include <Methane/Platform/MacOS/Utils.hh>
+#include <Methane/Instrumentation.h>
 
 #import <AppKit/AppKit.h>
 
@@ -34,11 +35,13 @@ namespace Platform
 
 void PrintToDebugOutput(const std::string& msg)
 {
+    ITT_FUNCTION_TASK();
     NSLog(@"%s", msg.c_str());
 }
 
 std::string GetExecutableDir()
 {
+    ITT_FUNCTION_TASK();
     std::string exe_dir;
     @autoreleasepool
     {
@@ -54,6 +57,7 @@ std::string GetExecutableDir()
 
 std::string GetExecutableFileName()
 {
+    ITT_FUNCTION_TASK();
     std::string exe_file;
     @autoreleasepool
     {
@@ -69,6 +73,7 @@ std::string GetExecutableFileName()
 
 std::string GetResourceDir()
 {
+    ITT_FUNCTION_TASK();
     std::string res_dir;
     @autoreleasepool
     {

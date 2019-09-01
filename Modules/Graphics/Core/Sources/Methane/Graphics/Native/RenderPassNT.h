@@ -29,7 +29,7 @@ Native implementation alias of the render pass interface.
 
 #elif defined __APPLE__
 
-#include <Methane/Graphics/Metal/RenderPassMT.h>
+#include <Methane/Graphics/Metal/RenderPassMT.hh>
 
 #endif
 

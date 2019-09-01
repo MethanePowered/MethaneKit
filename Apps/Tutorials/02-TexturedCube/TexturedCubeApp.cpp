@@ -28,7 +28,10 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 #include <cml/mathlib/mathlib.h>
 #include <cassert>
 
-using namespace Methane::Tutorials;
+namespace Methane
+{
+namespace Tutorials
+{
 
 static const gfx::Shader::EntryTarget g_vs_main   = { "VSMain", "vs_5_1" };
 static const gfx::Shader::EntryTarget g_ps_main   = { "PSMain", "ps_5_1" };
@@ -73,7 +76,7 @@ TexturedCubeApp::TexturedCubeApp()
                 gfx::Matrix33f light_rotate_matrix;
                 cml::matrix_rotation_axis_angle(light_rotate_matrix, m_camera.GetOrientation().up, cml::rad(360.f * delta_seconds / 4.f));
                 m_shader_uniforms.light_position = m_shader_uniforms.light_position * light_rotate_matrix;
-                m_camera.RotateYaw(360.f * delta_seconds / 8.f);
+                m_camera.RotateYaw(static_cast<float>(delta_seconds * 360.f / 8.f));
                 return true;
             }));
 }
@@ -257,7 +260,23 @@ void TexturedCubeApp::Render()
     GraphicsApp::Render();
 }
 
+void TexturedCubeApp::OnContextReleased()
+{
+    m_sp_texture_sampler.reset();
+    m_sp_cube_texture.reset();
+    m_sp_const_buffer.reset();
+    m_sp_index_buffer.reset();
+    m_sp_vertex_buffer.reset();
+    m_sp_state.reset();
+    m_sp_program.reset();
+
+    GraphicsApp::OnContextReleased();
+}
+
+} // namespace Tutorials
+} // namespace Methane
+
 int main(int argc, const char* argv[])
 {
-    return TexturedCubeApp().Run({ argc, argv });
+    return Methane::Tutorials::TexturedCubeApp().Run({ argc, argv });
 }

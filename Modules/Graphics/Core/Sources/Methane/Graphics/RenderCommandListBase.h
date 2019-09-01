@@ -45,13 +45,12 @@ public:
     using Ptr = std::shared_ptr<RenderCommandList>;
 
     RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass);
-    virtual ~RenderCommandListBase() override = default;
 
     // RenderCommandList interface
-    virtual void Reset(RenderState& render_state, const std::string& debug_group = "") override;
-    virtual void SetVertexBuffers(const Buffer::Refs& vertex_buffers) override;
-    virtual void DrawIndexed(Primitive primitive_type, const Buffer& index_buffer, uint32_t instance_count) override;
-    virtual void Draw(Primitive primitive_type, uint32_t vertex_count, uint32_t instance_count) override;
+    void Reset(RenderState& render_state, const std::string& debug_group = "") override;
+    void SetVertexBuffers(const Buffer::Refs& vertex_buffers) override;
+    void DrawIndexed(Primitive primitive_type, const Buffer& index_buffer, uint32_t instance_count) override;
+    void Draw(Primitive primitive_type, uint32_t vertex_count, uint32_t instance_count) override;
 
     RenderPassBase& GetPass();
 

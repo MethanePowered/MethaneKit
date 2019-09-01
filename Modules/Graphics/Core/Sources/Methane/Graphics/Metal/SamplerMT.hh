@@ -16,27 +16,42 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/DescriptorHeapMT.h
-Metal "dummy" implementation of the descriptor heap.
+FILE: Methane/Graphics/Metal/SamplerMT.hh
+Metal implementation of the sampler interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/DescriptorHeap.h>
+#include <Methane/Graphics/SamplerBase.h>
+
+#import <Metal/Metal.h>
 
 namespace Methane
 {
 namespace Graphics
 {
 
-class ContextBase;
+class ContextMT;
 
-class DescriptorHeapMT : public DescriptorHeap
+class SamplerMT : public SamplerBase
 {
 public:
-    DescriptorHeapMT(ContextBase& context, const Settings& settings);
-    virtual ~DescriptorHeapMT() override;
+    SamplerMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
+    ~SamplerMT() override;
+
+    // Object interface
+    void SetName(const std::string& name) override;
+    
+    const id<MTLSamplerState>& GetNativeSamplerState() const noexcept { return m_mtl_sampler_state; }
+
+protected:
+    void ResetSampletState();
+
+    ContextMT& GetContextMT() noexcept;
+    
+    MTLSamplerDescriptor* m_mtl_sampler_desc = nullptr;
+    id<MTLSamplerState>   m_mtl_sampler_state = nil;
 };
 
 } // namespace Graphics

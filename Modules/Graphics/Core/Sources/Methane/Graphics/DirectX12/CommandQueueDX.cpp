@@ -23,16 +23,20 @@ DirectX 12 implementation of the command queue interface.
 
 #include "CommandQueueDX.h"
 #include "ContextDX.h"
+#include "DeviceDX.h"
 #include "RenderCommandListDX.h"
 
-#include <Methane/Graphics/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #include <nowide/convert.hpp>
 
 #include <cassert>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 CommandQueue::Ptr CommandQueue::Create(Context& context)
 {
@@ -45,7 +49,7 @@ CommandQueueDX::CommandQueueDX(ContextBase& context)
 {
     ITT_FUNCTION_TASK();
 
-    const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetNativeDevice();
+    const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
     assert(!!cp_device);
 
     D3D12_COMMAND_QUEUE_DESC queue_desc = {};
@@ -66,18 +70,27 @@ void CommandQueueDX::SetName(const std::string& name)
 void CommandQueueDX::Execute(const CommandList::Refs& command_lists)
 {
     ITT_FUNCTION_TASK();
+    assert(!command_lists.empty());
+    if (command_lists.empty())
+        return;
 
     CommandQueueBase::Execute(command_lists);
 
-    std::vector<ID3D12CommandList*> dx_command_lists;
-    dx_command_lists.reserve(command_lists.size());
-    for (const CommandList::Ref& command_list_ref : command_lists)
+    D3D12CommandLists dx_command_lists = GetNativeCommandLists(command_lists);
+    m_cp_command_queue->ExecuteCommandLists(static_cast<UINT>(dx_command_lists.size()), dx_command_lists.data());
+}
+
+CommandQueueDX::D3D12CommandLists CommandQueueDX::GetNativeCommandLists(const CommandList::Refs& command_list_refs)
+{
+    ITT_FUNCTION_TASK();
+    D3D12CommandLists dx_command_lists;
+    dx_command_lists.reserve(command_list_refs.size());
+    for (const CommandList::Ref& command_list_ref : command_list_refs)
     {
         RenderCommandListDX& dx_command_list = dynamic_cast<RenderCommandListDX&>(command_list_ref.get());
         dx_command_lists.push_back(dx_command_list.GetNativeCommandList().Get());
     }
-
-    m_cp_command_queue->ExecuteCommandLists(static_cast<UINT>(dx_command_lists.size()), dx_command_lists.data());
+    return dx_command_lists;
 }
 
 ContextDX& CommandQueueDX::GetContextDX()
@@ -85,3 +98,6 @@ ContextDX& CommandQueueDX::GetContextDX()
     ITT_FUNCTION_TASK();
     return static_cast<class ContextDX&>(m_context);
 }
+
+} // namespace Graphics
+} // namespace Methane

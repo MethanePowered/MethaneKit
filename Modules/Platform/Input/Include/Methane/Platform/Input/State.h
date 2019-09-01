@@ -38,9 +38,8 @@ public:
     State() = default;
     State(const ControllersPool& controllers) : m_controllers(controllers) {}
 
-    ControllersPool&        Controllers()                                       { return m_controllers; }
     const ControllersPool&  GetControllers() const                              { return m_controllers; }
-    void                    SetControllers(const ControllersPool& controllers)  { m_controllers = controllers; }
+    void                    AddControllers(const Controllers& controllers)      { m_controllers.insert(m_controllers.end(), controllers.begin(), controllers.end()); }
 
     const Keyboard::State& GetKeyboardState() const                 { return m_keyboard_state; }
     const Mouse::State&    GetMouseState() const                    { return m_mouse_state; }
@@ -51,11 +50,14 @@ public:
     void OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_delta) override;
     void OnMouseInWindowChanged(bool is_mouse_in_window) override;
     void OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state) override;
+    void OnModifiersChanged(Keyboard::Modifier::Mask modifiers) override;
+
+    void ReleaseAllKeys();
 
 protected:
-    ControllersPool  m_controllers;
-    Keyboard::State  m_keyboard_state;
-    Mouse::State     m_mouse_state;
+    ControllersPool     m_controllers;
+    Mouse::State        m_mouse_state;
+    Keyboard::StateExt  m_keyboard_state;
 };
 
 } // namespace Input

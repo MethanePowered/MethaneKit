@@ -25,7 +25,10 @@ Tutorial demonstrating triangle rendering with Methane graphics API
 
 #include <cassert>
 
-using namespace Methane::Tutorials;
+namespace Methane
+{
+namespace Tutorials
+{
 
 static const gfx::Shader::EntryTarget g_vs_main   = { "VSMain", "vs_5_1" };
 static const gfx::Shader::EntryTarget g_ps_main   = { "PSMain", "ps_5_1" };
@@ -87,7 +90,7 @@ void HelloTriangleApp::Init()
         { // constant_argument_names
         },
         { // render_target_pixel_formats
-          m_context_settings.color_format
+            GetInitialContextSettings().color_format
         }
     });
     m_sp_program->SetName("Colored Vertices");
@@ -110,8 +113,8 @@ void HelloTriangleApp::Init()
     // Create render state
     m_sp_state = gfx::RenderState::Create(*m_sp_context, {
         m_sp_program,
-        { gfx::GetFrameViewport(m_context_settings.frame_size) },
-        { gfx::GetFrameScissorRect(m_context_settings.frame_size) },
+        { gfx::GetFrameViewport(GetInitialContextSettings().frame_size) },
+        { gfx::GetFrameScissorRect(GetInitialContextSettings().frame_size) },
     });
     m_sp_state->SetName("Frame Render Pipeline State");
 
@@ -164,7 +167,19 @@ void HelloTriangleApp::Render()
     GraphicsApp::Render();
 }
 
+void HelloTriangleApp::OnContextReleased()
+{
+    m_sp_vertex_buffer.reset();
+    m_sp_state.reset();
+    m_sp_program.reset();
+
+    GraphicsApp::OnContextReleased();
+}
+
+} // namespace Tutorials
+} // namespace Methane
+
 int main(int argc, const char* argv[])
 {
-    return HelloTriangleApp().Run({ argc, argv });
+    return Methane::Tutorials::HelloTriangleApp().Run({ argc, argv });
 }

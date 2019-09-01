@@ -24,15 +24,17 @@ Base implementation of the program interface.
 #include "ProgramBase.h"
 #include "ContextBase.h"
 #include "ResourceManager.h"
-#include "Instrumentation.h"
 
+#include <Methane/Instrumentation.h>
 #include <Methane/Platform/Utils.h>
 
 #include <cassert>
 #include <sstream>
 
-using namespace Methane;
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 bool Program::Argument::operator<(const Argument& other) const
 {
@@ -448,3 +450,6 @@ uint32_t ProgramBase::GetInputBufferIndexByArgumentSemantic(const std::string& a
 
     throw std::runtime_error("Input argument with semantic \"" + argument_semantic + "\" was not found for program \"" + m_name + "\"");
 }
+
+} // namespace Graphics
+} // namespace Methane

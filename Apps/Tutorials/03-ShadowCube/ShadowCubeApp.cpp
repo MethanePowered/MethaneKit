@@ -28,7 +28,10 @@ Tutorial demonstrating shadow-pass rendering with Methane graphics API
 #include <cml/mathlib/mathlib.h>
 #include <cassert>
 
-using namespace Methane::Tutorials;
+namespace Methane
+{
+namespace Tutorials
+{
 
 // Common application settings
 static const gfx::FrameSize           g_shadow_map_size(1024, 1024);
@@ -67,6 +70,7 @@ ShadowCubeApp::ShadowCubeApp()
         })
 {
     m_view_camera.SetOrientation({ { 15.0f, 22.5f, -15.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
+
     m_light_camera.SetOrientation({ { 0.0f,  25.0f, -25.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
     m_light_camera.SetParamters({ -300, 300.f, 90.f });
@@ -76,8 +80,8 @@ ShadowCubeApp::ShadowCubeApp()
         std::make_shared<Data::TimeAnimation>(
             [this](double, double delta_seconds)
             {
-                m_view_camera.RotateYaw( 360.f * delta_seconds / 8.f);
-                m_light_camera.RotateYaw(360.f * delta_seconds / 4.f);
+                m_view_camera.RotateYaw(static_cast<float>(delta_seconds * 360.f / 8.f));
+                m_light_camera.RotateYaw(static_cast<float>(delta_seconds * 360.f / 4.f));
                 return true;
             }));
 }
@@ -317,9 +321,21 @@ void ShadowCubeApp::MeshBuffers::Init(const gfx::BaseMesh<VType>& mesh_data, gfx
     sp_index->SetData(reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetIndices().data()), floor_index_data_size);
 }
 
+void ShadowCubeApp::MeshBuffers::Release()
+{
+    sp_vertex.reset();
+    sp_index.reset();
+}
+
+void ShadowCubeApp::RenderPass::Release()
+{
+    sp_program.reset();
+    sp_state.reset();
+}
+
 bool ShadowCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 {
-    if (!m_initialized || m_context_settings.frame_size == frame_size)
+    if (!m_initialized || GetInitialContextSettings().frame_size == frame_size)
         return false;
 
     // Resize screen color and depth textures
@@ -476,7 +492,26 @@ void ShadowCubeApp::RenderScene(const RenderPass& render_pass, ShadowCubeFrame::
     cmd_list.Commit(render_pass.is_final_pass);
 }
 
+void ShadowCubeApp::OnContextReleased()
+{
+    m_final_pass.Release();
+    m_shadow_pass.Release();
+    m_floor_buffers.Release();
+    m_cube_buffers.Release();
+
+    m_sp_shadow_sampler.reset();
+    m_sp_texture_sampler.reset();
+    m_sp_floor_texture.reset();
+    m_sp_cube_texture.reset();
+    m_sp_const_buffer.reset();
+
+    GraphicsApp::OnContextReleased();
+}
+
+} // namespace Tutorials
+} // namespace Methane
+
 int main(int argc, const char* argv[])
 {
-    return ShadowCubeApp().Run({ argc, argv });
+    return Methane::Tutorials::ShadowCubeApp().Run({ argc, argv });
 }

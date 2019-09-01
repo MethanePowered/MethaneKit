@@ -16,26 +16,28 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/MacOS/AppDelegate.h
-MacOS application delegate implementation.
+FILE: Methane/Graphics/Metal/DescriptorHeapMT.hh
+Metal "dummy" implementation of the descriptor heap.
 
 ******************************************************************************/
 
-#include "AppViewController.h"
+#pragma once
 
-#include <Methane/Platform/AppBase.h>
+#include <Methane/Graphics/DescriptorHeap.h>
 
-#import <Cocoa/Cocoa.h>
+namespace Methane
+{
+namespace Graphics
+{
 
-namespace Methane { namespace Platform { class AppMac; } }
+class ContextBase;
 
-@interface AppDelegate : NSObject<NSApplicationDelegate>
+class DescriptorHeapMT : public DescriptorHeap
+{
+public:
+    DescriptorHeapMT(ContextBase& context, const Settings& settings);
+    ~DescriptorHeapMT() override;
+};
 
-@property (nonatomic, strong, nonnull) IBOutlet AppViewController* viewController;
-@property (nonatomic, readonly, nullable) NSWindow* window;
-
-- (id _Nullable) initWithApp : (Methane::Platform::AppMac* _Nonnull) p_app andSettings : (Methane::Platform::AppBase::Settings* _Nonnull) p_settings;
-- (void) run;
-- (void) alert : (nonnull NSString*) ns_title withInformation: (nonnull NSString*) ns_info andStyle: (NSAlertStyle) ns_alert_style;
-
-@end
+} // namespace Graphics
+} // namespace Methane

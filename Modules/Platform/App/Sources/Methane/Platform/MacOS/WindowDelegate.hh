@@ -16,12 +16,17 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Instrumentation.h
-Common header for instrumentation of graphics core API with ITT macroses,
-Defines common ITT domain required for instrumentation.
+FILE: Methane/Platform/MacOS/AppDelegate.h
+MacOS application delegate implementation.
 
 ******************************************************************************/
 
-#include "Instrumentation.h"
+#import <Cocoa/Cocoa.h>
 
-ITT_DOMAIN_GLOBAL("Methane Graphics");
+namespace Methane { namespace Platform { class AppMac; } }
+
+@interface WindowDelegate : NSObject<NSWindowDelegate>
+
+- (id _Nullable) initWithApp : (Methane::Platform::AppMac* _Nonnull) p_app;
+
+@end

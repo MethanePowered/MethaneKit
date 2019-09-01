@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/ContextMT.h
+FILE: Methane/Graphics/Metal/ContextMT.hh
 Metal implementation of the context interface.
 
 ******************************************************************************/
@@ -25,7 +25,7 @@ Metal implementation of the context interface.
 
 #include "../ContextBase.h"
 
-#import <Methane/Platform/MacOS/AppViewMT.h>
+#import <Methane/Platform/MacOS/AppViewMT.hh>
 
 #import <Metal/Metal.h>
 
@@ -36,26 +36,31 @@ namespace Graphics
 
 struct CommandQueue;
 class RenderPassMT;
+class DeviceMT;
 
 class ContextMT : public ContextBase
 {
 public:
-    ContextMT(const Platform::AppEnvironment& env, const Data::Provider& data_provider, const Settings& settings);
-    virtual ~ContextMT() override;
+    ContextMT(const Platform::AppEnvironment& env, const Data::Provider& data_provider, DeviceBase& device, const Settings& settings);
+    ~ContextMT() override;
 
     // Context interface
-    virtual bool ReadyToRender() const override;
-    virtual void OnCommandQueueCompleted(CommandQueue& cmd_queue, uint32_t frame_index) override;
-    virtual void WaitForGpu(WaitFor wait_for) override;
-    virtual void Resize(const FrameSize& frame_size) override;
-    virtual void Present() override;
-    virtual Platform::AppView GetAppView() const override { return { m_app_view }; }
+    bool ReadyToRender() const override;
+    void OnCommandQueueCompleted(CommandQueue& cmd_queue, uint32_t frame_index) override;
+    void WaitForGpu(WaitFor wait_for) override;
+    void Resize(const FrameSize& frame_size) override;
+    void Present() override;
+    bool SetVSyncEnabled(bool vsync_enabled) override;
+    Platform::AppView GetAppView() const override { return { m_app_view }; }
 
     id<CAMetalDrawable>      GetNativeDrawable()       { return m_app_view.currentDrawable; }
-    id<MTLDevice>&           GetNativeDevice()         { return m_mtl_device; }
+    DeviceMT&                GetDeviceMT();
 
 protected:
-    id<MTLDevice>           m_mtl_device;
+    // ContextBase overrides
+    void Release() override;
+    void Initialize(Device& device, bool deferred_heap_allocation) override;
+    
     AppViewMT*              m_app_view;
     dispatch_semaphore_t    m_dispatch_semaphore;
 };

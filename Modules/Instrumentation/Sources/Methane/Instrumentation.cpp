@@ -16,43 +16,12 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/CommandQueueMT.h
-Metal implementation of the command queue interface.
+FILE: Methane/Graphics/Instrumentation.cpp
+Common header for instrumentation of the Methane Kit modules with ITT macroses,
+Defines common ITT domain required for instrumentation.
 
 ******************************************************************************/
 
-#pragma once
+#include <Methane/Instrumentation.h>
 
-#include <Methane/Graphics/CommandQueueBase.h>
-
-#import <Metal/Metal.h>
-
-namespace Methane
-{
-namespace Graphics
-{
-
-class RenderPassMT;
-class ContextMT;
-
-class CommandQueueMT final : public CommandQueueBase
-{
-public:
-    CommandQueueMT(ContextBase& context);
-    virtual ~CommandQueueMT() override;
-
-    // Object interface
-    virtual void SetName(const std::string& name) override;
-    
-    ContextMT& GetContextMT() noexcept;
-    
-    id<MTLCommandQueue>&  GetNativeCommandQueue() noexcept { return m_mtl_command_queue; }
-
-protected:
-    void Reset();
-    
-    id<MTLCommandQueue>  m_mtl_command_queue;
-};
-
-} // namespace Graphics
-} // namespace Methane
+ITT_DOMAIN_GLOBAL("Methane Kit");

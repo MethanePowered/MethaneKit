@@ -17,14 +17,16 @@ if (WIN32)
 elseif(APPLE)
 
     set(PLATFORM_HEADERS
-        ${INCLUDE_PLATFORM_DIR}/AppMac.h
-        ${SOURCES_PLATFORM_DIR}/AppDelegate.h
-        ${SOURCES_PLATFORM_DIR}/AppViewController.h
+        ${INCLUDE_PLATFORM_DIR}/AppMac.hh
+        ${SOURCES_PLATFORM_DIR}/AppDelegate.hh
+        ${SOURCES_PLATFORM_DIR}/WindowDelegate.hh
+        ${SOURCES_PLATFORM_DIR}/AppViewController.hh
     )
 
     set(PLATFORM_SOURCES
         ${SOURCES_PLATFORM_DIR}/AppMac.mm
         ${SOURCES_PLATFORM_DIR}/AppDelegate.mm
+        ${SOURCES_PLATFORM_DIR}/WindowDelegate.mm
         ${SOURCES_PLATFORM_DIR}/AppViewController.mm
     )
 
@@ -39,6 +41,7 @@ set(LIBRARIES ${LIBRARIES}
     MethanePlatformUtils
     MethanePlatformInput
     MethanePlatformAppView
+    MethaneInstrumentation
     nowide_static
     cxxopts
 )
@@ -46,12 +49,12 @@ set(LIBRARIES ${LIBRARIES}
 set(HEADERS ${PLATFORM_HEADERS}
     ${INCLUDE_DIR}/App.h
     ${INCLUDE_DIR}/AppBase.h
-    ${INCLUDE_DIR}/AppHelpController.h
+    ${INCLUDE_DIR}/AppController.h
 )
 
 set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/AppBase.cpp
-    ${SOURCES_DIR}/AppHelpController.cpp
+    ${SOURCES_DIR}/AppController.cpp
 )
 
 add_library(${TARGET} STATIC

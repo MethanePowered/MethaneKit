@@ -29,7 +29,7 @@ Native implementation alias of the buffer interface.
 
 #elif defined __APPLE__
 
-#include <Methane/Graphics/Metal/BufferMT.h>
+#include <Methane/Graphics/Metal/BufferMT.hh>
 
 #endif
 

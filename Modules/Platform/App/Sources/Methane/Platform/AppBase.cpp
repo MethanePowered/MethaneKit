@@ -23,18 +23,22 @@ Base application interface and platform-independent implementation.
 
 #include <Methane/Platform/AppBase.h>
 #include <Methane/Platform/Utils.h>
+#include <Methane/Instrumentation.h>
 
 #include <vector>
 #include <cstdlib>
 #include <cassert>
 
-using namespace Methane;
-using namespace Methane::Platform;
+namespace Methane
+{
+namespace Platform
+{
 
 AppBase::AppBase(const AppBase::Settings& settings)
     : m_settings(settings)
     , m_cmd_options(GetExecutableFileName(), settings.name)
 {
+    ITT_FUNCTION_TASK();
     m_cmd_options
         .allow_unrecognised_options()
         .add_options()
@@ -45,6 +49,7 @@ AppBase::AppBase(const AppBase::Settings& settings)
 
 void AppBase::ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result)
 {
+    ITT_FUNCTION_TASK();
     if (cmd_parse_result.count("help"))
     {
         const Message help_msg = {
@@ -66,6 +71,8 @@ void AppBase::ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result)
 
 int AppBase::Run(const RunArgs& args)
 {
+    ITT_FUNCTION_TASK();
+
 #ifdef __APPLE__
     // NOTE: MacOS bundle process serial number argument must be skipped because of unsupported syntax (underscores)
     const std::string macos_psn_arg_prefix = "-psn_";
@@ -120,23 +127,49 @@ int AppBase::Run(const RunArgs& args)
 
 void AppBase::Init()
 {
+    ITT_FUNCTION_TASK();
     m_initialized = true;
 }
 
 void AppBase::ChangeWindowBounds(const Data::FrameRect& window_bounds)
 {
+    ITT_FUNCTION_TASK();
     m_window_bounds = window_bounds;
 }
 
 void AppBase::Alert(const Message& msg, bool deferred)
 {
+    ITT_FUNCTION_TASK();
     if (!deferred)
         return;
 
     m_sp_deferred_message.reset(new Message(msg));
 }
 
+void AppBase::ShowAlert(const Message&)
+{
+    ITT_FUNCTION_TASK();
+
+    // Message box interrupts message loop so that application looses all key release events
+    // We asssume that user has released all previously pressed keys and simulate these events
+    m_input_state.ReleaseAllKeys();
+}
+
 bool AppBase::HasError() const
 {
+    ITT_FUNCTION_TASK();
     return m_sp_deferred_message ? m_sp_deferred_message->type == Message::Type::Error : false;
 }
+
+bool AppBase::SetFullScreen(bool is_full_screen)
+{
+    ITT_FUNCTION_TASK();
+    if (m_settings.is_full_screen == is_full_screen)
+        return false;
+
+    m_settings.is_full_screen = is_full_screen;
+    return true;
+}
+
+} // namespace Platform
+} // namespace Methane

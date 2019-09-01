@@ -16,14 +16,14 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/MacOS/AppViewMT.h
+FILE: Methane/Platform/MacOS/AppViewMT.hh
 MacOS application view implementation.
 
 ******************************************************************************/
 
 #pragma once
 
-#import "AppEnvironment.h"
+#import "AppEnvironment.hh"
 
 #import <AppKit/AppKit.h>
 #import <Metal/Metal.h>
@@ -38,9 +38,9 @@ MacOS application view implementation.
 @property (nonatomic, readonly, nullable) NSScreen* currentScreen;
 @property (nonatomic, readonly) MTLPixelFormat pixelFormat;
 @property (nonatomic, readonly) NSUInteger drawableCount;
-@property (nonatomic, readonly) BOOL vsyncEnabled;
+@property (nonatomic, readwrite) BOOL vsyncEnabled;
 
-@property (nonatomic, readwrite) NSTimeInterval nonsyncRefreshInterval;
+@property (nonatomic, readwrite) NSTimeInterval unsyncRefreshInterval;
 @property (nonatomic, readwrite) BOOL redrawing;
 
 @property (nonatomic, weak, nullable) id<MetalAppViewDelegate> delegate;

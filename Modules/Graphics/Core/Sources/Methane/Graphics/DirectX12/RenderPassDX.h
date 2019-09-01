@@ -59,13 +59,12 @@ public:
     };
 
     RenderPassDX(ContextBase& context, const Settings& settings);
-    virtual ~RenderPassDX() override = default;
 
     // RenderPass interface
-    virtual void Update(const Settings& settings) override;
+    void Update(const Settings& settings) override;
 
     // RenderPassBase interface
-    virtual void Apply(RenderCommandListBase& command_list) override;
+    void Apply(RenderCommandListBase& command_list) override;
 
     std::vector<ID3D12DescriptorHeap*>       GetNativeDescriptorHeaps() const;
     std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> GetNativeRenderTargetCPUHandles() const;

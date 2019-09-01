@@ -16,43 +16,48 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/SamplerMT.h
-Metal implementation of the sampler interface.
+FILE: Methane/Data/AnimationsPool.cpp
+Pool of animations for centralized updating, adding and removing in application.
 
 ******************************************************************************/
 
-#pragma once
-
-#include <Methane/Graphics/SamplerBase.h>
-
-#import <Metal/Metal.h>
+#include <Methane/Data/Animation.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane
 {
-namespace Graphics
+namespace Data
 {
 
-class ContextMT;
-
-class SamplerMT : public SamplerBase
+Animation::Animation(double duration_sec)
+    : m_duration_sec(duration_sec)
 {
-public:
-    SamplerMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
-    virtual ~SamplerMT() override;
+    ITT_FUNCTION_TASK();
+}
 
-    // Object interface
-    virtual void SetName(const std::string& name) override;
-    
-    const id<MTLSamplerState>& GetNativeSamplerState() const noexcept { return m_mtl_sampler_state; }
+Animation::~Animation()
+{
+    ITT_FUNCTION_TASK();
+}
 
-protected:
-    void ResetSampletState();
+void Animation::IncreaseDuration(double duration_sec)
+{
+    ITT_FUNCTION_TASK();
+    m_duration_sec = GetElapsedSecondsD() + duration_sec;
+}
 
-    ContextMT& GetContextMT() noexcept;
-    
-    MTLSamplerDescriptor* m_mtl_sampler_desc = nullptr;
-    id<MTLSamplerState>   m_mtl_sampler_state = nil;
-};
+void Animation::Restart() noexcept
+{
+    ITT_FUNCTION_TASK();
+    m_is_running = true;
+    Timer::Reset();
+}
 
-} // namespace Graphics
+void Animation::Stop() noexcept
+{
+    ITT_FUNCTION_TASK();
+    m_is_running = false;
+}
+
+} // namespace Data
 } // namespace Methane

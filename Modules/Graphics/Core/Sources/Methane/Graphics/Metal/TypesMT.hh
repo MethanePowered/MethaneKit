@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/TypesMT.h
+FILE: Methane/Graphics/Metal/TypesMT.hh
 Methane graphics types convertors to Metal native types.
 
 ******************************************************************************/

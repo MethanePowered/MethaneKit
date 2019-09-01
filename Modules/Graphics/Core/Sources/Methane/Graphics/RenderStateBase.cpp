@@ -22,11 +22,15 @@ Base implementation of the render state interface.
 ******************************************************************************/
 
 #include "RenderStateBase.h"
-#include "Instrumentation.h"
 
-using namespace Methane::Graphics;
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
+
+namespace Methane
+{
+namespace Graphics
+{
 
 RenderStateBase::RenderStateBase(ContextBase& context, const Settings& settings)
     : m_context(context)
@@ -60,3 +64,6 @@ void RenderStateBase::SetScissorRects(const ScissorRects& scissor_rects)
     }
     m_settings.scissor_rects = scissor_rects;
 }
+
+} // namespace Graphics
+} // namespace Methane

@@ -21,10 +21,12 @@ MacOS application delegate implementation.
 
 ******************************************************************************/
 
-#import "AppDelegate.h"
+#import "AppDelegate.hh"
+#import "WindowDelegate.hh"
 
-#include <Methane/Platform/MacOS/AppMac.h>
-#include <Methane/Platform/MacOS/Types.h>
+#include <Methane/Platform/MacOS/AppMac.hh>
+#include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 
@@ -37,6 +39,8 @@ using namespace Methane::Platform;
 
 - (id) initWithApp : (AppMac*) p_app andSettings : (AppBase::Settings*) p_settings
 {
+    ITT_FUNCTION_TASK();
+
     self = [super init];
     if (!self || !p_settings)
         return nil;
@@ -54,9 +58,10 @@ using namespace Methane::Platform;
                             NSWindowStyleMaskMiniaturizable;
 
     NSBackingStoreType backing = NSBackingStoreBuffered;
-
+    
     _window = [[NSWindow alloc] initWithContentRect:frame styleMask:styleMask backing:backing defer:YES];
     _window.title = MacOS::ConvertToNSType<std::string, NSString*>(p_settings->name);
+    _window.delegate = [[WindowDelegate alloc] initWithApp:p_app];
     [_window center];
     
     NSRect backing_frame = [mainScreen convertRectToBacking:frame];
@@ -69,12 +74,14 @@ using namespace Methane::Platform;
 
 - (void) run
 {
+    ITT_FUNCTION_TASK();
     [self.window setContentViewController: self.viewController];
     [self.window setAcceptsMouseMovedEvents:YES];
 }
 
 - (void) alert : (NSString*) ns_title withInformation: (NSString*) ns_info andStyle: (NSAlertStyle) ns_alert_style
 {
+    ITT_FUNCTION_TASK();
     if (ns_title == nil || ns_info == nil)
     {
         assert(0);
@@ -94,23 +101,43 @@ using namespace Methane::Platform;
     }
 }
 
-- (void)applicationWillFinishLaunching:(NSNotification *)notification
+- (void) applicationWillFinishLaunching:(NSNotification *)notification
 {
+    ITT_FUNCTION_TASK();
     [self.window makeKeyAndOrderFront:self];
 }
 
-- (void)applicationDidFinishLaunching:(NSNotification *)notification
+- (void) applicationDidFinishLaunching:(NSNotification *)notification
 {
+    ITT_FUNCTION_TASK();
     [self.window makeFirstResponder: self.viewController.view];
 }
 
-- (void)applicationWillTerminate:(NSNotification *)notification
+- (void) windowWillEnterFullScreen:(NSNotification *)notification
 {
+    ITT_FUNCTION_TASK();
+    AppMac* p_app = [self.viewController getApp];
+    assert(!!p_app);
+    p_app->SetFullScreenInternal(true);
+}
+
+- (void) windowWillExitFullScreen:(NSNotification *)notification
+{
+    ITT_FUNCTION_TASK();
+    AppMac* p_app = [self.viewController getApp];
+    assert(!!p_app);
+    p_app->SetFullScreenInternal(false);
+}
+
+- (void) applicationWillTerminate:(NSNotification *)notification
+{
+    ITT_FUNCTION_TASK();
     // Insert code here to tear down your application
 }
 
-- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender
+- (BOOL) applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender
 {
+    ITT_FUNCTION_TASK();
     return YES;
 }
 

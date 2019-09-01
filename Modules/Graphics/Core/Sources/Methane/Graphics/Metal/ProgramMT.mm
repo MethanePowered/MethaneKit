@@ -16,27 +16,30 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/ProgramMT.h
+FILE: Methane/Graphics/Metal/ProgramMT.hh
 Metal implementation of the program interface.
 
 ******************************************************************************/
 
-#include "ProgramMT.h"
-#include "ShaderMT.h"
-#include "BufferMT.h"
-#include "TextureMT.h"
-#include "SamplerMT.h"
-#include "ContextMT.h"
-#include "RenderCommandListMT.h"
-#include "TypesMT.h"
+#include "ProgramMT.hh"
+#include "ShaderMT.hh"
+#include "BufferMT.hh"
+#include "TextureMT.hh"
+#include "SamplerMT.hh"
+#include "ContextMT.hh"
+#include "DeviceMT.hh"
+#include "RenderCommandListMT.hh"
+#include "TypesMT.hh"
 
-#include <Methane/Graphics/Instrumentation.h>
-#include <Methane/Platform/MacOS/Types.h>
+#include <Methane/Instrumentation.h>
+#include <Methane/Platform/MacOS/Types.hh>
 
 #include <cassert>
 
-using namespace Methane;
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 template<typename TMetalResource>
 void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const TMetalResource& mtl_buffer, uint32_t arg_index) noexcept;
@@ -207,7 +210,7 @@ ProgramMT::ProgramMT(ContextBase& context, const Settings& settings)
     ContextMT& metal_context = static_cast<ContextMT&>(context);
     
     NSError* ns_error = nil;
-    m_mtl_dummy_pipeline_state_for_reflection = [metal_context.GetNativeDevice() newRenderPipelineStateWithDescriptor:mtl_reflection_state_desc options:MTLPipelineOptionArgumentInfo reflection:&m_mtl_render_pipeline_reflection error:&ns_error];
+    m_mtl_dummy_pipeline_state_for_reflection = [metal_context.GetDeviceMT().GetNativeDevice() newRenderPipelineStateWithDescriptor:mtl_reflection_state_desc options:MTLPipelineOptionArgumentInfo reflection:&m_mtl_render_pipeline_reflection error:&ns_error];
     
     if (ns_error != nil)
     {
@@ -256,3 +259,6 @@ void ProgramMT::SetNativeShaderArguments(Shader::Type shader_type, NSArray<MTLAr
         GetShaderMT(shader_type).SetNativeArguments(mtl_arguments);
     }
 }
+
+} // namespace Graphics
+} // namespace Methane

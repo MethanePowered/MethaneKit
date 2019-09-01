@@ -21,30 +21,27 @@ Metal implementation of the resource interface.
 
 ******************************************************************************/
 
-#include "ResourceMT.h"
-#include "ContextMT.h"
-#include "BufferMT.h"
-#include "TextureMT.h"
+#include "ResourceMT.hh"
+#include "ContextMT.hh"
+#include "BufferMT.hh"
+#include "TextureMT.hh"
 
-#include <Methane/Graphics/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <vector>
 
 #import <Metal/Metal.h>
 
-namespace Methane {
-namespace Graphics {
+namespace Methane
+{
+namespace Graphics
+{
 
 struct ResourceContainerMT
 {
     std::vector<id<MTLBuffer>>  buffers;
     std::vector<id<MTLTexture>> textures;
 };
-
-}
-}
-
-using namespace Methane::Graphics;
 
 ResourceBase::ReleasePool::Ptr ResourceBase::ReleasePool::Create()
 {
@@ -104,3 +101,6 @@ ContextMT& ResourceMT::GetContextMT() noexcept
     ITT_FUNCTION_TASK();
     return static_cast<class ContextMT&>(m_context);
 }
+
+} // namespace Graphics
+} // namespace Methane

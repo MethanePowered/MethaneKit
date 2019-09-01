@@ -28,7 +28,7 @@ MacOS application implementation.
 
 #if defined(__OBJC__) && defined(METHANE_RENDER_APP)
 
-#import <Methane/Platform/MacOS/AppDelegate.h>
+#import <Methane/Platform/MacOS/AppDelegate.hh>
 #import <AppKit/AppKit.h>
 
 using NSApplicationType = NSApplication;
@@ -52,19 +52,23 @@ class AppMac : public AppBase
 {
 public:
     AppMac(const AppBase::Settings& settings);
-    virtual ~AppMac() override;
+    ~AppMac() override;
 
     // AppBase interface
-    virtual void InitContext(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size) override;
-    virtual int Run(const RunArgs& args) override;
-    virtual void Alert(const Message& msg, bool deferred = false) override;
-    virtual void SetWindowTitle(const std::string& title_text) override;
-  
+    void InitContext(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size) override;
+    int Run(const RunArgs& args) override;
+    void Alert(const Message& msg, bool deferred = false) override;
+    void SetWindowTitle(const std::string& title_text) override;
+    bool SetFullScreen(bool is_full_screen) override;
+    void Close() override;
+
     void SetWindow(NSWindowType* ns_window);
-    NSWindowType* GetWindow() { return m_ns_window; }
+    bool SetFullScreenInternal(bool is_full_screen) { return AppBase::SetFullScreen(is_full_screen); }
+    NSWindowType* GetWindow()                       { return m_ns_window; }
 
 protected:
-    void ShowAlert(const Message& msg);
+    // AppBase interface
+    void ShowAlert(const Message& msg) override;
 
     NSApplicationType*  m_ns_app;
     AppDelegateType*    m_ns_app_delegate;

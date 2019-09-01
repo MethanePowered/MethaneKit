@@ -16,36 +16,53 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/AppHelpController.h
-Help displaying controller
+FILE: Methane/Platform/MacOS/AppDelegate.mm
+MacOS application delegate implementation.
 
 ******************************************************************************/
 
-#pragma once
+#import "WindowDelegate.hh"
 
-#include <Methane/Platform/AppBase.h>
+#include <Methane/Platform/MacOS/AppMac.hh>
+#include <Methane/Instrumentation.h>
 
-namespace Methane
+#include <cassert>
+
+using namespace Methane;
+using namespace Methane::Platform;
+
+@implementation WindowDelegate
 {
-namespace Platform
+    AppMac* m_p_app;
+}
+
+- (id) initWithApp : (AppMac*) p_app
 {
+    ITT_FUNCTION_TASK();
 
-class AppHelpController : public Input::Controller
+    self = [super init];
+    if (!self)
+        return nil;
+
+    m_p_app = p_app;
+    
+    return self;
+}
+
+- (void) windowDidEnterFullScreen:(NSNotification *)notification
 {
-public:
-    AppHelpController(AppBase& application, const std::string& application_help,
-                      Keyboard::Key help_key = Platform::Keyboard::Key::F1);
+    ITT_FUNCTION_TASK();
+    assert(!!m_p_app);
 
-    // Input::Controller implementation
-    void OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Platform::Keyboard::StateChange&) override;
+    m_p_app->SetFullScreen(true);
+}
 
-    // Input::IHelpProvider implementation
-    HelpLines GetHelp() const override;
+- (void) windowDidExitFullScreen:(NSNotification *)notification
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_p_app);
 
-private:
-    AppBase&            m_application;
-    const Keyboard::Key m_help_key;
-};
+    m_p_app->SetFullScreen(false);
+}
 
-} // namespace Graphics
-} // namespace Methane
+@end

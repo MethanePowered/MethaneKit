@@ -21,11 +21,14 @@ Metal "dummy" implementation of the descriptor heap.
 
 ******************************************************************************/
 
-#include "DescriptorHeapMT.h"
+#include "DescriptorHeapMT.hh"
 
-#include <Methane/Graphics/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 DescriptorHeap::Ptr DescriptorHeap::Create(ContextBase& context, const Settings& settings)
 {
@@ -43,3 +46,6 @@ DescriptorHeapMT::~DescriptorHeapMT()
 {
     ITT_FUNCTION_TASK();
 }
+
+} // namespace Graphics
+} // namespace Methane

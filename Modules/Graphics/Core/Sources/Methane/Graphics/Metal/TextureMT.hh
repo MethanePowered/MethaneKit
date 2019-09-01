@@ -16,49 +16,46 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/ResourceMT.h
-Metal implementation of the resource interface.
+FILE: Methane/Graphics/Metal/TextureMT.hh
+Metal implementation of the texture interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/ResourceBase.h>
+#include <Methane/Graphics/TextureBase.h>
 
-#include <memory>
+#import <Metal/Metal.h>
 
 namespace Methane
 {
 namespace Graphics
 {
 
-class ContextMT;
-struct ResourceContainerMT;
-
-class ResourceMT : public ResourceBase
+class TextureMT : public TextureBase
 {
 public:
-    using Ptr = std::shared_ptr<ResourceMT>;
+    using Ptr = std::shared_ptr<TextureMT>;
 
-    class ReleasePoolMT : public ReleasePool
-    {
-    public:
-        ReleasePoolMT();
-        virtual ~ReleasePoolMT() override = default;
+    TextureMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    ~TextureMT() override;
 
-        // ReleasePool interface
-        virtual void AddResource(ResourceBase& resource) override;
-        virtual void ReleaseResources() override;
+    // Resource interface
+    void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override;
+    Data::Size GetDataSize() const override;
 
-    private:
-        std::unique_ptr<ResourceContainerMT> m_sp_mtl_resources;
-    };
+    // Object interface
+    void SetName(const std::string& name) override;
 
-    ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
-    virtual ~ResourceMT() override = default;
+    void UpdateFrameBuffer();
+
+    const id<MTLTexture>& GetNativeTexture() const { return m_mtl_texture; }
 
 protected:
-    ContextMT& GetContextMT() noexcept;
+    MTLTextureUsage       GetNativeTextureUsage();
+    MTLTextureDescriptor* GetNativeTextureDescriptor();
+
+    id<MTLTexture> m_mtl_texture;
 };
 
 } // namespace Graphics

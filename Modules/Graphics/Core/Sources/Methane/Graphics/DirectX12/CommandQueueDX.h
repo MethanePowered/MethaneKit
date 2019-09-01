@@ -28,6 +28,8 @@ DirectX 12 implementation of the command queue interface.
 #include <wrl.h>
 #include <d3d12.h>
 
+#include <vector>
+
 namespace Methane
 {
 namespace Graphics
@@ -42,19 +44,21 @@ class CommandQueueDX final : public CommandQueueBase
 {
 public:
     CommandQueueDX(ContextBase& context);
-    virtual ~CommandQueueDX() override = default;
 
     // CommandQueue interface
-    virtual void Execute(const CommandList::Refs& command_lists) override;
+    void Execute(const CommandList::Refs& command_lists) override;
 
     // Object interface
-    virtual void SetName(const std::string& name) override;
+    void SetName(const std::string& name) override;
 
     ContextDX& GetContextDX();
 
     wrl::ComPtr<ID3D12CommandQueue>& GetNativeCommandQueue()     { return m_cp_command_queue; }
 
 protected:
+    using D3D12CommandLists = std::vector<ID3D12CommandList*>;
+    static D3D12CommandLists GetNativeCommandLists(const CommandList::Refs& command_list_refs);
+
     wrl::ComPtr<ID3D12CommandQueue> m_cp_command_queue;
 };
 

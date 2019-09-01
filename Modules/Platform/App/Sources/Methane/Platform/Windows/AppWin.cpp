@@ -23,14 +23,17 @@ Windows application implementation.
 
 #include <Methane/Platform/Windows/AppWin.h>
 #include <Methane/Platform/Utils.h>
+#include <Methane/Instrumentation.h>
 
 #include <windowsx.h>
 #include <nowide/convert.hpp>
 
 #include <cassert>
 
-using namespace Methane;
-using namespace Methane::Platform;
+namespace Methane
+{
+namespace Platform
+{
 
 constexpr auto WM_ALERT = WM_USER + 1;
 
@@ -39,6 +42,7 @@ static const wchar_t* g_window_icon  = L"IDI_APP_ICON";
 
 UINT ConvertMessageTypeToFlags(AppBase::Message::Type msg_type)
 {
+    ITT_FUNCTION_TASK();
     switch (msg_type)
     {
     case AppBase::Message::Type::Information:   return MB_ICONINFORMATION | MB_OK;
@@ -51,22 +55,19 @@ UINT ConvertMessageTypeToFlags(AppBase::Message::Type msg_type)
 AppWin::AppWin(const AppBase::Settings& settings)
     : AppBase(settings)
 {
-    m_cmd_options.add_options()
-        ("warp", "Render via DirectX WARP device");
+    ITT_FUNCTION_TASK();
 }
 
 void AppWin::ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result)
 {
+    ITT_FUNCTION_TASK();
     AppBase::ParseCommandLine(cmd_parse_result);
-
-    if (cmd_parse_result.count("warp"))
-    {
-        m_env.use_warp_device = cmd_parse_result["warp"].as<bool>();
-    }
 }
 
 int AppWin::Run(const RunArgs& args)
 {
+    // Skip instrumentation ITT_FUNCTION_TASK() since this is the only root function running till application close
+
     const int base_return_code = AppBase::Run(args);
     if (base_return_code)
         return base_return_code;
@@ -182,6 +183,7 @@ int AppWin::Run(const RunArgs& args)
 
 void AppWin::Alert(const Message& msg, bool deferred)
 {
+    ITT_FUNCTION_TASK();
     AppBase::Alert(msg, deferred);
 
     if (deferred)
@@ -196,6 +198,8 @@ void AppWin::Alert(const Message& msg, bool deferred)
 
 LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPARAM l_param)
 {
+    ITT_FUNCTION_TASK();
+
     AppWin* p_app = reinterpret_cast<AppWin*>(GetWindowLongPtr(h_wnd, GWLP_USERDATA));
 
 #ifndef _DEBUG
@@ -388,6 +392,8 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
 
 void AppWin::ShowAlert(const Message& msg)
 {
+    ITT_FUNCTION_TASK();
+
     UINT msgbox_type = 0;
     MessageBox(
         m_env.window_handle,
@@ -396,22 +402,17 @@ void AppWin::ShowAlert(const Message& msg)
         ConvertMessageTypeToFlags(msg.type)
     );
 
+    AppBase::ShowAlert(msg);
+
     if (msg.type == Message::Type::Error)
     {
-        if (m_env.window_handle)
-        {
-            BOOL post_result = PostMessage(m_env.window_handle, WM_CLOSE, 0, 0);
-            assert(post_result != 0);
-        }
-        else
-        {
-            ExitProcess(0);
-        }
+        Close();
     }
 }
 
 void AppWin::ScheduleAlert()
 {
+    ITT_FUNCTION_TASK();
     if (!m_env.window_handle)
         return;
 
@@ -421,6 +422,75 @@ void AppWin::ScheduleAlert()
 
 void AppWin::SetWindowTitle(const std::string& title_text)
 {
+    ITT_FUNCTION_TASK();
+    assert(!!m_env.window_handle);
+
     BOOL set_result = SetWindowTextW(m_env.window_handle, nowide::widen(title_text).c_str());
     assert(set_result);
 }
+
+bool AppWin::SetFullScreen(bool is_full_screen)
+{
+    ITT_FUNCTION_TASK();
+    if (!AppBase::SetFullScreen(is_full_screen))
+        return false;
+
+    assert(!!m_env.window_handle);
+    
+    RECT    window_rect     = {};
+    int32_t window_style    = WS_OVERLAPPEDWINDOW;
+    int32_t window_mode     = 0;
+    HWND    window_position = nullptr;
+
+    if (m_settings.is_full_screen)
+    {
+        GetWindowRect(m_env.window_handle, &m_window_rect);
+
+        window_style   &= ~(WS_CAPTION | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_THICKFRAME);
+        window_position = HWND_TOPMOST;
+        window_mode     = SW_MAXIMIZE;
+
+        // Get resolution and location of the monitor where current window is located
+        HMONITOR    monitor_handle = MonitorFromWindow(m_env.window_handle, MONITOR_DEFAULTTONEAREST);
+        MONITORINFO monitor_info   = {};
+        monitor_info.cbSize        = sizeof(MONITORINFO);
+        GetMonitorInfo(monitor_handle, &monitor_info);
+        window_rect = monitor_info.rcMonitor;
+    }
+    else
+    {
+        window_rect     = m_window_rect;
+        window_position = HWND_NOTOPMOST;
+        window_mode     = SW_NORMAL;
+    }
+
+    m_settings.width  = window_rect.right  - window_rect.left;
+    m_settings.height = window_rect.bottom - window_rect.top;
+
+    SetWindowLong(m_env.window_handle, GWL_STYLE, window_style);
+    SetWindowPos(m_env.window_handle, window_position,
+                 window_rect.left,    window_rect.top,
+                 window_rect.right  - window_rect.left,
+                 window_rect.bottom - window_rect.top,
+                 SWP_FRAMECHANGED | SWP_NOACTIVATE);
+
+    ShowWindow(m_env.window_handle, window_mode);
+    return true;
+}
+
+void AppWin::Close()
+{
+    ITT_FUNCTION_TASK();
+    if (m_env.window_handle)
+    {
+        BOOL post_result = PostMessage(m_env.window_handle, WM_CLOSE, 0, 0);
+        assert(post_result != 0);
+    }
+    else
+    {
+        ExitProcess(0);
+    }
+}
+
+} // namespace Platform
+} // namespace Methane

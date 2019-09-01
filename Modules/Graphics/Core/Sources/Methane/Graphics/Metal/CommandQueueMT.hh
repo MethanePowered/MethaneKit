@@ -16,14 +16,14 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/TextureMT.h
-Metal implementation of the texture interface.
+FILE: Methane/Graphics/Metal/CommandQueueMT.hh
+Metal implementation of the command queue interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/TextureBase.h>
+#include <Methane/Graphics/CommandQueueBase.h>
 
 #import <Metal/Metal.h>
 
@@ -32,30 +32,26 @@ namespace Methane
 namespace Graphics
 {
 
-class TextureMT : public TextureBase
+class RenderPassMT;
+class ContextMT;
+
+class CommandQueueMT final : public CommandQueueBase
 {
 public:
-    using Ptr = std::shared_ptr<TextureMT>;
-
-    TextureMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    virtual ~TextureMT() override;
-
-    // Resource interface
-    virtual void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override;
-    virtual Data::Size GetDataSize() const override;
+    CommandQueueMT(ContextBase& context);
+    ~CommandQueueMT() override;
 
     // Object interface
-    virtual void SetName(const std::string& name) override;
-
-    void UpdateFrameBuffer();
-
-    const id<MTLTexture>& GetNativeTexture() const { return m_mtl_texture; }
+    void SetName(const std::string& name) override;
+    
+    ContextMT& GetContextMT() noexcept;
+    
+    id<MTLCommandQueue>&  GetNativeCommandQueue() noexcept { return m_mtl_command_queue; }
 
 protected:
-    MTLTextureUsage       GetNativeTextureUsage();
-    MTLTextureDescriptor* GetNativeTextureDescriptor();
-
-    id<MTLTexture> m_mtl_texture;
+    void Reset();
+    
+    id<MTLCommandQueue>  m_mtl_command_queue;
 };
 
 } // namespace Graphics

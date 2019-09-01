@@ -29,7 +29,7 @@ Methane platform utilitary functions
 
 #elif defined __APPLE__
 
-#include "MacOS/Utils.h"
+#include "MacOS/Utils.hh"
 
 #endif
 

@@ -23,7 +23,8 @@ Base implementation of the command queue interface.
 
 #include "CommandQueueBase.h"
 #include "ContextBase.h"
-#include "Instrumentation.h"
+
+#include <Methane/Instrumentation.h>
 
 #ifdef COMMAND_EXECUTION_LOGGING
 #include <Methane/Platform/Utils.h>
@@ -31,7 +32,10 @@ Base implementation of the command queue interface.
 
 #include <cassert>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 CommandQueueBase::CommandQueueBase(ContextBase& context, bool execution_state_tracking)
     : m_context(context)
@@ -155,3 +159,6 @@ void CommandQueueBase::OnCommandListCompleted(CommandListBase& /*command_list*/,
         m_context.OnCommandQueueCompleted(*this, frame_index);
     }
 }
+
+} // namespace Graphics
+} // namespace Methane

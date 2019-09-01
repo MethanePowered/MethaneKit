@@ -22,18 +22,70 @@ Platform abstraction of keyboard events.
 ******************************************************************************/
 
 #include <Methane/Platform/Keyboard.h>
+#include <Methane/Instrumentation.h>
 
 #include <map>
 #include <sstream>
 #include <cassert>
 
-using namespace Methane::Platform::Keyboard;
+namespace Methane
+{
+namespace Platform
+{
+namespace Keyboard
+{
 
 static const std::string s_keys_separator = "+";
 static const std::string s_properties_separator = "+";
 
-std::string KeyConverter::ToString() const
+KeyConverter::KeyConverter(Key key)
+    : m_key(key)
+    , m_modifiers(GetModifierKey())
 {
+    ITT_FUNCTION_TASK();
+}
+
+KeyConverter::KeyConverter(Key key, Modifier::Mask modifiers)
+    : m_key(key)
+    , m_modifiers(modifiers)
+{
+    ITT_FUNCTION_TASK();
+}
+
+KeyConverter::KeyConverter(const NativeKey& native_key)
+    : m_key(GetKeyByNativeCode(native_key))
+    , m_modifiers(GetModifiersByNativeCode(native_key))
+{
+    ITT_FUNCTION_TASK();
+}
+
+Modifier::Value KeyConverter::GetModifierKey() const noexcept
+{
+    ITT_FUNCTION_TASK();
+    switch (m_key)
+    {
+    case Key::LeftShift:
+    case Key::RightShift:   return Modifier::Shift;
+
+    case Key::LeftControl:
+    case Key::RightControl: return Modifier::Control;
+
+    case Key::LeftAlt:
+    case Key::RightAlt:     return Modifier::Alt;
+
+    case Key::LeftSuper:
+    case Key::RightSuper:   return Modifier::Super;
+
+    case Key::CapsLock:     return Modifier::CapsLock;
+    case Key::NumLock:      return Modifier::NumLock;
+
+    default:                return Modifier::None;
+    }
+}
+
+std::string KeyConverter::ToString() const noexcept
+{
+    ITT_FUNCTION_TASK();
     static const std::map<Key, std::string> s_name_by_key =
     {
         // Printable keys
@@ -153,13 +205,18 @@ std::string KeyConverter::ToString() const
         
         // Control keys
         { Key::LeftShift,       "LEFT_SHIFT"    },
-        { Key::LeftControl,     "LEFT_CONTROL"  },
-        { Key::LeftAlt,         "LEFT_ALT"      },
-        { Key::LeftSuper,       "LEFT_SUPER"    },
         { Key::RightShift,      "RIGHT_SHIFT"   },
+        { Key::LeftControl,     "LEFT_CONTROL"  },
         { Key::RightControl,    "RIGHT_CONTROL" },
+        { Key::LeftAlt,         "LEFT_ALT"      },
         { Key::RightAlt,        "RIGHT_ALT"     },
+#ifdef __APPLE__
+        { Key::LeftSuper,       "LEFT_COMMAND"  },
+        { Key::RightSuper,      "RIGHT_COMMAND" },
+#else
+        { Key::LeftSuper,       "LEFT_SUPER"    },
         { Key::RightSuper,      "RIGHT_SUPER"   },
+#endif
         { Key::Menu,            "MENU"          }
     };
 
@@ -169,11 +226,16 @@ std::string KeyConverter::ToString() const
         assert(0);
         return "";
     }
-    return key_and_name_it->second;
+    
+    return m_modifiers == Modifier::Value::None
+         ? key_and_name_it->second
+         : Modifier::ToString(m_modifiers) + s_keys_separator + key_and_name_it->second;
 };
 
-State::State(std::initializer_list<Key> pressed_keys)
+State::State(std::initializer_list<Key> pressed_keys, Modifier::Mask modifiers_mask)
+    : m_modifiers_mask(modifiers_mask)
 {
+    ITT_FUNCTION_TASK();
     for (Key pressed_key : pressed_keys)
     {
         SetKey(pressed_key, KeyState::Pressed);
@@ -184,10 +246,12 @@ State::State(const State& other)
     : m_key_states(other.m_key_states)
     , m_modifiers_mask(other.m_modifiers_mask)
 {
+    ITT_FUNCTION_TASK();
 }
 
 State& State::operator=(const State& other)
 {
+    ITT_FUNCTION_TASK();
     if (this != &other)
     {
         m_key_states     = other.m_key_states;
@@ -196,14 +260,26 @@ State& State::operator=(const State& other)
     return *this;
 }
 
+bool State::operator<(const State& other) const
+{
+    ITT_FUNCTION_TASK();
+    if (m_modifiers_mask != other.m_modifiers_mask)
+    {
+        return m_modifiers_mask < other.m_modifiers_mask;
+    }
+    return m_key_states < other.m_key_states;
+}
+
 bool State::operator==(const State& other) const
 {
+    ITT_FUNCTION_TASK();
     return m_key_states     == other.m_key_states &&
            m_modifiers_mask == other.m_modifiers_mask;
 }
 
 State::Property::Mask State::GetDiff(const State& other) const
 {
+    ITT_FUNCTION_TASK();
     State::Property::Mask properties_diff_mask = State::Property::None;
 
     if (m_key_states != other.m_key_states)
@@ -215,45 +291,33 @@ State::Property::Mask State::GetDiff(const State& other) const
     return properties_diff_mask;
 }
 
-void State::SetKey(Key key, KeyState state)
+KeyType State::SetKey(Key key, KeyState state)
 {
-    switch (key)
+    ITT_FUNCTION_TASK();
+    if (key == Key::Unknown)
+        return KeyType::Common;
+
+    const Modifier::Value key_modifier = KeyConverter(key).GetModifierKey();
+    if (key_modifier != Modifier::Value::None)
     {
-    case Key::LeftShift:
-    case Key::RightShift:
-        UpdateModifiersMask(Modifier::Shift,     state == KeyState::Pressed);
-        break;
-    case Key::LeftControl:
-    case Key::RightControl:
-        UpdateModifiersMask(Modifier::Control,   state == KeyState::Pressed);
-        break;
-    case Key::LeftAlt:
-    case Key::RightAlt:
-        UpdateModifiersMask(Modifier::Alt,       state == KeyState::Pressed);
-        break;
-    case Key::LeftSuper:
-    case Key::RightSuper:
-        UpdateModifiersMask(Modifier::Super,     state == KeyState::Pressed);
-        break;
-    case Key::CapsLock:
-        UpdateModifiersMask(Modifier::CapsLock,  state == KeyState::Pressed);
-        break;
-    case Key::NumLock:
-        UpdateModifiersMask(Modifier::NumLock,   state == KeyState::Pressed);
-        break;
-    default:
+        UpdateModifiersMask(key_modifier, state == KeyState::Pressed);
+        return KeyType::Common;
+    }
+    else
+    {
+        const size_t key_index = static_cast<size_t>(key);
+        assert(key_index < m_key_states.size());
+        if (key_index < m_key_states.size())
         {
-            size_t key_index = static_cast<size_t>(key);
-            if (key_index < m_key_states.size())
-            {
-                m_key_states[key_index] = state;
-            }
+            m_key_states[key_index] = state;
         }
+        return KeyType::Modifier;
     }
 }
 
 void State::UpdateModifiersMask(Modifier::Value modifier, bool add_modifier)
 {
+    ITT_FUNCTION_TASK();
     if (add_modifier)
         m_modifiers_mask |= modifier;
     else
@@ -262,6 +326,7 @@ void State::UpdateModifiersMask(Modifier::Value modifier, bool add_modifier)
 
 Keys State::GetPressedKeys() const
 {
+    ITT_FUNCTION_TASK();
     Keys pressed_keys;
     for (size_t key_index = 0; key_index < m_key_states.size(); ++key_index)
     {
@@ -274,24 +339,56 @@ Keys State::GetPressedKeys() const
     return pressed_keys;
 }
 
+KeyType StateExt::SetKey(Key key, KeyState state)
+{
+    ITT_FUNCTION_TASK();
+    const KeyType key_type = State::SetKey(key, state);
+    if (key_type == KeyType::Modifier)
+    {
+        if (state == KeyState::Pressed)
+        {
+            m_pressed_modifier_keys.insert(key);
+        }
+        else
+        {
+            m_pressed_modifier_keys.erase(key);
+        }
+    }
+    return key_type;
+}
+
+Keys StateExt::GetAllPressedKeys() const
+{
+    ITT_FUNCTION_TASK();
+    Keys all_pressed_keys = GetPressedKeys();
+    all_pressed_keys.insert(m_pressed_modifier_keys.begin(), m_pressed_modifier_keys.end());
+    return all_pressed_keys;
+}
+
 std::string Modifier::ToString(Value modifier)
 {
+    ITT_FUNCTION_TASK();
     switch(modifier)
     {
         case None:      return "None";
         case Shift:     return "Shift";
         case Control:   return "Control";
         case Alt:       return "Alt";
-        case Super:     return "Super";
         case CapsLock:  return "CapsLock";
         case NumLock:   return "NumLock";
         case All:       return "All";
+#ifdef __APPLE__
+        case Super:     return "Command";
+#else
+        case Super:     return "Super";
+#endif
     }
     return "Undefined";
 }
 
 std::string Modifier::ToString(Modifier::Mask modifiers_mask)
 {
+    ITT_FUNCTION_TASK();
     std::stringstream ss;
     bool first_modifier = true;
     for(Value modifier : values)
@@ -311,6 +408,7 @@ std::string Modifier::ToString(Modifier::Mask modifiers_mask)
 
 std::string State::Property::ToString(State::Property::Value property_value)
 {
+    ITT_FUNCTION_TASK();
     switch (property_value)
     {
     case All:       return "All";
@@ -323,6 +421,7 @@ std::string State::Property::ToString(State::Property::Value property_value)
 
 std::string State::Property::ToString(State::Property::Mask properties_mask)
 {
+    ITT_FUNCTION_TASK();
     std::stringstream ss;
     bool first_property = true;
     for (Value property_value : values)
@@ -342,6 +441,7 @@ std::string State::Property::ToString(State::Property::Mask properties_mask)
 
 std::string State::ToString() const
 {
+    ITT_FUNCTION_TASK();
     std::stringstream ss;
     const std::string modifiers_str = Modifier::ToString(m_modifiers_mask);
     if (!modifiers_str.empty())
@@ -367,3 +467,7 @@ std::string State::ToString() const
     
     return ss.str();
 }
+
+} // namespace Keyboard
+} // namespace Platform
+} // namespace Methane

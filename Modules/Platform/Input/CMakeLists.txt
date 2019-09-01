@@ -17,7 +17,7 @@ if (WIN32)
 elseif(APPLE)
 
     set(PLATFORM_HEADERS
-        ${INCLUDE_PLATFORM_DIR}/KeyboardMac.h
+        ${INCLUDE_PLATFORM_DIR}/KeyboardMac.hh
     )
 
     set(PLATFORM_SOURCES
@@ -33,11 +33,15 @@ endif()
 set(LIBRARIES ${LIBRARIES}
     MethaneDataTypes
     MethanePlatformUtils
+    MethaneInstrumentation
 )
 
 set(HEADERS ${PLATFORM_HEADERS}
     ${INCLUDE_DIR}/Keyboard.h
     ${INCLUDE_DIR}/Mouse.h
+    ${INCLUDE_DIR}/KeyboardActionControllerBase.hpp
+    ${INCLUDE_DIR}/MouseActionControllerBase.hpp
+    ${INCLUDE_DIR}/Input/HelpProvider.h
     ${INCLUDE_DIR}/Input/Controller.h
     ${INCLUDE_DIR}/Input/ControllersPool.h
     ${INCLUDE_DIR}/Input/State.h

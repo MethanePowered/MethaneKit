@@ -39,11 +39,10 @@ class RenderPassBase
 {
 public:
     RenderPassBase(ContextBase& context, const Settings& settings);
-    virtual ~RenderPassBase() override = default;
 
     // RenderPass interface
-    virtual void Update(const Settings& settings) override;
-    virtual const Settings& GetSettings() const override    { return m_settings; }
+    void Update(const Settings& settings) override;
+    const Settings& GetSettings() const override    { return m_settings; }
 
     // RenderPassBase interface
     virtual void Apply(RenderCommandListBase& command_list);

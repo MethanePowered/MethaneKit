@@ -16,12 +16,28 @@ steps:
       workingDirectory: $(buildDir)
       cmakeArgs: '--build . --config $(configuration) --target install'
 
+  - script: |
+      for /r "." %%a in (*Test.exe) do "%%~fa" -r junit -o "%%~fa_result.xml"
+    workingDirectory: '$(installDir)\Tests'
+    displayName: 'Run all unit-tests from install directory'
+
   - task: CopyFiles@2
     displayName: 'Copy install artifacts for $(platform) $(configuration)'
     inputs:
       SourceFolder: $(installDir)
       Contents: '**\*'
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles:  '**\*_result.xml'
+      searchFolder: '$(Build.ArtifactStagingDirectory)\Tests'
+      mergeTestResults: true
+      failTaskOnFailedTests: true
+      buildPlatform: $(platform)
+      buildConfiguration: $(configuration)
+      testRunTitle: 'Methane Tests $(platform) $(configuration)'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish install artifacts for $(platform) $(configuration)'

@@ -38,14 +38,13 @@ class BufferBase
 {
 public:
     BufferBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    virtual ~BufferBase() override = default;
 
     // Resource interface
-    virtual Data::Size GetDataSize() const override                { return m_settings.size; }
-    virtual void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override;
+    Data::Size GetDataSize() const override                { return m_settings.size; }
+    void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override;
 
     // Buffer interface
-    virtual Buffer::Type GetBufferType() const noexcept override { return m_settings.type; }
+    Buffer::Type GetBufferType() const noexcept override { return m_settings.type; }
 
     std::string GetBufferTypeName() const noexcept               { return Buffer::GetBufferTypeName(m_settings.type); }
 

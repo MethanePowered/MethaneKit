@@ -6,10 +6,12 @@ set(HEADERS
     ${INCLUDE_DIR}/App.hpp
     ${INCLUDE_DIR}/AppDataProvider.hpp
     ${INCLUDE_DIR}/AppCameraController.h
+    ${INCLUDE_DIR}/AppContextController.h
 )
 
 set(SOURCES
     ${SOURCES_DIR}/AppCameraController.cpp
+    ${SOURCES_DIR}/AppContextController.cpp
 )
 
 add_library(${TARGET} STATIC
@@ -30,6 +32,7 @@ target_link_libraries(${TARGET}
     MethanePlatformUtils
     MethaneGraphicsCore
     MethaneGraphicsHelpers
+    MethaneInstrumentation
 )
 
 set_target_properties(${TARGET}
@@ -41,7 +44,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER Modules/Data
+    FOLDER Modules/Graphics
     PUBLIC_HEADER "${HEADERS}"
 )
 

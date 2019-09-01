@@ -21,14 +21,17 @@ Metal implementation of the command queue interface.
 
 ******************************************************************************/
 
-#include "CommandQueueMT.h"
-#include "ContextMT.h"
+#include "CommandQueueMT.hh"
+#include "DeviceMT.hh"
+#include "ContextMT.hh"
 
-#include <Methane/Graphics/Instrumentation.h>
-#include <Methane/Platform/MacOS/Types.h>
+#include <Methane/Instrumentation.h>
+#include <Methane/Platform/MacOS/Types.hh>
 
-using namespace Methane::Graphics;
-using namespace Methane;
+namespace Methane
+{
+namespace Graphics
+{
 
 CommandQueue::Ptr CommandQueue::Create(Context& context)
 {
@@ -38,7 +41,7 @@ CommandQueue::Ptr CommandQueue::Create(Context& context)
 
 CommandQueueMT::CommandQueueMT(ContextBase& context)
     : CommandQueueBase(context, true)
-    , m_mtl_command_queue([GetContextMT().GetNativeDevice() newCommandQueue])
+    , m_mtl_command_queue([GetContextMT().GetDeviceMT().GetNativeDevice() newCommandQueue])
 {
     ITT_FUNCTION_TASK();
 }
@@ -66,3 +69,6 @@ ContextMT& CommandQueueMT::GetContextMT() noexcept
     ITT_FUNCTION_TASK();
     return static_cast<class ContextMT&>(m_context);
 }
+
+} // namespace Graphics
+} // namespace Methane

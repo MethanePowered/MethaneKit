@@ -54,14 +54,13 @@ public:
 
         ResourceBindingBase(ContextBase& context, const Settings& settings);
         ResourceBindingBase(const ResourceBindingBase& other) = default;
-        virtual ~ResourceBindingBase() override = default;
 
         // ResourceBinding interface
-        virtual Shader::Type         GetShaderType() const override     { return m_settings.shader_type; }
-        virtual const std::string&   GetArgumentName() const override   { return m_settings.argument_name; }
-        virtual bool                 IsConstant() const override        { return m_settings.is_constant; }
-        virtual const Resource::Ptr& GetResource() const override       { return m_sp_resource; }
-        virtual void                 SetResource(const Resource::Ptr& sp_resource) override;
+        Shader::Type         GetShaderType() const override     { return m_settings.shader_type; }
+        const std::string&   GetArgumentName() const override   { return m_settings.argument_name; }
+        bool                 IsConstant() const override        { return m_settings.is_constant; }
+        const Resource::Ptr& GetResource() const override       { return m_sp_resource; }
+        void                 SetResource(const Resource::Ptr& sp_resource) override;
 
         // ResourceBindingBase interface
         virtual DescriptorHeap::Type GetDescriptorHeapType() const = 0;
@@ -76,11 +75,10 @@ public:
     };
 
     ShaderBase(Type type, ContextBase& context, const Settings& settings);
-    virtual ~ShaderBase() override = default;
 
     // Shader interface
-    virtual Type             GetType() const noexcept override       { return m_type; }
-    virtual const Settings&  GetSettings() const noexcept override   { return m_settings; }
+    Type             GetType() const noexcept override       { return m_type; }
+    const Settings&  GetSettings() const noexcept override   { return m_settings; }
 
     // ShaderBase interface
     virtual ResourceBindings GetResourceBindings(const std::set<std::string>& constant_argument_names) const = 0;

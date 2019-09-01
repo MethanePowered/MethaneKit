@@ -21,16 +21,20 @@ Metal implementation of the shader interface.
 
 ******************************************************************************/
 
-#include "ShaderMT.h"
-#include "ProgramMT.h"
-#include "ResourceMT.h"
-#include "ContextMT.h"
-#include "TypesMT.h"
+#include "ShaderMT.hh"
+#include "ProgramMT.hh"
+#include "ResourceMT.hh"
+#include "ContextMT.hh"
+#include "DeviceMT.hh"
+#include "TypesMT.hh"
 
-#include <Methane/Graphics/Instrumentation.h>
-#include <Methane/Platform/MacOS/Types.h>
+#include <Methane/Instrumentation.h>
+#include <Methane/Platform/MacOS/Types.hh>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 using StepType = ProgramBase::InputBufferLayout::StepType;
 MTLVertexStepFunction GetVertexStepFunction(StepType step_type) noexcept
@@ -123,7 +127,7 @@ Shader::Ptr Shader::Create(Shader::Type shader_type, Context& context, const Set
 }
 
 ShaderMT::LibraryMT::LibraryMT(ContextMT& metal_context)
-    : m_mtl_library([metal_context.GetNativeDevice() newDefaultLibrary])
+    : m_mtl_library([metal_context.GetDeviceMT().GetNativeDevice() newDefaultLibrary])
 {
     ITT_FUNCTION_TASK();
 }
@@ -267,3 +271,6 @@ ShaderMT::LibraryMT& ShaderMT::GetLibraryMT() noexcept
     static LibraryMT metal_library(GetContextMT());
     return metal_library;
 }
+
+} // namespace Graphics
+} // namespace Methane

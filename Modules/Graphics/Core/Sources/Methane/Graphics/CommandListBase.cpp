@@ -24,7 +24,8 @@ Base implementation of the command list interface.
 #include "CommandListBase.h"
 #include "ContextBase.h"
 #include "ResourceBase.h"
-#include "Instrumentation.h"
+
+#include <Methane/Instrumentation.h>
 
 #ifdef COMMAND_EXECUTION_LOGGING
 #include <Methane/Platform/Utils.h>
@@ -32,7 +33,10 @@ Base implementation of the command list interface.
 
 #include <cassert>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 std::string CommandListBase::GetStateName(State state)
 {
@@ -199,3 +203,6 @@ const CommandQueueBase& CommandListBase::GetCommandQueueBase() const
     assert(!!m_sp_command_queue);
     return static_cast<const CommandQueueBase&>(*m_sp_command_queue);
 }
+
+} // namespace Graphics
+} // namespace Methane

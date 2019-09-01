@@ -21,29 +21,32 @@ Metal implementation of the context interface.
 
 ******************************************************************************/
 
-#include "ContextMT.h"
-#include "RenderStateMT.h"
-#include "RenderPassMT.h"
-#include "CommandQueueMT.h"
-#include "TypesMT.h"
+#include "ContextMT.hh"
+#include "DeviceMT.hh"
+#include "RenderStateMT.hh"
+#include "RenderPassMT.hh"
+#include "CommandQueueMT.hh"
+#include "TypesMT.hh"
 
-#include <Methane/Graphics/Instrumentation.h>
-#include <Methane/Platform/MacOS/Types.h>
+#include <Methane/Instrumentation.h>
+#include <Methane/Platform/MacOS/Types.hh>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
-Context::Ptr Context::Create(const Platform::AppEnvironment& env, const Data::Provider& data_provider, const Context::Settings& settings)
+Context::Ptr Context::Create(const Platform::AppEnvironment& env, const Data::Provider& data_provider, Device& device, const Context::Settings& settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ContextMT>(env, data_provider, settings);
+    return std::make_shared<ContextMT>(env, data_provider, static_cast<DeviceBase&>(device), settings);
 }
 
-ContextMT::ContextMT(const Platform::AppEnvironment& env, const Data::Provider& data_provider, const Context::Settings& settings)
-    : ContextBase(data_provider, settings)
-    , m_mtl_device(MTLCreateSystemDefaultDevice())
+ContextMT::ContextMT(const Platform::AppEnvironment& env, const Data::Provider& data_provider, DeviceBase& device, const Context::Settings& settings)
+    : ContextBase(data_provider, device, settings)
     , m_app_view([[AppViewMT alloc] initWithFrame: TypeConverterMT::CreateNSRect(m_settings.frame_size)
                                         appWindow: env.ns_app_delegate.window
-                                           device: m_mtl_device
+                                           device: GetDeviceMT().GetNativeDevice()
                                       pixelFormat: TypeConverterMT::DataFormatToMetalPixelType(m_settings.color_format)
                                     drawableCount: m_settings.frame_buffers_count
                                      vsyncEnabled: Methane::MacOS::ConvertToNSType<bool, BOOL>(m_settings.vsync_enabled)
@@ -69,7 +72,30 @@ ContextMT::~ContextMT()
     dispatch_release(m_dispatch_semaphore);
 
     [m_app_view release];
-    [m_mtl_device release];
+}
+
+void ContextMT::Release()
+{
+    ITT_FUNCTION_TASK();
+    
+    m_app_view.redrawing = NO;
+    
+    // FIXME: semaphore release causes a crash
+    // https://stackoverflow.com/questions/8287621/why-does-this-code-cause-exc-bad-instruction
+    //dispatch_release(m_dispatch_semaphore);
+    
+    ContextBase::Release();
+}
+
+void ContextMT::Initialize(Device& device, bool deferred_heap_allocation)
+{
+    ITT_FUNCTION_TASK();
+    
+    m_dispatch_semaphore = dispatch_semaphore_create(m_settings.frame_buffers_count);
+    
+    ContextBase::Initialize(device, deferred_heap_allocation);
+    
+    m_app_view.redrawing = YES;
 }
 
 bool ContextMT::ReadyToRender() const
@@ -111,3 +137,22 @@ void ContextMT::Present()
     ITT_FUNCTION_TASK();
     OnPresentComplete();
 }
+
+bool ContextMT::SetVSyncEnabled(bool vsync_enabled)
+{
+    ITT_FUNCTION_TASK();
+    if (ContextBase::SetVSyncEnabled(vsync_enabled))
+    {
+        m_app_view.vsyncEnabled = vsync_enabled ? YES : NO;
+        return true;
+    }
+    return false;
+}
+
+DeviceMT& ContextMT::GetDeviceMT()
+{
+    return static_cast<DeviceMT&>(GetDevice());
+}
+
+} // namespace Graphics
+} // namespace Methane

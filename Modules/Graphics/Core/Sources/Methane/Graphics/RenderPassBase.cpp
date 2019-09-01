@@ -24,11 +24,15 @@ Base implementation of the render pass interface.
 #include "RenderPassBase.h"
 #include "TextureBase.h"
 #include "RenderCommandListBase.h"
-#include "Instrumentation.h"
+
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 bool RenderPass::Attachment::operator==(const RenderPass::Attachment& other) const
 {
@@ -135,3 +139,6 @@ Resource::Refs RenderPassBase::GetColorAttachmentResources() const
     }
     return color_attach_resources;
 }
+
+} // namespace Graphics
+} // namespace Methane

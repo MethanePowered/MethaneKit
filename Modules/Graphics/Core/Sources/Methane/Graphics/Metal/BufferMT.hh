@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/BufferMT.h
+FILE: Methane/Graphics/Metal/BufferMT.hh
 Metal implementation of the buffer interface.
 
 ******************************************************************************/
@@ -39,16 +39,16 @@ public:
 
     BufferMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
     BufferMT(ContextBase& context, const Settings& settings, Data::Size stride, PixelFormat format, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    virtual ~BufferMT() override;
+    ~BufferMT() override;
 
     // Resource interface
-    virtual void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override;
+    void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override;
     
     // Buffer interface
-    virtual uint32_t GetFormattedItemsCount() const override;
+    uint32_t GetFormattedItemsCount() const override;
 
     // Object interface
-    virtual void SetName(const std::string& name) override;
+    void SetName(const std::string& name) override;
     
     const id<MTLBuffer>& GetNativeBuffer() const noexcept { return m_mtl_buffer; }
     MTLIndexType         GetNativeIndexType() const noexcept;

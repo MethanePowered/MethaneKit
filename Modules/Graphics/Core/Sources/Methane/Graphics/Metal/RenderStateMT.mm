@@ -21,21 +21,25 @@ Metal implementation of the render state interface.
 
 ******************************************************************************/
 
-#include "RenderStateMT.h"
-#include "ContextMT.h"
-#include "RenderCommandListMT.h"
-#include "ProgramMT.h"
-#include "ShaderMT.h"
-#include "TypesMT.h"
+#include "RenderStateMT.hh"
+#include "ContextMT.hh"
+#include "DeviceMT.hh"
+#include "RenderCommandListMT.hh"
+#include "ProgramMT.hh"
+#include "ShaderMT.hh"
+#include "TypesMT.hh"
 
-#include <Methane/Graphics/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
-#import <Methane/Platform/MacOS/AppViewMT.h>
-#import <Methane/Platform/MacOS/Types.h>
+#import <Methane/Platform/MacOS/AppViewMT.hh>
+#import <Methane/Platform/MacOS/Types.hh>
 
 #include <cassert>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 MTLCullMode ConvertRasterizerCullModeToMetal(RenderState::Rasterizer::CullMode cull_mode) noexcept
 {
@@ -275,7 +279,7 @@ id<MTLRenderPipelineState>& RenderStateMT::GetNativePipelineState()
     if (!m_mtl_pipeline_state)
     {
         NSError* ns_error = nil;
-        m_mtl_pipeline_state = [GetContextMT().GetNativeDevice() newRenderPipelineStateWithDescriptor:m_mtl_pipeline_state_desc error:&ns_error];
+        m_mtl_pipeline_state = [GetContextMT().GetDeviceMT().GetNativeDevice() newRenderPipelineStateWithDescriptor:m_mtl_pipeline_state_desc error:&ns_error];
         if (!m_mtl_pipeline_state)
         {
             const std::string error_msg = MacOS::ConvertFromNSType<NSString, std::string>([ns_error localizedDescription]);
@@ -291,7 +295,7 @@ id<MTLDepthStencilState>& RenderStateMT::GetNativeDepthState()
 
     if (!m_mtl_depth_state)
     {
-        m_mtl_depth_state = [GetContextMT().GetNativeDevice() newDepthStencilStateWithDescriptor:m_mtl_depth_stencil_state_desc];
+        m_mtl_depth_state = [GetContextMT().GetDeviceMT().GetNativeDevice() newDepthStencilStateWithDescriptor:m_mtl_depth_stencil_state_desc];
         if (!m_mtl_depth_state)
         {
             throw std::runtime_error("Failed to create Metal depth state.");
@@ -316,3 +320,6 @@ ContextMT& RenderStateMT::GetContextMT() noexcept
     ITT_FUNCTION_TASK();
     return static_cast<class ContextMT&>(m_context);
 }
+
+} // namespace Graphics
+} // namespace Methane

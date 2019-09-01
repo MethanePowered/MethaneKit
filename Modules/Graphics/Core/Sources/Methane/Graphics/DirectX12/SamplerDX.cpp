@@ -23,13 +23,17 @@ DirectX 12 implementation of the sampler interface.
 
 #include "SamplerDX.h"
 #include "ContextDX.h"
+#include "DeviceDX.h"
 #include "TypesDX.h"
 
-#include <Methane/Graphics/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 D3D12_FILTER ConvertFilterToDX(const SamplerBase::Filter& filter) noexcept
 {
@@ -194,5 +198,8 @@ SamplerDX::SamplerDX(ContextBase& context, const Settings& settings, const Descr
     dx_sampler_desc.ComparisonFunc     = TypeConverterDX::CompareFunctionToDX(m_settings.compare_function);
     ConvertBorderColorToDXColor(m_settings.border_color, &dx_sampler_desc.BorderColor[0]);
 
-    GetContextDX().GetNativeDevice()->CreateSampler(&dx_sampler_desc, GetNativeCPUDescriptorHandle(Usage::ShaderRead));
+    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateSampler(&dx_sampler_desc, GetNativeCPUDescriptorHandle(Usage::ShaderRead));
 }
+
+} // namespace Graphics
+} // namespace Methane

@@ -22,9 +22,13 @@ Base implementation of the sampler interface.
 ******************************************************************************/
 
 #include "SamplerBase.h"
-#include "Instrumentation.h"
 
-using namespace Methane::Graphics;
+#include <Methane/Instrumentation.h>
+
+namespace Methane
+{
+namespace Graphics
+{
 
 SamplerBase::SamplerBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : ResourceNT(Type::Sampler, Usage::ShaderRead, context, descriptor_by_usage)
@@ -33,3 +37,6 @@ SamplerBase::SamplerBase(ContextBase& context, const Settings& settings, const D
 {
     ITT_FUNCTION_TASK();
 }
+
+} // namespace Graphics
+} // namespace Methane

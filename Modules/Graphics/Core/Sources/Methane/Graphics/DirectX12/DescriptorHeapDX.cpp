@@ -23,13 +23,17 @@ DirectX 12 implementation of the descriptor heap wrapper.
 
 #include "DescriptorHeapDX.h"
 #include "ContextDX.h"
+#include "DeviceDX.h"
 
-#include <Methane/Graphics/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #include <cassert>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeap::Type type) noexcept
 {
@@ -54,19 +58,25 @@ DescriptorHeap::Ptr DescriptorHeap::Create(ContextBase& context, const Settings&
 DescriptorHeapDX::DescriptorHeapDX(ContextBase& context, const Settings& settings)
     : DescriptorHeap(context, settings)
     , m_descriptor_heap_type(GetNativeHeapType(m_settings.type))
-    , m_descriptor_size(GetContextDX().GetNativeDevice()->GetDescriptorHandleIncrementSize(m_descriptor_heap_type))
+    , m_descriptor_size(GetContextDX().GetDeviceDX().GetNativeDevice()->GetDescriptorHandleIncrementSize(m_descriptor_heap_type))
 {
     ITT_FUNCTION_TASK();
-    if (!m_settings.deferred_allocation)
+    if (m_deferred_size > 0)
     {
         DescriptorHeapDX::Allocate();
     }
+}
+
+DescriptorHeapDX::~DescriptorHeapDX()
+{
+    ITT_FUNCTION_TASK();
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeCPUDescriptorHandle(uint32_t descriptor_index) const noexcept
 {
     ITT_FUNCTION_TASK();
     assert(!!m_cp_descriptor_heap);
+    assert(descriptor_index < m_allocated_size);
     return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_cp_descriptor_heap->GetCPUDescriptorHandleForHeapStart(), descriptor_index, m_descriptor_size);
 }
 
@@ -91,12 +101,12 @@ void DescriptorHeapDX::Allocate()
     heap_desc.Flags          = m_settings.shader_visible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
     // Allocate new descriptor heap of deferred size
-    ThrowIfFailed(GetContextDX().GetNativeDevice()->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&m_cp_descriptor_heap)));
+    ThrowIfFailed(GetContextDX().GetDeviceDX().GetNativeDevice()->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&m_cp_descriptor_heap)));
 
     if (cp_old_descriptor_heap && m_allocated_size > 0)
     {
         // Copy descriptors from old heap to the new one
-        GetContextDX().GetNativeDevice()->CopyDescriptorsSimple(m_allocated_size,
+        GetContextDX().GetDeviceDX().GetNativeDevice()->CopyDescriptorsSimple(m_allocated_size,
                                                                 m_cp_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),
                                                                 cp_old_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),
                                                                 m_descriptor_heap_type);
@@ -110,3 +120,6 @@ ContextDX& DescriptorHeapDX::GetContextDX()
     ITT_FUNCTION_TASK();
     return static_cast<class ContextDX&>(m_context);
 }
+
+} // namespace Graphics
+} // namespace Methane

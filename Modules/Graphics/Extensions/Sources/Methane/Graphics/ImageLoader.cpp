@@ -24,6 +24,7 @@ by decoding them from popular image formats.
 
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Platform/Utils.h>
+#include <Methane/Instrumentation.h>
 
 #ifdef USE_OPEN_IMAGE_IO
 
@@ -38,16 +39,20 @@ by decoding them from popular image formats.
 
 #endif
 
-using namespace Methane;
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 ImageLoader::ImageLoader(Data::Provider& data_provider)
     : m_data_provider(data_provider)
 {
+    ITT_FUNCTION_TASK();
 }
 
 Texture::Ptr ImageLoader::CreateImageTexture(Context& context, const std::string& image_path)
 {
+    ITT_FUNCTION_TASK();
     const size_t texture_channels_count = 4;
 
 #ifdef USE_OPEN_IMAGE_IO
@@ -110,5 +115,7 @@ Texture::Ptr ImageLoader::CreateImageTexture(Context& context, const std::string
     return sp_texture;
 
 #endif
-
 }
+
+} // namespace Graphics
+} // namespace Methane

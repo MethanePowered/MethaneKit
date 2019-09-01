@@ -42,8 +42,11 @@ class DescriptorHeap
 public:
     enum class Type : uint32_t
     {
+        // Shader visible heap types
         ShaderResources = 0,
         Samplers,
+
+        // Other heap types
         RenderTargets,
         DepthStencil,
 
@@ -80,7 +83,7 @@ public:
 
     using  Ptr = std::shared_ptr<DescriptorHeap>;
     static Ptr Create(ContextBase& context, const Settings& settings);
-    virtual~DescriptorHeap();
+    virtual ~DescriptorHeap();
 
     // DescriptorHeap interface
     virtual int32_t AddResource(const ResourceBase& resource);

@@ -29,7 +29,7 @@ Methane platform application alias.
 
 #elif defined __APPLE__
 
-#include <Methane/Platform/MacOS/AppMac.h>
+#include <Methane/Platform/MacOS/AppMac.hh>
 
 #endif
 

@@ -23,6 +23,7 @@ DirectX 12 implementation of the render state interface.
 
 #include "RenderStateDX.h"
 #include "ContextDX.h"
+#include "DeviceDX.h"
 #include "ProgramDX.h"
 #include "ShaderDX.h"
 #include "TypesDX.h"
@@ -34,11 +35,14 @@ DirectX 12 implementation of the render state interface.
 #include <nowide/convert.hpp>
 #include <cassert>
 
-#include <Methane/Graphics/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 #include <Methane/Platform/Windows/Utils.h>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 constexpr size_t g_max_rtv_count = sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC::RTVFormats) / sizeof(DXGI_FORMAT);
 
@@ -244,7 +248,7 @@ wrl::ComPtr<ID3D12PipelineState>& RenderStateDX::GetNativePipelineState()
     ITT_FUNCTION_TASK();
     if (!m_cp_pipeline_state)
     {
-        ThrowIfFailed(GetContextDX().GetNativeDevice()->CreateGraphicsPipelineState(&m_pipeline_state_desc, IID_PPV_ARGS(&m_cp_pipeline_state)));
+        ThrowIfFailed(GetContextDX().GetDeviceDX().GetNativeDevice()->CreateGraphicsPipelineState(&m_pipeline_state_desc, IID_PPV_ARGS(&m_cp_pipeline_state)));
         SetName(GetName());
     }
     return m_cp_pipeline_state;
@@ -262,3 +266,6 @@ ContextDX& RenderStateDX::GetContextDX()
     ITT_FUNCTION_TASK();
     return static_cast<class ContextDX&>(m_context);
 }
+
+} // namespace Graphics
+} // namespace Methane

@@ -22,6 +22,7 @@ DirectX 12 implementation of the program interface.
 ******************************************************************************/
 
 #include "ContextDX.h"
+#include "DeviceDX.h"
 #include "ProgramDX.h"
 #include "ShaderDX.h"
 #include "ResourceDX.h"
@@ -29,7 +30,7 @@ DirectX 12 implementation of the program interface.
 #include "TypesDX.h"
 #include "DescriptorHeapDX.h"
 
-#include <Methane/Graphics/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 #include <Methane/Platform/Windows/Utils.h>
 
@@ -42,7 +43,10 @@ DirectX 12 implementation of the program interface.
 #include <cassert>
 #include <iomanip>
 
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_SHADER_INPUT_TYPE input_type) noexcept
 {
@@ -227,7 +231,7 @@ void ProgramDX::ResourceBindingsDX::CopyDescriptorsToGpu()
     ITT_FUNCTION_TASK();
 
     assert(!!m_sp_program);
-    const wrl::ComPtr<ID3D12Device>& cp_device = static_cast<const ProgramDX&>(*m_sp_program).GetContextDX().GetNativeDevice();
+    const wrl::ComPtr<ID3D12Device>& cp_device = static_cast<const ProgramDX&>(*m_sp_program).GetContextDX().GetDeviceDX().GetNativeDevice();
     ForEachResourceBinding([this, &cp_device](const ResourceDX& dx_resource, const DescriptorHeap::Reservation& heap_reservation, ShaderDX::ResourceBindingDX& resource_binding)
     {
         const DescriptorHeapDX& dx_descriptor_heap = static_cast<const DescriptorHeapDX&>(heap_reservation.heap.get());
@@ -325,7 +329,7 @@ void ProgramDX::InitRootSignature()
 
     D3D12_FEATURE_DATA_ROOT_SIGNATURE feature_data = {};
     feature_data.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
-    if (FAILED(GetContextDX().GetNativeDevice()->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &feature_data, sizeof(feature_data))))
+    if (FAILED(GetContextDX().GetDeviceDX().GetNativeDevice()->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &feature_data, sizeof(feature_data))))
     {
         feature_data.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
     }
@@ -333,7 +337,7 @@ void ProgramDX::InitRootSignature()
     wrl::ComPtr<ID3DBlob> root_signature_blob;
     wrl::ComPtr<ID3DBlob> error_blob;
     ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&root_signature_desc, feature_data.HighestVersion, &root_signature_blob, &error_blob), error_blob);
-    ThrowIfFailed(GetContextDX().GetNativeDevice()->CreateRootSignature(0, root_signature_blob->GetBufferPointer(), root_signature_blob->GetBufferSize(), IID_PPV_ARGS(&m_dx_root_signature)));
+    ThrowIfFailed(GetContextDX().GetDeviceDX().GetNativeDevice()->CreateRootSignature(0, root_signature_blob->GetBufferPointer(), root_signature_blob->GetBufferSize(), IID_PPV_ARGS(&m_dx_root_signature)));
     m_dx_root_signature->SetName(nowide::widen(m_name + " root signature").c_str());
 }
 
@@ -369,3 +373,6 @@ D3D12_INPUT_LAYOUT_DESC ProgramDX::GetNativeInputLayoutDesc() const noexcept
         static_cast<UINT>(m_dx_input_layout.size())
     };
 }
+
+} // namespace Graphics
+} // namespace Methane

@@ -21,14 +21,16 @@ MacOS application implementation.
 
 ******************************************************************************/
 
-#include <Methane/Platform/MacOS/AppMac.h>
-#include <Methane/Platform/MacOS/Types.h>
+#include <Methane/Platform/MacOS/AppMac.hh>
+#include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Instrumentation.h>
 
 using namespace Methane::Platform;
 using namespace Methane::MacOS;
 
 NSAlertStyle ConvertMessageTypeToNSAlertStyle(AppBase::Message::Type msg_type)
 {
+    ITT_FUNCTION_TASK();
     switch(msg_type)
     {
         case AppBase::Message::Type::Information: return NSAlertStyleInformational;
@@ -42,17 +44,20 @@ AppMac::AppMac(const AppBase::Settings& settings)
     , m_ns_app([NSApplication sharedApplication])
     , m_ns_app_delegate([[AppDelegate alloc] initWithApp:this andSettings: &m_settings])
 {
+    ITT_FUNCTION_TASK();
     [m_ns_app setDelegate: m_ns_app_delegate];
 }
 
 AppMac::~AppMac()
 {
+    ITT_FUNCTION_TASK();
     [m_ns_app_delegate release];
     [m_ns_app release];
 }
 
 void AppMac::InitContext(const Platform::AppEnvironment& /*env*/, const Data::FrameSize& /*frame_size*/)
 {
+    ITT_FUNCTION_TASK();
     AppView app_view = GetView();
     if (app_view.p_native_view == nil)
     {
@@ -69,6 +74,7 @@ void AppMac::InitContext(const Platform::AppEnvironment& /*env*/, const Data::Fr
 
 int AppMac::Run(const RunArgs& args)
 {
+    ITT_FUNCTION_TASK();
     const int base_return_code = AppBase::Run(args);
     if (base_return_code)
         return base_return_code;
@@ -80,6 +86,7 @@ int AppMac::Run(const RunArgs& args)
 
 void AppMac::Alert(const Message& msg, bool deferred)
 {
+    ITT_FUNCTION_TASK();
     AppBase::Alert(msg, deferred);
 
     if (deferred)
@@ -100,6 +107,7 @@ void AppMac::Alert(const Message& msg, bool deferred)
 
 void AppMac::SetWindowTitle(const std::string& title_text)
 {
+    ITT_FUNCTION_TASK();
     NSString* ns_title_text = ConvertToNSType<std::string, NSString*>(title_text);
     dispatch_async(dispatch_get_main_queue(), ^(void){
         m_ns_window.title = ns_title_text;
@@ -108,13 +116,38 @@ void AppMac::SetWindowTitle(const std::string& title_text)
 
 void AppMac::SetWindow(NSWindow* ns_window)
 {
+    ITT_FUNCTION_TASK();
     m_ns_window = ns_window;
 }
 
 void AppMac::ShowAlert(const Message& msg)
 {
+    ITT_FUNCTION_TASK();
     assert(m_ns_app_delegate);
     [m_ns_app_delegate alert: ConvertToNSType<std::string, NSString*>(msg.title)
              withInformation: ConvertToNSType<std::string, NSString*>(msg.information)
                     andStyle: ConvertMessageTypeToNSAlertStyle(msg.type)];
+
+    AppBase::ShowAlert(msg);
+}
+
+bool AppMac::SetFullScreen(bool is_full_screen)
+{
+    ITT_FUNCTION_TASK();
+    if (!AppBase::SetFullScreen(is_full_screen))
+        return false;
+    
+    const NSApplicationPresentationOptions app_options = [m_ns_app presentationOptions];
+    const bool is_app_fullscreen = (app_options & NSApplicationPresentationFullScreen);
+    if (is_app_fullscreen != is_full_screen)
+    {
+        [m_ns_window toggleFullScreen:nil];
+    }
+    return true;
+}
+
+void AppMac::Close()
+{
+    ITT_FUNCTION_TASK();
+    [m_ns_window close];
 }

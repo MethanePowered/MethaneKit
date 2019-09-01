@@ -21,19 +21,21 @@ Metal implementation of the render command list interface.
 
 ******************************************************************************/
 
-#include "RenderCommandListMT.h"
-#include "RenderStateMT.h"
-#include "RenderPassMT.h"
-#include "CommandQueueMT.h"
-#include "ContextMT.h"
-#include "BufferMT.h"
-#include "TypesMT.h"
+#include "RenderCommandListMT.hh"
+#include "RenderStateMT.hh"
+#include "RenderPassMT.hh"
+#include "CommandQueueMT.hh"
+#include "ContextMT.hh"
+#include "BufferMT.hh"
+#include "TypesMT.hh"
 
-#include <Methane/Graphics/Instrumentation.h>
-#include <Methane/Platform/MacOS/Types.h>
+#include <Methane/Instrumentation.h>
+#include <Methane/Platform/MacOS/Types.hh>
 
-using namespace Methane::Graphics;
-using namespace Methane;
+namespace Methane
+{
+namespace Graphics
+{
 
 MTLPrimitiveType PrimitiveTypeToMetal(RenderCommandList::Primitive primitive) noexcept
 {
@@ -228,3 +230,6 @@ RenderPassMT& RenderCommandListMT::GetPassMT()
     ITT_FUNCTION_TASK();
     return static_cast<class RenderPassMT&>(GetPass());
 }
+
+} // namespace Graphics
+} // namespace Methane

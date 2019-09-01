@@ -21,18 +21,21 @@ Metal implementation of the texture interface.
 
 ******************************************************************************/
 
-#include "TextureMT.h"
-#include "ContextMT.h"
-#include "TypesMT.h"
+#include "TextureMT.hh"
+#include "ContextMT.hh"
+#include "DeviceMT.hh"
+#include "TypesMT.hh"
 
-#include <Methane/Graphics/Instrumentation.h>
-#include <Methane/Platform/MacOS/Types.h>
+#include <Methane/Instrumentation.h>
+#include <Methane/Platform/MacOS/Types.hh>
 
 #include <algorithm>
 #include <cassert>
 
-using namespace Methane;
-using namespace Methane::Graphics;
+namespace Methane
+{
+namespace Graphics
+{
 
 Texture::Ptr Texture::CreateRenderTarget(Context& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
@@ -67,7 +70,7 @@ TextureMT::TextureMT(ContextBase& context, const Settings& settings, const Descr
     : TextureBase(context, settings, descriptor_by_usage)
     , m_mtl_texture(settings.type == Texture::Type::FrameBuffer
                       ? [GetContextMT().GetNativeDrawable() texture]
-                      : [GetContextMT().GetNativeDevice()  newTextureWithDescriptor:GetNativeTextureDescriptor()])
+                      : [GetContextMT().GetDeviceMT().GetNativeDevice()  newTextureWithDescriptor:GetNativeTextureDescriptor()])
 {
     ITT_FUNCTION_TASK();
 
@@ -176,3 +179,6 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
 
     return mtl_tex_desc;
 }
+
+} // namespace Graphics
+} // namespace Methane

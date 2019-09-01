@@ -38,10 +38,9 @@ class TextureBase
 {
 public:
     TextureBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
-    virtual ~TextureBase() override = default;
 
     // Texture interface
-    virtual const Settings& GetSettings() const override { return m_settings; }
+    const Settings& GetSettings() const override { return m_settings; }
 
 protected:
     const Settings m_settings;
