@@ -205,13 +205,18 @@ std::string KeyConverter::ToString() const noexcept
         
         // Control keys
         { Key::LeftShift,       "LEFT_SHIFT"    },
-        { Key::LeftControl,     "LEFT_CONTROL"  },
-        { Key::LeftAlt,         "LEFT_ALT"      },
-        { Key::LeftSuper,       "LEFT_SUPER"    },
         { Key::RightShift,      "RIGHT_SHIFT"   },
+        { Key::LeftControl,     "LEFT_CONTROL"  },
         { Key::RightControl,    "RIGHT_CONTROL" },
+        { Key::LeftAlt,         "LEFT_ALT"      },
         { Key::RightAlt,        "RIGHT_ALT"     },
+#ifdef __APPLE__
+        { Key::LeftSuper,       "LEFT_COMMAND"  },
+        { Key::RightSuper,      "RIGHT_COMMAND" },
+#else
+        { Key::LeftSuper,       "LEFT_SUPER"    },
         { Key::RightSuper,      "RIGHT_SUPER"   },
+#endif
         { Key::Menu,            "MENU"          }
     };
 
@@ -369,10 +374,14 @@ std::string Modifier::ToString(Value modifier)
         case Shift:     return "Shift";
         case Control:   return "Control";
         case Alt:       return "Alt";
-        case Super:     return "Super";
         case CapsLock:  return "CapsLock";
         case NumLock:   return "NumLock";
         case All:       return "All";
+#ifdef __APPLE__
+        case Super:     return "Command";
+#else
+        case Super:     return "Super";
+#endif
     }
     return "Undefined";
 }
