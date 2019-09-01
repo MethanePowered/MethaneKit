@@ -141,9 +141,7 @@ protected:
     inline const Camera& GetViewCamera() const noexcept
     { return m_p_view_camera ? *m_p_view_camera : *this; }
 
-    void ApplyLookDirection(const Vector3f& look_dir, const Orientation& base_orientation);
-    void ApplyLookDirection(const Vector3f& look_dir) { return ApplyLookDirection(look_dir, m_current_orientation);  }
-    
+    void ApplyLookDirection(const Vector3f& look_dir);
     void Rotate(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation);
     void Rotate(const Vector3f& view_axis, float angle_rad) { Rotate(view_axis, angle_rad, m_current_orientation ); }
     void Move(const Vector3f& move_vector);
