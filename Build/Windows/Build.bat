@@ -1,10 +1,13 @@
-@REM To build execute 'Build.bat' from 'Visual Studio 2017 Developer Command Prompt'
+@REM To build execute 'Build.bat' from 'Visual Studio Native Tools Command Prompt'
 @ECHO OFF
 SETLOCAL ENABLEDELAYEDEXPANSION
 
 SET PLATFORM_TYPE=Win64
 SET CONFIG_TYPE=Release
 SET BUILD_VERSION=0.1
+
+REM SET CMAKE_GENERATOR=Visual Studio 15 2017 %PLATFORM_TYPE%
+SET CMAKE_GENERATOR=Visual Studio 16 2019
 
 SET CONFIG_DIR=%~dp0..\Output\VisualStudio\%PLATFORM_TYPE%-%CONFIG_TYPE%
 SET INSTALL_DIR=%CONFIG_DIR%\Install
@@ -67,7 +70,7 @@ IF %IS_ANALYZE_BUILD% EQU 1 (
     CD "%BUILD_DIR%"
 
     "%SONAR_BUILD_WRAPPER_EXE%" --out-dir "%BUILD_DIR%"^
-         cmake -G "Visual Studio 15 2017 %PLATFORM_TYPE%" -DCMAKE_BUILD_TYPE=%BUILD_TYPE% "%SOURCE_DIR%"
+         cmake -G "%CMAKE_GENERATOR%" -DCMAKE_BUILD_TYPE=%BUILD_TYPE% "%SOURCE_DIR%"
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
     CD "%SOURCE_DIR%"
@@ -93,9 +96,9 @@ IF %IS_ANALYZE_BUILD% EQU 1 (
 ) ELSE (
     CD "%BUILD_DIR%"
 
-    ECHO Building with Visual Studio 2017...
+    ECHO Building with %CMAKE_GENERATOR%...
 
-    cmake -G "Visual Studio 15 2017 %PLATFORM_TYPE%" -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR% -DMETHANE_RUN_TESTS_DURING_BUILD=OFF "%SOURCE_DIR%"
+    cmake -G "%CMAKE_GENERATOR%" -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR% -DMETHANE_RUN_TESTS_DURING_BUILD=OFF "%SOURCE_DIR%"
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
     cmake --build . --config %CONFIG_TYPE% --target install
@@ -103,7 +106,7 @@ IF %IS_ANALYZE_BUILD% EQU 1 (
 
     ECHO Running tests...
 
-    ctest --build-config $CONFIG_TYPE --output-on-failure
+    ctest --build-config %CONFIG_TYPE% --output-on-failure
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 )
 
