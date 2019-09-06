@@ -24,7 +24,6 @@ Sample demonstrating parallel redering of the distinct asteroids massive
 #pragma once
 
 #include <Methane/Kit.h>
-#include <Methane/Graphics/Mesh.h>
 
 namespace Methane
 {
@@ -109,17 +108,14 @@ private:
         SHADER_FIELD_ALIGN gfx::Matrix44f mvp_matrix;
         SHADER_FIELD_ALIGN gfx::Matrix44f shadow_mvpx_matrix;
     };
-
-    struct MeshBuffers
+    
+    using TexturedMeshBuffersBase = gfx::TexturedMeshBuffers<MeshUniforms>;
+    struct TexturedMeshBuffers : TexturedMeshBuffersBase
     {
-        gfx::Buffer::Ptr sp_vertex;
-        gfx::Buffer::Ptr sp_index;
-        MeshUniforms     shadow_pass_uniforms = { };
-        MeshUniforms     final_pass_uniforms  = { };
-
-        template<typename VType>
-        void Init(const gfx::BaseMesh<VType>& mesh_data, gfx::Context& context, const std::string& base_name);
-        void Release();
+        using Ptr = std::unique_ptr<TexturedMeshBuffers>;
+        using TexturedMeshBuffersBase::TexturedMeshBuffersBase;
+        
+        MeshUniforms shadow_pass_uniforms = {};
     };
 
     struct RenderPass
@@ -142,14 +138,12 @@ private:
     gfx::ActionCamera           m_view_camera;
     gfx::ActionCamera           m_light_camera;
     gfx::Buffer::Ptr            m_sp_const_buffer;
-    gfx::Texture::Ptr           m_sp_cube_texture;
-    gfx::Texture::Ptr           m_sp_floor_texture;
     gfx::Sampler::Ptr           m_sp_texture_sampler;
     gfx::Sampler::Ptr           m_sp_shadow_sampler;
 
     SceneUniforms               m_scene_uniforms = { };
-    MeshBuffers                 m_cube_buffers;
-    MeshBuffers                 m_floor_buffers;
+    TexturedMeshBuffers::Ptr    m_sp_cube_buffers;
+    TexturedMeshBuffers::Ptr    m_sp_floor_buffers;
     RenderPass                  m_shadow_pass;
     RenderPass                  m_final_pass;
 };

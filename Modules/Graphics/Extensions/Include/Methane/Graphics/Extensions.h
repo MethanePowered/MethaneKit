@@ -24,3 +24,4 @@ Methane graphics extensions: all headers under one umbrella.
 #pragma once
 
 #include "ImageLoader.h"
+#include "MeshBuffers.hpp"
