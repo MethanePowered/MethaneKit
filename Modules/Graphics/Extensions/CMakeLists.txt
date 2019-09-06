@@ -6,11 +6,12 @@ get_module_dirs("Methane/Graphics")
 
 set(HEADERS
     ${INCLUDE_DIR}/Extensions.h
+    ${INCLUDE_DIR}/ImageLoader.h
+    ${INCLUDE_DIR}/MeshBuffers.hpp
 )
 
 set(SOURCES
     ${SOURCES_DIR}/ImageLoader.cpp
-    ${INCLUDE_DIR}/ImageLoader.h
 )
 
 add_library(${TARGET} STATIC
