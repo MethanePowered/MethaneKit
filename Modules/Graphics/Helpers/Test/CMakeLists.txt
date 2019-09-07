@@ -5,7 +5,7 @@ set(TARGET MethaneGraphicsHelpersTest)
 
 add_executable(${TARGET}
     Main.cpp
-    ActionCameraTest.cpp
+    ArcBallCameraTest.cpp
 )
 
 target_link_libraries(${TARGET}
