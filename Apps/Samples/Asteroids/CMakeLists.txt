@@ -13,7 +13,6 @@ set(SHADERS_CONFIG "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Shaders.cfg")
 set(IMAGES_DIR ${RESOURCES_DIR}/Images)
 set(TEXTURES
     ${IMAGES_DIR}/Textures/MethaneBubbles.jpg
-    ${IMAGES_DIR}/Textures/MarbleWhite.jpg
 )
 
 add_methane_application(${TARGET}
