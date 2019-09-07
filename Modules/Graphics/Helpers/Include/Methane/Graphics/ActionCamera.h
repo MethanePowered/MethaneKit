@@ -18,13 +18,12 @@ limitations under the License.
 
 FILE: Methane/Graphics/ActionCamera.h
 Interactive action-camera for rotating, moving and zooming with mouse and keyboard.
-Implemented based on arc-ball camera rotation model.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "Camera.h"
+#include "ArcBallCamera.h"
 
 #include <Methane/Data/AnimationsPool.h>
 
@@ -36,15 +35,9 @@ namespace Methane
 namespace Graphics
 {
 
-class ActionCamera : public Camera
+class ActionCamera : public ArcBallCamera
 {
 public:
-    enum class Pivot : uint32_t
-    {
-        Aim = 0,
-        Eye,
-    };
-
     enum class MouseAction : uint32_t
     {
         None = 0,
@@ -53,7 +46,8 @@ public:
         Move,
         Zoom,
 
-        Count // keep at end
+        // Keep at end
+        Count
     };
 
     enum class KeyboardAction : uint32_t
@@ -94,13 +88,6 @@ public:
     ActionCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
 
     // Parameters
-    Pivot GetPivot() const                                          { return m_pivot; }
-    void  SetPivot(Pivot pivot)                                     { m_pivot = pivot; }
-
-    float GetRadiusRatio() const                                    { return m_radius_ratio; }
-    void  SetRadiusRatio(float radius_ratio)                        { m_radius_ratio = radius_ratio; }
-    float GetRadiusInPixels() const noexcept                        { return GetRadiusInPixels(m_screen_size); }
-
     uint32_t GetZoomStepsCount() const                              { return m_zoom_steps_count; }
     void  SetZoomStepsCount(uint32_t steps_count)                   { m_zoom_steps_count = steps_count;}
 
@@ -133,17 +120,6 @@ public:
 protected:
     using KeyboardActionAnimations  = std::map<KeyboardAction, Data::Animation::WeakPtr>;
 
-    Vector3f GetNormalizedSphereProjection(const Data::Point2i& mouse_screen_pos, bool is_primary) const;
-
-    inline float GetRadiusInPixels(const Data::Point2f& screen_size) const noexcept
-    { return std::min(screen_size.x(), screen_size.y()) * m_radius_ratio / 2.f; }
-
-    inline const Camera& GetViewCamera() const noexcept
-    { return m_p_view_camera ? *m_p_view_camera : *this; }
-
-    void ApplyLookDirection(const Vector3f& look_dir);
-    void Rotate(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation);
-    void Rotate(const Vector3f& view_axis, float angle_rad) { Rotate(view_axis, angle_rad, m_current_orientation ); }
     void Move(const Vector3f& move_vector);
     void Zoom(float zoom_factor);
     
@@ -162,18 +138,13 @@ protected:
     bool StopKeyboardAction(KeyboardAction keyboard_action, double duration_sec);
 
     Data::AnimationsPool&    m_animations;
-    const Camera*            m_p_view_camera;
-    Pivot                    m_pivot;
-    float                    m_radius_ratio                 = 0.9f;
     uint32_t                 m_zoom_steps_count             = 3;
     DistanceRange            m_zoom_distance_range          = DistanceRange(1.f, 1000.f);
     float                    m_move_distance_per_second     = 5.f;
     float                    m_rotate_angle_per_second      = 15.f;
     double                   m_keyboard_action_duration_sec = 0.3;
     MouseAction              m_mouse_action                 = MouseAction::None;
-    Vector3f                 m_mouse_pressed_on_sphere      = { };
     Vector3f                 m_mouse_pressed_in_world       = { };
-    Orientation              m_mouse_pressed_orientation    = { };
     KeyboardActionAnimations m_keyboard_action_animations;
 };
 

@@ -16,12 +16,12 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Test/ActionCameraTest.cpp
+FILE: Test/ArcBallCameraTest.cpp
 Arc-Ball camera unit tests
 
 ******************************************************************************/
 
-#include <Methane/Graphics/ActionCamera.h>
+#include <Methane/Graphics/ArcBallCamera.h>
 #include <Methane/Data/Types.h>
 
 #include <cml/mathlib/mathlib.h>
@@ -38,7 +38,6 @@ static const float               g_test_radius_pixels    = g_test_screen_center.
 static const Vector3f            g_axis_x                = { 1.f, 0.f, 0.f };
 static const Vector3f            g_axis_y                = { 0.f, 1.f, 0.f };
 static const Vector3f            g_axis_z                = { 0.f, 0.f, -1.f };
-static AnimationsPool            g_animations;
 
 // Approximate comparison of vectors for test purposes only
 static float vectors_equal_epsilon = 0.00001f;
@@ -55,7 +54,7 @@ inline bool operator==(const Vector3f& left, const Vector3f& right)
 // NOTE: keep crach header include after comparison overloads to make them work on Clang
 #include <catch2/catch.hpp>
 
-inline void SetupCamera(ActionCamera& camera, const Camera::Orientation& orientation)
+inline void SetupCamera(ArcBallCamera& camera, const Camera::Orientation& orientation)
 {
     camera.Resize(g_test_screen_size.x(), g_test_screen_size.y());
     camera.SetOrientation(orientation);
@@ -63,16 +62,16 @@ inline void SetupCamera(ActionCamera& camera, const Camera::Orientation& orienta
     CHECK(camera.GetRadiusInPixels() == g_test_radius_pixels);
 }
 
-inline ActionCamera SetupViewCamera(ActionCamera::Pivot pivot, const Camera::Orientation& orientation)
+inline ArcBallCamera SetupViewCamera(ArcBallCamera::Pivot pivot, const Camera::Orientation& orientation)
 {
-    ActionCamera view_camera(g_animations, pivot);
+    ArcBallCamera view_camera(pivot);
     SetupCamera(view_camera, orientation);
     return view_camera;
 }
 
-inline ActionCamera SetupDependentCamera(const ActionCamera& view_camera, ActionCamera::Pivot pivot, const Camera::Orientation& orientation)
+inline ArcBallCamera SetupDependentCamera(const ArcBallCamera& view_camera, ArcBallCamera::Pivot pivot, const Camera::Orientation& orientation)
 {
-    ActionCamera dependent_camera(view_camera, g_animations, pivot);
+    ArcBallCamera dependent_camera(view_camera, pivot);
     SetupCamera(dependent_camera, orientation);
     return dependent_camera;
 }
@@ -85,36 +84,34 @@ inline void CheckOrientation(const Camera::Orientation& actual_orientation, cons
     CHECK(actual_orientation.up  == reference_orientation.up);
 }
 
-inline void TestViewCameraRotation(ActionCamera::Pivot view_pivot,
+inline void TestViewCameraRotation(ArcBallCamera::Pivot view_pivot,
                                    const Camera::Orientation& initial_view_orientation,
                                    const Point2i& mouse_press_pos, const Point2i& mouse_drag_pos,
                                    const Camera::Orientation& rotated_view_orientation,
                                    const float vectors_equality_epsilon = 0.00001f)
 {
-    ActionCamera view_camera = SetupViewCamera(view_pivot, initial_view_orientation);
-    view_camera.OnMousePressed(mouse_press_pos, ActionCamera::MouseAction::Rotate);
+    ArcBallCamera view_camera = SetupViewCamera(view_pivot, initial_view_orientation);
+    view_camera.OnMousePressed(mouse_press_pos);
     view_camera.OnMouseDragged(mouse_drag_pos);
-    view_camera.OnMouseReleased(mouse_drag_pos);
     CheckOrientation(view_camera.GetOrientation(), rotated_view_orientation, vectors_equality_epsilon);
 }
 
-inline void TestDependentCameraRotation(ActionCamera::Pivot view_pivot,
+inline void TestDependentCameraRotation(ArcBallCamera::Pivot view_pivot,
                                         const Camera::Orientation& initial_view_orientation,
-                                        ActionCamera::Pivot dependent_pivot,
+                                        ArcBallCamera::Pivot dependent_pivot,
                                         const Camera::Orientation& initial_dependent_orientation,
                                         const Point2i& mouse_press_pos, const Point2i& mouse_drag_pos,
                                         const Camera::Orientation& rotated_dependent_orientation,
                                         const float vectors_equality_epsilon = 0.00001f)
 {
-    ActionCamera view_camera      = SetupViewCamera(view_pivot, initial_view_orientation);
-    ActionCamera dependent_camera = SetupDependentCamera(view_camera, dependent_pivot, initial_dependent_orientation);
-    dependent_camera.OnMousePressed(mouse_press_pos, ActionCamera::MouseAction::Rotate);
+    ArcBallCamera view_camera      = SetupViewCamera(view_pivot, initial_view_orientation);
+    ArcBallCamera dependent_camera = SetupDependentCamera(view_camera, dependent_pivot, initial_dependent_orientation);
+    dependent_camera.OnMousePressed(mouse_press_pos);
     dependent_camera.OnMouseDragged(mouse_drag_pos);
-    dependent_camera.OnMouseReleased(mouse_drag_pos);
     CheckOrientation(dependent_camera.GetOrientation(), rotated_dependent_orientation, vectors_equality_epsilon);
 }
 
-inline Camera::Orientation RotateOrientation(const Camera::Orientation& orientation, const ActionCamera::Pivot pivot, const Vector3f& axis, float angle_degrees)
+inline Camera::Orientation RotateOrientation(const Camera::Orientation& orientation, const ArcBallCamera::Pivot pivot, const Vector3f& axis, float angle_degrees)
 {
     Matrix33f rotation_matrix;
     cml::matrix_rotation_axis_angle(rotation_matrix, axis.normalize(), cml::rad(angle_degrees));
@@ -122,9 +119,9 @@ inline Camera::Orientation RotateOrientation(const Camera::Orientation& orientat
     const Vector3f up_dir = rotation_matrix * orientation.up;
     switch (pivot)
     {
-    case ActionCamera::Pivot::Aim:
+    case ArcBallCamera::Pivot::Aim:
         return { orientation.aim - look_dir, orientation.aim, up_dir };
-    case ActionCamera::Pivot::Eye:
+    case ArcBallCamera::Pivot::Eye:
         return { orientation.eye, orientation.eye + look_dir, up_dir };
     }
     return { };
@@ -132,7 +129,7 @@ inline Camera::Orientation RotateOrientation(const Camera::Orientation& orientat
 
 TEST_CASE("View arc-ball camera rotation around Aim pivot < 90 degrees", "[camera][rotate][aim][view]")
 {
-    const ActionCamera::Pivot test_pivot = ActionCamera::Pivot::Aim;
+    const ArcBallCamera::Pivot test_pivot = ArcBallCamera::Pivot::Aim;
 
     SECTION("Rotation 90 degrees")
     {
@@ -196,7 +193,7 @@ TEST_CASE("View arc-ball camera rotation around Aim pivot < 90 degrees", "[camer
 
 TEST_CASE("View arc-ball camera rotation around Aim pivot > 90 degrees", "[camera][rotate][aim][view]")
 {
-    const ActionCamera::Pivot test_pivot = ActionCamera::Pivot::Aim;
+    const ArcBallCamera::Pivot test_pivot = ArcBallCamera::Pivot::Aim;
 
     SECTION("Rotation 180 degrees")
     {
@@ -260,7 +257,7 @@ TEST_CASE("View arc-ball camera rotation around Aim pivot > 90 degrees", "[camer
 
 TEST_CASE("View arc-ball camera rotation around Eye pivot < 90 degrees", "[camera][rotate][eye][view]")
 {
-    const ActionCamera::Pivot test_pivot = ActionCamera::Pivot::Eye;
+    const ArcBallCamera::Pivot test_pivot = ArcBallCamera::Pivot::Eye;
 
     SECTION("Rotation 90 degrees")
     {
@@ -324,7 +321,7 @@ TEST_CASE("View arc-ball camera rotation around Eye pivot < 90 degrees", "[camer
 
 TEST_CASE("View arc-ball camera rotation around Eye pivot > 90 degrees", "[camera][rotate][eye][view]")
 {
-    const ActionCamera::Pivot test_pivot = ActionCamera::Pivot::Eye;
+    const ArcBallCamera::Pivot test_pivot = ArcBallCamera::Pivot::Eye;
 
     SECTION("Rotation 180 degrees")
     {
@@ -388,7 +385,7 @@ TEST_CASE("View arc-ball camera rotation around Eye pivot > 90 degrees", "[camer
 
 TEST_CASE("Dependent arc-ball camera rotation around Aim pivot < 90 degrees", "[camera][rotate][aim][dependent]")
 {
-    const ActionCamera::Pivot test_pivot = ActionCamera::Pivot::Aim;
+    const ArcBallCamera::Pivot test_pivot = ArcBallCamera::Pivot::Aim;
 
     SECTION("Rotation 90 degrees")
     {
