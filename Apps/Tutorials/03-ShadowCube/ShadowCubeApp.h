@@ -62,13 +62,13 @@ class ShadowCubeApp final : public GraphicsApp
 {
 public:
     ShadowCubeApp();
-    virtual ~ShadowCubeApp() override;
+    ~ShadowCubeApp() override;
 
     // NativeApp
-    virtual void Init() override;
-    virtual bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
-    virtual void Update() override;
-    virtual void Render() override;
+    void Init() override;
+    bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
+    void Update() override;
+    void Render() override;
 
     // Context::Callback interface
     void OnContextReleased() override;
