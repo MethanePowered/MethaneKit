@@ -35,24 +35,10 @@ namespace pal = Methane::Platform;
 
 struct AsteroidsFrame final : gfx::AppFrame
 {
-    struct PassResources
-    {
-        struct MeshResources
-        {
-            gfx::Buffer::Ptr                    sp_uniforms_buffer;
-            gfx::Program::ResourceBindings::Ptr sp_resource_bindings;
-        };
-
-        MeshResources               cube;
-        MeshResources               floor;
-        gfx::Texture::Ptr           sp_rt_texture;
-        gfx::RenderPass::Ptr        sp_pass;
-        gfx::RenderCommandList::Ptr sp_cmd_list;
-    };
-
-    PassResources    shadow_pass;
-    PassResources    final_pass;
-    gfx::Buffer::Ptr sp_scene_uniforms_buffer;
+    gfx::Buffer::Ptr                    sp_scene_uniforms_buffer;
+    gfx::Buffer::Ptr                    sp_cube_uniforms_buffer;
+    gfx::Program::ResourceBindings::Ptr sp_resource_bindings;
+    gfx::RenderCommandList::Ptr         sp_cmd_list;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -62,7 +48,7 @@ class AsteroidsApp final : public GraphicsApp
 {
 public:
     AsteroidsApp();
-    virtual ~AsteroidsApp() override;
+    ~AsteroidsApp() override;
 
     // NativeApp
     void Init() override;
@@ -106,7 +92,6 @@ private:
     {
         SHADER_FIELD_ALIGN gfx::Matrix44f model_matrix;
         SHADER_FIELD_ALIGN gfx::Matrix44f mvp_matrix;
-        SHADER_FIELD_ALIGN gfx::Matrix44f shadow_mvpx_matrix;
     };
     
     using TexturedMeshBuffersBase = gfx::TexturedMeshBuffers<MeshUniforms>;
@@ -118,34 +103,17 @@ private:
         MeshUniforms shadow_pass_uniforms = {};
     };
 
-    struct RenderPass
-    {
-        gfx::Program::Ptr       sp_program;
-        gfx::RenderState::Ptr   sp_state;
-        std::string             command_group_name;
-        bool                    is_final_pass = false;
-
-        void Release();
-    };
-
-    void RenderScene(const RenderPass& render_pass, AsteroidsFrame::PassResources& render_pass_data, gfx::Texture& shadow_texture, bool is_shadow_rendering);
-
     const gfx::BoxMesh<Vertex>  m_cube_mesh;
-    const gfx::RectMesh<Vertex> m_floor_mesh;
     const float                 m_scene_scale;
     const Constants             m_scene_constants;
-
     gfx::ActionCamera           m_view_camera;
     gfx::ActionCamera           m_light_camera;
-    gfx::Buffer::Ptr            m_sp_const_buffer;
-    gfx::Sampler::Ptr           m_sp_texture_sampler;
-    gfx::Sampler::Ptr           m_sp_shadow_sampler;
 
     SceneUniforms               m_scene_uniforms = { };
     TexturedMeshBuffers::Ptr    m_sp_cube_buffers;
-    TexturedMeshBuffers::Ptr    m_sp_floor_buffers;
-    RenderPass                  m_shadow_pass;
-    RenderPass                  m_final_pass;
+    gfx::RenderState::Ptr       m_sp_state;
+    gfx::Buffer::Ptr            m_sp_const_buffer;
+    gfx::Sampler::Ptr           m_sp_texture_sampler;
 };
 
 } // namespace Samples
