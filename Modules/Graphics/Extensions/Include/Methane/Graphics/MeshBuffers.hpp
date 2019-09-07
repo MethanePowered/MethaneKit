@@ -46,10 +46,12 @@ struct MeshBuffers
 {
     using Ptr = std::unique_ptr<MeshBuffers<UniformsType>>;
 
-    UniformsType final_pass_uniforms = { };
+    Buffer::Ptr  sp_vertex;
+    Buffer::Ptr  sp_index;
+    UniformsType final_pass_uniforms = { }; // Actual uniforms buffer is created separately in Frame dependent resources
 
-    Buffer::Ptr sp_vertex;
-    Buffer::Ptr sp_index;
+    static inline Data::Size GetUniformsBufferSize()        { return static_cast<Data::Size>(sizeof(UniformsType)); }
+    static inline Data::Size GetUniformsAlignedBufferSize() { return Buffer::GetAlignedBufferSize(GetUniformsBufferSize()); }
 
     template<typename VType>
     MeshBuffers(Context& context, const BaseMesh<VType>& mesh_data, const std::string& mesh_name)
@@ -96,6 +98,5 @@ struct TexturedMeshBuffers : MeshBuffers<UniformsType>
     }
 };
 
-
-} // namespace Samples
+} // namespace Graphics
 } // namespace Methane
