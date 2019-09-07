@@ -361,7 +361,7 @@ void ShadowCubeApp::Update()
 
     // Update Cube uniforms with matrices for Final pass
     {
-        MeshUniforms& mesh_uniforms         = m_sp_cube_buffers->uniforms;
+        MeshUniforms& mesh_uniforms         = m_sp_cube_buffers->final_pass_uniforms;
         mesh_uniforms.model_matrix          = cube_model_matrix;
         mesh_uniforms.mvp_matrix            = mesh_uniforms.model_matrix * scene_view_matrix * scene_proj_matrix;
         mesh_uniforms.shadow_mvpx_matrix    = mesh_uniforms.model_matrix * light_view_matrix * light_proj_matrix * shadow_transform_matrix;
@@ -374,7 +374,7 @@ void ShadowCubeApp::Update()
     }
     // Update Floor uniforms with matrices for Final pass
     {
-        MeshUniforms& mesh_uniforms         = m_sp_floor_buffers->uniforms;
+        MeshUniforms& mesh_uniforms         = m_sp_floor_buffers->final_pass_uniforms;
         mesh_uniforms.model_matrix          = scale_matrix;
         mesh_uniforms.mvp_matrix            = mesh_uniforms.model_matrix * scene_view_matrix * scene_proj_matrix;
         mesh_uniforms.shadow_mvpx_matrix    = mesh_uniforms.model_matrix * light_view_matrix * light_proj_matrix * shadow_transform_matrix;
@@ -402,8 +402,8 @@ void ShadowCubeApp::Render()
     frame.sp_scene_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms));
     frame.shadow_pass.floor.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_floor_buffers->shadow_pass_uniforms), sizeof(MeshUniforms));
     frame.shadow_pass.cube.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->shadow_pass_uniforms), sizeof(MeshUniforms));
-    frame.final_pass.floor.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_floor_buffers->uniforms), sizeof(MeshUniforms));
-    frame.final_pass.cube.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->uniforms), sizeof(MeshUniforms));
+    frame.final_pass.floor.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_floor_buffers->final_pass_uniforms), sizeof(MeshUniforms));
+    frame.final_pass.cube.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->final_pass_uniforms), sizeof(MeshUniforms));
 
     // Record commands for shadow & final render passes
     RenderScene(m_shadow_pass, frame.shadow_pass, *frame.shadow_pass.sp_rt_texture, true);
@@ -428,25 +428,14 @@ void ShadowCubeApp::RenderScene(const RenderPass& render_pass, ShadowCubeFrame::
     cmd_list.Reset(*render_pass.sp_state, render_pass.command_group_name);
 
     // Cube drawing
-
     assert(!!render_pass_resources.cube.sp_resource_bindings);
     assert(!!m_sp_cube_buffers);
-    assert(!!m_sp_cube_buffers->sp_vertex);
-    assert(!!m_sp_cube_buffers->sp_index);
-
-    cmd_list.SetResourceBindings(*render_pass_resources.cube.sp_resource_bindings);
-    cmd_list.SetVertexBuffers({ *m_sp_cube_buffers->sp_vertex });
-    cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_sp_cube_buffers->sp_index, 1);
+    m_sp_cube_buffers->Draw(cmd_list, *render_pass_resources.cube.sp_resource_bindings, 1);
 
     // Floor drawing
-
     assert(!!render_pass_resources.floor.sp_resource_bindings);
-    assert(!!m_sp_floor_buffers->sp_vertex);
-    assert(!!m_sp_floor_buffers->sp_index);
-
-    cmd_list.SetResourceBindings(*render_pass_resources.floor.sp_resource_bindings);
-    cmd_list.SetVertexBuffers({ *m_sp_floor_buffers->sp_vertex });
-    cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_sp_floor_buffers->sp_index, 1);
+    assert(!!m_sp_floor_buffers);
+    m_sp_floor_buffers->Draw(cmd_list, *render_pass_resources.floor.sp_resource_bindings, 1);
 
     cmd_list.Commit(render_pass.is_final_pass);
 }

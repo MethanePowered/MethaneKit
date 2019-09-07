@@ -28,10 +28,13 @@ Mesh buffers with texture extension structure.
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/Texture.h>
+#include <Methane/Graphics/Program.h>
+#include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/Mesh.h>
 #include <Methane/Graphics/MathTypes.h>
 
 #include <memory>
+#include <cassert>
 
 namespace Methane
 {
@@ -43,7 +46,7 @@ struct MeshBuffers
 {
     using Ptr = std::unique_ptr<MeshBuffers<UniformsType>>;
 
-    UniformsType uniforms = { };
+    UniformsType final_pass_uniforms = { };
 
     Buffer::Ptr sp_vertex;
     Buffer::Ptr sp_index;
@@ -62,6 +65,16 @@ struct MeshBuffers
         sp_index->SetName(mesh_name + " Index Buffer");
         sp_index->SetData(reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetIndices().data()),
                           static_cast<Data::Size>(mesh_data.GetIndexDataSize()));
+    }
+
+    void Draw(RenderCommandList& cmd_list, Program::ResourceBindings& resource_bindings, uint32_t instance_count)
+    {
+        assert(!!sp_vertex);
+        assert(!!sp_index);
+
+        cmd_list.SetResourceBindings(resource_bindings);
+        cmd_list.SetVertexBuffers({ *sp_vertex });
+        cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, *sp_index, instance_count);
     }
 };
 
