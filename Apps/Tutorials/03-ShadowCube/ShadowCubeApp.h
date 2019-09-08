@@ -25,9 +25,7 @@ Tutorial demonstrating shadow-pass rendering with Methane graphics API
 
 #include <Methane/Kit.h>
 
-namespace Methane
-{
-namespace Tutorials
+namespace Methane::Tutorials
 {
 
 namespace gfx = Methane::Graphics;
@@ -128,7 +126,8 @@ private:
         void Release();
     };
 
-    void RenderScene(const RenderPass& render_pass, ShadowCubeFrame::PassResources& render_pass_data, gfx::Texture& shadow_texture, bool is_shadow_rendering);
+    void RenderScene(const RenderPass &render_pass, ShadowCubeFrame::PassResources &render_pass_resources,
+                     gfx::Texture &shadow_texture);
 
     const gfx::BoxMesh<Vertex>  m_cube_mesh;
     const gfx::RectMesh<Vertex> m_floor_mesh;
@@ -148,5 +147,4 @@ private:
     RenderPass                  m_final_pass;
 };
 
-} // namespace Tutorials
-} // namespace Methane
+} // namespace Methane::Tutorials
