@@ -30,9 +30,7 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 #include <vector>
 #include <array>
 
-namespace Methane
-{
-namespace Tutorials
+namespace Methane::Tutorials
 {
 
 namespace gfx = Methane::Graphics;
@@ -110,5 +108,4 @@ private:
     
 };
 
-} // namespace Tutorials
-} // namespace Methane
+} // namespace Methane::Tutorials

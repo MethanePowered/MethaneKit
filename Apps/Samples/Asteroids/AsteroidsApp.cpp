@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: AsteroidsApp.cpp
-Sample demonstrating parallel redering of the distinct asteroids massive
+Sample demonstrating parallel rendering of the distinct asteroids massive
 
 ******************************************************************************/
 
@@ -28,9 +28,7 @@ Sample demonstrating parallel redering of the distinct asteroids massive
 #include <cml/mathlib/mathlib.h>
 #include <cassert>
 
-namespace Methane
-{
-namespace Samples
+namespace Methane::Samples
 {
 
 // Common application settings
@@ -132,7 +130,7 @@ void AsteroidsApp::Init()
             gfx::Shader::CreatePixel(*m_sp_context, { g_ps_main, { } }),
         },
         { // input_buffer_layouts
-            { // Signle vertex buffer with interleaved data:
+            { // Single vertex buffer with interleaved data:
                 { // input arguments mapping to semantic names
                     { "in_position", "POSITION" },
                     { "in_normal",   "NORMAL"   },
@@ -237,17 +235,8 @@ void AsteroidsApp::Update()
     cube_model_matrix = cube_model_matrix * scale_matrix;
 
     // Update Cube uniforms with matrices
-    {
-        MeshUniforms& mesh_uniforms         = m_sp_cube_buffers->final_pass_uniforms;
-        mesh_uniforms.model_matrix          = cube_model_matrix;
-        mesh_uniforms.mvp_matrix            = mesh_uniforms.model_matrix * scene_view_matrix * scene_proj_matrix;
-    }
-    // Update Cube uniforms with matrices
-    {
-        MeshUniforms& mesh_uniforms         = m_sp_cube_buffers->shadow_pass_uniforms;
-        mesh_uniforms.model_matrix          = cube_model_matrix;
-        mesh_uniforms.mvp_matrix            = mesh_uniforms.model_matrix * light_view_matrix * light_proj_matrix;
-    }
+    m_sp_cube_buffers->final_pass_uniforms.model_matrix = cube_model_matrix;
+    m_sp_cube_buffers->final_pass_uniforms.mvp_matrix   = cube_model_matrix * scene_view_matrix * scene_proj_matrix;
 }
 
 void AsteroidsApp::Render()
@@ -295,8 +284,7 @@ void AsteroidsApp::OnContextReleased()
     GraphicsApp::OnContextReleased();
 }
 
-} // namespace Samples
-} // namespace Methane
+} // namespace Methane::Samples
 
 int main(int argc, const char* argv[])
 {

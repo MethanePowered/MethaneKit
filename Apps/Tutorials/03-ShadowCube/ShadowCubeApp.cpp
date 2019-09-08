@@ -28,9 +28,7 @@ Tutorial demonstrating shadow-pass rendering with Methane graphics API
 #include <cml/mathlib/mathlib.h>
 #include <cassert>
 
-namespace Methane
-{
-namespace Tutorials
+namespace Methane::Tutorials
 {
 
 // Common application settings
@@ -406,8 +404,8 @@ void ShadowCubeApp::Render()
     frame.final_pass.cube.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->final_pass_uniforms), sizeof(MeshUniforms));
 
     // Record commands for shadow & final render passes
-    RenderScene(m_shadow_pass, frame.shadow_pass, *frame.shadow_pass.sp_rt_texture, true);
-    RenderScene(m_final_pass,  frame.final_pass,  *frame.shadow_pass.sp_rt_texture, false);
+    RenderScene(m_shadow_pass, frame.shadow_pass, *frame.shadow_pass.sp_rt_texture);
+    RenderScene(m_final_pass, frame.final_pass, *frame.shadow_pass.sp_rt_texture);
 
     // Execute rendering commands and present frame to screen
     m_sp_context->GetRenderCommandQueue().Execute({
@@ -419,7 +417,7 @@ void ShadowCubeApp::Render()
     GraphicsApp::Render();
 }
 
-void ShadowCubeApp::RenderScene(const RenderPass& render_pass, ShadowCubeFrame::PassResources& render_pass_resources, gfx::Texture& shadow_texture, bool is_shadow_rendering)
+void ShadowCubeApp::RenderScene(const RenderPass &render_pass, ShadowCubeFrame::PassResources &render_pass_resources, gfx::Texture &shadow_texture)
 {
     assert(!!render_pass_resources.sp_cmd_list);
     gfx::RenderCommandList& cmd_list = *render_pass_resources.sp_cmd_list;
@@ -454,8 +452,7 @@ void ShadowCubeApp::OnContextReleased()
     GraphicsApp::OnContextReleased();
 }
 
-} // namespace Tutorials
-} // namespace Methane
+} // namespace Methane::Tutorials
 
 int main(int argc, const char* argv[])
 {

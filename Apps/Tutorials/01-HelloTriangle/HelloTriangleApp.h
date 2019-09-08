@@ -28,9 +28,7 @@ Tutorial demonstrating triangle rendering with Methane graphics API
 #include <string>
 #include <array>
 
-namespace Methane
-{
-namespace Tutorials
+namespace Methane::Tutorials
 {
 
 namespace gfx = Methane::Graphics;
@@ -73,5 +71,4 @@ private:
     gfx::Buffer::Ptr        m_sp_vertex_buffer;
 };
 
-} // namespace Tutorials
-} // namespace Methane
+} // namespace Methane::Tutorials

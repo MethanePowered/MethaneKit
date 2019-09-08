@@ -25,9 +25,7 @@ Sample demonstrating parallel redering of the distinct asteroids massive
 
 #include <Methane/Kit.h>
 
-namespace Methane
-{
-namespace Samples
+namespace Methane::Samples
 {
 
 namespace gfx = Methane::Graphics;
@@ -94,14 +92,7 @@ private:
         SHADER_FIELD_ALIGN gfx::Matrix44f mvp_matrix;
     };
     
-    using TexturedMeshBuffersBase = gfx::TexturedMeshBuffers<MeshUniforms>;
-    struct TexturedMeshBuffers : TexturedMeshBuffersBase
-    {
-        using Ptr = std::unique_ptr<TexturedMeshBuffers>;
-        using TexturedMeshBuffersBase::TexturedMeshBuffersBase;
-        
-        MeshUniforms shadow_pass_uniforms = {};
-    };
+    using TexturedMeshBuffers = gfx::TexturedMeshBuffers<MeshUniforms>;
 
     const gfx::BoxMesh<Vertex>  m_cube_mesh;
     const float                 m_scene_scale;
@@ -116,5 +107,4 @@ private:
     gfx::Sampler::Ptr           m_sp_texture_sampler;
 };
 
-} // namespace Samples
-} // namespace Methane
+} // namespace Methane::Samples
