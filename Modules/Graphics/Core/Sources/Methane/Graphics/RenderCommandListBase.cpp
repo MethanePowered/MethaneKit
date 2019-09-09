@@ -30,9 +30,7 @@ Base implementation of the render command list interface.
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& pass)
@@ -100,5 +98,4 @@ RenderPassBase& RenderCommandListBase::GetPass()
     return static_cast<RenderPassBase&>(*m_sp_pass);
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

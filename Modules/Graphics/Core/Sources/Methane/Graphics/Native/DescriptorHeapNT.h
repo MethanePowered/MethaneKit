@@ -33,9 +33,7 @@ Native implementation alias of the descriptor heap.
 
 #endif
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 #if defined _WIN32
@@ -48,5 +46,4 @@ using DescriptorHeapNT = DescriptorHeapMT;
 
 #endif
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

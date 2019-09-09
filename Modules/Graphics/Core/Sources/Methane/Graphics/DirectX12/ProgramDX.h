@@ -33,9 +33,7 @@ DirectX 12 implementation of the program interface.
 
 #include <functional>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ContextDX;
@@ -82,5 +80,4 @@ protected:
     std::vector<D3D12_INPUT_ELEMENT_DESC> m_dx_input_layout;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

@@ -31,9 +31,7 @@ DirectX 12 implementation of the buffer interface.
 #include <d3dx12.h>
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 template<typename TViewNative, typename... ExtraViewArgs>
@@ -83,5 +81,4 @@ using VertexBufferDX = BufferDX<D3D12_VERTEX_BUFFER_VIEW, Data::Size>;
 using IndexBufferDX = BufferDX<D3D12_INDEX_BUFFER_VIEW, PixelFormat>;
 using ConstantBufferDX = BufferDX<D3D12_CONSTANT_BUFFER_VIEW_DESC>;
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

@@ -32,9 +32,7 @@ Base implementation of the context interface.
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 std::string GetWaitForName(Context::WaitFor wait_for)
@@ -318,5 +316,4 @@ void ContextBase::UploadResources()
     WaitForGpu(WaitFor::ResourcesUploaded);
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

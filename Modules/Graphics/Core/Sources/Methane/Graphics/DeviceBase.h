@@ -27,9 +27,7 @@ Base implementation of the device interface.
 
 #include <Methane/Graphics/Device.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class DeviceBase
@@ -73,5 +71,4 @@ protected:
     Devices               m_devices;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

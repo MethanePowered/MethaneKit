@@ -32,9 +32,7 @@ Methane resource interface: base class of all GPU resources.
 #include <map>
 #include <array>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 struct Context;
@@ -100,5 +98,4 @@ struct Resource : virtual Object
     virtual const Descriptor&         GetDescriptor(Usage::Value usage) const = 0;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

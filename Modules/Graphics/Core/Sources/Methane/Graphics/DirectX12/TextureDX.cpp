@@ -32,9 +32,7 @@ DirectX 12 implementation of the texture interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 D3D12_SRV_DIMENSION GetSrvDimension(const Dimensions& tex_dimensions) noexcept
@@ -286,5 +284,4 @@ void ImageTextureDX::SetData(Data::ConstRawPtr p_data, Data::Size data_size)
     upload_cmd_list.SetResourceTransitionBarriers({ static_cast<Resource&>(*this) }, ResourceBase::State::CopyDest, ResourceBase::State::PixelShaderResource);
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

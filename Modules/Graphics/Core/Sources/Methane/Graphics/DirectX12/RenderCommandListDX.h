@@ -28,9 +28,7 @@ DirectX 12 implementation of the render command list interface.
 #include <wrl.h>
 #include <d3d12.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 namespace wrl = Microsoft::WRL;
@@ -73,5 +71,4 @@ protected:
     bool                                    m_is_committed = false;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

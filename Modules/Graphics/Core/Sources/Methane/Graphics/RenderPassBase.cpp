@@ -29,9 +29,7 @@ Base implementation of the render pass interface.
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 bool RenderPass::Attachment::operator==(const RenderPass::Attachment& other) const
@@ -140,5 +138,4 @@ Resource::Refs RenderPassBase::GetColorAttachmentResources() const
     return color_attach_resources;
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

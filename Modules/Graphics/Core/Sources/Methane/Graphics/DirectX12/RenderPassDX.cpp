@@ -31,9 +31,7 @@ DirectX 12 implementation of the render pass interface.
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 DescriptorHeap::Type GetDescriptorHeapTypeByAccess(RenderPass::Access::Value access) noexcept
@@ -196,5 +194,4 @@ const D3D12_CPU_DESCRIPTOR_HANDLE* RenderPassDX::GetNativeDepthStencilCPUHandle(
     return nullptr;
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

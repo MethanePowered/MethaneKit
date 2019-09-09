@@ -33,9 +33,7 @@ Native implementation alias of the render state interface.
 
 #endif
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 #if defined _WIN32
@@ -48,5 +46,4 @@ using RenderStateNT = RenderStateMT;
 
 #endif
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

@@ -25,9 +25,7 @@ Methane object interface: represents any named object.
 
 #include <string>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 struct Object
@@ -39,5 +37,4 @@ struct Object
     virtual ~Object() = default;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

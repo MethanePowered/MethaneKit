@@ -29,9 +29,7 @@ Abstract value animation based on time with an update lambda-function.
 
 #include <functional>
 
-namespace Methane
-{
-namespace Data
+namespace Methane::Data
 {
 
 template<typename ValueType>
@@ -83,5 +81,4 @@ private:
     double              m_prev_elapsed_seconds = 0.0;
 };
 
-} // namespace Data
-} // namespace Methane
+} // namespace Methane::Data

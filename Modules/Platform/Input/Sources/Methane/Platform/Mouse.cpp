@@ -28,9 +28,7 @@ Platform abstraction of mouse events.
 #include <sstream>
 #include <cassert>
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 namespace Mouse
 {
@@ -211,5 +209,4 @@ std::string State::ToString() const
 }
 
 } // namespace Mouse
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

@@ -27,9 +27,7 @@ Methane graphics types convertors to Metal native types.
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 MTLIndexType TypeConverterMT::DataFormatToMetalIndexType(PixelFormat data_format) noexcept
@@ -316,5 +314,4 @@ MTLCompareFunction TypeConverterMT::CompareFunctionToMetal(Compare compare_func)
     return MTLCompareFunctionNever;
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

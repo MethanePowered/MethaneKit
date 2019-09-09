@@ -20,9 +20,7 @@ FILE: Methane/Data/Types.cpp
 
 ******************************************************************************/
 
-namespace Methane
-{
-namespace Data
+namespace Methane::Data
 {
 
 void dummy()
@@ -31,5 +29,4 @@ void dummy()
     // the table of contents is empty (no object file members in the library define global symbols)
 }
 
-} // namespace Data
-} // namespace Methane
+} // namespace Methane::Data

@@ -31,9 +31,7 @@ Metal implementation of the context interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 Context::Ptr Context::Create(const Platform::AppEnvironment& env, const Data::Provider& data_provider, Device& device, const Context::Settings& settings)
@@ -154,5 +152,4 @@ DeviceMT& ContextMT::GetDeviceMT()
     return static_cast<DeviceMT&>(GetDevice());
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

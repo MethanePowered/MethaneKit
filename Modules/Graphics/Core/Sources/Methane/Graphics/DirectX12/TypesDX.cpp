@@ -27,9 +27,7 @@ Methane graphics types convertors to DirectX 12 native types.
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 CD3DX12_VIEWPORT TypeConverterDX::ViewportToD3D(const Viewport& viewport) noexcept
@@ -179,5 +177,4 @@ DXGI_FORMAT TypeConverterDX::ParameterDescToDXGIFormatAndSize(const D3D12_SIGNAT
     return DXGI_FORMAT_UNKNOWN;
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

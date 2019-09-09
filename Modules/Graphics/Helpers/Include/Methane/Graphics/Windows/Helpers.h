@@ -30,9 +30,7 @@ Windows platform graphics helpers.
 #include <stdexcept>
 #include <system_error>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 namespace wrl = Microsoft::WRL;
@@ -74,5 +72,4 @@ inline void ThrowIfFailed(HRESULT hr, wrl::ComPtr<ID3DBlob>& error_blob)
     }
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

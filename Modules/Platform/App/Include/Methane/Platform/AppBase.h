@@ -33,9 +33,7 @@ Base application interface and platform-independent implementation.
 #include <vector>
 #include <memory>
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 
 struct AppEnvironment;
@@ -113,5 +111,4 @@ protected:
     Input::State         m_input_state;
 };
 
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

@@ -38,9 +38,7 @@ DirectX 12 implementation of the context interface.
 #include <nowide/convert.hpp>
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 void SetWindowTopMostFlag(HWND window_handle, bool is_top_most)
@@ -353,5 +351,4 @@ void ContextDX::FenceDX::SetName(const std::string& name)
     m_cp_fence->SetName(nowide::widen(name).c_str());
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

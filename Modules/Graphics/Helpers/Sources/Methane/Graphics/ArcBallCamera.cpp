@@ -29,9 +29,7 @@ Arc-ball camera rotation with mouse handling.
 
 using namespace Methane::Data;
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 static inline float square(float x)     { return x * x; }
@@ -159,5 +157,4 @@ void ArcBallCamera::Rotate(const Vector3f& view_axis, float angle_rad, const Ori
     ApplyLookDirection(look_dir);
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

@@ -30,9 +30,7 @@ DirectX 12 implementation of the command queue interface.
 
 #include <vector>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 namespace wrl = Microsoft::WRL;
@@ -62,5 +60,4 @@ protected:
     wrl::ComPtr<ID3D12CommandQueue> m_cp_command_queue;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

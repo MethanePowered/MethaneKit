@@ -27,9 +27,7 @@ Metal implementation of the command queue interface.
 
 #import <Metal/Metal.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class RenderPassMT;
@@ -54,5 +52,4 @@ protected:
     id<MTLCommandQueue>  m_mtl_command_queue;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

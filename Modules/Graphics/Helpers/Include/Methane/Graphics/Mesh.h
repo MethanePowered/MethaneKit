@@ -32,9 +32,7 @@ Procedural mesh generators, including rect, box, etc.
 #include <algorithm>
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class Mesh
@@ -250,5 +248,4 @@ protected:
     const float m_depth;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

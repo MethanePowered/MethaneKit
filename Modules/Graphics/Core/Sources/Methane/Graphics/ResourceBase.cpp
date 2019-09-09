@@ -30,9 +30,7 @@ Base implementation of the resource interface.
 #include <cassert>
 #include <sstream>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 std::string Resource::GetTypeName(Type type) noexcept
@@ -217,5 +215,4 @@ void ResourceBase::SetState(State state, Barriers& out_barriers)
     m_state = state;
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

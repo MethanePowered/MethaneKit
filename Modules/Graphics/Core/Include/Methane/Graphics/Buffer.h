@@ -27,9 +27,7 @@ Methane buffer interface: GPU memory buffer resource.
 
 #include <vector>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 struct Buffer : virtual Resource
@@ -68,5 +66,4 @@ struct Buffer : virtual Resource
     virtual Buffer::Type GetBufferType() const noexcept = 0;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

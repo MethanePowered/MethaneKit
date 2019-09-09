@@ -39,9 +39,7 @@ by decoding them from popular image formats.
 
 #endif
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 ImageLoader::ImageLoader(Data::Provider& data_provider)
@@ -117,5 +115,4 @@ Texture::Ptr ImageLoader::CreateImageTexture(Context& context, const std::string
 #endif
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

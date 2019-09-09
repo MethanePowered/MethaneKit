@@ -28,9 +28,7 @@
 
 #include <map>
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 namespace Mouse
 {
@@ -91,5 +89,4 @@ protected:
 };
 
 } // namespace Keyboard
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

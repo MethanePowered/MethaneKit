@@ -29,9 +29,7 @@ Methane application view used both by Context in Core API and by Methane App imp
 
 #endif
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 
 #if defined(__OBJC__)
@@ -51,5 +49,4 @@ struct AppView
     NativeAppViewPtr p_native_view;
 };
 
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

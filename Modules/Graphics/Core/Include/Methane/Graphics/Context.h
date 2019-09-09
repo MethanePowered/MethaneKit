@@ -33,9 +33,7 @@ provides basic multi-frame rendering synchronization and frame presenting APIs.
 
 #include <memory>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class FpsCounter;
@@ -107,5 +105,4 @@ struct Context : virtual Object
     virtual bool SetFullScreen(bool is_full_screen) = 0;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

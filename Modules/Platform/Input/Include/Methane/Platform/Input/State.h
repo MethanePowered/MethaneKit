@@ -25,9 +25,7 @@ Aggregated application input state with controllers.
 
 #include "ControllersPool.h"
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 namespace Input
 {
@@ -61,5 +59,4 @@ protected:
 };
 
 } // namespace Input
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

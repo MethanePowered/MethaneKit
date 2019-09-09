@@ -31,9 +31,7 @@ Base implementation of the program interface.
 #include <cassert>
 #include <sstream>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 bool Program::Argument::operator<(const Argument& other) const
@@ -451,5 +449,4 @@ uint32_t ProgramBase::GetInputBufferIndexByArgumentSemantic(const std::string& a
     throw std::runtime_error("Input argument with semantic \"" + argument_semantic + "\" was not found for program \"" + m_name + "\"");
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

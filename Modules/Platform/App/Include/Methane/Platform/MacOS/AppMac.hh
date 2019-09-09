@@ -43,9 +43,7 @@ using NSWindowType = void;
 
 #endif
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 
 class AppMac : public AppBase
@@ -75,5 +73,4 @@ protected:
     NSWindowType*       m_ns_window;
 };
 
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

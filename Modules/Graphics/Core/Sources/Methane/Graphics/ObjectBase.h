@@ -25,9 +25,7 @@ Base implementation of the named object interface.
 
 #include <Methane/Graphics/Object.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ObjectBase : public virtual Object
@@ -43,5 +41,4 @@ private:
     std::string m_name;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

@@ -45,9 +45,7 @@ Base frame class provides frame buffer management with resize handling.
 #include <memory>
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 struct AppFrame
@@ -379,5 +377,4 @@ private:
     static constexpr double  g_title_update_interval_sec = 1;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

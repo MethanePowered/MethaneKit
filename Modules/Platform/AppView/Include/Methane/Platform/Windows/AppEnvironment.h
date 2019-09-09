@@ -25,9 +25,7 @@ Windows application environment.
 
 #include <windows.h>
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 
 struct AppEnvironment
@@ -35,5 +33,4 @@ struct AppEnvironment
     HWND window_handle = nullptr;
 };
 
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

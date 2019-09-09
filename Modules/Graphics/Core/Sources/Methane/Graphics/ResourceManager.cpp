@@ -28,9 +28,7 @@ and deferred releasing of GPU resource.
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 ResourceManager::ResourceManager(ContextBase& context)
@@ -234,5 +232,4 @@ ResourceBase::ReleasePool& ResourceManager::GetReleasePool()
     return static_cast<ResourceBase::ReleasePool&>(*m_sp_release_pool);
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

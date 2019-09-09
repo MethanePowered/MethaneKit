@@ -28,9 +28,7 @@ Metal implementation of the command queue interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 CommandQueue::Ptr CommandQueue::Create(Context& context)
@@ -70,5 +68,4 @@ ContextMT& CommandQueueMT::GetContextMT() noexcept
     return static_cast<class ContextMT&>(m_context);
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

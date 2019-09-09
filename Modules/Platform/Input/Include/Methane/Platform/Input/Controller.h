@@ -31,9 +31,7 @@ Abstract input controller interface for handling keyboard and mouse actions.
 #include <memory>
 #include <vector>
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 namespace Input
 {
@@ -94,5 +92,4 @@ private:
 using Controllers = std::vector<Controller::Ptr>;
 
 } // namespace Input
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

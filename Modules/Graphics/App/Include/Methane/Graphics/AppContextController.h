@@ -28,9 +28,7 @@ Graphics context controller for switching parameters in runtime.
 
 #include <map>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 struct Context;
@@ -76,5 +74,4 @@ protected:
     Context&                m_context;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

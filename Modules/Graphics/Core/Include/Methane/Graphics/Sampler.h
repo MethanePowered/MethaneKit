@@ -30,9 +30,7 @@ Methane sampler interface: GPU resource for texture sampling.
 #include <string>
 #include <limits>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 struct Context;
@@ -125,5 +123,4 @@ struct Sampler : virtual Resource
     virtual const Settings& GetSettings() const = 0;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

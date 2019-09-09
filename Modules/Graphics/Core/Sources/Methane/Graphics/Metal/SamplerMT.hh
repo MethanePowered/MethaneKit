@@ -27,9 +27,7 @@ Metal implementation of the sampler interface.
 
 #import <Metal/Metal.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ContextMT;
@@ -54,5 +52,4 @@ protected:
     id<MTLSamplerState>   m_mtl_sampler_state = nil;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

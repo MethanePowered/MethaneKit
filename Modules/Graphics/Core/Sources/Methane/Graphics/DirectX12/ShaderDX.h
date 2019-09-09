@@ -32,9 +32,7 @@ DirectX 12 implementation of the shader interface.
 #include <d3dx12.h>
 #include <d3d12shader.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 namespace wrl = Microsoft::WRL;
@@ -103,5 +101,4 @@ protected:
     wrl::ComPtr<ID3D12ShaderReflection> m_cp_reflection;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

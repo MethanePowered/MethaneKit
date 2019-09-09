@@ -37,9 +37,7 @@ Math types aliases.
 
 #endif
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 using Vector2i = cml::vector2i;
@@ -64,5 +62,4 @@ inline std::string VectorToString(const cml::vector<T, cml::fixed<vector_size>>&
     return str + ")";
 }
 
-}
 }

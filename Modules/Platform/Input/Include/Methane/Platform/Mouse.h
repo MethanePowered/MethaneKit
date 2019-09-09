@@ -30,9 +30,7 @@ Platform abstraction of mouse events.
 #include <string>
 #include <sstream>
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 namespace Mouse
 {
@@ -170,5 +168,4 @@ struct StateChange
 };
 
 } // namespace Mouse
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

@@ -28,9 +28,7 @@ Platform abstraction of keyboard events.
 #include <sstream>
 #include <cassert>
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 namespace Keyboard
 {
@@ -469,5 +467,4 @@ std::string State::ToString() const
 }
 
 } // namespace Keyboard
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

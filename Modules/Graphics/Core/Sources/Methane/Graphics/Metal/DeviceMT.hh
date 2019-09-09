@@ -27,9 +27,7 @@ Metal implementation of the device interface.
 
 #import <Metal/Metal.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class DeviceMT final : public DeviceBase
@@ -64,5 +62,4 @@ private:
     id<NSObject> m_device_observer = nil;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

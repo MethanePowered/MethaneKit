@@ -39,9 +39,7 @@ Base implementation of the context interface.
 #include <vector>
 #include <atomic>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ContextBase
@@ -105,5 +103,4 @@ protected:
     FpsCounter                  m_fps_counter;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

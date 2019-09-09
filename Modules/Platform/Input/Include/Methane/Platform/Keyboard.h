@@ -37,9 +37,7 @@ Platform abstraction of keyboard events.
 #include <set>
 #include <string>
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 namespace Keyboard
 {
@@ -255,5 +253,4 @@ struct StateChange
 };
 
 } // namespace Keyboard
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

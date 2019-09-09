@@ -34,9 +34,7 @@ DirectX 12 implementation of the device interface.
 #include <algorithm>
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 Device::Feature::Mask DeviceDX::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level)
@@ -286,5 +284,4 @@ void SystemDX::ReportLiveObjects()
 #endif
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

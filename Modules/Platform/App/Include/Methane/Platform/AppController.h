@@ -26,9 +26,7 @@ Base application controller providing commands like app close and help.
 #include <Methane/Platform/AppBase.h>
 #include <Methane/Platform/KeyboardActionControllerBase.hpp>
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 
 enum class AppHelpAction : uint32_t
@@ -70,5 +68,4 @@ private:
     const bool          m_show_command_line_help;
 };
 
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

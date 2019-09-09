@@ -25,9 +25,7 @@ Data provider interface used for loading application resources and resource file
 
 #include "Types.h"
 
-namespace Methane
-{
-namespace Data
+namespace Methane::Data
 {
 
 struct Chunk
@@ -57,5 +55,4 @@ struct Provider
     virtual ~Provider() = default;
 };
 
-} // namespace Data
-} // namespace Methane
+} // namespace Methane::Data

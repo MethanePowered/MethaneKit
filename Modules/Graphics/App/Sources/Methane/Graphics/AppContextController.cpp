@@ -32,9 +32,7 @@ Graphics context controller for switching parameters in runtime.
 
 using namespace Methane::Platform;
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 AppContextController::AppContextController(Context& context, const ActionByKeyboardState& action_by_keyboard_state)
@@ -111,5 +109,4 @@ Input::IHelpProvider::HelpLines AppContextController::GetHelp() const
     return help_lines;
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

@@ -30,9 +30,7 @@
 
 #include <map>
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 namespace Keyboard
 {
@@ -136,5 +134,4 @@ protected:
 };
 
 } // namespace Keyboard
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

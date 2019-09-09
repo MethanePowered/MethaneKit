@@ -27,9 +27,7 @@ Base implementation of the texture interface.
 
 #include "Native/ResourceNT.h"
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class TextureBase
@@ -46,5 +44,4 @@ protected:
     const Settings m_settings;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

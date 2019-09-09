@@ -27,9 +27,7 @@ Basic animation timer for measuring elapsed time since start.
 
 #include <chrono>
 
-namespace Methane
-{
-namespace Data
+namespace Methane::Data
 {
 
 class Timer
@@ -62,5 +60,4 @@ private:
     TimePoint m_start_time;
 };
 
-} // namespace Data
-} // namespace Methane
+} // namespace Methane::Data

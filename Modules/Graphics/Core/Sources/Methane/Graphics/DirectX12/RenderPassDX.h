@@ -27,9 +27,7 @@ DirectX 12 implementation of the render pass interface.
 
 #include <d3d12.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class RenderCommandListDX;
@@ -79,5 +77,4 @@ private:
     bool                                    m_is_updated = false;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

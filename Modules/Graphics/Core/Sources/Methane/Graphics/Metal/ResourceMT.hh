@@ -27,9 +27,7 @@ Metal implementation of the resource interface.
 
 #include <memory>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ContextMT;
@@ -59,5 +57,4 @@ protected:
     ContextMT& GetContextMT() noexcept;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

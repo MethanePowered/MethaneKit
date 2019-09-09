@@ -25,9 +25,7 @@ MacOS platform specific types and implementation of Keyboard abstractions.
 
 #include <stdint.h>
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 namespace Keyboard
 {
@@ -39,5 +37,4 @@ struct NativeKey
 };
 
 } // namespace Keyboard
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

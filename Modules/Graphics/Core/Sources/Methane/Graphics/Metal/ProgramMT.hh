@@ -27,9 +27,7 @@ Metal implementation of the program interface.
 
 #import <Metal/Metal.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ContextMT;
@@ -68,5 +66,4 @@ protected:
     MTLRenderPipelineReflection* m_mtl_render_pipeline_reflection = nil;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics
