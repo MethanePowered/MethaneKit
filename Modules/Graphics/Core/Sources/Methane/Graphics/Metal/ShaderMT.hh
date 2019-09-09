@@ -30,9 +30,7 @@ Metal implementation of the shader interface.
 #include <string>
 #include <memory>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ContextMT;
@@ -97,5 +95,4 @@ protected:
     NSArray<MTLArgument*>* m_mtl_arguments = nil;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

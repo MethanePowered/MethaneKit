@@ -31,9 +31,7 @@ Methane shader interface: defines programmable stage of the graphics pipeline.
 #include <set>
 #include <map>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 struct Context;
@@ -104,5 +102,4 @@ struct Shader
 
 using Shaders = std::vector<Shader::Ptr>;
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

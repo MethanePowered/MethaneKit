@@ -29,9 +29,7 @@ Metal implementation of the context interface.
 
 #import <Metal/Metal.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 struct CommandQueue;
@@ -65,5 +63,4 @@ protected:
     dispatch_semaphore_t    m_dispatch_semaphore;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

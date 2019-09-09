@@ -27,9 +27,7 @@ Metal implementation of the buffer interface.
 
 #import <Metal/Metal.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class BufferMT : public BufferBase
@@ -59,5 +57,4 @@ protected:
     PixelFormat   m_format = PixelFormat::Unknown;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

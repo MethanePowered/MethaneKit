@@ -29,9 +29,7 @@ Base implementation of the texture interface.
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, PixelFormat pixel_format, bool mipmapped, TextureBase::Usage::Mask usage)
@@ -97,5 +95,4 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
     }
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

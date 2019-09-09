@@ -27,9 +27,7 @@ Abstract animation class
 
 #include <memory>
 
-namespace Methane
-{
-namespace Data
+namespace Methane::Data
 {
 
 class Animation : public Timer
@@ -57,5 +55,4 @@ protected:
     double  m_duration_sec  = std::numeric_limits<double>::max();
 };
 
-} // namespace Data
-} // namespace Methane
+} // namespace Methane::Data

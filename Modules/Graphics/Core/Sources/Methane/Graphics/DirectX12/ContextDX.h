@@ -33,9 +33,7 @@ DirectX 12 implementation of the context interface.
 
 #include <vector>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 namespace wrl = Microsoft::WRL;
@@ -110,5 +108,4 @@ protected:
     FenceDX::Ptr                   m_sp_upload_fence;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

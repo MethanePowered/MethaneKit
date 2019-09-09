@@ -33,9 +33,7 @@ Metal implementation of the buffer interface.
 #include <iterator>
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 Buffer::Ptr Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
@@ -137,5 +135,4 @@ MTLIndexType BufferMT::GetNativeIndexType() const noexcept
     return TypeConverterMT::DataFormatToMetalIndexType(m_format);
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

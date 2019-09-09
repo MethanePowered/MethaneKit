@@ -30,9 +30,7 @@ Base implementation of the program interface.
 
 #include <memory>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ContextBase;
@@ -120,5 +118,4 @@ protected:
     DescriptorRangeByHeapType m_constant_descriptor_range_by_heap_type;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

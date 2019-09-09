@@ -21,9 +21,7 @@ Methane application view.
 
 ******************************************************************************/
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 
 void AppViewDummy()
@@ -32,5 +30,4 @@ void AppViewDummy()
     // the table of contents is empty (no object file members in the library define global symbols)
 }
 
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

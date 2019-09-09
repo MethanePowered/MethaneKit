@@ -29,9 +29,7 @@ Methane graphics types convertors to Metal native types.
 
 #include <vector>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class TypeConverterMT
@@ -51,5 +49,4 @@ private:
     TypeConverterMT() = default;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

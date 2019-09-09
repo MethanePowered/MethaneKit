@@ -24,9 +24,7 @@ Pool of animations for centralized updating, adding and removing in application.
 #include <Methane/Data/Animation.h>
 #include <Methane/Instrumentation.h>
 
-namespace Methane
-{
-namespace Data
+namespace Methane::Data
 {
 
 Animation::Animation(double duration_sec)
@@ -59,5 +57,4 @@ void Animation::Stop() noexcept
     m_is_running = false;
 }
 
-} // namespace Data
-} // namespace Methane
+} // namespace Methane::Data

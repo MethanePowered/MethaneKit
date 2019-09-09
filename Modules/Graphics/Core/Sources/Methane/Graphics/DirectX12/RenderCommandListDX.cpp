@@ -41,9 +41,7 @@ DirectX 12 implementation of the render command list interface.
 #include <nowide/convert.hpp>
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primitive primitive) noexcept
@@ -242,5 +240,4 @@ void RenderCommandListDX::Execute(uint32_t frame_index)
     Complete(frame_index);
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

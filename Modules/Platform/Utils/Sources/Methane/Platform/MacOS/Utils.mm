@@ -28,9 +28,7 @@ MacOS platform utilitary functions.
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 
 void PrintToDebugOutput(const std::string& msg)
@@ -83,5 +81,4 @@ std::string GetResourceDir()
     return res_dir;
 }
 
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

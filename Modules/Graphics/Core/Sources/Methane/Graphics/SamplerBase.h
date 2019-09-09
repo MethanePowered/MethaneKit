@@ -27,9 +27,7 @@ Base implementation of the sampler interface.
 
 #include "Native/ResourceNT.h"
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ContextBase;
@@ -53,5 +51,4 @@ protected:
     Settings     m_settings;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

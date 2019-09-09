@@ -27,9 +27,7 @@ Time-based animation of any external enity with an update lambda-function.
 
 #include <functional>
 
-namespace Methane
-{
-namespace Data
+namespace Methane::Data
 {
 
 class TimeAnimation : public Animation
@@ -48,5 +46,4 @@ private:
     double              m_prev_elapsed_seconds = 0.0;
 };
 
-} // namespace Data
-} // namespace Methane
+} // namespace Methane::Data

@@ -28,9 +28,7 @@ Arc-ball camera rotation with mouse handling.
 #include <map>
 #include <chrono>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ArcBallCamera : public Camera
@@ -78,5 +76,4 @@ protected:
     Orientation              m_mouse_pressed_orientation    = { };
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

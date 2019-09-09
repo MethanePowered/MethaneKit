@@ -26,9 +26,7 @@ limitations under the License.
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 namespace Input
 {
@@ -124,5 +122,4 @@ void State::ReleaseAllKeys()
 }
 
 } // namespace Input
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

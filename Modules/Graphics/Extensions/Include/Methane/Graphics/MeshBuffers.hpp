@@ -36,9 +36,7 @@ Mesh buffers with texture extension structure.
 #include <memory>
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 template<typename UniformsType>
@@ -98,5 +96,4 @@ struct TexturedMeshBuffers : MeshBuffers<UniformsType>
     }
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

@@ -27,9 +27,7 @@ Methane graphics interface: graphics texture.
 
 #include <string>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 struct Texture : virtual Resource
@@ -81,5 +79,4 @@ struct Texture : virtual Resource
     virtual const Settings& GetSettings() const = 0;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

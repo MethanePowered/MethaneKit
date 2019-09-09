@@ -27,9 +27,7 @@ Base implementation of the buffer interface.
 
 #include <Methane/Graphics/Buffer.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class BufferBase
@@ -52,5 +50,4 @@ protected:
     Settings m_settings;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

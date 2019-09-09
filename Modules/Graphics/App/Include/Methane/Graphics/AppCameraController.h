@@ -28,9 +28,7 @@ Action camera controller with keyboard and mouse interactions handling.
 #include <Methane/Platform/MouseActionControllerBase.hpp>
 #include <Methane/Graphics/ActionCamera.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class AppCameraController final
@@ -97,5 +95,4 @@ protected:
     ActionCamera& m_action_camera;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

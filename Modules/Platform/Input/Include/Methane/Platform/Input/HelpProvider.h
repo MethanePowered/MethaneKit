@@ -26,9 +26,7 @@ Abstract input help provider.
 #include <vector>
 #include <string>
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 namespace Input
 {
@@ -44,5 +42,4 @@ struct IHelpProvider
 };
 
 } // namespace Input
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

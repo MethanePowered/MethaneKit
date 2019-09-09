@@ -25,9 +25,7 @@ A pool of input controllers for user actions handling in separate application co
 
 #include "Controller.h"
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 namespace Input
 {
@@ -54,5 +52,4 @@ public:
 };
 
 } // namespace Input
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

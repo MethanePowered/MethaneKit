@@ -28,9 +28,7 @@ Methane primitive graphics types.
 
 #include <cstdint>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 template<typename T>
@@ -171,5 +169,4 @@ enum class Compare : uint32_t
     NotEqual,
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

@@ -30,9 +30,7 @@ Windows application implementation.
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 
 constexpr auto WM_ALERT = WM_USER + 1;
@@ -491,5 +489,4 @@ void AppWin::Close()
     }
 }
 
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

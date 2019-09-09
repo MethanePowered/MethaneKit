@@ -32,9 +32,7 @@ minimum number of continous ranges by merging or splitting adjacent ranges in se
 #include <set>
 #include <vector>
 
-namespace Methane
-{
-namespace Data
+namespace Methane::Data
 {
 
 template<typename ScalarT>
@@ -183,5 +181,4 @@ protected:
     }
 };
 
-} // namespace Data
-} // namespace Methane
+} // namespace Methane::Data

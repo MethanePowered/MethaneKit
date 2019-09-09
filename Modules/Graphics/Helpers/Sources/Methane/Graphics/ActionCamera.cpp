@@ -31,9 +31,7 @@ Interactive action-camera for rotating, moving and zooming with mouse and keyboa
 
 using namespace Methane::Data;
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 static inline float square(float x)     { return x * x; }
@@ -326,5 +324,4 @@ std::string ActionCamera::GetActionName(KeyboardAction keyboard_action)
     }
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

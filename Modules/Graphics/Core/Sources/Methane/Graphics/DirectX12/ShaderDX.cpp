@@ -39,9 +39,7 @@ DirectX 12 implementation of the shader interface.
 #include <sstream>
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type) noexcept
@@ -456,5 +454,4 @@ ContextDX& ShaderDX::GetContextDX()
     return static_cast<class ContextDX&>(m_context);
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

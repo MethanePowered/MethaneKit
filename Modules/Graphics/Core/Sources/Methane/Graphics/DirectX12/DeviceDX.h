@@ -30,9 +30,7 @@ DirectX 12 implementation of the device interface.
 #include <d3d12.h>
 #include <d3dx12.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 namespace wrl = Microsoft::WRL;
@@ -84,5 +82,4 @@ private:
     DWORD                      m_adapter_change_registration_cookie = 0;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

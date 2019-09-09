@@ -30,9 +30,7 @@ Interactive action-camera for rotating, moving and zooming with mouse and keyboa
 #include <map>
 #include <chrono>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ActionCamera : public ArcBallCamera
@@ -148,5 +146,4 @@ protected:
     KeyboardActionAnimations m_keyboard_action_animations;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

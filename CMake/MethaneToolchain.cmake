@@ -52,7 +52,7 @@ function(get_shaders_name SHADERS_FILE SHADERS_NAME)
     trim_spaces(${SHADERS_FILE} SHADERS_FILE)
     split_by_last_delimiter(${SHADERS_FILE} "." SHADERS_PATH FILE_EXT)
     string(REGEX MATCH "[^/\\]+$" FILE_NAME ${SHADERS_PATH})
-    set(${SHADERS_NAME} FILE_NAME PARENT_SCOPE)
+    set(${SHADERS_NAME} ${FILE_NAME} PARENT_SCOPE)
 endfunction()
 
 function(get_generated_shaders FOR_TARGET SHADERS_CONFIG SHADER_EXT SHADERS_GENERATED)

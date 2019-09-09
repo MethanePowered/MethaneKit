@@ -25,9 +25,7 @@ Metal "dummy" implementation of the descriptor heap.
 
 #include <Methane/Graphics/DescriptorHeap.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ContextBase;
@@ -39,5 +37,4 @@ public:
     ~DescriptorHeapMT() override;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

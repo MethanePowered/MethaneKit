@@ -30,9 +30,7 @@ by decoding them from popular image formats.
 
 #include <string>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ImageLoader final
@@ -46,5 +44,4 @@ private:
     Data::Provider& m_data_provider;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

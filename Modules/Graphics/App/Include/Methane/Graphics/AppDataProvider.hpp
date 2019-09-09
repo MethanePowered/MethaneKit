@@ -47,9 +47,7 @@ and external resource files on disk.
     CMRC_DECLARE(Textures);
 #endif
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class AppDataProvider : public Data::Provider
@@ -158,5 +156,4 @@ private:
 #endif
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

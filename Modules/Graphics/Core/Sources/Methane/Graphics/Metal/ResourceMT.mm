@@ -32,9 +32,7 @@ Metal implementation of the resource interface.
 
 #import <Metal/Metal.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 struct ResourceContainerMT
@@ -102,5 +100,4 @@ ContextMT& ResourceMT::GetContextMT() noexcept
     return static_cast<class ContextMT&>(m_context);
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

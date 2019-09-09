@@ -27,9 +27,7 @@ Common Methane primitive data types
 #include <string>
 #include <cstdint>
 
-namespace Methane
-{
-namespace Data
+namespace Methane::Data
 {
 
 template<typename T>
@@ -103,5 +101,4 @@ using Size = uint32_t;
 using RawPtr = char*;
 using ConstRawPtr = const char* const;
 
-} // namespace Data
-} // namespace Methane
+} // namespace Methane::Data

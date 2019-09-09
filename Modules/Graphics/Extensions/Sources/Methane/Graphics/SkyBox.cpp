@@ -23,10 +23,7 @@ SkyBox rendering extension primitive
 
 #include <Methane/Graphics/SkyBox.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

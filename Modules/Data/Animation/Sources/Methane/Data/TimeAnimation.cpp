@@ -24,9 +24,7 @@ Time-based animation of any external enity with an update lambda-function.
 #include <Methane/Data/TimeAnimation.h>
 #include <Methane/Instrumentation.h>
 
-namespace Methane
-{
-namespace Data
+namespace Methane::Data
 {
 
 TimeAnimation::TimeAnimation(const FunctionType& update_function, double duration_sec)
@@ -58,5 +56,4 @@ bool TimeAnimation::Update()
     return m_is_running;
 }
 
-} // namespace Data
-} // namespace Methane
+} // namespace Methane::Data

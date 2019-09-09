@@ -31,9 +31,7 @@ DirectX 12 implementation of the texture interface.
 #include <d3dx12.h>
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 template<typename... ExtraArgs>
@@ -92,5 +90,4 @@ using FrameBufferTextureDX          = TextureDX<uint32_t /* frame_buffer_index *
 using DepthStencilBufferTextureDX   = TextureDX<Depth /*depth_clear_value*/, Stencil /*stencil_clear_value*/>;
 using ImageTextureDX                = TextureDX<ImageTextureArg>;
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

@@ -33,9 +33,7 @@ A pool of input controllers for user actions handling in separate application co
 #include <Methane/Platform/Utils.h>
 #endif
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 namespace Input
 {
@@ -169,5 +167,4 @@ IHelpProvider::HelpLines ControllersPool::GetHelp() const
 }
 
 } // namespace Input
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

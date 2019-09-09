@@ -32,9 +32,7 @@ Base implementation of the command list interface.
 #include <map>
 #include <mutex>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class CommandQueueBase;
@@ -97,5 +95,4 @@ private:
     mutable std::mutex  m_state_mutex;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

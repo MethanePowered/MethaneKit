@@ -25,14 +25,11 @@ SkyBox rendering extension primitive
 
 #include <memory>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class SkyBox
 {
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

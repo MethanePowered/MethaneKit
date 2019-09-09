@@ -28,9 +28,7 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 DescriptorHeap::Reservation::Reservation(Ref in_heap, const Range& in_constant_range, const Range& in_mutable_range)
@@ -165,5 +163,4 @@ std::string DescriptorHeap::GetTypeName(Type heap_type)
     }
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

@@ -26,9 +26,7 @@ Action camera controller with keyboard and mouse interactions handling.
 
 using namespace Methane::Platform;
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 AppCameraController::AppCameraController(ActionCamera& action_camera, const std::string& camera_name,
@@ -128,5 +126,4 @@ std::string AppCameraController::GetMouseActionName(ActionCamera::MouseAction ac
     return ActionCamera::GetActionName(action);
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

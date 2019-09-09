@@ -27,9 +27,7 @@ Metal implementation of the texture interface.
 
 #import <Metal/Metal.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class TextureMT : public TextureBase
@@ -58,5 +56,4 @@ protected:
     id<MTLTexture> m_mtl_texture;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

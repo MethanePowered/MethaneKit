@@ -32,9 +32,7 @@ Base implementation of the command queue interface.
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 CommandQueueBase::CommandQueueBase(ContextBase& context, bool execution_state_tracking)
@@ -160,5 +158,4 @@ void CommandQueueBase::OnCommandListCompleted(CommandListBase& /*command_list*/,
     }
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

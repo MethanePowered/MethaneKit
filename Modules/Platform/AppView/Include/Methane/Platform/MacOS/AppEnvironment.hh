@@ -46,9 +46,7 @@ using NativeViewController = void;
 
 #endif
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 
 struct AppEnvironment
@@ -56,5 +54,4 @@ struct AppEnvironment
     NativeViewController* _Nonnull ns_app_delegate;
 };
 
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

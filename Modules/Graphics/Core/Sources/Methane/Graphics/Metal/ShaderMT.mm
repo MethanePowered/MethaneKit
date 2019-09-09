@@ -31,9 +31,7 @@ Metal implementation of the shader interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 using StepType = ProgramBase::InputBufferLayout::StepType;
@@ -272,5 +270,4 @@ ShaderMT::LibraryMT& ShaderMT::GetLibraryMT() noexcept
     return metal_library;
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

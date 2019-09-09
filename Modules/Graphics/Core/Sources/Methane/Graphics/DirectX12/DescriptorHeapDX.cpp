@@ -30,9 +30,7 @@ DirectX 12 implementation of the descriptor heap wrapper.
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeap::Type type) noexcept
@@ -124,5 +122,4 @@ ContextDX& DescriptorHeapDX::GetContextDX()
     return static_cast<class ContextDX&>(m_context);
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

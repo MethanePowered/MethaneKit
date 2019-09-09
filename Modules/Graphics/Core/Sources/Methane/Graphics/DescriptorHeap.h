@@ -29,9 +29,7 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps
 #include <vector>
 #include <set>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ContextBase;
@@ -119,5 +117,4 @@ protected:
 using DescriptorHeaps      = std::vector<DescriptorHeap::Ptr>;
 using DescriptorHeapRefs   = std::vector<DescriptorHeap::Ref>;
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

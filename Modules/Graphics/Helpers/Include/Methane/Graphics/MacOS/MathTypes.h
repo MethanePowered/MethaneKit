@@ -30,9 +30,7 @@ MacOS specific math types aliases.
 #define SHADER_FIELD_ALIGN  alignas(16)
 #define SHADER_FIELD_PACK   alignas(4)
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 // Use row-major order matrices for Metal
@@ -46,5 +44,4 @@ using Matrix44f = cml::matrix44f_r;
 // Axis orientation used by Metal
 constexpr cml::AxisOrientation g_axis_orientation = cml::AxisOrientation::left_handed;
 
-}
 }

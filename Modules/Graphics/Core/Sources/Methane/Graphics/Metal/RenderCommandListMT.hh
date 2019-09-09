@@ -29,9 +29,7 @@ Metal implementation of the render command list interface.
 
 #import <Metal/Metal.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class CommandQueueMT;
@@ -74,5 +72,4 @@ protected:
     id<MTLRenderCommandEncoder> m_mtl_cmd_encoder;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics
