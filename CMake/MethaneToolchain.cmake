@@ -21,93 +21,9 @@ Cmake auxillary functions to setup build of cross-platform graphics application
 
 *****************************************************************************]]
 
+include(MethaneUtils)
+include(MethaneModules)
 include(CMakeRC)
-
-function(get_platform_dir)
-    if (WIN32)
-        set(PLATFORM_DIR Windows PARENT_SCOPE)
-        set(CPP_EXT cpp PARENT_SCOPE)
-    elseif(APPLE)
-        set(PLATFORM_DIR MacOS PARENT_SCOPE)
-        set(CPP_EXT mm PARENT_SCOPE)
-    else()
-        set(PLATFORM_DIR Linux PARENT_SCOPE)
-        set(CPP_EXT cpp PARENT_SCOPE)
-    endif()
-endfunction()
-
-function(get_graphics_dir)
-    if (WIN32)
-        set(GRAPHICS_DIR DirectX12 PARENT_SCOPE)
-    elseif(APPLE)
-        set(GRAPHICS_DIR Metal PARENT_SCOPE)
-    else()
-        set(GRAPHICS_DIR Vulkan PARENT_SCOPE)
-    endif()
-endfunction()
-
-function(get_module_dirs NAMESPACE)
-    get_platform_dir()
-    get_graphics_dir()
-
-    set(INCLUDE_DIR "Include/${NAMESPACE}")
-    set(SOURCES_DIR "Sources/${NAMESPACE}")
-
-    set(INCLUDE_PLATFORM_DIR ${INCLUDE_DIR}/${PLATFORM_DIR} PARENT_SCOPE)
-    set(SOURCES_PLATFORM_DIR ${SOURCES_DIR}/${PLATFORM_DIR} PARENT_SCOPE)
-    set(INCLUDE_GRAPHICS_DIR ${INCLUDE_DIR}/${GRAPHICS_DIR} PARENT_SCOPE)
-    set(SOURCES_GRAPHICS_DIR ${SOURCES_DIR}/${GRAPHICS_DIR} PARENT_SCOPE)
-    set(INCLUDE_DIR ${INCLUDE_DIR} PARENT_SCOPE)
-    set(SOURCES_DIR ${SOURCES_DIR} PARENT_SCOPE)
-    set(NAMESPACE_DIR ${NAMESPACE} PARENT_SCOPE)
-    set(GRAPHICS_DIR ${GRAPHICS_DIR} PARENT_SCOPE)
-    set(PLATFORM_DIR ${PLATFORM_DIR} PARENT_SCOPE)
-    set(CPP_EXT ${CPP_EXT} PARENT_SCOPE)
-endfunction()
-
-function(add_prerequisite_modules TO_TARGET FROM_TARGETS)
-    foreach(FROM_TARGET ${FROM_TARGETS})
-        if(NOT TARGET ${FROM_TARGET})
-            message(SEND_ERROR "Can not add prerequisite modules from target \"${FROM_TARGET}\": target does not exist.")
-        endif()
-        get_property(TARGET_PREREQUISITE_MODULES_IS_SET TARGET ${FROM_TARGET} PROPERTY PREREQUISITE_MODULES SET)
-        if (TARGET_PREREQUISITE_MODULES_IS_SET)
-            get_target_property(TARGET_PREREQUISITE_MODULES ${FROM_TARGET} PREREQUISITE_MODULES)
-            list(APPEND ALL_PREREQUISITE_MODULES ${TARGET_PREREQUISITE_MODULES})
-        endif()
-    endforeach()
-    set_target_properties(${TO_TARGET}
-        PROPERTIES
-        PREREQUISITE_MODULES "${ALL_PREREQUISITE_MODULES}"
-    )
-endfunction()
-
-function(add_prerequisite_binaries TO_TARGET FROM_TARGETS)
-    foreach(FROM_TARGET ${FROM_TARGETS})
-        get_property(TARGET_PREREQUISITE_BINARIES_IS_SET TARGET ${FROM_TARGET} PROPERTY PREREQUISITE_BINARIES SET)
-        if (TARGET_PREREQUISITE_BINARIES_IS_SET)
-            get_target_property(COPY_BINARIES ${FROM_TARGET} PREREQUISITE_BINARIES)
-            list(APPEND COPY_ALL_BINARIES ${COPY_BINARIES})
-        endif()
-    endforeach()
-    if (COPY_ALL_BINARIES)
-        add_custom_command(TARGET ${TO_TARGET} POST_BUILD
-            COMMENT "Copying prerequisite binaries for application " ${TO_TARGET}
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${COPY_ALL_BINARIES} "$<TARGET_FILE_DIR:${TO_TARGET}>")
-    endif()
-endfunction()
-
-function(shorten_target_name IN_TARGET_NAME OUT_TARGET_NAME)
-    # Visual Studio custom command targets may fail because of paths exceeding 256 symbols,
-    # so we have to shorten long target names by replacing them with 32 symbol hashes
-    string(LENGTH "${IN_TARGET_NAME}" IN_TARGET_LENGTH)
-    if((CMAKE_GENERATOR MATCHES "^Visual Studio") AND (IN_TARGET_LENGTH GREATER 32))
-        string(MD5 TARGET_NAME_HASH "${IN_TARGET_NAME}")
-        set(${OUT_TARGET_NAME} ${TARGET_NAME_HASH} PARENT_SCOPE)
-    else()
-        set(${OUT_TARGET_NAME} ${IN_TARGET_NAME} PARENT_SCOPE)
-    endif()
-endfunction()
 
 function(get_shader_profile SHADER_TYPE PROFILE_VER OUT_PROFILE)
     if (SHADER_TYPE STREQUAL "frag")
@@ -126,18 +42,29 @@ function(get_target_shader_paths FOR_TARGET)
     set(SHADERS_METAL_LIB "${_TARGET_SHADERS_DIR}/default.metallib" PARENT_SCOPE)
 endfunction()
 
+function(get_shaders_config SHADERS_HLSL SHADERS_CONFIG)
+    trim_spaces(${SHADERS_HLSL} SHADERS_HLSL)
+    split_by_last_delimiter(${SHADERS_HLSL} "." SHADERS_FILE HLSL_EXT)
+    set(${SHADERS_CONFIG} "${SHADERS_FILE}.cfg" PARENT_SCOPE)
+endfunction()
+
 function(get_generated_shaders FOR_TARGET SHADERS_CONFIG SHADER_EXT SHADERS_GENERATED)
     get_target_shader_paths(${FOR_TARGET})
+    split_by_first_delimiter(${SHADERS_CONFIG} "." SHADERS_FILE CONFIG_EXT)
+    string(REGEX MATCH "[^/\\]+$" SHADERS_NAME ${SHADERS_FILE})
+
     file(STRINGS ${SHADERS_CONFIG} CONFIG_STRINGS)
     foreach(KEY_VALUE_STRING ${CONFIG_STRINGS})
-        string(REGEX REPLACE "^[ ]+" "" KEY_VALUE_STRING ${KEY_VALUE_STRING})
-        string(REGEX MATCH "^[^=]+" SHADER_TYPE ${KEY_VALUE_STRING})
-        string(REPLACE "${SHADER_TYPE}=" "" ENTRY_POINT_WITH_DEFINIES ${KEY_VALUE_STRING})
+        trim_spaces(${KEY_VALUE_STRING} KEY_VALUE_STRING)
+        split_by_first_delimiter(${KEY_VALUE_STRING} "=" SHADER_TYPE ENTRY_POINT_WITH_DEFINIES)
+
         string(REGEX REPLACE ":| " "_" NEW_ENTRY_POINT ${ENTRY_POINT_WITH_DEFINIES})
         string(REPLACE "=" "" NEW_ENTRY_POINT "${NEW_ENTRY_POINT}")
+        set(NEW_ENTRY_POINT "${SHADERS_NAME}_${NEW_ENTRY_POINT}")
 
         list(APPEND _SHADERS_GENERATED "${TARGET_SHADERS_DIR}/${NEW_ENTRY_POINT}.${SHADER_EXT}")
     endforeach()
+
     set(${SHADERS_GENERATED} ${_SHADERS_GENERATED} PARENT_SCOPE)
 endfunction()
 
@@ -145,19 +72,20 @@ function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL SHADERS_CONFIG
     get_platform_dir()
     get_target_shader_paths(${FOR_TARGET})
 
+    split_by_first_delimiter(${SHADERS_CONFIG} "." SHADERS_FILE CONFIG_EXT)
+    string(REGEX MATCH "[^/\\]+$" SHADERS_NAME ${SHADERS_FILE})
+
     set(SPIRV_BIN_DIR      "${CMAKE_SOURCE_DIR}/Externals/SPIRV/binaries/${PLATFORM_DIR}")
     set(SPIRV_GEN_EXE      "${SPIRV_BIN_DIR}/glslangValidator")
     set(SPIRV_CROSS_EXE    "${SPIRV_BIN_DIR}/spirv-cross")
 
     file(STRINGS ${SHADERS_CONFIG} CONFIG_STRINGS)
     foreach(KEY_VALUE_STRING ${CONFIG_STRINGS})
-        string(REGEX REPLACE "^[ ]+" "" KEY_VALUE_STRING ${KEY_VALUE_STRING})
-        string(REGEX MATCH "^[^=]+" SHADER_TYPE ${KEY_VALUE_STRING})
-        string(REPLACE "${SHADER_TYPE}=" "" ENTRY_POINT_WITH_DEFINIES ${KEY_VALUE_STRING})
-        string(REGEX MATCH "^[^:]+" OLD_ENTRY_POINT ${ENTRY_POINT_WITH_DEFINIES})
+        trim_spaces(${KEY_VALUE_STRING} KEY_VALUE_STRING)
+        split_by_first_delimiter(${KEY_VALUE_STRING} "=" SHADER_TYPE ENTRY_POINT_WITH_DEFINIES)
+        split_by_first_delimiter(${ENTRY_POINT_WITH_DEFINIES} ":" OLD_ENTRY_POINT SHADER_DEFINITIONS)
 
-        set(NEW_ENTRY_POINT ${OLD_ENTRY_POINT})
-        string(REGEX REPLACE "^${OLD_ENTRY_POINT}[:]?" "" SHADER_DEFINITIONS ${ENTRY_POINT_WITH_DEFINIES})
+        set(NEW_ENTRY_POINT "${SHADERS_NAME}_${OLD_ENTRY_POINT}")
         string(REPLACE " " ";" SHADER_DEFINITIONS "${SHADER_DEFINITIONS}")
 
         foreach(SHADER_DEFINITION ${SHADER_DEFINITIONS})
@@ -172,6 +100,7 @@ function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL SHADERS_CONFIG
         set(SHADER_METAL_PATH "${TARGET_SHADERS_DIR}/${SHADER_METAL_FILE}")
 
         set(GENERATE_METAL_TARGET ${FOR_TARGET}_Generate_${SHADER_METAL_FILE})
+
         add_custom_target(${GENERATE_METAL_TARGET}
             COMMENT "Generating Metal shader source code from HLSL " ${NEW_ENTRY_POINT} " for application " ${TARGET}
             BYPRODUCTS "${SHADER_METAL_PATH}"
@@ -246,13 +175,11 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL SHADERS_CONFIG PROFILE_VER
 
     file(STRINGS ${SHADERS_CONFIG} CONFIG_STRINGS)
     foreach(KEY_VALUE_STRING ${CONFIG_STRINGS})
-        string(REGEX REPLACE "^[ ]+" "" KEY_VALUE_STRING ${KEY_VALUE_STRING})
-        string(REGEX MATCH "^[^=]+" SHADER_TYPE ${KEY_VALUE_STRING})
-        string(REPLACE "${SHADER_TYPE}=" "" ENTRY_POINT_WITH_DEFINIES ${KEY_VALUE_STRING})
-        string(REGEX MATCH "^[^:]+" ORIG_ENTRY_POINT ${ENTRY_POINT_WITH_DEFINIES})
+        trim_spaces(${KEY_VALUE_STRING} KEY_VALUE_STRING)
+        split_by_first_delimiter(${KEY_VALUE_STRING} "=" SHADER_TYPE ENTRY_POINT_WITH_DEFINIES)
+        split_by_first_delimiter(${ENTRY_POINT_WITH_DEFINIES} ":" ORIG_ENTRY_POINT SHADER_DEFINITIONS)
 
         set(NEW_ENTRY_POINT ${ORIG_ENTRY_POINT})
-        string(REGEX REPLACE "^${ORIG_ENTRY_POINT}[:]?" "" SHADER_DEFINITIONS ${ENTRY_POINT_WITH_DEFINIES})
         string(REPLACE " " ";" SHADER_DEFINITIONS "${SHADER_DEFINITIONS}")
 
         foreach(SHADER_DEFINITION ${SHADER_DEFINITIONS})
@@ -292,10 +219,15 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL SHADERS_CONFIG PROFILE_VER
     set(${OUT_COMPILED_SHADER_BINS} ${_OUT_COMPILED_SHADER_BINS} PARENT_SCOPE)
 endfunction()
 
-function(add_methane_application TARGET APP_NAME SOURCES SHADERS_HLSL SHADERS_CONFIG RESOURCES_DIR EMBEDDED_TEXTURES_DIR EMBEDDED_TEXTURES COPY_TEXTURES INSTALL_DIR)
+function(add_methane_application TARGET APP_NAME SOURCES HLSL_SOURCES RESOURCES_DIR EMBEDDED_TEXTURES_DIR EMBEDDED_TEXTURES COPY_TEXTURES INSTALL_DIR)
     set(BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 
     get_target_shader_paths(${TARGET})
+
+    foreach(SHADERS_HLSL ${HLSL_SOURCES})
+        get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
+        list(APPEND CONFIG_SOURCES ${SHADERS_CONFIG})
+    endforeach()
 
     if (WIN32)
 
@@ -310,8 +242,8 @@ function(add_methane_application TARGET APP_NAME SOURCES SHADERS_HLSL SHADERS_CO
 
         add_executable(${TARGET} WIN32
             ${SOURCES}
-            ${SHADERS_HLSL}
-            ${SHADERS_CONFIG}
+            ${HLSL_SOURCES}
+            ${CONFIG_SOURCES}
             ${RESOURCE_FILE}
         )
 
@@ -370,13 +302,16 @@ function(add_methane_application TARGET APP_NAME SOURCES SHADERS_HLSL SHADERS_CO
         configure_file(${RESOURCES_DIR}/Configs/MacOS/plist.in ${PLIST_FILE_PATH})
         
         # Get list of generated Metal shaders
-        get_generated_shaders(${TARGET} ${SHADERS_CONFIG} "metal" SHADERS_GENERATED)
+        foreach(SHADERS_CONFIG ${CONFIG_SOURCES})
+            get_generated_shaders(${TARGET} ${SHADERS_CONFIG} "metal" SHADERS_GENERATED)
+            list(APPEND GENERATED_SOURCES ${SHADERS_GENERATED})
+        endforeach()
 
         add_executable(${TARGET} MACOSX_BUNDLE
             ${SOURCES}
-            ${SHADERS_HLSL}
-            ${SHADERS_CONFIG}
-            ${SHADERS_GENERATED}
+            ${HLSL_SOURCES}
+            ${CONFIG_SOURCES}
+            ${GENERATED_SOURCES}
             ${SHADERS_METAL_LIB}
             ${ICON_FILE_PATH}
         )
@@ -388,8 +323,12 @@ function(add_methane_application TARGET APP_NAME SOURCES SHADERS_HLSL SHADERS_CO
         )
 
         # Generate Metal shaders from HLSL sources with SPIRV toolset and compile to Metal Library
-        generate_metal_shaders_from_hlsl(${TARGET} ${SHADERS_HLSL} ${SHADERS_CONFIG})
-        compile_metal_shaders_to_library(${TARGET} "macosx" "${SHADERS_GENERATED}")
+        foreach(SHADERS_HLSL ${HLSL_SOURCES})
+            get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
+            generate_metal_shaders_from_hlsl(${TARGET} ${SHADERS_HLSL} ${SHADERS_CONFIG})
+        endforeach()
+
+        compile_metal_shaders_to_library(${TARGET} "macosx" "${GENERATED_SOURCES}")
         
         # Set bundle location of the icon and metal library files
         set_source_files_properties(

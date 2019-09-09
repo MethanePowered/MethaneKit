@@ -33,8 +33,8 @@ namespace Methane::Tutorials
 
 // Common application settings
 static const gfx::FrameSize           g_shadow_map_size(1024, 1024);
-static const gfx::Shader::EntryTarget g_vs_main       = { "VSMain", "vs_5_1" };
-static const gfx::Shader::EntryTarget g_ps_main       = { "PSMain", "ps_5_1" };
+static const gfx::Shader::EntryTarget g_vs_main       = { "Shaders", "VSMain", "vs_5_1" };
+static const gfx::Shader::EntryTarget g_ps_main       = { "Shaders", "PSMain", "ps_5_1" };
 static const GraphicsApp::Settings    g_app_settings  = // Application settings:
 {                                                       // ====================
     {                                                   // app:

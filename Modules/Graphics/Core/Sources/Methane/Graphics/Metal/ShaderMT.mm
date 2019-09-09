@@ -167,7 +167,7 @@ ShaderBase::ResourceBindings ShaderMT::GetResourceBindings(const std::set<std::s
         return resource_bindings;
     
 #ifndef NDEBUG
-    NSLog(@"%s shader arguments:", GetTypeName().c_str());
+    NSLog(@"%s shader '%s' arguments:", GetTypeName().c_str(), GetCompiledEntryFunctionName().c_str());
 #endif
 
     for(MTLArgument* mtl_arg in m_mtl_arguments)

@@ -201,8 +201,8 @@ public:
         {
             Program::Create(*m_sp_context, {
                 {
-                    Shader::CreateVertex(*m_sp_context, { { "VSMain", "vs_5_1" } }),
-                    Shader::CreatePixel(*m_sp_context,  { { "PSMain", "ps_5_1" } }),
+                    Shader::CreateVertex(*m_sp_context, { { "Shaders", "VSMain", "vs_5_1" } }),
+                    Shader::CreatePixel(*m_sp_context,  { { "Shaders", "PSMain", "ps_5_1" } }),
                 },
                 { { {
                     { "in_position", "POSITION" },

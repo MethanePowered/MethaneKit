@@ -1,6 +1,6 @@
 set(TARGET MethanePlatformInput)
 
-include(Methane)
+include(MethaneModules)
 
 get_module_dirs("Methane/Platform")
 

@@ -75,6 +75,7 @@ struct Shader
 
     struct EntryTarget
     {
+        std::string     file_name;
         std::string     function_name;
         std::string     compile_target;
     };
