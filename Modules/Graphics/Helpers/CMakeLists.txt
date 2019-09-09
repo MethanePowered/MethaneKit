@@ -1,6 +1,6 @@
 set(TARGET MethaneGraphicsHelpers)
 
-include(Methane)
+include(MethaneModules)
 
 get_module_dirs("Methane/Graphics")
 
