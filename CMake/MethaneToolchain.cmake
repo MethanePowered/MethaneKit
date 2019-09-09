@@ -174,6 +174,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL SHADERS_CONFIG PROFILE_VER
     
     get_platform_dir()
     get_target_shader_paths(${FOR_TARGET})
+    get_shaders_name(${SHADERS_CONFIG} SHADERS_NAME)
 
     set(SHADER_COMPILER_EXE "${WINDOWS_SDK_BIN_PATH}/fxc.exe")
 
@@ -194,7 +195,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL SHADERS_CONFIG PROFILE_VER
 
         get_shader_profile(${SHADER_TYPE} ${PROFILE_VER} SHADER_PROFILE)
 
-        set(SHADER_OBJ_FILE "${NEW_ENTRY_POINT}.obj")
+        set(SHADER_OBJ_FILE "${SHADERS_NAME}_${NEW_ENTRY_POINT}.obj")
         set(SHADER_OBJ_PATH "${TARGET_SHADERS_DIR}/${SHADER_OBJ_FILE}")
 
         list(APPEND _OUT_COMPILED_SHADER_BINS ${SHADER_OBJ_PATH})
