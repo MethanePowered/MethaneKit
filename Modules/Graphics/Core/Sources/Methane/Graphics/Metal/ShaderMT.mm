@@ -25,7 +25,6 @@ Metal implementation of the shader interface.
 #include "ProgramMT.hh"
 #include "ResourceMT.hh"
 #include "ContextMT.hh"
-#include "DeviceMT.hh"
 #include "TypesMT.hh"
 
 #include <Methane/Instrumentation.h>
@@ -121,25 +120,12 @@ DescriptorHeap::Type ShaderMT::ResourceBindingMT::GetDescriptorHeapType() const
 Shader::Ptr Shader::Create(Shader::Type shader_type, Context& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ShaderMT>(shader_type, static_cast<ContextBase&>(context), settings);
+    return std::make_shared<ShaderMT>(shader_type, static_cast<ContextMT&>(context), settings);
 }
 
-ShaderMT::LibraryMT::LibraryMT(ContextMT& metal_context)
-    : m_mtl_library([metal_context.GetDeviceMT().GetNativeDevice() newDefaultLibrary])
-{
-    ITT_FUNCTION_TASK();
-}
-
-ShaderMT::LibraryMT::~LibraryMT()
-{
-    ITT_FUNCTION_TASK();
-
-    [m_mtl_library release];
-}
-
-ShaderMT::ShaderMT(Shader::Type shader_type, ContextBase& context, const Settings& settings)
+ShaderMT::ShaderMT(Shader::Type shader_type, ContextMT& context, const Settings& settings)
     : ShaderBase(shader_type, context, settings)
-    , m_mtl_function([GetLibraryMT().Get() newFunctionWithName: Methane::MacOS::ConvertToNSType<std::string, NSString*>(GetCompiledEntryFunctionName())])
+    , m_mtl_function([context.GetLibraryMT(/*settings.entry_target.file_name*/)->Get() newFunctionWithName: Methane::MacOS::ConvertToNSType<std::string, NSString*>(GetCompiledEntryFunctionName())])
 {
     ITT_FUNCTION_TASK();
 
@@ -261,13 +247,6 @@ ContextMT& ShaderMT::GetContextMT() noexcept
 {
     ITT_FUNCTION_TASK();
     return static_cast<class ContextMT&>(m_context);
-}
-
-ShaderMT::LibraryMT& ShaderMT::GetLibraryMT() noexcept
-{
-    ITT_FUNCTION_TASK();
-    static LibraryMT metal_library(GetContextMT());
-    return metal_library;
 }
 
 } // namespace Methane::Graphics

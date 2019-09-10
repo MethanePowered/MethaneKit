@@ -29,6 +29,7 @@ Metal implementation of the context interface.
 #include "TypesMT.hh"
 
 #include <Methane/Instrumentation.h>
+#include <Methane/Platform/Utils.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
 namespace Methane::Graphics
@@ -149,7 +150,42 @@ bool ContextMT::SetVSyncEnabled(bool vsync_enabled)
 
 DeviceMT& ContextMT::GetDeviceMT()
 {
+    ITT_FUNCTION_TASK();
     return static_cast<DeviceMT&>(GetDevice());
+}
+
+const ContextMT::LibraryMT::Ptr& ContextMT::GetLibraryMT(const std::string& library_name)
+{
+    ITT_FUNCTION_TASK();
+    const auto library_by_name_it = m_library_by_name.find(library_name);
+    if (library_by_name_it != m_library_by_name.end())
+        return library_by_name_it->second;
+
+    return m_library_by_name.emplace(library_name, std::make_shared<LibraryMT>(*this, library_name)).first->second;
+}
+
+NSString* ContextMT::LibraryMT::GetFullPath(const std::string& library_name)
+{
+    return MacOS::ConvertToNSType<std::string, NSString*>(Platform::GetResourceDir() + "/" + library_name + ".metallib");
+}
+
+ContextMT::LibraryMT::LibraryMT(ContextMT& metal_context, const std::string& library_name)
+        : m_mtl_library(library_name.empty()
+                        ? [metal_context.GetDeviceMT().GetNativeDevice() newDefaultLibrary]
+                        : [metal_context.GetDeviceMT().GetNativeDevice() newLibraryWithFile:GetFullPath(library_name) error:&m_ns_error])
+{
+    ITT_FUNCTION_TASK();
+    if (!m_mtl_library)
+    {
+        const std::string error_msg = MacOS::ConvertFromNSType<NSString, std::string>([m_ns_error localizedDescription]);
+        throw std::runtime_error("Failed to create " + (library_name.empty() ? std::string("default") : library_name) + " Metal library: " + error_msg);
+    }
+}
+
+ContextMT::LibraryMT::~LibraryMT()
+{
+    ITT_FUNCTION_TASK();
+    [m_mtl_library release];
 }
 
 } // namespace Methane::Graphics
