@@ -34,9 +34,6 @@ using namespace Methane::Data;
 namespace Methane::Graphics
 {
 
-static inline float square(float x)     { return x * x; }
-static inline float unitSign(float x)   { return x / std::fabsf(x); }
-
 ActionCamera::ActionCamera(AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation)
     : ArcBallCamera(pivot, axis_orientation)
     , m_animations(animations)

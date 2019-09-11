@@ -215,15 +215,6 @@ void AsteroidsApp::Update()
     // Update View and Projection matrices based on light camera location
     gfx::Matrix44f light_view_matrix, light_proj_matrix;
     m_light_camera.GetViewProjMatrices(light_view_matrix, light_proj_matrix);
-    
-    // Prepare shadow transform matrix
-    static const gfx::Matrix44f shadow_transform_matrix = ([]() -> gfx::Matrix44f
-    {
-        gfx::Matrix44f shadow_scale_matrix, shadow_translate_matrix;
-        cml::matrix_scale(shadow_scale_matrix, 0.5f, -0.5f, 1.f);
-        cml::matrix_translation(shadow_translate_matrix, 0.5f, 0.5f, 0.f);
-        return shadow_scale_matrix * shadow_translate_matrix;
-    })();
 
     // Update scene uniforms
     m_scene_uniforms.eye_position    = gfx::Vector4f(m_view_camera.GetOrientation().eye, 1.f);
