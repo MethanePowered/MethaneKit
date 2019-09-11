@@ -232,15 +232,8 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL SHADERS_CONFIG PROFILE_VER
     set(${OUT_COMPILED_SHADER_BINS} ${_OUT_COMPILED_SHADER_BINS} PARENT_SCOPE)
 endfunction()
 
-function(add_methane_application TARGET APP_NAME SOURCES HLSL_SOURCES RESOURCES_DIR EMBEDDED_TEXTURES_DIR EMBEDDED_TEXTURES COPY_TEXTURES INSTALL_DIR)
+function(add_methane_application TARGET APP_NAME SOURCES RESOURCES_DIR EMBEDDED_TEXTURES_DIR EMBEDDED_TEXTURES COPY_TEXTURES INSTALL_DIR)
     set(BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
-
-    get_target_shader_paths(${TARGET} TARGET_SHADERS_DIR)
-
-    foreach(SHADERS_HLSL ${HLSL_SOURCES})
-        get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
-        list(APPEND CONFIG_SOURCES ${SHADERS_CONFIG})
-    endforeach()
 
     if (WIN32)
 
@@ -255,8 +248,6 @@ function(add_methane_application TARGET APP_NAME SOURCES HLSL_SOURCES RESOURCES_
 
         add_executable(${TARGET} WIN32
             ${SOURCES}
-            ${HLSL_SOURCES}
-            ${CONFIG_SOURCES}
             ${RESOURCE_FILE}
         )
 
@@ -265,34 +256,6 @@ function(add_methane_application TARGET APP_NAME SOURCES HLSL_SOURCES RESOURCES_
             RUNTIME
                 DESTINATION ${INSTALL_DIR}
                 COMPONENT Runtime
-        )
-
-        get_generated_shaders(${TARGET} "${SHADERS_CONFIG}" "obj" SHADERS_OBJ)
-
-        set(SHADER_RESOURCES_TARGET ${TARGET}_Shaders)
-        cmrc_add_resource_library(${SHADER_RESOURCES_TARGET}
-            ALIAS Methane::Resources::Shaders
-            WHENCE "${TARGET_SHADERS_DIR}"
-            NAMESPACE Shaders
-            ${SHADERS_OBJ}
-        )
-
-        compile_hlsl_shaders(${TARGET} ${SHADERS_HLSL} ${SHADERS_CONFIG} "5_1" OUT_COMPILED_SHADER_BINS)
-
-        # Disable automatic HLSL shaders compilation in Visual Studio, since it's compiled by custom target
-        set_source_files_properties(${SHADERS_HLSL}
-            PROPERTIES
-            VS_TOOL_OVERRIDE "None"
-        )
-
-        set_target_properties(${SHADER_RESOURCES_TARGET}
-            PROPERTIES
-            FOLDER Build
-        )
-
-        target_compile_definitions(${TARGET}
-            PRIVATE
-            ENABLE_SHADER_RESOURCES
         )
 
         # Disable default manifest generation with linker, since manually written manifest is added to resources
@@ -313,22 +276,9 @@ function(add_methane_application TARGET APP_NAME SOURCES HLSL_SOURCES RESOURCES_
         set(MACOSX_BUNDLE_ICON_FILE ${ICON_FILE})
         set(MACOSX_BUNDLE_BUNDLE_NAME ${APP_NAME})
         configure_file(${RESOURCES_DIR}/Configs/MacOS/plist.in ${PLIST_FILE_PATH})
-        
-        # Get list of generated Metal shaders
-        foreach(SHADERS_CONFIG ${CONFIG_SOURCES})
-            get_metal_library(${TARGET} ${SHADERS_CONFIG} METAL_LIBRARY)
-            list(APPEND METAL_LIBRARIES ${METAL_LIBRARY})
-
-            get_generated_shaders(${TARGET} ${SHADERS_CONFIG} "metal" SHADERS_GENERATED)
-            list(APPEND GENERATED_SOURCES ${SHADERS_GENERATED})
-        endforeach()
 
         add_executable(${TARGET} MACOSX_BUNDLE
             ${SOURCES}
-            ${HLSL_SOURCES}
-            ${CONFIG_SOURCES}
-            ${GENERATED_SOURCES}
-            ${METAL_LIBRARIES}
             ${ICON_FILE_PATH}
         )
 
@@ -338,39 +288,20 @@ function(add_methane_application TARGET APP_NAME SOURCES HLSL_SOURCES RESOURCES_
                 COMPONENT Runtime
         )
 
-        # Generate Metal shaders from HLSL sources with SPIRV toolset and compile to Metal Library
-        foreach(SHADERS_HLSL ${HLSL_SOURCES})
-            get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
-            get_metal_library(${TARGET} ${SHADERS_HLSL} METAL_LIBRARY)
+        # Set bundle location of the icon and metal library files
+        set_source_files_properties(${ICON_FILE_PATH}
+            PROPERTIES MACOSX_PACKAGE_LOCATION
+            "Resources"
+        )
 
-            generate_metal_shaders_from_hlsl(${TARGET} ${SHADERS_HLSL} ${SHADERS_CONFIG} SHADERS_METAL)
-            compile_metal_shaders_to_library(${TARGET} "macosx" "${SHADERS_METAL}" "${METAL_LIBRARY}")
+        set_target_properties(${TARGET}
+            PROPERTIES
+            MACOSX_BUNDLE_INFO_PLIST ${PLIST_FILE_PATH}
+        )
 
-            # Set bundle location of the icon and metal library files
-            set_source_files_properties(
-                ${ICON_FILE_PATH}
-                ${METAL_LIBRARY}
+        set(BINARY_DIR ${BINARY_DIR}/${TARGET}.app/Contents/Resources)
 
-                PROPERTIES MACOSX_PACKAGE_LOCATION
-                "Resources"
-            )
-
-            set_source_files_properties(
-                ${METAL_LIBRARY}
-                PROPERTIES
-                GENERATED TRUE
-            )
-
-            set_target_properties(${TARGET}
-                PROPERTIES
-                MACOSX_BUNDLE_INFO_PLIST ${PLIST_FILE_PATH}
-            )
-
-            set(BINARY_DIR ${BINARY_DIR}/${TARGET}.app/Contents/Resources)
-
-            source_group("Generated Shaders" FILES ${SHADERS_GENERATED} ${METAL_LIBRARY})
-            source_group("Resources" FILES ${PLIST_FILE_PATH} ${ICON_FILE_PATH})
-        endforeach()
+        source_group("Resources" FILES ${PLIST_FILE_PATH} ${ICON_FILE_PATH})
 
     endif()
 
@@ -408,7 +339,6 @@ function(add_methane_application TARGET APP_NAME SOURCES HLSL_SOURCES RESOURCES_
 
     target_link_libraries(${TARGET}
         MethaneKit
-        ${SHADER_RESOURCES_TARGET}
         ${TEXTURE_RESOURCES_TARGET}
     )
 
@@ -419,4 +349,116 @@ function(add_methane_application TARGET APP_NAME SOURCES HLSL_SOURCES RESOURCES_
         PUBLIC
             .
     )
+endfunction()
+
+function(add_methane_shaders TARGET HLSL_SOURCES)
+    get_target_shader_paths(${TARGET} TARGET_SHADERS_DIR)
+
+    if (WIN32)
+
+        get_generated_shaders(${TARGET} "${SHADERS_CONFIG}" "obj" SHADERS_OBJ)
+
+        set(SHADER_RESOURCES_TARGET ${TARGET}_Shaders)
+        cmrc_add_resource_library(${SHADER_RESOURCES_TARGET}
+            ALIAS Methane::Resources::Shaders
+            WHENCE "${TARGET_SHADERS_DIR}"
+            NAMESPACE Shaders
+            ${SHADERS_OBJ}
+        )
+
+        foreach(SHADERS_HLSL ${HLSL_SOURCES})
+            get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
+            compile_hlsl_shaders(${TARGET} ${SHADERS_HLSL} ${SHADERS_CONFIG} "5_1" OUT_COMPILED_SHADER_BINS)
+            list(APPEND CONFIG_SOURCES ${SHADERS_CONFIG})
+        endforeach()
+
+        target_sources(${TARGET} PUBLIC
+            ${HLSL_SOURCES}
+            ${CONFIG_SOURCES}
+        )
+
+        target_link_libraries(${TARGET}
+            ${SHADER_RESOURCES_TARGET}
+        )
+
+        # Disable automatic HLSL shaders compilation in Visual Studio, since it's compiled by custom target
+        set_source_files_properties(${HLSL_SOURCES}
+            PROPERTIES
+            VS_TOOL_OVERRIDE "None"
+        )
+
+        set_target_properties(${SHADER_RESOURCES_TARGET}
+            PROPERTIES
+            FOLDER Build
+        )
+
+        target_compile_definitions(${TARGET}
+            PRIVATE
+            ENABLE_SHADER_RESOURCES
+        )
+
+        # Disable default manifest generation with linker, since manually written manifest is added to resources
+        set_target_properties(${TARGET}
+            PROPERTIES
+            LINK_FLAGS "/MANIFEST:NO /ENTRY:mainCRTStartup"
+        )
+
+    elseif(APPLE)
+
+        # Get list of generated Metal shaders
+        foreach(SHADERS_HLSL ${HLSL_SOURCES})
+            get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
+            list(APPEND CONFIG_SOURCES ${SHADERS_CONFIG})
+
+            get_metal_library(${TARGET} ${SHADERS_CONFIG} METAL_LIBRARY)
+            list(APPEND METAL_LIBRARIES ${METAL_LIBRARY})
+
+            get_generated_shaders(${TARGET} ${SHADERS_CONFIG} "metal" METAL_SOURCES)
+            list(APPEND GENERATED_SOURCES ${METAL_SOURCES})
+        endforeach()
+
+        target_sources(${TARGET} PUBLIC
+            ${HLSL_SOURCES}
+            ${CONFIG_SOURCES}
+            ${GENERATED_SOURCES}
+            ${METAL_LIBRARIES}
+        )
+
+        # Add Metal libraries to the list of prerequisite binaries to auto-copy them to the application Resources
+        set_target_properties(${TARGET}
+            PROPERTIES PREREQUISITE_BINARIES
+            "${METAL_LIBRARIES}"
+        )
+
+        # Generate Metal shaders from HLSL sources with SPIRV toolset and compile to Metal Library
+        foreach(SHADERS_HLSL ${HLSL_SOURCES})
+            get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
+            get_metal_library(${TARGET} ${SHADERS_HLSL} METAL_LIBRARY)
+
+            generate_metal_shaders_from_hlsl(${TARGET} ${SHADERS_HLSL} ${SHADERS_CONFIG} SHADERS_METAL)
+            compile_metal_shaders_to_library(${TARGET} "macosx" "${SHADERS_METAL}" "${METAL_LIBRARY}")
+
+            # Set bundle location of the icon and metal library files
+            set_source_files_properties(${METAL_LIBRARY}
+                PROPERTIES MACOSX_PACKAGE_LOCATION
+                "Resources"
+            )
+
+            set_source_files_properties(${METAL_LIBRARY}
+                PROPERTIES GENERATED
+                TRUE
+            )
+
+            list(APPEND SHADERS_GENERATED ${SHADERS_METAL})
+        endforeach()
+
+        source_group("Generated Shaders" FILES ${SHADERS_GENERATED} ${METAL_LIBRARY})
+
+    endif()
+
+    source_group("Source Shaders" FILES
+        ${HLSL_SOURCES}
+        ${CONFIG_SOURCES}
+    )
+
 endfunction()

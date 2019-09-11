@@ -16,13 +16,14 @@ set(TEXTURES
 add_methane_application(${TARGET}
     "Methane Asteroids"
     "${SOURCES}"
-    "${SHADERS_HLSL}"
     "${RESOURCES_DIR}"
     "${IMAGES_DIR}"
     "${TEXTURES}"
     ""
     "Apps/Samples"
 )
+
+add_methane_shaders(${TARGET} "${SHADERS_HLSL}")
 
 set_target_properties(${TARGET}
     PROPERTIES

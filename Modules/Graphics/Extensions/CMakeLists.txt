@@ -1,6 +1,6 @@
 set(TARGET MethaneGraphicsExtensions)
 
-include(MethaneModules)
+include(MethaneToolchain)
 
 get_module_dirs("Methane/Graphics")
 
@@ -14,10 +14,16 @@ set(SOURCES
     ${SOURCES_DIR}/ImageLoader.cpp
 )
 
+set(HLSL_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/SkyBox.hlsl
+)
+
 add_library(${TARGET} STATIC
     ${HEADERS}
     ${SOURCES}
 )
+
+#add_methane_shaders(${TARGET} "${HLSL_SOURCES}")
 
 target_link_libraries(${TARGET}
     MethanePlatformUtils
