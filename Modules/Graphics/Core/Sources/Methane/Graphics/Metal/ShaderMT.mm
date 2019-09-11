@@ -125,7 +125,7 @@ Shader::Ptr Shader::Create(Shader::Type shader_type, Context& context, const Set
 
 ShaderMT::ShaderMT(Shader::Type shader_type, ContextMT& context, const Settings& settings)
     : ShaderBase(shader_type, context, settings)
-    , m_mtl_function([context.GetLibraryMT(/*settings.entry_target.file_name*/)->Get() newFunctionWithName: Methane::MacOS::ConvertToNSType<std::string, NSString*>(GetCompiledEntryFunctionName())])
+    , m_mtl_function([context.GetLibraryMT(settings.entry_target.file_name)->Get() newFunctionWithName: Methane::MacOS::ConvertToNSType<std::string, NSString*>(GetCompiledEntryFunctionName())])
 {
     ITT_FUNCTION_TASK();
 
