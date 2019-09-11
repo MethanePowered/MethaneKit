@@ -28,9 +28,7 @@
 
 #include <map>
 
-namespace Methane::Platform
-{
-namespace Mouse
+namespace Methane::Platform::Mouse
 {
 
 template<typename ActionEnum>
@@ -88,5 +86,4 @@ protected:
     ActionByMouseButton m_action_by_mouse_button;
 };
 
-} // namespace Keyboard
-} // namespace Methane::Platform
+} // namespace Methane::Platform::Mouse

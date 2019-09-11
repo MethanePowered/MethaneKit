@@ -26,9 +26,7 @@ limitations under the License.
 
 #include <cassert>
 
-namespace Methane::Platform
-{
-namespace Input
+namespace Methane::Platform::Input
 {
 
 void State::OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button_state)
@@ -121,5 +119,4 @@ void State::ReleaseAllKeys()
     }
 }
 
-} // namespace Input
-} // namespace Methane::Platform
+} // namespace Methane::Platform::Input

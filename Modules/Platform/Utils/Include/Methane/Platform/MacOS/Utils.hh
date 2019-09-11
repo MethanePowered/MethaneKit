@@ -26,10 +26,7 @@ MacOS platform utilitary functions.
 #include <string>
 #include <vector>
 
-namespace Methane
-{
-namespace MacOS
+namespace Methane::MacOS
 {
 
-} // namespace MacOS
-} // namespace Methane
+} // namespace Methane::MacOS

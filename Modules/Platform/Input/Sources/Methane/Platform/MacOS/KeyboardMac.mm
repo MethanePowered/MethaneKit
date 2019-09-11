@@ -28,7 +28,8 @@ MacOS platform specific types and implementation of Keyboard abstractions.
 
 #include <map>
 
-using namespace Methane::Platform::Keyboard;
+namespace Methane::Platform::Keyboard
+{
 
 Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
 {
@@ -181,3 +182,5 @@ Modifier::Mask KeyConverter::GetModifiersByNativeCode(const NativeKey& native_ke
     
     return modifiers_mask;
 }
+
+} // namespace Methane::Platform::Keyboard
