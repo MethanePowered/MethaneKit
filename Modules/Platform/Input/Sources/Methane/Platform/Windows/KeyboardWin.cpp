@@ -26,9 +26,7 @@ Windows platform specific types and implementation of Keyboard abstractions.
 
 #include <map>
 
-namespace Methane::Platform
-{
-namespace Keyboard
+namespace Methane::Platform::Keyboard
 {
 
 Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
@@ -217,5 +215,4 @@ Modifier::Mask KeyConverter::GetModifiersByNativeCode(const NativeKey& native_ke
     }
 }
 
-} // namespace Keyboard
-} // namespace Methane::Platform
+} // namespace Methane::Platform::Keyboard

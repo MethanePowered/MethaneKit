@@ -30,9 +30,7 @@
 
 #include <map>
 
-namespace Methane::Platform
-{
-namespace Keyboard
+namespace Methane::Platform::Keyboard
 {
 
 template<typename ActionEnum>
@@ -133,5 +131,4 @@ protected:
     ActionByKeyboardState m_action_by_keyboard_state;
 };
 
-} // namespace Keyboard
-} // namespace Methane::Platform
+} // namespace Methane::Platform::Keyboard

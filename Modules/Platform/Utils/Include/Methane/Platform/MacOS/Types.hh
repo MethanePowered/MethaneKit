@@ -28,9 +28,7 @@ MacOS platform type convertors.
 
 #import <Cocoa/Cocoa.h>
 
-namespace Methane
-{
-namespace MacOS
+namespace Methane::MacOS
 {
 
 // ===============================
@@ -93,5 +91,4 @@ inline std::string ConvertFromNSType<NSString, std::string>(const NSString* p_ns
     return p_ns_str ? std::string([p_ns_str UTF8String]) : std::string();
 }
 
-} // namespace MacOS
-} // namespace Methane
+} // namespace Methane::MacOS

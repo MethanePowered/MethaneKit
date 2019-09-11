@@ -28,9 +28,7 @@ Platform abstraction of mouse events.
 #include <sstream>
 #include <cassert>
 
-namespace Methane::Platform
-{
-namespace Mouse
+namespace Methane::Platform::Mouse
 {
 
 static const std::string s_buttons_separator = "+";
@@ -208,5 +206,4 @@ std::string State::ToString() const
     return ss.str();
 }
 
-} // namespace Mouse
-} // namespace Methane::Platform
+} // namespace Methane::Platform::Mouse
