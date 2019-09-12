@@ -178,11 +178,12 @@ function(compile_metal_shaders_to_library FOR_TARGET SDK METAL_SHADERS METAL_LIB
     add_dependencies(${FOR_TARGET} ${METAL_LIB_TARGET})
 endfunction()
 
-function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL SHADERS_CONFIG PROFILE_VER OUT_COMPILED_SHADER_BINS)
+function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_SHADER_BINS)
     
     get_platform_dir()
     get_target_shader_paths(${FOR_TARGET} TARGET_SHADERS_DIR)
-    get_shaders_name(${SHADERS_CONFIG} SHADERS_NAME)
+    get_shaders_name(${SHADERS_HLSL} SHADERS_NAME)
+    get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
 
     set(SHADER_COMPILER_EXE "${WINDOWS_SDK_BIN_PATH}/fxc.exe")
 
@@ -356,19 +357,23 @@ function(add_methane_shaders TARGET HLSL_SOURCES)
 
     if (WIN32)
 
-        get_generated_shaders(${TARGET} "${SHADERS_CONFIG}" "obj" SHADERS_OBJ)
+        foreach(SHADERS_HLSL ${HLSL_SOURCES})
+            get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
+            get_generated_shaders(${TARGET} "${SHADERS_CONFIG}" "obj" SHADERS_OBJ)
+            list(APPEND SHADERS_OBJ_FILES ${SHADERS_OBJ})
+        endforeach()
+        
 
         set(SHADER_RESOURCES_TARGET ${TARGET}_Shaders)
         cmrc_add_resource_library(${SHADER_RESOURCES_TARGET}
             ALIAS Methane::Resources::Shaders
             WHENCE "${TARGET_SHADERS_DIR}"
             NAMESPACE Shaders
-            ${SHADERS_OBJ}
+            ${SHADERS_OBJ_FILES}
         )
 
         foreach(SHADERS_HLSL ${HLSL_SOURCES})
-            get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
-            compile_hlsl_shaders(${TARGET} ${SHADERS_HLSL} ${SHADERS_CONFIG} "5_1" OUT_COMPILED_SHADER_BINS)
+            compile_hlsl_shaders(${TARGET} ${SHADERS_HLSL} "5_1" OUT_COMPILED_SHADER_BINS)
             list(APPEND CONFIG_SOURCES ${SHADERS_CONFIG})
         endforeach()
 
