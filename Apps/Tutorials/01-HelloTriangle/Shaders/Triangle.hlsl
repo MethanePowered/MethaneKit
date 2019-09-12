@@ -4,7 +4,7 @@ struct PSInput
     float4 color    : COLOR;
 };
 
-PSInput VSMain(float3 in_position : POSITION, 
+PSInput TriangleVS(float3 in_position : POSITION, 
                float3 in_color    : COLOR)
 {
     PSInput output;
@@ -13,7 +13,7 @@ PSInput VSMain(float3 in_position : POSITION,
     return output;
 }
 
-float4 PSMain(PSInput input) : SV_TARGET
+float4 TrianglePS(PSInput input) : SV_TARGET
 {
     return input.color;
 }

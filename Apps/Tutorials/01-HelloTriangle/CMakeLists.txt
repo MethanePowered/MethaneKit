@@ -1,6 +1,6 @@
 include(MethaneToolchain)
 
-set(SHADERS_HLSL   "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Shaders.hlsl")
+set(SHADERS_HLSL   "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Triangle.hlsl")
 
 #================================== STANDARD ==================================
 

@@ -7,11 +7,9 @@ set(SOURCES
     AsteroidsApp.cpp
 )
 
-set(SHADERS_HLSL ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Shaders.hlsl)
 set(IMAGES_DIR ${RESOURCES_DIR}/Images)
-set(TEXTURES
-    ${IMAGES_DIR}/Textures/MethaneBubbles.jpg
-)
+set(TEXTURES ${IMAGES_DIR}/Textures/MethaneBubbles.jpg)
+set(SHADERS_HLSL ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Asteroids.hlsl)
 
 add_methane_application(${TARGET}
     "Methane Asteroids"

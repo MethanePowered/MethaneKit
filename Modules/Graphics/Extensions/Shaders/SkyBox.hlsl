@@ -1,4 +1,4 @@
-cbuffer SkyboxUniforms : register(b0)
+struct SkyboxUniforms
 {
     float4x4 mvp_matrix;
 };
@@ -13,7 +13,7 @@ struct SkyboxVSOut
     float3 uvw      : UVFACE;
 };
 
-SkyboxVSOut VSSkybox(float3 in_position : POSITION)
+SkyboxVSOut SkyboxVS(float3 in_position : POSITION)
 {
     SkyboxVSOut output;
 
@@ -24,7 +24,7 @@ SkyboxVSOut VSSkybox(float3 in_position : POSITION)
     return output;
 }
 
-float4 PSkybox(SkyboxVSOut input) : SV_TARGET
+float4 SkyboxPS(SkyboxVSOut input) : SV_TARGET
 {
     const float4 texel_color = g_skybox_texture.Sample(g_texture_sampler, input.uvw);
     return float4(texel_color.xyz, 1.f);

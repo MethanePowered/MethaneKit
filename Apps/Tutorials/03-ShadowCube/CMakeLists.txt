@@ -7,7 +7,7 @@ set(SOURCES
     ShadowCubeApp.cpp
 )
 
-set(SHADERS_HLSL ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Shaders.hlsl)
+set(SHADERS_HLSL ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/ShadowCube.hlsl)
 set(IMAGES_DIR ${RESOURCES_DIR}/Images)
 set(TEXTURES
     ${IMAGES_DIR}/Textures/MethaneBubbles.jpg
