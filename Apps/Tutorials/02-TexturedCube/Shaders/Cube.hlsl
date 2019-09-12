@@ -27,7 +27,7 @@ struct PSInput
     float2 uv             : TEXCOORD;
 };
 
-PSInput VSMain(float3 in_position : POSITION, 
+PSInput CubeVS(float3 in_position : POSITION, 
                float3 in_normal : NORMAL, 
                float2 in_uv : TEXCOORD)
 {
@@ -43,7 +43,7 @@ PSInput VSMain(float3 in_position : POSITION,
     return output;
 }
 
-float4 PSMain(PSInput input) : SV_TARGET
+float4 CubePS(PSInput input) : SV_TARGET
 {
     const float3 fragment_to_light  = normalize(g_uniforms.light_position - input.world_position);
     const float3 fragment_to_eye    = normalize(g_uniforms.eye_position.xyz - input.world_position);

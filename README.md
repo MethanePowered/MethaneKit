@@ -201,8 +201,8 @@ public:
         {
             Program::Create(*m_sp_context, {
                 {
-                    Shader::CreateVertex(*m_sp_context, { { "Shaders", "VSMain", "vs_5_1" } }),
-                    Shader::CreatePixel(*m_sp_context,  { { "Shaders", "PSMain", "ps_5_1" } }),
+                    Shader::CreateVertex(*m_sp_context, { { "Triangle", "TriangleVS", "vs_5_1" } }),
+                    Shader::CreatePixel(*m_sp_context,  { { "Triangle", "TrianglePS", "ps_5_1" } }),
                 },
                 { { {
                     { "in_position", "POSITION" },
@@ -259,8 +259,8 @@ int main(int argc, const char* argv[])
 }
 ```
 
-Also you need a simple HLSL shader [Shaders/Shaders.hlsl](/Apps/Tutorials/01-HelloTriangle/Shaders/Shaders.hlsl).
-Note how arguments of verftex shader function `VSMain(...)` are matching to input buffer layout description passed in Settings of `Program::Create(...)` call:
+Also you need a simple HLSL shader [Shaders/Triangle.hlsl](/Apps/Tutorials/01-HelloTriangle/Shaders/Triangle.hlsl).
+Note how arguments of verftex shader function `TriangleVS(...)` are matching to input buffer layout description passed in Settings of `Program::Create(...)` call:
 ```cpp
 struct PSInput
 {
@@ -268,8 +268,8 @@ struct PSInput
     float4 color    : COLOR;
 };
 
-PSInput VSMain(float3 in_position : POSITION, 
-               float3 in_color    : COLOR)
+PSInput TriangleVS(float3 in_position : POSITION, 
+                   float3 in_color    : COLOR)
 {
     PSInput output;
     output.position = float4(in_position, 1.0f);
@@ -277,7 +277,7 @@ PSInput VSMain(float3 in_position : POSITION,
     return output;
 }
 
-float4 PSMain(PSInput input) : SV_TARGET
+float4 TrianglePS(PSInput input) : SV_TARGET
 {
     return input.color;
 }
@@ -285,8 +285,8 @@ float4 PSMain(PSInput input) : SV_TARGET
 
 The configuration file [Shaders/Shaders.cfg](/Apps/Tutorials/01-HelloTriangle/Shaders/Shaders.cfg) describes shader types along with entry points and optional sets of macro definitions used to prebuild shaders to bytecode:
 ```
-frag=PSMain
-vert=VSMain
+frag=TrianglePS
+vert=TriangleVS
 ```
 
 Finally add build configuration [CMakeLists.txt](/Apps/Tutorials/01-HelloTriangle/CMakeLists.txt) powered by included module [Methane.cmake](CMake/Methane.cmake):
@@ -296,8 +296,7 @@ include(Methane)
 add_methane_application(MethaneHelloTriangle
     "Methane Hello Triangle"
     "HelloTriangleAppSimple.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Shaders.hlsl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Shaders.cfg"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Triangle.hlsl"
     ""               # RESOURCES_DIR
     ""               # EMBEDDED_TEXTURES_DIR
     ""               # EMBEDDED_TEXTURES
