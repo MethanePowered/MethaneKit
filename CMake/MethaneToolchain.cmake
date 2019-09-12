@@ -354,7 +354,6 @@ function(add_methane_application TARGET APP_NAME SOURCES RESOURCES_DIR EMBEDDED_
 endfunction()
 
 function(add_methane_shaders TARGET HLSL_SOURCES)
-    get_target_shaders_dir(${TARGET} TARGET_SHADERS_DIR)
 
     if (WIN32)
 
@@ -364,6 +363,7 @@ function(add_methane_shaders TARGET HLSL_SOURCES)
             list(APPEND SHADERS_OBJ_FILES ${SHADERS_OBJ})
         endforeach()
         
+        get_target_shaders_dir(TARGET_SHADERS_DIR)
 
         set(SHADER_RESOURCES_TARGET ${TARGET}_Shaders)
         cmrc_add_resource_library(${SHADER_RESOURCES_TARGET}
