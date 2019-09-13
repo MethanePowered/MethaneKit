@@ -27,7 +27,6 @@ Tutorial demonstrating shadow-pass rendering with Methane graphics API
 
 #include <cml/mathlib/mathlib.h>
 #include <cassert>
-#include "Methane/Graphics/Windows/MathTypes.h"
 
 namespace Methane::Tutorials
 {

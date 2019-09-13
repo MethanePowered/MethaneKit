@@ -37,12 +37,10 @@ struct SkyBoxVertex
     };
 };
 
-static const BoxMesh<SkyBoxVertex> g_cube_mesh(Mesh::VertexLayoutFromArray(SkyBoxVertex::layout));
-
 SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& settings)
     : m_settings(settings)
     , m_context(context)
-    , m_mesh_buffers(context, g_cube_mesh, "Sky-Box")
+    , m_mesh_buffers(context, BoxMesh<SkyBoxVertex>(Mesh::VertexLayoutFromArray(SkyBoxVertex::layout)), "Sky-Box")
 {
 }
 
