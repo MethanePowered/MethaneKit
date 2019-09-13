@@ -361,6 +361,7 @@ function(add_methane_shaders TARGET HLSL_SOURCES)
             get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
             get_generated_shaders(${TARGET} "${SHADERS_CONFIG}" "obj" SHADERS_OBJ)
             list(APPEND SHADERS_OBJ_FILES ${SHADERS_OBJ})
+            list(APPEND CONFIG_SOURCES ${SHADERS_CONFIG})
         endforeach()
         
         get_target_shaders_dir(TARGET_SHADERS_DIR)
@@ -375,7 +376,6 @@ function(add_methane_shaders TARGET HLSL_SOURCES)
 
         foreach(SHADERS_HLSL ${HLSL_SOURCES})
             compile_hlsl_shaders(${TARGET} ${SHADERS_HLSL} "5_1" OUT_COMPILED_SHADER_BINS)
-            list(APPEND CONFIG_SOURCES ${SHADERS_CONFIG})
         endforeach()
 
         target_sources(${TARGET} PRIVATE

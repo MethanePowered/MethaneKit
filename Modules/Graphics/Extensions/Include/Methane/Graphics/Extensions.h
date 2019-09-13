@@ -25,3 +25,4 @@ Methane graphics extensions: all headers under one umbrella.
 
 #include "ImageLoader.h"
 #include "MeshBuffers.hpp"
+#include "SkyBox.h"

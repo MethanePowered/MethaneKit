@@ -108,12 +108,17 @@ private:
     };
 
     using TexturedMeshBuffersBase = gfx::TexturedMeshBuffers<MeshUniforms>;
-    struct TexturedMeshBuffers : TexturedMeshBuffersBase
+    class TexturedMeshBuffers : public TexturedMeshBuffersBase
     {
+    public:
         using Ptr = std::unique_ptr<TexturedMeshBuffers>;
         using TexturedMeshBuffersBase::TexturedMeshBuffersBase;
 
-        MeshUniforms shadow_pass_uniforms = {};
+        const MeshUniforms& GetShadowPassUniforms() const        { return m_shadow_pass_uniforms; }
+        void SetShadowPassUniforms(const MeshUniforms& uniforms) { m_shadow_pass_uniforms = uniforms; }
+
+    private:
+        MeshUniforms m_shadow_pass_uniforms = {};
     };
 
     struct RenderPass

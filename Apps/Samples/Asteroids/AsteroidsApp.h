@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: AsteroidsApp.h
-Sample demonstrating parallel redering of the distinct asteroids massive
+Sample demonstrating parallel rendering of the distinct asteroids massive
 
 ******************************************************************************/
 
@@ -28,8 +28,8 @@ Sample demonstrating parallel redering of the distinct asteroids massive
 namespace Methane::Samples
 {
 
-namespace gfx = Methane::Graphics;
-namespace pal = Methane::Platform;
+namespace gfx = Graphics;
+namespace pal = Platform;
 
 struct AsteroidsFrame final : gfx::AppFrame
 {
@@ -101,6 +101,7 @@ private:
     gfx::ActionCamera           m_light_camera;
 
     SceneUniforms               m_scene_uniforms = { };
+    gfx::SkyBox::Ptr            m_sp_sky_box;
     TexturedMeshBuffers::Ptr    m_sp_cube_buffers;
     gfx::RenderState::Ptr       m_sp_state;
     gfx::Buffer::Ptr            m_sp_const_buffer;
