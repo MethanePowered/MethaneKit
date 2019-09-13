@@ -21,12 +21,15 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 
 ******************************************************************************/
 
+#define _ENABLE_EXTENDED_ALIGNED_STORAGE // FIXME: get rid of this ASAP
+
 #include "AsteroidsApp.h"
 
 #include <Methane/Graphics/AppCameraController.h>
 
 #include <cml/mathlib/mathlib.h>
 #include <cassert>
+#include <memory>
 
 namespace Methane::Samples
 {
@@ -98,25 +101,39 @@ void AsteroidsApp::Init()
     GraphicsApp::Init();
 
     assert(m_sp_context);
-    const gfx::Context::Settings& context_settings = m_sp_context->GetSettings();
+    gfx::Context& context = *m_sp_context;
+
+    const gfx::Context::Settings& context_settings = context.GetSettings();
     m_view_camera.Resize(static_cast<float>(context_settings.frame_size.width),
                          static_cast<float>(context_settings.frame_size.height));
 
+    // Create sky-box
+    m_sp_sky_box = std::make_shared<gfx::SkyBox>(context, m_image_loader, gfx::SkyBox::Settings{
+        {
+            "Textures/SkyBox/Galaxy/GalaxySkyPositiveX.jpg",
+            "Textures/SkyBox/Galaxy/GalaxySkyNegativeX.jpg",
+            "Textures/SkyBox/Galaxy/GalaxySkyPositiveY.jpg",
+            "Textures/SkyBox/Galaxy/GalaxySkyNegativeY.jpg",
+            "Textures/SkyBox/Galaxy/GalaxySkyPositiveZ.jpg",
+            "Textures/SkyBox/Galaxy/GalaxySkyNegativeZ.jpg"
+        }
+    });
+
     // Create vertex and index buffer for meshes
-    m_sp_cube_buffers  = std::make_unique<TexturedMeshBuffers>(*m_sp_context, m_cube_mesh, m_image_loader,
-                                                               "Textures/MethaneBubbles.jpg", "Cube");
+    m_sp_cube_buffers  = std::make_unique<TexturedMeshBuffers>(context, m_cube_mesh, "Cube");
+    m_sp_cube_buffers->SetTexture(m_image_loader.CreateImageTexture(context, "Textures/MethaneBubbles.jpg"));
 
     const Data::Size constants_data_size      = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(Constants)));
     const Data::Size scene_uniforms_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(SceneUniforms)));
     const Data::Size cube_uniforms_data_size  = TexturedMeshBuffers::GetUniformsAlignedBufferSize();
 
     // Create constants buffer for frame rendering
-    m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, constants_data_size);
+    m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(context, constants_data_size);
     m_sp_const_buffer->SetName("Constants Buffer");
     m_sp_const_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants));
 
     // Create sampler for image texture
-    m_sp_texture_sampler = gfx::Sampler::Create(*m_sp_context, {
+    m_sp_texture_sampler = gfx::Sampler::Create(context, {
         { gfx::Sampler::Filter::MinMag::Linear     },    // Bilinear filtering
         { gfx::Sampler::Address::Mode::ClampToZero }
     });
@@ -124,10 +141,10 @@ void AsteroidsApp::Init()
 
     // Create state for final FB rendering with a program
     gfx::RenderState::Settings state_settings;
-    state_settings.sp_program    = gfx::Program::Create(*m_sp_context, {
+    state_settings.sp_program    = gfx::Program::Create(context, {
         {
-            gfx::Shader::CreateVertex(*m_sp_context, { g_vs_main, { } }),
-            gfx::Shader::CreatePixel(*m_sp_context, { g_ps_main, { } }),
+            gfx::Shader::CreateVertex(context, { g_vs_main, { } }),
+            gfx::Shader::CreatePixel(context, { g_ps_main, { } }),
         },
         { // input_buffer_layouts
             { // Single vertex buffer with interleaved data:
@@ -151,7 +168,7 @@ void AsteroidsApp::Init()
     state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };
     state_settings.depth.enabled = true;
     
-    m_sp_state = gfx::RenderState::Create(*m_sp_context, state_settings);
+    m_sp_state = gfx::RenderState::Create(context, state_settings);
     m_sp_state->SetName("Final FB render state");
     
 
@@ -159,15 +176,15 @@ void AsteroidsApp::Init()
     for(AsteroidsFrame& frame : m_frames)
     {
         // Create uniforms buffer with volatile parameters for the whole scene rendering
-        frame.sp_scene_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, scene_uniforms_data_size);
+        frame.sp_scene_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, scene_uniforms_data_size);
         frame.sp_scene_uniforms_buffer->SetName(IndexedName("Scene Uniforms Buffer", frame.index));
 
         // Create uniforms buffer for Cube rendering
-        frame.sp_cube_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, cube_uniforms_data_size);
+        frame.sp_cube_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, cube_uniforms_data_size);
         frame.sp_cube_uniforms_buffer->SetName(IndexedName("Cube Uniforms Buffer", frame.index));
 
         // Create render pass and command list for final pass rendering
-        frame.sp_cmd_list = gfx::RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
+        frame.sp_cmd_list = gfx::RenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_screen_pass);
         frame.sp_cmd_list->SetName(IndexedName("Scene Rendering", frame.index));
 
         // Final-pass resource bindings for cube rendering
@@ -175,7 +192,7 @@ void AsteroidsApp::Init()
             { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, frame.sp_cube_uniforms_buffer               },
             { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, frame.sp_scene_uniforms_buffer              },
             { { gfx::Shader::Type::Pixel,  "g_constants"      }, m_sp_const_buffer                           },
-            { { gfx::Shader::Type::Pixel,  "g_texture"        }, m_sp_cube_buffers->sp_texture               },
+            { { gfx::Shader::Type::Pixel,  "g_texture"        }, m_sp_cube_buffers->GetTexturePtr()          },
             { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, m_sp_texture_sampler                        },
         });
     }
@@ -183,7 +200,7 @@ void AsteroidsApp::Init()
     // Complete initialization of render context:
     //  - allocate deferred descriptor heaps with calculated sizes
     //  - execute commands to upload resources to GPU
-    m_sp_context->CompleteInitialization();
+    context.CompleteInitialization();
 }
 
 bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
@@ -226,8 +243,10 @@ void AsteroidsApp::Update()
     cube_model_matrix = cube_model_matrix * scale_matrix;
 
     // Update Cube uniforms with matrices
-    m_sp_cube_buffers->final_pass_uniforms.model_matrix = cube_model_matrix;
-    m_sp_cube_buffers->final_pass_uniforms.mvp_matrix   = cube_model_matrix * scene_view_matrix * scene_proj_matrix;
+    m_sp_cube_buffers->SetFinalPassUniforms(MeshUniforms{
+        cube_model_matrix,
+        cube_model_matrix * scene_view_matrix * scene_proj_matrix
+    });
 }
 
 void AsteroidsApp::Render()
@@ -243,7 +262,7 @@ void AsteroidsApp::Render()
 
     // Upload uniform buffers to GPU
     frame.sp_scene_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms));
-    frame.sp_cube_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->final_pass_uniforms), sizeof(MeshUniforms));
+    frame.sp_cube_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->GetFinalPassUniforms()), sizeof(MeshUniforms));
 
     // Record rendering commands
     assert(!!frame.sp_cmd_list);

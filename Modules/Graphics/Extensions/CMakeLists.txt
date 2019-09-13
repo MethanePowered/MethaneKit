@@ -8,10 +8,12 @@ set(HEADERS
     ${INCLUDE_DIR}/Extensions.h
     ${INCLUDE_DIR}/ImageLoader.h
     ${INCLUDE_DIR}/MeshBuffers.hpp
+    ${INCLUDE_DIR}/SkyBox.h
 )
 
 set(SOURCES
     ${SOURCES_DIR}/ImageLoader.cpp
+    ${SOURCES_DIR}/SkyBox.cpp
 )
 
 set(HLSL_SOURCES

@@ -17,13 +17,33 @@ limitations under the License.
 *******************************************************************************
 
 FILE: SkyBox.cpp
-SkyBox rendering extension primitive
+SkyBox rendering primitive
 
 ******************************************************************************/
 
 #include <Methane/Graphics/SkyBox.h>
+#include <Methane/Graphics/Mesh.h>
 
 namespace Methane::Graphics
 {
+
+struct SkyBoxVertex
+{
+    Mesh::Position position;
+
+    using FieldsArray = std::array<Mesh::VertexField, 1>;
+    static constexpr const FieldsArray layout = {
+        Mesh::VertexField::Position,
+    };
+};
+
+static const BoxMesh<SkyBoxVertex> g_cube_mesh(Mesh::VertexLayoutFromArray(SkyBoxVertex::layout));
+
+SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& settings)
+    : m_settings(settings)
+    , m_context(context)
+    , m_mesh_buffers(context, g_cube_mesh, "Sky-Box")
+{
+}
 
 } // namespace Methane::Graphics

@@ -27,6 +27,7 @@ Tutorial demonstrating shadow-pass rendering with Methane graphics API
 
 #include <cml/mathlib/mathlib.h>
 #include <cassert>
+#include "Methane/Graphics/Windows/MathTypes.h"
 
 namespace Methane::Tutorials
 {
@@ -98,10 +99,11 @@ void ShadowCubeApp::Init()
     const gfx::Context::Settings& context_settings = m_sp_context->GetSettings();
 
     // Load textures, vertex and index buffers for cube and floor meshes
-    m_sp_cube_buffers  = std::make_unique<TexturedMeshBuffers>(*m_sp_context, m_cube_mesh, m_image_loader,
-                                                               "Textures/MethaneBubbles.jpg", "Cube");
-    m_sp_floor_buffers = std::make_unique<TexturedMeshBuffers>(*m_sp_context, m_floor_mesh, m_image_loader,
-                                                               "Textures/MarbleWhite.jpg", "Floor");
+    m_sp_cube_buffers  = std::make_unique<TexturedMeshBuffers>(*m_sp_context, m_cube_mesh, "Cube");
+    m_sp_cube_buffers->SetTexture(m_image_loader.CreateImageTexture(*m_sp_context, "Textures/MethaneBubbles.jpg"));
+
+    m_sp_floor_buffers = std::make_unique<TexturedMeshBuffers>(*m_sp_context, m_floor_mesh, "Floor");
+    m_sp_floor_buffers->SetTexture(m_image_loader.CreateImageTexture(*m_sp_context, "Textures/MarbleWhite.jpg"));
 
     m_view_camera.Resize(static_cast<float>(context_settings.frame_size.width),
                          static_cast<float>(context_settings.frame_size.height));
@@ -280,14 +282,14 @@ void ShadowCubeApp::Init()
             { { gfx::Shader::Type::Pixel,  "g_constants"      }, m_sp_const_buffer                           },
             { { gfx::Shader::Type::Pixel,  "g_shadow_map"     }, frame.shadow_pass.sp_rt_texture             },
             { { gfx::Shader::Type::Pixel,  "g_shadow_sampler" }, m_sp_shadow_sampler                         },
-            { { gfx::Shader::Type::Pixel,  "g_texture"        }, m_sp_cube_buffers->sp_texture               },
+            { { gfx::Shader::Type::Pixel,  "g_texture"        }, m_sp_cube_buffers->GetTexturePtr()          },
             { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, m_sp_texture_sampler                        },
         });
 
         // Final-pass resource bindings for floor rendering - patched a copy of cube bindings
         frame.final_pass.floor.sp_resource_bindings = gfx::Program::ResourceBindings::CreateCopy(*frame.final_pass.cube.sp_resource_bindings, {
             { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, frame.final_pass.floor.sp_uniforms_buffer   },
-            { { gfx::Shader::Type::Pixel,  "g_texture"        }, m_sp_floor_buffers->sp_texture              },
+            { { gfx::Shader::Type::Pixel,  "g_texture"        }, m_sp_floor_buffers->GetTexturePtr()         },
         });
     }
 
@@ -357,32 +359,29 @@ void ShadowCubeApp::Update()
     cml::matrix_translation(cube_model_matrix, gfx::Vector3f(0.f, m_cube_mesh.GetHeight() / 2.f, 0.f));
     cube_model_matrix = cube_model_matrix * scale_matrix;
 
-    // Update Cube uniforms with matrices for Final pass
-    {
-        MeshUniforms& mesh_uniforms         = m_sp_cube_buffers->final_pass_uniforms;
-        mesh_uniforms.model_matrix          = cube_model_matrix;
-        mesh_uniforms.mvp_matrix            = mesh_uniforms.model_matrix * scene_view_matrix * scene_proj_matrix;
-        mesh_uniforms.shadow_mvpx_matrix    = mesh_uniforms.model_matrix * light_view_matrix * light_proj_matrix * shadow_transform_matrix;
-    }
-    // Update Cube uniforms with matrices for Shadow pass
-    {
-        MeshUniforms& mesh_uniforms         = m_sp_cube_buffers->shadow_pass_uniforms;
-        mesh_uniforms.model_matrix          = cube_model_matrix;
-        mesh_uniforms.mvp_matrix            = mesh_uniforms.model_matrix * light_view_matrix * light_proj_matrix;
-    }
-    // Update Floor uniforms with matrices for Final pass
-    {
-        MeshUniforms& mesh_uniforms         = m_sp_floor_buffers->final_pass_uniforms;
-        mesh_uniforms.model_matrix          = scale_matrix;
-        mesh_uniforms.mvp_matrix            = mesh_uniforms.model_matrix * scene_view_matrix * scene_proj_matrix;
-        mesh_uniforms.shadow_mvpx_matrix    = mesh_uniforms.model_matrix * light_view_matrix * light_proj_matrix * shadow_transform_matrix;
-    }
-    // Update Floor uniforms with matrices for Shadow pass
-    {
-        MeshUniforms& mesh_uniforms         = m_sp_floor_buffers->shadow_pass_uniforms;
-        mesh_uniforms.model_matrix          = scale_matrix;
-        mesh_uniforms.mvp_matrix            = mesh_uniforms.model_matrix * light_view_matrix * light_proj_matrix;
-    }
+    // Update Cube uniforms
+    m_sp_cube_buffers->SetFinalPassUniforms(MeshUniforms{
+        cube_model_matrix,
+        cube_model_matrix* scene_view_matrix * scene_proj_matrix,
+        cube_model_matrix* light_view_matrix * light_proj_matrix * shadow_transform_matrix
+    });
+    m_sp_cube_buffers->SetShadowPassUniforms(MeshUniforms{
+        cube_model_matrix,
+        cube_model_matrix* light_view_matrix * light_proj_matrix,
+        gfx::Matrix44f()
+    });
+
+    // Update Floor uniforms
+    m_sp_floor_buffers->SetFinalPassUniforms(MeshUniforms{
+        scale_matrix,
+        scale_matrix* scene_view_matrix * scene_proj_matrix,
+        scale_matrix* light_view_matrix * light_proj_matrix * shadow_transform_matrix
+    });
+    m_sp_floor_buffers->SetShadowPassUniforms(MeshUniforms{
+        scale_matrix,
+        scale_matrix* light_view_matrix * light_proj_matrix,
+        gfx::Matrix44f()
+    });
 }
 
 void ShadowCubeApp::Render()
@@ -398,10 +397,10 @@ void ShadowCubeApp::Render()
 
     // Upload uniform buffers to GPU
     frame.sp_scene_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms));
-    frame.shadow_pass.floor.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_floor_buffers->shadow_pass_uniforms), sizeof(MeshUniforms));
-    frame.shadow_pass.cube.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->shadow_pass_uniforms), sizeof(MeshUniforms));
-    frame.final_pass.floor.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_floor_buffers->final_pass_uniforms), sizeof(MeshUniforms));
-    frame.final_pass.cube.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->final_pass_uniforms), sizeof(MeshUniforms));
+    frame.shadow_pass.floor.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_floor_buffers->GetShadowPassUniforms()), sizeof(MeshUniforms));
+    frame.shadow_pass.cube.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->GetShadowPassUniforms()), sizeof(MeshUniforms));
+    frame.final_pass.floor.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_floor_buffers->GetFinalPassUniforms()), sizeof(MeshUniforms));
+    frame.final_pass.cube.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->GetFinalPassUniforms()), sizeof(MeshUniforms));
 
     // Record commands for shadow & final render passes
     RenderScene(m_shadow_pass, frame.shadow_pass, *frame.shadow_pass.sp_rt_texture);

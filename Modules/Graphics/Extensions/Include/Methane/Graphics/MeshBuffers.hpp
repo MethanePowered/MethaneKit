@@ -40,60 +40,84 @@ namespace Methane::Graphics
 {
 
 template<typename UniformsType>
-struct MeshBuffers
+class MeshBuffers
 {
+public:
     using Ptr = std::unique_ptr<MeshBuffers<UniformsType>>;
-
-    Buffer::Ptr  sp_vertex;
-    Buffer::Ptr  sp_index;
-    UniformsType final_pass_uniforms = { }; // Actual uniforms buffer is created separately in Frame dependent resources
 
     static inline Data::Size GetUniformsBufferSize()        { return static_cast<Data::Size>(sizeof(UniformsType)); }
     static inline Data::Size GetUniformsAlignedBufferSize() { return Buffer::GetAlignedBufferSize(GetUniformsBufferSize()); }
 
     template<typename VType>
     MeshBuffers(Context& context, const BaseMesh<VType>& mesh_data, const std::string& mesh_name)
-        : sp_vertex(Buffer::CreateVertexBuffer(context, static_cast<Data::Size>(mesh_data.GetVertexDataSize()),
-                                                        static_cast<Data::Size>(mesh_data.GetVertexSize())))
-        , sp_index( Buffer::CreateIndexBuffer( context, static_cast<Data::Size>(mesh_data.GetIndexDataSize()), 
-                                                        PixelFormat::R32Uint))
+        : m_sp_vertex(Buffer::CreateVertexBuffer(context, static_cast<Data::Size>(mesh_data.GetVertexDataSize()),
+                                                          static_cast<Data::Size>(mesh_data.GetVertexSize())))
+        , m_sp_index( Buffer::CreateIndexBuffer( context, static_cast<Data::Size>(mesh_data.GetIndexDataSize()), 
+                                                          PixelFormat::R32Uint))
     {
-        sp_vertex->SetName(mesh_name + " Vertex Buffer");
-        sp_vertex->SetData(reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetVertices().data()),
+        m_sp_vertex->SetName(mesh_name + " Vertex Buffer");
+        m_sp_vertex->SetData(reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetVertices().data()),
                            static_cast<Data::Size>(mesh_data.GetVertexDataSize()));
 
-        sp_index->SetName(mesh_name + " Index Buffer");
-        sp_index->SetData(reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetIndices().data()),
+        m_sp_index->SetName(mesh_name + " Index Buffer");
+        m_sp_index->SetData(reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetIndices().data()),
                           static_cast<Data::Size>(mesh_data.GetIndexDataSize()));
     }
 
     void Draw(RenderCommandList& cmd_list, Program::ResourceBindings& resource_bindings, uint32_t instance_count)
     {
-        assert(!!sp_vertex);
-        assert(!!sp_index);
-
         cmd_list.SetResourceBindings(resource_bindings);
-        cmd_list.SetVertexBuffers({ *sp_vertex });
-        cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, *sp_index, instance_count);
+        cmd_list.SetVertexBuffers({ GetVertexBuffer() });
+        cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, GetIndexBuffer(), instance_count);
     }
+
+    const std::string& GetMeshName() const              { return m_mesh_name; }
+
+    const UniformsType& GetFinalPassUniforms() const    { return m_final_pass_uniforms; }
+    void SetFinalPassUniforms(UniformsType& uniforms)   { m_final_pass_uniforms = uniforms; }
+
+protected:
+    Buffer& GetVertexBuffer()
+    {
+        assert(!!m_sp_vertex);
+        return *m_sp_vertex;
+    }
+
+    Buffer& GetIndexBuffer()
+    {
+        assert(!!m_sp_index);
+        return *m_sp_index;
+    }
+
+private:
+    const std::string m_mesh_name;
+    Buffer::Ptr       m_sp_vertex;
+    Buffer::Ptr       m_sp_index;
+    UniformsType      m_final_pass_uniforms = { }; // Actual uniforms buffer is created separately in Frame dependent resources
 };
 
 template<typename UniformsType>
-struct TexturedMeshBuffers : MeshBuffers<UniformsType>
+class TexturedMeshBuffers : public MeshBuffers<UniformsType>
 {
+public:
     using Ptr = std::unique_ptr<TexturedMeshBuffers<UniformsType>>;
-    
-    Texture::Ptr sp_texture;
 
     template<typename VType>
     TexturedMeshBuffers(Context& context, const BaseMesh<VType>& mesh_data,
-                        ImageLoader& image_loader, const std::string& texture_path,
                         const std::string& mesh_name)
         : MeshBuffers<UniformsType>(context, mesh_data, mesh_name)
-        , sp_texture(image_loader.CreateImageTexture(context, texture_path))
     {
-        sp_texture->SetName(mesh_name + " Texture");
     }
+
+    const Texture::Ptr& GetTexturePtr() const { return m_sp_texture; }
+    void SetTexture(const Texture::Ptr& sp_texture)
+    {
+        m_sp_texture = sp_texture;
+        m_sp_texture->SetName(GetMeshName() + " Texture");
+    }
+
+private:
+    Texture::Ptr m_sp_texture;
 };
 
 } // namespace Methane::Graphics

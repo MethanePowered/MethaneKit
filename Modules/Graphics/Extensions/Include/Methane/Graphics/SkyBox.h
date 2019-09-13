@@ -17,19 +17,63 @@ limitations under the License.
 *******************************************************************************
 
 FILE: SkyBox.h
-SkyBox rendering extension primitive
+SkyBox rendering primitive
 
 ******************************************************************************/
 
 #pragma once
 
+#include "MeshBuffers.hpp"
+
+#include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/MathTypes.h>
+
 #include <memory>
+#include <array>
+#include <string>
 
 namespace Methane::Graphics
 {
 
+class ImageLoader;
+
 class SkyBox
 {
+public:
+    using Ptr = std::shared_ptr<SkyBox>;
+
+    enum class Face : uint32_t
+    {
+        PositiveX = 0u,
+        NegativeX,
+        PositiveY,
+        NegativeY,
+        PositiveZ,
+        NegativeZ,
+
+        Count
+    };
+
+    using FaceResources = std::array<std::string, static_cast<uint32_t>(Face::Count)>;
+
+    struct Settings
+    {
+        FaceResources face_resources;
+    };
+
+    SkyBox(Context& context, ImageLoader& image_loader, const Settings& settings);
+
+private:
+    struct SHADER_STRUCT_ALIGN BoxMeshUniforms
+    {
+        SHADER_FIELD_ALIGN Matrix44f mvp_matrix;
+    };
+
+    using TexturedMeshBuffers = TexturedMeshBuffers<BoxMeshUniforms>;
+
+    Settings            m_settings;
+    Context&            m_context;
+    TexturedMeshBuffers m_mesh_buffers;
 };
 
 } // namespace Methane::Graphics
