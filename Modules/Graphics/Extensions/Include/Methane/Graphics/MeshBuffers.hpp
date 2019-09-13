@@ -34,6 +34,7 @@ Mesh buffers with texture extension structure.
 #include <Methane/Graphics/MathTypes.h>
 
 #include <memory>
+#include <string>
 #include <cassert>
 
 namespace Methane::Graphics
@@ -57,11 +58,11 @@ public:
     {
         m_sp_vertex->SetName(mesh_name + " Vertex Buffer");
         m_sp_vertex->SetData(reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetVertices().data()),
-                           static_cast<Data::Size>(mesh_data.GetVertexDataSize()));
+                             static_cast<Data::Size>(mesh_data.GetVertexDataSize()));
 
         m_sp_index->SetName(mesh_name + " Index Buffer");
         m_sp_index->SetData(reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetIndices().data()),
-                          static_cast<Data::Size>(mesh_data.GetIndexDataSize()));
+                            static_cast<Data::Size>(mesh_data.GetIndexDataSize()));
     }
 
     void Draw(RenderCommandList& cmd_list, Program::ResourceBindings& resource_bindings, uint32_t instance_count)
@@ -71,10 +72,9 @@ public:
         cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, GetIndexBuffer(), instance_count);
     }
 
-    const std::string& GetMeshName() const              { return m_mesh_name; }
-
+    const std::string&  GetMeshName() const              { return m_mesh_name; }
     const UniformsType& GetFinalPassUniforms() const    { return m_final_pass_uniforms; }
-    void SetFinalPassUniforms(UniformsType& uniforms)   { m_final_pass_uniforms = uniforms; }
+    void SetFinalPassUniforms(const UniformsType& uniforms)   { m_final_pass_uniforms = uniforms; }
 
 protected:
     Buffer& GetVertexBuffer()
@@ -113,7 +113,7 @@ public:
     void SetTexture(const Texture::Ptr& sp_texture)
     {
         m_sp_texture = sp_texture;
-        m_sp_texture->SetName(GetMeshName() + " Texture");
+        m_sp_texture->SetName(MeshBuffers<UniformsType>::GetMeshName() + " Texture");
     }
 
 private:

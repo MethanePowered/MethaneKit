@@ -23,6 +23,7 @@ SkyBox rendering primitive
 
 #pragma once
 
+#include "ImageLoader.h"
 #include "MeshBuffers.hpp"
 
 #include <Methane/Graphics/Context.h>
@@ -34,8 +35,6 @@ SkyBox rendering primitive
 
 namespace Methane::Graphics
 {
-
-class ImageLoader;
 
 class SkyBox
 {

@@ -110,12 +110,12 @@ void AsteroidsApp::Init()
     // Create sky-box
     m_sp_sky_box = std::make_shared<gfx::SkyBox>(context, m_image_loader, gfx::SkyBox::Settings{
         {
-            "Textures/SkyBox/Galaxy/GalaxySkyPositiveX.jpg",
-            "Textures/SkyBox/Galaxy/GalaxySkyNegativeX.jpg",
-            "Textures/SkyBox/Galaxy/GalaxySkyPositiveY.jpg",
-            "Textures/SkyBox/Galaxy/GalaxySkyNegativeY.jpg",
-            "Textures/SkyBox/Galaxy/GalaxySkyPositiveZ.jpg",
-            "Textures/SkyBox/Galaxy/GalaxySkyNegativeZ.jpg"
+            std::string("Textures/SkyBox/Galaxy/GalaxySkyPositiveX.jpg"),
+            std::string("Textures/SkyBox/Galaxy/GalaxySkyNegativeX.jpg"),
+            std::string("Textures/SkyBox/Galaxy/GalaxySkyPositiveY.jpg"),
+            std::string("Textures/SkyBox/Galaxy/GalaxySkyNegativeY.jpg"),
+            std::string("Textures/SkyBox/Galaxy/GalaxySkyPositiveZ.jpg"),
+            std::string("Textures/SkyBox/Galaxy/GalaxySkyNegativeZ.jpg")
         }
     });
 
