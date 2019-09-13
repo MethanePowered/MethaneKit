@@ -378,7 +378,7 @@ function(add_methane_shaders TARGET HLSL_SOURCES)
             list(APPEND CONFIG_SOURCES ${SHADERS_CONFIG})
         endforeach()
 
-        target_sources(${TARGET} PUBLIC
+        target_sources(${TARGET} PRIVATE
             ${HLSL_SOURCES}
             ${CONFIG_SOURCES}
         )
