@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Externals" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Externals/CML" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Externals/CMRC" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Externals/Catch2" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Externals/CxxOpts" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Externals/DirectXLibraries" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Externals/ITT" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Externals/Nowide" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Externals/STB" vcs="Git" />
+  </component>
+</project>
