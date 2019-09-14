@@ -75,7 +75,7 @@ public:
 
         const Data::Size vertex_buffer_size = static_cast<Data::Size>(sizeof(triange_vertices));
         m_sp_vertex_buffer = Buffer::CreateVertexBuffer(*m_sp_context, vertex_buffer_size, static_cast<Data::Size>(sizeof(Vertex)));
-        m_sp_vertex_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(triange_vertices.data()), vertex_buffer_size);
+        m_sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(triange_vertices.data()), vertex_buffer_size } });
 
         m_sp_state = RenderState::Create(*m_sp_context,
         {

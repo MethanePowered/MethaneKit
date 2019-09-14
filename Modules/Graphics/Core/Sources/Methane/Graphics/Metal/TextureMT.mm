@@ -94,20 +94,25 @@ void TextureMT::SetName(const std::string& name)
     m_mtl_texture.label = MacOS::ConvertToNSType<std::string, NSString*>(name);
 }
 
-void TextureMT::SetData(Data::ConstRawPtr p_data, Data::Size data_size)
+void TextureMT::SetData(const SubResources& sub_resources)
 {
     ITT_FUNCTION_TASK();
 
-    if (!p_data || data_size == 0)
+    if (sub_resources.empty())
     {
-        throw std::invalid_argument("Can not set empty data to texture.");
+        throw std::invalid_argument("Can not set texture data from empty sub-resources.");
     }
     
-    const MTLRegion texture_region = MTLRegionMake2D(0, 0, m_settings.dimensions.width, m_settings.dimensions.height);
     const uint32_t bytes_per_row = GetPixelSize(m_settings.pixel_format) * m_settings.dimensions.width;
-    
+
     assert(m_mtl_texture != nil);
-    [m_mtl_texture replaceRegion:texture_region mipmapLevel:0 withBytes:p_data bytesPerRow:bytes_per_row];
+    for(const SubResource& sub_resourse : sub_resources)
+    {
+        // TODO: implement multi-subresource data upload
+        const MTLRegion texture_region = MTLRegionMake2D(0, 0, m_settings.dimensions.width, m_settings.dimensions.height);
+        [m_mtl_texture replaceRegion:texture_region mipmapLevel:0 withBytes:sub_resourse.p_data bytesPerRow:bytes_per_row];
+    }
+
 }
 
 Data::Size TextureMT::GetDataSize() const

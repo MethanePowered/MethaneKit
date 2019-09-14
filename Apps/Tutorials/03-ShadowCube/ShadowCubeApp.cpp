@@ -115,7 +115,7 @@ void ShadowCubeApp::Init()
     // Create constants buffer for frame rendering
     m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, constants_data_size);
     m_sp_const_buffer->SetName("Constants Buffer");
-    m_sp_const_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants));
+    m_sp_const_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } });
 
     // Create sampler for image texture
     m_sp_texture_sampler = gfx::Sampler::Create(*m_sp_context, {
@@ -395,11 +395,11 @@ void ShadowCubeApp::Render()
     ShadowCubeFrame& frame = GetCurrentFrame();
 
     // Upload uniform buffers to GPU
-    frame.sp_scene_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms));
-    frame.shadow_pass.floor.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_floor_buffers->GetShadowPassUniforms()), sizeof(MeshUniforms));
-    frame.shadow_pass.cube.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->GetShadowPassUniforms()), sizeof(MeshUniforms));
-    frame.final_pass.floor.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_floor_buffers->GetFinalPassUniforms()), sizeof(MeshUniforms));
-    frame.final_pass.cube.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->GetFinalPassUniforms()), sizeof(MeshUniforms));
+    frame.sp_scene_uniforms_buffer->SetData({ {reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms) } });
+    frame.shadow_pass.floor.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_floor_buffers->GetShadowPassUniforms()), sizeof(MeshUniforms) } });
+    frame.shadow_pass.cube.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->GetShadowPassUniforms()), sizeof(MeshUniforms) } });
+    frame.final_pass.floor.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_floor_buffers->GetFinalPassUniforms()), sizeof(MeshUniforms) } });
+    frame.final_pass.cube.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->GetFinalPassUniforms()), sizeof(MeshUniforms) } });
 
     // Record commands for shadow & final render passes
     RenderScene(m_shadow_pass, frame.shadow_pass, *frame.shadow_pass.sp_rt_texture);

@@ -45,6 +45,7 @@ static const GraphicsApp::Settings    g_app_settings  = // Application settings:
     {                                                   // app:
         "Methane Asteroids",                            // - name
         0.8, 0.8,                                       // - width, height
+        false,                                           // - is_full_screen
     },                                                  //
     {                                                   // context:
         gfx::FrameSize(),                               // - frame_size
@@ -110,12 +111,12 @@ void AsteroidsApp::Init()
     // Create sky-box
     m_sp_sky_box = std::make_shared<gfx::SkyBox>(context, m_image_loader, gfx::SkyBox::Settings{
         {
-            std::string("Textures/SkyBox/Galaxy/GalaxySkyPositiveX.jpg"),
-            std::string("Textures/SkyBox/Galaxy/GalaxySkyNegativeX.jpg"),
-            std::string("Textures/SkyBox/Galaxy/GalaxySkyPositiveY.jpg"),
-            std::string("Textures/SkyBox/Galaxy/GalaxySkyNegativeY.jpg"),
-            std::string("Textures/SkyBox/Galaxy/GalaxySkyPositiveZ.jpg"),
-            std::string("Textures/SkyBox/Galaxy/GalaxySkyNegativeZ.jpg")
+            "Textures/SkyBox/Galaxy/GalaxySkyPositiveX.jpg",
+            "Textures/SkyBox/Galaxy/GalaxySkyNegativeX.jpg",
+            "Textures/SkyBox/Galaxy/GalaxySkyPositiveY.jpg",
+            "Textures/SkyBox/Galaxy/GalaxySkyNegativeY.jpg",
+            "Textures/SkyBox/Galaxy/GalaxySkyPositiveZ.jpg",
+            "Textures/SkyBox/Galaxy/GalaxySkyNegativeZ.jpg"
         }
     });
 
@@ -130,7 +131,7 @@ void AsteroidsApp::Init()
     // Create constants buffer for frame rendering
     m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(context, constants_data_size);
     m_sp_const_buffer->SetName("Constants Buffer");
-    m_sp_const_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants));
+    m_sp_const_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } });
 
     // Create sampler for image texture
     m_sp_texture_sampler = gfx::Sampler::Create(context, {
@@ -261,8 +262,8 @@ void AsteroidsApp::Render()
     AsteroidsFrame& frame = GetCurrentFrame();
 
     // Upload uniform buffers to GPU
-    frame.sp_scene_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms));
-    frame.sp_cube_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->GetFinalPassUniforms()), sizeof(MeshUniforms));
+    frame.sp_scene_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms) } });
+    frame.sp_cube_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->GetFinalPassUniforms()), sizeof(MeshUniforms) } });
 
     // Record rendering commands
     assert(!!frame.sp_cmd_list);

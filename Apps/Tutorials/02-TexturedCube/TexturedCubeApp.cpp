@@ -135,7 +135,7 @@ void TexturedCubeApp::Init()
     // Create constants buffer for frame rendering
     m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, constants_data_size);
     m_sp_const_buffer->SetName("Constants Buffer");
-    m_sp_const_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), sizeof(m_shader_constants));
+    m_sp_const_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), sizeof(m_shader_constants) } });
 
     // Create frame buffer data
     for(TexturedCubeFrame& frame : m_frames)
@@ -162,13 +162,13 @@ void TexturedCubeApp::Init()
     const Data::Size vertex_size      = static_cast<Data::Size>(m_cube_mesh.GetVertexSize());
     m_sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(*m_sp_context, vertex_data_size, vertex_size);
     m_sp_vertex_buffer->SetName("Cube Vertex Buffer");
-    m_sp_vertex_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetVertices().data()), vertex_data_size);
+    m_sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetVertices().data()), vertex_data_size } });
 
     // Create index buffer for cube mesh
     const Data::Size index_data_size = static_cast<Data::Size>(m_cube_mesh.GetIndexDataSize());
     m_sp_index_buffer  = gfx::Buffer::CreateIndexBuffer(*m_sp_context, index_data_size, gfx::PixelFormat::R32Uint);
     m_sp_index_buffer->SetName("Cube Index Buffer");
-    m_sp_index_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), index_data_size);
+    m_sp_index_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), index_data_size } });
 
     // Create render state
     gfx::RenderState::Settings state_settings;
@@ -234,7 +234,7 @@ void TexturedCubeApp::Render()
     assert(!!m_sp_state);
 
     // Update uniforms buffer related to current frame
-    frame.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(Uniforms));
+    frame.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(Uniforms) } });
 
     // Issue commands for cube rendering
     frame.sp_cmd_list->Reset(*m_sp_state, "Cube redering");

@@ -29,6 +29,8 @@ Base implementation of the resource interface.
 
 #include <cassert>
 #include <sstream>
+#include <utility>
+#include <Methane/Graphics/Resource.h>
 
 namespace Methane::Graphics
 {
@@ -83,11 +85,27 @@ std::string Resource::GetUsageNames(Usage::Mask usage_mask) noexcept
     return names_ss.str();
 }
 
-ResourceBase::ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
+Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, int32_t in_index)
+    : heap(in_heap)
+    , index(in_index)
+{
+    ITT_FUNCTION_TASK();
+}
+
+Resource::SubResource::SubResource(Data::ConstRawPtr in_p_data, Data::Size in_data_size, uint32_t in_array_index, uint32_t in_mip_level)
+    : p_data(in_p_data)
+    , data_size(in_data_size)
+    , array_index(in_array_index)
+    , mip_level(in_mip_level)
+{
+    ITT_FUNCTION_TASK();
+}
+
+ResourceBase::ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& context, DescriptorByUsage descriptor_by_usage)
     : m_type(type)
     , m_usage_mask(usage_mask)
     , m_context(context)
-    , m_descriptor_by_usage(descriptor_by_usage)
+    , m_descriptor_by_usage(std::move(descriptor_by_usage))
 {
     ITT_FUNCTION_TASK();
 

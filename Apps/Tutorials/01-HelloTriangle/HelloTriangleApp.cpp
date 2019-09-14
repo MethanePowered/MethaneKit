@@ -106,7 +106,7 @@ void HelloTriangleApp::Init()
     
     m_sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(*m_sp_context, vertex_data_size, vertex_size);
     m_sp_vertex_buffer->SetName("Triangle Vertex Buffer");
-    m_sp_vertex_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(m_triangle_vertices.data()), vertex_data_size);
+    m_sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_triangle_vertices.data()), vertex_data_size } });
 
     // Create render state
     m_sp_state = gfx::RenderState::Create(*m_sp_context, {

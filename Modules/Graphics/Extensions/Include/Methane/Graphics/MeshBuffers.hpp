@@ -57,12 +57,20 @@ public:
                                                           PixelFormat::R32Uint))
     {
         m_sp_vertex->SetName(mesh_name + " Vertex Buffer");
-        m_sp_vertex->SetData(reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetVertices().data()),
-                             static_cast<Data::Size>(mesh_data.GetVertexDataSize()));
+        m_sp_vertex->SetData({
+            {
+                reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetVertices().data()),
+                static_cast<Data::Size>(mesh_data.GetVertexDataSize())
+            }
+        });
 
         m_sp_index->SetName(mesh_name + " Index Buffer");
-        m_sp_index->SetData(reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetIndices().data()),
-                            static_cast<Data::Size>(mesh_data.GetIndexDataSize()));
+        m_sp_index->SetData({
+            {
+                reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetIndices().data()),
+                static_cast<Data::Size>(mesh_data.GetIndexDataSize())
+            }
+        });
     }
 
     void Draw(RenderCommandList& cmd_list, Program::ResourceBindings& resource_bindings, uint32_t instance_count)

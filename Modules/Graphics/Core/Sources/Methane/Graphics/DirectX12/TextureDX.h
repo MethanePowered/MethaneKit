@@ -52,7 +52,7 @@ public:
     }
 
     // Resource interface
-    void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override
+    void SetData(const SubResources&) override
     {
         ITT_FUNCTION_TASK();
         throw std::logic_error("Setting texture data is allowed for image textures only.");
@@ -77,7 +77,7 @@ public:
     TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg);
 
     // Resource interface
-    void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override;
+    void SetData(const SubResources& sub_resources) override;
     Data::Size GetDataSize() const override { return m_data_size; }
 
 protected:

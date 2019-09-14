@@ -131,7 +131,7 @@ void DepthStencilBufferTextureDX::Initialize(Depth depth_clear_value, Stencil st
 {
     ITT_FUNCTION_TASK();
 
-    CD3DX12_RESOURCE_DESC tex_desc = tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
+    CD3DX12_RESOURCE_DESC tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
         TypeConverterDX::DataFormatToDXGI(m_settings.pixel_format, TypeConverterDX::ResourceFormatType::ResourceBase),
         m_settings.dimensions.width, m_settings.dimensions.height
     );
@@ -257,29 +257,50 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
     GetContextDX().GetDeviceDX().GetNativeDevice()->CreateShaderResourceView(m_cp_resource.Get(), &srv_desc, GetNativeCPUDescriptorHandle(Usage::ShaderRead));
 }
 
-void ImageTextureDX::SetData(Data::ConstRawPtr p_data, Data::Size data_size)
+void ImageTextureDX::SetData(const SubResources& sub_resources)
 {
     ITT_FUNCTION_TASK();
 
-    if (!p_data || data_size == 0)
+    if (sub_resources.empty())
     {
-        throw std::invalid_argument("Can not set empty data to texture.");
+        throw std::invalid_argument("Can not set texture data from empty sub-resources.");
     }
     
     assert(!!m_cp_resource);
     assert(!!m_cp_upload_resource);
 
-    D3D12_SUBRESOURCE_DATA texture_data = {};
-    texture_data.pData      = p_data;
-    texture_data.RowPitch   = m_settings.dimensions.width * GetPixelSize(m_settings.pixel_format);
-    texture_data.SlicePitch = m_settings.dimensions.height * texture_data.RowPitch;
+    const uint32_t      mip_levels_count  = 1; // TODO: replace with actual value when mip-levels are supported
+    const Data::Size    pixel_size = GetPixelSize(m_settings.pixel_format);
+    const uint32_t first_sub_resource_index = sub_resources.front().GetIndex(mip_levels_count);
 
-    assert(texture_data.SlicePitch <= static_cast<LONG_PTR>(data_size));
-    m_data_size = data_size;
+    m_data_size = 0;
+    std::vector<D3D12_SUBRESOURCE_DATA> dx_sub_resources(sub_resources.size(), D3D12_SUBRESOURCE_DATA{});
+
+    for(const SubResource& sub_resourse : sub_resources)
+    {
+        const uint32_t raw_sub_resource_index = sub_resourse.GetIndex(mip_levels_count) - first_sub_resource_index;
+        if (raw_sub_resource_index >= dx_sub_resources.size())
+        {
+            dx_sub_resources.resize(raw_sub_resource_index + 1, D3D12_SUBRESOURCE_DATA{});
+        }
+
+        D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[raw_sub_resource_index];
+        dx_sub_resource.pData      = sub_resourse.p_data;
+        dx_sub_resource.RowPitch   = m_settings.dimensions.width  * pixel_size;
+        dx_sub_resource.SlicePitch = m_settings.dimensions.height * dx_sub_resource.RowPitch;
+
+        if (dx_sub_resource.SlicePitch > static_cast<LONG_PTR>(sub_resourse.data_size))
+        {
+            throw std::invalid_argument("Subresource data size is bigger than computed size");
+        }
+
+        m_data_size += static_cast<Data::Size>(dx_sub_resource.SlicePitch);
+    }
 
     RenderCommandListDX& upload_cmd_list = static_cast<RenderCommandListDX&>(m_context.GetUploadCommandList());
     UpdateSubresources(upload_cmd_list.GetNativeCommandList().Get(),
-                       m_cp_resource.Get(), m_cp_upload_resource.Get(), 0, 0, 1, &texture_data);
+                       m_cp_resource.Get(), m_cp_upload_resource.Get(), 0, first_sub_resource_index,
+                       static_cast<UINT>(dx_sub_resources.size()), dx_sub_resources.data());
 
     upload_cmd_list.SetResourceTransitionBarriers({ static_cast<Resource&>(*this) }, ResourceBase::State::CopyDest, ResourceBase::State::PixelShaderResource);
 }
