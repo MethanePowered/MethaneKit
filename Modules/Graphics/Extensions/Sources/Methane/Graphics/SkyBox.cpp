@@ -42,6 +42,7 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
     , m_context(context)
     , m_mesh_buffers(context, BoxMesh<SkyBoxVertex>(Mesh::VertexLayoutFromArray(SkyBoxVertex::layout)), "Sky-Box")
 {
+    //m_mesh_buffers.SetTexture()
 }
 
 } // namespace Methane::Graphics

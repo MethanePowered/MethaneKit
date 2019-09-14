@@ -39,7 +39,7 @@ public:
     ~TextureMT() override;
 
     // Resource interface
-    void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override;
+    void SetData(const SubResources& sub_resources) override;
     Data::Size GetDataSize() const override;
 
     // Object interface

@@ -48,20 +48,23 @@ public:
     }
 
     // Resource interface
-    void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override
+    void SetData(const SubResources& sub_resources) override
     {
         ITT_FUNCTION_TASK();
-        BufferBase::SetData(p_data, data_size);
+        BufferBase::SetData(sub_resources);
 
-        assert(!!m_cp_resource);
-        char* p_resource_data = nullptr;
-        CD3DX12_RANGE read_range(0, 0); // Zero range, since we're not going to read this resource on CPU
-        ThrowIfFailed(m_cp_resource->Map(0, &read_range, reinterpret_cast<void**>(&p_resource_data)));
+        for(const SubResource& sub_resource : sub_resources)
+        {
+            assert(!!m_cp_resource);
+            char* p_resource_data = nullptr;
+            CD3DX12_RANGE read_range(0, 0); // Zero range, since we're not going to read this resource on CPU
+            ThrowIfFailed(m_cp_resource->Map(sub_resource.GetIndex(), &read_range, reinterpret_cast<void**>(&p_resource_data)));
 
-        assert(!!p_resource_data);
-        std::copy(p_data, p_data + data_size, stdext::checked_array_iterator<char*>(p_resource_data, GetDataSize()));
+            assert(!!p_resource_data);
+            std::copy(sub_resource.p_data, sub_resource.p_data + sub_resource.data_size, stdext::checked_array_iterator<char*>(p_resource_data, GetDataSize()));
 
-        m_cp_resource->Unmap(0, nullptr);
+            m_cp_resource->Unmap(sub_resource.GetIndex(), nullptr);
+        }
     }
 
     // Buffer interface

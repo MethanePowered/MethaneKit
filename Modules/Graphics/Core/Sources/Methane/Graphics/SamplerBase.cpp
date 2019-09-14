@@ -36,4 +36,10 @@ SamplerBase::SamplerBase(ContextBase& context, const Settings& settings, const D
     ITT_FUNCTION_TASK();
 }
 
+void SamplerBase::SetData(const SubResources&)
+{
+    ITT_FUNCTION_TASK();
+    throw std::logic_error("Samplers do not support setting the data.");
+}
+
 } // namespace Methane::Graphics

@@ -107,7 +107,7 @@ Texture::Ptr ImageLoader::CreateImageTexture(Context& context, const std::string
     // Create texture for loaded image and set image data (with uploading it to the GPU)
     const Dimensions image_dimensions(static_cast<uint32_t>(image_width), static_cast<uint32_t>(image_height), 1);
     Texture::Ptr sp_texture = Texture::CreateImage(context, image_dimensions, PixelFormat::RGBA8Unorm, false);
-    sp_texture->SetData(reinterpret_cast<Data::ConstRawPtr>(p_image_data), image_data_size);
+    sp_texture->SetData({ { reinterpret_cast<Data::ConstRawPtr>(p_image_data), image_data_size } });
 
     stbi_image_free(p_image_data);
     return sp_texture;
