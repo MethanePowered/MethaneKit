@@ -32,18 +32,41 @@ Base implementation of the texture interface.
 namespace Methane::Graphics
 {
 
-Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, PixelFormat pixel_format, bool mipmapped, TextureBase::Usage::Mask usage)
+Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, TextureBase::Usage::Mask usage)
 {
     ITT_FUNCTION_TASK();
 
-    Settings settings       = { };
+    Settings settings;
     settings.type           = Type::Texture;
-    settings.dimension_type = dimensions.depth > 1 ? DimensionType::Tex3D : DimensionType::Tex2D;
-    settings.usage_mask     = usage;
-    settings.pixel_format   = pixel_format;
+    settings.dimension_type = dimensions.height == 1
+                            ? (array_length == 1 ? DimensionType::Tex1D : DimensionType::Tex1DArray)
+                            : (dimensions.depth == 1
+                                ? (array_length == 1 ? DimensionType::Tex2D : DimensionType::Tex2DArray)
+                                : DimensionType::Tex3D);
     settings.dimensions     = dimensions;
+    settings.array_length   = array_length;
+    settings.pixel_format   = pixel_format;
+    settings.usage_mask     = usage;
     settings.mipmapped      = mipmapped;
     settings.cpu_accessible = true;
+
+    return settings;
+}
+
+Texture::Settings Texture::Settings::Cube(uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage::Mask usage)
+{
+    ITT_FUNCTION_TASK();
+
+    Settings settings;
+    settings.type           = Type::Texture;
+    settings.dimension_type = array_length == 1 ? DimensionType::Cube : DimensionType::CubeArray;
+    settings.dimensions     = Dimensions(dimension_size, dimension_size, 6);
+    settings.array_length   = array_length;
+    settings.pixel_format   = pixel_format;
+    settings.usage_mask     = usage;
+    settings.mipmapped      = mipmapped;
+    settings.cpu_accessible = true;
+
     return settings;
 }
 
@@ -51,13 +74,14 @@ Texture::Settings Texture::Settings::FrameBuffer(const Dimensions& dimensions, P
 {
     ITT_FUNCTION_TASK();
 
-    Settings settings       = { };
+    Settings settings;
     settings.type           = Type::FrameBuffer;
     settings.dimension_type = DimensionType::Tex2D;
     settings.usage_mask     = Usage::RenderTarget;
     settings.pixel_format   = pixel_format;
     settings.dimensions     = dimensions;
     settings.cpu_accessible = false;
+
     return settings;
 }
 
@@ -65,7 +89,7 @@ Texture::Settings Texture::Settings::DepthStencilBuffer(const Dimensions& dimens
 {
     ITT_FUNCTION_TASK();
 
-    Settings settings       = {};
+    Settings settings;
     settings.type           = Type::DepthStencilBuffer;
     settings.dimension_type = DimensionType::Tex2D;
     settings.usage_mask     = usage_mask;
@@ -89,9 +113,26 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
     {
         throw std::invalid_argument("Can not create texture with \"Unknown\" pixel format.");
     }
-    if (m_settings.dimensions == Dimensions(0, 0, 0))
+    if (!m_settings.dimensions.width || !m_settings.dimensions.height || !m_settings.dimensions.depth || !m_settings.array_length)
     {
-        throw std::invalid_argument("Can not create texture with all zero dimensions.");
+        throw std::invalid_argument("All dimension sizes and array length should be greater than zero.");
+    }
+
+    switch(m_settings.dimension_type)
+    {
+    case DimensionType::Cube:
+    case DimensionType::CubeArray:
+        if (m_settings.dimensions.width != m_settings.dimensions.height)
+        {
+            throw std::invalid_argument("Cube texture must have equal width and height dimensions.");
+        }
+        if (m_settings.dimensions.depth != 6)
+        {
+            throw std::invalid_argument("Cube texture depth must be equal to 6.");
+        }
+        break;
+
+    default: return;
     }
 }
 

@@ -99,10 +99,10 @@ void ShadowCubeApp::Init()
 
     // Load textures, vertex and index buffers for cube and floor meshes
     m_sp_cube_buffers  = std::make_unique<TexturedMeshBuffers>(*m_sp_context, m_cube_mesh, "Cube");
-    m_sp_cube_buffers->SetTexture(m_image_loader.CreateImageTexture(*m_sp_context, "Textures/MethaneBubbles.jpg"));
+    m_sp_cube_buffers->SetTexture(m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MethaneBubbles.jpg"));
 
     m_sp_floor_buffers = std::make_unique<TexturedMeshBuffers>(*m_sp_context, m_floor_mesh, "Floor");
-    m_sp_floor_buffers->SetTexture(m_image_loader.CreateImageTexture(*m_sp_context, "Textures/MarbleWhite.jpg"));
+    m_sp_floor_buffers->SetTexture(m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MarbleWhite.jpg"));
 
     m_view_camera.Resize(static_cast<float>(context_settings.frame_size.width),
                          static_cast<float>(context_settings.frame_size.height));
