@@ -93,7 +93,7 @@ struct Resource : virtual Object
         SubResource(Data::ConstRawPtr in_p_data, Data::Size in_data_size,
                     uint32_t in_depth_slice = 0, uint32_t in_array_index = 0, uint32_t in_mip_level = 0);
 
-        uint32_t GetIndex(uint32_t mip_levels_count = 1) const { return array_index * mip_levels_count + mip_level; }
+        uint32_t GetIndex(uint32_t depth = 1, uint32_t mip_levels_count = 1) const { return (array_index * depth + depth_slice) * mip_levels_count + mip_level; }
     };
 
     using SubResources = std::vector<SubResource>;

@@ -40,9 +40,10 @@ public:
     struct ImageData
     {
         Dimensions  dimensions;
+        uint32_t    channels_count;
         Data::Chunk pixels;
 
-        ImageData(const Dimensions& in_dimensions, const Data::Chunk&& in_pixels);
+        ImageData(const Dimensions& in_dimensions, uint32_t in_channels_count, const Data::Chunk&& in_pixels);
         ImageData(const ImageData&& other);
         ~ImageData();
     };
