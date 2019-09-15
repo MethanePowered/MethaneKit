@@ -29,6 +29,7 @@ by decoding them from popular image formats.
 #include <Methane/Data/Provider.h>
 
 #include <string>
+#include <array>
 
 namespace Methane::Graphics
 {
@@ -36,9 +37,36 @@ namespace Methane::Graphics
 class ImageLoader final
 {
 public:
+    struct ImageData
+    {
+        Dimensions  dimensions;
+        Data::Chunk pixels;
+
+        ImageData(const Dimensions& in_dimensions, const Data::Chunk&& in_pixels);
+        ImageData(const ImageData&& other);
+        ~ImageData();
+    };
+
+    enum class CubeFace : size_t
+    {
+        PositiveX = 0u,
+        NegativeX,
+        PositiveY,
+        NegativeY,
+        PositiveZ,
+        NegativeZ,
+
+        Count
+    };
+
+    using CubeFaceResources = std::array<std::string, static_cast<size_t>(CubeFace::Count)>;
+
     ImageLoader(Data::Provider& data_provider);
 
-    Texture::Ptr CreateImageTexture(Context& context, const std::string& image_path);
+    ImageData LoadImage(const std::string& image_path, size_t channels_count, bool create_copy);
+
+    Texture::Ptr LoadImageToTexture2D(Context& context, const std::string& image_path);
+    Texture::Ptr LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths);
 
 private:
     Data::Provider& m_data_provider;

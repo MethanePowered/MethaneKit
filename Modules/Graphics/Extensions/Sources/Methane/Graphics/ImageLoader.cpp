@@ -42,22 +42,49 @@ by decoding them from popular image formats.
 namespace Methane::Graphics
 {
 
+ImageLoader::ImageData::ImageData(const Dimensions& in_dimensions, const Data::Chunk&& in_pixels)
+    : dimensions(in_dimensions)
+    , pixels(std::move(in_pixels))
+{
+    ITT_FUNCTION_TASK();
+}
+
+ImageLoader::ImageData::ImageData(const ImageData&& other)
+    : dimensions(std::move(other.dimensions))
+    , pixels(std::move(other.pixels))
+{
+    ITT_FUNCTION_TASK();
+}
+
+ImageLoader::ImageData::~ImageData()
+{
+    ITT_FUNCTION_TASK();
+
+#ifndef USE_OPEN_IMAGE_IO
+    if (pixels.data.empty() && pixels.p_data)
+    {
+        // We assume that image data was loaded with STB load call and was not copied to container, so it must be freed
+        stbi_image_free(const_cast<Data::RawPtr>(pixels.p_data));
+    }
+#endif
+}
+
 ImageLoader::ImageLoader(Data::Provider& data_provider)
     : m_data_provider(data_provider)
 {
     ITT_FUNCTION_TASK();
 }
 
-Texture::Ptr ImageLoader::CreateImageTexture(Context& context, const std::string& image_path)
+ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, size_t channels_count, bool create_copy)
 {
     ITT_FUNCTION_TASK();
-    const size_t texture_channels_count = 4;
+
+    Data::Chunk raw_image_data = m_data_provider.GetData(Data::Provider::Type::Texture, image_path);
 
 #ifdef USE_OPEN_IMAGE_IO
 
 #if 0
-    Data::Chunk image_data = m_data_provider.GetData(Data::Provider::Type::Texture, image_path);
-    OIIO::Filesystem::IOMemReader image_reader(const_cast<char*>(image_data.p_data), image_data.size);
+    OIIO::Filesystem::IOMemReader image_reader(const_cast<char*>(raw_image_data.p_data), raw_image_data.size);
     OIIO::ImageSpec init_spec;
     init_spec.attribute("oiio:ioproxy", OIIO::TypeDesc::PTR, &image_reader);
     OIIO::ImageBuf image_buf(init_spec);
@@ -75,44 +102,99 @@ Texture::Ptr ImageLoader::CreateImageTexture(Context& context, const std::string
 
     // Convert image pixels data to the target texture format RGBA8 Unorm
     OIIO::ROI image_roi = OIIO::get_roi(image_spec);
-    std::vector<uint8_t> texture_data(texture_channels_count * image_roi.npixels(), 255);
+    Data::Bytes texture_data(channels_count * image_roi.npixels(), 255);
     const OIIO::TypeDesc texture_format(OIIO::TypeDesc::BASETYPE::UCHAR);
-    if (!image_buf.get_pixels(image_roi, texture_format, texture_data.data(), texture_channels_count * sizeof(texture_data[0])))
+    if (!image_buf.get_pixels(image_roi, texture_format, texture_data.data(), channels_count * sizeof(texture_data[0])))
     {
         throw std::runtime_error("Failed to decode image from file \"" + image_path + "\", error: " + image_buf.geterror());
     }
 
-    // Create texture for loaded image and set image data (with uploading it to the GPU)
-    const Dimensions image_dimensions(static_cast<uint32_t>(image_spec.width), static_cast<uint32_t>(image_spec.height), 1);
-    Texture::Ptr sp_texture = Texture::CreateImage(context, image_dimensions, PixelFormat::RGBA8Unorm, false);
-    sp_texture->SetData(reinterpret_cast<Data::ConstRawPtr>(texture_data.data()), static_cast<Data::Size>(texture_data.size()));
-
-    return sp_texture;
+    return ImageData(Dimensions(static_cast<uint32_t>(image_spec.width), static_cast<uint32_t>(image_spec.height)),
+                                Data::Chunk(std::move(texture_data)));
 
 #else
-
-    Data::Chunk image_chunk = m_data_provider.GetData(Data::Provider::Type::Texture, image_path);
     int image_width = 0, image_height = 0, image_channels_count = 0;
-    stbi_uc* p_image_data = stbi_load_from_memory(reinterpret_cast<stbi_uc const*>(image_chunk.p_data),
-                                                    static_cast<int>(image_chunk.size),
-                                                    &image_width, &image_height, &image_channels_count,
-                                                    static_cast<int>(texture_channels_count));
-    const Data::Size image_data_size = static_cast<Data::Size>(image_width * image_height) * texture_channels_count * sizeof(stbi_uc);
+    stbi_uc* p_image_data = stbi_load_from_memory(reinterpret_cast<stbi_uc const*>(raw_image_data.p_data),
+                                                  static_cast<int>(raw_image_data.size),
+                                                  &image_width, &image_height, &image_channels_count,
+                                                  static_cast<int>(channels_count));
 
-    if (!p_image_data || !image_width || !image_height || !image_channels_count)
+    if (!p_image_data || image_width <= 0 || image_height <= 0 || image_channels_count <= 0)
     {
         throw std::runtime_error("Failed to decode image from memory file \"" + image_path + "\".");
     }
 
-    // Create texture for loaded image and set image data (with uploading it to the GPU)
-    const Dimensions image_dimensions(static_cast<uint32_t>(image_width), static_cast<uint32_t>(image_height), 1);
-    Texture::Ptr sp_texture = Texture::CreateImage(context, image_dimensions, PixelFormat::RGBA8Unorm, false);
-    sp_texture->SetData({ { reinterpret_cast<Data::ConstRawPtr>(p_image_data), image_data_size } });
+    const Dimensions image_dimensions(static_cast<uint32_t>(image_width), static_cast<uint32_t>(image_height));
+    const Data::Size image_data_size = static_cast<Data::Size>(image_width * image_height) * channels_count * sizeof(stbi_uc);
 
-    stbi_image_free(p_image_data);
-    return sp_texture;
+    if (create_copy)
+    {
+        Data::RawPtr p_image_raw_data = reinterpret_cast<Data::RawPtr>(p_image_data);
+        ImageData image_data(image_dimensions, Data::Chunk(Data::Bytes(p_image_raw_data, p_image_raw_data + image_data_size)));
+        stbi_image_free(p_image_data);
+        return image_data;
+    }
+    else
+    {
+        return ImageData(image_dimensions, Data::Chunk(reinterpret_cast<Data::ConstRawPtr>(p_image_data), image_data_size));
+    }
 
 #endif
+}
+
+Texture::Ptr ImageLoader::LoadImageToTexture2D(Context& context, const std::string& image_path)
+{
+    ITT_FUNCTION_TASK();
+
+    const ImageData image_data = LoadImage(image_path, 4, false);
+    Texture::Ptr sp_texture = Texture::CreateImage(context, image_data.dimensions, 1, PixelFormat::RGBA8Unorm, false);
+    sp_texture->SetData({ { image_data.pixels.p_data, image_data.pixels.size } });
+
+    return sp_texture;
+}
+
+Texture::Ptr ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths)
+{
+    ITT_FUNCTION_TASK();
+
+    std::vector<ImageData> face_resources_data;
+    face_resources_data.reserve(image_paths.size());
+
+    Resource::SubResources face_resources;
+    face_resources.reserve(image_paths.size());
+
+    Dimensions face_dimensions;
+    uint32_t face_slice = 0;
+
+    for (const std::string& image_path : image_paths)
+    {
+        // NOTE:
+        //  we create a copy of the loaded image data (via 3-rd argument of LoadImage)
+        //  to resolve a problem of STB image loader which requires an image data to be freed before next image is loaded
+        face_resources_data.emplace_back(std::move(LoadImage(image_path, 4, true)));
+        const ImageData& image_data = face_resources_data.back();
+
+        if (face_slice == 0)
+        {
+            face_dimensions = image_data.dimensions;
+            if (face_dimensions.width != face_dimensions.height)
+            {
+                throw std::runtime_error("All images of cube texture faces must have equal width and height.");
+            }
+        }
+        else if (face_dimensions != image_data.dimensions)
+        {
+            throw std::runtime_error("All image of cube texture faces must have equal dimensions.");
+        }
+
+        face_resources.emplace_back(image_data.pixels.p_data, image_data.pixels.size, face_slice);
+        face_slice++;
+    }
+
+    Texture::Ptr sp_texture = Texture::CreateCube(context, face_dimensions.width, 1, PixelFormat::RGBA8Unorm, false);
+    sp_texture->SetData(face_resources);
+
+    return sp_texture;
 }
 
 } // namespace Methane::Graphics

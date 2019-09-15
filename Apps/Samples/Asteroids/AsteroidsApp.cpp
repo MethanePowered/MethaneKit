@@ -122,7 +122,7 @@ void AsteroidsApp::Init()
 
     // Create vertex and index buffer for meshes
     m_sp_cube_buffers  = std::make_unique<TexturedMeshBuffers>(context, m_cube_mesh, "Cube");
-    m_sp_cube_buffers->SetTexture(m_image_loader.CreateImageTexture(context, "Textures/MethaneBubbles.jpg"));
+    m_sp_cube_buffers->SetTexture(m_image_loader.LoadImageToTexture2D(context, "Textures/MethaneBubbles.jpg"));
 
     const Data::Size constants_data_size      = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(Constants)));
     const Data::Size scene_uniforms_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(SceneUniforms)));

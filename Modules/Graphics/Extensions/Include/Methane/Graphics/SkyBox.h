@@ -41,23 +41,9 @@ class SkyBox
 public:
     using Ptr = std::shared_ptr<SkyBox>;
 
-    enum class Face : uint32_t
-    {
-        PositiveX = 0u,
-        NegativeX,
-        PositiveY,
-        NegativeY,
-        PositiveZ,
-        NegativeZ,
-
-        Count
-    };
-
-    using FaceResources = std::array<std::string, static_cast<uint32_t>(Face::Count)>;
-
     struct Settings
     {
-        FaceResources face_resources;
+        ImageLoader::CubeFaceResources face_resources;
     };
 
     SkyBox(Context& context, ImageLoader& image_loader, const Settings& settings);
