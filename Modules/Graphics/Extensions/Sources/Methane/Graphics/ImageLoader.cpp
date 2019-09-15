@@ -42,8 +42,9 @@ by decoding them from popular image formats.
 namespace Methane::Graphics
 {
 
-ImageLoader::ImageData::ImageData(const Dimensions& in_dimensions, const Data::Chunk&& in_pixels)
+ImageLoader::ImageData::ImageData(const Dimensions& in_dimensions, uint32_t in_channels_count, const Data::Chunk&& in_pixels)
     : dimensions(in_dimensions)
+    , channels_count(in_channels_count)
     , pixels(std::move(in_pixels))
 {
     ITT_FUNCTION_TASK();
@@ -51,6 +52,7 @@ ImageLoader::ImageData::ImageData(const Dimensions& in_dimensions, const Data::C
 
 ImageLoader::ImageData::ImageData(const ImageData&& other)
     : dimensions(std::move(other.dimensions))
+    , channels_count(other.channels_count)
     , pixels(std::move(other.pixels))
 {
     ITT_FUNCTION_TASK();
@@ -110,6 +112,7 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
     }
 
     return ImageData(Dimensions(static_cast<uint32_t>(image_spec.width), static_cast<uint32_t>(image_spec.height)),
+                                static_cast<uint32_t>(channels_count),
                                 Data::Chunk(std::move(texture_data)));
 
 #else
@@ -130,13 +133,15 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
     if (create_copy)
     {
         Data::RawPtr p_image_raw_data = reinterpret_cast<Data::RawPtr>(p_image_data);
-        ImageData image_data(image_dimensions, Data::Chunk(Data::Bytes(p_image_raw_data, p_image_raw_data + image_data_size)));
+        Data::Bytes image_data_copy(p_image_raw_data, p_image_raw_data + image_data_size);
+        ImageData image_data(image_dimensions, static_cast<uint32_t>(image_channels_count), Data::Chunk(std::move(image_data_copy)));
         stbi_image_free(p_image_data);
         return image_data;
     }
     else
     {
-        return ImageData(image_dimensions, Data::Chunk(reinterpret_cast<Data::ConstRawPtr>(p_image_data), image_data_size));
+        return ImageData(image_dimensions, static_cast<uint32_t>(image_channels_count),
+                         Data::Chunk(reinterpret_cast<Data::ConstRawPtr>(p_image_data), image_data_size));
     }
 
 #endif
@@ -163,28 +168,32 @@ Texture::Ptr ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
     Resource::SubResources face_resources;
     face_resources.reserve(image_paths.size());
 
-    Dimensions face_dimensions;
-    uint32_t face_slice = 0;
+    const uint32_t desired_channels_count = 4;
+    uint32_t       face_channels_count = 0;
+    Dimensions     face_dimensions;
+    uint32_t       face_slice = 0;
 
     for (const std::string& image_path : image_paths)
     {
         // NOTE:
         //  we create a copy of the loaded image data (via 3-rd argument of LoadImage)
         //  to resolve a problem of STB image loader which requires an image data to be freed before next image is loaded
-        face_resources_data.emplace_back(std::move(LoadImage(image_path, 4, true)));
+        face_resources_data.emplace_back(std::move(LoadImage(image_path, desired_channels_count, true)));
         const ImageData& image_data = face_resources_data.back();
 
         if (face_slice == 0)
         {
-            face_dimensions = image_data.dimensions;
+            face_dimensions     = image_data.dimensions;
+            face_channels_count = image_data.channels_count;
             if (face_dimensions.width != face_dimensions.height)
             {
                 throw std::runtime_error("All images of cube texture faces must have equal width and height.");
             }
         }
-        else if (face_dimensions != image_data.dimensions)
+        else if (face_dimensions     != image_data.dimensions ||
+                 face_channels_count != image_data.channels_count)
         {
-            throw std::runtime_error("All image of cube texture faces must have equal dimensions.");
+            throw std::runtime_error("All face image of cube texture must have equal dimensions and channels count.");
         }
 
         face_resources.emplace_back(image_data.pixels.p_data, image_data.pixels.size, face_slice);
