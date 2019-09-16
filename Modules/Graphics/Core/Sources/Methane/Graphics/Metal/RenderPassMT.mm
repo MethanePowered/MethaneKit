@@ -126,6 +126,17 @@ void RenderPassMT::Reset()
         m_mtl_pass_descriptor.stencilAttachment.storeAction   = GetMTLStoreAction(m_settings.stencil_attachment.store_action);
     }
 }
+    
+MTLRenderPassDescriptor* RenderPassMT::GetNativeDescriptor(bool reset)
+{
+    ITT_FUNCTION_TASK();
+    
+    if (reset)
+    {
+        Reset();
+    }
+    return m_mtl_pass_descriptor;
+}
 
 ContextMT& RenderPassMT::GetContextMT() noexcept
 {

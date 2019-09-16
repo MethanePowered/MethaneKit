@@ -42,7 +42,7 @@ public:
     
     void Reset();
     
-    MTLRenderPassDescriptor* GetNativeDescriptor() { return m_mtl_pass_descriptor; }
+    MTLRenderPassDescriptor* GetNativeDescriptor(bool reset);
 
 protected:
     ContextMT& GetContextMT() noexcept;
