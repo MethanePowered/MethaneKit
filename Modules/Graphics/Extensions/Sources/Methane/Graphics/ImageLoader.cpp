@@ -178,7 +178,7 @@ Texture::Ptr ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
         // NOTE:
         //  we create a copy of the loaded image data (via 3-rd argument of LoadImage)
         //  to resolve a problem of STB image loader which requires an image data to be freed before next image is loaded
-        face_resources_data.emplace_back(std::move(LoadImage(image_path, desired_channels_count, true)));
+        face_resources_data.emplace_back(LoadImage(image_path, desired_channels_count, true));
         const ImageData& image_data = face_resources_data.back();
 
         if (face_slice == 0)

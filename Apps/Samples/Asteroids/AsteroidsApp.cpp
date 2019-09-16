@@ -74,16 +74,16 @@ AsteroidsApp::AsteroidsApp()
     , m_view_camera(m_animations, gfx::ActionCamera::Pivot::Aim)
     , m_light_camera(m_view_camera, m_animations, gfx::ActionCamera::Pivot::Aim)
 {
-    m_view_camera.SetOrientation({ { 15.0f, 22.5f, -15.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
+    m_view_camera.SetOrientation({ { -15.0f, 22.5f, 15.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
     m_view_camera.SetZoomDistanceRange({ 15.f , 100.f });
 
-    m_light_camera.SetOrientation({ { 0.0f,  25.0f, -25.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
+    m_light_camera.SetOrientation({ { 0.0f,  25.0f, 25.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
     m_light_camera.SetParamters({ -300, 300.f, 90.f });
     m_light_camera.Resize(120, 120);
 
     m_input_state.AddControllers({
-        std::make_shared<gfx::AppCameraController>(m_view_camera, "VIEW CAMERA"),
+        std::make_shared<gfx::AppCameraController>(m_view_camera,  "VIEW CAMERA"),
         std::make_shared<gfx::AppCameraController>(m_light_camera, "LIGHT SOURCE",
             gfx::AppCameraController::ActionByMouseButton   { { pal::Mouse::Button::Right, gfx::ActionCamera::MouseAction::Rotate   } },
             gfx::AppCameraController::ActionByKeyboardState { { { pal::Keyboard::Key::L }, gfx::ActionCamera::KeyboardAction::Reset } },
@@ -121,7 +121,7 @@ void AsteroidsApp::Init()
     });
 
     // Create vertex and index buffer for meshes
-    m_sp_cube_buffers  = std::make_unique<TexturedMeshBuffers>(context, m_cube_mesh, "Cube");
+    m_sp_cube_buffers = std::make_unique<TexturedMeshBuffers>(context, m_cube_mesh, "Cube");
     m_sp_cube_buffers->SetTexture(m_image_loader.LoadImageToTexture2D(context, "Textures/MethaneBubbles.jpg"));
 
     const Data::Size constants_data_size      = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(Constants)));
@@ -171,26 +171,36 @@ void AsteroidsApp::Init()
     
     m_sp_state = gfx::RenderState::Create(context, state_settings);
     m_sp_state->SetName("Final FB render state");
-    
 
     // ========= Per-Frame Data =========
     for(AsteroidsFrame& frame : m_frames)
     {
-        // Create uniforms buffer with volatile parameters for the whole scene rendering
-        frame.sp_scene_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, scene_uniforms_data_size);
-        frame.sp_scene_uniforms_buffer->SetName(IndexedName("Scene Uniforms Buffer", frame.index));
-
-        // Create uniforms buffer for Cube rendering
-        frame.sp_cube_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, cube_uniforms_data_size);
-        frame.sp_cube_uniforms_buffer->SetName(IndexedName("Cube Uniforms Buffer", frame.index));
-
         // Create render pass and command list for final pass rendering
         frame.sp_cmd_list = gfx::RenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_screen_pass);
         frame.sp_cmd_list->SetName(IndexedName("Scene Rendering", frame.index));
 
-        // Final-pass resource bindings for cube rendering
-        frame.sp_resource_bindings = gfx::Program::ResourceBindings::Create(state_settings.sp_program, {
-            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, frame.sp_cube_uniforms_buffer               },
+        // Create uniforms buffer with volatile parameters for the whole scene rendering
+        frame.sp_scene_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, scene_uniforms_data_size);
+        frame.sp_scene_uniforms_buffer->SetName(IndexedName("Scene Uniforms Buffer", frame.index));
+
+        // Create uniforms buffer for Sky-Box rendering
+        frame.skybox.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, sizeof(gfx::SkyBox::MeshUniforms));
+        frame.skybox.sp_uniforms_buffer->SetName(IndexedName("Sky-box Uniforms Buffer", frame.index));
+
+        // Resource bindings for Sky-Box rendering
+        frame.skybox.sp_resource_bindings = gfx::Program::ResourceBindings::Create(m_sp_sky_box->GetProgramPtr(), {
+            { { gfx::Shader::Type::Vertex, "g_skybox_uniforms" }, frame.skybox.sp_uniforms_buffer },
+            { { gfx::Shader::Type::Pixel,  "g_skybox_texture"  }, m_sp_sky_box->GetTexturePtr()   },
+            { { gfx::Shader::Type::Pixel,  "g_texture_sampler" }, m_sp_texture_sampler            },
+        });
+
+        // Create uniforms buffer for Cube rendering
+        frame.cube.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, cube_uniforms_data_size);
+        frame.cube.sp_uniforms_buffer->SetName(IndexedName("Cube Uniforms Buffer", frame.index));
+
+        // Resource bindings for cube rendering
+        frame.cube.sp_resource_bindings = gfx::Program::ResourceBindings::Create(state_settings.sp_program, {
+            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, frame.cube.sp_uniforms_buffer               },
             { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, frame.sp_scene_uniforms_buffer              },
             { { gfx::Shader::Type::Pixel,  "g_constants"      }, m_sp_const_buffer                           },
             { { gfx::Shader::Type::Pixel,  "g_texture"        }, m_sp_cube_buffers->GetTexturePtr()          },
@@ -238,6 +248,13 @@ void AsteroidsApp::Update()
     m_scene_uniforms.eye_position    = gfx::Vector4f(m_view_camera.GetOrientation().eye, 1.f);
     m_scene_uniforms.light_position  = m_light_camera.GetOrientation().eye;
 
+    // Update sky-box matrix
+    gfx::Matrix44f skybox_scale_matrix;
+    cml::matrix_uniform_scale(skybox_scale_matrix, m_scene_scale * 100);
+    m_sp_sky_box->SetFinalPassUniforms({
+        skybox_scale_matrix * scene_view_matrix * scene_proj_matrix
+    });
+
     // Cube model matrix
     gfx::Matrix44f cube_model_matrix;
     cml::matrix_translation(cube_model_matrix, gfx::Vector3f(0.f, m_cube_mesh.GetHeight() / 2.f, 0.f));
@@ -262,17 +279,21 @@ void AsteroidsApp::Render()
     AsteroidsFrame& frame = GetCurrentFrame();
 
     // Upload uniform buffers to GPU
+    assert(!!m_sp_sky_box);
     frame.sp_scene_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms) } });
-    frame.sp_cube_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->GetFinalPassUniforms()), sizeof(MeshUniforms) } });
+    frame.cube.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->GetFinalPassUniforms()), sizeof(MeshUniforms) } });
+    frame.skybox.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_sky_box->GetFinalPassUniforms()), sizeof(gfx::SkyBox::MeshUniforms) } });
 
-    // Record rendering commands
+    // Sky-box drawing
     assert(!!frame.sp_cmd_list);
-    frame.sp_cmd_list->Reset(*m_sp_state, "Cube rendering");
+    assert(!!frame.skybox.sp_resource_bindings);
+    m_sp_sky_box->Draw(*frame.sp_cmd_list, *frame.skybox.sp_resource_bindings);
 
     // Cube drawing
-    assert(!!frame.sp_resource_bindings);
+    assert(!!frame.cube.sp_resource_bindings);
     assert(!!m_sp_cube_buffers);
-    m_sp_cube_buffers->Draw(*frame.sp_cmd_list, *frame.sp_resource_bindings, 1);
+    frame.sp_cmd_list->Reset(*m_sp_state, "Cube rendering");
+    m_sp_cube_buffers->Draw(*frame.sp_cmd_list, *frame.cube.sp_resource_bindings, 1);
 
     frame.sp_cmd_list->Commit(true);
 

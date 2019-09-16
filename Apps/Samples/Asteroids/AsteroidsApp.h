@@ -33,10 +33,17 @@ namespace pal = Platform;
 
 struct AsteroidsFrame final : gfx::AppFrame
 {
-    gfx::Buffer::Ptr                    sp_scene_uniforms_buffer;
-    gfx::Buffer::Ptr                    sp_cube_uniforms_buffer;
-    gfx::Program::ResourceBindings::Ptr sp_resource_bindings;
-    gfx::RenderCommandList::Ptr         sp_cmd_list;
+    struct MeshBufferBindings
+    {
+        gfx::Buffer::Ptr                    sp_uniforms_buffer;
+        gfx::Program::ResourceBindings::Ptr sp_resource_bindings;
+    };
+
+    gfx::RenderCommandList::Ptr  sp_cmd_list;
+    gfx::Buffer::Ptr             sp_scene_uniforms_buffer;
+    MeshBufferBindings           skybox;
+    MeshBufferBindings           cube;
+
 
     using gfx::AppFrame::AppFrame;
 };

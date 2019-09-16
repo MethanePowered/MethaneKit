@@ -27,6 +27,7 @@ SkyBox rendering primitive
 #include "MeshBuffers.hpp"
 
 #include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/RenderState.h>
 #include <Methane/Graphics/MathTypes.h>
 
 #include <memory>
@@ -46,19 +47,28 @@ public:
         ImageLoader::CubeFaceResources face_resources;
     };
 
-    SkyBox(Context& context, ImageLoader& image_loader, const Settings& settings);
-
-private:
-    struct SHADER_STRUCT_ALIGN BoxMeshUniforms
+    struct SHADER_STRUCT_ALIGN MeshUniforms
     {
         SHADER_FIELD_ALIGN Matrix44f mvp_matrix;
     };
 
-    using TexturedMeshBuffers = TexturedMeshBuffers<BoxMeshUniforms>;
+    SkyBox(Context& context, ImageLoader& image_loader, const Settings& settings);
 
-    Settings            m_settings;
-    Context&            m_context;
-    TexturedMeshBuffers m_mesh_buffers;
+    const Program::Ptr& GetProgramPtr() const               { return m_sp_state->GetSettings().sp_program; }
+    const Texture::Ptr& GetTexturePtr() const               { return m_mesh_buffers.GetTexturePtr(); }
+    const MeshUniforms& GetFinalPassUniforms() const        { return m_mesh_buffers.GetFinalPassUniforms(); }
+    void SetFinalPassUniforms(const MeshUniforms& uniforms) { m_mesh_buffers.SetFinalPassUniforms(uniforms); }
+
+    void Draw(RenderCommandList& cmd_list, Program::ResourceBindings& resource_bindings);
+
+private:
+    using TexturedMeshBuffers = TexturedMeshBuffers<MeshUniforms>;
+
+    Settings               m_settings;
+    Context&               m_context;
+    TexturedMeshBuffers    m_mesh_buffers;
+    RenderState::Ptr       m_sp_state;
+    RenderCommandList::Ptr m_sp_command_list;
 };
 
 } // namespace Methane::Graphics
