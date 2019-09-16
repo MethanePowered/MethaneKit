@@ -63,8 +63,6 @@ public:
     id<MTLRenderCommandEncoder>& GetNativeEncoder() noexcept { return m_mtl_cmd_encoder; }
 
 protected:
-    void Reset();
-
     CommandQueueMT& GetCommandQueueMT() noexcept;
     RenderPassMT& GetPassMT();
 
