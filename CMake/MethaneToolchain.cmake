@@ -445,7 +445,7 @@ function(add_methane_shaders TARGET HLSL_SOURCES)
         )
 
         source_group("Generated Shaders" FILES
-            ${SHADERS_GENERATED}
+            ${GENERATED_SOURCES}
             ${METAL_LIBRARY}
         )
 
