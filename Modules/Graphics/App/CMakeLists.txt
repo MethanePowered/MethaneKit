@@ -4,7 +4,6 @@ get_module_dirs("Methane/Graphics")
 
 set(HEADERS
     ${INCLUDE_DIR}/App.hpp
-    ${INCLUDE_DIR}/AppDataProvider.hpp
     ${INCLUDE_DIR}/AppCameraController.h
     ${INCLUDE_DIR}/AppContextController.h
 )

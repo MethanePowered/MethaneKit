@@ -23,6 +23,7 @@ SkyBox rendering primitive
 
 #include <Methane/Graphics/SkyBox.h>
 #include <Methane/Graphics/Mesh.h>
+#include <Methane/Data/AppResourceProviders.h>
 
 namespace Methane::Graphics
 {
@@ -49,8 +50,8 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
     RenderState::Settings state_settings;
     state_settings.sp_program = Program::Create(context, {
         {
-            Shader::CreateVertex(context, { { "SkyBox", "SkyboxVS", "vs_5_1" }, { } }),
-            Shader::CreatePixel( context, { { "SkyBox", "SkyboxPS", "ps_5_1" }, { } }),
+            Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxVS", "vs_5_1" }, { } }),
+            Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxPS", "ps_5_1" }, { } }),
         },
         { { {
             { "in_position", "POSITION" },

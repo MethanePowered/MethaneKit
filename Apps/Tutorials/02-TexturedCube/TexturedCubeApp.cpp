@@ -97,8 +97,8 @@ void TexturedCubeApp::Init()
     // Create cube shading program
     m_sp_program = gfx::Program::Create(*m_sp_context, {
         { // shaders
-            gfx::Shader::CreateVertex(*m_sp_context, { g_vs_main }),
-            gfx::Shader::CreatePixel( *m_sp_context, { g_ps_main }),
+            gfx::Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), g_vs_main }),
+            gfx::Shader::CreatePixel( *m_sp_context, { Data::ShaderProvider::Get(), g_ps_main }),
         },
         { // input_buffer_layouts
             { // single vertex buffer layout with interleaved data

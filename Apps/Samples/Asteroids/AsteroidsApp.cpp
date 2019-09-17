@@ -144,8 +144,8 @@ void AsteroidsApp::Init()
     gfx::RenderState::Settings state_settings;
     state_settings.sp_program    = gfx::Program::Create(context, {
         {
-            gfx::Shader::CreateVertex(context, { g_vs_main, { } }),
-            gfx::Shader::CreatePixel(context, { g_ps_main, { } }),
+            gfx::Shader::CreateVertex(context, { Data::ShaderProvider::Get(), g_vs_main, { } }),
+            gfx::Shader::CreatePixel(context,  { Data::ShaderProvider::Get(), g_ps_main, { } }),
         },
         { // input_buffer_layouts
             { // Single vertex buffer with interleaved data:

@@ -59,7 +59,7 @@ public:
         id<MTLLibrary> m_mtl_library;
     };
 
-    ContextMT(const Platform::AppEnvironment& env, const Data::Provider& data_provider, DeviceBase& device, const Settings& settings);
+    ContextMT(const Platform::AppEnvironment& env, DeviceBase& device, const Settings& settings);
     ~ContextMT() override;
 
     // Context interface

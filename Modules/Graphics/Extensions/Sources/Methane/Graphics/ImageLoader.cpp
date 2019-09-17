@@ -81,7 +81,7 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
 {
     ITT_FUNCTION_TASK();
 
-    Data::Chunk raw_image_data = m_data_provider.GetData(Data::Provider::Type::Texture, image_path);
+    Data::Chunk raw_image_data = m_data_provider.GetData(image_path);
 
 #ifdef USE_OPEN_IMAGE_IO
 

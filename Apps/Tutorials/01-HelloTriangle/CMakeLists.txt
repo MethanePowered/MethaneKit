@@ -14,13 +14,10 @@ add_methane_application(${TARGET}
     "Methane Hello Triangle"
     "${SOURCES}"
     "${RESOURCES_DIR}"
-    ""
-    ""
-    ""
     "Apps/Tutorials"
 )
 
-add_methane_shaders(${TARGET} "${SHADERS_HLSL}")
+add_methane_shaders(${TARGET} HelloTriangle "${SHADERS_HLSL}")
 
 set_target_properties(${TARGET}
     PROPERTIES
@@ -36,13 +33,10 @@ add_methane_application(${TARGET_SIMPLE}
     "Methane Hello Triangle"
     "${SOURCES_SIMPLE}"
     "${RESOURCES_DIR}"
-    ""
-    ""
-    ""
     "Apps/Tutorials"
 )
 
-add_methane_shaders(${TARGET_SIMPLE} "${SHADERS_HLSL}")
+add_methane_shaders(${TARGET_SIMPLE} HelloTriangle "${SHADERS_HLSL}")
 
 set_target_properties(${TARGET_SIMPLE}
     PROPERTIES
