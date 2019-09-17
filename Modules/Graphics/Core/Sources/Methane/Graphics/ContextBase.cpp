@@ -47,9 +47,8 @@ std::string GetWaitForName(Context::WaitFor wait_for)
     return "";
 }
 
-ContextBase::ContextBase(const Data::Provider& data_provider, DeviceBase& device, const Settings& settings)
-    : m_data_provider(data_provider)
-    , m_sp_device(device.GetPtr())
+ContextBase::ContextBase(DeviceBase& device, const Settings& settings)
+    : m_sp_device(device.GetPtr())
     , m_settings(settings)
     , m_resource_manager(*this)
     , m_frame_buffer_index(0)

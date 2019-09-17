@@ -55,14 +55,14 @@ void SetWindowTopMostFlag(HWND window_handle, bool is_top_most)
                  SWP_FRAMECHANGED | SWP_NOACTIVATE);
 }
 
-Context::Ptr Context::Create(const Platform::AppEnvironment& env, const Data::Provider& data_provider, Device& device, const Context::Settings& settings)
+Context::Ptr Context::Create(const Platform::AppEnvironment& env, Device& device, const Context::Settings& settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ContextDX>(env, data_provider, static_cast<DeviceBase&>(device), settings);
+    return std::make_shared<ContextDX>(env, static_cast<DeviceBase&>(device), settings);
 }
 
-ContextDX::ContextDX(const Platform::AppEnvironment& env, const Data::Provider& data_provider, DeviceBase& device, const Context::Settings& settings)
-    : ContextBase(data_provider, device, settings)
+ContextDX::ContextDX(const Platform::AppEnvironment& env, DeviceBase& device, const Context::Settings& settings)
+    : ContextBase(device, settings)
     , m_platform_env(env)
 {
     ITT_FUNCTION_TASK();

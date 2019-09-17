@@ -81,8 +81,8 @@ public:
         {
             Program::Create(*m_sp_context, {
                 {
-                    Shader::CreateVertex(*m_sp_context, { { "Triangle", "TriangleVS", "vs_5_1" } }),
-                    Shader::CreatePixel(*m_sp_context,  { { "Triangle", "TrianglePS", "ps_5_1" } }),
+                    Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), { "Triangle", "TriangleVS", "vs_5_1" } }),
+                    Shader::CreatePixel(*m_sp_context,  { Data::ShaderProvider::Get(), { "Triangle", "TrianglePS", "ps_5_1" } }),
                 },
                 { { {
                     { "in_position", "POSITION" },

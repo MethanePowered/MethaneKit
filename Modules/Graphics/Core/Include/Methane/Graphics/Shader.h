@@ -31,6 +31,11 @@ Methane shader interface: defines programmable stage of the graphics pipeline.
 #include <set>
 #include <map>
 
+namespace Methane::Data
+{
+struct Provider;
+}
+
 namespace Methane::Graphics
 {
 
@@ -80,6 +85,7 @@ struct Shader
 
     struct Settings
     {
+        Data::Provider&  data_provider;
         EntryTarget      entry_target;
         MacroDefinitions compile_definitions;
         std::string      source_file_path;    // Optional parameter: by default shaders are precompiled to application resources and loaded through DataProvider

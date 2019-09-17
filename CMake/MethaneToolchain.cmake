@@ -234,7 +234,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
     set(${OUT_COMPILED_SHADER_BINS} ${_OUT_COMPILED_SHADER_BINS} PARENT_SCOPE)
 endfunction()
 
-function(add_methane_application TARGET APP_NAME SOURCES RESOURCES_DIR EMBEDDED_TEXTURES_DIR EMBEDDED_TEXTURES COPY_TEXTURES INSTALL_DIR)
+function(add_methane_application TARGET APP_NAME SOURCES RESOURCES_DIR INSTALL_DIR)
     set(BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 
     if (WIN32)
@@ -307,41 +307,11 @@ function(add_methane_application TARGET APP_NAME SOURCES RESOURCES_DIR EMBEDDED_
 
     endif()
 
-    if (EMBEDDED_TEXTURES)
-        set(TEXTURE_RESOURCES_TARGET ${TARGET}_Textures)
-        cmrc_add_resource_library(${TEXTURE_RESOURCES_TARGET}
-            ALIAS Methane::Resources::Textures
-            WHENCE "${EMBEDDED_TEXTURES_DIR}"
-            NAMESPACE Textures
-            ${EMBEDDED_TEXTURES}
-        )
-
-        set_target_properties(${TEXTURE_RESOURCES_TARGET}
-            PROPERTIES
-            FOLDER Build
-        )
-
-        target_compile_definitions(${TARGET}
-            PRIVATE
-            ENABLE_TEXTURE_RESOURCES
-        )
-    endif()
-
-    if (COPY_TEXTURES)
-        add_custom_command(TARGET ${TARGET} POST_BUILD
-            COMMENT "Copying textures for application " ${TARGET}
-            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${BINARY_DIR}/Textures"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${COPY_TEXTURES} "${BINARY_DIR}/Textures"
-        )
-    endif()
-
     source_group("Source Files" FILES ${SOURCES})
     source_group("Source Shaders" FILES ${SHADERS_HLSL} ${SHADERS_CONFIG})
 
     target_link_libraries(${TARGET}
         MethaneKit
-        ${TEXTURE_RESOURCES_TARGET}
     )
 
     get_target_property(METHANE_PREREQUISITE_MODULES MethaneKit PREREQUISITE_MODULES)
@@ -353,7 +323,46 @@ function(add_methane_application TARGET APP_NAME SOURCES RESOURCES_DIR EMBEDDED_
     )
 endfunction()
 
-function(add_methane_shaders TARGET HLSL_SOURCES)
+function(add_methane_embedded_textures TARGET RESOURCE_NAMESPACE EMBEDDED_TEXTURES_DIR EMBEDDED_TEXTURES)
+
+    set(TEXTURE_RESOURCES_TARGET ${TARGET}_Textures)
+
+    cmrc_add_resource_library(${TEXTURE_RESOURCES_TARGET}
+        ALIAS Methane::Resources::Textures
+        WHENCE "${EMBEDDED_TEXTURES_DIR}"
+        NAMESPACE ${RESOURCE_NAMESPACE}::Textures
+        ${EMBEDDED_TEXTURES}
+    )
+
+    set_target_properties(${TEXTURE_RESOURCES_TARGET}
+        PROPERTIES
+        FOLDER Build
+    )
+
+    target_link_libraries(${TARGET}
+        MethaneKit
+        ${TEXTURE_RESOURCES_TARGET}
+    )
+
+    target_compile_definitions(${TARGET}
+        PRIVATE
+        TEXTURE_RESOURCE_NAMESPACE=${RESOURCE_NAMESPACE}::Textures
+    )
+
+endfunction()
+
+function(add_methane_copy_textures TARGET COPY_TEXTURES)
+
+    add_custom_command(TARGET ${TARGET} POST_BUILD
+            COMMENT "Copying textures for application " ${TARGET}
+            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${BINARY_DIR}/Textures"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${COPY_TEXTURES} "${BINARY_DIR}/Textures"
+        )
+
+endfunction()
+
+function(add_methane_shaders TARGET RESOURCE_NAMESPACE HLSL_SOURCES)
 
     if (WIN32)
 
@@ -370,7 +379,7 @@ function(add_methane_shaders TARGET HLSL_SOURCES)
         cmrc_add_resource_library(${SHADER_RESOURCES_TARGET}
             ALIAS Methane::Resources::Shaders
             WHENCE "${TARGET_SHADERS_DIR}"
-            NAMESPACE Shaders
+            NAMESPACE ${RESOURCE_NAMESPACE}::Shaders
             ${SHADERS_OBJ_FILES}
         )
 
@@ -400,7 +409,7 @@ function(add_methane_shaders TARGET HLSL_SOURCES)
 
         target_compile_definitions(${TARGET}
             PRIVATE
-            ENABLE_SHADER_RESOURCES
+            SHADER_RESOURCE_NAMESPACE=${RESOURCE_NAMESPACE}::Shaders
         )
 
         # Disable default manifest generation with linker, since manually written manifest is added to resources

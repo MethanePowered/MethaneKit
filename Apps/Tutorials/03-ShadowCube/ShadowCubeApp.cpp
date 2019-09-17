@@ -137,8 +137,8 @@ void ShadowCubeApp::Init()
     gfx::Shader::MacroDefinitions textured_shadows_definitions = { { "ENABLE_SHADOWS", "" }, { "ENABLE_TEXTURING", "" } };
     m_final_pass.sp_program = gfx::Program::Create(*m_sp_context, {
         {
-            gfx::Shader::CreateVertex(*m_sp_context, { g_vs_main, textured_shadows_definitions }),
-            gfx::Shader::CreatePixel(*m_sp_context,  { g_ps_main, textured_shadows_definitions }),
+            gfx::Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), g_vs_main, textured_shadows_definitions }),
+            gfx::Shader::CreatePixel(*m_sp_context,  { Data::ShaderProvider::Get(), g_ps_main, textured_shadows_definitions }),
         },
         { // input_buffer_layouts
             { // Signle vertex buffer with interleaved data:
@@ -180,7 +180,7 @@ void ShadowCubeApp::Init()
     gfx::Shader::MacroDefinitions textured_definitions = { { "ENABLE_TEXTURING", "" } };
     m_shadow_pass.sp_program = gfx::Program::Create(*m_sp_context, {
         {
-            gfx::Shader::CreateVertex(*m_sp_context, { g_vs_main, textured_definitions }),
+            gfx::Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), g_vs_main, textured_definitions }),
         },
         m_final_pass.sp_program->GetSettings().input_buffer_layouts,
         {

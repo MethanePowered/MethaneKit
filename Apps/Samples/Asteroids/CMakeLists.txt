@@ -23,13 +23,11 @@ add_methane_application(${TARGET}
     "Methane Asteroids"
     "${SOURCES}"
     "${RESOURCES_DIR}"
-    "${IMAGES_DIR}"
-    "${TEXTURES}"
-    ""
     "Apps/Samples"
 )
 
-add_methane_shaders(${TARGET} "${SHADERS_HLSL}")
+add_methane_embedded_textures(${TARGET} Asteroids "${IMAGES_DIR}" "${TEXTURES}")
+add_methane_shaders(${TARGET} Asteroids "${SHADERS_HLSL}")
 
 set_target_properties(${TARGET}
     PROPERTIES

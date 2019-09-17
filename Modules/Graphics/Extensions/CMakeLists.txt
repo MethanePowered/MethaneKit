@@ -25,7 +25,7 @@ add_library(${TARGET} STATIC
     ${SOURCES}
 )
 
-add_methane_shaders(${TARGET} "${HLSL_SOURCES}")
+add_methane_shaders(${TARGET} MethaneGraphicsExtensions "${HLSL_SOURCES}")
 
 target_link_libraries(${TARGET}
     MethanePlatformUtils

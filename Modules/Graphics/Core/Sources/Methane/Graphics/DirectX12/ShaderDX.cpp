@@ -34,7 +34,7 @@ DirectX 12 implementation of the shader interface.
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
-#include <Methane/Platform/Windows/Utils.h>
+#include <Methane/Data/Provider.h>
 
 #include <sstream>
 #include <cassert>
@@ -305,7 +305,7 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
     else
     {
         const std::string compiled_func_name = GetCompiledEntryFunctionName();
-        const Data::Chunk compiled_func_data = m_context.GetDataProvider().GetData(Data::Provider::Type::Shader, compiled_func_name + ".obj");
+        const Data::Chunk compiled_func_data = m_settings.data_provider.GetData(compiled_func_name + ".obj");
 
         ThrowIfFailed(D3DCreateBlob(compiled_func_data.size, &m_cp_byte_code));
         Data::RawPtr p_cp_byte_code_data = static_cast<Data::RawPtr>(m_cp_byte_code->GetBufferPointer());

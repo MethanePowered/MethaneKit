@@ -35,14 +35,14 @@ Metal implementation of the context interface.
 namespace Methane::Graphics
 {
 
-Context::Ptr Context::Create(const Platform::AppEnvironment& env, const Data::Provider& data_provider, Device& device, const Context::Settings& settings)
+Context::Ptr Context::Create(const Platform::AppEnvironment& env, Device& device, const Context::Settings& settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ContextMT>(env, data_provider, static_cast<DeviceBase&>(device), settings);
+    return std::make_shared<ContextMT>(env, static_cast<DeviceBase&>(device), settings);
 }
 
-ContextMT::ContextMT(const Platform::AppEnvironment& env, const Data::Provider& data_provider, DeviceBase& device, const Context::Settings& settings)
-    : ContextBase(data_provider, device, settings)
+ContextMT::ContextMT(const Platform::AppEnvironment& env, DeviceBase& device, const Context::Settings& settings)
+    : ContextBase(device, settings)
     , m_app_view([[AppViewMT alloc] initWithFrame: TypeConverterMT::CreateNSRect(m_settings.frame_size)
                                         appWindow: env.ns_app_delegate.window
                                            device: GetDeviceMT().GetNativeDevice()

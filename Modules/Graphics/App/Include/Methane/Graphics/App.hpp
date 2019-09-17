@@ -24,9 +24,9 @@ Base frame class provides frame buffer management with resize handling.
 
 #pragma once
 
-#include "AppDataProvider.hpp"
 #include "AppContextController.h"
 
+#include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Data/Timer.h>
 #include <Methane/Data/AnimationsPool.h>
 #include <Methane/Platform/App.h>
@@ -39,6 +39,7 @@ Base frame class provides frame buffer management with resize handling.
 #include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Instrumentation.h>
+
 
 #include <vector>
 #include <sstream>
@@ -75,7 +76,7 @@ public:
     App(const Settings& settings, RenderPass::Access::Mask screen_pass_access,
         const std::string& help_description = "Methane Graphics Application")
         : Platform::App(settings.app)
-        , m_image_loader(AppDataProvider::Get())
+        , m_image_loader(Data::TextureProvider::Get())
         , m_initial_context_settings(settings.context)
         , m_screen_pass_access(screen_pass_access)
         , m_show_hud_in_window_title(settings.show_hud_in_window_title)
@@ -115,7 +116,7 @@ public:
         
         // Create render context of the current window size
         m_initial_context_settings.frame_size = frame_size;
-        m_sp_context = Context::Create(env, AppDataProvider::Get(), *sp_device, m_initial_context_settings);
+        m_sp_context = Context::Create(env, *sp_device, m_initial_context_settings);
         m_sp_context->SetName("App Gfx Context");
         m_sp_context->AddCallback(*this);
 

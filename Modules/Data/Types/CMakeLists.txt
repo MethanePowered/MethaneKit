@@ -5,8 +5,11 @@ include(MethaneModules)
 get_module_dirs("Methane/Data")
 
 set(HEADERS
-    ${INCLUDE_DIR}/Provider.h
     ${INCLUDE_DIR}/Types.h
+    ${INCLUDE_DIR}/Provider.h
+    ${INCLUDE_DIR}/FileProvider.hpp
+    ${INCLUDE_DIR}/ResourceProvider.hpp
+    ${INCLUDE_DIR}/AppResourceProviders.h
 )
 
 set(SOURCES
@@ -26,6 +29,8 @@ target_include_directories(${TARGET}
 )
 
 target_link_libraries(${TARGET}
+    MethaneInstrumentation
+    MethanePlatformUtils
     CML
 )
 
