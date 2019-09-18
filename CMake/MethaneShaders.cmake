@@ -16,8 +16,9 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane.cmake
-Cmake auxillary functions to setup build of cross-platform graphics application
+FILE: MethaneShaders.cmake
+Cross-platform HLSL shaders compilation and embedding into application resources
+with transformation to Metal shaders using SPIR-V tools.
 
 *****************************************************************************]]
 
@@ -232,135 +233,6 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
     endforeach()
 
     set(${OUT_COMPILED_SHADER_BINS} ${_OUT_COMPILED_SHADER_BINS} PARENT_SCOPE)
-endfunction()
-
-function(add_methane_application TARGET APP_NAME SOURCES RESOURCES_DIR INSTALL_DIR)
-    set(BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
-
-    if (WIN32)
-
-        # Configure Resoruce file
-        set(COMPONENT_NAME ${COMPONENT_OUTPUT_NAME}.exe)
-        set(MANIEFEST_FILE_PATH ${RESOURCES_DIR}/Configs/Windows/App.manifest)
-        set(ICON_FILE_PATH ${RESOURCES_DIR}/Icons/Windows/Methane.ico)
-        set(RESOURCE_FILE ${CMAKE_CURRENT_BINARY_DIR}/Resource.rc)
-        set(FILE_DESCRIPTION ${APP_NAME})
-
-        configure_file(${RESOURCES_DIR}/Configs/Windows/Resource.rc.in ${RESOURCE_FILE})
-
-        add_executable(${TARGET} WIN32
-            ${SOURCES}
-            ${RESOURCE_FILE}
-        )
-
-        install(TARGETS ${TARGET}
-            CONFIGURATIONS Release RelWithDebInfo
-            RUNTIME
-                DESTINATION ${INSTALL_DIR}
-                COMPONENT Runtime
-        )
-
-        # Disable default manifest generation with linker, since manually written manifest is added to resources
-        set_target_properties(${TARGET}
-            PROPERTIES
-                LINK_FLAGS "/MANIFEST:NO /ENTRY:mainCRTStartup"
-        )
-
-        source_group("Resources" FILES ${RESOURCE_FILE} ${ICON_FILE_PATH})
-
-    elseif(APPLE)
-
-        set(ICON_FILE Methane.icns)
-        set(ICON_FILE_PATH ${RESOURCES_DIR}/Icons/MacOS/${ICON_FILE})
-        set(PLIST_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/Info.plist)
-
-        # Configure bundle plist
-        set(MACOSX_BUNDLE_ICON_FILE ${ICON_FILE})
-        set(MACOSX_BUNDLE_BUNDLE_NAME ${APP_NAME})
-        configure_file(${RESOURCES_DIR}/Configs/MacOS/plist.in ${PLIST_FILE_PATH})
-
-        add_executable(${TARGET} MACOSX_BUNDLE
-            ${SOURCES}
-            ${ICON_FILE_PATH}
-        )
-
-        install(TARGETS ${TARGET}
-            BUNDLE
-                DESTINATION ${INSTALL_DIR}
-                COMPONENT Runtime
-        )
-
-        # Set bundle location of the icon and metal library files
-        set_source_files_properties(${ICON_FILE_PATH}
-            PROPERTIES MACOSX_PACKAGE_LOCATION
-            "Resources"
-        )
-
-        set_target_properties(${TARGET}
-            PROPERTIES
-            MACOSX_BUNDLE_INFO_PLIST ${PLIST_FILE_PATH}
-        )
-
-        set(BINARY_DIR ${BINARY_DIR}/${TARGET}.app/Contents/Resources)
-
-        source_group("Resources" FILES ${PLIST_FILE_PATH} ${ICON_FILE_PATH})
-
-    endif()
-
-    source_group("Source Files" FILES ${SOURCES})
-    source_group("Source Shaders" FILES ${SHADERS_HLSL} ${SHADERS_CONFIG})
-
-    target_link_libraries(${TARGET}
-        MethaneKit
-    )
-
-    get_target_property(METHANE_PREREQUISITE_MODULES MethaneKit PREREQUISITE_MODULES)
-    add_prerequisite_binaries(${TARGET} "${METHANE_PREREQUISITE_MODULES}")
-
-    target_include_directories(${TARGET}
-        PUBLIC
-            .
-    )
-endfunction()
-
-function(add_methane_embedded_textures TARGET EMBEDDED_TEXTURES_DIR EMBEDDED_TEXTURES)
-
-    set(TEXTURE_RESOURCES_TARGET ${TARGET}_Textures)
-    set(RESOURCE_NAMESPACE ${TARGET})
-
-    cmrc_add_resource_library(${TEXTURE_RESOURCES_TARGET}
-        ALIAS Methane::Resources::Textures
-        WHENCE "${EMBEDDED_TEXTURES_DIR}"
-        NAMESPACE ${RESOURCE_NAMESPACE}::Textures
-        ${EMBEDDED_TEXTURES}
-    )
-
-    set_target_properties(${TEXTURE_RESOURCES_TARGET}
-        PROPERTIES
-        FOLDER Build
-    )
-
-    target_link_libraries(${TARGET}
-        MethaneKit
-        ${TEXTURE_RESOURCES_TARGET}
-    )
-
-    target_compile_definitions(${TARGET}
-        PRIVATE
-        TEXTURE_RESOURCE_NAMESPACE=${RESOURCE_NAMESPACE}::Textures
-    )
-
-endfunction()
-
-function(add_methane_copy_textures TARGET COPY_TEXTURES)
-
-    add_custom_command(TARGET ${TARGET} POST_BUILD
-            COMMENT "Copying textures for application " ${TARGET}
-            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${BINARY_DIR}/Textures"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${COPY_TEXTURES} "${BINARY_DIR}/Textures"
-        )
-
 endfunction()
 
 function(add_methane_shaders TARGET HLSL_SOURCES)

@@ -201,8 +201,8 @@ public:
         {
             Program::Create(*m_sp_context, {
                 {
-                    Shader::CreateVertex(*m_sp_context, { { "Triangle", "TriangleVS", "vs_5_1" } }),
-                    Shader::CreatePixel(*m_sp_context,  { { "Triangle", "TrianglePS", "ps_5_1" } }),
+                    Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), { "Triangle", "TriangleVS", "vs_5_1" } }),
+                    Shader::CreatePixel( *m_sp_context, { Data::ShaderProvider::Get(), { "Triangle", "TrianglePS", "ps_5_1" } }),
                 },
                 { { {
                     { "in_position", "POSITION" },
@@ -291,17 +291,18 @@ vert=TriangleVS
 
 Finally add build configuration [CMakeLists.txt](/Apps/Tutorials/01-HelloTriangle/CMakeLists.txt) powered by included module [Methane.cmake](CMake/Methane.cmake):
 ```cmake
-include(Methane)
+include(MethaneApplications)
+include(MethaneShaders)
 
 add_methane_application(MethaneHelloTriangle
     "Methane Hello Triangle"
     "HelloTriangleAppSimple.cpp"
+    "${RESOURCES_DIR}"
+    "Apps/Tutorials"
+)
+
+add_methane_shaders(MethaneHelloTriangle
     "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Triangle.hlsl"
-    ""               # RESOURCES_DIR
-    ""               # EMBEDDED_TEXTURES_DIR
-    ""               # EMBEDDED_TEXTURES
-    ""               # COPY_TEXTURES
-    "Apps/Tutorials" # INSTALL_DIR
 )
 ```
 

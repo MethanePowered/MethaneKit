@@ -1,6 +1,6 @@
 set(TARGET MethaneGraphicsExtensions)
 
-include(MethaneToolchain)
+include(MethaneShaders)
 
 get_module_dirs("Methane/Graphics")
 

@@ -1,6 +1,8 @@
 set(TARGET MethaneShadowCube)
 
-include(MethaneToolchain)
+include(MethaneApplications)
+include(MethaneShaders)
+include(MethaneResources)
 
 set(SOURCES
     ShadowCubeApp.h
@@ -20,7 +22,6 @@ add_methane_application(${TARGET}
     "${RESOURCES_DIR}"
     "Apps/Tutorials"
 )
-
 add_methane_embedded_textures(${TARGET} "${IMAGES_DIR}" "${TEXTURES}")
 add_methane_shaders(${TARGET} "${SHADERS_HLSL}")
 
