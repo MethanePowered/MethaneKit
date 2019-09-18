@@ -69,6 +69,7 @@ protected:
     wrl::ComPtr<ID3D12GraphicsCommandList>  m_cp_command_list;
     Resource::Refs                          m_present_resources;
     bool                                    m_is_committed = false;
+    bool                                    m_is_pass_applied = false;
 };
 
 } // namespace Methane::Graphics
