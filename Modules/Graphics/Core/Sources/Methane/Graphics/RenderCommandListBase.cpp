@@ -43,10 +43,17 @@ RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue, Re
 void RenderCommandListBase::Reset(RenderState& render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
+
+    if (m_debug_group_opened)
+    {
+        PopDebugGroup();
+        m_debug_group_opened = false;
+    }
+
     if (!debug_group.empty())
     {
         PushDebugGroup(debug_group);
-        m_pop_debug_group_on_commit = true;
+        m_debug_group_opened = true;
     }
     
     static_cast<RenderStateBase&>(render_state).Apply(*this);

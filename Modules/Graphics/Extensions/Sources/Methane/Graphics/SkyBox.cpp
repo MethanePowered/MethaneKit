@@ -70,6 +70,13 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
     m_sp_state->SetName("Sky-box render state");
 }
 
+void SkyBox::Resize(const FrameSize& frame_size)
+{
+    assert(m_sp_state);
+    m_sp_state->SetViewports({ GetFrameViewport(frame_size) });
+    m_sp_state->SetScissorRects({ GetFrameScissorRect(frame_size) });
+}
+
 void SkyBox::Draw(RenderCommandList& cmd_list, Program::ResourceBindings& resource_bindings)
 {
     cmd_list.Reset(*m_sp_state, "Sky-box rendering");

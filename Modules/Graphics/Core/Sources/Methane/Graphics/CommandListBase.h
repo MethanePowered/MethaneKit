@@ -82,7 +82,7 @@ protected:
     uint32_t GetCurrentFrameIndex() const;
 
     CommandQueue::Ptr m_sp_command_queue;
-    bool              m_pop_debug_group_on_commit = false;
+    bool              m_debug_group_opened = false;
 
 private:
     static std::string GetStateName(State state);

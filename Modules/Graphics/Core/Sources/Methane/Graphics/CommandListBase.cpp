@@ -71,10 +71,10 @@ void CommandListBase::Commit(bool /*present_drawable*/)
     m_committed_frame_index = GetCurrentFrameIndex();
     m_state = State::Committed;
 
-    if (m_pop_debug_group_on_commit)
+    if (m_debug_group_opened)
     {
         PopDebugGroup();
-        m_pop_debug_group_on_commit = false;
+        m_debug_group_opened = false;
     }
 
     // Keep command list from destruction until it's execution is completed

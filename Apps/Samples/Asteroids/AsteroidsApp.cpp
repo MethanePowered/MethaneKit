@@ -226,6 +226,7 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     assert(m_sp_state);
     m_sp_state->SetViewports({ gfx::GetFrameViewport(frame_size) });
     m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
+    m_sp_sky_box->Resize(frame_size);
 
     m_view_camera.Resize(static_cast<float>(frame_size.width), static_cast<float>(frame_size.height));
     return true;
@@ -308,6 +309,7 @@ void AsteroidsApp::Render()
 
 void AsteroidsApp::OnContextReleased()
 {
+    m_sp_sky_box.reset();
     m_sp_cube_buffers.reset();
     m_sp_texture_sampler.reset();
     m_sp_const_buffer.reset();
