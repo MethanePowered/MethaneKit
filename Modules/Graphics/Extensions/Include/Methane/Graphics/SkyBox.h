@@ -59,6 +59,7 @@ public:
     const MeshUniforms& GetFinalPassUniforms() const        { return m_mesh_buffers.GetFinalPassUniforms(); }
     void SetFinalPassUniforms(const MeshUniforms& uniforms) { m_mesh_buffers.SetFinalPassUniforms(uniforms); }
 
+    void Resize(const FrameSize& frame_size);
     void Draw(RenderCommandList& cmd_list, Program::ResourceBindings& resource_bindings);
 
 private:
