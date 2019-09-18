@@ -17,8 +17,8 @@ add_methane_application(${TARGET}
     "${RESOURCES_DIR}"
     "Apps/Tutorials"
 )
-add_methane_embedded_textures(${TARGET} TexturedCube "${IMAGES_DIR}" "${TEXTURES}")
-add_methane_shaders(${TARGET} TexturedCube "${SHADERS_HLSL}")
+add_methane_embedded_textures(${TARGET} "${IMAGES_DIR}" "${TEXTURES}")
+add_methane_shaders(${TARGET} "${SHADERS_HLSL}")
 
 set_target_properties(${TARGET}
     PROPERTIES
