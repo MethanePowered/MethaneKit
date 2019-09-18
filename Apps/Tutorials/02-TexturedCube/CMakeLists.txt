@@ -1,6 +1,8 @@
 set(TARGET MethaneTexturedCube)
 
-include(MethaneToolchain)
+include(MethaneApplications)
+include(MethaneShaders)
+include(MethaneResources)
 
 set(SOURCES
     TexturedCubeApp.h

@@ -1,6 +1,8 @@
 set(TARGET MethaneAsteroids)
 
-include(MethaneToolchain)
+include(MethaneApplications)
+include(MethaneShaders)
+include(MethaneResources)
 
 set(SOURCES
     AsteroidsApp.h
@@ -25,7 +27,6 @@ add_methane_application(${TARGET}
     "${RESOURCES_DIR}"
     "Apps/Samples"
 )
-
 add_methane_embedded_textures(${TARGET} "${IMAGES_DIR}" "${TEXTURES}")
 add_methane_shaders(${TARGET} "${SHADERS_HLSL}")
 

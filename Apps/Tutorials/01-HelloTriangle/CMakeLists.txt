@@ -1,4 +1,5 @@
-include(MethaneToolchain)
+include(MethaneApplications)
+include(MethaneShaders)
 
 set(SHADERS_HLSL   "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Triangle.hlsl")
 
@@ -16,7 +17,6 @@ add_methane_application(${TARGET}
     "${RESOURCES_DIR}"
     "Apps/Tutorials"
 )
-
 add_methane_shaders(${TARGET} "${SHADERS_HLSL}")
 
 set_target_properties(${TARGET}
@@ -27,15 +27,13 @@ set_target_properties(${TARGET}
 #=================================== SIMPLE ===================================
 
 set(TARGET_SIMPLE ${TARGET}Simple)
-set(SOURCES_SIMPLE HelloTriangleAppSimple.cpp)
 
 add_methane_application(${TARGET_SIMPLE}
     "Methane Hello Triangle"
-    "${SOURCES_SIMPLE}"
+    "HelloTriangleAppSimple.cpp"
     "${RESOURCES_DIR}"
     "Apps/Tutorials"
 )
-
 add_methane_shaders(${TARGET_SIMPLE} "${SHADERS_HLSL}")
 
 set_target_properties(${TARGET_SIMPLE}

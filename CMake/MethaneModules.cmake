@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: MethaneModules.cmake
-Cmake module auxilarry functions
+Library module configuration functions
 
 *****************************************************************************]]
 
