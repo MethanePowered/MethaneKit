@@ -323,9 +323,10 @@ function(add_methane_application TARGET APP_NAME SOURCES RESOURCES_DIR INSTALL_D
     )
 endfunction()
 
-function(add_methane_embedded_textures TARGET RESOURCE_NAMESPACE EMBEDDED_TEXTURES_DIR EMBEDDED_TEXTURES)
+function(add_methane_embedded_textures TARGET EMBEDDED_TEXTURES_DIR EMBEDDED_TEXTURES)
 
     set(TEXTURE_RESOURCES_TARGET ${TARGET}_Textures)
+    set(RESOURCE_NAMESPACE ${TARGET})
 
     cmrc_add_resource_library(${TEXTURE_RESOURCES_TARGET}
         ALIAS Methane::Resources::Textures
@@ -362,7 +363,9 @@ function(add_methane_copy_textures TARGET COPY_TEXTURES)
 
 endfunction()
 
-function(add_methane_shaders TARGET RESOURCE_NAMESPACE HLSL_SOURCES)
+function(add_methane_shaders TARGET HLSL_SOURCES)
+
+    set(RESOURCE_NAMESPACE ${TARGET})
 
     if (WIN32)
 
