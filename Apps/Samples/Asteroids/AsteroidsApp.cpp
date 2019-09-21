@@ -191,11 +191,7 @@ void AsteroidsApp::Init()
         frame.skybox.sp_uniforms_buffer->SetName(IndexedName("Sky-box Uniforms Buffer", frame.index));
 
         // Resource bindings for Sky-Box rendering
-        frame.skybox.sp_resource_bindings = gfx::Program::ResourceBindings::Create(m_sp_sky_box->GetProgramPtr(), {
-            { { gfx::Shader::Type::Vertex, "g_skybox_uniforms" }, frame.skybox.sp_uniforms_buffer },
-            { { gfx::Shader::Type::Pixel,  "g_skybox_texture"  }, m_sp_sky_box->GetTexturePtr()   },
-            { { gfx::Shader::Type::Pixel,  "g_texture_sampler" }, m_sp_texture_sampler            },
-        });
+        frame.skybox.sp_resource_bindings = m_sp_sky_box->CreateResourceBindings(frame.skybox.sp_uniforms_buffer);
 
         // Create uniforms buffer for Cube rendering
         frame.cube.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, cube_uniforms_data_size);

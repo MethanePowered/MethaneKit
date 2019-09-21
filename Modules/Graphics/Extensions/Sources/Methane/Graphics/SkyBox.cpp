@@ -69,6 +69,23 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
 
     m_sp_state = RenderState::Create(context, state_settings);
     m_sp_state->SetName("Sky-box render state");
+
+    m_sp_texture_sampler = Sampler::Create(context, {
+        { Sampler::Filter::MinMag::Linear     },
+        { Sampler::Address::Mode::ClampToZero }
+    });
+    m_sp_texture_sampler->SetName("Sky-box Texture Sampler");
+}
+
+Program::ResourceBindings::Ptr SkyBox::CreateResourceBindings(const Buffer::Ptr& sp_uniforms_buffer)
+{
+    assert(!!m_sp_state);
+    assert(!!m_sp_state->GetSettings().sp_program);
+    return Program::ResourceBindings::Create(m_sp_state->GetSettings().sp_program, {
+        { { Shader::Type::Vertex, "g_skybox_uniforms" }, sp_uniforms_buffer              },
+        { { Shader::Type::Pixel,  "g_skybox_texture"  }, m_mesh_buffers.GetTexturePtr()  },
+        { { Shader::Type::Pixel,  "g_texture_sampler" }, m_sp_texture_sampler            },
+    });
 }
 
 void SkyBox::Resize(const FrameSize& frame_size)

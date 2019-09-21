@@ -29,6 +29,9 @@ SkyBox rendering primitive
 #include <Methane/Graphics/Context.h>
 #include <Methane/Graphics/Camera.h>
 #include <Methane/Graphics/RenderState.h>
+#include <Methane/Graphics/Buffer.h>
+#include <Methane/Graphics/Program.h>
+#include <Methane/Graphics/Sampler.h>
 #include <Methane/Graphics/MathTypes.h>
 
 #include <memory>
@@ -37,8 +40,6 @@ SkyBox rendering primitive
 
 namespace Methane::Graphics
 {
-
-struct Buffer;
 
 class SkyBox
 {
@@ -59,9 +60,7 @@ public:
 
     SkyBox(Context& context, ImageLoader& image_loader, const Settings& settings);
 
-    const Program::Ptr& GetProgramPtr() const               { return m_sp_state->GetSettings().sp_program; }
-    const Texture::Ptr& GetTexturePtr() const               { return m_mesh_buffers.GetTexturePtr(); }
-
+    Program::ResourceBindings::Ptr CreateResourceBindings(const Buffer::Ptr& sp_uniforms_buffer);
     void Resize(const FrameSize& frame_size);
     void Update();
     void Draw(RenderCommandList& cmd_list, Buffer& uniforms_buffer, Program::ResourceBindings& resource_bindings);
@@ -72,6 +71,7 @@ private:
     Settings               m_settings;
     Context&               m_context;
     TexturedMeshBuffers    m_mesh_buffers;
+    Sampler::Ptr           m_sp_texture_sampler;
     RenderState::Ptr       m_sp_state;
     RenderCommandList::Ptr m_sp_command_list;
 };
