@@ -91,7 +91,7 @@ struct Shader
         // Optional parameters:
         // by default shaders are precompiled to application resources and loaded through Data::Provider
         std::string      source_file_path;
-        std::string      source_comsource_compile_targetpile_target;
+        std::string      source_compile_target;
     };
 
     // Create Shader instance
