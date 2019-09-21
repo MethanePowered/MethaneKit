@@ -257,7 +257,7 @@ class SphereMesh : public BaseMesh<VType>
 public:
     using BaseMesh = BaseMesh<VType>;
     
-    SphereMesh(const Mesh::VertexLayout& vertex_layout, float radius = 1.f, uint32_t lat_lines_count = 10, uint32_t long_lines_count = 10)
+    SphereMesh(const Mesh::VertexLayout& vertex_layout, float radius = 1.f, uint32_t lat_lines_count = 10, uint32_t long_lines_count = 16)
         : BaseMesh(Mesh::Type::Sphere, vertex_layout)
         , m_radius(radius)
     {
@@ -337,14 +337,15 @@ public:
         for(Mesh::Index long_line_index = 0; long_line_index < long_lines_count - 1; ++long_line_index)
         {
             BaseMesh::m_indices[index_offset]     = 0;
-            BaseMesh::m_indices[index_offset + 1] = long_line_index + 1;
-            BaseMesh::m_indices[index_offset + 2] = long_line_index + 2;
+            BaseMesh::m_indices[index_offset + 1] = long_line_index + 2;
+            BaseMesh::m_indices[index_offset + 2] = long_line_index + 1;
             index_offset += 3;
         }
 
         BaseMesh::m_indices[index_offset]     = 0;
-        BaseMesh::m_indices[index_offset + 1] = long_lines_count;
-        BaseMesh::m_indices[index_offset + 2] = 1;
+        BaseMesh::m_indices[index_offset + 1] = 1;
+        BaseMesh::m_indices[index_offset + 2] = long_lines_count;
+        
         index_offset += 3;
 
         const uint32_t vertices_count = BaseMesh::m_vertices.size();
@@ -377,14 +378,15 @@ public:
         for(uint32_t long_line_index = 0; long_line_index < long_lines_count - 1; ++long_line_index)
         {
             BaseMesh::m_indices[index_offset]     = (vertices_count - 1);
-            BaseMesh::m_indices[index_offset + 1] = (vertices_count - 1) - (long_line_index + 1);
-            BaseMesh::m_indices[index_offset + 2] = (vertices_count - 1) - (long_line_index + 2);
+            BaseMesh::m_indices[index_offset + 1] = (vertices_count - 1) - (long_line_index + 2);
+            BaseMesh::m_indices[index_offset + 2] = (vertices_count - 1) - (long_line_index + 1);
+
             index_offset += 3;
         }
 
         BaseMesh::m_indices[index_offset]     = (vertices_count - 1);
-        BaseMesh::m_indices[index_offset + 1] = (vertices_count - 1) - long_lines_count;
-        BaseMesh::m_indices[index_offset + 2] = (vertices_count - 2);
+        BaseMesh::m_indices[index_offset + 1] = (vertices_count - 2);
+        BaseMesh::m_indices[index_offset + 2] = (vertices_count - 1) - long_lines_count;
     }
     
     const float GetRadius() const noexcept  { return m_radius; }
