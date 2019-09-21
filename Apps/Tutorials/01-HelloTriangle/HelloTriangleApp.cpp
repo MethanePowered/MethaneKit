@@ -28,9 +28,9 @@ Tutorial demonstrating triangle rendering with Methane graphics API
 namespace Methane::Tutorials
 {
 
-static const gfx::Shader::EntryTarget g_vs_main   = { "Triangle", "TriangleVS", "vs_5_1" };
-static const gfx::Shader::EntryTarget g_ps_main   = { "Triangle", "TrianglePS", "ps_5_1" };
-static const GraphicsApp::Settings g_app_settings = // Application settings:
+static const gfx::Shader::EntryFunction g_vs_main      = { "Triangle", "TriangleVS" };
+static const gfx::Shader::EntryFunction g_ps_main      = { "Triangle", "TrianglePS" };
+static const GraphicsApp::Settings      g_app_settings = // Application settings:
 {                                                   // ====================
     {                                               // app:
         "Methane Hello Triangle",                   // - name

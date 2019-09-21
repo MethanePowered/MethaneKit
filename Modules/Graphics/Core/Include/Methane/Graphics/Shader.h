@@ -76,19 +76,22 @@ struct Shader
     using ResourceBindings = std::vector<ResourceBinding::Ptr>;
     using MacroDefinitions = std::map<std::string, std::string>;
 
-    struct EntryTarget
+    struct EntryFunction
     {
         std::string     file_name;
         std::string     function_name;
-        std::string     compile_target;
     };
 
     struct Settings
     {
         Data::Provider&  data_provider;
-        EntryTarget      entry_target;
+        EntryFunction    entry_function;
         MacroDefinitions compile_definitions;
-        std::string      source_file_path;    // Optional parameter: by default shaders are precompiled to application resources and loaded through DataProvider
+
+        // Optional parameters:
+        // by default shaders are precompiled to application resources and loaded through Data::Provider
+        std::string      source_file_path;
+        std::string      source_comsource_compile_targetpile_target;
     };
 
     // Create Shader instance

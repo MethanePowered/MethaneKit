@@ -35,12 +35,12 @@ namespace Methane::Samples
 {
 
 // Common application settings
-static const gfx::FrameSize           g_shadow_map_size(1024, 1024);
-static const gfx::Shader::EntryTarget g_vs_main       = { "Asteroids", "AsteroidsVS", "vs_5_1" };
-static const gfx::Shader::EntryTarget g_ps_main       = { "Asteroids", "AsteroidsPS", "ps_5_1" };
-static const std::string              g_app_help_text = "Asteroids sample demonstrates parallel rendering of multiple heterogeneous objects " \
+static const gfx::FrameSize             g_shadow_map_size(1024, 1024);
+static const gfx::Shader::EntryFunction g_vs_main       = { "Asteroids", "AsteroidsVS" };
+static const gfx::Shader::EntryFunction g_ps_main       = { "Asteroids", "AsteroidsPS" };
+static const std::string                g_app_help_text = "Asteroids sample demonstrates parallel rendering of multiple heterogeneous objects " \
                                                         "and action camera interaction with mouse and keyboard.";
-static const GraphicsApp::Settings    g_app_settings  = // Application settings:
+static const GraphicsApp::Settings      g_app_settings  = // Application settings:
 {                                                       // ====================
     {                                                   // app:
         "Methane Asteroids",                            // - name
