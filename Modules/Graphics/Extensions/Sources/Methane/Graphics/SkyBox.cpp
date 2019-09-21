@@ -51,8 +51,8 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
     RenderState::Settings state_settings;
     state_settings.sp_program = Program::Create(context, {
         {
-            Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxVS", "vs_5_1" }, { } }),
-            Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxPS", "ps_5_1" }, { } }),
+            Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxVS" }, { } }),
+            Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxPS" }, { } }),
         },
         { { {
             { "in_position", "POSITION" },

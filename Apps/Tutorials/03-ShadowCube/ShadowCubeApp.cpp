@@ -32,10 +32,10 @@ namespace Methane::Tutorials
 {
 
 // Common application settings
-static const gfx::FrameSize           g_shadow_map_size(1024, 1024);
-static const gfx::Shader::EntryTarget g_vs_main       = { "ShadowCube", "CubeVS", "vs_5_1" };
-static const gfx::Shader::EntryTarget g_ps_main       = { "ShadowCube", "CubePS", "ps_5_1" };
-static const GraphicsApp::Settings    g_app_settings  = // Application settings:
+static const gfx::FrameSize             g_shadow_map_size(1024, 1024);
+static const gfx::Shader::EntryFunction g_vs_main      = { "ShadowCube", "CubeVS" };
+static const gfx::Shader::EntryFunction g_ps_main      = { "ShadowCube", "CubePS" };
+static const GraphicsApp::Settings      g_app_settings = // Application settings:
 {                                                       // ====================
     {                                                   // app:
         "Methane Shadow Cube",                          // - name
