@@ -74,8 +74,9 @@ AsteroidsApp::AsteroidsApp()
     , m_view_camera(m_animations, gfx::ActionCamera::Pivot::Aim)
     , m_light_camera(m_view_camera, m_animations, gfx::ActionCamera::Pivot::Aim)
 {
-    m_view_camera.SetOrientation({ { -15.0f, 22.5f, 15.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
-    m_view_camera.SetZoomDistanceRange({ 15.f , 100.f });
+    m_view_camera.SetOrientation({ { -30.0f, 30.f, 30.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
+    m_view_camera.SetParamters({ 0.01f, 600.f, 90.f });
+    m_view_camera.SetZoomDistanceRange({ 15.f , 300.f });
 
     m_light_camera.SetOrientation({ { 0.0f,  25.0f, 25.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
@@ -110,6 +111,8 @@ void AsteroidsApp::Init()
 
     // Create sky-box
     m_sp_sky_box = std::make_shared<gfx::SkyBox>(context, m_image_loader, gfx::SkyBox::Settings{
+        m_scene_scale * 100.f,
+        m_view_camera,
         {
             "Textures/SkyBox/Galaxy/PositiveX.jpg",
             "Textures/SkyBox/Galaxy/NegativeX.jpg",
@@ -249,13 +252,6 @@ void AsteroidsApp::Update()
     m_scene_uniforms.eye_position    = gfx::Vector4f(m_view_camera.GetOrientation().eye, 1.f);
     m_scene_uniforms.light_position  = m_light_camera.GetOrientation().eye;
 
-    // Update sky-box matrix
-    gfx::Matrix44f skybox_scale_matrix;
-    cml::matrix_uniform_scale(skybox_scale_matrix, m_scene_scale * 100);
-    m_sp_sky_box->SetFinalPassUniforms({
-        skybox_scale_matrix * scene_view_matrix * scene_proj_matrix
-    });
-
     // Cube model matrix
     gfx::Matrix44f cube_model_matrix;
     cml::matrix_translation(cube_model_matrix, gfx::Vector3f(0.f, m_cube_mesh.GetHeight() / 2.f, 0.f));
@@ -266,6 +262,8 @@ void AsteroidsApp::Update()
         cube_model_matrix,
         cube_model_matrix * scene_view_matrix * scene_proj_matrix
     });
+
+    m_sp_sky_box->Update();
 }
 
 void AsteroidsApp::Render()
@@ -283,12 +281,12 @@ void AsteroidsApp::Render()
     assert(!!m_sp_sky_box);
     frame.sp_scene_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms) } });
     frame.cube.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->GetFinalPassUniforms()), sizeof(MeshUniforms) } });
-    frame.skybox.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_sky_box->GetFinalPassUniforms()), sizeof(gfx::SkyBox::MeshUniforms) } });
 
     // Sky-box drawing
     assert(!!frame.sp_cmd_list);
+    assert(!!frame.skybox.sp_uniforms_buffer);
     assert(!!frame.skybox.sp_resource_bindings);
-    m_sp_sky_box->Draw(*frame.sp_cmd_list, *frame.skybox.sp_resource_bindings);
+    m_sp_sky_box->Draw(*frame.sp_cmd_list, *frame.skybox.sp_uniforms_buffer, *frame.skybox.sp_resource_bindings);
 
     // Cube drawing
     assert(!!frame.cube.sp_resource_bindings);

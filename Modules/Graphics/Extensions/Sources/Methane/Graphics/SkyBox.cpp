@@ -23,6 +23,7 @@ SkyBox rendering primitive
 
 #include <Methane/Graphics/SkyBox.h>
 #include <Methane/Graphics/Mesh.h>
+#include <Methane/Graphics/Buffer.h>
 #include <Methane/Data/AppResourceProviders.h>
 
 namespace Methane::Graphics
@@ -77,8 +78,21 @@ void SkyBox::Resize(const FrameSize& frame_size)
     m_sp_state->SetScissorRects({ GetFrameScissorRect(frame_size) });
 }
 
-void SkyBox::Draw(RenderCommandList& cmd_list, Program::ResourceBindings& resource_bindings)
+void SkyBox::Update()
 {
+    Matrix44f model_scale_matrix, model_translate_matrix, scene_view_matrix, scene_proj_matrix;
+    m_settings.view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
+    cml::matrix_uniform_scale(model_scale_matrix, m_settings.scale);
+    cml::matrix_translation(model_translate_matrix, m_settings.view_camera.GetOrientation().eye); // Sky-box is centered in the camera eye to simulate infinity distance
+
+    m_mesh_buffers.SetFinalPassUniforms({ model_scale_matrix * model_translate_matrix * scene_view_matrix * scene_proj_matrix });
+}
+
+void SkyBox::Draw(RenderCommandList& cmd_list, Buffer& uniforms_buffer, Program::ResourceBindings& resource_bindings)
+{
+    assert(uniforms_buffer.GetDataSize() >= sizeof(MeshUniforms));
+    uniforms_buffer.SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_mesh_buffers.GetFinalPassUniforms()), sizeof(MeshUniforms) } });
+
     cmd_list.Reset(*m_sp_state, "Sky-box rendering");
     m_mesh_buffers.Draw(cmd_list, resource_bindings, 1);
 }

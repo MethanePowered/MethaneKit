@@ -27,6 +27,7 @@ SkyBox rendering primitive
 #include "MeshBuffers.hpp"
 
 #include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/Camera.h>
 #include <Methane/Graphics/RenderState.h>
 #include <Methane/Graphics/MathTypes.h>
 
@@ -37,6 +38,8 @@ SkyBox rendering primitive
 namespace Methane::Graphics
 {
 
+struct Buffer;
+
 class SkyBox
 {
 public:
@@ -44,6 +47,8 @@ public:
 
     struct Settings
     {
+        float                          scale;
+        const Camera&                  view_camera;
         ImageLoader::CubeFaceResources face_resources;
     };
 
@@ -56,11 +61,10 @@ public:
 
     const Program::Ptr& GetProgramPtr() const               { return m_sp_state->GetSettings().sp_program; }
     const Texture::Ptr& GetTexturePtr() const               { return m_mesh_buffers.GetTexturePtr(); }
-    const MeshUniforms& GetFinalPassUniforms() const        { return m_mesh_buffers.GetFinalPassUniforms(); }
-    void SetFinalPassUniforms(const MeshUniforms& uniforms) { m_mesh_buffers.SetFinalPassUniforms(uniforms); }
 
     void Resize(const FrameSize& frame_size);
-    void Draw(RenderCommandList& cmd_list, Program::ResourceBindings& resource_bindings);
+    void Update();
+    void Draw(RenderCommandList& cmd_list, Buffer& uniforms_buffer, Program::ResourceBindings& resource_bindings);
 
 private:
     using TexturedMeshBuffers = TexturedMeshBuffers<MeshUniforms>;
