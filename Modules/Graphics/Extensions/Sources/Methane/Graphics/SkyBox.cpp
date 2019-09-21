@@ -41,7 +41,7 @@ struct SkyBoxVertex
 SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& settings)
     : m_settings(settings)
     , m_context(context)
-    , m_mesh_buffers(context, BoxMesh<SkyBoxVertex>(Mesh::VertexLayoutFromArray(SkyBoxVertex::layout)), "Sky-Box")
+    , m_mesh_buffers(context, SphereMesh<SkyBoxVertex>(Mesh::VertexLayoutFromArray(SkyBoxVertex::layout)), "Sky-Box")
 {
     m_mesh_buffers.SetTexture(image_loader.LoadImagesToTextureCube(m_context, m_settings.face_resources));
 

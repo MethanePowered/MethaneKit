@@ -44,12 +44,12 @@ public:
     ArcBallCamera(const Camera& view_camera, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
 
     // Parameters
-    Pivot GetPivot() const                                          { return m_pivot; }
-    void  SetPivot(Pivot pivot)                                     { m_pivot = pivot; }
+    Pivot GetPivot() const                      { return m_pivot; }
+    void  SetPivot(Pivot pivot)                 { m_pivot = pivot; }
 
-    float GetRadiusRatio() const                                    { return m_radius_ratio; }
-    void  SetRadiusRatio(float radius_ratio)                        { m_radius_ratio = radius_ratio; }
-    float GetRadiusInPixels() const noexcept                        { return GetRadiusInPixels(m_screen_size); }
+    float GetRadiusRatio() const                { return m_radius_ratio; }
+    void  SetRadiusRatio(float radius_ratio)    { m_radius_ratio = radius_ratio; }
+    float GetRadiusInPixels() const noexcept    { return GetRadiusInPixels(m_screen_size); }
 
     // Mouse action handlers
     void OnMousePressed(const Data::Point2i& mouse_screen_pos);
