@@ -54,7 +54,7 @@ public:
             },                                 //
             true                               // show_hud_in_window_title
         },
-        RenderPass::Access::None) // screen_pass_access (program access to resources)
+        RenderPass::Access::None)              // screen_pass_access (program access to resources)
     { }
 
     ~HelloTriangleApp() override
