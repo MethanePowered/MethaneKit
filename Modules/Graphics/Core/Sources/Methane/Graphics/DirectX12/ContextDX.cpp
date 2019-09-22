@@ -118,7 +118,7 @@ void ContextDX::Initialize(Device& device, bool deferred_heap_allocation)
     swap_chain_desc.SwapEffect            = DXGI_SWAP_EFFECT_FLIP_DISCARD;
     swap_chain_desc.SampleDesc.Count      = 1;
 
-    const wrl::ComPtr<IDXGIFactory6>& cp_dxgi_factory = SystemDX::Get().GetNativeFactory();
+    const wrl::ComPtr<IDXGIFactory5>& cp_dxgi_factory = SystemDX::Get().GetNativeFactory();
     assert(!!cp_dxgi_factory);
 
     BOOL present_tearing_suport = FALSE;
