@@ -25,6 +25,7 @@ by decoding them from popular image formats.
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Data/Parallel.hpp>
 
 #ifdef USE_OPEN_IMAGE_IO
 
@@ -162,43 +163,56 @@ Texture::Ptr ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
 {
     ITT_FUNCTION_TASK();
 
-    std::vector<ImageData> face_resources_data;
+    const uint32_t desired_channels_count = 4;
+    std::vector<std::pair<uint32_t, std::string>> face_image_paths;
+    face_image_paths.reserve(image_paths.size());
+    for(uint32_t face_index = 0; face_index < static_cast<uint32_t>(image_paths.size()); ++face_index)
+    {
+        face_image_paths.push_back({ face_index, image_paths[face_index] });
+    }
+
+    // Load face image data in parallel
+    std::mutex             data_mutex;
+    std::vector<std::pair<uint32_t, ImageData>> face_resources_data;
     face_resources_data.reserve(image_paths.size());
+    Data::ParallelFor(face_image_paths.begin(), face_image_paths.end(),
+        [&](const std::pair<uint32_t, std::string&>& face_image_path)
+        {
+            // NOTE:
+            //  we create a copy of the loaded image data (via 3-rd argument of LoadImage)
+            //  to resolve a problem of STB image loader which requires an image data to be freed before next image is loaded
+            ImageLoader::ImageData image_data = LoadImage(face_image_path.second, desired_channels_count, true);
+
+            std::lock_guard<std::mutex> data_lock(data_mutex);
+            face_resources_data.emplace_back(face_image_path.first, std::move(image_data));
+        });
+
+    // Verify cube textures
+
+    if (face_resources_data.size() != image_paths.size())
+    {
+        throw std::runtime_error("Some faces of cube texture have failed to load.");
+    }
+    const Dimensions face_dimensions     = face_resources_data.front().second.dimensions;
+    const uint32_t   face_channels_count = face_resources_data.front().second.channels_count;
+    if (face_dimensions.width != face_dimensions.height)
+    {
+        throw std::runtime_error("All images of cube texture faces must have equal width and height.");
+    }
 
     Resource::SubResources face_resources;
     face_resources.reserve(image_paths.size());
-
-    const uint32_t desired_channels_count = 4;
-    uint32_t       face_channels_count = 0;
-    Dimensions     face_dimensions;
-    uint32_t       face_slice = 0;
-
-    for (const std::string& image_path : image_paths)
+    for(const std::pair<uint32_t, ImageData>& face_image_data : face_resources_data)
     {
-        // NOTE:
-        //  we create a copy of the loaded image data (via 3-rd argument of LoadImage)
-        //  to resolve a problem of STB image loader which requires an image data to be freed before next image is loaded
-        face_resources_data.emplace_back(LoadImage(image_path, desired_channels_count, true));
-        const ImageData& image_data = face_resources_data.back();
-
-        if (face_slice == 0)
-        {
-            face_dimensions     = image_data.dimensions;
-            face_channels_count = image_data.channels_count;
-            if (face_dimensions.width != face_dimensions.height)
-            {
-                throw std::runtime_error("All images of cube texture faces must have equal width and height.");
-            }
-        }
-        else if (face_dimensions     != image_data.dimensions ||
-                 face_channels_count != image_data.channels_count)
+        if (face_dimensions     != face_image_data.second.dimensions ||
+            face_channels_count != face_image_data.second.channels_count)
         {
             throw std::runtime_error("All face image of cube texture must have equal dimensions and channels count.");
         }
-
-        face_resources.emplace_back(image_data.pixels.p_data, image_data.pixels.size, face_slice);
-        face_slice++;
+        face_resources.emplace_back(face_image_data.second.pixels.p_data, face_image_data.second.pixels.size, face_image_data.first);
     }
+
+    // Load face images to cube texture
 
     Texture::Ptr sp_texture = Texture::CreateCube(context, face_dimensions.width, 1, PixelFormat::RGBA8Unorm, false);
     sp_texture->SetData(face_resources);
