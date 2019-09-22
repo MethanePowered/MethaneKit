@@ -1,4 +1,4 @@
-set(TARGET MethaneDataTypes)
+set(TARGET MethaneDataPrimitives)
 
 include(MethaneModules)
 

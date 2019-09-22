@@ -97,8 +97,8 @@ elseif(APPLE)
 endif()
 
 set(LIBRARIES ${PLATFORM_LIBRARIES}
-    MethaneDataTypes
-    MethaneRangeSet
+    MethaneDataPrimitives
+    MethaneDataRangeSet
     MethanePlatformUtils
     MethanePlatformAppView
     MethaneGraphicsHelpers

@@ -1,4 +1,4 @@
-set(TARGET MethaneRangeSet)
+set(TARGET MethaneDataRangeSet)
 
 include(MethaneModules)
 
