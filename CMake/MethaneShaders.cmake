@@ -37,8 +37,8 @@ function(get_shader_profile SHADER_TYPE PROFILE_VER OUT_PROFILE)
     set(${OUT_PROFILE} "${_PROFILE_TYPE}_${PROFILE_VER}" PARENT_SCOPE)
 endfunction()
 
-function(get_target_shaders_dir TARGET_SHADERS_DIR)
-    set(${TARGET_SHADERS_DIR} "${CMAKE_CURRENT_BINARY_DIR}/Shaders" PARENT_SCOPE)
+function(get_target_shaders_dir FOR_TARGET TARGET_SHADERS_DIR)
+    set(${TARGET_SHADERS_DIR} "${CMAKE_CURRENT_BINARY_DIR}/Shaders/${FOR_TARGET}" PARENT_SCOPE)
 endfunction()
 
 function(get_shaders_config SHADERS_HLSL SHADERS_CONFIG)
@@ -55,13 +55,13 @@ function(get_shaders_name SHADERS_FILE SHADERS_NAME)
 endfunction()
 
 function(get_metal_library FOR_TARGET SHADERS_HLSL METAL_LIBRARY)
-    get_target_shaders_dir(TARGET_SHADERS_DIR)
+    get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
     get_shaders_name(${SHADERS_HLSL} SHADERS_NAME)
     set(${METAL_LIBRARY} "${TARGET_SHADERS_DIR}/${SHADERS_NAME}.metallib" PARENT_SCOPE)
 endfunction()
 
 function(get_generated_shaders FOR_TARGET SHADERS_CONFIG SHADER_EXT SHADERS_GENERATED)
-    get_target_shaders_dir(TARGET_SHADERS_DIR)
+    get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
     get_shaders_name(${SHADERS_CONFIG} SHADERS_NAME)
 
     file(STRINGS ${SHADERS_CONFIG} CONFIG_STRINGS)
@@ -81,7 +81,7 @@ endfunction()
 
 function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL OUT_SHADERS_METAL)
     get_platform_dir()
-    get_target_shaders_dir(TARGET_SHADERS_DIR)
+    get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
     get_shaders_name(${SHADERS_HLSL} SHADERS_NAME)
     get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
 
@@ -135,7 +135,7 @@ function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL OUT_SHADERS_ME
 endfunction()
 
 function(compile_metal_shaders_to_library FOR_TARGET SDK METAL_SHADERS METAL_LIBRARY)
-    get_target_shaders_dir(TARGET_SHADERS_DIR)
+    get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
 
     foreach(SHADER_METAL_PATH ${METAL_SHADERS})
         string(REPLACE "/" ";" SHADER_METAL_PATH_LIST "${SHADER_METAL_PATH}")
@@ -183,7 +183,7 @@ endfunction()
 function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_SHADER_BINS)
     
     get_platform_dir()
-    get_target_shaders_dir(TARGET_SHADERS_DIR)
+    get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
     get_shaders_name(${SHADERS_HLSL} SHADERS_NAME)
     get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
 
@@ -248,7 +248,7 @@ function(add_methane_shaders TARGET HLSL_SOURCES)
             list(APPEND CONFIG_SOURCES ${SHADERS_CONFIG})
         endforeach()
         
-        get_target_shaders_dir(TARGET_SHADERS_DIR)
+        get_target_shaders_dir(${TARGET} TARGET_SHADERS_DIR)
 
         set(SHADER_RESOURCES_TARGET ${TARGET}_Shaders)
         cmrc_add_resource_library(${SHADER_RESOURCES_TARGET}
@@ -285,12 +285,6 @@ function(add_methane_shaders TARGET HLSL_SOURCES)
         target_compile_definitions(${TARGET}
             PRIVATE
             SHADER_RESOURCE_NAMESPACE=${RESOURCE_NAMESPACE}::Shaders
-        )
-
-        # Disable default manifest generation with linker, since manually written manifest is added to resources
-        set_target_properties(${TARGET}
-            PROPERTIES
-            LINK_FLAGS "/MANIFEST:NO /ENTRY:mainCRTStartup"
         )
 
     elseif(APPLE)
