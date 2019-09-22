@@ -342,25 +342,30 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
 
     const uint32_t      mip_levels_count  = 1; // TODO: replace with actual value when mip-levels are supported
     const Data::Size    pixel_size = GetPixelSize(m_settings.pixel_format);
-    const uint32_t first_sub_resource_index = sub_resources.front().GetIndex(mip_levels_count);
+
+    uint32_t first_sub_resource_index = std::numeric_limits<uint32_t>::max();
+    for (const SubResource& sub_resource : sub_resources)
+    {
+        first_sub_resource_index = std::min(first_sub_resource_index, sub_resource.GetIndex(mip_levels_count));
+    }
 
     m_data_size = 0;
     std::vector<D3D12_SUBRESOURCE_DATA> dx_sub_resources(sub_resources.size(), D3D12_SUBRESOURCE_DATA{});
 
-    for(const SubResource& sub_resourse : sub_resources)
+    for(const SubResource& sub_resource : sub_resources)
     {
-        const uint32_t raw_sub_resource_index = sub_resourse.GetIndex(m_settings.dimensions.depth, mip_levels_count) - first_sub_resource_index;
+        const uint32_t raw_sub_resource_index = sub_resource.GetIndex(m_settings.dimensions.depth, mip_levels_count) - first_sub_resource_index;
         if (raw_sub_resource_index >= dx_sub_resources.size())
         {
             dx_sub_resources.resize(raw_sub_resource_index + 1, D3D12_SUBRESOURCE_DATA{});
         }
 
         D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[raw_sub_resource_index];
-        dx_sub_resource.pData      = sub_resourse.p_data;
+        dx_sub_resource.pData      = sub_resource.p_data;
         dx_sub_resource.RowPitch   = m_settings.dimensions.width  * pixel_size;
         dx_sub_resource.SlicePitch = m_settings.dimensions.height * dx_sub_resource.RowPitch;
 
-        if (dx_sub_resource.SlicePitch > static_cast<LONG_PTR>(sub_resourse.data_size))
+        if (dx_sub_resource.SlicePitch > static_cast<LONG_PTR>(sub_resource.data_size))
         {
             throw std::invalid_argument("Sub-resource data size is smaller than computed slice size. Possible pixel format mismatch.");
         }
