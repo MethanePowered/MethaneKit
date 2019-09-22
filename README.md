@@ -315,7 +315,7 @@ Now you have all in one application executable/bundle running on Windows/MacOS, 
 
 All external dependencies of Methane Kit are listed in [MethaneExternals](https://github.com/egorodet/MethaneExternals) repository. See [MethaneExternals/README.md](https://github.com/egorodet/MethaneExternals/blob/master/README.md) for more details.
 
-## Development Tools <a href="https://www.jetbrains.com/?from=MethaneKit" target="_blank"><img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/JetBrains/JetBrains.png" width=200 align="right" valign="bottom"/></a>
+## Development Tools <a href="https://www.jetbrains.com/?from=MethaneKit" target="_blank"><img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Partners/JetBrains.png" width=200 align="right" valign="bottom"/></a>
 
 Methane Kit is being developed with support of [Jet Brains](https://www.jetbrains.com/?from=MethaneKit) development tools: CLion IDE and ReSharper C++.
 Open source project development license is provided free of charge for all key contributors of Methane Kit project.
