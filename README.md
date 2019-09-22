@@ -1,9 +1,9 @@
 # Methane Kit <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Logo/MethaneLogoNameSmall.png" width=200 align="right" valign="middle">
 
-**Easy to use modern 3D graphics abstraction API written in C++ for cross-platform applications development:**
+**Easy to use modern 3D graphics abstraction API in C++17 for cross-platform applications development:**
 - **Built on top of modern native 3D graphics APIs**: DirectX 12 on Windows and Metal on MacOS.
-- **Provides object-oriented graphics API** simple but capable of high-performance graphics rendering on modern GPUs.
-- **Supplies completely cross-platform application infrastructure**: clean C++ code without nasty preprocessor stuff.
+- **Simplifies modern graphics programming** with object-oriented graphics API inspired by simplicity of Apple's Metal.
+- **Provides cross-platform application infrastructure** from CMake-based toolchain to application and user input classes.
 
 Note that project is in **Alpha / [MVP](https://en.wikipedia.org/wiki/Minimum_viable_product)** stage and is under active development.
 
@@ -29,16 +29,16 @@ Note that project is in **Alpha / [MVP](https://en.wikipedia.org/wiki/Minimum_vi
 
 - **Cross-platform**
   - Supported platforms:
-    - Windows 10 with DirectX 12
-    - MacOS (El Capitan or later) with Metal API
+    - Windows 10 with DirectX 12 API
+    - MacOS 10.13 "El Capitan" or later with Metal API
   - Application infrastructure:
-    - [Methane CMake module](/CMake/Methane.cmake) is provided to simplify configuration of the cross-platform build
-    - [Base application class](/Modules/Platform/App/Include/Methane/Platform/AppBase.h) and platform-specific implementations are completely GLFW free
-    - [Graphics application base template class](/Modules/Graphics/App/Include/Methane/Graphics/App.hpp) with basic multi-frame swap-chain management 
+    - [Methane CMake modules](/CMake) implement toolchain for cross-platform graphics applications build setup.
+    - [Base application class](/Modules/Platform/App/Include/Methane/Platform/AppBase.h) and platform-specific implementations are completely GLFW free!
+    - [Graphics application base template class](/Modules/Graphics/App/Include/Methane/Graphics/App.hpp) with basic multi-frame swap-chain management.
 - **One shader code for all APIs**
   - Shaders are written in HLSL 5.1
-  - Shaders are converted to native API shading language at build time with SPIRV-Cross toolchain
-  - Shaders are prebuilt and embedded in application resources as bytecode (with preprocessor definitions support)
+  - Shaders are converted to native API shading language (Metal on MacOS) at build time with SPIRV-Cross toolchain
+  - Shaders are compiled at build time and embedded in application resources as bytecode (with all variations of preprocessor definitions)
 - **Easy to use object-oriented graphics API**
   - [Core graphics interfaces](/Modules/Graphics/Core/Include/Methane/Graphics):
     - [Context](/Modules/Graphics/Core/Include/Methane/Graphics/Context.h) unifies Device and Swap-Chain under one umbrella
@@ -47,18 +47,18 @@ Note that project is in **Alpha / [MVP](https://en.wikipedia.org/wiki/Minimum_vi
     - [Program::ResourceBindings](/Modules/Graphics/Core/Include/Methane/Graphics/Program.h) simplifies binding resources to programs by uniform variable names and enables fast bindings switching at runtime
     - [RenderState](/Modules/Graphics/Core/Include/Methane/Graphics/RenderState.h) and [RenderPass](/Modules/Graphics/Core/Include/Methane/Graphics/RenderPass.h) used for inputs and outputs configuration of the graphics pipeline
     - [RenderCommandList](/Modules/Graphics/Core/Include/Methane/Graphics/RenderCommandList.h) and [CommandQueue](/Modules/Graphics/Core/Include/Methane/Graphics/CommandQueue.h) for render commands encoding and execution
-  - [Core interface extensions](/Modules/Graphics/Extensions/Include/Methane/Graphics) like: ImageLoader for creating textures from common image formats.
+  - [Core interface extensions](/Modules/Graphics/Extensions/Include/Methane/Graphics) like: ImageLoader for loading images to textures from common image formats.
   - [Common 3D graphics helpers](/Modules/Graphics/Helpers/Include/Methane/Graphics) like: Camera, Timer, Mesh generator, etc.
 - **Lightweight**:
-  - No heavy external depedencies (almost all libraries are header only)
-  - Fast application startup (thanks to embedded prebuilt shaders)
+  - No heavy external dependencies: almost all libraries are header only.
+  - Fast application startup: thanks to embedded prebuilt shaders.
 - **Performance oriented**:
   - Triple frame buffering swap-chain by default
   - Builtin API instrumentation with [Intel ITT API](https://software.intel.com/en-us/vtune-amplifier-help-instrumentation-and-tracing-technology-apis) for performance analysis with [Intel Vtune Amplifier](https://software.intel.com/en-us/vtune) and [Intel Graphics Trace Analyzer](https://software.intel.com/en-us/gpa/graphics-trace-analyzer)
 
 ## Development plans
 
-- [x] Continous integration setup
+- [x] Continous integration system
 - [x] Application user input with mouse and keyboard
 - [ ] Parallel command lists
 - [ ] Text rendering
@@ -72,16 +72,16 @@ Note that project is in **Alpha / [MVP](https://en.wikipedia.org/wiki/Minimum_vi
 ### Prerequisites
 
 - **Common**
-  - Git
-  - CMake 3.12 or later installed and availabled from any location
+  - Git (required to pull dependent sub-modules)
+  - CMake 3.12 or later added to PATH
 - **Windows**
-  - Windows 10 OS or later
+  - Windows 10 RS5 (build 1809) or later
   - Visual Studio 2017 or later
   - MSVC v141 or later
   - Windows 10 SDK
 - **MacOS**
-  - MacOS El Capitan OS or later
-  - XCode with Command Line tools
+  - MacOS 10.13 "El Capitan" or later
+  - XCode 9 or later with Command Line tools
 
 ### Build
 
@@ -91,19 +91,19 @@ Note that project is in **Alpha / [MVP](https://en.wikipedia.org/wiki/Minimum_vi
 
 - **First time initialization**
 ```console
-mkdir <MethaneKit-Root>
-cd <MethaneKit-Root>
+mkdir MethaneKit
+cd MethaneKit
 git clone --recurse-submodules --depth 1 https://github.com/egorodet/MethaneKit.git
 ```
 - **Update sources to latest version**
 ```console
-cd <MethaneKit-Root>
+cd MethaneKit
 git pull --recurse-submodules
 ```
 
 #### Windows Build
 
-Start **"x64 Native Tools Command Prompt for VS2017"** (it initializes environment with VS path to Windows SDK, etc), then go to MethaneKit root directory (see instructions above to initialize repository and get latest code with submodules) and either start auxilarry build script [Build/Windows/Build.bat](Build/Windows/Build.bat) or build with cmake manually:
+Start **"x64 Native Tools Command Prompt for VS2017"** (it initializes environment with VS path to Windows SDK, etc), then go to MethaneKit root directory (see instructions above to initialize repository and get latest code with submodules) and either start auxiliary build script [Build/Windows/Build.bat](Build/Windows/Build.bat) or build with cmake manually:
 ```console
 mkdir Build\Output\VisualStudio\Build
 cd Build\Output\VisualStudio\Build
@@ -111,13 +111,13 @@ cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_INSTALL_PREFIX="%cd%\..\Install" 
 cmake --build . --config Release --target install
 ```
 
-Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) directly in Visual Studio 2017 and build it with VS CMake Tools using "Ninja" generator and provided configuration file [CMakeSettings.json](CMakeSettings.json).
+Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) directly in Visual Studio 2017 (or any other CMake IDE of your choice) and build it with using "Ninja" and provided configuration file [CMakeSettings.json](CMakeSettings.json).
 
-Run tutorials from the installation directory `Build\Output\VisualStudio\Install\Apps\Tutorials`.
+Run applications from the installation directory `Build\Output\VisualStudio\Install\Apps`.
 
 #### MacOS Build
 
-Start terminal, then go to MethaneKit root directory (see instructions above to initialize repository and get latest code with submodules) and either start auxilarry build script [Build/MacOS/Build.sh](Build/MacOS/Build.sh) or build with cmake manually:
+Start terminal, then go to MethaneKit root directory (see instructions above to initialize repository and get latest code with submodules) and either start auxiliary build script [Build/MacOS/Build.sh](Build/MacOS/Build.sh) or build with cmake manually:
 ```console
 mkdir -p Build/Output/XCode/Build
 cd Build/Output/XCode/Build
@@ -127,7 +127,7 @@ cmake --build . --config Release --target install
 
 Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) directly in QtCreator or VSCode or any other IDE of choice and build it from there.
 
-Run tutorials from the installation directory `Build/Output/XCode/Install/Apps/Tutorials`
+Run applications from the installation directory `Build/Output/XCode/Install/Apps`
 
 ### Tutorials
 
@@ -195,7 +195,7 @@ public:
 
         const Data::Size vertex_buffer_size = static_cast<Data::Size>(sizeof(triange_vertices));
         m_sp_vertex_buffer = Buffer::CreateVertexBuffer(*m_sp_context, vertex_buffer_size, static_cast<Data::Size>(sizeof(Vertex)));
-        m_sp_vertex_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(triange_vertices.data()), vertex_buffer_size);
+        m_sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(triange_vertices.data()), vertex_buffer_size } });
 
         m_sp_state = RenderState::Create(*m_sp_context,
         {
@@ -204,7 +204,7 @@ public:
                     Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), { "Triangle", "TriangleVS" } }),
                     Shader::CreatePixel( *m_sp_context, { Data::ShaderProvider::Get(), { "Triangle", "TrianglePS" } }),
                 },
-                { { {
+                { { { // input buffer layout mapping to vertex shader arguments
                     { "in_position", "POSITION" },
                     { "in_color",    "COLOR"    },
                 } } },
@@ -260,7 +260,7 @@ int main(int argc, const char* argv[])
 ```
 
 Also you need a simple HLSL shader [Shaders/Triangle.hlsl](/Apps/Tutorials/01-HelloTriangle/Shaders/Triangle.hlsl).
-Note how arguments of verftex shader function `TriangleVS(...)` are matching to input buffer layout description passed in Settings of `Program::Create(...)` call:
+Note how arguments of vertex shader function `TriangleVS(...)` are matching to input buffer layout description passed in Settings of `Program::Create(...)` call:
 ```cpp
 struct PSInput
 {
@@ -283,13 +283,16 @@ float4 TrianglePS(PSInput input) : SV_TARGET
 }
 ```
 
-The configuration file [Shaders/Shaders.cfg](/Apps/Tutorials/01-HelloTriangle/Shaders/Shaders.cfg) describes shader types along with entry points and optional sets of macro definitions used to prebuild shaders to bytecode:
+Shaders configuration file [Shaders/Triangle.cfg](/Apps/Tutorials/01-HelloTriangle/Shaders/Triangle.cfg) is created in pair with every shaders file and describes shader types along with entry points and optional sets of macro definitions used to prebuild shaders to bytecode at build time:
 ```
 frag=TrianglePS
 vert=TriangleVS
 ```
 
-Finally add build configuration [CMakeLists.txt](/Apps/Tutorials/01-HelloTriangle/CMakeLists.txt) powered by included module [Methane.cmake](CMake/Methane.cmake):
+Finally CMake build configuration [CMakeLists.txt](/Apps/Tutorials/01-HelloTriangle/CMakeLists.txt) of the application is powered by included Methane Cmake modules:
+- [MethaneApplications.cmake](CMake/MethaneApplications.cmake) - defines function ``add_methane_application``;
+- [MethaneShaders.cmake](CMake/MethaneShaders.cmake) - defines function ``add_methane_shaders``;
+- [MethaneResources.cmake](CMake/MethaneResources.cmake) - defines functions ``add_methane_embedded_textures`` and ``add_methane_copy_textures``.
 ```cmake
 include(MethaneApplications)
 include(MethaneShaders)
@@ -310,10 +313,15 @@ Now you have all in one application executable/bundle running on Windows/MacOS, 
 
 ## External Dependencies
 
-All external dependencies of Methane Kit are gathered in [MethaneExternals](https://github.com/egorodet/MethaneExternals) repository. See [MethaneExternals/README.md](https://github.com/egorodet/MethaneExternals/blob/master/README.md) for more details.
+All external dependencies of Methane Kit are listed in [MethaneExternals](https://github.com/egorodet/MethaneExternals) repository. See [MethaneExternals/README.md](https://github.com/egorodet/MethaneExternals/blob/master/README.md) for more details.
+
+## Development Tools <a href="https://www.jetbrains.com/?from=MethaneKit" target="_blank"><img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/JetBrains/JetBrains.png" width=200 align="right" valign="bottom"/></a>
+
+Methane Kit is being developed with support of [Jet Brains](https://www.jetbrains.com/?from=MethaneKit) development tools: CLion IDE and ReSharper C++.
+Open source project development license is provided free of charge for all key contributors of Methane Kit project.
 
 ## License
 
-Methane Kit is distributed under [Apache 2.0 License](LICENSE): it is free to use and open for contribution!
+Methane Kit is distributed under [Apache 2.0 License](LICENSE): it is free to use and open for contributions!
 
 *Copyright 2019 © Evgeny Gorodetskiy* [![Follow](https://img.shields.io/twitter/follow/egorodet.svg?style=social)](https://twitter.com/egorodet)
