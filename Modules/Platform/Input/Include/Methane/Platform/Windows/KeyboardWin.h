@@ -25,11 +25,7 @@ Windows platform specific types and implementation of Keyboard abstractions.
 
 #include <Windows.h>
 
-namespace Methane
-{
-namespace Platform
-{
-namespace Keyboard
+namespace Methane::Platform::Keyboard
 {
 
 struct NativeKey
@@ -38,6 +34,4 @@ struct NativeKey
     LPARAM l_param;
 };
 
-} // namespace Keyboard
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform::Keyboard

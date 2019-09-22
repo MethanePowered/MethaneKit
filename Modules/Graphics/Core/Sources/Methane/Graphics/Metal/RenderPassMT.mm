@@ -28,9 +28,7 @@ Metal implementation of the render pass interface.
 
 #include <Methane/Instrumentation.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 MTLStoreAction GetMTLStoreAction(RenderPass::Attachment::StoreAction store_action) noexcept
@@ -128,6 +126,17 @@ void RenderPassMT::Reset()
         m_mtl_pass_descriptor.stencilAttachment.storeAction   = GetMTLStoreAction(m_settings.stencil_attachment.store_action);
     }
 }
+    
+MTLRenderPassDescriptor* RenderPassMT::GetNativeDescriptor(bool reset)
+{
+    ITT_FUNCTION_TASK();
+    
+    if (reset)
+    {
+        Reset();
+    }
+    return m_mtl_pass_descriptor;
+}
 
 ContextMT& RenderPassMT::GetContextMT() noexcept
 {
@@ -135,5 +144,4 @@ ContextMT& RenderPassMT::GetContextMT() noexcept
     return static_cast<class ContextMT&>(m_context);
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

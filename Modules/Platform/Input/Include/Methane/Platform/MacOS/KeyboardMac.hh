@@ -25,19 +25,13 @@ MacOS platform specific types and implementation of Keyboard abstractions.
 
 #include <stdint.h>
 
-namespace Methane
+namespace Methane::Platform::Keyboard
 {
-namespace Platform
-{
-namespace Keyboard
-{
-    
+
 struct NativeKey
 {
     unsigned int  code;
     unsigned long flags;
 };
 
-} // namespace Keyboard
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform::Keyboard

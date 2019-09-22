@@ -33,9 +33,7 @@ Native implementation alias of the render pass interface.
 
 #endif
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 #if defined _WIN32
@@ -48,5 +46,4 @@ using RenderPassNT = RenderPassMT;
 
 #endif
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

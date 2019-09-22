@@ -33,11 +33,7 @@ A pool of input controllers for user actions handling in separate application co
 #include <Methane/Platform/Utils.h>
 #endif
 
-namespace Methane
-{
-namespace Platform
-{
-namespace Input
+namespace Methane::Platform::Input
 {
 
 void ControllersPool::OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button_state, const Mouse::StateChange& state_change)
@@ -168,6 +164,4 @@ IHelpProvider::HelpLines ControllersPool::GetHelp() const
     return all_help_lines;
 }
 
-} // namespace Input
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform::Input

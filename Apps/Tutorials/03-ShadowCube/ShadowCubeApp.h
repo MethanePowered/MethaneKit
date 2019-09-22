@@ -24,11 +24,8 @@ Tutorial demonstrating shadow-pass rendering with Methane graphics API
 #pragma once
 
 #include <Methane/Kit.h>
-#include <Methane/Graphics/Mesh.h>
 
-namespace Methane
-{
-namespace Tutorials
+namespace Methane::Tutorials
 {
 
 namespace gfx = Methane::Graphics;
@@ -63,13 +60,13 @@ class ShadowCubeApp final : public GraphicsApp
 {
 public:
     ShadowCubeApp();
-    virtual ~ShadowCubeApp() override;
+    ~ShadowCubeApp() override;
 
     // NativeApp
-    virtual void Init() override;
-    virtual bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
-    virtual void Update() override;
-    virtual void Render() override;
+    void Init() override;
+    bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
+    void Update() override;
+    void Render() override;
 
     // Context::Callback interface
     void OnContextReleased() override;
@@ -110,16 +107,18 @@ private:
         SHADER_FIELD_ALIGN gfx::Matrix44f shadow_mvpx_matrix;
     };
 
-    struct MeshBuffers
+    using TexturedMeshBuffersBase = gfx::TexturedMeshBuffers<MeshUniforms>;
+    class TexturedMeshBuffers : public TexturedMeshBuffersBase
     {
-        gfx::Buffer::Ptr sp_vertex;
-        gfx::Buffer::Ptr sp_index;
-        MeshUniforms     shadow_pass_uniforms = { };
-        MeshUniforms     final_pass_uniforms  = { };
+    public:
+        using Ptr = std::unique_ptr<TexturedMeshBuffers>;
+        using TexturedMeshBuffersBase::TexturedMeshBuffersBase;
 
-        template<typename VType>
-        void Init(const gfx::BaseMesh<VType>& mesh_data, gfx::Context& context, const std::string& base_name);
-        void Release();
+        const MeshUniforms& GetShadowPassUniforms() const        { return m_shadow_pass_uniforms; }
+        void SetShadowPassUniforms(const MeshUniforms& uniforms) { m_shadow_pass_uniforms = uniforms; }
+
+    private:
+        MeshUniforms m_shadow_pass_uniforms = {};
     };
 
     struct RenderPass
@@ -132,7 +131,8 @@ private:
         void Release();
     };
 
-    void RenderScene(const RenderPass& render_pass, ShadowCubeFrame::PassResources& render_pass_data, gfx::Texture& shadow_texture, bool is_shadow_rendering);
+    void RenderScene(const RenderPass &render_pass, ShadowCubeFrame::PassResources &render_pass_resources,
+                     gfx::Texture &shadow_texture);
 
     const gfx::BoxMesh<Vertex>  m_cube_mesh;
     const gfx::RectMesh<Vertex> m_floor_mesh;
@@ -142,17 +142,14 @@ private:
     gfx::Camera                 m_view_camera;
     gfx::Camera                 m_light_camera;
     gfx::Buffer::Ptr            m_sp_const_buffer;
-    gfx::Texture::Ptr           m_sp_cube_texture;
-    gfx::Texture::Ptr           m_sp_floor_texture;
     gfx::Sampler::Ptr           m_sp_texture_sampler;
     gfx::Sampler::Ptr           m_sp_shadow_sampler;
 
     SceneUniforms               m_scene_uniforms = { };
-    MeshBuffers                 m_cube_buffers;
-    MeshBuffers                 m_floor_buffers;
+    TexturedMeshBuffers::Ptr    m_sp_cube_buffers;
+    TexturedMeshBuffers::Ptr    m_sp_floor_buffers;
     RenderPass                  m_shadow_pass;
     RenderPass                  m_final_pass;
 };
 
-} // namespace Tutorials
-} // namespace Methane
+} // namespace Methane::Tutorials

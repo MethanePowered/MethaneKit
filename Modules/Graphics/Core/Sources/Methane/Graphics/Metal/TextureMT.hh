@@ -27,9 +27,7 @@ Metal implementation of the texture interface.
 
 #import <Metal/Metal.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class TextureMT : public TextureBase
@@ -41,7 +39,7 @@ public:
     ~TextureMT() override;
 
     // Resource interface
-    void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override;
+    void SetData(const SubResources& sub_resources) override;
     Data::Size GetDataSize() const override;
 
     // Object interface
@@ -58,5 +56,4 @@ protected:
     id<MTLTexture> m_mtl_texture;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

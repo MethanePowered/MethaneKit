@@ -33,9 +33,7 @@ Methane platform application alias.
 
 #endif
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 
 #if defined _WIN32
@@ -48,5 +46,4 @@ using App = AppMac;
 
 #endif
 
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

@@ -25,11 +25,7 @@ A pool of input controllers for user actions handling in separate application co
 
 #include "Controller.h"
 
-namespace Methane
-{
-namespace Platform
-{
-namespace Input
+namespace Methane::Platform::Input
 {
 
 class ControllersPool
@@ -53,6 +49,4 @@ public:
     HelpLines GetHelp() const override;
 };
 
-} // namespace Input
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform::Input

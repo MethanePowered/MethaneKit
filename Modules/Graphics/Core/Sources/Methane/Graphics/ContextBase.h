@@ -39,9 +39,7 @@ Base implementation of the context interface.
 #include <vector>
 #include <atomic>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ContextBase
@@ -49,7 +47,7 @@ class ContextBase
     , public Context
 {
 public:
-    ContextBase(const Data::Provider& data_provider, DeviceBase& device, const Settings& settings);
+    ContextBase(DeviceBase& device, const Settings& settings);
 
     // Context interface
     void                  CompleteInitialization() override;
@@ -63,7 +61,6 @@ public:
     CommandQueue&         GetUploadCommandQueue() override;
     RenderCommandList&    GetUploadCommandList() override;
     Device&               GetDevice() override;
-    const Data::Provider& GetDataProvider() const override      { return m_data_provider; }
     const Settings&       GetSettings() const override          { return m_settings; }
     uint32_t              GetFrameBufferIndex() const override  { return m_frame_buffer_index;  }
     const FpsCounter&     GetFpsCounter() const override        { return m_fps_counter; }
@@ -92,7 +89,6 @@ protected:
 
     using Callbacks = std::vector<Callback::Ref>;
 
-    const Data::Provider&       m_data_provider;
     DeviceBase::Ptr             m_sp_device;
     Settings                    m_settings;
     ResourceManager::Settings   m_resource_manager_init_settings = { true };
@@ -105,5 +101,4 @@ protected:
     FpsCounter                  m_fps_counter;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

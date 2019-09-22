@@ -28,9 +28,7 @@ Metal implementation of the device interface.
 
 #include <algorithm>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 Device::Feature::Mask DeviceMT::GetSupportedFeatures(const id<MTLDevice>& mtl_device)
@@ -152,5 +150,4 @@ const Device::Ptr& SystemMT::FindMetalDevice(const id<MTLDevice>& mtl_device) co
     return device_it != m_devices.end() ? *device_it : sp_empty_device;
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

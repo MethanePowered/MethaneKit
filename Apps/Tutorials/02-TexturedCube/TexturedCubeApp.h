@@ -30,9 +30,7 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 #include <vector>
 #include <array>
 
-namespace Methane
-{
-namespace Tutorials
+namespace Methane::Tutorials
 {
 
 namespace gfx = Methane::Graphics;
@@ -53,13 +51,13 @@ class TexturedCubeApp final : public GraphicsApp
 {
 public:
     TexturedCubeApp();
-    virtual ~TexturedCubeApp() override;
+    ~TexturedCubeApp() override;
 
     // App interface
-    virtual void Init() override;
-    virtual bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
-    virtual void Update() override;
-    virtual void Render() override;
+    void Init() override;
+    bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
+    void Update() override;
+    void Render() override;
 
     // Context::Callback interface
     void OnContextReleased() override;
@@ -110,5 +108,4 @@ private:
     
 };
 
-} // namespace Tutorials
-} // namespace Methane
+} // namespace Methane::Tutorials

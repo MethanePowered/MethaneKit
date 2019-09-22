@@ -32,9 +32,7 @@ Metal implementation of the render command list interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 MTLPrimitiveType PrimitiveTypeToMetal(RenderCommandList::Primitive primitive) noexcept
@@ -70,29 +68,30 @@ RenderCommandListMT::RenderCommandListMT(CommandQueueBase& command_queue, Render
 void RenderCommandListMT::Reset(RenderState& render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
-
-    Reset();
-
-    RenderCommandListBase::Reset(render_state, debug_group);
-}
-
-void RenderCommandListMT::Reset()
-{
-    ITT_FUNCTION_TASK();
-
-    assert(!IsCommitted());
     
     RenderPassMT& render_pass = GetPassMT();
-    render_pass.Reset(); // NOTE: We reset pass before getting native descriptor to refresh it, since it becomes obsolete on frame present
-    MTLRenderPassDescriptor* mtl_render_pass = render_pass.GetNativeDescriptor();
+    const std::string&  name = GetName();
     
-    m_mtl_cmd_buffer = [GetCommandQueueMT().GetNativeCommandQueue() commandBuffer];
-    assert(m_mtl_cmd_buffer != nil);
-    
+    // NOTE: If command buffer was not created for current frame yet,
+    //       then render pass descriptor should be reset with new frame drawable
+    MTLRenderPassDescriptor* mtl_render_pass = render_pass.GetNativeDescriptor(m_mtl_cmd_buffer == nil);
     assert(!!mtl_render_pass);
-    m_mtl_cmd_encoder = [m_mtl_cmd_buffer renderCommandEncoderWithDescriptor: mtl_render_pass];
+    
+    if (m_mtl_cmd_buffer == nil)
+    {
+        m_mtl_cmd_buffer = [GetCommandQueueMT().GetNativeCommandQueue() commandBuffer];
+        assert(m_mtl_cmd_buffer != nil);
+        m_mtl_cmd_buffer.label = MacOS::ConvertToNSType<std::string, NSString*>(name);
+    }
+    
+    if (m_mtl_cmd_encoder == nil)
+    {
+        m_mtl_cmd_encoder = [m_mtl_cmd_buffer renderCommandEncoderWithDescriptor: mtl_render_pass];
+        assert(m_mtl_cmd_encoder != nil);
+        m_mtl_cmd_encoder.label = MacOS::ConvertToNSType<std::string, NSString*>(name + ": " + debug_group);
+    }
 
-    SetName(GetName());
+    RenderCommandListBase::Reset(render_state, debug_group);
 }
 
 void RenderCommandListMT::SetName(const std::string& name)
@@ -190,6 +189,8 @@ void RenderCommandListMT::Draw(Primitive primitive, uint32_t vertex_count, uint3
 void RenderCommandListMT::Commit(bool present_drawable)
 {
     ITT_FUNCTION_TASK();
+    
+    assert(!IsCommitted());
 
     RenderCommandListBase::Commit(present_drawable);
     
@@ -197,6 +198,7 @@ void RenderCommandListMT::Commit(bool present_drawable)
         return;
 
     [m_mtl_cmd_encoder endEncoding];
+    m_mtl_cmd_encoder = nil;
     
     if (present_drawable)
     {
@@ -217,6 +219,7 @@ void RenderCommandListMT::Execute(uint32_t frame_index)
     }];
 
     [m_mtl_cmd_buffer commit];
+    m_mtl_cmd_buffer  = nil;
 }
 
 CommandQueueMT& RenderCommandListMT::GetCommandQueueMT() noexcept
@@ -231,5 +234,4 @@ RenderPassMT& RenderCommandListMT::GetPassMT()
     return static_cast<class RenderPassMT&>(GetPass());
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

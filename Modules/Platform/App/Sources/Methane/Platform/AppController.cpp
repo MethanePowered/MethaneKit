@@ -27,9 +27,7 @@ Base application controller providing commands like app close and help.
 #include <sstream>
 #include <cassert>
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 
 AppController::AppController(AppBase& application, const std::string& application_help, bool show_command_line_help,
@@ -156,5 +154,4 @@ void AppController::ShowHelp()
     });
 }
 
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

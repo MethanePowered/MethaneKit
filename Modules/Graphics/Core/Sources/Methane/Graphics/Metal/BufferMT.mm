@@ -33,9 +33,7 @@ Metal implementation of the buffer interface.
 #include <iterator>
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 Buffer::Ptr Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
@@ -97,17 +95,22 @@ void BufferMT::SetName(const std::string& name)
     m_mtl_buffer.label = MacOS::ConvertToNSType<std::string, NSString*>(name);
 }
 
-void BufferMT::SetData(Data::ConstRawPtr p_data, Data::Size data_size)
+void BufferMT::SetData(const SubResources& sub_resources)
 {
     ITT_FUNCTION_TASK();
 
-    BufferBase::SetData(p_data, data_size);
+    BufferBase::SetData(sub_resources);
 
     assert(m_mtl_buffer != nil);
     Data::RawPtr p_resource_data = static_cast<Data::RawPtr>([m_mtl_buffer contents]);
-
     assert(!!p_resource_data);
-    std::copy(p_data, p_data + data_size, p_resource_data);
+
+    Data::Size data_size = 0;
+    for(const SubResource& sub_resource : sub_resources)
+    {
+        std::copy(sub_resource.p_data, sub_resource.p_data + sub_resource.data_size, p_resource_data + data_size);
+        data_size += sub_resource.data_size;
+    }
 
     if (m_mtl_buffer.storageMode == MTLStorageModeManaged)
     {
@@ -137,5 +140,4 @@ MTLIndexType BufferMT::GetNativeIndexType() const noexcept
     return TypeConverterMT::DataFormatToMetalIndexType(m_format);
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

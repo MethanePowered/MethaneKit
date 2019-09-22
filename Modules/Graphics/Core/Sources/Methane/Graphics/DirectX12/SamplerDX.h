@@ -28,9 +28,7 @@ DirectX 12 implementation of the sampler interface.
 #include <wrl.h>
 #include <d3d12.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 namespace wrl = Microsoft::WRL;
@@ -46,5 +44,4 @@ protected:
     // NOTE: SamplerBase descriptor is stored in heap
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

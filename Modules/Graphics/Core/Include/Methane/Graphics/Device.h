@@ -31,9 +31,7 @@ is used to create graphics context for rendering.
 #include <vector>
 #include <functional>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 struct Device : virtual Object
@@ -94,5 +92,4 @@ struct System
     virtual ~System() = default;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

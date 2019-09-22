@@ -1,22 +1,31 @@
 set(TARGET MethaneGraphicsExtensions)
 
-include(Methane)
+include(MethaneShaders)
 
 get_module_dirs("Methane/Graphics")
 
 set(HEADERS
     ${INCLUDE_DIR}/Extensions.h
+    ${INCLUDE_DIR}/ImageLoader.h
+    ${INCLUDE_DIR}/MeshBuffers.hpp
+    ${INCLUDE_DIR}/SkyBox.h
 )
 
 set(SOURCES
     ${SOURCES_DIR}/ImageLoader.cpp
-    ${INCLUDE_DIR}/ImageLoader.h
+    ${SOURCES_DIR}/SkyBox.cpp
+)
+
+set(HLSL_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/SkyBox.hlsl
 )
 
 add_library(${TARGET} STATIC
     ${HEADERS}
     ${SOURCES}
 )
+
+add_methane_shaders(${TARGET} "${HLSL_SOURCES}")
 
 target_link_libraries(${TARGET}
     MethanePlatformUtils

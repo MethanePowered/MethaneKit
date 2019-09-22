@@ -25,11 +25,7 @@ Aggregated application input state with controllers.
 
 #include "ControllersPool.h"
 
-namespace Methane
-{
-namespace Platform
-{
-namespace Input
+namespace Methane::Platform::Input
 {
 
 class State : public IActionController
@@ -60,6 +56,4 @@ protected:
     Keyboard::StateExt  m_keyboard_state;
 };
 
-} // namespace Input
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform::Input

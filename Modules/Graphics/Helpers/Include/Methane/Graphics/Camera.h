@@ -29,9 +29,7 @@ Camera helper implementation allowing to generate view and projectrion matrices.
 
 #include <cml/mathlib/constants.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class Camera
@@ -112,5 +110,4 @@ protected:
     Orientation     m_current_orientation   = { };
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

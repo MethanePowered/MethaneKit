@@ -28,9 +28,7 @@ Base implementation of the resource interface.
 #include "ObjectBase.h"
 #include "DescriptorHeap.h"
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ResourceBase
@@ -87,7 +85,7 @@ public:
         virtual ~ReleasePool() = default;
     };
 
-    ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
+    ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& context, DescriptorByUsage  descriptor_by_usage);
     ~ResourceBase() override;
 
     // Resource interface
@@ -115,5 +113,4 @@ protected:
     State               m_state = State::Common;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

@@ -17,9 +17,11 @@ limitations under the License.
 *******************************************************************************
 
 FILE: AsteroidsApp.cpp
-Sample demonstrating parallel redering of the distinct asteroids massive
+Sample demonstrating parallel rendering of the distinct asteroids massive
 
 ******************************************************************************/
+
+#define _ENABLE_EXTENDED_ALIGNED_STORAGE // FIXME: get rid of this ASAP
 
 #include "AsteroidsApp.h"
 
@@ -27,23 +29,23 @@ Sample demonstrating parallel redering of the distinct asteroids massive
 
 #include <cml/mathlib/mathlib.h>
 #include <cassert>
+#include <memory>
 
-namespace Methane
-{
-namespace Samples
+namespace Methane::Samples
 {
 
 // Common application settings
-static const gfx::FrameSize           g_shadow_map_size(1024, 1024);
-static const gfx::Shader::EntryTarget g_vs_main       = { "VSMain", "vs_5_1" };
-static const gfx::Shader::EntryTarget g_ps_main       = { "PSMain", "ps_5_1" };
-static const std::string              g_app_help_text = "Asteroids sample demonstrates parallel rendering of multiple heterogeneous objects " \
+static const gfx::FrameSize             g_shadow_map_size(1024, 1024);
+static const gfx::Shader::EntryFunction g_vs_main       = { "Asteroids", "AsteroidsVS" };
+static const gfx::Shader::EntryFunction g_ps_main       = { "Asteroids", "AsteroidsPS" };
+static const std::string                g_app_help_text = "Asteroids sample demonstrates parallel rendering of multiple heterogeneous objects " \
                                                         "and action camera interaction with mouse and keyboard.";
-static const GraphicsApp::Settings    g_app_settings  = // Application settings:
+static const GraphicsApp::Settings      g_app_settings  = // Application settings:
 {                                                       // ====================
     {                                                   // app:
         "Methane Asteroids",                            // - name
         0.8, 0.8,                                       // - width, height
+        false,                                           // - is_full_screen
     },                                                  //
     {                                                   // context:
         gfx::FrameSize(),                               // - frame_size
@@ -61,7 +63,6 @@ static const GraphicsApp::Settings    g_app_settings  = // Application settings:
 AsteroidsApp::AsteroidsApp()
     : GraphicsApp(g_app_settings, gfx::RenderPass::Access::ShaderResources | gfx::RenderPass::Access::Samplers, g_app_help_text)
     , m_cube_mesh(gfx::Mesh::VertexLayoutFromArray(Vertex::layout), 1.f, 1.f, 1.f)
-    , m_floor_mesh(gfx::Mesh::VertexLayoutFromArray(Vertex::layout), 7.f, 7.f, 0.f, 0, gfx::RectMesh<Vertex>::FaceType::XZ)
     , m_scene_scale(15.f)
     , m_scene_constants(                                // Shader constants:
         {                                               // ================
@@ -73,16 +74,17 @@ AsteroidsApp::AsteroidsApp()
     , m_view_camera(m_animations, gfx::ActionCamera::Pivot::Aim)
     , m_light_camera(m_view_camera, m_animations, gfx::ActionCamera::Pivot::Aim)
 {
-    m_view_camera.SetOrientation({ { 15.0f, 22.5f, -15.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
-    m_view_camera.SetZoomDistanceRange({ 15.f , 100.f });
+    m_view_camera.SetOrientation({ { -30.0f, 30.f, 30.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
+    m_view_camera.SetParamters({ 0.01f, 600.f, 90.f });
+    m_view_camera.SetZoomDistanceRange({ 15.f , 300.f });
 
-    m_light_camera.SetOrientation({ { 0.0f,  25.0f, -25.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
+    m_light_camera.SetOrientation({ { 0.0f,  25.0f, 25.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
     m_light_camera.SetParamters({ -300, 300.f, 90.f });
     m_light_camera.Resize(120, 120);
 
     m_input_state.AddControllers({
-        std::make_shared<gfx::AppCameraController>(m_view_camera, "VIEW CAMERA"),
+        std::make_shared<gfx::AppCameraController>(m_view_camera,  "VIEW CAMERA"),
         std::make_shared<gfx::AppCameraController>(m_light_camera, "LIGHT SOURCE",
             gfx::AppCameraController::ActionByMouseButton   { { pal::Mouse::Button::Right, gfx::ActionCamera::MouseAction::Rotate   } },
             gfx::AppCameraController::ActionByKeyboardState { { { pal::Keyboard::Key::L }, gfx::ActionCamera::KeyboardAction::Reset } },
@@ -101,58 +103,56 @@ void AsteroidsApp::Init()
     GraphicsApp::Init();
 
     assert(m_sp_context);
-    const gfx::Context::Settings& context_settings = m_sp_context->GetSettings();
+    gfx::Context& context = *m_sp_context;
+
+    const gfx::Context::Settings& context_settings = context.GetSettings();
+    m_view_camera.Resize(static_cast<float>(context_settings.frame_size.width),
+                         static_cast<float>(context_settings.frame_size.height));
+
+    // Create sky-box
+    m_sp_sky_box = std::make_shared<gfx::SkyBox>(context, m_image_loader, gfx::SkyBox::Settings{
+        m_scene_scale * 100.f,
+        m_view_camera,
+        {
+            "Textures/SkyBox/Galaxy/PositiveX.jpg",
+            "Textures/SkyBox/Galaxy/NegativeX.jpg",
+            "Textures/SkyBox/Galaxy/PositiveY.jpg",
+            "Textures/SkyBox/Galaxy/NegativeY.jpg",
+            "Textures/SkyBox/Galaxy/PositiveZ.jpg",
+            "Textures/SkyBox/Galaxy/NegativeZ.jpg"
+        }
+    });
 
     // Create vertex and index buffer for meshes
-    m_cube_buffers.Init(m_cube_mesh,   *m_sp_context, "Cube");
-    m_floor_buffers.Init(m_floor_mesh, *m_sp_context, "Floor");
-    m_view_camera.Resize(static_cast<float>(context_settings.frame_size.width),
-                          static_cast<float>(context_settings.frame_size.height));
+    m_sp_cube_buffers = std::make_unique<TexturedMeshBuffers>(context, m_cube_mesh, "Cube");
+    m_sp_cube_buffers->SetTexture(m_image_loader.LoadImageToTexture2D(context, "Textures/MethaneBubbles.jpg"));
 
-    const Data::Size constants_data_size      = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(SceneUniforms)));
+    const Data::Size constants_data_size      = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(Constants)));
     const Data::Size scene_uniforms_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(SceneUniforms)));
-    const Data::Size cube_uniforms_data_size  = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(MeshUniforms)));
-    const Data::Size floor_uniforms_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(MeshUniforms)));
+    const Data::Size cube_uniforms_data_size  = TexturedMeshBuffers::GetUniformsAlignedBufferSize();
 
     // Create constants buffer for frame rendering
-    m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, constants_data_size);
+    m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(context, constants_data_size);
     m_sp_const_buffer->SetName("Constants Buffer");
-    m_sp_const_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants));
-
-    // Load cube texture images from file
-    m_sp_cube_texture = m_image_loader.CreateImageTexture(*m_sp_context, "Textures/MethaneBubbles.jpg");
-    m_sp_cube_texture->SetName("Cube Texture Image");
-
-    // Load floor texture images from file
-    m_sp_floor_texture = m_image_loader.CreateImageTexture(*m_sp_context, "Textures/MarbleWhite.jpg");
-    m_sp_floor_texture->SetName("Floor Texture Image");
+    m_sp_const_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } });
 
     // Create sampler for image texture
-    m_sp_texture_sampler = gfx::Sampler::Create(*m_sp_context, {
+    m_sp_texture_sampler = gfx::Sampler::Create(context, {
         { gfx::Sampler::Filter::MinMag::Linear     },    // Bilinear filtering
         { gfx::Sampler::Address::Mode::ClampToZero }
     });
     m_sp_texture_sampler->SetName("Texture Sampler");
 
-    // Create sampler for shadow-map
-    m_sp_shadow_sampler = gfx::Sampler::Create(*m_sp_context, {
-        { gfx::Sampler::Filter::MinMag::Linear     },    // Bilinear filtering
-        { gfx::Sampler::Address::Mode::ClampToEdge }
-    });
-    m_sp_shadow_sampler->SetName("Shadow Map Sampler");
-
-    // ========= Final Pass objects =========
-
-    // Create final-pass shading program with texturing
-    gfx::Shader::MacroDefinitions textured_shadows_definitions = { { "ENABLE_SHADOWS", "" }, { "ENABLE_TEXTURING", "" } };
-    m_final_pass.sp_program = gfx::Program::Create(*m_sp_context, {
+    // Create state for final FB rendering with a program
+    gfx::RenderState::Settings state_settings;
+    state_settings.sp_program    = gfx::Program::Create(context, {
         {
-            gfx::Shader::CreateVertex(*m_sp_context, { g_vs_main, textured_shadows_definitions }),
-            gfx::Shader::CreatePixel(*m_sp_context,  { g_ps_main, textured_shadows_definitions }),
+            gfx::Shader::CreateVertex(context, { Data::ShaderProvider::Get(), g_vs_main, { } }),
+            gfx::Shader::CreatePixel(context,  { Data::ShaderProvider::Get(), g_ps_main, { } }),
         },
         { // input_buffer_layouts
-            { // Signle vertex buffer with interleaved data:
-                {
+            { // Single vertex buffer with interleaved data:
+                { // input arguments mapping to semantic names
                     { "in_position", "POSITION" },
                     { "in_normal",   "NORMAL"   },
                     { "in_uv",       "TEXCOORD" },
@@ -160,181 +160,57 @@ void AsteroidsApp::Init()
             }
         },
         { // constant_argument_names
-            "g_constants", "g_texture_sampler", "g_shadow_sampler"
+            "g_constants", "g_texture_sampler"
         },
         { // render_target_pixel_formats
             context_settings.color_format
         },
         context_settings.depth_stencil_format
     });
-    m_final_pass.sp_program->SetName("Textured, Shadows & Lighting");
-
-    // Create state for final pass rendering
-    gfx::RenderState::Settings final_state_settings;
-    final_state_settings.sp_program    = m_final_pass.sp_program;
-    final_state_settings.viewports     = { gfx::GetFrameViewport(context_settings.frame_size) };
-    final_state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };
-    final_state_settings.depth.enabled = true;
-    m_final_pass.sp_state = gfx::RenderState::Create(*m_sp_context, final_state_settings);
-    m_final_pass.sp_state->SetName("Final pass render state");
+    state_settings.sp_program->SetName("Textured Phong Lighting");
+    state_settings.viewports     = { gfx::GetFrameViewport(context_settings.frame_size) };
+    state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };
+    state_settings.depth.enabled = true;
     
-    m_final_pass.command_group_name = "Final Render Pass";
-    m_final_pass.is_final_pass = true;
-
-    // ========= Shadow Pass objects =========
-    
-    // Shadow texture settings
-    gfx::Texture::Settings shadow_texture_settings = gfx::Texture::Settings::DepthStencilBuffer(g_shadow_map_size, context_settings.depth_stencil_format, gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead);
-
-    // Create shadow-pass program for geometry-only rendering to depth texture
-    gfx::Shader::MacroDefinitions textured_definitions = { { "ENABLE_TEXTURING", "" } };
-    m_shadow_pass.sp_program = gfx::Program::Create(*m_sp_context, {
-        {
-            gfx::Shader::CreateVertex(*m_sp_context, { g_vs_main, textured_definitions }),
-        },
-        m_final_pass.sp_program->GetSettings().input_buffer_layouts,
-        {
-            "g_constants", "g_shadow_sampler"
-        },
-        { // no color attachments, rendering to depth texture
-        },
-        shadow_texture_settings.pixel_format
-    });
-    m_shadow_pass.sp_program->SetName("Vertex Only: Textured, Lighting");
-
-    // Create state for shadow map rendering
-    gfx::RenderState::Settings shadow_state_settings;
-    shadow_state_settings.sp_program    = m_shadow_pass.sp_program;
-    shadow_state_settings.viewports     = { gfx::GetFrameViewport(g_shadow_map_size) };
-    shadow_state_settings.scissor_rects = { gfx::GetFrameScissorRect(g_shadow_map_size) };
-    shadow_state_settings.depth.enabled = true;
-    m_shadow_pass.sp_state = gfx::RenderState::Create(*m_sp_context, shadow_state_settings);
-    m_shadow_pass.sp_state->SetName("Shadow-map render state");
-    
-    m_shadow_pass.command_group_name = "Shadow Render Pass";
-    m_shadow_pass.is_final_pass = false;
+    m_sp_state = gfx::RenderState::Create(context, state_settings);
+    m_sp_state->SetName("Final FB render state");
 
     // ========= Per-Frame Data =========
     for(AsteroidsFrame& frame : m_frames)
     {
+        // Create render pass and command list for final pass rendering
+        frame.sp_cmd_list = gfx::RenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_screen_pass);
+        frame.sp_cmd_list->SetName(IndexedName("Scene Rendering", frame.index));
+
         // Create uniforms buffer with volatile parameters for the whole scene rendering
-        frame.sp_scene_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, scene_uniforms_data_size);
+        frame.sp_scene_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, scene_uniforms_data_size);
         frame.sp_scene_uniforms_buffer->SetName(IndexedName("Scene Uniforms Buffer", frame.index));
 
-        // ========= Shadow Pass data =========
+        // Create uniforms buffer for Sky-Box rendering
+        frame.skybox.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, sizeof(gfx::SkyBox::MeshUniforms));
+        frame.skybox.sp_uniforms_buffer->SetName(IndexedName("Sky-box Uniforms Buffer", frame.index));
 
-        // Create uniforms buffer for Cube rendering in Shadow pass
-        frame.shadow_pass.cube.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, cube_uniforms_data_size);
-        frame.shadow_pass.cube.sp_uniforms_buffer->SetName(IndexedName("Cube Uniforms Buffer for Shadow Pass", frame.index));
+        // Resource bindings for Sky-Box rendering
+        frame.skybox.sp_resource_bindings = m_sp_sky_box->CreateResourceBindings(frame.skybox.sp_uniforms_buffer);
 
-        // Create uniforms buffer for Floor rendering in Shadow pass
-        frame.shadow_pass.floor.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, floor_uniforms_data_size);
-        frame.shadow_pass.floor.sp_uniforms_buffer->SetName(IndexedName("Floor Uniforms Buffer for Shadow Pass", frame.index));
+        // Create uniforms buffer for Cube rendering
+        frame.cube.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, cube_uniforms_data_size);
+        frame.cube.sp_uniforms_buffer->SetName(IndexedName("Cube Uniforms Buffer", frame.index));
 
-        // Create depth texture for shadow map rendering
-        frame.shadow_pass.sp_rt_texture = gfx::Texture::CreateRenderTarget(*m_sp_context, shadow_texture_settings);
-        frame.shadow_pass.sp_rt_texture->SetName(IndexedName("Shadow Map", frame.index));
-        
-        // Create shadow pass configuration with depth attachment
-        frame.shadow_pass.sp_pass = gfx::RenderPass::Create(*m_sp_context, {
-            { // No color attachments
-            },
-            gfx::RenderPass::DepthAttachment(
-                {
-                    frame.shadow_pass.sp_rt_texture,
-                    0, 0, 0,
-                    gfx::RenderPass::Attachment::LoadAction::Clear,
-                    gfx::RenderPass::Attachment::StoreAction::Store,
-                },
-                context_settings.clear_depth
-            ),
-            gfx::RenderPass::StencilAttachment(),
-            gfx::RenderPass::Access::ShaderResources
-        });
-        
-        // Create render pass and command list for shadow pass rendering
-        frame.shadow_pass.sp_cmd_list = gfx::RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.shadow_pass.sp_pass);
-        frame.shadow_pass.sp_cmd_list->SetName(IndexedName("Shadow-Map Rendering", frame.index));
-
-        // Shadow-pass resource bindings for cube rendering
-        frame.shadow_pass.cube.sp_resource_bindings = gfx::Program::ResourceBindings::Create(m_shadow_pass.sp_program, {
-            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, frame.shadow_pass.cube.sp_uniforms_buffer },
-        });
-
-        // Shadow-pass resource bindings for floor rendering
-        frame.shadow_pass.floor.sp_resource_bindings = gfx::Program::ResourceBindings::Create(m_shadow_pass.sp_program, {
-            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, frame.shadow_pass.floor.sp_uniforms_buffer },
-        });
-
-        // ========= Final Pass data =========
-
-        // Create uniforms buffer for Cube rendering in Final pass
-        frame.final_pass.cube.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, cube_uniforms_data_size);
-        frame.final_pass.cube.sp_uniforms_buffer->SetName(IndexedName("Cube Uniforms Buffer for Final Pass", frame.index));
-
-        // Create uniforms buffer for Floor rendering in Final pass
-        frame.final_pass.floor.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, floor_uniforms_data_size);
-        frame.final_pass.floor.sp_uniforms_buffer->SetName(IndexedName("Floor Uniforms Buffer for Final Pass", frame.index));
-
-        // Bind final pass RT texture and pass to the frame buffer texture and final pass.
-        frame.final_pass.sp_rt_texture = frame.sp_screen_texture;
-        frame.final_pass.sp_pass       = frame.sp_screen_pass;
-        
-        // Create render pass and command list for final pass rendering
-        frame.final_pass.sp_cmd_list = gfx::RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.final_pass.sp_pass);
-        frame.final_pass.sp_cmd_list->SetName(IndexedName("Final Scene Rendering", frame.index));
-
-        // Final-pass resource bindings for cube rendering
-        frame.final_pass.cube.sp_resource_bindings = gfx::Program::ResourceBindings::Create(m_final_pass.sp_program, {
-            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, frame.final_pass.cube.sp_uniforms_buffer    },
+        // Resource bindings for cube rendering
+        frame.cube.sp_resource_bindings = gfx::Program::ResourceBindings::Create(state_settings.sp_program, {
+            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, frame.cube.sp_uniforms_buffer               },
             { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, frame.sp_scene_uniforms_buffer              },
             { { gfx::Shader::Type::Pixel,  "g_constants"      }, m_sp_const_buffer                           },
-            { { gfx::Shader::Type::Pixel,  "g_shadow_map"     }, frame.shadow_pass.sp_rt_texture             },
-            { { gfx::Shader::Type::Pixel,  "g_shadow_sampler" }, m_sp_shadow_sampler                         },
-            { { gfx::Shader::Type::Pixel,  "g_texture"        }, m_sp_cube_texture                           },
+            { { gfx::Shader::Type::Pixel,  "g_texture"        }, m_sp_cube_buffers->GetTexturePtr()          },
             { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, m_sp_texture_sampler                        },
-        });
-
-        // Final-pass resource bindings for floor rendering - patched a copy of cube bindings
-        frame.final_pass.floor.sp_resource_bindings = gfx::Program::ResourceBindings::CreateCopy(*frame.final_pass.cube.sp_resource_bindings, {
-            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, frame.final_pass.floor.sp_uniforms_buffer   },
-            { { gfx::Shader::Type::Pixel,  "g_texture"        }, m_sp_floor_texture                          },
         });
     }
 
     // Complete initialization of render context:
     //  - allocate deferred descriptor heaps with calculated sizes
     //  - execute commands to upload resources to GPU
-    m_sp_context->CompleteInitialization();
-}
-
-template<typename VType>
-void AsteroidsApp::MeshBuffers::Init(const gfx::BaseMesh<VType>& mesh_data, gfx::Context& context, const std::string& base_name)
-{
-    // Create vertex buffer of the mesh
-    const Data::Size vertex_data_size = static_cast<Data::Size>(mesh_data.GetVertexDataSize());
-    const Data::Size vertex_size = static_cast<Data::Size>(mesh_data.GetVertexSize());
-    sp_vertex = gfx::Buffer::CreateVertexBuffer(context, vertex_data_size, vertex_size);
-    sp_vertex->SetName(base_name + " Vertex Buffer");
-    sp_vertex->SetData(reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetVertices().data()), vertex_data_size);
-
-    // Create index buffer of the mesh
-    const Data::Size floor_index_data_size = static_cast<Data::Size>(mesh_data.GetIndexDataSize());
-    sp_index = gfx::Buffer::CreateIndexBuffer(context, floor_index_data_size, gfx::PixelFormat::R32Uint);
-    sp_index->SetName(base_name + " Index Buffer");
-    sp_index->SetData(reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetIndices().data()), floor_index_data_size);
-}
-
-void AsteroidsApp::MeshBuffers::Release()
-{
-    sp_index.reset();
-    sp_vertex.reset();
-}
-
-void AsteroidsApp::RenderPass::Release()
-{
-    sp_state.reset();
-    sp_program.reset();
+    context.CompleteInitialization();
 }
 
 bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
@@ -343,18 +219,13 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
         return false;
 
     // Resize screen color and depth textures
-    for (AsteroidsFrame& frame : m_frames)
-        frame.final_pass.sp_rt_texture.reset();
-
     GraphicsApp::Resize(frame_size, is_minimized);
 
-    for (AsteroidsFrame& frame : m_frames)
-        frame.final_pass.sp_rt_texture = frame.sp_screen_texture;
-
     // Update viewports and scissor rects state
-    assert(m_final_pass.sp_state);
-    m_final_pass.sp_state->SetViewports({ gfx::GetFrameViewport(frame_size) });
-    m_final_pass.sp_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
+    assert(m_sp_state);
+    m_sp_state->SetViewports({ gfx::GetFrameViewport(frame_size) });
+    m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
+    m_sp_sky_box->Resize(frame_size);
 
     m_view_camera.Resize(static_cast<float>(frame_size.width), static_cast<float>(frame_size.height));
     return true;
@@ -372,15 +243,6 @@ void AsteroidsApp::Update()
     // Update View and Projection matrices based on light camera location
     gfx::Matrix44f light_view_matrix, light_proj_matrix;
     m_light_camera.GetViewProjMatrices(light_view_matrix, light_proj_matrix);
-    
-    // Prepare shadow transform matrix
-    static const gfx::Matrix44f shadow_transform_matrix = ([]() -> gfx::Matrix44f
-    {
-        gfx::Matrix44f shadow_scale_matrix, shadow_translate_matrix;
-        cml::matrix_scale(shadow_scale_matrix, 0.5f, -0.5f, 1.f);
-        cml::matrix_translation(shadow_translate_matrix, 0.5f, 0.5f, 0.f);
-        return shadow_scale_matrix * shadow_translate_matrix;
-    })();
 
     // Update scene uniforms
     m_scene_uniforms.eye_position    = gfx::Vector4f(m_view_camera.GetOrientation().eye, 1.f);
@@ -391,32 +253,13 @@ void AsteroidsApp::Update()
     cml::matrix_translation(cube_model_matrix, gfx::Vector3f(0.f, m_cube_mesh.GetHeight() / 2.f, 0.f));
     cube_model_matrix = cube_model_matrix * scale_matrix;
 
-    // Update Cube uniforms with matrices for Final pass
-    {
-        MeshUniforms& mesh_uniforms         = m_cube_buffers.final_pass_uniforms;
-        mesh_uniforms.model_matrix          = cube_model_matrix;
-        mesh_uniforms.mvp_matrix            = mesh_uniforms.model_matrix * scene_view_matrix * scene_proj_matrix;
-        mesh_uniforms.shadow_mvpx_matrix    = mesh_uniforms.model_matrix * light_view_matrix * light_proj_matrix * shadow_transform_matrix;
-    }
-    // Update Cube uniforms with matrices for Shadow pass
-    {
-        MeshUniforms& mesh_uniforms         = m_cube_buffers.shadow_pass_uniforms;
-        mesh_uniforms.model_matrix          = cube_model_matrix;
-        mesh_uniforms.mvp_matrix            = mesh_uniforms.model_matrix * light_view_matrix * light_proj_matrix;
-    }
-    // Update Floor uniforms with matrices for Final pass
-    {
-        MeshUniforms& mesh_uniforms         = m_floor_buffers.final_pass_uniforms;
-        mesh_uniforms.model_matrix          = scale_matrix;
-        mesh_uniforms.mvp_matrix            = mesh_uniforms.model_matrix * scene_view_matrix * scene_proj_matrix;
-        mesh_uniforms.shadow_mvpx_matrix    = mesh_uniforms.model_matrix * light_view_matrix * light_proj_matrix * shadow_transform_matrix;
-    }
-    // Update Floor uniforms with matrices for Shadow pass
-    {
-        MeshUniforms& mesh_uniforms         = m_floor_buffers.shadow_pass_uniforms;
-        mesh_uniforms.model_matrix          = scale_matrix;
-        mesh_uniforms.mvp_matrix            = mesh_uniforms.model_matrix * light_view_matrix * light_proj_matrix;
-    }
+    // Update Cube uniforms with matrices
+    m_sp_cube_buffers->SetFinalPassUniforms(MeshUniforms{
+        cube_model_matrix,
+        cube_model_matrix * scene_view_matrix * scene_proj_matrix
+    });
+
+    m_sp_sky_box->Update();
 }
 
 void AsteroidsApp::Render()
@@ -431,75 +274,45 @@ void AsteroidsApp::Render()
     AsteroidsFrame& frame = GetCurrentFrame();
 
     // Upload uniform buffers to GPU
-    frame.sp_scene_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms));
-    frame.shadow_pass.floor.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_floor_buffers.shadow_pass_uniforms), sizeof(MeshUniforms));
-    frame.shadow_pass.cube.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_cube_buffers.shadow_pass_uniforms), sizeof(MeshUniforms));
-    frame.final_pass.floor.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_floor_buffers.final_pass_uniforms), sizeof(MeshUniforms));
-    frame.final_pass.cube.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_cube_buffers.final_pass_uniforms), sizeof(MeshUniforms));
+    assert(!!m_sp_sky_box);
+    frame.sp_scene_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms) } });
+    frame.cube.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->GetFinalPassUniforms()), sizeof(MeshUniforms) } });
 
-    // Record commands for shadow & final render passes
-    RenderScene(m_shadow_pass, frame.shadow_pass, *frame.shadow_pass.sp_rt_texture, true);
-    RenderScene(m_final_pass,  frame.final_pass,  *frame.shadow_pass.sp_rt_texture, false);
+    // Sky-box drawing
+    assert(!!frame.sp_cmd_list);
+    assert(!!frame.skybox.sp_uniforms_buffer);
+    assert(!!frame.skybox.sp_resource_bindings);
+    m_sp_sky_box->Draw(*frame.sp_cmd_list, *frame.skybox.sp_uniforms_buffer, *frame.skybox.sp_resource_bindings);
+
+    // Cube drawing
+    assert(!!frame.cube.sp_resource_bindings);
+    assert(!!m_sp_cube_buffers);
+    frame.sp_cmd_list->Reset(*m_sp_state, "Cube rendering");
+    m_sp_cube_buffers->Draw(*frame.sp_cmd_list, *frame.cube.sp_resource_bindings, 1);
+
+    frame.sp_cmd_list->Commit(true);
 
     // Execute rendering commands and present frame to screen
     m_sp_context->GetRenderCommandQueue().Execute({
-        *frame.shadow_pass.sp_cmd_list,
-        *frame.final_pass.sp_cmd_list
+        *frame.sp_cmd_list,
     });
     m_sp_context->Present();
 
     GraphicsApp::Render();
 }
 
-void AsteroidsApp::RenderScene(const RenderPass& render_pass, AsteroidsFrame::PassResources& render_pass_resources, gfx::Texture& shadow_texture, bool is_shadow_rendering)
-{
-    assert(!!render_pass_resources.sp_cmd_list);
-    gfx::RenderCommandList& cmd_list = *render_pass_resources.sp_cmd_list;
-
-    assert(!!render_pass.sp_state);
-    cmd_list.Reset(*render_pass.sp_state, render_pass.command_group_name);
-
-    // Cube drawing
-
-    assert(!!render_pass_resources.cube.sp_resource_bindings);
-    assert(!!m_cube_buffers.sp_vertex);
-    assert(!!m_cube_buffers.sp_index);
-
-    cmd_list.SetResourceBindings(*render_pass_resources.cube.sp_resource_bindings);
-    cmd_list.SetVertexBuffers({ *m_cube_buffers.sp_vertex });
-    cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_cube_buffers.sp_index, 1);
-
-    // Floor drawing
-
-    assert(!!render_pass_resources.floor.sp_resource_bindings);
-    assert(!!m_floor_buffers.sp_vertex);
-    assert(!!m_floor_buffers.sp_index);
-
-    cmd_list.SetResourceBindings(*render_pass_resources.floor.sp_resource_bindings);
-    cmd_list.SetVertexBuffers({ *m_floor_buffers.sp_vertex });
-    cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_floor_buffers.sp_index, 1);
-
-    cmd_list.Commit(render_pass.is_final_pass);
-}
-
 void AsteroidsApp::OnContextReleased()
 {
-    m_final_pass.Release();
-    m_shadow_pass.Release();
-    m_floor_buffers.Release();
-    m_cube_buffers.Release();
-
-    m_sp_shadow_sampler.reset();
+    m_sp_sky_box.reset();
+    m_sp_cube_buffers.reset();
     m_sp_texture_sampler.reset();
-    m_sp_floor_texture.reset();
-    m_sp_cube_texture.reset();
     m_sp_const_buffer.reset();
+    m_sp_state.reset();
 
     GraphicsApp::OnContextReleased();
 }
 
-} // namespace Samples
-} // namespace Methane
+} // namespace Methane::Samples
 
 int main(int argc, const char* argv[])
 {

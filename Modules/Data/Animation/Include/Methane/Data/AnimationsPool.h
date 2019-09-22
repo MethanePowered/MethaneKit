@@ -27,9 +27,7 @@ Pool of animations for centralized updating, adding and removing in application.
 
 #include <deque>
 
-namespace Methane
-{
-namespace Data
+namespace Methane::Data
 {
 
 using Animations = std::deque<Animation::Ptr>;
@@ -40,5 +38,4 @@ public:
     void Update();
 };
 
-} // namespace Data
-} // namespace Methane
+} // namespace Methane::Data

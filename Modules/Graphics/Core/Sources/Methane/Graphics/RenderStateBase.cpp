@@ -27,9 +27,7 @@ Base implementation of the render state interface.
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 RenderStateBase::RenderStateBase(ContextBase& context, const Settings& settings)
@@ -65,5 +63,4 @@ void RenderStateBase::SetScissorRects(const ScissorRects& scissor_rects)
     m_settings.scissor_rects = scissor_rects;
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

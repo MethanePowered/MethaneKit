@@ -28,9 +28,7 @@ Methane command queue interface: queues are used to execute command lists.
 
 #include <memory>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 struct Context;
@@ -47,5 +45,4 @@ struct CommandQueue : virtual Object
     virtual void Execute(const CommandList::Refs& command_lists) = 0;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

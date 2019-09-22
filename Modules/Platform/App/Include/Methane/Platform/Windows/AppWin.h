@@ -32,9 +32,7 @@ Windows application implementation.
 #include <vector>
 #include <memory>
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 
 class AppWin : public AppBase
@@ -65,5 +63,4 @@ private:
     RECT         m_window_rect = {};
 };
 
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

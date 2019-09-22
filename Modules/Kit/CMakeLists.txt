@@ -24,7 +24,7 @@ target_include_directories(${TARGET}
 
 target_link_libraries(${TARGET}
     PUBLIC
-        MethaneDataTypes
+        MethaneDataPrimitives
         MethaneGraphicsApp
         MethaneGraphicsCore
         MethaneGraphicsHelpers

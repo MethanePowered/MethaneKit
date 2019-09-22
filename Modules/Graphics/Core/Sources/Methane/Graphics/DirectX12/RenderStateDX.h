@@ -29,9 +29,7 @@ DirectX 12 implementation of the render state interface.
 #include <d3d12.h>
 #include <d3dx12.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 namespace wrl = Microsoft::WRL;
@@ -69,5 +67,4 @@ protected:
     std::vector<CD3DX12_RECT>          m_scissor_rects;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

@@ -34,9 +34,7 @@ pipeline via state object and used to create resource binding objects.
 
 //#define PROGRAM_IGNORE_MISSING_ARGUMENTS
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 struct Context;
@@ -121,5 +119,4 @@ struct Program
     virtual ~Program() = default;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

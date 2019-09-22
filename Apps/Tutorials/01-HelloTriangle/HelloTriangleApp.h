@@ -28,9 +28,7 @@ Tutorial demonstrating triangle rendering with Methane graphics API
 #include <string>
 #include <array>
 
-namespace Methane
-{
-namespace Tutorials
+namespace Methane::Tutorials
 {
 
 namespace gfx = Methane::Graphics;
@@ -48,12 +46,12 @@ class HelloTriangleApp final : public GraphicsApp
 {
 public:
     HelloTriangleApp();
-    virtual ~HelloTriangleApp() override;
+    ~HelloTriangleApp() override;
 
     // App interface
-    virtual void Init() override;
-    virtual bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
-    virtual void Render() override;
+    void Init() override;
+    bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
+    void Render() override;
 
     // Context::Callback interface
     void OnContextReleased() override;
@@ -73,5 +71,4 @@ private:
     gfx::Buffer::Ptr        m_sp_vertex_buffer;
 };
 
-} // namespace Tutorials
-} // namespace Methane
+} // namespace Methane::Tutorials

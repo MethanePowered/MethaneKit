@@ -25,14 +25,12 @@ Tutorial demonstrating triangle rendering with Methane graphics API
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Tutorials
+namespace Methane::Tutorials
 {
 
-static const gfx::Shader::EntryTarget g_vs_main   = { "VSMain", "vs_5_1" };
-static const gfx::Shader::EntryTarget g_ps_main   = { "PSMain", "ps_5_1" };
-static const GraphicsApp::Settings g_app_settings = // Application settings:
+static const gfx::Shader::EntryFunction g_vs_main      = { "Triangle", "TriangleVS" };
+static const gfx::Shader::EntryFunction g_ps_main      = { "Triangle", "TrianglePS" };
+static const GraphicsApp::Settings      g_app_settings = // Application settings:
 {                                                   // ====================
     {                                               // app:
         "Methane Hello Triangle",                   // - name
@@ -76,8 +74,8 @@ void HelloTriangleApp::Init()
     // Create triangle shading program
     m_sp_program = gfx::Program::Create(*m_sp_context, {
         { // shaders
-            gfx::Shader::CreateVertex(*m_sp_context, { g_vs_main }),
-            gfx::Shader::CreatePixel( *m_sp_context, { g_ps_main }),
+            gfx::Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), g_vs_main }),
+            gfx::Shader::CreatePixel( *m_sp_context, { Data::ShaderProvider::Get(), g_ps_main }),
         },
         { // input_buffer_layouts
             { // single vertex buffer layout with interleaved data
@@ -108,7 +106,7 @@ void HelloTriangleApp::Init()
     
     m_sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(*m_sp_context, vertex_data_size, vertex_size);
     m_sp_vertex_buffer->SetName("Triangle Vertex Buffer");
-    m_sp_vertex_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(m_triangle_vertices.data()), vertex_data_size);
+    m_sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_triangle_vertices.data()), vertex_data_size } });
 
     // Create render state
     m_sp_state = gfx::RenderState::Create(*m_sp_context, {
@@ -172,8 +170,7 @@ void HelloTriangleApp::OnContextReleased()
     GraphicsApp::OnContextReleased();
 }
 
-} // namespace Tutorials
-} // namespace Methane
+} // namespace Methane::Tutorials
 
 int main(int argc, const char* argv[])
 {

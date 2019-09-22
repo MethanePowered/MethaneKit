@@ -36,9 +36,7 @@ Methane platform utilitary functions
 #include <string>
 #include <vector>
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 
 void PrintToDebugOutput(const std::string& msg);
@@ -47,5 +45,4 @@ std::string GetExecutableFileName();
 std::string GetResourceDir();
 
 
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

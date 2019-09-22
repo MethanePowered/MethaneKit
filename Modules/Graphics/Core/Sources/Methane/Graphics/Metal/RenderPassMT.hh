@@ -27,9 +27,7 @@ Metal implementation of the render pass interface.
 
 #import <Metal/Metal.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ContextMT;
@@ -44,7 +42,7 @@ public:
     
     void Reset();
     
-    MTLRenderPassDescriptor* GetNativeDescriptor() { return m_mtl_pass_descriptor; }
+    MTLRenderPassDescriptor* GetNativeDescriptor(bool reset);
 
 protected:
     ContextMT& GetContextMT() noexcept;
@@ -52,5 +50,4 @@ protected:
     MTLRenderPassDescriptor* m_mtl_pass_descriptor;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

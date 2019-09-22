@@ -32,9 +32,9 @@ Procedural mesh generators, including rect, box, etc.
 #include <algorithm>
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+#include <cml/mathlib/mathlib.h>
+
+namespace Methane::Graphics
 {
 
 class Mesh
@@ -51,6 +51,7 @@ public:
     {
         Rect,
         Box,
+        Sphere
     };
 
     enum class VertexField : size_t
@@ -249,6 +250,150 @@ protected:
 
     const float m_depth;
 };
+    
+template<typename VType>
+class SphereMesh : public BaseMesh<VType>
+{
+public:
+    using BaseMesh = BaseMesh<VType>;
+    
+    SphereMesh(const Mesh::VertexLayout& vertex_layout, float radius = 1.f, uint32_t lat_lines_count = 10, uint32_t long_lines_count = 16)
+        : BaseMesh(Mesh::Type::Sphere, vertex_layout)
+        , m_radius(radius)
+    {
+        ITT_FUNCTION_TASK();
 
-} // namespace Graphics
-} // namespace Methane
+        if (Mesh::HasVertexField(Mesh::VertexField::Color))
+        {
+            throw std::invalid_argument("Colored vertices are not supported for sphere mesh.");
+        }
+        if (Mesh::HasVertexField(Mesh::VertexField::TexCoord))
+        {
+            throw std::invalid_argument("Textured vertices are not supported for sphere mesh.");
+        }
+        if (lat_lines_count < 3)
+        {
+            throw std::invalid_argument("Lattitude lines count should not be less than 3.");
+        }
+        if (long_lines_count < 3)
+        {
+            throw std::invalid_argument("Longitude lines count should not be less than 3.");
+        }
+        
+        // Generate sphere vertices
+        
+        BaseMesh::m_vertices.resize((lat_lines_count - 2) * long_lines_count + 2, {});
+        
+        Mesh::Position& first_vertex_position = BaseMesh::template GetVertexField<Mesh::Position>(BaseMesh::m_vertices.front(), Mesh::VertexField::Position);
+        Mesh::Position& last_vertex_position = BaseMesh::template GetVertexField<Mesh::Position>(BaseMesh::m_vertices.back(), Mesh::VertexField::Position);
+        
+        first_vertex_position = Mesh::Position(0.f, m_radius, 0.f);
+        last_vertex_position  = Mesh::Position(0.f, -m_radius, 0.f);
+        
+        if (Mesh::HasVertexField(Mesh::VertexField::Normal))
+        {
+            Mesh::Position& first_vertex_normal = BaseMesh::template GetVertexField<Mesh::Normal>(BaseMesh::m_vertices.front(), Mesh::VertexField::Normal);
+            Mesh::Position& last_vertex_normal = BaseMesh::template GetVertexField<Mesh::Normal>(BaseMesh::m_vertices.back(), Mesh::VertexField::Normal);
+        
+            first_vertex_normal = Mesh::Position(0.f,  1.f, 0.f);
+            last_vertex_normal  = Mesh::Position(0.f, -1.f, 0.f);
+        }
+        
+        cml::matrix33f pitch_step_matrix = { }, yaw_step_matrix = { };
+        cml::matrix_rotation_world_x(pitch_step_matrix, cml::constants<float>::pi() / (lat_lines_count - 1));
+        cml::matrix_rotation_world_y(yaw_step_matrix, 2.0 * cml::constants<float>::pi() / long_lines_count);
+        
+        cml::matrix33f pitch_matrix = cml::identity_3x3(), yaw_matrix = cml::identity_3x3();
+        for (uint32_t lat_line_index = 1; lat_line_index < lat_lines_count - 1; ++lat_line_index)
+        {
+            pitch_matrix = pitch_matrix * pitch_step_matrix;
+            
+            for(uint32_t long_line_index = 0; long_line_index < long_lines_count; ++long_line_index)
+            {
+                const cml::matrix33f rotation_matrix = pitch_matrix * yaw_matrix;
+                const uint32_t  vertex_index = (lat_line_index - 1) * long_lines_count + long_line_index + 1;
+                
+                VType& vertex = BaseMesh::m_vertices[vertex_index];
+                {
+                    Mesh::Position& vertex_position = BaseMesh::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
+                    vertex_position = Mesh::Position(0.f, m_radius, 0.f) * rotation_matrix;
+                }
+                if (Mesh::HasVertexField(Mesh::VertexField::Normal))
+                {
+                    Mesh::Normal& vertex_normal = BaseMesh::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
+                    vertex_normal = Mesh::Normal(0.f, 1.f, 0.f) * rotation_matrix;
+                }
+                
+                yaw_matrix = yaw_matrix * yaw_step_matrix;
+            }
+        }
+        
+        // Generate sphere indices
+        
+        const uint32_t sphere_faces_count = (lat_lines_count - 2) * long_lines_count * 2;
+        BaseMesh::m_indices.resize(sphere_faces_count * 3, 0);
+        
+        uint32_t index_offset = 0;
+        for(Mesh::Index long_line_index = 0; long_line_index < long_lines_count - 1; ++long_line_index)
+        {
+            BaseMesh::m_indices[index_offset]     = 0;
+            BaseMesh::m_indices[index_offset + 1] = long_line_index + 2;
+            BaseMesh::m_indices[index_offset + 2] = long_line_index + 1;
+            index_offset += 3;
+        }
+
+        BaseMesh::m_indices[index_offset]     = 0;
+        BaseMesh::m_indices[index_offset + 1] = 1;
+        BaseMesh::m_indices[index_offset + 2] = long_lines_count;
+        
+        index_offset += 3;
+
+        const uint32_t vertices_count = static_cast<uint32_t>(BaseMesh::m_vertices.size());
+        for (uint32_t lat_line_index = 0; lat_line_index < lat_lines_count - 3; ++lat_line_index)
+        {
+            for(uint32_t long_line_index = 0; long_line_index < long_lines_count - 1; ++long_line_index)
+            {
+                BaseMesh::m_indices[index_offset]     = lat_line_index * long_lines_count + long_line_index + 1;
+                BaseMesh::m_indices[index_offset + 1] = lat_line_index * long_lines_count + long_line_index + 2;
+                BaseMesh::m_indices[index_offset + 2] = (lat_line_index + 1) * long_lines_count + long_line_index + 1;
+
+                BaseMesh::m_indices[index_offset + 3] = (lat_line_index + 1) * long_lines_count + long_line_index + 1;
+                BaseMesh::m_indices[index_offset + 4] = lat_line_index * long_lines_count + long_line_index + 2;
+                BaseMesh::m_indices[index_offset + 5] = (lat_line_index + 1) * long_lines_count + long_line_index + 2;
+
+                index_offset += 6;
+            }
+
+            BaseMesh::m_indices[index_offset]     = (lat_line_index * long_lines_count) + long_lines_count;
+            BaseMesh::m_indices[index_offset + 1] = (lat_line_index * long_lines_count) + 1;
+            BaseMesh::m_indices[index_offset + 2] = ((lat_line_index + 1) * long_lines_count) + long_lines_count;
+
+            BaseMesh::m_indices[index_offset + 3] = ((lat_line_index + 1) * long_lines_count) + long_lines_count;
+            BaseMesh::m_indices[index_offset + 4] = (lat_line_index * long_lines_count) + 1;
+            BaseMesh::m_indices[index_offset + 5] = ((lat_line_index + 1) * long_lines_count) + 1;
+
+            index_offset += 6;
+        }
+
+        for(uint32_t long_line_index = 0; long_line_index < long_lines_count - 1; ++long_line_index)
+        {
+            BaseMesh::m_indices[index_offset]     = (vertices_count - 1);
+            BaseMesh::m_indices[index_offset + 1] = (vertices_count - 1) - (long_line_index + 2);
+            BaseMesh::m_indices[index_offset + 2] = (vertices_count - 1) - (long_line_index + 1);
+
+            index_offset += 3;
+        }
+
+        BaseMesh::m_indices[index_offset]     = (vertices_count - 1);
+        BaseMesh::m_indices[index_offset + 1] = (vertices_count - 2);
+        BaseMesh::m_indices[index_offset + 2] = (vertices_count - 1) - long_lines_count;
+    }
+    
+    const float GetRadius() const noexcept  { return m_radius; }
+    
+protected:
+    const float m_radius;
+};
+
+
+} // namespace Methane::Graphics

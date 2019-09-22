@@ -26,9 +26,7 @@ Methane primitive graphics types.
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 ScissorRect GetFrameScissorRect(const FrameSize& frame_size)
@@ -70,5 +68,4 @@ uint32_t GetPixelSize(PixelFormat data_format) noexcept
     return 0;
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

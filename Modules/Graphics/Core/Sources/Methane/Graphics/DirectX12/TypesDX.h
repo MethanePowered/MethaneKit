@@ -30,9 +30,7 @@ Methane graphics types convertors to DirectX 12 native types.
 
 #include <vector>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class TypeConverterDX
@@ -58,5 +56,4 @@ private:
     TypeConverterDX() = default;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

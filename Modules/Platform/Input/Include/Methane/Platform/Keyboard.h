@@ -37,11 +37,7 @@ Platform abstraction of keyboard events.
 #include <set>
 #include <string>
 
-namespace Methane
-{
-namespace Platform
-{
-namespace Keyboard
+namespace Methane::Platform::Keyboard
 {
 
 enum class Key : uint32_t
@@ -254,6 +250,4 @@ struct StateChange
     const State::Property::Mask changed_properties;
 };
 
-} // namespace Keyboard
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform::Keyboard

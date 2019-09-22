@@ -32,9 +32,7 @@ Base implementation of the command list interface.
 #include <map>
 #include <mutex>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class CommandQueueBase;
@@ -84,7 +82,7 @@ protected:
     uint32_t GetCurrentFrameIndex() const;
 
     CommandQueue::Ptr m_sp_command_queue;
-    bool              m_pop_debug_group_on_commit = false;
+    bool              m_debug_group_opened = false;
 
 private:
     static std::string GetStateName(State state);
@@ -97,5 +95,4 @@ private:
     mutable std::mutex  m_state_mutex;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

@@ -26,9 +26,7 @@ Methane render command list interface.
 #include "CommandList.h"
 #include "Buffer.h"
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 struct RenderState;
@@ -57,5 +55,4 @@ struct RenderCommandList : virtual CommandList
     virtual void Draw(Primitive primitive, uint32_t vertex_count, uint32_t instance_count) = 0;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

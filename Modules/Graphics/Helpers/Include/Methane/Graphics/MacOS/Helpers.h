@@ -25,10 +25,7 @@ MacOS platform graphics helpers.
 
 #import <simd/simd.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

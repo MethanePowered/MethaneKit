@@ -1,7 +1,7 @@
 include(CTest)
 include(ParseAndAddCatchTests)
 
-set(TARGET MethaneRangeSetTest)
+set(TARGET MethaneDataRangeSetTest)
 
 add_executable(${TARGET}
     Main.cpp
@@ -10,7 +10,7 @@ add_executable(${TARGET}
 )
 
 target_link_libraries(${TARGET}
-    MethaneRangeSet
+    MethaneDataRangeSet
     Catch
 )
 

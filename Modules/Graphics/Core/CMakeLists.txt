@@ -1,6 +1,6 @@
 set(TARGET MethaneGraphicsCore)
 
-include(Methane)
+include(MethaneModules)
 
 get_module_dirs("Methane/Graphics")
 
@@ -97,8 +97,8 @@ elseif(APPLE)
 endif()
 
 set(LIBRARIES ${PLATFORM_LIBRARIES}
-    MethaneDataTypes
-    MethaneRangeSet
+    MethaneDataPrimitives
+    MethaneDataRangeSet
     MethanePlatformUtils
     MethanePlatformAppView
     MethaneGraphicsHelpers

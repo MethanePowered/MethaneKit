@@ -34,9 +34,7 @@ Base implementation of the command queue interface.
 
 //#define COMMAND_EXECUTION_LOGGING
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ContextBase;
@@ -73,5 +71,4 @@ protected:
     mutable std::mutex  m_executing_mutex;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

@@ -17,43 +17,33 @@ limitations under the License.
 *******************************************************************************
 
 FILE: AsteroidsApp.h
-Sample demonstrating parallel redering of the distinct asteroids massive
+Sample demonstrating parallel rendering of the distinct asteroids massive
 
 ******************************************************************************/
 
 #pragma once
 
 #include <Methane/Kit.h>
-#include <Methane/Graphics/Mesh.h>
 
-namespace Methane
-{
-namespace Samples
+namespace Methane::Samples
 {
 
-namespace gfx = Methane::Graphics;
-namespace pal = Methane::Platform;
+namespace gfx = Graphics;
+namespace pal = Platform;
 
 struct AsteroidsFrame final : gfx::AppFrame
 {
-    struct PassResources
+    struct MeshBufferBindings
     {
-        struct MeshResources
-        {
-            gfx::Buffer::Ptr                    sp_uniforms_buffer;
-            gfx::Program::ResourceBindings::Ptr sp_resource_bindings;
-        };
-
-        MeshResources               cube;
-        MeshResources               floor;
-        gfx::Texture::Ptr           sp_rt_texture;
-        gfx::RenderPass::Ptr        sp_pass;
-        gfx::RenderCommandList::Ptr sp_cmd_list;
+        gfx::Buffer::Ptr                    sp_uniforms_buffer;
+        gfx::Program::ResourceBindings::Ptr sp_resource_bindings;
     };
 
-    PassResources    shadow_pass;
-    PassResources    final_pass;
-    gfx::Buffer::Ptr sp_scene_uniforms_buffer;
+    gfx::RenderCommandList::Ptr  sp_cmd_list;
+    gfx::Buffer::Ptr             sp_scene_uniforms_buffer;
+    MeshBufferBindings           skybox;
+    MeshBufferBindings           cube;
+
 
     using gfx::AppFrame::AppFrame;
 };
@@ -63,7 +53,7 @@ class AsteroidsApp final : public GraphicsApp
 {
 public:
     AsteroidsApp();
-    virtual ~AsteroidsApp() override;
+    ~AsteroidsApp() override;
 
     // NativeApp
     void Init() override;
@@ -107,52 +97,22 @@ private:
     {
         SHADER_FIELD_ALIGN gfx::Matrix44f model_matrix;
         SHADER_FIELD_ALIGN gfx::Matrix44f mvp_matrix;
-        SHADER_FIELD_ALIGN gfx::Matrix44f shadow_mvpx_matrix;
     };
-
-    struct MeshBuffers
-    {
-        gfx::Buffer::Ptr sp_vertex;
-        gfx::Buffer::Ptr sp_index;
-        MeshUniforms     shadow_pass_uniforms = { };
-        MeshUniforms     final_pass_uniforms  = { };
-
-        template<typename VType>
-        void Init(const gfx::BaseMesh<VType>& mesh_data, gfx::Context& context, const std::string& base_name);
-        void Release();
-    };
-
-    struct RenderPass
-    {
-        gfx::Program::Ptr       sp_program;
-        gfx::RenderState::Ptr   sp_state;
-        std::string             command_group_name;
-        bool                    is_final_pass = false;
-
-        void Release();
-    };
-
-    void RenderScene(const RenderPass& render_pass, AsteroidsFrame::PassResources& render_pass_data, gfx::Texture& shadow_texture, bool is_shadow_rendering);
+    
+    using TexturedMeshBuffers = gfx::TexturedMeshBuffers<MeshUniforms>;
 
     const gfx::BoxMesh<Vertex>  m_cube_mesh;
-    const gfx::RectMesh<Vertex> m_floor_mesh;
     const float                 m_scene_scale;
     const Constants             m_scene_constants;
-
     gfx::ActionCamera           m_view_camera;
     gfx::ActionCamera           m_light_camera;
-    gfx::Buffer::Ptr            m_sp_const_buffer;
-    gfx::Texture::Ptr           m_sp_cube_texture;
-    gfx::Texture::Ptr           m_sp_floor_texture;
-    gfx::Sampler::Ptr           m_sp_texture_sampler;
-    gfx::Sampler::Ptr           m_sp_shadow_sampler;
 
     SceneUniforms               m_scene_uniforms = { };
-    MeshBuffers                 m_cube_buffers;
-    MeshBuffers                 m_floor_buffers;
-    RenderPass                  m_shadow_pass;
-    RenderPass                  m_final_pass;
+    gfx::SkyBox::Ptr            m_sp_sky_box;
+    TexturedMeshBuffers::Ptr    m_sp_cube_buffers;
+    gfx::RenderState::Ptr       m_sp_state;
+    gfx::Buffer::Ptr            m_sp_const_buffer;
+    gfx::Sampler::Ptr           m_sp_texture_sampler;
 };
 
-} // namespace Samples
-} // namespace Methane
+} // namespace Methane::Samples

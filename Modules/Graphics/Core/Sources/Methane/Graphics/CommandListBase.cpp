@@ -33,9 +33,7 @@ Base implementation of the command list interface.
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 std::string CommandListBase::GetStateName(State state)
@@ -73,10 +71,10 @@ void CommandListBase::Commit(bool /*present_drawable*/)
     m_committed_frame_index = GetCurrentFrameIndex();
     m_state = State::Committed;
 
-    if (m_pop_debug_group_on_commit)
+    if (m_debug_group_opened)
     {
         PopDebugGroup();
-        m_pop_debug_group_on_commit = false;
+        m_debug_group_opened = false;
     }
 
     // Keep command list from destruction until it's execution is completed
@@ -204,5 +202,4 @@ const CommandQueueBase& CommandListBase::GetCommandQueueBase() const
     return static_cast<const CommandQueueBase&>(*m_sp_command_queue);
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

@@ -28,9 +28,7 @@ DirectX 12 implementation of the buffer interface.
 
 #include <Methane/Instrumentation.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 Buffer::Ptr Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
@@ -99,5 +97,4 @@ void ConstantBufferDX::InitializeView()
     GetContextDX().GetDeviceDX().GetNativeDevice()->CreateConstantBufferView(&m_buffer_view, cpu_handle);
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

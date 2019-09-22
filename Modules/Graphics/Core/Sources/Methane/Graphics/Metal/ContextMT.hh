@@ -29,9 +29,10 @@ Metal implementation of the context interface.
 
 #import <Metal/Metal.h>
 
-namespace Methane
-{
-namespace Graphics
+#include <string>
+#include <map>
+
+namespace Methane::Graphics
 {
 
 struct CommandQueue;
@@ -41,7 +42,24 @@ class DeviceMT;
 class ContextMT : public ContextBase
 {
 public:
-    ContextMT(const Platform::AppEnvironment& env, const Data::Provider& data_provider, DeviceBase& device, const Settings& settings);
+    class LibraryMT
+    {
+    public:
+        using Ptr = std::shared_ptr<LibraryMT>;
+
+        LibraryMT(ContextMT& metal_context, const std::string& library_name = "");
+        ~LibraryMT();
+
+        id<MTLLibrary>& Get() noexcept { return m_mtl_library; }
+
+    private:
+        static NSString* GetFullPath(const std::string& library_name);
+
+        NSError*       m_ns_error = nil;
+        id<MTLLibrary> m_mtl_library;
+    };
+
+    ContextMT(const Platform::AppEnvironment& env, DeviceBase& device, const Settings& settings);
     ~ContextMT() override;
 
     // Context interface
@@ -51,19 +69,23 @@ public:
     void Resize(const FrameSize& frame_size) override;
     void Present() override;
     bool SetVSyncEnabled(bool vsync_enabled) override;
+    bool SetFrameBuffersCount(uint32_t frame_buffers_count) override;
     Platform::AppView GetAppView() const override { return { m_app_view }; }
 
-    id<CAMetalDrawable>      GetNativeDrawable()       { return m_app_view.currentDrawable; }
-    DeviceMT&                GetDeviceMT();
+    id<CAMetalDrawable>     GetNativeDrawable()       { return m_app_view.currentDrawable; }
+    DeviceMT&               GetDeviceMT();
+    const LibraryMT::Ptr&   GetLibraryMT(const std::string& library_name = "");
 
 protected:
     // ContextBase overrides
     void Release() override;
     void Initialize(Device& device, bool deferred_heap_allocation) override;
+
+    using LibraryByName = std::map<std::string, LibraryMT::Ptr>;
     
     AppViewMT*              m_app_view;
     dispatch_semaphore_t    m_dispatch_semaphore;
+    LibraryByName           m_library_by_name;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

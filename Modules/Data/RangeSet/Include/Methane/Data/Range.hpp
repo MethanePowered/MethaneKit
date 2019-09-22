@@ -33,9 +33,7 @@ till end (exclusively): [start, end)
 
 #include <Methane/Instrumentation.h>
 
-namespace Methane
-{
-namespace Data
+namespace Methane::Data
 {
 
 template<typename ScalarT>
@@ -125,5 +123,4 @@ protected:
     ScalarT m_end;
 };
 
-} // namespace Data
-} // namespace Methane
+} // namespace Methane::Data

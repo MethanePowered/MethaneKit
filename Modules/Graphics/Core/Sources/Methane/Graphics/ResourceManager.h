@@ -30,9 +30,7 @@ and deferred releasing of GPU resource.
 
 #include <array>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ContextBase;
@@ -78,5 +76,4 @@ protected:
     ProgramResourceBindings         m_deferred_resource_bindings;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

@@ -41,9 +41,7 @@ DirectX 12 implementation of the render command list interface.
 #include <nowide/convert.hpp>
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primitive primitive) noexcept
@@ -92,18 +90,25 @@ void RenderCommandListDX::Reset(RenderState& render_state, const std::string& de
         m_is_committed = false;
         ThrowIfFailed(m_cp_command_allocator->Reset());
         ThrowIfFailed(m_cp_command_list->Reset(m_cp_command_allocator.Get(), dx_state.GetNativePipelineState().Get()));
+        m_is_pass_applied = false;
     }
 
     RenderCommandListBase::Reset(render_state, debug_group);
 
     // Set render target transition barriers and apply pass
-    RenderPassDX& pass_dx = GetPassDX();
-    m_present_resources = pass_dx.GetColorAttachmentResources();
-    if (!m_present_resources.empty())
+    if (!m_is_pass_applied)
     {
-        SetResourceTransitionBarriers(m_present_resources, ResourceBase::State::Present, ResourceBase::State::RenderTarget);
+        RenderPassDX& pass_dx = GetPassDX();
+        m_present_resources = pass_dx.GetColorAttachmentResources();
+
+        if (!m_present_resources.empty())
+        {
+            SetResourceTransitionBarriers(m_present_resources, ResourceBase::State::Present, ResourceBase::State::RenderTarget);
+        }
+
+        pass_dx.Apply(*this);
+        m_is_pass_applied = true;
     }
-    pass_dx.Apply(*this);
 }
 
 void RenderCommandListDX::SetName(const std::string& name)
@@ -242,5 +247,4 @@ void RenderCommandListDX::Execute(uint32_t frame_index)
     Complete(frame_index);
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

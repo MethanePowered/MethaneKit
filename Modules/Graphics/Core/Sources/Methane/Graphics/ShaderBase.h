@@ -27,9 +27,7 @@ Base implementation of the shader interface.
 
 #include "DescriptorHeap.h"
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ContextBase;
@@ -98,5 +96,4 @@ protected:
 
 using Shaders = std::vector<Shader::Ptr>;
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

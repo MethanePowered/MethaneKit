@@ -27,9 +27,7 @@ Methane graphics interface: graphics texture.
 
 #include <string>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 struct Texture : virtual Resource
@@ -58,15 +56,17 @@ struct Texture : virtual Resource
 
     struct Settings
     {
-        Type           type;
-        DimensionType  dimension_type;
-        Usage::Mask    usage_mask;
-        PixelFormat    pixel_format;
-        Dimensions     dimensions;
-        bool           mipmapped;
-        bool           cpu_accessible;
+        Type           type                 = Type::Texture;
+        DimensionType  dimension_type       = DimensionType::Tex2D;
+        Usage::Mask    usage_mask           = Usage::Value::Unknown;
+        PixelFormat    pixel_format         = PixelFormat::Unknown;
+        Dimensions     dimensions           = Dimensions();
+        uint32_t       array_length         = 1;
+        bool           mipmapped            = false;
+        bool           cpu_accessible       = true;
 
-        static Settings Image(const Dimensions& dimensions, PixelFormat pixel_format, bool mipmapped, Usage::Mask usage = Usage::Unknown);
+        static Settings Image(const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage::Mask usage);
+        static Settings Cube(uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage::Mask usage);
         static Settings FrameBuffer(const Dimensions& dimensions, PixelFormat pixel_format);
         static Settings DepthStencilBuffer(const Dimensions& dimensions, PixelFormat pixel_format, Usage::Mask usage_mask = Usage::RenderTarget);
     };
@@ -75,11 +75,13 @@ struct Texture : virtual Resource
     static Ptr CreateRenderTarget(Context& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
     static Ptr CreateFrameBuffer(Context& context, uint32_t frame_buffer_index, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
     static Ptr CreateDepthStencilBuffer(Context& context, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    static Ptr CreateImage(Context& context, Dimensions dimensions, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    static Ptr CreateImage(Context& context, Dimensions dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped,
+                           const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    static Ptr CreateCube(Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped,
+                           const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
     // Texture interface
     virtual const Settings& GetSettings() const = 0;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

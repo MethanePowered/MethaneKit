@@ -43,9 +43,7 @@ DirectX 12 implementation of the program interface.
 #include <cassert>
 #include <iomanip>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_SHADER_INPUT_TYPE input_type) noexcept
@@ -374,5 +372,4 @@ D3D12_INPUT_LAYOUT_DESC ProgramDX::GetNativeInputLayoutDesc() const noexcept
     };
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

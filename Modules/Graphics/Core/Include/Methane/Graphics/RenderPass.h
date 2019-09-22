@@ -29,9 +29,7 @@ Methane render pass interface: specifies output of the graphics pipeline.
 #include <memory>
 #include <vector>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 struct Context;
@@ -138,5 +136,4 @@ struct RenderPass
     virtual ~RenderPass() = default;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

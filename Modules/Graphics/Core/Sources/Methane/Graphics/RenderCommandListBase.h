@@ -30,9 +30,7 @@ Base implementation of the render command list interface.
 #include "CommandListBase.h"
 #include "RenderPassBase.h"
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 struct RenderState;
@@ -58,5 +56,4 @@ protected:
     const RenderPass::Ptr m_sp_pass;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

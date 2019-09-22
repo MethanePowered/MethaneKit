@@ -30,11 +30,7 @@ Platform abstraction of mouse events.
 #include <string>
 #include <sstream>
 
-namespace Methane
-{
-namespace Platform
-{
-namespace Mouse
+namespace Methane::Platform::Mouse
 {
 
 enum class Button : uint32_t
@@ -169,6 +165,4 @@ struct StateChange
     const State::Property::Mask changed_properties;
 };
 
-} // namespace Mouse
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform::Mouse

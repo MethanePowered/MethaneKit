@@ -24,7 +24,6 @@ DirectX 12 implementation of the context interface.
 #pragma once
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Graphics/CommandQueueBase.h>
 
 #include <wrl.h>
 #include <dxgi1_4.h>
@@ -33,9 +32,7 @@ DirectX 12 implementation of the context interface.
 
 #include <vector>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 namespace wrl = Microsoft::WRL;
@@ -48,7 +45,7 @@ class DeviceDX;
 class ContextDX final : public ContextBase
 {
 public:
-    ContextDX(const Platform::AppEnvironment& env, const Data::Provider& data_provider, DeviceBase& device, const Settings& settings);
+    ContextDX(const Platform::AppEnvironment& env, DeviceBase& device, const Settings& settings);
     ~ContextDX() override;
 
     // Context interface
@@ -110,5 +107,4 @@ protected:
     FenceDX::Ptr                   m_sp_upload_fence;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

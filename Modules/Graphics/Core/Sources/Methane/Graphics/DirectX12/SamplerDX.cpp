@@ -30,9 +30,7 @@ DirectX 12 implementation of the sampler interface.
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 D3D12_FILTER ConvertFilterToDX(const SamplerBase::Filter& filter) noexcept
@@ -201,5 +199,4 @@ SamplerDX::SamplerDX(ContextBase& context, const Settings& settings, const Descr
     GetContextDX().GetDeviceDX().GetNativeDevice()->CreateSampler(&dx_sampler_desc, GetNativeCPUDescriptorHandle(Usage::ShaderRead));
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

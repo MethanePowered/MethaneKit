@@ -28,9 +28,7 @@ Base implementation of the shader interface.
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 std::string Shader::GetTypeName(Type shader_type) noexcept
@@ -83,7 +81,7 @@ std::string ShaderBase::GetCompiledEntryFunctionName() const
 {
     ITT_FUNCTION_TASK();
     std::stringstream entry_func_steam;
-    entry_func_steam << m_settings.entry_target.function_name;
+    entry_func_steam << m_settings.entry_function.file_name << "_" << m_settings.entry_function.function_name;
     for (const auto& define_and_value : m_settings.compile_definitions)
     {
         entry_func_steam << "_" << define_and_value.first << define_and_value.second;
@@ -91,5 +89,4 @@ std::string ShaderBase::GetCompiledEntryFunctionName() const
     return entry_func_steam.str();
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

@@ -29,30 +29,42 @@ Base implementation of the buffer interface.
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 BufferBase::BufferBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : ResourceNT(Resource::Type::Buffer, settings.usage_mask, context, descriptor_by_usage)
     , m_settings(settings)
 {
+    if (!m_settings.size)
+    {
+        throw std::invalid_argument("Can not create buffer of zero size.");
+    }
     ITT_FUNCTION_TASK();
 }
 
-void BufferBase::SetData(Data::ConstRawPtr p_data, Data::Size data_size)
+void BufferBase::SetData(const SubResources& sub_resources)
 {
     ITT_FUNCTION_TASK();
 
-    if (!p_data || !data_size)
+    if (sub_resources.empty())
     {
-        throw std::invalid_argument("Can not set empty data to buffer.");
+        throw std::invalid_argument("Can not set buffer data from empty sub-resources.");
+    }
+
+    uint32_t data_size = 0;
+    for(const SubResource& sub_resource : sub_resources)
+    {
+        if (!sub_resource.p_data || !sub_resource.data_size)
+        {
+            throw std::invalid_argument("Can not set empty subresource data to buffer.");
+        }
+        data_size += sub_resource.data_size;
     }
 
     if (data_size > m_settings.size)
     {
-        throw std::runtime_error("Can not set more data (" + std::to_string(data_size) + 
+        throw std::runtime_error("Can not set more data (" + std::to_string(data_size) +
                                  ") than allocated buffer size (" + std::to_string(m_settings.size) + ").");
     }
 }
@@ -71,5 +83,4 @@ std::string Buffer::GetBufferTypeName(Type type) noexcept
     return "Unknown";
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

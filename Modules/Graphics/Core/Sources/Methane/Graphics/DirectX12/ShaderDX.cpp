@@ -34,14 +34,12 @@ DirectX 12 implementation of the shader interface.
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
-#include <Methane/Platform/Windows/Utils.h>
+#include <Methane/Data/Provider.h>
 
 #include <sstream>
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type) noexcept
@@ -296,8 +294,8 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
             nowide::widen(m_settings.source_file_path).c_str(),
             macro_definitions.data(),
             D3D_COMPILE_STANDARD_FILE_INCLUDE,
-            m_settings.entry_target.function_name.c_str(),
-            m_settings.entry_target.compile_target.c_str(),
+            m_settings.entry_function.function_name.c_str(),
+            m_settings.source_compile_target.c_str(),
             shader_compile_flags,
             0,
             &m_cp_byte_code,
@@ -307,7 +305,7 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
     else
     {
         const std::string compiled_func_name = GetCompiledEntryFunctionName();
-        const Data::Chunk   compiled_func_data = m_context.GetDataProvider().GetData(Data::Provider::Type::Shader, compiled_func_name + ".obj");
+        const Data::Chunk compiled_func_data = m_settings.data_provider.GetData(compiled_func_name + ".obj");
 
         ThrowIfFailed(D3DCreateBlob(compiled_func_data.size, &m_cp_byte_code));
         Data::RawPtr p_cp_byte_code_data = static_cast<Data::RawPtr>(m_cp_byte_code->GetBufferPointer());
@@ -456,5 +454,4 @@ ContextDX& ShaderDX::GetContextDX()
     return static_cast<class ContextDX&>(m_context);
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

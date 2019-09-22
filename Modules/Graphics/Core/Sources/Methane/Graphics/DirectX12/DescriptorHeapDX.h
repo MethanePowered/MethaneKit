@@ -28,9 +28,7 @@ DirectX 12 implementation of the descriptor heap wrapper.
 #include <wrl.h>
 #include <d3d12.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 namespace wrl = Microsoft::WRL;
@@ -59,5 +57,4 @@ protected:
     wrl::ComPtr<ID3D12DescriptorHeap> m_cp_descriptor_heap;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

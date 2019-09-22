@@ -27,9 +27,7 @@ Metal implementation of the buffer interface.
 
 #import <Metal/Metal.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class BufferMT : public BufferBase
@@ -42,7 +40,7 @@ public:
     ~BufferMT() override;
 
     // Resource interface
-    void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override;
+    void SetData(const SubResources& sub_resources) override;
     
     // Buffer interface
     uint32_t GetFormattedItemsCount() const override;
@@ -59,5 +57,4 @@ protected:
     PixelFormat   m_format = PixelFormat::Unknown;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

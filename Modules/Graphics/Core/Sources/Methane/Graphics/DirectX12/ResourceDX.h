@@ -28,9 +28,7 @@ DirectX 12 implementation of the resource interface.
 #include <wrl.h>
 #include <d3d12.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 namespace wrl = Microsoft::WRL;
@@ -81,5 +79,4 @@ protected:
     wrl::ComPtr<ID3D12Resource> m_cp_resource;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

@@ -30,9 +30,7 @@ Methane render state interface: specifies configuration of the graphics pipeline
 #include <memory>
 #include <string>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 struct Context;
@@ -125,5 +123,4 @@ public:
     virtual ~RenderState() = default;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

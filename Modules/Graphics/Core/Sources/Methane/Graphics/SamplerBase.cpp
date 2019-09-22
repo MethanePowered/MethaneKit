@@ -25,9 +25,7 @@ Base implementation of the sampler interface.
 
 #include <Methane/Instrumentation.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 SamplerBase::SamplerBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
@@ -38,5 +36,10 @@ SamplerBase::SamplerBase(ContextBase& context, const Settings& settings, const D
     ITT_FUNCTION_TASK();
 }
 
-} // namespace Graphics
-} // namespace Methane
+void SamplerBase::SetData(const SubResources&)
+{
+    ITT_FUNCTION_TASK();
+    throw std::logic_error("Samplers do not support setting the data.");
+}
+
+} // namespace Methane::Graphics

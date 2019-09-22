@@ -36,9 +36,7 @@ Metal implementation of the render state interface.
 
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 MTLCullMode ConvertRasterizerCullModeToMetal(RenderState::Rasterizer::CullMode cull_mode) noexcept
@@ -178,7 +176,7 @@ void RenderStateMT::Reset(const Settings& settings)
     // Depth-stencil state
     m_mtl_depth_stencil_state_desc                      = [[MTLDepthStencilDescriptor alloc] init];
     m_mtl_depth_stencil_state_desc.depthWriteEnabled    = m_settings.depth.enabled ? YES : NO;
-    m_mtl_depth_stencil_state_desc.depthCompareFunction = m_settings.depth.enabled ? TypeConverterMT::CompareFunctionToMetal(m_settings.depth.compare) : MTLCompareFunctionNever;
+    m_mtl_depth_stencil_state_desc.depthCompareFunction = TypeConverterMT::CompareFunctionToMetal(m_settings.depth.compare);
     m_mtl_depth_stencil_state_desc.backFaceStencil      = ConvertStencilDescriptorToMetal(m_settings.stencil, false);
     m_mtl_depth_stencil_state_desc.frontFaceStencil     = ConvertStencilDescriptorToMetal(m_settings.stencil, true);
     
@@ -321,5 +319,4 @@ ContextMT& RenderStateMT::GetContextMT() noexcept
     return static_cast<class ContextMT&>(m_context);
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

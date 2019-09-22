@@ -27,15 +27,12 @@ provides basic multi-frame rendering synchronization and frame presenting APIs.
 #include "Object.h"
 #include "Types.h"
 
-#include <Methane/Data/Provider.h>
 #include <Methane/Platform/AppEnvironment.h>
 #include <Methane/Platform/AppView.h>
 
 #include <memory>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class FpsCounter;
@@ -79,7 +76,7 @@ struct Context : virtual Object
     };
 
     // Create Context instance
-    static Ptr Create(const Platform::AppEnvironment& env, const Data::Provider& data_provider, Device& device, const Settings& settings);
+    static Ptr Create(const Platform::AppEnvironment& env, Device& device, const Settings& settings);
 
     // Context interface
     virtual void CompleteInitialization() = 0;
@@ -93,7 +90,6 @@ struct Context : virtual Object
     virtual void RemoveCallback(Callback& callback) = 0;
 
     virtual Platform::AppView     GetAppView() const = 0;
-    virtual const Data::Provider& GetDataProvider() const = 0;
     virtual Device&               GetDevice() = 0;
     virtual CommandQueue&         GetRenderCommandQueue() = 0;
     virtual CommandQueue&         GetUploadCommandQueue() = 0;
@@ -107,5 +103,4 @@ struct Context : virtual Object
     virtual bool SetFullScreen(bool is_full_screen) = 0;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

@@ -32,9 +32,7 @@ Windows platform utilitary functions.
 
 namespace wrl = Microsoft::WRL;
 
-namespace Methane
-{
-namespace Platform
+namespace Methane::Platform
 {
 
 void PrintToDebugOutput(const std::string& msg)
@@ -100,5 +98,4 @@ void GetDesktopResolution(uint32_t& width, uint32_t& height)
 }
 
 } // namespace Windows
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform

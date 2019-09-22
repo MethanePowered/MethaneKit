@@ -1,12 +1,13 @@
 set(TARGET MethaneGraphicsHelpers)
 
-include(Methane)
+include(MethaneModules)
 
 get_module_dirs("Methane/Graphics")
 
 set(HEADERS
     ${INCLUDE_DIR}/Helpers.h
     ${INCLUDE_DIR}/Camera.h
+    ${INCLUDE_DIR}/ArcBallCamera.h
     ${INCLUDE_DIR}/ActionCamera.h
     ${INCLUDE_DIR}/FpsCounter.h
     ${INCLUDE_DIR}/Mesh.h
@@ -17,6 +18,7 @@ set(HEADERS
 
 set(SOURCES
     ${SOURCES_DIR}/Camera.cpp
+    ${SOURCES_DIR}/ArcBallCamera.cpp
     ${SOURCES_DIR}/ActionCamera.cpp
     ${SOURCES_DIR}/FpsCounter.cpp
     ${SOURCES_DIR}/Mesh.cpp
@@ -35,7 +37,7 @@ target_include_directories(${TARGET}
 )
 
 target_link_libraries(${TARGET}
-    MethaneDataTypes
+    MethaneDataPrimitives
     MethaneDataAnimation
     MethanePlatformUtils
     MethaneInstrumentation

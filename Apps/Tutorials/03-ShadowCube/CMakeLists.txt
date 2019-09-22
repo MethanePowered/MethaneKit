@@ -1,15 +1,15 @@
 set(TARGET MethaneShadowCube)
 
-include(Methane)
+include(MethaneApplications)
+include(MethaneShaders)
+include(MethaneResources)
 
 set(SOURCES
     ShadowCubeApp.h
     ShadowCubeApp.cpp
 )
 
-set(SHADERS_HLSL   "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Shaders.hlsl")
-set(SHADERS_CONFIG "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Shaders.cfg")
-
+set(SHADERS_HLSL ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/ShadowCube.hlsl)
 set(IMAGES_DIR ${RESOURCES_DIR}/Images)
 set(TEXTURES
     ${IMAGES_DIR}/Textures/MethaneBubbles.jpg
@@ -19,14 +19,11 @@ set(TEXTURES
 add_methane_application(${TARGET}
     "Methane Shadow Cube"
     "${SOURCES}"
-    "${SHADERS_HLSL}"
-    "${SHADERS_CONFIG}"
     "${RESOURCES_DIR}"
-    "${IMAGES_DIR}"
-    "${TEXTURES}"
-    ""
     "Apps/Tutorials"
 )
+add_methane_embedded_textures(${TARGET} "${IMAGES_DIR}" "${TEXTURES}")
+add_methane_shaders(${TARGET} "${SHADERS_HLSL}")
 
 set_target_properties(${TARGET}
     PROPERTIES

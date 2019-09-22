@@ -38,9 +38,7 @@ DirectX 12 implementation of the context interface.
 #include <nowide/convert.hpp>
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 void SetWindowTopMostFlag(HWND window_handle, bool is_top_most)
@@ -57,14 +55,14 @@ void SetWindowTopMostFlag(HWND window_handle, bool is_top_most)
                  SWP_FRAMECHANGED | SWP_NOACTIVATE);
 }
 
-Context::Ptr Context::Create(const Platform::AppEnvironment& env, const Data::Provider& data_provider, Device& device, const Context::Settings& settings)
+Context::Ptr Context::Create(const Platform::AppEnvironment& env, Device& device, const Context::Settings& settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ContextDX>(env, data_provider, static_cast<DeviceBase&>(device), settings);
+    return std::make_shared<ContextDX>(env, static_cast<DeviceBase&>(device), settings);
 }
 
-ContextDX::ContextDX(const Platform::AppEnvironment& env, const Data::Provider& data_provider, DeviceBase& device, const Context::Settings& settings)
-    : ContextBase(data_provider, device, settings)
+ContextDX::ContextDX(const Platform::AppEnvironment& env, DeviceBase& device, const Context::Settings& settings)
+    : ContextBase(device, settings)
     , m_platform_env(env)
 {
     ITT_FUNCTION_TASK();
@@ -120,7 +118,7 @@ void ContextDX::Initialize(Device& device, bool deferred_heap_allocation)
     swap_chain_desc.SwapEffect            = DXGI_SWAP_EFFECT_FLIP_DISCARD;
     swap_chain_desc.SampleDesc.Count      = 1;
 
-    const wrl::ComPtr<IDXGIFactory6>& cp_dxgi_factory = SystemDX::Get().GetNativeFactory();
+    const wrl::ComPtr<IDXGIFactory5>& cp_dxgi_factory = SystemDX::Get().GetNativeFactory();
     assert(!!cp_dxgi_factory);
 
     BOOL present_tearing_suport = FALSE;
@@ -353,5 +351,4 @@ void ContextDX::FenceDX::SetName(const std::string& name)
     m_cp_fence->SetName(nowide::widen(name).c_str());
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

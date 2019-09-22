@@ -32,9 +32,7 @@ DirectX 12 implementation of the texture interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 D3D12_SRV_DIMENSION GetSrvDimension(const Dimensions& tex_dimensions) noexcept
@@ -86,11 +84,17 @@ Texture::Ptr Texture::CreateDepthStencilBuffer(Context& context, const Descripto
     return std::make_shared<DepthStencilBufferTextureDX>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage, context_settings.clear_depth, context_settings.clear_stencil);
 }
 
-Texture::Ptr Texture::CreateImage(Context& context, Dimensions dimensions, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
+Texture::Ptr Texture::CreateImage(Context& context, Dimensions dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
+    const Settings texture_settings = Settings::Image(dimensions, array_length, pixel_format, mipmapped, Usage::ShaderRead);
+    return std::make_shared<ImageTextureDX>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage, ImageTextureArg());
+}
 
-    const Settings texture_settings = Settings::Image(dimensions, pixel_format, mipmapped, static_cast<Usage::Mask>(Usage::ShaderRead));
+Texture::Ptr Texture::CreateCube(Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
+{
+    ITT_FUNCTION_TASK();
+    const Settings texture_settings = Settings::Cube(dimension_size, array_length, pixel_format, mipmapped, Usage::ShaderRead);
     return std::make_shared<ImageTextureDX>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage, ImageTextureArg());
 }
 
@@ -133,7 +137,7 @@ void DepthStencilBufferTextureDX::Initialize(Depth depth_clear_value, Stencil st
 {
     ITT_FUNCTION_TASK();
 
-    CD3DX12_RESOURCE_DESC tex_desc = tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
+    CD3DX12_RESOURCE_DESC tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
         TypeConverterDX::DataFormatToDXGI(m_settings.pixel_format, TypeConverterDX::ResourceFormatType::ResourceBase),
         m_settings.dimensions.width, m_settings.dimensions.height
     );
@@ -207,36 +211,100 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
     D3D12_RESOURCE_DESC tex_desc = {};
     D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
 
-    if (m_settings.dimensions.depth == 1)
+    switch(m_settings.dimension_type)
     {
-        if (m_settings.dimensions.height == 1)
+    case DimensionType::Tex1D:
+        if (m_settings.array_length != 1)
         {
-            tex_desc = CD3DX12_RESOURCE_DESC::Tex1D(
-                TypeConverterDX::DataFormatToDXGI(m_settings.pixel_format),
-                m_settings.dimensions.width
-            );
-            srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE1D;
-            srv_desc.Texture1D.MipLevels = 1;
+            throw std::invalid_argument("Single 1D Texture must have array length equal to 1.");
         }
-        else
+        srv_desc.Texture1D.MipLevels = 1; // TODO: set actual mip-levels count
+    case DimensionType::Tex1DArray:
+        if (m_settings.dimensions.height != 1 || m_settings.dimensions.depth != 1)
         {
-            tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
-                TypeConverterDX::DataFormatToDXGI(m_settings.pixel_format),
-                m_settings.dimensions.width, m_settings.dimensions.height,
-                1, m_settings.mipmapped ? 0 : 1
-            );
-            srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-            srv_desc.Texture2D.MipLevels = 1;
+            throw std::invalid_argument("1D Textures must have height and depth dimensions equal to 1.");
         }
-    }
-    else
-    {
+
+        tex_desc = CD3DX12_RESOURCE_DESC::Tex1D(
+            TypeConverterDX::DataFormatToDXGI(m_settings.pixel_format),
+            m_settings.dimensions.width,
+            m_settings.array_length,
+            m_settings.mipmapped ? 0 : 1
+        );
+
+        srv_desc.Texture1DArray.MipLevels = 1; // TODO: set actual mip-levels count
+        srv_desc.ViewDimension            = m_settings.dimension_type == DimensionType::Tex1D
+                                          ? D3D12_SRV_DIMENSION_TEXTURE1D
+                                          : D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
+        break;
+
+    case DimensionType::Tex2D:
+        if (m_settings.array_length != 1)
+        {
+            throw std::invalid_argument("Single 2D Texture must have array length equal to 1.");
+        }
+        srv_desc.Texture2D.MipLevels = 1; // TODO: set actual mip-levels count
+    case DimensionType::Tex2DArray:
+        if (m_settings.dimensions.depth != 1)
+        {
+            throw std::invalid_argument("2D Textures must have depth dimension equal to 1.");
+        }
+        tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
+            TypeConverterDX::DataFormatToDXGI(m_settings.pixel_format),
+            m_settings.dimensions.width,
+            m_settings.dimensions.height,
+            m_settings.array_length,
+            m_settings.mipmapped ? 0 : 1
+        );
+
+        srv_desc.Texture2DArray.MipLevels = 1; // TODO: set actual mip-levels count
+        srv_desc.ViewDimension            = m_settings.dimension_type == DimensionType::Tex2D
+                                          ? D3D12_SRV_DIMENSION_TEXTURE2D
+                                          : D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+        break;
+
+    case DimensionType::Tex3D:
+        if (m_settings.array_length != 1)
+        {
+            throw std::invalid_argument("Single 3D Texture must have array length equal to 1.");
+        }
         tex_desc = CD3DX12_RESOURCE_DESC::Tex3D(
             TypeConverterDX::DataFormatToDXGI(m_settings.pixel_format),
-            m_settings.dimensions.width, m_settings.dimensions.height, m_settings.dimensions.depth
+            m_settings.dimensions.width,
+            m_settings.dimensions.height,
+            m_settings.dimensions.depth,
+            m_settings.mipmapped ? 0 : 1
         );
-        srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
-        srv_desc.Texture3D.MipLevels = 1;
+        srv_desc.Texture3D.MipLevels = 1; // TODO: set actual mip-levels count
+        srv_desc.ViewDimension       = D3D12_SRV_DIMENSION_TEXTURE3D;
+        break;
+
+    case DimensionType::Cube:
+        if (m_settings.array_length != 1)
+        {
+            throw std::invalid_argument("Single Cube Texture must have array length equal to 1.");
+        }
+        srv_desc.TextureCube.MipLevels = 1; // TODO: set actual mip-levels count
+    case DimensionType::CubeArray:
+        if (m_settings.dimensions.depth != 6)
+        {
+            throw std::invalid_argument("Cube textures must have depth dimension equal to 6.");
+        }
+        tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
+            TypeConverterDX::DataFormatToDXGI(m_settings.pixel_format),
+            m_settings.dimensions.width,
+            m_settings.dimensions.height,
+            m_settings.dimensions.depth * m_settings.array_length,
+            m_settings.mipmapped ? 0 : 1
+        );
+
+        srv_desc.TextureCubeArray.First2DArrayFace = 0;
+        srv_desc.TextureCubeArray.NumCubes = m_settings.array_length;
+        srv_desc.TextureCubeArray.MipLevels = 1; // TODO: set actual mip-levels count
+        srv_desc.ViewDimension              = m_settings.dimension_type == DimensionType::Cube
+                                            ? D3D12_SRV_DIMENSION_TEXTURECUBE
+                                            : D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
+        break;
     }
 
     srv_desc.Format = tex_desc.Format;
@@ -244,7 +312,8 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
 
     InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COPY_DEST);
 
-    const UINT64 upload_buffer_size = GetRequiredIntermediateSize(m_cp_resource.Get(), 0, 1);
+    const UINT number_of_subresources = m_settings.dimensions.depth * m_settings.array_length;
+    const UINT64 upload_buffer_size   = GetRequiredIntermediateSize(m_cp_resource.Get(), 0, number_of_subresources);
     ThrowIfFailed(
         GetContextDX().GetDeviceDX().GetNativeDevice()->CreateCommittedResource(
             &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
@@ -259,32 +328,57 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
     GetContextDX().GetDeviceDX().GetNativeDevice()->CreateShaderResourceView(m_cp_resource.Get(), &srv_desc, GetNativeCPUDescriptorHandle(Usage::ShaderRead));
 }
 
-void ImageTextureDX::SetData(Data::ConstRawPtr p_data, Data::Size data_size)
+void ImageTextureDX::SetData(const SubResources& sub_resources)
 {
     ITT_FUNCTION_TASK();
 
-    if (!p_data || data_size == 0)
+    if (sub_resources.empty())
     {
-        throw std::invalid_argument("Can not set empty data to texture.");
+        throw std::invalid_argument("Can not set texture data from empty sub-resources.");
     }
     
     assert(!!m_cp_resource);
     assert(!!m_cp_upload_resource);
 
-    D3D12_SUBRESOURCE_DATA texture_data = {};
-    texture_data.pData      = p_data;
-    texture_data.RowPitch   = m_settings.dimensions.width * GetPixelSize(m_settings.pixel_format);
-    texture_data.SlicePitch = m_settings.dimensions.height * texture_data.RowPitch;
+    const uint32_t      mip_levels_count  = 1; // TODO: replace with actual value when mip-levels are supported
+    const Data::Size    pixel_size = GetPixelSize(m_settings.pixel_format);
 
-    assert(texture_data.SlicePitch <= static_cast<LONG_PTR>(data_size));
-    m_data_size = data_size;
+    uint32_t first_sub_resource_index = std::numeric_limits<uint32_t>::max();
+    for (const SubResource& sub_resource : sub_resources)
+    {
+        first_sub_resource_index = std::min(first_sub_resource_index, sub_resource.GetIndex(mip_levels_count));
+    }
+
+    m_data_size = 0;
+    std::vector<D3D12_SUBRESOURCE_DATA> dx_sub_resources(sub_resources.size(), D3D12_SUBRESOURCE_DATA{});
+
+    for(const SubResource& sub_resource : sub_resources)
+    {
+        const uint32_t raw_sub_resource_index = sub_resource.GetIndex(m_settings.dimensions.depth, mip_levels_count) - first_sub_resource_index;
+        if (raw_sub_resource_index >= dx_sub_resources.size())
+        {
+            dx_sub_resources.resize(raw_sub_resource_index + 1, D3D12_SUBRESOURCE_DATA{});
+        }
+
+        D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[raw_sub_resource_index];
+        dx_sub_resource.pData      = sub_resource.p_data;
+        dx_sub_resource.RowPitch   = m_settings.dimensions.width  * pixel_size;
+        dx_sub_resource.SlicePitch = m_settings.dimensions.height * dx_sub_resource.RowPitch;
+
+        if (dx_sub_resource.SlicePitch > static_cast<LONG_PTR>(sub_resource.data_size))
+        {
+            throw std::invalid_argument("Sub-resource data size is smaller than computed slice size. Possible pixel format mismatch.");
+        }
+
+        m_data_size += static_cast<Data::Size>(dx_sub_resource.SlicePitch);
+    }
 
     RenderCommandListDX& upload_cmd_list = static_cast<RenderCommandListDX&>(m_context.GetUploadCommandList());
     UpdateSubresources(upload_cmd_list.GetNativeCommandList().Get(),
-                       m_cp_resource.Get(), m_cp_upload_resource.Get(), 0, 0, 1, &texture_data);
+                       m_cp_resource.Get(), m_cp_upload_resource.Get(), 0, first_sub_resource_index,
+                       static_cast<UINT>(dx_sub_resources.size()), dx_sub_resources.data());
 
     upload_cmd_list.SetResourceTransitionBarriers({ static_cast<Resource&>(*this) }, ResourceBase::State::CopyDest, ResourceBase::State::PixelShaderResource);
 }
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

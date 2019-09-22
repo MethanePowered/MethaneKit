@@ -28,14 +28,12 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 #include <cml/mathlib/mathlib.h>
 #include <cassert>
 
-namespace Methane
-{
-namespace Tutorials
+namespace Methane::Tutorials
 {
 
-static const gfx::Shader::EntryTarget g_vs_main   = { "VSMain", "vs_5_1" };
-static const gfx::Shader::EntryTarget g_ps_main   = { "PSMain", "ps_5_1" };
-static const GraphicsApp::Settings g_app_settings = // Application settings:
+static const gfx::Shader::EntryFunction g_vs_main      = { "Cube", "CubeVS" };
+static const gfx::Shader::EntryFunction g_ps_main      = { "Cube", "CubePS" };
+static const GraphicsApp::Settings      g_app_settings = // Application settings:
 {                                                   // ====================
     {                                               // app:
         "Methane Textured Cube",                    // - name
@@ -99,8 +97,8 @@ void TexturedCubeApp::Init()
     // Create cube shading program
     m_sp_program = gfx::Program::Create(*m_sp_context, {
         { // shaders
-            gfx::Shader::CreateVertex(*m_sp_context, { g_vs_main }),
-            gfx::Shader::CreatePixel( *m_sp_context, { g_ps_main }),
+            gfx::Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), g_vs_main }),
+            gfx::Shader::CreatePixel( *m_sp_context, { Data::ShaderProvider::Get(), g_ps_main }),
         },
         { // input_buffer_layouts
             { // single vertex buffer layout with interleaved data
@@ -122,7 +120,7 @@ void TexturedCubeApp::Init()
     m_sp_program->SetName("Textured Phong Lighting");
 
     // Load texture image from file
-    m_sp_cube_texture = m_image_loader.CreateImageTexture(*m_sp_context, "Textures/MethaneBubbles.jpg");
+    m_sp_cube_texture = m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MethaneBubbles.jpg");
     m_sp_cube_texture->SetName("Cube Texture 2D Image");
 
     // Create sampler for image texture
@@ -137,7 +135,7 @@ void TexturedCubeApp::Init()
     // Create constants buffer for frame rendering
     m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, constants_data_size);
     m_sp_const_buffer->SetName("Constants Buffer");
-    m_sp_const_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), sizeof(m_shader_constants));
+    m_sp_const_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), sizeof(m_shader_constants) } });
 
     // Create frame buffer data
     for(TexturedCubeFrame& frame : m_frames)
@@ -164,13 +162,13 @@ void TexturedCubeApp::Init()
     const Data::Size vertex_size      = static_cast<Data::Size>(m_cube_mesh.GetVertexSize());
     m_sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(*m_sp_context, vertex_data_size, vertex_size);
     m_sp_vertex_buffer->SetName("Cube Vertex Buffer");
-    m_sp_vertex_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetVertices().data()), vertex_data_size);
+    m_sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetVertices().data()), vertex_data_size } });
 
     // Create index buffer for cube mesh
     const Data::Size index_data_size = static_cast<Data::Size>(m_cube_mesh.GetIndexDataSize());
     m_sp_index_buffer  = gfx::Buffer::CreateIndexBuffer(*m_sp_context, index_data_size, gfx::PixelFormat::R32Uint);
     m_sp_index_buffer->SetName("Cube Index Buffer");
-    m_sp_index_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), index_data_size);
+    m_sp_index_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), index_data_size } });
 
     // Create render state
     gfx::RenderState::Settings state_settings;
@@ -236,7 +234,7 @@ void TexturedCubeApp::Render()
     assert(!!m_sp_state);
 
     // Update uniforms buffer related to current frame
-    frame.sp_uniforms_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(Uniforms));
+    frame.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(Uniforms) } });
 
     // Issue commands for cube rendering
     frame.sp_cmd_list->Reset(*m_sp_state, "Cube redering");
@@ -265,8 +263,7 @@ void TexturedCubeApp::OnContextReleased()
     GraphicsApp::OnContextReleased();
 }
 
-} // namespace Tutorials
-} // namespace Methane
+} // namespace Methane::Tutorials
 
 int main(int argc, const char* argv[])
 {

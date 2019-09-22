@@ -1,6 +1,6 @@
 set(TARGET MethanePlatformInput)
 
-include(Methane)
+include(MethaneModules)
 
 get_module_dirs("Methane/Platform")
 
@@ -31,7 +31,7 @@ elseif(APPLE)
 endif()
 
 set(LIBRARIES ${LIBRARIES}
-    MethaneDataTypes
+    MethaneDataPrimitives
     MethanePlatformUtils
     MethaneInstrumentation
 )

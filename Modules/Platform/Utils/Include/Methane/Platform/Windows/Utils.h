@@ -26,15 +26,9 @@ Windows platform utilitary functions.
 #include <string>
 #include <vector>
 
-namespace Methane
-{
-namespace Platform
-{
-namespace Windows
+namespace Methane::Platform::Windows
 {
 
 void GetDesktopResolution(uint32_t& width, uint32_t& height);
 
-} // namespace Windows
-} // namespace Platform
-} // namespace Methane
+} // namespace Methane::Platform::Windows

@@ -27,9 +27,7 @@ Base implementation of the buffer interface.
 
 #include <Methane/Graphics/Buffer.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class BufferBase
@@ -41,7 +39,7 @@ public:
 
     // Resource interface
     Data::Size GetDataSize() const override                 { return m_settings.size; }
-    void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override;
+    void SetData(const SubResources& sub_resources) override;
 
     // Buffer interface
     Buffer::Type GetBufferType() const noexcept override    { return m_settings.type; }
@@ -52,5 +50,4 @@ protected:
     Settings m_settings;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

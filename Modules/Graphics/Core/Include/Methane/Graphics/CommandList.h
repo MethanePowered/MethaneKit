@@ -33,9 +33,7 @@ to create instance refer to RenderCommandList, etc. for specific derived interfa
 #include <string>
 #include <vector>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 struct CommandQueue;
@@ -56,5 +54,4 @@ struct CommandList : virtual Object
     virtual ~CommandList() = default;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

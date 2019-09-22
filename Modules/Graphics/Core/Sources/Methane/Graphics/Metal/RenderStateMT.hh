@@ -29,9 +29,7 @@ Metal implementation of the render state interface.
 
 #include <vector>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ContextMT;
@@ -74,5 +72,4 @@ protected:
     MTLWinding                   m_mtl_front_face_winding = MTLWindingClockwise;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

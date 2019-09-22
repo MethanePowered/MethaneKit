@@ -54,7 +54,7 @@ public:
             },                                 //
             true                               // show_hud_in_window_title
         },
-        RenderPass::Access::None) // screen_pass_access (program access to resources)
+        RenderPass::Access::None)              // screen_pass_access (program access to resources)
     { }
 
     ~HelloTriangleApp() override
@@ -75,14 +75,14 @@ public:
 
         const Data::Size vertex_buffer_size = static_cast<Data::Size>(sizeof(triange_vertices));
         m_sp_vertex_buffer = Buffer::CreateVertexBuffer(*m_sp_context, vertex_buffer_size, static_cast<Data::Size>(sizeof(Vertex)));
-        m_sp_vertex_buffer->SetData(reinterpret_cast<Data::ConstRawPtr>(triange_vertices.data()), vertex_buffer_size);
+        m_sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(triange_vertices.data()), vertex_buffer_size } });
 
         m_sp_state = RenderState::Create(*m_sp_context,
         {
             Program::Create(*m_sp_context, {
                 {
-                    Shader::CreateVertex(*m_sp_context, { { "VSMain", "vs_5_1" } }),
-                    Shader::CreatePixel(*m_sp_context,  { { "PSMain", "ps_5_1" } }),
+                    Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), { "Triangle", "TriangleVS" } }),
+                    Shader::CreatePixel(*m_sp_context,  { Data::ShaderProvider::Get(), { "Triangle", "TrianglePS" } }),
                 },
                 { { {
                     { "in_position", "POSITION" },

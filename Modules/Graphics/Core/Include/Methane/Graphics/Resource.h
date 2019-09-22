@@ -32,9 +32,7 @@ Methane resource interface: base class of all GPU resources.
 #include <map>
 #include <array>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 struct Context;
@@ -78,13 +76,27 @@ struct Resource : virtual Object
         DescriptorHeap& heap;
         int32_t         index;
 
-        Descriptor(DescriptorHeap& in_heap, int32_t in_index = -1)
-            : heap(in_heap)
-            , index(in_index)
-        { }
+        Descriptor(DescriptorHeap& in_heap, int32_t in_index = -1);
     };
 
     using DescriptorByUsage = std::map<Usage::Value, Descriptor>;
+
+    struct SubResource
+    {
+        Data::ConstRawPtr   p_data      = nullptr;
+        Data::Size          data_size   = 0;
+        uint32_t            depth_slice = 0;
+        uint32_t            array_index = 0;
+        uint32_t            mip_level   = 0;
+
+        SubResource() = default;
+        SubResource(Data::ConstRawPtr in_p_data, Data::Size in_data_size,
+                    uint32_t in_depth_slice = 0, uint32_t in_array_index = 0, uint32_t in_mip_level = 0);
+
+        uint32_t GetIndex(uint32_t depth = 1, uint32_t mip_levels_count = 1) const { return (array_index * depth + depth_slice) * mip_levels_count + mip_level; }
+    };
+
+    using SubResources = std::vector<SubResource>;
 
     // Auxillary functions
     static std::string GetTypeName(Type type) noexcept;
@@ -92,7 +104,7 @@ struct Resource : virtual Object
     static std::string GetUsageNames(Usage::Mask usage_mask) noexcept;
 
     // Resource interface
-    virtual void                      SetData(Data::ConstRawPtr p_data, Data::Size data_size) = 0;
+    virtual void                      SetData(const SubResources& sub_resources) = 0;
     virtual Data::Size                GetDataSize() const = 0;
     virtual Type                      GetResourceType() const noexcept = 0;
     virtual Usage::Mask               GetUsageMask() const noexcept = 0;
@@ -100,5 +112,4 @@ struct Resource : virtual Object
     virtual const Descriptor&         GetDescriptor(Usage::Value usage) const = 0;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

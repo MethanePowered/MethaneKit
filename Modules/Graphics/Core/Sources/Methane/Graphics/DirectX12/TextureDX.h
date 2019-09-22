@@ -31,9 +31,7 @@ DirectX 12 implementation of the texture interface.
 #include <d3dx12.h>
 #include <cassert>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 template<typename... ExtraArgs>
@@ -54,7 +52,7 @@ public:
     }
 
     // Resource interface
-    void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override
+    void SetData(const SubResources&) override
     {
         ITT_FUNCTION_TASK();
         throw std::logic_error("Setting texture data is allowed for image textures only.");
@@ -79,7 +77,7 @@ public:
     TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg);
 
     // Resource interface
-    void SetData(Data::ConstRawPtr p_data, Data::Size data_size) override;
+    void SetData(const SubResources& sub_resources) override;
     Data::Size GetDataSize() const override { return m_data_size; }
 
 protected:
@@ -92,5 +90,4 @@ using FrameBufferTextureDX          = TextureDX<uint32_t /* frame_buffer_index *
 using DepthStencilBufferTextureDX   = TextureDX<Depth /*depth_clear_value*/, Stencil /*stencil_clear_value*/>;
 using ImageTextureDX                = TextureDX<ImageTextureArg>;
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

@@ -30,9 +30,7 @@ DirectX 12 implementation of the device interface.
 #include <d3d12.h>
 #include <d3dx12.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 namespace wrl = Microsoft::WRL;
@@ -70,7 +68,7 @@ public:
     void           CheckForChanges() override;
     const Devices& UpdateGpuDevices(Device::Feature::Mask supported_features) override;
 
-    const wrl::ComPtr<IDXGIFactory6>& GetNativeFactory() { return m_cp_factory; }
+    const wrl::ComPtr<IDXGIFactory5>& GetNativeFactory() { return m_cp_factory; }
     void ReportLiveObjects();
 
 private:
@@ -79,10 +77,9 @@ private:
     void UnregisterAdapterChangeEvent();
     void AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
 
-    wrl::ComPtr<IDXGIFactory6> m_cp_factory;
+    wrl::ComPtr<IDXGIFactory5> m_cp_factory;
     HANDLE                     m_adapter_change_event = NULL;
     DWORD                      m_adapter_change_registration_cookie = 0;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics

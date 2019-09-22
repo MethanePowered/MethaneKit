@@ -25,9 +25,7 @@ Base implementation of the render pass interface.
 
 #include <Methane/Graphics/RenderPass.h>
 
-namespace Methane
-{
-namespace Graphics
+namespace Methane::Graphics
 {
 
 class ContextBase;
@@ -55,5 +53,4 @@ protected:
     Settings     m_settings;
 };
 
-} // namespace Graphics
-} // namespace Methane
+} // namespace Methane::Graphics
