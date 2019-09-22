@@ -348,7 +348,7 @@ public:
         
         index_offset += 3;
 
-        const uint32_t vertices_count = BaseMesh::m_vertices.size();
+        const uint32_t vertices_count = static_cast<uint32_t>(BaseMesh::m_vertices.size());
         for (uint32_t lat_line_index = 0; lat_line_index < lat_lines_count - 3; ++lat_line_index)
         {
             for(uint32_t long_line_index = 0; long_line_index < long_lines_count - 1; ++long_line_index)

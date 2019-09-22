@@ -129,7 +129,7 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
     }
 
     const Dimensions image_dimensions(static_cast<uint32_t>(image_width), static_cast<uint32_t>(image_height));
-    const Data::Size image_data_size = static_cast<Data::Size>(image_width * image_height) * channels_count * sizeof(stbi_uc);
+    const Data::Size image_data_size = static_cast<Data::Size>(image_width * image_height * channels_count * sizeof(stbi_uc));
 
     if (create_copy)
     {
@@ -173,10 +173,10 @@ Texture::Ptr ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
 
     // Load face image data in parallel
     std::mutex             data_mutex;
-    std::vector<std::pair<uint32_t, ImageData>> face_resources_data;
-    face_resources_data.reserve(image_paths.size());
+    std::vector<std::pair<uint32_t, ImageData>> face_images_data;
+    face_images_data.reserve(image_paths.size());
     Data::ParallelFor(face_image_paths.begin(), face_image_paths.end(),
-        [&](const std::pair<uint32_t, std::string&>& face_image_path)
+        [&](const std::pair<uint32_t, std::string>& face_image_path)
         {
             // NOTE:
             //  we create a copy of the loaded image data (via 3-rd argument of LoadImage)
@@ -184,25 +184,25 @@ Texture::Ptr ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
             ImageLoader::ImageData image_data = LoadImage(face_image_path.second, desired_channels_count, true);
 
             std::lock_guard<std::mutex> data_lock(data_mutex);
-            face_resources_data.emplace_back(face_image_path.first, std::move(image_data));
+            face_images_data.emplace_back(face_image_path.first, std::move(image_data));
         });
 
     // Verify cube textures
 
-    if (face_resources_data.size() != image_paths.size())
+    if (face_images_data.size() != image_paths.size())
     {
         throw std::runtime_error("Some faces of cube texture have failed to load.");
     }
-    const Dimensions face_dimensions     = face_resources_data.front().second.dimensions;
-    const uint32_t   face_channels_count = face_resources_data.front().second.channels_count;
+    const Dimensions face_dimensions     = face_images_data.front().second.dimensions;
+    const uint32_t   face_channels_count = face_images_data.front().second.channels_count;
     if (face_dimensions.width != face_dimensions.height)
     {
         throw std::runtime_error("All images of cube texture faces must have equal width and height.");
     }
 
     Resource::SubResources face_resources;
-    face_resources.reserve(image_paths.size());
-    for(const std::pair<uint32_t, ImageData>& face_image_data : face_resources_data)
+    face_resources.reserve(face_images_data.size());
+    for(const std::pair<uint32_t, ImageData>& face_image_data : face_images_data)
     {
         if (face_dimensions     != face_image_data.second.dimensions ||
             face_channels_count != face_image_data.second.channels_count)
