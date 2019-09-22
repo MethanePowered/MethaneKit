@@ -205,13 +205,12 @@ ResourceManager::DescriptorHeapSizeByType ResourceManager::GetDescriptorHeapSize
     DescriptorHeapSizeByType descriptor_heap_sizes;
     for (uint32_t heap_type_idx = 0; heap_type_idx < static_cast<uint32_t>(DescriptorHeap::Type::Count); ++heap_type_idx)
     {
-        const DescriptorHeap::Type  heap_type = static_cast<DescriptorHeap::Type>(heap_type_idx);
-        const DescriptorHeaps&      desc_heaps = m_descriptor_heap_types[heap_type_idx];
+        const DescriptorHeaps& desc_heaps = m_descriptor_heap_types[heap_type_idx];
         uint32_t max_heap_size = 0;
         for (const DescriptorHeap::Ptr& sp_desc_heap : desc_heaps)
         {
             assert(!!sp_desc_heap);
-            assert(sp_desc_heap->GetSettings().type == heap_type);
+            assert(sp_desc_heap->GetSettings().type == static_cast<DescriptorHeap::Type>(heap_type_idx));
             if ( (for_shader_visible_heaps && !sp_desc_heap->IsShaderVisible()) ||
                 (!for_shader_visible_heaps &&  sp_desc_heap->IsShaderVisible()) )
                 continue;
