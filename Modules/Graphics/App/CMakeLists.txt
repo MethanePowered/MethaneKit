@@ -26,7 +26,7 @@ target_include_directories(${TARGET}
 )
 
 target_link_libraries(${TARGET}
-    MethaneDataTypes
+    MethaneDataPrimitives
     MethanePlatformApp
     MethanePlatformUtils
     MethaneGraphicsCore

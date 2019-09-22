@@ -37,7 +37,7 @@ elseif(APPLE)
 endif()
 
 set(LIBRARIES ${LIBRARIES}
-    MethaneDataTypes
+    MethaneDataPrimitives
     MethanePlatformUtils
     MethanePlatformInput
     MethanePlatformAppView
