@@ -148,6 +148,18 @@ bool ContextMT::SetVSyncEnabled(bool vsync_enabled)
     return false;
 }
 
+bool ContextMT::SetFrameBuffersCount(uint32_t frame_buffers_count)
+{
+    ITT_FUNCTION_TASK();
+    frame_buffers_count = std::min(std::max(2u, frame_buffers_count), 3u); // Metal supports only 2 or 3 drawable buffers
+    if (ContextBase::SetFrameBuffersCount(frame_buffers_count))
+    {
+        m_app_view.drawableCount = frame_buffers_count;
+        return true;
+    }
+    return false;
+}
+
 DeviceMT& ContextMT::GetDeviceMT()
 {
     ITT_FUNCTION_TASK();

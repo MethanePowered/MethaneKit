@@ -154,9 +154,13 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
     layer.bounds = self.bounds;
     layer.device = self.device;
     layer.pixelFormat = self.pixelFormat;
-    layer.maximumDrawableCount = self.drawableCount;
     layer.displaySyncEnabled = self.vsyncEnabled;
     layer.contentsScale = self.currentScreen.backingScaleFactor;
+
+    if (@available(macOS 10.13.2, *))
+    {
+        layer.maximumDrawableCount = self.drawableCount;
+    }
     
     return layer;
 }
@@ -206,6 +210,23 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
     BOOL was_redrawing = self.redrawing;
     self.redrawing = NO;
     _vsyncEnabled = vsyncEnabled;
+    self.metalLayer.displaySyncEnabled = vsyncEnabled;
+    self.redrawing = was_redrawing;
+}
+
+- (void)setDrawableCount:(NSUInteger)drawableCount
+{
+    ITT_FUNCTION_TASK();
+    if (_drawableCount == drawableCount)
+        return;
+
+    BOOL was_redrawing = self.redrawing;
+    self.redrawing = NO;
+    _drawableCount = drawableCount;
+    if (@available(macOS 10.13.2, *))
+    {
+        self.metalLayer.maximumDrawableCount = self.drawableCount;
+    }
     self.redrawing = was_redrawing;
 }
 
