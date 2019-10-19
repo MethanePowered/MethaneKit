@@ -49,6 +49,7 @@ public:
 
     enum class Type
     {
+        Unknown,
         Rect,
         Box,
         Sphere
