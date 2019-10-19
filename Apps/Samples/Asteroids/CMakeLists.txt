@@ -7,6 +7,8 @@ include(MethaneResources)
 set(SOURCES
     AsteroidsApp.h
     AsteroidsApp.cpp
+    Asteroid.h
+    Asteroid.cpp
 )
 
 set(IMAGES_DIR ${RESOURCES_DIR}/Images)
