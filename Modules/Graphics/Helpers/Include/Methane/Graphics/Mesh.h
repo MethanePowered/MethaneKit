@@ -29,6 +29,7 @@ Procedural mesh generators, including rect, box, etc.
 
 #include <vector>
 #include <array>
+#include <map>
 #include <algorithm>
 #include <cassert>
 
@@ -52,7 +53,8 @@ public:
         Unknown,
         Rect,
         Box,
-        Sphere
+        Sphere,
+        Icosahedron,
     };
 
     enum class VertexField : size_t
@@ -83,8 +85,18 @@ public:
     size_t              GetIndexDataSize() const noexcept   { return m_indices.size() * sizeof(Index); }
 
 protected:
+    struct Edge
+    {
+        const Mesh::Index first_index;
+        const Mesh::Index second_index;
+        
+        Edge(Mesh::Index v1_index, Mesh::Index v2_index);
+        
+        bool operator<(const Edge& other) const;
+    };
+    
     using VertexFieldOffsets = std::array<int32_t, static_cast<size_t>(VertexField::Count)>;
-    using VertexFieldSizes   = std::array<size_t, static_cast<size_t>(VertexField::Count)>;
+    using VertexFieldSizes   = std::array<size_t,  static_cast<size_t>(VertexField::Count)>;
 
     bool HasVertexField(VertexField field) const noexcept;
 
@@ -136,6 +148,108 @@ protected:
         const int32_t field_offset = m_vertex_field_offsets[static_cast<size_t>(field)];
         assert(field_offset >= 0);
         return *reinterpret_cast<FType*>(reinterpret_cast<char*>(&vertex) + field_offset);
+    }
+    
+    template<typename FType>
+    const FType& GetVertexField(const VType& vertex, VertexField field) noexcept
+    {
+        ITT_FUNCTION_TASK();
+        const int32_t field_offset = m_vertex_field_offsets[static_cast<size_t>(field)];
+        assert(field_offset >= 0);
+        return *reinterpret_cast<const FType*>(reinterpret_cast<const char*>(&vertex) + field_offset);
+    }
+    
+    using EdgeMidpoints = std::map<Mesh::Edge, Mesh::Index>;
+    Index AddEdgeMidpoint(const Edge& edge, EdgeMidpoints& edge_midpoinds)
+    {
+        const auto edge_midpoint_it = edge_midpoinds.find(edge);
+        if (edge_midpoint_it == edge_midpoinds.end())
+            return edge_midpoint_it->second;
+        
+        const VType& v1 = m_vertices[edge.first_index];
+        const VType& v2 = m_vertices[edge.second_index];
+        VType  v_mid = { };
+        
+        const Mesh::Position& v1_position = GetVertexField<Mesh::Position>(v1,    Mesh::VertexField::Position);
+        const Mesh::Position& v2_position = GetVertexField<Mesh::Position>(v2,    Mesh::VertexField::Position);
+        Mesh::Position&    v_mid_position = GetVertexField<Mesh::Position>(v_mid, Mesh::VertexField::Position);
+        v_mid_position = (v1_position + v2_position) / 2.f;
+        
+        if (Mesh::HasVertexField(Mesh::VertexField::Normal))
+        {
+            const Mesh::Normal& v1_normal = GetVertexField<Mesh::Normal>(v1,    Mesh::VertexField::Normal);
+            const Mesh::Normal& v2_normal = GetVertexField<Mesh::Normal>(v2,    Mesh::VertexField::Normal);
+            Mesh::Normal&    v_mid_normal = GetVertexField<Mesh::Normal>(v_mid, Mesh::VertexField::Normal);
+            v_mid_normal = cml::normalize(v1_normal + v2_normal);
+        }
+        
+        if (Mesh::HasVertexField(Mesh::VertexField::Color))
+        {
+            const Mesh::Color& v1_color = GetVertexField<Mesh::Color>(v1,    Mesh::VertexField::Color);
+            const Mesh::Color& v2_color = GetVertexField<Mesh::Color>(v2,    Mesh::VertexField::Color);
+            Mesh::Color&    v_mid_color = GetVertexField<Mesh::Color>(v_mid, Mesh::VertexField::Color);
+            v_mid_color = (v1_color + v2_color) / 2.f;
+        }
+        
+        if (Mesh::HasVertexField(Mesh::VertexField::TexCoord))
+        {
+            const Mesh::TexCoord& v1_texcoord = GetVertexField<Mesh::TexCoord>(v1,    Mesh::VertexField::TexCoord);
+            const Mesh::TexCoord& v2_texcoord = GetVertexField<Mesh::TexCoord>(v2,    Mesh::VertexField::TexCoord);
+            Mesh::TexCoord&    v_mid_texcoord = GetVertexField<Mesh::TexCoord>(v_mid, Mesh::VertexField::TexCoord);
+            v_mid_texcoord = (v1_texcoord + v2_texcoord) / 2.f;
+        }
+        
+        const Mesh::Index v_mid_index = static_cast<Mesh::Index>(m_vertices.size());
+        edge_midpoinds.emplace(edge, v_mid_index);
+        m_vertices.push_back(v_mid);
+        return v_mid_index;
+    }
+    
+    void ComputeAverageNormals()
+    {
+        if (!Mesh::HasVertexField(Mesh::VertexField::Normal))
+            throw std::logic_error("Mesh should contain normals.");
+            
+        if (BaseMesh::m_indices.size() % 3 == 0)
+            throw std::logic_error("Mesh indices count should be a multiple of three representing triangles list.");
+        
+        for (VType& vertex : m_vertices)
+        {
+            Mesh::Normal& vertex_normal = GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
+            vertex_normal = { 0.f, 0.f, 0.f };
+        }
+        
+        const size_t triangles_count = BaseMesh::m_indices.size() / 3;
+        for (size_t triangle_index = 0; triangle_index < triangles_count; ++triangle_index)
+        {
+            VType& v1 = m_vertices[m_indices[triangle_index * 3]];
+            VType& v2 = m_vertices[m_indices[triangle_index * 3 + 1]];
+            VType& v3 = m_vertices[m_indices[triangle_index * 3 + 2]];
+            
+            const Mesh::Position& p1 = GetVertexField<Mesh::Position>(v1, Mesh::VertexField::Position);
+            const Mesh::Position& p2 = GetVertexField<Mesh::Position>(v2, Mesh::VertexField::Position);
+            const Mesh::Position& p3 = GetVertexField<Mesh::Position>(v3, Mesh::VertexField::Position);
+            
+            const Mesh::Position u = p2 - p1;
+            const Mesh::Position v = p3 - p1;
+            const Mesh::Normal   n = cml::cross(u, v);
+            
+            // NOTE: weight average by contributing face area
+            Mesh::Normal& n1 = GetVertexField<Mesh::Normal>(v1, Mesh::VertexField::Normal);
+            n1 += n;
+            
+            Mesh::Normal& n2 = GetVertexField<Mesh::Normal>(v2, Mesh::VertexField::Normal);
+            n2 += n;
+            
+            Mesh::Normal& n3 = GetVertexField<Mesh::Normal>(v3, Mesh::VertexField::Normal);
+            n3 += n;
+        }
+        
+        for (VType& vertex : m_vertices)
+        {
+            Mesh::Normal& vertex_normal = GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
+            vertex_normal.normalize();
+        }
     }
 
     Vertices m_vertices;
@@ -390,11 +504,143 @@ public:
         BaseMesh::m_indices[index_offset + 2] = (vertices_count - 1) - long_lines_count;
     }
     
-    const float GetRadius() const noexcept  { return m_radius; }
+    const float GetRadius() const noexcept { return m_radius; }
     
 protected:
     const float m_radius;
 };
 
+template<typename VType>
+class IcosahedronMesh : public BaseMesh<VType>
+{
+public:
+    using BaseMesh = BaseMesh<VType>;
+    
+    IcosahedronMesh(const Mesh::VertexLayout& vertex_layout, float radius = 1.f, uint32_t subdivisions_count = 0, bool spherify = false)
+        : BaseMesh(Mesh::Type::Icosahedron, vertex_layout)
+        , m_radius(radius)
+    {
+        if (Mesh::HasVertexField(Mesh::VertexField::Color))
+        {
+            throw std::invalid_argument("Colored vertices are not supported for icosahedron mesh.");
+        }
+        if (Mesh::HasVertexField(Mesh::VertexField::TexCoord))
+        {
+            throw std::invalid_argument("Textured vertices are not supported for icosahedron mesh.");
+        }
+        
+        const float a = radius;                                    // std::sqrt(2.0f / (5.0f - std::sqrt(5.0f)));
+        const float b = (radius + std::sqrtf(radius * 5.f)) / 2.f; // std::sqrt(2.0f / (5.0f + std::sqrt(5.0f)));
+        const std::array<Mesh::Position, 12> vertex_positions = {{
+            {-b,  a,  0},
+            { b,  a,  0},
+            {-b, -a,  0},
+            { b, -a,  0},
+            { 0, -b,  a},
+            { 0,  b,  a},
+            { 0, -b, -a},
+            { 0,  b, -a},
+            { a,  0, -b},
+            { a,  0,  b},
+            {-a,  0, -b},
+            {-a,  0,  b},
+        }};
+        
+        BaseMesh::m_vertices.resize(vertex_positions.size());
+        for(size_t vertex_index = 0; vertex_index < vertex_positions.size(); ++vertex_index)
+        {
+            VType& vertex = BaseMesh::m_vertices[vertex_index];
+            Mesh::Position& vertex_position = BaseMesh::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
+            vertex_position = vertex_positions[vertex_index];
+        }
+
+        BaseMesh::m_indices = {
+             0,  5, 11,
+             0,  1,  5,
+             0,  7,  1,
+             0, 10,  7,
+             0, 11, 10,
+             1,  9,  5,
+             5,  4, 11,
+            11,  2, 10,
+            10,  6,  7,
+             7,  8,  1,
+             3,  4,  9,
+             3,  2,  4,
+             3,  6,  2,
+             3,  8,  6,
+             3,  9,  8,
+             4,  5,  9,
+             2, 11,  4,
+             6, 10,  2,
+             8,  7,  6,
+             9,  1,  8,
+        };
+        
+        for(uint32_t subdivision = 0; subdivision < subdivisions_count; ++subdivision)
+        {
+            Subdivide();
+        }
+        
+        if (spherify)
+        {
+            Spherify();
+        }
+    }
+    
+    const float GetRadius() const noexcept  { return m_radius; }
+    
+    void Subdivide()
+    {
+        if (BaseMesh::m_indices.size() % 3 == 0)
+            throw std::logic_error("Icosahedron indices count should be a multiple of three representing triangles list.");
+
+        Mesh::Indices new_indices;
+        new_indices.reserve(BaseMesh::m_indices.size() * 4);
+        BaseMesh::m_vertices.reserve(BaseMesh::m_vertices.size() * 2);
+        
+        typename BaseMesh::EdgeMidpoints edge_midpoints;
+
+        const size_t triangles_count = BaseMesh::m_indices.size() / 3;
+        for (size_t triangle_index = 0; triangle_index < triangles_count; ++triangle_index)
+        {
+            const Mesh::Index vi1 = BaseMesh::m_indices[triangle_index * 3];
+            const Mesh::Index vi2 = BaseMesh::m_indices[triangle_index * 3 + 1];
+            const Mesh::Index vi3 = BaseMesh::m_indices[triangle_index * 3 + 2];
+
+            const Mesh::Index vm1 = BaseMesh::AddEdgeMidpoint(Mesh::Edge(vi1, vi2), edge_midpoints);
+            const Mesh::Index vm2 = BaseMesh::AddEdgeMidpoint(Mesh::Edge(vi2, vi3), edge_midpoints);
+            const Mesh::Index vm3 = BaseMesh::AddEdgeMidpoint(Mesh::Edge(vi3, vi1), edge_midpoints);
+
+            std::array<Mesh::Index, 3 * 4> indices = {
+                vi1, vm1, vm3,
+                vm1, vi2, vm2,
+                vm1, vm2, vm3,
+                vm3, vm2, vi3,
+            };
+            new_indices.insert(BaseMesh::m_indices.end(), indices.begin(), indices.end());
+        }
+
+        std::swap(BaseMesh::m_indices, new_indices);
+    }
+    
+    void Spherify()
+    {
+        for(VType& vertex : BaseMesh::m_vertices)
+        {
+            Mesh::Position& vertex_position = BaseMesh::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
+            vertex_position = cml::normalize(vertex_position) * m_radius;
+            
+            if (Mesh::HasVertexField(Mesh::VertexField::Normal))
+            {
+                Mesh::Normal& vertex_normal = BaseMesh::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
+                vertex_normal = cml::normalize(vertex_position);
+            }
+        }
+    }
+    
+protected:
+    const float m_radius;
+};
 
 } // namespace Methane::Graphics
