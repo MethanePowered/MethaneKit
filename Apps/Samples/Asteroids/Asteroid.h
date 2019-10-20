@@ -44,7 +44,7 @@ public:
         };
     };
 
-    class Mesh : public gfx::BaseMesh<Vertex>
+    class Mesh : public gfx::IcosahedronMesh<Vertex>
     {
     public:
         Mesh();
