@@ -23,6 +23,8 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 
 #pragma once
 
+#include "Asteroid.h"
+
 #include <Methane/Kit.h>
 
 namespace Methane::Samples
@@ -42,8 +44,7 @@ struct AsteroidsFrame final : gfx::AppFrame
     gfx::RenderCommandList::Ptr  sp_cmd_list;
     gfx::Buffer::Ptr             sp_scene_uniforms_buffer;
     MeshBufferBindings           skybox;
-    MeshBufferBindings           cube;
-
+    MeshBufferBindings           asteroid;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -93,15 +94,6 @@ private:
         SHADER_FIELD_ALIGN gfx::Vector3f  light_position;
     };
 
-    struct SHADER_STRUCT_ALIGN MeshUniforms
-    {
-        SHADER_FIELD_ALIGN gfx::Matrix44f model_matrix;
-        SHADER_FIELD_ALIGN gfx::Matrix44f mvp_matrix;
-    };
-    
-    using TexturedMeshBuffers = gfx::TexturedMeshBuffers<MeshUniforms>;
-
-    const gfx::BoxMesh<Vertex>  m_cube_mesh;
     const float                 m_scene_scale;
     const Constants             m_scene_constants;
     gfx::ActionCamera           m_view_camera;
@@ -109,7 +101,7 @@ private:
 
     SceneUniforms               m_scene_uniforms = { };
     gfx::SkyBox::Ptr            m_sp_sky_box;
-    TexturedMeshBuffers::Ptr    m_sp_cube_buffers;
+    Asteroid::Ptr               m_sp_asteroid;
     gfx::RenderState::Ptr       m_sp_state;
     gfx::Buffer::Ptr            m_sp_const_buffer;
     gfx::Sampler::Ptr           m_sp_texture_sampler;

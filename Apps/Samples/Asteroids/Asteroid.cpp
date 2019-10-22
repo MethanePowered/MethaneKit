@@ -27,11 +27,12 @@ namespace Methane::Samples
 {
 
 Asteroid::Mesh::Mesh()
-    : gfx::IcosahedronMesh<Vertex>(VertexLayoutFromArray(Vertex::layout), 2.f)
+    : gfx::IcosahedronMesh<Vertex>(VertexLayoutFromArray(Vertex::layout), 1.f)
 {
 }
 
-Asteroid::Asteroid()
+Asteroid::Asteroid(gfx::Context& context)
+    : BaseBuffers(context, Mesh(), "Asteroid")
 {
 }
 
