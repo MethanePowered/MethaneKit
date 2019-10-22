@@ -170,7 +170,6 @@ void AsteroidsApp::Init()
     state_settings.viewports     = { gfx::GetFrameViewport(context_settings.frame_size) };
     state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };
     state_settings.depth.enabled = true;
-    //state_settings.rasterizer.is_front_counter_clockwise = true;
     
     m_sp_state = gfx::RenderState::Create(context, state_settings);
     m_sp_state->SetName("Final FB render state");
