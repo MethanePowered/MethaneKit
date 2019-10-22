@@ -23,24 +23,38 @@ Random generated asteroid model with mesh and texture ready for rendering.
 
 #pragma once
 
+#include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/MathTypes.h>
 #include <Methane/Graphics/Mesh.h>
+#include <Methane/Graphics/MeshBuffers.hpp>
 
 namespace Methane::Samples
 {
 
 namespace gfx = Graphics;
 
-class Asteroid
+struct SHADER_STRUCT_ALIGN AsteroidUniforms
+{
+    SHADER_FIELD_ALIGN gfx::Matrix44f model_matrix;
+    SHADER_FIELD_ALIGN gfx::Matrix44f mvp_matrix;
+};
+
+class Asteroid : public gfx::TexturedMeshBuffers<AsteroidUniforms>
 {
 public:
+    using Ptr = std::unique_ptr<Asteroid>;
+    using BaseBuffers = gfx::TexturedMeshBuffers<AsteroidUniforms>;
+    
     struct Vertex
     {
         gfx::Mesh::Position position;
         gfx::Mesh::Normal   normal;
+        gfx::Mesh::TexCoord texcoord;
 
-        static constexpr const std::array<gfx::Mesh::VertexField, 2> layout = {
+        static constexpr const std::array<gfx::Mesh::VertexField, 3> layout = {
             gfx::Mesh::VertexField::Position,
             gfx::Mesh::VertexField::Normal,
+            gfx::Mesh::VertexField::TexCoord,
         };
     };
 
@@ -52,7 +66,7 @@ public:
     private:
     };
 
-    Asteroid();
+    Asteroid(gfx::Context& context);
 
 private:
 };

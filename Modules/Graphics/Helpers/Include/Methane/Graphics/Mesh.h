@@ -163,7 +163,7 @@ protected:
     Index AddEdgeMidpoint(const Edge& edge, EdgeMidpoints& edge_midpoinds)
     {
         const auto edge_midpoint_it = edge_midpoinds.find(edge);
-        if (edge_midpoint_it == edge_midpoinds.end())
+        if (edge_midpoint_it != edge_midpoinds.end())
             return edge_midpoint_it->second;
         
         const VType& v1 = m_vertices[edge.first_index];
@@ -210,7 +210,7 @@ protected:
         if (!Mesh::HasVertexField(Mesh::VertexField::Normal))
             throw std::logic_error("Mesh should contain normals.");
             
-        if (BaseMesh::m_indices.size() % 3 == 0)
+        if (BaseMesh::m_indices.size() % 3 != 0)
             throw std::logic_error("Mesh indices count should be a multiple of three representing triangles list.");
         
         for (VType& vertex : m_vertices)
@@ -524,34 +524,44 @@ public:
         {
             throw std::invalid_argument("Colored vertices are not supported for icosahedron mesh.");
         }
-        if (Mesh::HasVertexField(Mesh::VertexField::TexCoord))
-        {
-            throw std::invalid_argument("Textured vertices are not supported for icosahedron mesh.");
-        }
         
         const float a = radius;                                    // std::sqrt(2.0f / (5.0f - std::sqrt(5.0f)));
         const float b = (radius + std::sqrtf(radius * 5.f)) / 2.f; // std::sqrt(2.0f / (5.0f + std::sqrt(5.0f)));
         const std::array<Mesh::Position, 12> vertex_positions = {{
-            {-b,  a,  0},
-            { b,  a,  0},
-            {-b, -a,  0},
-            { b, -a,  0},
-            { 0, -b,  a},
-            { 0,  b,  a},
-            { 0, -b, -a},
-            { 0,  b, -a},
-            { a,  0, -b},
-            { a,  0,  b},
-            {-a,  0, -b},
-            {-a,  0,  b},
+            {-b,  a,  0 },
+            { b,  a,  0 },
+            {-b, -a,  0 },
+            { b, -a,  0 },
+            { 0, -b,  a },
+            { 0,  b,  a },
+            { 0, -b, -a },
+            { 0,  b, -a },
+            { a,  0, -b },
+            { a,  0,  b },
+            {-a,  0, -b },
+            {-a,  0,  b },
         }};
         
         BaseMesh::m_vertices.resize(vertex_positions.size());
         for(size_t vertex_index = 0; vertex_index < vertex_positions.size(); ++vertex_index)
         {
             VType& vertex = BaseMesh::m_vertices[vertex_index];
+            
             Mesh::Position& vertex_position = BaseMesh::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
             vertex_position = vertex_positions[vertex_index];
+            
+            if (Mesh::HasVertexField(Mesh::VertexField::Normal))
+            {
+                Mesh::Normal& vertex_normal = BaseMesh::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
+                vertex_normal = cml::normalize(vertex_position);
+            }
+            
+            if (Mesh::HasVertexField(Mesh::VertexField::TexCoord))
+            {
+                Mesh::TexCoord& vertex_texcoord = BaseMesh::template GetVertexField<Mesh::TexCoord>(vertex, Mesh::VertexField::TexCoord);
+                vertex_texcoord[0] = std::atan2(vertex_position[2], vertex_position[0]) / (2.f * cml::constants<float>::pi());
+                vertex_texcoord[1] = std::asin(vertex_position[1]) / cml::constants<float>::pi() + 0.5f;
+            }
         }
 
         BaseMesh::m_indices = {
@@ -592,7 +602,7 @@ public:
     
     void Subdivide()
     {
-        if (BaseMesh::m_indices.size() % 3 == 0)
+        if (BaseMesh::m_indices.size() % 3 != 0)
             throw std::logic_error("Icosahedron indices count should be a multiple of three representing triangles list.");
 
         Mesh::Indices new_indices;
@@ -618,7 +628,7 @@ public:
                 vm1, vm2, vm3,
                 vm3, vm2, vi3,
             };
-            new_indices.insert(BaseMesh::m_indices.end(), indices.begin(), indices.end());
+            new_indices.insert(new_indices.end(), indices.begin(), indices.end());
         }
 
         std::swap(BaseMesh::m_indices, new_indices);
