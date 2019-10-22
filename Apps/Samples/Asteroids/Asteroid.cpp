@@ -27,7 +27,7 @@ namespace Methane::Samples
 {
 
 Asteroid::Mesh::Mesh()
-    : gfx::IcosahedronMesh<Vertex>(VertexLayoutFromArray(Vertex::layout), 1.f)
+    : gfx::IcosahedronMesh<Vertex>(VertexLayoutFromArray(Vertex::layout), 0.5f, 0, false)
 {
 }
 

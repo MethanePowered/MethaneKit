@@ -525,8 +525,8 @@ public:
             throw std::invalid_argument("Colored vertices are not supported for icosahedron mesh.");
         }
         
-        const float a = radius;                                    // std::sqrt(2.0f / (5.0f - std::sqrt(5.0f)));
-        const float b = (radius + std::sqrtf(radius * 5.f)) / 2.f; // std::sqrt(2.0f / (5.0f + std::sqrt(5.0f)));
+        const float a = (radius + std::sqrtf(radius * 5.f)) / 2.f;
+        const float b = radius;
         const std::array<Mesh::Position, 12> vertex_positions = {{
             {-b,  a,  0 },
             { b,  a,  0 },
@@ -559,32 +559,37 @@ public:
             if (Mesh::HasVertexField(Mesh::VertexField::TexCoord))
             {
                 Mesh::TexCoord& vertex_texcoord = BaseMesh::template GetVertexField<Mesh::TexCoord>(vertex, Mesh::VertexField::TexCoord);
-                vertex_texcoord[0] = std::atan2(vertex_position[2], vertex_position[0]) / (2.f * cml::constants<float>::pi());
-                vertex_texcoord[1] = std::asin(vertex_position[1]) / cml::constants<float>::pi() + 0.5f;
+                const Mesh::Position vertex_direction = cml::normalize(vertex_position);
+
+                vertex_texcoord[0] = std::atan2(vertex_direction[2], vertex_direction[0]) / (2.f * cml::constants<float>::pi()) + 0.5f;
+                assert(0.f <= vertex_texcoord[0] && vertex_texcoord[0] <= 1.f);
+
+                vertex_texcoord[1] = std::asin(vertex_direction[1]) / cml::constants<float>::pi() + 0.5f;
+                assert(0.f <= vertex_texcoord[1] && vertex_texcoord[1] <= 1.f);
             }
         }
 
         BaseMesh::m_indices = {
-             0,  5, 11,
-             0,  1,  5,
-             0,  7,  1,
-             0, 10,  7,
-             0, 11, 10,
-             1,  9,  5,
-             5,  4, 11,
-            11,  2, 10,
-            10,  6,  7,
-             7,  8,  1,
-             3,  4,  9,
-             3,  2,  4,
-             3,  6,  2,
-             3,  8,  6,
-             3,  9,  8,
-             4,  5,  9,
-             2, 11,  4,
-             6, 10,  2,
-             8,  7,  6,
-             9,  1,  8,
+             5,  0, 11,
+             1,  0,  5,
+             7,  0,  1,
+            10,  0,  7,
+            11,  0, 10,
+             9,  1,  5,
+             4,  5, 11,
+             2, 11, 10,
+             6, 10,  7,
+             8,  7,  1,
+             4,  3,  9,
+             2,  3,  4,
+             6,  3,  2,
+             8,  3,  6,
+             9,  3,  8,
+             5,  4,  9,
+            11,  2,  4,
+            10,  6,  2,
+             7,  8,  6,
+             1,  9,  8,
         };
         
         for(uint32_t subdivision = 0; subdivision < subdivisions_count; ++subdivision)
