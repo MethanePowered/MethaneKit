@@ -23,12 +23,16 @@ Random generated asteroid model with mesh and texture ready for rendering
 
 #include "Asteroid.h"
 
+#include <Methane/Graphics/Noise.hpp>
+
 namespace Methane::Samples
 {
 
 Asteroid::Mesh::Mesh()
     : gfx::IcosahedronMesh<Vertex>(VertexLayoutFromArray(Vertex::layout), 0.5f, 0, false)
 {
+    const gfx::NoiseOctaves<4> noise_generator;
+    const float noise_value = noise_generator(gfx::Vector2f(0.f, 0.f));
 }
 
 Asteroid::Asteroid(gfx::Context& context)
