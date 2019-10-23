@@ -11,6 +11,7 @@ set(HEADERS
     ${INCLUDE_DIR}/ActionCamera.h
     ${INCLUDE_DIR}/FpsCounter.h
     ${INCLUDE_DIR}/Mesh.h
+    ${INCLUDE_DIR}/Noise.hpp
     ${INCLUDE_DIR}/MathTypes.h
     ${INCLUDE_PLATFORM_DIR}/Helpers.h
     ${INCLUDE_PLATFORM_DIR}/MathTypes.h
@@ -41,6 +42,7 @@ target_link_libraries(${TARGET}
     MethaneDataAnimation
     MethanePlatformUtils
     MethaneInstrumentation
+    PerlinNoise
     CML
 )
 
