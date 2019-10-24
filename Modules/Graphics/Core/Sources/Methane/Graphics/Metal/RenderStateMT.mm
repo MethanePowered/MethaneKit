@@ -205,7 +205,10 @@ void RenderStateMT::Apply(RenderCommandListBase& command_list)
     id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeEncoder();
     
     [mtl_cmd_encoder setRenderPipelineState: GetNativePipelineState()];
-    [mtl_cmd_encoder setDepthStencilState: GetNativeDepthState()];
+    if (m_settings.depth.enabled)
+    {
+        [mtl_cmd_encoder setDepthStencilState: GetNativeDepthState()];
+    }
     [mtl_cmd_encoder setTriangleFillMode: m_mtl_fill_mode];
     [mtl_cmd_encoder setFrontFacingWinding: m_mtl_front_face_winding];
     [mtl_cmd_encoder setCullMode: m_mtl_cull_mode];
@@ -293,6 +296,7 @@ id<MTLDepthStencilState>& RenderStateMT::GetNativeDepthState()
 
     if (!m_mtl_depth_state)
     {
+        assert(m_mtl_depth_stencil_state_desc != nil);
         m_mtl_depth_state = [GetContextMT().GetDeviceMT().GetNativeDevice() newDepthStencilStateWithDescriptor:m_mtl_depth_stencil_state_desc];
         if (!m_mtl_depth_state)
         {
