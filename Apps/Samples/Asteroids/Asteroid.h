@@ -61,7 +61,7 @@ public:
     class Mesh : public gfx::IcosahedronMesh<Vertex>
     {
     public:
-        Mesh();
+        Mesh(uint32_t randome_seed = 1337);
 
     private:
     };
