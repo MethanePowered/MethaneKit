@@ -28,11 +28,27 @@ Random generated asteroid model with mesh and texture ready for rendering
 namespace Methane::Samples
 {
 
-Asteroid::Mesh::Mesh()
-    : gfx::IcosahedronMesh<Vertex>(VertexLayoutFromArray(Vertex::layout), 0.5f, 0, false)
+Asteroid::Mesh::Mesh(uint32_t randome_seed)
+    : gfx::IcosahedronMesh<Vertex>(VertexLayoutFromArray(Vertex::layout), 0.5f, 3, true)
 {
-    const gfx::NoiseOctaves<4> noise_generator;
-    const float noise_value = noise_generator(gfx::Vector2f(0.f, 0.f));
+    const float noise_scale  = 0.5f;
+    const float radius_scale = 1.8f;
+    const float radius_bias  = 0.3f;
+    
+    std::mt19937 rng(randome_seed);
+
+    auto random_persistence = std::normal_distribution<float>(0.95f, 0.04f);
+    const gfx::NoiseOctaves<4> perlin_noise(random_persistence(rng));
+    
+    auto  random_noise = std::uniform_real_distribution<float>(0.0f, 10000.0f);
+    const float noise = random_noise(rng);
+
+    for (Vertex& vertex : m_vertices)
+    {
+        vertex.position *= perlin_noise(gfx::Vector4f(vertex.position * noise_scale, noise)) * radius_scale + radius_bias;
+    }
+    
+    ComputeAverageNormals();
 }
 
 Asteroid::Asteroid(gfx::Context& context)
