@@ -262,22 +262,22 @@ template<typename VType>
 class UberMesh : public BaseMesh<VType>
 {
 public:
+    struct Slice
+    {
+        const size_t offset;
+        const size_t count;
+
+        Slice(size_t in_offset, size_t in_count) : offset(in_offset), count(in_count) { }
+        Slice(const Slice& other) = default;
+    };
+    
     struct MeshDesc
     {
-        struct OffsetCount
-        {
-            const size_t offset;
-            const size_t count;
-
-            OffsetCount(size_t in_offset, size_t in_count) : offset(in_offset), count(in_count) { }
-            OffsetCount(const OffsetCount& other) = default;
-        };
-
         const Mesh::Type  mesh_type;
-        const OffsetCount vertices;
-        const OffsetCount indices;
+        const Slice       vertices;
+        const Slice       indices;
 
-        MeshDesc(Mesh::Type in_mesh_type, const OffsetCount& in_vertices, const OffsetCount& in_indices)
+        MeshDesc(Mesh::Type in_mesh_type, const Slice& in_vertices, const Slice& in_indices)
             : mesh_type(in_mesh_type)
             , vertices(in_vertices)
             , indices(in_indices)
@@ -285,25 +285,27 @@ public:
 
         MeshDesc(const MeshDesc& other) = default;
     };
+    
+    using BaseMesh = BaseMesh<VType>;
 
     UberMesh(const Mesh::VertexLayout& vertex_layout)
-        : BaseMesh<VType>(Mesh::Type::Uber, vertex_layout)
+        : BaseMesh(Mesh::Type::Uber, vertex_layout)
     { }
 
-    void AddSubMesh(const BaseMesh<VType>& sub_mesh)
+    void AddSubMesh(const BaseMesh& sub_mesh)
     {
-        const BaseMesh<VType>::Vertices& sub_vertices = sub_mesh.GetVertices();
-        const Mesh::Indices&             sub_indices  = sub_mesh.GetIndices();
+        const typename BaseMesh::Vertices& sub_vertices = sub_mesh.GetVertices();
+        const Mesh::Indices& sub_indices = sub_mesh.GetIndices();
 
         m_sub_meshes.emplace_back(sub_mesh.GetType(),
-                                  MeshDesc::OffsetCount(m_vertices.size(), sub_vertices.size()),
-                                  MeshDesc::OffsetCount(m_indices.size(),  sub_indices.size()));
+                                  Slice(BaseMesh::m_vertices.size(), sub_vertices.size()),
+                                  Slice(Mesh::m_indices.size(),      sub_indices.size()));
 
         const Mesh::Index index_offset = static_cast<Mesh::Index>(sub_vertices.size());
-        std::transform(sub_indices.begin(), sub_indices.end(), std::back_inserter(m_indices),
+        std::transform(sub_indices.begin(), sub_indices.end(), std::back_inserter(Mesh::m_indices),
                        [index_offset](const Mesh::Index& index) { return index_offset + index; });
 
-        m_vertices.insert(m_vertices.end(), sub_vertices.begin(), sub_vertices.end());
+        BaseMesh::m_vertices.insert(BaseMesh::m_vertices.end(), sub_vertices.begin(), sub_vertices.end());
     }
 
     size_t          GetSubMeshCount() const noexcept { return m_sub_meshes.size(); }
@@ -318,13 +320,13 @@ public:
     std::pair<const VType*, size_t>       GetSubMeshVertices(size_t sub_mesh_index) const
     {
         const MeshDesc& sub_mesh_desc = GetSubMeshDesc(sub_mesh_index);
-        return { GetVertices().data() + sub_mesh_desc.vertices.offset, sub_mesh_desc.vertices.count };
+        return { BaseMesh::GetVertices().data() + sub_mesh_desc.vertices.offset, sub_mesh_desc.vertices.count };
     }
 
     std::pair<const Mesh::Index*, size_t> GetSubMeshIndices(size_t sub_mesh_index) const
     {
         const MeshDesc& sub_mesh_desc = GetSubMeshDesc(sub_mesh_index);
-        return { GetIndices().data() + sub_mesh_desc.indices.offset, sub_mesh_desc.indices.count };
+        return { Mesh::GetIndices().data() + sub_mesh_desc.indices.offset, sub_mesh_desc.indices.count };
     }
 
 private:
