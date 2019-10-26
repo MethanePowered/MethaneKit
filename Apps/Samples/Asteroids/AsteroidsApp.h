@@ -33,6 +33,8 @@ namespace Methane::Samples
 namespace gfx = Graphics;
 namespace pal = Platform;
 
+//#define ASTEROID_ARRAY_SIZE 100
+
 struct AsteroidsFrame final : gfx::AppFrame
 {
     struct MeshBufferBindings
@@ -101,10 +103,15 @@ private:
 
     SceneUniforms               m_scene_uniforms = { };
     gfx::SkyBox::Ptr            m_sp_sky_box;
-    Asteroid::Ptr               m_sp_asteroid;
     gfx::RenderState::Ptr       m_sp_state;
     gfx::Buffer::Ptr            m_sp_const_buffer;
     gfx::Sampler::Ptr           m_sp_texture_sampler;
+
+#ifdef ASTEROID_ARRAY_SIZE
+    AsteroidArray::Ptr          m_sp_asteroid_array;
+#else
+    Asteroid::Ptr               m_sp_asteroid;
+#endif
 };
 
 } // namespace Methane::Samples

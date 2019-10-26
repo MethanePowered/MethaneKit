@@ -24,22 +24,31 @@ Random generated asteroid model with mesh and texture ready for rendering
 #include "Asteroid.h"
 
 #include <Methane/Graphics/Noise.hpp>
+#include <Methane/Data/Parallel.hpp>
 
 namespace Methane::Samples
 {
 
-Asteroid::Mesh::Mesh(uint32_t randome_seed)
-    : gfx::IcosahedronMesh<Vertex>(VertexLayoutFromArray(Vertex::layout), 0.5f, 3, true)
+Asteroid::Mesh::Mesh(uint32_t subdivisions_count, bool randomize)
+    : gfx::IcosahedronMesh<Vertex>(VertexLayoutFromArray(Vertex::layout), 0.5f, subdivisions_count, true)
 {
-    const float noise_scale  = 0.5f;
+    if (randomize)
+    {
+        Randomize();
+    }
+}
+
+void Asteroid::Mesh::Randomize(uint32_t random_seed)
+{
+    const float noise_scale = 0.5f;
     const float radius_scale = 1.8f;
-    const float radius_bias  = 0.3f;
-    
-    std::mt19937 rng(randome_seed);
+    const float radius_bias = 0.3f;
+
+    std::mt19937 rng(random_seed);
 
     auto random_persistence = std::normal_distribution<float>(0.95f, 0.04f);
     const gfx::NoiseOctaves<4> perlin_noise(random_persistence(rng));
-    
+
     auto  random_noise = std::uniform_real_distribution<float>(0.0f, 10000.0f);
     const float noise = random_noise(rng);
 
@@ -47,12 +56,41 @@ Asteroid::Mesh::Mesh(uint32_t randome_seed)
     {
         vertex.position *= perlin_noise(gfx::Vector4f(vertex.position * noise_scale, noise)) * radius_scale + radius_bias;
     }
-    
+
     ComputeAverageNormals();
 }
 
 Asteroid::Asteroid(gfx::Context& context)
-    : BaseBuffers(context, Mesh(), "Asteroid")
+    : BaseBuffers(context, Mesh(3, true), "Asteroid")
+{
+}
+
+
+AsteroidArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed)
+    : gfx::UberMesh<Asteroid::Vertex>(gfx::Mesh::VertexLayoutFromArray(Asteroid::Vertex::layout))
+{
+    std::mt19937 rng(random_seed);
+
+    for(uint32_t instance_index = 0; instance_index < instance_count; ++instance_index)
+    {
+        const uint32_t instance_seed = rng();
+        Asteroid::Mesh base_mesh(0, false);
+
+        for (uint32_t subdivision_index = 0; subdivision_index < subdivisions_count; ++subdivision_index)
+        {
+            base_mesh.Subdivide();
+
+            Asteroid::Mesh asteroid_mesh(base_mesh);
+            asteroid_mesh.Spherify();
+            asteroid_mesh.Randomize(instance_seed);
+
+            AddSubMesh(asteroid_mesh);
+        }
+    }
+}
+
+AsteroidArray::AsteroidArray(gfx::Context& context, uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed)
+    : BaseBuffers(context, UberMesh(instance_count, subdivisions_count, random_seed), "Asteroid Array")
 {
 }
 

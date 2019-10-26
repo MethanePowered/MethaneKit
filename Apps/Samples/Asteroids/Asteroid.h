@@ -61,14 +61,27 @@ public:
     class Mesh : public gfx::IcosahedronMesh<Vertex>
     {
     public:
-        Mesh(uint32_t randome_seed = 1337);
+        Mesh(uint32_t subdivisions_count, bool randomize);
 
-    private:
+        void Randomize(uint32_t random_seed = 1337);
     };
 
     Asteroid(gfx::Context& context);
+};
 
-private:
+class AsteroidArray : public gfx::TexturedMeshBuffers<AsteroidUniforms>
+{
+public:
+    using Ptr = std::unique_ptr<AsteroidArray>;
+    using BaseBuffers = gfx::TexturedMeshBuffers<AsteroidUniforms>;
+
+    class UberMesh : public gfx::UberMesh<Asteroid::Vertex>
+    {
+    public:
+        UberMesh(uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed);
+    };
+
+    AsteroidArray(gfx::Context& context, uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed = 1337);
 };
 
 } // namespace Methane::Samples
