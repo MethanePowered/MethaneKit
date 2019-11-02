@@ -25,6 +25,7 @@ Procedural mesh generators, including rect, box, etc.
 
 #include "MathTypes.h"
 
+#include <Methane/Data/Types.h>
 #include <Methane/Instrumentation.h>
 
 #include <vector>
@@ -58,6 +59,32 @@ public:
         Icosahedron,
     };
 
+    struct Subset
+    {
+        struct Slice
+        {
+            const Data::Size offset;
+            const Data::Size count;
+
+            Slice(Data::Size in_offset, Data::Size in_count) : offset(in_offset), count(in_count) { }
+            Slice(const Slice& other) = default;
+        };
+
+        const Type  mesh_type;
+        const Slice vertices;
+        const Slice indices;
+
+        Subset(Type in_mesh_type, const Slice& in_vertices, const Slice& in_indices)
+            : mesh_type(in_mesh_type)
+            , vertices(in_vertices)
+            , indices(in_indices)
+        { }
+
+        Subset(const Subset& other) = default;
+    };
+
+    using Subsets = std::vector<Subset>;
+
     enum class VertexField : size_t
     {
         Position = 0,
@@ -81,10 +108,10 @@ public:
 
     Type                GetType() const noexcept            { return m_type; }
     const VertexLayout& GetVertexLayout() const noexcept    { return m_vertex_layout; }
-    size_t              GetVertexSize() const noexcept      { return m_vertex_size; }
+    Data::Size          GetVertexSize() const noexcept      { return m_vertex_size; }
     const Indices&      GetIndices() const noexcept         { return m_indices; }
-    size_t              GetIndexCount() const noexcept      { return m_indices.size(); }
-    size_t              GetIndexDataSize() const noexcept   { return m_indices.size() * sizeof(Index); }
+    Data::Size          GetIndexCount() const noexcept      { return static_cast<Data::Size>(m_indices.size()); }
+    Data::Size          GetIndexDataSize() const noexcept   { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
 
 protected:
     struct Edge
@@ -97,18 +124,18 @@ protected:
         bool operator<(const Edge& other) const;
     };
     
-    using VertexFieldOffsets = std::array<int32_t, static_cast<size_t>(VertexField::Count)>;
-    using VertexFieldSizes   = std::array<size_t,  static_cast<size_t>(VertexField::Count)>;
+    using VertexFieldOffsets = std::array<int32_t,     static_cast<size_t>(VertexField::Count)>;
+    using VertexFieldSizes   = std::array<Data::Size,  static_cast<size_t>(VertexField::Count)>;
 
     bool HasVertexField(VertexField field) const noexcept;
 
     static VertexFieldOffsets GetVertexFieldOffsets(const VertexLayout& vertex_layout);
-    static size_t             GetVertexSize(const VertexLayout& vertex_layout) noexcept;
+    static Data::Size         GetVertexSize(const VertexLayout& vertex_layout) noexcept;
 
     const Type                  m_type;
     const VertexLayout          m_vertex_layout;
     const VertexFieldOffsets    m_vertex_field_offsets;
-    const size_t                m_vertex_size;
+    const Data::Size            m_vertex_size;
     Indices                     m_indices;
 
     using Position2D  = Vector2f;
@@ -140,8 +167,8 @@ public:
     }
 
     const Vertices& GetVertices() const noexcept       { return m_vertices; }
-    size_t          GetVertexCount() const noexcept    { return m_vertices.size(); }
-    size_t          GetVertexDataSize() const noexcept { return m_vertices.size() * m_vertex_size; }
+    Data::Size      GetVertexCount() const noexcept    { return static_cast<Data::Size>(m_vertices.size()); }
+    Data::Size      GetVertexDataSize() const noexcept { return static_cast<Data::Size>(m_vertices.size() * m_vertex_size); }
 
 protected:
     template<typename FType>
@@ -262,30 +289,6 @@ template<typename VType>
 class UberMesh : public BaseMesh<VType>
 {
 public:
-    struct Slice
-    {
-        const size_t offset;
-        const size_t count;
-
-        Slice(size_t in_offset, size_t in_count) : offset(in_offset), count(in_count) { }
-        Slice(const Slice& other) = default;
-    };
-    
-    struct MeshDesc
-    {
-        const Mesh::Type  mesh_type;
-        const Slice       vertices;
-        const Slice       indices;
-
-        MeshDesc(Mesh::Type in_mesh_type, const Slice& in_vertices, const Slice& in_indices)
-            : mesh_type(in_mesh_type)
-            , vertices(in_vertices)
-            , indices(in_indices)
-        { }
-
-        MeshDesc(const MeshDesc& other) = default;
-    };
-    
     using BaseMesh = BaseMesh<VType>;
 
     UberMesh(const Mesh::VertexLayout& vertex_layout)
@@ -297,9 +300,9 @@ public:
         const typename BaseMesh::Vertices& sub_vertices = sub_mesh.GetVertices();
         const Mesh::Indices& sub_indices = sub_mesh.GetIndices();
 
-        m_sub_meshes.emplace_back(sub_mesh.GetType(),
-                                  Slice(BaseMesh::m_vertices.size(), sub_vertices.size()),
-                                  Slice(Mesh::m_indices.size(),      sub_indices.size()));
+        m_subsets.emplace_back(sub_mesh.GetType(),
+                               Mesh::Subset::Slice(static_cast<Data::Size>(BaseMesh::m_vertices.size()), static_cast<Data::Size>(sub_vertices.size())),
+                               Mesh::Subset::Slice(static_cast<Data::Size>(Mesh::m_indices.size()), static_cast<Data::Size>(sub_indices.size())));
 
         const Mesh::Index index_offset = static_cast<Mesh::Index>(sub_vertices.size());
         std::transform(sub_indices.begin(), sub_indices.end(), std::back_inserter(Mesh::m_indices),
@@ -308,29 +311,30 @@ public:
         BaseMesh::m_vertices.insert(BaseMesh::m_vertices.end(), sub_vertices.begin(), sub_vertices.end());
     }
 
-    size_t          GetSubMeshCount() const noexcept { return m_sub_meshes.size(); }
-    const MeshDesc& GetSubMeshDesc(size_t sub_mesh_index) const
+    const Mesh::Subsets& GetSubsets() const                     { return m_subsets; }
+    size_t               GetSubsetCount() const noexcept        { return m_subsets.size(); }
+    const Mesh::Subset&  GetSubset(size_t subset_index) const
     {
-        if (sub_mesh_index >= m_sub_meshes.size())
+        if (subset_index >= m_subsets.size())
             throw std::invalid_argument("Sub mesh index is out of bounds.");
 
-        return m_sub_meshes[sub_mesh_index];
+        return m_subsets[subset_index];
     }
 
-    std::pair<const VType*, size_t>       GetSubMeshVertices(size_t sub_mesh_index) const
+    std::pair<const VType*, size_t> GetSubsetVertices(size_t subset_index) const
     {
-        const MeshDesc& sub_mesh_desc = GetSubMeshDesc(sub_mesh_index);
-        return { BaseMesh::GetVertices().data() + sub_mesh_desc.vertices.offset, sub_mesh_desc.vertices.count };
+        const Mesh::Subset& subset = GetSubset(subset_index);
+        return { BaseMesh::GetVertices().data() + subset.vertices.offset, subset.vertices.count };
     }
 
-    std::pair<const Mesh::Index*, size_t> GetSubMeshIndices(size_t sub_mesh_index) const
+    std::pair<const Mesh::Index*, size_t> GetSubsetIndices(size_t subset_index) const
     {
-        const MeshDesc& sub_mesh_desc = GetSubMeshDesc(sub_mesh_index);
-        return { Mesh::GetIndices().data() + sub_mesh_desc.indices.offset, sub_mesh_desc.indices.count };
+        const MeshDesc& subset = GetSubMeshDesc(subset_index);
+        return { Mesh::GetIndices().data() + subset.indices.offset, subset.indices.count };
     }
 
 private:
-    std::vector<MeshDesc> m_sub_meshes;
+    Mesh::Subsets m_subsets;
 };
 
 template<typename VType>
