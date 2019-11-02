@@ -302,7 +302,7 @@ void AsteroidsApp::Render()
 #ifdef ASTEROID_ARRAY_SIZE
 #else
     assert(!!m_sp_asteroid);
-    m_sp_asteroid->Draw(*frame.sp_cmd_list, *frame.asteroid.sp_resource_bindings, 1);
+    m_sp_asteroid->Draw(*frame.sp_cmd_list, *frame.asteroid.sp_resource_bindings);
 #endif
 
     frame.sp_cmd_list->Commit(true);

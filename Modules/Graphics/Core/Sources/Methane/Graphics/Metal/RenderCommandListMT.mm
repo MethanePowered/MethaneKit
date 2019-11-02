@@ -147,43 +147,48 @@ void RenderCommandListMT::SetVertexBuffers(const Buffer::Refs& vertex_buffers)
     }
 }
 
-void RenderCommandListMT::DrawIndexed(Primitive primitive, const Buffer& index_buffer, uint32_t instance_count)
+void RenderCommandListMT::DrawIndexed(Primitive primitive, const Buffer& index_buffer,
+                                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
+                                      uint32_t instance_count, uint32_t start_instance)
 {
     ITT_FUNCTION_TASK();
 
-    RenderCommandListBase::DrawIndexed(primitive, index_buffer, instance_count);
+    RenderCommandListBase::DrawIndexed(primitive, index_buffer, index_count, start_index, start_vertex, instance_count, start_instance);
 
     const BufferMT&        metal_index_buffer   = static_cast<const BufferMT&>(index_buffer);
     const MTLPrimitiveType mtl_primitive_type   = PrimitiveTypeToMetal(primitive);
-    const NSUInteger       mtl_index_count      = metal_index_buffer.GetFormattedItemsCount();
+    const NSUInteger       mtl_index_count      = index_count ? index_count : metal_index_buffer.GetFormattedItemsCount();
     const MTLIndexType     mtl_index_type       = metal_index_buffer.GetNativeIndexType();
     const id<MTLBuffer>&   mtl_index_buffer     = metal_index_buffer.GetNativeBuffer();
 
     assert(m_mtl_cmd_encoder != nil);
     assert(mtl_index_count > 0);
-    assert(instance_count > 0);
 
     [m_mtl_cmd_encoder drawIndexedPrimitives: mtl_primitive_type
                                   indexCount: mtl_index_count
                                    indexType: mtl_index_type
                                  indexBuffer: mtl_index_buffer
-                           indexBufferOffset: 0
-                               instanceCount: instance_count];
+                           indexBufferOffset: start_index
+                               instanceCount: instance_count
+                                  baseVertex: start_vertex
+                                baseInstance: start_instance];
 }
 
-void RenderCommandListMT::Draw(Primitive primitive, uint32_t vertex_count, uint32_t instance_count)
+void RenderCommandListMT::Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
+                               uint32_t instance_count, uint32_t start_instance)
 {
     ITT_FUNCTION_TASK();
 
-    RenderCommandListBase::Draw(primitive, vertex_count, instance_count);
+    RenderCommandListBase::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
 
     const MTLPrimitiveType mtl_primitive_type = PrimitiveTypeToMetal(primitive);
 
     assert(m_mtl_cmd_encoder != nil);
-    assert(vertex_count > 0);
-    assert(instance_count > 0);
-
-    [m_mtl_cmd_encoder drawPrimitives:mtl_primitive_type vertexStart:0 vertexCount:vertex_count instanceCount:instance_count];
+    [m_mtl_cmd_encoder drawPrimitives: mtl_primitive_type
+                          vertexStart: start_vertex
+                          vertexCount: vertex_count
+                        instanceCount: instance_count
+                         baseInstance: start_instance];
 }
 
 void RenderCommandListMT::Commit(bool present_drawable)

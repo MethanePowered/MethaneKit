@@ -426,12 +426,12 @@ void ShadowCubeApp::RenderScene(const RenderPass &render_pass, ShadowCubeFrame::
     // Cube drawing
     assert(!!render_pass_resources.cube.sp_resource_bindings);
     assert(!!m_sp_cube_buffers);
-    m_sp_cube_buffers->Draw(cmd_list, *render_pass_resources.cube.sp_resource_bindings, 1);
+    m_sp_cube_buffers->Draw(cmd_list, *render_pass_resources.cube.sp_resource_bindings);
 
     // Floor drawing
     assert(!!render_pass_resources.floor.sp_resource_bindings);
     assert(!!m_sp_floor_buffers);
-    m_sp_floor_buffers->Draw(cmd_list, *render_pass_resources.floor.sp_resource_bindings, 1);
+    m_sp_floor_buffers->Draw(cmd_list, *render_pass_resources.floor.sp_resource_bindings);
 
     cmd_list.Commit(render_pass.is_final_pass);
 }

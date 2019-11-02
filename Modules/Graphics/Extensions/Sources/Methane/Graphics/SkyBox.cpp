@@ -111,7 +111,7 @@ void SkyBox::Draw(RenderCommandList& cmd_list, Buffer& uniforms_buffer, Program:
     uniforms_buffer.SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_mesh_buffers.GetFinalPassUniforms()), sizeof(MeshUniforms) } });
 
     cmd_list.Reset(*m_sp_state, "Sky-box rendering");
-    m_mesh_buffers.Draw(cmd_list, resource_bindings, 1);
+    m_mesh_buffers.Draw(cmd_list, resource_bindings);
 }
 
 } // namespace Methane::Graphics

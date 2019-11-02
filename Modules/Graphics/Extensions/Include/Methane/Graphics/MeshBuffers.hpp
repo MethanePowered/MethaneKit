@@ -73,16 +73,19 @@ public:
         });
     }
 
-    void Draw(RenderCommandList& cmd_list, Program::ResourceBindings& resource_bindings, uint32_t instance_count)
+    void Draw(RenderCommandList& cmd_list, Program::ResourceBindings& resource_bindings,
+              uint32_t index_count = 0, uint32_t start_index = 0, uint32_t start_vertex = 0,
+              uint32_t instance_count = 1, uint32_t start_instance = 0)
     {
         cmd_list.SetResourceBindings(resource_bindings);
         cmd_list.SetVertexBuffers({ GetVertexBuffer() });
-        cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, GetIndexBuffer(), instance_count);
+        cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, GetIndexBuffer(),
+                             index_count, start_index, start_vertex, instance_count, start_instance);
     }
 
-    const std::string&  GetMeshName() const              { return m_mesh_name; }
-    const UniformsType& GetFinalPassUniforms() const    { return m_final_pass_uniforms; }
-    void SetFinalPassUniforms(const UniformsType& uniforms)   { m_final_pass_uniforms = uniforms; }
+    const std::string&  GetMeshName() const                   { return m_mesh_name; }
+    const UniformsType& GetFinalPassUniforms() const          { return m_final_pass_uniforms; }
+    void  SetFinalPassUniforms(const UniformsType& uniforms)  { m_final_pass_uniforms = uniforms; }
 
 protected:
     Buffer& GetVertexBuffer()
