@@ -85,11 +85,11 @@ Mesh::VertexFieldOffsets Mesh::GetVertexFieldOffsets(const VertexLayout& vertex_
     return field_offsets;
 }
 
-size_t Mesh::GetVertexSize(const VertexLayout& vertex_layout) noexcept
+Data::Size Mesh::GetVertexSize(const VertexLayout& vertex_layout) noexcept
 {
     ITT_FUNCTION_TASK();
 
-    size_t vertex_size = 0;
+    Data::Size vertex_size = 0;
     for (VertexField vertex_field : vertex_layout)
     {
         vertex_size += g_vertex_field_sizes[static_cast<size_t>(vertex_field)];
