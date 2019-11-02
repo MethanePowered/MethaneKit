@@ -152,20 +152,22 @@ void RenderCommandListMT::DrawIndexed(Primitive primitive, const Buffer& index_b
                                       uint32_t instance_count, uint32_t start_instance)
 {
     ITT_FUNCTION_TASK();
+    
+    const BufferMT& metal_index_buffer = static_cast<const BufferMT&>(index_buffer);
+    if (index_count == 0)
+    {
+        index_count = metal_index_buffer.GetFormattedItemsCount();
+    }
 
     RenderCommandListBase::DrawIndexed(primitive, index_buffer, index_count, start_index, start_vertex, instance_count, start_instance);
-
-    const BufferMT&        metal_index_buffer   = static_cast<const BufferMT&>(index_buffer);
+    
     const MTLPrimitiveType mtl_primitive_type   = PrimitiveTypeToMetal(primitive);
-    const NSUInteger       mtl_index_count      = index_count ? index_count : metal_index_buffer.GetFormattedItemsCount();
     const MTLIndexType     mtl_index_type       = metal_index_buffer.GetNativeIndexType();
     const id<MTLBuffer>&   mtl_index_buffer     = metal_index_buffer.GetNativeBuffer();
 
     assert(m_mtl_cmd_encoder != nil);
-    assert(mtl_index_count > 0);
-
     [m_mtl_cmd_encoder drawIndexedPrimitives: mtl_primitive_type
-                                  indexCount: mtl_index_count
+                                  indexCount: index_count
                                    indexType: mtl_index_type
                                  indexBuffer: mtl_index_buffer
                            indexBufferOffset: start_index
