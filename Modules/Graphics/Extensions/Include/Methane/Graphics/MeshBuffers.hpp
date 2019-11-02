@@ -175,7 +175,7 @@ public:
 
     template<typename VType>
     TexturedMeshBuffers(Context& context, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
-        : MeshBuffers(context, uber_mesh_data, mesh_name)
+        : MeshBuffers<UniformsType>(context, uber_mesh_data, mesh_name)
     {
     }
 
