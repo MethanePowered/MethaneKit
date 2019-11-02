@@ -329,7 +329,7 @@ public:
 
     std::pair<const Mesh::Index*, size_t> GetSubsetIndices(size_t subset_index) const
     {
-        const MeshDesc& subset = GetSubMeshDesc(subset_index);
+        const Mesh::Subset& subset = GetSubset(subset_index);
         return { Mesh::GetIndices().data() + subset.indices.offset, subset.indices.count };
     }
 
