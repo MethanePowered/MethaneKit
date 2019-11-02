@@ -65,10 +65,10 @@ void VertexBufferDX::InitializeView(Data::Size stride)
     ITT_FUNCTION_TASK();
 
     const Data::Size data_size     = GetDataSize();
-    m_buffer_view.BufferLocation = GetNativeGpuAddress();
-    m_buffer_view.SizeInBytes    = static_cast<UINT>(data_size);
-    m_buffer_view.StrideInBytes  = static_cast<UINT>(stride);
-    m_formatted_items_count = stride > 0 ? data_size / stride : 0;
+    m_buffer_view.BufferLocation   = GetNativeGpuAddress();
+    m_buffer_view.SizeInBytes      = static_cast<UINT>(data_size);
+    m_buffer_view.StrideInBytes    = static_cast<UINT>(stride);
+    m_formatted_items_count        = stride > 0 ? data_size / stride : 0;
 }
 
 template<>
@@ -78,10 +78,10 @@ void IndexBufferDX::InitializeView(PixelFormat format)
 
     const Data::Size data_size     = GetDataSize();
     const Data::Size element_size  = GetPixelSize(format);
-    m_buffer_view.BufferLocation = GetNativeGpuAddress();
-    m_buffer_view.SizeInBytes    = static_cast<UINT>(data_size);
-    m_buffer_view.Format = TypeConverterDX::DataFormatToDXGI(format);
-    m_formatted_items_count = element_size > 0 ? data_size / element_size : 0;
+    m_buffer_view.BufferLocation   = GetNativeGpuAddress();
+    m_buffer_view.SizeInBytes      = static_cast<UINT>(data_size);
+    m_buffer_view.Format           = TypeConverterDX::DataFormatToDXGI(format);
+    m_formatted_items_count        = element_size > 0 ? data_size / element_size : 0;
 }
 
 template<>
