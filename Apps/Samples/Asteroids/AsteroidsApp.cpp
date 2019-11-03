@@ -123,17 +123,12 @@ void AsteroidsApp::Init()
     });
 
     // Create vertex and index buffer for meshes
-#ifdef ASTEROID_ARRAY_SIZE
-    m_sp_asteroid_array = std::make_unique<AsteroidArray>(context, ASTEROID_ARRAY_SIZE, 3, 1337);
+    m_sp_asteroid_array = std::make_unique<AsteroidArray>(context, g_asteroid_instances_count, g_asteroid_subdivisions_count, 1337);
     m_sp_asteroid_array->SetTexture(m_image_loader.LoadImageToTexture2D(context, "Textures/MethaneBubbles.jpg"));
-#else
-    m_sp_asteroid = std::make_unique<Asteroid>(context);
-    m_sp_asteroid->SetTexture(m_image_loader.LoadImageToTexture2D(context, "Textures/MethaneBubbles.jpg"));
-#endif
 
     const Data::Size constants_data_size         = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(Constants)));
     const Data::Size scene_uniforms_data_size    = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(SceneUniforms)));
-    const Data::Size asteroid_uniforms_data_size = Asteroid::GetUniformsAlignedBufferSize();
+    const Data::Size asteroid_uniforms_data_size = m_sp_asteroid_array->GetUniformsBufferSize();
 
     // Create constants buffer for frame rendering
     m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(context, constants_data_size);
@@ -195,24 +190,25 @@ void AsteroidsApp::Init()
         frame.skybox.sp_uniforms_buffer->SetName(IndexedName("Sky-box Uniforms Buffer", frame.index));
 
         // Resource bindings for Sky-Box rendering
-        frame.skybox.sp_resource_bindings = m_sp_sky_box->CreateResourceBindings(frame.skybox.sp_uniforms_buffer);
+        frame.skybox.resource_bindings_array.resize(1);
+        frame.skybox.resource_bindings_array[0] = m_sp_sky_box->CreateResourceBindings(frame.skybox.sp_uniforms_buffer);
 
         // Create uniforms buffer for Cube rendering
-        frame.asteroid.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, asteroid_uniforms_data_size);
-        frame.asteroid.sp_uniforms_buffer->SetName(IndexedName("Cube Uniforms Buffer", frame.index));
+        frame.asteroids.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, asteroid_uniforms_data_size);
+        frame.asteroids.sp_uniforms_buffer->SetName(IndexedName("Cube Uniforms Buffer", frame.index));
 
         // Resource bindings for cube rendering
-        frame.asteroid.sp_resource_bindings = gfx::Program::ResourceBindings::Create(state_settings.sp_program, {
-            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, frame.asteroid.sp_uniforms_buffer           },
-            { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, frame.sp_scene_uniforms_buffer              },
-            { { gfx::Shader::Type::Pixel,  "g_constants"      }, m_sp_const_buffer                           },
-#ifdef ASTEROID_ARRAY_SIZE
-            { { gfx::Shader::Type::Pixel,  "g_texture"        }, m_sp_asteroid_array->GetTexturePtr()        },
-#else
-            { { gfx::Shader::Type::Pixel,  "g_texture"        }, m_sp_asteroid->GetTexturePtr()              },
-#endif
-            { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, m_sp_texture_sampler                        },
-        });
+        frame.asteroids.resource_bindings_array.resize(m_sp_asteroid_array->GetSubsetsCount());
+        for(gfx::Program::ResourceBindings::Ptr& sp_asteroid_resource_bindings : frame.asteroids.resource_bindings_array)
+        {
+            sp_asteroid_resource_bindings = gfx::Program::ResourceBindings::Create(state_settings.sp_program, {
+                { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, frame.asteroids.sp_uniforms_buffer /* + ELEMENT_OFFSET */ },
+                { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, frame.sp_scene_uniforms_buffer              },
+                { { gfx::Shader::Type::Pixel,  "g_constants"      }, m_sp_const_buffer                           },
+                { { gfx::Shader::Type::Pixel,  "g_texture"        }, m_sp_asteroid_array->GetTexturePtr()        },
+                { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, m_sp_texture_sampler                        },
+            });
+        }
     }
 
     // Complete initialization of render context:
@@ -256,18 +252,18 @@ void AsteroidsApp::Update()
     m_scene_uniforms.eye_position    = gfx::Vector4f(m_view_camera.GetOrientation().eye, 1.f);
     m_scene_uniforms.light_position  = m_light_camera.GetOrientation().eye;
 
-    // Cube model matrix
-    gfx::Matrix44f cube_model_matrix = scale_matrix;
-
-    // Update Cube uniforms with matrices
-#ifdef ASTEROID_ARRAY_SIZE
-#else
-    m_sp_asteroid->SetFinalPassUniforms(AsteroidUniforms{
-        cube_model_matrix,
-        cube_model_matrix * scene_view_matrix * scene_proj_matrix
-    });
-#endif
-
+    // Update Asteroid uniforms with matrices
+    const uint32_t asteroids_count = m_sp_asteroid_array->GetSubsetsCount();
+    for(uint32_t asteroid_index = 0; asteroid_index < asteroids_count; ++asteroid_index)
+    {
+        gfx::Matrix44f asteroid_model_matrix = scale_matrix;
+        // TODO asteroids positioning
+        m_sp_asteroid_array->SetFinalPassUniforms(AsteroidUniforms{
+            asteroid_model_matrix,
+            asteroid_model_matrix * scene_view_matrix * scene_proj_matrix
+        }, asteroid_index);
+    }
+    
     m_sp_sky_box->Update();
 }
 
@@ -283,27 +279,23 @@ void AsteroidsApp::Render()
     AsteroidsFrame& frame = GetCurrentFrame();
 
     // Upload uniform buffers to GPU
-    assert(!!m_sp_sky_box);
+    
     frame.sp_scene_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms) } });
-#ifdef ASTEROID_ARRAY_SIZE
-#else
-    frame.asteroid.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_asteroid->GetFinalPassUniforms()), sizeof(AsteroidUniforms) } });
-#endif
+    frame.asteroids.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_asteroid_array->GetFinalPassUniforms()),
+                                                    m_sp_asteroid_array->GetUniformsBufferSize() } });
 
     // Sky-box drawing
     assert(!!frame.sp_cmd_list);
     assert(!!frame.skybox.sp_uniforms_buffer);
-    assert(!!frame.skybox.sp_resource_bindings);
-    m_sp_sky_box->Draw(*frame.sp_cmd_list, *frame.skybox.sp_uniforms_buffer, *frame.skybox.sp_resource_bindings);
+    assert(!!frame.skybox.resource_bindings_array[0]);
+    assert(!!m_sp_sky_box);
+    m_sp_sky_box->Draw(*frame.sp_cmd_list, *frame.skybox.sp_uniforms_buffer, *frame.skybox.resource_bindings_array[0]);
 
     // Cube drawing
-    frame.sp_cmd_list->Reset(*m_sp_state, "Cube rendering");
+    frame.sp_cmd_list->Reset(*m_sp_state, "Asteroids rendering");
 
-#ifdef ASTEROID_ARRAY_SIZE
-#else
-    assert(!!m_sp_asteroid);
-    m_sp_asteroid->Draw(*frame.sp_cmd_list, *frame.asteroid.sp_resource_bindings);
-#endif
+    assert(!!m_sp_asteroid_array);
+    m_sp_asteroid_array->Draw(*frame.sp_cmd_list, frame.asteroids.resource_bindings_array);
 
     frame.sp_cmd_list->Commit(true);
 
@@ -319,14 +311,10 @@ void AsteroidsApp::Render()
 void AsteroidsApp::OnContextReleased()
 {
     m_sp_sky_box.reset();
+    m_sp_asteroid_array.reset();
     m_sp_texture_sampler.reset();
     m_sp_const_buffer.reset();
     m_sp_state.reset();
-
-#ifdef ASTEROID_ARRAY_SIZE
-#else
-    m_sp_asteroid.reset();
-#endif
 
     GraphicsApp::OnContextReleased();
 }

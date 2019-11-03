@@ -33,20 +33,20 @@ namespace Methane::Samples
 namespace gfx = Graphics;
 namespace pal = Platform;
 
-//#define ASTEROID_ARRAY_SIZE 100
-
 struct AsteroidsFrame final : gfx::AppFrame
 {
     struct MeshBufferBindings
     {
-        gfx::Buffer::Ptr                    sp_uniforms_buffer;
-        gfx::Program::ResourceBindings::Ptr sp_resource_bindings;
+        using ResourceBindingsArray = std::vector<gfx::Program::ResourceBindings::Ptr>;
+        
+        gfx::Buffer::Ptr      sp_uniforms_buffer;
+        ResourceBindingsArray resource_bindings_array;
     };
 
     gfx::RenderCommandList::Ptr  sp_cmd_list;
     gfx::Buffer::Ptr             sp_scene_uniforms_buffer;
     MeshBufferBindings           skybox;
-    MeshBufferBindings           asteroid;
+    MeshBufferBindings           asteroids;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -68,20 +68,6 @@ public:
     void OnContextReleased() override;
 
 private:
-    struct Vertex
-    {
-        gfx::Mesh::Position position;
-        gfx::Mesh::Normal   normal;
-        gfx::Mesh::TexCoord texcoord;
-
-        using FieldsArray = std::array<gfx::Mesh::VertexField, 3>;
-        static constexpr const FieldsArray layout = {
-            gfx::Mesh::VertexField::Position,
-            gfx::Mesh::VertexField::Normal,
-            gfx::Mesh::VertexField::TexCoord,
-        };
-    };
-
     struct SHADER_STRUCT_ALIGN Constants
     {
         SHADER_FIELD_ALIGN gfx::Color     light_color;
@@ -95,23 +81,21 @@ private:
         SHADER_FIELD_ALIGN gfx::Vector4f  eye_position;
         SHADER_FIELD_ALIGN gfx::Vector3f  light_position;
     };
+    
+    static constexpr uint32_t g_asteroid_instances_count = 1;
+    static constexpr uint32_t g_asteroid_subdivisions_count = 3;
 
-    const float                 m_scene_scale;
-    const Constants             m_scene_constants;
-    gfx::ActionCamera           m_view_camera;
-    gfx::ActionCamera           m_light_camera;
+    const float             m_scene_scale;
+    const Constants         m_scene_constants;
+    gfx::ActionCamera       m_view_camera;
+    gfx::ActionCamera       m_light_camera;
 
-    SceneUniforms               m_scene_uniforms = { };
-    gfx::SkyBox::Ptr            m_sp_sky_box;
-    gfx::RenderState::Ptr       m_sp_state;
-    gfx::Buffer::Ptr            m_sp_const_buffer;
-    gfx::Sampler::Ptr           m_sp_texture_sampler;
-
-#ifdef ASTEROID_ARRAY_SIZE
-    AsteroidArray::Ptr          m_sp_asteroid_array;
-#else
-    Asteroid::Ptr               m_sp_asteroid;
-#endif
+    SceneUniforms           m_scene_uniforms = { };
+    gfx::SkyBox::Ptr        m_sp_sky_box;
+    gfx::RenderState::Ptr   m_sp_state;
+    gfx::Buffer::Ptr        m_sp_const_buffer;
+    gfx::Sampler::Ptr       m_sp_texture_sampler;
+    AsteroidArray::Ptr      m_sp_asteroid_array;
 };
 
 } // namespace Methane::Samples
