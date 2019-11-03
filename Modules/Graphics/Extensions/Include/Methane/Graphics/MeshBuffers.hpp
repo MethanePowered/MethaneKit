@@ -46,9 +46,6 @@ class MeshBuffers
 public:
     using Ptr = std::unique_ptr<MeshBuffers<UniformsType>>;
 
-    static inline Data::Size GetUniformsBufferSize()        { return static_cast<Data::Size>(sizeof(UniformsType)); }
-    static inline Data::Size GetUniformsAlignedBufferSize() { return Buffer::GetAlignedBufferSize(GetUniformsBufferSize()); }
-
     template<typename VType>
     MeshBuffers(Context& context, const BaseMesh<VType>& mesh_data, const std::string& mesh_name, const Mesh::Subsets& mesh_subsets = Mesh::Subsets())
         : m_mesh_name(mesh_name)
@@ -99,20 +96,23 @@ public:
                              instance_count, start_instance);
     }
 
-    void Draw(RenderCommandList& cmd_list, const std::vector<Program::ResourceBindings>& subset_resource_bindings)
+    void Draw(RenderCommandList& cmd_list, const std::vector<Program::ResourceBindings::Ptr>& subset_resource_bindings)
     {
-        if (subset_resource_bindings.size() <= m_mesh_subsets.size())
+        if (subset_resource_bindings.size() > m_mesh_subsets.size())
             throw std::invalid_argument("Resource bindings count is greater than subsets count.");
 
         cmd_list.SetVertexBuffers({ GetVertexBuffer() });
 
         const Buffer& index_buffer = GetIndexBuffer();
         uint32_t mesh_subset_index = 0;
-        for (const Program::ResourceBindings& resource_bindings : subset_resource_bindings)
+        for (const Program::ResourceBindings::Ptr& sp_resource_bindings : subset_resource_bindings)
         {
+            if (!sp_resource_bindings)
+                throw std::invalid_argument("Can not set Null resource bindings");
+            
             const Mesh::Subset& mesh_subset = m_mesh_subsets[mesh_subset_index++];
 
-            cmd_list.SetResourceBindings(resource_bindings);
+            cmd_list.SetResourceBindings(*sp_resource_bindings);
             cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, index_buffer,
                                  mesh_subset.indices.count, mesh_subset.indices.offset, mesh_subset.vertices.offset, 1, 0);
         }
@@ -129,12 +129,18 @@ public:
         return m_final_pass_subset_uniforms[subset];
     }
 
-    void  SetFinalPassUniforms(const UniformsType& uniforms, uint32_t subset = 0)
+    void  SetFinalPassUniforms(UniformsType uniforms, uint32_t subset = 0)
     {
         if (subset >= m_mesh_subsets.size())
             throw std::invalid_argument("Subset index is out of bounds.");
 
-        m_final_pass_subset_uniforms[subset] = uniforms;
+        m_final_pass_subset_uniforms[subset] = std::move(uniforms);
+    }
+    
+    Data::Size GetUniformsBufferSize(bool aligned_size = true) const
+    {
+        const Data::Size uniform_size = static_cast<Data::Size>(sizeof(UniformsType));
+        return uniform_size * m_final_pass_subset_uniforms.size();
     }
 
 protected:
