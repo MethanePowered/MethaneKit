@@ -171,23 +171,35 @@ public:
                         const std::string& mesh_name)
         : MeshBuffers<UniformsType>(context, mesh_data, mesh_name)
     {
+        m_subset_textures.resize(1);
     }
 
     template<typename VType>
     TexturedMeshBuffers(Context& context, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
         : MeshBuffers<UniformsType>(context, uber_mesh_data, mesh_name)
     {
+        m_subset_textures.resize(MeshBuffers<UniformsType>::GetSubsetsCount());
     }
 
-    const Texture::Ptr& GetTexturePtr() const { return m_sp_texture; }
-    void SetTexture(const Texture::Ptr& sp_texture)
+    const Texture::Ptr& GetTexturePtr(uint32_t subset_index = 0) const
     {
-        m_sp_texture = sp_texture;
-        m_sp_texture->SetName(MeshBuffers<UniformsType>::GetMeshName() + " Texture");
+        if (subset_index >= MeshBuffers<UniformsType>::GetSubsetsCount())
+            throw std::invalid_argument("Subset index is out of bounds.");
+        
+        return m_subset_textures[subset_index];
+    }
+    
+    void SetTexture(const Texture::Ptr& sp_texture, uint32_t subset_index = 0)
+    {
+        if (subset_index >= MeshBuffers<UniformsType>::GetSubsetsCount())
+            throw std::invalid_argument("Subset index is out of bounds.");
+        
+        sp_texture->SetName(MeshBuffers<UniformsType>::GetMeshName() + " Texture");
+        m_subset_textures[subset_index] = sp_texture;
     }
 
 private:
-    Texture::Ptr m_sp_texture;
+    std::vector<Texture::Ptr> m_subset_textures;
 };
 
 } // namespace Methane::Graphics
