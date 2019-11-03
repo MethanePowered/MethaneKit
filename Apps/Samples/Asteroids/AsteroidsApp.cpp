@@ -198,15 +198,17 @@ void AsteroidsApp::Init()
         frame.asteroids.sp_uniforms_buffer->SetName(IndexedName("Cube Uniforms Buffer", frame.index));
 
         // Resource bindings for cube rendering
+        uint32_t asteroid_index = 0;
         frame.asteroids.resource_bindings_array.resize(m_sp_asteroid_array->GetSubsetsCount());
         for(gfx::Program::ResourceBindings::Ptr& sp_asteroid_resource_bindings : frame.asteroids.resource_bindings_array)
         {
+            const Data::Size asteroid_uniform_offset = m_sp_asteroid_array->GetUniformsBufferOffset(asteroid_index++);
             sp_asteroid_resource_bindings = gfx::Program::ResourceBindings::Create(state_settings.sp_program, {
-                { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, frame.asteroids.sp_uniforms_buffer /* + ELEMENT_OFFSET */ },
-                { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, frame.sp_scene_uniforms_buffer              },
-                { { gfx::Shader::Type::Pixel,  "g_constants"      }, m_sp_const_buffer                           },
-                { { gfx::Shader::Type::Pixel,  "g_texture"        }, m_sp_asteroid_array->GetTexturePtr()        },
-                { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, m_sp_texture_sampler                        },
+                { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { frame.asteroids.sp_uniforms_buffer, asteroid_uniform_offset } },
+                { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { frame.sp_scene_uniforms_buffer                              } },
+                { { gfx::Shader::Type::Pixel,  "g_constants"      }, { m_sp_const_buffer                                           } },
+                { { gfx::Shader::Type::Pixel,  "g_texture"        }, { m_sp_asteroid_array->GetTexturePtr()                        } },
+                { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { m_sp_texture_sampler                                        } },
             });
         }
     }
@@ -254,10 +256,12 @@ void AsteroidsApp::Update()
 
     // Update Asteroid uniforms with matrices
     const uint32_t asteroids_count = m_sp_asteroid_array->GetSubsetsCount();
+    gfx::Matrix44f asteroid_model_matrix = scale_matrix;
+    gfx::Matrix44f asteroid_offset_matrix;
+    cml::matrix_translation(asteroid_offset_matrix, 0.f, 0.f, -30.f);
     for(uint32_t asteroid_index = 0; asteroid_index < asteroids_count; ++asteroid_index)
     {
-        gfx::Matrix44f asteroid_model_matrix = scale_matrix;
-        // TODO asteroids positioning
+        asteroid_model_matrix = asteroid_model_matrix * asteroid_offset_matrix;
         m_sp_asteroid_array->SetFinalPassUniforms(AsteroidUniforms{
             asteroid_model_matrix,
             asteroid_model_matrix * scene_view_matrix * scene_proj_matrix

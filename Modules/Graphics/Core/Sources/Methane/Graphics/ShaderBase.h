@@ -54,22 +54,22 @@ public:
         ResourceBindingBase(const ResourceBindingBase& other) = default;
 
         // ResourceBinding interface
-        Shader::Type         GetShaderType() const override     { return m_settings.shader_type; }
-        const std::string&   GetArgumentName() const override   { return m_settings.argument_name; }
-        bool                 IsConstant() const override        { return m_settings.is_constant; }
-        const Resource::Ptr& GetResource() const override       { return m_sp_resource; }
-        void                 SetResource(const Resource::Ptr& sp_resource) override;
+        Shader::Type              GetShaderType() const override        { return m_settings.shader_type; }
+        const std::string&        GetArgumentName() const override      { return m_settings.argument_name; }
+        bool                      IsConstant() const override           { return m_settings.is_constant; }
+        const Resource::Location& GetResourceLocation() const override  { return m_resource_location; }
+        void                      SetResourceLocation(Resource::Location resource_location) override;
 
         // ResourceBindingBase interface
         virtual DescriptorHeap::Type GetDescriptorHeapType() const = 0;
 
         Ptr  GetPtr()               { return shared_from_this(); }
-        bool HasResource() const    { return !!m_sp_resource; }
+        bool HasResource() const    { return !!m_resource_location.sp_resource; }
 
     protected:
-        ContextBase&    m_context;
-        const Settings  m_settings;
-        Resource::Ptr   m_sp_resource;
+        ContextBase&        m_context;
+        const Settings      m_settings;
+        Resource::Location  m_resource_location;
     };
 
     ShaderBase(Type type, ContextBase& context, const Settings& settings);

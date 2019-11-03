@@ -80,6 +80,12 @@ struct Resource : virtual Object
     };
 
     using DescriptorByUsage = std::map<Usage::Value, Descriptor>;
+    
+    struct Location
+    {
+        Ptr        sp_resource;
+        Data::Size offset = 0;
+    };
 
     struct SubResource
     {

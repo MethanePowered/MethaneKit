@@ -53,7 +53,7 @@ public:
         ResourceBindingMT(const ResourceBindingMT& other) = default;
         
         // ResourceBinding interface
-        void SetResource(const Resource::Ptr& sp_resource) override;
+        void SetResourceLocation(Resource::Location resource_location) override;
         uint32_t GetResourceCount() const override { return 1; }
         
         // ResourceBindingBase interface

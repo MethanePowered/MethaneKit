@@ -85,12 +85,16 @@ ShaderMT::ResourceBindingMT::ResourceBindingMT(ContextBase& context, const Setti
     ITT_FUNCTION_TASK();
 }
 
-void ShaderMT::ResourceBindingMT::SetResource(const Resource::Ptr& sp_resource)
+void ShaderMT::ResourceBindingMT::SetResourceLocation(Resource::Location resource_location)
 {
     ITT_FUNCTION_TASK();
 
-    assert(sp_resource);
-    const Resource::Type resource_type = sp_resource->GetResourceType();
+    if (!resource_location.sp_resource)
+    {
+        throw std::invalid_argument("Can not set resource location with Null resource pointer.");
+    }
+    
+    const Resource::Type resource_type = resource_location.sp_resource->GetResourceType();
     
     bool resource_type_compatible = false;
     switch(m_settings.argument_type)
@@ -103,12 +107,12 @@ void ShaderMT::ResourceBindingMT::SetResource(const Resource::Ptr& sp_resource)
     
     if (!resource_type_compatible)
     {
-        throw std::invalid_argument("Incompatible resource type \"" + Resource::GetTypeName(sp_resource->GetResourceType()) +
+        throw std::invalid_argument("Incompatible resource type \"" + Resource::GetTypeName(resource_location.sp_resource->GetResourceType()) +
                                     "\" is bound to argument \"" + GetArgumentName() +
                                     "\" of type \"" + GetMetalArgumentTypeName(m_settings.argument_type) + "\".");
     }
     
-    ShaderBase::ResourceBindingBase::SetResource(sp_resource);
+    ShaderBase::ResourceBindingBase::SetResourceLocation(std::move(resource_location));
 }
 
 DescriptorHeap::Type ShaderMT::ResourceBindingMT::GetDescriptorHeapType() const
