@@ -50,8 +50,8 @@ public:
     MeshBuffers(Context& context, const BaseMesh<VType>& mesh_data, const std::string& mesh_name, const Mesh::Subsets& mesh_subsets = Mesh::Subsets())
         : m_mesh_name(mesh_name)
         , m_mesh_subsets(!mesh_subsets.empty() ? mesh_subsets
-                                          : Mesh::Subsets{ Mesh::Subset(mesh_data.GetType(), { 0, mesh_data.GetVertexCount() },
-                                                                                             { 0, mesh_data.GetIndexCount()  } ) })
+                                               : Mesh::Subsets{ Mesh::Subset(mesh_data.GetType(), { 0, mesh_data.GetVertexCount() },
+                                                                                                  { 0, mesh_data.GetIndexCount()  }, true ) })
         , m_sp_vertex(Buffer::CreateVertexBuffer(context, static_cast<Data::Size>(mesh_data.GetVertexDataSize()),
                                                           static_cast<Data::Size>(mesh_data.GetVertexSize())))
         , m_sp_index( Buffer::CreateIndexBuffer( context, static_cast<Data::Size>(mesh_data.GetIndexDataSize()), 
@@ -92,7 +92,8 @@ public:
         cmd_list.SetResourceBindings(resource_bindings);
         cmd_list.SetVertexBuffers({ GetVertexBuffer() });
         cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, GetIndexBuffer(),
-                             mesh_subset.indices.count, mesh_subset.indices.offset, mesh_subset.vertices.offset,
+                             mesh_subset.indices.count, mesh_subset.indices.offset,
+                             mesh_subset.indices_adjusted ? 0 : mesh_subset.vertices.offset,
                              instance_count, start_instance);
     }
 
@@ -114,7 +115,9 @@ public:
 
             cmd_list.SetResourceBindings(*sp_resource_bindings);
             cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, index_buffer,
-                                 mesh_subset.indices.count, mesh_subset.indices.offset, mesh_subset.vertices.offset, 1, 0);
+                                 mesh_subset.indices.count, mesh_subset.indices.offset,
+                                 mesh_subset.indices_adjusted ? 0 : mesh_subset.vertices.offset,
+                                 1, 0);
         }
     }
 

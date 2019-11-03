@@ -164,13 +164,14 @@ void RenderCommandListMT::DrawIndexed(Primitive primitive, const Buffer& index_b
     const MTLPrimitiveType mtl_primitive_type   = PrimitiveTypeToMetal(primitive);
     const MTLIndexType     mtl_index_type       = metal_index_buffer.GetNativeIndexType();
     const id<MTLBuffer>&   mtl_index_buffer     = metal_index_buffer.GetNativeBuffer();
+    const uint32_t         mtl_index_stride     = mtl_index_type == MTLIndexTypeUInt32 ? 4 : 2;
 
     assert(m_mtl_cmd_encoder != nil);
     [m_mtl_cmd_encoder drawIndexedPrimitives: mtl_primitive_type
                                   indexCount: index_count
                                    indexType: mtl_index_type
                                  indexBuffer: mtl_index_buffer
-                           indexBufferOffset: start_index
+                           indexBufferOffset: start_index * mtl_index_stride
                                instanceCount: instance_count
                                   baseVertex: start_vertex
                                 baseInstance: start_instance];

@@ -84,7 +84,7 @@ AsteroidArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivisions
             asteroid_mesh.Spherify();
             asteroid_mesh.Randomize(instance_seed);
 
-            AddSubMesh(asteroid_mesh);
+            AddSubMesh(asteroid_mesh, true);
         }
     }
 }
