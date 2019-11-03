@@ -42,7 +42,7 @@ bool Program::Argument::operator<(const Argument& other) const
          : shader_type < other.shader_type;
 }
 
-ProgramBase::ResourceBindingsBase::ResourceBindingsBase(const Program::Ptr& sp_program, const ResourceByArgument& resource_by_argument)
+ProgramBase::ResourceBindingsBase::ResourceBindingsBase(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_by_argument)
     : m_sp_program(sp_program)
 {
     ITT_FUNCTION_TASK();
@@ -57,27 +57,28 @@ ProgramBase::ResourceBindingsBase::ResourceBindingsBase(const Program::Ptr& sp_p
     VerifyAllArgumentsAreBoundToResources();
 }
 
-ProgramBase::ResourceBindingsBase::ResourceBindingsBase(const ResourceBindingsBase& other_resource_bingings, const ResourceByArgument& replace_resource_by_argument)
+ProgramBase::ResourceBindingsBase::ResourceBindingsBase(const ResourceBindingsBase& other_resource_bingings, const ResourceLocationByArgument& replace_resource_location_by_argument)
     : m_sp_program(other_resource_bingings.m_sp_program)
     , m_descriptor_heap_reservations_by_type(other_resource_bingings.m_descriptor_heap_reservations_by_type)
 {
     ITT_FUNCTION_TASK();
 
     // Form map of original resource bindings
-    ResourceByArgument resource_by_argument;
+    ResourceLocationByArgument resource_location_by_argument;
     for (const auto& argument_and_resource_binding : other_resource_bingings.m_resource_binding_by_argument)
     {
-        resource_by_argument.emplace(argument_and_resource_binding.first, argument_and_resource_binding.second->GetResource());
+        resource_location_by_argument.emplace(argument_and_resource_binding.first,
+                                              argument_and_resource_binding.second->GetResourceLocation());
     }
 
     // Substitute resources in original bindings list
-    for (const auto& argument_and_resource : replace_resource_by_argument)
+    for (const auto& argument_and_resource_location : replace_resource_location_by_argument)
     {
-        resource_by_argument[argument_and_resource.first] = argument_and_resource.second;
+        resource_location_by_argument[argument_and_resource_location.first] = argument_and_resource_location.second;
     }
 
     ReserveDescriptorHeapRanges();
-    SetResourcesForArguments(resource_by_argument);
+    SetResourcesForArguments(resource_location_by_argument);
     VerifyAllArgumentsAreBoundToResources();
 }
 
@@ -178,24 +179,24 @@ void ProgramBase::ResourceBindingsBase::ReserveDescriptorHeapRanges()
     }
 }
 
-void ProgramBase::ResourceBindingsBase::SetResourcesForArguments(const ResourceByArgument& resource_by_argument)
+void ProgramBase::ResourceBindingsBase::SetResourcesForArguments(const ResourceLocationByArgument& resource_location_by_argument)
 {
     ITT_FUNCTION_TASK();
 
-    for (const auto& argument_and_resource : resource_by_argument)
+    for (const auto& argument_and_resource_location : resource_location_by_argument)
     {
-        const Shader::ResourceBinding::Ptr& sp_binding = Get(argument_and_resource.first);
+        const Shader::ResourceBinding::Ptr& sp_binding = Get(argument_and_resource_location.first);
         if (!sp_binding)
         {
 #ifndef PROGRAM_IGNORE_MISSING_ARGUMENTS
             throw std::runtime_error("Program \"" + m_sp_program->GetName() +
-                "\" does not have argument \"" + argument_and_resource.first.argument_name +
-                "\" of " + Shader::GetTypeName(argument_and_resource.first.shader_type) + " shader.");
+                "\" does not have argument \"" + argument_and_resource_location.first.argument_name +
+                "\" of " + Shader::GetTypeName(argument_and_resource_location.first.shader_type) + " shader.");
 #else
             continue;
 #endif
         }
-        sp_binding->SetResource(argument_and_resource.second);
+        sp_binding->SetResourceLocation(argument_and_resource_location.second);
     }
 }
 
@@ -217,7 +218,7 @@ bool ProgramBase::ResourceBindingsBase::AllArgumentsAreBoundToResources(std::str
     bool all_arguments_are_bound_to_resources = true;
     for (const auto& resource_binding_by_argument : m_resource_binding_by_argument)
     {
-        if (!resource_binding_by_argument.second->GetResource())
+        if (!resource_binding_by_argument.second->GetResourceLocation().sp_resource)
         {
             log_ss << std::endl 
                    << "   - Program \"" << m_sp_program->GetName()

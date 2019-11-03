@@ -51,10 +51,10 @@ ShaderBase::ResourceBindingBase::ResourceBindingBase(ContextBase& context, const
     ITT_FUNCTION_TASK();
 }
 
-void ShaderBase::ResourceBindingBase::SetResource(const Resource::Ptr& sp_resource)
+void ShaderBase::ResourceBindingBase::SetResourceLocation(Resource::Location resource_location)
 {
     ITT_FUNCTION_TASK();
-    m_sp_resource = sp_resource;
+    m_resource_location = std::move(resource_location);
 }
 
 ShaderBase::ShaderBase(Type type, ContextBase& context, const Settings& settings)

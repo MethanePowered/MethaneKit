@@ -81,13 +81,13 @@ struct Program
 
     struct ResourceBindings
     {
-        using Ptr                = std::shared_ptr<ResourceBindings>;
-        using WeakPtr            = std::weak_ptr<ResourceBindings>;
-        using ResourceByArgument = std::map<Argument, Resource::Ptr>;
+        using Ptr     = std::shared_ptr<ResourceBindings>;
+        using WeakPtr = std::weak_ptr<ResourceBindings>;
+        using ResourceLocationByArgument = std::map<Argument, Resource::Location>;
 
         // Create ResourceBindings instance
-        static Ptr Create(const Program::Ptr& sp_program, const ResourceByArgument& resource_by_argument);
-        static Ptr CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceByArgument& replace_resource_by_argument = {});
+        static Ptr Create(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_location_by_argument);
+        static Ptr CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceLocationByArgument& replace_resource_location_by_argument = {});
 
         // ResourceBindings interface
         virtual const Shader::ResourceBinding::Ptr& Get(const Argument& shader_argument) const = 0;

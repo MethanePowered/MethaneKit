@@ -248,12 +248,12 @@ void ShadowCubeApp::Init()
 
         // Shadow-pass resource bindings for cube rendering
         frame.shadow_pass.cube.sp_resource_bindings = gfx::Program::ResourceBindings::Create(m_shadow_pass.sp_program, {
-            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, frame.shadow_pass.cube.sp_uniforms_buffer },
+            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { frame.shadow_pass.cube.sp_uniforms_buffer } },
         });
 
         // Shadow-pass resource bindings for floor rendering
         frame.shadow_pass.floor.sp_resource_bindings = gfx::Program::ResourceBindings::Create(m_shadow_pass.sp_program, {
-            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, frame.shadow_pass.floor.sp_uniforms_buffer },
+            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { frame.shadow_pass.floor.sp_uniforms_buffer } },
         });
 
         // ========= Final Pass data =========
@@ -276,19 +276,19 @@ void ShadowCubeApp::Init()
 
         // Final-pass resource bindings for cube rendering
         frame.final_pass.cube.sp_resource_bindings = gfx::Program::ResourceBindings::Create(m_final_pass.sp_program, {
-            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, frame.final_pass.cube.sp_uniforms_buffer    },
-            { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, frame.sp_scene_uniforms_buffer              },
-            { { gfx::Shader::Type::Pixel,  "g_constants"      }, m_sp_const_buffer                           },
-            { { gfx::Shader::Type::Pixel,  "g_shadow_map"     }, frame.shadow_pass.sp_rt_texture             },
-            { { gfx::Shader::Type::Pixel,  "g_shadow_sampler" }, m_sp_shadow_sampler                         },
-            { { gfx::Shader::Type::Pixel,  "g_texture"        }, m_sp_cube_buffers->GetTexturePtr()          },
-            { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, m_sp_texture_sampler                        },
+            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { frame.final_pass.cube.sp_uniforms_buffer   } },
+            { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { frame.sp_scene_uniforms_buffer             } },
+            { { gfx::Shader::Type::Pixel,  "g_constants"      }, { m_sp_const_buffer                          } },
+            { { gfx::Shader::Type::Pixel,  "g_shadow_map"     }, { frame.shadow_pass.sp_rt_texture            } },
+            { { gfx::Shader::Type::Pixel,  "g_shadow_sampler" }, { m_sp_shadow_sampler                        } },
+            { { gfx::Shader::Type::Pixel,  "g_texture"        }, { m_sp_cube_buffers->GetTexturePtr()         } },
+            { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { m_sp_texture_sampler                       } },
         });
 
         // Final-pass resource bindings for floor rendering - patched a copy of cube bindings
         frame.final_pass.floor.sp_resource_bindings = gfx::Program::ResourceBindings::CreateCopy(*frame.final_pass.cube.sp_resource_bindings, {
-            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, frame.final_pass.floor.sp_uniforms_buffer   },
-            { { gfx::Shader::Type::Pixel,  "g_texture"        }, m_sp_floor_buffers->GetTexturePtr()         },
+            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { frame.final_pass.floor.sp_uniforms_buffer  } },
+            { { gfx::Shader::Type::Pixel,  "g_texture"        }, { m_sp_floor_buffers->GetTexturePtr()        } },
         });
     }
 

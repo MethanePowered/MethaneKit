@@ -142,6 +142,12 @@ public:
         const Data::Size uniform_size = static_cast<Data::Size>(sizeof(UniformsType));
         return uniform_size * m_final_pass_subset_uniforms.size();
     }
+    
+    Data::Size GetUniformsBufferOffset(uint32_t subset_index) const
+    {
+        const Data::Size uniform_size = static_cast<Data::Size>(sizeof(UniformsType));
+        return uniform_size * subset_index;
+    }
 
 protected:
     Buffer& GetVertexBuffer()

@@ -48,8 +48,8 @@ public:
         , public std::enable_shared_from_this<ResourceBindingsBase>
     {
     public:
-        ResourceBindingsBase(const Program::Ptr& sp_program, const ResourceByArgument& resource_by_argument);
-        ResourceBindingsBase(const ResourceBindingsBase& other_resource_bingings, const ResourceByArgument& replace_resource_by_argument);
+        ResourceBindingsBase(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_by_argument);
+        ResourceBindingsBase(const ResourceBindingsBase& other_resource_bingings, const ResourceLocationByArgument& replace_resource_location_by_argument);
         ~ResourceBindingsBase() override;
 
         Ptr GetPtr()                            { return shared_from_this(); }
@@ -67,7 +67,7 @@ public:
         using DescriptorHeapReservationByType = std::map<DescriptorHeap::Type, DescriptorHeap::Reservation>;
 
         void ReserveDescriptorHeapRanges();
-        void SetResourcesForArguments(const ResourceByArgument& resource_by_argument);
+        void SetResourcesForArguments(const ResourceLocationByArgument& resource_location_by_argument);
         void VerifyAllArgumentsAreBoundToResources();
 
         const Program::Ptr              m_sp_program;
