@@ -261,11 +261,11 @@ void AsteroidsApp::Update()
     cml::matrix_translation(asteroid_offset_matrix, 0.f, 0.f, -30.f);
     for(uint32_t asteroid_index = 0; asteroid_index < asteroids_count; ++asteroid_index)
     {
-        asteroid_model_matrix = asteroid_model_matrix * asteroid_offset_matrix;
         m_sp_asteroid_array->SetFinalPassUniforms(AsteroidUniforms{
             asteroid_model_matrix,
             asteroid_model_matrix * scene_view_matrix * scene_proj_matrix
         }, asteroid_index);
+        asteroid_model_matrix = asteroid_model_matrix * asteroid_offset_matrix;
     }
     
     m_sp_sky_box->Update();

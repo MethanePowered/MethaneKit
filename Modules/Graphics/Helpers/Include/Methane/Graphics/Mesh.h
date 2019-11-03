@@ -73,11 +73,13 @@ public:
         const Type  mesh_type;
         const Slice vertices;
         const Slice indices;
+        const bool  indices_adjusted;
 
-        Subset(Type in_mesh_type, const Slice& in_vertices, const Slice& in_indices)
+        Subset(Type in_mesh_type, const Slice& in_vertices, const Slice& in_indices, bool in_indices_adjusted)
             : mesh_type(in_mesh_type)
             , vertices(in_vertices)
             , indices(in_indices)
+            , indices_adjusted(in_indices_adjusted)
         { }
 
         Subset(const Subset& other) = default;
@@ -295,18 +297,26 @@ public:
         : BaseMesh(Mesh::Type::Uber, vertex_layout)
     { }
 
-    void AddSubMesh(const BaseMesh& sub_mesh)
+    void AddSubMesh(const BaseMesh& sub_mesh, bool adjust_indices)
     {
         const typename BaseMesh::Vertices& sub_vertices = sub_mesh.GetVertices();
         const Mesh::Indices& sub_indices = sub_mesh.GetIndices();
 
         m_subsets.emplace_back(sub_mesh.GetType(),
                                Mesh::Subset::Slice(static_cast<Data::Size>(BaseMesh::m_vertices.size()), static_cast<Data::Size>(sub_vertices.size())),
-                               Mesh::Subset::Slice(static_cast<Data::Size>(Mesh::m_indices.size()), static_cast<Data::Size>(sub_indices.size())));
+                               Mesh::Subset::Slice(static_cast<Data::Size>(Mesh::m_indices.size()), static_cast<Data::Size>(sub_indices.size())),
+                               adjust_indices);
 
-        const Mesh::Index index_offset = static_cast<Mesh::Index>(sub_vertices.size());
-        std::transform(sub_indices.begin(), sub_indices.end(), std::back_inserter(Mesh::m_indices),
-                       [index_offset](const Mesh::Index& index) { return index_offset + index; });
+        if (adjust_indices)
+        {
+            const Mesh::Index index_offset = static_cast<Mesh::Index>(BaseMesh::GetVertexCount());
+            std::transform(sub_indices.begin(), sub_indices.end(), std::back_inserter(Mesh::m_indices),
+                           [index_offset](const Mesh::Index& index) { return index_offset + index; });
+        }
+        else
+        {
+            Mesh::m_indices.insert(Mesh::m_indices.end(), sub_indices.begin(), sub_indices.end());
+        }
 
         BaseMesh::m_vertices.insert(BaseMesh::m_vertices.end(), sub_vertices.begin(), sub_vertices.end());
     }
