@@ -146,7 +146,8 @@ ShaderMT::~ShaderMT()
     [m_mtl_function release];
 }
 
-ShaderBase::ResourceBindings ShaderMT::GetResourceBindings(const std::set<std::string>& constant_argument_names) const
+ShaderBase::ResourceBindings ShaderMT::GetResourceBindings(const std::set<std::string>& constant_argument_names,
+                                                           const std::set<std::string>& /*addressable_argument_names*/) const
 {
     ITT_FUNCTION_TASK();
 
