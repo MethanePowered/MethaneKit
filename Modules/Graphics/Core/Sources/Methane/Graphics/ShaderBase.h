@@ -57,6 +57,7 @@ public:
         Shader::Type              GetShaderType() const override        { return m_settings.shader_type; }
         const std::string&        GetArgumentName() const override      { return m_settings.argument_name; }
         bool                      IsConstant() const override           { return m_settings.is_constant; }
+        bool                      IsAddressable() const override        { return true; }
         const Resource::Location& GetResourceLocation() const override  { return m_resource_location; }
         void                      SetResourceLocation(Resource::Location resource_location) override;
 
@@ -79,7 +80,8 @@ public:
     const Settings&  GetSettings() const noexcept override   { return m_settings; }
 
     // ShaderBase interface
-    virtual ResourceBindings GetResourceBindings(const std::set<std::string>& constant_argument_names) const = 0;
+    virtual ResourceBindings GetResourceBindings(const std::set<std::string>& constant_argument_names,
+                                                 const std::set<std::string>& addressable_argument_names) const = 0;
 
     Ptr         GetPtr()                     { return shared_from_this(); }
     std::string GetTypeName() const noexcept { return Shader::GetTypeName(m_type); }

@@ -112,6 +112,8 @@ void TexturedCubeApp::Init()
         { // constant_argument_names
             "g_constants", "g_texture", "g_sampler"
         },
+        { // addressable_argument_names
+        },
         { // render_target_pixel_formats
             context_settings.color_format
         },

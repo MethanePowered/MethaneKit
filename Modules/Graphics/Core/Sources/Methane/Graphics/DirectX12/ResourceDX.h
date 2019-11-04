@@ -60,7 +60,7 @@ public:
     void SetName(const std::string& name) override;
 
     ID3D12Resource*             GetNativeResource() const noexcept                              { return m_cp_resource.Get(); }
-    D3D12_GPU_VIRTUAL_ADDRESS   GetNativeGpuAddress() const noexcept                            { return m_cp_resource->GetGPUVirtualAddress(); }
+    D3D12_GPU_VIRTUAL_ADDRESS   GetNativeGpuAddress() const noexcept                            { return m_cp_resource ? m_cp_resource->GetGPUVirtualAddress() : 0; }
     D3D12_CPU_DESCRIPTOR_HANDLE GetNativeCPUDescriptorHandle(Usage::Value usage) const noexcept { return GetNativeCPUDescriptorHandle(GetDescriptorByUsage(usage)); }
     D3D12_CPU_DESCRIPTOR_HANDLE GetNativeCPUDescriptorHandle(const Descriptor& desc) const noexcept;
     D3D12_GPU_DESCRIPTOR_HANDLE GetNativeGPUDescriptorHandle(Usage::Value usage) const noexcept { return GetNativeGPUDescriptorHandle(GetDescriptorByUsage(usage)); }

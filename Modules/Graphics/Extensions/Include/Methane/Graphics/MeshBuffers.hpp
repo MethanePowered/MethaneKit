@@ -31,7 +31,7 @@ Mesh buffers with texture extension structure.
 #include <Methane/Graphics/Program.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/Mesh.h>
-#include <Methane/Graphics/MathTypes.h>
+#include <Methane/Data/AlignedAllocator.hpp>
 
 #include <memory>
 #include <string>
@@ -122,7 +122,7 @@ public:
     }
 
     const std::string&  GetMeshName() const     { return m_mesh_name; }
-    uint32_t            GetSubsetsCount() const { return m_mesh_subsets.size(); }
+    uint32_t            GetSubsetsCount() const { return static_cast<uint32_t>(m_mesh_subsets.size()); }
 
     const UniformsType& GetFinalPassUniforms(uint32_t subset = 0) const
     {
@@ -132,24 +132,25 @@ public:
         return m_final_pass_subset_uniforms[subset];
     }
 
-    void  SetFinalPassUniforms(UniformsType uniforms, uint32_t subset = 0)
+    void  SetFinalPassUniforms(const UniformsType& uniforms, uint32_t subset = 0)
     {
         if (subset >= m_mesh_subsets.size())
             throw std::invalid_argument("Subset index is out of bounds.");
 
-        m_final_pass_subset_uniforms[subset] = std::move(uniforms);
+        m_final_pass_subset_uniforms[subset] = uniforms;
     }
     
-    Data::Size GetUniformsBufferSize(bool aligned_size = true) const
+    Data::Size GetUniformsBufferSize() const
     {
-        const Data::Size uniform_size = static_cast<Data::Size>(sizeof(UniformsType));
-        return uniform_size * m_final_pass_subset_uniforms.size();
+        return m_final_pass_subset_uniforms.empty() ? 0 : static_cast<Data::Size>(m_final_pass_subset_uniforms.size() * sizeof(m_final_pass_subset_uniforms[0]));
     }
     
     Data::Size GetUniformsBufferOffset(uint32_t subset_index) const
     {
-        const Data::Size uniform_size = static_cast<Data::Size>(sizeof(UniformsType));
-        return uniform_size * subset_index;
+        return static_cast<Data::Size>(
+            reinterpret_cast<const char*>(&m_final_pass_subset_uniforms[subset_index]) -
+            reinterpret_cast<const char*>(m_final_pass_subset_uniforms.data())
+        );
     }
 
 protected:
@@ -166,7 +167,7 @@ protected:
     }
 
 private:
-    using SubsethUniforms = std::vector<UniformsType>;
+    using SubsethUniforms = std::vector<UniformsType, Data::AlignedAllocator<UniformsType, SHADER_STRUCT_ALIGNMENT>>;
 
     const std::string   m_mesh_name;
     const Mesh::Subsets m_mesh_subsets;
