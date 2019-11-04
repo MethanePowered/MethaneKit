@@ -220,7 +220,7 @@ ProgramMT::ProgramMT(ContextBase& context, const Settings& settings)
     {
         SetNativeShaderArguments(Shader::Type::Vertex, m_mtl_render_pipeline_reflection.vertexArguments);
         SetNativeShaderArguments(Shader::Type::Pixel,  m_mtl_render_pipeline_reflection.fragmentArguments);
-        InitResourceBindings(settings.constant_argument_names);
+        InitResourceBindings(settings.constant_argument_names, settings.addressable_argument_names);
     }
 }
 

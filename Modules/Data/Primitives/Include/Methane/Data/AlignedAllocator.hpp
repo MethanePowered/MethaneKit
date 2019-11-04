@@ -24,7 +24,10 @@ Aligned memory allocator to be used in STL containers, like std::vector.
 #pragma once
 
 #include <stdlib.h>
+
+#ifdef WIN32
 #include <malloc.h>
+#endif
 
 namespace Methane::Data
 {
@@ -42,6 +45,12 @@ public:
 
     using reference = T&       ;
     using const_reference = const T& ;
+    
+    template <typename T2>
+    struct rebind
+    {
+        typedef AlignedAllocator<T2, N> other;
+    };
 
     AlignedAllocator() = default;
 
@@ -53,12 +62,14 @@ public:
 
     static pointer allocate(size_type n)
     {
+        const size_t allocate_size = n * sizeof(value_type);
 #ifdef WIN32
-        return static_cast<pointer>(_aligned_malloc(n * sizeof(value_type), N));
+        return static_cast<pointer>(_aligned_malloc(allocate_size, N));
 #else
         void* p_memory = nullptr;
-        posix_memalign(&p_memory, n * sizeof(value_type), N);
-        return p_memory;
+        const int error = posix_memalign(&p_memory, N, allocate_size);
+        assert(!error);
+        return static_cast<pointer>(p_memory);
 #endif
     }
 
@@ -85,12 +96,6 @@ public:
     {
         return size_type(-1) / sizeof(value_type);
     }
-
-    template <typename T2>
-    struct rebind
-    {
-        typedef AlignedAllocator<T2, N> other;
-    };
 
     bool operator!=(const AlignedAllocator<T, N>& other) const
     {
