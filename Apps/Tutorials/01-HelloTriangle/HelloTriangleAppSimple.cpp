@@ -88,7 +88,7 @@ public:
                     { "in_position", "POSITION" },
                     { "in_color",    "COLOR"    },
                 } } },
-                { },
+                { }, { },
                 { m_sp_context->GetSettings().color_format }
             }),
             { GetFrameViewport(m_sp_context->GetSettings().frame_size) },

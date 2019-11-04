@@ -48,7 +48,7 @@ public:
         , public std::enable_shared_from_this<ResourceBindingsBase>
     {
     public:
-        ResourceBindingsBase(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_by_argument);
+        ResourceBindingsBase(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_location_by_argument);
         ResourceBindingsBase(const ResourceBindingsBase& other_resource_bingings, const ResourceLocationByArgument& replace_resource_location_by_argument);
         ~ResourceBindingsBase() override;
 
@@ -91,7 +91,7 @@ public:
     Ptr          GetPtr()                                   { return shared_from_this(); }
 
 protected:
-    void InitResourceBindings(const std::set<std::string>& constant_argument_names);
+    void InitResourceBindings(const std::set<std::string>& constant_argument_names, const std::set<std::string>& addressable_argument_names);
     const DescriptorHeap::Range& ReserveConstantDescriptorRange(DescriptorHeap& heap, uint32_t range_length);
 
     Shader& GetShaderRef(Shader::Type shader_type);

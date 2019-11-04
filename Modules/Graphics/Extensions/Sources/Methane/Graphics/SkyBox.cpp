@@ -58,6 +58,7 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
             { "in_position", "POSITION" },
         } } },
         { "g_skybox_texture", "g_texture_sampler" },
+        { },
         { context_settings.color_format },
         context_settings.depth_stencil_format
     });

@@ -26,7 +26,8 @@ MacOS specific math types aliases.
 #include <cml/mathlib/constants.h>
 #include <cml/matrix.h>
 
-#define SHADER_STRUCT_ALIGN alignas(256)
+#define SHADER_STRUCT_ALIGNMENT 256
+#define SHADER_STRUCT_ALIGN alignas(SHADER_STRUCT_ALIGNMENT)
 #define SHADER_FIELD_ALIGN  alignas(16)
 #define SHADER_FIELD_PACK   alignas(4)
 

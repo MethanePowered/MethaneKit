@@ -102,6 +102,7 @@ struct Program
         Shaders                  shaders;
         InputBufferLayouts       input_buffer_layouts;
         std::set<std::string>    constant_argument_names;
+        std::set<std::string>    addressable_argument_names;
         std::vector<PixelFormat> color_formats;
         PixelFormat              depth_format = PixelFormat::Unknown;
     };

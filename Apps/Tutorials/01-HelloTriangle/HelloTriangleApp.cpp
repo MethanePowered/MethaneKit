@@ -87,6 +87,8 @@ void HelloTriangleApp::Init()
         },
         { // constant_argument_names
         },
+        { // addressable_argument_names
+        },
         { // render_target_pixel_formats
             GetInitialContextSettings().color_format
         }

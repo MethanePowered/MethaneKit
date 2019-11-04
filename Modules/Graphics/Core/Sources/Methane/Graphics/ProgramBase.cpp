@@ -42,7 +42,7 @@ bool Program::Argument::operator<(const Argument& other) const
          : shader_type < other.shader_type;
 }
 
-ProgramBase::ResourceBindingsBase::ResourceBindingsBase(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_by_argument)
+ProgramBase::ResourceBindingsBase::ResourceBindingsBase(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_location_by_argument)
     : m_sp_program(sp_program)
 {
     ITT_FUNCTION_TASK();
@@ -53,7 +53,7 @@ ProgramBase::ResourceBindingsBase::ResourceBindingsBase(const Program::Ptr& sp_p
     }
 
     ReserveDescriptorHeapRanges();
-    SetResourcesForArguments(resource_by_argument);
+    SetResourcesForArguments(resource_location_by_argument);
     VerifyAllArgumentsAreBoundToResources();
 }
 
@@ -131,6 +131,10 @@ void ProgramBase::ResourceBindingsBase::ReserveDescriptorHeapRanges()
         {
             resource_binding_by_argument_it->second = Shader::ResourceBinding::CreateCopy(*resource_binding_by_argument_it->second);
         }
+
+        // NOTE: addressable resource bindings do not require descriptors to be created, instead they use direct GPU memory offset from resource
+        if (resource_binding.IsAddressable())
+            continue;
 
         const DescriptorHeap::Type heap_type = static_cast<const ShaderBase::ResourceBindingBase&>(resource_binding).GetDescriptorHeapType();
         DescriptorsCount& descriptors = descriptors_count_by_heap_type[heap_type];
@@ -308,7 +312,7 @@ ProgramBase::~ProgramBase()
     }
 }
 
-void ProgramBase::InitResourceBindings(const std::set<std::string>& constant_argument_names)
+void ProgramBase::InitResourceBindings(const std::set<std::string>& constant_argument_names, const std::set<std::string>& addressable_argument_names)
 {
     ITT_FUNCTION_TASK();
 
@@ -326,7 +330,7 @@ void ProgramBase::InitResourceBindings(const std::set<std::string>& constant_arg
         const Shader::Type shader_type = sp_shader->GetType();
         all_shader_types.insert(shader_type);
         
-        const Shader::ResourceBindings shader_resource_bindings = static_cast<const ShaderBase&>(*sp_shader).GetResourceBindings(constant_argument_names);
+        const Shader::ResourceBindings shader_resource_bindings = static_cast<const ShaderBase&>(*sp_shader).GetResourceBindings(constant_argument_names, addressable_argument_names);
         for (const Shader::ResourceBinding::Ptr& sp_resource_binging : shader_resource_bindings)
         {
             if (!sp_resource_binging)

@@ -152,6 +152,8 @@ void ShadowCubeApp::Init()
         { // constant_argument_names
             "g_constants", "g_texture_sampler", "g_shadow_sampler"
         },
+        { // addressable_argument_names
+        },
         { // render_target_pixel_formats
             context_settings.color_format
         },
@@ -185,6 +187,8 @@ void ShadowCubeApp::Init()
         m_final_pass.sp_program->GetSettings().input_buffer_layouts,
         {
             "g_constants", "g_shadow_sampler"
+        },
+        { // addressable_argument_names
         },
         { // no color attachments, rendering to depth texture
         },

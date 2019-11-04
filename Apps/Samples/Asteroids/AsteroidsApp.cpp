@@ -161,6 +161,9 @@ void AsteroidsApp::Init()
         { // constant_argument_names
             "g_constants", "g_texture_sampler"
         },
+        { // addressable_argument_names
+            "g_mesh_uniforms"
+        },
         { // render_target_pixel_formats
             context_settings.color_format
         },
@@ -264,7 +267,7 @@ void AsteroidsApp::Update()
         m_sp_asteroid_array->SetFinalPassUniforms(AsteroidUniforms{
             asteroid_model_matrix,
             asteroid_model_matrix * scene_view_matrix * scene_proj_matrix
-        }, asteroid_index);
+        }, asteroids_count - 1 - asteroid_index);
         asteroid_model_matrix = asteroid_model_matrix * asteroid_offset_matrix;
     }
     
