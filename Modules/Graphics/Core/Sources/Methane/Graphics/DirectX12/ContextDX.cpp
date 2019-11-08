@@ -28,7 +28,7 @@ DirectX 12 implementation of the context interface.
 #include "CommandQueueDX.h"
 #include "TypesDX.h"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #ifdef COMMAND_EXECUTION_LOGGING

@@ -23,7 +23,7 @@ Interactive action-camera for rotating, moving and zooming with mouse and keyboa
 
 #include <Methane/Graphics/ActionCamera.h>
 #include <Methane/Data/TimeAnimation.h>
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <cml/mathlib/mathlib.h>
 

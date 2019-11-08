@@ -22,11 +22,11 @@ Defines common ITT domain required for instrumentation.
 
 ******************************************************************************/
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 ITT_DOMAIN_GLOBAL("Methane Kit");
 
-namespace Methane::Instrumentation
+namespace Methane::Data::Instrumentation
 {
 
 void dummy()

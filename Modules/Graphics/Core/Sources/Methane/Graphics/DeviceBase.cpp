@@ -23,7 +23,7 @@ Base implementation of the device interface.
 
 #include "DeviceBase.h"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <sstream>
 #include <cassert>

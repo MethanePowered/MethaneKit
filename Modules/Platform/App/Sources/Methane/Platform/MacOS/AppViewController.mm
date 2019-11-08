@@ -25,7 +25,7 @@ MacOS application view controller implementation.
 
 #include <Methane/Platform/MacOS/AppMac.hh>
 #include <Methane/Data/Types.h>
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <string>
 

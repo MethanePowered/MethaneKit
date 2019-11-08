@@ -31,7 +31,7 @@ target_include_directories(${TARGET}
 )
 
 target_link_libraries(${TARGET}
-    MethaneInstrumentation
+    MethaneDataInstrumentation
     MethanePlatformUtils
     CML
 )

@@ -122,7 +122,7 @@ function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL OUT_SHADERS_ME
 
         set_target_properties(${GENERATE_METAL_TARGET}
             PROPERTIES
-            FOLDER Build
+            FOLDER Build/Shaders/${FOR_TARGET}
         )
 
         add_dependencies(${GENERATE_METAL_TARGET} SPIRV-build)
@@ -154,7 +154,7 @@ function(compile_metal_shaders_to_library FOR_TARGET SDK METAL_SHADERS METAL_LIB
 
         set_target_properties(${SHADER_COMPILE_TARGET}
             PROPERTIES
-            FOLDER Build
+            FOLDER Build/Shaders/${FOR_TARGET}
         )
         
         add_dependencies(${SHADER_COMPILE_TARGET} ${FOR_TARGET}_Generate_${SHADER_METAL_FILE})
@@ -173,7 +173,7 @@ function(compile_metal_shaders_to_library FOR_TARGET SDK METAL_SHADERS METAL_LIB
 
     set_target_properties(${METAL_LIB_TARGET}
         PROPERTIES
-        FOLDER Build
+        FOLDER Build/Shaders/${FOR_TARGET}
     )
 
     add_dependencies(${METAL_LIB_TARGET} ${_SHADER_COMPILE_TARGETS})
@@ -226,7 +226,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
 
         set_target_properties(${COMPILE_SHADER_TARGET}
             PROPERTIES
-            FOLDER Build
+            FOLDER Build/Shaders
         )
 
         add_dependencies(${FOR_TARGET}_Shaders ${COMPILE_SHADER_TARGET})
@@ -279,7 +279,7 @@ function(add_methane_shaders TARGET HLSL_SOURCES)
 
         set_target_properties(${SHADER_RESOURCES_TARGET}
             PROPERTIES
-            FOLDER Build
+            FOLDER Build/Resources
         )
 
         target_compile_definitions(${TARGET}

@@ -26,7 +26,7 @@ Metal implementation of the resource interface.
 #include "BufferMT.hh"
 #include "TextureMT.hh"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <vector>
 

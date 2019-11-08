@@ -22,7 +22,7 @@ Methane primitive graphics types.
 ******************************************************************************/
 
 #include <Methane/Graphics/Types.h>
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <cassert>
 

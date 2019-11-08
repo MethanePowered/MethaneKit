@@ -22,7 +22,7 @@ Windows platform specific types and implementation of Keyboard abstractions.
 ******************************************************************************/
 
 #include <Methane/Platform/Keyboard.h>
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <map>
 

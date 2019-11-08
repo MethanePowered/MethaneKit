@@ -26,7 +26,7 @@ Procedural mesh generators, including rect, box, etc.
 #include "MathTypes.h"
 
 #include <Methane/Data/Types.h>
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <vector>
 #include <array>

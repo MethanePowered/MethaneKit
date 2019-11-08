@@ -23,7 +23,7 @@ target_include_directories(${TARGET}
 
 target_link_libraries(${TARGET}
     PUBLIC
-        MethaneInstrumentation
+        MethaneDataInstrumentation
 )
 
 set_target_properties(${TARGET}

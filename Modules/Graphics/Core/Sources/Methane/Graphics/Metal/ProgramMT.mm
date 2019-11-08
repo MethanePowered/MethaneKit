@@ -31,7 +31,7 @@ Metal implementation of the program interface.
 #include "RenderCommandListMT.hh"
 #include "TypesMT.hh"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
 #include <cassert>

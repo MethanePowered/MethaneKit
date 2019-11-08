@@ -23,7 +23,7 @@ Metal "dummy" implementation of the descriptor heap.
 
 #include "DescriptorHeapMT.hh"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 namespace Methane::Graphics
 {

@@ -25,7 +25,7 @@ Abstract value animation based on time with an update lambda-function.
 
 #include "Animation.h"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <functional>
 
