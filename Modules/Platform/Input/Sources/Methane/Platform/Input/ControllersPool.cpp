@@ -22,7 +22,7 @@ A pool of input controllers for user actions handling in separate application co
 ******************************************************************************/
 
 #include <Methane/Platform/Input/ControllersPool.h>
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <cassert>
 

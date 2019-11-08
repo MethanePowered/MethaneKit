@@ -22,7 +22,7 @@ Pool of animations for centralized updating, adding and removing in application.
 ******************************************************************************/
 
 #include <Methane/Data/AnimationsPool.h>
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <vector>
 

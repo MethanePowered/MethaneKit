@@ -1,18 +1,20 @@
-set(TARGET MethaneKit)
+set(TARGET MethaneDataInstrumentation)
 
-get_module_dirs("Methane")
+include(MethaneModules)
 
-set(SOURCES
-    ${SOURCES_DIR}/Kit.cpp
-)
+get_module_dirs("Methane/Data")
 
 set(HEADERS
-    ${INCLUDE_DIR}/Kit.h
+    ${INCLUDE_DIR}/Instrumentation.h
+)
+
+set(SOURCES
+    ${SOURCES_DIR}/Instrumentation.cpp
 )
 
 add_library(${TARGET} STATIC
-    ${SOURCES}
     ${HEADERS}
+    ${SOURCES}
 )
 
 target_include_directories(${TARGET}
@@ -24,30 +26,19 @@ target_include_directories(${TARGET}
 
 target_link_libraries(${TARGET}
     PUBLIC
-        MethaneDataPrimitives
-        MethaneGraphicsApp
-        MethaneGraphicsCore
-        MethaneGraphicsHelpers
-        MethaneGraphicsExtensions
+        IttNotify
+        nowide_static
 )
-
-set(PREREQUISITE_TARGETS
-    MethaneGraphicsExtensions
-)
-add_prerequisite_modules(${TARGET} "${PREREQUISITE_TARGETS}")
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER Modules
+    FOLDER Modules/Data
     PUBLIC_HEADER "${HEADERS}"
 )
 
 install(TARGETS ${TARGET}
-    INCLUDES
-        DESTINATION ${INCLUDE_DIR}
-        COMPONENT Development
     PUBLIC_HEADER
         DESTINATION ${INCLUDE_DIR}
         COMPONENT Development

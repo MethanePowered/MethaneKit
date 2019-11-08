@@ -22,7 +22,7 @@ Action camera controller with keyboard and mouse interactions handling.
 ******************************************************************************/
 
 #include <Methane/Graphics/AppCameraController.h>
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 using namespace Methane::Platform;
 

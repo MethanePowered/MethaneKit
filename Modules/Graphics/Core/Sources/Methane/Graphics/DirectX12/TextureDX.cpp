@@ -29,7 +29,7 @@ DirectX 12 implementation of the texture interface.
 #include "RenderCommandListDX.h"
 #include "TypesDX.h"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 namespace Methane::Graphics

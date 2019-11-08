@@ -22,7 +22,7 @@ Base application controller providing commands like app close and help.
 ******************************************************************************/
 
 #include <Methane/Platform/AppController.h>
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <sstream>
 #include <cassert>

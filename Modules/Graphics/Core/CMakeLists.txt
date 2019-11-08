@@ -102,7 +102,7 @@ set(LIBRARIES ${PLATFORM_LIBRARIES}
     MethanePlatformUtils
     MethanePlatformAppView
     MethaneGraphicsHelpers
-    MethaneInstrumentation
+    MethaneDataInstrumentation
 )
 
 set(HEADERS

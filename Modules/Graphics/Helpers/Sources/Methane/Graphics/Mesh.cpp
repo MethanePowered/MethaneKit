@@ -22,7 +22,7 @@ Procedural mesh generators, including rect, box, etc.
 ******************************************************************************/
 
 #include <Methane/Graphics/Mesh.h>
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <cml/mathlib/mathlib.h>
 

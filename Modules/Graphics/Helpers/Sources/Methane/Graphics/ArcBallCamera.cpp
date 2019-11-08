@@ -22,7 +22,7 @@ Arc-ball camera rotation with mouse handling.
 ******************************************************************************/
 
 #include <Methane/Graphics/ArcBallCamera.h>
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <cml/mathlib/mathlib.h>
 #include <cassert>

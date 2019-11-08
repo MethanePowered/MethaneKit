@@ -23,7 +23,7 @@ Tutorial demonstrating shadow-pass rendering with Methane graphics API
 
 #pragma once
 
-#include <Methane/Kit.h>
+#include <Methane/Graphics/Kit.h>
 
 namespace Methane::Tutorials
 {

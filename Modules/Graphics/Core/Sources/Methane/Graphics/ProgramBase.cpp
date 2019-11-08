@@ -25,7 +25,7 @@ Base implementation of the program interface.
 #include "ContextBase.h"
 #include "ResourceManager.h"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 #include <Methane/Platform/Utils.h>
 
 #include <cassert>
