@@ -23,7 +23,7 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 
 #pragma once
 
-#include "Asteroid.h"
+#include "AsteroidsArray.h"
 
 #include <Methane/Graphics/Kit.h>
 
