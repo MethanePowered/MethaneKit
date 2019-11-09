@@ -1,5 +1,4 @@
-{
-    // See https://go.microsoft.com//fwlink//?linkid=834763 for more information about this file.
+﻿{
     "configurations": [
         {
             "name": "x86-Debug",
@@ -8,9 +7,10 @@
             "inheritEnvironments": [ "msvc_x86" ],
             "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
             "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-            "cmakeCommandArgs": "-DMETHANE_USE_ITT_INSTRUMENTATION:BOOL=ON",
+            "cmakeCommandArgs": "-DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON",
             "buildCommandArgs": "-v",
-            "ctestCommandArgs": ""
+            "ctestCommandArgs": "",
+            "variables": []
         },
         {
             "name": "x86-Release",
@@ -19,9 +19,10 @@
             "inheritEnvironments": [ "msvc_x86" ],
             "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
             "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-            "cmakeCommandArgs": "-DMETHANE_USE_ITT_INSTRUMENTATION:BOOL=ON",
+            "cmakeCommandArgs": "-DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON",
             "buildCommandArgs": "-v",
-            "ctestCommandArgs": ""
+            "ctestCommandArgs": "",
+            "variables": []
         },
         {
             "name": "x64-Debug",
@@ -30,9 +31,10 @@
             "inheritEnvironments": [ "msvc_x64_x64" ],
             "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
             "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-            "cmakeCommandArgs": "-DMETHANE_USE_ITT_INSTRUMENTATION:BOOL=ON",
+            "cmakeCommandArgs": "-DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON",
             "buildCommandArgs": "-v",
-            "ctestCommandArgs": ""
+            "ctestCommandArgs": "",
+            "variables": []
         },
         {
             "name": "x64-Release",
@@ -41,9 +43,10 @@
             "inheritEnvironments": [ "msvc_x64_x64" ],
             "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
             "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-            "cmakeCommandArgs": "-DMETHANE_USE_ITT_INSTRUMENTATION:BOOL=ON",
+            "cmakeCommandArgs": "-DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON",
             "buildCommandArgs": "-v",
-            "ctestCommandArgs": ""
+            "ctestCommandArgs": "",
+            "variables": []
         }
     ]
 }

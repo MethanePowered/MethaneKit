@@ -5,7 +5,8 @@ project(MethaneKit)
 enable_testing()
 
 option(METHANE_USE_OPEN_IMAGE_IO "Enable using OpenImageIO library for images loading" OFF)
-option(METHANE_USE_ITT_INSTRUMENTATION "Enable ITT instrumentation" OFF)
+option(METHANE_ITT_INSTRUMENTATION_ENABLED "Enable ITT instrumentation" OFF)
+option(METHANE_SHADERS_CODEVIEW_ENABLED "Enable shaders code viewing in debug tools while keeping compiler optimizations in Release builds)" OFF)
 option(METHANE_RUN_TESTS_DURING_BUILD "Run tests during build" ON)
 
 include_directories($ENV{INCLUDE})
@@ -38,7 +39,7 @@ endif()
 
 add_definitions(-DUNICODE -D_UNICODE -DNOMINMAX -DWIN32_LEAN_AND_MEAN -DUSE_PIX)
 
-if(METHANE_USE_ITT_INSTRUMENTATION)
+if(METHANE_ITT_INSTRUMENTATION_ENABLED)
     add_definitions(-DITT_INSTRUMENTATION_ENABLED)
 endif()
 

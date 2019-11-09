@@ -18,6 +18,7 @@ SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )
 SOURCE_DIR=$SCRIPT_DIR/../..
 OUTPUT_DIR=$SCRIPT_DIR/../Output/XCode
 INSTALL_DIR=$OUTPUT_DIR/Install
+CMAKE_FLAGS=-DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF
 
 if [ "$IS_ANALYZE_BUILD" == true ]; then
 
@@ -60,7 +61,7 @@ if [ "$IS_ANALYZE_BUILD" == true ]; then
 
     echo Analyzing code with Sonar Scanner on branch $GITBRANCH...
     "$SONAR_BUILD_WRAPPER_EXE" --out-dir "$BUILD_DIR" \
-        cmake -H"$SOURCE_DIR" -B"$BUILD_DIR" -G Xcode
+        cmake -H"$SOURCE_DIR" -B"$BUILD_DIR" -G Xcode $CMAKE_FLAGS
 
     "$SONAR_SCANNER_EXE" \
         -Dsonar.projectKey=egorodet_MethaneKit \
@@ -74,7 +75,7 @@ if [ "$IS_ANALYZE_BUILD" == true ]; then
 
 else
     echo Building with XCode...
-    cmake -H"$SOURCE_DIR" -B"$BUILD_DIR" -G Xcode -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" -DMETHANE_RUN_TESTS_DURING_BUILD=OFF
+    cmake -H"$SOURCE_DIR" -B"$BUILD_DIR" -G Xcode -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" $CMAKE_FLAGS
     cmake --build "$BUILD_DIR" --config $CONFIG_TYPE --target install
 
     echo Running unit-tests...
