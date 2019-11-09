@@ -63,21 +63,21 @@ static const GraphicsApp::Settings  g_app_settings  = // Application settings:
 AsteroidsApp::AsteroidsApp()
     : GraphicsApp(g_app_settings, gfx::RenderPass::Access::ShaderResources | gfx::RenderPass::Access::Samplers, g_app_help_text)
     , m_scene_scale(15.f)
-    , m_scene_constants(                                // Shader constants:
-        {                                               // ================
-            gfx::Color(1.f, 1.f, 0.74f, 1.f),           // - light_color
-            10000.f,                                     // - light_power
-            0.2f,                                       // - light_ambient_factor
-            4.f                                         // - light_specular_factor
+    , m_scene_constants(                              // Shader constants:
+        {                                             // ================
+            gfx::Color(1.f, 1.f, 0.74f, 1.f),         // - light_color
+            10000.f,                                  // - light_power
+            0.1f,                                     // - light_ambient_factor
+            4.f                                       // - light_specular_factor
         })
     , m_view_camera(m_animations, gfx::ActionCamera::Pivot::Aim)
     , m_light_camera(m_view_camera, m_animations, gfx::ActionCamera::Pivot::Aim)
 {
-    m_view_camera.SetOrientation({ { -30.f, 30.f, 30.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f } });
+    m_view_camera.SetOrientation({ { 0.f, 40.f, 90.f }, { 0.f, -25.f, 0.f }, { 0.f, 1.f, 0.f } });
     m_view_camera.SetParamters({ 0.01f, 600.f, 90.f });
     m_view_camera.SetZoomDistanceRange({ 15.f , 300.f });
 
-    m_light_camera.SetOrientation({ { 100.f,  100.f, -100.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f } });
+    m_light_camera.SetOrientation({ { 100.f,  100.f, 100.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
     m_light_camera.SetParamters({ -300.f, 300.f, 90.f });
     m_light_camera.Resize(120.f, 120.f);
