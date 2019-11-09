@@ -65,12 +65,11 @@ PSInput CubeVS(float3 in_position : POSITION,
               )
 {
     const float4 position       = float4(in_position, 1.0f);
-    const float3 normal         = normalize(mul(float4(in_normal, 0.0), g_mesh_uniforms.model_matrix)).xyz;
 
     PSInput output;
     output.position             = mul(g_mesh_uniforms.mvp_matrix, position);
     output.world_position       = mul(g_mesh_uniforms.model_matrix, position).xyz;
-    output.normal               = normalize(mul(g_mesh_uniforms.model_matrix, float4(normal, 0.0)).xyz);
+    output.normal               = normalize(mul(g_mesh_uniforms.model_matrix, float4(in_normal, 0.0)).xyz);
 #ifdef ENABLE_SHADOWS
     output.shadow_position      = mul(g_mesh_uniforms.shadow_mvpx_matrix, position);
 #endif
