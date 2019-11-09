@@ -82,9 +82,6 @@ private:
         SHADER_FIELD_ALIGN gfx::Vector3f  light_position;
     };
     
-    static constexpr uint32_t g_asteroid_instances_count = 1;
-    static constexpr uint32_t g_asteroid_subdivisions_count = 3;
-
     const float             m_scene_scale;
     const Constants         m_scene_constants;
     gfx::ActionCamera       m_view_camera;

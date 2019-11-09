@@ -26,6 +26,7 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 #include "AsteroidsApp.h"
 
 #include <Methane/Graphics/AppCameraController.h>
+#include <Methane/Data/TimeAnimation.h>
 
 #include <cml/mathlib/mathlib.h>
 #include <cassert>
@@ -35,29 +36,28 @@ namespace Methane::Samples
 {
 
 // Common application settings
-static const gfx::FrameSize             g_shadow_map_size(1024, 1024);
-static const gfx::Shader::EntryFunction g_vs_main       = { "Asteroids", "AsteroidsVS" };
-static const gfx::Shader::EntryFunction g_ps_main       = { "Asteroids", "AsteroidsPS" };
-static const std::string                g_app_help_text = "Asteroids sample demonstrates parallel rendering of multiple heterogeneous objects " \
-                                                        "and action camera interaction with mouse and keyboard.";
-static const GraphicsApp::Settings      g_app_settings  = // Application settings:
-{                                                       // ====================
-    {                                                   // app:
-        "Methane Asteroids",                            // - name
-        0.8, 0.8,                                       // - width, height
-        false,                                           // - is_full_screen
-    },                                                  //
-    {                                                   // context:
-        gfx::FrameSize(),                               // - frame_size
-        gfx::PixelFormat::BGRA8Unorm,                   // - color_format
-        gfx::PixelFormat::Depth32Float,                 // - depth_stencil_format
-        gfx::Color(0.0f, 0.2f, 0.4f, 1.0f),             // - clear_color
-        1.f,                                            // - clear_depth
-        0,                                              // - clear_stencil
-        3,                                              // - frame_buffers_count
-        true,                                           // - vsync_enabled
-    },                                                  //
-    true                                                // show_hud_in_window_title
+static constexpr uint32_t           g_asteroid_instances_count    = 10;
+static constexpr uint32_t           g_asteroid_subdivisions_count = 3;
+static const std::string            g_app_help_text = "Asteroids sample demonstrates parallel rendering of multiple heterogeneous objects " \
+                                                      "and action camera interaction with mouse and keyboard.";
+static const GraphicsApp::Settings  g_app_settings  = // Application settings:
+{                                                     // ====================
+    {                                                 // app:
+        "Methane Asteroids",                          // - name
+        0.8, 0.8,                                     // - width, height
+        false,                                        // - is_full_screen
+    },                                                //
+    {                                                 // context:
+        gfx::FrameSize(),                             // - frame_size
+        gfx::PixelFormat::BGRA8Unorm,                 // - color_format
+        gfx::PixelFormat::Depth32Float,               // - depth_stencil_format
+        gfx::Color(0.0f, 0.2f, 0.4f, 1.0f),           // - clear_color
+        1.f,                                          // - clear_depth
+        0,                                            // - clear_stencil
+        3,                                            // - frame_buffers_count
+        true,                                         // - vsync_enabled
+    },                                                //
+    true                                              // show_hud_in_window_title
 };
 
 AsteroidsApp::AsteroidsApp()
@@ -66,9 +66,9 @@ AsteroidsApp::AsteroidsApp()
     , m_scene_constants(                                // Shader constants:
         {                                               // ================
             gfx::Color(1.f, 1.f, 0.74f, 1.f),           // - light_color
-            600.f,                                      // - light_power
+            10000.f,                                     // - light_power
             0.2f,                                       // - light_ambient_factor
-            5.f                                         // - light_specular_factor
+            4.f                                         // - light_specular_factor
         })
     , m_view_camera(m_animations, gfx::ActionCamera::Pivot::Aim)
     , m_light_camera(m_view_camera, m_animations, gfx::ActionCamera::Pivot::Aim)
@@ -77,7 +77,7 @@ AsteroidsApp::AsteroidsApp()
     m_view_camera.SetParamters({ 0.01f, 600.f, 90.f });
     m_view_camera.SetZoomDistanceRange({ 15.f , 300.f });
 
-    m_light_camera.SetOrientation({ { 0.f,  25.f, 25.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f } });
+    m_light_camera.SetOrientation({ { 100.f,  100.f, -100.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
     m_light_camera.SetParamters({ -300.f, 300.f, 90.f });
     m_light_camera.Resize(120.f, 120.f);
@@ -123,7 +123,12 @@ void AsteroidsApp::Init()
     });
 
     // Create vertex and index buffer for meshes
-    m_sp_asteroid_array = std::make_unique<AsteroidArray>(context, g_asteroid_instances_count, g_asteroid_subdivisions_count, 1337);
+    m_sp_asteroid_array = std::make_unique<AsteroidArray>(context, AsteroidArray::Settings{
+        m_view_camera,
+        g_asteroid_instances_count,
+        g_asteroid_subdivisions_count,
+        m_scene_scale
+    });
     m_sp_asteroid_array->SetTexture(m_image_loader.LoadImageToTexture2D(context, "Textures/MethaneBubbles.jpg"));
 
     const Data::Size constants_data_size         = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(Constants)));
@@ -144,10 +149,10 @@ void AsteroidsApp::Init()
 
     // Create state for final FB rendering with a program
     gfx::RenderState::Settings state_settings;
-    state_settings.sp_program    = gfx::Program::Create(context, {
+    state_settings.sp_program = gfx::Program::Create(context, {
         {
-            gfx::Shader::CreateVertex(context, { Data::ShaderProvider::Get(), g_vs_main, { } }),
-            gfx::Shader::CreatePixel(context,  { Data::ShaderProvider::Get(), g_ps_main, { } }),
+            gfx::Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidsVS" }, { } }),
+            gfx::Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidsPS" }, { } }),
         },
         { // input_buffer_layouts
             { // Single vertex buffer with interleaved data:
@@ -223,6 +228,9 @@ void AsteroidsApp::Init()
         }
     }
 
+    // Setup animations
+    m_animations.push_back(std::make_shared<Data::TimeAnimation>(std::bind(&AsteroidArray::Update, m_sp_asteroid_array.get(), std::placeholders::_1, std::placeholders::_2)));
+
     // Complete initialization of render context:
     //  - allocate deferred descriptor heaps with calculated sizes
     //  - execute commands to upload resources to GPU
@@ -251,34 +259,13 @@ void AsteroidsApp::Update()
 {
     GraphicsApp::Update();
 
-    // Update Model, View, Projection matrices based on scene camera location
-    gfx::Matrix44f scale_matrix, scene_view_matrix, scene_proj_matrix;
-    cml::matrix_uniform_scale(scale_matrix, m_scene_scale);
-    m_view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
-
-    // Update View and Projection matrices based on light camera location
-    gfx::Matrix44f light_view_matrix, light_proj_matrix;
-    m_light_camera.GetViewProjMatrices(light_view_matrix, light_proj_matrix);
-
     // Update scene uniforms
     m_scene_uniforms.eye_position    = gfx::Vector4f(m_view_camera.GetOrientation().eye, 1.f);
     m_scene_uniforms.light_position  = m_light_camera.GetOrientation().eye;
 
-    // Update Asteroid uniforms with matrices
-    const uint32_t asteroids_count = m_sp_asteroid_array->GetSubsetsCount();
-    gfx::Matrix44f asteroid_model_matrix = scale_matrix;
-    gfx::Matrix44f asteroid_offset_matrix;
-    cml::matrix_translation(asteroid_offset_matrix, 0.f, 0.f, -30.f);
-    for(uint32_t asteroid_index = 0; asteroid_index < asteroids_count; ++asteroid_index)
-    {
-        m_sp_asteroid_array->SetFinalPassUniforms(AsteroidUniforms{
-            asteroid_model_matrix,
-            asteroid_model_matrix * scene_view_matrix * scene_proj_matrix
-        }, asteroids_count - 1 - asteroid_index);
-        asteroid_model_matrix = asteroid_model_matrix * asteroid_offset_matrix;
-    }
-    
     m_sp_sky_box->Update();
+
+    //m_sp_asteroid_array->Update(0., 0.);
 }
 
 void AsteroidsApp::Render()
@@ -293,7 +280,6 @@ void AsteroidsApp::Render()
     AsteroidsFrame& frame = GetCurrentFrame();
 
     // Upload uniform buffers to GPU
-    
     frame.sp_scene_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms) } });
     frame.asteroids.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_asteroid_array->GetFinalPassUniforms()),
                                                     m_sp_asteroid_array->GetUniformsBufferSize() } });
@@ -324,6 +310,7 @@ void AsteroidsApp::Render()
 
 void AsteroidsApp::OnContextReleased()
 {
+    m_animations.clear();
     m_sp_sky_box.reset();
     m_sp_asteroid_array.reset();
     m_sp_texture_sampler.reset();
