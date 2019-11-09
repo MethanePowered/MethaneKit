@@ -9,6 +9,8 @@ set(SOURCES
     AsteroidsApp.cpp
     Asteroid.h
     Asteroid.cpp
+    AsteroidsArray.h
+    AsteroidsArray.cpp
 )
 
 set(IMAGES_DIR ${RESOURCES_DIR}/Images)

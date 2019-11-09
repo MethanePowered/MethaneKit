@@ -27,7 +27,6 @@ Random generated asteroid model with mesh and texture ready for rendering.
 #include <Methane/Graphics/MathTypes.h>
 #include <Methane/Graphics/Mesh.h>
 #include <Methane/Graphics/MeshBuffers.hpp>
-#include <Methane/Graphics/Camera.h>
 
 namespace Methane::Samples
 {
@@ -77,38 +76,6 @@ public:
     };
 
     Asteroid(gfx::Context& context);
-};
-
-class AsteroidArray : public gfx::TexturedMeshBuffers<AsteroidUniforms>
-{
-public:
-    using Ptr = std::unique_ptr<AsteroidArray>;
-    using BaseBuffers = gfx::TexturedMeshBuffers<AsteroidUniforms>;
-
-    class UberMesh : public gfx::UberMesh<Asteroid::Vertex>
-    {
-    public:
-        UberMesh(uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed);
-    };
-
-    struct Settings
-    {
-        const gfx::Camera&  view_camera;
-        const uint32_t      instance_count;
-        const uint32_t      subdivisions_count;
-        float               scale;
-        const uint32_t      random_seed = 1337;
-    };
-
-    AsteroidArray(gfx::Context& context, Settings settings);
-
-    bool Update(double elapsed_seconds, double delta_seconds);
-
-private:
-    using Parameters = std::vector<Asteroid::Parameters>;
-
-    Settings   m_settings;
-    Parameters m_parameters;
 };
 
 } // namespace Methane::Samples
