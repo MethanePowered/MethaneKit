@@ -137,6 +137,10 @@ endfunction()
 function(compile_metal_shaders_to_library FOR_TARGET SDK METAL_SHADERS METAL_LIBRARY)
     get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
 
+    if(METHANE_SHADERS_CODEVIEW_ENABLED OR CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(EXTRA_COMPILE_FLAGS -gcodeview)
+    endif()
+
     foreach(SHADER_METAL_PATH ${METAL_SHADERS})
         string(REPLACE "/" ";" SHADER_METAL_PATH_LIST "${SHADER_METAL_PATH}")
         list(LENGTH SHADER_METAL_PATH_LIST SHADER_METAL_PATH_LIST_LENGTH)
@@ -149,7 +153,7 @@ function(compile_metal_shaders_to_library FOR_TARGET SDK METAL_SHADERS METAL_LIB
             COMMENT "Compiling Metal shader " ${SHADER_METAL_FILE} " for target " ${TARGET}
             BYPRODUCTS "${SHADER_AIR_PATH}"
             DEPENDS "${SHADER_METAL_PATH}"
-            COMMAND xcrun -sdk ${SDK} metal -gcodeview -c "${SHADER_METAL_PATH}" -o "${SHADER_AIR_PATH}"
+            COMMAND xcrun -sdk ${SDK} metal ${EXTRA_COMPILE_FLAGS} -c "${SHADER_METAL_PATH}" -o "${SHADER_AIR_PATH}"
         )
 
         set_target_properties(${SHADER_COMPILE_TARGET}
@@ -189,6 +193,14 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
 
     set(SHADER_COMPILER_EXE "${WINDOWS_SDK_BIN_PATH}/fxc.exe")
 
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(EXTRA_COMPILE_FLAGS /Od)
+    endif()
+
+    if(METHANE_SHADERS_CODEVIEW_ENABLED OR CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(EXTRA_COMPILE_FLAGS ${EXTRA_COMPILE_FLAGS} /Zi)
+    endif()
+
     file(STRINGS ${SHADERS_CONFIG} CONFIG_STRINGS)
     foreach(KEY_VALUE_STRING ${CONFIG_STRINGS})
         trim_spaces(${KEY_VALUE_STRING} KEY_VALUE_STRING)
@@ -210,10 +222,6 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
         set(SHADER_OBJ_PATH "${TARGET_SHADERS_DIR}/${SHADER_OBJ_FILE}")
 
         list(APPEND _OUT_COMPILED_SHADER_BINS ${SHADER_OBJ_PATH})
-
-        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-            set(EXTRA_COMPILE_FLAGS /Od /Zi)
-        endif()
 
         shorten_target_name(${FOR_TARGET}_HLSL_${NEW_ENTRY_POINT} COMPILE_SHADER_TARGET)
         add_custom_target(${COMPILE_SHADER_TARGET}
