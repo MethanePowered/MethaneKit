@@ -75,6 +75,7 @@ struct Rect
         { return !operator==(other); }
 
         D GetPixelsCount() const noexcept { return width * height; }
+        D GetLongestSide() const noexcept { return std::max(width, height); }
 
         operator std::string() const
         { return "Sz(" + std::to_string(width) + " x " + std::to_string(height) + ")"; }

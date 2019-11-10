@@ -89,6 +89,7 @@ struct Volume
         { return Rect<T, D>::Size::operator==(other) && depth == other.depth; }
 
         D GetPixelsCount() const noexcept { return depth * Rect<T, D>::Size::GetPixelsCount(); }
+        D GetLongestSide() const noexcept { return std::max(depth, Rect<T, D>::Size::GetLongestSide()); }
 
         operator std::string() const
         {

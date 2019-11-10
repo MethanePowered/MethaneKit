@@ -42,6 +42,9 @@ public:
     void SetData(const SubResources& sub_resources) override;
     Data::Size GetDataSize() const override;
 
+    // Texture interface
+    void GenerateMipLevels() override;
+
     // Object interface
     void SetName(const std::string& name) override;
 

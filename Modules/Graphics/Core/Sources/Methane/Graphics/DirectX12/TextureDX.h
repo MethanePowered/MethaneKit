@@ -64,6 +64,13 @@ public:
         return m_settings.dimensions.GetPixelsCount() * GetPixelSize(m_settings.pixel_format);
     }
 
+    // Texture interface
+    void GenerateMipLevels() override
+    {
+        ITT_FUNCTION_TASK();
+        throw std::logic_error("Mip levels generation is supported by image textures only.");
+    }
+
 protected:
     void Initialize(ExtraArgs...);
 };
@@ -79,6 +86,9 @@ public:
     // Resource interface
     void SetData(const SubResources& sub_resources) override;
     Data::Size GetDataSize() const override { return m_data_size; }
+
+    // Texture interface
+    void GenerateMipLevels() override;
 
 protected:
     Data::Size                  m_data_size = 0;

@@ -235,4 +235,22 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
     return mtl_tex_desc;
 }
 
+void TextureMT::GenerateMipLevels()
+{
+    ITT_FUNCTION_TASK();
+
+    TextureBase::GenerateMipLevels();
+
+    // TODO: mip-levels generation to be implemented here using MTLBlitCommandEncoder::generateMipmapsForTexture
+
+    // id<MTLDevice> device = [texture device];
+    // id<MTLCommandQueue> commandQueue = [device newCommandQueue];
+    // id<MTLCommandBuffer> commandBuffer = [commandQueue commandBuffer];
+    // id<MTLBlitCommandEncoder> blitEncoder = [commandBuffer blitCommandEncoder];
+    // [blitEncoder generateMipmapsForTexture:texture];
+    // [blitEncoder endEncoding];
+    // [commandBuffer commit];
+    // [commandBuffer waitUntilCompleted];
+}
+
 } // namespace Methane::Graphics

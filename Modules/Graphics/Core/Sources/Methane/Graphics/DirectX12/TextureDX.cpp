@@ -381,4 +381,13 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
     upload_cmd_list.SetResourceTransitionBarriers({ static_cast<Resource&>(*this) }, ResourceBase::State::CopyDest, ResourceBase::State::PixelShaderResource);
 }
 
+void ImageTextureDX::GenerateMipLevels()
+{
+    ITT_FUNCTION_TASK();
+
+    TextureBase::GenerateMipLevels();
+
+    // TODO: mip-levels generation to be implemented here using DirectXTex library (https://github.com/Microsoft/DirectXTex/wiki/GenerateMipMaps)
+}
+
 } // namespace Methane::Graphics

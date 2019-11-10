@@ -130,9 +130,45 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
         {
             throw std::invalid_argument("Cube texture depth must be equal to 6.");
         }
-        break;
-
+        // NOTE: break is missing intentionally
+    case DimensionType::Tex3D:
+        if (m_settings.mipmapped && m_settings.dimensions.depth % 2)
+        {
+            throw std::invalid_argument("All dimensions of the mip-mapped texture should be a power of 2, but depth is not.");
+        }
+        // NOTE: break is missing intentionally
+    case DimensionType::Tex2D:
+    case DimensionType::Tex2DArray:
+    case DimensionType::Tex2DMultisample:
+        if (m_settings.mipmapped && m_settings.dimensions.height % 2)
+        {
+            throw std::invalid_argument("All dimensions of the mip-mapped texture should be a power of 2, but height is not.");
+        }
+        // NOTE: break is missing intentionally
+    case DimensionType::Tex1D:
+    case DimensionType::Tex1DArray:
+        if (m_settings.mipmapped && m_settings.dimensions.width % 2)
+        {
+            throw std::invalid_argument("All dimensions of the mip-mapped texture should be a power of 2, but width is not.");
+        }
+        // NOTE: break is missing intentionally
     default: return;
+    }
+}
+
+uint32_t TextureBase::GetMipLevelsCount() const
+{
+    ITT_FUNCTION_TASK();
+    return m_settings.mipmapped ? 1u + static_cast<uint32_t>(std::log2(static_cast<double>(m_settings.dimensions.GetLongestSide())))
+                                : 1u;
+}
+
+void TextureBase::GenerateMipLevels()
+{
+    ITT_FUNCTION_TASK();
+    if (!m_settings.mipmapped)
+    {
+        throw std::logic_error("Can not generate mip-levels for non-mipmapped texture.");
     }
 }
 
