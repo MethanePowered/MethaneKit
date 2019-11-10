@@ -39,6 +39,8 @@ public:
 
     // Texture interface
     const Settings& GetSettings() const override { return m_settings; }
+    uint32_t        GetMipLevelsCount() const override;
+    void            GenerateMipLevels() override;
 
 protected:
     const Settings m_settings;
