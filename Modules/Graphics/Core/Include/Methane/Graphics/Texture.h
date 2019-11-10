@@ -72,13 +72,16 @@ struct Texture : virtual Resource
     };
 
     // Create Texture instance
-    static Ptr CreateRenderTarget(Context& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    static Ptr CreateFrameBuffer(Context& context, uint32_t frame_buffer_index, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    static Ptr CreateDepthStencilBuffer(Context& context, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    static Ptr CreateImage(Context& context, Dimensions dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped,
+    static Ptr CreateRenderTarget(Context& context, const Settings& settings,
+                                  const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    static Ptr CreateFrameBuffer(Context& context, uint32_t frame_buffer_index,
+                                 const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    static Ptr CreateDepthStencilBuffer(Context& context,
+                                        const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    static Ptr CreateImage(Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped,
                            const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
     static Ptr CreateCube(Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped,
-                           const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+                          const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
     // Texture interface
     virtual const Settings& GetSettings() const = 0;

@@ -84,7 +84,7 @@ Texture::Ptr Texture::CreateDepthStencilBuffer(Context& context, const Descripto
     return std::make_shared<DepthStencilBufferTextureDX>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage, context_settings.clear_depth, context_settings.clear_stencil);
 }
 
-Texture::Ptr Texture::CreateImage(Context& context, Dimensions dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
+Texture::Ptr Texture::CreateImage(Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length, pixel_format, mipmapped, Usage::ShaderRead);
