@@ -292,7 +292,7 @@ void AsteroidsApp::Render()
     // Cube drawing
     frame.sp_cmd_list->Reset(*m_sp_state, "Asteroids rendering");
 
-    assert(!!m_sp_asteroid_array);
+    assert(!!m_sp_asteroids_array);
     m_sp_asteroids_array->Draw(*frame.sp_cmd_list, frame.asteroids.resource_bindings_array);
 
     frame.sp_cmd_list->Commit(true);
