@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: AsteroidsArray.h
-Random generated asteroids array with uber mesh and textures ready for rendering.
+Random generated asteroids array with uber-mesh and textures ready for rendering.
 
 ******************************************************************************/
 
@@ -35,10 +35,10 @@ namespace Methane::Samples
 
 namespace gfx = Graphics;
 
-class AsteroidArray : public gfx::TexturedMeshBuffers<AsteroidUniforms>
+class AsteroidsArray : public gfx::TexturedMeshBuffers<AsteroidUniforms>
 {
 public:
-    using Ptr = std::unique_ptr<AsteroidArray>;
+    using Ptr = std::unique_ptr<AsteroidsArray>;
     using BaseBuffers = gfx::TexturedMeshBuffers<AsteroidUniforms>;
 
     struct Settings
@@ -56,7 +56,7 @@ public:
         UberMesh(uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed);
     };
 
-    AsteroidArray(gfx::Context& context, Settings settings);
+    AsteroidsArray(gfx::Context& context, Settings settings);
 
     bool Update(double elapsed_seconds, double delta_seconds);
 

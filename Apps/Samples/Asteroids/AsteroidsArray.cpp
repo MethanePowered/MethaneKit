@@ -41,7 +41,7 @@ static gfx::Point3f GetRandomDirection(std::mt19937& rng)
     return cml::normalize(direction);
 }
 
-AsteroidArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed)
+AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed)
     : gfx::UberMesh<Asteroid::Vertex>(gfx::Mesh::VertexLayoutFromArray(Asteroid::Vertex::layout))
 {
     std::mt19937 rng(random_seed);
@@ -64,7 +64,7 @@ AsteroidArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivisions
     }
 }
 
-AsteroidArray::AsteroidArray(gfx::Context& context, Settings settings)
+AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
     : BaseBuffers(context, UberMesh(settings.instance_count, settings.subdivisions_count, settings.random_seed), "Asteroid Array")
     , m_settings(std::move(settings))
 {
@@ -99,7 +99,7 @@ AsteroidArray::AsteroidArray(gfx::Context& context, Settings settings)
     }
 }
 
-bool AsteroidArray::Update(double elapsed_seconds, double delta_seconds)
+bool AsteroidsArray::Update(double elapsed_seconds, double delta_seconds)
 {
     gfx::Matrix44f scene_view_matrix, scene_proj_matrix;
     m_settings.view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
