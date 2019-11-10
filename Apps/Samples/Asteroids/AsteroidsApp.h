@@ -92,7 +92,7 @@ private:
     gfx::RenderState::Ptr   m_sp_state;
     gfx::Buffer::Ptr        m_sp_const_buffer;
     gfx::Sampler::Ptr       m_sp_texture_sampler;
-    AsteroidArray::Ptr      m_sp_asteroid_array;
+    AsteroidsArray::Ptr     m_sp_asteroids_array;
 };
 
 } // namespace Methane::Samples
