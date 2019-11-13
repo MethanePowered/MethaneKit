@@ -147,7 +147,7 @@ void AsteroidsApp::Init()
     m_sp_texture_sampler->SetName("Texture Sampler");
 
     // Create state for final FB rendering with a program
-    const gfx::Shader::MacroDefinitions asteroid_definitions = { { "TEX_COUNT", std::to_string(g_asteroid_subdivisions_count) } };
+    const gfx::Shader::MacroDefinitions asteroid_definitions = { };
     gfx::RenderState::Settings state_settings;
     state_settings.sp_program = gfx::Program::Create(context, {
         {
