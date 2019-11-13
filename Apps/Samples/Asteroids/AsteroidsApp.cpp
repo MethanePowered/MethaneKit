@@ -125,11 +125,10 @@ void AsteroidsApp::Init()
     // Create vertex and index buffer for meshes
     m_sp_asteroids_array = std::make_unique<AsteroidsArray>(context, AsteroidsArray::Settings{
         m_view_camera,
+        m_scene_scale,
         g_asteroid_instances_count,
-        g_asteroid_subdivisions_count,
-        m_scene_scale
+        g_asteroid_subdivisions_count
     });
-    m_sp_asteroids_array->SetTexture(m_image_loader.LoadImageToTexture2D(context, "Textures/MethaneBubbles.jpg"));
 
     const Data::Size constants_data_size         = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(Constants)));
     const Data::Size scene_uniforms_data_size    = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(SceneUniforms)));
@@ -148,11 +147,12 @@ void AsteroidsApp::Init()
     m_sp_texture_sampler->SetName("Texture Sampler");
 
     // Create state for final FB rendering with a program
+    const gfx::Shader::MacroDefinitions asteroid_definitions = { { "TEX_COUNT", std::to_string(g_asteroid_subdivisions_count) } };
     gfx::RenderState::Settings state_settings;
     state_settings.sp_program = gfx::Program::Create(context, {
         {
-            gfx::Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidsVS" }, { } }),
-            gfx::Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidsPS" }, { } }),
+            gfx::Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidsVS" }, asteroid_definitions }),
+            gfx::Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidsPS" }, asteroid_definitions }),
         },
         { // input_buffer_layouts
             { // Single vertex buffer with interleaved data:
@@ -212,18 +212,19 @@ void AsteroidsApp::Init()
             continue;
 
         frame.asteroids.resource_bindings_array[0] = gfx::Program::ResourceBindings::Create(state_settings.sp_program, {
-            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { frame.asteroids.sp_uniforms_buffer, m_sp_asteroids_array->GetUniformsBufferOffset(0) } },
-            { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { frame.sp_scene_uniforms_buffer        } },
-            { { gfx::Shader::Type::Pixel,  "g_constants"      }, { m_sp_const_buffer                     } },
-            { { gfx::Shader::Type::Pixel,  "g_texture"        }, { m_sp_asteroids_array->GetTexturePtr()  } },
-            { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { m_sp_texture_sampler                  } },
+            { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, { frame.asteroids.sp_uniforms_buffer, m_sp_asteroids_array->GetUniformsBufferOffset(0) } },
+            { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { frame.sp_scene_uniforms_buffer         } },
+            { { gfx::Shader::Type::Pixel,  "g_constants"      }, { m_sp_const_buffer                      } },
+            { { gfx::Shader::Type::Pixel,  "g_textures"       }, { m_sp_asteroids_array->GetTexturePtr(0) } },
+            { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { m_sp_texture_sampler                   } },
         });
 
         for(uint32_t asteroid_index = 1; asteroid_index < asteroids_count; ++asteroid_index)
         {
             const Data::Size asteroid_uniform_offset = m_sp_asteroids_array->GetUniformsBufferOffset(asteroid_index);
             frame.asteroids.resource_bindings_array[asteroid_index] = gfx::Program::ResourceBindings::CreateCopy(*frame.asteroids.resource_bindings_array[0], {
-                { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { frame.asteroids.sp_uniforms_buffer, asteroid_uniform_offset } },
+                { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, { frame.asteroids.sp_uniforms_buffer, asteroid_uniform_offset } },
+                { { gfx::Shader::Type::Pixel,  "g_textures"       }, { m_sp_asteroids_array->GetTexturePtr(asteroid_index) } },
             });
         }
     }

@@ -80,7 +80,7 @@ gfx::Texture::Ptr Asteroid::GenerateTextures(gfx::Context& context, const gfx::D
     
     std::mt19937 rng(random_seed);
     std::uniform_real_distribution<float> noise_seed_distribution(0.f, 10000.f);
-    std::uniform_real_distribution<float> noise_scale_distribution(100.f, 150.f);
+    std::uniform_real_distribution<float> noise_scale_distribution(10.f, 30.f);
     std::normal_distribution<float>       persistence_distribution(0.9f, 0.2f);
 
     gfx::Vector3f color_scale(255.f, 255.f, 255.f);
@@ -102,7 +102,7 @@ gfx::Texture::Ptr Asteroid::GenerateTextures(gfx::Context& context, const gfx::D
         FillRandomNoiseToTexture(sub_resource_data, dimensions, pixel_size, row_stide, base_color,
                                  noise_seed_distribution(rng),
                                  persistence_distribution(rng),
-                                 noise_scale_distribution(rng) / dimensions.width,
+                                 noise_scale_distribution(rng),
                                  1.5f);
         
         sub_resources.emplace_back(static_cast<Data::ConstRawPtr>(sub_resource_data.data()),

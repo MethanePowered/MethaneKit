@@ -68,6 +68,16 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
     : BaseBuffers(context, UberMesh(settings.instance_count, settings.subdivisions_count, settings.random_seed), "Asteroid Array")
     , m_settings(std::move(settings))
 {
+    std::mt19937 rng(settings.random_seed);
+    
+    // Create randomly generated texture arrays with perlin-noise
+    m_unique_textures.resize(m_settings.textures_count);
+    Data::ParallelFor(m_unique_textures.begin(), m_unique_textures.end(),
+        [this, &context, &rng](gfx::Texture::Ptr& sp_texture)
+        {
+            sp_texture = Asteroid::GenerateTextures(context, m_settings.texture_dimensions, m_settings.subdivisions_count, false, rng());
+        });
+    
     // Calculate initial asteroid positions and rotation parameters
     const uint32_t asteroids_count = GetSubsetsCount();
     const uint32_t asteroids_grid_size_x = static_cast<uint32_t>(std::sqrt(asteroids_count));
@@ -77,24 +87,29 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
     const float grid_origin_x = asteroid_offset_step * (asteroids_grid_size_x - 1) / -2.f;
     const float grid_origin_y = asteroid_offset_step * (asteroids_grid_size_y - 1) / -2.f;
 
-    std::mt19937 rng(settings.random_seed);
-    std::normal_distribution<float> distribution;
+    std::normal_distribution<float> normal_distribution;
+    std::uniform_int_distribution<uint32_t> textures_distribution(0u, m_settings.textures_count - 1);
+    //std::uniform_int_distribution<uint32_t> texture_array_distribution(0u, m_settings.subdivisions_count - 1);
 
     m_parameters.reserve(asteroids_count);
     for (uint32_t asteroid_index = 0; asteroid_index < asteroids_count; ++asteroid_index)
     {
+        const uint32_t texture_index    = textures_distribution(rng);
         const uint32_t asteroid_index_x = asteroid_index % asteroids_grid_size_x;
         const uint32_t asteroid_index_y = asteroid_index / asteroids_grid_size_x;
+        
+        SetTexture(m_unique_textures[texture_index], asteroid_index);
 
         m_parameters.emplace_back(Asteroid::Parameters{
             asteroid_index,
+            0, //texture_array_distribution(rng),
             {
                 grid_origin_x + asteroid_index_x * asteroid_offset_step, 0.f,
                 grid_origin_y + asteroid_index_y * asteroid_offset_step
             },
             GetRandomDirection(rng),
-            cml::constants<float>::pi() * distribution(rng),
-            0.1f + distribution(rng) * 0.1f
+            cml::constants<float>::pi() * normal_distribution(rng),
+            0.1f + normal_distribution(rng) * 0.1f
         });
     }
 }
@@ -123,7 +138,8 @@ bool AsteroidsArray::Update(double elapsed_seconds, double delta_seconds)
             AsteroidUniforms
             {
                 model_matrix,
-                model_matrix * scene_view_matrix * scene_proj_matrix
+                model_matrix * scene_view_matrix * scene_proj_matrix,
+                asteroid_parameters.texture_index
             },
             asteroid_parameters.index
         );

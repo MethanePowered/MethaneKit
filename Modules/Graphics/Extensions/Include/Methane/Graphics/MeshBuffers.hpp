@@ -210,12 +210,18 @@ public:
         if (subset_index >= MeshBuffers<UniformsType>::GetSubsetsCount())
             throw std::invalid_argument("Subset index is out of bounds.");
         
-        sp_texture->SetName(MeshBuffers<UniformsType>::GetMeshName() + " Texture");
+        if (sp_texture)
+        {
+            sp_texture->SetName(MeshBuffers<UniformsType>::GetMeshName() + " Texture");
+        }
         m_subset_textures[subset_index] = sp_texture;
     }
 
+protected:
+    using Textures = std::vector<Texture::Ptr>;
+    
 private:
-    std::vector<Texture::Ptr> m_subset_textures;
+    Textures m_subset_textures;
 };
 
 } // namespace Methane::Graphics

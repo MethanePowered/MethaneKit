@@ -16,13 +16,14 @@ struct MeshUniforms
 {
     float4x4 model_matrix;
     float4x4 mvp_matrix;
+    uint     texture_index;
 };
 
-ConstantBuffer<Constants>     g_constants           : register(b1);
-ConstantBuffer<SceneUniforms> g_scene_uniforms      : register(b2);
-ConstantBuffer<MeshUniforms>  g_mesh_uniforms       : register(b3);
-Texture2D                     g_texture             : register(t1);
-SamplerState                  g_texture_sampler     : register(s1);
+ConstantBuffer<Constants>     g_constants        : register(b1);
+ConstantBuffer<SceneUniforms> g_scene_uniforms   : register(b2);
+ConstantBuffer<MeshUniforms>  g_mesh_uniforms    : register(b3);
+Texture2DArray<float4>        g_textures         : register(t1);
+SamplerState                  g_texture_sampler  : register(s1);
 
 struct PSInput
 {
@@ -65,15 +66,15 @@ float4 AsteroidsPS(PSInput input) : SV_TARGET
     const float3 fragment_to_eye    = normalize(g_scene_uniforms.eye_position.xyz - input.world_position);
     const float3 light_reflected_from_fragment = reflect(-fragment_to_light, input.normal);
 
-    const float4 texel_color    = g_texture.Sample(g_texture_sampler, input.uv);
+    const float4 texel_color    = g_textures.Sample(g_texture_sampler, float3(input.uv, g_mesh_uniforms.texture_index));
     const float4 ambient_color  = texel_color * g_constants.light_ambient_factor;
     const float4 base_color     = texel_color * g_constants.light_color * g_constants.light_power;
 
-    const float distance        = length(g_scene_uniforms.light_position - input.world_position);
-    const float diffuse_part    = clamp(dot(fragment_to_light, input.normal), 0.0, 1.0);
+    const float  distance       = length(g_scene_uniforms.light_position - input.world_position);
+    const float  diffuse_part   = clamp(dot(fragment_to_light, input.normal), 0.0, 1.0);
     const float4 diffuse_color  = base_color * diffuse_part / (distance * distance);
 
-    const float specular_part   = pow(clamp(dot(fragment_to_eye, light_reflected_from_fragment), 0.0, 1.0), g_constants.light_specular_factor);
+    const float  specular_part  = pow(clamp(dot(fragment_to_eye, light_reflected_from_fragment), 0.0, 1.0), g_constants.light_specular_factor);
     const float4 specular_color = base_color * specular_part / (distance * distance);
 
     return ambient_color + diffuse_color + specular_color;
