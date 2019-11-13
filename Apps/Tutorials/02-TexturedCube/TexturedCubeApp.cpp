@@ -43,7 +43,7 @@ static const GraphicsApp::Settings      g_app_settings = // Application settings
         gfx::FrameSize(),                           // - frame_size
         gfx::PixelFormat::BGRA8Unorm,               // - color_format
         gfx::PixelFormat::Depth32Float,             // - depth_stencil_format
-        gfx::Color(0.0f, 0.2f, 0.4f, 1.0f),         // - clear_color
+        gfx::Color4f(0.0f, 0.2f, 0.4f, 1.0f),       // - clear_color
         1.f,                                        // - clear_depth
         0,                                          // - clear_stencil
         3,                                          // - frame_buffers_count
@@ -56,7 +56,7 @@ TexturedCubeApp::TexturedCubeApp()
     : GraphicsApp(g_app_settings, gfx::RenderPass::Access::ShaderResources | gfx::RenderPass::Access::Samplers)
     , m_shader_constants(                           // Shader constants:
         {                                           // ================
-            gfx::Color(1.f, 1.f, 0.74f, 1.f),       // - light_color
+            gfx::Color4f(1.f, 1.f, 0.74f, 1.f),     // - light_color
             700.f,                                  // - light_power
             0.2f,                                   // - light_ambient_factor
             5.f                                     // - light_specular_factor

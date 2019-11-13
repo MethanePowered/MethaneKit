@@ -269,7 +269,7 @@ uint32_t TypeConverterMT::ByteSizeOfVertexFormat(MTLVertexFormat vertex_format) 
     return 0;
 }
 
-MTLClearColor TypeConverterMT::ColorToMetalClearColor(const Color& color) noexcept
+MTLClearColor TypeConverterMT::ColorToMetalClearColor(const Color4f& color) noexcept
 {
     ITT_FUNCTION_TASK();
     return MTLClearColorMake(color.r(), color.g(), color.b(), color.a());

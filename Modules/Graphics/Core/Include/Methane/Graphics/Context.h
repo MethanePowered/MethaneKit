@@ -49,7 +49,7 @@ struct Context : virtual Object
         FrameSize   frame_size;
         PixelFormat color_format            = PixelFormat::BGRA8Unorm;
         PixelFormat depth_stencil_format    = PixelFormat::Unknown;
-        Color       clear_color;
+        Color4f     clear_color;
         Depth       clear_depth             = 1.f;
         Stencil     clear_stencil           = 0;
         uint32_t    frame_buffers_count     = 3;
