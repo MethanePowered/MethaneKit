@@ -43,11 +43,13 @@ public:
 
     struct Settings
     {
-        const gfx::Camera&  view_camera;
-        const uint32_t      instance_count      = 3;
-        const uint32_t      subdivisions_count  = 3;
-        float               scale               = 1.f;
-        const uint32_t      random_seed         = 1337;
+        const gfx::Camera&      view_camera;
+        const float             scale               = 1.f;
+        const uint32_t          instance_count      = 3u;
+        const uint32_t          subdivisions_count  = 3u;
+        const uint32_t          textures_count      = 10u;
+        const gfx::Dimensions   texture_dimensions  = { 256u, 256u };
+        const uint32_t          random_seed         = 1337u;
     };
 
     class UberMesh : public gfx::UberMesh<Asteroid::Vertex>
@@ -65,6 +67,7 @@ private:
 
     Settings   m_settings;
     Parameters m_parameters;
+    Textures   m_unique_textures;
 };
 
 } // namespace Methane::Samples

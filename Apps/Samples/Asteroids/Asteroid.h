@@ -36,6 +36,7 @@ struct SHADER_STRUCT_ALIGN AsteroidUniforms
 {
     SHADER_FIELD_ALIGN gfx::Matrix44f model_matrix;
     SHADER_FIELD_ALIGN gfx::Matrix44f mvp_matrix;
+    SHADER_FIELD_ALIGN uint32_t       texture_index;
 };
 
 class Asteroid : public gfx::TexturedMeshBuffers<AsteroidUniforms>
@@ -68,6 +69,7 @@ public:
     struct Parameters
     {
         const uint32_t index;
+        uint32_t       texture_index;
         gfx::Point3f   position;
         gfx::Point3f   rotation_axis;
         float          rotation_angle_rad;
