@@ -41,20 +41,20 @@ private:
 
 public:
     HelloTriangleApp() : GraphicsApp(
-        {                                      // Application settings:
-            {                                  // app:
-                "Methane Hello Triangle",      // - name
-                0.8, 0.8,                      // - width, height
-            },                                 //
-            {                                  // context:
-                FrameSize(),                   // - frame_size placeholder: actual size is set in InitContext
-                PixelFormat::BGRA8Unorm,       // - color_format
-                PixelFormat::Unknown,          // - depth_stencil_format
-                Color(0.0f, 0.2f, 0.4f, 1.0f), // - clear_color
-            },                                 //
-            true                               // show_hud_in_window_title
-        },
-        RenderPass::Access::None)              // screen_pass_access (program access to resources)
+        {                                        // Application settings:
+            {                                    // app:
+                "Methane Hello Triangle",        // - name
+                0.8, 0.8,                        // - width, height
+            },                                   //
+            {                                    // context:
+                FrameSize(),                     // - frame_size placeholder: actual size is set in InitContext
+                PixelFormat::BGRA8Unorm,         // - color_format
+                PixelFormat::Unknown,            // - depth_stencil_format
+                Color4f(0.0f, 0.2f, 0.4f, 1.0f), // - clear_color
+            },                                   //
+            true                                 // show_hud_in_window_title
+          },
+        RenderPass::Access::None)                // screen_pass_access (program access to resources)
     { }
 
     ~HelloTriangleApp() override

@@ -67,9 +67,9 @@ struct RenderPass
     
     struct ColorAttachment : Attachment
     {
-        Color       clear_color;
+        Color4f clear_color;
         
-        ColorAttachment(const Attachment&& attach, const Color& in_clear_color = Color()) : Attachment(attach), clear_color(in_clear_color) { }
+        ColorAttachment(const Attachment&& attach, const Color4f& in_clear_color = Color4f()) : Attachment(attach), clear_color(in_clear_color) { }
         
         bool operator==(const ColorAttachment& other) const;
     };
