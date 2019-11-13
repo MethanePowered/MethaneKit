@@ -114,11 +114,39 @@ using Viewport  = Volume<double, double>;
 using Viewports = std::vector<Viewport>;
 
 Viewport GetFrameViewport(const FrameSize& frame_size);
+    
+class Color3f : public Vector3f
+{
+public:
+    using Vector3f::Vector3f;
+    using Vector3f::operator=;
+    
+    Color3f() = default;
+    Color3f(float r, float g, float b) : Vector3f(r, g, b) { }
+    
+    float r() const noexcept { return (*this)[0]; }
+    float g() const noexcept { return (*this)[1]; }
+    float b() const noexcept { return (*this)[2]; }
+    
+    void setR(float r) noexcept { (*this)[0] = r; }
+    void setG(float g) noexcept { (*this)[1] = g; }
+    void setB(float b) noexcept { (*this)[2] = b; }
+
+    std::string ToString() const
+    {
+        return "C(R:" + std::to_string(r()) +
+               ", G:" + std::to_string(g()) +
+               ", B:" + std::to_string(b()) + ")";
+    }
+};
 
 class Color : public Vector4f
 {
 public:
-    Color() : Vector4f() {}
+    using Vector4f::Vector4f;
+    using Vector4f::operator=;
+    
+    Color() = default;
     Color(float r, float g, float b, float a) : Vector4f(r, g, b, a) { }
     
     float r() const noexcept { return (*this)[0]; }
