@@ -25,7 +25,6 @@ Random generated asteroid model with mesh and texture ready for rendering.
 
 #include <Methane/Graphics/Context.h>
 #include <Methane/Graphics/MathTypes.h>
-#include <Methane/Graphics/Mesh.h>
 #include <Methane/Graphics/MeshBuffers.hpp>
 
 namespace Methane::Samples
@@ -76,6 +75,12 @@ public:
     };
 
     Asteroid(gfx::Context& context);
+    
+    static gfx::Texture::Ptr GenerateTextures(gfx::Context& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, uint32_t random_seed);
+    
+private:
+    static void FillRandomNoiseToTexture(Data::Bytes& texture_data, const gfx::Dimensions& dimensions, uint32_t pixel_size, uint32_t row_stride,
+                                         const gfx::Color3f& base_color, float random_seed, float persistence, float noise_scale, float noise_strength);
 };
 
 } // namespace Methane::Samples

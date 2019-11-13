@@ -62,7 +62,80 @@ void Asteroid::Mesh::Randomize(uint32_t random_seed)
 Asteroid::Asteroid(gfx::Context& context)
     : BaseBuffers(context, Mesh(3, true), "Asteroid")
 {
+    SetTexture(GenerateTextures(context, gfx::Dimensions(256, 256), 1, true, 0), 0);
 }
 
+gfx::Texture::Ptr Asteroid::GenerateTextures(gfx::Context& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, uint32_t random_seed)
+{
+    const gfx::PixelFormat pixel_format = gfx::PixelFormat::RGBA8Unorm;
+    const uint32_t pixel_size = gfx::GetPixelSize(pixel_format);
+    const uint32_t pixels_count = dimensions.GetPixelsCount();
+    const uint32_t row_stide = pixel_size * dimensions.width;
+
+    std::vector<Data::Bytes> sub_resources_data;
+    sub_resources_data.resize(array_size);
+    
+    gfx::Resource::SubResources sub_resources;
+    sub_resources.reserve(array_size);
+    
+    std::mt19937 rng(random_seed);
+    std::uniform_real_distribution<float> noise_seed_distribution(0.f, 10000.f);
+    std::uniform_real_distribution<float> noise_scale_distribution(100.f, 150.f);
+    std::normal_distribution<float>       persistence_distribution(0.9f, 0.2f);
+
+    gfx::Vector3f color_scale(255.f, 255.f, 255.f);
+    for(uint32_t array_index = 0; array_index < array_size; ++array_index)
+    {
+        Methane::Data::Bytes& sub_resource_data = sub_resources_data[array_index];
+        sub_resource_data.resize(pixels_count * pixel_size);
+        
+        const gfx::Color3f base_color(
+#ifdef true
+            255.f, 255.f, 255.f
+#else
+            array_index & 1 ? 255.f : 0.f,
+            array_index & 2 ? 255.f : 0.f,
+            array_index & 4 ? 255.f : 0.f
+#endif
+        );
+        
+        FillRandomNoiseToTexture(sub_resource_data, dimensions, pixel_size, row_stide, base_color,
+                                 noise_seed_distribution(rng),
+                                 persistence_distribution(rng),
+                                 noise_scale_distribution(rng) / dimensions.width,
+                                 1.5f);
+        
+        sub_resources.emplace_back(static_cast<Data::ConstRawPtr>(sub_resource_data.data()),
+                                   static_cast<Data::Size>(sub_resource_data.size()),
+                                   0, array_index);
+    }
+    
+    gfx::Texture::Ptr sp_texture_array = gfx::Texture::CreateImage(context, dimensions, array_size, pixel_format, mipmapped);
+    sp_texture_array->SetData(sub_resources);
+    
+    return sp_texture_array;
+}
+    
+void Asteroid::FillRandomNoiseToTexture(Data::Bytes& texture_data, const gfx::Dimensions& dimensions, uint32_t pixel_size, uint32_t row_stride,
+                                        const gfx::Color3f& base_color, float random_seed, float persistence, float noise_scale, float noise_strength)
+{
+    const gfx::NoiseOctaves<4> perlin_noise(persistence);
+    
+    for (size_t row = 0; row < dimensions.height; ++row)
+    {
+        uint32_t* row_data = reinterpret_cast<uint32_t*>(texture_data.data() + row * row_stride);
+        
+        for (size_t col = 0; col < dimensions.width; ++col)
+        {
+            const gfx::Vector3f noise_coordinates(noise_scale * row, noise_scale * col, random_seed);
+            const float intensity = std::max(0.0f, std::min(1.0f, (perlin_noise(noise_coordinates) - 0.5f) * noise_strength + 0.5f));
+            const gfx::Color3f texel_color = base_color * intensity;
+            
+            row_data[col] = (static_cast<uint32_t>(texel_color.r()) << 16u) |
+                            (static_cast<uint32_t>(texel_color.g()) << 8u)  |
+                            (static_cast<uint32_t>(texel_color.b()) << 0u);
+        }
+    }
+}
 
 } // namespace Methane::Samples
