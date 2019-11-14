@@ -145,7 +145,7 @@ D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDX(SamplerBase::Address::Mode add
     // D3D12_TEXTURE_ADDRESS_MODE_MIRROR_ONCE
 }
 
-void SetColor(const Color& in_color, FLOAT* p_out_color) noexcept
+void SetColor(const Color4f& in_color, FLOAT* p_out_color) noexcept
 {
     ITT_FUNCTION_TASK();
 
