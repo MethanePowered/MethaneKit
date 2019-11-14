@@ -70,13 +70,22 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
 {
     std::mt19937 rng(settings.random_seed);
     
-    // Create randomly generated texture arrays with perlin-noise
-    m_unique_textures.resize(m_settings.textures_count);
-    Data::ParallelFor(m_unique_textures.begin(), m_unique_textures.end(),
-        [this, &context, &rng](gfx::Texture::Ptr& sp_texture)
+    // Generated sub-resources for texture arrays filled with random perlin-noise
+    std::vector<gfx::Resource::SubResources> texture_subresources_array;
+    texture_subresources_array.resize(m_settings.textures_count);
+    Data::ParallelFor(texture_subresources_array.begin(), texture_subresources_array.end(),
+        [this, &rng](gfx::Resource::SubResources& sub_resources)
         {
-            sp_texture = Asteroid::GenerateTextures(context, m_settings.texture_dimensions, m_settings.subdivisions_count, false, rng());
+            sub_resources = Asteroid::GenerateTextureArraySubresources(m_settings.texture_dimensions, m_settings.subdivisions_count, false, rng());
         });
+
+    // Create texture arrays initialized with sub-resources data
+    m_unique_textures.reserve(m_settings.textures_count);
+    for(const gfx::Resource::SubResources& texture_subresources : texture_subresources_array)
+    {
+        m_unique_textures.emplace_back(gfx::Texture::CreateImage(context, m_settings.texture_dimensions, static_cast<uint32_t>(texture_subresources.size()), gfx::PixelFormat::RGBA8Unorm, false));
+        m_unique_textures.back()->SetData(texture_subresources);
+    }
     
     // Calculate initial asteroid positions and rotation parameters
     const uint32_t asteroids_count = GetSubsetsCount();

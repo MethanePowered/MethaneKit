@@ -89,6 +89,7 @@ struct Resource : virtual Object
 
     struct SubResource
     {
+        Data::Bytes         data_storage;
         Data::ConstRawPtr   p_data      = nullptr;
         Data::Size          data_size   = 0;
         uint32_t            depth_slice = 0;
@@ -96,6 +97,8 @@ struct Resource : virtual Object
         uint32_t            mip_level   = 0;
 
         SubResource() = default;
+        SubResource(Data::Bytes&& data,
+                    uint32_t in_depth_slice = 0, uint32_t in_array_index = 0, uint32_t in_mip_level = 0);
         SubResource(Data::ConstRawPtr in_p_data, Data::Size in_data_size,
                     uint32_t in_depth_slice = 0, uint32_t in_array_index = 0, uint32_t in_mip_level = 0);
 

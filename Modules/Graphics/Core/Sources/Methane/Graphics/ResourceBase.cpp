@@ -92,6 +92,17 @@ Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, int32_t in_index)
     ITT_FUNCTION_TASK();
 }
 
+Resource::SubResource::SubResource(Data::Bytes&& data, uint32_t in_depth_slice, uint32_t in_array_index, uint32_t in_mip_level)
+    : data_storage(std::move(data))
+    , p_data(data_storage.data())
+    , data_size(data_storage.size())
+    , depth_slice(in_depth_slice)
+    , array_index(in_array_index)
+    , mip_level(in_mip_level)
+{
+    ITT_FUNCTION_TASK();
+}
+
 Resource::SubResource::SubResource(Data::ConstRawPtr in_p_data, Data::Size in_data_size, uint32_t in_depth_slice, uint32_t in_array_index, uint32_t in_mip_level)
     : p_data(in_p_data)
     , data_size(in_data_size)
