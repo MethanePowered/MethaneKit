@@ -210,6 +210,7 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
 
     D3D12_RESOURCE_DESC tex_desc = {};
     D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+    const uint32_t mip_levels_count = GetMipLevelsCount();
 
     switch(m_settings.dimension_type)
     {
@@ -218,7 +219,7 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
         {
             throw std::invalid_argument("Single 1D Texture must have array length equal to 1.");
         }
-        srv_desc.Texture1D.MipLevels = 1; // TODO: set actual mip-levels count
+        srv_desc.Texture1D.MipLevels = mip_levels_count;
     case DimensionType::Tex1DArray:
         if (m_settings.dimensions.height != 1 || m_settings.dimensions.depth != 1)
         {
@@ -229,10 +230,11 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
             TypeConverterDX::DataFormatToDXGI(m_settings.pixel_format),
             m_settings.dimensions.width,
             m_settings.array_length,
-            m_settings.mipmapped ? 0 : 1
+            mip_levels_count
         );
 
-        srv_desc.Texture1DArray.MipLevels = 1; // TODO: set actual mip-levels count
+        srv_desc.Texture1DArray.MipLevels = mip_levels_count;
+        srv_desc.Texture1DArray.ArraySize = m_settings.array_length;
         srv_desc.ViewDimension            = m_settings.dimension_type == DimensionType::Tex1D
                                           ? D3D12_SRV_DIMENSION_TEXTURE1D
                                           : D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
@@ -243,7 +245,7 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
         {
             throw std::invalid_argument("Single 2D Texture must have array length equal to 1.");
         }
-        srv_desc.Texture2D.MipLevels = 1; // TODO: set actual mip-levels count
+        srv_desc.Texture2D.MipLevels = mip_levels_count;
     case DimensionType::Tex2DArray:
         if (m_settings.dimensions.depth != 1)
         {
@@ -254,10 +256,11 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
             m_settings.dimensions.width,
             m_settings.dimensions.height,
             m_settings.array_length,
-            m_settings.mipmapped ? 0 : 1
+            mip_levels_count
         );
 
-        srv_desc.Texture2DArray.MipLevels = 1; // TODO: set actual mip-levels count
+        srv_desc.Texture2DArray.MipLevels = mip_levels_count;
+        srv_desc.Texture2DArray.ArraySize = m_settings.array_length;
         srv_desc.ViewDimension            = m_settings.dimension_type == DimensionType::Tex2D
                                           ? D3D12_SRV_DIMENSION_TEXTURE2D
                                           : D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
@@ -273,9 +276,9 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
             m_settings.dimensions.width,
             m_settings.dimensions.height,
             m_settings.dimensions.depth,
-            m_settings.mipmapped ? 0 : 1
+            mip_levels_count
         );
-        srv_desc.Texture3D.MipLevels = 1; // TODO: set actual mip-levels count
+        srv_desc.Texture3D.MipLevels = mip_levels_count;
         srv_desc.ViewDimension       = D3D12_SRV_DIMENSION_TEXTURE3D;
         break;
 
@@ -284,7 +287,7 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
         {
             throw std::invalid_argument("Single Cube Texture must have array length equal to 1.");
         }
-        srv_desc.TextureCube.MipLevels = 1; // TODO: set actual mip-levels count
+        srv_desc.TextureCube.MipLevels = mip_levels_count;
     case DimensionType::CubeArray:
         if (m_settings.dimensions.depth != 6)
         {
@@ -295,12 +298,12 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
             m_settings.dimensions.width,
             m_settings.dimensions.height,
             m_settings.dimensions.depth * m_settings.array_length,
-            m_settings.mipmapped ? 0 : 1
+            mip_levels_count
         );
 
         srv_desc.TextureCubeArray.First2DArrayFace = 0;
         srv_desc.TextureCubeArray.NumCubes = m_settings.array_length;
-        srv_desc.TextureCubeArray.MipLevels = 1; // TODO: set actual mip-levels count
+        srv_desc.TextureCubeArray.MipLevels = mip_levels_count;
         srv_desc.ViewDimension              = m_settings.dimension_type == DimensionType::Cube
                                             ? D3D12_SRV_DIMENSION_TEXTURECUBE
                                             : D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;

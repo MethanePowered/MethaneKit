@@ -78,7 +78,8 @@ public:
 
     Asteroid(gfx::Context& context);
     
-    static gfx::Texture::Ptr GenerateTextures(gfx::Context& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, uint32_t random_seed);
+    static gfx::Texture::Ptr GenerateTextureArray(gfx::Context& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, uint32_t random_seed);
+    static gfx::Resource::SubResources GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, uint32_t random_seed);
     
 private:
     static void FillRandomNoiseToTexture(Data::Bytes& texture_data, const gfx::Dimensions& dimensions, uint32_t pixel_size, uint32_t row_stride,

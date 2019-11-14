@@ -62,35 +62,36 @@ void Asteroid::Mesh::Randomize(uint32_t random_seed)
 Asteroid::Asteroid(gfx::Context& context)
     : BaseBuffers(context, Mesh(3, true), "Asteroid")
 {
-    SetTexture(GenerateTextures(context, gfx::Dimensions(256, 256), 1, true, 0), 0);
+    SetTexture(GenerateTextureArray(context, gfx::Dimensions(256, 256), 1, true, 0), 0);
 }
 
-gfx::Texture::Ptr Asteroid::GenerateTextures(gfx::Context& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, uint32_t random_seed)
+gfx::Texture::Ptr Asteroid::GenerateTextureArray(gfx::Context& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, uint32_t random_seed)
+{
+    const gfx::Resource::SubResources sub_resources = GenerateTextureArraySubresources(dimensions, array_size, mipmapped, random_seed);
+    gfx::Texture::Ptr sp_texture_array = gfx::Texture::CreateImage(context, dimensions, array_size, gfx::PixelFormat::RGBA8Unorm, mipmapped);
+    sp_texture_array->SetData(sub_resources);
+    return sp_texture_array;
+}
+
+gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, uint32_t random_seed)
 {
     const gfx::PixelFormat pixel_format = gfx::PixelFormat::RGBA8Unorm;
     const uint32_t pixel_size = gfx::GetPixelSize(pixel_format);
     const uint32_t pixels_count = dimensions.GetPixelsCount();
     const uint32_t row_stide = pixel_size * dimensions.width;
 
-    std::vector<Data::Bytes> sub_resources_data;
-    sub_resources_data.resize(array_size);
-    
     gfx::Resource::SubResources sub_resources;
     sub_resources.reserve(array_size);
-    
+
     std::mt19937 rng(random_seed);
     std::uniform_real_distribution<float> noise_seed_distribution(0.f, 10000.f);
     std::uniform_real_distribution<float> noise_scale_distribution(10.f, 30.f);
     std::normal_distribution<float>       persistence_distribution(0.9f, 0.2f);
 
-    gfx::Vector3f color_scale(255.f, 255.f, 255.f);
-    for(uint32_t array_index = 0; array_index < array_size; ++array_index)
+    for (uint32_t array_index = 0; array_index < array_size; ++array_index)
     {
-        Methane::Data::Bytes& sub_resource_data = sub_resources_data[array_index];
-        sub_resource_data.resize(pixels_count * pixel_size);
-        
         const gfx::Color3f base_color(
-#ifdef true
+#if 1
             255.f, 255.f, 255.f
 #else
             array_index & 1 ? 255.f : 0.f,
@@ -98,24 +99,20 @@ gfx::Texture::Ptr Asteroid::GenerateTextures(gfx::Context& context, const gfx::D
             array_index & 4 ? 255.f : 0.f
 #endif
         );
-        
+
+        Data::Bytes sub_resource_data(pixels_count * pixel_size, 0);
         FillRandomNoiseToTexture(sub_resource_data, dimensions, pixel_size, row_stide, base_color,
-                                 noise_seed_distribution(rng),
-                                 persistence_distribution(rng),
-                                 noise_scale_distribution(rng),
-                                 1.5f);
-        
-        sub_resources.emplace_back(static_cast<Data::ConstRawPtr>(sub_resource_data.data()),
-                                   static_cast<Data::Size>(sub_resource_data.size()),
-                                   0, array_index);
+            noise_seed_distribution(rng),
+            persistence_distribution(rng),
+            noise_scale_distribution(rng),
+            1.5f);
+
+        sub_resources.emplace_back(std::move(sub_resource_data), 0, array_index);
     }
-    
-    gfx::Texture::Ptr sp_texture_array = gfx::Texture::CreateImage(context, dimensions, array_size, pixel_format, mipmapped);
-    sp_texture_array->SetData(sub_resources);
-    
-    return sp_texture_array;
+
+    return sub_resources;
 }
-    
+
 void Asteroid::FillRandomNoiseToTexture(Data::Bytes& texture_data, const gfx::Dimensions& dimensions, uint32_t pixel_size, uint32_t row_stride,
                                         const gfx::Color3f& base_color, float random_seed, float persistence, float noise_scale, float noise_strength)
 {
