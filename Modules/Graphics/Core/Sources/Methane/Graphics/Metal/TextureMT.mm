@@ -52,6 +52,27 @@ MTLTextureType GetNativeTextureType(Texture::DimensionType dimension_type)
     default: throw std::invalid_argument("Dimension type is not supported in Metal");
     }
 }
+    
+MTLRegion GetTextureRegion(const Dimensions& dimensions, Texture::DimensionType dimension_type)
+{
+    switch(dimension_type)
+    {
+    case Texture::DimensionType::Tex1D:
+    case Texture::DimensionType::Tex1DArray:
+            return MTLRegionMake1D(0, dimensions.width);
+    case Texture::DimensionType::Tex2D:
+    case Texture::DimensionType::Tex2DArray:
+    case Texture::DimensionType::Tex2DMultisample:
+    case Texture::DimensionType::Cube:
+    case Texture::DimensionType::CubeArray:
+            return MTLRegionMake2D(0, 0, dimensions.width, dimensions.height);
+    case Texture::DimensionType::Tex3D:
+            return MTLRegionMake3D(0, 0, 0, dimensions.width, dimensions.height, dimensions.depth);
+    default:
+            throw std::invalid_argument("Dimension type is not supported in Metal");
+    }
+    return {};
+}
 
 Texture::Ptr Texture::CreateRenderTarget(Context& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
@@ -129,15 +150,32 @@ void TextureMT::SetData(const SubResources& sub_resources)
         throw std::invalid_argument("Can not set texture data from empty sub-resources.");
     }
     
-    const uint32_t bytes_per_row   = m_settings.dimensions.width  * GetPixelSize(m_settings.pixel_format);
-    const uint32_t bytes_per_image = m_settings.dimensions.height * bytes_per_row;
-    const MTLRegion texture_region = MTLRegionMake2D(0, 0, m_settings.dimensions.width, m_settings.dimensions.height);
+    const uint32_t  bytes_per_row   = m_settings.dimensions.width  * GetPixelSize(m_settings.pixel_format);
+    const uint32_t  bytes_per_image = m_settings.dimensions.height * bytes_per_row;
+    const MTLRegion texture_region  = GetTextureRegion(m_settings.dimensions, m_settings.dimension_type);
 
     for(const SubResource& sub_resourse : sub_resources)
     {
+        uint32_t slice = 0;
+        switch(m_settings.dimension_type)
+        {
+            case Texture::DimensionType::Tex1DArray:
+            case Texture::DimensionType::Tex2DArray:
+                slice = sub_resourse.array_index;
+                break;
+            case Texture::DimensionType::Cube:
+                slice = sub_resourse.depth_slice;
+                break;
+            case Texture::DimensionType::CubeArray:
+                slice = sub_resourse.depth_slice + sub_resourse.array_index * 6;
+                break;
+            default:
+                slice = 0;
+        }
+        
         [m_mtl_texture replaceRegion:texture_region
                          mipmapLevel:sub_resourse.mip_level
-                               slice:sub_resourse.depth_slice
+                               slice:slice
                            withBytes:sub_resourse.p_data
                          bytesPerRow:bytes_per_row
                        bytesPerImage:bytes_per_image];
