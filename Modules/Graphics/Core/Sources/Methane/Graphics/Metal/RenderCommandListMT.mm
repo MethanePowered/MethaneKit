@@ -154,13 +154,13 @@ void RenderCommandListMT::DrawIndexed(Primitive primitive, const Buffer& index_b
 
     assert(m_mtl_render_encoder != nil);
     [m_mtl_render_encoder drawIndexedPrimitives: mtl_primitive_type
-                                  indexCount: index_count
-                                   indexType: mtl_index_type
-                                 indexBuffer: mtl_index_buffer
-                           indexBufferOffset: start_index * mtl_index_stride
-                               instanceCount: instance_count
-                                  baseVertex: start_vertex
-                                baseInstance: start_instance];
+                                     indexCount: index_count
+                                      indexType: mtl_index_type
+                                    indexBuffer: mtl_index_buffer
+                              indexBufferOffset: start_index * mtl_index_stride
+                                  instanceCount: instance_count
+                                     baseVertex: start_vertex
+                                   baseInstance: start_instance];
 }
 
 void RenderCommandListMT::Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
@@ -174,10 +174,10 @@ void RenderCommandListMT::Draw(Primitive primitive, uint32_t vertex_count, uint3
 
     assert(m_mtl_render_encoder != nil);
     [m_mtl_render_encoder drawPrimitives: mtl_primitive_type
-                          vertexStart: start_vertex
-                          vertexCount: vertex_count
-                        instanceCount: instance_count
-                         baseInstance: start_instance];
+                             vertexStart: start_vertex
+                             vertexCount: vertex_count
+                           instanceCount: instance_count
+                            baseInstance: start_instance];
 }
 
 void RenderCommandListMT::Commit(bool present_drawable)
