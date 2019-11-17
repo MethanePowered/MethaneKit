@@ -91,19 +91,19 @@ struct Resource : virtual Object
     {
         struct Index
         {
-            uint32_t depth_slice = 0;
-            uint32_t array_index = 0;
-            uint32_t mip_level = 0;
+            uint32_t depth_slice  = 0;
+            uint32_t array_index  = 0;
+            uint32_t mip_level    = 0;
         };
 
         Data::Bytes         data_storage;
         Data::ConstRawPtr   p_data      = nullptr;
         Data::Size          data_size   = 0;
-        Index               index;
+        Index               index       = { 0, 0, 0 };
 
         SubResource() = default;
-        SubResource(Data::Bytes&& data, Index in_index = {});
-        SubResource(Data::ConstRawPtr in_p_data, Data::Size in_data_size, Index in_index = {});
+        SubResource(Data::Bytes&& data, Index in_index = { 0, 0, 0 });
+        SubResource(Data::ConstRawPtr in_p_data, Data::Size in_data_size, Index in_index = { 0, 0, 0 });
 
         uint32_t GetRawIndex(uint32_t depth = 1, uint32_t mip_levels_count = 1) const
         { return ComputeRawIndex(index, depth, mip_levels_count); }

@@ -164,20 +164,20 @@ void TextureMT::SetData(const SubResources& sub_resources)
         {
             case Texture::DimensionType::Tex1DArray:
             case Texture::DimensionType::Tex2DArray:
-                slice = sub_resourse.array_index;
+                slice = sub_resourse.index.array_index;
                 break;
             case Texture::DimensionType::Cube:
-                slice = sub_resourse.depth_slice;
+                slice = sub_resourse.index.depth_slice;
                 break;
             case Texture::DimensionType::CubeArray:
-                slice = sub_resourse.depth_slice + sub_resourse.array_index * 6;
+                slice = sub_resourse.index.depth_slice + sub_resourse.index.array_index * 6;
                 break;
             default:
                 slice = 0;
         }
         
         [m_mtl_texture replaceRegion:texture_region
-                         mipmapLevel:sub_resourse.mip_level
+                         mipmapLevel:sub_resourse.index.mip_level
                                slice:slice
                            withBytes:sub_resourse.p_data
                          bytesPerRow:bytes_per_row
