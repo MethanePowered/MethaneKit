@@ -109,7 +109,7 @@ Resource::SubResource::SubResource(Data::ConstRawPtr in_p_data, Data::Size in_da
     ITT_FUNCTION_TASK();
 }
 
-Resource::SubResource::Index Resource::SubResource::ComputeIndex(uint32_t raw_index, uint32_t depth, int32_t mip_levels_count)
+Resource::SubResource::Index Resource::SubResource::ComputeIndex(uint32_t raw_index, uint32_t depth, uint32_t mip_levels_count)
 {
     const uint32_t array_and_depth_index = raw_index / mip_levels_count;
 

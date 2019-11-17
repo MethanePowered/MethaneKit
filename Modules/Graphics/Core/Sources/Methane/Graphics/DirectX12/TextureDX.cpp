@@ -450,7 +450,7 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
                                              " of texture \"" + GetName() + "\".");
                 }
 
-                const uint32_t dx_sub_resource_index = SubResource::ComputeRawIndex({ depth, item, mip }, tex_metadata.depth, tex_metadata.mipLevels);
+                const uint32_t dx_sub_resource_index = SubResource::ComputeRawIndex({ depth, item, mip }, static_cast<uint32_t>(tex_metadata.depth), static_cast<uint32_t>(tex_metadata.mipLevels));
                 assert(dx_sub_resource_index < dx_sub_resources.size());
 
                 D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[dx_sub_resource_index];

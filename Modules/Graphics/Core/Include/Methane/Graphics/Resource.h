@@ -108,10 +108,10 @@ struct Resource : virtual Object
         uint32_t GetRawIndex(uint32_t depth = 1, uint32_t mip_levels_count = 1) const
         { return ComputeRawIndex(index, depth, mip_levels_count); }
 
-        static uint32_t ComputeRawIndex(const Index& index, uint32_t depth = 1, int32_t mip_levels_count = 1)
+        static uint32_t ComputeRawIndex(const Index& index, uint32_t depth = 1, uint32_t mip_levels_count = 1)
         { return (index.array_index * depth + index.depth_slice) * mip_levels_count + index.mip_level; }
 
-        static Index ComputeIndex(uint32_t raw_index, uint32_t depth = 1, int32_t mip_levels_count = 1);
+        static Index ComputeIndex(uint32_t raw_index, uint32_t depth = 1, uint32_t mip_levels_count = 1);
     };
 
     using SubResources = std::vector<SubResource>;
