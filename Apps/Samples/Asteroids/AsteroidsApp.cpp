@@ -77,7 +77,7 @@ AsteroidsApp::AsteroidsApp()
     m_view_camera.SetParamters({ 0.01f, 600.f, 90.f });
     m_view_camera.SetZoomDistanceRange({ 15.f , 300.f });
 
-    m_light_camera.SetOrientation({ { 100.f,  100.f, 100.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f } });
+    m_light_camera.SetOrientation({ { 0.f,  120.f, 0.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
     m_light_camera.SetParamters({ -300.f, 300.f, 90.f });
     m_light_camera.Resize(120.f, 120.f);

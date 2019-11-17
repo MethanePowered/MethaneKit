@@ -72,10 +72,6 @@ gfx::Texture::Ptr Asteroid::GenerateTextureArray(gfx::Context& context, const gf
     const gfx::Resource::SubResources sub_resources = GenerateTextureArraySubresources(dimensions, array_size, mipmapped, random_seed);
     gfx::Texture::Ptr sp_texture_array = gfx::Texture::CreateImage(context, dimensions, array_size, gfx::PixelFormat::RGBA8Unorm, mipmapped);
     sp_texture_array->SetData(sub_resources);
-    if (mipmapped)
-    {
-        sp_texture_array->GenerateMipLevels();
-    }
     return sp_texture_array;
 }
 
@@ -102,7 +98,7 @@ gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx
             array_index % 3 == 1 ? 100.f : 30.f,
             array_index % 3 == 2 ? 100.f : 30.f
 #else
-            0.f, 30.f, 100.f
+            0.f, 50.f, 100.f
 #endif
         );
 
@@ -112,11 +108,11 @@ gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx
             texture_id % 3 == 1 ? 255.f : 125.f,
             texture_id % 3 == 2 ? 255.f : 125.f
 #else
-            155.f, 200.f, 255.f
+            115.f, 160.f, 235.f
 #endif
         );
 
-        Data::Bytes sub_resource_data(pixels_count * pixel_size, uint8_t(256));
+        Data::Bytes sub_resource_data(pixels_count * pixel_size, 255u);
         FillPerlinNoiseToTexture(sub_resource_data, dimensions,
                                  pixel_size, row_stide,
                                  low_color, high_color,
@@ -125,7 +121,7 @@ gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx
                                  noise_scale_distribution(rng),
                                  1.5f);
 
-        sub_resources.emplace_back(std::move(sub_resource_data), 0, array_index);
+        sub_resources.emplace_back(std::move(sub_resource_data), gfx::Resource::SubResource::Index{ 0, array_index });
     }
 
     return sub_resources;

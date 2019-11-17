@@ -32,6 +32,8 @@ DirectX 12 implementation of the texture interface.
 #include <Methane/Data/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
+#include <DirectXTex.h>
+
 namespace Methane::Graphics
 {
 
@@ -315,7 +317,7 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
 
     InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COPY_DEST);
 
-    const UINT number_of_subresources = m_settings.dimensions.depth * m_settings.array_length;
+    const UINT number_of_subresources = GetRequiredSubresourceCount();
     const UINT64 upload_buffer_size   = GetRequiredIntermediateSize(m_cp_resource.Get(), 0, number_of_subresources);
     ThrowIfFailed(
         GetContextDX().GetDeviceDX().GetNativeDevice()->CreateCommittedResource(
@@ -339,31 +341,32 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
     {
         throw std::invalid_argument("Can not set texture data from empty sub-resources.");
     }
+
+    m_data_size = 0;
     
     assert(!!m_cp_resource);
     assert(!!m_cp_upload_resource);
 
-    const uint32_t      mip_levels_count  = 1; // TODO: replace with actual value when mip-levels are supported
-    const Data::Size    pixel_size = GetPixelSize(m_settings.pixel_format);
+    const Data::Size          pixel_size                  = GetPixelSize(m_settings.pixel_format);
+    const uint32_t            mip_levels_count            = GetMipLevelsCount();
+    const uint32_t            required_subresources_count = GetRequiredSubresourceCount();
 
-    uint32_t first_sub_resource_index = std::numeric_limits<uint32_t>::max();
-    for (const SubResource& sub_resource : sub_resources)
+    if (!m_settings.mipmapped && sub_resources.size() < required_subresources_count)
     {
-        first_sub_resource_index = std::min(first_sub_resource_index, sub_resource.GetIndex(mip_levels_count));
+        throw std::invalid_argument("Number of sub-resources provided (" + std::to_string(sub_resources.size()) + 
+                                    ") is less than required (" + std::to_string(required_subresources_count) + 
+                                    ") for normal texture upload \"" + GetName() + "\".");
     }
 
-    m_data_size = 0;
-    std::vector<D3D12_SUBRESOURCE_DATA> dx_sub_resources(sub_resources.size(), D3D12_SUBRESOURCE_DATA{});
-
+    std::vector<D3D12_SUBRESOURCE_DATA> dx_sub_resources(required_subresources_count, D3D12_SUBRESOURCE_DATA{});
     for(const SubResource& sub_resource : sub_resources)
     {
-        const uint32_t raw_sub_resource_index = sub_resource.GetIndex(m_settings.dimensions.depth, mip_levels_count) - first_sub_resource_index;
-        if (raw_sub_resource_index >= dx_sub_resources.size())
-        {
-            dx_sub_resources.resize(raw_sub_resource_index + 1, D3D12_SUBRESOURCE_DATA{});
-        }
+        const uint32_t sub_resource_raw_index = sub_resource.GetRawIndex(m_settings.dimensions.depth, mip_levels_count);
+        assert(sub_resource_raw_index < dx_sub_resources.size());
+        if (sub_resource_raw_index >= dx_sub_resources.size())
+            continue;
 
-        D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[raw_sub_resource_index];
+        D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[sub_resource_raw_index];
         dx_sub_resource.pData      = sub_resource.p_data;
         dx_sub_resource.RowPitch   = m_settings.dimensions.width  * pixel_size;
         dx_sub_resource.SlicePitch = m_settings.dimensions.height * dx_sub_resource.RowPitch;
@@ -376,21 +379,89 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
         m_data_size += static_cast<Data::Size>(dx_sub_resource.SlicePitch);
     }
 
+    // NOTE: scratch_image is the owner of generated mip-levels memory, which should be hold until UpdateSubresources call completes
+    DirectX::ScratchImage scratch_image; 
+    if (m_settings.mipmapped && sub_resources.size() < required_subresources_count)
+    {
+        GenerateMipLevels(dx_sub_resources, scratch_image);
+    }
+
     RenderCommandListDX& upload_cmd_list = static_cast<RenderCommandListDX&>(m_context.GetUploadCommandList());
+    DirectX:: ScratchImage mipChain;
     UpdateSubresources(upload_cmd_list.GetNativeCommandList().Get(),
-                       m_cp_resource.Get(), m_cp_upload_resource.Get(), 0, first_sub_resource_index,
+                       m_cp_resource.Get(), m_cp_upload_resource.Get(), 0, 0,
                        static_cast<UINT>(dx_sub_resources.size()), dx_sub_resources.data());
 
     upload_cmd_list.SetResourceTransitionBarriers({ static_cast<Resource&>(*this) }, ResourceBase::State::CopyDest, ResourceBase::State::PixelShaderResource);
 }
 
-void ImageTextureDX::GenerateMipLevels()
+void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_resources, DirectX::ScratchImage& scratch_image)
 {
     ITT_FUNCTION_TASK();
 
-    TextureBase::GenerateMipLevels();
+    const uint32_t    mip_levels_count = GetMipLevelsCount();
+    const D3D12_RESOURCE_DESC tex_desc = m_cp_resource->GetDesc();
+    const bool         is_cube_texture = m_settings.dimension_type == DimensionType::Cube || m_settings.dimension_type == DimensionType::CubeArray;
 
-    // TODO: mip-levels generation to be implemented here using DirectXTex library (https://github.com/Microsoft/DirectXTex/wiki/GenerateMipMaps)
+    std::vector<DirectX::Image> sub_resource_images(dx_sub_resources.size(), DirectX::Image{});
+    for(uint32_t sub_resource_raw_index = 0; sub_resource_raw_index < dx_sub_resources.size(); ++sub_resource_raw_index)
+    {
+        // Initialize images of base mip-levels only
+        const SubResource::Index sub_resource_index = SubResource::ComputeIndex(sub_resource_raw_index);
+        if (sub_resource_index.mip_level > 0)
+            continue;
+
+        D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[sub_resource_raw_index];
+        DirectX::Image& base_mip_image = sub_resource_images[sub_resource_raw_index];
+        base_mip_image.width           = m_settings.dimensions.width;
+        base_mip_image.height          = m_settings.dimensions.height;
+        base_mip_image.format          = tex_desc.Format;
+        base_mip_image.rowPitch        = dx_sub_resource.RowPitch;
+        base_mip_image.slicePitch      = dx_sub_resource.SlicePitch;
+        base_mip_image.pixels          = reinterpret_cast<uint8_t*>(const_cast<void*>(dx_sub_resource.pData)); // FIXME: Dirty casting...
+    }
+
+    DirectX::TexMetadata tex_metadata = { };
+    tex_metadata.width     = m_settings.dimensions.width;
+    tex_metadata.height    = m_settings.dimensions.height;
+    tex_metadata.depth     = is_cube_texture ? 1 : m_settings.dimensions.depth;
+    tex_metadata.arraySize = is_cube_texture ? m_settings.dimensions.depth : m_settings.array_length;
+    tex_metadata.mipLevels = mip_levels_count;
+    tex_metadata.format    = tex_desc.Format;
+    tex_metadata.dimension = static_cast<DirectX::TEX_DIMENSION>(tex_desc.Dimension);
+    tex_metadata.miscFlags = is_cube_texture ? DirectX::TEX_MISC_TEXTURECUBE : 0;
+
+    ThrowIfFailed(DirectX::GenerateMipMaps(sub_resource_images.data(), sub_resource_images.size(),
+                                           tex_metadata, DirectX::TEX_FILTER_DEFAULT,
+                                           mip_levels_count, scratch_image));
+
+    for (uint32_t depth = 0; depth < tex_metadata.depth; ++depth)
+    {
+        for (uint32_t item = 0; item < tex_metadata.arraySize; ++item)
+        {
+            for (uint32_t mip = 1; mip < tex_metadata.mipLevels; ++mip)
+            {
+                const DirectX::Image* p_mip_image = scratch_image.GetImage(mip, item, depth);
+                if (!p_mip_image)
+                {
+                    throw std::runtime_error("Failed to generate mipmap level " + std::to_string(mip) +
+                                             " for array item " + std::to_string(item) +
+                                             " in depth " + std::to_string(depth) +
+                                             " of texture \"" + GetName() + "\".");
+                }
+
+                const uint32_t dx_sub_resource_index = SubResource::ComputeRawIndex({ depth, item, mip }, tex_metadata.depth, tex_metadata.mipLevels);
+                assert(dx_sub_resource_index < dx_sub_resources.size());
+
+                D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[dx_sub_resource_index];
+                dx_sub_resource.pData       = p_mip_image->pixels;
+                dx_sub_resource.RowPitch    = p_mip_image->rowPitch;
+                dx_sub_resource.SlicePitch  = p_mip_image->slicePitch;
+
+                m_data_size += static_cast<Data::Size>(dx_sub_resource.SlicePitch);
+            }
+        }
+    }
 }
 
 } // namespace Methane::Graphics

@@ -89,7 +89,6 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
     {
         m_unique_textures.emplace_back(gfx::Texture::CreateImage(context, m_settings.texture_dimensions, static_cast<uint32_t>(texture_subresources.size()), gfx::PixelFormat::RGBA8Unorm, true));
         m_unique_textures.back()->SetData(texture_subresources);
-        m_unique_textures.back()->GenerateMipLevels();
     }
     
     // Calculate initial asteroid positions and rotation parameters

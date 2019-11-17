@@ -163,13 +163,10 @@ uint32_t TextureBase::GetMipLevelsCount() const
                                 : 1u;
 }
 
-void TextureBase::GenerateMipLevels()
+uint32_t TextureBase::GetRequiredSubresourceCount() const
 {
     ITT_FUNCTION_TASK();
-    if (!m_settings.mipmapped)
-    {
-        throw std::logic_error("Can not generate mip-levels for non-mipmapped texture.");
-    }
+    return m_settings.array_length * m_settings.dimensions.depth * GetMipLevelsCount();
 }
 
 } // namespace Methane::Graphics

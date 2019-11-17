@@ -31,6 +31,11 @@ DirectX 12 implementation of the texture interface.
 #include <d3dx12.h>
 #include <cassert>
 
+namespace DirectX
+{
+class ScratchImage;
+}
+
 namespace Methane::Graphics
 {
 
@@ -64,13 +69,6 @@ public:
         return m_settings.dimensions.GetPixelsCount() * GetPixelSize(m_settings.pixel_format);
     }
 
-    // Texture interface
-    void GenerateMipLevels() override
-    {
-        ITT_FUNCTION_TASK();
-        throw std::logic_error("Mip levels generation is supported by image textures only.");
-    }
-
 protected:
     void Initialize(ExtraArgs...);
 };
@@ -87,10 +85,9 @@ public:
     void SetData(const SubResources& sub_resources) override;
     Data::Size GetDataSize() const override { return m_data_size; }
 
-    // Texture interface
-    void GenerateMipLevels() override;
-
 protected:
+    void GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_resources, DirectX::ScratchImage& scratch_image);
+
     Data::Size                  m_data_size = 0;
     wrl::ComPtr<ID3D12Resource> m_cp_upload_resource;
 };

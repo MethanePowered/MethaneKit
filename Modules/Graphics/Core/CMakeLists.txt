@@ -39,6 +39,7 @@ if (WIN32)
 
     set(PLATFORM_LIBRARIES
         D3DX12
+        DirectXTex
         d3d12
         dxgi
         dxguid

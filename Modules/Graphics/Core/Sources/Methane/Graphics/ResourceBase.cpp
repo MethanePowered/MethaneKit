@@ -92,25 +92,33 @@ Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, int32_t in_index)
     ITT_FUNCTION_TASK();
 }
 
-Resource::SubResource::SubResource(Data::Bytes&& data, uint32_t in_depth_slice, uint32_t in_array_index, uint32_t in_mip_level)
+Resource::SubResource::SubResource(Data::Bytes&& data, Index in_index)
     : data_storage(std::move(data))
     , p_data(data_storage.data())
-    , data_size(data_storage.size())
-    , depth_slice(in_depth_slice)
-    , array_index(in_array_index)
-    , mip_level(in_mip_level)
+    , data_size(static_cast<Methane::Data::Size>(data_storage.size()))
+    , index(std::move(in_index))
 {
     ITT_FUNCTION_TASK();
 }
 
-Resource::SubResource::SubResource(Data::ConstRawPtr in_p_data, Data::Size in_data_size, uint32_t in_depth_slice, uint32_t in_array_index, uint32_t in_mip_level)
+Resource::SubResource::SubResource(Data::ConstRawPtr in_p_data, Data::Size in_data_size, Index in_index)
     : p_data(in_p_data)
     , data_size(in_data_size)
-    , depth_slice(in_depth_slice)
-    , array_index(in_array_index)
-    , mip_level(in_mip_level)
+    , index(std::move(in_index))
 {
     ITT_FUNCTION_TASK();
+}
+
+Resource::SubResource::Index Resource::SubResource::ComputeIndex(uint32_t raw_index, uint32_t depth, int32_t mip_levels_count)
+{
+    const uint32_t array_and_depth_index = raw_index / mip_levels_count;
+
+    Index index = {};
+    index.mip_level   = raw_index % mip_levels_count;
+    index.depth_slice = array_and_depth_index % depth;
+    index.array_index = array_and_depth_index / depth;
+
+    return index;
 }
 
 ResourceBase::ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& context, DescriptorByUsage descriptor_by_usage)

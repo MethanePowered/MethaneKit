@@ -89,20 +89,29 @@ struct Resource : virtual Object
 
     struct SubResource
     {
+        struct Index
+        {
+            uint32_t depth_slice = 0;
+            uint32_t array_index = 0;
+            uint32_t mip_level = 0;
+        };
+
         Data::Bytes         data_storage;
         Data::ConstRawPtr   p_data      = nullptr;
         Data::Size          data_size   = 0;
-        uint32_t            depth_slice = 0;
-        uint32_t            array_index = 0;
-        uint32_t            mip_level   = 0;
+        Index               index;
 
         SubResource() = default;
-        SubResource(Data::Bytes&& data,
-                    uint32_t in_depth_slice = 0, uint32_t in_array_index = 0, uint32_t in_mip_level = 0);
-        SubResource(Data::ConstRawPtr in_p_data, Data::Size in_data_size,
-                    uint32_t in_depth_slice = 0, uint32_t in_array_index = 0, uint32_t in_mip_level = 0);
+        SubResource(Data::Bytes&& data, Index in_index = {});
+        SubResource(Data::ConstRawPtr in_p_data, Data::Size in_data_size, Index in_index = {});
 
-        uint32_t GetIndex(uint32_t depth = 1, uint32_t mip_levels_count = 1) const { return (array_index * depth + depth_slice) * mip_levels_count + mip_level; }
+        uint32_t GetRawIndex(uint32_t depth = 1, uint32_t mip_levels_count = 1) const
+        { return ComputeRawIndex(index, depth, mip_levels_count); }
+
+        static uint32_t ComputeRawIndex(const Index& index, uint32_t depth = 1, int32_t mip_levels_count = 1)
+        { return (index.array_index * depth + index.depth_slice) * mip_levels_count + index.mip_level; }
+
+        static Index ComputeIndex(uint32_t raw_index, uint32_t depth = 1, int32_t mip_levels_count = 1);
     };
 
     using SubResources = std::vector<SubResource>;

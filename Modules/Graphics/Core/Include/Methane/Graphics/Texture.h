@@ -86,7 +86,6 @@ struct Texture : virtual Resource
     // Texture interface
     virtual const Settings& GetSettings() const = 0;
     virtual uint32_t        GetMipLevelsCount() const = 0;
-    virtual void            GenerateMipLevels() = 0;
 };
 
 } // namespace Methane::Graphics
