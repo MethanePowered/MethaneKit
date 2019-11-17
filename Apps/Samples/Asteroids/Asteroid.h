@@ -79,7 +79,7 @@ public:
     Asteroid(gfx::Context& context);
     
     static gfx::Texture::Ptr GenerateTextureArray(gfx::Context& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, uint32_t random_seed, uint32_t texture_id = 0);
-    static gfx::Resource::SubResources GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, uint32_t random_seed, uint32_t texture_id = 0);
+    static gfx::Resource::SubResources GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, uint32_t random_seed, uint32_t texture_id = 0);
     
 private:
     static void FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Dimensions& dimensions, uint32_t pixel_size, uint32_t row_stride,
