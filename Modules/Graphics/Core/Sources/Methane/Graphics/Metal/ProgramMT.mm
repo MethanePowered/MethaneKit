@@ -48,7 +48,7 @@ void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl
     ITT_FUNCTION_TASK();
     switch(shader_type)
     {
-        case Shader::Type::Vertex: [mtl_cmd_encoder setVertexBuffer:mtl_buffer offset:buffer_offset atIndex:arg_index]; break;
+        case Shader::Type::Vertex: [mtl_cmd_encoder setVertexBuffer:mtl_buffer   offset:buffer_offset atIndex:arg_index]; break;
         case Shader::Type::Pixel:  [mtl_cmd_encoder setFragmentBuffer:mtl_buffer offset:buffer_offset atIndex:arg_index]; break;
         default:                    assert(0);
     }
@@ -60,7 +60,7 @@ void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl
     ITT_FUNCTION_TASK();
     switch(shader_type)
     {
-        case Shader::Type::Vertex: [mtl_cmd_encoder setVertexTexture:mtl_texture atIndex:arg_index]; break;
+        case Shader::Type::Vertex: [mtl_cmd_encoder setVertexTexture:mtl_texture   atIndex:arg_index]; break;
         case Shader::Type::Pixel:  [mtl_cmd_encoder setFragmentTexture:mtl_texture atIndex:arg_index]; break;
         default:                    assert(0);
     }
@@ -72,7 +72,7 @@ void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl
     ITT_FUNCTION_TASK();
     switch(shader_type)
     {
-        case Shader::Type::Vertex: [mtl_cmd_encoder setVertexSamplerState:mtl_sampler atIndex:arg_index]; break;
+        case Shader::Type::Vertex: [mtl_cmd_encoder setVertexSamplerState:mtl_sampler   atIndex:arg_index]; break;
         case Shader::Type::Pixel:  [mtl_cmd_encoder setFragmentSamplerState:mtl_sampler atIndex:arg_index]; break;
         default: assert(0);
     }
