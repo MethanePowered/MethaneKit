@@ -122,7 +122,7 @@ void TexturedCubeApp::Init()
     m_sp_program->SetName("Textured Phong Lighting");
 
     // Load texture image from file
-    m_sp_cube_texture = m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MethaneBubbles.jpg");
+    m_sp_cube_texture = m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MethaneBubbles.jpg", true);
     m_sp_cube_texture->SetName("Cube Texture 2D Image");
 
     // Create sampler for image texture

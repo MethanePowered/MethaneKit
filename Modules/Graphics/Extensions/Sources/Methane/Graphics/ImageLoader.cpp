@@ -148,18 +148,18 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
 #endif
 }
 
-Texture::Ptr ImageLoader::LoadImageToTexture2D(Context& context, const std::string& image_path)
+Texture::Ptr ImageLoader::LoadImageToTexture2D(Context& context, const std::string& image_path, bool mipmapped)
 {
     ITT_FUNCTION_TASK();
 
     const ImageData image_data = LoadImage(image_path, 4, false);
-    Texture::Ptr sp_texture = Texture::CreateImage(context, image_data.dimensions, 1, PixelFormat::RGBA8Unorm, false);
+    Texture::Ptr sp_texture = Texture::CreateImage(context, image_data.dimensions, 1, PixelFormat::RGBA8Unorm, mipmapped);
     sp_texture->SetData({ { image_data.pixels.p_data, image_data.pixels.size } });
 
     return sp_texture;
 }
 
-Texture::Ptr ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths)
+Texture::Ptr ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, bool mipmapped)
 {
     ITT_FUNCTION_TASK();
 
@@ -209,12 +209,13 @@ Texture::Ptr ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
         {
             throw std::runtime_error("All face image of cube texture must have equal dimensions and channels count.");
         }
-        face_resources.emplace_back(face_image_data.second.pixels.p_data, face_image_data.second.pixels.size, face_image_data.first);
+        face_resources.emplace_back(face_image_data.second.pixels.p_data, face_image_data.second.pixels.size,
+                                    Resource::SubResource::Index{ face_image_data.first });
     }
 
     // Load face images to cube texture
 
-    Texture::Ptr sp_texture = Texture::CreateCube(context, face_dimensions.width, 1, PixelFormat::RGBA8Unorm, false);
+    Texture::Ptr sp_texture = Texture::CreateCube(context, face_dimensions.width, 1, PixelFormat::RGBA8Unorm, mipmapped);
     sp_texture->SetData(face_resources);
 
     return sp_texture;

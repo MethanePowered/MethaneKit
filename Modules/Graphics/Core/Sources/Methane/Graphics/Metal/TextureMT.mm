@@ -183,6 +183,11 @@ void TextureMT::SetData(const SubResources& sub_resources)
                          bytesPerRow:bytes_per_row
                        bytesPerImage:bytes_per_image];
     }
+
+    if (m_settings.mipmapped && sub_resources.size() < GetRequiredSubresourceCount())
+    {
+        GenerateMipLevels();
+    }
 }
 
 Data::Size TextureMT::GetDataSize() const
@@ -280,8 +285,6 @@ void TextureMT::GenerateMipLevels()
 {
     ITT_FUNCTION_TASK();
 
-    TextureBase::GenerateMipLevels();
-    
     RenderCommandListMT& render_command_list = static_cast<RenderCommandListMT&>(m_context.GetUploadCommandList());
     render_command_list.StartBlitEncoding();
     
