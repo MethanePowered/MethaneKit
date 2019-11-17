@@ -124,7 +124,7 @@ void ProgramMT::ResourceBindingsMT::Apply(CommandList& command_list) const
 {
     ITT_FUNCTION_TASK();
 
-    id<MTLRenderCommandEncoder>& mtl_cmd_encoder = dynamic_cast<RenderCommandListMT&>(command_list).GetNativeEncoder();
+    id<MTLRenderCommandEncoder>& mtl_cmd_encoder = dynamic_cast<RenderCommandListMT&>(command_list).GetNativeRenderEncoder();
     for(const auto& resource_binding_by_argument : m_resource_binding_by_argument)
     {
         const Argument& program_argument = resource_binding_by_argument.first;

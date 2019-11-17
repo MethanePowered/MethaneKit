@@ -202,7 +202,7 @@ void RenderStateMT::Apply(RenderCommandListBase& command_list)
     ITT_FUNCTION_TASK();
 
     RenderCommandListMT& metal_command_list = static_cast<RenderCommandListMT&>(command_list);
-    id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeEncoder();
+    id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeRenderEncoder();
     
     [mtl_cmd_encoder setRenderPipelineState: GetNativePipelineState()];
     if (m_settings.depth.enabled)

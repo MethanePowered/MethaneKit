@@ -72,10 +72,14 @@ gfx::Texture::Ptr Asteroid::GenerateTextureArray(gfx::Context& context, const gf
     const gfx::Resource::SubResources sub_resources = GenerateTextureArraySubresources(dimensions, array_size, mipmapped, random_seed);
     gfx::Texture::Ptr sp_texture_array = gfx::Texture::CreateImage(context, dimensions, array_size, gfx::PixelFormat::RGBA8Unorm, mipmapped);
     sp_texture_array->SetData(sub_resources);
+    if (mipmapped)
+    {
+        sp_texture_array->GenerateMipLevels();
+    }
     return sp_texture_array;
 }
 
-gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, uint32_t random_seed, uint32_t texture_id)
+gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, uint32_t random_seed, uint32_t texture_id)
 {
     const gfx::PixelFormat pixel_format = gfx::PixelFormat::RGBA8Unorm;
     const uint32_t pixel_size = gfx::GetPixelSize(pixel_format);

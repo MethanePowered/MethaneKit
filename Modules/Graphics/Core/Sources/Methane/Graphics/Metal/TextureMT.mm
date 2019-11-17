@@ -24,6 +24,7 @@ Metal implementation of the texture interface.
 #include "TextureMT.hh"
 #include "ContextMT.hh"
 #include "DeviceMT.hh"
+#include "RenderCommandListMT.hh"
 #include "TypesMT.hh"
 
 #include <Methane/Data/Instrumentation.h>
@@ -37,6 +38,7 @@ namespace Methane::Graphics
 
 MTLTextureType GetNativeTextureType(Texture::DimensionType dimension_type)
 {
+    ITT_FUNCTION_TASK();
     switch(dimension_type)
     {
     case Texture::DimensionType::Tex1D:             return MTLTextureType1D;
@@ -55,6 +57,7 @@ MTLTextureType GetNativeTextureType(Texture::DimensionType dimension_type)
     
 MTLRegion GetTextureRegion(const Dimensions& dimensions, Texture::DimensionType dimension_type)
 {
+    ITT_FUNCTION_TASK();
     switch(dimension_type)
     {
     case Texture::DimensionType::Tex1D:
@@ -254,7 +257,7 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
         mtl_tex_desc.height             = m_settings.dimensions.height;
         mtl_tex_desc.depth              = m_settings.dimensions.depth;
         mtl_tex_desc.arrayLength        = m_settings.array_length;
-        mtl_tex_desc.mipmapLevelCount   = 1; // TODO: calculate mip-map level count
+        mtl_tex_desc.mipmapLevelCount   = GetMipLevelsCount();
         break;
 
     default:
@@ -278,17 +281,17 @@ void TextureMT::GenerateMipLevels()
     ITT_FUNCTION_TASK();
 
     TextureBase::GenerateMipLevels();
-
-    // TODO: mip-levels generation to be implemented here using MTLBlitCommandEncoder::generateMipmapsForTexture
-
-    // id<MTLDevice> device = [texture device];
-    // id<MTLCommandQueue> commandQueue = [device newCommandQueue];
-    // id<MTLCommandBuffer> commandBuffer = [commandQueue commandBuffer];
-    // id<MTLBlitCommandEncoder> blitEncoder = [commandBuffer blitCommandEncoder];
-    // [blitEncoder generateMipmapsForTexture:texture];
-    // [blitEncoder endEncoding];
-    // [commandBuffer commit];
-    // [commandBuffer waitUntilCompleted];
+    
+    RenderCommandListMT& render_command_list = static_cast<RenderCommandListMT&>(m_context.GetUploadCommandList());
+    render_command_list.StartBlitEncoding();
+    
+    id<MTLBlitCommandEncoder>& mtl_blit_encoder = render_command_list.GetNativeBlitEncoder();
+    assert(mtl_blit_encoder != nil);
+    assert(m_mtl_texture != nil);
+    
+    [mtl_blit_encoder generateMipmapsForTexture: m_mtl_texture];
+    
+    render_command_list.EndBlitEncoding();
 }
 
 } // namespace Methane::Graphics

@@ -80,15 +80,16 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
         [this, &rng, &texture_counter](gfx::Resource::SubResources& sub_resources)
         {
             texture_counter++;
-            sub_resources = Asteroid::GenerateTextureArraySubresources(m_settings.texture_dimensions, m_settings.subdivisions_count, false, rng(), texture_counter);
+            sub_resources = Asteroid::GenerateTextureArraySubresources(m_settings.texture_dimensions, m_settings.subdivisions_count, rng(), texture_counter);
         });
 
     // Create texture arrays initialized with sub-resources data
     m_unique_textures.reserve(m_settings.textures_count);
     for(const gfx::Resource::SubResources& texture_subresources : texture_subresources_array)
     {
-        m_unique_textures.emplace_back(gfx::Texture::CreateImage(context, m_settings.texture_dimensions, static_cast<uint32_t>(texture_subresources.size()), gfx::PixelFormat::RGBA8Unorm, false));
+        m_unique_textures.emplace_back(gfx::Texture::CreateImage(context, m_settings.texture_dimensions, static_cast<uint32_t>(texture_subresources.size()), gfx::PixelFormat::RGBA8Unorm, true));
         m_unique_textures.back()->SetData(texture_subresources);
+        m_unique_textures.back()->GenerateMipLevels();
     }
     
     // Calculate initial asteroid positions and rotation parameters
