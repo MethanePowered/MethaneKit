@@ -235,24 +235,25 @@ void ProgramDX::ResourceBindingsDX::ForEachResourceBinding(ApplyResourceBindingF
         assert(!!resource_binding_by_argument.second);
         ShaderDX::ResourceBindingDX& resource_binding = static_cast<ShaderDX::ResourceBindingDX&>(*resource_binding_by_argument.second);
 
-        const Resource::Location& resource_location = resource_binding.GetResourceLocation();
+        const ResourceLocationDX& resource_location = resource_binding.GetResourceLocationDX();
         if (!resource_location.sp_resource)
         {
             throw std::invalid_argument("Empty resource is bound to argument \"" + resource_binding_by_argument.first.argument_name + 
                                         "\" of " + Shader::GetTypeName(resource_binding_by_argument.first.shader_type) + " shader.");
         }
 
-        ResourceDX& dx_resource = dynamic_cast<ResourceDX&>(*resource_location.sp_resource);
         const ShaderDX::ResourceBindingDX::DescriptorRange& descriptor_range = resource_binding.GetDescriptorRange();
-
         const DescriptorHeap::Reservation* p_heap_reservation = nullptr;
-        auto shader_descriptor_heap_by_type_it = m_descriptor_heap_reservations_by_type.find(descriptor_range.heap_type);
-        if (shader_descriptor_heap_by_type_it != m_descriptor_heap_reservations_by_type.end())
+        if (descriptor_range.heap_type != DescriptorHeap::Type::Undefined)
         {
-            p_heap_reservation = &shader_descriptor_heap_by_type_it->second;
+            const std::optional<DescriptorHeap::Reservation>& descriptor_heap_reservation_opt = m_descriptor_heap_reservations_by_type[static_cast<uint32_t>(descriptor_range.heap_type)];
+            if (descriptor_heap_reservation_opt)
+            {
+                p_heap_reservation = &*descriptor_heap_reservation_opt;
+            }
         }
 
-        apply_resource_binding(dx_resource, resource_binding, p_heap_reservation);
+        apply_resource_binding(*resource_location.sp_resource, resource_binding, p_heap_reservation);
     }
 }
 

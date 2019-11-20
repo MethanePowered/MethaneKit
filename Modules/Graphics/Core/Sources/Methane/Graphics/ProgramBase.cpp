@@ -89,7 +89,10 @@ ProgramBase::ResourceBindingsBase::~ResourceBindingsBase()
     // Release mutable descriptor ranges in heaps (constant ranges are released by the program)
     for (const auto& descriptor_type_and_heap_reservation : m_descriptor_heap_reservations_by_type)
     {
-        const DescriptorHeap::Reservation& heap_reservation = descriptor_type_and_heap_reservation.second;
+        if (!descriptor_type_and_heap_reservation)
+            continue;
+
+        const DescriptorHeap::Reservation& heap_reservation = *descriptor_type_and_heap_reservation;
         if (heap_reservation.mutable_range.IsEmpty())
             continue;
 
@@ -155,18 +158,17 @@ void ProgramBase::ResourceBindingsBase::ReserveDescriptorHeapRanges()
         const DescriptorHeap::Type heap_type = descriptor_heap_type_and_count.first;
         const DescriptorsCount&  descriptors = descriptor_heap_type_and_count.second;
 
-        auto shader_descriptor_heap_by_type_it = m_descriptor_heap_reservations_by_type.find(heap_type);
-        if (shader_descriptor_heap_by_type_it == m_descriptor_heap_reservations_by_type.end())
+        std::optional<DescriptorHeap::Reservation>& descriptor_heap_reservation_opt = m_descriptor_heap_reservations_by_type[static_cast<uint32_t>(heap_type)];
+        if (!descriptor_heap_reservation_opt)
         {
-            bool success = false;
-            std::tie(shader_descriptor_heap_by_type_it, success) = m_descriptor_heap_reservations_by_type.emplace(heap_type, DescriptorHeap::Reservation {
+            descriptor_heap_reservation_opt.emplace(
                 resource_manager.GetDefaultShaderVisibleDescriptorHeap(heap_type),
                 DescriptorHeap::Range(0, 0),
                 DescriptorHeap::Range(0, 0)
-            });
+            );
         }
 
-        DescriptorHeap::Reservation& heap_reservation = shader_descriptor_heap_by_type_it->second;
+        DescriptorHeap::Reservation& heap_reservation = *descriptor_heap_reservation_opt;
         if (descriptors.constant_count > 0)
         {
             heap_reservation.constant_range = static_cast<ProgramBase&>(*m_sp_program).ReserveConstantDescriptorRange(heap_reservation.heap.get(), descriptors.constant_count);
