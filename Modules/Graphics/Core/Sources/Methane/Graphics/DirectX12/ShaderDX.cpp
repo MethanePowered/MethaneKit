@@ -211,10 +211,13 @@ void ShaderDX::ResourceBindingDX::SetResourceLocation(Resource::Location resourc
 
     ShaderBase::ResourceBindingBase::SetResourceLocation(std::move(resource_location));
 
-    if (!m_resource_location.sp_resource || !m_p_descriptor_heap_reservation)
+    m_resource_location_dx.sp_resource = std::dynamic_pointer_cast<ResourceDX>(m_resource_location.sp_resource);
+    m_resource_location_dx.offset      = m_resource_location.offset;
+
+    if (!m_resource_location_dx.sp_resource || !m_p_descriptor_heap_reservation)
         return;
 
-    const ResourceDX& dx_resource = dynamic_cast<const ResourceDX&>(*m_resource_location.sp_resource);
+    const ResourceDX&       dx_resource        = *m_resource_location_dx.sp_resource;
     const DescriptorHeapDX& dx_descriptor_heap = static_cast<const DescriptorHeapDX&>(m_p_descriptor_heap_reservation->heap.get());
     if (m_descriptor_range.heap_type != dx_descriptor_heap.GetSettings().type)
     {

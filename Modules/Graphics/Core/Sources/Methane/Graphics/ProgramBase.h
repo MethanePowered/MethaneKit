@@ -29,6 +29,8 @@ Base implementation of the program interface.
 #include "DescriptorHeap.h"
 
 #include <memory>
+#include <array>
+#include <optional>
 
 namespace Methane::Graphics
 {
@@ -64,7 +66,7 @@ public:
         bool AllArgumentsAreBoundToResources(std::string& missing_args) const;
 
     protected:
-        using DescriptorHeapReservationByType = std::map<DescriptorHeap::Type, DescriptorHeap::Reservation>;
+        using DescriptorHeapReservationByType = std::array<std::optional<DescriptorHeap::Reservation>, static_cast<uint32_t>(DescriptorHeap::Type::Count)>;
 
         void ReserveDescriptorHeapRanges();
         void SetResourcesForArguments(const ResourceLocationByArgument& resource_location_by_argument);
