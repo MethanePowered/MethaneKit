@@ -212,7 +212,7 @@ void AsteroidsApp::Init()
             continue;
 
         frame.asteroids.resource_bindings_array[0] = gfx::Program::ResourceBindings::Create(state_settings.sp_program, {
-            { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, { frame.asteroids.sp_uniforms_buffer, m_sp_asteroids_array->GetUniformsBufferOffset(0) } },
+            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { frame.asteroids.sp_uniforms_buffer, m_sp_asteroids_array->GetUniformsBufferOffset(0) } },
             { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { frame.sp_scene_uniforms_buffer         } },
             { { gfx::Shader::Type::Pixel,  "g_constants"      }, { m_sp_const_buffer                      } },
             { { gfx::Shader::Type::Pixel,  "g_textures"       }, { m_sp_asteroids_array->GetTexturePtr(0) } },
@@ -223,7 +223,7 @@ void AsteroidsApp::Init()
         {
             const Data::Size asteroid_uniform_offset = m_sp_asteroids_array->GetUniformsBufferOffset(asteroid_index);
             frame.asteroids.resource_bindings_array[asteroid_index] = gfx::Program::ResourceBindings::CreateCopy(*frame.asteroids.resource_bindings_array[0], {
-                { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, { frame.asteroids.sp_uniforms_buffer, asteroid_uniform_offset } },
+                { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { frame.asteroids.sp_uniforms_buffer, asteroid_uniform_offset } },
                 { { gfx::Shader::Type::Pixel,  "g_textures"       }, { m_sp_asteroids_array->GetTexturePtr(asteroid_index) } },
             });
         }

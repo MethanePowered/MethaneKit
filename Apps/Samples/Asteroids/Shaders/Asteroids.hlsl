@@ -16,7 +16,6 @@ struct MeshUniforms
 {
     float4x4 model_matrix;
     float4x4 mvp_matrix;
-    uint     texture_index;
 };
 
 ConstantBuffer<Constants>     g_constants        : register(b1);
@@ -66,7 +65,7 @@ float4 AsteroidsPS(PSInput input) : SV_TARGET
     const float3 fragment_to_eye    = normalize(g_scene_uniforms.eye_position.xyz - input.world_position);
     const float3 light_reflected_from_fragment = reflect(-fragment_to_light, input.normal);
 
-    const float4 texel_color    = g_textures.Sample(g_texture_sampler, float3(input.uv, g_mesh_uniforms.texture_index));
+    const float4 texel_color    = g_textures.Sample(g_texture_sampler, float3(input.uv, 0));
     const float4 ambient_color  = texel_color * g_constants.light_ambient_factor;
     const float4 base_color     = texel_color * g_constants.light_color * g_constants.light_power;
 
