@@ -75,12 +75,10 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
     // Parallel generation sub-resources for texture arrays filled with random perlin-noise
     std::vector<gfx::Resource::SubResources> texture_subresources_array;
     texture_subresources_array.resize(m_settings.textures_count);
-    std::atomic<uint32_t> texture_counter(0);
     Data::ParallelFor(texture_subresources_array.begin(), texture_subresources_array.end(),
-        [this, &rng, &texture_counter](gfx::Resource::SubResources& sub_resources)
+        [this, &rng](gfx::Resource::SubResources& sub_resources)
         {
-            texture_counter++;
-            sub_resources = Asteroid::GenerateTextureArraySubresources(m_settings.texture_dimensions, m_settings.subdivisions_count, rng(), texture_counter);
+            sub_resources = Asteroid::GenerateTextureArraySubresources(m_settings.texture_dimensions, m_settings.subdivisions_count, rng());
         });
 
     // Create texture arrays initialized with sub-resources data
@@ -102,7 +100,6 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
 
     std::normal_distribution<float> normal_distribution;
     std::uniform_int_distribution<uint32_t> textures_distribution(0u, m_settings.textures_count - 1);
-    std::uniform_int_distribution<uint32_t> texture_array_distribution(0u, m_settings.subdivisions_count - 1);
 
     m_parameters.reserve(asteroids_count);
     for (uint32_t asteroid_index = 0; asteroid_index < asteroids_count; ++asteroid_index)
@@ -115,7 +112,6 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
 
         m_parameters.emplace_back(Asteroid::Parameters{
             asteroid_index,
-            texture_array_distribution(rng),
             {
                 grid_origin_x + asteroid_index_x * asteroid_offset_step, 0.f,
                 grid_origin_y + asteroid_index_y * asteroid_offset_step
@@ -152,7 +148,6 @@ bool AsteroidsArray::Update(double elapsed_seconds, double delta_seconds)
             {
                 model_matrix,
                 model_matrix * scene_view_matrix * scene_proj_matrix,
-                asteroid_parameters.texture_index
             },
             asteroid_parameters.index
         );

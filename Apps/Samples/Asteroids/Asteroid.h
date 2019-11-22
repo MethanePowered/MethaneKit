@@ -36,7 +36,6 @@ struct SHADER_STRUCT_ALIGN AsteroidUniforms
 {
     SHADER_FIELD_ALIGN gfx::Matrix44f model_matrix;
     SHADER_FIELD_ALIGN gfx::Matrix44f mvp_matrix;
-    SHADER_FIELD_ALIGN uint32_t       texture_index;
 };
 
 class Asteroid : public gfx::TexturedMeshBuffers<AsteroidUniforms>
@@ -69,7 +68,6 @@ public:
     struct Parameters
     {
         const uint32_t index;
-        uint32_t       texture_index;
         gfx::Point3f   position;
         gfx::Point3f   rotation_axis;
         float          rotation_angle_rad;
@@ -78,12 +76,11 @@ public:
 
     Asteroid(gfx::Context& context);
     
-    static gfx::Texture::Ptr GenerateTextureArray(gfx::Context& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, uint32_t random_seed, uint32_t texture_id = 0);
-    static gfx::Resource::SubResources GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, uint32_t random_seed, uint32_t texture_id = 0);
+    static gfx::Texture::Ptr GenerateTextureArray(gfx::Context& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, uint32_t random_seed);
+    static gfx::Resource::SubResources GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, uint32_t random_seed);
     
 private:
     static void FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Dimensions& dimensions, uint32_t pixel_size, uint32_t row_stride,
-                                         const gfx::Color3f& low_color, const gfx::Color3f& high_color,
                                          float random_seed, float persistence, float noise_scale, float noise_strength);
 };
 
