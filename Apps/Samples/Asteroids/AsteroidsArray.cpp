@@ -33,7 +33,7 @@ namespace Methane::Samples
 
 using AsteroidColorSchemas = std::array<Asteroid::Colors, 6>;
 
-constexpr gfx::Color3f TransformSRGBToLinear(const gfx::Color3f& srgb_color)
+static gfx::Color3f TransformSRGBToLinear(const gfx::Color3f& srgb_color)
 {
     gfx::Color3f linear_color = {};
     for(int c = 0; c < 3; ++c)
@@ -43,7 +43,7 @@ constexpr gfx::Color3f TransformSRGBToLinear(const gfx::Color3f& srgb_color)
     return linear_color;
 }
 
-constexpr AsteroidColorSchemas TransformSRGBToLinear(const AsteroidColorSchemas& srgb_color_schemas)
+static AsteroidColorSchemas TransformSRGBToLinear(const AsteroidColorSchemas& srgb_color_schemas)
 {
     AsteroidColorSchemas linear_color_schemas = {};
     for(size_t i = 0; i < srgb_color_schemas.size(); ++i)
