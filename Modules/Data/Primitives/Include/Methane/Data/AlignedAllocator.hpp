@@ -24,6 +24,8 @@ Aligned memory allocator to be used in STL containers, like std::vector.
 #pragma once
 
 #include <stdlib.h>
+#include <exception>
+#include <string>
 
 #ifdef WIN32
 #include <malloc.h>
@@ -68,7 +70,8 @@ public:
 #else
         void* p_memory = nullptr;
         const int error = posix_memalign(&p_memory, N, allocate_size);
-        assert(!error);
+        if (error)
+            throw std::runtime_error("Failed to allocate aligned memory! posix_memalign error: " + std::to_string(error));
         return static_cast<pointer>(p_memory);
 #endif
     }
