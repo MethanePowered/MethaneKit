@@ -143,9 +143,9 @@ void ShadowCubeApp::Init()
         { // input_buffer_layouts
             { // Signle vertex buffer with interleaved data:
                 {
-                    { "in_position", "POSITION" },
-                    { "in_normal",   "NORMAL"   },
-                    { "in_uv",       "TEXCOORD" },
+                    { "input_position", "POSITION" },
+                    { "input_normal",   "NORMAL"   },
+                    { "input_texcoord", "TEXCOORD" },
                 }
             }
         },

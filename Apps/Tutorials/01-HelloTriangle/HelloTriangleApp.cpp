@@ -80,8 +80,8 @@ void HelloTriangleApp::Init()
         { // input_buffer_layouts
             { // single vertex buffer layout with interleaved data
                 { // input arguments mapping to semantic names
-                    { "in_position", "POSITION" },
-                    { "in_color",    "COLOR"    },
+                    { "input_position", "POSITION" },
+                    { "input_color",    "COLOR"    },
                 }
             }
         },

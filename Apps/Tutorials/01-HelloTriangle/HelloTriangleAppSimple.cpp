@@ -85,8 +85,8 @@ public:
                     Shader::CreatePixel(*m_sp_context,  { Data::ShaderProvider::Get(), { "Triangle", "TrianglePS" } }),
                 },
                 { { {
-                    { "in_position", "POSITION" },
-                    { "in_color",    "COLOR"    },
+                    { "input__position", "POSITION" },
+                    { "input__color",    "COLOR"    },
                 } } },
                 { }, { },
                 { m_sp_context->GetSettings().color_format }
