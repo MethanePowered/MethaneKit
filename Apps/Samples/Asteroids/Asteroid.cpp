@@ -25,7 +25,7 @@ Random generated asteroid model with mesh and texture ready for rendering
 
 #include <Methane/Graphics/Noise.hpp>
 
-#define TEXTURE_INDEXED_COLORING 0
+#include <sstream>
 
 namespace Methane::Samples
 {
@@ -53,9 +53,16 @@ void Asteroid::Mesh::Randomize(uint32_t random_seed)
     auto  random_noise = std::uniform_real_distribution<float>(0.0f, 10000.0f);
     const float noise = random_noise(rng);
 
+    m_depth_range[0] = std::numeric_limits<float>::max();
+    m_depth_range[1] = std::numeric_limits<float>::min();
+
     for (Vertex& vertex : m_vertices)
     {
         vertex.position *= perlin_noise(gfx::Vector4f(vertex.position * noise_scale, noise)) * radius_scale + radius_bias;
+
+        const float vertex_depth = vertex.position.length();
+        m_depth_range[0] = std::min(m_depth_range[0], vertex_depth);
+        m_depth_range[1] = std::max(m_depth_range[1], vertex_depth);
     }
 
     ComputeAverageNormals();
@@ -64,18 +71,19 @@ void Asteroid::Mesh::Randomize(uint32_t random_seed)
 Asteroid::Asteroid(gfx::Context& context)
     : BaseBuffers(context, Mesh(3, true), "Asteroid")
 {
-    SetTexture(GenerateTextureArray(context, gfx::Dimensions(256, 256), 1, true, 0), 0);
+    SetTexture(GenerateTextureArray(context, gfx::Dimensions(256, 256), 1, true, TextureNoiseParameters()), 0);
 }
 
-gfx::Texture::Ptr Asteroid::GenerateTextureArray(gfx::Context& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, uint32_t random_seed)
+gfx::Texture::Ptr Asteroid::GenerateTextureArray(gfx::Context& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, 
+                                                 const TextureNoiseParameters& noise_parameters)
 {
-    const gfx::Resource::SubResources sub_resources = GenerateTextureArraySubresources(dimensions, array_size, random_seed);
+    const gfx::Resource::SubResources sub_resources = GenerateTextureArraySubresources(dimensions, array_size, noise_parameters);
     gfx::Texture::Ptr sp_texture_array = gfx::Texture::CreateImage(context, dimensions, array_size, gfx::PixelFormat::RGBA8Unorm, mipmapped);
     sp_texture_array->SetData(sub_resources);
     return sp_texture_array;
 }
 
-gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, uint32_t random_seed)
+gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, const TextureNoiseParameters& noise_parameters)
 {
     const gfx::PixelFormat pixel_format = gfx::PixelFormat::RGBA8Unorm;
     const uint32_t pixel_size = gfx::GetPixelSize(pixel_format);
@@ -85,10 +93,8 @@ gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx
     gfx::Resource::SubResources sub_resources;
     sub_resources.reserve(array_size);
 
-    std::mt19937 rng(random_seed);
+    std::mt19937 rng(noise_parameters.random_seed);
     std::uniform_real_distribution<float> noise_seed_distribution(0.f, 10000.f);
-    std::uniform_real_distribution<float> noise_scale_distribution(0.05f, 0.1f);
-    std::normal_distribution<float>       persistence_distribution(0.9f, 0.2f);
 
     for (uint32_t array_index = 0; array_index < array_size; ++array_index)
     {
@@ -96,9 +102,10 @@ gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx
         FillPerlinNoiseToTexture(sub_resource_data, dimensions,
                                  pixel_size, row_stide,
                                  noise_seed_distribution(rng),
-                                 persistence_distribution(rng),
-                                 noise_scale_distribution(rng),
-                                 1.5f);
+                                 noise_parameters.persistence,
+                                 noise_parameters.scale,
+                                 noise_parameters.strength,
+                                 array_index);
 
         sub_resources.emplace_back(std::move(sub_resource_data), gfx::Resource::SubResource::Index{ 0, array_index });
     }
@@ -107,7 +114,7 @@ gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx
 }
 
 void Asteroid::FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Dimensions& dimensions, uint32_t pixel_size, uint32_t row_stride,
-                                        float random_seed, float persistence, float noise_scale, float noise_strength)
+                                        float random_seed, float persistence, float noise_scale, float noise_strength, uint32_t array_index)
 {
     const gfx::NoiseOctaves<4> perlin_noise(persistence);
     
@@ -118,13 +125,19 @@ void Asteroid::FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Di
         for (size_t col = 0; col < dimensions.width; ++col)
         {
             const gfx::Vector3f noise_coordinates(noise_scale * row, noise_scale * col, random_seed);
-            const float intensity = std::max(0.0f, std::min(1.0f, (perlin_noise(noise_coordinates) - 0.5f) * noise_strength + 0.5f));
-            const uint8_t color_component = static_cast<uint8_t>(255.f * intensity);
+            const float         noise_intensity = std::max(0.0f, std::min(1.0f, (perlin_noise(noise_coordinates) - 0.5f) * noise_strength + 0.5f));
 
             uint8_t* texel_data = reinterpret_cast<uint8_t*>(&row_data[col]);
-            texel_data[0] = color_component;
-            texel_data[1] = color_component;
-            texel_data[2] = color_component;
+            for (size_t channel = 0; channel < 3; ++channel)
+            {
+#if 1
+                const float channel_value = 255.f;
+#else
+                const float channel_value = array_index % 3 == channel ? 255.f : 125.f;
+#endif
+                texel_data[channel] = static_cast<uint8_t>(channel_value * noise_intensity);
+            }
+            
         }
     }
 }

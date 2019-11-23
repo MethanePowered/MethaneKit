@@ -73,7 +73,8 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
 
     m_sp_texture_sampler = Sampler::Create(context, {
         { Sampler::Filter::MinMag::Linear     },
-        { Sampler::Address::Mode::ClampToZero }
+        { Sampler::Address::Mode::ClampToZero },
+        Sampler::LevelOfDetail(m_settings.lod_bias)
     });
     m_sp_texture_sampler->SetName("Sky-box Texture Sampler");
 }

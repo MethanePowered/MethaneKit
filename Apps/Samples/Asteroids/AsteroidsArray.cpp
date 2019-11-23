@@ -31,6 +31,45 @@ Random generated asteroids array with uber mesh and textures ready for rendering
 namespace Methane::Samples
 {
 
+using AsteroidColorSchemas = std::array<Asteroid::Colors, 6>;
+
+constexpr gfx::Color3f TransformSRGBToLinear(const gfx::Color3f& srgb_color)
+{
+    gfx::Color3f linear_color = {};
+    for(int c = 0; c < 3; ++c)
+    {
+        linear_color[c] = std::powf(srgb_color[c] / 255.f, 2.2f);
+    }
+    return linear_color;
+}
+
+constexpr AsteroidColorSchemas TransformSRGBToLinear(const AsteroidColorSchemas& srgb_color_schemas)
+{
+    AsteroidColorSchemas linear_color_schemas = {};
+    for(size_t i = 0; i < srgb_color_schemas.size(); ++i)
+    {
+        linear_color_schemas[i].deep    = TransformSRGBToLinear(srgb_color_schemas[i].deep);
+        linear_color_schemas[i].shallow = TransformSRGBToLinear(srgb_color_schemas[i].shallow);
+    }
+    return linear_color_schemas;
+}
+
+static const AsteroidColorSchemas& GetAsteroidColorSchemas(bool is_linear)
+{
+    static const AsteroidColorSchemas g_color_schemas_srgb = { {
+        { { 55.f,   49.f,  40.f }, { 156.f, 139.f, 113.f } },
+        { { 58.f,   38.f,  14.f }, { 156.f, 139.f, 113.f } },
+        { { 98.f,  101.f, 104.f }, { 156.f, 139.f, 113.f } },
+        { { 205.f, 197.f, 178.f }, { 156.f, 139.f, 113.f } },
+        { { 88.f,   88.f,  88.f }, { 153.f, 146.f, 136.f } },
+        { { 148.f, 108.f, 102.f }, { 189.f, 181.f, 164.f } }
+    } };
+
+    static const AsteroidColorSchemas g_color_schemas_linear = TransformSRGBToLinear(g_color_schemas_srgb);
+
+    return is_linear ? g_color_schemas_linear : g_color_schemas_srgb;
+}
+
 static gfx::Point3f GetRandomDirection(std::mt19937& rng)
 {
     std::normal_distribution<float> distribution;
@@ -48,6 +87,7 @@ AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivision
 {
     std::mt19937 rng(random_seed);
 
+    m_depth_ranges.reserve(instance_count * subdivisions_count);
     for(uint32_t instance_index = 0; instance_index < instance_count; ++instance_index)
     {
         const uint32_t instance_seed = rng();
@@ -61,24 +101,46 @@ AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivision
             asteroid_mesh.Spherify();
             asteroid_mesh.Randomize(instance_seed);
 
+            m_depth_ranges.emplace_back(asteroid_mesh.GetDepthRange());
             AddSubMesh(asteroid_mesh, true);
         }
     }
 }
 
+const gfx::Vector2f& AsteroidsArray::UberMesh::GetSubMeshDepthRange(uint32_t sub_mesh_index) const
+{
+    if (sub_mesh_index >= m_depth_ranges.size())
+        std::invalid_argument("Sub-mesh index is out of range.");
+
+    return m_depth_ranges[sub_mesh_index];
+}
+
 AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
-    : BaseBuffers(context, UberMesh(settings.instance_count, settings.subdivisions_count, settings.random_seed), "Asteroid Array")
+    : AsteroidsArray(context, std::move(settings), UberMesh(settings.instance_count, settings.subdivisions_count, settings.random_seed))
+{
+}
+
+ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings&& settings, const UberMesh& uber_mesh)
+    : BaseBuffers(context, uber_mesh, "Asteroids Array")
     , m_settings(std::move(settings))
 {
     std::mt19937 rng(settings.random_seed);
+    std::normal_distribution<float>       noise_persistence_distribution(0.9f, 0.2f);
+    std::uniform_real_distribution<float> noise_scale_distribution(0.05f, 0.1f);
     
     // Parallel generation sub-resources for texture arrays filled with random perlin-noise
     std::vector<gfx::Resource::SubResources> texture_subresources_array;
     texture_subresources_array.resize(m_settings.textures_count);
     Data::ParallelFor(texture_subresources_array.begin(), texture_subresources_array.end(),
-        [this, &rng](gfx::Resource::SubResources& sub_resources)
+        [this, &rng, &noise_scale_distribution, &noise_persistence_distribution](gfx::Resource::SubResources& sub_resources)
         {
-            sub_resources = Asteroid::GenerateTextureArraySubresources(m_settings.texture_dimensions, m_settings.subdivisions_count, rng());
+            Asteroid::TextureNoiseParameters noise_parameters = {
+                rng(),
+                noise_persistence_distribution(rng),
+                noise_scale_distribution(rng),
+                1.5f
+            };
+            sub_resources = Asteroid::GenerateTextureArraySubresources(m_settings.texture_dimensions, 3, noise_parameters);
         });
 
     // Create texture arrays initialized with sub-resources data
@@ -97,9 +159,11 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
     const float asteroid_offset_step = m_settings.scale * 2.f;
     const float grid_origin_x = asteroid_offset_step * (asteroids_grid_size_x - 1) / -2.f;
     const float grid_origin_y = asteroid_offset_step * (asteroids_grid_size_y - 1) / -2.f;
+    const AsteroidColorSchemas& asteroid_color_schemas = GetAsteroidColorSchemas(true);
 
     std::normal_distribution<float> normal_distribution;
     std::uniform_int_distribution<uint32_t> textures_distribution(0u, m_settings.textures_count - 1);
+    std::uniform_int_distribution<uint32_t> color_schema_distribution(0, static_cast<uint32_t>(asteroid_color_schemas.size() - 1));
 
     m_parameters.reserve(asteroids_count);
     for (uint32_t asteroid_index = 0; asteroid_index < asteroids_count; ++asteroid_index)
@@ -107,11 +171,14 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
         const uint32_t texture_index    = textures_distribution(rng);
         const uint32_t asteroid_index_x = asteroid_index % asteroids_grid_size_x;
         const uint32_t asteroid_index_y = asteroid_index / asteroids_grid_size_x;
+        const Asteroid::Colors& asteroid_colors = asteroid_color_schemas[color_schema_distribution(rng)];
         
         SetTexture(m_unique_textures[texture_index], asteroid_index);
 
         m_parameters.emplace_back(Asteroid::Parameters{
             asteroid_index,
+            asteroid_colors,
+            uber_mesh.GetSubMeshDepthRange(asteroid_index),
             {
                 grid_origin_x + asteroid_index_x * asteroid_offset_step, 0.f,
                 grid_origin_y + asteroid_index_y * asteroid_offset_step
@@ -130,8 +197,8 @@ bool AsteroidsArray::Update(double elapsed_seconds, double delta_seconds)
 
     gfx::Matrix44f scale_matrix;
     cml::matrix_uniform_scale(scale_matrix, m_settings.scale);
-    
-    for (Asteroid::Parameters& asteroid_parameters : m_parameters)
+
+    for(Asteroid::Parameters& asteroid_parameters : m_parameters)
     {
         asteroid_parameters.rotation_angle_rad += cml::constants<float>::pi() * asteroid_parameters.rotation_speed * static_cast<float>(delta_seconds);
 
@@ -148,6 +215,9 @@ bool AsteroidsArray::Update(double elapsed_seconds, double delta_seconds)
             {
                 model_matrix,
                 model_matrix * scene_view_matrix * scene_proj_matrix,
+                asteroid_parameters.colors.deep,
+                asteroid_parameters.colors.shallow,
+                asteroid_parameters.depth_range
             },
             asteroid_parameters.index
         );

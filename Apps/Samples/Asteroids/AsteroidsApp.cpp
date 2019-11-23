@@ -51,7 +51,7 @@ static const GraphicsApp::Settings  g_app_settings  = // Application settings:
         gfx::FrameSize(),                             // - frame_size
         gfx::PixelFormat::BGRA8Unorm,                 // - color_format
         gfx::PixelFormat::Depth32Float,               // - depth_stencil_format
-        gfx::Color4f(0.0f, 0.2f, 0.4f, 1.0f),         // - clear_color
+        gfx::Color4f(0.0f, 0.0f, 0.0f, 1.0f),         // - clear_color
         1.f,                                          // - clear_depth
         0,                                            // - clear_stencil
         3,                                            // - frame_buffers_count
@@ -65,8 +65,8 @@ AsteroidsApp::AsteroidsApp()
     , m_scene_scale(15.f)
     , m_scene_constants(                              // Shader constants:
         {                                             // ================
-            gfx::Color4f(1.f, 1.f, 0.74f, 1.f),       // - light_color
-            10000.f,                                  // - light_power
+            gfx::Color4f(1.f, 1.f, 1.f, 1.f),         // - light_color
+            1.f,                                      // - light_power
             0.1f,                                     // - light_ambient_factor
             4.f                                       // - light_specular_factor
         })
@@ -111,6 +111,7 @@ void AsteroidsApp::Init()
     // Create sky-box
     m_sp_sky_box = std::make_shared<gfx::SkyBox>(context, m_image_loader, gfx::SkyBox::Settings{
         m_scene_scale * 100.f,
+        -0.8f, // LOD bias is negative to sample from more detailed mip level
         m_view_camera,
         {
             "Textures/SkyBox/Galaxy/PositiveX.jpg",
@@ -151,15 +152,14 @@ void AsteroidsApp::Init()
     gfx::RenderState::Settings state_settings;
     state_settings.sp_program = gfx::Program::Create(context, {
         {
-            gfx::Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidsVS" }, asteroid_definitions }),
-            gfx::Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidsPS" }, asteroid_definitions }),
+            gfx::Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidVS" }, asteroid_definitions }),
+            gfx::Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidPS" }, asteroid_definitions }),
         },
         { // input_buffer_layouts
             { // Single vertex buffer with interleaved data:
                 { // input arguments mapping to semantic names
-                    { "in_position", "POSITION" },
-                    { "in_normal",   "NORMAL"   },
-                    { "in_uv",       "TEXCOORD" },
+                    { "input_position", "POSITION" },
+                    { "input_normal",   "NORMAL"   },
                 }
             }
         },
@@ -215,7 +215,7 @@ void AsteroidsApp::Init()
             { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { frame.asteroids.sp_uniforms_buffer, m_sp_asteroids_array->GetUniformsBufferOffset(0) } },
             { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { frame.sp_scene_uniforms_buffer         } },
             { { gfx::Shader::Type::Pixel,  "g_constants"      }, { m_sp_const_buffer                      } },
-            { { gfx::Shader::Type::Pixel,  "g_textures"       }, { m_sp_asteroids_array->GetTexturePtr(0) } },
+            { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, { m_sp_asteroids_array->GetTexturePtr(0) } },
             { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { m_sp_texture_sampler                   } },
         });
 
@@ -224,7 +224,7 @@ void AsteroidsApp::Init()
             const Data::Size asteroid_uniform_offset = m_sp_asteroids_array->GetUniformsBufferOffset(asteroid_index);
             frame.asteroids.resource_bindings_array[asteroid_index] = gfx::Program::ResourceBindings::CreateCopy(*frame.asteroids.resource_bindings_array[0], {
                 { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { frame.asteroids.sp_uniforms_buffer, asteroid_uniform_offset } },
-                { { gfx::Shader::Type::Pixel,  "g_textures"       }, { m_sp_asteroids_array->GetTexturePtr(asteroid_index) } },
+                { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, { m_sp_asteroids_array->GetTexturePtr(asteroid_index) } },
             });
         }
     }

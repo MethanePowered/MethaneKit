@@ -56,6 +56,11 @@ public:
     {
     public:
         UberMesh(uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed);
+
+        const gfx::Vector2f& GetSubMeshDepthRange(uint32_t sub_mesh_index) const;
+
+    private:
+        std::vector<gfx::Vector2f> m_depth_ranges;
     };
 
     AsteroidsArray(gfx::Context& context, Settings settings);
@@ -65,9 +70,11 @@ public:
 private:
     using Parameters = std::vector<Asteroid::Parameters>;
 
-    Settings   m_settings;
-    Parameters m_parameters;
-    Textures   m_unique_textures;
+    AsteroidsArray(gfx::Context& context, Settings&& settings, const UberMesh& uber_mesh);
+
+    Settings    m_settings;
+    Parameters  m_parameters;
+    Textures    m_unique_textures;
 };
 
 } // namespace Methane::Samples
