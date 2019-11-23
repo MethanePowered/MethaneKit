@@ -103,9 +103,9 @@ void TexturedCubeApp::Init()
         { // input_buffer_layouts
             { // single vertex buffer layout with interleaved data
                 { // input arguments mapping to semantic names
-                    { "in_position", "POSITION" },
-                    { "in_normal",   "NORMAL"   },
-                    { "in_uv",       "TEXCOORD" },
+                    { "input_position", "POSITION" },
+                    { "input_normal",   "NORMAL"   },
+                    { "input_texcoord", "TEXCOORD" },
                 }
             }
         },
