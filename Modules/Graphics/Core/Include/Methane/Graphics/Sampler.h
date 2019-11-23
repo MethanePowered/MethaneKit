@@ -86,6 +86,7 @@ struct Sampler : virtual Resource
     struct LevelOfDetail
     {
         LevelOfDetail() { }
+        LevelOfDetail(float in_bias) : bias(in_bias) { }
         LevelOfDetail(float in_min, float in_max, float in_bias) : min(in_min), max(in_max), bias(in_bias) { }
         
         float min     = 0.f;

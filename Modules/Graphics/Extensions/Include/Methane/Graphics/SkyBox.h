@@ -49,6 +49,7 @@ public:
     struct Settings
     {
         float                          scale;
+        float                          lod_bias;
         const Camera&                  view_camera;
         ImageLoader::CubeFaceResources face_resources;
     };
