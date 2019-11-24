@@ -49,9 +49,11 @@ public:
     struct Settings
     {
         float                          scale;
-        float                          lod_bias;
         const Camera&                  view_camera;
         ImageLoader::CubeFaceResources face_resources;
+        bool                           mipmapped = false;
+        float                          lod_bias = 0.f;
+
     };
 
     struct SHADER_STRUCT_ALIGN MeshUniforms
