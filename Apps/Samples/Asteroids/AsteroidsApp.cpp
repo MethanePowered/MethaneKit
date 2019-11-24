@@ -111,7 +111,6 @@ void AsteroidsApp::Init()
     // Create sky-box
     m_sp_sky_box = std::make_shared<gfx::SkyBox>(context, m_image_loader, gfx::SkyBox::Settings{
         m_scene_scale * 100.f,
-        -0.8f, // LOD bias is negative to sample from more detailed mip level
         m_view_camera,
         {
             "Textures/SkyBox/Galaxy/PositiveX.jpg",
