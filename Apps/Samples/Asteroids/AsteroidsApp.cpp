@@ -36,9 +36,9 @@ namespace Methane::Samples
 {
 
 // Common application settings
-static constexpr uint32_t           g_asteroid_instances_count    = 10;
-static constexpr uint32_t           g_asteroid_subdivisions_count = 3;
-static const std::string            g_app_help_text = "Asteroids sample demonstrates parallel rendering of multiple heterogeneous objects " \
+static constexpr uint32_t  g_asteroid_instances_count    = 64;
+static constexpr uint32_t  g_asteroid_subdivisions_count = 3;
+static const std::string   g_app_help_text          = "Asteroids sample demonstrates parallel rendering of multiple heterogeneous objects " \
                                                       "and action camera interaction with mouse and keyboard.";
 static const GraphicsApp::Settings  g_app_settings  = // Application settings:
 {                                                     // ====================
@@ -73,7 +73,7 @@ AsteroidsApp::AsteroidsApp()
     , m_view_camera(m_animations, gfx::ActionCamera::Pivot::Aim)
     , m_light_camera(m_view_camera, m_animations, gfx::ActionCamera::Pivot::Aim)
 {
-    m_view_camera.SetOrientation({ { 0.f, 40.f, 90.f }, { 0.f, -25.f, 0.f }, { 0.f, 1.f, 0.f } });
+    m_view_camera.SetOrientation({ { 0.f, 40.f, 250.f }, { 0.f, -120.f, 0.f }, { 0.f, 1.f, 0.f } });
     m_view_camera.SetParamters({ 0.01f, 600.f, 90.f });
     m_view_camera.SetZoomDistanceRange({ 15.f , 300.f });
 

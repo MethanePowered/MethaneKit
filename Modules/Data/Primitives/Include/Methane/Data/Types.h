@@ -99,6 +99,7 @@ using FrameSize    = FrameRect::Size;
 
 using Bytes = std::vector<uint8_t>;
 using Size = uint32_t;
+using Index = Size;
 using RawPtr = uint8_t*;
 using ConstRawPtr = const uint8_t* const;
 
