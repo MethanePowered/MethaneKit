@@ -31,7 +31,8 @@ Random generated asteroids array with uber mesh and textures ready for rendering
 namespace Methane::Samples
 {
 
-using AsteroidColorSchemas = std::array<Asteroid::Colors, 6>;
+constexpr size_t g_asteroid_color_schema_size = 6u;
+using AsteroidColorSchema = std::array<gfx::Color3f, g_asteroid_color_schema_size>;
 
 static gfx::Color3f TransformSRGBToLinear(const gfx::Color3f& srgb_color)
 {
@@ -43,31 +44,72 @@ static gfx::Color3f TransformSRGBToLinear(const gfx::Color3f& srgb_color)
     return linear_color;
 }
 
-static AsteroidColorSchemas TransformSRGBToLinear(const AsteroidColorSchemas& srgb_color_schemas)
+static AsteroidColorSchema TransformSRGBToLinear(const AsteroidColorSchema& srgb_color_schema)
 {
-    AsteroidColorSchemas linear_color_schemas = {};
-    for(size_t i = 0; i < srgb_color_schemas.size(); ++i)
+    AsteroidColorSchema linear_color_schema = {};
+    for(size_t i = 0; i < srgb_color_schema.size(); ++i)
     {
-        linear_color_schemas[i].deep    = TransformSRGBToLinear(srgb_color_schemas[i].deep);
-        linear_color_schemas[i].shallow = TransformSRGBToLinear(srgb_color_schemas[i].shallow);
+        linear_color_schema[i] = TransformSRGBToLinear(srgb_color_schema[i]);
     }
-    return linear_color_schemas;
+    return linear_color_schema;
 }
 
-static const AsteroidColorSchemas& GetAsteroidColorSchemas(bool is_linear)
+static const Asteroid::Colors& GetAsteroidRockColors(uint32_t deep_color_index, uint32_t shallow_color_index)
 {
-    static const AsteroidColorSchemas g_color_schemas_srgb = { {
-        { { 55.f,   49.f,  40.f }, { 156.f, 139.f, 113.f } },
-        { { 58.f,   38.f,  14.f }, { 156.f, 139.f, 113.f } },
-        { { 98.f,  101.f, 104.f }, { 156.f, 139.f, 113.f } },
-        { { 205.f, 197.f, 178.f }, { 156.f, 139.f, 113.f } },
-        { { 88.f,   88.f,  88.f }, { 153.f, 146.f, 136.f } },
-        { { 148.f, 108.f, 102.f }, { 189.f, 181.f, 164.f } }
+    static const AsteroidColorSchema s_srgb_deep_rock_colors = { {
+        {  55.f,  49.f,  40.f },
+        {  58.f,  38.f,  14.f },
+        {  98.f, 101.f, 104.f },
+        { 205.f, 197.f, 178.f },
+        {  88.f,  88.f,  88.f },
+        { 148.f, 108.f, 102.f },
     } };
+    static const AsteroidColorSchema s_linear_deep_rock_colors = TransformSRGBToLinear(s_srgb_deep_rock_colors);
 
-    static const AsteroidColorSchemas g_color_schemas_linear = TransformSRGBToLinear(g_color_schemas_srgb);
+    static const AsteroidColorSchema s_srgb_shallow_rock_colors = { {
+        { 156.f, 139.f, 113.f },
+        { 198.f, 188.f, 137.f },
+        { 239.f, 222.f, 191.f },
+        { 239.f, 213.f, 198.f },
+        { 153.f, 146.f, 136.f },
+        { 189.f, 181.f, 164.f },
+    } };
+    static const AsteroidColorSchema s_linear_shallow_rock_colors = TransformSRGBToLinear(s_srgb_shallow_rock_colors);
 
-    return is_linear ? g_color_schemas_linear : g_color_schemas_srgb;
+    if (deep_color_index >= s_linear_deep_rock_colors.size() ||
+        shallow_color_index >= s_linear_shallow_rock_colors.size())
+        throw std::invalid_argument("Deep or shallow color indices are out of boundaries for asteroids color schema.");
+
+    return Asteroid::Colors{ s_linear_deep_rock_colors[deep_color_index], s_linear_shallow_rock_colors[shallow_color_index] };
+}
+
+static const Asteroid::Colors& GetAsteroidIceColors(uint32_t deep_color_index, uint32_t shallow_color_index)
+{
+    static const AsteroidColorSchema s_srgb_deep_ice_colors = { {
+        {   8.f,  57.f,  72.f },
+        {  35.f,  79.f, 116.f },
+        {   7.f,  25.f,  27.f },
+        {  55.f, 116.f, 161.f },
+        {  16.f,  66.f,  66.f },
+        {  48.f, 103.f, 147.f }
+    } };
+    static const AsteroidColorSchema s_linear_deep_ice_colors = TransformSRGBToLinear(s_srgb_deep_ice_colors);
+
+    static const AsteroidColorSchema s_srgb_shallow_ice_colors = { {
+        { 199.f, 212.f, 244.f },
+        { 196.f, 227.f, 239.f },
+        { 133.f, 177.f, 222.f },
+        { 133.f, 186.f, 230.f },
+        { 167.f, 212.f, 239.f },
+        { 200.f, 221.f, 252.f }
+    } };
+    static const AsteroidColorSchema s_linear_shallow_ice_colors = TransformSRGBToLinear(s_srgb_shallow_ice_colors);
+
+    if (deep_color_index >= s_linear_deep_ice_colors.size() ||
+        shallow_color_index >= s_linear_shallow_ice_colors.size())
+        throw std::invalid_argument("Deep or shallow color indices are out of boundaries for asteroids color schema.");
+
+    return Asteroid::Colors{ s_linear_deep_ice_colors[deep_color_index], s_linear_shallow_ice_colors[shallow_color_index] };
 }
 
 static gfx::Point3f GetRandomDirection(std::mt19937& rng)
@@ -159,11 +201,11 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
     const float asteroid_offset_step = m_settings.scale * 2.f;
     const float grid_origin_x = asteroid_offset_step * (asteroids_grid_size_x - 1) / -2.f;
     const float grid_origin_y = asteroid_offset_step * (asteroids_grid_size_y - 1) / -2.f;
-    const AsteroidColorSchemas& asteroid_color_schemas = GetAsteroidColorSchemas(true);
 
     std::normal_distribution<float> normal_distribution;
     std::uniform_int_distribution<uint32_t> textures_distribution(0u, m_settings.textures_count - 1);
-    std::uniform_int_distribution<uint32_t> color_schema_distribution(0, static_cast<uint32_t>(asteroid_color_schemas.size() - 1));
+    std::uniform_int_distribution<uint32_t> colors_distribution(0, static_cast<uint32_t>(g_asteroid_color_schema_size - 1));
+    std::uniform_real_distribution<float>   scale_distribution(0.7f, 1.3f);
 
     m_parameters.reserve(asteroids_count);
     for (uint32_t asteroid_index = 0; asteroid_index < asteroids_count; ++asteroid_index)
@@ -171,14 +213,24 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
         const uint32_t texture_index    = textures_distribution(rng);
         const uint32_t asteroid_index_x = asteroid_index % asteroids_grid_size_x;
         const uint32_t asteroid_index_y = asteroid_index / asteroids_grid_size_x;
-        const Asteroid::Colors& asteroid_colors = asteroid_color_schemas[color_schema_distribution(rng)];
         
         SetTexture(m_unique_textures[texture_index], asteroid_index);
 
+        gfx::Matrix44f scale_matrix;
+        cml::matrix_scale(scale_matrix,
+                          m_settings.scale * scale_distribution(rng),
+                          m_settings.scale * scale_distribution(rng),
+                          m_settings.scale * scale_distribution(rng));
+
+        Asteroid::Colors asteroid_colors = normal_distribution(rng) <= 1.f
+                                         ? GetAsteroidIceColors(colors_distribution(rng), colors_distribution(rng))
+                                         : GetAsteroidRockColors(colors_distribution(rng), colors_distribution(rng));
+
         m_parameters.emplace_back(Asteroid::Parameters{
             asteroid_index,
-            asteroid_colors,
+            std::move(asteroid_colors),
             uber_mesh.GetSubMeshDepthRange(asteroid_index),
+            std::move(scale_matrix),
             {
                 grid_origin_x + asteroid_index_x * asteroid_offset_step, 0.f,
                 grid_origin_y + asteroid_index_y * asteroid_offset_step
@@ -195,9 +247,6 @@ bool AsteroidsArray::Update(double elapsed_seconds, double delta_seconds)
     gfx::Matrix44f scene_view_matrix, scene_proj_matrix;
     m_settings.view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
 
-    gfx::Matrix44f scale_matrix;
-    cml::matrix_uniform_scale(scale_matrix, m_settings.scale);
-
     for(Asteroid::Parameters& asteroid_parameters : m_parameters)
     {
         asteroid_parameters.rotation_angle_rad += cml::constants<float>::pi() * asteroid_parameters.rotation_speed * static_cast<float>(delta_seconds);
@@ -208,7 +257,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double delta_seconds)
         gfx::Matrix44f postion_matrix;
         cml::matrix_translation(postion_matrix, asteroid_parameters.position);
 
-        gfx::Matrix44f model_matrix = scale_matrix * rotation_matrix * postion_matrix;
+        gfx::Matrix44f model_matrix = asteroid_parameters.scale_matrix * rotation_matrix * postion_matrix;
 
         SetFinalPassUniforms(
             AsteroidUniforms
