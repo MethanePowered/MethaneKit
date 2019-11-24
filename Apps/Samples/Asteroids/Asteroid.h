@@ -101,6 +101,10 @@ public:
     
     static gfx::Texture::Ptr GenerateTextureArray(gfx::Context& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, const TextureNoiseParameters& noise_parameters);
     static gfx::Resource::SubResources GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, const TextureNoiseParameters& noise_parameters);
+
+    static constexpr size_t color_schema_size = 6u;
+    static Colors GetAsteroidRockColors(uint32_t deep_color_index, uint32_t shallow_color_index);
+    static Colors GetAsteroidIceColors(uint32_t deep_color_index, uint32_t shallow_color_index);
     
 private:
     static void FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Dimensions& dimensions, uint32_t pixel_size, uint32_t row_stride,
