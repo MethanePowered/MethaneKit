@@ -49,18 +49,15 @@ AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivision
     std::mt19937 rng(random_seed);
 
     m_depth_ranges.reserve(instance_count * subdivisions_count);
-    for(uint32_t instance_index = 0; instance_index < instance_count; ++instance_index)
+    for (uint32_t subdivision_index = 1; subdivision_index <= subdivisions_count; ++subdivision_index)
     {
-        const uint32_t instance_seed = rng();
-        Asteroid::Mesh base_mesh(0, false);
+        Asteroid::Mesh base_mesh(subdivision_index, false);
+        base_mesh.Spherify();
 
-        for (uint32_t subdivision_index = 0; subdivision_index < subdivisions_count; ++subdivision_index)
+        for (uint32_t instance_index = 0; instance_index < instance_count; ++instance_index)
         {
-            base_mesh.Subdivide();
-
             Asteroid::Mesh asteroid_mesh(base_mesh);
-            asteroid_mesh.Spherify();
-            asteroid_mesh.Randomize(instance_seed);
+            asteroid_mesh.Randomize(rng());
 
             m_depth_ranges.emplace_back(asteroid_mesh.GetDepthRange());
             AddSubMesh(asteroid_mesh, true);
