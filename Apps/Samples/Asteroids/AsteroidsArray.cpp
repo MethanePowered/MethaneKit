@@ -54,7 +54,7 @@ static AsteroidColorSchema TransformSRGBToLinear(const AsteroidColorSchema& srgb
     return linear_color_schema;
 }
 
-static const Asteroid::Colors& GetAsteroidRockColors(uint32_t deep_color_index, uint32_t shallow_color_index)
+static Asteroid::Colors GetAsteroidRockColors(uint32_t deep_color_index, uint32_t shallow_color_index)
 {
     static const AsteroidColorSchema s_srgb_deep_rock_colors = { {
         {  55.f,  49.f,  40.f },
@@ -83,7 +83,7 @@ static const Asteroid::Colors& GetAsteroidRockColors(uint32_t deep_color_index, 
     return Asteroid::Colors{ s_linear_deep_rock_colors[deep_color_index], s_linear_shallow_rock_colors[shallow_color_index] };
 }
 
-static const Asteroid::Colors& GetAsteroidIceColors(uint32_t deep_color_index, uint32_t shallow_color_index)
+static Asteroid::Colors GetAsteroidIceColors(uint32_t deep_color_index, uint32_t shallow_color_index)
 {
     static const AsteroidColorSchema s_srgb_deep_ice_colors = { {
         {   8.f,  57.f,  72.f },
@@ -262,7 +262,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double delta_seconds)
         SetFinalPassUniforms(
             AsteroidUniforms
             {
-                model_matrix,
+                std::move(model_matrix),
                 model_matrix * scene_view_matrix * scene_proj_matrix,
                 asteroid_parameters.colors.deep,
                 asteroid_parameters.colors.shallow,
