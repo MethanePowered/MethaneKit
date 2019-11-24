@@ -23,37 +23,77 @@ Data parallel processing primitives.
 
 #pragma once
 
-#include <mutex>
-#include <thread>
+#include <Methane/Data/Types.h>
+
+#include <iterator>
+#include <functional>
+#include <future>
 
 namespace Methane::Data
 {
 
-template<typename Iterator, class UnaryFunction>
-void ParallelFor(const Iterator& begin_it, const Iterator& end_it, UnaryFunction&& f)
+template<typename Iterator,
+         typename Value = typename std::iterator_traits<Iterator>::value_type>
+void ParallelFor(const Iterator& begin_it, const Iterator& end_it,
+                 std::function<void(Value&, Index)>&& body_function)
 {
     ITT_FUNCTION_TASK();
 
-    const uint32_t items_count = static_cast<uint32_t>(std::distance(begin_it, end_it));
-    const uint32_t thread_count = std::thread::hardware_concurrency();
-    const uint32_t group_size = std::max(1u, static_cast<uint32_t>(std::ceil(static_cast<float>(items_count) / thread_count)));
+    std::vector<std::future<void>> futures;
+    futures.reserve(std::distance(begin_it, end_it));
 
-    std::vector<std::thread> threads;
-    threads.reserve(thread_count);
-
-    for (Iterator it = begin_it; static_cast<uint32_t>(std::distance(begin_it, it)) < items_count; it += group_size)
+    for (Iterator it = begin_it; it != end_it; ++it)
     {
-        threads.push_back(
-            std::thread([=, &f]()
-            {
-                std::for_each(it, std::min(it + group_size, end_it), f);
-            }));
+        const Index item_index = static_cast<Index>(std::distance(begin_it, it));
+        futures.emplace_back(std::async(std::launch::async, body_function, std::ref(*it), item_index));
     }
 
-    std::for_each(threads.begin(), threads.end(), [](std::thread& thread)
+    for(const std::future<void>& future : futures)
     {
-        thread.join();
-    });
+        future.wait();
+    };
+}
+
+template<typename ConstIterator,
+         typename Value = typename std::iterator_traits<ConstIterator>::value_type>
+void ParallelFor(const ConstIterator& begin_it, const ConstIterator& end_it,
+                 std::function<void(const Value&, Index)>&& body_function)
+{
+    ITT_FUNCTION_TASK();
+
+    std::vector<std::future<void>> futures;
+    futures.reserve(std::distance(begin_it, end_it));
+
+    for (ConstIterator it = begin_it; it != end_it; ++it)
+    {
+        const Index item_index = static_cast<Index>(std::distance(begin_it, it));
+        futures.emplace_back(std::async(std::launch::async, body_function, std::cref(*it), item_index));
+    }
+
+    for (const std::future<void>& future : futures)
+    {
+        future.wait();
+    };
+}
+
+template<typename IndexType>
+void ParallelFor(IndexType start_index, IndexType count, std::function<void(IndexType)>&& body_function)
+{
+    ITT_FUNCTION_TASK();
+
+    std::vector<std::future<void>> futures;
+    futures.reserve(static_cast<size_t>(count));
+
+    const IndexType end_index = start_index + count;
+    for (IndexType index = start_index; index < end_index; ++index)
+    {
+        futures.emplace_back(std::async(std::launch::async, body_function, index));
+    }
+
+    for (const std::future<void>& future : futures)
+    {
+        future.wait();
+    };
 }
 
 } // namespace Methane::Data

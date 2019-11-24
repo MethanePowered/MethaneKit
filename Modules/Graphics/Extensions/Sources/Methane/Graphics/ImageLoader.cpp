@@ -164,27 +164,21 @@ Texture::Ptr ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
     ITT_FUNCTION_TASK();
 
     const uint32_t desired_channels_count = 4;
-    std::vector<std::pair<uint32_t, std::string>> face_image_paths;
-    face_image_paths.reserve(image_paths.size());
-    for(uint32_t face_index = 0; face_index < static_cast<uint32_t>(image_paths.size()); ++face_index)
-    {
-        face_image_paths.push_back({ face_index, image_paths[face_index] });
-    }
 
     // Load face image data in parallel
-    std::mutex             data_mutex;
-    std::vector<std::pair<uint32_t, ImageData>> face_images_data;
+    std::mutex data_mutex;
+    std::vector<std::pair<Data::Index, ImageData>> face_images_data;
     face_images_data.reserve(image_paths.size());
-    Data::ParallelFor(face_image_paths.begin(), face_image_paths.end(),
-        [&](const std::pair<uint32_t, std::string>& face_image_path)
+    Data::ParallelFor<CubeFaceResources::const_iterator, std::string>(image_paths.begin(), image_paths.end(),
+        [&](const std::string& face_image_path, Data::Index face_index) -> void
         {
             // NOTE:
             //  we create a copy of the loaded image data (via 3-rd argument of LoadImage)
             //  to resolve a problem of STB image loader which requires an image data to be freed before next image is loaded
-            ImageLoader::ImageData image_data = LoadImage(face_image_path.second, desired_channels_count, true);
+            ImageLoader::ImageData image_data = LoadImage(face_image_path, desired_channels_count, true);
 
             std::lock_guard<std::mutex> data_lock(data_mutex);
-            face_images_data.emplace_back(face_image_path.first, std::move(image_data));
+            face_images_data.emplace_back(face_index, std::move(image_data));
         });
 
     // Verify cube textures
@@ -202,7 +196,7 @@ Texture::Ptr ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
 
     Resource::SubResources face_resources;
     face_resources.reserve(face_images_data.size());
-    for(const std::pair<uint32_t, ImageData>& face_image_data : face_images_data)
+    for(const std::pair<Data::Index, ImageData>& face_image_data : face_images_data)
     {
         if (face_dimensions     != face_image_data.second.dimensions ||
             face_channels_count != face_image_data.second.channels_count)

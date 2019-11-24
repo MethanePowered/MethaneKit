@@ -26,8 +26,6 @@ Random generated asteroids array with uber mesh and textures ready for rendering
 #include <Methane/Graphics/Noise.hpp>
 #include <Methane/Data/Parallel.hpp>
 
-#include <atomic>
-
 namespace Methane::Samples
 {
 
@@ -54,14 +52,17 @@ AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivision
         Asteroid::Mesh base_mesh(subdivision_index, false);
         base_mesh.Spherify();
 
-        for (uint32_t instance_index = 0; instance_index < instance_count; ++instance_index)
+        std::mutex data_mutex;
+        Data::ParallelFor<uint32_t>(0u, instance_count, [&](uint32_t instance_index)
         {
             Asteroid::Mesh asteroid_mesh(base_mesh);
             asteroid_mesh.Randomize(rng());
 
             m_depth_ranges.emplace_back(asteroid_mesh.GetDepthRange());
+
+            std::lock_guard<std::mutex> lock_guard(data_mutex);
             AddSubMesh(asteroid_mesh, true);
-        }
+        });
     }
 }
 
@@ -87,10 +88,11 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
     std::uniform_real_distribution<float> noise_scale_distribution(0.05f, 0.1f);
     
     // Parallel generation sub-resources for texture arrays filled with random perlin-noise
-    std::vector<gfx::Resource::SubResources> texture_subresources_array;
+    using TextureArraySubresources = std::vector<gfx::Resource::SubResources>;
+    TextureArraySubresources texture_subresources_array;
     texture_subresources_array.resize(m_settings.textures_count);
-    Data::ParallelFor(texture_subresources_array.begin(), texture_subresources_array.end(),
-        [this, &rng, &noise_scale_distribution, &noise_persistence_distribution](gfx::Resource::SubResources& sub_resources)
+    Data::ParallelFor<TextureArraySubresources::iterator, gfx::Resource::SubResources>(texture_subresources_array.begin(), texture_subresources_array.end(),
+        [this, &rng, &noise_scale_distribution, &noise_persistence_distribution](gfx::Resource::SubResources& sub_resources, Data::Index)
         {
             Asteroid::TextureNoiseParameters noise_parameters = {
                 rng(),

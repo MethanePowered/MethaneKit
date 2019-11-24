@@ -80,7 +80,9 @@ public:
             , vertices(in_vertices)
             , indices(in_indices)
             , indices_adjusted(in_indices_adjusted)
-        { }
+        {
+            ITT_FUNCTION_TASK();
+        }
 
         Subset(const Subset& other) = default;
     };
@@ -194,6 +196,7 @@ protected:
     using EdgeMidpoints = std::map<Mesh::Edge, Mesh::Index>;
     Index AddEdgeMidpoint(const Edge& edge, EdgeMidpoints& edge_midpoinds)
     {
+        ITT_FUNCTION_TASK();
         const auto edge_midpoint_it = edge_midpoinds.find(edge);
         if (edge_midpoint_it != edge_midpoinds.end())
             return edge_midpoint_it->second;
@@ -239,6 +242,7 @@ protected:
     
     void ComputeAverageNormals()
     {
+        ITT_FUNCTION_TASK();
         if (!Mesh::HasVertexField(Mesh::VertexField::Normal))
             throw std::logic_error("Mesh should contain normals.");
             
@@ -295,10 +299,13 @@ public:
 
     UberMesh(const Mesh::VertexLayout& vertex_layout)
         : BaseMesh(Mesh::Type::Uber, vertex_layout)
-    { }
+    {
+        ITT_FUNCTION_TASK();
+    }
 
     void AddSubMesh(const BaseMesh& sub_mesh, bool adjust_indices)
     {
+        ITT_FUNCTION_TASK();
         const typename BaseMesh::Vertices& sub_vertices = sub_mesh.GetVertices();
         const Mesh::Indices& sub_indices = sub_mesh.GetIndices();
 
@@ -325,6 +332,7 @@ public:
     size_t               GetSubsetCount() const noexcept        { return m_subsets.size(); }
     const Mesh::Subset&  GetSubset(size_t subset_index) const
     {
+        ITT_FUNCTION_TASK();
         if (subset_index >= m_subsets.size())
             throw std::invalid_argument("Sub mesh index is out of bounds.");
 
@@ -333,12 +341,14 @@ public:
 
     std::pair<const VType*, size_t> GetSubsetVertices(size_t subset_index) const
     {
+        ITT_FUNCTION_TASK();
         const Mesh::Subset& subset = GetSubset(subset_index);
         return { BaseMesh::GetVertices().data() + subset.vertices.offset, subset.vertices.count };
     }
 
     std::pair<const Mesh::Index*, size_t> GetSubsetIndices(size_t subset_index) const
     {
+        ITT_FUNCTION_TASK();
         const Mesh::Subset& subset = GetSubset(subset_index);
         return { Mesh::GetIndices().data() + subset.indices.offset, subset.indices.count };
     }
@@ -612,6 +622,7 @@ public:
         : BaseMesh(Mesh::Type::Icosahedron, vertex_layout)
         , m_radius(radius)
     {
+        ITT_FUNCTION_TASK();
         if (Mesh::HasVertexField(Mesh::VertexField::Color))
         {
             throw std::invalid_argument("Colored vertices are not supported for icosahedron mesh.");
@@ -699,6 +710,7 @@ public:
     
     void Subdivide()
     {
+        ITT_FUNCTION_TASK();
         if (BaseMesh::m_indices.size() % 3 != 0)
             throw std::logic_error("Icosahedron indices count should be a multiple of three representing triangles list.");
 
@@ -733,6 +745,7 @@ public:
     
     void Spherify()
     {
+        ITT_FUNCTION_TASK();
         for(VType& vertex : BaseMesh::m_vertices)
         {
             Mesh::Position& vertex_position = BaseMesh::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
