@@ -82,6 +82,7 @@ public:
         const uint32_t index;
         Colors         colors;
         gfx::Vector2f  depth_range;
+        gfx::Matrix44f scale_matrix;
         gfx::Point3f   position;
         gfx::Point3f   rotation_axis;
         float          rotation_angle_rad;
