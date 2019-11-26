@@ -45,10 +45,14 @@ Buffer::Ptr Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFo
     return std::make_shared<IndexBufferDX>(static_cast<ContextBase&>(context), settings, DescriptorByUsage(), format);
 }
 
-Buffer::Ptr Buffer::CreateConstantBuffer(Context& context, Data::Size size, const DescriptorByUsage& descriptor_by_usage)
+Buffer::Ptr Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
-    const Buffer::Settings settings = { Buffer::Type::Constant, Usage::ShaderRead, size };
+    Usage::Mask usage_mask = Usage::ShaderRead;
+    if (addressable)
+        usage_mask |= Usage::Addressable;
+
+    const Buffer::Settings settings = { Buffer::Type::Constant, usage_mask, size };
     return std::make_shared<ConstantBufferDX>(static_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
@@ -93,8 +97,12 @@ void ConstantBufferDX::InitializeView()
     m_buffer_view.BufferLocation = GetNativeGpuAddress();
     m_buffer_view.SizeInBytes    = static_cast<UINT>(data_size);
 
-    D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle = GetNativeCPUDescriptorHandle(Usage::ShaderRead);
-    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateConstantBufferView(&m_buffer_view, cpu_handle);
+    // NOTE: Addressable resources are bound to pipeline using GPU Address and byte offset
+    if (m_usage_mask & Usage::ShaderRead && !(m_usage_mask & Usage::Addressable))
+    {
+        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle = GetNativeCPUDescriptorHandle(Usage::ShaderRead);
+        GetContextDX().GetDeviceDX().GetNativeDevice()->CreateConstantBufferView(&m_buffer_view, cpu_handle);
+    }
 }
 
 } // namespace Methane::Graphics

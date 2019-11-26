@@ -36,10 +36,10 @@ namespace Methane::Samples
 {
 
 // Common application settings
-static constexpr uint32_t  g_asteroid_instances_count    = 64;
+static constexpr uint32_t  g_asteroid_instances_count    = 81;
 static constexpr uint32_t  g_asteroid_subdivisions_count = 3;
-static const std::string   g_app_help_text          = "Asteroids sample demonstrates parallel rendering of multiple heterogeneous objects " \
-                                                      "and action camera interaction with mouse and keyboard.";
+static const std::string   g_app_help_text               = "Asteroids sample demonstrates parallel rendering of multiple heterogeneous objects " \
+                                                           "and action camera interaction with mouse and keyboard.";
 static const GraphicsApp::Settings  g_app_settings  = // Application settings:
 {                                                     // ====================
     {                                                 // app:
@@ -201,7 +201,7 @@ void AsteroidsApp::Init()
         frame.skybox.resource_bindings_array[0] = m_sp_sky_box->CreateResourceBindings(frame.skybox.sp_uniforms_buffer);
 
         // Create uniforms buffer for Cube rendering
-        frame.asteroids.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, asteroid_uniforms_data_size);
+        frame.asteroids.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, asteroid_uniforms_data_size, true);
         frame.asteroids.sp_uniforms_buffer->SetName(IndexedName("Cube Uniforms Buffer", frame.index));
 
         // Resource bindings for cube rendering

@@ -54,6 +54,17 @@ ShaderBase::ResourceBindingBase::ResourceBindingBase(ContextBase& context, const
 void ShaderBase::ResourceBindingBase::SetResourceLocation(Resource::Location resource_location)
 {
     ITT_FUNCTION_TASK();
+    if (!resource_location.sp_resource)
+        throw std::invalid_argument("Can not set empty resource for resource binding.");
+
+    const bool is_addressable_binding = IsAddressable();
+    const Resource::Usage::Mask resource_usage_mask = resource_location.sp_resource->GetUsageMask();
+    if (static_cast<bool>(resource_usage_mask & Resource::Usage::Addressable) != is_addressable_binding)
+        throw std::invalid_argument("Resource addressable usage flag does not match with resource binding state.");
+
+    if (!is_addressable_binding && resource_location.offset > 0)
+        throw std::invalid_argument("Can not set resource location with non-zero offset to non-addressable resource binding.");
+
     m_resource_location = std::move(resource_location);
 }
 
