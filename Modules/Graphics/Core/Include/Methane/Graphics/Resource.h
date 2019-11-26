@@ -58,14 +58,23 @@ struct Resource : virtual Object
         enum Value : Mask
         {
             Unknown      = 0,
+            // Primary usages
             ShaderRead   = 1 << 0,
             ShaderWrite  = 1 << 1,
             RenderTarget = 1 << 2,
+            // Secondary usages
+            Addressable  = 1 << 3,
             All          = static_cast<Mask>(~0),
         };
 
-        using Values = std::array<Value, 3>;
-        static constexpr const Values values = { ShaderRead, ShaderWrite, RenderTarget };
+        using BaseValues = std::array<Value, 3>;
+        static constexpr const BaseValues primary_values = { ShaderRead, ShaderWrite, RenderTarget };
+
+        using Values = std::array<Value, 4>;
+        static constexpr const Values values = { ShaderRead, ShaderWrite, RenderTarget, Addressable };
+
+        static std::string ToString(Usage::Value usage) noexcept;
+        static std::string ToString(Usage::Mask usage_mask) noexcept;
 
         Usage() = delete;
         ~Usage() = delete;
@@ -118,8 +127,7 @@ struct Resource : virtual Object
 
     // Auxillary functions
     static std::string GetTypeName(Type type) noexcept;
-    static std::string GetUsageName(Usage::Value usage) noexcept;
-    static std::string GetUsageNames(Usage::Mask usage_mask) noexcept;
+
 
     // Resource interface
     virtual void                      SetData(const SubResources& sub_resources) = 0;

@@ -95,7 +95,7 @@ public:
     const Descriptor&        GetDescriptor(Usage::Value usage) const override;
 
     void                     InitializeDefaultDescriptors();
-    std::string              GetUsageNames() const noexcept                     { return Resource::GetUsageNames(m_usage_mask); }
+    std::string              GetUsageNames() const noexcept                     { return Usage::ToString(m_usage_mask); }
     std::string              GetResourceTypeName() const noexcept               { return Resource::GetTypeName(m_type); }
     DescriptorHeap::Types    GetUsedDescriptorHeapTypes() const noexcept;
 

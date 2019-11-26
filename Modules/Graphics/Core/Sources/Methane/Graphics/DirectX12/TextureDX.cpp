@@ -162,7 +162,7 @@ void DepthStencilBufferTextureDX::Initialize(Depth depth_clear_value, Stencil st
 
     const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
 
-    for (Usage::Value usage : Usage::values)
+    for (Usage::Value usage : Usage::primary_values)
     {
         if (!(m_usage_mask & usage))
             continue;

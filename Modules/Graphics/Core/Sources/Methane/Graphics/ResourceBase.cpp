@@ -48,7 +48,7 @@ std::string Resource::GetTypeName(Type type) noexcept
     return "Unknown";
 }
 
-std::string Resource::GetUsageName(Usage::Value usage) noexcept
+std::string Resource::Usage::ToString(Usage::Value usage) noexcept
 {
     ITT_FUNCTION_TASK();
     switch (usage)
@@ -56,12 +56,13 @@ std::string Resource::GetUsageName(Usage::Value usage) noexcept
     case Resource::Usage::ShaderRead:   return "Shader Read";
     case Resource::Usage::ShaderWrite:  return "Shader Write";
     case Resource::Usage::RenderTarget: return "Render Target";
+    case Resource::Usage::Addressable:  return "Addressable";
     default:                            assert(0);
     }
     return "Unknown";
 }
 
-std::string Resource::GetUsageNames(Usage::Mask usage_mask) noexcept
+std::string Resource::Usage::ToString(Usage::Mask usage_mask) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -78,7 +79,7 @@ std::string Resource::GetUsageNames(Usage::Mask usage_mask) noexcept
             names_ss << ", ";
         }
 
-        names_ss << GetUsageName(usage);
+        names_ss << Usage::ToString(usage);
         first_usage = false;
     }
 
@@ -159,7 +160,7 @@ void ResourceBase::InitializeDefaultDescriptors()
 {
     ITT_FUNCTION_TASK();
 
-    for (Usage::Value usage : Usage::values)
+    for (Usage::Value usage : Usage::primary_values)
     {
         if (!(m_usage_mask & usage))
             continue;
@@ -183,7 +184,7 @@ const Resource::Descriptor& ResourceBase::GetDescriptor(Usage::Value usage) cons
     auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
     if (descriptor_by_usage_it == m_descriptor_by_usage.end())
     {
-        throw std::runtime_error("Resource \"" + GetName() + "\" does not support \"" + GetUsageName(usage) + "\" usage");
+        throw std::runtime_error("Resource \"" + GetName() + "\" does not support \"" + Usage::ToString(usage) + "\" usage");
     }
     return descriptor_by_usage_it->second;
 }
@@ -219,7 +220,7 @@ const Resource::Descriptor& ResourceBase::GetDescriptorByUsage(Usage::Value usag
     auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
     if (descriptor_by_usage_it == m_descriptor_by_usage.end())
     {
-        throw std::runtime_error("Resource \"" + GetName() + "\" does not have descriptor for usage \"" + GetUsageName(usage) + "\"");
+        throw std::runtime_error("Resource \"" + GetName() + "\" does not have descriptor for usage \"" + Usage::ToString(usage) + "\"");
     }
 
     return descriptor_by_usage_it->second;
