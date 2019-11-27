@@ -43,13 +43,14 @@ public:
 
     struct Settings
     {
-        const gfx::Camera&      view_camera;
-        const float             scale               = 1.f;
-        const uint32_t          instance_count      = 3u;
-        const uint32_t          subdivisions_count  = 3u;
-        const uint32_t          textures_count      = 10u;
-        const gfx::Dimensions   texture_dimensions  = { 256u, 256u };
-        const uint32_t          random_seed         = 1337u;
+        const gfx::Camera&    view_camera;
+        const float           scale              = 1.f;
+        const uint32_t        instance_count     = 100u;
+        const uint32_t        unique_mesh_count  = 50u;
+        const uint32_t        subdivisions_count = 3u;
+        const uint32_t        textures_count     = 10u;
+        const gfx::Dimensions texture_dimensions = { 256u, 256u };
+        const uint32_t        random_seed        = 1337u;
     };
 
     class UberMesh : public gfx::UberMesh<Asteroid::Vertex>
@@ -65,7 +66,13 @@ public:
 
     AsteroidsArray(gfx::Context& context, Settings settings);
 
+    const Settings& GetSettings() const { return m_settings; }
+
     bool Update(double elapsed_seconds, double delta_seconds);
+
+protected:
+    // MeshBuffers overrides
+    uint32_t GetSubsetByInstanceIndex(uint32_t instance_index) const override;
 
 private:
     using Parameters = std::vector<Asteroid::Parameters>;

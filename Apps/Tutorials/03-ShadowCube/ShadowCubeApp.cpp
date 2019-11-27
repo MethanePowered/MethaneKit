@@ -99,10 +99,10 @@ void ShadowCubeApp::Init()
 
     // Load textures, vertex and index buffers for cube and floor meshes
     m_sp_cube_buffers  = std::make_unique<TexturedMeshBuffers>(*m_sp_context, m_cube_mesh, "Cube");
-    m_sp_cube_buffers->SetTexture(m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MethaneBubbles.jpg", true));
+    m_sp_cube_buffers->SetSubsetTexture(m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MethaneBubbles.jpg", true));
 
     m_sp_floor_buffers = std::make_unique<TexturedMeshBuffers>(*m_sp_context, m_floor_mesh, "Floor");
-    m_sp_floor_buffers->SetTexture(m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MarbleWhite.jpg", true));
+    m_sp_floor_buffers->SetSubsetTexture(m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MarbleWhite.jpg", true));
 
     m_view_camera.Resize(static_cast<float>(context_settings.frame_size.width),
                          static_cast<float>(context_settings.frame_size.height));
@@ -285,14 +285,14 @@ void ShadowCubeApp::Init()
             { { gfx::Shader::Type::Pixel,  "g_constants"      }, { m_sp_const_buffer                          } },
             { { gfx::Shader::Type::Pixel,  "g_shadow_map"     }, { frame.shadow_pass.sp_rt_texture            } },
             { { gfx::Shader::Type::Pixel,  "g_shadow_sampler" }, { m_sp_shadow_sampler                        } },
-            { { gfx::Shader::Type::Pixel,  "g_texture"        }, { m_sp_cube_buffers->GetTexturePtr()         } },
+            { { gfx::Shader::Type::Pixel,  "g_texture"        }, { m_sp_cube_buffers->GetSubsetTexturePtr()         } },
             { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { m_sp_texture_sampler                       } },
         });
 
         // Final-pass resource bindings for floor rendering - patched a copy of cube bindings
         frame.final_pass.floor.sp_resource_bindings = gfx::Program::ResourceBindings::CreateCopy(*frame.final_pass.cube.sp_resource_bindings, {
             { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { frame.final_pass.floor.sp_uniforms_buffer  } },
-            { { gfx::Shader::Type::Pixel,  "g_texture"        }, { m_sp_floor_buffers->GetTexturePtr()        } },
+            { { gfx::Shader::Type::Pixel,  "g_texture"        }, { m_sp_floor_buffers->GetSubsetTexturePtr()        } },
         });
     }
 

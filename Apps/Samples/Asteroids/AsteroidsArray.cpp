@@ -75,7 +75,7 @@ const gfx::Vector2f& AsteroidsArray::UberMesh::GetSubMeshDepthRange(uint32_t sub
 }
 
 AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
-    : AsteroidsArray(context, std::move(settings), UberMesh(settings.instance_count, settings.subdivisions_count, settings.random_seed))
+    : AsteroidsArray(context, std::move(settings), UberMesh(settings.unique_mesh_count, settings.subdivisions_count, settings.random_seed))
 {
 }
 
@@ -83,6 +83,8 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
     : BaseBuffers(context, uber_mesh, "Asteroids Array")
     , m_settings(std::move(settings))
 {
+    SetInstanceCount(m_settings.instance_count);
+
     std::mt19937 rng(settings.random_seed);
     std::normal_distribution<float>       noise_persistence_distribution(0.9f, 0.2f);
     std::uniform_real_distribution<float> noise_scale_distribution(0.05f, 0.1f);
@@ -110,29 +112,41 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
         m_unique_textures.emplace_back(gfx::Texture::CreateImage(context, m_settings.texture_dimensions, static_cast<uint32_t>(texture_subresources.size()), gfx::PixelFormat::RGBA8Unorm, true));
         m_unique_textures.back()->SetData(texture_subresources);
     }
+
+    // Randomly distribute textures between unique mesh subsets
+    const uint32_t subset_count = m_settings.unique_mesh_count * m_settings.subdivisions_count;
+    std::uniform_int_distribution<uint32_t> textures_distribution(0u, m_settings.textures_count - 1);
+    for (uint32_t subset_index = 0; subset_index < subset_count; ++subset_index)
+    {
+        const uint32_t texture_index = textures_distribution(rng);
+        SetSubsetTexture(m_unique_textures[texture_index], subset_index);
+    }
     
     // Calculate initial asteroid positions and rotation parameters
-    const uint32_t asteroids_count = GetSubsetsCount();
-    const uint32_t asteroids_grid_size_x = static_cast<uint32_t>(std::sqrt(asteroids_count));
-    const uint32_t asteroids_grid_size_y = static_cast<uint32_t>(std::ceil(asteroids_count / asteroids_grid_size_x));
+    const uint32_t asteroids_grid_size_x = static_cast<uint32_t>(std::sqrt(m_settings.instance_count));
+    const uint32_t asteroids_grid_size_y = static_cast<uint32_t>(std::ceil(m_settings.instance_count / asteroids_grid_size_x));
 
     const float asteroid_offset_step = m_settings.scale * 2.f;
     const float grid_origin_x = asteroid_offset_step * (asteroids_grid_size_x - 1) / -2.f;
     const float grid_origin_y = asteroid_offset_step * (asteroids_grid_size_y - 1) / -2.f;
 
+    const float orbit_radius = 450.f;
+    const float disc_radius  = 120.f;
+
     std::normal_distribution<float> normal_distribution;
-    std::uniform_int_distribution<uint32_t> textures_distribution(0u, m_settings.textures_count - 1);
+    std::uniform_int_distribution<uint32_t> subset_distribution(0u, subset_count - 1);
     std::uniform_int_distribution<uint32_t> colors_distribution(0, static_cast<uint32_t>(Asteroid::color_schema_size - 1));
     std::uniform_real_distribution<float>   scale_distribution(0.7f, 1.3f);
+    std::uniform_real_distribution<float>   orbit_velocity_distribution(5.0f, 15.0f);
+    std::normal_distribution<float>         orbit_radius_distribution(orbit_radius, 0.6f * disc_radius);
+    std::normal_distribution<float>         orbit_height_distribution(0.0f, 0.4f);
 
-    m_parameters.reserve(asteroids_count);
-    for (uint32_t asteroid_index = 0; asteroid_index < asteroids_count; ++asteroid_index)
+    m_parameters.reserve(m_settings.instance_count);
+    for (uint32_t asteroid_index = 0; asteroid_index < m_settings.instance_count; ++asteroid_index)
     {
-        const uint32_t texture_index    = textures_distribution(rng);
+        const uint32_t subset_index     = subset_distribution(rng);
         const uint32_t asteroid_index_x = asteroid_index % asteroids_grid_size_x;
         const uint32_t asteroid_index_y = asteroid_index / asteroids_grid_size_x;
-        
-        SetTexture(m_unique_textures[texture_index], asteroid_index);
 
         gfx::Matrix44f scale_matrix;
         cml::matrix_scale(scale_matrix,
@@ -146,16 +160,18 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
 
         m_parameters.emplace_back(Asteroid::Parameters{
             asteroid_index,
+            subset_index,
+            uber_mesh.GetSubMeshDepthRange(subset_index),
             std::move(asteroid_colors),
-            uber_mesh.GetSubMeshDepthRange(asteroid_index),
             std::move(scale_matrix),
+            GetRandomDirection(rng),
+            0.1f + normal_distribution(rng) * 0.1f,
+            0.1f + normal_distribution(rng) * 0.1f,
+            cml::constants<float>::pi() * normal_distribution(rng),
             {
                 grid_origin_x + asteroid_index_x * asteroid_offset_step, 0.f,
                 grid_origin_y + asteroid_index_y * asteroid_offset_step
-            },
-            GetRandomDirection(rng),
-            cml::constants<float>::pi() * normal_distribution(rng),
-            0.1f + normal_distribution(rng) * 0.1f
+            }
         });
     }
 }
@@ -167,10 +183,10 @@ bool AsteroidsArray::Update(double elapsed_seconds, double delta_seconds)
 
     for(Asteroid::Parameters& asteroid_parameters : m_parameters)
     {
-        asteroid_parameters.rotation_angle_rad += cml::constants<float>::pi() * asteroid_parameters.rotation_speed * static_cast<float>(delta_seconds);
+        asteroid_parameters.spin_angle_rad += cml::constants<float>::pi() * asteroid_parameters.spin_speed * static_cast<float>(delta_seconds);
 
         gfx::Matrix44f rotation_matrix;
-        cml::matrix_rotation_axis_angle(rotation_matrix, asteroid_parameters.rotation_axis, asteroid_parameters.rotation_angle_rad);
+        cml::matrix_rotation_axis_angle(rotation_matrix, asteroid_parameters.spin_axis, asteroid_parameters.spin_angle_rad);
 
         gfx::Matrix44f postion_matrix;
         cml::matrix_translation(postion_matrix, asteroid_parameters.position);
@@ -191,6 +207,12 @@ bool AsteroidsArray::Update(double elapsed_seconds, double delta_seconds)
     }
 
     return true;
+}
+
+uint32_t AsteroidsArray::GetSubsetByInstanceIndex(uint32_t instance_index) const
+{
+    assert(instance_index < m_parameters.size());
+    return m_parameters[instance_index].subset_index;
 }
 
 } // namespace Methane::Samples
