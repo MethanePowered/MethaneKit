@@ -79,14 +79,16 @@ public:
 
     struct Parameters
     {
-        const uint32_t index;
-        Colors         colors;
-        gfx::Vector2f  depth_range;
-        gfx::Matrix44f scale_matrix;
-        gfx::Point3f   position;
-        gfx::Point3f   rotation_axis;
-        float          rotation_angle_rad;
-        float          rotation_speed;
+        const uint32_t       index;
+        const uint32_t       subset_index;
+        const gfx::Vector2f  depth_range;
+        const Colors         colors;
+        const gfx::Matrix44f scale_matrix;
+        const gfx::Point3f   spin_axis;
+        const float          orbit_speed;
+        const float          spin_speed;
+        float                spin_angle_rad;
+        gfx::Point3f         position;
     };
 
     struct TextureNoiseParameters

@@ -57,7 +57,7 @@ public:
         , m_sp_index( Buffer::CreateIndexBuffer( context, static_cast<Data::Size>(mesh_data.GetIndexDataSize()), 
                                                           PixelFormat::R32Uint))
     {
-        m_final_pass_subset_uniforms.resize(m_mesh_subsets.size());
+        m_final_pass_instance_uniforms.resize(m_mesh_subsets.size());
 
         m_sp_vertex->SetName(mesh_name + " Vertex Buffer");
         m_sp_vertex->SetData({
@@ -97,63 +97,70 @@ public:
                              instance_count, start_instance);
     }
 
-    void Draw(RenderCommandList& cmd_list, const std::vector<Program::ResourceBindings::Ptr>& subset_resource_bindings)
+    void Draw(RenderCommandList& cmd_list, const std::vector<Program::ResourceBindings::Ptr>& instance_resource_bindings)
     {
-        if (subset_resource_bindings.size() > m_mesh_subsets.size())
-            throw std::invalid_argument("Resource bindings count is greater than subsets count.");
-
         cmd_list.SetVertexBuffers({ GetVertexBuffer() });
 
         const Buffer& index_buffer = GetIndexBuffer();
-        uint32_t mesh_subset_index = 0;
-        for (const Program::ResourceBindings::Ptr& sp_resource_bindings : subset_resource_bindings)
+        uint32_t instance_index = 0;
+        for (const Program::ResourceBindings::Ptr& sp_resource_bindings : instance_resource_bindings)
         {
             if (!sp_resource_bindings)
                 throw std::invalid_argument("Can not set Null resource bindings");
-            
-            const Mesh::Subset& mesh_subset = m_mesh_subsets[mesh_subset_index++];
+
+            const uint32_t subset_index = GetSubsetByInstanceIndex(instance_index);
+            assert(subset_index < m_mesh_subsets.size());
+
+            const Mesh::Subset& mesh_subset = m_mesh_subsets[subset_index];
 
             cmd_list.SetResourceBindings(*sp_resource_bindings);
             cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, index_buffer,
                                  mesh_subset.indices.count, mesh_subset.indices.offset,
                                  mesh_subset.indices_adjusted ? 0 : mesh_subset.vertices.offset,
                                  1, 0);
+
+            instance_index++;
         }
     }
 
-    const std::string&  GetMeshName() const     { return m_mesh_name; }
-    uint32_t            GetSubsetsCount() const { return static_cast<uint32_t>(m_mesh_subsets.size()); }
+    const std::string&  GetMeshName() const      { return m_mesh_name; }
+    uint32_t            GetSubsetsCount() const  { return static_cast<uint32_t>(m_mesh_subsets.size()); }
+    uint32_t            GetInstanceCount() const { return static_cast<uint32_t>(m_final_pass_instance_uniforms.size()); }
 
-    const UniformsType& GetFinalPassUniforms(uint32_t subset = 0) const
+    const UniformsType& GetFinalPassUniforms(uint32_t instance_index = 0) const
     {
-        if (subset >= m_mesh_subsets.size())
-            throw std::invalid_argument("Subset index is out of bounds.");
+        if (instance_index >= m_final_pass_instance_uniforms.size())
+            throw std::invalid_argument("Instance index is out of bounds.");
 
-        return m_final_pass_subset_uniforms[subset];
+        return m_final_pass_instance_uniforms[instance_index];
     }
 
-    void  SetFinalPassUniforms(const UniformsType& uniforms, uint32_t subset = 0)
+    void  SetFinalPassUniforms(const UniformsType& uniforms, uint32_t instance_index = 0)
     {
-        if (subset >= m_mesh_subsets.size())
-            throw std::invalid_argument("Subset index is out of bounds.");
+        if (instance_index >= m_final_pass_instance_uniforms.size())
+            throw std::invalid_argument("Instance index is out of bounds.");
 
-        m_final_pass_subset_uniforms[subset] = uniforms;
+        m_final_pass_instance_uniforms[instance_index] = uniforms;
     }
     
     Data::Size GetUniformsBufferSize() const
     {
-        return m_final_pass_subset_uniforms.empty() ? 0 : static_cast<Data::Size>(m_final_pass_subset_uniforms.size() * sizeof(m_final_pass_subset_uniforms[0]));
+        return m_final_pass_instance_uniforms.empty() ? 0 : static_cast<Data::Size>(m_final_pass_instance_uniforms.size() * sizeof(m_final_pass_instance_uniforms[0]));
     }
     
-    Data::Size GetUniformsBufferOffset(uint32_t subset_index) const
+    Data::Size GetUniformsBufferOffset(uint32_t instance_index) const
     {
         return static_cast<Data::Size>(
-            reinterpret_cast<const char*>(&m_final_pass_subset_uniforms[subset_index]) -
-            reinterpret_cast<const char*>(m_final_pass_subset_uniforms.data())
+            reinterpret_cast<const char*>(&m_final_pass_instance_uniforms[instance_index]) -
+            reinterpret_cast<const char*>(m_final_pass_instance_uniforms.data())
         );
     }
 
 protected:
+    // Allows to override instance to mesh subset mapping, which is 1:1 by default
+    void SetInstanceCount(uint32_t instance_count) { m_final_pass_instance_uniforms.resize(instance_count); }
+    virtual uint32_t GetSubsetByInstanceIndex(uint32_t instance_index) const { return instance_index; }
+
     Buffer& GetVertexBuffer()
     {
         assert(!!m_sp_vertex);
@@ -167,13 +174,13 @@ protected:
     }
 
 private:
-    using SubsethUniforms = std::vector<UniformsType, Data::AlignedAllocator<UniformsType, SHADER_STRUCT_ALIGNMENT>>;
+    using InstanceUniforms = std::vector<UniformsType, Data::AlignedAllocator<UniformsType, SHADER_STRUCT_ALIGNMENT>>;
 
     const std::string   m_mesh_name;
     const Mesh::Subsets m_mesh_subsets;
     Buffer::Ptr         m_sp_vertex;
     Buffer::Ptr         m_sp_index;
-    SubsethUniforms     m_final_pass_subset_uniforms; // Actual uniforms buffer is created separately in Frame dependent resources
+    InstanceUniforms    m_final_pass_instance_uniforms; // Actual uniforms buffers are created separately in Frame dependent resources
 };
 
 template<typename UniformsType>
@@ -197,15 +204,21 @@ public:
         m_subset_textures.resize(MeshBuffers<UniformsType>::GetSubsetsCount());
     }
 
-    const Texture::Ptr& GetTexturePtr(uint32_t subset_index = 0) const
+    const Texture::Ptr& GetSubsetTexturePtr(uint32_t subset_index = 0) const
     {
         if (subset_index >= MeshBuffers<UniformsType>::GetSubsetsCount())
             throw std::invalid_argument("Subset index is out of bounds.");
-        
+
         return m_subset_textures[subset_index];
     }
+
+    const Texture::Ptr& GetInstanceTexturePtr(uint32_t instance_index = 0) const
+    {
+        const uint32_t subset_index = GetSubsetByInstanceIndex(instance_index);
+        return GetSubsetTexturePtr(subset_index);
+    }
     
-    void SetTexture(const Texture::Ptr& sp_texture, uint32_t subset_index = 0)
+    void SetSubsetTexture(const Texture::Ptr& sp_texture, uint32_t subset_index = 0)
     {
         if (subset_index >= MeshBuffers<UniformsType>::GetSubsetsCount())
             throw std::invalid_argument("Subset index is out of bounds.");

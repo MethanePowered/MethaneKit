@@ -36,7 +36,8 @@ namespace Methane::Samples
 {
 
 // Common application settings
-static constexpr uint32_t  g_asteroid_instances_count    = 81;
+static constexpr uint32_t  g_asteroid_instances_count    = 180;
+static constexpr uint32_t  g_asteroid_unique_mesh_count  = 30;
 static constexpr uint32_t  g_asteroid_subdivisions_count = 3;
 static const std::string   g_app_help_text               = "Asteroids sample demonstrates parallel rendering of multiple heterogeneous objects " \
                                                            "and action camera interaction with mouse and keyboard.";
@@ -66,7 +67,7 @@ AsteroidsApp::AsteroidsApp()
     , m_scene_constants(                              // Shader constants:
         {                                             // ================
             gfx::Color4f(1.f, 1.f, 1.f, 1.f),         // - light_color
-            1.f,                                      // - light_power
+            1.25f,                                    // - light_power
             0.1f,                                     // - light_ambient_factor
             4.f                                       // - light_specular_factor
         })
@@ -127,6 +128,7 @@ void AsteroidsApp::Init()
         m_view_camera,
         m_scene_scale,
         g_asteroid_instances_count,
+        g_asteroid_unique_mesh_count,
         g_asteroid_subdivisions_count
     });
 
@@ -204,26 +206,25 @@ void AsteroidsApp::Init()
         frame.asteroids.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, asteroid_uniforms_data_size, true);
         frame.asteroids.sp_uniforms_buffer->SetName(IndexedName("Cube Uniforms Buffer", frame.index));
 
-        // Resource bindings for cube rendering
-        const uint32_t asteroids_count = m_sp_asteroids_array->GetSubsetsCount();
-        frame.asteroids.resource_bindings_array.resize(asteroids_count);
-        if (asteroids_count == 0)
+        // Resource bindings for asteroids rendering
+        frame.asteroids.resource_bindings_array.resize(g_asteroid_instances_count);
+        if (g_asteroid_instances_count == 0)
             continue;
 
         frame.asteroids.resource_bindings_array[0] = gfx::Program::ResourceBindings::Create(state_settings.sp_program, {
             { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { frame.asteroids.sp_uniforms_buffer, m_sp_asteroids_array->GetUniformsBufferOffset(0) } },
             { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { frame.sp_scene_uniforms_buffer         } },
             { { gfx::Shader::Type::Pixel,  "g_constants"      }, { m_sp_const_buffer                      } },
-            { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, { m_sp_asteroids_array->GetTexturePtr(0) } },
+            { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, { m_sp_asteroids_array->GetInstanceTexturePtr(0) } },
             { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { m_sp_texture_sampler                   } },
         });
 
-        for(uint32_t asteroid_index = 1; asteroid_index < asteroids_count; ++asteroid_index)
+        for(uint32_t asteroid_index = 1; asteroid_index < g_asteroid_instances_count; ++asteroid_index)
         {
             const Data::Size asteroid_uniform_offset = m_sp_asteroids_array->GetUniformsBufferOffset(asteroid_index);
             frame.asteroids.resource_bindings_array[asteroid_index] = gfx::Program::ResourceBindings::CreateCopy(*frame.asteroids.resource_bindings_array[0], {
                 { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { frame.asteroids.sp_uniforms_buffer, asteroid_uniform_offset } },
-                { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, { m_sp_asteroids_array->GetTexturePtr(asteroid_index) } },
+                { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, { m_sp_asteroids_array->GetInstanceTexturePtr(asteroid_index) } },
             });
         }
     }
