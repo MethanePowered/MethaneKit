@@ -41,7 +41,7 @@ struct SHADER_STRUCT_ALIGN AsteroidUniforms
     SHADER_FIELD_ALIGN gfx::Vector2f  depth_range;
 };
 
-class Asteroid : public gfx::TexturedMeshBuffers<AsteroidUniforms>
+class Asteroid final : public gfx::TexturedMeshBuffers<AsteroidUniforms>
 {
 public:
     using Ptr = std::unique_ptr<Asteroid>;

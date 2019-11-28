@@ -179,7 +179,7 @@ Shader::ResourceBinding::Ptr Shader::ResourceBinding::CreateCopy(const ResourceB
 
 ShaderDX::ResourceBindingDX::ResourceBindingDX(ContextBase& context, const Settings& settings)
     : ShaderBase::ResourceBindingBase(context, settings.base)
-    , m_settings_dx(settings)
+    , c(settings)
 {
     ITT_FUNCTION_TASK();
 }
@@ -358,6 +358,7 @@ ShaderBase::ResourceBindings ShaderDX::GetResourceBindings(const std::set<std::s
                     m_type,
                     argument_name,
                     is_constant_binding,
+                    is_addressable_binding
                 },
                 dx_binding_type,
                 binding_desc.Type,

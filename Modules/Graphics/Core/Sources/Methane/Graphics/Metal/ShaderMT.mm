@@ -147,7 +147,7 @@ ShaderMT::~ShaderMT()
 }
 
 ShaderBase::ResourceBindings ShaderMT::GetResourceBindings(const std::set<std::string>& constant_argument_names,
-                                                           const std::set<std::string>& /*addressable_argument_names*/) const
+                                                           const std::set<std::string>& addressable_argument_names) const
 {
     ITT_FUNCTION_TASK();
 
@@ -171,7 +171,9 @@ ShaderBase::ResourceBindings ShaderMT::GetResourceBindings(const std::set<std::s
             continue;
         }
         
-        const bool is_constant_binding = constant_argument_names.find(argument_name) != constant_argument_names.end();
+        const bool is_constant_binding    = constant_argument_names.find(argument_name)    != constant_argument_names.end();
+        const bool is_addressable_binding = addressable_argument_names.find(argument_name) != addressable_argument_names.end();
+        
         resource_bindings.push_back(std::make_shared<ResourceBindingMT>(
             m_context,
             ResourceBindingMT::Settings
@@ -180,6 +182,7 @@ ShaderBase::ResourceBindings ShaderMT::GetResourceBindings(const std::set<std::s
                     m_type,
                     argument_name,
                     is_constant_binding,
+                    is_addressable_binding
                 },
                 mtl_arg.type,
                 static_cast<uint32_t>(mtl_arg.index)

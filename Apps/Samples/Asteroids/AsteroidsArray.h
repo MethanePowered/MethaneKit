@@ -35,7 +35,7 @@ namespace Methane::Samples
 
 namespace gfx = Graphics;
 
-class AsteroidsArray : public gfx::TexturedMeshBuffers<AsteroidUniforms>
+class AsteroidsArray final : public gfx::TexturedMeshBuffers<AsteroidUniforms>
 {
 public:
     using Ptr = std::unique_ptr<AsteroidsArray>;

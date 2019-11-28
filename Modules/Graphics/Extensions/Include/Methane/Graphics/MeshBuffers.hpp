@@ -81,6 +81,8 @@ public:
         : MeshBuffers(context, uber_mesh_data, mesh_name, uber_mesh_data.GetSubsets())
     {
     }
+    
+    virtual ~MeshBuffers() = default;
 
     void Draw(RenderCommandList& cmd_list, const Program::ResourceBindings& resource_bindings,
               uint32_t mesh_subset_index = 0, uint32_t instance_count = 1, uint32_t start_instance = 0)
@@ -214,7 +216,7 @@ public:
 
     const Texture::Ptr& GetInstanceTexturePtr(uint32_t instance_index = 0) const
     {
-        const uint32_t subset_index = GetSubsetByInstanceIndex(instance_index);
+        const uint32_t subset_index = this->GetSubsetByInstanceIndex(instance_index);
         return GetSubsetTexturePtr(subset_index);
     }
     

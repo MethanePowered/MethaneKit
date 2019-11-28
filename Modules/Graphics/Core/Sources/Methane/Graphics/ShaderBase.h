@@ -48,6 +48,7 @@ public:
             Shader::Type shader_type;
             std::string  argument_name;
             bool         is_constant;
+            bool         is_addressable;
         };
 
         ResourceBindingBase(ContextBase& context, const Settings& settings);
@@ -57,7 +58,7 @@ public:
         Shader::Type              GetShaderType() const override        { return m_settings.shader_type; }
         const std::string&        GetArgumentName() const override      { return m_settings.argument_name; }
         bool                      IsConstant() const override           { return m_settings.is_constant; }
-        bool                      IsAddressable() const override        { return true; }
+        bool                      IsAddressable() const override        { return m_settings.is_addressable; }
         const Resource::Location& GetResourceLocation() const override  { return m_resource_location; }
         void                      SetResourceLocation(Resource::Location resource_location) override;
 
