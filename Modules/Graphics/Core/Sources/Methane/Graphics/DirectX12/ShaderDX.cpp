@@ -179,7 +179,7 @@ Shader::ResourceBinding::Ptr Shader::ResourceBinding::CreateCopy(const ResourceB
 
 ShaderDX::ResourceBindingDX::ResourceBindingDX(ContextBase& context, const Settings& settings)
     : ShaderBase::ResourceBindingBase(context, settings.base)
-    , c(settings)
+    , m_settings_dx(settings)
 {
     ITT_FUNCTION_TASK();
 }
