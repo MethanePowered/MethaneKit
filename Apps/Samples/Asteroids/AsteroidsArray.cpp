@@ -74,27 +74,18 @@ const gfx::Vector2f& AsteroidsArray::UberMesh::GetSubMeshDepthRange(uint32_t sub
     return m_depth_ranges[sub_mesh_index];
 }
 
-AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
-    : AsteroidsArray(context, std::move(settings), UberMesh(settings.unique_mesh_count, settings.subdivisions_count, settings.random_seed))
+AsteroidsArray::State::State(const Settings& settings)
+    : uber_mesh(settings.unique_mesh_count, settings.subdivisions_count, settings.random_seed)
 {
-}
-
- AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings&& settings, const UberMesh& uber_mesh)
-    : BaseBuffers(context, uber_mesh, "Asteroids Array")
-    , m_settings(std::move(settings))
-{
-    SetInstanceCount(m_settings.instance_count);
-
     std::mt19937 rng(settings.random_seed);
+
+    // Randomly generate perlin-noise textures
     std::normal_distribution<float>       noise_persistence_distribution(0.9f, 0.2f);
     std::uniform_real_distribution<float> noise_scale_distribution(0.05f, 0.1f);
-    
-    // Parallel generation sub-resources for texture arrays filled with random perlin-noise
-    using TextureArraySubresources = std::vector<gfx::Resource::SubResources>;
-    TextureArraySubresources texture_subresources_array;
-    texture_subresources_array.resize(m_settings.textures_count);
-    Data::ParallelFor<TextureArraySubresources::iterator, gfx::Resource::SubResources>(texture_subresources_array.begin(), texture_subresources_array.end(),
-        [this, &rng, &noise_scale_distribution, &noise_persistence_distribution](gfx::Resource::SubResources& sub_resources, Data::Index)
+
+    texture_array_subresources.resize(settings.textures_count);
+    Data::ParallelFor<TextureArraySubresources::iterator, gfx::Resource::SubResources>(texture_array_subresources.begin(), texture_array_subresources.end(),
+        [&](gfx::Resource::SubResources& sub_resources, Data::Index)
         {
             Asteroid::TextureNoiseParameters noise_parameters = {
                 rng(),
@@ -102,77 +93,88 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
                 noise_scale_distribution(rng),
                 1.5f
             };
-            sub_resources = Asteroid::GenerateTextureArraySubresources(m_settings.texture_dimensions, 3, noise_parameters);
+            sub_resources = Asteroid::GenerateTextureArraySubresources(settings.texture_dimensions, 3, noise_parameters);
         });
 
-    // Create texture arrays initialized with sub-resources data
-    m_unique_textures.reserve(m_settings.textures_count);
-    for(const gfx::Resource::SubResources& texture_subresources : texture_subresources_array)
-    {
-        m_unique_textures.emplace_back(gfx::Texture::CreateImage(context, m_settings.texture_dimensions, static_cast<uint32_t>(texture_subresources.size()), gfx::PixelFormat::RGBA8Unorm, true));
-        m_unique_textures.back()->SetData(texture_subresources);
-    }
+    // Randomly generate parameters of each asteroid in array
+    const uint32_t subset_count = settings.unique_mesh_count * settings.subdivisions_count;
+    const float    orbit_radius = settings.orbit_radius_ratio * settings.scale;
+    const float    disc_radius = settings.disc_radius_ratio * settings.scale;
 
-    // Randomly distribute textures between unique mesh subsets
-    const uint32_t subset_count = m_settings.unique_mesh_count * m_settings.subdivisions_count;
-    std::uniform_int_distribution<uint32_t> textures_distribution(0u, m_settings.textures_count - 1);
-    for (uint32_t subset_index = 0; subset_index < subset_count; ++subset_index)
-    {
-        const uint32_t texture_index = textures_distribution(rng);
-        SetSubsetTexture(m_unique_textures[texture_index], subset_index);
-    }
-    
-    // Calculate initial asteroid positions and rotation parameters
-    const uint32_t asteroids_grid_size_x = static_cast<uint32_t>(std::sqrt(m_settings.instance_count));
-    const uint32_t asteroids_grid_size_y = static_cast<uint32_t>(std::ceil(m_settings.instance_count / asteroids_grid_size_x));
-
-    const float asteroid_offset_step = m_settings.scale * 2.f;
-    const float grid_origin_x = asteroid_offset_step * (asteroids_grid_size_x - 1) / -2.f;
-    const float grid_origin_y = asteroid_offset_step * (asteroids_grid_size_y - 1) / -2.f;
-
-    const float orbit_radius = 450.f;
-    const float disc_radius  = 120.f;
-
-    std::normal_distribution<float> normal_distribution;
+    std::normal_distribution<float>         normal_distribution;
     std::uniform_int_distribution<uint32_t> subset_distribution(0u, subset_count - 1);
     std::uniform_int_distribution<uint32_t> colors_distribution(0, static_cast<uint32_t>(Asteroid::color_schema_size - 1));
     std::uniform_real_distribution<float>   scale_distribution(0.7f, 1.3f);
-    std::uniform_real_distribution<float>   orbit_velocity_distribution(5.0f, 15.0f);
+    std::uniform_real_distribution<float>   spin_velocity_distribution(-2.f, 2.f);
+    std::uniform_real_distribution<float>   orbit_velocity_distribution(10.f, 30.f);
     std::normal_distribution<float>         orbit_radius_distribution(orbit_radius, 0.6f * disc_radius);
-    std::normal_distribution<float>         orbit_height_distribution(0.0f, 0.4f);
+    std::normal_distribution<float>         orbit_height_distribution(0.0f, 0.4f * disc_radius);
+    std::uniform_int_distribution<uint32_t> textures_distribution(0u, settings.textures_count - 1);
 
-    m_parameters.reserve(m_settings.instance_count);
-    for (uint32_t asteroid_index = 0; asteroid_index < m_settings.instance_count; ++asteroid_index)
+    parameters.reserve(settings.instance_count);
+
+    for (uint32_t asteroid_index = 0; asteroid_index < settings.instance_count; ++asteroid_index)
     {
-        const uint32_t subset_index     = subset_distribution(rng);
-        const uint32_t asteroid_index_x = asteroid_index % asteroids_grid_size_x;
-        const uint32_t asteroid_index_y = asteroid_index / asteroids_grid_size_x;
+        const uint32_t      subset_index   = subset_distribution(rng);
+        const float         orbit_radius   = orbit_radius_distribution(rng);
+        const float         orbit_height   = orbit_height_distribution(rng);
+        const gfx::Vector3f scale_proportions(scale_distribution(rng), scale_distribution(rng), scale_distribution(rng));
+        const float         max_scale_proportion = std::max(std::max(scale_proportions[0], scale_proportions[1]), scale_proportions[2]);
+
+        gfx::Matrix44f translation_matrix;
+        cml::matrix_translation(translation_matrix, orbit_radius, orbit_height, 0.f);
 
         gfx::Matrix44f scale_matrix;
-        cml::matrix_scale(scale_matrix,
-                          m_settings.scale * scale_distribution(rng),
-                          m_settings.scale * scale_distribution(rng),
-                          m_settings.scale * scale_distribution(rng));
+        cml::matrix_scale(scale_matrix, scale_proportions * settings.scale);
 
         Asteroid::Colors asteroid_colors = normal_distribution(rng) <= 1.f
                                          ? Asteroid::GetAsteroidIceColors(colors_distribution(rng), colors_distribution(rng))
                                          : Asteroid::GetAsteroidRockColors(colors_distribution(rng), colors_distribution(rng));
 
-        m_parameters.emplace_back(Asteroid::Parameters{
-            asteroid_index,
-            subset_index,
-            uber_mesh.GetSubMeshDepthRange(subset_index),
-            std::move(asteroid_colors),
-            std::move(scale_matrix),
-            GetRandomDirection(rng),
-            0.1f + normal_distribution(rng) * 0.1f,
-            0.1f + normal_distribution(rng) * 0.1f,
-            cml::constants<float>::pi() * normal_distribution(rng),
+        parameters.emplace_back(
+            Asteroid::Parameters
             {
-                grid_origin_x + asteroid_index_x * asteroid_offset_step, 0.f,
-                grid_origin_y + asteroid_index_y * asteroid_offset_step
+                asteroid_index,
+                subset_index,
+                textures_distribution(rng),
+                uber_mesh.GetSubMeshDepthRange(subset_index),
+                std::move(asteroid_colors),
+                std::move(scale_matrix),
+                std::move(translation_matrix),
+                GetRandomDirection(rng),
+                orbit_velocity_distribution(rng) / (max_scale_proportion * settings.scale * orbit_radius),
+                spin_velocity_distribution(rng)  / (max_scale_proportion * settings.scale),
+                cml::constants<float>::pi() * normal_distribution(rng),
+                cml::constants<float>::pi() * normal_distribution(rng) * 2.f
             }
-        });
+        );
+    }
+}
+
+AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
+    : AsteroidsArray(context, settings, *std::make_shared<State>(settings))
+{
+}
+
+ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings, State& state)
+    : BaseBuffers(context, state.uber_mesh, "Asteroids Array")
+    , m_settings(std::move(settings))
+    , m_sp_state(state.shared_from_this())
+{
+    SetInstanceCount(m_settings.instance_count);
+
+    // Create texture arrays initialized with sub-resources data
+    m_unique_textures.reserve(m_settings.textures_count);
+    for(const gfx::Resource::SubResources& texture_subresources : m_sp_state->texture_array_subresources)
+    {
+        m_unique_textures.emplace_back(gfx::Texture::CreateImage(context, m_settings.texture_dimensions, static_cast<uint32_t>(texture_subresources.size()), gfx::PixelFormat::RGBA8Unorm, true));
+        m_unique_textures.back()->SetData(texture_subresources);
+    }
+
+    // Distribute textures between unique mesh subsets
+    for (Asteroid::Parameters& asteroid_parameters : m_sp_state->parameters)
+    {
+        SetSubsetTexture(m_unique_textures[asteroid_parameters.texture_index], asteroid_parameters.subset_index);
     }
 }
 
@@ -181,17 +183,18 @@ bool AsteroidsArray::Update(double elapsed_seconds, double delta_seconds)
     gfx::Matrix44f scene_view_matrix, scene_proj_matrix;
     m_settings.view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
 
-    for(Asteroid::Parameters& asteroid_parameters : m_parameters)
+    for(Asteroid::Parameters& asteroid_parameters : m_sp_state->parameters)
     {
-        asteroid_parameters.spin_angle_rad += cml::constants<float>::pi() * asteroid_parameters.spin_speed * static_cast<float>(delta_seconds);
+        asteroid_parameters.spin_angle_rad  += cml::constants<float>::pi() * asteroid_parameters.spin_speed  * static_cast<float>(delta_seconds);
+        asteroid_parameters.orbit_angle_rad += cml::constants<float>::pi() * asteroid_parameters.orbit_speed * static_cast<float>(delta_seconds);
 
-        gfx::Matrix44f rotation_matrix;
-        cml::matrix_rotation_axis_angle(rotation_matrix, asteroid_parameters.spin_axis, asteroid_parameters.spin_angle_rad);
+        gfx::Matrix44f spin_rotation_matrix;
+        cml::matrix_rotation_axis_angle(spin_rotation_matrix, asteroid_parameters.spin_axis, asteroid_parameters.spin_angle_rad);
 
-        gfx::Matrix44f postion_matrix;
-        cml::matrix_translation(postion_matrix, asteroid_parameters.position);
+        gfx::Matrix44f orbit_rotation_matrix;
+        cml::matrix_rotation_world_y(orbit_rotation_matrix, asteroid_parameters.orbit_angle_rad);
 
-        gfx::Matrix44f model_matrix = asteroid_parameters.scale_matrix * rotation_matrix * postion_matrix;
+        gfx::Matrix44f model_matrix = asteroid_parameters.scale_matrix * spin_rotation_matrix * asteroid_parameters.translation_matrix * orbit_rotation_matrix;
 
         SetFinalPassUniforms(
             AsteroidUniforms
@@ -211,8 +214,9 @@ bool AsteroidsArray::Update(double elapsed_seconds, double delta_seconds)
 
 uint32_t AsteroidsArray::GetSubsetByInstanceIndex(uint32_t instance_index) const
 {
-    assert(instance_index < m_parameters.size());
-    return m_parameters[instance_index].subset_index;
+    assert(!!m_sp_state);
+    assert(instance_index < m_sp_state->parameters.size());
+    return m_sp_state->parameters[instance_index].subset_index;
 }
 
 } // namespace Methane::Samples
