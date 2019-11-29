@@ -43,14 +43,16 @@ public:
 
     struct Settings
     {
-        const gfx::Camera&    view_camera;
-        const float           scale              = 1.f;
-        const uint32_t        instance_count     = 100u;
-        const uint32_t        unique_mesh_count  = 50u;
-        const uint32_t        subdivisions_count = 3u;
-        const uint32_t        textures_count     = 10u;
-        const gfx::Dimensions texture_dimensions = { 256u, 256u };
-        const uint32_t        random_seed        = 1337u;
+        gfx::Camera&    view_camera;
+        float           scale              = 1.f;
+        uint32_t        instance_count     = 100u;
+        uint32_t        unique_mesh_count  = 50u;
+        uint32_t        subdivisions_count = 3u;
+        uint32_t        textures_count     = 10u;
+        gfx::Dimensions texture_dimensions = { 256u, 256u };
+        uint32_t        random_seed        = 1337u;
+        float           orbit_radius_ratio = 10.f;
+        float           disc_radius_ratio  = 3.f;
     };
 
     class UberMesh : public gfx::UberMesh<Asteroid::Vertex>
@@ -64,9 +66,24 @@ public:
         std::vector<gfx::Vector2f> m_depth_ranges;
     };
 
+    using Parameters               = std::vector<Asteroid::Parameters>;
+    using TextureArraySubresources = std::vector<gfx::Resource::SubResources>;
+
+    struct State : public std::enable_shared_from_this<State>
+    {
+        using Ptr = std::shared_ptr<State>;
+        State(const Settings& settings);
+
+        UberMesh                 uber_mesh;
+        TextureArraySubresources texture_array_subresources;
+        Parameters               parameters;
+    };
+
     AsteroidsArray(gfx::Context& context, Settings settings);
+    AsteroidsArray(gfx::Context& context, Settings settings, State& state);
 
     const Settings& GetSettings() const { return m_settings; }
+    const State::Ptr& GetState() const  { return m_sp_state; }
 
     bool Update(double elapsed_seconds, double delta_seconds);
 
@@ -75,13 +92,9 @@ protected:
     uint32_t GetSubsetByInstanceIndex(uint32_t instance_index) const override;
 
 private:
-    using Parameters = std::vector<Asteroid::Parameters>;
-
-    AsteroidsArray(gfx::Context& context, Settings&& settings, const UberMesh& uber_mesh);
-
-    Settings    m_settings;
-    Parameters  m_parameters;
-    Textures    m_unique_textures;
+    const Settings m_settings;
+    State::Ptr     m_sp_state;
+    Textures       m_unique_textures;
 };
 
 } // namespace Methane::Samples

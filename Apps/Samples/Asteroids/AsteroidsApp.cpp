@@ -36,11 +36,8 @@ namespace Methane::Samples
 {
 
 // Common application settings
-static constexpr uint32_t  g_asteroid_instances_count    = 180;
-static constexpr uint32_t  g_asteroid_unique_mesh_count  = 30;
-static constexpr uint32_t  g_asteroid_subdivisions_count = 3;
-static const std::string   g_app_help_text               = "Asteroids sample demonstrates parallel rendering of multiple heterogeneous objects " \
-                                                           "and action camera interaction with mouse and keyboard.";
+static const std::string           g_app_help_text  = "Asteroids sample demonstrates parallel rendering of multiple heterogeneous objects " \
+                                                      "and action camera interaction with mouse and keyboard.";
 static const GraphicsApp::Settings  g_app_settings  = // Application settings:
 {                                                     // ====================
     {                                                 // app:
@@ -63,6 +60,8 @@ static const GraphicsApp::Settings  g_app_settings  = // Application settings:
 
 AsteroidsApp::AsteroidsApp()
     : GraphicsApp(g_app_settings, gfx::RenderPass::Access::ShaderResources | gfx::RenderPass::Access::Samplers, g_app_help_text)
+    , m_view_camera(m_animations, gfx::ActionCamera::Pivot::Aim)
+    , m_light_camera(m_view_camera, m_animations, gfx::ActionCamera::Pivot::Aim)
     , m_scene_scale(15.f)
     , m_scene_constants(                              // Shader constants:
         {                                             // ================
@@ -71,14 +70,25 @@ AsteroidsApp::AsteroidsApp()
             0.1f,                                     // - light_ambient_factor
             4.f                                       // - light_specular_factor
         })
-    , m_view_camera(m_animations, gfx::ActionCamera::Pivot::Aim)
-    , m_light_camera(m_view_camera, m_animations, gfx::ActionCamera::Pivot::Aim)
+    , m_asteroids_array_settings(                     // Asteroids array settings:
+        {                                             // ================
+            m_view_camera,                            // - view_camera
+            m_scene_scale,                            // - scale
+            300u,                                     // - instance_count
+            50u,                                      // - unique_mesh_count
+            3u,                                       // - subdivisions_count
+            10u,                                      // - textures_count
+            { 256u, 256u },                           // - texture_dimensions
+            1337u,                                    // - random_seed
+            13.f,                                     // - orbit_radius_ratio
+            4.f,                                      // - disc_radius_ratio
+        })
 {
-    m_view_camera.SetOrientation({ { 0.f, 40.f, 250.f }, { 0.f, -120.f, 0.f }, { 0.f, 1.f, 0.f } });
+    m_view_camera.SetOrientation({ { 0.f, 80.f, 250.f }, { 0.f, -120.f, 0.f }, { 0.f, 1.f, 0.f } });
     m_view_camera.SetParamters({ 0.01f, 600.f, 90.f });
     m_view_camera.SetZoomDistanceRange({ 15.f , 300.f });
 
-    m_light_camera.SetOrientation({ { 0.f,  120.f, 0.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f } });
+    m_light_camera.SetOrientation({ { 0.f, 120.f, 0.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
     m_light_camera.SetParamters({ -300.f, 300.f, 90.f });
     m_light_camera.Resize(120.f, 120.f);
@@ -124,13 +134,9 @@ void AsteroidsApp::Init()
     });
 
     // Create vertex and index buffer for meshes
-    m_sp_asteroids_array = std::make_unique<AsteroidsArray>(context, AsteroidsArray::Settings{
-        m_view_camera,
-        m_scene_scale,
-        g_asteroid_instances_count,
-        g_asteroid_unique_mesh_count,
-        g_asteroid_subdivisions_count
-    });
+    m_sp_asteroids_array = m_sp_asteroids_array_state
+                         ? std::make_unique<AsteroidsArray>(context, m_asteroids_array_settings, *m_sp_asteroids_array_state)
+                         : std::make_unique<AsteroidsArray>(context, m_asteroids_array_settings);
 
     const Data::Size constants_data_size         = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(Constants)));
     const Data::Size scene_uniforms_data_size    = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(SceneUniforms)));
@@ -207,8 +213,8 @@ void AsteroidsApp::Init()
         frame.asteroids.sp_uniforms_buffer->SetName(IndexedName("Cube Uniforms Buffer", frame.index));
 
         // Resource bindings for asteroids rendering
-        frame.asteroids.resource_bindings_array.resize(g_asteroid_instances_count);
-        if (g_asteroid_instances_count == 0)
+        frame.asteroids.resource_bindings_array.resize(m_asteroids_array_settings.instance_count);
+        if (m_asteroids_array_settings.instance_count == 0)
             continue;
 
         frame.asteroids.resource_bindings_array[0] = gfx::Program::ResourceBindings::Create(state_settings.sp_program, {
@@ -219,7 +225,7 @@ void AsteroidsApp::Init()
             { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { m_sp_texture_sampler                   } },
         });
 
-        for(uint32_t asteroid_index = 1; asteroid_index < g_asteroid_instances_count; ++asteroid_index)
+        for(uint32_t asteroid_index = 1; asteroid_index < m_asteroids_array_settings.instance_count; ++asteroid_index)
         {
             const Data::Size asteroid_uniform_offset = m_sp_asteroids_array->GetUniformsBufferOffset(asteroid_index);
             frame.asteroids.resource_bindings_array[asteroid_index] = gfx::Program::ResourceBindings::CreateCopy(*frame.asteroids.resource_bindings_array[0], {
@@ -309,6 +315,11 @@ void AsteroidsApp::Render()
 
 void AsteroidsApp::OnContextReleased()
 {
+    if (m_sp_asteroids_array)
+    {
+        m_sp_asteroids_array_state = m_sp_asteroids_array->GetState();
+    }
+
     m_animations.clear();
     m_sp_sky_box.reset();
     m_sp_asteroids_array.reset();

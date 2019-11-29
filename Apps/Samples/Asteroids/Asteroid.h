@@ -73,22 +73,24 @@ public:
 
     struct Colors
     {
-        gfx::Color3f   deep;
-        gfx::Color3f   shallow;
+        gfx::Color3f deep;
+        gfx::Color3f shallow;
     };
 
     struct Parameters
     {
         const uint32_t       index;
         const uint32_t       subset_index;
+        const uint32_t       texture_index;
         const gfx::Vector2f  depth_range;
         const Colors         colors;
         const gfx::Matrix44f scale_matrix;
+        const gfx::Matrix44f translation_matrix;
         const gfx::Point3f   spin_axis;
         const float          orbit_speed;
         const float          spin_speed;
         float                spin_angle_rad;
-        gfx::Point3f         position;
+        float                orbit_angle_rad;
     };
 
     struct TextureNoiseParameters

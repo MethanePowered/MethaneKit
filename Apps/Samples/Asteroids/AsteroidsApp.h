@@ -81,18 +81,20 @@ private:
         SHADER_FIELD_ALIGN gfx::Vector4f  eye_position;
         SHADER_FIELD_ALIGN gfx::Vector3f  light_position;
     };
-    
-    const float             m_scene_scale;
-    const Constants         m_scene_constants;
-    gfx::ActionCamera       m_view_camera;
-    gfx::ActionCamera       m_light_camera;
 
-    SceneUniforms           m_scene_uniforms = { };
-    gfx::SkyBox::Ptr        m_sp_sky_box;
-    gfx::RenderState::Ptr   m_sp_state;
-    gfx::Buffer::Ptr        m_sp_const_buffer;
-    gfx::Sampler::Ptr       m_sp_texture_sampler;
-    AsteroidsArray::Ptr     m_sp_asteroids_array;
+    gfx::ActionCamera               m_view_camera;
+    gfx::ActionCamera               m_light_camera;
+    const float                     m_scene_scale;
+    const Constants                 m_scene_constants;
+    const AsteroidsArray::Settings  m_asteroids_array_settings;
+
+    SceneUniforms                   m_scene_uniforms = { };
+    gfx::SkyBox::Ptr                m_sp_sky_box;
+    gfx::RenderState::Ptr           m_sp_state;
+    gfx::Buffer::Ptr                m_sp_const_buffer;
+    gfx::Sampler::Ptr               m_sp_texture_sampler;
+    AsteroidsArray::Ptr             m_sp_asteroids_array;
+    AsteroidsArray::State::Ptr      m_sp_asteroids_array_state;
 };
 
 } // namespace Methane::Samples
