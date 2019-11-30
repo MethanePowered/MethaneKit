@@ -27,6 +27,7 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 
 #include <Methane/Graphics/AppCameraController.h>
 #include <Methane/Data/TimeAnimation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <cml/mathlib/mathlib.h>
 #include <cassert>
@@ -86,6 +87,8 @@ AsteroidsApp::AsteroidsApp()
             0.7f,                                     // - max_asteroid_scale_ratio
         })
 {
+    ITT_FUNCTION_TASK();
+
     m_view_camera.SetOrientation({ { 0.f, 70.f, 220.f }, { 0.f, -120.f, 0.f }, { 0.f, 1.f, 0.f } });
     m_view_camera.SetParamters({ 0.01f, 600.f, 90.f });
     m_view_camera.SetZoomDistanceRange({ 15.f , 400.f });
@@ -106,12 +109,15 @@ AsteroidsApp::AsteroidsApp()
 
 AsteroidsApp::~AsteroidsApp()
 {
+    ITT_FUNCTION_TASK();
     // Wait for GPU rendering is completed to release resources
     m_sp_context->WaitForGpu(gfx::Context::WaitFor::RenderComplete);
 }
 
 void AsteroidsApp::Init()
 {
+    ITT_FUNCTION_TASK();
+
     GraphicsApp::Init();
 
     assert(m_sp_context);
@@ -248,6 +254,8 @@ void AsteroidsApp::Init()
 
 bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 {
+    ITT_FUNCTION_TASK();
+
     if (!m_initialized || GetInitialContextSettings().frame_size == frame_size)
         return false;
 
@@ -266,6 +274,8 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 
 void AsteroidsApp::Update()
 {
+    ITT_FUNCTION_TASK();
+
     GraphicsApp::Update();
 
     // Update scene uniforms
@@ -277,6 +287,8 @@ void AsteroidsApp::Update()
 
 void AsteroidsApp::Render()
 {
+    ITT_FUNCTION_TASK();
+
     // Render only when context is ready
     assert(!!m_sp_context);
     if (!m_sp_context->ReadyToRender())
@@ -317,6 +329,8 @@ void AsteroidsApp::Render()
 
 void AsteroidsApp::OnContextReleased()
 {
+    ITT_FUNCTION_TASK();
+
     if (m_sp_asteroids_array)
     {
         m_sp_asteroids_array_state = m_sp_asteroids_array->GetState();

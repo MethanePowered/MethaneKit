@@ -24,6 +24,7 @@ Random generated asteroid model with mesh and texture ready for rendering
 #include "Asteroid.h"
 
 #include <Methane/Graphics/Noise.hpp>
+#include <Methane/Data/Instrumentation.h>
 
 #include <sstream>
 
@@ -34,6 +35,8 @@ using AsteroidColorSchema = std::array<gfx::Color3f, Asteroid::color_schema_size
 
 static gfx::Color3f TransformSRGBToLinear(const gfx::Color3f& srgb_color)
 {
+    ITT_FUNCTION_TASK();
+
     gfx::Color3f linear_color = {};
     for (int c = 0; c < 3; ++c)
     {
@@ -44,6 +47,8 @@ static gfx::Color3f TransformSRGBToLinear(const gfx::Color3f& srgb_color)
 
 static AsteroidColorSchema TransformSRGBToLinear(const AsteroidColorSchema& srgb_color_schema)
 {
+    ITT_FUNCTION_TASK();
+
     AsteroidColorSchema linear_color_schema = {};
     for (size_t i = 0; i < srgb_color_schema.size(); ++i)
     {
@@ -55,6 +60,8 @@ static AsteroidColorSchema TransformSRGBToLinear(const AsteroidColorSchema& srgb
 Asteroid::Mesh::Mesh(uint32_t subdivisions_count, bool randomize)
     : gfx::IcosahedronMesh<Vertex>(VertexLayoutFromArray(Vertex::layout), 0.5f, subdivisions_count, true)
 {
+    ITT_FUNCTION_TASK();
+
     if (randomize)
     {
         Randomize();
@@ -63,6 +70,8 @@ Asteroid::Mesh::Mesh(uint32_t subdivisions_count, bool randomize)
 
 void Asteroid::Mesh::Randomize(uint32_t random_seed)
 {
+    ITT_FUNCTION_TASK();
+
     const float noise_scale = 0.5f;
     const float radius_scale = 1.8f;
     const float radius_bias = 0.3f;
@@ -93,12 +102,16 @@ void Asteroid::Mesh::Randomize(uint32_t random_seed)
 Asteroid::Asteroid(gfx::Context& context)
     : BaseBuffers(context, Mesh(3, true), "Asteroid")
 {
+    ITT_FUNCTION_TASK();
+
     SetSubsetTexture(GenerateTextureArray(context, gfx::Dimensions(256, 256), 1, true, TextureNoiseParameters()), 0);
 }
 
 gfx::Texture::Ptr Asteroid::GenerateTextureArray(gfx::Context& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, 
                                                  const TextureNoiseParameters& noise_parameters)
 {
+    ITT_FUNCTION_TASK();
+
     const gfx::Resource::SubResources sub_resources = GenerateTextureArraySubresources(dimensions, array_size, noise_parameters);
     gfx::Texture::Ptr sp_texture_array = gfx::Texture::CreateImage(context, dimensions, array_size, gfx::PixelFormat::RGBA8Unorm, mipmapped);
     sp_texture_array->SetData(sub_resources);
@@ -107,6 +120,8 @@ gfx::Texture::Ptr Asteroid::GenerateTextureArray(gfx::Context& context, const gf
 
 gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, const TextureNoiseParameters& noise_parameters)
 {
+    ITT_FUNCTION_TASK();
+
     const gfx::PixelFormat pixel_format = gfx::PixelFormat::RGBA8Unorm;
     const uint32_t pixel_size = gfx::GetPixelSize(pixel_format);
     const uint32_t pixels_count = dimensions.GetPixelsCount();
@@ -137,6 +152,8 @@ gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx
 
 Asteroid::Colors Asteroid::GetAsteroidRockColors(uint32_t deep_color_index, uint32_t shallow_color_index)
 {
+    ITT_FUNCTION_TASK();
+
     static const AsteroidColorSchema s_srgb_deep_rock_colors = { {
         {  55.f,  49.f,  40.f },
         {  58.f,  38.f,  14.f },
@@ -166,6 +183,8 @@ Asteroid::Colors Asteroid::GetAsteroidRockColors(uint32_t deep_color_index, uint
 
 Asteroid::Colors Asteroid::GetAsteroidIceColors(uint32_t deep_color_index, uint32_t shallow_color_index)
 {
+    ITT_FUNCTION_TASK();
+
     static const AsteroidColorSchema s_srgb_deep_ice_colors = { {
         {   8.f,  57.f,  72.f },
         {  35.f,  79.f, 116.f },
@@ -196,6 +215,8 @@ Asteroid::Colors Asteroid::GetAsteroidIceColors(uint32_t deep_color_index, uint3
 void Asteroid::FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Dimensions& dimensions, uint32_t pixel_size, uint32_t row_stride,
                                         float random_seed, float persistence, float noise_scale, float noise_strength, uint32_t array_index)
 {
+    ITT_FUNCTION_TASK();
+
     const gfx::NoiseOctaves<4> perlin_noise(persistence);
     
     for (size_t row = 0; row < dimensions.height; ++row)

@@ -32,6 +32,7 @@ Mesh buffers with texture extension structure.
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/Mesh.h>
 #include <Methane/Data/AlignedAllocator.hpp>
+#include <Methane/Data/Instrumentation.h>
 
 #include <memory>
 #include <string>
@@ -57,6 +58,8 @@ public:
         , m_sp_index( Buffer::CreateIndexBuffer( context, static_cast<Data::Size>(mesh_data.GetIndexDataSize()), 
                                                           PixelFormat::R32Uint))
     {
+        ITT_FUNCTION_TASK();
+
         m_final_pass_instance_uniforms.resize(m_mesh_subsets.size());
 
         m_sp_vertex->SetName(mesh_name + " Vertex Buffer");
@@ -80,6 +83,7 @@ public:
     MeshBuffers(Context& context, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
         : MeshBuffers(context, uber_mesh_data, mesh_name, uber_mesh_data.GetSubsets())
     {
+        ITT_FUNCTION_TASK();
     }
     
     virtual ~MeshBuffers() = default;
@@ -87,6 +91,8 @@ public:
     void Draw(RenderCommandList& cmd_list, const Program::ResourceBindings& resource_bindings,
               uint32_t mesh_subset_index = 0, uint32_t instance_count = 1, uint32_t start_instance = 0)
     {
+        ITT_FUNCTION_TASK();
+
         if (mesh_subset_index >= m_mesh_subsets.size())
             throw std::invalid_argument("Can not draw mesh subset because its index is out of bounds.");
 
@@ -101,6 +107,8 @@ public:
 
     void Draw(RenderCommandList& cmd_list, const std::vector<Program::ResourceBindings::Ptr>& instance_resource_bindings)
     {
+        ITT_FUNCTION_TASK();
+
         cmd_list.SetVertexBuffers({ GetVertexBuffer() });
 
         const Buffer& index_buffer = GetIndexBuffer();
@@ -131,6 +139,8 @@ public:
 
     const UniformsType& GetFinalPassUniforms(uint32_t instance_index = 0) const
     {
+        ITT_FUNCTION_TASK();
+
         if (instance_index >= m_final_pass_instance_uniforms.size())
             throw std::invalid_argument("Instance index is out of bounds.");
 
@@ -139,6 +149,8 @@ public:
 
     void  SetFinalPassUniforms(const UniformsType& uniforms, uint32_t instance_index = 0)
     {
+        ITT_FUNCTION_TASK();
+
         if (instance_index >= m_final_pass_instance_uniforms.size())
             throw std::invalid_argument("Instance index is out of bounds.");
 
@@ -147,11 +159,13 @@ public:
     
     Data::Size GetUniformsBufferSize() const
     {
+        ITT_FUNCTION_TASK();
         return m_final_pass_instance_uniforms.empty() ? 0 : static_cast<Data::Size>(m_final_pass_instance_uniforms.size() * sizeof(m_final_pass_instance_uniforms[0]));
     }
     
     Data::Size GetUniformsBufferOffset(uint32_t instance_index) const
     {
+        ITT_FUNCTION_TASK();
         return static_cast<Data::Size>(
             reinterpret_cast<const char*>(&m_final_pass_instance_uniforms[instance_index]) -
             reinterpret_cast<const char*>(m_final_pass_instance_uniforms.data())
@@ -196,6 +210,7 @@ public:
                         const std::string& mesh_name)
         : MeshBuffers<UniformsType>(context, mesh_data, mesh_name)
     {
+        ITT_FUNCTION_TASK();
         m_subset_textures.resize(1);
     }
 
@@ -203,11 +218,14 @@ public:
     TexturedMeshBuffers(Context& context, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
         : MeshBuffers<UniformsType>(context, uber_mesh_data, mesh_name)
     {
+        ITT_FUNCTION_TASK();
         m_subset_textures.resize(MeshBuffers<UniformsType>::GetSubsetsCount());
     }
 
     const Texture::Ptr& GetSubsetTexturePtr(uint32_t subset_index = 0) const
     {
+        ITT_FUNCTION_TASK();
+
         if (subset_index >= MeshBuffers<UniformsType>::GetSubsetsCount())
             throw std::invalid_argument("Subset index is out of bounds.");
 
@@ -216,12 +234,16 @@ public:
 
     const Texture::Ptr& GetInstanceTexturePtr(uint32_t instance_index = 0) const
     {
+        ITT_FUNCTION_TASK();
+
         const uint32_t subset_index = this->GetSubsetByInstanceIndex(instance_index);
         return GetSubsetTexturePtr(subset_index);
     }
     
     void SetSubsetTexture(const Texture::Ptr& sp_texture, uint32_t subset_index = 0)
     {
+        ITT_FUNCTION_TASK();
+
         if (subset_index >= MeshBuffers<UniformsType>::GetSubsetsCount())
             throw std::invalid_argument("Subset index is out of bounds.");
         
