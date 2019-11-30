@@ -36,7 +36,6 @@ SkyBox rendering primitive
 
 #include <memory>
 #include <array>
-#include <string>
 
 namespace Methane::Graphics
 {
@@ -56,7 +55,7 @@ public:
 
     };
 
-    struct SHADER_STRUCT_ALIGN MeshUniforms
+    struct SHADER_STRUCT_ALIGN Uniforms
     {
         SHADER_FIELD_ALIGN Matrix44f mvp_matrix;
     };
@@ -69,7 +68,7 @@ public:
     void Draw(RenderCommandList& cmd_list, Buffer& uniforms_buffer, Program::ResourceBindings& resource_bindings);
 
 private:
-    using TexturedMeshBuffers = TexturedMeshBuffers<MeshUniforms>;
+    using TexturedMeshBuffers = TexturedMeshBuffers<Uniforms>;
 
     Settings               m_settings;
     Context&               m_context;

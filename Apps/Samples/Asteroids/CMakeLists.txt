@@ -11,11 +11,13 @@ set(SOURCES
     Asteroid.cpp
     AsteroidsArray.h
     AsteroidsArray.cpp
+    Planet.h
+    Planet.cpp
 )
 
 set(IMAGES_DIR ${RESOURCES_DIR}/Images)
 set(TEXTURES
-    ${IMAGES_DIR}/Textures/MethaneBubbles.jpg
+    ${IMAGES_DIR}/Textures/Planet/Earth/Day.jpg
     ${IMAGES_DIR}/Textures/SkyBox/Galaxy/PositiveX.jpg
     ${IMAGES_DIR}/Textures/SkyBox/Galaxy/NegativeX.jpg
     ${IMAGES_DIR}/Textures/SkyBox/Galaxy/PositiveY.jpg
@@ -23,7 +25,11 @@ set(TEXTURES
     ${IMAGES_DIR}/Textures/SkyBox/Galaxy/PositiveZ.jpg
     ${IMAGES_DIR}/Textures/SkyBox/Galaxy/NegativeZ.jpg
 )
-set(SHADERS_HLSL ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Asteroids.hlsl)
+
+set(SHADERS_HLSL
+    ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Asteroids.hlsl
+    ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Planet.hlsl
+)
 
 add_methane_application(${TARGET}
     "Methane Asteroids"
