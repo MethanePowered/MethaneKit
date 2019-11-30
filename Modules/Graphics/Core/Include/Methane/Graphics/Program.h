@@ -30,7 +30,8 @@ pipeline via state object and used to create resource binding objects.
 #include <memory>
 #include <vector>
 #include <string>
-#include <map>
+#include <unordered_set>
+#include <unordered_map>
 
 //#define PROGRAM_IGNORE_MISSING_ARGUMENTS
 
@@ -72,18 +73,26 @@ struct Program
     {
         const Shader::Type shader_type;
         const std::string  argument_name;
+        const size_t       hash;
 
-        bool operator<(const Argument& other) const;
+        Argument(Shader::Type shader_type, std::string argument_name);
+
+        bool operator==(const Argument& other) const;
+
+        struct Hash
+        {
+            size_t operator()(const Argument& arg) const { return arg.hash; }
+        };
     };
 
-    using Arguments                 = std::set<Argument>;
-    using ResourceBindingByArgument = std::map<Argument, Shader::ResourceBinding::Ptr>;
+    using Arguments                 = std::unordered_set<Argument, Argument::Hash>;
+    using ResourceBindingByArgument = std::unordered_map<Argument, Shader::ResourceBinding::Ptr, Argument::Hash>;
 
     struct ResourceBindings
     {
         using Ptr     = std::shared_ptr<ResourceBindings>;
         using WeakPtr = std::weak_ptr<ResourceBindings>;
-        using ResourceLocationByArgument = std::map<Argument, Resource::Location>;
+        using ResourceLocationByArgument = std::unordered_map<Argument, Resource::Location, Argument::Hash>;
 
         // Create ResourceBindings instance
         static Ptr Create(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_location_by_argument);
