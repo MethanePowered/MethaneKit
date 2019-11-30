@@ -29,6 +29,7 @@ and deferred releasing of GPU resource.
 #include "ProgramBase.h"
 
 #include <array>
+#include <mutex>
 
 namespace Methane::Graphics
 {
@@ -74,6 +75,7 @@ protected:
     DescriptorHeapTypes             m_descriptor_heap_types;
     ResourceBase::ReleasePool::Ptr  m_sp_release_pool;
     ProgramResourceBindings         m_deferred_resource_bindings;
+    std::mutex                      m_deferred_resource_bindings_mutex;
 };
 
 } // namespace Methane::Graphics

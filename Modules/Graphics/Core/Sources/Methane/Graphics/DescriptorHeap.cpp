@@ -56,6 +56,9 @@ DescriptorHeap::DescriptorHeap(ContextBase& context, const Settings& settings)
 DescriptorHeap::~DescriptorHeap()
 {
     ITT_FUNCTION_TASK();
+
+    std::lock_guard<std::mutex> lock_guard(m_modification_mutex);
+
     // All descriptor ranges must be released when heap is destroyed
     assert((!m_deferred_size && m_free_ranges.IsEmpty()) ||
              m_free_ranges == RangeSet({ { 0, m_deferred_size } }));
@@ -64,6 +67,8 @@ DescriptorHeap::~DescriptorHeap()
 int32_t DescriptorHeap::AddResource(const ResourceBase& resource)
 {
     ITT_FUNCTION_TASK();
+
+    std::lock_guard<std::mutex> lock_guard(m_modification_mutex);
 
     if (m_resources.size() >= m_settings.size)
     {
@@ -91,6 +96,8 @@ int32_t DescriptorHeap::ReplaceResource(const ResourceBase& resource, uint32_t a
 {
     ITT_FUNCTION_TASK();
 
+    std::lock_guard<std::mutex> lock_guard(m_modification_mutex);
+
     if (at_index >= m_resources.size())
     {
         throw std::runtime_error("Index " + std::to_string(at_index) + 
@@ -105,6 +112,8 @@ void DescriptorHeap::RemoveResource(uint32_t at_index)
 {
     ITT_FUNCTION_TASK();
 
+    std::lock_guard<std::mutex> lock_guard(m_modification_mutex);
+
     if (at_index >= m_resources.size())
     {
         throw std::runtime_error("Can not remove resource: index (" + std::to_string(at_index) + 
@@ -118,6 +127,8 @@ void DescriptorHeap::RemoveResource(uint32_t at_index)
 DescriptorHeap::RangePtr DescriptorHeap::ReserveRange(Index length)
 {
     ITT_FUNCTION_TASK();
+
+    std::lock_guard<std::mutex> lock_guard(m_modification_mutex);
 
     RangeSet::ConstIterator free_range_it = std::find_if(m_free_ranges.begin(), m_free_ranges.end(),
         [length](const Range& range)
@@ -147,6 +158,8 @@ DescriptorHeap::RangePtr DescriptorHeap::ReserveRange(Index length)
 void DescriptorHeap::ReleaseRange(const Range& range)
 {
     ITT_FUNCTION_TASK();
+
+    std::lock_guard<std::mutex> lock_guard(m_modification_mutex);
     m_free_ranges.Add(range);
 }
 

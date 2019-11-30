@@ -31,6 +31,7 @@ Base implementation of the program interface.
 #include <memory>
 #include <array>
 #include <optional>
+#include <mutex>
 
 namespace Methane::Graphics
 {
@@ -118,6 +119,7 @@ protected:
     ResourceBindingByArgument m_resource_binding_by_argument;
     std::string               m_name;
     DescriptorRangeByHeapType m_constant_descriptor_range_by_heap_type;
+    std::mutex                m_constant_descriptor_ranges_reservation_mutex;
 };
 
 } // namespace Methane::Graphics

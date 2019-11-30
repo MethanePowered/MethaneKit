@@ -27,6 +27,7 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 
 #include <Methane/Graphics/AppCameraController.h>
 #include <Methane/Data/TimeAnimation.h>
+#include <Methane/Data/Parallel.hpp>
 #include <Methane/Data/Instrumentation.h>
 
 #include <cml/mathlib/mathlib.h>
@@ -75,16 +76,16 @@ AsteroidsApp::AsteroidsApp()
         {                                             // ================
             m_view_camera,                            // - view_camera
             m_scene_scale,                            // - scale
-            1000u,                                    // - instance_count
-            100u,                                     // - unique_mesh_count
+            2000u,                                    // - instance_count
+            300u,                                     // - unique_mesh_count
             3u,                                       // - subdivisions_count
             10u,                                      // - textures_count
             { 256u, 256u },                           // - texture_dimensions
             1123u,                                    // - random_seed
             13.f,                                     // - orbit_radius_ratio
             4.f,                                      // - disc_radius_ratio
-            0.1f,                                     // - min_asteroid_scale_ratio
-            0.7f,                                     // - max_asteroid_scale_ratio
+            0.05f,                                    // - min_asteroid_scale_ratio
+            0.5f,                                     // - max_asteroid_scale_ratio
         })
 {
     ITT_FUNCTION_TASK();
@@ -227,20 +228,22 @@ void AsteroidsApp::Init()
 
         frame.asteroids.resource_bindings_array[0] = gfx::Program::ResourceBindings::Create(state_settings.sp_program, {
             { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { frame.asteroids.sp_uniforms_buffer, m_sp_asteroids_array->GetUniformsBufferOffset(0) } },
-            { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { frame.sp_scene_uniforms_buffer         } },
-            { { gfx::Shader::Type::Pixel,  "g_constants"      }, { m_sp_const_buffer                      } },
+            { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { frame.sp_scene_uniforms_buffer                 } },
+            { { gfx::Shader::Type::Pixel,  "g_constants"      }, { m_sp_const_buffer                              } },
             { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, { m_sp_asteroids_array->GetInstanceTexturePtr(0) } },
-            { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { m_sp_texture_sampler                   } },
+            { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { m_sp_texture_sampler                           } },
         });
 
-        for(uint32_t asteroid_index = 1; asteroid_index < m_asteroids_array_settings.instance_count; ++asteroid_index)
-        {
-            const Data::Size asteroid_uniform_offset = m_sp_asteroids_array->GetUniformsBufferOffset(asteroid_index);
-            frame.asteroids.resource_bindings_array[asteroid_index] = gfx::Program::ResourceBindings::CreateCopy(*frame.asteroids.resource_bindings_array[0], {
-                { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { frame.asteroids.sp_uniforms_buffer, asteroid_uniform_offset } },
-                { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, { m_sp_asteroids_array->GetInstanceTexturePtr(asteroid_index) } },
-            });
-        }
+        Data::ParallelFor<uint32_t>(1u, m_asteroids_array_settings.instance_count - 1,
+            [this, &frame](uint32_t asteroid_index)
+            {
+                const Data::Size asteroid_uniform_offset = m_sp_asteroids_array->GetUniformsBufferOffset(asteroid_index);
+                frame.asteroids.resource_bindings_array[asteroid_index] = gfx::Program::ResourceBindings::CreateCopy(*frame.asteroids.resource_bindings_array[0], {
+                    { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { frame.asteroids.sp_uniforms_buffer, asteroid_uniform_offset } },
+                    { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, { m_sp_asteroids_array->GetInstanceTexturePtr(asteroid_index) } },
+                });
+            }
+        );
     }
 
     // Setup animations
