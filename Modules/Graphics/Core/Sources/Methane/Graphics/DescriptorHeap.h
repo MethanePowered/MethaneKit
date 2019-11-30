@@ -28,6 +28,7 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps
 #include <memory>
 #include <vector>
 #include <set>
+#include <mutex>
 
 namespace Methane::Graphics
 {
@@ -112,6 +113,7 @@ protected:
     uint32_t        m_allocated_size = 0;
     ResourcePtrs    m_resources;
     RangeSet        m_free_ranges;
+    std::mutex      m_modification_mutex;
 };
 
 using DescriptorHeaps      = std::vector<DescriptorHeap::Ptr>;
