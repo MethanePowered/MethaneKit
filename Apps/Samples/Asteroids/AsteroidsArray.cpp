@@ -66,9 +66,8 @@ AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivision
             Asteroid::Mesh asteroid_mesh(base_mesh);
             asteroid_mesh.Randomize(rng());
 
-            m_depth_ranges.emplace_back(asteroid_mesh.GetDepthRange());
-
             std::lock_guard<std::mutex> lock_guard(data_mutex);
+            m_depth_ranges.emplace_back(asteroid_mesh.GetDepthRange());
             AddSubMesh(asteroid_mesh, true);
         });
     }
