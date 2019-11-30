@@ -25,12 +25,15 @@ Random generated asteroids array with uber mesh and textures ready for rendering
 
 #include <Methane/Graphics/Noise.hpp>
 #include <Methane/Data/Parallel.hpp>
+#include <Methane/Data/Instrumentation.h>
 
 namespace Methane::Samples
 {
 
 static gfx::Point3f GetRandomDirection(std::mt19937& rng)
 {
+    ITT_FUNCTION_TASK();
+
     std::normal_distribution<float> distribution;
     gfx::Point3f direction;
     do
@@ -47,6 +50,8 @@ AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivision
     , m_subdivisions_count(subdivisions_count)
     , m_min_subdivision(min_subdivision)
 {
+    ITT_FUNCTION_TASK();
+
     std::mt19937 rng(random_seed);
 
     m_depth_ranges.reserve(m_instance_count * m_subdivisions_count);
@@ -71,6 +76,8 @@ AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivision
 
 const gfx::Vector2f& AsteroidsArray::UberMesh::GetSubsetDepthRange(uint32_t subset_index) const
 {
+    ITT_FUNCTION_TASK();
+
     if (subset_index >= GetSubsetCount())
         std::invalid_argument("Subset index is out of range.");
 
@@ -80,6 +87,8 @@ const gfx::Vector2f& AsteroidsArray::UberMesh::GetSubsetDepthRange(uint32_t subs
 
 uint32_t AsteroidsArray::UberMesh::GetSubsetSubdivision(uint32_t subset_index) const
 {
+    ITT_FUNCTION_TASK();
+
     if (subset_index >= GetSubsetCount())
         std::invalid_argument("Subset index is out of range.");
 
@@ -92,6 +101,8 @@ uint32_t AsteroidsArray::UberMesh::GetSubsetSubdivision(uint32_t subset_index) c
 AsteroidsArray::State::State(const Settings& settings)
     : uber_mesh(settings.unique_mesh_count, settings.subdivisions_count, 1, settings.random_seed)
 {
+    ITT_FUNCTION_TASK();
+
     std::mt19937 rng(settings.random_seed);
 
     // Randomly generate perlin-noise textures
@@ -193,13 +204,16 @@ AsteroidsArray::State::State(const Settings& settings)
 AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
     : AsteroidsArray(context, settings, *std::make_shared<State>(settings))
 {
+    ITT_FUNCTION_TASK();
 }
 
- AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings, State& state)
+AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings, State& state)
     : BaseBuffers(context, state.uber_mesh, "Asteroids Array")
     , m_settings(std::move(settings))
     , m_sp_state(state.shared_from_this())
 {
+    ITT_FUNCTION_TASK();
+
     SetInstanceCount(m_settings.instance_count);
 
     // Create texture arrays initialized with sub-resources data
@@ -221,6 +235,8 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
 
 bool AsteroidsArray::Update(double elapsed_seconds, double delta_seconds)
 {
+    ITT_FUNCTION_TASK();
+
     gfx::Matrix44f scene_view_matrix, scene_proj_matrix;
     m_settings.view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
 
@@ -255,6 +271,8 @@ bool AsteroidsArray::Update(double elapsed_seconds, double delta_seconds)
 
 uint32_t AsteroidsArray::GetSubsetByInstanceIndex(uint32_t instance_index) const
 {
+    ITT_FUNCTION_TASK();
+
     assert(!!m_sp_state);
     assert(instance_index < m_sp_state->parameters.size());
     return m_sp_state->parameters[instance_index].subset_index;

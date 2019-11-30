@@ -25,6 +25,7 @@ SkyBox rendering primitive
 #include <Methane/Graphics/Mesh.h>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Data/AppResourceProviders.h>
+#include <Methane/Data/Instrumentation.h>
 
 namespace Methane::Graphics
 {
@@ -44,6 +45,8 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
     , m_context(context)
     , m_mesh_buffers(context, SphereMesh<SkyBoxVertex>(Mesh::VertexLayoutFromArray(SkyBoxVertex::layout)), "Sky-Box")
 {
+    ITT_FUNCTION_TASK();
+
     m_mesh_buffers.SetSubsetTexture(image_loader.LoadImagesToTextureCube(m_context, m_settings.face_resources, m_settings.mipmapped));
 
     const Context::Settings& context_settings = context.GetSettings();
@@ -81,6 +84,8 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
 
 Program::ResourceBindings::Ptr SkyBox::CreateResourceBindings(const Buffer::Ptr& sp_uniforms_buffer)
 {
+    ITT_FUNCTION_TASK();
+
     assert(!!m_sp_state);
     assert(!!m_sp_state->GetSettings().sp_program);
     return Program::ResourceBindings::Create(m_sp_state->GetSettings().sp_program, {
@@ -92,6 +97,8 @@ Program::ResourceBindings::Ptr SkyBox::CreateResourceBindings(const Buffer::Ptr&
 
 void SkyBox::Resize(const FrameSize& frame_size)
 {
+    ITT_FUNCTION_TASK();
+
     assert(m_sp_state);
     m_sp_state->SetViewports({ GetFrameViewport(frame_size) });
     m_sp_state->SetScissorRects({ GetFrameScissorRect(frame_size) });
@@ -99,6 +106,8 @@ void SkyBox::Resize(const FrameSize& frame_size)
 
 void SkyBox::Update()
 {
+    ITT_FUNCTION_TASK();
+
     Matrix44f model_scale_matrix, model_translate_matrix, scene_view_matrix, scene_proj_matrix;
     m_settings.view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
     cml::matrix_uniform_scale(model_scale_matrix, m_settings.scale);
@@ -109,6 +118,8 @@ void SkyBox::Update()
 
 void SkyBox::Draw(RenderCommandList& cmd_list, Buffer& uniforms_buffer, Program::ResourceBindings& resource_bindings)
 {
+    ITT_FUNCTION_TASK();
+
     assert(uniforms_buffer.GetDataSize() >= sizeof(MeshUniforms));
     uniforms_buffer.SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_mesh_buffers.GetFinalPassUniforms()), sizeof(MeshUniforms) } });
 
