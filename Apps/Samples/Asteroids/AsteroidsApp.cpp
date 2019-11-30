@@ -74,19 +74,21 @@ AsteroidsApp::AsteroidsApp()
         {                                             // ================
             m_view_camera,                            // - view_camera
             m_scene_scale,                            // - scale
-            300u,                                     // - instance_count
-            50u,                                      // - unique_mesh_count
+            1000u,                                    // - instance_count
+            100u,                                     // - unique_mesh_count
             3u,                                       // - subdivisions_count
             10u,                                      // - textures_count
             { 256u, 256u },                           // - texture_dimensions
-            1337u,                                    // - random_seed
+            1123u,                                    // - random_seed
             13.f,                                     // - orbit_radius_ratio
             4.f,                                      // - disc_radius_ratio
+            0.1f,                                     // - min_asteroid_scale_ratio
+            0.7f,                                     // - max_asteroid_scale_ratio
         })
 {
-    m_view_camera.SetOrientation({ { 0.f, 80.f, 250.f }, { 0.f, -120.f, 0.f }, { 0.f, 1.f, 0.f } });
+    m_view_camera.SetOrientation({ { 0.f, 70.f, 220.f }, { 0.f, -120.f, 0.f }, { 0.f, 1.f, 0.f } });
     m_view_camera.SetParamters({ 0.01f, 600.f, 90.f });
-    m_view_camera.SetZoomDistanceRange({ 15.f , 300.f });
+    m_view_camera.SetZoomDistanceRange({ 15.f , 400.f });
 
     m_light_camera.SetOrientation({ { 0.f, 120.f, 0.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
