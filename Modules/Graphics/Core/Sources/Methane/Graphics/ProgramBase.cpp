@@ -34,12 +34,21 @@ Base implementation of the program interface.
 namespace Methane::Graphics
 {
 
-bool Program::Argument::operator<(const Argument& other) const
+static const std::hash<std::string> g_argument_name_hash;
+
+Program::Argument::Argument(Shader::Type shader_type, std::string argument_name)
+    : shader_type(shader_type)
+    , argument_name(std::move(argument_name))
+    , hash(g_argument_name_hash(argument_name) ^ (static_cast<size_t>(shader_type) << 1))
 {
     ITT_FUNCTION_TASK();
-    return shader_type == other.shader_type
-         ? argument_name < other.argument_name
-         : shader_type < other.shader_type;
+}
+
+bool Program::Argument::operator==(const Argument& other) const
+{
+    ITT_FUNCTION_TASK();
+    return std::tie(hash, shader_type, argument_name) == 
+           std::tie(other.hash, other.shader_type, other.argument_name);
 }
 
 ProgramBase::ResourceBindingsBase::ResourceBindingsBase(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_location_by_argument)
@@ -67,8 +76,10 @@ ProgramBase::ResourceBindingsBase::ResourceBindingsBase(const ResourceBindingsBa
     ResourceLocationByArgument resource_location_by_argument;
     for (const auto& argument_and_resource_binding : other_resource_bingings.m_resource_binding_by_argument)
     {
-        resource_location_by_argument.emplace(argument_and_resource_binding.first,
-                                              argument_and_resource_binding.second->GetResourceLocation());
+        resource_location_by_argument.emplace(
+            argument_and_resource_binding.first,
+            argument_and_resource_binding.second->GetResourceLocation()
+        );
     }
 
     // Substitute resources in original bindings list
@@ -128,9 +139,14 @@ void ProgramBase::ResourceBindingsBase::ReserveDescriptorHeapRanges()
         auto resource_binding_by_argument_it = m_resource_binding_by_argument.find(resource_binding_by_argument.first);
         if (resource_binding_by_argument_it == m_resource_binding_by_argument.end())
         {
-            m_resource_binding_by_argument.emplace(resource_binding_by_argument.first, Shader::ResourceBinding::CreateCopy(resource_binding));
+            m_resource_binding_by_argument.emplace(
+                resource_binding_by_argument.first,
+                resource_binding.IsConstant()
+                    ? resource_binding_by_argument.second
+                    : Shader::ResourceBinding::CreateCopy(resource_binding)
+            );
         }
-        else
+        else if (!resource_binding.IsConstant())
         {
             resource_binding_by_argument_it->second = Shader::ResourceBinding::CreateCopy(*resource_binding_by_argument_it->second);
         }
