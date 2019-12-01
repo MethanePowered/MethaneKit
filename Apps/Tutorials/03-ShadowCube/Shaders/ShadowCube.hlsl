@@ -2,6 +2,28 @@
 // #define ENABLE_SHADOWS
 // #define ENABLE_TEXTURING
 
+struct VSInput
+{
+    float3 position         : POSITION;
+    float3 normal           : NORMAL;
+#ifdef ENABLE_TEXTURING
+    float2 texcoord         : TEXCOORD;
+#endif
+};
+
+struct PSInput
+{
+    float4 position         : SV_POSITION;
+    float3 world_position   : POSITION0;
+    float3 world_normal     : NORMAL;
+#ifdef ENABLE_SHADOWS
+    float4 shadow_position  : POSITION1;
+#endif
+#ifdef ENABLE_TEXTURING
+    float2 texcoord         : TEXCOORD;
+#endif
+};
+
 struct Constants
 {
     float4 light_color;
@@ -38,28 +60,6 @@ SamplerState                  g_shadow_sampler  : register(s0);
 Texture2D                     g_texture         : register(t1);
 SamplerState                  g_texture_sampler : register(s1);
 #endif
-
-struct VSInput
-{
-    float3 position         : POSITION;
-    float3 normal           : NORMAL;
-#ifdef ENABLE_TEXTURING
-    float2 texcoord         : TEXCOORD;
-#endif
-};
-
-struct PSInput
-{
-    float4 position         : SV_POSITION;
-    float3 world_position   : POSITION0;
-    float3 world_normal     : NORMAL;
-#ifdef ENABLE_SHADOWS
-    float4 shadow_position  : POSITION1;
-#endif
-#ifdef ENABLE_TEXTURING
-    float2 texcoord         : TEXCOORD;
-#endif
-};
 
 PSInput CubeVS(VSInput input)
 {
