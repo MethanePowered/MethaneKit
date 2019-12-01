@@ -47,27 +47,14 @@ public:
 
     struct Settings
     {
-        float              scale;
         const gfx::Camera& view_camera;
+        const gfx::Camera& light_camera;
         std::string        texture_path;
+        gfx::Vector3f      position;
+        float              scale;
+        float              spin_velocity_rps = 0.3f; // (rps = radians per second)
         bool               mipmapped = false;
         float              lod_bias = 0.f;
-    };
-
-    Planet(gfx::Context& context, gfx::ImageLoader& image_loader, const Settings& settings);
-
-    gfx::Program::ResourceBindings::Ptr CreateResourceBindings(const gfx::Buffer::Ptr& sp_uniforms_buffer);
-    void Resize(const gfx::FrameSize& frame_size);
-    void Update();
-    void Draw(gfx::RenderCommandList& cmd_list, gfx::Buffer& uniforms_buffer, gfx::Program::ResourceBindings& resource_bindings);
-
-private:
-    struct SHADER_STRUCT_ALIGN Constants
-    {
-        SHADER_FIELD_ALIGN gfx::Color4f   light_color;
-        SHADER_FIELD_PACK  float          light_power;
-        SHADER_FIELD_PACK  float          light_ambient_factor;
-        SHADER_FIELD_PACK  float          light_specular_factor;
     };
 
     struct SHADER_STRUCT_ALIGN Uniforms
@@ -77,6 +64,16 @@ private:
         SHADER_FIELD_ALIGN gfx::Matrix44f mvp_matrix;
         SHADER_FIELD_ALIGN gfx::Matrix44f model_matrix;
     };
+
+    Planet(gfx::Context& context, gfx::ImageLoader& image_loader, const Settings& settings);
+
+    gfx::Program::ResourceBindings::Ptr CreateResourceBindings(const gfx::Buffer::Ptr& sp_constants_buffer, const gfx::Buffer::Ptr& sp_uniforms_buffer);
+    void Resize(const gfx::FrameSize& frame_size);
+    bool Update(double elapsed_seconds, double delta_seconds);
+    void Draw(gfx::RenderCommandList& cmd_list, gfx::Buffer& uniforms_buffer, gfx::Program::ResourceBindings& resource_bindings);
+
+private:
+
 
     using TexturedMeshBuffers = gfx::TexturedMeshBuffers<Uniforms>;
 

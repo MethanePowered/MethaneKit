@@ -147,14 +147,14 @@ public:
         return m_final_pass_instance_uniforms[instance_index];
     }
 
-    void  SetFinalPassUniforms(const UniformsType& uniforms, uint32_t instance_index = 0)
+    void  SetFinalPassUniforms(UniformsType&& uniforms, uint32_t instance_index = 0)
     {
         ITT_FUNCTION_TASK();
 
         if (instance_index >= m_final_pass_instance_uniforms.size())
             throw std::invalid_argument("Instance index is out of bounds.");
 
-        m_final_pass_instance_uniforms[instance_index] = uniforms;
+        m_final_pass_instance_uniforms[instance_index] = std::move(uniforms);
     }
     
     Data::Size GetUniformsBufferSize() const

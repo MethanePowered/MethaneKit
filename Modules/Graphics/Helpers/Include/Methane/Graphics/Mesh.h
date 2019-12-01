@@ -375,6 +375,11 @@ public:
         , m_depth_pos(depth_pos)
     {
         ITT_FUNCTION_TASK();
+
+        const bool has_colors   = Mesh::HasVertexField(Mesh::VertexField::Color);
+        const bool has_normals  = Mesh::HasVertexField(Mesh::VertexField::Normal);
+        const bool has_texcoord = Mesh::HasVertexField(Mesh::VertexField::TexCoord);
+
         for (size_t face_vertex_idx = 0; face_vertex_idx < Mesh::g_face_positions_2d.size(); ++face_vertex_idx)
         {
             VType vertex = {};
@@ -388,7 +393,7 @@ public:
                 case FaceType::YZ: vertex_position = Mesh::Position(m_depth_pos, pos_2d[1] * m_width, pos_2d[0] * m_height); break;
                 }
             }
-            if (Mesh::HasVertexField(Mesh::VertexField::Normal))
+            if (has_normals)
             {
                 Mesh::Normal& vertex_normal = BaseMesh<VType>::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
                 const float depth_norm = m_depth_pos ? m_depth_pos / std::abs(m_depth_pos) : 1.f;
@@ -399,12 +404,12 @@ public:
                     case FaceType::YZ: vertex_normal = Mesh::Normal(depth_norm, 0.f, 0.f); break;
                 }
             }
-            if (Mesh::HasVertexField(Mesh::VertexField::Color))
+            if (has_colors)
             {
                 Mesh::Color& vertex_color = BaseMesh<VType>::template GetVertexField<Mesh::Color>(vertex, Mesh::VertexField::Color);
                 vertex_color = Mesh::g_colors[color_index % Mesh::g_colors.size()];
             }
-            if (Mesh::HasVertexField(Mesh::VertexField::TexCoord))
+            if (has_texcoord)
             {
                 Mesh::TexCoord& vertex_texcoord = BaseMesh<VType>::template GetVertexField<Mesh::TexCoord>(vertex, Mesh::VertexField::TexCoord);
                 vertex_texcoord = Mesh::g_face_texcoords[face_vertex_idx];
@@ -480,13 +485,13 @@ public:
     {
         ITT_FUNCTION_TASK();
 
-        if (Mesh::HasVertexField(Mesh::VertexField::Color))
+        const bool has_colors    = Mesh::HasVertexField(Mesh::VertexField::Color);
+        const bool has_normals   = Mesh::HasVertexField(Mesh::VertexField::Normal);
+        const bool has_texcoord  = Mesh::HasVertexField(Mesh::VertexField::TexCoord);
+
+        if (has_colors)
         {
             throw std::invalid_argument("Colored vertices are not supported for sphere mesh.");
-        }
-        if (Mesh::HasVertexField(Mesh::VertexField::TexCoord))
-        {
-            throw std::invalid_argument("Textured vertices are not supported for sphere mesh.");
         }
         if (lat_lines_count < 3)
         {
@@ -497,113 +502,154 @@ public:
             throw std::invalid_argument("Longitude lines count should not be less than 3.");
         }
         
+        // In case of textured sphere mesh,
+        // an additional ending longitude line of vertices is added (with same positions as for the first line),
+        // required to complete the texture projection on sphere
+        const uint32_t actual_long_lines_count = has_texcoord ? long_lines_count + 1 : long_lines_count;
+        const uint32_t cap_vertex_count = 2 * (has_texcoord ? actual_long_lines_count : 1);
+
         // Generate sphere vertices
-        
-        BaseMesh::m_vertices.resize((lat_lines_count - 2) * long_lines_count + 2, {});
-        
-        Mesh::Position& first_vertex_position = BaseMesh::template GetVertexField<Mesh::Position>(BaseMesh::m_vertices.front(), Mesh::VertexField::Position);
-        Mesh::Position& last_vertex_position = BaseMesh::template GetVertexField<Mesh::Position>(BaseMesh::m_vertices.back(), Mesh::VertexField::Position);
-        
-        first_vertex_position = Mesh::Position(0.f, m_radius, 0.f);
-        last_vertex_position  = Mesh::Position(0.f, -m_radius, 0.f);
-        
-        if (Mesh::HasVertexField(Mesh::VertexField::Normal))
+
+        BaseMesh::m_vertices.resize((lat_lines_count - 2) * actual_long_lines_count + cap_vertex_count, {});
+
+        if (!has_texcoord)
         {
-            Mesh::Position& first_vertex_normal = BaseMesh::template GetVertexField<Mesh::Normal>(BaseMesh::m_vertices.front(), Mesh::VertexField::Normal);
-            Mesh::Position& last_vertex_normal = BaseMesh::template GetVertexField<Mesh::Normal>(BaseMesh::m_vertices.back(), Mesh::VertexField::Normal);
-        
-            first_vertex_normal = Mesh::Position(0.f,  1.f, 0.f);
-            last_vertex_normal  = Mesh::Position(0.f, -1.f, 0.f);
+            Mesh::Position& first_vertex_position = BaseMesh::template GetVertexField<Mesh::Position>(BaseMesh::m_vertices.front(), Mesh::VertexField::Position);
+            Mesh::Position& last_vertex_position = BaseMesh::template GetVertexField<Mesh::Position>(BaseMesh::m_vertices.back(), Mesh::VertexField::Position);
+
+            first_vertex_position = Mesh::Position(0.f, m_radius, 0.f);
+            last_vertex_position = Mesh::Position(0.f, -m_radius, 0.f);
+
+            if (has_normals)
+            {
+                Mesh::Normal& first_vertex_normal = BaseMesh::template GetVertexField<Mesh::Normal>(BaseMesh::m_vertices.front(), Mesh::VertexField::Normal);
+                Mesh::Normal& last_vertex_normal = BaseMesh::template GetVertexField<Mesh::Normal>(BaseMesh::m_vertices.back(), Mesh::VertexField::Normal);
+
+                first_vertex_normal = Mesh::Normal(0.f, 1.f, 0.f);
+                last_vertex_normal = Mesh::Normal(0.f, -1.f, 0.f);
+            }
         }
+
+        const float texcoord_long_spacing = 1.f / (actual_long_lines_count - 1);
+        const float texcoord_lat_spacing  = 1.f / (lat_lines_count + 1);
         
         cml::matrix33f pitch_step_matrix = { }, yaw_step_matrix = { };
         cml::matrix_rotation_world_x(pitch_step_matrix, cml::constants<float>::pi() / (lat_lines_count - 1));
         cml::matrix_rotation_world_y(yaw_step_matrix, 2.0 * cml::constants<float>::pi() / long_lines_count);
-        
-        cml::matrix33f pitch_matrix = cml::identity_3x3(), yaw_matrix = cml::identity_3x3();
-        for (uint32_t lat_line_index = 1; lat_line_index < lat_lines_count - 1; ++lat_line_index)
+
+        cml::matrix33f pitch_matrix           = has_texcoord ? cml::identity_3x3() : pitch_step_matrix;
+        const uint32_t actual_lat_lines_count = has_texcoord ? lat_lines_count : lat_lines_count - 1;
+        const uint32_t first_lat_line_index   = has_texcoord ? 0 : 1;
+        const uint32_t first_vertex_index     = has_texcoord ? 0 : 1;
+
+        for (uint32_t lat_line_index = first_lat_line_index; lat_line_index < actual_lat_lines_count; ++lat_line_index)
         {
-            pitch_matrix = pitch_matrix * pitch_step_matrix;
-            
-            for(uint32_t long_line_index = 0; long_line_index < long_lines_count; ++long_line_index)
+            cml::matrix33f yaw_matrix = cml::identity_3x3();
+
+            for(uint32_t long_line_index = 0; long_line_index < actual_long_lines_count; ++long_line_index)
             {
                 const cml::matrix33f rotation_matrix = pitch_matrix * yaw_matrix;
-                const uint32_t  vertex_index = (lat_line_index - 1) * long_lines_count + long_line_index + 1;
+                const uint32_t       vertex_index    = (lat_line_index - first_lat_line_index) * actual_long_lines_count + long_line_index + first_vertex_index;
                 
                 VType& vertex = BaseMesh::m_vertices[vertex_index];
                 {
                     Mesh::Position& vertex_position = BaseMesh::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
                     vertex_position = Mesh::Position(0.f, m_radius, 0.f) * rotation_matrix;
                 }
-                if (Mesh::HasVertexField(Mesh::VertexField::Normal))
+                if (has_normals)
                 {
                     Mesh::Normal& vertex_normal = BaseMesh::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
                     vertex_normal = Mesh::Normal(0.f, 1.f, 0.f) * rotation_matrix;
                 }
+                if (has_texcoord)
+                {
+                    Mesh::TexCoord& vertex_texcoord = BaseMesh::template GetVertexField<Mesh::TexCoord>(vertex, Mesh::VertexField::TexCoord);
+                    vertex_texcoord = Mesh::TexCoord(texcoord_long_spacing * long_line_index, texcoord_lat_spacing * lat_line_index);
+                }
                 
                 yaw_matrix = yaw_matrix * yaw_step_matrix;
             }
+
+            pitch_matrix = pitch_matrix * pitch_step_matrix;
         }
         
         // Generate sphere indices
-        
-        const uint32_t sphere_faces_count = (lat_lines_count - 2) * long_lines_count * 2;
+
+        const uint32_t sphere_faces_count = (has_texcoord ? lat_lines_count      : lat_lines_count - 2) * long_lines_count * 2;
         BaseMesh::m_indices.resize(sphere_faces_count * 3, 0);
-        
+
         uint32_t index_offset = 0;
-        for(Mesh::Index long_line_index = 0; long_line_index < long_lines_count - 1; ++long_line_index)
+
+        if (!has_texcoord)
         {
+            // Top cap triangles reuse single pole vertex
+
+            for(Mesh::Index long_line_index = 0; long_line_index < actual_long_lines_count - 1; ++long_line_index)
+            {
+                BaseMesh::m_indices[index_offset]     = 0;
+                BaseMesh::m_indices[index_offset + 1] = long_line_index + 2;
+                BaseMesh::m_indices[index_offset + 2] = long_line_index + 1;
+
+                index_offset += 3;
+            }
+
             BaseMesh::m_indices[index_offset]     = 0;
-            BaseMesh::m_indices[index_offset + 1] = long_line_index + 2;
-            BaseMesh::m_indices[index_offset + 2] = long_line_index + 1;
+            BaseMesh::m_indices[index_offset + 1] = 1;
+            BaseMesh::m_indices[index_offset + 2] = long_lines_count;
+
             index_offset += 3;
         }
 
-        BaseMesh::m_indices[index_offset]     = 0;
-        BaseMesh::m_indices[index_offset + 1] = 1;
-        BaseMesh::m_indices[index_offset + 2] = long_lines_count;
-        
-        index_offset += 3;
+        const uint32_t vertices_count         = static_cast<uint32_t>(BaseMesh::m_vertices.size());
+        const uint32_t index_lat_lines_count  = has_texcoord ? lat_lines_count - 1 : lat_lines_count - 3;
+        const uint32_t index_long_lines_count = has_texcoord ? long_lines_count + 1 : long_lines_count - 1;
 
-        const uint32_t vertices_count = static_cast<uint32_t>(BaseMesh::m_vertices.size());
-        for (uint32_t lat_line_index = 0; lat_line_index < lat_lines_count - 3; ++lat_line_index)
+        for (uint32_t lat_line_index = 0; lat_line_index < index_lat_lines_count; ++lat_line_index)
         {
-            for(uint32_t long_line_index = 0; long_line_index < long_lines_count - 1; ++long_line_index)
+            for (uint32_t long_line_index = 0; long_line_index < index_long_lines_count; ++long_line_index)
             {
-                BaseMesh::m_indices[index_offset]     = lat_line_index * long_lines_count + long_line_index + 1;
-                BaseMesh::m_indices[index_offset + 1] = lat_line_index * long_lines_count + long_line_index + 2;
-                BaseMesh::m_indices[index_offset + 2] = (lat_line_index + 1) * long_lines_count + long_line_index + 1;
+                BaseMesh::m_indices[index_offset]     = (lat_line_index      * actual_long_lines_count) + long_line_index + first_vertex_index;
+                BaseMesh::m_indices[index_offset + 1] = (lat_line_index      * actual_long_lines_count) + long_line_index + first_vertex_index + 1;
+                BaseMesh::m_indices[index_offset + 2] = (lat_line_index + 1) * actual_long_lines_count  + long_line_index + first_vertex_index;
 
-                BaseMesh::m_indices[index_offset + 3] = (lat_line_index + 1) * long_lines_count + long_line_index + 1;
-                BaseMesh::m_indices[index_offset + 4] = lat_line_index * long_lines_count + long_line_index + 2;
-                BaseMesh::m_indices[index_offset + 5] = (lat_line_index + 1) * long_lines_count + long_line_index + 2;
+                BaseMesh::m_indices[index_offset + 3] = (lat_line_index + 1) * actual_long_lines_count  + long_line_index + first_vertex_index;
+                BaseMesh::m_indices[index_offset + 4] = (lat_line_index      * actual_long_lines_count) + long_line_index + first_vertex_index + 1;
+                BaseMesh::m_indices[index_offset + 5] = (lat_line_index + 1) * actual_long_lines_count  + long_line_index + first_vertex_index + 1;
 
                 index_offset += 6;
             }
 
-            BaseMesh::m_indices[index_offset]     = (lat_line_index * long_lines_count) + long_lines_count;
-            BaseMesh::m_indices[index_offset + 1] = (lat_line_index * long_lines_count) + 1;
-            BaseMesh::m_indices[index_offset + 2] = ((lat_line_index + 1) * long_lines_count) + long_lines_count;
+            if (!has_texcoord)
+            {
+                BaseMesh::m_indices[index_offset]     = (lat_line_index      * actual_long_lines_count) + actual_long_lines_count;
+                BaseMesh::m_indices[index_offset + 1] = (lat_line_index      * actual_long_lines_count) + 1;
+                BaseMesh::m_indices[index_offset + 2] = (lat_line_index + 1) * actual_long_lines_count  + actual_long_lines_count;
 
-            BaseMesh::m_indices[index_offset + 3] = ((lat_line_index + 1) * long_lines_count) + long_lines_count;
-            BaseMesh::m_indices[index_offset + 4] = (lat_line_index * long_lines_count) + 1;
-            BaseMesh::m_indices[index_offset + 5] = ((lat_line_index + 1) * long_lines_count) + 1;
+                BaseMesh::m_indices[index_offset + 3] = (lat_line_index + 1) * actual_long_lines_count  + actual_long_lines_count;
+                BaseMesh::m_indices[index_offset + 4] = (lat_line_index      * actual_long_lines_count) + 1;
+                BaseMesh::m_indices[index_offset + 5] = (lat_line_index + 1) * actual_long_lines_count  + 1;
 
-            index_offset += 6;
+                index_offset += 6;
+            }
         }
 
-        for(uint32_t long_line_index = 0; long_line_index < long_lines_count - 1; ++long_line_index)
+        if (!has_texcoord)
         {
+            // Bottom cap triangles reuse single pole vertex
+
+            for (uint32_t long_line_index = 0; long_line_index < index_long_lines_count; ++long_line_index)
+            {
+                BaseMesh::m_indices[index_offset]     = (vertices_count - 1);
+                BaseMesh::m_indices[index_offset + 1] = (vertices_count - 1) - (long_line_index + 2);
+                BaseMesh::m_indices[index_offset + 2] = (vertices_count - 1) - (long_line_index + 1);
+
+                index_offset += 3;
+            }
+
             BaseMesh::m_indices[index_offset]     = (vertices_count - 1);
-            BaseMesh::m_indices[index_offset + 1] = (vertices_count - 1) - (long_line_index + 2);
-            BaseMesh::m_indices[index_offset + 2] = (vertices_count - 1) - (long_line_index + 1);
-
-            index_offset += 3;
+            BaseMesh::m_indices[index_offset + 1] = (vertices_count - 2);
+            BaseMesh::m_indices[index_offset + 2] = (vertices_count - 1) - actual_long_lines_count;
         }
-
-        BaseMesh::m_indices[index_offset]     = (vertices_count - 1);
-        BaseMesh::m_indices[index_offset + 1] = (vertices_count - 2);
-        BaseMesh::m_indices[index_offset + 2] = (vertices_count - 1) - long_lines_count;
     }
     
     const float GetRadius() const noexcept { return m_radius; }
@@ -623,7 +669,12 @@ public:
         , m_radius(radius)
     {
         ITT_FUNCTION_TASK();
-        if (Mesh::HasVertexField(Mesh::VertexField::Color))
+
+        const bool has_colors   = Mesh::HasVertexField(Mesh::VertexField::Color);
+        const bool has_normals  = Mesh::HasVertexField(Mesh::VertexField::Normal);
+        const bool has_texcoord = Mesh::HasVertexField(Mesh::VertexField::TexCoord);
+
+        if (has_colors)
         {
             throw std::invalid_argument("Colored vertices are not supported for icosahedron mesh.");
         }
@@ -653,13 +704,13 @@ public:
             Mesh::Position& vertex_position = BaseMesh::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
             vertex_position = vertex_positions[vertex_index];
             
-            if (Mesh::HasVertexField(Mesh::VertexField::Normal))
+            if (has_normals)
             {
                 Mesh::Normal& vertex_normal = BaseMesh::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
                 vertex_normal = cml::normalize(vertex_position);
             }
             
-            if (Mesh::HasVertexField(Mesh::VertexField::TexCoord))
+            if (has_texcoord)
             {
                 Mesh::TexCoord& vertex_texcoord = BaseMesh::template GetVertexField<Mesh::TexCoord>(vertex, Mesh::VertexField::TexCoord);
                 const Mesh::Position vertex_direction = cml::normalize(vertex_position);
@@ -746,12 +797,15 @@ public:
     void Spherify()
     {
         ITT_FUNCTION_TASK();
+
+        const bool has_normals = Mesh::HasVertexField(Mesh::VertexField::Normal);
+
         for(VType& vertex : BaseMesh::m_vertices)
         {
             Mesh::Position& vertex_position = BaseMesh::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
             vertex_position = cml::normalize(vertex_position) * m_radius;
             
-            if (Mesh::HasVertexField(Mesh::VertexField::Normal))
+            if (has_normals)
             {
                 Mesh::Normal& vertex_normal = BaseMesh::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
                 vertex_normal = cml::normalize(vertex_position);
