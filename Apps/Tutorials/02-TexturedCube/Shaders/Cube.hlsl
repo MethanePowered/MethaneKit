@@ -1,3 +1,18 @@
+struct VSInput
+{
+    float3 position         : POSITION;
+    float3 normal           : NORMAL;
+    float2 texcoord         : TEXCOORD;
+};
+
+struct PSInput
+{
+    float4 position         : SV_POSITION;
+    float3 world_position   : POSITION;
+    float3 world_normal     : NORMAL;
+    float2 texcoord         : TEXCOORD;
+};
+
 struct Constants
 {
     float4 light_color;
@@ -18,21 +33,6 @@ ConstantBuffer<Constants> g_constants : register(b1);
 ConstantBuffer<Uniforms>  g_uniforms  : register(b2);
 Texture2D                 g_texture   : register(t0);
 SamplerState              g_sampler   : register(s0);
-
-struct VSInput
-{
-    float3 position         : POSITION;
-    float3 normal           : NORMAL;
-    float2 texcoord         : TEXCOORD;
-};
-
-struct PSInput
-{
-    float4 position         : SV_POSITION;
-    float3 world_position   : POSITION;
-    float3 world_normal     : NORMAL;
-    float2 texcoord         : TEXCOORD;
-};
 
 PSInput CubeVS(VSInput input)
 {
