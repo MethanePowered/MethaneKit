@@ -17,7 +17,7 @@ set(SOURCES
 
 set(IMAGES_DIR ${RESOURCES_DIR}/Images)
 set(TEXTURES
-    ${IMAGES_DIR}/Textures/Planet/Earth/Day.jpg
+    ${IMAGES_DIR}/Textures/Planet/Mars.jpg
     ${IMAGES_DIR}/Textures/SkyBox/Galaxy/PositiveX.jpg
     ${IMAGES_DIR}/Textures/SkyBox/Galaxy/NegativeX.jpg
     ${IMAGES_DIR}/Textures/SkyBox/Galaxy/PositiveY.jpg

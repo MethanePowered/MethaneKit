@@ -90,11 +90,11 @@ AsteroidsApp::AsteroidsApp()
 {
     ITT_FUNCTION_TASK();
 
-    m_view_camera.SetOrientation({ { 0.f, 70.f, 220.f }, { 0.f, -120.f, 0.f }, { 0.f, 1.f, 0.f } });
+    m_view_camera.SetOrientation({ { 0.f, 60.f, 250.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f } });
     m_view_camera.SetParamters({ 0.01f, 600.f, 90.f });
     m_view_camera.SetZoomDistanceRange({ 15.f , 400.f });
 
-    m_light_camera.SetOrientation({ { 0.f, 120.f, 0.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f } });
+    m_light_camera.SetOrientation({ { -100.f, 120.f, 0.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
     m_light_camera.SetParamters({ -300.f, 300.f, 90.f });
     m_light_camera.Resize(120.f, 120.f);
@@ -130,7 +130,6 @@ void AsteroidsApp::Init()
 
     // Create sky-box
     m_sp_sky_box = std::make_shared<gfx::SkyBox>(context, m_image_loader, gfx::SkyBox::Settings{
-        m_scene_scale * 100.f,
         m_view_camera,
         {
             "Textures/SkyBox/Galaxy/PositiveX.jpg",
@@ -139,10 +138,22 @@ void AsteroidsApp::Init()
             "Textures/SkyBox/Galaxy/NegativeY.jpg",
             "Textures/SkyBox/Galaxy/PositiveZ.jpg",
             "Textures/SkyBox/Galaxy/NegativeZ.jpg"
-        }
+        },
+        m_scene_scale * 100.f
     });
 
-    // Create vertex and index buffer for meshes
+    // Create planet
+    m_sp_planet = std::make_shared<Planet>(context, m_image_loader, Planet::Settings{
+        m_view_camera,
+        m_light_camera,
+        "Textures/Planet/Mars.jpg",
+        gfx::Vector3f(0.f, 0.f, 0.f),
+        m_scene_scale * 3.f,
+        0.1f,
+        true
+    });
+
+    // Create asteroids array
     m_sp_asteroids_array = m_sp_asteroids_array_state
                          ? std::make_unique<AsteroidsArray>(context, m_asteroids_array_settings, *m_sp_asteroids_array_state)
                          : std::make_unique<AsteroidsArray>(context, m_asteroids_array_settings);
@@ -190,7 +201,7 @@ void AsteroidsApp::Init()
         },
         context_settings.depth_stencil_format
     });
-    state_settings.sp_program->SetName("Textured Phong Lighting");
+    state_settings.sp_program->SetName("Asteroids trip-planar texturing and light shading");
     state_settings.viewports     = { gfx::GetFrameViewport(context_settings.frame_size) };
     state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };
     state_settings.depth.enabled = true;
@@ -213,15 +224,23 @@ void AsteroidsApp::Init()
         frame.skybox.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, sizeof(gfx::SkyBox::Uniforms));
         frame.skybox.sp_uniforms_buffer->SetName(IndexedName("Sky-box Uniforms Buffer", frame.index));
 
+        // Create uniforms buffer for Planet rendering
+        frame.planet.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, sizeof(Planet::Uniforms));
+        frame.planet.sp_uniforms_buffer->SetName(IndexedName("Planet Uniforms Buffer", frame.index));
+
+        // Create uniforms buffer for Asteroids array rendering
+        frame.asteroids.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, asteroid_uniforms_data_size, true);
+        frame.asteroids.sp_uniforms_buffer->SetName(IndexedName("Asteroids Array Uniforms Buffer", frame.index));
+
         // Resource bindings for Sky-Box rendering
         frame.skybox.resource_bindings_array.resize(1);
         frame.skybox.resource_bindings_array[0] = m_sp_sky_box->CreateResourceBindings(frame.skybox.sp_uniforms_buffer);
 
-        // Create uniforms buffer for Cube rendering
-        frame.asteroids.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, asteroid_uniforms_data_size, true);
-        frame.asteroids.sp_uniforms_buffer->SetName(IndexedName("Cube Uniforms Buffer", frame.index));
+        // Resource bindings for Planet rendering
+        frame.planet.resource_bindings_array.resize(1);
+        frame.planet.resource_bindings_array[0] = m_sp_planet->CreateResourceBindings(m_sp_const_buffer, frame.planet.sp_uniforms_buffer);
 
-        // Resource bindings for asteroids rendering
+        // Resource bindings for Asteroids rendering
         frame.asteroids.resource_bindings_array.resize(m_asteroids_array_settings.instance_count);
         if (m_asteroids_array_settings.instance_count == 0)
             continue;
@@ -247,6 +266,7 @@ void AsteroidsApp::Init()
     }
 
     // Setup animations
+    m_animations.push_back(std::make_shared<Data::TimeAnimation>(std::bind(&Planet::Update, m_sp_planet.get(), std::placeholders::_1, std::placeholders::_2)));
     m_animations.push_back(std::make_shared<Data::TimeAnimation>(std::bind(&AsteroidsArray::Update, m_sp_asteroids_array.get(), std::placeholders::_1, std::placeholders::_2)));
 
     // Complete initialization of render context:
@@ -270,6 +290,7 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     m_sp_state->SetViewports({ gfx::GetFrameViewport(frame_size) });
     m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
     m_sp_sky_box->Resize(frame_size);
+    m_sp_planet->Resize(frame_size);
 
     m_view_camera.Resize(static_cast<float>(frame_size.width), static_cast<float>(frame_size.height));
     return true;
@@ -306,14 +327,21 @@ void AsteroidsApp::Render()
     frame.asteroids.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_asteroids_array->GetFinalPassUniforms()),
                                                     m_sp_asteroids_array->GetUniformsBufferSize() } });
 
-    // Sky-box drawing
     assert(!!frame.sp_cmd_list);
+
+    // Sky-box drawing
     assert(!!frame.skybox.sp_uniforms_buffer);
     assert(!!frame.skybox.resource_bindings_array[0]);
     assert(!!m_sp_sky_box);
     m_sp_sky_box->Draw(*frame.sp_cmd_list, *frame.skybox.sp_uniforms_buffer, *frame.skybox.resource_bindings_array[0]);
 
-    // Cube drawing
+    // Planet drawing
+    assert(!!frame.planet.sp_uniforms_buffer);
+    assert(!!frame.planet.resource_bindings_array[0]);
+    assert(!!m_sp_planet);
+    m_sp_planet->Draw(*frame.sp_cmd_list, *frame.planet.sp_uniforms_buffer, *frame.planet.resource_bindings_array[0]);
+
+    // Asteroids drawing
     frame.sp_cmd_list->Reset(*m_sp_state, "Asteroids rendering");
 
     assert(!!m_sp_asteroids_array);
@@ -341,6 +369,7 @@ void AsteroidsApp::OnContextReleased()
 
     m_animations.clear();
     m_sp_sky_box.reset();
+    m_sp_planet.reset();
     m_sp_asteroids_array.reset();
     m_sp_texture_sampler.reset();
     m_sp_const_buffer.reset();

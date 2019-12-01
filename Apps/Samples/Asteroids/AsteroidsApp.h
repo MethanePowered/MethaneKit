@@ -23,6 +23,7 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 
 #pragma once
 
+#include "Planet.h"
 #include "AsteroidsArray.h"
 
 #include <Methane/Graphics/Kit.h>
@@ -46,6 +47,7 @@ struct AsteroidsFrame final : gfx::AppFrame
     gfx::RenderCommandList::Ptr  sp_cmd_list;
     gfx::Buffer::Ptr             sp_scene_uniforms_buffer;
     MeshBufferBindings           skybox;
+    MeshBufferBindings           planet;
     MeshBufferBindings           asteroids;
 
     using gfx::AppFrame::AppFrame;
@@ -89,10 +91,11 @@ private:
     const AsteroidsArray::Settings  m_asteroids_array_settings;
 
     SceneUniforms                   m_scene_uniforms = { };
-    gfx::SkyBox::Ptr                m_sp_sky_box;
     gfx::RenderState::Ptr           m_sp_state;
     gfx::Buffer::Ptr                m_sp_const_buffer;
     gfx::Sampler::Ptr               m_sp_texture_sampler;
+    gfx::SkyBox::Ptr                m_sp_sky_box;
+    Planet::Ptr                     m_sp_planet;
     AsteroidsArray::Ptr             m_sp_asteroids_array;
     AsteroidsArray::State::Ptr      m_sp_asteroids_array_state;
 };

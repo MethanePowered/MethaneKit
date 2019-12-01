@@ -104,6 +104,10 @@ Mesh::Mesh(Type type, const VertexLayout& vertex_layout)
     , m_vertex_size(GetVertexSize(m_vertex_layout))
 {
     ITT_FUNCTION_TASK();
+    if (!Mesh::HasVertexField(Mesh::VertexField::Position))
+    {
+        throw std::invalid_argument("Vertex positions must be available in mesh layout.");
+    }
 }
 
 bool Mesh::HasVertexField(VertexField field) const noexcept
