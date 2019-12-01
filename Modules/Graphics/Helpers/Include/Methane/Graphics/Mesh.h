@@ -537,7 +537,10 @@ public:
         cml::matrix_rotation_world_x(pitch_step_matrix, cml::constants<float>::pi() / (lat_lines_count - 1));
         cml::matrix_rotation_world_y(yaw_step_matrix, 2.0 * cml::constants<float>::pi() / long_lines_count);
 
-        cml::matrix33f pitch_matrix           = has_texcoord ? cml::identity_3x3() : pitch_step_matrix;
+        cml::matrix33f pitch_matrix = cml::identity_3x3();
+        if (!has_texcoord)
+            pitch_matrix = pitch_step_matrix;
+        
         const uint32_t actual_lat_lines_count = has_texcoord ? lat_lines_count : lat_lines_count - 1;
         const uint32_t first_lat_line_index   = has_texcoord ? 0 : 1;
         const uint32_t first_vertex_index     = has_texcoord ? 0 : 1;
