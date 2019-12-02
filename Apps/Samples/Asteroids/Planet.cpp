@@ -53,8 +53,6 @@ Planet::Planet(gfx::Context& context, gfx::ImageLoader& image_loader, const Sett
 {
     ITT_FUNCTION_TASK();
 
-    m_mesh_buffers.SetSubsetTexture(image_loader.LoadImageToTexture2D(m_context, m_settings.texture_path, m_settings.mipmapped));
-
     const gfx::Context::Settings& context_settings = context.GetSettings();
 
     gfx::RenderState::Settings state_settings;
@@ -64,29 +62,31 @@ Planet::Planet(gfx::Context& context, gfx::ImageLoader& image_loader, const Sett
             gfx::Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "Planet", "PlanetPS" }, { } }),
         },
         { { {
-            { "input_position", "POSITION" },
-            { "input_normal",   "NORMAL"   },
-            { "input_texcoord", "TEXCOORD" },
+                { "input_position", "POSITION" },
+                { "input_normal",   "NORMAL"   },
+                { "input_texcoord", "TEXCOORD" },
         } } },
         { "g_constants", "g_texture", "g_sampler" },
         { },
         { context_settings.color_format },
         context_settings.depth_stencil_format
     });
-    state_settings.sp_program->SetName("Planet shading");
+    state_settings.sp_program->SetName("Planet Shaders");
     state_settings.viewports     = { gfx::GetFrameViewport(context_settings.frame_size) };
     state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };
     state_settings.depth.enabled = true;
 
     m_sp_state = gfx::RenderState::Create(context, state_settings);
-    m_sp_state->SetName("Sky-box render state");
+    m_sp_state->SetName("Planet Render State");
+    
+    m_mesh_buffers.SetSubsetTexture(image_loader.LoadImageToTexture2D(m_context, m_settings.texture_path, m_settings.mipmapped));
 
     m_sp_texture_sampler = gfx::Sampler::Create(context, {
         { gfx::Sampler::Filter::MinMag::Linear     },
         { gfx::Sampler::Address::Mode::ClampToEdge },
         gfx::Sampler::LevelOfDetail(m_settings.lod_bias)
     });
-    m_sp_texture_sampler->SetName("Sky-box Texture Sampler");
+    m_sp_texture_sampler->SetName("Planet Texture Sampler");
 }
 
 gfx::Program::ResourceBindings::Ptr Planet::CreateResourceBindings(const gfx::Buffer::Ptr& sp_constants_buffer, const gfx::Buffer::Ptr& sp_uniforms_buffer)
@@ -132,15 +132,19 @@ bool Planet::Update(double elapsed_seconds, double)
     return true;
 }
 
-void Planet::Draw(gfx::RenderCommandList& cmd_list, gfx::Buffer& uniforms_buffer, gfx::Program::ResourceBindings& resource_bindings)
+void Planet::Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings)
 {
     ITT_FUNCTION_TASK();
 
-    assert(uniforms_buffer.GetDataSize() >= sizeof(Uniforms));
-    uniforms_buffer.SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_mesh_buffers.GetFinalPassUniforms()), sizeof(Uniforms) } });
+    assert(!!buffer_bindings.sp_uniforms_buffer);
+    assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= sizeof(Uniforms));
+    buffer_bindings.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_mesh_buffers.GetFinalPassUniforms()), sizeof(Uniforms) } });
 
     cmd_list.Reset(*m_sp_state, "Planet rendering");
-    m_mesh_buffers.Draw(cmd_list, resource_bindings);
+    
+    assert(!buffer_bindings.resource_bindings_per_instance.empty());
+    assert(!!buffer_bindings.resource_bindings_per_instance[0]);
+    m_mesh_buffers.Draw(cmd_list, *buffer_bindings.resource_bindings_per_instance[0]);
 }
 
 } // namespace Methane::Graphics

@@ -116,15 +116,19 @@ void SkyBox::Update()
     m_mesh_buffers.SetFinalPassUniforms({ model_scale_matrix * model_translate_matrix * scene_view_matrix * scene_proj_matrix });
 }
 
-void SkyBox::Draw(RenderCommandList& cmd_list, Buffer& uniforms_buffer, Program::ResourceBindings& resource_bindings)
+void SkyBox::Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindings)
 {
     ITT_FUNCTION_TASK();
-
-    assert(uniforms_buffer.GetDataSize() >= sizeof(Uniforms));
-    uniforms_buffer.SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_mesh_buffers.GetFinalPassUniforms()), sizeof(Uniforms) } });
+    
+    assert(!!buffer_bindings.sp_uniforms_buffer);
+    assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= sizeof(Uniforms));
+    buffer_bindings.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_mesh_buffers.GetFinalPassUniforms()), sizeof(Uniforms) } });
 
     cmd_list.Reset(*m_sp_state, "Sky-box rendering");
-    m_mesh_buffers.Draw(cmd_list, resource_bindings);
+    
+    assert(!buffer_bindings.resource_bindings_per_instance.empty());
+    assert(!!buffer_bindings.resource_bindings_per_instance[0]);
+    m_mesh_buffers.Draw(cmd_list, *buffer_bindings.resource_bindings_per_instance[0]);
 }
 
 } // namespace Methane::Graphics

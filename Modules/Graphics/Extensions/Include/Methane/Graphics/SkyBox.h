@@ -64,7 +64,7 @@ public:
     Program::ResourceBindings::Ptr CreateResourceBindings(const Buffer::Ptr& sp_uniforms_buffer);
     void Resize(const FrameSize& frame_size);
     void Update();
-    void Draw(RenderCommandList& cmd_list, Buffer& uniforms_buffer, Program::ResourceBindings& resource_bindings);
+    void Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindings);
 
 private:
     using TexturedMeshBuffers = TexturedMeshBuffers<Uniforms>;
