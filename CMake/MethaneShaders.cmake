@@ -47,13 +47,6 @@ function(get_shaders_config SHADERS_HLSL SHADERS_CONFIG)
     set(${SHADERS_CONFIG} "${SHADERS_PATH}.cfg" PARENT_SCOPE)
 endfunction()
 
-function(get_file_name FILE_PATH FILE_NAME)
-    trim_spaces(${FILE_PATH} FILE_PATH)
-    split_by_last_delimiter(${FILE_PATH} "." PATH EXTENSION)
-    string(REGEX MATCH "[^/\\]+$" NAME ${PATH})
-    set(${FILE_NAME} ${NAME} PARENT_SCOPE)
-endfunction()
-
 function(get_metal_library FOR_TARGET SHADERS_HLSL METAL_LIBRARY)
     get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
     get_file_name(${SHADERS_HLSL} SHADERS_NAME)
