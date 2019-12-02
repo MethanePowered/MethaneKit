@@ -40,6 +40,14 @@ Mesh buffers with texture extension structure.
 
 namespace Methane::Graphics
 {
+    
+struct MeshBufferBindings
+{
+    using ResourceBindingsArray = std::vector<Program::ResourceBindings::Ptr>;
+    
+    Buffer::Ptr           sp_uniforms_buffer;
+    ResourceBindingsArray resource_bindings_per_instance;
+};
 
 template<typename UniformsType>
 class MeshBuffers
@@ -105,7 +113,7 @@ public:
                              instance_count, start_instance);
     }
 
-    void Draw(RenderCommandList& cmd_list, const std::vector<Program::ResourceBindings::Ptr>& instance_resource_bindings)
+    void Draw(RenderCommandList& cmd_list, const MeshBufferBindings::ResourceBindingsArray& instance_resource_bindings)
     {
         ITT_FUNCTION_TASK();
 
@@ -147,7 +155,7 @@ public:
         return m_final_pass_instance_uniforms[instance_index];
     }
 
-    void  SetFinalPassUniforms(UniformsType&& uniforms, uint32_t instance_index = 0)
+    void SetFinalPassUniforms(UniformsType&& uniforms, uint32_t instance_index = 0)
     {
         ITT_FUNCTION_TASK();
 
@@ -160,16 +168,10 @@ public:
     Data::Size GetUniformsBufferSize() const
     {
         ITT_FUNCTION_TASK();
-        return m_final_pass_instance_uniforms.empty() ? 0 : static_cast<Data::Size>(m_final_pass_instance_uniforms.size() * sizeof(m_final_pass_instance_uniforms[0]));
-    }
-    
-    Data::Size GetUniformsBufferOffset(uint32_t instance_index) const
-    {
-        ITT_FUNCTION_TASK();
-        return static_cast<Data::Size>(
-            reinterpret_cast<const char*>(&m_final_pass_instance_uniforms[instance_index]) -
-            reinterpret_cast<const char*>(m_final_pass_instance_uniforms.data())
-        );
+        if (m_final_pass_instance_uniforms.empty())
+            return 0;
+        
+        return Buffer::GetAlignedBufferSize(static_cast<Data::Size>(m_final_pass_instance_uniforms.size() * sizeof(m_final_pass_instance_uniforms[0])));
     }
 
 protected:
@@ -187,6 +189,15 @@ protected:
     {
         assert(!!m_sp_index);
         return *m_sp_index;
+    }
+    
+    Data::Size GetUniformsBufferOffset(uint32_t instance_index) const
+    {
+        ITT_FUNCTION_TASK();
+        return static_cast<Data::Size>(
+            reinterpret_cast<const char*>(&m_final_pass_instance_uniforms[instance_index]) -
+            reinterpret_cast<const char*>(m_final_pass_instance_uniforms.data())
+        );
     }
 
 private:

@@ -25,6 +25,7 @@ Random generated asteroids array with uber mesh and textures ready for rendering
 
 #include <Methane/Graphics/Noise.hpp>
 #include <Methane/Data/Parallel.hpp>
+#include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Data/Instrumentation.h>
 
 namespace Methane::Samples
@@ -97,7 +98,7 @@ uint32_t AsteroidsArray::UberMesh::GetSubsetSubdivision(uint32_t subset_index) c
     return m_min_subdivision + subdivision_index;
 }
 
-AsteroidsArray::State::State(const Settings& settings)
+AsteroidsArray::ContentState::ContentState(const Settings& settings)
     : uber_mesh(settings.unique_mesh_count, settings.subdivisions_count, 1, settings.random_seed)
 {
     ITT_FUNCTION_TASK();
@@ -201,35 +202,104 @@ AsteroidsArray::State::State(const Settings& settings)
 }
 
 AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
-    : AsteroidsArray(context, settings, *std::make_shared<State>(settings))
+    : AsteroidsArray(context, settings, *std::make_shared<ContentState>(settings))
 {
     ITT_FUNCTION_TASK();
 }
 
-AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings, State& state)
+AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings, ContentState& state)
     : BaseBuffers(context, state.uber_mesh, "Asteroids Array")
     , m_settings(std::move(settings))
-    , m_sp_state(state.shared_from_this())
+    , m_sp_content_state(state.shared_from_this())
 {
     ITT_FUNCTION_TASK();
+    
+    const gfx::Context::Settings& context_settings = context.GetSettings();
+    
+    gfx::RenderState::Settings state_settings;
+    state_settings.sp_program = gfx::Program::Create(context, {
+        {
+            gfx::Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidVS" }, { } }),
+            gfx::Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidPS" }, { } }),
+        },
+        { { {
+                { "input_position", "POSITION" },
+                { "input_normal",   "NORMAL"   },
+        } } },
+        { "g_constants", "g_texture_sampler" },
+        { "g_mesh_uniforms" },
+        { context_settings.color_format },
+        context_settings.depth_stencil_format
+    });
+    state_settings.sp_program->SetName("Asteroid Shaders");
+    state_settings.viewports     = { gfx::GetFrameViewport(context_settings.frame_size) };
+    state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };
+    state_settings.depth.enabled = true;
+    
+    m_sp_render_state = gfx::RenderState::Create(context, state_settings);
+    m_sp_render_state->SetName("Asteroids Render State");
 
     SetInstanceCount(m_settings.instance_count);
 
     // Create texture arrays initialized with sub-resources data
     m_unique_textures.reserve(m_settings.textures_count);
-    for(const gfx::Resource::SubResources& texture_subresources : m_sp_state->texture_array_subresources)
+    for(const gfx::Resource::SubResources& texture_subresources : m_sp_content_state->texture_array_subresources)
     {
         m_unique_textures.emplace_back(gfx::Texture::CreateImage(context, m_settings.texture_dimensions, static_cast<uint32_t>(texture_subresources.size()), gfx::PixelFormat::RGBA8Unorm, true));
         m_unique_textures.back()->SetData(texture_subresources);
     }
 
     // Distribute textures between unique mesh subsets
-    for (uint32_t subset_index = 0; subset_index < m_sp_state->mesh_subset_texture_indices.size(); ++subset_index)
+    for (uint32_t subset_index = 0; subset_index < m_sp_content_state->mesh_subset_texture_indices.size(); ++subset_index)
     {
-        const uint32_t subset_texture_index = m_sp_state->mesh_subset_texture_indices[subset_index];
+        const uint32_t subset_texture_index = m_sp_content_state->mesh_subset_texture_indices[subset_index];
         assert(subset_texture_index < m_unique_textures.size());
         SetSubsetTexture(m_unique_textures[subset_texture_index], subset_index);
     }
+    
+    m_sp_texture_sampler = gfx::Sampler::Create(context, {
+        { gfx::Sampler::Filter::MinMag::Linear     },
+        { gfx::Sampler::Address::Mode::ClampToZero }
+    });
+    m_sp_texture_sampler->SetName("Asteroid Texture Sampler");
+}
+    
+gfx::MeshBufferBindings::ResourceBindingsArray AsteroidsArray::CreateResourceBindings(const gfx::Buffer::Ptr &sp_constants_buffer,
+                                                                                      const gfx::Buffer::Ptr &sp_scene_uniforms_buffer,
+                                                                                      const gfx::Buffer::Ptr &sp_asteroids_uniforms_buffer)
+{
+    gfx::MeshBufferBindings::ResourceBindingsArray resource_bindings_array;
+    if (m_settings.instance_count == 0)
+        return resource_bindings_array;
+    
+    resource_bindings_array.resize(m_settings.instance_count);
+    resource_bindings_array[0] = gfx::Program::ResourceBindings::Create(m_sp_render_state->GetSettings().sp_program, {
+        { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { sp_asteroids_uniforms_buffer, GetUniformsBufferOffset(0) } },
+        { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { sp_scene_uniforms_buffer } },
+        { { gfx::Shader::Type::Pixel,  "g_constants"      }, { sp_constants_buffer      } },
+        { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, { GetInstanceTexturePtr(0) } },
+        { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { m_sp_texture_sampler     } },
+    });
+
+    Data::ParallelFor<uint32_t>(1u, m_settings.instance_count - 1,
+        [&](uint32_t asteroid_index)
+        {
+            const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(asteroid_index);
+            resource_bindings_array[asteroid_index] = gfx::Program::ResourceBindings::CreateCopy(*resource_bindings_array[0], {
+                { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { sp_asteroids_uniforms_buffer, asteroid_uniform_offset } },
+                { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, { GetInstanceTexturePtr(asteroid_index)                 } },
+            });
+        }
+    );
+    
+    return resource_bindings_array;
+}
+
+void AsteroidsArray::Resize(const gfx::FrameSize &frame_size)
+{
+    assert(m_sp_render_state);
+    m_sp_render_state->SetViewports({ gfx::GetFrameViewport(frame_size) });
+    m_sp_render_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
 }
 
 bool AsteroidsArray::Update(double elapsed_seconds, double delta_seconds)
@@ -239,7 +309,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double delta_seconds)
     gfx::Matrix44f scene_view_matrix, scene_proj_matrix;
     m_settings.view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
 
-    for(Asteroid::Parameters& asteroid_parameters : m_sp_state->parameters)
+    for(Asteroid::Parameters& asteroid_parameters : m_sp_content_state->parameters)
     {
         asteroid_parameters.spin_angle_rad  += cml::constants<float>::pi() * asteroid_parameters.spin_speed  * static_cast<float>(delta_seconds);
         asteroid_parameters.orbit_angle_rad += cml::constants<float>::pi() * asteroid_parameters.orbit_speed * static_cast<float>(delta_seconds);
@@ -267,14 +337,27 @@ bool AsteroidsArray::Update(double elapsed_seconds, double delta_seconds)
 
     return true;
 }
+    
+void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, gfx::MeshBufferBindings& buffer_bindings)
+{
+    const Data::Size uniforms_buffer_size = GetUniformsBufferSize();
+    assert(buffer_bindings.sp_uniforms_buffer);
+    assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= uniforms_buffer_size);
+    buffer_bindings.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&GetFinalPassUniforms()), uniforms_buffer_size } });
+    
+    cmd_list.Reset(*m_sp_render_state, "Asteroids rendering");
+    
+    assert(buffer_bindings.resource_bindings_per_instance.size() == m_settings.instance_count);
+    BaseBuffers::Draw(cmd_list, buffer_bindings.resource_bindings_per_instance);
+}
 
 uint32_t AsteroidsArray::GetSubsetByInstanceIndex(uint32_t instance_index) const
 {
     ITT_FUNCTION_TASK();
 
-    assert(!!m_sp_state);
-    assert(instance_index < m_sp_state->parameters.size());
-    return m_sp_state->parameters[instance_index].subset_index;
+    assert(!!m_sp_content_state);
+    assert(instance_index < m_sp_content_state->parameters.size());
+    return m_sp_content_state->parameters[instance_index].subset_index;
 }
 
 } // namespace Methane::Samples

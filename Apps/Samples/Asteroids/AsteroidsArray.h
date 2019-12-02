@@ -27,6 +27,8 @@ Random generated asteroids array with uber-mesh and textures ready for rendering
 
 #include <Methane/Graphics/Context.h>
 #include <Methane/Graphics/Mesh.h>
+#include <Methane/Graphics/Sampler.h>
+#include <Methane/Graphics/RenderState.h>
 #include <Methane/Graphics/MeshBuffers.hpp>
 #include <Methane/Graphics/Camera.h>
 
@@ -35,7 +37,7 @@ namespace Methane::Samples
 
 namespace gfx = Graphics;
 
-class AsteroidsArray final : public gfx::TexturedMeshBuffers<AsteroidUniforms>
+class AsteroidsArray final : protected gfx::TexturedMeshBuffers<AsteroidUniforms>
 {
 public:
     using Ptr = std::unique_ptr<AsteroidsArray>;
@@ -79,10 +81,10 @@ public:
     using Parameters               = std::vector<Asteroid::Parameters>;
     using TextureArraySubresources = std::vector<gfx::Resource::SubResources>;
 
-    struct State : public std::enable_shared_from_this<State>
+    struct ContentState : public std::enable_shared_from_this<ContentState>
     {
-        using Ptr = std::shared_ptr<State>;
-        State(const Settings& settings);
+        using Ptr = std::shared_ptr<ContentState>;
+        ContentState(const Settings& settings);
 
         using MeshSubsetTextureIndices = std::vector<uint32_t>;
 
@@ -93,21 +95,30 @@ public:
     };
 
     AsteroidsArray(gfx::Context& context, Settings settings);
-    AsteroidsArray(gfx::Context& context, Settings settings, State& state);
+    AsteroidsArray(gfx::Context& context, Settings settings, ContentState& state);
 
-    const Settings& GetSettings() const { return m_settings; }
-    const State::Ptr& GetState() const  { return m_sp_state; }
+    const Settings& GetSettings() const      { return m_settings; }
+    const ContentState::Ptr& GetState() const       { return m_sp_content_state; }
+    Data::Size GetUniformsBufferSize() const { return BaseBuffers::GetUniformsBufferSize(); }
 
+    gfx::MeshBufferBindings::ResourceBindingsArray CreateResourceBindings(const gfx::Buffer::Ptr& sp_constants_buffer,
+                                                                          const gfx::Buffer::Ptr& sp_scene_uniforms_buffer,
+                                                                          const gfx::Buffer::Ptr& sp_asteroids_uniforms_buffer);
+
+    void Resize(const gfx::FrameSize& frame_size);
     bool Update(double elapsed_seconds, double delta_seconds);
+    void Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings);
 
 protected:
     // MeshBuffers overrides
     uint32_t GetSubsetByInstanceIndex(uint32_t instance_index) const override;
 
 private:
-    const Settings m_settings;
-    State::Ptr     m_sp_state;
-    Textures       m_unique_textures;
+    const Settings        m_settings;
+    ContentState::Ptr     m_sp_content_state;
+    Textures              m_unique_textures;
+    gfx::Sampler::Ptr     m_sp_texture_sampler;
+    gfx::RenderState::Ptr m_sp_render_state;
 };
 
 } // namespace Methane::Samples

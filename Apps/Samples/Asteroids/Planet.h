@@ -70,11 +70,9 @@ public:
     gfx::Program::ResourceBindings::Ptr CreateResourceBindings(const gfx::Buffer::Ptr& sp_constants_buffer, const gfx::Buffer::Ptr& sp_uniforms_buffer);
     void Resize(const gfx::FrameSize& frame_size);
     bool Update(double elapsed_seconds, double delta_seconds);
-    void Draw(gfx::RenderCommandList& cmd_list, gfx::Buffer& uniforms_buffer, gfx::Program::ResourceBindings& resource_bindings);
+    void Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings);
 
 private:
-
-
     using TexturedMeshBuffers = gfx::TexturedMeshBuffers<Uniforms>;
 
     Settings                    m_settings;
@@ -82,7 +80,6 @@ private:
     TexturedMeshBuffers         m_mesh_buffers;
     gfx::Sampler::Ptr           m_sp_texture_sampler;
     gfx::RenderState::Ptr       m_sp_state;
-    gfx::RenderCommandList::Ptr m_sp_command_list;
 };
 
 } // namespace Methane::Graphics
