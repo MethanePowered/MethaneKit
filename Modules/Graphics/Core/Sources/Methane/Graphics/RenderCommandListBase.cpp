@@ -30,6 +30,10 @@ Base implementation of the render command list interface.
 
 #include <cassert>
 
+#ifdef DrawState
+#undef DrawState
+#endif
+
 namespace Methane::Graphics
 {
 
@@ -40,9 +44,20 @@ RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue, Re
     ITT_FUNCTION_TASK();
 }
 
+void RenderCommandListBase::State::Reset()
+{
+    opt_primitive_type.reset();
+    sp_index_buffer.reset();
+    sp_vertex_buffers.clear();
+
+    flags = { };
+}
+
 void RenderCommandListBase::Reset(RenderState& render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
+
+    m_draw_state.Reset();
 
     if (m_debug_group_opened)
     {
@@ -67,9 +82,14 @@ void RenderCommandListBase::SetVertexBuffers(const Buffer::Refs& vertex_buffers)
         throw std::invalid_argument("Can not set empty vertex buffers.");
     }
 
+    m_draw_state.flags.vertex_buffers_changed = m_draw_state.sp_vertex_buffers.size() != vertex_buffers.size();
+    m_draw_state.sp_vertex_buffers.resize(vertex_buffers.size());
+
+    uint32_t vertex_buffer_index = 0;
     for (const Buffer::Ref& vertex_buffer_ref : vertex_buffers)
     {
-        const Buffer& vertex_buffer = vertex_buffer_ref.get();
+        BufferBase& vertex_buffer = static_cast<BufferBase&>(vertex_buffer_ref.get());
+
         if (vertex_buffer.GetBufferType() != Buffer::Type::Vertex)
         {
             throw std::invalid_argument("Can not set vertex buffer \"" + vertex_buffer.GetName() +
@@ -80,12 +100,21 @@ void RenderCommandListBase::SetVertexBuffers(const Buffer::Refs& vertex_buffers)
         {
             throw std::invalid_argument("Can not set empty vertex buffer.");
         }
-    }
 
-    m_vertex_buffers = vertex_buffers;
+        if (!m_draw_state.flags.vertex_buffers_changed &&
+            (vertex_buffer_index >= m_draw_state.sp_vertex_buffers.size() ||
+            !m_draw_state.sp_vertex_buffers[vertex_buffer_index] ||
+             m_draw_state.sp_vertex_buffers[vertex_buffer_index].get() != std::addressof(vertex_buffer)))
+        {
+            m_draw_state.flags.vertex_buffers_changed = true;
+        }
+
+        m_draw_state.sp_vertex_buffers[vertex_buffer_index] = vertex_buffer.GetPtr();
+        vertex_buffer_index++;
+    }
 }
 
-void RenderCommandListBase::DrawIndexed(Primitive /*primitive_type*/, const Buffer& index_buffer,
+void RenderCommandListBase::DrawIndexed(Primitive primitive_type, Buffer& index_buffer,
                                         uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                                         uint32_t instance_count, uint32_t /*start_instance*/)
 {
@@ -117,9 +146,15 @@ void RenderCommandListBase::DrawIndexed(Primitive /*primitive_type*/, const Buff
     }
 
     ValidateDrawVertexBuffers(start_vertex);
+
+    m_draw_state.flags.index_buffer_changed = !m_draw_state.sp_index_buffer || m_draw_state.sp_index_buffer.get() != std::addressof(index_buffer);
+    m_draw_state.sp_index_buffer = static_cast<BufferBase&>(index_buffer).GetPtr();
+
+    m_draw_state.flags.primitive_type_changed = !m_draw_state.opt_primitive_type || *m_draw_state.opt_primitive_type != primitive_type;
+    m_draw_state.opt_primitive_type = primitive_type;
 }
 
-void RenderCommandListBase::Draw(Primitive /*primitive_type*/ , uint32_t vertex_count, uint32_t start_vertex,
+void RenderCommandListBase::Draw(Primitive primitive_type, uint32_t vertex_count, uint32_t start_vertex,
                                  uint32_t instance_count, uint32_t start_instance)
 {
     ITT_FUNCTION_TASK();
@@ -134,14 +169,18 @@ void RenderCommandListBase::Draw(Primitive /*primitive_type*/ , uint32_t vertex_
     }
 
     ValidateDrawVertexBuffers(start_vertex, vertex_count);
+
+    m_draw_state.flags.primitive_type_changed = !m_draw_state.opt_primitive_type || *m_draw_state.opt_primitive_type != primitive_type;
+    m_draw_state.opt_primitive_type = primitive_type;
 }
 
 void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count)
 {
-    for (const Buffer::Ref& vertex_buffer_ref : m_vertex_buffers)
+    for (const BufferBase::Ptr& sp_vertex_buffer : m_draw_state.sp_vertex_buffers)
     {
-        const Buffer& vertex_buffer = vertex_buffer_ref.get();
-        const uint32_t vertex_count = vertex_buffer.GetFormattedItemsCount();
+        assert(!!sp_vertex_buffer);
+        const BufferBase& vertex_buffer = *sp_vertex_buffer;
+        const uint32_t    vertex_count  = vertex_buffer.GetFormattedItemsCount();
         if (draw_start_vertex + draw_vertex_count <= vertex_count)
             return;
 

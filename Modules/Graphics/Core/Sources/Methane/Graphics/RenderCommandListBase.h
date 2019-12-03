@@ -28,7 +28,10 @@ Base implementation of the render command list interface.
 #include <Methane/Graphics/RenderState.h>
 
 #include "CommandListBase.h"
+#include "BufferBase.h"
 #include "RenderPassBase.h"
+
+#include <optional>
 
 namespace Methane::Graphics
 {
@@ -47,7 +50,7 @@ public:
     // RenderCommandList interface
     void Reset(RenderState& render_state, const std::string& debug_group = "") override;
     void SetVertexBuffers(const Buffer::Refs& vertex_buffers) override;
-    void DrawIndexed(Primitive primitive_type, const Buffer& index_buffer,
+    void DrawIndexed(Primitive primitive_type, Buffer& index_buffer,
                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                      uint32_t instance_count, uint32_t start_instance) override;
     void Draw(Primitive primitive_type, uint32_t vertex_count, uint32_t start_vertex,
@@ -58,8 +61,26 @@ public:
 protected:
     void ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count = 0);
 
+    struct State
+    {
+        struct Flags
+        {
+            bool primitive_type_changed = false;
+            bool index_buffer_changed   = false;
+            bool vertex_buffers_changed = false;
+        };
+
+        std::optional<Primitive> opt_primitive_type;
+        BufferBase::Ptr          sp_index_buffer;
+        BufferBase::Ptrs         sp_vertex_buffers;
+
+        Flags                    flags;
+
+        void Reset();
+    };
+
     const RenderPass::Ptr m_sp_pass;
-    Buffer::Refs m_vertex_buffers;
+    State                 m_draw_state;
 };
 
 } // namespace Methane::Graphics
