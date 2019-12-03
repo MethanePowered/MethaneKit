@@ -122,6 +122,9 @@ void RenderCommandListMT::SetVertexBuffers(const Buffer::Refs& vertex_buffers)
 
     RenderCommandListBase::SetVertexBuffers(vertex_buffers);
 
+    if (!m_draw_state.flags.vertex_buffers_changed)
+        return;
+
     assert(m_mtl_render_encoder != nil);
     uint32_t vb_index = 0;
     for (auto vertex_buffer_ref : vertex_buffers)
@@ -133,7 +136,7 @@ void RenderCommandListMT::SetVertexBuffers(const Buffer::Refs& vertex_buffers)
     }
 }
 
-void RenderCommandListMT::DrawIndexed(Primitive primitive, const Buffer& index_buffer,
+void RenderCommandListMT::DrawIndexed(Primitive primitive, Buffer& index_buffer,
                                       uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                                       uint32_t instance_count, uint32_t start_instance)
 {

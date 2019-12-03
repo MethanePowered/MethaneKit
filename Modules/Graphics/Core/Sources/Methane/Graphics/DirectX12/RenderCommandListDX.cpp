@@ -142,6 +142,9 @@ void RenderCommandListDX::SetVertexBuffers(const Buffer::Refs& vertex_buffers)
 
     RenderCommandListBase::SetVertexBuffers(vertex_buffers);
 
+    if (!m_draw_state.flags.vertex_buffers_changed)
+        return;
+
     std::vector<D3D12_VERTEX_BUFFER_VIEW> vertex_buffer_views;
     vertex_buffer_views.reserve(vertex_buffers.size());
     for (auto vertex_buffer_ref : vertex_buffers)
@@ -155,13 +158,13 @@ void RenderCommandListDX::SetVertexBuffers(const Buffer::Refs& vertex_buffers)
     m_cp_command_list->IASetVertexBuffers(0, static_cast<UINT>(vertex_buffer_views.size()), vertex_buffer_views.data());
 }
 
-void RenderCommandListDX::DrawIndexed(Primitive primitive, const Buffer& index_buffer,
+void RenderCommandListDX::DrawIndexed(Primitive primitive, Buffer& index_buffer,
                                       uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                                       uint32_t instance_count, uint32_t start_instance)
 {
     ITT_FUNCTION_TASK();
 
-    const IndexBufferDX& dx_index_buffer = static_cast<const IndexBufferDX&>(index_buffer);
+    const IndexBufferDX& dx_index_buffer = static_cast<IndexBufferDX&>(index_buffer);
     if (!index_count)
     {
         index_count = dx_index_buffer.GetFormattedItemsCount();
@@ -169,11 +172,17 @@ void RenderCommandListDX::DrawIndexed(Primitive primitive, const Buffer& index_b
 
     RenderCommandListBase::DrawIndexed(primitive, index_buffer, index_count, start_index, start_vertex, instance_count, start_instance);
 
-    const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
-
     assert(m_cp_command_list);
-    m_cp_command_list->IASetIndexBuffer(&dx_index_buffer.GetNativeView());
-    m_cp_command_list->IASetPrimitiveTopology(primitive_topology);
+
+    if (m_draw_state.flags.primitive_type_changed)
+    {
+        const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
+        m_cp_command_list->IASetPrimitiveTopology(primitive_topology);
+    }
+    if (m_draw_state.flags.index_buffer_changed)
+    {
+        m_cp_command_list->IASetIndexBuffer(&dx_index_buffer.GetNativeView());
+    }
     m_cp_command_list->DrawIndexedInstanced(index_count, instance_count, start_index, start_vertex, start_instance);
 }
 
@@ -184,10 +193,13 @@ void RenderCommandListDX::Draw(Primitive primitive, uint32_t vertex_count, uint3
 
     RenderCommandListBase::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
 
-    const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
-
     assert(m_cp_command_list);
-    m_cp_command_list->IASetPrimitiveTopology(primitive_topology);
+
+    if (m_draw_state.flags.primitive_type_changed)
+    {
+        const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
+        m_cp_command_list->IASetPrimitiveTopology(primitive_topology);
+    }
     m_cp_command_list->DrawInstanced(vertex_count, instance_count, start_vertex, start_instance);
 }
 

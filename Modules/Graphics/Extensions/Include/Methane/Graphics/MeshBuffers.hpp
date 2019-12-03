@@ -119,7 +119,7 @@ public:
 
         cmd_list.SetVertexBuffers({ GetVertexBuffer() });
 
-        const Buffer& index_buffer = GetIndexBuffer();
+        Buffer& index_buffer = GetIndexBuffer();
         uint32_t instance_index = 0;
         for (const Program::ResourceBindings::Ptr& sp_resource_bindings : instance_resource_bindings)
         {
