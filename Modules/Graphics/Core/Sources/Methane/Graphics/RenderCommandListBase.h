@@ -61,7 +61,7 @@ public:
 protected:
     void ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count = 0);
 
-    struct State
+    struct DrawStateBase
     {
         struct Flags
         {
@@ -80,7 +80,7 @@ protected:
     };
 
     const RenderPass::Ptr m_sp_pass;
-    State                 m_draw_state;
+    DrawStateBase         m_draw_state;
 };
 
 } // namespace Methane::Graphics

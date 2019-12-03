@@ -44,7 +44,7 @@ RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue, Re
     ITT_FUNCTION_TASK();
 }
 
-void RenderCommandListBase::State::Reset()
+void RenderCommandListBase::DrawStateBase::Reset()
 {
     opt_primitive_type.reset();
     sp_index_buffer.reset();
