@@ -176,7 +176,7 @@ void ProgramDX::ResourceBindingsDX::Apply(CommandList& command_list) const
     ForEachResourceBinding([&](ResourceDX& resource, const Argument& argument, ShaderDX::ResourceBindingDX& resource_binding, const DescriptorHeap::Reservation* p_heap_reservation)
     {
         if (resource_binding.IsAlreadyApplied(*m_sp_program, argument, command_state))
-            continue;
+            return;
 
         const DXBindingType         binding_type            = resource_binding.GetSettings().type;
         D3D12_GPU_DESCRIPTOR_HANDLE gpu_descriptor_handle   = {};
