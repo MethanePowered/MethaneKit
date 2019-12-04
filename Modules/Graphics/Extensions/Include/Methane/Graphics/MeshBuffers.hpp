@@ -96,7 +96,7 @@ public:
     
     virtual ~MeshBuffers() = default;
 
-    void Draw(RenderCommandList& cmd_list, const Program::ResourceBindings& resource_bindings,
+    void Draw(RenderCommandList& cmd_list, Program::ResourceBindings& resource_bindings,
               uint32_t mesh_subset_index = 0, uint32_t instance_count = 1, uint32_t start_instance = 0)
     {
         ITT_FUNCTION_TASK();

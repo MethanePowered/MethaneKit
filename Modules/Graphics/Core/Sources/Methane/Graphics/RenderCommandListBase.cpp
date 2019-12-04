@@ -25,6 +25,7 @@ Base implementation of the render command list interface.
 #include "RenderPassBase.h"
 #include "RenderStateBase.h"
 #include "BufferBase.h"
+#include "ProgramBase.h"
 
 #include <Methane/Data/Instrumentation.h>
 
@@ -46,6 +47,8 @@ RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue, Re
 
 void RenderCommandListBase::DrawStateBase::Reset()
 {
+    ITT_FUNCTION_TASK();
+
     opt_primitive_type.reset();
     sp_index_buffer.reset();
     sp_vertex_buffers.clear();
@@ -58,6 +61,7 @@ void RenderCommandListBase::Reset(RenderState& render_state, const std::string& 
     ITT_FUNCTION_TASK();
 
     m_draw_state.Reset();
+    ResetCommandState();
 
     if (m_debug_group_opened)
     {
@@ -190,7 +194,6 @@ void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex
                                     "\" (size " + std::to_string(vertex_count) + ").");
     }
 }
-
 
 RenderPassBase& RenderCommandListBase::GetPass()
 {
