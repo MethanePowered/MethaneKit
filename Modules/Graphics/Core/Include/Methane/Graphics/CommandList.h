@@ -40,14 +40,14 @@ struct CommandQueue;
 
 struct CommandList : virtual Object
 {
-    using Ptr     = std::shared_ptr<CommandList>;
-    using Ref     = std::reference_wrapper<CommandList>;
-    using Refs    = std::vector<Ref>;
+    using Ptr  = std::shared_ptr<CommandList>;
+    using Ref  = std::reference_wrapper<CommandList>;
+    using Refs = std::vector<Ref>;
 
     // CommandList interface
     virtual void PushDebugGroup(const std::string& name) = 0;
     virtual void PopDebugGroup() = 0;
-    virtual void SetResourceBindings(const Program::ResourceBindings& resource_bindings) = 0;
+    virtual void SetResourceBindings(Program::ResourceBindings& resource_bindings) = 0;
     virtual void Commit(bool present_drawable) = 0;
     virtual CommandQueue& GetCommandQueue() = 0;
 

@@ -51,12 +51,15 @@ public:
         , public std::enable_shared_from_this<ResourceBindingsBase>
     {
     public:
+        using Ptr = std::shared_ptr<ResourceBindingsBase>;
+
         ResourceBindingsBase(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_location_by_argument);
         ResourceBindingsBase(const ResourceBindingsBase& other_resource_bingings, const ResourceLocationByArgument& replace_resource_location_by_argument);
         ~ResourceBindingsBase() override;
 
         Ptr GetPtr()                            { return shared_from_this(); }
         const Arguments& GetArguments() const   { return m_arguments; }
+        const Program&   GetProgram() const     { return *m_sp_program; }
 
         // ResourceBindings interface
         const Shader::ResourceBinding::Ptr& Get(const Argument& shader_argument) const override;

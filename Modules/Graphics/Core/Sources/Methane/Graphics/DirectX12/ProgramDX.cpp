@@ -166,14 +166,32 @@ void ProgramDX::ResourceBindingsDX::Apply(CommandList& command_list) const
         D3D12_GPU_VIRTUAL_ADDRESS   gpu_virtual_address;
     };
 
-    RenderCommandListDX& render_command_list_dx = dynamic_cast<RenderCommandListDX&>(command_list);
+    RenderCommandListDX&             render_command_list_dx = dynamic_cast<RenderCommandListDX&>(command_list);
     wrl::ComPtr<ID3D12GraphicsCommandList>& cp_command_list = render_command_list_dx.GetNativeCommandList();
+    const CommandListBase::CommandState&    command_state   = render_command_list_dx.GetCommandState();
     assert(!!cp_command_list);
 
     ResourceBase::Barriers resource_transition_barriers;
     std::vector<GraphicsRootParameterBinding> graphics_root_parameter_bindings;
-    ForEachResourceBinding([&](ResourceDX& resource, ShaderDX::ResourceBindingDX& resource_binding, const DescriptorHeap::Reservation* p_heap_reservation)
+    ForEachResourceBinding([&](ResourceDX& resource, const Argument& argument, ShaderDX::ResourceBindingDX& resource_binding, const DescriptorHeap::Reservation* p_heap_reservation)
     {
+        // Skip applying shader resource binding whenever possible
+        if (command_state.sp_resource_bindings && 
+            std::addressof(command_state.sp_resource_bindings->GetProgram()) == m_sp_program.get())
+        {
+            // 1) No need in setting constant resource binding
+            //    when another binding was previously set in the same command list for the same program
+            if (resource_binding.IsConstant())
+                return;
+
+            // 2) No need in setting resource binding to the same location 
+            //    as a previous resource binding set in the same command list for the same program
+            const Shader::ResourceBinding::Ptr& previous_resource_binding = command_state.sp_resource_bindings->Get(argument);
+            if (previous_resource_binding && 
+                previous_resource_binding->GetResourceLocation() == resource_binding.GetResourceLocation())
+                return;
+        }
+
         const DXBindingType         binding_type            = resource_binding.GetSettings().type;
         D3D12_GPU_DESCRIPTOR_HANDLE gpu_descriptor_handle   = {};
         D3D12_GPU_VIRTUAL_ADDRESS   gpu_virtual_address     = 0;
@@ -235,11 +253,12 @@ void ProgramDX::ResourceBindingsDX::ForEachResourceBinding(ApplyResourceBindingF
         assert(!!resource_binding_by_argument.second);
         ShaderDX::ResourceBindingDX& resource_binding = static_cast<ShaderDX::ResourceBindingDX&>(*resource_binding_by_argument.second);
 
+        const Argument& program_argument = resource_binding_by_argument.first;
         const ResourceLocationDX& resource_location = resource_binding.GetResourceLocationDX();
         if (!resource_location.sp_resource)
         {
-            throw std::invalid_argument("Empty resource is bound to argument \"" + resource_binding_by_argument.first.argument_name + 
-                                        "\" of " + Shader::GetTypeName(resource_binding_by_argument.first.shader_type) + " shader.");
+            throw std::invalid_argument("Empty resource is bound to argument \"" + program_argument.argument_name +
+                                        "\" of " + Shader::GetTypeName(program_argument.shader_type) + " shader.");
         }
 
         const ShaderDX::ResourceBindingDX::DescriptorRange& descriptor_range = resource_binding.GetDescriptorRange();
@@ -253,7 +272,7 @@ void ProgramDX::ResourceBindingsDX::ForEachResourceBinding(ApplyResourceBindingF
             }
         }
 
-        apply_resource_binding(*resource_location.sp_resource, resource_binding, p_heap_reservation);
+        apply_resource_binding(*resource_location.sp_resource, program_argument, resource_binding, p_heap_reservation);
     }
 }
 
@@ -263,7 +282,7 @@ void ProgramDX::ResourceBindingsDX::CopyDescriptorsToGpu()
 
     assert(!!m_sp_program);
     const wrl::ComPtr<ID3D12Device>& cp_device = static_cast<const ProgramDX&>(*m_sp_program).GetContextDX().GetDeviceDX().GetNativeDevice();
-    ForEachResourceBinding([this, &cp_device](const ResourceDX& dx_resource, ShaderDX::ResourceBindingDX& resource_binding, const DescriptorHeap::Reservation* p_heap_reservation)
+    ForEachResourceBinding([this, &cp_device](const ResourceDX& dx_resource, const Argument&, ShaderDX::ResourceBindingDX& resource_binding, const DescriptorHeap::Reservation* p_heap_reservation)
     {
             if (!p_heap_reservation)
                 return;

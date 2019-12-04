@@ -57,7 +57,7 @@ public:
         void Apply(CommandList& command_list) const override;
 
     protected:
-        using ApplyResourceBindingFunc = std::function<void(ResourceDX&, ShaderDX::ResourceBindingDX&, const DescriptorHeap::Reservation*)>;
+        using ApplyResourceBindingFunc = std::function<void(ResourceDX&, const Argument&, ShaderDX::ResourceBindingDX&, const DescriptorHeap::Reservation*)>;
         void ForEachResourceBinding(ApplyResourceBindingFunc apply_resource_binding) const;
         void CopyDescriptorsToGpu();
     };
