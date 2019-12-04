@@ -67,6 +67,35 @@ void ShaderBase::ResourceBindingBase::SetResourceLocation(Resource::Location res
 
     m_resource_location = std::move(resource_location);
 }
+    
+bool ShaderBase::ResourceBindingBase::IsAlreadyApplied(const Program& program, const Program::Argument& program_argument, const CommandListBase::CommandState& command_state) const
+{
+    ITT_FUNCTION_TASK();
+    
+    if (!command_state.sp_resource_bindings)
+        return false;
+    
+    const ProgramBase::ResourceBindingsBase& previous_resource_bindings = static_cast<const ProgramBase::ResourceBindingsBase&>(*command_state.sp_resource_bindings);
+    
+    if (std::addressof(previous_resource_bindings.GetProgram()) != std::addressof(program))
+        return false;
+    
+    // 1) No need in setting constant resource binding
+    //    when another binding was previously set in the same command list for the same program
+    if (m_settings.is_constant)
+        return true;
+
+    const Shader::ResourceBinding::Ptr& previous_argument_resource_binding = command_state.sp_resource_bindings->Get(program_argument);
+    if (!previous_argument_resource_binding)
+        return false;
+    
+    // 2) No need in setting resource binding to the same location
+    //    as a previous resource binding set in the same command list for the same program
+    if (previous_argument_resource_binding->GetResourceLocation() == m_resource_location)
+        return true;
+    
+    return false;
+}
 
 ShaderBase::ShaderBase(Type type, ContextBase& context, const Settings& settings)
     : m_type(type)

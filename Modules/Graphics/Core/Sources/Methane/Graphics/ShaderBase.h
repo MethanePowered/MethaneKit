@@ -23,15 +23,17 @@ Base implementation of the shader interface.
 
 #pragma once
 
-#include <Methane/Graphics/Shader.h>
-
+#include "CommandListBase.h"
 #include "DescriptorHeap.h"
+
+#include <Methane/Graphics/Shader.h>
 
 namespace Methane::Graphics
 {
 
 class ContextBase;
 class ProgramBase;
+struct Program;
 
 class ShaderBase
     : public Shader
@@ -67,6 +69,7 @@ public:
 
         Ptr  GetPtr()               { return shared_from_this(); }
         bool HasResource() const    { return !!m_resource_location.sp_resource; }
+        bool IsAlreadyApplied(const Program& program, const Program::Argument& program_argument, const CommandListBase::CommandState& command_state) const;
 
     protected:
         ContextBase&        m_context;

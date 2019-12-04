@@ -175,22 +175,8 @@ void ProgramDX::ResourceBindingsDX::Apply(CommandList& command_list) const
     std::vector<GraphicsRootParameterBinding> graphics_root_parameter_bindings;
     ForEachResourceBinding([&](ResourceDX& resource, const Argument& argument, ShaderDX::ResourceBindingDX& resource_binding, const DescriptorHeap::Reservation* p_heap_reservation)
     {
-        // Skip applying shader resource binding whenever possible
-        if (command_state.sp_resource_bindings && 
-            std::addressof(command_state.sp_resource_bindings->GetProgram()) == m_sp_program.get())
-        {
-            // 1) No need in setting constant resource binding
-            //    when another binding was previously set in the same command list for the same program
-            if (resource_binding.IsConstant())
-                return;
-
-            // 2) No need in setting resource binding to the same location 
-            //    as a previous resource binding set in the same command list for the same program
-            const Shader::ResourceBinding::Ptr& previous_resource_binding = command_state.sp_resource_bindings->Get(argument);
-            if (previous_resource_binding && 
-                previous_resource_binding->GetResourceLocation() == resource_binding.GetResourceLocation())
-                return;
-        }
+        if (resource_binding.IsAlreadyApplied(*m_sp_program, argument, command_state))
+            continue;
 
         const DXBindingType         binding_type            = resource_binding.GetSettings().type;
         D3D12_GPU_DESCRIPTOR_HANDLE gpu_descriptor_handle   = {};

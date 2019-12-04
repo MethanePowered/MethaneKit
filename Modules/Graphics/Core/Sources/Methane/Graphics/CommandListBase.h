@@ -25,8 +25,8 @@ Base implementation of the command list interface.
 
 #include "ObjectBase.h"
 #include "ResourceBase.h"
-#include "ProgramBase.h"
 
+#include <Methane/Graphics/Program.h>
 #include <Methane/Graphics/CommandList.h>
 #include <Methane/Graphics/CommandQueue.h>
 
@@ -58,7 +58,7 @@ public:
 
     struct CommandState
     {
-        ProgramBase::ResourceBindingsBase::Ptr sp_resource_bindings;
+        Program::ResourceBindings::Ptr sp_resource_bindings;
     };
 
     CommandListBase(CommandQueueBase& command_queue);
