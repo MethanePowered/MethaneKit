@@ -95,7 +95,7 @@ struct Resource : virtual Object
         Ptr        sp_resource;
         Data::Size offset = 0;
 
-        bool operator==(const Location& other) const = default;
+        bool operator==(const Location& other) const;
     };
 
     struct SubResource

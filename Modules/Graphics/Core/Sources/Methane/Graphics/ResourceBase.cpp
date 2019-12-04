@@ -92,6 +92,12 @@ Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, int32_t in_index)
 {
     ITT_FUNCTION_TASK();
 }
+    
+bool Resource::Location::operator==(const Location& other) const
+{
+    return std::tie(sp_resource, offset) ==
+           std::tie(other.sp_resource, other.offset);
+}
 
 Resource::SubResource::SubResource(Data::Bytes&& data, Index in_index)
     : data_storage(std::move(data))

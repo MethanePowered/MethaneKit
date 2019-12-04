@@ -124,7 +124,10 @@ void ProgramMT::ResourceBindingsMT::Apply(CommandList& command_list) const
 {
     ITT_FUNCTION_TASK();
 
-    id<MTLRenderCommandEncoder>& mtl_cmd_encoder = dynamic_cast<RenderCommandListMT&>(command_list).GetNativeRenderEncoder();
+    RenderCommandListMT& metal_command_list = dynamic_cast<RenderCommandListMT&>(command_list);
+    const CommandListBase::CommandState& command_state = metal_command_list.GetCommandState();
+    id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeRenderEncoder();
+    
     for(const auto& resource_binding_by_argument : m_resource_binding_by_argument)
     {
         const Argument& program_argument = resource_binding_by_argument.first;
@@ -141,6 +144,9 @@ void ProgramMT::ResourceBindingsMT::Apply(CommandList& command_list) const
             continue;
 #endif
         }
+        
+        if (metal_resource_binding.IsAlreadyApplied(*m_sp_program, program_argument, command_state))
+            continue;
         
         const Resource::Type resource_type = bound_resource_location.sp_resource->GetResourceType();
         const uint32_t arg_index = metal_resource_binding.GetSettings().argument_index;
