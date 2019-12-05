@@ -270,18 +270,23 @@ int main(int argc, const char* argv[])
 Also you need a simple HLSL shader [Shaders/Triangle.hlsl](/Apps/Tutorials/01-HelloTriangle/Shaders/Triangle.hlsl).
 Note how arguments of vertex shader function `TriangleVS(...)` are matching to input buffer layout description passed in Settings of `Program::Create(...)` call:
 ```cpp
+struct VSInput
+{
+    float3 position : POSITION;
+    float3 color    : COLOR;
+};
+
 struct PSInput
 {
     float4 position : SV_POSITION;
     float4 color    : COLOR;
 };
 
-PSInput TriangleVS(float3 in_position : POSITION, 
-                   float3 in_color    : COLOR)
+PSInput TriangleVS(VSInput input)
 {
     PSInput output;
-    output.position = float4(in_position, 1.0f);
-    output.color    = float4(in_color, 1.0f);
+    output.position = float4(input.position, 1.f);
+    output.color    = float4(input.color, 1.f);
     return output;
 }
 
