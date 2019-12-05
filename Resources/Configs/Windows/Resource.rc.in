@@ -1,4 +1,4 @@
-IDI_APP_ICON               ICON    DISCARDABLE     @ICON_FILE_PATH@
+IDI_APP_ICON               ICON    DISCARDABLE     @METHANE_APP_ICON_FILE_PATH@
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -9,7 +9,7 @@ IDI_APP_ICON               ICON    DISCARDABLE     @ICON_FILE_PATH@
 
 #undef APSTUDIO_READONLY_SYMBOLS
 
-CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST @MANIEFEST_FILE_PATH@
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST @METHANE_APP_MANIEFEST_FILE_PATH@
 
 /////////////////////////////////////////////////////////////////////////////
 // English (United States) resources
@@ -58,14 +58,14 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "Evgeny Gorodetskiy"
-            VALUE "FileDescription", "@FILE_DESCRIPTION@"
-            VALUE "FileVersion", "1,0,0"
-            VALUE "InternalName", "@COMPONENT_NAME@"
-            VALUE "LegalCopyright", "© 2019, Evgeny Gorodetskiy. All rights reserved."
-            VALUE "OriginalFilename", "@COMPONENT_NAME@"
-            VALUE "ProductName", "Methane Kit"
-            VALUE "ProductVersion", "1"
+            VALUE "CompanyName", "@METHANE_APP_COPYRIGHT@"
+            VALUE "FileDescription", "@METHANE_APP_DESCRIPTION@"
+            VALUE "FileVersion", "@METHANE_APP_LONG_VERSION@"
+            VALUE "InternalName", "@METHANE_APP_NAME@"
+            VALUE "LegalCopyright", "@METHANE_APP_COPYRIGHT@"
+            VALUE "OriginalFilename", "@METHANE_APP_EXECUTABLE@"
+            VALUE "ProductName", "@METHANE_PRODUCT_NAME@"
+            VALUE "ProductVersion", "@METHANE_APP_SHORT_VERSION@"
         END
     END
     BLOCK "VarFileInfo"

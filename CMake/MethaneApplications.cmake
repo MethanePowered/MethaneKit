@@ -24,18 +24,22 @@ Creates and configures cross-platform graphics application cmake build target.
 include(MethaneUtils)
 include(MethaneModules)
 
-function(add_methane_application TARGET APP_NAME SOURCES RESOURCES_DIR INSTALL_DIR)
+function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NAME DESCRIPTION COPYRIGHT VERSION BUILD_NUMBER)
     set(BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
+
+    set(METHANE_APP_NAME ${APP_NAME})
+    set(METHANE_APP_DESCRIPTION ${DESCRIPTION})
+    set(METHANE_APP_COPYRIGHT ${COPYRIGHT})
+    set(METHANE_APP_SHORT_VERSION ${VERSION})
+    set(METHANE_APP_LONG_VERSION "${VERSION}.${BUILD_NUMBER}")
 
     if (WIN32)
 
         # Configure Resoruce file
-        set(COMPONENT_NAME ${COMPONENT_OUTPUT_NAME}.exe)
-        set(MANIEFEST_FILE_PATH ${RESOURCES_DIR}/Configs/Windows/App.manifest)
-        set(ICON_FILE_PATH ${RESOURCES_DIR}/Icons/Windows/Methane.ico)
-        set(RESOURCE_FILE ${CMAKE_CURRENT_BINARY_DIR}/Resource.rc)
-        set(FILE_DESCRIPTION ${APP_NAME})
-
+        set(METHANE_APP_EXECUTABLE ${COMPONENT_OUTPUT_NAME}.exe)
+        set(METHANE_APP_MANIEFEST_FILE_PATH ${RESOURCES_DIR}/Configs/Windows/App.manifest)
+        set(METHANE_APP_ICON_FILE_PATH ${RESOURCES_DIR}/Icons/Windows/Methane.ico)
+        set(RESOURCE_FILE ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}/Resource.rc)
         configure_file(${RESOURCES_DIR}/Configs/Windows/Resource.rc.in ${RESOURCE_FILE})
 
         add_executable(${TARGET} WIN32
@@ -62,11 +66,14 @@ function(add_methane_application TARGET APP_NAME SOURCES RESOURCES_DIR INSTALL_D
 
         set(ICON_FILE Methane.icns)
         set(ICON_FILE_PATH ${RESOURCES_DIR}/Icons/MacOS/${ICON_FILE})
-        set(PLIST_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/Info.plist)
+        set(PLIST_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}/Info.plist)
 
         # Configure bundle plist
-        set(MACOSX_BUNDLE_ICON_FILE ${ICON_FILE})
-        set(MACOSX_BUNDLE_BUNDLE_NAME ${APP_NAME})
+        set(METHANE_APP_EXECUTABLE ${TARGET})
+        set(METHANE_APP_BUNDLE_VERSION "${BUILD_NUMBER}")
+        set(METHANE_APP_BUNDLE_ICON ${ICON_FILE})
+        set(METHANE_APP_BUNDLE_GUI_IDENTIFIER "")
+        set(MACOSX_DEPLOYMENT_TARGET "10.13")
         configure_file(${RESOURCES_DIR}/Configs/MacOS/plist.in ${PLIST_FILE_PATH})
 
         add_executable(${TARGET} MACOSX_BUNDLE
@@ -89,6 +96,8 @@ function(add_methane_application TARGET APP_NAME SOURCES RESOURCES_DIR INSTALL_D
         set_target_properties(${TARGET}
             PROPERTIES
             MACOSX_BUNDLE_INFO_PLIST ${PLIST_FILE_PATH}
+            XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY ""
+            XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "NO"
         )
 
         set(BINARY_DIR ${BINARY_DIR}/${TARGET}.app/Contents/Resources)

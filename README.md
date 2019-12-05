@@ -141,7 +141,7 @@ Run applications from the installation directory `Build/Output/XCode/Install/App
 
 See how triangle rendering application is implemented in 120 lines of C++ code using Methane Kit ([HelloTriangleAppSimple.cpp](/Apps/Tutorials/01-HelloTriangle/HelloTriangleAppSimple.cpp)):
 ```cpp
-#include <Methane/Kit.h>
+#include <Methane/Graphics/Kit.h>
 
 using namespace Methane;
 using namespace Methane::Graphics;
@@ -161,20 +161,20 @@ private:
 
 public:
     HelloTriangleApp() : GraphicsApp(
-        {                                      // Application settings:
-            {                                  // app:
-                "Methane Hello Triangle",      // - name
-                0.8, 0.8,                      // - width, height 
-            },                                 //
-            {                                  // context:
-                FrameSize(),                   // - frame_size placeholder: actual size is set in InitContext
-                PixelFormat::BGRA8Unorm,       // - color_format
-                PixelFormat::Unknown,          // - depth_stencil_format
-                Color(0.0f, 0.2f, 0.4f, 1.0f), // - clear_color
-            },                                 //
-            true                               // show_hud_in_window_title
-        },
-        RenderPass::Access::None)              // screen_pass_access (program access to resources)
+        {                                        // Application settings:
+            {                                    // app:
+                "Methane Hello Triangle",        // - name
+                0.8, 0.8,                        // - width, height
+            },                                   //
+            {                                    // context:
+                FrameSize(),                     // - frame_size placeholder: actual size is set in InitContext
+                PixelFormat::BGRA8Unorm,         // - color_format
+                PixelFormat::Unknown,            // - depth_stencil_format
+                Color4f(0.0f, 0.2f, 0.4f, 1.0f), // - clear_color
+            },                                   //
+            true                                 // show_hud_in_window_title
+          },
+        RenderPass::Access::None)                // screen_pass_access (program access to resources)
     { }
 
     ~HelloTriangleApp() override
@@ -202,13 +202,13 @@ public:
             Program::Create(*m_sp_context, {
                 {
                     Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), { "Triangle", "TriangleVS" } }),
-                    Shader::CreatePixel( *m_sp_context, { Data::ShaderProvider::Get(), { "Triangle", "TrianglePS" } }),
+                    Shader::CreatePixel(*m_sp_context,  { Data::ShaderProvider::Get(), { "Triangle", "TrianglePS" } }),
                 },
-                { { { // input buffer layout mapping to vertex shader arguments
-                    { "in_position", "POSITION" },
-                    { "in_color",    "COLOR"    },
+                { { {
+                    { "input_position", "POSITION" },
+                    { "input_color",    "COLOR"    },
                 } } },
-                { },
+                { }, { },
                 { m_sp_context->GetSettings().color_format }
             }),
             { GetFrameViewport(m_sp_context->GetSettings().frame_size) },
@@ -243,13 +243,21 @@ public:
 
         frame.sp_cmd_list->Reset(*m_sp_state);
         frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
-        frame.sp_cmd_list->Draw(RenderCommandList::Primitive::Triangle, 3, 1);
+        frame.sp_cmd_list->Draw(RenderCommandList::Primitive::Triangle, 3);
         frame.sp_cmd_list->Commit(true);
 
         m_sp_context->GetRenderCommandQueue().Execute({ *frame.sp_cmd_list });
         m_sp_context->Present();
 
         GraphicsApp::Render();
+    }
+
+    void OnContextReleased() override
+    {
+        m_sp_vertex_buffer.reset();
+        m_sp_state.reset();
+
+        GraphicsApp::OnContextReleased();
     }
 };
 
@@ -298,10 +306,10 @@ include(MethaneApplications)
 include(MethaneShaders)
 
 add_methane_application(MethaneHelloTriangle
-    "Methane Hello Triangle"
     "HelloTriangleAppSimple.cpp"
     "${RESOURCES_DIR}"
     "Apps/Tutorials"
+    "Methane Hello Triangle"
 )
 
 add_methane_shaders(MethaneHelloTriangle

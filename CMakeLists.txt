@@ -9,6 +9,12 @@ option(METHANE_ITT_INSTRUMENTATION_ENABLED "Enable ITT instrumentation" OFF)
 option(METHANE_SHADERS_CODEVIEW_ENABLED "Enable shaders code viewing in debug tools while keeping compiler optimizations in Release builds)" OFF)
 option(METHANE_RUN_TESTS_DURING_BUILD "Run tests during build" ON)
 
+set(METHANE_VERSION "0.1" CACHE STRING "Methane release major-minor version number")
+set(METHANE_BUILD_NUMBER "000000" CACHE STRING "Methane release build number")
+
+set(METHANE_PRODUCT_NAME "Methane Kit (https://github.com/egorodet/MethaneKit)")
+set(METHANE_COPYRIGHT "Copyright 2019 Evgeny Gorodetskiy")
+
 include_directories($ENV{INCLUDE})
 link_directories($ENV{LIB} ${CMAKE_LIBRARY_INPUT_DIRECTORY})
 
