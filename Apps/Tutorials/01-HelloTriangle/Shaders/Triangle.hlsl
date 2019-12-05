@@ -13,8 +13,8 @@ struct PSInput
 PSInput TriangleVS(VSInput input)
 {
     PSInput output;
-    output.position = float4(input.position, 1.0f);
-    output.color    = float4(input.color, 1.0f);
+    output.position = float4(input.position, 1.f);
+    output.color    = float4(input.color, 1.f);
     return output;
 }
 
