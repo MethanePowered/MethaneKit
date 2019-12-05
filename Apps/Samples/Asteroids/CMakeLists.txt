@@ -32,10 +32,14 @@ set(SHADERS_HLSL
 )
 
 add_methane_application(${TARGET}
-    "Methane Asteroids"
     "${SOURCES}"
     "${RESOURCES_DIR}"
     "Apps/Samples"
+    "Methane Asteroids"
+    "Asteroids sample demonstrates parallel rendering of the asteroids field observable with interactive camera."
+    "${METHANE_COPYRIGHT}"
+    "${METHANE_VERSION}"
+    "${METHANE_BUILD_NUMBER}"
 )
 add_methane_embedded_textures(${TARGET} "${IMAGES_DIR}" "${TEXTURES}")
 add_methane_shaders(${TARGET} "${SHADERS_HLSL}")

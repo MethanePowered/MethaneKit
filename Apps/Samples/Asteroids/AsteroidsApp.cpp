@@ -37,8 +37,7 @@ namespace Methane::Samples
 {
 
 // Common application settings
-static const std::string           g_app_help_text  = "Asteroids sample demonstrates parallel rendering of multiple heterogeneous objects " \
-                                                      "and action camera interaction with mouse and keyboard.";
+static const std::string           g_app_help_text  = "Asteroids sample demonstrates parallel rendering of the asteroids field observable with interactive camera.";
 static const GraphicsApp::Settings  g_app_settings  = // Application settings:
 {                                                     // ====================
     {                                                 // app:

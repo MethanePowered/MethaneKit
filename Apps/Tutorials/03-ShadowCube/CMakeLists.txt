@@ -17,10 +17,14 @@ set(TEXTURES
 )
 
 add_methane_application(${TARGET}
-    "Methane Shadow Cube"
     "${SOURCES}"
     "${RESOURCES_DIR}"
     "Apps/Tutorials"
+    "Methane Shadow Cube"
+    "Tutorial of the shadow pass rendering with Methane Kit."
+    "${METHANE_COPYRIGHT}"
+    "${METHANE_VERSION}"
+    "${METHANE_BUILD_NUMBER}"
 )
 add_methane_embedded_textures(${TARGET} "${IMAGES_DIR}" "${TEXTURES}")
 add_methane_shaders(${TARGET} "${SHADERS_HLSL}")
