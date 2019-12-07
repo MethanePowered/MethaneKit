@@ -31,7 +31,7 @@ Metal implementation of the render pass interface.
 namespace Methane::Graphics
 {
 
-MTLStoreAction GetMTLStoreAction(RenderPass::Attachment::StoreAction store_action) noexcept
+static MTLStoreAction GetMTLStoreAction(RenderPass::Attachment::StoreAction store_action) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -44,7 +44,7 @@ MTLStoreAction GetMTLStoreAction(RenderPass::Attachment::StoreAction store_actio
     return MTLStoreActionDontCare;
 }
 
-MTLLoadAction GetMTLLoadAction(RenderPass::Attachment::LoadAction load_action) noexcept
+static MTLLoadAction GetMTLLoadAction(RenderPass::Attachment::LoadAction load_action) noexcept
 {
     ITT_FUNCTION_TASK();
 

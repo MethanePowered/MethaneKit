@@ -40,10 +40,10 @@ namespace Methane::Graphics
 {
 
 template<typename TMetalResource>
-void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const TMetalResource& mtl_buffer, uint32_t arg_index, Data::Size buffer_offset) noexcept;
+static void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const TMetalResource& mtl_buffer, uint32_t arg_index, Data::Size buffer_offset) noexcept;
 
 template<>
-void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const id<MTLBuffer>& mtl_buffer, uint32_t arg_index, Data::Size buffer_offset) noexcept
+static void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const id<MTLBuffer>& mtl_buffer, uint32_t arg_index, Data::Size buffer_offset) noexcept
 {
     ITT_FUNCTION_TASK();
     switch(shader_type)
@@ -55,7 +55,7 @@ void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl
 }
 
 template<>
-void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const id<MTLTexture>& mtl_texture, uint32_t arg_index, Data::Size) noexcept
+static void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const id<MTLTexture>& mtl_texture, uint32_t arg_index, Data::Size) noexcept
 {
     ITT_FUNCTION_TASK();
     switch(shader_type)
@@ -67,7 +67,7 @@ void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl
 }
 
 template<>
-void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const id<MTLSamplerState>& mtl_sampler, uint32_t arg_index, Data::Size) noexcept
+static void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const id<MTLSamplerState>& mtl_sampler, uint32_t arg_index, Data::Size) noexcept
 {
     ITT_FUNCTION_TASK();
     switch(shader_type)
@@ -79,7 +79,7 @@ void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl
 }
 
 template<typename TMetalResource>
-void SetMetalResourceForAll(Shader::Type shader_type, Program& program, id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const TMetalResource& mtl_resource, uint32_t arg_index, Data::Size offset) noexcept
+static void SetMetalResourceForAll(Shader::Type shader_type, Program& program, id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const TMetalResource& mtl_resource, uint32_t arg_index, Data::Size offset) noexcept
 {
     ITT_FUNCTION_TASK();
 

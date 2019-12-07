@@ -37,7 +37,7 @@ DirectX 12 implementation of the texture interface.
 namespace Methane::Graphics
 {
 
-D3D12_SRV_DIMENSION GetSrvDimension(const Dimensions& tex_dimensions) noexcept
+static D3D12_SRV_DIMENSION GetSrvDimension(const Dimensions& tex_dimensions) noexcept
 {
     ITT_FUNCTION_TASK();
     return tex_dimensions.depth == 1 ? (tex_dimensions.height == 1 ? D3D12_SRV_DIMENSION_TEXTURE1D
@@ -45,7 +45,7 @@ D3D12_SRV_DIMENSION GetSrvDimension(const Dimensions& tex_dimensions) noexcept
                                      : D3D12_SRV_DIMENSION_TEXTURE3D;
 }
 
-D3D12_DSV_DIMENSION GetDsvDimension(const Dimensions& tex_dimensions)
+static D3D12_DSV_DIMENSION GetDsvDimension(const Dimensions& tex_dimensions)
 {
     ITT_FUNCTION_TASK();
     if (tex_dimensions.depth != 1)
@@ -206,15 +206,37 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
 
     InitializeDefaultDescriptors();
 
-    assert(m_settings.dimensions.depth > 0);
-    assert(m_settings.dimensions.width > 0);
+    const ResourceAndViewDesc tex_and_srv_desc = GetResourceAndViewDesc();
+    InitializeCommittedResource(tex_and_srv_desc.first, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COPY_DEST);
+
+    const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
+    const UINT number_of_subresources = GetRequiredSubresourceCount();
+    const UINT64 upload_buffer_size   = GetRequiredIntermediateSize(m_cp_resource.Get(), 0, number_of_subresources);
+    ThrowIfFailed(
+        cp_device->CreateCommittedResource(
+            &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+            D3D12_HEAP_FLAG_NONE,
+            &CD3DX12_RESOURCE_DESC::Buffer(upload_buffer_size),
+            D3D12_RESOURCE_STATE_GENERIC_READ,
+            nullptr,
+            IID_PPV_ARGS(&m_cp_upload_resource)
+        )
+    );
+
+    cp_device->CreateShaderResourceView(m_cp_resource.Get(), &tex_and_srv_desc.second, GetNativeCPUDescriptorHandle(Usage::ShaderRead));
+}
+
+ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() const
+{
+    assert(m_settings.dimensions.depth  > 0);
+    assert(m_settings.dimensions.width  > 0);
     assert(m_settings.dimensions.height > 0);
 
     D3D12_RESOURCE_DESC tex_desc = {};
     D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
     const uint32_t mip_levels_count = GetMipLevelsCount();
 
-    switch(m_settings.dimension_type)
+    switch (m_settings.dimension_type)
     {
     case DimensionType::Tex1D:
         if (m_settings.array_length != 1)
@@ -237,9 +259,9 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
 
         srv_desc.Texture1DArray.MipLevels = mip_levels_count;
         srv_desc.Texture1DArray.ArraySize = m_settings.array_length;
-        srv_desc.ViewDimension            = m_settings.dimension_type == DimensionType::Tex1D
-                                          ? D3D12_SRV_DIMENSION_TEXTURE1D
-                                          : D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
+        srv_desc.ViewDimension = m_settings.dimension_type == DimensionType::Tex1D
+            ? D3D12_SRV_DIMENSION_TEXTURE1D
+            : D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
         break;
 
     case DimensionType::Tex2D:
@@ -263,9 +285,9 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
 
         srv_desc.Texture2DArray.MipLevels = mip_levels_count;
         srv_desc.Texture2DArray.ArraySize = m_settings.array_length;
-        srv_desc.ViewDimension            = m_settings.dimension_type == DimensionType::Tex2D
-                                          ? D3D12_SRV_DIMENSION_TEXTURE2D
-                                          : D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+        srv_desc.ViewDimension = m_settings.dimension_type == DimensionType::Tex2D
+            ? D3D12_SRV_DIMENSION_TEXTURE2D
+            : D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
         break;
 
     case DimensionType::Tex3D:
@@ -281,7 +303,7 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
             mip_levels_count
         );
         srv_desc.Texture3D.MipLevels = mip_levels_count;
-        srv_desc.ViewDimension       = D3D12_SRV_DIMENSION_TEXTURE3D;
+        srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
         break;
 
     case DimensionType::Cube:
@@ -306,31 +328,16 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
         srv_desc.TextureCubeArray.First2DArrayFace = 0;
         srv_desc.TextureCubeArray.NumCubes = m_settings.array_length;
         srv_desc.TextureCubeArray.MipLevels = mip_levels_count;
-        srv_desc.ViewDimension              = m_settings.dimension_type == DimensionType::Cube
-                                            ? D3D12_SRV_DIMENSION_TEXTURECUBE
-                                            : D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
+        srv_desc.ViewDimension = m_settings.dimension_type == DimensionType::Cube
+            ? D3D12_SRV_DIMENSION_TEXTURECUBE
+            : D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
         break;
     }
 
     srv_desc.Format = tex_desc.Format;
     srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
-    InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COPY_DEST);
-
-    const UINT number_of_subresources = GetRequiredSubresourceCount();
-    const UINT64 upload_buffer_size   = GetRequiredIntermediateSize(m_cp_resource.Get(), 0, number_of_subresources);
-    ThrowIfFailed(
-        GetContextDX().GetDeviceDX().GetNativeDevice()->CreateCommittedResource(
-            &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-            D3D12_HEAP_FLAG_NONE,
-            &CD3DX12_RESOURCE_DESC::Buffer(upload_buffer_size),
-            D3D12_RESOURCE_STATE_GENERIC_READ,
-            nullptr,
-            IID_PPV_ARGS(&m_cp_upload_resource)
-        )
-    );
-
-    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateShaderResourceView(m_cp_resource.Get(), &srv_desc, GetNativeCPUDescriptorHandle(Usage::ShaderRead));
+    return { std::move(tex_desc), std::move(srv_desc) };
 }
 
 void ImageTextureDX::SetData(const SubResources& sub_resources)

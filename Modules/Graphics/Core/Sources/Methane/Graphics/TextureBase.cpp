@@ -113,26 +113,38 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
     {
         throw std::invalid_argument("Can not create texture with \"Unknown\" pixel format.");
     }
-    if (!m_settings.dimensions.width || !m_settings.dimensions.height || !m_settings.dimensions.depth || !m_settings.array_length)
+    if (!m_settings.array_length)
     {
-        throw std::invalid_argument("All dimension sizes and array length should be greater than zero.");
+        throw std::invalid_argument("Array length should be greater than zero.");
     }
 
-    switch(m_settings.dimension_type)
+    ValidateDimensions(m_settings.dimension_type, m_settings.dimensions, m_settings.mipmapped);
+}
+
+void TextureBase::ValidateDimensions(DimensionType dimension_type, const Dimensions& dimensions, bool mipmapped)
+{
+    ITT_FUNCTION_TASK();
+
+    if (!dimensions.width || !dimensions.height || !dimensions.depth)
+    {
+        throw std::invalid_argument("All dimension sizes should be greater than zero.");
+    }
+
+    switch (dimension_type)
     {
     case DimensionType::Cube:
     case DimensionType::CubeArray:
-        if (m_settings.dimensions.width != m_settings.dimensions.height)
+        if (dimensions.width != dimensions.height)
         {
             throw std::invalid_argument("Cube texture must have equal width and height dimensions.");
         }
-        if (m_settings.dimensions.depth != 6)
+        if (dimensions.depth != 6)
         {
             throw std::invalid_argument("Cube texture depth must be equal to 6.");
         }
         // NOTE: break is missing intentionally
     case DimensionType::Tex3D:
-        if (m_settings.mipmapped && m_settings.dimensions.depth % 2)
+        if (mipmapped && dimensions.depth % 2)
         {
             throw std::invalid_argument("All dimensions of the mip-mapped texture should be a power of 2, but depth is not.");
         }
@@ -140,14 +152,14 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
     case DimensionType::Tex2D:
     case DimensionType::Tex2DArray:
     case DimensionType::Tex2DMultisample:
-        if (m_settings.mipmapped && m_settings.dimensions.height % 2)
+        if (mipmapped && dimensions.height % 2)
         {
             throw std::invalid_argument("All dimensions of the mip-mapped texture should be a power of 2, but height is not.");
         }
         // NOTE: break is missing intentionally
     case DimensionType::Tex1D:
     case DimensionType::Tex1DArray:
-        if (m_settings.mipmapped && m_settings.dimensions.width % 2)
+        if (mipmapped && dimensions.width % 2)
         {
             throw std::invalid_argument("All dimensions of the mip-mapped texture should be a power of 2, but width is not.");
         }

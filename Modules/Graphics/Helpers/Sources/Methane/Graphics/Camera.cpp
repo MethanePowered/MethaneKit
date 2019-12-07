@@ -26,8 +26,6 @@ Camera helper implementation allowing to generate view and projectrion matrices.
 
 #include <cml/mathlib/mathlib.h>
 
-using namespace Methane::Data;
-
 namespace Methane::Graphics
 {
 
@@ -111,20 +109,20 @@ Matrix44f Camera::GetViewProjMatrix() const noexcept
     return GetViewMatrix() * GetProjMatrix();
 }
 
-Vector2f Camera::TransformScreenToProj(const Point2i& screen_pos) const noexcept
+Vector2f Camera::TransformScreenToProj(const Data::Point2i& screen_pos) const noexcept
 {
     ITT_FUNCTION_TASK();
     return { 2.f * screen_pos.x() / m_screen_size.x() - 1.f,
            -(2.f * screen_pos.y() / m_screen_size.y() - 1.f) };
 }
 
-Vector3f Camera::TransformScreenToView(const Point2i& screen_pos) const noexcept
+Vector3f Camera::TransformScreenToView(const Data::Point2i& screen_pos) const noexcept
 {
     ITT_FUNCTION_TASK();
     return (cml::inverse(GetProjMatrix()) * Vector4f(TransformScreenToProj(screen_pos), 0.f, 1.f)).subvector(3);
 }
 
-Vector3f Camera::TransformScreenToWorld(const Point2i& screen_pos) const noexcept
+Vector3f Camera::TransformScreenToWorld(const Data::Point2i& screen_pos) const noexcept
 {
     ITT_FUNCTION_TASK();
     return TransformViewToWorld(TransformScreenToView(screen_pos));

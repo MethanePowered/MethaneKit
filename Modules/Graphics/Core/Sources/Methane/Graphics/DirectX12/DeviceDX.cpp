@@ -37,16 +37,7 @@ DirectX 12 implementation of the device interface.
 namespace Methane::Graphics
 {
 
-Device::Feature::Mask DeviceDX::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level)
-{
-    ITT_FUNCTION_TASK();
-    Device::Feature::Mask supported_featues = Device::Feature::Value::BasicRendering;
-    cp_adapter;
-    feature_level;
-    return supported_featues;
-}
-
-std::string GetAdapterNameDXGI(IDXGIAdapter& adapter)
+static std::string GetAdapterNameDXGI(IDXGIAdapter& adapter)
 {
     ITT_FUNCTION_TASK();
 
@@ -55,13 +46,19 @@ std::string GetAdapterNameDXGI(IDXGIAdapter& adapter)
     return nowide::narrow(desc.Description);
 }
 
-bool IsSoftwareAdapterDXGI(IDXGIAdapter1& adapter)
+static bool IsSoftwareAdapterDXGI(IDXGIAdapter1& adapter)
 {
     ITT_FUNCTION_TASK();
 
     DXGI_ADAPTER_DESC1 desc = {};
     adapter.GetDesc1(&desc);
     return desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE;
+}
+
+Device::Feature::Mask DeviceDX::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& /*cp_adapter*/, D3D_FEATURE_LEVEL /*feature_level*/)
+{
+    ITT_FUNCTION_TASK();
+    return Device::Feature::Value::BasicRendering;
 }
 
 DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level)

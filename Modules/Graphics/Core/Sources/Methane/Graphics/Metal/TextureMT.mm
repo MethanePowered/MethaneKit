@@ -36,7 +36,7 @@ Metal implementation of the texture interface.
 namespace Methane::Graphics
 {
 
-MTLTextureType GetNativeTextureType(Texture::DimensionType dimension_type)
+static MTLTextureType GetNativeTextureType(Texture::DimensionType dimension_type)
 {
     ITT_FUNCTION_TASK();
     switch(dimension_type)
@@ -54,8 +54,8 @@ MTLTextureType GetNativeTextureType(Texture::DimensionType dimension_type)
     default: throw std::invalid_argument("Dimension type is not supported in Metal");
     }
 }
-    
-MTLRegion GetTextureRegion(const Dimensions& dimensions, Texture::DimensionType dimension_type)
+
+static MTLRegion GetTextureRegion(const Dimensions& dimensions, Texture::DimensionType dimension_type)
 {
     ITT_FUNCTION_TASK();
     switch(dimension_type)

@@ -30,8 +30,6 @@ DirectX 12 implementation of the resource interface.
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #include <nowide/convert.hpp>
-#include <algorithm>
-#include <iterator>
 #include <cassert>
 
 namespace Methane::Graphics

@@ -21,8 +21,6 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 
 ******************************************************************************/
 
-#define _ENABLE_EXTENDED_ALIGNED_STORAGE // FIXME: get rid of this ASAP
-
 #include "AsteroidsApp.h"
 
 #include <Methane/Graphics/AppCameraController.h>
