@@ -244,6 +244,8 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
             throw std::invalid_argument("Single 1D Texture must have array length equal to 1.");
         }
         srv_desc.Texture1D.MipLevels = mip_levels_count;
+        // NOTE: break is missing intentionally
+
     case DimensionType::Tex1DArray:
         if (m_settings.dimensions.height != 1 || m_settings.dimensions.depth != 1)
         {
@@ -257,11 +259,11 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
             mip_levels_count
         );
 
-        srv_desc.Texture1DArray.MipLevels = mip_levels_count;
-        srv_desc.Texture1DArray.ArraySize = m_settings.array_length;
-        srv_desc.ViewDimension = m_settings.dimension_type == DimensionType::Tex1D
-            ? D3D12_SRV_DIMENSION_TEXTURE1D
-            : D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
+        srv_desc.Texture1DArray.MipLevels   = mip_levels_count;
+        srv_desc.Texture1DArray.ArraySize   = m_settings.array_length;
+        srv_desc.ViewDimension              = m_settings.dimension_type == DimensionType::Tex1D
+                                            ? D3D12_SRV_DIMENSION_TEXTURE1D
+                                            : D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
         break;
 
     case DimensionType::Tex2D:
@@ -270,6 +272,8 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
             throw std::invalid_argument("Single 2D Texture must have array length equal to 1.");
         }
         srv_desc.Texture2D.MipLevels = mip_levels_count;
+        // NOTE: break is missing intentionally
+
     case DimensionType::Tex2DArray:
         if (m_settings.dimensions.depth != 1)
         {
@@ -283,11 +287,11 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
             mip_levels_count
         );
 
-        srv_desc.Texture2DArray.MipLevels = mip_levels_count;
-        srv_desc.Texture2DArray.ArraySize = m_settings.array_length;
-        srv_desc.ViewDimension = m_settings.dimension_type == DimensionType::Tex2D
-            ? D3D12_SRV_DIMENSION_TEXTURE2D
-            : D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+        srv_desc.Texture2DArray.MipLevels   = mip_levels_count;
+        srv_desc.Texture2DArray.ArraySize   = m_settings.array_length;
+        srv_desc.ViewDimension              = m_settings.dimension_type == DimensionType::Tex2D
+                                            ? D3D12_SRV_DIMENSION_TEXTURE2D
+                                            : D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
         break;
 
     case DimensionType::Tex3D:
@@ -303,7 +307,7 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
             mip_levels_count
         );
         srv_desc.Texture3D.MipLevels = mip_levels_count;
-        srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
+        srv_desc.ViewDimension       = D3D12_SRV_DIMENSION_TEXTURE3D;
         break;
 
     case DimensionType::Cube:
@@ -312,6 +316,8 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
             throw std::invalid_argument("Single Cube Texture must have array length equal to 1.");
         }
         srv_desc.TextureCube.MipLevels = mip_levels_count;
+        // NOTE: break is missing intentionally
+
     case DimensionType::CubeArray:
         if (m_settings.dimensions.depth != 6)
         {
@@ -326,15 +332,15 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         );
 
         srv_desc.TextureCubeArray.First2DArrayFace = 0;
-        srv_desc.TextureCubeArray.NumCubes = m_settings.array_length;
-        srv_desc.TextureCubeArray.MipLevels = mip_levels_count;
-        srv_desc.ViewDimension = m_settings.dimension_type == DimensionType::Cube
-            ? D3D12_SRV_DIMENSION_TEXTURECUBE
-            : D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
+        srv_desc.TextureCubeArray.NumCubes         = m_settings.array_length;
+        srv_desc.TextureCubeArray.MipLevels        = mip_levels_count;
+        srv_desc.ViewDimension                     = m_settings.dimension_type == DimensionType::Cube
+                                                   ? D3D12_SRV_DIMENSION_TEXTURECUBE
+                                                   : D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
         break;
     }
 
-    srv_desc.Format = tex_desc.Format;
+    srv_desc.Format                  = tex_desc.Format;
     srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
     return { std::move(tex_desc), std::move(srv_desc) };
