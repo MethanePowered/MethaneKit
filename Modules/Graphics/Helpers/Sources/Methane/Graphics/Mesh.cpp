@@ -22,7 +22,7 @@ Procedural mesh generators, including rect, box, etc.
 ******************************************************************************/
 
 #include <Methane/Graphics/Mesh.h>
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <cml/mathlib/mathlib.h>
 
@@ -85,11 +85,11 @@ Mesh::VertexFieldOffsets Mesh::GetVertexFieldOffsets(const VertexLayout& vertex_
     return field_offsets;
 }
 
-size_t Mesh::GetVertexSize(const VertexLayout& vertex_layout) noexcept
+Data::Size Mesh::GetVertexSize(const VertexLayout& vertex_layout) noexcept
 {
     ITT_FUNCTION_TASK();
 
-    size_t vertex_size = 0;
+    Data::Size vertex_size = 0;
     for (VertexField vertex_field : vertex_layout)
     {
         vertex_size += g_vertex_field_sizes[static_cast<size_t>(vertex_field)];
@@ -104,12 +104,28 @@ Mesh::Mesh(Type type, const VertexLayout& vertex_layout)
     , m_vertex_size(GetVertexSize(m_vertex_layout))
 {
     ITT_FUNCTION_TASK();
+    if (!Mesh::HasVertexField(Mesh::VertexField::Position))
+    {
+        throw std::invalid_argument("Vertex positions must be available in mesh layout.");
+    }
 }
 
 bool Mesh::HasVertexField(VertexField field) const noexcept
 {
     ITT_FUNCTION_TASK();
     return m_vertex_field_offsets[static_cast<size_t>(field)] >= 0;
+}
+    
+Mesh::Edge::Edge(Mesh::Index v1_index, Mesh::Index v2_index)
+    : first_index( v1_index < v2_index ? v1_index : v2_index)
+    , second_index(v1_index < v2_index ? v2_index : v1_index)
+{
+}
+    
+bool Mesh::Edge::operator<(const Edge& other) const
+{
+    return first_index < other.first_index ||
+          (first_index == other.first_index && second_index < other.second_index);
 }
 
 } // namespace Methane::Graphics

@@ -45,7 +45,7 @@ static const GraphicsApp::Settings      g_app_settings = // Application settings
         gfx::FrameSize(),                               // - frame_size
         gfx::PixelFormat::BGRA8Unorm,                   // - color_format
         gfx::PixelFormat::Depth32Float,                 // - depth_stencil_format
-        gfx::Color(0.0f, 0.2f, 0.4f, 1.0f),             // - clear_color
+        gfx::Color4f(0.0f, 0.2f, 0.4f, 1.0f),           // - clear_color
         1.f,                                            // - clear_depth
         0,                                              // - clear_stencil
         3,                                              // - frame_buffers_count
@@ -61,7 +61,7 @@ ShadowCubeApp::ShadowCubeApp()
     , m_scene_scale(15.f)
     , m_scene_constants(                                // Shader constants:
         {                                               // ================
-            gfx::Color(1.f, 1.f, 0.74f, 1.f),           // - light_color
+            gfx::Color4f(1.f, 1.f, 0.74f, 1.f),         // - light_color
             600.f,                                      // - light_power
             0.2f,                                       // - light_ambient_factor
             5.f                                         // - light_specular_factor
@@ -99,10 +99,10 @@ void ShadowCubeApp::Init()
 
     // Load textures, vertex and index buffers for cube and floor meshes
     m_sp_cube_buffers  = std::make_unique<TexturedMeshBuffers>(*m_sp_context, m_cube_mesh, "Cube");
-    m_sp_cube_buffers->SetTexture(m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MethaneBubbles.jpg"));
+    m_sp_cube_buffers->SetSubsetTexture(m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MethaneBubbles.jpg", true));
 
     m_sp_floor_buffers = std::make_unique<TexturedMeshBuffers>(*m_sp_context, m_floor_mesh, "Floor");
-    m_sp_floor_buffers->SetTexture(m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MarbleWhite.jpg"));
+    m_sp_floor_buffers->SetSubsetTexture(m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MarbleWhite.jpg", true));
 
     m_view_camera.Resize(static_cast<float>(context_settings.frame_size.width),
                          static_cast<float>(context_settings.frame_size.height));
@@ -143,14 +143,16 @@ void ShadowCubeApp::Init()
         { // input_buffer_layouts
             { // Signle vertex buffer with interleaved data:
                 {
-                    { "in_position", "POSITION" },
-                    { "in_normal",   "NORMAL"   },
-                    { "in_uv",       "TEXCOORD" },
+                    { "input_position", "POSITION" },
+                    { "input_normal",   "NORMAL"   },
+                    { "input_texcoord", "TEXCOORD" },
                 }
             }
         },
         { // constant_argument_names
             "g_constants", "g_texture_sampler", "g_shadow_sampler"
+        },
+        { // addressable_argument_names
         },
         { // render_target_pixel_formats
             context_settings.color_format
@@ -185,6 +187,8 @@ void ShadowCubeApp::Init()
         m_final_pass.sp_program->GetSettings().input_buffer_layouts,
         {
             "g_constants", "g_shadow_sampler"
+        },
+        { // addressable_argument_names
         },
         { // no color attachments, rendering to depth texture
         },
@@ -248,12 +252,12 @@ void ShadowCubeApp::Init()
 
         // Shadow-pass resource bindings for cube rendering
         frame.shadow_pass.cube.sp_resource_bindings = gfx::Program::ResourceBindings::Create(m_shadow_pass.sp_program, {
-            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, frame.shadow_pass.cube.sp_uniforms_buffer },
+            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { frame.shadow_pass.cube.sp_uniforms_buffer } },
         });
 
         // Shadow-pass resource bindings for floor rendering
         frame.shadow_pass.floor.sp_resource_bindings = gfx::Program::ResourceBindings::Create(m_shadow_pass.sp_program, {
-            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, frame.shadow_pass.floor.sp_uniforms_buffer },
+            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { frame.shadow_pass.floor.sp_uniforms_buffer } },
         });
 
         // ========= Final Pass data =========
@@ -276,19 +280,19 @@ void ShadowCubeApp::Init()
 
         // Final-pass resource bindings for cube rendering
         frame.final_pass.cube.sp_resource_bindings = gfx::Program::ResourceBindings::Create(m_final_pass.sp_program, {
-            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, frame.final_pass.cube.sp_uniforms_buffer    },
-            { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, frame.sp_scene_uniforms_buffer              },
-            { { gfx::Shader::Type::Pixel,  "g_constants"      }, m_sp_const_buffer                           },
-            { { gfx::Shader::Type::Pixel,  "g_shadow_map"     }, frame.shadow_pass.sp_rt_texture             },
-            { { gfx::Shader::Type::Pixel,  "g_shadow_sampler" }, m_sp_shadow_sampler                         },
-            { { gfx::Shader::Type::Pixel,  "g_texture"        }, m_sp_cube_buffers->GetTexturePtr()          },
-            { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, m_sp_texture_sampler                        },
+            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { frame.final_pass.cube.sp_uniforms_buffer   } },
+            { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { frame.sp_scene_uniforms_buffer             } },
+            { { gfx::Shader::Type::Pixel,  "g_constants"      }, { m_sp_const_buffer                          } },
+            { { gfx::Shader::Type::Pixel,  "g_shadow_map"     }, { frame.shadow_pass.sp_rt_texture            } },
+            { { gfx::Shader::Type::Pixel,  "g_shadow_sampler" }, { m_sp_shadow_sampler                        } },
+            { { gfx::Shader::Type::Pixel,  "g_texture"        }, { m_sp_cube_buffers->GetSubsetTexturePtr()         } },
+            { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { m_sp_texture_sampler                       } },
         });
 
         // Final-pass resource bindings for floor rendering - patched a copy of cube bindings
         frame.final_pass.floor.sp_resource_bindings = gfx::Program::ResourceBindings::CreateCopy(*frame.final_pass.cube.sp_resource_bindings, {
-            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, frame.final_pass.floor.sp_uniforms_buffer   },
-            { { gfx::Shader::Type::Pixel,  "g_texture"        }, m_sp_floor_buffers->GetTexturePtr()         },
+            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { frame.final_pass.floor.sp_uniforms_buffer  } },
+            { { gfx::Shader::Type::Pixel,  "g_texture"        }, { m_sp_floor_buffers->GetSubsetTexturePtr()        } },
         });
     }
 
@@ -426,12 +430,12 @@ void ShadowCubeApp::RenderScene(const RenderPass &render_pass, ShadowCubeFrame::
     // Cube drawing
     assert(!!render_pass_resources.cube.sp_resource_bindings);
     assert(!!m_sp_cube_buffers);
-    m_sp_cube_buffers->Draw(cmd_list, *render_pass_resources.cube.sp_resource_bindings, 1);
+    m_sp_cube_buffers->Draw(cmd_list, *render_pass_resources.cube.sp_resource_bindings);
 
     // Floor drawing
     assert(!!render_pass_resources.floor.sp_resource_bindings);
     assert(!!m_sp_floor_buffers);
-    m_sp_floor_buffers->Draw(cmd_list, *render_pass_resources.floor.sp_resource_bindings, 1);
+    m_sp_floor_buffers->Draw(cmd_list, *render_pass_resources.floor.sp_resource_bindings);
 
     cmd_list.Commit(render_pass.is_final_pass);
 }

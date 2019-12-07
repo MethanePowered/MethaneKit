@@ -40,7 +40,7 @@ static const GraphicsApp::Settings      g_app_settings = // Application settings
         gfx::FrameSize(),                           // - frame_size placeholder: actual size is set in InitContext
         gfx::PixelFormat::BGRA8Unorm,               // - color_format
         gfx::PixelFormat::Unknown,                  // - depth_stencil_format
-        gfx::Color(0.0f, 0.2f, 0.4f, 1.0f),         // - clear_color
+        gfx::Color4f(0.0f, 0.2f, 0.4f, 1.0f),       // - clear_color
         1.f,                                        // - clear_depth
         0,                                          // - clear_stencil
         3,                                          // - frame_buffers_count
@@ -80,12 +80,14 @@ void HelloTriangleApp::Init()
         { // input_buffer_layouts
             { // single vertex buffer layout with interleaved data
                 { // input arguments mapping to semantic names
-                    { "in_position", "POSITION" },
-                    { "in_color",    "COLOR"    },
+                    { "input_position", "POSITION" },
+                    { "input_color",    "COLOR"    },
                 }
             }
         },
         { // constant_argument_names
+        },
+        { // addressable_argument_names
         },
         { // render_target_pixel_formats
             GetInitialContextSettings().color_format
@@ -151,7 +153,7 @@ void HelloTriangleApp::Render()
     // Issue commands for triangle rendering
     frame.sp_cmd_list->Reset(*m_sp_state, "Cube redering");
     frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
-    frame.sp_cmd_list->Draw(gfx::RenderCommandList::Primitive::Triangle, static_cast<uint32_t>(m_triangle_vertices.size()) , 1);
+    frame.sp_cmd_list->Draw(gfx::RenderCommandList::Primitive::Triangle, static_cast<uint32_t>(m_triangle_vertices.size()));
     frame.sp_cmd_list->Commit(true);
 
     // Present frame to screen

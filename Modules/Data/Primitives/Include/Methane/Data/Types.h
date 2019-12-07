@@ -75,6 +75,7 @@ struct Rect
         { return !operator==(other); }
 
         D GetPixelsCount() const noexcept { return width * height; }
+        D GetLongestSide() const noexcept { return std::max(width, height); }
 
         operator std::string() const
         { return "Sz(" + std::to_string(width) + " x " + std::to_string(height) + ")"; }
@@ -96,9 +97,10 @@ struct Rect
 using FrameRect    = Rect<int32_t, uint32_t>;
 using FrameSize    = FrameRect::Size;
 
-using Bytes = std::vector<char>;
+using Bytes = std::vector<uint8_t>;
 using Size = uint32_t;
-using RawPtr = char*;
-using ConstRawPtr = const char* const;
+using Index = Size;
+using RawPtr = uint8_t*;
+using ConstRawPtr = const uint8_t* const;
 
 } // namespace Methane::Data

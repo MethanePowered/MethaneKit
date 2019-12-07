@@ -26,7 +26,7 @@ Metal implementation of the buffer interface.
 #include "ContextMT.hh"
 #include "TypesMT.hh"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
 #include <algorithm>
@@ -50,10 +50,14 @@ Buffer::Ptr Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFo
     return std::make_shared<BufferMT>(static_cast<ContextBase&>(context), settings, 0, format);
 }
 
-Buffer::Ptr Buffer::CreateConstantBuffer(Context& context, Data::Size size, const DescriptorByUsage& descriptor_by_usage)
+Buffer::Ptr Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
-    const Buffer::Settings settings = { Buffer::Type::Constant, Usage::Unknown, size };
+    Usage::Mask usage_mask = Usage::ShaderRead;
+    if (addressable)
+        usage_mask |= Usage::Addressable;
+
+    const Buffer::Settings settings = { Buffer::Type::Constant, usage_mask, size };
     return std::make_shared<BufferMT>(static_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 

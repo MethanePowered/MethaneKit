@@ -32,7 +32,7 @@ DirectX 12 implementation of the shader interface.
 #include <D3Dcompiler.h>
 #include <nowide/convert.hpp>
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 #include <Methane/Data/Provider.h>
 
@@ -42,7 +42,7 @@ DirectX 12 implementation of the shader interface.
 namespace Methane::Graphics
 {
 
-std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type) noexcept
+static std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -65,7 +65,7 @@ std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type) noexcept
     return "Unknown";
 }
 
-std::string GetSRVDimensionName(D3D_SRV_DIMENSION srv_dimension) noexcept
+static std::string GetSRVDimensionName(D3D_SRV_DIMENSION srv_dimension) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -88,7 +88,7 @@ std::string GetSRVDimensionName(D3D_SRV_DIMENSION srv_dimension) noexcept
     return "Unknown";
 }
 
-std::string GetReturnTypeName(D3D_RESOURCE_RETURN_TYPE return_type) noexcept
+static std::string GetReturnTypeName(D3D_RESOURCE_RETURN_TYPE return_type) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -106,7 +106,7 @@ std::string GetReturnTypeName(D3D_RESOURCE_RETURN_TYPE return_type) noexcept
     return "Undefined";
 }
 
-std::string GetValueTypeName(D3D_NAME value_type) noexcept
+static std::string GetValueTypeName(D3D_NAME value_type) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -142,7 +142,7 @@ std::string GetValueTypeName(D3D_NAME value_type) noexcept
     return "Unknown";
 }
 
-std::string GetComponentTypeName(D3D_REGISTER_COMPONENT_TYPE component_type) noexcept
+static std::string GetComponentTypeName(D3D_REGISTER_COMPONENT_TYPE component_type) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -158,7 +158,7 @@ std::string GetComponentTypeName(D3D_REGISTER_COMPONENT_TYPE component_type) noe
 }
 
 using StepType = ProgramBase::InputBufferLayout::StepType;
-D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepType step_type) noexcept
+static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepType step_type) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -184,15 +184,15 @@ ShaderDX::ResourceBindingDX::ResourceBindingDX(ContextBase& context, const Setti
     ITT_FUNCTION_TASK();
 }
 
-void ShaderDX::ResourceBindingDX::SetResource(const Resource::Ptr& sp_resource)
+void ShaderDX::ResourceBindingDX::SetResourceLocation(Resource::Location resource_location)
 {
     ITT_FUNCTION_TASK();
-    if (!sp_resource)
+    if (!resource_location.sp_resource)
     {
         throw std::invalid_argument("Can not set empty resource to shader resource binding.");
     }
 
-    const Resource::Type resource_type = sp_resource->GetResourceType();
+    const Resource::Type resource_type = resource_location.sp_resource->GetResourceType();
 
     bool resource_type_compatible = false;
     switch (m_settings_dx.input_type)
@@ -205,29 +205,34 @@ void ShaderDX::ResourceBindingDX::SetResource(const Resource::Ptr& sp_resource)
 
     if (!resource_type_compatible)
     {
-        throw std::invalid_argument("Incompatible resource type \"" + Resource::GetTypeName(sp_resource->GetResourceType()) +
+        throw std::invalid_argument("Incompatible resource type \"" + Resource::GetTypeName(resource_location.sp_resource->GetResourceType()) +
                                     "\" is bound to argument \"" + GetArgumentName() + "\" of type \"" + GetShaderInputTypeName(m_settings_dx.input_type) + "\".");
     }
 
-    ShaderBase::ResourceBindingBase::SetResource(sp_resource);
+    ShaderBase::ResourceBindingBase::SetResourceLocation(std::move(resource_location));
 
-    if (m_p_descriptor_heap_reservation && sp_resource)
+    m_resource_location_dx.sp_resource = std::dynamic_pointer_cast<ResourceDX>(m_resource_location.sp_resource);
+    m_resource_location_dx.offset      = m_resource_location.offset;
+
+    if (!m_resource_location_dx.sp_resource || !m_p_descriptor_heap_reservation)
+        return;
+
+    const ResourceDX&       dx_resource        = *m_resource_location_dx.sp_resource;
+    const DescriptorHeapDX& dx_descriptor_heap = static_cast<const DescriptorHeapDX&>(m_p_descriptor_heap_reservation->heap.get());
+    if (m_descriptor_range.heap_type != dx_descriptor_heap.GetSettings().type)
     {
-        const ResourceDX& dx_resource = dynamic_cast<const ResourceDX&>(*sp_resource);
-        const DescriptorHeapDX& dx_descriptor_heap = static_cast<const DescriptorHeapDX&>(m_p_descriptor_heap_reservation->heap.get());
-        if (m_descriptor_range.heap_type != dx_descriptor_heap.GetSettings().type)
-        {
-            throw std::logic_error("Incompatible heap type \"" + dx_descriptor_heap.GetTypeName() +
-                                   "\" is set for resource binding on argument \"" + GetArgumentName() + 
-                                   "\" of \"" + GetShaderInputTypeName(m_settings_dx.input_type) + "\" shader.");
-        }
-
-        const uint32_t descriptor_index = m_p_descriptor_heap_reservation->GetRange(IsConstant()).GetStart() + m_descriptor_range.offset;
-        GetContextDX().GetDeviceDX().GetNativeDevice()->CopyDescriptorsSimple(m_descriptor_range.count,
-            dx_descriptor_heap.GetNativeCPUDescriptorHandle(descriptor_index),
-            dx_resource.GetNativeCPUDescriptorHandle(ResourceBase::Usage::ShaderRead),
-            dx_descriptor_heap.GetNativeDescriptorHeapType());
+        throw std::logic_error("Incompatible heap type \"" + dx_descriptor_heap.GetTypeName() +
+                               "\" is set for resource binding on argument \"" + GetArgumentName() + 
+                               "\" of \"" + GetShaderInputTypeName(m_settings_dx.input_type) + "\" shader.");
     }
+
+    const uint32_t descriptor_index = m_p_descriptor_heap_reservation->GetRange(IsConstant()).GetStart() + m_descriptor_range.offset;
+    GetContextDX().GetDeviceDX().GetNativeDevice()->CopyDescriptorsSimple(
+        m_descriptor_range.count,
+        dx_descriptor_heap.GetNativeCPUDescriptorHandle(descriptor_index),
+        dx_resource.GetNativeCPUDescriptorHandle(ResourceBase::Usage::ShaderRead),
+        dx_descriptor_heap.GetNativeDescriptorHeapType()
+    );
 }
 
 DescriptorHeap::Type ShaderDX::ResourceBindingDX::GetDescriptorHeapType() const
@@ -319,7 +324,7 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
     ));
 }
 
-ShaderBase::ResourceBindings ShaderDX::GetResourceBindings(const std::set<std::string>& constant_argument_names) const
+ShaderBase::ResourceBindings ShaderDX::GetResourceBindings(const std::set<std::string>& constant_argument_names, const std::set<std::string>& addressable_argument_names) const
 {
     ITT_FUNCTION_TASK();
     assert(!!m_cp_reflection);
@@ -340,7 +345,11 @@ ShaderBase::ResourceBindings ShaderDX::GetResourceBindings(const std::set<std::s
         ThrowIfFailed(m_cp_reflection->GetResourceBindingDesc(resource_index, &binding_desc));
 
         const std::string argument_name(binding_desc.Name);
-        const bool is_constant_binding = constant_argument_names.find(argument_name) != constant_argument_names.end();
+        const bool is_constant_binding    = constant_argument_names.find(argument_name) != constant_argument_names.end();
+        const bool is_addressable_binding = addressable_argument_names.find(argument_name) != addressable_argument_names.end();
+        const ResourceBindingDX::Type dx_binding_type = !is_addressable_binding ? ResourceBindingDX::Type::DescriptorTable
+                                                                                : (binding_desc.Type == D3D_SIT_CBUFFER ? ResourceBindingDX::Type::ConstantBufferView
+                                                                                                                        : ResourceBindingDX::Type::ShaderResourceView);
         resource_bindings.push_back(std::make_shared<ResourceBindingDX>(
             m_context,
             ResourceBindingDX::Settings
@@ -349,7 +358,9 @@ ShaderBase::ResourceBindings ShaderDX::GetResourceBindings(const std::set<std::s
                     m_type,
                     argument_name,
                     is_constant_binding,
+                    is_addressable_binding
                 },
+                dx_binding_type,
                 binding_desc.Type,
                 binding_desc.BindCount,
                 binding_desc.BindPoint,

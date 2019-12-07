@@ -39,8 +39,12 @@ public:
 
     // Texture interface
     const Settings& GetSettings() const override { return m_settings; }
+    uint32_t        GetMipLevelsCount() const override;
 
 protected:
+    uint32_t GetRequiredSubresourceCount() const;
+    static void ValidateDimensions(DimensionType dimension_type, const Dimensions& dimensions, bool mipmapped);
+
     const Settings m_settings;
 };
 

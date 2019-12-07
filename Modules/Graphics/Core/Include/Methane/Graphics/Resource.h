@@ -58,14 +58,23 @@ struct Resource : virtual Object
         enum Value : Mask
         {
             Unknown      = 0,
+            // Primary usages
             ShaderRead   = 1 << 0,
             ShaderWrite  = 1 << 1,
             RenderTarget = 1 << 2,
+            // Secondary usages
+            Addressable  = 1 << 3,
             All          = static_cast<Mask>(~0),
         };
 
-        using Values = std::array<Value, 3>;
-        static constexpr const Values values = { ShaderRead, ShaderWrite, RenderTarget };
+        using BaseValues = std::array<Value, 3>;
+        static constexpr const BaseValues primary_values = { ShaderRead, ShaderWrite, RenderTarget };
+
+        using Values = std::array<Value, 4>;
+        static constexpr const Values values = { ShaderRead, ShaderWrite, RenderTarget, Addressable };
+
+        static std::string ToString(Usage::Value usage) noexcept;
+        static std::string ToString(Usage::Mask usage_mask) noexcept;
 
         Usage() = delete;
         ~Usage() = delete;
@@ -80,28 +89,47 @@ struct Resource : virtual Object
     };
 
     using DescriptorByUsage = std::map<Usage::Value, Descriptor>;
+    
+    struct Location
+    {
+        Ptr        sp_resource;
+        Data::Size offset = 0;
+
+        bool operator==(const Location& other) const;
+    };
 
     struct SubResource
     {
+        struct Index
+        {
+            uint32_t depth_slice  = 0;
+            uint32_t array_index  = 0;
+            uint32_t mip_level    = 0;
+        };
+
+        Data::Bytes         data_storage;
         Data::ConstRawPtr   p_data      = nullptr;
         Data::Size          data_size   = 0;
-        uint32_t            depth_slice = 0;
-        uint32_t            array_index = 0;
-        uint32_t            mip_level   = 0;
+        Index               index       = { 0, 0, 0 };
 
         SubResource() = default;
-        SubResource(Data::ConstRawPtr in_p_data, Data::Size in_data_size,
-                    uint32_t in_depth_slice = 0, uint32_t in_array_index = 0, uint32_t in_mip_level = 0);
+        SubResource(Data::Bytes&& data, Index in_index = { 0, 0, 0 });
+        SubResource(Data::ConstRawPtr in_p_data, Data::Size in_data_size, Index in_index = { 0, 0, 0 });
 
-        uint32_t GetIndex(uint32_t depth = 1, uint32_t mip_levels_count = 1) const { return (array_index * depth + depth_slice) * mip_levels_count + mip_level; }
+        uint32_t GetRawIndex(uint32_t depth = 1, uint32_t mip_levels_count = 1) const
+        { return ComputeRawIndex(index, depth, mip_levels_count); }
+
+        static uint32_t ComputeRawIndex(const Index& index, uint32_t depth = 1, uint32_t mip_levels_count = 1)
+        { return (index.array_index * depth + index.depth_slice) * mip_levels_count + index.mip_level; }
+
+        static Index ComputeIndex(uint32_t raw_index, uint32_t depth = 1, uint32_t mip_levels_count = 1);
     };
 
     using SubResources = std::vector<SubResource>;
 
     // Auxillary functions
     static std::string GetTypeName(Type type) noexcept;
-    static std::string GetUsageName(Usage::Value usage) noexcept;
-    static std::string GetUsageNames(Usage::Mask usage_mask) noexcept;
+
 
     // Resource interface
     virtual void                      SetData(const SubResources& sub_resources) = 0;

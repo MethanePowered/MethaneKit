@@ -23,7 +23,7 @@ MacOS application view implementation.
 
 #import <Methane/Platform/MacOS/AppViewMT.hh>
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 @interface AppViewMT ()
 {

@@ -31,7 +31,7 @@ till end (exclusively): [start, end)
 #include <cassert>
 #include <stdexcept>
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 namespace Methane::Data
 {

@@ -47,22 +47,15 @@ function(get_shaders_config SHADERS_HLSL SHADERS_CONFIG)
     set(${SHADERS_CONFIG} "${SHADERS_PATH}.cfg" PARENT_SCOPE)
 endfunction()
 
-function(get_shaders_name SHADERS_FILE SHADERS_NAME)
-    trim_spaces(${SHADERS_FILE} SHADERS_FILE)
-    split_by_last_delimiter(${SHADERS_FILE} "." SHADERS_PATH FILE_EXT)
-    string(REGEX MATCH "[^/\\]+$" FILE_NAME ${SHADERS_PATH})
-    set(${SHADERS_NAME} ${FILE_NAME} PARENT_SCOPE)
-endfunction()
-
 function(get_metal_library FOR_TARGET SHADERS_HLSL METAL_LIBRARY)
     get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
-    get_shaders_name(${SHADERS_HLSL} SHADERS_NAME)
+    get_file_name(${SHADERS_HLSL} SHADERS_NAME)
     set(${METAL_LIBRARY} "${TARGET_SHADERS_DIR}/${SHADERS_NAME}.metallib" PARENT_SCOPE)
 endfunction()
 
 function(get_generated_shaders FOR_TARGET SHADERS_CONFIG SHADER_EXT SHADERS_GENERATED)
     get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
-    get_shaders_name(${SHADERS_CONFIG} SHADERS_NAME)
+    get_file_name(${SHADERS_CONFIG} SHADERS_NAME)
 
     file(STRINGS ${SHADERS_CONFIG} CONFIG_STRINGS)
     foreach(KEY_VALUE_STRING ${CONFIG_STRINGS})
@@ -82,7 +75,7 @@ endfunction()
 function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL OUT_SHADERS_METAL)
     get_platform_dir()
     get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
-    get_shaders_name(${SHADERS_HLSL} SHADERS_NAME)
+    get_file_name(${SHADERS_HLSL} SHADERS_NAME)
     get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
 
     set(SPIRV_BIN_DIR      "${CMAKE_SOURCE_DIR}/Externals/SPIRV/binaries/${PLATFORM_DIR}")
@@ -122,7 +115,7 @@ function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL OUT_SHADERS_ME
 
         set_target_properties(${GENERATE_METAL_TARGET}
             PROPERTIES
-            FOLDER Build
+            FOLDER "Build/${FOR_TARGET}/Shaders"
         )
 
         add_dependencies(${GENERATE_METAL_TARGET} SPIRV-build)
@@ -137,6 +130,10 @@ endfunction()
 function(compile_metal_shaders_to_library FOR_TARGET SDK METAL_SHADERS METAL_LIBRARY)
     get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
 
+    if(METHANE_SHADERS_CODEVIEW_ENABLED OR CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(EXTRA_COMPILE_FLAGS -gcodeview)
+    endif()
+
     foreach(SHADER_METAL_PATH ${METAL_SHADERS})
         string(REPLACE "/" ";" SHADER_METAL_PATH_LIST "${SHADER_METAL_PATH}")
         list(LENGTH SHADER_METAL_PATH_LIST SHADER_METAL_PATH_LIST_LENGTH)
@@ -145,16 +142,17 @@ function(compile_metal_shaders_to_library FOR_TARGET SDK METAL_SHADERS METAL_LIB
 
         set(SHADER_AIR_PATH ${SHADER_METAL_PATH}.air)
         set(SHADER_COMPILE_TARGET ${FOR_TARGET}_Compile_${SHADER_METAL_FILE})
+
         add_custom_target(${SHADER_COMPILE_TARGET}
             COMMENT "Compiling Metal shader " ${SHADER_METAL_FILE} " for target " ${TARGET}
             BYPRODUCTS "${SHADER_AIR_PATH}"
             DEPENDS "${SHADER_METAL_PATH}"
-            COMMAND xcrun -sdk ${SDK} metal -gcodeview -c "${SHADER_METAL_PATH}" -o "${SHADER_AIR_PATH}"
+            COMMAND xcrun -sdk ${SDK} metal ${EXTRA_COMPILE_FLAGS} -c "${SHADER_METAL_PATH}" -o "${SHADER_AIR_PATH}"
         )
 
         set_target_properties(${SHADER_COMPILE_TARGET}
             PROPERTIES
-            FOLDER Build
+            FOLDER "Build/${FOR_TARGET}/Shaders"
         )
         
         add_dependencies(${SHADER_COMPILE_TARGET} ${FOR_TARGET}_Generate_${SHADER_METAL_FILE})
@@ -163,7 +161,8 @@ function(compile_metal_shaders_to_library FOR_TARGET SDK METAL_SHADERS METAL_LIB
         list(APPEND _SHADER_COMPILE_TARGETS ${SHADER_COMPILE_TARGET})
     endforeach()
 
-    set(METAL_LIB_TARGET ${FOR_TARGET}_LinkMetalLibrary)
+    get_file_name(${METAL_LIBRARY} METAL_LIBRARY_NAME)
+    set(METAL_LIB_TARGET ${FOR_TARGET}_LinkMetalLibrary_${METAL_LIBRARY_NAME})
     add_custom_target(${METAL_LIB_TARGET}
         COMMENT "Linking default Metal library for application " ${TARGET}
         BYPRODUCTS "${METAL_LIBRARY}"
@@ -173,7 +172,7 @@ function(compile_metal_shaders_to_library FOR_TARGET SDK METAL_SHADERS METAL_LIB
 
     set_target_properties(${METAL_LIB_TARGET}
         PROPERTIES
-        FOLDER Build
+        FOLDER "Build/${FOR_TARGET}/Shaders"
     )
 
     add_dependencies(${METAL_LIB_TARGET} ${_SHADER_COMPILE_TARGETS})
@@ -184,10 +183,18 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
     
     get_platform_dir()
     get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
-    get_shaders_name(${SHADERS_HLSL} SHADERS_NAME)
+    get_file_name(${SHADERS_HLSL} SHADERS_NAME)
     get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
 
     set(SHADER_COMPILER_EXE "${WINDOWS_SDK_BIN_PATH}/fxc.exe")
+
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(EXTRA_COMPILE_FLAGS /Od)
+    endif()
+
+    if(METHANE_SHADERS_CODEVIEW_ENABLED OR CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(EXTRA_COMPILE_FLAGS ${EXTRA_COMPILE_FLAGS} /Zi)
+    endif()
 
     file(STRINGS ${SHADERS_CONFIG} CONFIG_STRINGS)
     foreach(KEY_VALUE_STRING ${CONFIG_STRINGS})
@@ -211,10 +218,6 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
 
         list(APPEND _OUT_COMPILED_SHADER_BINS ${SHADER_OBJ_PATH})
 
-        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-            set(EXTRA_COMPILE_FLAGS /Od /Zi)
-        endif()
-
         shorten_target_name(${FOR_TARGET}_HLSL_${NEW_ENTRY_POINT} COMPILE_SHADER_TARGET)
         add_custom_target(${COMPILE_SHADER_TARGET}
             COMMENT "Compiling HLSL shader from file " ${SHADERS_HLSL} " with profile " ${SHADER_PROFILE} " and macro-definition" ${SHADER_DEFINITIONS} "to OBJ file " ${SHADER_OBJ_FILE}
@@ -226,7 +229,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
 
         set_target_properties(${COMPILE_SHADER_TARGET}
             PROPERTIES
-            FOLDER Build
+            FOLDER "Build/${FOR_TARGET}/Shaders"
         )
 
         add_dependencies(${FOR_TARGET}_Shaders ${COMPILE_SHADER_TARGET})
@@ -279,7 +282,7 @@ function(add_methane_shaders TARGET HLSL_SOURCES)
 
         set_target_properties(${SHADER_RESOURCES_TARGET}
             PROPERTIES
-            FOLDER Build
+            FOLDER "Build/${TARGET}/Resources"
         )
 
         target_compile_definitions(${TARGET}
@@ -310,21 +313,21 @@ function(add_methane_shaders TARGET HLSL_SOURCES)
 
         # Set bundle location for metal library files
         set_source_files_properties(
-            ${METAL_LIBRARY}
+            ${METAL_LIBRARIES}
             PROPERTIES MACOSX_PACKAGE_LOCATION
             "Resources"
         )
 
         set_source_files_properties(
             ${GENERATED_SOURCES}
-            ${METAL_LIBRARY}
+            ${METAL_LIBRARIES}
             PROPERTIES GENERATED
             TRUE
         )
 
         source_group("Generated Shaders" FILES
             ${GENERATED_SOURCES}
-            ${METAL_LIBRARY}
+            ${METAL_LIBRARIES}
         )
 
         # Add Metal libraries to the list of prerequisites to auto-copy them to the application Resources
@@ -334,11 +337,12 @@ function(add_methane_shaders TARGET HLSL_SOURCES)
         )
 
         # Generate Metal shaders from HLSL sources with SPIRV toolset and compile to Metal Library
+
         foreach(SHADERS_HLSL ${HLSL_SOURCES})
+            set(SHADERS_METAL) # init with empty list
             get_metal_library(${TARGET} ${SHADERS_HLSL} METAL_LIBRARY)
             generate_metal_shaders_from_hlsl(${TARGET} ${SHADERS_HLSL} SHADERS_METAL)
             compile_metal_shaders_to_library(${TARGET} "macosx" "${SHADERS_METAL}" "${METAL_LIBRARY}")
-            list(APPEND SHADERS_GENERATED ${SHADERS_METAL})
         endforeach()
 
     endif()

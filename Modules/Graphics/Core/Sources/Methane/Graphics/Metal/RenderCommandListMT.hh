@@ -53,21 +53,36 @@ public:
     // RenderCommandList interface
     void Reset(RenderState& render_state, const std::string& debug_group = "") override;
     void SetVertexBuffers(const Buffer::Refs& vertex_buffers) override;
-    void DrawIndexed(Primitive primitive, const Buffer& index_buffer, uint32_t instance_count) override;
-    void Draw(Primitive primitive, uint32_t vertex_count, uint32_t instance_count) override;
+    void DrawIndexed(Primitive primitive, Buffer& index_buffer,
+                     uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
+                     uint32_t instance_count, uint32_t start_instance) override;
+    void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
+              uint32_t instance_count, uint32_t start_instance) override;
 
     // Object interface
     void SetName(const std::string& label) override;
 
-    id<MTLCommandBuffer>& GetNativeCommandBuffer() noexcept  { return m_mtl_cmd_buffer; }
-    id<MTLRenderCommandEncoder>& GetNativeEncoder() noexcept { return m_mtl_cmd_encoder; }
+    bool IsRenderEncoding() const { return m_mtl_render_encoder != nil; }
+    void StartRenderEncoding();
+    void EndRenderEncoding();
+    
+    bool IsBlitEncoding() const   { return m_mtl_blit_encoder != nil; }
+    void StartBlitEncoding();
+    void EndBlitEncoding();
+
+    id<MTLCommandBuffer>&        GetNativeCommandBuffer() noexcept { return m_mtl_cmd_buffer; }
+    id<MTLRenderCommandEncoder>& GetNativeRenderEncoder() noexcept { return m_mtl_render_encoder; }
+    id<MTLBlitCommandEncoder>&   GetNativeBlitEncoder() noexcept   { return m_mtl_blit_encoder; }
 
 protected:
+    void InitializeCommandBuffer();
+    
     CommandQueueMT& GetCommandQueueMT() noexcept;
-    RenderPassMT& GetPassMT();
+    RenderPassMT&   GetPassMT();
 
     id<MTLCommandBuffer>        m_mtl_cmd_buffer;
-    id<MTLRenderCommandEncoder> m_mtl_cmd_encoder;
+    id<MTLRenderCommandEncoder> m_mtl_render_encoder;
+    id<MTLBlitCommandEncoder>   m_mtl_blit_encoder;
 };
 
 } // namespace Methane::Graphics

@@ -24,7 +24,7 @@ and deferred releasing of GPU resource.
 
 #include "ResourceManager.h"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <cassert>
 
@@ -68,6 +68,8 @@ void ResourceManager::CompleteInitialization()
 {
     ITT_FUNCTION_TASK();
 
+    std::lock_guard<std::mutex> lock_guard(m_deferred_resource_bindings_mutex);
+
     for (const DescriptorHeaps& desc_heaps : m_descriptor_heap_types)
     {
         for (const DescriptorHeap::Ptr& sp_desc_heap : desc_heaps)
@@ -107,6 +109,8 @@ void ResourceManager::Release()
 void ResourceManager::DeferResourceBindingsInitialization(Program::ResourceBindings& resource_bindings)
 {
     ITT_FUNCTION_TASK();
+
+    std::lock_guard<std::mutex> lock_guard(m_deferred_resource_bindings_mutex);
     m_deferred_resource_bindings.push_back(static_cast<ProgramBase::ResourceBindingsBase&>(resource_bindings).GetPtr());
 }
 

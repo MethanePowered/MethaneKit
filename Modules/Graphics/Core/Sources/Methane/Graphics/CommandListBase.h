@@ -26,6 +26,7 @@ Base implementation of the command list interface.
 #include "ObjectBase.h"
 #include "ResourceBase.h"
 
+#include <Methane/Graphics/Program.h>
 #include <Methane/Graphics/CommandList.h>
 #include <Methane/Graphics/CommandQueue.h>
 
@@ -55,10 +56,15 @@ public:
         Executing,
     };
 
+    struct CommandState
+    {
+        Program::ResourceBindings::Ptr sp_resource_bindings;
+    };
+
     CommandListBase(CommandQueueBase& command_queue);
 
     // CommandList interface
-    void SetResourceBindings(const Program::ResourceBindings& resource_bindings) override;
+    void SetResourceBindings(Program::ResourceBindings& resource_bindings) override;
     void Commit(bool present_drawable) override;
     CommandQueue& GetCommandQueue() override;
 
@@ -68,7 +74,8 @@ public:
     virtual void Complete(uint32_t frame_index);
 
     void SetResourceTransitionBarriers(const Resource::Refs& resources, ResourceBase::State state_before, ResourceBase::State state_after);
-    Ptr  GetPtr() { return shared_from_this(); }
+    const CommandState& GetCommandState() const { return m_command_state; }
+    Ptr  GetPtr()                               { return shared_from_this(); }
 
 protected:
     CommandQueueBase&       GetCommandQueueBase();
@@ -80,6 +87,7 @@ protected:
     bool     IsExecuting(uint32_t frame_index) const;
     bool     IsExecuting() const                        { return IsExecuting(GetCurrentFrameIndex()); }
     uint32_t GetCurrentFrameIndex() const;
+    void     ResetCommandState();
 
     CommandQueue::Ptr m_sp_command_queue;
     bool              m_debug_group_opened = false;
@@ -93,6 +101,7 @@ private:
     uint32_t            m_committed_frame_index = 0;
     State               m_state                 = State::Pending;
     mutable std::mutex  m_state_mutex;
+    CommandState        m_command_state;
 };
 
 } // namespace Methane::Graphics

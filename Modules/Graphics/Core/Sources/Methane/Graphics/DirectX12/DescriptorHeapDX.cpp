@@ -25,7 +25,7 @@ DirectX 12 implementation of the descriptor heap wrapper.
 #include "ContextDX.h"
 #include "DeviceDX.h"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #include <cassert>
@@ -33,7 +33,7 @@ DirectX 12 implementation of the descriptor heap wrapper.
 namespace Methane::Graphics
 {
 
-D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeap::Type type) noexcept
+static D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeap::Type type) noexcept
 {
     ITT_FUNCTION_TASK();
     switch (type)

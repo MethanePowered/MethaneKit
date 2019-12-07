@@ -26,12 +26,10 @@ DirectX 12 implementation of the resource interface.
 #include "ContextDX.h"
 #include "DeviceDX.h"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #include <nowide/convert.hpp>
-#include <algorithm>
-#include <iterator>
 #include <cassert>
 
 namespace Methane::Graphics

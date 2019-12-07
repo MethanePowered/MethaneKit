@@ -23,7 +23,10 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 
 #pragma once
 
-#include <Methane/Kit.h>
+#include "Planet.h"
+#include "AsteroidsArray.h"
+
+#include <Methane/Graphics/Kit.h>
 
 namespace Methane::Samples
 {
@@ -33,17 +36,11 @@ namespace pal = Platform;
 
 struct AsteroidsFrame final : gfx::AppFrame
 {
-    struct MeshBufferBindings
-    {
-        gfx::Buffer::Ptr                    sp_uniforms_buffer;
-        gfx::Program::ResourceBindings::Ptr sp_resource_bindings;
-    };
-
-    gfx::RenderCommandList::Ptr  sp_cmd_list;
-    gfx::Buffer::Ptr             sp_scene_uniforms_buffer;
-    MeshBufferBindings           skybox;
-    MeshBufferBindings           cube;
-
+    gfx::RenderCommandList::Ptr sp_cmd_list;
+    gfx::Buffer::Ptr            sp_scene_uniforms_buffer;
+    gfx::MeshBufferBindings     skybox;
+    gfx::MeshBufferBindings     planet;
+    gfx::MeshBufferBindings     asteroids;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -65,23 +62,9 @@ public:
     void OnContextReleased() override;
 
 private:
-    struct Vertex
-    {
-        gfx::Mesh::Position position;
-        gfx::Mesh::Normal   normal;
-        gfx::Mesh::TexCoord texcoord;
-
-        using FieldsArray = std::array<gfx::Mesh::VertexField, 3>;
-        static constexpr const FieldsArray layout = {
-            gfx::Mesh::VertexField::Position,
-            gfx::Mesh::VertexField::Normal,
-            gfx::Mesh::VertexField::TexCoord,
-        };
-    };
-
     struct SHADER_STRUCT_ALIGN Constants
     {
-        SHADER_FIELD_ALIGN gfx::Color     light_color;
+        SHADER_FIELD_ALIGN gfx::Color4f   light_color;
         SHADER_FIELD_PACK  float          light_power;
         SHADER_FIELD_PACK  float          light_ambient_factor;
         SHADER_FIELD_PACK  float          light_specular_factor;
@@ -93,26 +76,18 @@ private:
         SHADER_FIELD_ALIGN gfx::Vector3f  light_position;
     };
 
-    struct SHADER_STRUCT_ALIGN MeshUniforms
-    {
-        SHADER_FIELD_ALIGN gfx::Matrix44f model_matrix;
-        SHADER_FIELD_ALIGN gfx::Matrix44f mvp_matrix;
-    };
+    gfx::ActionCamera                 m_view_camera;
+    gfx::ActionCamera                 m_light_camera;
+    const float                       m_scene_scale;
+    const Constants                   m_scene_constants;
+    const AsteroidsArray::Settings    m_asteroids_array_settings;
+    SceneUniforms                     m_scene_uniforms = { };
     
-    using TexturedMeshBuffers = gfx::TexturedMeshBuffers<MeshUniforms>;
-
-    const gfx::BoxMesh<Vertex>  m_cube_mesh;
-    const float                 m_scene_scale;
-    const Constants             m_scene_constants;
-    gfx::ActionCamera           m_view_camera;
-    gfx::ActionCamera           m_light_camera;
-
-    SceneUniforms               m_scene_uniforms = { };
-    gfx::SkyBox::Ptr            m_sp_sky_box;
-    TexturedMeshBuffers::Ptr    m_sp_cube_buffers;
-    gfx::RenderState::Ptr       m_sp_state;
-    gfx::Buffer::Ptr            m_sp_const_buffer;
-    gfx::Sampler::Ptr           m_sp_texture_sampler;
+    gfx::Buffer::Ptr                  m_sp_const_buffer;
+    gfx::SkyBox::Ptr                  m_sp_sky_box;
+    Planet::Ptr                       m_sp_planet;
+    AsteroidsArray::Ptr               m_sp_asteroids_array;
+    AsteroidsArray::ContentState::Ptr m_sp_asteroids_array_state;
 };
 
 } // namespace Methane::Samples

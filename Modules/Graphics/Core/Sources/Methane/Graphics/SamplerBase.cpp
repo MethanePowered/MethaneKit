@@ -23,7 +23,7 @@ Base implementation of the sampler interface.
 
 #include "SamplerBase.h"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 namespace Methane::Graphics
 {

@@ -36,7 +36,6 @@ SkyBox rendering primitive
 
 #include <memory>
 #include <array>
-#include <string>
 
 namespace Methane::Graphics
 {
@@ -48,12 +47,14 @@ public:
 
     struct Settings
     {
-        float                          scale;
         const Camera&                  view_camera;
         ImageLoader::CubeFaceResources face_resources;
+        float                          scale;
+        bool                           mipmapped = false;
+        float                          lod_bias = 0.f;
     };
 
-    struct SHADER_STRUCT_ALIGN MeshUniforms
+    struct SHADER_STRUCT_ALIGN Uniforms
     {
         SHADER_FIELD_ALIGN Matrix44f mvp_matrix;
     };
@@ -63,10 +64,10 @@ public:
     Program::ResourceBindings::Ptr CreateResourceBindings(const Buffer::Ptr& sp_uniforms_buffer);
     void Resize(const FrameSize& frame_size);
     void Update();
-    void Draw(RenderCommandList& cmd_list, Buffer& uniforms_buffer, Program::ResourceBindings& resource_bindings);
+    void Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindings);
 
 private:
-    using TexturedMeshBuffers = TexturedMeshBuffers<MeshUniforms>;
+    using TexturedMeshBuffers = TexturedMeshBuffers<Uniforms>;
 
     Settings               m_settings;
     Context&               m_context;

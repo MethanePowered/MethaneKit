@@ -24,11 +24,10 @@ DirectX 12 implementation of the context interface.
 #include "ContextDX.h"
 #include "DeviceDX.h"
 #include "RenderStateDX.h"
-#include "RenderPassDX.h"
 #include "CommandQueueDX.h"
 #include "TypesDX.h"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #ifdef COMMAND_EXECUTION_LOGGING
@@ -41,9 +40,10 @@ DirectX 12 implementation of the context interface.
 namespace Methane::Graphics
 {
 
-void SetWindowTopMostFlag(HWND window_handle, bool is_top_most)
+static void SetWindowTopMostFlag(HWND window_handle, bool is_top_most)
 {
     ITT_FUNCTION_TASK();
+
     RECT window_rect = {};
     GetWindowRect(window_handle, &window_rect);
 

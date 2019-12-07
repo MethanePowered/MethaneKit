@@ -25,6 +25,7 @@ SkyBox rendering primitive
 #include <Methane/Graphics/Mesh.h>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Data/AppResourceProviders.h>
+#include <Methane/Data/Instrumentation.h>
 
 namespace Methane::Graphics
 {
@@ -44,7 +45,9 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
     , m_context(context)
     , m_mesh_buffers(context, SphereMesh<SkyBoxVertex>(Mesh::VertexLayoutFromArray(SkyBoxVertex::layout)), "Sky-Box")
 {
-    m_mesh_buffers.SetTexture(image_loader.LoadImagesToTextureCube(m_context, m_settings.face_resources));
+    ITT_FUNCTION_TASK();
+
+    m_mesh_buffers.SetSubsetTexture(image_loader.LoadImagesToTextureCube(m_context, m_settings.face_resources, m_settings.mipmapped));
 
     const Context::Settings& context_settings = context.GetSettings();
 
@@ -58,6 +61,7 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
             { "in_position", "POSITION" },
         } } },
         { "g_skybox_texture", "g_texture_sampler" },
+        { },
         { context_settings.color_format },
         context_settings.depth_stencil_format
     });
@@ -72,24 +76,29 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
 
     m_sp_texture_sampler = Sampler::Create(context, {
         { Sampler::Filter::MinMag::Linear     },
-        { Sampler::Address::Mode::ClampToZero }
+        { Sampler::Address::Mode::ClampToZero },
+        Sampler::LevelOfDetail(m_settings.lod_bias)
     });
     m_sp_texture_sampler->SetName("Sky-box Texture Sampler");
 }
 
 Program::ResourceBindings::Ptr SkyBox::CreateResourceBindings(const Buffer::Ptr& sp_uniforms_buffer)
 {
+    ITT_FUNCTION_TASK();
+
     assert(!!m_sp_state);
     assert(!!m_sp_state->GetSettings().sp_program);
     return Program::ResourceBindings::Create(m_sp_state->GetSettings().sp_program, {
-        { { Shader::Type::Vertex, "g_skybox_uniforms" }, sp_uniforms_buffer              },
-        { { Shader::Type::Pixel,  "g_skybox_texture"  }, m_mesh_buffers.GetTexturePtr()  },
-        { { Shader::Type::Pixel,  "g_texture_sampler" }, m_sp_texture_sampler            },
+        { { Shader::Type::Vertex, "g_skybox_uniforms" }, { sp_uniforms_buffer             } },
+        { { Shader::Type::Pixel,  "g_skybox_texture"  }, { m_mesh_buffers.GetSubsetTexturePtr() } },
+        { { Shader::Type::Pixel,  "g_texture_sampler" }, { m_sp_texture_sampler           } },
     });
 }
 
 void SkyBox::Resize(const FrameSize& frame_size)
 {
+    ITT_FUNCTION_TASK();
+
     assert(m_sp_state);
     m_sp_state->SetViewports({ GetFrameViewport(frame_size) });
     m_sp_state->SetScissorRects({ GetFrameScissorRect(frame_size) });
@@ -97,6 +106,8 @@ void SkyBox::Resize(const FrameSize& frame_size)
 
 void SkyBox::Update()
 {
+    ITT_FUNCTION_TASK();
+
     Matrix44f model_scale_matrix, model_translate_matrix, scene_view_matrix, scene_proj_matrix;
     m_settings.view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
     cml::matrix_uniform_scale(model_scale_matrix, m_settings.scale);
@@ -105,13 +116,19 @@ void SkyBox::Update()
     m_mesh_buffers.SetFinalPassUniforms({ model_scale_matrix * model_translate_matrix * scene_view_matrix * scene_proj_matrix });
 }
 
-void SkyBox::Draw(RenderCommandList& cmd_list, Buffer& uniforms_buffer, Program::ResourceBindings& resource_bindings)
+void SkyBox::Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindings)
 {
-    assert(uniforms_buffer.GetDataSize() >= sizeof(MeshUniforms));
-    uniforms_buffer.SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_mesh_buffers.GetFinalPassUniforms()), sizeof(MeshUniforms) } });
+    ITT_FUNCTION_TASK();
+    
+    assert(!!buffer_bindings.sp_uniforms_buffer);
+    assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= sizeof(Uniforms));
+    buffer_bindings.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_mesh_buffers.GetFinalPassUniforms()), sizeof(Uniforms) } });
 
     cmd_list.Reset(*m_sp_state, "Sky-box rendering");
-    m_mesh_buffers.Draw(cmd_list, resource_bindings, 1);
+    
+    assert(!buffer_bindings.resource_bindings_per_instance.empty());
+    assert(!!buffer_bindings.resource_bindings_per_instance[0]);
+    m_mesh_buffers.Draw(cmd_list, *buffer_bindings.resource_bindings_per_instance[0]);
 }
 
 } // namespace Methane::Graphics

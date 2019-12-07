@@ -27,14 +27,14 @@ Metal implementation of the shader interface.
 #include "ContextMT.hh"
 #include "TypesMT.hh"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
 namespace Methane::Graphics
 {
 
 using StepType = ProgramBase::InputBufferLayout::StepType;
-MTLVertexStepFunction GetVertexStepFunction(StepType step_type) noexcept
+static MTLVertexStepFunction GetVertexStepFunction(StepType step_type) noexcept
 {
     ITT_FUNCTION_TASK();
     switch(step_type)
@@ -45,7 +45,7 @@ MTLVertexStepFunction GetVertexStepFunction(StepType step_type) noexcept
     }
 }
 
-std::string GetMetalArgumentTypeName(MTLArgumentType mtl_arg_type) noexcept
+static std::string GetMetalArgumentTypeName(MTLArgumentType mtl_arg_type) noexcept
 {
     ITT_FUNCTION_TASK();
     switch(mtl_arg_type)
@@ -59,7 +59,7 @@ std::string GetMetalArgumentTypeName(MTLArgumentType mtl_arg_type) noexcept
     return "Unknown";
 }
 
-std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access) noexcept
+static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access) noexcept
 {
     ITT_FUNCTION_TASK();
     switch(mtl_arg_access)
@@ -85,12 +85,16 @@ ShaderMT::ResourceBindingMT::ResourceBindingMT(ContextBase& context, const Setti
     ITT_FUNCTION_TASK();
 }
 
-void ShaderMT::ResourceBindingMT::SetResource(const Resource::Ptr& sp_resource)
+void ShaderMT::ResourceBindingMT::SetResourceLocation(Resource::Location resource_location)
 {
     ITT_FUNCTION_TASK();
 
-    assert(sp_resource);
-    const Resource::Type resource_type = sp_resource->GetResourceType();
+    if (!resource_location.sp_resource)
+    {
+        throw std::invalid_argument("Can not set resource location with Null resource pointer.");
+    }
+    
+    const Resource::Type resource_type = resource_location.sp_resource->GetResourceType();
     
     bool resource_type_compatible = false;
     switch(m_settings.argument_type)
@@ -103,12 +107,12 @@ void ShaderMT::ResourceBindingMT::SetResource(const Resource::Ptr& sp_resource)
     
     if (!resource_type_compatible)
     {
-        throw std::invalid_argument("Incompatible resource type \"" + Resource::GetTypeName(sp_resource->GetResourceType()) +
+        throw std::invalid_argument("Incompatible resource type \"" + Resource::GetTypeName(resource_location.sp_resource->GetResourceType()) +
                                     "\" is bound to argument \"" + GetArgumentName() +
                                     "\" of type \"" + GetMetalArgumentTypeName(m_settings.argument_type) + "\".");
     }
     
-    ShaderBase::ResourceBindingBase::SetResource(sp_resource);
+    ShaderBase::ResourceBindingBase::SetResourceLocation(std::move(resource_location));
 }
 
 DescriptorHeap::Type ShaderMT::ResourceBindingMT::GetDescriptorHeapType() const
@@ -142,7 +146,8 @@ ShaderMT::~ShaderMT()
     [m_mtl_function release];
 }
 
-ShaderBase::ResourceBindings ShaderMT::GetResourceBindings(const std::set<std::string>& constant_argument_names) const
+ShaderBase::ResourceBindings ShaderMT::GetResourceBindings(const std::set<std::string>& constant_argument_names,
+                                                           const std::set<std::string>& addressable_argument_names) const
 {
     ITT_FUNCTION_TASK();
 
@@ -166,7 +171,9 @@ ShaderBase::ResourceBindings ShaderMT::GetResourceBindings(const std::set<std::s
             continue;
         }
         
-        const bool is_constant_binding = constant_argument_names.find(argument_name) != constant_argument_names.end();
+        const bool is_constant_binding    = constant_argument_names.find(argument_name)    != constant_argument_names.end();
+        const bool is_addressable_binding = addressable_argument_names.find(argument_name) != addressable_argument_names.end();
+        
         resource_bindings.push_back(std::make_shared<ResourceBindingMT>(
             m_context,
             ResourceBindingMT::Settings
@@ -175,6 +182,7 @@ ShaderBase::ResourceBindings ShaderMT::GetResourceBindings(const std::set<std::s
                     m_type,
                     argument_name,
                     is_constant_binding,
+                    is_addressable_binding
                 },
                 mtl_arg.type,
                 static_cast<uint32_t>(mtl_arg.index)

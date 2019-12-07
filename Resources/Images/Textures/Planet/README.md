@@ -1,0 +1,1 @@
+Free textures of the Solar System planets are taken from <https://www.solarsystemscope.com/textures/>

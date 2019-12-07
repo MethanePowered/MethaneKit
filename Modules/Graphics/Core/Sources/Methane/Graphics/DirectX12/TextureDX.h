@@ -26,10 +26,15 @@ DirectX 12 implementation of the texture interface.
 #include <Methane/Graphics/TextureBase.h>
 #include <Methane/Graphics/CommandListBase.h>
 #include <Methane/Graphics/Windows/Helpers.h>
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <d3dx12.h>
 #include <cassert>
+
+namespace DirectX
+{
+class ScratchImage;
+}
 
 namespace Methane::Graphics
 {
@@ -81,6 +86,10 @@ public:
     Data::Size GetDataSize() const override { return m_data_size; }
 
 protected:
+    using ResourceAndViewDesc = std::pair<D3D12_RESOURCE_DESC, D3D12_SHADER_RESOURCE_VIEW_DESC>;
+    ResourceAndViewDesc GetResourceAndViewDesc() const;
+    void GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_resources, DirectX::ScratchImage& scratch_image);
+
     Data::Size                  m_data_size = 0;
     wrl::ComPtr<ID3D12Resource> m_cp_upload_resource;
 };

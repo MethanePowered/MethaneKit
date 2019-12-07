@@ -26,7 +26,7 @@ from RESOURCES_NAMESPACE or external resource files on disk.
 
 #include "FileProvider.hpp"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <vector>
 #include <string>
@@ -66,7 +66,7 @@ public:
         if (m_resource_fs.exists(path))
         {
             cmrc::file res_file = m_resource_fs.open(path);
-            return Methane::Data::Chunk(static_cast<Methane::Data::ConstRawPtr>(res_file.cbegin()),
+            return Methane::Data::Chunk(reinterpret_cast<Methane::Data::ConstRawPtr>(res_file.cbegin()),
                                         static_cast<Methane::Data::Size>(res_file.cend() - res_file.cbegin()));
         }
 

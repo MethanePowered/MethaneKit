@@ -31,9 +31,8 @@ DirectX 12 implementation of the render command list interface.
 #include "ResourceDX.h"
 #include "TextureDX.h"
 #include "BufferDX.h"
-#include "TypesDX.h"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #include <d3dx12.h>
@@ -44,7 +43,7 @@ DirectX 12 implementation of the render command list interface.
 namespace Methane::Graphics
 {
 
-D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primitive primitive) noexcept
+static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primitive primitive) noexcept
 {
     ITT_FUNCTION_TASK();
     switch (primitive)
@@ -142,6 +141,9 @@ void RenderCommandListDX::SetVertexBuffers(const Buffer::Refs& vertex_buffers)
 
     RenderCommandListBase::SetVertexBuffers(vertex_buffers);
 
+    if (!m_draw_state.flags.vertex_buffers_changed)
+        return;
+
     std::vector<D3D12_VERTEX_BUFFER_VIEW> vertex_buffer_views;
     vertex_buffer_views.reserve(vertex_buffers.size());
     for (auto vertex_buffer_ref : vertex_buffers)
@@ -155,39 +157,49 @@ void RenderCommandListDX::SetVertexBuffers(const Buffer::Refs& vertex_buffers)
     m_cp_command_list->IASetVertexBuffers(0, static_cast<UINT>(vertex_buffer_views.size()), vertex_buffer_views.data());
 }
 
-void RenderCommandListDX::DrawIndexed(Primitive primitive, const Buffer& index_buffer, uint32_t instance_count)
+void RenderCommandListDX::DrawIndexed(Primitive primitive, Buffer& index_buffer,
+                                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
+                                      uint32_t instance_count, uint32_t start_instance)
 {
     ITT_FUNCTION_TASK();
 
-    RenderCommandListBase::DrawIndexed(primitive, index_buffer, instance_count);
+    const IndexBufferDX& dx_index_buffer = static_cast<IndexBufferDX&>(index_buffer);
+    if (!index_count)
+    {
+        index_count = dx_index_buffer.GetFormattedItemsCount();
+    }
 
-    const IndexBufferDX& dx_index_buffer = static_cast<const IndexBufferDX&>(index_buffer);
-    const uint32_t index_count = dx_index_buffer.GetFormattedItemsCount();
-    const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
+    RenderCommandListBase::DrawIndexed(primitive, index_buffer, index_count, start_index, start_vertex, instance_count, start_instance);
 
-    assert(index_count > 0);
-    assert(instance_count > 0);
     assert(m_cp_command_list);
 
-    m_cp_command_list->IASetIndexBuffer(&dx_index_buffer.GetNativeView());
-    m_cp_command_list->IASetPrimitiveTopology(primitive_topology);
-    m_cp_command_list->DrawIndexedInstanced(index_count, instance_count, 0, 0, 0);
+    if (m_draw_state.flags.primitive_type_changed)
+    {
+        const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
+        m_cp_command_list->IASetPrimitiveTopology(primitive_topology);
+    }
+    if (m_draw_state.flags.index_buffer_changed)
+    {
+        m_cp_command_list->IASetIndexBuffer(&dx_index_buffer.GetNativeView());
+    }
+    m_cp_command_list->DrawIndexedInstanced(index_count, instance_count, start_index, start_vertex, start_instance);
 }
 
-void RenderCommandListDX::Draw(Primitive primitive, uint32_t vertex_count, uint32_t instance_count)
+void RenderCommandListDX::Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
+                               uint32_t instance_count, uint32_t start_instance)
 {
     ITT_FUNCTION_TASK();
 
-    RenderCommandListBase::Draw(primitive, vertex_count, instance_count);
-
-    const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
+    RenderCommandListBase::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
 
     assert(m_cp_command_list);
-    assert(vertex_count > 0);
-    assert(instance_count > 0);
 
-    m_cp_command_list->IASetPrimitiveTopology(primitive_topology);
-    m_cp_command_list->DrawInstanced(vertex_count, instance_count, 0, 0);
+    if (m_draw_state.flags.primitive_type_changed)
+    {
+        const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
+        m_cp_command_list->IASetPrimitiveTopology(primitive_topology);
+    }
+    m_cp_command_list->DrawInstanced(vertex_count, instance_count, start_vertex, start_instance);
 }
 
 void RenderCommandListDX::SetResourceBarriers(const ResourceBase::Barriers& resource_barriers)

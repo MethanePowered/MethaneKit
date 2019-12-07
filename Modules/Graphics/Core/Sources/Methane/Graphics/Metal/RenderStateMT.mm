@@ -29,7 +29,7 @@ Metal implementation of the render state interface.
 #include "ShaderMT.hh"
 #include "TypesMT.hh"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #import <Methane/Platform/MacOS/AppViewMT.hh>
 #import <Methane/Platform/MacOS/Types.hh>
@@ -39,7 +39,7 @@ Metal implementation of the render state interface.
 namespace Methane::Graphics
 {
 
-MTLCullMode ConvertRasterizerCullModeToMetal(RenderState::Rasterizer::CullMode cull_mode) noexcept
+static MTLCullMode ConvertRasterizerCullModeToMetal(RenderState::Rasterizer::CullMode cull_mode) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -55,7 +55,7 @@ MTLCullMode ConvertRasterizerCullModeToMetal(RenderState::Rasterizer::CullMode c
 }
 
 
-MTLTriangleFillMode ConvertRasterizerFillModeToMetal(RenderState::Rasterizer::FillMode fill_mode) noexcept
+static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(RenderState::Rasterizer::FillMode fill_mode) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -69,7 +69,7 @@ MTLTriangleFillMode ConvertRasterizerFillModeToMetal(RenderState::Rasterizer::Fi
     return MTLTriangleFillModeFill;
 }
 
-MTLStencilOperation ConvertStencilOperationToMetal(RenderState::Stencil::Operation operation) noexcept
+static MTLStencilOperation ConvertStencilOperationToMetal(RenderState::Stencil::Operation operation) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -90,13 +90,13 @@ MTLStencilOperation ConvertStencilOperationToMetal(RenderState::Stencil::Operati
     return MTLStencilOperationKeep;
 }
 
-MTLWinding ConvertRasterizerFrontWindingToMetal(bool is_front_counter_clockwise) noexcept
+static MTLWinding ConvertRasterizerFrontWindingToMetal(bool is_front_counter_clockwise) noexcept
 {
     ITT_FUNCTION_TASK();
     return is_front_counter_clockwise ? MTLWindingCounterClockwise : MTLWindingClockwise;
 }
 
-MTLStencilDescriptor* ConvertStencilDescriptorToMetal(const RenderState::Stencil& stencil, bool for_front_face)
+static MTLStencilDescriptor* ConvertStencilDescriptorToMetal(const RenderState::Stencil& stencil, bool for_front_face)
 {
     ITT_FUNCTION_TASK();
     if (!stencil.enabled)
@@ -202,10 +202,13 @@ void RenderStateMT::Apply(RenderCommandListBase& command_list)
     ITT_FUNCTION_TASK();
 
     RenderCommandListMT& metal_command_list = static_cast<RenderCommandListMT&>(command_list);
-    id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeEncoder();
+    id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeRenderEncoder();
     
     [mtl_cmd_encoder setRenderPipelineState: GetNativePipelineState()];
-    [mtl_cmd_encoder setDepthStencilState: GetNativeDepthState()];
+    if (m_settings.depth.enabled)
+    {
+        [mtl_cmd_encoder setDepthStencilState: GetNativeDepthState()];
+    }
     [mtl_cmd_encoder setTriangleFillMode: m_mtl_fill_mode];
     [mtl_cmd_encoder setFrontFacingWinding: m_mtl_front_face_winding];
     [mtl_cmd_encoder setCullMode: m_mtl_cull_mode];
@@ -293,6 +296,7 @@ id<MTLDepthStencilState>& RenderStateMT::GetNativeDepthState()
 
     if (!m_mtl_depth_state)
     {
+        assert(m_mtl_depth_stencil_state_desc != nil);
         m_mtl_depth_state = [GetContextMT().GetDeviceMT().GetNativeDevice() newDepthStencilStateWithDescriptor:m_mtl_depth_stencil_state_desc];
         if (!m_mtl_depth_state)
         {

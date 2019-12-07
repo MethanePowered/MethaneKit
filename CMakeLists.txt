@@ -5,8 +5,15 @@ project(MethaneKit)
 enable_testing()
 
 option(METHANE_USE_OPEN_IMAGE_IO "Enable using OpenImageIO library for images loading" OFF)
-option(METHANE_USE_ITT_INSTRUMENTATION "Enable ITT instrumentation" OFF)
+option(METHANE_ITT_INSTRUMENTATION_ENABLED "Enable ITT instrumentation" OFF)
+option(METHANE_SHADERS_CODEVIEW_ENABLED "Enable shaders code viewing in debug tools while keeping compiler optimizations in Release builds)" OFF)
 option(METHANE_RUN_TESTS_DURING_BUILD "Run tests during build" ON)
+
+set(METHANE_VERSION "0.1" CACHE STRING "Methane release major-minor version number")
+set(METHANE_BUILD_NUMBER "000000" CACHE STRING "Methane release build number")
+
+set(METHANE_PRODUCT_NAME "Methane Kit (https://github.com/egorodet/MethaneKit)")
+set(METHANE_COPYRIGHT "Copyright 2019 Evgeny Gorodetskiy")
 
 include_directories($ENV{INCLUDE})
 link_directories($ENV{LIB} ${CMAKE_LIBRARY_INPUT_DIRECTORY})
@@ -38,7 +45,7 @@ endif()
 
 add_definitions(-DUNICODE -D_UNICODE -DNOMINMAX -DWIN32_LEAN_AND_MEAN -DUSE_PIX)
 
-if(METHANE_USE_ITT_INSTRUMENTATION)
+if(METHANE_ITT_INSTRUMENTATION_ENABLED)
     add_definitions(-DITT_INSTRUMENTATION_ENABLED)
 endif()
 

@@ -55,7 +55,7 @@ struct Buffer : virtual Resource
     // Create Buffer instance
     static Ptr CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride);
     static Ptr CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format);
-    static Ptr CreateConstantBuffer(Context& context, Data::Size size, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    static Ptr CreateConstantBuffer(Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
     // Auxillary functions
     static Data::Size  GetAlignedBufferSize(Data::Size size) noexcept;

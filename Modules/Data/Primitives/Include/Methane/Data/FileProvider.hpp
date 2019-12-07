@@ -26,7 +26,7 @@ Singleton data provider of files on disk.
 #include "Provider.h"
 
 #include <Methane/Platform/Utils.h>
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <string>
 #include <fstream>
@@ -61,7 +61,7 @@ public:
         {
             throw std::invalid_argument("File path does not exist: " + file_path);
         }
-        return Data::Chunk(Data::Bytes(std::istreambuf_iterator<Data::Bytes::value_type>(fs), {}));
+        return Data::Chunk(Data::Bytes(std::istreambuf_iterator<char>(fs), {}));
     }
 
 protected:

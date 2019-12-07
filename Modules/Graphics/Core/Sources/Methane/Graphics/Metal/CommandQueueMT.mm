@@ -25,7 +25,7 @@ Metal implementation of the command queue interface.
 #include "DeviceMT.hh"
 #include "ContextMT.hh"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
 namespace Methane::Graphics

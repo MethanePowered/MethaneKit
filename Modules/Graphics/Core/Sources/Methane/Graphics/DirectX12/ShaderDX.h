@@ -32,6 +32,8 @@ DirectX 12 implementation of the shader interface.
 #include <d3dx12.h>
 #include <d3d12shader.h>
 
+#include <memory>
+
 namespace Methane::Graphics
 {
 
@@ -39,6 +41,13 @@ namespace wrl = Microsoft::WRL;
 
 class ContextDX;
 class ProgramDX;
+class ResourceDX;
+
+struct ResourceLocationDX
+{
+    std::shared_ptr<ResourceDX> sp_resource;
+    Data::Size                  offset = 0;
+};
 
 class ShaderDX final : public ShaderBase
 {
@@ -46,9 +55,17 @@ public:
     class ResourceBindingDX : public ResourceBindingBase
     {
     public:
+        enum class Type : uint32_t
+        {
+            DescriptorTable = 0,
+            ConstantBufferView,
+            ShaderResourceView,
+        };
+
         struct Settings
         {
             ResourceBindingBase::Settings base;
+            Type                          type;
             D3D_SHADER_INPUT_TYPE         input_type;
             uint32_t                      count;
             uint32_t                      point;
@@ -57,7 +74,6 @@ public:
 
         struct DescriptorRange
         {
-            uint32_t             root_parameter_index   = std::numeric_limits<uint32_t>::max();
             DescriptorHeap::Type heap_type              = DescriptorHeap::Type::Undefined;
             uint32_t             offset                 = 0;
             uint32_t             count                  = 0;
@@ -67,13 +83,17 @@ public:
         ResourceBindingDX(const ResourceBindingDX& other) = default;
 
         // ResourceBinding interface
-        void                   SetResource(const Resource::Ptr& sp_resource) override;
-        uint32_t               GetResourceCount() const override        { return m_settings_dx.count; }
+        void                      SetResourceLocation(Resource::Location resource_location) override;
+        uint32_t                  GetResourceCount() const override         { return m_settings_dx.count; }
+        bool                      IsAddressable() const override            { return m_settings_dx.type != Type::DescriptorTable; }
 
-        const Settings&        GetSettings() const noexcept             { return m_settings_dx; }
-        const DescriptorRange& GetDescriptorRange() const noexcept      { return m_descriptor_range; }
-        DescriptorHeap::Type   GetDescriptorHeapType() const;
+        const Settings&           GetSettings() const noexcept              { return m_settings_dx; }
+        uint32_t                  GetRootParameterIndex() const noexcept    { return m_root_parameter_index; }
+        const DescriptorRange&    GetDescriptorRange() const noexcept       { return m_descriptor_range; }
+        DescriptorHeap::Type      GetDescriptorHeapType() const;
+        const ResourceLocationDX& GetResourceLocationDX() const noexcept    { return m_resource_location_dx; }
 
+        void SetRootParameterIndex(uint32_t root_parameter_index)           { m_root_parameter_index = root_parameter_index; }
         void SetDescriptorRange(const DescriptorRange& descriptor_range);
         void SetDescriptorHeapReservation(const DescriptorHeap::Reservation* p_descriptor_heap_reservation) 
         { m_p_descriptor_heap_reservation = p_descriptor_heap_reservation; }
@@ -81,15 +101,18 @@ public:
     protected:
         ContextDX& GetContextDX();
 
-        const Settings    m_settings_dx;
-        DescriptorRange   m_descriptor_range;
-        const DescriptorHeap::Reservation* m_p_descriptor_heap_reservation = nullptr;
+        const Settings                     m_settings_dx;
+        uint32_t                           m_root_parameter_index = std::numeric_limits<uint32_t>::max();;
+        DescriptorRange                    m_descriptor_range;
+        const DescriptorHeap::Reservation* m_p_descriptor_heap_reservation  = nullptr;
+        ResourceLocationDX                 m_resource_location_dx;
     };
 
     ShaderDX(Type type, ContextBase& context, const Settings& settings);
 
     // ShaderBase
-    ResourceBindings GetResourceBindings(const std::set<std::string>& constant_argument_names) const override;
+    ResourceBindings GetResourceBindings(const std::set<std::string>& constant_argument_names,
+                                         const std::set<std::string>& addressable_argument_names) const override;
 
     const wrl::ComPtr<ID3DBlob>& GetNativeByteCode() const noexcept { return m_cp_byte_code; }
     std::vector<D3D12_INPUT_ELEMENT_DESC> GetNativeProgramInputLayout(const ProgramDX& program) const;

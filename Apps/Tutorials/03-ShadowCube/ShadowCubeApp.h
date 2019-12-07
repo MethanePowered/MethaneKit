@@ -23,7 +23,7 @@ Tutorial demonstrating shadow-pass rendering with Methane graphics API
 
 #pragma once
 
-#include <Methane/Kit.h>
+#include <Methane/Graphics/Kit.h>
 
 namespace Methane::Tutorials
 {
@@ -88,7 +88,7 @@ private:
 
     struct SHADER_STRUCT_ALIGN Constants
     {
-        SHADER_FIELD_ALIGN gfx::Color     light_color;
+        SHADER_FIELD_ALIGN gfx::Color4f   light_color;
         SHADER_FIELD_PACK  float          light_power;
         SHADER_FIELD_PACK  float          light_ambient_factor;
         SHADER_FIELD_PACK  float          light_specular_factor;

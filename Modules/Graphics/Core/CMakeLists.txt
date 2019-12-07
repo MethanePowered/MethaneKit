@@ -39,6 +39,7 @@ if (WIN32)
 
     set(PLATFORM_LIBRARIES
         D3DX12
+        DirectXTex
         d3d12
         dxgi
         dxguid
@@ -102,7 +103,7 @@ set(LIBRARIES ${PLATFORM_LIBRARIES}
     MethanePlatformUtils
     MethanePlatformAppView
     MethaneGraphicsHelpers
-    MethaneInstrumentation
+    MethaneDataInstrumentation
 )
 
 set(HEADERS

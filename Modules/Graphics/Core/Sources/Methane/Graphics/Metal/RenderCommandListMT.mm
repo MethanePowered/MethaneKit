@@ -29,13 +29,13 @@ Metal implementation of the render command list interface.
 #include "BufferMT.hh"
 #include "TypesMT.hh"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
 namespace Methane::Graphics
 {
 
-MTLPrimitiveType PrimitiveTypeToMetal(RenderCommandList::Primitive primitive) noexcept
+static MTLPrimitiveType PrimitiveTypeToMetal(RenderCommandList::Primitive primitive) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -60,7 +60,8 @@ RenderCommandList::Ptr RenderCommandList::Create(CommandQueue& command_queue, Re
 RenderCommandListMT::RenderCommandListMT(CommandQueueBase& command_queue, RenderPassBase& render_pass)
     : RenderCommandListBase(command_queue, render_pass)
     , m_mtl_cmd_buffer(nil)
-    , m_mtl_cmd_encoder(nil)
+    , m_mtl_render_encoder(nil)
+    , m_mtl_blit_encoder(nil)
 {
     ITT_FUNCTION_TASK();
 }
@@ -69,27 +70,7 @@ void RenderCommandListMT::Reset(RenderState& render_state, const std::string& de
 {
     ITT_FUNCTION_TASK();
     
-    RenderPassMT& render_pass = GetPassMT();
-    const std::string&  name = GetName();
-    
-    // NOTE: If command buffer was not created for current frame yet,
-    //       then render pass descriptor should be reset with new frame drawable
-    MTLRenderPassDescriptor* mtl_render_pass = render_pass.GetNativeDescriptor(m_mtl_cmd_buffer == nil);
-    assert(!!mtl_render_pass);
-    
-    if (m_mtl_cmd_buffer == nil)
-    {
-        m_mtl_cmd_buffer = [GetCommandQueueMT().GetNativeCommandQueue() commandBuffer];
-        assert(m_mtl_cmd_buffer != nil);
-        m_mtl_cmd_buffer.label = MacOS::ConvertToNSType<std::string, NSString*>(name);
-    }
-    
-    if (m_mtl_cmd_encoder == nil)
-    {
-        m_mtl_cmd_encoder = [m_mtl_cmd_buffer renderCommandEncoderWithDescriptor: mtl_render_pass];
-        assert(m_mtl_cmd_encoder != nil);
-        m_mtl_cmd_encoder.label = MacOS::ConvertToNSType<std::string, NSString*>(name + ": " + debug_group);
-    }
+    StartRenderEncoding();
 
     RenderCommandListBase::Reset(render_state, debug_group);
 }
@@ -102,9 +83,14 @@ void RenderCommandListMT::SetName(const std::string& name)
     
     NSString* ns_name = MacOS::ConvertToNSType<std::string, NSString*>(name);
     
-    if (m_mtl_cmd_encoder != nil)
+    if (m_mtl_render_encoder != nil)
     {
-        m_mtl_cmd_encoder.label = ns_name;
+        m_mtl_render_encoder.label = ns_name;
+    }
+    
+    if (m_mtl_blit_encoder != nil)
+    {
+        m_mtl_blit_encoder.label = ns_name;
     }
     
     if (m_mtl_cmd_buffer != nil)
@@ -117,17 +103,17 @@ void RenderCommandListMT::PushDebugGroup(const std::string& name)
 {
     ITT_FUNCTION_TASK();
 
-    assert(m_mtl_cmd_encoder != nil);
+    assert(m_mtl_render_encoder != nil);
     NSString* ns_name = MacOS::ConvertToNSType<std::string, NSString*>(name);
-    [m_mtl_cmd_encoder pushDebugGroup:ns_name];
+    [m_mtl_render_encoder pushDebugGroup:ns_name];
 }
 
 void RenderCommandListMT::PopDebugGroup()
 {
     ITT_FUNCTION_TASK();
 
-    assert(m_mtl_cmd_encoder != nil);
-    [m_mtl_cmd_encoder popDebugGroup];
+    assert(m_mtl_render_encoder != nil);
+    [m_mtl_render_encoder popDebugGroup];
 }
 
 void RenderCommandListMT::SetVertexBuffers(const Buffer::Refs& vertex_buffers)
@@ -136,54 +122,65 @@ void RenderCommandListMT::SetVertexBuffers(const Buffer::Refs& vertex_buffers)
 
     RenderCommandListBase::SetVertexBuffers(vertex_buffers);
 
-    assert(m_mtl_cmd_encoder != nil);
+    if (!m_draw_state.flags.vertex_buffers_changed)
+        return;
+
+    assert(m_mtl_render_encoder != nil);
     uint32_t vb_index = 0;
     for (auto vertex_buffer_ref : vertex_buffers)
     {
         assert(vertex_buffer_ref.get().GetBufferType() == Buffer::Type::Vertex);
         const BufferMT& metal_buffer = static_cast<const BufferMT&>(vertex_buffer_ref.get());
-        [m_mtl_cmd_encoder setVertexBuffer:metal_buffer.GetNativeBuffer() offset:0 atIndex:vb_index];
+        [m_mtl_render_encoder setVertexBuffer:metal_buffer.GetNativeBuffer() offset:0 atIndex:vb_index];
         vb_index++;
     }
 }
 
-void RenderCommandListMT::DrawIndexed(Primitive primitive, const Buffer& index_buffer, uint32_t instance_count)
+void RenderCommandListMT::DrawIndexed(Primitive primitive, Buffer& index_buffer,
+                                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
+                                      uint32_t instance_count, uint32_t start_instance)
 {
     ITT_FUNCTION_TASK();
+    
+    const BufferMT& metal_index_buffer = static_cast<const BufferMT&>(index_buffer);
+    if (index_count == 0)
+    {
+        index_count = metal_index_buffer.GetFormattedItemsCount();
+    }
 
-    RenderCommandListBase::DrawIndexed(primitive, index_buffer, instance_count);
-
-    const BufferMT&        metal_index_buffer   = static_cast<const BufferMT&>(index_buffer);
+    RenderCommandListBase::DrawIndexed(primitive, index_buffer, index_count, start_index, start_vertex, instance_count, start_instance);
+    
     const MTLPrimitiveType mtl_primitive_type   = PrimitiveTypeToMetal(primitive);
-    const NSUInteger       mtl_index_count      = metal_index_buffer.GetFormattedItemsCount();
     const MTLIndexType     mtl_index_type       = metal_index_buffer.GetNativeIndexType();
     const id<MTLBuffer>&   mtl_index_buffer     = metal_index_buffer.GetNativeBuffer();
+    const uint32_t         mtl_index_stride     = mtl_index_type == MTLIndexTypeUInt32 ? 4 : 2;
 
-    assert(m_mtl_cmd_encoder != nil);
-    assert(mtl_index_count > 0);
-    assert(instance_count > 0);
-
-    [m_mtl_cmd_encoder drawIndexedPrimitives: mtl_primitive_type
-                                  indexCount: mtl_index_count
-                                   indexType: mtl_index_type
-                                 indexBuffer: mtl_index_buffer
-                           indexBufferOffset: 0
-                               instanceCount: instance_count];
+    assert(m_mtl_render_encoder != nil);
+    [m_mtl_render_encoder drawIndexedPrimitives: mtl_primitive_type
+                                     indexCount: index_count
+                                      indexType: mtl_index_type
+                                    indexBuffer: mtl_index_buffer
+                              indexBufferOffset: start_index * mtl_index_stride
+                                  instanceCount: instance_count
+                                     baseVertex: start_vertex
+                                   baseInstance: start_instance];
 }
 
-void RenderCommandListMT::Draw(Primitive primitive, uint32_t vertex_count, uint32_t instance_count)
+void RenderCommandListMT::Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
+                               uint32_t instance_count, uint32_t start_instance)
 {
     ITT_FUNCTION_TASK();
 
-    RenderCommandListBase::Draw(primitive, vertex_count, instance_count);
+    RenderCommandListBase::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
 
     const MTLPrimitiveType mtl_primitive_type = PrimitiveTypeToMetal(primitive);
 
-    assert(m_mtl_cmd_encoder != nil);
-    assert(vertex_count > 0);
-    assert(instance_count > 0);
-
-    [m_mtl_cmd_encoder drawPrimitives:mtl_primitive_type vertexStart:0 vertexCount:vertex_count instanceCount:instance_count];
+    assert(m_mtl_render_encoder != nil);
+    [m_mtl_render_encoder drawPrimitives: mtl_primitive_type
+                             vertexStart: start_vertex
+                             vertexCount: vertex_count
+                           instanceCount: instance_count
+                            baseInstance: start_instance];
 }
 
 void RenderCommandListMT::Commit(bool present_drawable)
@@ -194,11 +191,11 @@ void RenderCommandListMT::Commit(bool present_drawable)
 
     RenderCommandListBase::Commit(present_drawable);
     
-    if (!m_mtl_cmd_buffer || !m_mtl_cmd_encoder)
+    if (!m_mtl_cmd_buffer || (!m_mtl_render_encoder && !m_mtl_blit_encoder))
         return;
-
-    [m_mtl_cmd_encoder endEncoding];
-    m_mtl_cmd_encoder = nil;
+    
+    EndBlitEncoding();
+    EndRenderEncoding();
     
     if (present_drawable)
     {
@@ -220,6 +217,76 @@ void RenderCommandListMT::Execute(uint32_t frame_index)
 
     [m_mtl_cmd_buffer commit];
     m_mtl_cmd_buffer  = nil;
+}
+
+void RenderCommandListMT::InitializeCommandBuffer()
+{
+    ITT_FUNCTION_TASK();
+    if (m_mtl_cmd_buffer != nil)
+        return;
+
+    m_mtl_cmd_buffer = [GetCommandQueueMT().GetNativeCommandQueue() commandBuffer];
+    assert(m_mtl_cmd_buffer != nil);
+    
+    m_mtl_cmd_buffer.label = MacOS::ConvertToNSType<std::string, NSString*>(GetName());
+}
+    
+void RenderCommandListMT::StartRenderEncoding()
+{
+    ITT_FUNCTION_TASK();
+    if (m_mtl_render_encoder != nil)
+        return;
+    
+    EndBlitEncoding();
+    
+    // NOTE: If command buffer was not created for current frame yet,
+    //       then render pass descriptor should be reset with new frame drawable
+    RenderPassMT& render_pass = GetPassMT();
+    MTLRenderPassDescriptor* mtl_render_pass = render_pass.GetNativeDescriptor(m_mtl_cmd_buffer == nil);
+    
+    InitializeCommandBuffer();
+    
+    assert(!!mtl_render_pass);
+    m_mtl_render_encoder = [m_mtl_cmd_buffer renderCommandEncoderWithDescriptor: mtl_render_pass];
+    
+    assert(m_mtl_render_encoder != nil);
+    m_mtl_render_encoder.label = MacOS::ConvertToNSType<std::string, NSString*>(GetName());
+}
+
+void RenderCommandListMT::EndRenderEncoding()
+{
+    ITT_FUNCTION_TASK();
+    if (m_mtl_render_encoder == nil)
+        return;
+
+    [m_mtl_render_encoder endEncoding];
+    m_mtl_render_encoder = nil;
+}
+    
+void RenderCommandListMT::StartBlitEncoding()
+{
+    ITT_FUNCTION_TASK();
+    if (m_mtl_blit_encoder != nil)
+        return;
+
+    InitializeCommandBuffer();
+    EndRenderEncoding();
+    
+    assert(m_mtl_cmd_buffer != nil);
+    m_mtl_blit_encoder = [m_mtl_cmd_buffer blitCommandEncoder];
+    
+    assert(m_mtl_blit_encoder != nil);
+    m_mtl_blit_encoder.label = MacOS::ConvertToNSType<std::string, NSString*>(GetName());
+}
+
+void RenderCommandListMT::EndBlitEncoding()
+{
+    ITT_FUNCTION_TASK();
+    if (m_mtl_blit_encoder == nil)
+        return;
+
+    [m_mtl_blit_encoder endEncoding];
+    m_mtl_blit_encoder = nil;
 }
 
 CommandQueueMT& RenderCommandListMT::GetCommandQueueMT() noexcept

@@ -14,10 +14,14 @@ set(IMAGES_DIR ${RESOURCES_DIR}/Images)
 set(TEXTURES ${IMAGES_DIR}/Textures/MethaneBubbles.jpg)
 
 add_methane_application(${TARGET}
-    "Methane Textured Cube"
     "${SOURCES}"
     "${RESOURCES_DIR}"
     "Apps/Tutorials"
+    "Methane Textured Cube"
+    "Tutorial of the textured cube rendering with Methane Kit."
+    "${METHANE_COPYRIGHT}"
+    "${METHANE_VERSION}"
+    "${METHANE_BUILD_NUMBER}"
 )
 add_methane_embedded_textures(${TARGET} "${IMAGES_DIR}" "${TEXTURES}")
 add_methane_shaders(${TARGET} "${SHADERS_HLSL}")

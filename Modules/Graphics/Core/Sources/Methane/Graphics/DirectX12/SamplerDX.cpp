@@ -26,14 +26,14 @@ DirectX 12 implementation of the sampler interface.
 #include "DeviceDX.h"
 #include "TypesDX.h"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <cassert>
 
 namespace Methane::Graphics
 {
 
-D3D12_FILTER ConvertFilterToDX(const SamplerBase::Filter& filter) noexcept
+static D3D12_FILTER ConvertFilterToDX(const SamplerBase::Filter& filter) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -125,7 +125,7 @@ D3D12_FILTER ConvertFilterToDX(const SamplerBase::Filter& filter) noexcept
     // D3D12_FILTER_MAXIMUM_ANISOTROPIC
 }
 
-D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDX(SamplerBase::Address::Mode address_mode) noexcept
+static D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDX(SamplerBase::Address::Mode address_mode) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -145,7 +145,7 @@ D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDX(SamplerBase::Address::Mode add
     // D3D12_TEXTURE_ADDRESS_MODE_MIRROR_ONCE
 }
 
-void SetColor(const Color& in_color, FLOAT* p_out_color) noexcept
+static void SetColor(const Color4f& in_color, FLOAT* p_out_color) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -155,7 +155,7 @@ void SetColor(const Color& in_color, FLOAT* p_out_color) noexcept
     }
 }
 
-void ConvertBorderColorToDXColor(SamplerBase::BorderColor border_color, FLOAT* p_out_color) noexcept
+static void ConvertBorderColorToDXColor(SamplerBase::BorderColor border_color, FLOAT* p_out_color) noexcept
 {
     ITT_FUNCTION_TASK();
     assert(!!p_out_color);

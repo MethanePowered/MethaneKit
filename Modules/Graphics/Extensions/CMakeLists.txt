@@ -30,7 +30,7 @@ add_methane_shaders(${TARGET} "${HLSL_SOURCES}")
 target_link_libraries(${TARGET}
     MethanePlatformUtils
     MethaneGraphicsCore
-    MethaneInstrumentation
+    MethaneDataInstrumentation
 )
 
 if (METHANE_USE_OPEN_IMAGE_IO)

@@ -22,7 +22,7 @@ Platform abstraction of mouse events.
 ******************************************************************************/
 
 #include <Methane/Platform/Mouse.h>
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <map>
 #include <sstream>

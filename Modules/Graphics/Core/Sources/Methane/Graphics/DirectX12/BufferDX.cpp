@@ -26,7 +26,7 @@ DirectX 12 implementation of the buffer interface.
 #include "DeviceDX.h"
 #include "TypesDX.h"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 namespace Methane::Graphics
 {
@@ -45,10 +45,14 @@ Buffer::Ptr Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFo
     return std::make_shared<IndexBufferDX>(static_cast<ContextBase&>(context), settings, DescriptorByUsage(), format);
 }
 
-Buffer::Ptr Buffer::CreateConstantBuffer(Context& context, Data::Size size, const DescriptorByUsage& descriptor_by_usage)
+Buffer::Ptr Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
-    const Buffer::Settings settings = { Buffer::Type::Constant, Usage::ShaderRead, size };
+    Usage::Mask usage_mask = Usage::ShaderRead;
+    if (addressable)
+        usage_mask |= Usage::Addressable;
+
+    const Buffer::Settings settings = { Buffer::Type::Constant, usage_mask, size };
     return std::make_shared<ConstantBufferDX>(static_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
@@ -65,10 +69,10 @@ void VertexBufferDX::InitializeView(Data::Size stride)
     ITT_FUNCTION_TASK();
 
     const Data::Size data_size     = GetDataSize();
-    m_buffer_view.BufferLocation = GetNativeGpuAddress();
-    m_buffer_view.SizeInBytes    = static_cast<UINT>(data_size);
-    m_buffer_view.StrideInBytes  = static_cast<UINT>(stride);
-    m_formatted_items_count = stride > 0 ? data_size / stride : 0;
+    m_buffer_view.BufferLocation   = GetNativeGpuAddress();
+    m_buffer_view.SizeInBytes      = static_cast<UINT>(data_size);
+    m_buffer_view.StrideInBytes    = static_cast<UINT>(stride);
+    m_formatted_items_count        = stride > 0 ? data_size / stride : 0;
 }
 
 template<>
@@ -78,10 +82,10 @@ void IndexBufferDX::InitializeView(PixelFormat format)
 
     const Data::Size data_size     = GetDataSize();
     const Data::Size element_size  = GetPixelSize(format);
-    m_buffer_view.BufferLocation = GetNativeGpuAddress();
-    m_buffer_view.SizeInBytes    = static_cast<UINT>(data_size);
-    m_buffer_view.Format = TypeConverterDX::DataFormatToDXGI(format);
-    m_formatted_items_count = element_size > 0 ? data_size / element_size : 0;
+    m_buffer_view.BufferLocation   = GetNativeGpuAddress();
+    m_buffer_view.SizeInBytes      = static_cast<UINT>(data_size);
+    m_buffer_view.Format           = TypeConverterDX::DataFormatToDXGI(format);
+    m_formatted_items_count        = element_size > 0 ? data_size / element_size : 0;
 }
 
 template<>
@@ -93,8 +97,12 @@ void ConstantBufferDX::InitializeView()
     m_buffer_view.BufferLocation = GetNativeGpuAddress();
     m_buffer_view.SizeInBytes    = static_cast<UINT>(data_size);
 
-    D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle = GetNativeCPUDescriptorHandle(Usage::ShaderRead);
-    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateConstantBufferView(&m_buffer_view, cpu_handle);
+    // NOTE: Addressable resources are bound to pipeline using GPU Address and byte offset
+    if (m_usage_mask & Usage::ShaderRead && !(m_usage_mask & Usage::Addressable))
+    {
+        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle = GetNativeCPUDescriptorHandle(Usage::ShaderRead);
+        GetContextDX().GetDeviceDX().GetNativeDevice()->CreateConstantBufferView(&m_buffer_view, cpu_handle);
+    }
 }
 
 } // namespace Methane::Graphics

@@ -37,11 +37,10 @@ function(add_methane_embedded_textures TARGET EMBEDDED_TEXTURES_DIR EMBEDDED_TEX
 
     set_target_properties(${TEXTURE_RESOURCES_TARGET}
         PROPERTIES
-        FOLDER Build
+        FOLDER "Build/${TARGET}/Resources"
     )
 
     target_link_libraries(${TARGET}
-        MethaneKit
         ${TEXTURE_RESOURCES_TARGET}
     )
 

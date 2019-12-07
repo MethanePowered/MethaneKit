@@ -24,9 +24,10 @@ Metal implementation of the texture interface.
 #include "TextureMT.hh"
 #include "ContextMT.hh"
 #include "DeviceMT.hh"
+#include "RenderCommandListMT.hh"
 #include "TypesMT.hh"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
 #include <algorithm>
@@ -35,8 +36,9 @@ Metal implementation of the texture interface.
 namespace Methane::Graphics
 {
 
-MTLTextureType GetNativeTextureType(Texture::DimensionType dimension_type)
+static MTLTextureType GetNativeTextureType(Texture::DimensionType dimension_type)
 {
+    ITT_FUNCTION_TASK();
     switch(dimension_type)
     {
     case Texture::DimensionType::Tex1D:             return MTLTextureType1D;
@@ -51,6 +53,28 @@ MTLTextureType GetNativeTextureType(Texture::DimensionType dimension_type)
     // TODO: add support for MTLTextureTypeTextureBuffer
     default: throw std::invalid_argument("Dimension type is not supported in Metal");
     }
+}
+
+static MTLRegion GetTextureRegion(const Dimensions& dimensions, Texture::DimensionType dimension_type)
+{
+    ITT_FUNCTION_TASK();
+    switch(dimension_type)
+    {
+    case Texture::DimensionType::Tex1D:
+    case Texture::DimensionType::Tex1DArray:
+            return MTLRegionMake1D(0, dimensions.width);
+    case Texture::DimensionType::Tex2D:
+    case Texture::DimensionType::Tex2DArray:
+    case Texture::DimensionType::Tex2DMultisample:
+    case Texture::DimensionType::Cube:
+    case Texture::DimensionType::CubeArray:
+            return MTLRegionMake2D(0, 0, dimensions.width, dimensions.height);
+    case Texture::DimensionType::Tex3D:
+            return MTLRegionMake3D(0, 0, 0, dimensions.width, dimensions.height, dimensions.depth);
+    default:
+            throw std::invalid_argument("Dimension type is not supported in Metal");
+    }
+    return {};
 }
 
 Texture::Ptr Texture::CreateRenderTarget(Context& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
@@ -75,7 +99,7 @@ Texture::Ptr Texture::CreateDepthStencilBuffer(Context& context, const Descripto
     return std::make_shared<TextureMT>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
-Texture::Ptr Texture::CreateImage(Context& context, Dimensions dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
+Texture::Ptr Texture::CreateImage(Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length, pixel_format, mipmapped, Usage::ShaderRead);
@@ -129,18 +153,40 @@ void TextureMT::SetData(const SubResources& sub_resources)
         throw std::invalid_argument("Can not set texture data from empty sub-resources.");
     }
     
-    const uint32_t bytes_per_row   = m_settings.dimensions.width  * GetPixelSize(m_settings.pixel_format);
-    const uint32_t bytes_per_image = m_settings.dimensions.height * bytes_per_row;
-    const MTLRegion texture_region = MTLRegionMake2D(0, 0, m_settings.dimensions.width, m_settings.dimensions.height);
+    const uint32_t  bytes_per_row   = m_settings.dimensions.width  * GetPixelSize(m_settings.pixel_format);
+    const uint32_t  bytes_per_image = m_settings.dimensions.height * bytes_per_row;
+    const MTLRegion texture_region  = GetTextureRegion(m_settings.dimensions, m_settings.dimension_type);
 
     for(const SubResource& sub_resourse : sub_resources)
     {
+        uint32_t slice = 0;
+        switch(m_settings.dimension_type)
+        {
+            case Texture::DimensionType::Tex1DArray:
+            case Texture::DimensionType::Tex2DArray:
+                slice = sub_resourse.index.array_index;
+                break;
+            case Texture::DimensionType::Cube:
+                slice = sub_resourse.index.depth_slice;
+                break;
+            case Texture::DimensionType::CubeArray:
+                slice = sub_resourse.index.depth_slice + sub_resourse.index.array_index * 6;
+                break;
+            default:
+                slice = 0;
+        }
+        
         [m_mtl_texture replaceRegion:texture_region
-                         mipmapLevel:sub_resourse.mip_level
-                               slice:sub_resourse.depth_slice
+                         mipmapLevel:sub_resourse.index.mip_level
+                               slice:slice
                            withBytes:sub_resourse.p_data
                          bytesPerRow:bytes_per_row
                        bytesPerImage:bytes_per_image];
+    }
+
+    if (m_settings.mipmapped && sub_resources.size() < GetRequiredSubresourceCount())
+    {
+        GenerateMipLevels();
     }
 }
 
@@ -216,7 +262,7 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
         mtl_tex_desc.height             = m_settings.dimensions.height;
         mtl_tex_desc.depth              = m_settings.dimensions.depth;
         mtl_tex_desc.arrayLength        = m_settings.array_length;
-        mtl_tex_desc.mipmapLevelCount   = 1; // TODO: calculate mip-map level count
+        mtl_tex_desc.mipmapLevelCount   = GetMipLevelsCount();
         break;
 
     default:
@@ -233,6 +279,22 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
     mtl_tex_desc.usage = GetNativeTextureUsage();
 
     return mtl_tex_desc;
+}
+
+void TextureMT::GenerateMipLevels()
+{
+    ITT_FUNCTION_TASK();
+
+    RenderCommandListMT& render_command_list = static_cast<RenderCommandListMT&>(m_context.GetUploadCommandList());
+    render_command_list.StartBlitEncoding();
+    
+    id<MTLBlitCommandEncoder>& mtl_blit_encoder = render_command_list.GetNativeBlitEncoder();
+    assert(mtl_blit_encoder != nil);
+    assert(m_mtl_texture != nil);
+    
+    [mtl_blit_encoder generateMipmapsForTexture: m_mtl_texture];
+    
+    render_command_list.EndBlitEncoding();
 }
 
 } // namespace Methane::Graphics

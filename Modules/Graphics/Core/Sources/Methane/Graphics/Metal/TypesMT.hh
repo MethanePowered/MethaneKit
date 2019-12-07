@@ -39,7 +39,7 @@ public:
     static MTLPixelFormat DataFormatToMetalPixelType(PixelFormat data_format) noexcept;
     static MTLVertexFormat MetalDataTypeToVertexFormat(MTLDataType data_type, bool normalized = false) noexcept;
     static uint32_t ByteSizeOfVertexFormat(MTLVertexFormat vertex_format) noexcept;
-    static MTLClearColor ColorToMetalClearColor(const Color& color) noexcept;
+    static MTLClearColor ColorToMetalClearColor(const Color4f& color) noexcept;
     static NSRect RectToNS(const FrameRect& rect) noexcept;
     static NSRect CreateNSRect(const FrameSize& size, const Point2i& origin = Point2i(0, 0)) noexcept;
     static FrameRect RectFromNS(const NSRect& rect) noexcept;

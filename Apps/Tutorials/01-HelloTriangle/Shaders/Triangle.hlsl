@@ -1,15 +1,20 @@
+struct VSInput
+{
+    float3 position : POSITION;
+    float3 color    : COLOR;
+};
+
 struct PSInput
 {
     float4 position : SV_POSITION;
     float4 color    : COLOR;
 };
 
-PSInput TriangleVS(float3 in_position : POSITION, 
-               float3 in_color    : COLOR)
+PSInput TriangleVS(VSInput input)
 {
     PSInput output;
-    output.position = float4(in_position, 1.0f);
-    output.color    = float4(in_color, 1.0f);
+    output.position = float4(input.position, 1.f);
+    output.color    = float4(input.color, 1.f);
     return output;
 }
 

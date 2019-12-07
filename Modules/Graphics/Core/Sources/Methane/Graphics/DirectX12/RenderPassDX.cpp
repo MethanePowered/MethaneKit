@@ -25,7 +25,7 @@ DirectX 12 implementation of the render pass interface.
 #include "DescriptorHeapDX.h"
 #include "RenderCommandListDX.h"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/TextureBase.h>
 
@@ -34,7 +34,7 @@ DirectX 12 implementation of the render pass interface.
 namespace Methane::Graphics
 {
 
-DescriptorHeap::Type GetDescriptorHeapTypeByAccess(RenderPass::Access::Value access) noexcept
+static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(RenderPass::Access::Value access) noexcept
 {
     ITT_FUNCTION_TASK();
     

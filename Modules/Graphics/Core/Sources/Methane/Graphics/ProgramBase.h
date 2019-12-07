@@ -29,6 +29,9 @@ Base implementation of the program interface.
 #include "DescriptorHeap.h"
 
 #include <memory>
+#include <array>
+#include <optional>
+#include <mutex>
 
 namespace Methane::Graphics
 {
@@ -48,12 +51,15 @@ public:
         , public std::enable_shared_from_this<ResourceBindingsBase>
     {
     public:
-        ResourceBindingsBase(const Program::Ptr& sp_program, const ResourceByArgument& resource_by_argument);
-        ResourceBindingsBase(const ResourceBindingsBase& other_resource_bingings, const ResourceByArgument& replace_resource_by_argument);
+        using Ptr = std::shared_ptr<ResourceBindingsBase>;
+
+        ResourceBindingsBase(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_location_by_argument);
+        ResourceBindingsBase(const ResourceBindingsBase& other_resource_bingings, const ResourceLocationByArgument& replace_resource_location_by_argument);
         ~ResourceBindingsBase() override;
 
         Ptr GetPtr()                            { return shared_from_this(); }
         const Arguments& GetArguments() const   { return m_arguments; }
+        const Program&   GetProgram() const     { return *m_sp_program; }
 
         // ResourceBindings interface
         const Shader::ResourceBinding::Ptr& Get(const Argument& shader_argument) const override;
@@ -64,10 +70,10 @@ public:
         bool AllArgumentsAreBoundToResources(std::string& missing_args) const;
 
     protected:
-        using DescriptorHeapReservationByType = std::map<DescriptorHeap::Type, DescriptorHeap::Reservation>;
+        using DescriptorHeapReservationByType = std::array<std::optional<DescriptorHeap::Reservation>, static_cast<uint32_t>(DescriptorHeap::Type::Count)>;
 
         void ReserveDescriptorHeapRanges();
-        void SetResourcesForArguments(const ResourceByArgument& resource_by_argument);
+        void SetResourcesForArguments(const ResourceLocationByArgument& resource_location_by_argument);
         void VerifyAllArgumentsAreBoundToResources();
 
         const Program::Ptr              m_sp_program;
@@ -91,7 +97,7 @@ public:
     Ptr          GetPtr()                                   { return shared_from_this(); }
 
 protected:
-    void InitResourceBindings(const std::set<std::string>& constant_argument_names);
+    void InitResourceBindings(const std::set<std::string>& constant_argument_names, const std::set<std::string>& addressable_argument_names);
     const DescriptorHeap::Range& ReserveConstantDescriptorRange(DescriptorHeap& heap, uint32_t range_length);
 
     Shader& GetShaderRef(Shader::Type shader_type);
@@ -116,6 +122,7 @@ protected:
     ResourceBindingByArgument m_resource_binding_by_argument;
     std::string               m_name;
     DescriptorRangeByHeapType m_constant_descriptor_range_by_heap_type;
+    std::mutex                m_constant_descriptor_ranges_reservation_mutex;
 };
 
 } // namespace Methane::Graphics

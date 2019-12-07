@@ -38,8 +38,7 @@ Base frame class provides frame buffer management with resize handling.
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Graphics/ImageLoader.h>
-#include <Methane/Instrumentation.h>
-
+#include <Methane/Data/Instrumentation.h>
 
 #include <vector>
 #include <sstream>

@@ -24,6 +24,7 @@ Metal implementation of the texture interface.
 #pragma once
 
 #include <Methane/Graphics/TextureBase.h>
+#include "../../../../../../Data/Primitives/Include/Methane/Data/Types.h"
 
 #import <Metal/Metal.h>
 
@@ -50,6 +51,8 @@ public:
     const id<MTLTexture>& GetNativeTexture() const { return m_mtl_texture; }
 
 protected:
+    void GenerateMipLevels();
+
     MTLTextureUsage       GetNativeTextureUsage();
     MTLTextureDescriptor* GetNativeTextureDescriptor();
 

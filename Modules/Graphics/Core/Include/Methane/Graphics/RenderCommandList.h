@@ -51,8 +51,11 @@ struct RenderCommandList : virtual CommandList
     // RenderCommandList interface
     virtual void Reset(RenderState& render_state, const std::string& debug_group = "") = 0;
     virtual void SetVertexBuffers(const Buffer::Refs& vertex_buffers) = 0;
-    virtual void DrawIndexed(Primitive primitive, const Buffer& index_buffer, uint32_t instance_count) = 0;
-    virtual void Draw(Primitive primitive, uint32_t vertex_count, uint32_t instance_count) = 0;
+    virtual void DrawIndexed(Primitive primitive, Buffer& index_buffer, 
+                             uint32_t index_count = 0, uint32_t start_index = 0, uint32_t start_vertex = 0, 
+                             uint32_t instance_count = 1, uint32_t start_instance = 0) = 0;
+    virtual void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex = 0,
+                      uint32_t instance_count = 1, uint32_t start_instance = 0) = 0;
 };
 
 } // namespace Methane::Graphics

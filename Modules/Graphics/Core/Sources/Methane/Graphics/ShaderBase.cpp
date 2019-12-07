@@ -24,7 +24,7 @@ Base implementation of the shader interface.
 #include "ShaderBase.h"
 #include "ProgramBase.h"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <cassert>
 
@@ -51,10 +51,50 @@ ShaderBase::ResourceBindingBase::ResourceBindingBase(ContextBase& context, const
     ITT_FUNCTION_TASK();
 }
 
-void ShaderBase::ResourceBindingBase::SetResource(const Resource::Ptr& sp_resource)
+void ShaderBase::ResourceBindingBase::SetResourceLocation(Resource::Location resource_location)
 {
     ITT_FUNCTION_TASK();
-    m_sp_resource = sp_resource;
+    if (!resource_location.sp_resource)
+        throw std::invalid_argument("Can not set empty resource for resource binding.");
+
+    const bool is_addressable_binding = IsAddressable();
+    const Resource::Usage::Mask resource_usage_mask = resource_location.sp_resource->GetUsageMask();
+    if (static_cast<bool>(resource_usage_mask & Resource::Usage::Addressable) != is_addressable_binding)
+        throw std::invalid_argument("Resource addressable usage flag does not match with resource binding state.");
+
+    if (!is_addressable_binding && resource_location.offset > 0)
+        throw std::invalid_argument("Can not set resource location with non-zero offset to non-addressable resource binding.");
+
+    m_resource_location = std::move(resource_location);
+}
+    
+bool ShaderBase::ResourceBindingBase::IsAlreadyApplied(const Program& program, const Program::Argument& program_argument, const CommandListBase::CommandState& command_state) const
+{
+    ITT_FUNCTION_TASK();
+    
+    if (!command_state.sp_resource_bindings)
+        return false;
+    
+    const ProgramBase::ResourceBindingsBase& previous_resource_bindings = static_cast<const ProgramBase::ResourceBindingsBase&>(*command_state.sp_resource_bindings);
+    
+    if (std::addressof(previous_resource_bindings.GetProgram()) != std::addressof(program))
+        return false;
+    
+    // 1) No need in setting constant resource binding
+    //    when another binding was previously set in the same command list for the same program
+    if (m_settings.is_constant)
+        return true;
+
+    const Shader::ResourceBinding::Ptr& previous_argument_resource_binding = command_state.sp_resource_bindings->Get(program_argument);
+    if (!previous_argument_resource_binding)
+        return false;
+    
+    // 2) No need in setting resource binding to the same location
+    //    as a previous resource binding set in the same command list for the same program
+    if (previous_argument_resource_binding->GetResourceLocation() == m_resource_location)
+        return true;
+    
+    return false;
 }
 
 ShaderBase::ShaderBase(Type type, ContextBase& context, const Settings& settings)

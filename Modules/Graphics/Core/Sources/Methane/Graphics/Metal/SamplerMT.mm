@@ -26,14 +26,13 @@ Metal implementation of the sampler interface.
 #include "DeviceMT.hh"
 #include "TypesMT.hh"
 
-#include <Methane/Instrumentation.h>
-
+#include <Methane/Data/Instrumentation.h>
 #import <Methane/Platform/MacOS/Types.hh>
 
 namespace Methane::Graphics
 {
 
-MTLSamplerAddressMode ConvertAddressModeToMetal(const SamplerBase::Address::Mode& address_mode) noexcept
+static MTLSamplerAddressMode ConvertAddressModeToMetal(const SamplerBase::Address::Mode& address_mode) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -49,7 +48,7 @@ MTLSamplerAddressMode ConvertAddressModeToMetal(const SamplerBase::Address::Mode
     }
 }
 
-MTLSamplerMinMagFilter ConvertMinMagFilterToMetal(const SamplerBase::Filter::MinMag& min_mag_filter) noexcept
+static MTLSamplerMinMagFilter ConvertMinMagFilterToMetal(const SamplerBase::Filter::MinMag& min_mag_filter) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -62,7 +61,7 @@ MTLSamplerMinMagFilter ConvertMinMagFilterToMetal(const SamplerBase::Filter::Min
     }
 }
 
-MTLSamplerMipFilter ConvertMipFilterToMetal(const SamplerBase::Filter::Mip& mip_filter) noexcept
+static MTLSamplerMipFilter ConvertMipFilterToMetal(const SamplerBase::Filter::Mip& mip_filter) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -76,7 +75,7 @@ MTLSamplerMipFilter ConvertMipFilterToMetal(const SamplerBase::Filter::Mip& mip_
     }
 }
 
-MTLSamplerBorderColor ConvertBorderColorToMetal(const SamplerBase::BorderColor& border_color) noexcept
+static MTLSamplerBorderColor ConvertBorderColorToMetal(const SamplerBase::BorderColor& border_color) noexcept
 {
     ITT_FUNCTION_TASK();
 

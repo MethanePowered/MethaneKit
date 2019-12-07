@@ -43,7 +43,7 @@ static const GraphicsApp::Settings      g_app_settings = // Application settings
         gfx::FrameSize(),                           // - frame_size
         gfx::PixelFormat::BGRA8Unorm,               // - color_format
         gfx::PixelFormat::Depth32Float,             // - depth_stencil_format
-        gfx::Color(0.0f, 0.2f, 0.4f, 1.0f),         // - clear_color
+        gfx::Color4f(0.0f, 0.2f, 0.4f, 1.0f),       // - clear_color
         1.f,                                        // - clear_depth
         0,                                          // - clear_stencil
         3,                                          // - frame_buffers_count
@@ -56,7 +56,7 @@ TexturedCubeApp::TexturedCubeApp()
     : GraphicsApp(g_app_settings, gfx::RenderPass::Access::ShaderResources | gfx::RenderPass::Access::Samplers)
     , m_shader_constants(                           // Shader constants:
         {                                           // ================
-            gfx::Color(1.f, 1.f, 0.74f, 1.f),       // - light_color
+            gfx::Color4f(1.f, 1.f, 0.74f, 1.f),     // - light_color
             700.f,                                  // - light_power
             0.2f,                                   // - light_ambient_factor
             5.f                                     // - light_specular_factor
@@ -103,14 +103,16 @@ void TexturedCubeApp::Init()
         { // input_buffer_layouts
             { // single vertex buffer layout with interleaved data
                 { // input arguments mapping to semantic names
-                    { "in_position", "POSITION" },
-                    { "in_normal",   "NORMAL"   },
-                    { "in_uv",       "TEXCOORD" },
+                    { "input_position", "POSITION" },
+                    { "input_normal",   "NORMAL"   },
+                    { "input_texcoord", "TEXCOORD" },
                 }
             }
         },
         { // constant_argument_names
             "g_constants", "g_texture", "g_sampler"
+        },
+        { // addressable_argument_names
         },
         { // render_target_pixel_formats
             context_settings.color_format
@@ -120,7 +122,7 @@ void TexturedCubeApp::Init()
     m_sp_program->SetName("Textured Phong Lighting");
 
     // Load texture image from file
-    m_sp_cube_texture = m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MethaneBubbles.jpg");
+    m_sp_cube_texture = m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MethaneBubbles.jpg", true);
     m_sp_cube_texture->SetName("Cube Texture 2D Image");
 
     // Create sampler for image texture
@@ -146,10 +148,10 @@ void TexturedCubeApp::Init()
 
         // Configure program resource bindings
         frame.sp_resource_bindings = gfx::Program::ResourceBindings::Create(m_sp_program, {
-            { { gfx::Shader::Type::All,   "g_uniforms"  }, frame.sp_uniforms_buffer  },
-            { { gfx::Shader::Type::Pixel, "g_constants" }, m_sp_const_buffer         },
-            { { gfx::Shader::Type::Pixel, "g_texture"   }, m_sp_cube_texture         },
-            { { gfx::Shader::Type::Pixel, "g_sampler"   }, m_sp_texture_sampler      },
+            { { gfx::Shader::Type::All,   "g_uniforms"  }, { frame.sp_uniforms_buffer } },
+            { { gfx::Shader::Type::Pixel, "g_constants" }, { m_sp_const_buffer        } },
+            { { gfx::Shader::Type::Pixel, "g_texture"   }, { m_sp_cube_texture        } },
+            { { gfx::Shader::Type::Pixel, "g_sampler"   }, { m_sp_texture_sampler     } },
         });
         
         // Create command list for rendering
@@ -240,7 +242,7 @@ void TexturedCubeApp::Render()
     frame.sp_cmd_list->Reset(*m_sp_state, "Cube redering");
     frame.sp_cmd_list->SetResourceBindings(*frame.sp_resource_bindings);
     frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
-    frame.sp_cmd_list->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_sp_index_buffer, 1);
+    frame.sp_cmd_list->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
     frame.sp_cmd_list->Commit(true);
 
     // Present frame to screen

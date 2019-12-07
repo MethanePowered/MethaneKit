@@ -10,6 +10,7 @@ set(HEADERS
     ${INCLUDE_DIR}/FileProvider.hpp
     ${INCLUDE_DIR}/ResourceProvider.hpp
     ${INCLUDE_DIR}/AppResourceProviders.h
+    ${INCLUDE_DIR}/AlignedAllocator.hpp
     ${INCLUDE_DIR}/Parallel.hpp
 )
 
@@ -30,7 +31,7 @@ target_include_directories(${TARGET}
 )
 
 target_link_libraries(${TARGET}
-    MethaneInstrumentation
+    MethaneDataInstrumentation
     MethanePlatformUtils
     CML
 )

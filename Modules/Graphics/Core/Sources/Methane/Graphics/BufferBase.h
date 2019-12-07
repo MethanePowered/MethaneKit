@@ -35,6 +35,9 @@ class BufferBase
     , public ResourceNT
 {
 public:
+    using Ptr = std::shared_ptr<BufferBase>;
+    using Ptrs = std::vector<Ptr>;
+
     BufferBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
     // Resource interface
@@ -44,6 +47,7 @@ public:
     // Buffer interface
     Buffer::Type GetBufferType() const noexcept override    { return m_settings.type; }
 
+    Ptr GetPtr()                                            { return std::dynamic_pointer_cast<BufferBase>(shared_from_this()); }
     std::string GetBufferTypeName() const noexcept          { return Buffer::GetBufferTypeName(m_settings.type); }
 
 protected:

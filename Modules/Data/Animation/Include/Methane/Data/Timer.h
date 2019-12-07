@@ -23,7 +23,7 @@ Basic animation timer for measuring elapsed time since start.
 
 #pragma once
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Data/Instrumentation.h>
 
 #include <chrono>
 
