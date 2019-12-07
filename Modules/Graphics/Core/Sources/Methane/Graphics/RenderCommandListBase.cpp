@@ -45,7 +45,7 @@ RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue, Re
     ITT_FUNCTION_TASK();
 }
 
-void RenderCommandListBase::DrawStateBase::Reset()
+void RenderCommandListBase::DrawingState::Reset()
 {
     ITT_FUNCTION_TASK();
 
