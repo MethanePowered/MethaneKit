@@ -238,7 +238,6 @@ void Asteroid::FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Di
 #endif
                 texel_data[channel] = static_cast<uint8_t>(channel_value * noise_intensity);
             }
-            
         }
     }
 }

@@ -30,14 +30,14 @@ DirectX 12 implementation of the render state interface.
 #include "TextureDX.h"
 #include "RenderCommandListDX.h"
 
+#include <Methane/Graphics/Windows/Helpers.h>
+#include <Methane/Platform/Windows/Utils.h>
+#include <Methane/Data/Instrumentation.h>
+
 #include <d3dx12.h>
 #include <D3Dcompiler.h>
 #include <nowide/convert.hpp>
 #include <cassert>
-
-#include <Methane/Data/Instrumentation.h>
-#include <Methane/Graphics/Windows/Helpers.h>
-#include <Methane/Platform/Windows/Utils.h>
 
 namespace Methane::Graphics
 {
@@ -52,7 +52,7 @@ inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Shader::Ptr& sp_shader)
         : CD3DX12_SHADER_BYTECODE(NULL, 0);
 }
 
-D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(RenderState::Rasterizer::FillMode fill_mode)
+static D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(RenderState::Rasterizer::FillMode fill_mode)
 {
     ITT_FUNCTION_TASK();
 
@@ -68,7 +68,7 @@ D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(RenderState::Rasterizer::FillMo
 }
 
 
-D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(RenderState::Rasterizer::CullMode cull_mode)
+static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(RenderState::Rasterizer::CullMode cull_mode)
 {
     ITT_FUNCTION_TASK();
 
@@ -84,7 +84,7 @@ D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(RenderState::Rasterizer::CullMo
     return D3D12_CULL_MODE_NONE;
 }
 
-D3D12_STENCIL_OP ConvertStencilOperationToD3D12(RenderState::Stencil::Operation operation)
+static D3D12_STENCIL_OP ConvertStencilOperationToD3D12(RenderState::Stencil::Operation operation)
 {
     ITT_FUNCTION_TASK();
 
@@ -105,7 +105,7 @@ D3D12_STENCIL_OP ConvertStencilOperationToD3D12(RenderState::Stencil::Operation 
     return D3D12_STENCIL_OP_KEEP;
 }
 
-D3D12_DEPTH_STENCILOP_DESC ConvertStencilFaceOperationsToD3D12(const RenderState::Stencil::FaceOperations& stencil_face_op)
+static D3D12_DEPTH_STENCILOP_DESC ConvertStencilFaceOperationsToD3D12(const RenderState::Stencil::FaceOperations& stencil_face_op)
 {
     ITT_FUNCTION_TASK();
 

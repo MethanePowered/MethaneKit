@@ -482,35 +482,50 @@ public:
     SphereMesh(const Mesh::VertexLayout& vertex_layout, float radius = 1.f, uint32_t lat_lines_count = 10, uint32_t long_lines_count = 16)
         : BaseMesh(Mesh::Type::Sphere, vertex_layout)
         , m_radius(radius)
+        , m_lat_lines_count(lat_lines_count)
+        , m_long_lines_count(long_lines_count)
     {
         ITT_FUNCTION_TASK();
 
-        const bool has_colors    = Mesh::HasVertexField(Mesh::VertexField::Color);
-        const bool has_normals   = Mesh::HasVertexField(Mesh::VertexField::Normal);
-        const bool has_texcoord  = Mesh::HasVertexField(Mesh::VertexField::TexCoord);
-
-        if (has_colors)
+        if (Mesh::HasVertexField(Mesh::VertexField::Color))
         {
             throw std::invalid_argument("Colored vertices are not supported for sphere mesh.");
         }
-        if (lat_lines_count < 3)
+        if (m_lat_lines_count < 3)
         {
             throw std::invalid_argument("Lattitude lines count should not be less than 3.");
         }
-        if (long_lines_count < 3)
+        if (m_long_lines_count < 3)
         {
             throw std::invalid_argument("Longitude lines count should not be less than 3.");
         }
         
+        GenerateSphereVertices();
+        GenerateSphereIndices();
+    }
+
+    float    GetRadius() const noexcept         { return m_radius; }
+    uint32_t GetLongLinesCount() const noexcept { return m_long_lines_count; }
+    uint32_t GetLatLinesCount() const noexcept  { return m_lat_lines_count; }
+    
+private:
+    uint32_t GetActualLongLinesCount() const noexcept { return  Mesh::HasVertexField(Mesh::VertexField::TexCoord) ? m_long_lines_count + 1 : m_long_lines_count; }
+    uint32_t GetSphereFacesCount() const noexcept     { return (Mesh::HasVertexField(Mesh::VertexField::TexCoord) ? m_lat_lines_count : m_lat_lines_count - 2) * m_long_lines_count * 2; }
+
+    void GenerateSphereVertices()
+    {
+        ITT_FUNCTION_TASK();
+
         // In case of textured sphere mesh,
         // an additional ending longitude line of vertices is added (with same positions as for the first line),
         // required to complete the texture projection on sphere
-        const uint32_t actual_long_lines_count = has_texcoord ? long_lines_count + 1 : long_lines_count;
+
+        const bool     has_texcoord = Mesh::HasVertexField(Mesh::VertexField::TexCoord);
+        const bool     has_normals  = Mesh::HasVertexField(Mesh::VertexField::Normal);
+        const uint32_t actual_long_lines_count = GetActualLongLinesCount();
         const uint32_t cap_vertex_count = 2 * (has_texcoord ? actual_long_lines_count : 1);
 
-        // Generate sphere vertices
-
-        BaseMesh::m_vertices.resize((lat_lines_count - 2) * actual_long_lines_count + cap_vertex_count, {});
+        BaseMesh::m_vertices.resize((m_lat_lines_count - 2) * actual_long_lines_count + cap_vertex_count, {});
 
         if (!has_texcoord)
         {
@@ -531,17 +546,17 @@ public:
         }
 
         const float texcoord_long_spacing = 1.f / (actual_long_lines_count - 1);
-        const float texcoord_lat_spacing  = 1.f / (lat_lines_count + 1);
+        const float texcoord_lat_spacing  = 1.f / (m_lat_lines_count + 1);
         
         cml::matrix33f pitch_step_matrix = { }, yaw_step_matrix = { };
-        cml::matrix_rotation_world_x(pitch_step_matrix, cml::constants<float>::pi() / (lat_lines_count - 1));
-        cml::matrix_rotation_world_y(yaw_step_matrix, 2.0 * cml::constants<float>::pi() / long_lines_count);
+        cml::matrix_rotation_world_x(pitch_step_matrix, cml::constants<float>::pi() / (m_lat_lines_count - 1));
+        cml::matrix_rotation_world_y(yaw_step_matrix, 2.0 * cml::constants<float>::pi() / m_long_lines_count);
 
         cml::matrix33f pitch_matrix = cml::identity_3x3();
         if (!has_texcoord)
             pitch_matrix = pitch_step_matrix;
         
-        const uint32_t actual_lat_lines_count = has_texcoord ? lat_lines_count : lat_lines_count - 1;
+        const uint32_t actual_lat_lines_count = has_texcoord ? m_lat_lines_count : m_lat_lines_count - 1;
         const uint32_t first_lat_line_index   = has_texcoord ? 0 : 1;
         const uint32_t first_vertex_index     = has_texcoord ? 0 : 1;
 
@@ -575,10 +590,16 @@ public:
 
             pitch_matrix = pitch_matrix * pitch_step_matrix;
         }
-        
-        // Generate sphere indices
+    }
 
-        const uint32_t sphere_faces_count = (has_texcoord ? lat_lines_count      : lat_lines_count - 2) * long_lines_count * 2;
+    void GenerateSphereIndices()
+    {
+        ITT_FUNCTION_TASK();
+
+        const bool     has_texcoord            = Mesh::HasVertexField(Mesh::VertexField::TexCoord);
+        const uint32_t actual_long_lines_count = GetActualLongLinesCount();
+        const uint32_t sphere_faces_count      = GetSphereFacesCount();
+
         BaseMesh::m_indices.resize(sphere_faces_count * 3, 0);
 
         uint32_t index_offset = 0;
@@ -587,7 +608,7 @@ public:
         {
             // Top cap triangles reuse single pole vertex
 
-            for(Mesh::Index long_line_index = 0; long_line_index < actual_long_lines_count - 1; ++long_line_index)
+            for (Mesh::Index long_line_index = 0; long_line_index < actual_long_lines_count - 1; ++long_line_index)
             {
                 BaseMesh::m_indices[index_offset]     = 0;
                 BaseMesh::m_indices[index_offset + 1] = long_line_index + 2;
@@ -598,14 +619,15 @@ public:
 
             BaseMesh::m_indices[index_offset]     = 0;
             BaseMesh::m_indices[index_offset + 1] = 1;
-            BaseMesh::m_indices[index_offset + 2] = long_lines_count;
+            BaseMesh::m_indices[index_offset + 2] = m_long_lines_count;
 
             index_offset += 3;
         }
 
         const uint32_t vertices_count         = static_cast<uint32_t>(BaseMesh::m_vertices.size());
-        const uint32_t index_lat_lines_count  = has_texcoord ? lat_lines_count - 1 : lat_lines_count - 3;
-        const uint32_t index_long_lines_count = has_texcoord ? long_lines_count + 1 : long_lines_count - 1;
+        const uint32_t index_lat_lines_count  = has_texcoord ? m_lat_lines_count - 1 : m_lat_lines_count - 3;
+        const uint32_t index_long_lines_count = has_texcoord ? m_long_lines_count + 1 : m_long_lines_count - 1;
+        const uint32_t first_vertex_index     = has_texcoord ? 0 : 1;
 
         for (uint32_t lat_line_index = 0; lat_line_index < index_lat_lines_count; ++lat_line_index)
         {
@@ -654,11 +676,10 @@ public:
             BaseMesh::m_indices[index_offset + 2] = (vertices_count - 1) - actual_long_lines_count;
         }
     }
-    
-    const float GetRadius() const noexcept { return m_radius; }
-    
-protected:
-    const float m_radius;
+
+    const float    m_radius;
+    const uint32_t m_lat_lines_count;
+    const uint32_t m_long_lines_count;
 };
 
 template<typename VType>

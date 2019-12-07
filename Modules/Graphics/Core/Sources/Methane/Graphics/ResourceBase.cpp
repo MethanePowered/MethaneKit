@@ -25,12 +25,12 @@ Base implementation of the resource interface.
 #include "TextureBase.h"
 #include "ContextBase.h"
 
+#include <Methane/Graphics/Resource.h>
 #include <Methane/Data/Instrumentation.h>
 
 #include <cassert>
 #include <sstream>
 #include <utility>
-#include <Methane/Graphics/Resource.h>
 
 namespace Methane::Graphics
 {

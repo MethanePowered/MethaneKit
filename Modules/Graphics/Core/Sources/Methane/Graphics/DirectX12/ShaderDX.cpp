@@ -42,7 +42,7 @@ DirectX 12 implementation of the shader interface.
 namespace Methane::Graphics
 {
 
-std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type) noexcept
+static std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -65,7 +65,7 @@ std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type) noexcept
     return "Unknown";
 }
 
-std::string GetSRVDimensionName(D3D_SRV_DIMENSION srv_dimension) noexcept
+static std::string GetSRVDimensionName(D3D_SRV_DIMENSION srv_dimension) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -88,7 +88,7 @@ std::string GetSRVDimensionName(D3D_SRV_DIMENSION srv_dimension) noexcept
     return "Unknown";
 }
 
-std::string GetReturnTypeName(D3D_RESOURCE_RETURN_TYPE return_type) noexcept
+static std::string GetReturnTypeName(D3D_RESOURCE_RETURN_TYPE return_type) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -106,7 +106,7 @@ std::string GetReturnTypeName(D3D_RESOURCE_RETURN_TYPE return_type) noexcept
     return "Undefined";
 }
 
-std::string GetValueTypeName(D3D_NAME value_type) noexcept
+static std::string GetValueTypeName(D3D_NAME value_type) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -142,7 +142,7 @@ std::string GetValueTypeName(D3D_NAME value_type) noexcept
     return "Unknown";
 }
 
-std::string GetComponentTypeName(D3D_REGISTER_COMPONENT_TYPE component_type) noexcept
+static std::string GetComponentTypeName(D3D_REGISTER_COMPONENT_TYPE component_type) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -158,7 +158,7 @@ std::string GetComponentTypeName(D3D_REGISTER_COMPONENT_TYPE component_type) noe
 }
 
 using StepType = ProgramBase::InputBufferLayout::StepType;
-D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepType step_type) noexcept
+static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepType step_type) noexcept
 {
     ITT_FUNCTION_TASK();
 

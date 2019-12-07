@@ -97,9 +97,9 @@ public:
     AsteroidsArray(gfx::Context& context, Settings settings);
     AsteroidsArray(gfx::Context& context, Settings settings, ContentState& state);
 
-    const Settings& GetSettings() const      { return m_settings; }
-    const ContentState::Ptr& GetState() const       { return m_sp_content_state; }
-    Data::Size GetUniformsBufferSize() const { return BaseBuffers::GetUniformsBufferSize(); }
+    const Settings& GetSettings() const         { return m_settings; }
+    const ContentState::Ptr& GetState() const   { return m_sp_content_state; }
+    Data::Size GetUniformsBufferSize() const    { return BaseBuffers::GetUniformsBufferSize(); }
 
     gfx::MeshBufferBindings::ResourceBindingsArray CreateResourceBindings(const gfx::Buffer::Ptr& sp_constants_buffer,
                                                                           const gfx::Buffer::Ptr& sp_scene_uniforms_buffer,

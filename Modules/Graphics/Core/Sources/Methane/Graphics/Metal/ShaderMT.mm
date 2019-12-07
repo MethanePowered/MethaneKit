@@ -34,7 +34,7 @@ namespace Methane::Graphics
 {
 
 using StepType = ProgramBase::InputBufferLayout::StepType;
-MTLVertexStepFunction GetVertexStepFunction(StepType step_type) noexcept
+static MTLVertexStepFunction GetVertexStepFunction(StepType step_type) noexcept
 {
     ITT_FUNCTION_TASK();
     switch(step_type)
@@ -45,7 +45,7 @@ MTLVertexStepFunction GetVertexStepFunction(StepType step_type) noexcept
     }
 }
 
-std::string GetMetalArgumentTypeName(MTLArgumentType mtl_arg_type) noexcept
+static std::string GetMetalArgumentTypeName(MTLArgumentType mtl_arg_type) noexcept
 {
     ITT_FUNCTION_TASK();
     switch(mtl_arg_type)
@@ -59,7 +59,7 @@ std::string GetMetalArgumentTypeName(MTLArgumentType mtl_arg_type) noexcept
     return "Unknown";
 }
 
-std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access) noexcept
+static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access) noexcept
 {
     ITT_FUNCTION_TASK();
     switch(mtl_arg_access)

@@ -86,6 +86,8 @@ public:
     Data::Size GetDataSize() const override { return m_data_size; }
 
 protected:
+    using ResourceAndViewDesc = std::pair<D3D12_RESOURCE_DESC, D3D12_SHADER_RESOURCE_VIEW_DESC>;
+    ResourceAndViewDesc GetResourceAndViewDesc() const;
     void GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_resources, DirectX::ScratchImage& scratch_image);
 
     Data::Size                  m_data_size = 0;

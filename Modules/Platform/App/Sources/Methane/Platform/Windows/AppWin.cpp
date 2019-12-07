@@ -38,7 +38,7 @@ constexpr auto WM_ALERT = WM_USER + 1;
 static const wchar_t* g_window_class = L"MethaneWindowClass";
 static const wchar_t* g_window_icon  = L"IDI_APP_ICON";
 
-UINT ConvertMessageTypeToFlags(AppBase::Message::Type msg_type)
+static UINT ConvertMessageTypeToFlags(AppBase::Message::Type msg_type)
 {
     ITT_FUNCTION_TASK();
     switch (msg_type)

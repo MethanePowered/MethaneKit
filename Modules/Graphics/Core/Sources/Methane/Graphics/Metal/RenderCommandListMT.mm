@@ -35,7 +35,7 @@ Metal implementation of the render command list interface.
 namespace Methane::Graphics
 {
 
-MTLPrimitiveType PrimitiveTypeToMetal(RenderCommandList::Primitive primitive) noexcept
+static MTLPrimitiveType PrimitiveTypeToMetal(RenderCommandList::Primitive primitive) noexcept
 {
     ITT_FUNCTION_TASK();
 

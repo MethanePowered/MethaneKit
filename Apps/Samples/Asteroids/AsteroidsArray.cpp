@@ -268,6 +268,8 @@ gfx::MeshBufferBindings::ResourceBindingsArray AsteroidsArray::CreateResourceBin
                                                                                       const gfx::Buffer::Ptr &sp_scene_uniforms_buffer,
                                                                                       const gfx::Buffer::Ptr &sp_asteroids_uniforms_buffer)
 {
+    ITT_FUNCTION_TASK();
+
     gfx::MeshBufferBindings::ResourceBindingsArray resource_bindings_array;
     if (m_settings.instance_count == 0)
         return resource_bindings_array;
@@ -297,6 +299,8 @@ gfx::MeshBufferBindings::ResourceBindingsArray AsteroidsArray::CreateResourceBin
 
 void AsteroidsArray::Resize(const gfx::FrameSize &frame_size)
 {
+    ITT_FUNCTION_TASK();
+
     assert(m_sp_render_state);
     m_sp_render_state->SetViewports({ gfx::GetFrameViewport(frame_size) });
     m_sp_render_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
@@ -340,6 +344,8 @@ bool AsteroidsArray::Update(double elapsed_seconds, double delta_seconds)
     
 void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, gfx::MeshBufferBindings& buffer_bindings)
 {
+    ITT_FUNCTION_TASK();
+
     const Data::Size uniforms_buffer_size = GetUniformsBufferSize();
     assert(buffer_bindings.sp_uniforms_buffer);
     assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= uniforms_buffer_size);

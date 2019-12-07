@@ -39,7 +39,7 @@ Metal implementation of the render state interface.
 namespace Methane::Graphics
 {
 
-MTLCullMode ConvertRasterizerCullModeToMetal(RenderState::Rasterizer::CullMode cull_mode) noexcept
+static MTLCullMode ConvertRasterizerCullModeToMetal(RenderState::Rasterizer::CullMode cull_mode) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -55,7 +55,7 @@ MTLCullMode ConvertRasterizerCullModeToMetal(RenderState::Rasterizer::CullMode c
 }
 
 
-MTLTriangleFillMode ConvertRasterizerFillModeToMetal(RenderState::Rasterizer::FillMode fill_mode) noexcept
+static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(RenderState::Rasterizer::FillMode fill_mode) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -69,7 +69,7 @@ MTLTriangleFillMode ConvertRasterizerFillModeToMetal(RenderState::Rasterizer::Fi
     return MTLTriangleFillModeFill;
 }
 
-MTLStencilOperation ConvertStencilOperationToMetal(RenderState::Stencil::Operation operation) noexcept
+static MTLStencilOperation ConvertStencilOperationToMetal(RenderState::Stencil::Operation operation) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -90,13 +90,13 @@ MTLStencilOperation ConvertStencilOperationToMetal(RenderState::Stencil::Operati
     return MTLStencilOperationKeep;
 }
 
-MTLWinding ConvertRasterizerFrontWindingToMetal(bool is_front_counter_clockwise) noexcept
+static MTLWinding ConvertRasterizerFrontWindingToMetal(bool is_front_counter_clockwise) noexcept
 {
     ITT_FUNCTION_TASK();
     return is_front_counter_clockwise ? MTLWindingCounterClockwise : MTLWindingClockwise;
 }
 
-MTLStencilDescriptor* ConvertStencilDescriptorToMetal(const RenderState::Stencil& stencil, bool for_front_face)
+static MTLStencilDescriptor* ConvertStencilDescriptorToMetal(const RenderState::Stencil& stencil, bool for_front_face)
 {
     ITT_FUNCTION_TASK();
     if (!stencil.enabled)

@@ -33,7 +33,7 @@ DirectX 12 implementation of the descriptor heap wrapper.
 namespace Methane::Graphics
 {
 
-D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeap::Type type) noexcept
+static D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeap::Type type) noexcept
 {
     ITT_FUNCTION_TASK();
     switch (type)

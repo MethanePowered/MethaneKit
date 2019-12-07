@@ -46,7 +46,7 @@ DirectX 12 implementation of the program interface.
 namespace Methane::Graphics
 {
 
-D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_SHADER_INPUT_TYPE input_type) noexcept
+static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_SHADER_INPUT_TYPE input_type) noexcept
 {
     ITT_FUNCTION_TASK();
 
@@ -78,7 +78,7 @@ D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_SHADER_I
     return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 }
 
-DescriptorHeap::Type GetDescriptorHeapTypeByRangeType(D3D12_DESCRIPTOR_RANGE_TYPE range_type) noexcept
+static DescriptorHeap::Type GetDescriptorHeapTypeByRangeType(D3D12_DESCRIPTOR_RANGE_TYPE range_type) noexcept
 {
     ITT_FUNCTION_TASK();
     if (range_type == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
@@ -87,7 +87,7 @@ DescriptorHeap::Type GetDescriptorHeapTypeByRangeType(D3D12_DESCRIPTOR_RANGE_TYP
         return DescriptorHeap::Type::ShaderResources;
 }
 
-D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_type) noexcept
+static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_type) noexcept
 {
     ITT_FUNCTION_TASK();
     switch (shader_type)
@@ -350,7 +350,6 @@ void ProgramDX::InitRootSignature()
 
         switch (bind_settings.type)
         {
-
         case ShaderDX::ResourceBindingDX::Type::DescriptorTable:
         {
             const D3D12_DESCRIPTOR_RANGE_TYPE  range_type  = GetDescriptorRangeTypeByShaderInputType(bind_settings.input_type);

@@ -29,26 +29,24 @@ Interactive action-camera for rotating, moving and zooming with mouse and keyboa
 
 #include <cassert>
 
-using namespace Methane::Data;
-
 namespace Methane::Graphics
 {
 
-ActionCamera::ActionCamera(AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation)
+ActionCamera::ActionCamera(Data::AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation)
     : ArcBallCamera(pivot, axis_orientation)
     , m_animations(animations)
 {
     ITT_FUNCTION_TASK();
 }
 
-ActionCamera::ActionCamera(const Camera& view_camera, AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation)
+ActionCamera::ActionCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation)
     : ArcBallCamera(view_camera, pivot, axis_orientation)
     , m_animations(animations)
 {
     ITT_FUNCTION_TASK();
 }
 
-void ActionCamera::OnMousePressed(const Point2i& mouse_screen_pos, MouseAction mouse_action)
+void ActionCamera::OnMousePressed(const Data::Point2i& mouse_screen_pos, MouseAction mouse_action)
 {
     ITT_FUNCTION_TASK();
     m_mouse_action = mouse_action;
@@ -69,7 +67,7 @@ void ActionCamera::OnMousePressed(const Point2i& mouse_screen_pos, MouseAction m
     }
 }
 
-void ActionCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
+void ActionCamera::OnMouseDragged(const Data::Point2i& mouse_screen_pos)
 {
     ITT_FUNCTION_TASK();
     switch (m_mouse_action)
@@ -86,7 +84,7 @@ void ActionCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
     }
 }
 
-void ActionCamera::OnMouseReleased(const Point2i&)
+void ActionCamera::OnMouseReleased(const Data::Point2i&)
 {
     ITT_FUNCTION_TASK();
     m_mouse_action = MouseAction::None;
@@ -177,7 +175,7 @@ void ActionCamera::StartRotateAction(KeyboardAction rotate_action, const Vector3
     
     const float angle_rad_per_second = cml::rad(m_rotate_angle_per_second);
     m_animations.push_back(
-        std::make_shared<TimeAnimation>([this, angle_rad_per_second, rotation_axis_in_view](double elapsed_seconds, double delta_seconds)
+        std::make_shared<Data::TimeAnimation>([this, angle_rad_per_second, rotation_axis_in_view](double elapsed_seconds, double delta_seconds)
             {
                 Rotate(rotation_axis_in_view, static_cast<float>(angle_rad_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
                 return true;
@@ -197,7 +195,7 @@ void ActionCamera::StartMoveAction(KeyboardAction move_action, const Vector3f& m
         return;
     
     m_animations.push_back(
-        std::make_shared<TimeAnimation>([this, move_direction_in_view](double elapsed_seconds, double delta_seconds)
+        std::make_shared<Data::TimeAnimation>([this, move_direction_in_view](double elapsed_seconds, double delta_seconds)
             {
                 const Vector3f move_per_second = TransformViewToWorld(move_direction_in_view).normalize() * m_move_distance_per_second;
                 Move(move_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds));
@@ -218,7 +216,7 @@ void ActionCamera::StartZoomAction(KeyboardAction zoom_action, float zoom_factor
         return;
     
     m_animations.push_back(
-        std::make_shared<TimeAnimation>([this, zoom_factor_per_second](double elapsed_seconds, double delta_seconds)
+        std::make_shared<Data::TimeAnimation>([this, zoom_factor_per_second](double elapsed_seconds, double delta_seconds)
             {
                 Zoom(1.f - static_cast<float>((1.f - zoom_factor_per_second) * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
                 return true;

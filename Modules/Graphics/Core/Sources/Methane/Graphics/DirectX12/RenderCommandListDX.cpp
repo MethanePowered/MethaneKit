@@ -31,7 +31,6 @@ DirectX 12 implementation of the render command list interface.
 #include "ResourceDX.h"
 #include "TextureDX.h"
 #include "BufferDX.h"
-#include "TypesDX.h"
 
 #include <Methane/Data/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
@@ -44,7 +43,7 @@ DirectX 12 implementation of the render command list interface.
 namespace Methane::Graphics
 {
 
-D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primitive primitive) noexcept
+static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primitive primitive) noexcept
 {
     ITT_FUNCTION_TASK();
     switch (primitive)
