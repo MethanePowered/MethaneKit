@@ -167,7 +167,7 @@ void ProgramDX::ResourceBindingsDX::Apply(CommandList& command_list) const
     };
 
     RenderCommandListDX&             render_command_list_dx = dynamic_cast<RenderCommandListDX&>(command_list);
-    wrl::ComPtr<ID3D12GraphicsCommandList>& cp_command_list = render_command_list_dx.GetNativeCommandList();
+    wrl::ComPtr<ID3D12GraphicsCommandListVer>& cp_command_list = render_command_list_dx.GetNativeCommandList();
     const CommandListBase::CommandState&    command_state   = render_command_list_dx.GetCommandState();
     assert(!!cp_command_list);
 

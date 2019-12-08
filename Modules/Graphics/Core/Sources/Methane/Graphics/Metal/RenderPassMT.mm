@@ -39,9 +39,9 @@ static MTLStoreAction GetMTLStoreAction(RenderPass::Attachment::StoreAction stor
     {
         case RenderPass::Attachment::StoreAction::DontCare:   return MTLStoreActionDontCare;
         case RenderPass::Attachment::StoreAction::Store:      return MTLStoreActionStore;
-        case RenderPass::Attachment::StoreAction::Unknown:    return MTLStoreActionUnknown;
+        case RenderPass::Attachment::StoreAction::Resolve:    return MTLStoreActionMultisampleResolve;
     }
-    return MTLStoreActionDontCare;
+    return MTLStoreActionUnknown;
 }
 
 static MTLLoadAction GetMTLLoadAction(RenderPass::Attachment::LoadAction load_action) noexcept

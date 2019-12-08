@@ -202,7 +202,7 @@ void RenderStateDX::Apply(RenderCommandListBase& command_list)
     ITT_FUNCTION_TASK();
 
     RenderCommandListDX& dx_command_list = static_cast<RenderCommandListDX&>(command_list);
-    wrl::ComPtr<ID3D12GraphicsCommandList>& cp_dx_command_list = dx_command_list.GetNativeCommandList();
+    wrl::ComPtr<ID3D12GraphicsCommandListVer>& cp_dx_command_list = dx_command_list.GetNativeCommandList();
 
     cp_dx_command_list->SetPipelineState(GetNativePipelineState().Get());
     cp_dx_command_list->SetGraphicsRootSignature(GetProgramDX().GetNativeRootSignature().Get());

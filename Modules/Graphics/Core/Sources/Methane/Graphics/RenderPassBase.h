@@ -43,14 +43,17 @@ public:
     const Settings& GetSettings() const override    { return m_settings; }
 
     // RenderPassBase interface
-    virtual void Apply(RenderCommandListBase& command_list);
+    virtual void Begin(RenderCommandListBase& command_list);
+    virtual void End(RenderCommandListBase& command_list);
 
     Ptr            GetPtr() { return shared_from_this(); }
     Resource::Refs GetColorAttachmentResources() const;
+    bool           IsBegun() const { return m_is_begun; }
 
 protected:
     ContextBase& m_context;
     Settings     m_settings;
+    bool         m_is_begun = false;
 };
 
 } // namespace Methane::Graphics

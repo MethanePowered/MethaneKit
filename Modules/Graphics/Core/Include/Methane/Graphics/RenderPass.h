@@ -52,7 +52,7 @@ struct RenderPass
         {
             DontCare = 0,
             Store,
-            Unknown,
+            Resolve,
         };
         
         Texture::WeakPtr wp_texture;
@@ -60,7 +60,7 @@ struct RenderPass
         uint32_t         slice        = 0;
         uint32_t         depth_plane  = 0;
         LoadAction       load_action  = LoadAction::DontCare;
-        StoreAction      store_action = StoreAction::Unknown;
+        StoreAction      store_action = StoreAction::DontCare;
         
         bool operator==(const Attachment& other) const;
     };

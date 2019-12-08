@@ -71,7 +71,8 @@ bool RenderPass::Settings::operator==(const Settings& other) const
     ITT_FUNCTION_TASK();
     return color_attachments  == other.color_attachments &&
            depth_attachment   == other.depth_attachment &&
-           stencil_attachment == other.stencil_attachment;
+           stencil_attachment == other.stencil_attachment &&
+           shader_access_mask == other.shader_access_mask;
 }
 
 bool RenderPass::Settings::operator!=(const Settings& other) const
@@ -93,9 +94,14 @@ void RenderPassBase::Update(const RenderPass::Settings& settings)
     m_settings = settings;
 }
 
-void RenderPassBase::Apply(RenderCommandListBase& command_list)
+void RenderPassBase::Begin(RenderCommandListBase& command_list)
 {
     ITT_FUNCTION_TASK();
+
+    if (m_is_begun)
+    {
+        throw std::logic_error("Can not begin pass which was begun already and was not ended.");
+    }
 
     ResourceBase::Barriers resource_transition_barriers;
 
@@ -120,6 +126,20 @@ void RenderPassBase::Apply(RenderCommandListBase& command_list)
     {
         command_list.SetResourceBarriers(resource_transition_barriers);
     }
+
+    m_is_begun = true;
+}
+
+void RenderPassBase::End(RenderCommandListBase&)
+{
+    ITT_FUNCTION_TASK();
+
+    if (!m_is_begun)
+    {
+        throw std::logic_error("Can not end render pass, which was not begun.");
+    }
+
+    m_is_begun = false;
 }
 
 Resource::Refs RenderPassBase::GetColorAttachmentResources() const

@@ -23,6 +23,8 @@ DirectX 12 implementation of the render command list interface.
 
 #pragma once
 
+#include "RenderPassDX.h"
+
 #include <Methane/Graphics/RenderCommandListBase.h>
 
 #include <wrl.h>
@@ -32,6 +34,12 @@ namespace Methane::Graphics
 {
 
 namespace wrl = Microsoft::WRL;
+
+#if D3D12_RENDER_PASS_ENABLED
+using ID3D12GraphicsCommandListVer = ID3D12GraphicsCommandList4;
+#else
+using ID3D12GraphicsCommandListVer = ID3D12GraphicsCommandList;
+#endif
 
 class CommandQueueDX;
 class RenderPassDX;
@@ -62,17 +70,15 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-    wrl::ComPtr<ID3D12GraphicsCommandList>& GetNativeCommandList()      { return m_cp_command_list; }
+    wrl::ComPtr<ID3D12GraphicsCommandListVer>& GetNativeCommandList() { return m_cp_command_list; }
 
 protected:
     CommandQueueDX& GetCommandQueueDX();
     RenderPassDX&   GetPassDX();
 
-    wrl::ComPtr<ID3D12CommandAllocator>     m_cp_command_allocator;
-    wrl::ComPtr<ID3D12GraphicsCommandList>  m_cp_command_list;
-    Resource::Refs                          m_present_resources;
-    bool                                    m_is_committed = false;
-    bool                                    m_is_pass_applied = false;
+    wrl::ComPtr<ID3D12CommandAllocator>       m_cp_command_allocator;
+    wrl::ComPtr<ID3D12GraphicsCommandListVer> m_cp_command_list;
+    bool                                      m_is_committed = false;
 };
 
 } // namespace Methane::Graphics
