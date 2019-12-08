@@ -37,13 +37,20 @@ DirectX 12 implementation of the render pass interface.
 namespace Methane::Graphics
 {
 
+static D3D12_CPU_DESCRIPTOR_HANDLE GetRenderTargetTextureCpuDescriptor(const Texture::WeakPtr& wp_texture)
+{
+    return !wp_texture.expired()
+         ? static_cast<TextureBase&>(*wp_texture.lock()).GetNativeCPUDescriptorHandle(Resource::Usage::RenderTarget)
+         : D3D12_CPU_DESCRIPTOR_HANDLE();
+}
+
 #if D3D12_RENDER_PASS_ENABLED
 
 RenderPassDX::AccessDesc::AccessDesc(const Attachment& attachment)
-    : descriptor(!attachment.wp_texture.expired()
-                 ? static_cast<TextureBase&>(*attachment.wp_texture.lock()).GetNativeCPUDescriptorHandle(Resource::Usage::RenderTarget)
-                 : D3D12_CPU_DESCRIPTOR_HANDLE())
+    : descriptor(GetRenderTargetTextureCpuDescriptor(attachment.wp_texture))
 {
+    ITT_FUNCTION_TASK();
+
     if (attachment.wp_texture.expired())
     {
         beginning.Type = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS;
@@ -52,7 +59,7 @@ RenderPassDX::AccessDesc::AccessDesc(const Attachment& attachment)
     else
     {
         beginning.Type = GetBeginningAccessTypeByLoadAction(attachment.load_action);
-        ending.Type   = GetEndingAccessTypeByStoreAction(attachment.store_action);
+        ending.Type    = GetEndingAccessTypeByStoreAction(attachment.store_action);
     }
 
     if (attachment.store_action == Attachment::StoreAction::Resolve)
@@ -65,6 +72,8 @@ RenderPassDX::AccessDesc::AccessDesc(const Attachment& attachment)
 RenderPassDX::AccessDesc::AccessDesc(const ColorAttachment& color_attachment)
     : AccessDesc(static_cast<const Attachment&>(color_attachment))
 {
+    ITT_FUNCTION_TASK();
+
     if (color_attachment.load_action == Attachment::LoadAction::Clear)
     {
         if (color_attachment.wp_texture.expired())
@@ -87,17 +96,21 @@ RenderPassDX::AccessDesc::AccessDesc(const ColorAttachment& color_attachment)
 RenderPassDX::AccessDesc::AccessDesc(const DepthAttachment& depth_attachment, const StencilAttachment& stencil_attachment)
     : AccessDesc(static_cast<const Attachment&>(depth_attachment))
 {
+    ITT_FUNCTION_TASK();
     InitDepthStencilClearValue(depth_attachment, stencil_attachment);
 }
 
 RenderPassDX::AccessDesc::AccessDesc(const StencilAttachment& stencil_attachment, const DepthAttachment& depth_attachment)
     : AccessDesc(static_cast<const Attachment&>(stencil_attachment))
 {
+    ITT_FUNCTION_TASK();
     InitDepthStencilClearValue(depth_attachment, stencil_attachment);
 }
 
 void RenderPassDX::AccessDesc::InitDepthStencilClearValue(const DepthAttachment& depth_attachment, const StencilAttachment& stencil_attachment)
 {
+    ITT_FUNCTION_TASK();
+
     if (depth_attachment.wp_texture.expired())
     {
         throw std::invalid_argument("Depth attachments should point to the depth-stencil texture.");
@@ -109,38 +122,41 @@ void RenderPassDX::AccessDesc::InitDepthStencilClearValue(const DepthAttachment&
 
 D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE RenderPassDX::AccessDesc::GetBeginningAccessTypeByLoadAction(Attachment::LoadAction load_action) noexcept
 {
+    ITT_FUNCTION_TASK();
+
     switch (load_action)
     {
     case Attachment::LoadAction::DontCare:  return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD;
     case Attachment::LoadAction::Load:      return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE;
     case Attachment::LoadAction::Clear:     return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR;
     }
+    return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS;
 }
 
 D3D12_RENDER_PASS_ENDING_ACCESS_TYPE RenderPassDX::AccessDesc::GetEndingAccessTypeByStoreAction(Attachment::StoreAction store_action) noexcept
 {
+    ITT_FUNCTION_TASK();
+
     switch (store_action)
     {
     case Attachment::StoreAction::DontCare:  return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD;
     case Attachment::StoreAction::Store:     return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE;
     case Attachment::StoreAction::Resolve:   return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_RESOLVE;
     }
+    return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS;
 }
 
 #else
 
 RenderPassDX::RTClearInfo::RTClearInfo(const RenderPass::ColorAttachment& color_attach)
-    : cpu_handle(!color_attach.wp_texture.expired() ? static_cast<TextureBase&>(*color_attach.wp_texture.lock()).GetNativeCPUDescriptorHandle(Resource::Usage::RenderTarget)
-                                                    : D3D12_CPU_DESCRIPTOR_HANDLE())
+    : cpu_handle(GetRenderTargetTextureCpuDescriptor(color_attach.wp_texture))
     , clear_color{ color_attach.clear_color.r(), color_attach.clear_color.g(), color_attach.clear_color.b(), color_attach.clear_color.a() }
 {
     ITT_FUNCTION_TASK();
 }
 
 RenderPassDX::DSClearInfo::DSClearInfo(const RenderPass::DepthAttachment& depth_attach, const RenderPass::StencilAttachment& stencil_attach)
-    : cpu_handle(!depth_attach.wp_texture.expired() ? static_cast<TextureBase&>(*depth_attach.wp_texture.lock()).GetNativeCPUDescriptorHandle(ResourceBase::Usage::RenderTarget)
-                                                    : !stencil_attach.wp_texture.expired() ? static_cast<TextureBase&>(*stencil_attach.wp_texture.lock()).GetNativeCPUDescriptorHandle(ResourceBase::Usage::RenderTarget)
-                                                                                           : D3D12_CPU_DESCRIPTOR_HANDLE())
+    : cpu_handle(GetRenderTargetTextureCpuDescriptor(depth_attach.wp_texture))
     , depth_cleared(!depth_attach.wp_texture.expired() && depth_attach.load_action == RenderPass::Attachment::LoadAction::Clear)
     , depth_value(depth_attach.clear_value)
     , stencil_cleared(!stencil_attach.wp_texture.expired() && stencil_attach.load_action == RenderPass::Attachment::LoadAction::Clear)
@@ -192,29 +208,53 @@ void RenderPassDX::Update(const Settings& settings)
 {
     ITT_FUNCTION_TASK();
 
+    const bool settings_unchanged = m_settings == settings;
     RenderPassBase::Update(settings);
 
 #if D3D12_RENDER_PASS_ENABLED
 
-    for (const RenderPassBase::ColorAttachment& color_attach : m_settings.color_attachments)
+    const bool update_descriptors_only = settings_unchanged && m_render_target_descs.size() == m_settings.color_attachments.size();
+    if (!update_descriptors_only)
     {
-        const AccessDesc render_target_access(color_attach);
+        m_render_target_descs.clear();
+        m_depth_stencil_desc.reset();
+    }
 
-        m_render_target_descs.emplace_back(D3D12_RENDER_PASS_RENDER_TARGET_DESC{
-            render_target_access.descriptor, render_target_access.beginning, render_target_access.ending
-        });
+    uint32_t color_attachment_index = 0;
+    for (const RenderPassBase::ColorAttachment& color_attachment : m_settings.color_attachments)
+    {
+        if (update_descriptors_only)
+        {
+            m_render_target_descs[color_attachment_index].cpuDescriptor = GetRenderTargetTextureCpuDescriptor(color_attachment.wp_texture);
+            color_attachment_index++;
+        }
+        else
+        {
+            const AccessDesc render_target_access(color_attachment);
+
+            m_render_target_descs.emplace_back(D3D12_RENDER_PASS_RENDER_TARGET_DESC{
+                render_target_access.descriptor, render_target_access.beginning, render_target_access.ending
+            });
+        }
     }
 
     if (!m_settings.depth_attachment.wp_texture.expired())
     {
-        const AccessDesc depth_access(m_settings.depth_attachment, m_settings.stencil_attachment);
-        const AccessDesc stencil_access(m_settings.stencil_attachment, m_settings.depth_attachment);
+        if (update_descriptors_only && m_depth_stencil_desc)
+        {
+            m_depth_stencil_desc->cpuDescriptor = GetRenderTargetTextureCpuDescriptor(m_settings.depth_attachment.wp_texture);
+        }
+        else
+        {
+            const AccessDesc depth_access(m_settings.depth_attachment, m_settings.stencil_attachment);
+            const AccessDesc stencil_access(m_settings.stencil_attachment, m_settings.depth_attachment);
 
-        m_depth_stencil_desc = D3D12_RENDER_PASS_DEPTH_STENCIL_DESC{
-            depth_access.descriptor,
-            depth_access.beginning, stencil_access.beginning,
-            depth_access.ending,    stencil_access.ending
-        };
+            m_depth_stencil_desc = D3D12_RENDER_PASS_DEPTH_STENCIL_DESC{
+                depth_access.descriptor,
+                depth_access.beginning, stencil_access.beginning,
+                depth_access.ending,    stencil_access.ending
+            };
+        }
     }
 
 #else
