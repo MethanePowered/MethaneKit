@@ -74,6 +74,7 @@ RenderCommandListDX::RenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPas
 
     ThrowIfFailed(cp_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_cp_command_allocator)));
     ThrowIfFailed(cp_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_cp_command_allocator.Get(), nullptr, IID_PPV_ARGS(&m_cp_command_list)));
+    m_cp_command_list.As(&m_cp_command_list_4);
 }
 
 void RenderCommandListDX::Reset(RenderState& render_state, const std::string& debug_group)

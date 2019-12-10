@@ -89,14 +89,17 @@ void DeviceDX::SetName(const std::string& name)
 const wrl::ComPtr<ID3D12Device>& DeviceDX::GetNativeDevice() const
 {
     ITT_FUNCTION_TASK();
-    if (!m_cp_device)
+    if (m_cp_device)
+        return m_cp_device;
+
+    ThrowIfFailed(D3D12CreateDevice(m_cp_adapter.Get(), m_feature_level, IID_PPV_ARGS(&m_cp_device)));
+    if (!GetName().empty())
     {
-        ThrowIfFailed(D3D12CreateDevice(m_cp_adapter.Get(), m_feature_level, IID_PPV_ARGS(&m_cp_device)));
-        if (!GetName().empty())
-        {
-            m_cp_device->SetName(nowide::widen(GetName()).c_str());
-        }
+        m_cp_device->SetName(nowide::widen(GetName()).c_str());
     }
+
+    ThrowIfFailed(m_cp_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &m_feature_support, sizeof(m_feature_support)));
+
     return m_cp_device;
 }
 

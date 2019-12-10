@@ -30,10 +30,6 @@ DirectX 12 implementation of the render pass interface.
 #include <vector>
 #include <optional>
 
-#ifndef D3D12_RENDER_PASS_ENABLED
-#define D3D12_RENDER_PASS_ENABLED 1
-#endif
-
 namespace Methane::Graphics
 {
 
@@ -56,8 +52,6 @@ public:
     const D3D12_CPU_DESCRIPTOR_HANDLE*       GetNativeDepthStencilCPUHandle();
 
 private:
-#if D3D12_RENDER_PASS_ENABLED
-
     struct AccessDesc
     {
         D3D12_CPU_DESCRIPTOR_HANDLE        descriptor = { };
@@ -74,12 +68,6 @@ private:
         static D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE GetBeginningAccessTypeByLoadAction(Attachment::LoadAction load_action) noexcept;
         static D3D12_RENDER_PASS_ENDING_ACCESS_TYPE    GetEndingAccessTypeByStoreAction(Attachment::StoreAction store_action) noexcept;
     };
-
-    std::vector<D3D12_RENDER_PASS_RENDER_TARGET_DESC>   m_render_target_descs;
-    std::optional<D3D12_RENDER_PASS_DEPTH_STENCIL_DESC> m_depth_stencil_desc;
-    D3D12_RENDER_PASS_FLAGS                             m_pass_flags = D3D12_RENDER_PASS_FLAG_NONE;
-
-#else
 
     struct RTClearInfo
     {
@@ -102,11 +90,15 @@ private:
         DSClearInfo(const RenderPassBase::DepthAttachment& depth_attach, const RenderPassBase::StencilAttachment& stencil_attach);
     };
 
+    // D3D12 Render-Pass description
+    std::optional<bool>                                 m_is_native_render_pass_available;
+    std::vector<D3D12_RENDER_PASS_RENDER_TARGET_DESC>   m_render_target_descs;
+    std::optional<D3D12_RENDER_PASS_DEPTH_STENCIL_DESC> m_depth_stencil_desc;
+    D3D12_RENDER_PASS_FLAGS                             m_pass_flags = D3D12_RENDER_PASS_FLAG_NONE;
+
+    // Fallback to input assember setup
     std::vector<RTClearInfo>                            m_rt_clear_infos;
     DSClearInfo                                         m_ds_clear_info;
-
-#endif
-
     D3D12_CPU_DESCRIPTOR_HANDLE                         m_depth_stencil_cpu_handle = {};
     bool                                                m_is_updated = false;
 };

@@ -35,12 +35,6 @@ namespace Methane::Graphics
 
 namespace wrl = Microsoft::WRL;
 
-#if D3D12_RENDER_PASS_ENABLED
-using ID3D12GraphicsCommandListVer = ID3D12GraphicsCommandList4;
-#else
-using ID3D12GraphicsCommandListVer = ID3D12GraphicsCommandList;
-#endif
-
 class CommandQueueDX;
 class RenderPassDX;
 
@@ -70,14 +64,16 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-    wrl::ComPtr<ID3D12GraphicsCommandListVer>& GetNativeCommandList() { return m_cp_command_list; }
+    wrl::ComPtr<ID3D12GraphicsCommandList>&  GetNativeCommandList()  { return m_cp_command_list; }
+    wrl::ComPtr<ID3D12GraphicsCommandList4>& GetNativeCommandList4() { return m_cp_command_list_4; }
 
 protected:
     CommandQueueDX& GetCommandQueueDX();
     RenderPassDX&   GetPassDX();
 
     wrl::ComPtr<ID3D12CommandAllocator>       m_cp_command_allocator;
-    wrl::ComPtr<ID3D12GraphicsCommandListVer> m_cp_command_list;
+    wrl::ComPtr<ID3D12GraphicsCommandList>    m_cp_command_list;
+    wrl::ComPtr<ID3D12GraphicsCommandList4>   m_cp_command_list_4;    // extended interface for the same command list (may be unavailable on older Windows)
     bool                                      m_is_committed = false;
 };
 
