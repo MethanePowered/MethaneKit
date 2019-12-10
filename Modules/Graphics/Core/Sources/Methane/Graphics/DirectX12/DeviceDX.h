@@ -30,6 +30,8 @@ DirectX 12 implementation of the device interface.
 #include <d3d12.h>
 #include <d3dx12.h>
 
+#include <optional>
+
 namespace Methane::Graphics
 {
 
@@ -46,16 +48,17 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-    const D3D12_FEATURE_DATA_D3D12_OPTIONS5& GetNativeFeatureSupport() const { return m_feature_support; }
-    const wrl::ComPtr<IDXGIAdapter>&         GetNativeAdapter() const        { return m_cp_adapter; }
-    const wrl::ComPtr<ID3D12Device>&         GetNativeDevice() const;
+    using NativeFeatureOptions5 = std::optional<D3D12_FEATURE_DATA_D3D12_OPTIONS5>;
+    const NativeFeatureOptions5&        GetNativeFeatureOptions5() const { return m_feature_options_5; }
+    const wrl::ComPtr<IDXGIAdapter>&    GetNativeAdapter() const         { return m_cp_adapter; }
+    const wrl::ComPtr<ID3D12Device>&    GetNativeDevice() const;
     void ReleaseNativeDevice();
 
 protected:
-    const wrl::ComPtr<IDXGIAdapter>           m_cp_adapter;
-    const D3D_FEATURE_LEVEL                   m_feature_level;
-    mutable D3D12_FEATURE_DATA_D3D12_OPTIONS5 m_feature_support;
-    mutable wrl::ComPtr<ID3D12Device>         m_cp_device;
+    const wrl::ComPtr<IDXGIAdapter>     m_cp_adapter;
+    const D3D_FEATURE_LEVEL             m_feature_level;
+    mutable NativeFeatureOptions5       m_feature_options_5;
+    mutable wrl::ComPtr<ID3D12Device>   m_cp_device;
 };
 
 class SystemDX final : public SystemBase

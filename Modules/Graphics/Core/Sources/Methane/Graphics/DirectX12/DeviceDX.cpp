@@ -63,8 +63,8 @@ Device::Feature::Mask DeviceDX::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdap
 
 DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level)
     : DeviceBase(GetAdapterNameDXGI(*cp_adapter.Get()),
-                 IsSoftwareAdapterDXGI(static_cast<IDXGIAdapter1&>(*cp_adapter.Get())),
-                 GetSupportedFeatures(cp_adapter, feature_level))
+        IsSoftwareAdapterDXGI(static_cast<IDXGIAdapter1&>(*cp_adapter.Get())),
+        GetSupportedFeatures(cp_adapter, feature_level))
     , m_cp_adapter(cp_adapter)
     , m_feature_level(feature_level)
 {
@@ -98,7 +98,11 @@ const wrl::ComPtr<ID3D12Device>& DeviceDX::GetNativeDevice() const
         m_cp_device->SetName(nowide::widen(GetName()).c_str());
     }
 
-    ThrowIfFailed(m_cp_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &m_feature_support, sizeof(m_feature_support)));
+    D3D12_FEATURE_DATA_D3D12_OPTIONS5 feature_options_5 = {};
+    if (m_cp_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &feature_options_5, sizeof(feature_options_5)) == S_OK)
+    {
+        m_feature_options_5 = feature_options_5;
+    }
 
     return m_cp_device;
 }

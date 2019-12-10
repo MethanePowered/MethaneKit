@@ -301,7 +301,7 @@ void RenderPassDX::Begin(RenderCommandListBase& command_list)
     wrl::ComPtr<ID3D12GraphicsCommandList4>& cp_dx_command_list_4 = command_list_dx.GetNativeCommandList4();
     m_is_native_render_pass_available = !!cp_dx_command_list_4;
 
-    if (m_is_native_render_pass_available)
+    if (m_is_native_render_pass_available.value())
     {
         // Begin render pass
         cp_dx_command_list_4->BeginRenderPass(
@@ -335,7 +335,7 @@ void RenderPassDX::End(RenderCommandListBase& command_list)
 {
     ITT_FUNCTION_TASK();
 
-    if (m_is_native_render_pass_available)
+    if (m_is_native_render_pass_available.has_value() && m_is_native_render_pass_available.value())
     {
         wrl::ComPtr<ID3D12GraphicsCommandList4>& cp_dx_command_list_4 = static_cast<RenderCommandListDX&>(command_list).GetNativeCommandList4();
         assert(!!cp_dx_command_list_4);
