@@ -118,6 +118,7 @@ set(HEADERS
     ${INCLUDE_DIR}/CommandQueue.h
     ${INCLUDE_DIR}/CommandList.h
     ${INCLUDE_DIR}/RenderCommandList.h
+    ${INCLUDE_DIR}/ParallelRenderCommandList.h
     ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/RenderPass.h
     ${INCLUDE_DIR}/Types.h
@@ -163,6 +164,8 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/CommandListBase.cpp
     ${SOURCES_DIR}/RenderCommandListBase.h
     ${SOURCES_DIR}/RenderCommandListBase.cpp
+    ${SOURCES_DIR}/ParallelRenderCommandListBase.h
+    ${SOURCES_DIR}/ParallelRenderCommandListBase.cpp
     ${SOURCES_DIR}/RenderPassBase.h
     ${SOURCES_DIR}/RenderPassBase.cpp
     ${SOURCES_DIR}/RenderStateBase.h

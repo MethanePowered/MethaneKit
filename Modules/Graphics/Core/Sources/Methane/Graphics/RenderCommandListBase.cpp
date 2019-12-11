@@ -31,10 +31,6 @@ Base implementation of the render command list interface.
 
 #include <cassert>
 
-#ifdef DrawState
-#undef DrawState
-#endif
-
 namespace Methane::Graphics
 {
 
