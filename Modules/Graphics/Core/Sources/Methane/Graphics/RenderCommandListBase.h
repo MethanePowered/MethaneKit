@@ -36,6 +36,7 @@ namespace Methane::Graphics
 {
 
 struct RenderState;
+class ParallelRenderCommandListBase;
 
 class RenderCommandListBase
     : public RenderCommandList
@@ -45,6 +46,7 @@ public:
     using Ptr = std::shared_ptr<RenderCommandList>;
 
     RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass);
+    RenderCommandListBase(ParallelRenderCommandListBase& parallel_render_command_list);
 
     // RenderCommandList interface
     void Reset(RenderState& render_state, const std::string& debug_group = "") override;

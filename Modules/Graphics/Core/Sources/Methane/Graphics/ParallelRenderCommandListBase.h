@@ -44,14 +44,20 @@ public:
 
     ParallelRenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass);
 
+    // CommandList interface
+    void PushDebugGroup(const std::string& name) override   { throw std::logic_error("Not available for parallel render command list."); }
+    void PopDebugGroup() override                           { throw std::logic_error("Not available for parallel render command list."); }
+
+    // CommandListBase interface
+    void SetResourceBarriers(const ResourceBase::Barriers&) override { }
+
     // ParallelRenderCommandList interface
-    const std::vector<RenderCommandList::Ptr>& GetParallelCommandLists() const override { return m_parallel_command_lists; }
+    RenderCommandList::Ptrs CreateRenderCommandLists(uint32_t count) override;
 
     RenderPassBase& GetPass();
 
 protected:
-    const RenderPass::Ptr               m_sp_pass;
-    std::vector<RenderCommandList::Ptr> m_parallel_command_lists;
+    const RenderPass::Ptr m_sp_pass;
 };
 
 } // namespace Methane::Graphics

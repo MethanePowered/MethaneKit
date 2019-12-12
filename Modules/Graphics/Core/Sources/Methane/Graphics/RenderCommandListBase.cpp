@@ -22,6 +22,8 @@ Base implementation of the render command list interface.
 ******************************************************************************/
 
 #include "RenderCommandListBase.h"
+#include "ParallelRenderCommandListBase.h"
+#include "CommandQueueBase.h"
 #include "RenderPassBase.h"
 #include "RenderStateBase.h"
 #include "BufferBase.h"
@@ -37,6 +39,13 @@ namespace Methane::Graphics
 RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& pass)
     : CommandListBase(command_queue)
     , m_sp_pass(pass.GetPtr())
+{
+    ITT_FUNCTION_TASK();
+}
+
+RenderCommandListBase::RenderCommandListBase(ParallelRenderCommandListBase& parallel_render_command_list)
+    : CommandListBase(static_cast<CommandQueueBase&>(parallel_render_command_list.GetCommandQueue()))
+    , m_sp_pass(static_cast<RenderPassBase&>(parallel_render_command_list.GetPass()).GetPtr())
 {
     ITT_FUNCTION_TASK();
 }

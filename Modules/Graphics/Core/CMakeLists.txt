@@ -82,6 +82,8 @@ elseif(APPLE)
         ${SOURCES_GRAPHICS_DIR}/CommandQueueMT.mm
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.hh
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.mm
+        ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListMT.hh
+        ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListMT.mm
     )
 
     set(PLATFORM_LIBRARIES

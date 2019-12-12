@@ -40,6 +40,7 @@ class RenderCommandListMT final : public RenderCommandListBase
 {
 public:
     RenderCommandListMT(CommandQueueBase& command_queue, RenderPassBase& render_pass);
+    RenderCommandListMT(ParallelRenderCommandListBase& parallel_render_command_list);
 
     // CommandList interface
     void PushDebugGroup(const std::string& name) override;

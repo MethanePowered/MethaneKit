@@ -22,6 +22,7 @@ Base implementation of the parallel render command list interface.
 ******************************************************************************/
 
 #include "ParallelRenderCommandListBase.h"
+#include "RenderCommandListBase.h"
 #include "RenderPassBase.h"
 #include "RenderStateBase.h"
 #include "BufferBase.h"
@@ -46,6 +47,17 @@ RenderPassBase& ParallelRenderCommandListBase::GetPass()
     ITT_FUNCTION_TASK();
     assert(!!m_sp_pass);
     return static_cast<RenderPassBase&>(*m_sp_pass);
+}
+
+RenderCommandList::Ptrs ParallelRenderCommandListBase::CreateRenderCommandLists(uint32_t count)
+{
+    ITT_FUNCTION_TASK();
+    RenderCommandList::Ptrs render_command_lists(count);
+    for(RenderCommandList::Ptr& sp_render_command_list : render_command_lists)
+    {
+        sp_render_command_list = RenderCommandList::Create(*this);
+    }
+    return render_command_lists;
 }
 
 } // namespace Methane::Graphics

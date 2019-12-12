@@ -31,7 +31,6 @@ namespace Methane::Graphics
 
 struct RenderState;
 struct RenderPass;
-struct RenderCommandList;
 
 struct ParallelRenderCommandList : virtual CommandList
 {
@@ -41,7 +40,8 @@ struct ParallelRenderCommandList : virtual CommandList
     static Ptr Create(CommandQueue& command_queue, RenderPass& render_pass);
 
     // ParallelRenderCommandList interface
-    virtual const std::vector<RenderCommandList::Ptr>& GetParallelCommandLists() const = 0;
+    virtual void  Reset() = 0;
+    virtual RenderCommandList::Ptrs CreateRenderCommandLists(uint32_t count) = 0;
 };
 
 } // namespace Methane::Graphics

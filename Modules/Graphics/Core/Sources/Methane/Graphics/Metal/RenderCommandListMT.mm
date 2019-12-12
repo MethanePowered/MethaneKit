@@ -22,12 +22,12 @@ Metal implementation of the render command list interface.
 ******************************************************************************/
 
 #include "RenderCommandListMT.hh"
+#include "ParallelRenderCommandListMT.hh"
 #include "RenderStateMT.hh"
 #include "RenderPassMT.hh"
 #include "CommandQueueMT.hh"
 #include "ContextMT.hh"
 #include "BufferMT.hh"
-#include "TypesMT.hh"
 
 #include <Methane/Data/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
@@ -57,11 +57,23 @@ RenderCommandList::Ptr RenderCommandList::Create(CommandQueue& command_queue, Re
     return std::make_shared<RenderCommandListMT>(static_cast<CommandQueueBase&>(command_queue), static_cast<RenderPassBase&>(render_pass));
 }
 
+RenderCommandList::Ptr RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
+{
+    ITT_FUNCTION_TASK();
+    return std::make_shared<RenderCommandListMT>(static_cast<ParallelRenderCommandListBase&>(parallel_render_command_list));
+}
+
 RenderCommandListMT::RenderCommandListMT(CommandQueueBase& command_queue, RenderPassBase& render_pass)
     : RenderCommandListBase(command_queue, render_pass)
     , m_mtl_cmd_buffer(nil)
     , m_mtl_render_encoder(nil)
     , m_mtl_blit_encoder(nil)
+{
+    ITT_FUNCTION_TASK();
+}
+
+RenderCommandListMT::RenderCommandListMT(ParallelRenderCommandListBase& parallel_render_command_list)
+    : RenderCommandListBase(parallel_render_command_list)
 {
     ITT_FUNCTION_TASK();
 }
