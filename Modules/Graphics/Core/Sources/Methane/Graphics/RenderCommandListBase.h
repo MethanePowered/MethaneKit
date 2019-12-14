@@ -82,6 +82,7 @@ protected:
 
     const RenderPass::Ptr m_sp_pass;
     DrawingState          m_draw_state;
+    std::weak_ptr<ParallelRenderCommandListBase> m_wp_parallel_render_command_list;
 };
 
 } // namespace Methane::Graphics

@@ -41,7 +41,8 @@ struct ParallelRenderCommandList : virtual CommandList
 
     // ParallelRenderCommandList interface
     virtual void Reset(RenderState& render_state) = 0;
-    virtual RenderCommandList::Ptrs CreateRenderCommandLists(uint32_t count) = 0;
+    virtual void SetParallelCommandListsCount(uint32_t count) = 0;
+    virtual const RenderCommandList::Ptrs& GetParallelCommandLists() const = 0;
 };
 
 } // namespace Methane::Graphics

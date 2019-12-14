@@ -29,6 +29,7 @@ Base implementation of the parallel render command list interface.
 #include "ProgramBase.h"
 
 #include <Methane/Data/Instrumentation.h>
+#include <Methane/Data/Parallel.hpp>
 
 #include <cassert>
 
@@ -42,22 +43,53 @@ ParallelRenderCommandListBase::ParallelRenderCommandListBase(CommandQueueBase& c
     ITT_FUNCTION_TASK();
 }
 
+void ParallelRenderCommandListBase::Reset(RenderState& render_state)
+{
+    ITT_FUNCTION_TASK();
+
+    Data::ParallelFor<RenderCommandList::Ptrs::const_iterator, RenderCommandList::Ptr>(m_parallel_comand_lists.begin(), m_parallel_comand_lists.end(),
+        [&render_state](const RenderCommandList::Ptr& sp_render_command_list, Data::Index cl_index)
+        {
+            assert(sp_render_command_list);
+            sp_render_command_list->Reset(render_state);
+        });
+}
+
+void ParallelRenderCommandListBase::Commit(bool present_drawable)
+{
+    ITT_FUNCTION_TASK();
+
+    Data::ParallelFor<RenderCommandList::Ptrs::const_iterator, RenderCommandList::Ptr>(m_parallel_comand_lists.begin(), m_parallel_comand_lists.end(),
+        [present_drawable](const RenderCommandList::Ptr& sp_render_command_list, Data::Index cl_index)
+        {
+            assert(sp_render_command_list);
+            sp_render_command_list->Commit(present_drawable);
+        });
+}
+
+void ParallelRenderCommandListBase::SetParallelCommandListsCount(uint32_t count)
+{
+    ITT_FUNCTION_TASK();
+
+    uint32_t initial_count = static_cast<uint32_t>(m_parallel_comand_lists.size());
+    if (count < initial_count)
+    {
+        m_parallel_comand_lists.resize(count);
+        return;
+    }
+
+    m_parallel_comand_lists.reserve(count);
+    for(uint32_t cl_index = initial_count; cl_index < count; ++cl_index)
+    {
+        m_parallel_comand_lists.emplace_back(RenderCommandList::Create(*this));
+    }
+}
+
 RenderPassBase& ParallelRenderCommandListBase::GetPass()
 {
     ITT_FUNCTION_TASK();
     assert(!!m_sp_pass);
     return static_cast<RenderPassBase&>(*m_sp_pass);
-}
-
-RenderCommandList::Ptrs ParallelRenderCommandListBase::CreateRenderCommandLists(uint32_t count)
-{
-    ITT_FUNCTION_TASK();
-    RenderCommandList::Ptrs render_command_lists(count);
-    for(RenderCommandList::Ptr& sp_render_command_list : render_command_lists)
-    {
-        sp_render_command_list = RenderCommandList::Create(*this);
-    }
-    return render_command_lists;
 }
 
 } // namespace Methane::Graphics

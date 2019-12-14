@@ -46,6 +46,7 @@ RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue, Re
 RenderCommandListBase::RenderCommandListBase(ParallelRenderCommandListBase& parallel_render_command_list)
     : CommandListBase(static_cast<CommandQueueBase&>(parallel_render_command_list.GetCommandQueue()))
     , m_sp_pass(static_cast<RenderPassBase&>(parallel_render_command_list.GetPass()).GetPtr())
+    , m_wp_parallel_render_command_list(std::static_pointer_cast<ParallelRenderCommandListBase>(parallel_render_command_list.GetPtr()))
 {
     ITT_FUNCTION_TASK();
 }

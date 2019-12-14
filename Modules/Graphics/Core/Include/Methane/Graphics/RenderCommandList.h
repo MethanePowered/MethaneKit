@@ -35,8 +35,9 @@ struct ParallelRenderCommandList;
 
 struct RenderCommandList : virtual CommandList
 {
-    using Ptr = std::shared_ptr<RenderCommandList>;
-    using Ptrs = std::vector<Ptr>;
+    using Ptr       = std::shared_ptr<RenderCommandList>;
+    using Ptrs      = std::vector<Ptr>;
+    using ConstPtrs = std::vector<const Ptr>;
 
     enum class Primitive
     {
