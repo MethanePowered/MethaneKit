@@ -22,6 +22,7 @@ DirectX 12 implementation of the render command list interface.
 ******************************************************************************/
 
 #include "RenderCommandListDX.h"
+#include "ParallelRenderCommandListDX.h"
 #include "RenderStateDX.h"
 #include "RenderPassDX.h"
 #include "CommandQueueDX.h"
@@ -64,8 +65,27 @@ RenderCommandList::Ptr RenderCommandList::Create(CommandQueue& cmd_queue, Render
     return std::make_shared<RenderCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue), static_cast<RenderPassBase&>(render_pass));
 }
 
+RenderCommandList::Ptr RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
+{
+    ITT_FUNCTION_TASK();
+    return std::make_shared<RenderCommandListDX>(static_cast<ParallelRenderCommandListBase&>(parallel_render_command_list));
+}
+
 RenderCommandListDX::RenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass)
     : RenderCommandListBase(cmd_buffer, render_pass)
+{
+    ITT_FUNCTION_TASK();
+    Initialize();
+}
+
+RenderCommandListDX::RenderCommandListDX(ParallelRenderCommandListBase& parallel_render_command_list)
+    : RenderCommandListBase(parallel_render_command_list)
+{
+    ITT_FUNCTION_TASK();
+    Initialize();
+}
+
+void RenderCommandListDX::Initialize()
 {
     ITT_FUNCTION_TASK();
 

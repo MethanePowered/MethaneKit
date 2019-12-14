@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/RenderCommandListDX.h
+FILE: Methane/Graphics/DirectX12/ParallelRenderCommandListDX.h
 DirectX 12 implementation of the render command list interface.
 
 ******************************************************************************/
@@ -25,7 +25,7 @@ DirectX 12 implementation of the render command list interface.
 
 #include "RenderPassDX.h"
 
-#include <Methane/Graphics/RenderCommandListBase.h>
+#include <Methane/Graphics/ParallelRenderCommandListBase.h>
 
 #include <wrl.h>
 #include <d3d12.h>
@@ -38,45 +38,28 @@ namespace wrl = Microsoft::WRL;
 class CommandQueueDX;
 class RenderPassDX;
 
-class RenderCommandListDX final : public RenderCommandListBase
+class ParallelRenderCommandListDX final : public ParallelRenderCommandListBase
 {
 public:
-    RenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass);
-    RenderCommandListDX(ParallelRenderCommandListBase& parallel_render_command_list);
+    ParallelRenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass);
+
+    // ParallelRenderCommandList interface
+    void Reset(RenderState& render_state) override;
 
     // CommandList interface
-    void PushDebugGroup(const std::string& name) override;
-    void PopDebugGroup() override;
     void Commit(bool present_drawable) override;
 
     // CommandListBase interface
-    void SetResourceBarriers(const ResourceBase::Barriers& resource_barriers) override;
     void Execute(uint32_t frame_index) override;
-
-    // RenderCommandList interface
-    void Reset(RenderState& render_state, const std::string& debug_group) override;
-    void SetVertexBuffers(const Buffer::Refs& vertex_buffers) override;
-    void DrawIndexed(Primitive primitive, Buffer& index_buffer,
-                     uint32_t index_count, uint32_t start_index, uint32_t start_vertex, 
-                     uint32_t instance_count, uint32_t start_instance) override;
-    void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
-              uint32_t instance_count, uint32_t start_instance) override;
 
     // Object interface
     void SetName(const std::string& name) override;
 
-    wrl::ComPtr<ID3D12GraphicsCommandList>&  GetNativeCommandList()  { return m_cp_command_list; }
-    wrl::ComPtr<ID3D12GraphicsCommandList4>& GetNativeCommandList4() { return m_cp_command_list_4; }
-
 protected:
-    void Initialize();
-
     CommandQueueDX& GetCommandQueueDX();
     RenderPassDX&   GetPassDX();
 
     wrl::ComPtr<ID3D12CommandAllocator>       m_cp_command_allocator;
-    wrl::ComPtr<ID3D12GraphicsCommandList>    m_cp_command_list;
-    wrl::ComPtr<ID3D12GraphicsCommandList4>   m_cp_command_list_4;    // extended interface for the same command list (may be unavailable on older Windows)
     bool                                      m_is_committed = false;
 };
 

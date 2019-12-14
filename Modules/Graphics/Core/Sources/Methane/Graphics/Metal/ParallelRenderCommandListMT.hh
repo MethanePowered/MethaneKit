@@ -42,7 +42,7 @@ public:
     ParallelRenderCommandListMT(CommandQueueBase& command_queue, RenderPassBase& render_pass);
 
     // ParallelRenderCommandList interface
-    void Reset() override;
+    void Reset(RenderState& render_state) override;
 
     // CommandList interface
     void Commit(bool present_drawable) override;

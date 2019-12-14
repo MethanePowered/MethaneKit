@@ -65,7 +65,7 @@ void ParallelRenderCommandListMT::SetName(const std::string& name)
     }
 }
 
-void ParallelRenderCommandListMT::Reset()
+void ParallelRenderCommandListMT::Reset(RenderState& render_state)
 {
     ITT_FUNCTION_TASK();
     if (m_mtl_parallel_render_encoder != nil)
@@ -91,7 +91,7 @@ void ParallelRenderCommandListMT::Reset()
     assert(m_mtl_parallel_render_encoder != nil);
     m_mtl_parallel_render_encoder.label = MacOS::ConvertToNSType<std::string, NSString*>(GetName());
 
-    ParallelRenderCommandListBase::Reset();
+    ParallelRenderCommandListBase::Reset(render_state);
 }
 
 void ParallelRenderCommandListMT::Commit(bool present_drawable)
