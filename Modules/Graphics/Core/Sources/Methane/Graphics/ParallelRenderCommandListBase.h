@@ -45,18 +45,23 @@ public:
 
     ParallelRenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass);
 
+    // ParallelRenderCommandList interface
+    void Reset(RenderState& render_state) override;
+    void SetParallelCommandListsCount(uint32_t count) override;
+    const RenderCommandList::Ptrs& GetParallelCommandLists() const override { return m_parallel_comand_lists; }
+
+    // CommandListBase interface
+    void SetResourceBarriers(const ResourceBase::Barriers&) override { }
+    void Execute(uint32_t frame_index) override;
+    void Complete(uint32_t frame_index) override;
+
     // CommandList interface
     void PushDebugGroup(const std::string& name) override   { throw std::logic_error("Not available for parallel render command list."); }
     void PopDebugGroup() override                           { throw std::logic_error("Not available for parallel render command list."); }
     void Commit(bool present_drawable) override;
 
-    // CommandListBase interface
-    void SetResourceBarriers(const ResourceBase::Barriers&) override { }
-
-    // ParallelRenderCommandList interface
-    void Reset(RenderState& render_state) override;
-    void SetParallelCommandListsCount(uint32_t count) override;
-    const RenderCommandList::Ptrs& GetParallelCommandLists() const override { return m_parallel_comand_lists; }
+    // Object interface
+    void SetName(const std::string& name) override;
 
     RenderPassBase& GetPass();
 

@@ -30,9 +30,11 @@ Mesh buffers with texture extension structure.
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/Program.h>
 #include <Methane/Graphics/RenderCommandList.h>
+#include <Methane/Graphics/ParallelRenderCommandList.h>
 #include <Methane/Graphics/Mesh.h>
 #include <Methane/Data/AlignedAllocator.hpp>
 #include <Methane/Data/Instrumentation.h>
+#include <Methane/Data/Parallel.hpp>
 
 #include <memory>
 #include <string>
@@ -113,14 +115,14 @@ public:
                              instance_count, start_instance);
     }
 
-    void Draw(RenderCommandList& cmd_list, const MeshBufferBindings::ResourceBindingsArray& instance_resource_bindings)
+    void Draw(RenderCommandList& cmd_list, const MeshBufferBindings::ResourceBindingsArray& instance_resource_bindings, uint32_t first_instance_index = 0)
     {
         ITT_FUNCTION_TASK();
 
         cmd_list.SetVertexBuffers({ GetVertexBuffer() });
 
         Buffer& index_buffer = GetIndexBuffer();
-        uint32_t instance_index = 0;
+        uint32_t instance_index = first_instance_index;
         for (const Program::ResourceBindings::Ptr& sp_resource_bindings : instance_resource_bindings)
         {
             if (!sp_resource_bindings)
@@ -139,6 +141,31 @@ public:
 
             instance_index++;
         }
+    }
+
+    void Draw(ParallelRenderCommandList& parallel_cmd_list, const MeshBufferBindings::ResourceBindingsArray& instance_resource_bindings)
+    {
+        ITT_FUNCTION_TASK();
+
+        const RenderCommandList::Ptrs& render_cmd_lists = parallel_cmd_list.GetParallelCommandLists();
+        const uint32_t instances_count_per_command_list = static_cast<uint32_t>(Data::DivCeilUnsigned(instance_resource_bindings.size(), render_cmd_lists.size()));
+
+        Data::ParallelFor<RenderCommandList::Ptrs::const_iterator, RenderCommandList::Ptr>(render_cmd_lists.begin(), render_cmd_lists.end(),
+            [this, &instance_resource_bindings, &instances_count_per_command_list](const RenderCommandList::Ptr& sp_render_command_list, Data::Index cl_index)
+            {
+                const uint32_t begin_instance_index = instances_count_per_command_list * cl_index;
+                const uint32_t end_instance_index   = std::min(begin_instance_index + instances_count_per_command_list,
+                                                               static_cast<uint32_t>(instance_resource_bindings.size()));
+
+                // TODO: eliminate copying of bindings array slice, pass iterators range instead
+                const MeshBufferBindings::ResourceBindingsArray instance_resource_bindings_slice(
+                    instance_resource_bindings.begin() + begin_instance_index,
+                    instance_resource_bindings.begin() + end_instance_index
+                );
+
+                assert(!!sp_render_command_list);
+                Draw(*sp_render_command_list, instance_resource_bindings_slice, begin_instance_index);
+            });
     }
 
     const std::string&  GetMeshName() const      { return m_mesh_name; }

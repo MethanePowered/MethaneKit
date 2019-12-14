@@ -39,6 +39,8 @@ class RenderPassMT;
 class ParallelRenderCommandListMT final : public ParallelRenderCommandListBase
 {
 public:
+    using Ptr = std::shared_ptr<ParallelRenderCommandListMT>;
+
     ParallelRenderCommandListMT(CommandQueueBase& command_queue, RenderPassBase& render_pass);
 
     // ParallelRenderCommandList interface
@@ -60,8 +62,8 @@ protected:
     CommandQueueMT& GetCommandQueueMT() noexcept;
     RenderPassMT&   GetPassMT();
 
-    id<MTLCommandBuffer>                m_mtl_cmd_buffer;
-    id<MTLParallelRenderCommandEncoder> m_mtl_parallel_render_encoder;
+    id<MTLCommandBuffer>                m_mtl_cmd_buffer = nil;
+    id<MTLParallelRenderCommandEncoder> m_mtl_parallel_render_encoder = nil;
 };
 
 } // namespace Methane::Graphics

@@ -40,8 +40,6 @@ ParallelRenderCommandList::Ptr ParallelRenderCommandList::Create(CommandQueue& c
 
 ParallelRenderCommandListMT::ParallelRenderCommandListMT(CommandQueueBase& command_queue, RenderPassBase& render_pass)
     : ParallelRenderCommandListBase(command_queue, render_pass)
-    , m_mtl_cmd_buffer(nil)
-    , m_mtl_parallel_render_encoder(nil)
 {
     ITT_FUNCTION_TASK();
 }

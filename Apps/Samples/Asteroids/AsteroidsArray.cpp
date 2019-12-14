@@ -350,11 +350,26 @@ void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, gfx::MeshBufferBindi
     assert(buffer_bindings.sp_uniforms_buffer);
     assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= uniforms_buffer_size);
     buffer_bindings.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&GetFinalPassUniforms()), uniforms_buffer_size } });
-    
+
     cmd_list.Reset(*m_sp_render_state, "Asteroids rendering");
-    
+
     assert(buffer_bindings.resource_bindings_per_instance.size() == m_settings.instance_count);
     BaseBuffers::Draw(cmd_list, buffer_bindings.resource_bindings_per_instance);
+}
+
+void AsteroidsArray::Draw(gfx::ParallelRenderCommandList& parallel_cmd_list, gfx::MeshBufferBindings& buffer_bindings)
+{
+    ITT_FUNCTION_TASK();
+
+    const Data::Size uniforms_buffer_size = GetUniformsBufferSize();
+    assert(buffer_bindings.sp_uniforms_buffer);
+    assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= uniforms_buffer_size);
+    buffer_bindings.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&GetFinalPassUniforms()), uniforms_buffer_size } });
+
+    parallel_cmd_list.Reset(*m_sp_render_state);
+
+    assert(buffer_bindings.resource_bindings_per_instance.size() == m_settings.instance_count);
+    BaseBuffers::Draw(parallel_cmd_list, buffer_bindings.resource_bindings_per_instance);
 }
 
 uint32_t AsteroidsArray::GetSubsetByInstanceIndex(uint32_t instance_index) const

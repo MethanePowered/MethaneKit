@@ -27,9 +27,15 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 #include <Methane/Data/TimeAnimation.h>
 #include <Methane/Data/Instrumentation.h>
 
-#include <cml/mathlib/mathlib.h>
 #include <cassert>
 #include <memory>
+#include <thread>
+
+#ifdef __APPLE__
+#define PARALLEL_RENDERING_ENABLED 1
+#else
+#define PARALLEL_RENDERING_ENABLED 0
+#endif
 
 namespace Methane::Samples
 {
@@ -170,6 +176,17 @@ void AsteroidsApp::Init()
         frame.sp_cmd_list = gfx::RenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_screen_pass);
         frame.sp_cmd_list->SetName(IndexedName("Scene Rendering", frame.index));
 
+#if PARALLEL_RENDERING_ENABLED
+        gfx::RenderPass::Settings asteroids_render_pass_settings = frame.sp_screen_pass->GetSettings();
+        asteroids_render_pass_settings.color_attachments[0].load_action = gfx::RenderPass::Attachment::LoadAction::Load;
+        asteroids_render_pass_settings.depth_attachment.load_action     = gfx::RenderPass::Attachment::LoadAction::Load;
+        frame.sp_asteroids_render_pass = gfx::RenderPass::Create(*m_sp_context, asteroids_render_pass_settings);
+
+        frame.sp_parallel_cmd_list = gfx::ParallelRenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_asteroids_render_pass);
+        frame.sp_parallel_cmd_list->SetParallelCommandListsCount(std::thread::hardware_concurrency());
+        frame.sp_parallel_cmd_list->SetName(IndexedName("Parallel Asteroids Rendering", frame.index));
+#endif
+
         // Create uniforms buffer with volatile parameters for the whole scene rendering
         frame.sp_scene_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, scene_uniforms_data_size);
         frame.sp_scene_uniforms_buffer->SetName(IndexedName("Scene Uniforms Buffer", frame.index));
@@ -267,13 +284,24 @@ void AsteroidsApp::Render()
 
     // Asteroids rendering
     assert(!!m_sp_asteroids_array);
-    m_sp_asteroids_array->Draw(*frame.sp_cmd_list, frame.asteroids);
 
+#if PARALLEL_RENDERING_ENABLED
+    frame.sp_cmd_list->Commit(false);
+
+    assert(!!frame.sp_parallel_cmd_list);
+    m_sp_asteroids_array->Draw(*frame.sp_parallel_cmd_list, frame.asteroids);
+    frame.sp_parallel_cmd_list->Commit(true);
+#else
+    m_sp_asteroids_array->Draw(*frame.sp_cmd_list, frame.asteroids);
     frame.sp_cmd_list->Commit(true);
+#endif
 
     // Execute rendering commands and present frame to screen
     m_sp_context->GetRenderCommandQueue().Execute({
         *frame.sp_cmd_list,
+#if PARALLEL_RENDERING_ENABLED
+        *frame.sp_parallel_cmd_list,
+#endif
     });
     m_sp_context->Present();
 

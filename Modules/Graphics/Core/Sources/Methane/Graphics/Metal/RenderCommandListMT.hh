@@ -81,9 +81,9 @@ protected:
     CommandQueueMT& GetCommandQueueMT() noexcept;
     RenderPassMT&   GetPassMT();
 
-    id<MTLCommandBuffer>        m_mtl_cmd_buffer;
-    id<MTLRenderCommandEncoder> m_mtl_render_encoder;
-    id<MTLBlitCommandEncoder>   m_mtl_blit_encoder;
+    id<MTLCommandBuffer>        m_mtl_cmd_buffer = nil;
+    id<MTLRenderCommandEncoder> m_mtl_render_encoder = nil;
+    id<MTLBlitCommandEncoder>   m_mtl_blit_encoder = nil;
 };
 
 } // namespace Methane::Graphics

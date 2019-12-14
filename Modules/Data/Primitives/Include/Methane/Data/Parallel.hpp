@@ -96,4 +96,19 @@ void ParallelFor(IndexType start_index, IndexType count, std::function<void(Inde
     };
 }
 
+template<typename T, typename = std::enable_if_t<std::is_unsigned<T>::value>>
+T DivCeilUnsigned(T numerator, T denominator)
+{
+    return numerator > 0 ? (1 + ((numerator - 1) / denominator)): 0;
+}
+
+template<typename T, typename = std::enable_if_t<std::is_signed<T>::value>>
+T DivCeilSigned(T numerator, T denominator)
+{
+    std::div_t res = std::div(static_cast<int32_t>(numerator), static_cast<int32_t>(denominator));
+    return res.rem ? (res.quot >= 0 ? (res.quot + 1)
+                                    : (res.quot - 1))
+                   : res.quot;
+}
+
 } // namespace Methane::Data

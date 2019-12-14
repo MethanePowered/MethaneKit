@@ -80,8 +80,10 @@ protected:
         void Reset();
     };
 
+    const bool            m_is_parallel;
     const RenderPass::Ptr m_sp_pass;
     DrawingState          m_draw_state;
+
     std::weak_ptr<ParallelRenderCommandListBase> m_wp_parallel_render_command_list;
 };
 
