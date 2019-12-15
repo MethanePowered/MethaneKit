@@ -97,10 +97,8 @@ void RenderCommandListDX::Initialize()
     m_cp_command_list.As(&m_cp_command_list_4);
 }
 
-void RenderCommandListDX::Reset(RenderState& render_state, const std::string& debug_group)
+void RenderCommandListDX::ResetNative(RenderState& render_state)
 {
-    ITT_FUNCTION_TASK();
-
     assert(m_cp_command_list);
     RenderStateDX& dx_state = static_cast<RenderStateDX&>(render_state);
 
@@ -111,11 +109,23 @@ void RenderCommandListDX::Reset(RenderState& render_state, const std::string& de
         ThrowIfFailed(m_cp_command_allocator->Reset());
         ThrowIfFailed(m_cp_command_list->Reset(m_cp_command_allocator.Get(), dx_state.GetNativePipelineState().Get()));
     }
+}
+
+void RenderCommandListDX::Reset(RenderState& render_state, const std::string& debug_group)
+{
+    ITT_FUNCTION_TASK();
+
+    ResetNative(render_state);
 
     RenderCommandListBase::Reset(render_state, debug_group);
 
     RenderPassDX& pass_dx = GetPassDX();
-    if (!pass_dx.IsBegun())
+    if (m_is_parallel)
+    {
+        pass_dx.SetNativeDescriptorHeaps(*this);
+        pass_dx.SetNativeRenderTargets(*this);
+    }
+    else if (!pass_dx.IsBegun())
     {
         pass_dx.Begin(*this);
     }
@@ -234,10 +244,13 @@ void RenderCommandListDX::Commit(bool present_drawable)
 {
     ITT_FUNCTION_TASK();
 
-    RenderPassDX& pass_dx = GetPassDX();
-    if (pass_dx.IsBegun())
+    if (!m_is_parallel)
     {
-        pass_dx.End(*this);
+        RenderPassDX& pass_dx = GetPassDX();
+        if (pass_dx.IsBegun())
+        {
+            pass_dx.End(*this);
+        }
     }
 
     RenderCommandListBase::Commit(present_drawable);

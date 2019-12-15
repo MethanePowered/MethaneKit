@@ -44,7 +44,14 @@ struct CommandList : virtual Object
     using Ref  = std::reference_wrapper<CommandList>;
     using Refs = std::vector<Ref>;
 
+    enum class Type : uint32_t
+    {
+        RenderCommandList = 0u,
+        ParallelRenderCommandList,
+    };
+
     // CommandList interface
+    virtual Type GetType() const = 0;
     virtual void PushDebugGroup(const std::string& name) = 0;
     virtual void PopDebugGroup() = 0;
     virtual void SetResourceBindings(Program::ResourceBindings& resource_bindings) = 0;

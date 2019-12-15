@@ -53,6 +53,8 @@ public:
     void SetResourceBarriers(const ResourceBase::Barriers& resource_barriers) override;
     void Execute(uint32_t frame_index) override;
 
+    void ResetNative(RenderState& render_state);
+
     // RenderCommandList interface
     void Reset(RenderState& render_state, const std::string& debug_group) override;
     void SetVertexBuffers(const Buffer::Refs& vertex_buffers) override;
@@ -65,8 +67,11 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-    wrl::ComPtr<ID3D12GraphicsCommandList>&  GetNativeCommandList()  { return m_cp_command_list; }
-    wrl::ComPtr<ID3D12GraphicsCommandList4>& GetNativeCommandList4() { return m_cp_command_list_4; }
+    const wrl::ComPtr<ID3D12GraphicsCommandList>& GetNativeCommandList() const   { return m_cp_command_list; }
+    wrl::ComPtr<ID3D12GraphicsCommandList>&       GetNativeCommandList()         { return m_cp_command_list; }
+
+    const wrl::ComPtr<ID3D12GraphicsCommandList4>& GetNativeCommandList4() const { return m_cp_command_list_4; }
+    wrl::ComPtr<ID3D12GraphicsCommandList4>&       GetNativeCommandList4()       { return m_cp_command_list_4; }
 
 protected:
     void Initialize();

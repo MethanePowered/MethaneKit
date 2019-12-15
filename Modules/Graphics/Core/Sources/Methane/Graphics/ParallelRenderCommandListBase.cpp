@@ -42,7 +42,7 @@ inline std::string GetThreadCommandListName(const std::string& name, uint32_t in
 }
 
 ParallelRenderCommandListBase::ParallelRenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& pass)
-    : CommandListBase(command_queue)
+    : CommandListBase(command_queue, Type::ParallelRenderCommandList)
     , m_sp_pass(pass.GetPtr())
 {
     ITT_FUNCTION_TASK();

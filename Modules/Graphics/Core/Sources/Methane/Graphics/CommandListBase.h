@@ -61,9 +61,10 @@ public:
         Program::ResourceBindings::Ptr sp_resource_bindings;
     };
 
-    CommandListBase(CommandQueueBase& command_queue);
+    CommandListBase(CommandQueueBase& command_queue, Type type);
 
     // CommandList interface
+    Type GetType() const override               { return m_type; }
     void SetResourceBindings(Program::ResourceBindings& resource_bindings) override;
     void Commit(bool present_drawable) override;
     CommandQueue& GetCommandQueue() override;
@@ -97,6 +98,7 @@ private:
 
     using ExecutingOnFrame = std::map<uint32_t, bool>;
 
+    const Type          m_type;
     Ptr                 m_sp_self;
     uint32_t            m_committed_frame_index = 0;
     State               m_state                 = State::Pending;

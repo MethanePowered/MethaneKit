@@ -24,19 +24,14 @@ DirectX 12 implementation of the render command list interface.
 #pragma once
 
 #include "RenderPassDX.h"
+#include "RenderCommandListDX.h"
 
 #include <Methane/Graphics/ParallelRenderCommandListBase.h>
-
-#include <wrl.h>
-#include <d3d12.h>
 
 namespace Methane::Graphics
 {
 
-namespace wrl = Microsoft::WRL;
-
 class CommandQueueDX;
-class RenderPassDX;
 
 class ParallelRenderCommandListDX final : public ParallelRenderCommandListBase
 {
@@ -55,12 +50,15 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
+    using D3D12CommandLists = std::vector<ID3D12CommandList*>;
+    D3D12CommandLists GetNativeCommandLists() const;
+
 protected:
     CommandQueueDX& GetCommandQueueDX();
     RenderPassDX&   GetPassDX();
 
-    wrl::ComPtr<ID3D12CommandAllocator>       m_cp_command_allocator;
-    bool                                      m_is_committed = false;
+    RenderCommandListDX m_begining_command_list;
+    RenderCommandListDX m_ending_command_list;
 };
 
 } // namespace Methane::Graphics

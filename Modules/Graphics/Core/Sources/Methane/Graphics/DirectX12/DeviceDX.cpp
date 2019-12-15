@@ -173,6 +173,7 @@ void SystemDX::RegisterAdapterChangeEvent()
         ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
     }
 
+    assert(!!cp_factory7);
     ThrowIfFailed(cp_factory7->RegisterAdaptersChangedEvent(m_adapter_change_event, &m_adapter_change_registration_cookie));
 }
 
@@ -185,6 +186,7 @@ void SystemDX::UnregisterAdapterChangeEvent()
         !SUCCEEDED(m_cp_factory->QueryInterface(IID_PPV_ARGS(&cp_factory7))))
         return;
 
+    assert(!!cp_factory7);
     ThrowIfFailed(cp_factory7->UnregisterAdaptersChangedEvent(m_adapter_change_registration_cookie));
     m_adapter_change_registration_cookie = 0;
 

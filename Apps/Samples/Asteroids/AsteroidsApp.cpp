@@ -31,11 +31,7 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 #include <memory>
 #include <thread>
 
-#ifdef __APPLE__
 #define PARALLEL_RENDERING_ENABLED 1
-#else
-#define PARALLEL_RENDERING_ENABLED 0
-#endif
 
 namespace Methane::Samples
 {

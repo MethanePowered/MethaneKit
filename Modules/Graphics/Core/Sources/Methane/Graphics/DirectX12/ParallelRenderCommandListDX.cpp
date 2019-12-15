@@ -44,8 +44,14 @@ ParallelRenderCommandList::Ptr ParallelRenderCommandList::Create(CommandQueue& c
 
 ParallelRenderCommandListDX::ParallelRenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass)
     : ParallelRenderCommandListBase(cmd_buffer, render_pass)
+    , m_begining_command_list(cmd_buffer, render_pass)
+    , m_ending_command_list(cmd_buffer, render_pass)
 {
     ITT_FUNCTION_TASK();
+
+    // Native D3D12 render-pass usage is disabled to do the render target setup and clears
+    // in "begin" command list once before parallel rendering
+    GetPassDX().SetNativeRenderPassUsage(false);
 
     const wrl::ComPtr<ID3D12Device>& cp_device = GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice();
     assert(!!cp_device);
@@ -55,14 +61,20 @@ void ParallelRenderCommandListDX::Reset(RenderState& render_state)
 {
     ITT_FUNCTION_TASK();
 
-    ParallelRenderCommandListBase::Reset(render_state);
+    // Render pass is begun in "beginning" command list only,
+    // but it will be ended in the "ending" command list on commit of the parallel CL
+    m_begining_command_list.Reset(render_state, ""); // begins render pass
+    m_ending_command_list.ResetNative(render_state); // only resets native command lists
 
-    // Reset pre-command list
+    ParallelRenderCommandListBase::Reset(render_state);
 }
 
 void ParallelRenderCommandListDX::SetName(const std::string& name)
 {
     ITT_FUNCTION_TASK();
+
+    m_begining_command_list.SetName(name + " [Beginning]");
+    m_ending_command_list.SetName(name + " [Ending]");
 
     ParallelRenderCommandListBase::SetName(name);
 }
@@ -71,9 +83,45 @@ void ParallelRenderCommandListDX::Commit(bool present_drawable)
 {
     ITT_FUNCTION_TASK();
 
-    ParallelRenderCommandListBase::Commit(present_drawable);
+    // Render pass was begun in "beginning" command list,
+    // but it is ended in "ending" command list only
+    m_ending_command_list.Commit(false);    // ends render pass
+    m_begining_command_list.Commit(false);
 
-    m_is_committed = true;
+    ParallelRenderCommandListBase::Commit(present_drawable);
+}
+
+void ParallelRenderCommandListDX::Execute(uint32_t frame_index)
+{
+    ITT_FUNCTION_TASK();
+
+    m_begining_command_list.Execute(frame_index);
+    
+    ParallelRenderCommandListBase::Execute(frame_index);
+
+    m_ending_command_list.Execute(frame_index);
+
+    // NOTE: In DirectX there's no need for tracking command list completion, so it's completed right away
+    CommandListBase::Complete(frame_index);
+}
+
+ParallelRenderCommandListDX::D3D12CommandLists ParallelRenderCommandListDX::GetNativeCommandLists() const
+{
+    ITT_FUNCTION_TASK();
+
+    D3D12CommandLists dx_command_lists;
+    dx_command_lists.reserve(m_parallel_comand_lists.size() + 2); // 2 command lists reserved for beginning and ending
+    dx_command_lists.push_back(m_begining_command_list.GetNativeCommandList().Get());
+
+    for (const RenderCommandList::Ptr& sp_command_list : m_parallel_comand_lists)
+    {
+        assert(!!sp_command_list);
+        RenderCommandListDX& dx_command_list = static_cast<RenderCommandListDX&>(*sp_command_list);
+        dx_command_lists.push_back(dx_command_list.GetNativeCommandList().Get());
+    }
+
+    dx_command_lists.push_back(m_ending_command_list.GetNativeCommandList().Get());
+    return dx_command_lists;
 }
 
 CommandQueueDX& ParallelRenderCommandListDX::GetCommandQueueDX()
@@ -86,16 +134,6 @@ RenderPassDX& ParallelRenderCommandListDX::GetPassDX()
 {
     ITT_FUNCTION_TASK();
     return static_cast<RenderPassDX&>(GetPass());
-}
-
-void ParallelRenderCommandListDX::Execute(uint32_t frame_index)
-{
-    ITT_FUNCTION_TASK();
-    
-    ParallelRenderCommandListBase::Execute(frame_index);
-
-    // NOTE: In DirectX there's no need for tracking command list completion, so it's completed right away
-    Complete(frame_index);
 }
 
 } // namespace Methane::Graphics

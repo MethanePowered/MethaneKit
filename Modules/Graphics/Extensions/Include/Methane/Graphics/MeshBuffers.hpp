@@ -117,17 +117,29 @@ public:
 
     void Draw(RenderCommandList& cmd_list, const MeshBufferBindings::ResourceBindingsArray& instance_resource_bindings, uint32_t first_instance_index = 0)
     {
+        Draw(cmd_list, instance_resource_bindings.begin(), instance_resource_bindings.end(), first_instance_index);
+    }
+
+    void Draw(RenderCommandList& cmd_list,
+              const MeshBufferBindings::ResourceBindingsArray::const_iterator& instance_resource_bindings_begin,
+              const MeshBufferBindings::ResourceBindingsArray::const_iterator& instance_resource_bindings_end,
+              uint32_t first_instance_index = 0)
+    {
         ITT_FUNCTION_TASK();
 
         cmd_list.SetVertexBuffers({ GetVertexBuffer() });
 
         Buffer& index_buffer = GetIndexBuffer();
-        uint32_t instance_index = first_instance_index;
-        for (const Program::ResourceBindings::Ptr& sp_resource_bindings : instance_resource_bindings)
+        for (MeshBufferBindings::ResourceBindingsArray::const_iterator instance_resource_bindings_it = instance_resource_bindings_begin;
+             instance_resource_bindings_it != instance_resource_bindings_end;
+             ++instance_resource_bindings_it)
         {
+            const Program::ResourceBindings::Ptr& sp_resource_bindings = *instance_resource_bindings_it;
+
             if (!sp_resource_bindings)
                 throw std::invalid_argument("Can not set Null resource bindings");
 
+            const uint32_t instance_index = first_instance_index + std::distance(instance_resource_bindings_begin, instance_resource_bindings_it);
             const uint32_t subset_index = GetSubsetByInstanceIndex(instance_index);
             assert(subset_index < m_mesh_subsets.size());
 
@@ -138,8 +150,6 @@ public:
                                  mesh_subset.indices.count, mesh_subset.indices.offset,
                                  mesh_subset.indices_adjusted ? 0 : mesh_subset.vertices.offset,
                                  1, 0);
-
-            instance_index++;
         }
     }
 
@@ -157,14 +167,11 @@ public:
                 const uint32_t end_instance_index   = std::min(begin_instance_index + instances_count_per_command_list,
                                                                static_cast<uint32_t>(instance_resource_bindings.size()));
 
-                // TODO: eliminate copying of bindings array slice, pass iterators range instead
-                const MeshBufferBindings::ResourceBindingsArray instance_resource_bindings_slice(
-                    instance_resource_bindings.begin() + begin_instance_index,
-                    instance_resource_bindings.begin() + end_instance_index
-                );
-
                 assert(!!sp_render_command_list);
-                Draw(*sp_render_command_list, instance_resource_bindings_slice, begin_instance_index);
+                Draw(*sp_render_command_list,
+                     instance_resource_bindings.begin() + begin_instance_index,
+                     instance_resource_bindings.begin() + end_instance_index,
+                     begin_instance_index);
             });
     }
 

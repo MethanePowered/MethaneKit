@@ -47,6 +47,12 @@ public:
     void Begin(RenderCommandListBase& command_list) override;
     void End(RenderCommandListBase& command_list) override;
 
+    // Allows to disable native D3D12 render-pass feature usage,
+    // but enabling does not guarantee that it will be used (it depends on OS version and API availability)
+    void SetNativeRenderPassUsage(bool use_native_render_pass);
+    void SetNativeDescriptorHeaps(RenderCommandListDX& dx_command_list) const;
+    void SetNativeRenderTargets(RenderCommandListDX& dx_command_list);
+
     std::vector<ID3D12DescriptorHeap*>       GetNativeDescriptorHeaps() const;
     std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> GetNativeRenderTargetCPUHandles() const;
     const D3D12_CPU_DESCRIPTOR_HANDLE*       GetNativeDepthStencilCPUHandle();
@@ -96,7 +102,7 @@ private:
     std::optional<D3D12_RENDER_PASS_DEPTH_STENCIL_DESC> m_depth_stencil_desc;
     D3D12_RENDER_PASS_FLAGS                             m_pass_flags = D3D12_RENDER_PASS_FLAG_NONE;
 
-    // Fallback to input assember setup
+    // Fallback to input assembler setup
     std::vector<RTClearInfo>                            m_rt_clear_infos;
     DSClearInfo                                         m_ds_clear_info;
     D3D12_CPU_DESCRIPTOR_HANDLE                         m_depth_stencil_cpu_handle = {};

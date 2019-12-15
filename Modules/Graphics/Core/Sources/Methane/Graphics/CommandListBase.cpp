@@ -48,8 +48,9 @@ std::string CommandListBase::GetStateName(State state)
     return "Undefined";
 }
 
-CommandListBase::CommandListBase(CommandQueueBase& command_queue)
+CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
     : m_sp_command_queue(command_queue.GetPtr())
+    , m_type(type)
 {
     ITT_FUNCTION_TASK();
 }
@@ -78,7 +79,11 @@ void CommandListBase::Commit(bool /*present_drawable*/)
     }
 
     // Keep command list from destruction until it's execution is completed
-    m_sp_self = shared_from_this();
+    // if weak_from_this is expired, the command list was created explicitly, without make_shared
+    if (!weak_from_this().expired())
+    {
+        m_sp_self = shared_from_this();
+    }
 }
 
 void CommandListBase::Execute(uint32_t frame_index)
