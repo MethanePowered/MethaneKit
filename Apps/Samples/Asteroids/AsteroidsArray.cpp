@@ -140,7 +140,7 @@ AsteroidsArray::ContentState::ContentState(const Settings& settings)
     std::uniform_int_distribution<uint32_t> colors_distribution(0, static_cast<uint32_t>(Asteroid::color_schema_size - 1));
     std::uniform_real_distribution<float>   scale_proportion_distribution(0.8f, 1.2f);
     std::uniform_real_distribution<float>   spin_velocity_distribution(-2.f, 2.f);
-    std::uniform_real_distribution<float>   orbit_velocity_distribution(10.f, 30.f);
+    std::uniform_real_distribution<float>   orbit_velocity_distribution(3.f, 10.f);
     std::normal_distribution<float>         orbit_radius_distribution(orbit_radius, 0.6f * disc_radius);
     std::normal_distribution<float>         orbit_height_distribution(0.0f, 0.4f * disc_radius);
 
@@ -306,38 +306,42 @@ void AsteroidsArray::Resize(const gfx::FrameSize &frame_size)
     m_sp_render_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
 }
 
-bool AsteroidsArray::Update(double elapsed_seconds, double delta_seconds)
+bool AsteroidsArray::Update(double /*elapsed_seconds*/, double delta_seconds)
 {
     ITT_FUNCTION_TASK();
 
     gfx::Matrix44f scene_view_matrix, scene_proj_matrix;
     m_settings.view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
 
-    for(Asteroid::Parameters& asteroid_parameters : m_sp_content_state->parameters)
-    {
-        asteroid_parameters.spin_angle_rad  += cml::constants<float>::pi() * asteroid_parameters.spin_speed  * static_cast<float>(delta_seconds);
-        asteroid_parameters.orbit_angle_rad += cml::constants<float>::pi() * asteroid_parameters.orbit_speed * static_cast<float>(delta_seconds);
+    Data::ParallelFor<Parameters::iterator, Asteroid::Parameters>(m_sp_content_state->parameters.begin(), m_sp_content_state->parameters.end(),
+        [&](Asteroid::Parameters& asteroid_parameters, Data::Index)
+        {
+            ITT_FUNCTION_TASK();
 
-        gfx::Matrix44f spin_rotation_matrix;
-        cml::matrix_rotation_axis_angle(spin_rotation_matrix, asteroid_parameters.spin_axis, asteroid_parameters.spin_angle_rad);
+            asteroid_parameters.spin_angle_rad  += cml::constants<float>::pi() * asteroid_parameters.spin_speed  * static_cast<float>(delta_seconds);
+            asteroid_parameters.orbit_angle_rad += cml::constants<float>::pi() * asteroid_parameters.orbit_speed * static_cast<float>(delta_seconds);
 
-        gfx::Matrix44f orbit_rotation_matrix;
-        cml::matrix_rotation_world_y(orbit_rotation_matrix, asteroid_parameters.orbit_angle_rad);
+            gfx::Matrix44f spin_rotation_matrix;
+            cml::matrix_rotation_axis_angle(spin_rotation_matrix, asteroid_parameters.spin_axis, asteroid_parameters.spin_angle_rad);
 
-        gfx::Matrix44f model_matrix = asteroid_parameters.scale_matrix * spin_rotation_matrix * asteroid_parameters.translation_matrix * orbit_rotation_matrix;
+            gfx::Matrix44f orbit_rotation_matrix;
+            cml::matrix_rotation_world_y(orbit_rotation_matrix, asteroid_parameters.orbit_angle_rad);
 
-        SetFinalPassUniforms(
-            AsteroidUniforms
-            {
-                std::move(model_matrix),
-                model_matrix * scene_view_matrix * scene_proj_matrix,
-                asteroid_parameters.colors.deep,
-                asteroid_parameters.colors.shallow,
-                asteroid_parameters.depth_range
-            },
-            asteroid_parameters.index
-        );
-    }
+            gfx::Matrix44f model_matrix = asteroid_parameters.scale_matrix * spin_rotation_matrix * asteroid_parameters.translation_matrix * orbit_rotation_matrix;
+
+            SetFinalPassUniforms(
+                AsteroidUniforms
+                {
+                    std::move(model_matrix),
+                    model_matrix * scene_view_matrix * scene_proj_matrix,
+                    asteroid_parameters.colors.deep,
+                    asteroid_parameters.colors.shallow,
+                    asteroid_parameters.depth_range
+                },
+                asteroid_parameters.index
+            );
+        }
+    );
 
     return true;
 }

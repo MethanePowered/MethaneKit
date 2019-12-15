@@ -74,16 +74,16 @@ AsteroidsApp::AsteroidsApp()
         {                                             // ================
             m_view_camera,                            // - view_camera
             m_scene_scale,                            // - scale
-            2000u,                                    // - instance_count
-            300u,                                     // - unique_mesh_count
+            10000u,                                   // - instance_count
+            700u,                                     // - unique_mesh_count
             3u,                                       // - subdivisions_count
-            10u,                                      // - textures_count
+            30u,                                      // - textures_count
             { 256u, 256u },                           // - texture_dimensions
             1123u,                                    // - random_seed
             13.f,                                     // - orbit_radius_ratio
             4.f,                                      // - disc_radius_ratio
-            0.05f,                                    // - min_asteroid_scale_ratio
-            0.5f,                                     // - max_asteroid_scale_ratio
+            0.03f,                                   // - min_asteroid_scale_ratio
+            0.3f,                                    // - max_asteroid_scale_ratio
         })
 {
     ITT_FUNCTION_TASK();

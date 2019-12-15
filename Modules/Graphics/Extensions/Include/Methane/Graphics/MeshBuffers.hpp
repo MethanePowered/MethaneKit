@@ -139,7 +139,7 @@ public:
             if (!sp_resource_bindings)
                 throw std::invalid_argument("Can not set Null resource bindings");
 
-            const uint32_t instance_index = first_instance_index + std::distance(instance_resource_bindings_begin, instance_resource_bindings_it);
+            const uint32_t instance_index = first_instance_index + static_cast<uint32_t>(std::distance(instance_resource_bindings_begin, instance_resource_bindings_it));
             const uint32_t subset_index = GetSubsetByInstanceIndex(instance_index);
             assert(subset_index < m_mesh_subsets.size());
 
@@ -158,9 +158,9 @@ public:
         ITT_FUNCTION_TASK();
 
         const RenderCommandList::Ptrs& render_cmd_lists = parallel_cmd_list.GetParallelCommandLists();
-        const uint32_t instances_count_per_command_list = static_cast<uint32_t>(Data::DivCeilUnsigned(instance_resource_bindings.size(), render_cmd_lists.size()));
+        const uint32_t instances_count_per_command_list = static_cast<uint32_t>(Data::DivCeil(instance_resource_bindings.size(), render_cmd_lists.size()));
 
-        Data::ParallelFor<RenderCommandList::Ptrs::const_iterator, RenderCommandList::Ptr>(render_cmd_lists.begin(), render_cmd_lists.end(),
+        Data::ParallelFor<RenderCommandList::Ptrs::const_iterator, const RenderCommandList::Ptr>(render_cmd_lists.begin(), render_cmd_lists.end(),
             [this, &instance_resource_bindings, &instances_count_per_command_list](const RenderCommandList::Ptr& sp_render_command_list, Data::Index cl_index)
             {
                 const uint32_t begin_instance_index = instances_count_per_command_list * cl_index;

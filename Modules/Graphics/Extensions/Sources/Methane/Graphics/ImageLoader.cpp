@@ -169,7 +169,7 @@ Texture::Ptr ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
     std::mutex data_mutex;
     std::vector<std::pair<Data::Index, ImageData>> face_images_data;
     face_images_data.reserve(image_paths.size());
-    Data::ParallelFor<CubeFaceResources::const_iterator, std::string>(image_paths.begin(), image_paths.end(),
+    Data::ParallelFor<CubeFaceResources::const_iterator, const std::string>(image_paths.begin(), image_paths.end(),
         [&](const std::string& face_image_path, Data::Index face_index) -> void
         {
             // NOTE:

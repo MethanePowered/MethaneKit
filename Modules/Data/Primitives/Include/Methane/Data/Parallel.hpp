@@ -32,20 +32,69 @@ Data parallel processing primitives.
 namespace Methane::Data
 {
 
-template<typename Iterator,
-         typename Value = typename std::iterator_traits<Iterator>::value_type>
+template<typename T>
+std::enable_if_t<std::is_unsigned<T>::value, T> DivCeil(T numerator, T denominator)
+{
+    return numerator > 0 ? (1 + ((numerator - 1) / denominator)) : 0;
+}
+
+template<typename T>
+std::enable_if_t<std::is_signed<T>::value, T> DivCeil(T numerator, T denominator)
+{
+    std::div_t res = std::div(static_cast<int32_t>(numerator), static_cast<int32_t>(denominator));
+    return res.rem ? (res.quot >= 0 ? (res.quot + 1) : (res.quot - 1))
+                   : res.quot;
+}
+
+template<typename Iterator, typename Value>
+struct IteratorFunction
+{
+    using type = std::function<void(Value&, Index)>;
+};
+
+#if 0 // TODO: fix or remove experimental code
+
+template<typename Iterator, typename = std::void_t<typename std::iterator_traits<Iterator>::iterator_category>>
+struct is_const_iterator
+{
+    static constexpr bool value = std::is_const<typename std::iterator_traits<Iterator>::value_type>::value;
+};
+
+template<typename Iterator>
+struct IteratorFunction<Iterator, std::enable_if_t<is_const_iterator<Iterator>::value, const typename std::iterator_traits<Iterator>::value_type>>;
+
+template<typename Iterator>
+struct IteratorFunction<Iterator, std::enable_if_t<!is_const_iterator<Iterator>::value, typename std::iterator_traits<Iterator>::value_type>>;
+
+#endif
+
+template<typename Iterator, typename Value>
 void ParallelFor(const Iterator& begin_it, const Iterator& end_it,
-                 std::function<void(Value&, Index)>&& body_function)
+                 typename IteratorFunction<Iterator, Value>::type&& body_function)
 {
     ITT_FUNCTION_TASK();
 
-    std::vector<std::future<void>> futures;
-    futures.reserve(std::distance(begin_it, end_it));
+    const size_t items_count     = std::distance(begin_it, end_it);
+    const size_t hw_theads_count = std::thread::hardware_concurrency();
+    const size_t chunk_size      = Data::DivCeil(items_count, hw_theads_count);
 
-    for (Iterator it = begin_it; it != end_it; ++it)
+    std::vector<std::future<void>> futures;
+    futures.reserve(items_count);
+
+    for (size_t chunk_begin_index = 0; chunk_begin_index < items_count; chunk_begin_index += chunk_size)
     {
-        const Index item_index = static_cast<Index>(std::distance(begin_it, it));
-        futures.emplace_back(std::async(std::launch::async, body_function, std::ref(*it), item_index));
+        const size_t chunk_end_index = std::min(chunk_begin_index + chunk_size, items_count);
+        futures.emplace_back(
+            std::async(std::launch::async,
+                [&begin_it, chunk_begin_index, chunk_end_index, body_function]()
+                {
+                    for(size_t index = chunk_begin_index; index < chunk_end_index; ++index)
+                    {
+                        body_function(*(begin_it + index), static_cast<Index>(index));
+                    }
+                }
+            )
+        );
     }
 
     for(const std::future<void>& future : futures)
@@ -54,61 +103,37 @@ void ParallelFor(const Iterator& begin_it, const Iterator& end_it,
     };
 }
 
-template<typename ConstIterator,
-         typename Value = typename std::iterator_traits<ConstIterator>::value_type>
-void ParallelFor(const ConstIterator& begin_it, const ConstIterator& end_it,
-                 std::function<void(const Value&, Index)>&& body_function)
-{
-    ITT_FUNCTION_TASK();
-
-    std::vector<std::future<void>> futures;
-    futures.reserve(std::distance(begin_it, end_it));
-
-    for (ConstIterator it = begin_it; it != end_it; ++it)
-    {
-        const Index item_index = static_cast<Index>(std::distance(begin_it, it));
-        futures.emplace_back(std::async(std::launch::async, body_function, std::cref(*it), item_index));
-    }
-
-    for (const std::future<void>& future : futures)
-    {
-        future.wait();
-    };
-}
-
-template<typename IndexType>
+template<typename IndexType, typename = std::enable_if_t<std::is_integral<IndexType>::value>>
 void ParallelFor(IndexType start_index, IndexType count, std::function<void(IndexType)>&& body_function)
 {
     ITT_FUNCTION_TASK();
 
+    const IndexType hw_theads_count = static_cast<IndexType>(std::thread::hardware_concurrency());
+    const IndexType chunk_size      = Data::DivCeil(count, hw_theads_count);
+
     std::vector<std::future<void>> futures;
     futures.reserve(static_cast<size_t>(count));
 
-    const IndexType end_index = start_index + count;
-    for (IndexType index = start_index; index < end_index; ++index)
+    for (IndexType chunk_begin_index = start_index; chunk_begin_index < count; chunk_begin_index += chunk_size)
     {
-        futures.emplace_back(std::async(std::launch::async, body_function, index));
+        const IndexType chunk_end_index = std::min(chunk_begin_index + chunk_size, start_index + count);
+        futures.emplace_back(
+            std::async(std::launch::async,
+                [chunk_begin_index, chunk_end_index, body_function]()
+                {
+                    for (IndexType index = chunk_begin_index; index < chunk_end_index; ++index)
+                    {
+                        body_function(index);
+                    }
+                }
+            )
+        );
     }
 
     for (const std::future<void>& future : futures)
     {
         future.wait();
     };
-}
-
-template<typename T, typename = std::enable_if_t<std::is_unsigned<T>::value>>
-T DivCeilUnsigned(T numerator, T denominator)
-{
-    return numerator > 0 ? (1 + ((numerator - 1) / denominator)): 0;
-}
-
-template<typename T, typename = std::enable_if_t<std::is_signed<T>::value>>
-T DivCeilSigned(T numerator, T denominator)
-{
-    std::div_t res = std::div(static_cast<int32_t>(numerator), static_cast<int32_t>(denominator));
-    return res.rem ? (res.quot >= 0 ? (res.quot + 1)
-                                    : (res.quot - 1))
-                   : res.quot;
 }
 
 } // namespace Methane::Data
