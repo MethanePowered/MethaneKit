@@ -29,12 +29,38 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 
 #include <cassert>
 #include <memory>
+#include <array>
 #include <thread>
 
 #define PARALLEL_RENDERING_ENABLED 1
 
 namespace Methane::Samples
 {
+
+template<typename ValueT, size_t N>
+using ParamValueByCoresCount = std::array<ValueT, N>;
+
+template<typename ValueT, size_t N>
+inline ValueT GetParamValueByCoresCount(const ParamValueByCoresCount<ValueT, N>& param_values_by_cores_count)
+{
+    const size_t cores_count = std::thread::hardware_concurrency() / 2;
+    return param_values_by_cores_count[std::min(cores_count, N - 1)];
+}
+
+constexpr size_t g_max_cores_count = 11;
+static const ParamValueByCoresCount<uint32_t, g_max_cores_count> g_instaces_count = {
+//  [0]   [1]    [2]    [3]    [4]    [5]    [6]     [7]     [8]     [9]     [10]
+    500u, 1000u, 2000u, 3000u, 4000u, 5000u, 10000u, 15000u, 20000u, 35000u, 50000u,
+};
+static const ParamValueByCoresCount<uint32_t, g_max_cores_count> g_mesh_count = {
+    50u,  70u,   100u,  150u,  200u,  400u,  600u,   800u,   1000u,  1500u,  2000u,
+};
+static const ParamValueByCoresCount<uint32_t, g_max_cores_count> g_textures_count = {
+    5u,   10u,   20u,   30u,   40u,   50u,   60u,    70u,    80u,    90u,    100u
+};
+static const ParamValueByCoresCount<float, g_max_cores_count> g_scale_ratio = {
+    0.6f, 0.55f, 0.5f,  0.45f, 0.4f,  0.35f, 0.3f,   0.25f,  0.2f,   0.15f,  0.1f
+};
 
 // Common application settings
 static const std::string           g_app_help_text  = "Asteroids sample demonstrates parallel rendering of the asteroids field observable with interactive camera.";
@@ -63,27 +89,27 @@ AsteroidsApp::AsteroidsApp()
     , m_view_camera(m_animations, gfx::ActionCamera::Pivot::Aim)
     , m_light_camera(m_view_camera, m_animations, gfx::ActionCamera::Pivot::Aim)
     , m_scene_scale(15.f)
-    , m_scene_constants(                              // Shader constants:
-        {                                             // ================
-            gfx::Color4f(1.f, 1.f, 1.f, 1.f),         // - light_color
-            1.25f,                                    // - light_power
-            0.1f,                                     // - light_ambient_factor
-            4.f                                       // - light_specular_factor
+    , m_scene_constants(                                    // Shader constants:
+        {                                                   // ================
+            gfx::Color4f(1.f, 1.f, 1.f, 1.f),               // - light_color
+            1.25f,                                          // - light_power
+            0.1f,                                           // - light_ambient_factor
+            4.f                                             // - light_specular_factor
         })
-    , m_asteroids_array_settings(                     // Asteroids array settings:
-        {                                             // ================
-            m_view_camera,                            // - view_camera
-            m_scene_scale,                            // - scale
-            10000u,                                   // - instance_count
-            700u,                                     // - unique_mesh_count
-            3u,                                       // - subdivisions_count
-            30u,                                      // - textures_count
-            { 256u, 256u },                           // - texture_dimensions
-            1123u,                                    // - random_seed
-            13.f,                                     // - orbit_radius_ratio
-            4.f,                                      // - disc_radius_ratio
-            0.03f,                                   // - min_asteroid_scale_ratio
-            0.3f,                                    // - max_asteroid_scale_ratio
+    , m_asteroids_array_settings(                           // Asteroids array settings:
+        {                                                   // ================
+            m_view_camera,                                  // - view_camera
+            m_scene_scale,                                  // - scale
+            GetParamValueByCoresCount(g_instaces_count),    // - instance_count
+            GetParamValueByCoresCount(g_mesh_count),        // - unique_mesh_count
+            3u,                                             // - subdivisions_count
+            GetParamValueByCoresCount(g_textures_count),    // - textures_count
+            { 256u, 256u },                                 // - texture_dimensions
+            1123u,                                          // - random_seed
+            13.f,                                           // - orbit_radius_ratio
+        4.f,                                                // - disc_radius_ratio
+            GetParamValueByCoresCount(g_scale_ratio) / 10.f,// - min_asteroid_scale_ratio
+            GetParamValueByCoresCount(g_scale_ratio),       // - max_asteroid_scale_ratio
         })
 {
     ITT_FUNCTION_TASK();
