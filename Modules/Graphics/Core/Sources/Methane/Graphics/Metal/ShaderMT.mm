@@ -59,6 +59,7 @@ static std::string GetMetalArgumentTypeName(MTLArgumentType mtl_arg_type) noexce
     return "Unknown";
 }
 
+#ifndef NDEBUG
 static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access) noexcept
 {
     ITT_FUNCTION_TASK();
@@ -71,7 +72,8 @@ static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access) 
     }
     return "Unknown";
 }
-
+#endif
+    
 Shader::ResourceBinding::Ptr Shader::ResourceBinding::CreateCopy(const ResourceBinding& other_resource_binging)
 {
     ITT_FUNCTION_TASK();
