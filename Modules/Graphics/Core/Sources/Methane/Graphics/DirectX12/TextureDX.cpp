@@ -155,11 +155,12 @@ void DepthStencilBufferTextureDX::Initialize(const std::optional<DepthStencil>& 
         tex_desc.Flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
     }
 
+    const DXGI_FORMAT view_write_format = TypeConverterDX::DataFormatToDXGI(m_settings.pixel_format, TypeConverterDX::ResourceFormatType::ViewWrite);
+
     if (clear_depth_stencil)
     {
         // Performance tip: Tell the runtime at resource creation the desired clear value
-        const DXGI_FORMAT view_write_format = TypeConverterDX::DataFormatToDXGI(m_settings.pixel_format, TypeConverterDX::ResourceFormatType::ViewWrite);
-        CD3DX12_CLEAR_VALUE clear_value(view_write_format, depth_clear_value, stencil_clear_value);
+        CD3DX12_CLEAR_VALUE clear_value(view_write_format, clear_depth_stencil->first, clear_depth_stencil->second);
         InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_DEPTH_WRITE, &clear_value);
     }
     else
