@@ -151,22 +151,28 @@ public:
                 {
                     RenderPass::ColorAttachment(
                         {
-                            frame.sp_screen_texture,
-                            0, 0, 0,
-                            RenderPass::Attachment::LoadAction::Clear,
+                            frame.sp_screen_texture, 0, 0, 0,
+                            context_settings.clear_color.has_value()
+                                ? RenderPass::Attachment::LoadAction::Clear
+                                : RenderPass::Attachment::LoadAction::DontCare,
                             RenderPass::Attachment::StoreAction::Store,
                         },
                         context_settings.clear_color
+                            ? context_settings.clear_color.value()
+                            : Color4f()
                     )
                 },
                 RenderPass::DepthAttachment(
                     {
-                        m_sp_depth_texture,
-                        0, 0, 0,
-                        RenderPass::Attachment::LoadAction::Clear,
+                        m_sp_depth_texture, 0, 0, 0,
+                        context_settings.clear_depth_stencil.has_value()
+                            ? RenderPass::Attachment::LoadAction::Clear
+                            : RenderPass::Attachment::LoadAction::DontCare,
                         RenderPass::Attachment::StoreAction::DontCare,
                     },
-                    context_settings.clear_depth
+                    context_settings.clear_depth_stencil.has_value()
+                        ? context_settings.clear_depth_stencil->first
+                        : 1.f
                 ),
                 RenderPass::StencilAttachment(),
                 m_screen_pass_access

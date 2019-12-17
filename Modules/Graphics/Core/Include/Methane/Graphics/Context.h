@@ -31,6 +31,7 @@ provides basic multi-frame rendering synchronization and frame presenting APIs.
 #include <Methane/Platform/AppView.h>
 
 #include <memory>
+#include <optional>
 
 namespace Methane::Graphics
 {
@@ -46,16 +47,15 @@ struct Context : virtual Object
 
     struct Settings
     {
-        FrameSize   frame_size;
-        PixelFormat color_format            = PixelFormat::BGRA8Unorm;
-        PixelFormat depth_stencil_format    = PixelFormat::Unknown;
-        Color4f     clear_color;
-        Depth       clear_depth             = 1.f;
-        Stencil     clear_stencil           = 0;
-        uint32_t    frame_buffers_count     = 3;
-        bool        vsync_enabled           = true;
-        bool        is_full_screen          = false;
-        uint32_t    unsync_max_fps          = 1000; // MacOS only
+        FrameSize                   frame_size;
+        PixelFormat                 color_format            = PixelFormat::BGRA8Unorm;
+        PixelFormat                 depth_stencil_format    = PixelFormat::Unknown;
+        std::optional<Color4f>      clear_color;
+        std::optional<DepthStencil> clear_depth_stencil;
+        uint32_t                    frame_buffers_count     = 3;
+        bool                        vsync_enabled           = true;
+        bool                        is_full_screen          = false;
+        uint32_t                    unsync_max_fps          = 1000; // MacOS only
     };
 
     enum class WaitFor

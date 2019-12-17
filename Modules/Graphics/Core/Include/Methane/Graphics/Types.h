@@ -170,6 +170,7 @@ public:
 
 using Depth = float;
 using Stencil = uint8_t;
+using DepthStencil = std::pair<Depth, Stencil>;
 
 enum class PixelFormat
 {

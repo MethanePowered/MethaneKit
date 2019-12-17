@@ -96,7 +96,7 @@ protected:
 
 using RenderTargetTextureDX         = TextureDX<>;
 using FrameBufferTextureDX          = TextureDX<uint32_t /* frame_buffer_index */>;
-using DepthStencilBufferTextureDX   = TextureDX<Depth /*depth_clear_value*/, Stencil /*stencil_clear_value*/>;
+using DepthStencilBufferTextureDX   = TextureDX<const std::optional<DepthStencil>&>;
 using ImageTextureDX                = TextureDX<ImageTextureArg>;
 
 } // namespace Methane::Graphics

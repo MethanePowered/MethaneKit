@@ -75,10 +75,9 @@ static const GraphicsApp::Settings  g_app_settings  = // Application settings:
         gfx::FrameSize(),                             // - frame_size
         gfx::PixelFormat::BGRA8Unorm,                 // - color_format
         gfx::PixelFormat::Depth32Float,               // - depth_stencil_format
-        gfx::Color4f(0.0f, 0.0f, 0.0f, 1.0f),         // - clear_color
-        0.f,                                          // - clear_depth
-        0,                                            // - clear_stencil
-        3,                                            // - frame_buffers_count
+        { /* color clearing disabled */ },            // - clear_color
+        gfx::DepthStencil{ 0.f, 0u },                 // - clear_depth_stencil
+        3u,                                           // - frame_buffers_count
         true,                                         // - vsync_enabled
     },                                                //
     true                                              // show_hud_in_window_title
@@ -310,6 +309,8 @@ void AsteroidsApp::Render()
     gfx::RenderCommandList& render_cmd_list = *frame.sp_cmd_list;
     gfx::CommandList&       commit_cmd_list = *frame.sp_cmd_list;
 #endif
+    
+    render_cmd_list.PopDebugGroup();
     
     // Planet rendering
     assert(!!m_sp_planet);

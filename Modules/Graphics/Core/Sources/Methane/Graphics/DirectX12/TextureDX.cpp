@@ -63,7 +63,7 @@ Texture::Ptr Texture::CreateRenderTarget(Context& context, const Settings& setti
     switch (settings.type)
     {
     case Texture::Type::FrameBuffer:        throw std::logic_error("Frame buffer texture must be created with static method Texture::CreateFrameBuffer.");
-    case Texture::Type::DepthStencilBuffer: return std::make_shared<DepthStencilBufferTextureDX>(static_cast<ContextBase&>(context), settings, descriptor_by_usage, context.GetSettings().clear_depth, context.GetSettings().clear_stencil);
+    case Texture::Type::DepthStencilBuffer: return std::make_shared<DepthStencilBufferTextureDX>(static_cast<ContextBase&>(context), settings, descriptor_by_usage, context.GetSettings().clear_depth_stencil);
     default:                                return std::make_shared<RenderTargetTextureDX>(static_cast<ContextBase&>(context), settings, descriptor_by_usage);
     }
 }
@@ -83,7 +83,7 @@ Texture::Ptr Texture::CreateDepthStencilBuffer(Context& context, const Descripto
     
     const Context::Settings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::DepthStencilBuffer(context_settings.frame_size, context_settings.depth_stencil_format);
-    return std::make_shared<DepthStencilBufferTextureDX>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage, context_settings.clear_depth, context_settings.clear_stencil);
+    return std::make_shared<DepthStencilBufferTextureDX>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage, context_settings.clear_depth_stencil);
 }
 
 Texture::Ptr Texture::CreateImage(Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
@@ -135,7 +135,7 @@ void FrameBufferTextureDX::Initialize(uint32_t frame_buffer_index)
 }
 
 template<>
-void DepthStencilBufferTextureDX::Initialize(Depth depth_clear_value, Stencil stencil_clear_value)
+void DepthStencilBufferTextureDX::Initialize(const std::optional<DepthStencil>& clear_depth_stencil)
 {
     ITT_FUNCTION_TASK();
 
@@ -155,10 +155,17 @@ void DepthStencilBufferTextureDX::Initialize(Depth depth_clear_value, Stencil st
         tex_desc.Flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
     }
 
-    // Performance tip: Tell the runtime at resource creation the desired clear value
-    const DXGI_FORMAT view_write_format = TypeConverterDX::DataFormatToDXGI(m_settings.pixel_format, TypeConverterDX::ResourceFormatType::ViewWrite);
-    CD3DX12_CLEAR_VALUE clear_value(view_write_format, depth_clear_value, stencil_clear_value);
-    InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_DEPTH_WRITE, &clear_value);
+    if (clear_depth_stencil)
+    {
+        // Performance tip: Tell the runtime at resource creation the desired clear value
+        const DXGI_FORMAT view_write_format = TypeConverterDX::DataFormatToDXGI(m_settings.pixel_format, TypeConverterDX::ResourceFormatType::ViewWrite);
+        CD3DX12_CLEAR_VALUE clear_value(view_write_format, depth_clear_value, stencil_clear_value);
+        InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_DEPTH_WRITE, &clear_value);
+    }
+    else
+    {
+        InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+    }
 
     const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
 

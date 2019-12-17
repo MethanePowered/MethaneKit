@@ -46,8 +46,7 @@ static const GraphicsApp::Settings      g_app_settings = // Application settings
         gfx::PixelFormat::BGRA8Unorm,                   // - color_format
         gfx::PixelFormat::Depth32Float,                 // - depth_stencil_format
         gfx::Color4f(0.0f, 0.2f, 0.4f, 1.0f),           // - clear_color
-        1.f,                                            // - clear_depth
-        0,                                              // - clear_stencil
+        gfx::DepthStencil{ 1.f, 0u },                   // - clear_depth_stencil
         3,                                              // - frame_buffers_count
         true,                                           // - vsync_enabled
     },                                                  //
@@ -240,7 +239,7 @@ void ShadowCubeApp::Init()
                     gfx::RenderPass::Attachment::LoadAction::Clear,
                     gfx::RenderPass::Attachment::StoreAction::Store,
                 },
-                context_settings.clear_depth
+                context_settings.clear_depth_stencil->first
             ),
             gfx::RenderPass::StencilAttachment(),
             gfx::RenderPass::Access::ShaderResources
