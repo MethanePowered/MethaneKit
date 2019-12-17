@@ -57,7 +57,7 @@ ParallelRenderCommandListDX::ParallelRenderCommandListDX(CommandQueueBase& cmd_b
     assert(!!cp_device);
 }
 
-void ParallelRenderCommandListDX::Reset(RenderState& render_state)
+void ParallelRenderCommandListDX::Reset(RenderState& render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
 
@@ -66,7 +66,7 @@ void ParallelRenderCommandListDX::Reset(RenderState& render_state)
     m_begining_command_list.Reset(render_state, ""); // begins render pass
     m_ending_command_list.ResetNative(render_state); // only resets native command lists
 
-    ParallelRenderCommandListBase::Reset(render_state);
+    ParallelRenderCommandListBase::Reset(render_state, debug_group);
 }
 
 void ParallelRenderCommandListDX::SetName(const std::string& name)

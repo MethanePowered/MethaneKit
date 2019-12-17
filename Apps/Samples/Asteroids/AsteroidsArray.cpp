@@ -371,7 +371,7 @@ void AsteroidsArray::Draw(gfx::ParallelRenderCommandList& parallel_cmd_list, gfx
     assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= uniforms_buffer_size);
     buffer_bindings.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&GetFinalPassUniforms()), uniforms_buffer_size } });
 
-    parallel_cmd_list.Reset(*m_sp_render_state);
+    parallel_cmd_list.Reset(*m_sp_render_state, "Asteroids Rendering");
 
     assert(buffer_bindings.resource_bindings_per_instance.size() == m_settings.instance_count);
     BaseBuffers::Draw(parallel_cmd_list, buffer_bindings.resource_bindings_per_instance);

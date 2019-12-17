@@ -46,7 +46,7 @@ public:
     ParallelRenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass);
 
     // ParallelRenderCommandList interface
-    void Reset(RenderState& render_state) override;
+    void Reset(RenderState& render_state, const std::string& debug_group = "") override;
     void SetParallelCommandListsCount(uint32_t count) override;
     const RenderCommandList::Ptrs& GetParallelCommandLists() const override { return m_parallel_comand_lists; }
 
