@@ -158,7 +158,7 @@ public:
                             RenderPass::Attachment::StoreAction::Store,
                         },
                         context_settings.clear_color
-                            ? context_settings.clear_color.value()
+                            ? *context_settings.clear_color
                             : Color4f()
                     )
                 },
@@ -170,7 +170,7 @@ public:
                             : RenderPass::Attachment::LoadAction::DontCare,
                         RenderPass::Attachment::StoreAction::DontCare,
                     },
-                    context_settings.clear_depth_stencil.has_value()
+                    context_settings.clear_depth_stencil
                         ? context_settings.clear_depth_stencil->first
                         : 1.f
                 ),
