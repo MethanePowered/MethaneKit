@@ -156,7 +156,7 @@ void RenderStateDX::Reset(const Settings& settings)
     // Set depth and stencil state descriptor
     CD3DX12_DEPTH_STENCIL_DESC                  depth_stencil_desc(D3D12_DEFAULT);
     depth_stencil_desc.DepthEnable              = m_settings.depth.enabled;
-    depth_stencil_desc.DepthWriteMask           = D3D12_DEPTH_WRITE_MASK_ALL;
+    depth_stencil_desc.DepthWriteMask           = m_settings.depth.write_enabled ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
     depth_stencil_desc.DepthFunc                = TypeConverterDX::CompareFunctionToDX(m_settings.depth.compare);
     depth_stencil_desc.StencilEnable            = m_settings.stencil.enabled;
     depth_stencil_desc.StencilReadMask          = m_settings.stencil.read_mask;

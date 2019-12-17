@@ -175,7 +175,7 @@ void RenderStateMT::Reset(const Settings& settings)
     
     // Depth-stencil state
     m_mtl_depth_stencil_state_desc                      = [[MTLDepthStencilDescriptor alloc] init];
-    m_mtl_depth_stencil_state_desc.depthWriteEnabled    = m_settings.depth.enabled ? YES : NO;
+    m_mtl_depth_stencil_state_desc.depthWriteEnabled    = m_settings.depth.write_enabled ? YES : NO;
     m_mtl_depth_stencil_state_desc.depthCompareFunction = TypeConverterMT::CompareFunctionToMetal(m_settings.depth.compare);
     m_mtl_depth_stencil_state_desc.backFaceStencil      = ConvertStencilDescriptorToMetal(m_settings.stencil, false);
     m_mtl_depth_stencil_state_desc.frontFaceStencil     = ConvertStencilDescriptorToMetal(m_settings.stencil, true);

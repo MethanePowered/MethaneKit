@@ -68,6 +68,7 @@ public:
     struct Depth
     {
         bool    enabled = false;
+        bool    write_enabled = true;
         Compare compare = Compare::Less;
     };
     

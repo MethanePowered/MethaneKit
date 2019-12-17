@@ -66,10 +66,11 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
         context_settings.depth_stencil_format
     });
     state_settings.sp_program->SetName("Sky-box shading");
-    state_settings.viewports     = { GetFrameViewport(context_settings.frame_size) };
-    state_settings.scissor_rects = { GetFrameScissorRect(context_settings.frame_size) };
-    state_settings.depth.enabled = m_settings.depth_enabled;
-    state_settings.depth.compare = m_settings.depth_reversed ? Compare::GreaterEqual : Compare::Less;
+    state_settings.viewports            = { GetFrameViewport(context_settings.frame_size) };
+    state_settings.scissor_rects        = { GetFrameScissorRect(context_settings.frame_size) };
+    state_settings.depth.enabled        = m_settings.depth_enabled;
+    state_settings.depth.write_enabled  = false;
+    state_settings.depth.compare        = m_settings.depth_reversed ? Compare::GreaterEqual : Compare::Less;
     state_settings.rasterizer.is_front_counter_clockwise = true;
 
     m_sp_state = RenderState::Create(context, state_settings);
