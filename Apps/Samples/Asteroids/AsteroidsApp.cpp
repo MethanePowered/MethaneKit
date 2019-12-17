@@ -76,7 +76,7 @@ static const GraphicsApp::Settings  g_app_settings  = // Application settings:
         gfx::PixelFormat::BGRA8Unorm,                 // - color_format
         gfx::PixelFormat::Depth32Float,               // - depth_stencil_format
         gfx::Color4f(0.0f, 0.0f, 0.0f, 1.0f),         // - clear_color
-        1.f,                                          // - clear_depth
+        0.f,                                          // - clear_depth
         0,                                            // - clear_stencil
         3,                                            // - frame_buffers_count
         true,                                         // - vsync_enabled
@@ -107,15 +107,19 @@ AsteroidsApp::AsteroidsApp()
             { 256u, 256u },                                 // - texture_dimensions
             1123u,                                          // - random_seed
             13.f,                                           // - orbit_radius_ratio
-        4.f,                                                // - disc_radius_ratio
+            4.f,                                            // - disc_radius_ratio
             GetParamValueByCoresCount(g_scale_ratio) / 10.f,// - min_asteroid_scale_ratio
             GetParamValueByCoresCount(g_scale_ratio),       // - max_asteroid_scale_ratio
+            true                                            // - depth_reversed
         })
 {
     ITT_FUNCTION_TASK();
 
+    // NOTE: Near and Far values are swapped in camera parameters (1st value is near = max depth, 2nd value is far = min depth)
+    // for Reversed-Z buffer values range [ near: 1, far 0], instead of [ near 0, far 1]
+    // which is used for "from near to far" drawing order for reducing pixels overdraw
     m_view_camera.SetOrientation({ { 0.f, 60.f, 250.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f } });
-    m_view_camera.SetParamters({ 0.01f, 600.f, 90.f });
+    m_view_camera.SetParamters({ 600.f /* near = max depth */, 0.01f /*far = min depth*/, 90.f /* FOV */ });
     m_view_camera.SetZoomDistanceRange({ 60.f , 400.f });
 
     m_light_camera.SetOrientation({ { -100.f, 120.f, 0.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f } });
@@ -163,18 +167,21 @@ void AsteroidsApp::Init()
             "Textures/SkyBox/Galaxy/PositiveZ.jpg",
             "Textures/SkyBox/Galaxy/NegativeZ.jpg"
         },
-        m_scene_scale * 100.f
+        m_scene_scale * 100.f,
+        true, true // depth enabled and reversed
     });
 
     // Create planet
     m_sp_planet = std::make_shared<Planet>(context, m_image_loader, Planet::Settings{
         m_view_camera,
         m_light_camera,
-        "Textures/Planet/Mars.jpg",
-        gfx::Vector3f(0.f, 0.f, 0.f),
-        m_scene_scale * 3.f,
-        0.1f,
-        true
+        "Textures/Planet/Mars.jpg",     // texture_path
+        gfx::Vector3f(0.f, 0.f, 0.f),   // position
+        m_scene_scale * 3.f,            // scale
+        0.1f,                           // spin_velocity_rps
+        true,                           // depth_reversed
+        true,                           // mipmapped
+        -1.f,                           // lod_bias
     });
 
     // Create asteroids array
@@ -194,19 +201,14 @@ void AsteroidsApp::Init()
     // ========= Per-Frame Data =========
     for(AsteroidsFrame& frame : m_frames)
     {
+#if PARALLEL_RENDERING_ENABLED
+        frame.sp_parallel_cmd_list = gfx::ParallelRenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_screen_pass);
+        frame.sp_parallel_cmd_list->SetParallelCommandListsCount(std::thread::hardware_concurrency());
+        frame.sp_parallel_cmd_list->SetName(IndexedName("Parallel Rendering", frame.index));
+#else
         // Create command list for final FB rendering
         frame.sp_cmd_list = gfx::RenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_screen_pass);
         frame.sp_cmd_list->SetName(IndexedName("Scene Rendering", frame.index));
-
-#if PARALLEL_RENDERING_ENABLED
-        gfx::RenderPass::Settings asteroids_render_pass_settings = frame.sp_screen_pass->GetSettings();
-        asteroids_render_pass_settings.color_attachments[0].load_action = gfx::RenderPass::Attachment::LoadAction::Load;
-        asteroids_render_pass_settings.depth_attachment.load_action     = gfx::RenderPass::Attachment::LoadAction::Load;
-        frame.sp_asteroids_render_pass = gfx::RenderPass::Create(*m_sp_context, asteroids_render_pass_settings);
-
-        frame.sp_parallel_cmd_list = gfx::ParallelRenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_asteroids_render_pass);
-        frame.sp_parallel_cmd_list->SetParallelCommandListsCount(std::thread::hardware_concurrency());
-        frame.sp_parallel_cmd_list->SetName(IndexedName("Parallel Asteroids Rendering", frame.index));
 #endif
 
         // Create uniforms buffer with volatile parameters for the whole scene rendering
@@ -294,35 +296,37 @@ void AsteroidsApp::Render()
     // Upload uniform buffers to GPU
     frame.sp_scene_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms) } });
 
-    assert(!!frame.sp_cmd_list);
-
-    // Sky-box rendering
-    assert(!!m_sp_sky_box);
-    m_sp_sky_box->Draw(*frame.sp_cmd_list, frame.skybox);
-
-    // Planet rendering
-    assert(!!m_sp_planet);
-    m_sp_planet->Draw(*frame.sp_cmd_list, frame.planet);
-
     // Asteroids rendering
     assert(!!m_sp_asteroids_array);
 
 #if PARALLEL_RENDERING_ENABLED
-    frame.sp_cmd_list->Commit(false);
-
     assert(!!frame.sp_parallel_cmd_list);
     m_sp_asteroids_array->Draw(*frame.sp_parallel_cmd_list, frame.asteroids);
-    frame.sp_parallel_cmd_list->Commit(true);
+    gfx::RenderCommandList& render_cmd_list = *frame.sp_parallel_cmd_list->GetParallelCommandLists().back();
+    gfx::CommandList&       commit_cmd_list = *frame.sp_parallel_cmd_list;
 #else
+    assert(!!frame.sp_cmd_list);
     m_sp_asteroids_array->Draw(*frame.sp_cmd_list, frame.asteroids);
-    frame.sp_cmd_list->Commit(true);
+    gfx::RenderCommandList& render_cmd_list = *frame.sp_cmd_list;
+    gfx::CommandList&       commit_cmd_list = *frame.sp_cmd_list;
 #endif
+    
+    // Planet rendering
+    assert(!!m_sp_planet);
+    m_sp_planet->Draw(render_cmd_list, frame.planet);
+
+    // Sky-box rendering
+    assert(!!m_sp_sky_box);
+    m_sp_sky_box->Draw(render_cmd_list, frame.skybox);
+    
+    commit_cmd_list.Commit(true);
 
     // Execute rendering commands and present frame to screen
     m_sp_context->GetRenderCommandQueue().Execute({
-        *frame.sp_cmd_list,
 #if PARALLEL_RENDERING_ENABLED
         *frame.sp_parallel_cmd_list,
+#else
+        *frame.sp_cmd_list,
 #endif
     });
     m_sp_context->Present();

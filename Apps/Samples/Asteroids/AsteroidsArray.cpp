@@ -235,6 +235,7 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings, Content
     state_settings.viewports     = { gfx::GetFrameViewport(context_settings.frame_size) };
     state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };
     state_settings.depth.enabled = true;
+    state_settings.depth.compare = m_settings.depth_reversed ? gfx::Compare::GreaterEqual : gfx::Compare::Less;
     
     m_sp_render_state = gfx::RenderState::Create(context, state_settings);
     m_sp_render_state->SetName("Asteroids Render State");

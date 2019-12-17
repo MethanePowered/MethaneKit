@@ -50,6 +50,8 @@ public:
         const Camera&                  view_camera;
         ImageLoader::CubeFaceResources face_resources;
         float                          scale;
+        bool                           depth_enabled = false;
+        bool                           depth_reversed = false;
         bool                           mipmapped = false;
         float                          lod_bias = 0.f;
     };

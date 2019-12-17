@@ -79,10 +79,10 @@ void Camera::GetProjMatrix(Matrix44f& out_proj) const noexcept
     switch (m_projection)
     {
     case Projection::Perspective:
-        cml::matrix_perspective_yfov(out_proj, GetFOVAngleY(), m_aspect_ratio, m_parameters.near_depth, m_parameters.far_depth, m_axis_orientation, cml::ZClip::z_clip_neg_one);
+        cml::matrix_perspective_yfov(out_proj, GetFOVAngleY(), m_aspect_ratio, m_parameters.near_depth, m_parameters.far_depth, m_axis_orientation, cml::ZClip::z_clip_zero);
         break;
     case Projection::Orthogonal:
-        cml::matrix_orthographic(out_proj, m_screen_size.x(), m_screen_size.y(), m_parameters.near_depth, m_parameters.far_depth, m_axis_orientation, cml::ZClip::z_clip_neg_one);
+        cml::matrix_orthographic(out_proj, m_screen_size.x(), m_screen_size.y(), m_parameters.near_depth, m_parameters.far_depth, m_axis_orientation, cml::ZClip::z_clip_zero);
         break;
     }
 }

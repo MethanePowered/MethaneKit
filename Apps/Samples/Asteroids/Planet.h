@@ -53,6 +53,7 @@ public:
         gfx::Vector3f      position;
         float              scale;
         float              spin_velocity_rps = 0.3f; // (rps = radians per second)
+        bool               depth_reversed = false;
         bool               mipmapped = false;
         float              lod_bias = 0.f;
     };

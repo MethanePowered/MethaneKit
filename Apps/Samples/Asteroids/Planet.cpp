@@ -75,6 +75,7 @@ Planet::Planet(gfx::Context& context, gfx::ImageLoader& image_loader, const Sett
     state_settings.viewports     = { gfx::GetFrameViewport(context_settings.frame_size) };
     state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };
     state_settings.depth.enabled = true;
+    state_settings.depth.compare = m_settings.depth_reversed ? gfx::Compare::GreaterEqual : gfx::Compare::Less;
 
     m_sp_state = gfx::RenderState::Create(context, state_settings);
     m_sp_state->SetName("Planet Render State");
