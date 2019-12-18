@@ -36,6 +36,16 @@ DirectX 12 implementation of the parallel render command list interface.
 namespace Methane::Graphics
 {
 
+static std::string GetParallelCommandListDebugName(const std::string& base_name, const std::string& suffix)
+{
+    return base_name.empty() ? std::string() : base_name + " " + suffix;
+}
+
+static std::string GetTrailingCommandListDebugName(const std::string& base_name, bool is_beginning)
+{
+    return GetParallelCommandListDebugName(base_name, is_beginning ? "[Beginning]" : "[Ending]");
+}
+
 ParallelRenderCommandList::Ptr ParallelRenderCommandList::Create(CommandQueue& cmd_queue, RenderPass& render_pass)
 {
     ITT_FUNCTION_TASK();
@@ -63,8 +73,9 @@ void ParallelRenderCommandListDX::Reset(RenderState& render_state, const std::st
 
     // Render pass is begun in "beginning" command list only,
     // but it will be ended in the "ending" command list on commit of the parallel CL
-    m_begining_command_list.Reset(render_state, ""); // begins render pass
+    m_begining_command_list.Reset(render_state, GetTrailingCommandListDebugName(debug_group, true)); // begins render pass
     m_ending_command_list.ResetNative(render_state); // only resets native command lists
+    m_ending_command_list.PushDebugGroup(GetTrailingCommandListDebugName(debug_group, false));
 
     ParallelRenderCommandListBase::Reset(render_state, debug_group);
 }
@@ -73,8 +84,8 @@ void ParallelRenderCommandListDX::SetName(const std::string& name)
 {
     ITT_FUNCTION_TASK();
 
-    m_begining_command_list.SetName(name + " [Beginning]");
-    m_ending_command_list.SetName(name + " [Ending]");
+    m_begining_command_list.SetName(GetTrailingCommandListDebugName(name, true));
+    m_ending_command_list.SetName(GetTrailingCommandListDebugName(name, false));
 
     ParallelRenderCommandListBase::SetName(name);
 }
