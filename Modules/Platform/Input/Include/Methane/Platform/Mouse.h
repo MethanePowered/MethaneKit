@@ -92,12 +92,12 @@ public:
         using Mask = uint32_t;
         enum Value : Mask
         {
-            None        = 0,
-            Buttons     = 1 << 0,
-            Position    = 1 << 1,
-            Scroll      = 1 << 2,
-            InWindow    = 1 << 3,
-            All         = static_cast<Mask>(~0),
+            None        = 0u,
+            Buttons     = 1u << 0u,
+            Position    = 1u << 1u,
+            Scroll      = 1u << 2u,
+            InWindow    = 1u << 3u,
+            All         = ~0u,
         };
 
         using Values = std::array<Value, 4>;

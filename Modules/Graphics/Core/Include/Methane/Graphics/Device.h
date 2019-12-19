@@ -51,10 +51,10 @@ struct Device : virtual Object
         using Mask = uint32_t;
         enum Value : Mask
         {
-            Unknown                     = 0u,
-            BasicRendering              = 1u << 0u,
-            TextureAndSamplerArrays     = 1u << 1u,
-            All                         = ~0u,
+            Unknown                 = 0u,
+            BasicRendering          = 1u << 0u,
+            TextureAndSamplerArrays = 1u << 1u,
+            All                     = ~0u,
         };
 
         using Values = std::array<Value, 2>;

@@ -105,14 +105,14 @@ struct Modifier
     using Mask = uint32_t;
     enum Value : Mask
     {
-        None     = 0,
-        Shift    = 1 << 0,
-        Control  = 1 << 1,
-        Alt      = 1 << 2,
-        Super    = 1 << 3,
-        CapsLock = 1 << 4,
-        NumLock  = 1 << 5,
-        All      = static_cast<Mask>(~0),
+        None     = 0u,
+        Shift    = 1u << 0u,
+        Control  = 1u << 1u,
+        Alt      = 1u << 2u,
+        Super    = 1u << 3u,
+        CapsLock = 1u << 4u,
+        NumLock  = 1u << 5u,
+        All      = ~0u,
     };
 
     using Values = std::array<Value, 6>;
@@ -125,9 +125,9 @@ struct Modifier
     ~Modifier() = delete;
 };
 
-enum class KeyType
+enum class KeyType : uint32_t
 {
-    Common = 0,
+    Common = 0u,
     Modifier,
 };
 
@@ -156,7 +156,7 @@ private:
 
 enum class KeyState : uint8_t
 {
-    Released = 0,
+    Released = 0ui8,
     Pressed,
 };
 
@@ -170,10 +170,10 @@ public:
         using Mask = uint32_t;
         enum Value : Mask
         {
-            None      = 0,
-            KeyStates = 1 << 0,
-            Modifiers = 1 << 1,
-            All       = static_cast<Mask>(~0),
+            None      = 0u,
+            KeyStates = 1u << 0u,
+            Modifiers = 1u << 1u,
+            All       = ~0u,
         };
 
         using Values = std::array<Value, 2>;
