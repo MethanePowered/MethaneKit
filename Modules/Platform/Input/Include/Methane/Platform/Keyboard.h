@@ -156,7 +156,7 @@ private:
 
 enum class KeyState : uint8_t
 {
-    Released = 0ui8,
+    Released = 0u,
     Pressed,
 };
 

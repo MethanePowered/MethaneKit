@@ -88,10 +88,10 @@ struct RenderPass
     
     struct StencilAttachment : Attachment
     {
-        Stencil clear_value = 0ui8;
+        Stencil clear_value = 0u;
         
         StencilAttachment() = default;
-        StencilAttachment(const Attachment&& attach, Stencil in_clear_value = 0ui8) : Attachment(attach), clear_value(in_clear_value) { }
+        StencilAttachment(const Attachment&& attach, Stencil in_clear_value = 0u) : Attachment(attach), clear_value(in_clear_value) { }
         
         bool operator==(const StencilAttachment& other) const;
     };
