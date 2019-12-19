@@ -33,7 +33,8 @@ using namespace Methane::Platform;
 
 @implementation WindowDelegate
 {
-    AppMac* m_p_app;
+    AppMac*         m_p_app;
+    Data::FrameSize m_frame_size;
 }
 
 - (id) initWithApp : (AppMac*) p_app
@@ -63,6 +64,22 @@ using namespace Methane::Platform;
     assert(!!m_p_app);
 
     m_p_app->SetFullScreen(false);
+}
+
+- (void) windowDidMiniaturize:(NSNotification *)notification
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_p_app);
+    
+    m_p_app->Resize(m_p_app->GetFrameSize(), true);
+}
+
+- (void) windowDidDeminiaturize:(NSNotification *)notification
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_p_app);
+    
+    m_p_app->Resize(m_p_app->GetFrameSize(), false);
 }
 
 @end

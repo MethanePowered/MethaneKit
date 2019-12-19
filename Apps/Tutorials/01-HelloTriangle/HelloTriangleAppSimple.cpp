@@ -113,10 +113,10 @@ public:
         return true;
     }
 
-    void Render() override
+    bool Render() override
     {
-        if (!m_sp_context->ReadyToRender())
-            return;
+        if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
+            return false;
 
         m_sp_context->WaitForGpu(Context::WaitFor::FramePresented);
         HelloTriangleFrame& frame = GetCurrentFrame();
@@ -129,7 +129,7 @@ public:
         m_sp_context->GetRenderCommandQueue().Execute({ *frame.sp_cmd_list });
         m_sp_context->Present();
 
-        GraphicsApp::Render();
+        return true;
     }
 
     void OnContextReleased() override

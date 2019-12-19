@@ -252,11 +252,9 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 {
     ITT_FUNCTION_TASK();
 
-    if (!m_initialized || GetInitialContextSettings().frame_size == frame_size)
-        return false;
-
     // Resize screen color and depth textures
-    GraphicsApp::Resize(frame_size, is_minimized);
+    if (!GraphicsApp::Resize(frame_size, is_minimized))
+        return false;
 
     m_sp_sky_box->Resize(frame_size);
     m_sp_planet->Resize(frame_size);
@@ -266,27 +264,29 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     return true;
 }
 
-void AsteroidsApp::Update()
+bool AsteroidsApp::Update()
 {
     ITT_FUNCTION_TASK();
 
-    GraphicsApp::Update();
+    if (!GraphicsApp::Update())
+        return false;
 
     // Update scene uniforms
     m_scene_uniforms.eye_position    = gfx::Vector4f(m_view_camera.GetOrientation().eye, 1.f);
     m_scene_uniforms.light_position  = m_light_camera.GetOrientation().eye;
 
     m_sp_sky_box->Update();
+    return true;
 }
 
-void AsteroidsApp::Render()
+bool AsteroidsApp::Render()
 {
     ITT_FUNCTION_TASK();
 
     // Render only when context is ready
     assert(!!m_sp_context);
-    if (!m_sp_context->ReadyToRender())
-        return;
+    if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
+        return false;
 
     // Wait for previous frame rendering is completed and switch to next frame
     m_sp_context->WaitForGpu(gfx::Context::WaitFor::FramePresented);
@@ -332,7 +332,7 @@ void AsteroidsApp::Render()
     });
     m_sp_context->Present();
 
-    GraphicsApp::Render();
+    return true;
 }
 
 void AsteroidsApp::OnContextReleased()

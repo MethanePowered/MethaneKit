@@ -134,12 +134,12 @@ bool HelloTriangleApp::Resize(const gfx::FrameSize& frame_size, bool is_minimize
     return true;
 }
 
-void HelloTriangleApp::Render()
+bool HelloTriangleApp::Render()
 {
     // Render only when context is ready
     assert(!!m_sp_context);
-    if (!m_sp_context->ReadyToRender())
-        return;
+    if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
+        return false;
 
     // Wait for previous frame rendering is completed and switch to next frame
     m_sp_context->WaitForGpu(gfx::Context::WaitFor::FramePresented);
@@ -159,7 +159,7 @@ void HelloTriangleApp::Render()
     m_sp_context->GetRenderCommandQueue().Execute({ *frame.sp_cmd_list });
     m_sp_context->Present();
 
-    GraphicsApp::Render();
+    return true;
 }
 
 void HelloTriangleApp::OnContextReleased()

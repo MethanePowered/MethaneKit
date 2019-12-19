@@ -309,17 +309,17 @@ void ShadowCubeApp::RenderPass::Release()
 
 bool ShadowCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 {
-    if (!m_initialized || GetInitialContextSettings().frame_size == frame_size)
-        return false;
-
     // Resize screen color and depth textures
     for (ShadowCubeFrame& frame : m_frames)
         frame.final_pass.sp_rt_texture.reset();
 
-    GraphicsApp::Resize(frame_size, is_minimized);
+    const bool is_resized = GraphicsApp::Resize(frame_size, is_minimized);
 
     for (ShadowCubeFrame& frame : m_frames)
         frame.final_pass.sp_rt_texture = frame.sp_screen_texture;
+    
+    if (!is_resized)
+        return false;
 
     // Update viewports and scissor rects state
     assert(m_final_pass.sp_state);
@@ -330,9 +330,10 @@ bool ShadowCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     return true;
 }
 
-void ShadowCubeApp::Update()
+bool ShadowCubeApp::Update()
 {
-    GraphicsApp::Update();
+    if (!GraphicsApp::Update())
+        return false;
 
     // Update Model, View, Projection matrices based on scene camera location
     gfx::Matrix44f scale_matrix, scene_view_matrix, scene_proj_matrix;
@@ -384,14 +385,16 @@ void ShadowCubeApp::Update()
         scale_matrix* light_view_matrix * light_proj_matrix,
         gfx::Matrix44f()
     });
+    
+    return true;
 }
 
-void ShadowCubeApp::Render()
+bool ShadowCubeApp::Render()
 {
     // Render only when context is ready
     assert(!!m_sp_context);
-    if (!m_sp_context->ReadyToRender())
-        return;
+    if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
+        return false;
 
     // Wait for previous frame rendering is completed and switch to next frame
     m_sp_context->WaitForGpu(gfx::Context::WaitFor::FramePresented);
@@ -414,8 +417,8 @@ void ShadowCubeApp::Render()
         *frame.final_pass.sp_cmd_list
     });
     m_sp_context->Present();
-
-    GraphicsApp::Render();
+    
+    return true;
 }
 
 void ShadowCubeApp::RenderScene(const RenderPass &render_pass, ShadowCubeFrame::PassResources &render_pass_resources, gfx::Texture &shadow_texture)

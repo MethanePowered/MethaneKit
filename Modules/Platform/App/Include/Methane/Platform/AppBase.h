@@ -78,10 +78,10 @@ public:
     virtual int  Run(const RunArgs& args);
     virtual void InitContext(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size) = 0;
     virtual void Init();
-    virtual bool Resize(const Data::FrameSize& frame, bool is_minimized) = 0;
     virtual void ChangeWindowBounds(const Data::FrameRect& window_bounds);
-    virtual void Update() = 0;
-    virtual void Render() = 0;
+    virtual bool Resize(const Data::FrameSize& frame_size, bool is_minimized);
+    virtual bool Update() = 0;
+    virtual bool Render() = 0;
     virtual void Alert(const Message& msg, bool deferred = false);
     virtual void SetWindowTitle(const std::string& title_text) = 0;
     virtual bool SetFullScreen(bool is_full_screen);
@@ -92,6 +92,8 @@ public:
 
     const Settings&         GetSettings() const   { return m_settings; }
     const Input::State&     GetInputState() const { return m_input_state; }
+    const Data::FrameSize&  GetFrameSize() const  { return m_frame_size; }
+    bool                    IsMinimized() const   { return m_is_minimized; }
     const cxxopts::Options& GetCmdOptions() const { return m_cmd_options; }
 
     // Entry point for user input handling from platform-specific implementation
@@ -104,8 +106,10 @@ protected:
     virtual void ShowAlert(const Message& msg);
 
     Settings             m_settings;
-    Data::FrameRect      m_window_bounds;
     cxxopts::Options     m_cmd_options;
+    Data::FrameRect      m_window_bounds;
+    Data::FrameSize      m_frame_size;
+    bool                 m_is_minimized = false;
     bool                 m_initialized = false;
     Message::Ptr         m_sp_deferred_message;
     Input::State         m_input_state;

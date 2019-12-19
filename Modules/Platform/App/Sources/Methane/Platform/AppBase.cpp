@@ -134,6 +134,21 @@ void AppBase::ChangeWindowBounds(const Data::FrameRect& window_bounds)
     ITT_FUNCTION_TASK();
     m_window_bounds = window_bounds;
 }
+    
+bool AppBase::Resize(const Data::FrameSize& frame_size, bool is_minimized)
+{
+    ITT_FUNCTION_TASK();
+    
+    const bool is_resizing = !is_minimized && m_frame_size != frame_size;
+    
+    m_is_minimized = is_minimized;
+    if (!m_is_minimized)
+    {
+        m_frame_size = frame_size;
+    }
+    
+    return m_initialized && is_resizing;
+}
 
 void AppBase::Alert(const Message& msg, bool deferred)
 {

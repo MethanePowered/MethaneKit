@@ -184,16 +184,17 @@ public:
         Platform::App::Init();
     }
 
-    bool Resize(const FrameSize& frame_size, bool /*is_minimized*/) override
+    bool Resize(const FrameSize& frame_size, bool is_minimized) override
     {
         ITT_FUNCTION_TASK();
+        
         struct ResourceInfo
         {
             Resource::DescriptorByUsage descriptor_by_usage;
             std::string name;
         };
 
-        if (!m_initialized || m_initial_context_settings.frame_size == frame_size)
+        if (!AppBase::Resize(frame_size, is_minimized))
             return false;
 
         m_initial_context_settings.frame_size = frame_size;
@@ -246,21 +247,29 @@ public:
         return true;
     }
     
-    void Update() override
+    bool Update() override
     {
         ITT_FUNCTION_TASK();
+        if (m_is_minimized)
+            return false;
+        
         System::Get().CheckForChanges();
         m_animations.Update();
+        
+        return true;
     }
 
-    void Render() override
+    bool Render() override
     {
         ITT_FUNCTION_TASK();
+        
+        if (m_is_minimized)
+            return false;
 
         // Update HUD info in window title
         if (!m_show_hud_in_window_title ||
             m_title_update_timer.GetElapsedSecondsD() < g_title_update_interval_sec)
-            return;
+            return true;
 
         if (!m_sp_context)
         {
@@ -286,6 +295,8 @@ public:
 
         // Keep window full-screen mode in sync with the context
         SetFullScreen(context_settings.is_full_screen);
+        
+        return true;
     }
     
     bool SetFullScreen(bool is_full_screen) override

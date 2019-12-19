@@ -201,9 +201,10 @@ bool TexturedCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized
     return true;
 }
 
-void TexturedCubeApp::Update()
+bool TexturedCubeApp::Update()
 {
-    GraphicsApp::Update();
+    if (!GraphicsApp::Update())
+        return false;
 
     // Update Model, View, Projection matrices based on camera location
     gfx::Matrix44f model_matrix, view_matrix, proj_matrix;
@@ -214,14 +215,16 @@ void TexturedCubeApp::Update()
     m_shader_uniforms.mvp_matrix     = mv_matrix * proj_matrix;
     m_shader_uniforms.model_matrix   = model_matrix;
     m_shader_uniforms.eye_position   = gfx::Vector4f(m_camera.GetOrientation().eye, 1.f);
+    
+    return true;
 }
 
-void TexturedCubeApp::Render()
+bool TexturedCubeApp::Render()
 {
     // Render only when context is ready
     assert(!!m_sp_context);
-    if (!m_sp_context->ReadyToRender())
-        return;
+    if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
+        return false;
 
     // Wait for previous frame rendering is completed and switch to next frame
     m_sp_context->WaitForGpu(gfx::Context::WaitFor::FramePresented);
@@ -248,7 +251,7 @@ void TexturedCubeApp::Render()
     m_sp_context->GetRenderCommandQueue().Execute({ *frame.sp_cmd_list });
     m_sp_context->Present();
 
-    GraphicsApp::Render();
+    return true;
 }
 
 void TexturedCubeApp::OnContextReleased()

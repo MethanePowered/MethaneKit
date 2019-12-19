@@ -220,10 +220,9 @@ void RenderCommandListMT::Execute(uint32_t frame_index)
 
     RenderCommandListBase::Execute(frame_index);
 
-    if (m_is_parallel)
+    if (m_is_parallel || !m_mtl_cmd_buffer)
         return;
 
-    assert(!!m_mtl_cmd_buffer);
     [m_mtl_cmd_buffer addCompletedHandler:^(id<MTLCommandBuffer>) {
         Complete(frame_index);
     }];
