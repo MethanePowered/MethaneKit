@@ -16,33 +16,22 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Helpers.h
-Methane graphics helpers: all headers under one umbrella.
+FILE: Methane/Platform/Windows/Keyboard.h
+Windows platform specific types and implementation of Keyboard abstractions.
 
 ******************************************************************************/
 
 #pragma once
 
-#if defined _WIN32
+#include <Windows.h>
 
-#include "Windows/Helpers.h"
+namespace Methane::Platform::Keyboard
+{
 
-#elif defined __APPLE__
+struct NativeKey
+{
+    WPARAM w_param;
+    LPARAM l_param;
+};
 
-#include "MacOS/Helpers.h"
-
-#else //Linux
-
-#include "Linux/MathTypes.h"
-
-#endif
-
-#include "MathTypes.h"
-#include "ActionCamera.h"
-#include "ArcBallCamera.h"
-#include "Camera.h"
-#include "Mesh.h"
-#include "Noise.hpp"
-#include "FpsCounter.h"
-
-#include <Methane/Data/Timer.h>
+} // namespace Methane::Platform::Keyboard

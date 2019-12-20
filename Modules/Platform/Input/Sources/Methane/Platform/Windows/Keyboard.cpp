@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/Windows/KeyboardWin.h
+FILE: Methane/Platform/Windows/Keyboard.h
 Windows platform specific types and implementation of Keyboard abstractions.
 
 ******************************************************************************/

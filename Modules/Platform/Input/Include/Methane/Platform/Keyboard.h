@@ -25,11 +25,15 @@ Platform abstraction of keyboard events.
 
 #if defined _WIN32
 
-#include "Windows/KeyboardWin.h"
+#include "Windows/Keyboard.h"
 
 #elif defined __APPLE__
 
-#include "MacOS/KeyboardMac.hh"
+#include "MacOS/Keyboard.h"
+
+#else // Linux
+
+#include "Linux/Keyboard.h"
 
 #endif
 

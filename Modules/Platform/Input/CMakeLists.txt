@@ -4,25 +4,7 @@ include(MethaneModules)
 
 get_module_dirs("Methane/Platform")
 
-if (WIN32)
-
-    set(PLATFORM_HEADERS
-        ${INCLUDE_PLATFORM_DIR}/KeyboardWin.h
-    )
-
-    set(PLATFORM_SOURCES
-        ${SOURCES_PLATFORM_DIR}/KeyboardWin.cpp
-    )
-
-elseif(APPLE)
-
-    set(PLATFORM_HEADERS
-        ${INCLUDE_PLATFORM_DIR}/KeyboardMac.hh
-    )
-
-    set(PLATFORM_SOURCES
-        ${SOURCES_PLATFORM_DIR}/KeyboardMac.mm
-    )
+if(APPLE)
 
     set(LIBRARIES
         "-framework AppKit"
@@ -36,7 +18,8 @@ set(LIBRARIES ${LIBRARIES}
     MethaneDataInstrumentation
 )
 
-set(HEADERS ${PLATFORM_HEADERS}
+set(HEADERS
+    ${INCLUDE_PLATFORM_DIR}/Keyboard.h
     ${INCLUDE_DIR}/Keyboard.h
     ${INCLUDE_DIR}/Mouse.h
     ${INCLUDE_DIR}/KeyboardActionControllerBase.hpp
@@ -47,7 +30,8 @@ set(HEADERS ${PLATFORM_HEADERS}
     ${INCLUDE_DIR}/Input/State.h
 )
 
-set(SOURCES ${PLATFORM_SOURCES}
+set(SOURCES
+    ${SOURCES_PLATFORM_DIR}/Keyboard.${CPP_EXT}
     ${SOURCES_DIR}/Keyboard.cpp
     ${SOURCES_DIR}/Mouse.cpp
     ${SOURCES_DIR}/Input/ControllersPool.cpp

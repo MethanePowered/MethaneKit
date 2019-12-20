@@ -16,22 +16,42 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/Windows/KeyboardWin.h
-Windows platform specific types and implementation of Keyboard abstractions.
+FILE: Methane/Platform/MacOS/Utils.mm
+MacOS platform utilitary functions.
 
 ******************************************************************************/
 
-#pragma once
+#include <Methane/Platform/MacOS/Utils.hh>
+#include <Methane/Data/Instrumentation.h>
 
-#include <Windows.h>
+#include <cassert>
+#include <stdexcept>
 
-namespace Methane::Platform::Keyboard
+namespace Methane::Platform
 {
 
-struct NativeKey
+void PrintToDebugOutput(const std::string& msg)
 {
-    WPARAM w_param;
-    LPARAM l_param;
-};
+    ITT_FUNCTION_TASK();
+    throw std::runtime_error("Method is not implemented yet.");
+}
 
-} // namespace Methane::Platform::Keyboard
+std::string GetExecutableDir()
+{
+    ITT_FUNCTION_TASK();
+    throw std::runtime_error("Method is not implemented yet.");
+}
+
+std::string GetExecutableFileName()
+{
+    ITT_FUNCTION_TASK();
+    throw std::runtime_error("Method is not implemented yet.");
+}
+
+std::string GetResourceDir()
+{
+    ITT_FUNCTION_TASK();
+    throw std::runtime_error("Method is not implemented yet.");
+}
+
+} // namespace Methane::Platform

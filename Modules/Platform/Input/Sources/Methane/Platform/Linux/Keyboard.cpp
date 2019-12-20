@@ -16,15 +16,13 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/MacOS/KeyboardMac.h
-MacOS platform specific types and implementation of Keyboard abstractions.
+FILE: Methane/Platform/Linux/Keyboard.cpp
+Linux platform specific types and implementation of Keyboard abstractions.
 
 ******************************************************************************/
 
 #include <Methane/Platform/Keyboard.h>
 #include <Methane/Data/Instrumentation.h>
-
-#import <AppKit/AppKit.h>
 
 #include <map>
 
@@ -160,26 +158,8 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
 Modifier::Mask KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key)
 {
     ITT_FUNCTION_TASK();
+
     Modifier::Mask modifiers_mask = Modifier::Value::None;
-    
-    if (native_key.flags & NSEventModifierFlagShift)
-        modifiers_mask |= Modifier::Value::Shift;
-    
-    if (native_key.flags & NSEventModifierFlagControl)
-        modifiers_mask |= Modifier::Value::Control;
-    
-    if (native_key.flags & NSEventModifierFlagOption)
-        modifiers_mask |= Modifier::Value::Alt;
-    
-    if (native_key.flags & NSEventModifierFlagCommand)
-        modifiers_mask |= Modifier::Value::Super;
-    
-    if (native_key.flags & NSEventModifierFlagCapsLock)
-        modifiers_mask |= Modifier::Value::CapsLock;
-    
-    if (native_key.flags & NSEventModifierFlagNumericPad)
-        modifiers_mask |= Modifier::Value::NumLock;
-    
     return modifiers_mask;
 }
 

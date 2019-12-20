@@ -104,6 +104,12 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
 
         source_group("Resources" FILES ${PLIST_FILE_PATH} ${ICON_FILE_PATH})
 
+    else() # Linux
+
+        add_executable(${TARGET}
+            ${SOURCES}
+        )
+    
     endif()
 
     source_group("Source Files" FILES ${SOURCES})

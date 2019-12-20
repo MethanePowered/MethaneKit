@@ -89,8 +89,10 @@ int AppBase::Run(const RunArgs& args)
         mutable_arg_values[mutable_args_count] = new char[arg_value_size];
 #ifdef _WIN32
         strcpy_s(mutable_arg_values[argi], arg_value_size, args.cmd_arg_values[argi]);
-#else
+#elif defined __APPLE__
         strlcpy(mutable_arg_values[argi], args.cmd_arg_values[argi], arg_value_size);
+#else // Linux
+        strcpy(mutable_arg_values[argi], args.cmd_arg_values[argi]);
 #endif
         mutable_args_count++;
     };

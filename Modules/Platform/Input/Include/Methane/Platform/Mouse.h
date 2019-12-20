@@ -25,6 +25,7 @@ Platform abstraction of mouse events.
 
 #include <Methane/Data/Types.h>
 
+#include <cmath>
 #include <array>
 #include <set>
 #include <string>
@@ -79,8 +80,8 @@ using MouseButtonAndDelta = std::pair<Mouse::Button, float>;
 inline MouseButtonAndDelta GetScrollButtonAndDelta(const Scroll& scroll_delta)
 {
     const float min_scroll_delta = 0.00001f;
-    return std::fabsf(scroll_delta.y()) > min_scroll_delta ? MouseButtonAndDelta(Button::VScroll, scroll_delta.y())
-        : (std::fabsf(scroll_delta.x()) > min_scroll_delta ? MouseButtonAndDelta(Button::HScroll, scroll_delta.x())
+    return std::fabs(scroll_delta.y()) > min_scroll_delta ? MouseButtonAndDelta(Button::VScroll, scroll_delta.y())
+        : (std::fabs(scroll_delta.x()) > min_scroll_delta ? MouseButtonAndDelta(Button::HScroll, scroll_delta.x())
                                                            : MouseButtonAndDelta(Button::Unknonwn, 0.f ) );
 }
 

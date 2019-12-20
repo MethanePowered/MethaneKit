@@ -23,26 +23,7 @@ MacOS specific math types aliases.
 
 #pragma once
 
-#include <cml/mathlib/constants.h>
-#include <cml/matrix.h>
-
-#define SHADER_STRUCT_ALIGNMENT 256
-#define SHADER_STRUCT_ALIGN alignas(SHADER_STRUCT_ALIGNMENT)
-#define SHADER_FIELD_ALIGN  alignas(16)
-#define SHADER_FIELD_PACK   alignas(4)
-
 namespace Methane::Graphics
 {
 
-// Use row-major order matrices for Metal
-using Matrix22i = cml::matrix22i_r;
-using Matrix33i = cml::matrix33i_r;
-using Matrix44i = cml::matrix44i_r;
-using Matrix22f = cml::matrix22f_r;
-using Matrix33f = cml::matrix33f_r;
-using Matrix44f = cml::matrix44f_r;
-
-// Axis orientation used by Metal
-constexpr cml::AxisOrientation g_axis_orientation = cml::AxisOrientation::left_handed;
-
-}
+} // namespace Methane::Graphics

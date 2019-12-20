@@ -16,33 +16,13 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Helpers.h
-Methane graphics helpers: all headers under one umbrella.
+FILE: Methane/Graphics/Linux/Helpers.h
+Linux platform graphics helpers.
 
 ******************************************************************************/
 
 #pragma once
 
-#if defined _WIN32
-
-#include "Windows/Helpers.h"
-
-#elif defined __APPLE__
-
-#include "MacOS/Helpers.h"
-
-#else //Linux
-
-#include "Linux/MathTypes.h"
-
-#endif
-
-#include "MathTypes.h"
-#include "ActionCamera.h"
-#include "ArcBallCamera.h"
-#include "Camera.h"
-#include "Mesh.h"
-#include "Noise.hpp"
-#include "FpsCounter.h"
-
-#include <Methane/Data/Timer.h>
+namespace Methane::Graphics
+{
+} // namespace Methane::Graphics
