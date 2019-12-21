@@ -16,42 +16,18 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Native/TextureNT.h
-Native implementation alias of the texture interface.
+FILE: Methane/Platform/Linux/AppEnvironment.h
+Linux application environment.
 
 ******************************************************************************/
 
 #pragma once
 
-#if defined _WIN32
-
-#include <Methane/Graphics/DirectX12/TextureDX.h>
-
-#elif defined __APPLE__
-
-#include <Methane/Graphics/Metal/TextureMT.hh>
-
-#else // Linux
-
-#include <Methane/Graphics/Vulkan/TextureVK.h>
-
-#endif
-
-namespace Methane::Graphics
+namespace Methane::Platform
 {
 
-#if defined _WIN32
+struct AppEnvironment
+{
+};
 
-using TextureNT = TextureDX;
-
-#elif defined __APPLE__
-
-using TextureNT = TextureMT;
-
-#else // Linux
-
-using TextureNT = TextureVK;
-
-#endif
-
-} // namespace Methane::Graphics
+} // namespace Methane::Platform

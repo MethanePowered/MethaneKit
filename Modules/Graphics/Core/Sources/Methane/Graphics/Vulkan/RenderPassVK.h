@@ -16,42 +16,32 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Native/TextureNT.h
-Native implementation alias of the texture interface.
+FILE: Methane/Graphics/Vulkan/RenderPassVK.h
+Vulkan implementation of the render pass interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#if defined _WIN32
-
-#include <Methane/Graphics/DirectX12/TextureDX.h>
-
-#elif defined __APPLE__
-
-#include <Methane/Graphics/Metal/TextureMT.hh>
-
-#else // Linux
-
-#include <Methane/Graphics/Vulkan/TextureVK.h>
-
-#endif
+#include <Methane/Graphics/RenderPassBase.h>
 
 namespace Methane::Graphics
 {
 
-#if defined _WIN32
+class ContextVK;
 
-using TextureNT = TextureDX;
+class RenderPassVK : public RenderPassBase
+{
+public:
+    RenderPassVK(ContextBase& context, const Settings& settings);
 
-#elif defined __APPLE__
+    // RenderPass interface
+    void Update(const Settings& settings) override;
+    
+    void Reset();
 
-using TextureNT = TextureMT;
-
-#else // Linux
-
-using TextureNT = TextureVK;
-
-#endif
+protected:
+    ContextVK& GetContextVK() noexcept;
+};
 
 } // namespace Methane::Graphics

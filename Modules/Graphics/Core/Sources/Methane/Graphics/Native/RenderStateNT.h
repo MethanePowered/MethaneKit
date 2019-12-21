@@ -31,6 +31,10 @@ Native implementation alias of the render state interface.
 
 #include <Methane/Graphics/Metal/RenderStateMT.hh>
 
+#else // Linux
+
+#include <Methane/Graphics/Vulkan/RenderStateVK.h>
+
 #endif
 
 namespace Methane::Graphics
@@ -43,6 +47,10 @@ using RenderStateNT = RenderStateDX;
 #elif defined __APPLE__
 
 using RenderStateNT = RenderStateMT;
+
+#else // Linux
+
+using RenderStateNT = RenderStateVK;
 
 #endif
 

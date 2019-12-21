@@ -16,42 +16,37 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Native/TextureNT.h
-Native implementation alias of the texture interface.
+FILE: Methane/Graphics/Vulkan/TextureVK.h
+Vulkan implementation of the texture interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#if defined _WIN32
-
-#include <Methane/Graphics/DirectX12/TextureDX.h>
-
-#elif defined __APPLE__
-
-#include <Methane/Graphics/Metal/TextureMT.hh>
-
-#else // Linux
-
-#include <Methane/Graphics/Vulkan/TextureVK.h>
-
-#endif
+#include <Methane/Graphics/TextureBase.h>
 
 namespace Methane::Graphics
 {
 
-#if defined _WIN32
+class TextureVK : public TextureBase
+{
+public:
+    using Ptr = std::shared_ptr<TextureVK>;
 
-using TextureNT = TextureDX;
+    TextureVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    ~TextureVK() override;
 
-#elif defined __APPLE__
+    // Resource interface
+    void SetData(const SubResources& sub_resources) override;
+    Data::Size GetDataSize() const override;
 
-using TextureNT = TextureMT;
+    // Object interface
+    void SetName(const std::string& name) override;
 
-#else // Linux
+    void UpdateFrameBuffer();
 
-using TextureNT = TextureVK;
-
-#endif
+protected:
+    void GenerateMipLevels();
+};
 
 } // namespace Methane::Graphics

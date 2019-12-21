@@ -31,6 +31,10 @@ Native implementation alias of the program interface.
 
 #include <Methane/Graphics/Metal/ProgramMT.hh>
 
+#else // Linux
+
+#include <Methane/Graphics/Vulkan/ProgramVK.h>
+
 #endif
 
 namespace Methane::Graphics
@@ -43,6 +47,10 @@ using ProgramNT = ProgramDX;
 #elif defined __APPLE__
 
 using ProgramNT = ProgramMT;
+
+#else // Linux
+
+#include <Methane/Graphics/Vulkan/ProgramVK.h>
 
 #endif
 

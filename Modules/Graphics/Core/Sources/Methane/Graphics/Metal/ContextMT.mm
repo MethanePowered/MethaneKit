@@ -30,7 +30,6 @@ Metal implementation of the context interface.
 
 #include <Methane/Data/Instrumentation.h>
 #include <Methane/Platform/Utils.h>
-#include <Methane/Platform/MacOS/Types.hh>
 
 namespace Methane::Graphics
 {

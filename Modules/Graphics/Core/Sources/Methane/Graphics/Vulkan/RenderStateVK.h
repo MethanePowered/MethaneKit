@@ -16,42 +16,43 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Native/TextureNT.h
-Native implementation alias of the texture interface.
+FILE: Methane/Graphics/Vulkan/RenderStateVK.h
+Vulkan implementation of the render state interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#if defined _WIN32
+#include <Methane/Graphics/RenderStateBase.h>
 
-#include <Methane/Graphics/DirectX12/TextureDX.h>
-
-#elif defined __APPLE__
-
-#include <Methane/Graphics/Metal/TextureMT.hh>
-
-#else // Linux
-
-#include <Methane/Graphics/Vulkan/TextureVK.h>
-
-#endif
+#include <vector>
 
 namespace Methane::Graphics
 {
 
-#if defined _WIN32
+class ContextVK;
 
-using TextureNT = TextureDX;
+class RenderStateVK : public RenderStateBase
+{
+public:
+    RenderStateVK(ContextBase& context, const Settings& settings);
+    ~RenderStateVK() override;
+    
+    // RenderState interface
+    void Reset(const Settings& settings) override;
+    void SetViewports(const Viewports& viewports) override;
+    void SetScissorRects(const ScissorRects& scissor_rects) override;
 
-#elif defined __APPLE__
+    // RenderStateBase interface
+    void Apply(RenderCommandListBase& command_list) override;
 
-using TextureNT = TextureMT;
+    // Object interface
+    void SetName(const std::string& name) override;
 
-#else // Linux
-
-using TextureNT = TextureVK;
-
-#endif
+protected:
+    ContextVK& GetContextVK() noexcept;
+    
+    void ResetNativeState();
+};
 
 } // namespace Methane::Graphics

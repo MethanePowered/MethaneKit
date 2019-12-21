@@ -16,42 +16,34 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Native/TextureNT.h
-Native implementation alias of the texture interface.
+FILE: Methane/Graphics/Vulkan/CommandQueueVK.h
+Vulkan implementation of the command queue interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#if defined _WIN32
-
-#include <Methane/Graphics/DirectX12/TextureDX.h>
-
-#elif defined __APPLE__
-
-#include <Methane/Graphics/Metal/TextureMT.hh>
-
-#else // Linux
-
-#include <Methane/Graphics/Vulkan/TextureVK.h>
-
-#endif
+#include <Methane/Graphics/CommandQueueBase.h>
 
 namespace Methane::Graphics
 {
 
-#if defined _WIN32
+class RenderPassVK;
+class ContextVK;
 
-using TextureNT = TextureDX;
+class CommandQueueVK final : public CommandQueueBase
+{
+public:
+    CommandQueueVK(ContextBase& context);
+    ~CommandQueueVK() override;
 
-#elif defined __APPLE__
+    // Object interface
+    void SetName(const std::string& name) override;
+    
+    ContextVK& GetContextVK() noexcept;
 
-using TextureNT = TextureMT;
-
-#else // Linux
-
-using TextureNT = TextureVK;
-
-#endif
+protected:
+    void Reset();
+};
 
 } // namespace Methane::Graphics

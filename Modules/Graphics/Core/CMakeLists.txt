@@ -99,6 +99,41 @@ elseif(APPLE)
         COMPILE_FLAGS -fobjc-weak
     )
 
+else() # Linux
+
+    set(PLATFORM_SOURCES
+        ${SOURCES_GRAPHICS_DIR}/TypesVK.h
+        ${SOURCES_GRAPHICS_DIR}/TypesVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/DeviceVK.h
+        ${SOURCES_GRAPHICS_DIR}/DeviceVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/ContextVK.h
+        ${SOURCES_GRAPHICS_DIR}/ContextVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/ShaderVK.h
+        ${SOURCES_GRAPHICS_DIR}/ShaderVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/ProgramVK.h
+        ${SOURCES_GRAPHICS_DIR}/ProgramVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/RenderStateVK.h
+        ${SOURCES_GRAPHICS_DIR}/RenderStateVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/ResourceVK.h
+        ${SOURCES_GRAPHICS_DIR}/ResourceVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/DescriptorHeapVK.h
+        ${SOURCES_GRAPHICS_DIR}/DescriptorHeapVK.cpp  
+        ${SOURCES_GRAPHICS_DIR}/BufferVK.h
+        ${SOURCES_GRAPHICS_DIR}/BufferVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/TextureVK.h
+        ${SOURCES_GRAPHICS_DIR}/TextureVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/SamplerVK.h
+        ${SOURCES_GRAPHICS_DIR}/SamplerVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/RenderPassVK.h
+        ${SOURCES_GRAPHICS_DIR}/RenderPassVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/CommandQueueVK.h
+        ${SOURCES_GRAPHICS_DIR}/CommandQueueVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/RenderCommandListVK.h
+        ${SOURCES_GRAPHICS_DIR}/RenderCommandListVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListVK.h
+        ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListVK.cpp
+    )
+
 endif()
 
 set(LIBRARIES ${PLATFORM_LIBRARIES}

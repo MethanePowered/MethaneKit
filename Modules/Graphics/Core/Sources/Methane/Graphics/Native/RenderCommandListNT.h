@@ -31,6 +31,10 @@ Native implementation alias of the render command list interface.
 
 #include <Methane/Graphics/Metal/RenderCommandListMT.hh>
 
+#else // Linux
+
+#include <Methane/Graphics/Vulkan/RenderCommandListVK.h>
+
 #endif
 
 namespace Methane::Graphics
@@ -43,6 +47,10 @@ using RenderCommandListNT = RenderCommandListDX;
 #elif defined __APPLE__
 
 using RenderCommandListNT = RenderCommandListMT;
+
+#else // Linux
+
+using RenderCommandListNT = RenderCommandListVK;
 
 #endif
 

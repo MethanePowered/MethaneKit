@@ -16,42 +16,32 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Native/TextureNT.h
-Native implementation alias of the texture interface.
+FILE: Methane/Graphics/Vulkan/DeviceVK.h
+Vulkan implementation of the device interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#if defined _WIN32
-
-#include <Methane/Graphics/DirectX12/TextureDX.h>
-
-#elif defined __APPLE__
-
-#include <Methane/Graphics/Metal/TextureMT.hh>
-
-#else // Linux
-
-#include <Methane/Graphics/Vulkan/TextureVK.h>
-
-#endif
+#include <Methane/Graphics/DeviceBase.h>
 
 namespace Methane::Graphics
 {
 
-#if defined _WIN32
+class DeviceVK final : public DeviceBase
+{
+public:
+    DeviceVK();
+    ~DeviceVK() override;
+};
 
-using TextureNT = TextureDX;
-
-#elif defined __APPLE__
-
-using TextureNT = TextureMT;
-
-#else // Linux
-
-using TextureNT = TextureVK;
-
-#endif
+class SystemVK final : public SystemBase
+{
+public:
+    ~SystemVK() override;
+    
+    void           CheckForChanges() override {}
+    const Devices& UpdateGpuDevices(Device::Feature::Mask supported_features) override;
+};
 
 } // namespace Methane::Graphics

@@ -16,42 +16,49 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Native/TextureNT.h
-Native implementation alias of the texture interface.
+FILE: Methane/Graphics/Vulkan/DeviceVK.mm
+Vulkan implementation of the device interface.
 
 ******************************************************************************/
 
-#pragma once
+#include "DeviceVK.h"
 
-#if defined _WIN32
-
-#include <Methane/Graphics/DirectX12/TextureDX.h>
-
-#elif defined __APPLE__
-
-#include <Methane/Graphics/Metal/TextureMT.hh>
-
-#else // Linux
-
-#include <Methane/Graphics/Vulkan/TextureVK.h>
-
-#endif
+#include <Methane/Data/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-#if defined _WIN32
+DeviceVK::DeviceVK()
+    : DeviceBase("", false, Device::Feature::Value::BasicRendering)
+{
+    ITT_FUNCTION_TASK();
+}
 
-using TextureNT = TextureDX;
+DeviceVK::~DeviceVK()
+{
+    ITT_FUNCTION_TASK();
+}
 
-#elif defined __APPLE__
+System& System::Get()
+{
+    ITT_FUNCTION_TASK();
+    static SystemVK s_system;
+    return s_system;
+}
 
-using TextureNT = TextureMT;
+SystemVK::~SystemVK()
+{
+    ITT_FUNCTION_TASK();
+}
 
-#else // Linux
+const Devices& SystemVK::UpdateGpuDevices(Device::Feature::Mask supported_features)
+{
+    ITT_FUNCTION_TASK();
 
-using TextureNT = TextureVK;
+    m_supported_features = supported_features;
+    m_devices.clear();
 
-#endif
+    return m_devices;
+}
 
 } // namespace Methane::Graphics

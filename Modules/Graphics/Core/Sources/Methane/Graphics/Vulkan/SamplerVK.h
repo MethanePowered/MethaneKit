@@ -16,42 +16,33 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Native/TextureNT.h
-Native implementation alias of the texture interface.
+FILE: Methane/Graphics/Vulkan/SamplerVK.h
+Vulkan implementation of the sampler interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#if defined _WIN32
-
-#include <Methane/Graphics/DirectX12/TextureDX.h>
-
-#elif defined __APPLE__
-
-#include <Methane/Graphics/Metal/TextureMT.hh>
-
-#else // Linux
-
-#include <Methane/Graphics/Vulkan/TextureVK.h>
-
-#endif
+#include <Methane/Graphics/SamplerBase.h>
 
 namespace Methane::Graphics
 {
 
-#if defined _WIN32
+class ContextVK;
 
-using TextureNT = TextureDX;
+class SamplerVK : public SamplerBase
+{
+public:
+    SamplerVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
+    ~SamplerVK() override;
 
-#elif defined __APPLE__
+    // Object interface
+    void SetName(const std::string& name) override;
+    
+protected:
+    void ResetSampletState();
 
-using TextureNT = TextureMT;
-
-#else // Linux
-
-using TextureNT = TextureVK;
-
-#endif
+    ContextVK& GetContextVK() noexcept;
+};
 
 } // namespace Methane::Graphics

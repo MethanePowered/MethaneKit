@@ -31,6 +31,10 @@ Native implementation alias of the sampler interface.
 
 #include <Methane/Graphics/Metal/SamplerMT.hh>
 
+#else // Linux
+
+#include <Methane/Graphics/Vulkan/SamplerVK.h>
+
 #endif
 
 namespace Methane::Graphics
@@ -43,6 +47,10 @@ using SamplerNT = SamplerDX;
 #elif defined __APPLE__
 
 using SamplerNT = SamplerMT;
+
+#else // Linux
+
+using SamplerNT = SamplerVK;
 
 #endif
 

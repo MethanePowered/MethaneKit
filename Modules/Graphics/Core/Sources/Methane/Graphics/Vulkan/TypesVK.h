@@ -16,42 +16,24 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Native/TextureNT.h
-Native implementation alias of the texture interface.
+FILE: Methane/Graphics/Vulkan/TypesVK.h
+Methane graphics types convertors to Vulkan native types.
 
 ******************************************************************************/
 
 #pragma once
 
-#if defined _WIN32
-
-#include <Methane/Graphics/DirectX12/TextureDX.h>
-
-#elif defined __APPLE__
-
-#include <Methane/Graphics/Metal/TextureMT.hh>
-
-#else // Linux
-
-#include <Methane/Graphics/Vulkan/TextureVK.h>
-
-#endif
+#include <Methane/Graphics/Types.h>
 
 namespace Methane::Graphics
 {
 
-#if defined _WIN32
+class TypeConverterVK
+{
+public:
 
-using TextureNT = TextureDX;
-
-#elif defined __APPLE__
-
-using TextureNT = TextureMT;
-
-#else // Linux
-
-using TextureNT = TextureVK;
-
-#endif
+private:
+    TypeConverterVK() = default;
+};
 
 } // namespace Methane::Graphics

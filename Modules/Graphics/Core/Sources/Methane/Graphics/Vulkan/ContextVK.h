@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/ContextMT.hh
-Metal implementation of the context interface.
+FILE: Methane/Graphics/Vulkan/ContextVK.h
+Vulkan implementation of the context interface.
 
 ******************************************************************************/
 
@@ -25,41 +25,18 @@ Metal implementation of the context interface.
 
 #include <Methane/Graphics/ContextBase.h>
 
-#import <Methane/Platform/MacOS/AppViewMT.hh>
-#import <Metal/Metal.h>
-
-#include <string>
-#include <map>
-
 namespace Methane::Graphics
 {
 
 struct CommandQueue;
-class RenderPassMT;
-class DeviceMT;
+class RenderPassVK;
+class DeviceVK;
 
-class ContextMT : public ContextBase
+class ContextVK : public ContextBase
 {
 public:
-    class LibraryMT
-    {
-    public:
-        using Ptr = std::shared_ptr<LibraryMT>;
-
-        LibraryMT(ContextMT& metal_context, const std::string& library_name = "");
-        ~LibraryMT();
-
-        id<MTLLibrary>& Get() noexcept { return m_mtl_library; }
-
-    private:
-        static NSString* GetFullPath(const std::string& library_name);
-
-        NSError*       m_ns_error = nil;
-        id<MTLLibrary> m_mtl_library;
-    };
-
-    ContextMT(const Platform::AppEnvironment& env, DeviceBase& device, const Settings& settings);
-    ~ContextMT() override;
+    ContextVK(const Platform::AppEnvironment& env, DeviceBase& device, const Settings& settings);
+    ~ContextVK() override;
 
     // Context interface
     bool ReadyToRender() const override;
@@ -69,22 +46,14 @@ public:
     void Present() override;
     bool SetVSyncEnabled(bool vsync_enabled) override;
     bool SetFrameBuffersCount(uint32_t frame_buffers_count) override;
-    Platform::AppView GetAppView() const override { return { m_app_view }; }
+    Platform::AppView GetAppView() const override { return { nullptr }; }
 
-    id<CAMetalDrawable>     GetNativeDrawable()       { return m_app_view.currentDrawable; }
-    DeviceMT&               GetDeviceMT();
-    const LibraryMT::Ptr&   GetLibraryMT(const std::string& library_name = "");
+    DeviceVK& GetDeviceVK();
 
 protected:
     // ContextBase overrides
     void Release() override;
     void Initialize(Device& device, bool deferred_heap_allocation) override;
-
-    using LibraryByName = std::map<std::string, LibraryMT::Ptr>;
-    
-    AppViewMT*              m_app_view;
-    dispatch_semaphore_t    m_dispatch_semaphore;
-    LibraryByName           m_library_by_name;
 };
 
 } // namespace Methane::Graphics

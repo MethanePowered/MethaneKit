@@ -16,42 +16,33 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Native/TextureNT.h
-Native implementation alias of the texture interface.
+FILE: Methane/Graphics/Vulkan/DescriptorHeapVK.mm
+Vulkan "dummy" implementation of the descriptor heap.
 
 ******************************************************************************/
 
-#pragma once
+#include "DescriptorHeapVK.h"
 
-#if defined _WIN32
-
-#include <Methane/Graphics/DirectX12/TextureDX.h>
-
-#elif defined __APPLE__
-
-#include <Methane/Graphics/Metal/TextureMT.hh>
-
-#else // Linux
-
-#include <Methane/Graphics/Vulkan/TextureVK.h>
-
-#endif
+#include <Methane/Data/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-#if defined _WIN32
+DescriptorHeap::Ptr DescriptorHeap::Create(ContextBase& context, const Settings& settings)
+{
+    ITT_FUNCTION_TASK();
+    return std::make_shared<DescriptorHeapVK>(context, settings);
+}
 
-using TextureNT = TextureDX;
+DescriptorHeapVK::DescriptorHeapVK(ContextBase& context, const Settings& settings)
+    : DescriptorHeap(context, settings)
+{
+    ITT_FUNCTION_TASK();
+}
 
-#elif defined __APPLE__
-
-using TextureNT = TextureMT;
-
-#else // Linux
-
-using TextureNT = TextureVK;
-
-#endif
+DescriptorHeapVK::~DescriptorHeapVK()
+{
+    ITT_FUNCTION_TASK();
+}
 
 } // namespace Methane::Graphics

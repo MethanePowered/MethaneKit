@@ -31,6 +31,10 @@ Native implementation alias of the shader interface.
 
 #include <Methane/Graphics/Metal/ShaderMT.hh>
 
+#else // Linux
+
+#include <Methane/Graphics/Vulkan/ShaderVK.h>
+
 #endif
 
 namespace Methane::Graphics
@@ -43,6 +47,10 @@ using ShaderNT = ShaderDX;
 #elif defined __APPLE__
 
 using ShaderNT = ShaderMT;
+
+#else // Linux
+
+using ShaderNT = ShaderVK;
 
 #endif
 

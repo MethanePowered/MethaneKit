@@ -24,7 +24,7 @@ Metal implementation of the texture interface.
 #pragma once
 
 #include <Methane/Graphics/TextureBase.h>
-#include "../../../../../../Data/Primitives/Include/Methane/Data/Types.h"
+#include <Methane/Graphics/Types.h>
 
 #import <Metal/Metal.h>
 

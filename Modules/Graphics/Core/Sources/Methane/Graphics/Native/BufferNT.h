@@ -31,6 +31,10 @@ Native implementation alias of the buffer interface.
 
 #include <Methane/Graphics/Metal/BufferMT.hh>
 
+#else // Linux
+
+#include <Methane/Graphics/Vulkan/BufferVK.h>
+
 #endif
 
 namespace Methane::Graphics
@@ -43,6 +47,10 @@ using BufferNT = BufferDX;
 #elif defined __APPLE__
 
 using BufferNT = BufferMT;
+
+#else // Linux
+
+using BufferNT = BufferVK;
 
 #endif
 

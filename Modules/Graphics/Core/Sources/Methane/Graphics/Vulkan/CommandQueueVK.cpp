@@ -16,42 +16,48 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Native/TextureNT.h
-Native implementation alias of the texture interface.
+FILE: Methane/Graphics/Vulkan/CommandQueueVK.mm
+Vulkan implementation of the command queue interface.
 
 ******************************************************************************/
 
-#pragma once
+#include "CommandQueueVK.h"
+#include "ContextVK.h"
 
-#if defined _WIN32
-
-#include <Methane/Graphics/DirectX12/TextureDX.h>
-
-#elif defined __APPLE__
-
-#include <Methane/Graphics/Metal/TextureMT.hh>
-
-#else // Linux
-
-#include <Methane/Graphics/Vulkan/TextureVK.h>
-
-#endif
+#include <Methane/Data/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-#if defined _WIN32
+CommandQueue::Ptr CommandQueue::Create(Context& context)
+{
+    ITT_FUNCTION_TASK();
+    return std::make_shared<CommandQueueVK>(static_cast<ContextBase&>(context));
+}
 
-using TextureNT = TextureDX;
+CommandQueueVK::CommandQueueVK(ContextBase& context)
+    : CommandQueueBase(context, true)
+{
+    ITT_FUNCTION_TASK();
+}
 
-#elif defined __APPLE__
+CommandQueueVK::~CommandQueueVK()
+{
+    ITT_FUNCTION_TASK();
+    assert(!IsExecuting());
+}
 
-using TextureNT = TextureMT;
+void CommandQueueVK::SetName(const std::string& name)
+{
+    ITT_FUNCTION_TASK();
 
-#else // Linux
+    CommandQueueBase::SetName(name);
+}
 
-using TextureNT = TextureVK;
-
-#endif
+ContextVK& CommandQueueVK::GetContextVK() noexcept
+{
+    ITT_FUNCTION_TASK();
+    return static_cast<class ContextVK&>(m_context);
+}
 
 } // namespace Methane::Graphics
