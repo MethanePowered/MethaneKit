@@ -29,7 +29,6 @@ resources:
       submodules: recursive
 
 variables:
-  buildConfiguration: 'Release'
   buildCmakeFlags: '-DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF -DMETHANE_BUILD_NUMBER=$(Build.BuildNumber)'
 
 jobs:
@@ -41,7 +40,7 @@ jobs:
 
   variables:
     platform: 'Win64'
-    configuration: $(buildConfiguration)
+    configuration: 'Release'
     vcVarsBatFile: 'vcvars64.bat'
     generatorName: '"Visual Studio 15 2017 Win64"'
     cmakeFlags: $(buildCmakeFlags)
@@ -61,7 +60,7 @@ jobs:
 
   variables:
     platform: 'Win32'
-    configuration: $(buildConfiguration)
+    configuration: 'Release'
     vcVarsBatFile: 'vcvars32.bat'
     generatorName: '"Visual Studio 15 2017"'
     cmakeFlags: $(buildCmakeFlags)
@@ -81,7 +80,7 @@ jobs:
 
   variables:
     platform: 'MacOS'
-    configuration: $(buildConfiguration)
+    configuration: 'Release'
     generatorName: 'Xcode'
     cmakeFlags: $(buildCmakeFlags)
     buildName: '$(platform)-$(configuration)'
@@ -100,7 +99,7 @@ jobs:
 
   variables:
     platform: 'Ubuntu'
-    configuration: $(buildConfiguration)
+    configuration: 'Release'
     generatorName: '"Unix Makefiles"'
     cmakeFlags: $(buildCmakeFlags)
     buildName: '$(platform)-$(configuration)'
