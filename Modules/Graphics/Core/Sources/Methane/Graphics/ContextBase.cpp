@@ -100,7 +100,7 @@ void ContextBase::Reset(Device& device)
 
     WaitForGpu(WaitFor::RenderComplete);
     Release();
-    Initialize(device, false);
+    Initialize(device, true);
 }
 
 void ContextBase::Present()

@@ -7,6 +7,8 @@ include(MethaneResources)
 set(SOURCES
     AsteroidsApp.h
     AsteroidsApp.cpp
+    AsteroidsAppController.h
+    AsteroidsAppController.cpp
     Asteroid.h
     Asteroid.cpp
     AsteroidsArray.h

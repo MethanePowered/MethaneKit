@@ -22,6 +22,7 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 ******************************************************************************/
 
 #include "AsteroidsApp.h"
+#include "AsteroidsAppController.h"
 
 #include <Methane/Graphics/AppCameraController.h>
 #include <Methane/Data/TimeAnimation.h>
@@ -29,8 +30,9 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 
 #include <cassert>
 #include <memory>
-#include <array>
 #include <thread>
+#include <array>
+#include <map>
 
 #define PARALLEL_RENDERING_ENABLED 1
 
@@ -38,28 +40,44 @@ namespace Methane::Samples
 {
 
 template<typename ValueT, size_t N>
-using ParamValueByCoresCount = std::array<ValueT, N>;
+using ParamValues = std::array<ValueT, N>;
 
 template<typename ValueT, size_t N>
-inline ValueT GetParamValueByCoresCount(const ParamValueByCoresCount<ValueT, N>& param_values_by_cores_count)
+inline ValueT GetParamValue(const ParamValues<ValueT, N>& param_values, size_t param_index)
 {
-    const size_t cores_count = std::thread::hardware_concurrency() / 2;
-    return param_values_by_cores_count[std::min(cores_count, N - 1)];
+    return param_values[std::min(param_index, N - 1)];
+}
+
+inline size_t GetCoresCount()
+{
+    return std::thread::hardware_concurrency() / 2;
+}
+
+template<typename ValueT, size_t N>
+inline ValueT GetParamValueByCoresCount(const ParamValues<ValueT, N>& param_values_by_cores_count)
+{
+    return GetParamValue(param_values_by_cores_count, GetCoresCount());
 }
 
 constexpr size_t g_max_cores_count = 11;
-static const ParamValueByCoresCount<uint32_t, g_max_cores_count> g_instaces_count = {
+static const ParamValues<uint32_t, g_max_cores_count> g_instaces_count = {
 //  [0]   [1]    [2]    [3]    [4]    [5]    [6]     [7]     [8]     [9]     [10]
     500u, 1000u, 2000u, 3000u, 4000u, 5000u, 10000u, 15000u, 20000u, 35000u, 50000u,
 };
-static const ParamValueByCoresCount<uint32_t, g_max_cores_count> g_mesh_count = {
+static const ParamValues<uint32_t, g_max_cores_count> g_mesh_count = {
     50u,  70u,   100u,  150u,  200u,  400u,  600u,   800u,   1000u,  1500u,  2000u,
 };
-static const ParamValueByCoresCount<uint32_t, g_max_cores_count> g_textures_count = {
+static const ParamValues<uint32_t, g_max_cores_count> g_textures_count = {
     5u,   10u,   20u,   30u,   40u,   50u,   60u,    70u,    80u,    90u,    100u
 };
-static const ParamValueByCoresCount<float, g_max_cores_count> g_scale_ratio = {
+static const ParamValues<float, g_max_cores_count> g_scale_ratio = {
     0.6f, 0.55f, 0.5f,  0.45f, 0.4f,  0.35f, 0.3f,   0.25f,  0.2f,   0.15f,  0.1f
+};
+
+static const std::map<pal::Keyboard::State, AsteroidsAppAction> g_asteroids_action_by_keyboard_state = {
+    { { pal::Keyboard::Key::RightAlt, pal::Keyboard::Key::RightBracket }, AsteroidsAppAction::IncreaseComplexity       },
+    { { pal::Keyboard::Key::RightAlt, pal::Keyboard::Key::LeftBracket  }, AsteroidsAppAction::DecreaseComplexity       },
+    { { pal::Keyboard::Key::RightAlt, pal::Keyboard::Key::P            }, AsteroidsAppAction::SwitchParallelRendering  },
 };
 
 // Common application settings
@@ -112,6 +130,7 @@ AsteroidsApp::AsteroidsApp()
             GetParamValueByCoresCount(g_scale_ratio),       // - max_asteroid_scale_ratio
             true                                            // - depth_reversed
         })
+    , m_asteroids_complexity(GetCoresCount())
 {
     ITT_FUNCTION_TASK();
 
@@ -128,6 +147,7 @@ AsteroidsApp::AsteroidsApp()
     m_light_camera.Resize(120.f, 120.f);
 
     m_input_state.AddControllers({
+        std::make_shared<AsteroidsAppController>(*this, g_asteroids_action_by_keyboard_state),
         std::make_shared<gfx::AppCameraController>(m_view_camera,  "VIEW CAMERA"),
         std::make_shared<gfx::AppCameraController>(m_light_camera, "LIGHT SOURCE",
             gfx::AppCameraController::ActionByMouseButton   { { pal::Mouse::Button::Right, gfx::ActionCamera::MouseAction::Rotate   } },
@@ -201,15 +221,14 @@ void AsteroidsApp::Init()
     // ========= Per-Frame Data =========
     for(AsteroidsFrame& frame : m_frames)
     {
-#if PARALLEL_RENDERING_ENABLED
+        // Create parallel rendering command list for final FB rendering
         frame.sp_parallel_cmd_list = gfx::ParallelRenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_screen_pass);
         frame.sp_parallel_cmd_list->SetParallelCommandListsCount(std::thread::hardware_concurrency());
         frame.sp_parallel_cmd_list->SetName(IndexedName("Parallel Rendering", frame.index));
-#else
+
         // Create command list for final FB rendering
         frame.sp_cmd_list = gfx::RenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_screen_pass);
         frame.sp_cmd_list->SetName(IndexedName("Scene Rendering", frame.index));
-#endif
 
         // Create uniforms buffer with volatile parameters for the whole scene rendering
         frame.sp_scene_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, scene_uniforms_data_size);
@@ -298,18 +317,19 @@ bool AsteroidsApp::Render()
 
     // Asteroids rendering
     assert(!!m_sp_asteroids_array);
-
-#if PARALLEL_RENDERING_ENABLED
-    assert(!!frame.sp_parallel_cmd_list);
-    m_sp_asteroids_array->Draw(*frame.sp_parallel_cmd_list, frame.asteroids);
-    gfx::RenderCommandList& render_cmd_list = *frame.sp_parallel_cmd_list->GetParallelCommandLists().back();
-    gfx::CommandList&       commit_cmd_list = *frame.sp_parallel_cmd_list;
-#else
-    assert(!!frame.sp_cmd_list);
-    m_sp_asteroids_array->Draw(*frame.sp_cmd_list, frame.asteroids);
-    gfx::RenderCommandList& render_cmd_list = *frame.sp_cmd_list;
-    gfx::CommandList&       commit_cmd_list = *frame.sp_cmd_list;
-#endif
+    if (m_is_parallel_rendering_enabled)
+    {
+        assert(!!frame.sp_parallel_cmd_list);
+        m_sp_asteroids_array->Draw(*frame.sp_parallel_cmd_list, frame.asteroids);
+    }
+    else
+    {
+        assert(!!frame.sp_cmd_list);
+        m_sp_asteroids_array->Draw(*frame.sp_cmd_list, frame.asteroids);
+    }
+    
+    gfx::RenderCommandList& render_cmd_list = m_is_parallel_rendering_enabled ? *frame.sp_parallel_cmd_list->GetParallelCommandLists().back() : *frame.sp_cmd_list;
+    gfx::CommandList&       commit_cmd_list = m_is_parallel_rendering_enabled ? static_cast<gfx::CommandList&>(*frame.sp_parallel_cmd_list) : *frame.sp_cmd_list;
     
     render_cmd_list.PopDebugGroup();
     
@@ -324,13 +344,7 @@ bool AsteroidsApp::Render()
     commit_cmd_list.Commit(true);
 
     // Execute rendering commands and present frame to screen
-    m_sp_context->GetRenderCommandQueue().Execute({
-#if PARALLEL_RENDERING_ENABLED
-        *frame.sp_parallel_cmd_list,
-#else
-        *frame.sp_cmd_list,
-#endif
-    });
+    m_sp_context->GetRenderCommandQueue().Execute({ commit_cmd_list });
     m_sp_context->Present();
 
     return true;
@@ -352,6 +366,33 @@ void AsteroidsApp::OnContextReleased()
     m_sp_const_buffer.reset();
 
     GraphicsApp::OnContextReleased();
+}
+
+void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
+{
+    ITT_FUNCTION_TASK();
+    if (m_asteroids_complexity == asteroids_complexity)
+        return;
+    
+    m_asteroids_complexity = asteroids_complexity;
+    
+    m_asteroids_array_settings.instance_count           = GetParamValue(g_instaces_count, m_asteroids_complexity);
+    m_asteroids_array_settings.unique_mesh_count        = GetParamValue(g_mesh_count, m_asteroids_complexity);
+    m_asteroids_array_settings.textures_count           = GetParamValue(g_textures_count, m_asteroids_complexity);
+    m_asteroids_array_settings.min_asteroid_scale_ratio = GetParamValue(g_scale_ratio, m_asteroids_complexity) / 10.f;
+    m_asteroids_array_settings.max_asteroid_scale_ratio = GetParamValue(g_scale_ratio, m_asteroids_complexity);
+    
+    m_sp_asteroids_array.reset();
+    m_sp_asteroids_array_state.reset();
+    
+    assert(!!m_sp_context);
+    m_sp_context->Reset(m_sp_context->GetDevice());
+}
+    
+void AsteroidsApp::SetParallelRnderingEnabled(bool is_parallel_rendering_enabled)
+{
+    ITT_FUNCTION_TASK();
+    m_is_parallel_rendering_enabled = is_parallel_rendering_enabled;
 }
 
 } // namespace Methane::Samples

@@ -25,8 +25,10 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 
 #include "Planet.h"
 #include "AsteroidsArray.h"
+#include "AsteroidsAppController.h"
 
 #include <Methane/Graphics/Kit.h>
+#include <Methane/Platform/Input/Controller.h>
 
 namespace Methane::Samples
 {
@@ -59,8 +61,14 @@ public:
     bool Update() override;
     bool Render() override;
 
-    // Context::Callback interface
+    // Context::Callback overrides
     void OnContextReleased() override;
+    
+    uint32_t GetAsteroidsComplexity() const { return m_asteroids_complexity; }
+    void     SetAsteroidsComplexity(uint32_t asteroids_complexity);
+    
+    bool     IsParallelRenderingEnabled() const { return m_is_parallel_rendering_enabled; }
+    void     SetParallelRnderingEnabled(bool is_parallel_rendering_enabled);
 
 private:
     struct SHADER_STRUCT_ALIGN Constants
@@ -81,7 +89,9 @@ private:
     gfx::ActionCamera                 m_light_camera;
     const float                       m_scene_scale;
     const Constants                   m_scene_constants;
-    const AsteroidsArray::Settings    m_asteroids_array_settings;
+    AsteroidsArray::Settings          m_asteroids_array_settings;
+    size_t                            m_asteroids_complexity = 0;
+    bool                              m_is_parallel_rendering_enabled = true;
     SceneUniforms                     m_scene_uniforms = { };
     
     gfx::Buffer::Ptr                  m_sp_const_buffer;
