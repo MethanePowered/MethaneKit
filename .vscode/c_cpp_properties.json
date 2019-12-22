@@ -1,0 +1,29 @@
+{
+    "env": {
+        "defaultIncludePath": [
+            "${workspaceFolder}/Externals/**",
+            "${workspaceFolder}/Modules/**",
+            "${workspaceFolder}/Apps/**"
+        ],
+        "defaultDefines": [
+            "ITT_INSTRUMENTATION_ENABLED"
+        ],
+        "defaultCStandard": "c11",
+        "defaultCppStandard": "c++17"
+    },
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${defaultIncludePath}"
+            ],
+            "defines": [],
+            "cStandard": "${defaultCStandard}",
+            "cppStandard": "${defaultCppStandard}",
+            "compilerPath": "/usr/bin/gcc",
+            "configurationProvider": "vector-of-bool.cmake-tools",
+            "compileCommands": "${workspaceFolder}/Build/Output/VSCode/Build/compile_commands.json"
+        }
+    ],
+    "version": 4
+}

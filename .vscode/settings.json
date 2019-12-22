@@ -4,11 +4,14 @@
     "cmake.installPrefix": "${workspaceRoot}/Build/Output/VSCode/Install",
     "cmake.configureArgs": [
     	"-DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON",
-    	"-DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON"
+    	"-DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON",
+        "-DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF"
     ],
-    
     "C_Cpp.default.configurationProvider": "vector-of-bool.cmake-tools",
     "C_Cpp.default.cppStandard": "c++17",
     "C_Cpp.default.cStandard": "c11",
     "C_Cpp.default.intelliSenseMode": "clang-x64",
+    "files.exclude": {
+        "Build/Output": true
+    }
 }
