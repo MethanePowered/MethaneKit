@@ -99,7 +99,7 @@ uint32_t AsteroidsArray::UberMesh::GetSubsetSubdivision(uint32_t subset_index) c
 }
 
 AsteroidsArray::ContentState::ContentState(const Settings& settings)
-    : uber_mesh(settings.unique_mesh_count, settings.subdivisions_count, 1, settings.random_seed)
+    : uber_mesh(settings.unique_mesh_count, settings.subdivisions_count, settings.minimum_subdivision, settings.random_seed)
 {
     ITT_FUNCTION_TASK();
 

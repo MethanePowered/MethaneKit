@@ -49,6 +49,7 @@ public:
         float           scale                    = 1.f;
         uint32_t        instance_count           = 100u;
         uint32_t        unique_mesh_count        = 50u;
+        uint32_t        minimum_subdivision      = 0u;
         uint32_t        subdivisions_count       = 3u;
         uint32_t        textures_count           = 10u;
         gfx::Dimensions texture_dimensions       = { 256u, 256u };
