@@ -31,7 +31,7 @@ Methane graphics helpers: all headers under one umbrella.
 
 #include "MacOS/Helpers.h"
 
-#else //Linux
+#elif defined __linux__
 
 #include "Linux/MathTypes.h"
 

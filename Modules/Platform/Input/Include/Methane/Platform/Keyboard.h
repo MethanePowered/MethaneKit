@@ -31,7 +31,7 @@ Platform abstraction of keyboard events.
 
 #include "MacOS/Keyboard.h"
 
-#else // Linux
+#elif defined __linux__
 
 #include "Linux/Keyboard.h"
 

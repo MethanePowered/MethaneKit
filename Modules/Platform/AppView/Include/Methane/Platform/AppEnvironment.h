@@ -31,7 +31,7 @@ Methane application environment.
 
 #include "MacOS/AppEnvironment.hh"
 
-#else // Linux
+#elif defined __linux__
 
 #include "Linux/AppEnvironment.h"
 

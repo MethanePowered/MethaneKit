@@ -48,7 +48,7 @@ using RenderPassNT = RenderPassDX;
 
 using RenderPassNT = RenderPassMT;
 
-#else // Linux
+#elif defined __linux__
 
 using RenderPassNT = RenderPassVK;
 

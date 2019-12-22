@@ -31,7 +31,7 @@ Methane platform application alias.
 
 #include <Methane/Platform/MacOS/AppMac.hh>
 
-#else //Linux
+#elif defined __linux__
 
 #include <Methane/Platform/Linux/AppLin.h>
 
@@ -48,7 +48,7 @@ using App = AppWin;
 
 using App = AppMac;
 
-#else // Linux
+#elif defined __linux__
 
 using App = AppLin;
 

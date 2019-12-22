@@ -31,7 +31,7 @@ Math types aliases.
 
 #include "MacOS/MathTypes.h"
 
-#else //Linux
+#elif defined __linux__
 
 #include "Linux/MathTypes.h"
 

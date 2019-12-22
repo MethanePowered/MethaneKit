@@ -31,7 +31,7 @@ Native implementation alias of the render state interface.
 
 #include <Methane/Graphics/Metal/RenderStateMT.hh>
 
-#else // Linux
+#elif defined __linux__
 
 #include <Methane/Graphics/Vulkan/RenderStateVK.h>
 
@@ -48,7 +48,7 @@ using RenderStateNT = RenderStateDX;
 
 using RenderStateNT = RenderStateMT;
 
-#else // Linux
+#elif defined __linux__
 
 using RenderStateNT = RenderStateVK;
 

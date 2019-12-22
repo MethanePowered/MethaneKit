@@ -91,7 +91,7 @@ int AppBase::Run(const RunArgs& args)
         strcpy_s(mutable_arg_values[argi], arg_value_size, args.cmd_arg_values[argi]);
 #elif defined __APPLE__
         strlcpy(mutable_arg_values[argi], args.cmd_arg_values[argi], arg_value_size);
-#else // Linux
+#elif defined __linux__
         strcpy(mutable_arg_values[argi], args.cmd_arg_values[argi]);
 #endif
         mutable_args_count++;

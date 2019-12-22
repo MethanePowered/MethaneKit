@@ -31,7 +31,7 @@ Native implementation alias of the command queue interface.
 
 #include <Methane/Graphics/Metal/CommandQueueMT.hh>
 
-#else // Linux
+#elif defined __linux__
 
 #include <Methane/Graphics/Vulkan/CommandQueueVK.h>
 
@@ -48,7 +48,7 @@ using CommandQueueNT = CommandQueueDX;
 
 using CommandQueueNT = CommandQueueMT;
 
-#else // Linux
+#elif defined __linux__
 
 using CommandQueueNT = CommandQueueVK;
 

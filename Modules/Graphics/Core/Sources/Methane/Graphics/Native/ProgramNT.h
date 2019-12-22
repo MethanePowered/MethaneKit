@@ -31,7 +31,7 @@ Native implementation alias of the program interface.
 
 #include <Methane/Graphics/Metal/ProgramMT.hh>
 
-#else // Linux
+#elif defined __linux__
 
 #include <Methane/Graphics/Vulkan/ProgramVK.h>
 
@@ -48,7 +48,7 @@ using ProgramNT = ProgramDX;
 
 using ProgramNT = ProgramMT;
 
-#else // Linux
+#elif defined __linux__
 
 #include <Methane/Graphics/Vulkan/ProgramVK.h>
 

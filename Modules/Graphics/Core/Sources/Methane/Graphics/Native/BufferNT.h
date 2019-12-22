@@ -31,7 +31,7 @@ Native implementation alias of the buffer interface.
 
 #include <Methane/Graphics/Metal/BufferMT.hh>
 
-#else // Linux
+#elif defined __linux__
 
 #include <Methane/Graphics/Vulkan/BufferVK.h>
 
@@ -48,7 +48,7 @@ using BufferNT = BufferDX;
 
 using BufferNT = BufferMT;
 
-#else // Linux
+#elif defined __linux__
 
 using BufferNT = BufferVK;
 

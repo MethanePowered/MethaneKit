@@ -31,7 +31,7 @@ Native implementation alias of the resource interface.
 
 #include <Methane/Graphics/Metal/ResourceMT.hh>
 
-#else // Linux
+#elif defined __linux__
 
 #include <Methane/Graphics/Vulkan/ResourceVK.h>
 
@@ -48,7 +48,7 @@ using ResourceNT = ResourceDX;
 
 using ResourceNT = ResourceMT;
 
-#else // Linux
+#elif defined __linux__
 
 using ResourceNT = ResourceVK;
 

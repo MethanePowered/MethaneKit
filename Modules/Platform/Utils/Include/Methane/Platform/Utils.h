@@ -31,7 +31,7 @@ Methane platform utilitary functions
 
 #include "MacOS/Utils.hh"
 
-#else // Linux
+#elif defined __linux__
 
 #include "Linux/Utils.h"
 

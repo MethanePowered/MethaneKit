@@ -31,7 +31,7 @@ Native implementation alias of the context interface.
 
 #include <Methane/Graphics/Metal/ContextMT.hh>
 
-#else // Linux
+#elif defined __linux__
 
 #include <Methane/Graphics/Vulkan/ContextVK.h>
 
@@ -48,7 +48,7 @@ using ContextNT = ContextDX;
 
 using ContextNT = ContextMT;
 
-#else // Linux
+#elif defined __linux__
 
 using ContextNT = ContextVK;
 

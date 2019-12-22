@@ -31,7 +31,7 @@ Native implementation alias of the descriptor heap.
 
 #include <Methane/Graphics/Metal/DescriptorHeapMT.hh>
 
-#else // Linux
+#elif defined __linux__
 
 #include <Methane/Graphics/Vulkan/DescriptorHeapVK.h>
 
@@ -48,7 +48,7 @@ using DescriptorHeapNT = DescriptorHeapDX;
 
 using DescriptorHeapNT = DescriptorHeapMT;
 
-#else // Linux
+#elif defined __linux__
 
 using DescriptorHeapNT = DescriptorHeapVK;
 
