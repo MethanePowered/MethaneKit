@@ -5,7 +5,10 @@
 - **Simplifies modern graphics programming** with object-oriented graphics API inspired by simplicity of Apple's Metal.
 - **Provides cross-platform application infrastructure** from CMake-based toolchain to application and user input classes.
 
-Note that project is in **Alpha / [MVP](https://en.wikipedia.org/wiki/Minimum_viable_product)** stage and is under active development.
+Note that project is in Alpha stage and is under active development.
+You can check out Methane Kit right away in a familiar "VS Code" like IDE environment in your web-browser with the "Open in Gitpod" button.
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/theia-ide/theia)
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![LoC](https://tokei.rs/b1/github/egorodet/MethaneKit)](https://github.com/egorodet/MethaneKit)
