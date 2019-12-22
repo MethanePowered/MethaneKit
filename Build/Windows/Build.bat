@@ -49,8 +49,8 @@ IF "%~1"=="--analyze" (
     ECHO =========================================================
 )
 
-ECHO Pulling latest changes with submodules...
-git pull --recurse-submodules
+ECHO Pulling latest changes from submodules...
+git submodule update --init --recursive
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
 RD /S /Q "%BUILD_DIR%"

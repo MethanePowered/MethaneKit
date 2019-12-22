@@ -46,8 +46,8 @@ fi
 rm -rf "$OUTPUT_DIR"
 mkdir -p "$BUILD_DIR"
 
-echo Pulling latest changes with submodules...
-git pull --recurse-submodules
+echo Pulling latest changes from submodules...
+git submodule update --init --recursive
 
 echo ---
 

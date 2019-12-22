@@ -53,7 +53,7 @@ public:
                 Color4f(0.0f, 0.2f, 0.4f, 1.0f), // - clear_color
             },                                   //
             true                                 // show_hud_in_window_title
-          },
+        },
         RenderPass::Access::None)                // screen_pass_access (program access to resources)
     { }
 

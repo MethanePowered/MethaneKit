@@ -33,7 +33,7 @@ Check out the codebase right away in a familiar "VS Code" IDE environment in you
 - **Cross-platform**
   - Supported platforms:
     - Windows 10 with DirectX 12 API
-    - MacOS 10.13 "El Capitan" or later with Metal API
+    - MacOS 10.13 with Metal API
   - Application infrastructure:
     - [Methane CMake modules](/CMake) implement toolchain for cross-platform graphics applications build setup.
     - [Base application class](/Modules/Platform/App/Include/Methane/Platform/AppBase.h) and platform-specific implementations are completely GLFW free!
@@ -50,7 +50,7 @@ Check out the codebase right away in a familiar "VS Code" IDE environment in you
     - [Program::ResourceBindings](/Modules/Graphics/Core/Include/Methane/Graphics/Program.h) simplifies binding resources to programs by uniform variable names and enables fast bindings switching at runtime
     - [RenderState](/Modules/Graphics/Core/Include/Methane/Graphics/RenderState.h) and [RenderPass](/Modules/Graphics/Core/Include/Methane/Graphics/RenderPass.h) used for inputs and outputs configuration of the graphics pipeline
     - [RenderCommandList](/Modules/Graphics/Core/Include/Methane/Graphics/RenderCommandList.h) and [CommandQueue](/Modules/Graphics/Core/Include/Methane/Graphics/CommandQueue.h) for render commands encoding and execution
-  - [Core interface extensions](/Modules/Graphics/Extensions/Include/Methane/Graphics) like: ImageLoader for loading images to textures from common image formats.
+  - [Core interface extensions](/Modules/Graphics/Extensions/Include/Methane/Graphics) like: ImageLoader for loading images to textures, SkyBox renderer, etc.
   - [Common 3D graphics helpers](/Modules/Graphics/Helpers/Include/Methane/Graphics) like: Camera, Timer, Mesh generator, etc.
 - **Lightweight**:
   - No heavy external dependencies: almost all libraries are header only.
@@ -94,27 +94,25 @@ Check out the codebase right away in a familiar "VS Code" IDE environment in you
 
 - **First time initialization**
 ```console
-mkdir MethaneKit
-cd MethaneKit
+mkdir MethaneKit && cd MethaneKit
 git clone --recurse-submodules --depth 1 https://github.com/egorodet/MethaneKit.git
 ```
 - **Update sources to latest version**
 ```console
 cd MethaneKit
-git pull --recurse-submodules
+git pull && git submodule update --init --depth 1 --recursive
 ```
 
 #### Windows Build
 
 Start **"x64 Native Tools Command Prompt for VS2017"** (it initializes environment with VS path to Windows SDK, etc), then go to MethaneKit root directory (see instructions above to initialize repository and get latest code with submodules) and either start auxiliary build script [Build/Windows/Build.bat](Build/Windows/Build.bat) or build with cmake manually:
 ```console
-mkdir Build\Output\VisualStudio\Build
-cd Build\Output\VisualStudio\Build
+mkdir Build\Output\VisualStudio\Build && cd Build\Output\VisualStudio\Build
 cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_INSTALL_PREFIX="%cd%\..\Install" "..\..\..\.."
 cmake --build . --config Release --target install
 ```
 
-Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) directly in Visual Studio 2017 (or any other CMake IDE of your choice) and build it with using "Ninja" and provided configuration file [CMakeSettings.json](CMakeSettings.json).
+Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) directly in Visual Studio 2017 (or any other CMake IDE of your choice) and build it using "Ninja" generator and provided configuration file [CMakeSettings.json](CMakeSettings.json).
 
 Run applications from the installation directory `Build\Output\VisualStudio\Install\Apps`.
 
@@ -122,8 +120,7 @@ Run applications from the installation directory `Build\Output\VisualStudio\Inst
 
 Start terminal, then go to MethaneKit root directory (see instructions above to initialize repository and get latest code with submodules) and either start auxiliary build script [Build/MacOS/Build.sh](Build/MacOS/Build.sh) or build with cmake manually:
 ```console
-mkdir -p Build/Output/XCode/Build
-cd Build/Output/XCode/Build
+mkdir -p Build/Output/XCode/Build && cd Build/Output/XCode/Build
 cmake -H../../../.. -B. -G Xcode -DCMAKE_INSTALL_PREFIX="$(pwd)/../Install"
 cmake --build . --config Release --target install
 ```
@@ -176,7 +173,7 @@ public:
                 Color4f(0.0f, 0.2f, 0.4f, 1.0f), // - clear_color
             },                                   //
             true                                 // show_hud_in_window_title
-          },
+        },
         RenderPass::Access::None)                // screen_pass_access (program access to resources)
     { }
 
@@ -236,10 +233,10 @@ public:
         return true;
     }
 
-    void Render() override
+    bool Render() override
     {
-        if (!m_sp_context->ReadyToRender())
-            return;
+        if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
+            return false;
 
         m_sp_context->WaitForGpu(Context::WaitFor::FramePresented);
         HelloTriangleFrame& frame = GetCurrentFrame();
@@ -252,7 +249,7 @@ public:
         m_sp_context->GetRenderCommandQueue().Execute({ *frame.sp_cmd_list });
         m_sp_context->Present();
 
-        GraphicsApp::Render();
+        return true;
     }
 
     void OnContextReleased() override
