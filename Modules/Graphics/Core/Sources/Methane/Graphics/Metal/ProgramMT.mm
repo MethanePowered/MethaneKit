@@ -146,7 +146,7 @@ void ProgramMT::ResourceBindingsMT::Apply(CommandList& command_list, ApplyBehavi
         }
         
         if ((apply_behavior & ApplyBehavior::ConstantOnce || apply_behavior & ApplyBehavior::ChangesOnly) &&
-            resource_binding.IsAlreadyApplied(*m_sp_program, program_argument, command_state, apply_behavior & ApplyBehavior::ChangesOnly))
+            metal_resource_binding.IsAlreadyApplied(*m_sp_program, program_argument, command_state, apply_behavior & ApplyBehavior::ChangesOnly))
             continue;
         
         const Resource::Type resource_type = bound_resource_location.sp_resource->GetResourceType();
