@@ -34,6 +34,16 @@ elseif(APPLE)
         "-framework AppKit"
     )
 
+else() # Linux
+
+    set(PLATFORM_HEADERS
+        ${INCLUDE_PLATFORM_DIR}/AppLin.h
+    )
+
+    set(PLATFORM_SOURCES
+        ${SOURCES_PLATFORM_DIR}/AppLin.cpp
+    )
+
 endif()
 
 set(LIBRARIES ${LIBRARIES}

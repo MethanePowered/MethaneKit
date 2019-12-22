@@ -114,7 +114,7 @@ AsteroidsArray::ContentState::ContentState(const Settings& settings)
         [&](gfx::Resource::SubResources& sub_resources, Data::Index)
         {
             Asteroid::TextureNoiseParameters noise_parameters = {
-                rng(),
+                static_cast<uint32_t>(rng()),
                 noise_persistence_distribution(rng),
                 noise_scale_distribution(rng),
                 1.5f

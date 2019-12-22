@@ -108,6 +108,11 @@ void RenderStateVK::SetName(const std::string& name)
     ResetNativeState();
 }
 
+void RenderStateVK::ResetNativeState()
+{
+    ITT_FUNCTION_TASK();
+}
+
 ContextVK& RenderStateVK::GetContextVK() noexcept
 {
     ITT_FUNCTION_TASK();

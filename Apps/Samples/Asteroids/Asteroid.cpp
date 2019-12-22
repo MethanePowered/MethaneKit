@@ -26,6 +26,7 @@ Random generated asteroid model with mesh and texture ready for rendering
 #include <Methane/Graphics/Noise.hpp>
 #include <Methane/Data/Instrumentation.h>
 
+#include <cmath>
 #include <sstream>
 
 namespace Methane::Samples
@@ -40,7 +41,7 @@ static gfx::Color3f TransformSRGBToLinear(const gfx::Color3f& srgb_color)
     gfx::Color3f linear_color = {};
     for (int c = 0; c < 3; ++c)
     {
-        linear_color[c] = std::powf(srgb_color[c] / 255.f, 2.2f);
+        linear_color[c] = std::pow(srgb_color[c] / 255.f, 2.2f);
     }
     return linear_color;
 }

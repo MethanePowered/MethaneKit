@@ -36,6 +36,14 @@ target_link_libraries(${TARGET}
     CML
 )
 
+if (UNIX)
+
+    target_link_libraries(${TARGET}
+        pthread
+    )
+
+endif()
+
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES  ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}

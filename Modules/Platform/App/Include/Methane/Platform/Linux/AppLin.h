@@ -16,42 +16,41 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/App.h
-Methane platform application alias.
+FILE: Methane/Platform/Linux/AppLin.h
+Linux application implementation.
 
 ******************************************************************************/
 
 #pragma once
 
-#if defined _WIN32
+#include <Methane/Platform/AppBase.h>
+#include <Methane/Platform/AppEnvironment.h>
+#include <Methane/Platform/Mouse.h>
 
-#include <Methane/Platform/Windows/AppWin.h>
-
-#elif defined __APPLE__
-
-#include <Methane/Platform/MacOS/AppMac.hh>
-
-#else //Linux
-
-#include <Methane/Platform/Linux/AppLin.h>
-
-#endif
+#include <vector>
+#include <memory>
 
 namespace Methane::Platform
 {
 
-#if defined _WIN32
+class AppLin : public AppBase
+{
+public:
+    AppLin(const Settings& settings);
 
-using App = AppWin;
+    // AppBase interface
+    int Run(const RunArgs& args) override;
+    void Alert(const Message& msg, bool deferred = false) override;
+    void SetWindowTitle(const std::string& title_text) override;
+    bool SetFullScreen(bool is_full_screen) override;
+    void Close() override;
 
-#elif defined __APPLE__
+protected:
+    // AppBase interface
+    void ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result) override;
+    void ShowAlert(const Message& msg) override;
 
-using App = AppMac;
-
-#else // Linux
-
-using App = AppLin;
-
-#endif
+    AppEnvironment m_env;
+};
 
 } // namespace Methane::Platform

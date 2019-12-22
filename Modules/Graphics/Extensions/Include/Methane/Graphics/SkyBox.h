@@ -69,11 +69,11 @@ public:
     void Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindings);
 
 private:
-    using TexturedMeshBuffers = TexturedMeshBuffers<Uniforms>;
+    using TheTexturedMeshBuffers = TexturedMeshBuffers<Uniforms>;
 
     Settings               m_settings;
     Context&               m_context;
-    TexturedMeshBuffers    m_mesh_buffers;
+    TheTexturedMeshBuffers m_mesh_buffers;
     Sampler::Ptr           m_sp_texture_sampler;
     RenderState::Ptr       m_sp_state;
     RenderCommandList::Ptr m_sp_command_list;
