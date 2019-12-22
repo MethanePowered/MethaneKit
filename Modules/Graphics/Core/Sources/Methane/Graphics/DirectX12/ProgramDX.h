@@ -54,7 +54,7 @@ public:
 
         // ResourceBindings interface
         void CompleteInitialization() override;
-        void Apply(CommandList& command_list) const override;
+        void Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior) const override;
 
     protected:
         using ApplyResourceBindingFunc = std::function<void(ResourceDX&, const Argument&, ShaderDX::ResourceBindingDX&, const DescriptorHeap::Reservation*)>;

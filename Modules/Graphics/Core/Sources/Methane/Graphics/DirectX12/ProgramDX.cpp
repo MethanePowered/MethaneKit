@@ -42,6 +42,7 @@ DirectX 12 implementation of the program interface.
 #include <sstream>
 #include <cassert>
 #include <iomanip>
+#include "../ResourceBase.h"
 
 namespace Methane::Graphics
 {
@@ -151,7 +152,7 @@ void ProgramDX::ResourceBindingsDX::CompleteInitialization()
     CopyDescriptorsToGpu();
 }
 
-void ProgramDX::ResourceBindingsDX::Apply(CommandList& command_list) const 
+void ProgramDX::ResourceBindingsDX::Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior) const
 {
     ITT_FUNCTION_TASK();
 
@@ -173,9 +174,12 @@ void ProgramDX::ResourceBindingsDX::Apply(CommandList& command_list) const
 
     ResourceBase::Barriers resource_transition_barriers;
     std::vector<GraphicsRootParameterBinding> graphics_root_parameter_bindings;
+    graphics_root_parameter_bindings.reserve(m_resource_binding_by_argument.size());
+
     ForEachResourceBinding([&](ResourceDX& resource, const Argument& argument, ShaderDX::ResourceBindingDX& resource_binding, const DescriptorHeap::Reservation* p_heap_reservation)
     {
-        if (resource_binding.IsAlreadyApplied(*m_sp_program, argument, command_state))
+        if ((apply_behavior & ApplyBehavior::ConstantOnce || apply_behavior & ApplyBehavior::ChangesOnly) &&
+            resource_binding.IsAlreadyApplied(*m_sp_program, argument, command_state, apply_behavior & ApplyBehavior::ChangesOnly))
             return;
 
         const DXBindingType         binding_type            = resource_binding.GetSettings().type;
@@ -205,11 +209,13 @@ void ProgramDX::ResourceBindingsDX::Apply(CommandList& command_list) const
             gpu_virtual_address
         });
 
-        const ResourceBase::State resource_state = resource_binding.GetShaderType() == Shader::Type::Pixel
-            ? ResourceBase::State::PixelShaderResource
-            : ResourceBase::State::NonPixelShaderResource;
-
-        resource.SetState(resource_state, resource_transition_barriers);
+        if (apply_behavior & ApplyBehavior::StateBarriers)
+        {
+            const ResourceBase::State resource_state = resource_binding.GetShaderType() == Shader::Type::Pixel
+                                                     ? ResourceBase::State::PixelShaderResource
+                                                     : ResourceBase::State::NonPixelShaderResource;
+            resource.SetState(resource_state, resource_transition_barriers);
+        }
     });
 
     // Set resource transition barriers before applying resource bindings

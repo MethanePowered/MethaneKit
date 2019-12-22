@@ -43,7 +43,7 @@ public:
         ResourceBindingsMT(const ResourceBindingsMT& other_resource_bindings, const ResourceLocationByArgument& replace_resource_location_by_argument);
 
         // ResourceBindings interface
-        void Apply(CommandList& command_list) const override;
+        void Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior) const override;
         
         // ResourceBindingsBase interface
         void CompleteInitialization() override { }

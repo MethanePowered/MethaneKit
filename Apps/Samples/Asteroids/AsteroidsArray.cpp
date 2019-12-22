@@ -359,7 +359,8 @@ void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, gfx::MeshBufferBindi
     cmd_list.Reset(*m_sp_render_state, "Asteroids rendering");
 
     assert(buffer_bindings.resource_bindings_per_instance.size() == m_settings.instance_count);
-    BaseBuffers::Draw(cmd_list, buffer_bindings.resource_bindings_per_instance);
+    BaseBuffers::Draw(cmd_list, buffer_bindings.resource_bindings_per_instance,
+                      gfx::Program::ResourceBindings::ApplyBehavior::ConstantOnce);
 }
 
 void AsteroidsArray::Draw(gfx::ParallelRenderCommandList& parallel_cmd_list, gfx::MeshBufferBindings& buffer_bindings)
@@ -374,7 +375,8 @@ void AsteroidsArray::Draw(gfx::ParallelRenderCommandList& parallel_cmd_list, gfx
     parallel_cmd_list.Reset(*m_sp_render_state, "Asteroids Rendering");
 
     assert(buffer_bindings.resource_bindings_per_instance.size() == m_settings.instance_count);
-    BaseBuffers::Draw(parallel_cmd_list, buffer_bindings.resource_bindings_per_instance);
+    BaseBuffers::Draw(parallel_cmd_list, buffer_bindings.resource_bindings_per_instance,
+                      gfx::Program::ResourceBindings::ApplyBehavior::ConstantOnce);
 }
 
 uint32_t AsteroidsArray::GetSubsetByInstanceIndex(uint32_t instance_index) const

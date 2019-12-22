@@ -58,7 +58,7 @@ ProgramVK::ResourceBindingsVK::ResourceBindingsVK(const ResourceBindingsVK& othe
     ITT_FUNCTION_TASK();
 }
 
-void ProgramVK::ResourceBindingsVK::Apply(CommandList& command_list) const
+void ProgramVK::ResourceBindingsVK::Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior) const
 {
     ITT_FUNCTION_TASK();
 
@@ -82,7 +82,8 @@ void ProgramVK::ResourceBindingsVK::Apply(CommandList& command_list) const
 #endif
         }
         
-        if (vulkan_resource_binding.IsAlreadyApplied(*m_sp_program, program_argument, command_state))
+        if ((apply_behavior & ApplyBehavior::ConstantOnce || apply_behavior & ApplyBehavior::ChangesOnly) &&
+            vulkan_resource_binding.IsAlreadyApplied(*m_sp_program, program_argument, command_state, apply_behavior & ApplyBehavior::ChangesOnly))
             continue;
     }
 }

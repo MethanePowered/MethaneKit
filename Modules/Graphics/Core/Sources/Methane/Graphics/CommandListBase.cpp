@@ -176,10 +176,10 @@ void CommandListBase::ResetCommandState()
     m_command_state.sp_resource_bindings.reset();
 }
 
-void CommandListBase::SetResourceBindings(Program::ResourceBindings& resource_bindings)
+void CommandListBase::SetResourceBindings(Program::ResourceBindings& resource_bindings, Program::ResourceBindings::ApplyBehavior::Mask apply_behavior)
 {
     ITT_FUNCTION_TASK();
-    resource_bindings.Apply(*this);
+    resource_bindings.Apply(*this, apply_behavior);
     m_command_state.sp_resource_bindings = static_cast<ProgramBase::ResourceBindingsBase&>(resource_bindings).GetPtr();
 }
 

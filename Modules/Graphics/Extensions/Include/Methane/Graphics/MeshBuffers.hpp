@@ -123,6 +123,7 @@ public:
     void Draw(RenderCommandList& cmd_list,
               const MeshBufferBindings::ResourceBindingsArray::const_iterator& instance_resource_bindings_begin,
               const MeshBufferBindings::ResourceBindingsArray::const_iterator& instance_resource_bindings_end,
+              Program::ResourceBindings::ApplyBehavior::Mask bindings_apply_behavior = Program::ResourceBindings::ApplyBehavior::AllIncremental,
               uint32_t first_instance_index = 0)
     {
         ITT_FUNCTION_TASK();
@@ -145,7 +146,7 @@ public:
 
             const Mesh::Subset& mesh_subset = m_mesh_subsets[subset_index];
 
-            cmd_list.SetResourceBindings(*sp_resource_bindings);
+            cmd_list.SetResourceBindings(*sp_resource_bindings, bindings_apply_behavior);
             cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, index_buffer,
                                  mesh_subset.indices.count, mesh_subset.indices.offset,
                                  mesh_subset.indices_adjusted ? 0 : mesh_subset.vertices.offset,
@@ -153,7 +154,8 @@ public:
         }
     }
 
-    void Draw(ParallelRenderCommandList& parallel_cmd_list, const MeshBufferBindings::ResourceBindingsArray& instance_resource_bindings)
+    void Draw(ParallelRenderCommandList& parallel_cmd_list, const MeshBufferBindings::ResourceBindingsArray& instance_resource_bindings,
+              Program::ResourceBindings::ApplyBehavior::Mask bindings_apply_behavior = Program::ResourceBindings::ApplyBehavior::AllIncremental)
     {
         ITT_FUNCTION_TASK();
 
@@ -161,7 +163,7 @@ public:
         const uint32_t instances_count_per_command_list = static_cast<uint32_t>(Data::DivCeil(instance_resource_bindings.size(), render_cmd_lists.size()));
 
         Data::ParallelFor<RenderCommandList::Ptrs::const_iterator, const RenderCommandList::Ptr>(render_cmd_lists.begin(), render_cmd_lists.end(),
-            [this, &instance_resource_bindings, &instances_count_per_command_list](const RenderCommandList::Ptr& sp_render_command_list, Data::Index cl_index)
+            [this, &instance_resource_bindings, &instances_count_per_command_list, bindings_apply_behavior](const RenderCommandList::Ptr& sp_render_command_list, Data::Index cl_index)
             {
                 const uint32_t begin_instance_index = instances_count_per_command_list * cl_index;
                 const uint32_t end_instance_index   = std::min(begin_instance_index + instances_count_per_command_list,
@@ -171,7 +173,7 @@ public:
                 Draw(*sp_render_command_list,
                      instance_resource_bindings.begin() + begin_instance_index,
                      instance_resource_bindings.begin() + end_instance_index,
-                     begin_instance_index);
+                     bindings_apply_behavior, begin_instance_index);
             });
     }
 

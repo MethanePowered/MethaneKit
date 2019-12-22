@@ -69,7 +69,9 @@ public:
 
         Ptr  GetPtr()               { return shared_from_this(); }
         bool HasResource() const    { return !!m_resource_location.sp_resource; }
-        bool IsAlreadyApplied(const Program& program, const Program::Argument& program_argument, const CommandListBase::CommandState& command_state) const;
+        bool IsAlreadyApplied(const Program& program, const Program::Argument& program_argument,
+                              const CommandListBase::CommandState& command_state,
+                              bool check_binding_value_changes) const;
 
     protected:
         ContextBase&        m_context;

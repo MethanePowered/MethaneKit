@@ -68,7 +68,9 @@ void ShaderBase::ResourceBindingBase::SetResourceLocation(Resource::Location res
     m_resource_location = std::move(resource_location);
 }
     
-bool ShaderBase::ResourceBindingBase::IsAlreadyApplied(const Program& program, const Program::Argument& program_argument, const CommandListBase::CommandState& command_state) const
+bool ShaderBase::ResourceBindingBase::IsAlreadyApplied(const Program& program, const Program::Argument& program_argument,
+                                                       const CommandListBase::CommandState& command_state,
+                                                       bool check_binding_value_changes) const
 {
     ITT_FUNCTION_TASK();
     
@@ -84,6 +86,9 @@ bool ShaderBase::ResourceBindingBase::IsAlreadyApplied(const Program& program, c
     //    when another binding was previously set in the same command list for the same program
     if (m_settings.is_constant)
         return true;
+
+    if (!check_binding_value_changes)
+        return false;
 
     const Shader::ResourceBinding::Ptr& previous_argument_resource_binding = command_state.sp_resource_bindings->Get(program_argument);
     if (!previous_argument_resource_binding)

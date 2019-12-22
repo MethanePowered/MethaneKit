@@ -94,13 +94,28 @@ struct Program
         using WeakPtr = std::weak_ptr<ResourceBindings>;
         using ResourceLocationByArgument = std::unordered_map<Argument, Resource::Location, Argument::Hash>;
 
+        struct ApplyBehavior
+        {
+            using Mask = uint32_t;
+            enum Value : Mask
+            {
+                Indifferent    = 0u,        // All bindings will be applied indifferently of the previous binding values
+                ConstantOnce   = 1u << 0,   // Constant program arguments will be applied only once for each command list
+                ChangesOnly    = 1u << 1,   // Only changed program argument values will be applied in command sequence
+                StateBarriers  = 1u << 2,   // Resource state barriers will be automatically evaluated and set for command list
+                AllIncremental = ~0u        // All binding values will be applied incrementally along with resource state barriers
+            };
+
+            ApplyBehavior() = delete;
+        };
+
         // Create ResourceBindings instance
         static Ptr Create(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_location_by_argument);
         static Ptr CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceLocationByArgument& replace_resource_location_by_argument = {});
 
         // ResourceBindings interface
         virtual const Shader::ResourceBinding::Ptr& Get(const Argument& shader_argument) const = 0;
-        virtual void Apply(CommandList& command_list) const = 0;
+        virtual void Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior = ApplyBehavior::AllIncremental) const = 0;
 
         virtual ~ResourceBindings() = default;
     };
