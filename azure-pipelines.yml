@@ -74,7 +74,7 @@ jobs:
   steps:
   - template: Build/Windows/AzureBuild.yml
 
-- job: MacOS
+- job: macOS
 
   pool:
     vmImage: 'macOS-10.13'
@@ -93,7 +93,7 @@ jobs:
   steps:
   - template: Build/Posix/AzureBuild.yml
 
-  - job: Ubuntu
+- job: Ubuntu
 
   pool:
     vmImage: 'ubuntu-18.04'
