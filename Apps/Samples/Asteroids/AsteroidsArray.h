@@ -58,6 +58,7 @@ public:
         float           disc_radius_ratio        = 3.f;
         float           min_asteroid_scale_ratio = 0.1f;
         float           max_asteroid_scale_ratio = 0.7f;
+        bool            textures_array_enabled   = false;
         bool            depth_reversed           = false;
     };
 

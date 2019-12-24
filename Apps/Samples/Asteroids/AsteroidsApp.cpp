@@ -128,6 +128,7 @@ AsteroidsApp::AsteroidsApp()
             4.f,                                            // - disc_radius_ratio
             GetParamValueByCoresCount(g_scale_ratio) / 10.f,// - min_asteroid_scale_ratio
             GetParamValueByCoresCount(g_scale_ratio),       // - max_asteroid_scale_ratio
+            false,                                          // - textures_array_enabled
             true                                            // - depth_reversed
         })
     , m_asteroids_complexity(GetCoresCount())

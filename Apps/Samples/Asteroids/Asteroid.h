@@ -39,6 +39,7 @@ struct SHADER_STRUCT_ALIGN AsteroidUniforms
     SHADER_FIELD_ALIGN gfx::Color3f   deep_color;
     SHADER_FIELD_ALIGN gfx::Color3f   shallow_color;
     SHADER_FIELD_ALIGN gfx::Vector2f  depth_range;
+    SHADER_FIELD_ALIGN uint32_t       texture_index;
 };
 
 class Asteroid final : public gfx::TexturedMeshBuffers<AsteroidUniforms>
@@ -81,6 +82,7 @@ public:
     {
         const uint32_t       index;
         const uint32_t       subset_index;
+        const uint32_t       texture_index;
         const gfx::Vector2f  depth_range;
         const Colors         colors;
         const gfx::Matrix44f scale_matrix;

@@ -187,6 +187,7 @@ AsteroidsArray::ContentState::ContentState(const Settings& settings)
             {
                 asteroid_index,
                 asteroid_subset_index,
+                settings.textures_array_enabled ? textures_distribution(rng) : 0u,
                 uber_mesh.GetSubsetDepthRange(asteroid_subset_index),
                 std::move(asteroid_colors),
                 std::move(scale_matrix),
@@ -215,19 +216,26 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings, Content
     ITT_FUNCTION_TASK();
     
     const gfx::Context::Settings& context_settings = context.GetSettings();
-    
+
+    const size_t textures_array_size = m_settings.textures_array_enabled ? m_settings.textures_count : 1;
+    const gfx::Shader::MacroDefinitions macro_definitions  = { { "TEXTURES_COUNT", std::to_string(textures_array_size) } };
+    const std::set<std::string> addressable_argument_names = { "g_mesh_uniforms" };
+    std::set<std::string>       constant_argument_names    = { "g_constants", "g_texture_sampler" };
+    if (m_settings.textures_array_enabled)
+        constant_argument_names.insert("g_face_textures");
+
     gfx::RenderState::Settings state_settings;
     state_settings.sp_program = gfx::Program::Create(context, {
         {
-            gfx::Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidVS" }, { } }),
-            gfx::Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidPS" }, { } }),
+            gfx::Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidVS" }, macro_definitions }),
+            gfx::Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidPS" }, macro_definitions }),
         },
         { { {
                 { "input_position", "POSITION" },
                 { "input_normal",   "NORMAL"   },
         } } },
-        { "g_constants", "g_texture_sampler" },
-        { "g_mesh_uniforms" },
+        constant_argument_names,
+        addressable_argument_names,
         { context_settings.color_format },
         context_settings.depth_stencil_format
     });
@@ -277,7 +285,7 @@ gfx::MeshBufferBindings::ResourceBindingsArray AsteroidsArray::CreateResourceBin
     
     resource_bindings_array.resize(m_settings.instance_count);
     resource_bindings_array[0] = gfx::Program::ResourceBindings::Create(m_sp_render_state->GetSettings().sp_program, {
-        { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { sp_asteroids_uniforms_buffer, GetUniformsBufferOffset(0) } },
+        { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, { sp_asteroids_uniforms_buffer, GetUniformsBufferOffset(0) } },
         { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { sp_scene_uniforms_buffer } },
         { { gfx::Shader::Type::Pixel,  "g_constants"      }, { sp_constants_buffer      } },
         { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, { GetInstanceTexturePtr(0) } },
@@ -288,10 +296,16 @@ gfx::MeshBufferBindings::ResourceBindingsArray AsteroidsArray::CreateResourceBin
         [&](uint32_t asteroid_index)
         {
             const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(asteroid_index);
-            resource_bindings_array[asteroid_index] = gfx::Program::ResourceBindings::CreateCopy(*resource_bindings_array[0], {
-                { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { sp_asteroids_uniforms_buffer, asteroid_uniform_offset } },
-                { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, { GetInstanceTexturePtr(asteroid_index)                 } },
-            });
+            gfx::Program::ResourceBindings::ResourceLocationByArgument set_resoure_location_by_argument = {
+                { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, { sp_asteroids_uniforms_buffer, asteroid_uniform_offset } },
+            };
+            if (!m_settings.textures_array_enabled)
+            {
+                set_resoure_location_by_argument.insert(
+                    { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, { GetInstanceTexturePtr(asteroid_index) } }
+                );
+            }
+            resource_bindings_array[asteroid_index] = gfx::Program::ResourceBindings::CreateCopy(*resource_bindings_array[0], set_resoure_location_by_argument);
         }
     );
     
@@ -337,7 +351,8 @@ bool AsteroidsArray::Update(double /*elapsed_seconds*/, double delta_seconds)
                     model_matrix * scene_view_matrix * scene_proj_matrix,
                     asteroid_parameters.colors.deep,
                     asteroid_parameters.colors.shallow,
-                    asteroid_parameters.depth_range
+                    asteroid_parameters.depth_range,
+                    asteroid_parameters.texture_index
                 },
                 asteroid_parameters.index
             );
