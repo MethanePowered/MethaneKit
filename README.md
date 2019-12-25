@@ -94,12 +94,10 @@ Check out the codebase right away in a familiar "VS Code" IDE environment in you
 
 - **First time initialization**
 ```console
-mkdir MethaneKit && cd MethaneKit
 git clone --recurse-submodules --depth 1 https://github.com/egorodet/MethaneKit.git
 ```
 - **Update sources to latest version**
 ```console
-cd MethaneKit
 git pull && git submodule update --init --depth 1 --recursive
 ```
 
