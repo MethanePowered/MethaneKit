@@ -131,7 +131,7 @@ AsteroidsApp::AsteroidsApp()
             false,                                          // - textures_array_enabled
             true                                            // - depth_reversed
         })
-    , m_asteroids_complexity(GetCoresCount())
+    , m_asteroids_complexity(static_cast<uint32_t>(GetCoresCount()))
 {
     ITT_FUNCTION_TASK();
 

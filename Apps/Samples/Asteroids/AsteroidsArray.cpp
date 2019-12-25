@@ -55,7 +55,7 @@ AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivision
 
     std::mt19937 rng(random_seed);
 
-    m_depth_ranges.reserve(m_instance_count * m_subdivisions_count);
+    m_depth_ranges.reserve(static_cast<size_t>(m_instance_count) * m_subdivisions_count);
     for (uint32_t subdivision_index = m_min_subdivision; subdivision_index <= m_subdivisions_count; ++subdivision_index)
     {
         Asteroid::Mesh base_mesh(subdivision_index, false);
@@ -79,7 +79,7 @@ const gfx::Vector2f& AsteroidsArray::UberMesh::GetSubsetDepthRange(uint32_t subs
     ITT_FUNCTION_TASK();
 
     if (subset_index >= GetSubsetCount())
-        std::invalid_argument("Subset index is out of range.");
+        throw std::invalid_argument("Subset index is out of range.");
 
     assert(subset_index < m_depth_ranges.size());
     return m_depth_ranges[subset_index];
@@ -90,7 +90,7 @@ uint32_t AsteroidsArray::UberMesh::GetSubsetSubdivision(uint32_t subset_index) c
     ITT_FUNCTION_TASK();
 
     if (subset_index >= GetSubsetCount())
-        std::invalid_argument("Subset index is out of range.");
+        throw std::invalid_argument("Subset index is out of range.");
 
     const uint32_t subdivision_index = subset_index / m_instance_count;
     assert(subdivision_index < m_subdivisions_count);

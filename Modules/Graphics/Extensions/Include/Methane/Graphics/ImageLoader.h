@@ -43,8 +43,8 @@ public:
         uint32_t    channels_count;
         Data::Chunk pixels;
 
-        ImageData(const Dimensions& in_dimensions, uint32_t in_channels_count, const Data::Chunk&& in_pixels);
-        ImageData(const ImageData&& other);
+        ImageData(const Dimensions& in_dimensions, uint32_t in_channels_count, Data::Chunk&& in_pixels);
+        ImageData(ImageData&& other);
         ~ImageData();
     };
 

@@ -43,7 +43,7 @@ by decoding them from popular image formats.
 namespace Methane::Graphics
 {
 
-ImageLoader::ImageData::ImageData(const Dimensions& in_dimensions, uint32_t in_channels_count, const Data::Chunk&& in_pixels)
+ImageLoader::ImageData::ImageData(const Dimensions& in_dimensions, uint32_t in_channels_count, Data::Chunk&& in_pixels)
     : dimensions(in_dimensions)
     , channels_count(in_channels_count)
     , pixels(std::move(in_pixels))
@@ -51,7 +51,7 @@ ImageLoader::ImageData::ImageData(const Dimensions& in_dimensions, uint32_t in_c
     ITT_FUNCTION_TASK();
 }
 
-ImageLoader::ImageData::ImageData(const ImageData&& other)
+ImageLoader::ImageData::ImageData(ImageData&& other)
     : dimensions(std::move(other.dimensions))
     , channels_count(other.channels_count)
     , pixels(std::move(other.pixels))
