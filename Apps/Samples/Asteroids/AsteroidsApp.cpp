@@ -48,15 +48,19 @@ inline ValueT GetParamValue(const ParamValues<ValueT, N>& param_values, size_t p
     return param_values[std::min(param_index, N - 1)];
 }
 
-inline size_t GetCoresCount()
+inline size_t GetComplexity()
 {
+#ifdef _DEBUG
+    return 2;
+#else
     return std::thread::hardware_concurrency() / 2;
+#endif
 }
 
 template<typename ValueT, size_t N>
-inline ValueT GetParamValueByCoresCount(const ParamValues<ValueT, N>& param_values_by_cores_count)
+inline ValueT GetParamValueByComplexity(const ParamValues<ValueT, N>& param_values_by_complexity)
 {
-    return GetParamValue(param_values_by_cores_count, GetCoresCount());
+    return GetParamValue(param_values_by_complexity, GetComplexity());
 }
 
 constexpr size_t g_max_cores_count = 11;
@@ -117,21 +121,21 @@ AsteroidsApp::AsteroidsApp()
         {                                                   // ================
             m_view_camera,                                  // - view_camera
             m_scene_scale,                                  // - scale
-            GetParamValueByCoresCount(g_instaces_count),    // - instance_count
-            GetParamValueByCoresCount(g_mesh_count),        // - unique_mesh_count
+            GetParamValueByComplexity(g_instaces_count),    // - instance_count
+            GetParamValueByComplexity(g_mesh_count),        // - unique_mesh_count
             1u,                                             // - minimum_subdivision
             3u,                                             // - subdivisions_count
-            GetParamValueByCoresCount(g_textures_count),    // - textures_count
+            GetParamValueByComplexity(g_textures_count),    // - textures_count
             { 256u, 256u },                                 // - texture_dimensions
             1123u,                                          // - random_seed
             13.f,                                           // - orbit_radius_ratio
             4.f,                                            // - disc_radius_ratio
-            GetParamValueByCoresCount(g_scale_ratio) / 10.f,// - min_asteroid_scale_ratio
-            GetParamValueByCoresCount(g_scale_ratio),       // - max_asteroid_scale_ratio
+            GetParamValueByComplexity(g_scale_ratio) / 10.f,// - min_asteroid_scale_ratio
+            GetParamValueByComplexity(g_scale_ratio),       // - max_asteroid_scale_ratio
             false,                                          // - textures_array_enabled
             true                                            // - depth_reversed
         })
-    , m_asteroids_complexity(static_cast<uint32_t>(GetCoresCount()))
+    , m_asteroids_complexity(static_cast<uint32_t>(GetComplexity()))
 {
     ITT_FUNCTION_TASK();
 
@@ -280,8 +284,8 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     m_sp_sky_box->Resize(frame_size);
     m_sp_planet->Resize(frame_size);
     m_sp_asteroids_array->Resize(frame_size);
-
     m_view_camera.Resize(static_cast<float>(frame_size.width), static_cast<float>(frame_size.height));
+
     return true;
 }
 
