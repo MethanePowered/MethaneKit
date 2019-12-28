@@ -293,6 +293,7 @@ void ProgramDX::ResourceBindingsDX::CopyDescriptorsToGpu()
             throw std::invalid_argument("Descriptor range offset is out of bounds of reserved descriptor range.");
         }
 
+        uint32_t resource_index = 0;
         for (const ResourceDX::LocationDX& resource_location_dx : resource_binding.GetResourceLocationsDX())
         {
             assert(!!resource_location_dx.sp_resource);
@@ -303,7 +304,8 @@ void ProgramDX::ResourceBindingsDX::CopyDescriptorsToGpu()
                     " on descriptor heap of incompatible type \"" + dx_descriptor_heap.GetTypeName() + "\".");
             }
 
-            const uint32_t descriptor_index = p_heap_reservation->GetRange(resource_binding.IsConstant()).GetStart() + descriptor_range.offset;
+            const uint32_t descriptor_index = p_heap_reservation->GetRange(resource_binding.IsConstant()).GetStart()
+                                            + descriptor_range.offset + resource_index;
 
             //OutputDebugStringA((dx_resource.GetName() + " range: [" + std::to_string(descriptor_range.offset) + " - " + std::to_string(descriptor_range.offset + descriptor_range.count) + 
             //                    "), descriptor: " + std::to_string(descriptor_index) + "\n").c_str());
@@ -312,6 +314,7 @@ void ProgramDX::ResourceBindingsDX::CopyDescriptorsToGpu()
                                              dx_descriptor_heap.GetNativeCPUDescriptorHandle(descriptor_index),
                                              resource_location_dx.sp_resource->GetNativeCPUDescriptorHandle(ResourceBase::Usage::ShaderRead),
                                              dx_descriptor_heap.GetNativeDescriptorHeapType());
+            resource_index++;
         }
     });
 }
