@@ -282,27 +282,31 @@ gfx::MeshBufferBindings::ResourceBindingsArray AsteroidsArray::CreateResourceBin
     gfx::MeshBufferBindings::ResourceBindingsArray resource_bindings_array;
     if (m_settings.instance_count == 0)
         return resource_bindings_array;
+
+    const gfx::Resource::Locations face_texture_locations = m_settings.textures_array_enabled
+                                                          ? gfx::Resource::CreateLocations(m_unique_textures)
+                                                          : gfx::Resource::Locations{ { GetInstanceTexturePtr(0) } };
     
     resource_bindings_array.resize(m_settings.instance_count);
     resource_bindings_array[0] = gfx::Program::ResourceBindings::Create(m_sp_render_state->GetSettings().sp_program, {
-        { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, { sp_asteroids_uniforms_buffer, GetUniformsBufferOffset(0) } },
-        { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { sp_scene_uniforms_buffer } },
-        { { gfx::Shader::Type::Pixel,  "g_constants"      }, { sp_constants_buffer      } },
-        { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, { GetInstanceTexturePtr(0) } },
-        { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { m_sp_texture_sampler     } },
+        { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, { { sp_asteroids_uniforms_buffer, GetUniformsBufferOffset(0) } } },
+        { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { { sp_scene_uniforms_buffer } } },
+        { { gfx::Shader::Type::Pixel,  "g_constants"      }, { { sp_constants_buffer      } } },
+        { { gfx::Shader::Type::Pixel,  "g_face_textures"  },     face_texture_locations       },
+        { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { { m_sp_texture_sampler     } } },
     });
 
     Data::ParallelFor<uint32_t>(1u, m_settings.instance_count - 1,
         [&](uint32_t asteroid_index)
         {
-            const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(asteroid_index);
-            gfx::Program::ResourceBindings::ResourceLocationByArgument set_resoure_location_by_argument = {
-                { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, { sp_asteroids_uniforms_buffer, asteroid_uniform_offset } },
+            const Data::Size                                            asteroid_uniform_offset          = GetUniformsBufferOffset(asteroid_index);
+            gfx::Program::ResourceBindings::ResourceLocationsByArgument set_resoure_location_by_argument = {
+                { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, { { sp_asteroids_uniforms_buffer, asteroid_uniform_offset } } },
             };
             if (!m_settings.textures_array_enabled)
             {
                 set_resoure_location_by_argument.insert(
-                    { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, { GetInstanceTexturePtr(asteroid_index) } }
+                    { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, { { GetInstanceTexturePtr(asteroid_index) } } }
                 );
             }
             resource_bindings_array[asteroid_index] = gfx::Program::ResourceBindings::CreateCopy(*resource_bindings_array[0], set_resoure_location_by_argument);

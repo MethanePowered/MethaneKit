@@ -92,7 +92,7 @@ struct Program
     {
         using Ptr     = std::shared_ptr<ResourceBindings>;
         using WeakPtr = std::weak_ptr<ResourceBindings>;
-        using ResourceLocationByArgument = std::unordered_map<Argument, Resource::Location, Argument::Hash>;
+        using ResourceLocationsByArgument = std::unordered_map<Argument, Resource::Locations, Argument::Hash>;
 
         struct ApplyBehavior
         {
@@ -110,8 +110,8 @@ struct Program
         };
 
         // Create ResourceBindings instance
-        static Ptr Create(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_location_by_argument);
-        static Ptr CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceLocationByArgument& replace_resource_location_by_argument = {});
+        static Ptr Create(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
+        static Ptr CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument = {});
 
         // ResourceBindings interface
         virtual const Shader::ResourceBinding::Ptr& Get(const Argument& shader_argument) const = 0;

@@ -23,12 +23,16 @@ Metal implementation of the shader interface.
 
 #include "ShaderMT.hh"
 #include "ProgramMT.hh"
-#include "ResourceMT.hh"
+#include "SamplerMT.hh"
+#include "BufferMT.hh"
+#include "TextureMT.hh"
 #include "ContextMT.hh"
 #include "TypesMT.hh"
 
 #include <Methane/Data/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
+
+#include <algorithm>
 
 namespace Methane::Graphics
 {
@@ -42,6 +46,18 @@ static MTLVertexStepFunction GetVertexStepFunction(StepType step_type) noexcept
         case StepType::Undefined:   return MTLVertexStepFunctionConstant;
         case StepType::PerVertex:   return MTLVertexStepFunctionPerVertex;
         case StepType::PerInstance: return MTLVertexStepFunctionPerInstance;
+    }
+}
+
+static Resource::Type GetResourceTypeByMetalArgumentType(MTLArgumentType mtl_arg_type)
+{
+    ITT_FUNCTION_TASK();
+    switch(mtl_arg_type)
+    {
+    case MTLArgumentTypeBuffer:     return Resource::Type::Buffer;
+    case MTLArgumentTypeTexture:    return Resource::Type::Texture;
+    case MTLArgumentTypeSampler:    return Resource::Type::Sampler;
+    default:                        throw std::invalid_argument("Unable to determine resource type by DX shader input type.");
     }
 }
 
@@ -87,40 +103,43 @@ ShaderMT::ResourceBindingMT::ResourceBindingMT(ContextBase& context, const Setti
     ITT_FUNCTION_TASK();
 }
 
-void ShaderMT::ResourceBindingMT::SetResourceLocation(Resource::Location resource_location)
+void ShaderMT::ResourceBindingMT::SetResourceLocations(const Resource::Locations& resource_locations)
 {
     ITT_FUNCTION_TASK();
+    ResourceBindingBase::SetResourceLocations(resource_locations);
 
-    if (!resource_location.sp_resource)
-    {
-        throw std::invalid_argument("Can not set resource location with Null resource pointer.");
-    }
-    
-    const Resource::Type resource_type = resource_location.sp_resource->GetResourceType();
-    
-    bool resource_type_compatible = false;
-    switch(m_settings.argument_type)
-    {
-        case MTLArgumentTypeBuffer:  resource_type_compatible = (resource_type == Resource::Type::Buffer);  break;
-        case MTLArgumentTypeTexture: resource_type_compatible = (resource_type == Resource::Type::Texture); break;
-        case MTLArgumentTypeSampler: resource_type_compatible = (resource_type == Resource::Type::Sampler); break;
-        default:                     assert(0);
-    }
-    
-    if (!resource_type_compatible)
-    {
-        throw std::invalid_argument("Incompatible resource type \"" + Resource::GetTypeName(resource_location.sp_resource->GetResourceType()) +
-                                    "\" is bound to argument \"" + GetArgumentName() +
-                                    "\" of type \"" + GetMetalArgumentTypeName(m_settings.argument_type) + "\".");
-    }
-    
-    ShaderBase::ResourceBindingBase::SetResourceLocation(std::move(resource_location));
-}
+    m_mtl_sampler_states.clear();
+    m_mtl_textures.clear();
+    m_mtl_buffers.clear();
+    m_mtl_buffer_offsets.clear();
 
-DescriptorHeap::Type ShaderMT::ResourceBindingMT::GetDescriptorHeapType() const
-{
-    ITT_FUNCTION_TASK();
-    return (m_settings.argument_type == MTLArgumentTypeSampler) ? DescriptorHeap::Type::Samplers : DescriptorHeap::Type::ShaderResources;
+    switch(m_settings.base.resource_type)
+    {
+    case Resource::Type::Sampler:
+        m_mtl_sampler_states.reserve(m_resource_locations.size());
+        std::transform(m_resource_locations.begin(), m_resource_locations.end(), std::back_inserter(m_mtl_sampler_states),
+                       [](const Resource::Location& resource_location)
+                       { return dynamic_cast<const SamplerMT&>(*resource_location.sp_resource).GetNativeSamplerState(); });
+        break;
+
+    case Resource::Type::Texture:
+        m_mtl_textures.reserve(m_resource_locations.size());
+        std::transform(m_resource_locations.begin(), m_resource_locations.end(), std::back_inserter(m_mtl_textures),
+                       [](const Resource::Location& resource_location)
+                       { return dynamic_cast<const TextureMT&>(*resource_location.sp_resource).GetNativeTexture(); });
+        break;
+
+    case Resource::Type::Buffer:
+        m_mtl_buffers.reserve(m_resource_locations.size());
+        m_mtl_buffer_offsets.reserve(m_resource_locations.size());
+        for (const Resource::Location& resource_location : m_resource_locations)
+        {
+            assert(!!resource_location.sp_resource);
+            m_mtl_buffers.push_back(dynamic_cast<const BufferMT&>(*resource_location.sp_resource).GetNativeBuffer());
+            m_mtl_buffer_offsets.push_back(static_cast<NSUInteger>(resource_location.offset));
+        }
+        break;
+    }
 }
 
 Shader::Ptr Shader::Create(Shader::Type shader_type, Context& context, const Settings& settings)
@@ -183,10 +202,11 @@ ShaderBase::ResourceBindings ShaderMT::GetResourceBindings(const std::set<std::s
                 {
                     m_type,
                     argument_name,
+                    GetResourceTypeByMetalArgumentType(mtl_arg.type),
+                    static_cast<uint32_t>(mtl_arg.arrayLength),
                     is_constant_binding,
                     is_addressable_binding
                 },
-                mtl_arg.type,
                 static_cast<uint32_t>(mtl_arg.index)
             }
         ));

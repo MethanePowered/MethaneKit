@@ -42,6 +42,19 @@ DirectX 12 implementation of the shader interface.
 namespace Methane::Graphics
 {
 
+static Resource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_type) noexcept
+{
+    ITT_FUNCTION_TASK();
+    switch (input_type)
+    {
+    case D3D_SIT_CBUFFER:
+    case D3D_SIT_TBUFFER:   return Resource::Type::Buffer;
+    case D3D_SIT_TEXTURE:   return Resource::Type::Texture;
+    case D3D_SIT_SAMPLER:   return Resource::Type::Sampler;
+    default:                throw std::invalid_argument("Unable to determine resource type by DX shader input type.");
+    }
+}
+
 static std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type) noexcept
 {
     ITT_FUNCTION_TASK();
@@ -184,32 +197,11 @@ ShaderDX::ResourceBindingDX::ResourceBindingDX(ContextBase& context, const Setti
     ITT_FUNCTION_TASK();
 }
 
-void ShaderDX::ResourceBindingDX::SetResourceLocation(Resource::Location resource_location)
+void ShaderDX::ResourceBindingDX::SetResourceLocations(Resource::Locations resource_locations)
 {
     ITT_FUNCTION_TASK();
-    if (!resource_location.sp_resource)
-    {
-        throw std::invalid_argument("Can not set empty resource to shader resource binding.");
-    }
 
-    const Resource::Type resource_type = resource_location.sp_resource->GetResourceType();
-
-    bool resource_type_compatible = false;
-    switch (m_settings_dx.input_type)
-    {
-    case D3D_SIT_CBUFFER:   resource_type_compatible = (resource_type == Resource::Type::Buffer);  break;
-    case D3D_SIT_TEXTURE:   resource_type_compatible = (resource_type == Resource::Type::Texture);  break;
-    case D3D_SIT_SAMPLER:   resource_type_compatible = (resource_type == Resource::Type::Sampler); break;
-    default:                assert(0);
-    }
-
-    if (!resource_type_compatible)
-    {
-        throw std::invalid_argument("Incompatible resource type \"" + Resource::GetTypeName(resource_location.sp_resource->GetResourceType()) +
-                                    "\" is bound to argument \"" + GetArgumentName() + "\" of type \"" + GetShaderInputTypeName(m_settings_dx.input_type) + "\".");
-    }
-
-    ShaderBase::ResourceBindingBase::SetResourceLocation(std::move(resource_location));
+    ShaderBase::ResourceBindingBase::SetResourceLocations(std::move(resource_locations));
 
     m_resource_location_dx.sp_resource = std::dynamic_pointer_cast<ResourceDX>(m_resource_location.sp_resource);
     m_resource_location_dx.offset      = m_resource_location.offset;
@@ -223,7 +215,7 @@ void ShaderDX::ResourceBindingDX::SetResourceLocation(Resource::Location resourc
     {
         throw std::logic_error("Incompatible heap type \"" + dx_descriptor_heap.GetTypeName() +
                                "\" is set for resource binding on argument \"" + GetArgumentName() + 
-                               "\" of \"" + GetShaderInputTypeName(m_settings_dx.input_type) + "\" shader.");
+                               "\" of \"" + GetTypeName(m_settings.shader_type)+ "\" shader.");
     }
 
     const uint32_t descriptor_index = m_p_descriptor_heap_reservation->GetRange(IsConstant()).GetStart() + m_descriptor_range.offset;
@@ -233,12 +225,6 @@ void ShaderDX::ResourceBindingDX::SetResourceLocation(Resource::Location resourc
         dx_resource.GetNativeCPUDescriptorHandle(ResourceBase::Usage::ShaderRead),
         dx_descriptor_heap.GetNativeDescriptorHeapType()
     );
-}
-
-DescriptorHeap::Type ShaderDX::ResourceBindingDX::GetDescriptorHeapType() const
-{
-    ITT_FUNCTION_TASK();
-    return (m_settings_dx.input_type == D3D_SIT_SAMPLER)? DescriptorHeap::Type::Samplers : DescriptorHeap::Type::ShaderResources;
 }
 
 void ShaderDX::ResourceBindingDX::SetDescriptorRange(const DescriptorRange& descriptor_range)
@@ -357,12 +343,12 @@ ShaderBase::ResourceBindings ShaderDX::GetResourceBindings(const std::set<std::s
                 {
                     m_type,
                     argument_name,
+                    GetResourceTypeByInputType(binding_desc.Type),
+                    binding_desc.BindCount,
                     is_constant_binding,
                     is_addressable_binding
                 },
                 dx_binding_type,
-                binding_desc.Type,
-                binding_desc.BindCount,
                 binding_desc.BindPoint,
                 binding_desc.Space
             }

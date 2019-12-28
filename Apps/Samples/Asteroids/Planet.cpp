@@ -97,10 +97,10 @@ gfx::Program::ResourceBindings::Ptr Planet::CreateResourceBindings(const gfx::Bu
     assert(!!m_sp_state);
     assert(!!m_sp_state->GetSettings().sp_program);
     return gfx::Program::ResourceBindings::Create(m_sp_state->GetSettings().sp_program, {
-        { { gfx::Shader::Type::All,   "g_uniforms"  }, { sp_uniforms_buffer                   } },
-        { { gfx::Shader::Type::Pixel, "g_constants" }, { sp_constants_buffer                  } },
-        { { gfx::Shader::Type::Pixel, "g_texture"   }, { m_mesh_buffers.GetSubsetTexturePtr() } },
-        { { gfx::Shader::Type::Pixel, "g_sampler"   }, { m_sp_texture_sampler                 } },
+        { { gfx::Shader::Type::All,   "g_uniforms"  }, { { sp_uniforms_buffer                   } } },
+        { { gfx::Shader::Type::Pixel, "g_constants" }, { { sp_constants_buffer                  } } },
+        { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_mesh_buffers.GetSubsetTexturePtr() } } },
+        { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler                 } } },
     });
 }
 

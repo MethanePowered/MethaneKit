@@ -90,7 +90,8 @@ Check out the codebase right away in a familiar "VS Code" IDE environment in you
 
 #### Fetch Sources
 
-**IMPORTANT:** Do not download source code via Zip archive, since it will not allow to properly initalize External submodules. Use git as described below.
+**IMPORTANT:** Do not download source code via Zip archive, since it does not include content of External submodules.
+Use git as described below.
 
 - **First time initialization**
 ```console

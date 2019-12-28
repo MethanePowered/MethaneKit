@@ -63,13 +63,13 @@ struct Shader
         static Ptr CreateCopy(const ResourceBinding& other_resource_binging);
 
         // ResourceBinding interface
-        virtual Shader::Type              GetShaderType() const = 0;
-        virtual const std::string&        GetArgumentName() const = 0;
-        virtual bool                      IsConstant() const = 0;
-        virtual bool                      IsAddressable() const = 0;
-        virtual const Resource::Location& GetResourceLocation() const = 0;
-        virtual void                      SetResourceLocation(Resource::Location resource_location) = 0;
-        virtual uint32_t                  GetResourceCount() const = 0;
+        virtual Shader::Type               GetShaderType() const = 0;
+        virtual const std::string&         GetArgumentName() const = 0;
+        virtual bool                       IsConstant() const = 0;
+        virtual bool                       IsAddressable() const = 0;
+        virtual uint32_t                   GetResourceCount() const = 0;
+        virtual const Resource::Locations& GetResourceLocations() const = 0;
+        virtual void                       SetResourceLocations(const Resource::Locations& resource_locations) = 0;
 
         virtual ~ResourceBinding() = default;
     };

@@ -147,10 +147,10 @@ void TexturedCubeApp::Init()
 
         // Configure program resource bindings
         frame.sp_resource_bindings = gfx::Program::ResourceBindings::Create(m_sp_program, {
-            { { gfx::Shader::Type::All,   "g_uniforms"  }, { frame.sp_uniforms_buffer } },
-            { { gfx::Shader::Type::Pixel, "g_constants" }, { m_sp_const_buffer        } },
-            { { gfx::Shader::Type::Pixel, "g_texture"   }, { m_sp_cube_texture        } },
-            { { gfx::Shader::Type::Pixel, "g_sampler"   }, { m_sp_texture_sampler     } },
+            { { gfx::Shader::Type::All,   "g_uniforms"  }, { { frame.sp_uniforms_buffer } } },
+            { { gfx::Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer        } } },
+            { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_sp_cube_texture        } } },
+            { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler     } } },
         });
         
         // Create command list for rendering

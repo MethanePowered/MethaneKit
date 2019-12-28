@@ -66,17 +66,15 @@ public:
         {
             ResourceBindingBase::Settings base;
             Type                          type;
-            D3D_SHADER_INPUT_TYPE         input_type;
-            uint32_t                      count;
             uint32_t                      point;
             uint32_t                      space;
         };
 
         struct DescriptorRange
         {
-            DescriptorHeap::Type heap_type              = DescriptorHeap::Type::Undefined;
-            uint32_t             offset                 = 0;
-            uint32_t             count                  = 0;
+            DescriptorHeap::Type heap_type = DescriptorHeap::Type::Undefined;
+            uint32_t             offset    = 0;
+            uint32_t             count     = 0;
         };
 
         ResourceBindingDX(ContextBase& context, const Settings& settings);
@@ -84,7 +82,6 @@ public:
 
         // ResourceBinding interface
         void                      SetResourceLocation(Resource::Location resource_location) override;
-        uint32_t                  GetResourceCount() const override         { return m_settings_dx.count; }
         bool                      IsAddressable() const override            { return m_settings_dx.type != Type::DescriptorTable; }
 
         const Settings&           GetSettings() const noexcept              { return m_settings_dx; }

@@ -45,9 +45,9 @@ struct Resource : virtual Object
     using Ref     = std::reference_wrapper<Resource>;
     using Refs    = std::vector<Ref>;
 
-    enum class Type
+    enum class Type : uint32_t
     {
-        Buffer,
+        Buffer = 0u,
         Texture,
         Sampler,
     };
@@ -93,10 +93,23 @@ struct Resource : virtual Object
     struct Location
     {
         Ptr        sp_resource;
-        Data::Size offset = 0u;
+        Data::Size offset;
+
+        Location(Ptr in_sp_resource, Data::Size in_offset = 0u) : sp_resource(std::move(in_sp_resource)), offset(in_offset) { }
 
         bool operator==(const Location& other) const;
     };
+
+    using Locations = std::vector<Location>;
+
+    template<typename TResource>
+    static Locations CreateLocations(const std::vector<std::shared_ptr<TResource>>& resources)
+    {
+        Resource::Locations resource_locations;
+        std::transform(resources.begin(), resources.end(), std::back_inserter(resource_locations),
+                       [](const std::shared_ptr<TResource>& sp_resource) { return Location(sp_resource); });
+        return resource_locations;
+    }
 
     struct SubResource
     {
