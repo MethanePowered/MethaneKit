@@ -42,7 +42,7 @@ DirectX 12 implementation of the shader interface.
 namespace Methane::Graphics
 {
 
-static Resource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_type) noexcept
+static Resource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_type)
 {
     ITT_FUNCTION_TASK();
     switch (input_type)
@@ -127,7 +127,7 @@ static std::string GetValueTypeName(D3D_NAME value_type) noexcept
     {
     case D3D_NAME_UNDEFINED:                        return "Undefined";
     case D3D_NAME_POSITION:                         return "Position";
-    case D3D_NAME_CLIP_DISTANCE:                    return "Clip Disnance";
+    case D3D_NAME_CLIP_DISTANCE:                    return "Clip Distance";
     case D3D_NAME_CULL_DISTANCE:                    return "Cull Distance";
     case D3D_NAME_RENDER_TARGET_ARRAY_INDEX:        return "RT Array Index";
     case D3D_NAME_VIEWPORT_ARRAY_INDEX:             return "Viewport Array Index";
@@ -197,34 +197,60 @@ ShaderDX::ResourceBindingDX::ResourceBindingDX(ContextBase& context, const Setti
     ITT_FUNCTION_TASK();
 }
 
-void ShaderDX::ResourceBindingDX::SetResourceLocations(Resource::Locations resource_locations)
+ShaderDX::ResourceBindingDX::ResourceBindingDX(const ResourceBindingDX& other)
+    : ResourceBindingBase(other)
+    , m_settings_dx(other.m_settings_dx)
+    , m_root_parameter_index(other.m_root_parameter_index)
+    , m_descriptor_range(other.m_descriptor_range)
+    , m_p_descriptor_heap_reservation(other.m_p_descriptor_heap_reservation)
+    , m_resource_locations_dx(other.m_resource_locations_dx)
+{
+    ITT_FUNCTION_TASK();
+}
+
+void ShaderDX::ResourceBindingDX::SetResourceLocations(const Resource::Locations& resource_locations)
 {
     ITT_FUNCTION_TASK();
 
-    ShaderBase::ResourceBindingBase::SetResourceLocations(std::move(resource_locations));
+    ShaderBase::ResourceBindingBase::SetResourceLocations(resource_locations);
 
-    m_resource_location_dx.sp_resource = std::dynamic_pointer_cast<ResourceDX>(m_resource_location.sp_resource);
-    m_resource_location_dx.offset      = m_resource_location.offset;
+    m_resource_locations_dx.clear();
 
-    if (!m_resource_location_dx.sp_resource || !m_p_descriptor_heap_reservation)
-        return;
-
-    const ResourceDX&       dx_resource        = *m_resource_location_dx.sp_resource;
-    const DescriptorHeapDX& dx_descriptor_heap = static_cast<const DescriptorHeapDX&>(m_p_descriptor_heap_reservation->heap.get());
-    if (m_descriptor_range.heap_type != dx_descriptor_heap.GetSettings().type)
+    if (m_settings_dx.type == Type::DescriptorTable &&
+        m_resource_locations.size() > m_descriptor_range.count)
     {
-        throw std::logic_error("Incompatible heap type \"" + dx_descriptor_heap.GetTypeName() +
-                               "\" is set for resource binding on argument \"" + GetArgumentName() + 
-                               "\" of \"" + GetTypeName(m_settings.shader_type)+ "\" shader.");
+        throw std::invalid_argument("The number of bound resources (" + std::to_string(m_resource_locations.size()) +
+                                    ") exceeds reserved descriptors count (" + std::to_string(m_descriptor_range.count) + ").");
     }
 
-    const uint32_t descriptor_index = m_p_descriptor_heap_reservation->GetRange(IsConstant()).GetStart() + m_descriptor_range.offset;
-    GetContextDX().GetDeviceDX().GetNativeDevice()->CopyDescriptorsSimple(
-        m_descriptor_range.count,
-        dx_descriptor_heap.GetNativeCPUDescriptorHandle(descriptor_index),
-        dx_resource.GetNativeCPUDescriptorHandle(ResourceBase::Usage::ShaderRead),
-        dx_descriptor_heap.GetNativeDescriptorHeapType()
-    );
+    uint32_t resource_index = 0;
+    m_resource_locations_dx.reserve(m_resource_locations.size());
+    for(const Resource::Location& resource_location : m_resource_locations)
+    {
+        m_resource_locations_dx.emplace_back(resource_location);
+
+        if (!m_p_descriptor_heap_reservation)
+            continue;
+
+        const ResourceDX::LocationDX& resource_location_dx = m_resource_locations_dx.back();
+        const DescriptorHeapDX& dx_descriptor_heap = static_cast<const DescriptorHeapDX&>(m_p_descriptor_heap_reservation->heap.get());
+        if (m_descriptor_range.heap_type != dx_descriptor_heap.GetSettings().type)
+        {
+            throw std::logic_error("Incompatible heap type \"" + dx_descriptor_heap.GetTypeName() +
+                                   "\" is set for resource binding on argument \"" + GetArgumentName() +
+                                   "\" of \"" + Shader::GetTypeName(m_settings.shader_type) + "\" shader.");
+        }
+
+        const uint32_t descriptor_index = m_p_descriptor_heap_reservation->GetRange(IsConstant()).GetStart() + m_descriptor_range.offset + resource_index;
+        GetContextDX().GetDeviceDX().GetNativeDevice()->CopyDescriptorsSimple(
+            1,
+            dx_descriptor_heap.GetNativeCPUDescriptorHandle(descriptor_index),
+            resource_location_dx.sp_resource->GetNativeCPUDescriptorHandle(ResourceBase::Usage::ShaderRead),
+            dx_descriptor_heap.GetNativeDescriptorHeapType()
+        );
+
+        resource_index++;
+    }
 }
 
 void ShaderDX::ResourceBindingDX::SetDescriptorRange(const DescriptorRange& descriptor_range)
@@ -238,12 +264,11 @@ void ShaderDX::ResourceBindingDX::SetDescriptorRange(const DescriptorRange& desc
                                  "\" is incompatible with the resource binding, expected heap type is \"" +
                                  DescriptorHeap::GetTypeName(expected_heap_type) + "\".");
     }
-    if (descriptor_range.count < m_settings_dx.count)
+    if (descriptor_range.count < m_settings_dx.base.resource_count)
     {
         throw std::runtime_error("Descriptor range size (" + std::to_string(descriptor_range.count) + 
-                                 ") will not fit bound shader resources (" + std::to_string(m_settings_dx.count) + ").");
+                                 ") will not fit bound shader resources (" + std::to_string(m_settings_dx.base.resource_count) + ").");
     }
-    assert(descriptor_range.count <= m_settings_dx.count);
     m_descriptor_range = descriptor_range;
 }
 
@@ -349,6 +374,7 @@ ShaderBase::ResourceBindings ShaderDX::GetResourceBindings(const std::set<std::s
                     is_addressable_binding
                 },
                 dx_binding_type,
+                binding_desc.Type,
                 binding_desc.BindPoint,
                 binding_desc.Space
             }

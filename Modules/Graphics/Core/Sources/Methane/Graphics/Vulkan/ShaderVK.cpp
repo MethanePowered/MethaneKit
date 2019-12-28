@@ -42,24 +42,11 @@ ShaderVK::ResourceBindingVK::ResourceBindingVK(ContextBase& context, const Setti
     ITT_FUNCTION_TASK();
 }
 
-void ShaderVK::ResourceBindingVK::SetResourceLocation(Resource::Location resource_location)
+void ShaderVK::ResourceBindingVK::SetResourceLocations(const Resource::Locations& resource_locations)
 {
     ITT_FUNCTION_TASK();
-
-    if (!resource_location.sp_resource)
-    {
-        throw std::invalid_argument("Can not set resource location with Null resource pointer.");
-    }
     
-    const Resource::Type resource_type = resource_location.sp_resource->GetResourceType();
-    
-    ShaderBase::ResourceBindingBase::SetResourceLocation(std::move(resource_location));
-}
-
-DescriptorHeap::Type ShaderVK::ResourceBindingVK::GetDescriptorHeapType() const
-{
-    ITT_FUNCTION_TASK();
-    return DescriptorHeap::Type::Undefined;
+    ShaderBase::ResourceBindingBase::SetResourceLocations(resource_locations);
 }
 
 Shader::Ptr Shader::Create(Shader::Type shader_type, Context& context, const Settings& settings)

@@ -37,8 +37,8 @@ public:
     class ResourceBindingsVK : public ResourceBindingsBase
     {
     public:
-        ResourceBindingsVK(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_location_by_argument);
-        ResourceBindingsVK(const ResourceBindingsVK& other_resource_bindings, const ResourceLocationByArgument& replace_resource_location_by_argument);
+        ResourceBindingsVK(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
+        ResourceBindingsVK(const ResourceBindingsVK& other_resource_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
 
         // ResourceBindings interface
         void Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior) const override;

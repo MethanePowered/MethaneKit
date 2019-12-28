@@ -47,8 +47,8 @@ public:
     class ResourceBindingsDX : public ResourceBindingsBase
     {
     public:
-        ResourceBindingsDX(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_location_by_argument);
-        ResourceBindingsDX(const ResourceBindingsDX& other_resource_bindings, const ResourceLocationByArgument& replace_resource_location_by_argument);
+        ResourceBindingsDX(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
+        ResourceBindingsDX(const ResourceBindingsDX& other_resource_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument);
 
         void Initialize();
 
@@ -57,7 +57,7 @@ public:
         void Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior) const override;
 
     protected:
-        using ApplyResourceBindingFunc = std::function<void(ResourceDX&, const Argument&, ShaderDX::ResourceBindingDX&, const DescriptorHeap::Reservation*)>;
+        using ApplyResourceBindingFunc = std::function<void(const Argument&, ShaderDX::ResourceBindingDX&, const DescriptorHeap::Reservation*)>;
         void ForEachResourceBinding(ApplyResourceBindingFunc apply_resource_binding) const;
         void CopyDescriptorsToGpu();
     };

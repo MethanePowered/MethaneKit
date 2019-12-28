@@ -34,25 +34,25 @@ Vulkan implementation of the program interface.
 namespace Methane::Graphics
 {
 
-Program::ResourceBindings::Ptr Program::ResourceBindings::Create(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_location_by_argument)
+Program::ResourceBindings::Ptr Program::ResourceBindings::Create(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ProgramVK::ResourceBindingsVK>(sp_program, resource_location_by_argument);
+    return std::make_shared<ProgramVK::ResourceBindingsVK>(sp_program, resource_locations_by_argument);
 }
 
-Program::ResourceBindings::Ptr Program::ResourceBindings::CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceLocationByArgument& replace_resource_location_by_argument)
+Program::ResourceBindings::Ptr Program::ResourceBindings::CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_location_by_argument)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<ProgramVK::ResourceBindingsVK>(static_cast<const ProgramVK::ResourceBindingsVK&>(other_resource_bingings), replace_resource_location_by_argument);
 }
 
-ProgramVK::ResourceBindingsVK::ResourceBindingsVK(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_location_by_argument)
-    : ResourceBindingsBase(sp_program, resource_location_by_argument)
+ProgramVK::ResourceBindingsVK::ResourceBindingsVK(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
+    : ResourceBindingsBase(sp_program, resource_locations_by_argument)
 {
     ITT_FUNCTION_TASK();
 }
 
-ProgramVK::ResourceBindingsVK::ResourceBindingsVK(const ResourceBindingsVK& other_resource_bindings, const ResourceLocationByArgument& replace_resource_location_by_argument)
+ProgramVK::ResourceBindingsVK::ResourceBindingsVK(const ResourceBindingsVK& other_resource_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument)
     : ResourceBindingsBase(other_resource_bindings, replace_resource_location_by_argument)
 {
     ITT_FUNCTION_TASK();
@@ -69,19 +69,7 @@ void ProgramVK::ResourceBindingsVK::Apply(CommandList& command_list, ApplyBehavi
     {
         const Argument& program_argument = resource_binding_by_argument.first;
         const ShaderVK::ResourceBindingVK& vulkan_resource_binding = static_cast<const ShaderVK::ResourceBindingVK&>(*resource_binding_by_argument.second);
-        const Resource::Location& bound_resource_location = vulkan_resource_binding.GetResourceLocation();
-        if (!bound_resource_location.sp_resource)
-        {
-#ifndef PROGRAM_IGNORE_MISSING_ARGUMENTS
-            throw std::runtime_error(
-                "Can not apply resource binding for argument \"" + program_argument.argument_name +
-                "\" of \"" + Shader::GetTypeName(program_argument.shader_type) +
-                "\" shader because it is not bound to any resource.");
-#else
-            continue;
-#endif
-        }
-        
+
         if ((apply_behavior & ApplyBehavior::ConstantOnce || apply_behavior & ApplyBehavior::ChangesOnly) &&
             vulkan_resource_binding.IsAlreadyApplied(*m_sp_program, program_argument, command_state, apply_behavior & ApplyBehavior::ChangesOnly))
             continue;

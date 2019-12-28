@@ -54,6 +54,22 @@ void ResourceDX::ReleasePoolDX::ReleaseResources()
     m_resources.clear();
 }
 
+ResourceDX::LocationDX::LocationDX(const Location& location)
+    : sp_resource(std::dynamic_pointer_cast<ResourceDX>(location.sp_resource))
+    , offset(location.offset)
+{
+    ITT_FUNCTION_TASK();
+    if (!sp_resource)
+        throw std::invalid_argument("Can not create location for empty DX resource.");
+}
+
+ResourceDX::LocationDX::LocationDX(const LocationDX& location)
+    : sp_resource(location.sp_resource)
+    , offset(location.offset)
+{
+    ITT_FUNCTION_TASK();
+}
+
 ResourceDX::ResourceDX(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
     : ResourceBase(type, usage_mask, context, descriptor_by_usage)
 {

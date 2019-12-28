@@ -215,9 +215,9 @@ void ProgramBase::ResourceBindingsBase::SetResourcesForArguments(const ResourceL
             const Argument all_shaders_argument(Shader::Type::All, argument.argument_name);
             const bool all_shaders_argument_found = !!Get(all_shaders_argument);
             throw std::runtime_error("Program \"" + m_sp_program->GetName() +
-                "\" does not have argument \"" + argument.argument_name +
-                "\" of " + Shader::GetTypeName(argument.shader_type) + " shader." +
-                (all_shaders_argument_found ? " Instead this argument is used in All shaders." : "") );
+                                     "\" does not have argument \"" + argument.argument_name +
+                                     "\" of " + Shader::GetTypeName(argument.shader_type) + " shader." +
+                                     (all_shaders_argument_found ? " Instead this argument is used in All shaders." : "") );
 #else
             continue;
 #endif

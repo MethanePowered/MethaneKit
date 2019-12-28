@@ -95,7 +95,11 @@ struct Resource : virtual Object
         Ptr        sp_resource;
         Data::Size offset;
 
-        Location(Ptr in_sp_resource, Data::Size in_offset = 0u) : sp_resource(std::move(in_sp_resource)), offset(in_offset) { }
+        Location(Ptr in_sp_resource, Data::Size in_offset = 0u) : sp_resource(std::move(in_sp_resource)), offset(in_offset)
+        {
+            if (!sp_resource)
+                throw std::invalid_argument("Can not create Resource::Location for an empty resource.");
+        }
 
         bool operator==(const Location& other) const;
     };

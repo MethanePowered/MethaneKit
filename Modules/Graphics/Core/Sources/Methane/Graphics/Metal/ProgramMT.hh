@@ -39,7 +39,7 @@ public:
     class ResourceBindingsMT : public ResourceBindingsBase
     {
     public:
-        ResourceBindingsMT(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_location_by_argument);
+        ResourceBindingsMT(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
         ResourceBindingsMT(const ResourceBindingsMT& other_resource_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
 
         // ResourceBindings interface

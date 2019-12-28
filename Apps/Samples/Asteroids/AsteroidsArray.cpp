@@ -296,22 +296,22 @@ gfx::MeshBufferBindings::ResourceBindingsArray AsteroidsArray::CreateResourceBin
         { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { { m_sp_texture_sampler     } } },
     });
 
-    Data::ParallelFor<uint32_t>(1u, m_settings.instance_count - 1,
-        [&](uint32_t asteroid_index)
+    // TODO: parallel initialization of resource binding is disabled due to unresolved race issues
+    // Data::ParallelFor<uint32_t>(1u, m_settings.instance_count - 1, [&](uint32_t asteroid_index)
+    for(uint32_t asteroid_index = 1u; asteroid_index < m_settings.instance_count; ++asteroid_index)
+    {
+        const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(asteroid_index);
+        gfx::Program::ResourceBindings::ResourceLocationsByArgument set_resoure_location_by_argument = {
+            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { sp_asteroids_uniforms_buffer, asteroid_uniform_offset } } },
+        };
+        if (!m_settings.textures_array_enabled)
         {
-            const Data::Size                                            asteroid_uniform_offset          = GetUniformsBufferOffset(asteroid_index);
-            gfx::Program::ResourceBindings::ResourceLocationsByArgument set_resoure_location_by_argument = {
-                { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, { { sp_asteroids_uniforms_buffer, asteroid_uniform_offset } } },
-            };
-            if (!m_settings.textures_array_enabled)
-            {
-                set_resoure_location_by_argument.insert(
-                    { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, { { GetInstanceTexturePtr(asteroid_index) } } }
-                );
-            }
-            resource_bindings_array[asteroid_index] = gfx::Program::ResourceBindings::CreateCopy(*resource_bindings_array[0], set_resoure_location_by_argument);
+            set_resoure_location_by_argument.insert(
+                { { gfx::Shader::Type::Pixel, "g_face_textures"  }, { { GetInstanceTexturePtr(asteroid_index) } } }
+            );
         }
-    );
+        resource_bindings_array[asteroid_index] = gfx::Program::ResourceBindings::CreateCopy(*resource_bindings_array[0], set_resoure_location_by_argument);
+    } //);
     
     return resource_bindings_array;
 }

@@ -53,7 +53,7 @@ public:
     public:
         using Ptr = std::shared_ptr<ResourceBindingsBase>;
 
-        ResourceBindingsBase(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_location_by_argument);
+        ResourceBindingsBase(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
         ResourceBindingsBase(const ResourceBindingsBase& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
         ~ResourceBindingsBase() override;
 
@@ -73,7 +73,7 @@ public:
         using DescriptorHeapReservationByType = std::array<std::optional<DescriptorHeap::Reservation>, static_cast<uint32_t>(DescriptorHeap::Type::Count)>;
 
         void ReserveDescriptorHeapRanges();
-        void SetResourcesForArguments(const ResourceLocationsByArgument& resource_location_by_argument);
+        void SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument);
         void VerifyAllArgumentsAreBoundToResources();
 
         const Program::Ptr              m_sp_program;

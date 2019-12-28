@@ -49,11 +49,8 @@ public:
         ResourceBindingVK(const ResourceBindingVK& other) = default;
         
         // ResourceBinding interface
-        void SetResourceLocation(Resource::Location resource_location) override;
+        void SetResourceLocations(const Resource::Locations& resource_locations) override;
         uint32_t GetResourceCount() const override { return 1; }
-        
-        // ResourceBindingBase interface
-        DescriptorHeap::Type GetDescriptorHeapType() const override;
         
         const Settings& GetSettings() const noexcept { return m_settings; }
         
