@@ -54,6 +54,7 @@ public:
     void                  WaitForGpu(WaitFor wait_for) override;
     void                  Resize(const FrameSize& frame_size) override;
     void                  Reset(Device& device) override;
+    void                  Reset() override                       { ResetWithSettings(m_settings); }
     void                  Present() override;
     void                  AddCallback(Callback& callback) override;
     void                  RemoveCallback(Callback& callback) override;

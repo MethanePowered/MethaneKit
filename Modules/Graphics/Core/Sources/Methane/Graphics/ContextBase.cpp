@@ -95,12 +95,12 @@ void ContextBase::Reset(Device& device)
     ITT_FUNCTION_TASK();
 
 #ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("RESET context \"" + GetName() + "\"");
+    Platform::PrintToDebugOutput("RESET context \"" + GetName() + "\" with device adapter \"" + device.GetAdapterName() + "\".");
 #endif
 
     WaitForGpu(WaitFor::RenderComplete);
     Release();
-    Initialize(device, true);
+    Initialize(device, false);
 }
 
 void ContextBase::Present()
@@ -147,6 +147,11 @@ void ContextBase::OnPresentComplete()
 void ContextBase::ResetWithSettings(const Settings& settings)
 {
     ITT_FUNCTION_TASK();
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("RESET context \"" + GetName() + "\" with new settings.");
+#endif
+
     WaitForGpu(WaitFor::RenderComplete);
 
     DeviceBase::Ptr sp_device = m_sp_device;

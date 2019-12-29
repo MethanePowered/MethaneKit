@@ -84,6 +84,7 @@ struct Context : virtual Object
     virtual void WaitForGpu(WaitFor wait_for) = 0;
     virtual void Resize(const FrameSize& frame_size) = 0;
     virtual void Reset(Device& device) = 0;
+    virtual void Reset() = 0;
     virtual void Present() = 0;
     
     virtual void AddCallback(Callback& callback) = 0;

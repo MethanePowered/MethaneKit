@@ -379,7 +379,8 @@ void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
     ITT_FUNCTION_TASK();
     if (m_asteroids_complexity == asteroids_complexity)
         return;
-    
+
+    m_sp_context->WaitForGpu(gfx::Context::WaitFor::RenderComplete);
     m_asteroids_complexity = asteroids_complexity;
     
     m_asteroids_array_settings.instance_count           = GetParamValue(g_instaces_count, m_asteroids_complexity);
@@ -392,7 +393,7 @@ void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
     m_sp_asteroids_array_state.reset();
     
     assert(!!m_sp_context);
-    m_sp_context->Reset(m_sp_context->GetDevice());
+    m_sp_context->Reset();
 }
     
 void AsteroidsApp::SetParallelRnderingEnabled(bool is_parallel_rendering_enabled)
