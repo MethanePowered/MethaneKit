@@ -276,15 +276,16 @@ public:
             throw std::runtime_error("Context is not initialized before rendering.");
         }
 
-        const Context::Settings& context_settings       = m_sp_context->GetSettings();
-        const FpsCounter&        fps_counter            = m_sp_context->GetFpsCounter();
-        const uint32_t           average_fps            = fps_counter.GetFramesPerSecond();
-        const double             average_frame_time_ms  = fps_counter.GetAverageFrameTimeMilSec();
+        const Context::Settings&      context_settings      = m_sp_context->GetSettings();
+        const FpsCounter&             fps_counter           = m_sp_context->GetFpsCounter();
+        const uint32_t                average_fps           = fps_counter.GetFramesPerSecond();
+        const FpsCounter::FrameTiming average_frame_timing  = fps_counter.GetAverageFrameTiming();
 
         std::stringstream title_ss;
         title_ss.precision(2);
         title_ss << m_settings.name << "        " 
-                 << average_fps << " FPS (" << std::fixed << average_frame_time_ms << " ms)"
+                 << average_fps << " FPS (" << std::fixed << average_frame_timing.GetTotalTimeMSec()
+                                << " ms, "  << std::fixed << average_frame_timing.GetCpuTimePercent() << "% cpu)"
                  << ", " << context_settings.frame_size.width << " x " << context_settings.frame_size.height
                  << ", " << std::to_string(context_settings.frame_buffers_count) << " FB"
                  << ", VSync: " << (context_settings.vsync_enabled ? "ON" : "OFF")

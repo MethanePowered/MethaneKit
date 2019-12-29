@@ -105,9 +105,13 @@ void ContextBase::Reset(Device& device)
 
 void ContextBase::Present()
 {
+    ITT_FUNCTION_TASK();
+
 #ifdef COMMAND_EXECUTION_LOGGING
     Platform::PrintToDebugOutput("PRESENT frame " + std::to_string(m_frame_buffer_index) + " in context \"" + GetName() + "\"");
 #endif
+
+    m_fps_counter.OnFrameReadyToPresent();
 }
 
 void ContextBase::AddCallback(Callback& callback)
