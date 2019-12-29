@@ -169,12 +169,13 @@ Texture::Ptr ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
     std::mutex data_mutex;
     std::vector<std::pair<Data::Index, ImageData>> face_images_data;
     face_images_data.reserve(image_paths.size());
-    Data::ParallelFor<CubeFaceResources::const_iterator, const std::string>(image_paths.begin(), image_paths.end(),
-        [&](const std::string& face_image_path, Data::Index face_index) -> void
+    Data::ParallelFor<Data::Index>(0u, static_cast<Data::Index>(image_paths.size()),
+        [&](Data::Index face_index) -> void
         {
             // NOTE:
             //  we create a copy of the loaded image data (via 3-rd argument of LoadImage)
             //  to resolve a problem of STB image loader which requires an image data to be freed before next image is loaded
+            const std::string& face_image_path = image_paths[face_index];
             ImageLoader::ImageData image_data = LoadImage(face_image_path, desired_channels_count, true);
 
             std::lock_guard<std::mutex> data_lock(data_mutex);

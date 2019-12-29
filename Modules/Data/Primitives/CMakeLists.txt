@@ -11,6 +11,7 @@ set(HEADERS
     ${INCLUDE_DIR}/ResourceProvider.hpp
     ${INCLUDE_DIR}/AppResourceProviders.h
     ${INCLUDE_DIR}/AlignedAllocator.hpp
+    ${INCLUDE_DIR}/Math.hpp
     ${INCLUDE_DIR}/Parallel.hpp
 )
 

@@ -35,6 +35,7 @@ Mesh buffers with texture extension structure.
 #include <Methane/Data/AlignedAllocator.hpp>
 #include <Methane/Data/Instrumentation.h>
 #include <Methane/Data/Parallel.hpp>
+#include <Methane/Data/Math.hpp>
 
 #include <memory>
 #include <string>
@@ -162,10 +163,11 @@ public:
         const RenderCommandList::Ptrs& render_cmd_lists = parallel_cmd_list.GetParallelCommandLists();
         const uint32_t instances_count_per_command_list = static_cast<uint32_t>(Data::DivCeil(instance_resource_bindings.size(), render_cmd_lists.size()));
 
-        Data::ParallelFor<RenderCommandList::Ptrs::const_iterator, const RenderCommandList::Ptr>(render_cmd_lists.begin(), render_cmd_lists.end(),
-            [this, &instance_resource_bindings, &instances_count_per_command_list, bindings_apply_behavior](const RenderCommandList::Ptr& sp_render_command_list, Data::Index cl_index)
+        Data::ParallelFor<size_t>(0u, render_cmd_lists.size(),
+            [&](size_t cl_index)
             {
-                const uint32_t begin_instance_index = instances_count_per_command_list * cl_index;
+                const RenderCommandList::Ptr& sp_render_command_list = render_cmd_lists[cl_index];
+                const uint32_t begin_instance_index = static_cast<uint32_t>(cl_index * instances_count_per_command_list);
                 const uint32_t end_instance_index   = std::min(begin_instance_index + instances_count_per_command_list,
                                                                static_cast<uint32_t>(instance_resource_bindings.size()));
 

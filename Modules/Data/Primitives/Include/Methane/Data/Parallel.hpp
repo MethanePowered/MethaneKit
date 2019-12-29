@@ -16,8 +16,10 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Data/Parallel.hpp
-Data parallel processing primitives.
+FILE: Methane/Data/Posix/Parallel.hpp
+Data parallel processing primitives
+- on Windows platform: implemented with Parallel Primitives Library (PPL)
+- on Posix platforms: implemented with STL Async and Future.
 
 ******************************************************************************/
 
@@ -25,31 +27,32 @@ Data parallel processing primitives.
 
 #include <Methane/Data/Types.h>
 
+#ifdef _WIN32
+#define METHANE_USE_PPL
+#endif
+
+#ifdef METHANE_USE_PPL
+
+#include <ppl.h>
+
+#else
+
+#include <Methane/Data/Math.hpp>
+#include <future>
+
+#endif
+
+#include <type_traits>
 #include <iterator>
 #include <functional>
-#include <future>
 
 namespace Methane::Data
 {
 
-template<typename T>
-std::enable_if_t<std::is_unsigned<T>::value, T> DivCeil(T numerator, T denominator)
-{
-    return numerator > 0 ? (1 + ((numerator - 1) / denominator)) : 0;
-}
-
-template<typename T>
-std::enable_if_t<std::is_signed<T>::value, T> DivCeil(T numerator, T denominator)
-{
-    std::div_t res = std::div(static_cast<int32_t>(numerator), static_cast<int32_t>(denominator));
-    return res.rem ? (res.quot >= 0 ? (res.quot + 1) : (res.quot - 1))
-                   : res.quot;
-}
-
 template<typename Iterator, typename Value>
 struct IteratorFunction
 {
-    using type = std::function<void(Value&, Index)>;
+    using type = std::function<void(Value&)>;
 };
 
 #if 0 // TODO: fix or remove experimental code
@@ -69,10 +72,16 @@ struct IteratorFunction<Iterator, std::enable_if_t<!is_const_iterator<Iterator>:
 #endif
 
 template<typename Iterator, typename Value>
-void ParallelFor(const Iterator& begin_it, const Iterator& end_it,
-                 typename IteratorFunction<Iterator, Value>::type&& body_function)
+void ParallelForEach(const Iterator& begin_it, const Iterator& end_it,
+                     typename IteratorFunction<Iterator, Value>::type&& body_function)
 {
     ITT_FUNCTION_TASK();
+
+#ifdef METHANE_USE_PPL
+
+    concurrency::parallel_for_each(begin_it, end_it, body_function);
+
+#else
 
     const size_t items_count     = std::distance(begin_it, end_it);
     const size_t hw_theads_count = std::thread::hardware_concurrency();
@@ -90,7 +99,7 @@ void ParallelFor(const Iterator& begin_it, const Iterator& end_it,
                 {
                     for(size_t index = chunk_begin_index; index < chunk_end_index; ++index)
                     {
-                        body_function(*(begin_it + index), static_cast<Index>(index));
+                        body_function(*(begin_it + index));
                     }
                 }
             )
@@ -101,22 +110,36 @@ void ParallelFor(const Iterator& begin_it, const Iterator& end_it,
     {
         future.wait();
     };
+
+#endif
 }
 
 template<typename IndexType, typename = std::enable_if_t<std::is_integral<IndexType>::value>>
-void ParallelFor(IndexType start_index, IndexType count, std::function<void(IndexType)>&& body_function)
+void ParallelFor(IndexType begin_index, IndexType end_index, std::function<void(IndexType)>&& body_function)
 {
     ITT_FUNCTION_TASK();
 
+    if (end_index < begin_index)
+    {
+        throw std::invalid_argument("ParallelFor requires end_index to be greater or equal to begin_index");
+    }
+
+#ifdef METHANE_USE_PPL
+
+    concurrency::parallel_for(begin_index, end_index, body_function);
+
+#else
+
+    const IndexType count           = end_index - begin_index;
     const IndexType hw_theads_count = static_cast<IndexType>(std::thread::hardware_concurrency());
     const IndexType chunk_size      = Data::DivCeil(count, hw_theads_count);
 
     std::vector<std::future<void>> futures;
     futures.reserve(static_cast<size_t>(count));
 
-    for (IndexType chunk_begin_index = start_index; chunk_begin_index < count; chunk_begin_index += chunk_size)
+    for (IndexType chunk_begin_index = begin_index; chunk_begin_index < count; chunk_begin_index += chunk_size)
     {
-        const IndexType chunk_end_index = std::min(chunk_begin_index + chunk_size, start_index + count);
+        const IndexType chunk_end_index = std::min(chunk_begin_index + chunk_size, end_index);
         futures.emplace_back(
             std::async(std::launch::async,
                 [chunk_begin_index, chunk_end_index, body_function]()
@@ -134,6 +157,8 @@ void ParallelFor(IndexType start_index, IndexType count, std::function<void(Inde
     {
         future.wait();
     };
+
+#endif
 }
 
 } // namespace Methane::Data

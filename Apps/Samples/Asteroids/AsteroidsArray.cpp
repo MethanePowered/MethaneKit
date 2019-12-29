@@ -110,8 +110,8 @@ AsteroidsArray::ContentState::ContentState(const Settings& settings)
     std::uniform_real_distribution<float> noise_scale_distribution(0.05f, 0.1f);
 
     texture_array_subresources.resize(settings.textures_count);
-    Data::ParallelFor<TextureArraySubresources::iterator, gfx::Resource::SubResources>(texture_array_subresources.begin(), texture_array_subresources.end(),
-        [&](gfx::Resource::SubResources& sub_resources, Data::Index)
+    Data::ParallelForEach<TextureArraySubresources::iterator, gfx::Resource::SubResources>(texture_array_subresources.begin(), texture_array_subresources.end(),
+        [&](gfx::Resource::SubResources& sub_resources)
         {
             Asteroid::TextureNoiseParameters noise_parameters = {
                 static_cast<uint32_t>(rng()),
@@ -332,8 +332,8 @@ bool AsteroidsArray::Update(double /*elapsed_seconds*/, double delta_seconds)
     gfx::Matrix44f scene_view_matrix, scene_proj_matrix;
     m_settings.view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
 
-    Data::ParallelFor<Parameters::iterator, Asteroid::Parameters>(m_sp_content_state->parameters.begin(), m_sp_content_state->parameters.end(),
-        [&](Asteroid::Parameters& asteroid_parameters, Data::Index)
+    Data::ParallelForEach<Parameters::iterator, Asteroid::Parameters>(m_sp_content_state->parameters.begin(), m_sp_content_state->parameters.end(),
+        [&](Asteroid::Parameters& asteroid_parameters)
         {
             ITT_FUNCTION_TASK();
 

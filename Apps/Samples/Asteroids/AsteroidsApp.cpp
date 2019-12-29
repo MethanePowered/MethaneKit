@@ -136,6 +136,7 @@ AsteroidsApp::AsteroidsApp()
             true                                            // - depth_reversed
         })
     , m_asteroids_complexity(static_cast<uint32_t>(GetComplexity()))
+    , m_is_parallel_rendering_enabled(true)
 {
     ITT_FUNCTION_TASK();
 
