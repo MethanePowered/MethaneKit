@@ -351,7 +351,7 @@ bool AsteroidsArray::Update(double /*elapsed_seconds*/, double delta_seconds)
             SetFinalPassUniforms(
                 AsteroidUniforms
                 {
-                    std::move(model_matrix),
+                    model_matrix,
                     model_matrix * scene_view_matrix * scene_proj_matrix,
                     asteroid_parameters.colors.deep,
                     asteroid_parameters.colors.shallow,
