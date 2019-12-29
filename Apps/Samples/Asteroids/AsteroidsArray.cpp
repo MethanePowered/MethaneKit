@@ -220,7 +220,7 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings, Content
     const size_t textures_array_size = m_settings.textures_array_enabled ? m_settings.textures_count : 1;
     const gfx::Shader::MacroDefinitions macro_definitions  = { { "TEXTURES_COUNT", std::to_string(textures_array_size) } };
     const std::set<std::string> addressable_argument_names = { "g_mesh_uniforms" };
-    std::set<std::string>       constant_argument_names    = { "g_constants", "g_texture_sampler" };
+    std::set<std::string>       constant_argument_names    = { "g_constants", "g_texture_sampler", "g_scene_uniforms" };
     if (m_settings.textures_array_enabled)
         constant_argument_names.insert("g_face_textures");
 
