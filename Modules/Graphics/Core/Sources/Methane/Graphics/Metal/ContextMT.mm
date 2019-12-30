@@ -134,6 +134,7 @@ void ContextMT::Resize(const FrameSize& frame_size)
 void ContextMT::Present()
 {
     ITT_FUNCTION_TASK();
+    ContextBase::Present();
     OnPresentComplete();
 }
 
