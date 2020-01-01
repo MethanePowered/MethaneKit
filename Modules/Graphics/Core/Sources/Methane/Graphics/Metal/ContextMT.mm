@@ -51,8 +51,12 @@ ContextMT::ContextMT(const Platform::AppEnvironment& env, DeviceBase& device, co
                                      vsyncEnabled: Methane::MacOS::ConvertToNSType<bool, BOOL>(m_settings.vsync_enabled)
                             unsyncRefreshInterval: 1.0 / m_settings.unsync_max_fps])
     , m_dispatch_semaphore(dispatch_semaphore_create(m_settings.frame_buffers_count))
+    , m_frame_capture_scope([[MTLCaptureManager sharedCaptureManager] newCaptureScopeWithDevice:GetDeviceMT().GetNativeDevice()])
 {
     ITT_FUNCTION_TASK();
+    
+    m_frame_capture_scope.label = Methane::MacOS::ConvertToNSType<std::string, NSString*>(device.GetName() + " Capture Scope");
+    [MTLCaptureManager sharedCaptureManager].defaultCaptureScope = m_frame_capture_scope;
 
     // bind metal context with application delegate
     m_app_view.delegate = env.ns_app_delegate;
@@ -122,6 +126,7 @@ void ContextMT::WaitForGpu(WaitFor wait_for)
     if (switch_to_next_frame)
     {
         m_frame_buffer_index = (m_frame_buffer_index + 1) % m_settings.frame_buffers_count;
+        [m_frame_capture_scope beginScope];
     }
 }
 
@@ -135,6 +140,9 @@ void ContextMT::Present()
 {
     ITT_FUNCTION_TASK();
     ContextBase::Present();
+    
+    [m_frame_capture_scope endScope];
+    
     OnPresentComplete();
 }
 
@@ -165,6 +173,12 @@ DeviceMT& ContextMT::GetDeviceMT()
 {
     ITT_FUNCTION_TASK();
     return static_cast<DeviceMT&>(GetDevice());
+}
+    
+CommandQueueMT& ContextMT::GetRenderCommandQueueMT()
+{
+    ITT_FUNCTION_TASK();
+    return static_cast<CommandQueueMT&>(ContextBase::GetRenderCommandQueue());
 }
 
 const ContextMT::LibraryMT::Ptr& ContextMT::GetLibraryMT(const std::string& library_name)

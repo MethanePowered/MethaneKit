@@ -37,6 +37,7 @@ namespace Methane::Graphics
 struct CommandQueue;
 class RenderPassMT;
 class DeviceMT;
+class CommandQueueMT;
 
 class ContextMT : public ContextBase
 {
@@ -73,6 +74,7 @@ public:
 
     id<CAMetalDrawable>     GetNativeDrawable()       { return m_app_view.currentDrawable; }
     DeviceMT&               GetDeviceMT();
+    CommandQueueMT&         GetRenderCommandQueueMT();
     const LibraryMT::Ptr&   GetLibraryMT(const std::string& library_name = "");
 
 protected:
@@ -85,6 +87,7 @@ protected:
     AppViewMT*              m_app_view;
     dispatch_semaphore_t    m_dispatch_semaphore;
     LibraryByName           m_library_by_name;
+    id<MTLCaptureScope>     m_frame_capture_scope;
 };
 
 } // namespace Methane::Graphics
