@@ -119,14 +119,14 @@ void ShaderMT::ResourceBindingMT::SetResourceLocations(const Resource::Locations
         m_mtl_sampler_states.reserve(m_resource_locations.size());
         std::transform(m_resource_locations.begin(), m_resource_locations.end(), std::back_inserter(m_mtl_sampler_states),
                        [](const Resource::Location& resource_location)
-                       { return dynamic_cast<const SamplerMT&>(*resource_location.sp_resource).GetNativeSamplerState(); });
+                       { return dynamic_cast<const SamplerMT&>(resource_location.GetResource()).GetNativeSamplerState(); });
         break;
 
     case Resource::Type::Texture:
         m_mtl_textures.reserve(m_resource_locations.size());
         std::transform(m_resource_locations.begin(), m_resource_locations.end(), std::back_inserter(m_mtl_textures),
                        [](const Resource::Location& resource_location)
-                       { return dynamic_cast<const TextureMT&>(*resource_location.sp_resource).GetNativeTexture(); });
+                       { return dynamic_cast<const TextureMT&>(resource_location.GetResource()).GetNativeTexture(); });
         break;
 
     case Resource::Type::Buffer:
@@ -134,9 +134,8 @@ void ShaderMT::ResourceBindingMT::SetResourceLocations(const Resource::Locations
         m_mtl_buffer_offsets.reserve(m_resource_locations.size());
         for (const Resource::Location& resource_location : m_resource_locations)
         {
-            assert(!!resource_location.sp_resource);
-            m_mtl_buffers.push_back(dynamic_cast<const BufferMT&>(*resource_location.sp_resource).GetNativeBuffer());
-            m_mtl_buffer_offsets.push_back(static_cast<NSUInteger>(resource_location.offset));
+            m_mtl_buffers.push_back(dynamic_cast<const BufferMT&>(resource_location.GetResource()).GetNativeBuffer());
+            m_mtl_buffer_offsets.push_back(static_cast<NSUInteger>(resource_location.GetOffset()));
         }
         break;
     }
