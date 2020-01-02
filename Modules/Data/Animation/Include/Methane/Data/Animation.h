@@ -23,7 +23,7 @@ Abstract animation class
 
 #pragma once
 
-#include "Timer.h"
+#include <Methane/Data/Timer.hpp>
 
 #include <memory>
 

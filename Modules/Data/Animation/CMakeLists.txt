@@ -5,7 +5,6 @@ include(MethaneModules)
 get_module_dirs("Methane/Data")
 
 set(HEADERS
-    ${INCLUDE_DIR}/Timer.h
     ${INCLUDE_DIR}/Animation.h
     ${INCLUDE_DIR}/AnimationsPool.h
     ${INCLUDE_DIR}/TimeAnimation.h

@@ -6,6 +6,7 @@ get_module_dirs("Methane/Data")
 
 set(HEADERS
     ${INCLUDE_DIR}/Instrumentation.h
+    ${INCLUDE_DIR}/Timer.hpp
 )
 
 set(SOURCES

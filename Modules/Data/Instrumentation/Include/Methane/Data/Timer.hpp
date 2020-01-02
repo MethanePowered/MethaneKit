@@ -23,7 +23,7 @@ Basic animation timer for measuring elapsed time since start.
 
 #pragma once
 
-#include <Methane/Data/Instrumentation.h>
+#include "Instrumentation.h"
 
 #include <chrono>
 
@@ -38,12 +38,6 @@ public:
 
     Timer() : m_start_time(Clock::now()) { ITT_FUNCTION_TASK(); }
 
-    void Reset() noexcept
-    {
-        ITT_FUNCTION_TASK();
-        m_start_time = Clock::now();
-    }
-
     TimePoint   GetStartTime() const noexcept       { return m_start_time; }
     uint32_t    GetElapsedSecondsU() const noexcept { return GetElapsedSeconds<uint32_t>(); }
     double      GetElapsedSecondsD() const noexcept { return GetElapsedSeconds<double>(); }
@@ -54,6 +48,12 @@ public:
     {
         ITT_FUNCTION_TASK();
         return std::chrono::duration_cast<std::chrono::duration<T>>(Clock::now() - m_start_time).count();
+    }
+
+    void Reset() noexcept
+    {
+        ITT_FUNCTION_TASK();
+        m_start_time = Clock::now();
     }
 
 private:
