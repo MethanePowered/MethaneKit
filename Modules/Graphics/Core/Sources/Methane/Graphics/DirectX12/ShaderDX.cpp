@@ -245,7 +245,7 @@ void ShaderDX::ResourceBindingDX::SetResourceLocations(const Resource::Locations
         GetContextDX().GetDeviceDX().GetNativeDevice()->CopyDescriptorsSimple(
             1,
             dx_descriptor_heap.GetNativeCPUDescriptorHandle(descriptor_index),
-            resource_location_dx.sp_resource->GetNativeCPUDescriptorHandle(ResourceBase::Usage::ShaderRead),
+            resource_location_dx.GetResourceDX().GetNativeCPUDescriptorHandle(ResourceBase::Usage::ShaderRead),
             dx_descriptor_heap.GetNativeDescriptorHeapType()
         );
 

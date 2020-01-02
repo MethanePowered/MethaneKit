@@ -54,6 +54,8 @@ ShaderBase::ResourceBindingBase::ResourceBindingBase(ContextBase& context, const
 void ShaderBase::ResourceBindingBase::SetResourceLocations(const Resource::Locations& resource_locations)
 {
     ITT_FUNCTION_TASK();
+
+    m_resource_locations.clear();
     if (resource_locations.empty())
         throw std::invalid_argument("Can not set empty resources for resource binding.");
 
@@ -61,21 +63,18 @@ void ShaderBase::ResourceBindingBase::SetResourceLocations(const Resource::Locat
 
     for (const Resource::Location& resource_location : resource_locations)
     {
-        if (!resource_location.sp_resource)
-            throw std::invalid_argument("Can not use empty resource for resource binding.");
-
-        if (resource_location.sp_resource->GetResourceType() != m_settings.resource_type)
+        if (resource_location.GetResource().GetResourceType() != m_settings.resource_type)
         {
-            throw std::invalid_argument("Incompatible resource type \"" + Resource::GetTypeName(resource_location.sp_resource->GetResourceType()) +
+            throw std::invalid_argument("Incompatible resource type \"" + Resource::GetTypeName(resource_location.GetResource().GetResourceType()) +
                                         "\" is bound to argument \"" + GetArgumentName() +
                                         "\" of type \"" + Resource::GetTypeName(m_settings.resource_type) + "\".");
         }
 
-        const Resource::Usage::Mask resource_usage_mask = resource_location.sp_resource->GetUsageMask();
+        const Resource::Usage::Mask resource_usage_mask = resource_location.GetResource().GetUsageMask();
         if (static_cast<bool>(resource_usage_mask & Resource::Usage::Addressable) != is_addressable_binding)
             throw std::invalid_argument("Resource addressable usage flag does not match with resource binding state.");
 
-        if (!is_addressable_binding && resource_location.offset > 0)
+        if (!is_addressable_binding && resource_location.GetOffset() > 0)
             throw std::invalid_argument("Can not set resource location with non-zero offset to non-addressable resource binding.");
     }
 

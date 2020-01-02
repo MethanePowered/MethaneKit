@@ -40,8 +40,6 @@ class DescriptorHeapDX;
 class ResourceDX : public ResourceBase
 {
 public:
-    using Ptr = std::shared_ptr<ResourceDX>;
-
     class ReleasePoolDX : public ResourceBase::ReleasePool
     {
     public:
@@ -54,15 +52,19 @@ public:
         std::vector<wrl::ComPtr<ID3D12Resource>> m_resources;
     };
 
-    struct LocationDX
+    class LocationDX : public Location
     {
-        Ptr        sp_resource;
-        Data::Size offset;
+    public:
+        explicit LocationDX(const Location& location);
+        explicit LocationDX(const LocationDX& location);
 
-        LocationDX(const Location& location);
-        LocationDX(const LocationDX& location);
+        LocationDX& operator=(const LocationDX& other);
 
-        D3D12_GPU_VIRTUAL_ADDRESS GetNativeGpuAddress() const noexcept { return sp_resource->GetNativeGpuAddress() + offset; }
+        ResourceDX&               GetResourceDX() const noexcept       { return m_resource_dx.get(); }
+        D3D12_GPU_VIRTUAL_ADDRESS GetNativeGpuAddress() const noexcept { return GetResourceDX().GetNativeGpuAddress() + GetOffset(); }
+
+    private:
+        std::reference_wrapper<ResourceDX> m_resource_dx;
     };
 
     using LocationsDX = std::vector<LocationDX>;

@@ -35,6 +35,14 @@ Base implementation of the resource interface.
 namespace Methane::Graphics
 {
 
+Resource::Location::Location(Ptr sp_resource, Data::Size offset)
+    : m_sp_resource(std::move(sp_resource))
+    , m_offset(offset)
+{
+    if (!m_sp_resource)
+        throw std::invalid_argument("Can not create Resource Location for an empty resource.");
+}
+
 std::string Resource::GetTypeName(Type type) noexcept
 {
     ITT_FUNCTION_TASK();
@@ -95,8 +103,8 @@ Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, int32_t in_index)
     
 bool Resource::Location::operator==(const Location& other) const
 {
-    return std::tie(sp_resource, offset) ==
-           std::tie(other.sp_resource, other.offset);
+    return std::tie(m_sp_resource, m_offset) ==
+           std::tie(other.m_sp_resource, other.m_offset);
 }
 
 Resource::SubResource::SubResource(Data::Bytes&& data, Index in_index)

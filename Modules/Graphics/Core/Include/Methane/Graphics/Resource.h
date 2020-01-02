@@ -90,18 +90,20 @@ struct Resource : virtual Object
 
     using DescriptorByUsage = std::map<Usage::Value, Descriptor>;
     
-    struct Location
+    class Location
     {
-        Ptr        sp_resource;
-        Data::Size offset;
-
-        Location(Ptr in_sp_resource, Data::Size in_offset = 0u) : sp_resource(std::move(in_sp_resource)), offset(in_offset)
-        {
-            if (!sp_resource)
-                throw std::invalid_argument("Can not create Resource::Location for an empty resource.");
-        }
+    public:
+        Location(Ptr sp_resource, Data::Size offset = 0u);
 
         bool operator==(const Location& other) const;
+
+        const Ptr& GetResourcePtr() const   { return m_sp_resource; }
+        Resource&  GetResource() const      { return *m_sp_resource; }
+        Data::Size GetOffset() const        { return m_offset; }
+
+    private:
+        Ptr        m_sp_resource;
+        Data::Size m_offset;
     };
 
     using Locations = std::vector<Location>;

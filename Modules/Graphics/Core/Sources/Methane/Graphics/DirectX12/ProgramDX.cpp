@@ -222,7 +222,7 @@ void ProgramDX::ResourceBindingsDX::Apply(CommandList& command_list, ApplyBehavi
 
             for (const ResourceDX::LocationDX& resource_location_dx : resource_binding.GetResourceLocationsDX())
             {
-                resource_location_dx.sp_resource->SetState(resource_state, resource_transition_barriers);
+                resource_location_dx.GetResourceDX().SetState(resource_state, resource_transition_barriers);
             }
         }
     });
@@ -296,11 +296,10 @@ void ProgramDX::ResourceBindingsDX::CopyDescriptorsToGpu()
         uint32_t resource_index = 0;
         for (const ResourceDX::LocationDX& resource_location_dx : resource_binding.GetResourceLocationsDX())
         {
-            assert(!!resource_location_dx.sp_resource);
-            const DescriptorHeap::Types used_heap_types = resource_location_dx.sp_resource->GetUsedDescriptorHeapTypes();
+            const DescriptorHeap::Types used_heap_types = resource_location_dx.GetResourceDX().GetUsedDescriptorHeapTypes();
             if (used_heap_types.find(heap_type) == used_heap_types.end())
             {
-                throw std::invalid_argument("Can not create binding for resource used for " + resource_location_dx.sp_resource->GetUsageNames() +
+                throw std::invalid_argument("Can not create binding for resource used for " + resource_location_dx.GetResourceDX().GetUsageNames() +
                     " on descriptor heap of incompatible type \"" + dx_descriptor_heap.GetTypeName() + "\".");
             }
 
@@ -312,7 +311,7 @@ void ProgramDX::ResourceBindingsDX::CopyDescriptorsToGpu()
 
             cp_device->CopyDescriptorsSimple(1,
                                              dx_descriptor_heap.GetNativeCPUDescriptorHandle(descriptor_index),
-                                             resource_location_dx.sp_resource->GetNativeCPUDescriptorHandle(ResourceBase::Usage::ShaderRead),
+                                             resource_location_dx.GetResourceDX().GetNativeCPUDescriptorHandle(ResourceBase::Usage::ShaderRead),
                                              dx_descriptor_heap.GetNativeDescriptorHeapType());
             resource_index++;
         }

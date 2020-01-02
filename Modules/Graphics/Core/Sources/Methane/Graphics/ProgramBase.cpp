@@ -72,20 +72,20 @@ ProgramBase::ResourceBindingsBase::ResourceBindingsBase(const ResourceBindingsBa
 {
     ITT_FUNCTION_TASK();
 
-    // Form map of original resource bindings
-    ResourceLocationsByArgument resource_locations_by_argument;
+    // Form map of volatile resource bindings with replaced resource locations
+    ResourceLocationsByArgument resource_locations_by_argument = replace_resource_locations_by_argument;
     for (const auto& argument_and_resource_binding : other_resource_bingings.m_resource_binding_by_argument)
     {
+        // NOTE: constant resource bindings are reusing single binding-object for the whole program,
+        //       so there's no need in setting its value, since it was already set by the original resource binding
+        if (argument_and_resource_binding.second->IsConstant() ||
+            resource_locations_by_argument.count(argument_and_resource_binding.first))
+            continue;
+
         resource_locations_by_argument.emplace(
             argument_and_resource_binding.first,
             argument_and_resource_binding.second->GetResourceLocations()
         );
-    }
-
-    // Substitute resources in original bindings list
-    for (const auto& argument_and_resource_location : replace_resource_locations_by_argument)
-    {
-        resource_locations_by_argument[argument_and_resource_location.first] = argument_and_resource_location.second;
     }
 
     ReserveDescriptorHeapRanges();
