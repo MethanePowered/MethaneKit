@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,12 +16,27 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Instrumentation.cpp
-Common header for instrumentation of the Methane Kit modules with ITT macroses,
-Defines common ITT domain required for instrumentation.
+FILE: Methane/Data/ILogger.h
+Abstract logger interface.
 
 ******************************************************************************/
 
-#include <Methane/Data/Instrumentation.h>
+#pragma once
 
-ITT_DOMAIN_GLOBAL("Methane Kit");
+#include "Utils.h"
+
+#include <Methane/Data/ILogger.h>
+
+namespace Methane::Platform
+{
+
+class Logger : public Data::ILogger
+{
+    // Data::ILogger interface
+    void Log(const std::string& message) override
+    {
+        PrintToDebugOutput(message);
+    }
+};
+
+} // namespace Methane::Data

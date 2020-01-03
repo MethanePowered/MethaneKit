@@ -7,10 +7,13 @@ get_module_dirs("Methane/Data")
 set(HEADERS
     ${INCLUDE_DIR}/Instrumentation.h
     ${INCLUDE_DIR}/Timer.hpp
+    ${INCLUDE_DIR}/ScopeTimer.h
+    ${INCLUDE_DIR}/ILogger.h
 )
 
 set(SOURCES
     ${SOURCES_DIR}/Instrumentation.cpp
+    ${SOURCES_DIR}/ScopeTimer.cpp
 )
 
 add_library(${TARGET} STATIC
