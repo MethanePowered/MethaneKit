@@ -7,10 +7,25 @@
             "inheritEnvironments": [ "msvc_x86" ],
             "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
             "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-            "cmakeCommandArgs": "-DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON",
             "buildCommandArgs": "-v",
             "ctestCommandArgs": "",
-            "variables": []
+            "variables": [
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                }
+            ]
         },
         {
             "name": "x86-Release",
@@ -19,10 +34,25 @@
             "inheritEnvironments": [ "msvc_x86" ],
             "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
             "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-            "cmakeCommandArgs": "-DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON",
             "buildCommandArgs": "-v",
             "ctestCommandArgs": "",
-            "variables": []
+            "variables": [
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                }
+            ]
         },
         {
             "name": "x64-Debug",
@@ -31,10 +61,25 @@
             "inheritEnvironments": [ "msvc_x64_x64" ],
             "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
             "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-            "cmakeCommandArgs": "-DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON",
             "buildCommandArgs": "-v",
             "ctestCommandArgs": "",
-            "variables": []
+            "variables": [
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                }
+            ]
         },
         {
             "name": "x64-Release",
@@ -43,10 +88,25 @@
             "inheritEnvironments": [ "msvc_x64_x64" ],
             "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
             "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-            "cmakeCommandArgs": "-DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON",
             "buildCommandArgs": "-v",
             "ctestCommandArgs": "",
-            "variables": []
+            "variables": [
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                }
+            ]
         },
         {
             "name": "Linux-Debug",

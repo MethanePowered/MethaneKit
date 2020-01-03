@@ -6,7 +6,8 @@ enable_testing()
 
 option(METHANE_USE_OPEN_IMAGE_IO "Enable using OpenImageIO library for images loading" OFF)
 option(METHANE_ITT_INSTRUMENTATION_ENABLED "Enable ITT instrumentation" OFF)
-option(METHANE_SHADERS_CODEVIEW_ENABLED "Enable shaders code viewing in debug tools while keeping compiler optimizations in Release builds)" OFF)
+option(METHANE_SCOPE_TIMERS_ENABLED "Enable low-overhead profiling with scope-timers" OFF)
+option(METHANE_SHADERS_CODEVIEW_ENABLED "Enable shaders code symbols viewing in debug tools)" OFF)
 option(METHANE_RUN_TESTS_DURING_BUILD "Run tests during build" ON)
 
 set(METHANE_VERSION "0.1" CACHE STRING "Methane release major-minor version number")
@@ -32,6 +33,11 @@ set(PARSE_CATCH_TESTS_VERBOSE OFF)
 
 if(MSVC)
 
+    if(NOT DEFINED ENV{WindowsSdkVerBinPath})
+        message(FATAL_ERROR "Windows SDK binary directory path is undefined! "
+                            "Please start cmake generation from \"Visual Studio Native Tools\" command prompt.")
+    endif()
+
     set(VS_STARTUP_PROJECT MethaneShadowCube)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
     set(WINDOWS_SDK_BIN_PATH $ENV{WindowsSdkVerBinPath}x64)
@@ -45,8 +51,26 @@ elseif(APPLE)
 
 endif()
 
+if(METHANE_USE_OPEN_IMAGE_IO)
+    message(STATUS "Methane Kit OpenImageIO media-library is enbabled.")
+endif()
+
 if(METHANE_ITT_INSTRUMENTATION_ENABLED)
+    message(STATUS "Methane ITT Instrumentation is enabled")
     add_definitions(-DITT_INSTRUMENTATION_ENABLED)
+endif()
+
+if(METHANE_SCOPE_TIMERS_ENABLED)
+    message(STATUS "Methane Scope Timers are enabled")
+    add_definitions(-DSCOPE_TIMERS_ENABLED)
+endif()
+
+if(METHANE_SHADERS_CODEVIEW_ENABLED)
+    message(STATUS "Methane shaders code symbols are enabled")
+endif()
+
+if(METHANE_RUN_TESTS_DURING_BUILD)
+    message(STATUS "Methane tests running during build is enabled")
 endif()
 
 if (CMAKE_INSTALL_PREFIX AND EXISTS "${CMAKE_INSTALL_PREFIX}/bin/ctest")
