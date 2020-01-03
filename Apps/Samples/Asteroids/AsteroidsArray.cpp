@@ -27,6 +27,7 @@ Random generated asteroids array with uber mesh and textures ready for rendering
 #include <Methane/Data/Parallel.hpp>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Data/Instrumentation.h>
+#include <Methane/Data/ScopeTimer.h>
 
 namespace Methane::Samples
 {
@@ -52,6 +53,7 @@ AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivision
     , m_min_subdivision(min_subdivision)
 {
     ITT_FUNCTION_TASK();
+    SCOPE_TIMER("AsteroidsArray::UberMesh::UberMesh");
 
     std::mt19937 rng(random_seed);
 
@@ -102,6 +104,7 @@ AsteroidsArray::ContentState::ContentState(const Settings& settings)
     : uber_mesh(settings.unique_mesh_count, settings.subdivisions_count, settings.minimum_subdivision, settings.random_seed)
 {
     ITT_FUNCTION_TASK();
+    SCOPE_TIMER("AsteroidsArray::ContentState::ContentState");
 
     std::mt19937 rng(settings.random_seed);
 
@@ -214,6 +217,7 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings, Content
     , m_sp_content_state(state.shared_from_this())
 {
     ITT_FUNCTION_TASK();
+    SCOPE_TIMER("AsteroidsArray::AsteroidsArray");
     
     const gfx::Context::Settings& context_settings = context.GetSettings();
 
@@ -278,6 +282,7 @@ gfx::MeshBufferBindings::ResourceBindingsArray AsteroidsArray::CreateResourceBin
                                                                                       const gfx::Buffer::Ptr &sp_asteroids_uniforms_buffer)
 {
     ITT_FUNCTION_TASK();
+    SCOPE_TIMER("AsteroidsArray::CreateResourceBindings");
 
     gfx::MeshBufferBindings::ResourceBindingsArray resource_bindings_array;
     if (m_settings.instance_count == 0)
@@ -326,6 +331,7 @@ void AsteroidsArray::Resize(const gfx::FrameSize &frame_size)
 bool AsteroidsArray::Update(double /*elapsed_seconds*/, double delta_seconds)
 {
     ITT_FUNCTION_TASK();
+    SCOPE_TIMER("AsteroidsArray::Update");
 
     gfx::Matrix44f scene_view_matrix, scene_proj_matrix;
     m_settings.view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
@@ -367,6 +373,7 @@ bool AsteroidsArray::Update(double /*elapsed_seconds*/, double delta_seconds)
 void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, gfx::MeshBufferBindings& buffer_bindings)
 {
     ITT_FUNCTION_TASK();
+    SCOPE_TIMER("AsteroidsArray::Draw");
 
     const Data::Size uniforms_buffer_size = GetUniformsBufferSize();
     assert(buffer_bindings.sp_uniforms_buffer);
@@ -380,9 +387,10 @@ void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, gfx::MeshBufferBindi
                       gfx::Program::ResourceBindings::ApplyBehavior::ConstantOnce);
 }
 
-void AsteroidsArray::Draw(gfx::ParallelRenderCommandList& parallel_cmd_list, gfx::MeshBufferBindings& buffer_bindings)
+void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list, gfx::MeshBufferBindings& buffer_bindings)
 {
     ITT_FUNCTION_TASK();
+    SCOPE_TIMER("AsteroidsArray::DrawParallel");
 
     const Data::Size uniforms_buffer_size = GetUniformsBufferSize();
     assert(buffer_bindings.sp_uniforms_buffer);

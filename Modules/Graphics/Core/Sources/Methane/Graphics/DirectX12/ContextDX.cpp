@@ -28,6 +28,7 @@ DirectX 12 implementation of the context interface.
 #include "TypesDX.h"
 
 #include <Methane/Data/Instrumentation.h>
+#include <Methane/Data/ScopeTimer.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #ifdef COMMAND_EXECUTION_LOGGING
@@ -203,18 +204,24 @@ void ContextDX::WaitForGpu(WaitFor wait_for)
     switch (wait_for)
     {
     case WaitFor::ResourcesUploaded:
+    {
+        SCOPE_TIMER("ContextDX::WaitForGpu::ResourcesUploaded");
         assert(!!m_sp_upload_fence);
         m_sp_upload_fence->Flush();
-        break;
+    } break;
 
     case WaitFor::RenderComplete:
+    {
+        SCOPE_TIMER("ContextDX::WaitForGpu::RenderComplete");
         assert(m_sp_render_fence);
         m_sp_render_fence->Flush();
-        break;
+    } break;
 
     case WaitFor::FramePresented:
+    {
+        SCOPE_TIMER("ContextDX::WaitForGpu::FramePresented");
         GetCurrentFrameFence().Wait();
-        break;
+    } break;
     }
 
     ContextBase::WaitForGpu(wait_for);
@@ -239,13 +246,15 @@ void ContextDX::Resize(const FrameSize& frame_size)
 void ContextDX::Present()
 {
     ITT_FUNCTION_TASK();
-    assert(m_cp_swap_chain);
+    SCOPE_TIMER("ContextDX::Present");
 
     ContextBase::Present();
 
     // Preset frame to screen
     const uint32_t present_flags  = 0; // DXGI_PRESENT_DO_NOT_WAIT
     const uint32_t vsync_interval = GetPresentVSyncInterval();
+
+    assert(m_cp_swap_chain);
     ThrowIfFailed(m_cp_swap_chain->Present(vsync_interval, present_flags));
 
     // Schedule a signal command in the queue for a currently finished frame

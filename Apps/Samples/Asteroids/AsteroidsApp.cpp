@@ -27,6 +27,8 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 #include <Methane/Graphics/AppCameraController.h>
 #include <Methane/Data/TimeAnimation.h>
 #include <Methane/Data/Instrumentation.h>
+#include <Methane/Data/ScopeTimer.h>
+#include <Methane/Platform/Logger.h>
 
 #include <cassert>
 #include <memory>
@@ -172,6 +174,7 @@ AsteroidsApp::~AsteroidsApp()
 void AsteroidsApp::Init()
 {
     ITT_FUNCTION_TASK();
+    SCOPE_TIMER("AsteroidsApp::Init");
 
     GraphicsApp::Init();
 
@@ -293,6 +296,7 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 bool AsteroidsApp::Update()
 {
     ITT_FUNCTION_TASK();
+    SCOPE_TIMER("AsteroidsApp::Update");
 
     if (!GraphicsApp::Update())
         return false;
@@ -308,6 +312,7 @@ bool AsteroidsApp::Update()
 bool AsteroidsApp::Render()
 {
     ITT_FUNCTION_TASK();
+    SCOPE_TIMER("AsteroidsApp::Render");
 
     // Render only when context is ready
     assert(!!m_sp_context);
@@ -326,7 +331,7 @@ bool AsteroidsApp::Render()
     if (m_is_parallel_rendering_enabled)
     {
         assert(!!frame.sp_parallel_cmd_list);
-        m_sp_asteroids_array->Draw(*frame.sp_parallel_cmd_list, frame.asteroids);
+        m_sp_asteroids_array->DrawParallel(*frame.sp_parallel_cmd_list, frame.asteroids);
     }
     else
     {
@@ -346,12 +351,15 @@ bool AsteroidsApp::Render()
     // Sky-box rendering
     assert(!!m_sp_sky_box);
     m_sp_sky_box->Draw(render_cmd_list, frame.skybox);
-    
-    commit_cmd_list.Commit(true);
 
-    // Execute rendering commands and present frame to screen
-    m_sp_context->GetRenderCommandQueue().Execute({ commit_cmd_list });
-    m_sp_context->Present();
+    {
+        
+        commit_cmd_list.Commit(true);
+
+        // Execute rendering commands and present frame to screen
+        m_sp_context->GetRenderCommandQueue().Execute({ commit_cmd_list });
+        m_sp_context->Present();
+    }
 
     return true;
 }
@@ -406,5 +414,6 @@ void AsteroidsApp::SetParallelRnderingEnabled(bool is_parallel_rendering_enabled
 
 int main(int argc, const char* argv[])
 {
+    Methane::Data::ScopeTimer::InitializeLogger<Methane::Platform::Logger>();
     return Methane::Samples::AsteroidsApp().Run({ argc, argv });
 }
