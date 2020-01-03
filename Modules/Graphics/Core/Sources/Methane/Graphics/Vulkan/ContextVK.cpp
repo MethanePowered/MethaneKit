@@ -78,10 +78,13 @@ void ContextVK::WaitForGpu(WaitFor wait_for)
 {
     ITT_FUNCTION_TASK();
 
-    const bool switch_to_next_frame = (wait_for == WaitFor::FramePresented);
     ContextBase::WaitForGpu(wait_for);
 
-    if (switch_to_next_frame)
+    // TODO: Wait for GPU work complete
+
+    ContextBase::OnGpuWaitComplete(wait_for);
+
+    if (wait_for == WaitFor::FramePresented)
     {
         m_frame_buffer_index = (m_frame_buffer_index + 1) % m_settings.frame_buffers_count;
     }
@@ -96,7 +99,7 @@ void ContextVK::Resize(const FrameSize& frame_size)
 void ContextVK::Present()
 {
     ITT_FUNCTION_TASK();
-    OnPresentComplete();
+    OnCpuPresentComplete();
 }
 
 bool ContextVK::SetVSyncEnabled(bool vsync_enabled)

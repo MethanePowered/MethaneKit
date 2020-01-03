@@ -262,7 +262,7 @@ void ContextDX::Present()
     // Schedule a signal command in the queue for a currently finished frame
     GetCurrentFrameFence().Signal();
 
-    OnPresentComplete();
+    OnCpuPresentComplete();
 
     // Update current frame buffer index
     m_frame_buffer_index = m_cp_swap_chain->GetCurrentBackBufferIndex();
