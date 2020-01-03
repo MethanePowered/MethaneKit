@@ -201,6 +201,8 @@ void ContextDX::WaitForGpu(WaitFor wait_for)
 {
     ITT_FUNCTION_TASK();
 
+    ContextBase::WaitForGpu(wait_for);
+
     switch (wait_for)
     {
     case WaitFor::ResourcesUploaded:
@@ -224,7 +226,7 @@ void ContextDX::WaitForGpu(WaitFor wait_for)
     } break;
     }
 
-    ContextBase::WaitForGpu(wait_for);
+    ContextBase::OnGpuWaitComplete(wait_for);
 }
 
 void ContextDX::Resize(const FrameSize& frame_size)

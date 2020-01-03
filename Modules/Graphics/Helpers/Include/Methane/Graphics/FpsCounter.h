@@ -39,14 +39,16 @@ public:
     public:
         FrameTiming() = default;
         FrameTiming(const FrameTiming&) = default;
-        FrameTiming(double total_time_sec, double present_time_sec);
+        FrameTiming(double total_time_sec, double present_time_sec, double gpu_wait_time_sec);
 
-        double GetTotalTimeSec() const   { return m_total_time_sec; }
-        double GetPresentTimeSec() const { return m_present_time_sec; }
-        double GetCpuTimeSec() const     { return m_total_time_sec - m_present_time_sec; }
+        double GetTotalTimeSec() const    { return m_total_time_sec; }
+        double GetPresentTimeSec() const  { return m_present_time_sec; }
+        double GetGpuWaitTimeSec() const  { return m_gpu_wait_time_sec; }
+        double GetCpuTimeSec() const      { return m_total_time_sec - m_present_time_sec - m_gpu_wait_time_sec; }
 
         double GetTotalTimeMSec() const   { return m_total_time_sec * 1000.0; }
         double GetPresentTimeMSec() const { return m_present_time_sec * 1000.0; }
+        double GetGpuWaitTimeMSec() const { return m_gpu_wait_time_sec * 1000.0; }
         double GetCpuTimeMSec() const     { return GetCpuTimeSec() * 1000.0; }
 
         double GetCpuTimePercent() const  { return 100.0 * GetCpuTimeSec() / GetTotalTimeSec(); }
@@ -58,16 +60,19 @@ public:
         FrameTiming  operator*(double multiplier) const;
 
     private:
-        double m_total_time_sec   = 0.0;
-        double m_present_time_sec = 0.0;
+        double m_total_time_sec    = 0.0;
+        double m_present_time_sec  = 0.0;
+        double m_gpu_wait_time_sec = 0.0;
     };
 
     FpsCounter() = default;
     FpsCounter(uint32_t averaged_timings_count) : m_averaged_timings_count(averaged_timings_count) {}
 
     void Reset(uint32_t averaged_timings_count);
-    void OnFrameReadyToPresent();
-    void OnFramePresented();
+    void OnGpuFramePresentWait();
+    void OnGpuFramePresented();
+    void OnCpuFrameReadyToPresent();
+    void OnCpuFramePresented();
 
     uint32_t        GetAveragedTimingsCount() const noexcept { return static_cast<uint32_t>(m_frame_timings.size()); }
     FrameTiming     GetAverageFrameTiming() const noexcept   { return m_frame_timings_sum / GetAveragedTimingsCount(); }
@@ -76,6 +81,7 @@ public:
 private:
     Data::Timer             m_frame_timer;
     Data::Timer             m_present_timer;
+    double                  m_present_on_gpu_wait_time_sec = 0.0;
     uint32_t                m_averaged_timings_count = 100;
     FrameTiming             m_frame_timings_sum;
     std::queue<FrameTiming> m_frame_timings;

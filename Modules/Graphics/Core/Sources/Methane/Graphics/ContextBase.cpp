@@ -76,7 +76,7 @@ void ContextBase::WaitForGpu(WaitFor wait_for)
     Platform::PrintToDebugOutput(GetWaitForName(wait_for) + " in context \"" + GetName() + "\"");
 #endif
 
-    m_resource_manager.GetReleasePool().ReleaseResources();
+    m_fps_counter.OnGpuFramePresentWait();
 }
 
 void ContextBase::Resize(const FrameSize& frame_size)
@@ -111,7 +111,7 @@ void ContextBase::Present()
     Platform::PrintToDebugOutput("PRESENT frame " + std::to_string(m_frame_buffer_index) + " in context \"" + GetName() + "\"");
 #endif
 
-    m_fps_counter.OnFrameReadyToPresent();
+    m_fps_counter.OnCpuFrameReadyToPresent();
 }
 
 void ContextBase::AddCallback(Callback& callback)
@@ -132,8 +132,18 @@ void ContextBase::RemoveCallback(Callback& callback)
     
     m_callbacks.erase(callback_it);
 }
+    
+void ContextBase::OnGpuWaitComplete(WaitFor wait_for)
+{
+    ITT_FUNCTION_TASK();
+    if (wait_for == WaitFor::FramePresented)
+    {
+        m_fps_counter.OnGpuFramePresented();
+    }
+    m_resource_manager.GetReleasePool().ReleaseResources();
+}
 
-void ContextBase::OnPresentComplete()
+void ContextBase::OnCpuPresentComplete()
 {
     ITT_FUNCTION_TASK();
 
@@ -141,7 +151,7 @@ void ContextBase::OnPresentComplete()
     Platform::PrintToDebugOutput("PRESENT COMPLETE for context \"" + GetName() + "\"");
 #endif
 
-    m_fps_counter.OnFramePresented();
+    m_fps_counter.OnCpuFramePresented();
 }
 
 void ContextBase::ResetWithSettings(const Settings& settings)

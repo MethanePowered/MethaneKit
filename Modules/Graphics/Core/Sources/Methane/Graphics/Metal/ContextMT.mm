@@ -117,13 +117,14 @@ void ContextMT::OnCommandQueueCompleted(CommandQueue& /*cmd_queue*/, uint32_t /*
 void ContextMT::WaitForGpu(WaitFor wait_for)
 {
     ITT_FUNCTION_TASK();
-
-    dispatch_semaphore_wait(m_dispatch_semaphore, DISPATCH_TIME_FOREVER);
-
-    const bool switch_to_next_frame = (wait_for == WaitFor::FramePresented);
+    
     ContextBase::WaitForGpu(wait_for);
+    
+    dispatch_semaphore_wait(m_dispatch_semaphore, DISPATCH_TIME_FOREVER);
+    
+    ContextBase::OnGpuWaitComplete(wait_for);
 
-    if (switch_to_next_frame)
+    if (wait_for == WaitFor::FramePresented)
     {
         m_frame_buffer_index = (m_frame_buffer_index + 1) % m_settings.frame_buffers_count;
         [m_frame_capture_scope beginScope];
@@ -143,7 +144,7 @@ void ContextMT::Present()
     
     [m_frame_capture_scope endScope];
     
-    OnPresentComplete();
+    OnCpuPresentComplete();
 }
 
 bool ContextMT::SetVSyncEnabled(bool vsync_enabled)

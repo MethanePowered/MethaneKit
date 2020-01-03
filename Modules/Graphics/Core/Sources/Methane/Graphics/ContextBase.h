@@ -82,7 +82,8 @@ public:
 
 protected:
     void UploadResources();
-    void OnPresentComplete();
+    void OnGpuWaitComplete(WaitFor wait_for);
+    void OnCpuPresentComplete();
     void ResetWithSettings(const Settings& settings);
 
     virtual void Release();
