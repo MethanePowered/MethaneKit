@@ -299,6 +299,22 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     // Resize screen color and depth textures
     if (!GraphicsApp::Resize(frame_size, is_minimized))
         return false;
+    
+    // Update frame buffer and depth textures in initial & final render passes
+    for (AsteroidsFrame& frame : m_frames)
+    {
+        assert(!!frame.sp_initial_screen_pass);
+        gfx::RenderPass::Settings initial_pass_settings = frame.sp_initial_screen_pass->GetSettings();
+        initial_pass_settings.color_attachments[0].wp_texture = frame.sp_screen_texture;
+        initial_pass_settings.depth_attachment.wp_texture = m_sp_depth_texture;
+        frame.sp_initial_screen_pass->Update(initial_pass_settings);
+        
+        assert(!!frame.sp_final_screen_pass);
+        gfx::RenderPass::Settings final_pass_settings = frame.sp_final_screen_pass->GetSettings();
+        final_pass_settings.color_attachments[0].wp_texture = frame.sp_screen_texture;
+        final_pass_settings.depth_attachment.wp_texture = m_sp_depth_texture;
+        frame.sp_final_screen_pass->Update(final_pass_settings);
+    }
 
     m_sp_sky_box->Resize(frame_size);
     m_sp_planet->Resize(frame_size);
