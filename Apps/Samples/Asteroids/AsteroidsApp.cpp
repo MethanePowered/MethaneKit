@@ -230,14 +230,29 @@ void AsteroidsApp::Init()
     // ========= Per-Frame Data =========
     for(AsteroidsFrame& frame : m_frames)
     {
-        // Create parallel rendering command list for final FB rendering
-        frame.sp_parallel_cmd_list = gfx::ParallelRenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_screen_pass);
+        // Create initial screen pass for asteroids rendering
+        gfx::RenderPass::Settings initial_screen_pass_settings = frame.sp_screen_pass->GetSettings();
+        initial_screen_pass_settings.depth_attachment.store_action = gfx::RenderPass::Attachment::StoreAction::Store;
+        frame.sp_initial_screen_pass = gfx::RenderPass::Create(context, initial_screen_pass_settings);
+
+        // Create final screen pass for sky-box and planet rendering
+        gfx::RenderPass::Settings final_screen_pass_settings = frame.sp_screen_pass->GetSettings();
+        final_screen_pass_settings.color_attachments[0].load_action = gfx::RenderPass::Attachment::LoadAction::Load;
+        final_screen_pass_settings.depth_attachment.load_action     = gfx::RenderPass::Attachment::LoadAction::Load;
+        frame.sp_final_screen_pass = gfx::RenderPass::Create(context, final_screen_pass_settings);
+
+        // Create parallel command list for asteroids rendering
+        frame.sp_parallel_cmd_list = gfx::ParallelRenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_initial_screen_pass);
         frame.sp_parallel_cmd_list->SetParallelCommandListsCount(std::thread::hardware_concurrency());
         frame.sp_parallel_cmd_list->SetName(IndexedName("Parallel Rendering", frame.index));
 
-        // Create command list for final FB rendering
-        frame.sp_cmd_list = gfx::RenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_screen_pass);
-        frame.sp_cmd_list->SetName(IndexedName("Scene Rendering", frame.index));
+        // Create serial command list for asteroids rendering
+        frame.sp_serial_cmd_list = gfx::RenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_initial_screen_pass);
+        frame.sp_serial_cmd_list->SetName(IndexedName("Serial Rendering", frame.index));
+
+        // Create final command list for sky-box and planet rendering
+        frame.sp_final_cmd_list = gfx::RenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_final_screen_pass);
+        frame.sp_final_cmd_list->SetName(IndexedName("Final Rendering", frame.index));
 
         // Create uniforms buffer with volatile parameters for the whole scene rendering
         frame.sp_scene_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, scene_uniforms_data_size);
@@ -326,40 +341,40 @@ bool AsteroidsApp::Render()
     // Upload uniform buffers to GPU
     frame.sp_scene_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms) } });
 
-    // Asteroids rendering
     assert(!!m_sp_asteroids_array);
+    gfx::CommandList::Refs execute_cmd_lists;
+
+    // Asteroids rendering
     if (m_is_parallel_rendering_enabled)
     {
         assert(!!frame.sp_parallel_cmd_list);
         m_sp_asteroids_array->DrawParallel(*frame.sp_parallel_cmd_list, frame.asteroids);
+        frame.sp_parallel_cmd_list->Commit(false);
+        execute_cmd_lists.push_back(*frame.sp_parallel_cmd_list);
     }
     else
     {
-        assert(!!frame.sp_cmd_list);
-        m_sp_asteroids_array->Draw(*frame.sp_cmd_list, frame.asteroids);
+        assert(!!frame.sp_serial_cmd_list);
+        m_sp_asteroids_array->Draw(*frame.sp_serial_cmd_list, frame.asteroids);
+        frame.sp_serial_cmd_list->Commit(false);
+        execute_cmd_lists.push_back(*frame.sp_serial_cmd_list);
     }
-    
-    gfx::RenderCommandList& render_cmd_list = m_is_parallel_rendering_enabled ? *frame.sp_parallel_cmd_list->GetParallelCommandLists().back() : *frame.sp_cmd_list;
-    gfx::CommandList&       commit_cmd_list = m_is_parallel_rendering_enabled ? static_cast<gfx::CommandList&>(*frame.sp_parallel_cmd_list) : *frame.sp_cmd_list;
-    
-    render_cmd_list.PopDebugGroup();
     
     // Planet rendering
     assert(!!m_sp_planet);
-    m_sp_planet->Draw(render_cmd_list, frame.planet);
+    assert(!!frame.sp_final_cmd_list);
+    m_sp_planet->Draw(*frame.sp_final_cmd_list, frame.planet);
 
     // Sky-box rendering
     assert(!!m_sp_sky_box);
-    m_sp_sky_box->Draw(render_cmd_list, frame.skybox);
+    m_sp_sky_box->Draw(*frame.sp_final_cmd_list, frame.skybox);
 
-    {
-        
-        commit_cmd_list.Commit(true);
+    frame.sp_final_cmd_list->Commit(true);
+    execute_cmd_lists.push_back(*frame.sp_final_cmd_list);
 
-        // Execute rendering commands and present frame to screen
-        m_sp_context->GetRenderCommandQueue().Execute({ commit_cmd_list });
-        m_sp_context->Present();
-    }
+    // Execute rendering commands and present frame to screen
+    m_sp_context->GetRenderCommandQueue().Execute(execute_cmd_lists);
+    m_sp_context->Present();
 
     return true;
 }

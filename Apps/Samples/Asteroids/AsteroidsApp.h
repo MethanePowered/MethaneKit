@@ -38,8 +38,11 @@ namespace pal = Platform;
 
 struct AsteroidsFrame final : gfx::AppFrame
 {
-    gfx::RenderCommandList::Ptr         sp_cmd_list;
+    gfx::RenderPass::Ptr                sp_initial_screen_pass;
+    gfx::RenderPass::Ptr                sp_final_screen_pass;
     gfx::ParallelRenderCommandList::Ptr sp_parallel_cmd_list;
+    gfx::RenderCommandList::Ptr         sp_serial_cmd_list;
+    gfx::RenderCommandList::Ptr         sp_final_cmd_list;
     gfx::Buffer::Ptr                    sp_scene_uniforms_buffer;
     gfx::MeshBufferBindings             skybox;
     gfx::MeshBufferBindings             planet;
