@@ -197,17 +197,31 @@ void RenderStateDX::Reset(const Settings& settings)
     m_cp_pipeline_state.Reset();
 }
 
-void RenderStateDX::Apply(RenderCommandListBase& command_list)
+void RenderStateDX::Apply(RenderCommandListBase& command_list, Group::Mask state_groups)
 {
     ITT_FUNCTION_TASK();
 
     RenderCommandListDX& dx_command_list = static_cast<RenderCommandListDX&>(command_list);
     wrl::ComPtr<ID3D12GraphicsCommandList>& cp_dx_command_list = dx_command_list.GetNativeCommandList();
 
-    cp_dx_command_list->SetPipelineState(GetNativePipelineState().Get());
-    cp_dx_command_list->SetGraphicsRootSignature(GetProgramDX().GetNativeRootSignature().Get());
-    cp_dx_command_list->RSSetViewports(static_cast<UINT>(m_viewports.size()), m_viewports.data());
-    cp_dx_command_list->RSSetScissorRects(static_cast<UINT>(m_scissor_rects.size()), m_scissor_rects.data());
+    if (state_groups & Group::Program    ||
+        state_groups & Group::Rasterizer ||
+        state_groups & Group::DepthStencil)
+    {
+        cp_dx_command_list->SetPipelineState(GetNativePipelineState().Get());
+    }
+    if (state_groups & Group::ProgramBindingsOnly)
+    {
+        cp_dx_command_list->SetGraphicsRootSignature(GetProgramDX().GetNativeRootSignature().Get());
+    }
+    if (state_groups & Group::Viewports)
+    {
+        cp_dx_command_list->RSSetViewports(static_cast<UINT>(m_viewports.size()), m_viewports.data());
+    }
+    if (state_groups & Group::ScissorRects)
+    {
+        cp_dx_command_list->RSSetScissorRects(static_cast<UINT>(m_scissor_rects.size()), m_scissor_rects.data());
+    }
 }
 
 void RenderStateDX::SetViewports(const Viewports& viewports)

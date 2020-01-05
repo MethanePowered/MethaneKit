@@ -197,26 +197,33 @@ void RenderStateMT::Reset(const Settings& settings)
     ResetNativeState();
 }
 
-void RenderStateMT::Apply(RenderCommandListBase& command_list)
+void RenderStateMT::Apply(RenderCommandListBase& command_list, Group::Mask state_groups)
 {
     ITT_FUNCTION_TASK();
 
     RenderCommandListMT& metal_command_list = static_cast<RenderCommandListMT&>(command_list);
     id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeRenderEncoder();
     
-    [mtl_cmd_encoder setRenderPipelineState: GetNativePipelineState()];
-    if (m_settings.depth.enabled)
+    if (state_groups & Group::Program ||
+        state_groups & Group::Rasterizer)
+    {
+        [mtl_cmd_encoder setRenderPipelineState: GetNativePipelineState()];
+    }
+    if (state_groups & Group::DepthStencil && m_settings.depth.enabled)
     {
         [mtl_cmd_encoder setDepthStencilState: GetNativeDepthState()];
     }
-    [mtl_cmd_encoder setTriangleFillMode: m_mtl_fill_mode];
-    [mtl_cmd_encoder setFrontFacingWinding: m_mtl_front_face_winding];
-    [mtl_cmd_encoder setCullMode: m_mtl_cull_mode];
-    if (!m_mtl_viewports.empty())
+    if (state_groups & Group::Rasterizer)
+    {
+        [mtl_cmd_encoder setTriangleFillMode: m_mtl_fill_mode];
+        [mtl_cmd_encoder setFrontFacingWinding: m_mtl_front_face_winding];
+        [mtl_cmd_encoder setCullMode: m_mtl_cull_mode];
+    }
+    if (state_groups & Group::Viewports && !m_mtl_viewports.empty())
     {
         [mtl_cmd_encoder setViewports: m_mtl_viewports.data() count:static_cast<uint32_t>(m_mtl_viewports.size())];
     }
-    if (!m_mtl_scissor_rects.empty())
+    if (state_groups & Group::ScissorRects && !m_mtl_scissor_rects.empty())
     {
         [mtl_cmd_encoder setScissorRects: m_mtl_scissor_rects.data() count:static_cast<uint32_t>(m_mtl_scissor_rects.size())];
     }

@@ -84,9 +84,12 @@ struct Volume
         Size() = default;
         Size(const typename Rect<T, D>::Size& rect_size, D d = 1) : Rect<T, D>::Size(rect_size), depth(d) { }
         Size(D w, D h, D d = 1) : Rect<T, D>::Size(w, h), depth(d) { }
-        
-        bool operator==(const Size& other) const
+
+        bool operator==(const Size& other) const noexcept
         { return Rect<T, D>::Size::operator==(other) && depth == other.depth; }
+
+        bool operator!=(const Size& other) const noexcept
+        { return Rect<T, D>::Size::operator!=(other) || depth != other.depth; }
 
         D GetPixelsCount() const noexcept { return depth * Rect<T, D>::Size::GetPixelsCount(); }
         D GetLongestSide() const noexcept { return std::max(depth, Rect<T, D>::Size::GetLongestSide()); }
@@ -98,6 +101,12 @@ struct Volume
                    " x " + std::to_string(depth) + ")";
         }
     };
+
+    bool operator==(const Volume& other) const noexcept
+    { return std::tie(origin, size) == std::tie(other.origin, other.size); }
+
+    bool operator!=(const Volume& other) const noexcept
+    { return std::tie(origin, size) != std::tie(other.origin, other.size); }
 
     operator std::string() const
     { return std::string("Vm[") + origin + " + " + size + "]"; }

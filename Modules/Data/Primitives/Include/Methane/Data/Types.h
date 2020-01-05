@@ -68,11 +68,11 @@ struct Rect
         Size(const Size& size) = default;
         Size(D w, D h) : width(w), height(h) { }
         
-        bool operator==(const Size& other) const
-        { return width == other.width && height == other.height; }
+        bool operator==(const Size& other) const noexcept
+        { return std::tie(width, height) == std::tie(other.height, other.width); }
 
-        bool operator!=(const Size& other) const
-        { return !operator==(other); }
+        bool operator!=(const Size& other) const noexcept
+        { return std::tie(width, height) != std::tie(other.height, other.width); }
 
         D GetPixelsCount() const noexcept { return width * height; }
         D GetLongestSide() const noexcept { return std::max(width, height); }
@@ -84,6 +84,12 @@ struct Rect
     template<typename U>
     operator Rect<U, U>() const
     { return { static_cast<Point2T<U>>(origin), static_cast<typename Rect<U, U>::Size>(size) }; }
+
+    bool operator==(const Rect& other) const noexcept
+    { return std::tie(origin, size) == std::tie(other.origin, other.size); }
+
+    bool operator!=(const Rect& other) const noexcept
+    { return std::tie(origin, size) != std::tie(other.origin, other.size); }
 
     operator std::string() const
     { return std::string("Rt[") + origin + " + " + size + "]"; }

@@ -79,6 +79,8 @@ void RenderCommandListMT::Reset(RenderState& render_state, const std::string& de
 {
     ITT_FUNCTION_TASK();
     
+    RenderCommandListBase::ResetDrawState();
+
     StartRenderEncoding();
 
     RenderCommandListBase::Reset(render_state, debug_group);

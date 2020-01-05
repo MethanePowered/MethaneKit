@@ -44,7 +44,7 @@ public:
     void SetScissorRects(const ScissorRects& scissor_rects) override;
 
     // RenderStateBase interface
-    void Apply(RenderCommandListBase& command_list) override;
+    void Apply(RenderCommandListBase& command_list, Group::Mask state_groups) override;
 
     // Object interface
     void SetName(const std::string& name) override;

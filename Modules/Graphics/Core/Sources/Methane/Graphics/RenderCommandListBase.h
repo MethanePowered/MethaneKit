@@ -26,9 +26,9 @@ Base implementation of the render command list interface.
 #include "CommandListBase.h"
 #include "BufferBase.h"
 #include "RenderPassBase.h"
+#include "RenderStateBase.h"
 
 #include <Methane/Graphics/RenderCommandList.h>
-#include <Methane/Graphics/RenderState.h>
 
 #include <optional>
 
@@ -50,6 +50,7 @@ public:
 
     // RenderCommandList interface
     void Reset(RenderState& render_state, const std::string& debug_group = "") override;
+    void SetState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) override;
     void SetVertexBuffers(const Buffer::Refs& vertex_buffers) override;
     void DrawIndexed(Primitive primitive_type, Buffer& index_buffer,
                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
@@ -60,20 +61,25 @@ public:
     RenderPassBase& GetPass();
 
 protected:
+    void ResetDrawState();
     void ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count = 0);
 
     struct DrawingState
     {
         struct Flags
         {
-            bool primitive_type_changed = false;
-            bool index_buffer_changed   = false;
-            bool vertex_buffers_changed = false;
+            bool                     primitive_type_changed      = false;
+            bool                     index_buffer_changed        = false;
+            bool                     vertex_buffers_changed      = false;
+
+            bool operator==(const Flags& other) const noexcept = default;
         };
 
         std::optional<Primitive> opt_primitive_type;
         BufferBase::Ptr          sp_index_buffer;
         BufferBase::Ptrs         sp_vertex_buffers;
+        RenderStateBase::Ptr     sp_render_state;
+        RenderState::Group::Mask render_state_groups;
 
         Flags                    flags;
 

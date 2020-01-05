@@ -63,13 +63,19 @@ public:
         uint32_t sample_count               = 1;
         bool     alpha_to_coverage_enabled  = false;
         bool     alpha_to_one_enabled       = false;
+
+        bool operator==(const Rasterizer& other) const = default;
+        bool operator!=(const Rasterizer& other) const = default;
     };
     
     struct Depth
     {
-        bool    enabled = false;
-        bool    write_enabled = true;
-        Compare compare = Compare::Less;
+        bool    enabled         = false;
+        bool    write_enabled   = true;
+        Compare compare         = Compare::Less;
+
+        bool operator==(const Depth& other) const = default;
+        bool operator!=(const Depth& other) const = default;
     };
     
     struct Stencil
@@ -88,11 +94,14 @@ public:
 
         struct FaceOperations
         {
-            Operation stencil_failure    = Operation::Keep;
-            Operation stencil_pass       = Operation::Keep; // DX only
-            Operation depth_failure      = Operation::Keep;
-            Operation depth_stencil_pass = Operation::Keep; // Metal only
-            Compare   compare            = Compare::Always;
+            Operation  stencil_failure   = Operation::Keep;
+            Operation  stencil_pass      = Operation::Keep; // DX only
+            Operation  depth_failure     = Operation::Keep;
+            Operation  depth_stencil_pass= Operation::Keep; // Metal only
+            Compare    compare           = Compare::Always;
+
+            bool operator==(const FaceOperations& other) const = default;
+            bool operator!=(const FaceOperations& other) const = default;
         };
         
         bool           enabled           = false;
@@ -100,6 +109,27 @@ public:
         uint32_t       write_mask        = static_cast<uint32_t>(~0x0);
         FaceOperations front_face;
         FaceOperations back_face;
+
+        bool operator==(const Stencil& other) const = default;
+        bool operator!=(const Stencil& other) const = default;
+    };
+
+    struct Group
+    {
+        using Mask = uint32_t;
+        enum Value : Mask
+        {
+            None                = 0u,
+            Program             = 1u << 0u,
+            ProgramBindingsOnly = 1u << 1u,
+            Rasterizer          = 1u << 2u,
+            DepthStencil        = 1u << 3u,
+            Viewports           = 1u << 4u,
+            ScissorRects        = 1u << 5u,
+            All                 = ~0u
+        };
+
+        Group() = delete;
     };
 
     struct Settings
@@ -110,6 +140,8 @@ public:
         Rasterizer   rasterizer;
         Depth        depth;
         Stencil      stencil;
+
+        static Group::Mask Compare(const Settings& left, const Settings& right, Group::Mask compare_groups = Group::All);
     };
 
     // Create RenderState instance

@@ -77,7 +77,6 @@ struct Resource : virtual Object
         static std::string ToString(Usage::Mask usage_mask) noexcept;
 
         Usage() = delete;
-        ~Usage() = delete;
     };
 
     struct Descriptor

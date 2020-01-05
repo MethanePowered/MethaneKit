@@ -48,7 +48,7 @@ public:
     void SetScissorRects(const ScissorRects& scissor_rects) override;
 
     // RenderStateBase interface
-    virtual void Apply(RenderCommandListBase& command_list) = 0;
+    virtual void Apply(RenderCommandListBase& command_list, Group::Mask apply_groups) = 0;
 
     Ptr GetPtr() { return shared_from_this(); }
 

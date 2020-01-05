@@ -25,11 +25,11 @@ Methane render command list interface.
 
 #include "CommandList.h"
 #include "Buffer.h"
+#include "RenderState.h"
 
 namespace Methane::Graphics
 {
 
-struct RenderState;
 struct RenderPass;
 struct ParallelRenderCommandList;
 
@@ -54,6 +54,7 @@ struct RenderCommandList : virtual CommandList
 
     // RenderCommandList interface
     virtual void Reset(RenderState& render_state, const std::string& debug_group = "") = 0;
+    virtual void SetState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) = 0;
     virtual void SetVertexBuffers(const Buffer::Refs& vertex_buffers) = 0;
     virtual void DrawIndexed(Primitive primitive, Buffer& index_buffer, 
                              uint32_t index_count = 0, uint32_t start_index = 0, uint32_t start_vertex = 0, 

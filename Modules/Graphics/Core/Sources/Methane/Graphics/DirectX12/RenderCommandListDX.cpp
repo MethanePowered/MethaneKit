@@ -105,9 +105,16 @@ void RenderCommandListDX::ResetNative(RenderState& render_state)
     // Reset command list
     if (m_is_committed)
     {
+        ResetDrawState();
+
         m_is_committed = false;
         ThrowIfFailed(m_cp_command_allocator->Reset());
         ThrowIfFailed(m_cp_command_list->Reset(m_cp_command_allocator.Get(), dx_state.GetNativePipelineState().Get()));
+
+        m_draw_state.sp_render_state     = dx_state.GetPtr();
+        m_draw_state.render_state_groups = RenderState::Group::Program
+                                         | RenderState::Group::Rasterizer
+                                         | RenderState::Group::DepthStencil;
     }
 }
 

@@ -63,4 +63,36 @@ void RenderStateBase::SetScissorRects(const ScissorRects& scissor_rects)
     m_settings.scissor_rects = scissor_rects;
 }
 
+RenderState::Group::Mask RenderState::Settings::Compare(const Settings& left, const Settings& right, Group::Mask compare_groups)
+{
+    Group::Mask changed_state_groups = Group::ProgramBindingsOnly;
+    if (compare_groups & Group::Program &&
+        left.sp_program.get() != right.sp_program.get())
+    {
+        changed_state_groups |= Group::Program;
+    }
+    if (compare_groups & Group::DepthStencil && (
+        left.depth   != right.depth ||
+        left.stencil != right.stencil))
+    {
+        changed_state_groups |= Group::DepthStencil;
+    }
+    if (compare_groups & Group::Rasterizer && 
+        left.rasterizer != right.rasterizer)
+    {
+        changed_state_groups |= Group::Rasterizer;
+    }
+    if (compare_groups & Group::Viewports &&
+        left.viewports != right.viewports)
+    {
+        changed_state_groups |= Group::Viewports;
+    }
+    if (compare_groups & Group::ScissorRects && 
+        left.scissor_rects != right.scissor_rects)
+    {
+        changed_state_groups |= Group::ScissorRects;
+    }
+    return changed_state_groups;
+}
+
 } // namespace Methane::Graphics

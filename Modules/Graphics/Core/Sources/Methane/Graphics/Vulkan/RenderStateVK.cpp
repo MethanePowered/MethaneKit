@@ -61,7 +61,7 @@ void RenderStateVK::Reset(const Settings& settings)
     {
         throw std::invalid_argument("Can not create state with empty program.");
     }
-    
+
     RenderStateBase::Reset(settings);
     
     ProgramVK& vulkan_program = static_cast<ProgramVK&>(*m_settings.sp_program);
@@ -78,7 +78,7 @@ void RenderStateVK::Reset(const Settings& settings)
     ResetNativeState();
 }
 
-void RenderStateVK::Apply(RenderCommandListBase& command_list)
+void RenderStateVK::Apply(RenderCommandListBase& command_list, Group::Mask state_groups)
 {
     ITT_FUNCTION_TASK();
 
