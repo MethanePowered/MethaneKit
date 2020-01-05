@@ -46,7 +46,7 @@ public:
     using Normal    = Vector3f;
     using Color     = Vector4f;
     using TexCoord  = Vector2f;
-    using Index     = uint32_t;
+    using Index     = uint16_t;
     using Indices   = std::vector<Index>;
 
     enum class Type
@@ -114,6 +114,7 @@ public:
     const VertexLayout& GetVertexLayout() const noexcept    { return m_vertex_layout; }
     Data::Size          GetVertexSize() const noexcept      { return m_vertex_size; }
     const Indices&      GetIndices() const noexcept         { return m_indices; }
+    const Index         GetIndex(uint32_t i) const noexcept { return i < m_indices.size() ? m_indices[i] : 0; }
     Data::Size          GetIndexCount() const noexcept      { return static_cast<Data::Size>(m_indices.size()); }
     Data::Size          GetIndexDataSize() const noexcept   { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
 
@@ -316,9 +317,16 @@ public:
 
         if (adjust_indices)
         {
-            const Mesh::Index index_offset = static_cast<Mesh::Index>(BaseMeshT::GetVertexCount());
+            const Data::Size vertex_count = BaseMeshT::GetVertexCount();
+            assert(vertex_count <= std::numeric_limits<Mesh::Index>::max());
+
+            const Mesh::Index index_offset = static_cast<Mesh::Index>(vertex_count);
             std::transform(sub_indices.begin(), sub_indices.end(), std::back_inserter(Mesh::m_indices),
-                           [index_offset](const Mesh::Index& index) { return index_offset + index; });
+                           [index_offset](const Mesh::Index& index)
+                           {
+                               assert(static_cast<Data::Size>(index_offset) + index <= std::numeric_limits<Mesh::Index>::max());
+                               return index_offset + index;
+                           });
         }
         else
         {

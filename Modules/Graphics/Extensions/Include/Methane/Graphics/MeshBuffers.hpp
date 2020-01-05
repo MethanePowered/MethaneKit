@@ -66,8 +66,7 @@ public:
                                                                                                   { 0, mesh_data.GetIndexCount()  }, true ) })
         , m_sp_vertex(Buffer::CreateVertexBuffer(context, static_cast<Data::Size>(mesh_data.GetVertexDataSize()),
                                                           static_cast<Data::Size>(mesh_data.GetVertexSize())))
-        , m_sp_index( Buffer::CreateIndexBuffer( context, static_cast<Data::Size>(mesh_data.GetIndexDataSize()), 
-                                                          PixelFormat::R32Uint))
+        , m_sp_index( Buffer::CreateIndexBuffer( context, static_cast<Data::Size>(mesh_data.GetIndexDataSize()), GetIndexFormat(mesh_data.GetIndex(0))))
     {
         ITT_FUNCTION_TASK();
 
