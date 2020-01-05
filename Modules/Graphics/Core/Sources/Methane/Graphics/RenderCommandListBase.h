@@ -68,11 +68,9 @@ protected:
     {
         struct Flags
         {
-            bool                     primitive_type_changed      = false;
-            bool                     index_buffer_changed        = false;
-            bool                     vertex_buffers_changed      = false;
-
-            bool operator==(const Flags& other) const noexcept = default;
+            bool primitive_type_changed = false;
+            bool index_buffer_changed   = false;
+            bool vertex_buffers_changed = false;
         };
 
         std::optional<Primitive> opt_primitive_type;
