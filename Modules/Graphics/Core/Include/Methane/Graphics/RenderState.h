@@ -64,8 +64,8 @@ public:
         bool     alpha_to_coverage_enabled  = false;
         bool     alpha_to_one_enabled       = false;
 
-        bool operator==(const Rasterizer& other) const = default;
-        bool operator!=(const Rasterizer& other) const = default;
+        bool operator==(const Rasterizer& other) const noexcept;
+        bool operator!=(const Rasterizer& other) const noexcept;
     };
     
     struct Depth
@@ -74,8 +74,8 @@ public:
         bool    write_enabled   = true;
         Compare compare         = Compare::Less;
 
-        bool operator==(const Depth& other) const = default;
-        bool operator!=(const Depth& other) const = default;
+        bool operator==(const Depth& other) const noexcept;
+        bool operator!=(const Depth& other) const noexcept;
     };
     
     struct Stencil
@@ -100,8 +100,8 @@ public:
             Operation  depth_stencil_pass= Operation::Keep; // Metal only
             Compare    compare           = Compare::Always;
 
-            bool operator==(const FaceOperations& other) const = default;
-            bool operator!=(const FaceOperations& other) const = default;
+            bool operator==(const FaceOperations& other) const noexcept;
+            bool operator!=(const FaceOperations& other) const noexcept;
         };
         
         bool           enabled           = false;
@@ -110,8 +110,8 @@ public:
         FaceOperations front_face;
         FaceOperations back_face;
 
-        bool operator==(const Stencil& other) const = default;
-        bool operator!=(const Stencil& other) const = default;
+        bool operator==(const Stencil& other) const noexcept;
+        bool operator!=(const Stencil& other) const noexcept;
     };
 
     struct Group
@@ -141,7 +141,7 @@ public:
         Depth        depth;
         Stencil      stencil;
 
-        static Group::Mask Compare(const Settings& left, const Settings& right, Group::Mask compare_groups = Group::All);
+        static Group::Mask Compare(const Settings& left, const Settings& right, Group::Mask compare_groups = Group::All) noexcept;
     };
 
     // Create RenderState instance

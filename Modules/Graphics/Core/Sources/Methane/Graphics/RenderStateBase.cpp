@@ -30,6 +30,84 @@ Base implementation of the render state interface.
 namespace Methane::Graphics
 {
 
+bool RenderState::Rasterizer::operator==(const Rasterizer& other) const noexcept
+{
+    return std::tie(is_front_counter_clockwise, cull_mode, fill_mode, sample_count, alpha_to_coverage_enabled, alpha_to_one_enabled) ==
+           std::tie(other.is_front_counter_clockwise, other.cull_mode, other.fill_mode, other.sample_count, other.alpha_to_coverage_enabled, other.alpha_to_one_enabled);
+}
+
+bool RenderState::Rasterizer::operator!=(const Rasterizer& other) const noexcept
+{
+    return !operator==(other);
+}
+
+bool RenderState::Depth::operator==(const Depth& other) const noexcept
+{
+    return std::tie(enabled, write_enabled, compare) ==
+           std::tie(other.enabled, other.write_enabled, other.compare);
+}
+bool RenderState::Depth::operator!=(const Depth& other) const noexcept
+{
+    return !operator==(other);
+}
+
+bool RenderState::Stencil::FaceOperations::operator==(const FaceOperations& other) const noexcept
+{
+    return std::tie(stencil_failure, stencil_pass, depth_failure, depth_stencil_pass, compare) ==
+           std::tie(other.stencil_failure, other.stencil_pass, other.depth_failure, other.depth_stencil_pass, other.compare);
+}
+
+bool RenderState::Stencil::FaceOperations::operator!=(const FaceOperations& other) const noexcept
+{
+    return !operator==(other);
+}
+
+bool RenderState::Stencil::operator==(const Stencil& other) const noexcept
+{
+    return std::tie(enabled, read_mask, write_mask, front_face, back_face) ==
+           std::tie(other.enabled, other.read_mask, other.write_mask, other.front_face, other.back_face);
+}
+bool RenderState::Stencil::operator!=(const Stencil& other) const noexcept
+{
+    return !operator==(other);
+}
+
+RenderState::Group::Mask RenderState::Settings::Compare(const Settings& left, const Settings& right, Group::Mask compare_groups) noexcept
+{
+    ITT_FUNCTION_TASK();
+    
+    Group::Mask changed_state_groups = Group::ProgramBindingsOnly;
+    
+    if (compare_groups & Group::Program &&
+        left.sp_program.get() != right.sp_program.get())
+    {
+        changed_state_groups |= Group::Program;
+    }
+    if (compare_groups & Group::DepthStencil && (
+        left.depth   != right.depth ||
+        left.stencil != right.stencil))
+    {
+        changed_state_groups |= Group::DepthStencil;
+    }
+    if (compare_groups & Group::Rasterizer &&
+        left.rasterizer != right.rasterizer)
+    {
+        changed_state_groups |= Group::Rasterizer;
+    }
+    if (compare_groups & Group::Viewports &&
+        left.viewports != right.viewports)
+    {
+        changed_state_groups |= Group::Viewports;
+    }
+    if (compare_groups & Group::ScissorRects &&
+        left.scissor_rects != right.scissor_rects)
+    {
+        changed_state_groups |= Group::ScissorRects;
+    }
+    
+    return changed_state_groups;
+}
+    
 RenderStateBase::RenderStateBase(ContextBase& context, const Settings& settings)
     : m_context(context)
     , m_settings(settings)
@@ -61,38 +139,6 @@ void RenderStateBase::SetScissorRects(const ScissorRects& scissor_rects)
         throw std::invalid_argument("Can not set empty scissor rectangles to state.");
     }
     m_settings.scissor_rects = scissor_rects;
-}
-
-RenderState::Group::Mask RenderState::Settings::Compare(const Settings& left, const Settings& right, Group::Mask compare_groups)
-{
-    Group::Mask changed_state_groups = Group::ProgramBindingsOnly;
-    if (compare_groups & Group::Program &&
-        left.sp_program.get() != right.sp_program.get())
-    {
-        changed_state_groups |= Group::Program;
-    }
-    if (compare_groups & Group::DepthStencil && (
-        left.depth   != right.depth ||
-        left.stencil != right.stencil))
-    {
-        changed_state_groups |= Group::DepthStencil;
-    }
-    if (compare_groups & Group::Rasterizer && 
-        left.rasterizer != right.rasterizer)
-    {
-        changed_state_groups |= Group::Rasterizer;
-    }
-    if (compare_groups & Group::Viewports &&
-        left.viewports != right.viewports)
-    {
-        changed_state_groups |= Group::Viewports;
-    }
-    if (compare_groups & Group::ScissorRects && 
-        left.scissor_rects != right.scissor_rects)
-    {
-        changed_state_groups |= Group::ScissorRects;
-    }
-    return changed_state_groups;
 }
 
 } // namespace Methane::Graphics
