@@ -125,7 +125,7 @@ AsteroidsApp::AsteroidsApp()
             m_scene_scale,                                  // - scale
             GetParamValueByComplexity(g_instaces_count),    // - instance_count
             GetParamValueByComplexity(g_mesh_count),        // - unique_mesh_count
-            1u,                                             // - minimum_subdivision
+            0u,                                             // - minimum_subdivision
             3u,                                             // - subdivisions_count
             GetParamValueByComplexity(g_textures_count),    // - textures_count
             { 256u, 256u },                                 // - texture_dimensions

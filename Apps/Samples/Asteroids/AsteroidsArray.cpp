@@ -181,6 +181,8 @@ AsteroidsArray::ContentState::ContentState(const Settings& settings)
         gfx::Matrix44f scale_matrix;
         cml::matrix_scale(scale_matrix, asteroid_scale_ratios * settings.scale);
 
+        const gfx::Matrix44f scale_translate_matrix = scale_matrix * translation_matrix;
+
         Asteroid::Colors asteroid_colors = normal_distribution(rng) <= 1.f
                                          ? Asteroid::GetAsteroidIceColors(colors_distribution(rng), colors_distribution(rng))
                                          : Asteroid::GetAsteroidRockColors(colors_distribution(rng), colors_distribution(rng));
@@ -193,8 +195,7 @@ AsteroidsArray::ContentState::ContentState(const Settings& settings)
                 settings.textures_array_enabled ? textures_distribution(rng) : 0u,
                 uber_mesh.GetSubsetDepthRange(asteroid_subset_index),
                 std::move(asteroid_colors),
-                std::move(scale_matrix),
-                std::move(translation_matrix),
+                std::move(scale_translate_matrix),
                 GetRandomDirection(rng),
                 orbit_velocity_distribution(rng) / (asteroid_scale * asteroid_orbit_radius),
                 spin_velocity_distribution(rng)  / asteroid_scale,
@@ -333,13 +334,14 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
     ITT_FUNCTION_TASK();
     SCOPE_TIMER("AsteroidsArray::Update");
 
-    gfx::Matrix44f scene_view_matrix, scene_proj_matrix;
-    m_settings.view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
+    gfx::Matrix44f view_matrix, proj_matrix;
+    m_settings.view_camera.GetViewProjMatrices(view_matrix, proj_matrix);
 
+    const gfx::Matrix44f view_proj_matrix = view_matrix * proj_matrix;
     const float elapsed_radians = cml::constants<float>::pi()* static_cast<float>(elapsed_seconds);
 
     Data::ParallelForEach<Parameters::iterator, const Asteroid::Parameters>(m_sp_content_state->parameters.begin(), m_sp_content_state->parameters.end(),
-        [&](const Asteroid::Parameters& asteroid_parameters)
+        [this, &view_proj_matrix, elapsed_radians](const Asteroid::Parameters& asteroid_parameters)
         {
             ITT_FUNCTION_TASK();
 
@@ -352,8 +354,8 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
             gfx::Matrix44f orbit_rotation_matrix;
             cml::matrix_rotation_world_y(orbit_rotation_matrix, orbit_angle_rad);
 
-            const gfx::Matrix44f model_matrix = asteroid_parameters.scale_matrix * spin_rotation_matrix * asteroid_parameters.translation_matrix * orbit_rotation_matrix;
-            const gfx::Matrix44f mvp_matrix   = model_matrix * scene_view_matrix * scene_proj_matrix;
+            const gfx::Matrix44f model_matrix = spin_rotation_matrix * asteroid_parameters.scale_translate_matrix * orbit_rotation_matrix;
+            const gfx::Matrix44f mvp_matrix   = model_matrix * view_proj_matrix;
 
             SetFinalPassUniforms(
                 AsteroidUniforms
