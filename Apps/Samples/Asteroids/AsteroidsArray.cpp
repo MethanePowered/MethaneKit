@@ -328,7 +328,7 @@ void AsteroidsArray::Resize(const gfx::FrameSize &frame_size)
     m_sp_render_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
 }
 
-bool AsteroidsArray::Update(double /*elapsed_seconds*/, double delta_seconds)
+bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
 {
     ITT_FUNCTION_TASK();
     SCOPE_TIMER("AsteroidsArray::Update");
@@ -336,27 +336,30 @@ bool AsteroidsArray::Update(double /*elapsed_seconds*/, double delta_seconds)
     gfx::Matrix44f scene_view_matrix, scene_proj_matrix;
     m_settings.view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
 
-    Data::ParallelForEach<Parameters::iterator, Asteroid::Parameters>(m_sp_content_state->parameters.begin(), m_sp_content_state->parameters.end(),
-        [&](Asteroid::Parameters& asteroid_parameters)
+    const float elapsed_radians = cml::constants<float>::pi()* static_cast<float>(elapsed_seconds);
+
+    Data::ParallelForEach<Parameters::iterator, const Asteroid::Parameters>(m_sp_content_state->parameters.begin(), m_sp_content_state->parameters.end(),
+        [&](const Asteroid::Parameters& asteroid_parameters)
         {
             ITT_FUNCTION_TASK();
 
-            asteroid_parameters.spin_angle_rad  += cml::constants<float>::pi() * asteroid_parameters.spin_speed  * static_cast<float>(delta_seconds);
-            asteroid_parameters.orbit_angle_rad += cml::constants<float>::pi() * asteroid_parameters.orbit_speed * static_cast<float>(delta_seconds);
+            const float spin_angle_rad  = asteroid_parameters.spin_angle_rad  + asteroid_parameters.spin_speed  * elapsed_radians;
+            const float orbit_angle_rad = asteroid_parameters.orbit_angle_rad + asteroid_parameters.orbit_speed * elapsed_radians;
 
             gfx::Matrix44f spin_rotation_matrix;
-            cml::matrix_rotation_axis_angle(spin_rotation_matrix, asteroid_parameters.spin_axis, asteroid_parameters.spin_angle_rad);
+            cml::matrix_rotation_axis_angle(spin_rotation_matrix, asteroid_parameters.spin_axis, spin_angle_rad);
 
             gfx::Matrix44f orbit_rotation_matrix;
-            cml::matrix_rotation_world_y(orbit_rotation_matrix, asteroid_parameters.orbit_angle_rad);
+            cml::matrix_rotation_world_y(orbit_rotation_matrix, orbit_angle_rad);
 
-            gfx::Matrix44f model_matrix = asteroid_parameters.scale_matrix * spin_rotation_matrix * asteroid_parameters.translation_matrix * orbit_rotation_matrix;
+            const gfx::Matrix44f model_matrix = asteroid_parameters.scale_matrix * spin_rotation_matrix * asteroid_parameters.translation_matrix * orbit_rotation_matrix;
+            const gfx::Matrix44f mvp_matrix   = model_matrix * scene_view_matrix * scene_proj_matrix;
 
             SetFinalPassUniforms(
                 AsteroidUniforms
                 {
                     model_matrix,
-                    model_matrix * scene_view_matrix * scene_proj_matrix,
+                    mvp_matrix,
                     asteroid_parameters.colors.deep,
                     asteroid_parameters.colors.shallow,
                     asteroid_parameters.depth_range,

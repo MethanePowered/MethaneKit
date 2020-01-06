@@ -90,8 +90,8 @@ public:
         const gfx::Point3f   spin_axis;
         const float          orbit_speed;
         const float          spin_speed;
-        float                spin_angle_rad;
-        float                orbit_angle_rad;
+        const float          spin_angle_rad;
+        const float          orbit_angle_rad;
     };
 
     struct TextureNoiseParameters
