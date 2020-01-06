@@ -126,7 +126,7 @@ void SkyBox::Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindin
     assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= sizeof(Uniforms));
     buffer_bindings.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_mesh_buffers.GetFinalPassUniforms()), sizeof(Uniforms) } });
 
-    cmd_list.Reset(*m_sp_state, "Sky-box rendering");
+    cmd_list.Reset(m_sp_state, "Sky-box rendering");
     
     assert(!buffer_bindings.resource_bindings_per_instance.empty());
     assert(!!buffer_bindings.resource_bindings_per_instance[0]);

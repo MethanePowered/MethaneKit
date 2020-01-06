@@ -75,8 +75,9 @@ public:
     virtual void Complete(uint32_t frame_index);
 
     void SetResourceTransitionBarriers(const Resource::Refs& resources, ResourceBase::State state_before, ResourceBase::State state_after);
-    const CommandState& GetCommandState() const { return m_command_state; }
-    Ptr  GetPtr()                               { return shared_from_this(); }
+    const CommandState& GetCommandState() const       { return m_command_state; }
+    Ptr  GetPtr()                                     { return shared_from_this(); }
+    void SetDebugGroupOpened(bool debug_group_opened) { m_debug_group_opened = debug_group_opened; }
 
 protected:
     CommandQueueBase&       GetCommandQueueBase();

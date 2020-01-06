@@ -48,7 +48,7 @@ ParallelRenderCommandListBase::ParallelRenderCommandListBase(CommandQueueBase& c
     ITT_FUNCTION_TASK();
 }
 
-void ParallelRenderCommandListBase::Reset(RenderState& render_state, const std::string& debug_group)
+void ParallelRenderCommandListBase::Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
 
@@ -57,7 +57,7 @@ void ParallelRenderCommandListBase::Reset(RenderState& render_state, const std::
     {
         assert(sp_render_command_list);
         const std::string render_debug_group = GetThreadCommandListName(debug_group, render_command_list_index++);
-        sp_render_command_list->Reset(render_state, render_debug_group);
+        sp_render_command_list->Reset(sp_render_state, render_debug_group);
     }
 }
 

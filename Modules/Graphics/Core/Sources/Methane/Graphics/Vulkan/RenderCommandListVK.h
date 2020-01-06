@@ -50,7 +50,7 @@ public:
     void Execute(uint32_t frame_index) override;
 
     // RenderCommandList interface
-    void Reset(RenderState& render_state, const std::string& debug_group = "") override;
+    void Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group = "") override;
     void SetVertexBuffers(const Buffer::Refs& vertex_buffers) override;
     void DrawIndexed(Primitive primitive, Buffer& index_buffer,
                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex,

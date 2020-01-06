@@ -58,12 +58,12 @@ RenderCommandListVK::RenderCommandListVK(ParallelRenderCommandListBase& parallel
     ITT_FUNCTION_TASK();
 }
 
-void RenderCommandListVK::Reset(RenderState& render_state, const std::string& debug_group)
+void RenderCommandListVK::Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
 
     RenderCommandListBase::ResetDrawState();
-    RenderCommandListBase::Reset(render_state, debug_group);
+    RenderCommandListBase::Reset(sp_render_state, debug_group);
 }
 
 void RenderCommandListVK::SetName(const std::string& name)

@@ -65,7 +65,7 @@ void RenderCommandListBase::DrawingState::Reset()
     flags = { };
 }
 
-void RenderCommandListBase::Reset(RenderState& render_state, const std::string& debug_group)
+void RenderCommandListBase::Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
 
@@ -85,7 +85,10 @@ void RenderCommandListBase::Reset(RenderState& render_state, const std::string& 
         m_debug_group_opened = true;
     }
 
-    SetState(render_state);
+    if (sp_render_state)
+    {
+        SetState(*sp_render_state);
+    }
 }
 
 void RenderCommandListBase::SetState(RenderState& render_state, RenderState::Group::Mask state_groups)

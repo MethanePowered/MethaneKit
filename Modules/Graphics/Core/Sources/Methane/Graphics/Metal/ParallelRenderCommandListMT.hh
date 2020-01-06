@@ -44,7 +44,7 @@ public:
     ParallelRenderCommandListMT(CommandQueueBase& command_queue, RenderPassBase& render_pass);
 
     // ParallelRenderCommandList interface
-    void Reset(RenderState& render_state, const std::string& debug_group = "") override;
+    void Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group = "") override;
 
     // CommandList interface
     void Commit(bool present_drawable) override;

@@ -121,7 +121,7 @@ public:
         m_sp_context->WaitForGpu(Context::WaitFor::FramePresented);
         HelloTriangleFrame& frame = GetCurrentFrame();
 
-        frame.sp_cmd_list->Reset(*m_sp_state);
+        frame.sp_cmd_list->Reset(m_sp_state);
         frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
         frame.sp_cmd_list->Draw(RenderCommandList::Primitive::Triangle, 3);
         frame.sp_cmd_list->Commit(true);

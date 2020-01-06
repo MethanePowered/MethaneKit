@@ -75,7 +75,7 @@ RenderCommandListMT::RenderCommandListMT(ParallelRenderCommandListBase& parallel
     ITT_FUNCTION_TASK();
 }
 
-void RenderCommandListMT::Reset(RenderState& render_state, const std::string& debug_group)
+void RenderCommandListMT::Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
     
@@ -83,7 +83,7 @@ void RenderCommandListMT::Reset(RenderState& render_state, const std::string& de
 
     StartRenderEncoding();
 
-    RenderCommandListBase::Reset(render_state, debug_group);
+    RenderCommandListBase::Reset(sp_render_state, debug_group);
 }
 
 void RenderCommandListMT::SetName(const std::string& name)

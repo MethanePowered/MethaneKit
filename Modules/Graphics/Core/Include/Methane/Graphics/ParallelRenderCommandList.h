@@ -40,7 +40,7 @@ struct ParallelRenderCommandList : virtual CommandList
     static Ptr Create(CommandQueue& command_queue, RenderPass& render_pass);
 
     // ParallelRenderCommandList interface
-    virtual void Reset(RenderState& render_state, const std::string& debug_group = "") = 0;
+    virtual void Reset(const RenderState::Ptr& sp_render_state = RenderState::Ptr(), const std::string& debug_group = "") = 0;
     virtual void SetParallelCommandListsCount(uint32_t count) = 0;
     virtual const RenderCommandList::Ptrs& GetParallelCommandLists() const = 0;
 };

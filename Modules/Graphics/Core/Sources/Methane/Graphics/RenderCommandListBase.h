@@ -49,7 +49,7 @@ public:
     RenderCommandListBase(ParallelRenderCommandListBase& parallel_render_command_list);
 
     // RenderCommandList interface
-    void Reset(RenderState& render_state, const std::string& debug_group = "") override;
+    void Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group = "") override;
     void SetState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) override;
     void SetVertexBuffers(const Buffer::Refs& vertex_buffers) override;
     void DrawIndexed(Primitive primitive_type, Buffer& index_buffer,

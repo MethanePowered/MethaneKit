@@ -53,7 +53,7 @@ struct RenderCommandList : virtual CommandList
     static Ptr Create(ParallelRenderCommandList& parallel_command_list);
 
     // RenderCommandList interface
-    virtual void Reset(RenderState& render_state, const std::string& debug_group = "") = 0;
+    virtual void Reset(const RenderState::Ptr& sp_render_state = RenderState::Ptr(), const std::string& debug_group = "") = 0;
     virtual void SetState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) = 0;
     virtual void SetVertexBuffers(const Buffer::Refs& vertex_buffers) = 0;
     virtual void DrawIndexed(Primitive primitive, Buffer& index_buffer, 

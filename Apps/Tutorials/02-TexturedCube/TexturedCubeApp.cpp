@@ -241,7 +241,7 @@ bool TexturedCubeApp::Render()
     frame.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(Uniforms) } });
 
     // Issue commands for cube rendering
-    frame.sp_cmd_list->Reset(*m_sp_state, "Cube redering");
+    frame.sp_cmd_list->Reset(m_sp_state, "Cube redering");
     frame.sp_cmd_list->SetResourceBindings(*frame.sp_resource_bindings);
     frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
     frame.sp_cmd_list->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);

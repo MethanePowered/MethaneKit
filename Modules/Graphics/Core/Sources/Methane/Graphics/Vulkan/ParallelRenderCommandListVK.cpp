@@ -50,11 +50,11 @@ void ParallelRenderCommandListVK::SetName(const std::string& name)
     ParallelRenderCommandListBase::SetName(name);
 }
 
-void ParallelRenderCommandListVK::Reset(RenderState& render_state, const std::string& debug_group)
+void ParallelRenderCommandListVK::Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
 
-    ParallelRenderCommandListBase::Reset(render_state, debug_group);
+    ParallelRenderCommandListBase::Reset(sp_render_state, debug_group);
 }
 
 void ParallelRenderCommandListVK::Commit(bool present_drawable)

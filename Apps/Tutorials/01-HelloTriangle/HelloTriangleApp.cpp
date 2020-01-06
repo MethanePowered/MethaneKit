@@ -150,7 +150,7 @@ bool HelloTriangleApp::Render()
     assert(!!m_sp_state);
 
     // Issue commands for triangle rendering
-    frame.sp_cmd_list->Reset(*m_sp_state, "Cube redering");
+    frame.sp_cmd_list->Reset(m_sp_state, "Cube redering");
     frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
     frame.sp_cmd_list->Draw(gfx::RenderCommandList::Primitive::Triangle, static_cast<uint32_t>(m_triangle_vertices.size()));
     frame.sp_cmd_list->Commit(true);

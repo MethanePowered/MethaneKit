@@ -141,7 +141,7 @@ void Planet::Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buf
     assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= sizeof(Uniforms));
     buffer_bindings.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_mesh_buffers.GetFinalPassUniforms()), sizeof(Uniforms) } });
 
-    cmd_list.Reset(*m_sp_state, "Planet rendering");
+    cmd_list.Reset(m_sp_state, "Planet rendering");
     
     assert(!buffer_bindings.resource_bindings_per_instance.empty());
     assert(!!buffer_bindings.resource_bindings_per_instance[0]);

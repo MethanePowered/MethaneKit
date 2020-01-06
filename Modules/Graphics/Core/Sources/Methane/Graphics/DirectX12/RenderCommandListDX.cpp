@@ -97,34 +97,36 @@ void RenderCommandListDX::Initialize()
     m_cp_command_list.As(&m_cp_command_list_4);
 }
 
-void RenderCommandListDX::ResetNative(RenderState& render_state)
+void RenderCommandListDX::ResetNative(const RenderState::Ptr& sp_render_state)
 {
-    assert(m_cp_command_list);
-    RenderStateDX& dx_state = static_cast<RenderStateDX&>(render_state);
-
     // Reset command list
-    if (m_is_committed)
-    {
-        ResetDrawState();
+    if (!m_is_committed)
+        return;
 
-        m_is_committed = false;
-        ThrowIfFailed(m_cp_command_allocator->Reset());
-        ThrowIfFailed(m_cp_command_list->Reset(m_cp_command_allocator.Get(), dx_state.GetNativePipelineState().Get()));
+    m_is_committed = false;
 
-        m_draw_state.sp_render_state     = dx_state.GetPtr();
-        m_draw_state.render_state_groups = RenderState::Group::Program
-                                         | RenderState::Group::Rasterizer
-                                         | RenderState::Group::DepthStencil;
-    }
+    ResetDrawState();
+
+    ID3D12PipelineState* p_dx_initial_state = sp_render_state ? static_cast<RenderStateDX&>(*sp_render_state).GetNativePipelineState().Get() : nullptr;
+    ThrowIfFailed(m_cp_command_allocator->Reset());
+    ThrowIfFailed(m_cp_command_list->Reset(m_cp_command_allocator.Get(), p_dx_initial_state));
+
+    if (!sp_render_state)
+        return;
+
+    m_draw_state.sp_render_state     = static_cast<RenderStateBase&>(*sp_render_state).GetPtr();
+    m_draw_state.render_state_groups = RenderState::Group::Program
+                                     | RenderState::Group::Rasterizer
+                                     | RenderState::Group::DepthStencil;
 }
 
-void RenderCommandListDX::Reset(RenderState& render_state, const std::string& debug_group)
+void RenderCommandListDX::Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
 
-    ResetNative(render_state);
+    ResetNative(sp_render_state);
 
-    RenderCommandListBase::Reset(render_state, debug_group);
+    RenderCommandListBase::Reset(sp_render_state, debug_group);
 
     RenderPassDX& pass_dx = GetPassDX();
     if (m_is_parallel)

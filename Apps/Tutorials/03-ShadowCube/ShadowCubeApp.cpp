@@ -427,7 +427,7 @@ void ShadowCubeApp::RenderScene(const RenderPass &render_pass, ShadowCubeFrame::
     gfx::RenderCommandList& cmd_list = *render_pass_resources.sp_cmd_list;
 
     assert(!!render_pass.sp_state);
-    cmd_list.Reset(*render_pass.sp_state, render_pass.command_group_name);
+    cmd_list.Reset(render_pass.sp_state, render_pass.command_group_name);
 
     // Cube drawing
     assert(!!render_pass_resources.cube.sp_resource_bindings);

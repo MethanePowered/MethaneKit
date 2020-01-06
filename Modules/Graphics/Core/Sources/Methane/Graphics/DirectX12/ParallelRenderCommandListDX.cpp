@@ -67,17 +67,20 @@ ParallelRenderCommandListDX::ParallelRenderCommandListDX(CommandQueueBase& cmd_b
     assert(!!cp_device);
 }
 
-void ParallelRenderCommandListDX::Reset(RenderState& render_state, const std::string& debug_group)
+void ParallelRenderCommandListDX::Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
 
     // Render pass is begun in "beginning" command list only,
     // but it will be ended in the "ending" command list on commit of the parallel CL
-    m_begining_command_list.Reset(render_state, GetTrailingCommandListDebugName(debug_group, true)); // begins render pass
-    m_ending_command_list.ResetNative(render_state); // only resets native command lists
-    m_ending_command_list.PushDebugGroup(GetTrailingCommandListDebugName(debug_group, false));
+    m_begining_command_list.Reset(RenderState::Ptr(), debug_group); // begins render pass
+    m_ending_command_list.ResetNative();                            // only reset native command list
 
-    ParallelRenderCommandListBase::Reset(render_state, debug_group);
+    // Instead of closing debug group (from Reset call) on beginning CL commit, we force to close it in ending CL
+    m_begining_command_list.SetDebugGroupOpened(false);             
+    m_ending_command_list.SetDebugGroupOpened(true);
+
+    ParallelRenderCommandListBase::Reset(sp_render_state, debug_group);
 }
 
 void ParallelRenderCommandListDX::SetName(const std::string& name)
