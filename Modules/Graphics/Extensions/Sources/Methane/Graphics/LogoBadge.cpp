@@ -81,6 +81,8 @@ FrameRect LogoBadge::GetBadgeRectInFrame(const FrameSize& frame_size, FrameCorne
             badge_size
         };
     }
+
+    return FrameRect();
 }
 
 } // namespace Methane::Graphics

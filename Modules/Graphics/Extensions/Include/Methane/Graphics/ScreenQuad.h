@@ -59,13 +59,9 @@ public:
     void Draw(RenderCommandList& cmd_list) const;
 
 private:
-    struct Constants
-    {
-        SHADER_FIELD_ALIGN Color4f blend_color;
-    };
+    void UpdateConstantsBuffer() const;
 
     Settings                       m_settings;
-    Constants                      m_constants;
     const std::string              m_debug_region_name;
     RenderState::Ptr               m_sp_state;
     Buffer::Ptr                    m_sp_vertex_buffer;

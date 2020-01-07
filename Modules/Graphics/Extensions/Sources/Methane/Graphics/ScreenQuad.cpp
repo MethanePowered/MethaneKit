@@ -31,6 +31,11 @@ Screen Quad rendering primitive.
 namespace Methane::Graphics
 {
 
+struct SHADER_STRUCT_ALIGN ScreenQuadConstants
+{
+    SHADER_FIELD_ALIGN Color4f blend_color;
+};
+
 struct ScreenQuadVertex
 {
     Mesh::Position position;
@@ -45,9 +50,6 @@ struct ScreenQuadVertex
 
 ScreenQuad::ScreenQuad(Context& context, Texture::Ptr sp_texture, Settings settings)
     : m_settings(std::move(settings))
-    , m_constants({
-        m_settings.blend_color
-    })
     , m_debug_region_name(m_settings.name + " Screen-Quad rendering")
     , m_sp_texture(std::move(sp_texture))
 {
@@ -115,21 +117,17 @@ ScreenQuad::ScreenQuad(Context& context, Texture::Ptr sp_texture, Settings setti
         }
     });
 
-    const Data::Size const_buffer_size = static_cast<Data::Size>(sizeof(m_constants));
+    const Data::Size const_buffer_size = static_cast<Data::Size>(sizeof(ScreenQuadConstants));
     m_sp_const_buffer = Buffer::CreateConstantBuffer(context, Buffer::GetAlignedBufferSize(const_buffer_size));
     m_sp_const_buffer->SetName(m_settings.name + " Screen-Quad Constants Buffer");
-    m_sp_const_buffer->SetData({
-        {
-            reinterpret_cast<Data::ConstRawPtr>(&m_constants),
-            static_cast<Data::Size>(sizeof(m_constants))
-        }
-    });
 
     m_sp_const_resource_bindings = Program::ResourceBindings::Create(state_settings.sp_program, {
         { { Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer    } } },
         { { Shader::Type::Pixel, "g_texture"   }, { { m_sp_texture         } } },
         { { Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler } } },
     });
+
+    UpdateConstantsBuffer();
 }
 
 void ScreenQuad::SetBlendColor(const Color4f& blend_color)
@@ -140,14 +138,8 @@ void ScreenQuad::SetBlendColor(const Color4f& blend_color)
         return;
 
     m_settings.blend_color  = blend_color;
-    m_constants.blend_color = blend_color;
 
-    m_sp_const_buffer->SetData({
-        {
-            reinterpret_cast<Data::ConstRawPtr>(&m_constants),
-            static_cast<Data::Size>(sizeof(m_constants))
-        }
-    });
+    UpdateConstantsBuffer();
 }
 
 void ScreenQuad::SetScreenRect(const FrameRect& screen_rect)
@@ -171,6 +163,20 @@ void ScreenQuad::Draw(RenderCommandList& cmd_list) const
     cmd_list.SetResourceBindings(*m_sp_const_resource_bindings);
     cmd_list.SetVertexBuffers({ *m_sp_vertex_buffer });
     cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
+}
+
+void ScreenQuad::UpdateConstantsBuffer() const
+{
+    ScreenQuadConstants constants = {
+        m_settings.blend_color
+    };
+
+    m_sp_const_buffer->SetData({
+        {
+            reinterpret_cast<Data::ConstRawPtr>(&constants),
+            static_cast<Data::Size>(sizeof(constants))
+        }
+    });
 }
 
 } // namespace Methane::Graphics
