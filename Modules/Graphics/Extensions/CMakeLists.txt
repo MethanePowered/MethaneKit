@@ -1,6 +1,7 @@
 set(TARGET MethaneGraphicsExtensions)
 
 include(MethaneShaders)
+include(MethaneResources)
 
 get_module_dirs("Methane/Graphics")
 
@@ -10,17 +11,24 @@ set(HEADERS
     ${INCLUDE_DIR}/MeshBuffers.hpp
     ${INCLUDE_DIR}/SkyBox.h
     ${INCLUDE_DIR}/ScreenQuad.h
+    ${INCLUDE_DIR}/LogoBadge.h
 )
 
 set(SOURCES
     ${SOURCES_DIR}/ImageLoader.cpp
     ${SOURCES_DIR}/SkyBox.cpp
     ${SOURCES_DIR}/ScreenQuad.cpp
+    ${SOURCES_DIR}/LogoBadge.cpp
 )
 
 set(HLSL_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/SkyBox.hlsl
     ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/ScreenQuad.hlsl
+)
+
+set(IMAGES_DIR ${RESOURCES_DIR}/Images)
+set(TEXTURES
+    ${IMAGES_DIR}/Logo/MethaneLogoNameWatermark.png
 )
 
 add_library(${TARGET} STATIC
@@ -29,6 +37,7 @@ add_library(${TARGET} STATIC
 )
 
 add_methane_shaders(${TARGET} "${HLSL_SOURCES}")
+add_methane_embedded_textures(${TARGET} "${IMAGES_DIR}" "${TEXTURES}")
 
 target_link_libraries(${TARGET}
     MethanePlatformUtils

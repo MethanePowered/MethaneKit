@@ -49,7 +49,7 @@ static const GraphicsApp::Settings      g_app_settings = // Application settings
 };
 
 HelloTriangleApp::HelloTriangleApp()
-    : GraphicsApp(g_app_settings, gfx::RenderPass::Access::None)
+    : GraphicsApp(g_app_settings, gfx::RenderPass::Access::ShaderResources | gfx::RenderPass::Access::Samplers)
     , m_triangle_vertices({{
         { { 0.0f,   0.5f,  0.0f }, { 1.0f, 0.0f, 0.0f } },
         { { 0.5f,  -0.5f,  0.0f }, { 0.0f, 1.0f, 0.0f } },
@@ -69,6 +69,9 @@ void HelloTriangleApp::Init()
     GraphicsApp::Init();
 
     assert(m_sp_context);
+
+    // Create Methane logo badge
+    m_sp_logo_badge = std::make_shared<gfx::LogoBadge>(*m_sp_context);
 
     // Create triangle shading program
     m_sp_program = gfx::Program::Create(*m_sp_context, {
@@ -131,6 +134,8 @@ bool HelloTriangleApp::Resize(const gfx::FrameSize& frame_size, bool is_minimize
     assert(m_sp_state);
     m_sp_state->SetViewports(    { gfx::GetFrameViewport(frame_size)    } );
     m_sp_state->SetScissorRects( { gfx::GetFrameScissorRect(frame_size) } );
+    m_sp_logo_badge->Resize(frame_size);
+
     return true;
 }
 
@@ -153,9 +158,15 @@ bool HelloTriangleApp::Render()
     frame.sp_cmd_list->Reset(m_sp_state, "Cube redering");
     frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
     frame.sp_cmd_list->Draw(gfx::RenderCommandList::Primitive::Triangle, static_cast<uint32_t>(m_triangle_vertices.size()));
+
+    // Draw Methane logo badge
+    assert(!!m_sp_logo_badge);
+    m_sp_logo_badge->Draw(*frame.sp_cmd_list);
+
+    // Commit command list with present flag
     frame.sp_cmd_list->Commit(true);
 
-    // Present frame to screen
+    // Execute command list on render queue and present frame to screen
     m_sp_context->GetRenderCommandQueue().Execute({ *frame.sp_cmd_list });
     m_sp_context->Present();
 

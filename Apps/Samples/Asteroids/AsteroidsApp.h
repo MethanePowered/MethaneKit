@@ -25,10 +25,8 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 
 #include "Planet.h"
 #include "AsteroidsArray.h"
-#include "AsteroidsAppController.h"
 
 #include <Methane/Graphics/Kit.h>
-#include <Methane/Platform/Input/Controller.h>
 
 namespace Methane::Samples
 {
@@ -98,6 +96,7 @@ private:
     SceneUniforms                     m_scene_uniforms = { };
     
     gfx::Buffer::Ptr                  m_sp_const_buffer;
+    gfx::LogoBadge::Ptr               m_sp_logo_badge;
     gfx::SkyBox::Ptr                  m_sp_sky_box;
     Planet::Ptr                       m_sp_planet;
     AsteroidsArray::Ptr               m_sp_asteroids_array;

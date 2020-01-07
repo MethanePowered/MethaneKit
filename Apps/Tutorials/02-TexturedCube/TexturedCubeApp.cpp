@@ -93,6 +93,9 @@ void TexturedCubeApp::Init()
     m_camera.Resize(static_cast<float>(context_settings.frame_size.width),
                     static_cast<float>(context_settings.frame_size.height));
 
+    // Create Methane logo badge
+    m_sp_logo_badge = std::make_shared<gfx::LogoBadge>(*m_sp_context);
+
     // Create cube shading program
     m_sp_program = gfx::Program::Create(*m_sp_context, {
         { // shaders
@@ -198,6 +201,8 @@ bool TexturedCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized
     m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
 
     m_camera.Resize(static_cast<float>(frame_size.width), static_cast<float>(frame_size.height));
+    m_sp_logo_badge->Resize(frame_size);
+
     return true;
 }
 
@@ -245,9 +250,15 @@ bool TexturedCubeApp::Render()
     frame.sp_cmd_list->SetResourceBindings(*frame.sp_resource_bindings);
     frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
     frame.sp_cmd_list->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
+
+    // Draw Methane logo badge
+    assert(!!m_sp_logo_badge);
+    m_sp_logo_badge->Draw(*frame.sp_cmd_list);
+
+    // Commit command list with present flag
     frame.sp_cmd_list->Commit(true);
 
-    // Present frame to screen
+    // Execute command list on render queue and present frame to screen
     m_sp_context->GetRenderCommandQueue().Execute({ *frame.sp_cmd_list });
     m_sp_context->Present();
 

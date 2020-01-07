@@ -66,6 +66,7 @@ private:
     using Vertices = std::array<Vertex, 3>;
     const Vertices m_triangle_vertices;
 
+    gfx::LogoBadge::Ptr     m_sp_logo_badge;
     gfx::Program::Ptr       m_sp_program;
     gfx::RenderState::Ptr   m_sp_state;
     gfx::Buffer::Ptr        m_sp_vertex_buffer;

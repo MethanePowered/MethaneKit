@@ -96,6 +96,9 @@ void ShadowCubeApp::Init()
     assert(m_sp_context);
     const gfx::Context::Settings& context_settings = m_sp_context->GetSettings();
 
+    // Create Methane logo badge
+    m_sp_logo_badge = std::make_shared<gfx::LogoBadge>(*m_sp_context);
+
     // Load textures, vertex and index buffers for cube and floor meshes
     m_sp_cube_buffers  = std::make_unique<TexturedMeshBuffers>(*m_sp_context, m_cube_mesh, "Cube");
     m_sp_cube_buffers->SetSubsetTexture(m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MethaneBubbles.jpg", true));
@@ -327,6 +330,10 @@ bool ShadowCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     m_final_pass.sp_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
 
     m_view_camera.Resize(static_cast<float>(frame_size.width), static_cast<float>(frame_size.height));
+
+    assert(!!m_sp_logo_badge);
+    m_sp_logo_badge->Resize(frame_size);
+
     return true;
 }
 
@@ -426,6 +433,7 @@ void ShadowCubeApp::RenderScene(const RenderPass &render_pass, ShadowCubeFrame::
     assert(!!render_pass_resources.sp_cmd_list);
     gfx::RenderCommandList& cmd_list = *render_pass_resources.sp_cmd_list;
 
+    // Reset command list with initial rendering state
     assert(!!render_pass.sp_state);
     cmd_list.Reset(render_pass.sp_state, render_pass.command_group_name);
 
@@ -439,6 +447,14 @@ void ShadowCubeApp::RenderScene(const RenderPass &render_pass, ShadowCubeFrame::
     assert(!!m_sp_floor_buffers);
     m_sp_floor_buffers->Draw(cmd_list, *render_pass_resources.floor.sp_resource_bindings);
 
+    if (render_pass.is_final_pass)
+    {
+        // Draw Methane logo badge
+        assert(!!m_sp_logo_badge);
+        m_sp_logo_badge->Draw(cmd_list);
+    }
+
+    // Commit command list with present flag in case of final render pass
     cmd_list.Commit(render_pass.is_final_pass);
 }
 
@@ -447,6 +463,7 @@ void ShadowCubeApp::OnContextReleased()
     m_final_pass.Release();
     m_shadow_pass.Release();
 
+    m_sp_logo_badge.reset();
     m_sp_floor_buffers.reset();
     m_sp_cube_buffers.reset();
     m_sp_shadow_sampler.reset();
