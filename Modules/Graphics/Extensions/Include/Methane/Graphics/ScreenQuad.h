@@ -59,7 +59,7 @@ public:
     void Draw(RenderCommandList& cmd_list) const;
 
 private:
-    struct SHADER_STRUCT_ALIGN Constants
+    struct Constants
     {
         SHADER_FIELD_ALIGN Color4f blend_color;
     };
