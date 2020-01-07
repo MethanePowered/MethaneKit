@@ -46,7 +46,8 @@ using FrameRect    = Data::FrameRect;
 using FrameSize    = Data::FrameSize;
 using ScissorRect  = Rect<uint32_t, uint32_t>;
 using ScissorRects = std::vector<ScissorRect>;
-    
+
+ScissorRect GetFrameScissorRect(const FrameRect& frame_rect);
 ScissorRect GetFrameScissorRect(const FrameSize& frame_size);
 
 template<typename T>
@@ -123,6 +124,7 @@ using Viewport  = Volume<double, double>;
 using Viewports = std::vector<Viewport>;
 
 Viewport GetFrameViewport(const FrameSize& frame_size);
+Viewport GetFrameViewport(const FrameRect& frame_rect);
     
 class Color3f : public Vector3f
 {

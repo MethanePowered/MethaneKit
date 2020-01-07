@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: SkyBox.cpp
+FILE: Methane/Graphics/SkyBox.cpp
 SkyBox rendering primitive
 
 ******************************************************************************/
@@ -58,7 +58,7 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
             Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxPS" }, { } }),
         },
         { { {
-            { "in_position", "POSITION" },
+            { "input_position", "POSITION" },
         } } },
         { "g_skybox_texture", "g_texture_sampler" },
         { },

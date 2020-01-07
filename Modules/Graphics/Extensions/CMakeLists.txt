@@ -9,15 +9,18 @@ set(HEADERS
     ${INCLUDE_DIR}/ImageLoader.h
     ${INCLUDE_DIR}/MeshBuffers.hpp
     ${INCLUDE_DIR}/SkyBox.h
+    ${INCLUDE_DIR}/ScreenQuad.h
 )
 
 set(SOURCES
     ${SOURCES_DIR}/ImageLoader.cpp
     ${SOURCES_DIR}/SkyBox.cpp
+    ${SOURCES_DIR}/ScreenQuad.cpp
 )
 
 set(HLSL_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/SkyBox.hlsl
+    ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/ScreenQuad.hlsl
 )
 
 add_library(${TARGET} STATIC

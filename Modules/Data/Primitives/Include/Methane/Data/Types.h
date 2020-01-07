@@ -74,6 +74,18 @@ struct Rect
         bool operator!=(const Size& other) const noexcept
         { return std::tie(width, height) != std::tie(other.height, other.width); }
 
+        Size& operator*(D multiplier)
+        {
+            width *= multiplier; height *= multiplier;
+            return *this;
+        }
+
+        Size& operator/(D divisor)
+        {
+            width /= divisor; height /= divisor;
+            return *this;
+        }
+
         D GetPixelsCount() const noexcept { return width * height; }
         D GetLongestSide() const noexcept { return std::max(width, height); }
 

@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: SkyBox.h
+FILE: Methane/Graphics/SkyBox.h
 SkyBox rendering primitive
 
 ******************************************************************************/
@@ -76,7 +76,6 @@ private:
     TheTexturedMeshBuffers m_mesh_buffers;
     Sampler::Ptr           m_sp_texture_sampler;
     RenderState::Ptr       m_sp_state;
-    RenderCommandList::Ptr m_sp_command_list;
 };
 
 } // namespace Methane::Graphics
