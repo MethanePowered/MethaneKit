@@ -47,9 +47,15 @@ public:
 
     struct Settings
     {
-        FrameSize   size       = FrameSize(128u, 128u);
-        FrameCorner corner     = FrameCorner::TopRight;
-        uint32_t    margins    = 10u;
+        FrameSize   size;
+        FrameCorner corner;
+        uint32_t    margins;
+        
+        Settings()
+            : size(128u, 128u)
+            , corner(FrameCorner::TopRight)
+            , margins(10u)
+        { }
     };
 
     LogoBadge(Context& context, Settings settings = Settings());

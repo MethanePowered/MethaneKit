@@ -33,10 +33,10 @@ ScissorRect GetFrameScissorRect(const FrameRect& frame_rect)
 {
     ITT_FUNCTION_TASK();
     return ScissorRect{
-        ScissorRect::Point(static_cast<uint32_t>(std::max(0, frame_rect.origin.x())), 
+        ScissorRect::Point(static_cast<uint32_t>(std::max(0, frame_rect.origin.x())),
                            static_cast<uint32_t>(std::max(0, frame_rect.origin.y()))),
-        ScissorRect::Size(frame_rect.size.width  + frame_rect.origin.x(),
-                          frame_rect.size.height + frame_rect.origin.y())
+        ScissorRect::Size(frame_rect.origin.x() >= 0 ? frame_rect.size.width  : frame_rect.size.width  + frame_rect.origin.x(),
+                          frame_rect.origin.y() >= 0 ? frame_rect.size.height : frame_rect.size.height + frame_rect.origin.y())
     };
 }
 

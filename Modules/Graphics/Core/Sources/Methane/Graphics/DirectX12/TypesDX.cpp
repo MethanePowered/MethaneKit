@@ -42,7 +42,8 @@ CD3DX12_RECT TypeConverterDX::ScissorRectToD3D(const ScissorRect& scissor_rect) 
 {
     ITT_FUNCTION_TASK();
     return CD3DX12_RECT(static_cast<LONG>(scissor_rect.origin.x()), static_cast<LONG>(scissor_rect.origin.y()),
-                        static_cast<LONG>(scissor_rect.size.width), static_cast<LONG>(scissor_rect.size.height));
+                        static_cast<LONG>(scissor_rect.origin.x() + scissor_rect.size.width),
+                        static_cast<LONG>(scissor_rect.origin.y() + scissor_rect.size.height));
 }
 
 std::vector<CD3DX12_VIEWPORT> TypeConverterDX::ViewportsToD3D(const Viewports& viewports) noexcept

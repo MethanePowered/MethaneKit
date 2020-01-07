@@ -37,7 +37,7 @@ ScreenQuad rendering primitive.
 namespace Methane::Graphics
 {
 
-class RenderCommandList;
+struct RenderCommandList;
 
 class ScreenQuad
 {
