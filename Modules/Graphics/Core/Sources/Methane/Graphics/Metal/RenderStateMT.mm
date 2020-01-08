@@ -68,6 +68,74 @@ static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(RenderState::Rasteri
     }
     return MTLTriangleFillModeFill;
 }
+    
+static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(RenderState::Blending::ColorChannel::Mask rt_write_mask)
+{
+    ITT_FUNCTION_TASK();
+
+    using ColorChannel = RenderState::Blending::ColorChannel;
+
+    MTLColorWriteMask mtl_color_write_mask = 0;
+    if (rt_write_mask & ColorChannel::Red)
+        mtl_color_write_mask |= MTLColorWriteMaskRed;
+    if (rt_write_mask & ColorChannel::Green)
+        mtl_color_write_mask |= MTLColorWriteMaskGreen;
+    if (rt_write_mask & ColorChannel::Blue)
+        mtl_color_write_mask |= MTLColorWriteMaskBlue;
+    if (rt_write_mask & ColorChannel::Alpha)
+        mtl_color_write_mask |= MTLColorWriteMaskAlpha;
+    return mtl_color_write_mask;
+};
+
+static MTLBlendOperation ConvertBlendingOperationToMetal(RenderState::Blending::Operation blend_operation)
+{
+    ITT_FUNCTION_TASK();
+
+    using BlendOp = RenderState::Blending::Operation;
+
+    switch(blend_operation)
+    {
+    case BlendOp::Add:              return MTLBlendOperationAdd;
+    case BlendOp::Subtract:         return MTLBlendOperationSubtract;
+    case BlendOp::ReverseSubtract:  return MTLBlendOperationReverseSubtract;
+    case BlendOp::Minimum:          return MTLBlendOperationMin;
+    case BlendOp::Maximum:          return MTLBlendOperationMax;
+    default:                        assert(0);
+    }
+    return MTLBlendOperationAdd;
+}
+
+static MTLBlendFactor ConvertBlendingFactorToMetal(RenderState::Blending::Factor blend_factor)
+{
+    ITT_FUNCTION_TASK();
+
+    using BlendFactor = RenderState::Blending::Factor;
+    
+    switch (blend_factor)
+    {
+    case BlendFactor::Zero:                     return MTLBlendFactorZero;
+    case BlendFactor::One:                      return MTLBlendFactorOne;
+    case BlendFactor::SourceColor:              return MTLBlendFactorSourceColor;
+    case BlendFactor::OneMinusSourceColor:      return MTLBlendFactorOneMinusSourceColor;
+    case BlendFactor::SourceAlpha:              return MTLBlendFactorSourceAlpha;
+    case BlendFactor::OneMinusSourceAlpha:      return MTLBlendFactorOneMinusSourceAlpha;
+    case BlendFactor::DestinationColor:         return MTLBlendFactorDestinationColor;
+    case BlendFactor::OneMinusDestinationColor: return MTLBlendFactorOneMinusDestinationColor;
+    case BlendFactor::DestinationAlpha:         return MTLBlendFactorDestinationAlpha;
+    case BlendFactor::OneMinusDestinationAlpha: return MTLBlendFactorOneMinusDestinationAlpha;
+    case BlendFactor::SourceAlphaSaturated:     return MTLBlendFactorSourceAlphaSaturated;
+    case BlendFactor::BlendColor:               return MTLBlendFactorBlendColor;
+    case BlendFactor::OneMinusBlendColor:       return MTLBlendFactorOneMinusBlendColor;
+    case BlendFactor::BlendAlpha:               return MTLBlendFactorBlendAlpha;
+    case BlendFactor::OneMinusBlendAlpha:       return MTLBlendFactorOneMinusBlendAlpha;
+    case BlendFactor::Source1Color:             return MTLBlendFactorSource1Color;
+    case BlendFactor::OneMinusSource1Color:     return MTLBlendFactorOneMinusSource1Color;
+    case BlendFactor::Source1Alpha:             return MTLBlendFactorSource1Alpha;
+    case BlendFactor::OneMinusSource1Alpha:     return MTLBlendFactorOneMinusSource1Alpha;
+    default:                                    assert(0);
+    }
+    return MTLBlendFactorZero;
+}
 
 static MTLStencilOperation ConvertStencilOperationToMetal(RenderState::Stencil::Operation operation) noexcept
 {
@@ -158,20 +226,37 @@ void RenderStateMT::Reset(const Settings& settings)
     m_mtl_pipeline_state_desc.fragmentFunction          = metal_program.GetNativeShaderFunction(Shader::Type::Pixel);
     m_mtl_pipeline_state_desc.vertexDescriptor          = metal_program.GetNativeVertexDescriptor();
     
-    // Color, depth, stencil attachment formats state from program settings
-    uint32_t attachment_index = 0;
-    for (PixelFormat color_format : metal_program.GetSettings().color_formats)
-    {
-        m_mtl_pipeline_state_desc.colorAttachments[attachment_index++].pixelFormat = TypeConverterMT::DataFormatToMetalPixelType(color_format);
-    }
-    m_mtl_pipeline_state_desc.colorAttachments[attachment_index].pixelFormat = MTLPixelFormatInvalid;
-    m_mtl_pipeline_state_desc.depthAttachmentPixelFormat   = TypeConverterMT::DataFormatToMetalPixelType(metal_program.GetSettings().depth_format);
-    m_mtl_pipeline_state_desc.stencilAttachmentPixelFormat = MTLPixelFormatInvalid; // TODO: stencil not supported yet
-    
     // Rasterizer state
     m_mtl_pipeline_state_desc.sampleCount               = m_settings.rasterizer.sample_count;
     m_mtl_pipeline_state_desc.alphaToCoverageEnabled    = m_settings.rasterizer.alpha_to_coverage_enabled ? YES : NO;
-    m_mtl_pipeline_state_desc.alphaToOneEnabled         = m_settings.rasterizer.alpha_to_one_enabled      ? YES : NO;
+    m_mtl_pipeline_state_desc.alphaToOneEnabled         = NO; // not supported by Methane
+    
+    // Blending state
+    const std::vector<PixelFormat>& rt_color_formats = metal_program.GetSettings().color_formats;
+    for (uint32_t rt_index = 0; rt_index < m_settings.blending.render_targets.size(); ++rt_index)
+    {
+        const Blending::RenderTarget& render_target = m_settings.blending.is_independent
+                                                    ? m_settings.blending.render_targets[rt_index]
+                                                    : m_settings.blending.render_targets[0];
+        
+        // Set render target blending state for color attachment
+        MTLRenderPipelineColorAttachmentDescriptor* mtl_color_attach = m_mtl_pipeline_state_desc.colorAttachments[rt_index];
+        mtl_color_attach.pixelFormat                = rt_index < rt_color_formats.size()
+                                                    ? TypeConverterMT::DataFormatToMetalPixelType(rt_color_formats[rt_index])
+                                                    : MTLPixelFormatInvalid;
+        mtl_color_attach.blendingEnabled            = render_target.blend_enabled && rt_index < rt_color_formats.size() ? YES : NO;
+        mtl_color_attach.writeMask                  = ConvertRenderTargetWriteMaskToMetal(render_target.write_mask);
+        mtl_color_attach.rgbBlendOperation          = ConvertBlendingOperationToMetal(render_target.rgb_blend_op);
+        mtl_color_attach.alphaBlendOperation        = ConvertBlendingOperationToMetal(render_target.alpha_blend_op);
+        mtl_color_attach.sourceRGBBlendFactor       = ConvertBlendingFactorToMetal(render_target.source_rgb_blend_factor);
+        mtl_color_attach.sourceAlphaBlendFactor     = ConvertBlendingFactorToMetal(render_target.source_alpha_blend_factor);
+        mtl_color_attach.destinationRGBBlendFactor  = ConvertBlendingFactorToMetal(render_target.dest_rgb_blend_factor);
+        mtl_color_attach.destinationAlphaBlendFactor= ConvertBlendingFactorToMetal(render_target.dest_alpha_blend_factor);
+    }
+    
+    // Color, depth, stencil attachment formats state from program settings
+    m_mtl_pipeline_state_desc.depthAttachmentPixelFormat   = TypeConverterMT::DataFormatToMetalPixelType(metal_program.GetSettings().depth_format);
+    m_mtl_pipeline_state_desc.stencilAttachmentPixelFormat = MTLPixelFormatInvalid; // TODO: stencil not supported yet
     
     // Depth-stencil state
     m_mtl_depth_stencil_state_desc                      = [[MTLDepthStencilDescriptor alloc] init];
