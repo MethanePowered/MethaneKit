@@ -238,7 +238,7 @@ void RenderStateDX::Reset(const Settings& settings)
 
     // Set blending factor
     assert(m_settings.blending_color.size() <= 4);
-    for (uint32_t component_index = 0; component_index < m_settings.blending_color.size(); ++component_index)
+    for (uint32_t component_index = 0; component_index < static_cast<uint32_t>(m_settings.blending_color.size()); ++component_index)
     {
         m_blend_factor[component_index] = m_settings.blending_color[component_index];
     }
