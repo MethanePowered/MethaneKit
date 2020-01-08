@@ -81,9 +81,11 @@ ScreenQuad::ScreenQuad(Context& context, Texture::Ptr sp_texture, Settings setti
     state_settings.depth.enabled        = false;
     state_settings.depth.write_enabled  = false;
     state_settings.rasterizer.is_front_counter_clockwise = true;
-
-    // TODO: temporary solution, to be replaced with RT-blending state
-    state_settings.rasterizer.alpha_to_coverage_enabled  = true;
+    state_settings.blending.render_targets[0].blend_enabled             = m_settings.alpha_blending_enabled;
+    state_settings.blending.render_targets[0].source_rgb_blend_factor   = RenderState::Blending::Factor::SourceAlpha;
+    state_settings.blending.render_targets[0].dest_rgb_blend_factor     = RenderState::Blending::Factor::OneMinusSourceAlpha;
+    state_settings.blending.render_targets[0].source_alpha_blend_factor = RenderState::Blending::Factor::Zero;
+    state_settings.blending.render_targets[0].dest_alpha_blend_factor   = RenderState::Blending::Factor::Zero;
 
     m_sp_state = RenderState::Create(context, state_settings);
     m_sp_state->SetName(m_settings.name + " Screen-Quad Render State");
@@ -153,6 +155,20 @@ void ScreenQuad::SetScreenRect(const FrameRect& screen_rect)
 
     m_sp_state->SetViewports({ GetFrameViewport(screen_rect) });
     m_sp_state->SetScissorRects({ GetFrameScissorRect(screen_rect) });
+}
+
+void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled)
+{
+    ITT_FUNCTION_TASK();
+
+    if (m_settings.alpha_blending_enabled == alpha_blending_enabled)
+        return;
+
+    m_settings.alpha_blending_enabled = alpha_blending_enabled;
+
+    RenderState::Settings state_settings = m_sp_state->GetSettings();
+    state_settings.blending.render_targets[0].blend_enabled = alpha_blending_enabled;
+    m_sp_state->Reset(state_settings);
 }
 
 void ScreenQuad::Draw(RenderCommandList& cmd_list) const

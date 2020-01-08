@@ -44,7 +44,8 @@ LogoBadge::LogoBadge(Context& context, Texture::Ptr sp_texture, Settings setting
                  {
                      "Logo Badge",
                      GetBadgeRectInFrame(context.GetSettings().frame_size, settings.corner, settings.size, settings.margins),
-                     Color4f(1.f, 1.f, 1.f, 1.f)
+                     true,
+                     Color4f(1.f, 1.f, 1.f, 0.3f)
                  })
     , m_settings(std::move(settings))
 {

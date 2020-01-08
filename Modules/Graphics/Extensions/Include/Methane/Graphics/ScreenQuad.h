@@ -48,6 +48,7 @@ public:
     {
         const std::string  name;
         FrameRect   screen_rect;
+        bool        alpha_blending_enabled = false;
         Color4f     blend_color = Color4f(1.f, 1.f, 1.f, 1.f);
     };
 
@@ -55,6 +56,7 @@ public:
 
     void SetBlendColor(const Color4f& blend_color);
     void SetScreenRect(const FrameRect& screen_rect);
+    void SetAlphaBlendingEnabled(bool alpha_blending_enabled);
 
     void Draw(RenderCommandList& cmd_list) const;
 
