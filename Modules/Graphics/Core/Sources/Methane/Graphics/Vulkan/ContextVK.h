@@ -47,7 +47,7 @@ public:
     bool SetVSyncEnabled(bool vsync_enabled) override;
     bool SetFrameBuffersCount(uint32_t frame_buffers_count) override;
     Platform::AppView GetAppView() const override { return { nullptr }; }
-    float GetBackingScaleFactor() const override { return 1.f; }
+    float GetContentScalingFactor() const override { return 1.f; }
 
     DeviceVK& GetDeviceVK();
 
