@@ -84,6 +84,74 @@ static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(RenderState::Rasterizer:
     return D3D12_CULL_MODE_NONE;
 }
 
+static UINT8 ConvertRenderTargetWriteMaskToD3D12(RenderState::Blending::ColorChannel::Mask rt_write_mask)
+{
+    ITT_FUNCTION_TASK();
+
+    using ColorChannel = RenderState::Blending::ColorChannel;
+
+    UINT8 d3d12_color_write_mask = 0;
+    if (rt_write_mask & ColorChannel::Red)
+        d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_RED;
+    if (rt_write_mask & ColorChannel::Green)
+        d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_GREEN;
+    if (rt_write_mask & ColorChannel::Blue)
+        d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_BLUE;
+    if (rt_write_mask & ColorChannel::Alpha)
+        d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_ALPHA;
+    return d3d12_color_write_mask;
+};
+
+static D3D12_BLEND_OP ConvertBlendingOperationToD3D12(RenderState::Blending::Operation blend_operation)
+{
+    ITT_FUNCTION_TASK();
+
+    using BlendOp = RenderState::Blending::Operation;
+
+    switch(blend_operation)
+    {
+    case BlendOp::Add:              return D3D12_BLEND_OP_ADD;
+    case BlendOp::Subtract:         return D3D12_BLEND_OP_SUBTRACT;
+    case BlendOp::ReverseSubtract:  return D3D12_BLEND_OP_REV_SUBTRACT;
+    case BlendOp::Minimum:          return D3D12_BLEND_OP_MIN;
+    case BlendOp::Maximum:          return D3D12_BLEND_OP_MAX;
+    default:                        assert(0);
+    }
+    return D3D12_BLEND_OP_ADD;
+}
+
+static D3D12_BLEND ConvertBlendingFactorToD3D12(RenderState::Blending::Factor blend_factor)
+{
+    ITT_FUNCTION_TASK();
+
+    using BlendFactor = RenderState::Blending::Factor;
+    
+    switch (blend_factor)
+    {
+    case BlendFactor::Zero:                     return D3D12_BLEND_ZERO;
+    case BlendFactor::One:                      return D3D12_BLEND_ONE;
+    case BlendFactor::SourceColor:              return D3D12_BLEND_SRC_COLOR;
+    case BlendFactor::OneMinusSourceColor:      return D3D12_BLEND_INV_SRC_COLOR;
+    case BlendFactor::SourceAlpha:              return D3D12_BLEND_SRC_ALPHA;
+    case BlendFactor::OneMinusSourceAlpha:      return D3D12_BLEND_INV_SRC_ALPHA;
+    case BlendFactor::DestinationColor:         return D3D12_BLEND_DEST_COLOR;
+    case BlendFactor::OneMinusDestinationColor: return D3D12_BLEND_INV_DEST_COLOR;
+    case BlendFactor::DestinationAlpha:         return D3D12_BLEND_DEST_ALPHA;
+    case BlendFactor::OneMinusDestinationAlpha: return D3D12_BLEND_INV_DEST_ALPHA;
+    case BlendFactor::SourceAlphaSaturated:     return D3D12_BLEND_SRC_ALPHA_SAT;
+    case BlendFactor::BlendColor:               return D3D12_BLEND_BLEND_FACTOR;
+    case BlendFactor::OneMinusBlendColor:       return D3D12_BLEND_INV_BLEND_FACTOR;
+    case BlendFactor::BlendAlpha:               return D3D12_BLEND_BLEND_FACTOR;
+    case BlendFactor::OneMinusBlendAlpha:       return D3D12_BLEND_INV_BLEND_FACTOR;
+    case BlendFactor::Source1Color:             return D3D12_BLEND_SRC1_COLOR;
+    case BlendFactor::OneMinusSource1Color:     return D3D12_BLEND_INV_SRC1_COLOR;
+    case BlendFactor::Source1Alpha:             return D3D12_BLEND_SRC1_ALPHA;
+    case BlendFactor::OneMinusSource1Alpha:     return D3D12_BLEND_INV_SRC1_ALPHA;
+    default:                                    assert(0);
+    }
+    return D3D12_BLEND_ZERO;
+}
+
 static D3D12_STENCIL_OP ConvertStencilOperationToD3D12(RenderState::Stencil::Operation operation)
 {
     ITT_FUNCTION_TASK();
@@ -148,10 +216,32 @@ void RenderStateDX::Reset(const Settings& settings)
     rasterizer_desc.MultisampleEnable           = m_settings.rasterizer.sample_count > 1;
     rasterizer_desc.ForcedSampleCount           = !m_settings.depth.enabled && !m_settings.stencil.enabled ? m_settings.rasterizer.sample_count : 0;
 
+    // Set Blending state descriptor
     CD3DX12_BLEND_DESC                          blend_desc(D3D12_DEFAULT);
     blend_desc.AlphaToCoverageEnable            = m_settings.rasterizer.alpha_to_coverage_enabled;
-    blend_desc.IndependentBlendEnable           = FALSE;
-    // TODO: impulate setting m_settings.rasterizer.alpha_to_one_enabled
+    blend_desc.IndependentBlendEnable           = m_settings.blending.is_independent;
+
+    uint32_t rt_index = 0;
+    for (const Blending::RenderTarget& render_target : m_settings.blending.render_targets)
+    {
+        // Set render target blending descriptor
+        D3D12_RENDER_TARGET_BLEND_DESC& rt_blend_desc = blend_desc.RenderTarget[rt_index++];
+        rt_blend_desc.BlendEnable               = render_target.blend_enabled;
+        rt_blend_desc.RenderTargetWriteMask     = ConvertRenderTargetWriteMaskToD3D12(render_target.write_mask);
+        rt_blend_desc.BlendOp                   = ConvertBlendingOperationToD3D12(render_target.rgb_blend_op);
+        rt_blend_desc.BlendOpAlpha              = ConvertBlendingOperationToD3D12(render_target.alpha_blend_op);
+        rt_blend_desc.SrcBlend                  = ConvertBlendingFactorToD3D12(render_target.source_rgb_blend_factor);
+        rt_blend_desc.SrcBlendAlpha             = ConvertBlendingFactorToD3D12(render_target.source_alpha_blend_factor);
+        rt_blend_desc.DestBlend                 = ConvertBlendingFactorToD3D12(render_target.dest_rgb_blend_factor);
+        rt_blend_desc.DestBlendAlpha            = ConvertBlendingFactorToD3D12(render_target.dest_alpha_blend_factor);
+    }
+
+    // Set blending factor
+    assert(m_settings.blending_color.size() <= 4);
+    for (uint32_t component_index = 0; component_index < m_settings.blending_color.size(); ++component_index)
+    {
+        m_blend_factor[component_index] = m_settings.blending_color[component_index];
+    }
 
     // Set depth and stencil state descriptor
     CD3DX12_DEPTH_STENCIL_DESC                  depth_stencil_desc(D3D12_DEFAULT);
@@ -206,14 +296,14 @@ void RenderStateDX::Apply(RenderCommandListBase& command_list, Group::Mask state
 
     if (state_groups & Group::Program    ||
         state_groups & Group::Rasterizer ||
+        state_groups & Group::Blending   ||
         state_groups & Group::DepthStencil)
     {
         cp_dx_command_list->SetPipelineState(GetNativePipelineState().Get());
     }
-    if (state_groups & Group::ProgramBindingsOnly)
-    {
-        cp_dx_command_list->SetGraphicsRootSignature(GetProgramDX().GetNativeRootSignature().Get());
-    }
+
+    cp_dx_command_list->SetGraphicsRootSignature(GetProgramDX().GetNativeRootSignature().Get());
+
     if (state_groups & Group::Viewports)
     {
         cp_dx_command_list->RSSetViewports(static_cast<UINT>(m_viewports.size()), m_viewports.data());
@@ -221,6 +311,10 @@ void RenderStateDX::Apply(RenderCommandListBase& command_list, Group::Mask state
     if (state_groups & Group::ScissorRects)
     {
         cp_dx_command_list->RSSetScissorRects(static_cast<UINT>(m_scissor_rects.size()), m_scissor_rects.data());
+    }
+    if (state_groups & Group::BlendingColor)
+    {
+        cp_dx_command_list->OMSetBlendFactor(m_blend_factor);
     }
 }
 

@@ -32,43 +32,79 @@ namespace Methane::Graphics
 
 bool RenderState::Rasterizer::operator==(const Rasterizer& other) const noexcept
 {
-    return std::tie(is_front_counter_clockwise, cull_mode, fill_mode, sample_count, alpha_to_coverage_enabled, alpha_to_one_enabled) ==
-           std::tie(other.is_front_counter_clockwise, other.cull_mode, other.fill_mode, other.sample_count, other.alpha_to_coverage_enabled, other.alpha_to_one_enabled);
+    ITT_FUNCTION_TASK();
+    return std::tie(is_front_counter_clockwise, cull_mode, fill_mode, sample_count, alpha_to_coverage_enabled) ==
+           std::tie(other.is_front_counter_clockwise, other.cull_mode, other.fill_mode, other.sample_count, other.alpha_to_coverage_enabled);
 }
 
 bool RenderState::Rasterizer::operator!=(const Rasterizer& other) const noexcept
 {
+    ITT_FUNCTION_TASK();
+    return !operator==(other);
+}
+
+bool RenderState::Blending::RenderTarget::operator==(const RenderTarget& other) const noexcept
+{
+    ITT_FUNCTION_TASK();
+    return std::tie(blend_enabled, write_mask, rgb_blend_op, alpha_blend_op, 
+                    source_rgb_blend_factor, source_alpha_blend_factor, dest_rgb_blend_factor, dest_alpha_blend_factor) ==
+           std::tie(other.blend_enabled, other.write_mask, other.rgb_blend_op, other.alpha_blend_op,
+                    other.source_rgb_blend_factor, other.source_alpha_blend_factor, other.dest_rgb_blend_factor, other.dest_alpha_blend_factor);
+}
+
+bool RenderState::Blending::RenderTarget::operator!=(const RenderTarget& other) const noexcept
+{
+    ITT_FUNCTION_TASK();
+    return !operator==(other);
+}
+
+bool RenderState::Blending::operator==(const Blending& other) const noexcept
+{
+    ITT_FUNCTION_TASK();
+    return std::tie(is_independent, render_targets) ==
+           std::tie(other.is_independent, other.render_targets);
+}
+
+bool RenderState::Blending::operator!=(const Blending& other) const noexcept
+{
+    ITT_FUNCTION_TASK();
     return !operator==(other);
 }
 
 bool RenderState::Depth::operator==(const Depth& other) const noexcept
 {
+    ITT_FUNCTION_TASK();
     return std::tie(enabled, write_enabled, compare) ==
            std::tie(other.enabled, other.write_enabled, other.compare);
 }
 bool RenderState::Depth::operator!=(const Depth& other) const noexcept
 {
+    ITT_FUNCTION_TASK();
     return !operator==(other);
 }
 
 bool RenderState::Stencil::FaceOperations::operator==(const FaceOperations& other) const noexcept
 {
+    ITT_FUNCTION_TASK();
     return std::tie(stencil_failure, stencil_pass, depth_failure, depth_stencil_pass, compare) ==
            std::tie(other.stencil_failure, other.stencil_pass, other.depth_failure, other.depth_stencil_pass, other.compare);
 }
 
 bool RenderState::Stencil::FaceOperations::operator!=(const FaceOperations& other) const noexcept
 {
+    ITT_FUNCTION_TASK();
     return !operator==(other);
 }
 
 bool RenderState::Stencil::operator==(const Stencil& other) const noexcept
 {
+    ITT_FUNCTION_TASK();
     return std::tie(enabled, read_mask, write_mask, front_face, back_face) ==
            std::tie(other.enabled, other.read_mask, other.write_mask, other.front_face, other.back_face);
 }
 bool RenderState::Stencil::operator!=(const Stencil& other) const noexcept
 {
+    ITT_FUNCTION_TASK();
     return !operator==(other);
 }
 
@@ -76,23 +112,33 @@ RenderState::Group::Mask RenderState::Settings::Compare(const Settings& left, co
 {
     ITT_FUNCTION_TASK();
     
-    Group::Mask changed_state_groups = Group::ProgramBindingsOnly;
+    Group::Mask changed_state_groups = Group::None;
     
     if (compare_groups & Group::Program &&
         left.sp_program.get() != right.sp_program.get())
     {
         changed_state_groups |= Group::Program;
     }
+    if (compare_groups & Group::Rasterizer &&
+        left.rasterizer != right.rasterizer)
+    {
+        changed_state_groups |= Group::Rasterizer;
+    }
+    if (compare_groups & Group::Blending &&
+        left.blending != right.blending)
+    {
+        changed_state_groups |= Group::Blending;
+    }
+    if (compare_groups & Group::BlendingColor &&
+        left.blending_color != right.blending_color)
+    {
+        changed_state_groups |= Group::BlendingColor;
+    }
     if (compare_groups & Group::DepthStencil && (
         left.depth   != right.depth ||
         left.stencil != right.stencil))
     {
         changed_state_groups |= Group::DepthStencil;
-    }
-    if (compare_groups & Group::Rasterizer &&
-        left.rasterizer != right.rasterizer)
-    {
-        changed_state_groups |= Group::Rasterizer;
     }
     if (compare_groups & Group::Viewports &&
         left.viewports != right.viewports)

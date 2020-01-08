@@ -156,8 +156,8 @@ class Color4f : public Vector4f
 public:
     using Vector4f::Vector4f;
     using Vector4f::operator=;
-    
-    Color4f() = default;
+
+    Color4f() : Vector4f(0.f, 0.f, 0.f, 0.f) { }
     Color4f(float r, float g, float b, float a) : Vector4f(r, g, b, a) { }
     
     float r() const noexcept { return (*this)[0]; }
