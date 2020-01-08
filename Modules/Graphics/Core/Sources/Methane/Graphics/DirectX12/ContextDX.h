@@ -54,6 +54,7 @@ public:
     void Resize(const FrameSize& frame_size) override;
     void Present() override;
     Platform::AppView GetAppView() const override { return { nullptr }; }
+    float GetContentScalingFactor() const override { return 1.f; }
 
     // ContextBase interface
     void OnCommandQueueCompleted(CommandQueue& cmd_list, uint32_t frame_index) override;

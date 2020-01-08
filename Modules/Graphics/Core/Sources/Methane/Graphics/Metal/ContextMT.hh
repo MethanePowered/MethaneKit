@@ -63,13 +63,14 @@ public:
     ~ContextMT() override;
 
     // Context interface
-    bool ReadyToRender() const override;
-    void OnCommandQueueCompleted(CommandQueue& cmd_queue, uint32_t frame_index) override;
-    void WaitForGpu(WaitFor wait_for) override;
-    void Resize(const FrameSize& frame_size) override;
-    void Present() override;
-    bool SetVSyncEnabled(bool vsync_enabled) override;
-    bool SetFrameBuffersCount(uint32_t frame_buffers_count) override;
+    bool  ReadyToRender() const override;
+    void  OnCommandQueueCompleted(CommandQueue& cmd_queue, uint32_t frame_index) override;
+    void  WaitForGpu(WaitFor wait_for) override;
+    void  Resize(const FrameSize& frame_size) override;
+    void  Present() override;
+    bool  SetVSyncEnabled(bool vsync_enabled) override;
+    bool  SetFrameBuffersCount(uint32_t frame_buffers_count) override;
+    float GetContentScalingFactor() const override;
     Platform::AppView GetAppView() const override { return { m_app_view }; }
 
     id<CAMetalDrawable>     GetNativeDrawable()       { return m_app_view.currentDrawable; }

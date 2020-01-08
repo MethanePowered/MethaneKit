@@ -50,11 +50,13 @@ public:
         FrameSize   size;
         FrameCorner corner;
         uint32_t    margins;
+        float       opacity;
         
         Settings()
             : size(128u, 128u)
             , corner(FrameCorner::TopRight)
             , margins(10u)
+            , opacity(0.15f)
         { }
     };
 

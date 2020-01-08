@@ -27,13 +27,22 @@ Logo badge rendering primitive.
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Data/Instrumentation.h>
 
+#include <cmath>
+
 namespace Methane::Graphics
 {
 
+static LogoBadge::Settings ScaleBadgeSize(LogoBadge::Settings settings, float scale_factor)
+{
+    settings.size.width  = static_cast<uint32_t>(std::round(scale_factor * settings.size.width));
+    settings.size.height = static_cast<uint32_t>(std::round(scale_factor * settings.size.height));
+    return settings;
+}
+    
 LogoBadge::LogoBadge(Context& context, Settings settings)
     : LogoBadge(context,
                 ImageLoader(Data::TextureProvider::Get()).LoadImageToTexture2D(context, "Logo/MethaneLogoNameWatermark.png", true),
-                settings)
+                ScaleBadgeSize(settings, context.GetContentScalingFactor()))
 {
     ITT_FUNCTION_TASK();
 }
@@ -45,7 +54,7 @@ LogoBadge::LogoBadge(Context& context, Texture::Ptr sp_texture, Settings setting
                      "Logo Badge",
                      GetBadgeRectInFrame(context.GetSettings().frame_size, settings.corner, settings.size, settings.margins),
                      true,
-                     Color4f(1.f, 1.f, 1.f, 0.3f)
+                     Color4f(1.f, 1.f, 1.f, settings.opacity)
                  })
     , m_settings(std::move(settings))
 {

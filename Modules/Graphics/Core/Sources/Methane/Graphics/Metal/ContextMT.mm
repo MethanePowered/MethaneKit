@@ -170,6 +170,12 @@ bool ContextMT::SetFrameBuffersCount(uint32_t frame_buffers_count)
     return false;
 }
 
+float ContextMT::GetContentScalingFactor() const
+{
+    ITT_FUNCTION_TASK();
+    return m_app_view.appWindow.backingScaleFactor;
+}
+
 DeviceMT& ContextMT::GetDeviceMT()
 {
     ITT_FUNCTION_TASK();
