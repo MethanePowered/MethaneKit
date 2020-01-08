@@ -29,10 +29,9 @@ Metal implementation of the render state interface.
 #include "ShaderMT.hh"
 #include "TypesMT.hh"
 
+#include <Methane/Platform/MacOS/AppViewMT.hh>
+#include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Data/Instrumentation.h>
-
-#import <Methane/Platform/MacOS/AppViewMT.hh>
-#import <Methane/Platform/MacOS/Types.hh>
 
 #include <cassert>
 
@@ -235,33 +234,36 @@ void RenderStateMT::Reset(const Settings& settings)
     const std::vector<PixelFormat>& rt_color_formats = metal_program.GetSettings().color_formats;
     for (uint32_t rt_index = 0; rt_index < m_settings.blending.render_targets.size(); ++rt_index)
     {
-        const Blending::RenderTarget& render_target = m_settings.blending.is_independent
-                                                    ? m_settings.blending.render_targets[rt_index]
-                                                    : m_settings.blending.render_targets[0];
+        const Blending::RenderTarget& render_target     = m_settings.blending.is_independent
+                                                        ? m_settings.blending.render_targets[rt_index]
+                                                        : m_settings.blending.render_targets[0];
         
         // Set render target blending state for color attachment
         MTLRenderPipelineColorAttachmentDescriptor* mtl_color_attach = m_mtl_pipeline_state_desc.colorAttachments[rt_index];
-        mtl_color_attach.pixelFormat                = rt_index < rt_color_formats.size()
-                                                    ? TypeConverterMT::DataFormatToMetalPixelType(rt_color_formats[rt_index])
-                                                    : MTLPixelFormatInvalid;
-        mtl_color_attach.blendingEnabled            = render_target.blend_enabled && rt_index < rt_color_formats.size() ? YES : NO;
-        mtl_color_attach.writeMask                  = ConvertRenderTargetWriteMaskToMetal(render_target.write_mask);
-        mtl_color_attach.rgbBlendOperation          = ConvertBlendingOperationToMetal(render_target.rgb_blend_op);
-        mtl_color_attach.alphaBlendOperation        = ConvertBlendingOperationToMetal(render_target.alpha_blend_op);
-        mtl_color_attach.sourceRGBBlendFactor       = ConvertBlendingFactorToMetal(render_target.source_rgb_blend_factor);
-        mtl_color_attach.sourceAlphaBlendFactor     = ConvertBlendingFactorToMetal(render_target.source_alpha_blend_factor);
-        mtl_color_attach.destinationRGBBlendFactor  = ConvertBlendingFactorToMetal(render_target.dest_rgb_blend_factor);
-        mtl_color_attach.destinationAlphaBlendFactor= ConvertBlendingFactorToMetal(render_target.dest_alpha_blend_factor);
+        mtl_color_attach.pixelFormat                    = rt_index < rt_color_formats.size()
+                                                        ? TypeConverterMT::DataFormatToMetalPixelType(rt_color_formats[rt_index])
+                                                        : MTLPixelFormatInvalid;
+        mtl_color_attach.blendingEnabled                = render_target.blend_enabled && rt_index < rt_color_formats.size() ? YES : NO;
+        mtl_color_attach.writeMask                      = ConvertRenderTargetWriteMaskToMetal(render_target.write_mask);
+        mtl_color_attach.rgbBlendOperation              = ConvertBlendingOperationToMetal(render_target.rgb_blend_op);
+        mtl_color_attach.alphaBlendOperation            = ConvertBlendingOperationToMetal(render_target.alpha_blend_op);
+        mtl_color_attach.sourceRGBBlendFactor           = ConvertBlendingFactorToMetal(render_target.source_rgb_blend_factor);
+        mtl_color_attach.sourceAlphaBlendFactor         = ConvertBlendingFactorToMetal(render_target.source_alpha_blend_factor);
+        mtl_color_attach.destinationRGBBlendFactor      = ConvertBlendingFactorToMetal(render_target.dest_rgb_blend_factor);
+        mtl_color_attach.destinationAlphaBlendFactor    = ConvertBlendingFactorToMetal(render_target.dest_alpha_blend_factor);
     }
     
     // Color, depth, stencil attachment formats state from program settings
-    m_mtl_pipeline_state_desc.depthAttachmentPixelFormat   = TypeConverterMT::DataFormatToMetalPixelType(metal_program.GetSettings().depth_format);
+    const PixelFormat depth_format = metal_program.GetSettings().depth_format;
+    m_mtl_pipeline_state_desc.depthAttachmentPixelFormat   = TypeConverterMT::DataFormatToMetalPixelType(depth_format);
     m_mtl_pipeline_state_desc.stencilAttachmentPixelFormat = MTLPixelFormatInvalid; // TODO: stencil not supported yet
     
     // Depth-stencil state
     m_mtl_depth_stencil_state_desc                      = [[MTLDepthStencilDescriptor alloc] init];
-    m_mtl_depth_stencil_state_desc.depthWriteEnabled    = m_settings.depth.write_enabled ? YES : NO;
-    m_mtl_depth_stencil_state_desc.depthCompareFunction = TypeConverterMT::CompareFunctionToMetal(m_settings.depth.compare);
+    m_mtl_depth_stencil_state_desc.depthWriteEnabled    = m_settings.depth.write_enabled && depth_format != PixelFormat::Unknown ? YES : NO;
+    m_mtl_depth_stencil_state_desc.depthCompareFunction = m_settings.depth.enabled && depth_format != PixelFormat::Unknown
+                                                        ? TypeConverterMT::CompareFunctionToMetal(m_settings.depth.compare)
+                                                        : MTLCompareFunctionAlways;
     m_mtl_depth_stencil_state_desc.backFaceStencil      = ConvertStencilDescriptorToMetal(m_settings.stencil, false);
     m_mtl_depth_stencil_state_desc.frontFaceStencil     = ConvertStencilDescriptorToMetal(m_settings.stencil, true);
     
@@ -289,14 +291,15 @@ void RenderStateMT::Apply(RenderCommandListBase& command_list, Group::Mask state
     RenderCommandListMT& metal_command_list = static_cast<RenderCommandListMT&>(command_list);
     id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeRenderEncoder();
     
-    if (state_groups & Group::Program ||
-        state_groups & Group::Rasterizer)
+    if (state_groups & Group::Program    ||
+        state_groups & Group::Rasterizer ||
+        state_groups & Group::Blending)
     {
         [mtl_cmd_encoder setRenderPipelineState: GetNativePipelineState()];
     }
-    if (state_groups & Group::DepthStencil && m_settings.depth.enabled)
+    if (state_groups & Group::DepthStencil)
     {
-        [mtl_cmd_encoder setDepthStencilState: GetNativeDepthState()];
+        [mtl_cmd_encoder setDepthStencilState: GetNativeDepthStencilState()];
     }
     if (state_groups & Group::Rasterizer)
     {
@@ -311,6 +314,13 @@ void RenderStateMT::Apply(RenderCommandListBase& command_list, Group::Mask state
     if (state_groups & Group::ScissorRects && !m_mtl_scissor_rects.empty())
     {
         [mtl_cmd_encoder setScissorRects: m_mtl_scissor_rects.data() count:static_cast<uint32_t>(m_mtl_scissor_rects.size())];
+    }
+    if (state_groups & Group::BlendingColor)
+    {
+        [mtl_cmd_encoder setBlendColorRed:m_settings.blending_color.r()
+                                    green:m_settings.blending_color.g()
+                                     blue:m_settings.blending_color.b()
+                                    alpha:m_settings.blending_color.a()];
     }
 }
 
@@ -382,10 +392,10 @@ id<MTLRenderPipelineState>& RenderStateMT::GetNativePipelineState()
     return m_mtl_pipeline_state;
 }
 
-id<MTLDepthStencilState>& RenderStateMT::GetNativeDepthState()
+id<MTLDepthStencilState>& RenderStateMT::GetNativeDepthStencilState()
 {
     ITT_FUNCTION_TASK();
-
+    
     if (!m_mtl_depth_state)
     {
         assert(m_mtl_depth_stencil_state_desc != nil);
