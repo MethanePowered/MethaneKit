@@ -46,6 +46,7 @@ if (WIN32)
         dxgi
         dxguid
         d3dcompiler
+        Shcore
     )
 
     set(EXTRA_COMPILE_OPTIONS
