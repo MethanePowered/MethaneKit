@@ -36,6 +36,7 @@ static LogoBadge::Settings ScaleBadgeSize(LogoBadge::Settings settings, float sc
 {
     settings.size.width  = static_cast<uint32_t>(std::round(scale_factor * settings.size.width));
     settings.size.height = static_cast<uint32_t>(std::round(scale_factor * settings.size.height));
+    settings.margins     = static_cast<uint32_t>(std::round(scale_factor * settings.margins));
     return settings;
 }
     

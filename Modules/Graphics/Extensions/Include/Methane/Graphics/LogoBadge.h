@@ -53,9 +53,9 @@ public:
         float       opacity;
         
         Settings()
-            : size(128u, 128u)
+            : size(96u, 128u)
             , corner(FrameCorner::TopRight)
-            , margins(10u)
+            , margins(16u)
             , opacity(0.15f)
         { }
     };
