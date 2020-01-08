@@ -274,6 +274,7 @@ void TexturedCubeApp::OnContextReleased()
     m_sp_vertex_buffer.reset();
     m_sp_state.reset();
     m_sp_program.reset();
+    m_sp_logo_badge.reset();
 
     GraphicsApp::OnContextReleased();
 }
