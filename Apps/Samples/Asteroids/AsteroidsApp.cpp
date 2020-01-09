@@ -65,25 +65,25 @@ inline ValueT GetParamValueByComplexity(const ParamValues<ValueT, N>& param_valu
     return GetParamValue(param_values_by_complexity, GetComplexity());
 }
 
-constexpr size_t g_max_cores_count = 11;
-static const ParamValues<uint32_t, g_max_cores_count> g_instaces_count = {
+constexpr uint32_t g_max_complexity = 11;
+static const ParamValues<uint32_t, g_max_complexity> g_instaces_count = {
 //  [0]   [1]    [2]    [3]    [4]    [5]    [6]     [7]     [8]     [9]     [10]
     500u, 1000u, 2000u, 3000u, 4000u, 5000u, 10000u, 15000u, 20000u, 35000u, 50000u,
 };
-static const ParamValues<uint32_t, g_max_cores_count> g_mesh_count = {
-    50u,  70u,   100u,  150u,  200u,  400u,  600u,   800u,   1000u,  1500u,  2000u,
+static const ParamValues<uint32_t, g_max_complexity> g_mesh_count = {
+    25u,  35u,   50u,   75u,   100u,  200u,  300u,   400u,   500u,   740u,   1000u,
 };
-static const ParamValues<uint32_t, g_max_cores_count> g_textures_count = {
-    5u,   10u,   20u,   30u,   40u,   50u,   60u,    70u,    80u,    90u,    100u
+static const ParamValues<uint32_t, g_max_complexity> g_textures_count = {
+    5u,   10u,   10u,   20u,   20u,   30u,   30u,    40u,    40u,    50u,    50u
 };
-static const ParamValues<float, g_max_cores_count> g_scale_ratio = {
-    0.6f, 0.55f, 0.5f,  0.45f, 0.4f,  0.35f, 0.3f,   0.25f,  0.2f,   0.15f,  0.1f
+static const ParamValues<float, g_max_complexity> g_scale_ratio = {
+    0.8f, 0.6f,  0.5f,  0.45f, 0.4f,  0.33f, 0.3f,   0.27f,  0.23f,  0.2f,   0.17f
 };
 
 static const std::map<pal::Keyboard::State, AsteroidsAppAction> g_asteroids_action_by_keyboard_state = {
-    { { pal::Keyboard::Key::RightAlt, pal::Keyboard::Key::RightBracket }, AsteroidsAppAction::IncreaseComplexity       },
-    { { pal::Keyboard::Key::RightAlt, pal::Keyboard::Key::LeftBracket  }, AsteroidsAppAction::DecreaseComplexity       },
-    { { pal::Keyboard::Key::RightAlt, pal::Keyboard::Key::P            }, AsteroidsAppAction::SwitchParallelRendering  },
+    { { pal::Keyboard::Key::RightBracket }, AsteroidsAppAction::IncreaseComplexity       },
+    { { pal::Keyboard::Key::LeftBracket  }, AsteroidsAppAction::DecreaseComplexity       },
+    { { pal::Keyboard::Key::P            }, AsteroidsAppAction::SwitchParallelRendering  },
 };
 
 // Common application settings
@@ -102,7 +102,7 @@ static const GraphicsApp::Settings  g_app_settings  = // Application settings:
         { /* color clearing disabled */ },            // - clear_color
         gfx::DepthStencil{ 0.f, 0u },                 // - clear_depth_stencil
         3u,                                           // - frame_buffers_count
-        true,                                         // - vsync_enabled
+        false,                                        // - vsync_enabled
     },                                                //
     true                                              // show_hud_in_window_title
 };
@@ -126,7 +126,7 @@ AsteroidsApp::AsteroidsApp()
             GetParamValueByComplexity(g_instaces_count),    // - instance_count
             GetParamValueByComplexity(g_mesh_count),        // - unique_mesh_count
             0u,                                             // - minimum_subdivision
-            3u,                                             // - subdivisions_count
+            4u,                                             // - subdivisions_count
             GetParamValueByComplexity(g_textures_count),    // - textures_count
             { 256u, 256u },                                 // - texture_dimensions
             1123u,                                          // - random_seed
@@ -159,7 +159,7 @@ AsteroidsApp::AsteroidsApp()
         std::make_shared<gfx::AppCameraController>(m_view_camera,  "VIEW CAMERA"),
         std::make_shared<gfx::AppCameraController>(m_light_camera, "LIGHT SOURCE",
             gfx::AppCameraController::ActionByMouseButton   { { pal::Mouse::Button::Right, gfx::ActionCamera::MouseAction::Rotate   } },
-            gfx::AppCameraController::ActionByKeyboardState { { { pal::Keyboard::Key::L }, gfx::ActionCamera::KeyboardAction::Reset } },
+            gfx::AppCameraController::ActionByKeyboardState { { { pal::Keyboard::Key::LeftControl, pal::Keyboard::Key::L }, gfx::ActionCamera::KeyboardAction::Reset } },
             gfx::AppCameraController::ActionByKeyboardKey   { }),
     });
 }
@@ -425,6 +425,8 @@ void AsteroidsApp::OnContextReleased()
 void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
 {
     ITT_FUNCTION_TASK();
+
+    asteroids_complexity = std::min(g_max_complexity, asteroids_complexity);
     if (m_asteroids_complexity == asteroids_complexity)
         return;
 
@@ -432,10 +434,10 @@ void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
     m_asteroids_complexity = asteroids_complexity;
     
     m_asteroids_array_settings.instance_count           = GetParamValue(g_instaces_count, m_asteroids_complexity);
-    m_asteroids_array_settings.unique_mesh_count        = GetParamValue(g_mesh_count, m_asteroids_complexity);
+    m_asteroids_array_settings.unique_mesh_count        = GetParamValue(g_mesh_count,     m_asteroids_complexity);
     m_asteroids_array_settings.textures_count           = GetParamValue(g_textures_count, m_asteroids_complexity);
-    m_asteroids_array_settings.min_asteroid_scale_ratio = GetParamValue(g_scale_ratio, m_asteroids_complexity) / 10.f;
-    m_asteroids_array_settings.max_asteroid_scale_ratio = GetParamValue(g_scale_ratio, m_asteroids_complexity);
+    m_asteroids_array_settings.min_asteroid_scale_ratio = GetParamValue(g_scale_ratio,    m_asteroids_complexity) / 10.f;
+    m_asteroids_array_settings.max_asteroid_scale_ratio = GetParamValue(g_scale_ratio,    m_asteroids_complexity);
     
     m_sp_asteroids_array.reset();
     m_sp_asteroids_array_state.reset();
@@ -443,7 +445,7 @@ void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
     assert(!!m_sp_context);
     m_sp_context->Reset();
 }
-    
+
 void AsteroidsApp::SetParallelRnderingEnabled(bool is_parallel_rendering_enabled)
 {
     ITT_FUNCTION_TASK();
