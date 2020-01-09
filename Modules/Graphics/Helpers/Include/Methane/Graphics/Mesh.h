@@ -560,11 +560,11 @@ private:
         const float texcoord_long_spacing = 1.f / (actual_long_lines_count - 1);
         const float texcoord_lat_spacing  = 1.f / (m_lat_lines_count + 1);
         
-        cml::matrix33f pitch_step_matrix = { }, yaw_step_matrix = { };
+        Matrix33f pitch_step_matrix = { }, yaw_step_matrix = { };
         cml::matrix_rotation_world_x(pitch_step_matrix, cml::constants<float>::pi() / (m_lat_lines_count - 1));
         cml::matrix_rotation_world_y(yaw_step_matrix, 2.0 * cml::constants<float>::pi() / m_long_lines_count);
 
-        cml::matrix33f pitch_matrix = cml::identity_3x3();
+        Matrix33f pitch_matrix = cml::identity_3x3();
         if (!has_texcoord)
             pitch_matrix = pitch_step_matrix;
         
@@ -574,12 +574,12 @@ private:
 
         for (uint32_t lat_line_index = first_lat_line_index; lat_line_index < actual_lat_lines_count; ++lat_line_index)
         {
-            cml::matrix33f yaw_matrix = cml::identity_3x3();
+            Matrix33f yaw_matrix = cml::identity_3x3();
 
             for(uint32_t long_line_index = 0; long_line_index < actual_long_lines_count; ++long_line_index)
             {
-                const cml::matrix33f rotation_matrix = pitch_matrix * yaw_matrix;
-                const uint32_t       vertex_index    = (lat_line_index - first_lat_line_index) * actual_long_lines_count + long_line_index + first_vertex_index;
+                const Matrix33f rotation_matrix = pitch_matrix * yaw_matrix;
+                const uint32_t  vertex_index    = (lat_line_index - first_lat_line_index) * actual_long_lines_count + long_line_index + first_vertex_index;
                 
                 VType& vertex = BaseMeshT::m_vertices[vertex_index];
                 {
