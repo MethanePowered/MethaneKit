@@ -41,10 +41,16 @@ ScopeTimer::Aggregator& ScopeTimer::Aggregator::Get()
 ScopeTimer::Aggregator::~Aggregator()
 {
     ITT_FUNCTION_TASK();
+    Flush();
+}
+
+void ScopeTimer::Aggregator::Flush()
+{
     if (m_sp_logger)
     {
         LogTimings(*m_sp_logger);
     }
+    m_timing_by_scope_name.clear();
 }
 
 void ScopeTimer::Aggregator::LogTimings(ILogger& logger)

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -69,7 +69,9 @@ public:
     void     SetAsteroidsComplexity(uint32_t asteroids_complexity);
     
     bool     IsParallelRenderingEnabled() const { return m_is_parallel_rendering_enabled; }
-    void     SetParallelRnderingEnabled(bool is_parallel_rendering_enabled);
+    void     SetParallelRenderingEnabled(bool is_parallel_rendering_enabled);
+
+    void PrintParameters();
 
 private:
     struct SHADER_STRUCT_ALIGN Constants

@@ -54,6 +54,7 @@ public:
         const Timing& GetScopeTiming(const std::string& scope_name) const;
 
         void LogTimings(ILogger& logger);
+        void Flush();
 
     private:
         Aggregator() = default;
@@ -83,11 +84,13 @@ private:
 
 #define SCOPE_TIMER(SCOPE_NAME) Methane::Data::ScopeTimer scope_timer(SCOPE_NAME)
 #define FUNCTION_SCOPE_TIMER() SCOPE_TIMER(__func__)
+#define FLUSH_SCOPE_TIMINGS() Methane::Data::ScopeTimer::Aggregator::Get().Flush()
 
 #else
 
 #define SCOPE_TIMER(SCOPE_NAME)
 #define FUNCTION_SCOPE_TIMER()
+#define FLUSH_SCOPE_TIMINGS()
 
 #endif
 

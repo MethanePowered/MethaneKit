@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -34,9 +34,8 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 #include <memory>
 #include <thread>
 #include <array>
+#include <sstream>
 #include <map>
-
-#define PARALLEL_RENDERING_ENABLED 1
 
 namespace Methane::Samples
 {
@@ -53,9 +52,10 @@ inline ValueT GetParamValue(const ParamValues<ValueT, N>& param_values, size_t p
 inline size_t GetComplexity()
 {
 #ifdef _DEBUG
-    return 2;
+    return 1;
 #else
-    return std::thread::hardware_concurrency() / 2;
+    const size_t hw_cores_count = std::thread::hardware_concurrency() / 2;
+    return hw_cores_count > 0u ? hw_cores_count - 1u : 0u;
 #endif
 }
 
@@ -65,19 +65,19 @@ inline ValueT GetParamValueByComplexity(const ParamValues<ValueT, N>& param_valu
     return GetParamValue(param_values_by_complexity, GetComplexity());
 }
 
-constexpr uint32_t g_max_complexity = 11;
-static const ParamValues<uint32_t, g_max_complexity> g_instaces_count = {
-//  [0]   [1]    [2]    [3]    [4]    [5]    [6]     [7]     [8]     [9]     [10]
-    500u, 1000u, 2000u, 3000u, 4000u, 5000u, 10000u, 15000u, 20000u, 35000u, 50000u,
+constexpr uint32_t g_max_complexity = 9;
+static const ParamValues<uint32_t, g_max_complexity+1> g_instaces_count = {
+//  [0]    [1]    [2]    [3]    [4]    [5]     [6]     [7]     [8]     [9]
+    1000u, 2000u, 3000u, 4000u, 5000u, 10000u, 15000u, 20000u, 35000u, 50000u,
 };
-static const ParamValues<uint32_t, g_max_complexity> g_mesh_count = {
-    25u,  35u,   50u,   75u,   100u,  200u,  300u,   400u,   500u,   740u,   1000u,
+static const ParamValues<uint32_t, g_max_complexity+1> g_mesh_count = {
+    35u,   50u,   75u,   100u,  200u,  300u,   400u,   500u,   600u,   750u,
 };
-static const ParamValues<uint32_t, g_max_complexity> g_textures_count = {
-    5u,   10u,   10u,   20u,   20u,   30u,   30u,    40u,    40u,    50u,    50u
+static const ParamValues<uint32_t, g_max_complexity+1> g_textures_count = {
+    10u,   10u,   20u,   20u,   30u,   30u,    40u,    40u,    50u,    50u
 };
-static const ParamValues<float, g_max_complexity> g_scale_ratio = {
-    0.8f, 0.6f,  0.5f,  0.45f, 0.4f,  0.33f, 0.3f,   0.27f,  0.23f,  0.2f,   0.17f
+static const ParamValues<float, g_max_complexity+1> g_scale_ratio = {
+    0.6f,  0.5f,  0.45f, 0.4f,  0.33f, 0.3f,   0.27f,  0.23f,  0.2f,   0.17f
 };
 
 static const std::map<pal::Keyboard::State, AsteroidsAppAction> g_asteroids_action_by_keyboard_state = {
@@ -293,6 +293,8 @@ void AsteroidsApp::Init()
     //  - allocate deferred descriptor heaps with calculated sizes
     //  - execute commands to upload resources to GPU
     context.CompleteInitialization();
+
+    PrintParameters();
 }
 
 bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
@@ -406,6 +408,7 @@ bool AsteroidsApp::Render()
 void AsteroidsApp::OnContextReleased()
 {
     ITT_FUNCTION_TASK();
+    FLUSH_SCOPE_TIMINGS();
 
     if (m_sp_asteroids_array)
     {
@@ -431,14 +434,15 @@ void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
         return;
 
     m_sp_context->WaitForGpu(gfx::Context::WaitFor::RenderComplete);
+
     m_asteroids_complexity = asteroids_complexity;
-    
+
     m_asteroids_array_settings.instance_count           = GetParamValue(g_instaces_count, m_asteroids_complexity);
     m_asteroids_array_settings.unique_mesh_count        = GetParamValue(g_mesh_count,     m_asteroids_complexity);
     m_asteroids_array_settings.textures_count           = GetParamValue(g_textures_count, m_asteroids_complexity);
     m_asteroids_array_settings.min_asteroid_scale_ratio = GetParamValue(g_scale_ratio,    m_asteroids_complexity) / 10.f;
     m_asteroids_array_settings.max_asteroid_scale_ratio = GetParamValue(g_scale_ratio,    m_asteroids_complexity);
-    
+
     m_sp_asteroids_array.reset();
     m_sp_asteroids_array_state.reset();
     
@@ -446,10 +450,30 @@ void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
     m_sp_context->Reset();
 }
 
-void AsteroidsApp::SetParallelRnderingEnabled(bool is_parallel_rendering_enabled)
+void AsteroidsApp::SetParallelRenderingEnabled(bool is_parallel_rendering_enabled)
 {
     ITT_FUNCTION_TASK();
+    FLUSH_SCOPE_TIMINGS();
+
     m_is_parallel_rendering_enabled = is_parallel_rendering_enabled;
+
+    PrintParameters();
+}
+
+void AsteroidsApp::PrintParameters()
+{
+    ITT_FUNCTION_TASK();
+
+    std::stringstream ss;
+    ss << std::endl << "Asteroids simulation parameters:"
+       << std::endl << "  - simulation complexity: "    << m_asteroids_complexity
+       << std::endl << "  - parallel rendering: "       << (m_is_parallel_rendering_enabled ? "enabled" : "disabled")
+       << std::endl << "  - asteroid instances count: " << m_asteroids_array_settings.instance_count
+       << std::endl << "  - unique meshes count: "      << m_asteroids_array_settings.unique_mesh_count
+       << std::endl << "  - mesh subdivisions count: "  << m_asteroids_array_settings.subdivisions_count
+       << std::endl << "  - unique textures count: "    << m_asteroids_array_settings.textures_count << " "
+                                                        << static_cast<std::string>(m_asteroids_array_settings.texture_dimensions);
+    pal::PrintToDebugOutput(ss.str());
 }
 
 } // namespace Methane::Samples
