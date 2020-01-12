@@ -132,6 +132,7 @@ void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir)
     case Pivot::Aim: m_current_orientation.eye = m_current_orientation.aim - look_dir; break;
     case Pivot::Eye: m_current_orientation.aim = m_current_orientation.eye + look_dir; break;
     }
+    PrintOrientation();
 }
 
 void ArcBallCamera::Rotate(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation)

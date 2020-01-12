@@ -86,6 +86,8 @@ public:
     Vector4f  TransformWorldToView(const Vector4f& world_pos) const noexcept { return TransformWorldToView(world_pos, m_current_orientation); }
     Vector4f  TransformViewToWorld(const Vector4f& view_pos)  const noexcept { return TransformViewToWorld(view_pos,  m_current_orientation); }
 
+    void PrintOrientation();
+
 protected:
     float GetFOVAngleY() const noexcept;
 
