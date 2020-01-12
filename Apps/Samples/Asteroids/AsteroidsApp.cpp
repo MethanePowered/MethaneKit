@@ -81,6 +81,7 @@ static const ParamValues<float, g_max_complexity+1> g_scale_ratio = {
 };
 
 static const std::map<pal::Keyboard::State, AsteroidsAppAction> g_asteroids_action_by_keyboard_state = {
+    { { pal::Keyboard::Key::F2           }, AsteroidsAppAction::ShowParameters              },
     { { pal::Keyboard::Key::RightBracket }, AsteroidsAppAction::IncreaseComplexity          },
     { { pal::Keyboard::Key::LeftBracket  }, AsteroidsAppAction::DecreaseComplexity          },
     { { pal::Keyboard::Key::P            }, AsteroidsAppAction::SwitchParallelRendering     },
@@ -296,7 +297,7 @@ void AsteroidsApp::Init()
     //  - execute commands to upload resources to GPU
     context.CompleteInitialization();
 
-    PrintParameters();
+    pal::PrintToDebugOutput(GetParametersString());
 }
 
 bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
@@ -427,13 +428,6 @@ void AsteroidsApp::OnContextReleased()
     GraphicsApp::OnContextReleased();
 }
 
-AsteroidsArray& AsteroidsApp::GetAsterpodsArray()
-{
-    ITT_FUNCTION_TASK();
-    assert(!!m_sp_asteroids_array);
-    return *m_sp_asteroids_array;
-}
-
 void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
 {
     ITT_FUNCTION_TASK();
@@ -466,23 +460,33 @@ void AsteroidsApp::SetParallelRenderingEnabled(bool is_parallel_rendering_enable
 
     m_is_parallel_rendering_enabled = is_parallel_rendering_enabled;
 
-    PrintParameters();
+    pal::PrintToDebugOutput(GetParametersString());
 }
 
-void AsteroidsApp::PrintParameters()
+
+AsteroidsArray& AsteroidsApp::GetAsteroidsArray() const
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_sp_asteroids_array);
+    return *m_sp_asteroids_array;
+}
+
+std::string AsteroidsApp::GetParametersString() const
 {
     ITT_FUNCTION_TASK();
 
     std::stringstream ss;
     ss << std::endl << "Asteroids simulation parameters:"
-       << std::endl << "  - simulation complexity: "    << m_asteroids_complexity
-       << std::endl << "  - parallel rendering: "       << (m_is_parallel_rendering_enabled ? "enabled" : "disabled")
-       << std::endl << "  - asteroid instances count: " << m_asteroids_array_settings.instance_count
-       << std::endl << "  - unique meshes count: "      << m_asteroids_array_settings.unique_mesh_count
-       << std::endl << "  - mesh subdivisions count: "  << m_asteroids_array_settings.subdivisions_count
-       << std::endl << "  - unique textures count: "    << m_asteroids_array_settings.textures_count << " "
-                                                        << static_cast<std::string>(m_asteroids_array_settings.texture_dimensions);
-    pal::PrintToDebugOutput(ss.str());
+       << std::endl << "  - simulation complexity: "     << m_asteroids_complexity
+       << std::endl << "  - asteroid instances count: "  << m_asteroids_array_settings.instance_count
+       << std::endl << "  - unique meshes count: "       << m_asteroids_array_settings.unique_mesh_count
+       << std::endl << "  - mesh subdivisions count: "   << m_asteroids_array_settings.subdivisions_count
+       << std::endl << "  - unique textures count: "     << m_asteroids_array_settings.textures_count << " "
+                                                         << static_cast<std::string>(m_asteroids_array_settings.texture_dimensions)
+       << std::endl << "  - parallel rendering: "        << (m_is_parallel_rendering_enabled ? "enabled" : "disabled")
+       << std::endl << "  - CPU hardware thread count: " << std::thread::hardware_concurrency();
+
+    return ss.str();
 }
 
 } // namespace Methane::Samples

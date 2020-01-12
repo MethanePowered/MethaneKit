@@ -52,32 +52,40 @@ void AsteroidsAppController::OnKeyboardStateAction(AsteroidsAppAction action)
     const uint32_t asteroids_complexity = m_asteroids_app.GetAsteroidsComplexity();
     switch(action)
     {
-        case AsteroidsAppAction::IncreaseComplexity:
-            m_asteroids_app.SetAsteroidsComplexity(asteroids_complexity + 1);
-            break;
-            
-        case AsteroidsAppAction::DecreaseComplexity:
-            m_asteroids_app.SetAsteroidsComplexity(asteroids_complexity > 1 ? asteroids_complexity - 1 : 0);
-            break;
-            
-        case AsteroidsAppAction::SwitchParallelRendering:
-            m_asteroids_app.SetParallelRenderingEnabled(!m_asteroids_app.IsParallelRenderingEnabled());
-            break;
+    case AsteroidsAppAction::ShowParameters:
+        m_asteroids_app.Alert({
+            pal::AppBase::Message::Type::Information,
+            "Methane Asteroids",
+            m_asteroids_app.GetParametersString()
+        });
+        break;
 
-        case AsteroidsAppAction::SwitchMeshLodsColoring:
-            m_asteroids_app.GetAsterpodsArray().SetMeshLodColoringEnabled(!m_asteroids_app.GetAsterpodsArray().IsMeshLodColoringEnabled());
-            break;
+    case AsteroidsAppAction::IncreaseComplexity:
+        m_asteroids_app.SetAsteroidsComplexity(asteroids_complexity + 1);
+        break;
+        
+    case AsteroidsAppAction::DecreaseComplexity:
+        m_asteroids_app.SetAsteroidsComplexity(asteroids_complexity > 1 ? asteroids_complexity - 1 : 0);
+        break;
+        
+    case AsteroidsAppAction::SwitchParallelRendering:
+        m_asteroids_app.SetParallelRenderingEnabled(!m_asteroids_app.IsParallelRenderingEnabled());
+        break;
 
-        case AsteroidsAppAction::IncreaseMeshLodComplexity:
-            m_asteroids_app.GetAsterpodsArray().SetMinMeshLodScreenSize(m_asteroids_app.GetAsterpodsArray().GetMinMeshLodScreenSize() / 2.f);
-            break;
+    case AsteroidsAppAction::SwitchMeshLodsColoring:
+        m_asteroids_app.GetAsteroidsArray().SetMeshLodColoringEnabled(!m_asteroids_app.GetAsteroidsArray().IsMeshLodColoringEnabled());
+        break;
 
-        case AsteroidsAppAction::DecreaseMeshLodComplexity:
-            m_asteroids_app.GetAsterpodsArray().SetMinMeshLodScreenSize(m_asteroids_app.GetAsterpodsArray().GetMinMeshLodScreenSize() * 2.f);
-            break;
-            
-        default:
-            assert(0);
+    case AsteroidsAppAction::IncreaseMeshLodComplexity:
+        m_asteroids_app.GetAsteroidsArray().SetMinMeshLodScreenSize(m_asteroids_app.GetAsteroidsArray().GetMinMeshLodScreenSize() / 2.f);
+        break;
+
+    case AsteroidsAppAction::DecreaseMeshLodComplexity:
+        m_asteroids_app.GetAsteroidsArray().SetMinMeshLodScreenSize(m_asteroids_app.GetAsteroidsArray().GetMinMeshLodScreenSize() * 2.f);
+        break;
+        
+    default:
+        assert(0);
     }
 }
 
@@ -86,13 +94,14 @@ std::string AsteroidsAppController::GetKeyboardActionName(AsteroidsAppAction act
     ITT_FUNCTION_TASK();
     switch(action)
     {
-        case AsteroidsAppAction::IncreaseComplexity:        return "increase scene complexity";
-        case AsteroidsAppAction::DecreaseComplexity:        return "decrease scene complexity";
-        case AsteroidsAppAction::SwitchParallelRendering:   return "switch parallel rendering";
-        case AsteroidsAppAction::SwitchMeshLodsColoring:    return "switch mesh LOD coloring";
-        case AsteroidsAppAction::IncreaseMeshLodComplexity: return "increase mesh LOD complexity";
-        case AsteroidsAppAction::DecreaseMeshLodComplexity: return "decrease mesh LOD complexity";
-        default: assert(0);
+    case AsteroidsAppAction::ShowParameters:            return "show simulation parameters";
+    case AsteroidsAppAction::IncreaseComplexity:        return "increase scene complexity";
+    case AsteroidsAppAction::DecreaseComplexity:        return "decrease scene complexity";
+    case AsteroidsAppAction::SwitchParallelRendering:   return "switch parallel rendering";
+    case AsteroidsAppAction::SwitchMeshLodsColoring:    return "switch mesh LOD coloring";
+    case AsteroidsAppAction::IncreaseMeshLodComplexity: return "increase mesh LOD complexity";
+    case AsteroidsAppAction::DecreaseMeshLodComplexity: return "decrease mesh LOD complexity";
+    default: assert(0);
     }
     return "";
 }

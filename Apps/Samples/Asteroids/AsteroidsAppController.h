@@ -34,7 +34,8 @@ class AsteroidsApp;
 enum class AsteroidsAppAction : uint32_t
 {
     None = 0u,
-    
+
+    ShowParameters,
     IncreaseComplexity,
     DecreaseComplexity,
     SwitchParallelRendering,

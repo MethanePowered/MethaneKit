@@ -65,15 +65,14 @@ public:
     // Context::Callback overrides
     void OnContextReleased() override;
 
-    AsteroidsArray& GetAsterpodsArray();
-
     uint32_t GetAsteroidsComplexity() const { return m_asteroids_complexity; }
     void     SetAsteroidsComplexity(uint32_t asteroids_complexity);
     
     bool     IsParallelRenderingEnabled() const { return m_is_parallel_rendering_enabled; }
     void     SetParallelRenderingEnabled(bool is_parallel_rendering_enabled);
 
-    void PrintParameters();
+    AsteroidsArray& GetAsteroidsArray() const;
+    std::string     GetParametersString() const;
 
 private:
     struct SHADER_STRUCT_ALIGN Constants
