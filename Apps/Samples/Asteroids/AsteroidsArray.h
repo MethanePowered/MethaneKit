@@ -111,6 +111,12 @@ public:
     void Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings);
     void DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list, gfx::MeshBufferBindings& buffer_bindings);
 
+    bool  IsMeshLodColoringEnabled() const                           { return m_mesh_lod_coloring_enabled; }
+    void  SetMeshLodColoringEnabled(bool mesh_lod_coloring_enabled)  { m_mesh_lod_coloring_enabled = mesh_lod_coloring_enabled; }
+
+    float GetMinMeshLodScreenSize() const;
+    void  SetMinMeshLodScreenSize(float mesh_lod_min_screen_size);
+
 protected:
     // MeshBuffers overrides
     uint32_t GetSubsetByInstanceIndex(uint32_t instance_index) const override;
@@ -124,6 +130,8 @@ private:
     gfx::Sampler::Ptr         m_sp_texture_sampler;
     gfx::RenderState::Ptr     m_sp_render_state;
     MeshSubsetByInstanceIndex m_mesh_subset_by_instance_index;
+    bool                      m_mesh_lod_coloring_enabled = false;
+    float                     m_min_mesh_lod_screen_size_log2;
 
 };
 

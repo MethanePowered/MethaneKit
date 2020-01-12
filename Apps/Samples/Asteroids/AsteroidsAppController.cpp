@@ -63,6 +63,18 @@ void AsteroidsAppController::OnKeyboardStateAction(AsteroidsAppAction action)
         case AsteroidsAppAction::SwitchParallelRendering:
             m_asteroids_app.SetParallelRenderingEnabled(!m_asteroids_app.IsParallelRenderingEnabled());
             break;
+
+        case AsteroidsAppAction::SwitchMeshLodsColoring:
+            m_asteroids_app.GetAsterpodsArray().SetMeshLodColoringEnabled(!m_asteroids_app.GetAsterpodsArray().IsMeshLodColoringEnabled());
+            break;
+
+        case AsteroidsAppAction::IncreaseMeshLodComplexity:
+            m_asteroids_app.GetAsterpodsArray().SetMinMeshLodScreenSize(m_asteroids_app.GetAsterpodsArray().GetMinMeshLodScreenSize() / 2.f);
+            break;
+
+        case AsteroidsAppAction::DecreaseMeshLodComplexity:
+            m_asteroids_app.GetAsterpodsArray().SetMinMeshLodScreenSize(m_asteroids_app.GetAsterpodsArray().GetMinMeshLodScreenSize() * 2.f);
+            break;
             
         default:
             assert(0);
@@ -74,9 +86,12 @@ std::string AsteroidsAppController::GetKeyboardActionName(AsteroidsAppAction act
     ITT_FUNCTION_TASK();
     switch(action)
     {
-        case AsteroidsAppAction::IncreaseComplexity:       return "increase scene complexity";
-        case AsteroidsAppAction::DecreaseComplexity:       return "decrease scene complexity";
-        case AsteroidsAppAction::SwitchParallelRendering:  return "switch parallel rendering";
+        case AsteroidsAppAction::IncreaseComplexity:        return "increase scene complexity";
+        case AsteroidsAppAction::DecreaseComplexity:        return "decrease scene complexity";
+        case AsteroidsAppAction::SwitchParallelRendering:   return "switch parallel rendering";
+        case AsteroidsAppAction::SwitchMeshLodsColoring:    return "switch mesh LOD coloring";
+        case AsteroidsAppAction::IncreaseMeshLodComplexity: return "increase mesh LOD complexity";
+        case AsteroidsAppAction::DecreaseMeshLodComplexity: return "decrease mesh LOD complexity";
         default: assert(0);
     }
     return "";

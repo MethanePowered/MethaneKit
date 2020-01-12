@@ -175,8 +175,7 @@ Asteroid::Colors Asteroid::GetAsteroidRockColors(uint32_t deep_color_index, uint
     } };
     static const AsteroidColorSchema s_linear_shallow_rock_colors = TransformSRGBToLinear(s_srgb_shallow_rock_colors);
 
-    if (deep_color_index >= s_linear_deep_rock_colors.size() ||
-        shallow_color_index >= s_linear_shallow_rock_colors.size())
+    if (deep_color_index >= s_linear_deep_rock_colors.size() || shallow_color_index >= s_linear_shallow_rock_colors.size())
         throw std::invalid_argument("Deep or shallow color indices are out of boundaries for asteroids color schema.");
 
     return Asteroid::Colors{ s_linear_deep_rock_colors[deep_color_index], s_linear_shallow_rock_colors[shallow_color_index] };
@@ -206,11 +205,39 @@ Asteroid::Colors Asteroid::GetAsteroidIceColors(uint32_t deep_color_index, uint3
     } };
     static const AsteroidColorSchema s_linear_shallow_ice_colors = TransformSRGBToLinear(s_srgb_shallow_ice_colors);
 
-    if (deep_color_index >= s_linear_deep_ice_colors.size() ||
-        shallow_color_index >= s_linear_shallow_ice_colors.size())
+    if (deep_color_index >= s_linear_deep_ice_colors.size() || shallow_color_index >= s_linear_shallow_ice_colors.size())
         throw std::invalid_argument("Deep or shallow color indices are out of boundaries for asteroids color schema.");
 
     return Asteroid::Colors{ s_linear_deep_ice_colors[deep_color_index], s_linear_shallow_ice_colors[shallow_color_index] };
+}
+
+Asteroid::Colors Asteroid::GetAsteroidLodColors(uint32_t lod_index)
+{
+    ITT_FUNCTION_TASK();
+    static const AsteroidColorSchema s_srgb_lod_deep_colors = { {
+        {    0.f, 128.f,   0.f }, // LOD-0: green
+        {    0.f,  64.f, 128.f }, // LOD-1: blue
+        {   96.f,   0.f, 128.f }, // LOD-2: purple
+        {  128.f,   0.f,   0.f }, // LOD-3: red
+        {  128.f, 128.f,   0.f }, // LOD-4: yellow
+        {  128.f,  64.f,   0.f }, // LOD-5: orange
+    } };
+    static const AsteroidColorSchema s_linear_lod_deep_colors = TransformSRGBToLinear(s_srgb_lod_deep_colors);
+
+    static const AsteroidColorSchema s_srgb_lod_shallow_colors = { {
+        {    0.f, 255.f,   0.f }, // LOD-0: green
+        {    0.f, 128.f, 255.f }, // LOD-1: blue
+        {  196.f,   0.f, 255.f }, // LOD-2: purple
+        {  255.f,   0.f,   0.f }, // LOD-3: red
+        {  255.f, 255.f,   0.f }, // LOD-4: yellow
+        {  255.f, 128.f,   0.f }, // LOD-5: orange
+    } };
+    static const AsteroidColorSchema s_linear_lod_shallow_colors = TransformSRGBToLinear(s_srgb_lod_shallow_colors);
+
+    if (lod_index >= s_linear_lod_deep_colors.size() || lod_index >= s_linear_lod_shallow_colors.size())
+        throw std::invalid_argument("LOD index is out of boundaries for asteroids color schema.");
+
+    return Asteroid::Colors{ s_linear_lod_deep_colors[lod_index], s_linear_lod_shallow_colors[lod_index] };
 }
 
 void Asteroid::FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Dimensions& dimensions, uint32_t pixel_size, uint32_t row_stride,

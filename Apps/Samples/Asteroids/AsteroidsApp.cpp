@@ -81,9 +81,12 @@ static const ParamValues<float, g_max_complexity+1> g_scale_ratio = {
 };
 
 static const std::map<pal::Keyboard::State, AsteroidsAppAction> g_asteroids_action_by_keyboard_state = {
-    { { pal::Keyboard::Key::RightBracket }, AsteroidsAppAction::IncreaseComplexity       },
-    { { pal::Keyboard::Key::LeftBracket  }, AsteroidsAppAction::DecreaseComplexity       },
-    { { pal::Keyboard::Key::P            }, AsteroidsAppAction::SwitchParallelRendering  },
+    { { pal::Keyboard::Key::RightBracket }, AsteroidsAppAction::IncreaseComplexity          },
+    { { pal::Keyboard::Key::LeftBracket  }, AsteroidsAppAction::DecreaseComplexity          },
+    { { pal::Keyboard::Key::P            }, AsteroidsAppAction::SwitchParallelRendering     },
+    { { pal::Keyboard::Key::L            }, AsteroidsAppAction::SwitchMeshLodsColoring      },
+    { { pal::Keyboard::Key::Apostrophe   }, AsteroidsAppAction::IncreaseMeshLodComplexity   },
+    { { pal::Keyboard::Key::Semicolon    }, AsteroidsAppAction::DecreaseMeshLodComplexity   },
 };
 
 // Common application settings
@@ -422,6 +425,13 @@ void AsteroidsApp::OnContextReleased()
     m_sp_const_buffer.reset();
 
     GraphicsApp::OnContextReleased();
+}
+
+AsteroidsArray& AsteroidsApp::GetAsterpodsArray()
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_sp_asteroids_array);
+    return *m_sp_asteroids_array;
 }
 
 void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)

@@ -64,7 +64,9 @@ public:
 
     // Context::Callback overrides
     void OnContextReleased() override;
-    
+
+    AsteroidsArray& GetAsterpodsArray();
+
     uint32_t GetAsteroidsComplexity() const { return m_asteroids_complexity; }
     void     SetAsteroidsComplexity(uint32_t asteroids_complexity);
     

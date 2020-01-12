@@ -38,7 +38,10 @@ enum class AsteroidsAppAction : uint32_t
     IncreaseComplexity,
     DecreaseComplexity,
     SwitchParallelRendering,
-    
+    SwitchMeshLodsColoring,
+    IncreaseMeshLodComplexity,
+    DecreaseMeshLodComplexity,
+
     Count
 };
 

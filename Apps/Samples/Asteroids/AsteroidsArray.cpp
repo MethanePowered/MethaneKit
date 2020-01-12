@@ -217,6 +217,7 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings, Content
     , m_settings(std::move(settings))
     , m_sp_content_state(state.shared_from_this())
     , m_mesh_subset_by_instance_index(m_settings.instance_count, 0u)
+    , m_min_mesh_lod_screen_size_log2(std::log2(0.08f))
 {
     ITT_FUNCTION_TASK();
     SCOPE_TIMER("AsteroidsArray::AsteroidsArray");
@@ -356,19 +357,19 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
             gfx::Matrix44f orbit_rotation_matrix;
             cml::matrix_rotation_world_y(orbit_rotation_matrix, orbit_angle_rad);
 
-            const gfx::Matrix44f model_matrix = spin_rotation_matrix * asteroid_parameters.scale_translate_matrix * orbit_rotation_matrix;
-            const gfx::Matrix44f mvp_matrix   = model_matrix * view_proj_matrix;
+            const gfx::Matrix44f    model_matrix = spin_rotation_matrix * asteroid_parameters.scale_translate_matrix * orbit_rotation_matrix;
+            const gfx::Matrix44f    mvp_matrix   = model_matrix * view_proj_matrix;
 
-            const gfx::Vector3f asteroid_position(model_matrix(3, 0), model_matrix(3, 1), model_matrix(3, 2));
-            const float         distance_to_eye           = (eye_position - asteroid_position).length();
-            const float         relative_screen_size      = asteroid_parameters.scale / std::sqrt(distance_to_eye);
-            const float         relative_screen_size_log2 = std::log2(relative_screen_size);
+            const gfx::Vector3f     asteroid_position(model_matrix(3, 0), model_matrix(3, 1), model_matrix(3, 2));
+            const float             distance_to_eye           = (eye_position - asteroid_position).length();
+            const float             relative_screen_size_log2 = std::log2(asteroid_parameters.scale / std::sqrt(distance_to_eye));
 
-            static const float   min_subdiv_size_log2    = std::log2(0.08f);
-            const float          mesh_subdiv_float       = std::roundf(relative_screen_size_log2 - min_subdiv_size_log2);
-            const uint32_t       mesh_subdivision_index  = std::min(m_settings.subdivisions_count - 1, static_cast<uint32_t>(std::max(0.0f, mesh_subdiv_float)));
-            const uint32_t       mesh_subset_index       = m_sp_content_state->uber_mesh.GetSubsetIndex(asteroid_parameters.mesh_instance_index, mesh_subdivision_index);
-            const gfx::Vector2f& mesh_subset_depth_range = m_sp_content_state->uber_mesh.GetSubsetDepthRange(mesh_subset_index);
+            const float             mesh_subdiv_float       = std::roundf(relative_screen_size_log2 - m_min_mesh_lod_screen_size_log2);
+            const uint32_t          mesh_subdivision_index  = std::min(m_settings.subdivisions_count - 1, static_cast<uint32_t>(std::max(0.0f, mesh_subdiv_float)));
+            const uint32_t          mesh_subset_index       = m_sp_content_state->uber_mesh.GetSubsetIndex(asteroid_parameters.mesh_instance_index, mesh_subdivision_index);
+            const gfx::Vector2f&    mesh_subset_depth_range = m_sp_content_state->uber_mesh.GetSubsetDepthRange(mesh_subset_index);
+            const Asteroid::Colors& asteroid_colors         = m_mesh_lod_coloring_enabled ? Asteroid::GetAsteroidLodColors(mesh_subdivision_index)
+                                                                                          : asteroid_parameters.colors;
 
             m_mesh_subset_by_instance_index[asteroid_parameters.index] = mesh_subset_index;
 
@@ -377,8 +378,8 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
                 {
                     model_matrix,
                     mvp_matrix,
-                    asteroid_parameters.colors.deep,
-                    asteroid_parameters.colors.shallow,
+                    asteroid_colors.deep,
+                    asteroid_colors.shallow,
                     mesh_subset_depth_range,
                     asteroid_parameters.texture_index
                 },
@@ -422,6 +423,18 @@ void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_l
     assert(buffer_bindings.resource_bindings_per_instance.size() == m_settings.instance_count);
     BaseBuffers::DrawParallel(parallel_cmd_list, buffer_bindings.resource_bindings_per_instance,
                               gfx::Program::ResourceBindings::ApplyBehavior::ConstantOnce);
+}
+
+float AsteroidsArray::GetMinMeshLodScreenSize() const
+{
+    ITT_FUNCTION_TASK();
+    return std::pow(2.f, m_min_mesh_lod_screen_size_log2);
+}
+
+void AsteroidsArray::SetMinMeshLodScreenSize(float mesh_lod_min_screen_size)
+{
+    ITT_FUNCTION_TASK();
+    m_min_mesh_lod_screen_size_log2 = std::log2(mesh_lod_min_screen_size);
 }
 
 uint32_t AsteroidsArray::GetSubsetByInstanceIndex(uint32_t instance_index) const
