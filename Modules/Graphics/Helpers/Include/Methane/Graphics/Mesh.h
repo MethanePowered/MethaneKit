@@ -289,6 +289,18 @@ protected:
         }
     }
 
+    void ValidateMeshData()
+    {
+        for(size_t index = 0; index < m_indices.size(); ++index)
+        {
+            const Index vertex_index = m_indices[index];
+            if (vertex_index >= m_vertices.size())
+                throw std::logic_error("Mesh index buffer value " + std::to_string(vertex_index) + 
+                                       " at position " + std::to_string(index) +
+                                       " is out of vertex buffer size " + std::to_string(m_vertices.size()));
+        }
+    }
+
     Vertices m_vertices;
 };
 
@@ -640,7 +652,7 @@ private:
 
         const uint32_t vertices_count         = static_cast<uint32_t>(BaseMeshT::m_vertices.size());
         const uint32_t index_lat_lines_count  = has_texcoord ? m_lat_lines_count - 1 : m_lat_lines_count - 3;
-        const uint32_t index_long_lines_count = has_texcoord ? m_long_lines_count + 1 : m_long_lines_count - 1;
+        const uint32_t index_long_lines_count = has_texcoord ? m_long_lines_count : m_long_lines_count - 1;
         const uint32_t first_vertex_index     = has_texcoord ? 0 : 1;
 
         for (uint32_t lat_line_index = 0; lat_line_index < index_lat_lines_count; ++lat_line_index)
