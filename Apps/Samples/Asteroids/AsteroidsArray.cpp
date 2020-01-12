@@ -29,6 +29,8 @@ Random generated asteroids array with uber mesh and textures ready for rendering
 #include <Methane/Data/Instrumentation.h>
 #include <Methane/Data/ScopeTimer.h>
 
+#include <cmath>
+
 namespace Methane::Samples
 {
 
@@ -359,10 +361,10 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
 
             const gfx::Vector3f asteroid_position(model_matrix(3, 0), model_matrix(3, 1), model_matrix(3, 2));
             const float         distance_to_eye           = (eye_position - asteroid_position).length();
-            const float         relative_screen_size      = asteroid_parameters.scale / std::sqrtf(distance_to_eye);
-            const float         relative_screen_size_log2 = std::logf(relative_screen_size);
+            const float         relative_screen_size      = asteroid_parameters.scale / std::sqrt(distance_to_eye);
+            const float         relative_screen_size_log2 = std::log2(relative_screen_size);
 
-            static const float   min_subdiv_size_log2    = std::log2f(0.08);
+            static const float   min_subdiv_size_log2    = std::log2(0.08f);
             const float          mesh_subdiv_float       = std::roundf(relative_screen_size_log2 - min_subdiv_size_log2);
             const uint32_t       mesh_subdivision_index  = std::min(m_settings.subdivisions_count - 1, static_cast<uint32_t>(std::max(0.0f, mesh_subdiv_float)));
             const uint32_t       mesh_subset_index       = m_sp_content_state->uber_mesh.GetSubsetIndex(asteroid_parameters.mesh_instance_index, mesh_subdivision_index);
