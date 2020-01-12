@@ -97,7 +97,6 @@ private:
     gfx::Camera             m_camera;
     gfx::BoxMesh<Vertex>    m_cube_mesh;
     float                   m_cube_scale;
-    gfx::LogoBadge::Ptr     m_sp_logo_badge;
     gfx::Program::Ptr       m_sp_program;
     gfx::RenderState::Ptr   m_sp_state;
     gfx::Buffer::Ptr        m_sp_vertex_buffer;

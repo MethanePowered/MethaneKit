@@ -99,7 +99,6 @@ private:
     SceneUniforms                     m_scene_uniforms = { };
     
     gfx::Buffer::Ptr                  m_sp_const_buffer;
-    gfx::LogoBadge::Ptr               m_sp_logo_badge;
     gfx::SkyBox::Ptr                  m_sp_sky_box;
     Planet::Ptr                       m_sp_planet;
     AsteroidsArray::Ptr               m_sp_asteroids_array;

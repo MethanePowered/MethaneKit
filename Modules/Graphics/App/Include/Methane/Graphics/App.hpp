@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -36,8 +36,10 @@ Base frame class provides frame buffer management with resize handling.
 #include <Methane/Graphics/Context.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/RenderPass.h>
+#include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Graphics/ImageLoader.h>
+#include <Methane/Graphics/LogoBadge.h>
 #include <Methane/Data/Instrumentation.h>
 
 #include <vector>
@@ -70,6 +72,7 @@ public:
         Platform::App::Settings app;
         Context::Settings       context;
         bool                    show_hud_in_window_title;
+        bool                    show_logo_badge;
     };
 
     App(const Settings& settings, RenderPass::Access::Mask screen_pass_access,
@@ -79,6 +82,7 @@ public:
         , m_initial_context_settings(settings.context)
         , m_screen_pass_access(screen_pass_access)
         , m_show_hud_in_window_title(settings.show_hud_in_window_title)
+        , m_show_logo_badge(settings.show_logo_badge)
     {
         ITT_FUNCTION_TASK();
         m_cmd_options.add_options()
@@ -116,7 +120,7 @@ public:
         // Create render context of the current window size
         m_initial_context_settings.frame_size = frame_size;
         m_sp_context = Context::Create(env, *sp_device, m_initial_context_settings);
-        m_sp_context->SetName("App Gfx Context");
+        m_sp_context->SetName("App Graphics Context");
         m_sp_context->AddCallback(*this);
 
         m_input_state.AddControllers({ std::make_shared<AppContextController>(*m_sp_context) });
@@ -180,6 +184,10 @@ public:
 
             m_frames.emplace_back(std::move(frame));
         }
+        
+        // Create Methane logo badge
+        if (m_show_logo_badge)
+            m_sp_logo_badge = std::make_shared<LogoBadge>(*m_sp_context);
 
         Platform::App::Init();
     }
@@ -243,6 +251,9 @@ public:
 
             frame.sp_screen_pass->Update(pass_settings);
         }
+        
+        if (m_sp_logo_badge)
+            m_sp_logo_badge->Resize(frame_size);
 
         return true;
     }
@@ -301,6 +312,13 @@ public:
         return true;
     }
     
+    void RenderOverlay(RenderCommandList& cmd_list)
+    {
+        ITT_FUNCTION_TASK();
+        if (m_sp_logo_badge)
+            m_sp_logo_badge->Draw(cmd_list);
+    }
+    
     bool SetFullScreen(bool is_full_screen) override
     {
         ITT_FUNCTION_TASK();
@@ -316,6 +334,7 @@ public:
         ITT_FUNCTION_TASK();
         m_frames.clear();
         m_sp_depth_texture.reset();
+        m_sp_logo_badge.reset();
         m_initialized = false;
     }
 
@@ -383,6 +402,7 @@ protected:
     Context::Ptr                    m_sp_context;
     ImageLoader                     m_image_loader;
     Texture::Ptr                    m_sp_depth_texture;
+    LogoBadge::Ptr                  m_sp_logo_badge;
     std::vector<FrameT>             m_frames;
     Data::AnimationsPool            m_animations;
 
@@ -391,6 +411,7 @@ private:
     int32_t                         m_default_device_index = 0;
     const RenderPass::Access::Mask  m_screen_pass_access;
     bool                            m_show_hud_in_window_title;
+    bool                            m_show_logo_badge;
     Data::Timer                     m_title_update_timer;
 
     static constexpr double  g_title_update_interval_sec = 1;

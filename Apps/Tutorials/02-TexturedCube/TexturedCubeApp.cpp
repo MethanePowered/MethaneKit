@@ -48,7 +48,8 @@ static const GraphicsApp::Settings      g_app_settings = // Application settings
         3,                                          // - frame_buffers_count
         true,                                       // - vsync_enabled
     },                                              //
-    true                                            // show_hud_in_window_title
+    true,                                           // show_hud_in_window_title
+    true                                            // show_logo_badge
 };
 
 TexturedCubeApp::TexturedCubeApp()
@@ -92,9 +93,6 @@ void TexturedCubeApp::Init()
     const gfx::Context::Settings& context_settings = m_sp_context->GetSettings();
     m_camera.Resize(static_cast<float>(context_settings.frame_size.width),
                     static_cast<float>(context_settings.frame_size.height));
-
-    // Create Methane logo badge
-    m_sp_logo_badge = std::make_shared<gfx::LogoBadge>(*m_sp_context);
 
     // Create cube shading program
     m_sp_program = gfx::Program::Create(*m_sp_context, {
@@ -201,7 +199,6 @@ bool TexturedCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized
     m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
 
     m_camera.Resize(static_cast<float>(frame_size.width), static_cast<float>(frame_size.height));
-    m_sp_logo_badge->Resize(frame_size);
 
     return true;
 }
@@ -251,9 +248,7 @@ bool TexturedCubeApp::Render()
     frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
     frame.sp_cmd_list->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
 
-    // Draw Methane logo badge
-    assert(!!m_sp_logo_badge);
-    m_sp_logo_badge->Draw(*frame.sp_cmd_list);
+    RenderOverlay(*frame.sp_cmd_list);
 
     // Commit command list with present flag
     frame.sp_cmd_list->Commit(true);
@@ -274,7 +269,6 @@ void TexturedCubeApp::OnContextReleased()
     m_sp_vertex_buffer.reset();
     m_sp_state.reset();
     m_sp_program.reset();
-    m_sp_logo_badge.reset();
 
     GraphicsApp::OnContextReleased();
 }

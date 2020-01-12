@@ -50,7 +50,8 @@ static const GraphicsApp::Settings      g_app_settings = // Application settings
         3,                                              // - frame_buffers_count
         true,                                           // - vsync_enabled
     },                                                  //
-    true                                                // show_hud_in_window_title
+    true,                                               // show_hud_in_window_title
+    true                                                // show_logo_badge
 };
 
 ShadowCubeApp::ShadowCubeApp()
@@ -95,9 +96,6 @@ void ShadowCubeApp::Init()
 
     assert(m_sp_context);
     const gfx::Context::Settings& context_settings = m_sp_context->GetSettings();
-
-    // Create Methane logo badge
-    m_sp_logo_badge = std::make_shared<gfx::LogoBadge>(*m_sp_context);
 
     // Load textures, vertex and index buffers for cube and floor meshes
     m_sp_cube_buffers  = std::make_unique<TexturedMeshBuffers>(*m_sp_context, m_cube_mesh, "Cube");
@@ -331,9 +329,6 @@ bool ShadowCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 
     m_view_camera.Resize(static_cast<float>(frame_size.width), static_cast<float>(frame_size.height));
 
-    assert(!!m_sp_logo_badge);
-    m_sp_logo_badge->Resize(frame_size);
-
     return true;
 }
 
@@ -449,9 +444,7 @@ void ShadowCubeApp::RenderScene(const RenderPass &render_pass, ShadowCubeFrame::
 
     if (render_pass.is_final_pass)
     {
-        // Draw Methane logo badge
-        assert(!!m_sp_logo_badge);
-        m_sp_logo_badge->Draw(cmd_list);
+        RenderOverlay(cmd_list);
     }
 
     // Commit command list with present flag in case of final render pass
@@ -463,7 +456,6 @@ void ShadowCubeApp::OnContextReleased()
     m_final_pass.Release();
     m_shadow_pass.Release();
 
-    m_sp_logo_badge.reset();
     m_sp_floor_buffers.reset();
     m_sp_cube_buffers.reset();
     m_sp_shadow_sampler.reset();

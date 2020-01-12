@@ -141,7 +141,6 @@ private:
 
     gfx::Camera                 m_view_camera;
     gfx::Camera                 m_light_camera;
-    gfx::LogoBadge::Ptr         m_sp_logo_badge;
     gfx::Buffer::Ptr            m_sp_const_buffer;
     gfx::Sampler::Ptr           m_sp_texture_sampler;
     gfx::Sampler::Ptr           m_sp_shadow_sampler;

@@ -45,7 +45,8 @@ static const GraphicsApp::Settings      g_app_settings = // Application settings
         3,                                          // - frame_buffers_count
         true,                                       // - vsync_enabled
     },                                              //
-    true                                            // show_hud_in_window_title
+    true,                                           // show_hud_in_window_title
+    true                                            // show_logo_badge
 };
 
 HelloTriangleApp::HelloTriangleApp()
@@ -69,9 +70,6 @@ void HelloTriangleApp::Init()
     GraphicsApp::Init();
 
     assert(m_sp_context);
-
-    // Create Methane logo badge
-    m_sp_logo_badge = std::make_shared<gfx::LogoBadge>(*m_sp_context);
 
     // Create triangle shading program
     m_sp_program = gfx::Program::Create(*m_sp_context, {
@@ -134,7 +132,6 @@ bool HelloTriangleApp::Resize(const gfx::FrameSize& frame_size, bool is_minimize
     assert(m_sp_state);
     m_sp_state->SetViewports(    { gfx::GetFrameViewport(frame_size)    } );
     m_sp_state->SetScissorRects( { gfx::GetFrameScissorRect(frame_size) } );
-    m_sp_logo_badge->Resize(frame_size);
 
     return true;
 }
@@ -159,9 +156,7 @@ bool HelloTriangleApp::Render()
     frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
     frame.sp_cmd_list->Draw(gfx::RenderCommandList::Primitive::Triangle, static_cast<uint32_t>(m_triangle_vertices.size()));
 
-    // Draw Methane logo badge
-    assert(!!m_sp_logo_badge);
-    m_sp_logo_badge->Draw(*frame.sp_cmd_list);
+    RenderOverlay(*frame.sp_cmd_list);
 
     // Commit command list with present flag
     frame.sp_cmd_list->Commit(true);
@@ -178,7 +173,6 @@ void HelloTriangleApp::OnContextReleased()
     m_sp_vertex_buffer.reset();
     m_sp_state.reset();
     m_sp_program.reset();
-    m_sp_logo_badge.reset();
 
     GraphicsApp::OnContextReleased();
 }

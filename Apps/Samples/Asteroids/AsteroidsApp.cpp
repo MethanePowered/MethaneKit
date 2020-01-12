@@ -108,7 +108,8 @@ static const GraphicsApp::Settings  g_app_settings  = // Application settings:
         3u,                                           // - frame_buffers_count
         false,                                        // - vsync_enabled
     },                                                //
-    true                                              // show_hud_in_window_title
+    true,                                             // show_hud_in_window_title
+    true                                              // show_logo_badge
 };
 
 AsteroidsApp::AsteroidsApp()
@@ -187,9 +188,6 @@ void AsteroidsApp::Init()
     const gfx::Context::Settings& context_settings = context.GetSettings();
     m_view_camera.Resize(static_cast<float>(context_settings.frame_size.width),
                          static_cast<float>(context_settings.frame_size.height));
-
-    // Create Methane logo badge
-    m_sp_logo_badge = std::make_shared<gfx::LogoBadge>(context);
 
     // Create sky-box
     m_sp_sky_box = std::make_shared<gfx::SkyBox>(context, m_image_loader, gfx::SkyBox::Settings{
@@ -324,7 +322,6 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
         frame.sp_final_screen_pass->Update(final_pass_settings);
     }
 
-    m_sp_logo_badge->Resize(frame_size);
     m_sp_sky_box->Resize(frame_size);
     m_sp_planet->Resize(frame_size);
     m_sp_asteroids_array->Resize(frame_size);
@@ -394,9 +391,7 @@ bool AsteroidsApp::Render()
     assert(!!m_sp_sky_box);
     m_sp_sky_box->Draw(*frame.sp_final_cmd_list, frame.skybox);
 
-    // Logo-badge rendering
-    assert(!!m_sp_logo_badge);
-    m_sp_logo_badge->Draw(*frame.sp_final_cmd_list);
+    RenderOverlay(*frame.sp_final_cmd_list);
 
     frame.sp_final_cmd_list->Commit(true);
     execute_cmd_lists.push_back(*frame.sp_final_cmd_list);
@@ -419,7 +414,6 @@ void AsteroidsApp::OnContextReleased()
     }
 
     m_animations.clear();
-    m_sp_logo_badge.reset();
     m_sp_sky_box.reset();
     m_sp_planet.reset();
     m_sp_asteroids_array.reset();
