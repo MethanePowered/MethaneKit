@@ -154,8 +154,8 @@ public:
         }
     }
 
-    void Draw(ParallelRenderCommandList& parallel_cmd_list, const MeshBufferBindings::ResourceBindingsArray& instance_resource_bindings,
-              Program::ResourceBindings::ApplyBehavior::Mask bindings_apply_behavior = Program::ResourceBindings::ApplyBehavior::AllIncremental)
+    void DrawParallel(ParallelRenderCommandList& parallel_cmd_list, const MeshBufferBindings::ResourceBindingsArray& instance_resource_bindings,
+                      Program::ResourceBindings::ApplyBehavior::Mask bindings_apply_behavior = Program::ResourceBindings::ApplyBehavior::AllIncremental)
     {
         ITT_FUNCTION_TASK();
 

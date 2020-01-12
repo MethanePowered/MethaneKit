@@ -49,7 +49,6 @@ public:
         float           scale                    = 1.f;
         uint32_t        instance_count           = 100u;
         uint32_t        unique_mesh_count        = 50u;
-        uint32_t        minimum_subdivision      = 0u;
         uint32_t        subdivisions_count       = 3u;
         uint32_t        textures_count           = 10u;
         gfx::Dimensions texture_dimensions       = { 256u, 256u };
@@ -65,19 +64,18 @@ public:
     class UberMesh : public gfx::UberMesh<Asteroid::Vertex>
     {
     public:
-        UberMesh(uint32_t instance_count, uint32_t subdivisions_count, uint32_t min_subdivision, uint32_t random_seed);
+        UberMesh(uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed);
 
         uint32_t GetInstanceCount() const       { return m_instance_count; }
         uint32_t GetSubdivisionsCount() const   { return m_subdivisions_count; }
-        uint32_t GetMinSubdivision() const      { return m_min_subdivision; }
 
-        const gfx::Vector2f& GetSubsetDepthRange(uint32_t subset_index) const;
+        uint32_t             GetSubsetIndex(uint32_t instance_index, uint32_t subdivision_index);
         uint32_t             GetSubsetSubdivision(uint32_t subset_index) const;
+        const gfx::Vector2f& GetSubsetDepthRange(uint32_t subset_index) const;
 
     private:
         const uint32_t             m_instance_count;
         const uint32_t             m_subdivisions_count;
-        const uint32_t             m_min_subdivision;
         std::vector<gfx::Vector2f> m_depth_ranges;
     };
 
@@ -118,11 +116,15 @@ protected:
     uint32_t GetSubsetByInstanceIndex(uint32_t instance_index) const override;
 
 private:
-    const Settings        m_settings;
-    ContentState::Ptr     m_sp_content_state;
-    Textures              m_unique_textures;
-    gfx::Sampler::Ptr     m_sp_texture_sampler;
-    gfx::RenderState::Ptr m_sp_render_state;
+    using MeshSubsetByInstanceIndex = std::vector<uint32_t>;
+
+    const Settings            m_settings;
+    ContentState::Ptr         m_sp_content_state;
+    Textures                  m_unique_textures;
+    gfx::Sampler::Ptr         m_sp_texture_sampler;
+    gfx::RenderState::Ptr     m_sp_render_state;
+    MeshSubsetByInstanceIndex m_mesh_subset_by_instance_index;
+
 };
 
 } // namespace Methane::Samples

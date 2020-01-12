@@ -46,11 +46,10 @@ static gfx::Point3f GetRandomDirection(std::mt19937& rng)
     return cml::normalize(direction);
 }
 
-AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivisions_count, uint32_t min_subdivision, uint32_t random_seed)
+AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed)
     : gfx::UberMesh<Asteroid::Vertex>(gfx::Mesh::VertexLayoutFromArray(Asteroid::Vertex::layout))
     , m_instance_count(instance_count)
     , m_subdivisions_count(subdivisions_count)
-    , m_min_subdivision(min_subdivision)
 {
     ITT_FUNCTION_TASK();
     SCOPE_TIMER("AsteroidsArray::UberMesh::UberMesh");
@@ -58,22 +57,49 @@ AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivision
     std::mt19937 rng(random_seed);
 
     m_depth_ranges.reserve(static_cast<size_t>(m_instance_count) * m_subdivisions_count);
-    for (uint32_t subdivision_index = m_min_subdivision; subdivision_index <= m_subdivisions_count; ++subdivision_index)
+
+    std::mutex data_mutex;
+    for (uint32_t subdivision_index = 0; subdivision_index < m_subdivisions_count; ++subdivision_index)
     {
         Asteroid::Mesh base_mesh(subdivision_index, false);
         base_mesh.Spherify();
 
-        std::mutex data_mutex;
         Data::ParallelFor<uint32_t>(0u, m_instance_count, [&](uint32_t)
-        {
-            Asteroid::Mesh asteroid_mesh(base_mesh);
-            asteroid_mesh.Randomize(rng());
+            {
+                Asteroid::Mesh asteroid_mesh(base_mesh);
+                asteroid_mesh.Randomize(rng());
 
-            std::lock_guard<std::mutex> lock_guard(data_mutex);
-            m_depth_ranges.emplace_back(asteroid_mesh.GetDepthRange());
-            AddSubMesh(asteroid_mesh, false);
-        });
+                std::lock_guard<std::mutex> lock_guard(data_mutex);
+                m_depth_ranges.emplace_back(asteroid_mesh.GetDepthRange());
+                AddSubMesh(asteroid_mesh, false);
+            });
     }
+}
+
+uint32_t AsteroidsArray::UberMesh::GetSubsetIndex(uint32_t instance_index, uint32_t subdivision_index)
+{
+    ITT_FUNCTION_TASK();
+
+    if (instance_index >= m_instance_count)
+        throw std::invalid_argument("Uber-mesh instance index is out of range.");
+
+    if (subdivision_index >= m_subdivisions_count)
+        throw std::invalid_argument("Uber-mesh subdivision index is out of range.");
+
+    return subdivision_index * m_instance_count + instance_index;
+}
+
+uint32_t AsteroidsArray::UberMesh::GetSubsetSubdivision(uint32_t subset_index) const
+{
+    ITT_FUNCTION_TASK();
+
+    if (subset_index >= GetSubsetCount())
+        throw std::invalid_argument("Subset index is out of range.");
+
+    const uint32_t subdivision_index = subset_index / m_instance_count;
+    assert(subdivision_index < m_subdivisions_count);
+
+    return subdivision_index;
 }
 
 const gfx::Vector2f& AsteroidsArray::UberMesh::GetSubsetDepthRange(uint32_t subset_index) const
@@ -87,21 +113,8 @@ const gfx::Vector2f& AsteroidsArray::UberMesh::GetSubsetDepthRange(uint32_t subs
     return m_depth_ranges[subset_index];
 }
 
-uint32_t AsteroidsArray::UberMesh::GetSubsetSubdivision(uint32_t subset_index) const
-{
-    ITT_FUNCTION_TASK();
-
-    if (subset_index >= GetSubsetCount())
-        throw std::invalid_argument("Subset index is out of range.");
-
-    const uint32_t subdivision_index = subset_index / m_instance_count;
-    assert(subdivision_index < m_subdivisions_count);
-
-    return m_min_subdivision + subdivision_index;
-}
-
 AsteroidsArray::ContentState::ContentState(const Settings& settings)
-    : uber_mesh(settings.unique_mesh_count, settings.subdivisions_count, settings.minimum_subdivision, settings.random_seed)
+    : uber_mesh(settings.unique_mesh_count, settings.subdivisions_count, settings.random_seed)
 {
     ITT_FUNCTION_TASK();
     SCOPE_TIMER("AsteroidsArray::ContentState::ContentState");
@@ -134,42 +147,27 @@ AsteroidsArray::ContentState::ContentState(const Settings& settings)
     }
 
     // Randomly generate parameters of each asteroid in array
-    const uint32_t subset_count = settings.unique_mesh_count  * settings.subdivisions_count;
     const float    orbit_radius = settings.orbit_radius_ratio * settings.scale;
     const float    disc_radius  = settings.disc_radius_ratio  * settings.scale;
 
     std::normal_distribution<float>         normal_distribution;
-    std::uniform_int_distribution<uint32_t> subset_distribution(0u, subset_count - 1);
+    std::uniform_int_distribution<uint32_t> mesh_distribution(0u, settings.unique_mesh_count - 1);
     std::uniform_int_distribution<uint32_t> colors_distribution(0, static_cast<uint32_t>(Asteroid::color_schema_size - 1));
+    std::uniform_real_distribution<float>   scale_distribution(settings.min_asteroid_scale_ratio, settings.max_asteroid_scale_ratio);
     std::uniform_real_distribution<float>   scale_proportion_distribution(0.8f, 1.2f);
     std::uniform_real_distribution<float>   spin_velocity_distribution(-2.f, 2.f);
     std::uniform_real_distribution<float>   orbit_velocity_distribution(3.f, 10.f);
     std::normal_distribution<float>         orbit_radius_distribution(orbit_radius, 0.6f * disc_radius);
     std::normal_distribution<float>         orbit_height_distribution(0.0f, 0.4f * disc_radius);
 
-    assert(settings.min_asteroid_scale_ratio < settings.max_asteroid_scale_ratio);
-    const float scale_range_step = (settings.max_asteroid_scale_ratio - settings.min_asteroid_scale_ratio) / settings.subdivisions_count;
-
-    // Separate scale distributions for different mesh subdivisions
-    // for less-detailed meshes be rendered with smaller scale
-    std::vector<std::uniform_real_distribution<float>> subdivision_scale_distributions;
-    for(uint32_t subdivision_index = 0; subdivision_index < settings.subdivisions_count; ++subdivision_index)
-    {
-        subdivision_scale_distributions.emplace_back(
-            settings.min_asteroid_scale_ratio + scale_range_step * (subdivision_index),
-            settings.min_asteroid_scale_ratio + scale_range_step * (subdivision_index + 1)
-        );
-    }
-
     parameters.reserve(settings.instance_count);
 
     for (uint32_t asteroid_index = 0; asteroid_index < settings.instance_count; ++asteroid_index)
     {
-        const uint32_t      asteroid_subset_index = subset_distribution(rng);
-        const uint32_t      asteroid_subdivision  = uber_mesh.GetSubsetSubdivision(asteroid_subset_index) - uber_mesh.GetMinSubdivision();
+        const uint32_t      asteroid_mesh_index   = mesh_distribution(rng);
         const float         asteroid_orbit_radius = orbit_radius_distribution(rng);
         const float         asteroid_orbit_height = orbit_height_distribution(rng);
-        const float         asteroid_scale_ratio  = subdivision_scale_distributions[asteroid_subdivision](rng);
+        const float         asteroid_scale_ratio  = scale_distribution(rng);
         const float         asteroid_scale        = asteroid_scale_ratio * settings.scale;
         const gfx::Vector3f asteroid_scale_ratios = gfx::Vector3f(scale_proportion_distribution(rng),
                                                                   scale_proportion_distribution(rng),
@@ -191,12 +189,12 @@ AsteroidsArray::ContentState::ContentState(const Settings& settings)
             Asteroid::Parameters
             {
                 asteroid_index,
-                asteroid_subset_index,
+                asteroid_mesh_index,
                 settings.textures_array_enabled ? textures_distribution(rng) : 0u,
-                uber_mesh.GetSubsetDepthRange(asteroid_subset_index),
                 std::move(asteroid_colors),
                 std::move(scale_translate_matrix),
                 GetRandomDirection(rng),
+                asteroid_scale,
                 orbit_velocity_distribution(rng) / (asteroid_scale * asteroid_orbit_radius),
                 spin_velocity_distribution(rng)  / asteroid_scale,
                 cml::constants<float>::pi() * normal_distribution(rng),
@@ -216,6 +214,7 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings, Content
     : BaseBuffers(context, state.uber_mesh, "Asteroids Array")
     , m_settings(std::move(settings))
     , m_sp_content_state(state.shared_from_this())
+    , m_mesh_subset_by_instance_index(m_settings.instance_count, 0u)
 {
     ITT_FUNCTION_TASK();
     SCOPE_TIMER("AsteroidsArray::AsteroidsArray");
@@ -336,12 +335,13 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
 
     gfx::Matrix44f view_matrix, proj_matrix;
     m_settings.view_camera.GetViewProjMatrices(view_matrix, proj_matrix);
+    const gfx::Vector3f& eye_position = m_settings.view_camera.GetOrientation().eye;
 
     const gfx::Matrix44f view_proj_matrix = view_matrix * proj_matrix;
     const float elapsed_radians = cml::constants<float>::pi()* static_cast<float>(elapsed_seconds);
 
-    Data::ParallelForEach<Parameters::iterator, const Asteroid::Parameters>(m_sp_content_state->parameters.begin(), m_sp_content_state->parameters.end(),
-        [this, &view_proj_matrix, elapsed_radians](const Asteroid::Parameters& asteroid_parameters)
+    Data::ParallelForEach<Parameters::iterator, Asteroid::Parameters>(m_sp_content_state->parameters.begin(), m_sp_content_state->parameters.end(),
+        [this, &view_proj_matrix, elapsed_radians, &eye_position](Asteroid::Parameters& asteroid_parameters)
         {
             ITT_FUNCTION_TASK();
 
@@ -357,6 +357,19 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
             const gfx::Matrix44f model_matrix = spin_rotation_matrix * asteroid_parameters.scale_translate_matrix * orbit_rotation_matrix;
             const gfx::Matrix44f mvp_matrix   = model_matrix * view_proj_matrix;
 
+            const gfx::Vector3f asteroid_position(model_matrix(3, 0), model_matrix(3, 1), model_matrix(3, 2));
+            const float         distance_to_eye           = (eye_position - asteroid_position).length();
+            const float         relative_screen_size      = asteroid_parameters.scale / std::sqrtf(distance_to_eye);
+            const float         relative_screen_size_log2 = std::logf(relative_screen_size);
+
+            static const float   min_subdiv_size_log2    = std::log2f(0.08);
+            const float          mesh_subdiv_float       = std::roundf(relative_screen_size_log2 - min_subdiv_size_log2);
+            const uint32_t       mesh_subdivision_index  = std::min(m_settings.subdivisions_count - 1, static_cast<uint32_t>(std::max(0.0f, mesh_subdiv_float)));
+            const uint32_t       mesh_subset_index       = m_sp_content_state->uber_mesh.GetSubsetIndex(asteroid_parameters.mesh_instance_index, mesh_subdivision_index);
+            const gfx::Vector2f& mesh_subset_depth_range = m_sp_content_state->uber_mesh.GetSubsetDepthRange(mesh_subset_index);
+
+            m_mesh_subset_by_instance_index[asteroid_parameters.index] = mesh_subset_index;
+
             SetFinalPassUniforms(
                 AsteroidUniforms
                 {
@@ -364,7 +377,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
                     mvp_matrix,
                     asteroid_parameters.colors.deep,
                     asteroid_parameters.colors.shallow,
-                    asteroid_parameters.depth_range,
+                    mesh_subset_depth_range,
                     asteroid_parameters.texture_index
                 },
                 asteroid_parameters.index
@@ -405,17 +418,16 @@ void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_l
     parallel_cmd_list.Reset(m_sp_render_state, "Asteroids Rendering");
 
     assert(buffer_bindings.resource_bindings_per_instance.size() == m_settings.instance_count);
-    BaseBuffers::Draw(parallel_cmd_list, buffer_bindings.resource_bindings_per_instance,
-                      gfx::Program::ResourceBindings::ApplyBehavior::ConstantOnce);
+    BaseBuffers::DrawParallel(parallel_cmd_list, buffer_bindings.resource_bindings_per_instance,
+                              gfx::Program::ResourceBindings::ApplyBehavior::ConstantOnce);
 }
 
 uint32_t AsteroidsArray::GetSubsetByInstanceIndex(uint32_t instance_index) const
 {
     ITT_FUNCTION_TASK();
 
-    assert(!!m_sp_content_state);
-    assert(instance_index < m_sp_content_state->parameters.size());
-    return m_sp_content_state->parameters[instance_index].subset_index;
+    assert(instance_index < m_mesh_subset_by_instance_index.size());
+    return m_mesh_subset_by_instance_index[instance_index];
 }
 
 } // namespace Methane::Samples

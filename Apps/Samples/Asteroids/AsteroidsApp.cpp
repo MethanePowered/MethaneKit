@@ -71,7 +71,7 @@ static const ParamValues<uint32_t, g_max_complexity+1> g_instaces_count = {
     1000u, 2000u, 3000u, 4000u, 5000u, 10000u, 15000u, 20000u, 35000u, 50000u,
 };
 static const ParamValues<uint32_t, g_max_complexity+1> g_mesh_count = {
-    35u,   50u,   75u,   100u,  200u,  300u,   400u,   500u,   600u,   750u,
+    35u,   50u,   75u,   100u,  200u,  300u,   400u,   500u,   750u,   1000u,
 };
 static const ParamValues<uint32_t, g_max_complexity+1> g_textures_count = {
     10u,   10u,   20u,   20u,   30u,   30u,    40u,    40u,    50u,    50u
@@ -125,7 +125,6 @@ AsteroidsApp::AsteroidsApp()
             m_scene_scale,                                  // - scale
             GetParamValueByComplexity(g_instaces_count),    // - instance_count
             GetParamValueByComplexity(g_mesh_count),        // - unique_mesh_count
-            0u,                                             // - minimum_subdivision
             4u,                                             // - subdivisions_count
             GetParamValueByComplexity(g_textures_count),    // - textures_count
             { 256u, 256u },                                 // - texture_dimensions
