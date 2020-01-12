@@ -121,7 +121,7 @@ bool Planet::Update(double elapsed_seconds, double)
     m_settings.view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
     cml::matrix_uniform_scale(model_scale_matrix, m_settings.scale);
     cml::matrix_translation(model_translate_matrix, m_settings.position);
-    cml::matrix_rotation_world_y(model_rotation_matrix, m_settings.spin_velocity_rps * elapsed_seconds);
+    cml::matrix_rotation_world_y(model_rotation_matrix, -m_settings.spin_velocity_rps * elapsed_seconds);
 
     Uniforms uniforms = {};
     uniforms.eye_position   = gfx::Vector4f(m_settings.view_camera.GetOrientation().eye, 1.f);

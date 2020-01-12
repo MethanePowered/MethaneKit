@@ -157,8 +157,8 @@ AsteroidsArray::ContentState::ContentState(const Settings& settings)
     std::uniform_int_distribution<uint32_t> colors_distribution(0, static_cast<uint32_t>(Asteroid::color_schema_size - 1));
     std::uniform_real_distribution<float>   scale_distribution(settings.min_asteroid_scale_ratio, settings.max_asteroid_scale_ratio);
     std::uniform_real_distribution<float>   scale_proportion_distribution(0.8f, 1.2f);
-    std::uniform_real_distribution<float>   spin_velocity_distribution(-2.f, 2.f);
-    std::uniform_real_distribution<float>   orbit_velocity_distribution(3.f, 10.f);
+    std::uniform_real_distribution<float>   spin_velocity_distribution(-1.7f, 1.7f);
+    std::uniform_real_distribution<float>   orbit_velocity_distribution(1.5f, 5.f);
     std::normal_distribution<float>         orbit_radius_distribution(orbit_radius, 0.6f * disc_radius);
     std::normal_distribution<float>         orbit_height_distribution(0.0f, 0.4f * disc_radius);
 
@@ -181,7 +181,7 @@ AsteroidsArray::ContentState::ContentState(const Settings& settings)
         gfx::Matrix44f scale_matrix;
         cml::matrix_scale(scale_matrix, asteroid_scale_ratios * settings.scale);
 
-        const gfx::Matrix44f scale_translate_matrix = scale_matrix * translation_matrix;
+        gfx::Matrix44f scale_translate_matrix = scale_matrix * translation_matrix;
 
         Asteroid::Colors asteroid_colors = normal_distribution(rng) <= 1.f
                                          ? Asteroid::GetAsteroidIceColors(colors_distribution(rng), colors_distribution(rng))
@@ -217,7 +217,7 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings, Content
     , m_settings(std::move(settings))
     , m_sp_content_state(state.shared_from_this())
     , m_mesh_subset_by_instance_index(m_settings.instance_count, 0u)
-    , m_min_mesh_lod_screen_size_log2(std::log2(0.08f))
+    , m_min_mesh_lod_screen_size_log2(std::log2(0.04f))
 {
     ITT_FUNCTION_TASK();
     SCOPE_TIMER("AsteroidsArray::AsteroidsArray");
@@ -349,7 +349,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
             ITT_FUNCTION_TASK();
 
             const float spin_angle_rad  = asteroid_parameters.spin_angle_rad  + asteroid_parameters.spin_speed  * elapsed_radians;
-            const float orbit_angle_rad = asteroid_parameters.orbit_angle_rad + asteroid_parameters.orbit_speed * elapsed_radians;
+            const float orbit_angle_rad = asteroid_parameters.orbit_angle_rad - asteroid_parameters.orbit_speed * elapsed_radians;
 
             gfx::Matrix44f spin_rotation_matrix;
             cml::matrix_rotation_axis_angle(spin_rotation_matrix, asteroid_parameters.spin_axis, spin_angle_rad);

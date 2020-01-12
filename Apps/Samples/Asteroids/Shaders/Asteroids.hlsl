@@ -94,6 +94,7 @@ float4 AsteroidPS(PSInput input) : SV_TARGET
 
     const float  specular_part  = pow(clamp(dot(fragment_to_eye, light_reflected_from_fragment), 0.0, 1.0), g_constants.light_specular_factor);
     const float4 specular_color = base_color * specular_part;
+    const float  fading_ratio   = saturate(input.position.z * 20000.0f);
 
-    return ambient_color + diffuse_color + specular_color;
+    return (ambient_color + diffuse_color + specular_color) * fading_ratio;
 }
