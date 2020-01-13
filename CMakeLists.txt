@@ -51,7 +51,7 @@ elseif(APPLE)
 
 endif()
 
-message(STATUS "Methane Kit version ${METHANE_VERSION}, build number ${METHANE_BUILD_NUMBER}")
+message(STATUS "Methane Kit version ${METHANE_VERSION} build number ${METHANE_BUILD_NUMBER}")
 
 if(METHANE_USE_OPEN_IMAGE_IO)
     message(STATUS "Methane Kit OpenImageIO media-library is enbabled.")
