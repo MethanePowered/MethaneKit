@@ -10,11 +10,11 @@ option(METHANE_SCOPE_TIMERS_ENABLED "Enable low-overhead profiling with scope-ti
 option(METHANE_SHADERS_CODEVIEW_ENABLED "Enable shaders code symbols viewing in debug tools)" OFF)
 option(METHANE_RUN_TESTS_DURING_BUILD "Run tests during build" ON)
 
-set(METHANE_VERSION "0.1" CACHE STRING "Methane release major-minor version number")
+set(METHANE_VERSION "0.2" CACHE STRING "Methane release major-minor version number")
 set(METHANE_BUILD_NUMBER "000000" CACHE STRING "Methane release build number")
 
 set(METHANE_PRODUCT_NAME "Methane Kit (https://github.com/egorodet/MethaneKit)")
-set(METHANE_COPYRIGHT "Copyright 2019 Evgeny Gorodetskiy")
+set(METHANE_COPYRIGHT "Copyright 2019-2020 Evgeny Gorodetskiy")
 
 include_directories($ENV{INCLUDE})
 link_directories($ENV{LIB} ${CMAKE_LIBRARY_INPUT_DIRECTORY})
@@ -51,17 +51,19 @@ elseif(APPLE)
 
 endif()
 
+message(STATUS "Methane Kit version ${METHANE_VERSION} build number ${METHANE_BUILD_NUMBER}")
+
 if(METHANE_USE_OPEN_IMAGE_IO)
     message(STATUS "Methane Kit OpenImageIO media-library is enbabled.")
 endif()
 
 if(METHANE_ITT_INSTRUMENTATION_ENABLED)
-    message(STATUS "Methane ITT Instrumentation is enabled")
+    message(STATUS "Methane ITT instrumentation is enabled")
     add_definitions(-DITT_INSTRUMENTATION_ENABLED)
 endif()
 
 if(METHANE_SCOPE_TIMERS_ENABLED)
-    message(STATUS "Methane Scope Timers are enabled")
+    message(STATUS "Methane scope timers are enabled")
     add_definitions(-DSCOPE_TIMERS_ENABLED)
 endif()
 

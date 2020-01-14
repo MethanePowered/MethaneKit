@@ -8,9 +8,11 @@ trigger:
     - develop
   paths:
     exclude:
+    - Build/Windows/Build.bat
+    - Build/Windows/Build.sh
+    - CMakeSettings.json
     - README.md
     - LICENSE
-    - CMakeSettings.json
 
 pr:
   branches:
@@ -29,7 +31,12 @@ resources:
       submodules: recursive
 
 variables:
-  buildCmakeFlags: '-DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF -DMETHANE_BUILD_NUMBER=$(Build.BuildNumber)'
+  buildCmakeFlags: '-DMETHANE_BUILD_NUMBER=$(Build.BuildNumber) 
+    -DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON 
+    -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON 
+    -DMETHANE_SCOPE_TIMERS_ENABLED:BOOL=OFF 
+    -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF 
+    -DMETHANE_USE_OPEN_IMAGE_IO:BOOL=OFF'
 
 jobs:
 
