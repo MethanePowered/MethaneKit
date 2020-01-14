@@ -10,7 +10,7 @@
 - **Simplifies modern graphics programming** with object-oriented graphics API inspired by simplicity of Apple's Metal.
 - **Provides cross-platform application infrastructure** from CMake-based toolchain to application and user input classes.
 
-Click on **"Open in Gitpod" button** to check out the codebase right away in a familiar VSCode-like IDE environment in your web-browser.
+Click **"Open in Gitpod" button** above to explore Methane Kit codebase right away in a familiar VSCode-like IDE environment in your web-browser with navigation by symbols and even Linux build in cloud.
 
 |     Platform     |  Master Build Status  |  Develop Build Status  |
 | ---------------- | --------------------- | --------------------- |
@@ -25,10 +25,8 @@ Click on **"Open in Gitpod" button** to check out the codebase right away in a f
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit)
 [![Total lines](https://tokei.rs/b1/github/egorodet/MethaneKit)](https://github.com/egorodet/MethaneKit)
 
-<p align="center">
-<img src="https://github.com/egorodet/MethaneKit/blob/develop/Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg"/><br/>
-<a href="https://github.com/egorodet/MethaneKit/master/Apps/Samples/Asteroids">Asteroids sample</a> demonstrating multi-threaded rendering with Methane Graphics API
-</p>
+![Asteroids sample on Windows](Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg)
+<p align="center"><i><a href="#asteroids">Asteroids sample</a> demonstrating multi-threaded rendering with Methane Graphics API</i></p>
 
 ## Table of Contents
 
@@ -58,11 +56,11 @@ Click on **"Open in Gitpod" button** to check out the codebase right away in a f
     - MacOS 10.13 with Metal API
   - Application infrastructure:
     - [Methane CMake modules](/CMake) implement toolchain for cross-platform graphics applications build setup.
+    - [Base application class](/Modules/Platform/App/Include/Methane/Platform/AppBase.h) and platform-specific implementations are completely GLFW free!
     - [Mouse](/Modules/Platform/Input/Include/Methane/Platform/Mouse.h) and [Keyboard](/Modules/Platform/Input/Include/Methane/Platform/Keyboard.h) input classes with platform abstractions of input states.
     - [Resources Provider](Modules/Data/Primitives/Include/Methane/Data/ResourceProvider.hpp) allows loading shaders and textures from embedded application resources.
     - [Animations](Modules/Data/Animation/Include/Methane/Data/Animation.h) execution infrastructure.
     - [Paralel](/Modules/Data/Primitives/Include/Methane/Data/Parallel.hpp) execution primitives.
-    - [Base application class](/Modules/Platform/App/Include/Methane/Platform/AppBase.h) and platform-specific implementations are completely GLFW free!
     - [Graphics application base template class](/Modules/Graphics/App/Include/Methane/Graphics/App.hpp) with basic multi-frame swap-chain management.
 - **One shader code for all APIs**
   - Shaders are written in HLSL 5.1
@@ -92,8 +90,9 @@ Click on **"Open in Gitpod" button** to check out the codebase right away in a f
 - [x] Application user input with mouse and keyboard
 - [x] Parallel command lists
 - [ ] Text rendering
+- [ ] Improved shaders toolset (use DXC & HLSL 6)
+- [ ] Post-processing pipeline
 - [ ] User interface library
-- [ ] Improved shader conversion
 - [ ] Dynamic linking support
 - [ ] Compute pipeline
 
@@ -112,6 +111,8 @@ Click on **"Open in Gitpod" button** to check out the codebase right away in a f
 - **MacOS**
   - MacOS 10.13 "El Capitan" or later
   - XCode 9 or later with Command Line tools
+- **Linux**
+  - Ubuntu 18.04 or later
 
 ### Fetch Sources
 
@@ -142,16 +143,25 @@ Run applications from the installation directory `Build\Output\VisualStudio\Inst
 
 ### MacOS Build
 
-Start terminal, then go to MethaneKit root directory (see instructions above to initialize repository and get latest code with submodules) and either start auxiliary build script [Build/MacOS/Build.sh](Build/MacOS/Build.sh) or build with cmake manually:
+Start terminal, then go to MethaneKit root directory (see instructions above to initialize repository and get latest code with submodules) and either start auxiliary build script [Build/Posix/Build.sh](Build/Posix/Build.sh) or build with cmake manually:
 ```console
 mkdir -p Build/Output/XCode/Build && cd Build/Output/XCode/Build
 cmake -H../../../.. -B. -G Xcode -DCMAKE_INSTALL_PREFIX="$(pwd)/../Install"
 cmake --build . --config Release --target install
 ```
 
-Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) directly in QtCreator or VSCode or any other IDE of choice and build it from there.
+Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) directly in VSCode, CLion or QtCreatoror of choice and build it from there.
 
 Run applications from the installation directory `Build/Output/XCode/Install/Apps`
+
+### Linux Build
+
+Build on Linux with GCC works fine using "Unix Makefiles" generator, but the platform abstraction layer and graphics API implementation are currently stubbed.  So in spite of it builds, do not expect anything to work on Linux now.
+```console
+mkdir -p Build/Output/Linux/Build && cd Build/Output/Linux/Build
+cmake -H../../../.. -B. -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$(pwd)/../Install"
+cmake --build . --config Release --target install
+```
 
 ## Demo Applications
 
@@ -371,24 +381,49 @@ Now you have all in one application executable/bundle running on Windows/MacOS, 
 
 #### Asteroids
 
-![Asteroids on Windows](/Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg)
+| Windows (DirectX 12) | MacOS (Metal) |
+| -------------------- | ------------- |
+| ![Asteroids on Windows](/Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg) | ![Asteroids on MacOS](/Apps/Samples/Asteroids/Screenshots/AsteroidsMacMetal.jpg) |
 
 [Full source code](/Apps/Samples/Asteroids)
 
-## Development Tools <a href="https://www.jetbrains.com/?from=MethaneKit" target="_blank"><img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Partners/JetBrains.png" width=200 align="right" valign="bottom"/></a>
+Asteroids sample demontstrates multi-threaded rendering of large number of heterogenous objects with [ParallelRenderCommandList](/Modules/Graphics/Core/Include/Methane/Graphics/ParallelRenderCommandList.h). Thousands of unique asteroid instances (1000-50000) are drawn with individual Draw-calls in parallel with a random combination of:
+- random-generated mesh (from array of up to 1000 unique meshes)
+- random generated perlin-noise array texture each with 3 projections (from array of up to 50 unique textures)
+- randome combination of coloring (from 2x6x6 combinations)
 
-Supported development environments
+Default parameters of asteroids simulation are selected depending on CPU HW cores count and can be displayed by **[F2]** key.
+Overall complexity can be reduced / increased by pressing **<[>** / **<]>** keys.
+Sample renders galaxy background using [SkyBox](Modules/Graphics/Extensions/Include/Methane/Graphics/SkyBox.h)
+Methane graphics extension and planet using generated [Sphere mesh](/Modules/Graphics/Helpers/Include/Methane/Graphics/Mesh.h) with spheric texture coordinates.
+It also demonstrates interactive [Arc-Ball camera](/Modules/Graphics/Helpers/Include/Methane/Graphics/ArcBallCamera.h) rotated with mouse <LMB> and light rotated with <RMB>, keyboard keys can be seen by pressing **[F1]** key.
+
+Sample includes the following optimizations and features:
+- Asteroid meshes use dynamically selected LODs depending on estimated screen size.
+This allows to greatly reduce GPU overhead. Use **[L]** key to enable LODs coloring and **[']** / **[;]** keys to increase / reduce overall LOD level and mesh detalization.
+- Parallel rendering of asteroids array with individual draw-calls allows to be less CPU bound.
+Multi-threading can be switched off for comparing with single-threaded rendering by pressing **[P]** key.
+- All asteroid textures are bound to program uniform all at once as an array of textures to minimize number of program binding calls between draws.
+Particular texture is selected on each draw call using index parameter in constants buffer.
+Note that each asteroid texture is a texture 2d array itself with 3 mip-mapped textures used for triplanar projection.
+- Inverted depth buffer (with values from 1 in foreground to 0 in background and greater-or-equal compare function) is used to minimize frame buffer overdrawing by rendering in order from foreground to background: asteroids array with planet are drawen first and sky-box afterwards.
+
+Methane Asteroids sample was inspired by [Intel Asteroids D3D12](https://github.com/GameTechDev/asteroids_d3d12), but the whole implementation was re-written from scratch.
+
+## Development Tools
+
+Supported development environments:<a href="https://www.jetbrains.com/?from=MethaneKit" target="_blank"><img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Partners/JetBrains.png" width=200 align="right" valign="bottom"/></a>
 - Microsoft Visual Studio 2017-2019
-  - Solutions and projects generator (generate with [Build.bat](/Build/Windows/Build.bat))
-  - Ninja generator by direct opening CMakeList.txt (pre-configured with [CMakeSettings.json](/CMakeSettings.json))
+  - Solutions and projects build (generate with [Build.bat](/Build/Windows/Build.bat))
+  - Ninja build with CMake native support (pre-configured with [CMakeSettings.json](/CMakeSettings.json))
 - Apple XCode 10, 11
-  - XCode workspace and projects generator (generate with [Build.sh](/Build/Posix/Build.sh))
+  - XCode workspace and projects (generate with [Build.sh](/Build/Posix/Build.sh))
 - Microsoft VS Code (pre-configured with [.vscode/settings.json](/.vscode/settings.json))
 - Jet Brains CLion (pre-configured with [.idea](/.idea))
-- Jet Brains ReSharper C++
-- Qt Creator
+- Jet Brains ReSharper C++ (pre-configured with [Folder.DotSettings](/Folder.DotSettings))
+- Qt Creator with CMake native support
 
-Methane Kit is being developed with support of [Jet Brains](https://www.jetbrains.com/?from=MethaneKit) development tools.
+**NOTE:** Methane Kit is being developed with support of [Jet Brains](https://www.jetbrains.com/?from=MethaneKit) development tools.
 Open source project development license is provided free of charge for all key contributors of Methane Kit project.
 
 ## External Dependencies
@@ -399,4 +434,4 @@ All external dependencies of Methane Kit are listed in [MethaneExternals](https:
 
 Methane Kit is distributed under [Apache 2.0 License](LICENSE): it is free to use and open for contributions!
 
-*Copyright 2019 © Evgeny Gorodetskiy* [![Follow](https://img.shields.io/twitter/follow/egorodet.svg?style=social)](https://twitter.com/egorodet)
+*Copyright 2019-2020 © Evgeny Gorodetskiy* [![Follow](https://img.shields.io/twitter/follow/egorodet.svg?style=social)](https://twitter.com/egorodet)
