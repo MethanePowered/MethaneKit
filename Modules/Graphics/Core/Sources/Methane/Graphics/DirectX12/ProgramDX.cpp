@@ -42,7 +42,6 @@ DirectX 12 implementation of the program interface.
 #include <sstream>
 #include <cassert>
 #include <iomanip>
-#include "../ResourceBase.h"
 
 namespace Methane::Graphics
 {
@@ -334,6 +333,16 @@ ProgramDX::ProgramDX(ContextBase& context, const Settings& settings)
     InitRootSignature();
 }
 
+void ProgramDX::SetName(const std::string& name)
+{
+    ITT_FUNCTION_TASK();
+
+    ObjectBase::SetName(name);
+
+    assert(!!m_cp_root_signature);
+    m_cp_root_signature->SetName(nowide::widen(name).c_str());
+}
+
 void ProgramDX::InitRootSignature()
 {
     ITT_FUNCTION_TASK();
@@ -407,8 +416,7 @@ void ProgramDX::InitRootSignature()
     wrl::ComPtr<ID3DBlob> root_signature_blob;
     wrl::ComPtr<ID3DBlob> error_blob;
     ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&root_signature_desc, feature_data.HighestVersion, &root_signature_blob, &error_blob), error_blob);
-    ThrowIfFailed(GetContextDX().GetDeviceDX().GetNativeDevice()->CreateRootSignature(0, root_signature_blob->GetBufferPointer(), root_signature_blob->GetBufferSize(), IID_PPV_ARGS(&m_dx_root_signature)));
-    m_dx_root_signature->SetName(nowide::widen(m_name + " root signature").c_str());
+    ThrowIfFailed(GetContextDX().GetDeviceDX().GetNativeDevice()->CreateRootSignature(0, root_signature_blob->GetBufferPointer(), root_signature_blob->GetBufferSize(), IID_PPV_ARGS(&m_cp_root_signature)));
 }
 
 ContextDX& ProgramDX::GetContextDX() noexcept

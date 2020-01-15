@@ -41,6 +41,7 @@ class CommandListBase;
 
 class ProgramBase
     : public Program
+    , public ObjectBase
     , public std::enable_shared_from_this<ProgramBase>
 {
     friend class ShaderBase;
@@ -87,8 +88,6 @@ public:
 
     // Program interface
     const Settings&      GetSettings() const override                       { return m_settings; }
-    void                 SetName(const std::string& name) override          { m_name = name; }
-    const std::string&   GetName() const override                           { return m_name; }
     const Shader::Types& GetShaderTypes() const override                    { return m_shader_types; }
     const Shader::Ptr&   GetShader(Shader::Type shader_type) const override { return m_shaders_by_type[static_cast<size_t>(shader_type)]; }
 
@@ -120,7 +119,6 @@ protected:
     const ShadersByType       m_shaders_by_type;
     const Shader::Types       m_shader_types;
     ResourceBindingByArgument m_resource_binding_by_argument;
-    std::string               m_name;
     DescriptorRangeByHeapType m_constant_descriptor_range_by_heap_type;
     std::mutex                m_constant_descriptor_ranges_reservation_mutex;
 };

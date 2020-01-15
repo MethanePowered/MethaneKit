@@ -437,7 +437,7 @@ Shader& ProgramBase::GetShaderRef(Shader::Type shader_type)
     const Shader::Ptr& sp_shader = GetShader(shader_type);
     if (!sp_shader)
     {
-        throw std::runtime_error(Shader::GetTypeName(shader_type) + "shader was not found in program \"" + m_name + "\".");
+        throw std::runtime_error(Shader::GetTypeName(shader_type) + "shader was not found in program \"" + GetName() + "\".");
     }
     return *sp_shader;
 }
@@ -458,7 +458,7 @@ uint32_t ProgramBase::GetInputBufferIndexByArgumentName(const std::string& argum
             return static_cast<uint32_t>(buffer_index);
     }
     
-    throw std::runtime_error("Input argument \"" + argument_name + "\" was not found for program \"" + m_name + "\"");
+    throw std::runtime_error("Input argument \"" + argument_name + "\" was not found for program \"" + GetName() + "\"");
 }
 
 uint32_t ProgramBase::GetInputBufferIndexByArgumentSemantic(const std::string& argument_semantic) const
@@ -477,7 +477,7 @@ uint32_t ProgramBase::GetInputBufferIndexByArgumentSemantic(const std::string& a
             return static_cast<uint32_t>(buffer_index);
     }
 
-    throw std::runtime_error("Input argument with semantic \"" + argument_semantic + "\" was not found for program \"" + m_name + "\"");
+    throw std::runtime_error("Input argument with semantic \"" + argument_semantic + "\" was not found for program \"" + GetName() + "\"");
 }
 
 } // namespace Methane::Graphics

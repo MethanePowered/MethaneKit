@@ -29,7 +29,6 @@ DirectX 12 implementation of the program interface.
 
 #include <wrl.h>
 #include <d3d12.h>
-#include <d3dx12.h>
 
 #include <functional>
 
@@ -64,10 +63,13 @@ public:
 
     ProgramDX(ContextBase& context, const Settings& settings);
 
+    // Object interface
+    void SetName(const std::string& name) override;
+
     ShaderDX& GetVertexShaderDX() noexcept;
     ShaderDX& GetPixelShaderDX() noexcept;
 
-    const wrl::ComPtr<ID3D12RootSignature>& GetNativeRootSignature() const { return m_dx_root_signature; }
+    const wrl::ComPtr<ID3D12RootSignature>& GetNativeRootSignature() const { return m_cp_root_signature; }
     D3D12_INPUT_LAYOUT_DESC                 GetNativeInputLayoutDesc() const noexcept;
 
 protected:
@@ -76,7 +78,7 @@ protected:
     ContextDX& GetContextDX() noexcept;
     const ContextDX& GetContextDX() const noexcept;
 
-    wrl::ComPtr<ID3D12RootSignature>      m_dx_root_signature;
+    wrl::ComPtr<ID3D12RootSignature>      m_cp_root_signature;
     std::vector<D3D12_INPUT_ELEMENT_DESC> m_dx_input_layout;
 };
 

@@ -25,6 +25,7 @@ pipeline via state object and used to create resource binding objects.
 #pragma once
 
 #include "Shader.h"
+#include "Object.h"
 #include "Types.h"
 
 #include <memory>
@@ -41,7 +42,7 @@ namespace Methane::Graphics
 struct Context;
 struct CommandList;
 
-struct Program
+struct Program : virtual Object
 {
     using Ptr = std::shared_ptr<Program>;
 
@@ -136,8 +137,6 @@ struct Program
 
     // Program interface
     virtual const Settings&      GetSettings() const = 0;
-    virtual void                 SetName(const std::string& name) = 0;
-    virtual const std::string&   GetName() const = 0;
     virtual const Shader::Types& GetShaderTypes() const = 0;
     virtual const Shader::Ptr&   GetShader(Shader::Type shader_type) const = 0;
 
