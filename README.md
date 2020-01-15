@@ -6,11 +6,11 @@
 [![Join the chat at https://gitter.im/MethaneKit/community](https://badges.gitter.im/MethaneKit/community.svg)](https://gitter.im/MethaneKit/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 **Easy to use modern 3D graphics abstraction API in C++17 for cross-platform applications development:**
-- **Built on top of modern native 3D graphics APIs**: DirectX 12 on Windows and Metal on MacOS.
+- **Built on top of modern native 3D graphics APIs**: DirectX 12 on Windows and Metal on MacOS, Vulkan on Linux will be enabled soon.
 - **Simplifies modern graphics programming** with object-oriented graphics API inspired by simplicity of Apple's Metal.
 - **Provides cross-platform application infrastructure** from CMake-based toolchain to application and user input classes.
 
-Click **"Open in Gitpod" button** above to explore Methane Kit codebase right away in a familiar VSCode-like IDE environment in your web-browser with navigation by symbols and even Linux build in cloud.
+Click **"Open in Gitpod" button** above to explore Methane Kit codebase right away in a familiar VSCode-like IDE environment in your web-browser with navigation by symbols and even cloud-build.
 
 |     Platform     |  Master Build Status  |  Develop Build Status  |
 | ---------------- | --------------------- | --------------------- |
@@ -37,6 +37,7 @@ Click **"Open in Gitpod" button** above to explore Methane Kit codebase right aw
    1. [Fetch Sources](#fetch-sources)
    1. [Windows Build](#windows-build)
    1. [MacOS Build](#macos-build)
+   1. [Linux Build](#linux-build)
 1. [Demo Applications](#demo-applications)
    1. [Tutorials](#tutorials)
       1. [Hello Triangle](#hello-triangle)
@@ -387,32 +388,37 @@ Now you have all in one application executable/bundle running on Windows/MacOS, 
 
 [Full source code](/Apps/Samples/Asteroids)
 
-Asteroids sample demontstrates multi-threaded rendering of large number of heterogenous objects with [ParallelRenderCommandList](/Modules/Graphics/Core/Include/Methane/Graphics/ParallelRenderCommandList.h). Thousands of unique asteroid instances (1000-50000) are drawn with individual Draw-calls in parallel with a random combination of:
+Asteroids sample demontstrates multi-threaded rendering of large number of heterogenous objects with [ParallelRenderCommandList](/Modules/Graphics/Core/Include/Methane/Graphics/ParallelRenderCommandList.h).
+Thousands of unique asteroid instances (1000-50000) are drawn with individual Draw-calls in parallel with a random combination of:
 - random-generated mesh (from array of up to 1000 unique meshes)
 - random generated perlin-noise array texture each with 3 projections (from array of up to 50 unique textures)
-- randome combination of coloring (from 2x6x6 combinations)
+- random combination of coloring (from 72 color combinations)
 
-Default parameters of asteroids simulation are selected depending on CPU HW cores count and can be displayed by **[F2]** key.
-Overall complexity can be reduced / increased by pressing **<[>** / **<]>** keys.
+Default parameters of asteroids simulation are selected depending on CPU HW cores count and can be displayed by `F2` key.
+Overall complexity can be reduced / increased by pressing `[` / `]` keys.
 Sample renders galaxy background using [SkyBox](Modules/Graphics/Extensions/Include/Methane/Graphics/SkyBox.h)
-Methane graphics extension and planet using generated [Sphere mesh](/Modules/Graphics/Helpers/Include/Methane/Graphics/Mesh.h) with spheric texture coordinates.
-It also demonstrates interactive [Arc-Ball camera](/Modules/Graphics/Helpers/Include/Methane/Graphics/ArcBallCamera.h) rotated with mouse <LMB> and light rotated with <RMB>, keyboard keys can be seen by pressing **[F1]** key.
+graphics extension and planet using generated [Sphere mesh](/Modules/Graphics/Helpers/Include/Methane/Graphics/Mesh.h) with spheric texture coordinates.
+It also uses interactive [Arc-Ball camera](/Modules/Graphics/Helpers/Include/Methane/Graphics/ArcBallCamera.h)
+rotated with mouse `LMB` and light rotated with `RMB` with keyboard shotcuts also available by pressing `F1` key.
 
 Sample includes the following optimizations and features:
-- Asteroid meshes use dynamically selected LODs depending on estimated screen size.
-This allows to greatly reduce GPU overhead. Use **[L]** key to enable LODs coloring and **[']** / **[;]** keys to increase / reduce overall LOD level and mesh detalization.
-- Parallel rendering of asteroids array with individual draw-calls allows to be less CPU bound.
-Multi-threading can be switched off for comparing with single-threaded rendering by pressing **[P]** key.
-- All asteroid textures are bound to program uniform all at once as an array of textures to minimize number of program binding calls between draws.
+- Asteroid meshes use **dynamically selected LODs** depending on estimated screen size.
+This allows to greatly reduce GPU overhead. Use `L` key to enable LODs coloring and `'` / `;` keys to increase / reduce overall LOD level and mesh detalization.
+- **Parallel rendering** of asteroids array with individual draw-calls allows to be less CPU bound.
+Multi-threading can be switched off for comparing with single-threaded rendering by pressing `P` key.
+- All asteroid textures are bound to program uniform all at once as an **array of textures** to minimize number of program binding calls between draws.
 Particular texture is selected on each draw call using index parameter in constants buffer.
 Note that each asteroid texture is a texture 2d array itself with 3 mip-mapped textures used for triplanar projection.
-- Inverted depth buffer (with values from 1 in foreground to 0 in background and greater-or-equal compare function) is used to minimize frame buffer overdrawing by rendering in order from foreground to background: asteroids array with planet are drawen first and sky-box afterwards.
+- **Inverted depth buffer** (with values from 1 in foreground to 0 in background and greater-or-equal compare function)
+is used to minimize frame buffer overdrawing by rendering in order from foreground to background: asteroids array with planet
+are drawen first and sky-box afterwards.
 
-Methane Asteroids sample was inspired by [Intel Asteroids D3D12](https://github.com/GameTechDev/asteroids_d3d12), but the whole implementation was re-written from scratch.
+Methane Asteroids sample was inspired by [Intel Asteroids D3D12](https://github.com/GameTechDev/asteroids_d3d12),
+but the whole implementation was re-written from scratch using Methane Kit in cross-platform style.
 
 ## Development Tools
 
-Supported development environments:<a href="https://www.jetbrains.com/?from=MethaneKit" target="_blank"><img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Partners/JetBrains.png" width=200 align="right" valign="bottom"/></a>
+**Supported development environments**:<a href="https://www.jetbrains.com/?from=MethaneKit" target="_blank"><img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Partners/JetBrains.png" width=200 align="right" valign="bottom"/></a>
 - Microsoft Visual Studio 2017-2019
   - Solutions and projects build (generate with [Build.bat](/Build/Windows/Build.bat))
   - Ninja build with CMake native support (pre-configured with [CMakeSettings.json](/CMakeSettings.json))
