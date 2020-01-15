@@ -287,18 +287,26 @@ public:
         const uint32_t subset_index = this->GetSubsetByInstanceIndex(instance_index);
         return GetSubsetTexturePtr(subset_index);
     }
+
+    void SetTexture(const Texture::Ptr& sp_texture)
+    {
+        ITT_FUNCTION_TASK();
+
+        SetSubsetTexture(sp_texture, 0u);
+
+        if (sp_texture)
+        {
+            sp_texture->SetName(MeshBuffers<UniformsType>::GetMeshName() + " Texture");
+        }
+    }
     
-    void SetSubsetTexture(const Texture::Ptr& sp_texture, uint32_t subset_index = 0)
+    void SetSubsetTexture(const Texture::Ptr& sp_texture, uint32_t subset_index)
     {
         ITT_FUNCTION_TASK();
 
         if (subset_index >= MeshBuffers<UniformsType>::GetSubsetsCount())
             throw std::invalid_argument("Subset index is out of bounds.");
-        
-        if (sp_texture)
-        {
-            sp_texture->SetName(MeshBuffers<UniformsType>::GetMeshName() + " Texture");
-        }
+
         m_subset_textures[subset_index] = sp_texture;
     }
 

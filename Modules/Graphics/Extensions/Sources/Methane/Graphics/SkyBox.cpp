@@ -47,7 +47,7 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
 {
     ITT_FUNCTION_TASK();
 
-    m_mesh_buffers.SetSubsetTexture(image_loader.LoadImagesToTextureCube(m_context, m_settings.face_resources, m_settings.mipmapped));
+    m_mesh_buffers.SetTexture(image_loader.LoadImagesToTextureCube(m_context, m_settings.face_resources, m_settings.mipmapped));
 
     const Context::Settings& context_settings = context.GetSettings();
 

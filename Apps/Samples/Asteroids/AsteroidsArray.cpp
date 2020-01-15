@@ -258,11 +258,13 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings, Content
     SetInstanceCount(m_settings.instance_count);
 
     // Create texture arrays initialized with sub-resources data
+    uint32_t texture_index = 0u;
     m_unique_textures.reserve(m_settings.textures_count);
     for(const gfx::Resource::SubResources& texture_subresources : m_sp_content_state->texture_array_subresources)
     {
         m_unique_textures.emplace_back(gfx::Texture::CreateImage(context, m_settings.texture_dimensions, static_cast<uint32_t>(texture_subresources.size()), gfx::PixelFormat::RGBA8Unorm, true));
         m_unique_textures.back()->SetData(texture_subresources);
+        m_unique_textures.back()->SetName("Asteroid Texture " + std::to_string(texture_index++));
     }
 
     // Distribute textures between unique mesh subsets
