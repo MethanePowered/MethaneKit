@@ -392,7 +392,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
 
     return true;
 }
-    
+
 void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, gfx::MeshBufferBindings& buffer_bindings)
 {
     ITT_FUNCTION_TASK();

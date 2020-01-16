@@ -57,6 +57,34 @@ static void SetWindowTopMostFlag(HWND window_handle, bool is_top_most)
                  SWP_FRAMECHANGED | SWP_NOACTIVATE);
 }
 
+static float GetDeviceScaleRatio(DEVICE_SCALE_FACTOR device_scale_factor)
+{
+    ITT_FUNCTION_TASK();
+
+    switch (device_scale_factor)
+    {
+    case SCALE_100_PERCENT: return 1.0f;
+    case SCALE_120_PERCENT: return 1.2f;
+    case SCALE_125_PERCENT: return 1.25f;
+    case SCALE_140_PERCENT: return 1.4f;
+    case SCALE_150_PERCENT: return 1.5f;
+    case SCALE_160_PERCENT: return 1.6f;
+    case SCALE_175_PERCENT: return 1.75f;
+    case SCALE_180_PERCENT: return 1.8f;
+    case SCALE_200_PERCENT: return 2.f;
+    case SCALE_225_PERCENT: return 2.25f;
+    case SCALE_250_PERCENT: return 2.5f;
+    case SCALE_300_PERCENT: return 3.f;
+    case SCALE_350_PERCENT: return 3.5f;
+    case SCALE_400_PERCENT: return 4.f;
+    case SCALE_450_PERCENT: return 4.5f;
+    case SCALE_500_PERCENT: return 5.f;
+    default:                assert(0);
+    }
+
+    return 1.f;
+}
+
 Context::Ptr Context::Create(const Platform::AppEnvironment& env, Device& device, const Context::Settings& settings)
 {
     ITT_FUNCTION_TASK();
@@ -274,29 +302,7 @@ float ContextDX::GetContentScalingFactor() const
     DEVICE_SCALE_FACTOR device_scale_factor = DEVICE_SCALE_FACTOR_INVALID;
     HMONITOR monitor_handle = MonitorFromWindow(m_platform_env.window_handle, MONITOR_DEFAULTTONEAREST);
     ThrowIfFailed(GetScaleFactorForMonitor(monitor_handle, &device_scale_factor));
-
-    switch(device_scale_factor)
-    {
-    case SCALE_100_PERCENT: return 1.0f;
-    case SCALE_120_PERCENT: return 1.2f;
-    case SCALE_125_PERCENT: return 1.25f;
-    case SCALE_140_PERCENT: return 1.4f;
-    case SCALE_150_PERCENT: return 1.5f;
-    case SCALE_160_PERCENT: return 1.6f;
-    case SCALE_175_PERCENT: return 1.75f;
-    case SCALE_180_PERCENT: return 1.8f;
-    case SCALE_200_PERCENT: return 2.f;
-    case SCALE_225_PERCENT: return 2.25f;
-    case SCALE_250_PERCENT: return 2.5f;
-    case SCALE_300_PERCENT: return 3.f;
-    case SCALE_350_PERCENT: return 3.5f;
-    case SCALE_400_PERCENT: return 4.f;
-    case SCALE_450_PERCENT: return 4.5f;
-    case SCALE_500_PERCENT: return 5.f;
-    default:                assert(0);
-    }
-
-    return 1.f;
+    return GetDeviceScaleRatio(device_scale_factor);
 }
 
 CommandQueueDX& ContextDX::GetUploadCommandQueueDX()

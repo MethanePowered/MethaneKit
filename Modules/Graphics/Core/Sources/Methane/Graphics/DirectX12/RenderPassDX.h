@@ -96,6 +96,9 @@ private:
         DSClearInfo(const RenderPassBase::DepthAttachment& depth_attach, const RenderPassBase::StencilAttachment& stencil_attach);
     };
 
+    void UpdateNativeRenderPassDesc(bool settings_changed);
+    void UpdateNativeClearDesc();
+
     // D3D12 Render-Pass description
     std::optional<bool>                                 m_is_native_render_pass_available;
     std::vector<D3D12_RENDER_PASS_RENDER_TARGET_DESC>   m_render_target_descs;

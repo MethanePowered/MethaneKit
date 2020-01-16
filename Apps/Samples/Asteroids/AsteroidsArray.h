@@ -132,7 +132,6 @@ private:
     MeshSubsetByInstanceIndex m_mesh_subset_by_instance_index;
     bool                      m_mesh_lod_coloring_enabled = false;
     float                     m_min_mesh_lod_screen_size_log2;
-
 };
 
 } // namespace Methane::Samples

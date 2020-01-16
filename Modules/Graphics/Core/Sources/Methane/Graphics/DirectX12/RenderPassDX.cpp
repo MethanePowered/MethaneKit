@@ -54,7 +54,7 @@ RenderPassDX::AccessDesc::AccessDesc(const Attachment& attachment)
     if (attachment.wp_texture.expired())
     {
         beginning.Type = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS;
-        ending.Type   = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS;
+        ending.Type    = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS;
     }
     else
     {
@@ -204,73 +204,88 @@ void RenderPassDX::Update(const Settings& settings)
 {
     ITT_FUNCTION_TASK();
 
-    const bool settings_unchanged = m_settings == settings;
+    const bool settings_changed = m_settings != settings;
     RenderPassBase::Update(settings);
 
     if (!m_is_native_render_pass_available.has_value() || m_is_native_render_pass_available.value())
     {
-        const bool update_descriptors_only = settings_unchanged && m_render_target_descs.size() == m_settings.color_attachments.size();
-        if (!update_descriptors_only)
-        {
-            m_render_target_descs.clear();
-            m_depth_stencil_desc.reset();
-        }
-
-        uint32_t color_attachment_index = 0;
-        for (const RenderPassBase::ColorAttachment& color_attachment : m_settings.color_attachments)
-        {
-            if (update_descriptors_only)
-            {
-                m_render_target_descs[color_attachment_index].cpuDescriptor = GetRenderTargetTextureCpuDescriptor(color_attachment.wp_texture);
-                color_attachment_index++;
-            }
-            else
-            {
-                const AccessDesc render_target_access(color_attachment);
-
-                m_render_target_descs.emplace_back(D3D12_RENDER_PASS_RENDER_TARGET_DESC{
-                    render_target_access.descriptor, render_target_access.beginning, render_target_access.ending
-                    });
-            }
-        }
-
-        if (!m_settings.depth_attachment.wp_texture.expired())
-        {
-            if (update_descriptors_only && m_depth_stencil_desc)
-            {
-                m_depth_stencil_desc->cpuDescriptor = GetRenderTargetTextureCpuDescriptor(m_settings.depth_attachment.wp_texture);
-            }
-            else
-            {
-                const AccessDesc depth_access(m_settings.depth_attachment, m_settings.stencil_attachment);
-                const AccessDesc stencil_access(m_settings.stencil_attachment, m_settings.depth_attachment);
-
-                m_depth_stencil_desc = D3D12_RENDER_PASS_DEPTH_STENCIL_DESC{
-                    depth_access.descriptor,
-                    depth_access.beginning, stencil_access.beginning,
-                    depth_access.ending,    stencil_access.ending
-                };
-            }
-        }
+        UpdateNativeRenderPassDesc(!settings_changed);
     }
     
     if (!m_is_native_render_pass_available.has_value() || !m_is_native_render_pass_available.value())
     {
-        m_rt_clear_infos.clear();
-        for (const RenderPassBase::ColorAttachment& color_attach : m_settings.color_attachments)
-        {
-            if (color_attach.load_action != RenderPassBase::Attachment::LoadAction::Clear)
-                continue;
-
-            if (color_attach.wp_texture.expired())
-            {
-                throw std::invalid_argument("Can not clear render target attachment without texture.");
-            }
-            m_rt_clear_infos.emplace_back(color_attach);
-        }
-
-        m_ds_clear_info = DSClearInfo(m_settings.depth_attachment, m_settings.stencil_attachment);
+        UpdateNativeClearDesc();
     }
+}
+
+void RenderPassDX::UpdateNativeRenderPassDesc(bool settings_changed)
+{
+    ITT_FUNCTION_TASK();
+
+    const bool update_descriptors_only = !settings_changed && m_render_target_descs.size() == m_settings.color_attachments.size();
+    if (!update_descriptors_only)
+    {
+        m_render_target_descs.clear();
+        m_depth_stencil_desc.reset();
+    }
+
+    uint32_t color_attachment_index = 0;
+    for (const RenderPassBase::ColorAttachment& color_attachment : m_settings.color_attachments)
+    {
+        if (update_descriptors_only)
+        {
+            m_render_target_descs[color_attachment_index].cpuDescriptor = GetRenderTargetTextureCpuDescriptor(color_attachment.wp_texture);
+            color_attachment_index++;
+        }
+        else
+        {
+            const AccessDesc render_target_access(color_attachment);
+            m_render_target_descs.emplace_back(D3D12_RENDER_PASS_RENDER_TARGET_DESC{
+                render_target_access.descriptor, render_target_access.beginning, render_target_access.ending
+            });
+        }
+    }
+
+    if (!m_settings.depth_attachment.wp_texture.expired())
+    {
+        if (update_descriptors_only && m_depth_stencil_desc)
+        {
+            m_depth_stencil_desc->cpuDescriptor = GetRenderTargetTextureCpuDescriptor(m_settings.depth_attachment.wp_texture);
+        }
+        else
+        {
+            const AccessDesc depth_access(m_settings.depth_attachment, m_settings.stencil_attachment);
+            const AccessDesc stencil_access(m_settings.stencil_attachment, m_settings.depth_attachment);
+
+            m_depth_stencil_desc = D3D12_RENDER_PASS_DEPTH_STENCIL_DESC{
+                depth_access.descriptor,
+                depth_access.beginning, stencil_access.beginning,
+                depth_access.ending,    stencil_access.ending
+            };
+        }
+    }
+
+}
+
+void RenderPassDX::UpdateNativeClearDesc()
+{
+    ITT_FUNCTION_TASK();
+
+    m_rt_clear_infos.clear();
+    for (const RenderPassBase::ColorAttachment& color_attach : m_settings.color_attachments)
+    {
+        if (color_attach.load_action != RenderPassBase::Attachment::LoadAction::Clear)
+            continue;
+
+        if (color_attach.wp_texture.expired())
+        {
+            throw std::invalid_argument("Can not clear render target attachment without texture.");
+        }
+        m_rt_clear_infos.emplace_back(color_attach);
+    }
+
+    m_ds_clear_info = DSClearInfo(m_settings.depth_attachment, m_settings.stencil_attachment);
+
 }
 
 void RenderPassDX::Begin(RenderCommandListBase& command_list)

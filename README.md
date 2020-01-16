@@ -43,7 +43,7 @@ Click **"Open in Gitpod" button** above to explore Methane Kit codebase right aw
       1. [Hello Triangle](#hello-triangle)
       2. [Textured Cube](#textured-cube)
       3. [Shadow Cube](#shadow-cube)
-   3. [Samples](#samples)
+   2. [Samples](#samples)
       1. [Asteroids](#asteroids)
 5. [Development Tools](#development-tools)
 6. [External Dependencies](#external-dependencies)

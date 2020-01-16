@@ -31,7 +31,7 @@ Native implementation alias of the render pass interface.
 
 #include <Methane/Graphics/Metal/RenderPassMT.hh>
 
-#elif // Linux
+#elif defined __linux__
 
 #include <Methane/Graphics/Vulkan/RenderPassVK.h>
 
