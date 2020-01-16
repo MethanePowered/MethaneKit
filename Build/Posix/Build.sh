@@ -6,7 +6,7 @@ do
     arg="$1"
     case "$arg" in
         --analyze) IS_ANALYZE_BUILD=true;;
-        *)         IS_UNKNOWN_ARG=true;;
+        *)         echo "Unknown argument!" && exit 1;;
     esac
     shift
 done

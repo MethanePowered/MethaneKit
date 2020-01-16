@@ -73,16 +73,6 @@ void RenderPassVK::Reset()
         
         color_attach_index++;
     }
-    
-    if (!m_settings.depth_attachment.wp_texture.expired())
-    {
-        const TextureVK& depth_texture = static_cast<const TextureVK&>(*m_settings.depth_attachment.wp_texture.lock());
-    }
-    
-    if (!m_settings.stencil_attachment.wp_texture.expired())
-    {
-        const TextureVK& stencil_texture = static_cast<const TextureVK&>(*m_settings.stencil_attachment.wp_texture.lock());
-    }
 }
 
 ContextVK& RenderPassVK::GetContextVK() noexcept

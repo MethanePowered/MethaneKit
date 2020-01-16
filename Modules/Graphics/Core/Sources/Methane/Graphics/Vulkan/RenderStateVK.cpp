@@ -81,8 +81,6 @@ void RenderStateVK::Reset(const Settings& settings)
 void RenderStateVK::Apply(RenderCommandListBase& command_list, Group::Mask state_groups)
 {
     ITT_FUNCTION_TASK();
-
-    RenderCommandListVK& vulkan_command_list = static_cast<RenderCommandListVK&>(command_list);
 }
 
 void RenderStateVK::SetViewports(const Viewports& viewports)

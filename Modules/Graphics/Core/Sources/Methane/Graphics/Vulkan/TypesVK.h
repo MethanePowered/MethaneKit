@@ -30,8 +30,6 @@ namespace Methane::Graphics
 
 class TypeConverterVK
 {
-public:
-
 private:
     TypeConverterVK() = default;
 };

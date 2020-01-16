@@ -31,23 +31,23 @@ Click **"Open in Gitpod" button** above to explore Methane Kit codebase right aw
 ## Table of Contents
 
 1. [Features](#features)
-1. [Development Plans](#development-plans)
-1. [Getting Started](#getting-started)
+2. [Development Plans](#development-plans)
+3. [Getting Started](#getting-started)
    1. [Prerequisites](#prerequisites)
-   1. [Fetch Sources](#fetch-sources)
-   1. [Windows Build](#windows-build)
-   1. [MacOS Build](#macos-build)
-   1. [Linux Build](#linux-build)
-1. [Demo Applications](#demo-applications)
+   2. [Fetch Sources](#fetch-sources)
+   3. [Windows Build](#windows-build)
+   4. [MacOS Build](#macos-build)
+   5. [Linux Build](#linux-build)
+4. [Demo Applications](#demo-applications)
    1. [Tutorials](#tutorials)
       1. [Hello Triangle](#hello-triangle)
-      1. [Textured Cube](#textured-cube)
-      1. [Shadow Cube](#shadow-cube)
-   1. [Samples](#samples)
+      2. [Textured Cube](#textured-cube)
+      3. [Shadow Cube](#shadow-cube)
+   3. [Samples](#samples)
       1. [Asteroids](#asteroids)
-1. [Development Tools](#development-tools)
-1. [External Dependencies](#external-dependencies)
-1. [License](#license)
+5. [Development Tools](#development-tools)
+6. [External Dependencies](#external-dependencies)
+7. [License](#license)
 
 ## Features
 
@@ -90,6 +90,7 @@ Click **"Open in Gitpod" button** above to explore Methane Kit codebase right aw
 - [x] Continous integration system
 - [x] Application user input with mouse and keyboard
 - [x] Parallel command lists
+- [ ] Mesh loader (Assimp)
 - [ ] Text rendering
 - [ ] Improved shaders toolset (use DXC & HLSL 6)
 - [ ] Post-processing pipeline
