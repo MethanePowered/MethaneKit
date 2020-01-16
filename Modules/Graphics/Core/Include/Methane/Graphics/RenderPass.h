@@ -43,24 +43,24 @@ struct RenderPass
     {
         enum class LoadAction : uint32_t
         {
-            DontCare = 0,
+            DontCare = 0u,
             Load,
             Clear,
         };
 
         enum class StoreAction : uint32_t
         {
-            DontCare = 0,
+            DontCare = 0u,
             Store,
-            Unknown,
+            Resolve,
         };
         
         Texture::WeakPtr wp_texture;
-        uint32_t         level        = 0;
-        uint32_t         slice        = 0;
-        uint32_t         depth_plane  = 0;
+        uint32_t         level        = 0u;
+        uint32_t         slice        = 0u;
+        uint32_t         depth_plane  = 0u;
         LoadAction       load_action  = LoadAction::DontCare;
-        StoreAction      store_action = StoreAction::Unknown;
+        StoreAction      store_action = StoreAction::DontCare;
         
         bool operator==(const Attachment& other) const;
     };
@@ -88,10 +88,10 @@ struct RenderPass
     
     struct StencilAttachment : Attachment
     {
-        Stencil clear_value = 0;
+        Stencil clear_value = 0u;
         
         StencilAttachment() = default;
-        StencilAttachment(const Attachment&& attach, Stencil in_clear_value = 0) : Attachment(attach), clear_value(in_clear_value) { }
+        StencilAttachment(const Attachment&& attach, Stencil in_clear_value = 0u) : Attachment(attach), clear_value(in_clear_value) { }
         
         bool operator==(const StencilAttachment& other) const;
     };
@@ -101,12 +101,12 @@ struct RenderPass
         using Mask = uint32_t;
         enum Value : Mask
         {
-            None            = 0,
-            ShaderResources = 1 << 0,
-            Samplers        = 1 << 1,
-            RenderTargets   = 1 << 2,
-            DepthStencil    = 1 << 3,
-            All             = static_cast<Mask>(~0),
+            None            = 0u,
+            ShaderResources = 1u << 0u,
+            Samplers        = 1u << 1u,
+            RenderTargets   = 1u << 2u,
+            DepthStencil    = 1u << 3u,
+            All             = ~0u,
         };
 
         using Values = std::array<Value, 4>;

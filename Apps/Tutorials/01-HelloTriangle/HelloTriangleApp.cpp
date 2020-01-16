@@ -41,16 +41,16 @@ static const GraphicsApp::Settings      g_app_settings = // Application settings
         gfx::PixelFormat::BGRA8Unorm,               // - color_format
         gfx::PixelFormat::Unknown,                  // - depth_stencil_format
         gfx::Color4f(0.0f, 0.2f, 0.4f, 1.0f),       // - clear_color
-        1.f,                                        // - clear_depth
-        0,                                          // - clear_stencil
+        { /* no depth-stencil clearing */ },        // - clear_depth_stencil
         3,                                          // - frame_buffers_count
         true,                                       // - vsync_enabled
     },                                              //
-    true                                            // show_hud_in_window_title
+    true,                                           // show_hud_in_window_title
+    true                                            // show_logo_badge
 };
 
 HelloTriangleApp::HelloTriangleApp()
-    : GraphicsApp(g_app_settings, gfx::RenderPass::Access::None)
+    : GraphicsApp(g_app_settings, gfx::RenderPass::Access::ShaderResources | gfx::RenderPass::Access::Samplers)
     , m_triangle_vertices({{
         { { 0.0f,   0.5f,  0.0f }, { 1.0f, 0.0f, 0.0f } },
         { { 0.5f,  -0.5f,  0.0f }, { 0.0f, 1.0f, 0.0f } },
@@ -132,15 +132,16 @@ bool HelloTriangleApp::Resize(const gfx::FrameSize& frame_size, bool is_minimize
     assert(m_sp_state);
     m_sp_state->SetViewports(    { gfx::GetFrameViewport(frame_size)    } );
     m_sp_state->SetScissorRects( { gfx::GetFrameScissorRect(frame_size) } );
+
     return true;
 }
 
-void HelloTriangleApp::Render()
+bool HelloTriangleApp::Render()
 {
     // Render only when context is ready
     assert(!!m_sp_context);
-    if (!m_sp_context->ReadyToRender())
-        return;
+    if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
+        return false;
 
     // Wait for previous frame rendering is completed and switch to next frame
     m_sp_context->WaitForGpu(gfx::Context::WaitFor::FramePresented);
@@ -151,16 +152,20 @@ void HelloTriangleApp::Render()
     assert(!!m_sp_state);
 
     // Issue commands for triangle rendering
-    frame.sp_cmd_list->Reset(*m_sp_state, "Cube redering");
+    frame.sp_cmd_list->Reset(m_sp_state, "Cube redering");
     frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
     frame.sp_cmd_list->Draw(gfx::RenderCommandList::Primitive::Triangle, static_cast<uint32_t>(m_triangle_vertices.size()));
+
+    RenderOverlay(*frame.sp_cmd_list);
+
+    // Commit command list with present flag
     frame.sp_cmd_list->Commit(true);
 
-    // Present frame to screen
+    // Execute command list on render queue and present frame to screen
     m_sp_context->GetRenderCommandQueue().Execute({ *frame.sp_cmd_list });
     m_sp_context->Present();
 
-    GraphicsApp::Render();
+    return true;
 }
 
 void HelloTriangleApp::OnContextReleased()

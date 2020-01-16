@@ -31,6 +31,10 @@ Native implementation alias of the render pass interface.
 
 #include <Methane/Graphics/Metal/RenderPassMT.hh>
 
+#elif defined __linux__
+
+#include <Methane/Graphics/Vulkan/RenderPassVK.h>
+
 #endif
 
 namespace Methane::Graphics
@@ -43,6 +47,10 @@ using RenderPassNT = RenderPassDX;
 #elif defined __APPLE__
 
 using RenderPassNT = RenderPassMT;
+
+#elif defined __linux__
+
+using RenderPassNT = RenderPassVK;
 
 #endif
 

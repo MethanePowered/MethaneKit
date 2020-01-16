@@ -42,7 +42,8 @@ CD3DX12_RECT TypeConverterDX::ScissorRectToD3D(const ScissorRect& scissor_rect) 
 {
     ITT_FUNCTION_TASK();
     return CD3DX12_RECT(static_cast<LONG>(scissor_rect.origin.x()), static_cast<LONG>(scissor_rect.origin.y()),
-                        static_cast<LONG>(scissor_rect.size.width), static_cast<LONG>(scissor_rect.size.height));
+                        static_cast<LONG>(scissor_rect.origin.x() + scissor_rect.size.width),
+                        static_cast<LONG>(scissor_rect.origin.y() + scissor_rect.size.height));
 }
 
 std::vector<CD3DX12_VIEWPORT> TypeConverterDX::ViewportsToD3D(const Viewports& viewports) noexcept
@@ -83,7 +84,9 @@ DXGI_FORMAT TypeConverterDX::DataFormatToDXGI(const PixelFormat& data_format) no
     case PixelFormat::R32Float:      return DXGI_FORMAT_R32_FLOAT;
     case PixelFormat::R32Uint:       return DXGI_FORMAT_R32_UINT;
     case PixelFormat::R32Sint:       return DXGI_FORMAT_R32_SINT;
-    default:                        assert(0);
+    case PixelFormat::R16Uint:       return DXGI_FORMAT_R16_UINT;
+    case PixelFormat::R16Sint:       return DXGI_FORMAT_R16_SINT;
+    default:                         assert(0);
     }
     return DXGI_FORMAT_UNKNOWN;
 }

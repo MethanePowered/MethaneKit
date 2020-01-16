@@ -17,6 +17,7 @@ endif()
 
 set(HEADERS
     ${INCLUDE_DIR}/Utils.h
+    ${INCLUDE_DIR}/Logger.h
     ${PLATFORM_HEADERS}
 )
 

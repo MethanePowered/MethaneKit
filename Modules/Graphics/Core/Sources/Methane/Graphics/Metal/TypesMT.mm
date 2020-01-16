@@ -57,6 +57,7 @@ MTLPixelFormat TypeConverterMT::DataFormatToMetalPixelType(PixelFormat data_form
         case PixelFormat::R32Uint:       return MTLPixelFormatR32Uint;
         case PixelFormat::R32Sint:       return MTLPixelFormatR32Sint;
         case PixelFormat::R16Uint:       return MTLPixelFormatRG16Uint;
+        case PixelFormat::R16Sint:       return MTLPixelFormatRG16Sint;
         case PixelFormat::Depth32Float:  return MTLPixelFormatDepth32Float;
         // MTLPixelFormatA8Unorm;
         // MTLPixelFormatR8Unorm;
@@ -72,20 +73,12 @@ MTLPixelFormat TypeConverterMT::DataFormatToMetalPixelType(PixelFormat data_form
         // MTLPixelFormatRG8Snorm;
         // MTLPixelFormatRG8Uint;
         // MTLPixelFormatRG8Sint;
-        // MTLPixelFormatR32Uint;
-        // MTLPixelFormatR32Sint;
-        // MTLPixelFormatR32Float;
         // MTLPixelFormatRG16Unorm;
         // MTLPixelFormatRG16Snorm;
-        // MTLPixelFormatRG16Uint;
-        // MTLPixelFormatRG16Sint;
         // MTLPixelFormatRG16Float;
-        // MTLPixelFormatRGBA8Unorm;
         // MTLPixelFormatRGBA8Unorm_sRGB;
         // MTLPixelFormatRGBA8Snorm;
-        // MTLPixelFormatRGBA8Uint;
         // MTLPixelFormatRGBA8Sint;
-        // MTLPixelFormatBGRA8Unorm;
         // MTLPixelFormatBGRA8Unorm_sRGB;
         // MTLPixelFormatRGB10A2Unorm;
         // MTLPixelFormatRGB10A2Uint;
@@ -120,7 +113,6 @@ MTLPixelFormat TypeConverterMT::DataFormatToMetalPixelType(PixelFormat data_form
         // MTLPixelFormatGBGR422;
         // MTLPixelFormatBGRG422;
         // MTLPixelFormatDepth16Unorm;
-        // MTLPixelFormatDepth32Float;
         // MTLPixelFormatStencil8;
         // MTLPixelFormatDepth24Unorm_Stencil8;
         // MTLPixelFormatDepth32Float_Stencil8;

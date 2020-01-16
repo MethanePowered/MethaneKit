@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -36,11 +36,15 @@ namespace pal = Platform;
 
 struct AsteroidsFrame final : gfx::AppFrame
 {
-    gfx::RenderCommandList::Ptr sp_cmd_list;
-    gfx::Buffer::Ptr            sp_scene_uniforms_buffer;
-    gfx::MeshBufferBindings     skybox;
-    gfx::MeshBufferBindings     planet;
-    gfx::MeshBufferBindings     asteroids;
+    gfx::RenderPass::Ptr                sp_initial_screen_pass;
+    gfx::RenderPass::Ptr                sp_final_screen_pass;
+    gfx::ParallelRenderCommandList::Ptr sp_parallel_cmd_list;
+    gfx::RenderCommandList::Ptr         sp_serial_cmd_list;
+    gfx::RenderCommandList::Ptr         sp_final_cmd_list;
+    gfx::Buffer::Ptr                    sp_scene_uniforms_buffer;
+    gfx::MeshBufferBindings             skybox;
+    gfx::MeshBufferBindings             planet;
+    gfx::MeshBufferBindings             asteroids;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -55,11 +59,20 @@ public:
     // NativeApp
     void Init() override;
     bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
-    void Update() override;
-    void Render() override;
+    bool Update() override;
+    bool Render() override;
 
-    // Context::Callback interface
+    // Context::Callback overrides
     void OnContextReleased() override;
+
+    uint32_t GetAsteroidsComplexity() const { return m_asteroids_complexity; }
+    void     SetAsteroidsComplexity(uint32_t asteroids_complexity);
+    
+    bool     IsParallelRenderingEnabled() const { return m_is_parallel_rendering_enabled; }
+    void     SetParallelRenderingEnabled(bool is_parallel_rendering_enabled);
+
+    AsteroidsArray& GetAsteroidsArray() const;
+    std::string     GetParametersString() const;
 
 private:
     struct SHADER_STRUCT_ALIGN Constants
@@ -80,7 +93,9 @@ private:
     gfx::ActionCamera                 m_light_camera;
     const float                       m_scene_scale;
     const Constants                   m_scene_constants;
-    const AsteroidsArray::Settings    m_asteroids_array_settings;
+    AsteroidsArray::Settings          m_asteroids_array_settings;
+    uint32_t                          m_asteroids_complexity          = 0u;
+    bool                              m_is_parallel_rendering_enabled = true;
     SceneUniforms                     m_scene_uniforms = { };
     
     gfx::Buffer::Ptr                  m_sp_const_buffer;

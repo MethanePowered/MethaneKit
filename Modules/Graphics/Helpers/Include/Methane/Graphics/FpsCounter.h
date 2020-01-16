@@ -23,7 +23,7 @@ FPS counter calculates frame time duration with moving average window algorithm.
 
 #pragma once
 
-#include <Methane/Data/Timer.h>
+#include <Methane/Data/Timer.hpp>
 
 #include <cmath>
 #include <queue>
@@ -34,22 +34,57 @@ namespace Methane::Graphics
 class FpsCounter
 {
 public:
+    class FrameTiming
+    {
+    public:
+        FrameTiming() = default;
+        FrameTiming(const FrameTiming&) = default;
+        FrameTiming(double total_time_sec, double present_time_sec, double gpu_wait_time_sec);
+
+        double GetTotalTimeSec() const    { return m_total_time_sec; }
+        double GetPresentTimeSec() const  { return m_present_time_sec; }
+        double GetGpuWaitTimeSec() const  { return m_gpu_wait_time_sec; }
+        double GetCpuTimeSec() const      { return m_total_time_sec - m_present_time_sec - m_gpu_wait_time_sec; }
+
+        double GetTotalTimeMSec() const   { return m_total_time_sec * 1000.0; }
+        double GetPresentTimeMSec() const { return m_present_time_sec * 1000.0; }
+        double GetGpuWaitTimeMSec() const { return m_gpu_wait_time_sec * 1000.0; }
+        double GetCpuTimeMSec() const     { return GetCpuTimeSec() * 1000.0; }
+
+        double GetCpuTimePercent() const  { return 100.0 * GetCpuTimeSec() / GetTotalTimeSec(); }
+
+        FrameTiming& operator=(const FrameTiming& other) = default;
+        FrameTiming& operator+=(const FrameTiming& other);
+        FrameTiming& operator-=(const FrameTiming& other);
+        FrameTiming  operator/(double divisor) const;
+        FrameTiming  operator*(double multiplier) const;
+
+    private:
+        double m_total_time_sec    = 0.0;
+        double m_present_time_sec  = 0.0;
+        double m_gpu_wait_time_sec = 0.0;
+    };
+
     FpsCounter() = default;
     FpsCounter(uint32_t averaged_timings_count) : m_averaged_timings_count(averaged_timings_count) {}
 
     void Reset(uint32_t averaged_timings_count);
-    void OnFramePresented();
+    void OnGpuFramePresentWait();
+    void OnGpuFramePresented();
+    void OnCpuFrameReadyToPresent();
+    void OnCpuFramePresented();
 
-    inline uint32_t GetAveragedTimingsCount() const noexcept   { return static_cast<uint32_t>(m_frame_timings.size()); }
-    inline double   GetAverageFrameTimeSec() const noexcept    { return m_frame_timings_sum / GetAveragedTimingsCount(); }
-    inline double   GetAverageFrameTimeMilSec() const noexcept { return GetAverageFrameTimeSec() * 1000; }
-    inline uint32_t GetFramesPerSecond() const noexcept        { return static_cast<uint32_t>(std::round(1.0 / GetAverageFrameTimeSec())); }
+    uint32_t        GetAveragedTimingsCount() const noexcept { return static_cast<uint32_t>(m_frame_timings.size()); }
+    FrameTiming     GetAverageFrameTiming() const noexcept   { return m_frame_timings_sum / GetAveragedTimingsCount(); }
+    const uint32_t  GetFramesPerSecond() const noexcept      { return static_cast<uint32_t>(std::round(1.0 / GetAverageFrameTiming().GetTotalTimeSec())); }
 
 private:
-    Data::Timer        m_frame_timer;
-    uint32_t           m_averaged_timings_count = 100;
-    double             m_frame_timings_sum = 0.0;
-    std::queue<double> m_frame_timings;
+    Data::Timer             m_frame_timer;
+    Data::Timer             m_present_timer;
+    double                  m_present_on_gpu_wait_time_sec = 0.0;
+    uint32_t                m_averaged_timings_count = 100;
+    FrameTiming             m_frame_timings_sum;
+    std::queue<FrameTiming> m_frame_timings;
 };
 
 } // namespace Methane::Graphics

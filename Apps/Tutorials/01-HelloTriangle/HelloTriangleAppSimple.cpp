@@ -52,8 +52,9 @@ public:
                 PixelFormat::Unknown,            // - depth_stencil_format
                 Color4f(0.0f, 0.2f, 0.4f, 1.0f), // - clear_color
             },                                   //
-            true                                 // show_hud_in_window_title
-          },
+            true,                                // show_hud_in_window_title
+            false                                // show_logo_badge
+        },
         RenderPass::Access::None)                // screen_pass_access (program access to resources)
     { }
 
@@ -113,15 +114,15 @@ public:
         return true;
     }
 
-    void Render() override
+    bool Render() override
     {
-        if (!m_sp_context->ReadyToRender())
-            return;
+        if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
+            return false;
 
         m_sp_context->WaitForGpu(Context::WaitFor::FramePresented);
         HelloTriangleFrame& frame = GetCurrentFrame();
 
-        frame.sp_cmd_list->Reset(*m_sp_state);
+        frame.sp_cmd_list->Reset(m_sp_state);
         frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
         frame.sp_cmd_list->Draw(RenderCommandList::Primitive::Triangle, 3);
         frame.sp_cmd_list->Commit(true);
@@ -129,7 +130,7 @@ public:
         m_sp_context->GetRenderCommandQueue().Execute({ *frame.sp_cmd_list });
         m_sp_context->Present();
 
-        GraphicsApp::Render();
+        return true;
     }
 
     void OnContextReleased() override

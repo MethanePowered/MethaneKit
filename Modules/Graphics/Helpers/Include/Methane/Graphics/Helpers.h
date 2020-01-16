@@ -31,6 +31,10 @@ Methane graphics helpers: all headers under one umbrella.
 
 #include "MacOS/Helpers.h"
 
+#elif defined __linux__
+
+#include "Linux/Helpers.h"
+
 #endif
 
 #include "MathTypes.h"
@@ -40,5 +44,3 @@ Methane graphics helpers: all headers under one umbrella.
 #include "Mesh.h"
 #include "Noise.hpp"
 #include "FpsCounter.h"
-
-#include <Methane/Data/Timer.h>

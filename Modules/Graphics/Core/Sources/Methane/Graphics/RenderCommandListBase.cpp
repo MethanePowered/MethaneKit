@@ -22,6 +22,8 @@ Base implementation of the render command list interface.
 ******************************************************************************/
 
 #include "RenderCommandListBase.h"
+#include "ParallelRenderCommandListBase.h"
+#include "CommandQueueBase.h"
 #include "RenderPassBase.h"
 #include "RenderStateBase.h"
 #include "BufferBase.h"
@@ -31,16 +33,22 @@ Base implementation of the render command list interface.
 
 #include <cassert>
 
-#ifdef DrawState
-#undef DrawState
-#endif
-
 namespace Methane::Graphics
 {
 
 RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& pass)
-    : CommandListBase(command_queue)
+    : CommandListBase(command_queue, Type::RenderCommandList)
+    , m_is_parallel(false)
     , m_sp_pass(pass.GetPtr())
+{
+    ITT_FUNCTION_TASK();
+}
+
+RenderCommandListBase::RenderCommandListBase(ParallelRenderCommandListBase& parallel_render_command_list)
+    : CommandListBase(static_cast<CommandQueueBase&>(parallel_render_command_list.GetCommandQueue()), Type::RenderCommandList)
+    , m_is_parallel(true)
+    , m_sp_pass(static_cast<RenderPassBase&>(parallel_render_command_list.GetPass()).GetPtr())
+    , m_wp_parallel_render_command_list(std::static_pointer_cast<ParallelRenderCommandListBase>(parallel_render_command_list.GetPtr()))
 {
     ITT_FUNCTION_TASK();
 }
@@ -52,15 +60,17 @@ void RenderCommandListBase::DrawingState::Reset()
     opt_primitive_type.reset();
     sp_index_buffer.reset();
     sp_vertex_buffers.clear();
+    sp_render_state.reset();
 
     flags = { };
 }
 
-void RenderCommandListBase::Reset(RenderState& render_state, const std::string& debug_group)
+void RenderCommandListBase::Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
 
-    m_draw_state.Reset();
+    // ResetDrawState() must be called from an overriden Reset method
+
     ResetCommandState();
 
     if (m_debug_group_opened)
@@ -74,8 +84,29 @@ void RenderCommandListBase::Reset(RenderState& render_state, const std::string& 
         PushDebugGroup(debug_group);
         m_debug_group_opened = true;
     }
-    
-    static_cast<RenderStateBase&>(render_state).Apply(*this);
+
+    if (sp_render_state)
+    {
+        SetState(*sp_render_state);
+    }
+}
+
+void RenderCommandListBase::SetState(RenderState& render_state, RenderState::Group::Mask state_groups)
+{
+    ITT_FUNCTION_TASK();
+
+    const RenderState::Group::Mask changed_states = (m_draw_state.sp_render_state
+                                                  ? RenderState::Settings::Compare(render_state.GetSettings(),
+                                                                                   m_draw_state.sp_render_state->GetSettings(),
+                                                                                   m_draw_state.render_state_groups)
+                                                  : RenderState::Group::All)
+                                                  | ~m_draw_state.render_state_groups;
+
+    RenderStateBase& render_state_base = static_cast<RenderStateBase&>(render_state);
+    render_state_base.Apply(*this, changed_states & state_groups);
+
+    m_draw_state.sp_render_state      = render_state_base.GetPtr();
+    m_draw_state.render_state_groups |= state_groups;
 }
 
 void RenderCommandListBase::SetVertexBuffers(const Buffer::Refs& vertex_buffers)
@@ -176,6 +207,11 @@ void RenderCommandListBase::Draw(Primitive primitive_type, uint32_t vertex_count
 
     m_draw_state.flags.primitive_type_changed = !m_draw_state.opt_primitive_type || *m_draw_state.opt_primitive_type != primitive_type;
     m_draw_state.opt_primitive_type = primitive_type;
+}
+
+void RenderCommandListBase::ResetDrawState()
+{
+    m_draw_state.Reset();
 }
 
 void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count)

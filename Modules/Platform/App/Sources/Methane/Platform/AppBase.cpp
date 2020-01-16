@@ -89,8 +89,10 @@ int AppBase::Run(const RunArgs& args)
         mutable_arg_values[mutable_args_count] = new char[arg_value_size];
 #ifdef _WIN32
         strcpy_s(mutable_arg_values[argi], arg_value_size, args.cmd_arg_values[argi]);
-#else
+#elif defined __APPLE__
         strlcpy(mutable_arg_values[argi], args.cmd_arg_values[argi], arg_value_size);
+#elif defined __linux__
+        strcpy(mutable_arg_values[argi], args.cmd_arg_values[argi]);
 #endif
         mutable_args_count++;
     };
@@ -133,6 +135,21 @@ void AppBase::ChangeWindowBounds(const Data::FrameRect& window_bounds)
 {
     ITT_FUNCTION_TASK();
     m_window_bounds = window_bounds;
+}
+    
+bool AppBase::Resize(const Data::FrameSize& frame_size, bool is_minimized)
+{
+    ITT_FUNCTION_TASK();
+    
+    const bool is_resizing = !is_minimized && m_frame_size != frame_size;
+    
+    m_is_minimized = is_minimized;
+    if (!m_is_minimized)
+    {
+        m_frame_size = frame_size;
+    }
+    
+    return m_initialized && is_resizing;
 }
 
 void AppBase::Alert(const Message& msg, bool deferred)

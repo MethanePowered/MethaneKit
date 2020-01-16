@@ -31,6 +31,10 @@ Native implementation alias of the resource interface.
 
 #include <Methane/Graphics/Metal/ResourceMT.hh>
 
+#elif defined __linux__
+
+#include <Methane/Graphics/Vulkan/ResourceVK.h>
+
 #endif
 
 namespace Methane::Graphics
@@ -43,6 +47,10 @@ using ResourceNT = ResourceDX;
 #elif defined __APPLE__
 
 using ResourceNT = ResourceMT;
+
+#elif defined __linux__
+
+using ResourceNT = ResourceVK;
 
 #endif
 

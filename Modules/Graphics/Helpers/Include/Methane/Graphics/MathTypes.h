@@ -23,10 +23,6 @@ Math types aliases.
 
 #pragma once
 
-#include <cml/vector.h>
-#include <cml/quaternion.h>
-#include <string>
-
 #if defined _WIN32
 
 #include "Windows/MathTypes.h"
@@ -35,10 +31,36 @@ Math types aliases.
 
 #include "MacOS/MathTypes.h"
 
+#elif defined __linux__
+
+#include "Linux/MathTypes.h"
+
 #endif
+
+#include <cml/vector.h>
+#include <cml/quaternion.h>
+#include <cml/mathlib/constants.h>
+#include <cml/matrix.h>
+
+#include <string>
+
+#define SHADER_STRUCT_ALIGNMENT 256
+#define SHADER_STRUCT_ALIGN alignas(SHADER_STRUCT_ALIGNMENT)
+#define SHADER_FIELD_ALIGN  alignas(16)
+#define SHADER_FIELD_PACK   alignas(4)
 
 namespace Methane::Graphics
 {
+
+constexpr cml::AxisOrientation g_axis_orientation = cml::AxisOrientation::left_handed;
+
+// Use row-major order matrices for DirectX
+using Matrix22i = cml::matrix22i_r;
+using Matrix33i = cml::matrix33i_r;
+using Matrix44i = cml::matrix44i_r;
+using Matrix22f = cml::matrix22f_r;
+using Matrix33f = cml::matrix33f_r;
+using Matrix44f = cml::matrix44f_r;
 
 using Vector2i = cml::vector2i;
 using Vector3i = cml::vector3i;

@@ -44,25 +44,28 @@ public:
     public:
         struct Settings
         {
-            ResourceBindingBase::Settings base;
-            MTLArgumentType               argument_type;
-            uint32_t                      argument_index;
+            ResourceBindingBase::Settings    base;
+            uint32_t                         argument_index;
         };
         
         ResourceBindingMT(ContextBase& context, const Settings& settings);
         ResourceBindingMT(const ResourceBindingMT& other) = default;
-        
+
         // ResourceBinding interface
-        void SetResourceLocation(Resource::Location resource_location) override;
-        uint32_t GetResourceCount() const override { return 1; }
-        
-        // ResourceBindingBase interface
-        DescriptorHeap::Type GetDescriptorHeapType() const override;
+        void SetResourceLocations(const Resource::Locations& resource_locations) override;
         
         const Settings& GetSettings() const noexcept { return m_settings; }
+        const std::vector<id<MTLSamplerState>>& GetNativeSamplerStates() const { return m_mtl_sampler_states; }
+        const std::vector<id<MTLTexture>>&      GetNativeTextures() const      { return m_mtl_textures; }
+        const std::vector<id<MTLBuffer>>&       GetNativeBuffers() const       { return m_mtl_buffers; }
+        const std::vector<NSUInteger>&          GetBufferOffsets() const       { return m_mtl_buffer_offsets; }
         
     protected:
-        const Settings m_settings;
+        const Settings                   m_settings;
+        std::vector<id<MTLSamplerState>> m_mtl_sampler_states;
+        std::vector<id<MTLTexture>>      m_mtl_textures;
+        std::vector<id<MTLBuffer>>       m_mtl_buffers;
+        std::vector<NSUInteger>          m_mtl_buffer_offsets;
     };
     
     ShaderMT(Shader::Type shader_type, ContextMT& context, const Settings& settings);

@@ -40,6 +40,7 @@ class RenderCommandListMT final : public RenderCommandListBase
 {
 public:
     RenderCommandListMT(CommandQueueBase& command_queue, RenderPassBase& render_pass);
+    RenderCommandListMT(ParallelRenderCommandListBase& parallel_render_command_list);
 
     // CommandList interface
     void PushDebugGroup(const std::string& name) override;
@@ -51,7 +52,7 @@ public:
     void Execute(uint32_t frame_index) override;
 
     // RenderCommandList interface
-    void Reset(RenderState& render_state, const std::string& debug_group = "") override;
+    void Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group = "") override;
     void SetVertexBuffers(const Buffer::Refs& vertex_buffers) override;
     void DrawIndexed(Primitive primitive, Buffer& index_buffer,
                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
@@ -80,9 +81,9 @@ protected:
     CommandQueueMT& GetCommandQueueMT() noexcept;
     RenderPassMT&   GetPassMT();
 
-    id<MTLCommandBuffer>        m_mtl_cmd_buffer;
-    id<MTLRenderCommandEncoder> m_mtl_render_encoder;
-    id<MTLBlitCommandEncoder>   m_mtl_blit_encoder;
+    id<MTLCommandBuffer>        m_mtl_cmd_buffer = nil;
+    id<MTLRenderCommandEncoder> m_mtl_render_encoder = nil;
+    id<MTLBlitCommandEncoder>   m_mtl_blit_encoder = nil;
 };
 
 } // namespace Methane::Graphics

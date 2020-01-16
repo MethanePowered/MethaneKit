@@ -61,10 +61,11 @@ public:
         Program::ResourceBindings::Ptr sp_resource_bindings;
     };
 
-    CommandListBase(CommandQueueBase& command_queue);
+    CommandListBase(CommandQueueBase& command_queue, Type type);
 
     // CommandList interface
-    void SetResourceBindings(Program::ResourceBindings& resource_bindings) override;
+    Type GetType() const override               { return m_type; }
+    void SetResourceBindings(Program::ResourceBindings& resource_bindings, Program::ResourceBindings::ApplyBehavior::Mask apply_behavior) override;
     void Commit(bool present_drawable) override;
     CommandQueue& GetCommandQueue() override;
 
@@ -74,8 +75,9 @@ public:
     virtual void Complete(uint32_t frame_index);
 
     void SetResourceTransitionBarriers(const Resource::Refs& resources, ResourceBase::State state_before, ResourceBase::State state_after);
-    const CommandState& GetCommandState() const { return m_command_state; }
-    Ptr  GetPtr()                               { return shared_from_this(); }
+    const CommandState& GetCommandState() const       { return m_command_state; }
+    Ptr  GetPtr()                                     { return shared_from_this(); }
+    void SetDebugGroupOpened(bool debug_group_opened) { m_debug_group_opened = debug_group_opened; }
 
 protected:
     CommandQueueBase&       GetCommandQueueBase();
@@ -97,6 +99,7 @@ private:
 
     using ExecutingOnFrame = std::map<uint32_t, bool>;
 
+    const Type          m_type;
     Ptr                 m_sp_self;
     uint32_t            m_committed_frame_index = 0;
     State               m_state                 = State::Pending;

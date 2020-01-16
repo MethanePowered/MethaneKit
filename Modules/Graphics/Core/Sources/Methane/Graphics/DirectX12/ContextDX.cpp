@@ -28,12 +28,14 @@ DirectX 12 implementation of the context interface.
 #include "TypesDX.h"
 
 #include <Methane/Data/Instrumentation.h>
+#include <Methane/Data/ScopeTimer.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #ifdef COMMAND_EXECUTION_LOGGING
 #include <Methane/Platform/Utils.h>
 #endif
 
+#include <shellscalingapi.h>
 #include <nowide/convert.hpp>
 #include <cassert>
 
@@ -53,6 +55,34 @@ static void SetWindowTopMostFlag(HWND window_handle, bool is_top_most)
                  window_rect.right  - window_rect.left,
                  window_rect.bottom - window_rect.top,
                  SWP_FRAMECHANGED | SWP_NOACTIVATE);
+}
+
+static float GetDeviceScaleRatio(DEVICE_SCALE_FACTOR device_scale_factor)
+{
+    ITT_FUNCTION_TASK();
+
+    switch (device_scale_factor)
+    {
+    case SCALE_100_PERCENT: return 1.0f;
+    case SCALE_120_PERCENT: return 1.2f;
+    case SCALE_125_PERCENT: return 1.25f;
+    case SCALE_140_PERCENT: return 1.4f;
+    case SCALE_150_PERCENT: return 1.5f;
+    case SCALE_160_PERCENT: return 1.6f;
+    case SCALE_175_PERCENT: return 1.75f;
+    case SCALE_180_PERCENT: return 1.8f;
+    case SCALE_200_PERCENT: return 2.f;
+    case SCALE_225_PERCENT: return 2.25f;
+    case SCALE_250_PERCENT: return 2.5f;
+    case SCALE_300_PERCENT: return 3.f;
+    case SCALE_350_PERCENT: return 3.5f;
+    case SCALE_400_PERCENT: return 4.f;
+    case SCALE_450_PERCENT: return 4.5f;
+    case SCALE_500_PERCENT: return 5.f;
+    default:                assert(0);
+    }
+
+    return 1.f;
 }
 
 Context::Ptr Context::Create(const Platform::AppEnvironment& env, Device& device, const Context::Settings& settings)
@@ -200,24 +230,32 @@ void ContextDX::WaitForGpu(WaitFor wait_for)
 {
     ITT_FUNCTION_TASK();
 
+    ContextBase::WaitForGpu(wait_for);
+
     switch (wait_for)
     {
     case WaitFor::ResourcesUploaded:
+    {
+        SCOPE_TIMER("ContextDX::WaitForGpu::ResourcesUploaded");
         assert(!!m_sp_upload_fence);
         m_sp_upload_fence->Flush();
-        break;
+    } break;
 
     case WaitFor::RenderComplete:
+    {
+        SCOPE_TIMER("ContextDX::WaitForGpu::RenderComplete");
         assert(m_sp_render_fence);
         m_sp_render_fence->Flush();
-        break;
+    } break;
 
     case WaitFor::FramePresented:
+    {
+        SCOPE_TIMER("ContextDX::WaitForGpu::FramePresented");
         GetCurrentFrameFence().Wait();
-        break;
+    } break;
     }
 
-    ContextBase::WaitForGpu(wait_for);
+    ContextBase::OnGpuWaitComplete(wait_for);
 }
 
 void ContextDX::Resize(const FrameSize& frame_size)
@@ -239,22 +277,32 @@ void ContextDX::Resize(const FrameSize& frame_size)
 void ContextDX::Present()
 {
     ITT_FUNCTION_TASK();
-    assert(m_cp_swap_chain);
+    SCOPE_TIMER("ContextDX::Present");
 
     ContextBase::Present();
 
     // Preset frame to screen
     const uint32_t present_flags  = 0; // DXGI_PRESENT_DO_NOT_WAIT
     const uint32_t vsync_interval = GetPresentVSyncInterval();
+
+    assert(m_cp_swap_chain);
     ThrowIfFailed(m_cp_swap_chain->Present(vsync_interval, present_flags));
 
     // Schedule a signal command in the queue for a currently finished frame
     GetCurrentFrameFence().Signal();
 
-    OnPresentComplete();
+    OnCpuPresentComplete();
 
     // Update current frame buffer index
     m_frame_buffer_index = m_cp_swap_chain->GetCurrentBackBufferIndex();
+}
+
+float ContextDX::GetContentScalingFactor() const
+{
+    DEVICE_SCALE_FACTOR device_scale_factor = DEVICE_SCALE_FACTOR_INVALID;
+    HMONITOR monitor_handle = MonitorFromWindow(m_platform_env.window_handle, MONITOR_DEFAULTTONEAREST);
+    ThrowIfFailed(GetScaleFactorForMonitor(monitor_handle, &device_scale_factor));
+    return GetDeviceScaleRatio(device_scale_factor);
 }
 
 CommandQueueDX& ContextDX::GetUploadCommandQueueDX()

@@ -51,27 +51,49 @@ ShaderBase::ResourceBindingBase::ResourceBindingBase(ContextBase& context, const
     ITT_FUNCTION_TASK();
 }
 
-void ShaderBase::ResourceBindingBase::SetResourceLocation(Resource::Location resource_location)
+void ShaderBase::ResourceBindingBase::SetResourceLocations(const Resource::Locations& resource_locations)
 {
     ITT_FUNCTION_TASK();
-    if (!resource_location.sp_resource)
-        throw std::invalid_argument("Can not set empty resource for resource binding.");
+
+    m_resource_locations.clear();
+    if (resource_locations.empty())
+        throw std::invalid_argument("Can not set empty resources for resource binding.");
 
     const bool is_addressable_binding = IsAddressable();
-    const Resource::Usage::Mask resource_usage_mask = resource_location.sp_resource->GetUsageMask();
-    if (static_cast<bool>(resource_usage_mask & Resource::Usage::Addressable) != is_addressable_binding)
-        throw std::invalid_argument("Resource addressable usage flag does not match with resource binding state.");
 
-    if (!is_addressable_binding && resource_location.offset > 0)
-        throw std::invalid_argument("Can not set resource location with non-zero offset to non-addressable resource binding.");
+    for (const Resource::Location& resource_location : resource_locations)
+    {
+        if (resource_location.GetResource().GetResourceType() != m_settings.resource_type)
+        {
+            throw std::invalid_argument("Incompatible resource type \"" + Resource::GetTypeName(resource_location.GetResource().GetResourceType()) +
+                                        "\" is bound to argument \"" + GetArgumentName() +
+                                        "\" of type \"" + Resource::GetTypeName(m_settings.resource_type) + "\".");
+        }
 
-    m_resource_location = std::move(resource_location);
+        const Resource::Usage::Mask resource_usage_mask = resource_location.GetResource().GetUsageMask();
+        if (static_cast<bool>(resource_usage_mask & Resource::Usage::Addressable) != is_addressable_binding)
+            throw std::invalid_argument("Resource addressable usage flag does not match with resource binding state.");
+
+        if (!is_addressable_binding && resource_location.GetOffset() > 0)
+            throw std::invalid_argument("Can not set resource location with non-zero offset to non-addressable resource binding.");
+    }
+
+    m_resource_locations = resource_locations;
 }
-    
-bool ShaderBase::ResourceBindingBase::IsAlreadyApplied(const Program& program, const Program::Argument& program_argument, const CommandListBase::CommandState& command_state) const
+
+DescriptorHeap::Type ShaderBase::ResourceBindingBase::GetDescriptorHeapType() const
 {
     ITT_FUNCTION_TASK();
+    return (m_settings.resource_type == Resource::Type::Sampler)
+          ? DescriptorHeap::Type::Samplers
+          : DescriptorHeap::Type::ShaderResources;
+}
     
+bool ShaderBase::ResourceBindingBase::IsAlreadyApplied(const Program& program, const Program::Argument& program_argument,
+                                                       const CommandListBase::CommandState& command_state,
+                                                       bool check_binding_value_changes) const
+{
+    ITT_FUNCTION_TASK();
     if (!command_state.sp_resource_bindings)
         return false;
     
@@ -85,13 +107,16 @@ bool ShaderBase::ResourceBindingBase::IsAlreadyApplied(const Program& program, c
     if (m_settings.is_constant)
         return true;
 
+    if (!check_binding_value_changes)
+        return false;
+
     const Shader::ResourceBinding::Ptr& previous_argument_resource_binding = command_state.sp_resource_bindings->Get(program_argument);
     if (!previous_argument_resource_binding)
         return false;
     
     // 2) No need in setting resource binding to the same location
     //    as a previous resource binding set in the same command list for the same program
-    if (previous_argument_resource_binding->GetResourceLocation() == m_resource_location)
+    if (previous_argument_resource_binding->GetResourceLocations() == m_resource_locations)
         return true;
     
     return false;

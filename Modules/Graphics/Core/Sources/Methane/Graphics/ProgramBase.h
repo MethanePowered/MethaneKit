@@ -41,6 +41,7 @@ class CommandListBase;
 
 class ProgramBase
     : public Program
+    , public ObjectBase
     , public std::enable_shared_from_this<ProgramBase>
 {
     friend class ShaderBase;
@@ -53,8 +54,8 @@ public:
     public:
         using Ptr = std::shared_ptr<ResourceBindingsBase>;
 
-        ResourceBindingsBase(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_location_by_argument);
-        ResourceBindingsBase(const ResourceBindingsBase& other_resource_bingings, const ResourceLocationByArgument& replace_resource_location_by_argument);
+        ResourceBindingsBase(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
+        ResourceBindingsBase(const ResourceBindingsBase& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
         ~ResourceBindingsBase() override;
 
         Ptr GetPtr()                            { return shared_from_this(); }
@@ -73,7 +74,7 @@ public:
         using DescriptorHeapReservationByType = std::array<std::optional<DescriptorHeap::Reservation>, static_cast<uint32_t>(DescriptorHeap::Type::Count)>;
 
         void ReserveDescriptorHeapRanges();
-        void SetResourcesForArguments(const ResourceLocationByArgument& resource_location_by_argument);
+        void SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument);
         void VerifyAllArgumentsAreBoundToResources();
 
         const Program::Ptr              m_sp_program;
@@ -87,8 +88,6 @@ public:
 
     // Program interface
     const Settings&      GetSettings() const override                       { return m_settings; }
-    void                 SetName(const std::string& name) override          { m_name = name; }
-    const std::string&   GetName() const override                           { return m_name; }
     const Shader::Types& GetShaderTypes() const override                    { return m_shader_types; }
     const Shader::Ptr&   GetShader(Shader::Type shader_type) const override { return m_shaders_by_type[static_cast<size_t>(shader_type)]; }
 
@@ -120,7 +119,6 @@ protected:
     const ShadersByType       m_shaders_by_type;
     const Shader::Types       m_shader_types;
     ResourceBindingByArgument m_resource_binding_by_argument;
-    std::string               m_name;
     DescriptorRangeByHeapType m_constant_descriptor_range_by_heap_type;
     std::mutex                m_constant_descriptor_ranges_reservation_mutex;
 };

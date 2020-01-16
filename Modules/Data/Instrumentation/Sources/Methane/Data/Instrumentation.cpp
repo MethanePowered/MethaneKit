@@ -25,14 +25,3 @@ Defines common ITT domain required for instrumentation.
 #include <Methane/Data/Instrumentation.h>
 
 ITT_DOMAIN_GLOBAL("Methane Kit");
-
-namespace Methane::Data::Instrumentation
-{
-
-void dummy()
-{
-    // Prevents libtool warning for library:
-    // the table of contents is empty (no object file members in the library define global symbols)
-}
-
-}

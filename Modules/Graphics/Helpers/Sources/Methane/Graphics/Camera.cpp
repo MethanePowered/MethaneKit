@@ -26,6 +26,13 @@ Camera helper implementation allowing to generate view and projectrion matrices.
 
 #include <cml/mathlib/mathlib.h>
 
+//#define PRINT_CAMERA_ORIENTATION
+
+#ifdef PRINT_CAMERA_ORIENTATION
+#include <Methane/Platform/Utils.h>
+#include <sstream>
+#endif
+
 namespace Methane::Graphics
 {
 
@@ -79,10 +86,10 @@ void Camera::GetProjMatrix(Matrix44f& out_proj) const noexcept
     switch (m_projection)
     {
     case Projection::Perspective:
-        cml::matrix_perspective_yfov(out_proj, GetFOVAngleY(), m_aspect_ratio, m_parameters.near_depth, m_parameters.far_depth, m_axis_orientation, cml::ZClip::z_clip_neg_one);
+        cml::matrix_perspective_yfov(out_proj, GetFOVAngleY(), m_aspect_ratio, m_parameters.near_depth, m_parameters.far_depth, m_axis_orientation, cml::ZClip::z_clip_zero);
         break;
     case Projection::Orthogonal:
-        cml::matrix_orthographic(out_proj, m_screen_size.x(), m_screen_size.y(), m_parameters.near_depth, m_parameters.far_depth, m_axis_orientation, cml::ZClip::z_clip_neg_one);
+        cml::matrix_orthographic(out_proj, m_screen_size.x(), m_screen_size.y(), m_parameters.near_depth, m_parameters.far_depth, m_axis_orientation, cml::ZClip::z_clip_zero);
         break;
     }
 }
@@ -149,6 +156,18 @@ float Camera::GetFOVAngleY() const noexcept
         fov_angle_y /= m_aspect_ratio;
     }
     return fov_angle_y;
+}
+
+void Camera::PrintOrientation()
+{
+#ifdef PRINT_CAMERA_ORIENTATION
+    std::stringstream ss;
+    ss << std::endl << "Camera orientation:"
+       << std::endl << "  - eye: " << VectorToString(m_current_orientation.eye)
+       << std::endl << "  - aim: " << VectorToString(m_current_orientation.aim)
+       << std::endl << "  - up:  " << VectorToString(m_current_orientation.up);
+    Platform::PrintToDebugOutput(ss.str());
+#endif
 }
 
 } // namespace Methane::Graphics

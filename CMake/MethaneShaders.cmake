@@ -91,6 +91,7 @@ function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL OUT_SHADERS_ME
         set(NEW_ENTRY_POINT "${SHADERS_NAME}_${OLD_ENTRY_POINT}")
         string(REPLACE " " ";" SHADER_DEFINITIONS "${SHADER_DEFINITIONS}")
 
+        set(SHADER_DEFINITION_ARGUMENTS )
         foreach(SHADER_DEFINITION ${SHADER_DEFINITIONS})
             list(APPEND SHADER_DEFINITION_ARGUMENTS -D${SHADER_DEFINITION})
             string(REPLACE "=" "" SHADER_DEFINITION_NAME ${SHADER_DEFINITION})
@@ -110,7 +111,7 @@ function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL OUT_SHADERS_ME
             DEPENDS ${SHADERS_HLSL} ${SHADERS_CONFIG}
             COMMAND ${CMAKE_COMMAND} -E make_directory "${TARGET_SHADERS_DIR}"
             COMMAND ${SPIRV_GEN_EXE} --hlsl-iomap -S ${SHADER_TYPE} -e ${OLD_ENTRY_POINT} ${SHADER_DEFINITION_ARGUMENTS} -o "${SHADER_SPIRV_PATH}" -V -D "${SHADERS_HLSL}"
-            COMMAND ${SPIRV_CROSS_EXE} --msl --rename-entry-point ${OLD_ENTRY_POINT} ${NEW_ENTRY_POINT} ${SHADER_TYPE} --output "${SHADER_METAL_PATH}" "${SHADER_SPIRV_PATH}"
+            COMMAND ${SPIRV_CROSS_EXE} --msl --msl-version 020101 --rename-entry-point ${OLD_ENTRY_POINT} ${NEW_ENTRY_POINT} ${SHADER_TYPE} --output "${SHADER_METAL_PATH}" "${SHADER_SPIRV_PATH}"
         )
 
         set_target_properties(${GENERATE_METAL_TARGET}
@@ -190,6 +191,8 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
 
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(EXTRA_COMPILE_FLAGS /Od)
+    else()
+        set(EXTRA_COMPILE_FLAGS /O3 /Gfa /all_resources_bound)
     endif()
 
     if(METHANE_SHADERS_CODEVIEW_ENABLED OR CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -205,6 +208,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
         set(NEW_ENTRY_POINT ${ORIG_ENTRY_POINT})
         string(REPLACE " " ";" SHADER_DEFINITIONS "${SHADER_DEFINITIONS}")
 
+        set(SHADER_DEFINITION_ARGUMENTS )
         foreach(SHADER_DEFINITION ${SHADER_DEFINITIONS})
             list(APPEND SHADER_DEFINITION_ARGUMENTS /D ${SHADER_DEFINITION})
             string(REPLACE "=" "" SHADER_DEFINITION_NAME ${SHADER_DEFINITION})

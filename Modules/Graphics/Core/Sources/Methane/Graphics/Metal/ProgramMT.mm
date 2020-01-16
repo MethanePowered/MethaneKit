@@ -42,6 +42,9 @@ namespace Methane::Graphics
 template<typename TMetalResource>
 static void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const TMetalResource& mtl_buffer, uint32_t arg_index, Data::Size buffer_offset) noexcept;
 
+template<typename TMetalResource>
+static void SetMetalResources(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const std::vector<TMetalResource>& mtl_buffer, uint32_t arg_index, const std::vector<NSUInteger>& buffer_offsets) noexcept;
+
 template<>
 void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const id<MTLBuffer>& mtl_buffer, uint32_t arg_index, Data::Size buffer_offset) noexcept
 {
@@ -51,6 +54,20 @@ void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl
         case Shader::Type::Vertex: [mtl_cmd_encoder setVertexBuffer:mtl_buffer   offset:buffer_offset atIndex:arg_index]; break;
         case Shader::Type::Pixel:  [mtl_cmd_encoder setFragmentBuffer:mtl_buffer offset:buffer_offset atIndex:arg_index]; break;
         default:                    assert(0);
+    }
+}
+
+template<>
+void SetMetalResources(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const std::vector<id<MTLBuffer>>& mtl_buffers,
+                      uint32_t arg_index, const std::vector<NSUInteger>& buffer_offsets) noexcept
+{
+    ITT_FUNCTION_TASK();
+    const NSRange args_range = NSMakeRange(arg_index, mtl_buffers.size());
+    switch(shader_type)
+    {
+    case Shader::Type::Vertex: [mtl_cmd_encoder setVertexBuffers:mtl_buffers.data()   offsets:buffer_offsets.data() withRange:args_range]; break;
+    case Shader::Type::Pixel:  [mtl_cmd_encoder setFragmentBuffers:mtl_buffers.data() offsets:buffer_offsets.data() withRange:args_range]; break;
+    default:                    assert(0);
     }
 }
 
@@ -67,6 +84,20 @@ void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl
 }
 
 template<>
+void SetMetalResources(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const std::vector<id<MTLTexture>>& mtl_textures,
+                      uint32_t arg_index, const std::vector<NSUInteger>&) noexcept
+{
+    ITT_FUNCTION_TASK();
+    const NSRange args_range = NSMakeRange(arg_index, mtl_textures.size());
+    switch(shader_type)
+    {
+    case Shader::Type::Vertex: [mtl_cmd_encoder setVertexTextures:mtl_textures.data()   withRange:args_range]; break;
+    case Shader::Type::Pixel:  [mtl_cmd_encoder setFragmentTextures:mtl_textures.data() withRange:args_range]; break;
+    default:                    assert(0);
+    }
+}
+
+template<>
 void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const id<MTLSamplerState>& mtl_sampler, uint32_t arg_index, Data::Size) noexcept
 {
     ITT_FUNCTION_TASK();
@@ -78,49 +109,90 @@ void SetMetalResource(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl
     }
 }
 
-template<typename TMetalResource>
-static void SetMetalResourceForAll(Shader::Type shader_type, Program& program, id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const TMetalResource& mtl_resource, uint32_t arg_index, Data::Size offset) noexcept
+template<>
+void SetMetalResources(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const std::vector<id<MTLSamplerState>>& mtl_samplers,
+                      uint32_t arg_index, const std::vector<NSUInteger>&) noexcept
 {
     ITT_FUNCTION_TASK();
-
-    if (shader_type != Shader::Type::All)
+    const NSRange args_range = NSMakeRange(arg_index, mtl_samplers.size());
+    switch(shader_type)
     {
-        SetMetalResource(shader_type, mtl_cmd_encoder, mtl_resource, arg_index, offset);
+    case Shader::Type::Vertex: [mtl_cmd_encoder setVertexSamplerStates:mtl_samplers.data()   withRange:args_range]; break;
+    case Shader::Type::Pixel:  [mtl_cmd_encoder setFragmentSamplerStates:mtl_samplers.data() withRange:args_range]; break;
+    default:                    assert(0);
+    }
+}
+
+template<typename TMetalResource>
+static void SetMetalResourcesForAll(Shader::Type shader_type, Program& program, id<MTLRenderCommandEncoder>& mtl_cmd_encoder,
+                                   const std::vector<TMetalResource>& mtl_resources, uint32_t arg_index,
+                                   const std::vector<NSUInteger>& offsets = std::vector<NSUInteger>()) noexcept
+{
+    ITT_FUNCTION_TASK();
+    assert(!mtl_resources.empty());
+
+    if (shader_type == Shader::Type::All)
+    {
+        if (mtl_resources.size() > 1)
+        {
+            for (Shader::Type specific_shader_type : program.GetShaderTypes())
+            {
+                SetMetalResources(specific_shader_type, mtl_cmd_encoder, mtl_resources, arg_index, offsets);
+            }
+        }
+        else
+        {
+            for (Shader::Type specific_shader_type : program.GetShaderTypes())
+            {
+                SetMetalResource(specific_shader_type, mtl_cmd_encoder, mtl_resources.back(), arg_index,
+                                 offsets.empty() ? 0 : offsets.back());
+            }
+        }
     }
     else
     {
-        for(Shader::Type specific_shader_type : program.GetShaderTypes())
+        if (mtl_resources.size() > 1)
         {
-            SetMetalResource(specific_shader_type, mtl_cmd_encoder, mtl_resource, arg_index, offset);
+            SetMetalResources(shader_type, mtl_cmd_encoder, mtl_resources, arg_index, offsets);
+        }
+        else
+        {
+            SetMetalResource(shader_type, mtl_cmd_encoder, mtl_resources.back(), arg_index,
+                             offsets.empty() ? 0 : offsets.back());
         }
     }
 }
 
-Program::ResourceBindings::Ptr Program::ResourceBindings::Create(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_location_by_argument)
+template<typename NativeResourceT, typename MTLResourceT>
+static void GetBoundMetalResources(const Resource::Locations& resource_locations, std::vector<MTLResourceT>& out_mtl_resources, std::vector<uint32_t>& out_offsets)
 {
-    ITT_FUNCTION_TASK();
-    return std::make_shared<ProgramMT::ResourceBindingsMT>(sp_program, resource_location_by_argument);
 }
 
-Program::ResourceBindings::Ptr Program::ResourceBindings::CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceLocationByArgument& replace_resource_location_by_argument)
+Program::ResourceBindings::Ptr Program::ResourceBindings::Create(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ProgramMT::ResourceBindingsMT>(static_cast<const ProgramMT::ResourceBindingsMT&>(other_resource_bingings), replace_resource_location_by_argument);
+    return std::make_shared<ProgramMT::ResourceBindingsMT>(sp_program, resource_locations_by_argument);
 }
 
-ProgramMT::ResourceBindingsMT::ResourceBindingsMT(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_location_by_argument)
-    : ResourceBindingsBase(sp_program, resource_location_by_argument)
+Program::ResourceBindings::Ptr Program::ResourceBindings::CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
+{
+    ITT_FUNCTION_TASK();
+    return std::make_shared<ProgramMT::ResourceBindingsMT>(static_cast<const ProgramMT::ResourceBindingsMT&>(other_resource_bingings), replace_resource_locations_by_argument);
+}
+
+ProgramMT::ResourceBindingsMT::ResourceBindingsMT(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
+    : ResourceBindingsBase(sp_program, resource_locations_by_argument)
 {
     ITT_FUNCTION_TASK();
 }
 
-ProgramMT::ResourceBindingsMT::ResourceBindingsMT(const ResourceBindingsMT& other_resource_bindings, const ResourceLocationByArgument& replace_resource_location_by_argument)
-    : ResourceBindingsBase(other_resource_bindings, replace_resource_location_by_argument)
+ProgramMT::ResourceBindingsMT::ResourceBindingsMT(const ResourceBindingsMT& other_resource_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
+    : ResourceBindingsBase(other_resource_bindings, replace_resource_locations_by_argument)
 {
     ITT_FUNCTION_TASK();
 }
 
-void ProgramMT::ResourceBindingsMT::Apply(CommandList& command_list) const
+void ProgramMT::ResourceBindingsMT::Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior) const
 {
     ITT_FUNCTION_TASK();
 
@@ -132,44 +204,27 @@ void ProgramMT::ResourceBindingsMT::Apply(CommandList& command_list) const
     {
         const Argument& program_argument = resource_binding_by_argument.first;
         const ShaderMT::ResourceBindingMT& metal_resource_binding = static_cast<const ShaderMT::ResourceBindingMT&>(*resource_binding_by_argument.second);
-        const Resource::Location& bound_resource_location = metal_resource_binding.GetResourceLocation();
-        if (!bound_resource_location.sp_resource)
-        {
-#ifndef PROGRAM_IGNORE_MISSING_ARGUMENTS
-            throw std::runtime_error(
-                "Can not apply resource binding for argument \"" + program_argument.argument_name +
-                "\" of \"" + Shader::GetTypeName(program_argument.shader_type) +
-                "\" shader because it is not bound to any resource.");
-#else
+
+        if ((apply_behavior & ApplyBehavior::ConstantOnce || apply_behavior & ApplyBehavior::ChangesOnly) &&
+            metal_resource_binding.IsAlreadyApplied(*m_sp_program, program_argument, command_state, apply_behavior & ApplyBehavior::ChangesOnly))
             continue;
-#endif
-        }
-        
-        if (metal_resource_binding.IsAlreadyApplied(*m_sp_program, program_argument, command_state))
-            continue;
-        
-        const Resource::Type resource_type = bound_resource_location.sp_resource->GetResourceType();
+
         const uint32_t arg_index = metal_resource_binding.GetSettings().argument_index;
-        
-        switch(resource_type)
+
+        switch(metal_resource_binding.GetSettings().base.resource_type)
         {
             case Resource::Type::Buffer:
-            {
-                const id<MTLBuffer>& mtl_buffer = dynamic_cast<const BufferMT&>(*bound_resource_location.sp_resource).GetNativeBuffer();
-                SetMetalResourceForAll(program_argument.shader_type, *m_sp_program, mtl_cmd_encoder, mtl_buffer, arg_index, bound_resource_location.offset);
-            } break;
+                SetMetalResourcesForAll(program_argument.shader_type, *m_sp_program, mtl_cmd_encoder, metal_resource_binding.GetNativeBuffers(), arg_index,
+                                       metal_resource_binding.GetBufferOffsets());
+                break;
 
             case Resource::Type::Texture:
-            {
-                const id<MTLTexture>& mtl_texture = dynamic_cast<const TextureMT&>(*bound_resource_location.sp_resource).GetNativeTexture();
-                SetMetalResourceForAll(program_argument.shader_type, *m_sp_program, mtl_cmd_encoder, mtl_texture, arg_index, bound_resource_location.offset);
-            } break;
+                SetMetalResourcesForAll(program_argument.shader_type, *m_sp_program, mtl_cmd_encoder, metal_resource_binding.GetNativeTextures(), arg_index);
+                break;
 
             case Resource::Type::Sampler:
-            {
-                const id<MTLSamplerState>& mtl_sampler = dynamic_cast<const SamplerMT&>(*bound_resource_location.sp_resource).GetNativeSamplerState();
-                SetMetalResourceForAll(program_argument.shader_type, *m_sp_program, mtl_cmd_encoder, mtl_sampler, arg_index, bound_resource_location.offset);
-            } break;
+                SetMetalResourcesForAll(program_argument.shader_type, *m_sp_program, mtl_cmd_encoder, metal_resource_binding.GetNativeSamplerStates(), arg_index);
+                break;
 
             default: assert(0);
         }

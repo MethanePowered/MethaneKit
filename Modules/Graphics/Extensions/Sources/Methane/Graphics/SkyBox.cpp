@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: SkyBox.cpp
+FILE: Methane/Graphics/SkyBox.cpp
 SkyBox rendering primitive
 
 ******************************************************************************/
@@ -47,7 +47,7 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
 {
     ITT_FUNCTION_TASK();
 
-    m_mesh_buffers.SetSubsetTexture(image_loader.LoadImagesToTextureCube(m_context, m_settings.face_resources, m_settings.mipmapped));
+    m_mesh_buffers.SetTexture(image_loader.LoadImagesToTextureCube(m_context, m_settings.face_resources, m_settings.mipmapped));
 
     const Context::Settings& context_settings = context.GetSettings();
 
@@ -58,7 +58,7 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
             Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxPS" }, { } }),
         },
         { { {
-            { "in_position", "POSITION" },
+            { "input_position", "POSITION" },
         } } },
         { "g_skybox_texture", "g_texture_sampler" },
         { },
@@ -66,9 +66,11 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
         context_settings.depth_stencil_format
     });
     state_settings.sp_program->SetName("Sky-box shading");
-    state_settings.viewports     = { GetFrameViewport(context_settings.frame_size) };
-    state_settings.scissor_rects = { GetFrameScissorRect(context_settings.frame_size) };
-    state_settings.depth.enabled = false;
+    state_settings.viewports            = { GetFrameViewport(context_settings.frame_size) };
+    state_settings.scissor_rects        = { GetFrameScissorRect(context_settings.frame_size) };
+    state_settings.depth.enabled        = m_settings.depth_enabled;
+    state_settings.depth.write_enabled  = false;
+    state_settings.depth.compare        = m_settings.depth_reversed ? Compare::GreaterEqual : Compare::Less;
     state_settings.rasterizer.is_front_counter_clockwise = true;
 
     m_sp_state = RenderState::Create(context, state_settings);
@@ -89,9 +91,9 @@ Program::ResourceBindings::Ptr SkyBox::CreateResourceBindings(const Buffer::Ptr&
     assert(!!m_sp_state);
     assert(!!m_sp_state->GetSettings().sp_program);
     return Program::ResourceBindings::Create(m_sp_state->GetSettings().sp_program, {
-        { { Shader::Type::Vertex, "g_skybox_uniforms" }, { sp_uniforms_buffer             } },
-        { { Shader::Type::Pixel,  "g_skybox_texture"  }, { m_mesh_buffers.GetSubsetTexturePtr() } },
-        { { Shader::Type::Pixel,  "g_texture_sampler" }, { m_sp_texture_sampler           } },
+        { { Shader::Type::Vertex, "g_skybox_uniforms" }, { { sp_uniforms_buffer             } } },
+        { { Shader::Type::Pixel,  "g_skybox_texture"  }, { { m_mesh_buffers.GetSubsetTexturePtr() } } },
+        { { Shader::Type::Pixel,  "g_texture_sampler" }, { { m_sp_texture_sampler           } } },
     });
 }
 
@@ -124,7 +126,7 @@ void SkyBox::Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindin
     assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= sizeof(Uniforms));
     buffer_bindings.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_mesh_buffers.GetFinalPassUniforms()), sizeof(Uniforms) } });
 
-    cmd_list.Reset(*m_sp_state, "Sky-box rendering");
+    cmd_list.Reset(m_sp_state, "Sky-box rendering");
     
     assert(!buffer_bindings.resource_bindings_per_instance.empty());
     assert(!!buffer_bindings.resource_bindings_per_instance[0]);

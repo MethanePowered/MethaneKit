@@ -71,7 +71,7 @@ protected:
     void        OnKeyboardStateAction(AppContextAction action) override;
     std::string GetKeyboardActionName(AppContextAction action) const override;
 
-    Context&                m_context;
+    Context& m_context;
 };
 
 } // namespace Methane::Graphics

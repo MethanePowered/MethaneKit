@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ public:
         gfx::Vector3f      position;
         float              scale;
         float              spin_velocity_rps = 0.3f; // (rps = radians per second)
+        bool               depth_reversed = false;
         bool               mipmapped = false;
         float              lod_bias = 0.f;
     };

@@ -37,8 +37,8 @@ struct Chunk
 
     Chunk() = default;
     Chunk(ConstRawPtr in_p_data, Size in_size) : p_data(in_p_data), size(in_size) { }
-    Chunk(const Bytes&& in_data) : data(std::move(in_data)), p_data(static_cast<ConstRawPtr>(data.data())), size(static_cast<Size>(data.size())) { }
-    Chunk(const Chunk&& other)   : data(std::move(other.data)), p_data(data.empty() ? other.p_data : data.data()), size(data.empty() ? other.size : static_cast<Size>(data.size())) { }
+    Chunk(const Bytes&& in_data)  : data(std::move(in_data)), p_data(static_cast<ConstRawPtr>(data.data())), size(static_cast<Size>(data.size())) { }
+    Chunk(Chunk&& other) noexcept : data(std::move(other.data)), p_data(data.empty() ? other.p_data : data.data()), size(data.empty() ? other.size : static_cast<Size>(data.size())) { }
 };
 
 struct Provider

@@ -1,3 +1,6 @@
+// Required macro definitions:
+// #define TEXTURES_COUNT 10
+
 struct VSInput
 {
     float3 position          : POSITION;
@@ -35,13 +38,14 @@ struct MeshUniforms
     float3   deep_color;
     float3   shallow_color;
     float2   depth_range;
+    uint     texture_index;
 };
 
-ConstantBuffer<Constants>     g_constants        : register(b1);
-ConstantBuffer<SceneUniforms> g_scene_uniforms   : register(b2);
-ConstantBuffer<MeshUniforms>  g_mesh_uniforms    : register(b3);
-Texture2DArray<float4>        g_face_textures    : register(t1);
-SamplerState                  g_texture_sampler  : register(s1);
+ConstantBuffer<Constants>     g_constants                     : register(b1);
+ConstantBuffer<SceneUniforms> g_scene_uniforms                : register(b2);
+ConstantBuffer<MeshUniforms>  g_mesh_uniforms                 : register(b3);
+Texture2DArray<float4>        g_face_textures[TEXTURES_COUNT] : register(t1);
+SamplerState                  g_texture_sampler               : register(s1);
 
 float linstep(float min, float max, float s)
 {
@@ -76,9 +80,10 @@ float4 AsteroidPS(PSInput input) : SV_TARGET
 
     // Triplanar projection sampling
     float3 texel_rgb = 0.0;
-    texel_rgb += input.face_blend_weights.x * g_face_textures.Sample(g_texture_sampler, float3(input.uvw.yz, 0)).xyz;
-    texel_rgb += input.face_blend_weights.y * g_face_textures.Sample(g_texture_sampler, float3(input.uvw.zx, 1)).xyz;
-    texel_rgb += input.face_blend_weights.z * g_face_textures.Sample(g_texture_sampler, float3(input.uvw.xy, 2)).xyz;
+    const uint tex_index = g_mesh_uniforms.texture_index;
+    texel_rgb += input.face_blend_weights.x * g_face_textures[tex_index].Sample(g_texture_sampler, float3(input.uvw.yz, 0)).xyz;
+    texel_rgb += input.face_blend_weights.y * g_face_textures[tex_index].Sample(g_texture_sampler, float3(input.uvw.zx, 1)).xyz;
+    texel_rgb += input.face_blend_weights.z * g_face_textures[tex_index].Sample(g_texture_sampler, float3(input.uvw.xy, 2)).xyz;
 
     const float4 texel_color    = float4(texel_rgb * input.albedo, 1.0);
     const float4 ambient_color  = texel_color * g_constants.light_ambient_factor;
@@ -89,6 +94,7 @@ float4 AsteroidPS(PSInput input) : SV_TARGET
 
     const float  specular_part  = pow(clamp(dot(fragment_to_eye, light_reflected_from_fragment), 0.0, 1.0), g_constants.light_specular_factor);
     const float4 specular_color = base_color * specular_part;
+    const float  fading_ratio   = saturate(input.position.z * 20000.0f);
 
-    return ambient_color + diffuse_color + specular_color;
+    return (ambient_color + diffuse_color + specular_color) * fading_ratio;
 }

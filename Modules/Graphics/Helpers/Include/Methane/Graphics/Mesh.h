@@ -46,7 +46,7 @@ public:
     using Normal    = Vector3f;
     using Color     = Vector4f;
     using TexCoord  = Vector2f;
-    using Index     = uint32_t;
+    using Index     = uint16_t;
     using Indices   = std::vector<Index>;
 
     enum class Type
@@ -114,6 +114,7 @@ public:
     const VertexLayout& GetVertexLayout() const noexcept    { return m_vertex_layout; }
     Data::Size          GetVertexSize() const noexcept      { return m_vertex_size; }
     const Indices&      GetIndices() const noexcept         { return m_indices; }
+    const Index         GetIndex(uint32_t i) const noexcept { return i < m_indices.size() ? m_indices[i] : 0; }
     Data::Size          GetIndexCount() const noexcept      { return static_cast<Data::Size>(m_indices.size()); }
     Data::Size          GetIndexDataSize() const noexcept   { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
 
@@ -288,6 +289,18 @@ protected:
         }
     }
 
+    void ValidateMeshData()
+    {
+        for(size_t index = 0; index < m_indices.size(); ++index)
+        {
+            const Index vertex_index = m_indices[index];
+            if (vertex_index >= m_vertices.size())
+                throw std::logic_error("Mesh index buffer value " + std::to_string(vertex_index) + 
+                                       " at position " + std::to_string(index) +
+                                       " is out of vertex buffer size " + std::to_string(m_vertices.size()));
+        }
+    }
+
     Vertices m_vertices;
 };
 
@@ -295,37 +308,44 @@ template<typename VType>
 class UberMesh : public BaseMesh<VType>
 {
 public:
-    using BaseMesh = BaseMesh<VType>;
+    using BaseMeshT = BaseMesh<VType>;
 
     UberMesh(const Mesh::VertexLayout& vertex_layout)
-        : BaseMesh(Mesh::Type::Uber, vertex_layout)
+        : BaseMeshT(Mesh::Type::Uber, vertex_layout)
     {
         ITT_FUNCTION_TASK();
     }
 
-    void AddSubMesh(const BaseMesh& sub_mesh, bool adjust_indices)
+    void AddSubMesh(const BaseMeshT& sub_mesh, bool adjust_indices)
     {
         ITT_FUNCTION_TASK();
-        const typename BaseMesh::Vertices& sub_vertices = sub_mesh.GetVertices();
+        const typename BaseMeshT::Vertices& sub_vertices = sub_mesh.GetVertices();
         const Mesh::Indices& sub_indices = sub_mesh.GetIndices();
 
         m_subsets.emplace_back(sub_mesh.GetType(),
-                               Mesh::Subset::Slice(static_cast<Data::Size>(BaseMesh::m_vertices.size()), static_cast<Data::Size>(sub_vertices.size())),
+                               Mesh::Subset::Slice(static_cast<Data::Size>(BaseMeshT::m_vertices.size()), static_cast<Data::Size>(sub_vertices.size())),
                                Mesh::Subset::Slice(static_cast<Data::Size>(Mesh::m_indices.size()), static_cast<Data::Size>(sub_indices.size())),
                                adjust_indices);
 
         if (adjust_indices)
         {
-            const Mesh::Index index_offset = static_cast<Mesh::Index>(BaseMesh::GetVertexCount());
+            const Data::Size vertex_count = BaseMeshT::GetVertexCount();
+            assert(vertex_count <= std::numeric_limits<Mesh::Index>::max());
+
+            const Mesh::Index index_offset = static_cast<Mesh::Index>(vertex_count);
             std::transform(sub_indices.begin(), sub_indices.end(), std::back_inserter(Mesh::m_indices),
-                           [index_offset](const Mesh::Index& index) { return index_offset + index; });
+                           [index_offset](const Mesh::Index& index)
+                           {
+                               assert(static_cast<Data::Size>(index_offset) + index <= std::numeric_limits<Mesh::Index>::max());
+                               return index_offset + index;
+                           });
         }
         else
         {
             Mesh::m_indices.insert(Mesh::m_indices.end(), sub_indices.begin(), sub_indices.end());
         }
 
-        BaseMesh::m_vertices.insert(BaseMesh::m_vertices.end(), sub_vertices.begin(), sub_vertices.end());
+        BaseMeshT::m_vertices.insert(BaseMeshT::m_vertices.end(), sub_vertices.begin(), sub_vertices.end());
     }
 
     const Mesh::Subsets& GetSubsets() const                     { return m_subsets; }
@@ -343,7 +363,7 @@ public:
     {
         ITT_FUNCTION_TASK();
         const Mesh::Subset& subset = GetSubset(subset_index);
-        return { BaseMesh::GetVertices().data() + subset.vertices.offset, subset.vertices.count };
+        return { BaseMeshT::GetVertices().data() + subset.vertices.offset, subset.vertices.count };
     }
 
     std::pair<const Mesh::Index*, size_t> GetSubsetIndices(size_t subset_index) const
@@ -361,6 +381,8 @@ template<typename VType>
 class RectMesh : public BaseMesh<VType>
 {
 public:
+    using BaseMeshT = BaseMesh<VType>;
+
     enum class FaceType
     {
         XY,
@@ -369,7 +391,7 @@ public:
     };
 
     RectMesh(const Mesh::VertexLayout& vertex_layout, float width = 1.f, float height = 1.f, float depth_pos = 0.f, size_t color_index = 0, FaceType face_type = FaceType::XY, Mesh::Type type = Mesh::Type::Rect)
-        : BaseMesh<VType>(type, vertex_layout)
+        : BaseMeshT(type, vertex_layout)
         , m_width(width)
         , m_height(height)
         , m_depth_pos(depth_pos)
@@ -385,7 +407,7 @@ public:
             VType vertex = {};
             {
                 const Mesh::Position2D& pos_2d = Mesh::g_face_positions_2d[face_vertex_idx];
-                Mesh::Position& vertex_position = BaseMesh<VType>::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
+                Mesh::Position& vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
                 switch (face_type)
                 {
                 case FaceType::XY: vertex_position = Mesh::Position(pos_2d[0] * m_width, pos_2d[1] * m_height, m_depth_pos); break;
@@ -395,7 +417,7 @@ public:
             }
             if (has_normals)
             {
-                Mesh::Normal& vertex_normal = BaseMesh<VType>::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
+                Mesh::Normal& vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
                 const float depth_norm = m_depth_pos ? m_depth_pos / std::abs(m_depth_pos) : 1.f;
                 switch (face_type)
                 {
@@ -406,12 +428,12 @@ public:
             }
             if (has_colors)
             {
-                Mesh::Color& vertex_color = BaseMesh<VType>::template GetVertexField<Mesh::Color>(vertex, Mesh::VertexField::Color);
+                Mesh::Color& vertex_color = BaseMeshT::template GetVertexField<Mesh::Color>(vertex, Mesh::VertexField::Color);
                 vertex_color = Mesh::g_colors[color_index % Mesh::g_colors.size()];
             }
             if (has_texcoord)
             {
-                Mesh::TexCoord& vertex_texcoord = BaseMesh<VType>::template GetVertexField<Mesh::TexCoord>(vertex, Mesh::VertexField::TexCoord);
+                Mesh::TexCoord& vertex_texcoord = BaseMeshT::template GetVertexField<Mesh::TexCoord>(vertex, Mesh::VertexField::TexCoord);
                 vertex_texcoord = Mesh::g_face_texcoords[face_vertex_idx];
             }
             RectMesh::m_vertices.push_back(vertex);
@@ -439,30 +461,32 @@ template<typename VType>
 class BoxMesh : public RectMesh<VType>
 {
     using Positions = std::vector<Mesh::Position>;
+    using BaseMeshT = BaseMesh<VType>;
+    using RectMeshT = RectMesh<VType>;
 
 public:
     BoxMesh(const Mesh::VertexLayout& vertex_layout, float width = 1.f, float height = 1.f, float depth = 1.f)
-        : RectMesh<VType>(vertex_layout, width, height, depth / 2.f, 0, RectMesh<VType>::FaceType::XY, Mesh::Type::Box)
+        : RectMeshT(vertex_layout, width, height, depth / 2.f, 0, RectMeshT::FaceType::XY, Mesh::Type::Box)
         , m_depth(depth)
     {
         ITT_FUNCTION_TASK();
-        AddFace(RectMesh<VType>(vertex_layout, width,  height, -depth  / 2.f, 1, RectMesh<VType>::FaceType::XY));
-        AddFace(RectMesh<VType>(vertex_layout, width,  depth,   height / 2.f, 2, RectMesh<VType>::FaceType::XZ));
-        AddFace(RectMesh<VType>(vertex_layout, width,  depth,  -height / 2.f, 3, RectMesh<VType>::FaceType::XZ));
-        AddFace(RectMesh<VType>(vertex_layout, height, depth,   width  / 2.f, 4, RectMesh<VType>::FaceType::YZ));
-        AddFace(RectMesh<VType>(vertex_layout, height, depth,  -width  / 2.f, 5, RectMesh<VType>::FaceType::YZ));
+        AddFace(RectMeshT(vertex_layout, width,  height, -depth  / 2.f, 1, RectMeshT::FaceType::XY));
+        AddFace(RectMeshT(vertex_layout, width,  depth,   height / 2.f, 2, RectMeshT::FaceType::XZ));
+        AddFace(RectMeshT(vertex_layout, width,  depth,  -height / 2.f, 3, RectMeshT::FaceType::XZ));
+        AddFace(RectMeshT(vertex_layout, height, depth,   width  / 2.f, 4, RectMeshT::FaceType::YZ));
+        AddFace(RectMeshT(vertex_layout, height, depth,  -width  / 2.f, 5, RectMeshT::FaceType::YZ));
     }
 
     float GetDepth() const noexcept { return m_depth; }
 
 protected:
-    void AddFace(const RectMesh<VType>& face_mesh) noexcept
+    void AddFace(const RectMeshT& face_mesh) noexcept
     {
         ITT_FUNCTION_TASK();
-        const size_t initial_vertices_count = BaseMesh<VType>::m_vertices.size();
+        const size_t initial_vertices_count = BaseMeshT::m_vertices.size();
 
-        const typename BaseMesh<VType>::Vertices& face_vertices = face_mesh.GetVertices();
-        BoxMesh::m_vertices.insert(BaseMesh<VType>::m_vertices.end(), face_vertices.begin(), face_vertices.end());
+        const typename BaseMeshT::Vertices& face_vertices = face_mesh.GetVertices();
+        BaseMeshT::m_vertices.insert(BaseMeshT::m_vertices.end(), face_vertices.begin(), face_vertices.end());
 
         const Mesh::Indices& face_indices = face_mesh.GetIndices();
         std::transform(face_indices.begin(), face_indices.end(), std::back_inserter(Mesh::m_indices),
@@ -477,10 +501,10 @@ template<typename VType>
 class SphereMesh : public BaseMesh<VType>
 {
 public:
-    using BaseMesh = BaseMesh<VType>;
+    using BaseMeshT = BaseMesh<VType>;
     
     SphereMesh(const Mesh::VertexLayout& vertex_layout, float radius = 1.f, uint32_t lat_lines_count = 10, uint32_t long_lines_count = 16)
-        : BaseMesh(Mesh::Type::Sphere, vertex_layout)
+        : BaseMeshT(Mesh::Type::Sphere, vertex_layout)
         , m_radius(radius)
         , m_lat_lines_count(lat_lines_count)
         , m_long_lines_count(long_lines_count)
@@ -525,20 +549,20 @@ private:
         const uint32_t actual_long_lines_count = GetActualLongLinesCount();
         const uint32_t cap_vertex_count = 2 * (has_texcoord ? actual_long_lines_count : 1);
 
-        BaseMesh::m_vertices.resize((m_lat_lines_count - 2) * actual_long_lines_count + cap_vertex_count, {});
+        BaseMeshT::m_vertices.resize((m_lat_lines_count - 2) * actual_long_lines_count + cap_vertex_count, {});
 
         if (!has_texcoord)
         {
-            Mesh::Position& first_vertex_position = BaseMesh::template GetVertexField<Mesh::Position>(BaseMesh::m_vertices.front(), Mesh::VertexField::Position);
-            Mesh::Position& last_vertex_position = BaseMesh::template GetVertexField<Mesh::Position>(BaseMesh::m_vertices.back(), Mesh::VertexField::Position);
+            Mesh::Position& first_vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(BaseMeshT::m_vertices.front(), Mesh::VertexField::Position);
+            Mesh::Position& last_vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(BaseMeshT::m_vertices.back(), Mesh::VertexField::Position);
 
             first_vertex_position = Mesh::Position(0.f, m_radius, 0.f);
             last_vertex_position = Mesh::Position(0.f, -m_radius, 0.f);
 
             if (has_normals)
             {
-                Mesh::Normal& first_vertex_normal = BaseMesh::template GetVertexField<Mesh::Normal>(BaseMesh::m_vertices.front(), Mesh::VertexField::Normal);
-                Mesh::Normal& last_vertex_normal = BaseMesh::template GetVertexField<Mesh::Normal>(BaseMesh::m_vertices.back(), Mesh::VertexField::Normal);
+                Mesh::Normal& first_vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(BaseMeshT::m_vertices.front(), Mesh::VertexField::Normal);
+                Mesh::Normal& last_vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(BaseMeshT::m_vertices.back(), Mesh::VertexField::Normal);
 
                 first_vertex_normal = Mesh::Normal(0.f, 1.f, 0.f);
                 last_vertex_normal = Mesh::Normal(0.f, -1.f, 0.f);
@@ -548,11 +572,13 @@ private:
         const float texcoord_long_spacing = 1.f / (actual_long_lines_count - 1);
         const float texcoord_lat_spacing  = 1.f / (m_lat_lines_count + 1);
         
-        cml::matrix33f pitch_step_matrix = { }, yaw_step_matrix = { };
-        cml::matrix_rotation_world_x(pitch_step_matrix, cml::constants<float>::pi() / (m_lat_lines_count - 1));
-        cml::matrix_rotation_world_y(yaw_step_matrix, 2.0 * cml::constants<float>::pi() / m_long_lines_count);
+        Matrix33f pitch_step_matrix = { }, yaw_step_matrix = { };
+        cml::matrix_rotation_world_x(pitch_step_matrix, -cml::constants<float>::pi() / (m_lat_lines_count - 1));
+        cml::matrix_rotation_world_y(yaw_step_matrix, -2.0 * cml::constants<float>::pi() / m_long_lines_count);
 
-        cml::matrix33f pitch_matrix = cml::identity_3x3();
+        Matrix33f pitch_matrix = { }, yaw_matrix = { };;
+        pitch_matrix.identity();
+
         if (!has_texcoord)
             pitch_matrix = pitch_step_matrix;
         
@@ -562,26 +588,26 @@ private:
 
         for (uint32_t lat_line_index = first_lat_line_index; lat_line_index < actual_lat_lines_count; ++lat_line_index)
         {
-            cml::matrix33f yaw_matrix = cml::identity_3x3();
+            yaw_matrix.identity();
 
             for(uint32_t long_line_index = 0; long_line_index < actual_long_lines_count; ++long_line_index)
             {
-                const cml::matrix33f rotation_matrix = pitch_matrix * yaw_matrix;
-                const uint32_t       vertex_index    = (lat_line_index - first_lat_line_index) * actual_long_lines_count + long_line_index + first_vertex_index;
+                const Matrix33f rotation_matrix = pitch_matrix * yaw_matrix;
+                const uint32_t  vertex_index    = (lat_line_index - first_lat_line_index) * actual_long_lines_count + long_line_index + first_vertex_index;
                 
-                VType& vertex = BaseMesh::m_vertices[vertex_index];
+                VType& vertex = BaseMeshT::m_vertices[vertex_index];
                 {
-                    Mesh::Position& vertex_position = BaseMesh::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
+                    Mesh::Position& vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
                     vertex_position = Mesh::Position(0.f, m_radius, 0.f) * rotation_matrix;
                 }
                 if (has_normals)
                 {
-                    Mesh::Normal& vertex_normal = BaseMesh::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
+                    Mesh::Normal& vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
                     vertex_normal = Mesh::Normal(0.f, 1.f, 0.f) * rotation_matrix;
                 }
                 if (has_texcoord)
                 {
-                    Mesh::TexCoord& vertex_texcoord = BaseMesh::template GetVertexField<Mesh::TexCoord>(vertex, Mesh::VertexField::TexCoord);
+                    Mesh::TexCoord& vertex_texcoord = BaseMeshT::template GetVertexField<Mesh::TexCoord>(vertex, Mesh::VertexField::TexCoord);
                     vertex_texcoord = Mesh::TexCoord(texcoord_long_spacing * long_line_index, texcoord_lat_spacing * lat_line_index);
                 }
                 
@@ -600,7 +626,7 @@ private:
         const uint32_t actual_long_lines_count = GetActualLongLinesCount();
         const uint32_t sphere_faces_count      = GetSphereFacesCount();
 
-        BaseMesh::m_indices.resize(sphere_faces_count * 3, 0);
+        BaseMeshT::m_indices.resize(sphere_faces_count * 3, 0);
 
         uint32_t index_offset = 0;
 
@@ -610,49 +636,49 @@ private:
 
             for (Mesh::Index long_line_index = 0; long_line_index < actual_long_lines_count - 1; ++long_line_index)
             {
-                BaseMesh::m_indices[index_offset]     = 0;
-                BaseMesh::m_indices[index_offset + 1] = long_line_index + 2;
-                BaseMesh::m_indices[index_offset + 2] = long_line_index + 1;
+                BaseMeshT::m_indices[index_offset]     = 0;
+                BaseMeshT::m_indices[index_offset + 1] = long_line_index + 2;
+                BaseMeshT::m_indices[index_offset + 2] = long_line_index + 1;
 
                 index_offset += 3;
             }
 
-            BaseMesh::m_indices[index_offset]     = 0;
-            BaseMesh::m_indices[index_offset + 1] = 1;
-            BaseMesh::m_indices[index_offset + 2] = m_long_lines_count;
+            BaseMeshT::m_indices[index_offset]     = 0;
+            BaseMeshT::m_indices[index_offset + 1] = 1;
+            BaseMeshT::m_indices[index_offset + 2] = m_long_lines_count;
 
             index_offset += 3;
         }
 
-        const uint32_t vertices_count         = static_cast<uint32_t>(BaseMesh::m_vertices.size());
+        const uint32_t vertices_count         = static_cast<uint32_t>(BaseMeshT::m_vertices.size());
         const uint32_t index_lat_lines_count  = has_texcoord ? m_lat_lines_count - 1 : m_lat_lines_count - 3;
-        const uint32_t index_long_lines_count = has_texcoord ? m_long_lines_count + 1 : m_long_lines_count - 1;
+        const uint32_t index_long_lines_count = has_texcoord ? m_long_lines_count : m_long_lines_count - 1;
         const uint32_t first_vertex_index     = has_texcoord ? 0 : 1;
 
         for (uint32_t lat_line_index = 0; lat_line_index < index_lat_lines_count; ++lat_line_index)
         {
             for (uint32_t long_line_index = 0; long_line_index < index_long_lines_count; ++long_line_index)
             {
-                BaseMesh::m_indices[index_offset]     = (lat_line_index      * actual_long_lines_count) + long_line_index + first_vertex_index;
-                BaseMesh::m_indices[index_offset + 1] = (lat_line_index      * actual_long_lines_count) + long_line_index + first_vertex_index + 1;
-                BaseMesh::m_indices[index_offset + 2] = (lat_line_index + 1) * actual_long_lines_count  + long_line_index + first_vertex_index;
+                BaseMeshT::m_indices[index_offset]     = (lat_line_index      * actual_long_lines_count) + long_line_index + first_vertex_index;
+                BaseMeshT::m_indices[index_offset + 1] = (lat_line_index      * actual_long_lines_count) + long_line_index + first_vertex_index + 1;
+                BaseMeshT::m_indices[index_offset + 2] = (lat_line_index + 1) * actual_long_lines_count  + long_line_index + first_vertex_index;
 
-                BaseMesh::m_indices[index_offset + 3] = (lat_line_index + 1) * actual_long_lines_count  + long_line_index + first_vertex_index;
-                BaseMesh::m_indices[index_offset + 4] = (lat_line_index      * actual_long_lines_count) + long_line_index + first_vertex_index + 1;
-                BaseMesh::m_indices[index_offset + 5] = (lat_line_index + 1) * actual_long_lines_count  + long_line_index + first_vertex_index + 1;
+                BaseMeshT::m_indices[index_offset + 3] = (lat_line_index + 1) * actual_long_lines_count  + long_line_index + first_vertex_index;
+                BaseMeshT::m_indices[index_offset + 4] = (lat_line_index      * actual_long_lines_count) + long_line_index + first_vertex_index + 1;
+                BaseMeshT::m_indices[index_offset + 5] = (lat_line_index + 1) * actual_long_lines_count  + long_line_index + first_vertex_index + 1;
 
                 index_offset += 6;
             }
 
             if (!has_texcoord)
             {
-                BaseMesh::m_indices[index_offset]     = (lat_line_index      * actual_long_lines_count) + actual_long_lines_count;
-                BaseMesh::m_indices[index_offset + 1] = (lat_line_index      * actual_long_lines_count) + 1;
-                BaseMesh::m_indices[index_offset + 2] = (lat_line_index + 1) * actual_long_lines_count  + actual_long_lines_count;
+                BaseMeshT::m_indices[index_offset]     = (lat_line_index      * actual_long_lines_count) + actual_long_lines_count;
+                BaseMeshT::m_indices[index_offset + 1] = (lat_line_index      * actual_long_lines_count) + 1;
+                BaseMeshT::m_indices[index_offset + 2] = (lat_line_index + 1) * actual_long_lines_count  + actual_long_lines_count;
 
-                BaseMesh::m_indices[index_offset + 3] = (lat_line_index + 1) * actual_long_lines_count  + actual_long_lines_count;
-                BaseMesh::m_indices[index_offset + 4] = (lat_line_index      * actual_long_lines_count) + 1;
-                BaseMesh::m_indices[index_offset + 5] = (lat_line_index + 1) * actual_long_lines_count  + 1;
+                BaseMeshT::m_indices[index_offset + 3] = (lat_line_index + 1) * actual_long_lines_count  + actual_long_lines_count;
+                BaseMeshT::m_indices[index_offset + 4] = (lat_line_index      * actual_long_lines_count) + 1;
+                BaseMeshT::m_indices[index_offset + 5] = (lat_line_index + 1) * actual_long_lines_count  + 1;
 
                 index_offset += 6;
             }
@@ -664,16 +690,16 @@ private:
 
             for (uint32_t long_line_index = 0; long_line_index < index_long_lines_count; ++long_line_index)
             {
-                BaseMesh::m_indices[index_offset]     = (vertices_count - 1);
-                BaseMesh::m_indices[index_offset + 1] = (vertices_count - 1) - (long_line_index + 2);
-                BaseMesh::m_indices[index_offset + 2] = (vertices_count - 1) - (long_line_index + 1);
+                BaseMeshT::m_indices[index_offset]     = (vertices_count - 1);
+                BaseMeshT::m_indices[index_offset + 1] = (vertices_count - 1) - (long_line_index + 2);
+                BaseMeshT::m_indices[index_offset + 2] = (vertices_count - 1) - (long_line_index + 1);
 
                 index_offset += 3;
             }
 
-            BaseMesh::m_indices[index_offset]     = (vertices_count - 1);
-            BaseMesh::m_indices[index_offset + 1] = (vertices_count - 2);
-            BaseMesh::m_indices[index_offset + 2] = (vertices_count - 1) - actual_long_lines_count;
+            BaseMeshT::m_indices[index_offset]     = (vertices_count - 1);
+            BaseMeshT::m_indices[index_offset + 1] = (vertices_count - 2);
+            BaseMeshT::m_indices[index_offset + 2] = (vertices_count - 1) - actual_long_lines_count;
         }
     }
 
@@ -686,10 +712,10 @@ template<typename VType>
 class IcosahedronMesh : public BaseMesh<VType>
 {
 public:
-    using BaseMesh = BaseMesh<VType>;
+    using BaseMeshT = BaseMesh<VType>;
     
     IcosahedronMesh(const Mesh::VertexLayout& vertex_layout, float radius = 1.f, uint32_t subdivisions_count = 0, bool spherify = false)
-        : BaseMesh(Mesh::Type::Icosahedron, vertex_layout)
+        : BaseMeshT(Mesh::Type::Icosahedron, vertex_layout)
         , m_radius(radius)
     {
         ITT_FUNCTION_TASK();
@@ -703,7 +729,7 @@ public:
             throw std::invalid_argument("Colored vertices are not supported for icosahedron mesh.");
         }
         
-        const float a = (radius + std::sqrtf(radius * 5.f)) / 2.f;
+        const float a = (radius + std::sqrt(radius * 5.f)) / 2.f;
         const float b = radius;
         const std::array<Mesh::Position, 12> vertex_positions = {{
             {-b,  a,  0 },
@@ -720,23 +746,23 @@ public:
             {-a,  0,  b },
         }};
         
-        BaseMesh::m_vertices.resize(vertex_positions.size());
+        BaseMeshT::m_vertices.resize(vertex_positions.size());
         for(size_t vertex_index = 0; vertex_index < vertex_positions.size(); ++vertex_index)
         {
-            VType& vertex = BaseMesh::m_vertices[vertex_index];
+            VType& vertex = BaseMeshT::m_vertices[vertex_index];
             
-            Mesh::Position& vertex_position = BaseMesh::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
+            Mesh::Position& vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
             vertex_position = vertex_positions[vertex_index];
             
             if (has_normals)
             {
-                Mesh::Normal& vertex_normal = BaseMesh::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
+                Mesh::Normal& vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
                 vertex_normal = cml::normalize(vertex_position);
             }
             
             if (has_texcoord)
             {
-                Mesh::TexCoord& vertex_texcoord = BaseMesh::template GetVertexField<Mesh::TexCoord>(vertex, Mesh::VertexField::TexCoord);
+                Mesh::TexCoord& vertex_texcoord = BaseMeshT::template GetVertexField<Mesh::TexCoord>(vertex, Mesh::VertexField::TexCoord);
                 const Mesh::Position vertex_direction = cml::normalize(vertex_position);
 
                 vertex_texcoord[0] = std::atan2(vertex_direction[2], vertex_direction[0]) / (2.f * cml::constants<float>::pi()) + 0.5f;
@@ -747,7 +773,7 @@ public:
             }
         }
 
-        BaseMesh::m_indices = {
+        BaseMeshT::m_indices = {
              5,  0, 11,
              1,  0,  5,
              7,  0,  1,
@@ -786,25 +812,25 @@ public:
     void Subdivide()
     {
         ITT_FUNCTION_TASK();
-        if (BaseMesh::m_indices.size() % 3 != 0)
+        if (BaseMeshT::m_indices.size() % 3 != 0)
             throw std::logic_error("Icosahedron indices count should be a multiple of three representing triangles list.");
 
         Mesh::Indices new_indices;
-        new_indices.reserve(BaseMesh::m_indices.size() * 4);
-        BaseMesh::m_vertices.reserve(BaseMesh::m_vertices.size() * 2);
+        new_indices.reserve(BaseMeshT::m_indices.size() * 4);
+        BaseMeshT::m_vertices.reserve(BaseMeshT::m_vertices.size() * 2);
         
-        typename BaseMesh::EdgeMidpoints edge_midpoints;
+        typename BaseMeshT::EdgeMidpoints edge_midpoints;
 
-        const size_t triangles_count = BaseMesh::m_indices.size() / 3;
+        const size_t triangles_count = BaseMeshT::m_indices.size() / 3;
         for (size_t triangle_index = 0; triangle_index < triangles_count; ++triangle_index)
         {
-            const Mesh::Index vi1 = BaseMesh::m_indices[triangle_index * 3];
-            const Mesh::Index vi2 = BaseMesh::m_indices[triangle_index * 3 + 1];
-            const Mesh::Index vi3 = BaseMesh::m_indices[triangle_index * 3 + 2];
+            const Mesh::Index vi1 = BaseMeshT::m_indices[triangle_index * 3];
+            const Mesh::Index vi2 = BaseMeshT::m_indices[triangle_index * 3 + 1];
+            const Mesh::Index vi3 = BaseMeshT::m_indices[triangle_index * 3 + 2];
 
-            const Mesh::Index vm1 = BaseMesh::AddEdgeMidpoint(Mesh::Edge(vi1, vi2), edge_midpoints);
-            const Mesh::Index vm2 = BaseMesh::AddEdgeMidpoint(Mesh::Edge(vi2, vi3), edge_midpoints);
-            const Mesh::Index vm3 = BaseMesh::AddEdgeMidpoint(Mesh::Edge(vi3, vi1), edge_midpoints);
+            const Mesh::Index vm1 = BaseMeshT::AddEdgeMidpoint(Mesh::Edge(vi1, vi2), edge_midpoints);
+            const Mesh::Index vm2 = BaseMeshT::AddEdgeMidpoint(Mesh::Edge(vi2, vi3), edge_midpoints);
+            const Mesh::Index vm3 = BaseMeshT::AddEdgeMidpoint(Mesh::Edge(vi3, vi1), edge_midpoints);
 
             std::array<Mesh::Index, 3 * 4> indices = {
                 vi1, vm1, vm3,
@@ -815,7 +841,7 @@ public:
             new_indices.insert(new_indices.end(), indices.begin(), indices.end());
         }
 
-        std::swap(BaseMesh::m_indices, new_indices);
+        std::swap(BaseMeshT::m_indices, new_indices);
     }
     
     void Spherify()
@@ -824,14 +850,14 @@ public:
 
         const bool has_normals = Mesh::HasVertexField(Mesh::VertexField::Normal);
 
-        for(VType& vertex : BaseMesh::m_vertices)
+        for(VType& vertex : BaseMeshT::m_vertices)
         {
-            Mesh::Position& vertex_position = BaseMesh::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
+            Mesh::Position& vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
             vertex_position = cml::normalize(vertex_position) * m_radius;
             
             if (has_normals)
             {
-                Mesh::Normal& vertex_normal = BaseMesh::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
+                Mesh::Normal& vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
                 vertex_normal = cml::normalize(vertex_position);
             }
         }

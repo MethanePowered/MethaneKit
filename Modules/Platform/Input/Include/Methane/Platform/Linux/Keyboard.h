@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/MacOS/KeyboardMac.h
-MacOS platform specific types and implementation of Keyboard abstractions.
+FILE: Methane/Platform/Linux/Keyboard.h
+Linux platform specific types and implementation of Keyboard abstractions.
 
 ******************************************************************************/
 

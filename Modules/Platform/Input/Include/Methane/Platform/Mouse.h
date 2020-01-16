@@ -25,6 +25,7 @@ Platform abstraction of mouse events.
 
 #include <Methane/Data/Types.h>
 
+#include <cmath>
 #include <array>
 #include <set>
 #include <string>
@@ -79,8 +80,8 @@ using MouseButtonAndDelta = std::pair<Mouse::Button, float>;
 inline MouseButtonAndDelta GetScrollButtonAndDelta(const Scroll& scroll_delta)
 {
     const float min_scroll_delta = 0.00001f;
-    return std::fabsf(scroll_delta.y()) > min_scroll_delta ? MouseButtonAndDelta(Button::VScroll, scroll_delta.y())
-        : (std::fabsf(scroll_delta.x()) > min_scroll_delta ? MouseButtonAndDelta(Button::HScroll, scroll_delta.x())
+    return std::fabs(scroll_delta.y()) > min_scroll_delta ? MouseButtonAndDelta(Button::VScroll, scroll_delta.y())
+        : (std::fabs(scroll_delta.x()) > min_scroll_delta ? MouseButtonAndDelta(Button::HScroll, scroll_delta.x())
                                                            : MouseButtonAndDelta(Button::Unknonwn, 0.f ) );
 }
 
@@ -92,12 +93,12 @@ public:
         using Mask = uint32_t;
         enum Value : Mask
         {
-            None        = 0,
-            Buttons     = 1 << 0,
-            Position    = 1 << 1,
-            Scroll      = 1 << 2,
-            InWindow    = 1 << 3,
-            All         = static_cast<Mask>(~0),
+            None        = 0u,
+            Buttons     = 1u << 0u,
+            Position    = 1u << 1u,
+            Scroll      = 1u << 2u,
+            InWindow    = 1u << 3u,
+            All         = ~0u,
         };
 
         using Values = std::array<Value, 4>;

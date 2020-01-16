@@ -25,6 +25,7 @@ pipeline via state object and used to create resource binding objects.
 #pragma once
 
 #include "Shader.h"
+#include "Object.h"
 #include "Types.h"
 
 #include <memory>
@@ -41,7 +42,7 @@ namespace Methane::Graphics
 struct Context;
 struct CommandList;
 
-struct Program
+struct Program : virtual Object
 {
     using Ptr = std::shared_ptr<Program>;
 
@@ -92,15 +93,30 @@ struct Program
     {
         using Ptr     = std::shared_ptr<ResourceBindings>;
         using WeakPtr = std::weak_ptr<ResourceBindings>;
-        using ResourceLocationByArgument = std::unordered_map<Argument, Resource::Location, Argument::Hash>;
+        using ResourceLocationsByArgument = std::unordered_map<Argument, Resource::Locations, Argument::Hash>;
+
+        struct ApplyBehavior
+        {
+            using Mask = uint32_t;
+            enum Value : Mask
+            {
+                Indifferent    = 0u,        // All bindings will be applied indifferently of the previous binding values
+                ConstantOnce   = 1u << 0,   // Constant program arguments will be applied only once for each command list
+                ChangesOnly    = 1u << 1,   // Only changed program argument values will be applied in command sequence
+                StateBarriers  = 1u << 2,   // Resource state barriers will be automatically evaluated and set for command list
+                AllIncremental = ~0u        // All binding values will be applied incrementally along with resource state barriers
+            };
+
+            ApplyBehavior() = delete;
+        };
 
         // Create ResourceBindings instance
-        static Ptr Create(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_location_by_argument);
-        static Ptr CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceLocationByArgument& replace_resource_location_by_argument = {});
+        static Ptr Create(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
+        static Ptr CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument = {});
 
         // ResourceBindings interface
         virtual const Shader::ResourceBinding::Ptr& Get(const Argument& shader_argument) const = 0;
-        virtual void Apply(CommandList& command_list) const = 0;
+        virtual void Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior = ApplyBehavior::AllIncremental) const = 0;
 
         virtual ~ResourceBindings() = default;
     };
@@ -121,8 +137,6 @@ struct Program
 
     // Program interface
     virtual const Settings&      GetSettings() const = 0;
-    virtual void                 SetName(const std::string& name) = 0;
-    virtual const std::string&   GetName() const = 0;
     virtual const Shader::Types& GetShaderTypes() const = 0;
     virtual const Shader::Ptr&   GetShader(Shader::Type shader_type) const = 0;
 

@@ -31,6 +31,10 @@ Native implementation alias of the texture interface.
 
 #include <Methane/Graphics/Metal/TextureMT.hh>
 
+#elif defined __linux__
+
+#include <Methane/Graphics/Vulkan/TextureVK.h>
+
 #endif
 
 namespace Methane::Graphics
@@ -43,6 +47,10 @@ using TextureNT = TextureDX;
 #elif defined __APPLE__
 
 using TextureNT = TextureMT;
+
+#elif defined __linux__
+
+using TextureNT = TextureVK;
 
 #endif
 

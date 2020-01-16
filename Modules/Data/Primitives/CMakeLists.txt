@@ -11,6 +11,7 @@ set(HEADERS
     ${INCLUDE_DIR}/ResourceProvider.hpp
     ${INCLUDE_DIR}/AppResourceProviders.h
     ${INCLUDE_DIR}/AlignedAllocator.hpp
+    ${INCLUDE_DIR}/Math.hpp
     ${INCLUDE_DIR}/Parallel.hpp
 )
 
@@ -35,6 +36,14 @@ target_link_libraries(${TARGET}
     MethanePlatformUtils
     CML
 )
+
+if (UNIX)
+
+    target_link_libraries(${TARGET}
+        pthread
+    )
+
+endif()
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES  ${HEADERS} ${SOURCES})
 

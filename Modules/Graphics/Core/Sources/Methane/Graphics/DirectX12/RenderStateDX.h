@@ -50,7 +50,7 @@ public:
     void SetScissorRects(const ScissorRects& scissor_rects) override;
 
     // RenderStateBase interface
-    void Apply(RenderCommandListBase& command_list) override;
+    void Apply(RenderCommandListBase& command_list, Group::Mask state_groups) override;
 
     // Object interface
     void SetName(const std::string& name) override;
@@ -65,6 +65,7 @@ protected:
     wrl::ComPtr<ID3D12PipelineState>   m_cp_pipeline_state;
     std::vector<CD3DX12_VIEWPORT>      m_viewports;
     std::vector<CD3DX12_RECT>          m_scissor_rects;
+    float                              m_blend_factor[4] = { 0.0, 0.0, 0.0, 0.0 };
 };
 
 } // namespace Methane::Graphics

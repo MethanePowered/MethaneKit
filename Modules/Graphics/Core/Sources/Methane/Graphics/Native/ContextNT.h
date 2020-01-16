@@ -31,6 +31,10 @@ Native implementation alias of the context interface.
 
 #include <Methane/Graphics/Metal/ContextMT.hh>
 
+#elif defined __linux__
+
+#include <Methane/Graphics/Vulkan/ContextVK.h>
+
 #endif
 
 namespace Methane::Graphics
@@ -38,11 +42,15 @@ namespace Methane::Graphics
 
 #if defined _WIN32
 
-using ContextNative = ContextDX;
+using ContextNT = ContextDX;
 
 #elif defined __APPLE__
 
-using ContextNative = ContextMT;
+using ContextNT = ContextMT;
+
+#elif defined __linux__
+
+using ContextNT = ContextVK;
 
 #endif
 

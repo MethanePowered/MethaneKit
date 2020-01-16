@@ -22,6 +22,7 @@ DirectX 12 implementation of the render command list interface.
 ******************************************************************************/
 
 #include "RenderCommandListDX.h"
+#include "ParallelRenderCommandListDX.h"
 #include "RenderStateDX.h"
 #include "RenderPassDX.h"
 #include "CommandQueueDX.h"
@@ -64,8 +65,27 @@ RenderCommandList::Ptr RenderCommandList::Create(CommandQueue& cmd_queue, Render
     return std::make_shared<RenderCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue), static_cast<RenderPassBase&>(render_pass));
 }
 
+RenderCommandList::Ptr RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
+{
+    ITT_FUNCTION_TASK();
+    return std::make_shared<RenderCommandListDX>(static_cast<ParallelRenderCommandListBase&>(parallel_render_command_list));
+}
+
 RenderCommandListDX::RenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass)
     : RenderCommandListBase(cmd_buffer, render_pass)
+{
+    ITT_FUNCTION_TASK();
+    Initialize();
+}
+
+RenderCommandListDX::RenderCommandListDX(ParallelRenderCommandListBase& parallel_render_command_list)
+    : RenderCommandListBase(parallel_render_command_list)
+{
+    ITT_FUNCTION_TASK();
+    Initialize();
+}
+
+void RenderCommandListDX::Initialize()
 {
     ITT_FUNCTION_TASK();
 
@@ -74,39 +94,49 @@ RenderCommandListDX::RenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPas
 
     ThrowIfFailed(cp_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_cp_command_allocator)));
     ThrowIfFailed(cp_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_cp_command_allocator.Get(), nullptr, IID_PPV_ARGS(&m_cp_command_list)));
+    m_cp_command_list.As(&m_cp_command_list_4);
 }
 
-void RenderCommandListDX::Reset(RenderState& render_state, const std::string& debug_group)
+void RenderCommandListDX::ResetNative(const RenderState::Ptr& sp_render_state)
+{
+    // Reset command list
+    if (!m_is_committed)
+        return;
+
+    m_is_committed = false;
+
+    ResetDrawState();
+
+    ID3D12PipelineState* p_dx_initial_state = sp_render_state ? static_cast<RenderStateDX&>(*sp_render_state).GetNativePipelineState().Get() : nullptr;
+    ThrowIfFailed(m_cp_command_allocator->Reset());
+    ThrowIfFailed(m_cp_command_list->Reset(m_cp_command_allocator.Get(), p_dx_initial_state));
+
+    if (!sp_render_state)
+        return;
+
+    m_draw_state.sp_render_state     = static_cast<RenderStateBase&>(*sp_render_state).GetPtr();
+    m_draw_state.render_state_groups = RenderState::Group::Program
+                                     | RenderState::Group::Rasterizer
+                                     | RenderState::Group::DepthStencil;
+}
+
+void RenderCommandListDX::Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
 
-    assert(m_cp_command_list);
-    RenderStateDX& dx_state = static_cast<RenderStateDX&>(render_state);
+    ResetNative(sp_render_state);
 
-    // Reset command list
-    if (m_is_committed)
+    RenderCommandListBase::Reset(sp_render_state, debug_group);
+
+    RenderPassDX& pass_dx = GetPassDX();
+    if (m_is_parallel)
     {
-        m_is_committed = false;
-        ThrowIfFailed(m_cp_command_allocator->Reset());
-        ThrowIfFailed(m_cp_command_list->Reset(m_cp_command_allocator.Get(), dx_state.GetNativePipelineState().Get()));
-        m_is_pass_applied = false;
+        pass_dx.SetNativeDescriptorHeaps(*this);
+        pass_dx.SetNativeRenderTargets(*this);
     }
-
-    RenderCommandListBase::Reset(render_state, debug_group);
-
-    // Set render target transition barriers and apply pass
-    if (!m_is_pass_applied)
+    else if (!pass_dx.IsBegun())
     {
-        RenderPassDX& pass_dx = GetPassDX();
-        m_present_resources = pass_dx.GetColorAttachmentResources();
-
-        if (!m_present_resources.empty())
-        {
-            SetResourceTransitionBarriers(m_present_resources, ResourceBase::State::Present, ResourceBase::State::RenderTarget);
-        }
-
-        pass_dx.Apply(*this);
-        m_is_pass_applied = true;
+        pass_dx.Begin(*this);
     }
 }
 
@@ -207,9 +237,7 @@ void RenderCommandListDX::SetResourceBarriers(const ResourceBase::Barriers& reso
     ITT_FUNCTION_TASK();
 
     if (resource_barriers.empty())
-    {
-        throw std::invalid_argument("Can not set empty resource barriers");
-    }
+        return;
 
     std::vector<D3D12_RESOURCE_BARRIER> dx_resource_barriers;
     for (const ResourceBase::Barrier& resource_barrier : resource_barriers)
@@ -225,11 +253,14 @@ void RenderCommandListDX::Commit(bool present_drawable)
 {
     ITT_FUNCTION_TASK();
 
-    if (!m_present_resources.empty())
+    if (!m_is_parallel)
     {
-        SetResourceTransitionBarriers(m_present_resources, ResourceBase::State::RenderTarget, ResourceBase::State::Present);
+        RenderPassDX& pass_dx = GetPassDX();
+        if (pass_dx.IsBegun())
+        {
+            pass_dx.End(*this);
+        }
     }
-    m_present_resources.clear();
 
     RenderCommandListBase::Commit(present_drawable);
 

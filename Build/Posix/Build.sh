@@ -6,19 +6,32 @@ do
     arg="$1"
     case "$arg" in
         --analyze) IS_ANALYZE_BUILD=true;;
-        *)         IS_UNKNOWN_ARG=true;;
+        *)         echo "Unknown argument!" && exit 1;;
     esac
     shift
 done
 
+# Choose CMake generator depending on operating system
+UNAME_OUT="$(uname -s)"
+case "${UNAME_OUT}" in
+    Linux*)     CMAKE_GENERATOR=Unix\ Makefiles;;
+    Darwin*)    CMAKE_GENERATOR=Xcode;;
+    *)          echo "Unsupported operating system!" 1>&2 && exit 1;;
+esac
+
 CONFIG_TYPE=Release
-BUILD_VERSION=0.1
+BUILD_VERSION=0.2
 
 SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )
 SOURCE_DIR=$SCRIPT_DIR/../..
-OUTPUT_DIR=$SCRIPT_DIR/../Output/XCode
+OUTPUT_DIR=$SCRIPT_DIR/../Output/$CMAKE_GENERATOR
 INSTALL_DIR=$OUTPUT_DIR/Install
-CMAKE_FLAGS=-DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF
+CMAKE_FLAGS="-DMETHANE_VERSION=$BUILD_VERSION \
+    -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON \
+    -DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON \
+    -DMETHANE_SCOPE_TIMERS_ENABLED:BOOL=OFF \
+    -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF \
+    -DMETHANE_USE_OPEN_IMAGE_IO:BOOL=OFF"
 
 if [ "$IS_ANALYZE_BUILD" == true ]; then
 
@@ -46,8 +59,8 @@ fi
 rm -rf "$OUTPUT_DIR"
 mkdir -p "$BUILD_DIR"
 
-echo Pulling latest changes with submodules...
-git pull --recurse-submodules
+echo Pulling latest changes from submodules...
+git submodule update --init --recursive
 
 echo ---
 
@@ -61,7 +74,7 @@ if [ "$IS_ANALYZE_BUILD" == true ]; then
 
     echo Analyzing code with Sonar Scanner on branch $GITBRANCH...
     "$SONAR_BUILD_WRAPPER_EXE" --out-dir "$BUILD_DIR" \
-        cmake -H"$SOURCE_DIR" -B"$BUILD_DIR" -G Xcode $CMAKE_FLAGS
+        cmake -H"$SOURCE_DIR" -B"$BUILD_DIR" -G "$CMAKE_GENERATOR" $CMAKE_FLAGS
 
     "$SONAR_SCANNER_EXE" \
         -Dsonar.projectKey=egorodet_MethaneKit \
@@ -74,8 +87,8 @@ if [ "$IS_ANALYZE_BUILD" == true ]; then
         -Dsonar.login=6e1dbce6af614f59d75f1d78f0609aaaa60caee1
 
 else
-    echo Building with XCode...
-    cmake -H"$SOURCE_DIR" -B"$BUILD_DIR" -G Xcode -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" $CMAKE_FLAGS
+    echo Building with $CMAKE_GENERATOR...
+    cmake -H"$SOURCE_DIR" -B"$BUILD_DIR" -G "$CMAKE_GENERATOR" -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" $CMAKE_FLAGS
     cmake --build "$BUILD_DIR" --config $CONFIG_TYPE --target install
 
     echo Running unit-tests...

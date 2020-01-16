@@ -25,10 +25,13 @@ DirectX 12 implementation of the texture interface.
 
 #include <Methane/Graphics/TextureBase.h>
 #include <Methane/Graphics/CommandListBase.h>
+#include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 #include <Methane/Data/Instrumentation.h>
 
 #include <d3dx12.h>
+
+#include <optional>
 #include <cassert>
 
 namespace DirectX
@@ -96,7 +99,7 @@ protected:
 
 using RenderTargetTextureDX         = TextureDX<>;
 using FrameBufferTextureDX          = TextureDX<uint32_t /* frame_buffer_index */>;
-using DepthStencilBufferTextureDX   = TextureDX<Depth /*depth_clear_value*/, Stencil /*stencil_clear_value*/>;
+using DepthStencilBufferTextureDX   = TextureDX<const std::optional<DepthStencil>&>;
 using ImageTextureDX                = TextureDX<ImageTextureArg>;
 
 } // namespace Methane::Graphics

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -57,24 +57,25 @@ public:
         float           disc_radius_ratio        = 3.f;
         float           min_asteroid_scale_ratio = 0.1f;
         float           max_asteroid_scale_ratio = 0.7f;
+        bool            textures_array_enabled   = false;
+        bool            depth_reversed           = false;
     };
 
     class UberMesh : public gfx::UberMesh<Asteroid::Vertex>
     {
     public:
-        UberMesh(uint32_t instance_count, uint32_t subdivisions_count, uint32_t min_subdivision, uint32_t random_seed);
+        UberMesh(uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed);
 
         uint32_t GetInstanceCount() const       { return m_instance_count; }
         uint32_t GetSubdivisionsCount() const   { return m_subdivisions_count; }
-        uint32_t GetMinSubdivision() const      { return m_min_subdivision; }
 
-        const gfx::Vector2f& GetSubsetDepthRange(uint32_t subset_index) const;
+        uint32_t             GetSubsetIndex(uint32_t instance_index, uint32_t subdivision_index);
         uint32_t             GetSubsetSubdivision(uint32_t subset_index) const;
+        const gfx::Vector2f& GetSubsetDepthRange(uint32_t subset_index) const;
 
     private:
         const uint32_t             m_instance_count;
         const uint32_t             m_subdivisions_count;
-        const uint32_t             m_min_subdivision;
         std::vector<gfx::Vector2f> m_depth_ranges;
     };
 
@@ -108,17 +109,29 @@ public:
     void Resize(const gfx::FrameSize& frame_size);
     bool Update(double elapsed_seconds, double delta_seconds);
     void Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings);
+    void DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list, gfx::MeshBufferBindings& buffer_bindings);
+
+    bool  IsMeshLodColoringEnabled() const                           { return m_mesh_lod_coloring_enabled; }
+    void  SetMeshLodColoringEnabled(bool mesh_lod_coloring_enabled)  { m_mesh_lod_coloring_enabled = mesh_lod_coloring_enabled; }
+
+    float GetMinMeshLodScreenSize() const;
+    void  SetMinMeshLodScreenSize(float mesh_lod_min_screen_size);
 
 protected:
     // MeshBuffers overrides
     uint32_t GetSubsetByInstanceIndex(uint32_t instance_index) const override;
 
 private:
-    const Settings        m_settings;
-    ContentState::Ptr     m_sp_content_state;
-    Textures              m_unique_textures;
-    gfx::Sampler::Ptr     m_sp_texture_sampler;
-    gfx::RenderState::Ptr m_sp_render_state;
+    using MeshSubsetByInstanceIndex = std::vector<uint32_t>;
+
+    const Settings            m_settings;
+    ContentState::Ptr         m_sp_content_state;
+    Textures                  m_unique_textures;
+    gfx::Sampler::Ptr         m_sp_texture_sampler;
+    gfx::RenderState::Ptr     m_sp_render_state;
+    MeshSubsetByInstanceIndex m_mesh_subset_by_instance_index;
+    bool                      m_mesh_lod_coloring_enabled = false;
+    float                     m_min_mesh_lod_screen_size_log2;
 };
 
 } // namespace Methane::Samples

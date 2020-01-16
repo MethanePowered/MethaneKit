@@ -45,9 +45,9 @@ struct Resource : virtual Object
     using Ref     = std::reference_wrapper<Resource>;
     using Refs    = std::vector<Ref>;
 
-    enum class Type
+    enum class Type : uint32_t
     {
-        Buffer,
+        Buffer = 0u,
         Texture,
         Sampler,
     };
@@ -57,14 +57,14 @@ struct Resource : virtual Object
         using Mask = uint32_t;
         enum Value : Mask
         {
-            Unknown      = 0,
+            Unknown      = 0u,
             // Primary usages
-            ShaderRead   = 1 << 0,
-            ShaderWrite  = 1 << 1,
-            RenderTarget = 1 << 2,
+            ShaderRead   = 1u << 0u,
+            ShaderWrite  = 1u << 1u,
+            RenderTarget = 1u << 2u,
             // Secondary usages
-            Addressable  = 1 << 3,
-            All          = static_cast<Mask>(~0),
+            Addressable  = 1u << 3u,
+            All          = ~0u,
         };
 
         using BaseValues = std::array<Value, 3>;
@@ -77,7 +77,6 @@ struct Resource : virtual Object
         static std::string ToString(Usage::Mask usage_mask) noexcept;
 
         Usage() = delete;
-        ~Usage() = delete;
     };
 
     struct Descriptor
@@ -90,33 +89,52 @@ struct Resource : virtual Object
 
     using DescriptorByUsage = std::map<Usage::Value, Descriptor>;
     
-    struct Location
+    class Location
     {
-        Ptr        sp_resource;
-        Data::Size offset = 0;
+    public:
+        Location(Ptr sp_resource, Data::Size offset = 0u);
 
         bool operator==(const Location& other) const;
+
+        const Ptr& GetResourcePtr() const   { return m_sp_resource; }
+        Resource&  GetResource() const      { return *m_sp_resource; }
+        Data::Size GetOffset() const        { return m_offset; }
+
+    private:
+        Ptr        m_sp_resource;
+        Data::Size m_offset;
     };
+
+    using Locations = std::vector<Location>;
+
+    template<typename TResource>
+    static Locations CreateLocations(const std::vector<std::shared_ptr<TResource>>& resources)
+    {
+        Resource::Locations resource_locations;
+        std::transform(resources.begin(), resources.end(), std::back_inserter(resource_locations),
+                       [](const std::shared_ptr<TResource>& sp_resource) { return Location(sp_resource); });
+        return resource_locations;
+    }
 
     struct SubResource
     {
         struct Index
         {
-            uint32_t depth_slice  = 0;
-            uint32_t array_index  = 0;
-            uint32_t mip_level    = 0;
+            uint32_t depth_slice  = 0u;
+            uint32_t array_index  = 0u;
+            uint32_t mip_level    = 0u;
         };
 
         Data::Bytes         data_storage;
         Data::ConstRawPtr   p_data      = nullptr;
-        Data::Size          data_size   = 0;
-        Index               index       = { 0, 0, 0 };
+        Data::Size          data_size   = 0u;
+        Index               index;
 
         SubResource() = default;
-        SubResource(Data::Bytes&& data, Index in_index = { 0, 0, 0 });
-        SubResource(Data::ConstRawPtr in_p_data, Data::Size in_data_size, Index in_index = { 0, 0, 0 });
+        SubResource(Data::Bytes&& data, Index in_index = { 0u, 0u, 0u });
+        SubResource(Data::ConstRawPtr in_p_data, Data::Size in_data_size, Index in_index = { 0u, 0u, 0u });
 
-        uint32_t GetRawIndex(uint32_t depth = 1, uint32_t mip_levels_count = 1) const
+        uint32_t GetRawIndex(uint32_t depth = 1u, uint32_t mip_levels_count = 1u) const
         { return ComputeRawIndex(index, depth, mip_levels_count); }
 
         static uint32_t ComputeRawIndex(const Index& index, uint32_t depth = 1, uint32_t mip_levels_count = 1)

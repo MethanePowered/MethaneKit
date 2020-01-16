@@ -16,14 +16,14 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Data/Timer.h
+FILE: Methane/Data/Timer.hpp
 Basic animation timer for measuring elapsed time since start.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Data/Instrumentation.h>
+#include "Instrumentation.h"
 
 #include <chrono>
 
@@ -33,27 +33,29 @@ namespace Methane::Data
 class Timer
 {
 public:
-    using Clock = std::chrono::high_resolution_clock;
-    using TimePoint = Clock::time_point;
+    using Clock        = std::chrono::high_resolution_clock;
+    using TimePoint    = Clock::time_point;
+    using TimeDuration = Clock::duration;
 
     Timer() : m_start_time(Clock::now()) { ITT_FUNCTION_TASK(); }
 
-    void Reset() noexcept
-    {
-        ITT_FUNCTION_TASK();
-        m_start_time = Clock::now();
-    }
-
-    TimePoint   GetStartTime() const noexcept       { return m_start_time; }
-    uint32_t    GetElapsedSecondsU() const noexcept { return GetElapsedSeconds<uint32_t>(); }
-    double      GetElapsedSecondsD() const noexcept { return GetElapsedSeconds<double>(); }
-    float       GetElapsedSecondsF() const noexcept { return GetElapsedSeconds<float>(); }
+    TimePoint    GetStartTime() const noexcept       { return m_start_time; }
+    TimeDuration GetElapsedDuration() const noexcept { return Clock::now() - m_start_time; }
+    uint32_t     GetElapsedSecondsU() const noexcept { return GetElapsedSeconds<uint32_t>(); }
+    double       GetElapsedSecondsD() const noexcept { return GetElapsedSeconds<double>(); }
+    float        GetElapsedSecondsF() const noexcept { return GetElapsedSeconds<float>(); }
 
     template<typename T>
     T GetElapsedSeconds() const noexcept
     {
         ITT_FUNCTION_TASK();
-        return std::chrono::duration_cast<std::chrono::duration<T>>(Clock::now() - m_start_time).count();
+        return std::chrono::duration_cast<std::chrono::duration<T>>(GetElapsedDuration()).count();
+    }
+
+    void Reset() noexcept
+    {
+        ITT_FUNCTION_TASK();
+        m_start_time = Clock::now();
     }
 
 private:

@@ -67,8 +67,8 @@ public:
 
     inline static const ActionByKeyboardState default_actions_by_keyboard_state = {
         // Other
-        { { Platform::Keyboard::Key::R },           ActionCamera::KeyboardAction::Reset       },
-        { { Platform::Keyboard::Key::P },           ActionCamera::KeyboardAction::ChangePivot },
+        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::R }, ActionCamera::KeyboardAction::Reset       },
+        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::P }, ActionCamera::KeyboardAction::ChangePivot },
     };
 
     AppCameraController(ActionCamera& action_camera, const std::string& camera_name,

@@ -25,6 +25,7 @@ DirectX 12 implementation of the command queue interface.
 #include "ContextDX.h"
 #include "DeviceDX.h"
 #include "RenderCommandListDX.h"
+#include "ParallelRenderCommandListDX.h"
 
 #include <Methane/Data/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
@@ -85,8 +86,20 @@ CommandQueueDX::D3D12CommandLists CommandQueueDX::GetNativeCommandLists(const Co
     dx_command_lists.reserve(command_list_refs.size());
     for (const CommandList::Ref& command_list_ref : command_list_refs)
     {
-        RenderCommandListDX& dx_command_list = dynamic_cast<RenderCommandListDX&>(command_list_ref.get());
-        dx_command_lists.push_back(dx_command_list.GetNativeCommandList().Get());
+        CommandListBase& command_list = dynamic_cast<CommandListBase&>(command_list_ref.get());
+        switch (command_list.GetType())
+        {
+        case CommandList::Type::RenderCommandList:
+        {
+            dx_command_lists.push_back(static_cast<RenderCommandListDX&>(command_list).GetNativeCommandList().Get());
+        } break;
+
+        case CommandList::Type::ParallelRenderCommandList:
+        {
+            const D3D12CommandLists dx_parallel_command_lists = static_cast<ParallelRenderCommandListDX&>(command_list).GetNativeCommandLists();
+            dx_command_lists.insert(dx_command_lists.end(), dx_parallel_command_lists.begin(), dx_parallel_command_lists.end());
+        } break;
+        }
     }
     return dx_command_lists;
 }

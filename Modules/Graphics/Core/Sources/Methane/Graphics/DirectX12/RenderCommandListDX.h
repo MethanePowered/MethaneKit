@@ -23,6 +23,8 @@ DirectX 12 implementation of the render command list interface.
 
 #pragma once
 
+#include "RenderPassDX.h"
+
 #include <Methane/Graphics/RenderCommandListBase.h>
 
 #include <wrl.h>
@@ -40,6 +42,7 @@ class RenderCommandListDX final : public RenderCommandListBase
 {
 public:
     RenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass);
+    RenderCommandListDX(ParallelRenderCommandListBase& parallel_render_command_list);
 
     // CommandList interface
     void PushDebugGroup(const std::string& name) override;
@@ -50,8 +53,10 @@ public:
     void SetResourceBarriers(const ResourceBase::Barriers& resource_barriers) override;
     void Execute(uint32_t frame_index) override;
 
+    void ResetNative(const RenderState::Ptr& sp_render_state = RenderState::Ptr());
+
     // RenderCommandList interface
-    void Reset(RenderState& render_state, const std::string& debug_group) override;
+    void Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group) override;
     void SetVertexBuffers(const Buffer::Refs& vertex_buffers) override;
     void DrawIndexed(Primitive primitive, Buffer& index_buffer,
                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex, 
@@ -62,17 +67,22 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-    wrl::ComPtr<ID3D12GraphicsCommandList>& GetNativeCommandList()      { return m_cp_command_list; }
+    const wrl::ComPtr<ID3D12GraphicsCommandList>& GetNativeCommandList() const   { return m_cp_command_list; }
+    wrl::ComPtr<ID3D12GraphicsCommandList>&       GetNativeCommandList()         { return m_cp_command_list; }
+
+    const wrl::ComPtr<ID3D12GraphicsCommandList4>& GetNativeCommandList4() const { return m_cp_command_list_4; }
+    wrl::ComPtr<ID3D12GraphicsCommandList4>&       GetNativeCommandList4()       { return m_cp_command_list_4; }
 
 protected:
+    void Initialize();
+
     CommandQueueDX& GetCommandQueueDX();
     RenderPassDX&   GetPassDX();
 
-    wrl::ComPtr<ID3D12CommandAllocator>     m_cp_command_allocator;
-    wrl::ComPtr<ID3D12GraphicsCommandList>  m_cp_command_list;
-    Resource::Refs                          m_present_resources;
-    bool                                    m_is_committed = false;
-    bool                                    m_is_pass_applied = false;
+    wrl::ComPtr<ID3D12CommandAllocator>       m_cp_command_allocator;
+    wrl::ComPtr<ID3D12GraphicsCommandList>    m_cp_command_list;
+    wrl::ComPtr<ID3D12GraphicsCommandList4>   m_cp_command_list_4;    // extended interface for the same command list (may be unavailable on older Windows)
+    bool                                      m_is_committed = false;
 };
 
 } // namespace Methane::Graphics

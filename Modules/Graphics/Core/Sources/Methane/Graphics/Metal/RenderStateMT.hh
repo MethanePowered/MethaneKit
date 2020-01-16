@@ -46,13 +46,13 @@ public:
     void SetScissorRects(const ScissorRects& scissor_rects) override;
 
     // RenderStateBase interface
-    void Apply(RenderCommandListBase& command_list) override;
+    void Apply(RenderCommandListBase& command_list, Group::Mask state_groups) override;
 
     // Object interface
     void SetName(const std::string& name) override;
     
     id<MTLRenderPipelineState>& GetNativePipelineState();
-    id<MTLDepthStencilState>&   GetNativeDepthState();
+    id<MTLDepthStencilState>&   GetNativeDepthStencilState();
     MTLCullMode                 GetNativeCullMode() const noexcept         { return m_mtl_cull_mode; }
     MTLWinding                  GetNativeFrontFaceWinding() const noexcept { return m_mtl_front_face_winding; }
 

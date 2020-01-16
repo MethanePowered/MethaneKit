@@ -51,7 +51,7 @@ public:
     // App interface
     void Init() override;
     bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
-    void Render() override;
+    bool Render() override;
 
     // Context::Callback interface
     void OnContextReleased() override;

@@ -46,7 +46,8 @@ using FrameRect    = Data::FrameRect;
 using FrameSize    = Data::FrameSize;
 using ScissorRect  = Rect<uint32_t, uint32_t>;
 using ScissorRects = std::vector<ScissorRect>;
-    
+
+ScissorRect GetFrameScissorRect(const FrameRect& frame_rect);
 ScissorRect GetFrameScissorRect(const FrameSize& frame_size);
 
 template<typename T>
@@ -84,9 +85,12 @@ struct Volume
         Size() = default;
         Size(const typename Rect<T, D>::Size& rect_size, D d = 1) : Rect<T, D>::Size(rect_size), depth(d) { }
         Size(D w, D h, D d = 1) : Rect<T, D>::Size(w, h), depth(d) { }
-        
-        bool operator==(const Size& other) const
+
+        bool operator==(const Size& other) const noexcept
         { return Rect<T, D>::Size::operator==(other) && depth == other.depth; }
+
+        bool operator!=(const Size& other) const noexcept
+        { return Rect<T, D>::Size::operator!=(other) || depth != other.depth; }
 
         D GetPixelsCount() const noexcept { return depth * Rect<T, D>::Size::GetPixelsCount(); }
         D GetLongestSide() const noexcept { return std::max(depth, Rect<T, D>::Size::GetLongestSide()); }
@@ -98,6 +102,12 @@ struct Volume
                    " x " + std::to_string(depth) + ")";
         }
     };
+
+    bool operator==(const Volume& other) const noexcept
+    { return std::tie(origin, size) == std::tie(other.origin, other.size); }
+
+    bool operator!=(const Volume& other) const noexcept
+    { return std::tie(origin, size) != std::tie(other.origin, other.size); }
 
     operator std::string() const
     { return std::string("Vm[") + origin + " + " + size + "]"; }
@@ -114,6 +124,7 @@ using Viewport  = Volume<double, double>;
 using Viewports = std::vector<Viewport>;
 
 Viewport GetFrameViewport(const FrameSize& frame_size);
+Viewport GetFrameViewport(const FrameRect& frame_rect);
     
 class Color3f : public Vector3f
 {
@@ -145,8 +156,8 @@ class Color4f : public Vector4f
 public:
     using Vector4f::Vector4f;
     using Vector4f::operator=;
-    
-    Color4f() = default;
+
+    Color4f() : Vector4f(0.f, 0.f, 0.f, 0.f) { }
     Color4f(float r, float g, float b, float a) : Vector4f(r, g, b, a) { }
     
     float r() const noexcept { return (*this)[0]; }
@@ -170,6 +181,7 @@ public:
 
 using Depth = float;
 using Stencil = uint8_t;
+using DepthStencil = std::pair<Depth, Stencil>;
 
 enum class PixelFormat
 {
@@ -181,10 +193,26 @@ enum class PixelFormat
     R32Uint,
     R32Sint,
     R16Uint,
+    R16Sint,
     Depth32Float
 };
 
 uint32_t GetPixelSize(PixelFormat data_format) noexcept;
+
+template<typename TIndex>
+PixelFormat GetIndexFormat(TIndex) noexcept          { return PixelFormat::Unknown; }
+
+template<>
+inline PixelFormat GetIndexFormat(uint32_t) noexcept { return PixelFormat::R32Uint; }
+
+template<>
+inline PixelFormat GetIndexFormat(int32_t) noexcept  { return PixelFormat::R32Sint; }
+
+template<>
+inline PixelFormat GetIndexFormat(uint16_t) noexcept { return PixelFormat::R16Uint; }
+
+template<>
+inline PixelFormat GetIndexFormat(int16_t) noexcept  { return PixelFormat::R16Sint; }
 
 enum class Compare : uint32_t
 {

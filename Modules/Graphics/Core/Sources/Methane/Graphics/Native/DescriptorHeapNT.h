@@ -31,6 +31,10 @@ Native implementation alias of the descriptor heap.
 
 #include <Methane/Graphics/Metal/DescriptorHeapMT.hh>
 
+#elif defined __linux__
+
+#include <Methane/Graphics/Vulkan/DescriptorHeapVK.h>
+
 #endif
 
 namespace Methane::Graphics
@@ -43,6 +47,10 @@ using DescriptorHeapNT = DescriptorHeapDX;
 #elif defined __APPLE__
 
 using DescriptorHeapNT = DescriptorHeapMT;
+
+#elif defined __linux__
+
+using DescriptorHeapNT = DescriptorHeapVK;
 
 #endif
 

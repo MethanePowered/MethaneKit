@@ -31,7 +31,7 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
     set(METHANE_APP_DESCRIPTION ${DESCRIPTION})
     set(METHANE_APP_COPYRIGHT ${COPYRIGHT})
     set(METHANE_APP_SHORT_VERSION ${VERSION})
-    set(METHANE_APP_LONG_VERSION "${VERSION}.${BUILD_NUMBER}")
+    get_full_file_version(${VERSION} ${BUILD_NUMBER} METHANE_APP_LONG_VERSION)
 
     if (WIN32)
 
@@ -40,6 +40,8 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
         set(METHANE_APP_MANIEFEST_FILE_PATH ${RESOURCES_DIR}/Configs/Windows/App.manifest)
         set(METHANE_APP_ICON_FILE_PATH ${RESOURCES_DIR}/Icons/Windows/Methane.ico)
         set(RESOURCE_FILE ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}/Resource.rc)
+        string(REPLACE "." "," METHANE_APP_SHORT_VERSION_CSV ${METHANE_APP_SHORT_VERSION})
+        string(REPLACE "." "," METHANE_APP_LONG_VERSION_CSV ${METHANE_APP_LONG_VERSION})
         configure_file(${RESOURCES_DIR}/Configs/Windows/Resource.rc.in ${RESOURCE_FILE})
 
         add_executable(${TARGET} WIN32
@@ -104,6 +106,12 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
 
         source_group("Resources" FILES ${PLIST_FILE_PATH} ${ICON_FILE_PATH})
 
+    else() # Linux
+
+        add_executable(${TARGET}
+            ${SOURCES}
+        )
+    
     endif()
 
     source_group("Source Files" FILES ${SOURCES})

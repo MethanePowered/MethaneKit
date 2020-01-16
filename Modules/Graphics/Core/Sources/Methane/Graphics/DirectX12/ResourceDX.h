@@ -27,6 +27,7 @@ DirectX 12 implementation of the resource interface.
 
 #include <wrl.h>
 #include <d3d12.h>
+#include "Methane/Data/Types.h"
 
 namespace Methane::Graphics
 {
@@ -39,8 +40,6 @@ class DescriptorHeapDX;
 class ResourceDX : public ResourceBase
 {
 public:
-    using Ptr = std::shared_ptr<ResourceDX>;
-
     class ReleasePoolDX : public ResourceBase::ReleasePool
     {
     public:
@@ -52,6 +51,23 @@ public:
     private:
         std::vector<wrl::ComPtr<ID3D12Resource>> m_resources;
     };
+
+    class LocationDX : public Location
+    {
+    public:
+        explicit LocationDX(const Location& location);
+        explicit LocationDX(const LocationDX& location);
+
+        LocationDX& operator=(const LocationDX& other);
+
+        ResourceDX&               GetResourceDX() const noexcept       { return m_resource_dx.get(); }
+        D3D12_GPU_VIRTUAL_ADDRESS GetNativeGpuAddress() const noexcept { return GetResourceDX().GetNativeGpuAddress() + GetOffset(); }
+
+    private:
+        std::reference_wrapper<ResourceDX> m_resource_dx;
+    };
+
+    using LocationsDX = std::vector<LocationDX>;
 
     ResourceDX(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
     ~ResourceDX() override;

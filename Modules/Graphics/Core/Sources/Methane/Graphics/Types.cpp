@@ -29,12 +29,32 @@ Methane primitive graphics types.
 namespace Methane::Graphics
 {
 
+ScissorRect GetFrameScissorRect(const FrameRect& frame_rect)
+{
+    ITT_FUNCTION_TASK();
+    return ScissorRect{
+        ScissorRect::Point(static_cast<uint32_t>(std::max(0, frame_rect.origin.x())),
+                           static_cast<uint32_t>(std::max(0, frame_rect.origin.y()))),
+        ScissorRect::Size(frame_rect.origin.x() >= 0 ? frame_rect.size.width  : frame_rect.size.width  + frame_rect.origin.x(),
+                          frame_rect.origin.y() >= 0 ? frame_rect.size.height : frame_rect.size.height + frame_rect.origin.y())
+    };
+}
+
 ScissorRect GetFrameScissorRect(const FrameSize& frame_size)
 {
     ITT_FUNCTION_TASK();
     return ScissorRect {
-        ScissorRect::Point(0, 0),
+        ScissorRect::Point(0u, 0u),
         ScissorRect::Size(frame_size.width, frame_size.height)
+    };
+}
+
+Viewport GetFrameViewport(const FrameRect& frame_rect)
+{
+    ITT_FUNCTION_TASK();
+    return Viewport{
+        Viewport::Point(static_cast<double>(frame_rect.origin.x()), static_cast<double>(frame_rect.origin.y()), 0.0),
+        Viewport::Size(static_cast<double>(frame_rect.size.width), static_cast<double>(frame_rect.size.height), 1.0)
     };
 }
 

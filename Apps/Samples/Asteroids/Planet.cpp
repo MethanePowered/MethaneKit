@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -75,11 +75,12 @@ Planet::Planet(gfx::Context& context, gfx::ImageLoader& image_loader, const Sett
     state_settings.viewports     = { gfx::GetFrameViewport(context_settings.frame_size) };
     state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };
     state_settings.depth.enabled = true;
+    state_settings.depth.compare = m_settings.depth_reversed ? gfx::Compare::GreaterEqual : gfx::Compare::Less;
 
     m_sp_state = gfx::RenderState::Create(context, state_settings);
     m_sp_state->SetName("Planet Render State");
     
-    m_mesh_buffers.SetSubsetTexture(image_loader.LoadImageToTexture2D(m_context, m_settings.texture_path, m_settings.mipmapped));
+    m_mesh_buffers.SetTexture(image_loader.LoadImageToTexture2D(m_context, m_settings.texture_path, m_settings.mipmapped));
 
     m_sp_texture_sampler = gfx::Sampler::Create(context, {
         { gfx::Sampler::Filter::MinMag::Linear     },
@@ -96,10 +97,10 @@ gfx::Program::ResourceBindings::Ptr Planet::CreateResourceBindings(const gfx::Bu
     assert(!!m_sp_state);
     assert(!!m_sp_state->GetSettings().sp_program);
     return gfx::Program::ResourceBindings::Create(m_sp_state->GetSettings().sp_program, {
-        { { gfx::Shader::Type::All,   "g_uniforms"  }, { sp_uniforms_buffer                   } },
-        { { gfx::Shader::Type::Pixel, "g_constants" }, { sp_constants_buffer                  } },
-        { { gfx::Shader::Type::Pixel, "g_texture"   }, { m_mesh_buffers.GetSubsetTexturePtr() } },
-        { { gfx::Shader::Type::Pixel, "g_sampler"   }, { m_sp_texture_sampler                 } },
+        { { gfx::Shader::Type::All,   "g_uniforms"  }, { { sp_uniforms_buffer                   } } },
+        { { gfx::Shader::Type::Pixel, "g_constants" }, { { sp_constants_buffer                  } } },
+        { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_mesh_buffers.GetSubsetTexturePtr() } } },
+        { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler                 } } },
     });
 }
 
@@ -120,7 +121,7 @@ bool Planet::Update(double elapsed_seconds, double)
     m_settings.view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
     cml::matrix_uniform_scale(model_scale_matrix, m_settings.scale);
     cml::matrix_translation(model_translate_matrix, m_settings.position);
-    cml::matrix_rotation_world_y(model_rotation_matrix, m_settings.spin_velocity_rps * elapsed_seconds);
+    cml::matrix_rotation_world_y(model_rotation_matrix, -m_settings.spin_velocity_rps * elapsed_seconds);
 
     Uniforms uniforms = {};
     uniforms.eye_position   = gfx::Vector4f(m_settings.view_camera.GetOrientation().eye, 1.f);
@@ -140,7 +141,7 @@ void Planet::Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buf
     assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= sizeof(Uniforms));
     buffer_bindings.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_mesh_buffers.GetFinalPassUniforms()), sizeof(Uniforms) } });
 
-    cmd_list.Reset(*m_sp_state, "Planet rendering");
+    cmd_list.Reset(m_sp_state, "Planet rendering");
     
     assert(!buffer_bindings.resource_bindings_per_instance.empty());
     assert(!!buffer_bindings.resource_bindings_per_instance[0]);

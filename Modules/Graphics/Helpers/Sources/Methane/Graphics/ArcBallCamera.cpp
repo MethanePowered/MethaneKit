@@ -25,6 +25,8 @@ Arc-ball camera rotation with mouse handling.
 #include <Methane/Data/Instrumentation.h>
 
 #include <cml/mathlib/mathlib.h>
+
+#include <cmath>
 #include <cassert>
 
 using namespace Methane::Data;
@@ -33,7 +35,7 @@ namespace Methane::Graphics
 {
 
 static inline float square(float x)     { return x * x; }
-static inline float unitSign(float x)   { return x / std::fabsf(x); }
+static inline float unitSign(float x)   { return x / std::fabs(x); }
 
 ArcBallCamera::ArcBallCamera(Pivot pivot, cml::AxisOrientation axis_orientation)
     : Camera(axis_orientation)
@@ -66,7 +68,7 @@ void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
     const Vector3f mouse_current_on_sphere = GetNormalizedSphereProjection(mouse_screen_pos, false);
     const Vector3f vectors_cross = cml::cross(m_mouse_pressed_on_sphere, mouse_current_on_sphere);
     const Vector3f rotation_axis = vectors_cross.normalize();
-    const float    rotation_angle = std::atan2f(vectors_cross.length(), cml::dot(m_mouse_pressed_on_sphere, mouse_current_on_sphere));
+    const float    rotation_angle = std::atan2(vectors_cross.length(), cml::dot(m_mouse_pressed_on_sphere, mouse_current_on_sphere));
 
     Rotate(rotation_axis, rotation_angle, m_mouse_pressed_orientation);
 
@@ -105,12 +107,12 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
     float z_sign = 1.f;
     if (!is_primary && inside_sphere && screen_radius > sphere_radius)
     {
-        const uint32_t radius_mult = static_cast<uint32_t>(std::floorf(screen_radius / sphere_radius));
+        const uint32_t radius_mult = static_cast<uint32_t>(std::floor(screen_radius / sphere_radius));
         if (radius_mult < 2)
         {
             const float vector_radius = sphere_radius * (radius_mult + 1) - screen_radius;
             screen_vector = screen_vector.normalize() * vector_radius;
-            z_sign = std::powf(-1.f, static_cast<float>(radius_mult));
+            z_sign = std::pow(-1.f, static_cast<float>(radius_mult));
         }
         else
         {
@@ -119,7 +121,7 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
         }
     }
 
-    return cml::normalize(Vector3f(screen_vector, inside_sphere ? z_sign * std::sqrtf(square(sphere_radius) - screen_vector.length_squared()) : 0.f));
+    return cml::normalize(Vector3f(screen_vector, inside_sphere ? z_sign * std::sqrt(square(sphere_radius) - screen_vector.length_squared()) : 0.f));
 }
 
 void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir)
@@ -130,6 +132,7 @@ void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir)
     case Pivot::Aim: m_current_orientation.eye = m_current_orientation.aim - look_dir; break;
     case Pivot::Eye: m_current_orientation.aim = m_current_orientation.eye + look_dir; break;
     }
+    PrintOrientation();
 }
 
 void ArcBallCamera::Rotate(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation)

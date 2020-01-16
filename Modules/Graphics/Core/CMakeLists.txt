@@ -17,6 +17,8 @@ if (WIN32)
         ${SOURCES_GRAPHICS_DIR}/ShaderDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ProgramDX.h
         ${SOURCES_GRAPHICS_DIR}/ProgramDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/RenderStateDX.h
+        ${SOURCES_GRAPHICS_DIR}/RenderStateDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ResourceDX.h
         ${SOURCES_GRAPHICS_DIR}/ResourceDX.cpp
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.h
@@ -27,14 +29,14 @@ if (WIN32)
         ${SOURCES_GRAPHICS_DIR}/TextureDX.cpp
         ${SOURCES_GRAPHICS_DIR}/SamplerDX.h
         ${SOURCES_GRAPHICS_DIR}/SamplerDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/RenderPassDX.h
+        ${SOURCES_GRAPHICS_DIR}/RenderPassDX.cpp
         ${SOURCES_GRAPHICS_DIR}/CommandQueueDX.h
         ${SOURCES_GRAPHICS_DIR}/CommandQueueDX.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListDX.h
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/RenderPassDX.h
-        ${SOURCES_GRAPHICS_DIR}/RenderPassDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/RenderStateDX.h
-        ${SOURCES_GRAPHICS_DIR}/RenderStateDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListDX.h
+        ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListDX.cpp
     )
 
     set(PLATFORM_LIBRARIES
@@ -44,6 +46,7 @@ if (WIN32)
         dxgi
         dxguid
         d3dcompiler
+        Shcore
     )
 
     set(EXTRA_COMPILE_OPTIONS
@@ -82,6 +85,8 @@ elseif(APPLE)
         ${SOURCES_GRAPHICS_DIR}/CommandQueueMT.mm
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.hh
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.mm
+        ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListMT.hh
+        ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListMT.mm
     )
 
     set(PLATFORM_LIBRARIES
@@ -93,6 +98,41 @@ elseif(APPLE)
         ${PLATFORM_SOURCES}
         PROPERTIES
         COMPILE_FLAGS -fobjc-weak
+    )
+
+else() # Linux
+
+    set(PLATFORM_SOURCES
+        ${SOURCES_GRAPHICS_DIR}/TypesVK.h
+        ${SOURCES_GRAPHICS_DIR}/TypesVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/DeviceVK.h
+        ${SOURCES_GRAPHICS_DIR}/DeviceVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/ContextVK.h
+        ${SOURCES_GRAPHICS_DIR}/ContextVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/ShaderVK.h
+        ${SOURCES_GRAPHICS_DIR}/ShaderVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/ProgramVK.h
+        ${SOURCES_GRAPHICS_DIR}/ProgramVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/RenderStateVK.h
+        ${SOURCES_GRAPHICS_DIR}/RenderStateVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/ResourceVK.h
+        ${SOURCES_GRAPHICS_DIR}/ResourceVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/DescriptorHeapVK.h
+        ${SOURCES_GRAPHICS_DIR}/DescriptorHeapVK.cpp  
+        ${SOURCES_GRAPHICS_DIR}/BufferVK.h
+        ${SOURCES_GRAPHICS_DIR}/BufferVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/TextureVK.h
+        ${SOURCES_GRAPHICS_DIR}/TextureVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/SamplerVK.h
+        ${SOURCES_GRAPHICS_DIR}/SamplerVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/RenderPassVK.h
+        ${SOURCES_GRAPHICS_DIR}/RenderPassVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/CommandQueueVK.h
+        ${SOURCES_GRAPHICS_DIR}/CommandQueueVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/RenderCommandListVK.h
+        ${SOURCES_GRAPHICS_DIR}/RenderCommandListVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListVK.h
+        ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListVK.cpp
     )
 
 endif()
@@ -107,20 +147,21 @@ set(LIBRARIES ${PLATFORM_LIBRARIES}
 )
 
 set(HEADERS
+    ${INCLUDE_DIR}/Types.h
     ${INCLUDE_DIR}/Device.h
     ${INCLUDE_DIR}/Context.h
     ${INCLUDE_DIR}/Shader.h
     ${INCLUDE_DIR}/Program.h
+    ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/Resource.h
     ${INCLUDE_DIR}/Buffer.h
     ${INCLUDE_DIR}/Texture.h
     ${INCLUDE_DIR}/Sampler.h
+    ${INCLUDE_DIR}/RenderPass.h
     ${INCLUDE_DIR}/CommandQueue.h
     ${INCLUDE_DIR}/CommandList.h
     ${INCLUDE_DIR}/RenderCommandList.h
-    ${INCLUDE_DIR}/RenderState.h
-    ${INCLUDE_DIR}/RenderPass.h
-    ${INCLUDE_DIR}/Types.h
+    ${INCLUDE_DIR}/ParallelRenderCommandList.h
 )
 
 set(SOURCES ${PLATFORM_SOURCES}
@@ -129,15 +170,15 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/Native/ContextNT.h
     ${SOURCES_DIR}/Native/ShaderNT.h
     ${SOURCES_DIR}/Native/ProgramNT.h
+    ${SOURCES_DIR}/Native/RenderStateNT.h
     ${SOURCES_DIR}/Native/ResourceNT.h
     ${SOURCES_DIR}/Native/DescriptorHeapNT.h
     ${SOURCES_DIR}/Native/BufferNT.h
     ${SOURCES_DIR}/Native/TextureNT.h
     ${SOURCES_DIR}/Native/SamplerNT.h
+    ${SOURCES_DIR}/Native/RenderPassNT.h
     ${SOURCES_DIR}/Native/CommandQueueNT.h
     ${SOURCES_DIR}/Native/RenderCommandListNT.h
-    ${SOURCES_DIR}/Native/RenderStateNT.h
-    ${SOURCES_DIR}/Native/RenderPassNT.h
 
     # Base implementation
     ${SOURCES_DIR}/ObjectBase.h
@@ -149,6 +190,8 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/ShaderBase.cpp
     ${SOURCES_DIR}/ProgramBase.h
     ${SOURCES_DIR}/ProgramBase.cpp
+    ${SOURCES_DIR}/RenderStateBase.h
+    ${SOURCES_DIR}/RenderStateBase.cpp
     ${SOURCES_DIR}/ResourceBase.h
     ${SOURCES_DIR}/ResourceBase.cpp
     ${SOURCES_DIR}/BufferBase.h
@@ -157,16 +200,16 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/TextureBase.cpp
     ${SOURCES_DIR}/SamplerBase.h
     ${SOURCES_DIR}/SamplerBase.cpp
+    ${SOURCES_DIR}/RenderPassBase.h
+    ${SOURCES_DIR}/RenderPassBase.cpp
     ${SOURCES_DIR}/CommandQueueBase.h
     ${SOURCES_DIR}/CommandQueueBase.cpp
     ${SOURCES_DIR}/CommandListBase.h
     ${SOURCES_DIR}/CommandListBase.cpp
     ${SOURCES_DIR}/RenderCommandListBase.h
     ${SOURCES_DIR}/RenderCommandListBase.cpp
-    ${SOURCES_DIR}/RenderPassBase.h
-    ${SOURCES_DIR}/RenderPassBase.cpp
-    ${SOURCES_DIR}/RenderStateBase.h
-    ${SOURCES_DIR}/RenderStateBase.cpp
+    ${SOURCES_DIR}/ParallelRenderCommandListBase.h
+    ${SOURCES_DIR}/ParallelRenderCommandListBase.cpp
 
     # Other sources
     ${SOURCES_DIR}/DescriptorHeap.h

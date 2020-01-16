@@ -47,34 +47,38 @@ public:
     public:
         struct Settings
         {
-            Shader::Type shader_type;
-            std::string  argument_name;
-            bool         is_constant;
-            bool         is_addressable;
+            Shader::Type   shader_type;
+            std::string    argument_name;
+            Resource::Type resource_type;
+            uint32_t       resource_count;
+            bool           is_constant;
+            bool           is_addressable;
         };
 
         ResourceBindingBase(ContextBase& context, const Settings& settings);
         ResourceBindingBase(const ResourceBindingBase& other) = default;
 
         // ResourceBinding interface
-        Shader::Type              GetShaderType() const override        { return m_settings.shader_type; }
-        const std::string&        GetArgumentName() const override      { return m_settings.argument_name; }
-        bool                      IsConstant() const override           { return m_settings.is_constant; }
-        bool                      IsAddressable() const override        { return m_settings.is_addressable; }
-        const Resource::Location& GetResourceLocation() const override  { return m_resource_location; }
-        void                      SetResourceLocation(Resource::Location resource_location) override;
+        Shader::Type               GetShaderType() const override        { return m_settings.shader_type; }
+        const std::string&         GetArgumentName() const override      { return m_settings.argument_name; }
+        bool                       IsConstant() const override           { return m_settings.is_constant; }
+        bool                       IsAddressable() const override        { return m_settings.is_addressable; }
+        uint32_t                   GetResourceCount() const override     { return m_settings.resource_count; }
+        const Resource::Locations& GetResourceLocations() const override { return m_resource_locations; }
+        void                       SetResourceLocations(const Resource::Locations& resource_locations) override;
 
-        // ResourceBindingBase interface
-        virtual DescriptorHeap::Type GetDescriptorHeapType() const = 0;
+        DescriptorHeap::Type GetDescriptorHeapType() const;
 
         Ptr  GetPtr()               { return shared_from_this(); }
-        bool HasResource() const    { return !!m_resource_location.sp_resource; }
-        bool IsAlreadyApplied(const Program& program, const Program::Argument& program_argument, const CommandListBase::CommandState& command_state) const;
+        bool HasResources() const   { return !m_resource_locations.empty(); }
+        bool IsAlreadyApplied(const Program& program, const Program::Argument& program_argument,
+                              const CommandListBase::CommandState& command_state,
+                              bool check_binding_value_changes) const;
 
     protected:
         ContextBase&        m_context;
         const Settings      m_settings;
-        Resource::Location  m_resource_location;
+        Resource::Locations m_resource_locations;
     };
 
     ShaderBase(Type type, ContextBase& context, const Settings& settings);

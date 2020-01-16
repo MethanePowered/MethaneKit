@@ -100,32 +100,32 @@ static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_typ
     return D3D12_SHADER_VISIBILITY_ALL;
 };
 
-Program::ResourceBindings::Ptr Program::ResourceBindings::Create(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_location_by_argument)
+Program::ResourceBindings::Ptr Program::ResourceBindings::Create(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
 {
     ITT_FUNCTION_TASK();
 
-    std::shared_ptr<ProgramDX::ResourceBindingsDX> sp_dx_resource_bindings = std::make_shared<ProgramDX::ResourceBindingsDX>(sp_program, resource_location_by_argument);
+    std::shared_ptr<ProgramDX::ResourceBindingsDX> sp_dx_resource_bindings = std::make_shared<ProgramDX::ResourceBindingsDX>(sp_program, resource_locations_by_argument);
     sp_dx_resource_bindings->Initialize(); // NOTE: Initialize is called externally (not from constructor) to enable using shared_from_this from its code
     return sp_dx_resource_bindings;
 }
 
-Program::ResourceBindings::Ptr Program::ResourceBindings::CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceLocationByArgument& replace_resource_location_by_argument)
+Program::ResourceBindings::Ptr Program::ResourceBindings::CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
 {
     ITT_FUNCTION_TASK();
 
-    std::shared_ptr<ProgramDX::ResourceBindingsDX>  sp_dx_resource_bindings = std::make_shared<ProgramDX::ResourceBindingsDX>(static_cast<const ProgramDX::ResourceBindingsDX&>(other_resource_bingings), replace_resource_location_by_argument);
+    std::shared_ptr<ProgramDX::ResourceBindingsDX> sp_dx_resource_bindings = std::make_shared<ProgramDX::ResourceBindingsDX>(static_cast<const ProgramDX::ResourceBindingsDX&>(other_resource_bingings), replace_resource_locations_by_argument);
     sp_dx_resource_bindings->Initialize(); // NOTE: Initialize is called externally (not from constructor) to enable using shared_from_this from its code
     return sp_dx_resource_bindings;
 }
 
-ProgramDX::ResourceBindingsDX::ResourceBindingsDX(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_location_by_argument)
-    : ProgramBase::ResourceBindingsBase(sp_program, resource_location_by_argument)
+ProgramDX::ResourceBindingsDX::ResourceBindingsDX(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
+    : ProgramBase::ResourceBindingsBase(sp_program, resource_locations_by_argument)
 {
     ITT_FUNCTION_TASK();
 }
 
-ProgramDX::ResourceBindingsDX::ResourceBindingsDX(const ResourceBindingsDX& other_resource_bindings, const ResourceLocationByArgument& replace_resource_location_by_argument)
-    : ProgramBase::ResourceBindingsBase(other_resource_bindings, replace_resource_location_by_argument)
+ProgramDX::ResourceBindingsDX::ResourceBindingsDX(const ResourceBindingsDX& other_resource_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
+    : ProgramBase::ResourceBindingsBase(other_resource_bindings, replace_resource_locations_by_argument)
 {
     ITT_FUNCTION_TASK();
 }
@@ -151,7 +151,7 @@ void ProgramDX::ResourceBindingsDX::CompleteInitialization()
     CopyDescriptorsToGpu();
 }
 
-void ProgramDX::ResourceBindingsDX::Apply(CommandList& command_list) const 
+void ProgramDX::ResourceBindingsDX::Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior) const
 {
     ITT_FUNCTION_TASK();
 
@@ -160,10 +160,10 @@ void ProgramDX::ResourceBindingsDX::Apply(CommandList& command_list) const
 
     struct GraphicsRootParameterBinding
     {
-        DXBindingType               type;
-        uint32_t                    root_parameter_index;
-        D3D12_GPU_DESCRIPTOR_HANDLE base_descriptor;
-        D3D12_GPU_VIRTUAL_ADDRESS   gpu_virtual_address;
+        DXBindingType               type                 = ShaderDX::ResourceBindingDX::Type::DescriptorTable;
+        uint32_t                    root_parameter_index = 0;
+        D3D12_GPU_DESCRIPTOR_HANDLE base_descriptor      = {};
+        D3D12_GPU_VIRTUAL_ADDRESS   gpu_virtual_address  = 0u;
     };
 
     RenderCommandListDX&             render_command_list_dx = dynamic_cast<RenderCommandListDX&>(command_list);
@@ -173,14 +173,16 @@ void ProgramDX::ResourceBindingsDX::Apply(CommandList& command_list) const
 
     ResourceBase::Barriers resource_transition_barriers;
     std::vector<GraphicsRootParameterBinding> graphics_root_parameter_bindings;
-    ForEachResourceBinding([&](ResourceDX& resource, const Argument& argument, ShaderDX::ResourceBindingDX& resource_binding, const DescriptorHeap::Reservation* p_heap_reservation)
+    graphics_root_parameter_bindings.reserve(m_resource_binding_by_argument.size());
+
+    ForEachResourceBinding([&](const Argument& argument, ShaderDX::ResourceBindingDX& resource_binding, const DescriptorHeap::Reservation* p_heap_reservation)
     {
-        if (resource_binding.IsAlreadyApplied(*m_sp_program, argument, command_state))
+        if ((apply_behavior & ApplyBehavior::ConstantOnce || apply_behavior & ApplyBehavior::ChangesOnly) &&
+            resource_binding.IsAlreadyApplied(*m_sp_program, argument, command_state, apply_behavior & ApplyBehavior::ChangesOnly))
             return;
 
         const DXBindingType         binding_type            = resource_binding.GetSettings().type;
         D3D12_GPU_DESCRIPTOR_HANDLE gpu_descriptor_handle   = {};
-        D3D12_GPU_VIRTUAL_ADDRESS   gpu_virtual_address     = 0;
 
         if (binding_type == DXBindingType::DescriptorTable)
         {
@@ -191,25 +193,37 @@ void ProgramDX::ResourceBindingsDX::Apply(CommandList& command_list) const
             const DXDescriptorRange&  descriptor_range = resource_binding.GetDescriptorRange();
             const uint32_t            descriptor_index = p_heap_reservation->GetRange(resource_binding.IsConstant()).GetStart() + descriptor_range.offset;
             gpu_descriptor_handle = dx_descriptor_heap.GetNativeGPUDescriptorHandle(descriptor_index);
+            graphics_root_parameter_bindings.push_back({
+                    binding_type,
+                    resource_binding.GetRootParameterIndex(),
+                    gpu_descriptor_handle,
+                    0
+                });
         }
         else
         {
-            const Data::Size resource_offset = resource_binding.GetResourceLocation().offset;
-            gpu_virtual_address = resource.GetNativeGpuAddress() + resource_offset;
+            for (const ResourceDX::LocationDX& resource_location_dx : resource_binding.GetResourceLocationsDX())
+            {
+                graphics_root_parameter_bindings.push_back({
+                    binding_type,
+                    resource_binding.GetRootParameterIndex(),
+                    gpu_descriptor_handle,
+                    resource_location_dx.GetNativeGpuAddress()
+                });
+            }
         }
 
-        graphics_root_parameter_bindings.push_back({
-            binding_type,
-            resource_binding.GetRootParameterIndex(),
-            gpu_descriptor_handle,
-            gpu_virtual_address
-        });
+        if (apply_behavior & ApplyBehavior::StateBarriers)
+        {
+            const ResourceBase::State resource_state = resource_binding.GetShaderType() == Shader::Type::Pixel
+                                                     ? ResourceBase::State::PixelShaderResource
+                                                     : ResourceBase::State::NonPixelShaderResource;
 
-        const ResourceBase::State resource_state = resource_binding.GetShaderType() == Shader::Type::Pixel
-            ? ResourceBase::State::PixelShaderResource
-            : ResourceBase::State::NonPixelShaderResource;
-
-        resource.SetState(resource_state, resource_transition_barriers);
+            for (const ResourceDX::LocationDX& resource_location_dx : resource_binding.GetResourceLocationsDX())
+            {
+                resource_location_dx.GetResourceDX().SetState(resource_state, resource_transition_barriers);
+            }
+        }
     });
 
     // Set resource transition barriers before applying resource bindings
@@ -237,18 +251,12 @@ void ProgramDX::ResourceBindingsDX::ForEachResourceBinding(ApplyResourceBindingF
     for (auto& resource_binding_by_argument : m_resource_binding_by_argument)
     {
         assert(!!resource_binding_by_argument.second);
-        ShaderDX::ResourceBindingDX& resource_binding = static_cast<ShaderDX::ResourceBindingDX&>(*resource_binding_by_argument.second);
 
-        const Argument& program_argument = resource_binding_by_argument.first;
-        const ResourceLocationDX& resource_location = resource_binding.GetResourceLocationDX();
-        if (!resource_location.sp_resource)
-        {
-            throw std::invalid_argument("Empty resource is bound to argument \"" + program_argument.argument_name +
-                                        "\" of " + Shader::GetTypeName(program_argument.shader_type) + " shader.");
-        }
+        ShaderDX::ResourceBindingDX&                        resource_binding   = static_cast<ShaderDX::ResourceBindingDX&>(*resource_binding_by_argument.second);
+        const Argument&                                     program_argument   = resource_binding_by_argument.first;
+        const ShaderDX::ResourceBindingDX::DescriptorRange& descriptor_range   = resource_binding.GetDescriptorRange();
+        const DescriptorHeap::Reservation*                  p_heap_reservation = nullptr;
 
-        const ShaderDX::ResourceBindingDX::DescriptorRange& descriptor_range = resource_binding.GetDescriptorRange();
-        const DescriptorHeap::Reservation* p_heap_reservation = nullptr;
         if (descriptor_range.heap_type != DescriptorHeap::Type::Undefined)
         {
             const std::optional<DescriptorHeap::Reservation>& descriptor_heap_reservation_opt = m_descriptor_heap_reservations_by_type[static_cast<uint32_t>(descriptor_range.heap_type)];
@@ -258,7 +266,7 @@ void ProgramDX::ResourceBindingsDX::ForEachResourceBinding(ApplyResourceBindingF
             }
         }
 
-        apply_resource_binding(*resource_location.sp_resource, program_argument, resource_binding, p_heap_reservation);
+        apply_resource_binding(program_argument, resource_binding, p_heap_reservation);
     }
 }
 
@@ -268,14 +276,14 @@ void ProgramDX::ResourceBindingsDX::CopyDescriptorsToGpu()
 
     assert(!!m_sp_program);
     const wrl::ComPtr<ID3D12Device>& cp_device = static_cast<const ProgramDX&>(*m_sp_program).GetContextDX().GetDeviceDX().GetNativeDevice();
-    ForEachResourceBinding([this, &cp_device](const ResourceDX& dx_resource, const Argument&, ShaderDX::ResourceBindingDX& resource_binding, const DescriptorHeap::Reservation* p_heap_reservation)
+    ForEachResourceBinding([this, &cp_device](const Argument&, ShaderDX::ResourceBindingDX& resource_binding, const DescriptorHeap::Reservation* p_heap_reservation)
     {
-            if (!p_heap_reservation)
-                return;
+        if (!p_heap_reservation)
+            return;
 
-        const DescriptorHeapDX& dx_descriptor_heap = static_cast<const DescriptorHeapDX&>(p_heap_reservation->heap.get());
-        const ShaderDX::ResourceBindingDX::DescriptorRange& descriptor_range = resource_binding.GetDescriptorRange();
-        const DescriptorHeap::Type heap_type = dx_descriptor_heap.GetSettings().type;
+        const DescriptorHeapDX&                             dx_descriptor_heap = static_cast<const DescriptorHeapDX&>(p_heap_reservation->heap.get());
+        const ShaderDX::ResourceBindingDX::DescriptorRange& descriptor_range   = resource_binding.GetDescriptorRange();
+        const DescriptorHeap::Type                          heap_type          = dx_descriptor_heap.GetSettings().type;
 
         resource_binding.SetDescriptorHeapReservation(p_heap_reservation);
 
@@ -284,21 +292,28 @@ void ProgramDX::ResourceBindingsDX::CopyDescriptorsToGpu()
             throw std::invalid_argument("Descriptor range offset is out of bounds of reserved descriptor range.");
         }
 
-        const DescriptorHeap::Types used_heap_types = dx_resource.GetUsedDescriptorHeapTypes();
-        if (used_heap_types.find(heap_type) == used_heap_types.end())
+        uint32_t resource_index = 0;
+        for (const ResourceDX::LocationDX& resource_location_dx : resource_binding.GetResourceLocationsDX())
         {
-            throw std::invalid_argument("Can not create binding for resource used for " + dx_resource.GetUsageNames() + " on descriptor heap of incompatible type \"" + dx_descriptor_heap.GetTypeName() + "\".");
+            const DescriptorHeap::Types used_heap_types = resource_location_dx.GetResourceDX().GetUsedDescriptorHeapTypes();
+            if (used_heap_types.find(heap_type) == used_heap_types.end())
+            {
+                throw std::invalid_argument("Can not create binding for resource used for " + resource_location_dx.GetResourceDX().GetUsageNames() +
+                    " on descriptor heap of incompatible type \"" + dx_descriptor_heap.GetTypeName() + "\".");
+            }
+
+            const uint32_t descriptor_index = p_heap_reservation->GetRange(resource_binding.IsConstant()).GetStart()
+                                            + descriptor_range.offset + resource_index;
+
+            //OutputDebugStringA((dx_resource.GetName() + " range: [" + std::to_string(descriptor_range.offset) + " - " + std::to_string(descriptor_range.offset + descriptor_range.count) + 
+            //                    "), descriptor: " + std::to_string(descriptor_index) + "\n").c_str());
+
+            cp_device->CopyDescriptorsSimple(1,
+                                             dx_descriptor_heap.GetNativeCPUDescriptorHandle(descriptor_index),
+                                             resource_location_dx.GetResourceDX().GetNativeCPUDescriptorHandle(ResourceBase::Usage::ShaderRead),
+                                             dx_descriptor_heap.GetNativeDescriptorHeapType());
+            resource_index++;
         }
-
-        const uint32_t descriptor_index = p_heap_reservation->GetRange(resource_binding.IsConstant()).GetStart() + descriptor_range.offset;
-
-        //OutputDebugStringA((dx_resource.GetName() + " range: [" + std::to_string(descriptor_range.offset) + " - " + std::to_string(descriptor_range.offset + descriptor_range.count) + 
-        //                    "), descriptor: " + std::to_string(descriptor_index) + "\n").c_str());
-
-        cp_device->CopyDescriptorsSimple(descriptor_range.count,
-                                         dx_descriptor_heap.GetNativeCPUDescriptorHandle(descriptor_index),
-                                         dx_resource.GetNativeCPUDescriptorHandle(ResourceBase::Usage::ShaderRead),
-                                         dx_descriptor_heap.GetNativeDescriptorHeapType());
     });
 }
 
@@ -316,6 +331,16 @@ ProgramDX::ProgramDX(ContextBase& context, const Settings& settings)
 
     InitResourceBindings(m_settings.constant_argument_names, m_settings.addressable_argument_names);
     InitRootSignature();
+}
+
+void ProgramDX::SetName(const std::string& name)
+{
+    ITT_FUNCTION_TASK();
+
+    ObjectBase::SetName(name);
+
+    assert(!!m_cp_root_signature);
+    m_cp_root_signature->SetName(nowide::widen(name).c_str());
 }
 
 void ProgramDX::InitRootSignature()
@@ -357,15 +382,15 @@ void ProgramDX::InitRootSignature()
                                                            ? D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC
                                                            : D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
             
-            descriptor_ranges.emplace_back(range_type, bind_settings.count, bind_settings.point, bind_settings.space, range_flags);
+            descriptor_ranges.emplace_back(range_type, bind_settings.base.resource_count, bind_settings.point, bind_settings.space, range_flags);
             root_parameters.back().InitAsDescriptorTable(1, &descriptor_ranges.back(), shader_visibility);
 
             const DescriptorHeap::Type  heap_type = GetDescriptorHeapTypeByRangeType(range_type);
             DescriptorOffsets& descriptor_offsets = descriptor_offset_by_heap_type[heap_type];
             uint32_t& descriptor_offset = resource_binding.IsConstant() ? descriptor_offsets.constant_offset : descriptor_offsets.mutable_offset;
-            resource_binding.SetDescriptorRange({ heap_type, descriptor_offset, bind_settings.count });
+            resource_binding.SetDescriptorRange({ heap_type, descriptor_offset, bind_settings.base.resource_count });
 
-            descriptor_offset += bind_settings.count;
+            descriptor_offset += bind_settings.base.resource_count;
         } break;
 
         case ShaderDX::ResourceBindingDX::Type::ConstantBufferView:
@@ -391,8 +416,7 @@ void ProgramDX::InitRootSignature()
     wrl::ComPtr<ID3DBlob> root_signature_blob;
     wrl::ComPtr<ID3DBlob> error_blob;
     ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&root_signature_desc, feature_data.HighestVersion, &root_signature_blob, &error_blob), error_blob);
-    ThrowIfFailed(GetContextDX().GetDeviceDX().GetNativeDevice()->CreateRootSignature(0, root_signature_blob->GetBufferPointer(), root_signature_blob->GetBufferSize(), IID_PPV_ARGS(&m_dx_root_signature)));
-    m_dx_root_signature->SetName(nowide::widen(m_name + " root signature").c_str());
+    ThrowIfFailed(GetContextDX().GetDeviceDX().GetNativeDevice()->CreateRootSignature(0, root_signature_blob->GetBufferPointer(), root_signature_blob->GetBufferSize(), IID_PPV_ARGS(&m_cp_root_signature)));
 }
 
 ContextDX& ProgramDX::GetContextDX() noexcept

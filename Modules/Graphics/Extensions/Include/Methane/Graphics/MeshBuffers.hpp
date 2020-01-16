@@ -30,9 +30,12 @@ Mesh buffers with texture extension structure.
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/Program.h>
 #include <Methane/Graphics/RenderCommandList.h>
+#include <Methane/Graphics/ParallelRenderCommandList.h>
 #include <Methane/Graphics/Mesh.h>
 #include <Methane/Data/AlignedAllocator.hpp>
 #include <Methane/Data/Instrumentation.h>
+#include <Methane/Data/Parallel.hpp>
+#include <Methane/Data/Math.hpp>
 
 #include <memory>
 #include <string>
@@ -63,8 +66,7 @@ public:
                                                                                                   { 0, mesh_data.GetIndexCount()  }, true ) })
         , m_sp_vertex(Buffer::CreateVertexBuffer(context, static_cast<Data::Size>(mesh_data.GetVertexDataSize()),
                                                           static_cast<Data::Size>(mesh_data.GetVertexSize())))
-        , m_sp_index( Buffer::CreateIndexBuffer( context, static_cast<Data::Size>(mesh_data.GetIndexDataSize()), 
-                                                          PixelFormat::R32Uint))
+        , m_sp_index( Buffer::CreateIndexBuffer( context, static_cast<Data::Size>(mesh_data.GetIndexDataSize()), GetIndexFormat(mesh_data.GetIndex(0))))
     {
         ITT_FUNCTION_TASK();
 
@@ -113,32 +115,67 @@ public:
                              instance_count, start_instance);
     }
 
-    void Draw(RenderCommandList& cmd_list, const MeshBufferBindings::ResourceBindingsArray& instance_resource_bindings)
+    void Draw(RenderCommandList& cmd_list, const MeshBufferBindings::ResourceBindingsArray& instance_resource_bindings, uint32_t first_instance_index = 0)
+    {
+        Draw(cmd_list, instance_resource_bindings.begin(), instance_resource_bindings.end(), first_instance_index);
+    }
+
+    void Draw(RenderCommandList& cmd_list,
+              const MeshBufferBindings::ResourceBindingsArray::const_iterator& instance_resource_bindings_begin,
+              const MeshBufferBindings::ResourceBindingsArray::const_iterator& instance_resource_bindings_end,
+              Program::ResourceBindings::ApplyBehavior::Mask bindings_apply_behavior = Program::ResourceBindings::ApplyBehavior::AllIncremental,
+              uint32_t first_instance_index = 0)
     {
         ITT_FUNCTION_TASK();
 
         cmd_list.SetVertexBuffers({ GetVertexBuffer() });
 
         Buffer& index_buffer = GetIndexBuffer();
-        uint32_t instance_index = 0;
-        for (const Program::ResourceBindings::Ptr& sp_resource_bindings : instance_resource_bindings)
+        for (MeshBufferBindings::ResourceBindingsArray::const_iterator instance_resource_bindings_it = instance_resource_bindings_begin;
+             instance_resource_bindings_it != instance_resource_bindings_end;
+             ++instance_resource_bindings_it)
         {
+            const Program::ResourceBindings::Ptr& sp_resource_bindings = *instance_resource_bindings_it;
+
             if (!sp_resource_bindings)
                 throw std::invalid_argument("Can not set Null resource bindings");
 
+            const uint32_t instance_index = first_instance_index + static_cast<uint32_t>(std::distance(instance_resource_bindings_begin, instance_resource_bindings_it));
             const uint32_t subset_index = GetSubsetByInstanceIndex(instance_index);
             assert(subset_index < m_mesh_subsets.size());
 
             const Mesh::Subset& mesh_subset = m_mesh_subsets[subset_index];
 
-            cmd_list.SetResourceBindings(*sp_resource_bindings);
+            cmd_list.SetResourceBindings(*sp_resource_bindings, bindings_apply_behavior);
             cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, index_buffer,
                                  mesh_subset.indices.count, mesh_subset.indices.offset,
                                  mesh_subset.indices_adjusted ? 0 : mesh_subset.vertices.offset,
                                  1, 0);
-
-            instance_index++;
         }
+    }
+
+    void DrawParallel(ParallelRenderCommandList& parallel_cmd_list, const MeshBufferBindings::ResourceBindingsArray& instance_resource_bindings,
+                      Program::ResourceBindings::ApplyBehavior::Mask bindings_apply_behavior = Program::ResourceBindings::ApplyBehavior::AllIncremental)
+    {
+        ITT_FUNCTION_TASK();
+
+        const RenderCommandList::Ptrs& render_cmd_lists = parallel_cmd_list.GetParallelCommandLists();
+        const uint32_t instances_count_per_command_list = static_cast<uint32_t>(Data::DivCeil(instance_resource_bindings.size(), render_cmd_lists.size()));
+
+        Data::ParallelFor<size_t>(0u, render_cmd_lists.size(),
+            [&](size_t cl_index)
+            {
+                const RenderCommandList::Ptr& sp_render_command_list = render_cmd_lists[cl_index];
+                const uint32_t begin_instance_index = static_cast<uint32_t>(cl_index * instances_count_per_command_list);
+                const uint32_t end_instance_index   = std::min(begin_instance_index + instances_count_per_command_list,
+                                                               static_cast<uint32_t>(instance_resource_bindings.size()));
+
+                assert(!!sp_render_command_list);
+                Draw(*sp_render_command_list,
+                     instance_resource_bindings.begin() + begin_instance_index,
+                     instance_resource_bindings.begin() + end_instance_index,
+                     bindings_apply_behavior, begin_instance_index);
+            });
     }
 
     const std::string&  GetMeshName() const      { return m_mesh_name; }
@@ -250,18 +287,26 @@ public:
         const uint32_t subset_index = this->GetSubsetByInstanceIndex(instance_index);
         return GetSubsetTexturePtr(subset_index);
     }
+
+    void SetTexture(const Texture::Ptr& sp_texture)
+    {
+        ITT_FUNCTION_TASK();
+
+        SetSubsetTexture(sp_texture, 0u);
+
+        if (sp_texture)
+        {
+            sp_texture->SetName(MeshBuffers<UniformsType>::GetMeshName() + " Texture");
+        }
+    }
     
-    void SetSubsetTexture(const Texture::Ptr& sp_texture, uint32_t subset_index = 0)
+    void SetSubsetTexture(const Texture::Ptr& sp_texture, uint32_t subset_index)
     {
         ITT_FUNCTION_TASK();
 
         if (subset_index >= MeshBuffers<UniformsType>::GetSubsetsCount())
             throw std::invalid_argument("Subset index is out of bounds.");
-        
-        if (sp_texture)
-        {
-            sp_texture->SetName(MeshBuffers<UniformsType>::GetMeshName() + " Texture");
-        }
+
         m_subset_textures[subset_index] = sp_texture;
     }
 

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ struct SHADER_STRUCT_ALIGN AsteroidUniforms
     SHADER_FIELD_ALIGN gfx::Color3f   deep_color;
     SHADER_FIELD_ALIGN gfx::Color3f   shallow_color;
     SHADER_FIELD_ALIGN gfx::Vector2f  depth_range;
+    SHADER_FIELD_ALIGN uint32_t       texture_index;
 };
 
 class Asteroid final : public gfx::TexturedMeshBuffers<AsteroidUniforms>
@@ -80,16 +81,16 @@ public:
     struct Parameters
     {
         const uint32_t       index;
-        const uint32_t       subset_index;
-        const gfx::Vector2f  depth_range;
+        const uint32_t       mesh_instance_index;
+        const uint32_t       texture_index;
         const Colors         colors;
-        const gfx::Matrix44f scale_matrix;
-        const gfx::Matrix44f translation_matrix;
+        const gfx::Matrix44f scale_translate_matrix;
         const gfx::Point3f   spin_axis;
+        const float          scale;
         const float          orbit_speed;
         const float          spin_speed;
-        float                spin_angle_rad;
-        float                orbit_angle_rad;
+        const float          spin_angle_rad;
+        const float          orbit_angle_rad;
     };
 
     struct TextureNoiseParameters
@@ -108,6 +109,7 @@ public:
     static constexpr size_t color_schema_size = 6u;
     static Colors GetAsteroidRockColors(uint32_t deep_color_index, uint32_t shallow_color_index);
     static Colors GetAsteroidIceColors(uint32_t deep_color_index, uint32_t shallow_color_index);
+    static Colors GetAsteroidLodColors(uint32_t lod_index);
     
 private:
     static void FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Dimensions& dimensions, uint32_t pixel_size, uint32_t row_stride,

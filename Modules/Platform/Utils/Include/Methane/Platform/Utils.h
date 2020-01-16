@@ -31,6 +31,10 @@ Methane platform utilitary functions
 
 #include "MacOS/Utils.hh"
 
+#elif defined __linux__
+
+#include "Linux/Utils.h"
+
 #endif
 
 #include <string>
@@ -43,6 +47,5 @@ void PrintToDebugOutput(const std::string& msg);
 std::string GetExecutableDir();
 std::string GetExecutableFileName();
 std::string GetResourceDir();
-
 
 } // namespace Methane::Platform

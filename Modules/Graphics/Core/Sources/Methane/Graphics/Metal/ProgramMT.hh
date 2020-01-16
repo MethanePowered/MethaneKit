@@ -39,11 +39,11 @@ public:
     class ResourceBindingsMT : public ResourceBindingsBase
     {
     public:
-        ResourceBindingsMT(const Program::Ptr& sp_program, const ResourceLocationByArgument& resource_location_by_argument);
-        ResourceBindingsMT(const ResourceBindingsMT& other_resource_bindings, const ResourceLocationByArgument& replace_resource_location_by_argument);
+        ResourceBindingsMT(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
+        ResourceBindingsMT(const ResourceBindingsMT& other_resource_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
 
         // ResourceBindings interface
-        void Apply(CommandList& command_list) const override;
+        void Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior) const override;
         
         // ResourceBindingsBase interface
         void CompleteInitialization() override { }

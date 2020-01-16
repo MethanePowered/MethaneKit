@@ -34,6 +34,10 @@ DirectX 12 implementation of the device interface.
 #include <algorithm>
 #include <cassert>
 
+// NOTE: Adapters change handling breaks many frame capture tools,
+//       like VS or RenderDoc, so it's disabled for now
+//#define ADAPTERS_CHANGE_HANDLING
+
 namespace Methane::Graphics
 {
 
@@ -63,8 +67,8 @@ Device::Feature::Mask DeviceDX::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdap
 
 DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level)
     : DeviceBase(GetAdapterNameDXGI(*cp_adapter.Get()),
-                 IsSoftwareAdapterDXGI(static_cast<IDXGIAdapter1&>(*cp_adapter.Get())),
-                 GetSupportedFeatures(cp_adapter, feature_level))
+        IsSoftwareAdapterDXGI(static_cast<IDXGIAdapter1&>(*cp_adapter.Get())),
+        GetSupportedFeatures(cp_adapter, feature_level))
     , m_cp_adapter(cp_adapter)
     , m_feature_level(feature_level)
 {
@@ -89,14 +93,21 @@ void DeviceDX::SetName(const std::string& name)
 const wrl::ComPtr<ID3D12Device>& DeviceDX::GetNativeDevice() const
 {
     ITT_FUNCTION_TASK();
-    if (!m_cp_device)
+    if (m_cp_device)
+        return m_cp_device;
+
+    ThrowIfFailed(D3D12CreateDevice(m_cp_adapter.Get(), m_feature_level, IID_PPV_ARGS(&m_cp_device)));
+    if (!GetName().empty())
     {
-        ThrowIfFailed(D3D12CreateDevice(m_cp_adapter.Get(), m_feature_level, IID_PPV_ARGS(&m_cp_device)));
-        if (!GetName().empty())
-        {
-            m_cp_device->SetName(nowide::widen(GetName()).c_str());
-        }
+        m_cp_device->SetName(nowide::widen(GetName()).c_str());
     }
+
+    D3D12_FEATURE_DATA_D3D12_OPTIONS5 feature_options_5 = {};
+    if (m_cp_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &feature_options_5, sizeof(feature_options_5)) == S_OK)
+    {
+        m_feature_options_5 = feature_options_5;
+    }
+
     return m_cp_device;
 }
 
@@ -156,6 +167,7 @@ void SystemDX::RegisterAdapterChangeEvent()
 {
     ITT_FUNCTION_TASK();
 
+#ifdef ADAPTERS_CHANGE_HANDLING
     wrl::ComPtr<IDXGIFactory7> cp_factory7;
     if (!SUCCEEDED(m_cp_factory->QueryInterface(IID_PPV_ARGS(&cp_factory7))))
         return;
@@ -166,28 +178,35 @@ void SystemDX::RegisterAdapterChangeEvent()
         ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
     }
 
+    assert(!!cp_factory7);
     ThrowIfFailed(cp_factory7->RegisterAdaptersChangedEvent(m_adapter_change_event, &m_adapter_change_registration_cookie));
+#endif
 }
 
 void SystemDX::UnregisterAdapterChangeEvent()
 {
     ITT_FUNCTION_TASK();
 
+#ifdef ADAPTERS_CHANGE_HANDLING
     wrl::ComPtr<IDXGIFactory7> cp_factory7;
     if (m_adapter_change_registration_cookie == 0 ||
         !SUCCEEDED(m_cp_factory->QueryInterface(IID_PPV_ARGS(&cp_factory7))))
         return;
 
+    assert(!!cp_factory7);
     ThrowIfFailed(cp_factory7->UnregisterAdaptersChangedEvent(m_adapter_change_registration_cookie));
     m_adapter_change_registration_cookie = 0;
 
     CloseHandle(m_adapter_change_event);
     m_adapter_change_event = NULL;
+#endif
 }
 
 void SystemDX::CheckForChanges()
 {
     ITT_FUNCTION_TASK();
+
+#ifdef ADAPTERS_CHANGE_HANDLING
     const bool adapters_changed = m_adapter_change_event ? WaitForSingleObject(m_adapter_change_event, 0) == WAIT_OBJECT_0
                                                          : !m_cp_factory->IsCurrent();
 
@@ -216,6 +235,7 @@ void SystemDX::CheckForChanges()
             prev_device.Notify(Device::Notification::Removed);
         }
     }
+#endif
 }
 
 const Devices& SystemDX::UpdateGpuDevices(Device::Feature::Mask supported_features)

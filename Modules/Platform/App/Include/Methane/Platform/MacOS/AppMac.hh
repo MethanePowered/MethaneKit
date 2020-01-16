@@ -54,7 +54,7 @@ public:
 
     // AppBase interface
     void InitContext(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size) override;
-    int Run(const RunArgs& args) override;
+    int  Run(const RunArgs& args) override;
     void Alert(const Message& msg, bool deferred = false) override;
     void SetWindowTitle(const std::string& title_text) override;
     bool SetFullScreen(bool is_full_screen) override;

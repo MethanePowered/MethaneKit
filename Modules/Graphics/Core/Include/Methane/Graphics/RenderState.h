@@ -62,13 +62,92 @@ public:
         FillMode fill_mode                  = FillMode::Solid;
         uint32_t sample_count               = 1;
         bool     alpha_to_coverage_enabled  = false;
-        bool     alpha_to_one_enabled       = false;
+
+        bool operator==(const Rasterizer& other) const noexcept;
+        bool operator!=(const Rasterizer& other) const noexcept;
+    };
+
+    struct Blending
+    {
+        struct ColorChannel
+        {
+            using Mask = uint32_t;
+            enum Value : Mask
+            {
+                None    = 0u,
+                Red     = 1u << 0u,
+                Green   = 1u << 1u,
+                Blue    = 1u << 2u,
+                Alpha   = 1u << 3u,
+                All     = ~0u,
+            };
+
+            ColorChannel() = delete;
+        };
+
+        enum class Operation : uint32_t
+        {
+            Add = 0u,
+            Subtract,
+            ReverseSubtract,
+            Minimum,
+            Maximum,
+        };
+
+        enum class Factor : uint32_t
+        {
+            Zero = 0u,
+            One,
+            SourceColor,
+            OneMinusSourceColor,
+            SourceAlpha,
+            OneMinusSourceAlpha,
+            DestinationColor,
+            OneMinusDestinationColor,
+            DestinationAlpha,
+            OneMinusDestinationAlpha,
+            SourceAlphaSaturated,
+            BlendColor,
+            OneMinusBlendColor,
+            BlendAlpha,
+            OneMinusBlendAlpha,
+            Source1Color,
+            OneMinusSource1Color,
+            Source1Alpha,
+            OneMinusSource1Alpha
+        };
+
+        struct RenderTarget
+        {
+            bool               blend_enabled             = false;
+            ColorChannel::Mask write_mask                = ColorChannel::All;
+            Operation          rgb_blend_op              = Operation::Add;
+            Operation          alpha_blend_op            = Operation::Add;
+            Factor             source_rgb_blend_factor   = Factor::One;
+            Factor             source_alpha_blend_factor = Factor::One;
+            Factor             dest_rgb_blend_factor     = Factor::Zero;
+            Factor             dest_alpha_blend_factor   = Factor::Zero;
+
+            bool operator==(const RenderTarget& other) const noexcept;
+            bool operator!=(const RenderTarget& other) const noexcept;
+        };
+
+        // NOTE: If is_independent set to false, only the render_targets[0] members are used
+        bool                        is_independent = false;
+        std::array<RenderTarget, 8> render_targets;
+
+        bool operator==(const Blending& other) const noexcept;
+        bool operator!=(const Blending& other) const noexcept;
     };
     
     struct Depth
     {
-        bool    enabled = false;
-        Compare compare = Compare::Less;
+        bool    enabled         = false;
+        bool    write_enabled   = true;
+        Compare compare         = Compare::Less;
+
+        bool operator==(const Depth& other) const noexcept;
+        bool operator!=(const Depth& other) const noexcept;
     };
     
     struct Stencil
@@ -87,11 +166,14 @@ public:
 
         struct FaceOperations
         {
-            Operation stencil_failure    = Operation::Keep;
-            Operation stencil_pass       = Operation::Keep; // DX only
-            Operation depth_failure      = Operation::Keep;
-            Operation depth_stencil_pass = Operation::Keep; // Metal only
-            Compare   compare            = Compare::Always;
+            Operation  stencil_failure   = Operation::Keep;
+            Operation  stencil_pass      = Operation::Keep; // DX only
+            Operation  depth_failure     = Operation::Keep;
+            Operation  depth_stencil_pass= Operation::Keep; // Metal only
+            Compare    compare           = Compare::Always;
+
+            bool operator==(const FaceOperations& other) const noexcept;
+            bool operator!=(const FaceOperations& other) const noexcept;
         };
         
         bool           enabled           = false;
@@ -99,16 +181,45 @@ public:
         uint32_t       write_mask        = static_cast<uint32_t>(~0x0);
         FaceOperations front_face;
         FaceOperations back_face;
+
+        bool operator==(const Stencil& other) const noexcept;
+        bool operator!=(const Stencil& other) const noexcept;
+    };
+
+    struct Group
+    {
+        using Mask = uint32_t;
+        enum Value : Mask
+        {
+            None                = 0u,
+            Program             = 1u << 0u,
+            Rasterizer          = 1u << 1u,
+            Blending            = 1u << 2u,
+            BlendingColor       = 1u << 3u,
+            DepthStencil        = 1u << 4u,
+            Viewports           = 1u << 5u,
+            ScissorRects        = 1u << 6u,
+            All                 = ~0u
+        };
+
+        Group() = delete;
     };
 
     struct Settings
     {
+        // NOTE: members are ordered by the usage frequency,
+        //       for convenient setup with initializer lists
+        //       (default states may be skipped at initialization)
         Program::Ptr sp_program;
         Viewports    viewports;
         ScissorRects scissor_rects;
         Rasterizer   rasterizer;
         Depth        depth;
         Stencil      stencil;
+        Blending     blending;
+        Color4f      blending_color;
+
+        static Group::Mask Compare(const Settings& left, const Settings& right, Group::Mask compare_groups = Group::All) noexcept;
     };
 
     // Create RenderState instance

@@ -44,12 +44,12 @@ static const GraphicsApp::Settings      g_app_settings = // Application settings
         gfx::PixelFormat::BGRA8Unorm,               // - color_format
         gfx::PixelFormat::Depth32Float,             // - depth_stencil_format
         gfx::Color4f(0.0f, 0.2f, 0.4f, 1.0f),       // - clear_color
-        1.f,                                        // - clear_depth
-        0,                                          // - clear_stencil
+        gfx::DepthStencil{ 1.f, 0u },               // - clear_depth_stencil
         3,                                          // - frame_buffers_count
         true,                                       // - vsync_enabled
     },                                              //
-    true                                            // show_hud_in_window_title
+    true,                                           // show_hud_in_window_title
+    true                                            // show_logo_badge
 };
 
 TexturedCubeApp::TexturedCubeApp()
@@ -148,10 +148,10 @@ void TexturedCubeApp::Init()
 
         // Configure program resource bindings
         frame.sp_resource_bindings = gfx::Program::ResourceBindings::Create(m_sp_program, {
-            { { gfx::Shader::Type::All,   "g_uniforms"  }, { frame.sp_uniforms_buffer } },
-            { { gfx::Shader::Type::Pixel, "g_constants" }, { m_sp_const_buffer        } },
-            { { gfx::Shader::Type::Pixel, "g_texture"   }, { m_sp_cube_texture        } },
-            { { gfx::Shader::Type::Pixel, "g_sampler"   }, { m_sp_texture_sampler     } },
+            { { gfx::Shader::Type::All,   "g_uniforms"  }, { { frame.sp_uniforms_buffer } } },
+            { { gfx::Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer        } } },
+            { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_sp_cube_texture        } } },
+            { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler     } } },
         });
         
         // Create command list for rendering
@@ -168,7 +168,7 @@ void TexturedCubeApp::Init()
 
     // Create index buffer for cube mesh
     const Data::Size index_data_size = static_cast<Data::Size>(m_cube_mesh.GetIndexDataSize());
-    m_sp_index_buffer  = gfx::Buffer::CreateIndexBuffer(*m_sp_context, index_data_size, gfx::PixelFormat::R32Uint);
+    m_sp_index_buffer  = gfx::Buffer::CreateIndexBuffer(*m_sp_context, index_data_size, gfx::GetIndexFormat(m_cube_mesh.GetIndex(0)));
     m_sp_index_buffer->SetName("Cube Index Buffer");
     m_sp_index_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), index_data_size } });
 
@@ -199,12 +199,14 @@ bool TexturedCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized
     m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
 
     m_camera.Resize(static_cast<float>(frame_size.width), static_cast<float>(frame_size.height));
+
     return true;
 }
 
-void TexturedCubeApp::Update()
+bool TexturedCubeApp::Update()
 {
-    GraphicsApp::Update();
+    if (!GraphicsApp::Update())
+        return false;
 
     // Update Model, View, Projection matrices based on camera location
     gfx::Matrix44f model_matrix, view_matrix, proj_matrix;
@@ -215,14 +217,16 @@ void TexturedCubeApp::Update()
     m_shader_uniforms.mvp_matrix     = mv_matrix * proj_matrix;
     m_shader_uniforms.model_matrix   = model_matrix;
     m_shader_uniforms.eye_position   = gfx::Vector4f(m_camera.GetOrientation().eye, 1.f);
+    
+    return true;
 }
 
-void TexturedCubeApp::Render()
+bool TexturedCubeApp::Render()
 {
     // Render only when context is ready
     assert(!!m_sp_context);
-    if (!m_sp_context->ReadyToRender())
-        return;
+    if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
+        return false;
 
     // Wait for previous frame rendering is completed and switch to next frame
     m_sp_context->WaitForGpu(gfx::Context::WaitFor::FramePresented);
@@ -239,17 +243,21 @@ void TexturedCubeApp::Render()
     frame.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(Uniforms) } });
 
     // Issue commands for cube rendering
-    frame.sp_cmd_list->Reset(*m_sp_state, "Cube redering");
+    frame.sp_cmd_list->Reset(m_sp_state, "Cube redering");
     frame.sp_cmd_list->SetResourceBindings(*frame.sp_resource_bindings);
     frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
     frame.sp_cmd_list->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
+
+    RenderOverlay(*frame.sp_cmd_list);
+
+    // Commit command list with present flag
     frame.sp_cmd_list->Commit(true);
 
-    // Present frame to screen
+    // Execute command list on render queue and present frame to screen
     m_sp_context->GetRenderCommandQueue().Execute({ *frame.sp_cmd_list });
     m_sp_context->Present();
 
-    GraphicsApp::Render();
+    return true;
 }
 
 void TexturedCubeApp::OnContextReleased()

@@ -98,7 +98,7 @@ void AppController::ShowHelp()
         std::string controller_offset;
         if (!sp_controller->GetControllerName().empty())
         {
-            help_stream << sp_controller->GetControllerName() << std::endl;
+            help_stream << std::endl << sp_controller->GetControllerName();
             controller_offset = single_offset;
         }
         
@@ -108,7 +108,7 @@ void AppController::ShowHelp()
         {
             if (key_description.first.empty())
             {
-                help_stream << std::endl << controller_offset << key_description.second << ":" << std::endl;
+                help_stream << std::endl << std::endl << controller_offset << key_description.second << ":";
                 header_present = true;
             }
             else
@@ -117,7 +117,7 @@ void AppController::ShowHelp()
                 {
                     help_stream << std::endl;
                 }
-                help_stream << controller_offset;
+                help_stream << std::endl << controller_offset;
                 if (header_present)
                 {
                     help_stream << single_offset;
@@ -127,7 +127,6 @@ void AppController::ShowHelp()
                 {
                     help_stream << " - " << key_description.second << ";";
                 }
-                help_stream << std::endl;
             }
             first_line = false;
         }
@@ -146,6 +145,12 @@ void AppController::ShowHelp()
             help_stream << std::endl << cmd_line_help;
         }
     }
+
+    if (!is_first_controller)
+    {
+        help_stream << std::endl;
+    }
+    help_stream << std::endl << "Powered by Methane Kit: https://github.com/egorodet/MethaneKit";
     
     m_application.Alert({
         AppBase::Message::Type::Information,

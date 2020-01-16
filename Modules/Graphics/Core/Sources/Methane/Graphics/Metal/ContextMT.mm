@@ -51,8 +51,12 @@ ContextMT::ContextMT(const Platform::AppEnvironment& env, DeviceBase& device, co
                                      vsyncEnabled: Methane::MacOS::ConvertToNSType<bool, BOOL>(m_settings.vsync_enabled)
                             unsyncRefreshInterval: 1.0 / m_settings.unsync_max_fps])
     , m_dispatch_semaphore(dispatch_semaphore_create(m_settings.frame_buffers_count))
+    , m_frame_capture_scope([[MTLCaptureManager sharedCaptureManager] newCaptureScopeWithDevice:GetDeviceMT().GetNativeDevice()])
 {
     ITT_FUNCTION_TASK();
+    
+    m_frame_capture_scope.label = Methane::MacOS::ConvertToNSType<std::string, NSString*>(device.GetName() + " Capture Scope");
+    [MTLCaptureManager sharedCaptureManager].defaultCaptureScope = m_frame_capture_scope;
 
     // bind metal context with application delegate
     m_app_view.delegate = env.ns_app_delegate;
@@ -113,15 +117,17 @@ void ContextMT::OnCommandQueueCompleted(CommandQueue& /*cmd_queue*/, uint32_t /*
 void ContextMT::WaitForGpu(WaitFor wait_for)
 {
     ITT_FUNCTION_TASK();
-
-    dispatch_semaphore_wait(m_dispatch_semaphore, DISPATCH_TIME_FOREVER);
-
-    const bool switch_to_next_frame = (wait_for == WaitFor::FramePresented);
+    
     ContextBase::WaitForGpu(wait_for);
+    
+    dispatch_semaphore_wait(m_dispatch_semaphore, DISPATCH_TIME_FOREVER);
+    
+    ContextBase::OnGpuWaitComplete(wait_for);
 
-    if (switch_to_next_frame)
+    if (wait_for == WaitFor::FramePresented)
     {
         m_frame_buffer_index = (m_frame_buffer_index + 1) % m_settings.frame_buffers_count;
+        [m_frame_capture_scope beginScope];
     }
 }
 
@@ -134,7 +140,11 @@ void ContextMT::Resize(const FrameSize& frame_size)
 void ContextMT::Present()
 {
     ITT_FUNCTION_TASK();
-    OnPresentComplete();
+    ContextBase::Present();
+    
+    [m_frame_capture_scope endScope];
+    
+    OnCpuPresentComplete();
 }
 
 bool ContextMT::SetVSyncEnabled(bool vsync_enabled)
@@ -160,10 +170,22 @@ bool ContextMT::SetFrameBuffersCount(uint32_t frame_buffers_count)
     return false;
 }
 
+float ContextMT::GetContentScalingFactor() const
+{
+    ITT_FUNCTION_TASK();
+    return m_app_view.appWindow.backingScaleFactor;
+}
+
 DeviceMT& ContextMT::GetDeviceMT()
 {
     ITT_FUNCTION_TASK();
     return static_cast<DeviceMT&>(GetDevice());
+}
+    
+CommandQueueMT& ContextMT::GetRenderCommandQueueMT()
+{
+    ITT_FUNCTION_TASK();
+    return static_cast<CommandQueueMT&>(ContextBase::GetRenderCommandQueue());
 }
 
 const ContextMT::LibraryMT::Ptr& ContextMT::GetLibraryMT(const std::string& library_name)

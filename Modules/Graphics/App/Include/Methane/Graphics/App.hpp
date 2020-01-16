@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ Base frame class provides frame buffer management with resize handling.
 #include "AppContextController.h"
 
 #include <Methane/Data/AppResourceProviders.h>
-#include <Methane/Data/Timer.h>
+#include <Methane/Data/Timer.hpp>
 #include <Methane/Data/AnimationsPool.h>
 #include <Methane/Platform/App.h>
 #include <Methane/Platform/AppController.h>
@@ -36,8 +36,10 @@ Base frame class provides frame buffer management with resize handling.
 #include <Methane/Graphics/Context.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/RenderPass.h>
+#include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Graphics/ImageLoader.h>
+#include <Methane/Graphics/LogoBadge.h>
 #include <Methane/Data/Instrumentation.h>
 
 #include <vector>
@@ -70,6 +72,7 @@ public:
         Platform::App::Settings app;
         Context::Settings       context;
         bool                    show_hud_in_window_title;
+        bool                    show_logo_badge;
     };
 
     App(const Settings& settings, RenderPass::Access::Mask screen_pass_access,
@@ -79,6 +82,7 @@ public:
         , m_initial_context_settings(settings.context)
         , m_screen_pass_access(screen_pass_access)
         , m_show_hud_in_window_title(settings.show_hud_in_window_title)
+        , m_show_logo_badge(settings.show_logo_badge)
     {
         ITT_FUNCTION_TASK();
         m_cmd_options.add_options()
@@ -116,7 +120,7 @@ public:
         // Create render context of the current window size
         m_initial_context_settings.frame_size = frame_size;
         m_sp_context = Context::Create(env, *sp_device, m_initial_context_settings);
-        m_sp_context->SetName("App Gfx Context");
+        m_sp_context->SetName("App Graphics Context");
         m_sp_context->AddCallback(*this);
 
         m_input_state.AddControllers({ std::make_shared<AppContextController>(*m_sp_context) });
@@ -151,22 +155,28 @@ public:
                 {
                     RenderPass::ColorAttachment(
                         {
-                            frame.sp_screen_texture,
-                            0, 0, 0,
-                            RenderPass::Attachment::LoadAction::Clear,
+                            frame.sp_screen_texture, 0, 0, 0,
+                            context_settings.clear_color.has_value()
+                                ? RenderPass::Attachment::LoadAction::Clear
+                                : RenderPass::Attachment::LoadAction::DontCare,
                             RenderPass::Attachment::StoreAction::Store,
                         },
                         context_settings.clear_color
+                            ? *context_settings.clear_color
+                            : Color4f()
                     )
                 },
                 RenderPass::DepthAttachment(
                     {
-                        m_sp_depth_texture,
-                        0, 0, 0,
-                        RenderPass::Attachment::LoadAction::Clear,
+                        m_sp_depth_texture, 0, 0, 0,
+                        context_settings.clear_depth_stencil.has_value()
+                            ? RenderPass::Attachment::LoadAction::Clear
+                            : RenderPass::Attachment::LoadAction::DontCare,
                         RenderPass::Attachment::StoreAction::DontCare,
                     },
-                    context_settings.clear_depth
+                    context_settings.clear_depth_stencil
+                        ? context_settings.clear_depth_stencil->first
+                        : 1.f
                 ),
                 RenderPass::StencilAttachment(),
                 m_screen_pass_access
@@ -174,20 +184,25 @@ public:
 
             m_frames.emplace_back(std::move(frame));
         }
+        
+        // Create Methane logo badge
+        if (m_show_logo_badge)
+            m_sp_logo_badge = std::make_shared<LogoBadge>(*m_sp_context);
 
         Platform::App::Init();
     }
 
-    bool Resize(const FrameSize& frame_size, bool /*is_minimized*/) override
+    bool Resize(const FrameSize& frame_size, bool is_minimized) override
     {
         ITT_FUNCTION_TASK();
+        
         struct ResourceInfo
         {
             Resource::DescriptorByUsage descriptor_by_usage;
             std::string name;
         };
 
-        if (!m_initialized || m_initial_context_settings.frame_size == frame_size)
+        if (!AppBase::Resize(frame_size, is_minimized))
             return false;
 
         m_initial_context_settings.frame_size = frame_size;
@@ -236,50 +251,77 @@ public:
 
             frame.sp_screen_pass->Update(pass_settings);
         }
+        
+        if (m_sp_logo_badge)
+            m_sp_logo_badge->Resize(frame_size);
 
         return true;
     }
     
-    void Update() override
+    bool Update() override
     {
         ITT_FUNCTION_TASK();
+        if (m_is_minimized)
+            return false;
+        
         System::Get().CheckForChanges();
         m_animations.Update();
+        
+        return true;
     }
 
-    void Render() override
+    bool Render() override
     {
         ITT_FUNCTION_TASK();
+        
+        if (m_is_minimized)
+        {
+            // No need to render frames while window is minimized.
+            // Sleep thread for a while to not heat CPU by running the message loop
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            return false;
+        }
 
         // Update HUD info in window title
         if (!m_show_hud_in_window_title ||
             m_title_update_timer.GetElapsedSecondsD() < g_title_update_interval_sec)
-            return;
+            return true;
 
         if (!m_sp_context)
         {
             throw std::runtime_error("Context is not initialized before rendering.");
         }
 
-        const Context::Settings& context_settings       = m_sp_context->GetSettings();
-        const FpsCounter&        fps_counter            = m_sp_context->GetFpsCounter();
-        const uint32_t           average_fps            = fps_counter.GetFramesPerSecond();
-        const double             average_frame_time_ms  = fps_counter.GetAverageFrameTimeMilSec();
+        const Context::Settings&      context_settings      = m_sp_context->GetSettings();
+        const FpsCounter&             fps_counter           = m_sp_context->GetFpsCounter();
+        const uint32_t                average_fps           = fps_counter.GetFramesPerSecond();
+        const FpsCounter::FrameTiming average_frame_timing  = fps_counter.GetAverageFrameTiming();
 
         std::stringstream title_ss;
         title_ss.precision(2);
         title_ss << m_settings.name << "        " 
-                 << average_fps << " FPS (" << std::fixed << average_frame_time_ms << " ms)"
+                 << average_fps << " FPS (" << std::fixed << average_frame_timing.GetTotalTimeMSec()
+                                << " ms, "  << std::fixed << average_frame_timing.GetCpuTimePercent() << "% cpu)"
                  << ", " << context_settings.frame_size.width << " x " << context_settings.frame_size.height
-                 << ", " << std::to_string(context_settings.frame_buffers_count) << " FBs"
+                 << ", " << std::to_string(context_settings.frame_buffers_count) << " FB"
                  << ", VSync: " << (context_settings.vsync_enabled ? "ON" : "OFF")
-                 << ", GPU: "   << m_sp_context->GetDevice().GetAdapterName();
+                 << ", GPU: "   << m_sp_context->GetDevice().GetAdapterName()
+                 << "    (F1 - help)";
 
         SetWindowTitle(title_ss.str());
         m_title_update_timer.Reset();
 
         // Keep window full-screen mode in sync with the context
         SetFullScreen(context_settings.is_full_screen);
+        
+        return true;
+    }
+    
+    void RenderOverlay(RenderCommandList& cmd_list)
+    {
+        ITT_FUNCTION_TASK();
+        if (m_sp_logo_badge)
+            m_sp_logo_badge->Draw(cmd_list);
     }
     
     bool SetFullScreen(bool is_full_screen) override
@@ -297,6 +339,7 @@ public:
         ITT_FUNCTION_TASK();
         m_frames.clear();
         m_sp_depth_texture.reset();
+        m_sp_logo_badge.reset();
         m_initialized = false;
     }
 
@@ -364,6 +407,7 @@ protected:
     Context::Ptr                    m_sp_context;
     ImageLoader                     m_image_loader;
     Texture::Ptr                    m_sp_depth_texture;
+    LogoBadge::Ptr                  m_sp_logo_badge;
     std::vector<FrameT>             m_frames;
     Data::AnimationsPool            m_animations;
 
@@ -372,6 +416,7 @@ private:
     int32_t                         m_default_device_index = 0;
     const RenderPass::Access::Mask  m_screen_pass_access;
     bool                            m_show_hud_in_window_title;
+    bool                            m_show_logo_badge;
     Data::Timer                     m_title_update_timer;
 
     static constexpr double  g_title_update_interval_sec = 1;

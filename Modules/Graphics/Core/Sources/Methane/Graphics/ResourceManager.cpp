@@ -25,6 +25,7 @@ and deferred releasing of GPU resource.
 #include "ResourceManager.h"
 
 #include <Methane/Data/Instrumentation.h>
+#include <Methane/Data/Parallel.hpp>
 
 #include <cassert>
 
@@ -79,14 +80,16 @@ void ResourceManager::CompleteInitialization()
         }
     }
 
-    for (const Program::ResourceBindings::WeakPtr& wp_resource_bindings : m_deferred_resource_bindings)
-    {
-        Program::ResourceBindings::Ptr sp_resource_bindings = wp_resource_bindings.lock();
-        if (!sp_resource_bindings)
-            continue;
+    Data::ParallelForEach<ProgramResourceBindings::const_iterator, const ProgramResourceBindings::value_type>(
+        m_deferred_resource_bindings.begin(), m_deferred_resource_bindings.end(),
+        [](const Program::ResourceBindings::WeakPtr& wp_resource_bindings)
+        {
+            Program::ResourceBindings::Ptr sp_resource_bindings = wp_resource_bindings.lock();
+            if (!sp_resource_bindings)
+                return;
 
-        static_cast<ProgramBase::ResourceBindingsBase&>(*sp_resource_bindings).CompleteInitialization();
-    }
+            static_cast<ProgramBase::ResourceBindingsBase&>(*sp_resource_bindings).CompleteInitialization();
+        });
 
     m_deferred_resource_bindings.clear();
 }
