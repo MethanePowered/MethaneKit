@@ -34,6 +34,10 @@ DirectX 12 implementation of the device interface.
 #include <algorithm>
 #include <cassert>
 
+// NOTE: Adapters change handling breaks many frame capture tools,
+//       like VS or RenderDoc, so it's disabled for now
+//#define ADAPTERS_CHANGE_HANDLING
+
 namespace Methane::Graphics
 {
 
@@ -163,6 +167,7 @@ void SystemDX::RegisterAdapterChangeEvent()
 {
     ITT_FUNCTION_TASK();
 
+#ifdef ADAPTERS_CHANGE_HANDLING
     wrl::ComPtr<IDXGIFactory7> cp_factory7;
     if (!SUCCEEDED(m_cp_factory->QueryInterface(IID_PPV_ARGS(&cp_factory7))))
         return;
@@ -175,12 +180,14 @@ void SystemDX::RegisterAdapterChangeEvent()
 
     assert(!!cp_factory7);
     ThrowIfFailed(cp_factory7->RegisterAdaptersChangedEvent(m_adapter_change_event, &m_adapter_change_registration_cookie));
+#endif
 }
 
 void SystemDX::UnregisterAdapterChangeEvent()
 {
     ITT_FUNCTION_TASK();
 
+#ifdef ADAPTERS_CHANGE_HANDLING
     wrl::ComPtr<IDXGIFactory7> cp_factory7;
     if (m_adapter_change_registration_cookie == 0 ||
         !SUCCEEDED(m_cp_factory->QueryInterface(IID_PPV_ARGS(&cp_factory7))))
@@ -192,11 +199,14 @@ void SystemDX::UnregisterAdapterChangeEvent()
 
     CloseHandle(m_adapter_change_event);
     m_adapter_change_event = NULL;
+#endif
 }
 
 void SystemDX::CheckForChanges()
 {
     ITT_FUNCTION_TASK();
+
+#ifdef ADAPTERS_CHANGE_HANDLING
     const bool adapters_changed = m_adapter_change_event ? WaitForSingleObject(m_adapter_change_event, 0) == WAIT_OBJECT_0
                                                          : !m_cp_factory->IsCurrent();
 
@@ -225,6 +235,7 @@ void SystemDX::CheckForChanges()
             prev_device.Notify(Device::Notification::Removed);
         }
     }
+#endif
 }
 
 const Devices& SystemDX::UpdateGpuDevices(Device::Feature::Mask supported_features)
