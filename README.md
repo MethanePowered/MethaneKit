@@ -35,9 +35,10 @@ Click **"Open in Gitpod" button** above to explore Methane Kit codebase right aw
 3. [Getting Started](#getting-started)
    1. [Prerequisites](#prerequisites)
    2. [Fetch Sources](#fetch-sources)
-   3. [Windows Build](#windows-build)
-   4. [MacOS Build](#macos-build)
-   5. [Linux Build](#linux-build)
+   3. [Build](#build)
+      1. [Windows Build](#windows-build)
+      2. [MacOS Build](#macos-build)
+      3. [Linux Build](#linux-build)
 4. [Demo Applications](#demo-applications)
    1. [Tutorials](#tutorials)
       1. [Hello Triangle](#hello-triangle)
@@ -130,7 +131,9 @@ git clone --recurse-submodules --depth 1 https://github.com/egorodet/MethaneKit.
 git pull && git submodule update --init --depth 1 --recursive
 ```
 
-### Windows Build
+### Build
+
+#### Windows Build
 
 Start **"x64 Native Tools Command Prompt for VS2017"** (it initializes environment with VS path to Windows SDK, etc), then go to MethaneKit root directory (see instructions above to initialize repository and get latest code with submodules) and either start auxiliary build script [Build/Windows/Build.bat](Build/Windows/Build.bat) or build with cmake manually:
 ```console
@@ -143,7 +146,7 @@ Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) directly in Vis
 
 Run applications from the installation directory `Build\Output\VisualStudio\Install\Apps`.
 
-### MacOS Build
+#### MacOS Build
 
 Start terminal, then go to MethaneKit root directory (see instructions above to initialize repository and get latest code with submodules) and either start auxiliary build script [Build/Posix/Build.sh](Build/Posix/Build.sh) or build with cmake manually:
 ```console
@@ -156,7 +159,7 @@ Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) directly in VSC
 
 Run applications from the installation directory `Build/Output/XCode/Install/Apps`
 
-### Linux Build
+#### Linux Build
 
 Build on Linux with GCC works fine using "Unix Makefiles" generator, but the platform abstraction layer and graphics API implementation are currently stubbed.  So in spite of it builds, do not expect anything to work on Linux now.
 ```console

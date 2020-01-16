@@ -264,7 +264,6 @@ void RenderPassDX::UpdateNativeRenderPassDesc(bool settings_changed)
             };
         }
     }
-
 }
 
 void RenderPassDX::UpdateNativeClearDesc()
@@ -285,7 +284,6 @@ void RenderPassDX::UpdateNativeClearDesc()
     }
 
     m_ds_clear_info = DSClearInfo(m_settings.depth_attachment, m_settings.stencil_attachment);
-
 }
 
 void RenderPassDX::Begin(RenderCommandListBase& command_list)
