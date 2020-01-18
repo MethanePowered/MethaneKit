@@ -41,7 +41,7 @@ struct ResourceContainerMT
     std::vector<id<MTLTexture>> textures;
 };
 
-ResourceBase::ReleasePool::Ptr ResourceBase::ReleasePool::Create()
+Ptr<ResourceBase::ReleasePool> ResourceBase::ReleasePool::Create()
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<ResourceMT::ReleasePoolMT>();

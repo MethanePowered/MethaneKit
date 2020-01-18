@@ -261,7 +261,7 @@ void RenderCommandListMT::StartRenderEncoding()
 
     if (m_is_parallel)
     {
-        ParallelRenderCommandListMT::Ptr sp_parallel_render_cmd_list = std::static_pointer_cast<ParallelRenderCommandListMT>(m_wp_parallel_render_command_list.lock());
+        Ptr<ParallelRenderCommandListMT> sp_parallel_render_cmd_list = std::static_pointer_cast<ParallelRenderCommandListMT>(m_wp_parallel_render_command_list.lock());
         assert(!!sp_parallel_render_cmd_list);
         id<MTLParallelRenderCommandEncoder>& mtl_parallel_render_command_encoder = sp_parallel_render_cmd_list->GetNativeParallelRenderEncoder();
         m_mtl_render_encoder = [mtl_parallel_render_command_encoder renderCommandEncoder];

@@ -74,14 +74,14 @@ public:
     id<CAMetalDrawable>     GetNativeDrawable()       { return m_app_view.currentDrawable; }
     DeviceMT&               GetDeviceMT();
     CommandQueueMT&         GetRenderCommandQueueMT();
-    const LibraryMT::Ptr&   GetLibraryMT(const std::string& library_name = "");
+    const Ptr<LibraryMT>&   GetLibraryMT(const std::string& library_name = "");
 
 protected:
     // ContextBase overrides
     void Release() override;
     void Initialize(Device& device, bool deferred_heap_allocation) override;
 
-    using LibraryByName = std::map<std::string, LibraryMT::Ptr>;
+    using LibraryByName = std::map<std::string, Ptr<LibraryMT>>;
     
     AppViewMT*              m_app_view;
     dispatch_semaphore_t    m_dispatch_semaphore;

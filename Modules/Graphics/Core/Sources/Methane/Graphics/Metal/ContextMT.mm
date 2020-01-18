@@ -188,7 +188,7 @@ CommandQueueMT& ContextMT::GetRenderCommandQueueMT()
     return static_cast<CommandQueueMT&>(ContextBase::GetRenderCommandQueue());
 }
 
-const ContextMT::LibraryMT::Ptr& ContextMT::GetLibraryMT(const std::string& library_name)
+const Ptr<ContextMT::LibraryMT>& ContextMT::GetLibraryMT(const std::string& library_name)
 {
     ITT_FUNCTION_TASK();
     const auto library_by_name_it = m_library_by_name.find(library_name);
