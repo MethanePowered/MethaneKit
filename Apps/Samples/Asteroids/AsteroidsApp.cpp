@@ -364,7 +364,7 @@ bool AsteroidsApp::Render()
     frame.sp_scene_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms) } });
 
     assert(!!m_sp_asteroids_array);
-    gfx::CommandList::Refs execute_cmd_lists;
+    Refs<gfx::CommandList> execute_cmd_lists;
 
     // Asteroids rendering
     if (m_is_parallel_rendering_enabled)

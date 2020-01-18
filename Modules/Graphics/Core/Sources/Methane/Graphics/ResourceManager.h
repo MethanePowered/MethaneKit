@@ -67,15 +67,14 @@ public:
     ResourceBase::ReleasePool&  GetReleasePool();
 
 protected:
-    using DescriptorHeapTypes = std::array<DescriptorHeaps, static_cast<size_t>(DescriptorHeap::Type::Count)>;
-    using ProgramResourceBindings = std::vector<Program::ResourceBindings::WeakPtr>;
+    using DescriptorHeapTypes = std::array<Ptrs<DescriptorHeap>, static_cast<size_t>(DescriptorHeap::Type::Count)>;
 
-    bool                            m_deferred_heap_allocation = false;
-    ContextBase&                    m_context;
-    DescriptorHeapTypes             m_descriptor_heap_types;
-    ResourceBase::ReleasePool::Ptr  m_sp_release_pool;
-    ProgramResourceBindings         m_deferred_resource_bindings;
-    std::mutex                      m_deferred_resource_bindings_mutex;
+    bool                                m_deferred_heap_allocation = false;
+    ContextBase&                        m_context;
+    DescriptorHeapTypes                 m_descriptor_heap_types;
+    Ptr<ResourceBase::ReleasePool>      m_sp_release_pool;
+    WeakPtrs<Program::ResourceBindings> m_deferred_resource_bindings;
+    std::mutex                          m_deferred_resource_bindings_mutex;
 };
 
 } // namespace Methane::Graphics

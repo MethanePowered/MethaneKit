@@ -183,12 +183,12 @@ void CommandListBase::SetResourceBindings(Program::ResourceBindings& resource_bi
     m_command_state.sp_resource_bindings = static_cast<ProgramBase::ResourceBindingsBase&>(resource_bindings).GetPtr();
 }
 
-void CommandListBase::SetResourceTransitionBarriers(const Resource::Refs& resources, ResourceBase::State state_before, ResourceBase::State state_after)
+void CommandListBase::SetResourceTransitionBarriers(const Refs<Resource>& resources, ResourceBase::State state_before, ResourceBase::State state_after)
 {
     ITT_FUNCTION_TASK();
     ResourceBase::Barriers resource_barriers;
     resource_barriers.reserve(resources.size());
-    for (const Resource::Ref& resource_ref : resources)
+    for (const Ref<Resource>& resource_ref : resources)
     {
         resource_barriers.push_back({
             ResourceBase::Barrier::Type::Transition,

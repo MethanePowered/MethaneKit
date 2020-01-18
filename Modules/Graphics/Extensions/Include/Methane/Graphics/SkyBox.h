@@ -43,8 +43,6 @@ namespace Methane::Graphics
 class SkyBox
 {
 public:
-    using Ptr = std::shared_ptr<SkyBox>;
-
     struct Settings
     {
         const Camera&                  view_camera;
@@ -63,19 +61,17 @@ public:
 
     SkyBox(Context& context, ImageLoader& image_loader, const Settings& settings);
 
-    Program::ResourceBindings::Ptr CreateResourceBindings(const Buffer::Ptr& sp_uniforms_buffer);
+    Ptr<Program::ResourceBindings> CreateResourceBindings(const Ptr<Buffer>& sp_uniforms_buffer);
     void Resize(const FrameSize& frame_size);
     void Update();
     void Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindings);
 
 private:
-    using TheTexturedMeshBuffers = TexturedMeshBuffers<Uniforms>;
-
-    Settings               m_settings;
-    Context&               m_context;
-    TheTexturedMeshBuffers m_mesh_buffers;
-    Sampler::Ptr           m_sp_texture_sampler;
-    RenderState::Ptr       m_sp_state;
+    Settings                      m_settings;
+    Context&                      m_context;
+    TexturedMeshBuffers<Uniforms> m_mesh_buffers;
+    Ptr<Sampler>                  m_sp_texture_sampler;
+    Ptr<RenderState>              m_sp_state;
 };
 
 } // namespace Methane::Graphics

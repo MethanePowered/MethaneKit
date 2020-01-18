@@ -107,7 +107,7 @@ void RenderPassBase::Begin(RenderCommandListBase& command_list)
 
     for (ColorAttachment& color_attachment : m_settings.color_attachments)
     {
-        Texture::Ptr sp_color_texture = color_attachment.wp_texture.lock();
+        Ptr<Texture> sp_color_texture = color_attachment.wp_texture.lock();
         if (!sp_color_texture)
             continue;
 
@@ -115,7 +115,7 @@ void RenderPassBase::Begin(RenderCommandListBase& command_list)
         color_texture.SetState(ResourceBase::State::RenderTarget, resource_transition_barriers);
     }
 
-    Texture::Ptr sp_depth_texture = m_settings.depth_attachment.wp_texture.lock();
+    Ptr<Texture> sp_depth_texture = m_settings.depth_attachment.wp_texture.lock();
     if (sp_depth_texture)
     {
         TextureBase& depth_texture = dynamic_cast<TextureBase&>(*sp_depth_texture);
@@ -142,10 +142,10 @@ void RenderPassBase::End(RenderCommandListBase&)
     m_is_begun = false;
 }
 
-Resource::Refs RenderPassBase::GetColorAttachmentResources() const
+Refs<Resource> RenderPassBase::GetColorAttachmentResources() const
 {
     ITT_FUNCTION_TASK();
-    Resource::Refs color_attach_resources;
+    Refs<Resource> color_attach_resources;
     color_attach_resources.reserve(m_settings.color_attachments.size());
     for (const ColorAttachment& color_attach : m_settings.color_attachments)
     {

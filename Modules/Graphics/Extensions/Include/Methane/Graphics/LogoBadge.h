@@ -35,8 +35,6 @@ class ImageLoader;
 class LogoBadge : public ScreenQuad
 {
 public:
-    using Ptr = std::shared_ptr<LogoBadge>;
-
     enum class FrameCorner : uint32_t
     {
         TopLeft = 0u,
@@ -61,7 +59,7 @@ public:
     };
 
     LogoBadge(Context& context, Settings settings = Settings());
-    LogoBadge(Context& context, Texture::Ptr sp_texture, Settings settings = Settings());
+    LogoBadge(Context& context, Ptr<Texture> sp_texture, Settings settings = Settings());
 
     void Resize(const FrameSize& frame_size);
 

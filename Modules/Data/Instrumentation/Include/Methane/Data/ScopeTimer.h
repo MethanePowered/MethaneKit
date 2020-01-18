@@ -26,6 +26,8 @@ Code scope measurement timer with aggregating and averaging of timings.
 #include "Timer.hpp"
 #include "ILogger.h"
 
+#include <Methane/Memory.hpp>
+
 #include <string>
 #include <map>
 
@@ -47,8 +49,8 @@ public:
         static Aggregator& Get();
         ~Aggregator();
 
-        void SetLogger(ILogger::Ptr sp_logger)   { m_sp_logger = std::move(sp_logger); }
-        const ILogger::Ptr& GetLogger() const { return m_sp_logger; }
+        void SetLogger(Ptr<ILogger> sp_logger)   { m_sp_logger = std::move(sp_logger); }
+        const Ptr<ILogger>& GetLogger() const { return m_sp_logger; }
 
         void AddScopeTiming(const std::string& scope_name, TimeDuration duration);
         const Timing& GetScopeTiming(const std::string& scope_name) const;
@@ -62,7 +64,7 @@ public:
         using ScopeTimings = std::map<std::string, Timing>;
 
         ScopeTimings m_timing_by_scope_name;
-        ILogger::Ptr m_sp_logger;
+        Ptr<ILogger> m_sp_logger;
     };
 
     template<typename TLogger>

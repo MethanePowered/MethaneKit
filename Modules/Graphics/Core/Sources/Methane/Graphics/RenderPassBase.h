@@ -46,9 +46,9 @@ public:
     virtual void Begin(RenderCommandListBase& command_list);
     virtual void End(RenderCommandListBase& command_list);
 
-    Ptr            GetPtr() { return shared_from_this(); }
-    Resource::Refs GetColorAttachmentResources() const;
-    bool           IsBegun() const { return m_is_begun; }
+    Ptr<RenderPassBase> GetPtr() { return shared_from_this(); }
+    Refs<Resource>      GetColorAttachmentResources() const;
+    bool                IsBegun() const { return m_is_begun; }
 
 protected:
     ContextBase& m_context;

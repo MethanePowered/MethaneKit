@@ -45,8 +45,6 @@ public:
     class LibraryMT
     {
     public:
-        using Ptr = std::shared_ptr<LibraryMT>;
-
         LibraryMT(ContextMT& metal_context, const std::string& library_name = "");
         ~LibraryMT();
 

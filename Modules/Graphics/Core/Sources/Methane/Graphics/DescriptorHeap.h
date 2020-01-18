@@ -24,6 +24,7 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps
 #pragma once
 
 #include <Methane/Data/RangeSet.hpp>
+#include <Methane/Memory.hpp>
 
 #include <memory>
 #include <vector>
@@ -61,7 +62,6 @@ public:
         bool     shader_visible;
     };
 
-    using Ref      = std::reference_wrapper<DescriptorHeap>;
     using Types    = std::set<Type>;
     using Index    = uint32_t;
     using Range    = Methane::Data::Range<Index>;
@@ -69,11 +69,11 @@ public:
 
     struct Reservation
     {
-        Ref   heap;
+        Ref<DescriptorHeap> heap;
         Range constant_range;
         Range mutable_range;
 
-        Reservation(Ref in_heap, const Range& in_constant_range, const Range& in_mutable_range);
+        Reservation(const Ref<DescriptorHeap>& in_heap, const Range& in_constant_range, const Range& in_mutable_range);
 
         const Range& GetRange(bool is_constant) const { return is_constant ? constant_range : mutable_range; }
     };
@@ -115,8 +115,5 @@ protected:
     RangeSet        m_free_ranges;
     std::mutex      m_modification_mutex;
 };
-
-using DescriptorHeaps      = std::vector<DescriptorHeap::Ptr>;
-using DescriptorHeapRefs   = std::vector<DescriptorHeap::Ref>;
 
 } // namespace Methane::Graphics

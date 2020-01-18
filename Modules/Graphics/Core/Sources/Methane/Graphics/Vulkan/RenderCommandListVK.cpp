@@ -34,13 +34,13 @@ Vulkan implementation of the render command list interface.
 namespace Methane::Graphics
 {
 
-RenderCommandList::Ptr RenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
+Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<RenderCommandListVK>(static_cast<CommandQueueBase&>(command_queue), static_cast<RenderPassBase&>(render_pass));
 }
 
-RenderCommandList::Ptr RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
+Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<RenderCommandListVK>(static_cast<ParallelRenderCommandListBase&>(parallel_render_command_list));
@@ -58,7 +58,7 @@ RenderCommandListVK::RenderCommandListVK(ParallelRenderCommandListBase& parallel
     ITT_FUNCTION_TASK();
 }
 
-void RenderCommandListVK::Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group)
+void RenderCommandListVK::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
 
@@ -83,7 +83,7 @@ void RenderCommandListVK::PopDebugGroup()
     ITT_FUNCTION_TASK();
 }
 
-void RenderCommandListVK::SetVertexBuffers(const Buffer::Refs& vertex_buffers)
+void RenderCommandListVK::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
 {
     ITT_FUNCTION_TASK();
 

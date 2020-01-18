@@ -24,14 +24,10 @@ to create instance refer to RenderCommandList, etc. for specific derived interfa
 
 #pragma once
 
-#include "Types.h"
 #include "Object.h"
-#include "Resource.h"
 #include "Program.h"
 
-#include <memory>
 #include <string>
-#include <vector>
 
 namespace Methane::Graphics
 {
@@ -40,10 +36,6 @@ struct CommandQueue;
 
 struct CommandList : virtual Object
 {
-    using Ptr  = std::shared_ptr<CommandList>;
-    using Ref  = std::reference_wrapper<CommandList>;
-    using Refs = std::vector<Ref>;
-
     enum class Type : uint32_t
     {
         RenderCommandList = 0u,

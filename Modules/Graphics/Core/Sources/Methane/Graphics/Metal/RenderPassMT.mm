@@ -57,7 +57,7 @@ static MTLLoadAction GetMTLLoadAction(RenderPass::Attachment::LoadAction load_ac
     return MTLLoadActionDontCare;
 }
 
-RenderPass::Ptr RenderPass::Create(Context& context, const Settings& settings)
+Ptr<RenderPass> RenderPass::Create(Context& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<RenderPassMT>(static_cast<ContextBase&>(context), settings);

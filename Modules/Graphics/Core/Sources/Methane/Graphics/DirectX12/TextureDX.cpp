@@ -56,7 +56,7 @@ static D3D12_DSV_DIMENSION GetDsvDimension(const Dimensions& tex_dimensions)
                                        : D3D12_DSV_DIMENSION_TEXTURE2D;
 }
 
-Texture::Ptr Texture::CreateRenderTarget(Context& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateRenderTarget(Context& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     
@@ -68,7 +68,7 @@ Texture::Ptr Texture::CreateRenderTarget(Context& context, const Settings& setti
     }
 }
 
-Texture::Ptr Texture::CreateFrameBuffer(Context& context, uint32_t frame_buffer_index, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateFrameBuffer(Context& context, uint32_t frame_buffer_index, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     
@@ -77,7 +77,7 @@ Texture::Ptr Texture::CreateFrameBuffer(Context& context, uint32_t frame_buffer_
     return std::make_shared<FrameBufferTextureDX>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage, frame_buffer_index);
 }
 
-Texture::Ptr Texture::CreateDepthStencilBuffer(Context& context, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateDepthStencilBuffer(Context& context, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     
@@ -86,14 +86,14 @@ Texture::Ptr Texture::CreateDepthStencilBuffer(Context& context, const Descripto
     return std::make_shared<DepthStencilBufferTextureDX>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage, context_settings.clear_depth_stencil);
 }
 
-Texture::Ptr Texture::CreateImage(Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateImage(Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length, pixel_format, mipmapped, Usage::ShaderRead);
     return std::make_shared<ImageTextureDX>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage, ImageTextureArg());
 }
 
-Texture::Ptr Texture::CreateCube(Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateCube(Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length, pixel_format, mipmapped, Usage::ShaderRead);

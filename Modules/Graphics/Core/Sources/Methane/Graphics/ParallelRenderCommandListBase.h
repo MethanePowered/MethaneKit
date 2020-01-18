@@ -40,15 +40,12 @@ class ParallelRenderCommandListBase
     , public CommandListBase
 {
 public:
-    using Ptr     = std::shared_ptr<ParallelRenderCommandList>;
-    using WeakPtr = std::weak_ptr<ParallelRenderCommandList>;
-
     ParallelRenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass);
 
     // ParallelRenderCommandList interface
-    void Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group = "") override;
+    void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;
     void SetParallelCommandListsCount(uint32_t count) override;
-    const RenderCommandList::Ptrs& GetParallelCommandLists() const override { return m_parallel_comand_lists; }
+    const Ptrs<RenderCommandList>& GetParallelCommandLists() const override { return m_parallel_command_lists; }
 
     // CommandListBase interface
     void SetResourceBarriers(const ResourceBase::Barriers&) override { }
@@ -66,8 +63,8 @@ public:
     RenderPassBase& GetPass();
 
 protected:
-    const RenderPass::Ptr   m_sp_pass;
-    RenderCommandList::Ptrs m_parallel_comand_lists;
+    const Ptr<RenderPass>   m_sp_pass;
+    Ptrs<RenderCommandList> m_parallel_command_lists;
 };
 
 } // namespace Methane::Graphics

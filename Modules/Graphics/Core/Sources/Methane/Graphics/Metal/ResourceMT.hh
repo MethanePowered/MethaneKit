@@ -36,8 +36,6 @@ struct ResourceContainerMT;
 class ResourceMT : public ResourceBase
 {
 public:
-    using Ptr = std::shared_ptr<ResourceMT>;
-
     class ReleasePoolMT : public ReleasePool
     {
     public:

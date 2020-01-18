@@ -13,6 +13,7 @@ if(APPLE)
 endif()
 
 set(LIBRARIES ${LIBRARIES}
+    MethaneCommonPrimitives
     MethaneDataPrimitives
     MethanePlatformUtils
     MethaneDataInstrumentation

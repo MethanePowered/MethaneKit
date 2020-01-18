@@ -62,8 +62,8 @@ public:
     ~ShaderVK() override;
     
     // ShaderBase interface
-    ResourceBindings GetResourceBindings(const std::set<std::string>& constant_argument_names,
-                                         const std::set<std::string>& addressable_argument_names) const override;
+    Ptrs<ResourceBinding> GetResourceBindings(const std::set<std::string>& constant_argument_names,
+                                              const std::set<std::string>& addressable_argument_names) const override;
 
 protected:
     ContextVK& GetContextVK() noexcept;

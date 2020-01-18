@@ -182,7 +182,7 @@ static MTLStencilDescriptor* ConvertStencilDescriptorToMetal(const RenderState::
     return mtl_stencil_desc;
 }
 
-RenderState::Ptr RenderState::Create(Context& context, const RenderState::Settings& state_settings)
+Ptr<RenderState> RenderState::Create(Context& context, const RenderState::Settings& state_settings)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<RenderStateMT>(static_cast<ContextBase&>(context), state_settings);

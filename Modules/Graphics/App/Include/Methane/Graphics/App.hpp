@@ -45,6 +45,7 @@ Base frame class provides frame buffer management with resize handling.
 #include <vector>
 #include <sstream>
 #include <memory>
+#include <thread>
 #include <cassert>
 
 namespace Methane::Graphics
@@ -53,8 +54,8 @@ namespace Methane::Graphics
 struct AppFrame
 {
     const uint32_t  index = 0;
-    Texture::Ptr    sp_screen_texture;
-    RenderPass::Ptr sp_screen_pass;
+    Ptr<Texture>    sp_screen_texture;
+    Ptr<RenderPass> sp_screen_pass;
 
     AppFrame(uint32_t frame_index) : index(frame_index) { ITT_FUNCTION_TASK(); }
 };
@@ -107,10 +108,10 @@ public:
     void InitContext(const Platform::AppEnvironment& env, const FrameSize& frame_size) override
     {
         ITT_FUNCTION_TASK();
-        const Devices& devices = System::Get().UpdateGpuDevices();
+        const Ptrs<Device>& devices = System::Get().UpdateGpuDevices();
         assert(!devices.empty());
 
-        Device::Ptr sp_device = m_default_device_index < 0
+        Ptr<Device> sp_device = m_default_device_index < 0
                       ? System::Get().GetSoftwareGpuDevice()
                       : (static_cast<size_t>(m_default_device_index) < devices.size()
                            ? devices[m_default_device_index]
@@ -404,10 +405,10 @@ protected:
         return ss.str();
     }
 
-    Context::Ptr                    m_sp_context;
+    Ptr<Context>                    m_sp_context;
     ImageLoader                     m_image_loader;
-    Texture::Ptr                    m_sp_depth_texture;
-    LogoBadge::Ptr                  m_sp_logo_badge;
+    Ptr<Texture>                    m_sp_depth_texture;
+    Ptr<LogoBadge>                  m_sp_logo_badge;
     std::vector<FrameT>             m_frames;
     Data::AnimationsPool            m_animations;
 

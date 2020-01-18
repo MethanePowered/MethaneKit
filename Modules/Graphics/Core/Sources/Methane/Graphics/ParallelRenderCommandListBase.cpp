@@ -48,12 +48,12 @@ ParallelRenderCommandListBase::ParallelRenderCommandListBase(CommandQueueBase& c
     ITT_FUNCTION_TASK();
 }
 
-void ParallelRenderCommandListBase::Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group)
+void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
 
     uint32_t render_command_list_index = 0;
-    for(const RenderCommandList::Ptr& sp_render_command_list : m_parallel_comand_lists)
+    for(const Ptr<RenderCommandList>& sp_render_command_list : m_parallel_command_lists)
     {
         assert(sp_render_command_list);
         const std::string render_debug_group = GetThreadCommandListName(debug_group, render_command_list_index++);
@@ -65,7 +65,7 @@ void ParallelRenderCommandListBase::Commit(bool present_drawable)
 {
     ITT_FUNCTION_TASK();
 
-    for(const RenderCommandList::Ptr& sp_render_command_list : m_parallel_comand_lists)
+    for(const Ptr<RenderCommandList>& sp_render_command_list : m_parallel_command_lists)
     {
         assert(!!sp_render_command_list);
         sp_render_command_list->Commit(false);
@@ -78,21 +78,21 @@ void ParallelRenderCommandListBase::SetParallelCommandListsCount(uint32_t count)
 {
     ITT_FUNCTION_TASK();
 
-    uint32_t initial_count = static_cast<uint32_t>(m_parallel_comand_lists.size());
+    uint32_t initial_count = static_cast<uint32_t>(m_parallel_command_lists.size());
     if (count < initial_count)
     {
-        m_parallel_comand_lists.resize(count);
+        m_parallel_command_lists.resize(count);
         return;
     }
 
     const std::string& name = GetName();
-    m_parallel_comand_lists.reserve(count);
+    m_parallel_command_lists.reserve(count);
     for(uint32_t cmd_list_index = initial_count; cmd_list_index < count; ++cmd_list_index)
     {
-        m_parallel_comand_lists.emplace_back(RenderCommandList::Create(*this));
+        m_parallel_command_lists.emplace_back(RenderCommandList::Create(*this));
         if (!name.empty())
         {
-            m_parallel_comand_lists.back()->SetName(GetThreadCommandListName(name, cmd_list_index));
+            m_parallel_command_lists.back()->SetName(GetThreadCommandListName(name, cmd_list_index));
         }
     }
 }
@@ -101,7 +101,7 @@ void ParallelRenderCommandListBase::Execute(uint32_t frame_index)
 {
     ITT_FUNCTION_TASK();
 
-    for(const RenderCommandList::Ptr& sp_render_command_list : m_parallel_comand_lists)
+    for(const Ptr<RenderCommandList>& sp_render_command_list : m_parallel_command_lists)
     {
         assert(!!sp_render_command_list);
         RenderCommandListBase& metal_render_command_list = static_cast<RenderCommandListBase&>(*sp_render_command_list);
@@ -115,7 +115,7 @@ void ParallelRenderCommandListBase::Complete(uint32_t frame_index)
 {
     ITT_FUNCTION_TASK();
 
-    for(const RenderCommandList::Ptr& sp_render_command_list : m_parallel_comand_lists)
+    for(const Ptr<RenderCommandList>& sp_render_command_list : m_parallel_command_lists)
     {
         assert(!!sp_render_command_list);
         RenderCommandListBase& metal_render_command_list = static_cast<RenderCommandListBase&>(*sp_render_command_list);
@@ -135,7 +135,7 @@ void ParallelRenderCommandListBase::SetName(const std::string& name)
         return;
 
     uint32_t render_cmd_list_index = 0;
-    for(const RenderCommandList::Ptr& sp_render_cmd_list : m_parallel_comand_lists)
+    for(const Ptr<RenderCommandList>& sp_render_cmd_list : m_parallel_command_lists)
     {
         assert(!!sp_render_cmd_list);
         sp_render_cmd_list->SetName(GetThreadCommandListName(name, render_cmd_list_index));

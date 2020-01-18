@@ -29,7 +29,7 @@ Vulkan implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
-CommandQueue::Ptr CommandQueue::Create(Context& context)
+Ptr<CommandQueue> CommandQueue::Create(Context& context)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<CommandQueueVK>(static_cast<ContextBase&>(context));

@@ -51,13 +51,13 @@ static MTLPrimitiveType PrimitiveTypeToMetal(RenderCommandList::Primitive primit
     return MTLPrimitiveTypeTriangleStrip;
 }
 
-RenderCommandList::Ptr RenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
+Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<RenderCommandListMT>(static_cast<CommandQueueBase&>(command_queue), static_cast<RenderPassBase&>(render_pass));
 }
 
-RenderCommandList::Ptr RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
+Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<RenderCommandListMT>(static_cast<ParallelRenderCommandListBase&>(parallel_render_command_list));
@@ -75,7 +75,7 @@ RenderCommandListMT::RenderCommandListMT(ParallelRenderCommandListBase& parallel
     ITT_FUNCTION_TASK();
 }
 
-void RenderCommandListMT::Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group)
+void RenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
     
@@ -127,7 +127,7 @@ void RenderCommandListMT::PopDebugGroup()
     [m_mtl_render_encoder popDebugGroup];
 }
 
-void RenderCommandListMT::SetVertexBuffers(const Buffer::Refs& vertex_buffers)
+void RenderCommandListMT::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
 {
     ITT_FUNCTION_TASK();
 

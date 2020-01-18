@@ -69,8 +69,8 @@ public:
 
         DescriptorHeap::Type GetDescriptorHeapType() const;
 
-        Ptr  GetPtr()               { return shared_from_this(); }
-        bool HasResources() const   { return !m_resource_locations.empty(); }
+        Ptr<ResourceBindingBase> GetPtr()   { return shared_from_this(); }
+        bool HasResources() const           { return !m_resource_locations.empty(); }
         bool IsAlreadyApplied(const Program& program, const Program::Argument& program_argument,
                               const CommandListBase::CommandState& command_state,
                               bool check_binding_value_changes) const;
@@ -88,11 +88,11 @@ public:
     const Settings&  GetSettings() const noexcept override   { return m_settings; }
 
     // ShaderBase interface
-    virtual ResourceBindings GetResourceBindings(const std::set<std::string>& constant_argument_names,
-                                                 const std::set<std::string>& addressable_argument_names) const = 0;
+    virtual Ptrs<ResourceBinding> GetResourceBindings(const std::set<std::string>& constant_argument_names,
+                                                      const std::set<std::string>& addressable_argument_names) const = 0;
 
-    Ptr         GetPtr()                     { return shared_from_this(); }
-    std::string GetTypeName() const noexcept { return Shader::GetTypeName(m_type); }
+    Ptr<ShaderBase> GetPtr()                     { return shared_from_this(); }
+    std::string     GetTypeName() const noexcept { return Shader::GetTypeName(m_type); }
 
 protected:
     uint32_t    GetProgramInputBufferIndexByArgumentName(const ProgramBase& program, const std::string& argument_name) const;
@@ -103,7 +103,5 @@ protected:
     ContextBase&      m_context;
     const Settings    m_settings;
 };
-
-using Shaders = std::vector<Shader::Ptr>;
 
 } // namespace Methane::Graphics

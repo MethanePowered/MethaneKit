@@ -26,7 +26,7 @@ Methane command queue interface: queues are used to execute command lists.
 #include "Object.h"
 #include "CommandList.h"
 
-#include <memory>
+#include <Methane/Memory.hpp>
 
 namespace Methane::Graphics
 {
@@ -35,14 +35,11 @@ struct Context;
 
 struct CommandQueue : virtual Object
 {
-    using Ptr     = std::shared_ptr<CommandQueue>;
-    using WeakPtr = std::weak_ptr<CommandQueue>;
-
     // Create CommandQueue instance
-    static Ptr Create(Context& context);
+    static Ptr<CommandQueue> Create(Context& context);
 
     // CommandQueue interface
-    virtual void Execute(const CommandList::Refs& command_lists) = 0;
+    virtual void Execute(const Refs<CommandList>& command_lists) = 0;
 };
 
 } // namespace Methane::Graphics

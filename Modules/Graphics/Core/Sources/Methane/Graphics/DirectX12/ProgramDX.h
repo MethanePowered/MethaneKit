@@ -46,7 +46,7 @@ public:
     class ResourceBindingsDX : public ResourceBindingsBase
     {
     public:
-        ResourceBindingsDX(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
+        ResourceBindingsDX(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
         ResourceBindingsDX(const ResourceBindingsDX& other_resource_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument);
 
         void Initialize();

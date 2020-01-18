@@ -44,7 +44,7 @@ void ControllersPool::OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonSt
     PrintToDebugOutput(std::string("Mouse (button): ") + state_change.current.ToString());
 #endif
 
-    for (const Controller::Ptr& sp_controller : *this)
+    for (const Ptr<Controller>& sp_controller : *this)
     {
         assert(!!sp_controller);
         if (!sp_controller || !sp_controller->IsEnabled())
@@ -62,7 +62,7 @@ void ControllersPool::OnMousePositionChanged(const Mouse::Position& mouse_positi
     PrintToDebugOutput(std::string("Mouse (position): ") + state_change.current.ToString());
 #endif
 
-    for (const Controller::Ptr& sp_controller : *this)
+    for (const Ptr<Controller>& sp_controller : *this)
     {
         assert(!!sp_controller);
         if (!sp_controller || !sp_controller->IsEnabled())
@@ -81,7 +81,7 @@ void ControllersPool::OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_del
                        ", scroll delta: " + std::to_string(mouse_scroll_delta.x()) + " x " + std::to_string(mouse_scroll_delta.y()));
 #endif
 
-    for (const Controller::Ptr& sp_controller : *this)
+    for (const Ptr<Controller>& sp_controller : *this)
     {
         assert(!!sp_controller);
         if (!sp_controller || !sp_controller->IsEnabled())
@@ -99,7 +99,7 @@ void ControllersPool::OnMouseInWindowChanged(bool is_mouse_in_window, const Mous
     PrintToDebugOutput(std::string("Mouse (in-window): ") + state_change.current.ToString());
 #endif
 
-    for (const Controller::Ptr& sp_controller : *this)
+    for (const Ptr<Controller>& sp_controller : *this)
     {
         assert(!!sp_controller);
         if (!sp_controller || !sp_controller->IsEnabled())
@@ -117,7 +117,7 @@ void ControllersPool::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState ke
     PrintToDebugOutput(std::string("Keyboard (key): ") + state_change.current.ToString());
 #endif
     
-    for (const Controller::Ptr& sp_controller : *this)
+    for (const Ptr<Controller>& sp_controller : *this)
     {
         assert(!!sp_controller);
         if (!sp_controller || !sp_controller->IsEnabled())
@@ -135,7 +135,7 @@ void ControllersPool::OnModifiersChanged(Keyboard::Modifier::Mask modifiers, con
     PrintToDebugOutput(std::string("Keyboard (modifiers): ") + state_change.current.ToString());
 #endif
     
-    for (const Controller::Ptr& sp_controller : *this)
+    for (const Ptr<Controller>& sp_controller : *this)
     {
         assert(!!sp_controller);
         if (!sp_controller || !sp_controller->IsEnabled())
@@ -150,7 +150,7 @@ IHelpProvider::HelpLines ControllersPool::GetHelp() const
     ITT_FUNCTION_TASK();
 
     HelpLines all_help_lines;
-    for (const Controller::Ptr& sp_controller : *this)
+    for (const Ptr<Controller>& sp_controller : *this)
     {
         assert(!!sp_controller);
         if (!sp_controller || !sp_controller->IsEnabled())

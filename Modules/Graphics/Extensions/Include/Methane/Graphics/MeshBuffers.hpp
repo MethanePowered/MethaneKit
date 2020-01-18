@@ -46,18 +46,14 @@ namespace Methane::Graphics
     
 struct MeshBufferBindings
 {
-    using ResourceBindingsArray = std::vector<Program::ResourceBindings::Ptr>;
-    
-    Buffer::Ptr           sp_uniforms_buffer;
-    ResourceBindingsArray resource_bindings_per_instance;
+    Ptr<Buffer>                     sp_uniforms_buffer;
+    Ptrs<Program::ResourceBindings> resource_bindings_per_instance;
 };
 
 template<typename UniformsType>
 class MeshBuffers
 {
 public:
-    using Ptr = std::unique_ptr<MeshBuffers<UniformsType>>;
-
     template<typename VType>
     MeshBuffers(Context& context, const BaseMesh<VType>& mesh_data, const std::string& mesh_name, const Mesh::Subsets& mesh_subsets = Mesh::Subsets())
         : m_mesh_name(mesh_name)
@@ -115,14 +111,14 @@ public:
                              instance_count, start_instance);
     }
 
-    void Draw(RenderCommandList& cmd_list, const MeshBufferBindings::ResourceBindingsArray& instance_resource_bindings, uint32_t first_instance_index = 0)
+    void Draw(RenderCommandList& cmd_list, const Ptrs<Program::ResourceBindings>& instance_resource_bindings, uint32_t first_instance_index = 0)
     {
         Draw(cmd_list, instance_resource_bindings.begin(), instance_resource_bindings.end(), first_instance_index);
     }
 
     void Draw(RenderCommandList& cmd_list,
-              const MeshBufferBindings::ResourceBindingsArray::const_iterator& instance_resource_bindings_begin,
-              const MeshBufferBindings::ResourceBindingsArray::const_iterator& instance_resource_bindings_end,
+              const Ptrs<Program::ResourceBindings>::const_iterator& instance_resource_bindings_begin,
+              const Ptrs<Program::ResourceBindings>::const_iterator& instance_resource_bindings_end,
               Program::ResourceBindings::ApplyBehavior::Mask bindings_apply_behavior = Program::ResourceBindings::ApplyBehavior::AllIncremental,
               uint32_t first_instance_index = 0)
     {
@@ -131,11 +127,11 @@ public:
         cmd_list.SetVertexBuffers({ GetVertexBuffer() });
 
         Buffer& index_buffer = GetIndexBuffer();
-        for (MeshBufferBindings::ResourceBindingsArray::const_iterator instance_resource_bindings_it = instance_resource_bindings_begin;
+        for (Ptrs<Program::ResourceBindings>::const_iterator instance_resource_bindings_it = instance_resource_bindings_begin;
              instance_resource_bindings_it != instance_resource_bindings_end;
              ++instance_resource_bindings_it)
         {
-            const Program::ResourceBindings::Ptr& sp_resource_bindings = *instance_resource_bindings_it;
+            const Ptr<Program::ResourceBindings>& sp_resource_bindings = *instance_resource_bindings_it;
 
             if (!sp_resource_bindings)
                 throw std::invalid_argument("Can not set Null resource bindings");
@@ -154,18 +150,18 @@ public:
         }
     }
 
-    void DrawParallel(ParallelRenderCommandList& parallel_cmd_list, const MeshBufferBindings::ResourceBindingsArray& instance_resource_bindings,
+    void DrawParallel(ParallelRenderCommandList& parallel_cmd_list, const Ptrs<Program::ResourceBindings>& instance_resource_bindings,
                       Program::ResourceBindings::ApplyBehavior::Mask bindings_apply_behavior = Program::ResourceBindings::ApplyBehavior::AllIncremental)
     {
         ITT_FUNCTION_TASK();
 
-        const RenderCommandList::Ptrs& render_cmd_lists = parallel_cmd_list.GetParallelCommandLists();
+        const Ptrs<RenderCommandList>& render_cmd_lists = parallel_cmd_list.GetParallelCommandLists();
         const uint32_t instances_count_per_command_list = static_cast<uint32_t>(Data::DivCeil(instance_resource_bindings.size(), render_cmd_lists.size()));
 
         Data::ParallelFor<size_t>(0u, render_cmd_lists.size(),
             [&](size_t cl_index)
             {
-                const RenderCommandList::Ptr& sp_render_command_list = render_cmd_lists[cl_index];
+                const Ptr<RenderCommandList>& sp_render_command_list = render_cmd_lists[cl_index];
                 const uint32_t begin_instance_index = static_cast<uint32_t>(cl_index * instances_count_per_command_list);
                 const uint32_t end_instance_index   = std::min(begin_instance_index + instances_count_per_command_list,
                                                                static_cast<uint32_t>(instance_resource_bindings.size()));
@@ -242,8 +238,8 @@ private:
 
     const std::string   m_mesh_name;
     const Mesh::Subsets m_mesh_subsets;
-    Buffer::Ptr         m_sp_vertex;
-    Buffer::Ptr         m_sp_index;
+    Ptr<Buffer>         m_sp_vertex;
+    Ptr<Buffer>         m_sp_index;
     InstanceUniforms    m_final_pass_instance_uniforms; // Actual uniforms buffers are created separately in Frame dependent resources
 };
 
@@ -251,8 +247,6 @@ template<typename UniformsType>
 class TexturedMeshBuffers : public MeshBuffers<UniformsType>
 {
 public:
-    using Ptr = std::unique_ptr<TexturedMeshBuffers<UniformsType>>;
-
     template<typename VType>
     TexturedMeshBuffers(Context& context, const BaseMesh<VType>& mesh_data,
                         const std::string& mesh_name)
@@ -270,7 +264,7 @@ public:
         m_subset_textures.resize(MeshBuffers<UniformsType>::GetSubsetsCount());
     }
 
-    const Texture::Ptr& GetSubsetTexturePtr(uint32_t subset_index = 0) const
+    const Ptr<Texture>& GetSubsetTexturePtr(uint32_t subset_index = 0) const
     {
         ITT_FUNCTION_TASK();
 
@@ -280,7 +274,7 @@ public:
         return m_subset_textures[subset_index];
     }
 
-    const Texture::Ptr& GetInstanceTexturePtr(uint32_t instance_index = 0) const
+    const Ptr<Texture>& GetInstanceTexturePtr(uint32_t instance_index = 0) const
     {
         ITT_FUNCTION_TASK();
 
@@ -288,7 +282,7 @@ public:
         return GetSubsetTexturePtr(subset_index);
     }
 
-    void SetTexture(const Texture::Ptr& sp_texture)
+    void SetTexture(const Ptr<Texture>& sp_texture)
     {
         ITT_FUNCTION_TASK();
 
@@ -300,7 +294,7 @@ public:
         }
     }
     
-    void SetSubsetTexture(const Texture::Ptr& sp_texture, uint32_t subset_index)
+    void SetSubsetTexture(const Ptr<Texture>& sp_texture, uint32_t subset_index)
     {
         ITT_FUNCTION_TASK();
 
@@ -311,7 +305,7 @@ public:
     }
 
 protected:
-    using Textures = std::vector<Texture::Ptr>;
+    using Textures = std::vector<Ptr<Texture>>;
     
 private:
     Textures m_subset_textures;

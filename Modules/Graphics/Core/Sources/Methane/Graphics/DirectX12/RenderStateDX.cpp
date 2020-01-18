@@ -44,7 +44,7 @@ namespace Methane::Graphics
 
 constexpr size_t g_max_rtv_count = sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC::RTVFormats) / sizeof(DXGI_FORMAT);
 
-inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Shader::Ptr& sp_shader)
+inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<Shader>& sp_shader)
 {
     ITT_FUNCTION_TASK();
     return sp_shader
@@ -187,7 +187,7 @@ static D3D12_DEPTH_STENCILOP_DESC ConvertStencilFaceOperationsToD3D12(const Rend
     return stencil_desc;
 }
 
-RenderState::Ptr RenderState::Create(Context& context, const RenderState::Settings& state_settings)
+Ptr<RenderState> RenderState::Create(Context& context, const RenderState::Settings& state_settings)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<RenderStateDX>(static_cast<ContextBase&>(context), state_settings);
@@ -269,8 +269,8 @@ void RenderStateDX::Reset(const Settings& settings)
     // Set RTV, DSV formats for pipeline state
     if (program_settings.color_formats.size() > g_max_rtv_count)
     {
-        throw new std::runtime_error("Number of color attachments (" + std::to_string(program_settings.color_formats.size()) +
-                                     ") exceeds maximum RTV count in DirectX (" + std::to_string(g_max_rtv_count) + ")");
+        throw std::runtime_error("Number of color attachments (" + std::to_string(program_settings.color_formats.size()) +
+                                 ") exceeds maximum RTV count in DirectX (" + std::to_string(g_max_rtv_count) + ")");
     }
     std::fill_n(m_pipeline_state_desc.RTVFormats, g_max_rtv_count, DXGI_FORMAT_UNKNOWN);
     uint32_t attachment_index = 0;

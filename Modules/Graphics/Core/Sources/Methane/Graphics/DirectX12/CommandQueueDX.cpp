@@ -37,7 +37,7 @@ DirectX 12 implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
-CommandQueue::Ptr CommandQueue::Create(Context& context)
+Ptr<CommandQueue> CommandQueue::Create(Context& context)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<CommandQueueDX>(static_cast<ContextBase&>(context));
@@ -66,7 +66,7 @@ void CommandQueueDX::SetName(const std::string& name)
     m_cp_command_queue->SetName(nowide::widen(name).c_str());
 }
 
-void CommandQueueDX::Execute(const CommandList::Refs& command_lists)
+void CommandQueueDX::Execute(const Refs<CommandList>& command_lists)
 {
     ITT_FUNCTION_TASK();
     assert(!command_lists.empty());
@@ -79,12 +79,12 @@ void CommandQueueDX::Execute(const CommandList::Refs& command_lists)
     m_cp_command_queue->ExecuteCommandLists(static_cast<UINT>(dx_command_lists.size()), dx_command_lists.data());
 }
 
-CommandQueueDX::D3D12CommandLists CommandQueueDX::GetNativeCommandLists(const CommandList::Refs& command_list_refs)
+CommandQueueDX::D3D12CommandLists CommandQueueDX::GetNativeCommandLists(const Refs<CommandList>& command_list_refs)
 {
     ITT_FUNCTION_TASK();
     D3D12CommandLists dx_command_lists;
     dx_command_lists.reserve(command_list_refs.size());
-    for (const CommandList::Ref& command_list_ref : command_list_refs)
+    for (const Ref<CommandList>& command_list_ref : command_list_refs)
     {
         CommandListBase& command_list = dynamic_cast<CommandListBase&>(command_list_ref.get());
         switch (command_list.GetType())

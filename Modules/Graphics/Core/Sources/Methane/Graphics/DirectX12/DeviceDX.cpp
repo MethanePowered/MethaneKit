@@ -216,15 +216,15 @@ void SystemDX::CheckForChanges()
     UnregisterAdapterChangeEvent();
     Initialize();
 
-    Devices prev_devices = m_devices;
+    Ptrs<Device> prev_devices = m_devices;
     UpdateGpuDevices(m_supported_features);
 
-    for (const Device::Ptr& sp_prev_device : prev_devices)
+    for (const Ptr<Device>& sp_prev_device : prev_devices)
     {
         assert(!!sp_prev_device);
         DeviceDX& prev_device = static_cast<DeviceDX&>(*sp_prev_device);
         auto device_it = std::find_if(m_devices.begin(), m_devices.end(),
-                                      [prev_device](const Device::Ptr& sp_device)
+                                      [prev_device](const Ptr<Device>& sp_device)
                                       {
                                           DeviceDX& device = static_cast<DeviceDX&>(*sp_device);
                                           return prev_device.GetNativeAdapter().GetAddressOf() == device.GetNativeAdapter().GetAddressOf();
@@ -238,7 +238,7 @@ void SystemDX::CheckForChanges()
 #endif
 }
 
-const Devices& SystemDX::UpdateGpuDevices(Device::Feature::Mask supported_features)
+const Ptrs<Device>& SystemDX::UpdateGpuDevices(Device::Feature::Mask supported_features)
 {
     ITT_FUNCTION_TASK();
     assert(m_cp_factory);
@@ -284,7 +284,7 @@ void SystemDX::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATUR
     if (!(device_supported_features & m_supported_features))
         return;
 
-    Device::Ptr sp_device = std::make_shared<DeviceDX>(cp_adapter, feature_level);
+    Ptr<Device> sp_device = std::make_shared<DeviceDX>(cp_adapter, feature_level);
     m_devices.push_back(sp_device);
 }
 

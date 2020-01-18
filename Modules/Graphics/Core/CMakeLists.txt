@@ -138,6 +138,7 @@ else() # Linux
 endif()
 
 set(LIBRARIES ${PLATFORM_LIBRARIES}
+    MethaneCommonPrimitives
     MethaneDataPrimitives
     MethaneDataRangeSet
     MethanePlatformUtils

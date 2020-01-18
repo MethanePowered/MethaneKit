@@ -171,7 +171,7 @@ static void ConvertBorderColorToDXColor(SamplerBase::BorderColor border_color, F
     }
 }
 
-Sampler::Ptr Sampler::Create(Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Sampler> Sampler::Create(Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<SamplerDX>(static_cast<ContextBase&>(context), settings, descriptor_by_usage);

@@ -42,8 +42,6 @@ struct RenderCommandList;
 class ScreenQuad
 {
 public:
-    using Ptr = std::shared_ptr<ScreenQuad>;
-
     struct Settings
     {
         const std::string  name;
@@ -52,7 +50,7 @@ public:
         Color4f     blend_color = Color4f(1.f, 1.f, 1.f, 1.f);
     };
 
-    ScreenQuad(Context& context, Texture::Ptr sp_texture, Settings settings);
+    ScreenQuad(Context& context, Ptr<Texture> sp_texture, Settings settings);
 
     void SetBlendColor(const Color4f& blend_color);
     void SetScreenRect(const FrameRect& screen_rect);
@@ -65,13 +63,13 @@ private:
 
     Settings                       m_settings;
     const std::string              m_debug_region_name;
-    RenderState::Ptr               m_sp_state;
-    Buffer::Ptr                    m_sp_vertex_buffer;
-    Buffer::Ptr                    m_sp_index_buffer;
-    Buffer::Ptr                    m_sp_const_buffer;
-    Texture::Ptr                   m_sp_texture;
-    Sampler::Ptr                   m_sp_texture_sampler;
-    Program::ResourceBindings::Ptr m_sp_const_resource_bindings;
+    Ptr<RenderState>               m_sp_state;
+    Ptr<Buffer>                    m_sp_vertex_buffer;
+    Ptr<Buffer>                    m_sp_index_buffer;
+    Ptr<Buffer>                    m_sp_const_buffer;
+    Ptr<Texture>                   m_sp_texture;
+    Ptr<Sampler>                   m_sp_texture_sampler;
+    Ptr<Program::ResourceBindings> m_sp_const_resource_bindings;
 };
 
 } // namespace Methane::Graphics

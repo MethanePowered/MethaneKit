@@ -189,7 +189,7 @@ using namespace Methane::Graphics;
 
 struct HelloTriangleFrame final : AppFrame
 {
-    RenderCommandList::Ptr sp_cmd_list;
+    Ptr<RenderCommandList> sp_cmd_list;
     using AppFrame::AppFrame;
 };
 
@@ -197,8 +197,8 @@ using GraphicsApp = App<HelloTriangleFrame>;
 class HelloTriangleApp final : public GraphicsApp
 {
 private:
-    RenderState::Ptr m_sp_state;
-    Buffer::Ptr      m_sp_vertex_buffer;
+    Ptr<RenderState> m_sp_state;
+    Ptr<Buffer>      m_sp_vertex_buffer;
 
 public:
     HelloTriangleApp() : GraphicsApp(
@@ -310,7 +310,7 @@ int main(int argc, const char* argv[])
 ```
 
 Also you need a simple HLSL shader [Shaders/Triangle.hlsl](/Apps/Tutorials/01-HelloTriangle/Shaders/Triangle.hlsl).
-Note how arguments of vertex shader function `TriangleVS(...)` are matching to input buffer layout description passed in Settings of `Program::Create(...)` call:
+Note how members of `VSInput` structure passed as argument of vertex shader function `TriangleVS(...)` are matching to input buffer layout description passed in Settings of `Program::Create(...)` call:
 ```cpp
 struct VSInput
 {

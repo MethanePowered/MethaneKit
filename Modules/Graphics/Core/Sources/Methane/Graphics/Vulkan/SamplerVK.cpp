@@ -29,7 +29,7 @@ Vulkan implementation of the sampler interface.
 namespace Methane::Graphics
 {
 
-Sampler::Ptr Sampler::Create(Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Sampler> Sampler::Create(Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<SamplerVK>(static_cast<ContextBase&>(context), settings, descriptor_by_usage);

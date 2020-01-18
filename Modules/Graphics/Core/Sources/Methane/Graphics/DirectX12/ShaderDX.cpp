@@ -184,7 +184,7 @@ static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepTyp
     return D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
 }
 
-Shader::ResourceBinding::Ptr Shader::ResourceBinding::CreateCopy(const ResourceBinding& other_resource_binging)
+Ptr<Shader::ResourceBinding> Shader::ResourceBinding::CreateCopy(const ResourceBinding& other_resource_binging)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<ShaderDX::ResourceBindingDX>(static_cast<const ShaderDX::ResourceBindingDX&>(other_resource_binging));
@@ -278,7 +278,7 @@ ContextDX& ShaderDX::ResourceBindingDX::GetContextDX()
     return static_cast<class ContextDX&>(m_context);
 }
 
-Shader::Ptr Shader::Create(Type type, Context& context, const Settings& settings)
+Ptr<Shader> Shader::Create(Type type, Context& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<ShaderDX>(type, static_cast<ContextBase&>(context), settings);
@@ -335,12 +335,12 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
     ));
 }
 
-ShaderBase::ResourceBindings ShaderDX::GetResourceBindings(const std::set<std::string>& constant_argument_names, const std::set<std::string>& addressable_argument_names) const
+Ptrs<ShaderBase::ResourceBinding> ShaderDX::GetResourceBindings(const std::set<std::string>& constant_argument_names, const std::set<std::string>& addressable_argument_names) const
 {
     ITT_FUNCTION_TASK();
     assert(!!m_cp_reflection);
 
-    ShaderBase::ResourceBindings resource_bindings;
+    Ptrs<ShaderBase::ResourceBinding> resource_bindings;
 
     D3D12_SHADER_DESC shader_desc = { };
     m_cp_reflection->GetDesc(&shader_desc);

@@ -66,8 +66,8 @@ public:
 
     ImageData LoadImage(const std::string& image_path, size_t channels_count, bool create_copy);
 
-    Texture::Ptr LoadImageToTexture2D(Context& context, const std::string& image_path, bool mipmapped);
-    Texture::Ptr LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, bool mipmapped);
+    Ptr<Texture> LoadImageToTexture2D(Context& context, const std::string& image_path, bool mipmapped);
+    Ptr<Texture> LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, bool mipmapped);
 
 private:
     Data::Provider& m_data_provider;

@@ -26,7 +26,8 @@ Methane resource interface: base class of all GPU resources.
 #include "Object.h"
 #include "Types.h"
 
-#include <memory>
+#include <Methane/Memory.hpp>
+
 #include <string>
 #include <vector>
 #include <map>
@@ -40,11 +41,6 @@ class DescriptorHeap;
 
 struct Resource : virtual Object
 {
-    using Ptr     = std::shared_ptr<Resource>;
-    using WeakPtr = std::weak_ptr<Resource>;
-    using Ref     = std::reference_wrapper<Resource>;
-    using Refs    = std::vector<Ref>;
-
     enum class Type : uint32_t
     {
         Buffer = 0u,
@@ -92,17 +88,17 @@ struct Resource : virtual Object
     class Location
     {
     public:
-        Location(Ptr sp_resource, Data::Size offset = 0u);
+        Location(Ptr<Resource> sp_resource, Data::Size offset = 0u);
 
         bool operator==(const Location& other) const;
 
-        const Ptr& GetResourcePtr() const   { return m_sp_resource; }
-        Resource&  GetResource() const      { return *m_sp_resource; }
-        Data::Size GetOffset() const        { return m_offset; }
+        const Ptr<Resource>& GetResourcePtr() const   { return m_sp_resource; }
+        Resource&            GetResource() const      { return *m_sp_resource; }
+        Data::Size           GetOffset() const        { return m_offset; }
 
     private:
-        Ptr        m_sp_resource;
-        Data::Size m_offset;
+        Ptr<Resource> m_sp_resource;
+        Data::Size    m_offset;
     };
 
     using Locations = std::vector<Location>;
@@ -147,7 +143,6 @@ struct Resource : virtual Object
 
     // Auxillary functions
     static std::string GetTypeName(Type type) noexcept;
-
 
     // Resource interface
     virtual void                      SetData(const SubResources& sub_resources) = 0;

@@ -69,7 +69,7 @@ SystemMT::~SystemMT()
     }
 }
 
-const Devices& SystemMT::UpdateGpuDevices(Device::Feature::Mask supported_features)
+const Ptrs<Device>& SystemMT::UpdateGpuDevices(Device::Feature::Mask supported_features)
 {
     ITT_FUNCTION_TASK();
     if (m_device_observer != nil)
@@ -114,7 +114,7 @@ void SystemMT::OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificat
 void SystemMT::NotifyDevice(const id<MTLDevice>& mtl_device, Device::Notification device_notification)
 {
     ITT_FUNCTION_TASK();
-    const Device::Ptr& sp_device = FindMetalDevice(mtl_device);
+    const Ptr<Device>& sp_device = FindMetalDevice(mtl_device);
     if (!sp_device)
     {
         assert(0);
@@ -130,15 +130,15 @@ void SystemMT::AddDevice(const id<MTLDevice>& mtl_device)
     if (!(device_supported_features & m_supported_features))
         return;
     
-    Device::Ptr sp_device = std::make_shared<DeviceMT>(mtl_device);
+    Ptr<Device> sp_device = std::make_shared<DeviceMT>(mtl_device);
     m_devices.push_back(sp_device);
 }
 
-const Device::Ptr& SystemMT::FindMetalDevice(const id<MTLDevice>& mtl_device) const
+const Ptr<Device>& SystemMT::FindMetalDevice(const id<MTLDevice>& mtl_device) const
 {
     ITT_FUNCTION_TASK();
     const auto device_it = std::find_if(m_devices.begin(), m_devices.end(),
-                                        [mtl_device](const Device::Ptr& sp_device)
+                                        [mtl_device](const Ptr<Device>& sp_device)
                                         {
                                             assert(!!sp_device);
                                             if (!sp_device) return false;
@@ -146,7 +146,7 @@ const Device::Ptr& SystemMT::FindMetalDevice(const id<MTLDevice>& mtl_device) co
                                             return metal_device.GetNativeDevice() == mtl_device;
                                         });
     
-    static const Device::Ptr sp_empty_device;
+    static const Ptr<Device> sp_empty_device;
     return device_it != m_devices.end() ? *device_it : sp_empty_device;
 }
 

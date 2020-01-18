@@ -49,7 +49,7 @@ CommandQueueBase::~CommandQueueBase()
     assert(m_executing_on_frames.empty());
 }
 
-void CommandQueueBase::Execute(const CommandList::Refs& command_lists)
+void CommandQueueBase::Execute(const Refs<CommandList>& command_lists)
 {
     ITT_FUNCTION_TASK();
 
@@ -78,7 +78,7 @@ void CommandQueueBase::Execute(const CommandList::Refs& command_lists)
     {
         if (std::addressof(command_list_ref.get().GetCommandQueue()) != std::addressof(*this))
         {
-            throw new std::runtime_error("Can not execute command list created in different command queue.");
+            throw std::runtime_error("Can not execute command list created in different command queue.");
         }
 
         CommandListBase& command_list = dynamic_cast<CommandListBase&>(command_list_ref.get());
@@ -124,8 +124,8 @@ void CommandQueueBase::OnCommandListCompleted(CommandListBase& /*command_list*/,
     for (auto executing_command_list_it = m_executing_command_lists.begin();
               executing_command_list_it != m_executing_command_lists.end();)
     {
-        CommandListBase::WeakPtr& wp_cmd_list = *executing_command_list_it;
-        CommandListBase::Ptr sp_cmd_list = wp_cmd_list.lock();
+        WeakPtr<CommandListBase>& wp_cmd_list = *executing_command_list_it;
+        Ptr<CommandListBase> sp_cmd_list = wp_cmd_list.lock();
         if (!sp_cmd_list)
         {
             executing_command_list_it = m_executing_command_lists.erase(executing_command_list_it);

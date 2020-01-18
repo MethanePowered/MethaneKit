@@ -100,7 +100,7 @@ static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_typ
     return D3D12_SHADER_VISIBILITY_ALL;
 };
 
-Program::ResourceBindings::Ptr Program::ResourceBindings::Create(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
+Ptr<Program::ResourceBindings> Program::ResourceBindings::Create(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
 {
     ITT_FUNCTION_TASK();
 
@@ -109,7 +109,7 @@ Program::ResourceBindings::Ptr Program::ResourceBindings::Create(const Program::
     return sp_dx_resource_bindings;
 }
 
-Program::ResourceBindings::Ptr Program::ResourceBindings::CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
+Ptr<Program::ResourceBindings> Program::ResourceBindings::CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
 {
     ITT_FUNCTION_TASK();
 
@@ -118,7 +118,7 @@ Program::ResourceBindings::Ptr Program::ResourceBindings::CreateCopy(const Resou
     return sp_dx_resource_bindings;
 }
 
-ProgramDX::ResourceBindingsDX::ResourceBindingsDX(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
+ProgramDX::ResourceBindingsDX::ResourceBindingsDX(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
     : ProgramBase::ResourceBindingsBase(sp_program, resource_locations_by_argument)
 {
     ITT_FUNCTION_TASK();
@@ -317,7 +317,7 @@ void ProgramDX::ResourceBindingsDX::CopyDescriptorsToGpu()
     });
 }
 
-Program::Ptr Program::Create(Context& context, const Settings& settings)
+Ptr<Program> Program::Create(Context& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<ProgramDX>(static_cast<ContextBase&>(context), settings);

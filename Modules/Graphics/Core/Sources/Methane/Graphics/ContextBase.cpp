@@ -124,7 +124,7 @@ void ContextBase::RemoveCallback(Callback& callback)
 {
     ITT_FUNCTION_TASK();
     const auto callback_it = std::find_if(m_callbacks.begin(), m_callbacks.end(),
-                                          [&callback](const Callback::Ref& callback_ref)
+                                          [&callback](const Ref<Callback>& callback_ref)
                                           { return std::addressof(callback_ref.get()) == std::addressof(callback); });
     assert(callback_it != m_callbacks.end());
     if (callback_it == m_callbacks.end())
@@ -164,7 +164,7 @@ void ContextBase::ResetWithSettings(const Settings& settings)
 
     WaitForGpu(WaitFor::RenderComplete);
 
-    DeviceBase::Ptr sp_device = m_sp_device;
+    Ptr<DeviceBase> sp_device = m_sp_device;
     m_settings = settings;
 
     Release();
@@ -183,7 +183,7 @@ void ContextBase::Release()
     m_sp_upload_cmd_queue.reset();
     m_sp_upload_cmd_list.reset();
 
-    for (const Callback::Ref& callback_ref : m_callbacks)
+    for (const Ref<Callback>& callback_ref : m_callbacks)
     {
         callback_ref.get().OnContextReleased();
     }
@@ -217,7 +217,7 @@ void ContextBase::Initialize(Device& device, bool deferred_heap_allocation)
     }
     m_resource_manager.Initialize(m_resource_manager_init_settings);
 
-    for (const Callback::Ref& callback_ref : m_callbacks)
+    for (const Ref<Callback>& callback_ref : m_callbacks)
     {
         callback_ref.get().OnContextInitialized();
     }
@@ -250,7 +250,7 @@ RenderCommandList& ContextBase::GetUploadCommandList()
     ITT_FUNCTION_TASK();
     if (!m_sp_upload_cmd_list)
     {
-        RenderPass::Ptr sp_empty_pass = RenderPass::Create(*this, RenderPass::Settings());
+        Ptr<RenderPass> sp_empty_pass = RenderPass::Create(*this, RenderPass::Settings());
         m_sp_upload_cmd_list = RenderCommandList::Create(GetUploadCommandQueue(), *sp_empty_pass);
         m_sp_upload_cmd_list->SetName("Upload Command List");
     }

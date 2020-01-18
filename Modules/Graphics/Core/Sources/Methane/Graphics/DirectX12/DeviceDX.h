@@ -71,7 +71,7 @@ public:
 
     // System interface
     void           CheckForChanges() override;
-    const Devices& UpdateGpuDevices(Device::Feature::Mask supported_features) override;
+    const Ptrs<Device>& UpdateGpuDevices(Device::Feature::Mask supported_features) override;
 
     const wrl::ComPtr<IDXGIFactory5>& GetNativeFactory() { return m_cp_factory; }
     void ReportLiveObjects();

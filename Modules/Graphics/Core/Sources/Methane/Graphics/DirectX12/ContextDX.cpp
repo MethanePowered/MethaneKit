@@ -85,7 +85,7 @@ static float GetDeviceScaleRatio(DEVICE_SCALE_FACTOR device_scale_factor)
     return 1.f;
 }
 
-Context::Ptr Context::Create(const Platform::AppEnvironment& env, Device& device, const Context::Settings& settings)
+Ptr<Context> Context::Create(const Platform::AppEnvironment& env, Device& device, const Context::Settings& settings)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<ContextDX>(env, static_cast<DeviceBase&>(device), settings);
@@ -210,7 +210,7 @@ void ContextDX::SetName(const std::string& name)
 
     GetDevice().SetName(name + " Device");
 
-    for (FenceDX::Ptr& sp_frame_fence : m_frame_fences)
+    for (UniquePtr<FenceDX>& sp_frame_fence : m_frame_fences)
     {
         assert(!!sp_frame_fence);
         sp_frame_fence->SetName(name + " Frame " + std::to_string(sp_frame_fence->GetFrame()) + " Fence");
@@ -319,7 +319,7 @@ CommandQueueDX& ContextDX::GetRenderCommandQueueDX()
 
 ContextDX::FenceDX& ContextDX::GetCurrentFrameFence()
 {
-    FenceDX::Ptr& sp_current_fence = GetCurrentFrameFencePtr();
+    const UniquePtr<FenceDX>& sp_current_fence = GetCurrentFrameFencePtr();
     assert(!!sp_current_fence);
     return *sp_current_fence;
 }

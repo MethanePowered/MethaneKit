@@ -31,7 +31,7 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps
 namespace Methane::Graphics
 {
 
-DescriptorHeap::Reservation::Reservation(Ref in_heap, const Range& in_constant_range, const Range& in_mutable_range)
+DescriptorHeap::Reservation::Reservation(const Ref<DescriptorHeap>& in_heap, const Range& in_constant_range, const Range& in_mutable_range)
     : heap(in_heap)
     , constant_range(in_constant_range)
     , mutable_range(in_mutable_range)

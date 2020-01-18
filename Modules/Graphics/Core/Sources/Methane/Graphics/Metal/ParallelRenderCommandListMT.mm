@@ -32,7 +32,7 @@ Metal implementation of the render command list interface.
 namespace Methane::Graphics
 {
 
-ParallelRenderCommandList::Ptr ParallelRenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
+ParallelPtr<RenderCommandList> ParallelRenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<ParallelRenderCommandListMT>(static_cast<CommandQueueBase&>(command_queue), static_cast<RenderPassBase&>(render_pass));
@@ -63,7 +63,7 @@ void ParallelRenderCommandListMT::SetName(const std::string& name)
     }
 }
 
-void ParallelRenderCommandListMT::Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group)
+void ParallelRenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
     if (m_mtl_parallel_render_encoder != nil)

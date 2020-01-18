@@ -27,8 +27,7 @@ Methane render state interface: specifies configuration of the graphics pipeline
 #include "Program.h"
 #include "Types.h"
 
-#include <memory>
-#include <string>
+#include <Methane/Memory.hpp>
 
 namespace Methane::Graphics
 {
@@ -39,9 +38,6 @@ struct RenderCommandList;
 struct RenderState : virtual Object
 {
 public:
-    using Ptr = std::shared_ptr<RenderState>;
-    using WeakPtr = std::weak_ptr<RenderState>;
-    
     struct Rasterizer
     {
         enum class CullMode : uint32_t
@@ -210,7 +206,7 @@ public:
         // NOTE: members are ordered by the usage frequency,
         //       for convenient setup with initializer lists
         //       (default states may be skipped at initialization)
-        Program::Ptr sp_program;
+        Ptr<Program> sp_program;
         Viewports    viewports;
         ScissorRects scissor_rects;
         Rasterizer   rasterizer;
@@ -223,7 +219,7 @@ public:
     };
 
     // Create RenderState instance
-    static Ptr Create(Context& context, const Settings& state_settings);
+    static Ptr<RenderState> Create(Context& context, const Settings& state_settings);
 
     // RenderState interface
     virtual const Settings& GetSettings() const = 0;

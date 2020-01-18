@@ -39,7 +39,7 @@ DirectX 12 implementation of the render pass interface.
 namespace Methane::Graphics
 {
 
-static D3D12_CPU_DESCRIPTOR_HANDLE GetRenderTargetTextureCpuDescriptor(const Texture::WeakPtr& wp_texture)
+static D3D12_CPU_DESCRIPTOR_HANDLE GetRenderTargetTextureCpuDescriptor(const WeakPtr<Texture>& wp_texture)
 {
     return !wp_texture.expired()
          ? static_cast<TextureBase&>(*wp_texture.lock()).GetNativeCPUDescriptorHandle(Resource::Usage::RenderTarget)
@@ -81,7 +81,7 @@ RenderPassDX::AccessDesc::AccessDesc(const ColorAttachment& color_attachment)
             throw std::invalid_argument("Can not clear render target attachment without texture.");
         }
 
-        const Texture::Ptr sp_color_rt        = color_attachment.wp_texture.lock();
+        const Ptr<Texture> sp_color_rt        = color_attachment.wp_texture.lock();
         const DXGI_FORMAT color_format        = TypeConverterDX::DataFormatToDXGI(sp_color_rt->GetSettings().pixel_format);
         const float clear_color_components[4] = {
             color_attachment.clear_color.r(),
@@ -188,7 +188,7 @@ static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(RenderPass::Access::Va
     return DescriptorHeap::Type::Undefined;
 }
 
-RenderPass::Ptr RenderPass::Create(Context& context, const Settings& settings)
+Ptr<RenderPass> RenderPass::Create(Context& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<RenderPassDX>(static_cast<ContextBase&>(context), settings);

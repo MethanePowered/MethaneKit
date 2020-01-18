@@ -26,6 +26,7 @@ Base application interface and platform-independent implementation.
 #include <Methane/Platform/AppView.h>
 #include <Methane/Platform/Input/State.h>
 #include <Methane/Data/Types.h>
+#include <Methane/Memory.hpp>
 
 #include <cxxopts.hpp>
 
@@ -57,8 +58,6 @@ public:
     
     struct Message
     {
-        using Ptr = std::unique_ptr<Message>;
-
         enum class Type : uint32_t
         {
             Information = 0,
@@ -111,7 +110,7 @@ protected:
     Data::FrameSize      m_frame_size;
     bool                 m_is_minimized = false;
     bool                 m_initialized = false;
-    Message::Ptr         m_sp_deferred_message;
+    Ptr<Message>         m_sp_deferred_message;
     Input::State         m_input_state;
 };
 

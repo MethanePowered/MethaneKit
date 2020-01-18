@@ -46,7 +46,7 @@ void ResourceManager::Initialize(const Settings& settings)
     m_deferred_heap_allocation = settings.deferred_heap_allocation;
     for (uint32_t heap_type_idx = 0; heap_type_idx < static_cast<uint32_t>(DescriptorHeap::Type::Count); ++heap_type_idx)
     {
-        DescriptorHeaps& desc_heaps = m_descriptor_heap_types[heap_type_idx];
+        Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[heap_type_idx];
         desc_heaps.clear();
 
         // CPU only accessible descriptor heaps of all types are created for default resource creation
@@ -71,7 +71,7 @@ void ResourceManager::CompleteInitialization()
 
     std::lock_guard<std::mutex> lock_guard(m_deferred_resource_bindings_mutex);
 
-    for (const DescriptorHeaps& desc_heaps : m_descriptor_heap_types)
+    for (const Ptrs<DescriptorHeap>& desc_heaps : m_descriptor_heap_types)
     {
         for (const DescriptorHeap::Ptr& sp_desc_heap : desc_heaps)
         {
@@ -80,11 +80,11 @@ void ResourceManager::CompleteInitialization()
         }
     }
 
-    Data::ParallelForEach<ProgramResourceBindings::const_iterator, const ProgramResourceBindings::value_type>(
+    Data::ParallelForEach<WeakPtrs<Program::ResourceBindings>::const_iterator, const WeakPtr<Program::ResourceBindings>>(
         m_deferred_resource_bindings.begin(), m_deferred_resource_bindings.end(),
-        [](const Program::ResourceBindings::WeakPtr& wp_resource_bindings)
+        [](const WeakPtr<Program::ResourceBindings>& wp_resource_bindings)
         {
-            Program::ResourceBindings::Ptr sp_resource_bindings = wp_resource_bindings.lock();
+            Ptr<Program::ResourceBindings> sp_resource_bindings = wp_resource_bindings.lock();
             if (!sp_resource_bindings)
                 return;
 
@@ -103,7 +103,7 @@ void ResourceManager::Release()
         m_sp_release_pool->ReleaseResources();
     }
 
-    for (DescriptorHeaps& desc_heaps : m_descriptor_heap_types)
+    for (Ptrs<DescriptorHeap>& desc_heaps : m_descriptor_heap_types)
     {
         desc_heaps.clear();
     }
@@ -126,7 +126,7 @@ uint32_t ResourceManager::CreateDescriptorHeap(const DescriptorHeap::Settings& s
     {
         throw std::invalid_argument("Can not create \"Undefined\" descriptor heap.");
     }
-    DescriptorHeaps& desc_heaps = m_descriptor_heap_types[static_cast<size_t>(settings.type)];
+    Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[static_cast<size_t>(settings.type)];
     desc_heaps.push_back(DescriptorHeap::Create(m_context, settings));
     return static_cast<uint32_t>(desc_heaps.size() - 1);
 }
@@ -142,7 +142,7 @@ const DescriptorHeap::Ptr& ResourceManager::GetDescriptorHeapPtr(DescriptorHeap:
         return empty_ptr;
     }
 
-    DescriptorHeaps& desc_heaps = m_descriptor_heap_types[static_cast<size_t>(type)];
+    Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[static_cast<size_t>(type)];
     if (heap_index >= desc_heaps.size())
     {
         throw std::invalid_argument("There is no \"" + DescriptorHeap::GetTypeName(type) +
@@ -181,7 +181,7 @@ const DescriptorHeap::Ptr&  ResourceManager::GetDefaultShaderVisibleDescriptorHe
         return empty_ptr;
     }
 
-    const DescriptorHeaps& descriptor_heaps = m_descriptor_heap_types[static_cast<uint32_t>(type)];
+    const Ptrs<DescriptorHeap>& descriptor_heaps = m_descriptor_heap_types[static_cast<uint32_t>(type)];
     auto descriptor_heaps_it = std::find_if(descriptor_heaps.begin(), descriptor_heaps.end(),
         [](const DescriptorHeap::Ptr& sp_descriptor_heap)
         {
@@ -212,7 +212,7 @@ ResourceManager::DescriptorHeapSizeByType ResourceManager::GetDescriptorHeapSize
     DescriptorHeapSizeByType descriptor_heap_sizes;
     for (uint32_t heap_type_idx = 0; heap_type_idx < static_cast<uint32_t>(DescriptorHeap::Type::Count); ++heap_type_idx)
     {
-        const DescriptorHeaps& desc_heaps = m_descriptor_heap_types[heap_type_idx];
+        const Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[heap_type_idx];
         uint32_t max_heap_size = 0;
         for (const DescriptorHeap::Ptr& sp_desc_heap : desc_heaps)
         {

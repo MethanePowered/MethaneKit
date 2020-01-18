@@ -91,7 +91,7 @@ static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access) 
 }
 #endif
     
-Shader::ResourceBinding::Ptr Shader::ResourceBinding::CreateCopy(const ResourceBinding& other_resource_binging)
+Ptr<Shader::ResourceBinding> Shader::ResourceBinding::CreateCopy(const ResourceBinding& other_resource_binging)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<ShaderMT::ResourceBindingMT>(static_cast<const ShaderMT::ResourceBindingMT&>(other_resource_binging));
@@ -142,7 +142,7 @@ void ShaderMT::ResourceBindingMT::SetResourceLocations(const Resource::Locations
     }
 }
 
-Shader::Ptr Shader::Create(Shader::Type shader_type, Context& context, const Settings& settings)
+Ptr<Shader> Shader::Create(Shader::Type shader_type, Context& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<ShaderMT>(shader_type, static_cast<ContextMT&>(context), settings);
@@ -167,12 +167,12 @@ ShaderMT::~ShaderMT()
     [m_mtl_function release];
 }
 
-ShaderBase::ResourceBindings ShaderMT::GetResourceBindings(const std::set<std::string>& constant_argument_names,
+Ptrs<ShaderBase::ResourceBinding> ShaderMT::GetResourceBindings(const std::set<std::string>& constant_argument_names,
                                                            const std::set<std::string>& addressable_argument_names) const
 {
     ITT_FUNCTION_TASK();
 
-    ShaderBase::ResourceBindings resource_bindings;
+    Ptrs<ShaderBase::ResourceBinding> resource_bindings;
     if (m_mtl_arguments == nil)
         return resource_bindings;
     

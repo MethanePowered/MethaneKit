@@ -90,7 +90,7 @@ Planet::Planet(gfx::Context& context, gfx::ImageLoader& image_loader, const Sett
     m_sp_texture_sampler->SetName("Planet Texture Sampler");
 }
 
-gfx::Program::ResourceBindings::Ptr Planet::CreateResourceBindings(const gfx::Buffer::Ptr& sp_constants_buffer, const gfx::Buffer::Ptr& sp_uniforms_buffer)
+Ptr<gfx::Program::ResourceBindings> Planet::CreateResourceBindings(const Ptr<gfx::Buffer>& sp_constants_buffer, const Ptr<gfx::Buffer>& sp_uniforms_buffer)
 {
     ITT_FUNCTION_TASK();
 

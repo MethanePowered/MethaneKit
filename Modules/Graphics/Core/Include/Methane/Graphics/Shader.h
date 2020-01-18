@@ -25,9 +25,9 @@ Methane shader interface: defines programmable stage of the graphics pipeline.
 
 #include "Resource.h"
 
-#include <memory>
+#include <Methane/Memory.hpp>
+
 #include <string>
-#include <vector>
 #include <set>
 #include <map>
 
@@ -43,9 +43,6 @@ struct Context;
 
 struct Shader
 {
-    using Ptr = std::shared_ptr<Shader>;
-    using WeakPtr = std::weak_ptr<Shader>;
-
     enum class Type : uint32_t
     {
         Vertex = 0,
@@ -59,8 +56,7 @@ struct Shader
 
     struct ResourceBinding
     {
-        using  Ptr = std::shared_ptr<ResourceBinding>;
-        static Ptr CreateCopy(const ResourceBinding& other_resource_binging);
+        static Ptr<ResourceBinding> CreateCopy(const ResourceBinding& other_resource_binging);
 
         // ResourceBinding interface
         virtual Shader::Type               GetShaderType() const = 0;
@@ -74,7 +70,6 @@ struct Shader
         virtual ~ResourceBinding() = default;
     };
 
-    using ResourceBindings = std::vector<ResourceBinding::Ptr>;
     using MacroDefinitions = std::map<std::string, std::string>;
 
     struct EntryFunction
@@ -88,17 +83,15 @@ struct Shader
         Data::Provider&  data_provider;
         EntryFunction    entry_function;
         MacroDefinitions compile_definitions;
-
-        // Optional parameters:
-        // by default shaders are precompiled to application resources and loaded through Data::Provider
+        // Optional parameters (by default shaders are precompiled to application resources and loaded through Data::Provider)
         std::string      source_file_path;
         std::string      source_compile_target;
     };
 
     // Create Shader instance
-    static Ptr Create(Type type, Context& context, const Settings& settings);
-    static Ptr CreateVertex(Context& context, const Settings& settings) { return Create(Type::Vertex, context, settings); }
-    static Ptr CreatePixel(Context& context, const Settings& settings)  { return Create(Type::Pixel, context, settings); }
+    static Ptr<Shader> Create(Type type, Context& context, const Settings& settings);
+    static Ptr<Shader> CreateVertex(Context& context, const Settings& settings) { return Create(Type::Vertex, context, settings); }
+    static Ptr<Shader> CreatePixel(Context& context, const Settings& settings)  { return Create(Type::Pixel, context, settings); }
 
     // Auxillary functions
     static std::string GetTypeName(Type shader_type) noexcept;
@@ -109,7 +102,5 @@ struct Shader
 
     virtual ~Shader() = default;
 };
-
-using Shaders = std::vector<Shader::Ptr>;
 
 } // namespace Methane::Graphics

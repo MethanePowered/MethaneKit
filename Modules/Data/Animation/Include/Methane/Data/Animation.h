@@ -25,17 +25,12 @@ Abstract animation class
 
 #include <Methane/Data/Timer.hpp>
 
-#include <memory>
-
 namespace Methane::Data
 {
 
 class Animation : public Timer
 {
 public:
-    using Ptr     = std::shared_ptr<Animation>;
-    using WeakPtr = std::weak_ptr<Animation>;
-
     Animation(double duration_sec = std::numeric_limits<double>::max());
     virtual ~Animation();
 

@@ -168,19 +168,19 @@ static void GetBoundMetalResources(const Resource::Locations& resource_locations
 {
 }
 
-Program::ResourceBindings::Ptr Program::ResourceBindings::Create(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
+Ptr<Program::ResourceBindings> Program::ResourceBindings::Create(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<ProgramMT::ResourceBindingsMT>(sp_program, resource_locations_by_argument);
 }
 
-Program::ResourceBindings::Ptr Program::ResourceBindings::CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
+Ptr<Program::ResourceBindings> Program::ResourceBindings::CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<ProgramMT::ResourceBindingsMT>(static_cast<const ProgramMT::ResourceBindingsMT&>(other_resource_bingings), replace_resource_locations_by_argument);
 }
 
-ProgramMT::ResourceBindingsMT::ResourceBindingsMT(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
+ProgramMT::ResourceBindingsMT::ResourceBindingsMT(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
     : ResourceBindingsBase(sp_program, resource_locations_by_argument)
 {
     ITT_FUNCTION_TASK();
@@ -231,7 +231,7 @@ void ProgramMT::ResourceBindingsMT::Apply(CommandList& command_list, ApplyBehavi
     }
 }
 
-Program::Ptr Program::Create(Context& context, const Settings& settings)
+Ptr<Program> Program::Create(Context& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<ProgramMT>(static_cast<ContextBase&>(context), settings);

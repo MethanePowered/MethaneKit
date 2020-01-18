@@ -40,7 +40,6 @@ namespace gfx = Graphics;
 class AsteroidsArray final : protected gfx::TexturedMeshBuffers<AsteroidUniforms>
 {
 public:
-    using Ptr = std::unique_ptr<AsteroidsArray>;
     using BaseBuffers = gfx::TexturedMeshBuffers<AsteroidUniforms>;
 
     struct Settings
@@ -84,7 +83,6 @@ public:
 
     struct ContentState : public std::enable_shared_from_this<ContentState>
     {
-        using Ptr = std::shared_ptr<ContentState>;
         ContentState(const Settings& settings);
 
         using MeshSubsetTextureIndices = std::vector<uint32_t>;
@@ -99,12 +97,12 @@ public:
     AsteroidsArray(gfx::Context& context, Settings settings, ContentState& state);
 
     const Settings& GetSettings() const         { return m_settings; }
-    const ContentState::Ptr& GetState() const   { return m_sp_content_state; }
+    const Ptr<ContentState>& GetState() const   { return m_sp_content_state; }
     Data::Size GetUniformsBufferSize() const    { return BaseBuffers::GetUniformsBufferSize(); }
 
-    gfx::MeshBufferBindings::ResourceBindingsArray CreateResourceBindings(const gfx::Buffer::Ptr& sp_constants_buffer,
-                                                                          const gfx::Buffer::Ptr& sp_scene_uniforms_buffer,
-                                                                          const gfx::Buffer::Ptr& sp_asteroids_uniforms_buffer);
+    Ptrs<gfx::Program::ResourceBindings> CreateResourceBindings(const Ptr<gfx::Buffer>& sp_constants_buffer,
+                                                                const Ptr<gfx::Buffer>& sp_scene_uniforms_buffer,
+                                                                const Ptr<gfx::Buffer>& sp_asteroids_uniforms_buffer);
 
     void Resize(const gfx::FrameSize& frame_size);
     bool Update(double elapsed_seconds, double delta_seconds);
@@ -125,10 +123,10 @@ private:
     using MeshSubsetByInstanceIndex = std::vector<uint32_t>;
 
     const Settings            m_settings;
-    ContentState::Ptr         m_sp_content_state;
+    Ptr<ContentState>         m_sp_content_state;
     Textures                  m_unique_textures;
-    gfx::Sampler::Ptr         m_sp_texture_sampler;
-    gfx::RenderState::Ptr     m_sp_render_state;
+    Ptr<gfx::Sampler>         m_sp_texture_sampler;
+    Ptr<gfx::RenderState>     m_sp_render_state;
     MeshSubsetByInstanceIndex m_mesh_subset_by_instance_index;
     bool                      m_mesh_lod_coloring_enabled = false;
     float                     m_min_mesh_lod_screen_size_log2;

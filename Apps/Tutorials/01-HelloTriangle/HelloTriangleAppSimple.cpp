@@ -28,7 +28,7 @@ using namespace Methane::Graphics;
 
 struct HelloTriangleFrame final : AppFrame
 {
-    RenderCommandList::Ptr sp_cmd_list;
+    Ptr<RenderCommandList> sp_cmd_list;
     using AppFrame::AppFrame;
 };
 
@@ -36,8 +36,8 @@ using GraphicsApp = App<HelloTriangleFrame>;
 class HelloTriangleApp final : public GraphicsApp
 {
 private:
-    RenderState::Ptr m_sp_state;
-    Buffer::Ptr      m_sp_vertex_buffer;
+    Ptr<RenderState> m_sp_state;
+    Ptr<Buffer>      m_sp_vertex_buffer;
 
 public:
     HelloTriangleApp() : GraphicsApp(

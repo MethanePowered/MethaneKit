@@ -48,7 +48,7 @@ LogoBadge::LogoBadge(Context& context, Settings settings)
     ITT_FUNCTION_TASK();
 }
 
-LogoBadge::LogoBadge(Context& context, Texture::Ptr sp_texture, Settings settings)
+LogoBadge::LogoBadge(Context& context, Ptr<Texture> sp_texture, Settings settings)
     : ScreenQuad(context, std::move(sp_texture),
                  ScreenQuad::Settings
                  {

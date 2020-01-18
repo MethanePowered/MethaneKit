@@ -42,7 +42,7 @@ public:
     RenderStateBase(ContextBase& context, const Settings& settings);
 
     // RenderState interface
-    const Settings& GetSettings() const override                 { return m_settings; }
+    const Settings& GetSettings() const override   { return m_settings; }
     void Reset(const Settings& settings) override;
     void SetViewports(const Viewports& viewports) override;
     void SetScissorRects(const ScissorRects& scissor_rects) override;
@@ -50,7 +50,7 @@ public:
     // RenderStateBase interface
     virtual void Apply(RenderCommandListBase& command_list, Group::Mask apply_groups) = 0;
 
-    Ptr GetPtr() { return shared_from_this(); }
+    Ptr<RenderStateBase> GetPtr() { return shared_from_this(); }
 
 protected:
     ContextBase& m_context;

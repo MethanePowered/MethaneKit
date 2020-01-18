@@ -48,7 +48,7 @@ struct ScreenQuadVertex
     };
 };
 
-ScreenQuad::ScreenQuad(Context& context, Texture::Ptr sp_texture, Settings settings)
+ScreenQuad::ScreenQuad(Context& context, Ptr<Texture> sp_texture, Settings settings)
     : m_settings(std::move(settings))
     , m_debug_region_name(m_settings.name + " Screen-Quad rendering")
     , m_sp_texture(std::move(sp_texture))

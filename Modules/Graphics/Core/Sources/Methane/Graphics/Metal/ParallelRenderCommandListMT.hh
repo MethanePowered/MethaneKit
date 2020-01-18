@@ -39,12 +39,10 @@ class RenderPassMT;
 class ParallelRenderCommandListMT final : public ParallelRenderCommandListBase
 {
 public:
-    using Ptr = std::shared_ptr<ParallelRenderCommandListMT>;
-
     ParallelRenderCommandListMT(CommandQueueBase& command_queue, RenderPassBase& render_pass);
 
     // ParallelRenderCommandList interface
-    void Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group = "") override;
+    void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;
 
     // CommandList interface
     void Commit(bool present_drawable) override;

@@ -33,7 +33,7 @@ struct ResourceContainerVK
 {
 };
 
-ResourceBase::ReleasePool::Ptr ResourceBase::ReleasePool::Create()
+Ptr<ResourceBase::ReleasePool> ResourceBase::ReleasePool::Create()
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<ResourceVK::ReleasePoolVK>();

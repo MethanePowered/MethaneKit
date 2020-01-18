@@ -46,9 +46,6 @@ class CommandListBase
     friend class CommandQueueBase;
 
 public:
-    using Ptr = std::shared_ptr<CommandListBase>;
-    using WeakPtr = std::weak_ptr<CommandListBase>;
-
     enum State
     {
         Pending,
@@ -58,7 +55,7 @@ public:
 
     struct CommandState
     {
-        Program::ResourceBindings::Ptr sp_resource_bindings;
+        Ptr<Program::ResourceBindings> sp_resource_bindings;
     };
 
     CommandListBase(CommandQueueBase& command_queue, Type type);
@@ -74,9 +71,9 @@ public:
     virtual void Execute(uint32_t frame_index);
     virtual void Complete(uint32_t frame_index);
 
-    void SetResourceTransitionBarriers(const Resource::Refs& resources, ResourceBase::State state_before, ResourceBase::State state_after);
+    void SetResourceTransitionBarriers(const Refs<Resource>& resources, ResourceBase::State state_before, ResourceBase::State state_after);
     const CommandState& GetCommandState() const       { return m_command_state; }
-    Ptr  GetPtr()                                     { return shared_from_this(); }
+    Ptr<CommandListBase> GetPtr()                     { return shared_from_this(); }
     void SetDebugGroupOpened(bool debug_group_opened) { m_debug_group_opened = debug_group_opened; }
 
 protected:
@@ -91,7 +88,7 @@ protected:
     uint32_t GetCurrentFrameIndex() const;
     void     ResetCommandState();
 
-    CommandQueue::Ptr m_sp_command_queue;
+    Ptr<CommandQueue> m_sp_command_queue;
     bool              m_debug_group_opened = false;
 
 private:
@@ -99,12 +96,12 @@ private:
 
     using ExecutingOnFrame = std::map<uint32_t, bool>;
 
-    const Type          m_type;
-    Ptr                 m_sp_self;
-    uint32_t            m_committed_frame_index = 0;
-    State               m_state                 = State::Pending;
-    mutable std::mutex  m_state_mutex;
-    CommandState        m_command_state;
+    const Type           m_type;
+    Ptr<CommandListBase> m_sp_self;
+    uint32_t             m_committed_frame_index = 0;
+    State                m_state                 = State::Pending;
+    mutable std::mutex   m_state_mutex;
+    CommandState         m_command_state;
 };
 
 } // namespace Methane::Graphics

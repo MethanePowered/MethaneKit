@@ -37,20 +37,20 @@ struct ShadowCubeFrame final : gfx::AppFrame
     {
         struct MeshResources
         {
-            gfx::Buffer::Ptr                    sp_uniforms_buffer;
-            gfx::Program::ResourceBindings::Ptr sp_resource_bindings;
+            Ptr<gfx::Buffer>                    sp_uniforms_buffer;
+            Ptr<gfx::Program::ResourceBindings> sp_resource_bindings;
         };
 
         MeshResources               cube;
         MeshResources               floor;
-        gfx::Texture::Ptr           sp_rt_texture;
-        gfx::RenderPass::Ptr        sp_pass;
-        gfx::RenderCommandList::Ptr sp_cmd_list;
+        Ptr<gfx::Texture>           sp_rt_texture;
+        Ptr<gfx::RenderPass>        sp_pass;
+        Ptr<gfx::RenderCommandList> sp_cmd_list;
     };
 
     PassResources    shadow_pass;
     PassResources    final_pass;
-    gfx::Buffer::Ptr sp_scene_uniforms_buffer;
+    Ptr<gfx::Buffer> sp_scene_uniforms_buffer;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -111,7 +111,6 @@ private:
     class TexturedMeshBuffers : public TexturedMeshBuffersBase
     {
     public:
-        using Ptr = std::unique_ptr<TexturedMeshBuffers>;
         using TexturedMeshBuffersBase::TexturedMeshBuffersBase;
 
         const MeshUniforms& GetShadowPassUniforms() const        { return m_shadow_pass_uniforms; }
@@ -123,8 +122,8 @@ private:
 
     struct RenderPass
     {
-        gfx::Program::Ptr       sp_program;
-        gfx::RenderState::Ptr   sp_state;
+        Ptr<gfx::Program>       sp_program;
+        Ptr<gfx::RenderState>   sp_state;
         std::string             command_group_name;
         bool                    is_final_pass = false;
 
@@ -141,13 +140,13 @@ private:
 
     gfx::Camera                 m_view_camera;
     gfx::Camera                 m_light_camera;
-    gfx::Buffer::Ptr            m_sp_const_buffer;
-    gfx::Sampler::Ptr           m_sp_texture_sampler;
-    gfx::Sampler::Ptr           m_sp_shadow_sampler;
+    Ptr<gfx::Buffer>            m_sp_const_buffer;
+    Ptr<gfx::Sampler>           m_sp_texture_sampler;
+    Ptr<gfx::Sampler>           m_sp_shadow_sampler;
 
     SceneUniforms               m_scene_uniforms = { };
-    TexturedMeshBuffers::Ptr    m_sp_cube_buffers;
-    TexturedMeshBuffers::Ptr    m_sp_floor_buffers;
+    Ptr<TexturedMeshBuffers>    m_sp_cube_buffers;
+    Ptr<TexturedMeshBuffers>    m_sp_floor_buffers;
     RenderPass                  m_shadow_pass;
     RenderPass                  m_final_pass;
 };

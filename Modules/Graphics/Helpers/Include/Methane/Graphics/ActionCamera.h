@@ -116,7 +116,7 @@ public:
     static std::string GetActionName(KeyboardAction keyboard_action);
 
 protected:
-    using KeyboardActionAnimations  = std::map<KeyboardAction, Data::Animation::WeakPtr>;
+    using KeyboardActionAnimations  = std::map<KeyboardAction, WeakPtr<Data::Animation>>;
 
     void Move(const Vector3f& move_vector);
     void Zoom(float zoom_factor);

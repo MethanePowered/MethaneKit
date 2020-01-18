@@ -37,7 +37,7 @@ public:
     class ResourceBindingsVK : public ResourceBindingsBase
     {
     public:
-        ResourceBindingsVK(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
+        ResourceBindingsVK(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
         ResourceBindingsVK(const ResourceBindingsVK& other_resource_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
 
         // ResourceBindings interface

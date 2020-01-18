@@ -29,8 +29,8 @@ provides basic multi-frame rendering synchronization and frame presenting APIs.
 
 #include <Methane/Platform/AppEnvironment.h>
 #include <Methane/Platform/AppView.h>
+#include <Methane/Memory.hpp>
 
-#include <memory>
 #include <optional>
 
 namespace Methane::Graphics
@@ -43,8 +43,6 @@ struct RenderCommandList;
 
 struct Context : virtual Object
 {
-    using Ptr = std::shared_ptr<Context>;
-
     struct Settings
     {
         FrameSize                   frame_size;
@@ -67,8 +65,6 @@ struct Context : virtual Object
     
     struct Callback
     {
-        using Ref = std::reference_wrapper<Callback>;
-        
         virtual void OnContextReleased() = 0;
         virtual void OnContextInitialized() = 0;
         
@@ -76,7 +72,7 @@ struct Context : virtual Object
     };
 
     // Create Context instance
-    static Ptr Create(const Platform::AppEnvironment& env, Device& device, const Settings& settings);
+    static Ptr<Context> Create(const Platform::AppEnvironment& env, Device& device, const Settings& settings);
 
     // Context interface
     virtual void CompleteInitialization() = 0;

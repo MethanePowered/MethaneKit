@@ -51,7 +51,7 @@ SystemVK::~SystemVK()
     ITT_FUNCTION_TASK();
 }
 
-const Devices& SystemVK::UpdateGpuDevices(Device::Feature::Mask supported_features)
+const Ptrs<Device>& SystemVK::UpdateGpuDevices(Device::Feature::Mask supported_features)
 {
     ITT_FUNCTION_TASK();
 

@@ -50,14 +50,14 @@ public:
     ~SystemMT() override;
     
     void           CheckForChanges() override {}
-    const Devices& UpdateGpuDevices(Device::Feature::Mask supported_features) override;
+    const Ptrs<Device>& UpdateGpuDevices(Device::Feature::Mask supported_features) override;
     
 private:
     void OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificationName device_notification);
     void NotifyDevice(const id<MTLDevice>& mtl_device, Device::Notification device_notification);
     void AddDevice(const id<MTLDevice>& mtl_device);
     
-    const Device::Ptr& FindMetalDevice(const id<MTLDevice>& mtl_device) const;
+    const Ptr<Device>& FindMetalDevice(const id<MTLDevice>& mtl_device) const;
     
     id<NSObject> m_device_observer = nil;
 };

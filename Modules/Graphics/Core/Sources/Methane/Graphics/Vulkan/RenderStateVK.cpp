@@ -36,7 +36,7 @@ Vulkan implementation of the render state interface.
 namespace Methane::Graphics
 {
 
-RenderState::Ptr RenderState::Create(Context& context, const RenderState::Settings& state_settings)
+Ptr<RenderState> RenderState::Create(Context& context, const RenderState::Settings& state_settings)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<RenderStateVK>(static_cast<ContextBase&>(context), state_settings);

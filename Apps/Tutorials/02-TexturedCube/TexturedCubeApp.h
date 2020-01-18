@@ -37,9 +37,9 @@ namespace dat = Methane::Data;
 
 struct TexturedCubeFrame final : gfx::AppFrame
 {
-    gfx::Buffer::Ptr                    sp_uniforms_buffer;
-    gfx::Program::ResourceBindings::Ptr sp_resource_bindings;
-    gfx::RenderCommandList::Ptr         sp_cmd_list;
+    Ptr<gfx::Buffer>                    sp_uniforms_buffer;
+    Ptr<gfx::Program::ResourceBindings> sp_resource_bindings;
+    Ptr<gfx::RenderCommandList>         sp_cmd_list;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -97,13 +97,13 @@ private:
     gfx::Camera             m_camera;
     gfx::BoxMesh<Vertex>    m_cube_mesh;
     float                   m_cube_scale;
-    gfx::Program::Ptr       m_sp_program;
-    gfx::RenderState::Ptr   m_sp_state;
-    gfx::Buffer::Ptr        m_sp_vertex_buffer;
-    gfx::Buffer::Ptr        m_sp_index_buffer;
-    gfx::Buffer::Ptr        m_sp_const_buffer;
-    gfx::Texture::Ptr       m_sp_cube_texture;
-    gfx::Sampler::Ptr       m_sp_texture_sampler;
+    Ptr<gfx::Program>       m_sp_program;
+    Ptr<gfx::RenderState>   m_sp_state;
+    Ptr<gfx::Buffer>        m_sp_vertex_buffer;
+    Ptr<gfx::Buffer>        m_sp_index_buffer;
+    Ptr<gfx::Buffer>        m_sp_const_buffer;
+    Ptr<gfx::Texture>       m_sp_cube_texture;
+    Ptr<gfx::Sampler>       m_sp_texture_sampler;
     
 };
 

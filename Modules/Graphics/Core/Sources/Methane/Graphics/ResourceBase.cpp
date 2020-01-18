@@ -35,7 +35,7 @@ Base implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-Resource::Location::Location(Ptr sp_resource, Data::Size offset)
+Resource::Location::Location(Ptr<Resource> sp_resource, Data::Size offset)
     : m_sp_resource(std::move(sp_resource))
     , m_offset(offset)
 {

@@ -44,7 +44,7 @@ public:
     CommandQueueDX(ContextBase& context);
 
     // CommandQueue interface
-    void Execute(const CommandList::Refs& command_lists) override;
+    void Execute(const Refs<CommandList>& command_lists) override;
 
     // Object interface
     void SetName(const std::string& name) override;
@@ -55,7 +55,7 @@ public:
 
 protected:
     using D3D12CommandLists = std::vector<ID3D12CommandList*>;
-    static D3D12CommandLists GetNativeCommandLists(const CommandList::Refs& command_list_refs);
+    static D3D12CommandLists GetNativeCommandLists(const Refs<CommandList>& command_list_refs);
 
     wrl::ComPtr<ID3D12CommandQueue> m_cp_command_queue;
 };

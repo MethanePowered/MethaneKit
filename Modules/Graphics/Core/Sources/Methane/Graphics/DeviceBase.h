@@ -36,8 +36,6 @@ class DeviceBase
     , public std::enable_shared_from_this<DeviceBase>
 {
 public:
-    using Ptr = std::shared_ptr<DeviceBase>;
-    
     DeviceBase(const std::string& adapter_name, bool is_software_adapter, Feature::Mask supported_features);
 
     // Device interface
@@ -48,7 +46,7 @@ public:
     void                Notify(Notification notification) override;
     std::string         ToString() const noexcept override;
 
-    Ptr GetPtr() { return shared_from_this(); }
+    Ptr<DeviceBase> GetPtr() { return shared_from_this(); }
 
 protected:
     const std::string    m_adapter_name;
@@ -60,15 +58,15 @@ protected:
 class SystemBase : public System
 {
 public:
-    const Devices&        GetGpuDevices() const override            { return m_devices; }
+    const Ptrs<Device>&   GetGpuDevices() const override            { return m_devices; }
     Device::Feature::Mask GetGpuSupportedFeatures() const override  { return m_supported_features; }
-    Device::Ptr           GetNextGpuDevice(const Device& device) const override;
-    Device::Ptr           GetSoftwareGpuDevice() const override;
+    Ptr<Device>           GetNextGpuDevice(const Device& device) const override;
+    Ptr<Device>           GetSoftwareGpuDevice() const override;
     std::string           ToString() const noexcept override;
 
 protected:
     Device::Feature::Mask m_supported_features = Device::Feature::Value::All;
-    Devices               m_devices;
+    Ptrs<Device>          m_devices;
 };
 
 } // namespace Methane::Graphics

@@ -65,7 +65,7 @@ void RenderCommandListBase::DrawingState::Reset()
     flags = { };
 }
 
-void RenderCommandListBase::Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group)
+void RenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
 
@@ -109,7 +109,7 @@ void RenderCommandListBase::SetState(RenderState& render_state, RenderState::Gro
     m_draw_state.render_state_groups |= state_groups;
 }
 
-void RenderCommandListBase::SetVertexBuffers(const Buffer::Refs& vertex_buffers)
+void RenderCommandListBase::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
 {
     ITT_FUNCTION_TASK();
     if (vertex_buffers.empty())
@@ -121,7 +121,7 @@ void RenderCommandListBase::SetVertexBuffers(const Buffer::Refs& vertex_buffers)
     m_draw_state.sp_vertex_buffers.resize(vertex_buffers.size());
 
     uint32_t vertex_buffer_index = 0;
-    for (const Buffer::Ref& vertex_buffer_ref : vertex_buffers)
+    for (const Ref<Buffer>& vertex_buffer_ref : vertex_buffers)
     {
         BufferBase& vertex_buffer = static_cast<BufferBase&>(vertex_buffer_ref.get());
 
@@ -216,7 +216,7 @@ void RenderCommandListBase::ResetDrawState()
 
 void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count)
 {
-    for (const BufferBase::Ptr& sp_vertex_buffer : m_draw_state.sp_vertex_buffers)
+    for (const Ptr<BufferBase>& sp_vertex_buffer : m_draw_state.sp_vertex_buffers)
     {
         assert(!!sp_vertex_buffer);
         const BufferBase& vertex_buffer = *sp_vertex_buffer;

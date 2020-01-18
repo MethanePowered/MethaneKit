@@ -72,7 +72,6 @@ protected:
     class FenceDX
     {
     public:
-        using Ptr = std::unique_ptr<FenceDX>;
         FenceDX(CommandQueueDX& command_queue, uint32_t frame = static_cast<uint32_t>(-1));
         ~FenceDX();
 
@@ -93,9 +92,9 @@ protected:
         std::string              m_name;
     };
 
-    FenceDX&             GetCurrentFrameFence();
-    inline FenceDX::Ptr& GetCurrentFrameFencePtr()       { return m_frame_fences[m_frame_buffer_index]; }
-    inline uint32_t      GetPresentVSyncInterval() const { return m_settings.vsync_enabled ? 1 : 0; }
+    FenceDX&                         GetCurrentFrameFence();
+    inline const UniquePtr<FenceDX>& GetCurrentFrameFencePtr()       { return m_frame_fences[m_frame_buffer_index]; }
+    inline uint32_t                  GetPresentVSyncInterval() const { return m_settings.vsync_enabled ? 1 : 0; }
 
     // ContextBase overrides
     void Release() override;
@@ -103,9 +102,9 @@ protected:
 
     const Platform::AppEnvironment m_platform_env;
     wrl::ComPtr<IDXGISwapChain3>   m_cp_swap_chain;
-    std::vector<FenceDX::Ptr>      m_frame_fences;
-    FenceDX::Ptr                   m_sp_render_fence;
-    FenceDX::Ptr                   m_sp_upload_fence;
+    UniquePtrs<FenceDX>            m_frame_fences;
+    Ptr<FenceDX>                   m_sp_render_fence;
+    Ptr<FenceDX>                   m_sp_upload_fence;
 };
 
 } // namespace Methane::Graphics

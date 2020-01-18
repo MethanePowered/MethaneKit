@@ -36,8 +36,6 @@ struct ResourceContainerVK;
 class ResourceVK : public ResourceBase
 {
 public:
-    using Ptr = std::shared_ptr<ResourceVK>;
-
     class ReleasePoolVK : public ReleasePool
     {
     public:

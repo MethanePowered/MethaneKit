@@ -89,16 +89,14 @@ protected:
     virtual void Release();
     virtual void Initialize(Device& device, bool deferred_heap_allocation);
 
-    using Callbacks = std::vector<Callback::Ref>;
-
-    DeviceBase::Ptr             m_sp_device;
+    Ptr<DeviceBase>             m_sp_device;
     Settings                    m_settings;
     ResourceManager::Settings   m_resource_manager_init_settings = { true };
     ResourceManager             m_resource_manager;
-    Callbacks                   m_callbacks; // ORDER: Keep callbacks before resources for correct auto-delete
-    CommandQueue::Ptr           m_sp_render_cmd_queue;
-    CommandQueue::Ptr           m_sp_upload_cmd_queue;
-    RenderCommandList::Ptr      m_sp_upload_cmd_list;
+    Refs<Callback>              m_callbacks; // ORDER: Keep callbacks before resources for correct auto-delete
+    Ptr<CommandQueue>           m_sp_render_cmd_queue;
+    Ptr<CommandQueue>           m_sp_upload_cmd_queue;
+    Ptr<RenderCommandList>      m_sp_upload_cmd_list;
     std::atomic<uint32_t>       m_frame_buffer_index;
     FpsCounter                  m_fps_counter;
 };

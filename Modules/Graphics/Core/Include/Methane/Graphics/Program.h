@@ -28,7 +28,8 @@ pipeline via state object and used to create resource binding objects.
 #include "Object.h"
 #include "Types.h"
 
-#include <memory>
+#include <Methane/Memory.hpp>
+
 #include <vector>
 #include <string>
 #include <unordered_set>
@@ -44,8 +45,6 @@ struct CommandList;
 
 struct Program : virtual Object
 {
-    using Ptr = std::shared_ptr<Program>;
-
     struct InputBufferLayout
     {
         enum class StepType
@@ -87,12 +86,10 @@ struct Program : virtual Object
     };
 
     using Arguments                 = std::unordered_set<Argument, Argument::Hash>;
-    using ResourceBindingByArgument = std::unordered_map<Argument, Shader::ResourceBinding::Ptr, Argument::Hash>;
+    using ResourceBindingByArgument = std::unordered_map<Argument, Ptr<Shader::ResourceBinding>, Argument::Hash>;
 
     struct ResourceBindings
     {
-        using Ptr     = std::shared_ptr<ResourceBindings>;
-        using WeakPtr = std::weak_ptr<ResourceBindings>;
         using ResourceLocationsByArgument = std::unordered_map<Argument, Resource::Locations, Argument::Hash>;
 
         struct ApplyBehavior
@@ -111,11 +108,11 @@ struct Program : virtual Object
         };
 
         // Create ResourceBindings instance
-        static Ptr Create(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
-        static Ptr CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument = {});
+        static Ptr<ResourceBindings> Create(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
+        static Ptr<ResourceBindings> CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument = {});
 
         // ResourceBindings interface
-        virtual const Shader::ResourceBinding::Ptr& Get(const Argument& shader_argument) const = 0;
+        virtual const Ptr<Shader::ResourceBinding>& Get(const Argument& shader_argument) const = 0;
         virtual void Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior = ApplyBehavior::AllIncremental) const = 0;
 
         virtual ~ResourceBindings() = default;
@@ -124,7 +121,7 @@ struct Program : virtual Object
     // Program settings
     struct Settings
     {
-        Shaders                  shaders;
+        Ptrs<Shader>             shaders;
         InputBufferLayouts       input_buffer_layouts;
         std::set<std::string>    constant_argument_names;
         std::set<std::string>    addressable_argument_names;
@@ -133,12 +130,12 @@ struct Program : virtual Object
     };
 
     // Create Program instance
-    static Ptr Create(Context& context, const Settings& settings);
+    static Ptr<Program> Create(Context& context, const Settings& settings);
 
     // Program interface
     virtual const Settings&      GetSettings() const = 0;
     virtual const Shader::Types& GetShaderTypes() const = 0;
-    virtual const Shader::Ptr&   GetShader(Shader::Type shader_type) const = 0;
+    virtual const Ptr<Shader>&   GetShader(Shader::Type shader_type) const = 0;
 
     virtual ~Program() = default;
 };

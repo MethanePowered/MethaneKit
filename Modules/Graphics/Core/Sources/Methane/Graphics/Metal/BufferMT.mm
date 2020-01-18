@@ -36,21 +36,21 @@ Metal implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
-Buffer::Ptr Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
+Ptr<Buffer> Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
 {
     ITT_FUNCTION_TASK();
     const Buffer::Settings settings = { Buffer::Type::Vertex, Usage::Unknown, size };
     return std::make_shared<BufferMT>(static_cast<ContextBase&>(context), settings, stride, PixelFormat::Unknown);
 }
 
-Buffer::Ptr Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format)
+Ptr<Buffer> Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format)
 {
     ITT_FUNCTION_TASK();
     const Buffer::Settings settings = { Buffer::Type::Index, Usage::Unknown, size };
     return std::make_shared<BufferMT>(static_cast<ContextBase&>(context), settings, 0, format);
 }
 
-Buffer::Ptr Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     Usage::Mask usage_mask = Usage::ShaderRead;

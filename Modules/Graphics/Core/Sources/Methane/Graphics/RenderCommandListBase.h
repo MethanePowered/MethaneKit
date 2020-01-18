@@ -43,15 +43,13 @@ class RenderCommandListBase
     , public CommandListBase
 {
 public:
-    using Ptr = std::shared_ptr<RenderCommandList>;
-
     RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass);
     RenderCommandListBase(ParallelRenderCommandListBase& parallel_render_command_list);
 
     // RenderCommandList interface
-    void Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group = "") override;
+    void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;
     void SetState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) override;
-    void SetVertexBuffers(const Buffer::Refs& vertex_buffers) override;
+    void SetVertexBuffers(const Refs<Buffer>& vertex_buffers) override;
     void DrawIndexed(Primitive primitive_type, Buffer& index_buffer,
                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                      uint32_t instance_count, uint32_t start_instance) override;
@@ -74,9 +72,9 @@ protected:
         };
 
         std::optional<Primitive> opt_primitive_type;
-        BufferBase::Ptr          sp_index_buffer;
-        BufferBase::Ptrs         sp_vertex_buffers;
-        RenderStateBase::Ptr     sp_render_state;
+        Ptr<BufferBase>          sp_index_buffer;
+        Ptrs<BufferBase>         sp_vertex_buffers;
+        Ptr<RenderStateBase>     sp_render_state;
         RenderState::Group::Mask render_state_groups;
 
         Flags                    flags;
@@ -85,7 +83,7 @@ protected:
     };
 
     const bool            m_is_parallel;
-    const RenderPass::Ptr m_sp_pass;
+    const Ptr<RenderPass> m_sp_pass;
     DrawingState          m_draw_state;
 
     std::weak_ptr<ParallelRenderCommandListBase> m_wp_parallel_render_command_list;

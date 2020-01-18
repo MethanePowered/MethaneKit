@@ -32,8 +32,6 @@ namespace Methane::Graphics
 class BufferVK : public BufferBase
 {
 public:
-    using Ptr = std::shared_ptr<BufferVK>;
-
     BufferVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
     BufferVK(ContextBase& context, const Settings& settings, Data::Size stride, PixelFormat format, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
     ~BufferVK() override;

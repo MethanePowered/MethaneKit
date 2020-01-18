@@ -23,7 +23,6 @@ Abstract logger interface.
 
 #pragma once
 
-#include <memory>
 #include <string>
 
 namespace Methane::Data
@@ -31,8 +30,6 @@ namespace Methane::Data
 
 struct ILogger
 {
-    using Ptr = std::shared_ptr<ILogger>;
-
     virtual void Log(const std::string& message) = 0;
 
     virtual ~ILogger() = default;

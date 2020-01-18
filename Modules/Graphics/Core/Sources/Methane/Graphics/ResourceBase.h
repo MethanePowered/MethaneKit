@@ -76,8 +76,7 @@ public:
 
     struct ReleasePool
     {
-        using  Ptr = std::shared_ptr<ReleasePool>;
-        static Ptr Create();
+        static Ptr<ReleasePool> Create();
 
         virtual void AddResource(ResourceBase& resource) = 0;
         virtual void ReleaseResources() = 0;

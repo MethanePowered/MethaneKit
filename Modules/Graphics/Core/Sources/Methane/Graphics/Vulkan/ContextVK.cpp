@@ -31,7 +31,7 @@ Vulkan implementation of the context interface.
 namespace Methane::Graphics
 {
 
-Context::Ptr Context::Create(const Platform::AppEnvironment& env, Device& device, const Context::Settings& settings)
+Ptr<Context> Context::Create(const Platform::AppEnvironment& env, Device& device, const Context::Settings& settings)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<ContextVK>(env, static_cast<DeviceBase&>(device), settings);

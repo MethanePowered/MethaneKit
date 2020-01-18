@@ -84,7 +84,7 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
     m_sp_texture_sampler->SetName("Sky-box Texture Sampler");
 }
 
-Program::ResourceBindings::Ptr SkyBox::CreateResourceBindings(const Buffer::Ptr& sp_uniforms_buffer)
+Ptr<Program::ResourceBindings> SkyBox::CreateResourceBindings(const Ptr<Buffer>& sp_uniforms_buffer)
 {
     ITT_FUNCTION_TASK();
 

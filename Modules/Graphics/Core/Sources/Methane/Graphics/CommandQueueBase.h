@@ -51,18 +51,18 @@ public:
     ~CommandQueueBase() override;
 
     // CommandQueue interface
-    void Execute(const CommandList::Refs& command_lists) override;
+    void Execute(const Refs<CommandList>& command_lists) override;
 
-    Ptr                GetPtr()           { return shared_from_this(); }
-    ContextBase&       GetContext()       { return m_context; }
-    const ContextBase& GetContext() const { return m_context; }
-    bool               IsExecuting(uint32_t frame_index) const;
-    bool               IsExecuting() const;
+    Ptr<CommandQueueBase> GetPtr()           { return shared_from_this(); }
+    ContextBase&          GetContext()       { return m_context; }
+    const ContextBase&    GetContext() const { return m_context; }
+    bool                  IsExecuting(uint32_t frame_index) const;
+    bool                  IsExecuting() const;
 
 protected:
     void OnCommandListCompleted(CommandListBase& command_list, uint32_t frame_index);
 
-    using CommandLists = std::list<CommandListBase::WeakPtr>;
+    using CommandLists = std::list<WeakPtr<CommandListBase>>;
 
     ContextBase&        m_context;
     const bool          m_execution_state_tracking;

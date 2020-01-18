@@ -34,8 +34,6 @@ namespace Methane::Graphics
 class TextureMT : public TextureBase
 {
 public:
-    using Ptr = std::shared_ptr<TextureMT>;
-
     TextureMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
     ~TextureMT() override;
 

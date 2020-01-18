@@ -59,13 +59,13 @@ static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primiti
     return D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
 }
 
-RenderCommandList::Ptr RenderCommandList::Create(CommandQueue& cmd_queue, RenderPass& render_pass)
+Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& cmd_queue, RenderPass& render_pass)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<RenderCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue), static_cast<RenderPassBase&>(render_pass));
 }
 
-RenderCommandList::Ptr RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
+Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<RenderCommandListDX>(static_cast<ParallelRenderCommandListBase&>(parallel_render_command_list));
@@ -97,7 +97,7 @@ void RenderCommandListDX::Initialize()
     m_cp_command_list.As(&m_cp_command_list_4);
 }
 
-void RenderCommandListDX::ResetNative(const RenderState::Ptr& sp_render_state)
+void RenderCommandListDX::ResetNative(const Ptr<RenderState>& sp_render_state)
 {
     // Reset command list
     if (!m_is_committed)
@@ -120,7 +120,7 @@ void RenderCommandListDX::ResetNative(const RenderState::Ptr& sp_render_state)
                                      | RenderState::Group::DepthStencil;
 }
 
-void RenderCommandListDX::Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group)
+void RenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
 
@@ -165,7 +165,7 @@ void RenderCommandListDX::PopDebugGroup()
     PIXEndEvent(m_cp_command_list.Get());
 }
 
-void RenderCommandListDX::SetVertexBuffers(const Buffer::Refs& vertex_buffers)
+void RenderCommandListDX::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
 {
     ITT_FUNCTION_TASK();
 

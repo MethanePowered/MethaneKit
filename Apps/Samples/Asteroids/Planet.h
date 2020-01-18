@@ -43,8 +43,6 @@ namespace gfx = Graphics;
 class Planet
 {
 public:
-    using Ptr = std::shared_ptr<Planet>;
-
     struct Settings
     {
         const gfx::Camera& view_camera;
@@ -68,7 +66,7 @@ public:
 
     Planet(gfx::Context& context, gfx::ImageLoader& image_loader, const Settings& settings);
 
-    gfx::Program::ResourceBindings::Ptr CreateResourceBindings(const gfx::Buffer::Ptr& sp_constants_buffer, const gfx::Buffer::Ptr& sp_uniforms_buffer);
+    Ptr<gfx::Program::ResourceBindings> CreateResourceBindings(const Ptr<gfx::Buffer>& sp_constants_buffer, const Ptr<gfx::Buffer>& sp_uniforms_buffer);
     void Resize(const gfx::FrameSize& frame_size);
     bool Update(double elapsed_seconds, double delta_seconds);
     void Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings);
@@ -79,8 +77,8 @@ private:
     Settings                    m_settings;
     gfx::Context&               m_context;
     TexturedMeshBuffers         m_mesh_buffers;
-    gfx::Sampler::Ptr           m_sp_texture_sampler;
-    gfx::RenderState::Ptr       m_sp_state;
+    Ptr<gfx::Sampler>           m_sp_texture_sampler;
+    Ptr<gfx::RenderState>       m_sp_state;
 };
 
 } // namespace Methane::Graphics

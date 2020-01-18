@@ -110,7 +110,7 @@ bool ShaderBase::ResourceBindingBase::IsAlreadyApplied(const Program& program, c
     if (!check_binding_value_changes)
         return false;
 
-    const Shader::ResourceBinding::Ptr& previous_argument_resource_binding = command_state.sp_resource_bindings->Get(program_argument);
+    const Ptr<Shader::ResourceBinding>& previous_argument_resource_binding = command_state.sp_resource_bindings->Get(program_argument);
     if (!previous_argument_resource_binding)
         return false;
     

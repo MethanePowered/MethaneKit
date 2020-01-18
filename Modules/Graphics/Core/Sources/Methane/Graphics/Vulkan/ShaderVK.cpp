@@ -29,7 +29,7 @@ Vulkan implementation of the shader interface.
 namespace Methane::Graphics
 {
 
-Shader::ResourceBinding::Ptr Shader::ResourceBinding::CreateCopy(const ResourceBinding& other_resource_binging)
+Ptr<Shader::ResourceBinding> Shader::ResourceBinding::CreateCopy(const ResourceBinding& other_resource_binging)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<ShaderVK::ResourceBindingVK>(static_cast<const ShaderVK::ResourceBindingVK&>(other_resource_binging));
@@ -49,7 +49,7 @@ void ShaderVK::ResourceBindingVK::SetResourceLocations(const Resource::Locations
     ShaderBase::ResourceBindingBase::SetResourceLocations(resource_locations);
 }
 
-Shader::Ptr Shader::Create(Shader::Type shader_type, Context& context, const Settings& settings)
+Ptr<Shader> Shader::Create(Shader::Type shader_type, Context& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<ShaderVK>(shader_type, static_cast<ContextVK&>(context), settings);
@@ -66,14 +66,11 @@ ShaderVK::~ShaderVK()
     ITT_FUNCTION_TASK();
 }
 
-ShaderBase::ResourceBindings ShaderVK::GetResourceBindings(const std::set<std::string>& constant_argument_names,
-                                                           const std::set<std::string>& addressable_argument_names) const
+Ptrs<ShaderBase::ResourceBinding> ShaderVK::GetResourceBindings(const std::set<std::string>& constant_argument_names,
+                                                                const std::set<std::string>& addressable_argument_names) const
 {
     ITT_FUNCTION_TASK();
-
-    ShaderBase::ResourceBindings resource_bindings;
-    return resource_bindings;
-
+    Ptrs<ShaderBase::ResourceBinding> resource_bindings;
     return resource_bindings;
 }
 

@@ -23,6 +23,8 @@ Pool of animations for centralized updating, adding and removing in application.
 
 #pragma once
 
+#include <Methane/Memory.hpp>
+
 #include "Animation.h"
 
 #include <deque>
@@ -30,7 +32,7 @@ Pool of animations for centralized updating, adding and removing in application.
 namespace Methane::Data
 {
 
-using Animations = std::deque<Animation::Ptr>;
+using Animations = std::deque<Ptr<Animation>>;
 
 class AnimationsPool : public Animations
 {

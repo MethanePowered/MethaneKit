@@ -28,9 +28,6 @@ Abstract input controller interface for handling keyboard and mouse actions.
 #include <Methane/Platform/Keyboard.h>
 #include <Methane/Platform/Mouse.h>
 
-#include <memory>
-#include <vector>
-
 namespace Methane::Platform::Input
 {
 
@@ -63,8 +60,6 @@ class Controller
     , public IHelpProvider
 {
 public:
-    using Ptr = std::shared_ptr<Controller>;
-
     Controller(const std::string& name) : m_name(name) { }
 
     const std::string& GetControllerName() const { return m_name; }
@@ -86,7 +81,5 @@ private:
     std::string m_name;
     bool        m_is_enabled = true;
 };
-
-using Controllers = std::vector<Controller::Ptr>;
 
 } // namespace Methane::Platform::Input

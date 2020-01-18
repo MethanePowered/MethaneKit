@@ -108,13 +108,13 @@ Asteroid::Asteroid(gfx::Context& context)
     SetTexture(GenerateTextureArray(context, gfx::Dimensions(256, 256), 1, true, TextureNoiseParameters()));
 }
 
-gfx::Texture::Ptr Asteroid::GenerateTextureArray(gfx::Context& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, 
+Ptr<gfx::Texture> Asteroid::GenerateTextureArray(gfx::Context& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped,
                                                  const TextureNoiseParameters& noise_parameters)
 {
     ITT_FUNCTION_TASK();
 
     const gfx::Resource::SubResources sub_resources = GenerateTextureArraySubresources(dimensions, array_size, noise_parameters);
-    gfx::Texture::Ptr sp_texture_array = gfx::Texture::CreateImage(context, dimensions, array_size, gfx::PixelFormat::RGBA8Unorm, mipmapped);
+    Ptr<gfx::Texture> sp_texture_array = gfx::Texture::CreateImage(context, dimensions, array_size, gfx::PixelFormat::RGBA8Unorm, mipmapped);
     sp_texture_array->SetData(sub_resources);
     return sp_texture_array;
 }

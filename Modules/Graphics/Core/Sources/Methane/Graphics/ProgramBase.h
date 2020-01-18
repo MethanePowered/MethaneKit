@@ -52,18 +52,16 @@ public:
         , public std::enable_shared_from_this<ResourceBindingsBase>
     {
     public:
-        using Ptr = std::shared_ptr<ResourceBindingsBase>;
-
-        ResourceBindingsBase(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
+        ResourceBindingsBase(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
         ResourceBindingsBase(const ResourceBindingsBase& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
         ~ResourceBindingsBase() override;
 
-        Ptr GetPtr()                            { return shared_from_this(); }
-        const Arguments& GetArguments() const   { return m_arguments; }
-        const Program&   GetProgram() const     { return *m_sp_program; }
+        Ptr<ResourceBindingsBase> GetPtr()               { return shared_from_this(); }
+        const Arguments&          GetArguments() const   { return m_arguments; }
+        const Program&            GetProgram() const     { return *m_sp_program; }
 
         // ResourceBindings interface
-        const Shader::ResourceBinding::Ptr& Get(const Argument& shader_argument) const override;
+        const Ptr<Shader::ResourceBinding>& Get(const Argument& shader_argument) const override;
 
         // ResourceBindingsBase interface
         virtual void CompleteInitialization() = 0;
@@ -77,7 +75,7 @@ public:
         void SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument);
         void VerifyAllArgumentsAreBoundToResources();
 
-        const Program::Ptr              m_sp_program;
+        const Ptr<Program>              m_sp_program;
         Arguments                       m_arguments;
         ResourceBindingByArgument       m_resource_binding_by_argument;
         DescriptorHeapReservationByType m_descriptor_heap_reservations_by_type;
@@ -89,11 +87,11 @@ public:
     // Program interface
     const Settings&      GetSettings() const override                       { return m_settings; }
     const Shader::Types& GetShaderTypes() const override                    { return m_shader_types; }
-    const Shader::Ptr&   GetShader(Shader::Type shader_type) const override { return m_shaders_by_type[static_cast<size_t>(shader_type)]; }
+    const Ptr<Shader>&   GetShader(Shader::Type shader_type) const override { return m_shaders_by_type[static_cast<size_t>(shader_type)]; }
 
-    bool         HasShader(Shader::Type shader_type) const  { return !!GetShader(shader_type); }
-    ContextBase& GetContext()                               { return m_context; }
-    Ptr          GetPtr()                                   { return shared_from_this(); }
+    bool             HasShader(Shader::Type shader_type) const  { return !!GetShader(shader_type); }
+    ContextBase&     GetContext()                               { return m_context; }
+    Ptr<ProgramBase> GetPtr()                                   { return shared_from_this(); }
 
 protected:
     void InitResourceBindings(const std::set<std::string>& constant_argument_names, const std::set<std::string>& addressable_argument_names);
@@ -103,12 +101,12 @@ protected:
     uint32_t GetInputBufferIndexByArgumentName(const std::string& argument_name) const;
     uint32_t GetInputBufferIndexByArgumentSemantic(const std::string& argument_semantic) const;
 
-    using ShadersByType = std::array<Shader::Ptr, static_cast<size_t>(Shader::Type::Count)>;
-    static ShadersByType CreateShadersByType(const Shaders& shaders);
+    using ShadersByType = std::array<Ptr<Shader>, static_cast<size_t>(Shader::Type::Count)>;
+    static ShadersByType CreateShadersByType(const Ptrs<Shader>& shaders);
 
     struct DescriptorHeapReservation
     {
-        DescriptorHeap::Ref       heap;
+        Ref<DescriptorHeap>   heap;
         DescriptorHeap::Range range;
     };
 

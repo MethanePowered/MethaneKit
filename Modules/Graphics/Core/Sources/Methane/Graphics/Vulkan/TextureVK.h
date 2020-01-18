@@ -31,8 +31,6 @@ namespace Methane::Graphics
 class TextureVK : public TextureBase
 {
 public:
-    using Ptr = std::shared_ptr<TextureVK>;
-
     TextureVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
     ~TextureVK() override;
 

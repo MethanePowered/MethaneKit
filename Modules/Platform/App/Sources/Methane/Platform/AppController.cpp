@@ -81,7 +81,7 @@ void AppController::ShowHelp()
     std::stringstream help_stream;
     std::string single_offset = "    ";
     bool is_first_controller = true;
-    for (const Controller::Ptr& sp_controller : m_application.GetInputState().GetControllers())
+    for (const Ptr<Controller>& sp_controller : m_application.GetInputState().GetControllers())
     {
         assert(!!sp_controller);
         if (!sp_controller) continue;

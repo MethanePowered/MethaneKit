@@ -51,7 +51,7 @@ bool Program::Argument::operator==(const Argument& other) const
            std::tie(other.hash, other.shader_type, other.argument_name);
 }
 
-ProgramBase::ResourceBindingsBase::ResourceBindingsBase(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
+ProgramBase::ResourceBindingsBase::ResourceBindingsBase(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
     : m_sp_program(sp_program)
 {
     ITT_FUNCTION_TASK();
@@ -208,7 +208,7 @@ void ProgramBase::ResourceBindingsBase::SetResourcesForArguments(const ResourceL
     for (const auto& argument_and_resource_locations : resource_locations_by_argument)
     {
         const Program::Argument argument = argument_and_resource_locations.first;
-        const Shader::ResourceBinding::Ptr& sp_binding = Get(argument);
+        const Ptr<Shader::ResourceBinding>& sp_binding = Get(argument);
         if (!sp_binding)
         {
 #ifndef PROGRAM_IGNORE_MISSING_ARGUMENTS
@@ -226,11 +226,11 @@ void ProgramBase::ResourceBindingsBase::SetResourcesForArguments(const ResourceL
     }
 }
 
-const Shader::ResourceBinding::Ptr& ProgramBase::ResourceBindingsBase::Get(const Argument& shader_argument) const
+const Ptr<Shader::ResourceBinding>& ProgramBase::ResourceBindingsBase::Get(const Argument& shader_argument) const
 {
     ITT_FUNCTION_TASK();
 
-    static const Shader::ResourceBinding::Ptr sp_empty_resource_binding;
+    static const Ptr<Shader::ResourceBinding> sp_empty_resource_binding;
     auto   resource_binding_by_argument_it  = m_resource_binding_by_argument.find(shader_argument);
     return resource_binding_by_argument_it != m_resource_binding_by_argument.end()
          ? resource_binding_by_argument_it->second : sp_empty_resource_binding;
@@ -278,12 +278,12 @@ void ProgramBase::ResourceBindingsBase::VerifyAllArgumentsAreBoundToResources()
 #endif
 }
 
-ProgramBase::ShadersByType ProgramBase::CreateShadersByType(const Shaders& shaders)
+ProgramBase::ShadersByType ProgramBase::CreateShadersByType(const Ptrs<Shader>& shaders)
 {
     ITT_FUNCTION_TASK();
 
     ProgramBase::ShadersByType shaders_by_type;
-    for (const Shader::Ptr& sp_shader : shaders)
+    for (const Ptr<Shader>& sp_shader : shaders)
     {
         if (!sp_shader)
         {
@@ -295,12 +295,12 @@ ProgramBase::ShadersByType ProgramBase::CreateShadersByType(const Shaders& shade
     return shaders_by_type;
 }
 
-Shader::Types CreateShaderTypes(const Shaders& shaders)
+Shader::Types CreateShaderTypes(const Ptrs<Shader>& shaders)
 {
     ITT_FUNCTION_TASK();
 
     Shader::Types shader_types;
-    for (const Shader::Ptr& sp_shader : shaders)
+    for (const Ptr<Shader>& sp_shader : shaders)
     {
         if (!sp_shader)
         {
@@ -344,7 +344,7 @@ void ProgramBase::InitResourceBindings(const std::set<std::string>& constant_arg
     std::map<std::string, Shader::Types> shader_types_by_argument_name_map;
     
     m_resource_binding_by_argument.clear();
-    for (const Shader::Ptr& sp_shader : m_settings.shaders)
+    for (const Ptr<Shader>& sp_shader : m_settings.shaders)
     {
         if (!sp_shader)
         {
@@ -354,8 +354,8 @@ void ProgramBase::InitResourceBindings(const std::set<std::string>& constant_arg
         const Shader::Type shader_type = sp_shader->GetType();
         all_shader_types.insert(shader_type);
         
-        const Shader::ResourceBindings shader_resource_bindings = static_cast<const ShaderBase&>(*sp_shader).GetResourceBindings(constant_argument_names, addressable_argument_names);
-        for (const Shader::ResourceBinding::Ptr& sp_resource_binging : shader_resource_bindings)
+        const Ptrs<Shader::ResourceBinding> shader_resource_bindings = static_cast<const ShaderBase&>(*sp_shader).GetResourceBindings(constant_argument_names, addressable_argument_names);
+        for (const Ptr<Shader::ResourceBinding>& sp_resource_binging : shader_resource_bindings)
         {
             if (!sp_resource_binging)
             {
@@ -376,7 +376,7 @@ void ProgramBase::InitResourceBindings(const std::set<std::string>& constant_arg
             continue;
 
         const std::string& argument_name = shader_types_by_argument_name.first;
-        Shader::ResourceBinding::Ptr sp_resource_binding;
+        Ptr<Shader::ResourceBinding> sp_resource_binding;
         for(Shader::Type shader_type : all_shader_types)
         {
             const Argument argument = { shader_type, argument_name };
@@ -434,7 +434,7 @@ Shader& ProgramBase::GetShaderRef(Shader::Type shader_type)
 {
     ITT_FUNCTION_TASK();
 
-    const Shader::Ptr& sp_shader = GetShader(shader_type);
+    const Ptr<Shader>& sp_shader = GetShader(shader_type);
     if (!sp_shader)
     {
         throw std::runtime_error(Shader::GetTypeName(shader_type) + "shader was not found in program \"" + GetName() + "\".");

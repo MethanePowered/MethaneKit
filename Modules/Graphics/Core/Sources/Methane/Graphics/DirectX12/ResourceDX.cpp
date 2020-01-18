@@ -35,7 +35,7 @@ DirectX 12 implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-ResourceBase::ReleasePool::Ptr ResourceBase::ReleasePool::Create()
+Ptr<ResourceBase::ReleasePool> ResourceBase::ReleasePool::Create()
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<ResourceDX::ReleasePoolDX>();

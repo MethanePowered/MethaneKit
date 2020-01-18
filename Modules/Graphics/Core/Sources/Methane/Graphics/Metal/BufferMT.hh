@@ -33,8 +33,6 @@ namespace Methane::Graphics
 class BufferMT : public BufferBase
 {
 public:
-    using Ptr = std::shared_ptr<BufferMT>;
-
     BufferMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
     BufferMT(ContextBase& context, const Settings& settings, Data::Size stride, PixelFormat format, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
     ~BufferMT() override;
