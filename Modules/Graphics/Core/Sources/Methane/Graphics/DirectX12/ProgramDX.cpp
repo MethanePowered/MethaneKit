@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ DirectX 12 implementation of the program interface.
 #include "TypesDX.h"
 #include "DescriptorHeapDX.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 #include <Methane/Platform/Windows/Utils.h>
 

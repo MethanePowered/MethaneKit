@@ -26,8 +26,8 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 
 #include <Methane/Graphics/AppCameraController.h>
 #include <Methane/Data/TimeAnimation.h>
-#include <Methane/Data/Instrumentation.h>
-#include <Methane/Data/ScopeTimer.h>
+#include <Methane/Instrumentation.h>
+#include <Methane/ScopeTimer.h>
 #include <Methane/Platform/Logger.h>
 
 #include <cassert>
@@ -487,6 +487,6 @@ std::string AsteroidsApp::GetParametersString() const
 
 int main(int argc, const char* argv[])
 {
-    Methane::Data::ScopeTimer::InitializeLogger<Methane::Platform::Logger>();
+    Methane::ScopeTimer::InitializeLogger<Methane::Platform::Logger>();
     return Methane::Samples::AsteroidsApp().Run({ argc, argv });
 }

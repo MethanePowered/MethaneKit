@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ MacOS application implementation.
 
 #include <Methane/Platform/MacOS/AppMac.hh>
 #include <Methane/Platform/MacOS/Types.hh>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 using namespace Methane::Platform;
 using namespace Methane::MacOS;

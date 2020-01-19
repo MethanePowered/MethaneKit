@@ -1,12 +1,11 @@
-set(TARGET MethaneDataInstrumentation)
+set(TARGET MethaneInstrumentation)
 
 include(MethaneModules)
 
-get_module_dirs("Methane/Data")
+get_module_dirs("Methane")
 
 set(HEADERS
     ${INCLUDE_DIR}/Instrumentation.h
-    ${INCLUDE_DIR}/Timer.hpp
     ${INCLUDE_DIR}/ScopeTimer.h
     ${INCLUDE_DIR}/ILogger.h
 )

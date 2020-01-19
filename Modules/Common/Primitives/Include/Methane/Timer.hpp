@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,11 +23,9 @@ Basic animation timer for measuring elapsed time since start.
 
 #pragma once
 
-#include "Instrumentation.h"
-
 #include <chrono>
 
-namespace Methane::Data
+namespace Methane
 {
 
 class Timer
@@ -37,7 +35,7 @@ public:
     using TimePoint    = Clock::time_point;
     using TimeDuration = Clock::duration;
 
-    Timer() : m_start_time(Clock::now()) { ITT_FUNCTION_TASK(); }
+    Timer() : m_start_time(Clock::now()) { }
 
     TimePoint    GetStartTime() const noexcept       { return m_start_time; }
     TimeDuration GetElapsedDuration() const noexcept { return Clock::now() - m_start_time; }
@@ -48,13 +46,11 @@ public:
     template<typename T>
     T GetElapsedSeconds() const noexcept
     {
-        ITT_FUNCTION_TASK();
         return std::chrono::duration_cast<std::chrono::duration<T>>(GetElapsedDuration()).count();
     }
 
     void Reset() noexcept
     {
-        ITT_FUNCTION_TASK();
         m_start_time = Clock::now();
     }
 

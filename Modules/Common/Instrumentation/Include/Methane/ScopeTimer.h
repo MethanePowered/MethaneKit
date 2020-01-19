@@ -16,22 +16,22 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Data/ScopeTimer.h
+FILE: Methane/ScopeTimer.h
 Code scope measurement timer with aggregating and averaging of timings.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "Timer.hpp"
 #include "ILogger.h"
 
+#include <Methane/Timer.hpp>
 #include <Methane/Memory.hpp>
 
 #include <string>
 #include <map>
 
-namespace Methane::Data
+namespace Methane
 {
 
 class ScopeTimer : protected Timer

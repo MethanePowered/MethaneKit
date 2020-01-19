@@ -31,7 +31,7 @@ target_link_libraries(${TARGET}
     MethanePlatformUtils
     MethaneGraphicsCore
     MethaneGraphicsHelpers
-    MethaneDataInstrumentation
+    MethaneInstrumentation
 )
 
 set_target_properties(${TARGET}

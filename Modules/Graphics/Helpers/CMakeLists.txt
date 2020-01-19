@@ -41,7 +41,7 @@ target_link_libraries(${TARGET}
     MethaneDataPrimitives
     MethaneDataAnimation
     MethanePlatformUtils
-    MethaneDataInstrumentation
+    MethaneInstrumentation
     PerlinNoise
     CML
 )

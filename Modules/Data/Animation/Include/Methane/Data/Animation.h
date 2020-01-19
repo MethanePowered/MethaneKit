@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ Abstract animation class
 
 #pragma once
 
-#include <Methane/Data/Timer.hpp>
+#include <Methane/Timer.hpp>
 
 namespace Methane::Data
 {

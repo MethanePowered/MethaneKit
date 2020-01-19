@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ Mesh buffers with texture extension structure.
 #include <Methane/Graphics/ParallelRenderCommandList.h>
 #include <Methane/Graphics/Mesh.h>
 #include <Methane/Data/AlignedAllocator.hpp>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Data/Parallel.hpp>
 #include <Methane/Data/Math.hpp>
 

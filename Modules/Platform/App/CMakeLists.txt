@@ -51,7 +51,7 @@ set(LIBRARIES ${LIBRARIES}
     MethanePlatformUtils
     MethanePlatformInput
     MethanePlatformAppView
-    MethaneDataInstrumentation
+    MethaneInstrumentation
     nowide_static
     cxxopts
 )

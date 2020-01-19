@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2020-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ Base frame class provides frame buffer management with resize handling.
 #include "AppContextController.h"
 
 #include <Methane/Data/AppResourceProviders.h>
-#include <Methane/Data/Timer.hpp>
+#include <Methane/Timer.hpp>
 #include <Methane/Data/AnimationsPool.h>
 #include <Methane/Platform/App.h>
 #include <Methane/Platform/AppController.h>
@@ -40,7 +40,7 @@ Base frame class provides frame buffer management with resize handling.
 #include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Graphics/LogoBadge.h>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <vector>
 #include <sstream>
@@ -418,7 +418,7 @@ private:
     const RenderPass::Access::Mask  m_screen_pass_access;
     bool                            m_show_hud_in_window_title;
     bool                            m_show_logo_badge;
-    Data::Timer                     m_title_update_timer;
+    Timer                           m_title_update_timer;
 
     static constexpr double  g_title_update_interval_sec = 1;
 };

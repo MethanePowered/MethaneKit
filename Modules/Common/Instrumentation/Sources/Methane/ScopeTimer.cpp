@@ -16,24 +16,23 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/ScopeTimer.cpp
+FILE: Methane/ScopeTimer.cpp
 Code scope measurement timer with aggregating and averaging of timings.
 
 ******************************************************************************/
 
-#include <Methane/Data/ScopeTimer.h>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/ScopeTimer.h>
+#include <Methane/Instrumentation.h>
 
 #include <sstream>
 #include <chrono>
 
-namespace Methane::Data
+namespace Methane
 {
 
 ScopeTimer::Aggregator& ScopeTimer::Aggregator::Get()
 {
     ITT_FUNCTION_TASK();
-
     static Aggregator s_scope_aggregator;
     return s_scope_aggregator;
 }
@@ -46,6 +45,7 @@ ScopeTimer::Aggregator::~Aggregator()
 
 void ScopeTimer::Aggregator::Flush()
 {
+    ITT_FUNCTION_TASK();
     if (m_sp_logger)
     {
         LogTimings(*m_sp_logger);

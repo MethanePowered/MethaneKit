@@ -144,7 +144,7 @@ set(LIBRARIES ${PLATFORM_LIBRARIES}
     MethanePlatformUtils
     MethanePlatformAppView
     MethaneGraphicsHelpers
-    MethaneDataInstrumentation
+    MethaneInstrumentation
 )
 
 set(HEADERS

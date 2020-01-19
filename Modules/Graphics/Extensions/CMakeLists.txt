@@ -43,7 +43,7 @@ target_link_libraries(${TARGET}
     MethaneCommonPrimitives
     MethanePlatformUtils
     MethaneGraphicsCore
-    MethaneDataInstrumentation
+    MethaneInstrumentation
 )
 
 if (METHANE_USE_OPEN_IMAGE_IO)

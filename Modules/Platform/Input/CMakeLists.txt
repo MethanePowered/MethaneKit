@@ -16,7 +16,7 @@ set(LIBRARIES ${LIBRARIES}
     MethaneCommonPrimitives
     MethaneDataPrimitives
     MethanePlatformUtils
-    MethaneDataInstrumentation
+    MethaneInstrumentation
 )
 
 set(HEADERS
