@@ -153,6 +153,7 @@ set(HEADERS
     ${INCLUDE_DIR}/Context.h
     ${INCLUDE_DIR}/Shader.h
     ${INCLUDE_DIR}/Program.h
+    ${INCLUDE_DIR}/ProgramBindings.h
     ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/Resource.h
     ${INCLUDE_DIR}/Buffer.h
