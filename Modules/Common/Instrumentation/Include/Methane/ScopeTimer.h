@@ -84,9 +84,9 @@ private:
 
 #ifdef SCOPE_TIMERS_ENABLED
 
-#define SCOPE_TIMER(SCOPE_NAME) Methane::Data::ScopeTimer scope_timer(SCOPE_NAME)
+#define SCOPE_TIMER(SCOPE_NAME) Methane::ScopeTimer scope_timer(SCOPE_NAME)
 #define FUNCTION_SCOPE_TIMER() SCOPE_TIMER(__func__)
-#define FLUSH_SCOPE_TIMINGS() Methane::Data::ScopeTimer::Aggregator::Get().Flush()
+#define FLUSH_SCOPE_TIMINGS() Methane::ScopeTimer::Aggregator::Get().Flush()
 
 #else
 
