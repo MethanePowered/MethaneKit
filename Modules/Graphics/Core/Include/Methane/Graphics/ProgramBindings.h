@@ -69,7 +69,7 @@ struct ProgramBindings
     using ResourceLocationsByArgument = std::unordered_map<Program::Argument, Resource::Locations, Program::Argument::Hash>;
 
     // Create ResourceBindings instance
-    static Ptr<ProgramBindings> Create(Program& program, const ResourceLocationsByArgument& resource_locations_by_argument);
+    static Ptr<ProgramBindings> Create(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
     static Ptr<ProgramBindings> CreateCopy(const ProgramBindings& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument = {});
 
     // ResourceBindings interface

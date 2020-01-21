@@ -69,14 +69,14 @@ public:
     ShaderDX& GetVertexShaderDX() noexcept;
     ShaderDX& GetPixelShaderDX() noexcept;
 
-    const wrl::ComPtr<ID3D12RootSignature>& GetNativeRootSignature() const { return m_cp_root_signature; }
+    const wrl::ComPtr<ID3D12RootSignature>& GetNativeRootSignature() const noexcept { return m_cp_root_signature; }
     D3D12_INPUT_LAYOUT_DESC                 GetNativeInputLayoutDesc() const noexcept;
-
-protected:
-    void InitRootSignature();
 
     ContextDX& GetContextDX() noexcept;
     const ContextDX& GetContextDX() const noexcept;
+
+protected:
+    void InitRootSignature();
 
     wrl::ComPtr<ID3D12RootSignature>      m_cp_root_signature;
     std::vector<D3D12_INPUT_ELEMENT_DESC> m_dx_input_layout;

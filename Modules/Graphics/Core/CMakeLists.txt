@@ -17,6 +17,8 @@ if (WIN32)
         ${SOURCES_GRAPHICS_DIR}/ShaderDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ProgramDX.h
         ${SOURCES_GRAPHICS_DIR}/ProgramDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/ProgramBindingsDX.h
+        ${SOURCES_GRAPHICS_DIR}/ProgramBindingsDX.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderStateDX.h
         ${SOURCES_GRAPHICS_DIR}/RenderStateDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ResourceDX.h
