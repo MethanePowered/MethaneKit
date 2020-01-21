@@ -45,6 +45,7 @@ class ProgramBase
     , public std::enable_shared_from_this<ProgramBase>
 {
     friend class ShaderBase;
+    friend class ProgramBindingsBase;
 
 public:
     class ResourceBindingsBase

@@ -73,7 +73,7 @@ struct ProgramBindings
     static Ptr<ProgramBindings> CreateCopy(const ProgramBindings& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument = {});
 
     // ResourceBindings interface
-    virtual const Ptr<Shader::ResourceBinding>& Get(const Program::Argument& shader_argument) const = 0;
+    virtual const Ptr<ArgumentBinding>& Get(const Program::Argument& shader_argument) const = 0;
     virtual void Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior = ApplyBehavior::AllIncremental) const = 0;
 
     virtual ~ProgramBindings() = default;

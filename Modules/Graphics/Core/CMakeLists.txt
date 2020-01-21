@@ -192,6 +192,8 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/ShaderBase.cpp
     ${SOURCES_DIR}/ProgramBase.h
     ${SOURCES_DIR}/ProgramBase.cpp
+    ${SOURCES_DIR}/ProgramBindingsBase.h
+    ${SOURCES_DIR}/ProgramBindingsBase.cpp
     ${SOURCES_DIR}/RenderStateBase.h
     ${SOURCES_DIR}/RenderStateBase.cpp
     ${SOURCES_DIR}/ResourceBase.h
