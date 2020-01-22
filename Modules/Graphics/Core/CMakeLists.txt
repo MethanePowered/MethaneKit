@@ -69,6 +69,8 @@ elseif(APPLE)
         ${SOURCES_GRAPHICS_DIR}/ShaderMT.mm
         ${SOURCES_GRAPHICS_DIR}/ProgramMT.hh
         ${SOURCES_GRAPHICS_DIR}/ProgramMT.mm
+        ${SOURCES_GRAPHICS_DIR}/ProgramBindingsMT.hh
+        ${SOURCES_GRAPHICS_DIR}/ProgramBindingsMT.mm
         ${SOURCES_GRAPHICS_DIR}/RenderStateMT.hh
         ${SOURCES_GRAPHICS_DIR}/RenderStateMT.mm
         ${SOURCES_GRAPHICS_DIR}/ResourceMT.hh
