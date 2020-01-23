@@ -117,6 +117,8 @@ else() # Linux
         ${SOURCES_GRAPHICS_DIR}/ShaderVK.cpp
         ${SOURCES_GRAPHICS_DIR}/ProgramVK.h
         ${SOURCES_GRAPHICS_DIR}/ProgramVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/ProgramBindingsVK.h
+        ${SOURCES_GRAPHICS_DIR}/ProgramBindingsVK.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderStateVK.h
         ${SOURCES_GRAPHICS_DIR}/RenderStateVK.cpp
         ${SOURCES_GRAPHICS_DIR}/ResourceVK.h
