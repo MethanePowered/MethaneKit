@@ -56,6 +56,8 @@ public:
             bool           is_addressable;
         };
 
+        static Ptr<ArgumentBindingBase> CreateCopy(const ArgumentBindingBase& other_argument_binding);
+
         ArgumentBindingBase(ContextBase& context, const Settings& settings);
         ArgumentBindingBase(const ArgumentBindingBase& other) = default;
 
@@ -82,7 +84,7 @@ public:
     };
 
     ProgramBindingsBase(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
-    ProgramBindingsBase(const ProgramBindingsBase& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
+    ProgramBindingsBase(const ProgramBindingsBase& other_program_bingings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
     ~ProgramBindingsBase() override;
 
     Ptr<ProgramBindingsBase>  GetPtr()              { return shared_from_this(); }
@@ -102,13 +104,13 @@ protected:
     void SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument);
     void VerifyAllArgumentsAreBoundToResources();
 
-    using BindingByArgument = std::unordered_map<Program::Argument, Ptr<ArgumentBindingBase>, Program::Argument::Hash>;
+    using BindingByArgument = std::unordered_map<Program::Argument, Ptr<ArgumentBinding>, Program::Argument::Hash>;
     using DescriptorHeapReservationByType = std::array<std::optional<DescriptorHeap::Reservation>,
                                                        static_cast<uint32_t>(DescriptorHeap::Type::Count)>;
 
     const Ptr<Program>              m_sp_program;
     Program::Arguments              m_arguments;
-    BindingByArgument               m_resource_binding_by_argument;
+    BindingByArgument               m_binding_by_argument;
     DescriptorHeapReservationByType m_descriptor_heap_reservations_by_type;
 };
 

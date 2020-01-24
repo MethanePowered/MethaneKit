@@ -123,7 +123,7 @@ ScreenQuad::ScreenQuad(Context& context, Ptr<Texture> sp_texture, Settings setti
     m_sp_const_buffer = Buffer::CreateConstantBuffer(context, Buffer::GetAlignedBufferSize(const_buffer_size));
     m_sp_const_buffer->SetName(m_settings.name + " Screen-Quad Constants Buffer");
 
-    m_sp_const_resource_bindings = Program::ResourceBindings::Create(state_settings.sp_program, {
+    m_sp_const_program_bindings = ProgramBindings::Create(state_settings.sp_program, {
         { { Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer    } } },
         { { Shader::Type::Pixel, "g_texture"   }, { { m_sp_texture         } } },
         { { Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler } } },
@@ -176,7 +176,7 @@ void ScreenQuad::Draw(RenderCommandList& cmd_list) const
     ITT_FUNCTION_TASK();
     
     cmd_list.Reset(m_sp_state, m_debug_region_name);
-    cmd_list.SetResourceBindings(*m_sp_const_resource_bindings);
+    cmd_list.SetResourceBindings(*m_sp_const_program_bindings);
     cmd_list.SetVertexBuffers({ *m_sp_vertex_buffer });
     cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
 }

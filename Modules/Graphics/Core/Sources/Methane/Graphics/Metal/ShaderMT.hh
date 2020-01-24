@@ -39,41 +39,12 @@ class ProgramMT;
 class ShaderMT : public ShaderBase
 {
 public:
-    class ResourceBindingMT : public ResourceBindingBase
-    {
-    public:
-        struct Settings
-        {
-            ResourceBindingBase::Settings    base;
-            uint32_t                         argument_index;
-        };
-        
-        ResourceBindingMT(ContextBase& context, const Settings& settings);
-        ResourceBindingMT(const ResourceBindingMT& other) = default;
-
-        // ResourceBinding interface
-        void SetResourceLocations(const Resource::Locations& resource_locations) override;
-        
-        const Settings& GetSettings() const noexcept { return m_settings; }
-        const std::vector<id<MTLSamplerState>>& GetNativeSamplerStates() const { return m_mtl_sampler_states; }
-        const std::vector<id<MTLTexture>>&      GetNativeTextures() const      { return m_mtl_textures; }
-        const std::vector<id<MTLBuffer>>&       GetNativeBuffers() const       { return m_mtl_buffers; }
-        const std::vector<NSUInteger>&          GetBufferOffsets() const       { return m_mtl_buffer_offsets; }
-        
-    protected:
-        const Settings                   m_settings;
-        std::vector<id<MTLSamplerState>> m_mtl_sampler_states;
-        std::vector<id<MTLTexture>>      m_mtl_textures;
-        std::vector<id<MTLBuffer>>       m_mtl_buffers;
-        std::vector<NSUInteger>          m_mtl_buffer_offsets;
-    };
-    
     ShaderMT(Shader::Type shader_type, ContextMT& context, const Settings& settings);
     ~ShaderMT() override;
     
     // ShaderBase interface
-    Ptrs<ResourceBinding> GetResourceBindings(const std::set<std::string>& constant_argument_names,
-                                              const std::set<std::string>& addressable_argument_names) const override;
+    ArgumentBindings GetArgumentBindings(const std::set<std::string>& constant_argument_names,
+                                         const std::set<std::string>& addressable_argument_names) const override;
     
     id<MTLFunction>& GetNativeFunction() noexcept                           { return m_mtl_function; }
     MTLVertexDescriptor* GetNativeVertexDescriptor(const ProgramMT& program) const;

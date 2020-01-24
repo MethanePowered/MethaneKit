@@ -37,16 +37,16 @@ Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& sp_program, con
     return std::make_shared<ProgramBindingsVK>(sp_program, resource_locations_by_argument);
 }
 
-Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_location_by_argument)
+Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bingings, const ResourceLocationsByArgument& replace_resource_location_by_argument)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ProgramBindingsVK>(static_cast<const ProgramBindingsVK&>(other_resource_bingings), replace_resource_location_by_argument);
+    return std::make_shared<ProgramBindingsVK>(static_cast<const ProgramBindingsVK&>(other_program_bingings), replace_resource_location_by_argument);
 }
 
-Ptr<ProgramBindings::ArgumentBinding> ProgramBindings::ArgumentBinding::CreateCopy(const ArgumentBinding& other_resource_binging)
+Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindingBase::CreateCopy(const ArgumentBindingBase& other_argument_binding)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ProgramBindingsVK::ArgumentBindingVK>(static_cast<const ProgramBindingsVK::ArgumentBindingVK&>(other_resource_binging));
+    return std::make_shared<ProgramBindingsVK::ArgumentBindingVK>(static_cast<const ProgramBindingsVK::ArgumentBindingVK&>(other_argument_binding));
 }
 
 ProgramBindingsVK::ArgumentBindingVK::ArgumentBindingVK(ContextBase& context, const Settings& settings)
@@ -69,8 +69,8 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& sp_program, const Resou
     ITT_FUNCTION_TASK();
 }
 
-ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_resource_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument)
-    : ProgramBindingsBase(other_resource_bindings, replace_resource_location_by_argument)
+ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument)
+    : ProgramBindingsBase(other_program_bindings, replace_resource_location_by_argument)
 {
     ITT_FUNCTION_TASK();
 }
@@ -82,13 +82,13 @@ void ProgramBindingsVK::Apply(CommandList& command_list, ApplyBehavior::Mask app
     RenderCommandListVK& vulkan_command_list = dynamic_cast<RenderCommandListVK&>(command_list);
     const CommandListBase::CommandState& command_state = vulkan_command_list.GetCommandState();
 
-    for(const auto& resource_binding_by_argument : m_resource_binding_by_argument)
+    for(const auto& binding_by_argument : m_binding_by_argument)
     {
-        const Program::Argument& program_argument = resource_binding_by_argument.first;
-        const ProgramBindingsVK::ArgumentBindingVK& vulkan_resource_binding = static_cast<const ProgramBindingsVK::ArgumentBindingVK&>(*resource_binding_by_argument.second);
+        const Program::Argument& program_argument = binding_by_argument.first;
+        const ProgramBindingsVK::ArgumentBindingVK& vulkan_argument_binding = static_cast<const ProgramBindingsVK::ArgumentBindingVK&>(*binding_by_argument.second);
 
         if ((apply_behavior & ApplyBehavior::ConstantOnce || apply_behavior & ApplyBehavior::ChangesOnly) &&
-            vulkan_resource_binding.IsAlreadyApplied(*m_sp_program, program_argument, command_state, apply_behavior & ApplyBehavior::ChangesOnly))
+            vulkan_argument_binding.IsAlreadyApplied(*m_sp_program, program_argument, command_state, apply_behavior & ApplyBehavior::ChangesOnly))
             continue;
     }
 }

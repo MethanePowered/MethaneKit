@@ -147,7 +147,7 @@ void TexturedCubeApp::Init()
         frame.sp_uniforms_buffer->SetName(IndexedName("Uniforms Buffer", frame.index));
 
         // Configure program resource bindings
-        frame.sp_resource_bindings = gfx::Program::ResourceBindings::Create(m_sp_program, {
+        frame.sp_program_bindings = gfx::ProgramBindings::Create(m_sp_program, {
             { { gfx::Shader::Type::All,   "g_uniforms"  }, { { frame.sp_uniforms_buffer } } },
             { { gfx::Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer        } } },
             { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_sp_cube_texture        } } },
@@ -234,7 +234,7 @@ bool TexturedCubeApp::Render()
 
     assert(!!frame.sp_uniforms_buffer);
     assert(!!frame.sp_cmd_list);
-    assert(!!frame.sp_resource_bindings);
+    assert(!!frame.sp_program_bindings);
     assert(!!m_sp_vertex_buffer);
     assert(!!m_sp_index_buffer);
     assert(!!m_sp_state);
@@ -244,7 +244,7 @@ bool TexturedCubeApp::Render()
 
     // Issue commands for cube rendering
     frame.sp_cmd_list->Reset(m_sp_state, "Cube redering");
-    frame.sp_cmd_list->SetResourceBindings(*frame.sp_resource_bindings);
+    frame.sp_cmd_list->SetResourceBindings(*frame.sp_program_bindings);
     frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
     frame.sp_cmd_list->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
 

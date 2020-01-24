@@ -69,7 +69,7 @@ void ResourceManager::CompleteInitialization()
 {
     ITT_FUNCTION_TASK();
 
-    std::lock_guard<std::mutex> lock_guard(m_deferred_resource_bindings_mutex);
+    std::lock_guard<std::mutex> lock_guard(m_deferred_program_bindings_mutex);
 
     for (const Ptrs<DescriptorHeap>& desc_heaps : m_descriptor_heap_types)
     {
@@ -80,18 +80,18 @@ void ResourceManager::CompleteInitialization()
         }
     }
 
-    Data::ParallelForEach<WeakPtrs<Program::ResourceBindings>::const_iterator, const WeakPtr<Program::ResourceBindings>>(
-        m_deferred_resource_bindings.begin(), m_deferred_resource_bindings.end(),
-        [](const WeakPtr<Program::ResourceBindings>& wp_resource_bindings)
+    Data::ParallelForEach<WeakPtrs<ProgramBindings>::const_iterator, const WeakPtr<ProgramBindings>>(
+        m_deferred_program_bindings.begin(), m_deferred_program_bindings.end(),
+        [](const WeakPtr<ProgramBindings>& wp_program_bindings)
         {
-            Ptr<Program::ResourceBindings> sp_resource_bindings = wp_resource_bindings.lock();
-            if (!sp_resource_bindings)
+            Ptr<ProgramBindings> sp_program_bindings = wp_program_bindings.lock();
+            if (!sp_program_bindings)
                 return;
 
-            static_cast<ProgramBase::ResourceBindingsBase&>(*sp_resource_bindings).CompleteInitialization();
+            static_cast<ProgramBindingsBase&>(*sp_program_bindings).CompleteInitialization();
         });
 
-    m_deferred_resource_bindings.clear();
+    m_deferred_program_bindings.clear();
 }
 
 void ResourceManager::Release()
@@ -109,12 +109,12 @@ void ResourceManager::Release()
     }
 }
 
-void ResourceManager::DeferResourceBindingsInitialization(Program::ResourceBindings& resource_bindings)
+void ResourceManager::DeferResourceBindingsInitialization(ProgramBindings& program_bindings)
 {
     ITT_FUNCTION_TASK();
 
-    std::lock_guard<std::mutex> lock_guard(m_deferred_resource_bindings_mutex);
-    m_deferred_resource_bindings.push_back(static_cast<ProgramBase::ResourceBindingsBase&>(resource_bindings).GetPtr());
+    std::lock_guard<std::mutex> lock_guard(m_deferred_program_bindings_mutex);
+    m_deferred_program_bindings.push_back(static_cast<ProgramBindingsBase&>(program_bindings).GetPtr());
 }
 
 uint32_t ResourceManager::CreateDescriptorHeap(const DescriptorHeap::Settings& settings)

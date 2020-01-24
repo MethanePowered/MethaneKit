@@ -173,14 +173,14 @@ uint32_t CommandListBase::GetCurrentFrameIndex() const
 
 void CommandListBase::ResetCommandState()
 {
-    m_command_state.sp_resource_bindings.reset();
+    m_command_state.sp_program_bindings.reset();
 }
 
-void CommandListBase::SetResourceBindings(Program::ResourceBindings& resource_bindings, Program::ResourceBindings::ApplyBehavior::Mask apply_behavior)
+void CommandListBase::SetResourceBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior)
 {
     ITT_FUNCTION_TASK();
-    resource_bindings.Apply(*this, apply_behavior);
-    m_command_state.sp_resource_bindings = static_cast<ProgramBase::ResourceBindingsBase&>(resource_bindings).GetPtr();
+    program_bindings.Apply(*this, apply_behavior);
+    m_command_state.sp_program_bindings = static_cast<ProgramBindingsBase&>(program_bindings).GetPtr();
 }
 
 void CommandListBase::SetResourceTransitionBarriers(const Refs<Resource>& resources, ResourceBase::State state_before, ResourceBase::State state_after)

@@ -23,16 +23,12 @@ Metal implementation of the shader interface.
 
 #include "ShaderMT.hh"
 #include "ProgramMT.hh"
-#include "SamplerMT.hh"
-#include "BufferMT.hh"
-#include "TextureMT.hh"
+#include "ProgramBindingsMT.hh"
 #include "ContextMT.hh"
 #include "TypesMT.hh"
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
-
-#include <algorithm>
 
 namespace Methane::Graphics
 {
@@ -90,57 +86,7 @@ static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access) 
     return "Unknown";
 }
 #endif
-    
-Ptr<Shader::ResourceBinding> Shader::ResourceBinding::CreateCopy(const ResourceBinding& other_resource_binging)
-{
-    ITT_FUNCTION_TASK();
-    return std::make_shared<ShaderMT::ResourceBindingMT>(static_cast<const ShaderMT::ResourceBindingMT&>(other_resource_binging));
-}
 
-ShaderMT::ResourceBindingMT::ResourceBindingMT(ContextBase& context, const Settings& settings)
-    : ResourceBindingBase(context, settings.base)
-    , m_settings(settings)
-{
-    ITT_FUNCTION_TASK();
-}
-
-void ShaderMT::ResourceBindingMT::SetResourceLocations(const Resource::Locations& resource_locations)
-{
-    ITT_FUNCTION_TASK();
-    ResourceBindingBase::SetResourceLocations(resource_locations);
-
-    m_mtl_sampler_states.clear();
-    m_mtl_textures.clear();
-    m_mtl_buffers.clear();
-    m_mtl_buffer_offsets.clear();
-
-    switch(m_settings.base.resource_type)
-    {
-    case Resource::Type::Sampler:
-        m_mtl_sampler_states.reserve(m_resource_locations.size());
-        std::transform(m_resource_locations.begin(), m_resource_locations.end(), std::back_inserter(m_mtl_sampler_states),
-                       [](const Resource::Location& resource_location)
-                       { return dynamic_cast<const SamplerMT&>(resource_location.GetResource()).GetNativeSamplerState(); });
-        break;
-
-    case Resource::Type::Texture:
-        m_mtl_textures.reserve(m_resource_locations.size());
-        std::transform(m_resource_locations.begin(), m_resource_locations.end(), std::back_inserter(m_mtl_textures),
-                       [](const Resource::Location& resource_location)
-                       { return dynamic_cast<const TextureMT&>(resource_location.GetResource()).GetNativeTexture(); });
-        break;
-
-    case Resource::Type::Buffer:
-        m_mtl_buffers.reserve(m_resource_locations.size());
-        m_mtl_buffer_offsets.reserve(m_resource_locations.size());
-        for (const Resource::Location& resource_location : m_resource_locations)
-        {
-            m_mtl_buffers.push_back(dynamic_cast<const BufferMT&>(resource_location.GetResource()).GetNativeBuffer());
-            m_mtl_buffer_offsets.push_back(static_cast<NSUInteger>(resource_location.GetOffset()));
-        }
-        break;
-    }
-}
 
 Ptr<Shader> Shader::Create(Shader::Type shader_type, Context& context, const Settings& settings)
 {
@@ -167,14 +113,14 @@ ShaderMT::~ShaderMT()
     [m_mtl_function release];
 }
 
-Ptrs<ShaderBase::ResourceBinding> ShaderMT::GetResourceBindings(const std::set<std::string>& constant_argument_names,
+ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const std::set<std::string>& constant_argument_names,
                                                            const std::set<std::string>& addressable_argument_names) const
 {
     ITT_FUNCTION_TASK();
 
-    Ptrs<ShaderBase::ResourceBinding> resource_bindings;
+    ArgumentBindings argument_bindings;
     if (m_mtl_arguments == nil)
-        return resource_bindings;
+        return argument_bindings;
     
 #ifndef NDEBUG
     NSLog(@"%s shader '%s' arguments:", GetTypeName().c_str(), GetCompiledEntryFunctionName().c_str());
@@ -182,7 +128,7 @@ Ptrs<ShaderBase::ResourceBinding> ShaderMT::GetResourceBindings(const std::set<s
 
     for(MTLArgument* mtl_arg in m_mtl_arguments)
     {
-        if (mtl_arg.active == NO)
+        if (!mtl_arg.active)
             continue;
 
         const std::string argument_name = Methane::MacOS::ConvertFromNSType<NSString, std::string>(mtl_arg.name);
@@ -195,9 +141,9 @@ Ptrs<ShaderBase::ResourceBinding> ShaderMT::GetResourceBindings(const std::set<s
         const bool is_constant_binding    = constant_argument_names.find(argument_name)    != constant_argument_names.end();
         const bool is_addressable_binding = addressable_argument_names.find(argument_name) != addressable_argument_names.end();
         
-        resource_bindings.push_back(std::make_shared<ResourceBindingMT>(
+        argument_bindings.push_back(std::make_shared<ProgramBindingsMT::ArgumentBindingMT>(
             m_context,
-            ResourceBindingMT::Settings
+            ProgramBindingsMT::ArgumentBindingMT::Settings
             {
                 {
                     m_type,
@@ -225,7 +171,7 @@ Ptrs<ShaderBase::ResourceBinding> ShaderMT::GetResourceBindings(const std::set<s
 #endif
     }
 
-    return resource_bindings;
+    return argument_bindings;
 }
 
 MTLVertexDescriptor* ShaderMT::GetNativeVertexDescriptor(const ProgramMT& program) const
@@ -238,7 +184,7 @@ MTLVertexDescriptor* ShaderMT::GetNativeVertexDescriptor(const ProgramMT& progra
     std::vector<uint32_t> input_buffer_byte_offsets;
     for(MTLVertexAttribute* mtl_vertex_attrib in m_mtl_function.vertexAttributes)
     {
-        if (mtl_vertex_attrib.active == NO)
+        if (!mtl_vertex_attrib.active)
             continue;
         
         const MTLVertexFormat mtl_vertex_format = TypeConverterMT::MetalDataTypeToVertexFormat(mtl_vertex_attrib.attributeType);

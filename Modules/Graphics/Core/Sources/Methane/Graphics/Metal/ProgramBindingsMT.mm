@@ -26,14 +26,9 @@ Metal implementation of the program bindings interface.
 #include "TextureMT.hh"
 #include "SamplerMT.hh"
 #include "ContextMT.hh"
-#include "DeviceMT.hh"
 #include "RenderCommandListMT.hh"
-#include "TypesMT.hh"
 
 #include <Methane/Instrumentation.h>
-#include <Methane/Platform/MacOS/Types.hh>
-
-#include <cassert>
 
 namespace Methane::Graphics
 {
@@ -168,16 +163,16 @@ Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& sp_program, con
     return std::make_shared<ProgramBindingsMT>(sp_program, resource_locations_by_argument);
 }
 
-Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
+Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ProgramBindingsMT>(static_cast<const ProgramBindingsMT&>(other_resource_bingings), replace_resource_locations_by_argument);
+    return std::make_shared<ProgramBindingsMT>(static_cast<const ProgramBindingsMT&>(other_program_bingings), replace_resource_locations_by_argument);
 }
 
-Ptr<ProgramBindings::ArgumentBinding> ProgramBindings::ArgumentBinding::CreateCopy(const ArgumentBinding& other_resource_binging)
+Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindingBase::CreateCopy(const ArgumentBindingBase& other_argument_binding)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ProgramBindingsMT::ArgumentBindingMT>(static_cast<const ProgramBindingsMT::ArgumentBindingMT&>(other_resource_binging));
+    return std::make_shared<ProgramBindingsMT::ArgumentBindingMT>(static_cast<const ProgramBindingsMT::ArgumentBindingMT&>(other_argument_binding));
 }
 
 ProgramBindingsMT::ArgumentBindingMT::ArgumentBindingMT(ContextBase& context, const Settings& settings)
@@ -231,8 +226,8 @@ ProgramBindingsMT::ProgramBindingsMT(const Ptr<Program>& sp_program, const Resou
     ITT_FUNCTION_TASK();
 }
 
-ProgramBindingsMT::ProgramBindingsMT(const ProgramBindingsMT& other_resource_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
-    : ProgramBindingsBase(other_resource_bindings, replace_resource_locations_by_argument)
+ProgramBindingsMT::ProgramBindingsMT(const ProgramBindingsMT& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
+    : ProgramBindingsBase(other_program_bindings, replace_resource_locations_by_argument)
 {
     ITT_FUNCTION_TASK();
 }
@@ -245,30 +240,30 @@ void ProgramBindingsMT::Apply(CommandList& command_list, ApplyBehavior::Mask app
     const CommandListBase::CommandState& command_state = metal_command_list.GetCommandState();
     id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeRenderEncoder();
     
-    for(const auto& resource_binding_by_argument : m_resource_binding_by_argument)
+    for(const auto& binding_by_argument : m_binding_by_argument)
     {
-        const Program::Argument& program_argument = resource_binding_by_argument.first;
-        const ArgumentBindingMT& metal_resource_binding = static_cast<const ArgumentBindingMT&>(*resource_binding_by_argument.second);
+        const Program::Argument& program_argument = binding_by_argument.first;
+        const ArgumentBindingMT& metal_argument_binding = static_cast<const ArgumentBindingMT&>(*binding_by_argument.second);
 
         if ((apply_behavior & ApplyBehavior::ConstantOnce || apply_behavior & ApplyBehavior::ChangesOnly) &&
-            metal_resource_binding.IsAlreadyApplied(*m_sp_program, program_argument, command_state, apply_behavior & ApplyBehavior::ChangesOnly))
+            metal_argument_binding.IsAlreadyApplied(*m_sp_program, program_argument, command_state, apply_behavior & ApplyBehavior::ChangesOnly))
             continue;
 
-        const uint32_t arg_index = metal_resource_binding.GetSettings().argument_index;
+        const uint32_t arg_index = metal_argument_binding.GetSettings().argument_index;
 
-        switch(metal_resource_binding.GetSettings().base.resource_type)
+        switch(metal_argument_binding.GetSettings().base.resource_type)
         {
             case Resource::Type::Buffer:
-                SetMetalResourcesForAll(program_argument.shader_type, *m_sp_program, mtl_cmd_encoder, metal_resource_binding.GetNativeBuffers(), arg_index,
-                                       metal_resource_binding.GetBufferOffsets());
+                SetMetalResourcesForAll(program_argument.shader_type, *m_sp_program, mtl_cmd_encoder, metal_argument_binding.GetNativeBuffers(), arg_index,
+                                       metal_argument_binding.GetBufferOffsets());
                 break;
 
             case Resource::Type::Texture:
-                SetMetalResourcesForAll(program_argument.shader_type, *m_sp_program, mtl_cmd_encoder, metal_resource_binding.GetNativeTextures(), arg_index);
+                SetMetalResourcesForAll(program_argument.shader_type, *m_sp_program, mtl_cmd_encoder, metal_argument_binding.GetNativeTextures(), arg_index);
                 break;
 
             case Resource::Type::Sampler:
-                SetMetalResourcesForAll(program_argument.shader_type, *m_sp_program, mtl_cmd_encoder, metal_resource_binding.GetNativeSamplerStates(), arg_index);
+                SetMetalResourcesForAll(program_argument.shader_type, *m_sp_program, mtl_cmd_encoder, metal_argument_binding.GetNativeSamplerStates(), arg_index);
                 break;
 
             default: assert(0);

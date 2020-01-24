@@ -97,7 +97,7 @@ public:
     };
     
     ProgramBindingsDX(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
-    ProgramBindingsDX(const ProgramBindingsDX& other_resource_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument);
+    ProgramBindingsDX(const ProgramBindingsDX& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument);
 
     void Initialize();
 
@@ -106,8 +106,8 @@ public:
     void Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior) const override;
 
 protected:
-    using ApplyResourceBindingFunc = std::function<void(const Program::Argument&, ArgumentBindingDX&, const DescriptorHeap::Reservation*)>;
-    void ForEachResourceBinding(ApplyResourceBindingFunc apply_resource_binding) const;
+    using ApplyArgumentBindingFunc = std::function<void(const Program::Argument&, ArgumentBindingDX&, const DescriptorHeap::Reservation*)>;
+    void ForEachResourceBinding(ApplyArgumentBindingFunc apply_argument_binding) const;
     void CopyDescriptorsToGpu();
 };
 

@@ -34,48 +34,6 @@ Vulkan implementation of the program interface.
 namespace Methane::Graphics
 {
 
-Ptr<Program::ResourceBindings> Program::ResourceBindings::Create(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
-{
-    ITT_FUNCTION_TASK();
-    return std::make_shared<ProgramVK::ResourceBindingsVK>(sp_program, resource_locations_by_argument);
-}
-
-Ptr<Program::ResourceBindings> Program::ResourceBindings::CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_location_by_argument)
-{
-    ITT_FUNCTION_TASK();
-    return std::make_shared<ProgramVK::ResourceBindingsVK>(static_cast<const ProgramVK::ResourceBindingsVK&>(other_resource_bingings), replace_resource_location_by_argument);
-}
-
-ProgramVK::ResourceBindingsVK::ResourceBindingsVK(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
-    : ResourceBindingsBase(sp_program, resource_locations_by_argument)
-{
-    ITT_FUNCTION_TASK();
-}
-
-ProgramVK::ResourceBindingsVK::ResourceBindingsVK(const ResourceBindingsVK& other_resource_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument)
-    : ResourceBindingsBase(other_resource_bindings, replace_resource_location_by_argument)
-{
-    ITT_FUNCTION_TASK();
-}
-
-void ProgramVK::ResourceBindingsVK::Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior) const
-{
-    ITT_FUNCTION_TASK();
-
-    RenderCommandListVK& vulkan_command_list = dynamic_cast<RenderCommandListVK&>(command_list);
-    const CommandListBase::CommandState& command_state = vulkan_command_list.GetCommandState();
-
-    for(const auto& resource_binding_by_argument : m_resource_binding_by_argument)
-    {
-        const Argument& program_argument = resource_binding_by_argument.first;
-        const ShaderVK::ResourceBindingVK& vulkan_resource_binding = static_cast<const ShaderVK::ResourceBindingVK&>(*resource_binding_by_argument.second);
-
-        if ((apply_behavior & ApplyBehavior::ConstantOnce || apply_behavior & ApplyBehavior::ChangesOnly) &&
-            vulkan_resource_binding.IsAlreadyApplied(*m_sp_program, program_argument, command_state, apply_behavior & ApplyBehavior::ChangesOnly))
-            continue;
-    }
-}
-
 Ptr<Program> Program::Create(Context& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();

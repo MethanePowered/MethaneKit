@@ -34,19 +34,6 @@ class ShaderVK;
 class ProgramVK : public ProgramBase
 {
 public:
-    class ResourceBindingsVK : public ResourceBindingsBase
-    {
-    public:
-        ResourceBindingsVK(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
-        ResourceBindingsVK(const ResourceBindingsVK& other_resource_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
-
-        // ResourceBindings interface
-        void Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior) const override;
-        
-        // ResourceBindingsBase interface
-        void CompleteInitialization() override { }
-    };
-
     ProgramVK(ContextBase& context, const Settings& settings);
     ~ProgramVK() override;
 

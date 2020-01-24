@@ -48,40 +48,6 @@ class ProgramBase
     friend class ProgramBindingsBase;
 
 public:
-    class ResourceBindingsBase
-        : public ResourceBindings
-        , public std::enable_shared_from_this<ResourceBindingsBase>
-    {
-    public:
-        ResourceBindingsBase(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
-        ResourceBindingsBase(const ResourceBindingsBase& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
-        ~ResourceBindingsBase() override;
-
-        Ptr<ResourceBindingsBase> GetPtr()               { return shared_from_this(); }
-        const Arguments&          GetArguments() const   { return m_arguments; }
-        const Program&            GetProgram() const     { return *m_sp_program; }
-
-        // ResourceBindings interface
-        const Ptr<Shader::ResourceBinding>& Get(const Argument& shader_argument) const override;
-
-        // ResourceBindingsBase interface
-        virtual void CompleteInitialization() = 0;
-
-        bool AllArgumentsAreBoundToResources(std::string& missing_args) const;
-
-    protected:
-        using DescriptorHeapReservationByType = std::array<std::optional<DescriptorHeap::Reservation>, static_cast<uint32_t>(DescriptorHeap::Type::Count)>;
-
-        void ReserveDescriptorHeapRanges();
-        void SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument);
-        void VerifyAllArgumentsAreBoundToResources();
-
-        const Ptr<Program>              m_sp_program;
-        Arguments                       m_arguments;
-        ResourceBindingByArgument       m_resource_binding_by_argument;
-        DescriptorHeapReservationByType m_descriptor_heap_reservations_by_type;
-    };
-
     ProgramBase(ContextBase& context, const Settings& settings);
     ~ProgramBase() override;
 
@@ -113,13 +79,13 @@ protected:
 
     using DescriptorRangeByHeapType = std::map<DescriptorHeap::Type, DescriptorHeapReservation>;
 
-    ContextBase&              m_context;
-    const Settings            m_settings;
-    const ShadersByType       m_shaders_by_type;
-    const Shader::Types       m_shader_types;
-    ResourceBindingByArgument m_resource_binding_by_argument;
-    DescriptorRangeByHeapType m_constant_descriptor_range_by_heap_type;
-    std::mutex                m_constant_descriptor_ranges_reservation_mutex;
+    ContextBase&                        m_context;
+    const Settings                      m_settings;
+    const ShadersByType                 m_shaders_by_type;
+    const Shader::Types                 m_shader_types;
+    ProgramBindings::ArgumentBindings   m_binding_by_argument;
+    DescriptorRangeByHeapType           m_constant_descriptor_range_by_heap_type;
+    std::mutex                          m_constant_descriptor_ranges_reservation_mutex;
 };
 
 } // namespace Methane::Graphics

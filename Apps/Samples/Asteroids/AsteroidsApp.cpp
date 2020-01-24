@@ -275,15 +275,15 @@ void AsteroidsApp::Init()
         frame.asteroids.sp_uniforms_buffer->SetName(IndexedName("Asteroids Array Uniforms Buffer", frame.index));
 
         // Resource bindings for Sky-Box rendering
-        frame.skybox.resource_bindings_per_instance.resize(1);
-        frame.skybox.resource_bindings_per_instance[0] = m_sp_sky_box->CreateResourceBindings(frame.skybox.sp_uniforms_buffer);
+        frame.skybox.program_bindings_per_instance.resize(1);
+        frame.skybox.program_bindings_per_instance[0] = m_sp_sky_box->CreateResourceBindings(frame.skybox.sp_uniforms_buffer);
 
         // Resource bindings for Planet rendering
-        frame.planet.resource_bindings_per_instance.resize(1);
-        frame.planet.resource_bindings_per_instance[0] = m_sp_planet->CreateResourceBindings(m_sp_const_buffer, frame.planet.sp_uniforms_buffer);
+        frame.planet.program_bindings_per_instance.resize(1);
+        frame.planet.program_bindings_per_instance[0] = m_sp_planet->CreateResourceBindings(m_sp_const_buffer, frame.planet.sp_uniforms_buffer);
 
         // Resource bindings for Asteroids rendering
-        frame.asteroids.resource_bindings_per_instance = m_sp_asteroids_array->CreateResourceBindings(m_sp_const_buffer, frame.sp_scene_uniforms_buffer, frame.asteroids.sp_uniforms_buffer);
+        frame.asteroids.program_bindings_per_instance = m_sp_asteroids_array->CreateResourceBindings(m_sp_const_buffer, frame.sp_scene_uniforms_buffer, frame.asteroids.sp_uniforms_buffer);
     }
 
     // Setup animations

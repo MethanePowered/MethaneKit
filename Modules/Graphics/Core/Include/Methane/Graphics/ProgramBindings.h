@@ -24,6 +24,7 @@ Methane program bindings interface for resources binding to program arguments.
 #pragma once
 
 #include "Program.h"
+#include "Resource.h"
 
 #include <Methane/Memory.hpp>
 
@@ -37,8 +38,6 @@ struct ProgramBindings
 {
     struct ArgumentBinding
     {
-        static Ptr<ArgumentBinding> CreateCopy(const ArgumentBinding& other_resource_binging);
-
         // ResourceBinding interface
         virtual Shader::Type               GetShaderType() const = 0;
         virtual const std::string&         GetArgumentName() const = 0;
@@ -50,6 +49,8 @@ struct ProgramBindings
 
         virtual ~ArgumentBinding() = default;
     };
+
+    using ArgumentBindings = std::unordered_map<Program::Argument, Ptr < ProgramBindings::ArgumentBinding>, Program::Argument::Hash>;
 
     struct ApplyBehavior
     {
@@ -70,7 +71,7 @@ struct ProgramBindings
 
     // Create ResourceBindings instance
     static Ptr<ProgramBindings> Create(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
-    static Ptr<ProgramBindings> CreateCopy(const ProgramBindings& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument = {});
+    static Ptr<ProgramBindings> CreateCopy(const ProgramBindings& other_program_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument = {});
 
     // ResourceBindings interface
     virtual const Ptr<ArgumentBinding>& Get(const Program::Argument& shader_argument) const = 0;

@@ -23,8 +23,6 @@ Methane shader interface: defines programmable stage of the graphics pipeline.
 
 #pragma once
 
-#include "Resource.h"
-
 #include <Methane/Memory.hpp>
 
 #include <string>
@@ -53,22 +51,6 @@ struct Shader
     };
     
     using Types = std::set<Shader::Type>;
-
-    struct ResourceBinding
-    {
-        static Ptr<ResourceBinding> CreateCopy(const ResourceBinding& other_resource_binging);
-
-        // ResourceBinding interface
-        virtual Shader::Type               GetShaderType() const = 0;
-        virtual const std::string&         GetArgumentName() const = 0;
-        virtual bool                       IsConstant() const = 0;
-        virtual bool                       IsAddressable() const = 0;
-        virtual uint32_t                   GetResourceCount() const = 0;
-        virtual const Resource::Locations& GetResourceLocations() const = 0;
-        virtual void                       SetResourceLocations(const Resource::Locations& resource_locations) = 0;
-
-        virtual ~ResourceBinding() = default;
-    };
 
     using MacroDefinitions = std::map<std::string, std::string>;
 

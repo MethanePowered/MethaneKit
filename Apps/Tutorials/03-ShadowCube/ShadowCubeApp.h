@@ -37,8 +37,8 @@ struct ShadowCubeFrame final : gfx::AppFrame
     {
         struct MeshResources
         {
-            Ptr<gfx::Buffer>                    sp_uniforms_buffer;
-            Ptr<gfx::Program::ResourceBindings> sp_resource_bindings;
+            Ptr<gfx::Buffer>          sp_uniforms_buffer;
+            Ptr<gfx::ProgramBindings> sp_program_bindings;
         };
 
         MeshResources               cube;

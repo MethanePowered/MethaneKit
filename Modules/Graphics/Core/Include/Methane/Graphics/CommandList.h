@@ -25,7 +25,7 @@ to create instance refer to RenderCommandList, etc. for specific derived interfa
 #pragma once
 
 #include "Object.h"
-#include "Program.h"
+#include "ProgramBindings.h"
 
 #include <string>
 
@@ -46,8 +46,8 @@ struct CommandList : virtual Object
     virtual Type GetType() const = 0;
     virtual void PushDebugGroup(const std::string& name) = 0;
     virtual void PopDebugGroup() = 0;
-    virtual void SetResourceBindings(Program::ResourceBindings& resource_bindings,
-                                     Program::ResourceBindings::ApplyBehavior::Mask apply_behavior = Program::ResourceBindings::ApplyBehavior::AllIncremental) = 0;
+    virtual void SetResourceBindings(ProgramBindings& program_bindings,
+                                     ProgramBindings::ApplyBehavior::Mask apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental) = 0;
     virtual void Commit(bool present_drawable) = 0;
     virtual CommandQueue& GetCommandQueue() = 0;
 

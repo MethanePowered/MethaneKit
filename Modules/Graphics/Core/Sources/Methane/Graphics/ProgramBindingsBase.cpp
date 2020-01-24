@@ -82,12 +82,12 @@ bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& p
     bool check_binding_value_changes) const
 {
     ITT_FUNCTION_TASK();
-    if (!command_state.sp_resource_bindings)
+    if (!command_state.sp_program_bindings)
         return false;
 
-    const ProgramBase::ResourceBindingsBase& previous_resource_bindings = static_cast<const ProgramBase::ResourceBindingsBase&>(*command_state.sp_resource_bindings);
+    const ProgramBindingsBase& previous_program_bindings = static_cast<const ProgramBindingsBase&>(*command_state.sp_program_bindings);
 
-    if (std::addressof(previous_resource_bindings.GetProgram()) != std::addressof(program))
+    if (std::addressof(previous_program_bindings.GetProgram()) != std::addressof(program))
         return false;
 
     // 1) No need in setting constant resource binding
@@ -98,13 +98,13 @@ bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& p
     if (!check_binding_value_changes)
         return false;
 
-    const Ptr<Shader::ResourceBinding>& previous_argument_resource_binding = command_state.sp_resource_bindings->Get(program_argument);
-    if (!previous_argument_resource_binding)
+    const Ptr<ProgramBindings::ArgumentBinding>& previous_argument_argument_binding = command_state.sp_program_bindings->Get(program_argument);
+    if (!previous_argument_argument_binding)
         return false;
 
     // 2) No need in setting resource binding to the same location
     //    as a previous resource binding set in the same command list for the same program
-    if (previous_argument_resource_binding->GetResourceLocations() == m_resource_locations)
+    if (previous_argument_argument_binding->GetResourceLocations() == m_resource_locations)
         return true;
 
     return false;
@@ -125,25 +125,25 @@ ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& sp_program, const R
     VerifyAllArgumentsAreBoundToResources();
 }
 
-ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
-    : m_sp_program(other_resource_bingings.m_sp_program)
-    , m_descriptor_heap_reservations_by_type(other_resource_bingings.m_descriptor_heap_reservations_by_type)
+ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_program_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
+    : m_sp_program(other_program_bingings.m_sp_program)
+    , m_descriptor_heap_reservations_by_type(other_program_bingings.m_descriptor_heap_reservations_by_type)
 {
     ITT_FUNCTION_TASK();
 
     // Form map of volatile resource bindings with replaced resource locations
     ResourceLocationsByArgument resource_locations_by_argument = replace_resource_locations_by_argument;
-    for (const auto& argument_and_resource_binding : other_resource_bingings.m_resource_binding_by_argument)
+    for (const auto& argument_and_argument_binding : other_program_bingings.m_binding_by_argument)
     {
         // NOTE: constant resource bindings are reusing single binding-object for the whole program,
         //       so there's no need in setting its value, since it was already set by the original resource binding
-        if (argument_and_resource_binding.second->IsConstant() ||
-            resource_locations_by_argument.count(argument_and_resource_binding.first))
+        if (argument_and_argument_binding.second->IsConstant() ||
+            resource_locations_by_argument.count(argument_and_argument_binding.first))
             continue;
 
         resource_locations_by_argument.emplace(
-            argument_and_resource_binding.first,
-            argument_and_resource_binding.second->GetResourceLocations()
+            argument_and_argument_binding.first,
+            argument_and_argument_binding.second->GetResourceLocations()
         );
     }
 
@@ -185,44 +185,44 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
 
     // Count the number of constant and mutable discriptots to be allocated in each desriptor heap
     std::map<DescriptorHeap::Type, DescriptorsCount> descriptors_count_by_heap_type;
-    for (const auto& resource_binding_by_argument : program.m_resource_binding_by_argument)
+    for (const auto& binding_by_argument : program.m_binding_by_argument)
     {
-        if (!resource_binding_by_argument.second)
+        if (!binding_by_argument.second)
         {
-            throw std::runtime_error("No resource binding is set for an argument \"" + resource_binding_by_argument.first.argument_name + "\" of shader.");
+            throw std::runtime_error("No resource binding is set for an argument \"" + binding_by_argument.first.argument_name + "\" of shader.");
         }
 
-        const ArgumentBinding& resource_binding = *resource_binding_by_argument.second;
-        m_arguments.insert(resource_binding_by_argument.first);
+        const ArgumentBindingBase& argument_binding = static_cast<const ArgumentBindingBase&>(*binding_by_argument.second);
+        m_arguments.insert(binding_by_argument.first);
 
-        auto resource_binding_by_argument_it = m_resource_binding_by_argument.find(resource_binding_by_argument.first);
-        if (resource_binding_by_argument_it == m_resource_binding_by_argument.end())
+        auto binding_by_argument_it = m_binding_by_argument.find(binding_by_argument.first);
+        if (binding_by_argument_it == m_binding_by_argument.end())
         {
-            m_resource_binding_by_argument.emplace(
-                resource_binding_by_argument.first,
-                resource_binding.IsConstant()
-                    ? resource_binding_by_argument.second
-                    : ArgumentBinding::CreateCopy(resource_binding)
+            m_binding_by_argument.emplace(
+                binding_by_argument.first,
+                argument_binding.IsConstant()
+                    ? binding_by_argument.second
+                    : ArgumentBindingBase::CreateCopy(argument_binding)
             );
         }
-        else if (!resource_binding.IsConstant())
+        else if (!argument_binding.IsConstant())
         {
-            resource_binding_by_argument_it->second = ArgumentBinding::CreateCopy(*resource_binding_by_argument_it->second);
+            binding_by_argument_it->second = ArgumentBindingBase::CreateCopy(static_cast<const ArgumentBindingBase&>(*binding_by_argument_it->second));
         }
 
         // NOTE: addressable resource bindings do not require descriptors to be created, instead they use direct GPU memory offset from resource
-        if (resource_binding.IsAddressable())
+        if (argument_binding.IsAddressable())
             continue;
 
-        const DescriptorHeap::Type heap_type = static_cast<const ArgumentBindingBase&>(resource_binding).GetDescriptorHeapType();
+        const DescriptorHeap::Type heap_type = static_cast<const ArgumentBindingBase&>(argument_binding).GetDescriptorHeapType();
         DescriptorsCount& descriptors = descriptors_count_by_heap_type[heap_type];
-        if (resource_binding.IsConstant())
+        if (argument_binding.IsConstant())
         {
-            descriptors.constant_count += resource_binding.GetResourceCount();
+            descriptors.constant_count += argument_binding.GetResourceCount();
         }
         else
         {
-            descriptors.mutable_count += resource_binding.GetResourceCount();
+            descriptors.mutable_count += argument_binding.GetResourceCount();
         }
     }
 
@@ -289,10 +289,10 @@ const Ptr<ProgramBindings::ArgumentBinding>& ProgramBindingsBase::Get(const Prog
 {
     ITT_FUNCTION_TASK();
 
-    static const Ptr<ArgumentBinding> sp_empty_resource_binding;
-    auto   resource_binding_by_argument_it  = m_resource_binding_by_argument.find(shader_argument);
-    return resource_binding_by_argument_it != m_resource_binding_by_argument.end()
-         ? resource_binding_by_argument_it->second : sp_empty_resource_binding;
+    static const Ptr<ArgumentBinding> sp_empty_argument_binding;
+    auto   binding_by_argument_it  = m_binding_by_argument.find(shader_argument);
+    return binding_by_argument_it != m_binding_by_argument.end()
+         ? binding_by_argument_it->second : sp_empty_argument_binding;
 }
 
 bool ProgramBindingsBase::AllArgumentsAreBoundToResources(std::string& missing_args) const
@@ -301,15 +301,15 @@ bool ProgramBindingsBase::AllArgumentsAreBoundToResources(std::string& missing_a
 
     std::stringstream log_ss;
     bool all_arguments_are_bound_to_resources = true;
-    for (const auto& resource_binding_by_argument : m_resource_binding_by_argument)
+    for (const auto& binding_by_argument : m_binding_by_argument)
     {
-        const Resource::Locations& resource_locations = resource_binding_by_argument.second->GetResourceLocations();
+        const Resource::Locations& resource_locations = binding_by_argument.second->GetResourceLocations();
         if (resource_locations.empty())
         {
             log_ss << std::endl 
                    << "   - Program \"" << m_sp_program->GetName()
-                   << "\" argument \"" << resource_binding_by_argument.first.argument_name
-                   << "\" of " << Shader::GetTypeName(resource_binding_by_argument.first.shader_type)
+                   << "\" argument \"" << binding_by_argument.first.argument_name
+                   << "\" of " << Shader::GetTypeName(binding_by_argument.first.shader_type)
                    << " shader is not bound to any resource." ;
             all_arguments_are_bound_to_resources = false;
         }

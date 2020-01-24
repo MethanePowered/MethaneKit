@@ -55,14 +55,14 @@ public:
 
     struct CommandState
     {
-        Ptr<Program::ResourceBindings> sp_resource_bindings;
+        Ptr<ProgramBindings> sp_program_bindings;
     };
 
     CommandListBase(CommandQueueBase& command_queue, Type type);
 
     // CommandList interface
     Type GetType() const override               { return m_type; }
-    void SetResourceBindings(Program::ResourceBindings& resource_bindings, Program::ResourceBindings::ApplyBehavior::Mask apply_behavior) override;
+    void SetResourceBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
     void Commit(bool present_drawable) override;
     CommandQueue& GetCommandQueue() override;
 

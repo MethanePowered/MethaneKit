@@ -90,13 +90,13 @@ Planet::Planet(gfx::Context& context, gfx::ImageLoader& image_loader, const Sett
     m_sp_texture_sampler->SetName("Planet Texture Sampler");
 }
 
-Ptr<gfx::Program::ResourceBindings> Planet::CreateResourceBindings(const Ptr<gfx::Buffer>& sp_constants_buffer, const Ptr<gfx::Buffer>& sp_uniforms_buffer)
+Ptr<gfx::ProgramBindings> Planet::CreateResourceBindings(const Ptr<gfx::Buffer>& sp_constants_buffer, const Ptr<gfx::Buffer>& sp_uniforms_buffer)
 {
     ITT_FUNCTION_TASK();
 
     assert(!!m_sp_state);
     assert(!!m_sp_state->GetSettings().sp_program);
-    return gfx::Program::ResourceBindings::Create(m_sp_state->GetSettings().sp_program, {
+    return gfx::ProgramBindings::Create(m_sp_state->GetSettings().sp_program, {
         { { gfx::Shader::Type::All,   "g_uniforms"  }, { { sp_uniforms_buffer                   } } },
         { { gfx::Shader::Type::Pixel, "g_constants" }, { { sp_constants_buffer                  } } },
         { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_mesh_buffers.GetSubsetTexturePtr() } } },
@@ -143,9 +143,9 @@ void Planet::Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buf
 
     cmd_list.Reset(m_sp_state, "Planet rendering");
     
-    assert(!buffer_bindings.resource_bindings_per_instance.empty());
-    assert(!!buffer_bindings.resource_bindings_per_instance[0]);
-    m_mesh_buffers.Draw(cmd_list, *buffer_bindings.resource_bindings_per_instance[0]);
+    assert(!buffer_bindings.program_bindings_per_instance.empty());
+    assert(!!buffer_bindings.program_bindings_per_instance[0]);
+    m_mesh_buffers.Draw(cmd_list, *buffer_bindings.program_bindings_per_instance[0]);
 }
 
 } // namespace Methane::Graphics

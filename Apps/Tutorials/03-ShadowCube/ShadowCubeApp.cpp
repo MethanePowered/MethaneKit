@@ -251,12 +251,12 @@ void ShadowCubeApp::Init()
         frame.shadow_pass.sp_cmd_list->SetName(IndexedName("Shadow-Map Rendering", frame.index));
 
         // Shadow-pass resource bindings for cube rendering
-        frame.shadow_pass.cube.sp_resource_bindings = gfx::Program::ResourceBindings::Create(m_shadow_pass.sp_program, {
+        frame.shadow_pass.cube.sp_program_bindings = gfx::ProgramBindings::Create(m_shadow_pass.sp_program, {
             { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { frame.shadow_pass.cube.sp_uniforms_buffer } } },
         });
 
         // Shadow-pass resource bindings for floor rendering
-        frame.shadow_pass.floor.sp_resource_bindings = gfx::Program::ResourceBindings::Create(m_shadow_pass.sp_program, {
+        frame.shadow_pass.floor.sp_program_bindings = gfx::ProgramBindings::Create(m_shadow_pass.sp_program, {
             { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { frame.shadow_pass.floor.sp_uniforms_buffer } } },
         });
 
@@ -279,7 +279,7 @@ void ShadowCubeApp::Init()
         frame.final_pass.sp_cmd_list->SetName(IndexedName("Final Scene Rendering", frame.index));
 
         // Final-pass resource bindings for cube rendering
-        frame.final_pass.cube.sp_resource_bindings = gfx::Program::ResourceBindings::Create(m_final_pass.sp_program, {
+        frame.final_pass.cube.sp_program_bindings = gfx::ProgramBindings::Create(m_final_pass.sp_program, {
             { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { { frame.final_pass.cube.sp_uniforms_buffer   } } },
             { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { { frame.sp_scene_uniforms_buffer             } } },
             { { gfx::Shader::Type::Pixel,  "g_constants"      }, { { m_sp_const_buffer                          } } },
@@ -290,7 +290,7 @@ void ShadowCubeApp::Init()
         });
 
         // Final-pass resource bindings for floor rendering - patched a copy of cube bindings
-        frame.final_pass.floor.sp_resource_bindings = gfx::Program::ResourceBindings::CreateCopy(*frame.final_pass.cube.sp_resource_bindings, {
+        frame.final_pass.floor.sp_program_bindings = gfx::ProgramBindings::CreateCopy(*frame.final_pass.cube.sp_program_bindings, {
             { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { { frame.final_pass.floor.sp_uniforms_buffer  } } },
             { { gfx::Shader::Type::Pixel,  "g_texture"        }, { { m_sp_floor_buffers->GetSubsetTexturePtr()  } } },
         });
@@ -433,14 +433,14 @@ void ShadowCubeApp::RenderScene(const RenderPass &render_pass, ShadowCubeFrame::
     cmd_list.Reset(render_pass.sp_state, render_pass.command_group_name);
 
     // Cube drawing
-    assert(!!render_pass_resources.cube.sp_resource_bindings);
+    assert(!!render_pass_resources.cube.sp_program_bindings);
     assert(!!m_sp_cube_buffers);
-    m_sp_cube_buffers->Draw(cmd_list, *render_pass_resources.cube.sp_resource_bindings);
+    m_sp_cube_buffers->Draw(cmd_list, *render_pass_resources.cube.sp_program_bindings);
 
     // Floor drawing
-    assert(!!render_pass_resources.floor.sp_resource_bindings);
+    assert(!!render_pass_resources.floor.sp_program_bindings);
     assert(!!m_sp_floor_buffers);
-    m_sp_floor_buffers->Draw(cmd_list, *render_pass_resources.floor.sp_resource_bindings);
+    m_sp_floor_buffers->Draw(cmd_list, *render_pass_resources.floor.sp_program_bindings);
 
     if (render_pass.is_final_pass)
     {

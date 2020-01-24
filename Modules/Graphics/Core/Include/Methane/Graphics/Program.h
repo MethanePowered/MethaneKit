@@ -85,38 +85,7 @@ struct Program : virtual Object
         };
     };
 
-    using Arguments                 = std::unordered_set<Argument, Argument::Hash>;
-    using ResourceBindingByArgument = std::unordered_map<Argument, Ptr<Shader::ResourceBinding>, Argument::Hash>;
-
-    struct ResourceBindings
-    {
-        using ResourceLocationsByArgument = std::unordered_map<Argument, Resource::Locations, Argument::Hash>;
-
-        struct ApplyBehavior
-        {
-            using Mask = uint32_t;
-            enum Value : Mask
-            {
-                Indifferent    = 0u,        // All bindings will be applied indifferently of the previous binding values
-                ConstantOnce   = 1u << 0,   // Constant program arguments will be applied only once for each command list
-                ChangesOnly    = 1u << 1,   // Only changed program argument values will be applied in command sequence
-                StateBarriers  = 1u << 2,   // Resource state barriers will be automatically evaluated and set for command list
-                AllIncremental = ~0u        // All binding values will be applied incrementally along with resource state barriers
-            };
-
-            ApplyBehavior() = delete;
-        };
-
-        // Create ResourceBindings instance
-        static Ptr<ResourceBindings> Create(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
-        static Ptr<ResourceBindings> CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument = {});
-
-        // ResourceBindings interface
-        virtual const Ptr<Shader::ResourceBinding>& Get(const Argument& shader_argument) const = 0;
-        virtual void Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior = ApplyBehavior::AllIncremental) const = 0;
-
-        virtual ~ResourceBindings() = default;
-    };
+    using Arguments = std::unordered_set<Argument, Argument::Hash>;
 
     // Program settings
     struct Settings

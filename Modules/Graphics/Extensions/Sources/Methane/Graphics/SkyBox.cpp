@@ -84,13 +84,13 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
     m_sp_texture_sampler->SetName("Sky-box Texture Sampler");
 }
 
-Ptr<Program::ResourceBindings> SkyBox::CreateResourceBindings(const Ptr<Buffer>& sp_uniforms_buffer)
+Ptr<ProgramBindings> SkyBox::CreateResourceBindings(const Ptr<Buffer>& sp_uniforms_buffer)
 {
     ITT_FUNCTION_TASK();
 
     assert(!!m_sp_state);
     assert(!!m_sp_state->GetSettings().sp_program);
-    return Program::ResourceBindings::Create(m_sp_state->GetSettings().sp_program, {
+    return ProgramBindings::Create(m_sp_state->GetSettings().sp_program, {
         { { Shader::Type::Vertex, "g_skybox_uniforms" }, { { sp_uniforms_buffer             } } },
         { { Shader::Type::Pixel,  "g_skybox_texture"  }, { { m_mesh_buffers.GetSubsetTexturePtr() } } },
         { { Shader::Type::Pixel,  "g_texture_sampler" }, { { m_sp_texture_sampler           } } },
@@ -128,9 +128,9 @@ void SkyBox::Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindin
 
     cmd_list.Reset(m_sp_state, "Sky-box rendering");
     
-    assert(!buffer_bindings.resource_bindings_per_instance.empty());
-    assert(!!buffer_bindings.resource_bindings_per_instance[0]);
-    m_mesh_buffers.Draw(cmd_list, *buffer_bindings.resource_bindings_per_instance[0]);
+    assert(!buffer_bindings.program_bindings_per_instance.empty());
+    assert(!!buffer_bindings.program_bindings_per_instance[0]);
+    m_mesh_buffers.Draw(cmd_list, *buffer_bindings.program_bindings_per_instance[0]);
 }
 
 } // namespace Methane::Graphics

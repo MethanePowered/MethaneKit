@@ -66,7 +66,7 @@ public:
 
     Planet(gfx::Context& context, gfx::ImageLoader& image_loader, const Settings& settings);
 
-    Ptr<gfx::Program::ResourceBindings> CreateResourceBindings(const Ptr<gfx::Buffer>& sp_constants_buffer, const Ptr<gfx::Buffer>& sp_uniforms_buffer);
+    Ptr<gfx::ProgramBindings> CreateResourceBindings(const Ptr<gfx::Buffer>& sp_constants_buffer, const Ptr<gfx::Buffer>& sp_uniforms_buffer);
     void Resize(const gfx::FrameSize& frame_size);
     bool Update(double elapsed_seconds, double delta_seconds);
     void Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings);

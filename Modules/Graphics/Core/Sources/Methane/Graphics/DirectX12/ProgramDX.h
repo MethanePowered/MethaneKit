@@ -43,24 +43,6 @@ namespace wrl = Microsoft::WRL;
 class ProgramDX final : public ProgramBase
 {
 public:
-    class ResourceBindingsDX : public ResourceBindingsBase
-    {
-    public:
-        ResourceBindingsDX(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
-        ResourceBindingsDX(const ResourceBindingsDX& other_resource_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument);
-
-        void Initialize();
-
-        // ResourceBindings interface
-        void CompleteInitialization() override;
-        void Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior) const override;
-
-    protected:
-        using ApplyResourceBindingFunc = std::function<void(const Argument&, ShaderDX::ResourceBindingDX&, const DescriptorHeap::Reservation*)>;
-        void ForEachResourceBinding(ApplyResourceBindingFunc apply_resource_binding) const;
-        void CopyDescriptorsToGpu();
-    };
-
     ProgramDX(ContextBase& context, const Settings& settings);
 
     // Object interface

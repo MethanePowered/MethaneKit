@@ -37,33 +37,12 @@ class ProgramVK;
 class ShaderVK : public ShaderBase
 {
 public:
-    class ResourceBindingVK : public ResourceBindingBase
-    {
-    public:
-        struct Settings
-        {
-            ResourceBindingBase::Settings base;
-        };
-        
-        ResourceBindingVK(ContextBase& context, const Settings& settings);
-        ResourceBindingVK(const ResourceBindingVK& other) = default;
-        
-        // ResourceBinding interface
-        void SetResourceLocations(const Resource::Locations& resource_locations) override;
-        uint32_t GetResourceCount() const override { return 1; }
-        
-        const Settings& GetSettings() const noexcept { return m_settings; }
-        
-    protected:
-        const Settings m_settings;
-    };
-    
     ShaderVK(Shader::Type shader_type, ContextVK& context, const Settings& settings);
     ~ShaderVK() override;
     
     // ShaderBase interface
-    Ptrs<ResourceBinding> GetResourceBindings(const std::set<std::string>& constant_argument_names,
-                                              const std::set<std::string>& addressable_argument_names) const override;
+    ArgumentBindings GetArgumentBindings(const std::set<std::string>& constant_argument_names,
+                                         const std::set<std::string>& addressable_argument_names) const override;
 
 protected:
     ContextVK& GetContextVK() noexcept;

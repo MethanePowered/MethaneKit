@@ -37,9 +37,9 @@ namespace dat = Methane::Data;
 
 struct TexturedCubeFrame final : gfx::AppFrame
 {
-    Ptr<gfx::Buffer>                    sp_uniforms_buffer;
-    Ptr<gfx::Program::ResourceBindings> sp_resource_bindings;
-    Ptr<gfx::RenderCommandList>         sp_cmd_list;
+    Ptr<gfx::Buffer>            sp_uniforms_buffer;
+    Ptr<gfx::ProgramBindings>   sp_program_bindings;
+    Ptr<gfx::RenderCommandList> sp_cmd_list;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -93,7 +93,7 @@ private:
     };
 
     const Constants         m_shader_constants;
-    Uniforms                m_shader_uniforms;
+    Uniforms                m_shader_uniforms = { };
     gfx::Camera             m_camera;
     gfx::BoxMesh<Vertex>    m_cube_mesh;
     float                   m_cube_scale;

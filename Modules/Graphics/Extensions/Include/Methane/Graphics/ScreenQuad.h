@@ -28,6 +28,7 @@ ScreenQuad rendering primitive.
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/RenderState.h>
 #include <Methane/Graphics/Program.h>
+#include <Methane/Graphics/ProgramBindings.h>
 #include <Methane/Graphics/Sampler.h>
 #include <Methane/Graphics/MathTypes.h>
 #include <Methane/Graphics/Types.h>
@@ -61,15 +62,15 @@ public:
 private:
     void UpdateConstantsBuffer() const;
 
-    Settings                       m_settings;
-    const std::string              m_debug_region_name;
-    Ptr<RenderState>               m_sp_state;
-    Ptr<Buffer>                    m_sp_vertex_buffer;
-    Ptr<Buffer>                    m_sp_index_buffer;
-    Ptr<Buffer>                    m_sp_const_buffer;
-    Ptr<Texture>                   m_sp_texture;
-    Ptr<Sampler>                   m_sp_texture_sampler;
-    Ptr<Program::ResourceBindings> m_sp_const_resource_bindings;
+    Settings             m_settings;
+    const std::string    m_debug_region_name;
+    Ptr<RenderState>     m_sp_state;
+    Ptr<Buffer>          m_sp_vertex_buffer;
+    Ptr<Buffer>          m_sp_index_buffer;
+    Ptr<Buffer>          m_sp_const_buffer;
+    Ptr<Texture>         m_sp_texture;
+    Ptr<Sampler>         m_sp_texture_sampler;
+    Ptr<ProgramBindings> m_sp_const_program_bindings;
 };
 
 } // namespace Methane::Graphics
