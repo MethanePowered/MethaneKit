@@ -42,7 +42,7 @@ public:
         ArgumentBindingVK(ContextBase& context, const Settings& settings);
         ArgumentBindingVK(const ArgumentBindingVK& other) = default;
 
-        // ResourceBinding interface
+        // ArgumentBinding interface
         void SetResourceLocations(const Resource::Locations& resource_locations) override;
         uint32_t GetResourceCount() const override { return 1; }
 

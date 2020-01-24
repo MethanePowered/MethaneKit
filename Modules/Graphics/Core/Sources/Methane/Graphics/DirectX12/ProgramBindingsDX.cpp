@@ -26,15 +26,12 @@ DirectX 12 implementation of the program bindings interface.
 #include "DeviceDX.h"
 #include "ProgramDX.h"
 #include "RenderCommandListDX.h"
-#include "TypesDX.h"
 #include "DescriptorHeapDX.h"
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Windows/Utils.h>
 
 #include <d3dx12.h>
-
-#include <nowide/convert.hpp>
 #include <cassert>
 
 namespace Methane::Graphics
@@ -222,7 +219,7 @@ void ProgramBindingsDX::Apply(CommandList& command_list, ApplyBehavior::Mask app
     std::vector<GraphicsRootParameterBinding> graphics_root_parameter_bindings;
     graphics_root_parameter_bindings.reserve(m_binding_by_argument.size());
 
-    ForEachResourceBinding([&](const Program::Argument& argument, ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation)
+    ForEachArgumentBinding([&](const Program::Argument& argument, ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation)
     {
         if ((apply_behavior & ApplyBehavior::ConstantOnce || apply_behavior & ApplyBehavior::ChangesOnly) &&
             argument_binding.IsAlreadyApplied(*m_sp_program, argument, command_state, apply_behavior & ApplyBehavior::ChangesOnly))
@@ -291,7 +288,7 @@ void ProgramBindingsDX::Apply(CommandList& command_list, ApplyBehavior::Mask app
     }
 }
 
-void ProgramBindingsDX::ForEachResourceBinding(ApplyArgumentBindingFunc apply_argument_binding) const
+void ProgramBindingsDX::ForEachArgumentBinding(ApplyArgumentBindingFunc apply_argument_binding) const
 {
     ITT_FUNCTION_TASK();
 
@@ -323,7 +320,7 @@ void ProgramBindingsDX::CopyDescriptorsToGpu()
 
     assert(!!m_sp_program);
     const wrl::ComPtr<ID3D12Device>& cp_device = static_cast<const ProgramDX&>(*m_sp_program).GetContextDX().GetDeviceDX().GetNativeDevice();
-    ForEachResourceBinding([this, &cp_device](const Program::Argument&, ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation)
+    ForEachArgumentBinding([this, &cp_device](const Program::Argument&, ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation)
     {
         if (!p_heap_reservation)
             return;

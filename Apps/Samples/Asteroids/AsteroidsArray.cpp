@@ -282,12 +282,12 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings, Content
     m_sp_texture_sampler->SetName("Asteroid Texture Sampler");
 }
     
-Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateResourceBindings(const Ptr<gfx::Buffer> &sp_constants_buffer,
+Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::Buffer> &sp_constants_buffer,
                                                                             const Ptr<gfx::Buffer> &sp_scene_uniforms_buffer,
                                                                             const Ptr<gfx::Buffer> &sp_asteroids_uniforms_buffer)
 {
     ITT_FUNCTION_TASK();
-    SCOPE_TIMER("AsteroidsArray::CreateResourceBindings");
+    SCOPE_TIMER("AsteroidsArray::CreateProgramBindings");
 
     Ptrs<gfx::ProgramBindings> program_bindings_array;
     if (m_settings.instance_count == 0)

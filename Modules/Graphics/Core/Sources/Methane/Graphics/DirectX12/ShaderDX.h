@@ -32,8 +32,6 @@ DirectX 12 implementation of the shader interface.
 #include <d3dx12.h>
 #include <d3d12shader.h>
 
-#include <memory>
-
 namespace Methane::Graphics
 {
 
@@ -48,8 +46,8 @@ public:
     ShaderDX(Type type, ContextBase& context, const Settings& settings);
 
     // ShaderBase
-    Ptrs<ResourceBinding> GetArgumentBindings(const std::set<std::string>& constant_argument_names,
-                                              const std::set<std::string>& addressable_argument_names) const override;
+    ArgumentBindings GetArgumentBindings(const std::set<std::string>& constant_argument_names,
+                                         const std::set<std::string>& addressable_argument_names) const override;
 
     const wrl::ComPtr<ID3DBlob>& GetNativeByteCode() const noexcept { return m_cp_byte_code; }
     std::vector<D3D12_INPUT_ELEMENT_DESC> GetNativeProgramInputLayout(const ProgramDX& program) const;

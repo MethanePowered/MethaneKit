@@ -24,22 +24,17 @@ DirectX 12 implementation of the program interface.
 #include "ContextDX.h"
 #include "DeviceDX.h"
 #include "ProgramDX.h"
+#include "ProgramBindingsDX.h"
 #include "ShaderDX.h"
-#include "ResourceDX.h"
 #include "RenderCommandListDX.h"
-#include "TypesDX.h"
-#include "DescriptorHeapDX.h"
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
-#include <Methane/Platform/Windows/Utils.h>
 
 #include <d3dx12.h>
 #include <D3Dcompiler.h>
 
 #include <nowide/convert.hpp>
-#include <array>
-#include <sstream>
 #include <cassert>
 #include <iomanip>
 
@@ -112,7 +107,7 @@ ProgramDX::ProgramDX(ContextBase& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
 
-    InitResourceBindings(m_settings.constant_argument_names, m_settings.addressable_argument_names);
+    InitArgumentBindings(m_settings.constant_argument_names, m_settings.addressable_argument_names);
     InitRootSignature();
 }
 
@@ -136,7 +131,7 @@ void ProgramDX::InitRootSignature()
         uint32_t mutable_offset = 0;
     };
 
-    using ResourceBindingDX = ShaderDX::ResourceBindingDX;
+    using ArgumentBindingDX = ProgramBindingsDX::ArgumentBindingDX;
 
     std::vector<CD3DX12_DESCRIPTOR_RANGE1> descriptor_ranges;
     std::vector<CD3DX12_ROOT_PARAMETER1>   root_parameters;
@@ -149,8 +144,8 @@ void ProgramDX::InitRootSignature()
     {
         assert(!!binding_by_argument.second);
         const Argument&                  shader_argument = binding_by_argument.first;
-        ResourceBindingDX&              argument_binding = static_cast<ShaderDX::ResourceBindingDX&>(*binding_by_argument.second);
-        const ResourceBindingDX::Settings& bind_settings = argument_binding.GetSettings();
+        ArgumentBindingDX&              argument_binding = static_cast<ArgumentBindingDX&>(*binding_by_argument.second);
+        const ArgumentBindingDX::Settings& bind_settings = argument_binding.GetSettings();
         const D3D12_SHADER_VISIBILITY  shader_visibility = GetShaderVisibilityByType(shader_argument.shader_type);
 
         argument_binding.SetRootParameterIndex(static_cast<uint32_t>(root_parameters.size()));
@@ -158,7 +153,7 @@ void ProgramDX::InitRootSignature()
 
         switch (bind_settings.type)
         {
-        case ShaderDX::ResourceBindingDX::Type::DescriptorTable:
+        case ArgumentBindingDX::Type::DescriptorTable:
         {
             const D3D12_DESCRIPTOR_RANGE_TYPE  range_type  = GetDescriptorRangeTypeByShaderInputType(bind_settings.input_type);
             const D3D12_DESCRIPTOR_RANGE_FLAGS range_flags = (bind_settings.input_type == D3D_SIT_CBUFFER)
@@ -176,11 +171,11 @@ void ProgramDX::InitRootSignature()
             descriptor_offset += bind_settings.base.resource_count;
         } break;
 
-        case ShaderDX::ResourceBindingDX::Type::ConstantBufferView:
+        case ArgumentBindingDX::Type::ConstantBufferView:
             root_parameters.back().InitAsConstantBufferView(bind_settings.point, bind_settings.space, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_STATIC, shader_visibility);
             break;
 
-        case ShaderDX::ResourceBindingDX::Type::ShaderResourceView:
+        case ArgumentBindingDX::Type::ShaderResourceView:
             root_parameters.back().InitAsShaderResourceView(bind_settings.point, bind_settings.space, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_STATIC, shader_visibility);
             break;
         }

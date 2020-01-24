@@ -62,7 +62,7 @@ public:
 
     // CommandList interface
     Type GetType() const override               { return m_type; }
-    void SetResourceBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
+    void SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
     void Commit(bool present_drawable) override;
     CommandQueue& GetCommandQueue() override;
 

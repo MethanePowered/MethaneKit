@@ -109,7 +109,7 @@ void ResourceManager::Release()
     }
 }
 
-void ResourceManager::DeferResourceBindingsInitialization(ProgramBindings& program_bindings)
+void ResourceManager::DeferProgramBindingsInitialization(ProgramBindings& program_bindings)
 {
     ITT_FUNCTION_TASK();
 

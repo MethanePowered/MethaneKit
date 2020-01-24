@@ -61,7 +61,7 @@ public:
     Ptr<ProgramBase> GetPtr()                                   { return shared_from_this(); }
 
 protected:
-    void InitResourceBindings(const std::set<std::string>& constant_argument_names, const std::set<std::string>& addressable_argument_names);
+    void InitArgumentBindings(const std::set<std::string>& constant_argument_names, const std::set<std::string>& addressable_argument_names);
     const DescriptorHeap::Range& ReserveConstantDescriptorRange(DescriptorHeap& heap, uint32_t range_length);
 
     Shader& GetShaderRef(Shader::Type shader_type);

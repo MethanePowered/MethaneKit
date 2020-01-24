@@ -56,7 +56,7 @@ public:
     void Release();
 
     bool DeferredHeapAllocationEnabled() const { return m_deferred_heap_allocation; }
-    void DeferResourceBindingsInitialization(ProgramBindings& program_bindings);
+    void DeferProgramBindingsInitialization(ProgramBindings& program_bindings);
 
     uint32_t                    CreateDescriptorHeap(const DescriptorHeap::Settings& settings); // returns index of the created descriptor heap
     const DescriptorHeap::Ptr&  GetDescriptorHeapPtr(DescriptorHeap::Type type, uint32_t heap_index = 0);

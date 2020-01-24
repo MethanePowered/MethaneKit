@@ -176,7 +176,7 @@ void ScreenQuad::Draw(RenderCommandList& cmd_list) const
     ITT_FUNCTION_TASK();
     
     cmd_list.Reset(m_sp_state, m_debug_region_name);
-    cmd_list.SetResourceBindings(*m_sp_const_program_bindings);
+    cmd_list.SetProgramBindings(*m_sp_const_program_bindings);
     cmd_list.SetVertexBuffers({ *m_sp_vertex_buffer });
     cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
 }

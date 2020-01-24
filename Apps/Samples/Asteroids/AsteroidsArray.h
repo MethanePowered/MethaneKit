@@ -100,7 +100,7 @@ public:
     const Ptr<ContentState>& GetState() const   { return m_sp_content_state; }
     Data::Size GetUniformsBufferSize() const    { return BaseBuffers::GetUniformsBufferSize(); }
 
-    Ptrs<gfx::ProgramBindings> CreateResourceBindings(const Ptr<gfx::Buffer>& sp_constants_buffer,
+    Ptrs<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& sp_constants_buffer,
                                                       const Ptr<gfx::Buffer>& sp_scene_uniforms_buffer,
                                                       const Ptr<gfx::Buffer>& sp_asteroids_uniforms_buffer);
 

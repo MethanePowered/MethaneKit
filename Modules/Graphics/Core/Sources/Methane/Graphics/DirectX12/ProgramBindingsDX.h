@@ -72,7 +72,7 @@ public:
         ArgumentBindingDX(ContextBase& context, const Settings& settings);
         ArgumentBindingDX(const ArgumentBindingDX& other);
 
-        // ResourceBinding interface
+        // ArgumentBinding interface
         void SetResourceLocations(const Resource::Locations& resource_locations) override;
         bool IsAddressable() const override { return m_settings_dx.type != Type::DescriptorTable; }
 
@@ -107,7 +107,7 @@ public:
 
 protected:
     using ApplyArgumentBindingFunc = std::function<void(const Program::Argument&, ArgumentBindingDX&, const DescriptorHeap::Reservation*)>;
-    void ForEachResourceBinding(ApplyArgumentBindingFunc apply_argument_binding) const;
+    void ForEachArgumentBinding(ApplyArgumentBindingFunc apply_argument_binding) const;
     void CopyDescriptorsToGpu();
 };
 

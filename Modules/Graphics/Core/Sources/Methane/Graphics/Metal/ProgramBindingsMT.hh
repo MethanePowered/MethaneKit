@@ -48,7 +48,7 @@ public:
         ArgumentBindingMT(ContextBase& context, const Settings& settings);
         ArgumentBindingMT(const ArgumentBindingMT& other) = default;
 
-        // ResourceBinding interface
+        // ArgumentBinding interface
         void SetResourceLocations(const Resource::Locations& resource_locations) override;
 
         const Settings& GetSettings() const noexcept { return m_settings; }
@@ -68,10 +68,10 @@ public:
     ProgramBindingsMT(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
     ProgramBindingsMT(const ProgramBindingsMT& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
 
-    // ResourceBindings interface
+    // ProgramBindings interface
     void Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior) const override;
 
-    // ResourceBindingsBase interface
+    // ProgramBindingsBase interface
     void CompleteInitialization() override { }
 };
 

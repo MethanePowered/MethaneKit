@@ -23,6 +23,7 @@ DirectX 12 implementation of the shader interface.
 
 #include "ShaderDX.h"
 #include "ProgramDX.h"
+#include "ProgramBindingsDX.h"
 #include "ResourceDX.h"
 #include "ContextDX.h"
 #include "DeviceDX.h"
@@ -241,12 +242,12 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
     ));
 }
 
-Ptrs<ShaderBase::ResourceBinding> ShaderDX::GetArgumentBindings(const std::set<std::string>& constant_argument_names, const std::set<std::string>& addressable_argument_names) const
+ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const std::set<std::string>& constant_argument_names, const std::set<std::string>& addressable_argument_names) const
 {
     ITT_FUNCTION_TASK();
     assert(!!m_cp_reflection);
 
-    Ptrs<ShaderBase::ResourceBinding> program_bindings;
+    ShaderBase::ArgumentBindings program_bindings;
 
     D3D12_SHADER_DESC shader_desc = { };
     m_cp_reflection->GetDesc(&shader_desc);
@@ -264,12 +265,12 @@ Ptrs<ShaderBase::ResourceBinding> ShaderDX::GetArgumentBindings(const std::set<s
         const std::string argument_name(binding_desc.Name);
         const bool is_constant_binding    = constant_argument_names.find(argument_name) != constant_argument_names.end();
         const bool is_addressable_binding = addressable_argument_names.find(argument_name) != addressable_argument_names.end();
-        const ResourceBindingDX::Type dx_binding_type = !is_addressable_binding ? ResourceBindingDX::Type::DescriptorTable
-                                                                                : (binding_desc.Type == D3D_SIT_CBUFFER ? ResourceBindingDX::Type::ConstantBufferView
-                                                                                                                        : ResourceBindingDX::Type::ShaderResourceView);
-        program_bindings.push_back(std::make_shared<ResourceBindingDX>(
+        const ProgramBindingsDX::ArgumentBindingDX::Type dx_binding_type = !is_addressable_binding ? ProgramBindingsDX::ArgumentBindingDX::Type::DescriptorTable
+                                                                                                   : (binding_desc.Type == D3D_SIT_CBUFFER ? ProgramBindingsDX::ArgumentBindingDX::Type::ConstantBufferView
+                                                                                                                                           : ProgramBindingsDX::ArgumentBindingDX::Type::ShaderResourceView);
+        program_bindings.push_back(std::make_shared<ProgramBindingsDX::ArgumentBindingDX>(
             m_context,
-            ResourceBindingDX::Settings
+            ProgramBindingsDX::ArgumentBindingDX::Settings
             {
                 {
                     m_type,

@@ -103,7 +103,7 @@ public:
             throw std::invalid_argument("Can not draw mesh subset because its index is out of bounds.");
 
         const Mesh::Subset& mesh_subset = m_mesh_subsets[mesh_subset_index];
-        cmd_list.SetResourceBindings(program_bindings);
+        cmd_list.SetProgramBindings(program_bindings);
         cmd_list.SetVertexBuffers({ GetVertexBuffer() });
         cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, GetIndexBuffer(),
                              mesh_subset.indices.count, mesh_subset.indices.offset,
@@ -142,7 +142,7 @@ public:
 
             const Mesh::Subset& mesh_subset = m_mesh_subsets[subset_index];
 
-            cmd_list.SetResourceBindings(*sp_program_bindings, bindings_apply_behavior);
+            cmd_list.SetProgramBindings(*sp_program_bindings, bindings_apply_behavior);
             cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, index_buffer,
                                  mesh_subset.indices.count, mesh_subset.indices.offset,
                                  mesh_subset.indices_adjusted ? 0 : mesh_subset.vertices.offset,

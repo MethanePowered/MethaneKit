@@ -23,13 +23,11 @@ Base implementation of the program interface.
 
 #include "ProgramBase.h"
 #include "ContextBase.h"
-#include "ResourceManager.h"
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Utils.h>
 
 #include <cassert>
-#include <sstream>
 
 namespace Methane::Graphics
 {
@@ -109,7 +107,7 @@ ProgramBase::~ProgramBase()
     }
 }
 
-void ProgramBase::InitResourceBindings(const std::set<std::string>& constant_argument_names, const std::set<std::string>& addressable_argument_names)
+void ProgramBase::InitArgumentBindings(const std::set<std::string>& constant_argument_names, const std::set<std::string>& addressable_argument_names)
 {
     ITT_FUNCTION_TASK();
 

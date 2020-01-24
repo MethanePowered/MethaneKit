@@ -61,7 +61,7 @@ public:
         ArgumentBindingBase(ContextBase& context, const Settings& settings);
         ArgumentBindingBase(const ArgumentBindingBase& other) = default;
 
-        // ResourceBinding interface
+        // ArgumentBinding interface
         Shader::Type               GetShaderType() const override           { return m_settings.shader_type; }
         const std::string&         GetArgumentName() const override         { return m_settings.argument_name; }
         bool                       IsConstant() const override              { return m_settings.is_constant; }
@@ -91,7 +91,7 @@ public:
     const Program::Arguments& GetArguments() const  { return m_arguments; }
     const Program&            GetProgram() const    { return *m_sp_program; }
 
-    // ResourceBindings interface
+    // ProgramBindings interface
     const Ptr<ArgumentBinding>& Get(const Program::Argument& shader_argument) const override;
 
     // ProgramBindingsBase interface

@@ -176,7 +176,7 @@ void CommandListBase::ResetCommandState()
     m_command_state.sp_program_bindings.reset();
 }
 
-void CommandListBase::SetResourceBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior)
+void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior)
 {
     ITT_FUNCTION_TASK();
     program_bindings.Apply(*this, apply_behavior);
