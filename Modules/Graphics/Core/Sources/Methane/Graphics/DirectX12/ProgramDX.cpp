@@ -165,7 +165,9 @@ void ProgramDX::InitRootSignature()
 
             const DescriptorHeap::Type  heap_type = GetDescriptorHeapTypeByRangeType(range_type);
             DescriptorOffsets& descriptor_offsets = descriptor_offset_by_heap_type[heap_type];
-            uint32_t& descriptor_offset = argument_binding.GetSettings().IsConstant() ? descriptor_offsets.constant_offset : descriptor_offsets.mutable_offset;
+            uint32_t& descriptor_offset = argument_binding.GetSettings().argument.IsConstant()
+                                        ? descriptor_offsets.constant_offset
+                                        : descriptor_offsets.mutable_offset;
             argument_binding.SetDescriptorRange({ heap_type, descriptor_offset, bind_settings.resource_count });
 
             descriptor_offset += bind_settings.resource_count;
