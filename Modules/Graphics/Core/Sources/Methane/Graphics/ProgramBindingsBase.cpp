@@ -32,9 +32,9 @@ Base implementation of the program bindings interface.
 namespace Methane::Graphics
 {
 
-ProgramBindingsBase::ArgumentBindingBase::ArgumentBindingBase(ContextBase& context, const Settings& settings)
+ProgramBindingsBase::ArgumentBindingBase::ArgumentBindingBase(ContextBase& context, Settings settings)
     : m_context(context)
-    , m_settings(settings)
+    , m_settings(std::move(settings))
 {
     ITT_FUNCTION_TASK();
 }
@@ -47,15 +47,16 @@ void ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resour
     if (resource_locations.empty())
         throw std::invalid_argument("Can not set empty resources for resource binding.");
 
-    const bool is_addressable_binding = IsAddressable();
+    const bool        is_addressable_binding = m_settings.IsAddressable();
+    const Resource::Type bound_resource_type = m_settings.resource_type;
 
     for (const Resource::Location& resource_location : resource_locations)
     {
-        if (resource_location.GetResource().GetResourceType() != m_settings.resource_type)
+        if (resource_location.GetResource().GetResourceType() != bound_resource_type)
         {
             throw std::invalid_argument("Incompatible resource type \"" + Resource::GetTypeName(resource_location.GetResource().GetResourceType()) +
-                                        "\" is bound to argument \"" + GetArgumentName() +
-                                        "\" of type \"" + Resource::GetTypeName(m_settings.resource_type) + "\".");
+                                        "\" is bound to argument \"" + m_settings.argument.name +
+                                        "\" of type \"" + Resource::GetTypeName(bound_resource_type) + "\".");
         }
 
         const Resource::Usage::Mask resource_usage_mask = resource_location.GetResource().GetUsageMask();
@@ -92,7 +93,7 @@ bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& p
 
     // 1) No need in setting constant resource binding
     //    when another binding was previously set in the same command list for the same program
-    if (m_settings.is_constant)
+    if (m_settings.IsConstant())
         return true;
 
     if (!check_binding_value_changes)
@@ -137,7 +138,7 @@ ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_progra
     {
         // NOTE: constant resource bindings are reusing single binding-object for the whole program,
         //       so there's no need in setting its value, since it was already set by the original resource binding
-        if (argument_and_argument_binding.second->IsConstant() ||
+        if (argument_and_argument_binding.second->GetSettings().IsConstant() ||
             resource_locations_by_argument.count(argument_and_argument_binding.first))
             continue;
 
@@ -189,10 +190,11 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
     {
         if (!binding_by_argument.second)
         {
-            throw std::runtime_error("No resource binding is set for an argument \"" + binding_by_argument.first.argument_name + "\" of shader.");
+            throw std::runtime_error("No resource binding is set for an argument \"" + binding_by_argument.first.name + "\" of shader.");
         }
 
-        const ArgumentBindingBase& argument_binding = static_cast<const ArgumentBindingBase&>(*binding_by_argument.second);
+        const ArgumentBindingBase&       argument_binding = static_cast<const ArgumentBindingBase&>(*binding_by_argument.second);
+        const ArgumentBinding::Settings& binding_settings = argument_binding.GetSettings();
         m_arguments.insert(binding_by_argument.first);
 
         auto binding_by_argument_it = m_binding_by_argument.find(binding_by_argument.first);
@@ -200,29 +202,29 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         {
             m_binding_by_argument.emplace(
                 binding_by_argument.first,
-                argument_binding.IsConstant()
+                binding_settings.IsConstant()
                     ? binding_by_argument.second
                     : ArgumentBindingBase::CreateCopy(argument_binding)
             );
         }
-        else if (!argument_binding.IsConstant())
+        else if (!binding_settings.IsConstant())
         {
             binding_by_argument_it->second = ArgumentBindingBase::CreateCopy(static_cast<const ArgumentBindingBase&>(*binding_by_argument_it->second));
         }
 
         // NOTE: addressable resource bindings do not require descriptors to be created, instead they use direct GPU memory offset from resource
-        if (argument_binding.IsAddressable())
+        if (binding_settings.IsAddressable())
             continue;
 
         const DescriptorHeap::Type heap_type = static_cast<const ArgumentBindingBase&>(argument_binding).GetDescriptorHeapType();
         DescriptorsCount& descriptors = descriptors_count_by_heap_type[heap_type];
-        if (argument_binding.IsConstant())
+        if (binding_settings.IsConstant())
         {
-            descriptors.constant_count += argument_binding.GetResourceCount();
+            descriptors.constant_count += binding_settings.resource_count;
         }
         else
         {
-            descriptors.mutable_count += argument_binding.GetResourceCount();
+            descriptors.mutable_count += binding_settings.resource_count;
         }
     }
 
@@ -271,10 +273,10 @@ void ProgramBindingsBase::SetResourcesForArguments(const ResourceLocationsByArgu
         if (!sp_binding)
         {
 #ifndef PROGRAM_IGNORE_MISSING_ARGUMENTS
-            const Program::Argument all_shaders_argument(Shader::Type::All, argument.argument_name);
+            const Program::Argument all_shaders_argument(Shader::Type::All, argument.name);
             const bool all_shaders_argument_found = !!Get(all_shaders_argument);
             throw std::runtime_error("Program \"" + m_sp_program->GetName() +
-                                     "\" does not have argument \"" + argument.argument_name +
+                                     "\" does not have argument \"" + argument.name +
                                      "\" of " + Shader::GetTypeName(argument.shader_type) + " shader." +
                                      (all_shaders_argument_found ? " Instead this argument is used in All shaders." : "") );
 #else
@@ -308,7 +310,7 @@ bool ProgramBindingsBase::AllArgumentsAreBoundToResources(std::string& missing_a
         {
             log_ss << std::endl 
                    << "   - Program \"" << m_sp_program->GetName()
-                   << "\" argument \"" << binding_by_argument.first.argument_name
+                   << "\" argument \"" << binding_by_argument.first.name
                    << "\" of " << Shader::GetTypeName(binding_by_argument.first.shader_type)
                    << " shader is not bound to any resource." ;
             all_arguments_are_bound_to_resources = false;

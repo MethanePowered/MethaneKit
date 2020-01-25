@@ -44,7 +44,6 @@ public:
 
         // ArgumentBinding interface
         void SetResourceLocations(const Resource::Locations& resource_locations) override;
-        uint32_t GetResourceCount() const override { return 1; }
 
         const Settings& GetSettings() const noexcept { return m_settings; }
 

@@ -72,7 +72,7 @@ struct Program : virtual Object
     struct Argument
     {
         const Shader::Type shader_type;
-        const std::string  argument_name;
+        const std::string  name;
         const size_t       hash;
 
         Argument(Shader::Type shader_type, std::string argument_name);

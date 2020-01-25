@@ -46,38 +46,26 @@ public:
         , public std::enable_shared_from_this<ArgumentBindingBase>
     {
     public:
-        struct Settings
-        {
-            Shader::Type   shader_type;
-            std::string    argument_name;
-            Resource::Type resource_type;
-            uint32_t       resource_count;
-            bool           is_constant;
-            bool           is_addressable;
-        };
-
         static Ptr<ArgumentBindingBase> CreateCopy(const ArgumentBindingBase& other_argument_binding);
 
-        ArgumentBindingBase(ContextBase& context, const Settings& settings);
+        ArgumentBindingBase(ContextBase& context, Settings settings);
         ArgumentBindingBase(const ArgumentBindingBase& other) = default;
 
         // ArgumentBinding interface
-        Shader::Type               GetShaderType() const override           { return m_settings.shader_type; }
-        const std::string&         GetArgumentName() const override         { return m_settings.argument_name; }
-        bool                       IsConstant() const override              { return m_settings.is_constant; }
-        bool                       IsAddressable() const override           { return m_settings.is_addressable; }
-        uint32_t                   GetResourceCount() const override        { return m_settings.resource_count; }
-        const Resource::Locations& GetResourceLocations() const override    { return m_resource_locations; }
+        const Settings&            GetSettings() const noexcept override            { return m_settings; }
+        const Resource::Locations& GetResourceLocations() const noexcept override   { return m_resource_locations; }
         void                       SetResourceLocations(const Resource::Locations& resource_locations) override;
 
         DescriptorHeap::Type       GetDescriptorHeapType() const;
         Ptr<ArgumentBindingBase>   GetPtr() { return shared_from_this(); }
-        bool HasResources() const { return !m_resource_locations.empty(); }
+
         bool IsAlreadyApplied(const Program& program, const Program::Argument& program_argument,
                               const CommandListBase::CommandState& command_state,
                               bool check_binding_value_changes) const;
-
     protected:
+        ContextBase&        GetContext() noexcept { return m_context; }
+
+    private:
         ContextBase&        m_context;
         const Settings      m_settings;
         Resource::Locations m_resource_locations;

@@ -247,7 +247,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const std::set<std::s
     ITT_FUNCTION_TASK();
     assert(!!m_cp_reflection);
 
-    ShaderBase::ArgumentBindings program_bindings;
+    ShaderBase::ArgumentBindings argument_bindings;
 
     D3D12_SHADER_DESC shader_desc = { };
     m_cp_reflection->GetDesc(&shader_desc);
@@ -263,22 +263,32 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const std::set<std::s
         ThrowIfFailed(m_cp_reflection->GetResourceBindingDesc(resource_index, &binding_desc));
 
         const std::string argument_name(binding_desc.Name);
-        const bool is_constant_binding    = constant_argument_names.find(argument_name) != constant_argument_names.end();
-        const bool is_addressable_binding = addressable_argument_names.find(argument_name) != addressable_argument_names.end();
-        const ProgramBindingsDX::ArgumentBindingDX::Type dx_binding_type = !is_addressable_binding ? ProgramBindingsDX::ArgumentBindingDX::Type::DescriptorTable
-                                                                                                   : (binding_desc.Type == D3D_SIT_CBUFFER ? ProgramBindingsDX::ArgumentBindingDX::Type::ConstantBufferView
-                                                                                                                                           : ProgramBindingsDX::ArgumentBindingDX::Type::ShaderResourceView);
-        program_bindings.push_back(std::make_shared<ProgramBindingsDX::ArgumentBindingDX>(
+        ProgramBindings::ArgumentBinding::Modifiers::Mask argument_modifiers = ProgramBindings::ArgumentBinding::Modifiers::None;
+        ProgramBindingsDX::ArgumentBindingDX::Type        dx_binding_type    = ProgramBindingsDX::ArgumentBindingDX::Type::DescriptorTable;
+
+        if (constant_argument_names.find(argument_name) != constant_argument_names.end())
+        {
+            argument_modifiers |= ProgramBindings::ArgumentBinding::Modifiers::Constant;
+        }
+        if (addressable_argument_names.find(argument_name) != addressable_argument_names.end())
+        {
+            argument_modifiers |= ProgramBindings::ArgumentBinding::Modifiers::Addressable;
+            dx_binding_type = binding_desc.Type == D3D_SIT_CBUFFER ? ProgramBindingsDX::ArgumentBindingDX::Type::ConstantBufferView
+                                                                   : ProgramBindingsDX::ArgumentBindingDX::Type::ShaderResourceView;
+        }
+
+        argument_bindings.push_back(std::make_shared<ProgramBindingsDX::ArgumentBindingDX>(
             m_context,
-            ProgramBindingsDX::ArgumentBindingDX::Settings
+            ProgramBindingsDX::ArgumentBindingDX::SettingsDX
             {
                 {
-                    m_type,
-                    argument_name,
+                    {
+                        m_type,
+                        argument_name,
+                    },
                     GetResourceTypeByInputType(binding_desc.Type),
                     binding_desc.BindCount,
-                    is_constant_binding,
-                    is_addressable_binding
+                    argument_modifiers
                 },
                 dx_binding_type,
                 binding_desc.Type,
@@ -307,7 +317,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const std::set<std::s
     OutputDebugStringA(log_ss.str().c_str());
 #endif
 
-    return program_bindings;
+    return argument_bindings;
 }
 
 std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(const ProgramDX& program) const

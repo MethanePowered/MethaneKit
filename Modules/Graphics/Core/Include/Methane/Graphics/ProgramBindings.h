@@ -38,13 +38,35 @@ struct ProgramBindings
 {
     struct ArgumentBinding
     {
+        struct Modifiers
+        {
+            using Mask = uint32_t;
+            enum Value : Mask
+            {
+                None        = 0u,
+                Constant    = 1u << 0u,
+                Addressable = 1u << 1u,
+                All         = ~0u,
+            };
+
+            Modifiers() = delete;
+        };
+
+        // ArgumentBinding settings
+        struct Settings
+        {
+            Program::Argument argument;
+            Resource::Type    resource_type;
+            uint32_t          resource_count = 1;
+            Modifiers::Mask   modifiers      = Modifiers::None;
+
+            inline bool IsConstant() const    { return modifiers & ProgramBindings::ArgumentBinding::Modifiers::Constant; }
+            inline bool IsAddressable() const { return modifiers & ProgramBindings::ArgumentBinding::Modifiers::Addressable; }
+        };
+
         // ArgumentBinding interface
-        virtual Shader::Type               GetShaderType() const = 0;
-        virtual const std::string&         GetArgumentName() const = 0;
-        virtual bool                       IsConstant() const = 0;
-        virtual bool                       IsAddressable() const = 0;
-        virtual uint32_t                   GetResourceCount() const = 0;
-        virtual const Resource::Locations& GetResourceLocations() const = 0;
+        virtual const Settings&            GetSettings() const noexcept = 0;
+        virtual const Resource::Locations& GetResourceLocations() const noexcept = 0;
         virtual void                       SetResourceLocations(const Resource::Locations& resource_locations) = 0;
 
         virtual ~ArgumentBinding() = default;

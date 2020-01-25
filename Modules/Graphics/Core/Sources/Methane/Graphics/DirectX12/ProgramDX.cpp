@@ -143,10 +143,10 @@ void ProgramDX::InitRootSignature()
     for (auto& binding_by_argument : m_binding_by_argument)
     {
         assert(!!binding_by_argument.second);
-        const Argument&                  shader_argument = binding_by_argument.first;
-        ArgumentBindingDX&              argument_binding = static_cast<ArgumentBindingDX&>(*binding_by_argument.second);
-        const ArgumentBindingDX::Settings& bind_settings = argument_binding.GetSettings();
-        const D3D12_SHADER_VISIBILITY  shader_visibility = GetShaderVisibilityByType(shader_argument.shader_type);
+        const Argument&                    shader_argument = binding_by_argument.first;
+        ArgumentBindingDX&                argument_binding = static_cast<ArgumentBindingDX&>(*binding_by_argument.second);
+        const ArgumentBindingDX::SettingsDX& bind_settings = argument_binding.GetSettingsDX();
+        const D3D12_SHADER_VISIBILITY    shader_visibility = GetShaderVisibilityByType(shader_argument.shader_type);
 
         argument_binding.SetRootParameterIndex(static_cast<uint32_t>(root_parameters.size()));
         root_parameters.emplace_back();
@@ -160,15 +160,15 @@ void ProgramDX::InitRootSignature()
                                                            ? D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC
                                                            : D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
             
-            descriptor_ranges.emplace_back(range_type, bind_settings.base.resource_count, bind_settings.point, bind_settings.space, range_flags);
+            descriptor_ranges.emplace_back(range_type, bind_settings.resource_count, bind_settings.point, bind_settings.space, range_flags);
             root_parameters.back().InitAsDescriptorTable(1, &descriptor_ranges.back(), shader_visibility);
 
             const DescriptorHeap::Type  heap_type = GetDescriptorHeapTypeByRangeType(range_type);
             DescriptorOffsets& descriptor_offsets = descriptor_offset_by_heap_type[heap_type];
-            uint32_t& descriptor_offset = argument_binding.IsConstant() ? descriptor_offsets.constant_offset : descriptor_offsets.mutable_offset;
-            argument_binding.SetDescriptorRange({ heap_type, descriptor_offset, bind_settings.base.resource_count });
+            uint32_t& descriptor_offset = argument_binding.GetSettings().IsConstant() ? descriptor_offsets.constant_offset : descriptor_offsets.mutable_offset;
+            argument_binding.SetDescriptorRange({ heap_type, descriptor_offset, bind_settings.resource_count });
 
-            descriptor_offset += bind_settings.base.resource_count;
+            descriptor_offset += bind_settings.resource_count;
         } break;
 
         case ArgumentBindingDX::Type::ConstantBufferView:

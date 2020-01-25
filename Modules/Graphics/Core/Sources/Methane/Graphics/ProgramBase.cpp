@@ -36,7 +36,7 @@ static const std::hash<std::string> g_argument_name_hash;
 
 Program::Argument::Argument(Shader::Type shader_type, std::string argument_name)
     : shader_type(shader_type)
-    , argument_name(std::move(argument_name))
+    , name(std::move(argument_name))
     , hash(g_argument_name_hash(argument_name) ^ (static_cast<size_t>(shader_type) << 1))
 {
     ITT_FUNCTION_TASK();
@@ -45,8 +45,8 @@ Program::Argument::Argument(Shader::Type shader_type, std::string argument_name)
 bool Program::Argument::operator==(const Argument& other) const
 {
     ITT_FUNCTION_TASK();
-    return std::tie(hash, shader_type, argument_name) == 
-           std::tie(other.hash, other.shader_type, other.argument_name);
+    return std::tie(hash, shader_type, name) ==
+           std::tie(other.hash, other.shader_type, other.name);
 }
 
 ProgramBase::ShadersByType ProgramBase::CreateShadersByType(const Ptrs<Shader>& shaders)
@@ -133,9 +133,9 @@ void ProgramBase::InitArgumentBindings(const std::set<std::string>& constant_arg
                 throw std::runtime_error("Empty resource binding provided by shader.");
             }
 
-            const Argument shader_argument = { shader_type, sp_argument_binging->GetArgumentName() };
+            const Argument& shader_argument = sp_argument_binging->GetSettings().argument;
             m_binding_by_argument.emplace(shader_argument, sp_argument_binging);
-            shader_types_by_argument_name_map[shader_argument.argument_name].insert(shader_argument.shader_type);
+            shader_types_by_argument_name_map[shader_argument.name].insert(shader_argument.shader_type);
         }
     }
     

@@ -45,11 +45,11 @@ class ShaderDX final : public ShaderBase
 public:
     ShaderDX(Type type, ContextBase& context, const Settings& settings);
 
-    // ShaderBase
+    // ShaderBase overrides
     ArgumentBindings GetArgumentBindings(const std::set<std::string>& constant_argument_names,
                                          const std::set<std::string>& addressable_argument_names) const override;
 
-    const wrl::ComPtr<ID3DBlob>& GetNativeByteCode() const noexcept { return m_cp_byte_code; }
+    const wrl::ComPtr<ID3DBlob>&          GetNativeByteCode() const noexcept { return m_cp_byte_code; }
     std::vector<D3D12_INPUT_ELEMENT_DESC> GetNativeProgramInputLayout(const ProgramDX& program) const;
 
 protected:

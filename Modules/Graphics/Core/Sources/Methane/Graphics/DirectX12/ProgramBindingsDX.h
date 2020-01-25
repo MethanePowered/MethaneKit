@@ -40,10 +40,10 @@ class ResourceDX;
 
 namespace wrl = Microsoft::WRL;
 
-class ProgramBindingsDX : public ProgramBindingsBase
+class ProgramBindingsDX final : public ProgramBindingsBase
 {
 public:
-    class ArgumentBindingDX : public ArgumentBindingBase
+    class ArgumentBindingDX final : public ArgumentBindingBase
     {
     public:
         enum class Type : uint32_t
@@ -53,13 +53,12 @@ public:
             ShaderResourceView,
         };
 
-        struct Settings
+        struct SettingsDX : ArgumentBinding::Settings
         {
-            ArgumentBindingBase::Settings base;
-            Type                          type;
-            D3D_SHADER_INPUT_TYPE         input_type;
-            uint32_t                      point;
-            uint32_t                      space;
+            Type                      type;
+            D3D_SHADER_INPUT_TYPE     input_type;
+            uint32_t                  point;
+            uint32_t                  space;
         };
 
         struct DescriptorRange
@@ -69,27 +68,23 @@ public:
             uint32_t             count     = 0;
         };
 
-        ArgumentBindingDX(ContextBase& context, const Settings& settings);
+        ArgumentBindingDX(ContextBase& context, SettingsDX settings);
         ArgumentBindingDX(const ArgumentBindingDX& other);
 
         // ArgumentBinding interface
         void SetResourceLocations(const Resource::Locations& resource_locations) override;
-        bool IsAddressable() const override { return m_settings_dx.type != Type::DescriptorTable; }
 
-        const Settings&                GetSettings() const noexcept              { return m_settings_dx; }
-        uint32_t                       GetRootParameterIndex() const noexcept    { return m_root_parameter_index; }
-        const DescriptorRange&         GetDescriptorRange() const noexcept       { return m_descriptor_range; }
-        const ResourceDX::LocationsDX& GetResourceLocationsDX() const noexcept   { return m_resource_locations_dx; }
+        const SettingsDX&                   GetSettingsDX() const noexcept            { return m_settings_dx; }
+        uint32_t                            GetRootParameterIndex() const noexcept    { return m_root_parameter_index; }
+        const DescriptorRange&              GetDescriptorRange() const noexcept       { return m_descriptor_range; }
+        const ResourceDX::LocationsDX&      GetResourceLocationsDX() const noexcept   { return m_resource_locations_dx; }
 
-        void SetRootParameterIndex(uint32_t root_parameter_index)                { m_root_parameter_index = root_parameter_index; }
+        void SetRootParameterIndex(uint32_t root_parameter_index)                           { m_root_parameter_index = root_parameter_index; }
         void SetDescriptorRange(const DescriptorRange& descriptor_range);
-        void SetDescriptorHeapReservation(const DescriptorHeap::Reservation* p_descriptor_heap_reservation)
-        { m_p_descriptor_heap_reservation = p_descriptor_heap_reservation; }
+        void SetDescriptorHeapReservation(const DescriptorHeap::Reservation* p_reservation) { m_p_descriptor_heap_reservation = p_reservation; }
 
-    protected:
-        ContextDX& GetContextDX();
-
-        const Settings                     m_settings_dx;
+    private:
+        const SettingsDX                   m_settings_dx;
         uint32_t                           m_root_parameter_index = std::numeric_limits<uint32_t>::max();;
         DescriptorRange                    m_descriptor_range;
         const DescriptorHeap::Reservation* m_p_descriptor_heap_reservation  = nullptr;
