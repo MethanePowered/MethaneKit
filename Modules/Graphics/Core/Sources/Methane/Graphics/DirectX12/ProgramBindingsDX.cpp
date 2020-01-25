@@ -102,7 +102,7 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
                                                       ? p_dx_descriptor_heap->GetNativeDescriptorHeapType()
                                                       : D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     const wrl::ComPtr<ID3D12Device>& cp_native_device = static_cast<class ContextDX&>(GetContext()).GetDeviceDX().GetNativeDevice();
-    assert(!!cp_device);
+    assert(!!cp_native_device);
 
     uint32_t resource_index = 0;
     m_resource_locations_dx.reserve(resource_locations.size());

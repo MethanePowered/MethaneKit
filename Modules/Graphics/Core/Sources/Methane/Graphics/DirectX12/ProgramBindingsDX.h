@@ -53,7 +53,7 @@ public:
             ShaderResourceView,
         };
 
-        struct SettingsDX : ArgumentBinding::Settings
+        struct SettingsDX : Settings
         {
             Type                      type;
             D3D_SHADER_INPUT_TYPE     input_type;

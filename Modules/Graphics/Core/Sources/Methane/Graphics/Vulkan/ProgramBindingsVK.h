@@ -28,27 +28,26 @@ Vulkan implementation of the program interface.
 namespace Methane::Graphics
 {
 
-class ProgramBindingsVK : public ProgramBindingsBase
+class ProgramBindingsVK final : public ProgramBindingsBase
 {
 public:
-    class ArgumentBindingVK : public ArgumentBindingBase
+    class ArgumentBindingVK final : public ArgumentBindingBase
     {
     public:
-        struct Settings
+        struct SettingsVK : Settings
         {
-            ArgumentBindingBase::Settings base;
         };
 
-        ArgumentBindingVK(ContextBase& context, const Settings& settings);
+        ArgumentBindingVK(ContextBase& context, SettingsVK settings);
         ArgumentBindingVK(const ArgumentBindingVK& other) = default;
 
         // ArgumentBinding interface
         void SetResourceLocations(const Resource::Locations& resource_locations) override;
 
-        const Settings& GetSettings() const noexcept { return m_settings; }
+        const SettingsVK& GetSettingsVK() const noexcept { return m_settings_vk; }
 
-    protected:
-        const Settings m_settings;
+    private:
+        const SettingsVK m_settings_vk;
     };
 
     ProgramBindingsVK(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
