@@ -138,21 +138,20 @@ ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const std::set<std::s
             continue;
         }
 
-        ProgramBindings::ArgumentBinding::Modifiers::Mask argument_modifiers = ProgramBindings::ArgumentBinding::Modifiers::None;
+        Program::Argument::Modifiers::Mask argument_modifiers = Program::Argument::Modifiers::None;
         if (constant_argument_names.find(argument_name) != constant_argument_names.end())
-            argument_modifiers |= ProgramBindings::ArgumentBinding::Modifiers::Constant;
+            argument_modifiers |= Program::Argument::Modifiers::Constant;
         if (addressable_argument_names.find(argument_name) != addressable_argument_names.end())
-            argument_modifiers |= ProgramBindings::ArgumentBinding::Modifiers::Addressable;
+            argument_modifiers |= Program::Argument::Modifiers::Addressable;
         
         argument_bindings.push_back(std::make_shared<ProgramBindingsMT::ArgumentBindingMT>(
             m_context,
             ProgramBindingsMT::ArgumentBindingMT::SettingsMT
             {
                 {
-                    Program::Argument(m_type, argument_name),
+                    Program::ArgumentDesc(m_type, argument_name, argument_modifiers),
                     GetResourceTypeByMetalArgumentType(mtl_arg.type),
                     static_cast<uint32_t>(mtl_arg.arrayLength),
-                    argument_modifiers
                 },
                 static_cast<uint32_t>(mtl_arg.index)
             }

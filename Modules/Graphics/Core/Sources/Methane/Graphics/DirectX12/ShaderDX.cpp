@@ -263,16 +263,16 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const std::set<std::s
         ThrowIfFailed(m_cp_reflection->GetResourceBindingDesc(resource_index, &binding_desc));
 
         const std::string argument_name(binding_desc.Name);
-        ProgramBindings::ArgumentBinding::Modifiers::Mask argument_modifiers = ProgramBindings::ArgumentBinding::Modifiers::None;
+        Program::Argument::Modifiers::Mask argument_modifiers = Program::Argument::Modifiers::None;
         ProgramBindingsDX::ArgumentBindingDX::Type        dx_binding_type    = ProgramBindingsDX::ArgumentBindingDX::Type::DescriptorTable;
 
         if (constant_argument_names.find(argument_name) != constant_argument_names.end())
         {
-            argument_modifiers |= ProgramBindings::ArgumentBinding::Modifiers::Constant;
+            argument_modifiers |= Program::Argument::Modifiers::Constant;
         }
         if (addressable_argument_names.find(argument_name) != addressable_argument_names.end())
         {
-            argument_modifiers |= ProgramBindings::ArgumentBinding::Modifiers::Addressable;
+            argument_modifiers |= Program::Argument::Modifiers::Addressable;
             dx_binding_type = binding_desc.Type == D3D_SIT_CBUFFER ? ProgramBindingsDX::ArgumentBindingDX::Type::ConstantBufferView
                                                                    : ProgramBindingsDX::ArgumentBindingDX::Type::ShaderResourceView;
         }
@@ -282,10 +282,9 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const std::set<std::s
             ProgramBindingsDX::ArgumentBindingDX::SettingsDX
             {
                 {
-                    Program::Argument(m_type, argument_name),
+                    Program::ArgumentDesc(m_type, argument_name, argument_modifiers),
                     GetResourceTypeByInputType(binding_desc.Type),
-                    binding_desc.BindCount,
-                    argument_modifiers
+                    binding_desc.BindCount
                 },
                 dx_binding_type,
                 binding_desc.Type,

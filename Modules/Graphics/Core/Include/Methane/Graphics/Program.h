@@ -71,11 +71,26 @@ struct Program : virtual Object
 
     struct Argument
     {
+        struct Modifiers
+        {
+            using Mask = uint32_t;
+            enum Value : Mask
+            {
+                None        = 0u,
+                Constant    = 1u << 0u,
+                Addressable = 1u << 1u,
+                All         = ~0u,
+            };
+
+            Modifiers() = delete;
+        };
+
         const Shader::Type shader_type;
         const std::string  name;
         const size_t       hash;
 
         Argument(Shader::Type shader_type, std::string argument_name);
+        Argument(const Argument& argument) = default;
 
         bool operator==(const Argument& other) const;
 
@@ -86,6 +101,22 @@ struct Program : virtual Object
     };
 
     using Arguments = std::unordered_set<Argument, Argument::Hash>;
+
+    struct ArgumentDesc : Argument
+    {
+        const Modifiers::Mask modifiers;
+
+        ArgumentDesc(Shader::Type shader_type, std::string argument_name,
+                     Modifiers::Mask modifiers_mask = Modifiers::None);
+        ArgumentDesc(const Argument& argument,
+                     Modifiers::Mask modifiers_mask = Modifiers::None);
+        ArgumentDesc(const ArgumentDesc& argument_desc) = default;
+
+        bool operator==(const ArgumentDesc& other) const;
+
+        inline bool IsConstant() const    { return modifiers & Modifiers::Constant; }
+        inline bool IsAddressable() const { return modifiers & Modifiers::Addressable; }
+    };
 
     // Program settings
     struct Settings

@@ -38,30 +38,12 @@ struct ProgramBindings
 {
     struct ArgumentBinding
     {
-        struct Modifiers
-        {
-            using Mask = uint32_t;
-            enum Value : Mask
-            {
-                None        = 0u,
-                Constant    = 1u << 0u,
-                Addressable = 1u << 1u,
-                All         = ~0u,
-            };
-
-            Modifiers() = delete;
-        };
-
         // ArgumentBinding settings
         struct Settings
         {
-            Program::Argument argument;
-            Resource::Type    resource_type;
-            uint32_t          resource_count = 1;
-            Modifiers::Mask   modifiers      = Modifiers::None;
-
-            inline bool IsConstant() const    { return modifiers & ProgramBindings::ArgumentBinding::Modifiers::Constant; }
-            inline bool IsAddressable() const { return modifiers & ProgramBindings::ArgumentBinding::Modifiers::Addressable; }
+            Program::ArgumentDesc argument;
+            Resource::Type        resource_type;
+            uint32_t              resource_count = 1;
         };
 
         // ArgumentBinding interface

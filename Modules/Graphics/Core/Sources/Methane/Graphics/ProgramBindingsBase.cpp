@@ -47,7 +47,7 @@ void ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resour
     if (resource_locations.empty())
         throw std::invalid_argument("Can not set empty resources for resource binding.");
 
-    const bool        is_addressable_binding = m_settings.IsAddressable();
+    const bool        is_addressable_binding = m_settings.argument.IsAddressable();
     const Resource::Type bound_resource_type = m_settings.resource_type;
 
     for (const Resource::Location& resource_location : resource_locations)
@@ -93,7 +93,7 @@ bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& p
 
     // 1) No need in setting constant resource binding
     //    when another binding was previously set in the same command list for the same program
-    if (m_settings.IsConstant())
+    if (m_settings.argument.IsConstant())
         return true;
 
     if (!check_binding_value_changes)
@@ -138,7 +138,7 @@ ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_progra
     {
         // NOTE: constant resource bindings are reusing single binding-object for the whole program,
         //       so there's no need in setting its value, since it was already set by the original resource binding
-        if (argument_and_argument_binding.second->GetSettings().IsConstant() ||
+        if (argument_and_argument_binding.second->GetSettings().argument.IsConstant() ||
             resource_locations_by_argument.count(argument_and_argument_binding.first))
             continue;
 
@@ -202,23 +202,23 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         {
             m_binding_by_argument.emplace(
                 binding_by_argument.first,
-                binding_settings.IsConstant()
+                binding_settings.argument.IsConstant()
                     ? binding_by_argument.second
                     : ArgumentBindingBase::CreateCopy(argument_binding)
             );
         }
-        else if (!binding_settings.IsConstant())
+        else if (!binding_settings.argument.IsConstant())
         {
             binding_by_argument_it->second = ArgumentBindingBase::CreateCopy(static_cast<const ArgumentBindingBase&>(*binding_by_argument_it->second));
         }
 
         // NOTE: addressable resource bindings do not require descriptors to be created, instead they use direct GPU memory offset from resource
-        if (binding_settings.IsAddressable())
+        if (binding_settings.argument.IsAddressable())
             continue;
 
         const DescriptorHeap::Type heap_type = static_cast<const ArgumentBindingBase&>(argument_binding).GetDescriptorHeapType();
         DescriptorsCount& descriptors = descriptors_count_by_heap_type[heap_type];
-        if (binding_settings.IsConstant())
+        if (binding_settings.argument.IsConstant())
         {
             descriptors.constant_count += binding_settings.resource_count;
         }

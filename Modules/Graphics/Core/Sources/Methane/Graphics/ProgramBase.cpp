@@ -49,6 +49,27 @@ bool Program::Argument::operator==(const Argument& other) const
            std::tie(other.hash, other.shader_type, other.name);
 }
 
+Program::ArgumentDesc::ArgumentDesc(Shader::Type shader_type, std::string argument_name, Modifiers::Mask modifiers)
+    : Argument(shader_type, argument_name)
+    , modifiers(modifiers)
+{
+    ITT_FUNCTION_TASK();
+}
+
+Program::ArgumentDesc::ArgumentDesc(const Argument& argument, Modifiers::Mask modifiers)
+    : Argument(argument)
+    , modifiers(modifiers)
+{
+    ITT_FUNCTION_TASK();
+}
+
+bool Program::ArgumentDesc::operator==(const ArgumentDesc& other) const
+{
+    ITT_FUNCTION_TASK();
+    return Argument::operator==(other) &&
+           modifiers == other.modifiers;
+}
+
 ProgramBase::ShadersByType ProgramBase::CreateShadersByType(const Ptrs<Shader>& shaders)
 {
     ITT_FUNCTION_TASK();

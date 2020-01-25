@@ -90,7 +90,7 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
     }
 
     const uint32_t             descriptor_range_start = m_p_descriptor_heap_reservation
-                                                      ? m_p_descriptor_heap_reservation->GetRange(m_settings_dx.IsConstant()).GetStart()
+                                                      ? m_p_descriptor_heap_reservation->GetRange(m_settings_dx.argument.IsConstant()).GetStart()
                                                       : std::numeric_limits<uint32_t>::max();
     const DescriptorHeapDX*      p_dx_descriptor_heap = m_p_descriptor_heap_reservation
                                                       ? static_cast<const DescriptorHeapDX*>(&m_p_descriptor_heap_reservation->heap.get())
@@ -244,7 +244,7 @@ void ProgramBindingsDX::Apply(CommandList& command_list, ApplyBehavior::Mask app
 
             const DescriptorHeapDX& dx_descriptor_heap = static_cast<const DescriptorHeapDX&>(p_heap_reservation->heap.get());
             const DXDescriptorRange&  descriptor_range = argument_binding.GetDescriptorRange();
-            const uint32_t            descriptor_index = p_heap_reservation->GetRange(binding_settings.IsConstant()).GetStart() + descriptor_range.offset;
+            const uint32_t            descriptor_index = p_heap_reservation->GetRange(binding_settings.argument.IsConstant()).GetStart() + descriptor_range.offset;
             gpu_descriptor_handle = dx_descriptor_heap.GetNativeGPUDescriptorHandle(descriptor_index);
             graphics_root_parameter_bindings.push_back({
                     binding_type,
@@ -337,7 +337,7 @@ void ProgramBindingsDX::CopyDescriptorsToGpu()
         const DescriptorHeapDX&                   dx_descriptor_heap  = static_cast<const DescriptorHeapDX&>(p_heap_reservation->heap.get());
         const ArgumentBindingDX::DescriptorRange& descriptor_range    = argument_binding.GetDescriptorRange();
         const DescriptorHeap::Type                heap_type           = dx_descriptor_heap.GetSettings().type;
-        const bool                                is_constant_bindnig = argument_binding.GetSettings().IsConstant();
+        const bool                                is_constant_bindnig = argument_binding.GetSettings().argument.IsConstant();
         const uint32_t                         descriptor_range_start = p_heap_reservation->GetRange(is_constant_bindnig).GetStart();
         const D3D12_DESCRIPTOR_HEAP_TYPE          native_heap_type    = dx_descriptor_heap.GetNativeDescriptorHeapType();
 
