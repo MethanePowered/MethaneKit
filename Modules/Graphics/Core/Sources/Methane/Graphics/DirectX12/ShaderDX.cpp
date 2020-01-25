@@ -282,10 +282,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const std::set<std::s
             ProgramBindingsDX::ArgumentBindingDX::SettingsDX
             {
                 {
-                    {
-                        m_type,
-                        argument_name,
-                    },
+                    Program::Argument(m_type, argument_name),
                     GetResourceTypeByInputType(binding_desc.Type),
                     binding_desc.BindCount,
                     argument_modifiers

@@ -175,9 +175,9 @@ Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindi
     return std::make_shared<ProgramBindingsMT::ArgumentBindingMT>(static_cast<const ProgramBindingsMT::ArgumentBindingMT&>(other_argument_binding));
 }
 
-ProgramBindingsMT::ArgumentBindingMT::ArgumentBindingMT(ContextBase& context, const Settings& settings)
-    : ArgumentBindingBase(context, settings.base)
-    , m_settings(settings)
+ProgramBindingsMT::ArgumentBindingMT::ArgumentBindingMT(ContextBase& context, SettingsMT settings)
+    : ArgumentBindingBase(context, settings)
+    , m_settings_mt(std::move(settings))
 {
     ITT_FUNCTION_TASK();
 }
@@ -192,26 +192,26 @@ void ProgramBindingsMT::ArgumentBindingMT::SetResourceLocations(const Resource::
     m_mtl_buffers.clear();
     m_mtl_buffer_offsets.clear();
 
-    switch(m_settings.base.resource_type)
+    switch(m_settings_mt.resource_type)
     {
     case Resource::Type::Sampler:
-        m_mtl_sampler_states.reserve(m_resource_locations.size());
-        std::transform(m_resource_locations.begin(), m_resource_locations.end(), std::back_inserter(m_mtl_sampler_states),
+        m_mtl_sampler_states.reserve(resource_locations.size());
+        std::transform(resource_locations.begin(), resource_locations.end(), std::back_inserter(m_mtl_sampler_states),
                        [](const Resource::Location& resource_location)
                            { return dynamic_cast<const SamplerMT&>(resource_location.GetResource()).GetNativeSamplerState(); });
         break;
 
     case Resource::Type::Texture:
-        m_mtl_textures.reserve(m_resource_locations.size());
-        std::transform(m_resource_locations.begin(), m_resource_locations.end(), std::back_inserter(m_mtl_textures),
+        m_mtl_textures.reserve(resource_locations.size());
+        std::transform(resource_locations.begin(), resource_locations.end(), std::back_inserter(m_mtl_textures),
                        [](const Resource::Location& resource_location)
                            { return dynamic_cast<const TextureMT&>(resource_location.GetResource()).GetNativeTexture(); });
         break;
 
     case Resource::Type::Buffer:
-        m_mtl_buffers.reserve(m_resource_locations.size());
-        m_mtl_buffer_offsets.reserve(m_resource_locations.size());
-        for (const Resource::Location& resource_location : m_resource_locations)
+        m_mtl_buffers.reserve(resource_locations.size());
+        m_mtl_buffer_offsets.reserve(resource_locations.size());
+        for (const Resource::Location& resource_location : resource_locations)
         {
             m_mtl_buffers.push_back(dynamic_cast<const BufferMT&>(resource_location.GetResource()).GetNativeBuffer());
             m_mtl_buffer_offsets.push_back(static_cast<NSUInteger>(resource_location.GetOffset()));
@@ -249,9 +249,9 @@ void ProgramBindingsMT::Apply(CommandList& command_list, ApplyBehavior::Mask app
             metal_argument_binding.IsAlreadyApplied(*m_sp_program, program_argument, command_state, apply_behavior & ApplyBehavior::ChangesOnly))
             continue;
 
-        const uint32_t arg_index = metal_argument_binding.GetSettings().argument_index;
+        const uint32_t arg_index = metal_argument_binding.GetSettingsMT().argument_index;
 
-        switch(metal_argument_binding.GetSettings().base.resource_type)
+        switch(metal_argument_binding.GetSettingsMT().resource_type)
         {
             case Resource::Type::Buffer:
                 SetMetalResourcesForAll(program_argument.shader_type, *m_sp_program, mtl_cmd_encoder, metal_argument_binding.GetNativeBuffers(), arg_index,

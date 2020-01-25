@@ -37,7 +37,7 @@ static const std::hash<std::string> g_argument_name_hash;
 Program::Argument::Argument(Shader::Type shader_type, std::string argument_name)
     : shader_type(shader_type)
     , name(std::move(argument_name))
-    , hash(g_argument_name_hash(argument_name) ^ (static_cast<size_t>(shader_type) << 1))
+    , hash(g_argument_name_hash(name) ^ (static_cast<size_t>(shader_type) << 1))
 {
     ITT_FUNCTION_TASK();
 }

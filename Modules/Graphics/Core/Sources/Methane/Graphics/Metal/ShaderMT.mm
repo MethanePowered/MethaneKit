@@ -137,21 +137,22 @@ ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const std::set<std::s
             // Skip input vertex buffers, since they are set with a separate RenderCommandList call, not through resource bindings
             continue;
         }
-        
-        const bool is_constant_binding    = constant_argument_names.find(argument_name)    != constant_argument_names.end();
-        const bool is_addressable_binding = addressable_argument_names.find(argument_name) != addressable_argument_names.end();
+
+        ProgramBindings::ArgumentBinding::Modifiers::Mask argument_modifiers = ProgramBindings::ArgumentBinding::Modifiers::None;
+        if (constant_argument_names.find(argument_name) != constant_argument_names.end())
+            argument_modifiers |= ProgramBindings::ArgumentBinding::Modifiers::Constant;
+        if (addressable_argument_names.find(argument_name) != addressable_argument_names.end())
+            argument_modifiers |= ProgramBindings::ArgumentBinding::Modifiers::Addressable;
         
         argument_bindings.push_back(std::make_shared<ProgramBindingsMT::ArgumentBindingMT>(
             m_context,
-            ProgramBindingsMT::ArgumentBindingMT::Settings
+            ProgramBindingsMT::ArgumentBindingMT::SettingsMT
             {
                 {
-                    m_type,
-                    argument_name,
+                    Program::Argument(m_type, argument_name),
                     GetResourceTypeByMetalArgumentType(mtl_arg.type),
                     static_cast<uint32_t>(mtl_arg.arrayLength),
-                    is_constant_binding,
-                    is_addressable_binding
+                    argument_modifiers
                 },
                 static_cast<uint32_t>(mtl_arg.index)
             }

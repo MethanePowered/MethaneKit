@@ -33,32 +33,31 @@ namespace Methane::Graphics
 class ContextMT;
 class ShaderMT;
 
-class ProgramBindingsMT : public ProgramBindingsBase
+class ProgramBindingsMT final : public ProgramBindingsBase
 {
 public:
-    class ArgumentBindingMT : public ArgumentBindingBase
+    class ArgumentBindingMT final : public ArgumentBindingBase
     {
     public:
-        struct Settings
+        struct SettingsMT final : Settings
         {
-            ArgumentBindingBase::Settings    base;
-            uint32_t                         argument_index;
+            uint32_t argument_index;
         };
 
-        ArgumentBindingMT(ContextBase& context, const Settings& settings);
+        ArgumentBindingMT(ContextBase& context, SettingsMT settings);
         ArgumentBindingMT(const ArgumentBindingMT& other) = default;
 
         // ArgumentBinding interface
         void SetResourceLocations(const Resource::Locations& resource_locations) override;
 
-        const Settings& GetSettings() const noexcept { return m_settings; }
+        const SettingsMT& GetSettingsMT() const noexcept { return m_settings_mt; }
         const std::vector<id<MTLSamplerState>>& GetNativeSamplerStates() const { return m_mtl_sampler_states; }
         const std::vector<id<MTLTexture>>&      GetNativeTextures() const      { return m_mtl_textures; }
         const std::vector<id<MTLBuffer>>&       GetNativeBuffers() const       { return m_mtl_buffers; }
         const std::vector<NSUInteger>&          GetBufferOffsets() const       { return m_mtl_buffer_offsets; }
 
-    protected:
-        const Settings                   m_settings;
+    private:
+        const SettingsMT                 m_settings_mt;
         std::vector<id<MTLSamplerState>> m_mtl_sampler_states;
         std::vector<id<MTLTexture>>      m_mtl_textures;
         std::vector<id<MTLBuffer>>       m_mtl_buffers;
