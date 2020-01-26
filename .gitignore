@@ -2,5 +2,6 @@
 /.idea/workspace.xml
 /.scannerwork
 /.sonarqube
+/*.srctrl*
 /out
 /CMakeLists.txt.user
