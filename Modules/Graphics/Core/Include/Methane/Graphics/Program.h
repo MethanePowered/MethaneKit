@@ -93,7 +93,6 @@ struct Program : virtual Object
         Argument(const Argument& argument) = default;
 
         bool operator==(const Argument& other) const;
-        Argument& operator=(const Argument& other) = default;
 
         struct Hash
         {
@@ -112,8 +111,6 @@ struct Program : virtual Object
         ArgumentDesc(const Argument& argument,
                      Modifiers::Mask modifiers_mask = Modifiers::None);
         ArgumentDesc(const ArgumentDesc& argument_desc) = default;
-
-        ArgumentDesc& operator=(const ArgumentDesc& other) = default;
 
         inline bool IsConstant() const    { return modifiers & Modifiers::Constant; }
         inline bool IsAddressable() const { return modifiers & Modifiers::Addressable; }
