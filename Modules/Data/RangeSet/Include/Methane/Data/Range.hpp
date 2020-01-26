@@ -102,12 +102,6 @@ public:
         return ss.str();
     }
 
-    explicit operator const char*() const
-    {
-        ITT_FUNCTION_TASK();
-        return std::string(*this).c_str();
-    }
-
 protected:
     void Validate() const
     {
