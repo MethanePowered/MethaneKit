@@ -56,21 +56,40 @@ Planet::Planet(gfx::Context& context, gfx::ImageLoader& image_loader, const Sett
     const gfx::Context::Settings& context_settings = context.GetSettings();
 
     gfx::RenderState::Settings state_settings;
-    state_settings.sp_program = gfx::Program::Create(context, {
+    state_settings.sp_program = gfx::Program::Create(context,
+        gfx::Program::Settings
         {
-            gfx::Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "Planet", "PlanetVS" }, { } }),
-            gfx::Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "Planet", "PlanetPS" }, { } }),
-        },
-        { { {
-                { "input_position", "POSITION" },
-                { "input_normal",   "NORMAL"   },
-                { "input_texcoord", "TEXCOORD" },
-        } } },
-        { "g_constants", "g_texture", "g_sampler" },
-        { },
-        { context_settings.color_format },
-        context_settings.depth_stencil_format
-    });
+            gfx::Program::Shaders
+            {
+                gfx::Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "Planet", "PlanetVS" }, { } }),
+                gfx::Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "Planet", "PlanetPS" }, { } }),
+            },
+            gfx::Program::InputBufferLayouts
+            {
+                gfx::Program::InputBufferLayout
+                {
+                    gfx::Program::InputBufferLayout::Arguments
+                    {
+                        { "input_position", "POSITION" },
+                        { "input_normal",   "NORMAL"   },
+                        { "input_texcoord", "TEXCOORD" },
+                    }
+                }
+            },
+            gfx::Program::ArgumentDescriptions
+            {
+                { { gfx::Shader::Type::All,    "g_uniforms"  }, gfx::Program::Argument::Modifiers::None     },
+                { { gfx::Shader::Type::Pixel,  "g_constants" }, gfx::Program::Argument::Modifiers::Constant },
+                { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::Argument::Modifiers::Constant },
+                { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::Argument::Modifiers::Constant },
+            },
+            gfx::PixelFormats
+            {
+                context_settings.color_format
+            },
+            context_settings.depth_stencil_format
+        }
+    );
     state_settings.sp_program->SetName("Planet Shaders");
     state_settings.viewports     = { gfx::GetFrameViewport(context_settings.frame_size) };
     state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };
@@ -97,10 +116,10 @@ Ptr<gfx::ProgramBindings> Planet::CreateProgramBindings(const Ptr<gfx::Buffer>& 
     assert(!!m_sp_state);
     assert(!!m_sp_state->GetSettings().sp_program);
     return gfx::ProgramBindings::Create(m_sp_state->GetSettings().sp_program, {
-        { { gfx::Shader::Type::All,   "g_uniforms"  }, { { sp_uniforms_buffer                   } } },
-        { { gfx::Shader::Type::Pixel, "g_constants" }, { { sp_constants_buffer                  } } },
-        { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_mesh_buffers.GetSubsetTexturePtr() } } },
-        { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler                 } } },
+        { { gfx::Shader::Type::All,   "g_uniforms"  }, { { sp_uniforms_buffer             } } },
+        { { gfx::Shader::Type::Pixel, "g_constants" }, { { sp_constants_buffer            } } },
+        { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_mesh_buffers.GetTexturePtr() } } },
+        { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler           } } },
     });
 }
 

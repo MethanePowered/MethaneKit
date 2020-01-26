@@ -52,19 +52,37 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
     const Context::Settings& context_settings = context.GetSettings();
 
     RenderState::Settings state_settings;
-    state_settings.sp_program = Program::Create(context, {
+    state_settings.sp_program = Program::Create(context,
+        Program::Settings
         {
-            Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxVS" }, { } }),
-            Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxPS" }, { } }),
-        },
-        { { {
-            { "input_position", "POSITION" },
-        } } },
-        { "g_skybox_texture", "g_texture_sampler" },
-        { },
-        { context_settings.color_format },
-        context_settings.depth_stencil_format
-    });
+            Program::Shaders
+            {
+                Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxVS" }, { } }),
+                Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxPS" }, { } }),
+            },
+            Program::InputBufferLayouts
+            {
+                Program::InputBufferLayout
+                {
+                    Program::InputBufferLayout::Arguments
+                    {
+                        { "input_position", "POSITION" },
+                    }
+                }
+            },
+            Program::ArgumentDescriptions
+            {
+                { { Shader::Type::Vertex, "g_skybox_uniforms" }, Program::Argument::Modifiers::None },
+                { { Shader::Type::Pixel,  "g_skybox_texture"  }, Program::Argument::Modifiers::Constant },
+                { { Shader::Type::Pixel,  "g_texture_sampler" }, Program::Argument::Modifiers::Constant },
+            },
+            PixelFormats
+            {
+                context_settings.color_format
+            },
+            context_settings.depth_stencil_format
+        }
+    );
     state_settings.sp_program->SetName("Sky-box shading");
     state_settings.viewports            = { GetFrameViewport(context_settings.frame_size) };
     state_settings.scissor_rects        = { GetFrameScissorRect(context_settings.frame_size) };
@@ -92,7 +110,7 @@ Ptr<ProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& sp_uniform
     assert(!!m_sp_state->GetSettings().sp_program);
     return ProgramBindings::Create(m_sp_state->GetSettings().sp_program, {
         { { Shader::Type::Vertex, "g_skybox_uniforms" }, { { sp_uniforms_buffer             } } },
-        { { Shader::Type::Pixel,  "g_skybox_texture"  }, { { m_mesh_buffers.GetSubsetTexturePtr() } } },
+        { { Shader::Type::Pixel,  "g_skybox_texture"  }, { { m_mesh_buffers.GetTexturePtr() } } },
         { { Shader::Type::Pixel,  "g_texture_sampler" }, { { m_sp_texture_sampler           } } },
     });
 }

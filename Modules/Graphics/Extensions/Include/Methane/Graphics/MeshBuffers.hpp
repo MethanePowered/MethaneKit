@@ -264,7 +264,13 @@ public:
         m_subset_textures.resize(MeshBuffers<UniformsType>::GetSubsetsCount());
     }
 
-    const Ptr<Texture>& GetSubsetTexturePtr(uint32_t subset_index = 0) const
+    const Ptr<Texture>& GetTexturePtr() const
+    {
+        ITT_FUNCTION_TASK();
+        return GetSubsetTexturePtr(0);
+    }
+
+    const Ptr<Texture>& GetSubsetTexturePtr(uint32_t subset_index) const
     {
         ITT_FUNCTION_TASK();
 

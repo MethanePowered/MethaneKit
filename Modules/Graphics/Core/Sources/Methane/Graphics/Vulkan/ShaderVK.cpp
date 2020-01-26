@@ -46,8 +46,7 @@ ShaderVK::~ShaderVK()
     ITT_FUNCTION_TASK();
 }
 
-ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const std::set<std::string>& constant_argument_names,
-                                                           const std::set<std::string>& addressable_argument_names) const
+ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::ArgumentDescriptions&) const
 {
     ITT_FUNCTION_TASK();
     ArgumentBindings argument_bindings;

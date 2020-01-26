@@ -63,11 +63,16 @@ Program::ArgumentDesc::ArgumentDesc(const Argument& argument, Modifiers::Mask mo
     ITT_FUNCTION_TASK();
 }
 
-bool Program::ArgumentDesc::operator==(const ArgumentDesc& other) const
+Program::ArgumentDescriptions::const_iterator Program::FindArgumentDescription(const ArgumentDescriptions& argument_descriptions, const Argument& argument)
 {
     ITT_FUNCTION_TASK();
-    return Argument::operator==(other) &&
-           modifiers == other.modifiers;
+
+    Program::ArgumentDescriptions::const_iterator argument_desc_it = argument_descriptions.find(argument);
+    if (argument_desc_it != argument_descriptions.end())
+        return argument_desc_it;
+
+    const Argument all_shaders_argument(Shader::Type::All, argument.name);
+    return argument_descriptions.find(all_shaders_argument);
 }
 
 ProgramBase::ShadersByType ProgramBase::CreateShadersByType(const Ptrs<Shader>& shaders)
@@ -128,7 +133,7 @@ ProgramBase::~ProgramBase()
     }
 }
 
-void ProgramBase::InitArgumentBindings(const std::set<std::string>& constant_argument_names, const std::set<std::string>& addressable_argument_names)
+void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_descriptions)
 {
     ITT_FUNCTION_TASK();
 
@@ -146,7 +151,7 @@ void ProgramBase::InitArgumentBindings(const std::set<std::string>& constant_arg
         const Shader::Type shader_type = sp_shader->GetType();
         all_shader_types.insert(shader_type);
         
-        const ShaderBase::ArgumentBindings argument_bindings = static_cast<const ShaderBase&>(*sp_shader).GetArgumentBindings(constant_argument_names, addressable_argument_names);
+        const ShaderBase::ArgumentBindings argument_bindings = static_cast<const ShaderBase&>(*sp_shader).GetArgumentBindings(argument_descriptions);
         for (const Ptr<ProgramBindingsBase::ArgumentBindingBase>& sp_argument_binging : argument_bindings)
         {
             if (!sp_argument_binging)

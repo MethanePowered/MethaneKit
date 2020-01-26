@@ -93,6 +93,7 @@ struct Program : virtual Object
         Argument(const Argument& argument) = default;
 
         bool operator==(const Argument& other) const;
+        Argument& operator=(const Argument& other) = default;
 
         struct Hash
         {
@@ -112,21 +113,24 @@ struct Program : virtual Object
                      Modifiers::Mask modifiers_mask = Modifiers::None);
         ArgumentDesc(const ArgumentDesc& argument_desc) = default;
 
-        bool operator==(const ArgumentDesc& other) const;
+        ArgumentDesc& operator=(const ArgumentDesc& other) = default;
 
         inline bool IsConstant() const    { return modifiers & Modifiers::Constant; }
         inline bool IsAddressable() const { return modifiers & Modifiers::Addressable; }
     };
 
+    using ArgumentDescriptions = std::unordered_set<ArgumentDesc, ArgumentDesc::Hash>;
+    static ArgumentDescriptions::const_iterator FindArgumentDescription(const ArgumentDescriptions& argument_descriptions, const Argument& argument);
+    using Shaders = Ptrs<Shader>;
+
     // Program settings
     struct Settings
     {
-        Ptrs<Shader>             shaders;
-        InputBufferLayouts       input_buffer_layouts;
-        std::set<std::string>    constant_argument_names;
-        std::set<std::string>    addressable_argument_names;
-        std::vector<PixelFormat> color_formats;
-        PixelFormat              depth_format = PixelFormat::Unknown;
+        Shaders              shaders;
+        InputBufferLayouts   input_buffer_layouts;
+        ArgumentDescriptions argument_descriptions;
+        PixelFormats         color_formats;
+        PixelFormat          depth_format = PixelFormat::Unknown;
     };
 
     // Create Program instance

@@ -61,20 +61,38 @@ ScreenQuad::ScreenQuad(Context& context, Ptr<Texture> sp_texture, Settings setti
     const Context::Settings& context_settings = context.GetSettings();
 
     RenderState::Settings state_settings;
-    state_settings.sp_program = Program::Create(context, {
+    state_settings.sp_program = Program::Create(context,
+        Program::Settings
         {
-            Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "ScreenQuad", "ScreenQuadVS" }, { } }),
-            Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "ScreenQuad", "ScreenQuadPS" }, { } }),
-        },
-        { { {
-            { "input_position", "POSITION" },
-            { "input_texcoord", "TEXCOORD" },
-        } } },
-        { "g_constants", "g_texture", "g_sampler" },
-        { },
-        { context_settings.color_format },
-        context_settings.depth_stencil_format
-    });
+            Program::Shaders
+            {
+                Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "ScreenQuad", "ScreenQuadVS" }, { } }),
+                Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "ScreenQuad", "ScreenQuadPS" }, { } }),
+            },
+            Program::InputBufferLayouts
+            {
+                Program::InputBufferLayout
+                {
+                    Program::InputBufferLayout::Arguments
+                    {
+                        { "input_position", "POSITION" },
+                        { "input_texcoord", "TEXCOORD" },
+                    }
+                }
+            },
+            Program::ArgumentDescriptions
+            {
+                { { Shader::Type::Pixel, "g_constants" }, Program::Argument::Modifiers::Constant },
+                { { Shader::Type::Pixel, "g_texture"   }, Program::Argument::Modifiers::Constant },
+                { { Shader::Type::Pixel, "g_sampler"   }, Program::Argument::Modifiers::Constant },
+            },
+            PixelFormats
+            {
+                context_settings.color_format
+            },
+            context_settings.depth_stencil_format
+        }
+    );
     state_settings.sp_program->SetName(m_settings.name + " Screen-Quad Shading");
     state_settings.viewports            = { GetFrameViewport(settings.screen_rect) };
     state_settings.scissor_rects        = { GetFrameScissorRect(settings.screen_rect) };

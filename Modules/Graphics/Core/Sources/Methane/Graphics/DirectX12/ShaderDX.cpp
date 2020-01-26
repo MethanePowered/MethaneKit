@@ -242,7 +242,7 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
     ));
 }
 
-ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const std::set<std::string>& constant_argument_names, const std::set<std::string>& addressable_argument_names) const
+ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const
 {
     ITT_FUNCTION_TASK();
     assert(!!m_cp_reflection);
@@ -254,7 +254,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const std::set<std::s
 
 #ifdef _DEBUG
     std::stringstream log_ss;
-    log_ss << std::endl << GetTypeName() << " shader v." << shader_desc.Version << " created by \"" << shader_desc.Creator << "\" with resource bindings:" << std::endl;
+    log_ss << std::endl << GetTypeName() << " shader v." << shader_desc.Version << " created by \"" << shader_desc.Creator << "\" with argument bindings:" << std::endl;
 #endif
 
     for (UINT resource_index = 0; resource_index < shader_desc.BoundResources; ++resource_index)
@@ -262,27 +262,22 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const std::set<std::s
         D3D12_SHADER_INPUT_BIND_DESC binding_desc = { };
         ThrowIfFailed(m_cp_reflection->GetResourceBindingDesc(resource_index, &binding_desc));
 
-        const std::string argument_name(binding_desc.Name);
-        Program::Argument::Modifiers::Mask argument_modifiers = Program::Argument::Modifiers::None;
-        ProgramBindingsDX::ArgumentBindingDX::Type        dx_binding_type    = ProgramBindingsDX::ArgumentBindingDX::Type::DescriptorTable;
-
-        if (constant_argument_names.find(argument_name) != constant_argument_names.end())
-        {
-            argument_modifiers |= Program::Argument::Modifiers::Constant;
-        }
-        if (addressable_argument_names.find(argument_name) != addressable_argument_names.end())
-        {
-            argument_modifiers |= Program::Argument::Modifiers::Addressable;
-            dx_binding_type = binding_desc.Type == D3D_SIT_CBUFFER ? ProgramBindingsDX::ArgumentBindingDX::Type::ConstantBufferView
-                                                                   : ProgramBindingsDX::ArgumentBindingDX::Type::ShaderResourceView;
-        }
+        const Program::Argument shader_argument(m_type, binding_desc.Name);
+        const auto argument_desc_it = Program::FindArgumentDescription(argument_descriptions, shader_argument);
+        const Program::ArgumentDesc argument_desc = argument_desc_it == argument_descriptions.end()
+                                                  ? Program::ArgumentDesc(shader_argument)
+                                                  : *argument_desc_it;
+        const ProgramBindingsDX::ArgumentBindingDX::Type dx_binding_type = argument_desc.IsAddressable()
+                                                  ? binding_desc.Type == D3D_SIT_CBUFFER ? ProgramBindingsDX::ArgumentBindingDX::Type::ConstantBufferView
+                                                                                         : ProgramBindingsDX::ArgumentBindingDX::Type::ShaderResourceView
+                                                  : ProgramBindingsDX::ArgumentBindingDX::Type::DescriptorTable;
 
         argument_bindings.push_back(std::make_shared<ProgramBindingsDX::ArgumentBindingDX>(
             m_context,
             ProgramBindingsDX::ArgumentBindingDX::SettingsDX
             {
                 {
-                    Program::ArgumentDesc(m_type, argument_name, argument_modifiers),
+                    argument_desc,
                     GetResourceTypeByInputType(binding_desc.Type),
                     binding_desc.BindCount
                 },
@@ -294,18 +289,22 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const std::set<std::s
         ));
 
 #ifdef _DEBUG
-        log_ss << "  - Resource \""  << binding_desc.Name
-               << "\" binding "      << resource_index
-               << ": type="          << GetShaderInputTypeName(binding_desc.Type)
-               << ", dimension="     << GetSRVDimensionName(binding_desc.Dimension)
-               << ", return_type="   << GetReturnTypeName(binding_desc.ReturnType)
-               << ", samples_count=" << binding_desc.NumSamples
-               << ", count="         << binding_desc.BindCount
-               << ", point="         << binding_desc.BindPoint
-               << ", space="         << binding_desc.Space
-               << ", flags="         << binding_desc.uFlags
-               << ", id="            << binding_desc.uID
-               << std::endl;
+        log_ss << "  - Argument \"" << binding_desc.Name
+               << "\" binding "     << resource_index
+               << ": type="         << GetShaderInputTypeName(binding_desc.Type)
+               << ", dimension="    << GetSRVDimensionName(binding_desc.Dimension)
+               << ", return_type="  << GetReturnTypeName(binding_desc.ReturnType)
+               << ", samples_count="<< binding_desc.NumSamples
+               << ", count="        << binding_desc.BindCount
+               << ", point="        << binding_desc.BindPoint
+               << ", space="        << binding_desc.Space
+               << ", flags="        << binding_desc.uFlags
+               << ", id="           << binding_desc.uID;
+        if (argument_desc_it == argument_descriptions.end())
+        {
+            log_ss << ", no user argument description was found, using default";
+        }
+        log_ss << std::endl;
 #endif
     }
 

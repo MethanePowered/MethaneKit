@@ -97,14 +97,12 @@ private:
     gfx::Camera             m_camera;
     gfx::BoxMesh<Vertex>    m_cube_mesh;
     float                   m_cube_scale;
-    Ptr<gfx::Program>       m_sp_program;
     Ptr<gfx::RenderState>   m_sp_state;
     Ptr<gfx::Buffer>        m_sp_vertex_buffer;
     Ptr<gfx::Buffer>        m_sp_index_buffer;
     Ptr<gfx::Buffer>        m_sp_const_buffer;
     Ptr<gfx::Texture>       m_sp_cube_texture;
     Ptr<gfx::Sampler>       m_sp_texture_sampler;
-    
 };
 
 } // namespace Methane::Tutorials

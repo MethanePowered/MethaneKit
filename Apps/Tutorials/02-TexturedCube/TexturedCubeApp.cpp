@@ -31,9 +31,7 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 namespace Methane::Tutorials
 {
 
-static const gfx::Shader::EntryFunction g_vs_main      = { "Cube", "CubeVS" };
-static const gfx::Shader::EntryFunction g_ps_main      = { "Cube", "CubePS" };
-static const GraphicsApp::Settings      g_app_settings = // Application settings:
+static const GraphicsApp::Settings g_app_settings = // Application settings:
 {                                                   // ====================
     {                                               // app:
         "Methane Textured Cube",                    // - name
@@ -46,7 +44,7 @@ static const GraphicsApp::Settings      g_app_settings = // Application settings
         gfx::Color4f(0.0f, 0.2f, 0.4f, 1.0f),       // - clear_color
         gfx::DepthStencil{ 1.f, 0u },               // - clear_depth_stencil
         3,                                          // - frame_buffers_count
-        true,                                       // - vsync_enabled
+        false,                                      // - vsync_enabled
     },                                              //
     true,                                           // show_hud_in_window_title
     true                                            // show_logo_badge
@@ -94,70 +92,64 @@ void TexturedCubeApp::Init()
     m_camera.Resize(static_cast<float>(context_settings.frame_size.width),
                     static_cast<float>(context_settings.frame_size.height));
 
-    // Create cube shading program
-    m_sp_program = gfx::Program::Create(*m_sp_context, {
-        { // shaders
-            gfx::Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), g_vs_main }),
-            gfx::Shader::CreatePixel( *m_sp_context, { Data::ShaderProvider::Get(), g_ps_main }),
-        },
-        { // input_buffer_layouts
-            { // single vertex buffer layout with interleaved data
-                { // input arguments mapping to semantic names
-                    { "input_position", "POSITION" },
-                    { "input_normal",   "NORMAL"   },
-                    { "input_texcoord", "TEXCOORD" },
+    // Create render state with program
+    gfx::RenderState::Settings state_settings;
+    state_settings.sp_program = gfx::Program::Create(*m_sp_context,
+        gfx::Program::Settings
+        {
+            gfx::Program::Shaders
+            {
+                gfx::Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), { "Cube", "CubeVS" } }),
+                gfx::Shader::CreatePixel( *m_sp_context, { Data::ShaderProvider::Get(), { "Cube", "CubePS" } }),
+            },
+            gfx::Program::InputBufferLayouts
+            {
+                gfx::Program::InputBufferLayout
+                {
+                    gfx::Program::InputBufferLayout::Arguments
+                    {
+                        { "input_position", "POSITION" },
+                        { "input_normal",   "NORMAL"   },
+                        { "input_texcoord", "TEXCOORD" },
+                    }
                 }
-            }
-        },
-        { // constant_argument_names
-            "g_constants", "g_texture", "g_sampler"
-        },
-        { // addressable_argument_names
-        },
-        { // render_target_pixel_formats
-            context_settings.color_format
-        },
-        context_settings.depth_stencil_format
-    });
-    m_sp_program->SetName("Textured Phong Lighting");
+            },
+            gfx::Program::ArgumentDescriptions
+            {
+                { { gfx::Shader::Type::All,   "g_uniforms"  }, gfx::Program::Argument::Modifiers::None     },
+                { { gfx::Shader::Type::Pixel, "g_constants" }, gfx::Program::Argument::Modifiers::Constant },
+                { { gfx::Shader::Type::Pixel, "g_texture"   }, gfx::Program::Argument::Modifiers::Constant },
+                { { gfx::Shader::Type::Pixel, "g_sampler"   }, gfx::Program::Argument::Modifiers::Constant },
+            },
+            gfx::PixelFormats
+            {
+                context_settings.color_format
+            },
+            context_settings.depth_stencil_format
+        }
+    );
+    state_settings.sp_program->SetName("Textured Phong Lighting");
+    state_settings.viewports     = { gfx::GetFrameViewport(context_settings.frame_size) };
+    state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };
+    state_settings.depth.enabled = true;
+    m_sp_state = gfx::RenderState::Create(*m_sp_context, state_settings);
+    m_sp_state->SetName("Final FB Render Pipeline State");
 
     // Load texture image from file
     m_sp_cube_texture = m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MethaneBubbles.jpg", true);
     m_sp_cube_texture->SetName("Cube Texture 2D Image");
 
     // Create sampler for image texture
-    m_sp_texture_sampler = gfx::Sampler::Create(*m_sp_context, {
-        { gfx::Sampler::Filter::MinMag::Linear     },    // Bilinear filtering
-        { gfx::Sampler::Address::Mode::ClampToZero }
-     });
+    m_sp_texture_sampler = gfx::Sampler::Create(*m_sp_context,
+        gfx::Sampler::Settings
+        {
+            gfx::Sampler::Filter  { gfx::Sampler::Filter::MinMag::Linear },
+            gfx::Sampler::Address { gfx::Sampler::Address::Mode::ClampToEdge }
+        }
+    );
 
     const Data::Size constants_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(m_shader_constants)));
     const Data::Size uniforms_data_size  = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(m_shader_uniforms)));
-
-    // Create constants buffer for frame rendering
-    m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, constants_data_size);
-    m_sp_const_buffer->SetName("Constants Buffer");
-    m_sp_const_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), sizeof(m_shader_constants) } });
-
-    // Create frame buffer data
-    for(TexturedCubeFrame& frame : m_frames)
-    {
-        // Create uniforms buffer with volatile parameters for frame rendering
-        frame.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, uniforms_data_size);
-        frame.sp_uniforms_buffer->SetName(IndexedName("Uniforms Buffer", frame.index));
-
-        // Configure program resource bindings
-        frame.sp_program_bindings = gfx::ProgramBindings::Create(m_sp_program, {
-            { { gfx::Shader::Type::All,   "g_uniforms"  }, { { frame.sp_uniforms_buffer } } },
-            { { gfx::Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer        } } },
-            { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_sp_cube_texture        } } },
-            { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler     } } },
-        });
-        
-        // Create command list for rendering
-        frame.sp_cmd_list = gfx::RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
-        frame.sp_cmd_list->SetName(IndexedName("Cube Rendering", frame.index));
-    }
 
     // Create vertex buffer for cube mesh
     const Data::Size vertex_data_size = static_cast<Data::Size>(m_cube_mesh.GetVertexDataSize());
@@ -172,14 +164,30 @@ void TexturedCubeApp::Init()
     m_sp_index_buffer->SetName("Cube Index Buffer");
     m_sp_index_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), index_data_size } });
 
-    // Create render state
-    gfx::RenderState::Settings state_settings;
-    state_settings.sp_program    = m_sp_program;
-    state_settings.viewports     = { gfx::GetFrameViewport(context_settings.frame_size) };
-    state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };
-    state_settings.depth.enabled = true;
-    m_sp_state = gfx::RenderState::Create(*m_sp_context, state_settings);
-    m_sp_state->SetName("Final FB Render Pipeline State");
+    // Create constants buffer for frame rendering
+    m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, constants_data_size);
+    m_sp_const_buffer->SetName("Constants Buffer");
+    m_sp_const_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), sizeof(m_shader_constants) } });
+
+    // Create frame buffer data
+    for(TexturedCubeFrame& frame : m_frames)
+    {
+        // Create uniforms buffer with volatile parameters for frame rendering
+        frame.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, uniforms_data_size);
+        frame.sp_uniforms_buffer->SetName(IndexedName("Uniforms Buffer", frame.index));
+
+        // Configure program resource bindings
+        frame.sp_program_bindings = gfx::ProgramBindings::Create(state_settings.sp_program, {
+            { { gfx::Shader::Type::All,   "g_uniforms"  }, { { frame.sp_uniforms_buffer } } },
+            { { gfx::Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer        } } },
+            { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_sp_cube_texture        } } },
+            { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler     } } },
+        });
+        
+        // Create command list for rendering
+        frame.sp_cmd_list = gfx::RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
+        frame.sp_cmd_list->SetName(IndexedName("Cube Rendering", frame.index));
+    }
 
     // Complete initialization of render context:
     //  - allocate deferred descriptor heaps with calculated sizes
@@ -243,7 +251,7 @@ bool TexturedCubeApp::Render()
     frame.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(Uniforms) } });
 
     // Issue commands for cube rendering
-    frame.sp_cmd_list->Reset(m_sp_state, "Cube redering");
+    frame.sp_cmd_list->Reset(m_sp_state, "Cube Rendering");
     frame.sp_cmd_list->SetProgramBindings(*frame.sp_program_bindings);
     frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
     frame.sp_cmd_list->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
@@ -268,7 +276,6 @@ void TexturedCubeApp::OnContextReleased()
     m_sp_index_buffer.reset();
     m_sp_vertex_buffer.reset();
     m_sp_state.reset();
-    m_sp_program.reset();
 
     GraphicsApp::OnContextReleased();
 }

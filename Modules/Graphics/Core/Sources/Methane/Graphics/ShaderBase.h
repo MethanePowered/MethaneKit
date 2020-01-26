@@ -49,8 +49,7 @@ public:
 
     // ShaderBase interface
     using ArgumentBindings = Ptrs<ProgramBindingsBase::ArgumentBindingBase>;
-    virtual ArgumentBindings GetArgumentBindings(const std::set<std::string>& constant_argument_names,
-                                                 const std::set<std::string>& addressable_argument_names) const = 0;
+    virtual ArgumentBindings GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const = 0;
 
     Ptr<ShaderBase> GetPtr()                     { return shared_from_this(); }
     std::string     GetTypeName() const noexcept { return Shader::GetTypeName(m_type); }

@@ -43,8 +43,7 @@ public:
     ~ShaderMT() override;
     
     // ShaderBase interface
-    ArgumentBindings GetArgumentBindings(const std::set<std::string>& constant_argument_names,
-                                         const std::set<std::string>& addressable_argument_names) const override;
+    ArgumentBindings GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const override;
     
     id<MTLFunction>& GetNativeFunction() noexcept                           { return m_mtl_function; }
     MTLVertexDescriptor* GetNativeVertexDescriptor(const ProgramMT& program) const;

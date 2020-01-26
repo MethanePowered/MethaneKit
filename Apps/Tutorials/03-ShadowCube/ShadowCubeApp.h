@@ -122,7 +122,6 @@ private:
 
     struct RenderPass
     {
-        Ptr<gfx::Program>       sp_program;
         Ptr<gfx::RenderState>   sp_state;
         std::string             command_group_name;
         bool                    is_final_pass = false;

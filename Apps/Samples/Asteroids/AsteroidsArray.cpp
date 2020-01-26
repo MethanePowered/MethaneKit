@@ -226,26 +226,44 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings, Content
 
     const size_t textures_array_size = m_settings.textures_array_enabled ? m_settings.textures_count : 1;
     const gfx::Shader::MacroDefinitions macro_definitions  = { { "TEXTURES_COUNT", std::to_string(textures_array_size) } };
-    const std::set<std::string> addressable_argument_names = { "g_mesh_uniforms" };
-    std::set<std::string>       constant_argument_names    = { "g_constants", "g_texture_sampler", "g_scene_uniforms" };
-    if (m_settings.textures_array_enabled)
-        constant_argument_names.insert("g_face_textures");
 
     gfx::RenderState::Settings state_settings;
-    state_settings.sp_program = gfx::Program::Create(context, {
+    state_settings.sp_program = gfx::Program::Create(context,
+        gfx::Program::Settings
         {
-            gfx::Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidVS" }, macro_definitions }),
-            gfx::Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidPS" }, macro_definitions }),
-        },
-        { { {
-                { "input_position", "POSITION" },
-                { "input_normal",   "NORMAL"   },
-        } } },
-        constant_argument_names,
-        addressable_argument_names,
-        { context_settings.color_format },
-        context_settings.depth_stencil_format
-    });
+            gfx::Program::Shaders
+            {
+                gfx::Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidVS" }, macro_definitions }),
+                gfx::Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidPS" }, macro_definitions }),
+            },
+            gfx::Program::InputBufferLayouts
+            {
+                gfx::Program::InputBufferLayout
+                {
+                    gfx::Program::InputBufferLayout::Arguments
+                    {
+                        { "input_position", "POSITION" },
+                        { "input_normal",   "NORMAL"   },
+                    }
+                }
+            },
+            gfx::Program::ArgumentDescriptions
+            {
+                { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, gfx::Program::Argument::Modifiers::Addressable },
+                { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, gfx::Program::Argument::Modifiers::Constant    },
+                { { gfx::Shader::Type::Pixel,  "g_constants"      }, gfx::Program::Argument::Modifiers::Constant    },
+                { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, gfx::Program::Argument::Modifiers::Constant    },
+                { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, m_settings.textures_array_enabled
+                                                                     ? gfx::Program::Argument::Modifiers::Constant
+                                                                     : gfx::Program::Argument::Modifiers::None      },
+            },
+            gfx::PixelFormats
+            {
+                context_settings.color_format
+            },
+            context_settings.depth_stencil_format
+        }
+    );
     state_settings.sp_program->SetName("Asteroid Shaders");
     state_settings.viewports     = { gfx::GetFrameViewport(context_settings.frame_size) };
     state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };

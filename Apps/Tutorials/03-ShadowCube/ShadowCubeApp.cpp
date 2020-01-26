@@ -32,26 +32,24 @@ namespace Methane::Tutorials
 {
 
 // Common application settings
-static const gfx::FrameSize             g_shadow_map_size(1024, 1024);
-static const gfx::Shader::EntryFunction g_vs_main      = { "ShadowCube", "CubeVS" };
-static const gfx::Shader::EntryFunction g_ps_main      = { "ShadowCube", "CubePS" };
-static const GraphicsApp::Settings      g_app_settings = // Application settings:
-{                                                       // ====================
-    {                                                   // app:
-        "Methane Shadow Cube",                          // - name
-        0.8, 0.8,                                       // - width, height
-    },                                                  //
-    {                                                   // context:
-        gfx::FrameSize(),                               // - frame_size
-        gfx::PixelFormat::BGRA8Unorm,                   // - color_format
-        gfx::PixelFormat::Depth32Float,                 // - depth_stencil_format
-        gfx::Color4f(0.0f, 0.2f, 0.4f, 1.0f),           // - clear_color
-        gfx::DepthStencil{ 1.f, 0u },                   // - clear_depth_stencil
-        3,                                              // - frame_buffers_count
-        true,                                           // - vsync_enabled
-    },                                                  //
-    true,                                               // show_hud_in_window_title
-    true                                                // show_logo_badge
+static const gfx::FrameSize        g_shadow_map_size(1024, 1024);
+static const GraphicsApp::Settings g_app_settings = // Application settings:
+{                                                   // ====================
+    {                                               // app:
+        "Methane Shadow Cube",                      // - name
+        0.8, 0.8,                                   // - width, height
+    },                                              //
+    {                                               // context:
+        gfx::FrameSize(),                           // - frame_size
+        gfx::PixelFormat::BGRA8Unorm,               // - color_format
+        gfx::PixelFormat::Depth32Float,             // - depth_stencil_format
+        gfx::Color4f(0.0f, 0.2f, 0.4f, 1.0f),       // - clear_color
+        gfx::DepthStencil{ 1.f, 0u },               // - clear_depth_stencil
+        3,                                          // - frame_buffers_count
+        false,                                      // - vsync_enabled
+    },                                              //
+    true,                                           // show_hud_in_window_title
+    true                                            // show_logo_badge
 };
 
 ShadowCubeApp::ShadowCubeApp()
@@ -59,12 +57,12 @@ ShadowCubeApp::ShadowCubeApp()
     , m_cube_mesh(gfx::Mesh::VertexLayoutFromArray(Vertex::layout), 1.f, 1.f, 1.f)
     , m_floor_mesh(gfx::Mesh::VertexLayoutFromArray(Vertex::layout), 7.f, 7.f, 0.f, 0, gfx::RectMesh<Vertex>::FaceType::XZ)
     , m_scene_scale(15.f)
-    , m_scene_constants(                                // Shader constants:
-        {                                               // ================
-            gfx::Color4f(1.f, 1.f, 0.74f, 1.f),         // - light_color
-            600.f,                                      // - light_power
-            0.2f,                                       // - light_ambient_factor
-            5.f                                         // - light_specular_factor
+    , m_scene_constants(                            // Shader constants:
+        {                                           // ================
+            gfx::Color4f(1.f, 1.f, 0.74f, 1.f),     // - light_color
+            600.f,                                  // - light_power
+            0.2f,                                   // - light_ambient_factor
+            5.f                                     // - light_specular_factor
         })
 {
     m_view_camera.SetOrientation({ { 15.0f, 22.5f, -15.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
@@ -117,53 +115,72 @@ void ShadowCubeApp::Init()
     m_sp_const_buffer->SetName("Constants Buffer");
     m_sp_const_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } });
 
-    // Create sampler for image texture
-    m_sp_texture_sampler = gfx::Sampler::Create(*m_sp_context, {
-        { gfx::Sampler::Filter::MinMag::Linear     },    // Bilinear filtering
-        { gfx::Sampler::Address::Mode::ClampToZero }
-    });
+    // Create sampler for cube and floor textures sampling
+    m_sp_texture_sampler = gfx::Sampler::Create(*m_sp_context,
+        gfx::Sampler::Settings
+        {
+            gfx::Sampler::Filter  { gfx::Sampler::Filter::MinMag::Linear },
+            gfx::Sampler::Address { gfx::Sampler::Address::Mode::ClampToEdge }
+        }
+    );
     m_sp_texture_sampler->SetName("Texture Sampler");
 
-    // Create sampler for shadow-map
-    m_sp_shadow_sampler = gfx::Sampler::Create(*m_sp_context, {
-        { gfx::Sampler::Filter::MinMag::Linear     },    // Bilinear filtering
-        { gfx::Sampler::Address::Mode::ClampToEdge }
-    });
+    // Create sampler for shadow-map texture
+    m_sp_shadow_sampler = gfx::Sampler::Create(*m_sp_context,
+        gfx::Sampler::Settings
+        {
+            gfx::Sampler::Filter  { gfx::Sampler::Filter::MinMag::Linear },
+            gfx::Sampler::Address { gfx::Sampler::Address::Mode::ClampToEdge }
+        }
+    );
     m_sp_shadow_sampler->SetName("Shadow Map Sampler");
 
     // ========= Final Pass objects =========
 
-    // Create final-pass shading program with texturing
-    gfx::Shader::MacroDefinitions textured_shadows_definitions = { { "ENABLE_SHADOWS", "" }, { "ENABLE_TEXTURING", "" } };
-    m_final_pass.sp_program = gfx::Program::Create(*m_sp_context, {
-        {
-            gfx::Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), g_vs_main, textured_shadows_definitions }),
-            gfx::Shader::CreatePixel(*m_sp_context,  { Data::ShaderProvider::Get(), g_ps_main, textured_shadows_definitions }),
-        },
-        { // input_buffer_layouts
-            { // Signle vertex buffer with interleaved data:
-                {
-                    { "input_position", "POSITION" },
-                    { "input_normal",   "NORMAL"   },
-                    { "input_texcoord", "TEXCOORD" },
-                }
-            }
-        },
-        { // constant_argument_names
-            "g_constants", "g_texture_sampler", "g_shadow_sampler"
-        },
-        { // addressable_argument_names
-        },
-        { // render_target_pixel_formats
-            context_settings.color_format
-        },
-        context_settings.depth_stencil_format
-    });
-    m_final_pass.sp_program->SetName("Textured, Shadows & Lighting");
+    const gfx::Shader::EntryFunction    vs_main                      = { "ShadowCube", "CubeVS" };
+    const gfx::Shader::EntryFunction    ps_main                      = { "ShadowCube", "CubePS" };
+    const gfx::Shader::MacroDefinitions textured_shadows_definitions = { { "ENABLE_SHADOWS", "" }, { "ENABLE_TEXTURING", "" } };
 
-    // Create state for final pass rendering
+    // Create final pass rendering state with program
     gfx::RenderState::Settings final_state_settings;
-    final_state_settings.sp_program    = m_final_pass.sp_program;
+    final_state_settings.sp_program = gfx::Program::Create(*m_sp_context,
+        gfx::Program::Settings
+        {
+            gfx::Program::Shaders
+            {
+                gfx::Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), vs_main, textured_shadows_definitions }),
+                gfx::Shader::CreatePixel(*m_sp_context,  { Data::ShaderProvider::Get(), ps_main, textured_shadows_definitions }),
+            },
+            gfx::Program::InputBufferLayouts
+            {
+                gfx::Program::InputBufferLayout
+                {
+                    gfx::Program::InputBufferLayout::Arguments
+                    {
+                        { "input_position", "POSITION" },
+                        { "input_normal",   "NORMAL"   },
+                        { "input_texcoord", "TEXCOORD" },
+                    }
+                }
+            },
+            gfx::Program::ArgumentDescriptions
+            {
+                { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, gfx::Program::Argument::Modifiers::None     },
+                { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, gfx::Program::Argument::Modifiers::None     },
+                { { gfx::Shader::Type::Pixel,  "g_constants"      }, gfx::Program::Argument::Modifiers::Constant },
+                { { gfx::Shader::Type::Pixel,  "g_shadow_map"     }, gfx::Program::Argument::Modifiers::None     },
+                { { gfx::Shader::Type::Pixel,  "g_shadow_sampler" }, gfx::Program::Argument::Modifiers::Constant },
+                { { gfx::Shader::Type::Pixel,  "g_texture"        }, gfx::Program::Argument::Modifiers::None },
+                { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, gfx::Program::Argument::Modifiers::Constant },
+            },
+            gfx::PixelFormats
+            {
+                context_settings.color_format
+            },
+            context_settings.depth_stencil_format
+        }
+    );
+    final_state_settings.sp_program->SetName("Textured, Shadows & Lighting");
     final_state_settings.viewports     = { gfx::GetFrameViewport(context_settings.frame_size) };
     final_state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };
     final_state_settings.depth.enabled = true;
@@ -175,30 +192,28 @@ void ShadowCubeApp::Init()
 
     // ========= Shadow Pass objects =========
     
-    // Shadow texture settings
-    gfx::Texture::Settings shadow_texture_settings = gfx::Texture::Settings::DepthStencilBuffer(g_shadow_map_size, context_settings.depth_stencil_format, gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead);
+    gfx::Texture::Settings        shadow_texture_settings = gfx::Texture::Settings::DepthStencilBuffer(g_shadow_map_size, context_settings.depth_stencil_format, gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead);
+    gfx::Shader::MacroDefinitions textured_definitions    = { { "ENABLE_TEXTURING", "" } };
 
-    // Create shadow-pass program for geometry-only rendering to depth texture
-    gfx::Shader::MacroDefinitions textured_definitions = { { "ENABLE_TEXTURING", "" } };
-    m_shadow_pass.sp_program = gfx::Program::Create(*m_sp_context, {
-        {
-            gfx::Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), g_vs_main, textured_definitions }),
-        },
-        m_final_pass.sp_program->GetSettings().input_buffer_layouts,
-        {
-            "g_constants", "g_shadow_sampler"
-        },
-        { // addressable_argument_names
-        },
-        { // no color attachments, rendering to depth texture
-        },
-        shadow_texture_settings.pixel_format
-    });
-    m_shadow_pass.sp_program->SetName("Vertex Only: Textured, Lighting");
-
-    // Create state for shadow map rendering
+    // Create shadow-pass rendering state with program
     gfx::RenderState::Settings shadow_state_settings;
-    shadow_state_settings.sp_program    = m_shadow_pass.sp_program;
+    shadow_state_settings.sp_program = gfx::Program::Create(*m_sp_context,
+        gfx::Program::Settings
+        {
+            gfx::Program::Shaders
+            {
+                gfx::Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), vs_main, textured_definitions }),
+            },
+            final_state_settings.sp_program->GetSettings().input_buffer_layouts,
+            gfx::Program::ArgumentDescriptions
+            {
+                { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, gfx::Program::Argument::Modifiers::None },
+            },
+            gfx::PixelFormats { /* no color attachments, rendering to depth texture */ },
+            shadow_texture_settings.pixel_format
+        }
+    );
+    shadow_state_settings.sp_program->SetName("Vertex Only: Textured, Lighting");
     shadow_state_settings.viewports     = { gfx::GetFrameViewport(g_shadow_map_size) };
     shadow_state_settings.scissor_rects = { gfx::GetFrameScissorRect(g_shadow_map_size) };
     shadow_state_settings.depth.enabled = true;
@@ -251,12 +266,12 @@ void ShadowCubeApp::Init()
         frame.shadow_pass.sp_cmd_list->SetName(IndexedName("Shadow-Map Rendering", frame.index));
 
         // Shadow-pass resource bindings for cube rendering
-        frame.shadow_pass.cube.sp_program_bindings = gfx::ProgramBindings::Create(m_shadow_pass.sp_program, {
+        frame.shadow_pass.cube.sp_program_bindings = gfx::ProgramBindings::Create(shadow_state_settings.sp_program, {
             { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { frame.shadow_pass.cube.sp_uniforms_buffer } } },
         });
 
         // Shadow-pass resource bindings for floor rendering
-        frame.shadow_pass.floor.sp_program_bindings = gfx::ProgramBindings::Create(m_shadow_pass.sp_program, {
+        frame.shadow_pass.floor.sp_program_bindings = gfx::ProgramBindings::Create(shadow_state_settings.sp_program, {
             { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { frame.shadow_pass.floor.sp_uniforms_buffer } } },
         });
 
@@ -279,20 +294,20 @@ void ShadowCubeApp::Init()
         frame.final_pass.sp_cmd_list->SetName(IndexedName("Final Scene Rendering", frame.index));
 
         // Final-pass resource bindings for cube rendering
-        frame.final_pass.cube.sp_program_bindings = gfx::ProgramBindings::Create(m_final_pass.sp_program, {
+        frame.final_pass.cube.sp_program_bindings = gfx::ProgramBindings::Create(final_state_settings.sp_program, {
             { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { { frame.final_pass.cube.sp_uniforms_buffer   } } },
             { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { { frame.sp_scene_uniforms_buffer             } } },
             { { gfx::Shader::Type::Pixel,  "g_constants"      }, { { m_sp_const_buffer                          } } },
             { { gfx::Shader::Type::Pixel,  "g_shadow_map"     }, { { frame.shadow_pass.sp_rt_texture            } } },
             { { gfx::Shader::Type::Pixel,  "g_shadow_sampler" }, { { m_sp_shadow_sampler                        } } },
-            { { gfx::Shader::Type::Pixel,  "g_texture"        }, { { m_sp_cube_buffers->GetSubsetTexturePtr()   } } },
+            { { gfx::Shader::Type::Pixel,  "g_texture"        }, { { m_sp_cube_buffers->GetTexturePtr()   } } },
             { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { { m_sp_texture_sampler                       } } },
         });
 
         // Final-pass resource bindings for floor rendering - patched a copy of cube bindings
         frame.final_pass.floor.sp_program_bindings = gfx::ProgramBindings::CreateCopy(*frame.final_pass.cube.sp_program_bindings, {
             { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { { frame.final_pass.floor.sp_uniforms_buffer  } } },
-            { { gfx::Shader::Type::Pixel,  "g_texture"        }, { { m_sp_floor_buffers->GetSubsetTexturePtr()  } } },
+            { { gfx::Shader::Type::Pixel,  "g_texture"        }, { { m_sp_floor_buffers->GetTexturePtr()        } } },
         });
     }
 
@@ -304,7 +319,6 @@ void ShadowCubeApp::Init()
 
 void ShadowCubeApp::RenderPass::Release()
 {
-    sp_program.reset();
     sp_state.reset();
 }
 

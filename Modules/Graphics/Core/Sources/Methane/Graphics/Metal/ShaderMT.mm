@@ -113,8 +113,7 @@ ShaderMT::~ShaderMT()
     [m_mtl_function release];
 }
 
-ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const std::set<std::string>& constant_argument_names,
-                                                           const std::set<std::string>& addressable_argument_names) const
+ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const
 {
     ITT_FUNCTION_TASK();
 
@@ -138,18 +137,18 @@ ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const std::set<std::s
             continue;
         }
 
-        Program::Argument::Modifiers::Mask argument_modifiers = Program::Argument::Modifiers::None;
-        if (constant_argument_names.find(argument_name) != constant_argument_names.end())
-            argument_modifiers |= Program::Argument::Modifiers::Constant;
-        if (addressable_argument_names.find(argument_name) != addressable_argument_names.end())
-            argument_modifiers |= Program::Argument::Modifiers::Addressable;
+        const Program::Argument shader_argument(m_type, argument_name);
+        const auto argument_desc_it = Program::FindArgumentDescription(argument_descriptions, shader_argument);
+        const Program::ArgumentDesc argument_desc = argument_desc_it == argument_descriptions.end()
+                                                  ? Program::ArgumentDesc(shader_argument)
+                                                  : *argument_desc_it;
         
         argument_bindings.push_back(std::make_shared<ProgramBindingsMT::ArgumentBindingMT>(
             m_context,
             ProgramBindingsMT::ArgumentBindingMT::SettingsMT
             {
                 {
-                    Program::ArgumentDesc(m_type, argument_name, argument_modifiers),
+                    argument_desc,
                     GetResourceTypeByMetalArgumentType(mtl_arg.type),
                     static_cast<uint32_t>(mtl_arg.arrayLength),
                 },

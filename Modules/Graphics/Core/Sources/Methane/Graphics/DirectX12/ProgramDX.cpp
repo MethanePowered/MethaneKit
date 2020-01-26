@@ -107,7 +107,7 @@ ProgramDX::ProgramDX(ContextBase& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
 
-    InitArgumentBindings(m_settings.constant_argument_names, m_settings.addressable_argument_names);
+    InitArgumentBindings(m_settings.argument_descriptions);
     InitRootSignature();
 }
 

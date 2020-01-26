@@ -197,6 +197,8 @@ enum class PixelFormat
     Depth32Float
 };
 
+using PixelFormats = std::vector<PixelFormat>;
+
 uint32_t GetPixelSize(PixelFormat data_format) noexcept;
 
 template<typename TIndex>

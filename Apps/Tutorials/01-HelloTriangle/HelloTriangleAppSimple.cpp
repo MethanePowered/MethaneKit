@@ -76,25 +76,43 @@ public:
 
         const Data::Size vertex_buffer_size = static_cast<Data::Size>(sizeof(triange_vertices));
         m_sp_vertex_buffer = Buffer::CreateVertexBuffer(*m_sp_context, vertex_buffer_size, static_cast<Data::Size>(sizeof(Vertex)));
-        m_sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(triange_vertices.data()), vertex_buffer_size } });
+        m_sp_vertex_buffer->SetData(
+            Resource::SubResources
+            {
+                Resource::SubResource { reinterpret_cast<Data::ConstRawPtr>(triange_vertices.data()), vertex_buffer_size }
+            }
+        );
 
         m_sp_state = RenderState::Create(*m_sp_context,
-        {
-            Program::Create(*m_sp_context, {
-                {
-                    Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), { "Triangle", "TriangleVS" } }),
-                    Shader::CreatePixel(*m_sp_context,  { Data::ShaderProvider::Get(), { "Triangle", "TrianglePS" } }),
-                },
-                { { {
-                    { "input_position", "POSITION" },
-                    { "input_color",    "COLOR"    },
-                } } },
-                { }, { },
-                { m_sp_context->GetSettings().color_format }
-            }),
-            { GetFrameViewport(m_sp_context->GetSettings().frame_size) },
-            { GetFrameScissorRect(m_sp_context->GetSettings().frame_size) },
-        });
+            RenderState::Settings
+            {
+                Program::Create(*m_sp_context,
+                    Program::Settings
+                    {
+                        Program::Shaders
+                        {
+                            Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), { "Triangle", "TriangleVS" } }),
+                            Shader::CreatePixel(*m_sp_context,  { Data::ShaderProvider::Get(), { "Triangle", "TrianglePS" } }),
+                        },
+                        Program::InputBufferLayouts
+                        {
+                            Program::InputBufferLayout
+                            {
+                                Program::InputBufferLayout::Arguments
+                                {
+                                    { "input_position", "POSITION" },
+                                    { "input_color",    "COLOR"    },
+                                }
+                            }
+                        },
+                        Program::ArgumentDescriptions { },
+                        PixelFormats { m_sp_context->GetSettings().color_format }
+                    }
+                ),
+                Viewports    { GetFrameViewport(m_sp_context->GetSettings().frame_size)    },
+                ScissorRects { GetFrameScissorRect(m_sp_context->GetSettings().frame_size) },
+            }
+        );
 
         for (HelloTriangleFrame& frame : m_frames)
         {
