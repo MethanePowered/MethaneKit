@@ -92,7 +92,7 @@ static MTLSamplerBorderColor ConvertBorderColorToMetal(const SamplerBase::Border
 Ptr<Sampler> Sampler::Create(Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<SamplerMT>(static_cast<ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<SamplerMT>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
 SamplerMT::SamplerMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
@@ -157,7 +157,7 @@ void SamplerMT::ResetSampletState()
 ContextMT& SamplerMT::GetContextMT() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextMT&>(m_context);
+    return dynamic_cast<class ContextMT&>(m_context);
 }
 
 } // namespace Methane::Graphics

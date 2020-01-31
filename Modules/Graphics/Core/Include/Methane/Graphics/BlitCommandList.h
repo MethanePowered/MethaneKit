@@ -16,38 +16,27 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/RenderPassMT.hh
-Metal implementation of the render pass interface.
+FILE: Methane/Graphics/BlitCommandList.h
+Methane blit command list interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/RenderPassBase.h>
+#include "CommandList.h"
 
-#import <Metal/Metal.h>
+#include <Methane/Memory.hpp>
 
 namespace Methane::Graphics
 {
 
-class ContextMT;
-
-class RenderPassMT : public RenderPassBase
+struct BlitCommandList : virtual CommandList
 {
-public:
-    RenderPassMT(RenderContextBase& context, const Settings& settings);
+    // Create BlitCommandList instance
+    static Ptr<BlitCommandList> Create(CommandQueue& command_queue);
 
-    // RenderPass interface
-    void Update(const Settings& settings) override;
-    
-    void Reset();
-    
-    MTLRenderPassDescriptor* GetNativeDescriptor(bool reset);
-
-protected:
-    ContextMT& GetContextMT() noexcept;
-    
-    MTLRenderPassDescriptor* m_mtl_pass_descriptor;
+    // BlitCommandList interface
+    virtual void Reset(const std::string& debug_group = "") = 0;
 };
 
 } // namespace Methane::Graphics

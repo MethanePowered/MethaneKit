@@ -55,7 +55,7 @@ class MeshBuffers
 {
 public:
     template<typename VType>
-    MeshBuffers(Context& context, const BaseMesh<VType>& mesh_data, const std::string& mesh_name, const Mesh::Subsets& mesh_subsets = Mesh::Subsets())
+    MeshBuffers(RenderContext& context, const BaseMesh<VType>& mesh_data, const std::string& mesh_name, const Mesh::Subsets& mesh_subsets = Mesh::Subsets())
         : m_mesh_name(mesh_name)
         , m_mesh_subsets(!mesh_subsets.empty() ? mesh_subsets
                                                : Mesh::Subsets{ Mesh::Subset(mesh_data.GetType(), { 0, mesh_data.GetVertexCount() },
@@ -86,7 +86,7 @@ public:
     }
 
     template<typename VType>
-    MeshBuffers(Context& context, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
+    MeshBuffers(RenderContext& context, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
         : MeshBuffers(context, uber_mesh_data, mesh_name, uber_mesh_data.GetSubsets())
     {
         ITT_FUNCTION_TASK();
@@ -248,7 +248,7 @@ class TexturedMeshBuffers : public MeshBuffers<UniformsType>
 {
 public:
     template<typename VType>
-    TexturedMeshBuffers(Context& context, const BaseMesh<VType>& mesh_data,
+    TexturedMeshBuffers(RenderContext& context, const BaseMesh<VType>& mesh_data,
                         const std::string& mesh_name)
         : MeshBuffers<UniformsType>(context, mesh_data, mesh_name)
     {
@@ -257,7 +257,7 @@ public:
     }
 
     template<typename VType>
-    TexturedMeshBuffers(Context& context, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
+    TexturedMeshBuffers(RenderContext& context, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
         : MeshBuffers<UniformsType>(context, uber_mesh_data, mesh_name)
     {
         ITT_FUNCTION_TASK();

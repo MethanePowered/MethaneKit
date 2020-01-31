@@ -28,6 +28,8 @@ Methane buffer interface: GPU memory buffer resource.
 namespace Methane::Graphics
 {
 
+struct Context;
+
 struct Buffer : virtual Resource
 {
     enum class Type

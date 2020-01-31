@@ -46,14 +46,14 @@ struct PlanetVertex
     };
 };
 
-Planet::Planet(gfx::Context& context, gfx::ImageLoader& image_loader, const Settings& settings)
+Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings)
     : m_settings(settings)
     , m_context(context)
     , m_mesh_buffers(context, gfx::SphereMesh<PlanetVertex>(gfx::Mesh::VertexLayoutFromArray(PlanetVertex::layout), 1.f, 32, 32), "Planet")
 {
     ITT_FUNCTION_TASK();
 
-    const gfx::Context::Settings& context_settings = context.GetSettings();
+    const gfx::RenderContext::Settings& context_settings = context.GetSettings();
 
     gfx::RenderState::Settings state_settings;
     state_settings.sp_program = gfx::Program::Create(context,

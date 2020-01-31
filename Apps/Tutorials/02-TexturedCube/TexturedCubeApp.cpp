@@ -80,7 +80,7 @@ TexturedCubeApp::TexturedCubeApp()
 TexturedCubeApp::~TexturedCubeApp()
 {
     // Wait for GPU rendering is completed to release resources
-    m_sp_context->WaitForGpu(gfx::Context::WaitFor::RenderComplete);
+    m_sp_context->WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
 }
 
 void TexturedCubeApp::Init()
@@ -88,7 +88,7 @@ void TexturedCubeApp::Init()
     GraphicsApp::Init();
 
     assert(m_sp_context);
-    const gfx::Context::Settings& context_settings = m_sp_context->GetSettings();
+    const gfx::RenderContext::Settings& context_settings = m_sp_context->GetSettings();
     m_camera.Resize(static_cast<float>(context_settings.frame_size.width),
                     static_cast<float>(context_settings.frame_size.height));
 
@@ -237,7 +237,7 @@ bool TexturedCubeApp::Render()
         return false;
 
     // Wait for previous frame rendering is completed and switch to next frame
-    m_sp_context->WaitForGpu(gfx::Context::WaitFor::FramePresented);
+    m_sp_context->WaitForGpu(gfx::RenderContext::WaitFor::FramePresented);
     TexturedCubeFrame& frame = GetCurrentFrame();
 
     assert(!!frame.sp_uniforms_buffer);

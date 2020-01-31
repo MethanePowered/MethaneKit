@@ -93,7 +93,7 @@ void ShadowCubeApp::Init()
     GraphicsApp::Init();
 
     assert(m_sp_context);
-    const gfx::Context::Settings& context_settings = m_sp_context->GetSettings();
+    const gfx::RenderContext::Settings& context_settings = m_sp_context->GetSettings();
 
     // Load textures, vertex and index buffers for cube and floor meshes
     m_sp_cube_buffers  = std::make_unique<TexturedMeshBuffers>(*m_sp_context, m_cube_mesh, "Cube");

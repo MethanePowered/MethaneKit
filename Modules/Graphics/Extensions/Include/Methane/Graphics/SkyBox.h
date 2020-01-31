@@ -26,7 +26,7 @@ SkyBox rendering primitive
 #include "ImageLoader.h"
 #include "MeshBuffers.hpp"
 
-#include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/Camera.h>
 #include <Methane/Graphics/RenderState.h>
 #include <Methane/Graphics/Buffer.h>
@@ -59,7 +59,7 @@ public:
         SHADER_FIELD_ALIGN Matrix44f mvp_matrix;
     };
 
-    SkyBox(Context& context, ImageLoader& image_loader, const Settings& settings);
+    SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings);
 
     Ptr<ProgramBindings> CreateProgramBindings(const Ptr<Buffer>& sp_uniforms_buffer);
     void Resize(const FrameSize& frame_size);
@@ -68,7 +68,7 @@ public:
 
 private:
     Settings                      m_settings;
-    Context&                      m_context;
+    RenderContext&                m_context;
     TexturedMeshBuffers<Uniforms> m_mesh_buffers;
     Ptr<Sampler>                  m_sp_texture_sampler;
     Ptr<RenderState>              m_sp_state;

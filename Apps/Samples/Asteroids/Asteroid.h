@@ -23,7 +23,7 @@ Random generated asteroid model with mesh and texture ready for rendering.
 
 #pragma once
 
-#include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/MathTypes.h>
 #include <Methane/Graphics/MeshBuffers.hpp>
 
@@ -100,9 +100,9 @@ public:
         float    strength    = 1.5f;
     };
 
-    Asteroid(gfx::Context& context);
+    Asteroid(gfx::RenderContext& context);
     
-    static Ptr<gfx::Texture> GenerateTextureArray(gfx::Context& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, const TextureNoiseParameters& noise_parameters);
+    static Ptr<gfx::Texture> GenerateTextureArray(gfx::RenderContext& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, const TextureNoiseParameters& noise_parameters);
     static gfx::Resource::SubResources GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, const TextureNoiseParameters& noise_parameters);
 
     static constexpr size_t color_schema_size = 6u;

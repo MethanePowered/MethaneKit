@@ -65,6 +65,8 @@ elseif(APPLE)
         ${SOURCES_GRAPHICS_DIR}/DeviceMT.mm
         ${SOURCES_GRAPHICS_DIR}/ContextMT.hh
         ${SOURCES_GRAPHICS_DIR}/ContextMT.mm
+        ${SOURCES_GRAPHICS_DIR}/RenderContextMT.hh
+        ${SOURCES_GRAPHICS_DIR}/RenderContextMT.mm
         ${SOURCES_GRAPHICS_DIR}/ShaderMT.hh
         ${SOURCES_GRAPHICS_DIR}/ShaderMT.mm
         ${SOURCES_GRAPHICS_DIR}/ProgramMT.hh
@@ -157,6 +159,7 @@ set(HEADERS
     ${INCLUDE_DIR}/Types.h
     ${INCLUDE_DIR}/Device.h
     ${INCLUDE_DIR}/Context.h
+    ${INCLUDE_DIR}/RenderContext.h
     ${INCLUDE_DIR}/Shader.h
     ${INCLUDE_DIR}/Program.h
     ${INCLUDE_DIR}/ProgramBindings.h
@@ -168,6 +171,7 @@ set(HEADERS
     ${INCLUDE_DIR}/RenderPass.h
     ${INCLUDE_DIR}/CommandQueue.h
     ${INCLUDE_DIR}/CommandList.h
+    ${INCLUDE_DIR}/BlitCommandList.h
     ${INCLUDE_DIR}/RenderCommandList.h
     ${INCLUDE_DIR}/ParallelRenderCommandList.h
 )
@@ -194,6 +198,8 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/DeviceBase.cpp
     ${SOURCES_DIR}/ContextBase.h
     ${SOURCES_DIR}/ContextBase.cpp
+    ${SOURCES_DIR}/RenderContextBase.h
+    ${SOURCES_DIR}/RenderContextBase.cpp
     ${SOURCES_DIR}/ShaderBase.h
     ${SOURCES_DIR}/ShaderBase.cpp
     ${SOURCES_DIR}/ProgramBase.h

@@ -31,6 +31,8 @@ Base implementation of the resource interface.
 namespace Methane::Graphics
 {
 
+class ContextBase;
+
 class ResourceBase
     : public virtual Resource
     , public ObjectBase

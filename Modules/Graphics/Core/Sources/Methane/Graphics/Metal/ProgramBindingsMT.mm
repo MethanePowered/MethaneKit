@@ -237,7 +237,6 @@ void ProgramBindingsMT::Apply(CommandList& command_list, ApplyBehavior::Mask app
     ITT_FUNCTION_TASK();
 
     RenderCommandListMT& metal_command_list = dynamic_cast<RenderCommandListMT&>(command_list);
-    const CommandListBase::CommandState& command_state = metal_command_list.GetCommandState();
     id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeRenderEncoder();
     
     for(const auto& binding_by_argument : m_binding_by_argument)
@@ -245,8 +244,8 @@ void ProgramBindingsMT::Apply(CommandList& command_list, ApplyBehavior::Mask app
         const Program::Argument& program_argument = binding_by_argument.first;
         const ArgumentBindingMT& metal_argument_binding = static_cast<const ArgumentBindingMT&>(*binding_by_argument.second);
 
-        if ((apply_behavior & ApplyBehavior::ConstantOnce || apply_behavior & ApplyBehavior::ChangesOnly) &&
-            metal_argument_binding.IsAlreadyApplied(*m_sp_program, program_argument, command_state, apply_behavior & ApplyBehavior::ChangesOnly))
+        if ((apply_behavior & ApplyBehavior::ConstantOnce || apply_behavior & ApplyBehavior::ChangesOnly) && metal_command_list.GetProgramBindings() &&
+            metal_argument_binding.IsAlreadyApplied(*m_sp_program, program_argument, *metal_command_list.GetProgramBindings(), apply_behavior & ApplyBehavior::ChangesOnly))
             continue;
 
         const uint32_t arg_index = metal_argument_binding.GetSettingsMT().argument_index;

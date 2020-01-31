@@ -60,10 +60,10 @@ public:
         Ptr<ArgumentBindingBase>   GetPtr() { return shared_from_this(); }
 
         bool IsAlreadyApplied(const Program& program, const Program::Argument& program_argument,
-                              const CommandListBase::CommandState& command_state,
+                              const ProgramBindingsBase& applied_program_bindings,
                               bool check_binding_value_changes) const;
     protected:
-        ContextBase&        GetContext() noexcept { return m_context; }
+        ContextBase& GetContext() noexcept { return m_context; }
 
     private:
         ContextBase&        m_context;

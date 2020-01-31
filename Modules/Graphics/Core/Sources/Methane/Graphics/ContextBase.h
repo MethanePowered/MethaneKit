@@ -23,51 +23,38 @@ Base implementation of the context interface.
 
 #pragma once
 
-#include <Methane/Graphics/Context.h>
-#include <Methane/Graphics/FpsCounter.h>
-#include <Methane/Data/Provider.h>
-
 #include "ObjectBase.h"
-#include "DeviceBase.h"
-#include "CommandQueueBase.h"
-#include "RenderCommandListBase.h"
-#include "RenderStateBase.h"
-#include "RenderPassBase.h"
 #include "ResourceManager.h"
 
+#include <Methane/Graphics/Context.h>
+
 #include <memory>
-#include <vector>
-#include <atomic>
 
 namespace Methane::Graphics
 {
 
+class DeviceBase;
+class CommandQueue;
+class RenderCommandList;
+
 class ContextBase
     : public ObjectBase
-    , public Context
+    , public virtual Context
 {
 public:
-    ContextBase(DeviceBase& device, const Settings& settings);
+    ContextBase(DeviceBase& device, Type type);
 
     // Context interface
+    Type                  GetType() const override { return m_type; }
     void                  CompleteInitialization() override;
     void                  WaitForGpu(WaitFor wait_for) override;
-    void                  Resize(const FrameSize& frame_size) override;
     void                  Reset(Device& device) override;
-    void                  Reset() override                       { ResetWithSettings(m_settings); }
-    void                  Present() override;
+    void                  Reset() override;
     void                  AddCallback(Callback& callback) override;
     void                  RemoveCallback(Callback& callback) override;
-    CommandQueue&         GetRenderCommandQueue() override;
     CommandQueue&         GetUploadCommandQueue() override;
     RenderCommandList&    GetUploadCommandList() override;
     Device&               GetDevice() override;
-    const Settings&       GetSettings() const override          { return m_settings; }
-    uint32_t              GetFrameBufferIndex() const override  { return m_frame_buffer_index;  }
-    const FpsCounter&     GetFpsCounter() const override        { return m_fps_counter; }
-    bool                  SetVSyncEnabled(bool vsync_enabled) override;
-    bool                  SetFrameBuffersCount(uint32_t frame_buffers_count) override;
-    bool                  SetFullScreen(bool is_full_screen) override;
 
     // ContextBase interface
     virtual void OnCommandQueueCompleted(CommandQueue& cmd_queue, uint32_t frame_index) = 0;
@@ -77,28 +64,23 @@ public:
 
     ResourceManager&  GetResourceManager() { return m_resource_manager; }
 
-    DeviceBase& GetDeviceBase();
+    DeviceBase&       GetDeviceBase();
     const DeviceBase& GetDeviceBase() const;
 
 protected:
     void UploadResources();
-    void OnGpuWaitComplete(WaitFor wait_for);
-    void OnCpuPresentComplete();
-    void ResetWithSettings(const Settings& settings);
 
+    virtual void OnGpuWaitComplete(WaitFor wait_for);
     virtual void Release();
     virtual void Initialize(Device& device, bool deferred_heap_allocation);
 
+    const Type                  m_type;
     Ptr<DeviceBase>             m_sp_device;
-    Settings                    m_settings;
     ResourceManager::Settings   m_resource_manager_init_settings = { true };
     ResourceManager             m_resource_manager;
     Refs<Callback>              m_callbacks; // ORDER: Keep callbacks before resources for correct auto-delete
-    Ptr<CommandQueue>           m_sp_render_cmd_queue;
     Ptr<CommandQueue>           m_sp_upload_cmd_queue;
     Ptr<RenderCommandList>      m_sp_upload_cmd_list;
-    std::atomic<uint32_t>       m_frame_buffer_index;
-    FpsCounter                  m_fps_counter;
 };
 
 } // namespace Methane::Graphics

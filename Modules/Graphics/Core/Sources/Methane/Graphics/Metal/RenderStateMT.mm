@@ -22,7 +22,7 @@ Metal implementation of the render state interface.
 ******************************************************************************/
 
 #include "RenderStateMT.hh"
-#include "ContextMT.hh"
+#include "RenderContextMT.hh"
 #include "DeviceMT.hh"
 #include "RenderCommandListMT.hh"
 #include "ProgramMT.hh"
@@ -182,13 +182,13 @@ static MTLStencilDescriptor* ConvertStencilDescriptorToMetal(const RenderState::
     return mtl_stencil_desc;
 }
 
-Ptr<RenderState> RenderState::Create(Context& context, const RenderState::Settings& state_settings)
+Ptr<RenderState> RenderState::Create(RenderContext& context, const RenderState::Settings& state_settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<RenderStateMT>(static_cast<ContextBase&>(context), state_settings);
+    return std::make_shared<RenderStateMT>(dynamic_cast<RenderContextBase&>(context), state_settings);
 }
 
-RenderStateMT::RenderStateMT(ContextBase& context, const Settings& settings)
+RenderStateMT::RenderStateMT(RenderContextBase& context, const Settings& settings)
     : RenderStateBase(context, settings)
 {
     ITT_FUNCTION_TASK();
@@ -382,7 +382,7 @@ id<MTLRenderPipelineState>& RenderStateMT::GetNativePipelineState()
     if (!m_mtl_pipeline_state)
     {
         NSError* ns_error = nil;
-        m_mtl_pipeline_state = [GetContextMT().GetDeviceMT().GetNativeDevice() newRenderPipelineStateWithDescriptor:m_mtl_pipeline_state_desc error:&ns_error];
+        m_mtl_pipeline_state = [GetRenderContextMT().GetDeviceMT().GetNativeDevice() newRenderPipelineStateWithDescriptor:m_mtl_pipeline_state_desc error:&ns_error];
         if (!m_mtl_pipeline_state)
         {
             const std::string error_msg = MacOS::ConvertFromNSType<NSString, std::string>([ns_error localizedDescription]);
@@ -399,7 +399,7 @@ id<MTLDepthStencilState>& RenderStateMT::GetNativeDepthStencilState()
     if (!m_mtl_depth_state)
     {
         assert(m_mtl_depth_stencil_state_desc != nil);
-        m_mtl_depth_state = [GetContextMT().GetDeviceMT().GetNativeDevice() newDepthStencilStateWithDescriptor:m_mtl_depth_stencil_state_desc];
+        m_mtl_depth_state = [GetRenderContextMT().GetDeviceMT().GetNativeDevice() newDepthStencilStateWithDescriptor:m_mtl_depth_stencil_state_desc];
         if (!m_mtl_depth_state)
         {
             throw std::runtime_error("Failed to create Metal depth state.");
@@ -419,10 +419,10 @@ void RenderStateMT::ResetNativeState()
     m_mtl_depth_state = nil;
 }
 
-ContextMT& RenderStateMT::GetContextMT() noexcept
+RenderContextMT& RenderStateMT::GetRenderContextMT()
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextMT&>(m_context);
+    return dynamic_cast<RenderContextMT&>(m_context);
 }
 
 } // namespace Methane::Graphics

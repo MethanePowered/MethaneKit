@@ -22,7 +22,7 @@ Metal implementation of the texture interface.
 ******************************************************************************/
 
 #include "TextureMT.hh"
-#include "ContextMT.hh"
+#include "RenderContextMT.hh"
 #include "DeviceMT.hh"
 #include "RenderCommandListMT.hh"
 #include "TypesMT.hh"
@@ -77,46 +77,46 @@ static MTLRegion GetTextureRegion(const Dimensions& dimensions, Texture::Dimensi
     return {};
 }
 
-Ptr<Texture> Texture::CreateRenderTarget(Context& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateRenderTarget(RenderContext& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<TextureMT>(static_cast<ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<TextureMT>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
-Ptr<Texture> Texture::CreateFrameBuffer(Context& context, uint32_t /*frame_buffer_index*/, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateFrameBuffer(RenderContext& context, uint32_t /*frame_buffer_index*/, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
-    const Context::Settings& context_settings = context.GetSettings();
+    const RenderContext::Settings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::FrameBuffer(context_settings.frame_size, context_settings.color_format);
-    return std::make_shared<TextureMT>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureMT>(dynamic_cast<RenderContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
-Ptr<Texture> Texture::CreateDepthStencilBuffer(Context& context, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateDepthStencilBuffer(RenderContext& context, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
-    const Context::Settings& context_settings = context.GetSettings();
+    const RenderContext::Settings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::DepthStencilBuffer(context_settings.frame_size, context_settings.depth_stencil_format);
-    return std::make_shared<TextureMT>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureMT>(dynamic_cast<RenderContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
 Ptr<Texture> Texture::CreateImage(Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<TextureMT>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureMT>(dynamic_cast<RenderContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
 Ptr<Texture> Texture::CreateCube(Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<TextureMT>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureMT>(dynamic_cast<RenderContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
 TextureMT::TextureMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : TextureBase(context, settings, descriptor_by_usage)
     , m_mtl_texture(settings.type == Texture::Type::FrameBuffer
-                      ? [GetContextMT().GetNativeDrawable() texture]
+                      ? [GetRenderContextMT().GetNativeDrawable() texture]
                       : [GetContextMT().GetDeviceMT().GetNativeDevice()  newTextureWithDescriptor:GetNativeTextureDescriptor()])
 {
     ITT_FUNCTION_TASK();
@@ -205,7 +205,7 @@ void TextureMT::UpdateFrameBuffer()
         throw std::logic_error("Unable to update frame buffer on non-FB texture.");
     }
 
-    m_mtl_texture = [GetContextMT().GetNativeDrawable() texture];
+    m_mtl_texture = [GetRenderContextMT().GetNativeDrawable() texture];
 }
 
 MTLTextureUsage TextureMT::GetNativeTextureUsage()
@@ -295,6 +295,14 @@ void TextureMT::GenerateMipLevels()
     [mtl_blit_encoder generateMipmapsForTexture: m_mtl_texture];
     
     render_command_list.EndBlitEncoding();
+}
+
+RenderContextMT& TextureMT::GetRenderContextMT()
+{
+    ITT_FUNCTION_TASK();
+    if (m_context.GetType() != Context::Type::Render)
+        throw std::runtime_error("Incompatible context type.");
+    return static_cast<RenderContextMT&>(GetContextMT());
 }
 
 } // namespace Methane::Graphics

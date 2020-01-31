@@ -154,7 +154,7 @@ RenderState::Group::Mask RenderState::Settings::Compare(const Settings& left, co
     return changed_state_groups;
 }
     
-RenderStateBase::RenderStateBase(ContextBase& context, const Settings& settings)
+RenderStateBase::RenderStateBase(RenderContextBase& context, const Settings& settings)
     : m_context(context)
     , m_settings(settings)
 {

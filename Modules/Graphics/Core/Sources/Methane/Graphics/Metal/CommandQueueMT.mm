@@ -23,7 +23,7 @@ Metal implementation of the command queue interface.
 
 #include "CommandQueueMT.hh"
 #include "DeviceMT.hh"
-#include "ContextMT.hh"
+#include "RenderContextMT.hh"
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
@@ -34,7 +34,7 @@ namespace Methane::Graphics
 Ptr<CommandQueue> CommandQueue::Create(Context& context)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<CommandQueueMT>(static_cast<ContextBase&>(context));
+    return std::make_shared<CommandQueueMT>(dynamic_cast<ContextBase&>(context));
 }
 
 CommandQueueMT::CommandQueueMT(ContextBase& context)
@@ -62,10 +62,18 @@ void CommandQueueMT::SetName(const std::string& name)
     m_mtl_command_queue.label = MacOS::ConvertToNSType<std::string, NSString*>(name);
 }
 
-ContextMT& CommandQueueMT::GetContextMT() noexcept
+ContextMT& CommandQueueMT::GetContextMT()
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextMT&>(m_context);
+    return dynamic_cast<class ContextMT&>(m_context);
+}
+
+RenderContextMT& CommandQueueMT::GetRenderContextMT()
+{
+    ITT_FUNCTION_TASK();
+    if (m_context.GetType() != Context::Type::Render)
+        throw std::runtime_error("Incompatible context type.");
+    return dynamic_cast<RenderContextMT&>(m_context);
 }
 
 } // namespace Methane::Graphics

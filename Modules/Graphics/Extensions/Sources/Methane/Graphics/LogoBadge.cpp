@@ -40,7 +40,7 @@ static LogoBadge::Settings ScaleBadgeSize(LogoBadge::Settings settings, float sc
     return settings;
 }
     
-LogoBadge::LogoBadge(Context& context, Settings settings)
+LogoBadge::LogoBadge(RenderContext& context, Settings settings)
     : LogoBadge(context,
                 ImageLoader(Data::TextureProvider::Get()).LoadImageToTexture2D(context, "Logo/MethaneLogoNameWatermark.png", true),
                 ScaleBadgeSize(settings, context.GetContentScalingFactor()))
@@ -48,7 +48,7 @@ LogoBadge::LogoBadge(Context& context, Settings settings)
     ITT_FUNCTION_TASK();
 }
 
-LogoBadge::LogoBadge(Context& context, Ptr<Texture> sp_texture, Settings settings)
+LogoBadge::LogoBadge(RenderContext& context, Ptr<Texture> sp_texture, Settings settings)
     : ScreenQuad(context, std::move(sp_texture),
                  ScreenQuad::Settings
                  {

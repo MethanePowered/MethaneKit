@@ -24,7 +24,7 @@ Metal implementation of the render command list interface.
 #include "ParallelRenderCommandListMT.hh"
 #include "RenderPassMT.hh"
 #include "CommandQueueMT.hh"
-#include "ContextMT.hh"
+#include "RenderContextMT.hh"
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
@@ -108,7 +108,7 @@ void ParallelRenderCommandListMT::Commit(bool present_drawable)
     
     if (present_drawable)
     {
-        [m_mtl_cmd_buffer presentDrawable: GetCommandQueueMT().GetContextMT().GetNativeDrawable()];
+        [m_mtl_cmd_buffer presentDrawable: GetCommandQueueMT().GetRenderContextMT().GetNativeDrawable()];
     }
 
     [m_mtl_cmd_buffer enqueue];

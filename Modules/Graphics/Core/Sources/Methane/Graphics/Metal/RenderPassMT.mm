@@ -22,7 +22,7 @@ Metal implementation of the render pass interface.
 ******************************************************************************/
 
 #include "RenderPassMT.hh"
-#include "ContextMT.hh"
+#include "RenderContextMT.hh"
 #include "TextureMT.hh"
 #include "TypesMT.hh"
 
@@ -57,13 +57,13 @@ static MTLLoadAction GetMTLLoadAction(RenderPass::Attachment::LoadAction load_ac
     return MTLLoadActionDontCare;
 }
 
-Ptr<RenderPass> RenderPass::Create(Context& context, const Settings& settings)
+Ptr<RenderPass> RenderPass::Create(RenderContext& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<RenderPassMT>(static_cast<ContextBase&>(context), settings);
+    return std::make_shared<RenderPassMT>(dynamic_cast<RenderContextBase&>(context), settings);
 }
 
-RenderPassMT::RenderPassMT(ContextBase& context, const Settings& settings)
+RenderPassMT::RenderPassMT(RenderContextBase& context, const Settings& settings)
     : RenderPassBase(context, settings)
 {
     ITT_FUNCTION_TASK();
@@ -141,7 +141,7 @@ MTLRenderPassDescriptor* RenderPassMT::GetNativeDescriptor(bool reset)
 ContextMT& RenderPassMT::GetContextMT() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextMT&>(m_context);
+    return dynamic_cast<class ContextMT&>(m_context);
 }
 
 } // namespace Methane::Graphics

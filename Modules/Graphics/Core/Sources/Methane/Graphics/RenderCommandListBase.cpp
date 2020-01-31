@@ -61,6 +61,7 @@ void RenderCommandListBase::DrawingState::Reset()
     sp_index_buffer.reset();
     sp_vertex_buffers.clear();
     sp_render_state.reset();
+    sp_program_bindings.reset();
 
     flags = { };
 }
@@ -70,8 +71,6 @@ void RenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_state, const
     ITT_FUNCTION_TASK();
 
     // ResetDrawState() must be called from an overriden Reset method
-
-    ResetCommandState();
 
     if (m_debug_group_opened)
     {
@@ -107,6 +106,13 @@ void RenderCommandListBase::SetState(RenderState& render_state, RenderState::Gro
 
     m_draw_state.sp_render_state      = render_state_base.GetPtr();
     m_draw_state.render_state_groups |= state_groups;
+}
+
+void RenderCommandListBase::SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior)
+{
+    ITT_FUNCTION_TASK();
+    program_bindings.Apply(*this, apply_behavior);
+    m_draw_state.sp_program_bindings = static_cast<ProgramBindingsBase&>(program_bindings).GetPtr();
 }
 
 void RenderCommandListBase::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)

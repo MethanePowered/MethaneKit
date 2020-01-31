@@ -69,12 +69,12 @@ public:
 protected:
     using DescriptorHeapTypes = std::array<Ptrs<DescriptorHeap>, static_cast<size_t>(DescriptorHeap::Type::Count)>;
 
-    bool                                m_deferred_heap_allocation = false;
-    ContextBase&                        m_context;
-    DescriptorHeapTypes                 m_descriptor_heap_types;
-    Ptr<ResourceBase::ReleasePool>      m_sp_release_pool;
-    WeakPtrs<ProgramBindings> m_deferred_program_bindings;
-    std::mutex                          m_deferred_program_bindings_mutex;
+    bool                           m_deferred_heap_allocation = false;
+    ContextBase&                   m_context;
+    DescriptorHeapTypes            m_descriptor_heap_types;
+    Ptr<ResourceBase::ReleasePool> m_sp_release_pool;
+    WeakPtrs<ProgramBindings>      m_deferred_program_bindings;
+    std::mutex                     m_deferred_program_bindings_mutex;
 };
 
 } // namespace Methane::Graphics

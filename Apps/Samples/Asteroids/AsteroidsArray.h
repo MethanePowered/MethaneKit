@@ -25,7 +25,7 @@ Random generated asteroids array with uber-mesh and textures ready for rendering
 
 #include "Asteroid.h"
 
-#include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/Mesh.h>
 #include <Methane/Graphics/Sampler.h>
 #include <Methane/Graphics/RenderState.h>
@@ -93,8 +93,8 @@ public:
         Parameters               parameters;
     };
 
-    AsteroidsArray(gfx::Context& context, Settings settings);
-    AsteroidsArray(gfx::Context& context, Settings settings, ContentState& state);
+    AsteroidsArray(gfx::RenderContext& context, Settings settings);
+    AsteroidsArray(gfx::RenderContext& context, Settings settings, ContentState& state);
 
     const Settings& GetSettings() const         { return m_settings; }
     const Ptr<ContentState>& GetState() const   { return m_sp_content_state; }

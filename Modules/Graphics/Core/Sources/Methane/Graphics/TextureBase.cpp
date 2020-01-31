@@ -23,7 +23,7 @@ Base implementation of the texture interface.
 
 #include "TextureBase.h"
 #include "DescriptorHeap.h"
-#include "ContextBase.h"
+#include "RenderContextBase.h"
 
 #include <Methane/Instrumentation.h>
 

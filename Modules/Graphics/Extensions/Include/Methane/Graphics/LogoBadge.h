@@ -58,8 +58,8 @@ public:
         { }
     };
 
-    LogoBadge(Context& context, Settings settings = Settings());
-    LogoBadge(Context& context, Ptr<Texture> sp_texture, Settings settings = Settings());
+    LogoBadge(RenderContext& context, Settings settings = Settings());
+    LogoBadge(RenderContext& context, Ptr<Texture> sp_texture, Settings settings = Settings());
 
     void Resize(const FrameSize& frame_size);
 

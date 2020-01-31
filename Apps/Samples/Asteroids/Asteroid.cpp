@@ -100,7 +100,7 @@ void Asteroid::Mesh::Randomize(uint32_t random_seed)
     ComputeAverageNormals();
 }
 
-Asteroid::Asteroid(gfx::Context& context)
+Asteroid::Asteroid(gfx::RenderContext& context)
     : BaseBuffers(context, Mesh(3, true), "Asteroid")
 {
     ITT_FUNCTION_TASK();
@@ -108,7 +108,7 @@ Asteroid::Asteroid(gfx::Context& context)
     SetTexture(GenerateTextureArray(context, gfx::Dimensions(256, 256), 1, true, TextureNoiseParameters()));
 }
 
-Ptr<gfx::Texture> Asteroid::GenerateTextureArray(gfx::Context& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped,
+Ptr<gfx::Texture> Asteroid::GenerateTextureArray(gfx::RenderContext& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped,
                                                  const TextureNoiseParameters& noise_parameters)
 {
     ITT_FUNCTION_TASK();

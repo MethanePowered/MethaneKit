@@ -70,7 +70,7 @@ Click **"Open in Gitpod" button** above to explore Methane Kit codebase right aw
   - Shaders are compiled at build time and embedded in application resources as bytecode (with all variations of preprocessor definitions)
 - **Easy to use object-oriented graphics API**
   - [Core graphics interfaces](/Modules/Graphics/Core/Include/Methane/Graphics):
-    - [Context](/Modules/Graphics/Core/Include/Methane/Graphics/Context.h) and [Device](/Modules/Graphics/Core/Include/Methane/Graphics/Device.h) classes with frame-buffers management and swap-chain logic.
+    - [RenderContext](/Modules/Graphics/Core/Include/Methane/Graphics/RenderContext.h) and [Device](/Modules/Graphics/Core/Include/Methane/Graphics/Device.h) classes with frame-buffers management and swap-chain logic.
     - [Resource](/Modules/Graphics/Core/Include/Methane/Graphics/Resource.h) derived interfaces [Buffer](/Modules/Graphics/Core/Include/Methane/Graphics/Buffer.h), [Texture](/Modules/Graphics/Core/Include/Methane/Graphics/Texture.h), [Sampler](/Modules/Graphics/Core/Include/Methane/Graphics/Sampler.h) to work with GPU memory resources
     - [Shader](/Modules/Graphics/Core/Include/Methane/Graphics/Shader.h) and [Program](/Modules/Graphics/Core/Include/Methane/Graphics/Program.h) providing unified access to compiled shaders with input layout and uniform variables reflection
     - [ProgramBindings](/Modules/Graphics/Core/Include/Methane/Graphics/Program.h) simplifies binding resources to programs by uniform variable names and enables fast bindings switching at runtime

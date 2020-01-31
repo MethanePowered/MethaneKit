@@ -53,16 +53,10 @@ public:
         Executing,
     };
 
-    struct CommandState
-    {
-        Ptr<ProgramBindings> sp_program_bindings;
-    };
-
     CommandListBase(CommandQueueBase& command_queue, Type type);
 
     // CommandList interface
-    Type GetType() const override               { return m_type; }
-    void SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
+    Type GetType() const override { return m_type; }
     void Commit(bool present_drawable) override;
     CommandQueue& GetCommandQueue() override;
 
@@ -72,7 +66,6 @@ public:
     virtual void Complete(uint32_t frame_index);
 
     void SetResourceTransitionBarriers(const Refs<Resource>& resources, ResourceBase::State state_before, ResourceBase::State state_after);
-    const CommandState& GetCommandState() const       { return m_command_state; }
     Ptr<CommandListBase> GetPtr()                     { return shared_from_this(); }
     void SetDebugGroupOpened(bool debug_group_opened) { m_debug_group_opened = debug_group_opened; }
 
@@ -86,7 +79,6 @@ protected:
     bool     IsExecuting(uint32_t frame_index) const;
     bool     IsExecuting() const                        { return IsExecuting(GetCurrentFrameIndex()); }
     uint32_t GetCurrentFrameIndex() const;
-    void     ResetCommandState();
 
     Ptr<CommandQueue> m_sp_command_queue;
     bool              m_debug_group_opened = false;
@@ -101,7 +93,6 @@ private:
     uint32_t             m_committed_frame_index = 0;
     State                m_state                 = State::Pending;
     mutable std::mutex   m_state_mutex;
-    CommandState         m_command_state;
 };
 
 } // namespace Methane::Graphics

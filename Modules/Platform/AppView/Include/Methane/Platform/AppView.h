@@ -17,7 +17,8 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Platform/AppView.h
-Methane application view used both by Context in Core API and by Methane App implementations.
+Methane application view used both by RenderContext in Core API
+and by Methane App implementations.
 
 ******************************************************************************/
 

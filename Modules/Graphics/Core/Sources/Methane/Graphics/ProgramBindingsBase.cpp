@@ -79,16 +79,12 @@ DescriptorHeap::Type ProgramBindingsBase::ArgumentBindingBase::GetDescriptorHeap
 }
 
 bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& program, const Program::Argument& program_argument,
-    const CommandListBase::CommandState& command_state,
-    bool check_binding_value_changes) const
+                                                                const ProgramBindingsBase& applied_program_bindings,
+                                                                bool check_binding_value_changes) const
 {
     ITT_FUNCTION_TASK();
-    if (!command_state.sp_program_bindings)
-        return false;
 
-    const ProgramBindingsBase& previous_program_bindings = static_cast<const ProgramBindingsBase&>(*command_state.sp_program_bindings);
-
-    if (std::addressof(previous_program_bindings.GetProgram()) != std::addressof(program))
+    if (std::addressof(applied_program_bindings.GetProgram()) != std::addressof(program))
         return false;
 
     // 1) No need in setting constant resource binding
@@ -99,7 +95,7 @@ bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& p
     if (!check_binding_value_changes)
         return false;
 
-    const Ptr<ProgramBindings::ArgumentBinding>& previous_argument_argument_binding = command_state.sp_program_bindings->Get(program_argument);
+    const Ptr<ProgramBindings::ArgumentBinding>& previous_argument_argument_binding = applied_program_bindings.Get(program_argument);
     if (!previous_argument_argument_binding)
         return false;
 

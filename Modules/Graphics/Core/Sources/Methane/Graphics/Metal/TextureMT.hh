@@ -31,6 +31,8 @@ Metal implementation of the texture interface.
 namespace Methane::Graphics
 {
 
+class RenderContextMT;
+
 class TextureMT : public TextureBase
 {
 public:
@@ -50,6 +52,7 @@ public:
 
 protected:
     void GenerateMipLevels();
+    RenderContextMT& GetRenderContextMT();
 
     MTLTextureUsage       GetNativeTextureUsage();
     MTLTextureDescriptor* GetNativeTextureDescriptor();

@@ -91,7 +91,7 @@ static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access) 
 Ptr<Shader> Shader::Create(Shader::Type shader_type, Context& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ShaderMT>(shader_type, static_cast<ContextMT&>(context), settings);
+    return std::make_shared<ShaderMT>(shader_type, dynamic_cast<ContextMT&>(context), settings);
 }
 
 ShaderMT::ShaderMT(Shader::Type shader_type, ContextMT& context, const Settings& settings)
@@ -221,7 +221,7 @@ MTLVertexDescriptor* ShaderMT::GetNativeVertexDescriptor(const ProgramMT& progra
 ContextMT& ShaderMT::GetContextMT() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextMT&>(m_context);
+    return dynamic_cast<ContextMT&>(m_context);
 }
 
 } // namespace Methane::Graphics

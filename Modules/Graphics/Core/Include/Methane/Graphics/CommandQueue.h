@@ -25,13 +25,12 @@ Methane command queue interface: queues are used to execute command lists.
 
 #include "Object.h"
 #include "CommandList.h"
+#include "Context.h"
 
 #include <Methane/Memory.hpp>
 
 namespace Methane::Graphics
 {
-
-struct Context;
 
 struct CommandQueue : virtual Object
 {

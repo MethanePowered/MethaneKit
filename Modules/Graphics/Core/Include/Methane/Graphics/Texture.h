@@ -25,6 +25,7 @@ Methane graphics interface: graphics texture.
 
 #include "Resource.h"
 
+#include <Methane/Graphics/RenderContext.h>
 #include <Methane/Memory.hpp>
 
 namespace Methane::Graphics
@@ -69,11 +70,11 @@ struct Texture : virtual Resource
     };
 
     // Create Texture instance
-    static Ptr<Texture> CreateRenderTarget(Context& context, const Settings& settings,
+    static Ptr<Texture> CreateRenderTarget(RenderContext& context, const Settings& settings,
                                            const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    static Ptr<Texture> CreateFrameBuffer(Context& context, uint32_t frame_buffer_index,
+    static Ptr<Texture> CreateFrameBuffer(RenderContext& context, uint32_t frame_buffer_index,
                                           const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    static Ptr<Texture> CreateDepthStencilBuffer(Context& context,
+    static Ptr<Texture> CreateDepthStencilBuffer(RenderContext& context,
                                                  const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
     static Ptr<Texture> CreateImage(Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped,
                                     const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());

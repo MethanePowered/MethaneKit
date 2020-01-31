@@ -36,7 +36,7 @@ namespace Methane::Graphics
 Ptr<Program> Program::Create(Context& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ProgramMT>(static_cast<ContextBase&>(context), settings);
+    return std::make_shared<ProgramMT>(dynamic_cast<ContextBase&>(context), settings);
 }
 
 ProgramMT::ProgramMT(ContextBase& context, const Settings& settings)
@@ -45,14 +45,6 @@ ProgramMT::ProgramMT(ContextBase& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
 
-    // In case if RT pixel formats are not set, we assume it renders to frame buffer
-    // NOTE: even when program has no pixel shaders render, render state must have at least one color format to be valid
-    std::vector<PixelFormat> color_formats = settings.color_formats;
-    if (color_formats.empty())
-    {
-        color_formats.push_back(context.GetSettings().color_format);
-    }
-
     // Create dummy pipeline state to get program reflection of vertex and fragment shader arguments
     MTLRenderPipelineDescriptor* mtl_reflection_state_desc = [MTLRenderPipelineDescriptor new];
     mtl_reflection_state_desc.vertexDescriptor = m_mtl_vertex_desc;
@@ -60,15 +52,16 @@ ProgramMT::ProgramMT(ContextBase& context, const Settings& settings)
     mtl_reflection_state_desc.fragmentFunction = GetNativeShaderFunction(Shader::Type::Pixel);
 
     // Fill state color attachment descriptors matching program's pixel shader output
+    // NOTE: even when program has no pixel shaders render, render state must have at least one color format to be valid
     uint32_t attachment_index = 0;
-    for(PixelFormat color_format : color_formats)
+    for(PixelFormat color_format : settings.color_formats)
     {
         mtl_reflection_state_desc.colorAttachments[attachment_index++].pixelFormat = TypeConverterMT::DataFormatToMetalPixelType(color_format);
     }
     mtl_reflection_state_desc.colorAttachments[attachment_index].pixelFormat = MTLPixelFormatInvalid;
     mtl_reflection_state_desc.depthAttachmentPixelFormat = TypeConverterMT::DataFormatToMetalPixelType(m_settings.depth_format);
     
-    ContextMT& metal_context = static_cast<ContextMT&>(context);
+    ContextMT& metal_context = dynamic_cast<ContextMT&>(context);
     
     NSError* ns_error = nil;
     m_mtl_dummy_pipeline_state_for_reflection = [metal_context.GetDeviceMT().GetNativeDevice() newRenderPipelineStateWithDescriptor:mtl_reflection_state_desc options:MTLPipelineOptionArgumentInfo reflection:&m_mtl_render_pipeline_reflection error:&ns_error];
@@ -97,7 +90,7 @@ ProgramMT::~ProgramMT()
 ContextMT& ProgramMT::GetContextMT() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextMT&>(m_context);
+    return dynamic_cast<ContextMT&>(m_context);
 }
 
 ShaderMT& ProgramMT::GetShaderMT(Shader::Type shader_type) noexcept

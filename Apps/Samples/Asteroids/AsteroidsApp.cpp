@@ -172,7 +172,7 @@ AsteroidsApp::~AsteroidsApp()
 {
     ITT_FUNCTION_TASK();
     // Wait for GPU rendering is completed to release resources
-    m_sp_context->WaitForGpu(gfx::Context::WaitFor::RenderComplete);
+    m_sp_context->WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
 }
 
 void AsteroidsApp::Init()
@@ -183,9 +183,9 @@ void AsteroidsApp::Init()
     GraphicsApp::Init();
 
     assert(m_sp_context);
-    gfx::Context& context = *m_sp_context;
+    gfx::RenderContext& context = *m_sp_context;
 
-    const gfx::Context::Settings& context_settings = context.GetSettings();
+    const gfx::RenderContext::Settings& context_settings = context.GetSettings();
     m_view_camera.Resize(static_cast<float>(context_settings.frame_size.width),
                          static_cast<float>(context_settings.frame_size.height));
 
@@ -357,7 +357,7 @@ bool AsteroidsApp::Render()
         return false;
 
     // Wait for previous frame rendering is completed and switch to next frame
-    m_sp_context->WaitForGpu(gfx::Context::WaitFor::FramePresented);
+    m_sp_context->WaitForGpu(gfx::RenderContext::WaitFor::FramePresented);
     AsteroidsFrame& frame = GetCurrentFrame();
 
     // Upload uniform buffers to GPU
@@ -430,7 +430,7 @@ void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
     if (m_asteroids_complexity == asteroids_complexity)
         return;
 
-    m_sp_context->WaitForGpu(gfx::Context::WaitFor::RenderComplete);
+    m_sp_context->WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
 
     m_asteroids_complexity = asteroids_complexity;
 

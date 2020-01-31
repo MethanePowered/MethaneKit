@@ -23,7 +23,7 @@ ScreenQuad rendering primitive.
 
 #pragma once
 
-#include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/RenderState.h>
@@ -51,7 +51,7 @@ public:
         Color4f     blend_color = Color4f(1.f, 1.f, 1.f, 1.f);
     };
 
-    ScreenQuad(Context& context, Ptr<Texture> sp_texture, Settings settings);
+    ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings settings);
 
     void SetBlendColor(const Color4f& blend_color);
     void SetScreenRect(const FrameRect& screen_rect);

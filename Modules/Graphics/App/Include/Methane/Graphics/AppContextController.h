@@ -31,7 +31,7 @@ Graphics context controller for switching parameters in runtime.
 namespace Methane::Graphics
 {
 
-struct Context;
+struct RenderContext;
 
 enum class AppContextAction : uint32_t
 {
@@ -59,7 +59,7 @@ public:
         { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::Minus }, AppContextAction::RemoveFrameBufferFromSwapChain },
     };
 
-    AppContextController(Context& context, const ActionByKeyboardState& action_by_keyboard_state = default_action_by_keyboard_state);
+    AppContextController(RenderContext& context, const ActionByKeyboardState& action_by_keyboard_state = default_action_by_keyboard_state);
 
     // Input::Controller implementation
     void OnKeyboardChanged(Platform::Keyboard::Key, Platform::Keyboard::KeyState, const Platform::Keyboard::StateChange& state_change) override;
@@ -71,7 +71,7 @@ protected:
     void        OnKeyboardStateAction(AppContextAction action) override;
     std::string GetKeyboardActionName(AppContextAction action) const override;
 
-    Context& m_context;
+    RenderContext& m_context;
 };
 
 } // namespace Methane::Graphics

@@ -52,7 +52,7 @@ public:
     ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
 
 protected:
-    ContextMT& GetContextMT() noexcept;
+    ContextMT& GetContextMT();
 };
 
 } // namespace Methane::Graphics

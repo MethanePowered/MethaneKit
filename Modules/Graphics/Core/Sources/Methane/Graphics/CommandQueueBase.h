@@ -37,7 +37,7 @@ Base implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
-class ContextBase;
+class RenderContextBase;
 
 class CommandQueueBase
     : public ObjectBase
@@ -61,6 +61,7 @@ public:
 
 protected:
     void OnCommandListCompleted(CommandListBase& command_list, uint32_t frame_index);
+    uint32_t GetCurrentFrameBufferIndex() const;
 
     using CommandLists = std::list<WeakPtr<CommandListBase>>;
 

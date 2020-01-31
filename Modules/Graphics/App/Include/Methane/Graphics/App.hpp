@@ -33,7 +33,7 @@ Base frame class provides frame buffer management with resize handling.
 #include <Methane/Platform/AppController.h>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Device.h>
-#include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/RenderCommandList.h>
@@ -63,7 +63,7 @@ struct AppFrame
 template<typename FrameT>
 class App
     : public Platform::App
-    , public Context::Callback
+    , public RenderContext::Callback
 {
     static_assert(std::is_base_of<AppFrame, FrameT>::value, "Application Frame type must be derived from AppFrame.");
 
@@ -71,7 +71,7 @@ public:
     struct Settings
     {
         Platform::App::Settings app;
-        Context::Settings       context;
+        RenderContext::Settings context;
         bool                    show_hud_in_window_title;
         bool                    show_logo_badge;
     };
@@ -99,7 +99,7 @@ public:
     {
         // WARNING: Don't forget to make the following call in the derived Application class
         // Wait for GPU rendering is completed to release resources
-        // m_sp_context->WaitForGpu(Context::WaitFor::RenderComplete);
+        // m_sp_context->WaitForGpu(RenderContext::WaitFor::RenderComplete);
         ITT_FUNCTION_TASK();
         m_sp_context->RemoveCallback(*this);
     }
@@ -120,8 +120,8 @@ public:
         
         // Create render context of the current window size
         m_initial_context_settings.frame_size = frame_size;
-        m_sp_context = Context::Create(env, *sp_device, m_initial_context_settings);
-        m_sp_context->SetName("App Graphics Context");
+        m_sp_context = RenderContext::Create(env, *sp_device, m_initial_context_settings);
+        m_sp_context->SetName("App Render Context");
         m_sp_context->AddCallback(*this);
 
         m_input_state.AddControllers({ std::make_shared<AppContextController>(*m_sp_context) });
@@ -133,7 +133,7 @@ public:
     {
         ITT_FUNCTION_TASK();
         assert(m_sp_context);
-        const Context::Settings& context_settings = m_sp_context->GetSettings();
+        const RenderContext::Settings& context_settings = m_sp_context->GetSettings();
 
         // Create depth texture for FB rendering
         if (context_settings.depth_stencil_format != PixelFormat::Unknown)
@@ -290,11 +290,11 @@ public:
 
         if (!m_sp_context)
         {
-            throw std::runtime_error("Context is not initialized before rendering.");
+            throw std::runtime_error("RenderContext is not initialized before rendering.");
         }
 
-        const Context::Settings&      context_settings      = m_sp_context->GetSettings();
-        const FpsCounter&             fps_counter           = m_sp_context->GetFpsCounter();
+        const RenderContext::Settings&      context_settings   = m_sp_context->GetSettings();
+        const FpsCounter             &             fps_counter = m_sp_context->GetFpsCounter();
         const uint32_t                average_fps           = fps_counter.GetFramesPerSecond();
         const FpsCounter::FrameTiming average_frame_timing  = fps_counter.GetAverageFrameTiming();
 
@@ -395,7 +395,7 @@ protected:
         return m_frames[frame_index];
     }
 
-    const Context::Settings& GetInitialContextSettings() const { return m_initial_context_settings; }
+    const RenderContext::Settings& GetInitialContextSettings() const { return m_initial_context_settings; }
 
     static std::string IndexedName(const std::string& base_name, uint32_t index)
     {
@@ -405,7 +405,7 @@ protected:
         return ss.str();
     }
 
-    Ptr<Context>                    m_sp_context;
+    Ptr<RenderContext>              m_sp_context;
     ImageLoader                     m_image_loader;
     Ptr<Texture>                    m_sp_depth_texture;
     Ptr<LogoBadge>                  m_sp_logo_badge;
@@ -413,7 +413,7 @@ protected:
     Data::AnimationsPool            m_animations;
 
 private:
-    Context::Settings               m_initial_context_settings;
+    RenderContext::Settings         m_initial_context_settings;
     int32_t                         m_default_device_index = 0;
     const RenderPass::Access::Mask  m_screen_pass_access;
     bool                            m_show_hud_in_window_title;

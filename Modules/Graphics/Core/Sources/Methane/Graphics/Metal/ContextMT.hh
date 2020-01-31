@@ -25,7 +25,6 @@ Metal implementation of the context interface.
 
 #include <Methane/Graphics/ContextBase.h>
 
-#import <Methane/Platform/MacOS/AppViewMT.hh>
 #import <Metal/Metal.h>
 
 #include <string>
@@ -35,11 +34,10 @@ namespace Methane::Graphics
 {
 
 struct CommandQueue;
-class RenderPassMT;
 class DeviceMT;
 class CommandQueueMT;
 
-class ContextMT : public ContextBase
+class ContextMT : public virtual ContextBase
 {
 public:
     class LibraryMT
@@ -57,23 +55,16 @@ public:
         id<MTLLibrary> m_mtl_library;
     };
 
-    ContextMT(const Platform::AppEnvironment& env, DeviceBase& device, const Settings& settings);
+    ContextMT(DeviceBase& device, Type type, uint32_t dispatch_count);
     ~ContextMT() override;
 
     // Context interface
-    bool  ReadyToRender() const override;
-    void  OnCommandQueueCompleted(CommandQueue& cmd_queue, uint32_t frame_index) override;
     void  WaitForGpu(WaitFor wait_for) override;
-    void  Resize(const FrameSize& frame_size) override;
-    void  Present() override;
-    bool  SetVSyncEnabled(bool vsync_enabled) override;
-    bool  SetFrameBuffersCount(uint32_t frame_buffers_count) override;
-    float GetContentScalingFactor() const override;
-    Platform::AppView GetAppView() const override { return { m_app_view }; }
 
-    id<CAMetalDrawable>     GetNativeDrawable()       { return m_app_view.currentDrawable; }
+    // ContextBase interface
+    void  OnCommandQueueCompleted(CommandQueue& cmd_queue, uint32_t frame_index) override;
+
     DeviceMT&               GetDeviceMT();
-    CommandQueueMT&         GetRenderCommandQueueMT();
     const Ptr<LibraryMT>&   GetLibraryMT(const std::string& library_name = "");
 
 protected:
@@ -82,11 +73,10 @@ protected:
     void Initialize(Device& device, bool deferred_heap_allocation) override;
 
     using LibraryByName = std::map<std::string, Ptr<LibraryMT>>;
-    
-    AppViewMT*              m_app_view;
-    dispatch_semaphore_t    m_dispatch_semaphore;
-    LibraryByName           m_library_by_name;
-    id<MTLCaptureScope>     m_frame_capture_scope;
+
+    const uint32_t       m_dispatch_count;
+    dispatch_semaphore_t m_dispatch_semaphore;
+    LibraryByName        m_library_by_name;
 };
 
 } // namespace Methane::Graphics

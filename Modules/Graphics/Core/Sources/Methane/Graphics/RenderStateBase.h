@@ -30,7 +30,7 @@ Base implementation of the render state interface.
 namespace Methane::Graphics
 {
 
-class ContextBase;
+class RenderContextBase;
 class RenderCommandListBase;
 
 class RenderStateBase
@@ -39,7 +39,7 @@ class RenderStateBase
     , public std::enable_shared_from_this<RenderStateBase>
 {
 public:
-    RenderStateBase(ContextBase& context, const Settings& settings);
+    RenderStateBase(RenderContextBase& context, const Settings& settings);
 
     // RenderState interface
     const Settings& GetSettings() const override   { return m_settings; }
@@ -53,7 +53,7 @@ public:
     Ptr<RenderStateBase> GetPtr() { return shared_from_this(); }
 
 protected:
-    ContextBase& m_context;
+    RenderContextBase& m_context;
     Settings     m_settings;
 };
 

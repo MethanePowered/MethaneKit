@@ -32,12 +32,12 @@ Metal implementation of the render state interface.
 namespace Methane::Graphics
 {
 
-class ContextMT;
+class RenderContextMT;
 
 class RenderStateMT : public RenderStateBase
 {
 public:
-    RenderStateMT(ContextBase& context, const Settings& settings);
+    RenderStateMT(RenderContextBase& context, const Settings& settings);
     ~RenderStateMT() override;
     
     // RenderState interface
@@ -57,7 +57,7 @@ public:
     MTLWinding                  GetNativeFrontFaceWinding() const noexcept { return m_mtl_front_face_winding; }
 
 protected:
-    ContextMT& GetContextMT() noexcept;
+    RenderContextMT& GetRenderContextMT();
     
     void ResetNativeState();
     

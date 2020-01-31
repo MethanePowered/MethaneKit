@@ -28,8 +28,6 @@ Metal "dummy" implementation of the descriptor heap.
 namespace Methane::Graphics
 {
 
-class ContextBase;
-
 class DescriptorHeapMT : public DescriptorHeap
 {
 public:

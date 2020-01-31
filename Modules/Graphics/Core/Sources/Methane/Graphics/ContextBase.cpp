@@ -24,6 +24,9 @@ Base implementation of the context interface.
 #include "ContextBase.h"
 #include "DeviceBase.h"
 
+#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/RenderPass.h>
+#include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Instrumentation.h>
 
 #ifdef COMMAND_EXECUTION_LOGGING
@@ -35,7 +38,7 @@ Base implementation of the context interface.
 namespace Methane::Graphics
 {
 
-std::string GetWaitForName(Context::WaitFor wait_for)
+static std::string GetWaitForName(Context::WaitFor wait_for)
 {
     ITT_FUNCTION_TASK();
     switch (wait_for)
@@ -47,11 +50,10 @@ std::string GetWaitForName(Context::WaitFor wait_for)
     return "";
 }
 
-ContextBase::ContextBase(DeviceBase& device, const Settings& settings)
-    : m_sp_device(device.GetPtr())
-    , m_settings(settings)
+ContextBase::ContextBase(DeviceBase& device, Type type)
+    : m_type(type)
+    , m_sp_device(device.GetPtr())
     , m_resource_manager(*this)
-    , m_frame_buffer_index(0)
 {
     ITT_FUNCTION_TASK();
 }
@@ -75,19 +77,6 @@ void ContextBase::WaitForGpu(WaitFor wait_for)
 #ifdef COMMAND_EXECUTION_LOGGING
     Platform::PrintToDebugOutput(GetWaitForName(wait_for) + " in context \"" + GetName() + "\"");
 #endif
-
-    m_fps_counter.OnGpuFramePresentWait();
-}
-
-void ContextBase::Resize(const FrameSize& frame_size)
-{
-    ITT_FUNCTION_TASK();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("RESIZE context \"" + GetName() + "\" from " + static_cast<std::string>(m_settings.frame_size) + " to " + static_cast<std::string>(frame_size));
-#endif
-
-    m_settings.frame_size = frame_size;
 }
 
 void ContextBase::Reset(Device& device)
@@ -103,15 +92,19 @@ void ContextBase::Reset(Device& device)
     Initialize(device, false);
 }
 
-void ContextBase::Present()
+void ContextBase::Reset()
 {
     ITT_FUNCTION_TASK();
 
 #ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("PRESENT frame " + std::to_string(m_frame_buffer_index) + " in context \"" + GetName() + "\"");
+    Platform::PrintToDebugOutput("RESET context \"" + GetName() + "\"..");
 #endif
 
-    m_fps_counter.OnCpuFrameReadyToPresent();
+    WaitForGpu(WaitFor::RenderComplete);
+
+    Ptr<DeviceBase> sp_device = m_sp_device;
+    Release();
+    Initialize(*sp_device, true);
 }
 
 void ContextBase::AddCallback(Callback& callback)
@@ -124,51 +117,21 @@ void ContextBase::RemoveCallback(Callback& callback)
 {
     ITT_FUNCTION_TASK();
     const auto callback_it = std::find_if(m_callbacks.begin(), m_callbacks.end(),
-                                          [&callback](const Ref<Callback>& callback_ref)
-                                          { return std::addressof(callback_ref.get()) == std::addressof(callback); });
+        [&callback](const Ref<Callback>& callback_ref)
+        {
+            return std::addressof(callback_ref.get()) == std::addressof(callback);
+        });
     assert(callback_it != m_callbacks.end());
     if (callback_it == m_callbacks.end())
         return;
-    
+
     m_callbacks.erase(callback_it);
 }
-    
+
 void ContextBase::OnGpuWaitComplete(WaitFor wait_for)
 {
     ITT_FUNCTION_TASK();
-    if (wait_for == WaitFor::FramePresented)
-    {
-        m_fps_counter.OnGpuFramePresented();
-    }
     m_resource_manager.GetReleasePool().ReleaseResources();
-}
-
-void ContextBase::OnCpuPresentComplete()
-{
-    ITT_FUNCTION_TASK();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("PRESENT COMPLETE for context \"" + GetName() + "\"");
-#endif
-
-    m_fps_counter.OnCpuFramePresented();
-}
-
-void ContextBase::ResetWithSettings(const Settings& settings)
-{
-    ITT_FUNCTION_TASK();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("RESET context \"" + GetName() + "\" with new settings.");
-#endif
-
-    WaitForGpu(WaitFor::RenderComplete);
-
-    Ptr<DeviceBase> sp_device = m_sp_device;
-    m_settings = settings;
-
-    Release();
-    Initialize(*sp_device, true);
 }
 
 void ContextBase::Release()
@@ -179,7 +142,6 @@ void ContextBase::Release()
     Platform::PrintToDebugOutput("RELEASE context \"" + GetName() + "\"");
 #endif
 
-    m_sp_render_cmd_queue.reset();
     m_sp_upload_cmd_queue.reset();
     m_sp_upload_cmd_list.reset();
 
@@ -202,7 +164,7 @@ void ContextBase::Initialize(Device& device, bool deferred_heap_allocation)
 #endif
 
     m_sp_device = static_cast<DeviceBase&>(device).GetPtr();
-    
+
     const std::string& context_name = GetName();
     if (!context_name.empty())
     {
@@ -223,17 +185,6 @@ void ContextBase::Initialize(Device& device, bool deferred_heap_allocation)
     }
 }
 
-CommandQueue& ContextBase::GetRenderCommandQueue()
-{
-    ITT_FUNCTION_TASK();
-    if (!m_sp_render_cmd_queue)
-    {
-        m_sp_render_cmd_queue = CommandQueue::Create(*this);
-        m_sp_render_cmd_queue->SetName("Render Command Queue");
-    }
-    return *m_sp_render_cmd_queue;
-}
-
 CommandQueue& ContextBase::GetUploadCommandQueue()
 {
     ITT_FUNCTION_TASK();
@@ -250,7 +201,7 @@ RenderCommandList& ContextBase::GetUploadCommandList()
     ITT_FUNCTION_TASK();
     if (!m_sp_upload_cmd_list)
     {
-        Ptr<RenderPass> sp_empty_pass = RenderPass::Create(*this, RenderPass::Settings());
+        Ptr<RenderPass> sp_empty_pass = RenderPass::Create(dynamic_cast<RenderContext&>(*this), RenderPass::Settings());
         m_sp_upload_cmd_list = RenderCommandList::Create(GetUploadCommandQueue(), *sp_empty_pass);
         m_sp_upload_cmd_list->SetName("Upload Command List");
     }
@@ -275,43 +226,6 @@ const DeviceBase& ContextBase::GetDeviceBase() const
     ITT_FUNCTION_TASK();
     assert(!!m_sp_device);
     return static_cast<const DeviceBase&>(*m_sp_device);
-}
-
-bool ContextBase::SetVSyncEnabled(bool vsync_enabled)
-{
-    ITT_FUNCTION_TASK();
-    if (m_settings.vsync_enabled == vsync_enabled)
-        return false;
-
-    m_settings.vsync_enabled = vsync_enabled;
-    return true;
-}
-
-bool ContextBase::SetFrameBuffersCount(uint32_t frame_buffers_count)
-{
-    ITT_FUNCTION_TASK();
-    frame_buffers_count = std::min(std::max(2u, frame_buffers_count), 10u);
-
-    if (m_settings.frame_buffers_count == frame_buffers_count)
-        return false;
-
-    Settings new_settings = m_settings;
-    new_settings.frame_buffers_count = frame_buffers_count;
-    ResetWithSettings(new_settings);
-
-    return true;
-}
-
-bool ContextBase::SetFullScreen(bool is_full_screen)
-{
-    ITT_FUNCTION_TASK();
-    if (m_settings.is_full_screen == is_full_screen)
-        return false;
-
-    // No need to reset context for switching to full-screen
-    // Application window state is kept in sync with context by the user code and handles window resizing
-    m_settings.is_full_screen = is_full_screen;
-    return true;
 }
 
 void ContextBase::SetName(const std::string& name)

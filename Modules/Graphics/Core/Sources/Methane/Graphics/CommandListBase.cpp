@@ -21,8 +21,9 @@ Base implementation of the command list interface.
 
 ******************************************************************************/
 
-#include "CommandListBase.h"
-#include "ContextBase.h"
+#include "DeviceBase.h"
+#include "CommandQueueBase.h"
+#include "RenderContextBase.h"
 #include "ResourceBase.h"
 
 #include <Methane/Instrumentation.h>
@@ -168,19 +169,7 @@ CommandQueue& CommandListBase::GetCommandQueue()
 uint32_t CommandListBase::GetCurrentFrameIndex() const
 {
     ITT_FUNCTION_TASK();
-    return GetCommandQueueBase().GetContext().GetFrameBufferIndex();
-}
-
-void CommandListBase::ResetCommandState()
-{
-    m_command_state.sp_program_bindings.reset();
-}
-
-void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior)
-{
-    ITT_FUNCTION_TASK();
-    program_bindings.Apply(*this, apply_behavior);
-    m_command_state.sp_program_bindings = static_cast<ProgramBindingsBase&>(program_bindings).GetPtr();
+    return  GetCommandQueueBase().GetCurrentFrameBufferIndex();
 }
 
 void CommandListBase::SetResourceTransitionBarriers(const Refs<Resource>& resources, ResourceBase::State state_before, ResourceBase::State state_after)

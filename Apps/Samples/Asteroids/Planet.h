@@ -24,7 +24,7 @@ Planet rendering primitive
 #pragma once
 
 #include <Methane/Graphics/MeshBuffers.hpp>
-#include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/Camera.h>
 #include <Methane/Graphics/RenderState.h>
 #include <Methane/Graphics/Buffer.h>
@@ -64,7 +64,7 @@ public:
         SHADER_FIELD_ALIGN gfx::Matrix44f model_matrix;
     };
 
-    Planet(gfx::Context& context, gfx::ImageLoader& image_loader, const Settings& settings);
+    Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings);
 
     Ptr<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& sp_constants_buffer, const Ptr<gfx::Buffer>& sp_uniforms_buffer);
     void Resize(const gfx::FrameSize& frame_size);
@@ -75,7 +75,7 @@ private:
     using TexturedMeshBuffers = gfx::TexturedMeshBuffers<Uniforms>;
 
     Settings                    m_settings;
-    gfx::Context&               m_context;
+    gfx::RenderContext&               m_context;
     TexturedMeshBuffers         m_mesh_buffers;
     Ptr<gfx::Sampler>           m_sp_texture_sampler;
     Ptr<gfx::RenderState>       m_sp_state;

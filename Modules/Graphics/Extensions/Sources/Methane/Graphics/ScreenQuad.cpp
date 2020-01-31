@@ -48,7 +48,7 @@ struct ScreenQuadVertex
     };
 };
 
-ScreenQuad::ScreenQuad(Context& context, Ptr<Texture> sp_texture, Settings settings)
+ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings settings)
     : m_settings(std::move(settings))
     , m_debug_region_name(m_settings.name + " Screen-Quad rendering")
     , m_sp_texture(std::move(sp_texture))
@@ -58,7 +58,7 @@ ScreenQuad::ScreenQuad(Context& context, Ptr<Texture> sp_texture, Settings setti
     if (!m_sp_texture)
         throw std::invalid_argument("Screen-quad texture can not be empty.");
 
-    const Context::Settings& context_settings = context.GetSettings();
+    const RenderContext::Settings& context_settings = context.GetSettings();
 
     RenderState::Settings state_settings;
     state_settings.sp_program = Program::Create(context,

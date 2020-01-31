@@ -32,7 +32,7 @@ Methane render state interface: specifies configuration of the graphics pipeline
 namespace Methane::Graphics
 {
 
-struct Context;
+struct RenderContext;
 struct RenderCommandList;
 
 struct RenderState : virtual Object
@@ -219,7 +219,7 @@ public:
     };
 
     // Create RenderState instance
-    static Ptr<RenderState> Create(Context& context, const Settings& state_settings);
+    static Ptr<RenderState> Create(RenderContext& context, const Settings& state_settings);
 
     // RenderState interface
     virtual const Settings& GetSettings() const = 0;

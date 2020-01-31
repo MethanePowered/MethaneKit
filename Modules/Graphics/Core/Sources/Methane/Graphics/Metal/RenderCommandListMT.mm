@@ -26,7 +26,7 @@ Metal implementation of the render command list interface.
 #include "RenderStateMT.hh"
 #include "RenderPassMT.hh"
 #include "CommandQueueMT.hh"
-#include "ContextMT.hh"
+#include "RenderContextMT.hh"
 #include "BufferMT.hh"
 
 #include <Methane/Instrumentation.h>
@@ -210,7 +210,7 @@ void RenderCommandListMT::Commit(bool present_drawable)
     
     if (present_drawable)
     {
-        [m_mtl_cmd_buffer presentDrawable: GetCommandQueueMT().GetContextMT().GetNativeDrawable()];
+        [m_mtl_cmd_buffer presentDrawable: GetCommandQueueMT().GetRenderContextMT().GetNativeDrawable()];
     }
 
     [m_mtl_cmd_buffer enqueue];

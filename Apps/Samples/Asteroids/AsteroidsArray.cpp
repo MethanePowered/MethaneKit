@@ -206,13 +206,13 @@ AsteroidsArray::ContentState::ContentState(const Settings& settings)
     }
 }
 
-AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings)
+AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, Settings settings)
     : AsteroidsArray(context, settings, *std::make_shared<ContentState>(settings))
 {
     ITT_FUNCTION_TASK();
 }
 
-AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings, ContentState& state)
+AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, Settings settings, ContentState& state)
     : BaseBuffers(context, state.uber_mesh, "Asteroids Array")
     , m_settings(std::move(settings))
     , m_sp_content_state(state.shared_from_this())
@@ -222,7 +222,7 @@ AsteroidsArray::AsteroidsArray(gfx::Context& context, Settings settings, Content
     ITT_FUNCTION_TASK();
     SCOPE_TIMER("AsteroidsArray::AsteroidsArray");
     
-    const gfx::Context::Settings& context_settings = context.GetSettings();
+    const gfx::RenderContext::Settings& context_settings = context.GetSettings();
 
     const size_t textures_array_size = m_settings.textures_array_enabled ? m_settings.textures_count : 1;
     const gfx::Shader::MacroDefinitions macro_definitions  = { { "TEXTURES_COUNT", std::to_string(textures_array_size) } };

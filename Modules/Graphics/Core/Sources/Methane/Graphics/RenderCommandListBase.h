@@ -36,6 +36,7 @@ namespace Methane::Graphics
 {
 
 struct RenderState;
+class ProgramBindingsBase;
 class ParallelRenderCommandListBase;
 
 class RenderCommandListBase
@@ -49,6 +50,7 @@ public:
     // RenderCommandList interface
     void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;
     void SetState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) override;
+    void SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
     void SetVertexBuffers(const Refs<Buffer>& vertex_buffers) override;
     void DrawIndexed(Primitive primitive_type, Buffer& index_buffer,
                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
@@ -56,6 +58,7 @@ public:
     void Draw(Primitive primitive_type, uint32_t vertex_count, uint32_t start_vertex,
               uint32_t instance_count, uint32_t start_instance) override;
 
+    const ProgramBindingsBase* GetProgramBindings() const { return m_draw_state.sp_program_bindings.get(); }
     RenderPassBase& GetPass();
 
 protected:
@@ -75,6 +78,7 @@ protected:
         Ptr<BufferBase>          sp_index_buffer;
         Ptrs<BufferBase>         sp_vertex_buffers;
         Ptr<RenderStateBase>     sp_render_state;
+        Ptr<ProgramBindingsBase> sp_program_bindings;
         RenderState::Group::Mask render_state_groups;
 
         Flags                    flags;

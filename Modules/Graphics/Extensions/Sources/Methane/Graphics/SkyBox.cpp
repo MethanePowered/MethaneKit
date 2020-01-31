@@ -40,7 +40,7 @@ struct SkyBoxVertex
     };
 };
 
-SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& settings)
+SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings)
     : m_settings(settings)
     , m_context(context)
     , m_mesh_buffers(context, SphereMesh<SkyBoxVertex>(Mesh::VertexLayoutFromArray(SkyBoxVertex::layout)), "Sky-Box")
@@ -49,7 +49,7 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
 
     m_mesh_buffers.SetTexture(image_loader.LoadImagesToTextureCube(m_context, m_settings.face_resources, m_settings.mipmapped));
 
-    const Context::Settings& context_settings = context.GetSettings();
+    const RenderContext::Settings& context_settings = context.GetSettings();
 
     RenderState::Settings state_settings;
     state_settings.sp_program = Program::Create(context,

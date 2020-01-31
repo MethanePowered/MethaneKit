@@ -81,7 +81,7 @@ bool RenderPass::Settings::operator!=(const Settings& other) const
     return !operator==(other);
 }
 
-RenderPassBase::RenderPassBase(ContextBase& context, const Settings& settings)
+RenderPassBase::RenderPassBase(RenderContextBase& context, const Settings& settings)
     : m_context(context)
     , m_settings(settings)
 {

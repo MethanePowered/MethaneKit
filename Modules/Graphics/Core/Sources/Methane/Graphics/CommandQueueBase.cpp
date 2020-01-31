@@ -22,7 +22,7 @@ Base implementation of the command queue interface.
 ******************************************************************************/
 
 #include "CommandQueueBase.h"
-#include "ContextBase.h"
+#include "RenderContextBase.h"
 
 #include <Methane/Instrumentation.h>
 
@@ -58,7 +58,8 @@ void CommandQueueBase::Execute(const Refs<CommandList>& command_lists)
         m_executing_mutex.lock();
     }
 
-    const uint32_t frame_index = m_context.GetFrameBufferIndex();
+    const uint32_t frame_index = GetCurrentFrameBufferIndex();
+
     if (m_execution_state_tracking)
     {
         if (m_executing_on_frames.find(frame_index) != m_executing_on_frames.end())
@@ -109,7 +110,7 @@ bool CommandQueueBase::IsExecuting(uint32_t frame_index) const
 bool CommandQueueBase::IsExecuting() const
 {
     ITT_FUNCTION_TASK();
-    return IsExecuting(m_context.GetFrameBufferIndex());
+    return IsExecuting(GetCurrentFrameBufferIndex());
 }
 
 void CommandQueueBase::OnCommandListCompleted(CommandListBase& /*command_list*/, uint32_t frame_index)
@@ -156,6 +157,13 @@ void CommandQueueBase::OnCommandListCompleted(CommandListBase& /*command_list*/,
         m_executing_on_frames.erase(frame_index);
         m_context.OnCommandQueueCompleted(*this, frame_index);
     }
+}
+
+uint32_t CommandQueueBase::GetCurrentFrameBufferIndex() const
+{
+    return m_context.GetType() == Context::Type::Render
+                                ? dynamic_cast<const RenderContextBase&>(m_context).GetFrameBufferIndex()
+                                : 0u;
 }
 
 } // namespace Methane::Graphics

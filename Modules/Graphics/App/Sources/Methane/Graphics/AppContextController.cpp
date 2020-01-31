@@ -23,7 +23,7 @@ Graphics context controller for switching parameters in runtime.
 
 #include <Methane/Graphics/AppContextController.h>
 
-#include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/Device.h>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Instrumentation.h>
@@ -35,7 +35,7 @@ using namespace Methane::Platform;
 namespace Methane::Graphics
 {
 
-AppContextController::AppContextController(Context& context, const ActionByKeyboardState& action_by_keyboard_state)
+AppContextController::AppContextController(RenderContext& context, const ActionByKeyboardState& action_by_keyboard_state)
     : Controller("GRAPHICS SETTINGS")
     , Keyboard::ActionControllerBase<AppContextAction>(action_by_keyboard_state, {})
     , m_context(context)

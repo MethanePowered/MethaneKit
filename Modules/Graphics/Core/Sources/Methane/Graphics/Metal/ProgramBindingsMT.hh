@@ -50,7 +50,7 @@ public:
         // ArgumentBinding interface
         void SetResourceLocations(const Resource::Locations& resource_locations) override;
 
-        const SettingsMT& GetSettingsMT() const noexcept { return m_settings_mt; }
+        const SettingsMT&                       GetSettingsMT() const noexcept { return m_settings_mt; }
         const std::vector<id<MTLSamplerState>>& GetNativeSamplerStates() const { return m_mtl_sampler_states; }
         const std::vector<id<MTLTexture>>&      GetNativeTextures() const      { return m_mtl_textures; }
         const std::vector<id<MTLBuffer>>&       GetNativeBuffers() const       { return m_mtl_buffers; }

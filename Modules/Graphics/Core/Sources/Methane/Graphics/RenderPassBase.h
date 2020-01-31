@@ -28,7 +28,7 @@ Base implementation of the render pass interface.
 namespace Methane::Graphics
 {
 
-class ContextBase;
+class RenderContextBase;
 class RenderCommandListBase;
 
 class RenderPassBase
@@ -36,7 +36,7 @@ class RenderPassBase
     , public std::enable_shared_from_this<RenderPassBase>
 {
 public:
-    RenderPassBase(ContextBase& context, const Settings& settings);
+    RenderPassBase(RenderContextBase& context, const Settings& settings);
 
     // RenderPass interface
     void Update(const Settings& settings) override;
@@ -51,7 +51,7 @@ public:
     bool                IsBegun() const { return m_is_begun; }
 
 protected:
-    ContextBase& m_context;
+    RenderContextBase& m_context;
     Settings     m_settings;
     bool         m_is_begun = false;
 };

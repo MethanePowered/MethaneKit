@@ -48,7 +48,6 @@ public:
     const Ptrs<RenderCommandList>& GetParallelCommandLists() const override { return m_parallel_command_lists; }
 
     // CommandListBase interface
-    void SetResourceBarriers(const ResourceBase::Barriers&) override { }
     void Execute(uint32_t frame_index) override;
     void Complete(uint32_t frame_index) override;
 

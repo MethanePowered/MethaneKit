@@ -30,8 +30,8 @@ Metal implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
-class RenderPassMT;
 class ContextMT;
+class RenderContextMT;
 
 class CommandQueueMT final : public CommandQueueBase
 {
@@ -42,7 +42,8 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
     
-    ContextMT& GetContextMT() noexcept;
+    ContextMT& GetContextMT();
+    RenderContextMT& GetRenderContextMT();
     
     id<MTLCommandQueue>&  GetNativeCommandQueue() noexcept { return m_mtl_command_queue; }
 
