@@ -138,10 +138,10 @@ MTLRenderPassDescriptor* RenderPassMT::GetNativeDescriptor(bool reset)
     return m_mtl_pass_descriptor;
 }
 
-ContextMT& RenderPassMT::GetContextMT() noexcept
+IContextMT& RenderPassMT::GetContextMT() noexcept
 {
     ITT_FUNCTION_TASK();
-    return dynamic_cast<class ContextMT&>(m_context);
+    return static_cast<IContextMT&>(m_context);
 }
 
 } // namespace Methane::Graphics

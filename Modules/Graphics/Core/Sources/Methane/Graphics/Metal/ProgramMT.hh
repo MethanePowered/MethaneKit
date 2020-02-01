@@ -30,7 +30,7 @@ Metal implementation of the program interface.
 namespace Methane::Graphics
 {
 
-class ContextMT;
+struct IContextMT;
 class ShaderMT;
 
 class ProgramMT : public ProgramBase
@@ -45,7 +45,7 @@ public:
     MTLVertexDescriptor* GetNativeVertexDescriptor() noexcept { return m_mtl_vertex_desc; }
 
 protected:
-    ContextMT& GetContextMT() noexcept;
+    IContextMT& GetContextMT() noexcept;
     void SetNativeShaderArguments(Shader::Type shader_type, NSArray<MTLArgument*>* mtl_arguments) noexcept;
     
     MTLVertexDescriptor*         m_mtl_vertex_desc = nil;

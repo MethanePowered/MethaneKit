@@ -30,7 +30,7 @@ Metal implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-class ContextMT;
+struct IContextMT;
 struct ResourceContainerMT;
 
 class ResourceMT : public ResourceBase
@@ -52,7 +52,7 @@ public:
     ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
 
 protected:
-    ContextMT& GetContextMT();
+    IContextMT& GetContextMT() noexcept;
 };
 
 } // namespace Methane::Graphics

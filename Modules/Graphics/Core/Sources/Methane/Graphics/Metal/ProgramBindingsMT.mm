@@ -25,7 +25,6 @@ Metal implementation of the program bindings interface.
 #include "BufferMT.hh"
 #include "TextureMT.hh"
 #include "SamplerMT.hh"
-#include "ContextMT.hh"
 #include "RenderCommandListMT.hh"
 
 #include <Methane/Instrumentation.h>

@@ -23,12 +23,13 @@ Metal implementation of the program interface.
 
 #include "ProgramMT.hh"
 #include "ShaderMT.hh"
-#include "ContextMT.hh"
+#include "ContextMT.h"
 #include "DeviceMT.hh"
 #include "TypesMT.hh"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
@@ -61,7 +62,7 @@ ProgramMT::ProgramMT(ContextBase& context, const Settings& settings)
     mtl_reflection_state_desc.colorAttachments[attachment_index].pixelFormat = MTLPixelFormatInvalid;
     mtl_reflection_state_desc.depthAttachmentPixelFormat = TypeConverterMT::DataFormatToMetalPixelType(m_settings.depth_format);
     
-    ContextMT& metal_context = dynamic_cast<ContextMT&>(context);
+    IContextMT& metal_context = dynamic_cast<IContextMT&>(context);
     
     NSError* ns_error = nil;
     m_mtl_dummy_pipeline_state_for_reflection = [metal_context.GetDeviceMT().GetNativeDevice() newRenderPipelineStateWithDescriptor:mtl_reflection_state_desc options:MTLPipelineOptionArgumentInfo reflection:&m_mtl_render_pipeline_reflection error:&ns_error];
@@ -87,10 +88,10 @@ ProgramMT::~ProgramMT()
     [m_mtl_vertex_desc release];
 }
 
-ContextMT& ProgramMT::GetContextMT() noexcept
+IContextMT& ProgramMT::GetContextMT() noexcept
 {
     ITT_FUNCTION_TASK();
-    return dynamic_cast<ContextMT&>(m_context);
+    return static_cast<IContextMT&>(m_context);
 }
 
 ShaderMT& ProgramMT::GetShaderMT(Shader::Type shader_type) noexcept

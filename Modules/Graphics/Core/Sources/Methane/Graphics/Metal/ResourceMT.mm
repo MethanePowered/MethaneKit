@@ -22,10 +22,11 @@ Metal implementation of the resource interface.
 ******************************************************************************/
 
 #include "ResourceMT.hh"
-#include "ContextMT.hh"
+#include "ContextMT.h"
 #include "BufferMT.hh"
 #include "TextureMT.hh"
 
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 
 #include <vector>
@@ -94,10 +95,10 @@ ResourceMT::ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, 
     ITT_FUNCTION_TASK();
 }
 
-ContextMT& ResourceMT::GetContextMT()
+IContextMT& ResourceMT::GetContextMT() noexcept
 {
     ITT_FUNCTION_TASK();
-    return dynamic_cast<class ContextMT&>(m_context);
+    return static_cast<IContextMT&>(m_context);
 }
 
 } // namespace Methane::Graphics

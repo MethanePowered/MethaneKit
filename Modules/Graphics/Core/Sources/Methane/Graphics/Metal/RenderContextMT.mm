@@ -42,9 +42,7 @@ Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, De
 }
 
 RenderContextMT::RenderContextMT(const Platform::AppEnvironment& env, DeviceBase& device, const RenderContext::Settings& settings)
-    : ContextMT(device, Type::Render, settings.frame_buffers_count)
-    , RenderContextBase(device, settings)
-    , ContextBase(device, Type::Render)
+    : ContextMT<RenderContextBase>(device, settings)
     , m_app_view([[AppViewMT alloc] initWithFrame: TypeConverterMT::CreateNSRect(m_settings.frame_size)
                                         appWindow: env.ns_app_delegate.window
                                            device: GetDeviceMT().GetNativeDevice()
@@ -80,30 +78,14 @@ void RenderContextMT::Release()
     
     m_app_view.redrawing = NO;
 
-    for (const Ref<Callback>& callback_ref : m_callbacks)
-    {
-        callback_ref.get().OnContextReleased();
-    }
-
-    ContextBase::Release();
-    RenderContextBase::Release();
-    ContextMT::Release();
-
-    m_resource_manager.Release();
+    ContextMT<RenderContextBase>::Release();
 }
 
 void RenderContextMT::Initialize(DeviceBase& device, bool deferred_heap_allocation)
 {
     ITT_FUNCTION_TASK();
 
-    ContextBase::Initialize(device, deferred_heap_allocation);
-    RenderContextBase::Initialize(device, deferred_heap_allocation);
-    ContextMT::Initialize(device, deferred_heap_allocation);
-
-    for (const Ref<Callback>& callback_ref : m_callbacks)
-    {
-        callback_ref.get().OnContextInitialized();
-    }
+    ContextMT<RenderContextBase>::Initialize(device, deferred_heap_allocation);
     
     m_app_view.redrawing = YES;
 }
@@ -118,8 +100,7 @@ void RenderContextMT::WaitForGpu(WaitFor wait_for)
 {
     ITT_FUNCTION_TASK();
 
-    RenderContextBase::WaitForGpu(wait_for);
-    ContextMT::WaitForGpu(wait_for);
+    ContextMT<RenderContextBase>::WaitForGpu(wait_for);
 
     if (wait_for == WaitFor::FramePresented)
     {
@@ -131,23 +112,23 @@ void RenderContextMT::WaitForGpu(WaitFor wait_for)
 void RenderContextMT::Resize(const FrameSize& frame_size)
 {
     ITT_FUNCTION_TASK();
-    RenderContextBase::Resize(frame_size);
+    ContextMT<RenderContextBase>::Resize(frame_size);
 }
 
 void RenderContextMT::Present()
 {
     ITT_FUNCTION_TASK();
-    RenderContextBase::Present();
+    ContextMT<RenderContextBase>::Present();
     
     [m_frame_capture_scope endScope];
 
-    RenderContextBase::OnCpuPresentComplete();
+    ContextMT<RenderContextBase>::OnCpuPresentComplete();
 }
 
 bool RenderContextMT::SetVSyncEnabled(bool vsync_enabled)
 {
     ITT_FUNCTION_TASK();
-    if (RenderContextBase::SetVSyncEnabled(vsync_enabled))
+    if (ContextMT<RenderContextBase>::SetVSyncEnabled(vsync_enabled))
     {
         m_app_view.vsyncEnabled = vsync_enabled ? YES : NO;
         return true;
@@ -159,7 +140,7 @@ bool RenderContextMT::SetFrameBuffersCount(uint32_t frame_buffers_count)
 {
     ITT_FUNCTION_TASK();
     frame_buffers_count = std::min(std::max(2u, frame_buffers_count), 3u); // Metal supports only 2 or 3 drawable buffers
-    if (RenderContextBase::SetFrameBuffersCount(frame_buffers_count))
+    if (ContextMT<RenderContextBase>::SetFrameBuffersCount(frame_buffers_count))
     {
         m_app_view.drawableCount = frame_buffers_count;
         return true;
@@ -176,7 +157,7 @@ float RenderContextMT::GetContentScalingFactor() const
 CommandQueueMT& RenderContextMT::GetRenderCommandQueueMT()
 {
     ITT_FUNCTION_TASK();
-    return static_cast<CommandQueueMT&>(RenderContextBase::GetRenderCommandQueue());
+    return static_cast<CommandQueueMT&>(ContextMT<RenderContextBase>::GetRenderCommandQueue());
 }
 
 } // namespace Methane::Graphics

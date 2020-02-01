@@ -30,9 +30,6 @@ Metal implementation of the program bindings interface.
 namespace Methane::Graphics
 {
 
-class ContextMT;
-class ShaderMT;
-
 class ProgramBindingsMT final : public ProgramBindingsBase
 {
 public:

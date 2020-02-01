@@ -23,12 +23,14 @@ Metal implementation of the shader interface.
 
 #include "ShaderMT.hh"
 #include "ProgramMT.hh"
+#include "ProgramLibraryMT.hh"
 #include "ProgramBindingsMT.hh"
-#include "ContextMT.hh"
+#include "ContextMT.h"
 #include "TypesMT.hh"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
@@ -91,10 +93,10 @@ static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access) 
 Ptr<Shader> Shader::Create(Shader::Type shader_type, Context& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ShaderMT>(shader_type, dynamic_cast<ContextMT&>(context), settings);
+    return std::make_shared<ShaderMT>(shader_type, dynamic_cast<ContextBase&>(context), settings);
 }
 
-ShaderMT::ShaderMT(Shader::Type shader_type, ContextMT& context, const Settings& settings)
+ShaderMT::ShaderMT(Shader::Type shader_type, ContextBase& context, const Settings& settings)
     : ShaderBase(shader_type, context, settings)
     , m_mtl_function([context.GetLibraryMT(settings.entry_function.file_name)->Get() newFunctionWithName: Methane::MacOS::ConvertToNSType<std::string, NSString*>(GetCompiledEntryFunctionName())])
 {
@@ -218,10 +220,10 @@ MTLVertexDescriptor* ShaderMT::GetNativeVertexDescriptor(const ProgramMT& progra
     return mtl_vertex_desc;
 }
 
-ContextMT& ShaderMT::GetContextMT() noexcept
+IContextMT& ShaderMT::GetContextMT() noexcept
 {
     ITT_FUNCTION_TASK();
-    return dynamic_cast<ContextMT&>(m_context);
+    return static_cast<IContextMT&>(m_context);
 }
 
 } // namespace Methane::Graphics

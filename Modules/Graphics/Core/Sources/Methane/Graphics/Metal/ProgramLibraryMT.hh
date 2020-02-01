@@ -16,40 +16,33 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/SamplerMT.hh
-Metal implementation of the sampler interface.
+FILE: Methane/Graphics/Metal/ProgramLibraryMT.hh
+Wrapper of the Metal program library.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/SamplerBase.h>
-
 #import <Metal/Metal.h>
+
+#include <string>
 
 namespace Methane::Graphics
 {
 
-struct IContextMT;
+class DeviceMT;
 
-class SamplerMT : public SamplerBase
+class ProgramLibraryMT
 {
 public:
-    SamplerMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
-    ~SamplerMT() override;
+    ProgramLibraryMT(DeviceMT& metal_device, const std::string& library_name = "");
+    ~ProgramLibraryMT();
 
-    // Object interface
-    void SetName(const std::string& name) override;
-    
-    const id<MTLSamplerState>& GetNativeSamplerState() const noexcept { return m_mtl_sampler_state; }
+    id<MTLLibrary>& Get() noexcept { return m_mtl_library; }
 
-protected:
-    void ResetSampletState();
-
-    IContextMT& GetContextMT() noexcept;
-    
-    MTLSamplerDescriptor* m_mtl_sampler_desc = nullptr;
-    id<MTLSamplerState>   m_mtl_sampler_state = nil;
+private:
+    NSError*       m_ns_error = nil;
+    id<MTLLibrary> m_mtl_library;
 };
 
 } // namespace Methane::Graphics

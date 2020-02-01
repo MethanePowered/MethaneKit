@@ -67,14 +67,16 @@ elseif(APPLE)
         ${SOURCES_GRAPHICS_DIR}/TypesMT.mm
         ${SOURCES_GRAPHICS_DIR}/DeviceMT.hh
         ${SOURCES_GRAPHICS_DIR}/DeviceMT.mm
-        ${SOURCES_GRAPHICS_DIR}/ContextMT.hh
-        ${SOURCES_GRAPHICS_DIR}/ContextMT.mm
+        ${SOURCES_GRAPHICS_DIR}/ContextMT.h
+        ${SOURCES_GRAPHICS_DIR}/ContextMT.hpp
         ${SOURCES_GRAPHICS_DIR}/RenderContextMT.hh
         ${SOURCES_GRAPHICS_DIR}/RenderContextMT.mm
         ${SOURCES_GRAPHICS_DIR}/ShaderMT.hh
         ${SOURCES_GRAPHICS_DIR}/ShaderMT.mm
         ${SOURCES_GRAPHICS_DIR}/ProgramMT.hh
         ${SOURCES_GRAPHICS_DIR}/ProgramMT.mm
+        ${SOURCES_GRAPHICS_DIR}/ProgramLibraryMT.hh
+        ${SOURCES_GRAPHICS_DIR}/ProgramLibraryMT.mm
         ${SOURCES_GRAPHICS_DIR}/ProgramBindingsMT.hh
         ${SOURCES_GRAPHICS_DIR}/ProgramBindingsMT.mm
         ${SOURCES_GRAPHICS_DIR}/RenderStateMT.hh

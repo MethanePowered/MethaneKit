@@ -22,12 +22,13 @@ Metal implementation of the sampler interface.
 ******************************************************************************/
 
 #include "SamplerMT.hh"
-#include "ContextMT.hh"
+#include "ContextMT.h"
 #include "DeviceMT.hh"
 #include "TypesMT.hh"
 
+#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
-#import <Methane/Platform/MacOS/Types.hh>
 
 namespace Methane::Graphics
 {
@@ -154,10 +155,10 @@ void SamplerMT::ResetSampletState()
     m_mtl_sampler_state = [GetContextMT().GetDeviceMT().GetNativeDevice() newSamplerStateWithDescriptor:m_mtl_sampler_desc];
 }
 
-ContextMT& SamplerMT::GetContextMT() noexcept
+IContextMT& SamplerMT::GetContextMT() noexcept
 {
     ITT_FUNCTION_TASK();
-    return dynamic_cast<class ContextMT&>(m_context);
+    return static_cast<IContextMT&>(m_context);
 }
 
 } // namespace Methane::Graphics

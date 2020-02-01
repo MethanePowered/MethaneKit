@@ -23,7 +23,7 @@ Metal implementation of the render context interface.
 
 #pragma once
 
-#include "ContextMT.hh"
+#include "ContextMT.hpp"
 
 #include <Methane/Graphics/RenderContextBase.h>
 
@@ -33,9 +33,7 @@ Metal implementation of the render context interface.
 namespace Methane::Graphics
 {
 
-class RenderContextMT
-    : public ContextMT
-    , public RenderContextBase
+class RenderContextMT : public ContextMT<RenderContextBase>
 {
 public:
     RenderContextMT(const Platform::AppEnvironment& env, DeviceBase& device, const Settings& settings);

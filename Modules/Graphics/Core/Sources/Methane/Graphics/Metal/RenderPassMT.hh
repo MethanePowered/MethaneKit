@@ -30,7 +30,7 @@ Metal implementation of the render pass interface.
 namespace Methane::Graphics
 {
 
-class ContextMT;
+struct IContextMT;
 
 class RenderPassMT : public RenderPassBase
 {
@@ -45,7 +45,7 @@ public:
     MTLRenderPassDescriptor* GetNativeDescriptor(bool reset);
 
 protected:
-    ContextMT& GetContextMT() noexcept;
+    IContextMT& GetContextMT() noexcept;
     
     MTLRenderPassDescriptor* m_mtl_pass_descriptor;
 };

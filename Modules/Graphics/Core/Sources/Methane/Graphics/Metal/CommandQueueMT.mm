@@ -62,10 +62,10 @@ void CommandQueueMT::SetName(const std::string& name)
     m_mtl_command_queue.label = MacOS::ConvertToNSType<std::string, NSString*>(name);
 }
 
-ContextMT& CommandQueueMT::GetContextMT()
+IContextMT& CommandQueueMT::GetContextMT() noexcept
 {
     ITT_FUNCTION_TASK();
-    return dynamic_cast<class ContextMT&>(m_context);
+    return static_cast<IContextMT&>(m_context);
 }
 
 RenderContextMT& CommandQueueMT::GetRenderContextMT()

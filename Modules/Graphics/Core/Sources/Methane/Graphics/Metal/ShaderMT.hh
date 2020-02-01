@@ -33,13 +33,13 @@ Metal implementation of the shader interface.
 namespace Methane::Graphics
 {
 
-class ContextMT;
+struct IContextMT;
 class ProgramMT;
 
 class ShaderMT : public ShaderBase
 {
 public:
-    ShaderMT(Shader::Type shader_type, ContextMT& context, const Settings& settings);
+    ShaderMT(Shader::Type shader_type, ContextBase& context, const Settings& settings);
     ~ShaderMT() override;
     
     // ShaderBase interface
@@ -50,7 +50,7 @@ public:
     void SetNativeArguments(NSArray<MTLArgument*>* mtl_arguments) noexcept  { m_mtl_arguments = mtl_arguments; }
 
 protected:
-    ContextMT& GetContextMT() noexcept;
+    IContextMT& GetContextMT() noexcept;
 
     id<MTLFunction>        m_mtl_function;
     NSArray<MTLArgument*>* m_mtl_arguments = nil;

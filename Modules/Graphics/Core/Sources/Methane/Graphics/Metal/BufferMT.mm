@@ -23,11 +23,12 @@ Metal implementation of the buffer interface.
 
 #include "BufferMT.hh"
 #include "DeviceMT.hh"
-#include "ContextMT.hh"
+#include "ContextMT.h"
 #include "TypesMT.hh"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Instrumentation.h>
 
 #include <algorithm>
 #include <iterator>
