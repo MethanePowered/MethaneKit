@@ -22,10 +22,10 @@ DirectX 12 implementation of the sampler interface.
 ******************************************************************************/
 
 #include "SamplerDX.h"
-#include "ContextDX.h"
 #include "DeviceDX.h"
 #include "TypesDX.h"
 
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 
 #include <cassert>

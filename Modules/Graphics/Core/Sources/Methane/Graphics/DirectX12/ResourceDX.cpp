@@ -156,10 +156,10 @@ D3D12_RESOURCE_BARRIER ResourceDX::GetNativeResourceBarrier(const Barrier& resou
     return D3D12_RESOURCE_BARRIER();
 }
 
-ContextDX& ResourceDX::GetContextDX() noexcept
+IContextDX& ResourceDX::GetContextDX() noexcept
 {
     ITT_FUNCTION_TASK();
-    return dynamic_cast<class ContextDX&>(m_context);
+    return static_cast<IContextDX&>(m_context);
 }
 
 void ResourceDX::InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type, 

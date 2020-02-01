@@ -22,12 +22,12 @@ DirectX 12 implementation of the program bindings interface.
 ******************************************************************************/
 
 #include "ProgramBindingsDX.h"
-#include "ContextDX.h"
 #include "DeviceDX.h"
 #include "ProgramDX.h"
 #include "RenderCommandListDX.h"
 #include "DescriptorHeapDX.h"
 
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Windows/Utils.h>
 
@@ -101,7 +101,7 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
     const D3D12_DESCRIPTOR_HEAP_TYPE native_heap_type = p_dx_descriptor_heap
                                                       ? p_dx_descriptor_heap->GetNativeDescriptorHeapType()
                                                       : D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    const wrl::ComPtr<ID3D12Device>& cp_native_device = dynamic_cast<class ContextDX&>(GetContext()).GetDeviceDX().GetNativeDevice();
+    const wrl::ComPtr<ID3D12Device>& cp_native_device = static_cast<IContextDX&>(GetContext()).GetDeviceDX().GetNativeDevice();
     assert(!!cp_native_device);
 
     uint32_t resource_index = 0;

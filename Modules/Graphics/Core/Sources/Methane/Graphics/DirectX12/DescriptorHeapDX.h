@@ -33,7 +33,7 @@ namespace Methane::Graphics
 
 namespace wrl = Microsoft::WRL;
 
-class ContextDX;
+struct IContextDX;
 
 class DescriptorHeapDX : public DescriptorHeap
 {
@@ -50,7 +50,7 @@ public:
     void Allocate() override;
 
 protected:
-    ContextDX& GetContextDX();
+    IContextDX& GetContextDX() noexcept;
 
     D3D12_DESCRIPTOR_HEAP_TYPE        m_descriptor_heap_type;
     uint32_t                          m_descriptor_size;

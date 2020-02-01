@@ -24,19 +24,17 @@ DirectX 12 implementation of the shader interface.
 #include "ShaderDX.h"
 #include "ProgramDX.h"
 #include "ProgramBindingsDX.h"
-#include "ResourceDX.h"
-#include "ContextDX.h"
 #include "DeviceDX.h"
 #include "TypesDX.h"
 
-#include <d3dx12.h>
-#include <D3Dcompiler.h>
-#include <nowide/convert.hpp>
-
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 #include <Methane/Data/Provider.h>
 
+#include <d3dx12.h>
+#include <D3Dcompiler.h>
+#include <nowide/convert.hpp>
 #include <sstream>
 #include <cassert>
 
@@ -383,10 +381,10 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
     return dx_input_layout;
 }
 
-ContextDX& ShaderDX::GetContextDX()
+IContextDX& ShaderDX::GetContextDX() noexcept
 {
     ITT_FUNCTION_TASK();
-    return dynamic_cast<class ContextDX&>(m_context);
+    return static_cast<IContextDX&>(m_context);
 }
 
 } // namespace Methane::Graphics

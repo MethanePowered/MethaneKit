@@ -34,7 +34,7 @@ namespace Methane::Graphics
 
 namespace wrl = Microsoft::WRL;
 
-class ContextDX;
+struct IContextDX;
 class DescriptorHeapDX;
 
 class ResourceDX : public ResourceBase
@@ -86,7 +86,7 @@ public:
     static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const Barrier& resource_barrier) noexcept;
 
 protected:
-    ContextDX& GetContextDX() noexcept;
+    IContextDX& GetContextDX() noexcept;
 
     void InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type,
                                      D3D12_RESOURCE_STATES resource_state, const D3D12_CLEAR_VALUE* p_clear_value = nullptr);

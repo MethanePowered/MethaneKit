@@ -16,48 +16,55 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/CommandQueueDX.h
-DirectX 12 implementation of the command queue interface.
+FILE: Methane/Graphics/DirectX12/FenceDX.cpp
+DirectX 12 fence wrapper.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/CommandQueueBase.h>
+#include <Methane/Graphics/ObjectBase.h>
 
+#include <string>
 #include <wrl.h>
 #include <d3d12.h>
-
-#include <vector>
 
 namespace Methane::Graphics
 {
 
 namespace wrl = Microsoft::WRL;
 
-struct IContextDX;
-class RenderStateBase;
+class CommandQueueDX;
 
-class CommandQueueDX final : public CommandQueueBase
+class FenceDX : public ObjectBase
 {
 public:
-    CommandQueueDX(ContextBase& context);
+    FenceDX(CommandQueueDX& command_queue);
+    ~FenceDX();
 
-    // CommandQueue interface
-    void Execute(const Refs<CommandList>& command_lists) override;
+    void Signal();
+    void Wait();
+    void Flush();
 
     // Object interface
-    void SetName(const std::string& name) override;
+    void SetName(const std::string& name) noexcept override;
 
-    IContextDX& GetContextDX() noexcept;
+private:
+    CommandQueueDX&          m_command_queue;
+    uint64_t                 m_value = 0;
+    wrl::ComPtr<ID3D12Fence> m_cp_fence;
+    HANDLE                   m_event = nullptr;
+};
 
-    wrl::ComPtr<ID3D12CommandQueue>& GetNativeCommandQueue()     { return m_cp_command_queue; }
+class FrameFenceDX : public FenceDX
+{
+public:
+    FrameFenceDX(CommandQueueDX& command_queue, uint32_t frame);
 
-protected:
-    using D3D12CommandLists = std::vector<ID3D12CommandList*>;
-    static D3D12CommandLists GetNativeCommandLists(const Refs<CommandList>& command_list_refs);
+    uint32_t GetFrame() const noexcept { return m_frame; }
 
-    wrl::ComPtr<ID3D12CommandQueue> m_cp_command_queue;
+private:
+    const uint32_t m_frame = 0;
 };
 
 } // namespace Methane::Graphics

@@ -94,9 +94,7 @@ Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, De
 }
 
 RenderContextDX::RenderContextDX(const Platform::AppEnvironment& env, DeviceBase& device, const RenderContext::Settings& settings)
-    : ContextDX(device, Type::Render)
-    , RenderContextBase(device, settings)
-    , ContextBase(device, Type::Render)
+    : ContextDX<RenderContextBase>(device, settings)
     , m_platform_env(env)
 {
     ITT_FUNCTION_TASK();
@@ -115,16 +113,7 @@ void RenderContextDX::Release()
     m_sp_render_fence.reset();
     m_frame_fences.clear();
 
-    for (const Ref<Callback>& callback_ref : m_callbacks)
-    {
-        callback_ref.get().OnContextReleased();
-    }
-
-    ContextBase::Release();
-    RenderContextBase::Release();
-    ContextDX::Release();
-
-    m_resource_manager.Release();
+    ContextDX<RenderContextBase>::Release();
 }
 
 void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocation)
@@ -195,22 +184,14 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
 
     m_sp_render_fence = std::make_unique<FenceDX>(GetRenderCommandQueueDX());
 
-    ContextBase::Initialize(device, deferred_heap_allocation);
-    RenderContextBase::Initialize(device, deferred_heap_allocation);
-    ContextDX::Initialize(device, deferred_heap_allocation);
-
-    for (const Ref<Callback>& callback_ref : m_callbacks)
-    {
-        callback_ref.get().OnContextInitialized();
-    }
+    ContextDX<RenderContextBase>::Initialize(device, deferred_heap_allocation);
 }
 
 void RenderContextDX::SetName(const std::string& name)
 {
     ITT_FUNCTION_TASK();
 
-    RenderContextBase::SetName(name);
-    ContextDX::SetName(name);
+    ContextDX<RenderContextBase>::SetName(name);
 
     for (UniquePtr<FrameFenceDX>& sp_frame_fence : m_frame_fences)
     {
@@ -225,7 +206,7 @@ void RenderContextDX::WaitForGpu(WaitFor wait_for)
 {
     ITT_FUNCTION_TASK();
 
-    ContextDX::WaitForGpu(wait_for);
+    ContextDX<RenderContextBase>::WaitForGpu(wait_for);
 
     switch (wait_for)
     {
@@ -244,7 +225,7 @@ void RenderContextDX::WaitForGpu(WaitFor wait_for)
 
     }
 
-    ContextBase::OnGpuWaitComplete(wait_for);
+    ContextDX<RenderContextBase>::OnGpuWaitComplete(wait_for);
 }
 
 void RenderContextDX::Resize(const FrameSize& frame_size)
@@ -253,7 +234,7 @@ void RenderContextDX::Resize(const FrameSize& frame_size)
 
     WaitForGpu(WaitFor::RenderComplete);
 
-    RenderContextBase::Resize(frame_size);
+    ContextDX<RenderContextBase>::Resize(frame_size);
 
     // Resize the swap chain to the desired dimensions
     DXGI_SWAP_CHAIN_DESC1 desc = {};
@@ -268,7 +249,7 @@ void RenderContextDX::Present()
     ITT_FUNCTION_TASK();
     SCOPE_TIMER("RenderContextDX::Present");
 
-    RenderContextBase::Present();
+    ContextDX<RenderContextBase>::Present();
 
     // Preset frame to screen
     const uint32_t present_flags  = 0; // DXGI_PRESENT_DO_NOT_WAIT
@@ -300,18 +281,11 @@ CommandQueueDX& RenderContextDX::GetRenderCommandQueueDX()
     return static_cast<CommandQueueDX&>(GetRenderCommandQueue());
 }
 
-RenderContextDX::FrameFenceDX& RenderContextDX::GetCurrentFrameFence()
+FrameFenceDX& RenderContextDX::GetCurrentFrameFence()
 {
     const UniquePtr<FrameFenceDX>& sp_current_fence = GetCurrentFrameFencePtr();
     assert(!!sp_current_fence);
     return *sp_current_fence;
-}
-
-RenderContextDX::FrameFenceDX::FrameFenceDX(CommandQueueDX& command_queue, uint32_t frame)
-    : ContextDX::FenceDX(command_queue)
-    , m_frame(frame)
-{
-    ITT_FUNCTION_TASK();
 }
 
 } // namespace Methane::Graphics

@@ -22,11 +22,11 @@ DirectX 12 implementation of the command queue interface.
 ******************************************************************************/
 
 #include "CommandQueueDX.h"
-#include "ContextDX.h"
 #include "DeviceDX.h"
 #include "RenderCommandListDX.h"
 #include "ParallelRenderCommandListDX.h"
 
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
@@ -104,10 +104,10 @@ CommandQueueDX::D3D12CommandLists CommandQueueDX::GetNativeCommandLists(const Re
     return dx_command_lists;
 }
 
-ContextDX& CommandQueueDX::GetContextDX()
+IContextDX& CommandQueueDX::GetContextDX() noexcept
 {
     ITT_FUNCTION_TASK();
-    return dynamic_cast<class ContextDX&>(m_context);
+    return static_cast<IContextDX&>(m_context);
 }
 
 } // namespace Methane::Graphics

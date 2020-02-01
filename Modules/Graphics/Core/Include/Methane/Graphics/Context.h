@@ -67,8 +67,8 @@ struct Context : virtual Object
     virtual void AddCallback(Callback& callback) = 0;
     virtual void RemoveCallback(Callback& callback) = 0;
 
-    virtual Device&          GetDevice() = 0;
-    virtual CommandQueue&    GetUploadCommandQueue() = 0;
+    virtual Device&            GetDevice() = 0;
+    virtual CommandQueue&      GetUploadCommandQueue() = 0;
     virtual RenderCommandList& GetUploadCommandList() = 0;
 };
 

@@ -37,7 +37,7 @@ namespace Methane::Graphics
 
 namespace wrl = Microsoft::WRL;
 
-class ContextDX;
+struct IContextDX;
 class ProgramDX;
 
 class ShaderDX final : public ShaderBase
@@ -52,7 +52,7 @@ public:
     std::vector<D3D12_INPUT_ELEMENT_DESC> GetNativeProgramInputLayout(const ProgramDX& program) const;
 
 protected:
-    ContextDX& GetContextDX();
+    IContextDX& GetContextDX() noexcept;
 
     wrl::ComPtr<ID3DBlob>               m_cp_byte_code;
     wrl::ComPtr<ID3D12ShaderReflection> m_cp_reflection;

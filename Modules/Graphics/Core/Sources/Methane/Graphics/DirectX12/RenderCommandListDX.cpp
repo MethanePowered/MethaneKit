@@ -26,13 +26,11 @@ DirectX 12 implementation of the render command list interface.
 #include "RenderStateDX.h"
 #include "RenderPassDX.h"
 #include "CommandQueueDX.h"
-#include "ContextDX.h"
 #include "DeviceDX.h"
 #include "ProgramDX.h"
-#include "ResourceDX.h"
-#include "TextureDX.h"
 #include "BufferDX.h"
 
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 

@@ -34,7 +34,7 @@ namespace Methane::Graphics
 {
 
 class RenderContextBase
-    : public virtual ContextBase
+    : public ContextBase
     , public RenderContext
 {
 public:

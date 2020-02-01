@@ -16,110 +16,27 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/ContextDX.cpp
-DirectX 12 implementation of the context interface.
+FILE: Methane/Graphics/DirectX12/FenceDX.cpp
+DirectX 12 fence wrapper.
 
 ******************************************************************************/
 
-#include "ContextDX.h"
-#include "DeviceDX.h"
+#include "FenceDX.h"
 #include "CommandQueueDX.h"
+#include "DeviceDX.h"
 
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/ScopeTimer.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
-#ifdef COMMAND_EXECUTION_LOGGING
-#include <Methane/Platform/Utils.h>
-#endif
-
 #include <nowide/convert.hpp>
-#include <cassert>
 
 namespace Methane::Graphics
 {
 
-ContextDX::ContextDX(DeviceBase& device, Type type)
-    : ContextBase(device, type)
-{
-    ITT_FUNCTION_TASK();
-}
 
-ContextDX::~ContextDX()
-{
-    ITT_FUNCTION_TASK();
-}
-
-void ContextDX::Release()
-{
-    ITT_FUNCTION_TASK();
-
-    m_sp_upload_fence.reset();
-
-    if (m_sp_device)
-    {
-        static_cast<DeviceDX&>(*m_sp_device).ReleaseNativeDevice();
-        m_sp_device.reset();
-    }
-
-    ContextBase::Release();
-
-    static_cast<SystemDX&>(System::Get()).ReportLiveObjects();
-}
-
-void ContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocation)
-{
-    ITT_FUNCTION_TASK();
-
-    ContextBase::Initialize(device, deferred_heap_allocation);
-
-    m_sp_upload_fence = std::make_unique<FenceDX>(GetUploadCommandQueueDX());
-}
-
-void ContextDX::OnCommandQueueCompleted(CommandQueue& /*cmd_queue*/, uint32_t /*frame_index*/)
-{
-    ITT_FUNCTION_TASK();
-}
-
-void ContextDX::SetName(const std::string& name)
-{
-    ITT_FUNCTION_TASK();
-    ContextBase::SetName(name);
-
-    GetDevice().SetName(name + " Device");
-
-    m_sp_upload_fence->SetName(name + " Upload Fence");
-}
-
-const DeviceDX& ContextDX::GetDeviceDX() const
-{
-    ITT_FUNCTION_TASK();
-    return static_cast<const DeviceDX&>(GetDeviceBase());
-}
-
-void ContextDX::WaitForGpu(WaitFor wait_for)
-{
-    ITT_FUNCTION_TASK();
-
-    ContextBase::WaitForGpu(wait_for);
-
-    if (wait_for == WaitFor::ResourcesUploaded)
-    {
-        SCOPE_TIMER("ContextDX::WaitForGpu::ResourcesUploaded");
-        assert(!!m_sp_upload_fence);
-        m_sp_upload_fence->Flush();
-    }
-
-    ContextBase::OnGpuWaitComplete(wait_for);
-}
-
-CommandQueueDX& ContextDX::GetUploadCommandQueueDX()
-{
-    ITT_FUNCTION_TASK();
-    return static_cast<CommandQueueDX&>(GetUploadCommandQueue());
-}
-
-ContextDX::FenceDX::FenceDX(CommandQueueDX& command_queue)
+FenceDX::FenceDX(CommandQueueDX& command_queue)
     : m_command_queue(command_queue)
     , m_event(CreateEvent(nullptr, FALSE, FALSE, nullptr))
 {
@@ -135,13 +52,13 @@ ContextDX::FenceDX::FenceDX(CommandQueueDX& command_queue)
     ThrowIfFailed(cp_device->CreateFence(m_value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_cp_fence)));
 }
 
-ContextDX::FenceDX::~FenceDX()
+FenceDX::~FenceDX()
 {
     ITT_FUNCTION_TASK();
     SafeCloseHandle(m_event);
 }
 
-void ContextDX::FenceDX::Signal()
+void FenceDX::Signal()
 {
     ITT_FUNCTION_TASK();
     wrl::ComPtr<ID3D12CommandQueue>& cp_command_queue = m_command_queue.GetNativeCommandQueue();
@@ -157,7 +74,7 @@ void ContextDX::FenceDX::Signal()
     ThrowIfFailed(cp_command_queue->Signal(m_cp_fence.Get(), m_value));
 }
 
-void ContextDX::FenceDX::Wait()
+void FenceDX::Wait()
 {
     ITT_FUNCTION_TASK();
     assert(!!m_cp_fence);
@@ -174,14 +91,14 @@ void ContextDX::FenceDX::Wait()
     }
 }
 
-void ContextDX::FenceDX::Flush()
+void FenceDX::Flush()
 {
     ITT_FUNCTION_TASK();
     Signal();
     Wait();
 }
 
-void ContextDX::FenceDX::SetName(const std::string& name) noexcept
+void FenceDX::SetName(const std::string& name) noexcept
 {
     ITT_FUNCTION_TASK();
     if (GetName() == name)
@@ -191,6 +108,14 @@ void ContextDX::FenceDX::SetName(const std::string& name) noexcept
 
     assert(!!m_cp_fence);
     m_cp_fence->SetName(nowide::widen(name).c_str());
+}
+
+
+FrameFenceDX::FrameFenceDX(CommandQueueDX& command_queue, uint32_t frame)
+    : FenceDX(command_queue)
+    , m_frame(frame)
+{
+    ITT_FUNCTION_TASK();
 }
 
 } // namespace Methane::Graphics

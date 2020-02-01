@@ -22,10 +22,10 @@ DirectX 12 implementation of the buffer interface.
 ******************************************************************************/
 
 #include "BufferDX.h"
-#include "ContextDX.h"
 #include "DeviceDX.h"
 #include "TypesDX.h"
 
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics

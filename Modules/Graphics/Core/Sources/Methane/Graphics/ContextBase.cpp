@@ -145,8 +145,15 @@ void ContextBase::Release()
     m_sp_upload_cmd_queue.reset();
     m_sp_upload_cmd_list.reset();
 
+    for (const Ref<Callback>& callback_ref : m_callbacks)
+    {
+        callback_ref.get().OnContextReleased();
+    }
+
     m_resource_manager_init_settings.default_heap_sizes         = m_resource_manager.GetDescriptorHeapSizes(true, false);
     m_resource_manager_init_settings.shader_visible_heap_sizes  = m_resource_manager.GetDescriptorHeapSizes(true, true);
+
+    m_resource_manager.Release();
 }
 
 void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation)
@@ -171,7 +178,13 @@ void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation)
         m_resource_manager_init_settings.default_heap_sizes        = {};
         m_resource_manager_init_settings.shader_visible_heap_sizes = {};
     }
+
     m_resource_manager.Initialize(m_resource_manager_init_settings);
+
+    for (const Ref<Callback>& callback_ref : m_callbacks)
+    {
+        callback_ref.get().OnContextInitialized();
+    }
 }
 
 CommandQueue& ContextBase::GetUploadCommandQueue()

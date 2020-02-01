@@ -11,8 +11,10 @@ if (WIN32)
         ${SOURCES_GRAPHICS_DIR}/TypesDX.cpp
         ${SOURCES_GRAPHICS_DIR}/DeviceDX.h
         ${SOURCES_GRAPHICS_DIR}/DeviceDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/FenceDX.h
+        ${SOURCES_GRAPHICS_DIR}/FenceDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ContextDX.h
-        ${SOURCES_GRAPHICS_DIR}/ContextDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/ContextDX.hpp
         ${SOURCES_GRAPHICS_DIR}/ShaderDX.h
         ${SOURCES_GRAPHICS_DIR}/ShaderDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ProgramDX.h
@@ -182,6 +184,7 @@ set(SOURCES ${PLATFORM_SOURCES}
 
     # Native alias headers
     ${SOURCES_DIR}/Native/ContextNT.h
+    ${SOURCES_DIR}/Native/RenderContextNT.h
     ${SOURCES_DIR}/Native/ShaderNT.h
     ${SOURCES_DIR}/Native/ProgramNT.h
     ${SOURCES_DIR}/Native/RenderStateNT.h

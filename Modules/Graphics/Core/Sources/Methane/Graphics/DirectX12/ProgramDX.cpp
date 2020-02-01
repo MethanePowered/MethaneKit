@@ -21,13 +21,13 @@ DirectX 12 implementation of the program interface.
 
 ******************************************************************************/
 
-#include "ContextDX.h"
 #include "DeviceDX.h"
 #include "ProgramDX.h"
 #include "ProgramBindingsDX.h"
 #include "ShaderDX.h"
 #include "RenderCommandListDX.h"
 
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
@@ -199,16 +199,16 @@ void ProgramDX::InitRootSignature()
     ThrowIfFailed(GetContextDX().GetDeviceDX().GetNativeDevice()->CreateRootSignature(0, root_signature_blob->GetBufferPointer(), root_signature_blob->GetBufferSize(), IID_PPV_ARGS(&m_cp_root_signature)));
 }
 
-ContextDX& ProgramDX::GetContextDX() noexcept
+IContextDX& ProgramDX::GetContextDX() noexcept
 {
     ITT_FUNCTION_TASK();
-    return dynamic_cast<ContextDX&>(m_context);
+    return static_cast<IContextDX&>(m_context);
 }
 
-const ContextDX& ProgramDX::GetContextDX() const noexcept
+const IContextDX& ProgramDX::GetContextDX() const noexcept
 {
     ITT_FUNCTION_TASK();
-    return dynamic_cast<const ContextDX&>(m_context);
+    return static_cast<const IContextDX&>(m_context);
 }
 
 ShaderDX& ProgramDX::GetVertexShaderDX() noexcept

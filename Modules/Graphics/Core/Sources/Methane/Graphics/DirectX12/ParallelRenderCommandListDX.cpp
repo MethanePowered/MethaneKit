@@ -25,9 +25,9 @@ DirectX 12 implementation of the parallel render command list interface.
 #include "RenderStateDX.h"
 #include "RenderPassDX.h"
 #include "CommandQueueDX.h"
-#include "ContextDX.h"
 #include "DeviceDX.h"
 
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 
 #include <d3dx12.h>

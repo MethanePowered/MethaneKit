@@ -23,7 +23,7 @@ DirectX 12 implementation of the render context interface.
 
 #pragma once
 
-#include "ContextDX.h"
+#include "ContextDX.hpp"
 
 #include <Methane/Graphics/RenderContextBase.h>
 
@@ -33,12 +33,11 @@ DirectX 12 implementation of the render context interface.
 namespace Methane::Graphics
 {
 
-class RenderContextDX final
-    : public ContextDX
-    , public RenderContextBase
+class RenderContextDX final : public ContextDX<RenderContextBase>
 {
 public:
-    RenderContextDX(const Platform::AppEnvironment& env, DeviceBase& device, const Settings& settings);
+    RenderContextDX(const Platform::AppEnvironment& env, DeviceBase& device, const RenderContext::Settings& settings);
+
     ~RenderContextDX() override;
 
     // RenderContext interface
@@ -61,17 +60,6 @@ public:
     const wrl::ComPtr<IDXGISwapChain3>& GetNativeSwapChain() const { return m_cp_swap_chain; }
 
 protected:
-    class FrameFenceDX : public FenceDX
-    {
-    public:
-        FrameFenceDX(CommandQueueDX& command_queue, uint32_t frame);
-
-        uint32_t GetFrame() const noexcept { return m_frame; }
-
-    private:
-        const uint32_t m_frame = 0;
-    };
-
     FrameFenceDX&                         GetCurrentFrameFence();
     inline const UniquePtr<FrameFenceDX>& GetCurrentFrameFencePtr()       { return m_frame_fences[m_frame_buffer_index]; }
     inline uint32_t                       GetPresentVSyncInterval() const { return m_settings.vsync_enabled ? 1 : 0; }

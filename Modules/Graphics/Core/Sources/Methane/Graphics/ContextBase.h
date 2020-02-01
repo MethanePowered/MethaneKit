@@ -27,6 +27,7 @@ Base implementation of the context interface.
 #include "ResourceManager.h"
 
 #include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/Native/ContextNT.h>
 
 #include <memory>
 
@@ -40,6 +41,7 @@ struct RenderCommandList;
 class ContextBase
     : public ObjectBase
     , public virtual Context
+    , public IContextNT
 {
 public:
     ContextBase(DeviceBase& device, Type type);

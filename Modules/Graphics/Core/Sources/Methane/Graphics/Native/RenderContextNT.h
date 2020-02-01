@@ -16,23 +16,42 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/ContextDX.h
-DirectX 12 context accessor interface for template class ContextDX<ContextBaseT>
+FILE: Methane/Graphics/Native/ContextNT.h
+Native implementation alias of the context interface.
 
 ******************************************************************************/
 
 #pragma once
 
+#if defined _WIN32
+
+#include <Methane/Graphics/DirectX12/RenderContextDX.h>
+
+#elif defined __APPLE__
+
+#include <Methane/Graphics/Metal/RenderContextMT.hh>
+
+#elif defined __linux__
+
+#include <Methane/Graphics/Vulkan/RenderContextVK.h>
+
+#endif
+
 namespace Methane::Graphics
 {
 
-class CommandQueueDX;
-class DeviceDX;
+#if defined _WIN32
 
-struct IContextDX
-{
-    virtual const DeviceDX& GetDeviceDX() const = 0;
-    virtual CommandQueueDX& GetUploadCommandQueueDX() = 0;
-};
+using RenderContextNT = RenderContextDX;
+
+#elif defined __APPLE__
+
+using RenderContextNT = RenderContextMT;
+
+#elif defined __linux__
+
+using RenderContextNT = RenderContextVK;
+
+#endif
 
 } // namespace Methane::Graphics

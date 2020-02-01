@@ -22,9 +22,9 @@ DirectX 12 implementation of the descriptor heap wrapper.
 ******************************************************************************/
 
 #include "DescriptorHeapDX.h"
-#include "ContextDX.h"
 #include "DeviceDX.h"
 
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
@@ -116,10 +116,10 @@ void DescriptorHeapDX::Allocate()
     DescriptorHeap::Allocate();
 }
 
-ContextDX& DescriptorHeapDX::GetContextDX()
+IContextDX& DescriptorHeapDX::GetContextDX() noexcept
 {
     ITT_FUNCTION_TASK();
-    return dynamic_cast<class ContextDX&>(m_context);
+    return static_cast<IContextDX&>(m_context);
 }
 
 } // namespace Methane::Graphics

@@ -35,7 +35,6 @@ DirectX 12 implementation of the program bindings interface.
 namespace Methane::Graphics
 {
 
-class ContextDX;
 class ResourceDX;
 
 namespace wrl = Microsoft::WRL;

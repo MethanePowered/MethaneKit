@@ -35,7 +35,7 @@ DirectX 12 implementation of the program interface.
 namespace Methane::Graphics
 {
 
-class ContextDX;
+struct IContextDX;
 class ResourceDX;
 
 namespace wrl = Microsoft::WRL;
@@ -54,8 +54,8 @@ public:
     const wrl::ComPtr<ID3D12RootSignature>& GetNativeRootSignature() const noexcept { return m_cp_root_signature; }
     D3D12_INPUT_LAYOUT_DESC                 GetNativeInputLayoutDesc() const noexcept;
 
-    ContextDX& GetContextDX() noexcept;
-    const ContextDX& GetContextDX() const noexcept;
+    IContextDX& GetContextDX() noexcept;
+    const IContextDX& GetContextDX() const noexcept;
 
 protected:
     void InitRootSignature();
