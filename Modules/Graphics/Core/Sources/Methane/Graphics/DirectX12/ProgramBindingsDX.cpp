@@ -101,7 +101,7 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
     const D3D12_DESCRIPTOR_HEAP_TYPE native_heap_type = p_dx_descriptor_heap
                                                       ? p_dx_descriptor_heap->GetNativeDescriptorHeapType()
                                                       : D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    const wrl::ComPtr<ID3D12Device>& cp_native_device = static_cast<class ContextDX&>(GetContext()).GetDeviceDX().GetNativeDevice();
+    const wrl::ComPtr<ID3D12Device>& cp_native_device = dynamic_cast<class ContextDX&>(GetContext()).GetDeviceDX().GetNativeDevice();
     assert(!!cp_native_device);
 
     uint32_t resource_index = 0;
@@ -220,7 +220,6 @@ void ProgramBindingsDX::Apply(CommandList& command_list, ApplyBehavior::Mask app
 
     RenderCommandListDX&             render_command_list_dx = dynamic_cast<RenderCommandListDX&>(command_list);
     wrl::ComPtr<ID3D12GraphicsCommandList>& cp_command_list = render_command_list_dx.GetNativeCommandList();
-    const CommandListBase::CommandState&    command_state   = render_command_list_dx.GetCommandState();
     assert(!!cp_command_list);
 
     ResourceBase::Barriers resource_transition_barriers;
@@ -229,8 +228,8 @@ void ProgramBindingsDX::Apply(CommandList& command_list, ApplyBehavior::Mask app
 
     ForEachArgumentBinding([&](const Program::Argument& argument, ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation)
     {
-        if ((apply_behavior & ApplyBehavior::ConstantOnce || apply_behavior & ApplyBehavior::ChangesOnly) &&
-            argument_binding.IsAlreadyApplied(*m_sp_program, argument, command_state, apply_behavior & ApplyBehavior::ChangesOnly))
+        if ((apply_behavior & ApplyBehavior::ConstantOnce || apply_behavior & ApplyBehavior::ChangesOnly) && render_command_list_dx.GetProgramBindings() &&
+            argument_binding.IsAlreadyApplied(*m_sp_program, argument, *render_command_list_dx.GetProgramBindings(), apply_behavior & ApplyBehavior::ChangesOnly))
             return;
 
         const ArgumentBindingDX::SettingsDX binding_settings = argument_binding.GetSettingsDX();

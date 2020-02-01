@@ -119,7 +119,7 @@ void DescriptorHeapDX::Allocate()
 ContextDX& DescriptorHeapDX::GetContextDX()
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextDX&>(m_context);
+    return dynamic_cast<class ContextDX&>(m_context);
 }
 
 } // namespace Methane::Graphics

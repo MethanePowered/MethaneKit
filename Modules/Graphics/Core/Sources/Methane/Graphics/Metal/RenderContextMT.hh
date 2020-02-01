@@ -53,16 +53,16 @@ public:
     float GetContentScalingFactor() const override;
     Platform::AppView GetAppView() const override { return { m_app_view }; }
 
-    id<CAMetalDrawable>     GetNativeDrawable()       { return m_app_view.currentDrawable; }
-    CommandQueueMT&         GetRenderCommandQueueMT();
+    // ContextBase overrides
+    void Initialize(DeviceBase& device, bool deferred_heap_allocation) override;
+    void Release() override;
+
+    id<CAMetalDrawable> GetNativeDrawable()       { return m_app_view.currentDrawable; }
+    CommandQueueMT&     GetRenderCommandQueueMT();
 
 protected:
-    // ContextBase overrides
-    void Release() override;
-    void Initialize(Device& device, bool deferred_heap_allocation) override;
-
-    AppViewMT*              m_app_view;
-    id<MTLCaptureScope>     m_frame_capture_scope;
+    AppViewMT*          m_app_view;
+    id<MTLCaptureScope> m_frame_capture_scope;
 };
 
 } // namespace Methane::Graphics

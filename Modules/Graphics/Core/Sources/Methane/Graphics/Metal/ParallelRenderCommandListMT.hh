@@ -48,7 +48,6 @@ public:
     void Commit(bool present_drawable) override;
 
     // CommandListBase interface
-    void SetResourceBarriers(const ResourceBase::Barriers&) override { }
     void Execute(uint32_t frame_index) override;
 
     // Object interface

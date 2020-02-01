@@ -34,8 +34,8 @@ namespace Methane::Graphics
 {
 
 class DeviceBase;
-class CommandQueue;
-class RenderCommandList;
+struct CommandQueue;
+struct RenderCommandList;
 
 class ContextBase
     : public ObjectBase
@@ -57,6 +57,8 @@ public:
     Device&               GetDevice() override;
 
     // ContextBase interface
+    virtual void Initialize(DeviceBase& device, bool deferred_heap_allocation);
+    virtual void Release();
     virtual void OnCommandQueueCompleted(CommandQueue& cmd_queue, uint32_t frame_index) = 0;
 
     // Object interface
@@ -70,9 +72,8 @@ public:
 protected:
     void UploadResources();
 
+    // ContextBase interface
     virtual void OnGpuWaitComplete(WaitFor wait_for);
-    virtual void Release();
-    virtual void Initialize(Device& device, bool deferred_heap_allocation);
 
     const Type                  m_type;
     Ptr<DeviceBase>             m_sp_device;

@@ -48,12 +48,13 @@ public:
     const Ptrs<RenderCommandList>& GetParallelCommandLists() const override { return m_parallel_command_lists; }
 
     // CommandListBase interface
+    void SetResourceBarriers(const ResourceBase::Barriers&) override { throw std::logic_error("Can not set resource barriers on parallel render command list."); }
     void Execute(uint32_t frame_index) override;
     void Complete(uint32_t frame_index) override;
 
     // CommandList interface
-    void PushDebugGroup(const std::string& name) override   { throw std::logic_error("Not available for parallel render command list."); }
-    void PopDebugGroup() override                           { throw std::logic_error("Not available for parallel render command list."); }
+    void PushDebugGroup(const std::string& name) override   { throw std::logic_error("Can no use debug groups on parallel render command list."); }
+    void PopDebugGroup() override                           { throw std::logic_error("Can no use debug groups on parallel render command list."); }
     void Commit(bool present_drawable) override;
 
     // Object interface

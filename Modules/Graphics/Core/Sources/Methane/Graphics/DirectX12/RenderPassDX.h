@@ -38,7 +38,7 @@ class RenderCommandListDX;
 class RenderPassDX : public RenderPassBase
 {
 public:
-    RenderPassDX(ContextBase& context, const Settings& settings);
+    RenderPassDX(RenderContextBase& context, const Settings& settings);
 
     // RenderPass interface
     void Update(const Settings& settings) override;

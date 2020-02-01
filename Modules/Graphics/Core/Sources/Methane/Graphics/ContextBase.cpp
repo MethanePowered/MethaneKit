@@ -89,7 +89,7 @@ void ContextBase::Reset(Device& device)
 
     WaitForGpu(WaitFor::RenderComplete);
     Release();
-    Initialize(device, false);
+    Initialize(static_cast<DeviceBase&>(device), false);
 }
 
 void ContextBase::Reset()
@@ -145,17 +145,11 @@ void ContextBase::Release()
     m_sp_upload_cmd_queue.reset();
     m_sp_upload_cmd_list.reset();
 
-    for (const Ref<Callback>& callback_ref : m_callbacks)
-    {
-        callback_ref.get().OnContextReleased();
-    }
-
     m_resource_manager_init_settings.default_heap_sizes         = m_resource_manager.GetDescriptorHeapSizes(true, false);
     m_resource_manager_init_settings.shader_visible_heap_sizes  = m_resource_manager.GetDescriptorHeapSizes(true, true);
-    m_resource_manager.Release();
 }
 
-void ContextBase::Initialize(Device& device, bool deferred_heap_allocation)
+void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation)
 {
     ITT_FUNCTION_TASK();
 
@@ -163,7 +157,7 @@ void ContextBase::Initialize(Device& device, bool deferred_heap_allocation)
     Platform::PrintToDebugOutput("INITIALIZE context \"" + GetName() + "\"");
 #endif
 
-    m_sp_device = static_cast<DeviceBase&>(device).GetPtr();
+    m_sp_device = device.GetPtr();
 
     const std::string& context_name = GetName();
     if (!context_name.empty())
@@ -178,11 +172,6 @@ void ContextBase::Initialize(Device& device, bool deferred_heap_allocation)
         m_resource_manager_init_settings.shader_visible_heap_sizes = {};
     }
     m_resource_manager.Initialize(m_resource_manager_init_settings);
-
-    for (const Ref<Callback>& callback_ref : m_callbacks)
-    {
-        callback_ref.get().OnContextInitialized();
-    }
 }
 
 CommandQueue& ContextBase::GetUploadCommandQueue()

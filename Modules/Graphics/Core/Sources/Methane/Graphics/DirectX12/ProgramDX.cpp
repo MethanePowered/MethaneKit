@@ -98,7 +98,7 @@ static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_typ
 Ptr<Program> Program::Create(Context& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ProgramDX>(static_cast<ContextBase&>(context), settings);
+    return std::make_shared<ProgramDX>(dynamic_cast<ContextBase&>(context), settings);
 }
 
 ProgramDX::ProgramDX(ContextBase& context, const Settings& settings)
@@ -202,13 +202,13 @@ void ProgramDX::InitRootSignature()
 ContextDX& ProgramDX::GetContextDX() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<ContextDX&>(m_context);
+    return dynamic_cast<ContextDX&>(m_context);
 }
 
 const ContextDX& ProgramDX::GetContextDX() const noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<const ContextDX&>(m_context);
+    return dynamic_cast<const ContextDX&>(m_context);
 }
 
 ShaderDX& ProgramDX::GetVertexShaderDX() noexcept

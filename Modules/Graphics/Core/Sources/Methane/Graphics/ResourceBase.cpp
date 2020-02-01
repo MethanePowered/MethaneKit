@@ -182,7 +182,7 @@ void ResourceBase::InitializeDefaultDescriptors()
         auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
         if (descriptor_by_usage_it == m_descriptor_by_usage.end())
         {
-            // Create deafult resource descriptor by usage
+            // Create default resource descriptor by usage
             const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByUsage(usage);
             Descriptor descriptor(m_context.GetResourceManager().GetDescriptorHeap(heap_type));
             descriptor.index = descriptor.heap.AddResource(*this);

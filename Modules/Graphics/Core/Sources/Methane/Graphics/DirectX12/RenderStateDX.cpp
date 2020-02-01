@@ -22,7 +22,7 @@ DirectX 12 implementation of the render state interface.
 ******************************************************************************/
 
 #include "RenderStateDX.h"
-#include "ContextDX.h"
+#include "RenderContextDX.h"
 #include "DeviceDX.h"
 #include "ProgramDX.h"
 #include "ShaderDX.h"
@@ -187,13 +187,13 @@ static D3D12_DEPTH_STENCILOP_DESC ConvertStencilFaceOperationsToD3D12(const Rend
     return stencil_desc;
 }
 
-Ptr<RenderState> RenderState::Create(Context& context, const RenderState::Settings& state_settings)
+Ptr<RenderState> RenderState::Create(RenderContext& context, const RenderState::Settings& state_settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<RenderStateDX>(static_cast<ContextBase&>(context), state_settings);
+    return std::make_shared<RenderStateDX>(dynamic_cast<RenderContextBase&>(context), state_settings);
 }
 
-RenderStateDX::RenderStateDX(ContextBase& context, const Settings& settings)
+RenderStateDX::RenderStateDX(RenderContextBase& context, const Settings& settings)
     : RenderStateBase(context, settings)
 {
     ITT_FUNCTION_TASK();
@@ -351,7 +351,7 @@ wrl::ComPtr<ID3D12PipelineState>& RenderStateDX::GetNativePipelineState()
     ITT_FUNCTION_TASK();
     if (!m_cp_pipeline_state)
     {
-        ThrowIfFailed(GetContextDX().GetDeviceDX().GetNativeDevice()->CreateGraphicsPipelineState(&m_pipeline_state_desc, IID_PPV_ARGS(&m_cp_pipeline_state)));
+        ThrowIfFailed(GetRenderContextDX().GetDeviceDX().GetNativeDevice()->CreateGraphicsPipelineState(&m_pipeline_state_desc, IID_PPV_ARGS(&m_cp_pipeline_state)));
         SetName(GetName());
     }
     return m_cp_pipeline_state;
@@ -364,10 +364,10 @@ ProgramDX& RenderStateDX::GetProgramDX()
     return static_cast<ProgramDX&>(*m_settings.sp_program);
 }
 
-ContextDX& RenderStateDX::GetContextDX()
+RenderContextDX& RenderStateDX::GetRenderContextDX()
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextDX&>(m_context);
+    return static_cast<class RenderContextDX&>(m_context);
 }
 
 } // namespace Methane::Graphics

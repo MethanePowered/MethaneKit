@@ -80,14 +80,30 @@ void RenderContextMT::Release()
     
     m_app_view.redrawing = NO;
 
+    for (const Ref<Callback>& callback_ref : m_callbacks)
+    {
+        callback_ref.get().OnContextReleased();
+    }
+
+    ContextBase::Release();
+    RenderContextBase::Release();
     ContextMT::Release();
+
+    m_resource_manager.Release();
 }
 
-void RenderContextMT::Initialize(Device& device, bool deferred_heap_allocation)
+void RenderContextMT::Initialize(DeviceBase& device, bool deferred_heap_allocation)
 {
     ITT_FUNCTION_TASK();
 
+    ContextBase::Initialize(device, deferred_heap_allocation);
+    RenderContextBase::Initialize(device, deferred_heap_allocation);
     ContextMT::Initialize(device, deferred_heap_allocation);
+
+    for (const Ref<Callback>& callback_ref : m_callbacks)
+    {
+        callback_ref.get().OnContextInitialized();
+    }
     
     m_app_view.redrawing = YES;
 }

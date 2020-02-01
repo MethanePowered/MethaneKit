@@ -188,7 +188,7 @@ static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepTyp
 Ptr<Shader> Shader::Create(Type type, Context& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ShaderDX>(type, static_cast<ContextBase&>(context), settings);
+    return std::make_shared<ShaderDX>(type, dynamic_cast<ContextBase&>(context), settings);
 }
 
 ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
@@ -386,7 +386,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
 ContextDX& ShaderDX::GetContextDX()
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextDX&>(m_context);
+    return dynamic_cast<class ContextDX&>(m_context);
 }
 
 } // namespace Methane::Graphics

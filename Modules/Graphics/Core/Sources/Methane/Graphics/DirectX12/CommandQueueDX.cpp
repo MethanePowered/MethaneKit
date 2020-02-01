@@ -40,7 +40,7 @@ namespace Methane::Graphics
 Ptr<CommandQueue> CommandQueue::Create(Context& context)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<CommandQueueDX>(static_cast<ContextBase&>(context));
+    return std::make_shared<CommandQueueDX>(dynamic_cast<ContextBase&>(context));
 }
 
 CommandQueueDX::CommandQueueDX(ContextBase& context)
@@ -107,7 +107,7 @@ CommandQueueDX::D3D12CommandLists CommandQueueDX::GetNativeCommandLists(const Re
 ContextDX& CommandQueueDX::GetContextDX()
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextDX&>(m_context);
+    return dynamic_cast<class ContextDX&>(m_context);
 }
 
 } // namespace Methane::Graphics

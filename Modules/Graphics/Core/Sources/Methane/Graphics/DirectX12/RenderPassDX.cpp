@@ -28,7 +28,7 @@ DirectX 12 implementation of the render pass interface.
 #include "TypesDX.h"
 
 #include <Methane/Instrumentation.h>
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/Graphics/TextureBase.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
@@ -188,13 +188,13 @@ static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(RenderPass::Access::Va
     return DescriptorHeap::Type::Undefined;
 }
 
-Ptr<RenderPass> RenderPass::Create(Context& context, const Settings& settings)
+Ptr<RenderPass> RenderPass::Create(RenderContext& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<RenderPassDX>(static_cast<ContextBase&>(context), settings);
+    return std::make_shared<RenderPassDX>(dynamic_cast<RenderContextBase&>(context), settings);
 }
 
-RenderPassDX::RenderPassDX(ContextBase& context, const Settings& settings)
+RenderPassDX::RenderPassDX(RenderContextBase& context, const Settings& settings)
     : RenderPassBase(context, settings)
 {
     ITT_FUNCTION_TASK();

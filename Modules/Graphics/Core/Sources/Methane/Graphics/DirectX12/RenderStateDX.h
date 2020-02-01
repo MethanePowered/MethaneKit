@@ -34,15 +34,14 @@ namespace Methane::Graphics
 
 namespace wrl = Microsoft::WRL;
 
-class ContextBase;
 class RenderCommandListBase;
-class ContextDX;
+class RenderContextDX;
 class ProgramDX;
 
 class RenderStateDX final : public RenderStateBase
 {
 public:
-    RenderStateDX(ContextBase& context, const Settings& settings);
+    RenderStateDX(RenderContextBase& context, const Settings& settings);
 
     // RenderState interface
     void Reset(const Settings& settings) override;
@@ -59,7 +58,7 @@ public:
 
 protected:
     ProgramDX& GetProgramDX();
-    ContextDX& GetContextDX();
+    RenderContextDX& GetRenderContextDX();
 
     D3D12_GRAPHICS_PIPELINE_STATE_DESC m_pipeline_state_desc = { };
     wrl::ComPtr<ID3D12PipelineState>   m_cp_pipeline_state;

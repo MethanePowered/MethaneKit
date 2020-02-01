@@ -23,7 +23,7 @@ DirectX 12 implementation of the resource interface.
 
 #include "ResourceDX.h"
 #include "DescriptorHeapDX.h"
-#include "ContextDX.h"
+#include "RenderContextDX.h"
 #include "DeviceDX.h"
 
 #include <Methane/Instrumentation.h>
@@ -159,7 +159,7 @@ D3D12_RESOURCE_BARRIER ResourceDX::GetNativeResourceBarrier(const Barrier& resou
 ContextDX& ResourceDX::GetContextDX() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextDX&>(m_context);
+    return dynamic_cast<class ContextDX&>(m_context);
 }
 
 void ResourceDX::InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type, 
@@ -186,7 +186,7 @@ void ResourceDX::InitializeFrameBufferResource(uint32_t frame_buffer_index)
     assert(!m_cp_resource);
 
     ThrowIfFailed(
-        GetContextDX().GetNativeSwapChain()->GetBuffer(
+        static_cast<RenderContextDX&>(GetContextDX()).GetNativeSwapChain()->GetBuffer(
             frame_buffer_index,
             IID_PPV_ARGS(&m_cp_resource)
         )

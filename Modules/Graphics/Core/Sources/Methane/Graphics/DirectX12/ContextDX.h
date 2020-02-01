@@ -26,37 +26,30 @@ DirectX 12 implementation of the context interface.
 #include <Methane/Graphics/ContextBase.h>
 
 #include <wrl.h>
-#include <dxgi1_4.h>
 #include <d3d12.h>
 #include <d3dx12.h>
-
-#include <vector>
 
 namespace Methane::Graphics
 {
 
 namespace wrl = Microsoft::WRL;
 
-struct AppEnvironment;
 class CommandQueueDX;
 class DeviceBase;
 class DeviceDX;
 
-class ContextDX final : public ContextBase
+class ContextDX : public virtual ContextBase
 {
 public:
-    ContextDX(const Platform::AppEnvironment& env, DeviceBase& device, const Settings& settings);
+    ContextDX(DeviceBase& device, Type type);
     ~ContextDX() override;
 
     // Context interface
-    bool ReadyToRender() const override { return true; }
     void WaitForGpu(WaitFor wait_for) override;
-    void Resize(const FrameSize& frame_size) override;
-    void Present() override;
-    Platform::AppView GetAppView() const override { return { nullptr }; }
-    float GetContentScalingFactor() const override;
 
     // ContextBase interface
+    void Initialize(DeviceBase& device, bool deferred_heap_allocation) override;
+    void Release() override;
     void OnCommandQueueCompleted(CommandQueue& cmd_list, uint32_t frame_index) override;
 
     // Object interface
@@ -64,47 +57,29 @@ public:
 
     const DeviceDX& GetDeviceDX() const;
     CommandQueueDX& GetUploadCommandQueueDX();
-    CommandQueueDX& GetRenderCommandQueueDX();
-
-    const wrl::ComPtr<IDXGISwapChain3>& GetNativeSwapChain() const { return m_cp_swap_chain; }
 
 protected:
-    class FenceDX
+    class FenceDX : public ObjectBase
     {
     public:
-        FenceDX(CommandQueueDX& command_queue, uint32_t frame = static_cast<uint32_t>(-1));
+        FenceDX(CommandQueueDX& command_queue);
         ~FenceDX();
 
         void Signal();
         void Wait();
         void Flush();
 
-        uint32_t           GetFrame() const { return m_frame; }
-        const std::string& GetName() const { return m_name; }
-        void               SetName(const std::string& name);
+        // Object interface
+        void SetName(const std::string& name) noexcept override;
 
     private:
         CommandQueueDX&          m_command_queue;
-        const uint32_t           m_frame = 0;
         uint64_t                 m_value = 0;
         wrl::ComPtr<ID3D12Fence> m_cp_fence;
         HANDLE                   m_event = nullptr;
-        std::string              m_name;
     };
 
-    FenceDX&                         GetCurrentFrameFence();
-    inline const UniquePtr<FenceDX>& GetCurrentFrameFencePtr()       { return m_frame_fences[m_frame_buffer_index]; }
-    inline uint32_t                  GetPresentVSyncInterval() const { return m_settings.vsync_enabled ? 1 : 0; }
-
-    // ContextBase overrides
-    void Release() override;
-    void Initialize(Device& device, bool deferred_heap_allocation) override;
-
-    const Platform::AppEnvironment m_platform_env;
-    wrl::ComPtr<IDXGISwapChain3>   m_cp_swap_chain;
-    UniquePtrs<FenceDX>            m_frame_fences;
-    Ptr<FenceDX>                   m_sp_render_fence;
-    Ptr<FenceDX>                   m_sp_upload_fence;
+    Ptr<FenceDX> m_sp_upload_fence;
 };
 
 } // namespace Methane::Graphics

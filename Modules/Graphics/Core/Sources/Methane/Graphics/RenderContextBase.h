@@ -54,12 +54,14 @@ public:
     bool              SetFrameBuffersCount(uint32_t frame_buffers_count) override;
     bool              SetFullScreen(bool is_full_screen) override;
 
+    // ContextBase overrides
+    void Release() override;
+
 protected:
     void ResetWithSettings(const Settings& settings);
     void OnCpuPresentComplete();
 
     // ContextBase overrides
-    void Release() override;
     void OnGpuWaitComplete(WaitFor wait_for) override;
 
     Settings              m_settings;

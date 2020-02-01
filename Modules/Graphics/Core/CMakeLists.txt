@@ -19,6 +19,8 @@ if (WIN32)
         ${SOURCES_GRAPHICS_DIR}/ProgramDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ProgramBindingsDX.h
         ${SOURCES_GRAPHICS_DIR}/ProgramBindingsDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/RenderContextDX.h
+        ${SOURCES_GRAPHICS_DIR}/RenderContextDX.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderStateDX.h
         ${SOURCES_GRAPHICS_DIR}/RenderStateDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ResourceDX.h
@@ -78,7 +80,7 @@ elseif(APPLE)
         ${SOURCES_GRAPHICS_DIR}/ResourceMT.hh
         ${SOURCES_GRAPHICS_DIR}/ResourceMT.mm
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapMT.hh
-        ${SOURCES_GRAPHICS_DIR}/DescriptorHeapMT.mm  
+        ${SOURCES_GRAPHICS_DIR}/DescriptorHeapMT.mm
         ${SOURCES_GRAPHICS_DIR}/BufferMT.hh
         ${SOURCES_GRAPHICS_DIR}/BufferMT.mm
         ${SOURCES_GRAPHICS_DIR}/TextureMT.hh

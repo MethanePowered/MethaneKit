@@ -61,7 +61,7 @@ void ContextMT::Release()
     ContextBase::Release();
 }
 
-void ContextMT::Initialize(Device& device, bool deferred_heap_allocation)
+void ContextMT::Initialize(DeviceBase& device, bool deferred_heap_allocation)
 {
     ITT_FUNCTION_TASK();
     

@@ -59,19 +59,17 @@ public:
     ~ContextMT() override;
 
     // Context interface
-    void  WaitForGpu(WaitFor wait_for) override;
+    void WaitForGpu(WaitFor wait_for) override;
 
     // ContextBase interface
-    void  OnCommandQueueCompleted(CommandQueue& cmd_queue, uint32_t frame_index) override;
+    void Initialize(DeviceBase& device, bool deferred_heap_allocation) override;
+    void Release() override;
+    void OnCommandQueueCompleted(CommandQueue& cmd_queue, uint32_t frame_index) override;
 
     DeviceMT&               GetDeviceMT();
     const Ptr<LibraryMT>&   GetLibraryMT(const std::string& library_name = "");
 
 protected:
-    // ContextBase overrides
-    void Release() override;
-    void Initialize(Device& device, bool deferred_heap_allocation) override;
-
     using LibraryByName = std::map<std::string, Ptr<LibraryMT>>;
 
     const uint32_t       m_dispatch_count;
