@@ -24,6 +24,7 @@ Vulkan implementation of the shader interface.
 #include "ShaderVK.h"
 #include "ContextVK.h"
 
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
@@ -32,10 +33,10 @@ namespace Methane::Graphics
 Ptr<Shader> Shader::Create(Shader::Type shader_type, Context& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ShaderVK>(shader_type, static_cast<ContextVK&>(context), settings);
+    return std::make_shared<ShaderVK>(shader_type, dynamic_cast<ContextBase&>(context), settings);
 }
 
-ShaderVK::ShaderVK(Shader::Type shader_type, ContextVK& context, const Settings& settings)
+ShaderVK::ShaderVK(Shader::Type shader_type, ContextBase& context, const Settings& settings)
     : ShaderBase(shader_type, context, settings)
 {
     ITT_FUNCTION_TASK();
@@ -53,10 +54,10 @@ ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::Argume
     return argument_bindings;
 }
 
-ContextVK& ShaderVK::GetContextVK() noexcept
+IContextVK& ShaderVK::GetContextVK() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextVK&>(m_context);
+    return static_cast<IContextVK&>(m_context);
 }
 
 } // namespace Methane::Graphics

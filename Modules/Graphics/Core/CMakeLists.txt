@@ -120,13 +120,15 @@ else() # Linux
         ${SOURCES_GRAPHICS_DIR}/DeviceVK.h
         ${SOURCES_GRAPHICS_DIR}/DeviceVK.cpp
         ${SOURCES_GRAPHICS_DIR}/ContextVK.h
-        ${SOURCES_GRAPHICS_DIR}/ContextVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/ContextVK.hpp
         ${SOURCES_GRAPHICS_DIR}/ShaderVK.h
         ${SOURCES_GRAPHICS_DIR}/ShaderVK.cpp
         ${SOURCES_GRAPHICS_DIR}/ProgramVK.h
         ${SOURCES_GRAPHICS_DIR}/ProgramVK.cpp
         ${SOURCES_GRAPHICS_DIR}/ProgramBindingsVK.h
         ${SOURCES_GRAPHICS_DIR}/ProgramBindingsVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/RenderContextVK.h
+        ${SOURCES_GRAPHICS_DIR}/RenderContextVK.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderStateVK.h
         ${SOURCES_GRAPHICS_DIR}/RenderStateVK.cpp
         ${SOURCES_GRAPHICS_DIR}/ResourceVK.h

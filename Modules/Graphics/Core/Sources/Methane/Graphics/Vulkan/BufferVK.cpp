@@ -22,8 +22,8 @@ Vulkan implementation of the buffer interface.
 ******************************************************************************/
 
 #include "BufferVK.h"
-#include "ContextVK.h"
 
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 
 #include <iterator>
@@ -36,14 +36,14 @@ Ptr<Buffer> Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::
 {
     ITT_FUNCTION_TASK();
     const Buffer::Settings settings = { Buffer::Type::Vertex, Usage::Unknown, size };
-    return std::make_shared<BufferVK>(static_cast<ContextBase&>(context), settings, stride, PixelFormat::Unknown);
+    return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings, stride, PixelFormat::Unknown);
 }
 
 Ptr<Buffer> Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format)
 {
     ITT_FUNCTION_TASK();
     const Buffer::Settings settings = { Buffer::Type::Index, Usage::Unknown, size };
-    return std::make_shared<BufferVK>(static_cast<ContextBase&>(context), settings, 0, format);
+    return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings, 0, format);
 }
 
 Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
@@ -54,7 +54,7 @@ Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool
         usage_mask |= Usage::Addressable;
 
     const Buffer::Settings settings = { Buffer::Type::Constant, usage_mask, size };
-    return std::make_shared<BufferVK>(static_cast<ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
 Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept

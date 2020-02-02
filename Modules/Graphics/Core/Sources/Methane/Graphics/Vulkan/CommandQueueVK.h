@@ -29,7 +29,7 @@ namespace Methane::Graphics
 {
 
 class RenderPassVK;
-class ContextVK;
+struct IContextVK;
 
 class CommandQueueVK final : public CommandQueueBase
 {
@@ -40,7 +40,7 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
     
-    ContextVK& GetContextVK() noexcept;
+    IContextVK& GetContextVK() noexcept;
 
 protected:
     void Reset();

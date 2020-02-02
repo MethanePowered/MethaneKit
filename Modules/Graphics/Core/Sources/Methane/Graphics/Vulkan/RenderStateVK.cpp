@@ -29,6 +29,7 @@ Vulkan implementation of the render state interface.
 #include "ShaderVK.h"
 #include "TypesVK.h"
 
+#include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/Instrumentation.h>
 
 #include <cassert>
@@ -36,13 +37,13 @@ Vulkan implementation of the render state interface.
 namespace Methane::Graphics
 {
 
-Ptr<RenderState> RenderState::Create(Context& context, const RenderState::Settings& state_settings)
+Ptr<RenderState> RenderState::Create(RenderContext& context, const RenderState::Settings& state_settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<RenderStateVK>(static_cast<ContextBase&>(context), state_settings);
+    return std::make_shared<RenderStateVK>(dynamic_cast<RenderContextBase&>(context), state_settings);
 }
 
-RenderStateVK::RenderStateVK(ContextBase& context, const Settings& settings)
+RenderStateVK::RenderStateVK(RenderContextBase& context, const Settings& settings)
     : RenderStateBase(context, settings)
 {
     ITT_FUNCTION_TASK();
@@ -111,10 +112,10 @@ void RenderStateVK::ResetNativeState()
     ITT_FUNCTION_TASK();
 }
 
-ContextVK& RenderStateVK::GetContextVK() noexcept
+IContextVK& RenderStateVK::GetContextVK() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextVK&>(m_context);
+    return static_cast<IContextVK&>(m_context);
 }
 
 } // namespace Methane::Graphics

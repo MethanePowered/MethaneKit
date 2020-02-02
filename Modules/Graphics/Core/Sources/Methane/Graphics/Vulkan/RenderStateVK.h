@@ -30,12 +30,12 @@ Vulkan implementation of the render state interface.
 namespace Methane::Graphics
 {
 
-class ContextVK;
+struct IContextVK;
 
 class RenderStateVK : public RenderStateBase
 {
 public:
-    RenderStateVK(ContextBase& context, const Settings& settings);
+    RenderStateVK(RenderContextBase& context, const Settings& settings);
     ~RenderStateVK() override;
     
     // RenderState interface
@@ -50,7 +50,7 @@ public:
     void SetName(const std::string& name) override;
 
 protected:
-    ContextVK& GetContextVK() noexcept;
+    IContextVK& GetContextVK() noexcept;
     
     void ResetNativeState();
 };

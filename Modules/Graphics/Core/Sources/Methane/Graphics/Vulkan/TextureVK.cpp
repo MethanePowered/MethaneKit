@@ -22,10 +22,10 @@ Vulkan implementation of the texture interface.
 ******************************************************************************/
 
 #include "TextureVK.h"
-#include "ContextVK.h"
 #include "RenderCommandListVK.h"
 #include "TypesVK.h"
 
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 
 #include <algorithm>
@@ -34,40 +34,40 @@ Vulkan implementation of the texture interface.
 namespace Methane::Graphics
 {
 
-Ptr<Texture> Texture::CreateRenderTarget(Context& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateRenderTarget(RenderContext& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<TextureVK>(static_cast<ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
-Ptr<Texture> Texture::CreateFrameBuffer(Context& context, uint32_t /*frame_buffer_index*/, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateFrameBuffer(RenderContext& context, uint32_t /*frame_buffer_index*/, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
-    const Context::Settings& context_settings = context.GetSettings();
+    const RenderContext::Settings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::FrameBuffer(context_settings.frame_size, context_settings.color_format);
-    return std::make_shared<TextureVK>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
-Ptr<Texture> Texture::CreateDepthStencilBuffer(Context& context, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateDepthStencilBuffer(RenderContext& context, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
-    const Context::Settings& context_settings = context.GetSettings();
+    const RenderContext::Settings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::DepthStencilBuffer(context_settings.frame_size, context_settings.depth_stencil_format);
-    return std::make_shared<TextureVK>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
 Ptr<Texture> Texture::CreateImage(Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<TextureVK>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
 Ptr<Texture> Texture::CreateCube(Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<TextureVK>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
 TextureVK::TextureVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)

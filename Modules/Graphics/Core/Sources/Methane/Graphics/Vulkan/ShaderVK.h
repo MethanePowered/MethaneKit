@@ -31,20 +31,20 @@ Vulkan implementation of the shader interface.
 namespace Methane::Graphics
 {
 
-class ContextVK;
+struct IContextVK;
 class ProgramVK;
 
 class ShaderVK : public ShaderBase
 {
 public:
-    ShaderVK(Shader::Type shader_type, ContextVK& context, const Settings& settings);
+    ShaderVK(Shader::Type shader_type, ContextBase& context, const Settings& settings);
     ~ShaderVK() override;
     
     // ShaderBase interface
     ArgumentBindings GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const override;
 
 protected:
-    ContextVK& GetContextVK() noexcept;
+    IContextVK& GetContextVK() noexcept;
 };
 
 } // namespace Methane::Graphics

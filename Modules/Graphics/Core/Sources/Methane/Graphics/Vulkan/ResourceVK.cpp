@@ -24,6 +24,7 @@ Vulkan implementation of the resource interface.
 #include "ResourceVK.h"
 #include "ContextVK.h"
 
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
@@ -63,10 +64,10 @@ ResourceVK::ResourceVK(Type type, Usage::Mask usage_mask, ContextBase& context, 
     ITT_FUNCTION_TASK();
 }
 
-ContextVK& ResourceVK::GetContextVK() noexcept
+IContextVK& ResourceVK::GetContextVK() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextVK&>(m_context);
+    return static_cast<IContextVK&>(m_context);
 }
 
 } // namespace Methane::Graphics

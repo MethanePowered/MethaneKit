@@ -37,7 +37,7 @@ class ProgramLibraryMT;
 struct IContextMT
 {
     virtual DeviceMT& GetDeviceMT() noexcept = 0;
-    virtual CommandQueueMT& GetUploadCommandQueueMT() = 0;
+    virtual CommandQueueMT& GetUploadCommandQueueMT() noexcept = 0;
     virtual const Ptr<ProgramLibraryMT>& GetLibraryMT(const std::string& library_name = "") = 0;
 };
 

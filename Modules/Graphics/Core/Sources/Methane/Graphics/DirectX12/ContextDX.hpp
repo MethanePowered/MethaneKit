@@ -113,8 +113,8 @@ public:
 
     // IContextDX interface
 
-    const DeviceDX& GetDeviceDX() const override       { return static_cast<const DeviceDX&>(GetDeviceBase()); }
-    CommandQueueDX& GetUploadCommandQueueDX() override { return static_cast<CommandQueueDX&>(GetUploadCommandQueue()); }
+    const DeviceDX& GetDeviceDX() const noexcept override       { return static_cast<const DeviceDX&>(GetDeviceBase()); }
+    CommandQueueDX& GetUploadCommandQueueDX() noexcept override { return static_cast<CommandQueueDX&>(GetUploadCommandQueue()); }
 
 protected:
     Ptr<FenceDX> m_sp_upload_fence;

@@ -24,6 +24,7 @@ Vulkan implementation of the sampler interface.
 #include "SamplerVK.h"
 #include "ContextVK.h"
 
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
@@ -32,7 +33,7 @@ namespace Methane::Graphics
 Ptr<Sampler> Sampler::Create(Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<SamplerVK>(static_cast<ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<SamplerVK>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
 SamplerVK::SamplerVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
@@ -64,10 +65,10 @@ void SamplerVK::ResetSampletState()
     ITT_FUNCTION_TASK();
 }
 
-ContextVK& SamplerVK::GetContextVK() noexcept
+IContextVK& SamplerVK::GetContextVK() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextVK&>(m_context);
+    return static_cast<IContextVK&>(m_context);
 }
 
 } // namespace Methane::Graphics

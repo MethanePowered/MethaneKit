@@ -80,15 +80,14 @@ void ProgramBindingsVK::Apply(CommandList& command_list, ApplyBehavior::Mask app
     ITT_FUNCTION_TASK();
 
     RenderCommandListVK& vulkan_command_list = dynamic_cast<RenderCommandListVK&>(command_list);
-    const CommandListBase::CommandState& command_state = vulkan_command_list.GetCommandState();
 
     for(const auto& binding_by_argument : m_binding_by_argument)
     {
         const Program::Argument& program_argument = binding_by_argument.first;
         const ProgramBindingsVK::ArgumentBindingVK& vulkan_argument_binding = static_cast<const ProgramBindingsVK::ArgumentBindingVK&>(*binding_by_argument.second);
 
-        if ((apply_behavior & ApplyBehavior::ConstantOnce || apply_behavior & ApplyBehavior::ChangesOnly) &&
-            vulkan_argument_binding.IsAlreadyApplied(*m_sp_program, program_argument, command_state, apply_behavior & ApplyBehavior::ChangesOnly))
+        if ((apply_behavior & ApplyBehavior::ConstantOnce || apply_behavior & ApplyBehavior::ChangesOnly) && vulkan_command_list.GetProgramBindings() &&
+            vulkan_argument_binding.IsAlreadyApplied(*m_sp_program, program_argument, *vulkan_command_list.GetProgramBindings(), apply_behavior & ApplyBehavior::ChangesOnly))
             continue;
     }
 }

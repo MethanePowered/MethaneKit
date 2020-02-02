@@ -28,7 +28,7 @@ Vulkan implementation of the program interface.
 namespace Methane::Graphics
 {
 
-class ContextVK;
+struct IContextVK;
 class ShaderVK;
 
 class ProgramVK : public ProgramBase
@@ -40,7 +40,7 @@ public:
     ShaderVK& GetShaderVK(Shader::Type shader_type) noexcept;
 
 protected:
-    ContextVK& GetContextVK() noexcept;
+    IContextVK& GetContextVK() noexcept;
 };
 
 } // namespace Methane::Graphics

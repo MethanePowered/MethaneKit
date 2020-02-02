@@ -30,7 +30,7 @@ Vulkan implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-class ContextVK;
+struct IContextVK;
 struct ResourceContainerVK;
 
 class ResourceVK : public ResourceBase
@@ -52,7 +52,7 @@ public:
     ResourceVK(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
 
 protected:
-    ContextVK& GetContextVK() noexcept;
+    IContextVK& GetContextVK() noexcept;
 };
 
 } // namespace Methane::Graphics

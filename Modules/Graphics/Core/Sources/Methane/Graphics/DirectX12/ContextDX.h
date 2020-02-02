@@ -31,8 +31,8 @@ class DeviceDX;
 
 struct IContextDX
 {
-    virtual const DeviceDX& GetDeviceDX() const = 0;
-    virtual CommandQueueDX& GetUploadCommandQueueDX() = 0;
+    virtual const DeviceDX& GetDeviceDX() const noexcept = 0;
+    virtual CommandQueueDX& GetUploadCommandQueueDX() noexcept = 0;
 };
 
 } // namespace Methane::Graphics

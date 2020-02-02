@@ -28,7 +28,7 @@ Vulkan implementation of the sampler interface.
 namespace Methane::Graphics
 {
 
-class ContextVK;
+struct IContextVK;
 
 class SamplerVK : public SamplerBase
 {
@@ -42,7 +42,7 @@ public:
 protected:
     void ResetSampletState();
 
-    ContextVK& GetContextVK() noexcept;
+    IContextVK& GetContextVK() noexcept;
 };
 
 } // namespace Methane::Graphics

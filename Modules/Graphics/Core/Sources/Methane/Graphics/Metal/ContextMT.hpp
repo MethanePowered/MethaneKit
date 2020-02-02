@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/Metal/ContextMT.hpp
-Metal template implementation of the base scontext interface.
+Metal template implementation of the base context interface.
 
 ******************************************************************************/
 
@@ -102,7 +102,7 @@ public:
         return static_cast<DeviceMT&>(ContextBase::GetDeviceBase());
     }
 
-    CommandQueueMT& GetUploadCommandQueueMT() override
+    CommandQueueMT& GetUploadCommandQueueMT() noexcept override
     {
         ITT_FUNCTION_TASK();
         return static_cast<CommandQueueMT&>(ContextBase::GetUploadCommandQueue());

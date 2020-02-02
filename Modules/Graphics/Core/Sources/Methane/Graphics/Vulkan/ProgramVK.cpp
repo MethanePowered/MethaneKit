@@ -27,6 +27,7 @@ Vulkan implementation of the program interface.
 #include "ContextVK.h"
 #include "RenderCommandListVK.h"
 
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 
 #include <cassert>
@@ -37,21 +38,13 @@ namespace Methane::Graphics
 Ptr<Program> Program::Create(Context& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ProgramVK>(static_cast<ContextBase&>(context), settings);
+    return std::make_shared<ProgramVK>(dynamic_cast<ContextBase&>(context), settings);
 }
 
 ProgramVK::ProgramVK(ContextBase& context, const Settings& settings)
     : ProgramBase(context, settings)
 {
     ITT_FUNCTION_TASK();
-
-    // In case if RT pixel formats are not set, we assume it renders to frame buffer
-    // NOTE: even when program has no pixel shaders render, render state must have at least one color format to be valid
-    std::vector<PixelFormat> color_formats = settings.color_formats;
-    if (color_formats.empty())
-    {
-        color_formats.push_back(context.GetSettings().color_format);
-    }
 }
 
 ProgramVK::~ProgramVK()
@@ -59,10 +52,10 @@ ProgramVK::~ProgramVK()
     ITT_FUNCTION_TASK();
 }
 
-ContextVK& ProgramVK::GetContextVK() noexcept
+IContextVK& ProgramVK::GetContextVK() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextVK&>(m_context);
+    return static_cast<IContextVK&>(m_context);
 }
 
 ShaderVK& ProgramVK::GetShaderVK(Shader::Type shader_type) noexcept
