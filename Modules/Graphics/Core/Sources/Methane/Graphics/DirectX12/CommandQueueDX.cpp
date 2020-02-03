@@ -89,12 +89,12 @@ CommandQueueDX::D3D12CommandLists CommandQueueDX::GetNativeCommandLists(const Re
         CommandListBase& command_list = dynamic_cast<CommandListBase&>(command_list_ref.get());
         switch (command_list.GetType())
         {
-        case CommandList::Type::RenderCommandList:
+        case CommandList::Type::Render:
         {
             dx_command_lists.push_back(static_cast<RenderCommandListDX&>(command_list).GetNativeCommandList().Get());
         } break;
 
-        case CommandList::Type::ParallelRenderCommandList:
+        case CommandList::Type::ParallelRender:
         {
             const D3D12CommandLists dx_parallel_command_lists = static_cast<ParallelRenderCommandListDX&>(command_list).GetNativeCommandLists();
             dx_command_lists.insert(dx_command_lists.end(), dx_parallel_command_lists.begin(), dx_parallel_command_lists.end());
