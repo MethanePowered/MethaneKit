@@ -16,14 +16,15 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/RenderCommandListMT.hh
-Metal implementation of the render command list interface.
+FILE: Methane/Graphics/Metal/BlitCommandListMT.hh
+Metal implementation of the blit command list interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/RenderCommandListBase.h>
+#include <Methane/Graphics/BlitCommandList.h>
+#include <Methane/Graphics/CommandListBase.h>
 
 #import <Metal/Metal.h>
 
@@ -31,14 +32,13 @@ namespace Methane::Graphics
 {
 
 class CommandQueueMT;
-class BufferMT;
-class RenderPassMT;
 
-class RenderCommandListMT final : public RenderCommandListBase
+class BlitCommandListMT final
+    : public CommandListBase
+    , public BlitCommandList
 {
 public:
-    RenderCommandListMT(CommandQueueBase& command_queue, RenderPassBase& render_pass);
-    RenderCommandListMT(ParallelRenderCommandListBase& parallel_render_command_list);
+    BlitCommandListMT(CommandQueueBase& command_queue);
 
     // CommandList interface
     void PushDebugGroup(const std::string& name) override;
@@ -49,38 +49,21 @@ public:
     void SetResourceBarriers(const ResourceBase::Barriers&) override { }
     void Execute(uint32_t frame_index) override;
 
-    // RenderCommandList interface
-    void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;
-    void SetVertexBuffers(const Refs<Buffer>& vertex_buffers) override;
-    void DrawIndexed(Primitive primitive, Buffer& index_buffer,
-                     uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
-                     uint32_t instance_count, uint32_t start_instance) override;
-    void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
-              uint32_t instance_count, uint32_t start_instance) override;
+    // BlitCommandList interface
+    void Reset(const std::string& debug_group = "") override;
 
     // Object interface
     void SetName(const std::string& label) override;
 
-    bool IsRenderEncoding() const { return m_mtl_render_encoder != nil; }
-    void StartRenderEncoding();
-    void EndRenderEncoding();
-    
-    bool IsBlitEncoding() const   { return m_mtl_blit_encoder != nil; }
-    void StartBlitEncoding();
-    void EndBlitEncoding();
-
     id<MTLCommandBuffer>&        GetNativeCommandBuffer() noexcept { return m_mtl_cmd_buffer; }
-    id<MTLRenderCommandEncoder>& GetNativeRenderEncoder() noexcept { return m_mtl_render_encoder; }
     id<MTLBlitCommandEncoder>&   GetNativeBlitEncoder() noexcept   { return m_mtl_blit_encoder; }
 
 protected:
     void InitializeCommandBuffer();
     
     CommandQueueMT& GetCommandQueueMT() noexcept;
-    RenderPassMT&   GetRenderPassMT();
 
     id<MTLCommandBuffer>        m_mtl_cmd_buffer = nil;
-    id<MTLRenderCommandEncoder> m_mtl_render_encoder = nil;
     id<MTLBlitCommandEncoder>   m_mtl_blit_encoder = nil;
 };
 

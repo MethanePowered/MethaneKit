@@ -255,7 +255,7 @@ void RenderCommandListMT::StartRenderEncoding()
     
     // NOTE: If command buffer was not created for current frame yet,
     //       then render pass descriptor should be reset with new frame drawable
-    MTLRenderPassDescriptor* mtl_render_pass = GetPassMT().GetNativeDescriptor(!m_is_parallel && m_mtl_cmd_buffer == nil);
+    MTLRenderPassDescriptor* mtl_render_pass = GetRenderPassMT().GetNativeDescriptor(!m_is_parallel && m_mtl_cmd_buffer == nil);
     
     InitializeCommandBuffer();
 
@@ -318,7 +318,7 @@ CommandQueueMT& RenderCommandListMT::GetCommandQueueMT() noexcept
     return static_cast<class CommandQueueMT&>(*m_sp_command_queue);
 }
 
-RenderPassMT& RenderCommandListMT::GetPassMT()
+RenderPassMT& RenderCommandListMT::GetRenderPassMT()
 {
     ITT_FUNCTION_TASK();
     return static_cast<class RenderPassMT&>(GetPass());

@@ -38,9 +38,9 @@ struct CommandList : virtual Object
 {
     enum class Type : uint32_t
     {
-        BlitCommandList = 0u,
-        RenderCommandList,
-        ParallelRenderCommandList,
+        Blit = 0u,
+        Render,
+        ParallelRender,
     };
 
     // CommandList interface
