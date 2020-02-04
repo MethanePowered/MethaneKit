@@ -70,19 +70,9 @@ void RenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_state, const
 {
     ITT_FUNCTION_TASK();
 
+    CommandListBase::Reset(debug_group);
+
     // ResetDrawState() must be called from an overriden Reset method
-
-    if (m_debug_group_opened)
-    {
-        PopDebugGroup();
-        m_debug_group_opened = false;
-    }
-
-    if (!debug_group.empty())
-    {
-        PushDebugGroup(debug_group);
-        m_debug_group_opened = true;
-    }
 
     if (sp_render_state)
     {

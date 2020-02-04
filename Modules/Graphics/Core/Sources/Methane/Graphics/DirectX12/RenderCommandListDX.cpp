@@ -35,8 +35,6 @@ DirectX 12 implementation of the render command list interface.
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #include <d3dx12.h>
-#include <pix.h>
-#include <nowide/convert.hpp>
 #include <cassert>
 
 namespace Methane::Graphics
@@ -70,29 +68,15 @@ Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& para
 }
 
 RenderCommandListDX::RenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass)
-    : RenderCommandListBase(cmd_buffer, render_pass)
+    : CommandListDX<RenderCommandListBase>(cmd_buffer, render_pass)
 {
     ITT_FUNCTION_TASK();
-    Initialize();
 }
 
 RenderCommandListDX::RenderCommandListDX(ParallelRenderCommandListBase& parallel_render_command_list)
-    : RenderCommandListBase(parallel_render_command_list)
+    : CommandListDX<RenderCommandListBase>(parallel_render_command_list)
 {
     ITT_FUNCTION_TASK();
-    Initialize();
-}
-
-void RenderCommandListDX::Initialize()
-{
-    ITT_FUNCTION_TASK();
-
-    const wrl::ComPtr<ID3D12Device>& cp_device = GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice();
-    assert(!!cp_device);
-
-    ThrowIfFailed(cp_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_cp_command_allocator)));
-    ThrowIfFailed(cp_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_cp_command_allocator.Get(), nullptr, IID_PPV_ARGS(&m_cp_command_list)));
-    m_cp_command_list.As(&m_cp_command_list_4);
 }
 
 void RenderCommandListDX::ResetNative(const Ptr<RenderState>& sp_render_state)
@@ -136,31 +120,6 @@ void RenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state, const s
     {
         pass_dx.Begin(*this);
     }
-}
-
-void RenderCommandListDX::SetName(const std::string& name)
-{
-    ITT_FUNCTION_TASK();
-
-    RenderCommandListBase::SetName(name);
-
-    assert(m_cp_command_list);
-    m_cp_command_list->SetName(nowide::widen(name).c_str());
-
-    assert(m_cp_command_allocator);
-    m_cp_command_allocator->SetName(nowide::widen(name + " allocator").c_str());
-}
-
-void RenderCommandListDX::PushDebugGroup(const std::string& name)
-{
-    ITT_FUNCTION_TASK();
-    PIXBeginEvent(m_cp_command_list.Get(), 0, nowide::widen(name).c_str());
-}
-
-void RenderCommandListDX::PopDebugGroup()
-{
-    ITT_FUNCTION_TASK();
-    PIXEndEvent(m_cp_command_list.Get());
 }
 
 void RenderCommandListDX::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
@@ -230,23 +189,6 @@ void RenderCommandListDX::Draw(Primitive primitive, uint32_t vertex_count, uint3
     m_cp_command_list->DrawInstanced(vertex_count, instance_count, start_vertex, start_instance);
 }
 
-void RenderCommandListDX::SetResourceBarriers(const ResourceBase::Barriers& resource_barriers)
-{
-    ITT_FUNCTION_TASK();
-
-    if (resource_barriers.empty())
-        return;
-
-    std::vector<D3D12_RESOURCE_BARRIER> dx_resource_barriers;
-    for (const ResourceBase::Barrier& resource_barrier : resource_barriers)
-    {
-        dx_resource_barriers.push_back(ResourceDX::GetNativeResourceBarrier(resource_barrier));
-    }
-
-    assert(m_cp_command_list);
-    m_cp_command_list->ResourceBarrier(static_cast<UINT>(dx_resource_barriers.size()), dx_resource_barriers.data());
-}
-
 void RenderCommandListDX::Commit(bool present_drawable)
 {
     ITT_FUNCTION_TASK();
@@ -260,32 +202,13 @@ void RenderCommandListDX::Commit(bool present_drawable)
         }
     }
 
-    RenderCommandListBase::Commit(present_drawable);
-
-    m_cp_command_list->Close();
-    m_is_committed = true;
-}
-
-CommandQueueDX& RenderCommandListDX::GetCommandQueueDX()
-{
-    ITT_FUNCTION_TASK();
-    return static_cast<CommandQueueDX&>(GetCommandQueueBase());
+    CommandListDX<RenderCommandListBase>::Commit(present_drawable);
 }
 
 RenderPassDX& RenderCommandListDX::GetPassDX()
 {
     ITT_FUNCTION_TASK();
     return static_cast<RenderPassDX&>(GetPass());
-}
-
-void RenderCommandListDX::Execute(uint32_t frame_index)
-{
-    ITT_FUNCTION_TASK();
-    
-    RenderCommandListBase::Execute(frame_index);
-
-    // NOTE: In DirectX there's no need for tracking command list completion, so it's completed right away
-    Complete(frame_index);
 }
 
 } // namespace Methane::Graphics

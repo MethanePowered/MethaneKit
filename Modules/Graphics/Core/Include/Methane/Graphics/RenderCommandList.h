@@ -51,7 +51,7 @@ struct RenderCommandList : virtual CommandList
     static Ptr<RenderCommandList> Create(ParallelRenderCommandList& parallel_command_list);
 
     // RenderCommandList interface
-    virtual void Reset(const Ptr<RenderState>& sp_render_state = Ptr<RenderState>(), const std::string& debug_group = "") = 0;
+    virtual void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") = 0;
     virtual void SetState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) = 0;
     virtual void SetProgramBindings(ProgramBindings& program_bindings,
                                     ProgramBindings::ApplyBehavior::Mask apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental) = 0;

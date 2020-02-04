@@ -57,10 +57,12 @@ public:
 
     // CommandList interface
     Type GetType() const override { return m_type; }
+    void Reset(const std::string& debug_group = "") override;
     void Commit(bool present_drawable) override;
     CommandQueue& GetCommandQueue() override;
 
     // CommandListBase interface
+
     virtual void SetResourceBarriers(const ResourceBase::Barriers& resource_barriers) = 0;
     virtual void Execute(uint32_t frame_index);
     virtual void Complete(uint32_t frame_index);
@@ -80,9 +82,6 @@ protected:
     bool     IsExecuting() const                        { return IsExecuting(GetCurrentFrameIndex()); }
     uint32_t GetCurrentFrameIndex() const;
 
-    Ptr<CommandQueue> m_sp_command_queue;
-    bool              m_debug_group_opened = false;
-
 private:
     static std::string GetStateName(State state);
 
@@ -90,6 +89,8 @@ private:
 
     const Type           m_type;
     Ptr<CommandListBase> m_sp_self;
+    Ptr<CommandQueue>    m_sp_command_queue;
+    bool                 m_debug_group_opened = false;
     uint32_t             m_committed_frame_index = 0;
     State                m_state                 = State::Pending;
     mutable std::mutex   m_state_mutex;

@@ -56,6 +56,23 @@ CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
     ITT_FUNCTION_TASK();
 }
 
+void CommandListBase::Reset(const std::string& debug_group)
+{
+    ITT_FUNCTION_TASK();
+
+    if (m_debug_group_opened)
+    {
+        PopDebugGroup();
+        m_debug_group_opened = false;
+    }
+
+    if (!debug_group.empty())
+    {
+        PushDebugGroup(debug_group);
+        m_debug_group_opened = true;
+    }
+}
+
 void CommandListBase::Commit(bool /*present_drawable*/)
 {
     ITT_FUNCTION_TASK();

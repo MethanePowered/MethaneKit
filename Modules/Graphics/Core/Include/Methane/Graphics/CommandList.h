@@ -47,6 +47,7 @@ struct CommandList : virtual Object
     virtual Type GetType() const = 0;
     virtual void PushDebugGroup(const std::string& name) = 0;
     virtual void PopDebugGroup() = 0;
+    virtual void Reset(const std::string& debug_group = "") = 0;
     virtual void Commit(bool present_drawable) = 0;
     virtual CommandQueue& GetCommandQueue() = 0;
 

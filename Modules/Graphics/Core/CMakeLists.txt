@@ -39,6 +39,7 @@ if (WIN32)
         ${SOURCES_GRAPHICS_DIR}/RenderPassDX.cpp
         ${SOURCES_GRAPHICS_DIR}/CommandQueueDX.h
         ${SOURCES_GRAPHICS_DIR}/CommandQueueDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/CommandListDX.hpp
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListDX.h
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListDX.h
