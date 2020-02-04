@@ -143,7 +143,7 @@ void RenderCommandListVK::Execute(uint32_t frame_index)
 CommandQueueVK& RenderCommandListVK::GetCommandQueueVK() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class CommandQueueVK&>(*m_sp_command_queue);
+    return static_cast<class CommandQueueVK&>(GetCommandQueue());
 }
 
 RenderPassVK& RenderCommandListVK::GetPassVK()
