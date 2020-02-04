@@ -145,7 +145,7 @@ void BlitCommandListMT::Execute(uint32_t frame_index)
 CommandQueueMT& BlitCommandListMT::GetCommandQueueMT() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class CommandQueueMT&>(*m_sp_command_queue);
+    return static_cast<class CommandQueueMT&>(GetCommandQueue());
 }
 
 } // namespace Methane::Graphics
