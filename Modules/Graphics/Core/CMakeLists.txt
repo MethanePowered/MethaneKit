@@ -150,6 +150,8 @@ else() # Linux
         ${SOURCES_GRAPHICS_DIR}/RenderPassVK.cpp
         ${SOURCES_GRAPHICS_DIR}/CommandQueueVK.h
         ${SOURCES_GRAPHICS_DIR}/CommandQueueVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/BlitCommandListVK.h
+        ${SOURCES_GRAPHICS_DIR}/BlitCommandListVK.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListVK.h
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListVK.cpp
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListVK.h
