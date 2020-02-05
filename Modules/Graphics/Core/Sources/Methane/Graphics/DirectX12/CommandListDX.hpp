@@ -16,12 +16,17 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/CommandListDX.h
+FILE: Methane/Graphics/DirectX12/CommandListDX.hpp
 DirectX 12 base template implementation of the command list interface.
 
 ******************************************************************************/
 
 #pragma once
+
+#include "DeviceDX.h"
+#include "ContextDX.h"
+#include "ResourceDX.h"
+#include "CommandQueueDX.h"
 
 #include <Methane/Graphics/CommandListBase.h>
 #include <Methane/Graphics/Windows/Helpers.h>
@@ -46,8 +51,8 @@ class CommandListDX : public CommandListBaseT
 {
 public:
     template<typename... ConstructArgs>
-    CommandListDX(ConstructArgs&... construct_args)
-        : CommandListBaseT(construct_args...)
+    CommandListDX(ConstructArgs&&... construct_args)
+        : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
     {
         ITT_FUNCTION_TASK();
 
