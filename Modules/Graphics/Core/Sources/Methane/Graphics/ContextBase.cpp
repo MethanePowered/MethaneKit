@@ -24,9 +24,7 @@ Base implementation of the context interface.
 #include "ContextBase.h"
 #include "DeviceBase.h"
 
-#include <Methane/Graphics/RenderContext.h>
-#include <Methane/Graphics/RenderPass.h>
-#include <Methane/Graphics/RenderCommandList.h>
+#include <Methane/Graphics/BlitCommandList.h>
 #include <Methane/Instrumentation.h>
 
 #ifdef COMMAND_EXECUTION_LOGGING
@@ -198,13 +196,12 @@ CommandQueue& ContextBase::GetUploadCommandQueue()
     return *m_sp_upload_cmd_queue;
 }
 
-RenderCommandList& ContextBase::GetUploadCommandList()
+BlitCommandList& ContextBase::GetUploadCommandList()
 {
     ITT_FUNCTION_TASK();
     if (!m_sp_upload_cmd_list)
     {
-        Ptr<RenderPass> sp_empty_pass = RenderPass::Create(dynamic_cast<RenderContext&>(*this), RenderPass::Settings());
-        m_sp_upload_cmd_list = RenderCommandList::Create(GetUploadCommandQueue(), *sp_empty_pass);
+        m_sp_upload_cmd_list = BlitCommandList::Create(GetUploadCommandQueue());
         m_sp_upload_cmd_list->SetName("Upload Command List");
     }
     return *m_sp_upload_cmd_list;

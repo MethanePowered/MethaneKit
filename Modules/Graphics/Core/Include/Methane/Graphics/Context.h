@@ -33,7 +33,7 @@ namespace Methane::Graphics
 
 struct Device;
 struct CommandQueue;
-struct RenderCommandList;
+struct BlitCommandList;
 
 struct Context : virtual Object
 {
@@ -67,9 +67,9 @@ struct Context : virtual Object
     virtual void AddCallback(Callback& callback) = 0;
     virtual void RemoveCallback(Callback& callback) = 0;
 
-    virtual Device&            GetDevice() = 0;
-    virtual CommandQueue&      GetUploadCommandQueue() = 0;
-    virtual RenderCommandList& GetUploadCommandList() = 0;
+    virtual Device&          GetDevice() = 0;
+    virtual CommandQueue&    GetUploadCommandQueue() = 0;
+    virtual BlitCommandList& GetUploadCommandList() = 0;
 };
 
 } // namespace Methane::Graphics

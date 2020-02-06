@@ -36,7 +36,6 @@ namespace Methane::Graphics
 
 class DeviceBase;
 struct CommandQueue;
-struct RenderCommandList;
 
 class ContextBase
     : public ObjectBase
@@ -47,16 +46,16 @@ public:
     ContextBase(DeviceBase& device, Type type);
 
     // Context interface
-    Type                  GetType() const override { return m_type; }
-    void                  CompleteInitialization() override;
-    void                  WaitForGpu(WaitFor wait_for) override;
-    void                  Reset(Device& device) override;
-    void                  Reset() override;
-    void                  AddCallback(Callback& callback) override;
-    void                  RemoveCallback(Callback& callback) override;
-    CommandQueue&         GetUploadCommandQueue() override;
-    RenderCommandList&    GetUploadCommandList() override;
-    Device&               GetDevice() override;
+    Type             GetType() const override { return m_type; }
+    void             CompleteInitialization() override;
+    void             WaitForGpu(WaitFor wait_for) override;
+    void             Reset(Device& device) override;
+    void             Reset() override;
+    void             AddCallback(Callback& callback) override;
+    void             RemoveCallback(Callback& callback) override;
+    CommandQueue&    GetUploadCommandQueue() override;
+    BlitCommandList& GetUploadCommandList() override;
+    Device&          GetDevice() override;
 
     // ContextBase interface
     virtual void Initialize(DeviceBase& device, bool deferred_heap_allocation);
@@ -77,13 +76,13 @@ protected:
     // ContextBase interface
     virtual void OnGpuWaitComplete(WaitFor wait_for);
 
-    const Type                  m_type;
-    Ptr<DeviceBase>             m_sp_device;
-    ResourceManager::Settings   m_resource_manager_init_settings = { true };
-    ResourceManager             m_resource_manager;
-    Refs<Callback>              m_callbacks; // ORDER: Keep callbacks before resources for correct auto-delete
-    Ptr<CommandQueue>           m_sp_upload_cmd_queue;
-    Ptr<RenderCommandList>      m_sp_upload_cmd_list;
+    const Type                m_type;
+    Ptr<DeviceBase>           m_sp_device;
+    ResourceManager::Settings m_resource_manager_init_settings = { true };
+    ResourceManager           m_resource_manager;
+    Refs<Callback>            m_callbacks; // ORDER: Keep callbacks before resources for correct auto-delete
+    Ptr<CommandQueue>         m_sp_upload_cmd_queue;
+    Ptr<BlitCommandList>      m_sp_upload_cmd_list;
 };
 
 } // namespace Methane::Graphics

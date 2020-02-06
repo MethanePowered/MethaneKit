@@ -26,7 +26,7 @@ DirectX 12 implementation of the texture interface.
 #include "DeviceDX.h"
 #include "DescriptorHeapDX.h"
 #include "CommandQueueDX.h"
-#include "RenderCommandListDX.h"
+#include "BlitCommandListDX.h"
 #include "TypesDX.h"
 
 #include <Methane/Instrumentation.h>
@@ -407,8 +407,7 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
         GenerateMipLevels(dx_sub_resources, scratch_image);
     }
 
-    RenderCommandListDX& upload_cmd_list = static_cast<RenderCommandListDX&>(m_context.GetUploadCommandList());
-    DirectX:: ScratchImage mipChain;
+    BlitCommandListDX& upload_cmd_list = static_cast<BlitCommandListDX&>(m_context.GetUploadCommandList());
     UpdateSubresources(upload_cmd_list.GetNativeCommandList().Get(),
                        m_cp_resource.Get(), m_cp_upload_resource.Get(), 0, 0,
                        static_cast<UINT>(dx_sub_resources.size()), dx_sub_resources.data());

@@ -23,15 +23,15 @@ DirectX 12 implementation of the command queue interface.
 
 #include "CommandQueueDX.h"
 #include "DeviceDX.h"
+#include "BlitCommandListDX.h"
 #include "RenderCommandListDX.h"
 #include "ParallelRenderCommandListDX.h"
 
-#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #include <nowide/convert.hpp>
-
 #include <cassert>
 
 namespace Methane::Graphics
@@ -89,6 +89,11 @@ CommandQueueDX::D3D12CommandLists CommandQueueDX::GetNativeCommandLists(const Re
         CommandListBase& command_list = dynamic_cast<CommandListBase&>(command_list_ref.get());
         switch (command_list.GetType())
         {
+        case CommandList::Type::Blit:
+        {
+            dx_command_lists.push_back(static_cast<BlitCommandListDX&>(command_list).GetNativeCommandList().Get());
+        } break;
+
         case CommandList::Type::Render:
         {
             dx_command_lists.push_back(static_cast<RenderCommandListDX&>(command_list).GetNativeCommandList().Get());
