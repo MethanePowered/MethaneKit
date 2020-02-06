@@ -61,27 +61,15 @@ public:
     // Object interface
     void SetName(const std::string& label) override;
 
-    bool IsRenderEncoding() const { return m_mtl_render_encoder != nil; }
-    void StartRenderEncoding();
-    void EndRenderEncoding();
-    
-    bool IsBlitEncoding() const   { return m_mtl_blit_encoder != nil; }
-    void StartBlitEncoding();
-    void EndBlitEncoding();
-
     id<MTLCommandBuffer>&        GetNativeCommandBuffer() noexcept { return m_mtl_cmd_buffer; }
     id<MTLRenderCommandEncoder>& GetNativeRenderEncoder() noexcept { return m_mtl_render_encoder; }
-    id<MTLBlitCommandEncoder>&   GetNativeBlitEncoder() noexcept   { return m_mtl_blit_encoder; }
 
 protected:
-    void InitializeCommandBuffer();
-    
     CommandQueueMT& GetCommandQueueMT() noexcept;
     RenderPassMT&   GetRenderPassMT();
 
     id<MTLCommandBuffer>        m_mtl_cmd_buffer = nil;
     id<MTLRenderCommandEncoder> m_mtl_render_encoder = nil;
-    id<MTLBlitCommandEncoder>   m_mtl_blit_encoder = nil;
 };
 
 } // namespace Methane::Graphics

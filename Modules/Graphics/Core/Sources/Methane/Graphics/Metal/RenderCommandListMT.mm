@@ -81,7 +81,40 @@ void RenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, const s
     
     RenderCommandListBase::ResetDrawState();
 
-    StartRenderEncoding();
+    if (m_mtl_render_encoder)
+    {
+        RenderCommandListBase::Reset(sp_render_state, debug_group);
+        return;
+    }
+
+    // NOTE: If command buffer was not created for current frame yet,
+    //       then render pass descriptor should be reset with new frame drawable
+    MTLRenderPassDescriptor* mtl_render_pass = GetRenderPassMT().GetNativeDescriptor(!m_is_parallel && m_mtl_cmd_buffer == nil);
+
+    if (m_is_parallel)
+    {
+        Ptr<ParallelRenderCommandListMT> sp_parallel_render_cmd_list = std::static_pointer_cast<ParallelRenderCommandListMT>(
+            m_wp_parallel_render_command_list.lock());
+        assert(!!sp_parallel_render_cmd_list);
+        id <MTLParallelRenderCommandEncoder>& mtl_parallel_render_command_encoder = sp_parallel_render_cmd_list->GetNativeParallelRenderEncoder();
+        m_mtl_render_encoder = [mtl_parallel_render_command_encoder renderCommandEncoder];
+    }
+    else
+    {
+        if (!m_mtl_cmd_buffer)
+        {
+            m_mtl_cmd_buffer = [GetCommandQueueMT().GetNativeCommandQueue() commandBuffer];
+            assert(m_mtl_cmd_buffer != nil);
+
+            m_mtl_cmd_buffer.label = MacOS::ConvertToNSType<std::string, NSString*>(GetName());
+        }
+
+        assert(!!mtl_render_pass);
+        m_mtl_render_encoder = [m_mtl_cmd_buffer renderCommandEncoderWithDescriptor:mtl_render_pass];
+    }
+
+    assert(m_mtl_render_encoder != nil);
+    m_mtl_render_encoder.label = MacOS::ConvertToNSType<std::string, NSString*>(GetName());
 
     RenderCommandListBase::Reset(sp_render_state, debug_group);
 }
@@ -97,11 +130,6 @@ void RenderCommandListMT::SetName(const std::string& name)
     if (m_mtl_render_encoder != nil)
     {
         m_mtl_render_encoder.label = ns_name;
-    }
-    
-    if (m_mtl_blit_encoder != nil)
-    {
-        m_mtl_blit_encoder.label = ns_name;
     }
     
     if (m_mtl_cmd_buffer != nil)
@@ -202,8 +230,11 @@ void RenderCommandListMT::Commit(bool present_drawable)
 
     RenderCommandListBase::Commit(present_drawable);
 
-    EndBlitEncoding();
-    EndRenderEncoding();
+    if (m_mtl_render_encoder)
+    {
+        [m_mtl_render_encoder endEncoding];
+        m_mtl_render_encoder = nil;
+    }
 
     if (!m_mtl_cmd_buffer || m_is_parallel)
         return;
@@ -231,85 +262,6 @@ void RenderCommandListMT::Execute(uint32_t frame_index)
 
     [m_mtl_cmd_buffer commit];
     m_mtl_cmd_buffer  = nil;
-}
-
-void RenderCommandListMT::InitializeCommandBuffer()
-{
-    ITT_FUNCTION_TASK();
-    if (m_is_parallel || m_mtl_cmd_buffer != nil)
-        return;
-
-    m_mtl_cmd_buffer = [GetCommandQueueMT().GetNativeCommandQueue() commandBuffer];
-    assert(m_mtl_cmd_buffer != nil);
-    
-    m_mtl_cmd_buffer.label = MacOS::ConvertToNSType<std::string, NSString*>(GetName());
-}
-    
-void RenderCommandListMT::StartRenderEncoding()
-{
-    ITT_FUNCTION_TASK();
-    if (m_mtl_render_encoder != nil)
-        return;
-    
-    EndBlitEncoding();
-    
-    // NOTE: If command buffer was not created for current frame yet,
-    //       then render pass descriptor should be reset with new frame drawable
-    MTLRenderPassDescriptor* mtl_render_pass = GetRenderPassMT().GetNativeDescriptor(!m_is_parallel && m_mtl_cmd_buffer == nil);
-    
-    InitializeCommandBuffer();
-
-    if (m_is_parallel)
-    {
-        Ptr<ParallelRenderCommandListMT> sp_parallel_render_cmd_list = std::static_pointer_cast<ParallelRenderCommandListMT>(m_wp_parallel_render_command_list.lock());
-        assert(!!sp_parallel_render_cmd_list);
-        id<MTLParallelRenderCommandEncoder>& mtl_parallel_render_command_encoder = sp_parallel_render_cmd_list->GetNativeParallelRenderEncoder();
-        m_mtl_render_encoder = [mtl_parallel_render_command_encoder renderCommandEncoder];
-    }
-    else
-    {
-        assert(!!mtl_render_pass);
-        m_mtl_render_encoder = [m_mtl_cmd_buffer renderCommandEncoderWithDescriptor:mtl_render_pass];
-    }
-    
-    assert(m_mtl_render_encoder != nil);
-    m_mtl_render_encoder.label = MacOS::ConvertToNSType<std::string, NSString*>(GetName());
-}
-
-void RenderCommandListMT::EndRenderEncoding()
-{
-    ITT_FUNCTION_TASK();
-    if (m_mtl_render_encoder == nil)
-        return;
-
-    [m_mtl_render_encoder endEncoding];
-    m_mtl_render_encoder = nil;
-}
-    
-void RenderCommandListMT::StartBlitEncoding()
-{
-    ITT_FUNCTION_TASK();
-    if (m_mtl_blit_encoder != nil)
-        return;
-
-    InitializeCommandBuffer();
-    EndRenderEncoding();
-    
-    assert(m_mtl_cmd_buffer != nil);
-    m_mtl_blit_encoder = [m_mtl_cmd_buffer blitCommandEncoder];
-    
-    assert(m_mtl_blit_encoder != nil);
-    m_mtl_blit_encoder.label = MacOS::ConvertToNSType<std::string, NSString*>(GetName());
-}
-
-void RenderCommandListMT::EndBlitEncoding()
-{
-    ITT_FUNCTION_TASK();
-    if (m_mtl_blit_encoder == nil)
-        return;
-
-    [m_mtl_blit_encoder endEncoding];
-    m_mtl_blit_encoder = nil;
 }
 
 CommandQueueMT& RenderCommandListMT::GetCommandQueueMT() noexcept
