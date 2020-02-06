@@ -60,17 +60,19 @@ void CommandListBase::Reset(const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
 
-    if (m_debug_group_opened)
+    const bool debug_group_changed = m_open_debug_group != debug_group;
+
+    if (!m_open_debug_group.empty() && debug_group_changed)
     {
         PopDebugGroup();
-        m_debug_group_opened = false;
     }
 
-    if (!debug_group.empty())
+    if (!debug_group.empty() && debug_group_changed)
     {
         PushDebugGroup(debug_group);
-        m_debug_group_opened = true;
     }
+
+    m_open_debug_group = debug_group;
 }
 
 void CommandListBase::Commit(bool /*present_drawable*/)
@@ -90,10 +92,10 @@ void CommandListBase::Commit(bool /*present_drawable*/)
     m_committed_frame_index = GetCurrentFrameIndex();
     m_state = State::Committed;
 
-    if (m_debug_group_opened)
+    if (!m_open_debug_group.empty())
     {
         PopDebugGroup();
-        m_debug_group_opened = false;
+        m_open_debug_group = "";
     }
 
     // Keep command list from destruction until it's execution is completed

@@ -68,8 +68,8 @@ public:
     virtual void Complete(uint32_t frame_index);
 
     void SetResourceTransitionBarriers(const Refs<Resource>& resources, ResourceBase::State state_before, ResourceBase::State state_after);
-    Ptr<CommandListBase> GetPtr()                     { return shared_from_this(); }
-    void SetDebugGroupOpened(bool debug_group_opened) { m_debug_group_opened = debug_group_opened; }
+    Ptr<CommandListBase> GetPtr()                           { return shared_from_this(); }
+    void SetOpenDebugGroup(const std::string& debug_group)  { m_open_debug_group = debug_group; }
 
 protected:
     CommandQueueBase&       GetCommandQueueBase();
@@ -90,7 +90,7 @@ private:
     const Type           m_type;
     Ptr<CommandListBase> m_sp_self;
     Ptr<CommandQueue>    m_sp_command_queue;
-    bool                 m_debug_group_opened = false;
+    std::string          m_open_debug_group;
     uint32_t             m_committed_frame_index = 0;
     State                m_state                 = State::Pending;
     mutable std::mutex   m_state_mutex;

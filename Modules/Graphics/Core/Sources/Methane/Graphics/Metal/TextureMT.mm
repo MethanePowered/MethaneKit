@@ -23,8 +23,7 @@ Metal implementation of the texture interface.
 
 #include "TextureMT.hh"
 #include "RenderContextMT.hh"
-#include "DeviceMT.hh"
-#include "RenderCommandListMT.hh"
+#include "BlitCommandListMT.hh"
 #include "TypesMT.hh"
 
 #include <Methane/Instrumentation.h>
@@ -285,16 +284,14 @@ void TextureMT::GenerateMipLevels()
 {
     ITT_FUNCTION_TASK();
 
-    RenderCommandListMT& render_command_list = static_cast<RenderCommandListMT&>(m_context.GetUploadCommandList());
-    render_command_list.StartBlitEncoding();
+    BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(m_context.GetUploadCommandList());
+    blit_command_list.Reset("Texture MIPs Generation");
     
-    id<MTLBlitCommandEncoder>& mtl_blit_encoder = render_command_list.GetNativeBlitEncoder();
+    id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeBlitEncoder();
     assert(mtl_blit_encoder != nil);
     assert(m_mtl_texture != nil);
     
     [mtl_blit_encoder generateMipmapsForTexture: m_mtl_texture];
-    
-    render_command_list.EndBlitEncoding();
 }
 
 RenderContextMT& TextureMT::GetRenderContextMT()
