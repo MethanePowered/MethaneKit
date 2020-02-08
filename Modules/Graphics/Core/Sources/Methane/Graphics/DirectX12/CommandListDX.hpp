@@ -23,6 +23,7 @@ DirectX 12 base template implementation of the command list interface.
 
 #pragma once
 
+#include "CommandListDX.h"
 #include "DeviceDX.h"
 #include "ContextDX.h"
 #include "ResourceDX.h"
@@ -47,7 +48,9 @@ class CommandQueueDX;
 class RenderPassDX;
 
 template<class CommandListBaseT, typename = std::enable_if_t<std::is_base_of_v<CommandListBase, CommandListBaseT>>>
-class CommandListDX : public CommandListBaseT
+class CommandListDX
+    : public CommandListBaseT
+    , public ICommandListDX
 {
 public:
     template<typename... ConstructArgs>
@@ -146,15 +149,17 @@ public:
         CommandListBaseT::SetName(name);
     }
 
-    const wrl::ComPtr<ID3D12GraphicsCommandList>& GetNativeCommandList() const   { return m_cp_command_list; }
-    wrl::ComPtr<ID3D12GraphicsCommandList>&       GetNativeCommandList()         { return m_cp_command_list; }
+    // ICommandListDX interface
 
-    const wrl::ComPtr<ID3D12GraphicsCommandList4>& GetNativeCommandList4() const { return m_cp_command_list_4; }
-    wrl::ComPtr<ID3D12GraphicsCommandList4>&       GetNativeCommandList4()       { return m_cp_command_list_4; }
+    CommandQueueDX& GetCommandQueueDX() override { return static_cast<CommandQueueDX&>(GetCommandQueueBase()); }
+
+    const wrl::ComPtr<ID3D12GraphicsCommandList>&  GetNativeCommandList() const override  { return m_cp_command_list; }
+    wrl::ComPtr<ID3D12GraphicsCommandList>&        GetNativeCommandList() override        { return m_cp_command_list; }
+
+    const wrl::ComPtr<ID3D12GraphicsCommandList4>& GetNativeCommandList4() const override { return m_cp_command_list_4; }
+    wrl::ComPtr<ID3D12GraphicsCommandList4>&       GetNativeCommandList4() override       { return m_cp_command_list_4; }
 
 protected:
-    CommandQueueDX& GetCommandQueueDX() { return static_cast<CommandQueueDX&>(GetCommandQueueBase()); }
-
     wrl::ComPtr<ID3D12CommandAllocator>       m_cp_command_allocator;
     wrl::ComPtr<ID3D12GraphicsCommandList>    m_cp_command_list;
     wrl::ComPtr<ID3D12GraphicsCommandList4>   m_cp_command_list_4;    // extended interface for the same command list (may be unavailable on older Windows)

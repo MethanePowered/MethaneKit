@@ -64,7 +64,7 @@ public:
         D3D12_GPU_VIRTUAL_ADDRESS GetNativeGpuAddress() const noexcept { return GetResourceDX().GetNativeGpuAddress() + GetOffset(); }
 
     private:
-        std::reference_wrapper<ResourceDX> m_resource_dx;
+        Ref<ResourceDX> m_resource_dx;
     };
 
     using LocationsDX = std::vector<LocationDX>;

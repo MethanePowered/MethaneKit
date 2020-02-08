@@ -244,7 +244,7 @@ void ProgramBindingsMT::Apply(CommandList& command_list, ApplyBehavior::Mask app
         const ArgumentBindingMT& metal_argument_binding = static_cast<const ArgumentBindingMT&>(*binding_by_argument.second);
 
         if ((apply_behavior & ApplyBehavior::ConstantOnce || apply_behavior & ApplyBehavior::ChangesOnly) && metal_command_list.GetProgramBindings() &&
-            metal_argument_binding.IsAlreadyApplied(*m_sp_program, program_argument, *metal_command_list.GetProgramBindings(), apply_behavior & ApplyBehavior::ChangesOnly))
+            metal_argument_binding.IsAlreadyApplied(*m_sp_program, *metal_command_list.GetProgramBindings(), apply_behavior & ApplyBehavior::ChangesOnly))
             continue;
 
         const uint32_t arg_index = metal_argument_binding.GetSettingsMT().argument_index;

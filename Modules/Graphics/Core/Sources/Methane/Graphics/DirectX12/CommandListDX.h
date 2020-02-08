@@ -16,25 +16,34 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/ContextDX.h
-DirectX 12 context accessor interface for template class ContextDX<ContextBaseT>
+FILE: Methane/Graphics/DirectX12/CommandListDX.h
+DirectX 12 command list accessor interface for template class CommandListDX<CommandListBaseT>
 
 ******************************************************************************/
 
 #pragma once
 
+#include <wrl.h>
+#include <d3d12.h>
+
 namespace Methane::Graphics
 {
 
+namespace wrl = Microsoft::WRL;
+
 class CommandQueueDX;
-class DeviceDX;
 
-struct IContextDX
+struct ICommandListDX
 {
-    virtual const DeviceDX& GetDeviceDX() const noexcept = 0;
-    virtual CommandQueueDX& GetUploadCommandQueueDX() noexcept = 0;
+    virtual CommandQueueDX& GetCommandQueueDX() = 0;
 
-    virtual ~IContextDX() = default;
+    virtual const wrl::ComPtr<ID3D12GraphicsCommandList>& GetNativeCommandList() const = 0;
+    virtual wrl::ComPtr<ID3D12GraphicsCommandList>&       GetNativeCommandList() = 0;
+
+    virtual const wrl::ComPtr<ID3D12GraphicsCommandList4>& GetNativeCommandList4() const = 0;
+    virtual wrl::ComPtr<ID3D12GraphicsCommandList4>&       GetNativeCommandList4() = 0;
+
+    virtual ~ICommandListDX() = default;
 };
 
 } // namespace Methane::Graphics

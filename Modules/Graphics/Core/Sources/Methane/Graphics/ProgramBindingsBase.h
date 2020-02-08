@@ -59,9 +59,9 @@ public:
         DescriptorHeap::Type       GetDescriptorHeapType() const;
         Ptr<ArgumentBindingBase>   GetPtr() { return shared_from_this(); }
 
-        bool IsAlreadyApplied(const Program& program, const Program::Argument& program_argument,
+        bool IsAlreadyApplied(const Program& program,
                               const ProgramBindingsBase& applied_program_bindings,
-                              bool check_binding_value_changes) const;
+                              bool check_binding_value_changes = true) const;
     protected:
         ContextBase& GetContext() noexcept { return m_context; }
 

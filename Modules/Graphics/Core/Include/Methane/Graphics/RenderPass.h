@@ -34,7 +34,6 @@ namespace Methane::Graphics
 {
 
 struct RenderContext;
-struct Resource;
 
 struct RenderPass
 {

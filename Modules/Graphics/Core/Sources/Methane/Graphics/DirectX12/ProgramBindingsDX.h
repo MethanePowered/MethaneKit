@@ -26,6 +26,7 @@ DirectX 12 implementation of the program bindings interface.
 #include "ResourceDX.h"
 
 #include <Methane/Graphics/ProgramBindingsBase.h>
+//#include <Methane/Graphics/ResourceBase.h>
 
 #include <wrl.h>
 #include <d3d12.h>
@@ -36,6 +37,7 @@ namespace Methane::Graphics
 {
 
 class ResourceDX;
+class RenderCommandListDX;
 
 namespace wrl = Microsoft::WRL;
 
@@ -78,7 +80,7 @@ public:
         const DescriptorRange&              GetDescriptorRange() const noexcept       { return m_descriptor_range; }
         const ResourceDX::LocationsDX&      GetResourceLocationsDX() const noexcept   { return m_resource_locations_dx; }
 
-        void SetRootParameterIndex(uint32_t root_parameter_index)                           { m_root_parameter_index = root_parameter_index; }
+        void SetRootParameterIndex(uint32_t root_parameter_index)                     { m_root_parameter_index = root_parameter_index; }
         void SetDescriptorRange(const DescriptorRange& descriptor_range);
         void SetDescriptorHeapReservation(const DescriptorHeap::Reservation* p_reservation) { m_p_descriptor_heap_reservation = p_reservation; }
 
@@ -99,10 +101,37 @@ public:
     void CompleteInitialization() override;
     void Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior) const override;
 
-protected:
-    using ApplyArgumentBindingFunc = std::function<void(const Program::Argument&, ArgumentBindingDX&, const DescriptorHeap::Reservation*)>;
-    void ForEachArgumentBinding(ApplyArgumentBindingFunc apply_argument_binding) const;
+private:
+    struct RootParameterBinding
+    {
+        ArgumentBindingDX&          argument_binding;
+        uint32_t                    root_parameter_index = 0u;
+        D3D12_GPU_DESCRIPTOR_HANDLE base_descriptor      = {};
+        D3D12_GPU_VIRTUAL_ADDRESS   gpu_virtual_address  = 0u;
+    };
+
+    struct ResourceState
+    {
+        Ptr<ResourceBase>     sp_resource;
+        ResourceBase::State   state;
+    };
+
+    using ArgumentBindingFunc = std::function<void(ArgumentBindingDX&, const DescriptorHeap::Reservation*)>;
+    void ForEachArgumentBinding(const ArgumentBindingFunc& argument_binding_function) const;
+    void AddRootParameterBinding(const Program::ArgumentDesc& argument_desc, RootParameterBinding root_parameter_binding);
+    void AddResourceState(const Program::ArgumentDesc& argument_desc, ResourceState resource_state);
+    void UpdateRootParameterBindings();
+    ResourceBase::Barriers ApplyResourceStates(bool apply_constant_resource_states) const;
+    void ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const;
     void CopyDescriptorsToGpu();
+
+    using RootParameterBindings = std::vector<RootParameterBinding>;
+    RootParameterBindings m_constant_root_parameter_bindings;
+    RootParameterBindings m_variadic_root_parameter_bindings;
+
+    using ResourceStates = std::vector<ResourceState>;
+    ResourceStates        m_constant_resource_states;
+    ResourceStates        m_variadic_resource_states;
 };
 
 } // namespace Methane::Graphics

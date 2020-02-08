@@ -78,7 +78,7 @@ DescriptorHeap::Type ProgramBindingsBase::ArgumentBindingBase::GetDescriptorHeap
         : DescriptorHeap::Type::ShaderResources;
 }
 
-bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& program, const Program::Argument& program_argument,
+bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& program,
                                                                 const ProgramBindingsBase& applied_program_bindings,
                                                                 bool check_binding_value_changes) const
 {
@@ -95,7 +95,7 @@ bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& p
     if (!check_binding_value_changes)
         return false;
 
-    const Ptr<ProgramBindings::ArgumentBinding>& previous_argument_argument_binding = applied_program_bindings.Get(program_argument);
+    const Ptr<ProgramBindings::ArgumentBinding>& previous_argument_argument_binding = applied_program_bindings.Get(m_settings.argument);
     if (!previous_argument_argument_binding)
         return false;
 
