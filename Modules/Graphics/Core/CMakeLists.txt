@@ -39,6 +39,7 @@ if (WIN32)
         ${SOURCES_GRAPHICS_DIR}/RenderPassDX.cpp
         ${SOURCES_GRAPHICS_DIR}/CommandQueueDX.h
         ${SOURCES_GRAPHICS_DIR}/CommandQueueDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/CommandListDX.h
         ${SOURCES_GRAPHICS_DIR}/CommandListDX.hpp
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListDX.h
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListDX.cpp
@@ -238,6 +239,7 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/CommandQueueBase.cpp
     ${SOURCES_DIR}/CommandListBase.h
     ${SOURCES_DIR}/CommandListBase.cpp
+    ${SOURCES_DIR}/CommandListState.cpp
     ${SOURCES_DIR}/RenderCommandListBase.h
     ${SOURCES_DIR}/RenderCommandListBase.cpp
     ${SOURCES_DIR}/ParallelRenderCommandListBase.h

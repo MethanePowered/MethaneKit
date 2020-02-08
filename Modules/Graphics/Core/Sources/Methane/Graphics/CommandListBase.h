@@ -37,6 +37,7 @@ namespace Methane::Graphics
 {
 
 class CommandQueueBase;
+class ProgramBindingsBase;
 
 class CommandListBase
     : public ObjectBase
@@ -53,25 +54,40 @@ public:
         Executing,
     };
 
+    struct CommandState
+    {
+        Ptr<ProgramBindingsBase> sp_program_bindings;
+
+        static UniquePtr<CommandState> Create(Type command_list_type);
+
+    protected:
+        CommandState() = default;
+    };
+
     CommandListBase(CommandQueueBase& command_queue, Type type);
 
     // CommandList interface
     Type GetType() const override { return m_type; }
     void Reset(const std::string& debug_group = "") override;
+    void SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
     void Commit(bool present_drawable) override;
     CommandQueue& GetCommandQueue() override;
 
     // CommandListBase interface
-
     virtual void SetResourceBarriers(const ResourceBase::Barriers& resource_barriers) = 0;
     virtual void Execute(uint32_t frame_index);
     virtual void Complete(uint32_t frame_index);
 
     void SetResourceTransitionBarriers(const Refs<Resource>& resources, ResourceBase::State state_before, ResourceBase::State state_after);
-    Ptr<CommandListBase> GetPtr()                           { return shared_from_this(); }
     void SetOpenDebugGroup(const std::string& debug_group)  { m_open_debug_group = debug_group; }
+    const ProgramBindingsBase* GetProgramBindings() const   { return GetCommandState().sp_program_bindings.get(); }
+    Ptr<CommandListBase>       GetPtr()                     { return shared_from_this(); }
 
 protected:
+    void ResetCommandState();
+    CommandState& GetCommandState();
+    const CommandState& GetCommandState() const;
+
     CommandQueueBase&       GetCommandQueueBase();
     const CommandQueueBase& GetCommandQueueBase() const;
 
@@ -84,16 +100,17 @@ protected:
 
 private:
     static std::string GetStateName(State state);
-
+    
     using ExecutingOnFrame = std::map<uint32_t, bool>;
 
-    const Type           m_type;
-    Ptr<CommandListBase> m_sp_self;
-    Ptr<CommandQueue>    m_sp_command_queue;
-    std::string          m_open_debug_group;
-    uint32_t             m_committed_frame_index = 0;
-    State                m_state                 = State::Pending;
-    mutable std::mutex   m_state_mutex;
+    const Type              m_type;
+    Ptr<CommandListBase>    m_sp_self;
+    Ptr<CommandQueue>       m_sp_command_queue;
+    UniquePtr<CommandState> m_sp_command_state;
+    std::string             m_open_debug_group;
+    uint32_t                m_committed_frame_index = 0;
+    State                   m_state                 = State::Pending;
+    mutable std::mutex      m_state_mutex;
 };
 
 } // namespace Methane::Graphics

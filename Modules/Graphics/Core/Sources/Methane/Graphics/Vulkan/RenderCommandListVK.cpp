@@ -62,7 +62,7 @@ void RenderCommandListVK::Reset(const Ptr<RenderState>& sp_render_state, const s
 {
     ITT_FUNCTION_TASK();
 
-    RenderCommandListBase::ResetDrawState();
+    RenderCommandListBase::ResetCommandState();
     RenderCommandListBase::Reset(sp_render_state, debug_group);
 }
 
@@ -89,7 +89,7 @@ void RenderCommandListVK::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
 
     RenderCommandListBase::SetVertexBuffers(vertex_buffers);
 
-    if (!m_draw_state.flags.vertex_buffers_changed)
+    if (!GetDrawingState().flags.vertex_buffers_changed)
         return;
 
     uint32_t vb_index = 0;

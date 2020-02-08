@@ -79,7 +79,7 @@ void RenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, const s
 {
     ITT_FUNCTION_TASK();
     
-    RenderCommandListBase::ResetDrawState();
+    RenderCommandListBase::ResetCommandState();
 
     if (m_mtl_render_encoder)
     {
@@ -161,7 +161,7 @@ void RenderCommandListMT::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
 
     RenderCommandListBase::SetVertexBuffers(vertex_buffers);
 
-    if (!m_draw_state.flags.vertex_buffers_changed)
+    if (!GetDrawingState().flags.vertex_buffers_changed)
         return;
 
     assert(m_mtl_render_encoder != nil);

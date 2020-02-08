@@ -24,10 +24,10 @@ DirectX 12 implementation of the program bindings interface.
 #include "ProgramBindingsDX.h"
 #include "DeviceDX.h"
 #include "ProgramDX.h"
-#include "RenderCommandListDX.h" // TODO: to be replaced with CommandListDX.h
+#include "CommandListDX.h"
 #include "DescriptorHeapDX.h"
 
-#include <Methane/Graphics/RenderCommandListBase.h> // TODO: to be replaced with CommandListBase.h
+#include <Methane/Graphics/CommandListBase.h>
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Windows/Utils.h>
@@ -79,7 +79,7 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
 {
     ITT_FUNCTION_TASK();
 
-    ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(resource_locations);
+    ArgumentBindingBase::SetResourceLocations(resource_locations);
 
     m_resource_locations_dx.clear();
 
@@ -201,6 +201,7 @@ void ProgramBindingsDX::Initialize()
 void ProgramBindingsDX::CompleteInitialization()
 {
     ITT_FUNCTION_TASK();
+
     CopyDescriptorsToGpu();
     UpdateRootParameterBindings();
 }
@@ -209,11 +210,12 @@ void ProgramBindingsDX::Apply(CommandList& command_list, ApplyBehavior::Mask app
 {
     ITT_FUNCTION_TASK();
 
-    using DXBindingType = ArgumentBindingDX::Type;
+    using DXBindingType     = ArgumentBindingDX::Type;
     using DXDescriptorRange = ArgumentBindingDX::DescriptorRange;
 
-    RenderCommandListDX&       command_list_dx            = dynamic_cast<RenderCommandListDX&>(command_list);
-    const ProgramBindingsBase* p_applied_program_bindings = command_list_dx.GetProgramBindings();
+    CommandListBase&           command_list_base          = dynamic_cast<CommandListBase&>(command_list);
+    ICommandListDX&            command_list_dx            = dynamic_cast<ICommandListDX&>(command_list);
+    const ProgramBindingsBase* p_applied_program_bindings = command_list_base.GetProgramBindings();
     const bool           apply_constant_resource_bindings = apply_behavior & ~ApplyBehavior::ConstantOnce || !p_applied_program_bindings;
 
     wrl::ComPtr<ID3D12GraphicsCommandList>& cp_d3d12_command_list = command_list_dx.GetNativeCommandList();
@@ -227,7 +229,7 @@ void ProgramBindingsDX::Apply(CommandList& command_list, ApplyBehavior::Mask app
         ResourceBase::Barriers resource_transition_barriers = ApplyResourceStates(apply_constant_resource_bindings);
         if (!resource_transition_barriers.empty())
         {
-            command_list_dx.SetResourceBarriers(resource_transition_barriers);
+            command_list_base.SetResourceBarriers(resource_transition_barriers);
         }
     }
 
@@ -277,6 +279,8 @@ void ProgramBindingsDX::ForEachArgumentBinding(const ArgumentBindingFunc& argume
 
 void ProgramBindingsDX::AddRootParameterBinding(const Program::ArgumentDesc& argument_desc, RootParameterBinding root_parameter_binding)
 {
+    ITT_FUNCTION_TASK();
+
     if (argument_desc.IsConstant())
     {
         m_constant_root_parameter_bindings.emplace_back(std::move(root_parameter_binding));
@@ -289,6 +293,8 @@ void ProgramBindingsDX::AddRootParameterBinding(const Program::ArgumentDesc& arg
 
 void ProgramBindingsDX::AddResourceState(const Program::ArgumentDesc& argument_desc, ResourceState resource_state)
 {
+    ITT_FUNCTION_TASK();
+
     if (argument_desc.IsConstant())
     {
         m_constant_resource_states.emplace_back(std::move(resource_state));
@@ -353,6 +359,8 @@ void ProgramBindingsDX::UpdateRootParameterBindings()
 
 ResourceBase::Barriers ProgramBindingsDX::ApplyResourceStates(bool apply_constant_resource_states) const
 {
+    ITT_FUNCTION_TASK();
+
     ResourceBase::Barriers resource_transition_barriers;
 
     if (apply_constant_resource_states)
@@ -376,6 +384,7 @@ ResourceBase::Barriers ProgramBindingsDX::ApplyResourceStates(bool apply_constan
 void ProgramBindingsDX::ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const
 {
     ITT_FUNCTION_TASK();
+
     const ArgumentBindingDX::Type binding_type = root_parameter_binding.argument_binding.GetSettingsDX().type;
 
     switch (binding_type)

@@ -23,7 +23,7 @@ Base implementation of the command list interface.
 
 #include "DeviceBase.h"
 #include "CommandQueueBase.h"
-#include "RenderContextBase.h"
+#include "ProgramBindingsBase.h"
 #include "ResourceBase.h"
 
 #include <Methane/Instrumentation.h>
@@ -51,6 +51,7 @@ std::string CommandListBase::GetStateName(State state)
 
 CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
     : m_sp_command_queue(command_queue.GetPtr())
+    , m_sp_command_state(CommandState::Create(type))
     , m_type(type)
 {
     ITT_FUNCTION_TASK();
@@ -59,6 +60,8 @@ CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
 void CommandListBase::Reset(const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
+
+    // ResetCommandState() must be called from the top-most overriden Reset method
 
     const bool debug_group_changed = m_open_debug_group != debug_group;
 
@@ -73,6 +76,13 @@ void CommandListBase::Reset(const std::string& debug_group)
     }
 
     m_open_debug_group = debug_group;
+}
+
+void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior)
+{
+    ITT_FUNCTION_TASK();
+    program_bindings.Apply(*this, apply_behavior);
+    m_sp_command_state->sp_program_bindings = static_cast<ProgramBindingsBase&>(program_bindings).GetPtr();
 }
 
 void CommandListBase::Commit(bool /*present_drawable*/)
@@ -206,6 +216,26 @@ void CommandListBase::SetResourceTransitionBarriers(const Refs<Resource>& resour
         });
     }
     SetResourceBarriers(resource_barriers);
+}
+
+void CommandListBase::ResetCommandState()
+{
+    ITT_FUNCTION_TASK();
+    m_sp_command_state = CommandState::Create(m_type);
+}
+
+CommandListBase::CommandState& CommandListBase::GetCommandState()
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_sp_command_state);
+    return *m_sp_command_state;
+}
+
+const CommandListBase::CommandState& CommandListBase::GetCommandState() const
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_sp_command_state);
+    return *m_sp_command_state;
 }
 
 CommandQueueBase& CommandListBase::GetCommandQueueBase()

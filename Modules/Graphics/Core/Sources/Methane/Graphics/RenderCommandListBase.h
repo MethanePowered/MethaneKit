@@ -36,7 +36,6 @@ namespace Methane::Graphics
 {
 
 struct RenderState;
-class ProgramBindingsBase;
 class ParallelRenderCommandListBase;
 
 class RenderCommandListBase
@@ -44,33 +43,12 @@ class RenderCommandListBase
     , public CommandListBase
 {
 public:
-    RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass);
-    RenderCommandListBase(ParallelRenderCommandListBase& parallel_render_command_list);
-
-    // RenderCommandList interface
-    void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;
-    void SetState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) override;
-    void SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
-    void SetVertexBuffers(const Refs<Buffer>& vertex_buffers) override;
-    void DrawIndexed(Primitive primitive_type, Buffer& index_buffer,
-                     uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
-                     uint32_t instance_count, uint32_t start_instance) override;
-    void Draw(Primitive primitive_type, uint32_t vertex_count, uint32_t start_vertex,
-              uint32_t instance_count, uint32_t start_instance) override;
-
-    const ProgramBindingsBase* GetProgramBindings() const { return m_draw_state.sp_program_bindings.get(); }
-    RenderPassBase& GetPass();
-
-protected:
-    void ResetDrawState();
-    void ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count = 0);
-
-    struct DrawingState
+    struct DrawingState final : CommandState
     {
         struct Flags
         {
             bool primitive_type_changed = false;
-            bool index_buffer_changed   = false;
+            bool index_buffer_changed = false;
             bool vertex_buffers_changed = false;
         };
 
@@ -78,17 +56,35 @@ protected:
         Ptr<BufferBase>          sp_index_buffer;
         Ptrs<BufferBase>         sp_vertex_buffers;
         Ptr<RenderStateBase>     sp_render_state;
-        Ptr<ProgramBindingsBase> sp_program_bindings;
         RenderState::Group::Mask render_state_groups;
 
         Flags                    flags;
 
-        void Reset();
+        DrawingState() = default;
     };
+
+    RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass);
+    RenderCommandListBase(ParallelRenderCommandListBase& parallel_render_command_list);
+
+    // RenderCommandList interface
+    void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;
+    void SetState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) override;
+    void SetVertexBuffers(const Refs<Buffer>& vertex_buffers) override;
+    void DrawIndexed(Primitive primitive_type, Buffer& index_buffer,
+                     uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
+                     uint32_t instance_count, uint32_t start_instance) override;
+    void Draw(Primitive primitive_type, uint32_t vertex_count, uint32_t start_vertex,
+              uint32_t instance_count, uint32_t start_instance) override;
+
+    RenderPassBase& GetPass();
+
+protected:
+    void ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count = 0);
+    DrawingState&       GetDrawingState()       { return static_cast<DrawingState&>(GetCommandState()); }
+    const DrawingState& GetDrawingState() const { return static_cast<const DrawingState&>(GetCommandState()); }
 
     const bool            m_is_parallel;
     const Ptr<RenderPass> m_sp_pass;
-    DrawingState          m_draw_state;
 
     std::weak_ptr<ParallelRenderCommandListBase> m_wp_parallel_render_command_list;
 };

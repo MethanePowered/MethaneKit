@@ -48,6 +48,8 @@ struct CommandList : virtual Object
     virtual void PushDebugGroup(const std::string& name) = 0;
     virtual void PopDebugGroup() = 0;
     virtual void Reset(const std::string& debug_group = "") = 0;
+    virtual void SetProgramBindings(ProgramBindings& program_bindings,
+                                    ProgramBindings::ApplyBehavior::Mask apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental) = 0;
     virtual void Commit(bool present_drawable) = 0;
     virtual CommandQueue& GetCommandQueue() = 0;
 
