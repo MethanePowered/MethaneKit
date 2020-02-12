@@ -34,12 +34,6 @@ AppLin::AppLin(const AppBase::Settings& settings)
     ITT_FUNCTION_TASK();
 }
 
-void AppLin::ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result)
-{
-    ITT_FUNCTION_TASK();
-    AppBase::ParseCommandLine(cmd_parse_result);
-}
-
 int AppLin::Run(const RunArgs& args)
 {
     return 0;

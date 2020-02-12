@@ -47,7 +47,6 @@ public:
 
 protected:
     // AppBase interface
-    void ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result) override;
     void ShowAlert(const Message& msg) override;
 
     AppEnvironment m_env;

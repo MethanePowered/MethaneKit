@@ -56,12 +56,6 @@ AppWin::AppWin(const AppBase::Settings& settings)
     ITT_FUNCTION_TASK();
 }
 
-void AppWin::ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result)
-{
-    ITT_FUNCTION_TASK();
-    AppBase::ParseCommandLine(cmd_parse_result);
-}
-
 int AppWin::Run(const RunArgs& args)
 {
     // Skip instrumentation ITT_FUNCTION_TASK() since this is the only root function running till application close
