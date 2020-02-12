@@ -3,6 +3,9 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Externals/CLI11" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Externals/CLI11/extern/googletest" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Externals/CLI11/tests/mesonTest/subprojects/CLI11" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/CML" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/CMRC" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/Catch2" vcs="Git" />

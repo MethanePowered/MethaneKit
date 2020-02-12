@@ -86,11 +86,10 @@ public:
         , m_show_logo_badge(settings.show_logo_badge)
     {
         ITT_FUNCTION_TASK();
-        m_cmd_options.add_options()
-            ("d,hud", "Show/hide HUD in window title", cxxopts::value<int>())
-            ("v,vsync", "Enable/disable vertical synchronization", cxxopts::value<int>())
-            ("i,device", "Render at adapter index, use -1 for software adapter", cxxopts::value<int>())
-            ("f,framebuffers", "Frame buffers count in swap-chain", cxxopts::value<uint32_t>());
+        add_option("-i,--hud", m_show_hud_in_window_title, "HUD information in window title", true);
+        add_option("-v,--vsync", m_initial_context_settings.vsync_enabled, "Vertical synchronization", true);
+        add_option("-d,--device", m_default_device_index, "Render at adapter index, use -1 for software adapter", true);
+        add_option("-b,--frame-buffers", m_initial_context_settings.frame_buffers_count, "Frame buffers count in swap-chain", true);
 
         m_input_state.AddControllers({ std::make_shared<Platform::AppController>(*this, help_description) });
     }
@@ -293,10 +292,10 @@ public:
             throw std::runtime_error("RenderContext is not initialized before rendering.");
         }
 
-        const RenderContext::Settings&      context_settings   = m_sp_context->GetSettings();
-        const FpsCounter             &             fps_counter = m_sp_context->GetFpsCounter();
-        const uint32_t                average_fps           = fps_counter.GetFramesPerSecond();
-        const FpsCounter::FrameTiming average_frame_timing  = fps_counter.GetAverageFrameTiming();
+        const RenderContext::Settings& context_settings      = m_sp_context->GetSettings();
+        const FpsCounter&              fps_counter           = m_sp_context->GetFpsCounter();
+        const uint32_t                 average_fps           = fps_counter.GetFramesPerSecond();
+        const FpsCounter::FrameTiming  average_frame_timing  = fps_counter.GetAverageFrameTiming();
 
         std::stringstream title_ss;
         title_ss.precision(2);
@@ -362,29 +361,6 @@ protected:
     {
         ITT_FUNCTION_TASK();
         return m_sp_context->GetAppView();
-    }
-
-    void ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result) override
-    {
-        ITT_FUNCTION_TASK();
-        Platform::App::ParseCommandLine(cmd_parse_result);
-
-        if (cmd_parse_result.count("hud"))
-        {
-            m_show_hud_in_window_title = cmd_parse_result["hud"].as<int>() != 0;
-        }
-        if (cmd_parse_result.count("vsync"))
-        {
-            m_initial_context_settings.vsync_enabled = cmd_parse_result["vsync"].as<int>() != 0;
-        }
-        if (cmd_parse_result.count("device"))
-        {
-            m_default_device_index = cmd_parse_result["device"].as<int>();
-        }
-        if (cmd_parse_result.count("framebuffers"))
-        {
-            m_initial_context_settings.frame_buffers_count = cmd_parse_result["framebuffers"].as<uint32_t>();
-        }
     }
 
     inline FrameT& GetCurrentFrame()

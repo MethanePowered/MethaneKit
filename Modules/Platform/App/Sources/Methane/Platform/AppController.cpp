@@ -134,7 +134,7 @@ void AppController::ShowHelp()
     
     if (m_show_command_line_help)
     {
-        const std::string cmd_line_help = m_application.GetCmdOptions().help();
+        const std::string cmd_line_help = m_application.help();
         if (!cmd_line_help.empty())
         {
             if (!is_first_controller)

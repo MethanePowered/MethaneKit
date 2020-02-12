@@ -28,7 +28,7 @@ Base application interface and platform-independent implementation.
 #include <Methane/Data/Types.h>
 #include <Methane/Memory.hpp>
 
-#include <cxxopts.hpp>
+#include <CLI/App.hpp>
 
 #include <string>
 #include <vector>
@@ -39,7 +39,7 @@ namespace Methane::Platform
 
 struct AppEnvironment;
 
-class AppBase
+class AppBase : public CLI::App
 {
 public:
     struct Settings
@@ -93,7 +93,6 @@ public:
     const Input::State&     GetInputState() const { return m_input_state; }
     const Data::FrameSize&  GetFrameSize() const  { return m_frame_size; }
     bool                    IsMinimized() const   { return m_is_minimized; }
-    const cxxopts::Options& GetCmdOptions() const { return m_cmd_options; }
 
     // Entry point for user input handling from platform-specific implementation
     Input::IActionController& InputController() { return m_input_state; }
@@ -101,11 +100,9 @@ public:
 protected:
     // AppBase interface
     virtual AppView GetView() const = 0;
-    virtual void ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result);
     virtual void ShowAlert(const Message& msg);
 
     Settings             m_settings;
-    cxxopts::Options     m_cmd_options;
     Data::FrameRect      m_window_bounds;
     Data::FrameSize      m_frame_size;
     bool                 m_is_minimized = false;
