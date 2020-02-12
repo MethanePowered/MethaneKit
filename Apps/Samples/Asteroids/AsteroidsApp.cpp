@@ -29,6 +29,7 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 #include <Methane/Instrumentation.h>
 #include <Methane/ScopeTimer.h>
 #include <Methane/Platform/Logger.h>
+#include <CLI/CLI.hpp>
 
 #include <cassert>
 #include <memory>
@@ -166,6 +167,26 @@ AsteroidsApp::AsteroidsApp()
             gfx::AppCameraController::ActionByKeyboardState { { { pal::Keyboard::Key::LeftControl, pal::Keyboard::Key::L }, gfx::ActionCamera::KeyboardAction::Reset } },
             gfx::AppCameraController::ActionByKeyboardKey   { }),
     });
+
+    const std::string options_group = "Asteroids Options";
+    add_option_group(options_group);
+    add_option("-c,--complexity",
+               [this](CLI::results_t res) {
+                       uint32_t complexity = 0;
+                       if (CLI::detail::lexical_cast(res[0], complexity))
+                       {
+                           SetAsteroidsComplexity(complexity);
+                           return true;
+                       }
+                       return false;
+                   }, "simulation complexity", true)
+        ->default_val(m_asteroids_complexity)
+        ->expected(0, g_instaces_count.size() - 1)
+        ->group(options_group);
+    add_option("-s,--subdiv-count", m_asteroids_array_settings.subdivisions_count, "mesh subdivisions count", true)->group(options_group);
+    add_option("-t,--texture-array", m_asteroids_array_settings.textures_array_enabled, "texture array enabled", true)->group(options_group);
+    add_option("-p,--parallel-render", m_is_parallel_rendering_enabled, "parallel rendering enabled", true)->group(options_group);
+
 }
 
 AsteroidsApp::~AsteroidsApp()
@@ -430,7 +451,8 @@ void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
     if (m_asteroids_complexity == asteroids_complexity)
         return;
 
-    m_sp_context->WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
+    if (m_sp_context)
+        m_sp_context->WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
 
     m_asteroids_complexity = asteroids_complexity;
 
@@ -442,9 +464,9 @@ void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
 
     m_sp_asteroids_array.reset();
     m_sp_asteroids_array_state.reset();
-    
-    assert(!!m_sp_context);
-    m_sp_context->Reset();
+
+    if (m_sp_context)
+        m_sp_context->Reset();
 }
 
 void AsteroidsApp::SetParallelRenderingEnabled(bool is_parallel_rendering_enabled)
@@ -477,6 +499,7 @@ std::string AsteroidsApp::GetParametersString() const
        << std::endl << "  - mesh subdivisions count: "   << m_asteroids_array_settings.subdivisions_count
        << std::endl << "  - unique textures count: "     << m_asteroids_array_settings.textures_count << " "
                                                          << static_cast<std::string>(m_asteroids_array_settings.texture_dimensions)
+       << std::endl << "  - textures array binding: "    << (m_asteroids_array_settings.textures_array_enabled ? "enabled" : "disabled")
        << std::endl << "  - parallel rendering: "        << (m_is_parallel_rendering_enabled ? "enabled" : "disabled")
        << std::endl << "  - CPU hardware thread count: " << std::thread::hardware_concurrency();
 
