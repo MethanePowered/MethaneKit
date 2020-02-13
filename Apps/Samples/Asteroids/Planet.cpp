@@ -107,6 +107,9 @@ Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, cons
         gfx::Sampler::LevelOfDetail(m_settings.lod_bias)
     });
     m_sp_texture_sampler->SetName("Planet Texture Sampler");
+
+    // Initialize default uniforms to be ready to render right away
+    Update(0.0, 0.0);
 }
 
 Ptr<gfx::ProgramBindings> Planet::CreateProgramBindings(const Ptr<gfx::Buffer>& sp_constants_buffer, const Ptr<gfx::Buffer>& sp_uniforms_buffer)

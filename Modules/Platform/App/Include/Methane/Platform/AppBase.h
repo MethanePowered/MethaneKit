@@ -89,25 +89,27 @@ public:
     void UpdateAndRender();
     bool HasError() const;
 
-    const Settings&         GetSettings() const   { return m_settings; }
-    const Input::State&     GetInputState() const { return m_input_state; }
-    const Data::FrameSize&  GetFrameSize() const  { return m_frame_size; }
-    bool                    IsMinimized() const   { return m_is_minimized; }
-
-    // Entry point for user input handling from platform-specific implementation
-    Input::IActionController& InputController() { return m_input_state; }
+    const Settings&         GetPlatformAppSettings() const  { return m_settings; }
+    const Input::State&     GetInputState() const           { return m_input_state; }
+    const Data::FrameSize&  GetFrameSize() const            { return m_frame_size; }
+    bool                    IsMinimized() const             { return m_is_minimized; }
+    Input::State&           InputState()                    { return m_input_state; }
 
 protected:
     // AppBase interface
     virtual AppView GetView() const = 0;
     virtual void ShowAlert(const Message& msg);
 
+    void Deinitialize() { m_initialized = false; }
+
+    Ptr<Message> m_sp_deferred_message;
+
+private:
     Settings             m_settings;
     Data::FrameRect      m_window_bounds;
     Data::FrameSize      m_frame_size;
     bool                 m_is_minimized = false;
     bool                 m_initialized = false;
-    Ptr<Message>         m_sp_deferred_message;
     Input::State         m_input_state;
 };
 

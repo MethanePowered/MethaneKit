@@ -23,6 +23,7 @@ Base application controller providing commands like app close and help.
 
 #include <Methane/Platform/AppController.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Platform/Utils.h>
 
 #include <sstream>
 #include <cassert>
@@ -30,12 +31,10 @@ Base application controller providing commands like app close and help.
 namespace Methane::Platform
 {
 
-AppController::AppController(AppBase& application, const std::string& application_help, bool show_command_line_help,
-                             const ActionByKeyboardState& action_by_keyboard_state)
+AppController::AppController(AppBase& application, const std::string& application_help, const ActionByKeyboardState& action_by_keyboard_state)
     : Controller(application_help)
     , Keyboard::ActionControllerBase<AppHelpAction>(action_by_keyboard_state, {})
     , m_application(application)
-    , m_show_command_line_help(show_command_line_help)
 {
     ITT_FUNCTION_TASK();
 }
@@ -51,8 +50,9 @@ void AppController::OnKeyboardStateAction(AppHelpAction action)
     ITT_FUNCTION_TASK();
     switch(action)
     {
-        case AppHelpAction::ShowHelp: ShowHelp(); break;
-        case AppHelpAction::CloseApp: m_application.Close(); break;
+        case AppHelpAction::ShowControlsHelp:    ShowControlsHelp(); break;
+        case AppHelpAction::ShowCommandLineHelp: ShowCommandLineHelp(); break;
+        case AppHelpAction::CloseApp:            m_application.Close(); break;
         default: assert(0);
     }
 }
@@ -62,10 +62,11 @@ std::string AppController::GetKeyboardActionName(AppHelpAction action) const
     ITT_FUNCTION_TASK();
     switch (action)
     {
-        case AppHelpAction::None:      return "none";
-        case AppHelpAction::ShowHelp:  return "show application help";
-        case AppHelpAction::CloseApp:  return "close application";
-        default: assert(0);            return "";
+        case AppHelpAction::None:                return "none";
+        case AppHelpAction::ShowControlsHelp:    return "show application controls help";
+        case AppHelpAction::ShowCommandLineHelp: return "show application command-line help";
+        case AppHelpAction::CloseApp:            return "close the application";
+        default: assert(0);                      return "";
     }
 }
 
@@ -75,7 +76,7 @@ Input::IHelpProvider::HelpLines AppController::GetHelp() const
     return GetKeyboardHelp();
 }
 
-void AppController::ShowHelp()
+void AppController::ShowControlsHelp()
 {
     ITT_FUNCTION_TASK();
     std::stringstream help_stream;
@@ -131,31 +132,30 @@ void AppController::ShowHelp()
             first_line = false;
         }
     }
-    
-    if (m_show_command_line_help)
-    {
-        const std::string cmd_line_help = m_application.help();
-        if (!cmd_line_help.empty())
-        {
-            if (!is_first_controller)
-            {
-                help_stream << std::endl;
-            }
-            help_stream << "COMMAND LINE OPTIONS" << std::endl;
-            help_stream << std::endl << cmd_line_help;
-        }
-    }
 
     if (!is_first_controller)
     {
         help_stream << std::endl;
     }
-    help_stream << std::endl << "Powered by Methane Kit: https://github.com/egorodet/MethaneKit";
+    help_stream << std::endl << "Powered by Methane Kit" << std::endl << "https://github.com/egorodet/MethaneKit";
     
     m_application.Alert({
         AppBase::Message::Type::Information,
-        "Application Help",
+        "Application Controls Help",
         help_stream.str()
+    });
+}
+
+void AppController::ShowCommandLineHelp()
+{
+    ITT_FUNCTION_TASK();
+    std::stringstream help_stream;
+
+    const std::string cmd_line_help = m_application.help();
+    m_application.Alert({
+        AppBase::Message::Type::Information,
+        "Application Command-Line Help",
+        cmd_line_help
     });
 }
 

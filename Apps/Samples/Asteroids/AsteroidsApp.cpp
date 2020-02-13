@@ -82,7 +82,7 @@ static const ParamValues<float, g_max_complexity+1> g_scale_ratio = {
 };
 
 static const std::map<pal::Keyboard::State, AsteroidsAppAction> g_asteroids_action_by_keyboard_state = {
-    { { pal::Keyboard::Key::F2           }, AsteroidsAppAction::ShowParameters              },
+    { { pal::Keyboard::Key::F3           }, AsteroidsAppAction::ShowParameters              },
     { { pal::Keyboard::Key::RightBracket }, AsteroidsAppAction::IncreaseComplexity          },
     { { pal::Keyboard::Key::LeftBracket  }, AsteroidsAppAction::DecreaseComplexity          },
     { { pal::Keyboard::Key::P            }, AsteroidsAppAction::SwitchParallelRendering     },
@@ -92,29 +92,35 @@ static const std::map<pal::Keyboard::State, AsteroidsAppAction> g_asteroids_acti
 };
 
 // Common application settings
-static const std::string           g_app_help_text  = "Asteroids sample demonstrates parallel rendering of the asteroids field observable with interactive camera.";
-static const GraphicsApp::Settings  g_app_settings  = // Application settings:
-{                                                     // ====================
-    {                                                 // app:
-        "Methane Asteroids",                          // - name
-        0.8, 0.8,                                     // - width, height
-        false,                                        // - is_full_screen
-    },                                                //
-    {                                                 // context:
-        gfx::FrameSize(),                             // - frame_size
-        gfx::PixelFormat::BGRA8Unorm,                 // - color_format
-        gfx::PixelFormat::Depth32Float,               // - depth_stencil_format
-        { /* color clearing disabled */ },            // - clear_color
-        gfx::DepthStencil{ 0.f, 0u },                 // - clear_depth_stencil
-        3u,                                           // - frame_buffers_count
-        false,                                        // - vsync_enabled
-    },                                                //
-    true,                                             // show_hud_in_window_title
-    true                                              // show_logo_badge
+static const std::string              g_app_help_text = "Methane sample demonstrating parallel rendering of massive randomly generated asteroids field observable with arc-ball camera.";
+static const GraphicsApp::AllSettings g_app_settings  = // Application settings:
+{                                                       // ====================
+    {                                                   // platform_app:
+        "Methane Asteroids",                            // - name
+        0.8, 0.8,                                       // - width, height
+        false,                                          // - is_full_screen
+    },                                                  //
+    {                                                   // graphics_app:
+        gfx::RenderPass::Access::ShaderResources |      // - screen_pass_access
+        gfx::RenderPass::Access::Samplers,              //
+        true,                                           // - animations_enabled
+        true,                                           // - show_hud_in_window_title
+        true,                                           // - show_logo_badge
+        0                                               // - default_device_index
+    },                                                  //
+    {                                                   // render_context:
+        gfx::FrameSize(),                               // - frame_size
+        gfx::PixelFormat::BGRA8Unorm,                   // - color_format
+        gfx::PixelFormat::Depth32Float,                 // - depth_stencil_format
+        { /* color clearing disabled */ },              // - clear_color
+        gfx::DepthStencil{ 0.f, 0u },                   // - clear_depth_stencil
+        3u,                                             // - frame_buffers_count
+        false,                                          // - vsync_enabled
+    }
 };
 
 AsteroidsApp::AsteroidsApp()
-    : GraphicsApp(g_app_settings, gfx::RenderPass::Access::ShaderResources | gfx::RenderPass::Access::Samplers, g_app_help_text)
+    : GraphicsApp(g_app_settings, g_app_help_text)
     , m_view_camera(m_animations, gfx::ActionCamera::Pivot::Aim)
     , m_light_camera(m_view_camera, m_animations, gfx::ActionCamera::Pivot::Aim)
     , m_scene_scale(15.f)
@@ -159,7 +165,7 @@ AsteroidsApp::AsteroidsApp()
     m_light_camera.SetParamters({ -300.f, 300.f, 90.f });
     m_light_camera.Resize(120.f, 120.f);
 
-    m_input_state.AddControllers({
+    InputState().AddControllers({
         std::make_shared<AsteroidsAppController>(*this, g_asteroids_action_by_keyboard_state),
         std::make_shared<gfx::AppCameraController>(m_view_camera,  "VIEW CAMERA"),
         std::make_shared<gfx::AppCameraController>(m_light_camera, "LIGHT SOURCE",

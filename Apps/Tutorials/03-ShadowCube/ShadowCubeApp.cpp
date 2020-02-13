@@ -32,37 +32,43 @@ namespace Methane::Tutorials
 {
 
 // Common application settings
-static const gfx::FrameSize        g_shadow_map_size(1024, 1024);
-static const GraphicsApp::Settings g_app_settings = // Application settings:
-{                                                   // ====================
-    {                                               // app:
-        "Methane Shadow Cube",                      // - name
-        0.8, 0.8,                                   // - width, height
-    },                                              //
-    {                                               // context:
-        gfx::FrameSize(),                           // - frame_size
-        gfx::PixelFormat::BGRA8Unorm,               // - color_format
-        gfx::PixelFormat::Depth32Float,             // - depth_stencil_format
-        gfx::Color4f(0.0f, 0.2f, 0.4f, 1.0f),       // - clear_color
-        gfx::DepthStencil{ 1.f, 0u },               // - clear_depth_stencil
-        3,                                          // - frame_buffers_count
-        false,                                      // - vsync_enabled
-    },                                              //
-    true,                                           // show_hud_in_window_title
-    true                                            // show_logo_badge
+static const gfx::FrameSize           g_shadow_map_size(1024, 1024);
+static const GraphicsApp::AllSettings g_app_settings =  // Application settings:
+{                                                       // ====================
+    {                                                   // platform_app:
+        "Methane Shadow Cube",                          // - name
+        0.8, 0.8,                                       // - width, height
+    },                                                  //
+    {                                                   // graphics_app:
+        gfx::RenderPass::Access::ShaderResources |      // - screen_pass_access
+        gfx::RenderPass::Access::Samplers,              //
+        true,                                           // - animations_enabled
+        true,                                           // - show_hud_in_window_title
+        true,                                           // - show_logo_badge
+        0                                               // - default_device_index
+    },                                                  //
+    {                                                   // render_context:
+        gfx::FrameSize(),                               // - frame_size
+        gfx::PixelFormat::BGRA8Unorm,                   // - color_format
+        gfx::PixelFormat::Depth32Float,                 // - depth_stencil_format
+        gfx::Color4f(0.0f, 0.2f, 0.4f, 1.0f),           // - clear_color
+        gfx::DepthStencil{ 1.f, 0u },                   // - clear_depth_stencil
+        3,                                              // - frame_buffers_count
+        false,                                          // - vsync_enabled
+    }
 };
 
 ShadowCubeApp::ShadowCubeApp()
-    : GraphicsApp(g_app_settings, gfx::RenderPass::Access::ShaderResources | gfx::RenderPass::Access::Samplers)
+    : GraphicsApp(g_app_settings, "Methane Tutorial of shadow pass rendering")
     , m_cube_mesh(gfx::Mesh::VertexLayoutFromArray(Vertex::layout), 1.f, 1.f, 1.f)
     , m_floor_mesh(gfx::Mesh::VertexLayoutFromArray(Vertex::layout), 7.f, 7.f, 0.f, 0, gfx::RectMesh<Vertex>::FaceType::XZ)
     , m_scene_scale(15.f)
-    , m_scene_constants(                            // Shader constants:
-        {                                           // ================
-            gfx::Color4f(1.f, 1.f, 0.74f, 1.f),     // - light_color
-            600.f,                                  // - light_power
-            0.2f,                                   // - light_ambient_factor
-            5.f                                     // - light_specular_factor
+    , m_scene_constants(                                // Shader constants:
+        {                                               // ================
+            gfx::Color4f(1.f, 1.f, 0.74f, 1.f),         // - light_color
+            600.f,                                      // - light_power
+            0.2f,                                       // - light_ambient_factor
+            5.f                                         // - light_specular_factor
         })
 {
     m_view_camera.SetOrientation({ { 15.0f, 22.5f, -15.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });

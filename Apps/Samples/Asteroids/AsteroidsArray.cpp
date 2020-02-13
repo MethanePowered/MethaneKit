@@ -298,6 +298,9 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, Settings settings, C
         { gfx::Sampler::Address::Mode::ClampToZero }
     });
     m_sp_texture_sampler->SetName("Asteroid Texture Sampler");
+
+    // Initialize default uniforms to be ready to render right aways
+    Update(0.0, 0.0);
 }
     
 Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::Buffer> &sp_constants_buffer,

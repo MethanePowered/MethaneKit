@@ -42,7 +42,7 @@ NSAlertStyle ConvertMessageTypeToNSAlertStyle(AppBase::Message::Type msg_type)
 AppMac::AppMac(const AppBase::Settings& settings)
     : AppBase(settings)
     , m_ns_app([NSApplication sharedApplication])
-    , m_ns_app_delegate([[AppDelegate alloc] initWithApp:this andSettings: &m_settings])
+    , m_ns_app_delegate([[AppDelegate alloc] initWithApp:this andSettings: &settings])
 {
     ITT_FUNCTION_TASK();
     [m_ns_app setDelegate: m_ns_app_delegate];

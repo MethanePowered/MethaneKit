@@ -33,7 +33,8 @@ enum class AppHelpAction : uint32_t
 {
     None = 0,
     
-    ShowHelp,
+    ShowControlsHelp,
+    ShowCommandLineHelp,
     CloseApp,
     
     Count
@@ -45,18 +46,20 @@ class AppController final
 {
 public:
     inline static const ActionByKeyboardState default_action_by_keyboard_state = {
-        { { Platform::Keyboard::Key::F1 },                                       AppHelpAction::ShowHelp  },
+        { { Platform::Keyboard::Key::F1 },                                       AppHelpAction::ShowControlsHelp  },
+        { { Platform::Keyboard::Key::F2 },                                       AppHelpAction::ShowCommandLineHelp  },
         { { Platform::Keyboard::OS::key_left_ctrl, Platform::Keyboard::Key::Q }, AppHelpAction::CloseApp  },
     };
     
-    AppController(AppBase& application, const std::string& application_help, bool show_command_line_help = false,
+    AppController(AppBase& application, const std::string& application_help,
                       const ActionByKeyboardState& action_by_keyboard_state = default_action_by_keyboard_state);
     
     // Input::Controller implementation
     void OnKeyboardChanged(Platform::Keyboard::Key, Platform::Keyboard::KeyState, const Platform::Keyboard::StateChange& state_change) override;
     HelpLines GetHelp() const override;
     
-    void ShowHelp();
+    void ShowControlsHelp();
+    void ShowCommandLineHelp();
 
 private:
     // Keyboard::ActionControllerBase interface
@@ -64,8 +67,7 @@ private:
     void        OnKeyboardStateAction(AppHelpAction action) override;
     std::string GetKeyboardActionName(AppHelpAction action) const override;
 
-    AppBase&            m_application;
-    const bool          m_show_command_line_help;
+    AppBase& m_application;
 };
 
 } // namespace Methane::Platform

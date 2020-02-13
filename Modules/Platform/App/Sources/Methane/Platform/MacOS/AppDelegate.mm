@@ -37,7 +37,7 @@ using namespace Methane::Platform;
 
 @synthesize window = _window;
 
-- (id) initWithApp : (AppMac*) p_app andSettings : (AppBase::Settings*) p_settings
+- (id) initWithApp : (AppMac*) p_app andSettings : (const AppBase::Settings*) p_settings
 {
     ITT_FUNCTION_TASK();
 

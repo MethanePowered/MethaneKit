@@ -28,27 +28,33 @@ Tutorial demonstrating triangle rendering with Methane graphics API
 namespace Methane::Tutorials
 {
 
-static const GraphicsApp::Settings g_app_settings = // Application settings:
-{                                                   // ====================
-    {                                               // app:
-        "Methane Hello Triangle",                   // - name
-        0.8, 0.8,                                   // - width, height
-    },                                              //
-    {                                               // context:
-        gfx::FrameSize(),                           // - frame_size placeholder: actual size is set in InitContext
-        gfx::PixelFormat::BGRA8Unorm,               // - color_format
-        gfx::PixelFormat::Unknown,                  // - depth_stencil_format
-        gfx::Color4f(0.0f, 0.2f, 0.4f, 1.0f),       // - clear_color
-        { /* no depth-stencil clearing */ },        // - clear_depth_stencil
-        3,                                          // - frame_buffers_count
-        false,                                      // - vsync_enabled
-    },                                              //
-    true,                                           // show_hud_in_window_title
-    true                                            // show_logo_badge
+static const GraphicsApp::AllSettings g_app_settings =  // Application settings:
+{                                                       // ====================
+    {                                                   // platform_apps:
+        "Methane Hello Triangle",                       // - name
+        0.8, 0.8,                                       // - width, height
+    },                                                  //
+    {                                                   // graphics_app:
+        gfx::RenderPass::Access::ShaderResources |      // - screen_pass_access
+        gfx::RenderPass::Access::Samplers,              //
+        true,                                           // - animations_enabled
+        true,                                           // - show_hud_in_window_title
+        true,                                           // - show_logo_badge
+        0                                               // - default_device_index
+    },                                                  //
+    {                                                   // render_context:
+        gfx::FrameSize(),                               // - frame_size placeholder: actual size is set in InitContext
+        gfx::PixelFormat::BGRA8Unorm,                   // - color_format
+        gfx::PixelFormat::Unknown,                      // - depth_stencil_format
+        gfx::Color4f(0.0f, 0.2f, 0.4f, 1.0f),           // - clear_color
+        { /* no depth-stencil clearing */ },            // - clear_depth_stencil
+        3,                                              // - frame_buffers_count
+        false,                                          // - vsync_enabled
+    }
 };
 
 HelloTriangleApp::HelloTriangleApp()
-    : GraphicsApp(g_app_settings, gfx::RenderPass::Access::ShaderResources | gfx::RenderPass::Access::Samplers)
+    : GraphicsApp(g_app_settings, "Methane tutorial of simple triangle rendering")
     , m_triangle_vertices({{
         { { 0.0f,   0.5f,  0.0f }, { 1.0f, 0.0f, 0.0f } },
         { { 0.5f,  -0.5f,  0.0f }, { 0.0f, 1.0f, 0.0f } },

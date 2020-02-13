@@ -70,28 +70,34 @@ class App
 public:
     struct Settings
     {
-        Platform::App::Settings app;
-        RenderContext::Settings context;
-        bool                    show_hud_in_window_title;
-        bool                    show_logo_badge;
+        RenderPass::Access::Mask screen_pass_access = RenderPass::Access::None;
+        bool    animations_enabled          = true;
+        bool    show_hud_in_window_title    = true;
+        bool    show_logo_badge             = true;
+        int32_t default_device_index        = 0;
     };
 
-    App(const Settings& settings, RenderPass::Access::Mask screen_pass_access,
-        const std::string& help_description = "Methane Graphics Application")
-        : Platform::App(settings.app)
+    struct AllSettings
+    {
+        Platform::App::Settings platform_app;
+        Settings                graphics_app;
+        RenderContext::Settings render_context;
+    };
+
+    App(const AllSettings& settings, const std::string& help_description = "Methane Graphics Application")
+        : Platform::App(settings.platform_app)
         , m_image_loader(Data::TextureProvider::Get())
-        , m_initial_context_settings(settings.context)
-        , m_screen_pass_access(screen_pass_access)
-        , m_show_hud_in_window_title(settings.show_hud_in_window_title)
-        , m_show_logo_badge(settings.show_logo_badge)
+        , m_settings(settings.graphics_app)
+        , m_initial_context_settings(settings.render_context)
     {
         ITT_FUNCTION_TASK();
-        add_option("-i,--hud", m_show_hud_in_window_title, "HUD information in window title", true);
+        add_option("-i,--hud", m_settings.show_hud_in_window_title, "HUD information in window title", true);
+        add_option("-a,--animations", m_settings.animations_enabled, "Switch animations", true);
+        add_option("-d,--device", m_settings.default_device_index, "Render at adapter index, use -1 for software adapter", true);
         add_option("-v,--vsync", m_initial_context_settings.vsync_enabled, "Vertical synchronization", true);
-        add_option("-d,--device", m_default_device_index, "Render at adapter index, use -1 for software adapter", true);
         add_option("-b,--frame-buffers", m_initial_context_settings.frame_buffers_count, "Frame buffers count in swap-chain", true);
 
-        m_input_state.AddControllers({ std::make_shared<Platform::AppController>(*this, help_description) });
+        InputState().AddControllers({ std::make_shared<Platform::AppController>(*this, help_description) });
     }
 
     ~App() override
@@ -110,10 +116,10 @@ public:
         const Ptrs<Device>& devices = System::Get().UpdateGpuDevices();
         assert(!devices.empty());
 
-        Ptr<Device> sp_device = m_default_device_index < 0
+        Ptr<Device> sp_device = m_settings.default_device_index < 0
                       ? System::Get().GetSoftwareGpuDevice()
-                      : (static_cast<size_t>(m_default_device_index) < devices.size()
-                           ? devices[m_default_device_index]
+                      : (static_cast<size_t>(m_settings.default_device_index) < devices.size()
+                           ? devices[m_settings.default_device_index]
                            : devices.front());
         assert(sp_device);
         
@@ -123,7 +129,7 @@ public:
         m_sp_context->SetName("App Render Context");
         m_sp_context->AddCallback(*this);
 
-        m_input_state.AddControllers({ std::make_shared<AppContextController>(*m_sp_context) });
+        InputState().AddControllers({ std::make_shared<AppContextController>(*m_sp_context) });
         
         SetFullScreen(m_initial_context_settings.is_full_screen);
     }
@@ -179,14 +185,14 @@ public:
                         : 1.f
                 ),
                 RenderPass::StencilAttachment(),
-                m_screen_pass_access
+                m_settings.screen_pass_access
                 });
 
             m_frames.emplace_back(std::move(frame));
         }
         
         // Create Methane logo badge
-        if (m_show_logo_badge)
+        if (m_settings.show_logo_badge)
             m_sp_logo_badge = std::make_shared<LogoBadge>(*m_sp_context);
 
         Platform::App::Init();
@@ -261,11 +267,13 @@ public:
     bool Update() override
     {
         ITT_FUNCTION_TASK();
-        if (m_is_minimized)
+        if (IsMinimized())
             return false;
         
         System::Get().CheckForChanges();
-        m_animations.Update();
+
+        if (m_settings.animations_enabled)
+            m_animations.Update();
         
         return true;
     }
@@ -274,7 +282,7 @@ public:
     {
         ITT_FUNCTION_TASK();
         
-        if (m_is_minimized)
+        if (IsMinimized())
         {
             // No need to render frames while window is minimized.
             // Sleep thread for a while to not heat CPU by running the message loop
@@ -283,7 +291,7 @@ public:
         }
 
         // Update HUD info in window title
-        if (!m_show_hud_in_window_title ||
+        if (!m_settings.show_hud_in_window_title ||
             m_title_update_timer.GetElapsedSecondsD() < g_title_update_interval_sec)
             return true;
 
@@ -299,7 +307,7 @@ public:
 
         std::stringstream title_ss;
         title_ss.precision(2);
-        title_ss << m_settings.name << "        " 
+        title_ss << GetPlatformAppSettings().name << "        "
                  << average_fps << " FPS (" << std::fixed << average_frame_timing.GetTotalTimeMSec()
                                 << " ms, "  << std::fixed << average_frame_timing.GetCpuTimePercent() << "% cpu)"
                  << ", " << context_settings.frame_size.width << " x " << context_settings.frame_size.height
@@ -340,7 +348,7 @@ public:
         m_frames.clear();
         m_sp_depth_texture.reset();
         m_sp_logo_badge.reset();
-        m_initialized = false;
+        Deinitialize();
     }
 
     // Context::Callback interface
@@ -350,8 +358,8 @@ public:
         Init();
     }
 
-    void SetShowHudInWindowTitle(bool show_hud_in_window_title) { m_show_hud_in_window_title = show_hud_in_window_title; }
-    bool GetShowHudInWindowTitle() const                        { return m_show_hud_in_window_title; }
+    const Settings& GetGraphicsAppSettings() const { return m_settings; }
+    //void SetShowHudInWindowTitle(bool show_hud_in_window_title) { m_settings.show_hud_in_window_title = show_hud_in_window_title; }
 
 protected:
 
@@ -389,11 +397,8 @@ protected:
     Data::AnimationsPool            m_animations;
 
 private:
+    Settings                        m_settings;
     RenderContext::Settings         m_initial_context_settings;
-    int32_t                         m_default_device_index = 0;
-    const RenderPass::Access::Mask  m_screen_pass_access;
-    bool                            m_show_hud_in_window_title;
-    bool                            m_show_logo_badge;
     Timer                           m_title_update_timer;
 
     static constexpr double  g_title_update_interval_sec = 1;
