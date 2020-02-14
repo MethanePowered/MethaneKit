@@ -113,7 +113,7 @@ static const GraphicsApp::AllSettings g_app_settings  = // Application settings:
         gfx::PixelFormat::BGRA8Unorm,                   // - color_format
         gfx::PixelFormat::Depth32Float,                 // - depth_stencil_format
         { /* color clearing disabled */ },              // - clear_color
-        gfx::DepthStencil{ 0.f, 0u },                   // - clear_depth_stencil
+        gfx::DepthStencil{ 0.f, 0 },                    // - clear_depth_stencil
         3u,                                             // - frame_buffers_count
         false,                                          // - vsync_enabled
     }
