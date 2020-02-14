@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020-2020 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,18 +24,18 @@ Base frame class provides frame buffer management with resize handling.
 
 #pragma once
 
+#include "App.h"
+#include "AppController.h"
 #include "AppContextController.h"
 
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Timer.hpp>
 #include <Methane/Data/AnimationsPool.h>
 #include <Methane/Platform/App.h>
-#include <Methane/Platform/AppController.h>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Device.h>
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/Texture.h>
-#include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Graphics/ImageLoader.h>
@@ -62,25 +62,18 @@ struct AppFrame
 
 template<typename FrameT>
 class App
-    : public Platform::App
+    : public Graphics::IApp
+    , public Platform::App
     , public RenderContext::Callback
 {
     static_assert(std::is_base_of<AppFrame, FrameT>::value, "Application Frame type must be derived from AppFrame.");
 
 public:
-    struct Settings
-    {
-        RenderPass::Access::Mask screen_pass_access = RenderPass::Access::None;
-        bool    animations_enabled          = true;
-        bool    show_hud_in_window_title    = true;
-        bool    show_logo_badge             = true;
-        int32_t default_device_index        = 0;
-    };
 
     struct AllSettings
     {
         Platform::App::Settings platform_app;
-        Settings                graphics_app;
+        IApp::Settings          graphics_app;
         RenderContext::Settings render_context;
     };
 
@@ -97,7 +90,7 @@ public:
         add_option("-v,--vsync", m_initial_context_settings.vsync_enabled, "Vertical synchronization", true);
         add_option("-b,--frame-buffers", m_initial_context_settings.frame_buffers_count, "Frame buffers count in swap-chain", true);
 
-        InputState().AddControllers({ std::make_shared<Platform::AppController>(*this, help_description) });
+        InputState().AddControllers({ std::make_shared<AppController>(*this, help_description) });
     }
 
     ~App() override
@@ -358,8 +351,10 @@ public:
         Init();
     }
 
-    const Settings& GetGraphicsAppSettings() const { return m_settings; }
-    //void SetShowHudInWindowTitle(bool show_hud_in_window_title) { m_settings.show_hud_in_window_title = show_hud_in_window_title; }
+    // Graphics::IApp interface
+    const IApp::Settings& GetGraphicsAppSettings() const override        { return m_settings; }
+    void SetAnimationsEnabled(bool animations_enabled) override          { m_settings.animations_enabled = animations_enabled; }
+    void SetShowHudInWindowTitle(bool show_hud_in_window_title) override { m_settings.show_hud_in_window_title = show_hud_in_window_title; }
 
 protected:
 
@@ -397,7 +392,7 @@ protected:
     Data::AnimationsPool            m_animations;
 
 private:
-    Settings                        m_settings;
+    IApp::Settings                  m_settings;
     RenderContext::Settings         m_initial_context_settings;
     Timer                           m_title_update_timer;
 

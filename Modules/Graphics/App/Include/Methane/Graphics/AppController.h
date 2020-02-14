@@ -16,50 +16,47 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/AppController.h
-Base application controller providing commands like app close and help.
+FILE: Methane/Graphics/AppController.h
+Base graphics application controller.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Platform/AppBase.h>
+#include "App.h"
+
+#include <Methane/Platform/AppController.h>
 #include <Methane/Platform/KeyboardActionControllerBase.hpp>
 
-namespace Methane::Platform
+namespace Methane::Graphics
 {
 
 enum class AppAction : uint32_t
 {
     None = 0,
     
-    ShowControlsHelp,
-    ShowCommandLineHelp,
-    CloseApp,
+    SwitchAnimations,
     
     Count
 };
 
 class AppController
-    : public Input::Controller
+    : public Platform::AppController
     , public Platform::Keyboard::ActionControllerBase<AppAction>
 {
 public:
+    using ActionByKeyboardState = Platform::Keyboard::ActionControllerBase<AppAction>::ActionByKeyboardState;
     inline static const ActionByKeyboardState default_action_by_keyboard_state = {
-        { { Platform::Keyboard::Key::F1 },                                       AppAction::ShowControlsHelp  },
-        { { Platform::Keyboard::Key::F2 },                                       AppAction::ShowCommandLineHelp  },
-        { { Platform::Keyboard::OS::key_left_ctrl, Platform::Keyboard::Key::Q }, AppAction::CloseApp  },
+        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::A }, AppAction::SwitchAnimations  },
     };
     
-    AppController(AppBase& application, const std::string& application_help,
-                  const ActionByKeyboardState& action_by_keyboard_state = default_action_by_keyboard_state);
+    AppController(IApp& application, const std::string& application_help,
+                  const Platform::AppController::ActionByKeyboardState& platform_action_by_keyboard_state = Platform::AppController::default_action_by_keyboard_state,
+                  const Graphics::AppController::ActionByKeyboardState& graphics_action_by_keyboard_state = Graphics::AppController::default_action_by_keyboard_state);
     
     // Input::Controller implementation
     void OnKeyboardChanged(Platform::Keyboard::Key, Platform::Keyboard::KeyState, const Platform::Keyboard::StateChange& state_change) override;
     HelpLines GetHelp() const override;
-    
-    void ShowControlsHelp();
-    void ShowCommandLineHelp();
 
 private:
     // Keyboard::ActionControllerBase interface
@@ -67,7 +64,7 @@ private:
     void        OnKeyboardStateAction(AppAction action) override;
     std::string GetKeyboardActionName(AppAction action) const override;
 
-    AppBase& m_application;
+    IApp& m_application;
 };
 
 } // namespace Methane::Platform

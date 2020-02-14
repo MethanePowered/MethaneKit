@@ -33,7 +33,7 @@ namespace Methane::Platform
 
 AppController::AppController(AppBase& application, const std::string& application_help, const ActionByKeyboardState& action_by_keyboard_state)
     : Controller(application_help)
-    , Keyboard::ActionControllerBase<AppHelpAction>(action_by_keyboard_state, {})
+    , Keyboard::ActionControllerBase<AppAction>(action_by_keyboard_state, {})
     , m_application(application)
 {
     ITT_FUNCTION_TASK();
@@ -42,30 +42,30 @@ AppController::AppController(AppBase& application, const std::string& applicatio
 void AppController::OnKeyboardChanged(Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Keyboard::StateChange& state_change)
 {
     ITT_FUNCTION_TASK();
-    Keyboard::ActionControllerBase<AppHelpAction>::OnKeyboardChanged(key, key_state, state_change);
+    Keyboard::ActionControllerBase<AppAction>::OnKeyboardChanged(key, key_state, state_change);
 }
 
-void AppController::OnKeyboardStateAction(AppHelpAction action)
+void AppController::OnKeyboardStateAction(AppAction action)
 {
     ITT_FUNCTION_TASK();
     switch(action)
     {
-        case AppHelpAction::ShowControlsHelp:    ShowControlsHelp(); break;
-        case AppHelpAction::ShowCommandLineHelp: ShowCommandLineHelp(); break;
-        case AppHelpAction::CloseApp:            m_application.Close(); break;
+        case AppAction::ShowControlsHelp:    ShowControlsHelp(); break;
+        case AppAction::ShowCommandLineHelp: ShowCommandLineHelp(); break;
+        case AppAction::CloseApp:            m_application.Close(); break;
         default: assert(0);
     }
 }
 
-std::string AppController::GetKeyboardActionName(AppHelpAction action) const
+std::string AppController::GetKeyboardActionName(AppAction action) const
 {
     ITT_FUNCTION_TASK();
     switch (action)
     {
-        case AppHelpAction::None:                return "none";
-        case AppHelpAction::ShowControlsHelp:    return "show application controls help";
-        case AppHelpAction::ShowCommandLineHelp: return "show application command-line help";
-        case AppHelpAction::CloseApp:            return "close the application";
+        case AppAction::None:                return "none";
+        case AppAction::ShowControlsHelp:    return "show application controls help";
+        case AppAction::ShowCommandLineHelp: return "show application command-line help";
+        case AppAction::CloseApp:            return "close the application";
         default: assert(0);                      return "";
     }
 }
