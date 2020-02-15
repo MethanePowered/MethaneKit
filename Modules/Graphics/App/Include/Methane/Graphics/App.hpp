@@ -204,6 +204,8 @@ public:
         if (!AppBase::Resize(frame_size, is_minimized))
             return false;
 
+        m_sp_context->WaitForGpu(RenderContext::WaitFor::RenderComplete);
+
         m_initial_context_settings.frame_size = frame_size;
 
         // Save color texture information and delete obsolete resources for each frame buffer
