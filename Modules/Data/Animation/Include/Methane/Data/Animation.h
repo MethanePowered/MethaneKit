@@ -31,10 +31,17 @@ namespace Methane::Data
 class Animation : public Timer
 {
 public:
+    enum class State : uint32_t
+    {
+        Running = 0u,
+        Paused,
+        Completed,
+    };
+
     Animation(double duration_sec = std::numeric_limits<double>::max());
     virtual ~Animation();
 
-    bool   IsRunning() const noexcept            { return m_is_running; }
+    State  GetState() const noexcept             { return m_state; }
     double GetDuration() const noexcept          { return m_duration_sec; }
     void   SetDuration(double duration_sec)      { m_duration_sec = duration_sec; }
     void   IncreaseDuration(double duration_sec);
@@ -43,11 +50,17 @@ public:
     virtual void Stop() noexcept;
     virtual bool Update() = 0;
 
+    void Pause();
+    void Resume();
+
 protected:
+    bool IsTimeOver() const noexcept { return GetElapsedSecondsD() >= m_duration_sec; }
+
     using Timer::Reset;
 
-    bool    m_is_running    = true;
-    double  m_duration_sec  = std::numeric_limits<double>::max();
+    State        m_state           = State::Running;
+    double       m_duration_sec    = std::numeric_limits<double>::max();
+    TimeDuration m_paused_duration;
 };
 
 } // namespace Methane::Data

@@ -28,7 +28,8 @@ namespace Methane::Data
 {
 
 Animation::Animation(double duration_sec)
-    : m_duration_sec(duration_sec)
+    : Timer()
+    , m_duration_sec(duration_sec)
 {
     ITT_FUNCTION_TASK();
 }
@@ -47,14 +48,32 @@ void Animation::IncreaseDuration(double duration_sec)
 void Animation::Restart() noexcept
 {
     ITT_FUNCTION_TASK();
-    m_is_running = true;
+    m_state = State::Running;
     Timer::Reset();
 }
 
 void Animation::Stop() noexcept
 {
     ITT_FUNCTION_TASK();
-    m_is_running = false;
+    m_state = State::Completed;
+}
+
+void Animation::Pause()
+{
+    if (m_state != State::Running)
+        throw std::logic_error("Only running animation can be paused.");
+
+    m_state = State::Paused;
+    m_paused_duration = GetElapsedDuration();
+}
+
+void Animation::Resume()
+{
+    if (m_state != State::Paused)
+        throw std::logic_error("Only paused animation can be resumed.");
+
+    m_state = State::Running;
+    Reset(Clock::now() - m_paused_duration);
 }
 
 } // namespace Methane::Data

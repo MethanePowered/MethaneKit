@@ -51,7 +51,13 @@ public:
 
     void Reset() noexcept
     {
-        m_start_time = Clock::now();
+        Reset(Clock::now());
+    }
+
+protected:
+    void Reset(TimePoint time_point)
+    {
+        m_start_time = time_point;
     }
 
 private:

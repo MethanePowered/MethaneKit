@@ -38,6 +38,11 @@ class AnimationsPool : public Animations
 {
 public:
     void Update();
+    void Pause();
+    void Resume();
+
+private:
+    bool m_is_paused = false;
 };
 
 } // namespace Methane::Data

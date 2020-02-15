@@ -48,7 +48,7 @@ class AppController
 public:
     using ActionByKeyboardState = Platform::Keyboard::ActionControllerBase<AppAction>::ActionByKeyboardState;
     inline static const ActionByKeyboardState default_action_by_keyboard_state = {
-        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::A }, AppAction::SwitchAnimations  },
+        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::Z }, AppAction::SwitchAnimations  },
         { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::H }, AppAction::SwitchWindowHud   },
     };
     

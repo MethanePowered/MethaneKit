@@ -85,7 +85,7 @@ public:
     {
         ITT_FUNCTION_TASK();
         add_option("-i,--hud", m_settings.show_hud_in_window_title, "HUD information in window title", true);
-        add_option("-a,--animations", m_settings.animations_enabled, "Switch animations", true);
+        add_option("-a,--animations", m_settings.animations_enabled, "Enable animations", true);
         add_option("-d,--device", m_settings.default_device_index, "Render at adapter index, use -1 for software adapter", true);
         add_option("-v,--vsync", m_initial_context_settings.vsync_enabled, "Vertical synchronization", true);
         add_option("-b,--frame-buffers", m_initial_context_settings.frame_buffers_count, "Frame buffers count in swap-chain", true);
@@ -338,8 +338,21 @@ public:
     }
 
     // Graphics::IApp interface
-    const IApp::Settings& GetGraphicsAppSettings() const override        { return m_settings; }
-    void SetAnimationsEnabled(bool animations_enabled) override          { m_settings.animations_enabled = animations_enabled; }
+    const IApp::Settings& GetGraphicsAppSettings() const noexcept override        { return m_settings; }
+
+    void SetAnimationsEnabled(bool animations_enabled) override
+    {
+        if (m_settings.animations_enabled == animations_enabled)
+            return;
+
+        m_settings.animations_enabled = animations_enabled;
+
+        if (m_settings.animations_enabled)
+            m_animations.Resume();
+        else
+            m_animations.Pause();
+    }
+
     void SetShowHudInWindowTitle(bool show_hud_in_window_title) override
     {
         if (m_settings.show_hud_in_window_title == show_hud_in_window_title)

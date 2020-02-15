@@ -67,11 +67,13 @@ public:
 
         const double elapsed_seconds = GetElapsedSecondsD();
         const double delta_seconds = elapsed_seconds - m_prev_elapsed_seconds;
-        m_is_running = elapsed_seconds < m_duration_sec && 
-                       m_update_function(m_value, m_start_value, elapsed_seconds, delta_seconds);
+        if (IsTimeOver() || !m_update_function(m_value, m_start_value, elapsed_seconds, delta_seconds))
+        {
+            Stop();
+        }
         m_prev_elapsed_seconds = elapsed_seconds;
 
-        return m_is_running;
+        return m_state == State::Running;
     }
 
 private:

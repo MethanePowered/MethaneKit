@@ -32,7 +32,7 @@ namespace Methane::Data
 void AnimationsPool::Update()
 {
     ITT_FUNCTION_TASK();
-    if (empty())
+    if (m_is_paused || empty())
         return;
 
     std::vector<size_t> completed_animation_indices;
@@ -51,6 +51,34 @@ void AnimationsPool::Update()
     {
         erase(begin() + *animation_index_it);
     }
+}
+
+void AnimationsPool::Pause()
+{
+    if (m_is_paused)
+        return;
+
+    for(const Ptr<Animation>& sp_animation : *this)
+    {
+        if (sp_animation->GetState() == Animation::State::Running)
+            sp_animation->Pause();
+    }
+
+    m_is_paused = true;
+}
+
+void AnimationsPool::Resume()
+{
+    if (!m_is_paused)
+        return;
+
+    for(const Ptr<Animation>& sp_animation : *this)
+    {
+        if (sp_animation->GetState() == Animation::State::Paused)
+            sp_animation->Resume();
+    }
+
+    m_is_paused = false;
 }
 
 } // namespace Methane::Data

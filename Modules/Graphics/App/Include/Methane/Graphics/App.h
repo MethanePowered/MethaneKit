@@ -39,7 +39,7 @@ struct IApp
         int32_t                  default_device_index       = 0;
     };
 
-    virtual const IApp::Settings& GetGraphicsAppSettings() const = 0;
+    virtual const IApp::Settings& GetGraphicsAppSettings() const noexcept = 0;
     virtual void SetAnimationsEnabled(bool animations_enabled) = 0;
     virtual void SetShowHudInWindowTitle(bool show_hud_in_window_title) = 0;
 
