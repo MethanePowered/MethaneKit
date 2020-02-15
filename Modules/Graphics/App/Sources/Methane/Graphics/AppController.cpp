@@ -53,8 +53,13 @@ void AppController::OnKeyboardStateAction(AppAction action)
     ITT_FUNCTION_TASK();
     switch(action)
     {
+
     case AppAction::SwitchAnimations:
         m_application.SetAnimationsEnabled(!m_application.GetGraphicsAppSettings().animations_enabled);
+        break;
+
+    case AppAction::SwitchWindowHud:
+        m_application.SetShowHudInWindowTitle(!m_application.GetGraphicsAppSettings().show_hud_in_window_title);
         break;
 
     default: assert(0);

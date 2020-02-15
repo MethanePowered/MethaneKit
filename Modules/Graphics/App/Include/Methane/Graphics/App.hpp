@@ -283,38 +283,22 @@ public:
             return false;
         }
 
-        // Update HUD info in window title
-        if (!m_settings.show_hud_in_window_title ||
-            m_title_update_timer.GetElapsedSecondsD() < g_title_update_interval_sec)
-            return true;
-
         if (!m_sp_context)
         {
             throw std::runtime_error("RenderContext is not initialized before rendering.");
         }
 
-        const RenderContext::Settings& context_settings      = m_sp_context->GetSettings();
-        const FpsCounter&              fps_counter           = m_sp_context->GetFpsCounter();
-        const uint32_t                 average_fps           = fps_counter.GetFramesPerSecond();
-        const FpsCounter::FrameTiming  average_frame_timing  = fps_counter.GetAverageFrameTiming();
-
-        std::stringstream title_ss;
-        title_ss.precision(2);
-        title_ss << GetPlatformAppSettings().name << "        "
-                 << average_fps << " FPS (" << std::fixed << average_frame_timing.GetTotalTimeMSec()
-                                << " ms, "  << std::fixed << average_frame_timing.GetCpuTimePercent() << "% cpu)"
-                 << ", " << context_settings.frame_size.width << " x " << context_settings.frame_size.height
-                 << ", " << std::to_string(context_settings.frame_buffers_count) << " FB"
-                 << ", VSync: " << (context_settings.vsync_enabled ? "ON" : "OFF")
-                 << ", GPU: "   << m_sp_context->GetDevice().GetAdapterName()
-                 << "    (F1 - help)";
-
-        SetWindowTitle(title_ss.str());
-        m_title_update_timer.Reset();
-
         // Keep window full-screen mode in sync with the context
-        SetFullScreen(context_settings.is_full_screen);
-        
+        SetFullScreen(m_sp_context->GetSettings().is_full_screen);
+
+        // Update HUD info in window title
+        if (m_settings.show_hud_in_window_title &&
+            m_title_update_timer.GetElapsedSecondsD() >= g_title_update_interval_sec)
+        {
+            UpdateWindowTitle();
+            m_title_update_timer.Reset();
+        }
+
         return true;
     }
     
@@ -354,9 +338,48 @@ public:
     // Graphics::IApp interface
     const IApp::Settings& GetGraphicsAppSettings() const override        { return m_settings; }
     void SetAnimationsEnabled(bool animations_enabled) override          { m_settings.animations_enabled = animations_enabled; }
-    void SetShowHudInWindowTitle(bool show_hud_in_window_title) override { m_settings.show_hud_in_window_title = show_hud_in_window_title; }
+    void SetShowHudInWindowTitle(bool show_hud_in_window_title) override
+    {
+        if (m_settings.show_hud_in_window_title == show_hud_in_window_title)
+            return;
+
+        m_settings.show_hud_in_window_title = show_hud_in_window_title;
+        UpdateWindowTitle();
+    }
 
 protected:
+
+    void UpdateWindowTitle()
+    {
+        if (!m_settings.show_hud_in_window_title)
+        {
+            SetWindowTitle(GetPlatformAppSettings().name);
+            return;
+        }
+
+        assert(m_sp_context);
+        if (!m_sp_context)
+            return;
+
+        const RenderContext::Settings& context_settings      = m_sp_context->GetSettings();
+        const FpsCounter&              fps_counter           = m_sp_context->GetFpsCounter();
+        const uint32_t                 average_fps           = fps_counter.GetFramesPerSecond();
+        const FpsCounter::FrameTiming  average_frame_timing  = fps_counter.GetAverageFrameTiming();
+
+        std::stringstream title_ss;
+        title_ss.precision(2);
+        title_ss << GetPlatformAppSettings().name
+                 << "        "  << average_fps
+                 << " FPS ("    << std::fixed << average_frame_timing.GetTotalTimeMSec()
+                 << " ms, "     << std::fixed << average_frame_timing.GetCpuTimePercent() << "% cpu)"
+                 << ", "        << context_settings.frame_size.width << " x " << context_settings.frame_size.height
+                 << ", "        << std::to_string(context_settings.frame_buffers_count) << " FB"
+                 << ", VSync: " << (context_settings.vsync_enabled ? "ON" : "OFF")
+                 << ", GPU: "   << m_sp_context->GetDevice().GetAdapterName()
+                 << "    (F1 - help)";
+
+        SetWindowTitle(title_ss.str());
+    }
 
     // AppBase interface
 
@@ -384,19 +407,19 @@ protected:
         return ss.str();
     }
 
-    Ptr<RenderContext>              m_sp_context;
-    ImageLoader                     m_image_loader;
-    Ptr<Texture>                    m_sp_depth_texture;
-    Ptr<LogoBadge>                  m_sp_logo_badge;
-    std::vector<FrameT>             m_frames;
-    Data::AnimationsPool            m_animations;
+    Ptr<RenderContext>      m_sp_context;
+    ImageLoader             m_image_loader;
+    Ptr<Texture>            m_sp_depth_texture;
+    Ptr<LogoBadge>          m_sp_logo_badge;
+    std::vector<FrameT>     m_frames;
+    Data::AnimationsPool    m_animations;
 
 private:
-    IApp::Settings                  m_settings;
-    RenderContext::Settings         m_initial_context_settings;
-    Timer                           m_title_update_timer;
+    IApp::Settings          m_settings;
+    RenderContext::Settings m_initial_context_settings;
+    Timer                   m_title_update_timer;
 
-    static constexpr double  g_title_update_interval_sec = 1;
+    static constexpr double g_title_update_interval_sec = 1.0;
 };
 
 } // namespace Methane::Graphics

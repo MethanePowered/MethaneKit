@@ -32,11 +32,11 @@ struct IApp
 {
     struct Settings
     {
-        RenderPass::Access::Mask screen_pass_access = RenderPass::Access::None;
-        bool    animations_enabled          = true;
-        bool    show_hud_in_window_title    = true;
-        bool    show_logo_badge             = true;
-        int32_t default_device_index        = 0;
+        RenderPass::Access::Mask screen_pass_access         = RenderPass::Access::None;
+        bool                     animations_enabled         = true;
+        bool                     show_hud_in_window_title   = true;
+        bool                     show_logo_badge            = true;
+        int32_t                  default_device_index       = 0;
     };
 
     virtual const IApp::Settings& GetGraphicsAppSettings() const = 0;
