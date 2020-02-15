@@ -60,7 +60,10 @@ public:
         const std::type_info& controller_type  = typeid(ControllerT);
         for(const Ptr<Controller>& sp_controller : m_controllers)
         {
-            if (sp_controller && typeid(*sp_controller) == controller_type)
+            if (!sp_controller)
+                continue;
+            Controller& controller = *sp_controller;
+            if (typeid(controller) == controller_type)
                 controllers.emplace_back(static_cast<ControllerT&>(*sp_controller));
         }
         return controllers;

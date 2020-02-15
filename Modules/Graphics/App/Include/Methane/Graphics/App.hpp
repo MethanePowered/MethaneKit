@@ -353,7 +353,7 @@ public:
             m_animations.Pause();
 
         // Disable all camera controllers while animations are paused, since they can not function without animations
-        Refs<AppCameraController> camera_controllers = InputState().GetControllersOfType<AppCameraController>();
+        Refs<AppCameraController> camera_controllers = InputState().template GetControllersOfType<AppCameraController>();
         for(const Ref<AppCameraController> camera_controller : camera_controllers)
         {
             camera_controller.get().SetEnabled(animations_enabled);

@@ -24,6 +24,8 @@ Pool of animations for centralized updating, adding and removing in application.
 #include <Methane/Data/Animation.h>
 #include <Methane/Instrumentation.h>
 
+#include <stdexcept>
+
 namespace Methane::Data
 {
 
