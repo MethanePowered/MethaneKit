@@ -25,6 +25,8 @@ Aggregated application input state with controllers.
 
 #include "ControllersPool.h"
 
+#include <Methane/Instrumentation.h>
+
 namespace Methane::Platform::Input
 {
 
@@ -34,11 +36,11 @@ public:
     State() = default;
     State(const ControllersPool& controllers) : m_controllers(controllers) {}
 
-    const ControllersPool&  GetControllers() const                              { return m_controllers; }
+    const ControllersPool&  GetControllers() const noexcept                     { return m_controllers; }
     void                    AddControllers(const Ptrs<Controller>& controllers) { m_controllers.insert(m_controllers.end(), controllers.begin(), controllers.end()); }
 
-    const Keyboard::State& GetKeyboardState() const                 { return m_keyboard_state; }
-    const Mouse::State&    GetMouseState() const                    { return m_mouse_state; }
+    const Keyboard::State& GetKeyboardState() const noexcept { return m_keyboard_state; }
+    const Mouse::State&    GetMouseState() const noexcept    { return m_mouse_state; }
 
     // IActionController
     void OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button_state) override;
@@ -49,6 +51,20 @@ public:
     void OnModifiersChanged(Keyboard::Modifier::Mask modifiers) override;
 
     void ReleaseAllKeys();
+
+    template<typename ControllerT, typename = std::enable_if_t<std::is_base_of_v<Controller, ControllerT>>>
+    Refs<ControllerT> GetControllersOfType() const
+    {
+        ITT_FUNCTION_TASK();
+        Refs<ControllerT> controllers;
+        const std::type_info& controller_type  = typeid(ControllerT);
+        for(const Ptr<Controller>& sp_controller : m_controllers)
+        {
+            if (sp_controller && typeid(*sp_controller) == controller_type)
+                controllers.emplace_back(static_cast<ControllerT&>(*sp_controller));
+        }
+        return controllers;
+    }
 
 protected:
     ControllersPool     m_controllers;

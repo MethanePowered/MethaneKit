@@ -40,8 +40,8 @@ struct IApp
     };
 
     virtual const IApp::Settings& GetGraphicsAppSettings() const noexcept = 0;
-    virtual void SetAnimationsEnabled(bool animations_enabled) = 0;
-    virtual void SetShowHudInWindowTitle(bool show_hud_in_window_title) = 0;
+    virtual bool SetAnimationsEnabled(bool animations_enabled) = 0;
+    virtual bool SetShowHudInWindowTitle(bool show_hud_in_window_title) = 0;
 
     virtual ~IApp() = default;
 };

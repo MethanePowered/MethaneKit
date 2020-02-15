@@ -26,6 +26,7 @@ Base frame class provides frame buffer management with resize handling.
 
 #include "App.h"
 #include "AppController.h"
+#include "AppCameraController.h"
 #include "AppContextController.h"
 
 #include <Methane/Data/AppResourceProviders.h>
@@ -267,9 +268,7 @@ public:
         
         System::Get().CheckForChanges();
 
-        if (m_settings.animations_enabled)
-            m_animations.Update();
-        
+        m_animations.Update();
         return true;
     }
 
@@ -340,26 +339,38 @@ public:
     // Graphics::IApp interface
     const IApp::Settings& GetGraphicsAppSettings() const noexcept override        { return m_settings; }
 
-    void SetAnimationsEnabled(bool animations_enabled) override
+    bool SetAnimationsEnabled(bool animations_enabled) override
     {
         if (m_settings.animations_enabled == animations_enabled)
-            return;
+            return false;
 
         m_settings.animations_enabled = animations_enabled;
 
+        // Pause animations or resume from the paused state
         if (m_settings.animations_enabled)
             m_animations.Resume();
         else
             m_animations.Pause();
+
+        // Disable all camera controllers while animations are paused, since they can not function without animations
+        Refs<AppCameraController> camera_controllers = InputState().GetControllersOfType<AppCameraController>();
+        for(const Ref<AppCameraController> camera_controller : camera_controllers)
+        {
+            camera_controller.get().SetEnabled(animations_enabled);
+        }
+
+        return true;
     }
 
-    void SetShowHudInWindowTitle(bool show_hud_in_window_title) override
+    bool SetShowHudInWindowTitle(bool show_hud_in_window_title) override
     {
         if (m_settings.show_hud_in_window_title == show_hud_in_window_title)
-            return;
+            return false;
 
         m_settings.show_hud_in_window_title = show_hud_in_window_title;
         UpdateWindowTitle();
+
+        return true;
     }
 
 protected:
