@@ -50,10 +50,11 @@ void AppController::OnKeyboardStateAction(AppAction action)
     ITT_FUNCTION_TASK();
     switch(action)
     {
-        case AppAction::ShowControlsHelp:    ShowControlsHelp(); break;
-        case AppAction::ShowCommandLineHelp: ShowCommandLineHelp(); break;
-        case AppAction::CloseApp:            m_application.Close(); break;
-        default: assert(0);
+    case AppAction::ShowControlsHelp:    ShowControlsHelp(); break;
+    case AppAction::ShowCommandLineHelp: ShowCommandLineHelp(); break;
+    case AppAction::SwitchFullScreen:    m_application.SetFullScreen(!m_application.GetPlatformAppSettings().is_full_screen); break;
+    case AppAction::CloseApp:            m_application.Close(); break;
+    default: assert(0);
     }
 }
 
@@ -62,11 +63,12 @@ std::string AppController::GetKeyboardActionName(AppAction action) const
     ITT_FUNCTION_TASK();
     switch (action)
     {
-        case AppAction::None:                return "none";
-        case AppAction::ShowControlsHelp:    return "show application controls help";
-        case AppAction::ShowCommandLineHelp: return "show application command-line help";
-        case AppAction::CloseApp:            return "close the application";
-        default: assert(0);                      return "";
+    case AppAction::None:                return "none";
+    case AppAction::ShowControlsHelp:    return "show application controls help";
+    case AppAction::ShowCommandLineHelp: return "show application command-line help";
+    case AppAction::SwitchFullScreen:    return "switch full-screen mode";
+    case AppAction::CloseApp:            return "close the application";
+    default: assert(0);                  return "";
     }
 }
 

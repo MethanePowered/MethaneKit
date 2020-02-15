@@ -35,6 +35,7 @@ enum class AppAction : uint32_t
     
     ShowControlsHelp,
     ShowCommandLineHelp,
+    SwitchFullScreen,
     CloseApp,
     
     Count
@@ -46,9 +47,10 @@ class AppController
 {
 public:
     inline static const ActionByKeyboardState default_action_by_keyboard_state = {
-        { { Platform::Keyboard::Key::F1 },                                       AppAction::ShowControlsHelp  },
-        { { Platform::Keyboard::Key::F2 },                                       AppAction::ShowCommandLineHelp  },
-        { { Platform::Keyboard::OS::key_left_ctrl, Platform::Keyboard::Key::Q }, AppAction::CloseApp  },
+        { { Platform::Keyboard::Key::F1 },                                       AppAction::ShowControlsHelp    },
+        { { Platform::Keyboard::Key::F2 },                                       AppAction::ShowCommandLineHelp },
+        { { Platform::Keyboard::Key::LeftControl,  Platform::Keyboard::Key::F }, AppAction::SwitchFullScreen    },
+        { { Platform::Keyboard::OS::key_left_ctrl, Platform::Keyboard::Key::Q }, AppAction::CloseApp            },
     };
     
     AppController(AppBase& application, const std::string& application_help,

@@ -53,7 +53,6 @@ void AppController::OnKeyboardStateAction(AppAction action)
     ITT_FUNCTION_TASK();
     switch(action)
     {
-
     case AppAction::SwitchAnimations:
         m_application.SetAnimationsEnabled(!m_application.GetGraphicsAppSettings().animations_enabled);
         break;
@@ -71,10 +70,10 @@ std::string AppController::GetKeyboardActionName(AppAction action) const
     ITT_FUNCTION_TASK();
     switch (action)
     {
-        case AppAction::None:               return "none";
-        case AppAction::SwitchAnimations:   return "switch animations on/off";
-        case AppAction::SwitchWindowHud:    return "switch HUD in window title on/off";
-        default: assert(0);
+    case AppAction::None:               return "none";
+    case AppAction::SwitchAnimations:   return "switch animations on/off";
+    case AppAction::SwitchWindowHud:    return "switch HUD in window title on/off";
+    default: assert(0);
     }
     return "";
 }

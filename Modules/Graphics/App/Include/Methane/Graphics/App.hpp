@@ -205,7 +205,9 @@ public:
         if (!AppBase::Resize(frame_size, is_minimized))
             return false;
 
+#ifndef __APPLE__ // FIXME
         m_sp_context->WaitForGpu(RenderContext::WaitFor::RenderComplete);
+#endif
 
         m_initial_context_settings.frame_size = frame_size;
 
@@ -288,9 +290,6 @@ public:
         {
             throw std::runtime_error("RenderContext is not initialized before rendering.");
         }
-
-        // Keep window full-screen mode in sync with the context
-        SetFullScreen(m_sp_context->GetSettings().is_full_screen);
 
         // Update HUD info in window title
         if (m_settings.show_hud_in_window_title &&
