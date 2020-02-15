@@ -407,12 +407,13 @@ protected:
         return ss.str();
     }
 
-    Ptr<RenderContext>      m_sp_context;
     ImageLoader             m_image_loader;
+    Data::AnimationsPool    m_animations;
+
+    Ptr<RenderContext>      m_sp_context;
     Ptr<Texture>            m_sp_depth_texture;
     Ptr<LogoBadge>          m_sp_logo_badge;
     std::vector<FrameT>     m_frames;
-    Data::AnimationsPool    m_animations;
 
 private:
     IApp::Settings          m_settings;

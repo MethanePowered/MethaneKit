@@ -72,9 +72,10 @@ void RenderCommandListBase::SetState(RenderState& render_state, RenderState::Gro
     ITT_FUNCTION_TASK();
 
     DrawingState& drawing_state = GetDrawingState();
-    const RenderState::Group::Mask changed_states = (drawing_state.sp_render_state
+    Ptr<RenderState> sp_draw_render_state = drawing_state.wp_render_state.lock();
+    const RenderState::Group::Mask changed_states = (sp_draw_render_state
                                                   ? RenderState::Settings::Compare(render_state.GetSettings(),
-                                                      drawing_state.sp_render_state->GetSettings(),
+                                                      sp_draw_render_state->GetSettings(),
                                                       drawing_state.render_state_groups)
                                                   : RenderState::Group::All)
                                                   | ~drawing_state.render_state_groups;
@@ -82,7 +83,7 @@ void RenderCommandListBase::SetState(RenderState& render_state, RenderState::Gro
     RenderStateBase& render_state_base = static_cast<RenderStateBase&>(render_state);
     render_state_base.Apply(*this, changed_states & state_groups);
 
-    drawing_state.sp_render_state      = render_state_base.GetPtr();
+    drawing_state.wp_render_state      = render_state_base.GetPtr();
     drawing_state.render_state_groups |= state_groups;
 }
 
@@ -95,8 +96,8 @@ void RenderCommandListBase::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
     }
 
     DrawingState& drawing_state = GetDrawingState();
-    drawing_state.flags.vertex_buffers_changed = drawing_state.sp_vertex_buffers.size() != vertex_buffers.size();
-    drawing_state.sp_vertex_buffers.resize(vertex_buffers.size());
+    drawing_state.flags.vertex_buffers_changed = drawing_state.wp_vertex_buffers.size() != vertex_buffers.size();
+    drawing_state.wp_vertex_buffers.resize(vertex_buffers.size());
 
     uint32_t vertex_buffer_index = 0;
     for (const Ref<Buffer>& vertex_buffer_ref : vertex_buffers)
@@ -114,15 +115,19 @@ void RenderCommandListBase::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
             throw std::invalid_argument("Can not set empty vertex buffer.");
         }
 
-        if (!drawing_state.flags.vertex_buffers_changed &&
-            (vertex_buffer_index >= drawing_state.sp_vertex_buffers.size() ||
-            !drawing_state.sp_vertex_buffers[vertex_buffer_index] ||
-             drawing_state.sp_vertex_buffers[vertex_buffer_index].get() != std::addressof(vertex_buffer)))
+        if (!drawing_state.flags.vertex_buffers_changed)
         {
-            drawing_state.flags.vertex_buffers_changed = true;
+            if (vertex_buffer_index < drawing_state.wp_vertex_buffers.size())
+            {
+                Ptr<Buffer> sp_draw_vertex_buffer = drawing_state.wp_vertex_buffers[vertex_buffer_index].lock();
+                if (!sp_draw_vertex_buffer || sp_draw_vertex_buffer.get() != std::addressof(vertex_buffer))
+                    drawing_state.flags.vertex_buffers_changed = true;
+            }
+            else
+                drawing_state.flags.vertex_buffers_changed = true;
         }
 
-        drawing_state.sp_vertex_buffers[vertex_buffer_index] = vertex_buffer.GetPtr();
+        drawing_state.wp_vertex_buffers[vertex_buffer_index] = vertex_buffer.GetPtr();
         vertex_buffer_index++;
     }
 }
@@ -161,8 +166,9 @@ void RenderCommandListBase::DrawIndexed(Primitive primitive_type, Buffer& index_
     ValidateDrawVertexBuffers(start_vertex);
 
     DrawingState& drawing_state = GetDrawingState();
-    drawing_state.flags.index_buffer_changed = !drawing_state.sp_index_buffer || drawing_state.sp_index_buffer.get() != std::addressof(index_buffer);
-    drawing_state.sp_index_buffer = static_cast<BufferBase&>(index_buffer).GetPtr();
+    const Ptr<Buffer> sp_draw_index_buffer = drawing_state.wp_index_buffer.lock();
+    drawing_state.flags.index_buffer_changed = !sp_draw_index_buffer || sp_draw_index_buffer.get() != std::addressof(index_buffer);
+    drawing_state.wp_index_buffer = static_cast<BufferBase&>(index_buffer).GetPtr();
 
     drawing_state.flags.primitive_type_changed = !drawing_state.opt_primitive_type || *drawing_state.opt_primitive_type != primitive_type;
     drawing_state.opt_primitive_type = primitive_type;
@@ -192,10 +198,13 @@ void RenderCommandListBase::Draw(Primitive primitive_type, uint32_t vertex_count
 void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count)
 {
     DrawingState& drawing_state = GetDrawingState();
-    for (const Ptr<BufferBase>& sp_vertex_buffer : drawing_state.sp_vertex_buffers)
+    for (const WeakPtr<BufferBase>& wp_draw_vertex_buffer : drawing_state.wp_vertex_buffers)
     {
-        assert(!!sp_vertex_buffer);
-        const BufferBase& vertex_buffer = *sp_vertex_buffer;
+        const Ptr<BufferBase> sp_draw_vertex_buffer = wp_draw_vertex_buffer.lock();
+        if (!sp_draw_vertex_buffer)
+            throw std::runtime_error("Vertex buffer set for drawing on command list was released before draw!");
+
+        const BufferBase& vertex_buffer = *sp_draw_vertex_buffer;
         const uint32_t    vertex_count  = vertex_buffer.GetFormattedItemsCount();
         if (draw_start_vertex + draw_vertex_count <= vertex_count)
             return;

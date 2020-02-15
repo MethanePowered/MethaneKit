@@ -82,7 +82,7 @@ void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, Prog
 {
     ITT_FUNCTION_TASK();
     program_bindings.Apply(*this, apply_behavior);
-    m_sp_command_state->sp_program_bindings = static_cast<ProgramBindingsBase&>(program_bindings).GetPtr();
+    m_sp_command_state->wp_program_bindings = static_cast<ProgramBindingsBase&>(program_bindings).GetPtr();
 }
 
 void CommandListBase::Commit(bool /*present_drawable*/)

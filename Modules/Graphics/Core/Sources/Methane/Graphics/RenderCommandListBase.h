@@ -53,9 +53,9 @@ public:
         };
 
         std::optional<Primitive> opt_primitive_type;
-        Ptr<BufferBase>          sp_index_buffer;
-        Ptrs<BufferBase>         sp_vertex_buffers;
-        Ptr<RenderStateBase>     sp_render_state;
+        WeakPtr<BufferBase>      wp_index_buffer;
+        WeakPtrs<BufferBase>     wp_vertex_buffers;
+        WeakPtr<RenderStateBase> wp_render_state;
         RenderState::Group::Mask render_state_groups;
 
         Flags                    flags;

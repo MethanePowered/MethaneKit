@@ -56,7 +56,7 @@ public:
 
     struct CommandState
     {
-        Ptr<ProgramBindingsBase> sp_program_bindings;
+        WeakPtr<ProgramBindingsBase> wp_program_bindings;
 
         static UniquePtr<CommandState> Create(Type command_list_type);
 
@@ -80,7 +80,7 @@ public:
 
     void SetResourceTransitionBarriers(const Refs<Resource>& resources, ResourceBase::State state_before, ResourceBase::State state_after);
     void SetOpenDebugGroup(const std::string& debug_group)  { m_open_debug_group = debug_group; }
-    const ProgramBindingsBase* GetProgramBindings() const   { return GetCommandState().sp_program_bindings.get(); }
+    const ProgramBindingsBase* GetProgramBindings() const   { return GetCommandState().wp_program_bindings.lock().get(); }
     Ptr<CommandListBase>       GetPtr()                     { return shared_from_this(); }
 
 protected:

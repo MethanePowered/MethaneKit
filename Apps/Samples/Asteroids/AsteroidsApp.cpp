@@ -187,7 +187,7 @@ AsteroidsApp::AsteroidsApp()
                        return false;
                    }, "simulation complexity", true)
         ->default_val(m_asteroids_complexity)
-        ->expected(0, g_instaces_count.size() - 1)
+        ->expected(0, static_cast<int>(g_instaces_count.size() - 1))
         ->group(options_group);
     add_option("-s,--subdiv-count", m_asteroids_array_settings.subdivisions_count, "mesh subdivisions count", true)->group(options_group);
     add_option("-t,--texture-array", m_asteroids_array_settings.textures_array_enabled, "texture array enabled", true)->group(options_group);

@@ -59,7 +59,7 @@ int AppBase::Run(const RunArgs& args)
     {
         parse(args.cmd_arg_count, args.cmd_arg_values);
     }
-    catch(const CLI::CallForHelp& e)
+    catch(const CLI::CallForHelp&)
     {
         Alert(Message{
             Message::Type::Information,
