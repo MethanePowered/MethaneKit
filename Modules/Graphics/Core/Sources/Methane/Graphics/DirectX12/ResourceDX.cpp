@@ -45,7 +45,10 @@ void ResourceDX::ReleasePoolDX::AddResource(ResourceBase& resource)
 {
     ITT_FUNCTION_TASK();
     ResourceDX& resource_dx = static_cast<ResourceDX&>(resource);
-    m_resources.push_back(resource_dx.GetNativeResource());
+    const wrl::ComPtr<ID3D12Resource>& cp_native_resource = resource_dx.GetNativeResourceComPtr();
+    assert(!!cp_native_resource || resource_dx.GetResourceType() == Resource::Type::Sampler);
+    if (cp_native_resource)
+        m_resources.emplace_back(cp_native_resource);
 }
 
 void ResourceDX::ReleasePoolDX::ReleaseResources()

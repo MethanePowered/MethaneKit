@@ -215,17 +215,17 @@ void RenderContextDX::WaitForGpu(WaitFor wait_for)
         SCOPE_TIMER("RenderContextDX::WaitForGpu::RenderComplete");
         assert(m_sp_render_fence);
         m_sp_render_fence->Flush();
+        ContextDX<RenderContextBase>::OnGpuWaitComplete(wait_for);
     } break;
 
     case WaitFor::FramePresented:
     {
         SCOPE_TIMER("RenderContextDX::WaitForGpu::FramePresented");
         GetCurrentFrameFence().Wait();
+        ContextDX<RenderContextBase>::OnGpuWaitComplete(wait_for);
     } break;
 
     }
-
-    ContextDX<RenderContextBase>::OnGpuWaitComplete(wait_for);
 }
 
 void RenderContextDX::Resize(const FrameSize& frame_size)

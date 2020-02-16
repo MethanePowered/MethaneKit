@@ -75,15 +75,16 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-    ID3D12Resource*             GetNativeResource() const noexcept                              { return m_cp_resource.Get(); }
-    D3D12_GPU_VIRTUAL_ADDRESS   GetNativeGpuAddress() const noexcept                            { return m_cp_resource ? m_cp_resource->GetGPUVirtualAddress() : 0; }
-    D3D12_CPU_DESCRIPTOR_HANDLE GetNativeCPUDescriptorHandle(Usage::Value usage) const noexcept { return GetNativeCPUDescriptorHandle(GetDescriptorByUsage(usage)); }
-    D3D12_CPU_DESCRIPTOR_HANDLE GetNativeCPUDescriptorHandle(const Descriptor& desc) const noexcept;
-    D3D12_GPU_DESCRIPTOR_HANDLE GetNativeGPUDescriptorHandle(Usage::Value usage) const noexcept { return GetNativeGPUDescriptorHandle(GetDescriptorByUsage(usage)); }
-    D3D12_GPU_DESCRIPTOR_HANDLE GetNativeGPUDescriptorHandle(const Descriptor& desc) const noexcept;
+    ID3D12Resource*                     GetNativeResource() const noexcept                                  { return m_cp_resource.Get(); }
+    const wrl::ComPtr<ID3D12Resource>&  GetNativeResourceComPtr() const noexcept                            { return m_cp_resource; }
+    D3D12_GPU_VIRTUAL_ADDRESS           GetNativeGpuAddress() const noexcept                                { return m_cp_resource ? m_cp_resource->GetGPUVirtualAddress() : 0; }
+    D3D12_CPU_DESCRIPTOR_HANDLE         GetNativeCPUDescriptorHandle(Usage::Value usage) const noexcept     { return GetNativeCPUDescriptorHandle(GetDescriptorByUsage(usage)); }
+    D3D12_CPU_DESCRIPTOR_HANDLE         GetNativeCPUDescriptorHandle(const Descriptor& desc) const noexcept;
+    D3D12_GPU_DESCRIPTOR_HANDLE         GetNativeGPUDescriptorHandle(Usage::Value usage) const noexcept     { return GetNativeGPUDescriptorHandle(GetDescriptorByUsage(usage)); }
+    D3D12_GPU_DESCRIPTOR_HANDLE         GetNativeGPUDescriptorHandle(const Descriptor& desc) const noexcept;
 
-    static D3D12_RESOURCE_STATES  GetNativeResourceState(State resource_state) noexcept;
-    static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const Barrier& resource_barrier) noexcept;
+    static D3D12_RESOURCE_STATES        GetNativeResourceState(State resource_state) noexcept;
+    static D3D12_RESOURCE_BARRIER       GetNativeResourceBarrier(const Barrier& resource_barrier) noexcept;
 
 protected:
     IContextDX& GetContextDX() noexcept;

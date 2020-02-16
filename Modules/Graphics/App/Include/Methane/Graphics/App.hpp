@@ -195,63 +195,44 @@ public:
     bool Resize(const FrameSize& frame_size, bool is_minimized) override
     {
         ITT_FUNCTION_TASK();
-        
-        struct ResourceInfo
-        {
-            Resource::DescriptorByUsage descriptor_by_usage;
-            std::string name;
-        };
 
         if (!AppBase::Resize(frame_size, is_minimized))
             return false;
 
-#ifndef __APPLE__ // FIXME
-        m_sp_context->WaitForGpu(RenderContext::WaitFor::RenderComplete);
-#endif
-
         m_initial_context_settings.frame_size = frame_size;
 
-        // Save color texture information and delete obsolete resources for each frame buffer
-        std::vector<ResourceInfo> frame_restore_info(m_frames.size());
+        // Save frame and depth textures restore information and delete obsolete resources
+        std::vector<ResourceRestoreInfo> frame_restore_infos;
         for (FrameT& frame : m_frames)
         {
-            assert(!!frame.sp_screen_texture);
-
-            frame_restore_info[frame.index] = {
-                frame.sp_screen_texture->GetDescriptorByUsage(),
-                frame.sp_screen_texture->GetName()
-            };
-
+            frame_restore_infos.emplace_back(frame.sp_screen_texture);
             frame.sp_screen_texture.reset();
         }
-
-        // Save depth texture information and delete it
-        const Resource::DescriptorByUsage depth_descriptor_by_usage = m_sp_depth_texture ? m_sp_depth_texture->GetDescriptorByUsage() : Resource::DescriptorByUsage();
-        const std::string depth_resource_name = m_sp_depth_texture ? m_sp_depth_texture->GetName() : std::string();
+        const ResourceRestoreInfo depth_restore_info(m_sp_depth_texture);
         m_sp_depth_texture.reset();
 
         // Resize render context
         assert(m_sp_context);
         m_sp_context->Resize(frame_size);
 
-        // Resize depth texture and update it in render pass
-        if (!depth_descriptor_by_usage.empty())
+        // Restore depth texture with new size
+        if (!depth_restore_info.descriptor_by_usage.empty())
         {
-            m_sp_depth_texture = Texture::CreateDepthStencilBuffer(*m_sp_context, depth_descriptor_by_usage);
-            m_sp_depth_texture->SetName(depth_resource_name);
+            m_sp_depth_texture = Texture::CreateDepthStencilBuffer(*m_sp_context, depth_restore_info.descriptor_by_usage);
+            m_sp_depth_texture->SetName(depth_restore_info.name);
         }
 
-        // Resize frame buffers by creating new color textures and updating them in render pass
+        // Restore frame buffers with new size and update textures in render pass settings
         for (FrameT& frame : m_frames)
         {
-            ResourceInfo& frame_info = frame_restore_info[frame.index];
-            RenderPass::Settings pass_settings = frame.sp_screen_pass->GetSettings();
+            ResourceRestoreInfo& frame_restore_info = frame_restore_infos[frame.index];
+            RenderPass::Settings pass_settings      = frame.sp_screen_pass->GetSettings();
 
-            frame.sp_screen_texture = Texture::CreateFrameBuffer(*m_sp_context, frame.index, frame_info.descriptor_by_usage);
-            frame.sp_screen_texture->SetName(frame_info.name);
+            frame.sp_screen_texture = Texture::CreateFrameBuffer(*m_sp_context, frame.index, frame_restore_info.descriptor_by_usage);
+            frame.sp_screen_texture->SetName(frame_restore_info.name);
 
             pass_settings.color_attachments[0].wp_texture = frame.sp_screen_texture;
-            pass_settings.depth_attachment.wp_texture = m_sp_depth_texture;
+            pass_settings.depth_attachment.wp_texture     = m_sp_depth_texture;
 
             frame.sp_screen_pass->Update(pass_settings);
         }
@@ -373,6 +354,19 @@ public:
     }
 
 protected:
+
+    struct ResourceRestoreInfo
+    {
+        Resource::DescriptorByUsage descriptor_by_usage;
+        std::string                 name;
+
+        ResourceRestoreInfo() = default;
+        ResourceRestoreInfo(const ResourceRestoreInfo&) = default;
+        ResourceRestoreInfo(const Ptr<Resource>& sp_resource)
+            : descriptor_by_usage(sp_resource ? sp_resource->GetDescriptorByUsage() : Resource::DescriptorByUsage())
+            , name(sp_resource ? sp_resource->GetName() : std::string())
+        { }
+    };
 
     void UpdateWindowTitle()
     {

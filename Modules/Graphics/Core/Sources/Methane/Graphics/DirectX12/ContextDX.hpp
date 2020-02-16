@@ -67,9 +67,8 @@ public:
             SCOPE_TIMER("ContextDX::WaitForGpu::ResourcesUploaded");
             assert(!!m_sp_upload_fence);
             m_sp_upload_fence->Flush();
+            ContextBaseT::OnGpuWaitComplete(wait_for);
         }
-
-        ContextBaseT::OnGpuWaitComplete(wait_for);
     }
 
     // ContextBase interface
