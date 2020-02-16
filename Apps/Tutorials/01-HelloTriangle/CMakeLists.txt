@@ -18,8 +18,8 @@ add_methane_application(${TARGET}
     "Methane Hello Triangle"
     "Hello World tutorial of colored triangle rendering with Methane Kit."
     "${METHANE_COPYRIGHT}"
-    "${METHANE_VERSION}"
-    "${METHANE_BUILD_NUMBER}"
+    "${METHANE_VERSION_SHORT}"
+    "${METHANE_VERSION_BUILD}"
 )
 add_methane_shaders(${TARGET} "${SHADERS_HLSL}")
 
@@ -39,8 +39,8 @@ add_methane_application(${TARGET_SIMPLE}
     "Methane Hello Triangle"
     "Hello World tutorial of the colored triangle rendering with Methane Kit."
     "${METHANE_COPYRIGHT}"
-    "${METHANE_VERSION}"
-    "${METHANE_BUILD_NUMBER}"
+    "${METHANE_VERSION_SHORT}"
+    "${METHANE_VERSION_BUILD}"
 )
 add_methane_shaders(${TARGET_SIMPLE} "${SHADERS_HLSL}")
 

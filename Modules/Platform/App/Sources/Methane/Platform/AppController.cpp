@@ -22,8 +22,9 @@ Base application controller providing commands like app close and help.
 ******************************************************************************/
 
 #include <Methane/Platform/AppController.h>
-#include <Methane/Instrumentation.h>
 #include <Methane/Platform/Utils.h>
+#include <Methane/Instrumentation.h>
+#include <Methane/Version.h>
 
 #include <sstream>
 #include <cassert>
@@ -139,8 +140,9 @@ void AppController::ShowControlsHelp()
     {
         help_stream << std::endl;
     }
-    help_stream << std::endl << "Powered by Methane Kit" << std::endl << "https://github.com/egorodet/MethaneKit";
-    
+    help_stream << std::endl << "Powered by Methane Kit v" METHANE_VERSION_STR
+                << std::endl << "https://github.com/egorodet/MethaneKit";
+
     m_application.Alert({
         AppBase::Message::Type::Information,
         "Application Controls Help",

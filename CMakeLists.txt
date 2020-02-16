@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11.0)
+cmake_minimum_required(VERSION 3.15.0)
 
 project(MethaneKit)
 
@@ -10,11 +10,14 @@ option(METHANE_SCOPE_TIMERS_ENABLED "Enable low-overhead profiling with scope-ti
 option(METHANE_SHADERS_CODEVIEW_ENABLED "Enable shaders code symbols viewing in debug tools)" OFF)
 option(METHANE_RUN_TESTS_DURING_BUILD "Run tests during build" ON)
 
-set(METHANE_VERSION "0.2" CACHE STRING "Methane release major-minor version number")
-set(METHANE_BUILD_NUMBER "000000" CACHE STRING "Methane release build number")
+set(METHANE_VERSION_MAJOR 0 CACHE STRING "Methane major version")
+set(METHANE_VERSION_MINOR 2 CACHE STRING "Methane minor version")
+set(METHANE_VERSION_BUILD 0 CACHE STRING "Methane build version")
 
-set(METHANE_PRODUCT_NAME "Methane Kit (https://github.com/egorodet/MethaneKit)")
-set(METHANE_COPYRIGHT "Copyright 2019-2020 Evgeny Gorodetskiy")
+set(METHANE_VERSION_SHORT "${METHANE_VERSION_MAJOR}.${METHANE_VERSION_MINOR}")
+set(METHANE_VERSION_FULL  "${METHANE_VERSION_SHORT}.${METHANE_VERSION_BUILD}")
+set(METHANE_PRODUCT_NAME  "Methane Kit (https://github.com/egorodet/MethaneKit)")
+set(METHANE_COPYRIGHT     "Copyright 2019-2020 Evgeny Gorodetskiy")
 
 include_directories($ENV{INCLUDE})
 link_directories($ENV{LIB} ${CMAKE_LIBRARY_INPUT_DIRECTORY})
@@ -25,6 +28,7 @@ list(APPEND CMAKE_MODULE_PATH
     "${CMAKE_CURRENT_SOURCE_DIR}/Externals/CMRC"
 )
 
+include(MethaneUtils)
 include(ParseAndAddCatchTests)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -38,8 +42,10 @@ if(MSVC)
                             "Please start cmake generation from \"Visual Studio Native Tools\" command prompt.")
     endif()
 
-    set(VS_STARTUP_PROJECT MethaneShadowCube)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+    set(VS_STARTUP_PROJECT MethaneAsteroids)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>") # use /MT static runtime linking
+    string(REPLACE "/MD" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")           # remove /MD flag if it was there
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")                           # enable multi-threaded build
     set(WINDOWS_SDK_BIN_PATH $ENV{WindowsSdkVerBinPath}x64)
 
     add_definitions(-DUNICODE -D_UNICODE -DNOMINMAX -DWIN32_LEAN_AND_MEAN -DUSE_PIX)
@@ -51,7 +57,13 @@ elseif(APPLE)
 
 endif()
 
-message(STATUS "Methane Kit version ${METHANE_VERSION} build number ${METHANE_BUILD_NUMBER}")
+message(STATUS "Methane Kit version ${METHANE_VERSION_FULL}")
+split_by_first_delimiter("${METHANE_VERSION_BUILD}" "." METHANE_VERSION_BUILD_MAJOR METHANE_VERSION_BUILD_MINOR)
+add_definitions(
+    -DMETHANE_VERSION_MAJOR=${METHANE_VERSION_MAJOR}
+    -DMETHANE_VERSION_MINOR=${METHANE_VERSION_MINOR}
+    -DMETHANE_VERSION_BUILD=${METHANE_VERSION_BUILD_MAJOR}
+)
 
 if(METHANE_USE_OPEN_IMAGE_IO)
     message(STATUS "Methane Kit OpenImageIO media-library is enbabled.")

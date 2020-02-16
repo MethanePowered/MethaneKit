@@ -9,8 +9,9 @@ trigger:
   paths:
     exclude:
     - Build/Windows/Build.bat
-    - Build/Windows/Build.sh
+    - Build/Posix/Build.sh
     - CMakeSettings.json
+    - Folder.DotSettings
     - README.md
     - LICENSE
 
@@ -31,7 +32,7 @@ resources:
       submodules: recursive
 
 variables:
-  buildCmakeFlags: '-DMETHANE_BUILD_NUMBER=$(Build.BuildNumber)
+  buildCmakeFlags: '-DMETHANE_VERSION_BUILD=$(Build.BuildNumber)
     -DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON
     -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON
     -DMETHANE_SCOPE_TIMERS_ENABLED:BOOL=OFF

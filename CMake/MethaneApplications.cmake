@@ -35,18 +35,22 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
 
     if (WIN32)
 
-        # Configure Resoruce file
-        set(METHANE_APP_EXECUTABLE ${COMPONENT_OUTPUT_NAME}.exe)
-        set(METHANE_APP_MANIEFEST_FILE_PATH ${RESOURCES_DIR}/Configs/Windows/App.manifest)
+        # Configure Resource and Manifest files
+        set(METHANE_APP_MANIFEST_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}/App.manifest)
+        set(METHANE_APP_RESOURCE_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}/Resource.rc)
+        set(METHANE_APP_EXECUTABLE ${TARGET}.exe)
         set(METHANE_APP_ICON_FILE_PATH ${RESOURCES_DIR}/Icons/Windows/Methane.ico)
-        set(RESOURCE_FILE ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}/Resource.rc)
         string(REPLACE "." "," METHANE_APP_SHORT_VERSION_CSV ${METHANE_APP_SHORT_VERSION})
         string(REPLACE "." "," METHANE_APP_LONG_VERSION_CSV ${METHANE_APP_LONG_VERSION})
-        configure_file(${RESOURCES_DIR}/Configs/Windows/Resource.rc.in ${RESOURCE_FILE})
+        configure_file(${RESOURCES_DIR}/Configs/Windows/App.manifest.in ${METHANE_APP_MANIFEST_FILE_PATH})
+        configure_file(${RESOURCES_DIR}/Configs/Windows/Resource.rc.in ${METHANE_APP_RESOURCE_FILE_PATH})
+
+        set(MANIFEST_FILE ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}/Resource.rc)
+        configure_file(${RESOURCES_DIR}/Configs/Windows/Resource.rc.in ${METHANE_APP_RESOURCE_FILE_PATH})
 
         add_executable(${TARGET} WIN32
             ${SOURCES}
-            ${RESOURCE_FILE}
+            ${METHANE_APP_RESOURCE_FILE_PATH}
         )
 
         install(TARGETS ${TARGET}
@@ -62,7 +66,7 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
                 LINK_FLAGS "/MANIFEST:NO /ENTRY:mainCRTStartup"
         )
 
-        source_group("Resources" FILES ${RESOURCE_FILE} ${ICON_FILE_PATH})
+        source_group("Resources" FILES ${METHANE_APP_RESOURCE_FILE_PATH} ${ICON_FILE_PATH})
 
     elseif(APPLE)
 

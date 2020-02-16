@@ -5,8 +5,8 @@
                 xmlns:asmv2="urn:schemas-microsoft-com:asm.v2"
                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                 xmlns:asmv3="urn:schemas-microsoft-com:asm.v3">
-    <assemblyIdentity version="1.0.0.0" name="Methane.exe"/>
-    <description>Methane Powered Application</description>
+    <assemblyIdentity version="@METHANE_APP_LONG_VERSION@" name="@METHANE_APP_EXECUTABLE@"/>
+    <description>@METHANE_APP_DESCRIPTION@</description>
     <asmv3:application>
         <asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">
             <dpiAware>true</dpiAware>
