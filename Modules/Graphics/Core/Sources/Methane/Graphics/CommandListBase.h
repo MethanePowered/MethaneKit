@@ -56,7 +56,12 @@ public:
 
     struct CommandState
     {
-        WeakPtr<ProgramBindingsBase> wp_program_bindings;
+        // NOTE:
+        // Command state uses raw pointers instead of smart pointers for performance reasons:
+        //   - shared pointers can not be used here, because they keep resources from deletion on context release
+        //   - weak pointer should not be used too because 'lock' operation has significant performance overhead
+        //   - even if raw pointer becomes obsolete it won't be a problem because it is used only for address comparison with another raw pointer
+        ProgramBindingsBase* p_program_bindings = nullptr;
 
         static UniquePtr<CommandState> Create(Type command_list_type);
 
@@ -80,12 +85,12 @@ public:
 
     void SetResourceTransitionBarriers(const Refs<Resource>& resources, ResourceBase::State state_before, ResourceBase::State state_after);
     void SetOpenDebugGroup(const std::string& debug_group)  { m_open_debug_group = debug_group; }
-    const ProgramBindingsBase* GetProgramBindings() const   { return GetCommandState().wp_program_bindings.lock().get(); }
+    const ProgramBindingsBase* GetProgramBindings() const   { return GetCommandState().p_program_bindings; }
     Ptr<CommandListBase>       GetPtr()                     { return shared_from_this(); }
 
 protected:
     void ResetCommandState();
-    CommandState& GetCommandState();
+    CommandState&       GetCommandState();
     const CommandState& GetCommandState() const;
 
     CommandQueueBase&       GetCommandQueueBase();

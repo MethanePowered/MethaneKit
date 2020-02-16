@@ -52,10 +52,12 @@ public:
             bool vertex_buffers_changed = false;
         };
 
+        // NOTE: justification why raw pointers are used is provided in base class notice, see CommandState for more details
+
         std::optional<Primitive> opt_primitive_type;
-        WeakPtr<BufferBase>      wp_index_buffer;
-        WeakPtrs<BufferBase>     wp_vertex_buffers;
-        WeakPtr<RenderStateBase> wp_render_state;
+        BufferBase*              p_index_buffer     = nullptr;
+        std::vector<BufferBase*> vertex_buffers;
+        RenderStateBase*         p_render_state     = nullptr;
         RenderState::Group::Mask render_state_groups;
 
         Flags                    flags;

@@ -97,7 +97,7 @@ void RenderCommandListDX::ResetNative(const Ptr<RenderState>& sp_render_state)
         return;
 
     DrawingState& drawing_state = GetDrawingState();
-    drawing_state.wp_render_state     = static_cast<RenderStateBase&>(*sp_render_state).GetPtr();
+    drawing_state.p_render_state     = static_cast<RenderStateBase*>(sp_render_state.get());
     drawing_state.render_state_groups = RenderState::Group::Program
                                       | RenderState::Group::Rasterizer
                                       | RenderState::Group::DepthStencil;

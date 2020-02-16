@@ -60,8 +60,10 @@ CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
 void CommandListBase::Reset(const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
+    if (m_state != State::Pending)
+        throw std::logic_error("Can not reset command list in committed or executing state.");
 
-    // ResetCommandState() must be called from the top-most overriden Reset method
+    // ResetCommandState() must be called from the top-most overridden Reset method
 
     const bool debug_group_changed = m_open_debug_group != debug_group;
 
@@ -81,8 +83,13 @@ void CommandListBase::Reset(const std::string& debug_group)
 void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior)
 {
     ITT_FUNCTION_TASK();
+    if (m_state != State::Pending)
+        throw std::logic_error("Can not set program bindings on committed or executing command list.");
+
     program_bindings.Apply(*this, apply_behavior);
-    m_sp_command_state->wp_program_bindings = static_cast<ProgramBindingsBase&>(program_bindings).GetPtr();
+
+    assert(!!m_sp_command_state);
+    m_sp_command_state->p_program_bindings = static_cast<ProgramBindingsBase*>(&program_bindings);
 }
 
 void CommandListBase::Commit(bool /*present_drawable*/)
