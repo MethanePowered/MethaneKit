@@ -54,7 +54,7 @@ public:
     ProgramBindingsVK(const ProgramBindingsVK& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
 
     // ProgramBindings interface
-    void Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior) const override;
+    void Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const override;
     
     // ProgramBindingsBase interface
     void CompleteInitialization() override { }

@@ -99,7 +99,7 @@ public:
 
     // ProgramBindings interface
     void CompleteInitialization() override;
-    void Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior) const override;
+    void Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const override;
 
 private:
     struct RootParameterBinding

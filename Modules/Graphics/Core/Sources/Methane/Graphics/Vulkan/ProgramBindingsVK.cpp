@@ -75,11 +75,11 @@ ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bind
     ITT_FUNCTION_TASK();
 }
 
-void ProgramBindingsVK::Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior) const
+void ProgramBindingsVK::Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const
 {
     ITT_FUNCTION_TASK();
 
-    RenderCommandListVK& vulkan_command_list = dynamic_cast<RenderCommandListVK&>(command_list);
+    RenderCommandListVK& vulkan_command_list = static_cast<RenderCommandListVK&>(command_list);
 
     for(const auto& binding_by_argument : m_binding_by_argument)
     {

@@ -86,10 +86,11 @@ void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, Prog
     if (m_state != State::Pending)
         throw std::logic_error("Can not set program bindings on committed or executing command list.");
 
-    program_bindings.Apply(*this, apply_behavior);
-
+    ProgramBindingsBase& program_bindings_base = static_cast<ProgramBindingsBase&>(program_bindings);
+    program_bindings_base.Apply(*this, apply_behavior);
+    
     assert(!!m_sp_command_state);
-    m_sp_command_state->p_program_bindings = static_cast<ProgramBindingsBase*>(&program_bindings);
+    m_sp_command_state->p_program_bindings = &program_bindings_base;
 }
 
 void CommandListBase::Commit(bool /*present_drawable*/)

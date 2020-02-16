@@ -35,6 +35,7 @@ namespace Methane::Graphics
 {
 
 class ContextBase;
+class CommandListBase;
 
 class ProgramBindingsBase
     : public ProgramBindings
@@ -84,6 +85,7 @@ public:
 
     // ProgramBindingsBase interface
     virtual void CompleteInitialization() = 0;
+    virtual void Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior = ApplyBehavior::AllIncremental) const = 0;
 
     bool AllArgumentsAreBoundToResources(std::string& missing_args) const;
 

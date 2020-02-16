@@ -231,11 +231,11 @@ ProgramBindingsMT::ProgramBindingsMT(const ProgramBindingsMT& other_program_bind
     ITT_FUNCTION_TASK();
 }
 
-void ProgramBindingsMT::Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior) const
+void ProgramBindingsMT::Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const
 {
     ITT_FUNCTION_TASK();
 
-    RenderCommandListMT& metal_command_list = dynamic_cast<RenderCommandListMT&>(command_list);
+    RenderCommandListMT& metal_command_list = static_cast<RenderCommandListMT&>(command_list);
     id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeRenderEncoder();
     
     for(const auto& binding_by_argument : m_binding_by_argument)

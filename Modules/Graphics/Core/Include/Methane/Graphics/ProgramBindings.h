@@ -79,7 +79,6 @@ struct ProgramBindings
 
     // ProgramBindings interface
     virtual const Ptr<ArgumentBinding>& Get(const Program::Argument& shader_argument) const = 0;
-    virtual void Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior = ApplyBehavior::AllIncremental) const = 0;
 
     virtual ~ProgramBindings() = default;
 };

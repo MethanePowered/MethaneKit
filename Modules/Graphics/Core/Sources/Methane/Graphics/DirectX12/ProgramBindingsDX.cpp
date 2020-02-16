@@ -206,16 +206,15 @@ void ProgramBindingsDX::CompleteInitialization()
     UpdateRootParameterBindings();
 }
 
-void ProgramBindingsDX::Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior) const
+void ProgramBindingsDX::Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const
 {
     ITT_FUNCTION_TASK();
 
     using DXBindingType     = ArgumentBindingDX::Type;
     using DXDescriptorRange = ArgumentBindingDX::DescriptorRange;
 
-    CommandListBase&           command_list_base          = dynamic_cast<CommandListBase&>(command_list);
     ICommandListDX&            command_list_dx            = dynamic_cast<ICommandListDX&>(command_list);
-    const ProgramBindingsBase* p_applied_program_bindings = command_list_base.GetProgramBindings();
+    const ProgramBindingsBase* p_applied_program_bindings = command_list.GetProgramBindings();
     const bool           apply_constant_resource_bindings = apply_behavior & ~ApplyBehavior::ConstantOnce || !p_applied_program_bindings;
 
     wrl::ComPtr<ID3D12GraphicsCommandList>& cp_d3d12_command_list = command_list_dx.GetNativeCommandList();
@@ -229,7 +228,7 @@ void ProgramBindingsDX::Apply(CommandList& command_list, ApplyBehavior::Mask app
         ResourceBase::Barriers resource_transition_barriers = ApplyResourceStates(apply_constant_resource_bindings);
         if (!resource_transition_barriers.empty())
         {
-            command_list_base.SetResourceBarriers(resource_transition_barriers);
+            command_list.SetResourceBarriers(resource_transition_barriers);
         }
     }
 
