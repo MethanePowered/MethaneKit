@@ -387,24 +387,24 @@ bool ShadowCubeApp::Update()
     // Update Cube uniforms
     m_sp_cube_buffers->SetFinalPassUniforms(MeshUniforms{
         cube_model_matrix,
-        cube_model_matrix* scene_view_matrix * scene_proj_matrix,
-        cube_model_matrix* light_view_matrix * light_proj_matrix * shadow_transform_matrix
+        cube_model_matrix * scene_view_matrix * scene_proj_matrix,
+        cube_model_matrix * light_view_matrix * light_proj_matrix * shadow_transform_matrix
     });
     m_sp_cube_buffers->SetShadowPassUniforms(MeshUniforms{
         cube_model_matrix,
-        cube_model_matrix* light_view_matrix * light_proj_matrix,
+        cube_model_matrix * light_view_matrix * light_proj_matrix,
         gfx::Matrix44f()
     });
 
     // Update Floor uniforms
     m_sp_floor_buffers->SetFinalPassUniforms(MeshUniforms{
         scale_matrix,
-        scale_matrix* scene_view_matrix * scene_proj_matrix,
-        scale_matrix* light_view_matrix * light_proj_matrix * shadow_transform_matrix
+        scale_matrix * scene_view_matrix * scene_proj_matrix,
+        scale_matrix * light_view_matrix * light_proj_matrix * shadow_transform_matrix
     });
     m_sp_floor_buffers->SetShadowPassUniforms(MeshUniforms{
         scale_matrix,
-        scale_matrix* light_view_matrix * light_proj_matrix,
+        scale_matrix * light_view_matrix * light_proj_matrix,
         gfx::Matrix44f()
     });
     
