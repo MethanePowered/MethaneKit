@@ -67,6 +67,8 @@ public:
 
     RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass);
     RenderCommandListBase(ParallelRenderCommandListBase& parallel_render_command_list);
+    
+    using CommandListBase::Reset;
 
     // RenderCommandList interface
     void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;

@@ -63,12 +63,13 @@ public:
     void ShowControlsHelp();
     void ShowCommandLineHelp();
 
-private:
+protected:
     // Keyboard::ActionControllerBase interface
     void        OnKeyboardKeyAction(AppAction, Platform::Keyboard::KeyState) override { }
     void        OnKeyboardStateAction(AppAction action) override;
     std::string GetKeyboardActionName(AppAction action) const override;
 
+private:
     AppBase& m_application;
 };
 

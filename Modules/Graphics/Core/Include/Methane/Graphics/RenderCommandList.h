@@ -49,7 +49,7 @@ struct RenderCommandList : virtual CommandList
     // Create RenderCommandList instance
     static Ptr<RenderCommandList> Create(CommandQueue& command_queue, RenderPass& render_pass);
     static Ptr<RenderCommandList> Create(ParallelRenderCommandList& parallel_command_list);
-
+    
     // RenderCommandList interface
     virtual void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") = 0;
     virtual void SetState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) = 0;
@@ -59,6 +59,8 @@ struct RenderCommandList : virtual CommandList
                              uint32_t instance_count = 1, uint32_t start_instance = 0) = 0;
     virtual void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex = 0,
                       uint32_t instance_count = 1, uint32_t start_instance = 0) = 0;
+    
+    using CommandList::Reset;
 };
 
 } // namespace Methane::Graphics

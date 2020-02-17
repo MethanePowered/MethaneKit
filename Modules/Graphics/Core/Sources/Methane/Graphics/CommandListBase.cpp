@@ -50,9 +50,9 @@ std::string CommandListBase::GetStateName(State state)
 }
 
 CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
-    : m_sp_command_queue(command_queue.GetPtr())
+    : m_type(type)
+    , m_sp_command_queue(command_queue.GetPtr())
     , m_sp_command_state(CommandState::Create(type))
-    , m_type(type)
 {
     ITT_FUNCTION_TASK();
 }

@@ -36,6 +36,7 @@ Base implementation of the context interface.
 namespace Methane::Graphics
 {
 
+#ifdef COMMAND_EXECUTION_LOGGING
 static std::string GetWaitForName(Context::WaitFor wait_for)
 {
     ITT_FUNCTION_TASK();
@@ -47,6 +48,7 @@ static std::string GetWaitForName(Context::WaitFor wait_for)
     }
     return "";
 }
+#endif
 
 ContextBase::ContextBase(DeviceBase& device, Type type)
     : m_type(type)

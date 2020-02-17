@@ -41,6 +41,8 @@ class ParallelRenderCommandListBase
 {
 public:
     ParallelRenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass);
+    
+    using CommandListBase::Reset;
 
     // ParallelRenderCommandList interface
     void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;
