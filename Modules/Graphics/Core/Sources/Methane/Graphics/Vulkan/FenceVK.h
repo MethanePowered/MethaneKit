@@ -16,53 +16,37 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/FenceDX.cpp
-DirectX 12 fence wrapper.
+FILE: Methane/Graphics/Vulkan/FenceVK.h
+Vulkan fence implementation.
 
 ******************************************************************************/
 
-#include "FenceBase.h"
-#include "CommandQueueBase.h"
+#pragma once
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Graphics/FenceBase.h>
 
-#ifdef COMMAND_EXECUTION_LOGGING
-#include <Methane/Platform/Utils.h>
-#endif
 namespace Methane::Graphics
 {
 
-FenceBase::FenceBase(CommandQueueBase& command_queue)
-    : m_command_queue(command_queue)
+class CommandQueueVK;
+
+class FenceVK final : public FenceBase
 {
-    ITT_FUNCTION_TASK();
-}
+public:
+    FenceVK(CommandQueueBase& command_queue);
+    ~FenceVK();
 
-void FenceBase::Signal()
-{
-    ITT_FUNCTION_TASK();
+    // Fence overrides
+    void Signal() override;
+    void Wait() override;
 
-    m_value++;
+    // Object override
+    void SetName(const std::string& name) noexcept override;
 
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("SIGNAL fence \"" + m_name + "\" with value " + std::to_string(m_value));
-#endif
-}
+private:
+    CommandQueueVK& GetCommandQueueVK();
 
-void FenceBase::Wait()
-{
-    ITT_FUNCTION_TASK();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("WAIT fence \"" + m_name + "\" with value " + std::to_string(m_value));
-#endif
-}
-
-void FenceBase::Flush()
-{
-    ITT_FUNCTION_TASK();
-    Signal();
-    Wait();
-}
+    // TODO: native fence object
+};
 
 } // namespace Methane::Graphics

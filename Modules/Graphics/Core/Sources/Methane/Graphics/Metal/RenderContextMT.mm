@@ -38,7 +38,10 @@ namespace Methane::Graphics
 Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, Device& device, const RenderContext::Settings& settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<RenderContextMT>(env, static_cast<DeviceBase&>(device), settings);
+    DeviceBase& device_base = static_cast<DeviceBase&>(device);
+    Ptr<RenderContextMT> sp_render_context = std::make_shared<RenderContextMT>(env, device_base, settings);
+    sp_render_context->Initialize(device_base, true);
+    return sp_render_context;
 }
 
 RenderContextMT::RenderContextMT(const Platform::AppEnvironment& env, DeviceBase& device, const RenderContext::Settings& settings)

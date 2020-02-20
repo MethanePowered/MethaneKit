@@ -68,6 +68,7 @@ void RenderContextBase::WaitForGpu(WaitFor wait_for)
         OnGpuWaitComplete(wait_for);
     } break;
 
+    case WaitFor::ResourcesUploaded: break; // Handled in ContextBase::WaitForGpu
     }
 }
 
@@ -175,7 +176,8 @@ void RenderContextBase::SetName(const std::string& name)
         sp_frame_fence->SetName(name + " Frame " + std::to_string(frame_index) + " Fence");
     }
 
-    m_sp_render_fence->SetName(name + " Render Fence");
+    if (m_sp_render_fence)
+        m_sp_render_fence->SetName(name + " Render Fence");
 }
 
 void RenderContextBase::OnGpuWaitComplete(WaitFor wait_for)

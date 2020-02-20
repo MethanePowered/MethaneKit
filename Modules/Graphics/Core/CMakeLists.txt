@@ -71,6 +71,8 @@ elseif(APPLE)
         ${SOURCES_GRAPHICS_DIR}/TypesMT.mm
         ${SOURCES_GRAPHICS_DIR}/DeviceMT.hh
         ${SOURCES_GRAPHICS_DIR}/DeviceMT.mm
+        ${SOURCES_GRAPHICS_DIR}/FenceMT.hh
+        ${SOURCES_GRAPHICS_DIR}/FenceMT.mm
         ${SOURCES_GRAPHICS_DIR}/ContextMT.h
         ${SOURCES_GRAPHICS_DIR}/ContextMT.hpp
         ${SOURCES_GRAPHICS_DIR}/RenderContextMT.hh
@@ -125,6 +127,8 @@ else() # Linux
         ${SOURCES_GRAPHICS_DIR}/TypesVK.cpp
         ${SOURCES_GRAPHICS_DIR}/DeviceVK.h
         ${SOURCES_GRAPHICS_DIR}/DeviceVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/FenceVK.h
+        ${SOURCES_GRAPHICS_DIR}/FenceVK.cpp
         ${SOURCES_GRAPHICS_DIR}/ContextVK.h
         ${SOURCES_GRAPHICS_DIR}/ContextVK.hpp
         ${SOURCES_GRAPHICS_DIR}/ShaderVK.h

@@ -65,9 +65,9 @@ public:
     void WaitForGpu(Context::WaitFor wait_for) override
     {
         ITT_FUNCTION_TASK();
-        ContextBase::WaitForGpu(wait_for);
+        ContextBaseT::WaitForGpu(wait_for);
         dispatch_semaphore_wait(m_dispatch_semaphore, DISPATCH_TIME_FOREVER);
-        ContextBase::OnGpuWaitComplete(wait_for);
+        ContextBaseT::OnGpuWaitComplete(wait_for);
     }
 
     // ContextBase interface
@@ -76,7 +76,7 @@ public:
     {
         ITT_FUNCTION_TASK();
         m_dispatch_semaphore = dispatch_semaphore_create(m_dispatch_count);
-        ContextBase::Initialize(device, deferred_heap_allocation);
+        ContextBaseT::Initialize(device, deferred_heap_allocation);
     }
 
     void Release() override
@@ -85,7 +85,7 @@ public:
         // FIXME: semaphore release causes a crash
         // https://stackoverflow.com/questions/8287621/why-does-this-code-cause-exc-bad-instruction
         //dispatch_release(m_dispatch_semaphore);
-        ContextBase::Release();
+        ContextBaseT::Release();
     }
 
     void OnCommandQueueCompleted(CommandQueue&, uint32_t) override
