@@ -25,6 +25,7 @@ Base implementation of the render context interface.
 #include "DeviceBase.h"
 
 #include <Methane/Instrumentation.h>
+#include <Methane/ScopeTimer.h>
 
 #ifdef COMMAND_EXECUTION_LOGGING
 #include <Methane/Platform/Utils.h>
@@ -50,6 +51,24 @@ void RenderContextBase::WaitForGpu(WaitFor wait_for)
     ContextBase::WaitForGpu(wait_for);
 
     m_fps_counter.OnGpuFramePresentWait();
+
+    switch (wait_for)
+    {
+    case WaitFor::RenderComplete:
+    {
+        SCOPE_TIMER("RenderContextDX::WaitForGpu::RenderComplete");
+        GetRenderFence().Flush();
+        OnGpuWaitComplete(wait_for);
+    } break;
+
+    case WaitFor::FramePresented:
+    {
+        SCOPE_TIMER("RenderContextDX::WaitForGpu::FramePresented");
+        GetCurrentFrameFence().Wait();
+        OnGpuWaitComplete(wait_for);
+    } break;
+
+    }
 }
 
 void RenderContextBase::Resize(const FrameSize& frame_size)
@@ -85,6 +104,21 @@ void RenderContextBase::OnCpuPresentComplete()
     m_fps_counter.OnCpuFramePresented();
 }
 
+Fence& RenderContextBase::GetCurrentFrameFence() const
+{
+    ITT_FUNCTION_TASK();
+    const UniquePtr<Fence>& sp_current_fence = GetCurrentFrameFencePtr();
+    assert(!!sp_current_fence);
+    return *sp_current_fence;
+}
+
+Fence& RenderContextBase::GetRenderFence() const
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_sp_render_fence);
+    return *m_sp_render_fence;
+}
+
 void RenderContextBase::ResetWithSettings(const Settings& settings)
 {
     ITT_FUNCTION_TASK();
@@ -102,13 +136,46 @@ void RenderContextBase::ResetWithSettings(const Settings& settings)
     Initialize(*sp_device, true);
 }
 
+void RenderContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation)
+{
+    ITT_FUNCTION_TASK();
+
+    m_frame_fences.clear();
+    for (uint32_t frame_index = 0; frame_index < m_settings.frame_buffers_count; ++frame_index)
+    {
+        m_frame_fences.emplace_back(Fence::Create(GetRenderCommandQueue()));
+    }
+
+    m_sp_render_fence = Fence::Create(GetRenderCommandQueue());
+
+    ContextBase::Initialize(device, deferred_heap_allocation);
+}
+
 void RenderContextBase::Release()
 {
     ITT_FUNCTION_TASK();
 
+    m_sp_render_fence.reset();
+    m_frame_fences.clear();
     m_sp_render_cmd_queue.reset();
 
     ContextBase::Release();
+}
+
+void RenderContextBase::SetName(const std::string& name)
+{
+    ITT_FUNCTION_TASK();
+
+    ContextBase::SetName(name);
+
+    for (uint32_t frame_index = 0; frame_index < m_frame_fences.size(); ++frame_index)
+    {
+        const UniquePtr<Fence>& sp_frame_fence = m_frame_fences[frame_index];
+        assert(!!sp_frame_fence);
+        sp_frame_fence->SetName(name + " Frame " + std::to_string(frame_index) + " Fence");
+    }
+
+    m_sp_render_fence->SetName(name + " Render Fence");
 }
 
 void RenderContextBase::OnGpuWaitComplete(WaitFor wait_for)

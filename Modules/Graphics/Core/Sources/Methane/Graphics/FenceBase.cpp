@@ -16,43 +16,51 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/FenceDX.h
-DirectX 12 fence implementation.
+FILE: Methane/Graphics/DirectX12/FenceDX.cpp
+DirectX 12 fence wrapper.
 
 ******************************************************************************/
 
-#pragma once
+#include "FenceBase.h"
+#include "CommandQueueBase.h"
 
-#include <Methane/Graphics/FenceBase.h>
-
-#include <wrl.h>
-#include <d3d12.h>
+#include <Methane/Graphics/Windows/Helpers.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-namespace wrl = Microsoft::WRL;
-
-class CommandQueueDX;
-
-class FenceDX final : public FenceBase
+FenceBase::FenceBase(CommandQueueBase& command_queue)
+    : m_command_queue(command_queue)
 {
-public:
-    FenceDX(CommandQueueBase& command_queue);
-    ~FenceDX();
+    ITT_FUNCTION_TASK();
+}
 
-    // Fence overrides
-    void Signal() override;
-    void Wait() override;
+void FenceBase::Signal()
+{
+    ITT_FUNCTION_TASK();
 
-    // Object override
-    void SetName(const std::string& name) noexcept override;
+    m_value++;
 
-private:
-    CommandQueueDX& GetCommandQueueDX();
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("SIGNAL fence \"" + m_name + "\" with value " + std::to_string(m_value));
+#endif
+}
 
-    wrl::ComPtr<ID3D12Fence> m_cp_fence;
-    HANDLE                   m_event = nullptr;
-};
+void FenceBase::Wait()
+{
+    ITT_FUNCTION_TASK();
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("WAIT fence \"" + m_name + "\" with value " + std::to_string(m_value));
+#endif
+}
+
+void FenceBase::Flush()
+{
+    ITT_FUNCTION_TASK();
+    Signal();
+    Wait();
+}
 
 } // namespace Methane::Graphics

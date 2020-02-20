@@ -42,7 +42,6 @@ public:
 
     // RenderContext interface
     bool ReadyToRender() const override { return true; }
-    void WaitForGpu(WaitFor wait_for) override;
     void Resize(const FrameSize& frame_size) override;
     void Present() override;
     Platform::AppView GetAppView() const override { return { nullptr }; }
@@ -52,22 +51,15 @@ public:
     void Initialize(DeviceBase& device, bool deferred_heap_allocation) override;
     void Release() override;
 
-    // Object interface
-    void SetName(const std::string& name) override;
-
     CommandQueueDX& GetRenderCommandQueueDX();
 
     const wrl::ComPtr<IDXGISwapChain3>& GetNativeSwapChain() const { return m_cp_swap_chain; }
 
 protected:
-    FrameFenceDX&                         GetCurrentFrameFence();
-    inline const UniquePtr<FrameFenceDX>& GetCurrentFrameFencePtr()       { return m_frame_fences[m_frame_buffer_index]; }
-    inline uint32_t                       GetPresentVSyncInterval() const { return m_settings.vsync_enabled ? 1 : 0; }
+    inline uint32_t GetPresentVSyncInterval() const { return m_settings.vsync_enabled ? 1 : 0; }
 
     const Platform::AppEnvironment m_platform_env;
     wrl::ComPtr<IDXGISwapChain3>   m_cp_swap_chain;
-    UniquePtrs<FrameFenceDX>       m_frame_fences;
-    Ptr<FenceDX>                   m_sp_render_fence;
 };
 
 } // namespace Methane::Graphics

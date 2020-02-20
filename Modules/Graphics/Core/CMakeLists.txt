@@ -176,6 +176,7 @@ set(HEADERS
     ${INCLUDE_DIR}/Device.h
     ${INCLUDE_DIR}/Context.h
     ${INCLUDE_DIR}/RenderContext.h
+    ${INCLUDE_DIR}/Fence.h
     ${INCLUDE_DIR}/Shader.h
     ${INCLUDE_DIR}/Program.h
     ${INCLUDE_DIR}/ProgramBindings.h
@@ -217,6 +218,8 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/ContextBase.cpp
     ${SOURCES_DIR}/RenderContextBase.h
     ${SOURCES_DIR}/RenderContextBase.cpp
+    ${SOURCES_DIR}/FenceBase.h
+    ${SOURCES_DIR}/FenceBase.cpp
     ${SOURCES_DIR}/ShaderBase.h
     ${SOURCES_DIR}/ShaderBase.cpp
     ${SOURCES_DIR}/ProgramBase.h
@@ -251,7 +254,7 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/ResourceManager.h
     ${SOURCES_DIR}/ResourceManager.cpp
     ${SOURCES_DIR}/Types.cpp
-)
+    Include/Methane/Graphics/Fence.h)
 
 add_library(${TARGET} STATIC
     ${HEADERS}

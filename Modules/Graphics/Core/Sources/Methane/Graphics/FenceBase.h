@@ -16,43 +16,41 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/FenceDX.h
-DirectX 12 fence implementation.
+FILE: Methane/Graphics/FenceBase.h
+Methane fence base implementation.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/FenceBase.h>
-
-#include <wrl.h>
-#include <d3d12.h>
+#include <Methane/Memory.hpp>
+#include <Methane/Graphics/Fence.h>
+#include <Methane/Graphics/ObjectBase.h>
 
 namespace Methane::Graphics
 {
 
-namespace wrl = Microsoft::WRL;
+class CommandQueueBase;
 
-class CommandQueueDX;
-
-class FenceDX final : public FenceBase
+class FenceBase
+    : public Fence
+    , public ObjectBase
 {
 public:
-    FenceDX(CommandQueueBase& command_queue);
-    ~FenceDX();
+    FenceBase(CommandQueueBase& command_queue);
 
     // Fence overrides
     void Signal() override;
     void Wait() override;
+    void Flush() override;
 
-    // Object override
-    void SetName(const std::string& name) noexcept override;
+protected:
+    CommandQueueBase& GetCommandQueue() noexcept { return m_command_queue; }
+    uint64_t          GetValue() const noexcept  { return m_value; }
 
 private:
-    CommandQueueDX& GetCommandQueueDX();
-
-    wrl::ComPtr<ID3D12Fence> m_cp_fence;
-    HANDLE                   m_event = nullptr;
+    CommandQueueBase& m_command_queue;
+    uint64_t          m_value = 0u;
 };
 
 } // namespace Methane::Graphics

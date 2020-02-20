@@ -110,8 +110,6 @@ void RenderContextDX::Release()
     ITT_FUNCTION_TASK();
 
     m_cp_swap_chain.Reset();
-    m_sp_render_fence.reset();
-    m_frame_fences.clear();
 
     ContextDX<RenderContextBase>::Release();
 }
@@ -176,56 +174,7 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
     const wrl::ComPtr<ID3D12Device>& cp_device = static_cast<DeviceDX&>(device).GetNativeDevice();
     assert(!!cp_device);
 
-    m_frame_fences.clear();
-    for (uint32_t frame_index = 0; frame_index < m_settings.frame_buffers_count; ++frame_index)
-    {
-        m_frame_fences.emplace_back(std::make_unique<FrameFenceDX>(GetRenderCommandQueueDX(), frame_index));
-    }
-
-    m_sp_render_fence = std::make_unique<FenceDX>(GetRenderCommandQueueDX());
-
     ContextDX<RenderContextBase>::Initialize(device, deferred_heap_allocation);
-}
-
-void RenderContextDX::SetName(const std::string& name)
-{
-    ITT_FUNCTION_TASK();
-
-    ContextDX<RenderContextBase>::SetName(name);
-
-    for (UniquePtr<FrameFenceDX>& sp_frame_fence : m_frame_fences)
-    {
-        assert(!!sp_frame_fence);
-        sp_frame_fence->SetName(name + " Frame " + std::to_string(sp_frame_fence->GetFrame()) + " Fence");
-    }
-
-    m_sp_render_fence->SetName(name + " Render Fence");
-}
-
-void RenderContextDX::WaitForGpu(WaitFor wait_for)
-{
-    ITT_FUNCTION_TASK();
-
-    ContextDX<RenderContextBase>::WaitForGpu(wait_for);
-
-    switch (wait_for)
-    {
-    case WaitFor::RenderComplete:
-    {
-        SCOPE_TIMER("RenderContextDX::WaitForGpu::RenderComplete");
-        assert(m_sp_render_fence);
-        m_sp_render_fence->Flush();
-        ContextDX<RenderContextBase>::OnGpuWaitComplete(wait_for);
-    } break;
-
-    case WaitFor::FramePresented:
-    {
-        SCOPE_TIMER("RenderContextDX::WaitForGpu::FramePresented");
-        GetCurrentFrameFence().Wait();
-        ContextDX<RenderContextBase>::OnGpuWaitComplete(wait_for);
-    } break;
-
-    }
 }
 
 void RenderContextDX::Resize(const FrameSize& frame_size)
@@ -279,13 +228,6 @@ CommandQueueDX& RenderContextDX::GetRenderCommandQueueDX()
 {
     ITT_FUNCTION_TASK();
     return static_cast<CommandQueueDX&>(GetRenderCommandQueue());
-}
-
-FrameFenceDX& RenderContextDX::GetCurrentFrameFence()
-{
-    const UniquePtr<FrameFenceDX>& sp_current_fence = GetCurrentFrameFencePtr();
-    assert(!!sp_current_fence);
-    return *sp_current_fence;
 }
 
 } // namespace Methane::Graphics

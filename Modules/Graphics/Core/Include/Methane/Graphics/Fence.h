@@ -16,43 +16,30 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/FenceDX.h
-DirectX 12 fence implementation.
+FILE: Methane/Graphics/Fence.h
+Methane fence interface used for CPU-GPU synchronization.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/FenceBase.h>
+#include "Object.h"
 
-#include <wrl.h>
-#include <d3d12.h>
+#include <Methane/Memory.hpp>
 
 namespace Methane::Graphics
 {
 
-namespace wrl = Microsoft::WRL;
+struct CommandQueue;
 
-class CommandQueueDX;
-
-class FenceDX final : public FenceBase
+struct Fence : virtual Object
 {
-public:
-    FenceDX(CommandQueueBase& command_queue);
-    ~FenceDX();
+    static UniquePtr<Fence> Create(CommandQueue& command_queue);
 
-    // Fence overrides
-    void Signal() override;
-    void Wait() override;
-
-    // Object override
-    void SetName(const std::string& name) noexcept override;
-
-private:
-    CommandQueueDX& GetCommandQueueDX();
-
-    wrl::ComPtr<ID3D12Fence> m_cp_fence;
-    HANDLE                   m_event = nullptr;
+    // Fence interface
+    virtual void Signal() = 0;
+    virtual void Wait() = 0;
+    virtual void Flush() = 0;
 };
 
 } // namespace Methane::Graphics

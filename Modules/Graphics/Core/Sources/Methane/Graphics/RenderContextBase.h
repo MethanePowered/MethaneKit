@@ -24,6 +24,7 @@ Base implementation of the render context interface.
 #pragma once
 
 #include "ContextBase.h"
+#include "FenceBase.h"
 
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/FpsCounter.h>
@@ -54,18 +55,28 @@ public:
     bool              SetFrameBuffersCount(uint32_t frame_buffers_count) override;
     bool              SetFullScreen(bool is_full_screen) override;
 
-    // ContextBase overrides
+    // ContextBase interface
+    void Initialize(DeviceBase& device, bool deferred_heap_allocation) override;
     void Release() override;
+
+    // Object interface
+    void SetName(const std::string& name) override;
 
 protected:
     void ResetWithSettings(const Settings& settings);
     void OnCpuPresentComplete();
+
+    inline const UniquePtr<Fence>& GetCurrentFrameFencePtr() const { return m_frame_fences[m_frame_buffer_index]; }
+    Fence&                         GetCurrentFrameFence() const;
+    Fence&                         GetRenderFence() const;
 
     // ContextBase overrides
     void OnGpuWaitComplete(WaitFor wait_for) override;
 
     Settings              m_settings;
     Ptr<CommandQueue>     m_sp_render_cmd_queue;
+    UniquePtrs<Fence>     m_frame_fences;
+    UniquePtr<Fence>      m_sp_render_fence;
     std::atomic<uint32_t> m_frame_buffer_index;
     FpsCounter            m_fps_counter;
 };

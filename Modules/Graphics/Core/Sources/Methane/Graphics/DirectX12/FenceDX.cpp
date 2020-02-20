@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/DirectX12/FenceDX.cpp
-DirectX 12 fence wrapper.
+DirectX 12 fence implementation.
 
 ******************************************************************************/
 
@@ -27,7 +27,6 @@ DirectX 12 fence wrapper.
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/ScopeTimer.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #include <nowide/convert.hpp>
@@ -35,9 +34,14 @@ DirectX 12 fence wrapper.
 namespace Methane::Graphics
 {
 
+UniquePtr<Fence> Fence::Create(CommandQueue& command_queue)
+{
+    ITT_FUNCTION_TASK();
+    return std::make_unique<FenceDX>(static_cast<CommandQueueBase&>(command_queue));
+}
 
-FenceDX::FenceDX(CommandQueueDX& command_queue)
-    : m_command_queue(command_queue)
+FenceDX::FenceDX(CommandQueueBase& command_queue)
+    : FenceBase(command_queue)
     , m_event(CreateEvent(nullptr, FALSE, FALSE, nullptr))
 {
     ITT_FUNCTION_TASK();
@@ -46,10 +50,10 @@ FenceDX::FenceDX(CommandQueueDX& command_queue)
         ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
     }
 
-    const wrl::ComPtr<ID3D12Device>& cp_device = m_command_queue.GetContextDX().GetDeviceDX().GetNativeDevice();
+    const wrl::ComPtr<ID3D12Device>& cp_device = GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice();
     assert(!!cp_device);
 
-    ThrowIfFailed(cp_device->CreateFence(m_value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_cp_fence)));
+    ThrowIfFailed(cp_device->CreateFence(GetValue(), D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_cp_fence)));
 }
 
 FenceDX::~FenceDX()
@@ -61,47 +65,35 @@ FenceDX::~FenceDX()
 void FenceDX::Signal()
 {
     ITT_FUNCTION_TASK();
-    wrl::ComPtr<ID3D12CommandQueue>& cp_command_queue = m_command_queue.GetNativeCommandQueue();
+
+    FenceBase::Signal();
+
+    wrl::ComPtr<ID3D12CommandQueue>& cp_command_queue = GetCommandQueueDX().GetNativeCommandQueue();
     assert(!!cp_command_queue);
     assert(!!m_cp_fence);
 
-    m_value++;
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("SIGNAL fence \"" + m_name + "\" with value " + std::to_string(m_value));
-#endif
-
-    ThrowIfFailed(cp_command_queue->Signal(m_cp_fence.Get(), m_value));
+    ThrowIfFailed(cp_command_queue->Signal(m_cp_fence.Get(), GetValue()));
 }
 
 void FenceDX::Wait()
 {
     ITT_FUNCTION_TASK();
+
+    FenceBase::Wait();
+
     assert(!!m_cp_fence);
     assert(!!m_event);
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("WAIT fence \"" + m_name + "\" with value " + std::to_string(m_value));
-#endif
-
-    if (m_cp_fence->GetCompletedValue() < m_value)
+    if (m_cp_fence->GetCompletedValue() < GetValue())
     {
-        ThrowIfFailed(m_cp_fence->SetEventOnCompletion(m_value, m_event));
+        ThrowIfFailed(m_cp_fence->SetEventOnCompletion(GetValue(), m_event));
         WaitForSingleObjectEx(m_event, INFINITE, FALSE);
     }
-}
-
-void FenceDX::Flush()
-{
-    ITT_FUNCTION_TASK();
-    Signal();
-    Wait();
 }
 
 void FenceDX::SetName(const std::string& name) noexcept
 {
     ITT_FUNCTION_TASK();
-    if (GetName() == name)
+    if (ObjectBase::GetName() == name)
         return;
 
    ObjectBase::SetName(name);
@@ -110,12 +102,10 @@ void FenceDX::SetName(const std::string& name) noexcept
     m_cp_fence->SetName(nowide::widen(name).c_str());
 }
 
-
-FrameFenceDX::FrameFenceDX(CommandQueueDX& command_queue, uint32_t frame)
-    : FenceDX(command_queue)
-    , m_frame(frame)
+CommandQueueDX& FenceDX::GetCommandQueueDX()
 {
     ITT_FUNCTION_TASK();
+    return static_cast<CommandQueueDX&>(GetCommandQueue());
 }
 
 } // namespace Methane::Graphics
