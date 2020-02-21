@@ -98,6 +98,9 @@ void RenderContextBase::OnCpuPresentComplete()
 {
     ITT_FUNCTION_TASK();
 
+    // Schedule a signal command in the queue for a currently finished frame
+    GetCurrentFrameFence().Signal();
+
 #ifdef COMMAND_EXECUTION_LOGGING
     Platform::PrintToDebugOutput("PRESENT COMPLETE for context \"" + GetName() + "\"");
 #endif

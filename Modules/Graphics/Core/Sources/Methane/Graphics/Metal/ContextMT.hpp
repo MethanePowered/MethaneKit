@@ -66,7 +66,7 @@ public:
     {
         ITT_FUNCTION_TASK();
         ContextBaseT::WaitForGpu(wait_for);
-        dispatch_semaphore_wait(m_dispatch_semaphore, DISPATCH_TIME_FOREVER);
+        //dispatch_semaphore_wait(m_dispatch_semaphore, DISPATCH_TIME_FOREVER);
         ContextBaseT::OnGpuWaitComplete(wait_for);
     }
 
@@ -91,7 +91,7 @@ public:
     void OnCommandQueueCompleted(CommandQueue&, uint32_t) override
     {
         ITT_FUNCTION_TASK();
-        dispatch_semaphore_signal(m_dispatch_semaphore);
+        //dispatch_semaphore_signal(m_dispatch_semaphore);
     }
 
     // IContextMT interface

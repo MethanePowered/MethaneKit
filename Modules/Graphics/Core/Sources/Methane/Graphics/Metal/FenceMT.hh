@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/FenceMT.h
+FILE: Methane/Graphics/Metal/FenceMT.hh
 Metal fence implementation.
 
 ******************************************************************************/
@@ -24,6 +24,11 @@ Metal fence implementation.
 #pragma once
 
 #include <Methane/Graphics/FenceBase.h>
+
+#include <mutex>
+#include <condition_variable>
+
+#import <Metal/Metal.h>
 
 namespace Methane::Graphics
 {
@@ -45,8 +50,14 @@ public:
 
 private:
     CommandQueueMT& GetCommandQueueMT();
+    
+    static dispatch_queue_t& GetDispatchQueue();
 
-    // TODO: native fence object
+    id<MTLSharedEvent>      m_mtl_event;
+    MTLSharedEventListener* m_mtl_event_listener;
+    std::mutex              m_wait_mutex;
+    std::condition_variable m_wait_condition_var;
+    bool                    m_is_signalled = false;
 };
 
 } // namespace Methane::Graphics

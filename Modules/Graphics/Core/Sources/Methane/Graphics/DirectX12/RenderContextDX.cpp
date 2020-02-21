@@ -207,9 +207,6 @@ void RenderContextDX::Present()
     assert(m_cp_swap_chain);
     ThrowIfFailed(m_cp_swap_chain->Present(vsync_interval, present_flags));
 
-    // Schedule a signal command in the queue for a currently finished frame
-    GetCurrentFrameFence().Signal();
-
     OnCpuPresentComplete();
 
     // Update current frame buffer index

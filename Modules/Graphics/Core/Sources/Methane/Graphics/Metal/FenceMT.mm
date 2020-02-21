@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/FenceMT.cpp
+FILE: Methane/Graphics/Metal/FenceMT.mm
 Metal fence implementation.
 
 ******************************************************************************/
@@ -26,6 +26,7 @@ Metal fence implementation.
 #include "DeviceMT.hh"
 
 #include <Methane/Graphics/ContextBase.h>
+#include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
@@ -36,20 +37,25 @@ UniquePtr<Fence> Fence::Create(CommandQueue& command_queue)
     ITT_FUNCTION_TASK();
     return std::make_unique<FenceMT>(static_cast<CommandQueueBase&>(command_queue));
 }
+    
+dispatch_queue_t& FenceMT::GetDispatchQueue()
+{
+    static dispatch_queue_t s_fences_dispatch_queue = dispatch_queue_create("com.example.methane.fences", NULL);
+    return s_fences_dispatch_queue;
+}
 
 FenceMT::FenceMT(CommandQueueBase& command_queue)
     : FenceBase(command_queue)
+    , m_mtl_event([GetCommandQueueMT().GetContextMT().GetDeviceMT().GetNativeDevice() newSharedEvent])
+    , m_mtl_event_listener([[MTLSharedEventListener alloc] initWithDispatchQueue:GetDispatchQueue()])
 {
     ITT_FUNCTION_TASK();
-
-    // TODO: create native fence object
 }
 
 FenceMT::~FenceMT()
 {
     ITT_FUNCTION_TASK();
-
-    // TODO: release native fence object
+    [m_mtl_event_listener release];
 }
 
 void FenceMT::Signal()
@@ -57,8 +63,12 @@ void FenceMT::Signal()
     ITT_FUNCTION_TASK();
 
     FenceBase::Signal();
-
-    // TODO: signal native fence object
+    
+    id<MTLCommandBuffer> mtl_command_buffer = [GetCommandQueueMT().GetNativeCommandQueue() commandBuffer];
+    [mtl_command_buffer encodeSignalEvent:m_mtl_event value:GetValue()];
+    [mtl_command_buffer commit];
+    
+    m_is_signalled = false;
 }
 
 void FenceMT::Wait()
@@ -67,7 +77,22 @@ void FenceMT::Wait()
 
     FenceBase::Wait();
 
-    // TODO: wait for native fence object
+    assert(!!m_mtl_event);
+    assert(!!m_mtl_event_listener);
+    uint64_t signalled_value = m_mtl_event.signaledValue;
+    if (signalled_value >= GetValue())
+        return;
+    
+    assert(!m_is_signalled);
+    [m_mtl_event notifyListener:m_mtl_event_listener
+                        atValue:GetValue()
+                          block:^(id<MTLSharedEvent> sharedEvent, uint64_t value)
+                                {
+                                    m_is_signalled = true;
+                                    m_wait_condition_var.notify_one();
+                                }];
+    std::unique_lock<std::mutex> lock(m_wait_mutex);
+    m_wait_condition_var.wait(lock, [this]{ return m_is_signalled; });
 }
 
 void FenceMT::SetName(const std::string& name) noexcept
@@ -78,7 +103,7 @@ void FenceMT::SetName(const std::string& name) noexcept
 
    ObjectBase::SetName(name);
 
-    // TODO: set name of native fence object
+    m_mtl_event.label = MacOS::ConvertToNSType<std::string, NSString*>(name);
 }
 
 CommandQueueMT& FenceMT::GetCommandQueueMT()
