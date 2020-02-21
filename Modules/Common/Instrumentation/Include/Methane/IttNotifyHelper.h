@@ -23,6 +23,9 @@ Helper macro-definitions for ITT instrumentation
 
 #pragma once
 
+// Enable instrumentation of the ITT function arguments
+//#define ITT_FUNCTION_ARGS_ENABLED
+
 #ifdef ITT_INSTRUMENTATION_ENABLED
 
 #include <stdint.h>
@@ -139,11 +142,19 @@ public:
 
 #define ITT_FUNCTION_TASK() ITT_SCOPE_TASK(__FUNCTION__); ITT_ARG("__file__", __FILE__); ITT_ARG("__line__", __LINE__)
 
+#ifdef ITT_FUNCTION_ARGS_ENABLED
+
 #define ITT_ARG(/*const char* */name, /*number or string*/ value) {\
     static __itt_string_handle* __itt_arg_name = UNICODE_AGNOSTIC(__itt_string_handle_create)(name);\
     ITT_MAGIC_STATIC(__itt_arg_name);\
     __itt_scope_item.AddArg(__itt_arg_name, value);\
 }
+
+#else
+
+#define ITT_ARG(/*const char* */name, /*number or string*/ value)
+
+#endif
 
 enum Scope
 {
