@@ -44,7 +44,7 @@ Ptr<CommandQueue> CommandQueue::Create(Context& context)
 }
 
 CommandQueueDX::CommandQueueDX(ContextBase& context)
-    : CommandQueueBase(context, false)
+    : CommandQueueBase(context)
 {
     ITT_FUNCTION_TASK();
 

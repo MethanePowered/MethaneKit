@@ -78,11 +78,6 @@ public:
         ContextBase::Release();
     }
 
-    void OnCommandQueueCompleted(CommandQueue&, uint32_t) override
-    {
-        ITT_FUNCTION_TASK();
-    }
-
     // IContextVK interface
 
     DeviceVK& GetDeviceVK() noexcept override

@@ -98,8 +98,6 @@ public:
         static_cast<SystemDX&>(System::Get()).ReportLiveObjects();
     }
 
-    void OnCommandQueueCompleted(CommandQueue& cmd_list, uint32_t frame_index) override { }
-
     // Object interface
 
     void SetName(const std::string& name) override

@@ -37,7 +37,7 @@ Ptr<CommandQueue> CommandQueue::Create(Context& context)
 }
 
 CommandQueueVK::CommandQueueVK(ContextBase& context)
-    : CommandQueueBase(context, true)
+    : CommandQueueBase(context)
 {
     ITT_FUNCTION_TASK();
 }
