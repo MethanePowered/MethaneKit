@@ -26,6 +26,7 @@ Base implementation of the context interface.
 #include "ObjectBase.h"
 #include "ResourceManager.h"
 
+#include <Methane/Graphics/Fence.h>
 #include <Methane/Graphics/Context.h>
 #include <Methane/Graphics/Native/ContextNT.h>
 
@@ -81,6 +82,7 @@ protected:
     Refs<Callback>            m_callbacks; // ORDER: Keep callbacks before resources for correct auto-delete
     Ptr<CommandQueue>         m_sp_upload_cmd_queue;
     Ptr<BlitCommandList>      m_sp_upload_cmd_list;
+    UniquePtr<Fence>          m_sp_upload_fence;
 };
 
 } // namespace Methane::Graphics

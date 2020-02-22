@@ -30,7 +30,6 @@ DirectX 12 base template implementation of the context interface.
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/ScopeTimer.h>
 
 #include <wrl.h>
 #include <d3d12.h>
@@ -55,38 +54,18 @@ public:
         ITT_FUNCTION_TASK();
     }
 
-    // Context interface
-
-    void WaitForGpu(Context::WaitFor wait_for) override
-    {
-        ITT_FUNCTION_TASK();
-        ContextBaseT::WaitForGpu(wait_for);
-
-        if (wait_for == WaitFor::ResourcesUploaded)
-        {
-            SCOPE_TIMER("ContextDX::WaitForGpu::ResourcesUploaded");
-            assert(!!m_sp_upload_fence);
-            m_sp_upload_fence->Flush();
-            ContextBaseT::OnGpuWaitComplete(wait_for);
-        }
-    }
-
     // ContextBase interface
 
     void Initialize(DeviceBase& device, bool deferred_heap_allocation) override
     {
         ITT_FUNCTION_TASK();
-
-        m_sp_device       = device.GetPtr();
-        m_sp_upload_fence = std::make_unique<FenceDX>(GetUploadCommandQueueDX());
-
+        m_sp_device = device.GetPtr();
         ContextBaseT::Initialize(device, deferred_heap_allocation);
     }
 
     void Release() override
     {
         ITT_FUNCTION_TASK();
-        m_sp_upload_fence.reset();
 
         if (m_sp_device)
         {
@@ -105,16 +84,12 @@ public:
         ITT_FUNCTION_TASK();
         ContextBaseT::SetName(name);
         GetDevice().SetName(name + " Device");
-        m_sp_upload_fence->SetName(name + " Upload Fence");
     }
 
     // IContextDX interface
 
     const DeviceDX& GetDeviceDX() const noexcept override       { return static_cast<const DeviceDX&>(GetDeviceBase()); }
     CommandQueueDX& GetUploadCommandQueueDX() noexcept override { return static_cast<CommandQueueDX&>(GetUploadCommandQueue()); }
-
-protected:
-    Ptr<FenceDX> m_sp_upload_fence;
 };
 
 } // namespace Methane::Graphics

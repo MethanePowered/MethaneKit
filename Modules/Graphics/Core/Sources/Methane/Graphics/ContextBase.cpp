@@ -26,6 +26,7 @@ Base implementation of the context interface.
 
 #include <Methane/Graphics/BlitCommandList.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/ScopeTimer.h>
 
 #ifdef COMMAND_EXECUTION_LOGGING
 #include <Methane/Platform/Utils.h>
@@ -77,6 +78,14 @@ void ContextBase::WaitForGpu(WaitFor wait_for)
 #ifdef COMMAND_EXECUTION_LOGGING
     Platform::PrintToDebugOutput(GetWaitForName(wait_for) + " in context \"" + GetName() + "\"");
 #endif
+
+    if (wait_for == WaitFor::ResourcesUploaded)
+    {
+        SCOPE_TIMER("ContextBase::WaitForGpu::ResourcesUploaded");
+        assert(!!m_sp_upload_fence);
+        m_sp_upload_fence->Flush();
+        OnGpuWaitComplete(wait_for);
+    }
 }
 
 void ContextBase::Reset(Device& device)
@@ -144,6 +153,7 @@ void ContextBase::Release()
 
     m_sp_upload_cmd_queue.reset();
     m_sp_upload_cmd_list.reset();
+    m_sp_upload_fence.reset();
 
     for (const Ref<Callback>& callback_ref : m_callbacks)
     {
@@ -165,6 +175,7 @@ void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation)
 #endif
 
     m_sp_device = device.GetPtr();
+    m_sp_upload_fence = Fence::Create(GetUploadCommandQueue());
 
     const std::string& context_name = GetName();
     if (!context_name.empty())
@@ -234,6 +245,9 @@ void ContextBase::SetName(const std::string& name)
     ITT_FUNCTION_TASK();
     ObjectBase::SetName(name);
     GetDevice().SetName(name + " Device");
+    
+    if (m_sp_upload_fence)
+        m_sp_upload_fence->SetName(name + " Upload Fence");
 }
 
 void ContextBase::UploadResources()
