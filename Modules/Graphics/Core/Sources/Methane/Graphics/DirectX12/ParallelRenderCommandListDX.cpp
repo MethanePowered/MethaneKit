@@ -99,8 +99,8 @@ void ParallelRenderCommandListDX::Commit()
 
     // Render pass was begun in "beginning" command list,
     // but it is ended in "ending" command list only
-    m_ending_command_list.Commit(false);    // ends render pass
-    m_begining_command_list.Commit(false);
+    m_ending_command_list.Commit();    // ends render pass
+    m_begining_command_list.Commit();
 
     ParallelRenderCommandListBase::Commit();
 }
