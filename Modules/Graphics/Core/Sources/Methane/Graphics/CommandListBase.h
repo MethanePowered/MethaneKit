@@ -75,7 +75,7 @@ public:
     Type GetType() const override { return m_type; }
     void Reset(const std::string& debug_group = "") override;
     void SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
-    void Commit(bool present_drawable) override;
+    void Commit() override;
     CommandQueue& GetCommandQueue() override;
 
     // CommandListBase interface

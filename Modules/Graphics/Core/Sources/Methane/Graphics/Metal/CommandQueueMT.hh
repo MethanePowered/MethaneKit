@@ -50,7 +50,7 @@ public:
 protected:
     void Reset();
     
-    id<MTLCommandQueue>  m_mtl_command_queue;
+    id<MTLCommandQueue>  m_mtl_command_queue = nil;
 };
 
 } // namespace Methane::Graphics

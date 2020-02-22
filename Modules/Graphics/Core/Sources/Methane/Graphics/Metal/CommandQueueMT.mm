@@ -70,7 +70,9 @@ RenderContextMT& CommandQueueMT::GetRenderContextMT()
 {
     ITT_FUNCTION_TASK();
     if (m_context.GetType() != Context::Type::Render)
+    {
         throw std::runtime_error("Incompatible context type.");
+    }
     return dynamic_cast<RenderContextMT&>(m_context);
 }
 

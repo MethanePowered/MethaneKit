@@ -398,14 +398,14 @@ bool AsteroidsApp::Render()
     {
         assert(!!frame.sp_parallel_cmd_list);
         m_sp_asteroids_array->DrawParallel(*frame.sp_parallel_cmd_list, frame.asteroids);
-        frame.sp_parallel_cmd_list->Commit(false);
+        frame.sp_parallel_cmd_list->Commit();
         execute_cmd_lists.push_back(*frame.sp_parallel_cmd_list);
     }
     else
     {
         assert(!!frame.sp_serial_cmd_list);
         m_sp_asteroids_array->Draw(*frame.sp_serial_cmd_list, frame.asteroids);
-        frame.sp_serial_cmd_list->Commit(false);
+        frame.sp_serial_cmd_list->Commit();
         execute_cmd_lists.push_back(*frame.sp_serial_cmd_list);
     }
     
@@ -420,7 +420,7 @@ bool AsteroidsApp::Render()
 
     RenderOverlay(*frame.sp_final_cmd_list);
 
-    frame.sp_final_cmd_list->Commit(true);
+    frame.sp_final_cmd_list->Commit();
     execute_cmd_lists.push_back(*frame.sp_final_cmd_list);
 
     // Execute rendering commands and present frame to screen

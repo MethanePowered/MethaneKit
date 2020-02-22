@@ -174,7 +174,7 @@ bool HelloTriangleApp::Render()
     RenderOverlay(*frame.sp_cmd_list);
 
     // Commit command list with present flag
-    frame.sp_cmd_list->Commit(true);
+    frame.sp_cmd_list->Commit();
 
     // Execute command list on render queue and present frame to screen
     m_sp_context->GetRenderCommandQueue().Execute({ *frame.sp_cmd_list });

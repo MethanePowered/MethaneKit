@@ -222,13 +222,13 @@ void RenderCommandListMT::Draw(Primitive primitive, uint32_t vertex_count, uint3
                             baseInstance: start_instance];
 }
 
-void RenderCommandListMT::Commit(bool present_drawable)
+void RenderCommandListMT::Commit()
 {
     ITT_FUNCTION_TASK();
     
     assert(!IsCommitted());
 
-    RenderCommandListBase::Commit(present_drawable);
+    RenderCommandListBase::Commit();
 
     if (m_mtl_render_encoder)
     {
@@ -238,11 +238,6 @@ void RenderCommandListMT::Commit(bool present_drawable)
 
     if (!m_mtl_cmd_buffer || m_is_parallel)
         return;
-    
-    if (present_drawable)
-    {
-        [m_mtl_cmd_buffer presentDrawable: GetCommandQueueMT().GetRenderContextMT().GetNativeDrawable()];
-    }
 
     [m_mtl_cmd_buffer enqueue];
 }

@@ -39,7 +39,7 @@ public:
     RenderCommandListDX(ParallelRenderCommandListBase& parallel_render_command_list);
 
     // CommandList interface
-    void Commit(bool present_drawable) override;
+    void Commit() override;
 
     // RenderCommandList interface
     void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group) override;

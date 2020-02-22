@@ -93,7 +93,7 @@ void ParallelRenderCommandListDX::SetName(const std::string& name)
     ParallelRenderCommandListBase::SetName(name);
 }
 
-void ParallelRenderCommandListDX::Commit(bool present_drawable)
+void ParallelRenderCommandListDX::Commit()
 {
     ITT_FUNCTION_TASK();
 
@@ -102,7 +102,7 @@ void ParallelRenderCommandListDX::Commit(bool present_drawable)
     m_ending_command_list.Commit(false);    // ends render pass
     m_begining_command_list.Commit(false);
 
-    ParallelRenderCommandListBase::Commit(present_drawable);
+    ParallelRenderCommandListBase::Commit();
 }
 
 void ParallelRenderCommandListDX::Execute(uint32_t frame_index)

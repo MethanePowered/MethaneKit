@@ -57,13 +57,13 @@ void ParallelRenderCommandListVK::Reset(const Ptr<RenderState>& sp_render_state,
     ParallelRenderCommandListBase::Reset(sp_render_state, debug_group);
 }
 
-void ParallelRenderCommandListVK::Commit(bool present_drawable)
+void ParallelRenderCommandListVK::Commit()
 {
     ITT_FUNCTION_TASK();
     
     assert(!IsCommitted());
 
-    ParallelRenderCommandListBase::Commit(present_drawable);
+    ParallelRenderCommandListBase::Commit();
 }
 
 void ParallelRenderCommandListVK::Execute(uint32_t frame_index)

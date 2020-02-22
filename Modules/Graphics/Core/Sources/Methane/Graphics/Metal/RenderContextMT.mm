@@ -122,7 +122,11 @@ void RenderContextMT::Present()
 {
     ITT_FUNCTION_TASK();
     ContextMT<RenderContextBase>::Present();
-    
+
+    id<MTLCommandBuffer> mtl_cmd_buffer = [GetRenderCommandQueueMT().GetNativeCommandQueue() commandBuffer];
+    [mtl_cmd_buffer presentDrawable:GetNativeDrawable()];
+    [mtl_cmd_buffer commit];
+
     [m_frame_capture_scope endScope];
 
     ContextMT<RenderContextBase>::OnCpuPresentComplete();

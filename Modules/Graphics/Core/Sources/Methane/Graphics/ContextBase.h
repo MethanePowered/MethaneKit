@@ -37,6 +37,7 @@ namespace Methane::Graphics
 
 class DeviceBase;
 struct CommandQueue;
+class CommandQueueBase;
 
 class ContextBase
     : public ObjectBase
@@ -66,6 +67,7 @@ public:
     void SetName(const std::string& name) override;
 
     ResourceManager&  GetResourceManager() { return m_resource_manager; }
+    CommandQueueBase& GetUploadCommandQueueBase();
     DeviceBase&       GetDeviceBase();
     const DeviceBase& GetDeviceBase() const;
 

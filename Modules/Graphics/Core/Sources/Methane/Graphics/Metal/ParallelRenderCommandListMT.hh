@@ -45,7 +45,7 @@ public:
     void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;
 
     // CommandList interface
-    void Commit(bool present_drawable) override;
+    void Commit() override;
 
     // CommandListBase interface
     void Execute(uint32_t frame_index) override;

@@ -100,13 +100,13 @@ void BlitCommandListMT::PopDebugGroup()
     [m_mtl_blit_encoder popDebugGroup];
 }
 
-void BlitCommandListMT::Commit(bool present_drawable)
+void BlitCommandListMT::Commit()
 {
     ITT_FUNCTION_TASK();
     
     assert(!IsCommitted());
 
-    CommandListBase::Commit(present_drawable);
+    CommandListBase::Commit();
 
     if (m_mtl_blit_encoder)
     {
@@ -116,11 +116,6 @@ void BlitCommandListMT::Commit(bool present_drawable)
 
     if (!m_mtl_cmd_buffer)
         return;
-
-    if (present_drawable)
-    {
-        [m_mtl_cmd_buffer presentDrawable: GetCommandQueueMT().GetRenderContextMT().GetNativeDrawable()];
-    }
 
     [m_mtl_cmd_buffer enqueue];
 }

@@ -52,16 +52,6 @@ public:
         ContextBase::m_resource_manager.Initialize({ true });
     }
 
-    // Context interface
-
-    void WaitForGpu(Context::WaitFor wait_for) override
-    {
-        ITT_FUNCTION_TASK();
-        ContextBaseT::WaitForGpu(wait_for);
-        //dispatch_semaphore_wait(m_dispatch_semaphore, DISPATCH_TIME_FOREVER);
-        ContextBaseT::OnGpuWaitComplete(wait_for);
-    }
-
     // IContextMT interface
 
     DeviceMT& GetDeviceMT() noexcept override

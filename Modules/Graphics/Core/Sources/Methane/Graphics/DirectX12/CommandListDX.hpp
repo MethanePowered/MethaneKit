@@ -81,11 +81,11 @@ public:
         PIXEndEvent(m_cp_command_list.Get());
     }
 
-    void Commit(bool present_drawable) override
+    void Commit() override
     {
         ITT_FUNCTION_TASK();
 
-        CommandListBaseT::Commit(present_drawable);
+        CommandListBaseT::Commit();
 
         m_cp_command_list->Close();
         m_is_committed = true;

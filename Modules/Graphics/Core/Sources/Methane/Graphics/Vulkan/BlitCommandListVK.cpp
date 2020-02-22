@@ -63,13 +63,13 @@ void BlitCommandListVK::PopDebugGroup()
     ITT_FUNCTION_TASK();
 }
 
-void BlitCommandListVK::Commit(bool present_drawable)
+void BlitCommandListVK::Commit()
 {
     ITT_FUNCTION_TASK();
     
     assert(!IsCommitted());
 
-    CommandListBase::Commit(present_drawable);
+    CommandListBase::Commit();
 }
 
 void BlitCommandListVK::Execute(uint32_t frame_index)

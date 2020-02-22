@@ -23,6 +23,7 @@ Base implementation of the context interface.
 
 #include "ContextBase.h"
 #include "DeviceBase.h"
+#include "CommandQueueBase.h"
 
 #include <Methane/Graphics/BlitCommandList.h>
 #include <Methane/Instrumentation.h>
@@ -226,6 +227,12 @@ Device& ContextBase::GetDevice()
     assert(!!m_sp_device);
     return *m_sp_device;
 }
+    
+CommandQueueBase& ContextBase::GetUploadCommandQueueBase()
+{
+    ITT_FUNCTION_TASK();
+    return static_cast<CommandQueueBase&>(GetUploadCommandQueue());
+}
 
 DeviceBase& ContextBase::GetDeviceBase()
 {
@@ -245,7 +252,7 @@ void ContextBase::SetName(const std::string& name)
     ITT_FUNCTION_TASK();
     ObjectBase::SetName(name);
     GetDevice().SetName(name + " Device");
-    
+
     if (m_sp_upload_fence)
         m_sp_upload_fence->SetName(name + " Upload Fence");
 }
@@ -258,7 +265,7 @@ void ContextBase::UploadResources()
     Platform::PrintToDebugOutput("UPLOAD resources for context \"" + GetName() + "\"");
 #endif
 
-    GetUploadCommandList().Commit(false);
+    GetUploadCommandList().Commit();
     GetUploadCommandQueue().Execute({ GetUploadCommandList() });
     WaitForGpu(WaitFor::ResourcesUploaded);
 }

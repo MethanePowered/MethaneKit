@@ -41,7 +41,7 @@ public:
     // CommandList interface
     void PushDebugGroup(const std::string& name) override;
     void PopDebugGroup() override;
-    void Commit(bool present_drawable) override;
+    void Commit() override;
 
     // CommandListBase interface
     void SetResourceBarriers(const ResourceBase::Barriers&) override { }

@@ -93,7 +93,7 @@ void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, Prog
     m_sp_command_state->p_program_bindings = &program_bindings_base;
 }
 
-void CommandListBase::Commit(bool /*present_drawable*/)
+void CommandListBase::Commit()
 {
     ITT_FUNCTION_TASK();
 

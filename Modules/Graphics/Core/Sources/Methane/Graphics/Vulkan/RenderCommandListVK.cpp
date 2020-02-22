@@ -124,13 +124,13 @@ void RenderCommandListVK::Draw(Primitive primitive, uint32_t vertex_count, uint3
     RenderCommandListBase::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
 }
 
-void RenderCommandListVK::Commit(bool present_drawable)
+void RenderCommandListVK::Commit()
 {
     ITT_FUNCTION_TASK();
     
     assert(!IsCommitted());
 
-    RenderCommandListBase::Commit(present_drawable);
+    RenderCommandListBase::Commit();
 }
 
 void RenderCommandListVK::Execute(uint32_t frame_index)

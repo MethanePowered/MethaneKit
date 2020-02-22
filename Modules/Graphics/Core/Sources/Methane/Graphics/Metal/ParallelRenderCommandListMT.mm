@@ -92,24 +92,19 @@ void ParallelRenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state,
     ParallelRenderCommandListBase::Reset(sp_render_state, debug_group);
 }
 
-void ParallelRenderCommandListMT::Commit(bool present_drawable)
+void ParallelRenderCommandListMT::Commit()
 {
     ITT_FUNCTION_TASK();
     
     assert(!IsCommitted());
 
-    ParallelRenderCommandListBase::Commit(present_drawable);
+    ParallelRenderCommandListBase::Commit();
     
     if (!m_mtl_cmd_buffer || !m_mtl_parallel_render_encoder)
         return;
 
     [m_mtl_parallel_render_encoder endEncoding];
     m_mtl_parallel_render_encoder = nil;
-    
-    if (present_drawable)
-    {
-        [m_mtl_cmd_buffer presentDrawable: GetCommandQueueMT().GetRenderContextMT().GetNativeDrawable()];
-    }
 
     [m_mtl_cmd_buffer enqueue];
 }

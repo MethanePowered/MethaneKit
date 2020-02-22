@@ -468,7 +468,7 @@ void ShadowCubeApp::RenderScene(const RenderPass &render_pass, ShadowCubeFrame::
     }
 
     // Commit command list with present flag in case of final render pass
-    cmd_list.Commit(render_pass.is_final_pass);
+    cmd_list.Commit();
 }
 
 void ShadowCubeApp::OnContextReleased()

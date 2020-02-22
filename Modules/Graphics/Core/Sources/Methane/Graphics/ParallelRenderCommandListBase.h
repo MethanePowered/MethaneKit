@@ -57,7 +57,7 @@ public:
     // CommandList interface
     void PushDebugGroup(const std::string& name) override   { throw std::logic_error("Can no use debug groups on parallel render command list."); }
     void PopDebugGroup() override                           { throw std::logic_error("Can no use debug groups on parallel render command list."); }
-    void Commit(bool present_drawable) override;
+    void Commit() override;
 
     // Object interface
     void SetName(const std::string& name) override;

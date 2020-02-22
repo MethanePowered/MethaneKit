@@ -61,17 +61,17 @@ void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_stat
     }
 }
 
-void ParallelRenderCommandListBase::Commit(bool present_drawable)
+void ParallelRenderCommandListBase::Commit()
 {
     ITT_FUNCTION_TASK();
 
     for(const Ptr<RenderCommandList>& sp_render_command_list : m_parallel_command_lists)
     {
         assert(!!sp_render_command_list);
-        sp_render_command_list->Commit(false);
+        sp_render_command_list->Commit();
     }
 
-    CommandListBase::Commit(present_drawable);
+    CommandListBase::Commit();
 }
 
 void ParallelRenderCommandListBase::SetParallelCommandListsCount(uint32_t count)

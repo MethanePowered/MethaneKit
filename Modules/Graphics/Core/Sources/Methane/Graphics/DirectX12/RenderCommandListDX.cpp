@@ -191,7 +191,7 @@ void RenderCommandListDX::Draw(Primitive primitive, uint32_t vertex_count, uint3
     m_cp_command_list->DrawInstanced(vertex_count, instance_count, start_vertex, start_instance);
 }
 
-void RenderCommandListDX::Commit(bool present_drawable)
+void RenderCommandListDX::Commit()
 {
     ITT_FUNCTION_TASK();
 
@@ -204,7 +204,7 @@ void RenderCommandListDX::Commit(bool present_drawable)
         }
     }
 
-    CommandListDX<RenderCommandListBase>::Commit(present_drawable);
+    CommandListDX<RenderCommandListBase>::Commit();
 }
 
 RenderPassDX& RenderCommandListDX::GetPassDX()
