@@ -96,7 +96,6 @@ void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, Prog
 void CommandListBase::Commit(bool /*present_drawable*/)
 {
     ITT_FUNCTION_TASK();
-    std::lock_guard<std::mutex> guard(m_state_mutex);
 
     if (m_state != State::Pending)
     {
@@ -115,19 +114,11 @@ void CommandListBase::Commit(bool /*present_drawable*/)
         PopDebugGroup();
         m_open_debug_group = "";
     }
-
-    // Keep command list from destruction until it's execution is completed
-    // if weak_from_this is expired, the command list was created explicitly, without make_shared
-    if (!weak_from_this().expired())
-    {
-        m_sp_self = shared_from_this();
-    }
 }
 
 void CommandListBase::Execute(uint32_t frame_index)
 {
     ITT_FUNCTION_TASK();
-    std::lock_guard<std::mutex> guard(m_state_mutex);
 
     if (m_state != State::Committed)
     {
@@ -149,50 +140,38 @@ void CommandListBase::Execute(uint32_t frame_index)
 void CommandListBase::Complete(uint32_t frame_index)
 {
     ITT_FUNCTION_TASK();
+    if (m_state != State::Executing)
     {
-        std::lock_guard<std::mutex> guard(m_state_mutex);
-
-        if (m_state != State::Executing)
-        {
-            throw std::logic_error("Command list \"" + GetName() + "\" in " + GetStateName(m_state) + " state can not be completed. Only Executing command lists can be completed.");
-        }
-
-        if (m_committed_frame_index != frame_index)
-        {
-            throw std::logic_error("Command list \"" + GetName() + "\" committed on frame " + std::to_string(m_committed_frame_index) + " can not be completed on frame " + std::to_string(frame_index));
-        }
-
-#ifdef COMMAND_EXECUTION_LOGGING
-        Platform::PrintToDebugOutput("CommandList \"" + GetName() + "\" was completed on frame " + std::to_string(frame_index));
-#endif
-
-        m_state = State::Pending;
+        throw std::logic_error("Command list \"" + GetName() + "\" in " + GetStateName(m_state) + " state can not be completed. Only Executing command lists can be completed.");
     }
 
-    GetCommandQueueBase().OnCommandListCompleted(*this, frame_index);
+    if (m_committed_frame_index != frame_index)
+    {
+        throw std::logic_error("Command list \"" + GetName() + "\" committed on frame " + std::to_string(m_committed_frame_index) + " can not be completed on frame " + std::to_string(frame_index));
+    }
 
-    // Release command list shared pointer, so it can be deleted externally
-    m_sp_self.reset();
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("CommandList \"" + GetName() + "\" was completed on frame " + std::to_string(frame_index));
+#endif
+
+    m_state = State::Pending;
 }
 
 bool CommandListBase::IsExecutingOnAnyFrame() const
 {
     ITT_FUNCTION_TASK();
-    std::lock_guard<std::mutex> guard(m_state_mutex);
     return m_state == State::Executing;
 }
 
 bool CommandListBase::IsCommitted(uint32_t frame_index) const
 {
     ITT_FUNCTION_TASK();
-    std::lock_guard<std::mutex> guard(m_state_mutex);
     return m_state == State::Committed && m_committed_frame_index == frame_index;
 }
 
 bool CommandListBase::IsExecuting(uint32_t frame_index) const
 {
     ITT_FUNCTION_TASK();
-    std::lock_guard<std::mutex> guard(m_state_mutex);
     return m_state == State::Executing && m_committed_frame_index == frame_index;
 }
 

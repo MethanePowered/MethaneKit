@@ -60,13 +60,11 @@ public:
     // ContextBase interface
     virtual void Initialize(DeviceBase& device, bool deferred_heap_allocation);
     virtual void Release();
-    virtual void OnCommandQueueCompleted(CommandQueue& cmd_queue, uint32_t frame_index) = 0;
 
     // Object interface
     void SetName(const std::string& name) override;
 
     ResourceManager&  GetResourceManager() { return m_resource_manager; }
-
     DeviceBase&       GetDeviceBase();
     const DeviceBase& GetDeviceBase() const;
 

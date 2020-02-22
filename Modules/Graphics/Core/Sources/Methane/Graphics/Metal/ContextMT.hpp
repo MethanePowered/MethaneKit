@@ -47,17 +47,9 @@ class ContextMT : public ContextBaseT
 public:
     ContextMT(DeviceBase& device, const typename ContextBaseT::Settings& settings)
         : ContextBaseT(device, settings)
-        , m_dispatch_count(GetDispatchCount(settings))
-        , m_dispatch_semaphore(dispatch_semaphore_create(m_dispatch_count))
     {
         ITT_FUNCTION_TASK();
         ContextBase::m_resource_manager.Initialize({ true });
-    }
-
-    ~ContextMT() override
-    {
-        ITT_FUNCTION_TASK();
-        dispatch_release(m_dispatch_semaphore);
     }
 
     // Context interface
@@ -68,30 +60,6 @@ public:
         ContextBaseT::WaitForGpu(wait_for);
         //dispatch_semaphore_wait(m_dispatch_semaphore, DISPATCH_TIME_FOREVER);
         ContextBaseT::OnGpuWaitComplete(wait_for);
-    }
-
-    // ContextBase interface
-
-    void Initialize(DeviceBase& device, bool deferred_heap_allocation) override
-    {
-        ITT_FUNCTION_TASK();
-        m_dispatch_semaphore = dispatch_semaphore_create(m_dispatch_count);
-        ContextBaseT::Initialize(device, deferred_heap_allocation);
-    }
-
-    void Release() override
-    {
-        ITT_FUNCTION_TASK();
-        // FIXME: semaphore release causes a crash
-        // https://stackoverflow.com/questions/8287621/why-does-this-code-cause-exc-bad-instruction
-        //dispatch_release(m_dispatch_semaphore);
-        ContextBaseT::Release();
-    }
-
-    void OnCommandQueueCompleted(CommandQueue&, uint32_t) override
-    {
-        ITT_FUNCTION_TASK();
-        //dispatch_semaphore_signal(m_dispatch_semaphore);
     }
 
     // IContextMT interface
@@ -121,20 +89,6 @@ public:
 protected:
     using LibraryByName = std::map<std::string, Ptr<ProgramLibraryMT>>;
 
-    template<typename ContextSettingsT>
-    static uint32_t GetDispatchCount(const ContextSettingsT& settings)
-    {
-        return 1;
-    }
-
-    template<>
-    static uint32_t GetDispatchCount(const RenderContext::Settings& settings)
-    {
-        return settings.frame_buffers_count;
-    }
-
-    const uint32_t       m_dispatch_count;
-    dispatch_semaphore_t m_dispatch_semaphore;
     LibraryByName        m_library_by_name;
 };
 

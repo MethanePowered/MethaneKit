@@ -47,7 +47,7 @@ class CommandQueueBase
     friend class CommandListBase;
 
 public:
-    CommandQueueBase(ContextBase& context, bool execution_state_tracking);
+    CommandQueueBase(ContextBase& context);
     ~CommandQueueBase() override;
 
     // CommandQueue interface
@@ -56,20 +56,11 @@ public:
     Ptr<CommandQueueBase> GetPtr()           { return shared_from_this(); }
     ContextBase&          GetContext()       { return m_context; }
     const ContextBase&    GetContext() const { return m_context; }
-    bool                  IsExecuting(uint32_t frame_index) const;
-    bool                  IsExecuting() const;
 
 protected:
-    void OnCommandListCompleted(CommandListBase& command_list, uint32_t frame_index);
     uint32_t GetCurrentFrameBufferIndex() const;
 
-    using CommandLists = std::list<WeakPtr<CommandListBase>>;
-
     ContextBase&        m_context;
-    const bool          m_execution_state_tracking;
-    std::set<uint32_t>  m_executing_on_frames;
-    CommandLists        m_executing_command_lists;
-    mutable std::mutex  m_executing_mutex;
 };
 
 } // namespace Methane::Graphics

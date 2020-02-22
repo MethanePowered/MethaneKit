@@ -109,13 +109,11 @@ private:
     using ExecutingOnFrame = std::map<uint32_t, bool>;
 
     const Type              m_type;
-    Ptr<CommandListBase>    m_sp_self;
     Ptr<CommandQueue>       m_sp_command_queue;
     UniquePtr<CommandState> m_sp_command_state;
     std::string             m_open_debug_group;
     uint32_t                m_committed_frame_index = 0;
     State                   m_state                 = State::Pending;
-    mutable std::mutex      m_state_mutex;
 };
 
 } // namespace Methane::Graphics

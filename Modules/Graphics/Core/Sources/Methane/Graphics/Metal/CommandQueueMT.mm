@@ -38,7 +38,7 @@ Ptr<CommandQueue> CommandQueue::Create(Context& context)
 }
 
 CommandQueueMT::CommandQueueMT(ContextBase& context)
-    : CommandQueueBase(context, true)
+    : CommandQueueBase(context)
     , m_mtl_command_queue([GetContextMT().GetDeviceMT().GetNativeDevice() newCommandQueue])
 {
     ITT_FUNCTION_TASK();
@@ -47,8 +47,6 @@ CommandQueueMT::CommandQueueMT(ContextBase& context)
 CommandQueueMT::~CommandQueueMT()
 {
     ITT_FUNCTION_TASK();
-    assert(!IsExecuting());
-
     [m_mtl_command_queue release];
 }
 
