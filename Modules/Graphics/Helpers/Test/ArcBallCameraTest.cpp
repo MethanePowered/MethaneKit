@@ -24,6 +24,7 @@ Arc-Ball camera unit tests
 #include <Methane/Graphics/ArcBallCamera.h>
 #include <Methane/Data/Types.h>
 
+#include <catch2/catch.hpp>
 #include <cml/mathlib/mathlib.h>
 #include <cmath>
 
@@ -39,21 +40,23 @@ static const float               g_test_radius_pixels    = g_test_screen_center.
 static const Vector3f            g_axis_x                = { 1.f, 0.f, 0.f };
 static const Vector3f            g_axis_y                = { 0.f, 1.f, 0.f };
 static const Vector3f            g_axis_z                = { 0.f, 0.f, -1.f };
+static float                     g_vectors_equal_epsilon = 0.00001f;
 
-// Approximate comparison of vectors for test purposes only
-static float vectors_equal_epsilon = 0.00001f;
-inline bool operator==(const Vector3f& left, const Vector3f& right)
+namespace Catch {
+
+// Override vectors comparison with approximate comparison for test purposes
+template<>
+bool compareEqual(Vector3f const& left, Vector3f const& right)
 {
-    for(int i = 0; i < 3; ++i)
+    for (int i = 0; i < 3; ++i)
     {
-        if (std::fabs(left[i] - right[i]) > vectors_equal_epsilon)
+        if (std::fabs(left[i] - right[i]) > g_vectors_equal_epsilon)
             return false;
     }
     return true;
 }
 
-// NOTE: keep crach header include after comparison overloads to make them work on Clang
-#include <catch2/catch.hpp>
+}
 
 inline void SetupCamera(ArcBallCamera& camera, const Camera::Orientation& orientation)
 {
@@ -79,7 +82,7 @@ inline ArcBallCamera SetupDependentCamera(const ArcBallCamera& view_camera, ArcB
 
 inline void CheckOrientation(const Camera::Orientation& actual_orientation, const Camera::Orientation& reference_orientation, float epsilon = 0.00001f)
 {
-    vectors_equal_epsilon = epsilon;
+    g_vectors_equal_epsilon = epsilon;
     CHECK(actual_orientation.aim == reference_orientation.aim);
     CHECK(actual_orientation.eye == reference_orientation.eye);
     CHECK(actual_orientation.up  == reference_orientation.up);
