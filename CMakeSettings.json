@@ -24,6 +24,11 @@
                     "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
                     "value": "True",
                     "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
                 }
             ]
         },
@@ -50,6 +55,11 @@
                 {
                     "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
                     "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
                     "type": "BOOL"
                 }
             ]
@@ -78,6 +88,11 @@
                     "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
                     "value": "True",
                     "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
                 }
             ]
         },
@@ -104,6 +119,11 @@
                 {
                     "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
                     "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
                     "type": "BOOL"
                 }
             ]
