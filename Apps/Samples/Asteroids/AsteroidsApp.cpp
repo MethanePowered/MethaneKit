@@ -143,6 +143,7 @@ AsteroidsApp::AsteroidsApp()
             1123u,                                          // - random_seed
             13.f,                                           // - orbit_radius_ratio
             4.f,                                            // - disc_radius_ratio
+            0.06f,                                          // - mesh_lod_min_screen_size
             GetParamValueByComplexity(g_scale_ratio) / 10.f,// - min_asteroid_scale_ratio
             GetParamValueByComplexity(g_scale_ratio),       // - max_asteroid_scale_ratio
             true,                                           // - textures_array_enabled

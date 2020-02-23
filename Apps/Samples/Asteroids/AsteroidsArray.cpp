@@ -217,7 +217,7 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, Settings settings, C
     , m_settings(std::move(settings))
     , m_sp_content_state(state.shared_from_this())
     , m_mesh_subset_by_instance_index(m_settings.instance_count, 0u)
-    , m_min_mesh_lod_screen_size_log2(std::log2(0.04f))
+    , m_min_mesh_lod_screen_size_log2(std::log2(m_settings.mesh_lod_min_screen_size))
 {
     ITT_FUNCTION_TASK();
     SCOPE_TIMER("AsteroidsArray::AsteroidsArray");

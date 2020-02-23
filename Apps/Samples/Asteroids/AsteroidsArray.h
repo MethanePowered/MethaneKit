@@ -54,6 +54,7 @@ public:
         uint32_t        random_seed              = 1337u;
         float           orbit_radius_ratio       = 10.f;
         float           disc_radius_ratio        = 3.f;
+        float           mesh_lod_min_screen_size = 0.06f;
         float           min_asteroid_scale_ratio = 0.1f;
         float           max_asteroid_scale_ratio = 0.7f;
         bool            textures_array_enabled   = false;
