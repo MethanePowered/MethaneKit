@@ -56,10 +56,10 @@ public:
     const wrl::ComPtr<IDXGISwapChain3>& GetNativeSwapChain() const { return m_cp_swap_chain; }
 
 protected:
-    inline uint32_t GetPresentVSyncInterval() const { return m_settings.vsync_enabled ? 1 : 0; }
+    inline uint32_t GetPresentVSyncInterval() const { return GetSettings().vsync_enabled ? 1 : 0; }
 
     // RenderContextBase overrides
-    uint32_t GetCurrentFrameBufferIndex() override;
+    uint32_t GetNextFrameBufferIndex() override;
 
 private:
     const Platform::AppEnvironment m_platform_env;

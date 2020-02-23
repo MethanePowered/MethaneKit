@@ -149,6 +149,8 @@ void ContextBase::Release()
 {
     ITT_FUNCTION_TASK();
 
+    m_sp_device.reset();
+
 #ifdef COMMAND_EXECUTION_LOGGING
     Platform::PrintToDebugOutput("RELEASE context \"" + GetName() + "\"");
 #endif
@@ -269,6 +271,11 @@ void ContextBase::UploadResources()
     GetUploadCommandList().Commit();
     GetUploadCommandQueue().Execute({ GetUploadCommandList() });
     WaitForGpu(WaitFor::ResourcesUploaded);
+}
+
+void ContextBase::SetDevice(DeviceBase& device)
+{
+    m_sp_device = device.GetPtr();
 }
 
 } // namespace Methane::Graphics

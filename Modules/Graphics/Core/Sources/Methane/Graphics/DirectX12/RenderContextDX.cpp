@@ -118,10 +118,12 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
 {
     ITT_FUNCTION_TASK();
 
-    m_sp_device = device.GetPtr();
+    const Settings& settings = GetSettings();
+
+    SetDevice(device);
 
     // DXGI does not allow creating a swapchain targeting a window which has fullscreen styles(no border + topmost)
-    if (m_settings.is_full_screen)
+    if (settings.is_full_screen)
     {
         // Temporary remove top-most flag and restore it when swap-chain is created
         SetWindowTopMostFlag(m_platform_env.window_handle, false);
@@ -130,10 +132,10 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
     // Initialize swap-chain
 
     DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
-    swap_chain_desc.Width                 = m_settings.frame_size.width;
-    swap_chain_desc.Height                = m_settings.frame_size.height;
-    swap_chain_desc.Format                = TypeConverterDX::DataFormatToDXGI(m_settings.color_format);
-    swap_chain_desc.BufferCount           = m_settings.frame_buffers_count;
+    swap_chain_desc.Width                 = settings.frame_size.width;
+    swap_chain_desc.Height                = settings.frame_size.height;
+    swap_chain_desc.Format                = TypeConverterDX::DataFormatToDXGI(settings.color_format);
+    swap_chain_desc.BufferCount           = settings.frame_buffers_count;
     swap_chain_desc.BufferUsage           = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     swap_chain_desc.SwapEffect            = DXGI_SWAP_EFFECT_FLIP_DISCARD;
     swap_chain_desc.SampleDesc.Count      = 1;
@@ -155,7 +157,7 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
     ThrowIfFailed(cp_dxgi_factory->CreateSwapChainForHwnd(cp_command_queue.Get(), m_platform_env.window_handle, &swap_chain_desc, NULL, NULL, &cp_swap_chain));
     assert(!!cp_swap_chain);
 
-    if (m_settings.is_full_screen)
+    if (settings.is_full_screen)
     {
         // Restore top-most flag
         SetWindowTopMostFlag(m_platform_env.window_handle, true);
@@ -185,7 +187,7 @@ void RenderContextDX::Resize(const FrameSize& frame_size)
     // Resize the swap chain to the desired dimensions
     DXGI_SWAP_CHAIN_DESC1 desc = {};
     m_cp_swap_chain->GetDesc1(&desc);
-    ThrowIfFailed(m_cp_swap_chain->ResizeBuffers(m_settings.frame_buffers_count, frame_size.width, frame_size.height, desc.Format, desc.Flags));
+    ThrowIfFailed(m_cp_swap_chain->ResizeBuffers(GetSettings().frame_buffers_count, frame_size.width, frame_size.height, desc.Format, desc.Flags));
 
     UpdateFrameBufferIndex();
 }

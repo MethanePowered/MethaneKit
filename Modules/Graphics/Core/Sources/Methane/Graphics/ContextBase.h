@@ -73,6 +73,7 @@ public:
 
 protected:
     void UploadResources();
+    void SetDevice(DeviceBase& device);
 
     // ContextBase interface
     virtual void OnGpuWaitStart(WaitFor wait_for) {}

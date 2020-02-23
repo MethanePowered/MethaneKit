@@ -56,22 +56,11 @@ public:
 
     // ContextBase interface
 
-    void Initialize(DeviceBase& device, bool deferred_heap_allocation) override
-    {
-        ITT_FUNCTION_TASK();
-        m_sp_device = device.GetPtr();
-        ContextBaseT::Initialize(device, deferred_heap_allocation);
-    }
-
     void Release() override
     {
         ITT_FUNCTION_TASK();
 
-        if (m_sp_device)
-        {
-            static_cast<DeviceDX&>(*m_sp_device).ReleaseNativeDevice();
-            m_sp_device.reset();
-        }
+        GetMutableDeviceDX().ReleaseNativeDevice();
 
         ContextBaseT::Release();
         static_cast<SystemDX&>(System::Get()).ReportLiveObjects();
@@ -90,6 +79,9 @@ public:
 
     const DeviceDX& GetDeviceDX() const noexcept override       { return static_cast<const DeviceDX&>(GetDeviceBase()); }
     CommandQueueDX& GetUploadCommandQueueDX() noexcept override { return static_cast<CommandQueueDX&>(GetUploadCommandQueue()); }
+
+protected:
+    DeviceDX& GetMutableDeviceDX() noexcept { return static_cast<DeviceDX&>(GetDeviceBase()); }
 };
 
 } // namespace Methane::Graphics
