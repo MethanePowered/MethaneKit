@@ -58,6 +58,10 @@ public:
 protected:
     inline uint32_t GetPresentVSyncInterval() const { return m_settings.vsync_enabled ? 1 : 0; }
 
+    // RenderContextBase overrides
+    uint32_t GetCurrentFrameBufferIndex() override;
+
+private:
     const Platform::AppEnvironment m_platform_env;
     wrl::ComPtr<IDXGISwapChain3>   m_cp_swap_chain;
 };

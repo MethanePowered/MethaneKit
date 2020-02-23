@@ -46,7 +46,6 @@ public:
         : ContextBaseT(device, settings)
     {
         ITT_FUNCTION_TASK();
-        ContextBase::m_resource_manager.Initialize({ true });
     }
 
     ~ContextVK() override

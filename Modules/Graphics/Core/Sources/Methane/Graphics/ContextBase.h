@@ -78,6 +78,7 @@ protected:
     virtual void OnGpuWaitStart(WaitFor wait_for) {}
     virtual void OnGpuWaitComplete(WaitFor wait_for);
 
+private:
     const Type                m_type;
     Ptr<DeviceBase>           m_sp_device;
     ResourceManager::Settings m_resource_manager_init_settings = { true };

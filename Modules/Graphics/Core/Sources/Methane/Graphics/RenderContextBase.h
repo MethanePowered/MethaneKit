@@ -29,8 +29,6 @@ Base implementation of the render context interface.
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/FpsCounter.h>
 
-#include <atomic>
-
 namespace Methane::Graphics
 {
 
@@ -65,6 +63,7 @@ public:
 protected:
     void ResetWithSettings(const Settings& settings);
     void OnCpuPresentComplete(bool signal_frame_fence = true);
+    void UpdateFrameBufferIndex();
 
     inline const UniquePtr<Fence>& GetCurrentFrameFencePtr() const { return m_frame_fences[m_frame_buffer_index]; }
     Fence&                         GetCurrentFrameFence() const;
@@ -73,13 +72,17 @@ protected:
     // ContextBase overrides
     void OnGpuWaitStart(WaitFor wait_for) override;
     void OnGpuWaitComplete(WaitFor wait_for) override;
+    
+    // RenderContextBase
+    virtual uint32_t GetNextFrameBufferIndex();
 
-    Settings              m_settings;
-    Ptr<CommandQueue>     m_sp_render_cmd_queue;
-    UniquePtrs<Fence>     m_frame_fences;
-    UniquePtr<Fence>      m_sp_render_fence;
-    std::atomic<uint32_t> m_frame_buffer_index;
-    FpsCounter            m_fps_counter;
+private:
+    Settings            m_settings;
+    Ptr<CommandQueue>   m_sp_render_cmd_queue;
+    UniquePtrs<Fence>   m_frame_fences;
+    UniquePtr<Fence>    m_sp_render_fence;
+    uint32_t            m_frame_buffer_index;
+    FpsCounter          m_fps_counter;
 };
 
 } // namespace Methane::Graphics

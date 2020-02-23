@@ -49,7 +49,7 @@ public:
         : ContextBaseT(device, settings)
     {
         ITT_FUNCTION_TASK();
-        ContextBase::m_resource_manager.Initialize({ true });
+        //ContextBase::m_resource_manager.Initialize({ true });
     }
 
     // IContextMT interface
@@ -76,7 +76,7 @@ public:
         return m_library_by_name.emplace(library_name, std::make_shared<ProgramLibraryMT>(GetDeviceMT(), library_name)).first->second;
     }
 
-protected:
+private:
     using LibraryByName = std::map<std::string, Ptr<ProgramLibraryMT>>;
 
     LibraryByName        m_library_by_name;

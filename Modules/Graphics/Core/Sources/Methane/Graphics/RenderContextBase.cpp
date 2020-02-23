@@ -136,7 +136,7 @@ void RenderContextBase::ResetWithSettings(const Settings& settings)
 
     WaitForGpu(WaitFor::RenderComplete);
 
-    Ptr<DeviceBase> sp_device = m_sp_device;
+    Ptr<DeviceBase> sp_device = GetDeviceBase().GetPtr();
     m_settings = settings;
 
     Release();
@@ -204,6 +204,16 @@ void RenderContextBase::OnGpuWaitComplete(WaitFor wait_for)
         m_fps_counter.OnGpuFramePresented();
     }
     ContextBase::OnGpuWaitComplete(wait_for);
+}
+    
+void RenderContextBase::UpdateFrameBufferIndex()
+{
+    m_frame_buffer_index = GetNextFrameBufferIndex();
+}
+    
+uint32_t RenderContextBase::GetNextFrameBufferIndex()
+{
+    return (m_frame_buffer_index + 1) % m_settings.frame_buffers_count;
 }
 
 CommandQueue& RenderContextBase::GetRenderCommandQueue()

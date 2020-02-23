@@ -32,9 +32,6 @@ Metal implementation of the render context interface.
 #include <Methane/Platform/Utils.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
-// Either use dispatch queue semaphore or fence primitives for CPU-GPU frames rendering synchronization
-//#define USE_DISPATCH_QUEUE_SEMAPHORE
-
 namespace Methane::Graphics
 {
 
@@ -49,13 +46,13 @@ Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, De
 
 RenderContextMT::RenderContextMT(const Platform::AppEnvironment& env, DeviceBase& device, const RenderContext::Settings& settings)
     : ContextMT<RenderContextBase>(device, settings)
-    , m_app_view([[AppViewMT alloc] initWithFrame: TypeConverterMT::CreateNSRect(m_settings.frame_size)
+    , m_app_view([[AppViewMT alloc] initWithFrame: TypeConverterMT::CreateNSRect(settings.frame_size)
                                         appWindow: env.ns_app_delegate.window
                                            device: GetDeviceMT().GetNativeDevice()
-                                      pixelFormat: TypeConverterMT::DataFormatToMetalPixelType(m_settings.color_format)
-                                    drawableCount: m_settings.frame_buffers_count
-                                     vsyncEnabled: Methane::MacOS::ConvertToNSType<bool, BOOL>(m_settings.vsync_enabled)
-                            unsyncRefreshInterval: 1.0 / m_settings.unsync_max_fps])
+                                      pixelFormat: TypeConverterMT::DataFormatToMetalPixelType(settings.color_format)
+                                    drawableCount: settings.frame_buffers_count
+                                     vsyncEnabled: Methane::MacOS::ConvertToNSType<bool, BOOL>(settings.vsync_enabled)
+                            unsyncRefreshInterval: 1.0 / settings.unsync_max_fps])
     , m_frame_capture_scope([[MTLCaptureManager sharedCaptureManager] newCaptureScopeWithDevice:GetDeviceMT().GetNativeDevice()])
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
     , m_dispatch_semaphore(dispatch_semaphore_create(settings.frame_buffers_count))
@@ -135,7 +132,7 @@ void RenderContextMT::WaitForGpu(WaitFor wait_for)
         dispatch_semaphore_wait(m_dispatch_semaphore, DISPATCH_TIME_FOREVER);
         OnGpuWaitComplete(wait_for);
 #endif
-        m_frame_buffer_index = (m_frame_buffer_index + 1) % m_settings.frame_buffers_count;
+        UpdateFrameBufferIndex();
         [m_frame_capture_scope beginScope];
     }
 }
