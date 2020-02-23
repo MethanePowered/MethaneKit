@@ -58,7 +58,7 @@ public:
     id<MTLCommandBuffer>&        GetNativeCommandBuffer() noexcept { return m_mtl_cmd_buffer; }
     id<MTLBlitCommandEncoder>&   GetNativeBlitEncoder() noexcept   { return m_mtl_blit_encoder; }
 
-protected:
+private:
     void InitializeCommandBuffer();
     
     CommandQueueMT& GetCommandQueueMT() noexcept;

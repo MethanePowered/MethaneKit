@@ -40,7 +40,7 @@ public:
     
     id<MTLDevice>& GetNativeDevice() { return m_mtl_device; }
 
-protected:
+private:
     id<MTLDevice> m_mtl_device;
 };
 

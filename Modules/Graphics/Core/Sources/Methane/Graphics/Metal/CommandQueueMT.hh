@@ -47,7 +47,7 @@ public:
     
     id<MTLCommandQueue>&  GetNativeCommandQueue() noexcept { return m_mtl_command_queue; }
 
-protected:
+private:
     void Reset();
     
     id<MTLCommandQueue>  m_mtl_command_queue = nil;

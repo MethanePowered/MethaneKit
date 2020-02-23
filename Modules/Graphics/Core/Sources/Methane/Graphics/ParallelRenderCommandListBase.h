@@ -64,7 +64,7 @@ public:
 
     RenderPassBase& GetPass();
 
-protected:
+private:
     const Ptr<RenderPass>   m_sp_pass;
     Ptrs<RenderCommandList> m_parallel_command_lists;
 };

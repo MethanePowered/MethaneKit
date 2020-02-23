@@ -41,7 +41,7 @@ public:
             uint32_t argument_index;
         };
 
-        ArgumentBindingMT(ContextBase& context, SettingsMT settings);
+        ArgumentBindingMT(const ContextBase& context, SettingsMT settings);
         ArgumentBindingMT(const ArgumentBindingMT& other) = default;
 
         // ArgumentBinding interface

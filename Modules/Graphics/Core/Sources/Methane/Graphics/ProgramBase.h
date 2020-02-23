@@ -55,13 +55,15 @@ public:
     const Settings&      GetSettings() const override                       { return m_settings; }
     const Shader::Types& GetShaderTypes() const override                    { return m_shader_types; }
     const Ptr<Shader>&   GetShader(Shader::Type shader_type) const override { return m_shaders_by_type[static_cast<size_t>(shader_type)]; }
+    bool                 HasShader(Shader::Type shader_type) const          { return !!GetShader(shader_type); }
 
-    bool             HasShader(Shader::Type shader_type) const  { return !!GetShader(shader_type); }
-    ContextBase&     GetContext()                               { return m_context; }
-    Ptr<ProgramBase> GetPtr()                                   { return shared_from_this(); }
+    ContextBase&         GetContext()       { return m_context; }
+    const ContextBase&   GetContext() const { return m_context; }
+    Ptr<ProgramBase>     GetPtr()           { return shared_from_this(); }
 
 protected:
     void InitArgumentBindings(const ArgumentDescriptions& argument_descriptions);
+    const ProgramBindings::ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
     const DescriptorHeap::Range& ReserveConstantDescriptorRange(DescriptorHeap& heap, uint32_t range_length);
 
     Shader& GetShaderRef(Shader::Type shader_type);
@@ -71,6 +73,7 @@ protected:
     using ShadersByType = std::array<Ptr<Shader>, static_cast<size_t>(Shader::Type::Count)>;
     static ShadersByType CreateShadersByType(const Ptrs<Shader>& shaders);
 
+private:
     struct DescriptorHeapReservation
     {
         Ref<DescriptorHeap>   heap;

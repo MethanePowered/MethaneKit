@@ -50,11 +50,12 @@ public:
     // RenderStateBase interface
     virtual void Apply(RenderCommandListBase& command_list, Group::Mask apply_groups) = 0;
 
-    Ptr<RenderStateBase> GetPtr() { return shared_from_this(); }
+    Ptr<RenderStateBase> GetPtr()           { return shared_from_this(); }
+    RenderContextBase&   GetRenderContext() { return m_context; }
 
-protected:
+private:
     RenderContextBase& m_context;
-    Settings     m_settings;
+    Settings           m_settings;
 };
 
 } // namespace Methane::Graphics

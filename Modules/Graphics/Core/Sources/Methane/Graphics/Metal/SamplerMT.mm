@@ -104,20 +104,20 @@ SamplerMT::SamplerMT(ContextBase& context, const Settings& settings, const Descr
 
     InitializeDefaultDescriptors();
     
-    m_mtl_sampler_desc.rAddressMode = ConvertAddressModeToMetal(m_settings.address.r);
-    m_mtl_sampler_desc.sAddressMode = ConvertAddressModeToMetal(m_settings.address.s);
-    m_mtl_sampler_desc.tAddressMode = ConvertAddressModeToMetal(m_settings.address.t);
+    m_mtl_sampler_desc.rAddressMode = ConvertAddressModeToMetal(settings.address.r);
+    m_mtl_sampler_desc.sAddressMode = ConvertAddressModeToMetal(settings.address.s);
+    m_mtl_sampler_desc.tAddressMode = ConvertAddressModeToMetal(settings.address.t);
     
-    m_mtl_sampler_desc.minFilter    = ConvertMinMagFilterToMetal(m_settings.filter.min);
-    m_mtl_sampler_desc.magFilter    = ConvertMinMagFilterToMetal(m_settings.filter.mag);
-    m_mtl_sampler_desc.mipFilter    = ConvertMipFilterToMetal(m_settings.filter.mip);
+    m_mtl_sampler_desc.minFilter    = ConvertMinMagFilterToMetal(settings.filter.min);
+    m_mtl_sampler_desc.magFilter    = ConvertMinMagFilterToMetal(settings.filter.mag);
+    m_mtl_sampler_desc.mipFilter    = ConvertMipFilterToMetal(settings.filter.mip);
     
-    m_mtl_sampler_desc.lodMinClamp  = m_settings.lod.min;
-    m_mtl_sampler_desc.lodMaxClamp  = m_settings.lod.max;
+    m_mtl_sampler_desc.lodMinClamp  = settings.lod.min;
+    m_mtl_sampler_desc.lodMaxClamp  = settings.lod.max;
     
-    m_mtl_sampler_desc.maxAnisotropy   = m_settings.max_anisotropy;
-    m_mtl_sampler_desc.compareFunction = TypeConverterMT::CompareFunctionToMetal(m_settings.compare_function);
-    m_mtl_sampler_desc.borderColor     = ConvertBorderColorToMetal(m_settings.border_color);
+    m_mtl_sampler_desc.maxAnisotropy   = settings.max_anisotropy;
+    m_mtl_sampler_desc.compareFunction = TypeConverterMT::CompareFunctionToMetal(settings.compare_function);
+    m_mtl_sampler_desc.borderColor     = ConvertBorderColorToMetal(settings.border_color);
     
     ResetSampletState();
 }
@@ -158,7 +158,7 @@ void SamplerMT::ResetSampletState()
 IContextMT& SamplerMT::GetContextMT() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<IContextMT&>(m_context);
+    return static_cast<IContextMT&>(GetContext());
 }
 
 } // namespace Methane::Graphics

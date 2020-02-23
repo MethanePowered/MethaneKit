@@ -47,7 +47,7 @@ public:
     Ptr<BufferBase> GetPtr()                                { return std::dynamic_pointer_cast<BufferBase>(shared_from_this()); }
     std::string GetBufferTypeName() const noexcept          { return Buffer::GetBufferTypeName(m_settings.type); }
 
-protected:
+private:
     Settings m_settings;
 };
 

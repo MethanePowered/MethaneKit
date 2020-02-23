@@ -117,7 +117,7 @@ void SetMetalResources(Shader::Type shader_type, id<MTLRenderCommandEncoder>& mt
 }
 
 template<typename TMetalResource>
-static void SetMetalResourcesForAll(Shader::Type shader_type, Program& program, id<MTLRenderCommandEncoder>& mtl_cmd_encoder,
+static void SetMetalResourcesForAll(Shader::Type shader_type, const Program& program, id<MTLRenderCommandEncoder>& mtl_cmd_encoder,
                                    const std::vector<TMetalResource>& mtl_resources, uint32_t arg_index,
                                    const std::vector<NSUInteger>& offsets = std::vector<NSUInteger>()) noexcept
 {
@@ -174,7 +174,7 @@ Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindi
     return std::make_shared<ProgramBindingsMT::ArgumentBindingMT>(static_cast<const ProgramBindingsMT::ArgumentBindingMT&>(other_argument_binding));
 }
 
-ProgramBindingsMT::ArgumentBindingMT::ArgumentBindingMT(ContextBase& context, SettingsMT settings)
+ProgramBindingsMT::ArgumentBindingMT::ArgumentBindingMT(const ContextBase& context, SettingsMT settings)
     : ArgumentBindingBase(context, settings)
     , m_settings_mt(std::move(settings))
 {
@@ -238,13 +238,13 @@ void ProgramBindingsMT::Apply(CommandListBase& command_list, ApplyBehavior::Mask
     RenderCommandListMT& metal_command_list = static_cast<RenderCommandListMT&>(command_list);
     id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeRenderEncoder();
     
-    for(const auto& binding_by_argument : m_binding_by_argument)
+    for(const auto& binding_by_argument : GetBindingByArgument())
     {
         const Program::Argument& program_argument = binding_by_argument.first;
         const ArgumentBindingMT& metal_argument_binding = static_cast<const ArgumentBindingMT&>(*binding_by_argument.second);
 
         if ((apply_behavior & ApplyBehavior::ConstantOnce || apply_behavior & ApplyBehavior::ChangesOnly) && metal_command_list.GetProgramBindings() &&
-            metal_argument_binding.IsAlreadyApplied(*m_sp_program, *metal_command_list.GetProgramBindings(), apply_behavior & ApplyBehavior::ChangesOnly))
+            metal_argument_binding.IsAlreadyApplied(GetProgram(), *metal_command_list.GetProgramBindings(), apply_behavior & ApplyBehavior::ChangesOnly))
             continue;
 
         const uint32_t arg_index = metal_argument_binding.GetSettingsMT().argument_index;
@@ -252,16 +252,16 @@ void ProgramBindingsMT::Apply(CommandListBase& command_list, ApplyBehavior::Mask
         switch(metal_argument_binding.GetSettingsMT().resource_type)
         {
             case Resource::Type::Buffer:
-                SetMetalResourcesForAll(program_argument.shader_type, *m_sp_program, mtl_cmd_encoder, metal_argument_binding.GetNativeBuffers(), arg_index,
+                SetMetalResourcesForAll(program_argument.shader_type, GetProgram(), mtl_cmd_encoder, metal_argument_binding.GetNativeBuffers(), arg_index,
                                        metal_argument_binding.GetBufferOffsets());
                 break;
 
             case Resource::Type::Texture:
-                SetMetalResourcesForAll(program_argument.shader_type, *m_sp_program, mtl_cmd_encoder, metal_argument_binding.GetNativeTextures(), arg_index);
+                SetMetalResourcesForAll(program_argument.shader_type, GetProgram(), mtl_cmd_encoder, metal_argument_binding.GetNativeTextures(), arg_index);
                 break;
 
             case Resource::Type::Sampler:
-                SetMetalResourcesForAll(program_argument.shader_type, *m_sp_program, mtl_cmd_encoder, metal_argument_binding.GetNativeSamplerStates(), arg_index);
+                SetMetalResourcesForAll(program_argument.shader_type, GetProgram(), mtl_cmd_encoder, metal_argument_binding.GetNativeSamplerStates(), arg_index);
                 break;
 
             default: assert(0);

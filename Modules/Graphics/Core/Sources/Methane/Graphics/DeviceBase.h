@@ -48,7 +48,7 @@ public:
 
     Ptr<DeviceBase> GetPtr() { return shared_from_this(); }
 
-protected:
+private:
     const std::string    m_adapter_name;
     const bool           m_is_software_adapter;
     const Feature::Mask  m_supported_features;
@@ -65,6 +65,12 @@ public:
     std::string           ToString() const noexcept override;
 
 protected:
+    void SetGpuSupportedFeatures(Device::Feature::Mask supported_features) { m_supported_features = supported_features; }
+    void ClearDevices()                     { m_devices.clear(); }
+    void AddDevice(Ptr<Device>&& sp_device) { m_devices.emplace_back(std::move(sp_device)); }
+    const Ptrs<Device>& GetDevices() const  { return m_devices; }
+
+private:
     Device::Feature::Mask m_supported_features = Device::Feature::Value::All;
     Ptrs<Device>          m_devices;
 };

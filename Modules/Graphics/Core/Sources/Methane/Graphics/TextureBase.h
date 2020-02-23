@@ -45,6 +45,7 @@ protected:
     uint32_t GetRequiredSubresourceCount() const;
     static void ValidateDimensions(DimensionType dimension_type, const Dimensions& dimensions, bool mipmapped);
 
+private:
     const Settings m_settings;
 };
 

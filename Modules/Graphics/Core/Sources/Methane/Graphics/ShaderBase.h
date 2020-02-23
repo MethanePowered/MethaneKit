@@ -55,10 +55,13 @@ public:
     std::string     GetTypeName() const noexcept { return Shader::GetTypeName(m_type); }
 
 protected:
-    uint32_t    GetProgramInputBufferIndexByArgumentName(const ProgramBase& program, const std::string& argument_name) const;
-    uint32_t    GetProgramInputBufferIndexByArgumentSemantic(const ProgramBase& program, const std::string& argument_semantic) const;
-    std::string GetCompiledEntryFunctionName() const;
+    ContextBase&        GetContext()        { return m_context; }
+    const ContextBase&  GetContext() const  { return m_context; }
+    uint32_t            GetProgramInputBufferIndexByArgumentName(const ProgramBase& program, const std::string& argument_name) const;
+    uint32_t            GetProgramInputBufferIndexByArgumentSemantic(const ProgramBase& program, const std::string& argument_semantic) const;
+    std::string         GetCompiledEntryFunctionName() const;
 
+private:
     const Type        m_type;
     ContextBase&      m_context;
     const Settings    m_settings;

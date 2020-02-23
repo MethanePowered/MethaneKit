@@ -76,9 +76,9 @@ const Ptrs<Device>& SystemMT::UpdateGpuDevices(Device::Feature::Mask supported_f
     {
         MTLRemoveDeviceObserver(m_device_observer);
     }
-    
-    m_supported_features = supported_features;
-    m_devices.clear();
+
+    SetGpuSupportedFeatures(supported_features);
+    ClearDevices();
     
     NSArray<id<MTLDevice>>* mtl_devices = MTLCopyAllDevicesWithObserver(&m_device_observer,
                                                                         ^(id<MTLDevice> device, MTLDeviceNotificationName device_notification)
@@ -91,7 +91,7 @@ const Ptrs<Device>& SystemMT::UpdateGpuDevices(Device::Feature::Mask supported_f
         AddDevice(mtl_device);
     }
     
-    return m_devices;
+    return GetDevices();
 }
 
 void SystemMT::OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificationName device_notification)
@@ -127,17 +127,17 @@ void SystemMT::AddDevice(const id<MTLDevice>& mtl_device)
 {
     ITT_FUNCTION_TASK();
     Device::Feature::Mask device_supported_features = DeviceMT::GetSupportedFeatures(mtl_device);
-    if (!(device_supported_features & m_supported_features))
+    if (!(device_supported_features & GetGpuSupportedFeatures()))
         return;
-    
-    Ptr<Device> sp_device = std::make_shared<DeviceMT>(mtl_device);
-    m_devices.push_back(sp_device);
+
+    SystemBase::AddDevice(std::make_shared<DeviceMT>(mtl_device));
 }
 
 const Ptr<Device>& SystemMT::FindMetalDevice(const id<MTLDevice>& mtl_device) const
 {
     ITT_FUNCTION_TASK();
-    const auto device_it = std::find_if(m_devices.begin(), m_devices.end(),
+    const Ptrs<Device>& devices = GetDevices();
+    const auto device_it = std::find_if(devices.begin(), devices.end(),
                                         [mtl_device](const Ptr<Device>& sp_device)
                                         {
                                             assert(!!sp_device);
@@ -147,7 +147,7 @@ const Ptr<Device>& SystemMT::FindMetalDevice(const id<MTLDevice>& mtl_device) co
                                         });
     
     static const Ptr<Device> sp_empty_device;
-    return device_it != m_devices.end() ? *device_it : sp_empty_device;
+    return device_it != devices.end() ? *device_it : sp_empty_device;
 }
 
 } // namespace Methane::Graphics

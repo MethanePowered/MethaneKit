@@ -32,7 +32,7 @@ Base implementation of the program bindings interface.
 namespace Methane::Graphics
 {
 
-ProgramBindingsBase::ArgumentBindingBase::ArgumentBindingBase(ContextBase& context, Settings settings)
+ProgramBindingsBase::ArgumentBindingBase::ArgumentBindingBase(const ContextBase& context, Settings settings)
     : m_context(context)
     , m_settings(std::move(settings))
 {
@@ -167,6 +167,13 @@ ProgramBindingsBase::~ProgramBindingsBase()
     }
 }
 
+const Program& ProgramBindingsBase::GetProgram() const
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_sp_program);
+    return *m_sp_program;
+}
+
 void ProgramBindingsBase::ReserveDescriptorHeapRanges()
 {
     ITT_FUNCTION_TASK();
@@ -178,11 +185,11 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
     };
 
     assert(!!m_sp_program);
-    ProgramBase& program = static_cast<ProgramBase&>(*m_sp_program);
+    const ProgramBase& program = static_cast<const ProgramBase&>(GetProgram());
 
     // Count the number of constant and mutable discriptots to be allocated in each desriptor heap
     std::map<DescriptorHeap::Type, DescriptorsCount> descriptors_count_by_heap_type;
-    for (const auto& binding_by_argument : program.m_binding_by_argument)
+    for (const auto& binding_by_argument : program.GetArgumentBindings())
     {
         if (!binding_by_argument.second)
         {
@@ -225,7 +232,7 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
     }
 
     // Reserve descriptor ranges in heaps for resource bindings state
-    ResourceManager& resource_manager = program.GetContext().GetResourceManager();
+    const ResourceManager& resource_manager = program.GetContext().GetResourceManager();
     for (const auto& descriptor_heap_type_and_count : descriptors_count_by_heap_type)
     {
         const DescriptorHeap::Type heap_type = descriptor_heap_type_and_count.first;

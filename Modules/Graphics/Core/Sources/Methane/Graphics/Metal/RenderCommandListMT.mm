@@ -87,10 +87,9 @@ void RenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, const s
         return;
     }
 
-    if (m_is_parallel)
+    if (IsParallel())
     {
-        Ptr<ParallelRenderCommandListMT> sp_parallel_render_cmd_list = std::static_pointer_cast<ParallelRenderCommandListMT>(
-            m_wp_parallel_render_command_list.lock());
+        Ptr<ParallelRenderCommandListMT> sp_parallel_render_cmd_list = std::static_pointer_cast<ParallelRenderCommandListMT>(GetParallelRenderCommandList());
         assert(!!sp_parallel_render_cmd_list);
         id <MTLParallelRenderCommandEncoder>& mtl_parallel_render_command_encoder = sp_parallel_render_cmd_list->GetNativeParallelRenderEncoder();
         m_mtl_render_encoder = [mtl_parallel_render_command_encoder renderCommandEncoder];
@@ -236,7 +235,7 @@ void RenderCommandListMT::Commit()
         m_mtl_render_encoder = nil;
     }
 
-    if (!m_mtl_cmd_buffer || m_is_parallel)
+    if (!m_mtl_cmd_buffer || IsParallel())
         return;
 
     [m_mtl_cmd_buffer enqueue];
@@ -248,7 +247,7 @@ void RenderCommandListMT::Execute(uint32_t frame_index)
 
     RenderCommandListBase::Execute(frame_index);
 
-    if (m_is_parallel || !m_mtl_cmd_buffer)
+    if (IsParallel() || !m_mtl_cmd_buffer)
         return;
 
     [m_mtl_cmd_buffer addCompletedHandler:^(id<MTLCommandBuffer>) {

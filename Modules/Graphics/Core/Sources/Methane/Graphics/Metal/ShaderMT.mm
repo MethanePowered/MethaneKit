@@ -139,14 +139,14 @@ ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const Program::Argume
             continue;
         }
 
-        const Program::Argument shader_argument(m_type, argument_name);
+        const Program::Argument shader_argument(GetType(), argument_name);
         const auto argument_desc_it = Program::FindArgumentDescription(argument_descriptions, shader_argument);
         const Program::ArgumentDesc argument_desc = argument_desc_it == argument_descriptions.end()
                                                   ? Program::ArgumentDesc(shader_argument)
                                                   : *argument_desc_it;
         
-        argument_bindings.push_back(std::make_shared<ProgramBindingsMT::ArgumentBindingMT>(
-            m_context,
+        argument_bindings.emplace_back(std::make_shared<ProgramBindingsMT::ArgumentBindingMT>(
+            GetContext(),
             ProgramBindingsMT::ArgumentBindingMT::SettingsMT
             {
                 {
@@ -223,7 +223,7 @@ MTLVertexDescriptor* ShaderMT::GetNativeVertexDescriptor(const ProgramMT& progra
 IContextMT& ShaderMT::GetContextMT() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<IContextMT&>(m_context);
+    return static_cast<IContextMT&>(GetContext());
 }
 
 } // namespace Methane::Graphics

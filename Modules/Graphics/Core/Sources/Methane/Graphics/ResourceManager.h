@@ -61,12 +61,12 @@ public:
     uint32_t                    CreateDescriptorHeap(const DescriptorHeap::Settings& settings); // returns index of the created descriptor heap
     const DescriptorHeap::Ptr&  GetDescriptorHeapPtr(DescriptorHeap::Type type, uint32_t heap_index = 0);
     DescriptorHeap&             GetDescriptorHeap(DescriptorHeap::Type type, uint32_t heap_index = 0);
-    const DescriptorHeap::Ptr&  GetDefaultShaderVisibleDescriptorHeapPtr(DescriptorHeap::Type type);
-    DescriptorHeap&             GetDefaultShaderVisibleDescriptorHeap(DescriptorHeap::Type type);
+    const DescriptorHeap::Ptr&  GetDefaultShaderVisibleDescriptorHeapPtr(DescriptorHeap::Type type) const;
+    DescriptorHeap&             GetDefaultShaderVisibleDescriptorHeap(DescriptorHeap::Type type) const;
     DescriptorHeapSizeByType    GetDescriptorHeapSizes(bool get_allocated_size, bool for_shader_visible_heaps) const;
     ResourceBase::ReleasePool&  GetReleasePool();
 
-protected:
+private:
     using DescriptorHeapTypes = std::array<Ptrs<DescriptorHeap>, static_cast<size_t>(DescriptorHeap::Type::Count)>;
 
     bool                           m_deferred_heap_allocation = false;

@@ -46,14 +46,15 @@ public:
     virtual void Begin(RenderCommandListBase& command_list);
     virtual void End(RenderCommandListBase& command_list);
 
-    Ptr<RenderPassBase> GetPtr() { return shared_from_this(); }
+    RenderContextBase&  GetContext()        { return m_context; }
+    Ptr<RenderPassBase> GetPtr()            { return shared_from_this(); }
     Refs<Resource>      GetColorAttachmentResources() const;
-    bool                IsBegun() const { return m_is_begun; }
+    bool                IsBegun() const     { return m_is_begun; }
 
-protected:
+private:
     RenderContextBase& m_context;
-    Settings     m_settings;
-    bool         m_is_begun = false;
+    Settings           m_settings;
+    bool               m_is_begun = false;
 };
 
 } // namespace Methane::Graphics

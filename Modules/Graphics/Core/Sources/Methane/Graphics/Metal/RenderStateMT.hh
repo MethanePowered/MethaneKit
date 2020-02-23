@@ -34,7 +34,7 @@ namespace Methane::Graphics
 
 class RenderContextMT;
 
-class RenderStateMT : public RenderStateBase
+class RenderStateMT final : public RenderStateBase
 {
 public:
     RenderStateMT(RenderContextBase& context, const Settings& settings);
@@ -60,7 +60,7 @@ public:
     MTLCullMode                 GetNativeCullMode() const noexcept         { return m_mtl_cull_mode; }
     MTLWinding                  GetNativeFrontFaceWinding() const noexcept { return m_mtl_front_face_winding; }
 
-protected:
+private:
     RenderContextMT& GetRenderContextMT();
     
     void ResetNativeState();

@@ -106,7 +106,9 @@ public:
 protected:
     DescriptorHeap::Type GetDescriptorHeapTypeByUsage(Usage::Value usage) const;
     const Descriptor&    GetDescriptorByUsage(Usage::Value usage) const;
+    ContextBase&         GetContext() { return m_context; }
 
+private:
     const Type          m_type;
     const Usage::Mask   m_usage_mask;
     ContextBase&        m_context;

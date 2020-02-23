@@ -98,7 +98,7 @@ ResourceMT::ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, 
 IContextMT& ResourceMT::GetContextMT() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<IContextMT&>(m_context);
+    return static_cast<IContextMT&>(GetContext());
 }
 
 } // namespace Methane::Graphics

@@ -66,10 +66,11 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-    ResourceManager&  GetResourceManager() { return m_resource_manager; }
-    CommandQueueBase& GetUploadCommandQueueBase();
-    DeviceBase&       GetDeviceBase();
-    const DeviceBase& GetDeviceBase() const;
+    ResourceManager&        GetResourceManager()        { return m_resource_manager; }
+    const ResourceManager&  GetResourceManager() const  { return m_resource_manager; }
+    CommandQueueBase&       GetUploadCommandQueueBase();
+    DeviceBase&             GetDeviceBase();
+    const DeviceBase&       GetDeviceBase() const;
 
 protected:
     void UploadResources();

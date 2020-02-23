@@ -32,7 +32,7 @@ namespace Methane::Graphics
 
 class DeviceMT;
 
-class ProgramLibraryMT
+class ProgramLibraryMT final
 {
 public:
     ProgramLibraryMT(DeviceMT& metal_device, const std::string& library_name = "");

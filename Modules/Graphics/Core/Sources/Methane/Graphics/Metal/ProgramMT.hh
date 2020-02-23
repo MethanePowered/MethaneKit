@@ -33,7 +33,7 @@ namespace Methane::Graphics
 struct IContextMT;
 class ShaderMT;
 
-class ProgramMT : public ProgramBase
+class ProgramMT final : public ProgramBase
 {
 public:
     ProgramMT(ContextBase& context, const Settings& settings);
@@ -44,7 +44,7 @@ public:
     id<MTLFunction> GetNativeShaderFunction(Shader::Type shader_type) noexcept;
     MTLVertexDescriptor* GetNativeVertexDescriptor() noexcept { return m_mtl_vertex_desc; }
 
-protected:
+private:
     IContextMT& GetContextMT() noexcept;
     void SetNativeShaderArguments(Shader::Type shader_type, NSArray<MTLArgument*>* mtl_arguments) noexcept;
     

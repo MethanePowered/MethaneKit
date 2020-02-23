@@ -32,7 +32,7 @@ namespace Methane::Graphics
 
 struct IContextMT;
 
-class RenderPassMT : public RenderPassBase
+class RenderPassMT final : public RenderPassBase
 {
 public:
     RenderPassMT(RenderContextBase& context, const Settings& settings);
@@ -44,7 +44,7 @@ public:
     
     MTLRenderPassDescriptor* GetNativeDescriptor(bool reset);
 
-protected:
+private:
     IContextMT& GetContextMT() noexcept;
     
     MTLRenderPassDescriptor* m_mtl_pass_descriptor;

@@ -30,7 +30,7 @@ Metal implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
-class BufferMT : public BufferBase
+class BufferMT final : public BufferBase
 {
 public:
     BufferMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
@@ -49,7 +49,7 @@ public:
     const id<MTLBuffer>& GetNativeBuffer() const noexcept { return m_mtl_buffer; }
     MTLIndexType         GetNativeIndexType() const noexcept;
 
-protected:
+private:
     id<MTLBuffer> m_mtl_buffer;
     Data::Size    m_stride = 0;
     PixelFormat   m_format = PixelFormat::Unknown;

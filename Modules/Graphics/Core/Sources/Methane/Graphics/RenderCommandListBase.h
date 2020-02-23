@@ -84,13 +84,15 @@ public:
 
 protected:
     void ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count = 0);
-    DrawingState&       GetDrawingState()       { return static_cast<DrawingState&>(GetCommandState()); }
-    const DrawingState& GetDrawingState() const { return static_cast<const DrawingState&>(GetCommandState()); }
+    DrawingState&                      GetDrawingState()              { return static_cast<DrawingState&>(GetCommandState()); }
+    const DrawingState&                GetDrawingState() const        { return static_cast<const DrawingState&>(GetCommandState()); }
+    bool                               IsParallel() const             { return m_is_parallel; }
+    Ptr<ParallelRenderCommandListBase> GetParallelRenderCommandList() { return m_wp_parallel_render_command_list.lock(); }
 
-    const bool            m_is_parallel;
-    const Ptr<RenderPass> m_sp_pass;
-
-    std::weak_ptr<ParallelRenderCommandListBase> m_wp_parallel_render_command_list;
+private:
+    const bool                             m_is_parallel;
+    const Ptr<RenderPass>                  m_sp_pass;
+    WeakPtr<ParallelRenderCommandListBase> m_wp_parallel_render_command_list;
 };
 
 } // namespace Methane::Graphics

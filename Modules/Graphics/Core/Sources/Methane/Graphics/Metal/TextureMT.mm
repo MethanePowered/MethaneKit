@@ -127,9 +127,9 @@ TextureMT::~TextureMT()
 {
     ITT_FUNCTION_TASK();
 
-    if (m_settings.type != Texture::Type::FrameBuffer)
+    if (GetSettings().type != Texture::Type::FrameBuffer)
     {
-        m_context.GetResourceManager().GetReleasePool().AddResource(*this);
+        GetContext().GetResourceManager().GetReleasePool().AddResource(*this);
     }
 }
 
@@ -151,15 +151,16 @@ void TextureMT::SetData(const SubResources& sub_resources)
     {
         throw std::invalid_argument("Can not set texture data from empty sub-resources.");
     }
-    
-    const uint32_t  bytes_per_row   = m_settings.dimensions.width  * GetPixelSize(m_settings.pixel_format);
-    const uint32_t  bytes_per_image = m_settings.dimensions.height * bytes_per_row;
-    const MTLRegion texture_region  = GetTextureRegion(m_settings.dimensions, m_settings.dimension_type);
+
+    const Settings& settings        = GetSettings();
+    const uint32_t  bytes_per_row   = settings.dimensions.width  * GetPixelSize(settings.pixel_format);
+    const uint32_t  bytes_per_image = settings.dimensions.height * bytes_per_row;
+    const MTLRegion texture_region  = GetTextureRegion(settings.dimensions, settings.dimension_type);
 
     for(const SubResource& sub_resourse : sub_resources)
     {
         uint32_t slice = 0;
-        switch(m_settings.dimension_type)
+        switch(settings.dimension_type)
         {
             case Texture::DimensionType::Tex1DArray:
             case Texture::DimensionType::Tex2DArray:
@@ -183,7 +184,7 @@ void TextureMT::SetData(const SubResources& sub_resources)
                        bytesPerImage:bytes_per_image];
     }
 
-    if (m_settings.mipmapped && sub_resources.size() < GetRequiredSubresourceCount())
+    if (settings.mipmapped && sub_resources.size() < GetRequiredSubresourceCount())
     {
         GenerateMipLevels();
     }
@@ -199,7 +200,7 @@ void TextureMT::UpdateFrameBuffer()
 {
     ITT_FUNCTION_TASK();
 
-    if (m_settings.type != Texture::Type::FrameBuffer)
+    if (GetSettings().type != Texture::Type::FrameBuffer)
     {
         throw std::logic_error("Unable to update frame buffer on non-FB texture.");
     }
@@ -212,14 +213,15 @@ MTLTextureUsage TextureMT::GetNativeTextureUsage()
     ITT_FUNCTION_TASK();
 
     NSUInteger texture_usage = MTLTextureUsageUnknown;
+    const Settings& settings = GetSettings();
     
-    if (m_settings.usage_mask & static_cast<uint32_t>(TextureBase::Usage::ShaderRead))
+    if (settings.usage_mask & static_cast<uint32_t>(TextureBase::Usage::ShaderRead))
         texture_usage |= MTLTextureUsageShaderRead;
     
-    if (m_settings.usage_mask & static_cast<uint32_t>(TextureBase::Usage::ShaderWrite))
+    if (settings.usage_mask & static_cast<uint32_t>(TextureBase::Usage::ShaderWrite))
         texture_usage |= MTLTextureUsageShaderWrite;
     
-    if (m_settings.usage_mask & static_cast<uint32_t>(TextureBase::Usage::RenderTarget))
+    if (settings.usage_mask & static_cast<uint32_t>(TextureBase::Usage::RenderTarget))
         texture_usage |= MTLTextureUsageRenderTarget;
 
     return texture_usage;
@@ -229,22 +231,23 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
 {
     ITT_FUNCTION_TASK();
 
-    const MTLPixelFormat mtl_pixel_format = TypeConverterMT::DataFormatToMetalPixelType(m_settings.pixel_format);
-    const BOOL is_tex_mipmapped = MacOS::ConvertToNSType<bool, BOOL>(m_settings.mipmapped);
+    const Settings& settings = GetSettings();
+    const MTLPixelFormat mtl_pixel_format = TypeConverterMT::DataFormatToMetalPixelType(settings.pixel_format);
+    const BOOL is_tex_mipmapped = MacOS::ConvertToNSType<bool, BOOL>(settings.mipmapped);
 
     MTLTextureDescriptor* mtl_tex_desc = nil;
-    switch(m_settings.dimension_type)
+    switch(settings.dimension_type)
     {
     case Texture::DimensionType::Tex2D:
         mtl_tex_desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:mtl_pixel_format
-                                                                          width:m_settings.dimensions.width
-                                                                         height:m_settings.dimensions.height
+                                                                          width:settings.dimensions.width
+                                                                         height:settings.dimensions.height
                                                                       mipmapped:is_tex_mipmapped];
         break;
 
     case Texture::DimensionType::Cube:
         mtl_tex_desc = [MTLTextureDescriptor textureCubeDescriptorWithPixelFormat:mtl_pixel_format
-                                                                             size:m_settings.dimensions.width
+                                                                             size:settings.dimensions.width
                                                                         mipmapped:is_tex_mipmapped];
         break;
 
@@ -256,11 +259,11 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
     case Texture::DimensionType::Tex3D:
         mtl_tex_desc                    = [[MTLTextureDescriptor alloc] init];
         mtl_tex_desc.pixelFormat        = mtl_pixel_format;
-        mtl_tex_desc.textureType        = GetNativeTextureType(m_settings.dimension_type);
-        mtl_tex_desc.width              = m_settings.dimensions.width;
-        mtl_tex_desc.height             = m_settings.dimensions.height;
-        mtl_tex_desc.depth              = m_settings.dimensions.depth;
-        mtl_tex_desc.arrayLength        = m_settings.array_length;
+        mtl_tex_desc.textureType        = GetNativeTextureType(settings.dimension_type);
+        mtl_tex_desc.width              = settings.dimensions.width;
+        mtl_tex_desc.height             = settings.dimensions.height;
+        mtl_tex_desc.depth              = settings.dimensions.depth;
+        mtl_tex_desc.arrayLength        = settings.array_length;
         mtl_tex_desc.mipmapLevelCount   = GetMipLevelsCount();
         break;
 
@@ -271,7 +274,7 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
     if (!mtl_tex_desc)
         return nil;
 
-    if (!m_settings.cpu_accessible)
+    if (!settings.cpu_accessible)
     {
         mtl_tex_desc.resourceOptions = MTLResourceStorageModePrivate;
     }
@@ -284,7 +287,7 @@ void TextureMT::GenerateMipLevels()
 {
     ITT_FUNCTION_TASK();
 
-    BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(m_context.GetUploadCommandList());
+    BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContext().GetUploadCommandList());
     blit_command_list.Reset("Texture MIPs Generation");
     
     id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeBlitEncoder();
@@ -297,7 +300,7 @@ void TextureMT::GenerateMipLevels()
 RenderContextMT& TextureMT::GetRenderContextMT()
 {
     ITT_FUNCTION_TASK();
-    if (m_context.GetType() != Context::Type::Render)
+    if (GetContext().GetType() != Context::Type::Render)
         throw std::runtime_error("Incompatible context type.");
     return static_cast<RenderContextMT&>(GetContextMT());
 }

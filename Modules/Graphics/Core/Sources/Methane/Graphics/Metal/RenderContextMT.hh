@@ -38,7 +38,7 @@ Metal implementation of the render context interface.
 namespace Methane::Graphics
 {
 
-class RenderContextMT : public ContextMT<RenderContextBase>
+class RenderContextMT final : public ContextMT<RenderContextBase>
 {
 public:
     RenderContextMT(const Platform::AppEnvironment& env, DeviceBase& device, const Settings& settings);

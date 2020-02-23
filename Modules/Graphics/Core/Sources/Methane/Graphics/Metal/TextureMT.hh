@@ -33,7 +33,7 @@ namespace Methane::Graphics
 
 class RenderContextMT;
 
-class TextureMT : public TextureBase
+class TextureMT final : public TextureBase
 {
 public:
     TextureMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
@@ -50,7 +50,7 @@ public:
 
     const id<MTLTexture>& GetNativeTexture() const { return m_mtl_texture; }
 
-protected:
+private:
     void GenerateMipLevels();
     RenderContextMT& GetRenderContextMT();
 

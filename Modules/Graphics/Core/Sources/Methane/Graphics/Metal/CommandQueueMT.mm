@@ -63,17 +63,18 @@ void CommandQueueMT::SetName(const std::string& name)
 IContextMT& CommandQueueMT::GetContextMT() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<IContextMT&>(m_context);
+    return static_cast<IContextMT&>(GetContext());
 }
 
 RenderContextMT& CommandQueueMT::GetRenderContextMT()
 {
     ITT_FUNCTION_TASK();
-    if (m_context.GetType() != Context::Type::Render)
+    ContextBase& context = GetContext();
+    if (context.GetType() != Context::Type::Render)
     {
         throw std::runtime_error("Incompatible context type.");
     }
-    return dynamic_cast<RenderContextMT&>(m_context);
+    return static_cast<RenderContextMT&>(context);
 }
 
 } // namespace Methane::Graphics

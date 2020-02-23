@@ -32,7 +32,7 @@ namespace Methane::Graphics
 
 struct IContextMT;
 
-class SamplerMT : public SamplerBase
+class SamplerMT final : public SamplerBase
 {
 public:
     SamplerMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
@@ -43,7 +43,7 @@ public:
     
     const id<MTLSamplerState>& GetNativeSamplerState() const noexcept { return m_mtl_sampler_state; }
 
-protected:
+private:
     void ResetSampletState();
 
     IContextMT& GetContextMT() noexcept;

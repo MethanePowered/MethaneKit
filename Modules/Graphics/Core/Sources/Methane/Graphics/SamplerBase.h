@@ -47,6 +47,9 @@ public:
     Data::Size  GetDataSize() const override { return 0; }
 
 protected:
+    ContextBase& GetContext() { return m_context; }
+
+private:
     ContextBase& m_context;
     Settings     m_settings;
 };

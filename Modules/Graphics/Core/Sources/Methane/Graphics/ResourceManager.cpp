@@ -170,7 +170,7 @@ DescriptorHeap& ResourceManager::GetDescriptorHeap(DescriptorHeap::Type type, ui
     return *sp_resource_heap;
 }
 
-const DescriptorHeap::Ptr&  ResourceManager::GetDefaultShaderVisibleDescriptorHeapPtr(DescriptorHeap::Type type)
+const DescriptorHeap::Ptr&  ResourceManager::GetDefaultShaderVisibleDescriptorHeapPtr(DescriptorHeap::Type type) const
 {
     ITT_FUNCTION_TASK();
 
@@ -193,7 +193,7 @@ const DescriptorHeap::Ptr&  ResourceManager::GetDefaultShaderVisibleDescriptorHe
     return descriptor_heaps_it != descriptor_heaps.end() ? *descriptor_heaps_it : empty_heap_ptr;
 }
 
-DescriptorHeap& ResourceManager::GetDefaultShaderVisibleDescriptorHeap(DescriptorHeap::Type type)
+DescriptorHeap& ResourceManager::GetDefaultShaderVisibleDescriptorHeap(DescriptorHeap::Type type) const
 {
     ITT_FUNCTION_TASK();
 

@@ -60,6 +60,7 @@ public:
 protected:
     uint32_t GetCurrentFrameBufferIndex() const;
 
+private:
     ContextBase&        m_context;
 };
 

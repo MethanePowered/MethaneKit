@@ -49,7 +49,7 @@ public:
     public:
         static Ptr<ArgumentBindingBase> CreateCopy(const ArgumentBindingBase& other_argument_binding);
 
-        ArgumentBindingBase(ContextBase& context, Settings settings);
+        ArgumentBindingBase(const ContextBase& context, Settings settings);
         ArgumentBindingBase(const ArgumentBindingBase& other) = default;
 
         // ArgumentBinding interface
@@ -64,10 +64,10 @@ public:
                               const ProgramBindingsBase& applied_program_bindings,
                               bool check_binding_value_changes = true) const;
     protected:
-        ContextBase& GetContext() noexcept { return m_context; }
+        const ContextBase& GetContext() const noexcept { return m_context; }
 
     private:
-        ContextBase&        m_context;
+        const ContextBase&  m_context;
         const Settings      m_settings;
         Resource::Locations m_resource_locations;
     };
@@ -78,7 +78,7 @@ public:
 
     Ptr<ProgramBindingsBase>  GetPtr()              { return shared_from_this(); }
     const Program::Arguments& GetArguments() const  { return m_arguments; }
-    const Program&            GetProgram() const    { return *m_sp_program; }
+    const Program&            GetProgram() const;
 
     // ProgramBindings interface
     const Ptr<ArgumentBinding>& Get(const Program::Argument& shader_argument) const override;
@@ -95,6 +95,9 @@ protected:
     void VerifyAllArgumentsAreBoundToResources();
 
     using BindingByArgument = std::unordered_map<Program::Argument, Ptr<ArgumentBinding>, Program::Argument::Hash>;
+    const BindingByArgument& GetBindingByArgument() const { return m_binding_by_argument; }
+
+private:
     using DescriptorHeapReservationByType = std::array<std::optional<DescriptorHeap::Reservation>,
                                                        static_cast<uint32_t>(DescriptorHeap::Type::Count)>;
 

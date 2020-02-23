@@ -56,7 +56,7 @@ public:
     id<MTLCommandBuffer>&                GetNativeCommandBuffer() noexcept         { return m_mtl_cmd_buffer; }
     id<MTLParallelRenderCommandEncoder>& GetNativeParallelRenderEncoder() noexcept { return m_mtl_parallel_render_encoder; }
 
-protected:
+private:
     CommandQueueMT& GetCommandQueueMT() noexcept;
     RenderPassMT&   GetPassMT();
 
