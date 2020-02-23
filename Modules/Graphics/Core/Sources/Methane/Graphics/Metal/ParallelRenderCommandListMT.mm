@@ -23,6 +23,7 @@ Metal implementation of the render command list interface.
 
 #include "ParallelRenderCommandListMT.hh"
 #include "RenderPassMT.hh"
+#include "RenderStateMT.hh"
 #include "CommandQueueMT.hh"
 #include "RenderContextMT.hh"
 
@@ -88,6 +89,11 @@ void ParallelRenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state,
 
     assert(m_mtl_parallel_render_encoder != nil);
     m_mtl_parallel_render_encoder.label = MacOS::ConvertToNSType<std::string, NSString*>(GetName());
+    
+    if (sp_render_state)
+    {
+        static_cast<RenderStateMT&>(*sp_render_state).InitializeNativeStates();
+    }
 
     ParallelRenderCommandListBase::Reset(sp_render_state, debug_group);
 }

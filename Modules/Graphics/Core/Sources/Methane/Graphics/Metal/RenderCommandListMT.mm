@@ -87,10 +87,6 @@ void RenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, const s
         return;
     }
 
-    // NOTE: If command buffer was not created for current frame yet,
-    //       then render pass descriptor should be reset with new frame drawable
-    MTLRenderPassDescriptor* mtl_render_pass = GetRenderPassMT().GetNativeDescriptor(!m_is_parallel && m_mtl_cmd_buffer == nil);
-
     if (m_is_parallel)
     {
         Ptr<ParallelRenderCommandListMT> sp_parallel_render_cmd_list = std::static_pointer_cast<ParallelRenderCommandListMT>(
@@ -101,6 +97,10 @@ void RenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, const s
     }
     else
     {
+        // If command buffer was not created for current frame yet,
+        // then render pass descriptor should be reset with new frame drawable
+        MTLRenderPassDescriptor* mtl_render_pass = GetRenderPassMT().GetNativeDescriptor(m_mtl_cmd_buffer == nil);
+        
         if (!m_mtl_cmd_buffer)
         {
             m_mtl_cmd_buffer = [GetCommandQueueMT().GetNativeCommandQueue() commandBuffer];

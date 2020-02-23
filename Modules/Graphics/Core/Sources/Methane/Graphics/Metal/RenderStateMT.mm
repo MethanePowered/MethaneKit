@@ -374,20 +374,49 @@ void RenderStateMT::SetName(const std::string& name)
     
     ResetNativeState();
 }
+    
+void RenderStateMT::InitializeNativeStates()
+{
+    ITT_FUNCTION_TASK();
+    InitializeNativePipelineState();
+    InitializeNativeDepthStencilState();
+}
+
+void RenderStateMT::InitializeNativePipelineState()
+{
+    ITT_FUNCTION_TASK();
+    if (m_mtl_pipeline_state)
+        return;
+    
+    NSError* ns_error = nil;
+    m_mtl_pipeline_state = [GetRenderContextMT().GetDeviceMT().GetNativeDevice() newRenderPipelineStateWithDescriptor:m_mtl_pipeline_state_desc error:&ns_error];
+    if (!m_mtl_pipeline_state)
+    {
+        const std::string error_msg = MacOS::ConvertFromNSType<NSString, std::string>([ns_error localizedDescription]);
+        throw std::runtime_error("Failed to create Metal pipeline state: " + error_msg);
+    }
+}
+
+void RenderStateMT::InitializeNativeDepthStencilState()
+{
+    ITT_FUNCTION_TASK();
+    if (m_mtl_depth_state)
+        return;
+    
+    assert(m_mtl_depth_stencil_state_desc != nil);
+    m_mtl_depth_state = [GetRenderContextMT().GetDeviceMT().GetNativeDevice() newDepthStencilStateWithDescriptor:m_mtl_depth_stencil_state_desc];
+    if (!m_mtl_depth_state)
+    {
+        throw std::runtime_error("Failed to create Metal depth state.");
+    }
+}
 
 id<MTLRenderPipelineState>& RenderStateMT::GetNativePipelineState()
 {
     ITT_FUNCTION_TASK();
-
     if (!m_mtl_pipeline_state)
     {
-        NSError* ns_error = nil;
-        m_mtl_pipeline_state = [GetRenderContextMT().GetDeviceMT().GetNativeDevice() newRenderPipelineStateWithDescriptor:m_mtl_pipeline_state_desc error:&ns_error];
-        if (!m_mtl_pipeline_state)
-        {
-            const std::string error_msg = MacOS::ConvertFromNSType<NSString, std::string>([ns_error localizedDescription]);
-            throw std::runtime_error("Failed to create Metal pipeline state: " + error_msg);
-        }
+        InitializeNativePipelineState();
     }
     return m_mtl_pipeline_state;
 }
@@ -395,15 +424,9 @@ id<MTLRenderPipelineState>& RenderStateMT::GetNativePipelineState()
 id<MTLDepthStencilState>& RenderStateMT::GetNativeDepthStencilState()
 {
     ITT_FUNCTION_TASK();
-    
     if (!m_mtl_depth_state)
     {
-        assert(m_mtl_depth_stencil_state_desc != nil);
-        m_mtl_depth_state = [GetRenderContextMT().GetDeviceMT().GetNativeDevice() newDepthStencilStateWithDescriptor:m_mtl_depth_stencil_state_desc];
-        if (!m_mtl_depth_state)
-        {
-            throw std::runtime_error("Failed to create Metal depth state.");
-        }
+        InitializeNativeStates();
     }
     return m_mtl_depth_state;
 }

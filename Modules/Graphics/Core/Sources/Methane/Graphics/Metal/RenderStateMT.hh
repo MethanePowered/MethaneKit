@@ -51,6 +51,10 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
     
+    void InitializeNativeStates();
+    void InitializeNativePipelineState();
+    void InitializeNativeDepthStencilState();
+    
     id<MTLRenderPipelineState>& GetNativePipelineState();
     id<MTLDepthStencilState>&   GetNativeDepthStencilState();
     MTLCullMode                 GetNativeCullMode() const noexcept         { return m_mtl_cull_mode; }
