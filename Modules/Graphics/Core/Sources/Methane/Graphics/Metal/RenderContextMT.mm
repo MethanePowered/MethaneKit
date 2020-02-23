@@ -124,6 +124,7 @@ void RenderContextMT::Present()
     ContextMT<RenderContextBase>::Present();
 
     id<MTLCommandBuffer> mtl_cmd_buffer = [GetRenderCommandQueueMT().GetNativeCommandQueue() commandBuffer];
+    mtl_cmd_buffer.label = MacOS::ConvertToNSType<std::string, NSString*>(GetName() + " Present Command");
     [mtl_cmd_buffer presentDrawable:GetNativeDrawable()];
     [mtl_cmd_buffer commit];
 
