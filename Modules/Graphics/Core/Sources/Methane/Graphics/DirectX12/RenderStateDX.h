@@ -54,6 +54,7 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
+    void InitializeNativePipelineState();
     wrl::ComPtr<ID3D12PipelineState>& GetNativePipelineState();
 
 protected:

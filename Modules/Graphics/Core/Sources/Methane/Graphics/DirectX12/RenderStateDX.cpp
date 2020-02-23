@@ -346,13 +346,22 @@ void RenderStateDX::SetName(const std::string& name)
     }
 }
 
+void RenderStateDX::InitializeNativePipelineState()
+{
+    ITT_FUNCTION_TASK();
+    if (m_cp_pipeline_state)
+        return;
+
+    ThrowIfFailed(GetRenderContextDX().GetDeviceDX().GetNativeDevice()->CreateGraphicsPipelineState(&m_pipeline_state_desc, IID_PPV_ARGS(&m_cp_pipeline_state)));
+    SetName(GetName());
+}
+
 wrl::ComPtr<ID3D12PipelineState>& RenderStateDX::GetNativePipelineState()
 {
     ITT_FUNCTION_TASK();
     if (!m_cp_pipeline_state)
     {
-        ThrowIfFailed(GetRenderContextDX().GetDeviceDX().GetNativeDevice()->CreateGraphicsPipelineState(&m_pipeline_state_desc, IID_PPV_ARGS(&m_cp_pipeline_state)));
-        SetName(GetName());
+        InitializeNativePipelineState();
     }
     return m_cp_pipeline_state;
 }

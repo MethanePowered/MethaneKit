@@ -80,6 +80,14 @@ void ParallelRenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state,
     m_begining_command_list.SetOpenDebugGroup("");
     m_ending_command_list.SetOpenDebugGroup(debug_group);
 
+    if (sp_render_state)
+    {
+        // Initialize native pipeline state before resetting per-thread command lists
+        // to allow parallel reset of all CLs at once with using native pipeline state for each reset
+        RenderStateDX& dx_render_state = static_cast<RenderStateDX&>(*sp_render_state);
+        dx_render_state.InitializeNativePipelineState();
+    }
+
     ParallelRenderCommandListBase::Reset(sp_render_state, debug_group);
 }
 
