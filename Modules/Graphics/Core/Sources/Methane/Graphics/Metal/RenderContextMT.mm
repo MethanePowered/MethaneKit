@@ -32,6 +32,9 @@ Metal implementation of the render context interface.
 #include <Methane/Platform/Utils.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
+// Either use dispatch queue semaphore or fence primitives for CPU-GPU frames rendering synchronization
+//#define USE_DISPATCH_QUEUE_SEMAPHORE
+
 namespace Methane::Graphics
 {
 
@@ -54,6 +57,9 @@ RenderContextMT::RenderContextMT(const Platform::AppEnvironment& env, DeviceBase
                                      vsyncEnabled: Methane::MacOS::ConvertToNSType<bool, BOOL>(m_settings.vsync_enabled)
                             unsyncRefreshInterval: 1.0 / m_settings.unsync_max_fps])
     , m_frame_capture_scope([[MTLCaptureManager sharedCaptureManager] newCaptureScopeWithDevice:GetDeviceMT().GetNativeDevice()])
+#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
+    , m_dispatch_semaphore(dispatch_semaphore_create(settings.frame_buffers_count))
+#endif
 {
     ITT_FUNCTION_TASK();
     
@@ -73,6 +79,10 @@ RenderContextMT::~RenderContextMT()
     ITT_FUNCTION_TASK();
 
     [m_app_view release];
+    
+#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
+    dispatch_release(m_dispatch_semaphore);
+#endif
 }
 
 void RenderContextMT::Release()
@@ -80,6 +90,10 @@ void RenderContextMT::Release()
     ITT_FUNCTION_TASK();
     
     m_app_view.redrawing = NO;
+    
+#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
+    dispatch_release(m_dispatch_semaphore);
+#endif
 
     ContextMT<RenderContextBase>::Release();
 }
@@ -89,6 +103,10 @@ void RenderContextMT::Initialize(DeviceBase& device, bool deferred_heap_allocati
     ITT_FUNCTION_TASK();
 
     ContextMT<RenderContextBase>::Initialize(device, deferred_heap_allocation);
+    
+#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
+    m_dispatch_semaphore = dispatch_semaphore_create(GetSettings().frame_buffers_count);
+#endif
     
     m_app_view.redrawing = YES;
 }
@@ -102,11 +120,21 @@ bool RenderContextMT::ReadyToRender() const
 void RenderContextMT::WaitForGpu(WaitFor wait_for)
 {
     ITT_FUNCTION_TASK();
-
+    
+#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
+    if (wait_for != WaitFor::FramePresented)
+        ContextMT<RenderContextBase>::WaitForGpu(wait_for);
+#else
     ContextMT<RenderContextBase>::WaitForGpu(wait_for);
-
+#endif
+    
     if (wait_for == WaitFor::FramePresented)
     {
+#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
+        OnGpuWaitStart(wait_for);
+        dispatch_semaphore_wait(m_dispatch_semaphore, DISPATCH_TIME_FOREVER);
+        OnGpuWaitComplete(wait_for);
+#endif
         m_frame_buffer_index = (m_frame_buffer_index + 1) % m_settings.frame_buffers_count;
         [m_frame_capture_scope beginScope];
     }
@@ -126,11 +154,19 @@ void RenderContextMT::Present()
     id<MTLCommandBuffer> mtl_cmd_buffer = [GetRenderCommandQueueMT().GetNativeCommandQueue() commandBuffer];
     mtl_cmd_buffer.label = MacOS::ConvertToNSType<std::string, NSString*>(GetName() + " Present Command");
     [mtl_cmd_buffer presentDrawable:GetNativeDrawable()];
+#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
+    const bool signal_frame_fence = false;
+    [mtl_cmd_buffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
+        dispatch_semaphore_signal(m_dispatch_semaphore);
+    }];
+#else
+    const bool signal_frame_fence = true;
+#endif
     [mtl_cmd_buffer commit];
 
     [m_frame_capture_scope endScope];
 
-    ContextMT<RenderContextBase>::OnCpuPresentComplete();
+    ContextMT<RenderContextBase>::OnCpuPresentComplete(signal_frame_fence);
 }
 
 bool RenderContextMT::SetVSyncEnabled(bool vsync_enabled)

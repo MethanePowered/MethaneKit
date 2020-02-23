@@ -50,13 +50,12 @@ void RenderContextBase::WaitForGpu(WaitFor wait_for)
 
     ContextBase::WaitForGpu(wait_for);
 
-    m_fps_counter.OnGpuFramePresentWait();
-
     switch (wait_for)
     {
     case WaitFor::RenderComplete:
     {
         SCOPE_TIMER("RenderContextDX::WaitForGpu::RenderComplete");
+        OnGpuWaitStart(wait_for);
         GetRenderFence().Flush();
         OnGpuWaitComplete(wait_for);
     } break;
@@ -64,6 +63,7 @@ void RenderContextBase::WaitForGpu(WaitFor wait_for)
     case WaitFor::FramePresented:
     {
         SCOPE_TIMER("RenderContextDX::WaitForGpu::FramePresented");
+        OnGpuWaitStart(wait_for);
         GetCurrentFrameFence().Wait();
         OnGpuWaitComplete(wait_for);
     } break;
@@ -94,12 +94,15 @@ void RenderContextBase::Present()
     m_fps_counter.OnCpuFrameReadyToPresent();
 }
 
-void RenderContextBase::OnCpuPresentComplete()
+void RenderContextBase::OnCpuPresentComplete(bool signal_frame_fence)
 {
     ITT_FUNCTION_TASK();
 
-    // Schedule a signal command in the queue for a currently finished frame
-    GetCurrentFrameFence().Signal();
+    if (signal_frame_fence)
+    {
+        // Schedule a signal command in the queue for a currently finished frame
+        GetCurrentFrameFence().Signal();
+    }
 
 #ifdef COMMAND_EXECUTION_LOGGING
     Platform::PrintToDebugOutput("PRESENT COMPLETE for context \"" + GetName() + "\"");
@@ -181,6 +184,16 @@ void RenderContextBase::SetName(const std::string& name)
 
     if (m_sp_render_fence)
         m_sp_render_fence->SetName(name + " Render Fence");
+}
+    
+void RenderContextBase::OnGpuWaitStart(WaitFor wait_for)
+{
+    ITT_FUNCTION_TASK();
+    if (wait_for == WaitFor::FramePresented)
+    {
+        m_fps_counter.OnGpuFramePresentWait();
+    }
+    ContextBase::OnGpuWaitStart(wait_for);
 }
 
 void RenderContextBase::OnGpuWaitComplete(WaitFor wait_for)

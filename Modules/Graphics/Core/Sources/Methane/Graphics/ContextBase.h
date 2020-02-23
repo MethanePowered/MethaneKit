@@ -75,6 +75,7 @@ protected:
     void UploadResources();
 
     // ContextBase interface
+    virtual void OnGpuWaitStart(WaitFor wait_for) {}
     virtual void OnGpuWaitComplete(WaitFor wait_for);
 
     const Type                m_type;

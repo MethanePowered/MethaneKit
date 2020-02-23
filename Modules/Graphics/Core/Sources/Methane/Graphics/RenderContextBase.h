@@ -64,13 +64,14 @@ public:
 
 protected:
     void ResetWithSettings(const Settings& settings);
-    void OnCpuPresentComplete();
+    void OnCpuPresentComplete(bool signal_frame_fence = true);
 
     inline const UniquePtr<Fence>& GetCurrentFrameFencePtr() const { return m_frame_fences[m_frame_buffer_index]; }
     Fence&                         GetCurrentFrameFence() const;
     Fence&                         GetRenderFence() const;
 
     // ContextBase overrides
+    void OnGpuWaitStart(WaitFor wait_for) override;
     void OnGpuWaitComplete(WaitFor wait_for) override;
 
     Settings              m_settings;

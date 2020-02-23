@@ -59,8 +59,10 @@ public:
     CommandQueueMT&     GetRenderCommandQueueMT();
 
 protected:
-    AppViewMT*          m_app_view;
-    id<MTLCaptureScope> m_frame_capture_scope;
+    AppViewMT*           m_app_view;
+    id<MTLCaptureScope>  m_frame_capture_scope;
+    dispatch_semaphore_t m_dispatch_semaphore = nullptr;
+
 };
 
 } // namespace Methane::Graphics

@@ -84,6 +84,7 @@ void ContextBase::WaitForGpu(WaitFor wait_for)
     {
         SCOPE_TIMER("ContextBase::WaitForGpu::ResourcesUploaded");
         assert(!!m_sp_upload_fence);
+        OnGpuWaitStart(wait_for);
         m_sp_upload_fence->Flush();
         OnGpuWaitComplete(wait_for);
     }
