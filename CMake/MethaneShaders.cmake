@@ -132,7 +132,7 @@ function(compile_metal_shaders_to_library FOR_TARGET SDK METAL_SHADERS METAL_LIB
     get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
 
     if(METHANE_SHADERS_CODEVIEW_ENABLED OR CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(EXTRA_COMPILE_FLAGS -gcodeview)
+        set(EXTRA_COMPILE_FLAGS -gline-tables-only -MO)
     endif()
 
     foreach(SHADER_METAL_PATH ${METAL_SHADERS})
