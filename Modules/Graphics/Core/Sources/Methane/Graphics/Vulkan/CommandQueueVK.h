@@ -42,7 +42,7 @@ public:
     
     IContextVK& GetContextVK() noexcept;
 
-protected:
+private:
     void Reset();
 };
 

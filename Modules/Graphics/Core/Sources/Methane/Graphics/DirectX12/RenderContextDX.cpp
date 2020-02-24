@@ -150,11 +150,9 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
         swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
     }
 
-    wrl::ComPtr<ID3D12CommandQueue>& cp_command_queue = GetRenderCommandQueueDX().GetNativeCommandQueue();
-    assert(!!cp_command_queue);
-
     wrl::ComPtr<IDXGISwapChain1> cp_swap_chain;
-    ThrowIfFailed(cp_dxgi_factory->CreateSwapChainForHwnd(cp_command_queue.Get(), m_platform_env.window_handle, &swap_chain_desc, NULL, NULL, &cp_swap_chain));
+    ID3D12CommandQueue& dx_command_queue = GetRenderCommandQueueDX().GetNativeCommandQueue();
+    ThrowIfFailed(cp_dxgi_factory->CreateSwapChainForHwnd(&dx_command_queue, m_platform_env.window_handle, &swap_chain_desc, NULL, NULL, &cp_swap_chain));
     assert(!!cp_swap_chain);
 
     if (settings.is_full_screen)

@@ -54,11 +54,9 @@ SystemVK::~SystemVK()
 const Ptrs<Device>& SystemVK::UpdateGpuDevices(Device::Feature::Mask supported_features)
 {
     ITT_FUNCTION_TASK();
-
-    m_supported_features = supported_features;
-    m_devices.clear();
-
-    return m_devices;
+    SetGpuSupportedFeatures(supported_features);
+    ClearDevices();
+    return GetGpuDevices();
 }
 
 } // namespace Methane::Graphics

@@ -55,7 +55,7 @@ ProgramVK::~ProgramVK()
 IContextVK& ProgramVK::GetContextVK() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<IContextVK&>(m_context);
+    return static_cast<IContextVK&>(GetContext());
 }
 
 ShaderVK& ProgramVK::GetShaderVK(Shader::Type shader_type) noexcept

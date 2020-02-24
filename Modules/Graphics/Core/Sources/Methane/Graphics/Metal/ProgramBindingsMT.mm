@@ -238,7 +238,7 @@ void ProgramBindingsMT::Apply(CommandListBase& command_list, ApplyBehavior::Mask
     RenderCommandListMT& metal_command_list = static_cast<RenderCommandListMT&>(command_list);
     id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeRenderEncoder();
     
-    for(const auto& binding_by_argument : GetBindingByArgument())
+    for(const auto& binding_by_argument : GetArgumentBindings())
     {
         const Program::Argument& program_argument = binding_by_argument.first;
         const ArgumentBindingMT& metal_argument_binding = static_cast<const ArgumentBindingMT&>(*binding_by_argument.second);

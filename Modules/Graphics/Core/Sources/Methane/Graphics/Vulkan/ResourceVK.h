@@ -36,7 +36,7 @@ struct ResourceContainerVK;
 class ResourceVK : public ResourceBase
 {
 public:
-    class ReleasePoolVK : public ReleasePool
+    class ReleasePoolVK final : public ReleasePool
     {
     public:
         ReleasePoolVK();

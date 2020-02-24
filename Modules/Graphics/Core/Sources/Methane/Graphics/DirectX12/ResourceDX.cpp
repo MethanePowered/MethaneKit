@@ -87,7 +87,7 @@ ResourceDX::ResourceDX(Type type, Usage::Mask usage_mask, ContextBase& context, 
 ResourceDX::~ResourceDX()
 {
     ITT_FUNCTION_TASK();
-    m_context.GetResourceManager().GetReleasePool().AddResource(*this);
+    GetContext().GetResourceManager().GetReleasePool().AddResource(*this);
 }
 
 void ResourceDX::SetName(const std::string& name)
@@ -100,6 +100,13 @@ void ResourceDX::SetName(const std::string& name)
     {
         m_cp_resource->SetName(nowide::widen(name).c_str());
     }
+}
+
+ID3D12Resource& ResourceDX::GetNativeResourceRef() const
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_cp_resource);
+    return *m_cp_resource.Get();
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE ResourceDX::GetNativeCPUDescriptorHandle(const Descriptor& desc) const noexcept
@@ -162,7 +169,7 @@ D3D12_RESOURCE_BARRIER ResourceDX::GetNativeResourceBarrier(const Barrier& resou
 IContextDX& ResourceDX::GetContextDX() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<IContextDX&>(m_context);
+    return static_cast<IContextDX&>(GetContext());
 }
 
 void ResourceDX::InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type, 

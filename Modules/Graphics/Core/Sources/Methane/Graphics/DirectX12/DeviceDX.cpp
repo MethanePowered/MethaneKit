@@ -137,8 +137,8 @@ SystemDX::~SystemDX()
     UnregisterAdapterChangeEvent();
 
     m_cp_factory.Reset();
-    m_devices.clear();
 
+    ClearDevices();
     ReportLiveObjects();
 }
 
@@ -244,8 +244,8 @@ const Ptrs<Device>& SystemDX::UpdateGpuDevices(Device::Feature::Mask supported_f
     assert(m_cp_factory);
 
     const D3D_FEATURE_LEVEL dx_feature_level = D3D_FEATURE_LEVEL_11_0;
-    m_supported_features = supported_features;
-    m_devices.clear();
+    SetGpuSupportedFeatures(supported_features);
+    ClearDevices();
 
     IDXGIAdapter1* p_adapter = nullptr;
     for (UINT adapter_index = 0; DXGI_ERROR_NOT_FOUND != m_cp_factory->EnumAdapters1(adapter_index, &p_adapter); ++adapter_index)
@@ -269,7 +269,7 @@ const Ptrs<Device>& SystemDX::UpdateGpuDevices(Device::Feature::Mask supported_f
         AddDevice(cp_warp_adapter, dx_feature_level);
     }
 
-    return m_devices;
+    return GetGpuDevices();
 }
 
 void SystemDX::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level)
@@ -281,11 +281,10 @@ void SystemDX::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATUR
         return;
 
     Device::Feature::Mask device_supported_features = DeviceDX::GetSupportedFeatures(cp_adapter, feature_level);
-    if (!(device_supported_features & m_supported_features))
+    if (!(device_supported_features & GetGpuSupportedFeatures()))
         return;
 
-    Ptr<Device> sp_device = std::make_shared<DeviceDX>(cp_adapter, feature_level);
-    m_devices.push_back(sp_device);
+    SystemBase::AddDevice(std::make_shared<DeviceDX>(cp_adapter, feature_level));
 }
 
 void SystemDX::ReportLiveObjects()

@@ -49,7 +49,7 @@ Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindi
     return std::make_shared<ProgramBindingsVK::ArgumentBindingVK>(static_cast<const ProgramBindingsVK::ArgumentBindingVK&>(other_argument_binding));
 }
 
-ProgramBindingsVK::ArgumentBindingVK::ArgumentBindingVK(ContextBase& context, SettingsVK settings)
+ProgramBindingsVK::ArgumentBindingVK::ArgumentBindingVK(const ContextBase& context, SettingsVK settings)
     : ArgumentBindingBase(context, settings)
     , m_settings_vk(std::move(settings))
 {
@@ -81,11 +81,11 @@ void ProgramBindingsVK::Apply(CommandListBase& command_list, ApplyBehavior::Mask
 
     RenderCommandListVK& vulkan_command_list = static_cast<RenderCommandListVK&>(command_list);
 
-    for(const auto& binding_by_argument : m_binding_by_argument)
+    for(const auto& binding_by_argument : GetArgumentBindings())
     {
         const ProgramBindingsVK::ArgumentBindingVK& vulkan_argument_binding = static_cast<const ProgramBindingsVK::ArgumentBindingVK&>(*binding_by_argument.second);
         if ((apply_behavior & ApplyBehavior::ConstantOnce || apply_behavior & ApplyBehavior::ChangesOnly) && vulkan_command_list.GetProgramBindings() &&
-            vulkan_argument_binding.IsAlreadyApplied(*m_sp_program, *vulkan_command_list.GetProgramBindings(), apply_behavior & ApplyBehavior::ChangesOnly))
+            vulkan_argument_binding.IsAlreadyApplied(GetProgram(), *vulkan_command_list.GetProgramBindings(), apply_behavior & ApplyBehavior::ChangesOnly))
             continue;
     }
 }

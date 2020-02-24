@@ -82,16 +82,16 @@ RenderCommandListDX::RenderCommandListDX(ParallelRenderCommandListBase& parallel
 void RenderCommandListDX::ResetNative(const Ptr<RenderState>& sp_render_state)
 {
     // Reset command list
-    if (!m_is_committed)
+    if (!IsCommitted())
         return;
 
-    m_is_committed = false;
-
+    SetCommitted(false);
     ResetCommandState();
 
     ID3D12PipelineState* p_dx_initial_state = sp_render_state ? static_cast<RenderStateDX&>(*sp_render_state).GetNativePipelineState().Get() : nullptr;
-    ThrowIfFailed(m_cp_command_allocator->Reset());
-    ThrowIfFailed(m_cp_command_list->Reset(m_cp_command_allocator.Get(), p_dx_initial_state));
+    ID3D12CommandAllocator& dx_cmd_allocator = GetNativeCommandAllocatorRef();
+    ThrowIfFailed(dx_cmd_allocator.Reset());
+    ThrowIfFailed(GetNativeCommandListRef().Reset(&dx_cmd_allocator, p_dx_initial_state));
 
     if (!sp_render_state)
         return;
@@ -112,7 +112,7 @@ void RenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state, const s
     RenderCommandListBase::Reset(sp_render_state, debug_group);
 
     RenderPassDX& pass_dx = GetPassDX();
-    if (m_is_parallel)
+    if (IsParallel())
     {
         pass_dx.SetNativeDescriptorHeaps(*this);
         pass_dx.SetNativeRenderTargets(*this);
@@ -141,8 +141,7 @@ void RenderCommandListDX::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
         vertex_buffer_views.push_back(dx_vertex_buffer.GetNativeView());
     }
 
-    assert(m_cp_command_list);
-    m_cp_command_list->IASetVertexBuffers(0, static_cast<UINT>(vertex_buffer_views.size()), vertex_buffer_views.data());
+    GetNativeCommandListRef().IASetVertexBuffers(0, static_cast<UINT>(vertex_buffer_views.size()), vertex_buffer_views.data());
 }
 
 void RenderCommandListDX::DrawIndexed(Primitive primitive, Buffer& index_buffer,
@@ -159,19 +158,18 @@ void RenderCommandListDX::DrawIndexed(Primitive primitive, Buffer& index_buffer,
 
     RenderCommandListBase::DrawIndexed(primitive, index_buffer, index_count, start_index, start_vertex, instance_count, start_instance);
 
-    assert(m_cp_command_list);
-
+    ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
     DrawingState& drawing_state = GetDrawingState();
     if (drawing_state.flags.primitive_type_changed)
     {
         const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
-        m_cp_command_list->IASetPrimitiveTopology(primitive_topology);
+        dx_command_list.IASetPrimitiveTopology(primitive_topology);
     }
     if (drawing_state.flags.index_buffer_changed)
     {
-        m_cp_command_list->IASetIndexBuffer(&dx_index_buffer.GetNativeView());
+        dx_command_list.IASetIndexBuffer(&dx_index_buffer.GetNativeView());
     }
-    m_cp_command_list->DrawIndexedInstanced(index_count, instance_count, start_index, start_vertex, start_instance);
+    dx_command_list.DrawIndexedInstanced(index_count, instance_count, start_index, start_vertex, start_instance);
 }
 
 void RenderCommandListDX::Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
@@ -181,21 +179,20 @@ void RenderCommandListDX::Draw(Primitive primitive, uint32_t vertex_count, uint3
 
     RenderCommandListBase::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
 
-    assert(m_cp_command_list);
-
+    ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
     if (GetDrawingState().flags.primitive_type_changed)
     {
         const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
-        m_cp_command_list->IASetPrimitiveTopology(primitive_topology);
+        dx_command_list.IASetPrimitiveTopology(primitive_topology);
     }
-    m_cp_command_list->DrawInstanced(vertex_count, instance_count, start_vertex, start_instance);
+    dx_command_list.DrawInstanced(vertex_count, instance_count, start_vertex, start_instance);
 }
 
 void RenderCommandListDX::Commit()
 {
     ITT_FUNCTION_TASK();
 
-    if (!m_is_parallel)
+    if (!IsParallel())
     {
         RenderPassDX& pass_dx = GetPassDX();
         if (pass_dx.IsBegun())

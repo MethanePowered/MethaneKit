@@ -93,12 +93,13 @@ void ConstantBufferDX::InitializeView()
 {
     ITT_FUNCTION_TASK();
 
-    const Data::Size data_size     = GetDataSize();
+    const Data::Size data_size   = GetDataSize();
     m_buffer_view.BufferLocation = GetNativeGpuAddress();
     m_buffer_view.SizeInBytes    = static_cast<UINT>(data_size);
 
     // NOTE: Addressable resources are bound to pipeline using GPU Address and byte offset
-    if (m_usage_mask & Usage::ShaderRead && !(m_usage_mask & Usage::Addressable))
+    const Usage::Mask usage_mask = GetUsageMask();
+    if (usage_mask & Usage::ShaderRead && !(usage_mask & Usage::Addressable))
     {
         D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle = GetNativeCPUDescriptorHandle(Usage::ShaderRead);
         GetContextDX().GetDeviceDX().GetNativeDevice()->CreateConstantBufferView(&m_buffer_view, cpu_handle);

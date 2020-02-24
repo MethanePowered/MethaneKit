@@ -174,6 +174,13 @@ const Program& ProgramBindingsBase::GetProgram() const
     return *m_sp_program;
 }
 
+Program& ProgramBindingsBase::GetProgram()
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_sp_program);
+    return *m_sp_program;
+}
+
 void ProgramBindingsBase::ReserveDescriptorHeapRanges()
 {
     ITT_FUNCTION_TASK();
@@ -340,6 +347,13 @@ void ProgramBindingsBase::VerifyAllArgumentsAreBoundToResources()
                                  "\" are not bound to any resource:\n" + missing_args);
     }
 #endif
+}
+
+const std::optional<DescriptorHeap::Reservation>& ProgramBindingsBase::GetDescriptorHeapReservationByType(DescriptorHeap::Type heap_type) const
+{
+    ITT_FUNCTION_TASK();
+    assert(heap_type != DescriptorHeap::Type::Undefined);
+    return m_descriptor_heap_reservations_by_type[static_cast<uint32_t>(heap_type)];
 }
 
 } // namespace Methane::Graphics

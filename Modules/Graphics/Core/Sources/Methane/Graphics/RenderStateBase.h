@@ -53,6 +53,9 @@ public:
     Ptr<RenderStateBase> GetPtr()           { return shared_from_this(); }
     RenderContextBase&   GetRenderContext() { return m_context; }
 
+protected:
+    Program& GetProgram();
+
 private:
     RenderContextBase& m_context;
     Settings           m_settings;

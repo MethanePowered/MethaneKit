@@ -82,7 +82,7 @@ bool RenderPass::Settings::operator!=(const Settings& other) const
 }
 
 RenderPassBase::RenderPassBase(RenderContextBase& context, const Settings& settings)
-    : m_context(context)
+    : m_render_context(context)
     , m_settings(settings)
 {
     ITT_FUNCTION_TASK();

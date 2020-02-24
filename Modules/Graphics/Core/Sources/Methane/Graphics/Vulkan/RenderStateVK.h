@@ -32,7 +32,7 @@ namespace Methane::Graphics
 
 struct IContextVK;
 
-class RenderStateVK : public RenderStateBase
+class RenderStateVK final : public RenderStateBase
 {
 public:
     RenderStateVK(RenderContextBase& context, const Settings& settings);

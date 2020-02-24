@@ -50,13 +50,13 @@ public:
     void SetName(const std::string& name) override;
 
     IContextDX& GetContextDX() noexcept;
-
-    wrl::ComPtr<ID3D12CommandQueue>& GetNativeCommandQueue()     { return m_cp_command_queue; }
+    ID3D12CommandQueue& GetNativeCommandQueue();
 
 protected:
     using D3D12CommandLists = std::vector<ID3D12CommandList*>;
     static D3D12CommandLists GetNativeCommandLists(const Refs<CommandList>& command_list_refs);
 
+private:
     wrl::ComPtr<ID3D12CommandQueue> m_cp_command_queue;
 };
 

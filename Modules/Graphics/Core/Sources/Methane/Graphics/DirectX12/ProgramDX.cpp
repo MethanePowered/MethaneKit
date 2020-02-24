@@ -107,7 +107,7 @@ ProgramDX::ProgramDX(ContextBase& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
 
-    InitArgumentBindings(m_settings.argument_descriptions);
+    InitArgumentBindings(settings.argument_descriptions);
     InitRootSignature();
 }
 
@@ -136,15 +136,16 @@ void ProgramDX::InitRootSignature()
     std::vector<CD3DX12_DESCRIPTOR_RANGE1> descriptor_ranges;
     std::vector<CD3DX12_ROOT_PARAMETER1>   root_parameters;
 
-    descriptor_ranges.reserve(m_binding_by_argument.size());
-    root_parameters.reserve(m_binding_by_argument.size());
+    const ProgramBindings::ArgumentBindings& binding_by_argument = GetArgumentBindings();
+    descriptor_ranges.reserve(binding_by_argument.size());
+    root_parameters.reserve(binding_by_argument.size());
 
     std::map<DescriptorHeap::Type, DescriptorOffsets> descriptor_offset_by_heap_type;
-    for (auto& binding_by_argument : m_binding_by_argument)
+    for (auto& argument_and_binding : binding_by_argument)
     {
-        assert(!!binding_by_argument.second);
-        const Argument&                    shader_argument = binding_by_argument.first;
-        ArgumentBindingDX&                argument_binding = static_cast<ArgumentBindingDX&>(*binding_by_argument.second);
+        assert(!!argument_and_binding.second);
+        const Argument&                    shader_argument = argument_and_binding.first;
+        ArgumentBindingDX&                argument_binding = static_cast<ArgumentBindingDX&>(*argument_and_binding.second);
         const ArgumentBindingDX::SettingsDX& bind_settings = argument_binding.GetSettingsDX();
         const D3D12_SHADER_VISIBILITY    shader_visibility = GetShaderVisibilityByType(shader_argument.shader_type);
 
@@ -202,13 +203,13 @@ void ProgramDX::InitRootSignature()
 IContextDX& ProgramDX::GetContextDX() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<IContextDX&>(m_context);
+    return static_cast<IContextDX&>(GetContext());
 }
 
 const IContextDX& ProgramDX::GetContextDX() const noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<const IContextDX&>(m_context);
+    return static_cast<const IContextDX&>(GetContext());
 }
 
 ShaderDX& ProgramDX::GetVertexShaderDX() noexcept

@@ -64,16 +64,16 @@ void RenderStateVK::Reset(const Settings& settings)
     }
 
     RenderStateBase::Reset(settings);
-    
-    ProgramVK& vulkan_program = static_cast<ProgramVK&>(*m_settings.sp_program);
 
-    if (!m_settings.viewports.empty())
+    ProgramVK& vulkan_program = static_cast<ProgramVK&>(*settings.sp_program);
+
+    if (!settings.viewports.empty())
     {
-        SetViewports(m_settings.viewports);
+        SetViewports(settings.viewports);
     }
-    if (!m_settings.scissor_rects.empty())
+    if (!settings.scissor_rects.empty())
     {
-        SetScissorRects(m_settings.scissor_rects);
+        SetScissorRects(settings.scissor_rects);
     }
     
     ResetNativeState();
@@ -115,7 +115,7 @@ void RenderStateVK::ResetNativeState()
 IContextVK& RenderStateVK::GetContextVK() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<IContextVK&>(m_context);
+    return static_cast<IContextVK&>(GetRenderContext());
 }
 
 } // namespace Methane::Graphics

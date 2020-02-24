@@ -35,7 +35,7 @@ namespace Methane::Graphics
 
 class RenderCommandListDX;
 
-class RenderPassDX : public RenderPassBase
+class RenderPassDX final : public RenderPassBase
 {
 public:
     RenderPassDX(RenderContextBase& context, const Settings& settings);

@@ -35,13 +35,9 @@ class CommandQueueDX;
 
 struct ICommandListDX
 {
-    virtual CommandQueueDX& GetCommandQueueDX() = 0;
-
-    virtual const wrl::ComPtr<ID3D12GraphicsCommandList>& GetNativeCommandList() const = 0;
-    virtual wrl::ComPtr<ID3D12GraphicsCommandList>&       GetNativeCommandList() = 0;
-
-    virtual const wrl::ComPtr<ID3D12GraphicsCommandList4>& GetNativeCommandList4() const = 0;
-    virtual wrl::ComPtr<ID3D12GraphicsCommandList4>&       GetNativeCommandList4() = 0;
+    virtual CommandQueueDX&             GetCommandQueueDX() = 0;
+    virtual ID3D12GraphicsCommandList&  GetNativeCommandList() const = 0;
+    virtual ID3D12GraphicsCommandList4* GetNativeCommandList4() const = 0;
 
     virtual ~ICommandListDX() = default;
 };

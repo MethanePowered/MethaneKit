@@ -30,7 +30,7 @@ namespace Methane::Graphics
 
 struct IContextVK;
 
-class SamplerVK : public SamplerBase
+class SamplerVK final : public SamplerBase
 {
 public:
     SamplerVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);

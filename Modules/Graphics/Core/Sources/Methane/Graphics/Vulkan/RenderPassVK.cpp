@@ -41,16 +41,13 @@ RenderPassVK::RenderPassVK(RenderContextBase& context, const Settings& settings)
     : RenderPassBase(context, settings)
 {
     ITT_FUNCTION_TASK();
-
     Reset();
 }
 
 void RenderPassVK::Update(const Settings& settings)
 {
     ITT_FUNCTION_TASK();
-
-    m_settings = settings;
-
+    RenderPassBase::Update(settings);
     Reset();
 }
 
@@ -59,7 +56,7 @@ void RenderPassVK::Reset()
     ITT_FUNCTION_TASK();
 
     uint32_t color_attach_index = 0;
-    for(ColorAttachment& color_attach : m_settings.color_attachments)
+    for(const ColorAttachment& color_attach : GetSettings().color_attachments)
     {
         if (color_attach.wp_texture.expired())
         {
@@ -79,7 +76,7 @@ void RenderPassVK::Reset()
 IContextVK& RenderPassVK::GetContextVK() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<IContextVK&>(m_context);
+    return static_cast<IContextVK&>(GetRenderContext());
 }
 
 } // namespace Methane::Graphics

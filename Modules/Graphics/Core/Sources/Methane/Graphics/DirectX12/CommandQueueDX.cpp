@@ -91,12 +91,12 @@ CommandQueueDX::D3D12CommandLists CommandQueueDX::GetNativeCommandLists(const Re
         {
         case CommandList::Type::Blit:
         {
-            dx_command_lists.push_back(static_cast<BlitCommandListDX&>(command_list).GetNativeCommandList().Get());
+            dx_command_lists.push_back(&static_cast<BlitCommandListDX&>(command_list).GetNativeCommandList());
         } break;
 
         case CommandList::Type::Render:
         {
-            dx_command_lists.push_back(static_cast<RenderCommandListDX&>(command_list).GetNativeCommandList().Get());
+            dx_command_lists.push_back(&static_cast<RenderCommandListDX&>(command_list).GetNativeCommandList());
         } break;
 
         case CommandList::Type::ParallelRender:
@@ -112,7 +112,14 @@ CommandQueueDX::D3D12CommandLists CommandQueueDX::GetNativeCommandLists(const Re
 IContextDX& CommandQueueDX::GetContextDX() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<IContextDX&>(m_context);
+    return static_cast<IContextDX&>(GetContext());
+}
+
+ID3D12CommandQueue& CommandQueueDX::GetNativeCommandQueue()
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_cp_command_queue);
+    return *m_cp_command_queue.Get();
 }
 
 } // namespace Methane::Graphics

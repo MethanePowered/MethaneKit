@@ -30,7 +30,7 @@ namespace Methane::Graphics
 
 class ContextBase;
 
-class DescriptorHeapVK : public DescriptorHeap
+class DescriptorHeapVK final : public DescriptorHeap
 {
 public:
     DescriptorHeapVK(ContextBase& context, const Settings& settings);

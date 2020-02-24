@@ -83,7 +83,7 @@ BufferVK::BufferVK(ContextBase& context, const Settings& settings, Data::Size st
 BufferVK::~BufferVK()
 {
     ITT_FUNCTION_TASK();
-    m_context.GetResourceManager().GetReleasePool().AddResource(*this);
+    GetContext().GetResourceManager().GetReleasePool().AddResource(*this);
 }
 
 void BufferVK::SetName(const std::string& name)

@@ -68,11 +68,9 @@ void FenceDX::Signal()
 
     FenceBase::Signal();
 
-    wrl::ComPtr<ID3D12CommandQueue>& cp_command_queue = GetCommandQueueDX().GetNativeCommandQueue();
-    assert(!!cp_command_queue);
     assert(!!m_cp_fence);
-
-    ThrowIfFailed(cp_command_queue->Signal(m_cp_fence.Get(), GetValue()));
+    ID3D12CommandQueue& dx_command_queue = GetCommandQueueDX().GetNativeCommandQueue();
+    ThrowIfFailed(dx_command_queue.Signal(m_cp_fence.Get(), GetValue()));
 }
 
 void FenceDX::Wait()

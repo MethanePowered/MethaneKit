@@ -40,7 +40,7 @@ class DescriptorHeapDX;
 class ResourceDX : public ResourceBase
 {
 public:
-    class ReleasePoolDX : public ResourceBase::ReleasePool
+    class ReleasePoolDX final : public ReleasePool
     {
     public:
         ReleasePoolDX() = default;
@@ -75,6 +75,7 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
+    ID3D12Resource&                     GetNativeResourceRef() const;
     ID3D12Resource*                     GetNativeResource() const noexcept                                  { return m_cp_resource.Get(); }
     const wrl::ComPtr<ID3D12Resource>&  GetNativeResourceComPtr() const noexcept                            { return m_cp_resource; }
     D3D12_GPU_VIRTUAL_ADDRESS           GetNativeGpuAddress() const noexcept                                { return m_cp_resource ? m_cp_resource->GetGPUVirtualAddress() : 0; }
@@ -93,6 +94,7 @@ protected:
                                      D3D12_RESOURCE_STATES resource_state, const D3D12_CLEAR_VALUE* p_clear_value = nullptr);
     void InitializeFrameBufferResource(uint32_t frame_buffer_index);
 
+private:
     wrl::ComPtr<ID3D12Resource> m_cp_resource;
 };
 

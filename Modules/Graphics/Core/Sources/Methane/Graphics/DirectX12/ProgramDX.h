@@ -57,7 +57,7 @@ public:
     IContextDX& GetContextDX() noexcept;
     const IContextDX& GetContextDX() const noexcept;
 
-protected:
+private:
     void InitRootSignature();
 
     wrl::ComPtr<ID3D12RootSignature>      m_cp_root_signature;

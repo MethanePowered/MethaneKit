@@ -49,19 +49,12 @@ public:
         ITT_FUNCTION_TASK();
     }
 
-    ~ContextDX() override
-    {
-        ITT_FUNCTION_TASK();
-    }
-
     // ContextBase interface
 
     void Release() override
     {
         ITT_FUNCTION_TASK();
-
         GetMutableDeviceDX().ReleaseNativeDevice();
-
         ContextBaseT::Release();
         static_cast<SystemDX&>(System::Get()).ReportLiveObjects();
     }

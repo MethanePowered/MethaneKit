@@ -30,7 +30,7 @@ namespace Methane::Graphics
 
 struct IContextVK;
 
-class RenderPassVK : public RenderPassBase
+class RenderPassVK final : public RenderPassBase
 {
 public:
     RenderPassVK(RenderContextBase& context, const Settings& settings);

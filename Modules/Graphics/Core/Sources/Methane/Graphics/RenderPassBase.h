@@ -46,13 +46,16 @@ public:
     virtual void Begin(RenderCommandListBase& command_list);
     virtual void End(RenderCommandListBase& command_list);
 
-    RenderContextBase&  GetContext()        { return m_context; }
     Ptr<RenderPassBase> GetPtr()            { return shared_from_this(); }
     Refs<Resource>      GetColorAttachmentResources() const;
     bool                IsBegun() const     { return m_is_begun; }
 
+protected:
+    RenderContextBase&        GetRenderContext()        { return m_render_context; }
+    const RenderContextBase&  GetRenderContext() const  { return m_render_context; }
+
 private:
-    RenderContextBase& m_context;
+    RenderContextBase& m_render_context;
     Settings           m_settings;
     bool               m_is_begun = false;
 };

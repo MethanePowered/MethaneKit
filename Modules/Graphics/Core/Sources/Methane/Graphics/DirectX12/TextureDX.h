@@ -69,10 +69,11 @@ public:
     Data::Size GetDataSize() const override
     {
         ITT_FUNCTION_TASK();
-        return m_settings.dimensions.GetPixelsCount() * GetPixelSize(m_settings.pixel_format);
+        const Settings& settings = GetSettings();
+        return settings.dimensions.GetPixelsCount() * GetPixelSize(settings.pixel_format);
     }
 
-protected:
+private:
     void Initialize(ExtraArgs...);
 };
 

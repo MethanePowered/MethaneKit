@@ -57,7 +57,7 @@ public:
     void InitializeNativePipelineState();
     wrl::ComPtr<ID3D12PipelineState>& GetNativePipelineState();
 
-protected:
+private:
     ProgramDX& GetProgramDX();
     RenderContextDX& GetRenderContextDX();
 

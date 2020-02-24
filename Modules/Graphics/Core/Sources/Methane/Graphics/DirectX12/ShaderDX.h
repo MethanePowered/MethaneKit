@@ -51,7 +51,7 @@ public:
     const wrl::ComPtr<ID3DBlob>&          GetNativeByteCode() const noexcept { return m_cp_byte_code; }
     std::vector<D3D12_INPUT_ELEMENT_DESC> GetNativeProgramInputLayout(const ProgramDX& program) const;
 
-protected:
+private:
     IContextDX& GetContextDX() noexcept;
 
     wrl::ComPtr<ID3DBlob>               m_cp_byte_code;

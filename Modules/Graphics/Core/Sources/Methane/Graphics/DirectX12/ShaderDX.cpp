@@ -202,21 +202,21 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
 #endif
 
     std::vector<D3D_SHADER_MACRO> macro_definitions;
-    for (const auto& definition : m_settings.compile_definitions)
+    for (const auto& definition : settings.compile_definitions)
     {
         macro_definitions.push_back({ definition.first.c_str(), definition.second.c_str() });
     }
     macro_definitions.push_back({ nullptr, nullptr });
 
     wrl::ComPtr<ID3DBlob> error_blob;
-    if (!m_settings.source_file_path.empty())
+    if (!settings.source_file_path.empty())
     {
         ThrowIfFailed(D3DCompileFromFile(
-            nowide::widen(m_settings.source_file_path).c_str(),
+            nowide::widen(settings.source_file_path).c_str(),
             macro_definitions.data(),
             D3D_COMPILE_STANDARD_FILE_INCLUDE,
-            m_settings.entry_function.function_name.c_str(),
-            m_settings.source_compile_target.c_str(),
+            settings.entry_function.function_name.c_str(),
+            settings.source_compile_target.c_str(),
             shader_compile_flags,
             0,
             &m_cp_byte_code,
@@ -226,7 +226,7 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
     else
     {
         const std::string compiled_func_name = GetCompiledEntryFunctionName();
-        const Data::Chunk compiled_func_data = m_settings.data_provider.GetData(compiled_func_name + ".obj");
+        const Data::Chunk compiled_func_data = settings.data_provider.GetData(compiled_func_name + ".obj");
 
         ThrowIfFailed(D3DCreateBlob(compiled_func_data.size, &m_cp_byte_code));
         Data::RawPtr p_cp_byte_code_data = static_cast<Data::RawPtr>(m_cp_byte_code->GetBufferPointer());
@@ -260,7 +260,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
         D3D12_SHADER_INPUT_BIND_DESC binding_desc = { };
         ThrowIfFailed(m_cp_reflection->GetResourceBindingDesc(resource_index, &binding_desc));
 
-        const Program::Argument shader_argument(m_type, binding_desc.Name);
+        const Program::Argument shader_argument(GetType(), binding_desc.Name);
         const auto argument_desc_it = Program::FindArgumentDescription(argument_descriptions, shader_argument);
         const Program::ArgumentDesc argument_desc = argument_desc_it == argument_descriptions.end()
                                                   ? Program::ArgumentDesc(shader_argument)
@@ -271,7 +271,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
                                                   : ProgramBindingsDX::ArgumentBindingDX::Type::DescriptorTable;
 
         argument_bindings.push_back(std::make_shared<ProgramBindingsDX::ArgumentBindingDX>(
-            m_context,
+            GetContext(),
             ProgramBindingsDX::ArgumentBindingDX::SettingsDX
             {
                 {
@@ -384,7 +384,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
 IContextDX& ShaderDX::GetContextDX() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<IContextDX&>(m_context);
+    return static_cast<IContextDX&>(GetContext());
 }
 
 } // namespace Methane::Graphics

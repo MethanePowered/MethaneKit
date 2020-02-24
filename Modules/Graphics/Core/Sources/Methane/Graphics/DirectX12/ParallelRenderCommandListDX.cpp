@@ -132,17 +132,18 @@ ParallelRenderCommandListDX::D3D12CommandLists ParallelRenderCommandListDX::GetN
     ITT_FUNCTION_TASK();
 
     D3D12CommandLists dx_command_lists;
-    dx_command_lists.reserve(m_parallel_command_lists.size() + 2); // 2 command lists reserved for beginning and ending
-    dx_command_lists.push_back(m_begining_command_list.GetNativeCommandList().Get());
+    const Ptrs<RenderCommandList>& parallel_command_lists = GetParallelCommandLists();
+    dx_command_lists.reserve(parallel_command_lists.size() + 2); // 2 command lists reserved for beginning and ending
+    dx_command_lists.push_back(&m_begining_command_list.GetNativeCommandList());
 
-    for (const Ptr<RenderCommandList>& sp_command_list : m_parallel_command_lists)
+    for (const Ptr<RenderCommandList>& sp_command_list : parallel_command_lists)
     {
         assert(!!sp_command_list);
         RenderCommandListDX& dx_command_list = static_cast<RenderCommandListDX&>(*sp_command_list);
-        dx_command_lists.push_back(dx_command_list.GetNativeCommandList().Get());
+        dx_command_lists.push_back(&dx_command_list.GetNativeCommandList());
     }
 
-    dx_command_lists.push_back(m_ending_command_list.GetNativeCommandList().Get());
+    dx_command_lists.push_back(&m_ending_command_list.GetNativeCommandList());
     return dx_command_lists;
 }
 

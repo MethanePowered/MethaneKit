@@ -67,7 +67,7 @@ ResourceVK::ResourceVK(Type type, Usage::Mask usage_mask, ContextBase& context, 
 IContextVK& ResourceVK::GetContextVK() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<IContextVK&>(m_context);
+    return static_cast<IContextVK&>(GetContext());
 }
 
 } // namespace Methane::Graphics

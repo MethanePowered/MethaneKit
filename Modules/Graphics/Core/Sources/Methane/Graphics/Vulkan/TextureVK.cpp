@@ -82,9 +82,9 @@ TextureVK::~TextureVK()
 {
     ITT_FUNCTION_TASK();
 
-    if (m_settings.type != Texture::Type::FrameBuffer)
+    if (GetSettings().type != Texture::Type::FrameBuffer)
     {
-        m_context.GetResourceManager().GetReleasePool().AddResource(*this);
+        GetContext().GetResourceManager().GetReleasePool().AddResource(*this);
     }
 }
 
@@ -104,7 +104,7 @@ void TextureVK::SetData(const SubResources& sub_resources)
         throw std::invalid_argument("Can not set texture data from empty sub-resources.");
     }
     
-    if (m_settings.mipmapped && sub_resources.size() < GetRequiredSubresourceCount())
+    if (GetSettings().mipmapped && sub_resources.size() < GetRequiredSubresourceCount())
     {
         GenerateMipLevels();
     }
@@ -120,7 +120,7 @@ void TextureVK::UpdateFrameBuffer()
 {
     ITT_FUNCTION_TASK();
 
-    if (m_settings.type != Texture::Type::FrameBuffer)
+    if (GetSettings().type != Texture::Type::FrameBuffer)
     {
         throw std::logic_error("Unable to update frame buffer on non-FB texture.");
     }

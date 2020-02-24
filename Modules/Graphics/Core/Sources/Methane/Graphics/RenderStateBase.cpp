@@ -187,4 +187,11 @@ void RenderStateBase::SetScissorRects(const ScissorRects& scissor_rects)
     m_settings.scissor_rects = scissor_rects;
 }
 
+Program& RenderStateBase::GetProgram()
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_settings.sp_program);
+    return *m_settings.sp_program;
+}
+
 } // namespace Methane::Graphics

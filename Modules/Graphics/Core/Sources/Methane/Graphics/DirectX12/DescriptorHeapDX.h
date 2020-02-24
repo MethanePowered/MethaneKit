@@ -35,7 +35,7 @@ namespace wrl = Microsoft::WRL;
 
 struct IContextDX;
 
-class DescriptorHeapDX : public DescriptorHeap
+class DescriptorHeapDX final : public DescriptorHeap
 {
 public:
     DescriptorHeapDX(ContextBase& context, const Settings& settings);
@@ -52,6 +52,7 @@ public:
 protected:
     IContextDX& GetContextDX() noexcept;
 
+private:
     D3D12_DESCRIPTOR_HEAP_TYPE        m_descriptor_heap_type;
     uint32_t                          m_descriptor_size;
     wrl::ComPtr<ID3D12DescriptorHeap> m_cp_descriptor_heap;

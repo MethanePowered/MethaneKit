@@ -150,16 +150,31 @@ public:
     }
 
     // ICommandListDX interface
-
-    CommandQueueDX& GetCommandQueueDX() override { return static_cast<CommandQueueDX&>(GetCommandQueueBase()); }
-
-    const wrl::ComPtr<ID3D12GraphicsCommandList>&  GetNativeCommandList() const override  { return m_cp_command_list; }
-    wrl::ComPtr<ID3D12GraphicsCommandList>&        GetNativeCommandList() override        { return m_cp_command_list; }
-
-    const wrl::ComPtr<ID3D12GraphicsCommandList4>& GetNativeCommandList4() const override { return m_cp_command_list_4; }
-    wrl::ComPtr<ID3D12GraphicsCommandList4>&       GetNativeCommandList4() override       { return m_cp_command_list_4; }
+    CommandQueueDX&             GetCommandQueueDX() override           { return static_cast<CommandQueueDX&>(GetCommandQueueBase()); }
+    ID3D12GraphicsCommandList&  GetNativeCommandList() const override
+    {
+        assert(!!m_cp_command_list);
+        return *m_cp_command_list.Get();
+    }
+    ID3D12GraphicsCommandList4* GetNativeCommandList4() const override { return m_cp_command_list_4.Get(); }
 
 protected:
+    bool IsCommitted() const             { return m_is_committed; }
+    void SetCommitted(bool is_committed) { m_is_committed = is_committed; }
+
+    ID3D12CommandAllocator& GetNativeCommandAllocatorRef()
+    {
+        assert(!!m_cp_command_allocator);
+        return *m_cp_command_allocator.Get();
+    }
+
+    ID3D12GraphicsCommandList& GetNativeCommandListRef()
+    {
+        assert(!!m_cp_command_list);
+        return *m_cp_command_list.Get();
+    }
+
+private:
     wrl::ComPtr<ID3D12CommandAllocator>       m_cp_command_allocator;
     wrl::ComPtr<ID3D12GraphicsCommandList>    m_cp_command_list;
     wrl::ComPtr<ID3D12GraphicsCommandList4>   m_cp_command_list_4;    // extended interface for the same command list (may be unavailable on older Windows)

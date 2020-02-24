@@ -31,7 +31,7 @@ Vulkan implementation of the render context interface.
 namespace Methane::Graphics
 {
 
-class RenderContextVK : public ContextVK<RenderContextBase>
+class RenderContextVK final : public ContextVK<RenderContextBase>
 {
 public:
     RenderContextVK(const Platform::AppEnvironment& env, DeviceBase& device, const RenderContext::Settings& settings);

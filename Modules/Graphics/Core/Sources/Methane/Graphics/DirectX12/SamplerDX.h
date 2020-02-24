@@ -40,7 +40,6 @@ class SamplerDX final : public SamplerBase
 public:
     SamplerDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
-protected:
     // NOTE: SamplerBase descriptor is stored in heap
 };
 

@@ -53,7 +53,7 @@ public:
     using D3D12CommandLists = std::vector<ID3D12CommandList*>;
     D3D12CommandLists GetNativeCommandLists() const;
 
-protected:
+private:
     CommandQueueDX& GetCommandQueueDX();
     RenderPassDX&   GetPassDX();
 

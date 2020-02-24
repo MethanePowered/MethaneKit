@@ -185,16 +185,16 @@ SamplerDX::SamplerDX(ContextBase& context, const Settings& settings, const Descr
     InitializeDefaultDescriptors();
 
     D3D12_SAMPLER_DESC dx_sampler_desc = {};
-    dx_sampler_desc.Filter             = ConvertFilterToDX(m_settings.filter);
-    dx_sampler_desc.AddressU           = ConvertAddressModeToDX(m_settings.address.r);
-    dx_sampler_desc.AddressV           = ConvertAddressModeToDX(m_settings.address.s);
-    dx_sampler_desc.AddressW           = ConvertAddressModeToDX(m_settings.address.t);
-    dx_sampler_desc.MinLOD             = m_settings.lod.min;
-    dx_sampler_desc.MaxLOD             = m_settings.lod.max;
-    dx_sampler_desc.MipLODBias         = m_settings.lod.bias;
+    dx_sampler_desc.Filter             = ConvertFilterToDX(settings.filter);
+    dx_sampler_desc.AddressU           = ConvertAddressModeToDX(settings.address.r);
+    dx_sampler_desc.AddressV           = ConvertAddressModeToDX(settings.address.s);
+    dx_sampler_desc.AddressW           = ConvertAddressModeToDX(settings.address.t);
+    dx_sampler_desc.MinLOD             = settings.lod.min;
+    dx_sampler_desc.MaxLOD             = settings.lod.max;
+    dx_sampler_desc.MipLODBias         = settings.lod.bias;
     dx_sampler_desc.MaxAnisotropy      = 0;
-    dx_sampler_desc.ComparisonFunc     = TypeConverterDX::CompareFunctionToDX(m_settings.compare_function);
-    ConvertBorderColorToDXColor(m_settings.border_color, &dx_sampler_desc.BorderColor[0]);
+    dx_sampler_desc.ComparisonFunc     = TypeConverterDX::CompareFunctionToDX(settings.compare_function);
+    ConvertBorderColorToDXColor(settings.border_color, &dx_sampler_desc.BorderColor[0]);
 
     GetContextDX().GetDeviceDX().GetNativeDevice()->CreateSampler(&dx_sampler_desc, GetNativeCPUDescriptorHandle(Usage::ShaderRead));
 }

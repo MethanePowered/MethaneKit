@@ -57,7 +57,7 @@ Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindi
     return std::make_shared<ProgramBindingsDX::ArgumentBindingDX>(static_cast<const ProgramBindingsDX::ArgumentBindingDX&>(other_argument_binding));
 }
 
-ProgramBindingsDX::ArgumentBindingDX::ArgumentBindingDX(ContextBase& context, SettingsDX settings)
+ProgramBindingsDX::ArgumentBindingDX::ArgumentBindingDX(const ContextBase& context, SettingsDX settings)
     : ProgramBindingsBase::ArgumentBindingBase(context, settings)
     , m_settings_dx(std::move(settings))
 {
@@ -102,7 +102,7 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
     const D3D12_DESCRIPTOR_HEAP_TYPE native_heap_type = p_dx_descriptor_heap
                                                       ? p_dx_descriptor_heap->GetNativeDescriptorHeapType()
                                                       : D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    const wrl::ComPtr<ID3D12Device>& cp_native_device = static_cast<IContextDX&>(GetContext()).GetDeviceDX().GetNativeDevice();
+    const wrl::ComPtr<ID3D12Device>& cp_native_device = static_cast<const IContextDX&>(GetContext()).GetDeviceDX().GetNativeDevice();
     assert(!!cp_native_device);
 
     uint32_t resource_index = 0;
@@ -187,7 +187,7 @@ void ProgramBindingsDX::Initialize()
 {
     ITT_FUNCTION_TASK();
 
-    ResourceManager& resource_manager = static_cast<ProgramBase&>(*m_sp_program).GetContext().GetResourceManager();
+    ResourceManager& resource_manager = static_cast<ProgramBase&>(GetProgram()).GetContext().GetResourceManager();
     if (resource_manager.DeferredHeapAllocationEnabled())
     {
         resource_manager.DeferProgramBindingsInitialization(*this);
@@ -217,10 +217,7 @@ void ProgramBindingsDX::Apply(CommandListBase& command_list, ApplyBehavior::Mask
     const ProgramBindingsBase* p_applied_program_bindings = command_list.GetProgramBindings();
     const bool           apply_constant_resource_bindings = apply_behavior & ~ApplyBehavior::ConstantOnce || !p_applied_program_bindings;
 
-    wrl::ComPtr<ID3D12GraphicsCommandList>& cp_d3d12_command_list = command_list_dx.GetNativeCommandList();
-    assert(!!cp_d3d12_command_list);
-
-    ID3D12GraphicsCommandList& d3d12_command_list = *cp_d3d12_command_list.Get();
+    ID3D12GraphicsCommandList& d3d12_command_list = command_list_dx.GetNativeCommandList();
 
     // Set resource transition barriers before applying resource bindings
     if (apply_behavior & ApplyBehavior::StateBarriers)
@@ -244,7 +241,7 @@ void ProgramBindingsDX::Apply(CommandListBase& command_list, ApplyBehavior::Mask
     for(const RootParameterBinding& root_parameter_binding : m_variadic_root_parameter_bindings)
     {
         if (apply_behavior & ApplyBehavior::ChangesOnly && p_applied_program_bindings &&
-            root_parameter_binding.argument_binding.IsAlreadyApplied(*m_sp_program, *p_applied_program_bindings))
+            root_parameter_binding.argument_binding.IsAlreadyApplied(GetProgram(), *p_applied_program_bindings))
             continue;
 
         ApplyRootParameterBinding(root_parameter_binding, d3d12_command_list);
@@ -255,7 +252,7 @@ void ProgramBindingsDX::ForEachArgumentBinding(const ArgumentBindingFunc& argume
 {
     ITT_FUNCTION_TASK();
 
-    for (auto& binding_by_argument : m_binding_by_argument)
+    for (auto& binding_by_argument : GetArgumentBindings())
     {
         assert(!!binding_by_argument.second);
 
@@ -265,7 +262,7 @@ void ProgramBindingsDX::ForEachArgumentBinding(const ArgumentBindingFunc& argume
 
         if (descriptor_range.heap_type != DescriptorHeap::Type::Undefined)
         {
-            const std::optional<DescriptorHeap::Reservation>& descriptor_heap_reservation_opt = m_descriptor_heap_reservations_by_type[static_cast<uint32_t>(descriptor_range.heap_type)];
+            const std::optional<DescriptorHeap::Reservation>& descriptor_heap_reservation_opt = GetDescriptorHeapReservationByType(descriptor_range.heap_type);
             if (descriptor_heap_reservation_opt)
             {
                 p_heap_reservation = &*descriptor_heap_reservation_opt;
@@ -406,8 +403,7 @@ void ProgramBindingsDX::CopyDescriptorsToGpu()
 {
     ITT_FUNCTION_TASK();
 
-    assert(!!m_sp_program);
-    const wrl::ComPtr<ID3D12Device>& cp_device = static_cast<const ProgramDX&>(*m_sp_program).GetContextDX().GetDeviceDX().GetNativeDevice();
+    const wrl::ComPtr<ID3D12Device>& cp_device = static_cast<const ProgramDX&>(GetProgram()).GetContextDX().GetDeviceDX().GetNativeDevice();
     ForEachArgumentBinding([this, &cp_device](ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation)
     {
         if (!p_heap_reservation)

@@ -53,7 +53,7 @@ public:
     // Object interface
     void SetName(const std::string& label) override;
 
-protected:
+private:
     void InitializeCommandBuffer();
     
     CommandQueueVK& GetCommandQueueVK() noexcept;

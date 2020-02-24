@@ -90,12 +90,15 @@ public:
     bool AllArgumentsAreBoundToResources(std::string& missing_args) const;
 
 protected:
+    Program& GetProgram();
     void ReserveDescriptorHeapRanges();
     void SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument);
     void VerifyAllArgumentsAreBoundToResources();
 
     using BindingByArgument = std::unordered_map<Program::Argument, Ptr<ArgumentBinding>, Program::Argument::Hash>;
-    const BindingByArgument& GetBindingByArgument() const { return m_binding_by_argument; }
+    const BindingByArgument& GetArgumentBindings() const { return m_binding_by_argument; }
+
+    const std::optional<DescriptorHeap::Reservation>& GetDescriptorHeapReservationByType(DescriptorHeap::Type heap_type) const;
 
 private:
     using DescriptorHeapReservationByType = std::array<std::optional<DescriptorHeap::Reservation>,

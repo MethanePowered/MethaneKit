@@ -34,7 +34,7 @@ namespace Methane::Graphics
 struct IContextVK;
 class ProgramVK;
 
-class ShaderVK : public ShaderBase
+class ShaderVK final : public ShaderBase
 {
 public:
     ShaderVK(Shader::Type shader_type, ContextBase& context, const Settings& settings);

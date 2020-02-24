@@ -209,20 +209,20 @@ void RenderStateDX::Reset(const Settings& settings)
     Program::Settings  program_settings         = dx_program.GetSettings();
 
     // Set Rasterizer state descriptor
-    CD3DX12_RASTERIZER_DESC                     rasterizer_desc(D3D12_DEFAULT);
-    rasterizer_desc.FillMode                    = ConvertRasterizerFillModeToD3D12(m_settings.rasterizer.fill_mode);
-    rasterizer_desc.CullMode                    = ConvertRasterizerCullModeToD3D12(m_settings.rasterizer.cull_mode);
-    rasterizer_desc.FrontCounterClockwise       = m_settings.rasterizer.is_front_counter_clockwise;
-    rasterizer_desc.MultisampleEnable           = m_settings.rasterizer.sample_count > 1;
-    rasterizer_desc.ForcedSampleCount           = !m_settings.depth.enabled && !m_settings.stencil.enabled ? m_settings.rasterizer.sample_count : 0;
+    CD3DX12_RASTERIZER_DESC rasterizer_desc(D3D12_DEFAULT);
+    rasterizer_desc.FillMode                    = ConvertRasterizerFillModeToD3D12(settings.rasterizer.fill_mode);
+    rasterizer_desc.CullMode                    = ConvertRasterizerCullModeToD3D12(settings.rasterizer.cull_mode);
+    rasterizer_desc.FrontCounterClockwise       = settings.rasterizer.is_front_counter_clockwise;
+    rasterizer_desc.MultisampleEnable           = settings.rasterizer.sample_count > 1;
+    rasterizer_desc.ForcedSampleCount           = !settings.depth.enabled && !settings.stencil.enabled ? settings.rasterizer.sample_count : 0;
 
     // Set Blending state descriptor
     CD3DX12_BLEND_DESC                          blend_desc(D3D12_DEFAULT);
-    blend_desc.AlphaToCoverageEnable            = m_settings.rasterizer.alpha_to_coverage_enabled;
-    blend_desc.IndependentBlendEnable           = m_settings.blending.is_independent;
+    blend_desc.AlphaToCoverageEnable            = settings.rasterizer.alpha_to_coverage_enabled;
+    blend_desc.IndependentBlendEnable           = settings.blending.is_independent;
 
     uint32_t rt_index = 0;
-    for (const Blending::RenderTarget& render_target : m_settings.blending.render_targets)
+    for (const Blending::RenderTarget& render_target : settings.blending.render_targets)
     {
         // Set render target blending descriptor
         D3D12_RENDER_TARGET_BLEND_DESC& rt_blend_desc = blend_desc.RenderTarget[rt_index++];
@@ -237,22 +237,22 @@ void RenderStateDX::Reset(const Settings& settings)
     }
 
     // Set blending factor
-    assert(m_settings.blending_color.size() <= 4);
-    for (uint32_t component_index = 0; component_index < static_cast<uint32_t>(m_settings.blending_color.size()); ++component_index)
+    assert(settings.blending_color.size() <= 4);
+    for (uint32_t component_index = 0; component_index < static_cast<uint32_t>(settings.blending_color.size()); ++component_index)
     {
-        m_blend_factor[component_index] = m_settings.blending_color[component_index];
+        m_blend_factor[component_index] = settings.blending_color[component_index];
     }
 
     // Set depth and stencil state descriptor
     CD3DX12_DEPTH_STENCIL_DESC                  depth_stencil_desc(D3D12_DEFAULT);
-    depth_stencil_desc.DepthEnable              = m_settings.depth.enabled;
-    depth_stencil_desc.DepthWriteMask           = m_settings.depth.write_enabled ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
-    depth_stencil_desc.DepthFunc                = TypeConverterDX::CompareFunctionToDX(m_settings.depth.compare);
-    depth_stencil_desc.StencilEnable            = m_settings.stencil.enabled;
-    depth_stencil_desc.StencilReadMask          = m_settings.stencil.read_mask;
-    depth_stencil_desc.StencilWriteMask         = m_settings.stencil.write_mask;
-    depth_stencil_desc.FrontFace                = ConvertStencilFaceOperationsToD3D12(m_settings.stencil.front_face);
-    depth_stencil_desc.BackFace                 = ConvertStencilFaceOperationsToD3D12(m_settings.stencil.back_face);
+    depth_stencil_desc.DepthEnable              = settings.depth.enabled;
+    depth_stencil_desc.DepthWriteMask           = settings.depth.write_enabled ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
+    depth_stencil_desc.DepthFunc                = TypeConverterDX::CompareFunctionToDX(settings.depth.compare);
+    depth_stencil_desc.StencilEnable            = settings.stencil.enabled;
+    depth_stencil_desc.StencilReadMask          = settings.stencil.read_mask;
+    depth_stencil_desc.StencilWriteMask         = settings.stencil.write_mask;
+    depth_stencil_desc.FrontFace                = ConvertStencilFaceOperationsToD3D12(settings.stencil.front_face);
+    depth_stencil_desc.BackFace                 = ConvertStencilFaceOperationsToD3D12(settings.stencil.back_face);
 
     // Set pipeline state descriptor for program
     m_pipeline_state_desc.InputLayout           = dx_program.GetNativeInputLayoutDesc();
@@ -264,7 +264,7 @@ void RenderStateDX::Reset(const Settings& settings)
     m_pipeline_state_desc.RasterizerState       = rasterizer_desc;
     m_pipeline_state_desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE; // Not used: for GS or HS shaders only
     m_pipeline_state_desc.SampleMask            = UINT_MAX;
-    m_pipeline_state_desc.SampleDesc.Count      = m_settings.rasterizer.sample_count;
+    m_pipeline_state_desc.SampleDesc.Count      = settings.rasterizer.sample_count;
 
     // Set RTV, DSV formats for pipeline state
     if (program_settings.color_formats.size() > g_max_rtv_count)
@@ -279,10 +279,10 @@ void RenderStateDX::Reset(const Settings& settings)
         m_pipeline_state_desc.RTVFormats[attachment_index++] = TypeConverterDX::DataFormatToDXGI(color_format);
     }
     m_pipeline_state_desc.NumRenderTargets = static_cast<UINT>(program_settings.color_formats.size());
-    m_pipeline_state_desc.DSVFormat = m_settings.depth.enabled ? TypeConverterDX::DataFormatToDXGI(program_settings.depth_format) : DXGI_FORMAT_UNKNOWN;
+    m_pipeline_state_desc.DSVFormat = settings.depth.enabled ? TypeConverterDX::DataFormatToDXGI(program_settings.depth_format) : DXGI_FORMAT_UNKNOWN;
 
-    m_viewports     = TypeConverterDX::ViewportsToD3D(m_settings.viewports);
-    m_scissor_rects = TypeConverterDX::ScissorRectsToD3D(m_settings.scissor_rects);
+    m_viewports     = TypeConverterDX::ViewportsToD3D(settings.viewports);
+    m_scissor_rects = TypeConverterDX::ScissorRectsToD3D(settings.scissor_rects);
 
     m_cp_pipeline_state.Reset();
 }
@@ -291,30 +291,30 @@ void RenderStateDX::Apply(RenderCommandListBase& command_list, Group::Mask state
 {
     ITT_FUNCTION_TASK();
 
-    RenderCommandListDX& dx_command_list = static_cast<RenderCommandListDX&>(command_list);
-    wrl::ComPtr<ID3D12GraphicsCommandList>& cp_dx_command_list = dx_command_list.GetNativeCommandList();
+    RenderCommandListDX& dx_render_command_list = static_cast<RenderCommandListDX&>(command_list);
+    ID3D12GraphicsCommandList& d3d12_command_list = dx_render_command_list.GetNativeCommandList();
 
     if (state_groups & Group::Program    ||
         state_groups & Group::Rasterizer ||
         state_groups & Group::Blending   ||
         state_groups & Group::DepthStencil)
     {
-        cp_dx_command_list->SetPipelineState(GetNativePipelineState().Get());
+        d3d12_command_list.SetPipelineState(GetNativePipelineState().Get());
     }
 
-    cp_dx_command_list->SetGraphicsRootSignature(GetProgramDX().GetNativeRootSignature().Get());
+    d3d12_command_list.SetGraphicsRootSignature(GetProgramDX().GetNativeRootSignature().Get());
 
     if (state_groups & Group::Viewports)
     {
-        cp_dx_command_list->RSSetViewports(static_cast<UINT>(m_viewports.size()), m_viewports.data());
+        d3d12_command_list.RSSetViewports(static_cast<UINT>(m_viewports.size()), m_viewports.data());
     }
     if (state_groups & Group::ScissorRects)
     {
-        cp_dx_command_list->RSSetScissorRects(static_cast<UINT>(m_scissor_rects.size()), m_scissor_rects.data());
+        d3d12_command_list.RSSetScissorRects(static_cast<UINT>(m_scissor_rects.size()), m_scissor_rects.data());
     }
     if (state_groups & Group::BlendingColor)
     {
-        cp_dx_command_list->OMSetBlendFactor(m_blend_factor);
+        d3d12_command_list.OMSetBlendFactor(m_blend_factor);
     }
 }
 
@@ -369,14 +369,13 @@ wrl::ComPtr<ID3D12PipelineState>& RenderStateDX::GetNativePipelineState()
 ProgramDX& RenderStateDX::GetProgramDX()
 {
     ITT_FUNCTION_TASK();
-    assert(!!m_settings.sp_program);
-    return static_cast<ProgramDX&>(*m_settings.sp_program);
+    return static_cast<ProgramDX&>(GetProgram());
 }
 
 RenderContextDX& RenderStateDX::GetRenderContextDX()
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class RenderContextDX&>(m_context);
+    return static_cast<RenderContextDX&>(GetRenderContext());
 }
 
 } // namespace Methane::Graphics

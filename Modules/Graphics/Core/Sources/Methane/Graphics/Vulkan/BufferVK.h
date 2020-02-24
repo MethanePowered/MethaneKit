@@ -29,7 +29,7 @@ Vulkan implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
-class BufferVK : public BufferBase
+class BufferVK final : public BufferBase
 {
 public:
     BufferVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
@@ -45,7 +45,7 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-protected:
+private:
     Data::Size    m_stride = 0;
     PixelFormat   m_format = PixelFormat::Unknown;
 };

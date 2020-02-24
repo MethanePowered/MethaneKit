@@ -56,48 +56,48 @@ static D3D12_DSV_DIMENSION GetDsvDimension(const Dimensions& tex_dimensions)
                                        : D3D12_DSV_DIMENSION_TEXTURE2D;
 }
 
-Ptr<Texture> Texture::CreateRenderTarget(RenderContext& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateRenderTarget(RenderContext& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     
     switch (settings.type)
     {
     case Texture::Type::FrameBuffer:        throw std::logic_error("Frame buffer texture must be created with static method Texture::CreateFrameBuffer.");
-    case Texture::Type::DepthStencilBuffer: return std::make_shared<DepthStencilBufferTextureDX>(dynamic_cast<RenderContextBase&>(context), settings, descriptor_by_usage, context.GetSettings().clear_depth_stencil);
-    default:                                return std::make_shared<RenderTargetTextureDX>(dynamic_cast<RenderContextBase&>(context), settings, descriptor_by_usage);
+    case Texture::Type::DepthStencilBuffer: return std::make_shared<DepthStencilBufferTextureDX>(static_cast<RenderContextBase&>(render_context), settings, descriptor_by_usage, render_context.GetSettings().clear_depth_stencil);
+    default:                                return std::make_shared<RenderTargetTextureDX>(static_cast<RenderContextBase&>(render_context), settings, descriptor_by_usage);
     }
 }
 
-Ptr<Texture> Texture::CreateFrameBuffer(RenderContext& context, uint32_t frame_buffer_index, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateFrameBuffer(RenderContext& render_context, uint32_t frame_buffer_index, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     
-    const RenderContext::Settings& context_settings = context.GetSettings();
+    const RenderContext::Settings& context_settings = render_context.GetSettings();
     const Settings texture_settings = Settings::FrameBuffer(context_settings.frame_size, context_settings.color_format);
-    return std::make_shared<FrameBufferTextureDX>(dynamic_cast<RenderContextBase&>(context), texture_settings, descriptor_by_usage, frame_buffer_index);
+    return std::make_shared<FrameBufferTextureDX>(static_cast<RenderContextBase&>(render_context), texture_settings, descriptor_by_usage, frame_buffer_index);
 }
 
-Ptr<Texture> Texture::CreateDepthStencilBuffer(RenderContext& context, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateDepthStencilBuffer(RenderContext& render_context, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     
-    const RenderContext::Settings& context_settings = context.GetSettings();
+    const RenderContext::Settings& context_settings = render_context.GetSettings();
     const Settings texture_settings = Settings::DepthStencilBuffer(context_settings.frame_size, context_settings.depth_stencil_format);
-    return std::make_shared<DepthStencilBufferTextureDX>(dynamic_cast<RenderContextBase&>(context), texture_settings, descriptor_by_usage, context_settings.clear_depth_stencil);
+    return std::make_shared<DepthStencilBufferTextureDX>(static_cast<RenderContextBase&>(render_context), texture_settings, descriptor_by_usage, context_settings.clear_depth_stencil);
 }
 
-Ptr<Texture> Texture::CreateImage(Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateImage(Context& render_context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<ImageTextureDX>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage, ImageTextureArg());
+    return std::make_shared<ImageTextureDX>(dynamic_cast<ContextBase&>(render_context), texture_settings, descriptor_by_usage, ImageTextureArg());
 }
 
-Ptr<Texture> Texture::CreateCube(Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateCube(Context& render_context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<ImageTextureDX>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage, ImageTextureArg());
+    return std::make_shared<ImageTextureDX>(dynamic_cast<ContextBase&>(render_context), texture_settings, descriptor_by_usage, ImageTextureArg());
 }
 
 template<>
@@ -105,14 +105,16 @@ void RenderTargetTextureDX::Initialize()
 {
     ITT_FUNCTION_TASK();
 
-    if (m_settings.dimensions.depth != 1 || m_settings.dimensions.width == 0 || m_settings.dimensions.height == 0)
+    const Settings& settings = GetSettings();
+    if (settings.dimensions.depth != 1 || settings.dimensions.width == 0 || settings.dimensions.height == 0)
     {
         throw std::invalid_argument("Render target texture can only be created for 2D texture with dimensions.depth == 1 and non zero width and hight.");
     }
 
     D3D12_RESOURCE_DESC tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
-        TypeConverterDX::DataFormatToDXGI(m_settings.pixel_format),
-        m_settings.dimensions.width, m_settings.dimensions.height
+        TypeConverterDX::DataFormatToDXGI(settings.pixel_format),
+        settings.dimensions.width,
+        settings.dimensions.height
     );
     InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_GENERIC_READ);
 }
@@ -124,14 +126,13 @@ void FrameBufferTextureDX::Initialize(uint32_t frame_buffer_index)
 
     InitializeFrameBufferResource(frame_buffer_index);
 
-    if (m_usage_mask != Usage::RenderTarget)
+    if (GetUsageMask() != Usage::RenderTarget)
     {
         throw std::runtime_error("Frame BufferBase texture supports only Render Target usage.");
     }
 
-    assert(!!m_cp_resource);
     const D3D12_CPU_DESCRIPTOR_HANDLE descriptor_handle = GetNativeCPUDescriptorHandle(Usage::RenderTarget);
-    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateRenderTargetView(m_cp_resource.Get(), nullptr, descriptor_handle);
+    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateRenderTargetView(GetNativeResource(), nullptr, descriptor_handle);
 }
 
 template<>
@@ -139,23 +140,24 @@ void DepthStencilBufferTextureDX::Initialize(const std::optional<DepthStencil>& 
 {
     ITT_FUNCTION_TASK();
 
+    const Settings& settings = GetSettings();
     CD3DX12_RESOURCE_DESC tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
-        TypeConverterDX::DataFormatToDXGI(m_settings.pixel_format, TypeConverterDX::ResourceFormatType::ResourceBase),
-        m_settings.dimensions.width, m_settings.dimensions.height
+        TypeConverterDX::DataFormatToDXGI(settings.pixel_format, TypeConverterDX::ResourceFormatType::ResourceBase),
+        settings.dimensions.width, settings.dimensions.height
     );
 
     tex_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
-    if (m_settings.usage_mask & Usage::RenderTarget)
+    if (settings.usage_mask & Usage::RenderTarget)
     {
         tex_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
     }
-    if (!(m_settings.usage_mask & Usage::ShaderRead ||
-          m_settings.usage_mask & Usage::ShaderWrite))
+    if (!(settings.usage_mask & Usage::ShaderRead ||
+          settings.usage_mask & Usage::ShaderWrite))
     {
         tex_desc.Flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
     }
 
-    const DXGI_FORMAT view_write_format = TypeConverterDX::DataFormatToDXGI(m_settings.pixel_format, TypeConverterDX::ResourceFormatType::ViewWrite);
+    const DXGI_FORMAT view_write_format = TypeConverterDX::DataFormatToDXGI(settings.pixel_format, TypeConverterDX::ResourceFormatType::ViewWrite);
 
     if (clear_depth_stencil)
     {
@@ -170,9 +172,10 @@ void DepthStencilBufferTextureDX::Initialize(const std::optional<DepthStencil>& 
 
     const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
 
+    const Usage::Mask usage_mask = GetUsageMask();
     for (Usage::Value usage : Usage::primary_values)
     {
-        if (!(m_usage_mask & usage))
+        if (!(usage_mask & usage))
             continue;
 
         const Descriptor& desc = ResourceBase::GetDescriptorByUsage(usage);
@@ -181,19 +184,19 @@ void DepthStencilBufferTextureDX::Initialize(const std::optional<DepthStencil>& 
         case DescriptorHeap::Type::ShaderResources:
         {
             D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
-            srv_desc.Format                          = TypeConverterDX::DataFormatToDXGI(m_settings.pixel_format, TypeConverterDX::ResourceFormatType::ViewRead);
-            srv_desc.ViewDimension                   = GetSrvDimension(m_settings.dimensions);
+            srv_desc.Format                          = TypeConverterDX::DataFormatToDXGI(settings.pixel_format, TypeConverterDX::ResourceFormatType::ViewRead);
+            srv_desc.ViewDimension                   = GetSrvDimension(settings.dimensions);
             srv_desc.Shader4ComponentMapping         = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
             srv_desc.Texture2D.MipLevels             = 1;
-            cp_device->CreateShaderResourceView(m_cp_resource.Get(), &srv_desc, GetNativeCPUDescriptorHandle(desc));
+            cp_device->CreateShaderResourceView(GetNativeResource(), &srv_desc, GetNativeCPUDescriptorHandle(desc));
         } break;
 
         case DescriptorHeap::Type::DepthStencil:
         {
             D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc   = {};
             dsv_desc.Format                          = view_write_format;
-            dsv_desc.ViewDimension                   = GetDsvDimension(m_settings.dimensions);
-            cp_device->CreateDepthStencilView(m_cp_resource.Get(), &dsv_desc, GetNativeCPUDescriptorHandle(desc));
+            dsv_desc.ViewDimension                   = GetDsvDimension(settings.dimensions);
+            cp_device->CreateDepthStencilView(GetNativeResource(), &dsv_desc, GetNativeCPUDescriptorHandle(desc));
         } break;
 
         default:
@@ -202,12 +205,12 @@ void DepthStencilBufferTextureDX::Initialize(const std::optional<DepthStencil>& 
     }
 }
 
-ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg)
-    : TextureBase(context, settings, descriptor_by_usage)
+ImageTextureDX::TextureDX(ContextBase& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg)
+    : TextureBase(render_context, settings, descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
 
-    if (m_usage_mask != Usage::ShaderRead)
+    if (GetUsageMask() != Usage::ShaderRead)
     {
         throw std::runtime_error("Image texture supports only \"Shader Read\" usage.");
     }
@@ -219,7 +222,7 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
 
     const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
     const UINT number_of_subresources = GetRequiredSubresourceCount();
-    const UINT64 upload_buffer_size   = GetRequiredIntermediateSize(m_cp_resource.Get(), 0, number_of_subresources);
+    const UINT64 upload_buffer_size   = GetRequiredIntermediateSize(GetNativeResource(), 0, number_of_subresources);
     ThrowIfFailed(
         cp_device->CreateCommittedResource(
             &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
@@ -231,23 +234,24 @@ ImageTextureDX::TextureDX(ContextBase& context, const Settings& settings, const 
         )
     );
 
-    cp_device->CreateShaderResourceView(m_cp_resource.Get(), &tex_and_srv_desc.second, GetNativeCPUDescriptorHandle(Usage::ShaderRead));
+    cp_device->CreateShaderResourceView(GetNativeResource(), &tex_and_srv_desc.second, GetNativeCPUDescriptorHandle(Usage::ShaderRead));
 }
 
 ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() const
 {
-    assert(m_settings.dimensions.depth  > 0);
-    assert(m_settings.dimensions.width  > 0);
-    assert(m_settings.dimensions.height > 0);
+    const Settings& settings = GetSettings();
+    assert(settings.dimensions.depth  > 0);
+    assert(settings.dimensions.width  > 0);
+    assert(settings.dimensions.height > 0);
 
     D3D12_RESOURCE_DESC tex_desc = {};
     D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
     const uint32_t mip_levels_count = GetMipLevelsCount();
 
-    switch (m_settings.dimension_type)
+    switch (settings.dimension_type)
     {
     case DimensionType::Tex1D:
-        if (m_settings.array_length != 1)
+        if (settings.array_length != 1)
         {
             throw std::invalid_argument("Single 1D Texture must have array length equal to 1.");
         }
@@ -255,27 +259,27 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         // NOTE: break is missing intentionally
 
     case DimensionType::Tex1DArray:
-        if (m_settings.dimensions.height != 1 || m_settings.dimensions.depth != 1)
+        if (settings.dimensions.height != 1 || settings.dimensions.depth != 1)
         {
             throw std::invalid_argument("1D Textures must have height and depth dimensions equal to 1.");
         }
 
         tex_desc = CD3DX12_RESOURCE_DESC::Tex1D(
-            TypeConverterDX::DataFormatToDXGI(m_settings.pixel_format),
-            m_settings.dimensions.width,
-            m_settings.array_length,
+            TypeConverterDX::DataFormatToDXGI(settings.pixel_format),
+            settings.dimensions.width,
+            settings.array_length,
             mip_levels_count
         );
 
         srv_desc.Texture1DArray.MipLevels   = mip_levels_count;
-        srv_desc.Texture1DArray.ArraySize   = m_settings.array_length;
-        srv_desc.ViewDimension              = m_settings.dimension_type == DimensionType::Tex1D
+        srv_desc.Texture1DArray.ArraySize   = settings.array_length;
+        srv_desc.ViewDimension              = settings.dimension_type == DimensionType::Tex1D
                                             ? D3D12_SRV_DIMENSION_TEXTURE1D
                                             : D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
         break;
 
     case DimensionType::Tex2D:
-        if (m_settings.array_length != 1)
+        if (settings.array_length != 1)
         {
             throw std::invalid_argument("Single 2D Texture must have array length equal to 1.");
         }
@@ -283,35 +287,35 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         // NOTE: break is missing intentionally
 
     case DimensionType::Tex2DArray:
-        if (m_settings.dimensions.depth != 1)
+        if (settings.dimensions.depth != 1)
         {
             throw std::invalid_argument("2D Textures must have depth dimension equal to 1.");
         }
         tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
-            TypeConverterDX::DataFormatToDXGI(m_settings.pixel_format),
-            m_settings.dimensions.width,
-            m_settings.dimensions.height,
-            m_settings.array_length,
+            TypeConverterDX::DataFormatToDXGI(settings.pixel_format),
+            settings.dimensions.width,
+            settings.dimensions.height,
+            settings.array_length,
             mip_levels_count
         );
 
         srv_desc.Texture2DArray.MipLevels   = mip_levels_count;
-        srv_desc.Texture2DArray.ArraySize   = m_settings.array_length;
-        srv_desc.ViewDimension              = m_settings.dimension_type == DimensionType::Tex2D
+        srv_desc.Texture2DArray.ArraySize   = settings.array_length;
+        srv_desc.ViewDimension              = settings.dimension_type == DimensionType::Tex2D
                                             ? D3D12_SRV_DIMENSION_TEXTURE2D
                                             : D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
         break;
 
     case DimensionType::Tex3D:
-        if (m_settings.array_length != 1)
+        if (settings.array_length != 1)
         {
             throw std::invalid_argument("Single 3D Texture must have array length equal to 1.");
         }
         tex_desc = CD3DX12_RESOURCE_DESC::Tex3D(
-            TypeConverterDX::DataFormatToDXGI(m_settings.pixel_format),
-            m_settings.dimensions.width,
-            m_settings.dimensions.height,
-            m_settings.dimensions.depth,
+            TypeConverterDX::DataFormatToDXGI(settings.pixel_format),
+            settings.dimensions.width,
+            settings.dimensions.height,
+            settings.dimensions.depth,
             mip_levels_count
         );
         srv_desc.Texture3D.MipLevels = mip_levels_count;
@@ -319,7 +323,7 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         break;
 
     case DimensionType::Cube:
-        if (m_settings.array_length != 1)
+        if (settings.array_length != 1)
         {
             throw std::invalid_argument("Single Cube Texture must have array length equal to 1.");
         }
@@ -327,22 +331,22 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         // NOTE: break is missing intentionally
 
     case DimensionType::CubeArray:
-        if (m_settings.dimensions.depth != 6)
+        if (settings.dimensions.depth != 6)
         {
             throw std::invalid_argument("Cube textures must have depth dimension equal to 6.");
         }
         tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
-            TypeConverterDX::DataFormatToDXGI(m_settings.pixel_format),
-            m_settings.dimensions.width,
-            m_settings.dimensions.height,
-            m_settings.dimensions.depth * m_settings.array_length,
+            TypeConverterDX::DataFormatToDXGI(settings.pixel_format),
+            settings.dimensions.width,
+            settings.dimensions.height,
+            settings.dimensions.depth * settings.array_length,
             mip_levels_count
         );
 
         srv_desc.TextureCubeArray.First2DArrayFace = 0;
-        srv_desc.TextureCubeArray.NumCubes         = m_settings.array_length;
+        srv_desc.TextureCubeArray.NumCubes         = settings.array_length;
         srv_desc.TextureCubeArray.MipLevels        = mip_levels_count;
-        srv_desc.ViewDimension                     = m_settings.dimension_type == DimensionType::Cube
+        srv_desc.ViewDimension                     = settings.dimension_type == DimensionType::Cube
                                                    ? D3D12_SRV_DIMENSION_TEXTURECUBE
                                                    : D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
         break;
@@ -365,14 +369,14 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
 
     m_data_size = 0;
     
-    assert(!!m_cp_resource);
     assert(!!m_cp_upload_resource);
 
-    const Data::Size          pixel_size                  = GetPixelSize(m_settings.pixel_format);
-    const uint32_t            mip_levels_count            = GetMipLevelsCount();
-    const uint32_t            required_subresources_count = GetRequiredSubresourceCount();
+    const Settings&  settings                    = GetSettings();
+    const Data::Size pixel_size                  = GetPixelSize(settings.pixel_format);
+    const uint32_t   mip_levels_count            = GetMipLevelsCount();
+    const uint32_t   required_subresources_count = GetRequiredSubresourceCount();
 
-    if (!m_settings.mipmapped && sub_resources.size() < required_subresources_count)
+    if (!settings.mipmapped && sub_resources.size() < required_subresources_count)
     {
         throw std::invalid_argument("Number of sub-resources provided (" + std::to_string(sub_resources.size()) + 
                                     ") is less than required (" + std::to_string(required_subresources_count) + 
@@ -382,15 +386,15 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
     std::vector<D3D12_SUBRESOURCE_DATA> dx_sub_resources(required_subresources_count, D3D12_SUBRESOURCE_DATA{});
     for(const SubResource& sub_resource : sub_resources)
     {
-        const uint32_t sub_resource_raw_index = sub_resource.GetRawIndex(m_settings.dimensions.depth, mip_levels_count);
+        const uint32_t sub_resource_raw_index = sub_resource.GetRawIndex(settings.dimensions.depth, mip_levels_count);
         assert(sub_resource_raw_index < dx_sub_resources.size());
         if (sub_resource_raw_index >= dx_sub_resources.size())
             continue;
 
         D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[sub_resource_raw_index];
         dx_sub_resource.pData      = sub_resource.p_data;
-        dx_sub_resource.RowPitch   = m_settings.dimensions.width  * pixel_size;
-        dx_sub_resource.SlicePitch = m_settings.dimensions.height * dx_sub_resource.RowPitch;
+        dx_sub_resource.RowPitch   = settings.dimensions.width  * pixel_size;
+        dx_sub_resource.SlicePitch = settings.dimensions.height * dx_sub_resource.RowPitch;
 
         if (dx_sub_resource.SlicePitch > static_cast<LONG_PTR>(sub_resource.data_size))
         {
@@ -402,14 +406,14 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
 
     // NOTE: scratch_image is the owner of generated mip-levels memory, which should be hold until UpdateSubresources call completes
     DirectX::ScratchImage scratch_image; 
-    if (m_settings.mipmapped && sub_resources.size() < required_subresources_count)
+    if (settings.mipmapped && sub_resources.size() < required_subresources_count)
     {
         GenerateMipLevels(dx_sub_resources, scratch_image);
     }
 
-    BlitCommandListDX& upload_cmd_list = static_cast<BlitCommandListDX&>(m_context.GetUploadCommandList());
-    UpdateSubresources(upload_cmd_list.GetNativeCommandList().Get(),
-                       m_cp_resource.Get(), m_cp_upload_resource.Get(), 0, 0,
+    BlitCommandListDX& upload_cmd_list = static_cast<BlitCommandListDX&>(GetContext().GetUploadCommandList());
+    UpdateSubresources(&upload_cmd_list.GetNativeCommandList(),
+                       GetNativeResource(), m_cp_upload_resource.Get(), 0, 0,
                        static_cast<UINT>(dx_sub_resources.size()), dx_sub_resources.data());
 
     upload_cmd_list.SetResourceTransitionBarriers({ static_cast<Resource&>(*this) }, ResourceBase::State::CopyDest, ResourceBase::State::PixelShaderResource);
@@ -419,9 +423,10 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
 {
     ITT_FUNCTION_TASK();
 
-    const uint32_t    mip_levels_count = GetMipLevelsCount();
-    const D3D12_RESOURCE_DESC tex_desc = m_cp_resource->GetDesc();
-    const bool         is_cube_texture = m_settings.dimension_type == DimensionType::Cube || m_settings.dimension_type == DimensionType::CubeArray;
+    const Settings&           settings          = GetSettings();
+    const uint32_t            mip_levels_count  = GetMipLevelsCount();
+    const D3D12_RESOURCE_DESC tex_desc          = GetNativeResourceRef().GetDesc();
+    const bool                is_cube_texture   = settings.dimension_type == DimensionType::Cube || settings.dimension_type == DimensionType::CubeArray;
 
     std::vector<DirectX::Image> sub_resource_images(dx_sub_resources.size(), DirectX::Image{});
     for(uint32_t sub_resource_raw_index = 0; sub_resource_raw_index < dx_sub_resources.size(); ++sub_resource_raw_index)
@@ -433,8 +438,8 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
 
         D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[sub_resource_raw_index];
         DirectX::Image& base_mip_image = sub_resource_images[sub_resource_raw_index];
-        base_mip_image.width           = m_settings.dimensions.width;
-        base_mip_image.height          = m_settings.dimensions.height;
+        base_mip_image.width           = settings.dimensions.width;
+        base_mip_image.height          = settings.dimensions.height;
         base_mip_image.format          = tex_desc.Format;
         base_mip_image.rowPitch        = dx_sub_resource.RowPitch;
         base_mip_image.slicePitch      = dx_sub_resource.SlicePitch;
@@ -442,10 +447,10 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
     }
 
     DirectX::TexMetadata tex_metadata = { };
-    tex_metadata.width     = m_settings.dimensions.width;
-    tex_metadata.height    = m_settings.dimensions.height;
-    tex_metadata.depth     = is_cube_texture ? 1 : m_settings.dimensions.depth;
-    tex_metadata.arraySize = is_cube_texture ? m_settings.dimensions.depth : m_settings.array_length;
+    tex_metadata.width     = settings.dimensions.width;
+    tex_metadata.height    = settings.dimensions.height;
+    tex_metadata.depth     = is_cube_texture ? 1 : settings.dimensions.depth;
+    tex_metadata.arraySize = is_cube_texture ? settings.dimensions.depth : settings.array_length;
     tex_metadata.mipLevels = mip_levels_count;
     tex_metadata.format    = tex_desc.Format;
     tex_metadata.dimension = static_cast<DirectX::TEX_DIMENSION>(tex_desc.Dimension);

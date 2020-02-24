@@ -28,7 +28,7 @@ Vulkan implementation of the texture interface.
 namespace Methane::Graphics
 {
 
-class TextureVK : public TextureBase
+class TextureVK final : public TextureBase
 {
 public:
     TextureVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
