@@ -32,6 +32,8 @@ Metal implementation of the shader interface.
 #include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
 
+#include <regex>
+
 namespace Methane::Graphics
 {
 
@@ -127,18 +129,24 @@ ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const Program::Argume
     NSLog(@"%s shader '%s' arguments:", GetTypeName().c_str(), GetCompiledEntryFunctionName().c_str());
 #endif
 
+    // Regex matches trailing digit suffix, like "_1"
+    static const std::regex suffix_index_regex("_\\d+$");
+    
     for(MTLArgument* mtl_arg in m_mtl_arguments)
     {
         if (!mtl_arg.active)
             continue;
 
-        const std::string argument_name = Methane::MacOS::ConvertFromNSType<NSString, std::string>(mtl_arg.name);
+        std::string argument_name = Methane::MacOS::ConvertFromNSType<NSString, std::string>(mtl_arg.name);
         if (argument_name.find("vertexBuffer.") == 0)
         {
             // Skip input vertex buffers, since they are set with a separate RenderCommandList call, not through resource bindings
             continue;
         }
-
+        
+        // Remove trailing digit suffix from variable name, cause it's artificially added by latest version of glslangvalidator
+        argument_name = std::regex_replace(argument_name, suffix_index_regex, "");
+        
         const Program::Argument shader_argument(GetType(), argument_name);
         const auto argument_desc_it = Program::FindArgumentDescription(argument_descriptions, shader_argument);
         const Program::ArgumentDesc argument_desc = argument_desc_it == argument_descriptions.end()
