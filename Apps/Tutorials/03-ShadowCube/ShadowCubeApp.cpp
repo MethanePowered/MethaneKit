@@ -113,8 +113,7 @@ void ShadowCubeApp::Init()
 
     const Data::Size constants_data_size      = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(Constants)));
     const Data::Size scene_uniforms_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(SceneUniforms)));
-    const Data::Size cube_uniforms_data_size  = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(MeshUniforms)));
-    const Data::Size floor_uniforms_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(MeshUniforms)));
+    const Data::Size mesh_uniforms_data_size  = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(MeshUniforms)));
 
     // Create constants buffer for frame rendering
     m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, constants_data_size);
@@ -176,7 +175,7 @@ void ShadowCubeApp::Init()
                 { { gfx::Shader::Type::Pixel,  "g_constants"      }, gfx::Program::Argument::Modifiers::Constant },
                 { { gfx::Shader::Type::Pixel,  "g_shadow_map"     }, gfx::Program::Argument::Modifiers::None     },
                 { { gfx::Shader::Type::Pixel,  "g_shadow_sampler" }, gfx::Program::Argument::Modifiers::Constant },
-                { { gfx::Shader::Type::Pixel,  "g_texture"        }, gfx::Program::Argument::Modifiers::None },
+                { { gfx::Shader::Type::Pixel,  "g_texture"        }, gfx::Program::Argument::Modifiers::None     },
                 { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, gfx::Program::Argument::Modifiers::Constant },
             },
             gfx::PixelFormats
@@ -239,11 +238,11 @@ void ShadowCubeApp::Init()
         // ========= Shadow Pass data =========
 
         // Create uniforms buffer for Cube rendering in Shadow pass
-        frame.shadow_pass.cube.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, cube_uniforms_data_size);
+        frame.shadow_pass.cube.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, mesh_uniforms_data_size);
         frame.shadow_pass.cube.sp_uniforms_buffer->SetName(IndexedName("Cube Uniforms Buffer for Shadow Pass", frame.index));
 
         // Create uniforms buffer for Floor rendering in Shadow pass
-        frame.shadow_pass.floor.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, floor_uniforms_data_size);
+        frame.shadow_pass.floor.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, mesh_uniforms_data_size);
         frame.shadow_pass.floor.sp_uniforms_buffer->SetName(IndexedName("Floor Uniforms Buffer for Shadow Pass", frame.index));
 
         // Create depth texture for shadow map rendering
@@ -284,11 +283,11 @@ void ShadowCubeApp::Init()
         // ========= Final Pass data =========
 
         // Create uniforms buffer for Cube rendering in Final pass
-        frame.final_pass.cube.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, cube_uniforms_data_size);
+        frame.final_pass.cube.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, mesh_uniforms_data_size);
         frame.final_pass.cube.sp_uniforms_buffer->SetName(IndexedName("Cube Uniforms Buffer for Final Pass", frame.index));
 
         // Create uniforms buffer for Floor rendering in Final pass
-        frame.final_pass.floor.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, floor_uniforms_data_size);
+        frame.final_pass.floor.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, mesh_uniforms_data_size);
         frame.final_pass.floor.sp_uniforms_buffer->SetName(IndexedName("Floor Uniforms Buffer for Final Pass", frame.index));
 
         // Bind final pass RT texture and pass to the frame buffer texture and final pass.
@@ -306,7 +305,7 @@ void ShadowCubeApp::Init()
             { { gfx::Shader::Type::Pixel,  "g_constants"      }, { { m_sp_const_buffer                          } } },
             { { gfx::Shader::Type::Pixel,  "g_shadow_map"     }, { { frame.shadow_pass.sp_rt_texture            } } },
             { { gfx::Shader::Type::Pixel,  "g_shadow_sampler" }, { { m_sp_shadow_sampler                        } } },
-            { { gfx::Shader::Type::Pixel,  "g_texture"        }, { { m_sp_cube_buffers->GetTexturePtr()   } } },
+            { { gfx::Shader::Type::Pixel,  "g_texture"        }, { { m_sp_cube_buffers->GetTexturePtr()         } } },
             { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { { m_sp_texture_sampler                       } } },
         });
 
@@ -423,11 +422,12 @@ bool ShadowCubeApp::Render()
     ShadowCubeFrame& frame = GetCurrentFrame();
 
     // Upload uniform buffers to GPU
+    const Data::Size mesh_uniforms_buffer_size = sizeof(MeshUniforms);
     frame.sp_scene_uniforms_buffer->SetData({ {reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms) } });
-    frame.shadow_pass.floor.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_floor_buffers->GetShadowPassUniforms()), sizeof(MeshUniforms) } });
-    frame.shadow_pass.cube.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->GetShadowPassUniforms()), sizeof(MeshUniforms) } });
-    frame.final_pass.floor.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_floor_buffers->GetFinalPassUniforms()), sizeof(MeshUniforms) } });
-    frame.final_pass.cube.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->GetFinalPassUniforms()), sizeof(MeshUniforms) } });
+    frame.shadow_pass.floor.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_floor_buffers->GetShadowPassUniforms()), mesh_uniforms_buffer_size } });
+    frame.shadow_pass.cube.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->GetShadowPassUniforms()), mesh_uniforms_buffer_size } });
+    frame.final_pass.floor.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_floor_buffers->GetFinalPassUniforms()), mesh_uniforms_buffer_size } });
+    frame.final_pass.cube.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->GetFinalPassUniforms()), mesh_uniforms_buffer_size } });
 
     // Record commands for shadow & final render passes
     RenderScene(m_shadow_pass, frame.shadow_pass, *frame.shadow_pass.sp_rt_texture);
