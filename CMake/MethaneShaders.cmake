@@ -72,11 +72,14 @@ function(get_generated_shaders FOR_TARGET SHADERS_CONFIG SHADER_EXT SHADERS_GENE
     set(${SHADERS_GENERATED} ${_SHADERS_GENERATED} PARENT_SCOPE)
 endfunction()
 
-function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL OUT_SHADERS_METAL)
+function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_SHADERS_METAL)
     get_platform_dir()
     get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
     get_file_name(${SHADERS_HLSL} SHADERS_NAME)
     get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
+
+    set(DXC_BIN_DIR "${CMAKE_SOURCE_DIR}/Externals/DirectXCompiler/binaries/${PLATFORM_DIR}")
+    set(DXC_EXE     "${DXC_BIN_DIR}/dxc")
 
     set(SPIRV_BIN_DIR      "${CMAKE_SOURCE_DIR}/Externals/SPIRV/binaries/${PLATFORM_DIR}")
     set(SPIRV_GEN_EXE      "${SPIRV_BIN_DIR}/glslangValidator")
@@ -102,16 +105,18 @@ function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL OUT_SHADERS_ME
         set(SHADER_METAL_FILE "${NEW_ENTRY_POINT}.metal")
         set(SHADER_SPIRV_PATH "${TARGET_SHADERS_DIR}/${SHADER_SPIRV_FILE}")
         set(SHADER_METAL_PATH "${TARGET_SHADERS_DIR}/${SHADER_METAL_FILE}")
-
         set(GENERATE_METAL_TARGET ${FOR_TARGET}_Generate_${SHADER_METAL_FILE})
+
+        get_shader_profile(${SHADER_TYPE} ${PROFILE_VER} SHADER_PROFILE)
 
         add_custom_target(${GENERATE_METAL_TARGET}
             COMMENT "Generating Metal shader source code from HLSL " ${NEW_ENTRY_POINT} " for application " ${TARGET}
             BYPRODUCTS "${SHADER_METAL_PATH}"
             DEPENDS ${SHADERS_HLSL} ${SHADERS_CONFIG}
             COMMAND ${CMAKE_COMMAND} -E make_directory "${TARGET_SHADERS_DIR}"
-            COMMAND ${SPIRV_GEN_EXE} --hlsl-iomap -S ${SHADER_TYPE} -e ${OLD_ENTRY_POINT} ${SHADER_DEFINITION_ARGUMENTS} -o "${SHADER_SPIRV_PATH}" -V -D "${SHADERS_HLSL}"
-            COMMAND ${SPIRV_CROSS_EXE} --msl --msl-version 020101 --rename-entry-point ${OLD_ENTRY_POINT} ${NEW_ENTRY_POINT} ${SHADER_TYPE} --output "${SHADER_METAL_PATH}" "${SHADER_SPIRV_PATH}"
+            COMMAND ${DXC_EXE} -spirv -T ${SHADER_PROFILE} -E ${OLD_ENTRY_POINT} ${SHADER_DEFINITION_ARGUMENTS} "${SHADERS_HLSL}" -Fo "${SHADER_SPIRV_PATH}"
+            #COMMAND ${SPIRV_GEN_EXE} --hlsl-iomap -S ${SHADER_TYPE} -e ${OLD_ENTRY_POINT} ${SHADER_DEFINITION_ARGUMENTS} -o "${SHADER_SPIRV_PATH}" -V -D "${SHADERS_HLSL}"
+            COMMAND ${SPIRV_CROSS_EXE} --msl --msl-version 020101 --msl-decoration-binding --rename-entry-point ${OLD_ENTRY_POINT} ${NEW_ENTRY_POINT} ${SHADER_TYPE} --output "${SHADER_METAL_PATH}" "${SHADER_SPIRV_PATH}"
         )
 
         set_target_properties(${GENERATE_METAL_TARGET}
@@ -119,6 +124,7 @@ function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL OUT_SHADERS_ME
             FOLDER "Build/${FOR_TARGET}/Shaders"
         )
 
+        add_dependencies(${GENERATE_METAL_TARGET} DirectXCompiler-build)
         add_dependencies(${GENERATE_METAL_TARGET} SPIRV-build)
         add_dependencies(${FOR_TARGET} ${GENERATE_METAL_TARGET})
 
@@ -345,7 +351,7 @@ function(add_methane_shaders TARGET HLSL_SOURCES)
         foreach(SHADERS_HLSL ${HLSL_SOURCES})
             set(SHADERS_METAL) # init with empty list
             get_metal_library(${TARGET} ${SHADERS_HLSL} METAL_LIBRARY)
-            generate_metal_shaders_from_hlsl(${TARGET} ${SHADERS_HLSL} SHADERS_METAL)
+            generate_metal_shaders_from_hlsl(${TARGET} ${SHADERS_HLSL} "6_0" SHADERS_METAL)
             compile_metal_shaders_to_library(${TARGET} "macosx" "${SHADERS_METAL}" "${METAL_LIBRARY}")
         endforeach()
 
