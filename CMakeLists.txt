@@ -37,16 +37,10 @@ set(PARSE_CATCH_TESTS_VERBOSE OFF)
 
 if(MSVC)
 
-    if(NOT DEFINED ENV{WindowsSdkVerBinPath})
-        message(FATAL_ERROR "Windows SDK binary directory path is undefined! "
-                            "Please start cmake generation from \"Visual Studio Native Tools\" command prompt.")
-    endif()
-
     set(VS_STARTUP_PROJECT MethaneAsteroids)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>") # use /MT static runtime linking
     string(REPLACE "/MD" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")           # remove /MD flag if it was there
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")                           # enable multi-threaded build
-    set(WINDOWS_SDK_BIN_PATH $ENV{WindowsSdkVerBinPath}x64)
 
     add_definitions(-DUNICODE -D_UNICODE -DNOMINMAX -DWIN32_LEAN_AND_MEAN -DUSE_PIX)
 

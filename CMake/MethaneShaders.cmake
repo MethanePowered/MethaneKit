@@ -193,7 +193,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
     get_file_name(${SHADERS_HLSL} SHADERS_NAME)
     get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
 
-    set(SHADER_COMPILER_EXE "${WINDOWS_SDK_BIN_PATH}/fxc.exe")
+    set(SHADER_COMPILER_EXE "${CMAKE_SOURCE_DIR}/Externals/DirectXCompiler/binaries/${PLATFORM_DIR}/dxc.exe")
 
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(EXTRA_COMPILE_FLAGS /Od)
@@ -214,7 +214,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
         set(NEW_ENTRY_POINT ${ORIG_ENTRY_POINT})
         string(REPLACE " " ";" SHADER_DEFINITIONS "${SHADER_DEFINITIONS}")
 
-        set(SHADER_DEFINITION_ARGUMENTS )
+        set(SHADER_DEFINITION_ARGUMENTS)
         foreach(SHADER_DEFINITION ${SHADER_DEFINITIONS})
             list(APPEND SHADER_DEFINITION_ARGUMENTS /D ${SHADER_DEFINITION})
             string(REPLACE "=" "" SHADER_DEFINITION_NAME ${SHADER_DEFINITION})
@@ -237,6 +237,8 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
             COMMAND ${SHADER_COMPILER_EXE} /T ${SHADER_PROFILE} /E ${ORIG_ENTRY_POINT} /Fo ${SHADER_OBJ_PATH} ${EXTRA_COMPILE_FLAGS} ${SHADER_DEFINITION_ARGUMENTS} ${SHADERS_HLSL}
         )
 
+        add_dependencies(${COMPILE_SHADER_TARGET} DirectXCompiler-build)
+
         set_target_properties(${COMPILE_SHADER_TARGET}
             PROPERTIES
             FOLDER "Build/${FOR_TARGET}/Shaders"
@@ -248,7 +250,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
     set(${OUT_COMPILED_SHADER_BINS} ${_OUT_COMPILED_SHADER_BINS} PARENT_SCOPE)
 endfunction()
 
-function(add_methane_shaders TARGET HLSL_SOURCES)
+function(add_methane_shaders TARGET HLSL_SOURCES PROFILE_VER)
 
     set(RESOURCE_NAMESPACE ${TARGET})
 
@@ -272,7 +274,7 @@ function(add_methane_shaders TARGET HLSL_SOURCES)
         )
 
         foreach(SHADERS_HLSL ${HLSL_SOURCES})
-            compile_hlsl_shaders(${TARGET} ${SHADERS_HLSL} "5_1" OUT_COMPILED_SHADER_BINS)
+            compile_hlsl_shaders(${TARGET} ${SHADERS_HLSL} ${PROFILE_VER} OUT_COMPILED_SHADER_BINS)
         endforeach()
 
         target_sources(${TARGET} PRIVATE
@@ -351,7 +353,7 @@ function(add_methane_shaders TARGET HLSL_SOURCES)
         foreach(SHADERS_HLSL ${HLSL_SOURCES})
             set(SHADERS_METAL) # init with empty list
             get_metal_library(${TARGET} ${SHADERS_HLSL} METAL_LIBRARY)
-            generate_metal_shaders_from_hlsl(${TARGET} ${SHADERS_HLSL} "6_0" SHADERS_METAL)
+            generate_metal_shaders_from_hlsl(${TARGET} ${SHADERS_HLSL} ${PROFILE_VER} SHADERS_METAL)
             compile_metal_shaders_to_library(${TARGET} "macosx" "${SHADERS_METAL}" "${METAL_LIBRARY}")
         endforeach()
 

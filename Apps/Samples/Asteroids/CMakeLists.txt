@@ -44,7 +44,7 @@ add_methane_application(${TARGET}
     "${METHANE_VERSION_BUILD}"
 )
 add_methane_embedded_textures(${TARGET} "${IMAGES_DIR}" "${TEXTURES}")
-add_methane_shaders(${TARGET} "${SHADERS_HLSL}")
+add_methane_shaders(${TARGET} "${SHADERS_HLSL}" "6_0")
 
 set_target_properties(${TARGET}
     PROPERTIES
