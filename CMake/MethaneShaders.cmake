@@ -124,7 +124,7 @@ function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL PROFILE_VER OU
             FOLDER "Build/${FOR_TARGET}/Shaders"
         )
 
-        add_dependencies(${GENERATE_METAL_TARGET} DirectXCompiler-build)
+        add_dependencies(${GENERATE_METAL_TARGET} DirectXCompilerUnpack-build)
         add_dependencies(${GENERATE_METAL_TARGET} SPIRV-build)
         add_dependencies(${FOR_TARGET} ${GENERATE_METAL_TARGET})
 
@@ -193,7 +193,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
     get_file_name(${SHADERS_HLSL} SHADERS_NAME)
     get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
 
-    set(SHADER_COMPILER_EXE "${CMAKE_SOURCE_DIR}/Externals/DirectXCompiler/binaries/${PLATFORM_DIR}/dxc.exe")
+    set(SHADER_COMPILER_EXE "${CMAKE_SOURCE_DIR}/Externals/DirectXCompiler/binaries/${PLATFORM_DIR}/bin/dxc.exe")
 
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(EXTRA_COMPILE_FLAGS /Od)
@@ -237,7 +237,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
             COMMAND ${SHADER_COMPILER_EXE} /T ${SHADER_PROFILE} /E ${ORIG_ENTRY_POINT} /Fo ${SHADER_OBJ_PATH} ${EXTRA_COMPILE_FLAGS} ${SHADER_DEFINITION_ARGUMENTS} ${SHADERS_HLSL}
         )
 
-        add_dependencies(${COMPILE_SHADER_TARGET} DirectXCompiler-build)
+        add_dependencies(${COMPILE_SHADER_TARGET} DirectXCompilerUnpack-build)
 
         set_target_properties(${COMPILE_SHADER_TARGET}
             PROPERTIES

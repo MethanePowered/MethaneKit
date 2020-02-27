@@ -31,6 +31,7 @@ target_link_libraries(${TARGET}
 )
 
 set(PREREQUISITE_TARGETS
+    MethaneGraphicsCore
     MethaneGraphicsExtensions
 )
 add_prerequisite_modules(${TARGET} "${PREREQUISITE_TARGETS}")

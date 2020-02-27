@@ -208,9 +208,9 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
     }
     macro_definitions.push_back({ nullptr, nullptr });
 
-    wrl::ComPtr<ID3DBlob> error_blob;
     if (!settings.source_file_path.empty())
     {
+        wrl::ComPtr<ID3DBlob> error_blob;
         ThrowIfFailed(D3DCompileFromFile(
             nowide::widen(settings.source_file_path).c_str(),
             macro_definitions.data(),
@@ -222,22 +222,18 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
             &m_cp_byte_code,
             &error_blob
         ), error_blob);
+
+        m_sp_byte_code_chunk = std::make_unique<Data::Chunk>(static_cast<Data::ConstRawPtr>(m_cp_byte_code->GetBufferPointer()),
+                                                             static_cast<Data::Size>(m_cp_byte_code->GetBufferSize()));
     }
     else
     {
         const std::string compiled_func_name = GetCompiledEntryFunctionName();
-        const Data::Chunk compiled_func_data = settings.data_provider.GetData(compiled_func_name + ".obj");
-
-        ThrowIfFailed(D3DCreateBlob(compiled_func_data.size, &m_cp_byte_code));
-        Data::RawPtr p_cp_byte_code_data = static_cast<Data::RawPtr>(m_cp_byte_code->GetBufferPointer());
-        std::copy(compiled_func_data.p_data, compiled_func_data.p_data + compiled_func_data.size, p_cp_byte_code_data);
+        m_sp_byte_code_chunk = std::make_unique<Data::Chunk>(settings.data_provider.GetData(compiled_func_name + ".obj"));
     }
 
-    ThrowIfFailed(D3DReflect(
-        m_cp_byte_code->GetBufferPointer(),
-        m_cp_byte_code->GetBufferSize(),
-        IID_PPV_ARGS(&m_cp_reflection)
-    ));
+    assert(!!m_sp_byte_code_chunk);
+    ThrowIfFailed(D3DReflect(m_sp_byte_code_chunk->p_data, m_sp_byte_code_chunk->size, IID_PPV_ARGS(&m_cp_reflection)));
 }
 
 ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const
@@ -252,7 +248,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
 
 #ifdef _DEBUG
     std::stringstream log_ss;
-    log_ss << std::endl << GetTypeName() << " shader v." << shader_desc.Version << " created by \"" << shader_desc.Creator << "\" with argument bindings:" << std::endl;
+    log_ss << std::endl << GetTypeName() << " shader v." << shader_desc.Version << " with argument bindings:" << std::endl;
 #endif
 
     for (UINT resource_index = 0; resource_index < shader_desc.BoundResources; ++resource_index)

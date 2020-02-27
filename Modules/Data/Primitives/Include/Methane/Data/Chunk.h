@@ -16,26 +16,29 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Data/Provider.h
-Data provider interface used for loading application resources and resource files
+FILE: Methane/Data/Chunk.h
+Data chunk representing owning or non-owning memory container
 
 ******************************************************************************/
 
 #pragma once
 
-#include "Chunk.h"
-
-#include <string>
+#include "Types.h"
 
 namespace Methane::Data
 {
 
-struct Provider
+struct Chunk
 {
-    virtual bool  HasData(const std::string& path) const noexcept = 0;
-    virtual Chunk GetData(const std::string& path) const = 0;
+    // NOTE: Data storage is used only when data is not managed by data provider and returned with chunk (when data is loaded from file, for example)
+    const Bytes data;
+    ConstRawPtr p_data = nullptr;
+    const Size  size   = 0;
 
-    virtual ~Provider() = default;
+    Chunk() = default;
+    Chunk(ConstRawPtr in_p_data, Size in_size) : p_data(in_p_data), size(in_size) { }
+    Chunk(const Bytes&& in_data)  : data(std::move(in_data)), p_data(static_cast<ConstRawPtr>(data.data())), size(static_cast<Size>(data.size())) { }
+    Chunk(Chunk&& other) noexcept : data(std::move(other.data)), p_data(data.empty() ? other.p_data : data.data()), size(data.empty() ? other.size : static_cast<Size>(data.size())) { }
 };
 
 } // namespace Methane::Data

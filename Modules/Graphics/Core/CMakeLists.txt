@@ -52,10 +52,10 @@ if (WIN32)
     set(PLATFORM_LIBRARIES
         D3DX12
         DirectXTex
+        DirectXCompiler
         d3d12
         dxgi
         dxguid
-        d3dcompiler
         Shcore
     )
 
@@ -287,6 +287,11 @@ set_target_properties(${TARGET}
     PROPERTIES
     FOLDER Modules/Graphics
     PUBLIC_HEADER "${HEADERS}"
+)
+
+set_target_properties(${TARGET}
+    PROPERTIES
+    PREREQUISITE_MODULES "DirectXCompiler"
 )
 
 install(TARGETS ${TARGET}

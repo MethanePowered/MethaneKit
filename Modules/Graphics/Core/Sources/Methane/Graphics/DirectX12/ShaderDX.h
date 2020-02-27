@@ -24,6 +24,7 @@ DirectX 12 implementation of the shader interface.
 #pragma once
 
 #include <Methane/Graphics/ShaderBase.h>
+#include <Methane/Data/Chunk.h>
 
 #include "DescriptorHeapDX.h"
 
@@ -48,12 +49,13 @@ public:
     // ShaderBase overrides
     ArgumentBindings GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const override;
 
-    const wrl::ComPtr<ID3DBlob>&          GetNativeByteCode() const noexcept { return m_cp_byte_code; }
+    const Data::Chunk*                    GetNativeByteCode() const noexcept { return m_sp_byte_code_chunk.get(); }
     std::vector<D3D12_INPUT_ELEMENT_DESC> GetNativeProgramInputLayout(const ProgramDX& program) const;
 
 private:
     IContextDX& GetContextDX() noexcept;
 
+    UniquePtr<Data::Chunk>              m_sp_byte_code_chunk;
     wrl::ComPtr<ID3DBlob>               m_cp_byte_code;
     wrl::ComPtr<ID3D12ShaderReflection> m_cp_reflection;
 };
