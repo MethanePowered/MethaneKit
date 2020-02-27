@@ -125,11 +125,12 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
         MethaneGraphicsKit
     )
 
-    get_target_property(METHANE_PREREQUISITE_MODULES MethaneGraphicsKit PREREQUISITE_MODULES)
-    add_prerequisite_binaries(${TARGET} "${METHANE_PREREQUISITE_MODULES}")
-
     target_include_directories(${TARGET}
         PUBLIC
             .
     )
+
+    get_target_property(METHANE_PREREQUISITE_MODULES MethaneGraphicsKit PREREQUISITE_MODULES)
+    add_prerequisite_binaries(${TARGET} "${METHANE_PREREQUISITE_MODULES}" ${INSTALL_DIR})
+
 endfunction()

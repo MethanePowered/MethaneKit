@@ -90,7 +90,7 @@ function(add_prerequisite_modules TO_TARGET FROM_TARGETS)
     )
 endfunction()
 
-function(add_prerequisite_binaries TO_TARGET FROM_TARGETS)
+function(add_prerequisite_binaries TO_TARGET FROM_TARGETS INSTALL_DIR)
     foreach(FROM_TARGET ${FROM_TARGETS})
         get_property(TARGET_PREREQUISITE_BINARIES_IS_SET TARGET ${FROM_TARGET} PROPERTY PREREQUISITE_BINARIES SET)
         if (TARGET_PREREQUISITE_BINARIES_IS_SET)
@@ -108,6 +108,11 @@ function(add_prerequisite_binaries TO_TARGET FROM_TARGETS)
             COMMENT "Copying prerequisite binaries for application ${TO_TARGET}"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different ${COPY_ALL_BINARIES} "$<TARGET_FILE_DIR:${TO_TARGET}>"
         )
+        if (INSTALL_DIR)
+            install(FILES ${COPY_ALL_BINARIES}
+                DESTINATION ${INSTALL_DIR}
+            )
+        endif()
     endif()
     if (COPY_ALL_RESOURCES)
         get_target_resources_dir(${TO_TARGET} RESOURCES_DIR)
@@ -115,5 +120,10 @@ function(add_prerequisite_binaries TO_TARGET FROM_TARGETS)
             COMMENT "Copying prerequisite resources for application ${TO_TARGET}"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different ${COPY_ALL_RESOURCES} "${RESOURCES_DIR}"
         )
+        if (INSTALL_DIR AND NOT APPLE)
+            install(FILES ${COPY_ALL_RESOURCES}
+                DESTINATION ${INSTALL_DIR}
+            )
+        endif()
     endif()
 endfunction()
