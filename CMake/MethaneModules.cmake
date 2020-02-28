@@ -21,6 +21,22 @@ Library module configuration functions
 
 *****************************************************************************]]
 
+function(get_target_arch OUT_ARCH)
+    if(APPLE)
+        set(${OUT_ARCH} "" PARENT_SCOPE)
+    elseif(ARMEABI_V7A)
+        set(${OUT_ARCH} "arm" PARENT_SCOPE)
+    elseif(ARM64_V8A)
+        set(${OUT_ARCH} "arm64" PARENT_SCOPE)
+    elseif(${CMAKE_SIZEOF_VOID_P} STREQUAL "4")
+        set(${OUT_ARCH} "x86" PARENT_SCOPE)
+    elseif(${CMAKE_SIZEOF_VOID_P} STREQUAL "8")
+        set(${OUT_ARCH} "x64" PARENT_SCOPE)
+    else()
+        message(FATAL_ERROR "Unknown architecture")
+    endif()
+endfunction()
+
 function(get_platform_dir)
     if (WIN32)
         set(PLATFORM_DIR Windows PARENT_SCOPE)

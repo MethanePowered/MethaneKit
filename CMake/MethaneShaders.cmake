@@ -189,11 +189,12 @@ endfunction()
 function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_SHADER_BINS)
     
     get_platform_dir()
+    get_target_arch(WIN_ARCH)
     get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
     get_file_name(${SHADERS_HLSL} SHADERS_NAME)
     get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
 
-    set(SHADER_COMPILER_EXE "${CMAKE_SOURCE_DIR}/Externals/DirectXCompiler/binaries/${PLATFORM_DIR}/bin/dxc.exe")
+    set(SHADER_COMPILER_EXE "${CMAKE_SOURCE_DIR}/Externals/DirectXCompiler/binaries/${PLATFORM_DIR}-${WIN_ARCH}/bin/dxc.exe")
 
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(EXTRA_COMPILE_FLAGS /Od)
