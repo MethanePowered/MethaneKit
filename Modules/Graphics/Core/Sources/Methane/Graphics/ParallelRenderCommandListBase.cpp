@@ -61,7 +61,7 @@ void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_stat
     {
         const Ptr<RenderCommandList>& sp_render_command_list = m_parallel_command_lists[render_command_list_index];
         assert(sp_render_command_list);
-        const std::string render_debug_group = GetThreadCommandListName(debug_group, render_command_list_index);
+        const std::string render_debug_group = GetThreadCommandListName(debug_group, static_cast<uint32_t>(render_command_list_index));
         sp_render_command_list->Reset(sp_render_state, render_debug_group);
     }
 #ifdef _WIN32

@@ -194,7 +194,8 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
     get_file_name(${SHADERS_HLSL} SHADERS_NAME)
     get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
 
-    set(SHADER_COMPILER_EXE "${CMAKE_SOURCE_DIR}/Externals/DirectXCompiler/binaries/${PLATFORM_DIR}-${WIN_ARCH}/bin/dxc.exe")
+    set(SHADER_COMPILER_DIR "${CMAKE_SOURCE_DIR}/Externals/DirectXCompiler/binaries/${PLATFORM_DIR}-${WIN_ARCH}/bin")
+    set(SHADER_COMPILER_EXE "${SHADER_COMPILER_DIR}/dxc.exe")
 
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(EXTRA_COMPILE_FLAGS /Od)
@@ -203,7 +204,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
     endif()
 
     if(METHANE_SHADERS_CODEVIEW_ENABLED OR CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(EXTRA_COMPILE_FLAGS ${EXTRA_COMPILE_FLAGS} /Zi)
+        set(EXTRA_COMPILE_FLAGS ${EXTRA_COMPILE_FLAGS} /Zi /Qembed_debug)
     endif()
 
     file(STRINGS ${SHADERS_CONFIG} CONFIG_STRINGS)
@@ -234,6 +235,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
             COMMENT "Compiling HLSL shader from file " ${SHADERS_HLSL} " with profile " ${SHADER_PROFILE} " and macro-definition" ${SHADER_DEFINITIONS} "to OBJ file " ${SHADER_OBJ_FILE}
             BYPRODUCTS "${SHADER_OBJ_PATH}"
             DEPENDS ${SHADERS_HLSL} ${SHADERS_CONFIG}
+            WORKING_DIRECTORY "${SHADER_COMPILER_DIR}"
             COMMAND ${CMAKE_COMMAND} -E make_directory "${TARGET_SHADERS_DIR}"
             COMMAND ${SHADER_COMPILER_EXE} /T ${SHADER_PROFILE} /E ${ORIG_ENTRY_POINT} /Fo ${SHADER_OBJ_PATH} ${EXTRA_COMPILE_FLAGS} ${SHADER_DEFINITION_ARGUMENTS} ${SHADERS_HLSL}
         )
