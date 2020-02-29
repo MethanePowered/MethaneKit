@@ -55,11 +55,6 @@ static const GraphicsApp::AllSettings g_app_settings =  // Application settings:
 
 HelloTriangleApp::HelloTriangleApp()
     : GraphicsApp(g_app_settings, "Methane tutorial of simple triangle rendering")
-    , m_triangle_vertices({{
-        { { 0.0f,   0.5f,  0.0f }, { 1.0f, 0.0f, 0.0f } },
-        { { 0.5f,  -0.5f,  0.0f }, { 0.0f, 1.0f, 0.0f } },
-        { { -0.5f, -0.5f,  0.0f }, { 0.0f, 0.0f, 1.0f } },
-    }})
 {
 }
 
@@ -73,15 +68,25 @@ void HelloTriangleApp::Init()
 {
     GraphicsApp::Init();
 
-    assert(m_sp_context);
+    struct Vertex
+    {
+        gfx::Vector3f position;
+        gfx::Vector3f color;
+    };
+
+    const std::array<Vertex, 3> triangle_vertices = {{
+        { {  0.0f,  0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
+        { {  0.5f, -0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
+        { { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } },
+    }};
 
     // Create vertex buffer with triangle data
     const Data::Size vertex_size      = static_cast<Data::Size>(sizeof(Vertex));
-    const Data::Size vertex_data_size = static_cast<Data::Size>(sizeof(m_triangle_vertices));
+    const Data::Size vertex_data_size = static_cast<Data::Size>(sizeof(triangle_vertices));
 
     m_sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(*m_sp_context, vertex_data_size, vertex_size);
     m_sp_vertex_buffer->SetName("Triangle Vertex Buffer");
-    m_sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_triangle_vertices.data()), vertex_data_size } });
+    m_sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(triangle_vertices.data()), vertex_data_size } });
 
     // Create render state
     m_sp_state = gfx::RenderState::Create(*m_sp_context,
@@ -99,18 +104,11 @@ void HelloTriangleApp::Init()
                     {
                         gfx::Program::InputBufferLayout
                         {
-                            gfx::Program::InputBufferLayout::Arguments
-                            {
-                                { "input_position", "POSITION" },
-                                { "input_color",    "COLOR"    },
-                            }
+                            gfx::Program::InputBufferLayout::ArgumentSemantics { "POSITION" , "COLOR" }
                         }
                     },
                     gfx::Program::ArgumentDescriptions { },
-                    gfx::PixelFormats
-                    {
-                        GetInitialContextSettings().color_format
-                    }
+                    gfx::PixelFormats { m_sp_context->GetSettings().color_format }
                 }
             ),
             gfx::Viewports
@@ -144,7 +142,6 @@ bool HelloTriangleApp::Resize(const gfx::FrameSize& frame_size, bool is_minimize
         return false;
 
     // Update viewports and scissor rects state
-    assert(m_sp_state);
     m_sp_state->SetViewports(    { gfx::GetFrameViewport(frame_size)    } );
     m_sp_state->SetScissorRects( { gfx::GetFrameScissorRect(frame_size) } );
 
@@ -154,7 +151,6 @@ bool HelloTriangleApp::Resize(const gfx::FrameSize& frame_size, bool is_minimize
 bool HelloTriangleApp::Render()
 {
     // Render only when context is ready
-    assert(!!m_sp_context);
     if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
         return false;
 
@@ -162,14 +158,10 @@ bool HelloTriangleApp::Render()
     m_sp_context->WaitForGpu(gfx::Context::WaitFor::FramePresented);
     HelloTriangleFrame& frame = GetCurrentFrame();
 
-    assert(!!frame.sp_cmd_list);
-    assert(!!m_sp_vertex_buffer);
-    assert(!!m_sp_state);
-
     // Issue commands for triangle rendering
     frame.sp_cmd_list->Reset(m_sp_state, "Triangle Rendering");
     frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
-    frame.sp_cmd_list->Draw(gfx::RenderCommandList::Primitive::Triangle, static_cast<uint32_t>(m_triangle_vertices.size()));
+    frame.sp_cmd_list->Draw(gfx::RenderCommandList::Primitive::Triangle, 3u);
 
     RenderOverlay(*frame.sp_cmd_list);
 

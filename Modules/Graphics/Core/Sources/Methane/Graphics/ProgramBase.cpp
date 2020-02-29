@@ -239,25 +239,6 @@ Shader& ProgramBase::GetShaderRef(Shader::Type shader_type)
     return *sp_shader;
 }
 
-uint32_t ProgramBase::GetInputBufferIndexByArgumentName(const std::string& argument_name) const
-{
-    ITT_FUNCTION_TASK();
-
-    for (size_t buffer_index = 0; buffer_index < m_settings.input_buffer_layouts.size(); buffer_index++)
-    {
-        const InputBufferLayout& input_buffer_layout = m_settings.input_buffer_layouts[buffer_index];
-        auto argument_it = std::find_if(input_buffer_layout.arguments.begin(), input_buffer_layout.arguments.end(),
-                                        [&argument_name](const InputBufferLayout::Argument& argument) -> bool
-                                        {
-                                            return argument.name == argument_name;
-                                        });
-        if (argument_it != input_buffer_layout.arguments.end())
-            return static_cast<uint32_t>(buffer_index);
-    }
-    
-    throw std::runtime_error("Input argument \"" + argument_name + "\" was not found for program \"" + GetName() + "\"");
-}
-
 uint32_t ProgramBase::GetInputBufferIndexByArgumentSemantic(const std::string& argument_semantic) const
 {
     ITT_FUNCTION_TASK();
@@ -265,12 +246,8 @@ uint32_t ProgramBase::GetInputBufferIndexByArgumentSemantic(const std::string& a
     for (size_t buffer_index = 0; buffer_index < m_settings.input_buffer_layouts.size(); buffer_index++)
     {
         const InputBufferLayout& input_buffer_layout = m_settings.input_buffer_layouts[buffer_index];
-        auto argument_it = std::find_if(input_buffer_layout.arguments.begin(), input_buffer_layout.arguments.end(),
-                                        [&argument_semantic](const InputBufferLayout::Argument& argument) -> bool
-                                        {
-                                            return argument.semantic == argument_semantic;
-                                        });
-        if (argument_it != input_buffer_layout.arguments.end())
+        auto argument_it = std::find(input_buffer_layout.argument_semantics.begin(), input_buffer_layout.argument_semantics.end(), argument_semantic);
+        if (argument_it != input_buffer_layout.argument_semantics.end())
             return static_cast<uint32_t>(buffer_index);
     }
 

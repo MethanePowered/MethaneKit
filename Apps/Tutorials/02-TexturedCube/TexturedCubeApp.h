@@ -52,30 +52,16 @@ public:
     TexturedCubeApp();
     ~TexturedCubeApp() override;
 
-    // App interface
+    // GraphicsApp overrides
     void Init() override;
     bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
     bool Update() override;
     bool Render() override;
 
-    // Context::Callback interface
+    // Context::Callback override
     void OnContextReleased() override;
 
 private:
-    struct Vertex
-    {
-        gfx::Mesh::Position position;
-        gfx::Mesh::Normal   normal;
-        gfx::Mesh::TexCoord texcoord;
-
-        using FieldsArray = std::array<gfx::Mesh::VertexField, 3>;
-        static constexpr const FieldsArray layout = {
-            gfx::Mesh::VertexField::Position,
-            gfx::Mesh::VertexField::Normal,
-            gfx::Mesh::VertexField::TexCoord,
-        };
-    };
-
     struct SHADER_STRUCT_ALIGN Constants
     {
         SHADER_FIELD_ALIGN gfx::Color4f   light_color;
@@ -95,7 +81,6 @@ private:
     const Constants         m_shader_constants;
     Uniforms                m_shader_uniforms = { };
     gfx::Camera             m_camera;
-    gfx::BoxMesh<Vertex>    m_cube_mesh;
     float                   m_cube_scale;
     Ptr<gfx::RenderState>   m_sp_state;
     Ptr<gfx::Buffer>        m_sp_vertex_buffer;

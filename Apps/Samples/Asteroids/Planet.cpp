@@ -32,24 +32,16 @@ Planet rendering primitive
 namespace Methane::Samples
 {
 
-struct PlanetVertex
-{
-    gfx::Mesh::Position position;
-    gfx::Mesh::Normal   normal;
-    gfx::Mesh::TexCoord texcoord;
-
-    using FieldsArray = std::array<gfx::Mesh::VertexField, 3>;
-    static constexpr const FieldsArray layout = {
-        gfx::Mesh::VertexField::Position,
-        gfx::Mesh::VertexField::Normal,
-        gfx::Mesh::VertexField::TexCoord,
-    };
-};
-
 Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings)
+    : Planet(context, image_loader, settings, gfx::SphereMesh<Vertex>(Vertex::layout, 1.f, 32, 32))
+{
+    ITT_FUNCTION_TASK();
+}
+
+Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings, gfx::BaseMesh<Vertex> mesh)
     : m_settings(settings)
     , m_context(context)
-    , m_mesh_buffers(context, gfx::SphereMesh<PlanetVertex>(gfx::Mesh::VertexLayoutFromArray(PlanetVertex::layout), 1.f, 32, 32), "Planet")
+    , m_mesh_buffers(context, mesh, "Planet")
 {
     ITT_FUNCTION_TASK();
 
@@ -66,15 +58,7 @@ Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, cons
             },
             gfx::Program::InputBufferLayouts
             {
-                gfx::Program::InputBufferLayout
-                {
-                    gfx::Program::InputBufferLayout::Arguments
-                    {
-                        { "input_position", "POSITION" },
-                        { "input_normal",   "NORMAL"   },
-                        { "input_texcoord", "TEXCOORD" },
-                    }
-                }
+                gfx::Program::InputBufferLayout { mesh.GetVertexLayout().GetSemantics() }
             },
             gfx::Program::ArgumentDescriptions
             {

@@ -49,7 +49,7 @@ static gfx::Point3f GetRandomDirection(std::mt19937& rng)
 }
 
 AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed)
-    : gfx::UberMesh<Asteroid::Vertex>(gfx::Mesh::VertexLayoutFromArray(Asteroid::Vertex::layout))
+    : gfx::UberMesh<Asteroid::Vertex>(Asteroid::Vertex::layout)
     , m_instance_count(instance_count)
     , m_subdivisions_count(subdivisions_count)
 {
@@ -238,14 +238,7 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, Settings settings, C
             },
             gfx::Program::InputBufferLayouts
             {
-                gfx::Program::InputBufferLayout
-                {
-                    gfx::Program::InputBufferLayout::Arguments
-                    {
-                        { "input_position", "POSITION" },
-                        { "input_normal",   "NORMAL"   },
-                    }
-                }
+                gfx::Program::InputBufferLayout { state.uber_mesh.GetVertexLayout().GetSemantics() }
             },
             gfx::Program::ArgumentDescriptions
             {

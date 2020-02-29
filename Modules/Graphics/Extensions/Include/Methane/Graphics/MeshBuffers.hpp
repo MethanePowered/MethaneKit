@@ -248,8 +248,7 @@ class TexturedMeshBuffers : public MeshBuffers<UniformsType>
 {
 public:
     template<typename VType>
-    TexturedMeshBuffers(RenderContext& context, const BaseMesh<VType>& mesh_data,
-                        const std::string& mesh_name)
+    TexturedMeshBuffers(RenderContext& context, const BaseMesh<VType>& mesh_data, const std::string& mesh_name)
         : MeshBuffers<UniformsType>(context, mesh_data, mesh_name)
     {
         ITT_FUNCTION_TASK();

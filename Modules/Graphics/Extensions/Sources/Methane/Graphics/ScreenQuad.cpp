@@ -41,8 +41,7 @@ struct ScreenQuadVertex
     Mesh::Position position;
     Mesh::TexCoord texcoord;
 
-    using FieldsArray = std::array<Mesh::VertexField, 2>;
-    static constexpr const FieldsArray layout = {
+    static constexpr const Mesh::VertexFields<2> layout = {
         Mesh::VertexField::Position,
         Mesh::VertexField::TexCoord,
     };
@@ -57,6 +56,8 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
 
     if (!m_sp_texture)
         throw std::invalid_argument("Screen-quad texture can not be empty.");
+
+    RectMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.f, 2.f);
 
     const RenderContext::Settings& context_settings = context.GetSettings();
 
@@ -73,11 +74,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
             {
                 Program::InputBufferLayout
                 {
-                    Program::InputBufferLayout::Arguments
-                    {
-                        { "input_position", "POSITION" },
-                        { "input_texcoord", "TEXCOORD" },
-                    }
+                    Program::InputBufferLayout::ArgumentSemantics { quad_mesh.GetVertexLayout().GetSemantics() }
                 }
             },
             Program::ArgumentDescriptions
@@ -114,8 +111,6 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
     });
     m_sp_texture_sampler->SetName(m_settings.name + " Screen-Quad Texture Sampler");
     m_sp_texture->SetName(m_settings.name + " Screen-Quad Texture");
-
-    RectMesh<ScreenQuadVertex> quad_mesh(Mesh::VertexLayoutFromArray(ScreenQuadVertex::layout), 2.f, 2.f);
 
     m_sp_vertex_buffer = Buffer::CreateVertexBuffer(context, static_cast<Data::Size>(quad_mesh.GetVertexDataSize()),
                                                              static_cast<Data::Size>(quad_mesh.GetVertexSize()));

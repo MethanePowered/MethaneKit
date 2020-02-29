@@ -31,6 +31,19 @@ Tutorial demonstrating shadow-pass rendering with Methane graphics API
 namespace Methane::Tutorials
 {
 
+struct Vertex
+{
+    gfx::Mesh::Position position;
+    gfx::Mesh::Normal   normal;
+    gfx::Mesh::TexCoord texcoord;
+
+    static constexpr const gfx::Mesh::VertexFields<3> layout = {
+        gfx::Mesh::VertexField::Position,
+        gfx::Mesh::VertexField::Normal,
+        gfx::Mesh::VertexField::TexCoord,
+    };
+};
+
 // Common application settings
 static const gfx::FrameSize           g_shadow_map_size(1024, 1024);
 static const GraphicsApp::AllSettings g_app_settings =  // Application settings:
@@ -59,9 +72,7 @@ static const GraphicsApp::AllSettings g_app_settings =  // Application settings:
 };
 
 ShadowCubeApp::ShadowCubeApp()
-    : GraphicsApp(g_app_settings, "Methane Tutorial of shadow pass rendering")
-    , m_cube_mesh(gfx::Mesh::VertexLayoutFromArray(Vertex::layout), 1.f, 1.f, 1.f)
-    , m_floor_mesh(gfx::Mesh::VertexLayoutFromArray(Vertex::layout), 7.f, 7.f, 0.f, 0, gfx::RectMesh<Vertex>::FaceType::XZ)
+    : GraphicsApp(g_app_settings, "Methane tutorial of shadow pass rendering")
     , m_scene_scale(15.f)
     , m_scene_constants(                                // Shader constants:
         {                                               // ================
@@ -70,6 +81,8 @@ ShadowCubeApp::ShadowCubeApp()
             0.2f,                                       // - light_ambient_factor
             5.f                                         // - light_specular_factor
         })
+    , m_shadow_pass(false, "Shadow Render Pass")
+    , m_final_pass(true, "Final Render Pass")
 {
     m_view_camera.SetOrientation({ { 15.0f, 22.5f, -15.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
 
@@ -98,18 +111,19 @@ void ShadowCubeApp::Init()
 {
     GraphicsApp::Init();
 
-    assert(m_sp_context);
     const gfx::RenderContext::Settings& context_settings = m_sp_context->GetSettings();
-
-    // Load textures, vertex and index buffers for cube and floor meshes
-    m_sp_cube_buffers  = std::make_unique<TexturedMeshBuffers>(*m_sp_context, m_cube_mesh, "Cube");
-    m_sp_cube_buffers->SetTexture(m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MethaneBubbles.jpg", true));
-
-    m_sp_floor_buffers = std::make_unique<TexturedMeshBuffers>(*m_sp_context, m_floor_mesh, "Floor");
-    m_sp_floor_buffers->SetTexture(m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MarbleWhite.jpg", true));
-
     m_view_camera.Resize(static_cast<float>(context_settings.frame_size.width),
                          static_cast<float>(context_settings.frame_size.height));
+
+    const gfx::BoxMesh<Vertex>  cube_mesh(Vertex::layout, 1.f, 1.f, 1.f);
+    const gfx::RectMesh<Vertex> floor_mesh(Vertex::layout, 7.f, 7.f, 0.f, 0, gfx::RectMesh<Vertex>::FaceType::XZ);
+
+    // Load textures, vertex and index buffers for cube and floor meshes
+    m_sp_cube_buffers  = std::make_unique<TexturedMeshBuffers>(*m_sp_context, cube_mesh, "Cube");
+    m_sp_cube_buffers->SetTexture(m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MethaneBubbles.jpg", true));
+
+    m_sp_floor_buffers = std::make_unique<TexturedMeshBuffers>(*m_sp_context, floor_mesh, "Floor");
+    m_sp_floor_buffers->SetTexture(m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MarbleWhite.jpg", true));
 
     const Data::Size constants_data_size      = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(Constants)));
     const Data::Size scene_uniforms_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(SceneUniforms)));
@@ -160,12 +174,7 @@ void ShadowCubeApp::Init()
             {
                 gfx::Program::InputBufferLayout
                 {
-                    gfx::Program::InputBufferLayout::Arguments
-                    {
-                        { "input_position", "POSITION" },
-                        { "input_normal",   "NORMAL"   },
-                        { "input_texcoord", "TEXCOORD" },
-                    }
+                    gfx::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                 }
             },
             gfx::Program::ArgumentDescriptions
@@ -191,9 +200,6 @@ void ShadowCubeApp::Init()
     final_state_settings.depth.enabled = true;
     m_final_pass.sp_state = gfx::RenderState::Create(*m_sp_context, final_state_settings);
     m_final_pass.sp_state->SetName("Final pass render state");
-    
-    m_final_pass.command_group_name = "Final Render Pass";
-    m_final_pass.is_final_pass = true;
 
     // ========= Shadow Pass objects =========
     
@@ -224,9 +230,6 @@ void ShadowCubeApp::Init()
     shadow_state_settings.depth.enabled = true;
     m_shadow_pass.sp_state = gfx::RenderState::Create(*m_sp_context, shadow_state_settings);
     m_shadow_pass.sp_state->SetName("Shadow-map render state");
-    
-    m_shadow_pass.command_group_name = "Shadow Render Pass";
-    m_shadow_pass.is_final_pass = false;
 
     // ========= Per-Frame Data =========
     for(ShadowCubeFrame& frame : m_frames)
@@ -342,7 +345,6 @@ bool ShadowCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
         return false;
 
     // Update viewports and scissor rects state
-    assert(m_final_pass.sp_state);
     m_final_pass.sp_state->SetViewports({ gfx::GetFrameViewport(frame_size) });
     m_final_pass.sp_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
 
@@ -380,7 +382,7 @@ bool ShadowCubeApp::Update()
 
     // Cube model matrix
     gfx::Matrix44f cube_model_matrix;
-    cml::matrix_translation(cube_model_matrix, gfx::Vector3f(0.f, m_cube_mesh.GetHeight() / 2.f, 0.f));
+    cml::matrix_translation(cube_model_matrix, gfx::Vector3f(0.f, 0.5f, 0.f)); // move up by half of cube model height
     cube_model_matrix = cube_model_matrix * scale_matrix;
 
     // Update Cube uniforms
@@ -413,7 +415,6 @@ bool ShadowCubeApp::Update()
 bool ShadowCubeApp::Render()
 {
     // Render only when context is ready
-    assert(!!m_sp_context);
     if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
         return false;
 
@@ -445,21 +446,13 @@ bool ShadowCubeApp::Render()
 
 void ShadowCubeApp::RenderScene(const RenderPass &render_pass, ShadowCubeFrame::PassResources &render_pass_resources, gfx::Texture &shadow_texture)
 {
-    assert(!!render_pass_resources.sp_cmd_list);
     gfx::RenderCommandList& cmd_list = *render_pass_resources.sp_cmd_list;
 
     // Reset command list with initial rendering state
-    assert(!!render_pass.sp_state);
     cmd_list.Reset(render_pass.sp_state, render_pass.command_group_name);
 
-    // Cube drawing
-    assert(!!render_pass_resources.cube.sp_program_bindings);
-    assert(!!m_sp_cube_buffers);
+    // Draw scene with cube and floor
     m_sp_cube_buffers->Draw(cmd_list, *render_pass_resources.cube.sp_program_bindings);
-
-    // Floor drawing
-    assert(!!render_pass_resources.floor.sp_program_bindings);
-    assert(!!m_sp_floor_buffers);
     m_sp_floor_buffers->Draw(cmd_list, *render_pass_resources.floor.sp_program_bindings);
 
     if (render_pass.is_final_pass)

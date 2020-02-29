@@ -67,7 +67,6 @@ protected:
     const DescriptorHeap::Range& ReserveConstantDescriptorRange(DescriptorHeap& heap, uint32_t range_length);
 
     Shader& GetShaderRef(Shader::Type shader_type);
-    uint32_t GetInputBufferIndexByArgumentName(const std::string& argument_name) const;
     uint32_t GetInputBufferIndexByArgumentSemantic(const std::string& argument_semantic) const;
 
     using ShadersByType = std::array<Ptr<Shader>, static_cast<size_t>(Shader::Type::Count)>;

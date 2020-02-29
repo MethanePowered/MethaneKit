@@ -48,7 +48,7 @@ public:
     HelloTriangleApp();
     ~HelloTriangleApp() override;
 
-    // App interface
+    // GraphicsApp overrides
     void Init() override;
     bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
     bool Render() override;
@@ -57,15 +57,6 @@ public:
     void OnContextReleased() override;
 
 private:
-    struct Vertex
-    {
-        gfx::Vector3f position;
-        gfx::Vector3f color;
-    };
-
-    using Vertices = std::array<Vertex, 3>;
-    const Vertices m_triangle_vertices;
-
     Ptr<gfx::RenderState>   m_sp_state;
     Ptr<gfx::Buffer>        m_sp_vertex_buffer;
 };

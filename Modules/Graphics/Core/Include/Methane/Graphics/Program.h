@@ -53,18 +53,12 @@ struct Program : virtual Object
             PerVertex,
             PerInstance,
         };
-        
-        struct Argument
-        {
-            std::string name;
-            std::string semantic;
-        };
-        
-        using Arguments = std::vector<Argument>;
-        
-        Arguments arguments;
-        StepType  step_type = StepType::PerVertex;
-        uint32_t  step_rate = 1;
+
+        using ArgumentSemantics = std::vector<std::string>;
+
+        ArgumentSemantics argument_semantics;
+        StepType          step_type = StepType::PerVertex;
+        uint32_t          step_rate = 1;
     };
     
     using InputBufferLayouts = std::vector<InputBufferLayout>;

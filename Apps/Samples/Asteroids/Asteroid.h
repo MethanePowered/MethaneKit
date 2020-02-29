@@ -52,7 +52,7 @@ public:
         gfx::Mesh::Position position;
         gfx::Mesh::Normal   normal;
 
-        static constexpr const std::array<gfx::Mesh::VertexField, 2> layout = {
+        static constexpr const gfx::Mesh::VertexFields<2> layout = {
             gfx::Mesh::VertexField::Position,
             gfx::Mesh::VertexField::Normal,
         };

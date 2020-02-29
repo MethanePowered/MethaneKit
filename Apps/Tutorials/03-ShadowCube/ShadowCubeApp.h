@@ -62,30 +62,16 @@ public:
     ShadowCubeApp();
     ~ShadowCubeApp() override;
 
-    // NativeApp
+    // GraphicsApp overrides
     void Init() override;
     bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
     bool Update() override;
     bool Render() override;
 
-    // Context::Callback interface
+    // Context::Callback override
     void OnContextReleased() override;
 
 private:
-    struct Vertex
-    {
-        gfx::Mesh::Position position;
-        gfx::Mesh::Normal   normal;
-        gfx::Mesh::TexCoord texcoord;
-
-        using FieldsArray = std::array<gfx::Mesh::VertexField, 3>;
-        static constexpr const FieldsArray layout = {
-            gfx::Mesh::VertexField::Position,
-            gfx::Mesh::VertexField::Normal,
-            gfx::Mesh::VertexField::TexCoord,
-        };
-    };
-
     struct SHADER_STRUCT_ALIGN Constants
     {
         SHADER_FIELD_ALIGN gfx::Color4f   light_color;
@@ -113,8 +99,8 @@ private:
     public:
         using TexturedMeshBuffersBase::TexturedMeshBuffersBase;
 
-        const MeshUniforms& GetShadowPassUniforms() const        { return m_shadow_pass_uniforms; }
-        void SetShadowPassUniforms(const MeshUniforms& uniforms) { m_shadow_pass_uniforms = uniforms; }
+        const MeshUniforms& GetShadowPassUniforms() const                       { return m_shadow_pass_uniforms; }
+        void                SetShadowPassUniforms(const MeshUniforms& uniforms) { m_shadow_pass_uniforms = uniforms; }
 
     private:
         MeshUniforms m_shadow_pass_uniforms = {};
@@ -122,28 +108,29 @@ private:
 
     struct RenderPass
     {
+        RenderPass(bool is_final_pass, std::string command_group_name)
+            : is_final_pass(is_final_pass)
+            , command_group_name(std::move(command_group_name))
+        { }
+
+        const bool              is_final_pass;
+        const std::string       command_group_name;
         Ptr<gfx::RenderState>   sp_state;
-        std::string             command_group_name;
-        bool                    is_final_pass = false;
 
         void Release();
     };
 
-    void RenderScene(const RenderPass &render_pass, ShadowCubeFrame::PassResources &render_pass_resources,
-                     gfx::Texture &shadow_texture);
+    void RenderScene(const RenderPass &render_pass, ShadowCubeFrame::PassResources &render_pass_resources, gfx::Texture &shadow_texture);
 
-    const gfx::BoxMesh<Vertex>  m_cube_mesh;
-    const gfx::RectMesh<Vertex> m_floor_mesh;
     const float                 m_scene_scale;
     const Constants             m_scene_constants;
-
+    SceneUniforms               m_scene_uniforms = { };
     gfx::Camera                 m_view_camera;
     gfx::Camera                 m_light_camera;
+
     Ptr<gfx::Buffer>            m_sp_const_buffer;
     Ptr<gfx::Sampler>           m_sp_texture_sampler;
     Ptr<gfx::Sampler>           m_sp_shadow_sampler;
-
-    SceneUniforms               m_scene_uniforms = { };
     Ptr<TexturedMeshBuffers>    m_sp_cube_buffers;
     Ptr<TexturedMeshBuffers>    m_sp_floor_buffers;
     RenderPass                  m_shadow_pass;

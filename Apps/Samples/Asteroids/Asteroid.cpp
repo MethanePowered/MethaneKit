@@ -59,7 +59,7 @@ static AsteroidColorSchema TransformSRGBToLinear(const AsteroidColorSchema& srgb
 }
 
 Asteroid::Mesh::Mesh(uint32_t subdivisions_count, bool randomize)
-    : gfx::IcosahedronMesh<Vertex>(VertexLayoutFromArray(Vertex::layout), 0.5f, subdivisions_count, true)
+    : gfx::IcosahedronMesh<Vertex>(Vertex::layout, 0.5f, subdivisions_count, true)
 {
     ITT_FUNCTION_TASK();
 

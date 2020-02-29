@@ -65,6 +65,34 @@ const Mesh::Colors      Mesh::g_colors = {
     { 0.0f, 1.0f, 1.0f, 1.0f },
 };
 
+std::string Mesh::VertexLayout::GetSemanticByVertexField(VertexField vertex_field)
+{
+    ITT_FUNCTION_TASK();
+
+    switch(vertex_field)
+    {
+    case VertexField::Position: return "POSITION";
+    case VertexField::Normal:   return "NORMAL";
+    case VertexField::TexCoord: return "TEXCOORD";
+    case VertexField::Color:    return "COLOR";
+    default:                    assert(0);
+    }
+
+    return "";
+}
+
+std::vector<std::string> Mesh::VertexLayout::GetSemantics() const
+{
+    ITT_FUNCTION_TASK();
+
+    std::vector<std::string> semantic_names;
+    for(VertexField vertex_field : *this)
+    {
+        semantic_names.emplace_back(GetSemanticByVertexField(vertex_field));
+    }
+    return semantic_names;
+}
+
 Mesh::VertexFieldOffsets Mesh::GetVertexFieldOffsets(const VertexLayout& vertex_layout)
 {
     ITT_FUNCTION_TASK();

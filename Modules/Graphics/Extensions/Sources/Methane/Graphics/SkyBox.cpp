@@ -30,20 +30,16 @@ SkyBox rendering primitive
 namespace Methane::Graphics
 {
 
-struct SkyBoxVertex
-{
-    Mesh::Position position;
-
-    using FieldsArray = std::array<Mesh::VertexField, 1>;
-    static constexpr const FieldsArray layout = {
-        Mesh::VertexField::Position,
-    };
-};
-
 SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings)
+    : SkyBox(context, image_loader, settings, SphereMesh<Vertex>(Vertex::layout))
+{
+    ITT_FUNCTION_TASK();
+}
+
+SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings, BaseMesh<Vertex> mesh)
     : m_settings(settings)
     , m_context(context)
-    , m_mesh_buffers(context, SphereMesh<SkyBoxVertex>(Mesh::VertexLayoutFromArray(SkyBoxVertex::layout)), "Sky-Box")
+    , m_mesh_buffers(context, mesh, "Sky-Box")
 {
     ITT_FUNCTION_TASK();
 
@@ -64,10 +60,7 @@ SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings
             {
                 Program::InputBufferLayout
                 {
-                    Program::InputBufferLayout::Arguments
-                    {
-                        { "input_position", "POSITION" },
-                    }
+                    Program::InputBufferLayout::ArgumentSemantics { mesh.GetVertexLayout().GetSemantics() }
                 }
             },
             Program::ArgumentDescriptions

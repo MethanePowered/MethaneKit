@@ -52,12 +52,6 @@ ShaderBase::ShaderBase(Type type, ContextBase& context, const Settings& settings
     ITT_FUNCTION_TASK();
 }
 
-uint32_t ShaderBase::GetProgramInputBufferIndexByArgumentName(const ProgramBase& program, const std::string& argument_name) const
-{
-    ITT_FUNCTION_TASK();
-    return program.GetInputBufferIndexByArgumentName(argument_name);
-}
-
 uint32_t ShaderBase::GetProgramInputBufferIndexByArgumentSemantic(const ProgramBase& program, const std::string& argument_semantic) const
 {
     ITT_FUNCTION_TASK();

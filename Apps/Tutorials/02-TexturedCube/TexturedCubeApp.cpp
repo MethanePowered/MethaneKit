@@ -31,6 +31,19 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 namespace Methane::Tutorials
 {
 
+struct CubeVertex
+{
+    gfx::Mesh::Position position;
+    gfx::Mesh::Normal   normal;
+    gfx::Mesh::TexCoord texcoord;
+
+    static constexpr const gfx::Mesh::VertexFields<3> layout = {
+        gfx::Mesh::VertexField::Position,
+        gfx::Mesh::VertexField::Normal,
+        gfx::Mesh::VertexField::TexCoord,
+    };
+};
+
 static const GraphicsApp::AllSettings g_app_settings =  // Application settings:
 {                                                       // ====================
     {                                                   // platform_app:
@@ -65,7 +78,6 @@ TexturedCubeApp::TexturedCubeApp()
             0.2f,                                       // - light_ambient_factor
             5.f                                         // - light_specular_factor
         })
-    , m_cube_mesh(gfx::Mesh::VertexLayoutFromArray(Vertex::layout))
     , m_cube_scale(15.f)
 {
     m_shader_uniforms.light_position = gfx::Vector3f(0.f, 20.f, -25.f);
@@ -93,10 +105,11 @@ void TexturedCubeApp::Init()
 {
     GraphicsApp::Init();
 
-    assert(m_sp_context);
     const gfx::RenderContext::Settings& context_settings = m_sp_context->GetSettings();
     m_camera.Resize(static_cast<float>(context_settings.frame_size.width),
                     static_cast<float>(context_settings.frame_size.height));
+
+    const gfx::BoxMesh<CubeVertex> cube_mesh(CubeVertex::layout);
 
     // Create render state with program
     gfx::RenderState::Settings state_settings;
@@ -112,12 +125,7 @@ void TexturedCubeApp::Init()
             {
                 gfx::Program::InputBufferLayout
                 {
-                    gfx::Program::InputBufferLayout::Arguments
-                    {
-                        { "input_position", "POSITION" },
-                        { "input_normal",   "NORMAL"   },
-                        { "input_texcoord", "TEXCOORD" },
-                    }
+                    gfx::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                 }
             },
             gfx::Program::ArgumentDescriptions
@@ -158,17 +166,17 @@ void TexturedCubeApp::Init()
     const Data::Size uniforms_data_size  = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(m_shader_uniforms)));
 
     // Create vertex buffer for cube mesh
-    const Data::Size vertex_data_size = static_cast<Data::Size>(m_cube_mesh.GetVertexDataSize());
-    const Data::Size vertex_size      = static_cast<Data::Size>(m_cube_mesh.GetVertexSize());
+    const Data::Size vertex_data_size = static_cast<Data::Size>(cube_mesh.GetVertexDataSize());
+    const Data::Size vertex_size      = static_cast<Data::Size>(cube_mesh.GetVertexSize());
     m_sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(*m_sp_context, vertex_data_size, vertex_size);
     m_sp_vertex_buffer->SetName("Cube Vertex Buffer");
-    m_sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetVertices().data()), vertex_data_size } });
+    m_sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } });
 
     // Create index buffer for cube mesh
-    const Data::Size index_data_size = static_cast<Data::Size>(m_cube_mesh.GetIndexDataSize());
-    m_sp_index_buffer  = gfx::Buffer::CreateIndexBuffer(*m_sp_context, index_data_size, gfx::GetIndexFormat(m_cube_mesh.GetIndex(0)));
+    const Data::Size index_data_size = static_cast<Data::Size>(cube_mesh.GetIndexDataSize());
+    m_sp_index_buffer  = gfx::Buffer::CreateIndexBuffer(*m_sp_context, index_data_size, gfx::GetIndexFormat(cube_mesh.GetIndex(0)));
     m_sp_index_buffer->SetName("Cube Index Buffer");
-    m_sp_index_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), index_data_size } });
+    m_sp_index_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()), index_data_size } });
 
     // Create constants buffer for frame rendering
     m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, constants_data_size);
@@ -208,7 +216,6 @@ bool TexturedCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized
         return false;
 
     // Update viewports and scissor rects state
-    assert(m_sp_state);
     m_sp_state->SetViewports({ gfx::GetFrameViewport(frame_size) });
     m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
 
@@ -238,20 +245,12 @@ bool TexturedCubeApp::Update()
 bool TexturedCubeApp::Render()
 {
     // Render only when context is ready
-    assert(!!m_sp_context);
     if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
         return false;
 
     // Wait for previous frame rendering is completed and switch to next frame
     m_sp_context->WaitForGpu(gfx::RenderContext::WaitFor::FramePresented);
     TexturedCubeFrame& frame = GetCurrentFrame();
-
-    assert(!!frame.sp_uniforms_buffer);
-    assert(!!frame.sp_cmd_list);
-    assert(!!frame.sp_program_bindings);
-    assert(!!m_sp_vertex_buffer);
-    assert(!!m_sp_index_buffer);
-    assert(!!m_sp_state);
 
     // Update uniforms buffer related to current frame
     frame.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(Uniforms) } });

@@ -99,14 +99,25 @@ public:
         Count
     };
 
-    using VertexLayout = std::vector<VertexField>;
-
     template<std::size_t N>
-    static VertexLayout VertexLayoutFromArray(const std::array<VertexField, N>& layout_array)
+    using VertexFields = std::array<VertexField, N>;
+
+    class VertexLayout : public std::vector<VertexField>
     {
-        ITT_FUNCTION_TASK();
-        return VertexLayout(layout_array.begin(), layout_array.end());
-    }
+    public:
+        using std::vector<VertexField>::vector;
+
+        template<std::size_t N>
+        VertexLayout(const VertexFields<N>& vertex_fields)
+            : std::vector<VertexField>(vertex_fields.begin(), vertex_fields.end())
+        {
+            ITT_FUNCTION_TASK();
+        }
+
+        std::vector<std::string> GetSemantics() const;
+
+        static std::string GetSemanticByVertexField(VertexField vertex_field);
+    };
 
     Mesh(Type type, const VertexLayout& vertex_layout);
 
@@ -310,7 +321,7 @@ class UberMesh : public BaseMesh<VType>
 public:
     using BaseMeshT = BaseMesh<VType>;
 
-    UberMesh(const Mesh::VertexLayout& vertex_layout)
+    explicit UberMesh(const Mesh::VertexLayout& vertex_layout)
         : BaseMeshT(Mesh::Type::Uber, vertex_layout)
     {
         ITT_FUNCTION_TASK();

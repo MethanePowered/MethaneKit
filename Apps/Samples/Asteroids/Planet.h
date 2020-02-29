@@ -32,6 +32,7 @@ Planet rendering primitive
 #include <Methane/Graphics/Sampler.h>
 #include <Methane/Graphics/MathTypes.h>
 #include <Methane/Graphics/Types.h>
+#include <Methane/Graphics/Mesh.h>
 
 #include <memory>
 
@@ -74,8 +75,23 @@ public:
 private:
     using TexturedMeshBuffers = gfx::TexturedMeshBuffers<Uniforms>;
 
+    struct Vertex
+    {
+        gfx::Mesh::Position position;
+        gfx::Mesh::Normal   normal;
+        gfx::Mesh::TexCoord texcoord;
+
+        static constexpr const gfx::Mesh::VertexFields<3> layout = {
+            gfx::Mesh::VertexField::Position,
+            gfx::Mesh::VertexField::Normal,
+            gfx::Mesh::VertexField::TexCoord,
+        };
+    };
+
+    Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings, gfx::BaseMesh<Vertex> mesh);
+
     Settings                    m_settings;
-    gfx::RenderContext&               m_context;
+    gfx::RenderContext&         m_context;
     TexturedMeshBuffers         m_mesh_buffers;
     Ptr<gfx::Sampler>           m_sp_texture_sampler;
     Ptr<gfx::RenderState>       m_sp_state;

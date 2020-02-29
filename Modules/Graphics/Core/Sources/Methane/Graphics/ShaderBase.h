@@ -57,7 +57,6 @@ public:
 protected:
     ContextBase&        GetContext()        { return m_context; }
     const ContextBase&  GetContext() const  { return m_context; }
-    uint32_t            GetProgramInputBufferIndexByArgumentName(const ProgramBase& program, const std::string& argument_name) const;
     uint32_t            GetProgramInputBufferIndexByArgumentSemantic(const ProgramBase& program, const std::string& argument_semantic) const;
     std::string         GetCompiledEntryFunctionName() const;
 

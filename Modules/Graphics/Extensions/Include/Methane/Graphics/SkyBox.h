@@ -67,6 +67,17 @@ public:
     void Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindings);
 
 private:
+    struct Vertex
+    {
+        Mesh::Position position;
+
+        static constexpr const Mesh::VertexFields<1> layout = {
+            Mesh::VertexField::Position,
+        };
+    };
+
+    SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings, BaseMesh<Vertex> mesh);
+
     Settings                      m_settings;
     RenderContext&                m_context;
     TexturedMeshBuffers<Uniforms> m_mesh_buffers;
