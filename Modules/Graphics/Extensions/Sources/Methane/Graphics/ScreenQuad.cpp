@@ -23,7 +23,7 @@ Screen Quad rendering primitive.
 
 #include <Methane/Graphics/ScreenQuad.h>
 
-#include <Methane/Graphics/Mesh.h>
+#include <Methane/Graphics/Mesh/QuadMesh.hpp>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
@@ -57,7 +57,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
     if (!m_sp_texture)
         throw std::invalid_argument("Screen-quad texture can not be empty.");
 
-    RectMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.f, 2.f);
+    QuadMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.f, 2.f);
 
     const RenderContext::Settings& context_settings = context.GetSettings();
 

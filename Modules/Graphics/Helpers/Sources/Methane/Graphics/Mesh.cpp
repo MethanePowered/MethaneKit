@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/Mesh.cpp
-Procedural mesh generators, including rect, box, etc.
+Abstract mesh class
 
 ******************************************************************************/
 
@@ -91,6 +91,15 @@ std::vector<std::string> Mesh::VertexLayout::GetSemantics() const
         semantic_names.emplace_back(GetSemanticByVertexField(vertex_field));
     }
     return semantic_names;
+}
+
+Mesh::Subset::Subset(Type in_mesh_type, const Slice& in_vertices, const Slice& in_indices, bool in_indices_adjusted)
+    : mesh_type(in_mesh_type)
+    , vertices(in_vertices)
+    , indices(in_indices)
+    , indices_adjusted(in_indices_adjusted)
+{
+    ITT_FUNCTION_TASK();
 }
 
 Mesh::VertexFieldOffsets Mesh::GetVertexFieldOffsets(const VertexLayout& vertex_layout)
