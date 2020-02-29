@@ -389,13 +389,13 @@ protected:
         title_ss.precision(2);
         title_ss << GetPlatformAppSettings().name
                  << "        "  << average_fps
-                 << " FPS ("    << std::fixed << average_frame_timing.GetTotalTimeMSec()
-                 << " ms, "     << std::fixed << average_frame_timing.GetCpuTimePercent() << "% cpu)"
-                 << ", "        << context_settings.frame_size.width << " x " << context_settings.frame_size.height
-                 << ", "        << std::to_string(context_settings.frame_buffers_count) << " FB"
-                 << ", VSync: " << (context_settings.vsync_enabled ? "ON" : "OFF")
-                 << ", GPU: "   << m_sp_context->GetDevice().GetAdapterName()
-                 << "    (F1 - help)";
+                 << " FPS, "    << std::fixed << average_frame_timing.GetTotalTimeMSec()
+                 << " ms, "     << std::fixed << average_frame_timing.GetCpuTimePercent() << "% cpu"
+                 << "  |  "        << context_settings.frame_size.width << " x " << context_settings.frame_size.height
+                 << "  |  "        << std::to_string(context_settings.frame_buffers_count) << " FB"
+                 << "  |  VSync " << (context_settings.vsync_enabled ? "ON" : "OFF")
+                 << "  |  "   << m_sp_context->GetDevice().GetAdapterName()
+                 << "  |  F1 - help";
 
         SetWindowTitle(title_ss.str());
     }
