@@ -26,6 +26,7 @@ Random generated asteroid model with mesh and texture ready for rendering.
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/MathTypes.h>
 #include <Methane/Graphics/MeshBuffers.hpp>
+#include <Methane/Graphics/Mesh/IcosahedronMesh.hpp>
 
 namespace Methane::Samples
 {

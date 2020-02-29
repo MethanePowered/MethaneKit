@@ -10,9 +10,15 @@ set(HEADERS
     ${INCLUDE_DIR}/ArcBallCamera.h
     ${INCLUDE_DIR}/ActionCamera.h
     ${INCLUDE_DIR}/FpsCounter.h
-    ${INCLUDE_DIR}/Mesh.h
     ${INCLUDE_DIR}/Noise.hpp
     ${INCLUDE_DIR}/MathTypes.h
+    ${INCLUDE_DIR}/Mesh.h
+    ${INCLUDE_DIR}/Mesh/BaseMesh.hpp
+    ${INCLUDE_DIR}/Mesh/QuadMesh.hpp
+    ${INCLUDE_DIR}/Mesh/CubeMesh.hpp
+    ${INCLUDE_DIR}/Mesh/UberMesh.hpp
+    ${INCLUDE_DIR}/Mesh/SphereMesh.hpp
+    ${INCLUDE_DIR}/Mesh/IcosahedronMesh.hpp
     ${INCLUDE_PLATFORM_DIR}/Helpers.h
     ${INCLUDE_PLATFORM_DIR}/MathTypes.h
 )

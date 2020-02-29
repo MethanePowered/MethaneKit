@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Noise.h
-Multi-octave simplex noise geneator in range [0, 1]
+FILE: Methane/Graphics/Noise.hpp
+Multi-octave simplex noise generator in range [0, 1]
 
 ******************************************************************************/
 

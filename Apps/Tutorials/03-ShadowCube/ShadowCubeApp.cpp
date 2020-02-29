@@ -23,6 +23,7 @@ Tutorial demonstrating shadow-pass rendering with Methane graphics API
 
 #include "ShadowCubeApp.h"
 
+#include <Methane/Graphics/Mesh/CubeMesh.hpp>
 #include <Methane/Data/TimeAnimation.h>
 
 #include <cml/mathlib/mathlib.h>
@@ -115,8 +116,8 @@ void ShadowCubeApp::Init()
     m_view_camera.Resize(static_cast<float>(context_settings.frame_size.width),
                          static_cast<float>(context_settings.frame_size.height));
 
-    const gfx::BoxMesh<Vertex>  cube_mesh(Vertex::layout, 1.f, 1.f, 1.f);
-    const gfx::RectMesh<Vertex> floor_mesh(Vertex::layout, 7.f, 7.f, 0.f, 0, gfx::RectMesh<Vertex>::FaceType::XZ);
+    const gfx::CubeMesh<Vertex>  cube_mesh(Vertex::layout, 1.f, 1.f, 1.f);
+    const gfx::QuadMesh<Vertex> floor_mesh(Vertex::layout, 7.f, 7.f, 0.f, 0, gfx::QuadMesh<Vertex>::FaceType::XZ);
 
     // Load textures, vertex and index buffers for cube and floor meshes
     m_sp_cube_buffers  = std::make_unique<TexturedMeshBuffers>(*m_sp_context, cube_mesh, "Cube");

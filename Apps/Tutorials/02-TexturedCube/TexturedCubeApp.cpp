@@ -23,6 +23,7 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 
 #include "TexturedCubeApp.h"
 
+#include <Methane/Graphics/Mesh/CubeMesh.hpp>
 #include <Methane/Data/TimeAnimation.h>
 
 #include <cml/mathlib/mathlib.h>
@@ -109,7 +110,7 @@ void TexturedCubeApp::Init()
     m_camera.Resize(static_cast<float>(context_settings.frame_size.width),
                     static_cast<float>(context_settings.frame_size.height));
 
-    const gfx::BoxMesh<CubeVertex> cube_mesh(CubeVertex::layout);
+    const gfx::CubeMesh<CubeVertex> cube_mesh(CubeVertex::layout);
 
     // Create render state with program
     gfx::RenderState::Settings state_settings;

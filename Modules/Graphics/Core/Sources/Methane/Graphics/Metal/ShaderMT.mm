@@ -32,6 +32,8 @@ Metal implementation of the shader interface.
 #include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
 
+#include <regex>
+
 namespace Methane::Graphics
 {
 
