@@ -19,11 +19,9 @@ set(METHANE_VERSION_FULL  "${METHANE_VERSION_SHORT}.${METHANE_VERSION_BUILD}")
 set(METHANE_PRODUCT_NAME  "Methane Kit (https://github.com/egorodet/MethaneKit)")
 set(METHANE_COPYRIGHT     "Copyright 2019-2020 Evgeny Gorodetskiy")
 
-include_directories($ENV{INCLUDE})
-link_directories($ENV{LIB} ${CMAKE_LIBRARY_INPUT_DIRECTORY})
-
 list(APPEND CMAKE_MODULE_PATH
     "${CMAKE_CURRENT_SOURCE_DIR}/CMake"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Externals/CMakeModules"
     "${CMAKE_CURRENT_SOURCE_DIR}/Externals/Catch2/single_include/cmake"
     "${CMAKE_CURRENT_SOURCE_DIR}/Externals/CMRC"
 )
@@ -37,11 +35,29 @@ set(PARSE_CATCH_TESTS_VERBOSE OFF)
 
 if(MSVC)
 
+    include(FindWindowsSDK)
+    if(WINDOWSSDK_FOUND)
+        message(STATUS "${WINDOWSSDK_LATEST_NAME} was selected for build")
+    else()
+        message(FATAL_ERROR "Windows SDK was not found!")
+    endif()
+
+    get_windowssdk_include_dirs(${WINDOWSSDK_LATEST_DIR} WINDOWSSDK_INCLUDE_DIRS)
+    if(NOT WINDOWSSDK_INCLUDE_DIRS)
+        message(FATAL_ERROR "Failed to get Windows SDK include directories from ${WINDOWSSDK_LATEST_DIR}")
+    endif()
+
+    get_windowssdk_library_dirs(${WINDOWSSDK_LATEST_DIR} WINDOWSSDK_LIBRARY_DIRS)
+    if(NOT WINDOWSSDK_LIBRARY_DIRS)
+        message(FATAL_ERROR "Failed to get Windows SDK library directories from ${WINDOWSSDK_LATEST_DIR}")
+    endif()
+
     set(VS_STARTUP_PROJECT MethaneAsteroids)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>") # use /MT static runtime linking
-    string(REPLACE "/MD" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")           # remove /MD flag if it was there
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")                           # enable multi-threaded build
 
+    include_directories(${WINDOWSSDK_INCLUDE_DIRS})
+    link_directories(${WINDOWSSDK_LIBRARY_DIRS})
     add_definitions(-DUNICODE -D_UNICODE -DNOMINMAX -DWIN32_LEAN_AND_MEAN -DUSE_PIX)
 
 elseif(APPLE)
