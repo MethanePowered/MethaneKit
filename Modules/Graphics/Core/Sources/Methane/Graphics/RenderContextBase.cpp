@@ -147,6 +147,8 @@ void RenderContextBase::Initialize(DeviceBase& device, bool deferred_heap_alloca
 {
     ITT_FUNCTION_TASK();
 
+    ContextBase::Initialize(device, deferred_heap_allocation);
+
     m_frame_fences.clear();
     for (uint32_t frame_index = 0; frame_index < m_settings.frame_buffers_count; ++frame_index)
     {
@@ -154,8 +156,6 @@ void RenderContextBase::Initialize(DeviceBase& device, bool deferred_heap_alloca
     }
 
     m_sp_render_fence = Fence::Create(GetRenderCommandQueue());
-
-    ContextBase::Initialize(device, deferred_heap_allocation);
 }
 
 void RenderContextBase::Release()
