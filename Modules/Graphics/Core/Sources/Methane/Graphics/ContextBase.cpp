@@ -27,7 +27,6 @@ Base implementation of the context interface.
 
 #include <Methane/Graphics/BlitCommandList.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/ScopeTimer.h>
 
 #ifdef COMMAND_EXECUTION_LOGGING
 #include <Methane/Platform/Utils.h>

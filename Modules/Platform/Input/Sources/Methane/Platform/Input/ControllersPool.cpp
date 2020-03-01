@@ -44,6 +44,7 @@ void ControllersPool::OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonSt
     PrintToDebugOutput(std::string("Mouse (button): ") + state_change.current.ToString());
 #endif
 
+    ITT_FUNCTION_THREAD_MARKER();
     for (const Ptr<Controller>& sp_controller : *this)
     {
         assert(!!sp_controller);
@@ -62,6 +63,7 @@ void ControllersPool::OnMousePositionChanged(const Mouse::Position& mouse_positi
     PrintToDebugOutput(std::string("Mouse (position): ") + state_change.current.ToString());
 #endif
 
+    ITT_FUNCTION_THREAD_MARKER();
     for (const Ptr<Controller>& sp_controller : *this)
     {
         assert(!!sp_controller);
@@ -81,6 +83,7 @@ void ControllersPool::OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_del
                        ", scroll delta: " + std::to_string(mouse_scroll_delta.x()) + " x " + std::to_string(mouse_scroll_delta.y()));
 #endif
 
+    ITT_FUNCTION_THREAD_MARKER();
     for (const Ptr<Controller>& sp_controller : *this)
     {
         assert(!!sp_controller);
@@ -99,6 +102,7 @@ void ControllersPool::OnMouseInWindowChanged(bool is_mouse_in_window, const Mous
     PrintToDebugOutput(std::string("Mouse (in-window): ") + state_change.current.ToString());
 #endif
 
+    ITT_FUNCTION_THREAD_MARKER();
     for (const Ptr<Controller>& sp_controller : *this)
     {
         assert(!!sp_controller);
@@ -116,7 +120,8 @@ void ControllersPool::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState ke
 #ifdef DEBUG_USER_INPUT
     PrintToDebugOutput(std::string("Keyboard (key): ") + state_change.current.ToString());
 #endif
-    
+
+    ITT_FUNCTION_THREAD_MARKER();
     for (const Ptr<Controller>& sp_controller : *this)
     {
         assert(!!sp_controller);
@@ -134,7 +139,8 @@ void ControllersPool::OnModifiersChanged(Keyboard::Modifier::Mask modifiers, con
 #ifdef DEBUG_USER_INPUT
     PrintToDebugOutput(std::string("Keyboard (modifiers): ") + state_change.current.ToString());
 #endif
-    
+
+    ITT_FUNCTION_THREAD_MARKER();
     for (const Ptr<Controller>& sp_controller : *this)
     {
         assert(!!sp_controller);

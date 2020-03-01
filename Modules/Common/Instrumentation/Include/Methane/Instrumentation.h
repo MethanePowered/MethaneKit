@@ -24,6 +24,7 @@ Defines common ITT domain required for instrumentation.
 
 #pragma once
 
-#include "IttNotifyHelper.h"
+#include "IttApiHelper.h"
+#include "ScopeTimer.h"
 
 ITT_DOMAIN_EXTERN();

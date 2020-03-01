@@ -5,8 +5,8 @@ include(MethaneModules)
 get_module_dirs("Methane")
 
 set(HEADERS
-    ${INCLUDE_DIR}/IttNotifyHelper.h
     ${INCLUDE_DIR}/Instrumentation.h
+    ${INCLUDE_DIR}/IttApiHelper.h
     ${INCLUDE_DIR}/ScopeTimer.h
     ${INCLUDE_DIR}/ILogger.h
 )

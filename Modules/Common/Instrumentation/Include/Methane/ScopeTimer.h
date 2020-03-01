@@ -23,6 +23,8 @@ Code scope measurement timer with aggregating and averaging of timings.
 
 #pragma once
 
+#ifdef SCOPE_TIMERS_ENABLED
+
 #include "ILogger.h"
 
 #include <Methane/Timer.hpp>
@@ -82,18 +84,16 @@ private:
     std::string m_scope_name;
 };
 
-#ifdef SCOPE_TIMERS_ENABLED
+} // namespace Methane
 
 #define SCOPE_TIMER(SCOPE_NAME) Methane::ScopeTimer scope_timer(SCOPE_NAME)
 #define FUNCTION_SCOPE_TIMER() SCOPE_TIMER(__func__)
 #define FLUSH_SCOPE_TIMINGS() Methane::ScopeTimer::Aggregator::Get().Flush()
 
-#else
+#else // ifdef SCOPE_TIMERS_ENABLED
 
 #define SCOPE_TIMER(SCOPE_NAME)
 #define FUNCTION_SCOPE_TIMER()
 #define FLUSH_SCOPE_TIMINGS()
 
-#endif
-
-} // namespace Methane::Data
+#endif // ifdef SCOPE_TIMERS_ENABLED

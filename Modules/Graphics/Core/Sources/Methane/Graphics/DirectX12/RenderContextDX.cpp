@@ -27,7 +27,6 @@ DirectX 12 implementation of the render context interface.
 #include "TypesDX.h"
 
 #include <Methane/Instrumentation.h>
-#include <Methane/ScopeTimer.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #ifdef COMMAND_EXECUTION_LOGGING
