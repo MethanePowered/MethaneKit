@@ -70,12 +70,7 @@ public:
     {
         GraphicsApp::Init();
 
-        struct Vertex
-        {
-            Vector3f position;
-            Vector3f color;
-        };
-
+        struct Vertex { Vector3f position; Vector3f color; };
         const std::array<Vertex, 3> triange_vertices = { {
             { { 0.0f,   0.5f,  0.0f }, { 1.0f, 0.0f, 0.0f } },
             { { 0.5f,  -0.5f,  0.0f }, { 0.0f, 1.0f, 0.0f } },
