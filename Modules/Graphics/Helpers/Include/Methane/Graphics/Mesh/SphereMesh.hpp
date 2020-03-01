@@ -34,7 +34,7 @@ class SphereMesh : public BaseMesh<VType>
 public:
     using BaseMeshT = BaseMesh<VType>;
 
-    SphereMesh(const Mesh::VertexLayout& vertex_layout, float radius = 1.f, uint32_t lat_lines_count = 10, uint32_t long_lines_count = 16)
+    explicit SphereMesh(const Mesh::VertexLayout& vertex_layout, float radius = 1.f, uint32_t lat_lines_count = 10, uint32_t long_lines_count = 16)
         : BaseMeshT(Mesh::Type::Sphere, vertex_layout)
         , m_radius(radius)
         , m_lat_lines_count(lat_lines_count)

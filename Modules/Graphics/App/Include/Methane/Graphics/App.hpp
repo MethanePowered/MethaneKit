@@ -78,7 +78,7 @@ public:
         RenderContext::Settings render_context;
     };
 
-    App(const AllSettings& settings, const std::string& help_description = "Methane Graphics Application")
+    explicit App(const AllSettings& settings, const std::string& help_description = "Methane Graphics Application")
         : Platform::App(settings.platform_app)
         , m_image_loader(Data::TextureProvider::Get())
         , m_settings(settings.graphics_app)
@@ -354,7 +354,6 @@ public:
     }
 
 protected:
-
     struct ResourceRestoreInfo
     {
         Resource::DescriptorByUsage descriptor_by_usage;
@@ -362,7 +361,7 @@ protected:
 
         ResourceRestoreInfo() = default;
         ResourceRestoreInfo(const ResourceRestoreInfo&) = default;
-        ResourceRestoreInfo(const Ptr<Resource>& sp_resource)
+        explicit ResourceRestoreInfo(const Ptr<Resource>& sp_resource)
             : descriptor_by_usage(sp_resource ? sp_resource->GetDescriptorByUsage() : Resource::DescriptorByUsage())
             , name(sp_resource ? sp_resource->GetName() : std::string())
         { }

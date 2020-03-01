@@ -38,19 +38,6 @@ DirectX 12 implementation of the program bindings interface.
 namespace Methane::Graphics
 {
 
-static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_type) noexcept
-{
-    ITT_FUNCTION_TASK();
-    switch (shader_type)
-    {
-    case Shader::Type::All:    return D3D12_SHADER_VISIBILITY_ALL;
-    case Shader::Type::Vertex: return D3D12_SHADER_VISIBILITY_VERTEX;
-    case Shader::Type::Pixel:  return D3D12_SHADER_VISIBILITY_PIXEL;
-    default:                   assert(0);
-    }
-    return D3D12_SHADER_VISIBILITY_ALL;
-}
-
 Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindingBase::CreateCopy(const ArgumentBindingBase& other_argument_binding)
 {
     ITT_FUNCTION_TASK();

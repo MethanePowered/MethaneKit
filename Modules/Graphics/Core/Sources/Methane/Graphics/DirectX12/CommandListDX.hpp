@@ -54,7 +54,7 @@ class CommandListDX
 {
 public:
     template<typename... ConstructArgs>
-    CommandListDX(ConstructArgs&&... construct_args)
+    explicit CommandListDX(ConstructArgs&&... construct_args)
         : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
     {
         ITT_FUNCTION_TASK();

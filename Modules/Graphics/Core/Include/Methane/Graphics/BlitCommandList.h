@@ -34,9 +34,6 @@ struct BlitCommandList : virtual CommandList
 {
     // Create BlitCommandList instance
     static Ptr<BlitCommandList> Create(CommandQueue& command_queue);
-
-    // BlitCommandList interface
-    virtual void Reset(const std::string& debug_group = "") = 0;
 };
 
 } // namespace Methane::Graphics

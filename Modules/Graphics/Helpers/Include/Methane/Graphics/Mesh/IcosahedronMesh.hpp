@@ -34,7 +34,7 @@ class IcosahedronMesh : public BaseMesh<VType>
 public:
     using BaseMeshT = BaseMesh<VType>;
 
-    IcosahedronMesh(const Mesh::VertexLayout& vertex_layout, float radius = 1.f, uint32_t subdivisions_count = 0, bool spherify = false)
+    explicit IcosahedronMesh(const Mesh::VertexLayout& vertex_layout, float radius = 1.f, uint32_t subdivisions_count = 0, bool spherify = false)
         : BaseMeshT(Mesh::Type::Icosahedron, vertex_layout)
         , m_radius(radius)
     {
