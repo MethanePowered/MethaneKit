@@ -27,7 +27,6 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 #include <Methane/Graphics/AppCameraController.h>
 #include <Methane/Data/TimeAnimation.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/ScopeTimer.h>
 #include <Methane/Platform/Logger.h>
 #include <CLI/CLI.hpp>
 
@@ -63,12 +62,12 @@ static const std::array<MutableParameters, g_max_complexity+1> g_mutable_paramet
     { 50000u, 1000u, 50u, 0.17f }, // 9
 }};
 
-inline size_t GetComplexity()
+inline uint32_t GetDefaultComplexity()
 {
 #ifdef _DEBUG
-    return 1;
+    return 1u;
 #else
-    const size_t hw_cores_count = std::thread::hardware_concurrency() / 2;
+    const uint32_t hw_cores_count = std::thread::hardware_concurrency() / 2;
     return hw_cores_count > 0u ? hw_cores_count - 1u : 0u;
 #endif
 }
@@ -80,7 +79,7 @@ inline const MutableParameters& GetMutableParameters(uint32_t complexity)
 
 inline const MutableParameters& GetMutableParameters()
 {
-    return GetMutableParameters(GetComplexity());
+    return GetMutableParameters(GetDefaultComplexity());
 }
 
 static const std::map<pal::Keyboard::State, AsteroidsAppAction> g_asteroids_action_by_keyboard_state = {
@@ -151,7 +150,7 @@ AsteroidsApp::AsteroidsApp()
             true,                                       // - textures_array_enabled
             true                                        // - depth_reversed
         })
-    , m_asteroids_complexity(static_cast<uint32_t>(GetComplexity()))
+    , m_asteroids_complexity(static_cast<uint32_t>(GetDefaultComplexity()))
     , m_is_parallel_rendering_enabled(true)
 {
     ITT_FUNCTION_TASK();
