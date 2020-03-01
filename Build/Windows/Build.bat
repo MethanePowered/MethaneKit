@@ -3,7 +3,8 @@
 SETLOCAL ENABLEDELAYEDEXPANSION
 
 SET PLATFORM_TYPE=Win64
-SET CONFIG_TYPE=Release
+SET ARCH_TYPE=x64
+SET BUILD_TYPE=Release
 SET BUILD_VERSION=0.2
 SET CMAKE_FLAGS= ^
     -DMETHANE_VERSION=%BUILD_VERSION% ^
@@ -11,18 +12,21 @@ SET CMAKE_FLAGS= ^
     -DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON ^
     -DMETHANE_SCOPE_TIMERS_ENABLED:BOOL=OFF ^
     -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF ^
-    -DMETHANE_USE_OPEN_IMAGE_IO:BOOL=OFF
+    -DMETHANE_USE_OPEN_IMAGE_IO:BOOL=OFF ^
+    -DMETHANE_COMMAND_EXECUTION_LOGGING:BOOL=OFF
 
-SET CONFIG_DIR=%~dp0..\Output\VisualStudio\%PLATFORM_TYPE%-%CONFIG_TYPE%
+SET CONFIG_DIR=%~dp0..\Output\VisualStudio\%PLATFORM_TYPE%-%BUILD_TYPE%
 SET INSTALL_DIR=%CONFIG_DIR%\Install
 SET SOURCE_DIR=%~dp0..\..
 SET START_DIR=%cd%
 
 IF "%~1"=="--vs2019" (
 SET CMAKE_GENERATOR=Visual Studio 16 2019
+SET CMAKE_FLAGS=-A %ARCH_TYPE% %CMAKE_FLAGS%
 ) ELSE (
 IF "%~2"=="--vs2019" (
 SET CMAKE_GENERATOR=Visual Studio 16 2019
+SET CMAKE_FLAGS=-A %ARCH_TYPE% %CMAKE_FLAGS% 
 ) ELSE (
 SET CMAKE_GENERATOR=Visual Studio 15 2017 %PLATFORM_TYPE%
 ) )
@@ -37,7 +41,7 @@ IF "%~1"=="--analyze" (
     SET SONAR_SCANNER_MSBUILD_EXE=!SONAR_SCANNER_DIR!\SonarScanner.MSBuild.exe
 
     ECHO =========================================================
-    ECHO Code analysis for build Methane %PLATFORM_TYPE% %CONFIG_TYPE%
+    ECHO Code analysis for build Methane %PLATFORM_TYPE% %BUILD_TYPE%
     ECHO =========================================================
     ECHO  * Build in: '!BUILD_DIR!'
     ECHO =========================================================
@@ -48,7 +52,7 @@ IF "%~1"=="--analyze" (
     SET BUILD_DIR=%CONFIG_DIR%\Build
 
     ECHO =========================================================
-    ECHO Clean build and install Methane %PLATFORM_TYPE% %CONFIG_TYPE%
+    ECHO Clean build and install Methane %PLATFORM_TYPE% %BUILD_TYPE%
     ECHO =========================================================
     ECHO  * Build in:   '!BUILD_DIR!'
     ECHO  * Install to: '%INSTALL_DIR%'
@@ -83,7 +87,7 @@ IF %IS_ANALYZE_BUILD% EQU 1 (
     CD "%BUILD_DIR%"
 
     "%SONAR_BUILD_WRAPPER_EXE%" --out-dir "%BUILD_DIR%"^
-         cmake -G "%CMAKE_GENERATOR%" -DCMAKE_BUILD_TYPE=%BUILD_TYPE% %CMAKE_FLAGS% "%SOURCE_DIR%"
+         cmake -G "%CMAKE_GENERATOR%" %CMAKE_FLAGS% "%SOURCE_DIR%"
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
     CD "%SOURCE_DIR%"
@@ -111,15 +115,15 @@ IF %IS_ANALYZE_BUILD% EQU 1 (
 
     ECHO Building with %CMAKE_GENERATOR%...
 
-    cmake -G "%CMAKE_GENERATOR%" -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR% %CMAKE_FLAGS% "%SOURCE_DIR%"
+    cmake -G "%CMAKE_GENERATOR%" -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR% %CMAKE_FLAGS% "%SOURCE_DIR%"
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
-    cmake --build . --config %CONFIG_TYPE% --target install
+    cmake --build . --config %BUILD_TYPE% --target install
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
     ECHO Running tests...
 
-    ctest --build-config %CONFIG_TYPE% --output-on-failure
+    ctest --build-config %BUILD_TYPE% --output-on-failure
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 )
 

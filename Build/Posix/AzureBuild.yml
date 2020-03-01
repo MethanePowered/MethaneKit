@@ -27,6 +27,12 @@ steps:
     workingDirectory: '$(installDir)/Tests'
     displayName: 'Run all unit-tests from install directory'
 
+  - script: |
+      cp $(rootDir)/README.md README.md
+      echo Build number: $(Build.BuildNumber), git branch: $(Build.SourceBranchName), commit id: $(Build.SourceVersion) >Build.txt
+    workingDirectory: '$(installDir)'
+    displayName: 'Copy ReadMe and write build information'
+
   - task: CopyFiles@2
     displayName: 'Copy install artifacts for $(platform) $(configuration)'
     inputs:

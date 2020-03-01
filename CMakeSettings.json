@@ -29,6 +29,16 @@
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
                     "value": "False",
                     "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_COMMAND_EXECUTION_LOGGING",
+                    "value": "false",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "false",
+                    "type": "BOOL"
                 }
             ]
         },
@@ -60,6 +70,16 @@
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
                     "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "false",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_COMMAND_EXECUTION_LOGGING",
+                    "value": "false",
                     "type": "BOOL"
                 }
             ]
@@ -93,6 +113,16 @@
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
                     "value": "False",
                     "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_COMMAND_EXECUTION_LOGGING",
+                    "value": "false",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "false",
+                    "type": "BOOL"
                 }
             ]
         },
@@ -124,6 +154,16 @@
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
                     "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_COMMAND_EXECUTION_LOGGING",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "false",
                     "type": "BOOL"
                 }
             ]

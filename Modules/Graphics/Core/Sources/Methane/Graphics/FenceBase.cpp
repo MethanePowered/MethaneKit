@@ -45,7 +45,7 @@ void FenceBase::Signal()
     m_value++;
 
 #ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("SIGNAL fence \"" + m_name + "\" with value " + std::to_string(m_value));
+    Platform::PrintToDebugOutput("SIGNAL fence \"" + GetName() + "\" with value " + std::to_string(m_value));
 #endif
 }
 
@@ -54,7 +54,7 @@ void FenceBase::Wait()
     ITT_FUNCTION_TASK();
 
 #ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("WAIT fence \"" + m_name + "\" with value " + std::to_string(m_value));
+    Platform::PrintToDebugOutput("WAIT fence \"" + GetName() + "\" with value " + std::to_string(m_value));
 #endif
 }
 

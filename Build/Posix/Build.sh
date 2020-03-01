@@ -19,7 +19,7 @@ case "${UNAME_OUT}" in
     *)          echo "Unsupported operating system!" 1>&2 && exit 1;;
 esac
 
-CONFIG_TYPE=Release
+BUILD_TYPE=Release
 BUILD_VERSION=0.2
 
 SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )
@@ -31,7 +31,8 @@ CMAKE_FLAGS="-DMETHANE_VERSION=$BUILD_VERSION \
     -DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON \
     -DMETHANE_SCOPE_TIMERS_ENABLED:BOOL=OFF \
     -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF \
-    -DMETHANE_USE_OPEN_IMAGE_IO:BOOL=OFF"
+    -DMETHANE_USE_OPEN_IMAGE_IO:BOOL=OFF \
+    -DMETHANE_COMMAND_EXECUTION_LOGGING:BOOL=OFF"
 
 if [ "$IS_ANALYZE_BUILD" == true ]; then
 
@@ -42,14 +43,14 @@ if [ "$IS_ANALYZE_BUILD" == true ]; then
     SONAR_SCANNER_EXE=$SONAR_SCANNER_DIR/bin/sonar-scanner
 
     echo =========================================================
-    echo Code analysis for build Methane $CONFIG_TYPE
+    echo Code analysis for build Methane $BUILD_TYPE
     echo =========================================================
     echo  \* Build in:   $BUILD_DIR
     echo =========================================================
 else
     BUILD_DIR=$OUTPUT_DIR/Build
     echo =========================================================
-    echo Clean build and install Methane $CONFIG_TYPE
+    echo Clean build and install Methane $BUILD_TYPE
     echo =========================================================
     echo  \* Build in:   $BUILD_DIR
     echo  \* Install to: $INSTALL_DIR
@@ -89,8 +90,8 @@ if [ "$IS_ANALYZE_BUILD" == true ]; then
 else
     echo Building with $CMAKE_GENERATOR...
     cmake -H"$SOURCE_DIR" -B"$BUILD_DIR" -G "$CMAKE_GENERATOR" -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" $CMAKE_FLAGS
-    cmake --build "$BUILD_DIR" --config $CONFIG_TYPE --target install
+    cmake --build "$BUILD_DIR" --config $BUILD_TYPE --target install
 
     echo Running unit-tests...
-    cmake -E chdir "$BUILD_DIR" ctest --build-config $CONFIG_TYPE --output-on-failure
+    cmake -E chdir "$BUILD_DIR" ctest --build-config $BUILD_TYPE --output-on-failure
 fi

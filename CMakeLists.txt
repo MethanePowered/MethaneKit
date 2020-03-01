@@ -8,10 +8,11 @@ option(METHANE_USE_OPEN_IMAGE_IO "Enable using OpenImageIO library for images lo
 option(METHANE_ITT_INSTRUMENTATION_ENABLED "Enable ITT instrumentation" OFF)
 option(METHANE_SCOPE_TIMERS_ENABLED "Enable low-overhead profiling with scope-timers" OFF)
 option(METHANE_SHADERS_CODEVIEW_ENABLED "Enable shaders code symbols viewing in debug tools)" OFF)
+option(METHANE_COMMAND_EXECUTION_LOGGING "Enable command execution debug logging" OFF)
 option(METHANE_RUN_TESTS_DURING_BUILD "Run tests during build" ON)
 
 set(METHANE_VERSION_MAJOR 0 CACHE STRING "Methane major version")
-set(METHANE_VERSION_MINOR 2 CACHE STRING "Methane minor version")
+set(METHANE_VERSION_MINOR 3 CACHE STRING "Methane minor version")
 set(METHANE_VERSION_BUILD 0 CACHE STRING "Methane build version")
 
 set(METHANE_VERSION_SHORT "${METHANE_VERSION_MAJOR}.${METHANE_VERSION_MINOR}")
@@ -95,6 +96,11 @@ endif()
 
 if(METHANE_RUN_TESTS_DURING_BUILD)
     message(STATUS "Methane tests running during build is enabled")
+endif()
+
+if(METHANE_COMMAND_EXECUTION_LOGGING)
+    message(STATUS "Methane command execution debug logging is enabled")
+    add_definitions(-DCOMMAND_EXECUTION_LOGGING)
 endif()
 
 if (CMAKE_INSTALL_PREFIX AND EXISTS "${CMAKE_INSTALL_PREFIX}/bin/ctest")
