@@ -46,7 +46,8 @@ Helper macro-definitions for ITT instrumentation
 #define UNICODE_AGNOSTIC(name) name
 #endif
 
-namespace Methane::ITT {
+namespace Methane::ITT
+{
 
 class Event
 {
@@ -239,7 +240,7 @@ public:
     ITT_MAGIC_STATIC(itt_track_name);\
     Methane::ITT::ScopeTrack itt_track(itt_track_name);
 
-} //namespace Methane::ITT
+} // namespace Methane::ITT
 
 #else
 
