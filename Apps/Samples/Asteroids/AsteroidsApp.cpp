@@ -508,6 +508,6 @@ std::string AsteroidsApp::GetParametersString() const
 
 int main(int argc, const char* argv[])
 {
-    Methane::ScopeTimer::InitializeLogger<Methane::Platform::Logger>();
+    SCOPE_TIMER_INITIALIZE(Methane::Platform::Logger);
     return Methane::Samples::AsteroidsApp().Run({ argc, argv });
 }
