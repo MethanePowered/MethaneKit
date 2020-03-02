@@ -26,6 +26,8 @@ Vulkan implementation of the blit command list interface.
 
 #include <Methane/Instrumentation.h>
 
+#include <cassert>
+
 namespace Methane::Graphics
 {
 
@@ -68,7 +70,6 @@ void BlitCommandListVK::Commit()
     ITT_FUNCTION_TASK();
     
     assert(!IsCommitted());
-
     CommandListBase::Commit();
 }
 

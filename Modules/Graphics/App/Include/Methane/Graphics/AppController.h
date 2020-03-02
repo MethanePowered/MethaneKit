@@ -35,10 +35,9 @@ enum class AppAction : uint32_t
 {
     None = 0,
 
-    SwitchFullScreen,
     SwitchAnimations,
     SwitchWindowHud,
-    
+
     Count
 };
 
