@@ -2,7 +2,28 @@
   <dictionary name="egorodet">
     <words>
       <w>bilinear</w>
+      <w>bindings</w>
+      <w>evgeny</w>
+      <w>gorodetskiy</w>
+      <w>hlsl</w>
+      <w>ittnotify</w>
+      <w>libtool</w>
+      <w>lods</w>
+      <w>mipmapped</w>
+      <w>mvpx</w>
+      <w>nowide</w>
+      <w>perlin</w>
+      <w>skybox</w>
+      <w>std::string</w>
+      <w>subdiv</w>
       <w>subresource</w>
+      <w>subresources</w>
+      <w>texcoord</w>
+      <w>texel</w>
+      <w>texturing</w>
+      <w>uber</w>
+      <w>uncreatable</w>
+      <w>vsync</w>
     </words>
   </dictionary>
 </component>

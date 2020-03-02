@@ -1,6 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
+  <component name="CidrRootsConfiguration">
+    <sourceRoots>
+      <file path="$PROJECT_DIR$/Apps" />
+      <file path="$PROJECT_DIR$/Modules" />
+    </sourceRoots>
+    <libraryRoots>
+      <file path="$PROJECT_DIR$/Externals/CLI11" />
+      <file path="$PROJECT_DIR$/Externals/CML" />
+      <file path="$PROJECT_DIR$/Externals/CMRC" />
+      <file path="$PROJECT_DIR$/Externals/CMakeModules" />
+      <file path="$PROJECT_DIR$/Externals/Catch2" />
+      <file path="$PROJECT_DIR$/Externals/D3DCompilerToDXC" />
+      <file path="$PROJECT_DIR$/Externals/DirectXCompiler" />
+      <file path="$PROJECT_DIR$/Externals/DirectXLibraries" />
+      <file path="$PROJECT_DIR$/Externals/DirectXTex" />
+      <file path="$PROJECT_DIR$/Externals/IttApi" />
+      <file path="$PROJECT_DIR$/Externals/Nowide" />
+      <file path="$PROJECT_DIR$/Externals/OpenImageIO" />
+      <file path="$PROJECT_DIR$/Externals/PerlinNoise" />
+      <file path="$PROJECT_DIR$/Externals/SPIRV" />
+      <file path="$PROJECT_DIR$/Externals/STB" />
+      <file path="$PROJECT_DIR$/Externals/SonarScanner" />
+    </libraryRoots>
+    <excludeRoots>
+      <file path="$PROJECT_DIR$/Apps/Samples/Asteroids/Shaders" />
+      <file path="$PROJECT_DIR$/Apps/Tutorials/01-HelloTriangle/Shaders" />
+      <file path="$PROJECT_DIR$/Apps/Tutorials/02-TexturedCube/Shaders" />
+      <file path="$PROJECT_DIR$/Apps/Tutorials/03-ShadowCube/Shaders" />
+      <file path="$PROJECT_DIR$/Build/Output" />
+      <file path="$PROJECT_DIR$/Modules/Graphics/Extensions/Shaders" />
+    </excludeRoots>
+  </component>
   <component name="JavaScriptSettings">
     <option name="languageLevel" value="ES6" />
   </component>
