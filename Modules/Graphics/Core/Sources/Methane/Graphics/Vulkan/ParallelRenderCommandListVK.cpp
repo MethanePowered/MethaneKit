@@ -28,6 +28,8 @@ Vulkan implementation of the render command list interface.
 
 #include <Methane/Instrumentation.h>
 
+#include <cassert>
+
 namespace Methane::Graphics
 {
 
@@ -62,7 +64,6 @@ void ParallelRenderCommandListVK::Commit()
     ITT_FUNCTION_TASK();
     
     assert(!IsCommitted());
-
     ParallelRenderCommandListBase::Commit();
 }
 

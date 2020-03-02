@@ -29,7 +29,6 @@ Vulkan implementation of the texture interface.
 #include <Methane/Instrumentation.h>
 
 #include <algorithm>
-#include <cassert>
 
 namespace Methane::Graphics
 {

@@ -27,7 +27,6 @@ Vulkan implementation of the buffer interface.
 #include <Methane/Instrumentation.h>
 
 #include <iterator>
-#include <cassert>
 
 namespace Methane::Graphics
 {

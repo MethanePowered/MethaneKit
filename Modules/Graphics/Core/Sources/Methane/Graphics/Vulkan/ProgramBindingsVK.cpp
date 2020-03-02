@@ -26,8 +26,6 @@ Vulkan implementation of the program interface.
 
 #include <Methane/Instrumentation.h>
 
-#include <cassert>
-
 namespace Methane::Graphics
 {
 

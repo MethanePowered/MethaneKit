@@ -32,8 +32,6 @@ Vulkan implementation of the render state interface.
 #include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/Instrumentation.h>
 
-#include <cassert>
-
 namespace Methane::Graphics
 {
 
