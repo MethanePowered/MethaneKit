@@ -85,18 +85,10 @@ public:
         Count
     };
 
-    template<std::size_t N>
-    using VertexFields = std::array<VertexField, N>;
-
     class VertexLayout : public std::vector<VertexField>
     {
     public:
         using std::vector<VertexField>::vector;
-
-        template<std::size_t N>
-        VertexLayout(const VertexFields<N>& vertex_fields)
-            : std::vector<VertexField>(vertex_fields.begin(), vertex_fields.end())
-        { }
 
         std::vector<std::string> GetSemantics() const;
 

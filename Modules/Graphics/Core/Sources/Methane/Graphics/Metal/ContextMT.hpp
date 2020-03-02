@@ -28,13 +28,11 @@ Metal template implementation of the base context interface.
 #include "ProgramLibraryMT.hh"
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Graphics/RenderContext.h>
 #include <Methane/Instrumentation.h>
 
 #import <Metal/Metal.h>
 
 #include <string>
-#include <map>
 
 namespace Methane::Graphics
 {

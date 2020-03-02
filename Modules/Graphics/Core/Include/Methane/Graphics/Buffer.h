@@ -52,7 +52,7 @@ struct Buffer : virtual Resource
     static Ptr<Buffer> CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format);
     static Ptr<Buffer> CreateConstantBuffer(Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
-    // Auxillary functions
+    // Auxiliary functions
     static Data::Size  GetAlignedBufferSize(Data::Size size) noexcept;
     static std::string GetBufferTypeName(Type type) noexcept;
 

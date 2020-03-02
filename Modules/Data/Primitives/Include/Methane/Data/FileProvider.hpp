@@ -48,7 +48,7 @@ public:
     bool HasData(const std::string& path) const noexcept override
     {
         ITT_FUNCTION_TASK();
-        return std::ifstream(GetDataFilePath(path)).good();;
+        return std::ifstream(GetDataFilePath(path)).good();
     }
 
     Data::Chunk GetData(const std::string& path) const override

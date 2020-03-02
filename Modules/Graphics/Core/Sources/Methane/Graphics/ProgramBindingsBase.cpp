@@ -122,15 +122,15 @@ ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& sp_program, const R
     VerifyAllArgumentsAreBoundToResources();
 }
 
-ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_program_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
-    : m_sp_program(other_program_bingings.m_sp_program)
-    , m_descriptor_heap_reservations_by_type(other_program_bingings.m_descriptor_heap_reservations_by_type)
+ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
+    : m_sp_program(other_program_bindings.m_sp_program)
+    , m_descriptor_heap_reservations_by_type(other_program_bindings.m_descriptor_heap_reservations_by_type)
 {
     ITT_FUNCTION_TASK();
 
     // Form map of volatile resource bindings with replaced resource locations
     ResourceLocationsByArgument resource_locations_by_argument = replace_resource_locations_by_argument;
-    for (const auto& argument_and_argument_binding : other_program_bingings.m_binding_by_argument)
+    for (const auto& argument_and_argument_binding : other_program_bindings.m_binding_by_argument)
     {
         // NOTE: constant resource bindings are reusing single binding-object for the whole program,
         //       so there's no need in setting its value, since it was already set by the original resource binding

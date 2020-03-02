@@ -77,8 +77,8 @@ void FenceMT::Wait()
 
     FenceBase::Wait();
 
-    assert(!!m_mtl_event);
-    assert(!!m_mtl_event_listener);
+    assert(m_mtl_event != nil);
+    assert(m_mtl_event_listener != nil);
     uint64_t signalled_value = m_mtl_event.signaledValue;
     if (signalled_value >= GetValue())
         return;

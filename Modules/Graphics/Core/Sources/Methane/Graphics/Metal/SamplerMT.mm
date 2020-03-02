@@ -136,7 +136,7 @@ void SamplerMT::SetName(const std::string& name)
 
     SamplerBase::SetName(name);
 
-    assert(!!m_mtl_sampler_desc);
+    assert(m_mtl_sampler_desc != nil);
     m_mtl_sampler_desc.label = Methane::MacOS::ConvertToNSType<std::string, NSString*>(name);
     
     ResetSampletState();
@@ -153,12 +153,6 @@ void SamplerMT::ResetSampletState()
     
     assert(m_mtl_sampler_desc);
     m_mtl_sampler_state = [GetContextMT().GetDeviceMT().GetNativeDevice() newSamplerStateWithDescriptor:m_mtl_sampler_desc];
-}
-
-IContextMT& SamplerMT::GetContextMT() noexcept
-{
-    ITT_FUNCTION_TASK();
-    return static_cast<IContextMT&>(GetContext());
 }
 
 } // namespace Methane::Graphics

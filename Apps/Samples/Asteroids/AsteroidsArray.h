@@ -99,7 +99,7 @@ public:
 
     const Settings& GetSettings() const         { return m_settings; }
     const Ptr<ContentState>& GetState() const   { return m_sp_content_state; }
-    Data::Size GetUniformsBufferSize() const    { return BaseBuffers::GetUniformsBufferSize(); }
+    using BaseBuffers::GetUniformsBufferSize;
 
     Ptrs<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& sp_constants_buffer,
                                                       const Ptr<gfx::Buffer>& sp_scene_uniforms_buffer,
@@ -129,8 +129,8 @@ private:
     Ptr<gfx::Sampler>         m_sp_texture_sampler;
     Ptr<gfx::RenderState>     m_sp_render_state;
     MeshSubsetByInstanceIndex m_mesh_subset_by_instance_index;
-    bool                      m_mesh_lod_coloring_enabled = false;
-    float                     m_min_mesh_lod_screen_size_log2;
+    bool  m_mesh_lod_coloring_enabled = false;
+    float m_min_mesh_lod_screen_size_log_2;
 };
 
 } // namespace Methane::Samples

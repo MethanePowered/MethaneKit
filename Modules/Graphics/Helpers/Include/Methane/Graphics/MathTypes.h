@@ -38,7 +38,6 @@ Math types aliases.
 #endif
 
 #include <cml/vector.h>
-#include <cml/quaternion.h>
 #include <cml/mathlib/constants.h>
 #include <cml/matrix.h>
 
@@ -68,8 +67,6 @@ using Vector4i = cml::vector4i;
 using Vector2f = cml::vector2f;
 using Vector3f = cml::vector3f;
 using Vector4f = cml::vector4f;
-
-using Quaternionf = cml::quaternionf;
 
 template<typename T, int vector_size>
 inline std::string VectorToString(const cml::vector<T, cml::fixed<vector_size>>& v)

@@ -53,7 +53,7 @@ public:
         gfx::Mesh::Position position;
         gfx::Mesh::Normal   normal;
 
-        static constexpr const gfx::Mesh::VertexFields<2> layout = {
+        inline static const gfx::Mesh::VertexLayout layout = {
             gfx::Mesh::VertexField::Position,
             gfx::Mesh::VertexField::Normal,
         };
@@ -101,7 +101,7 @@ public:
         float    strength    = 1.5f;
     };
 
-    Asteroid(gfx::RenderContext& context);
+    explicit Asteroid(gfx::RenderContext& context);
     
     static Ptr<gfx::Texture> GenerateTextureArray(gfx::RenderContext& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, const TextureNoiseParameters& noise_parameters);
     static gfx::Resource::SubResources GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, const TextureNoiseParameters& noise_parameters);
@@ -112,8 +112,8 @@ public:
     static Colors GetAsteroidLodColors(uint32_t lod_index);
     
 private:
-    static void FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Dimensions& dimensions, uint32_t pixel_size, uint32_t row_stride,
-                                         float random_seed, float persistence, float noise_scale, float noise_strength, uint32_t array_index);
+    static void FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Dimensions& dimensions, uint32_t row_stride,
+                                         float random_seed, float persistence, float noise_scale, float noise_strength);
 };
 
 } // namespace Methane::Samples

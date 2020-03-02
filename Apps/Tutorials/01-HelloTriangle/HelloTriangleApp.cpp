@@ -23,8 +23,6 @@ Tutorial demonstrating triangle rendering with Methane graphics API
 
 #include "HelloTriangleApp.h"
 
-#include <cassert>
-
 namespace Methane::Tutorials
 {
 

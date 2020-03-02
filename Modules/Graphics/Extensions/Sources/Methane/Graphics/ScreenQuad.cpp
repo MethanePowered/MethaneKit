@@ -41,7 +41,7 @@ struct ScreenQuadVertex
     Mesh::Position position;
     Mesh::TexCoord texcoord;
 
-    static constexpr const Mesh::VertexFields<2> layout = {
+    inline static const Mesh::VertexLayout layout = {
         Mesh::VertexField::Position,
         Mesh::VertexField::TexCoord,
     };

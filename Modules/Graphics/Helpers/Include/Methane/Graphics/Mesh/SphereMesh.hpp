@@ -48,7 +48,7 @@ public:
         }
         if (m_lat_lines_count < 3)
         {
-            throw std::invalid_argument("Lattitude lines count should not be less than 3.");
+            throw std::invalid_argument("Latitude lines count should not be less than 3.");
         }
         if (m_long_lines_count < 3)
         {

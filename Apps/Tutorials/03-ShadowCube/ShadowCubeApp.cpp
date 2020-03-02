@@ -27,7 +27,6 @@ Tutorial demonstrating shadow-pass rendering with Methane graphics API
 #include <Methane/Data/TimeAnimation.h>
 
 #include <cml/mathlib/mathlib.h>
-#include <cassert>
 
 namespace Methane::Tutorials
 {
@@ -38,7 +37,7 @@ struct Vertex
     gfx::Mesh::Normal   normal;
     gfx::Mesh::TexCoord texcoord;
 
-    static constexpr const gfx::Mesh::VertexFields<3> layout = {
+    inline static const gfx::Mesh::VertexLayout layout = {
         gfx::Mesh::VertexField::Position,
         gfx::Mesh::VertexField::Normal,
         gfx::Mesh::VertexField::TexCoord,
@@ -116,8 +115,9 @@ void ShadowCubeApp::Init()
     m_view_camera.Resize(static_cast<float>(context_settings.frame_size.width),
                          static_cast<float>(context_settings.frame_size.height));
 
-    const gfx::CubeMesh<Vertex>  cube_mesh(Vertex::layout, 1.f, 1.f, 1.f);
-    const gfx::QuadMesh<Vertex> floor_mesh(Vertex::layout, 7.f, 7.f, 0.f, 0, gfx::QuadMesh<Vertex>::FaceType::XZ);
+    const gfx::Mesh::VertexLayout mesh_layout(Vertex::layout);
+    const gfx::CubeMesh<Vertex>  cube_mesh(mesh_layout, 1.f, 1.f, 1.f);
+    const gfx::QuadMesh<Vertex> floor_mesh(mesh_layout, 7.f, 7.f, 0.f, 0, gfx::QuadMesh<Vertex>::FaceType::XZ);
 
     // Load textures, vertex and index buffers for cube and floor meshes
     m_sp_cube_buffers  = std::make_unique<TexturedMeshBuffers>(*m_sp_context, cube_mesh, "Cube");
@@ -369,7 +369,7 @@ bool ShadowCubeApp::Update()
     m_light_camera.GetViewProjMatrices(light_view_matrix, light_proj_matrix);
     
     // Prepare shadow transform matrix
-    static const gfx::Matrix44f shadow_transform_matrix = ([]() -> gfx::Matrix44f
+    static const gfx::Matrix44f s_shadow_transform_matrix = ([]() -> gfx::Matrix44f
     {
         gfx::Matrix44f shadow_scale_matrix, shadow_translate_matrix;
         cml::matrix_scale(shadow_scale_matrix, 0.5f, -0.5f, 1.f);
@@ -390,7 +390,7 @@ bool ShadowCubeApp::Update()
     m_sp_cube_buffers->SetFinalPassUniforms(MeshUniforms{
         cube_model_matrix,
         cube_model_matrix * scene_view_matrix * scene_proj_matrix,
-        cube_model_matrix * light_view_matrix * light_proj_matrix * shadow_transform_matrix
+        cube_model_matrix * light_view_matrix * light_proj_matrix * s_shadow_transform_matrix
     });
     m_sp_cube_buffers->SetShadowPassUniforms(MeshUniforms{
         cube_model_matrix,
@@ -402,7 +402,7 @@ bool ShadowCubeApp::Update()
     m_sp_floor_buffers->SetFinalPassUniforms(MeshUniforms{
         scale_matrix,
         scale_matrix * scene_view_matrix * scene_proj_matrix,
-        scale_matrix * light_view_matrix * light_proj_matrix * shadow_transform_matrix
+        scale_matrix * light_view_matrix * light_proj_matrix * s_shadow_transform_matrix
     });
     m_sp_floor_buffers->SetShadowPassUniforms(MeshUniforms{
         scale_matrix,

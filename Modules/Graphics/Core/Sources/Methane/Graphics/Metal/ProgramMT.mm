@@ -60,7 +60,7 @@ ProgramMT::ProgramMT(ContextBase& context, const Settings& settings)
         mtl_reflection_state_desc.colorAttachments[attachment_index++].pixelFormat = TypeConverterMT::DataFormatToMetalPixelType(color_format);
     }
     mtl_reflection_state_desc.colorAttachments[attachment_index].pixelFormat = MTLPixelFormatInvalid;
-    mtl_reflection_state_desc.depthAttachmentPixelFormat = TypeConverterMT::DataFormatToMetalPixelType(GetSettings().depth_format);
+    mtl_reflection_state_desc.depthAttachmentPixelFormat = TypeConverterMT::DataFormatToMetalPixelType(ProgramBase::GetSettings().depth_format);
     
     IContextMT& metal_context = dynamic_cast<IContextMT&>(context);
     

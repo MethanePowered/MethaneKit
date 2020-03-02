@@ -23,17 +23,13 @@ Metal implementation of the render state interface.
 
 #include "RenderStateMT.hh"
 #include "RenderContextMT.hh"
-#include "DeviceMT.hh"
 #include "RenderCommandListMT.hh"
 #include "ProgramMT.hh"
 #include "ShaderMT.hh"
 #include "TypesMT.hh"
 
-#include <Methane/Platform/MacOS/AppViewMT.hh>
 #include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
 
 namespace Methane::Graphics
 {
@@ -74,7 +70,7 @@ static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(RenderState::Blendi
 
     using ColorChannel = RenderState::Blending::ColorChannel;
 
-    MTLColorWriteMask mtl_color_write_mask = 0;
+    MTLColorWriteMask mtl_color_write_mask = 0u;
     if (rt_write_mask & ColorChannel::Red)
         mtl_color_write_mask |= MTLColorWriteMaskRed;
     if (rt_write_mask & ColorChannel::Green)
@@ -99,7 +95,6 @@ static MTLBlendOperation ConvertBlendingOperationToMetal(RenderState::Blending::
     case BlendOp::ReverseSubtract:  return MTLBlendOperationReverseSubtract;
     case BlendOp::Minimum:          return MTLBlendOperationMin;
     case BlendOp::Maximum:          return MTLBlendOperationMax;
-    default:                        assert(0);
     }
     return MTLBlendOperationAdd;
 }
@@ -131,7 +126,6 @@ static MTLBlendFactor ConvertBlendingFactorToMetal(RenderState::Blending::Factor
     case BlendFactor::OneMinusSource1Color:     return MTLBlendFactorOneMinusSource1Color;
     case BlendFactor::Source1Alpha:             return MTLBlendFactorSource1Alpha;
     case BlendFactor::OneMinusSource1Alpha:     return MTLBlendFactorOneMinusSource1Alpha;
-    default:                                    assert(0);
     }
     return MTLBlendFactorZero;
 }
@@ -152,7 +146,6 @@ static MTLStencilOperation ConvertStencilOperationToMetal(RenderState::Stencil::
         case StencilOperation::DecrementClamp:  return MTLStencilOperationDecrementClamp;
         case StencilOperation::IncrementWrap:   return MTLStencilOperationIncrementWrap;
         case StencilOperation::DecrementWrap:   return MTLStencilOperationDecrementWrap;
-        default:                                assert(0);
     }
     return MTLStencilOperationKeep;
 }
@@ -227,7 +220,7 @@ void RenderStateMT::Reset(const Settings& settings)
     
     // Rasterizer state
     m_mtl_pipeline_state_desc.sampleCount               = settings.rasterizer.sample_count;
-    m_mtl_pipeline_state_desc.alphaToCoverageEnabled    = settings.rasterizer.alpha_to_coverage_enabled ? YES : NO;
+    m_mtl_pipeline_state_desc.alphaToCoverageEnabled    = settings.rasterizer.alpha_to_coverage_enabled;
     m_mtl_pipeline_state_desc.alphaToOneEnabled         = NO; // not supported by Methane
     
     // Blending state
@@ -243,7 +236,7 @@ void RenderStateMT::Reset(const Settings& settings)
         mtl_color_attach.pixelFormat                    = rt_index < rt_color_formats.size()
                                                         ? TypeConverterMT::DataFormatToMetalPixelType(rt_color_formats[rt_index])
                                                         : MTLPixelFormatInvalid;
-        mtl_color_attach.blendingEnabled                = render_target.blend_enabled && rt_index < rt_color_formats.size() ? YES : NO;
+        mtl_color_attach.blendingEnabled                = render_target.blend_enabled && rt_index < rt_color_formats.size();
         mtl_color_attach.writeMask                      = ConvertRenderTargetWriteMaskToMetal(render_target.write_mask);
         mtl_color_attach.rgbBlendOperation              = ConvertBlendingOperationToMetal(render_target.rgb_blend_op);
         mtl_color_attach.alphaBlendOperation            = ConvertBlendingOperationToMetal(render_target.alpha_blend_op);
@@ -260,7 +253,7 @@ void RenderStateMT::Reset(const Settings& settings)
     
     // Depth-stencil state
     m_mtl_depth_stencil_state_desc                      = [[MTLDepthStencilDescriptor alloc] init];
-    m_mtl_depth_stencil_state_desc.depthWriteEnabled    = settings.depth.write_enabled && depth_format != PixelFormat::Unknown ? YES : NO;
+    m_mtl_depth_stencil_state_desc.depthWriteEnabled    = settings.depth.write_enabled && depth_format != PixelFormat::Unknown;
     m_mtl_depth_stencil_state_desc.depthCompareFunction = settings.depth.enabled && depth_format != PixelFormat::Unknown
                                                         ? TypeConverterMT::CompareFunctionToMetal(settings.depth.compare)
                                                         : MTLCompareFunctionAlways;

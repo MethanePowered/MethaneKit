@@ -84,7 +84,7 @@ void ParallelRenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state,
         m_mtl_cmd_buffer.label = MacOS::ConvertToNSType<std::string, NSString*>(GetName());
     }
 
-    assert(!!mtl_render_pass);
+    assert(mtl_render_pass != nil);
     m_mtl_parallel_render_encoder = [m_mtl_cmd_buffer parallelRenderCommandEncoderWithDescriptor: mtl_render_pass];
 
     assert(m_mtl_parallel_render_encoder != nil);

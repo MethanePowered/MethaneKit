@@ -27,9 +27,6 @@ Metal implementation of the shader interface.
 
 #import <Metal/Metal.h>
 
-#include <string>
-#include <memory>
-
 namespace Methane::Graphics
 {
 

@@ -112,16 +112,16 @@ TEST_CASE("Range relations", "[range]")
         CHECK_FALSE(range_d.IsOverlapping(range_a));
     }
 
-    SECTION("Mergable")
+    SECTION("Mergeable")
     {
-        CHECK(range_a.IsMergable(range_c));
-        CHECK(range_c.IsMergable(range_a));
+        CHECK(range_a.IsMergeable(range_c));
+        CHECK(range_c.IsMergeable(range_a));
 
-        CHECK(range_a.IsMergable(range_b));
-        CHECK(range_b.IsMergable(range_a));
+        CHECK(range_a.IsMergeable(range_b));
+        CHECK(range_b.IsMergeable(range_a));
 
-        CHECK_FALSE(range_a.IsMergable(range_d));
-        CHECK_FALSE(range_d.IsMergable(range_a));
+        CHECK_FALSE(range_a.IsMergeable(range_d));
+        CHECK_FALSE(range_d.IsMergeable(range_a));
     }
 
     SECTION("Contained")

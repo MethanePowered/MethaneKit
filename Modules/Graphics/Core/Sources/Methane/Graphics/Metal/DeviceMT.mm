@@ -34,8 +34,8 @@ namespace Methane::Graphics
 Device::Feature::Mask DeviceMT::GetSupportedFeatures(const id<MTLDevice>& mtl_device)
 {
     ITT_FUNCTION_TASK();
-    Device::Feature::Mask supported_featues = Device::Feature::Value::BasicRendering;
-    return supported_featues;
+    Device::Feature::Mask supported_features = Device::Feature::Value::BasicRendering;
+    return supported_features;
 }
 
 DeviceMT::DeviceMT(const id<MTLDevice>& mtl_device)

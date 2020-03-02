@@ -37,10 +37,10 @@ Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& sp_program, con
     return std::make_shared<ProgramBindingsVK>(sp_program, resource_locations_by_argument);
 }
 
-Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bingings, const ResourceLocationsByArgument& replace_resource_location_by_argument)
+Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ProgramBindingsVK>(static_cast<const ProgramBindingsVK&>(other_program_bingings), replace_resource_location_by_argument);
+    return std::make_shared<ProgramBindingsVK>(static_cast<const ProgramBindingsVK&>(other_program_bindings), replace_resource_location_by_argument);
 }
 
 Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindingBase::CreateCopy(const ArgumentBindingBase& other_argument_binding)

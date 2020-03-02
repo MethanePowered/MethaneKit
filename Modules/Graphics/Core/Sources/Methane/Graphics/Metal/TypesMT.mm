@@ -118,7 +118,6 @@ MTLPixelFormat TypeConverterMT::DataFormatToMetalPixelType(PixelFormat data_form
         // MTLPixelFormatDepth32Float_Stencil8;
         // MTLPixelFormatX32_Stencil8;
         // MTLPixelFormatX24_Stencil8;
-        default:                        assert(0);
     }
     return MTLPixelFormatInvalid;
 }
@@ -301,7 +300,6 @@ MTLCompareFunction TypeConverterMT::CompareFunctionToMetal(Compare compare_func)
         case Compare::GreaterEqual: return MTLCompareFunctionGreaterEqual;
         case Compare::Equal:        return MTLCompareFunctionEqual;
         case Compare::NotEqual:     return MTLCompareFunctionNotEqual;
-        default:                    assert(0);
     }
     return MTLCompareFunctionNever;
 }

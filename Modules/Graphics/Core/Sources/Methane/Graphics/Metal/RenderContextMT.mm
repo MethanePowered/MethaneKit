@@ -22,8 +22,6 @@ Metal implementation of the render context interface.
 ******************************************************************************/
 
 #include "RenderContextMT.hh"
-#include "DeviceMT.hh"
-#include "RenderStateMT.hh"
 #include "RenderPassMT.hh"
 #include "CommandQueueMT.hh"
 #include "TypesMT.hh"
@@ -48,12 +46,12 @@ RenderContextMT::RenderContextMT(const Platform::AppEnvironment& env, DeviceBase
     : ContextMT<RenderContextBase>(device, settings)
     , m_app_view([[AppViewMT alloc] initWithFrame: TypeConverterMT::CreateNSRect(settings.frame_size)
                                         appWindow: env.ns_app_delegate.window
-                                           device: GetDeviceMT().GetNativeDevice()
+                                           device: ContextMT<RenderContextBase>::GetDeviceMT().GetNativeDevice()
                                       pixelFormat: TypeConverterMT::DataFormatToMetalPixelType(settings.color_format)
                                     drawableCount: settings.frame_buffers_count
                                      vsyncEnabled: Methane::MacOS::ConvertToNSType<bool, BOOL>(settings.vsync_enabled)
                             unsyncRefreshInterval: 1.0 / settings.unsync_max_fps])
-    , m_frame_capture_scope([[MTLCaptureManager sharedCaptureManager] newCaptureScopeWithDevice:GetDeviceMT().GetNativeDevice()])
+    , m_frame_capture_scope([[MTLCaptureManager sharedCaptureManager] newCaptureScopeWithDevice:ContextMT<RenderContextBase>::GetDeviceMT().GetNativeDevice()])
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
     , m_dispatch_semaphore(dispatch_semaphore_create(settings.frame_buffers_count))
 #endif
@@ -171,7 +169,7 @@ bool RenderContextMT::SetVSyncEnabled(bool vsync_enabled)
     ITT_FUNCTION_TASK();
     if (ContextMT<RenderContextBase>::SetVSyncEnabled(vsync_enabled))
     {
-        m_app_view.vsyncEnabled = vsync_enabled ? YES : NO;
+        m_app_view.vsyncEnabled = vsync_enabled;
         return true;
     }
     return false;
@@ -192,9 +190,9 @@ bool RenderContextMT::SetFrameBuffersCount(uint32_t frame_buffers_count)
 float RenderContextMT::GetContentScalingFactor() const
 {
     ITT_FUNCTION_TASK();
-    return m_app_view.appWindow.backingScaleFactor;
+    return static_cast<float>(m_app_view.appWindow.backingScaleFactor);
 }
-    
+
 CommandQueueMT& RenderContextMT::GetRenderCommandQueueMT()
 {
     ITT_FUNCTION_TASK();

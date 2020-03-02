@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/App.hpp
-Interface of the graphics appliction base template class defined in App.hpp
+Interface of the graphics application base template class defined in App.hpp
 
 ******************************************************************************/
 
@@ -46,4 +46,4 @@ struct IApp
     virtual ~IApp() = default;
 };
 
-} // namespace Methane::Graphicss
+} // namespace Methane::Graphics

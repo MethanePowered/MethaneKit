@@ -96,7 +96,7 @@ Also you can get [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/
 
 ## Development Plans
 
-- [x] Continous integration system
+- [x] Continuous integration system
 - [x] Application user input with mouse and keyboard
 - [x] Parallel command lists
 - [x] Improved shaders toolset: use DXC & HLSL 6 instead of glslang & HLSL 5.1

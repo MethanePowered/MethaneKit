@@ -55,7 +55,7 @@ bool TimeAnimation::Update()
     }
     m_prev_elapsed_seconds = elapsed_seconds;
 
-    return m_state == State::Running;
+    return GetState() == State::Running;
 }
 
 } // namespace Methane::Data

@@ -181,8 +181,6 @@ public:
 #define ITT_SCOPE_TASK(/*const char* */name) ITT_SCOPE(false, name)
 #define ITT_SCOPE_REGION(/*const char* */name) ITT_SCOPE(true, name)
 
-#define ITT_FUNCTION_TASK() ITT_SCOPE_TASK(__FUNCTION__); ITT_ARG("__file__", __FILE__); ITT_ARG("__line__", __LINE__)
-
 #ifdef ITT_FUNCTION_ARGS_ENABLED
 
 #define ITT_ARG(/*const char* */name, /*number or string*/ value) {\
@@ -191,9 +189,12 @@ public:
     __itt_scope_item.AddArg(__itt_arg_name, value);\
 }
 
+#define ITT_FUNCTION_TASK() ITT_SCOPE_TASK(__FUNCTION__); ITT_ARG("__file__", __FILE__); ITT_ARG("__line__", __LINE__)
+
 #else
 
 #define ITT_ARG(/*const char* */name, /*number or string*/ value)
+#define ITT_FUNCTION_TASK() ITT_SCOPE_TASK(__FUNCTION__)
 
 #endif
 

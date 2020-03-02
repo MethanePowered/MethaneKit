@@ -81,7 +81,7 @@ private:
         gfx::Mesh::Normal   normal;
         gfx::Mesh::TexCoord texcoord;
 
-        static constexpr const gfx::Mesh::VertexFields<3> layout = {
+        inline static const gfx::Mesh::VertexLayout layout = {
             gfx::Mesh::VertexField::Position,
             gfx::Mesh::VertexField::Normal,
             gfx::Mesh::VertexField::TexCoord,

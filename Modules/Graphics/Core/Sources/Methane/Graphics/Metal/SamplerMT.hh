@@ -46,8 +46,6 @@ public:
 private:
     void ResetSampletState();
 
-    IContextMT& GetContextMT() noexcept;
-    
     MTLSamplerDescriptor* m_mtl_sampler_desc = nullptr;
     id<MTLSamplerState>   m_mtl_sampler_state = nil;
 };

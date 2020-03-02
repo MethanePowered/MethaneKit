@@ -28,7 +28,6 @@ till end (exclusively): [start, end)
 #include <initializer_list>
 #include <algorithm>
 #include <sstream>
-#include <cassert>
 #include <stdexcept>
 
 #include <Methane/Instrumentation.h>
@@ -57,15 +56,15 @@ public:
 
     bool    IsAdjacent(const Range& other) const        { ITT_FUNCTION_TASK(); return m_start == other.m_end   || other.m_start == m_end; }
     bool    IsOverlapping(const Range& other) const     { ITT_FUNCTION_TASK(); return m_start <  other.m_end   && other.m_start <  m_end;  }
-    bool    IsMergable(const Range& other) const        { ITT_FUNCTION_TASK(); return m_start <= other.m_end   && other.m_start <= m_end; }
+    bool    IsMergeable(const Range& other) const        { ITT_FUNCTION_TASK(); return m_start <= other.m_end   && other.m_start <= m_end; }
     bool    Contains(const Range& other) const          { ITT_FUNCTION_TASK(); return m_start <= other.m_start && other.m_end   <= m_end; }
 
     Range operator+(const Range& other) const // merge
     {
         ITT_FUNCTION_TASK();
-        if (!IsMergable(other))
+        if (!IsMergeable(other))
         {
-            throw std::invalid_argument("Can not merge: ranges are not mergable.");
+            throw std::invalid_argument("Can not merge: ranges are not mergeable.");
         }
         return Range(std::min(m_start, other.m_start), std::max(m_end, other.m_end));
     }
@@ -73,7 +72,7 @@ public:
     Range operator%(const Range& other) const // intersect
     {
         ITT_FUNCTION_TASK();
-        if (!IsMergable(other))
+        if (!IsMergeable(other))
         {
             throw std::invalid_argument("Can not intersect: ranges are not overlapping or adjacent.");
         }

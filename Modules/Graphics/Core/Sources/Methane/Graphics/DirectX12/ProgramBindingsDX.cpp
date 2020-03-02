@@ -149,11 +149,11 @@ Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& sp_program, con
     return sp_dx_program_bindings;
 }
 
-Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
+Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
 {
     ITT_FUNCTION_TASK();
 
-    std::shared_ptr<ProgramBindingsDX> sp_dx_program_bindings = std::make_shared<ProgramBindingsDX>(static_cast<const ProgramBindingsDX&>(other_program_bingings), replace_resource_locations_by_argument);
+    std::shared_ptr<ProgramBindingsDX> sp_dx_program_bindings = std::make_shared<ProgramBindingsDX>(static_cast<const ProgramBindingsDX&>(other_program_bindings), replace_resource_locations_by_argument);
     sp_dx_program_bindings->Initialize(); // NOTE: Initialize is called externally (not from constructor) to enable using shared_from_this from its code
     return sp_dx_program_bindings;
 }

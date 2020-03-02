@@ -108,7 +108,7 @@ void BufferMT::SetData(const SubResources& sub_resources)
 
     assert(m_mtl_buffer != nil);
     Data::RawPtr p_resource_data = static_cast<Data::RawPtr>([m_mtl_buffer contents]);
-    assert(!!p_resource_data);
+    assert(p_resource_data != nullptr);
 
     Data::Size data_size = 0;
     for(const SubResource& sub_resource : sub_resources)

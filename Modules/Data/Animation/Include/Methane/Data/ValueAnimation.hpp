@@ -62,7 +62,7 @@ public:
     bool Update() override
     {
         ITT_FUNCTION_TASK();
-        if (!m_is_running)
+        if (GetState() != State::Running)
             return false;
 
         const double elapsed_seconds = GetElapsedSecondsD();
@@ -73,7 +73,7 @@ public:
         }
         m_prev_elapsed_seconds = elapsed_seconds;
 
-        return m_state == State::Running;
+        return GetState() == State::Running;
     }
 
 private:

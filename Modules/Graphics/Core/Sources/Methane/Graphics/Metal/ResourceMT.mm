@@ -31,8 +31,6 @@ Metal implementation of the resource interface.
 
 #include <vector>
 
-#import <Metal/Metal.h>
-
 namespace Methane::Graphics
 {
 

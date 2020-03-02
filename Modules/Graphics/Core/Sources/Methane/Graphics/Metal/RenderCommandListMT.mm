@@ -46,7 +46,6 @@ static MTLPrimitiveType PrimitiveTypeToMetal(RenderCommandList::Primitive primit
         case RenderCommandList::Primitive::LineStrip:      return MTLPrimitiveTypeLineStrip;
         case RenderCommandList::Primitive::Triangle:       return MTLPrimitiveTypeTriangle;
         case RenderCommandList::Primitive::TriangleStrip:  return MTLPrimitiveTypeTriangleStrip;
-        default:                                           assert(0);
     }
     return MTLPrimitiveTypeTriangleStrip;
 }
@@ -108,7 +107,7 @@ void RenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, const s
             m_mtl_cmd_buffer.label = MacOS::ConvertToNSType<std::string, NSString*>(GetName());
         }
 
-        assert(!!mtl_render_pass);
+        assert(mtl_render_pass != nil);
         m_mtl_render_encoder = [m_mtl_cmd_buffer renderCommandEncoderWithDescriptor:mtl_render_pass];
     }
 

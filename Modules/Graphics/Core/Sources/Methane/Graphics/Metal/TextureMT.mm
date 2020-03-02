@@ -50,7 +50,6 @@ static MTLTextureType GetNativeTextureType(Texture::DimensionType dimension_type
     case Texture::DimensionType::CubeArray:         return MTLTextureTypeCubeArray;
     case Texture::DimensionType::Tex3D:             return MTLTextureType3D;
     // TODO: add support for MTLTextureTypeTextureBuffer
-    default: throw std::invalid_argument("Dimension type is not supported in Metal");
     }
 }
 
@@ -70,8 +69,6 @@ static MTLRegion GetTextureRegion(const Dimensions& dimensions, Texture::Dimensi
             return MTLRegionMake2D(0, 0, dimensions.width, dimensions.height);
     case Texture::DimensionType::Tex3D:
             return MTLRegionMake3D(0, 0, 0, dimensions.width, dimensions.height, dimensions.depth);
-    default:
-            throw std::invalid_argument("Dimension type is not supported in Metal");
     }
     return {};
 }
@@ -127,7 +124,7 @@ TextureMT::~TextureMT()
 {
     ITT_FUNCTION_TASK();
 
-    if (GetSettings().type != Texture::Type::FrameBuffer)
+    if (TextureBase::GetSettings().type != Texture::Type::FrameBuffer)
     {
         GetContext().GetResourceManager().GetReleasePool().AddResource(*this);
     }
@@ -266,9 +263,6 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
         mtl_tex_desc.arrayLength        = settings.array_length;
         mtl_tex_desc.mipmapLevelCount   = GetMipLevelsCount();
         break;
-
-    default:
-        throw std::logic_error("Unsupported texture dimension type in Metal");
     }
 
     if (!mtl_tex_desc)

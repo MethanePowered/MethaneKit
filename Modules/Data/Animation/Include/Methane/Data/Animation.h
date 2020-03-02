@@ -58,6 +58,7 @@ protected:
 
     using Timer::Reset;
 
+private:
     State        m_state           = State::Running;
     double       m_duration_sec    = std::numeric_limits<double>::max();
     TimeDuration m_paused_duration;

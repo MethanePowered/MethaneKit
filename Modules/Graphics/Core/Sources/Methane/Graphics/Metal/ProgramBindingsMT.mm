@@ -162,10 +162,10 @@ Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& sp_program, con
     return std::make_shared<ProgramBindingsMT>(sp_program, resource_locations_by_argument);
 }
 
-Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
+Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ProgramBindingsMT>(static_cast<const ProgramBindingsMT&>(other_program_bingings), replace_resource_locations_by_argument);
+    return std::make_shared<ProgramBindingsMT>(static_cast<const ProgramBindingsMT&>(other_program_bindings), replace_resource_locations_by_argument);
 }
 
 Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindingBase::CreateCopy(const ArgumentBindingBase& other_argument_binding)
@@ -263,8 +263,6 @@ void ProgramBindingsMT::Apply(CommandListBase& command_list, ApplyBehavior::Mask
             case Resource::Type::Sampler:
                 SetMetalResourcesForAll(program_argument.shader_type, GetProgram(), mtl_cmd_encoder, metal_argument_binding.GetNativeSamplerStates(), arg_index);
                 break;
-
-            default: assert(0);
         }
     }
 }

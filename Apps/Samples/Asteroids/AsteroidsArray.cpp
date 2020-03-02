@@ -216,7 +216,7 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, Settings settings, C
     , m_settings(std::move(settings))
     , m_sp_content_state(state.shared_from_this())
     , m_mesh_subset_by_instance_index(m_settings.instance_count, 0u)
-    , m_min_mesh_lod_screen_size_log2(std::log2(m_settings.mesh_lod_min_screen_size))
+    , m_min_mesh_lod_screen_size_log_2(std::log2(m_settings.mesh_lod_min_screen_size))
 {
     ITT_FUNCTION_TASK();
     SCOPE_TIMER("AsteroidsArray::AsteroidsArray");
@@ -322,16 +322,16 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
     Data::ParallelFor<uint32_t>(1u, m_settings.instance_count, [&](uint32_t asteroid_index)
     {
         const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(asteroid_index);
-        gfx::ProgramBindings::ResourceLocationsByArgument set_resoure_location_by_argument = {
+        gfx::ProgramBindings::ResourceLocationsByArgument set_resource_location_by_argument = {
             { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { sp_asteroids_uniforms_buffer, asteroid_uniform_offset } } },
         };
         if (!m_settings.textures_array_enabled)
         {
-            set_resoure_location_by_argument.insert(
+            set_resource_location_by_argument.insert(
                 { { gfx::Shader::Type::Pixel, "g_face_textures"  }, { { GetInstanceTexturePtr(asteroid_index) } } }
             );
         }
-        program_bindings_array[asteroid_index] = gfx::ProgramBindings::CreateCopy(*program_bindings_array[0], set_resoure_location_by_argument);
+        program_bindings_array[asteroid_index] = gfx::ProgramBindings::CreateCopy(*program_bindings_array[0], set_resource_location_by_argument);
     });
     
     return program_bindings_array;
@@ -376,10 +376,10 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
             const gfx::Matrix44f    mvp_matrix   = model_matrix * view_proj_matrix;
 
             const gfx::Vector3f     asteroid_position(model_matrix(3, 0), model_matrix(3, 1), model_matrix(3, 2));
-            const float             distance_to_eye           = (eye_position - asteroid_position).length();
-            const float             relative_screen_size_log2 = std::log2(asteroid_parameters.scale / std::sqrt(distance_to_eye));
+            const float distance_to_eye            = (eye_position - asteroid_position).length();
+            const float relative_screen_size_log_2 = std::log2(asteroid_parameters.scale / std::sqrt(distance_to_eye));
 
-            const float             mesh_subdiv_float       = std::roundf(relative_screen_size_log2 - m_min_mesh_lod_screen_size_log2);
+            const float             mesh_subdiv_float       = std::roundf(relative_screen_size_log_2 - m_min_mesh_lod_screen_size_log_2);
             const uint32_t          mesh_subdivision_index  = std::min(m_settings.subdivisions_count - 1, static_cast<uint32_t>(std::max(0.0f, mesh_subdiv_float)));
             const uint32_t          mesh_subset_index       = m_sp_content_state->uber_mesh.GetSubsetIndex(asteroid_parameters.mesh_instance_index, mesh_subdivision_index);
             const gfx::Vector2f&    mesh_subset_depth_range = m_sp_content_state->uber_mesh.GetSubsetDepthRange(mesh_subset_index);
@@ -443,13 +443,13 @@ void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_l
 float AsteroidsArray::GetMinMeshLodScreenSize() const
 {
     ITT_FUNCTION_TASK();
-    return std::pow(2.f, m_min_mesh_lod_screen_size_log2);
+    return std::pow(2.f, m_min_mesh_lod_screen_size_log_2);
 }
 
 void AsteroidsArray::SetMinMeshLodScreenSize(float mesh_lod_min_screen_size)
 {
     ITT_FUNCTION_TASK();
-    m_min_mesh_lod_screen_size_log2 = std::log2(mesh_lod_min_screen_size);
+    m_min_mesh_lod_screen_size_log_2 = std::log2(mesh_lod_min_screen_size);
 }
 
 uint32_t AsteroidsArray::GetSubsetByInstanceIndex(uint32_t instance_index) const

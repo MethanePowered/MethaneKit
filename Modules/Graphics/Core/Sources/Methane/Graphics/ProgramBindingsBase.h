@@ -73,7 +73,7 @@ public:
     };
 
     ProgramBindingsBase(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
-    ProgramBindingsBase(const ProgramBindingsBase& other_program_bingings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
+    ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
     ~ProgramBindingsBase() override;
 
     Ptr<ProgramBindingsBase>  GetPtr()              { return shared_from_this(); }
