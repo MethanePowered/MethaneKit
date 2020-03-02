@@ -45,7 +45,6 @@ CommandQueueVK::CommandQueueVK(ContextBase& context)
 CommandQueueVK::~CommandQueueVK()
 {
     ITT_FUNCTION_TASK();
-    assert(!IsExecuting());
 }
 
 void CommandQueueVK::SetName(const std::string& name)

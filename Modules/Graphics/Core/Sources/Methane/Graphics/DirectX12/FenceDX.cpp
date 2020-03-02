@@ -30,6 +30,7 @@ DirectX 12 fence implementation.
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #include <nowide/convert.hpp>
+#include <cassert>
 
 namespace Methane::Graphics
 {
