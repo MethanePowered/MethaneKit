@@ -34,8 +34,8 @@ using namespace Methane::Data;
 namespace Methane::Graphics
 {
 
-static inline float square(float x)     { return x * x; }
-static inline float unitSign(float x)   { return x / std::fabs(x); }
+static inline float Square(float x)     { return x * x; }
+static inline float UnitSign(float x)   { return x / std::fabs(x); }
 
 ArcBallCamera::ArcBallCamera(Pivot pivot, cml::AxisOrientation axis_orientation)
     : Camera(axis_orientation)
@@ -84,7 +84,7 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
 {
     ITT_FUNCTION_TASK();
     const Point2f& screen_size = m_p_view_camera ? m_p_view_camera->GetScreenSize() : m_screen_size;
-    const Point2f screen_center(screen_size.x() / 2.f, screen_size.y() / 2.f);
+    const Point2f screen_center(screen_size.GetX() / 2.f, screen_size.GetY() / 2.f);
     Point2f screen_vector = static_cast<Point2f>(mouse_screen_pos) - screen_center;
 
     const float screen_radius = screen_vector.length();
@@ -98,10 +98,10 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
     // Reflect coordinates for natural camera movement
     const Point2f mirror_multipliers = m_p_view_camera
                                      ? Point2f(inside_sphere ? 1.f : -1.f, -1.f ) *
-                                       unitSign(cml::dot(GetLookDirection(m_mouse_pressed_orientation), m_p_view_camera->GetLookDirection()))
+                                           UnitSign(cml::dot(GetLookDirection(m_mouse_pressed_orientation), m_p_view_camera->GetLookDirection()))
                                      : Point2f(-1.f, 1.f);
-    screen_vector.setX(screen_vector.x() * mirror_multipliers.x());
-    screen_vector.setY(screen_vector.y() * mirror_multipliers.y());
+    screen_vector.SetX(screen_vector.GetX() * mirror_multipliers.GetX());
+    screen_vector.SetY(screen_vector.GetY() * mirror_multipliers.GetY());
 
     // Handle rotation between 90 and 180 degrees when mouse overruns one sphere radius
     float z_sign = 1.f;
@@ -121,7 +121,7 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
         }
     }
 
-    return cml::normalize(Vector3f(screen_vector, inside_sphere ? z_sign * std::sqrt(square(sphere_radius) - screen_vector.length_squared()) : 0.f));
+    return cml::normalize(Vector3f(screen_vector, inside_sphere ? z_sign * std::sqrt(Square(sphere_radius) - screen_vector.length_squared()) : 0.f));
 }
 
 void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir)

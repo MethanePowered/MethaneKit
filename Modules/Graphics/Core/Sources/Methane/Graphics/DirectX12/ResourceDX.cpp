@@ -109,16 +109,16 @@ ID3D12Resource& ResourceDX::GetNativeResourceRef() const
     return *m_cp_resource.Get();
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE ResourceDX::GetNativeCPUDescriptorHandle(const Descriptor& desc) const noexcept
+D3D12_CPU_DESCRIPTOR_HANDLE ResourceDX::GetNativeCpuDescriptorHandle(const Descriptor& desc) const noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeCPUDescriptorHandle(desc.index);
+    return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeCpuDescriptorHandle(desc.index);
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE ResourceDX::GetNativeGPUDescriptorHandle(const Descriptor& desc) const noexcept
+D3D12_GPU_DESCRIPTOR_HANDLE ResourceDX::GetNativeGpuDescriptorHandle(const Descriptor& desc) const noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeGPUDescriptorHandle(desc.index);
+    return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeGpuDescriptorHandle(desc.index);
 }
 
 D3D12_RESOURCE_STATES ResourceDX::GetNativeResourceState(State resource_state) noexcept
@@ -178,9 +178,10 @@ void ResourceDX::InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource
     ITT_FUNCTION_TASK();
     assert(!m_cp_resource);
 
+    const CD3DX12_HEAP_PROPERTIES heap_properties(heap_type);
     ThrowIfFailed(
         GetContextDX().GetDeviceDX().GetNativeDevice()->CreateCommittedResource(
-            &CD3DX12_HEAP_PROPERTIES(heap_type),
+            &heap_properties,
             D3D12_HEAP_FLAG_NONE,
             &resource_desc,
             resource_state,

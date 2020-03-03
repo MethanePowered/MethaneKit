@@ -64,7 +64,7 @@ DescriptorHeap::~DescriptorHeap()
              m_free_ranges == RangeSet({ { 0, m_deferred_size } }));
 }
 
-int32_t DescriptorHeap::AddResource(const ResourceBase& resource)
+Data::Index DescriptorHeap::AddResource(const ResourceBase& resource)
 {
     ITT_FUNCTION_TASK();
 
@@ -86,13 +86,13 @@ int32_t DescriptorHeap::AddResource(const ResourceBase& resource)
 
     m_resources.push_back(&resource);
 
-    const Index resource_index = static_cast<Index>(m_resources.size() - 1);
+    const Data::Index resource_index = static_cast<Data::Index>(m_resources.size() - 1);
     m_free_ranges.Remove(Range(resource_index, resource_index + 1));
 
     return static_cast<int32_t>(resource_index);
 }
 
-int32_t DescriptorHeap::ReplaceResource(const ResourceBase& resource, uint32_t at_index)
+Data::Index DescriptorHeap::ReplaceResource(const ResourceBase& resource, Data::Index at_index)
 {
     ITT_FUNCTION_TASK();
 
@@ -108,7 +108,7 @@ int32_t DescriptorHeap::ReplaceResource(const ResourceBase& resource, uint32_t a
     return at_index;
 }
 
-void DescriptorHeap::RemoveResource(uint32_t at_index)
+void DescriptorHeap::RemoveResource(Data::Index at_index)
 {
     ITT_FUNCTION_TASK();
 
@@ -124,7 +124,7 @@ void DescriptorHeap::RemoveResource(uint32_t at_index)
     m_free_ranges.Add(Range(at_index, at_index + 1));
 }
 
-DescriptorHeap::RangePtr DescriptorHeap::ReserveRange(Index length)
+Ptr<DescriptorHeap::Range> DescriptorHeap::ReserveRange(Data::Size length)
 {
     ITT_FUNCTION_TASK();
 
@@ -141,7 +141,7 @@ DescriptorHeap::RangePtr DescriptorHeap::ReserveRange(Index length)
     {
         if (m_settings.deferred_allocation)
         {
-            RangePtr sp_reserved_range(new Range(m_deferred_size, m_deferred_size + length));
+            Ptr<Range> sp_reserved_range(new Range(m_deferred_size, m_deferred_size + length));
             m_deferred_size += length;
             return sp_reserved_range;
         }
@@ -149,7 +149,7 @@ DescriptorHeap::RangePtr DescriptorHeap::ReserveRange(Index length)
             return nullptr;
     }
     
-    RangePtr sp_reserved_range(new Range(free_range_it->GetStart(), free_range_it->GetStart() + length));
+    Ptr<Range> sp_reserved_range(new Range(free_range_it->GetStart(), free_range_it->GetStart() + length));
     m_free_ranges.Remove(*sp_reserved_range);
 
     return sp_reserved_range;

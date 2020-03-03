@@ -18,7 +18,7 @@ limitations under the License.
 
 FILE: MethaneShaders.cmake
 Cross-platform HLSL shaders compilation and embedding into application resources
-with transformation to Metal shaders using SPIR-V tools.
+with transformation to Metal shaders using SPIRV tools.
 
 *****************************************************************************]]
 
@@ -60,9 +60,9 @@ function(get_generated_shaders FOR_TARGET SHADERS_CONFIG SHADER_EXT SHADERS_GENE
     file(STRINGS ${SHADERS_CONFIG} CONFIG_STRINGS)
     foreach(KEY_VALUE_STRING ${CONFIG_STRINGS})
         trim_spaces(${KEY_VALUE_STRING} KEY_VALUE_STRING)
-        split_by_first_delimiter(${KEY_VALUE_STRING} "=" SHADER_TYPE ENTRY_POINT_WITH_DEFINIES)
+        split_by_first_delimiter(${KEY_VALUE_STRING} "=" SHADER_TYPE ENTRY_POINT_WITH_DEFINES)
 
-        string(REGEX REPLACE ":| " "_" NEW_ENTRY_POINT ${ENTRY_POINT_WITH_DEFINIES})
+        string(REGEX REPLACE ":| " "_" NEW_ENTRY_POINT ${ENTRY_POINT_WITH_DEFINES})
         string(REPLACE "=" "" NEW_ENTRY_POINT "${NEW_ENTRY_POINT}")
         set(NEW_ENTRY_POINT "${SHADERS_NAME}_${NEW_ENTRY_POINT}")
 
@@ -88,8 +88,8 @@ function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL PROFILE_VER OU
     file(STRINGS ${SHADERS_CONFIG} CONFIG_STRINGS)
     foreach(KEY_VALUE_STRING ${CONFIG_STRINGS})
         trim_spaces(${KEY_VALUE_STRING} KEY_VALUE_STRING)
-        split_by_first_delimiter(${KEY_VALUE_STRING} "=" SHADER_TYPE ENTRY_POINT_WITH_DEFINIES)
-        split_by_first_delimiter(${ENTRY_POINT_WITH_DEFINIES} ":" OLD_ENTRY_POINT SHADER_DEFINITIONS)
+        split_by_first_delimiter(${KEY_VALUE_STRING} "=" SHADER_TYPE ENTRY_POINT_WITH_DEFINES)
+        split_by_first_delimiter(${ENTRY_POINT_WITH_DEFINES} ":" OLD_ENTRY_POINT SHADER_DEFINITIONS)
 
         set(NEW_ENTRY_POINT "${SHADERS_NAME}_${OLD_ENTRY_POINT}")
         string(REPLACE " " ";" SHADER_DEFINITIONS "${SHADER_DEFINITIONS}")
@@ -210,8 +210,8 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
     file(STRINGS ${SHADERS_CONFIG} CONFIG_STRINGS)
     foreach(KEY_VALUE_STRING ${CONFIG_STRINGS})
         trim_spaces(${KEY_VALUE_STRING} KEY_VALUE_STRING)
-        split_by_first_delimiter(${KEY_VALUE_STRING} "=" SHADER_TYPE ENTRY_POINT_WITH_DEFINIES)
-        split_by_first_delimiter(${ENTRY_POINT_WITH_DEFINIES} ":" ORIG_ENTRY_POINT SHADER_DEFINITIONS)
+        split_by_first_delimiter(${KEY_VALUE_STRING} "=" SHADER_TYPE ENTRY_POINT_WITH_DEFINES)
+        split_by_first_delimiter(${ENTRY_POINT_WITH_DEFINES} ":" ORIG_ENTRY_POINT SHADER_DEFINITIONS)
 
         set(NEW_ENTRY_POINT ${ORIG_ENTRY_POINT})
         string(REPLACE " " ";" SHADER_DEFINITIONS "${SHADER_DEFINITIONS}")

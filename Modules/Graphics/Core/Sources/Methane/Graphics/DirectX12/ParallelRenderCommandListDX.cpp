@@ -54,7 +54,7 @@ Ptr<ParallelRenderCommandList> ParallelRenderCommandList::Create(CommandQueue& c
 
 ParallelRenderCommandListDX::ParallelRenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass)
     : ParallelRenderCommandListBase(cmd_buffer, render_pass)
-    , m_begining_command_list(cmd_buffer, render_pass)
+    , m_beginning_command_list(cmd_buffer, render_pass)
     , m_ending_command_list(cmd_buffer, render_pass)
 {
     ITT_FUNCTION_TASK();
@@ -73,11 +73,11 @@ void ParallelRenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state,
 
     // Render pass is begun in "beginning" command list only,
     // but it will be ended in the "ending" command list on commit of the parallel CL
-    m_begining_command_list.Reset(Ptr<RenderState>(), debug_group); // begins render pass
+    m_beginning_command_list.Reset(Ptr<RenderState>(), debug_group); // begins render pass
     m_ending_command_list.ResetNative();                            // only reset native command list
 
     // Instead of closing debug group (from Reset call) on beginning CL commit, we force to close it in ending CL
-    m_begining_command_list.SetOpenDebugGroup("");
+    m_beginning_command_list.SetOpenDebugGroup("");
     m_ending_command_list.SetOpenDebugGroup(debug_group);
 
     if (sp_render_state)
@@ -95,7 +95,7 @@ void ParallelRenderCommandListDX::SetName(const std::string& name)
 {
     ITT_FUNCTION_TASK();
 
-    m_begining_command_list.SetName(GetTrailingCommandListDebugName(name, true));
+    m_beginning_command_list.SetName(GetTrailingCommandListDebugName(name, true));
     m_ending_command_list.SetName(GetTrailingCommandListDebugName(name, false));
 
     ParallelRenderCommandListBase::SetName(name);
@@ -108,7 +108,7 @@ void ParallelRenderCommandListDX::Commit()
     // Render pass was begun in "beginning" command list,
     // but it is ended in "ending" command list only
     m_ending_command_list.Commit();    // ends render pass
-    m_begining_command_list.Commit();
+    m_beginning_command_list.Commit();
 
     ParallelRenderCommandListBase::Commit();
 }
@@ -117,7 +117,7 @@ void ParallelRenderCommandListDX::Execute(uint32_t frame_index)
 {
     ITT_FUNCTION_TASK();
 
-    m_begining_command_list.Execute(frame_index);
+    m_beginning_command_list.Execute(frame_index);
     
     ParallelRenderCommandListBase::Execute(frame_index);
 
@@ -134,7 +134,7 @@ ParallelRenderCommandListDX::D3D12CommandLists ParallelRenderCommandListDX::GetN
     D3D12CommandLists dx_command_lists;
     const Ptrs<RenderCommandList>& parallel_command_lists = GetParallelCommandLists();
     dx_command_lists.reserve(parallel_command_lists.size() + 2); // 2 command lists reserved for beginning and ending
-    dx_command_lists.push_back(&m_begining_command_list.GetNativeCommandList());
+    dx_command_lists.push_back(&m_beginning_command_list.GetNativeCommandList());
 
     for (const Ptr<RenderCommandList>& sp_command_list : parallel_command_lists)
     {

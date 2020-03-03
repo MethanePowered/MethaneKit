@@ -89,9 +89,9 @@ const ScopeTimer::Aggregator::Timing& ScopeTimer::Aggregator::GetScopeTiming(con
 {
     ITT_FUNCTION_TASK();
 
-    static Timing g_empty_timing = {};
-    auto scope_timing_it = m_timing_by_scope_name.find(scope_name);
-    return scope_timing_it != m_timing_by_scope_name.end() ? scope_timing_it->second : g_empty_timing;
+    static Timing s_empty_timing = {};
+    auto   scope_timing_it = m_timing_by_scope_name.find(scope_name);
+    return scope_timing_it != m_timing_by_scope_name.end() ? scope_timing_it->second : s_empty_timing;
 }
 
 ScopeTimer::ScopeTimer(std::string scope_name)

@@ -118,8 +118,8 @@ SamplerMT::SamplerMT(ContextBase& context, const Settings& settings, const Descr
     m_mtl_sampler_desc.maxAnisotropy   = settings.max_anisotropy;
     m_mtl_sampler_desc.compareFunction = TypeConverterMT::CompareFunctionToMetal(settings.compare_function);
     m_mtl_sampler_desc.borderColor     = ConvertBorderColorToMetal(settings.border_color);
-    
-    ResetSampletState();
+
+    ResetSamplerState();
 }
 
 SamplerMT::~SamplerMT()
@@ -138,11 +138,11 @@ void SamplerMT::SetName(const std::string& name)
 
     assert(m_mtl_sampler_desc != nil);
     m_mtl_sampler_desc.label = Methane::MacOS::ConvertToNSType<std::string, NSString*>(name);
-    
-    ResetSampletState();
+
+    ResetSamplerState();
 }
 
-void SamplerMT::ResetSampletState()
+void SamplerMT::ResetSamplerState()
 {
     ITT_FUNCTION_TASK();
 

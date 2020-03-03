@@ -194,7 +194,7 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
     assert(!!m_sp_program);
     const ProgramBase& program = static_cast<const ProgramBase&>(GetProgram());
 
-    // Count the number of constant and mutable discriptots to be allocated in each desriptor heap
+    // Count the number of constant and mutable descriptors to be allocated in each descriptor heap
     std::map<DescriptorHeap::Type, DescriptorsCount> descriptors_count_by_heap_type;
     for (const auto& binding_by_argument : program.GetArgumentBindings())
     {
@@ -226,7 +226,7 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         if (binding_settings.argument.IsAddressable())
             continue;
 
-        const DescriptorHeap::Type heap_type = static_cast<const ArgumentBindingBase&>(argument_binding).GetDescriptorHeapType();
+        const DescriptorHeap::Type heap_type = argument_binding.GetDescriptorHeapType();
         DescriptorsCount& descriptors = descriptors_count_by_heap_type[heap_type];
         if (binding_settings.argument.IsConstant())
         {
@@ -262,7 +262,7 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         }
         if (descriptors.mutable_count > 0)
         {
-            DescriptorHeap::RangePtr sp_mutable_heap_range = heap_reservation.heap.get().ReserveRange(descriptors.mutable_count);
+            Ptr<DescriptorHeap::Range> sp_mutable_heap_range = heap_reservation.heap.get().ReserveRange(descriptors.mutable_count);
             if (!sp_mutable_heap_range)
             {
                 throw std::runtime_error("Failed to reserve mutable descriptor heap range. Descriptor heap is not big enough.");
@@ -301,10 +301,10 @@ const Ptr<ProgramBindings::ArgumentBinding>& ProgramBindingsBase::Get(const Prog
 {
     ITT_FUNCTION_TASK();
 
-    static const Ptr<ArgumentBinding> sp_empty_argument_binding;
-    auto   binding_by_argument_it  = m_binding_by_argument.find(shader_argument);
+    static const Ptr<ArgumentBinding> s_sp_empty_argument_binding;
+    auto binding_by_argument_it  = m_binding_by_argument.find(shader_argument);
     return binding_by_argument_it != m_binding_by_argument.end()
-         ? binding_by_argument_it->second : sp_empty_argument_binding;
+         ? binding_by_argument_it->second : s_sp_empty_argument_binding;
 }
 
 bool ProgramBindingsBase::AllArgumentsAreBoundToResources(std::string& missing_args) const

@@ -24,6 +24,7 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps
 #pragma once
 
 #include <Methane/Data/RangeSet.hpp>
+#include <Methane/Data/Types.h>
 #include <Methane/Memory.hpp>
 
 #include <set>
@@ -54,16 +55,14 @@ public:
 
     struct Settings
     {
-        Type     type;
-        uint32_t size;
-        bool     deferred_allocation;
-        bool     shader_visible;
+        Type       type;
+        Data::Size size;
+        bool       deferred_allocation;
+        bool       shader_visible;
     };
 
     using Types    = std::set<Type>;
-    using Index    = uint32_t;
-    using Range    = Methane::Data::Range<Index>;
-    using RangePtr = std::unique_ptr<Range>;
+    using Range    = Methane::Data::Range<Data::Index>;
 
     struct Reservation
     {
@@ -76,39 +75,38 @@ public:
         const Range& GetRange(bool is_constant) const { return is_constant ? constant_range : mutable_range; }
     };
 
-    using  Ptr = std::shared_ptr<DescriptorHeap>;
-    static Ptr Create(ContextBase& context, const Settings& settings);
+    static Ptr<DescriptorHeap> Create(ContextBase& context, const Settings& settings);
     virtual ~DescriptorHeap();
 
     // DescriptorHeap interface
-    virtual int32_t AddResource(const ResourceBase& resource);
-    virtual int32_t ReplaceResource(const ResourceBase& resource, uint32_t at_index);
-    virtual void    RemoveResource(uint32_t at_index);
-    virtual void    Allocate() { m_allocated_size = m_deferred_size; }
+    virtual Data::Index AddResource(const ResourceBase& resource);
+    virtual Data::Index ReplaceResource(const ResourceBase& resource, Data::Index at_index);
+    virtual void        RemoveResource(Data::Index at_index);
+    virtual void        Allocate() { m_allocated_size = m_deferred_size; }
 
-    RangePtr ReserveRange(Index length);
-    void     ReleaseRange(const Range& range);
+    Ptr<Range>          ReserveRange(Data::Size length);
+    void                ReleaseRange(const Range& range);
 
     const Settings&     GetSettings() const                             { return m_settings; }
-    uint32_t            GetDeferredSize() const                         { return m_deferred_size; }
-    uint32_t            GetAllocatedSize() const                        { return m_allocated_size; }
+    Data::Size          GetDeferredSize() const                         { return m_deferred_size; }
+    Data::Size          GetAllocatedSize() const                        { return m_allocated_size; }
     std::string         GetTypeName() const                             { return GetTypeName(m_settings.type); }
     const ResourceBase* GetResource(uint32_t descriptor_index) const    { return m_resources[descriptor_index]; }
-    bool                IsShaderVisible() const                         { return m_settings.shader_visible && IsShaderVisibileHeapType(m_settings.type); }
+    bool                IsShaderVisible() const                         { return m_settings.shader_visible && IsShaderVisibleHeapType(m_settings.type); }
 
-    static bool         IsShaderVisibileHeapType(Type heap_type)        { return heap_type == Type::ShaderResources || heap_type == Type::Samplers; }
+    static bool         IsShaderVisibleHeapType(Type heap_type)         { return heap_type == Type::ShaderResources || heap_type == Type::Samplers; }
     static std::string  GetTypeName(Type heap_type);
 
 protected:
     DescriptorHeap(ContextBase& context, const Settings& settings);
 
     using ResourcePtrs = std::vector<const ResourceBase*>;
-    using RangeSet     = Methane::Data::RangeSet<Index>;
+    using RangeSet     = Data::RangeSet<Data::Index>;
 
     ContextBase&    m_context;
     const Settings  m_settings;
-    uint32_t        m_deferred_size;
-    uint32_t        m_allocated_size = 0;
+    Data::Size      m_deferred_size;
+    Data::Size      m_allocated_size = 0;
     ResourcePtrs    m_resources;
     RangeSet        m_free_ranges;
     std::mutex      m_modification_mutex;

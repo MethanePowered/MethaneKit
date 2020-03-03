@@ -41,7 +41,7 @@ DirectX 12 implementation of the device interface.
 namespace Methane::Graphics
 {
 
-static std::string GetAdapterNameDXGI(IDXGIAdapter& adapter)
+static std::string GetAdapterNameDxgi(IDXGIAdapter& adapter)
 {
     ITT_FUNCTION_TASK();
 
@@ -50,7 +50,7 @@ static std::string GetAdapterNameDXGI(IDXGIAdapter& adapter)
     return nowide::narrow(desc.Description);
 }
 
-static bool IsSoftwareAdapterDXGI(IDXGIAdapter1& adapter)
+static bool IsSoftwareAdapterDxgi(IDXGIAdapter1& adapter)
 {
     ITT_FUNCTION_TASK();
 
@@ -66,9 +66,9 @@ Device::Feature::Mask DeviceDX::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdap
 }
 
 DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level)
-    : DeviceBase(GetAdapterNameDXGI(*cp_adapter.Get()),
-        IsSoftwareAdapterDXGI(static_cast<IDXGIAdapter1&>(*cp_adapter.Get())),
-        GetSupportedFeatures(cp_adapter, feature_level))
+    : DeviceBase(GetAdapterNameDxgi(*cp_adapter.Get()),
+                 IsSoftwareAdapterDxgi(static_cast<IDXGIAdapter1&>(*cp_adapter.Get())),
+                 GetSupportedFeatures(cp_adapter, feature_level))
     , m_cp_adapter(cp_adapter)
     , m_feature_level(feature_level)
 {
@@ -256,7 +256,7 @@ const Ptrs<Device>& SystemDX::UpdateGpuDevices(Device::Feature::Mask supported_f
 
         // Don't select the Basic Render Driver adapter.
         // If you want a software adapter, pass in "/warp" on the command line.
-        if (IsSoftwareAdapterDXGI(*p_adapter))
+        if (IsSoftwareAdapterDxgi(*p_adapter))
             continue;
 
         AddDevice(p_adapter, dx_feature_level);

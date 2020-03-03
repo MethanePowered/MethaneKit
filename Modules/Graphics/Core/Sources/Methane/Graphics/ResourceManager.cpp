@@ -56,7 +56,7 @@ void ResourceManager::Initialize(const Settings& settings)
         desc_heaps.push_back(DescriptorHeap::Create(m_context, heap_settings));
 
         // GPU accessible descriptor heaps are created for program resource bindings
-        if (DescriptorHeap::IsShaderVisibileHeapType(heap_type))
+        if (DescriptorHeap::IsShaderVisibleHeapType(heap_type))
         {
             const uint32_t shader_visible_heap_size = settings.shader_visible_heap_sizes[heap_type_idx];
             const DescriptorHeap::Settings heap_settings = { heap_type, shader_visible_heap_size, m_deferred_heap_allocation, true };
@@ -73,7 +73,7 @@ void ResourceManager::CompleteInitialization()
 
     for (const Ptrs<DescriptorHeap>& desc_heaps : m_descriptor_heap_types)
     {
-        for (const DescriptorHeap::Ptr& sp_desc_heap : desc_heaps)
+        for (const Ptr<DescriptorHeap>& sp_desc_heap : desc_heaps)
         {
             assert(!!sp_desc_heap);
             sp_desc_heap->Allocate();
@@ -131,15 +131,15 @@ uint32_t ResourceManager::CreateDescriptorHeap(const DescriptorHeap::Settings& s
     return static_cast<uint32_t>(desc_heaps.size() - 1);
 }
 
-const DescriptorHeap::Ptr& ResourceManager::GetDescriptorHeapPtr(DescriptorHeap::Type type, uint32_t heap_index)
+const Ptr<DescriptorHeap>& ResourceManager::GetDescriptorHeapPtr(DescriptorHeap::Type type, Data::Index heap_index)
 {
     ITT_FUNCTION_TASK();
 
     if (type == DescriptorHeap::Type::Undefined ||
         type == DescriptorHeap::Type::Count)
     {
-        static const DescriptorHeap::Ptr empty_ptr;
-        return empty_ptr;
+        static const Ptr<DescriptorHeap> s_empty_ptr;
+        return s_empty_ptr;
     }
 
     Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[static_cast<size_t>(type)];
@@ -152,7 +152,7 @@ const DescriptorHeap::Ptr& ResourceManager::GetDescriptorHeapPtr(DescriptorHeap:
     return desc_heaps[heap_index];
 }
 
-DescriptorHeap& ResourceManager::GetDescriptorHeap(DescriptorHeap::Type type, uint32_t heap_index)
+DescriptorHeap& ResourceManager::GetDescriptorHeap(DescriptorHeap::Type type, Data::Index heap_index)
 {
     ITT_FUNCTION_TASK();
 
@@ -161,7 +161,7 @@ DescriptorHeap& ResourceManager::GetDescriptorHeap(DescriptorHeap::Type type, ui
     {
         throw std::invalid_argument("Can not get reference to \"Undefined\" descriptor heap.");
     }
-    const DescriptorHeap::Ptr& sp_resource_heap = GetDescriptorHeapPtr(type, heap_index);
+    const Ptr<DescriptorHeap>& sp_resource_heap = GetDescriptorHeapPtr(type, heap_index);
     if (!sp_resource_heap)
     {
         throw std::invalid_argument("Descriptor heap of type \"" + DescriptorHeap::GetTypeName(type) +
@@ -170,34 +170,34 @@ DescriptorHeap& ResourceManager::GetDescriptorHeap(DescriptorHeap::Type type, ui
     return *sp_resource_heap;
 }
 
-const DescriptorHeap::Ptr&  ResourceManager::GetDefaultShaderVisibleDescriptorHeapPtr(DescriptorHeap::Type type) const
+const Ptr<DescriptorHeap>&  ResourceManager::GetDefaultShaderVisibleDescriptorHeapPtr(DescriptorHeap::Type type) const
 {
     ITT_FUNCTION_TASK();
 
     if (type == DescriptorHeap::Type::Undefined ||
         type == DescriptorHeap::Type::Count)
     {
-        static const DescriptorHeap::Ptr empty_ptr;
-        return empty_ptr;
+        static const Ptr<DescriptorHeap> s_empty_ptr;
+        return s_empty_ptr;
     }
 
     const Ptrs<DescriptorHeap>& descriptor_heaps = m_descriptor_heap_types[static_cast<uint32_t>(type)];
     auto descriptor_heaps_it = std::find_if(descriptor_heaps.begin(), descriptor_heaps.end(),
-        [](const DescriptorHeap::Ptr& sp_descriptor_heap)
+        [](const Ptr<DescriptorHeap>& sp_descriptor_heap)
         {
             assert(sp_descriptor_heap);
             return sp_descriptor_heap && sp_descriptor_heap->GetSettings().shader_visible;
         });
 
-    static const DescriptorHeap::Ptr empty_heap_ptr;
-    return descriptor_heaps_it != descriptor_heaps.end() ? *descriptor_heaps_it : empty_heap_ptr;
+    static const Ptr<DescriptorHeap> s_empty_heap_ptr;
+    return descriptor_heaps_it != descriptor_heaps.end() ? *descriptor_heaps_it : s_empty_heap_ptr;
 }
 
 DescriptorHeap& ResourceManager::GetDefaultShaderVisibleDescriptorHeap(DescriptorHeap::Type type) const
 {
     ITT_FUNCTION_TASK();
 
-    const DescriptorHeap::Ptr& sp_resource_heap = GetDefaultShaderVisibleDescriptorHeapPtr(type);
+    const Ptr<DescriptorHeap>& sp_resource_heap = GetDefaultShaderVisibleDescriptorHeapPtr(type);
     if (!sp_resource_heap)
     {
         throw std::invalid_argument("There is no shader visible descriptor heap of type \"" + DescriptorHeap::GetTypeName(type) + "\".");
@@ -214,7 +214,7 @@ ResourceManager::DescriptorHeapSizeByType ResourceManager::GetDescriptorHeapSize
     {
         const Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[heap_type_idx];
         uint32_t max_heap_size = 0;
-        for (const DescriptorHeap::Ptr& sp_desc_heap : desc_heaps)
+        for (const Ptr<DescriptorHeap>& sp_desc_heap : desc_heaps)
         {
             assert(!!sp_desc_heap);
             assert(sp_desc_heap->GetSettings().type == static_cast<DescriptorHeap::Type>(heap_type_idx));
@@ -234,8 +234,7 @@ ResourceBase::ReleasePool& ResourceManager::GetReleasePool()
 {
     ITT_FUNCTION_TASK();
     assert(!!m_sp_release_pool);
-
-    return static_cast<ResourceBase::ReleasePool&>(*m_sp_release_pool);
+    return *m_sp_release_pool;
 }
 
 } // namespace Methane::Graphics

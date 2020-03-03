@@ -86,7 +86,7 @@ void FenceMT::Wait()
     assert(!m_is_signalled);
     [m_mtl_event notifyListener:m_mtl_event_listener
                         atValue:GetValue()
-                          block:^(id<MTLSharedEvent> sharedEvent, uint64_t value)
+                          block:^(id<MTLSharedEvent>, uint64_t /*value*/)
                                 {
                                     m_is_signalled = true;
                                     m_wait_condition_var.notify_one();

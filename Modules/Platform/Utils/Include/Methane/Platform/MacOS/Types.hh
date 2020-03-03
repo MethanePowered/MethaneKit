@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Platform/MacOS/Types.h
-MacOS platform type convertors.
+MacOS platform type converters.
 
 ******************************************************************************/
 
@@ -27,6 +27,8 @@ MacOS platform type convertors.
 #include <vector>
 
 #import <Cocoa/Cocoa.h>
+#import "../../../../../../../../../Program Files (x86)/Windows Kits/10/Include/10.0.18362.0/shared/minwindef.h"
+#import "../../../../../../../../../Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Tools/MSVC/14.24.28314/include/string"
 
 namespace Methane::MacOS
 {
@@ -36,22 +38,22 @@ namespace Methane::MacOS
 // ===============================
 
 template<class STDType, class NSType>
-inline NSType ConvertToNSType(const STDType& value);
+inline NSType ConvertToNsType(const std::string& str);
 
 template<>
-inline BOOL ConvertToNSType<bool, BOOL>(const bool& value)
+inline BOOL ConvertToNsType<bool, BOOL>(const std::string& str)
 {
-    return value ? YES : NO;
+    return str ? YES : NO;
 }
 
 template<>
-inline NSString* ConvertToNSType<std::string, NSString*>(const std::string& str)
+inline NSString* ConvertToNsType<std::string, NSString*>(const std::string& str)
 {
     return [[NSString alloc] initWithUTF8String:str.data()];
 }
 
 template<typename STDItemType, typename NSItemType>
-inline NSMutableArray<NSItemType>* ConvertToNSList(const std::vector<STDItemType>& std_vector)
+inline NSMutableArray<NSItemType>* ConvertToNsList(const std::vector<STDItemType>& std_vector)
 {
     NSMutableArray<NSItemType>* p_mutable_array = [[NSMutableArray<NSItemType> alloc] init];
     if (!p_mutable_array)
@@ -59,7 +61,7 @@ inline NSMutableArray<NSItemType>* ConvertToNSList(const std::vector<STDItemType
 
     for(const STDItemType& std_item : std_vector)
     {
-        NSItemType p_ns_item = ConvertToNSType<STDItemType, NSItemType>(std_item);
+        NSItemType p_ns_item = ConvertToNsType<STDItemType, NSItemType>(std_item);
         if (!p_ns_item)
             continue;
 
@@ -74,19 +76,19 @@ inline NSMutableArray<NSItemType>* ConvertToNSList(const std::vector<STDItemType
 // ===============================
 
 template<class NSType, class STDType>
-inline STDType ConvertFromNSType(const NSType& value);
+inline STDType ConvertFromNsType(const BOOL& value);
 
 template<class NSType, class STDType>
-inline STDType ConvertFromNSType(const NSType* p_ns_value);
+inline STDType ConvertFromNsType(const NSString* p_ns_str);
 
 template<>
-inline bool ConvertFromNSType<BOOL, bool>(const BOOL& value)
+inline bool ConvertFromNsType<BOOL, bool>(const BOOL& value)
 {
     return value == YES;
 }
 
 template<>
-inline std::string ConvertFromNSType<NSString, std::string>(const NSString* p_ns_str)
+inline std::string ConvertFromNsType<NSString, std::string>(const NSString* p_ns_str)
 {
     return p_ns_str ? std::string([p_ns_str UTF8String]) : std::string();
 }

@@ -154,29 +154,29 @@ void TextureMT::SetData(const SubResources& sub_resources)
     const uint32_t  bytes_per_image = settings.dimensions.height * bytes_per_row;
     const MTLRegion texture_region  = GetTextureRegion(settings.dimensions, settings.dimension_type);
 
-    for(const SubResource& sub_resourse : sub_resources)
+    for(const SubResource& sub_resource : sub_resources)
     {
         uint32_t slice = 0;
         switch(settings.dimension_type)
         {
             case Texture::DimensionType::Tex1DArray:
             case Texture::DimensionType::Tex2DArray:
-                slice = sub_resourse.index.array_index;
+                slice = sub_resource.index.array_index;
                 break;
             case Texture::DimensionType::Cube:
-                slice = sub_resourse.index.depth_slice;
+                slice = sub_resource.index.depth_slice;
                 break;
             case Texture::DimensionType::CubeArray:
-                slice = sub_resourse.index.depth_slice + sub_resourse.index.array_index * 6;
+                slice = sub_resource.index.depth_slice + sub_resource.index.array_index * 6;
                 break;
             default:
                 slice = 0;
         }
         
         [m_mtl_texture replaceRegion:texture_region
-                         mipmapLevel:sub_resourse.index.mip_level
+                         mipmapLevel:sub_resource.index.mip_level
                                slice:slice
-                           withBytes:sub_resourse.p_data
+                           withBytes:sub_resource.p_data
                          bytesPerRow:bytes_per_row
                        bytesPerImage:bytes_per_image];
     }

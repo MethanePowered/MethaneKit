@@ -363,7 +363,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
         element_desc.InputSlot                = buffer_index;
         element_desc.InputSlotClass           = GetInputClassificationByLayoutStepType(input_buffer_layout.step_type);
         element_desc.InstanceDataStepRate     = 0; // FIXME: input_buffer_layout.step_rate;
-        element_desc.Format                   = TypeConverterDX::ParameterDescToDXGIFormatAndSize(param_desc, element_byte_size);
+        element_desc.Format                   = TypeConverterDX::ParameterDescToDxgiFormatAndSize(param_desc, element_byte_size);
         element_desc.AlignedByteOffset        = buffer_byte_offset;
 
         dx_input_layout.push_back(element_desc);

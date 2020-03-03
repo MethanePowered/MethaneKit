@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Data/TimeAnimation.h
-Time-based animation of any external enity with an update lambda-function.
+Time-based animation of any external entity with an update lambda-function.
 
 ******************************************************************************/
 

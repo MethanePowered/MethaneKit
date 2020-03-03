@@ -34,7 +34,6 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 #include <memory>
 #include <thread>
 #include <array>
-#include <sstream>
 #include <map>
 
 namespace Methane::Samples
@@ -159,12 +158,12 @@ AsteroidsApp::AsteroidsApp()
     // for Reversed-Z buffer values range [ near: 1, far 0], instead of [ near 0, far 1]
     // which is used for "from near to far" drawing order for reducing pixels overdraw
     m_view_camera.SetOrientation({ { -110.f, 75.f, 210.f }, { 0.f, -60.f, 25.f }, { 0.f, 1.f, 0.f } });
-    m_view_camera.SetParamters({ 600.f /* near = max depth */, 0.01f /*far = min depth*/, 90.f /* FOV */ });
+    m_view_camera.SetParameters({ 600.f /* near = max depth */, 0.01f /*far = min depth*/, 90.f /* FOV */ });
     m_view_camera.SetZoomDistanceRange({ 60.f , 400.f });
 
     m_light_camera.SetOrientation({ { -100.f, 120.f, 0.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
-    m_light_camera.SetParamters({ -300.f, 300.f, 90.f });
+    m_light_camera.SetParameters({ -300.f, 300.f, 90.f });
     m_light_camera.Resize(120.f, 120.f);
 
     InputState().AddControllers({

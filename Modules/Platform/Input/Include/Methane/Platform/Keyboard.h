@@ -91,13 +91,13 @@ namespace OS
 {
 #ifdef __APPLE__
 
-constexpr Key key_left_ctrl = Key::LeftSuper;
-constexpr Key key_right_ctrl = Key::RightSuper;
+constexpr Key g_key_left_ctrl  = Key::LeftSuper;
+constexpr Key g_key_right_ctrl = Key::RightSuper;
 
 #else
 
-constexpr Key key_left_ctrl  = Key::LeftControl;
-constexpr Key key_right_ctrl = Key::RightControl;
+constexpr Key g_key_left_ctrl  = Key::LeftControl;
+constexpr Key g_key_right_ctrl = Key::RightControl;
 
 #endif
 }

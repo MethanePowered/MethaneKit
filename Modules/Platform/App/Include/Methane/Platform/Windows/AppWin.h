@@ -53,7 +53,7 @@ protected:
     
     void ScheduleAlert();
 
-    static LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+    static LRESULT CALLBACK WindowProc(HWND h_wnd, UINT message, WPARAM w_param, LPARAM l_param);
 
     AppEnvironment m_env;
 

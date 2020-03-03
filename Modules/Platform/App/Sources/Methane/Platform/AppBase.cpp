@@ -127,7 +127,7 @@ void AppBase::ShowAlert(const Message&)
 
 void AppBase::UpdateAndRender()
 {
-    // Do not render if error has occured and is being displayed in message box
+    // Do not render if error has occurred and is being displayed in message box
     if (HasError())
         return;
 

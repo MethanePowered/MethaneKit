@@ -97,7 +97,7 @@ TEST_CASE("Range set add", "[range-set]")
         CHECK(range_set == reference_set);
     }
 
-    SECTION("Adding adacent range in the middle")
+    SECTION("Adding adjacent range in the middle")
     {
         RangeSet<uint32_t> range_set(test_range_set);
         range_set.Add({ 8, 11 });

@@ -23,7 +23,7 @@ FILE: Methane/Data/RangeSet.cpp
 namespace Methane::Data
 {
 
-void dummy()
+void Dummy()
 {
     // Prevents libtool warning for library on MacOS:
     // the table of contents is empty (no object file members in the library define global symbols)

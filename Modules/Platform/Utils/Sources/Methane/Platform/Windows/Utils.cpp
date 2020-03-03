@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Platform/Windows/Utils.cpp
-Windows platform utilitary functions.
+Windows platform utility functions.
 
 ******************************************************************************/
 
@@ -90,9 +90,9 @@ namespace Windows
 void GetDesktopResolution(uint32_t& width, uint32_t& height)
 {
     ITT_FUNCTION_TASK();
-    RECT desktop;
-    const HWND hDesktop = GetDesktopWindow();
-    GetWindowRect(hDesktop, &desktop);
+    RECT       desktop;
+    const HWND h_desktop = GetDesktopWindow();
+    GetWindowRect(h_desktop, &desktop);
     width = static_cast<uint32_t>(desktop.right);
     height = static_cast<uint32_t>(desktop.bottom);
 }

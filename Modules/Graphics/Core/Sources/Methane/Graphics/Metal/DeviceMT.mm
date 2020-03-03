@@ -146,8 +146,8 @@ const Ptr<Device>& SystemMT::FindMetalDevice(const id<MTLDevice>& mtl_device) co
                                             return metal_device.GetNativeDevice() == mtl_device;
                                         });
     
-    static const Ptr<Device> sp_empty_device;
-    return device_it != devices.end() ? *device_it : sp_empty_device;
+    static const Ptr<Device> s_sp_empty_device;
+    return device_it != devices.end() ? *device_it : s_sp_empty_device;
 }
 
 } // namespace Methane::Graphics

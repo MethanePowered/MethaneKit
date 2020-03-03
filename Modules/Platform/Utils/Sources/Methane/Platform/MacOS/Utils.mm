@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Platform/MacOS/Utils.mm
-MacOS platform utilitary functions.
+MacOS platform utility functions.
 
 ******************************************************************************/
 

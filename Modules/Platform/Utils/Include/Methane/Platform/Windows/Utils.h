@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Platform/Windows/Utils.h
-Windows platform utilitary functions.
+Windows platform utility functions.
 
 ******************************************************************************/
 

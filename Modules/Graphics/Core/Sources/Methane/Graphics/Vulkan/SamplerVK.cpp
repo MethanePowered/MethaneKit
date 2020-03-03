@@ -43,7 +43,7 @@ SamplerVK::SamplerVK(ContextBase& context, const Settings& settings, const Descr
 
     InitializeDefaultDescriptors();
     
-    ResetSampletState();
+    ResetSamplerState();
 }
 
 SamplerVK::~SamplerVK()
@@ -57,10 +57,10 @@ void SamplerVK::SetName(const std::string& name)
 
     SamplerBase::SetName(name);
 
-    ResetSampletState();
+    ResetSamplerState();
 }
 
-void SamplerVK::ResetSampletState()
+void SamplerVK::ResetSamplerState()
 {
     ITT_FUNCTION_TASK();
 }

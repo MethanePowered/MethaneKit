@@ -101,7 +101,7 @@ void ConstantBufferDX::InitializeView()
     const Usage::Mask usage_mask = GetUsageMask();
     if (usage_mask & Usage::ShaderRead && !(usage_mask & Usage::Addressable))
     {
-        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle = GetNativeCPUDescriptorHandle(Usage::ShaderRead);
+        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle = GetNativeCpuDescriptorHandle(Usage::ShaderRead);
         GetContextDX().GetDeviceDX().GetNativeDevice()->CreateConstantBufferView(&m_buffer_view, cpu_handle);
     }
 }

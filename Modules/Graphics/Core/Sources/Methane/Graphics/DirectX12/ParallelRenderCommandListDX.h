@@ -57,7 +57,7 @@ private:
     CommandQueueDX& GetCommandQueueDX();
     RenderPassDX&   GetPassDX();
 
-    RenderCommandListDX m_begining_command_list;
+    RenderCommandListDX m_beginning_command_list;
     RenderCommandListDX m_ending_command_list;
 };
 

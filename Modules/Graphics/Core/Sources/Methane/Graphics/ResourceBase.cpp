@@ -94,7 +94,7 @@ std::string Resource::Usage::ToString(Usage::Mask usage_mask) noexcept
     return names_ss.str();
 }
 
-Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, int32_t in_index)
+Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, Data::Index in_index)
     : heap(in_heap)
     , index(in_index)
 {
@@ -184,9 +184,8 @@ void ResourceBase::InitializeDefaultDescriptors()
         {
             // Create default resource descriptor by usage
             const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByUsage(usage);
-            Descriptor descriptor(m_context.GetResourceManager().GetDescriptorHeap(heap_type));
-            descriptor.index = descriptor.heap.AddResource(*this);
-            m_descriptor_by_usage.emplace(usage, descriptor);
+            DescriptorHeap& heap = m_context.GetResourceManager().GetDescriptorHeap(heap_type);
+            m_descriptor_by_usage.emplace(usage, Descriptor(heap, heap.AddResource(*this)));
         }
     }
 }

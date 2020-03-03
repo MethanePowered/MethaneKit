@@ -28,7 +28,7 @@ Metal "dummy" implementation of the descriptor heap.
 namespace Methane::Graphics
 {
 
-DescriptorHeap::Ptr DescriptorHeap::Create(ContextBase& context, const Settings& settings)
+Ptr<DescriptorHeap> DescriptorHeap::Create(ContextBase& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<DescriptorHeapMT>(context, settings);

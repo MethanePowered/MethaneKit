@@ -77,9 +77,9 @@ struct Resource : virtual Object
     struct Descriptor
     {
         DescriptorHeap& heap;
-        int32_t         index;
+        Data::Index     index;
 
-        Descriptor(DescriptorHeap& in_heap, int32_t in_index = -1);
+        Descriptor(DescriptorHeap& in_heap, Data::Index in_index);
     };
 
     using DescriptorByUsage = std::map<Usage::Value, Descriptor>;
@@ -140,7 +140,7 @@ struct Resource : virtual Object
 
     using SubResources = std::vector<SubResource>;
 
-    // Auxillary functions
+    // Auxiliary functions
     static std::string GetTypeName(Type type) noexcept;
 
     // Resource interface

@@ -37,18 +37,18 @@ public:
     using Base = cml::vector<T, cml::fixed<2>>;
     using Base::Base;
 
-    T x() const noexcept { return (*this)[0]; }
-    T y() const noexcept { return (*this)[1]; }
+    T GetX() const noexcept { return (*this)[0]; }
+    T GetY() const noexcept { return (*this)[1]; }
     
-    void setX(T x) noexcept { (*this)[0] = x; }
-    void setY(T y) noexcept { (*this)[1] = y; }
+    void SetX(T x) noexcept { (*this)[0] = x; }
+    void SetY(T y) noexcept { (*this)[1] = y; }
 
     template<typename U>
     explicit operator Point2T<U>() const
-    { return Point2T<U>(static_cast<U>(x()), static_cast<U>(y())); }
+    { return Point2T<U>(static_cast<U>(GetX()), static_cast<U>(GetY())); }
 
     operator std::string() const
-    { return "Pt(" + std::to_string(x()) + ", " + std::to_string(y()) + ")"; }
+    { return "Pt(" + std::to_string(GetX()) + ", " + std::to_string(GetY()) + ")"; }
 };
 
 using Point2i = Point2T<int32_t>;

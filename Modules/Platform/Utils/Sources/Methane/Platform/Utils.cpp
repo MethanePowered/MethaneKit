@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Platform/Utils.cpp
-Methane platform utilitary functions
+Methane platform utility functions
 
 ******************************************************************************/
 

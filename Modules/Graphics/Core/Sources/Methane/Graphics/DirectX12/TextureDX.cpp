@@ -108,7 +108,7 @@ void RenderTargetTextureDX::Initialize()
     const Settings& settings = GetSettings();
     if (settings.dimensions.depth != 1 || settings.dimensions.width == 0 || settings.dimensions.height == 0)
     {
-        throw std::invalid_argument("Render target texture can only be created for 2D texture with dimensions.depth == 1 and non zero width and hight.");
+        throw std::invalid_argument("Render target texture can only be created for 2D texture with dimensions.depth == 1 and non zero width and height.");
     }
 
     D3D12_RESOURCE_DESC tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
@@ -131,7 +131,7 @@ void FrameBufferTextureDX::Initialize(uint32_t frame_buffer_index)
         throw std::runtime_error("Frame BufferBase texture supports only Render Target usage.");
     }
 
-    const D3D12_CPU_DESCRIPTOR_HANDLE descriptor_handle = GetNativeCPUDescriptorHandle(Usage::RenderTarget);
+    const D3D12_CPU_DESCRIPTOR_HANDLE descriptor_handle = GetNativeCpuDescriptorHandle(Usage::RenderTarget);
     GetContextDX().GetDeviceDX().GetNativeDevice()->CreateRenderTargetView(GetNativeResource(), nullptr, descriptor_handle);
 }
 
@@ -188,7 +188,7 @@ void DepthStencilBufferTextureDX::Initialize(const std::optional<DepthStencil>& 
             srv_desc.ViewDimension                   = GetSrvDimension(settings.dimensions);
             srv_desc.Shader4ComponentMapping         = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
             srv_desc.Texture2D.MipLevels             = 1;
-            cp_device->CreateShaderResourceView(GetNativeResource(), &srv_desc, GetNativeCPUDescriptorHandle(desc));
+            cp_device->CreateShaderResourceView(GetNativeResource(), &srv_desc, GetNativeCpuDescriptorHandle(desc));
         } break;
 
         case DescriptorHeap::Type::DepthStencil:
@@ -196,7 +196,7 @@ void DepthStencilBufferTextureDX::Initialize(const std::optional<DepthStencil>& 
             D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc   = {};
             dsv_desc.Format                          = view_write_format;
             dsv_desc.ViewDimension                   = GetDsvDimension(settings.dimensions);
-            cp_device->CreateDepthStencilView(GetNativeResource(), &dsv_desc, GetNativeCPUDescriptorHandle(desc));
+            cp_device->CreateDepthStencilView(GetNativeResource(), &dsv_desc, GetNativeCpuDescriptorHandle(desc));
         } break;
 
         default:
@@ -210,7 +210,7 @@ ImageTextureDX::TextureDX(ContextBase& render_context, const Settings& settings,
 {
     ITT_FUNCTION_TASK();
 
-    if (GetUsageMask() != Usage::ShaderRead)
+    if (ResourceBase::GetUsageMask() != Usage::ShaderRead)
     {
         throw std::runtime_error("Image texture supports only \"Shader Read\" usage.");
     }
@@ -234,7 +234,7 @@ ImageTextureDX::TextureDX(ContextBase& render_context, const Settings& settings,
         )
     );
 
-    cp_device->CreateShaderResourceView(GetNativeResource(), &tex_and_srv_desc.second, GetNativeCPUDescriptorHandle(Usage::ShaderRead));
+    cp_device->CreateShaderResourceView(GetNativeResource(), &tex_and_srv_desc.second, GetNativeCpuDescriptorHandle(Usage::ShaderRead));
 }
 
 ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() const

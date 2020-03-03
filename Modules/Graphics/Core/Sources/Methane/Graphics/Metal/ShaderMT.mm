@@ -182,7 +182,7 @@ MTLVertexDescriptor* ShaderMT::GetNativeVertexDescriptor(const ProgramMT& progra
     ITT_FUNCTION_TASK();
     
     // Regex matching prefix of the input attributes "in_var_"
-    static const std::regex attr_suffix_regex("^in_var_");
+    static const std::regex s_attr_suffix_regex("^in_var_");
 
     MTLVertexDescriptor* mtl_vertex_desc = [[MTLVertexDescriptor alloc] init];
     [mtl_vertex_desc reset];
@@ -194,7 +194,7 @@ MTLVertexDescriptor* ShaderMT::GetNativeVertexDescriptor(const ProgramMT& progra
             continue;
         
         const MTLVertexFormat mtl_vertex_format = TypeConverterMT::MetalDataTypeToVertexFormat(mtl_vertex_attrib.attributeType);
-        const std::string attrib_name = std::regex_replace(Methane::MacOS::ConvertFromNSType<NSString, std::string>(mtl_vertex_attrib.name), attr_suffix_regex, "");
+        const std::string attrib_name = std::regex_replace(Methane::MacOS::ConvertFromNSType<NSString, std::string>(mtl_vertex_attrib.name), s_attr_suffix_regex, "");
         const uint32_t    attrib_size = TypeConverterMT::ByteSizeOfVertexFormat(mtl_vertex_format);
         const uint32_t    attrib_slot = GetProgramInputBufferIndexByArgumentSemantic(program, attrib_name);
         

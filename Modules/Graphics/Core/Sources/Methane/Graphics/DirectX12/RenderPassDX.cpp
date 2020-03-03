@@ -42,7 +42,7 @@ namespace Methane::Graphics
 static D3D12_CPU_DESCRIPTOR_HANDLE GetRenderTargetTextureCpuDescriptor(const WeakPtr<Texture>& wp_texture)
 {
     return !wp_texture.expired()
-         ? static_cast<TextureBase&>(*wp_texture.lock()).GetNativeCPUDescriptorHandle(Resource::Usage::RenderTarget)
+         ? static_cast<TextureBase&>(*wp_texture.lock()).GetNativeCpuDescriptorHandle(Resource::Usage::RenderTarget)
          : D3D12_CPU_DESCRIPTOR_HANDLE();
 }
 
@@ -84,10 +84,10 @@ RenderPassDX::AccessDesc::AccessDesc(const ColorAttachment& color_attachment)
         const Ptr<Texture> sp_color_rt        = color_attachment.wp_texture.lock();
         const DXGI_FORMAT color_format        = TypeConverterDX::DataFormatToDXGI(sp_color_rt->GetSettings().pixel_format);
         const float clear_color_components[4] = {
-            color_attachment.clear_color.r(),
-            color_attachment.clear_color.g(),
-            color_attachment.clear_color.b(),
-            color_attachment.clear_color.a()
+            color_attachment.clear_color.GetR(),
+            color_attachment.clear_color.GetG(),
+            color_attachment.clear_color.GetB(),
+            color_attachment.clear_color.GetA()
         };
         beginning.Clear.ClearValue = CD3DX12_CLEAR_VALUE(color_format, clear_color_components);
     }
@@ -148,7 +148,7 @@ D3D12_RENDER_PASS_ENDING_ACCESS_TYPE RenderPassDX::AccessDesc::GetEndingAccessTy
 
 RenderPassDX::RTClearInfo::RTClearInfo(const RenderPass::ColorAttachment& color_attach)
     : cpu_handle(GetRenderTargetTextureCpuDescriptor(color_attach.wp_texture))
-    , clear_color{ color_attach.clear_color.r(), color_attach.clear_color.g(), color_attach.clear_color.b(), color_attach.clear_color.a() }
+    , clear_color{ color_attach.clear_color.GetR(), color_attach.clear_color.GetG(), color_attach.clear_color.GetB(), color_attach.clear_color.GetA() }
 {
     ITT_FUNCTION_TASK();
 }
@@ -183,8 +183,8 @@ static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(RenderPass::Access::Va
     case RenderPass::Access::Samplers:        return DescriptorHeap::Type::Samplers;
     case RenderPass::Access::RenderTargets:   return DescriptorHeap::Type::RenderTargets;
     case RenderPass::Access::DepthStencil:    return DescriptorHeap::Type::DepthStencil;
+    default:                                  assert(0);
     }
-    assert(0);
     return DescriptorHeap::Type::Undefined;
 }
 
@@ -368,11 +368,11 @@ void RenderPassDX::SetNativeRenderPassUsage(bool use_native_render_pass)
 
 void RenderPassDX::SetNativeDescriptorHeaps(RenderCommandListDX& dx_command_list) const
 {
-    const std::vector<ID3D12DescriptorHeap*> descritor_heaps = GetNativeDescriptorHeaps();
-    if (descritor_heaps.empty())
+    const std::vector<ID3D12DescriptorHeap*> descriptor_heaps = GetNativeDescriptorHeaps();
+    if (descriptor_heaps.empty())
         return;
 
-    dx_command_list.GetNativeCommandList().SetDescriptorHeaps(static_cast<UINT>(descritor_heaps.size()), descritor_heaps.data());
+    dx_command_list.GetNativeCommandList().SetDescriptorHeaps(static_cast<UINT>(descriptor_heaps.size()), descriptor_heaps.data());
 }
 
 void RenderPassDX::SetNativeRenderTargets(RenderCommandListDX& dx_command_list)
@@ -387,7 +387,7 @@ std::vector<ID3D12DescriptorHeap*> RenderPassDX::GetNativeDescriptorHeaps() cons
     ITT_FUNCTION_TASK();
     const Settings& settings = GetSettings();
     const RenderContextBase& context = GetRenderContext();
-    std::vector<ID3D12DescriptorHeap*> descritor_heaps;
+    std::vector<ID3D12DescriptorHeap*> descriptor_heaps;
     for (Access::Value access : Access::values)
     {
         if (!(settings.shader_access_mask & access))
@@ -395,9 +395,9 @@ std::vector<ID3D12DescriptorHeap*> RenderPassDX::GetNativeDescriptorHeaps() cons
 
         DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByAccess(access);
         DescriptorHeapDX& descriptor_heap_dx = static_cast<DescriptorHeapDX&>(context.GetResourceManager().GetDefaultShaderVisibleDescriptorHeap(heap_type));
-        descritor_heaps.push_back(descriptor_heap_dx.GetNativeDescriptorHeap());
+        descriptor_heaps.push_back(descriptor_heap_dx.GetNativeDescriptorHeap());
     }
-    return descritor_heaps;
+    return descriptor_heaps;
 }
 
 std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> RenderPassDX::GetNativeRenderTargetCPUHandles() const
@@ -410,7 +410,7 @@ std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> RenderPassDX::GetNativeRenderTargetCPUH
         {
             throw std::invalid_argument("Can not use color attachment without texture.");
         }
-        rt_cpu_handles.push_back(static_cast<TextureBase&>(*color_attach.wp_texture.lock()).GetNativeCPUDescriptorHandle(ResourceBase::Usage::RenderTarget));
+        rt_cpu_handles.push_back(static_cast<TextureBase&>(*color_attach.wp_texture.lock()).GetNativeCpuDescriptorHandle(ResourceBase::Usage::RenderTarget));
     }
     return rt_cpu_handles;
 }
@@ -421,7 +421,8 @@ const D3D12_CPU_DESCRIPTOR_HANDLE* RenderPassDX::GetNativeDepthStencilCPUHandle(
     const Settings& settings = GetSettings();
     if (!settings.depth_attachment.wp_texture.expired())
     {
-        m_depth_stencil_cpu_handle = static_cast<TextureBase&>(*settings.depth_attachment.wp_texture.lock()).GetNativeCPUDescriptorHandle(ResourceBase::Usage::RenderTarget);
+        m_depth_stencil_cpu_handle = static_cast<TextureBase&>(*settings.depth_attachment.wp_texture.lock()).GetNativeCpuDescriptorHandle(
+            ResourceBase::Usage::RenderTarget);
         return &m_depth_stencil_cpu_handle;
     }
     return nullptr;

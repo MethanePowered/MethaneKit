@@ -44,18 +44,18 @@ MacOS application view implementation.
 @synthesize vsyncEnabled = _vsyncEnabled;
 @synthesize unsyncRefreshInterval = _unsyncRefreshInterval;
 
-CVDisplayLinkRef _displayLink;
+CVDisplayLinkRef g_display_link;
 
-static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
-                                   const CVTimeStamp *now,
-                                   const CVTimeStamp *outputTime,
-                                   CVOptionFlags flagsIn,
-                                   CVOptionFlags *flagsOut,
-                                   void *displayLinkContext)
+static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef display_link,
+                                   const CVTimeStamp* /*now*/,
+                                   const CVTimeStamp* /*output_time*/,
+                                   CVOptionFlags /*flags_in*/,
+                                   CVOptionFlags* /*flags_out*/,
+                                   void* p_display_link_context)
 {
     ITT_FUNCTION_TASK();
 
-    AppViewMT* app_view = (__bridge AppViewMT*)displayLinkContext;
+    AppViewMT* app_view = (__bridge AppViewMT*) p_display_link_context;
     
     if (app_view.redrawing)
     {
@@ -90,7 +90,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
                    pixelFormat:(MTLPixelFormat) pixel_format
                  drawableCount:(NSUInteger) drawable_count
                   vsyncEnabled:(BOOL) vsync_enabled
-         unsyncRefreshInterval:(double) refresn_interval_sec
+         unsyncRefreshInterval:(double) refresh_interval_sec
 {
     ITT_FUNCTION_TASK();
 
@@ -103,7 +103,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
         _pixelFormat = pixel_format;
         _drawableCount = drawable_count;
         _vsyncEnabled = vsync_enabled;
-        _unsyncRefreshInterval = refresn_interval_sec;
+        _unsyncRefreshInterval = refresh_interval_sec;
         [self updateTrackingAreas];
         [self commonInit];
     }
@@ -127,8 +127,8 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
     self.wantsLayer = YES;
     self.layerContentsRedrawPolicy = NSViewLayerContentsRedrawOnSetNeedsDisplay;
     
-    NSNotificationCenter* notificationCenter = [NSNotificationCenter defaultCenter];
-    [notificationCenter addObserver:self
+    NSNotificationCenter* ns_notification_center = [NSNotificationCenter defaultCenter];
+    [ns_notification_center addObserver:self
                            selector:@selector(windowWillClose:)
                                name:NSWindowWillCloseNotification
                              object:self.window];
@@ -250,16 +250,16 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
     {
         if (_vsyncEnabled)
         {
-            CVReturn cvReturn = CVDisplayLinkCreateWithActiveCGDisplays(&_displayLink);
-            assert(cvReturn == kCVReturnSuccess);
+            CVReturn cv_return = CVDisplayLinkCreateWithActiveCGDisplays(&g_display_link);
+            assert(cv_return == kCVReturnSuccess);
+
+            cv_return = CVDisplayLinkSetOutputCallback(g_display_link, &OnDisplayLinkFrame, (__bridge void *)self);
+            assert(cv_return == kCVReturnSuccess);
+
+            cv_return = CVDisplayLinkSetCurrentCGDisplay(g_display_link, CGMainDisplayID());
+            assert(cv_return == kCVReturnSuccess);
             
-            cvReturn = CVDisplayLinkSetOutputCallback(_displayLink, &OnDisplayLinkFrame, (__bridge void *)self);
-            assert(cvReturn == kCVReturnSuccess);
-            
-            cvReturn = CVDisplayLinkSetCurrentCGDisplay(_displayLink, CGMainDisplayID());
-            assert(cvReturn == kCVReturnSuccess);
-            
-            CVDisplayLinkStart(_displayLink);
+            CVDisplayLinkStart(g_display_link);
         }
         else
         {
@@ -267,12 +267,12 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
             self.unsyncTimer = [NSTimer scheduledTimerWithTimeInterval:_unsyncRefreshInterval target:self selector:@selector(redraw) userInfo:nil repeats:YES];
         }
     }
-    else if (_displayLink)
+    else if (g_display_link)
     {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
-        CVDisplayLinkStop(_displayLink);
-        CVDisplayLinkRelease(_displayLink);
-        _displayLink = nil;
+        CVDisplayLinkStop(g_display_link);
+        CVDisplayLinkRelease(g_display_link);
+        g_display_link = nil;
     }
 }
 
@@ -282,9 +282,9 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
     if (!self.redrawing)
         return;
     
-    bool delegateCanDrawInView = [self.delegate respondsToSelector:@selector(drawInView:)];
-    assert(delegateCanDrawInView);
-    if (!delegateCanDrawInView)
+    bool delegate_can_draw_in_view = [self.delegate respondsToSelector:@selector(drawInView:)];
+    assert(delegate_can_draw_in_view);
+    if (!delegate_can_draw_in_view)
         return;
     
     self.currentDrawable = [self.metalLayer nextDrawable];
@@ -297,7 +297,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
 
     // Stop the display link when the window is closing because we will
     // not be able to get a drawable, but the display link may continue to fire
-    if (notification.object == self.window && _displayLink)
+    if (notification.object == self.window && g_display_link)
     {
         self.redrawing = NO;
     }
@@ -308,8 +308,8 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
     ITT_FUNCTION_TASK();
     if (viewController)
     {
-        NSResponder *controllerNextResponder = [viewController nextResponder];
-        [super setNextResponder:controllerNextResponder];
+        NSResponder* controller_next_responder = [viewController nextResponder];
+        [super setNextResponder:controller_next_responder];
         [viewController setNextResponder:nil];
     }
     
@@ -317,9 +317,9 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef displayLink,
     
     if (newController)
     {
-        NSResponder *ownNextResponder = [self nextResponder];
+        NSResponder* own_next_responder = [self nextResponder];
         [super setNextResponder: viewController];
-        [viewController setNextResponder:ownNextResponder];
+        [viewController setNextResponder:own_next_responder];
     }
 }
 

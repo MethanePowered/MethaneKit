@@ -145,7 +145,8 @@ void ActionCamera::DoKeyboardAction(KeyboardAction keyboard_action)
     ITT_FUNCTION_TASK();
     switch(keyboard_action)
     {
-        case KeyboardAction::Reset:         ResetOrientaion(); break;
+        case KeyboardAction::Reset:
+            ResetOrientation(); break;
         case KeyboardAction::ChangePivot:   SetPivot(m_pivot == Pivot::Aim ? Pivot::Eye : Pivot::Aim); break;
         
         default: return;

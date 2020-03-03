@@ -28,7 +28,7 @@ MacOS application implementation.
 using namespace Methane::Platform;
 using namespace Methane::MacOS;
 
-NSAlertStyle ConvertMessageTypeToNSAlertStyle(AppBase::Message::Type msg_type)
+NSAlertStyle ConvertMessageTypeToNsAlertStyle(AppBase::Message::Type msg_type)
 {
     ITT_FUNCTION_TASK();
     switch(msg_type)
@@ -126,7 +126,7 @@ void AppMac::ShowAlert(const Message& msg)
     assert(m_ns_app_delegate);
     [m_ns_app_delegate alert: ConvertToNSType<std::string, NSString*>(msg.title)
              withInformation: ConvertToNSType<std::string, NSString*>(msg.information)
-                    andStyle: ConvertMessageTypeToNSAlertStyle(msg.type)];
+                    andStyle: ConvertMessageTypeToNsAlertStyle(msg.type)];
 
     AppBase::ShowAlert(msg);
 }

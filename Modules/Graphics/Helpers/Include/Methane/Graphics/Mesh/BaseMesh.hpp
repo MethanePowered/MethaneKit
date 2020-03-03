@@ -72,11 +72,11 @@ protected:
     }
 
     using EdgeMidpoints = std::map<Mesh::Edge, Mesh::Index>;
-    Index AddEdgeMidpoint(const Edge& edge, EdgeMidpoints& edge_midpoinds)
+    Index AddEdgeMidpoint(const Edge& edge, EdgeMidpoints& edge_midpoints)
     {
         ITT_FUNCTION_TASK();
-        const auto edge_midpoint_it = edge_midpoinds.find(edge);
-        if (edge_midpoint_it != edge_midpoinds.end())
+        const auto edge_midpoint_it = edge_midpoints.find(edge);
+        if (edge_midpoint_it != edge_midpoints.end())
             return edge_midpoint_it->second;
 
         const VType& v1 = m_vertices[edge.first_index];
@@ -113,7 +113,7 @@ protected:
         }
 
         const Mesh::Index v_mid_index = static_cast<Mesh::Index>(m_vertices.size());
-        edge_midpoinds.emplace(edge, v_mid_index);
+        edge_midpoints.emplace(edge, v_mid_index);
         m_vertices.push_back(v_mid);
         return v_mid_index;
     }

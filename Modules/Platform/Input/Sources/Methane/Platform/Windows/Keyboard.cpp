@@ -162,8 +162,8 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
     // The Ctrl keys require special handling
     if (native_key.w_param == VK_CONTROL)
     {
-        MSG next;
-        DWORD time;
+        MSG  next = {};
+        LONG time = 0;
 
         // Right side keys have the extended key bit set
         if (native_key.l_param & 0x01000000)
@@ -198,7 +198,7 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
         return Key::Unknown;
     }
 
-    const uint32_t native_key_code = HIWORD(native_key.l_param) & 0x1FF;
+    const uint32_t native_key_code = static_cast<uint32_t>(HIWORD(native_key.l_param) & 0x1FF);
     auto native_code_and_key_it = s_key_by_native_code.find(native_key_code);
     return native_code_and_key_it == s_key_by_native_code.end() ? Key::Unknown : native_code_and_key_it->second;
 }

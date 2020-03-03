@@ -1,29 +1,66 @@
 <component name="ProjectDictionaryState">
   <dictionary name="egorodet">
     <words>
+      <w>barycentrics</w>
       <w>bilinear</w>
       <w>bindings</w>
+      <w>capslock</w>
+      <w>cmrc</w>
+      <w>deinitialize</w>
+      <w>deminiaturize</w>
+      <w>descs</w>
+      <w>directxtex</w>
+      <w>dxgi</w>
+      <w>dxguid</w>
       <w>evgeny</w>
+      <w>glslang</w>
       <w>gorodetskiy</w>
       <w>hlsl</w>
+      <w>ifdef</w>
+      <w>iomap</w>
+      <w>itt</w>
       <w>ittnotify</w>
       <w>libtool</w>
       <w>lods</w>
+      <w>macroses</w>
+      <w>mergeable</w>
+      <w>metallib</w>
       <w>mipmapped</w>
+      <w>mult</w>
+      <w>multisample</w>
       <w>mvpx</w>
+      <w>nominmax</w>
       <w>nowide</w>
+      <w>numlock</w>
+      <w>oiio</w>
       <w>perlin</w>
+      <w>phong</w>
+      <w>printscreen</w>
+      <w>processkey</w>
+      <w>rasterizer</w>
+      <w>sampler</w>
+      <w>scrollock</w>
+      <w>shcore</w>
       <w>skybox</w>
+      <w>spherify</w>
+      <w>spirv</w>
+      <w>stbi</w>
       <w>std::string</w>
       <w>subdiv</w>
       <w>subresource</w>
       <w>subresources</w>
+      <w>swapchain</w>
       <w>texcoord</w>
+      <w>texcoords</w>
       <w>texel</w>
       <w>texturing</w>
       <w>uber</w>
       <w>uncreatable</w>
+      <w>unorm</w>
+      <w>unsync</w>
       <w>vsync</w>
+      <w>windowssdk</w>
+      <w>wireframe</w>
     </words>
   </dictionary>
 </component>

@@ -88,7 +88,7 @@ ShadowCubeApp::ShadowCubeApp()
 
     m_light_camera.SetOrientation({ { 0.0f,  25.0f, -25.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
-    m_light_camera.SetParamters({ -300, 300.f, 90.f });
+    m_light_camera.SetParameters({ -300, 300.f, 90.f });
     m_light_camera.Resize(80, 80);
 
     m_animations.push_back(

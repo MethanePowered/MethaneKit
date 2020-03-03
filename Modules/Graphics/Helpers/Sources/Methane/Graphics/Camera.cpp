@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/Camera.cpp
-Camera helper implementation allowing to generate view and projectrion matrices.
+Camera helper implementation allowing to generate view and projection matrices.
 
 ******************************************************************************/
 
@@ -40,7 +40,7 @@ Camera::Camera(cml::AxisOrientation axis_orientation)
     : m_axis_orientation(axis_orientation)
 {
     ITT_FUNCTION_TASK();
-    ResetOrientaion();
+    ResetOrientation();
 }
 
 void Camera::Resize(float width, float height) noexcept
@@ -86,10 +86,10 @@ void Camera::GetProjMatrix(Matrix44f& out_proj) const noexcept
     switch (m_projection)
     {
     case Projection::Perspective:
-        cml::matrix_perspective_yfov(out_proj, GetFOVAngleY(), m_aspect_ratio, m_parameters.near_depth, m_parameters.far_depth, m_axis_orientation, cml::ZClip::z_clip_zero);
+        cml::matrix_perspective_yfov(out_proj, GetFovAngleY(), m_aspect_ratio, m_parameters.near_depth, m_parameters.far_depth, m_axis_orientation, cml::ZClip::z_clip_zero);
         break;
     case Projection::Orthogonal:
-        cml::matrix_orthographic(out_proj, m_screen_size.x(), m_screen_size.y(), m_parameters.near_depth, m_parameters.far_depth, m_axis_orientation, cml::ZClip::z_clip_zero);
+        cml::matrix_orthographic(out_proj, m_screen_size.GetX(), m_screen_size.GetY(), m_parameters.near_depth, m_parameters.far_depth, m_axis_orientation, cml::ZClip::z_clip_zero);
         break;
     }
 }
@@ -119,8 +119,8 @@ Matrix44f Camera::GetViewProjMatrix() const noexcept
 Vector2f Camera::TransformScreenToProj(const Data::Point2i& screen_pos) const noexcept
 {
     ITT_FUNCTION_TASK();
-    return { 2.f * screen_pos.x() / m_screen_size.x() - 1.f,
-           -(2.f * screen_pos.y() / m_screen_size.y() - 1.f) };
+    return { 2.f * screen_pos.GetX() / m_screen_size.GetX() - 1.f,
+           -(2.f * screen_pos.GetY() / m_screen_size.GetY() - 1.f) };
 }
 
 Vector3f Camera::TransformScreenToView(const Data::Point2i& screen_pos) const noexcept
@@ -147,7 +147,7 @@ Vector4f Camera::TransformViewToWorld(const Vector4f& view_pos, const Orientatio
     return GetViewMatrix(orientation) * view_pos;
 }
 
-float Camera::GetFOVAngleY() const noexcept
+float Camera::GetFovAngleY() const noexcept
 {
     ITT_FUNCTION_TASK();
     float fov_angle_y = m_parameters.fov_deg * cml::constants<float>::pi() / 180.0f;

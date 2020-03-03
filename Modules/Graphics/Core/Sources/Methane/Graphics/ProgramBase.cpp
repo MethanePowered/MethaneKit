@@ -145,7 +145,7 @@ void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_desc
     {
         if (!sp_shader)
         {
-            throw std::runtime_error("Empty shader ponter in program is not allowed.");
+            throw std::runtime_error("Empty shader pointer in program is not allowed.");
         }
         
         const Shader::Type shader_type = sp_shader->GetType();
@@ -210,7 +210,7 @@ const DescriptorHeap::Range& ProgramBase::ReserveConstantDescriptorRange(Descrip
         const DescriptorHeapReservation& heap_reservation = constant_descriptor_range_by_heap_type_it->second;
         if (std::addressof(heap_reservation.heap.get()) != std::addressof(heap))
         {
-            throw std::runtime_error("Constant descriptor range was previously reserver for the program on a different descriptor heap of the same type.");
+            throw std::runtime_error("Constant descriptor range was previously reserved for the program on a different descriptor heap of the same type.");
         }
         if (heap_reservation.range.GetLength() != range_length)
         {
@@ -219,7 +219,7 @@ const DescriptorHeap::Range& ProgramBase::ReserveConstantDescriptorRange(Descrip
         return heap_reservation.range;
     }
 
-    DescriptorHeap::RangePtr sp_desc_range = heap.ReserveRange(range_length);
+    Ptr<DescriptorHeap::Range> sp_desc_range = heap.ReserveRange(range_length);
     if (!sp_desc_range)
     {
         throw std::runtime_error("Descriptor heap does not have enough space to reserve constant descriptor range of a program.");

@@ -44,7 +44,7 @@ public:
     const id<MTLSamplerState>& GetNativeSamplerState() const noexcept { return m_mtl_sampler_state; }
 
 private:
-    void ResetSampletState();
+    void ResetSamplerState();
 
     MTLSamplerDescriptor* m_mtl_sampler_desc = nullptr;
     id<MTLSamplerState>   m_mtl_sampler_state = nil;

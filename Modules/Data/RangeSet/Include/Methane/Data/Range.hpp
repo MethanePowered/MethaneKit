@@ -18,7 +18,7 @@ limitations under the License.
 
 FILE: Methane/Data/Range.hpp
 
-Range data type representing continuos numeric multitude from start (inclusively)
+Range data type representing continuous numeric multitude from start (inclusively)
 till end (exclusively): [start, end)
 
 ******************************************************************************/
@@ -56,7 +56,7 @@ public:
 
     bool    IsAdjacent(const Range& other) const        { ITT_FUNCTION_TASK(); return m_start == other.m_end   || other.m_start == m_end; }
     bool    IsOverlapping(const Range& other) const     { ITT_FUNCTION_TASK(); return m_start <  other.m_end   && other.m_start <  m_end;  }
-    bool    IsMergeable(const Range& other) const        { ITT_FUNCTION_TASK(); return m_start <= other.m_end   && other.m_start <= m_end; }
+    bool    IsMergeable(const Range& other) const       { ITT_FUNCTION_TASK(); return m_start <= other.m_end   && other.m_start <= m_end; }
     bool    Contains(const Range& other) const          { ITT_FUNCTION_TASK(); return m_start <= other.m_start && other.m_end   <= m_end; }
 
     Range operator+(const Range& other) const // merge

@@ -262,7 +262,6 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
             {
                 // HACK: Release both Shift keys on Shift up event, as when both
                 //       are pressed the first release does not emit any event
-                // NOTE: The other half of this is in _glfwPlatformPollEvents
                 p_app->InputState().OnKeyboardChanged(Keyboard::Key::LeftShift, key_state);
                 p_app->InputState().OnKeyboardChanged(Keyboard::Key::RightShift, key_state);
             }
@@ -287,7 +286,7 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
         case WM_MBUTTONUP:
         case WM_XBUTTONUP:
         {
-            Mouse::Button button = Mouse::Button::Unknonwn;
+            Mouse::Button button = Mouse::Button::Unknown;
             if (msg_id == WM_LBUTTONDOWN || msg_id == WM_LBUTTONUP)
                 button = Mouse::Button::Left;
             else if (msg_id == WM_RBUTTONDOWN || msg_id == WM_RBUTTONUP)
@@ -387,7 +386,6 @@ void AppWin::ShowAlert(const Message& msg)
 {
     ITT_FUNCTION_TASK();
 
-    UINT msgbox_type = 0;
     MessageBox(
         m_env.window_handle,
         nowide::widen(msg.information).c_str(),

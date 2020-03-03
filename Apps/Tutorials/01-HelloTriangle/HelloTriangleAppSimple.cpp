@@ -71,18 +71,18 @@ public:
         GraphicsApp::Init();
 
         struct Vertex { Vector3f position; Vector3f color; };
-        const std::array<Vertex, 3> triange_vertices = { {
+        const std::array<Vertex, 3> triangle_vertices = { {
             { { 0.0f,   0.5f,  0.0f }, { 1.0f, 0.0f, 0.0f } },
             { { 0.5f,  -0.5f,  0.0f }, { 0.0f, 1.0f, 0.0f } },
             { { -0.5f, -0.5f,  0.0f }, { 0.0f, 0.0f, 1.0f } },
         } };
 
-        const Data::Size vertex_buffer_size = static_cast<Data::Size>(sizeof(triange_vertices));
+        const Data::Size vertex_buffer_size = static_cast<Data::Size>(sizeof(triangle_vertices));
         m_sp_vertex_buffer = Buffer::CreateVertexBuffer(*m_sp_context, vertex_buffer_size, static_cast<Data::Size>(sizeof(Vertex)));
         m_sp_vertex_buffer->SetData(
             Resource::SubResources
             {
-                Resource::SubResource { reinterpret_cast<Data::ConstRawPtr>(triange_vertices.data()), vertex_buffer_size }
+                Resource::SubResource { reinterpret_cast<Data::ConstRawPtr>(triangle_vertices.data()), vertex_buffer_size }
             }
         );
 

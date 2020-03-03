@@ -50,7 +50,7 @@ public:
         { { Platform::Keyboard::Key::F1 },                                       AppAction::ShowControlsHelp    },
         { { Platform::Keyboard::Key::F2 },                                       AppAction::ShowCommandLineHelp },
         { { Platform::Keyboard::Key::LeftControl,  Platform::Keyboard::Key::F }, AppAction::SwitchFullScreen    },
-        { { Platform::Keyboard::OS::key_left_ctrl, Platform::Keyboard::Key::Q }, AppAction::CloseApp            },
+        { { Platform::Keyboard::OS::g_key_left_ctrl, Platform::Keyboard::Key::Q }, AppAction::CloseApp            },
     };
     
     AppController(AppBase& application, const std::string& application_help,

@@ -75,7 +75,7 @@ struct Shader
     static Ptr<Shader> CreateVertex(Context& context, const Settings& settings) { return Create(Type::Vertex, context, settings); }
     static Ptr<Shader> CreatePixel(Context& context, const Settings& settings)  { return Create(Type::Pixel, context, settings); }
 
-    // Auxillary functions
+    // Auxiliary functions
     static std::string GetTypeName(Type shader_type) noexcept;
 
     // Shader interface

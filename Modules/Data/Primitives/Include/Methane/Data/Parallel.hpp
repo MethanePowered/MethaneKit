@@ -52,28 +52,12 @@ namespace Methane::Data
 template<typename Iterator, typename Value>
 struct IteratorFunction
 {
-    using type = std::function<void(Value&)>;
+    using Type = std::function<void(Value&)>;
 };
-
-#if 0 // TODO: fix or remove experimental code
-
-template<typename Iterator, typename = std::void_t<typename std::iterator_traits<Iterator>::iterator_category>>
-struct is_const_iterator
-{
-    static constexpr bool value = std::is_const<typename std::iterator_traits<Iterator>::value_type>::value;
-};
-
-template<typename Iterator>
-struct IteratorFunction<Iterator, std::enable_if_t<is_const_iterator<Iterator>::value, const typename std::iterator_traits<Iterator>::value_type>>;
-
-template<typename Iterator>
-struct IteratorFunction<Iterator, std::enable_if_t<!is_const_iterator<Iterator>::value, typename std::iterator_traits<Iterator>::value_type>>;
-
-#endif
 
 template<typename Iterator, typename Value>
 void ParallelForEach(const Iterator& begin_it, const Iterator& end_it,
-                     typename IteratorFunction<Iterator, Value>::type&& body_function)
+                     typename IteratorFunction<Iterator, Value>::Type&& body_function)
 {
     ITT_FUNCTION_TASK();
 

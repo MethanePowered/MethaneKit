@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: MethaneUtils.cmake
-Cmake utilitary functions
+Cmake utility functions
 
 *****************************************************************************]]
 

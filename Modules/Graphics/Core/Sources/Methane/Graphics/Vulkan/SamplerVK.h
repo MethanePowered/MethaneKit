@@ -40,7 +40,7 @@ public:
     void SetName(const std::string& name) override;
     
 protected:
-    void ResetSampletState();
+    void ResetSamplerState();
 
     IContextVK& GetContextVK() noexcept;
 };

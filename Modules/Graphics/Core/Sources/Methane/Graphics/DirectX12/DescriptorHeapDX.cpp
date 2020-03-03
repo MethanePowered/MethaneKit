@@ -47,7 +47,7 @@ static D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeap::Type type) n
     return D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES;
 }
 
-DescriptorHeap::Ptr DescriptorHeap::Create(ContextBase& context, const Settings& settings)
+Ptr<DescriptorHeap> DescriptorHeap::Create(ContextBase& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<DescriptorHeapDX>(context, settings);
@@ -70,7 +70,7 @@ DescriptorHeapDX::~DescriptorHeapDX()
     ITT_FUNCTION_TASK();
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeCPUDescriptorHandle(uint32_t descriptor_index) const noexcept
+D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeCpuDescriptorHandle(uint32_t descriptor_index) const noexcept
 {
     ITT_FUNCTION_TASK();
     assert(!!m_cp_descriptor_heap);
@@ -78,7 +78,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeCPUDescriptorHandle(uint3
     return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_cp_descriptor_heap->GetCPUDescriptorHandleForHeapStart(), descriptor_index, m_descriptor_size);
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeGPUDescriptorHandle(uint32_t descriptor_index) const noexcept
+D3D12_GPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeGpuDescriptorHandle(uint32_t descriptor_index) const noexcept
 {
     ITT_FUNCTION_TASK();
     assert(!!m_cp_descriptor_heap);

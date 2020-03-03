@@ -48,7 +48,7 @@ inline void ThrowIfFailed(HRESULT hr)
 {
     if (FAILED(hr))
     {
-        std::string error_msg = "Critical runtime error has occured: ";
+        std::string error_msg = "Critical runtime error has occurred: ";
         error_msg += std::system_category().message(hr);
         OutputDebugStringA((error_msg + "\n").c_str());
         throw std::runtime_error(error_msg);
@@ -59,7 +59,7 @@ inline void ThrowIfFailed(HRESULT hr, wrl::ComPtr<ID3DBlob>& error_blob)
 {
     if (FAILED(hr))
     {
-        std::string error_msg = "Critical runtime error has occured: ";
+        std::string error_msg = "Critical runtime error has occurred: ";
         error_msg += std::system_category().message(hr);
         if (error_blob.Get())
         {

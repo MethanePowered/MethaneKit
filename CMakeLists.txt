@@ -77,7 +77,7 @@ add_definitions(
 )
 
 if(METHANE_USE_OPEN_IMAGE_IO)
-    message(STATUS "Methane Kit OpenImageIO media-library is enbabled.")
+    message(STATUS "Methane Kit OpenImageIO media-library is enabled.")
 endif()
 
 if(METHANE_ITT_INSTRUMENTATION_ENABLED)

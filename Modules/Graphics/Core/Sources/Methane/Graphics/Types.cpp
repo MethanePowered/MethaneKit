@@ -33,10 +33,10 @@ ScissorRect GetFrameScissorRect(const FrameRect& frame_rect)
 {
     ITT_FUNCTION_TASK();
     return ScissorRect{
-        ScissorRect::Point(static_cast<uint32_t>(std::max(0, frame_rect.origin.x())),
-                           static_cast<uint32_t>(std::max(0, frame_rect.origin.y()))),
-        ScissorRect::Size(frame_rect.origin.x() >= 0 ? frame_rect.size.width  : frame_rect.size.width  + frame_rect.origin.x(),
-                          frame_rect.origin.y() >= 0 ? frame_rect.size.height : frame_rect.size.height + frame_rect.origin.y())
+        ScissorRect::Point(static_cast<uint32_t>(std::max(0, frame_rect.origin.GetX())),
+                           static_cast<uint32_t>(std::max(0, frame_rect.origin.GetY()))),
+        ScissorRect::Size(frame_rect.origin.GetX() >= 0 ? frame_rect.size.width : frame_rect.size.width + frame_rect.origin.GetX(),
+                          frame_rect.origin.GetY() >= 0 ? frame_rect.size.height : frame_rect.size.height + frame_rect.origin.GetY())
     };
 }
 
@@ -53,7 +53,7 @@ Viewport GetFrameViewport(const FrameRect& frame_rect)
 {
     ITT_FUNCTION_TASK();
     return Viewport{
-        Viewport::Point(static_cast<double>(frame_rect.origin.x()), static_cast<double>(frame_rect.origin.y()), 0.0),
+        Viewport::Point(static_cast<double>(frame_rect.origin.GetX()), static_cast<double>(frame_rect.origin.GetY()), 0.0),
         Viewport::Size(static_cast<double>(frame_rect.size.width), static_cast<double>(frame_rect.size.height), 1.0)
     };
 }

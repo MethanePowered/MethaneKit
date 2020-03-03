@@ -142,9 +142,9 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
     const wrl::ComPtr<IDXGIFactory5>& cp_dxgi_factory = SystemDX::Get().GetNativeFactory();
     assert(!!cp_dxgi_factory);
 
-    BOOL present_tearing_suport = FALSE;
-    ThrowIfFailed(cp_dxgi_factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &present_tearing_suport, sizeof(present_tearing_suport)));
-    if (present_tearing_suport)
+    BOOL present_tearing_support = FALSE;
+    ThrowIfFailed(cp_dxgi_factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &present_tearing_support, sizeof(present_tearing_support)));
+    if (present_tearing_support)
     {
         swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
     }

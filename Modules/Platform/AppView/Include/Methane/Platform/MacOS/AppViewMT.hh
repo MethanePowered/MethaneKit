@@ -54,6 +54,6 @@ MacOS application view implementation.
                           pixelFormat:(MTLPixelFormat) pixelFormat
                         drawableCount:(NSUInteger) drawable_count
                          vsyncEnabled:(BOOL) vsync_enabled
-                unsyncRefreshInterval:(double) refresn_interval_sec;
+                unsyncRefreshInterval:(double) refresh_interval_sec;
 
 @end

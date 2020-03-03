@@ -112,8 +112,8 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
         const uint32_t descriptor_index = descriptor_range_start + m_descriptor_range.offset + resource_index;
         cp_native_device->CopyDescriptorsSimple(
             1,
-            p_dx_descriptor_heap->GetNativeCPUDescriptorHandle(descriptor_index),
-            dx_resource_location.GetResourceDX().GetNativeCPUDescriptorHandle(ResourceBase::Usage::ShaderRead),
+            p_dx_descriptor_heap->GetNativeCpuDescriptorHandle(descriptor_index),
+            dx_resource_location.GetResourceDX().GetNativeCpuDescriptorHandle(ResourceBase::Usage::ShaderRead),
             native_heap_type
         );
 
@@ -311,7 +311,7 @@ void ProgramBindingsDX::UpdateRootParameterBindings()
             AddRootParameterBinding(binding_settings.argument, {
                 argument_binding,
                 argument_binding.GetRootParameterIndex(),
-                dx_descriptor_heap.GetNativeGPUDescriptorHandle(descriptor_index),
+                dx_descriptor_heap.GetNativeGpuDescriptorHandle(descriptor_index),
                 0
             });
         }
@@ -396,16 +396,16 @@ void ProgramBindingsDX::CopyDescriptorsToGpu()
         if (!p_heap_reservation)
             return;
 
-        const DescriptorHeapDX&                   dx_descriptor_heap  = static_cast<const DescriptorHeapDX&>(p_heap_reservation->heap.get());
-        const ArgumentBindingDX::DescriptorRange& descriptor_range    = argument_binding.GetDescriptorRange();
-        const DescriptorHeap::Type                heap_type           = dx_descriptor_heap.GetSettings().type;
-        const bool                                is_constant_bindnig = argument_binding.GetSettings().argument.IsConstant();
-        const uint32_t                         descriptor_range_start = p_heap_reservation->GetRange(is_constant_bindnig).GetStart();
-        const D3D12_DESCRIPTOR_HEAP_TYPE          native_heap_type    = dx_descriptor_heap.GetNativeDescriptorHeapType();
+        const DescriptorHeapDX&                   dx_descriptor_heap     = static_cast<const DescriptorHeapDX&>(p_heap_reservation->heap.get());
+        const ArgumentBindingDX::DescriptorRange& descriptor_range       = argument_binding.GetDescriptorRange();
+        const DescriptorHeap::Type                heap_type              = dx_descriptor_heap.GetSettings().type;
+        const bool                                is_constant_bindinig   = argument_binding.GetSettings().argument.IsConstant();
+        const uint32_t                            descriptor_range_start = p_heap_reservation->GetRange(is_constant_bindinig).GetStart();
+        const D3D12_DESCRIPTOR_HEAP_TYPE          native_heap_type       = dx_descriptor_heap.GetNativeDescriptorHeapType();
 
         argument_binding.SetDescriptorHeapReservation(p_heap_reservation);
 
-        if (descriptor_range.offset >= p_heap_reservation->GetRange(is_constant_bindnig).GetLength())
+        if (descriptor_range.offset >= p_heap_reservation->GetRange(is_constant_bindinig).GetLength())
         {
             throw std::invalid_argument("Descriptor range offset is out of bounds of reserved descriptor range.");
         }
@@ -426,8 +426,8 @@ void ProgramBindingsDX::CopyDescriptorsToGpu()
             //                    "), descriptor: " + std::to_string(descriptor_index) + "\n").c_str());
 
             cp_device->CopyDescriptorsSimple(1,
-                                             dx_descriptor_heap.GetNativeCPUDescriptorHandle(descriptor_index),
-                                             resource_location_dx.GetResourceDX().GetNativeCPUDescriptorHandle(ResourceBase::Usage::ShaderRead),
+                                             dx_descriptor_heap.GetNativeCpuDescriptorHandle(descriptor_index),
+                                             resource_location_dx.GetResourceDX().GetNativeCpuDescriptorHandle(ResourceBase::Usage::ShaderRead),
                                              native_heap_type);
             resource_index++;
         }

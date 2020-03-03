@@ -48,7 +48,7 @@ enum class Button : uint32_t
     HScroll,
 
     Count,
-    Unknonwn
+    Unknown
 };
 
 using Buttons = std::set<Button>;
@@ -80,9 +80,9 @@ using MouseButtonAndDelta = std::pair<Mouse::Button, float>;
 inline MouseButtonAndDelta GetScrollButtonAndDelta(const Scroll& scroll_delta)
 {
     const float min_scroll_delta = 0.00001f;
-    return std::fabs(scroll_delta.y()) > min_scroll_delta ? MouseButtonAndDelta(Button::VScroll, scroll_delta.y())
-        : (std::fabs(scroll_delta.x()) > min_scroll_delta ? MouseButtonAndDelta(Button::HScroll, scroll_delta.x())
-                                                           : MouseButtonAndDelta(Button::Unknonwn, 0.f ) );
+    return std::fabs(scroll_delta.GetY()) > min_scroll_delta ? MouseButtonAndDelta(Button::VScroll, scroll_delta.GetY())
+                                                             : (std::fabs(scroll_delta.GetX()) > min_scroll_delta ? MouseButtonAndDelta(Button::HScroll, scroll_delta.GetX())
+                                                             : MouseButtonAndDelta(Button::Unknown, 0.f ) );
 }
 
 class State
