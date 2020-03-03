@@ -82,7 +82,7 @@ jobs:
   steps:
   - template: Build/Windows/AzureBuild.yml
 
-- job: macOS
+- job: MacOS
 
   pool:
     vmImage: 'macOS-10.14'
