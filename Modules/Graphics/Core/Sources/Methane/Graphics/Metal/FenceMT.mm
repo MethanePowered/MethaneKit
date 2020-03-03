@@ -103,7 +103,7 @@ void FenceMT::SetName(const std::string& name) noexcept
 
    ObjectBase::SetName(name);
 
-    m_mtl_event.label = MacOS::ConvertToNSType<std::string, NSString*>(name);
+    m_mtl_event.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
 }
 
 CommandQueueMT& FenceMT::GetCommandQueueMT()

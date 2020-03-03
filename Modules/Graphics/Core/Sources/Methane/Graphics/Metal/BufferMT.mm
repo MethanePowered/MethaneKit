@@ -97,7 +97,7 @@ void BufferMT::SetName(const std::string& name)
     ITT_FUNCTION_TASK();
 
     BufferBase::SetName(name);
-    m_mtl_buffer.label = MacOS::ConvertToNSType<std::string, NSString*>(name);
+    m_mtl_buffer.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
 }
 
 void BufferMT::SetData(const SubResources& sub_resources)

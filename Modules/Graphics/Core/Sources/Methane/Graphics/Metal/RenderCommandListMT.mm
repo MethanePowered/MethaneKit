@@ -104,7 +104,7 @@ void RenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, const s
             m_mtl_cmd_buffer = [GetCommandQueueMT().GetNativeCommandQueue() commandBuffer];
             assert(m_mtl_cmd_buffer != nil);
 
-            m_mtl_cmd_buffer.label = MacOS::ConvertToNSType<std::string, NSString*>(GetName());
+            m_mtl_cmd_buffer.label = MacOS::ConvertToNsType<std::string, NSString*>(GetName());
         }
 
         assert(mtl_render_pass != nil);
@@ -112,7 +112,7 @@ void RenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, const s
     }
 
     assert(m_mtl_render_encoder != nil);
-    m_mtl_render_encoder.label = MacOS::ConvertToNSType<std::string, NSString*>(GetName());
+    m_mtl_render_encoder.label = MacOS::ConvertToNsType<std::string, NSString*>(GetName());
 
     RenderCommandListBase::Reset(sp_render_state, debug_group);
 }
@@ -123,7 +123,7 @@ void RenderCommandListMT::SetName(const std::string& name)
 
     RenderCommandListBase::SetName(name);
     
-    NSString* ns_name = MacOS::ConvertToNSType<std::string, NSString*>(name);
+    NSString* ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
     
     if (m_mtl_render_encoder != nil)
     {
@@ -141,7 +141,7 @@ void RenderCommandListMT::PushDebugGroup(const std::string& name)
     ITT_FUNCTION_TASK();
 
     assert(m_mtl_render_encoder != nil);
-    NSString* ns_name = MacOS::ConvertToNSType<std::string, NSString*>(name);
+    NSString* ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
     [m_mtl_render_encoder pushDebugGroup:ns_name];
 }
 

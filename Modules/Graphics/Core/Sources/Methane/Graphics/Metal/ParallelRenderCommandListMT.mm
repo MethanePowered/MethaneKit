@@ -51,7 +51,7 @@ void ParallelRenderCommandListMT::SetName(const std::string& name)
 
     ParallelRenderCommandListBase::SetName(name);
     
-    NSString* ns_name = MacOS::ConvertToNSType<std::string, NSString*>(name);
+    NSString* ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
     
     if (m_mtl_parallel_render_encoder != nil)
     {
@@ -81,14 +81,14 @@ void ParallelRenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state,
         m_mtl_cmd_buffer = [GetCommandQueueMT().GetNativeCommandQueue() commandBuffer];
         assert(m_mtl_cmd_buffer != nil);
 
-        m_mtl_cmd_buffer.label = MacOS::ConvertToNSType<std::string, NSString*>(GetName());
+        m_mtl_cmd_buffer.label = MacOS::ConvertToNsType<std::string, NSString*>(GetName());
     }
 
     assert(mtl_render_pass != nil);
     m_mtl_parallel_render_encoder = [m_mtl_cmd_buffer parallelRenderCommandEncoderWithDescriptor: mtl_render_pass];
 
     assert(m_mtl_parallel_render_encoder != nil);
-    m_mtl_parallel_render_encoder.label = MacOS::ConvertToNSType<std::string, NSString*>(GetName());
+    m_mtl_parallel_render_encoder.label = MacOS::ConvertToNsType<std::string, NSString*>(GetName());
     
     if (sp_render_state)
     {

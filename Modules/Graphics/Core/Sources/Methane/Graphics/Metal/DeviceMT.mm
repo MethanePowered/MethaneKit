@@ -39,7 +39,7 @@ Device::Feature::Mask DeviceMT::GetSupportedFeatures(const id<MTLDevice>& mtl_de
 }
 
 DeviceMT::DeviceMT(const id<MTLDevice>& mtl_device)
-    : DeviceBase(MacOS::ConvertFromNSType<NSString, std::string>(mtl_device.name), false,
+    : DeviceBase(MacOS::ConvertFromNsType<NSString, std::string>(mtl_device.name), false,
                  GetSupportedFeatures(mtl_device))
     , m_mtl_device(mtl_device)
 {

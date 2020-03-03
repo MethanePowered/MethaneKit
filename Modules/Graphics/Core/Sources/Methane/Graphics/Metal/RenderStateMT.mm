@@ -311,10 +311,10 @@ void RenderStateMT::Apply(RenderCommandListBase& command_list, Group::Mask state
     if (state_groups & Group::BlendingColor)
     {
         const Settings& settings = GetSettings();
-        [mtl_cmd_encoder setBlendColorRed:settings.blending_color.r()
-                                    green:settings.blending_color.g()
-                                     blue:settings.blending_color.b()
-                                    alpha:settings.blending_color.a()];
+        [mtl_cmd_encoder setBlendColorRed:settings.blending_color.GetR()
+                                    green:settings.blending_color.GetG()
+                                     blue:settings.blending_color.GetB()
+                                    alpha:settings.blending_color.GetA()];
     }
 }
 
@@ -328,12 +328,12 @@ void RenderStateMT::SetViewports(const Viewports& viewports)
     for(const Viewport& viewport : viewports)
     {
         MTLViewport mtl_viewport = { };
-        mtl_viewport.originX = viewport.origin.x();
-        mtl_viewport.originY = viewport.origin.y();
+        mtl_viewport.originX = viewport.origin.GetX();
+        mtl_viewport.originY = viewport.origin.GetY();
         mtl_viewport.width   = viewport.size.width;
         mtl_viewport.height  = viewport.size.height;
-        mtl_viewport.znear   = viewport.origin.z();
-        mtl_viewport.zfar    = viewport.origin.z() + viewport.size.depth;
+        mtl_viewport.znear   = viewport.origin.GetZ();
+        mtl_viewport.zfar    = viewport.origin.GetZ() + viewport.size.depth;
         m_mtl_viewports.emplace_back(std::move(mtl_viewport));
     }
 }
@@ -348,8 +348,8 @@ void RenderStateMT::SetScissorRects(const ScissorRects& scissor_rects)
     for(const ScissorRect& scissor_rect : scissor_rects)
     {
         MTLScissorRect mtl_scissor_rect = {};
-        mtl_scissor_rect.x      = static_cast<NSUInteger>(scissor_rect.origin.x());
-        mtl_scissor_rect.y      = static_cast<NSUInteger>(scissor_rect.origin.y());
+        mtl_scissor_rect.x      = static_cast<NSUInteger>(scissor_rect.origin.GetX());
+        mtl_scissor_rect.y      = static_cast<NSUInteger>(scissor_rect.origin.GetY());
         mtl_scissor_rect.width  = static_cast<NSUInteger>(scissor_rect.size.width);
         mtl_scissor_rect.height = static_cast<NSUInteger>(scissor_rect.size.height);
         m_mtl_scissor_rects.emplace_back(std::move(mtl_scissor_rect));
@@ -362,7 +362,7 @@ void RenderStateMT::SetName(const std::string& name)
 
     RenderStateBase::SetName(name);
     
-    NSString* ns_name = Methane::MacOS::ConvertToNSType<std::string, NSString*>(name);
+    NSString* ns_name = Methane::MacOS::ConvertToNsType<std::string, NSString*>(name);
     m_mtl_pipeline_state_desc.label      = ns_name;
     m_mtl_depth_stencil_state_desc.label = ns_name;
     
@@ -386,7 +386,7 @@ void RenderStateMT::InitializeNativePipelineState()
     m_mtl_pipeline_state = [GetRenderContextMT().GetDeviceMT().GetNativeDevice() newRenderPipelineStateWithDescriptor:m_mtl_pipeline_state_desc error:&ns_error];
     if (!m_mtl_pipeline_state)
     {
-        const std::string error_msg = MacOS::ConvertFromNSType<NSString, std::string>([ns_error localizedDescription]);
+        const std::string error_msg = MacOS::ConvertFromNsType<NSString, std::string>([ns_error localizedDescription]);
         throw std::runtime_error("Failed to create Metal pipeline state: " + error_msg);
     }
 }

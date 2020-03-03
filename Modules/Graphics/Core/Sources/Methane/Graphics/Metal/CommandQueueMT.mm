@@ -57,7 +57,7 @@ void CommandQueueMT::SetName(const std::string& name)
     CommandQueueBase::SetName(name);
 
     assert(m_mtl_command_queue != nil);
-    m_mtl_command_queue.label = MacOS::ConvertToNSType<std::string, NSString*>(name);
+    m_mtl_command_queue.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
 }
 
 IContextMT& CommandQueueMT::GetContextMT() noexcept

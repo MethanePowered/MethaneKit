@@ -60,7 +60,7 @@ using namespace Methane::Platform;
     NSBackingStoreType backing = NSBackingStoreBuffered;
     
     _window = [[NSWindow alloc] initWithContentRect:frame styleMask:style_mask backing:backing defer:YES];
-    _window.title = MacOS::ConvertToNSType<std::string, NSString*>(p_settings->name);
+    _window.title = MacOS::ConvertToNsType<std::string, NSString*>(p_settings->name);
     _window.delegate = [[WindowDelegate alloc] initWithApp:p_app];
     [_window center];
     

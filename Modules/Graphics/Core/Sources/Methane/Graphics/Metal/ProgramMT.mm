@@ -73,7 +73,7 @@ ProgramMT::ProgramMT(ContextBase& context, const Settings& settings)
     
     if (ns_error != nil)
     {
-        const std::string error_msg = MacOS::ConvertFromNSType<NSString, std::string>([ns_error localizedDescription]);
+        const std::string error_msg = MacOS::ConvertFromNsType<NSString, std::string>([ns_error localizedDescription]);
         throw std::runtime_error("Failed to create dummy pipeline state for program reflection: " + error_msg);
     }
 

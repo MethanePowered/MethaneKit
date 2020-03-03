@@ -108,7 +108,7 @@ void AppMac::Alert(const Message& msg, bool deferred)
 void AppMac::SetWindowTitle(const std::string& title_text)
 {
     ITT_FUNCTION_TASK();
-    NSString* ns_title_text = ConvertToNSType<std::string, NSString*>(title_text);
+    NSString* ns_title_text = ConvertToNsType<std::string, NSString*>(title_text);
     dispatch_async(dispatch_get_main_queue(), ^(void){
         m_ns_window.title = ns_title_text;
     });
@@ -124,8 +124,8 @@ void AppMac::ShowAlert(const Message& msg)
 {
     ITT_FUNCTION_TASK();
     assert(m_ns_app_delegate);
-    [m_ns_app_delegate alert: ConvertToNSType<std::string, NSString*>(msg.title)
-             withInformation: ConvertToNSType<std::string, NSString*>(msg.information)
+    [m_ns_app_delegate alert: ConvertToNsType<std::string, NSString*>(msg.title)
+             withInformation: ConvertToNsType<std::string, NSString*>(msg.information)
                     andStyle: ConvertMessageTypeToNsAlertStyle(msg.type)];
 
     AppBase::ShowAlert(msg);

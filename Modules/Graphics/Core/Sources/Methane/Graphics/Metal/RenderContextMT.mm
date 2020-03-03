@@ -49,7 +49,7 @@ RenderContextMT::RenderContextMT(const Platform::AppEnvironment& env, DeviceBase
                                            device: ContextMT<RenderContextBase>::GetDeviceMT().GetNativeDevice()
                                       pixelFormat: TypeConverterMT::DataFormatToMetalPixelType(settings.color_format)
                                     drawableCount: settings.frame_buffers_count
-                                     vsyncEnabled: Methane::MacOS::ConvertToNSType<bool, BOOL>(settings.vsync_enabled)
+                                     vsyncEnabled: Methane::MacOS::ConvertToNsType<bool, BOOL>(settings.vsync_enabled)
                             unsyncRefreshInterval: 1.0 / settings.unsync_max_fps])
     , m_frame_capture_scope([[MTLCaptureManager sharedCaptureManager] newCaptureScopeWithDevice:ContextMT<RenderContextBase>::GetDeviceMT().GetNativeDevice()])
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
@@ -58,7 +58,7 @@ RenderContextMT::RenderContextMT(const Platform::AppEnvironment& env, DeviceBase
 {
     ITT_FUNCTION_TASK();
     
-    m_frame_capture_scope.label = Methane::MacOS::ConvertToNSType<std::string, NSString*>(device.GetName() + " Capture Scope");
+    m_frame_capture_scope.label = Methane::MacOS::ConvertToNsType<std::string, NSString*>(device.GetName() + " Capture Scope");
     [MTLCaptureManager sharedCaptureManager].defaultCaptureScope = m_frame_capture_scope;
 
     // bind metal context with application delegate
@@ -147,7 +147,7 @@ void RenderContextMT::Present()
     ContextMT<RenderContextBase>::Present();
 
     id<MTLCommandBuffer> mtl_cmd_buffer = [GetRenderCommandQueueMT().GetNativeCommandQueue() commandBuffer];
-    mtl_cmd_buffer.label = MacOS::ConvertToNSType<std::string, NSString*>(GetName() + " Present Command");
+    mtl_cmd_buffer.label = MacOS::ConvertToNsType<std::string, NSString*>(GetName() + " Present Command");
     [mtl_cmd_buffer presentDrawable:GetNativeDrawable()];
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
     const bool signal_frame_fence = false;

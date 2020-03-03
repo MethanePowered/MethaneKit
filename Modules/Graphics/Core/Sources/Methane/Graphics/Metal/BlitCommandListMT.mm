@@ -54,14 +54,14 @@ void BlitCommandListMT::Reset(const std::string& debug_group)
         m_mtl_cmd_buffer = [GetCommandQueueMT().GetNativeCommandQueue() commandBuffer];
         assert(m_mtl_cmd_buffer != nil);
 
-        m_mtl_cmd_buffer.label = MacOS::ConvertToNSType<std::string, NSString*>(GetName());
+        m_mtl_cmd_buffer.label = MacOS::ConvertToNsType<std::string, NSString*>(GetName());
     }
 
     assert(m_mtl_cmd_buffer != nil);
     m_mtl_blit_encoder = [m_mtl_cmd_buffer blitCommandEncoder];
 
     assert(m_mtl_blit_encoder != nil);
-    m_mtl_blit_encoder.label = MacOS::ConvertToNSType<std::string, NSString*>(GetName());
+    m_mtl_blit_encoder.label = MacOS::ConvertToNsType<std::string, NSString*>(GetName());
 }
 
 void BlitCommandListMT::SetName(const std::string& name)
@@ -70,7 +70,7 @@ void BlitCommandListMT::SetName(const std::string& name)
 
     CommandListBase::SetName(name);
     
-    NSString* ns_name = MacOS::ConvertToNSType<std::string, NSString*>(name);
+    NSString* ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
     
     if (m_mtl_blit_encoder != nil)
     {
@@ -88,7 +88,7 @@ void BlitCommandListMT::PushDebugGroup(const std::string& name)
     ITT_FUNCTION_TASK();
 
     assert(m_mtl_blit_encoder != nil);
-    NSString* ns_name = MacOS::ConvertToNSType<std::string, NSString*>(name);
+    NSString* ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
     [m_mtl_blit_encoder pushDebugGroup:ns_name];
 }
 

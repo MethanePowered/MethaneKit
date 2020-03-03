@@ -237,7 +237,7 @@ using namespace Methane::Platform;
     if ([event hasPreciseScrollingDeltas])
         scroll *= 0.1f;
     
-    if (fabs(scroll.x()) < 0.00001 && fabs(scroll.y()) > 0.00001)
+    if (fabs(scroll.GetX()) < 0.00001 && fabs(scroll.GetY()) > 0.00001)
         return;
 
     m_p_app->InputState().OnMouseScrollChanged(scroll);

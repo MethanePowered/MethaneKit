@@ -137,7 +137,7 @@ void SamplerMT::SetName(const std::string& name)
     SamplerBase::SetName(name);
 
     assert(m_mtl_sampler_desc != nil);
-    m_mtl_sampler_desc.label = Methane::MacOS::ConvertToNSType<std::string, NSString*>(name);
+    m_mtl_sampler_desc.label = Methane::MacOS::ConvertToNsType<std::string, NSString*>(name);
 
     ResetSamplerState();
 }

@@ -27,8 +27,6 @@ MacOS platform type converters.
 #include <vector>
 
 #import <Cocoa/Cocoa.h>
-#import "../../../../../../../../../Program Files (x86)/Windows Kits/10/Include/10.0.18362.0/shared/minwindef.h"
-#import "../../../../../../../../../Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Tools/MSVC/14.24.28314/include/string"
 
 namespace Methane::MacOS
 {
@@ -38,12 +36,12 @@ namespace Methane::MacOS
 // ===============================
 
 template<class STDType, class NSType>
-inline NSType ConvertToNsType(const std::string& str);
+inline NSType ConvertToNsType(const STDType&);
 
 template<>
-inline BOOL ConvertToNsType<bool, BOOL>(const std::string& str)
+inline BOOL ConvertToNsType<bool, BOOL>(const bool& flag)
 {
-    return str ? YES : NO;
+    return flag ? YES : NO;
 }
 
 template<>

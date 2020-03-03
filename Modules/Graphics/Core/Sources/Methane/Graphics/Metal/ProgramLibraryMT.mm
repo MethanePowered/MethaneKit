@@ -33,7 +33,7 @@ namespace Methane::Graphics
 
 static NSString* GetLibraryFullPath(const std::string& library_name)
 {
-    return MacOS::ConvertToNSType<std::string, NSString*>(Platform::GetResourceDir() + "/" + library_name + ".metallib");
+    return MacOS::ConvertToNsType<std::string, NSString*>(Platform::GetResourceDir() + "/" + library_name + ".metallib");
 }
 
 ProgramLibraryMT::ProgramLibraryMT(DeviceMT& metal_device, const std::string& library_name)
@@ -44,7 +44,7 @@ ProgramLibraryMT::ProgramLibraryMT(DeviceMT& metal_device, const std::string& li
     ITT_FUNCTION_TASK();
     if (!m_mtl_library)
     {
-        const std::string error_msg = MacOS::ConvertFromNSType<NSString, std::string>([m_ns_error localizedDescription]);
+        const std::string error_msg = MacOS::ConvertFromNsType<NSString, std::string>([m_ns_error localizedDescription]);
         throw std::runtime_error("Failed to create " + (library_name.empty() ? std::string("default") : library_name) + " Metal library: " + error_msg);
     }
 }

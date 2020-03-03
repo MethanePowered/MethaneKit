@@ -136,7 +136,7 @@ void TextureMT::SetName(const std::string& name)
 
     TextureBase::SetName(name);
 
-    m_mtl_texture.label = MacOS::ConvertToNSType<std::string, NSString*>(name);
+    m_mtl_texture.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
 }
 
 void TextureMT::SetData(const SubResources& sub_resources)
@@ -230,7 +230,7 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
 
     const Settings& settings = GetSettings();
     const MTLPixelFormat mtl_pixel_format = TypeConverterMT::DataFormatToMetalPixelType(settings.pixel_format);
-    const BOOL is_tex_mipmapped = MacOS::ConvertToNSType<bool, BOOL>(settings.mipmapped);
+    const BOOL is_tex_mipmapped = MacOS::ConvertToNsType<bool, BOOL>(settings.mipmapped);
 
     MTLTextureDescriptor* mtl_tex_desc = nil;
     switch(settings.dimension_type)

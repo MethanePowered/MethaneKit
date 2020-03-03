@@ -263,7 +263,7 @@ uint32_t TypeConverterMT::ByteSizeOfVertexFormat(MTLVertexFormat vertex_format) 
 MTLClearColor TypeConverterMT::ColorToMetalClearColor(const Color4f& color) noexcept
 {
     ITT_FUNCTION_TASK();
-    return MTLClearColorMake(color.r(), color.g(), color.b(), color.a());
+    return MTLClearColorMake(color.GetR(), color.GetG(), color.GetB(), color.GetA());
 }
 
 NSRect TypeConverterMT::RectToNS(const FrameRect& rect) noexcept
@@ -275,7 +275,7 @@ NSRect TypeConverterMT::RectToNS(const FrameRect& rect) noexcept
 NSRect TypeConverterMT::CreateNSRect(const FrameSize& size, const Point2i& origin) noexcept
 {
     ITT_FUNCTION_TASK();
-    return NSMakeRect(origin.x(), origin.y(), size.width, size.height);
+    return NSMakeRect(origin.GetX(), origin.GetY(), size.width, size.height);
 }
 
 FrameRect TypeConverterMT::RectFromNS(const NSRect& rect) noexcept

@@ -100,7 +100,7 @@ Ptr<Shader> Shader::Create(Shader::Type shader_type, Context& context, const Set
 
 ShaderMT::ShaderMT(Shader::Type shader_type, ContextBase& context, const Settings& settings)
     : ShaderBase(shader_type, context, settings)
-    , m_mtl_function([context.GetLibraryMT(settings.entry_function.file_name)->Get() newFunctionWithName: Methane::MacOS::ConvertToNSType<std::string, NSString*>(GetCompiledEntryFunctionName())])
+    , m_mtl_function([context.GetLibraryMT(settings.entry_function.file_name)->Get() newFunctionWithName: Methane::MacOS::ConvertToNsType<std::string, NSString*>(GetCompiledEntryFunctionName())])
 {
     ITT_FUNCTION_TASK();
 
@@ -134,7 +134,7 @@ ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const Program::Argume
         if (!mtl_arg.active)
             continue;
 
-        std::string argument_name = Methane::MacOS::ConvertFromNSType<NSString, std::string>(mtl_arg.name);
+        std::string argument_name = Methane::MacOS::ConvertFromNsType<NSString, std::string>(mtl_arg.name);
         if (argument_name.find("vertexBuffer.") == 0)
         {
             // Skip input vertex buffers, since they are set with a separate RenderCommandList call, not through resource bindings
@@ -194,7 +194,7 @@ MTLVertexDescriptor* ShaderMT::GetNativeVertexDescriptor(const ProgramMT& progra
             continue;
         
         const MTLVertexFormat mtl_vertex_format = TypeConverterMT::MetalDataTypeToVertexFormat(mtl_vertex_attrib.attributeType);
-        const std::string attrib_name = std::regex_replace(Methane::MacOS::ConvertFromNSType<NSString, std::string>(mtl_vertex_attrib.name), s_attr_suffix_regex, "");
+        const std::string attrib_name = std::regex_replace(Methane::MacOS::ConvertFromNsType<NSString, std::string>(mtl_vertex_attrib.name), s_attr_suffix_regex, "");
         const uint32_t    attrib_size = TypeConverterMT::ByteSizeOfVertexFormat(mtl_vertex_format);
         const uint32_t    attrib_slot = GetProgramInputBufferIndexByArgumentSemantic(program, attrib_name);
         
