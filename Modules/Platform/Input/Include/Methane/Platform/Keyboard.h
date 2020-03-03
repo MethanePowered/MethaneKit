@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -91,13 +91,13 @@ namespace OS
 {
 #ifdef __APPLE__
 
-constexpr Key key_left_ctrl = Key::LeftSuper;
-constexpr Key key_right_ctrl = Key::RightSuper;
+constexpr Key g_key_left_ctrl  = Key::LeftSuper;
+constexpr Key g_key_right_ctrl = Key::RightSuper;
 
 #else
 
-constexpr Key key_left_ctrl  = Key::LeftControl;
-constexpr Key key_right_ctrl = Key::RightControl;
+constexpr Key g_key_left_ctrl  = Key::LeftControl;
+constexpr Key g_key_right_ctrl = Key::RightControl;
 
 #endif
 }

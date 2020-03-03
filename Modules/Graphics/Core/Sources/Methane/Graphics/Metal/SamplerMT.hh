@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,9 +30,9 @@ Metal implementation of the sampler interface.
 namespace Methane::Graphics
 {
 
-class ContextMT;
+struct IContextMT;
 
-class SamplerMT : public SamplerBase
+class SamplerMT final : public SamplerBase
 {
 public:
     SamplerMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
@@ -43,11 +43,9 @@ public:
     
     const id<MTLSamplerState>& GetNativeSamplerState() const noexcept { return m_mtl_sampler_state; }
 
-protected:
-    void ResetSampletState();
+private:
+    void ResetSamplerState();
 
-    ContextMT& GetContextMT() noexcept;
-    
     MTLSamplerDescriptor* m_mtl_sampler_desc = nullptr;
     id<MTLSamplerState>   m_mtl_sampler_state = nil;
 };

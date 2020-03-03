@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,9 +26,9 @@ is used to create graphics context for rendering.
 
 #include "Object.h"
 
-#include <memory>
+#include <Methane/Memory.hpp>
+
 #include <array>
-#include <vector>
 #include <functional>
 
 namespace Methane::Graphics
@@ -36,8 +36,6 @@ namespace Methane::Graphics
 
 struct Device : virtual Object
 {
-    using Ptr = std::shared_ptr<Device>;
-    
     enum class Notification : uint32_t
     {
         RemoveRequested = 0,
@@ -75,17 +73,15 @@ struct Device : virtual Object
     virtual std::string        ToString() const noexcept = 0;
 };
 
-using Devices = std::vector<Device::Ptr>;
-
 struct System
 {
     static System& Get();
 
     virtual void                  CheckForChanges() = 0;
-    virtual const Devices&        UpdateGpuDevices(Device::Feature::Mask supported_features = Device::Feature::Value::All) = 0;
-    virtual const Devices&        GetGpuDevices() const = 0;
-    virtual Device::Ptr           GetNextGpuDevice(const Device& device) const = 0;
-    virtual Device::Ptr           GetSoftwareGpuDevice() const = 0;
+    virtual const Ptrs<Device>&   UpdateGpuDevices(Device::Feature::Mask supported_features = Device::Feature::Value::All) = 0;
+    virtual const Ptrs<Device>&   GetGpuDevices() const = 0;
+    virtual Ptr<Device>           GetNextGpuDevice(const Device& device) const = 0;
+    virtual Ptr<Device>           GetSoftwareGpuDevice() const = 0;
     virtual Device::Feature::Mask GetGpuSupportedFeatures() const = 0;
     virtual std::string           ToString() const noexcept = 0;
     

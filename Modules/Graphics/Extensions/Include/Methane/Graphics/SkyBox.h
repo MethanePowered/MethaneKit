@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ SkyBox rendering primitive
 #include "ImageLoader.h"
 #include "MeshBuffers.hpp"
 
-#include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/Camera.h>
 #include <Methane/Graphics/RenderState.h>
 #include <Methane/Graphics/Buffer.h>
@@ -43,8 +43,6 @@ namespace Methane::Graphics
 class SkyBox
 {
 public:
-    using Ptr = std::shared_ptr<SkyBox>;
-
     struct Settings
     {
         const Camera&                  view_camera;
@@ -61,21 +59,30 @@ public:
         SHADER_FIELD_ALIGN Matrix44f mvp_matrix;
     };
 
-    SkyBox(Context& context, ImageLoader& image_loader, const Settings& settings);
+    SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings);
 
-    Program::ResourceBindings::Ptr CreateResourceBindings(const Buffer::Ptr& sp_uniforms_buffer);
+    Ptr<ProgramBindings> CreateProgramBindings(const Ptr<Buffer>& sp_uniforms_buffer);
     void Resize(const FrameSize& frame_size);
     void Update();
     void Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindings);
 
 private:
-    using TheTexturedMeshBuffers = TexturedMeshBuffers<Uniforms>;
+    struct Vertex
+    {
+        Mesh::Position position;
 
-    Settings               m_settings;
-    Context&               m_context;
-    TheTexturedMeshBuffers m_mesh_buffers;
-    Sampler::Ptr           m_sp_texture_sampler;
-    RenderState::Ptr       m_sp_state;
+        inline static const Mesh::VertexLayout layout = {
+            Mesh::VertexField::Position,
+        };
+    };
+
+    SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings, BaseMesh<Vertex> mesh);
+
+    Settings                      m_settings;
+    RenderContext&                m_context;
+    TexturedMeshBuffers<Uniforms> m_mesh_buffers;
+    Ptr<Sampler>                  m_sp_texture_sampler;
+    Ptr<RenderState>              m_sp_state;
 };
 
 } // namespace Methane::Graphics

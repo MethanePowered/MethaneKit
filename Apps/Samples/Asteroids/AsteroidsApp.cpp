@@ -26,62 +26,62 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 
 #include <Methane/Graphics/AppCameraController.h>
 #include <Methane/Data/TimeAnimation.h>
-#include <Methane/Data/Instrumentation.h>
-#include <Methane/Data/ScopeTimer.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Platform/Logger.h>
+#include <CLI/CLI.hpp>
 
 #include <cassert>
 #include <memory>
 #include <thread>
 #include <array>
-#include <sstream>
 #include <map>
 
 namespace Methane::Samples
 {
 
-template<typename ValueT, size_t N>
-using ParamValues = std::array<ValueT, N>;
-
-template<typename ValueT, size_t N>
-inline ValueT GetParamValue(const ParamValues<ValueT, N>& param_values, size_t param_index)
+struct MutableParameters
 {
-    return param_values[std::min(param_index, N - 1)];
-}
+    uint32_t instances_count;
+    uint32_t unique_mesh_count;
+    uint32_t textures_count;
+    float    scale_ratio;
+};
 
-inline size_t GetComplexity()
+constexpr uint32_t g_max_complexity = 9;
+static const std::array<MutableParameters, g_max_complexity+1> g_mutable_parameters = {{
+    { 1000u,  35u,   10u, 0.6f  }, // 0
+    { 2000u,  50u,   10u, 0.5f  }, // 1
+    { 3000u,  75u,   20u, 0.45f }, // 2
+    { 4000u,  100u,  20u, 0.4f  }, // 3
+    { 5000u,  200u,  30u, 0.33f }, // 4
+    { 10000u, 300u,  30u, 0.3f  }, // 5
+    { 15000u, 400u,  40u, 0.27f }, // 6
+    { 20000u, 500u,  40u, 0.23f }, // 7
+    { 35000u, 750u,  50u, 0.2f  }, // 8
+    { 50000u, 1000u, 50u, 0.17f }, // 9
+}};
+
+inline uint32_t GetDefaultComplexity()
 {
 #ifdef _DEBUG
-    return 1;
+    return 1u;
 #else
-    const size_t hw_cores_count = std::thread::hardware_concurrency() / 2;
-    return hw_cores_count > 0u ? hw_cores_count - 1u : 0u;
+    return std::thread::hardware_concurrency() / 2;
 #endif
 }
 
-template<typename ValueT, size_t N>
-inline ValueT GetParamValueByComplexity(const ParamValues<ValueT, N>& param_values_by_complexity)
+inline const MutableParameters& GetMutableParameters(uint32_t complexity)
 {
-    return GetParamValue(param_values_by_complexity, GetComplexity());
+    return g_mutable_parameters[std::min(complexity, g_max_complexity)];
 }
 
-constexpr uint32_t g_max_complexity = 9;
-static const ParamValues<uint32_t, g_max_complexity+1> g_instaces_count = {
-//  [0]    [1]    [2]    [3]    [4]    [5]     [6]     [7]     [8]     [9]
-    1000u, 2000u, 3000u, 4000u, 5000u, 10000u, 15000u, 20000u, 35000u, 50000u,
-};
-static const ParamValues<uint32_t, g_max_complexity+1> g_mesh_count = {
-    35u,   50u,   75u,   100u,  200u,  300u,   400u,   500u,   750u,   1000u,
-};
-static const ParamValues<uint32_t, g_max_complexity+1> g_textures_count = {
-    10u,   10u,   20u,   20u,   30u,   30u,    40u,    40u,    50u,    50u
-};
-static const ParamValues<float, g_max_complexity+1> g_scale_ratio = {
-    0.6f,  0.5f,  0.45f, 0.4f,  0.33f, 0.3f,   0.27f,  0.23f,  0.2f,   0.17f
-};
+inline const MutableParameters& GetMutableParameters()
+{
+    return GetMutableParameters(GetDefaultComplexity());
+}
 
 static const std::map<pal::Keyboard::State, AsteroidsAppAction> g_asteroids_action_by_keyboard_state = {
-    { { pal::Keyboard::Key::F2           }, AsteroidsAppAction::ShowParameters              },
+    { { pal::Keyboard::Key::F3           }, AsteroidsAppAction::ShowParameters              },
     { { pal::Keyboard::Key::RightBracket }, AsteroidsAppAction::IncreaseComplexity          },
     { { pal::Keyboard::Key::LeftBracket  }, AsteroidsAppAction::DecreaseComplexity          },
     { { pal::Keyboard::Key::P            }, AsteroidsAppAction::SwitchParallelRendering     },
@@ -91,57 +91,64 @@ static const std::map<pal::Keyboard::State, AsteroidsAppAction> g_asteroids_acti
 };
 
 // Common application settings
-static const std::string           g_app_help_text  = "Asteroids sample demonstrates parallel rendering of the asteroids field observable with interactive camera.";
-static const GraphicsApp::Settings  g_app_settings  = // Application settings:
-{                                                     // ====================
-    {                                                 // app:
-        "Methane Asteroids",                          // - name
-        0.8, 0.8,                                     // - width, height
-        false,                                        // - is_full_screen
-    },                                                //
-    {                                                 // context:
-        gfx::FrameSize(),                             // - frame_size
-        gfx::PixelFormat::BGRA8Unorm,                 // - color_format
-        gfx::PixelFormat::Depth32Float,               // - depth_stencil_format
-        { /* color clearing disabled */ },            // - clear_color
-        gfx::DepthStencil{ 0.f, 0u },                 // - clear_depth_stencil
-        3u,                                           // - frame_buffers_count
-        false,                                        // - vsync_enabled
-    },                                                //
-    true,                                             // show_hud_in_window_title
-    true                                              // show_logo_badge
+static const std::string              g_app_help_text = "Methane sample demonstrating parallel rendering of massive randomly generated asteroids field observable with arc-ball camera.";
+static const GraphicsApp::AllSettings g_app_settings  = // Application settings:
+{                                                       // ====================
+    {                                                   // platform_app:
+        "Methane Asteroids",                            // - name
+        0.8, 0.8,                                       // - width, height
+        false,                                          // - is_full_screen
+    },                                                  //
+    {                                                   // graphics_app:
+        gfx::RenderPass::Access::ShaderResources |      // - screen_pass_access
+        gfx::RenderPass::Access::Samplers,              //
+        true,                                           // - animations_enabled
+        true,                                           // - show_hud_in_window_title
+        true,                                           // - show_logo_badge
+        0                                               // - default_device_index
+    },                                                  //
+    {                                                   // render_context:
+        gfx::FrameSize(),                               // - frame_size
+        gfx::PixelFormat::BGRA8Unorm,                   // - color_format
+        gfx::PixelFormat::Depth32Float,                 // - depth_stencil_format
+        { /* color clearing disabled */ },              // - clear_color
+        gfx::DepthStencil{ 0.f, 0 },                    // - clear_depth_stencil
+        3u,                                             // - frame_buffers_count
+        false,                                          // - vsync_enabled
+    }
 };
 
 AsteroidsApp::AsteroidsApp()
-    : GraphicsApp(g_app_settings, gfx::RenderPass::Access::ShaderResources | gfx::RenderPass::Access::Samplers, g_app_help_text)
+    : GraphicsApp(g_app_settings, g_app_help_text)
     , m_view_camera(m_animations, gfx::ActionCamera::Pivot::Aim)
     , m_light_camera(m_view_camera, m_animations, gfx::ActionCamera::Pivot::Aim)
     , m_scene_scale(15.f)
-    , m_scene_constants(                                    // Shader constants:
-        {                                                   // ================
-            gfx::Color4f(1.f, 1.f, 1.f, 1.f),               // - light_color
-            1.25f,                                          // - light_power
-            0.1f,                                           // - light_ambient_factor
-            4.f                                             // - light_specular_factor
+    , m_scene_constants(                                // Shader constants:
+        {                                               // ================
+            gfx::Color4f(1.f, 1.f, 1.f, 1.f),           // - light_color
+            1.25f,                                      // - light_power
+            0.1f,                                       // - light_ambient_factor
+            4.f                                         // - light_specular_factor
         })
-    , m_asteroids_array_settings(                           // Asteroids array settings:
-        {                                                   // ================
-            m_view_camera,                                  // - view_camera
-            m_scene_scale,                                  // - scale
-            GetParamValueByComplexity(g_instaces_count),    // - instance_count
-            GetParamValueByComplexity(g_mesh_count),        // - unique_mesh_count
-            4u,                                             // - subdivisions_count
-            GetParamValueByComplexity(g_textures_count),    // - textures_count
-            { 256u, 256u },                                 // - texture_dimensions
-            1123u,                                          // - random_seed
-            13.f,                                           // - orbit_radius_ratio
-            4.f,                                            // - disc_radius_ratio
-            GetParamValueByComplexity(g_scale_ratio) / 10.f,// - min_asteroid_scale_ratio
-            GetParamValueByComplexity(g_scale_ratio),       // - max_asteroid_scale_ratio
-            true,                                           // - textures_array_enabled
-            true                                            // - depth_reversed
+    , m_asteroids_array_settings(                       // Asteroids array settings:
+        {                                               // ================
+            m_view_camera,                              // - view_camera
+            m_scene_scale,                              // - scale
+            GetMutableParameters().instances_count,     // - instance_count
+            GetMutableParameters().unique_mesh_count,   // - unique_mesh_count
+            4u,                                         // - subdivisions_count
+            GetMutableParameters().textures_count,      // - textures_count
+            { 256u, 256u },                             // - texture_dimensions
+            1123u,                                      // - random_seed
+            13.f,                                       // - orbit_radius_ratio
+            4.f,                                        // - disc_radius_ratio
+            0.06f,                                      // - mesh_lod_min_screen_size
+            GetMutableParameters().scale_ratio / 10.f,  // - min_asteroid_scale_ratio
+            GetMutableParameters().scale_ratio,         // - max_asteroid_scale_ratio
+            true,                                       // - textures_array_enabled
+            true                                        // - depth_reversed
         })
-    , m_asteroids_complexity(static_cast<uint32_t>(GetComplexity()))
+    , m_asteroids_complexity(static_cast<uint32_t>(GetDefaultComplexity()))
     , m_is_parallel_rendering_enabled(true)
 {
     ITT_FUNCTION_TASK();
@@ -150,15 +157,15 @@ AsteroidsApp::AsteroidsApp()
     // for Reversed-Z buffer values range [ near: 1, far 0], instead of [ near 0, far 1]
     // which is used for "from near to far" drawing order for reducing pixels overdraw
     m_view_camera.SetOrientation({ { -110.f, 75.f, 210.f }, { 0.f, -60.f, 25.f }, { 0.f, 1.f, 0.f } });
-    m_view_camera.SetParamters({ 600.f /* near = max depth */, 0.01f /*far = min depth*/, 90.f /* FOV */ });
+    m_view_camera.SetParameters({ 600.f /* near = max depth */, 0.01f /*far = min depth*/, 90.f /* FOV */ });
     m_view_camera.SetZoomDistanceRange({ 60.f , 400.f });
 
     m_light_camera.SetOrientation({ { -100.f, 120.f, 0.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
-    m_light_camera.SetParamters({ -300.f, 300.f, 90.f });
+    m_light_camera.SetParameters({ -300.f, 300.f, 90.f });
     m_light_camera.Resize(120.f, 120.f);
 
-    m_input_state.AddControllers({
+    InputState().AddControllers({
         std::make_shared<AsteroidsAppController>(*this, g_asteroids_action_by_keyboard_state),
         std::make_shared<gfx::AppCameraController>(m_view_camera,  "VIEW CAMERA"),
         std::make_shared<gfx::AppCameraController>(m_light_camera, "LIGHT SOURCE",
@@ -166,13 +173,32 @@ AsteroidsApp::AsteroidsApp()
             gfx::AppCameraController::ActionByKeyboardState { { { pal::Keyboard::Key::LeftControl, pal::Keyboard::Key::L }, gfx::ActionCamera::KeyboardAction::Reset } },
             gfx::AppCameraController::ActionByKeyboardKey   { }),
     });
+
+    const std::string options_group = "Asteroids Options";
+    add_option_group(options_group);
+    add_option("-c,--complexity",
+               [this](CLI::results_t res) {
+                       uint32_t complexity = 0;
+                       if (CLI::detail::lexical_cast(res[0], complexity))
+                       {
+                           SetAsteroidsComplexity(complexity);
+                           return true;
+                       }
+                       return false;
+                   }, "simulation complexity", true)
+        ->default_val(m_asteroids_complexity)
+        ->expected(0, static_cast<int>(g_max_complexity))
+        ->group(options_group);
+    add_option("-s,--subdiv-count", m_asteroids_array_settings.subdivisions_count, "mesh subdivisions count", true)->group(options_group);
+    add_option("-t,--texture-array", m_asteroids_array_settings.textures_array_enabled, "texture array enabled", true)->group(options_group);
+    add_option("-r,--parallel-render", m_is_parallel_rendering_enabled, "parallel rendering enabled", true)->group(options_group);
 }
 
 AsteroidsApp::~AsteroidsApp()
 {
     ITT_FUNCTION_TASK();
     // Wait for GPU rendering is completed to release resources
-    m_sp_context->WaitForGpu(gfx::Context::WaitFor::RenderComplete);
+    m_sp_context->WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
 }
 
 void AsteroidsApp::Init()
@@ -183,9 +209,8 @@ void AsteroidsApp::Init()
     GraphicsApp::Init();
 
     assert(m_sp_context);
-    gfx::Context& context = *m_sp_context;
-
-    const gfx::Context::Settings& context_settings = context.GetSettings();
+    gfx::RenderContext& context = *m_sp_context;
+    const gfx::RenderContext::Settings& context_settings = context.GetSettings();
     m_view_camera.Resize(static_cast<float>(context_settings.frame_size.width),
                          static_cast<float>(context_settings.frame_size.height));
 
@@ -275,15 +300,15 @@ void AsteroidsApp::Init()
         frame.asteroids.sp_uniforms_buffer->SetName(IndexedName("Asteroids Array Uniforms Buffer", frame.index));
 
         // Resource bindings for Sky-Box rendering
-        frame.skybox.resource_bindings_per_instance.resize(1);
-        frame.skybox.resource_bindings_per_instance[0] = m_sp_sky_box->CreateResourceBindings(frame.skybox.sp_uniforms_buffer);
+        frame.skybox.program_bindings_per_instance.resize(1);
+        frame.skybox.program_bindings_per_instance[0] = m_sp_sky_box->CreateProgramBindings(frame.skybox.sp_uniforms_buffer);
 
         // Resource bindings for Planet rendering
-        frame.planet.resource_bindings_per_instance.resize(1);
-        frame.planet.resource_bindings_per_instance[0] = m_sp_planet->CreateResourceBindings(m_sp_const_buffer, frame.planet.sp_uniforms_buffer);
+        frame.planet.program_bindings_per_instance.resize(1);
+        frame.planet.program_bindings_per_instance[0] = m_sp_planet->CreateProgramBindings(m_sp_const_buffer, frame.planet.sp_uniforms_buffer);
 
         // Resource bindings for Asteroids rendering
-        frame.asteroids.resource_bindings_per_instance = m_sp_asteroids_array->CreateResourceBindings(m_sp_const_buffer, frame.sp_scene_uniforms_buffer, frame.asteroids.sp_uniforms_buffer);
+        frame.asteroids.program_bindings_per_instance = m_sp_asteroids_array->CreateProgramBindings(m_sp_const_buffer, frame.sp_scene_uniforms_buffer, frame.asteroids.sp_uniforms_buffer);
     }
 
     // Setup animations
@@ -357,43 +382,32 @@ bool AsteroidsApp::Render()
         return false;
 
     // Wait for previous frame rendering is completed and switch to next frame
-    m_sp_context->WaitForGpu(gfx::Context::WaitFor::FramePresented);
+    m_sp_context->WaitForGpu(gfx::RenderContext::WaitFor::FramePresented);
     AsteroidsFrame& frame = GetCurrentFrame();
 
     // Upload uniform buffers to GPU
     frame.sp_scene_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms) } });
 
-    assert(!!m_sp_asteroids_array);
-    gfx::CommandList::Refs execute_cmd_lists;
-
-    // Asteroids rendering
+    // Asteroids rendering in parallel or in main thread
+    Refs<gfx::CommandList> execute_cmd_lists;
     if (m_is_parallel_rendering_enabled)
     {
-        assert(!!frame.sp_parallel_cmd_list);
-        m_sp_asteroids_array->DrawParallel(*frame.sp_parallel_cmd_list, frame.asteroids);
-        frame.sp_parallel_cmd_list->Commit(false);
+        GetAsteroidsArray().DrawParallel(*frame.sp_parallel_cmd_list, frame.asteroids);
+        frame.sp_parallel_cmd_list->Commit();
         execute_cmd_lists.push_back(*frame.sp_parallel_cmd_list);
     }
     else
     {
-        assert(!!frame.sp_serial_cmd_list);
-        m_sp_asteroids_array->Draw(*frame.sp_serial_cmd_list, frame.asteroids);
-        frame.sp_serial_cmd_list->Commit(false);
+        GetAsteroidsArray().Draw(*frame.sp_serial_cmd_list, frame.asteroids);
+        frame.sp_serial_cmd_list->Commit();
         execute_cmd_lists.push_back(*frame.sp_serial_cmd_list);
     }
     
-    // Planet rendering
-    assert(!!m_sp_planet);
-    assert(!!frame.sp_final_cmd_list);
+    // Draw planet and sky-box after asteroids to minimize pixel overdraw
     m_sp_planet->Draw(*frame.sp_final_cmd_list, frame.planet);
-
-    // Sky-box rendering
-    assert(!!m_sp_sky_box);
     m_sp_sky_box->Draw(*frame.sp_final_cmd_list, frame.skybox);
-
     RenderOverlay(*frame.sp_final_cmd_list);
-
-    frame.sp_final_cmd_list->Commit(true);
+    frame.sp_final_cmd_list->Commit();
     execute_cmd_lists.push_back(*frame.sp_final_cmd_list);
 
     // Execute rendering commands and present frame to screen
@@ -430,30 +444,33 @@ void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
     if (m_asteroids_complexity == asteroids_complexity)
         return;
 
-    m_sp_context->WaitForGpu(gfx::Context::WaitFor::RenderComplete);
+    if (m_sp_context)
+        m_sp_context->WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
 
     m_asteroids_complexity = asteroids_complexity;
 
-    m_asteroids_array_settings.instance_count           = GetParamValue(g_instaces_count, m_asteroids_complexity);
-    m_asteroids_array_settings.unique_mesh_count        = GetParamValue(g_mesh_count,     m_asteroids_complexity);
-    m_asteroids_array_settings.textures_count           = GetParamValue(g_textures_count, m_asteroids_complexity);
-    m_asteroids_array_settings.min_asteroid_scale_ratio = GetParamValue(g_scale_ratio,    m_asteroids_complexity) / 10.f;
-    m_asteroids_array_settings.max_asteroid_scale_ratio = GetParamValue(g_scale_ratio,    m_asteroids_complexity);
+    const MutableParameters& mutable_parameters         = GetMutableParameters(m_asteroids_complexity);
+    m_asteroids_array_settings.instance_count           = mutable_parameters.instances_count;
+    m_asteroids_array_settings.unique_mesh_count        = mutable_parameters.unique_mesh_count;
+    m_asteroids_array_settings.textures_count           = mutable_parameters.textures_count;
+    m_asteroids_array_settings.min_asteroid_scale_ratio = mutable_parameters.scale_ratio / 10.f;
+    m_asteroids_array_settings.max_asteroid_scale_ratio = mutable_parameters.scale_ratio;
 
     m_sp_asteroids_array.reset();
     m_sp_asteroids_array_state.reset();
-    
-    assert(!!m_sp_context);
-    m_sp_context->Reset();
+
+    if (m_sp_context)
+        m_sp_context->Reset();
 }
 
 void AsteroidsApp::SetParallelRenderingEnabled(bool is_parallel_rendering_enabled)
 {
     ITT_FUNCTION_TASK();
+    if (m_is_parallel_rendering_enabled == is_parallel_rendering_enabled)
+        return;
+
     FLUSH_SCOPE_TIMINGS();
-
     m_is_parallel_rendering_enabled = is_parallel_rendering_enabled;
-
     pal::PrintToDebugOutput(GetParametersString());
 }
 
@@ -471,12 +488,13 @@ std::string AsteroidsApp::GetParametersString() const
 
     std::stringstream ss;
     ss << std::endl << "Asteroids simulation parameters:"
-       << std::endl << "  - simulation complexity: "     << m_asteroids_complexity
+       << std::endl << "  - simulation complexity [0.."  << g_max_complexity << "]: " << m_asteroids_complexity
        << std::endl << "  - asteroid instances count: "  << m_asteroids_array_settings.instance_count
        << std::endl << "  - unique meshes count: "       << m_asteroids_array_settings.unique_mesh_count
        << std::endl << "  - mesh subdivisions count: "   << m_asteroids_array_settings.subdivisions_count
        << std::endl << "  - unique textures count: "     << m_asteroids_array_settings.textures_count << " "
                                                          << static_cast<std::string>(m_asteroids_array_settings.texture_dimensions)
+       << std::endl << "  - textures array binding: "    << (m_asteroids_array_settings.textures_array_enabled ? "enabled" : "disabled")
        << std::endl << "  - parallel rendering: "        << (m_is_parallel_rendering_enabled ? "enabled" : "disabled")
        << std::endl << "  - CPU hardware thread count: " << std::thread::hardware_concurrency();
 
@@ -487,6 +505,6 @@ std::string AsteroidsApp::GetParametersString() const
 
 int main(int argc, const char* argv[])
 {
-    Methane::Data::ScopeTimer::InitializeLogger<Methane::Platform::Logger>();
+    SCOPE_TIMER_INITIALIZE(Methane::Platform::Logger);
     return Methane::Samples::AsteroidsApp().Run({ argc, argv });
 }

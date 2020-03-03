@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ namespace Methane::Graphics
 {
 
 class CommandQueueBase;
+class ProgramBindingsBase;
 
 class CommandListBase
     : public ObjectBase
@@ -46,9 +47,6 @@ class CommandListBase
     friend class CommandQueueBase;
 
 public:
-    using Ptr = std::shared_ptr<CommandListBase>;
-    using WeakPtr = std::weak_ptr<CommandListBase>;
-
     enum State
     {
         Pending,
@@ -58,15 +56,26 @@ public:
 
     struct CommandState
     {
-        Program::ResourceBindings::Ptr sp_resource_bindings;
+        // NOTE:
+        // Command state uses raw pointers instead of smart pointers for performance reasons:
+        //   - shared pointers can not be used here, because they keep resources from deletion on context release
+        //   - weak pointer should not be used too because 'lock' operation has significant performance overhead
+        //   - even if raw pointer becomes obsolete it won't be a problem because it is used only for address comparison with another raw pointer
+        ProgramBindingsBase* p_program_bindings = nullptr;
+
+        static UniquePtr<CommandState> Create(Type command_list_type);
+
+    protected:
+        CommandState() = default;
     };
 
     CommandListBase(CommandQueueBase& command_queue, Type type);
 
     // CommandList interface
-    Type GetType() const override               { return m_type; }
-    void SetResourceBindings(Program::ResourceBindings& resource_bindings, Program::ResourceBindings::ApplyBehavior::Mask apply_behavior) override;
-    void Commit(bool present_drawable) override;
+    Type GetType() const override { return m_type; }
+    void Reset(const std::string& debug_group = "") override;
+    void SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
+    void Commit() override;
     CommandQueue& GetCommandQueue() override;
 
     // CommandListBase interface
@@ -74,12 +83,16 @@ public:
     virtual void Execute(uint32_t frame_index);
     virtual void Complete(uint32_t frame_index);
 
-    void SetResourceTransitionBarriers(const Resource::Refs& resources, ResourceBase::State state_before, ResourceBase::State state_after);
-    const CommandState& GetCommandState() const       { return m_command_state; }
-    Ptr  GetPtr()                                     { return shared_from_this(); }
-    void SetDebugGroupOpened(bool debug_group_opened) { m_debug_group_opened = debug_group_opened; }
+    void SetResourceTransitionBarriers(const Refs<Resource>& resources, ResourceBase::State state_before, ResourceBase::State state_after);
+    void SetOpenDebugGroup(const std::string& debug_group)  { m_open_debug_group = debug_group; }
+    const ProgramBindingsBase* GetProgramBindings() const   { return GetCommandState().p_program_bindings; }
+    Ptr<CommandListBase>       GetPtr()                     { return shared_from_this(); }
 
 protected:
+    void ResetCommandState();
+    CommandState&       GetCommandState();
+    const CommandState& GetCommandState() const;
+
     CommandQueueBase&       GetCommandQueueBase();
     const CommandQueueBase& GetCommandQueueBase() const;
 
@@ -89,22 +102,18 @@ protected:
     bool     IsExecuting(uint32_t frame_index) const;
     bool     IsExecuting() const                        { return IsExecuting(GetCurrentFrameIndex()); }
     uint32_t GetCurrentFrameIndex() const;
-    void     ResetCommandState();
-
-    CommandQueue::Ptr m_sp_command_queue;
-    bool              m_debug_group_opened = false;
 
 private:
     static std::string GetStateName(State state);
-
+    
     using ExecutingOnFrame = std::map<uint32_t, bool>;
 
-    const Type          m_type;
-    Ptr                 m_sp_self;
-    uint32_t            m_committed_frame_index = 0;
-    State               m_state                 = State::Pending;
-    mutable std::mutex  m_state_mutex;
-    CommandState        m_command_state;
+    const Type              m_type;
+    Ptr<CommandQueue>       m_sp_command_queue;
+    UniquePtr<CommandState> m_sp_command_state;
+    std::string             m_open_debug_group;
+    uint32_t                m_committed_frame_index = 0;
+    State                   m_state                 = State::Pending;
 };
 
 } // namespace Methane::Graphics

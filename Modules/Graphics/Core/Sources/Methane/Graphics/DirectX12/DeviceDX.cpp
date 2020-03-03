@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ DirectX 12 implementation of the device interface.
 
 #include "DeviceDX.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #ifdef _DEBUG
@@ -41,7 +41,7 @@ DirectX 12 implementation of the device interface.
 namespace Methane::Graphics
 {
 
-static std::string GetAdapterNameDXGI(IDXGIAdapter& adapter)
+static std::string GetAdapterNameDxgi(IDXGIAdapter& adapter)
 {
     ITT_FUNCTION_TASK();
 
@@ -50,7 +50,7 @@ static std::string GetAdapterNameDXGI(IDXGIAdapter& adapter)
     return nowide::narrow(desc.Description);
 }
 
-static bool IsSoftwareAdapterDXGI(IDXGIAdapter1& adapter)
+static bool IsSoftwareAdapterDxgi(IDXGIAdapter1& adapter)
 {
     ITT_FUNCTION_TASK();
 
@@ -66,9 +66,9 @@ Device::Feature::Mask DeviceDX::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdap
 }
 
 DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level)
-    : DeviceBase(GetAdapterNameDXGI(*cp_adapter.Get()),
-        IsSoftwareAdapterDXGI(static_cast<IDXGIAdapter1&>(*cp_adapter.Get())),
-        GetSupportedFeatures(cp_adapter, feature_level))
+    : DeviceBase(GetAdapterNameDxgi(*cp_adapter.Get()),
+                 IsSoftwareAdapterDxgi(static_cast<IDXGIAdapter1&>(*cp_adapter.Get())),
+                 GetSupportedFeatures(cp_adapter, feature_level))
     , m_cp_adapter(cp_adapter)
     , m_feature_level(feature_level)
 {
@@ -137,8 +137,8 @@ SystemDX::~SystemDX()
     UnregisterAdapterChangeEvent();
 
     m_cp_factory.Reset();
-    m_devices.clear();
 
+    ClearDevices();
     ReportLiveObjects();
 }
 
@@ -216,15 +216,15 @@ void SystemDX::CheckForChanges()
     UnregisterAdapterChangeEvent();
     Initialize();
 
-    Devices prev_devices = m_devices;
+    Ptrs<Device> prev_devices = m_devices;
     UpdateGpuDevices(m_supported_features);
 
-    for (const Device::Ptr& sp_prev_device : prev_devices)
+    for (const Ptr<Device>& sp_prev_device : prev_devices)
     {
         assert(!!sp_prev_device);
         DeviceDX& prev_device = static_cast<DeviceDX&>(*sp_prev_device);
         auto device_it = std::find_if(m_devices.begin(), m_devices.end(),
-                                      [prev_device](const Device::Ptr& sp_device)
+                                      [prev_device](const Ptr<Device>& sp_device)
                                       {
                                           DeviceDX& device = static_cast<DeviceDX&>(*sp_device);
                                           return prev_device.GetNativeAdapter().GetAddressOf() == device.GetNativeAdapter().GetAddressOf();
@@ -238,14 +238,14 @@ void SystemDX::CheckForChanges()
 #endif
 }
 
-const Devices& SystemDX::UpdateGpuDevices(Device::Feature::Mask supported_features)
+const Ptrs<Device>& SystemDX::UpdateGpuDevices(Device::Feature::Mask supported_features)
 {
     ITT_FUNCTION_TASK();
     assert(m_cp_factory);
 
     const D3D_FEATURE_LEVEL dx_feature_level = D3D_FEATURE_LEVEL_11_0;
-    m_supported_features = supported_features;
-    m_devices.clear();
+    SetGpuSupportedFeatures(supported_features);
+    ClearDevices();
 
     IDXGIAdapter1* p_adapter = nullptr;
     for (UINT adapter_index = 0; DXGI_ERROR_NOT_FOUND != m_cp_factory->EnumAdapters1(adapter_index, &p_adapter); ++adapter_index)
@@ -256,7 +256,7 @@ const Devices& SystemDX::UpdateGpuDevices(Device::Feature::Mask supported_featur
 
         // Don't select the Basic Render Driver adapter.
         // If you want a software adapter, pass in "/warp" on the command line.
-        if (IsSoftwareAdapterDXGI(*p_adapter))
+        if (IsSoftwareAdapterDxgi(*p_adapter))
             continue;
 
         AddDevice(p_adapter, dx_feature_level);
@@ -269,7 +269,7 @@ const Devices& SystemDX::UpdateGpuDevices(Device::Feature::Mask supported_featur
         AddDevice(cp_warp_adapter, dx_feature_level);
     }
 
-    return m_devices;
+    return GetGpuDevices();
 }
 
 void SystemDX::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level)
@@ -281,11 +281,10 @@ void SystemDX::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATUR
         return;
 
     Device::Feature::Mask device_supported_features = DeviceDX::GetSupportedFeatures(cp_adapter, feature_level);
-    if (!(device_supported_features & m_supported_features))
+    if (!(device_supported_features & GetGpuSupportedFeatures()))
         return;
 
-    Device::Ptr sp_device = std::make_shared<DeviceDX>(cp_adapter, feature_level);
-    m_devices.push_back(sp_device);
+    SystemBase::AddDevice(std::make_shared<DeviceDX>(cp_adapter, feature_level));
 }
 
 void SystemDX::ReportLiveObjects()

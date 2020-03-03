@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,9 +25,10 @@ Methane graphics core interfaces: all headers under one umbrella.
 
 #include "Types.h"
 #include "Device.h"
-#include "Context.h"
+#include "RenderContext.h"
 #include "Shader.h"
 #include "Program.h"
+#include "ProgramBindings.h"
 #include "RenderState.h"
 #include "RenderPass.h"
 #include "Resource.h"

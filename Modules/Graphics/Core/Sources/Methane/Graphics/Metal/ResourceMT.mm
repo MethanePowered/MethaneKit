@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,15 +22,14 @@ Metal implementation of the resource interface.
 ******************************************************************************/
 
 #include "ResourceMT.hh"
-#include "ContextMT.hh"
+#include "ContextMT.h"
 #include "BufferMT.hh"
 #include "TextureMT.hh"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Instrumentation.h>
 
 #include <vector>
-
-#import <Metal/Metal.h>
 
 namespace Methane::Graphics
 {
@@ -41,7 +40,7 @@ struct ResourceContainerMT
     std::vector<id<MTLTexture>> textures;
 };
 
-ResourceBase::ReleasePool::Ptr ResourceBase::ReleasePool::Create()
+Ptr<ResourceBase::ReleasePool> ResourceBase::ReleasePool::Create()
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<ResourceMT::ReleasePoolMT>();
@@ -94,10 +93,10 @@ ResourceMT::ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, 
     ITT_FUNCTION_TASK();
 }
 
-ContextMT& ResourceMT::GetContextMT() noexcept
+IContextMT& ResourceMT::GetContextMT() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextMT&>(m_context);
+    return static_cast<IContextMT&>(GetContext());
 }
 
 } // namespace Methane::Graphics

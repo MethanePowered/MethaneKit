@@ -1,5 +1,33 @@
-// Required macro definitions:
-// #define TEXTURES_COUNT 10
+/******************************************************************************
+
+Copyright 2019-2020 Evgeny Gorodetskiy
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+*******************************************************************************
+
+FILE: MethaneKit/Apps/Samples/Asteroids/Shaders/Asteroids.hlsl
+Shaders for asteroids rendering with tri-planar texturing and Phong lighting.
+Asteroid textures can be bound indirectly with array of textures and selected
+using uniform texture index or bound directly with descriptor table.
+
+Optional macro definition: TEXTURES_COUNT=10
+
+******************************************************************************/
+
+#ifndef TEXTURES_COUNT
+#define TEXTURES_COUNT 1
+#endif
 
 struct VSInput
 {
@@ -63,7 +91,7 @@ PSInput AsteroidVS(VSInput input)
     output.world_normal      = normalize(mul(g_mesh_uniforms.model_matrix, float4(input.normal, 0.0)).xyz);
     output.albedo            = lerp(g_mesh_uniforms.deep_color, g_mesh_uniforms.shallow_color, depth);
 
-    // Prepare coordinates and blending weights for triplanar projection texturing
+    // Prepare coordinates and blending weights for tri-planar projection texturing
     output.uvw               = input.position / g_mesh_uniforms.depth_range.y * 0.5f + 0.5f;
     output.face_blend_weights = abs(normalize(input.position));
     output.face_blend_weights = saturate((output.face_blend_weights - 0.2f) * 7.0f);
@@ -78,7 +106,7 @@ float4 AsteroidPS(PSInput input) : SV_TARGET
     const float3 fragment_to_eye    = normalize(g_scene_uniforms.eye_position.xyz - input.world_position);
     const float3 light_reflected_from_fragment = reflect(-fragment_to_light, input.world_normal);
 
-    // Triplanar projection sampling
+    // Tri-planar projection sampling
     float3 texel_rgb = 0.0;
     const uint tex_index = g_mesh_uniforms.texture_index;
     texel_rgb += input.face_blend_weights.x * g_face_textures[tex_index].Sample(g_texture_sampler, float3(input.uvw.yz, 0)).xyz;

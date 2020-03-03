@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,9 @@ Base application interface and platform-independent implementation.
 
 #include <Methane/Platform/AppBase.h>
 #include <Methane/Platform/Utils.h>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
+
+#include <CLI/CLI.hpp>
 
 #include <vector>
 #include <cstdlib>
@@ -33,96 +35,49 @@ namespace Methane::Platform
 {
 
 AppBase::AppBase(const AppBase::Settings& settings)
-    : m_settings(settings)
-    , m_cmd_options(GetExecutableFileName(), settings.name)
+    : CLI::App(settings.name, GetExecutableFileName())
+    , m_settings(settings)
 {
     ITT_FUNCTION_TASK();
-    m_cmd_options
-        .allow_unrecognised_options()
-        .add_options()
-        ("help",     "Print command line options help")
-        ("w,width",  "Window width in pixels or as ratio of desctop width",   cxxopts::value<double>())
-        ("h,height", "Window height in pixels or as ratio of desctop height", cxxopts::value<double>());
-}
 
-void AppBase::ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result)
-{
-    ITT_FUNCTION_TASK();
-    if (cmd_parse_result.count("help"))
-    {
-        const Message help_msg = {
-            Message::Type::Information,
-            "Command Line Options",
-            m_cmd_options.help()
-        };
-        Alert(help_msg, true);
-    }
-    if (cmd_parse_result.count("width"))
-    {
-        m_settings.width = cmd_parse_result["width"].as<double>();
-    }
-    if (cmd_parse_result.count("height"))
-    {
-        m_settings.height = cmd_parse_result["height"].as<double>();
-    }
+    add_option("-w,--width",  m_settings.width,  "Window width in pixels or as ratio of desktop width", true);
+    add_option("-x,--height", m_settings.height, "Window height in pixels or as ratio of desktop height", true);
+    add_option("-f,--full-screen", m_settings.is_full_screen, "Full-screen mode", true);
+
+#ifdef __APPLE__
+    // When application is opened on MacOS with its Bundle,
+    // OS adds an additional command-line option which looks like "-psn_0_23004655" which should be allowed
+    allow_extras();
+#endif
 }
 
 int AppBase::Run(const RunArgs& args)
 {
     ITT_FUNCTION_TASK();
 
-#ifdef __APPLE__
-    // NOTE: MacOS bundle process serial number argument must be skipped because of unsupported syntax (underscores)
-    const std::string macos_psn_arg_prefix = "-psn_";
-#endif
-    
-    // Create a mutable copy of command line args to let the parser modify it
-    int mutable_args_count = 0;
-    std::vector<char*> mutable_arg_values(args.cmd_arg_count, nullptr);
-    for (int argi = 0; argi < args.cmd_arg_count; argi++)
-    {
-        const size_t arg_value_size = strlen(args.cmd_arg_values[argi]) + 1;
-#ifdef __APPLE__
-        if (strncmp(args.cmd_arg_values[argi], macos_psn_arg_prefix.data(), std::min(arg_value_size - 1, macos_psn_arg_prefix.length())) == 0)
-            continue;
-#endif
-        mutable_arg_values[mutable_args_count] = new char[arg_value_size];
-#ifdef _WIN32
-        strcpy_s(mutable_arg_values[argi], arg_value_size, args.cmd_arg_values[argi]);
-#elif defined __APPLE__
-        strlcpy(mutable_arg_values[argi], args.cmd_arg_values[argi], arg_value_size);
-#elif defined __linux__
-        strcpy(mutable_arg_values[argi], args.cmd_arg_values[argi]);
-#endif
-        mutable_args_count++;
-    };
-
-    // Parse command line
-    int return_code = 0;
     try
     {
-        char** p_mutable_arg_values = mutable_arg_values.data();
-        const cxxopts::ParseResult cmd_parse_result = m_cmd_options.parse(mutable_args_count, p_mutable_arg_values);
-        ParseCommandLine(cmd_parse_result);
+        parse(args.cmd_arg_count, args.cmd_arg_values);
     }
-    catch (const cxxopts::OptionException& e)
+    catch(const CLI::CallForHelp&)
     {
-        const Message help_msg = {
+        Alert(Message{
+            Message::Type::Information,
+            "Command Line Options",
+            help()
+        }, true);
+    }
+    catch(const CLI::ParseError& e)
+    {
+        Alert(Message{
             Message::Type::Error,
             "Command Line Parse Error",
-            std::string("Failed to parse command line option: ") + e.what()
-        };
-        Alert(help_msg);
-        return_code = 1;
+            std::string("Failed to parse command line: ") + e.what()
+        });
+        return exit(e);
     }
 
-    // Delete mutable args
-    for (char* p_arg_value : mutable_arg_values)
-    {
-        delete[](p_arg_value);
-    };
-
-    return return_code;
+    return 0;
 }
 
 void AppBase::Init()
@@ -166,13 +121,13 @@ void AppBase::ShowAlert(const Message&)
     ITT_FUNCTION_TASK();
 
     // Message box interrupts message loop so that application looses all key release events
-    // We asssume that user has released all previously pressed keys and simulate these events
+    // We assume that user has released all previously pressed keys and simulate these events
     m_input_state.ReleaseAllKeys();
 }
 
 void AppBase::UpdateAndRender()
 {
-    // Do not render if error has occured and is being displayed in message box
+    // Do not render if error has occurred and is being displayed in message box
     if (HasError())
         return;
 

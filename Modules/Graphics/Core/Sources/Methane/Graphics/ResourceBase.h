@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ Base implementation of the resource interface.
 
 namespace Methane::Graphics
 {
+
+class ContextBase;
 
 class ResourceBase
     : public virtual Resource
@@ -76,8 +78,7 @@ public:
 
     struct ReleasePool
     {
-        using  Ptr = std::shared_ptr<ReleasePool>;
-        static Ptr Create();
+        static Ptr<ReleasePool> Create();
 
         virtual void AddResource(ResourceBase& resource) = 0;
         virtual void ReleaseResources() = 0;
@@ -105,7 +106,9 @@ public:
 protected:
     DescriptorHeap::Type GetDescriptorHeapTypeByUsage(Usage::Value usage) const;
     const Descriptor&    GetDescriptorByUsage(Usage::Value usage) const;
+    ContextBase&         GetContext() { return m_context; }
 
+private:
     const Type          m_type;
     const Usage::Mask   m_usage_mask;
     ContextBase&        m_context;

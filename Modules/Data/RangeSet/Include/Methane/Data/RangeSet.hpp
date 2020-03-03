@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ limitations under the License.
 FILE: Methane/Data/RangeSet.hpp
 
 Set of ranges with operations of adding and removing a range with maintaining
-minimum number of continous ranges by merging or splitting adjacent ranges in set
+minimum number of continuous ranges by merging or splitting adjacent ranges in set
 
 ******************************************************************************/
 
@@ -27,7 +27,7 @@ minimum number of continous ranges by merging or splitting adjacent ranges in se
 
 #include "Range.hpp"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <set>
 #include <vector>
@@ -71,7 +71,7 @@ public:
     {
         ITT_FUNCTION_TASK();
         Range<ScalarT> merged_range(range);
-        const RangeOfRanges ranges = GetMergableRanges(range);
+        const RangeOfRanges ranges = GetMergeableRanges(range);
 
         Ranges remove_ranges;
         for (auto range_it = ranges.first; range_it != ranges.second; ++range_it)
@@ -88,7 +88,7 @@ public:
     {
         ITT_FUNCTION_TASK();
         Ranges remove_ranges, add_ranges;
-        RangeOfRanges ranges = GetMergableRanges(range);
+        RangeOfRanges ranges = GetMergeableRanges(range);
         for (auto range_it = ranges.first; range_it != ranges.second; ++range_it)
         {
             if (!range.IsOverlapping(*range_it))
@@ -129,7 +129,7 @@ public:
 
 protected:
     using RangeOfRanges = std::pair<ConstIterator, ConstIterator>;
-    RangeOfRanges GetMergableRanges(const Range<ScalarT>& range)
+    RangeOfRanges GetMergeableRanges(const Range<ScalarT>& range)
     {
         ITT_FUNCTION_TASK();
         if (BaseSet::empty())
@@ -137,28 +137,28 @@ protected:
             return RangeOfRanges{ BaseSet::end(), BaseSet::end() };
         }
 
-        RangeOfRanges mergable_ranges = {
+        RangeOfRanges mergeable_ranges = {
             BaseSet::lower_bound(Range<ScalarT>(range.GetStart(), range.GetStart())),
             BaseSet::upper_bound(range)
         };
 
-        if (mergable_ranges.first != BaseSet::begin())
-            mergable_ranges.first--;
+        if (mergeable_ranges.first != BaseSet::begin())
+            mergeable_ranges.first--;
 
-        while (mergable_ranges.first != BaseSet::end() && !range.IsMergable(*mergable_ranges.first))
-            mergable_ranges.first++;
+        while (mergeable_ranges.first != BaseSet::end() && !range.IsMergeable(*mergeable_ranges.first))
+            mergeable_ranges.first++;
 
-        if (mergable_ranges.first == BaseSet::end())
+        if (mergeable_ranges.first == BaseSet::end())
             return RangeOfRanges(BaseSet::end(), BaseSet::end());
 
-        while (mergable_ranges.second != mergable_ranges.first && 
-              (mergable_ranges.second == BaseSet::end() || !range.IsMergable(*mergable_ranges.second)))
+        while (mergeable_ranges.second != mergeable_ranges.first &&
+              (mergeable_ranges.second == BaseSet::end() || !range.IsMergeable(*mergeable_ranges.second)))
         {
-            mergable_ranges.second--;
+            mergeable_ranges.second--;
         }
-        mergable_ranges.second++;
+        mergeable_ranges.second++;
 
-        return mergable_ranges;
+        return mergeable_ranges;
     }
 
     using Ranges = std::vector<Range<ScalarT>>;

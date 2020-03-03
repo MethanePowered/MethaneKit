@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -34,15 +34,14 @@ namespace Methane::Graphics
 
 namespace wrl = Microsoft::WRL;
 
-class ContextBase;
 class RenderCommandListBase;
-class ContextDX;
+class RenderContextDX;
 class ProgramDX;
 
 class RenderStateDX final : public RenderStateBase
 {
 public:
-    RenderStateDX(ContextBase& context, const Settings& settings);
+    RenderStateDX(RenderContextBase& context, const Settings& settings);
 
     // RenderState interface
     void Reset(const Settings& settings) override;
@@ -55,11 +54,12 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
+    void InitializeNativePipelineState();
     wrl::ComPtr<ID3D12PipelineState>& GetNativePipelineState();
 
-protected:
+private:
     ProgramDX& GetProgramDX();
-    ContextDX& GetContextDX();
+    RenderContextDX& GetRenderContextDX();
 
     D3D12_GRAPHICS_PIPELINE_STATE_DESC m_pipeline_state_desc = { };
     wrl::ComPtr<ID3D12PipelineState>   m_cp_pipeline_state;

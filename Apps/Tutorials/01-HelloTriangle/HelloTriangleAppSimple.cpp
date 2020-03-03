@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ using namespace Methane::Graphics;
 
 struct HelloTriangleFrame final : AppFrame
 {
-    RenderCommandList::Ptr sp_cmd_list;
+    Ptr<RenderCommandList> sp_cmd_list;
     using AppFrame::AppFrame;
 };
 
@@ -36,26 +36,29 @@ using GraphicsApp = App<HelloTriangleFrame>;
 class HelloTriangleApp final : public GraphicsApp
 {
 private:
-    RenderState::Ptr m_sp_state;
-    Buffer::Ptr      m_sp_vertex_buffer;
+    Ptr<RenderState> m_sp_state;
+    Ptr<Buffer>      m_sp_vertex_buffer;
 
 public:
     HelloTriangleApp() : GraphicsApp(
         {                                        // Application settings:
-            {                                    // app:
+            {                                    // platform_app:
                 "Methane Hello Triangle",        // - name
                 0.8, 0.8,                        // - width, height
             },                                   //
-            {                                    // context:
+            {                                    // graphics_app:
+                RenderPass::Access::None,        // - screen_pass_access
+                false,                           // - animations_enabled
+                true,                            // - show_hud_in_window_title
+                false,                           // - show_logo_badge
+            },                                   //
+            {                                    // render_context:
                 FrameSize(),                     // - frame_size placeholder: actual size is set in InitContext
                 PixelFormat::BGRA8Unorm,         // - color_format
                 PixelFormat::Unknown,            // - depth_stencil_format
                 Color4f(0.0f, 0.2f, 0.4f, 1.0f), // - clear_color
-            },                                   //
-            true,                                // show_hud_in_window_title
-            false                                // show_logo_badge
-        },
-        RenderPass::Access::None)                // screen_pass_access (program access to resources)
+            }
+        })
     { }
 
     ~HelloTriangleApp() override
@@ -68,33 +71,47 @@ public:
         GraphicsApp::Init();
 
         struct Vertex { Vector3f position; Vector3f color; };
-        const std::array<Vertex, 3> triange_vertices = { {
+        const std::array<Vertex, 3> triangle_vertices = { {
             { { 0.0f,   0.5f,  0.0f }, { 1.0f, 0.0f, 0.0f } },
             { { 0.5f,  -0.5f,  0.0f }, { 0.0f, 1.0f, 0.0f } },
             { { -0.5f, -0.5f,  0.0f }, { 0.0f, 0.0f, 1.0f } },
         } };
 
-        const Data::Size vertex_buffer_size = static_cast<Data::Size>(sizeof(triange_vertices));
+        const Data::Size vertex_buffer_size = static_cast<Data::Size>(sizeof(triangle_vertices));
         m_sp_vertex_buffer = Buffer::CreateVertexBuffer(*m_sp_context, vertex_buffer_size, static_cast<Data::Size>(sizeof(Vertex)));
-        m_sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(triange_vertices.data()), vertex_buffer_size } });
+        m_sp_vertex_buffer->SetData(
+            Resource::SubResources
+            {
+                Resource::SubResource { reinterpret_cast<Data::ConstRawPtr>(triangle_vertices.data()), vertex_buffer_size }
+            }
+        );
 
         m_sp_state = RenderState::Create(*m_sp_context,
-        {
-            Program::Create(*m_sp_context, {
-                {
-                    Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), { "Triangle", "TriangleVS" } }),
-                    Shader::CreatePixel(*m_sp_context,  { Data::ShaderProvider::Get(), { "Triangle", "TrianglePS" } }),
-                },
-                { { {
-                    { "input_position", "POSITION" },
-                    { "input_color",    "COLOR"    },
-                } } },
-                { }, { },
-                { m_sp_context->GetSettings().color_format }
-            }),
-            { GetFrameViewport(m_sp_context->GetSettings().frame_size) },
-            { GetFrameScissorRect(m_sp_context->GetSettings().frame_size) },
-        });
+            RenderState::Settings
+            {
+                Program::Create(*m_sp_context,
+                    Program::Settings
+                    {
+                        Program::Shaders
+                        {
+                            Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), { "Triangle", "TriangleVS" } }),
+                            Shader::CreatePixel(*m_sp_context,  { Data::ShaderProvider::Get(), { "Triangle", "TrianglePS" } }),
+                        },
+                        Program::InputBufferLayouts
+                        {
+                            Program::InputBufferLayout
+                            {
+                                Program::InputBufferLayout::ArgumentSemantics { "POSITION", "COLOR" },
+                            }
+                        },
+                        Program::ArgumentDescriptions { },
+                        PixelFormats { m_sp_context->GetSettings().color_format }
+                    }
+                ),
+                Viewports    { GetFrameViewport(m_sp_context->GetSettings().frame_size)    },
+                ScissorRects { GetFrameScissorRect(m_sp_context->GetSettings().frame_size) },
+            }
+        );
 
         for (HelloTriangleFrame& frame : m_frames)
         {
@@ -125,7 +142,7 @@ public:
         frame.sp_cmd_list->Reset(m_sp_state);
         frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
         frame.sp_cmd_list->Draw(RenderCommandList::Primitive::Triangle, 3);
-        frame.sp_cmd_list->Commit(true);
+        frame.sp_cmd_list->Commit();
 
         m_sp_context->GetRenderCommandQueue().Execute({ *frame.sp_cmd_list });
         m_sp_context->Present();

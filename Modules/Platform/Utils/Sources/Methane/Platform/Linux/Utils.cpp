@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Platform/MacOS/Utils.mm
-MacOS platform utilitary functions.
+MacOS platform utility functions.
 
 ******************************************************************************/
 
 #include <Methane/Platform/MacOS/Utils.hh>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 #include <stdexcept>

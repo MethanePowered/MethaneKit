@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,19 +26,17 @@ Methane render pass interface: specifies output of the graphics pipeline.
 #include "Types.h"
 #include "Texture.h"
 
-#include <memory>
+#include <Methane/Memory.hpp>
+
 #include <vector>
 
 namespace Methane::Graphics
 {
 
-struct Context;
-struct Resource;
+struct RenderContext;
 
 struct RenderPass
 {
-    using Ptr = std::shared_ptr<RenderPass>;
-
     struct Attachment
     {
         enum class LoadAction : uint32_t
@@ -55,7 +53,7 @@ struct RenderPass
             Resolve,
         };
         
-        Texture::WeakPtr wp_texture;
+        WeakPtr<Texture> wp_texture;
         uint32_t         level        = 0u;
         uint32_t         slice        = 0u;
         uint32_t         depth_plane  = 0u;
@@ -115,8 +113,6 @@ struct RenderPass
 
     struct Settings
     {
-        using Ptr = std::unique_ptr<Settings>;
-        
         ColorAttachments   color_attachments;
         DepthAttachment    depth_attachment;
         StencilAttachment  stencil_attachment;
@@ -127,7 +123,7 @@ struct RenderPass
     };
 
     // Create RenderPass instance
-    static Ptr Create(Context& context, const Settings& settings);
+    static Ptr<RenderPass> Create(RenderContext& context, const Settings& settings);
 
     // RenderPass interface
     virtual void  Update(const Settings& settings) = 0;

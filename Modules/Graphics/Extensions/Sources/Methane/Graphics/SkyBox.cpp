@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,49 +22,60 @@ SkyBox rendering primitive
 ******************************************************************************/
 
 #include <Methane/Graphics/SkyBox.h>
-#include <Methane/Graphics/Mesh.h>
+#include <Methane/Graphics/Mesh/SphereMesh.hpp>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Data/AppResourceProviders.h>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-struct SkyBoxVertex
+SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings)
+    : SkyBox(context, image_loader, settings, SphereMesh<Vertex>(Vertex::layout))
 {
-    Mesh::Position position;
+    ITT_FUNCTION_TASK();
+}
 
-    using FieldsArray = std::array<Mesh::VertexField, 1>;
-    static constexpr const FieldsArray layout = {
-        Mesh::VertexField::Position,
-    };
-};
-
-SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& settings)
+SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings, BaseMesh<Vertex> mesh)
     : m_settings(settings)
     , m_context(context)
-    , m_mesh_buffers(context, SphereMesh<SkyBoxVertex>(Mesh::VertexLayoutFromArray(SkyBoxVertex::layout)), "Sky-Box")
+    , m_mesh_buffers(context, mesh, "Sky-Box")
 {
     ITT_FUNCTION_TASK();
 
     m_mesh_buffers.SetTexture(image_loader.LoadImagesToTextureCube(m_context, m_settings.face_resources, m_settings.mipmapped));
 
-    const Context::Settings& context_settings = context.GetSettings();
+    const RenderContext::Settings& context_settings = context.GetSettings();
 
     RenderState::Settings state_settings;
-    state_settings.sp_program = Program::Create(context, {
+    state_settings.sp_program = Program::Create(context,
+        Program::Settings
         {
-            Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxVS" }, { } }),
-            Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxPS" }, { } }),
-        },
-        { { {
-            { "input_position", "POSITION" },
-        } } },
-        { "g_skybox_texture", "g_texture_sampler" },
-        { },
-        { context_settings.color_format },
-        context_settings.depth_stencil_format
-    });
+            Program::Shaders
+            {
+                Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxVS" }, { } }),
+                Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxPS" }, { } }),
+            },
+            Program::InputBufferLayouts
+            {
+                Program::InputBufferLayout
+                {
+                    Program::InputBufferLayout::ArgumentSemantics { mesh.GetVertexLayout().GetSemantics() }
+                }
+            },
+            Program::ArgumentDescriptions
+            {
+                { { Shader::Type::Vertex, "g_skybox_uniforms" }, Program::Argument::Modifiers::None },
+                { { Shader::Type::Pixel,  "g_skybox_texture"  }, Program::Argument::Modifiers::Constant },
+                { { Shader::Type::Pixel,  "g_texture_sampler" }, Program::Argument::Modifiers::Constant },
+            },
+            PixelFormats
+            {
+                context_settings.color_format
+            },
+            context_settings.depth_stencil_format
+        }
+    );
     state_settings.sp_program->SetName("Sky-box shading");
     state_settings.viewports            = { GetFrameViewport(context_settings.frame_size) };
     state_settings.scissor_rects        = { GetFrameScissorRect(context_settings.frame_size) };
@@ -84,15 +95,15 @@ SkyBox::SkyBox(Context& context, ImageLoader& image_loader, const Settings& sett
     m_sp_texture_sampler->SetName("Sky-box Texture Sampler");
 }
 
-Program::ResourceBindings::Ptr SkyBox::CreateResourceBindings(const Buffer::Ptr& sp_uniforms_buffer)
+Ptr<ProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& sp_uniforms_buffer)
 {
     ITT_FUNCTION_TASK();
 
     assert(!!m_sp_state);
     assert(!!m_sp_state->GetSettings().sp_program);
-    return Program::ResourceBindings::Create(m_sp_state->GetSettings().sp_program, {
+    return ProgramBindings::Create(m_sp_state->GetSettings().sp_program, {
         { { Shader::Type::Vertex, "g_skybox_uniforms" }, { { sp_uniforms_buffer             } } },
-        { { Shader::Type::Pixel,  "g_skybox_texture"  }, { { m_mesh_buffers.GetSubsetTexturePtr() } } },
+        { { Shader::Type::Pixel,  "g_skybox_texture"  }, { { m_mesh_buffers.GetTexturePtr() } } },
         { { Shader::Type::Pixel,  "g_texture_sampler" }, { { m_sp_texture_sampler           } } },
     });
 }
@@ -128,9 +139,9 @@ void SkyBox::Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindin
 
     cmd_list.Reset(m_sp_state, "Sky-box rendering");
     
-    assert(!buffer_bindings.resource_bindings_per_instance.empty());
-    assert(!!buffer_bindings.resource_bindings_per_instance[0]);
-    m_mesh_buffers.Draw(cmd_list, *buffer_bindings.resource_bindings_per_instance[0]);
+    assert(!buffer_bindings.program_bindings_per_instance.empty());
+    assert(!!buffer_bindings.program_bindings_per_instance[0]);
+    m_mesh_buffers.Draw(cmd_list, *buffer_bindings.program_bindings_per_instance[0]);
 }
 
 } // namespace Methane::Graphics

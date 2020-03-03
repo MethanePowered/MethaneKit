@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/DirectX12/TypesDX.h
-Methane graphics types convertors to DirectX 12 native types.
+Methane graphics types converters to DirectX 12 native types.
 
 ******************************************************************************/
 
@@ -50,7 +50,7 @@ public:
     static DXGI_FORMAT                      DataFormatToDXGI(const PixelFormat& data_format) noexcept;
     static DXGI_FORMAT                      DataFormatToDXGI(const PixelFormat& data_format, ResourceFormatType format_type) noexcept;
     static D3D12_COMPARISON_FUNC            CompareFunctionToDX(Compare compare_func) noexcept;
-    static DXGI_FORMAT                      ParameterDescToDXGIFormatAndSize(const D3D12_SIGNATURE_PARAMETER_DESC& param_desc, uint32_t& out_element_byte_size) noexcept;
+    static DXGI_FORMAT                      ParameterDescToDxgiFormatAndSize(const D3D12_SIGNATURE_PARAMETER_DESC& param_desc, uint32_t& out_element_byte_size) noexcept;
 
 private:
     TypeConverterDX() = default;

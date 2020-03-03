@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,17 +25,19 @@ A pool of input controllers for user actions handling in separate application co
 
 #include "Controller.h"
 
+#include <Methane/Memory.hpp>
+
 namespace Methane::Platform::Input
 {
 
 class ControllersPool
-    : public Controllers
+    : public Ptrs<Controller>
     , public IController
     , public IHelpProvider
 {
 public:
-    using Controllers::Controllers;
-    using Controllers::operator=;
+    using Ptrs<Controller>::Ptrs;
+    using Ptrs<Controller>::operator=;
 
     // IController implementation
     void OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button_state, const Mouse::StateChange& state_change) override;

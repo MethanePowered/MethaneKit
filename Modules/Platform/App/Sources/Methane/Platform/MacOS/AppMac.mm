@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,12 +23,12 @@ MacOS application implementation.
 
 #include <Methane/Platform/MacOS/AppMac.hh>
 #include <Methane/Platform/MacOS/Types.hh>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 using namespace Methane::Platform;
 using namespace Methane::MacOS;
 
-NSAlertStyle ConvertMessageTypeToNSAlertStyle(AppBase::Message::Type msg_type)
+NSAlertStyle ConvertMessageTypeToNsAlertStyle(AppBase::Message::Type msg_type)
 {
     ITT_FUNCTION_TASK();
     switch(msg_type)
@@ -42,7 +42,7 @@ NSAlertStyle ConvertMessageTypeToNSAlertStyle(AppBase::Message::Type msg_type)
 AppMac::AppMac(const AppBase::Settings& settings)
     : AppBase(settings)
     , m_ns_app([NSApplication sharedApplication])
-    , m_ns_app_delegate([[AppDelegate alloc] initWithApp:this andSettings: &m_settings])
+    , m_ns_app_delegate([[AppDelegate alloc] initWithApp:this andSettings: &settings])
 {
     ITT_FUNCTION_TASK();
     [m_ns_app setDelegate: m_ns_app_delegate];
@@ -108,7 +108,7 @@ void AppMac::Alert(const Message& msg, bool deferred)
 void AppMac::SetWindowTitle(const std::string& title_text)
 {
     ITT_FUNCTION_TASK();
-    NSString* ns_title_text = ConvertToNSType<std::string, NSString*>(title_text);
+    NSString* ns_title_text = ConvertToNsType<std::string, NSString*>(title_text);
     dispatch_async(dispatch_get_main_queue(), ^(void){
         m_ns_window.title = ns_title_text;
     });
@@ -124,9 +124,9 @@ void AppMac::ShowAlert(const Message& msg)
 {
     ITT_FUNCTION_TASK();
     assert(m_ns_app_delegate);
-    [m_ns_app_delegate alert: ConvertToNSType<std::string, NSString*>(msg.title)
-             withInformation: ConvertToNSType<std::string, NSString*>(msg.information)
-                    andStyle: ConvertMessageTypeToNSAlertStyle(msg.type)];
+    [m_ns_app_delegate alert: ConvertToNsType<std::string, NSString*>(msg.title)
+             withInformation: ConvertToNsType<std::string, NSString*>(msg.information)
+                    andStyle: ConvertMessageTypeToNsAlertStyle(msg.type)];
 
     AppBase::ShowAlert(msg);
 }

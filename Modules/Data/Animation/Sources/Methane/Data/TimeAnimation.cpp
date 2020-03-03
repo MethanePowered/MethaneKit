@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Data/TimeAnimation.cpp
-Time-based animation of any external enity with an update lambda-function.
+Time-based animation of any external entity with an update lambda-function.
 
 ******************************************************************************/
 
 #include <Methane/Data/TimeAnimation.h>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Data
 {
@@ -44,16 +44,18 @@ void TimeAnimation::Restart() noexcept
 bool TimeAnimation::Update()
 {
     ITT_FUNCTION_TASK();
-    if (!m_is_running)
+    if (GetState() != State::Running)
         return false;
 
     const double elapsed_seconds = GetElapsedSecondsD();
     const double delta_seconds = elapsed_seconds - m_prev_elapsed_seconds;
-    m_is_running = elapsed_seconds < m_duration_sec && 
-                    m_update_function(elapsed_seconds, delta_seconds);
+    if (IsTimeOver() || !m_update_function(elapsed_seconds, delta_seconds))
+    {
+        Stop();
+    }
     m_prev_elapsed_seconds = elapsed_seconds;
 
-    return m_is_running;
+    return GetState() == State::Running;
 }
 
 } // namespace Methane::Data

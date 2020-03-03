@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ Pool of animations for centralized updating, adding and removing in application.
 
 #pragma once
 
+#include <Methane/Memory.hpp>
+
 #include "Animation.h"
 
 #include <deque>
@@ -30,12 +32,17 @@ Pool of animations for centralized updating, adding and removing in application.
 namespace Methane::Data
 {
 
-using Animations = std::deque<Animation::Ptr>;
+using Animations = std::deque<Ptr<Animation>>;
 
 class AnimationsPool : public Animations
 {
 public:
     void Update();
+    void Pause();
+    void Resume();
+
+private:
+    bool m_is_paused = false;
 };
 
 } // namespace Methane::Data

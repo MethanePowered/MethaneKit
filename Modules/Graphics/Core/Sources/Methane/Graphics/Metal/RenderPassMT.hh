@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,12 +30,12 @@ Metal implementation of the render pass interface.
 namespace Methane::Graphics
 {
 
-class ContextMT;
+struct IContextMT;
 
-class RenderPassMT : public RenderPassBase
+class RenderPassMT final : public RenderPassBase
 {
 public:
-    RenderPassMT(ContextBase& context, const Settings& settings);
+    RenderPassMT(RenderContextBase& context, const Settings& settings);
 
     // RenderPass interface
     void Update(const Settings& settings) override;
@@ -44,8 +44,8 @@ public:
     
     MTLRenderPassDescriptor* GetNativeDescriptor(bool reset);
 
-protected:
-    ContextMT& GetContextMT() noexcept;
+private:
+    IContextMT& GetContextMT() noexcept;
     
     MTLRenderPassDescriptor* m_mtl_pass_descriptor;
 };

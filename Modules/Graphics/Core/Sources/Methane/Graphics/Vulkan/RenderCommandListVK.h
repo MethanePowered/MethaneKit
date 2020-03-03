@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -43,15 +43,15 @@ public:
     // CommandList interface
     void PushDebugGroup(const std::string& name) override;
     void PopDebugGroup() override;
-    void Commit(bool present_drawable) override;
+    void Commit() override;
 
     // CommandListBase interface
     void SetResourceBarriers(const ResourceBase::Barriers&) override { }
     void Execute(uint32_t frame_index) override;
 
     // RenderCommandList interface
-    void Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group = "") override;
-    void SetVertexBuffers(const Buffer::Refs& vertex_buffers) override;
+    void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;
+    void SetVertexBuffers(const Refs<Buffer>& vertex_buffers) override;
     void DrawIndexed(Primitive primitive, Buffer& index_buffer,
                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                      uint32_t instance_count, uint32_t start_instance) override;

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,19 +23,18 @@ DirectX 12 implementation of the shader interface.
 
 #include "ShaderDX.h"
 #include "ProgramDX.h"
-#include "ResourceDX.h"
-#include "ContextDX.h"
+#include "ProgramBindingsDX.h"
 #include "DeviceDX.h"
 #include "TypesDX.h"
+
+#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Instrumentation.h>
+#include <Methane/Graphics/Windows/Helpers.h>
+#include <Methane/Data/Provider.h>
 
 #include <d3dx12.h>
 #include <D3Dcompiler.h>
 #include <nowide/convert.hpp>
-
-#include <Methane/Data/Instrumentation.h>
-#include <Methane/Graphics/Windows/Helpers.h>
-#include <Methane/Data/Provider.h>
-
 #include <sstream>
 #include <cassert>
 
@@ -184,104 +183,10 @@ static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepTyp
     return D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
 }
 
-Shader::ResourceBinding::Ptr Shader::ResourceBinding::CreateCopy(const ResourceBinding& other_resource_binging)
+Ptr<Shader> Shader::Create(Type type, Context& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ShaderDX::ResourceBindingDX>(static_cast<const ShaderDX::ResourceBindingDX&>(other_resource_binging));
-}
-
-ShaderDX::ResourceBindingDX::ResourceBindingDX(ContextBase& context, const Settings& settings)
-    : ShaderBase::ResourceBindingBase(context, settings.base)
-    , m_settings_dx(settings)
-{
-    ITT_FUNCTION_TASK();
-}
-
-ShaderDX::ResourceBindingDX::ResourceBindingDX(const ResourceBindingDX& other)
-    : ResourceBindingBase(other)
-    , m_settings_dx(other.m_settings_dx)
-    , m_root_parameter_index(other.m_root_parameter_index)
-    , m_descriptor_range(other.m_descriptor_range)
-    , m_p_descriptor_heap_reservation(other.m_p_descriptor_heap_reservation)
-    , m_resource_locations_dx(other.m_resource_locations_dx)
-{
-    ITT_FUNCTION_TASK();
-}
-
-void ShaderDX::ResourceBindingDX::SetResourceLocations(const Resource::Locations& resource_locations)
-{
-    ITT_FUNCTION_TASK();
-
-    ShaderBase::ResourceBindingBase::SetResourceLocations(resource_locations);
-
-    m_resource_locations_dx.clear();
-
-    if (m_settings_dx.type == Type::DescriptorTable &&
-        m_resource_locations.size() > m_descriptor_range.count)
-    {
-        throw std::invalid_argument("The number of bound resources (" + std::to_string(m_resource_locations.size()) +
-                                    ") exceeds reserved descriptors count (" + std::to_string(m_descriptor_range.count) + ").");
-    }
-
-    uint32_t resource_index = 0;
-    m_resource_locations_dx.reserve(m_resource_locations.size());
-    for(const Resource::Location& resource_location : m_resource_locations)
-    {
-        m_resource_locations_dx.emplace_back(resource_location);
-
-        if (!m_p_descriptor_heap_reservation)
-            continue;
-
-        const ResourceDX::LocationDX& resource_location_dx = m_resource_locations_dx.back();
-        const DescriptorHeapDX& dx_descriptor_heap = static_cast<const DescriptorHeapDX&>(m_p_descriptor_heap_reservation->heap.get());
-        if (m_descriptor_range.heap_type != dx_descriptor_heap.GetSettings().type)
-        {
-            throw std::logic_error("Incompatible heap type \"" + dx_descriptor_heap.GetTypeName() +
-                                   "\" is set for resource binding on argument \"" + GetArgumentName() +
-                                   "\" of \"" + Shader::GetTypeName(m_settings.shader_type) + "\" shader.");
-        }
-
-        const uint32_t descriptor_index = m_p_descriptor_heap_reservation->GetRange(IsConstant()).GetStart() + m_descriptor_range.offset + resource_index;
-        GetContextDX().GetDeviceDX().GetNativeDevice()->CopyDescriptorsSimple(
-            1,
-            dx_descriptor_heap.GetNativeCPUDescriptorHandle(descriptor_index),
-            resource_location_dx.GetResourceDX().GetNativeCPUDescriptorHandle(ResourceBase::Usage::ShaderRead),
-            dx_descriptor_heap.GetNativeDescriptorHeapType()
-        );
-
-        resource_index++;
-    }
-}
-
-void ShaderDX::ResourceBindingDX::SetDescriptorRange(const DescriptorRange& descriptor_range)
-{
-    ITT_FUNCTION_TASK();
-
-    const DescriptorHeap::Type expected_heap_type = GetDescriptorHeapType();
-    if (descriptor_range.heap_type != expected_heap_type)
-    {
-        throw std::runtime_error("Descriptor heap type \"" + DescriptorHeap::GetTypeName(descriptor_range.heap_type) +
-                                 "\" is incompatible with the resource binding, expected heap type is \"" +
-                                 DescriptorHeap::GetTypeName(expected_heap_type) + "\".");
-    }
-    if (descriptor_range.count < m_settings_dx.base.resource_count)
-    {
-        throw std::runtime_error("Descriptor range size (" + std::to_string(descriptor_range.count) + 
-                                 ") will not fit bound shader resources (" + std::to_string(m_settings_dx.base.resource_count) + ").");
-    }
-    m_descriptor_range = descriptor_range;
-}
-
-ContextDX& ShaderDX::ResourceBindingDX::GetContextDX()
-{
-    ITT_FUNCTION_TASK();
-    return static_cast<class ContextDX&>(m_context);
-}
-
-Shader::Ptr Shader::Create(Type type, Context& context, const Settings& settings)
-{
-    ITT_FUNCTION_TASK();
-    return std::make_shared<ShaderDX>(type, static_cast<ContextBase&>(context), settings);
+    return std::make_shared<ShaderDX>(type, dynamic_cast<ContextBase&>(context), settings);
 }
 
 ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
@@ -297,57 +202,53 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
 #endif
 
     std::vector<D3D_SHADER_MACRO> macro_definitions;
-    for (const auto& definition : m_settings.compile_definitions)
+    for (const auto& definition : settings.compile_definitions)
     {
         macro_definitions.push_back({ definition.first.c_str(), definition.second.c_str() });
     }
     macro_definitions.push_back({ nullptr, nullptr });
 
-    wrl::ComPtr<ID3DBlob> error_blob;
-    if (!m_settings.source_file_path.empty())
+    if (!settings.source_file_path.empty())
     {
+        wrl::ComPtr<ID3DBlob> error_blob;
         ThrowIfFailed(D3DCompileFromFile(
-            nowide::widen(m_settings.source_file_path).c_str(),
+            nowide::widen(settings.source_file_path).c_str(),
             macro_definitions.data(),
             D3D_COMPILE_STANDARD_FILE_INCLUDE,
-            m_settings.entry_function.function_name.c_str(),
-            m_settings.source_compile_target.c_str(),
+            settings.entry_function.function_name.c_str(),
+            settings.source_compile_target.c_str(),
             shader_compile_flags,
             0,
             &m_cp_byte_code,
             &error_blob
         ), error_blob);
+
+        m_sp_byte_code_chunk = std::make_unique<Data::Chunk>(static_cast<Data::ConstRawPtr>(m_cp_byte_code->GetBufferPointer()),
+                                                             static_cast<Data::Size>(m_cp_byte_code->GetBufferSize()));
     }
     else
     {
         const std::string compiled_func_name = GetCompiledEntryFunctionName();
-        const Data::Chunk compiled_func_data = m_settings.data_provider.GetData(compiled_func_name + ".obj");
-
-        ThrowIfFailed(D3DCreateBlob(compiled_func_data.size, &m_cp_byte_code));
-        Data::RawPtr p_cp_byte_code_data = static_cast<Data::RawPtr>(m_cp_byte_code->GetBufferPointer());
-        std::copy(compiled_func_data.p_data, compiled_func_data.p_data + compiled_func_data.size, p_cp_byte_code_data);
+        m_sp_byte_code_chunk = std::make_unique<Data::Chunk>(settings.data_provider.GetData(compiled_func_name + ".obj"));
     }
 
-    ThrowIfFailed(D3DReflect(
-        m_cp_byte_code->GetBufferPointer(),
-        m_cp_byte_code->GetBufferSize(),
-        IID_PPV_ARGS(&m_cp_reflection)
-    ));
+    assert(!!m_sp_byte_code_chunk);
+    ThrowIfFailed(D3DReflect(m_sp_byte_code_chunk->p_data, m_sp_byte_code_chunk->size, IID_PPV_ARGS(&m_cp_reflection)));
 }
 
-ShaderBase::ResourceBindings ShaderDX::GetResourceBindings(const std::set<std::string>& constant_argument_names, const std::set<std::string>& addressable_argument_names) const
+ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const
 {
     ITT_FUNCTION_TASK();
     assert(!!m_cp_reflection);
 
-    ShaderBase::ResourceBindings resource_bindings;
+    ShaderBase::ArgumentBindings argument_bindings;
 
     D3D12_SHADER_DESC shader_desc = { };
     m_cp_reflection->GetDesc(&shader_desc);
 
 #ifdef _DEBUG
     std::stringstream log_ss;
-    log_ss << std::endl << GetTypeName() << " shader v." << shader_desc.Version << " created by \"" << shader_desc.Creator << "\" with resource bindings:" << std::endl;
+    log_ss << std::endl << GetTypeName() << " shader v." << shader_desc.Version << " with argument bindings:" << std::endl;
 #endif
 
     for (UINT resource_index = 0; resource_index < shader_desc.BoundResources; ++resource_index)
@@ -355,23 +256,24 @@ ShaderBase::ResourceBindings ShaderDX::GetResourceBindings(const std::set<std::s
         D3D12_SHADER_INPUT_BIND_DESC binding_desc = { };
         ThrowIfFailed(m_cp_reflection->GetResourceBindingDesc(resource_index, &binding_desc));
 
-        const std::string argument_name(binding_desc.Name);
-        const bool is_constant_binding    = constant_argument_names.find(argument_name) != constant_argument_names.end();
-        const bool is_addressable_binding = addressable_argument_names.find(argument_name) != addressable_argument_names.end();
-        const ResourceBindingDX::Type dx_binding_type = !is_addressable_binding ? ResourceBindingDX::Type::DescriptorTable
-                                                                                : (binding_desc.Type == D3D_SIT_CBUFFER ? ResourceBindingDX::Type::ConstantBufferView
-                                                                                                                        : ResourceBindingDX::Type::ShaderResourceView);
-        resource_bindings.push_back(std::make_shared<ResourceBindingDX>(
-            m_context,
-            ResourceBindingDX::Settings
+        const Program::Argument shader_argument(GetType(), binding_desc.Name);
+        const auto argument_desc_it = Program::FindArgumentDescription(argument_descriptions, shader_argument);
+        const Program::ArgumentDesc argument_desc = argument_desc_it == argument_descriptions.end()
+                                                  ? Program::ArgumentDesc(shader_argument)
+                                                  : *argument_desc_it;
+        const ProgramBindingsDX::ArgumentBindingDX::Type dx_binding_type = argument_desc.IsAddressable()
+                                                  ? binding_desc.Type == D3D_SIT_CBUFFER ? ProgramBindingsDX::ArgumentBindingDX::Type::ConstantBufferView
+                                                                                         : ProgramBindingsDX::ArgumentBindingDX::Type::ShaderResourceView
+                                                  : ProgramBindingsDX::ArgumentBindingDX::Type::DescriptorTable;
+
+        argument_bindings.push_back(std::make_shared<ProgramBindingsDX::ArgumentBindingDX>(
+            GetContext(),
+            ProgramBindingsDX::ArgumentBindingDX::SettingsDX
             {
                 {
-                    m_type,
-                    argument_name,
+                    argument_desc,
                     GetResourceTypeByInputType(binding_desc.Type),
-                    binding_desc.BindCount,
-                    is_constant_binding,
-                    is_addressable_binding
+                    binding_desc.BindCount
                 },
                 dx_binding_type,
                 binding_desc.Type,
@@ -381,18 +283,22 @@ ShaderBase::ResourceBindings ShaderDX::GetResourceBindings(const std::set<std::s
         ));
 
 #ifdef _DEBUG
-        log_ss << "  - Resource \""  << binding_desc.Name
-               << "\" binding "      << resource_index
-               << ": type="          << GetShaderInputTypeName(binding_desc.Type)
-               << ", dimension="     << GetSRVDimensionName(binding_desc.Dimension)
-               << ", return_type="   << GetReturnTypeName(binding_desc.ReturnType)
-               << ", samples_count=" << binding_desc.NumSamples
-               << ", count="         << binding_desc.BindCount
-               << ", point="         << binding_desc.BindPoint
-               << ", space="         << binding_desc.Space
-               << ", flags="         << binding_desc.uFlags
-               << ", id="            << binding_desc.uID
-               << std::endl;
+        log_ss << "  - Argument \"" << binding_desc.Name
+               << "\" binding "     << resource_index
+               << ": type="         << GetShaderInputTypeName(binding_desc.Type)
+               << ", dimension="    << GetSRVDimensionName(binding_desc.Dimension)
+               << ", return_type="  << GetReturnTypeName(binding_desc.ReturnType)
+               << ", samples_count="<< binding_desc.NumSamples
+               << ", count="        << binding_desc.BindCount
+               << ", point="        << binding_desc.BindPoint
+               << ", space="        << binding_desc.Space
+               << ", flags="        << binding_desc.uFlags
+               << ", id="           << binding_desc.uID;
+        if (argument_desc_it == argument_descriptions.end())
+        {
+            log_ss << ", no user argument description was found, using default";
+        }
+        log_ss << std::endl;
 #endif
     }
 
@@ -400,7 +306,7 @@ ShaderBase::ResourceBindings ShaderDX::GetResourceBindings(const std::set<std::s
     OutputDebugStringA(log_ss.str().c_str());
 #endif
 
-    return resource_bindings;
+    return argument_bindings;
 }
 
 std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(const ProgramDX& program) const
@@ -457,7 +363,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
         element_desc.InputSlot                = buffer_index;
         element_desc.InputSlotClass           = GetInputClassificationByLayoutStepType(input_buffer_layout.step_type);
         element_desc.InstanceDataStepRate     = 0; // FIXME: input_buffer_layout.step_rate;
-        element_desc.Format                   = TypeConverterDX::ParameterDescToDXGIFormatAndSize(param_desc, element_byte_size);
+        element_desc.Format                   = TypeConverterDX::ParameterDescToDxgiFormatAndSize(param_desc, element_byte_size);
         element_desc.AlignedByteOffset        = buffer_byte_offset;
 
         dx_input_layout.push_back(element_desc);
@@ -471,10 +377,10 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
     return dx_input_layout;
 }
 
-ContextDX& ShaderDX::GetContextDX()
+IContextDX& ShaderDX::GetContextDX() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextDX&>(m_context);
+    return static_cast<IContextDX&>(GetContext());
 }
 
 } // namespace Methane::Graphics

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,8 +26,9 @@ Base application interface and platform-independent implementation.
 #include <Methane/Platform/AppView.h>
 #include <Methane/Platform/Input/State.h>
 #include <Methane/Data/Types.h>
+#include <Methane/Memory.hpp>
 
-#include <cxxopts.hpp>
+#include <CLI/App.hpp>
 
 #include <string>
 #include <vector>
@@ -38,7 +39,7 @@ namespace Methane::Platform
 
 struct AppEnvironment;
 
-class AppBase
+class AppBase : public CLI::App
 {
 public:
     struct Settings
@@ -57,8 +58,6 @@ public:
     
     struct Message
     {
-        using Ptr = std::unique_ptr<Message>;
-
         enum class Type : uint32_t
         {
             Information = 0,
@@ -90,28 +89,27 @@ public:
     void UpdateAndRender();
     bool HasError() const;
 
-    const Settings&         GetSettings() const   { return m_settings; }
-    const Input::State&     GetInputState() const { return m_input_state; }
-    const Data::FrameSize&  GetFrameSize() const  { return m_frame_size; }
-    bool                    IsMinimized() const   { return m_is_minimized; }
-    const cxxopts::Options& GetCmdOptions() const { return m_cmd_options; }
-
-    // Entry point for user input handling from platform-specific implementation
-    Input::IActionController& InputController() { return m_input_state; }
+    const Settings&         GetPlatformAppSettings() const  { return m_settings; }
+    const Input::State&     GetInputState() const           { return m_input_state; }
+    const Data::FrameSize&  GetFrameSize() const            { return m_frame_size; }
+    bool                    IsMinimized() const             { return m_is_minimized; }
+    Input::State&           InputState()                    { return m_input_state; }
 
 protected:
     // AppBase interface
     virtual AppView GetView() const = 0;
-    virtual void ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result);
     virtual void ShowAlert(const Message& msg);
 
+    void Deinitialize() { m_initialized = false; }
+
+    Ptr<Message> m_sp_deferred_message;
+
+private:
     Settings             m_settings;
-    cxxopts::Options     m_cmd_options;
     Data::FrameRect      m_window_bounds;
     Data::FrameSize      m_frame_size;
     bool                 m_is_minimized = false;
     bool                 m_initialized = false;
-    Message::Ptr         m_sp_deferred_message;
     Input::State         m_input_state;
 };
 

@@ -36,12 +36,12 @@ namespace pal = Platform;
 
 struct AsteroidsFrame final : gfx::AppFrame
 {
-    gfx::RenderPass::Ptr                sp_initial_screen_pass;
-    gfx::RenderPass::Ptr                sp_final_screen_pass;
-    gfx::ParallelRenderCommandList::Ptr sp_parallel_cmd_list;
-    gfx::RenderCommandList::Ptr         sp_serial_cmd_list;
-    gfx::RenderCommandList::Ptr         sp_final_cmd_list;
-    gfx::Buffer::Ptr                    sp_scene_uniforms_buffer;
+    Ptr<gfx::RenderPass>                sp_initial_screen_pass;
+    Ptr<gfx::RenderPass>                sp_final_screen_pass;
+    Ptr<gfx::ParallelRenderCommandList> sp_parallel_cmd_list;
+    Ptr<gfx::RenderCommandList>         sp_serial_cmd_list;
+    Ptr<gfx::RenderCommandList>         sp_final_cmd_list;
+    Ptr<gfx::Buffer>                    sp_scene_uniforms_buffer;
     gfx::MeshBufferBindings             skybox;
     gfx::MeshBufferBindings             planet;
     gfx::MeshBufferBindings             asteroids;
@@ -98,11 +98,11 @@ private:
     bool                              m_is_parallel_rendering_enabled = true;
     SceneUniforms                     m_scene_uniforms = { };
     
-    gfx::Buffer::Ptr                  m_sp_const_buffer;
-    gfx::SkyBox::Ptr                  m_sp_sky_box;
-    Planet::Ptr                       m_sp_planet;
-    AsteroidsArray::Ptr               m_sp_asteroids_array;
-    AsteroidsArray::ContentState::Ptr m_sp_asteroids_array_state;
+    Ptr<gfx::Buffer>                  m_sp_const_buffer;
+    Ptr<gfx::SkyBox>                  m_sp_sky_box;
+    Ptr<Planet>                       m_sp_planet;
+    Ptr<AsteroidsArray>               m_sp_asteroids_array;
+    Ptr<AsteroidsArray::ContentState> m_sp_asteroids_array_state;
 };
 
 } // namespace Methane::Samples

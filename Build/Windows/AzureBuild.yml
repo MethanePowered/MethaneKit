@@ -4,11 +4,14 @@
 steps:
 
   - script: |
-      call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\$(vcVarsBatFile)"
       mkdir $(buildDir)
-      cd $(buildDir)
-      cmake -G $(generatorName) -DCMAKE_INSTALL_PREFIX:PATH=$(buildInstallDir) $(cmakeFlags) $(rootDir)
+    displayName: 'Make build directories for $(platform) $(configuration)'
+
+  - task: CMake@1
     displayName: 'Generate with $(generatorName) for $(platform) $(configuration)'
+    inputs:
+      workingDirectory: $(buildDir)
+      cmakeArgs: '-G $(generatorName) -DCMAKE_INSTALL_PREFIX:PATH=$(buildInstallDir) $(cmakeFlags) $(rootDir)'
 
   - task: CMake@1
     displayName: 'Build with $(generatorName) for $(platform) $(configuration)'
@@ -20,6 +23,12 @@ steps:
       for /r "." %%a in (*Test.exe) do "%%~fa" -r junit -o "%%~fa_result.xml"
     workingDirectory: '$(installDir)\Tests'
     displayName: 'Run all unit-tests from install directory'
+
+  - script: |
+      copy $(rootDir)\README.md README.md
+      echo Build number: $(Build.BuildNumber), git branch: $(Build.SourceBranchName), commit id: $(Build.SourceVersion) >Build.txt
+    workingDirectory: '$(installDir)'
+    displayName: 'Copy ReadMe and write build information'
 
   - task: CopyFiles@2
     displayName: 'Copy install artifacts for $(platform) $(configuration)'

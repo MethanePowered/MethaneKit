@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -36,8 +36,6 @@ class DeviceBase
     , public std::enable_shared_from_this<DeviceBase>
 {
 public:
-    using Ptr = std::shared_ptr<DeviceBase>;
-    
     DeviceBase(const std::string& adapter_name, bool is_software_adapter, Feature::Mask supported_features);
 
     // Device interface
@@ -48,9 +46,9 @@ public:
     void                Notify(Notification notification) override;
     std::string         ToString() const noexcept override;
 
-    Ptr GetPtr() { return shared_from_this(); }
+    Ptr<DeviceBase> GetPtr() { return shared_from_this(); }
 
-protected:
+private:
     const std::string    m_adapter_name;
     const bool           m_is_software_adapter;
     const Feature::Mask  m_supported_features;
@@ -60,15 +58,20 @@ protected:
 class SystemBase : public System
 {
 public:
-    const Devices&        GetGpuDevices() const override            { return m_devices; }
+    const Ptrs<Device>&   GetGpuDevices() const override            { return m_devices; }
     Device::Feature::Mask GetGpuSupportedFeatures() const override  { return m_supported_features; }
-    Device::Ptr           GetNextGpuDevice(const Device& device) const override;
-    Device::Ptr           GetSoftwareGpuDevice() const override;
+    Ptr<Device>           GetNextGpuDevice(const Device& device) const override;
+    Ptr<Device>           GetSoftwareGpuDevice() const override;
     std::string           ToString() const noexcept override;
 
 protected:
+    void SetGpuSupportedFeatures(Device::Feature::Mask supported_features) { m_supported_features = supported_features; }
+    void ClearDevices()                     { m_devices.clear(); }
+    void AddDevice(Ptr<Device>&& sp_device) { m_devices.emplace_back(std::move(sp_device)); }
+
+private:
     Device::Feature::Mask m_supported_features = Device::Feature::Value::All;
-    Devices               m_devices;
+    Ptrs<Device>          m_devices;
 };
 
 } // namespace Methane::Graphics

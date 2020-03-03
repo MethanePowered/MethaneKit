@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ namespace Methane::Graphics
 
 class ContextBase;
 
-class DescriptorHeapVK : public DescriptorHeap
+class DescriptorHeapVK final : public DescriptorHeap
 {
 public:
     DescriptorHeapVK(ContextBase& context, const Settings& settings);

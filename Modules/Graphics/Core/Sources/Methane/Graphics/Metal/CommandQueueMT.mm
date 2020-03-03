@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,22 +23,22 @@ Metal implementation of the command queue interface.
 
 #include "CommandQueueMT.hh"
 #include "DeviceMT.hh"
-#include "ContextMT.hh"
+#include "RenderContextMT.hh"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
 namespace Methane::Graphics
 {
 
-CommandQueue::Ptr CommandQueue::Create(Context& context)
+Ptr<CommandQueue> CommandQueue::Create(Context& context)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<CommandQueueMT>(static_cast<ContextBase&>(context));
+    return std::make_shared<CommandQueueMT>(dynamic_cast<ContextBase&>(context));
 }
 
 CommandQueueMT::CommandQueueMT(ContextBase& context)
-    : CommandQueueBase(context, true)
+    : CommandQueueBase(context)
     , m_mtl_command_queue([GetContextMT().GetDeviceMT().GetNativeDevice() newCommandQueue])
 {
     ITT_FUNCTION_TASK();
@@ -47,8 +47,6 @@ CommandQueueMT::CommandQueueMT(ContextBase& context)
 CommandQueueMT::~CommandQueueMT()
 {
     ITT_FUNCTION_TASK();
-    assert(!IsExecuting());
-
     [m_mtl_command_queue release];
 }
 
@@ -59,13 +57,24 @@ void CommandQueueMT::SetName(const std::string& name)
     CommandQueueBase::SetName(name);
 
     assert(m_mtl_command_queue != nil);
-    m_mtl_command_queue.label = MacOS::ConvertToNSType<std::string, NSString*>(name);
+    m_mtl_command_queue.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
 }
 
-ContextMT& CommandQueueMT::GetContextMT() noexcept
+IContextMT& CommandQueueMT::GetContextMT() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextMT&>(m_context);
+    return static_cast<IContextMT&>(GetContext());
+}
+
+RenderContextMT& CommandQueueMT::GetRenderContextMT()
+{
+    ITT_FUNCTION_TASK();
+    ContextBase& context = GetContext();
+    if (context.GetType() != Context::Type::Render)
+    {
+        throw std::runtime_error("Incompatible context type.");
+    }
+    return static_cast<RenderContextMT&>(context);
 }
 
 } // namespace Methane::Graphics

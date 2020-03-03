@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,19 +26,15 @@ DirectX 12 implementation of the render command list interface.
 #include "RenderStateDX.h"
 #include "RenderPassDX.h"
 #include "CommandQueueDX.h"
-#include "ContextDX.h"
 #include "DeviceDX.h"
 #include "ProgramDX.h"
-#include "ResourceDX.h"
-#include "TextureDX.h"
 #include "BufferDX.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #include <d3dx12.h>
-#include <pix.h>
-#include <nowide/convert.hpp>
 #include <cassert>
 
 namespace Methane::Graphics
@@ -59,68 +55,55 @@ static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primiti
     return D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
 }
 
-RenderCommandList::Ptr RenderCommandList::Create(CommandQueue& cmd_queue, RenderPass& render_pass)
+Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& cmd_queue, RenderPass& render_pass)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<RenderCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue), static_cast<RenderPassBase&>(render_pass));
 }
 
-RenderCommandList::Ptr RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
+Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<RenderCommandListDX>(static_cast<ParallelRenderCommandListBase&>(parallel_render_command_list));
 }
 
 RenderCommandListDX::RenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass)
-    : RenderCommandListBase(cmd_buffer, render_pass)
+    : CommandListDX<RenderCommandListBase>(cmd_buffer, render_pass)
 {
     ITT_FUNCTION_TASK();
-    Initialize();
 }
 
 RenderCommandListDX::RenderCommandListDX(ParallelRenderCommandListBase& parallel_render_command_list)
-    : RenderCommandListBase(parallel_render_command_list)
+    : CommandListDX<RenderCommandListBase>(parallel_render_command_list)
 {
     ITT_FUNCTION_TASK();
-    Initialize();
 }
 
-void RenderCommandListDX::Initialize()
-{
-    ITT_FUNCTION_TASK();
-
-    const wrl::ComPtr<ID3D12Device>& cp_device = GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice();
-    assert(!!cp_device);
-
-    ThrowIfFailed(cp_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_cp_command_allocator)));
-    ThrowIfFailed(cp_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_cp_command_allocator.Get(), nullptr, IID_PPV_ARGS(&m_cp_command_list)));
-    m_cp_command_list.As(&m_cp_command_list_4);
-}
-
-void RenderCommandListDX::ResetNative(const RenderState::Ptr& sp_render_state)
+void RenderCommandListDX::ResetNative(const Ptr<RenderState>& sp_render_state)
 {
     // Reset command list
-    if (!m_is_committed)
+    if (!IsCommitted())
         return;
 
-    m_is_committed = false;
-
-    ResetDrawState();
+    SetCommitted(false);
+    ResetCommandState();
 
     ID3D12PipelineState* p_dx_initial_state = sp_render_state ? static_cast<RenderStateDX&>(*sp_render_state).GetNativePipelineState().Get() : nullptr;
-    ThrowIfFailed(m_cp_command_allocator->Reset());
-    ThrowIfFailed(m_cp_command_list->Reset(m_cp_command_allocator.Get(), p_dx_initial_state));
+    ID3D12CommandAllocator& dx_cmd_allocator = GetNativeCommandAllocatorRef();
+    ThrowIfFailed(dx_cmd_allocator.Reset());
+    ThrowIfFailed(GetNativeCommandListRef().Reset(&dx_cmd_allocator, p_dx_initial_state));
 
     if (!sp_render_state)
         return;
 
-    m_draw_state.sp_render_state     = static_cast<RenderStateBase&>(*sp_render_state).GetPtr();
-    m_draw_state.render_state_groups = RenderState::Group::Program
-                                     | RenderState::Group::Rasterizer
-                                     | RenderState::Group::DepthStencil;
+    DrawingState& drawing_state = GetDrawingState();
+    drawing_state.p_render_state     = static_cast<RenderStateBase*>(sp_render_state.get());
+    drawing_state.render_state_groups = RenderState::Group::Program
+                                      | RenderState::Group::Rasterizer
+                                      | RenderState::Group::DepthStencil;
 }
 
-void RenderCommandListDX::Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group)
+void RenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
 
@@ -129,7 +112,7 @@ void RenderCommandListDX::Reset(const RenderState::Ptr& sp_render_state, const s
     RenderCommandListBase::Reset(sp_render_state, debug_group);
 
     RenderPassDX& pass_dx = GetPassDX();
-    if (m_is_parallel)
+    if (IsParallel())
     {
         pass_dx.SetNativeDescriptorHeaps(*this);
         pass_dx.SetNativeRenderTargets(*this);
@@ -140,38 +123,13 @@ void RenderCommandListDX::Reset(const RenderState::Ptr& sp_render_state, const s
     }
 }
 
-void RenderCommandListDX::SetName(const std::string& name)
-{
-    ITT_FUNCTION_TASK();
-
-    RenderCommandListBase::SetName(name);
-
-    assert(m_cp_command_list);
-    m_cp_command_list->SetName(nowide::widen(name).c_str());
-
-    assert(m_cp_command_allocator);
-    m_cp_command_allocator->SetName(nowide::widen(name + " allocator").c_str());
-}
-
-void RenderCommandListDX::PushDebugGroup(const std::string& name)
-{
-    ITT_FUNCTION_TASK();
-    PIXBeginEvent(m_cp_command_list.Get(), 0, nowide::widen(name).c_str());
-}
-
-void RenderCommandListDX::PopDebugGroup()
-{
-    ITT_FUNCTION_TASK();
-    PIXEndEvent(m_cp_command_list.Get());
-}
-
-void RenderCommandListDX::SetVertexBuffers(const Buffer::Refs& vertex_buffers)
+void RenderCommandListDX::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
 {
     ITT_FUNCTION_TASK();
 
     RenderCommandListBase::SetVertexBuffers(vertex_buffers);
 
-    if (!m_draw_state.flags.vertex_buffers_changed)
+    if (!GetDrawingState().flags.vertex_buffers_changed)
         return;
 
     std::vector<D3D12_VERTEX_BUFFER_VIEW> vertex_buffer_views;
@@ -183,8 +141,7 @@ void RenderCommandListDX::SetVertexBuffers(const Buffer::Refs& vertex_buffers)
         vertex_buffer_views.push_back(dx_vertex_buffer.GetNativeView());
     }
 
-    assert(m_cp_command_list);
-    m_cp_command_list->IASetVertexBuffers(0, static_cast<UINT>(vertex_buffer_views.size()), vertex_buffer_views.data());
+    GetNativeCommandListRef().IASetVertexBuffers(0, static_cast<UINT>(vertex_buffer_views.size()), vertex_buffer_views.data());
 }
 
 void RenderCommandListDX::DrawIndexed(Primitive primitive, Buffer& index_buffer,
@@ -201,18 +158,18 @@ void RenderCommandListDX::DrawIndexed(Primitive primitive, Buffer& index_buffer,
 
     RenderCommandListBase::DrawIndexed(primitive, index_buffer, index_count, start_index, start_vertex, instance_count, start_instance);
 
-    assert(m_cp_command_list);
-
-    if (m_draw_state.flags.primitive_type_changed)
+    ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
+    DrawingState& drawing_state = GetDrawingState();
+    if (drawing_state.flags.primitive_type_changed)
     {
         const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
-        m_cp_command_list->IASetPrimitiveTopology(primitive_topology);
+        dx_command_list.IASetPrimitiveTopology(primitive_topology);
     }
-    if (m_draw_state.flags.index_buffer_changed)
+    if (drawing_state.flags.index_buffer_changed)
     {
-        m_cp_command_list->IASetIndexBuffer(&dx_index_buffer.GetNativeView());
+        dx_command_list.IASetIndexBuffer(&dx_index_buffer.GetNativeView());
     }
-    m_cp_command_list->DrawIndexedInstanced(index_count, instance_count, start_index, start_vertex, start_instance);
+    dx_command_list.DrawIndexedInstanced(index_count, instance_count, start_index, start_vertex, start_instance);
 }
 
 void RenderCommandListDX::Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
@@ -222,38 +179,20 @@ void RenderCommandListDX::Draw(Primitive primitive, uint32_t vertex_count, uint3
 
     RenderCommandListBase::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
 
-    assert(m_cp_command_list);
-
-    if (m_draw_state.flags.primitive_type_changed)
+    ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
+    if (GetDrawingState().flags.primitive_type_changed)
     {
         const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
-        m_cp_command_list->IASetPrimitiveTopology(primitive_topology);
+        dx_command_list.IASetPrimitiveTopology(primitive_topology);
     }
-    m_cp_command_list->DrawInstanced(vertex_count, instance_count, start_vertex, start_instance);
+    dx_command_list.DrawInstanced(vertex_count, instance_count, start_vertex, start_instance);
 }
 
-void RenderCommandListDX::SetResourceBarriers(const ResourceBase::Barriers& resource_barriers)
+void RenderCommandListDX::Commit()
 {
     ITT_FUNCTION_TASK();
 
-    if (resource_barriers.empty())
-        return;
-
-    std::vector<D3D12_RESOURCE_BARRIER> dx_resource_barriers;
-    for (const ResourceBase::Barrier& resource_barrier : resource_barriers)
-    {
-        dx_resource_barriers.push_back(ResourceDX::GetNativeResourceBarrier(resource_barrier));
-    }
-
-    assert(m_cp_command_list);
-    m_cp_command_list->ResourceBarrier(static_cast<UINT>(dx_resource_barriers.size()), dx_resource_barriers.data());
-}
-
-void RenderCommandListDX::Commit(bool present_drawable)
-{
-    ITT_FUNCTION_TASK();
-
-    if (!m_is_parallel)
+    if (!IsParallel())
     {
         RenderPassDX& pass_dx = GetPassDX();
         if (pass_dx.IsBegun())
@@ -262,32 +201,13 @@ void RenderCommandListDX::Commit(bool present_drawable)
         }
     }
 
-    RenderCommandListBase::Commit(present_drawable);
-
-    m_cp_command_list->Close();
-    m_is_committed = true;
-}
-
-CommandQueueDX& RenderCommandListDX::GetCommandQueueDX()
-{
-    ITT_FUNCTION_TASK();
-    return static_cast<CommandQueueDX&>(GetCommandQueueBase());
+    CommandListDX<RenderCommandListBase>::Commit();
 }
 
 RenderPassDX& RenderCommandListDX::GetPassDX()
 {
     ITT_FUNCTION_TASK();
     return static_cast<RenderPassDX&>(GetPass());
-}
-
-void RenderCommandListDX::Execute(uint32_t frame_index)
-{
-    ITT_FUNCTION_TASK();
-    
-    RenderCommandListBase::Execute(frame_index);
-
-    // NOTE: In DirectX there's no need for tracking command list completion, so it's completed right away
-    Complete(frame_index);
 }
 
 } // namespace Methane::Graphics

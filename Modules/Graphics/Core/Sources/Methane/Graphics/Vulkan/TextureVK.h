@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,11 +28,9 @@ Vulkan implementation of the texture interface.
 namespace Methane::Graphics
 {
 
-class TextureVK : public TextureBase
+class TextureVK final : public TextureBase
 {
 public:
-    using Ptr = std::shared_ptr<TextureVK>;
-
     TextureVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
     ~TextureVK() override;
 

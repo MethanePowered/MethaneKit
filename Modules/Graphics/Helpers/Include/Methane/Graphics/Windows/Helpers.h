@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ inline void ThrowIfFailed(HRESULT hr)
 {
     if (FAILED(hr))
     {
-        std::string error_msg = "Critical runtime error has occured: ";
+        std::string error_msg = "Critical runtime error has occurred: ";
         error_msg += std::system_category().message(hr);
         OutputDebugStringA((error_msg + "\n").c_str());
         throw std::runtime_error(error_msg);
@@ -59,7 +59,7 @@ inline void ThrowIfFailed(HRESULT hr, wrl::ComPtr<ID3DBlob>& error_blob)
 {
     if (FAILED(hr))
     {
-        std::string error_msg = "Critical runtime error has occured: ";
+        std::string error_msg = "Critical runtime error has occurred: ";
         error_msg += std::system_category().message(hr);
         if (error_blob.Get())
         {

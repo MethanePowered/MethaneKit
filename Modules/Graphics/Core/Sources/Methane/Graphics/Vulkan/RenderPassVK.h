@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,12 +28,12 @@ Vulkan implementation of the render pass interface.
 namespace Methane::Graphics
 {
 
-class ContextVK;
+struct IContextVK;
 
-class RenderPassVK : public RenderPassBase
+class RenderPassVK final : public RenderPassBase
 {
 public:
-    RenderPassVK(ContextBase& context, const Settings& settings);
+    RenderPassVK(RenderContextBase& context, const Settings& settings);
 
     // RenderPass interface
     void Update(const Settings& settings) override;
@@ -41,7 +41,7 @@ public:
     void Reset();
 
 protected:
-    ContextVK& GetContextVK() noexcept;
+    IContextVK& GetContextVK() noexcept;
 };
 
 } // namespace Methane::Graphics

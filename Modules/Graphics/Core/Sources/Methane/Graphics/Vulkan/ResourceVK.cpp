@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,7 +24,8 @@ Vulkan implementation of the resource interface.
 #include "ResourceVK.h"
 #include "ContextVK.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
@@ -33,7 +34,7 @@ struct ResourceContainerVK
 {
 };
 
-ResourceBase::ReleasePool::Ptr ResourceBase::ReleasePool::Create()
+Ptr<ResourceBase::ReleasePool> ResourceBase::ReleasePool::Create()
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<ResourceVK::ReleasePoolVK>();
@@ -63,10 +64,10 @@ ResourceVK::ResourceVK(Type type, Usage::Mask usage_mask, ContextBase& context, 
     ITT_FUNCTION_TASK();
 }
 
-ContextVK& ResourceVK::GetContextVK() noexcept
+IContextVK& ResourceVK::GetContextVK() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextVK&>(m_context);
+    return static_cast<IContextVK&>(GetContext());
 }
 
 } // namespace Methane::Graphics

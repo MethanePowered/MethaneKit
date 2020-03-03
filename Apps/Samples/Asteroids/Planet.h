@@ -24,7 +24,7 @@ Planet rendering primitive
 #pragma once
 
 #include <Methane/Graphics/MeshBuffers.hpp>
-#include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/Camera.h>
 #include <Methane/Graphics/RenderState.h>
 #include <Methane/Graphics/Buffer.h>
@@ -32,6 +32,7 @@ Planet rendering primitive
 #include <Methane/Graphics/Sampler.h>
 #include <Methane/Graphics/MathTypes.h>
 #include <Methane/Graphics/Types.h>
+#include <Methane/Graphics/Mesh.h>
 
 #include <memory>
 
@@ -43,8 +44,6 @@ namespace gfx = Graphics;
 class Planet
 {
 public:
-    using Ptr = std::shared_ptr<Planet>;
-
     struct Settings
     {
         const gfx::Camera& view_camera;
@@ -66,9 +65,9 @@ public:
         SHADER_FIELD_ALIGN gfx::Matrix44f model_matrix;
     };
 
-    Planet(gfx::Context& context, gfx::ImageLoader& image_loader, const Settings& settings);
+    Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings);
 
-    gfx::Program::ResourceBindings::Ptr CreateResourceBindings(const gfx::Buffer::Ptr& sp_constants_buffer, const gfx::Buffer::Ptr& sp_uniforms_buffer);
+    Ptr<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& sp_constants_buffer, const Ptr<gfx::Buffer>& sp_uniforms_buffer);
     void Resize(const gfx::FrameSize& frame_size);
     bool Update(double elapsed_seconds, double delta_seconds);
     void Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings);
@@ -76,11 +75,26 @@ public:
 private:
     using TexturedMeshBuffers = gfx::TexturedMeshBuffers<Uniforms>;
 
+    struct Vertex
+    {
+        gfx::Mesh::Position position;
+        gfx::Mesh::Normal   normal;
+        gfx::Mesh::TexCoord texcoord;
+
+        inline static const gfx::Mesh::VertexLayout layout = {
+            gfx::Mesh::VertexField::Position,
+            gfx::Mesh::VertexField::Normal,
+            gfx::Mesh::VertexField::TexCoord,
+        };
+    };
+
+    Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings, gfx::BaseMesh<Vertex> mesh);
+
     Settings                    m_settings;
-    gfx::Context&               m_context;
+    gfx::RenderContext&         m_context;
     TexturedMeshBuffers         m_mesh_buffers;
-    gfx::Sampler::Ptr           m_sp_texture_sampler;
-    gfx::RenderState::Ptr       m_sp_state;
+    Ptr<gfx::Sampler>           m_sp_texture_sampler;
+    Ptr<gfx::RenderState>       m_sp_state;
 };
 
 } // namespace Methane::Graphics

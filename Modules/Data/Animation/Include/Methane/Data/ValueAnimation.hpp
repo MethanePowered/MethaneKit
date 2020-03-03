@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ Abstract value animation based on time with an update lambda-function.
 
 #include "Animation.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <functional>
 
@@ -62,16 +62,18 @@ public:
     bool Update() override
     {
         ITT_FUNCTION_TASK();
-        if (!m_is_running)
+        if (GetState() != State::Running)
             return false;
 
         const double elapsed_seconds = GetElapsedSecondsD();
         const double delta_seconds = elapsed_seconds - m_prev_elapsed_seconds;
-        m_is_running = elapsed_seconds < m_duration_sec && 
-                       m_update_function(m_value, m_start_value, elapsed_seconds, delta_seconds);
+        if (IsTimeOver() || !m_update_function(m_value, m_start_value, elapsed_seconds, delta_seconds))
+        {
+            Stop();
+        }
         m_prev_elapsed_seconds = elapsed_seconds;
 
-        return m_is_running;
+        return GetState() == State::Running;
     }
 
 private:

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,93 +24,38 @@ DirectX 12 implementation of the shader interface.
 #pragma once
 
 #include <Methane/Graphics/ShaderBase.h>
+#include <Methane/Data/Chunk.h>
 
 #include "DescriptorHeapDX.h"
-#include "ResourceDX.h"
 
 #include <wrl.h>
 #include <d3d12.h>
 #include <d3dx12.h>
 #include <d3d12shader.h>
 
-#include <memory>
-
 namespace Methane::Graphics
 {
 
 namespace wrl = Microsoft::WRL;
 
-class ContextDX;
+struct IContextDX;
 class ProgramDX;
 
 class ShaderDX final : public ShaderBase
 {
 public:
-    class ResourceBindingDX : public ResourceBindingBase
-    {
-    public:
-        enum class Type : uint32_t
-        {
-            DescriptorTable = 0,
-            ConstantBufferView,
-            ShaderResourceView,
-        };
-
-        struct Settings
-        {
-            ResourceBindingBase::Settings base;
-            Type                          type;
-            D3D_SHADER_INPUT_TYPE         input_type;
-            uint32_t                      point;
-            uint32_t                      space;
-        };
-
-        struct DescriptorRange
-        {
-            DescriptorHeap::Type heap_type = DescriptorHeap::Type::Undefined;
-            uint32_t             offset    = 0;
-            uint32_t             count     = 0;
-        };
-
-        ResourceBindingDX(ContextBase& context, const Settings& settings);
-        ResourceBindingDX(const ResourceBindingDX& other);
-
-        // ResourceBinding interface
-        void SetResourceLocations(const Resource::Locations& resource_locations) override;
-        bool IsAddressable() const override { return m_settings_dx.type != Type::DescriptorTable; }
-
-        const Settings&                GetSettings() const noexcept              { return m_settings_dx; }
-        uint32_t                       GetRootParameterIndex() const noexcept    { return m_root_parameter_index; }
-        const DescriptorRange&         GetDescriptorRange() const noexcept       { return m_descriptor_range; }
-        const ResourceDX::LocationsDX& GetResourceLocationsDX() const noexcept   { return m_resource_locations_dx; }
-
-        void SetRootParameterIndex(uint32_t root_parameter_index)                { m_root_parameter_index = root_parameter_index; }
-        void SetDescriptorRange(const DescriptorRange& descriptor_range);
-        void SetDescriptorHeapReservation(const DescriptorHeap::Reservation* p_descriptor_heap_reservation) 
-        { m_p_descriptor_heap_reservation = p_descriptor_heap_reservation; }
-
-    protected:
-        ContextDX& GetContextDX();
-
-        const Settings                     m_settings_dx;
-        uint32_t                           m_root_parameter_index = std::numeric_limits<uint32_t>::max();;
-        DescriptorRange                    m_descriptor_range;
-        const DescriptorHeap::Reservation* m_p_descriptor_heap_reservation  = nullptr;
-        ResourceDX::LocationsDX            m_resource_locations_dx;
-    };
-
     ShaderDX(Type type, ContextBase& context, const Settings& settings);
 
-    // ShaderBase
-    ResourceBindings GetResourceBindings(const std::set<std::string>& constant_argument_names,
-                                         const std::set<std::string>& addressable_argument_names) const override;
+    // ShaderBase overrides
+    ArgumentBindings GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const override;
 
-    const wrl::ComPtr<ID3DBlob>& GetNativeByteCode() const noexcept { return m_cp_byte_code; }
+    const Data::Chunk*                    GetNativeByteCode() const noexcept { return m_sp_byte_code_chunk.get(); }
     std::vector<D3D12_INPUT_ELEMENT_DESC> GetNativeProgramInputLayout(const ProgramDX& program) const;
 
-protected:
-    ContextDX& GetContextDX();
+private:
+    IContextDX& GetContextDX() noexcept;
 
+    UniquePtr<Data::Chunk>              m_sp_byte_code_chunk;
     wrl::ComPtr<ID3DBlob>               m_cp_byte_code;
     wrl::ComPtr<ID3D12ShaderReflection> m_cp_reflection;
 };

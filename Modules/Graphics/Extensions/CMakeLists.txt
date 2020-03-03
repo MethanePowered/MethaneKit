@@ -36,13 +36,14 @@ add_library(${TARGET} STATIC
     ${SOURCES}
 )
 
-add_methane_shaders(${TARGET} "${HLSL_SOURCES}")
+add_methane_shaders(${TARGET} "${HLSL_SOURCES}" "6_0")
 add_methane_embedded_textures(${TARGET} "${IMAGES_DIR}" "${TEXTURES}")
 
 target_link_libraries(${TARGET}
+    MethaneCommonPrimitives
     MethanePlatformUtils
     MethaneGraphicsCore
-    MethaneDataInstrumentation
+    MethaneInstrumentation
 )
 
 if (METHANE_USE_OPEN_IMAGE_IO)

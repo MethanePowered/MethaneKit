@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ namespace Methane { namespace Platform { class AppMac; } }
 @property (nonatomic, strong, nonnull) IBOutlet AppViewController* viewController;
 @property (nonatomic, readonly, nullable) NSWindow* window;
 
-- (id _Nullable) initWithApp : (Methane::Platform::AppMac* _Nonnull) p_app andSettings : (Methane::Platform::AppBase::Settings* _Nonnull) p_settings;
+- (id _Nullable) initWithApp : (Methane::Platform::AppMac* _Nonnull) p_app andSettings : (const Methane::Platform::AppBase::Settings* _Nonnull) p_settings;
 - (void) run;
 - (void) alert : (nonnull NSString*) ns_title withInformation: (nonnull NSString*) ns_info andStyle: (NSAlertStyle) ns_alert_style;
 

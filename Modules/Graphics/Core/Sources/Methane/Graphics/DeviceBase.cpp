@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ Base implementation of the device interface.
 
 #include "DeviceBase.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <sstream>
 #include <cassert>
@@ -88,16 +88,16 @@ std::string DeviceBase::ToString() const noexcept
     return ss.str();
 }
 
-Device::Ptr SystemBase::GetNextGpuDevice(const Device& device) const
+Ptr<Device> SystemBase::GetNextGpuDevice(const Device& device) const
 {
     ITT_FUNCTION_TASK();
-    Device::Ptr sp_next_device;
+    Ptr<Device> sp_next_device;
     
     if (m_devices.empty())
         return sp_next_device;
     
     auto device_it = std::find_if(m_devices.begin(), m_devices.end(),
-                                  [&device](const Device::Ptr& sp_system_device)
+                                  [&device](const Ptr<Device>& sp_system_device)
                                   { return std::addressof(device) == sp_system_device.get(); });
     if (device_it == m_devices.end())
         return sp_next_device;
@@ -105,14 +105,14 @@ Device::Ptr SystemBase::GetNextGpuDevice(const Device& device) const
     return device_it == m_devices.end() - 1 ? m_devices.front() : *(device_it + 1);
 }
 
-Device::Ptr SystemBase::GetSoftwareGpuDevice() const
+Ptr<Device> SystemBase::GetSoftwareGpuDevice() const
 {
     ITT_FUNCTION_TASK();
     auto sw_device_it = std::find_if(m_devices.begin(), m_devices.end(),
-        [](const Device::Ptr& sp_system_device)
+        [](const Ptr<Device>& sp_system_device)
         { return sp_system_device && sp_system_device->IsSoftwareAdapter(); });
 
-    return sw_device_it != m_devices.end() ? *sw_device_it : Device::Ptr();
+    return sw_device_it != m_devices.end() ? *sw_device_it : Ptr<Device>();
 }
 
 std::string SystemBase::ToString() const noexcept
@@ -121,7 +121,7 @@ std::string SystemBase::ToString() const noexcept
     std::stringstream ss;
     ss << m_devices.size() << " system graphics device"
        << (m_devices.size() > 1 ? "s:" : ":") << std::endl;
-    for(const Device::Ptr& sp_device : m_devices)
+    for(const Ptr<Device>& sp_device : m_devices)
     {
         assert(sp_device);
         if (!sp_device) continue;

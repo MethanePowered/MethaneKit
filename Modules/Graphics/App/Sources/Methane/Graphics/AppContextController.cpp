@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@ Graphics context controller for switching parameters in runtime.
 
 #include <Methane/Graphics/AppContextController.h>
 
-#include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/Device.h>
 #include <Methane/Platform/Utils.h>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 
@@ -35,7 +35,7 @@ using namespace Methane::Platform;
 namespace Methane::Graphics
 {
 
-AppContextController::AppContextController(Context& context, const ActionByKeyboardState& action_by_keyboard_state)
+AppContextController::AppContextController(RenderContext& context, const ActionByKeyboardState& action_by_keyboard_state)
     : Controller("GRAPHICS SETTINGS")
     , Keyboard::ActionControllerBase<AppContextAction>(action_by_keyboard_state, {})
     , m_context(context)
@@ -54,10 +54,6 @@ void AppContextController::OnKeyboardStateAction(AppContextAction action)
     ITT_FUNCTION_TASK();
     switch (action)
     {
-        case AppContextAction::SwitchFullScreen:
-            m_context.SetFullScreen(!m_context.GetSettings().is_full_screen);
-            break;
-
         case AppContextAction::SwitchVSync:
             m_context.SetVSyncEnabled(!m_context.GetSettings().vsync_enabled);
             break;
@@ -72,7 +68,7 @@ void AppContextController::OnKeyboardStateAction(AppContextAction action)
 
         case AppContextAction::SwitchDevice:
         {
-            const Device::Ptr sp_next_device = System::Get().GetNextGpuDevice(m_context.GetDevice());
+            const Ptr<Device> sp_next_device = System::Get().GetNextGpuDevice(m_context.GetDevice());
             if (sp_next_device)
             {
                 m_context.Reset(*sp_next_device);
@@ -89,7 +85,6 @@ std::string AppContextController::GetKeyboardActionName(AppContextAction action)
     switch (action)
     {
         case AppContextAction::None:                            return "none";
-        case AppContextAction::SwitchFullScreen:                return "switch full-screen mode";
         case AppContextAction::SwitchVSync:                     return "switch vertical synchronization";
         case AppContextAction::SwitchDevice:                    return "switch device used for rendering";
         case AppContextAction::AddFrameBufferToSwapChain:       return "add frame buffer to swap-chain";

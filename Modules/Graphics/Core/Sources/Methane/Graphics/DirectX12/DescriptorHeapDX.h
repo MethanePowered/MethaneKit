@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -33,9 +33,9 @@ namespace Methane::Graphics
 
 namespace wrl = Microsoft::WRL;
 
-class ContextDX;
+struct IContextDX;
 
-class DescriptorHeapDX : public DescriptorHeap
+class DescriptorHeapDX final : public DescriptorHeap
 {
 public:
     DescriptorHeapDX(ContextBase& context, const Settings& settings);
@@ -43,15 +43,16 @@ public:
 
     ID3D12DescriptorHeap*       GetNativeDescriptorHeap() noexcept           { return m_cp_descriptor_heap.Get();  }
     D3D12_DESCRIPTOR_HEAP_TYPE  GetNativeDescriptorHeapType() const noexcept { return m_descriptor_heap_type; }
-    D3D12_CPU_DESCRIPTOR_HANDLE GetNativeCPUDescriptorHandle(uint32_t descriptor_index) const noexcept;
-    D3D12_GPU_DESCRIPTOR_HANDLE GetNativeGPUDescriptorHandle(uint32_t descriptor_index) const noexcept;
+    D3D12_CPU_DESCRIPTOR_HANDLE GetNativeCpuDescriptorHandle(uint32_t descriptor_index) const noexcept;
+    D3D12_GPU_DESCRIPTOR_HANDLE GetNativeGpuDescriptorHandle(uint32_t descriptor_index) const noexcept;
 
     // DescriptorHeap interface
     void Allocate() override;
 
 protected:
-    ContextDX& GetContextDX();
+    IContextDX& GetContextDX() noexcept;
 
+private:
     D3D12_DESCRIPTOR_HEAP_TYPE        m_descriptor_heap_type;
     uint32_t                          m_descriptor_size;
     wrl::ComPtr<ID3D12DescriptorHeap> m_cp_descriptor_heap;

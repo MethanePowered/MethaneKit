@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,11 +21,12 @@ Base implementation of the command list interface.
 
 ******************************************************************************/
 
-#include "CommandListBase.h"
-#include "ContextBase.h"
+#include "DeviceBase.h"
+#include "CommandQueueBase.h"
+#include "ProgramBindingsBase.h"
 #include "ResourceBase.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #ifdef COMMAND_EXECUTION_LOGGING
 #include <Methane/Platform/Utils.h>
@@ -49,16 +50,52 @@ std::string CommandListBase::GetStateName(State state)
 }
 
 CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
-    : m_sp_command_queue(command_queue.GetPtr())
-    , m_type(type)
+    : m_type(type)
+    , m_sp_command_queue(command_queue.GetPtr())
+    , m_sp_command_state(CommandState::Create(type))
 {
     ITT_FUNCTION_TASK();
 }
 
-void CommandListBase::Commit(bool /*present_drawable*/)
+void CommandListBase::Reset(const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
-    std::lock_guard<std::mutex> guard(m_state_mutex);
+    if (m_state != State::Pending)
+        throw std::logic_error("Can not reset command list in committed or executing state.");
+
+    // ResetCommandState() must be called from the top-most overridden Reset method
+
+    const bool debug_group_changed = m_open_debug_group != debug_group;
+
+    if (!m_open_debug_group.empty() && debug_group_changed)
+    {
+        PopDebugGroup();
+    }
+
+    if (!debug_group.empty() && debug_group_changed)
+    {
+        PushDebugGroup(debug_group);
+    }
+
+    m_open_debug_group = debug_group;
+}
+
+void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior)
+{
+    ITT_FUNCTION_TASK();
+    if (m_state != State::Pending)
+        throw std::logic_error("Can not set program bindings on committed or executing command list.");
+
+    ProgramBindingsBase& program_bindings_base = static_cast<ProgramBindingsBase&>(program_bindings);
+    program_bindings_base.Apply(*this, apply_behavior);
+    
+    assert(!!m_sp_command_state);
+    m_sp_command_state->p_program_bindings = &program_bindings_base;
+}
+
+void CommandListBase::Commit()
+{
+    ITT_FUNCTION_TASK();
 
     if (m_state != State::Pending)
     {
@@ -72,24 +109,16 @@ void CommandListBase::Commit(bool /*present_drawable*/)
     m_committed_frame_index = GetCurrentFrameIndex();
     m_state = State::Committed;
 
-    if (m_debug_group_opened)
+    if (!m_open_debug_group.empty())
     {
         PopDebugGroup();
-        m_debug_group_opened = false;
-    }
-
-    // Keep command list from destruction until it's execution is completed
-    // if weak_from_this is expired, the command list was created explicitly, without make_shared
-    if (!weak_from_this().expired())
-    {
-        m_sp_self = shared_from_this();
+        m_open_debug_group = "";
     }
 }
 
 void CommandListBase::Execute(uint32_t frame_index)
 {
     ITT_FUNCTION_TASK();
-    std::lock_guard<std::mutex> guard(m_state_mutex);
 
     if (m_state != State::Committed)
     {
@@ -111,50 +140,38 @@ void CommandListBase::Execute(uint32_t frame_index)
 void CommandListBase::Complete(uint32_t frame_index)
 {
     ITT_FUNCTION_TASK();
+    if (m_state != State::Executing)
     {
-        std::lock_guard<std::mutex> guard(m_state_mutex);
-
-        if (m_state != State::Executing)
-        {
-            throw std::logic_error("Command list \"" + GetName() + "\" in " + GetStateName(m_state) + " state can not be completed. Only Executing command lists can be completed.");
-        }
-
-        if (m_committed_frame_index != frame_index)
-        {
-            throw std::logic_error("Command list \"" + GetName() + "\" committed on frame " + std::to_string(m_committed_frame_index) + " can not be completed on frame " + std::to_string(frame_index));
-        }
-
-#ifdef COMMAND_EXECUTION_LOGGING
-        Platform::PrintToDebugOutput("CommandList \"" + GetName() + "\" was completed on frame " + std::to_string(frame_index));
-#endif
-
-        m_state = State::Pending;
+        throw std::logic_error("Command list \"" + GetName() + "\" in " + GetStateName(m_state) + " state can not be completed. Only Executing command lists can be completed.");
     }
 
-    GetCommandQueueBase().OnCommandListCompleted(*this, frame_index);
+    if (m_committed_frame_index != frame_index)
+    {
+        throw std::logic_error("Command list \"" + GetName() + "\" committed on frame " + std::to_string(m_committed_frame_index) + " can not be completed on frame " + std::to_string(frame_index));
+    }
 
-    // Release command list shared pointer, so it can be deleted externally
-    m_sp_self.reset();
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("CommandList \"" + GetName() + "\" was completed on frame " + std::to_string(frame_index));
+#endif
+
+    m_state = State::Pending;
 }
 
 bool CommandListBase::IsExecutingOnAnyFrame() const
 {
     ITT_FUNCTION_TASK();
-    std::lock_guard<std::mutex> guard(m_state_mutex);
     return m_state == State::Executing;
 }
 
 bool CommandListBase::IsCommitted(uint32_t frame_index) const
 {
     ITT_FUNCTION_TASK();
-    std::lock_guard<std::mutex> guard(m_state_mutex);
     return m_state == State::Committed && m_committed_frame_index == frame_index;
 }
 
 bool CommandListBase::IsExecuting(uint32_t frame_index) const
 {
     ITT_FUNCTION_TASK();
-    std::lock_guard<std::mutex> guard(m_state_mutex);
     return m_state == State::Executing && m_committed_frame_index == frame_index;
 }
 
@@ -168,27 +185,15 @@ CommandQueue& CommandListBase::GetCommandQueue()
 uint32_t CommandListBase::GetCurrentFrameIndex() const
 {
     ITT_FUNCTION_TASK();
-    return GetCommandQueueBase().GetContext().GetFrameBufferIndex();
+    return  GetCommandQueueBase().GetCurrentFrameBufferIndex();
 }
 
-void CommandListBase::ResetCommandState()
-{
-    m_command_state.sp_resource_bindings.reset();
-}
-
-void CommandListBase::SetResourceBindings(Program::ResourceBindings& resource_bindings, Program::ResourceBindings::ApplyBehavior::Mask apply_behavior)
-{
-    ITT_FUNCTION_TASK();
-    resource_bindings.Apply(*this, apply_behavior);
-    m_command_state.sp_resource_bindings = static_cast<ProgramBase::ResourceBindingsBase&>(resource_bindings).GetPtr();
-}
-
-void CommandListBase::SetResourceTransitionBarriers(const Resource::Refs& resources, ResourceBase::State state_before, ResourceBase::State state_after)
+void CommandListBase::SetResourceTransitionBarriers(const Refs<Resource>& resources, ResourceBase::State state_before, ResourceBase::State state_after)
 {
     ITT_FUNCTION_TASK();
     ResourceBase::Barriers resource_barriers;
     resource_barriers.reserve(resources.size());
-    for (const Resource::Ref& resource_ref : resources)
+    for (const Ref<Resource>& resource_ref : resources)
     {
         resource_barriers.push_back({
             ResourceBase::Barrier::Type::Transition,
@@ -198,6 +203,26 @@ void CommandListBase::SetResourceTransitionBarriers(const Resource::Refs& resour
         });
     }
     SetResourceBarriers(resource_barriers);
+}
+
+void CommandListBase::ResetCommandState()
+{
+    ITT_FUNCTION_TASK();
+    m_sp_command_state = CommandState::Create(m_type);
+}
+
+CommandListBase::CommandState& CommandListBase::GetCommandState()
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_sp_command_state);
+    return *m_sp_command_state;
+}
+
+const CommandListBase::CommandState& CommandListBase::GetCommandState() const
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_sp_command_state);
+    return *m_sp_command_state;
 }
 
 CommandQueueBase& CommandListBase::GetCommandQueueBase()

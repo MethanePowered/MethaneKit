@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ namespace Methane::Graphics
 {
 
 class RenderPassVK;
-class ContextVK;
+struct IContextVK;
 
 class CommandQueueVK final : public CommandQueueBase
 {
@@ -40,9 +40,9 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
     
-    ContextVK& GetContextVK() noexcept;
+    IContextVK& GetContextVK() noexcept;
 
-protected:
+private:
     void Reset();
 };
 

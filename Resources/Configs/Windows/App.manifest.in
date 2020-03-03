@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<asmv1:assembly manifestVersion="1.0"
+                xmlns="urn:schemas-microsoft-com:asm.v1"
+                xmlns:asmv1="urn:schemas-microsoft-com:asm.v1"
+                xmlns:asmv2="urn:schemas-microsoft-com:asm.v2"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xmlns:asmv3="urn:schemas-microsoft-com:asm.v3">
+    <assemblyIdentity version="@METHANE_APP_LONG_VERSION@" name="@METHANE_APP_EXECUTABLE@"/>
+    <description>@METHANE_APP_DESCRIPTION@</description>
+    <asmv3:application>
+        <asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">
+            <dpiAware>true</dpiAware>
+        </asmv3:windowsSettings>
+    </asmv3:application>
+    <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+        <application>
+            <!-- Windows 10 -->
+            <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"/>
+        </application>
+    </compatibility>
+</asmv1:assembly>

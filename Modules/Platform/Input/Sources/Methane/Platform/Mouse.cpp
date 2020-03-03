@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ Platform abstraction of mouse events.
 ******************************************************************************/
 
 #include <Methane/Platform/Mouse.h>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <map>
 #include <sstream>
@@ -31,8 +31,8 @@ Platform abstraction of mouse events.
 namespace Methane::Platform::Mouse
 {
 
-static const std::string s_buttons_separator = "+";
-static const std::string s_properties_separator = "+";
+static const std::string g_buttons_separator    = "+";
+static const std::string g_properties_separator = "+";
 
 std::string ButtonConverter::ToString() const
 {
@@ -88,7 +88,7 @@ std::string State::Property::ToString(State::Property::Mask properties_mask)
 
         if (!first_property)
         {
-            ss << s_properties_separator;
+            ss << g_properties_separator;
         }
         ss << ToString(property_value);
         first_property = false;
@@ -178,7 +178,7 @@ std::string State::ToString() const
 {
     ITT_FUNCTION_TASK();
     std::stringstream ss;
-    ss << "(" << m_position.x() << " x " << m_position.y() << ") ";
+    ss << "(" << m_position.GetX() << " x " << m_position.GetY() << ") ";
     
     bool is_first_button = true;
     for (size_t button_index = 0; button_index < m_button_states.size(); ++button_index)
@@ -188,7 +188,7 @@ std::string State::ToString() const
         
         if (!is_first_button)
         {
-            ss << s_buttons_separator;
+            ss << g_buttons_separator;
         }
         
         const Button button = static_cast<Button>(button_index);
@@ -196,9 +196,9 @@ std::string State::ToString() const
         is_first_button = false;
     }
 
-    if (m_scroll.x() > 0.1f || m_scroll.y() > 0.1f)
+    if (m_scroll.GetX() > 0.1f || m_scroll.GetY() > 0.1f)
     {
-        ss << ", scroll=(" << m_scroll.x() << " x " << m_scroll.y() << ")";
+        ss << ", scroll=(" << m_scroll.GetX() << " x " << m_scroll.GetY() << ")";
     }
 
     ss << ", " << (m_in_window ? "in window" : "out of window");

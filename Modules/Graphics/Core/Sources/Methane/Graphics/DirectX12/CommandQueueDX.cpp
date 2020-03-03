@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,29 +22,29 @@ DirectX 12 implementation of the command queue interface.
 ******************************************************************************/
 
 #include "CommandQueueDX.h"
-#include "ContextDX.h"
 #include "DeviceDX.h"
+#include "BlitCommandListDX.h"
 #include "RenderCommandListDX.h"
 #include "ParallelRenderCommandListDX.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #include <nowide/convert.hpp>
-
 #include <cassert>
 
 namespace Methane::Graphics
 {
 
-CommandQueue::Ptr CommandQueue::Create(Context& context)
+Ptr<CommandQueue> CommandQueue::Create(Context& context)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<CommandQueueDX>(static_cast<ContextBase&>(context));
+    return std::make_shared<CommandQueueDX>(dynamic_cast<ContextBase&>(context));
 }
 
 CommandQueueDX::CommandQueueDX(ContextBase& context)
-    : CommandQueueBase(context, false)
+    : CommandQueueBase(context)
 {
     ITT_FUNCTION_TASK();
 
@@ -66,7 +66,7 @@ void CommandQueueDX::SetName(const std::string& name)
     m_cp_command_queue->SetName(nowide::widen(name).c_str());
 }
 
-void CommandQueueDX::Execute(const CommandList::Refs& command_lists)
+void CommandQueueDX::Execute(const Refs<CommandList>& command_lists)
 {
     ITT_FUNCTION_TASK();
     assert(!command_lists.empty());
@@ -79,22 +79,27 @@ void CommandQueueDX::Execute(const CommandList::Refs& command_lists)
     m_cp_command_queue->ExecuteCommandLists(static_cast<UINT>(dx_command_lists.size()), dx_command_lists.data());
 }
 
-CommandQueueDX::D3D12CommandLists CommandQueueDX::GetNativeCommandLists(const CommandList::Refs& command_list_refs)
+CommandQueueDX::D3D12CommandLists CommandQueueDX::GetNativeCommandLists(const Refs<CommandList>& command_list_refs)
 {
     ITT_FUNCTION_TASK();
     D3D12CommandLists dx_command_lists;
     dx_command_lists.reserve(command_list_refs.size());
-    for (const CommandList::Ref& command_list_ref : command_list_refs)
+    for (const Ref<CommandList>& command_list_ref : command_list_refs)
     {
         CommandListBase& command_list = dynamic_cast<CommandListBase&>(command_list_ref.get());
         switch (command_list.GetType())
         {
-        case CommandList::Type::RenderCommandList:
+        case CommandList::Type::Blit:
         {
-            dx_command_lists.push_back(static_cast<RenderCommandListDX&>(command_list).GetNativeCommandList().Get());
+            dx_command_lists.push_back(&static_cast<BlitCommandListDX&>(command_list).GetNativeCommandList());
         } break;
 
-        case CommandList::Type::ParallelRenderCommandList:
+        case CommandList::Type::Render:
+        {
+            dx_command_lists.push_back(&static_cast<RenderCommandListDX&>(command_list).GetNativeCommandList());
+        } break;
+
+        case CommandList::Type::ParallelRender:
         {
             const D3D12CommandLists dx_parallel_command_lists = static_cast<ParallelRenderCommandListDX&>(command_list).GetNativeCommandLists();
             dx_command_lists.insert(dx_command_lists.end(), dx_parallel_command_lists.begin(), dx_parallel_command_lists.end());
@@ -104,10 +109,17 @@ CommandQueueDX::D3D12CommandLists CommandQueueDX::GetNativeCommandLists(const Co
     return dx_command_lists;
 }
 
-ContextDX& CommandQueueDX::GetContextDX()
+IContextDX& CommandQueueDX::GetContextDX() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextDX&>(m_context);
+    return static_cast<IContextDX&>(GetContext());
+}
+
+ID3D12CommandQueue& CommandQueueDX::GetNativeCommandQueue()
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_cp_command_queue);
+    return *m_cp_command_queue.Get();
 }
 
 } // namespace Methane::Graphics

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,7 +22,9 @@ Base application controller providing commands like app close and help.
 ******************************************************************************/
 
 #include <Methane/Platform/AppController.h>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Platform/Utils.h>
+#include <Methane/Instrumentation.h>
+#include <Methane/Version.h>
 
 #include <sstream>
 #include <cassert>
@@ -30,12 +32,10 @@ Base application controller providing commands like app close and help.
 namespace Methane::Platform
 {
 
-AppController::AppController(AppBase& application, const std::string& application_help, bool show_command_line_help,
-                             const ActionByKeyboardState& action_by_keyboard_state)
+AppController::AppController(AppBase& application, const std::string& application_help, const ActionByKeyboardState& action_by_keyboard_state)
     : Controller(application_help)
-    , Keyboard::ActionControllerBase<AppHelpAction>(action_by_keyboard_state, {})
+    , Keyboard::ActionControllerBase<AppAction>(action_by_keyboard_state, {})
     , m_application(application)
-    , m_show_command_line_help(show_command_line_help)
 {
     ITT_FUNCTION_TASK();
 }
@@ -43,29 +43,33 @@ AppController::AppController(AppBase& application, const std::string& applicatio
 void AppController::OnKeyboardChanged(Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Keyboard::StateChange& state_change)
 {
     ITT_FUNCTION_TASK();
-    Keyboard::ActionControllerBase<AppHelpAction>::OnKeyboardChanged(key, key_state, state_change);
+    Keyboard::ActionControllerBase<AppAction>::OnKeyboardChanged(key, key_state, state_change);
 }
 
-void AppController::OnKeyboardStateAction(AppHelpAction action)
+void AppController::OnKeyboardStateAction(AppAction action)
 {
     ITT_FUNCTION_TASK();
     switch(action)
     {
-        case AppHelpAction::ShowHelp: ShowHelp(); break;
-        case AppHelpAction::CloseApp: m_application.Close(); break;
-        default: assert(0);
+    case AppAction::ShowControlsHelp:    ShowControlsHelp(); break;
+    case AppAction::ShowCommandLineHelp: ShowCommandLineHelp(); break;
+    case AppAction::SwitchFullScreen:    m_application.SetFullScreen(!m_application.GetPlatformAppSettings().is_full_screen); break;
+    case AppAction::CloseApp:            m_application.Close(); break;
+    default: assert(0);
     }
 }
 
-std::string AppController::GetKeyboardActionName(AppHelpAction action) const
+std::string AppController::GetKeyboardActionName(AppAction action) const
 {
     ITT_FUNCTION_TASK();
     switch (action)
     {
-        case AppHelpAction::None:      return "none";
-        case AppHelpAction::ShowHelp:  return "show application help";
-        case AppHelpAction::CloseApp:  return "close application";
-        default: assert(0);            return "";
+    case AppAction::None:                return "none";
+    case AppAction::ShowControlsHelp:    return "show application controls help";
+    case AppAction::ShowCommandLineHelp: return "show application command-line help";
+    case AppAction::SwitchFullScreen:    return "switch full-screen mode";
+    case AppAction::CloseApp:            return "close the application";
+    default: assert(0);                  return "";
     }
 }
 
@@ -75,13 +79,13 @@ Input::IHelpProvider::HelpLines AppController::GetHelp() const
     return GetKeyboardHelp();
 }
 
-void AppController::ShowHelp()
+void AppController::ShowControlsHelp()
 {
     ITT_FUNCTION_TASK();
     std::stringstream help_stream;
     std::string single_offset = "    ";
     bool is_first_controller = true;
-    for (const Controller::Ptr& sp_controller : m_application.GetInputState().GetControllers())
+    for (const Ptr<Controller>& sp_controller : m_application.GetInputState().GetControllers())
     {
         assert(!!sp_controller);
         if (!sp_controller) continue;
@@ -131,31 +135,31 @@ void AppController::ShowHelp()
             first_line = false;
         }
     }
-    
-    if (m_show_command_line_help)
-    {
-        const std::string cmd_line_help = m_application.GetCmdOptions().help();
-        if (!cmd_line_help.empty())
-        {
-            if (!is_first_controller)
-            {
-                help_stream << std::endl;
-            }
-            help_stream << "COMMAND LINE OPTIONS" << std::endl;
-            help_stream << std::endl << cmd_line_help;
-        }
-    }
 
     if (!is_first_controller)
     {
         help_stream << std::endl;
     }
-    help_stream << std::endl << "Powered by Methane Kit: https://github.com/egorodet/MethaneKit";
-    
+    help_stream << std::endl << "Powered by Methane Kit v" METHANE_VERSION_STR
+                << std::endl << "https://github.com/egorodet/MethaneKit";
+
     m_application.Alert({
         AppBase::Message::Type::Information,
-        "Application Help",
+        "Application Controls Help",
         help_stream.str()
+    });
+}
+
+void AppController::ShowCommandLineHelp()
+{
+    ITT_FUNCTION_TASK();
+    std::stringstream help_stream;
+
+    const std::string cmd_line_help = m_application.help();
+    m_application.Alert({
+        AppBase::Message::Type::Information,
+        "Application Command-Line Help",
+        cmd_line_help
     });
 }
 

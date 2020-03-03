@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,18 +29,20 @@ Vulkan implementation of the render command list interface.
 #include "ContextVK.h"
 #include "BufferVK.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
+
+#include <cassert>
 
 namespace Methane::Graphics
 {
 
-RenderCommandList::Ptr RenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
+Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<RenderCommandListVK>(static_cast<CommandQueueBase&>(command_queue), static_cast<RenderPassBase&>(render_pass));
 }
 
-RenderCommandList::Ptr RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
+Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<RenderCommandListVK>(static_cast<ParallelRenderCommandListBase&>(parallel_render_command_list));
@@ -58,11 +60,11 @@ RenderCommandListVK::RenderCommandListVK(ParallelRenderCommandListBase& parallel
     ITT_FUNCTION_TASK();
 }
 
-void RenderCommandListVK::Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group)
+void RenderCommandListVK::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
 
-    RenderCommandListBase::ResetDrawState();
+    RenderCommandListBase::ResetCommandState();
     RenderCommandListBase::Reset(sp_render_state, debug_group);
 }
 
@@ -83,13 +85,13 @@ void RenderCommandListVK::PopDebugGroup()
     ITT_FUNCTION_TASK();
 }
 
-void RenderCommandListVK::SetVertexBuffers(const Buffer::Refs& vertex_buffers)
+void RenderCommandListVK::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
 {
     ITT_FUNCTION_TASK();
 
     RenderCommandListBase::SetVertexBuffers(vertex_buffers);
 
-    if (!m_draw_state.flags.vertex_buffers_changed)
+    if (!GetDrawingState().flags.vertex_buffers_changed)
         return;
 
     uint32_t vb_index = 0;
@@ -124,13 +126,13 @@ void RenderCommandListVK::Draw(Primitive primitive, uint32_t vertex_count, uint3
     RenderCommandListBase::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
 }
 
-void RenderCommandListVK::Commit(bool present_drawable)
+void RenderCommandListVK::Commit()
 {
     ITT_FUNCTION_TASK();
     
     assert(!IsCommitted());
 
-    RenderCommandListBase::Commit(present_drawable);
+    RenderCommandListBase::Commit();
 }
 
 void RenderCommandListVK::Execute(uint32_t frame_index)
@@ -143,7 +145,7 @@ void RenderCommandListVK::Execute(uint32_t frame_index)
 CommandQueueVK& RenderCommandListVK::GetCommandQueueVK() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class CommandQueueVK&>(*m_sp_command_queue);
+    return static_cast<class CommandQueueVK&>(GetCommandQueue());
 }
 
 RenderPassVK& RenderCommandListVK::GetPassVK()

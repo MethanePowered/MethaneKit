@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,11 +29,9 @@ Vulkan implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
-class BufferVK : public BufferBase
+class BufferVK final : public BufferBase
 {
 public:
-    using Ptr = std::shared_ptr<BufferVK>;
-
     BufferVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
     BufferVK(ContextBase& context, const Settings& settings, Data::Size stride, PixelFormat format, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
     ~BufferVK() override;
@@ -47,7 +45,7 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-protected:
+private:
     Data::Size    m_stride = 0;
     PixelFormat   m_format = PixelFormat::Unknown;
 };

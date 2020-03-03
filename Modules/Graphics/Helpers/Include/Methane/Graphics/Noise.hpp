@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Noise.h
-Multi-octave simplex noise geneator in range [0, 1]
+FILE: Methane/Graphics/Noise.hpp
+Multi-octave simplex noise generator in range [0, 1]
 
 ******************************************************************************/
 
@@ -38,7 +38,7 @@ class NoiseOctaves
 public:
     NoiseOctaves(float persistence = 0.5f)
         : m_weights(GetWeights(persistence))
-        , m_norm_multiplier(0.5f / GetWeightsSumm(m_weights))
+        , m_norm_multiplier(0.5f / GetWeightsSum(m_weights))
     { }
     
     float operator()(Vector2f pos) const
@@ -88,14 +88,14 @@ private:
         return weights;
     }
     
-    static float GetWeightsSumm(const WeightsArray& weights)
+    static float GetWeightsSum(const WeightsArray& weights)
     {
-        float weights_summ = 0.f;
+        float weights_sum = 0.f;
         for(float weight : weights)
         {
-            weights_summ += weight;
+            weights_sum += weight;
         }
-        return weights_summ;
+        return weights_sum;
     }
     
     const WeightsArray m_weights;

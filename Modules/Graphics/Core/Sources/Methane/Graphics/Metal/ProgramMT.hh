@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,25 +30,12 @@ Metal implementation of the program interface.
 namespace Methane::Graphics
 {
 
-class ContextMT;
+struct IContextMT;
 class ShaderMT;
 
-class ProgramMT : public ProgramBase
+class ProgramMT final : public ProgramBase
 {
 public:
-    class ResourceBindingsMT : public ResourceBindingsBase
-    {
-    public:
-        ResourceBindingsMT(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
-        ResourceBindingsMT(const ResourceBindingsMT& other_resource_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
-
-        // ResourceBindings interface
-        void Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior) const override;
-        
-        // ResourceBindingsBase interface
-        void CompleteInitialization() override { }
-    };
-
     ProgramMT(ContextBase& context, const Settings& settings);
     ~ProgramMT() override;
 
@@ -57,8 +44,8 @@ public:
     id<MTLFunction> GetNativeShaderFunction(Shader::Type shader_type) noexcept;
     MTLVertexDescriptor* GetNativeVertexDescriptor() noexcept { return m_mtl_vertex_desc; }
 
-protected:
-    ContextMT& GetContextMT() noexcept;
+private:
+    IContextMT& GetContextMT() noexcept;
     void SetNativeShaderArguments(Shader::Type shader_type, NSArray<MTLArgument*>* mtl_arguments) noexcept;
     
     MTLVertexDescriptor*         m_mtl_vertex_desc = nil;

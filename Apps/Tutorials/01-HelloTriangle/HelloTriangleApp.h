@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ namespace gfx = Methane::Graphics;
 
 struct HelloTriangleFrame final : gfx::AppFrame
 {
-    gfx::RenderCommandList::Ptr sp_cmd_list;
+    Ptr<gfx::RenderCommandList> sp_cmd_list;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -48,7 +48,7 @@ public:
     HelloTriangleApp();
     ~HelloTriangleApp() override;
 
-    // App interface
+    // GraphicsApp overrides
     void Init() override;
     bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
     bool Render() override;
@@ -57,18 +57,8 @@ public:
     void OnContextReleased() override;
 
 private:
-    struct Vertex
-    {
-        gfx::Vector3f position;
-        gfx::Vector3f color;
-    };
-
-    using Vertices = std::array<Vertex, 3>;
-    const Vertices m_triangle_vertices;
-
-    gfx::Program::Ptr       m_sp_program;
-    gfx::RenderState::Ptr   m_sp_state;
-    gfx::Buffer::Ptr        m_sp_vertex_buffer;
+    Ptr<gfx::RenderState>   m_sp_state;
+    Ptr<gfx::Buffer>        m_sp_vertex_buffer;
 };
 
 } // namespace Methane::Tutorials

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,14 +24,10 @@ to create instance refer to RenderCommandList, etc. for specific derived interfa
 
 #pragma once
 
-#include "Types.h"
 #include "Object.h"
-#include "Resource.h"
-#include "Program.h"
+#include "ProgramBindings.h"
 
-#include <memory>
 #include <string>
-#include <vector>
 
 namespace Methane::Graphics
 {
@@ -40,23 +36,21 @@ struct CommandQueue;
 
 struct CommandList : virtual Object
 {
-    using Ptr  = std::shared_ptr<CommandList>;
-    using Ref  = std::reference_wrapper<CommandList>;
-    using Refs = std::vector<Ref>;
-
     enum class Type : uint32_t
     {
-        RenderCommandList = 0u,
-        ParallelRenderCommandList,
+        Blit = 0u,
+        Render,
+        ParallelRender,
     };
 
     // CommandList interface
     virtual Type GetType() const = 0;
     virtual void PushDebugGroup(const std::string& name) = 0;
     virtual void PopDebugGroup() = 0;
-    virtual void SetResourceBindings(Program::ResourceBindings& resource_bindings,
-                                     Program::ResourceBindings::ApplyBehavior::Mask apply_behavior = Program::ResourceBindings::ApplyBehavior::AllIncremental) = 0;
-    virtual void Commit(bool present_drawable) = 0;
+    virtual void Reset(const std::string& debug_group = "") = 0;
+    virtual void SetProgramBindings(ProgramBindings& program_bindings,
+                                    ProgramBindings::ApplyBehavior::Mask apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental) = 0;
+    virtual void Commit() = 0;
     virtual CommandQueue& GetCommandQueue() = 0;
 
     virtual ~CommandList() = default;

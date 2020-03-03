@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,10 +23,29 @@ Base implementation of the sampler interface.
 
 #include "SamplerBase.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
+
+Sampler::Settings::Settings(const Filter& in_filter, const Address& in_address,
+                            const LevelOfDetail& in_lod, uint32_t in_max_anisotropy,
+                            BorderColor in_border_color, Compare in_compare_function)
+    : filter(in_filter)
+    , address(in_address)
+    , lod(in_lod)
+    , max_anisotropy(in_max_anisotropy)
+    , border_color(in_border_color)
+    , compare_function(in_compare_function)
+{
+}
+
+Sampler::LevelOfDetail::LevelOfDetail(float in_bias, float in_min, float in_max)
+    : min(in_min)
+    , max(in_max)
+    , bias(in_bias)
+{
+}
 
 SamplerBase::SamplerBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : ResourceNT(Type::Sampler, Usage::ShaderRead, context, descriptor_by_usage)

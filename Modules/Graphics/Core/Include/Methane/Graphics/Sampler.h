@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,7 +26,8 @@ Methane sampler interface: GPU resource for texture sampling.
 #include "Resource.h"
 #include "Types.h"
 
-#include <memory>
+#include <Methane/Memory.hpp>
+
 #include <string>
 #include <limits>
 
@@ -37,9 +38,6 @@ struct Context;
 
 struct Sampler : virtual Resource
 {
-    using Ptr = std::shared_ptr<Sampler>;
-    using WeakPtr = std::weak_ptr<Sampler>;
-
     struct Filter
     {
         enum class MinMag : uint32_t
@@ -85,9 +83,7 @@ struct Sampler : virtual Resource
 
     struct LevelOfDetail
     {
-        LevelOfDetail(float in_bias = 0.f, float in_min = 0.f, float in_max = std::numeric_limits<float>::max())
-            : min(in_min), max(in_max), bias(in_bias)
-        { }
+        LevelOfDetail(float in_bias = 0.f, float in_min = 0.f, float in_max = std::numeric_limits<float>::max());
         
         float min     = 0.f;
         float max     = std::numeric_limits<float>::max();
@@ -103,12 +99,13 @@ struct Sampler : virtual Resource
 
     struct Settings
     {
-        Settings(const Filter& in_filter, const Address& in_address, const LevelOfDetail& in_lod = LevelOfDetail(), uint32_t in_max_anisotropy = 1,
-                 BorderColor in_border_color = BorderColor::TransparentBlack, Compare in_compare_function = Compare::Never)
-            : filter(in_filter), address(in_address), lod(in_lod), max_anisotropy(in_max_anisotropy)
-            , border_color(in_border_color), compare_function(in_compare_function)
-        { }
-        
+        Settings(const Filter& in_filter,
+                 const Address& in_address,
+                 const LevelOfDetail& in_lod = LevelOfDetail(),
+                 uint32_t  in_max_anisotropy = 1,
+                 BorderColor in_border_color = BorderColor::TransparentBlack,
+                 Compare in_compare_function = Compare::Never);
+
         Filter          filter;
         Address         address;
         LevelOfDetail   lod;
@@ -118,7 +115,7 @@ struct Sampler : virtual Resource
     };
 
     // Create Sampler instance
-    static Ptr Create(Context& context, const Settings& state_settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    static Ptr<Sampler> Create(Context& context, const Settings& state_settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
     // Sampler interface
     virtual const Settings& GetSettings() const = 0;

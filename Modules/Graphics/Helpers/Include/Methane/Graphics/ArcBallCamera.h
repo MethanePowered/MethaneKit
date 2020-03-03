@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ protected:
     Vector3f GetNormalizedSphereProjection(const Data::Point2i& mouse_screen_pos, bool is_primary) const;
 
     inline float GetRadiusInPixels(const Data::Point2f& screen_size) const noexcept
-    { return std::min(screen_size.x(), screen_size.y()) * m_radius_ratio / 2.f; }
+    { return std::min(screen_size.GetX(), screen_size.GetY()) * m_radius_ratio / 2.f; }
 
     inline const Camera& GetViewCamera() const noexcept
     { return m_p_view_camera ? *m_p_view_camera : *this; }

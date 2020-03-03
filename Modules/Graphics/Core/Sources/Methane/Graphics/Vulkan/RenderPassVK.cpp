@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,31 +25,29 @@ Vulkan implementation of the render pass interface.
 #include "ContextVK.h"
 #include "TextureVK.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Graphics/RenderContextBase.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-RenderPass::Ptr RenderPass::Create(Context& context, const Settings& settings)
+Ptr<RenderPass> RenderPass::Create(RenderContext& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<RenderPassVK>(static_cast<ContextBase&>(context), settings);
+    return std::make_shared<RenderPassVK>(dynamic_cast<RenderContextBase&>(context), settings);
 }
 
-RenderPassVK::RenderPassVK(ContextBase& context, const Settings& settings)
+RenderPassVK::RenderPassVK(RenderContextBase& context, const Settings& settings)
     : RenderPassBase(context, settings)
 {
     ITT_FUNCTION_TASK();
-
     Reset();
 }
 
 void RenderPassVK::Update(const Settings& settings)
 {
     ITT_FUNCTION_TASK();
-
-    m_settings = settings;
-
+    RenderPassBase::Update(settings);
     Reset();
 }
 
@@ -58,7 +56,7 @@ void RenderPassVK::Reset()
     ITT_FUNCTION_TASK();
 
     uint32_t color_attach_index = 0;
-    for(ColorAttachment& color_attach : m_settings.color_attachments)
+    for(const ColorAttachment& color_attach : GetSettings().color_attachments)
     {
         if (color_attach.wp_texture.expired())
         {
@@ -75,10 +73,10 @@ void RenderPassVK::Reset()
     }
 }
 
-ContextVK& RenderPassVK::GetContextVK() noexcept
+IContextVK& RenderPassVK::GetContextVK() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextVK&>(m_context);
+    return static_cast<IContextVK&>(GetRenderContext());
 }
 
 } // namespace Methane::Graphics

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ Logo badge rendering primitive.
 
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Data/AppResourceProviders.h>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <cmath>
 
@@ -40,7 +40,7 @@ static LogoBadge::Settings ScaleBadgeSize(LogoBadge::Settings settings, float sc
     return settings;
 }
     
-LogoBadge::LogoBadge(Context& context, Settings settings)
+LogoBadge::LogoBadge(RenderContext& context, Settings settings)
     : LogoBadge(context,
                 ImageLoader(Data::TextureProvider::Get()).LoadImageToTexture2D(context, "Logo/MethaneLogoNameWatermark.png", true),
                 ScaleBadgeSize(settings, context.GetContentScalingFactor()))
@@ -48,7 +48,7 @@ LogoBadge::LogoBadge(Context& context, Settings settings)
     ITT_FUNCTION_TASK();
 }
 
-LogoBadge::LogoBadge(Context& context, Texture::Ptr sp_texture, Settings settings)
+LogoBadge::LogoBadge(RenderContext& context, Ptr<Texture> sp_texture, Settings settings)
     : ScreenQuad(context, std::move(sp_texture),
                  ScreenQuad::Settings
                  {

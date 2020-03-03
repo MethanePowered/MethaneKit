@@ -23,9 +23,10 @@ Random generated asteroid model with mesh and texture ready for rendering.
 
 #pragma once
 
-#include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/MathTypes.h>
 #include <Methane/Graphics/MeshBuffers.hpp>
+#include <Methane/Graphics/Mesh/IcosahedronMesh.hpp>
 
 namespace Methane::Samples
 {
@@ -45,7 +46,6 @@ struct SHADER_STRUCT_ALIGN AsteroidUniforms
 class Asteroid final : public gfx::TexturedMeshBuffers<AsteroidUniforms>
 {
 public:
-    using Ptr = std::unique_ptr<Asteroid>;
     using BaseBuffers = gfx::TexturedMeshBuffers<AsteroidUniforms>;
     
     struct Vertex
@@ -53,7 +53,7 @@ public:
         gfx::Mesh::Position position;
         gfx::Mesh::Normal   normal;
 
-        static constexpr const std::array<gfx::Mesh::VertexField, 2> layout = {
+        inline static const gfx::Mesh::VertexLayout layout = {
             gfx::Mesh::VertexField::Position,
             gfx::Mesh::VertexField::Normal,
         };
@@ -101,9 +101,9 @@ public:
         float    strength    = 1.5f;
     };
 
-    Asteroid(gfx::Context& context);
+    explicit Asteroid(gfx::RenderContext& context);
     
-    static gfx::Texture::Ptr GenerateTextureArray(gfx::Context& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, const TextureNoiseParameters& noise_parameters);
+    static Ptr<gfx::Texture> GenerateTextureArray(gfx::RenderContext& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, const TextureNoiseParameters& noise_parameters);
     static gfx::Resource::SubResources GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, const TextureNoiseParameters& noise_parameters);
 
     static constexpr size_t color_schema_size = 6u;
@@ -112,8 +112,8 @@ public:
     static Colors GetAsteroidLodColors(uint32_t lod_index);
     
 private:
-    static void FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Dimensions& dimensions, uint32_t pixel_size, uint32_t row_stride,
-                                         float random_seed, float persistence, float noise_scale, float noise_strength, uint32_t array_index);
+    static void FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Dimensions& dimensions, uint32_t row_stride,
+                                         float random_seed, float persistence, float noise_scale, float noise_strength);
 };
 
 } // namespace Methane::Samples

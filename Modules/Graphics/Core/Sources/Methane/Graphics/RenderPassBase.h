@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ Base implementation of the render pass interface.
 namespace Methane::Graphics
 {
 
-class ContextBase;
+class RenderContextBase;
 class RenderCommandListBase;
 
 class RenderPassBase
@@ -36,7 +36,7 @@ class RenderPassBase
     , public std::enable_shared_from_this<RenderPassBase>
 {
 public:
-    RenderPassBase(ContextBase& context, const Settings& settings);
+    RenderPassBase(RenderContextBase& context, const Settings& settings);
 
     // RenderPass interface
     void Update(const Settings& settings) override;
@@ -46,14 +46,18 @@ public:
     virtual void Begin(RenderCommandListBase& command_list);
     virtual void End(RenderCommandListBase& command_list);
 
-    Ptr            GetPtr() { return shared_from_this(); }
-    Resource::Refs GetColorAttachmentResources() const;
-    bool           IsBegun() const { return m_is_begun; }
+    Ptr<RenderPassBase> GetPtr()            { return shared_from_this(); }
+    Refs<Resource>      GetColorAttachmentResources() const;
+    bool                IsBegun() const     { return m_is_begun; }
 
 protected:
-    ContextBase& m_context;
-    Settings     m_settings;
-    bool         m_is_begun = false;
+    RenderContextBase&        GetRenderContext()        { return m_render_context; }
+    const RenderContextBase&  GetRenderContext() const  { return m_render_context; }
+
+private:
+    RenderContextBase& m_render_context;
+    Settings           m_settings;
+    bool               m_is_begun = false;
 };
 
 } // namespace Methane::Graphics

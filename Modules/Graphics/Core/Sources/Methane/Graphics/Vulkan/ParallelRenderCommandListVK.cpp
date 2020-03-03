@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,12 +26,14 @@ Vulkan implementation of the render command list interface.
 #include "CommandQueueVK.h"
 #include "ContextVK.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
+
+#include <cassert>
 
 namespace Methane::Graphics
 {
 
-ParallelRenderCommandList::Ptr ParallelRenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
+Ptr<ParallelRenderCommandList> ParallelRenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<ParallelRenderCommandListVK>(static_cast<CommandQueueBase&>(command_queue), static_cast<RenderPassBase&>(render_pass));
@@ -50,20 +52,19 @@ void ParallelRenderCommandListVK::SetName(const std::string& name)
     ParallelRenderCommandListBase::SetName(name);
 }
 
-void ParallelRenderCommandListVK::Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group)
+void ParallelRenderCommandListVK::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
 
     ParallelRenderCommandListBase::Reset(sp_render_state, debug_group);
 }
 
-void ParallelRenderCommandListVK::Commit(bool present_drawable)
+void ParallelRenderCommandListVK::Commit()
 {
     ITT_FUNCTION_TASK();
     
     assert(!IsCommitted());
-
-    ParallelRenderCommandListBase::Commit(present_drawable);
+    ParallelRenderCommandListBase::Commit();
 }
 
 void ParallelRenderCommandListVK::Execute(uint32_t frame_index)
@@ -76,7 +77,7 @@ void ParallelRenderCommandListVK::Execute(uint32_t frame_index)
 CommandQueueVK& ParallelRenderCommandListVK::GetCommandQueueVK() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class CommandQueueVK&>(*m_sp_command_queue);
+    return static_cast<class CommandQueueVK&>(GetCommandQueue());
 }
 
 RenderPassVK& ParallelRenderCommandListVK::GetPassVK()

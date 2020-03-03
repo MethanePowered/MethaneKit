@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Platform/Windows/Utils.cpp
-Windows platform utilitary functions.
+Windows platform utility functions.
 
 ******************************************************************************/
 
 #include <Methane/Platform/Windows/Utils.h>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <Windows.h>
 #include <shellapi.h>
@@ -90,9 +90,9 @@ namespace Windows
 void GetDesktopResolution(uint32_t& width, uint32_t& height)
 {
     ITT_FUNCTION_TASK();
-    RECT desktop;
-    const HWND hDesktop = GetDesktopWindow();
-    GetWindowRect(hDesktop, &desktop);
+    RECT       desktop;
+    const HWND h_desktop = GetDesktopWindow();
+    GetWindowRect(h_desktop, &desktop);
     width = static_cast<uint32_t>(desktop.right);
     height = static_cast<uint32_t>(desktop.bottom);
 }

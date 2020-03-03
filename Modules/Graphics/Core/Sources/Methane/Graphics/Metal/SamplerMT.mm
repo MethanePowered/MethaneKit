@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,12 +22,13 @@ Metal implementation of the sampler interface.
 ******************************************************************************/
 
 #include "SamplerMT.hh"
-#include "ContextMT.hh"
+#include "ContextMT.h"
 #include "DeviceMT.hh"
 #include "TypesMT.hh"
 
-#include <Methane/Data/Instrumentation.h>
-#import <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
@@ -89,10 +90,10 @@ static MTLSamplerBorderColor ConvertBorderColorToMetal(const SamplerBase::Border
     }
 }
 
-Sampler::Ptr Sampler::Create(Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Sampler> Sampler::Create(Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<SamplerMT>(static_cast<ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<SamplerMT>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
 SamplerMT::SamplerMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
@@ -103,22 +104,22 @@ SamplerMT::SamplerMT(ContextBase& context, const Settings& settings, const Descr
 
     InitializeDefaultDescriptors();
     
-    m_mtl_sampler_desc.rAddressMode = ConvertAddressModeToMetal(m_settings.address.r);
-    m_mtl_sampler_desc.sAddressMode = ConvertAddressModeToMetal(m_settings.address.s);
-    m_mtl_sampler_desc.tAddressMode = ConvertAddressModeToMetal(m_settings.address.t);
+    m_mtl_sampler_desc.rAddressMode = ConvertAddressModeToMetal(settings.address.r);
+    m_mtl_sampler_desc.sAddressMode = ConvertAddressModeToMetal(settings.address.s);
+    m_mtl_sampler_desc.tAddressMode = ConvertAddressModeToMetal(settings.address.t);
     
-    m_mtl_sampler_desc.minFilter    = ConvertMinMagFilterToMetal(m_settings.filter.min);
-    m_mtl_sampler_desc.magFilter    = ConvertMinMagFilterToMetal(m_settings.filter.mag);
-    m_mtl_sampler_desc.mipFilter    = ConvertMipFilterToMetal(m_settings.filter.mip);
+    m_mtl_sampler_desc.minFilter    = ConvertMinMagFilterToMetal(settings.filter.min);
+    m_mtl_sampler_desc.magFilter    = ConvertMinMagFilterToMetal(settings.filter.mag);
+    m_mtl_sampler_desc.mipFilter    = ConvertMipFilterToMetal(settings.filter.mip);
     
-    m_mtl_sampler_desc.lodMinClamp  = m_settings.lod.min;
-    m_mtl_sampler_desc.lodMaxClamp  = m_settings.lod.max;
+    m_mtl_sampler_desc.lodMinClamp  = settings.lod.min;
+    m_mtl_sampler_desc.lodMaxClamp  = settings.lod.max;
     
-    m_mtl_sampler_desc.maxAnisotropy   = m_settings.max_anisotropy;
-    m_mtl_sampler_desc.compareFunction = TypeConverterMT::CompareFunctionToMetal(m_settings.compare_function);
-    m_mtl_sampler_desc.borderColor     = ConvertBorderColorToMetal(m_settings.border_color);
-    
-    ResetSampletState();
+    m_mtl_sampler_desc.maxAnisotropy   = settings.max_anisotropy;
+    m_mtl_sampler_desc.compareFunction = TypeConverterMT::CompareFunctionToMetal(settings.compare_function);
+    m_mtl_sampler_desc.borderColor     = ConvertBorderColorToMetal(settings.border_color);
+
+    ResetSamplerState();
 }
 
 SamplerMT::~SamplerMT()
@@ -135,13 +136,13 @@ void SamplerMT::SetName(const std::string& name)
 
     SamplerBase::SetName(name);
 
-    assert(!!m_mtl_sampler_desc);
-    m_mtl_sampler_desc.label = Methane::MacOS::ConvertToNSType<std::string, NSString*>(name);
-    
-    ResetSampletState();
+    assert(m_mtl_sampler_desc != nil);
+    m_mtl_sampler_desc.label = Methane::MacOS::ConvertToNsType<std::string, NSString*>(name);
+
+    ResetSamplerState();
 }
 
-void SamplerMT::ResetSampletState()
+void SamplerMT::ResetSamplerState()
 {
     ITT_FUNCTION_TASK();
 
@@ -152,12 +153,6 @@ void SamplerMT::ResetSampletState()
     
     assert(m_mtl_sampler_desc);
     m_mtl_sampler_state = [GetContextMT().GetDeviceMT().GetNativeDevice() newSamplerStateWithDescriptor:m_mtl_sampler_desc];
-}
-
-ContextMT& SamplerMT::GetContextMT() noexcept
-{
-    ITT_FUNCTION_TASK();
-    return static_cast<class ContextMT&>(m_context);
 }
 
 } // namespace Methane::Graphics

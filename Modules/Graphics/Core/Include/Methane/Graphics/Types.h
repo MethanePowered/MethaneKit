@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -58,16 +58,16 @@ public:
     Point3T(T x, T y, T z) : cml::vector<T, cml::fixed<3>>(x, y, z) { }
     Point3T(const cml::vector<T, cml::fixed<3>>& v) : cml::vector<T, cml::fixed<3>>(v) { }
     
-    T x() const noexcept { return (*this)[0]; }
-    T y() const noexcept { return (*this)[1]; }
-    T z() const noexcept { return (*this)[2]; }
+    T GetX() const noexcept { return (*this)[0]; }
+    T GetY() const noexcept { return (*this)[1]; }
+    T GetZ() const noexcept { return (*this)[2]; }
     
-    void setX(T x) noexcept { (*this)[0] = x; }
-    void setY(T y) noexcept { (*this)[1] = y; }
-    void setZ(T z) noexcept { (*this)[2] = z; }
+    void SetX(T x) noexcept { (*this)[0] = x; }
+    void SetY(T y) noexcept { (*this)[1] = y; }
+    void SetZ(T z) noexcept { (*this)[2] = z; }
 
     operator std::string() const
-    { return "Pt(" + std::to_string(x()) + ", " + std::to_string(y()) + ", " + std::to_string(z()) + ")"; }
+    { return "Pt(" + std::to_string(GetX()) + ", " + std::to_string(GetY()) + ", " + std::to_string(GetZ()) + ")"; }
 };
 
 using Point3i = Point3T<int32_t>;
@@ -135,19 +135,19 @@ public:
     Color3f() = default;
     Color3f(float r, float g, float b) : Vector3f(r, g, b) { }
     
-    float r() const noexcept { return (*this)[0]; }
-    float g() const noexcept { return (*this)[1]; }
-    float b() const noexcept { return (*this)[2]; }
+    float GetR() const noexcept { return (*this)[0]; }
+    float GetG() const noexcept { return (*this)[1]; }
+    float GetB() const noexcept { return (*this)[2]; }
     
-    void setR(float r) noexcept { (*this)[0] = r; }
-    void setG(float g) noexcept { (*this)[1] = g; }
-    void setB(float b) noexcept { (*this)[2] = b; }
+    void SetR(float r) noexcept { (*this)[0] = r; }
+    void SetG(float g) noexcept { (*this)[1] = g; }
+    void SetB(float b) noexcept { (*this)[2] = b; }
 
     std::string ToString() const
     {
-        return "C(R:" + std::to_string(r()) +
-               ", G:" + std::to_string(g()) +
-               ", B:" + std::to_string(b()) + ")";
+        return "C(R:" + std::to_string(GetR()) +
+               ", G:" + std::to_string(GetG()) +
+               ", B:" + std::to_string(GetB()) + ")";
     }
 };
 
@@ -160,22 +160,22 @@ public:
     Color4f() : Vector4f(0.f, 0.f, 0.f, 0.f) { }
     Color4f(float r, float g, float b, float a) : Vector4f(r, g, b, a) { }
     
-    float r() const noexcept { return (*this)[0]; }
-    float g() const noexcept { return (*this)[1]; }
-    float b() const noexcept { return (*this)[2]; }
-    float a() const noexcept { return (*this)[3]; }
+    float GetR() const noexcept { return (*this)[0]; }
+    float GetG() const noexcept { return (*this)[1]; }
+    float GetB() const noexcept { return (*this)[2]; }
+    float GetA() const noexcept { return (*this)[3]; }
     
-    void setR(float r) noexcept { (*this)[0] = r; }
-    void setG(float g) noexcept { (*this)[1] = g; }
-    void setB(float b) noexcept { (*this)[2] = b; }
-    void setA(float a) noexcept { (*this)[3] = a; }
+    void SetR(float r) noexcept { (*this)[0] = r; }
+    void SetG(float g) noexcept { (*this)[1] = g; }
+    void SetB(float b) noexcept { (*this)[2] = b; }
+    void SetA(float a) noexcept { (*this)[3] = a; }
 
     std::string ToString() const
     {
-        return "C(R:" + std::to_string(r()) +
-               ", G:" + std::to_string(g()) +
-               ", B:" + std::to_string(b()) + 
-               ", A:" + std::to_string(a()) + ")";
+        return "C(R:" + std::to_string(GetR()) +
+               ", G:" + std::to_string(GetG()) +
+               ", B:" + std::to_string(GetB()) +
+               ", A:" + std::to_string(GetA()) + ")";
     }
 };
 
@@ -196,6 +196,8 @@ enum class PixelFormat
     R16Sint,
     Depth32Float
 };
+
+using PixelFormats = std::vector<PixelFormat>;
 
 uint32_t GetPixelSize(PixelFormat data_format) noexcept;
 

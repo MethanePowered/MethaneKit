@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ Base implementation of the render state interface.
 
 #include "RenderStateBase.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 
@@ -154,7 +154,7 @@ RenderState::Group::Mask RenderState::Settings::Compare(const Settings& left, co
     return changed_state_groups;
 }
     
-RenderStateBase::RenderStateBase(ContextBase& context, const Settings& settings)
+RenderStateBase::RenderStateBase(RenderContextBase& context, const Settings& settings)
     : m_context(context)
     , m_settings(settings)
 {
@@ -185,6 +185,13 @@ void RenderStateBase::SetScissorRects(const ScissorRects& scissor_rects)
         throw std::invalid_argument("Can not set empty scissor rectangles to state.");
     }
     m_settings.scissor_rects = scissor_rects;
+}
+
+Program& RenderStateBase::GetProgram()
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_settings.sp_program);
+    return *m_settings.sp_program;
 }
 
 } // namespace Methane::Graphics

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ Base implementation of the resource interface.
 #include "ContextBase.h"
 
 #include <Methane/Graphics/Resource.h>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 #include <sstream>
@@ -35,7 +35,7 @@ Base implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-Resource::Location::Location(Ptr sp_resource, Data::Size offset)
+Resource::Location::Location(Ptr<Resource> sp_resource, Data::Size offset)
     : m_sp_resource(std::move(sp_resource))
     , m_offset(offset)
 {
@@ -94,7 +94,7 @@ std::string Resource::Usage::ToString(Usage::Mask usage_mask) noexcept
     return names_ss.str();
 }
 
-Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, int32_t in_index)
+Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, Data::Index in_index)
     : heap(in_heap)
     , index(in_index)
 {
@@ -182,11 +182,10 @@ void ResourceBase::InitializeDefaultDescriptors()
         auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
         if (descriptor_by_usage_it == m_descriptor_by_usage.end())
         {
-            // Create deafult resource descriptor by usage
+            // Create default resource descriptor by usage
             const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByUsage(usage);
-            Descriptor descriptor(m_context.GetResourceManager().GetDescriptorHeap(heap_type));
-            descriptor.index = descriptor.heap.AddResource(*this);
-            m_descriptor_by_usage.emplace(usage, descriptor);
+            DescriptorHeap& heap = m_context.GetResourceManager().GetDescriptorHeap(heap_type);
+            m_descriptor_by_usage.emplace(usage, Descriptor(heap, heap.AddResource(*this)));
         }
     }
 }

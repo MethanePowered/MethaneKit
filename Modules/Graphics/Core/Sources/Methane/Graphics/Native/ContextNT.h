@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ Native implementation alias of the context interface.
 
 #elif defined __APPLE__
 
-#include <Methane/Graphics/Metal/ContextMT.hh>
+#include <Methane/Graphics/Metal/ContextMT.h>
 
 #elif defined __linux__
 
@@ -42,15 +42,15 @@ namespace Methane::Graphics
 
 #if defined _WIN32
 
-using ContextNT = ContextDX;
+using IContextNT = IContextDX;
 
 #elif defined __APPLE__
 
-using ContextNT = ContextMT;
+using IContextNT = IContextMT;
 
 #elif defined __linux__
 
-using ContextNT = ContextVK;
+using IContextNT = IContextVK;
 
 #endif
 

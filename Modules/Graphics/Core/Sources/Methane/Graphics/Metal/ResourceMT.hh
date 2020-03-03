@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,14 +30,12 @@ Metal implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-class ContextMT;
+struct IContextMT;
 struct ResourceContainerMT;
 
 class ResourceMT : public ResourceBase
 {
 public:
-    using Ptr = std::shared_ptr<ResourceMT>;
-
     class ReleasePoolMT : public ReleasePool
     {
     public:
@@ -54,7 +52,7 @@ public:
     ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
 
 protected:
-    ContextMT& GetContextMT() noexcept;
+    IContextMT& GetContextMT() noexcept;
 };
 
 } // namespace Methane::Graphics

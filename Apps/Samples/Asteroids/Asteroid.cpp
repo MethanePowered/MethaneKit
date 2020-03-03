@@ -24,17 +24,16 @@ Random generated asteroid model with mesh and texture ready for rendering
 #include "Asteroid.h"
 
 #include <Methane/Graphics/Noise.hpp>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <cmath>
-#include <sstream>
 
 namespace Methane::Samples
 {
 
 using AsteroidColorSchema = std::array<gfx::Color3f, Asteroid::color_schema_size>;
 
-static gfx::Color3f TransformSRGBToLinear(const gfx::Color3f& srgb_color)
+static gfx::Color3f TransformSrgbToLinear(const gfx::Color3f& srgb_color)
 {
     ITT_FUNCTION_TASK();
 
@@ -46,20 +45,20 @@ static gfx::Color3f TransformSRGBToLinear(const gfx::Color3f& srgb_color)
     return linear_color;
 }
 
-static AsteroidColorSchema TransformSRGBToLinear(const AsteroidColorSchema& srgb_color_schema)
+static AsteroidColorSchema TransformSrgbToLinear(const AsteroidColorSchema& srgb_color_schema)
 {
     ITT_FUNCTION_TASK();
 
     AsteroidColorSchema linear_color_schema = {};
     for (size_t i = 0; i < srgb_color_schema.size(); ++i)
     {
-        linear_color_schema[i] = TransformSRGBToLinear(srgb_color_schema[i]);
+        linear_color_schema[i] = TransformSrgbToLinear(srgb_color_schema[i]);
     }
     return linear_color_schema;
 }
 
 Asteroid::Mesh::Mesh(uint32_t subdivisions_count, bool randomize)
-    : gfx::IcosahedronMesh<Vertex>(VertexLayoutFromArray(Vertex::layout), 0.5f, subdivisions_count, true)
+    : gfx::IcosahedronMesh<Vertex>(Mesh::VertexLayout(Vertex::layout), 0.5f, subdivisions_count, true)
 {
     ITT_FUNCTION_TASK();
 
@@ -100,7 +99,7 @@ void Asteroid::Mesh::Randomize(uint32_t random_seed)
     ComputeAverageNormals();
 }
 
-Asteroid::Asteroid(gfx::Context& context)
+Asteroid::Asteroid(gfx::RenderContext& context)
     : BaseBuffers(context, Mesh(3, true), "Asteroid")
 {
     ITT_FUNCTION_TASK();
@@ -108,13 +107,13 @@ Asteroid::Asteroid(gfx::Context& context)
     SetTexture(GenerateTextureArray(context, gfx::Dimensions(256, 256), 1, true, TextureNoiseParameters()));
 }
 
-gfx::Texture::Ptr Asteroid::GenerateTextureArray(gfx::Context& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, 
+Ptr<gfx::Texture> Asteroid::GenerateTextureArray(gfx::RenderContext& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped,
                                                  const TextureNoiseParameters& noise_parameters)
 {
     ITT_FUNCTION_TASK();
 
     const gfx::Resource::SubResources sub_resources = GenerateTextureArraySubresources(dimensions, array_size, noise_parameters);
-    gfx::Texture::Ptr sp_texture_array = gfx::Texture::CreateImage(context, dimensions, array_size, gfx::PixelFormat::RGBA8Unorm, mipmapped);
+    Ptr<gfx::Texture> sp_texture_array = gfx::Texture::CreateImage(context, dimensions, array_size, gfx::PixelFormat::RGBA8Unorm, mipmapped);
     sp_texture_array->SetData(sub_resources);
     return sp_texture_array;
 }
@@ -124,9 +123,9 @@ gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx
     ITT_FUNCTION_TASK();
 
     const gfx::PixelFormat pixel_format = gfx::PixelFormat::RGBA8Unorm;
-    const uint32_t pixel_size = gfx::GetPixelSize(pixel_format);
-    const uint32_t pixels_count = dimensions.GetPixelsCount();
-    const uint32_t row_stide = pixel_size * dimensions.width;
+    const uint32_t         pixel_size   = gfx::GetPixelSize(pixel_format);
+    const uint32_t         pixels_count = dimensions.GetPixelsCount();
+    const uint32_t         row_stride   = pixel_size * dimensions.width;
 
     gfx::Resource::SubResources sub_resources;
     sub_resources.reserve(array_size);
@@ -137,13 +136,11 @@ gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx
     for (uint32_t array_index = 0; array_index < array_size; ++array_index)
     {
         Data::Bytes sub_resource_data(pixels_count * pixel_size, 255u);
-        FillPerlinNoiseToTexture(sub_resource_data, dimensions,
-                                 pixel_size, row_stide,
+        FillPerlinNoiseToTexture(sub_resource_data, dimensions, row_stride,
                                  noise_seed_distribution(rng),
                                  noise_parameters.persistence,
                                  noise_parameters.scale,
-                                 noise_parameters.strength,
-                                 array_index);
+                                 noise_parameters.strength);
 
         sub_resources.emplace_back(std::move(sub_resource_data), gfx::Resource::SubResource::Index{ 0, array_index });
     }
@@ -163,7 +160,7 @@ Asteroid::Colors Asteroid::GetAsteroidRockColors(uint32_t deep_color_index, uint
         {  88.f,  88.f,  88.f },
         { 148.f, 108.f, 102.f },
     } };
-    static const AsteroidColorSchema s_linear_deep_rock_colors = TransformSRGBToLinear(s_srgb_deep_rock_colors);
+    static const AsteroidColorSchema s_linear_deep_rock_colors = TransformSrgbToLinear(s_srgb_deep_rock_colors);
 
     static const AsteroidColorSchema s_srgb_shallow_rock_colors = { {
         { 156.f, 139.f, 113.f },
@@ -173,7 +170,7 @@ Asteroid::Colors Asteroid::GetAsteroidRockColors(uint32_t deep_color_index, uint
         { 153.f, 146.f, 136.f },
         { 189.f, 181.f, 164.f },
     } };
-    static const AsteroidColorSchema s_linear_shallow_rock_colors = TransformSRGBToLinear(s_srgb_shallow_rock_colors);
+    static const AsteroidColorSchema s_linear_shallow_rock_colors = TransformSrgbToLinear(s_srgb_shallow_rock_colors);
 
     if (deep_color_index >= s_linear_deep_rock_colors.size() || shallow_color_index >= s_linear_shallow_rock_colors.size())
         throw std::invalid_argument("Deep or shallow color indices are out of boundaries for asteroids color schema.");
@@ -193,7 +190,7 @@ Asteroid::Colors Asteroid::GetAsteroidIceColors(uint32_t deep_color_index, uint3
         {  16.f,  66.f,  66.f },
         {  48.f, 103.f, 147.f }
     } };
-    static const AsteroidColorSchema s_linear_deep_ice_colors = TransformSRGBToLinear(s_srgb_deep_ice_colors);
+    static const AsteroidColorSchema s_linear_deep_ice_colors = TransformSrgbToLinear(s_srgb_deep_ice_colors);
 
     static const AsteroidColorSchema s_srgb_shallow_ice_colors = { {
         { 199.f, 212.f, 244.f },
@@ -203,7 +200,7 @@ Asteroid::Colors Asteroid::GetAsteroidIceColors(uint32_t deep_color_index, uint3
         { 167.f, 212.f, 239.f },
         { 200.f, 221.f, 252.f }
     } };
-    static const AsteroidColorSchema s_linear_shallow_ice_colors = TransformSRGBToLinear(s_srgb_shallow_ice_colors);
+    static const AsteroidColorSchema s_linear_shallow_ice_colors = TransformSrgbToLinear(s_srgb_shallow_ice_colors);
 
     if (deep_color_index >= s_linear_deep_ice_colors.size() || shallow_color_index >= s_linear_shallow_ice_colors.size())
         throw std::invalid_argument("Deep or shallow color indices are out of boundaries for asteroids color schema.");
@@ -222,7 +219,7 @@ Asteroid::Colors Asteroid::GetAsteroidLodColors(uint32_t lod_index)
         {  128.f, 128.f,   0.f }, // LOD-4: yellow
         {  128.f,  64.f,   0.f }, // LOD-5: orange
     } };
-    static const AsteroidColorSchema s_linear_lod_deep_colors = TransformSRGBToLinear(s_srgb_lod_deep_colors);
+    static const AsteroidColorSchema s_linear_lod_deep_colors = TransformSrgbToLinear(s_srgb_lod_deep_colors);
 
     static const AsteroidColorSchema s_srgb_lod_shallow_colors = { {
         {    0.f, 255.f,   0.f }, // LOD-0: green
@@ -232,7 +229,7 @@ Asteroid::Colors Asteroid::GetAsteroidLodColors(uint32_t lod_index)
         {  255.f, 255.f,   0.f }, // LOD-4: yellow
         {  255.f, 128.f,   0.f }, // LOD-5: orange
     } };
-    static const AsteroidColorSchema s_linear_lod_shallow_colors = TransformSRGBToLinear(s_srgb_lod_shallow_colors);
+    static const AsteroidColorSchema s_linear_lod_shallow_colors = TransformSrgbToLinear(s_srgb_lod_shallow_colors);
 
     if (lod_index >= s_linear_lod_deep_colors.size() || lod_index >= s_linear_lod_shallow_colors.size())
         throw std::invalid_argument("LOD index is out of boundaries for asteroids color schema.");
@@ -240,8 +237,8 @@ Asteroid::Colors Asteroid::GetAsteroidLodColors(uint32_t lod_index)
     return Asteroid::Colors{ s_linear_lod_deep_colors[lod_index], s_linear_lod_shallow_colors[lod_index] };
 }
 
-void Asteroid::FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Dimensions& dimensions, uint32_t pixel_size, uint32_t row_stride,
-                                        float random_seed, float persistence, float noise_scale, float noise_strength, uint32_t array_index)
+void Asteroid::FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Dimensions& dimensions, uint32_t row_stride,
+                                        float random_seed, float persistence, float noise_scale, float noise_strength)
 {
     ITT_FUNCTION_TASK();
 
@@ -259,12 +256,7 @@ void Asteroid::FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Di
             uint8_t* texel_data = reinterpret_cast<uint8_t*>(&row_data[col]);
             for (size_t channel = 0; channel < 3; ++channel)
             {
-#if 1
-                const float channel_value = 255.f;
-#else
-                const float channel_value = array_index % 3 == channel ? 255.f : 125.f;
-#endif
-                texel_data[channel] = static_cast<uint8_t>(channel_value * noise_intensity);
+                texel_data[channel] = static_cast<uint8_t>(255.f * noise_intensity);
             }
         }
     }

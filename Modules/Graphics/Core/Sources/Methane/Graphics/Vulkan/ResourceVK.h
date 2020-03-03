@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,15 +30,13 @@ Vulkan implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-class ContextVK;
+struct IContextVK;
 struct ResourceContainerVK;
 
 class ResourceVK : public ResourceBase
 {
 public:
-    using Ptr = std::shared_ptr<ResourceVK>;
-
-    class ReleasePoolVK : public ReleasePool
+    class ReleasePoolVK final : public ReleasePool
     {
     public:
         ReleasePoolVK();
@@ -54,7 +52,7 @@ public:
     ResourceVK(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
 
 protected:
-    ContextVK& GetContextVK() noexcept;
+    IContextVK& GetContextVK() noexcept;
 };
 
 } // namespace Methane::Graphics

@@ -25,7 +25,7 @@ Random generated asteroids array with uber-mesh and textures ready for rendering
 
 #include "Asteroid.h"
 
-#include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/Mesh.h>
 #include <Methane/Graphics/Sampler.h>
 #include <Methane/Graphics/RenderState.h>
@@ -40,7 +40,6 @@ namespace gfx = Graphics;
 class AsteroidsArray final : protected gfx::TexturedMeshBuffers<AsteroidUniforms>
 {
 public:
-    using Ptr = std::unique_ptr<AsteroidsArray>;
     using BaseBuffers = gfx::TexturedMeshBuffers<AsteroidUniforms>;
 
     struct Settings
@@ -55,6 +54,7 @@ public:
         uint32_t        random_seed              = 1337u;
         float           orbit_radius_ratio       = 10.f;
         float           disc_radius_ratio        = 3.f;
+        float           mesh_lod_min_screen_size = 0.06f;
         float           min_asteroid_scale_ratio = 0.1f;
         float           max_asteroid_scale_ratio = 0.7f;
         bool            textures_array_enabled   = false;
@@ -84,7 +84,6 @@ public:
 
     struct ContentState : public std::enable_shared_from_this<ContentState>
     {
-        using Ptr = std::shared_ptr<ContentState>;
         ContentState(const Settings& settings);
 
         using MeshSubsetTextureIndices = std::vector<uint32_t>;
@@ -95,16 +94,16 @@ public:
         Parameters               parameters;
     };
 
-    AsteroidsArray(gfx::Context& context, Settings settings);
-    AsteroidsArray(gfx::Context& context, Settings settings, ContentState& state);
+    AsteroidsArray(gfx::RenderContext& context, Settings settings);
+    AsteroidsArray(gfx::RenderContext& context, Settings settings, ContentState& state);
 
     const Settings& GetSettings() const         { return m_settings; }
-    const ContentState::Ptr& GetState() const   { return m_sp_content_state; }
-    Data::Size GetUniformsBufferSize() const    { return BaseBuffers::GetUniformsBufferSize(); }
+    const Ptr<ContentState>& GetState() const   { return m_sp_content_state; }
+    using BaseBuffers::GetUniformsBufferSize;
 
-    gfx::MeshBufferBindings::ResourceBindingsArray CreateResourceBindings(const gfx::Buffer::Ptr& sp_constants_buffer,
-                                                                          const gfx::Buffer::Ptr& sp_scene_uniforms_buffer,
-                                                                          const gfx::Buffer::Ptr& sp_asteroids_uniforms_buffer);
+    Ptrs<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& sp_constants_buffer,
+                                                      const Ptr<gfx::Buffer>& sp_scene_uniforms_buffer,
+                                                      const Ptr<gfx::Buffer>& sp_asteroids_uniforms_buffer);
 
     void Resize(const gfx::FrameSize& frame_size);
     bool Update(double elapsed_seconds, double delta_seconds);
@@ -125,13 +124,13 @@ private:
     using MeshSubsetByInstanceIndex = std::vector<uint32_t>;
 
     const Settings            m_settings;
-    ContentState::Ptr         m_sp_content_state;
+    Ptr<ContentState>         m_sp_content_state;
     Textures                  m_unique_textures;
-    gfx::Sampler::Ptr         m_sp_texture_sampler;
-    gfx::RenderState::Ptr     m_sp_render_state;
+    Ptr<gfx::Sampler>         m_sp_texture_sampler;
+    Ptr<gfx::RenderState>     m_sp_render_state;
     MeshSubsetByInstanceIndex m_mesh_subset_by_instance_index;
-    bool                      m_mesh_lod_coloring_enabled = false;
-    float                     m_min_mesh_lod_screen_size_log2;
+    bool  m_mesh_lod_coloring_enabled = false;
+    float m_min_mesh_lod_screen_size_log_2;
 };
 
 } // namespace Methane::Samples

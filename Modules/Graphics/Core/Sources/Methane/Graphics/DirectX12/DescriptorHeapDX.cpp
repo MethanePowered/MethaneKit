@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,10 +22,10 @@ DirectX 12 implementation of the descriptor heap wrapper.
 ******************************************************************************/
 
 #include "DescriptorHeapDX.h"
-#include "ContextDX.h"
 #include "DeviceDX.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #include <cassert>
@@ -47,7 +47,7 @@ static D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeap::Type type) n
     return D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES;
 }
 
-DescriptorHeap::Ptr DescriptorHeap::Create(ContextBase& context, const Settings& settings)
+Ptr<DescriptorHeap> DescriptorHeap::Create(ContextBase& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<DescriptorHeapDX>(context, settings);
@@ -70,7 +70,7 @@ DescriptorHeapDX::~DescriptorHeapDX()
     ITT_FUNCTION_TASK();
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeCPUDescriptorHandle(uint32_t descriptor_index) const noexcept
+D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeCpuDescriptorHandle(uint32_t descriptor_index) const noexcept
 {
     ITT_FUNCTION_TASK();
     assert(!!m_cp_descriptor_heap);
@@ -78,7 +78,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeCPUDescriptorHandle(uint3
     return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_cp_descriptor_heap->GetCPUDescriptorHandleForHeapStart(), descriptor_index, m_descriptor_size);
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeGPUDescriptorHandle(uint32_t descriptor_index) const noexcept
+D3D12_GPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeGpuDescriptorHandle(uint32_t descriptor_index) const noexcept
 {
     ITT_FUNCTION_TASK();
     assert(!!m_cp_descriptor_heap);
@@ -116,10 +116,10 @@ void DescriptorHeapDX::Allocate()
     DescriptorHeap::Allocate();
 }
 
-ContextDX& DescriptorHeapDX::GetContextDX()
+IContextDX& DescriptorHeapDX::GetContextDX() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextDX&>(m_context);
+    return static_cast<IContextDX&>(m_context);
 }
 
 } // namespace Methane::Graphics

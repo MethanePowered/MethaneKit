@@ -24,53 +24,56 @@ Planet rendering primitive
 #include "Planet.h"
 
 #include <Methane/Graphics/ImageLoader.h>
-#include <Methane/Graphics/Mesh.h>
+#include <Methane/Graphics/Mesh/SphereMesh.hpp>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Data/AppResourceProviders.h>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Samples
 {
 
-struct PlanetVertex
+Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings)
+    : Planet(context, image_loader, settings, gfx::SphereMesh<Vertex>(Vertex::layout, 1.f, 32, 32))
 {
-    gfx::Mesh::Position position;
-    gfx::Mesh::Normal   normal;
-    gfx::Mesh::TexCoord texcoord;
+    ITT_FUNCTION_TASK();
+}
 
-    using FieldsArray = std::array<gfx::Mesh::VertexField, 3>;
-    static constexpr const FieldsArray layout = {
-        gfx::Mesh::VertexField::Position,
-        gfx::Mesh::VertexField::Normal,
-        gfx::Mesh::VertexField::TexCoord,
-    };
-};
-
-Planet::Planet(gfx::Context& context, gfx::ImageLoader& image_loader, const Settings& settings)
+Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings, gfx::BaseMesh<Vertex> mesh)
     : m_settings(settings)
     , m_context(context)
-    , m_mesh_buffers(context, gfx::SphereMesh<PlanetVertex>(gfx::Mesh::VertexLayoutFromArray(PlanetVertex::layout), 1.f, 32, 32), "Planet")
+    , m_mesh_buffers(context, mesh, "Planet")
 {
     ITT_FUNCTION_TASK();
 
-    const gfx::Context::Settings& context_settings = context.GetSettings();
+    const gfx::RenderContext::Settings& context_settings = context.GetSettings();
 
     gfx::RenderState::Settings state_settings;
-    state_settings.sp_program = gfx::Program::Create(context, {
+    state_settings.sp_program = gfx::Program::Create(context,
+        gfx::Program::Settings
         {
-            gfx::Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "Planet", "PlanetVS" }, { } }),
-            gfx::Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "Planet", "PlanetPS" }, { } }),
-        },
-        { { {
-                { "input_position", "POSITION" },
-                { "input_normal",   "NORMAL"   },
-                { "input_texcoord", "TEXCOORD" },
-        } } },
-        { "g_constants", "g_texture", "g_sampler" },
-        { },
-        { context_settings.color_format },
-        context_settings.depth_stencil_format
-    });
+            gfx::Program::Shaders
+            {
+                gfx::Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "Planet", "PlanetVS" }, { } }),
+                gfx::Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "Planet", "PlanetPS" }, { } }),
+            },
+            gfx::Program::InputBufferLayouts
+            {
+                gfx::Program::InputBufferLayout { mesh.GetVertexLayout().GetSemantics() }
+            },
+            gfx::Program::ArgumentDescriptions
+            {
+                { { gfx::Shader::Type::All,    "g_uniforms"  }, gfx::Program::Argument::Modifiers::None     },
+                { { gfx::Shader::Type::Pixel,  "g_constants" }, gfx::Program::Argument::Modifiers::Constant },
+                { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::Argument::Modifiers::Constant },
+                { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::Argument::Modifiers::Constant },
+            },
+            gfx::PixelFormats
+            {
+                context_settings.color_format
+            },
+            context_settings.depth_stencil_format
+        }
+    );
     state_settings.sp_program->SetName("Planet Shaders");
     state_settings.viewports     = { gfx::GetFrameViewport(context_settings.frame_size) };
     state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };
@@ -88,19 +91,22 @@ Planet::Planet(gfx::Context& context, gfx::ImageLoader& image_loader, const Sett
         gfx::Sampler::LevelOfDetail(m_settings.lod_bias)
     });
     m_sp_texture_sampler->SetName("Planet Texture Sampler");
+
+    // Initialize default uniforms to be ready to render right away
+    Update(0.0, 0.0);
 }
 
-gfx::Program::ResourceBindings::Ptr Planet::CreateResourceBindings(const gfx::Buffer::Ptr& sp_constants_buffer, const gfx::Buffer::Ptr& sp_uniforms_buffer)
+Ptr<gfx::ProgramBindings> Planet::CreateProgramBindings(const Ptr<gfx::Buffer>& sp_constants_buffer, const Ptr<gfx::Buffer>& sp_uniforms_buffer)
 {
     ITT_FUNCTION_TASK();
 
     assert(!!m_sp_state);
     assert(!!m_sp_state->GetSettings().sp_program);
-    return gfx::Program::ResourceBindings::Create(m_sp_state->GetSettings().sp_program, {
-        { { gfx::Shader::Type::All,   "g_uniforms"  }, { { sp_uniforms_buffer                   } } },
-        { { gfx::Shader::Type::Pixel, "g_constants" }, { { sp_constants_buffer                  } } },
-        { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_mesh_buffers.GetSubsetTexturePtr() } } },
-        { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler                 } } },
+    return gfx::ProgramBindings::Create(m_sp_state->GetSettings().sp_program, {
+        { { gfx::Shader::Type::All,   "g_uniforms"  }, { { sp_uniforms_buffer             } } },
+        { { gfx::Shader::Type::Pixel, "g_constants" }, { { sp_constants_buffer            } } },
+        { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_mesh_buffers.GetTexturePtr() } } },
+        { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler           } } },
     });
 }
 
@@ -143,9 +149,9 @@ void Planet::Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buf
 
     cmd_list.Reset(m_sp_state, "Planet rendering");
     
-    assert(!buffer_bindings.resource_bindings_per_instance.empty());
-    assert(!!buffer_bindings.resource_bindings_per_instance[0]);
-    m_mesh_buffers.Draw(cmd_list, *buffer_bindings.resource_bindings_per_instance[0]);
+    assert(!buffer_bindings.program_bindings_per_instance.empty());
+    assert(!!buffer_bindings.program_bindings_per_instance[0]);
+    m_mesh_buffers.Draw(cmd_list, *buffer_bindings.program_bindings_per_instance[0]);
 }
 
 } // namespace Methane::Graphics

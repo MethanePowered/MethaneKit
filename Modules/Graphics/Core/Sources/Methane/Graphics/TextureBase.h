@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ protected:
     uint32_t GetRequiredSubresourceCount() const;
     static void ValidateDimensions(DimensionType dimension_type, const Dimensions& dimensions, bool mipmapped);
 
+private:
     const Settings m_settings;
 };
 

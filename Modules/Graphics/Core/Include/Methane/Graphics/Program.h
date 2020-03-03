@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,7 +28,8 @@ pipeline via state object and used to create resource binding objects.
 #include "Object.h"
 #include "Types.h"
 
-#include <memory>
+#include <Methane/Memory.hpp>
+
 #include <vector>
 #include <string>
 #include <unordered_set>
@@ -44,8 +45,6 @@ struct CommandList;
 
 struct Program : virtual Object
 {
-    using Ptr = std::shared_ptr<Program>;
-
     struct InputBufferLayout
     {
         enum class StepType
@@ -54,29 +53,38 @@ struct Program : virtual Object
             PerVertex,
             PerInstance,
         };
-        
-        struct Argument
-        {
-            std::string name;
-            std::string semantic;
-        };
-        
-        using Arguments = std::vector<Argument>;
-        
-        Arguments arguments;
-        StepType  step_type = StepType::PerVertex;
-        uint32_t  step_rate = 1;
+
+        using ArgumentSemantics = std::vector<std::string>;
+
+        ArgumentSemantics argument_semantics;
+        StepType          step_type = StepType::PerVertex;
+        uint32_t          step_rate = 1;
     };
     
     using InputBufferLayouts = std::vector<InputBufferLayout>;
 
     struct Argument
     {
+        struct Modifiers
+        {
+            using Mask = uint32_t;
+            enum Value : Mask
+            {
+                None        = 0u,
+                Constant    = 1u << 0u,
+                Addressable = 1u << 1u,
+                All         = ~0u,
+            };
+
+            Modifiers() = delete;
+        };
+
         const Shader::Type shader_type;
-        const std::string  argument_name;
+        const std::string  name;
         const size_t       hash;
 
         Argument(Shader::Type shader_type, std::string argument_name);
+        Argument(const Argument& argument) = default;
 
         bool operator==(const Argument& other) const;
 
@@ -86,59 +94,43 @@ struct Program : virtual Object
         };
     };
 
-    using Arguments                 = std::unordered_set<Argument, Argument::Hash>;
-    using ResourceBindingByArgument = std::unordered_map<Argument, Shader::ResourceBinding::Ptr, Argument::Hash>;
+    using Arguments = std::unordered_set<Argument, Argument::Hash>;
 
-    struct ResourceBindings
+    struct ArgumentDesc : Argument
     {
-        using Ptr     = std::shared_ptr<ResourceBindings>;
-        using WeakPtr = std::weak_ptr<ResourceBindings>;
-        using ResourceLocationsByArgument = std::unordered_map<Argument, Resource::Locations, Argument::Hash>;
+        const Modifiers::Mask modifiers;
 
-        struct ApplyBehavior
-        {
-            using Mask = uint32_t;
-            enum Value : Mask
-            {
-                Indifferent    = 0u,        // All bindings will be applied indifferently of the previous binding values
-                ConstantOnce   = 1u << 0,   // Constant program arguments will be applied only once for each command list
-                ChangesOnly    = 1u << 1,   // Only changed program argument values will be applied in command sequence
-                StateBarriers  = 1u << 2,   // Resource state barriers will be automatically evaluated and set for command list
-                AllIncremental = ~0u        // All binding values will be applied incrementally along with resource state barriers
-            };
+        ArgumentDesc(Shader::Type shader_type, std::string argument_name,
+                     Modifiers::Mask modifiers_mask = Modifiers::None);
+        ArgumentDesc(const Argument& argument,
+                     Modifiers::Mask modifiers_mask = Modifiers::None);
+        ArgumentDesc(const ArgumentDesc& argument_desc) = default;
 
-            ApplyBehavior() = delete;
-        };
-
-        // Create ResourceBindings instance
-        static Ptr Create(const Program::Ptr& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
-        static Ptr CreateCopy(const ResourceBindings& other_resource_bingings, const ResourceLocationsByArgument& replace_resource_locations_by_argument = {});
-
-        // ResourceBindings interface
-        virtual const Shader::ResourceBinding::Ptr& Get(const Argument& shader_argument) const = 0;
-        virtual void Apply(CommandList& command_list, ApplyBehavior::Mask apply_behavior = ApplyBehavior::AllIncremental) const = 0;
-
-        virtual ~ResourceBindings() = default;
+        inline bool IsConstant() const    { return modifiers & Modifiers::Constant; }
+        inline bool IsAddressable() const { return modifiers & Modifiers::Addressable; }
     };
+
+    using ArgumentDescriptions = std::unordered_set<ArgumentDesc, ArgumentDesc::Hash>;
+    static ArgumentDescriptions::const_iterator FindArgumentDescription(const ArgumentDescriptions& argument_descriptions, const Argument& argument);
+    using Shaders = Ptrs<Shader>;
 
     // Program settings
     struct Settings
     {
-        Shaders                  shaders;
-        InputBufferLayouts       input_buffer_layouts;
-        std::set<std::string>    constant_argument_names;
-        std::set<std::string>    addressable_argument_names;
-        std::vector<PixelFormat> color_formats;
-        PixelFormat              depth_format = PixelFormat::Unknown;
+        Shaders              shaders;
+        InputBufferLayouts   input_buffer_layouts;
+        ArgumentDescriptions argument_descriptions;
+        PixelFormats         color_formats;
+        PixelFormat          depth_format = PixelFormat::Unknown;
     };
 
     // Create Program instance
-    static Ptr Create(Context& context, const Settings& settings);
+    static Ptr<Program> Create(Context& context, const Settings& settings);
 
     // Program interface
     virtual const Settings&      GetSettings() const = 0;
     virtual const Shader::Types& GetShaderTypes() const = 0;
-    virtual const Shader::Ptr&   GetShader(Shader::Type shader_type) const = 0;
+    virtual const Ptr<Shader>&   GetShader(Shader::Type shader_type) const = 0;
 
     virtual ~Program() = default;
 };

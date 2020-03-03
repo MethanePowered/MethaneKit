@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@ Screen Quad rendering primitive.
 
 #include <Methane/Graphics/ScreenQuad.h>
 
-#include <Methane/Graphics/Mesh.h>
+#include <Methane/Graphics/Mesh/QuadMesh.hpp>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Data/AppResourceProviders.h>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
@@ -41,14 +41,13 @@ struct ScreenQuadVertex
     Mesh::Position position;
     Mesh::TexCoord texcoord;
 
-    using FieldsArray = std::array<Mesh::VertexField, 2>;
-    static constexpr const FieldsArray layout = {
+    inline static const Mesh::VertexLayout layout = {
         Mesh::VertexField::Position,
         Mesh::VertexField::TexCoord,
     };
 };
 
-ScreenQuad::ScreenQuad(Context& context, Texture::Ptr sp_texture, Settings settings)
+ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings settings)
     : m_settings(std::move(settings))
     , m_debug_region_name(m_settings.name + " Screen-Quad rendering")
     , m_sp_texture(std::move(sp_texture))
@@ -58,23 +57,39 @@ ScreenQuad::ScreenQuad(Context& context, Texture::Ptr sp_texture, Settings setti
     if (!m_sp_texture)
         throw std::invalid_argument("Screen-quad texture can not be empty.");
 
-    const Context::Settings& context_settings = context.GetSettings();
+    QuadMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.f, 2.f);
+
+    const RenderContext::Settings& context_settings = context.GetSettings();
 
     RenderState::Settings state_settings;
-    state_settings.sp_program = Program::Create(context, {
+    state_settings.sp_program = Program::Create(context,
+        Program::Settings
         {
-            Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "ScreenQuad", "ScreenQuadVS" }, { } }),
-            Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "ScreenQuad", "ScreenQuadPS" }, { } }),
-        },
-        { { {
-            { "input_position", "POSITION" },
-            { "input_texcoord", "TEXCOORD" },
-        } } },
-        { "g_constants", "g_texture", "g_sampler" },
-        { },
-        { context_settings.color_format },
-        context_settings.depth_stencil_format
-    });
+            Program::Shaders
+            {
+                Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "ScreenQuad", "ScreenQuadVS" }, { } }),
+                Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "ScreenQuad", "ScreenQuadPS" }, { } }),
+            },
+            Program::InputBufferLayouts
+            {
+                Program::InputBufferLayout
+                {
+                    Program::InputBufferLayout::ArgumentSemantics { quad_mesh.GetVertexLayout().GetSemantics() }
+                }
+            },
+            Program::ArgumentDescriptions
+            {
+                { { Shader::Type::Pixel, "g_constants" }, Program::Argument::Modifiers::Constant },
+                { { Shader::Type::Pixel, "g_texture"   }, Program::Argument::Modifiers::Constant },
+                { { Shader::Type::Pixel, "g_sampler"   }, Program::Argument::Modifiers::Constant },
+            },
+            PixelFormats
+            {
+                context_settings.color_format
+            },
+            context_settings.depth_stencil_format
+        }
+    );
     state_settings.sp_program->SetName(m_settings.name + " Screen-Quad Shading");
     state_settings.viewports            = { GetFrameViewport(settings.screen_rect) };
     state_settings.scissor_rects        = { GetFrameScissorRect(settings.screen_rect) };
@@ -96,8 +111,6 @@ ScreenQuad::ScreenQuad(Context& context, Texture::Ptr sp_texture, Settings setti
     });
     m_sp_texture_sampler->SetName(m_settings.name + " Screen-Quad Texture Sampler");
     m_sp_texture->SetName(m_settings.name + " Screen-Quad Texture");
-
-    RectMesh<ScreenQuadVertex> quad_mesh(Mesh::VertexLayoutFromArray(ScreenQuadVertex::layout), 2.f, 2.f);
 
     m_sp_vertex_buffer = Buffer::CreateVertexBuffer(context, static_cast<Data::Size>(quad_mesh.GetVertexDataSize()),
                                                              static_cast<Data::Size>(quad_mesh.GetVertexSize()));
@@ -123,7 +136,7 @@ ScreenQuad::ScreenQuad(Context& context, Texture::Ptr sp_texture, Settings setti
     m_sp_const_buffer = Buffer::CreateConstantBuffer(context, Buffer::GetAlignedBufferSize(const_buffer_size));
     m_sp_const_buffer->SetName(m_settings.name + " Screen-Quad Constants Buffer");
 
-    m_sp_const_resource_bindings = Program::ResourceBindings::Create(state_settings.sp_program, {
+    m_sp_const_program_bindings = ProgramBindings::Create(state_settings.sp_program, {
         { { Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer    } } },
         { { Shader::Type::Pixel, "g_texture"   }, { { m_sp_texture         } } },
         { { Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler } } },
@@ -176,7 +189,7 @@ void ScreenQuad::Draw(RenderCommandList& cmd_list) const
     ITT_FUNCTION_TASK();
     
     cmd_list.Reset(m_sp_state, m_debug_region_name);
-    cmd_list.SetResourceBindings(*m_sp_const_resource_bindings);
+    cmd_list.SetProgramBindings(*m_sp_const_program_bindings);
     cmd_list.SetVertexBuffers({ *m_sp_vertex_buffer });
     cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
 }

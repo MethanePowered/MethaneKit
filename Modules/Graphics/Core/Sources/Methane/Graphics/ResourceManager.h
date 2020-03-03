@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -56,26 +56,25 @@ public:
     void Release();
 
     bool DeferredHeapAllocationEnabled() const { return m_deferred_heap_allocation; }
-    void DeferResourceBindingsInitialization(Program::ResourceBindings& resource_bindings);
+    void DeferProgramBindingsInitialization(ProgramBindings& program_bindings);
 
     uint32_t                    CreateDescriptorHeap(const DescriptorHeap::Settings& settings); // returns index of the created descriptor heap
-    const DescriptorHeap::Ptr&  GetDescriptorHeapPtr(DescriptorHeap::Type type, uint32_t heap_index = 0);
-    DescriptorHeap&             GetDescriptorHeap(DescriptorHeap::Type type, uint32_t heap_index = 0);
-    const DescriptorHeap::Ptr&  GetDefaultShaderVisibleDescriptorHeapPtr(DescriptorHeap::Type type);
-    DescriptorHeap&             GetDefaultShaderVisibleDescriptorHeap(DescriptorHeap::Type type);
+    const Ptr<DescriptorHeap>&  GetDescriptorHeapPtr(DescriptorHeap::Type type, Data::Index heap_index = 0);
+    DescriptorHeap&             GetDescriptorHeap(DescriptorHeap::Type type, Data::Index heap_index = 0);
+    const Ptr<DescriptorHeap>&  GetDefaultShaderVisibleDescriptorHeapPtr(DescriptorHeap::Type type) const;
+    DescriptorHeap&             GetDefaultShaderVisibleDescriptorHeap(DescriptorHeap::Type type) const;
     DescriptorHeapSizeByType    GetDescriptorHeapSizes(bool get_allocated_size, bool for_shader_visible_heaps) const;
     ResourceBase::ReleasePool&  GetReleasePool();
 
-protected:
-    using DescriptorHeapTypes = std::array<DescriptorHeaps, static_cast<size_t>(DescriptorHeap::Type::Count)>;
-    using ProgramResourceBindings = std::vector<Program::ResourceBindings::WeakPtr>;
+private:
+    using DescriptorHeapTypes = std::array<Ptrs<DescriptorHeap>, static_cast<size_t>(DescriptorHeap::Type::Count)>;
 
-    bool                            m_deferred_heap_allocation = false;
-    ContextBase&                    m_context;
-    DescriptorHeapTypes             m_descriptor_heap_types;
-    ResourceBase::ReleasePool::Ptr  m_sp_release_pool;
-    ProgramResourceBindings         m_deferred_resource_bindings;
-    std::mutex                      m_deferred_resource_bindings_mutex;
+    bool                           m_deferred_heap_allocation = false;
+    ContextBase&                   m_context;
+    DescriptorHeapTypes            m_descriptor_heap_types;
+    Ptr<ResourceBase::ReleasePool> m_sp_release_pool;
+    WeakPtrs<ProgramBindings>      m_deferred_program_bindings;
+    std::mutex                     m_deferred_program_bindings_mutex;
 };
 
 } // namespace Methane::Graphics

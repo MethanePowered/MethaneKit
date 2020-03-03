@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -40,34 +40,33 @@ class ParallelRenderCommandListBase
     , public CommandListBase
 {
 public:
-    using Ptr     = std::shared_ptr<ParallelRenderCommandList>;
-    using WeakPtr = std::weak_ptr<ParallelRenderCommandList>;
-
     ParallelRenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass);
+    
+    using CommandListBase::Reset;
 
     // ParallelRenderCommandList interface
-    void Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group = "") override;
+    void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;
     void SetParallelCommandListsCount(uint32_t count) override;
-    const RenderCommandList::Ptrs& GetParallelCommandLists() const override { return m_parallel_comand_lists; }
+    const Ptrs<RenderCommandList>& GetParallelCommandLists() const override { return m_parallel_command_lists; }
 
     // CommandListBase interface
-    void SetResourceBarriers(const ResourceBase::Barriers&) override { }
+    void SetResourceBarriers(const ResourceBase::Barriers&) override { throw std::logic_error("Can not set resource barriers on parallel render command list."); }
     void Execute(uint32_t frame_index) override;
     void Complete(uint32_t frame_index) override;
 
     // CommandList interface
-    void PushDebugGroup(const std::string& name) override   { throw std::logic_error("Not available for parallel render command list."); }
-    void PopDebugGroup() override                           { throw std::logic_error("Not available for parallel render command list."); }
-    void Commit(bool present_drawable) override;
+    void PushDebugGroup(const std::string& name) override   { throw std::logic_error("Can no use debug groups on parallel render command list."); }
+    void PopDebugGroup() override                           { throw std::logic_error("Can no use debug groups on parallel render command list."); }
+    void Commit() override;
 
     // Object interface
     void SetName(const std::string& name) override;
 
     RenderPassBase& GetPass();
 
-protected:
-    const RenderPass::Ptr   m_sp_pass;
-    RenderCommandList::Ptrs m_parallel_comand_lists;
+private:
+    const Ptr<RenderPass>   m_sp_pass;
+    Ptrs<RenderCommandList> m_parallel_command_lists;
 };
 
 } // namespace Methane::Graphics

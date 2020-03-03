@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ FILE: Methane/Data/RangeSet.cpp
 namespace Methane::Data
 {
 
-void dummy()
+void Dummy()
 {
     // Prevents libtool warning for library on MacOS:
     // the table of contents is empty (no object file members in the library define global symbols)

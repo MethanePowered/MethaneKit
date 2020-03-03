@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,12 +23,12 @@ Vulkan "dummy" implementation of the descriptor heap.
 
 #include "DescriptorHeapVK.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-DescriptorHeap::Ptr DescriptorHeap::Create(ContextBase& context, const Settings& settings)
+Ptr<DescriptorHeap> DescriptorHeap::Create(ContextBase& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<DescriptorHeapVK>(context, settings);

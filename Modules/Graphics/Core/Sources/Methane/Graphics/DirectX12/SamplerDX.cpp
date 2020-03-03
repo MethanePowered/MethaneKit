@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,11 +22,11 @@ DirectX 12 implementation of the sampler interface.
 ******************************************************************************/
 
 #include "SamplerDX.h"
-#include "ContextDX.h"
 #include "DeviceDX.h"
 #include "TypesDX.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 
@@ -171,10 +171,10 @@ static void ConvertBorderColorToDXColor(SamplerBase::BorderColor border_color, F
     }
 }
 
-Sampler::Ptr Sampler::Create(Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Sampler> Sampler::Create(Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<SamplerDX>(static_cast<ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<SamplerDX>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
 SamplerDX::SamplerDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
@@ -185,18 +185,18 @@ SamplerDX::SamplerDX(ContextBase& context, const Settings& settings, const Descr
     InitializeDefaultDescriptors();
 
     D3D12_SAMPLER_DESC dx_sampler_desc = {};
-    dx_sampler_desc.Filter             = ConvertFilterToDX(m_settings.filter);
-    dx_sampler_desc.AddressU           = ConvertAddressModeToDX(m_settings.address.r);
-    dx_sampler_desc.AddressV           = ConvertAddressModeToDX(m_settings.address.s);
-    dx_sampler_desc.AddressW           = ConvertAddressModeToDX(m_settings.address.t);
-    dx_sampler_desc.MinLOD             = m_settings.lod.min;
-    dx_sampler_desc.MaxLOD             = m_settings.lod.max;
-    dx_sampler_desc.MipLODBias         = m_settings.lod.bias;
+    dx_sampler_desc.Filter             = ConvertFilterToDX(settings.filter);
+    dx_sampler_desc.AddressU           = ConvertAddressModeToDX(settings.address.r);
+    dx_sampler_desc.AddressV           = ConvertAddressModeToDX(settings.address.s);
+    dx_sampler_desc.AddressW           = ConvertAddressModeToDX(settings.address.t);
+    dx_sampler_desc.MinLOD             = settings.lod.min;
+    dx_sampler_desc.MaxLOD             = settings.lod.max;
+    dx_sampler_desc.MipLODBias         = settings.lod.bias;
     dx_sampler_desc.MaxAnisotropy      = 0;
-    dx_sampler_desc.ComparisonFunc     = TypeConverterDX::CompareFunctionToDX(m_settings.compare_function);
-    ConvertBorderColorToDXColor(m_settings.border_color, &dx_sampler_desc.BorderColor[0]);
+    dx_sampler_desc.ComparisonFunc     = TypeConverterDX::CompareFunctionToDX(settings.compare_function);
+    ConvertBorderColorToDXColor(settings.border_color, &dx_sampler_desc.BorderColor[0]);
 
-    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateSampler(&dx_sampler_desc, GetNativeCPUDescriptorHandle(Usage::ShaderRead));
+    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateSampler(&dx_sampler_desc, GetNativeCpuDescriptorHandle(Usage::ShaderRead));
 }
 
 } // namespace Methane::Graphics

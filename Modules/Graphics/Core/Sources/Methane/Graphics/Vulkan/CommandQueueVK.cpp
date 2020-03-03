@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,19 +24,20 @@ Vulkan implementation of the command queue interface.
 #include "CommandQueueVK.h"
 #include "ContextVK.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-CommandQueue::Ptr CommandQueue::Create(Context& context)
+Ptr<CommandQueue> CommandQueue::Create(Context& context)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<CommandQueueVK>(static_cast<ContextBase&>(context));
+    return std::make_shared<CommandQueueVK>(dynamic_cast<ContextBase&>(context));
 }
 
 CommandQueueVK::CommandQueueVK(ContextBase& context)
-    : CommandQueueBase(context, true)
+    : CommandQueueBase(context)
 {
     ITT_FUNCTION_TASK();
 }
@@ -44,7 +45,6 @@ CommandQueueVK::CommandQueueVK(ContextBase& context)
 CommandQueueVK::~CommandQueueVK()
 {
     ITT_FUNCTION_TASK();
-    assert(!IsExecuting());
 }
 
 void CommandQueueVK::SetName(const std::string& name)
@@ -54,10 +54,10 @@ void CommandQueueVK::SetName(const std::string& name)
     CommandQueueBase::SetName(name);
 }
 
-ContextVK& CommandQueueVK::GetContextVK() noexcept
+IContextVK& CommandQueueVK::GetContextVK() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextVK&>(m_context);
+    return static_cast<IContextVK&>(GetContext());
 }
 
 } // namespace Methane::Graphics

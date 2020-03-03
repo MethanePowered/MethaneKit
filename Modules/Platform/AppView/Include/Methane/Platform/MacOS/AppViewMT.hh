@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -54,6 +54,6 @@ MacOS application view implementation.
                           pixelFormat:(MTLPixelFormat) pixelFormat
                         drawableCount:(NSUInteger) drawable_count
                          vsyncEnabled:(BOOL) vsync_enabled
-                unsyncRefreshInterval:(double) refresn_interval_sec;
+                unsyncRefreshInterval:(double) refresh_interval_sec;
 
 @end

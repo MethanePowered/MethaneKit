@@ -11,12 +11,18 @@ if (WIN32)
         ${SOURCES_GRAPHICS_DIR}/TypesDX.cpp
         ${SOURCES_GRAPHICS_DIR}/DeviceDX.h
         ${SOURCES_GRAPHICS_DIR}/DeviceDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/FenceDX.h
+        ${SOURCES_GRAPHICS_DIR}/FenceDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ContextDX.h
-        ${SOURCES_GRAPHICS_DIR}/ContextDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/ContextDX.hpp
         ${SOURCES_GRAPHICS_DIR}/ShaderDX.h
         ${SOURCES_GRAPHICS_DIR}/ShaderDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ProgramDX.h
         ${SOURCES_GRAPHICS_DIR}/ProgramDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/ProgramBindingsDX.h
+        ${SOURCES_GRAPHICS_DIR}/ProgramBindingsDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/RenderContextDX.h
+        ${SOURCES_GRAPHICS_DIR}/RenderContextDX.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderStateDX.h
         ${SOURCES_GRAPHICS_DIR}/RenderStateDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ResourceDX.h
@@ -33,6 +39,10 @@ if (WIN32)
         ${SOURCES_GRAPHICS_DIR}/RenderPassDX.cpp
         ${SOURCES_GRAPHICS_DIR}/CommandQueueDX.h
         ${SOURCES_GRAPHICS_DIR}/CommandQueueDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/CommandListDX.h
+        ${SOURCES_GRAPHICS_DIR}/CommandListDX.hpp
+        ${SOURCES_GRAPHICS_DIR}/BlitCommandListDX.h
+        ${SOURCES_GRAPHICS_DIR}/BlitCommandListDX.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListDX.h
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListDX.h
@@ -42,10 +52,10 @@ if (WIN32)
     set(PLATFORM_LIBRARIES
         D3DX12
         DirectXTex
+        D3DCompilerToDXC
         d3d12
         dxgi
         dxguid
-        d3dcompiler
         Shcore
     )
 
@@ -61,18 +71,26 @@ elseif(APPLE)
         ${SOURCES_GRAPHICS_DIR}/TypesMT.mm
         ${SOURCES_GRAPHICS_DIR}/DeviceMT.hh
         ${SOURCES_GRAPHICS_DIR}/DeviceMT.mm
-        ${SOURCES_GRAPHICS_DIR}/ContextMT.hh
-        ${SOURCES_GRAPHICS_DIR}/ContextMT.mm
+        ${SOURCES_GRAPHICS_DIR}/FenceMT.hh
+        ${SOURCES_GRAPHICS_DIR}/FenceMT.mm
+        ${SOURCES_GRAPHICS_DIR}/ContextMT.h
+        ${SOURCES_GRAPHICS_DIR}/ContextMT.hpp
+        ${SOURCES_GRAPHICS_DIR}/RenderContextMT.hh
+        ${SOURCES_GRAPHICS_DIR}/RenderContextMT.mm
         ${SOURCES_GRAPHICS_DIR}/ShaderMT.hh
         ${SOURCES_GRAPHICS_DIR}/ShaderMT.mm
         ${SOURCES_GRAPHICS_DIR}/ProgramMT.hh
         ${SOURCES_GRAPHICS_DIR}/ProgramMT.mm
+        ${SOURCES_GRAPHICS_DIR}/ProgramLibraryMT.hh
+        ${SOURCES_GRAPHICS_DIR}/ProgramLibraryMT.mm
+        ${SOURCES_GRAPHICS_DIR}/ProgramBindingsMT.hh
+        ${SOURCES_GRAPHICS_DIR}/ProgramBindingsMT.mm
         ${SOURCES_GRAPHICS_DIR}/RenderStateMT.hh
         ${SOURCES_GRAPHICS_DIR}/RenderStateMT.mm
         ${SOURCES_GRAPHICS_DIR}/ResourceMT.hh
         ${SOURCES_GRAPHICS_DIR}/ResourceMT.mm
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapMT.hh
-        ${SOURCES_GRAPHICS_DIR}/DescriptorHeapMT.mm  
+        ${SOURCES_GRAPHICS_DIR}/DescriptorHeapMT.mm
         ${SOURCES_GRAPHICS_DIR}/BufferMT.hh
         ${SOURCES_GRAPHICS_DIR}/BufferMT.mm
         ${SOURCES_GRAPHICS_DIR}/TextureMT.hh
@@ -83,6 +101,8 @@ elseif(APPLE)
         ${SOURCES_GRAPHICS_DIR}/RenderPassMT.mm
         ${SOURCES_GRAPHICS_DIR}/CommandQueueMT.hh
         ${SOURCES_GRAPHICS_DIR}/CommandQueueMT.mm
+        ${SOURCES_GRAPHICS_DIR}/BlitCommandListMT.hh
+        ${SOURCES_GRAPHICS_DIR}/BlitCommandListMT.mm
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.hh
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.mm
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListMT.hh
@@ -107,12 +127,18 @@ else() # Linux
         ${SOURCES_GRAPHICS_DIR}/TypesVK.cpp
         ${SOURCES_GRAPHICS_DIR}/DeviceVK.h
         ${SOURCES_GRAPHICS_DIR}/DeviceVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/FenceVK.h
+        ${SOURCES_GRAPHICS_DIR}/FenceVK.cpp
         ${SOURCES_GRAPHICS_DIR}/ContextVK.h
-        ${SOURCES_GRAPHICS_DIR}/ContextVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/ContextVK.hpp
         ${SOURCES_GRAPHICS_DIR}/ShaderVK.h
         ${SOURCES_GRAPHICS_DIR}/ShaderVK.cpp
         ${SOURCES_GRAPHICS_DIR}/ProgramVK.h
         ${SOURCES_GRAPHICS_DIR}/ProgramVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/ProgramBindingsVK.h
+        ${SOURCES_GRAPHICS_DIR}/ProgramBindingsVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/RenderContextVK.h
+        ${SOURCES_GRAPHICS_DIR}/RenderContextVK.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderStateVK.h
         ${SOURCES_GRAPHICS_DIR}/RenderStateVK.cpp
         ${SOURCES_GRAPHICS_DIR}/ResourceVK.h
@@ -129,6 +155,8 @@ else() # Linux
         ${SOURCES_GRAPHICS_DIR}/RenderPassVK.cpp
         ${SOURCES_GRAPHICS_DIR}/CommandQueueVK.h
         ${SOURCES_GRAPHICS_DIR}/CommandQueueVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/BlitCommandListVK.h
+        ${SOURCES_GRAPHICS_DIR}/BlitCommandListVK.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListVK.h
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListVK.cpp
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListVK.h
@@ -138,20 +166,24 @@ else() # Linux
 endif()
 
 set(LIBRARIES ${PLATFORM_LIBRARIES}
+    MethaneCommonPrimitives
     MethaneDataPrimitives
     MethaneDataRangeSet
     MethanePlatformUtils
     MethanePlatformAppView
     MethaneGraphicsHelpers
-    MethaneDataInstrumentation
+    MethaneInstrumentation
 )
 
 set(HEADERS
     ${INCLUDE_DIR}/Types.h
     ${INCLUDE_DIR}/Device.h
     ${INCLUDE_DIR}/Context.h
+    ${INCLUDE_DIR}/RenderContext.h
+    ${INCLUDE_DIR}/Fence.h
     ${INCLUDE_DIR}/Shader.h
     ${INCLUDE_DIR}/Program.h
+    ${INCLUDE_DIR}/ProgramBindings.h
     ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/Resource.h
     ${INCLUDE_DIR}/Buffer.h
@@ -160,6 +192,7 @@ set(HEADERS
     ${INCLUDE_DIR}/RenderPass.h
     ${INCLUDE_DIR}/CommandQueue.h
     ${INCLUDE_DIR}/CommandList.h
+    ${INCLUDE_DIR}/BlitCommandList.h
     ${INCLUDE_DIR}/RenderCommandList.h
     ${INCLUDE_DIR}/ParallelRenderCommandList.h
 )
@@ -168,6 +201,7 @@ set(SOURCES ${PLATFORM_SOURCES}
 
     # Native alias headers
     ${SOURCES_DIR}/Native/ContextNT.h
+    ${SOURCES_DIR}/Native/RenderContextNT.h
     ${SOURCES_DIR}/Native/ShaderNT.h
     ${SOURCES_DIR}/Native/ProgramNT.h
     ${SOURCES_DIR}/Native/RenderStateNT.h
@@ -186,10 +220,16 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/DeviceBase.cpp
     ${SOURCES_DIR}/ContextBase.h
     ${SOURCES_DIR}/ContextBase.cpp
+    ${SOURCES_DIR}/RenderContextBase.h
+    ${SOURCES_DIR}/RenderContextBase.cpp
+    ${SOURCES_DIR}/FenceBase.h
+    ${SOURCES_DIR}/FenceBase.cpp
     ${SOURCES_DIR}/ShaderBase.h
     ${SOURCES_DIR}/ShaderBase.cpp
     ${SOURCES_DIR}/ProgramBase.h
     ${SOURCES_DIR}/ProgramBase.cpp
+    ${SOURCES_DIR}/ProgramBindingsBase.h
+    ${SOURCES_DIR}/ProgramBindingsBase.cpp
     ${SOURCES_DIR}/RenderStateBase.h
     ${SOURCES_DIR}/RenderStateBase.cpp
     ${SOURCES_DIR}/ResourceBase.h
@@ -206,6 +246,7 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/CommandQueueBase.cpp
     ${SOURCES_DIR}/CommandListBase.h
     ${SOURCES_DIR}/CommandListBase.cpp
+    ${SOURCES_DIR}/CommandListState.cpp
     ${SOURCES_DIR}/RenderCommandListBase.h
     ${SOURCES_DIR}/RenderCommandListBase.cpp
     ${SOURCES_DIR}/ParallelRenderCommandListBase.h
@@ -217,7 +258,7 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/ResourceManager.h
     ${SOURCES_DIR}/ResourceManager.cpp
     ${SOURCES_DIR}/Types.cpp
-)
+    Include/Methane/Graphics/Fence.h)
 
 add_library(${TARGET} STATIC
     ${HEADERS}
@@ -246,6 +287,7 @@ set_target_properties(${TARGET}
     PROPERTIES
     FOLDER Modules/Graphics
     PUBLIC_HEADER "${HEADERS}"
+    PREREQUISITE_MODULES "DirectXCompiler"
 )
 
 install(TARGETS ${TARGET}

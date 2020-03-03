@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -52,28 +52,12 @@ namespace Methane::Data
 template<typename Iterator, typename Value>
 struct IteratorFunction
 {
-    using type = std::function<void(Value&)>;
+    using Type = std::function<void(Value&)>;
 };
-
-#if 0 // TODO: fix or remove experimental code
-
-template<typename Iterator, typename = std::void_t<typename std::iterator_traits<Iterator>::iterator_category>>
-struct is_const_iterator
-{
-    static constexpr bool value = std::is_const<typename std::iterator_traits<Iterator>::value_type>::value;
-};
-
-template<typename Iterator>
-struct IteratorFunction<Iterator, std::enable_if_t<is_const_iterator<Iterator>::value, const typename std::iterator_traits<Iterator>::value_type>>;
-
-template<typename Iterator>
-struct IteratorFunction<Iterator, std::enable_if_t<!is_const_iterator<Iterator>::value, typename std::iterator_traits<Iterator>::value_type>>;
-
-#endif
 
 template<typename Iterator, typename Value>
 void ParallelForEach(const Iterator& begin_it, const Iterator& end_it,
-                     typename IteratorFunction<Iterator, Value>::type&& body_function)
+                     typename IteratorFunction<Iterator, Value>::Type&& body_function)
 {
     ITT_FUNCTION_TASK();
 
@@ -109,7 +93,7 @@ void ParallelForEach(const Iterator& begin_it, const Iterator& end_it,
     for(const std::future<void>& future : futures)
     {
         future.wait();
-    };
+    }
 
 #endif
 }
@@ -130,9 +114,9 @@ void ParallelFor(IndexType begin_index, IndexType end_index, std::function<void(
 
 #else
 
-    const IndexType count           = end_index - begin_index;
-    const IndexType hw_theads_count = static_cast<IndexType>(std::thread::hardware_concurrency());
-    const IndexType chunk_size      = Data::DivCeil(count, hw_theads_count);
+    const IndexType count            = end_index - begin_index;
+    const IndexType hw_threads_count = static_cast<IndexType>(std::thread::hardware_concurrency());
+    const IndexType chunk_size       = Data::DivCeil(count, hw_threads_count);
 
     std::vector<std::future<void>> futures;
     futures.reserve(static_cast<size_t>(count));
@@ -156,7 +140,7 @@ void ParallelFor(IndexType begin_index, IndexType end_index, std::function<void(
     for (const std::future<void>& future : futures)
     {
         future.wait();
-    };
+    }
 
 #endif
 }

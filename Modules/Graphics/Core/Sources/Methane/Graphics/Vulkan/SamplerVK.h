@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,9 +28,9 @@ Vulkan implementation of the sampler interface.
 namespace Methane::Graphics
 {
 
-class ContextVK;
+struct IContextVK;
 
-class SamplerVK : public SamplerBase
+class SamplerVK final : public SamplerBase
 {
 public:
     SamplerVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
@@ -40,9 +40,9 @@ public:
     void SetName(const std::string& name) override;
     
 protected:
-    void ResetSampletState();
+    void ResetSamplerState();
 
-    ContextVK& GetContextVK() noexcept;
+    IContextVK& GetContextVK() noexcept;
 };
 
 } // namespace Methane::Graphics

@@ -6,6 +6,7 @@ get_module_dirs("Methane/Data")
 
 set(HEADERS
     ${INCLUDE_DIR}/Types.h
+    ${INCLUDE_DIR}/Chunk.h
     ${INCLUDE_DIR}/Provider.h
     ${INCLUDE_DIR}/FileProvider.hpp
     ${INCLUDE_DIR}/ResourceProvider.hpp
@@ -32,7 +33,7 @@ target_include_directories(${TARGET}
 )
 
 target_link_libraries(${TARGET}
-    MethaneDataInstrumentation
+    MethaneInstrumentation
     MethanePlatformUtils
     CML
 )

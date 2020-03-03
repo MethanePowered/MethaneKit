@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ Vulkan implementation of the device interface.
 
 #include "DeviceVK.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
@@ -51,14 +51,12 @@ SystemVK::~SystemVK()
     ITT_FUNCTION_TASK();
 }
 
-const Devices& SystemVK::UpdateGpuDevices(Device::Feature::Mask supported_features)
+const Ptrs<Device>& SystemVK::UpdateGpuDevices(Device::Feature::Mask supported_features)
 {
     ITT_FUNCTION_TASK();
-
-    m_supported_features = supported_features;
-    m_devices.clear();
-
-    return m_devices;
+    SetGpuSupportedFeatures(supported_features);
+    ClearDevices();
+    return GetGpuDevices();
 }
 
 } // namespace Methane::Graphics

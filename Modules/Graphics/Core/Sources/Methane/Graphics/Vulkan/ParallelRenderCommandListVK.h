@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -35,15 +35,13 @@ class RenderPassVK;
 class ParallelRenderCommandListVK final : public ParallelRenderCommandListBase
 {
 public:
-    using Ptr = std::shared_ptr<ParallelRenderCommandListVK>;
-
     ParallelRenderCommandListVK(CommandQueueBase& command_queue, RenderPassBase& render_pass);
 
     // ParallelRenderCommandList interface
-    void Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group = "") override;
+    void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;
 
     // CommandList interface
-    void Commit(bool present_drawable) override;
+    void Commit() override;
 
     // CommandListBase interface
     void Execute(uint32_t frame_index) override;

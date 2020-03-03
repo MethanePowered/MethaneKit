@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -116,7 +116,7 @@ public:
     static std::string GetActionName(KeyboardAction keyboard_action);
 
 protected:
-    using KeyboardActionAnimations  = std::map<KeyboardAction, Data::Animation::WeakPtr>;
+    using KeyboardActionAnimations  = std::map<KeyboardAction, WeakPtr<Data::Animation>>;
 
     void Move(const Vector3f& move_vector);
     void Zoom(float zoom_factor);

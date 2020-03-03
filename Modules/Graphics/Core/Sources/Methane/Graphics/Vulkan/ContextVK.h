@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,45 +16,25 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/ContextVK.h
-Vulkan implementation of the context interface.
+FILE: Methane/Graphics/Metal/ContextMT.h
+Vulkan context accessor interface for template class ContextMT<ContextBaseT>
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Memory.hpp>
 
 namespace Methane::Graphics
 {
 
-struct CommandQueue;
-class RenderPassVK;
 class DeviceVK;
+class CommandQueueVK;
 
-class ContextVK : public ContextBase
+struct IContextVK
 {
-public:
-    ContextVK(const Platform::AppEnvironment& env, DeviceBase& device, const Settings& settings);
-    ~ContextVK() override;
-
-    // Context interface
-    bool ReadyToRender() const override;
-    void OnCommandQueueCompleted(CommandQueue& cmd_queue, uint32_t frame_index) override;
-    void WaitForGpu(WaitFor wait_for) override;
-    void Resize(const FrameSize& frame_size) override;
-    void Present() override;
-    bool SetVSyncEnabled(bool vsync_enabled) override;
-    bool SetFrameBuffersCount(uint32_t frame_buffers_count) override;
-    Platform::AppView GetAppView() const override { return { nullptr }; }
-    float GetContentScalingFactor() const override { return 1.f; }
-
-    DeviceVK& GetDeviceVK();
-
-protected:
-    // ContextBase overrides
-    void Release() override;
-    void Initialize(Device& device, bool deferred_heap_allocation) override;
+    virtual DeviceVK&       GetDeviceVK() noexcept = 0;
+    virtual CommandQueueVK& GetUploadCommandQueueVK() noexcept = 0;
 };
 
 } // namespace Methane::Graphics

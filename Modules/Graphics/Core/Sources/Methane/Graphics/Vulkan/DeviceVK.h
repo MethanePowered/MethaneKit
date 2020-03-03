@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public:
     ~SystemVK() override;
     
     void           CheckForChanges() override {}
-    const Devices& UpdateGpuDevices(Device::Feature::Mask supported_features) override;
+    const Ptrs<Device>& UpdateGpuDevices(Device::Feature::Mask supported_features) override;
 };
 
 } // namespace Methane::Graphics

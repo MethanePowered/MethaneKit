@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -32,12 +32,12 @@ Metal implementation of the render state interface.
 namespace Methane::Graphics
 {
 
-class ContextMT;
+class RenderContextMT;
 
-class RenderStateMT : public RenderStateBase
+class RenderStateMT final : public RenderStateBase
 {
 public:
-    RenderStateMT(ContextBase& context, const Settings& settings);
+    RenderStateMT(RenderContextBase& context, const Settings& settings);
     ~RenderStateMT() override;
     
     // RenderState interface
@@ -51,13 +51,17 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
     
+    void InitializeNativeStates();
+    void InitializeNativePipelineState();
+    void InitializeNativeDepthStencilState();
+    
     id<MTLRenderPipelineState>& GetNativePipelineState();
     id<MTLDepthStencilState>&   GetNativeDepthStencilState();
     MTLCullMode                 GetNativeCullMode() const noexcept         { return m_mtl_cull_mode; }
     MTLWinding                  GetNativeFrontFaceWinding() const noexcept { return m_mtl_front_face_winding; }
 
-protected:
-    ContextMT& GetContextMT() noexcept;
+private:
+    RenderContextMT& GetRenderContextMT();
     
     void ResetNativeState();
     

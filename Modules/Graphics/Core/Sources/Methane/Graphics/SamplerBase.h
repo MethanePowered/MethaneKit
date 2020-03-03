@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -47,6 +47,9 @@ public:
     Data::Size  GetDataSize() const override { return 0; }
 
 protected:
+    ContextBase& GetContext() { return m_context; }
+
+private:
     ContextBase& m_context;
     Settings     m_settings;
 };

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ Base implementation of the render pass interface.
 #include "TextureBase.h"
 #include "RenderCommandListBase.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 
@@ -81,8 +81,8 @@ bool RenderPass::Settings::operator!=(const Settings& other) const
     return !operator==(other);
 }
 
-RenderPassBase::RenderPassBase(ContextBase& context, const Settings& settings)
-    : m_context(context)
+RenderPassBase::RenderPassBase(RenderContextBase& context, const Settings& settings)
+    : m_render_context(context)
     , m_settings(settings)
 {
     ITT_FUNCTION_TASK();
@@ -107,7 +107,7 @@ void RenderPassBase::Begin(RenderCommandListBase& command_list)
 
     for (ColorAttachment& color_attachment : m_settings.color_attachments)
     {
-        Texture::Ptr sp_color_texture = color_attachment.wp_texture.lock();
+        Ptr<Texture> sp_color_texture = color_attachment.wp_texture.lock();
         if (!sp_color_texture)
             continue;
 
@@ -115,7 +115,7 @@ void RenderPassBase::Begin(RenderCommandListBase& command_list)
         color_texture.SetState(ResourceBase::State::RenderTarget, resource_transition_barriers);
     }
 
-    Texture::Ptr sp_depth_texture = m_settings.depth_attachment.wp_texture.lock();
+    Ptr<Texture> sp_depth_texture = m_settings.depth_attachment.wp_texture.lock();
     if (sp_depth_texture)
     {
         TextureBase& depth_texture = dynamic_cast<TextureBase&>(*sp_depth_texture);
@@ -142,10 +142,10 @@ void RenderPassBase::End(RenderCommandListBase&)
     m_is_begun = false;
 }
 
-Resource::Refs RenderPassBase::GetColorAttachmentResources() const
+Refs<Resource> RenderPassBase::GetColorAttachmentResources() const
 {
     ITT_FUNCTION_TASK();
-    Resource::Refs color_attach_resources;
+    Refs<Resource> color_attach_resources;
     color_attach_resources.reserve(m_settings.color_attachments.size());
     for (const ColorAttachment& color_attach : m_settings.color_attachments)
     {

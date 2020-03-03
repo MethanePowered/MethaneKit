@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,13 +31,12 @@ Graphics context controller for switching parameters in runtime.
 namespace Methane::Graphics
 {
 
-struct Context;
+struct RenderContext;
 
 enum class AppContextAction : uint32_t
 {
     None = 0,
-    
-    SwitchFullScreen,
+
     SwitchVSync,
     SwitchDevice,
     AddFrameBufferToSwapChain,
@@ -52,14 +51,13 @@ class AppContextController final
 {
 public:
     inline static const ActionByKeyboardState default_action_by_keyboard_state = {
-        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::F     }, AppContextAction::SwitchFullScreen               },
         { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::V     }, AppContextAction::SwitchVSync                    },
         { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::X     }, AppContextAction::SwitchDevice                   },
         { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::Equal }, AppContextAction::AddFrameBufferToSwapChain      },
         { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::Minus }, AppContextAction::RemoveFrameBufferFromSwapChain },
     };
 
-    AppContextController(Context& context, const ActionByKeyboardState& action_by_keyboard_state = default_action_by_keyboard_state);
+    AppContextController(RenderContext& context, const ActionByKeyboardState& action_by_keyboard_state = default_action_by_keyboard_state);
 
     // Input::Controller implementation
     void OnKeyboardChanged(Platform::Keyboard::Key, Platform::Keyboard::KeyState, const Platform::Keyboard::StateChange& state_change) override;
@@ -71,7 +69,7 @@ protected:
     void        OnKeyboardStateAction(AppContextAction action) override;
     std::string GetKeyboardActionName(AppContextAction action) const override;
 
-    Context& m_context;
+    RenderContext& m_context;
 };
 
 } // namespace Methane::Graphics

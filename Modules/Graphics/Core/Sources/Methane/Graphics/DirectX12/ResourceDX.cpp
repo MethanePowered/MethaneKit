@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@ DirectX 12 implementation of the resource interface.
 
 #include "ResourceDX.h"
 #include "DescriptorHeapDX.h"
-#include "ContextDX.h"
+#include "RenderContextDX.h"
 #include "DeviceDX.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Helpers.h>
 
 #include <nowide/convert.hpp>
@@ -35,7 +35,7 @@ DirectX 12 implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-ResourceBase::ReleasePool::Ptr ResourceBase::ReleasePool::Create()
+Ptr<ResourceBase::ReleasePool> ResourceBase::ReleasePool::Create()
 {
     ITT_FUNCTION_TASK();
     return std::make_shared<ResourceDX::ReleasePoolDX>();
@@ -45,7 +45,10 @@ void ResourceDX::ReleasePoolDX::AddResource(ResourceBase& resource)
 {
     ITT_FUNCTION_TASK();
     ResourceDX& resource_dx = static_cast<ResourceDX&>(resource);
-    m_resources.push_back(resource_dx.GetNativeResource());
+    const wrl::ComPtr<ID3D12Resource>& cp_native_resource = resource_dx.GetNativeResourceComPtr();
+    assert(!!cp_native_resource || resource_dx.GetResourceType() == Resource::Type::Sampler);
+    if (cp_native_resource)
+        m_resources.emplace_back(cp_native_resource);
 }
 
 void ResourceDX::ReleasePoolDX::ReleaseResources()
@@ -84,7 +87,7 @@ ResourceDX::ResourceDX(Type type, Usage::Mask usage_mask, ContextBase& context, 
 ResourceDX::~ResourceDX()
 {
     ITT_FUNCTION_TASK();
-    m_context.GetResourceManager().GetReleasePool().AddResource(*this);
+    GetContext().GetResourceManager().GetReleasePool().AddResource(*this);
 }
 
 void ResourceDX::SetName(const std::string& name)
@@ -99,16 +102,23 @@ void ResourceDX::SetName(const std::string& name)
     }
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE ResourceDX::GetNativeCPUDescriptorHandle(const Descriptor& desc) const noexcept
+ID3D12Resource& ResourceDX::GetNativeResourceRef() const
 {
     ITT_FUNCTION_TASK();
-    return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeCPUDescriptorHandle(desc.index);
+    assert(!!m_cp_resource);
+    return *m_cp_resource.Get();
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE ResourceDX::GetNativeGPUDescriptorHandle(const Descriptor& desc) const noexcept
+D3D12_CPU_DESCRIPTOR_HANDLE ResourceDX::GetNativeCpuDescriptorHandle(const Descriptor& desc) const noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeGPUDescriptorHandle(desc.index);
+    return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeCpuDescriptorHandle(desc.index);
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE ResourceDX::GetNativeGpuDescriptorHandle(const Descriptor& desc) const noexcept
+{
+    ITT_FUNCTION_TASK();
+    return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeGpuDescriptorHandle(desc.index);
 }
 
 D3D12_RESOURCE_STATES ResourceDX::GetNativeResourceState(State resource_state) noexcept
@@ -156,10 +166,10 @@ D3D12_RESOURCE_BARRIER ResourceDX::GetNativeResourceBarrier(const Barrier& resou
     return D3D12_RESOURCE_BARRIER();
 }
 
-ContextDX& ResourceDX::GetContextDX() noexcept
+IContextDX& ResourceDX::GetContextDX() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextDX&>(m_context);
+    return static_cast<IContextDX&>(GetContext());
 }
 
 void ResourceDX::InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type, 
@@ -168,9 +178,10 @@ void ResourceDX::InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource
     ITT_FUNCTION_TASK();
     assert(!m_cp_resource);
 
+    const CD3DX12_HEAP_PROPERTIES heap_properties(heap_type);
     ThrowIfFailed(
         GetContextDX().GetDeviceDX().GetNativeDevice()->CreateCommittedResource(
-            &CD3DX12_HEAP_PROPERTIES(heap_type),
+            &heap_properties,
             D3D12_HEAP_FLAG_NONE,
             &resource_desc,
             resource_state,
@@ -186,7 +197,7 @@ void ResourceDX::InitializeFrameBufferResource(uint32_t frame_buffer_index)
     assert(!m_cp_resource);
 
     ThrowIfFailed(
-        GetContextDX().GetNativeSwapChain()->GetBuffer(
+        static_cast<RenderContextDX&>(GetContextDX()).GetNativeSwapChain()->GetBuffer(
             frame_buffer_index,
             IID_PPV_ARGS(&m_cp_resource)
         )

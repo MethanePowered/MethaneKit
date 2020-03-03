@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,16 +23,16 @@ Metal implementation of the shader interface.
 
 #include "ShaderMT.hh"
 #include "ProgramMT.hh"
-#include "SamplerMT.hh"
-#include "BufferMT.hh"
-#include "TextureMT.hh"
-#include "ContextMT.hh"
+#include "ProgramLibraryMT.hh"
+#include "ProgramBindingsMT.hh"
+#include "ContextMT.h"
 #include "TypesMT.hh"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Instrumentation.h>
 
-#include <algorithm>
+#include <regex>
 
 namespace Methane::Graphics
 {
@@ -90,67 +90,17 @@ static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access) 
     return "Unknown";
 }
 #endif
-    
-Shader::ResourceBinding::Ptr Shader::ResourceBinding::CreateCopy(const ResourceBinding& other_resource_binging)
+
+
+Ptr<Shader> Shader::Create(Shader::Type shader_type, Context& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ShaderMT::ResourceBindingMT>(static_cast<const ShaderMT::ResourceBindingMT&>(other_resource_binging));
+    return std::make_shared<ShaderMT>(shader_type, dynamic_cast<ContextBase&>(context), settings);
 }
 
-ShaderMT::ResourceBindingMT::ResourceBindingMT(ContextBase& context, const Settings& settings)
-    : ResourceBindingBase(context, settings.base)
-    , m_settings(settings)
-{
-    ITT_FUNCTION_TASK();
-}
-
-void ShaderMT::ResourceBindingMT::SetResourceLocations(const Resource::Locations& resource_locations)
-{
-    ITT_FUNCTION_TASK();
-    ResourceBindingBase::SetResourceLocations(resource_locations);
-
-    m_mtl_sampler_states.clear();
-    m_mtl_textures.clear();
-    m_mtl_buffers.clear();
-    m_mtl_buffer_offsets.clear();
-
-    switch(m_settings.base.resource_type)
-    {
-    case Resource::Type::Sampler:
-        m_mtl_sampler_states.reserve(m_resource_locations.size());
-        std::transform(m_resource_locations.begin(), m_resource_locations.end(), std::back_inserter(m_mtl_sampler_states),
-                       [](const Resource::Location& resource_location)
-                       { return dynamic_cast<const SamplerMT&>(resource_location.GetResource()).GetNativeSamplerState(); });
-        break;
-
-    case Resource::Type::Texture:
-        m_mtl_textures.reserve(m_resource_locations.size());
-        std::transform(m_resource_locations.begin(), m_resource_locations.end(), std::back_inserter(m_mtl_textures),
-                       [](const Resource::Location& resource_location)
-                       { return dynamic_cast<const TextureMT&>(resource_location.GetResource()).GetNativeTexture(); });
-        break;
-
-    case Resource::Type::Buffer:
-        m_mtl_buffers.reserve(m_resource_locations.size());
-        m_mtl_buffer_offsets.reserve(m_resource_locations.size());
-        for (const Resource::Location& resource_location : m_resource_locations)
-        {
-            m_mtl_buffers.push_back(dynamic_cast<const BufferMT&>(resource_location.GetResource()).GetNativeBuffer());
-            m_mtl_buffer_offsets.push_back(static_cast<NSUInteger>(resource_location.GetOffset()));
-        }
-        break;
-    }
-}
-
-Shader::Ptr Shader::Create(Shader::Type shader_type, Context& context, const Settings& settings)
-{
-    ITT_FUNCTION_TASK();
-    return std::make_shared<ShaderMT>(shader_type, static_cast<ContextMT&>(context), settings);
-}
-
-ShaderMT::ShaderMT(Shader::Type shader_type, ContextMT& context, const Settings& settings)
+ShaderMT::ShaderMT(Shader::Type shader_type, ContextBase& context, const Settings& settings)
     : ShaderBase(shader_type, context, settings)
-    , m_mtl_function([context.GetLibraryMT(settings.entry_function.file_name)->Get() newFunctionWithName: Methane::MacOS::ConvertToNSType<std::string, NSString*>(GetCompiledEntryFunctionName())])
+    , m_mtl_function([context.GetLibraryMT(settings.entry_function.file_name)->Get() newFunctionWithName: Methane::MacOS::ConvertToNsType<std::string, NSString*>(GetCompiledEntryFunctionName())])
 {
     ITT_FUNCTION_TASK();
 
@@ -167,14 +117,13 @@ ShaderMT::~ShaderMT()
     [m_mtl_function release];
 }
 
-ShaderBase::ResourceBindings ShaderMT::GetResourceBindings(const std::set<std::string>& constant_argument_names,
-                                                           const std::set<std::string>& addressable_argument_names) const
+ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const
 {
     ITT_FUNCTION_TASK();
 
-    ShaderBase::ResourceBindings resource_bindings;
+    ArgumentBindings argument_bindings;
     if (m_mtl_arguments == nil)
-        return resource_bindings;
+        return argument_bindings;
     
 #ifndef NDEBUG
     NSLog(@"%s shader '%s' arguments:", GetTypeName().c_str(), GetCompiledEntryFunctionName().c_str());
@@ -182,30 +131,30 @@ ShaderBase::ResourceBindings ShaderMT::GetResourceBindings(const std::set<std::s
 
     for(MTLArgument* mtl_arg in m_mtl_arguments)
     {
-        if (mtl_arg.active == NO)
+        if (!mtl_arg.active)
             continue;
 
-        const std::string argument_name = Methane::MacOS::ConvertFromNSType<NSString, std::string>(mtl_arg.name);
+        std::string argument_name = Methane::MacOS::ConvertFromNsType<NSString, std::string>(mtl_arg.name);
         if (argument_name.find("vertexBuffer.") == 0)
         {
             // Skip input vertex buffers, since they are set with a separate RenderCommandList call, not through resource bindings
             continue;
         }
         
-        const bool is_constant_binding    = constant_argument_names.find(argument_name)    != constant_argument_names.end();
-        const bool is_addressable_binding = addressable_argument_names.find(argument_name) != addressable_argument_names.end();
+        const Program::Argument shader_argument(GetType(), argument_name);
+        const auto argument_desc_it = Program::FindArgumentDescription(argument_descriptions, shader_argument);
+        const Program::ArgumentDesc argument_desc = argument_desc_it == argument_descriptions.end()
+                                                  ? Program::ArgumentDesc(shader_argument)
+                                                  : *argument_desc_it;
         
-        resource_bindings.push_back(std::make_shared<ResourceBindingMT>(
-            m_context,
-            ResourceBindingMT::Settings
+        argument_bindings.emplace_back(std::make_shared<ProgramBindingsMT::ArgumentBindingMT>(
+            GetContext(),
+            ProgramBindingsMT::ArgumentBindingMT::SettingsMT
             {
                 {
-                    m_type,
-                    argument_name,
+                    argument_desc,
                     GetResourceTypeByMetalArgumentType(mtl_arg.type),
                     static_cast<uint32_t>(mtl_arg.arrayLength),
-                    is_constant_binding,
-                    is_addressable_binding
                 },
                 static_cast<uint32_t>(mtl_arg.index)
             }
@@ -225,12 +174,15 @@ ShaderBase::ResourceBindings ShaderMT::GetResourceBindings(const std::set<std::s
 #endif
     }
 
-    return resource_bindings;
+    return argument_bindings;
 }
 
 MTLVertexDescriptor* ShaderMT::GetNativeVertexDescriptor(const ProgramMT& program) const
 {
     ITT_FUNCTION_TASK();
+    
+    // Regex matching prefix of the input attributes "in_var_"
+    static const std::regex s_attr_suffix_regex("^in_var_");
 
     MTLVertexDescriptor* mtl_vertex_desc = [[MTLVertexDescriptor alloc] init];
     [mtl_vertex_desc reset];
@@ -238,13 +190,13 @@ MTLVertexDescriptor* ShaderMT::GetNativeVertexDescriptor(const ProgramMT& progra
     std::vector<uint32_t> input_buffer_byte_offsets;
     for(MTLVertexAttribute* mtl_vertex_attrib in m_mtl_function.vertexAttributes)
     {
-        if (mtl_vertex_attrib.active == NO)
+        if (!mtl_vertex_attrib.active)
             continue;
         
         const MTLVertexFormat mtl_vertex_format = TypeConverterMT::MetalDataTypeToVertexFormat(mtl_vertex_attrib.attributeType);
-        const std::string attrib_name = Methane::MacOS::ConvertFromNSType<NSString, std::string>(mtl_vertex_attrib.name);
+        const std::string attrib_name = std::regex_replace(Methane::MacOS::ConvertFromNsType<NSString, std::string>(mtl_vertex_attrib.name), s_attr_suffix_regex, "");
         const uint32_t    attrib_size = TypeConverterMT::ByteSizeOfVertexFormat(mtl_vertex_format);
-        const uint32_t    attrib_slot = GetProgramInputBufferIndexByArgumentName(program, attrib_name);
+        const uint32_t    attrib_slot = GetProgramInputBufferIndexByArgumentSemantic(program, attrib_name);
         
         if (attrib_slot <= input_buffer_byte_offsets.size())
             input_buffer_byte_offsets.resize(attrib_slot + 1, 0);
@@ -273,10 +225,10 @@ MTLVertexDescriptor* ShaderMT::GetNativeVertexDescriptor(const ProgramMT& progra
     return mtl_vertex_desc;
 }
 
-ContextMT& ShaderMT::GetContextMT() noexcept
+IContextMT& ShaderMT::GetContextMT() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextMT&>(m_context);
+    return static_cast<IContextMT&>(GetContext());
 }
 
 } // namespace Methane::Graphics

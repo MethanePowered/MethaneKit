@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/Context.h
-Methane context interface: represents graphics device and swap chain,
-provides basic multi-frame rendering synchronization and frame presenting APIs.
+Methane base context interface: wraps graphics device used for GPU interaction.
 
 ******************************************************************************/
 
@@ -27,35 +26,20 @@ provides basic multi-frame rendering synchronization and frame presenting APIs.
 #include "Object.h"
 #include "Types.h"
 
-#include <Methane/Platform/AppEnvironment.h>
-#include <Methane/Platform/AppView.h>
-
-#include <memory>
-#include <optional>
+#include <Methane/Memory.hpp>
 
 namespace Methane::Graphics
 {
 
-class FpsCounter;
 struct Device;
 struct CommandQueue;
-struct RenderCommandList;
+struct BlitCommandList;
 
 struct Context : virtual Object
 {
-    using Ptr = std::shared_ptr<Context>;
-
-    struct Settings
+    enum class Type
     {
-        FrameSize                   frame_size;
-        PixelFormat                 color_format            = PixelFormat::BGRA8Unorm;
-        PixelFormat                 depth_stencil_format    = PixelFormat::Unknown;
-        std::optional<Color4f>      clear_color;
-        std::optional<DepthStencil> clear_depth_stencil;
-        uint32_t                    frame_buffers_count     = 3;
-        bool                        vsync_enabled           = true;
-        bool                        is_full_screen          = false;
-        uint32_t                    unsync_max_fps          = 1000; // MacOS only
+        Render,
     };
 
     enum class WaitFor
@@ -64,45 +48,28 @@ struct Context : virtual Object
         FramePresented,
         ResourcesUploaded
     };
-    
+
     struct Callback
     {
-        using Ref = std::reference_wrapper<Callback>;
-        
         virtual void OnContextReleased() = 0;
         virtual void OnContextInitialized() = 0;
-        
+
         virtual ~Callback() = default;
     };
 
-    // Create Context instance
-    static Ptr Create(const Platform::AppEnvironment& env, Device& device, const Settings& settings);
-
     // Context interface
+    virtual Type GetType() const = 0;
     virtual void CompleteInitialization() = 0;
-    virtual bool ReadyToRender() const = 0;
     virtual void WaitForGpu(WaitFor wait_for) = 0;
-    virtual void Resize(const FrameSize& frame_size) = 0;
     virtual void Reset(Device& device) = 0;
     virtual void Reset() = 0;
-    virtual void Present() = 0;
-    
+
     virtual void AddCallback(Callback& callback) = 0;
     virtual void RemoveCallback(Callback& callback) = 0;
 
-    virtual Platform::AppView     GetAppView() const = 0;
-    virtual Device&               GetDevice() = 0;
-    virtual CommandQueue&         GetRenderCommandQueue() = 0;
-    virtual CommandQueue&         GetUploadCommandQueue() = 0;
-    virtual RenderCommandList&    GetUploadCommandList() = 0;
-    virtual const Settings&       GetSettings() const = 0;
-    virtual uint32_t              GetFrameBufferIndex() const = 0;
-    virtual float                 GetContentScalingFactor() const = 0;
-    virtual const FpsCounter&     GetFpsCounter() const = 0;
-
-    virtual bool SetVSyncEnabled(bool vsync_enabled) = 0;
-    virtual bool SetFrameBuffersCount(uint32_t frame_buffers_count) = 0;
-    virtual bool SetFullScreen(bool is_full_screen) = 0;
+    virtual Device&          GetDevice() = 0;
+    virtual CommandQueue&    GetUploadCommandQueue() = 0;
+    virtual BlitCommandList& GetUploadCommandList() = 0;
 };
 
 } // namespace Methane::Graphics

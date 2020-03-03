@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ Methane render command list interface.
 #include "Buffer.h"
 #include "RenderState.h"
 
+#include <Methane/Memory.hpp>
+
 namespace Methane::Graphics
 {
 
@@ -35,10 +37,6 @@ struct ParallelRenderCommandList;
 
 struct RenderCommandList : virtual CommandList
 {
-    using Ptr       = std::shared_ptr<RenderCommandList>;
-    using Ptrs      = std::vector<Ptr>;
-    using ConstPtrs = std::vector<const Ptr>;
-
     enum class Primitive
     {
         Point,
@@ -49,18 +47,20 @@ struct RenderCommandList : virtual CommandList
     };
 
     // Create RenderCommandList instance
-    static Ptr Create(CommandQueue& command_queue, RenderPass& render_pass);
-    static Ptr Create(ParallelRenderCommandList& parallel_command_list);
-
+    static Ptr<RenderCommandList> Create(CommandQueue& command_queue, RenderPass& render_pass);
+    static Ptr<RenderCommandList> Create(ParallelRenderCommandList& parallel_command_list);
+    
     // RenderCommandList interface
-    virtual void Reset(const RenderState::Ptr& sp_render_state = RenderState::Ptr(), const std::string& debug_group = "") = 0;
+    virtual void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") = 0;
     virtual void SetState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) = 0;
-    virtual void SetVertexBuffers(const Buffer::Refs& vertex_buffers) = 0;
+    virtual void SetVertexBuffers(const Refs<Buffer>& vertex_buffers) = 0;
     virtual void DrawIndexed(Primitive primitive, Buffer& index_buffer, 
                              uint32_t index_count = 0, uint32_t start_index = 0, uint32_t start_vertex = 0, 
                              uint32_t instance_count = 1, uint32_t start_instance = 0) = 0;
     virtual void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex = 0,
                       uint32_t instance_count = 1, uint32_t start_instance = 0) = 0;
+    
+    using CommandList::Reset;
 };
 
 } // namespace Methane::Graphics

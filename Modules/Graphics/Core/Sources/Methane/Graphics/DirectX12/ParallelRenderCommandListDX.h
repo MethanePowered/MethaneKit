@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -39,10 +39,10 @@ public:
     ParallelRenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass);
 
     // ParallelRenderCommandList interface
-    void Reset(const RenderState::Ptr& sp_render_state, const std::string& debug_group = "") override;
+    void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;
 
     // CommandList interface
-    void Commit(bool present_drawable) override;
+    void Commit() override;
 
     // CommandListBase interface
     void Execute(uint32_t frame_index) override;
@@ -53,11 +53,11 @@ public:
     using D3D12CommandLists = std::vector<ID3D12CommandList*>;
     D3D12CommandLists GetNativeCommandLists() const;
 
-protected:
+private:
     CommandQueueDX& GetCommandQueueDX();
     RenderPassDX&   GetPassDX();
 
-    RenderCommandListDX m_begining_command_list;
+    RenderCommandListDX m_beginning_command_list;
     RenderCommandListDX m_ending_command_list;
 };
 

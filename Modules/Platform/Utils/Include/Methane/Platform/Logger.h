@@ -25,12 +25,12 @@ Abstract logger interface.
 
 #include "Utils.h"
 
-#include <Methane/Data/ILogger.h>
+#include <Methane/ILogger.h>
 
 namespace Methane::Platform
 {
 
-class Logger : public Data::ILogger
+class Logger : public ILogger
 {
     // Data::ILogger interface
     void Log(const std::string& message) override

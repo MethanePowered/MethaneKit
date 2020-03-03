@@ -58,7 +58,7 @@ add_library(${TARGET} STATIC
 
 target_link_libraries(${TARGET}
     ${LIBRARIES}
-    MethaneDataInstrumentation
+    MethaneInstrumentation
 )
 
 target_include_directories(${TARGET}

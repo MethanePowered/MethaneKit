@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ for multi-threaded rendering in the single render pass.
 
 #include "RenderCommandList.h"
 
+#include <Methane/Memory.hpp>
+
 namespace Methane::Graphics
 {
 
@@ -34,15 +36,15 @@ struct RenderPass;
 
 struct ParallelRenderCommandList : virtual CommandList
 {
-    using Ptr = std::shared_ptr<ParallelRenderCommandList>;
-
     // Create ParallelRenderCommandList instance
-    static Ptr Create(CommandQueue& command_queue, RenderPass& render_pass);
-
+    static Ptr<ParallelRenderCommandList> Create(CommandQueue& command_queue, RenderPass& render_pass);
+    
     // ParallelRenderCommandList interface
-    virtual void Reset(const RenderState::Ptr& sp_render_state = RenderState::Ptr(), const std::string& debug_group = "") = 0;
+    virtual void Reset(const Ptr<RenderState>& sp_render_state = Ptr<RenderState>(), const std::string& debug_group = "") = 0;
     virtual void SetParallelCommandListsCount(uint32_t count) = 0;
-    virtual const RenderCommandList::Ptrs& GetParallelCommandLists() const = 0;
+    virtual const Ptrs<RenderCommandList>& GetParallelCommandLists() const = 0;
+    
+    using CommandList::Reset;
 };
 
 } // namespace Methane::Graphics

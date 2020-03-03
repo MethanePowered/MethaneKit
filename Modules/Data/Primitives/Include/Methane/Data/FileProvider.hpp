@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ Singleton data provider of files on disk.
 #include "Provider.h"
 
 #include <Methane/Platform/Utils.h>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <string>
 #include <fstream>
@@ -48,7 +48,7 @@ public:
     bool HasData(const std::string& path) const noexcept override
     {
         ITT_FUNCTION_TASK();
-        return std::ifstream(GetDataFilePath(path)).good();;
+        return std::ifstream(GetDataFilePath(path)).good();
     }
 
     Data::Chunk GetData(const std::string& path) const override

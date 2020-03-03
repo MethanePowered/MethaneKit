@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,23 +23,12 @@ Data provider interface used for loading application resources and resource file
 
 #pragma once
 
-#include "Types.h"
+#include "Chunk.h"
+
+#include <string>
 
 namespace Methane::Data
 {
-
-struct Chunk
-{
-    // NOTE: Data storage is used only when data is not managed by data provider and returned with chunk (when data is loaded from file, for example)
-    const Bytes data;
-    ConstRawPtr p_data = nullptr;
-    const Size  size   = 0;
-
-    Chunk() = default;
-    Chunk(ConstRawPtr in_p_data, Size in_size) : p_data(in_p_data), size(in_size) { }
-    Chunk(const Bytes&& in_data)  : data(std::move(in_data)), p_data(static_cast<ConstRawPtr>(data.data())), size(static_cast<Size>(data.size())) { }
-    Chunk(Chunk&& other) noexcept : data(std::move(other.data)), p_data(data.empty() ? other.p_data : data.data()), size(data.empty() ? other.size : static_cast<Size>(data.size())) { }
-};
 
 struct Provider
 {

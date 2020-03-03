@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,9 +28,7 @@ Metal "dummy" implementation of the descriptor heap.
 namespace Methane::Graphics
 {
 
-class ContextBase;
-
-class DescriptorHeapMT : public DescriptorHeap
+class DescriptorHeapMT final : public DescriptorHeap
 {
 public:
     DescriptorHeapMT(ContextBase& context, const Settings& settings);

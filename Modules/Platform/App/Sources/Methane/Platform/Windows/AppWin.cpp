@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ Windows application implementation.
 
 #include <Methane/Platform/Windows/AppWin.h>
 #include <Methane/Platform/Utils.h>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <windowsx.h>
 #include <nowide/convert.hpp>
@@ -56,12 +56,6 @@ AppWin::AppWin(const AppBase::Settings& settings)
     ITT_FUNCTION_TASK();
 }
 
-void AppWin::ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result)
-{
-    ITT_FUNCTION_TASK();
-    AppBase::ParseCommandLine(cmd_parse_result);
-}
-
 int AppWin::Run(const RunArgs& args)
 {
     // Skip instrumentation ITT_FUNCTION_TASK() since this is the only root function running till application close
@@ -85,11 +79,13 @@ int AppWin::Run(const RunArgs& args)
     uint32_t desktop_width = 0, desktop_height = 0;
     Methane::Platform::Windows::GetDesktopResolution(desktop_width, desktop_height);
 
+    const Settings& app_settings = GetPlatformAppSettings();
+
     Data::FrameSize frame_size;
-    frame_size.width  = m_settings.width < 1.0  ? static_cast<uint32_t>(desktop_width * (m_settings.width > 0.0 ? m_settings.width : 0.7))
-                                                : static_cast<uint32_t>(m_settings.width);
-    frame_size.height = m_settings.height < 1.0 ? static_cast<uint32_t>(desktop_height * (m_settings.height > 0.0 ? m_settings.height : 0.7))
-                                                : static_cast<uint32_t>(m_settings.height);
+    frame_size.width  = app_settings.width < 1.0  ? static_cast<uint32_t>(desktop_width * (app_settings.width > 0.0 ? app_settings.width : 0.7))
+                                                  : static_cast<uint32_t>(app_settings.width);
+    frame_size.height = app_settings.height < 1.0 ? static_cast<uint32_t>(desktop_height * (app_settings.height > 0.0 ? app_settings.height : 0.7))
+                                                  : static_cast<uint32_t>(app_settings.height);
 
     RECT window_rect = { 0, 0, static_cast<LONG>(frame_size.width), static_cast<LONG>(frame_size.height) };
     AdjustWindowRect(&window_rect, WS_OVERLAPPEDWINDOW, FALSE);
@@ -99,7 +95,7 @@ int AppWin::Run(const RunArgs& args)
     // Create the window and store a handle to it.
     m_env.window_handle = CreateWindowEx(NULL,
         g_window_class,
-        nowide::widen(m_settings.name).c_str(),
+        nowide::widen(app_settings.name).c_str(),
         WS_OVERLAPPEDWINDOW,
         (desktop_width - window_size.width) / 2,
         (desktop_height - window_size.height) / 2,
@@ -266,19 +262,18 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
             {
                 // HACK: Release both Shift keys on Shift up event, as when both
                 //       are pressed the first release does not emit any event
-                // NOTE: The other half of this is in _glfwPlatformPollEvents
-                p_app->InputController().OnKeyboardChanged(Keyboard::Key::LeftShift, key_state);
-                p_app->InputController().OnKeyboardChanged(Keyboard::Key::RightShift, key_state);
+                p_app->InputState().OnKeyboardChanged(Keyboard::Key::LeftShift, key_state);
+                p_app->InputState().OnKeyboardChanged(Keyboard::Key::RightShift, key_state);
             }
             else if (w_param == VK_SNAPSHOT)
             {
                 // HACK: Key down is not reported for the Print Screen key
-                p_app->InputController().OnKeyboardChanged(key, Keyboard::KeyState::Pressed);
-                p_app->InputController().OnKeyboardChanged(key, Keyboard::KeyState::Released);
+                p_app->InputState().OnKeyboardChanged(key, Keyboard::KeyState::Pressed);
+                p_app->InputState().OnKeyboardChanged(key, Keyboard::KeyState::Released);
             }
             else
             {
-                p_app->InputController().OnKeyboardChanged(key, key_state);
+                p_app->InputState().OnKeyboardChanged(key, key_state);
             }
         } break;
 
@@ -291,7 +286,7 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
         case WM_MBUTTONUP:
         case WM_XBUTTONUP:
         {
-            Mouse::Button button = Mouse::Button::Unknonwn;
+            Mouse::Button button = Mouse::Button::Unknown;
             if (msg_id == WM_LBUTTONDOWN || msg_id == WM_LBUTTONUP)
                 button = Mouse::Button::Left;
             else if (msg_id == WM_RBUTTONDOWN || msg_id == WM_RBUTTONUP)
@@ -313,7 +308,7 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
             }
 
             p_app->m_mouse_state.SetButton(button, button_state);
-            p_app->InputController().OnMouseButtonChanged(button, button_state);
+            p_app->InputState().OnMouseButtonChanged(button, button_state);
 
             if (p_app->m_mouse_state.GetPressedButtons().empty())
             {
@@ -331,7 +326,7 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
             const int x = GET_X_LPARAM(l_param);
             const int y = GET_Y_LPARAM(l_param);
 
-            p_app->InputController().OnMousePositionChanged({ x, y });
+            p_app->InputState().OnMousePositionChanged({ x, y });
 
             if (!p_app->GetInputState().GetMouseState().IsInWindow())
             {
@@ -343,7 +338,7 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
                 tme.hwndTrack = h_wnd;
                 TrackMouseEvent(&tme);
 
-                p_app->InputController().OnMouseInWindowChanged(true);
+                p_app->InputState().OnMouseInWindowChanged(true);
             }
 
             return 0;
@@ -351,14 +346,14 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
 
         case WM_MOUSELEAVE:
         {
-            p_app->InputController().OnMouseInWindowChanged(false);
+            p_app->InputState().OnMouseInWindowChanged(false);
             return 0;
         }
 
         case WM_MOUSEWHEEL:
         {
             const float wheel_delta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(w_param)) / WHEEL_DELTA;
-            p_app->InputController().OnMouseScrollChanged({ 0.f, wheel_delta });
+            p_app->InputState().OnMouseScrollChanged({ 0.f, wheel_delta });
             return 0;
         }
 
@@ -366,7 +361,7 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
         {
             // NOTE: The X-axis is inverted for consistency with macOS and X11
             const float wheel_delta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(w_param)) / WHEEL_DELTA;
-            p_app->InputController().OnMouseScrollChanged({ -wheel_delta, 0.f });
+            p_app->InputState().OnMouseScrollChanged({ -wheel_delta, 0.f });
             return 0;
         }
 
@@ -391,7 +386,6 @@ void AppWin::ShowAlert(const Message& msg)
 {
     ITT_FUNCTION_TASK();
 
-    UINT msgbox_type = 0;
     MessageBox(
         m_env.window_handle,
         nowide::widen(msg.information).c_str(),
@@ -434,12 +428,13 @@ bool AppWin::SetFullScreen(bool is_full_screen)
 
     assert(!!m_env.window_handle);
     
-    RECT    window_rect     = {};
-    int32_t window_style    = WS_OVERLAPPEDWINDOW;
-    int32_t window_mode     = 0;
-    HWND    window_position = nullptr;
+    RECT            window_rect     = {};
+    int32_t         window_style    = WS_OVERLAPPEDWINDOW;
+    int32_t         window_mode     = 0;
+    HWND            window_position = nullptr;
+    const Settings& app_settings    = GetPlatformAppSettings();
 
-    if (m_settings.is_full_screen)
+    if (app_settings.is_full_screen)
     {
         GetWindowRect(m_env.window_handle, &m_window_rect);
 
@@ -460,9 +455,6 @@ bool AppWin::SetFullScreen(bool is_full_screen)
         window_position = HWND_NOTOPMOST;
         window_mode     = SW_NORMAL;
     }
-
-    m_settings.width  = window_rect.right  - window_rect.left;
-    m_settings.height = window_rect.bottom - window_rect.top;
 
     SetWindowLong(m_env.window_handle, GWL_STYLE, window_style);
     SetWindowPos(m_env.window_handle, window_position,

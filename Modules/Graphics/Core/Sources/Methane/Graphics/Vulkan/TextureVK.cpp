@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,52 +22,51 @@ Vulkan implementation of the texture interface.
 ******************************************************************************/
 
 #include "TextureVK.h"
-#include "ContextVK.h"
 #include "RenderCommandListVK.h"
 #include "TypesVK.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Instrumentation.h>
 
 #include <algorithm>
-#include <cassert>
 
 namespace Methane::Graphics
 {
 
-Texture::Ptr Texture::CreateRenderTarget(Context& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateRenderTarget(RenderContext& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<TextureVK>(static_cast<ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
-Texture::Ptr Texture::CreateFrameBuffer(Context& context, uint32_t /*frame_buffer_index*/, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateFrameBuffer(RenderContext& context, uint32_t /*frame_buffer_index*/, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
-    const Context::Settings& context_settings = context.GetSettings();
+    const RenderContext::Settings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::FrameBuffer(context_settings.frame_size, context_settings.color_format);
-    return std::make_shared<TextureVK>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
-Texture::Ptr Texture::CreateDepthStencilBuffer(Context& context, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateDepthStencilBuffer(RenderContext& context, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
-    const Context::Settings& context_settings = context.GetSettings();
+    const RenderContext::Settings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::DepthStencilBuffer(context_settings.frame_size, context_settings.depth_stencil_format);
-    return std::make_shared<TextureVK>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
-Texture::Ptr Texture::CreateImage(Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateImage(Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<TextureVK>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
-Texture::Ptr Texture::CreateCube(Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateCube(Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<TextureVK>(static_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
 TextureVK::TextureVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
@@ -82,9 +81,9 @@ TextureVK::~TextureVK()
 {
     ITT_FUNCTION_TASK();
 
-    if (m_settings.type != Texture::Type::FrameBuffer)
+    if (GetSettings().type != Texture::Type::FrameBuffer)
     {
-        m_context.GetResourceManager().GetReleasePool().AddResource(*this);
+        GetContext().GetResourceManager().GetReleasePool().AddResource(*this);
     }
 }
 
@@ -104,7 +103,7 @@ void TextureVK::SetData(const SubResources& sub_resources)
         throw std::invalid_argument("Can not set texture data from empty sub-resources.");
     }
     
-    if (m_settings.mipmapped && sub_resources.size() < GetRequiredSubresourceCount())
+    if (GetSettings().mipmapped && sub_resources.size() < GetRequiredSubresourceCount())
     {
         GenerateMipLevels();
     }
@@ -120,7 +119,7 @@ void TextureVK::UpdateFrameBuffer()
 {
     ITT_FUNCTION_TASK();
 
-    if (m_settings.type != Texture::Type::FrameBuffer)
+    if (GetSettings().type != Texture::Type::FrameBuffer)
     {
         throw std::logic_error("Unable to update frame buffer on non-FB texture.");
     }

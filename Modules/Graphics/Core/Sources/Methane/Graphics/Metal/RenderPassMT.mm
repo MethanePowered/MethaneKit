@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,11 +22,11 @@ Metal implementation of the render pass interface.
 ******************************************************************************/
 
 #include "RenderPassMT.hh"
-#include "ContextMT.hh"
+#include "RenderContextMT.hh"
 #include "TextureMT.hh"
 #include "TypesMT.hh"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
@@ -57,26 +57,23 @@ static MTLLoadAction GetMTLLoadAction(RenderPass::Attachment::LoadAction load_ac
     return MTLLoadActionDontCare;
 }
 
-RenderPass::Ptr RenderPass::Create(Context& context, const Settings& settings)
+Ptr<RenderPass> RenderPass::Create(RenderContext& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<RenderPassMT>(static_cast<ContextBase&>(context), settings);
+    return std::make_shared<RenderPassMT>(dynamic_cast<RenderContextBase&>(context), settings);
 }
 
-RenderPassMT::RenderPassMT(ContextBase& context, const Settings& settings)
+RenderPassMT::RenderPassMT(RenderContextBase& context, const Settings& settings)
     : RenderPassBase(context, settings)
 {
     ITT_FUNCTION_TASK();
-
     Reset();
 }
 
 void RenderPassMT::Update(const Settings& settings)
 {
     ITT_FUNCTION_TASK();
-
-    m_settings = settings;
-
+    RenderPassBase::Update(settings);
     Reset();
 }
 
@@ -85,9 +82,10 @@ void RenderPassMT::Reset()
     ITT_FUNCTION_TASK();
 
     m_mtl_pass_descriptor = [MTLRenderPassDescriptor renderPassDescriptor];
+    const Settings& settings = GetSettings();
     
     uint32_t color_attach_index = 0;
-    for(ColorAttachment& color_attach : m_settings.color_attachments)
+    for(const ColorAttachment& color_attach : settings.color_attachments)
     {
         if (color_attach.wp_texture.expired())
         {
@@ -108,29 +106,28 @@ void RenderPassMT::Reset()
         color_attach_index++;
     }
     
-    if (!m_settings.depth_attachment.wp_texture.expired())
+    if (!settings.depth_attachment.wp_texture.expired())
     {
-        const TextureMT& depth_texture = static_cast<const TextureMT&>(*m_settings.depth_attachment.wp_texture.lock());
+        const TextureMT& depth_texture = static_cast<const TextureMT&>(*settings.depth_attachment.wp_texture.lock());
         m_mtl_pass_descriptor.depthAttachment.texture         = depth_texture.GetNativeTexture();
-        m_mtl_pass_descriptor.depthAttachment.clearDepth      = m_settings.depth_attachment.clear_value;
-        m_mtl_pass_descriptor.depthAttachment.loadAction      = GetMTLLoadAction(m_settings.depth_attachment.load_action);
-        m_mtl_pass_descriptor.depthAttachment.storeAction     = GetMTLStoreAction(m_settings.depth_attachment.store_action);
+        m_mtl_pass_descriptor.depthAttachment.clearDepth      = settings.depth_attachment.clear_value;
+        m_mtl_pass_descriptor.depthAttachment.loadAction      = GetMTLLoadAction(settings.depth_attachment.load_action);
+        m_mtl_pass_descriptor.depthAttachment.storeAction     = GetMTLStoreAction(settings.depth_attachment.store_action);
     }
     
-    if (!m_settings.stencil_attachment.wp_texture.expired())
+    if (!settings.stencil_attachment.wp_texture.expired())
     {
-        const TextureMT& stencil_texture = static_cast<const TextureMT&>(*m_settings.stencil_attachment.wp_texture.lock());
+        const TextureMT& stencil_texture = static_cast<const TextureMT&>(*settings.stencil_attachment.wp_texture.lock());
         m_mtl_pass_descriptor.stencilAttachment.texture       = stencil_texture.GetNativeTexture();
-        m_mtl_pass_descriptor.stencilAttachment.clearStencil  = m_settings.stencil_attachment.clear_value;
-        m_mtl_pass_descriptor.stencilAttachment.loadAction    = GetMTLLoadAction(m_settings.stencil_attachment.load_action);
-        m_mtl_pass_descriptor.stencilAttachment.storeAction   = GetMTLStoreAction(m_settings.stencil_attachment.store_action);
+        m_mtl_pass_descriptor.stencilAttachment.clearStencil  = settings.stencil_attachment.clear_value;
+        m_mtl_pass_descriptor.stencilAttachment.loadAction    = GetMTLLoadAction(settings.stencil_attachment.load_action);
+        m_mtl_pass_descriptor.stencilAttachment.storeAction   = GetMTLStoreAction(settings.stencil_attachment.store_action);
     }
 }
     
 MTLRenderPassDescriptor* RenderPassMT::GetNativeDescriptor(bool reset)
 {
     ITT_FUNCTION_TASK();
-    
     if (reset)
     {
         Reset();
@@ -138,10 +135,10 @@ MTLRenderPassDescriptor* RenderPassMT::GetNativeDescriptor(bool reset)
     return m_mtl_pass_descriptor;
 }
 
-ContextMT& RenderPassMT::GetContextMT() noexcept
+IContextMT& RenderPassMT::GetContextMT() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextMT&>(m_context);
+    return static_cast<IContextMT&>(GetRenderContext());
 }
 
 } // namespace Methane::Graphics

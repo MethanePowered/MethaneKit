@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -49,12 +49,11 @@ public:
 
 protected:
     // AppBase interface
-    void ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result) override;
     void ShowAlert(const Message& msg) override;
     
     void ScheduleAlert();
 
-    static LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+    static LRESULT CALLBACK WindowProc(HWND h_wnd, UINT message, WPARAM w_param, LPARAM l_param);
 
     AppEnvironment m_env;
 

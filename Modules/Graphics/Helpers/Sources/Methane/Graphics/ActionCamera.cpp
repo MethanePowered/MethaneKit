@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ Interactive action-camera for rotating, moving and zooming with mouse and keyboa
 
 #include <Methane/Graphics/ActionCamera.h>
 #include <Methane/Data/TimeAnimation.h>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <cml/mathlib/mathlib.h>
 
@@ -145,7 +145,8 @@ void ActionCamera::DoKeyboardAction(KeyboardAction keyboard_action)
     ITT_FUNCTION_TASK();
     switch(keyboard_action)
     {
-        case KeyboardAction::Reset:         ResetOrientaion(); break;
+        case KeyboardAction::Reset:
+            ResetOrientation(); break;
         case KeyboardAction::ChangePivot:   SetPivot(m_pivot == Pivot::Aim ? Pivot::Eye : Pivot::Aim); break;
         
         default: return;

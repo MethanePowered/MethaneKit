@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ Metal implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
-class RenderPassMT;
-class ContextMT;
+struct IContextMT;
+class RenderContextMT;
 
 class CommandQueueMT final : public CommandQueueBase
 {
@@ -42,14 +42,15 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
     
-    ContextMT& GetContextMT() noexcept;
+    IContextMT& GetContextMT() noexcept;
+    RenderContextMT& GetRenderContextMT();
     
     id<MTLCommandQueue>&  GetNativeCommandQueue() noexcept { return m_mtl_command_queue; }
 
-protected:
+private:
     void Reset();
     
-    id<MTLCommandQueue>  m_mtl_command_queue;
+    id<MTLCommandQueue>  m_mtl_command_queue = nil;
 };
 
 } // namespace Methane::Graphics

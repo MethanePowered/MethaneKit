@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ MacOS application delegate implementation.
 
 #include <Methane/Platform/MacOS/AppMac.hh>
 #include <Methane/Platform/MacOS/Types.hh>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 
@@ -37,7 +37,7 @@ using namespace Methane::Platform;
 
 @synthesize window = _window;
 
-- (id) initWithApp : (AppMac*) p_app andSettings : (AppBase::Settings*) p_settings
+- (id) initWithApp : (AppMac*) p_app andSettings : (const AppBase::Settings*) p_settings
 {
     ITT_FUNCTION_TASK();
 
@@ -45,26 +45,26 @@ using namespace Methane::Platform;
     if (!self || !p_settings)
         return nil;
 
-    NSScreen* mainScreen = [NSScreen mainScreen];
-    CGFloat frame_width = p_settings->width < 1.0 ? mainScreen.frame.size.width * (p_settings->width > 0.0 ? p_settings->width : 0.7)
+    NSScreen* ns_main_screen = [NSScreen mainScreen];
+    CGFloat frame_width = p_settings->width < 1.0 ? ns_main_screen.frame.size.width * (p_settings->width > 0.0 ? p_settings->width : 0.7)
                                                   : static_cast<CGFloat>(p_settings->width);
-    CGFloat frame_height = p_settings->height < 1.0 ? mainScreen.frame.size.height * (p_settings->height > 0.0 ? p_settings->height : 0.7)
+    CGFloat frame_height = p_settings->height < 1.0 ? ns_main_screen.frame.size.height * (p_settings->height > 0.0 ? p_settings->height : 0.7)
                                                   : static_cast<CGFloat>(p_settings->height);
     NSRect frame = NSMakeRect(0, 0, frame_width, frame_height);
 
-    NSUInteger styleMask =  NSWindowStyleMaskTitled |
+    NSUInteger style_mask = NSWindowStyleMaskTitled |
                             NSWindowStyleMaskResizable |
                             NSWindowStyleMaskClosable |
                             NSWindowStyleMaskMiniaturizable;
 
     NSBackingStoreType backing = NSBackingStoreBuffered;
     
-    _window = [[NSWindow alloc] initWithContentRect:frame styleMask:styleMask backing:backing defer:YES];
-    _window.title = MacOS::ConvertToNSType<std::string, NSString*>(p_settings->name);
+    _window = [[NSWindow alloc] initWithContentRect:frame styleMask:style_mask backing:backing defer:YES];
+    _window.title = MacOS::ConvertToNsType<std::string, NSString*>(p_settings->name);
     _window.delegate = [[WindowDelegate alloc] initWithApp:p_app];
     [_window center];
     
-    NSRect backing_frame = [mainScreen convertRectToBacking:frame];
+    NSRect backing_frame = [ns_main_screen convertRectToBacking:frame];
     self.viewController = [[AppViewController alloc] initWithApp:p_app andFrameRect:backing_frame];
     
     p_app->SetWindow(_window);

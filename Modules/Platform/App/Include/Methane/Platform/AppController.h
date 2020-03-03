@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,43 +29,48 @@ Base application controller providing commands like app close and help.
 namespace Methane::Platform
 {
 
-enum class AppHelpAction : uint32_t
+enum class AppAction : uint32_t
 {
     None = 0,
     
-    ShowHelp,
+    ShowControlsHelp,
+    ShowCommandLineHelp,
+    SwitchFullScreen,
     CloseApp,
     
     Count
 };
 
-class AppController final
+class AppController
     : public Input::Controller
-    , public Platform::Keyboard::ActionControllerBase<AppHelpAction>
+    , public Platform::Keyboard::ActionControllerBase<AppAction>
 {
 public:
     inline static const ActionByKeyboardState default_action_by_keyboard_state = {
-        { { Platform::Keyboard::Key::F1 },                                       AppHelpAction::ShowHelp  },
-        { { Platform::Keyboard::OS::key_left_ctrl, Platform::Keyboard::Key::Q }, AppHelpAction::CloseApp  },
+        { { Platform::Keyboard::Key::F1 },                                       AppAction::ShowControlsHelp    },
+        { { Platform::Keyboard::Key::F2 },                                       AppAction::ShowCommandLineHelp },
+        { { Platform::Keyboard::Key::LeftControl,  Platform::Keyboard::Key::F }, AppAction::SwitchFullScreen    },
+        { { Platform::Keyboard::OS::g_key_left_ctrl, Platform::Keyboard::Key::Q }, AppAction::CloseApp            },
     };
     
-    AppController(AppBase& application, const std::string& application_help, bool show_command_line_help = false,
-                      const ActionByKeyboardState& action_by_keyboard_state = default_action_by_keyboard_state);
+    AppController(AppBase& application, const std::string& application_help,
+                  const ActionByKeyboardState& action_by_keyboard_state = default_action_by_keyboard_state);
     
     // Input::Controller implementation
     void OnKeyboardChanged(Platform::Keyboard::Key, Platform::Keyboard::KeyState, const Platform::Keyboard::StateChange& state_change) override;
     HelpLines GetHelp() const override;
     
-    void ShowHelp();
+    void ShowControlsHelp();
+    void ShowCommandLineHelp();
+
+protected:
+    // Keyboard::ActionControllerBase interface
+    void        OnKeyboardKeyAction(AppAction, Platform::Keyboard::KeyState) override { }
+    void        OnKeyboardStateAction(AppAction action) override;
+    std::string GetKeyboardActionName(AppAction action) const override;
 
 private:
-    // Keyboard::ActionControllerBase interface
-    void        OnKeyboardKeyAction(AppHelpAction, Platform::Keyboard::KeyState) override { }
-    void        OnKeyboardStateAction(AppHelpAction action) override;
-    std::string GetKeyboardActionName(AppHelpAction action) const override;
-
-    AppBase&            m_application;
-    const bool          m_show_command_line_help;
+    AppBase& m_application;
 };
 
 } // namespace Methane::Platform

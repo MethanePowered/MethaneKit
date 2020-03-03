@@ -24,7 +24,7 @@ Asteroids application controller.
 #include "AsteroidsAppController.h"
 #include "AsteroidsApp.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 
 namespace Methane::Samples

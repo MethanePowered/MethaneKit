@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ Platform abstraction of keyboard events.
 ******************************************************************************/
 
 #include <Methane/Platform/Keyboard.h>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <map>
 #include <sstream>
@@ -31,8 +31,8 @@ Platform abstraction of keyboard events.
 namespace Methane::Platform::Keyboard
 {
 
-static const std::string s_keys_separator = "+";
-static const std::string s_properties_separator = "+";
+static const std::string g_keys_separator = "+";
+static const std::string g_properties_separator = "+";
 
 KeyConverter::KeyConverter(Key key)
     : m_key(key)
@@ -225,7 +225,7 @@ std::string KeyConverter::ToString() const noexcept
     
     return m_modifiers == Modifier::Value::None
          ? key_and_name_it->second
-         : Modifier::ToString(m_modifiers) + s_keys_separator + key_and_name_it->second;
+         : Modifier::ToString(m_modifiers) + g_keys_separator + key_and_name_it->second;
 };
 
 State::State(std::initializer_list<Key> pressed_keys, Modifier::Mask modifiers_mask)
@@ -393,7 +393,7 @@ std::string Modifier::ToString(Modifier::Mask modifiers_mask)
         {
             if (!first_modifier)
             {
-                ss << s_keys_separator;
+                ss << g_keys_separator;
             }
             ss << ToString(modifier);
             first_modifier = false;
@@ -427,7 +427,7 @@ std::string State::Property::ToString(State::Property::Mask properties_mask)
 
         if (!first_property)
         {
-            ss << s_properties_separator;
+            ss << g_properties_separator;
         }
         ss << ToString(property_value);
         first_property = false;
@@ -453,7 +453,7 @@ std::string State::ToString() const
         
         if (!is_first_key || !modifiers_str.empty())
         {
-            ss << s_keys_separator;
+            ss << g_keys_separator;
         }
         
         const Key key = static_cast<Key>(key_index);

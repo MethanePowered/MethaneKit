@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,11 +30,9 @@ Metal implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
-class BufferMT : public BufferBase
+class BufferMT final : public BufferBase
 {
 public:
-    using Ptr = std::shared_ptr<BufferMT>;
-
     BufferMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
     BufferMT(ContextBase& context, const Settings& settings, Data::Size stride, PixelFormat format, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
     ~BufferMT() override;
@@ -51,7 +49,7 @@ public:
     const id<MTLBuffer>& GetNativeBuffer() const noexcept { return m_mtl_buffer; }
     MTLIndexType         GetNativeIndexType() const noexcept;
 
-protected:
+private:
     id<MTLBuffer> m_mtl_buffer;
     Data::Size    m_stride = 0;
     PixelFormat   m_format = PixelFormat::Unknown;

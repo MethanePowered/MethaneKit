@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/DirectX12/TypesDX.h
-Methane graphics types convertors to DirectX 12 native types.
+Methane graphics types converters to DirectX 12 native types.
 
 ******************************************************************************/
 
 #include "TypesDX.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 
@@ -33,17 +33,17 @@ namespace Methane::Graphics
 CD3DX12_VIEWPORT TypeConverterDX::ViewportToD3D(const Viewport& viewport) noexcept
 {
     ITT_FUNCTION_TASK();
-    return CD3DX12_VIEWPORT(static_cast<float>(viewport.origin.x()), static_cast<float>(viewport.origin.y()),
+    return CD3DX12_VIEWPORT(static_cast<float>(viewport.origin.GetX()), static_cast<float>(viewport.origin.GetY()),
                             static_cast<float>(viewport.size.width), static_cast<float>(viewport.size.height),
-                            static_cast<float>(viewport.origin.z()), static_cast<float>(viewport.origin.z() + viewport.size.depth));
+                            static_cast<float>(viewport.origin.GetZ()), static_cast<float>(viewport.origin.GetZ() + viewport.size.depth));
 }
 
 CD3DX12_RECT TypeConverterDX::ScissorRectToD3D(const ScissorRect& scissor_rect) noexcept
 {
     ITT_FUNCTION_TASK();
-    return CD3DX12_RECT(static_cast<LONG>(scissor_rect.origin.x()), static_cast<LONG>(scissor_rect.origin.y()),
-                        static_cast<LONG>(scissor_rect.origin.x() + scissor_rect.size.width),
-                        static_cast<LONG>(scissor_rect.origin.y() + scissor_rect.size.height));
+    return CD3DX12_RECT(static_cast<LONG>(scissor_rect.origin.GetX()), static_cast<LONG>(scissor_rect.origin.GetY()),
+                        static_cast<LONG>(scissor_rect.origin.GetX() + scissor_rect.size.width),
+                        static_cast<LONG>(scissor_rect.origin.GetY() + scissor_rect.size.height));
 }
 
 std::vector<CD3DX12_VIEWPORT> TypeConverterDX::ViewportsToD3D(const Viewports& viewports) noexcept
@@ -106,6 +106,8 @@ DXGI_FORMAT TypeConverterDX::DataFormatToDXGI(const PixelFormat& data_format, Re
         case ResourceFormatType::ViewWrite: return DXGI_FORMAT_D32_FLOAT;
         }
     } break;
+
+    default: assert(0);
     }
     return DataFormatToDXGI(data_format);
 }
@@ -129,7 +131,7 @@ D3D12_COMPARISON_FUNC TypeConverterDX::CompareFunctionToDX(Compare compare_func)
     return D3D12_COMPARISON_FUNC_NEVER;
 }
 
-DXGI_FORMAT TypeConverterDX::ParameterDescToDXGIFormatAndSize(const D3D12_SIGNATURE_PARAMETER_DESC& param_desc, uint32_t& out_element_byte_size) noexcept
+DXGI_FORMAT TypeConverterDX::ParameterDescToDxgiFormatAndSize(const D3D12_SIGNATURE_PARAMETER_DESC& param_desc, uint32_t& out_element_byte_size) noexcept
 {
     ITT_FUNCTION_TASK();
 

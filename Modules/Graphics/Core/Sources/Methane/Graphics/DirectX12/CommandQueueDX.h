@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ namespace Methane::Graphics
 
 namespace wrl = Microsoft::WRL;
 
-class ContextDX;
+struct IContextDX;
 class RenderStateBase;
 
 class CommandQueueDX final : public CommandQueueBase
@@ -44,19 +44,19 @@ public:
     CommandQueueDX(ContextBase& context);
 
     // CommandQueue interface
-    void Execute(const CommandList::Refs& command_lists) override;
+    void Execute(const Refs<CommandList>& command_lists) override;
 
     // Object interface
     void SetName(const std::string& name) override;
 
-    ContextDX& GetContextDX();
-
-    wrl::ComPtr<ID3D12CommandQueue>& GetNativeCommandQueue()     { return m_cp_command_queue; }
+    IContextDX& GetContextDX() noexcept;
+    ID3D12CommandQueue& GetNativeCommandQueue();
 
 protected:
     using D3D12CommandLists = std::vector<ID3D12CommandList*>;
-    static D3D12CommandLists GetNativeCommandLists(const CommandList::Refs& command_list_refs);
+    static D3D12CommandLists GetNativeCommandLists(const Refs<CommandList>& command_list_refs);
 
+private:
     wrl::ComPtr<ID3D12CommandQueue> m_cp_command_queue;
 };
 

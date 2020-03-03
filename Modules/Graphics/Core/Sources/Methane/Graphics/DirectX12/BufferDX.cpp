@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,30 +22,30 @@ DirectX 12 implementation of the buffer interface.
 ******************************************************************************/
 
 #include "BufferDX.h"
-#include "ContextDX.h"
 #include "DeviceDX.h"
 #include "TypesDX.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-Buffer::Ptr Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
+Ptr<Buffer> Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
 {
     ITT_FUNCTION_TASK();
     const Buffer::Settings settings = { Buffer::Type::Vertex, Usage::Unknown, size };
-    return std::make_shared<VertexBufferDX>(static_cast<ContextBase&>(context), settings, DescriptorByUsage(), stride);
+    return std::make_shared<VertexBufferDX>(dynamic_cast<ContextBase&>(context), settings, DescriptorByUsage(), stride);
 }
 
-Buffer::Ptr Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format)
+Ptr<Buffer> Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format)
 {
     ITT_FUNCTION_TASK();
     const Buffer::Settings settings = { Buffer::Type::Index, Usage::Unknown, size };
-    return std::make_shared<IndexBufferDX>(static_cast<ContextBase&>(context), settings, DescriptorByUsage(), format);
+    return std::make_shared<IndexBufferDX>(dynamic_cast<ContextBase&>(context), settings, DescriptorByUsage(), format);
 }
 
-Buffer::Ptr Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     Usage::Mask usage_mask = Usage::ShaderRead;
@@ -53,7 +53,7 @@ Buffer::Ptr Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool
         usage_mask |= Usage::Addressable;
 
     const Buffer::Settings settings = { Buffer::Type::Constant, usage_mask, size };
-    return std::make_shared<ConstantBufferDX>(static_cast<ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<ConstantBufferDX>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
 Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
@@ -93,14 +93,15 @@ void ConstantBufferDX::InitializeView()
 {
     ITT_FUNCTION_TASK();
 
-    const Data::Size data_size     = GetDataSize();
+    const Data::Size data_size   = GetDataSize();
     m_buffer_view.BufferLocation = GetNativeGpuAddress();
     m_buffer_view.SizeInBytes    = static_cast<UINT>(data_size);
 
     // NOTE: Addressable resources are bound to pipeline using GPU Address and byte offset
-    if (m_usage_mask & Usage::ShaderRead && !(m_usage_mask & Usage::Addressable))
+    const Usage::Mask usage_mask = GetUsageMask();
+    if (usage_mask & Usage::ShaderRead && !(usage_mask & Usage::Addressable))
     {
-        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle = GetNativeCPUDescriptorHandle(Usage::ShaderRead);
+        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle = GetNativeCpuDescriptorHandle(Usage::ShaderRead);
         GetContextDX().GetDeviceDX().GetNativeDevice()->CreateConstantBufferView(&m_buffer_view, cpu_handle);
     }
 }

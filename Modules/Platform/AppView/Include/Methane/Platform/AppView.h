@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,7 +17,8 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Platform/AppView.h
-Methane application view used both by Context in Core API and by Methane App implementations.
+Methane application view used both by RenderContext in Core API
+and by Methane App implementations.
 
 ******************************************************************************/
 

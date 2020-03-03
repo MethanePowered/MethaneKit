@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ DirectX 12 implementation of the buffer interface.
 #include <Methane/Graphics/BufferBase.h>
 #include <Methane/Graphics/DescriptorHeap.h>
 #include <Methane/Graphics/Windows/Helpers.h>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <d3dx12.h>
 #include <cassert>
@@ -35,7 +35,7 @@ namespace Methane::Graphics
 {
 
 template<typename TViewNative, typename... ExtraViewArgs>
-class BufferDX : public BufferBase
+class BufferDX final : public BufferBase
 {
 public:
     BufferDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraViewArgs... view_args)
@@ -55,15 +55,15 @@ public:
 
         for(const SubResource& sub_resource : sub_resources)
         {
-            assert(!!m_cp_resource);
+            ID3D12Resource& d3d12_resource = GetNativeResourceRef();
             char* p_resource_data = nullptr;
             CD3DX12_RANGE read_range(0, 0); // Zero range, since we're not going to read this resource on CPU
-            ThrowIfFailed(m_cp_resource->Map(sub_resource.GetRawIndex(), &read_range, reinterpret_cast<void**>(&p_resource_data)));
+            ThrowIfFailed(d3d12_resource.Map(sub_resource.GetRawIndex(), &read_range, reinterpret_cast<void**>(&p_resource_data)));
 
             assert(!!p_resource_data);
             std::copy(sub_resource.p_data, sub_resource.p_data + sub_resource.data_size, stdext::checked_array_iterator<char*>(p_resource_data, GetDataSize()));
 
-            m_cp_resource->Unmap(sub_resource.GetRawIndex(), nullptr);
+            d3d12_resource.Unmap(sub_resource.GetRawIndex(), nullptr);
         }
     }
 
@@ -75,6 +75,7 @@ public:
 protected:
     void InitializeView(ExtraViewArgs...);
 
+private:
     // NOTE: in case of resource context placed in descriptor heap, m_buffer_view field holds context descriptor instead of context
     TViewNative m_buffer_view;
     uint32_t    m_formatted_items_count = 0;

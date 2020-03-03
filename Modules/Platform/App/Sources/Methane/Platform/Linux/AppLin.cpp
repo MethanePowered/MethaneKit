@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ Linux application implementation.
 
 #include <Methane/Platform/Linux/AppLin.h>
 #include <Methane/Platform/Utils.h>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Platform
 {
@@ -32,12 +32,6 @@ AppLin::AppLin(const AppBase::Settings& settings)
     : AppBase(settings)
 {
     ITT_FUNCTION_TASK();
-}
-
-void AppLin::ParseCommandLine(const cxxopts::ParseResult& cmd_parse_result)
-{
-    ITT_FUNCTION_TASK();
-    AppBase::ParseCommandLine(cmd_parse_result);
 }
 
 int AppLin::Run(const RunArgs& args)

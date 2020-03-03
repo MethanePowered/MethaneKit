@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,11 +31,11 @@ Metal implementation of the texture interface.
 namespace Methane::Graphics
 {
 
-class TextureMT : public TextureBase
+class RenderContextMT;
+
+class TextureMT final : public TextureBase
 {
 public:
-    using Ptr = std::shared_ptr<TextureMT>;
-
     TextureMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
     ~TextureMT() override;
 
@@ -50,8 +50,9 @@ public:
 
     const id<MTLTexture>& GetNativeTexture() const { return m_mtl_texture; }
 
-protected:
+private:
     void GenerateMipLevels();
+    RenderContextMT& GetRenderContextMT();
 
     MTLTextureUsage       GetNativeTextureUsage();
     MTLTextureDescriptor* GetNativeTextureDescriptor();

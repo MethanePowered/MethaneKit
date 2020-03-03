@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,18 +22,14 @@ Metal implementation of the render state interface.
 ******************************************************************************/
 
 #include "RenderStateMT.hh"
-#include "ContextMT.hh"
-#include "DeviceMT.hh"
+#include "RenderContextMT.hh"
 #include "RenderCommandListMT.hh"
 #include "ProgramMT.hh"
 #include "ShaderMT.hh"
 #include "TypesMT.hh"
 
-#include <Methane/Platform/MacOS/AppViewMT.hh>
 #include <Methane/Platform/MacOS/Types.hh>
-#include <Methane/Data/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
@@ -52,7 +48,6 @@ static MTLCullMode ConvertRasterizerCullModeToMetal(RenderState::Rasterizer::Cul
     }
     return MTLCullModeNone;
 }
-
 
 static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(RenderState::Rasterizer::FillMode fill_mode) noexcept
 {
@@ -74,7 +69,7 @@ static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(RenderState::Blendi
 
     using ColorChannel = RenderState::Blending::ColorChannel;
 
-    MTLColorWriteMask mtl_color_write_mask = 0;
+    MTLColorWriteMask mtl_color_write_mask = 0u;
     if (rt_write_mask & ColorChannel::Red)
         mtl_color_write_mask |= MTLColorWriteMaskRed;
     if (rt_write_mask & ColorChannel::Green)
@@ -99,7 +94,6 @@ static MTLBlendOperation ConvertBlendingOperationToMetal(RenderState::Blending::
     case BlendOp::ReverseSubtract:  return MTLBlendOperationReverseSubtract;
     case BlendOp::Minimum:          return MTLBlendOperationMin;
     case BlendOp::Maximum:          return MTLBlendOperationMax;
-    default:                        assert(0);
     }
     return MTLBlendOperationAdd;
 }
@@ -131,7 +125,6 @@ static MTLBlendFactor ConvertBlendingFactorToMetal(RenderState::Blending::Factor
     case BlendFactor::OneMinusSource1Color:     return MTLBlendFactorOneMinusSource1Color;
     case BlendFactor::Source1Alpha:             return MTLBlendFactorSource1Alpha;
     case BlendFactor::OneMinusSource1Alpha:     return MTLBlendFactorOneMinusSource1Alpha;
-    default:                                    assert(0);
     }
     return MTLBlendFactorZero;
 }
@@ -152,7 +145,6 @@ static MTLStencilOperation ConvertStencilOperationToMetal(RenderState::Stencil::
         case StencilOperation::DecrementClamp:  return MTLStencilOperationDecrementClamp;
         case StencilOperation::IncrementWrap:   return MTLStencilOperationIncrementWrap;
         case StencilOperation::DecrementWrap:   return MTLStencilOperationDecrementWrap;
-        default:                                assert(0);
     }
     return MTLStencilOperationKeep;
 }
@@ -182,13 +174,13 @@ static MTLStencilDescriptor* ConvertStencilDescriptorToMetal(const RenderState::
     return mtl_stencil_desc;
 }
 
-RenderState::Ptr RenderState::Create(Context& context, const RenderState::Settings& state_settings)
+Ptr<RenderState> RenderState::Create(RenderContext& context, const RenderState::Settings& state_settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<RenderStateMT>(static_cast<ContextBase&>(context), state_settings);
+    return std::make_shared<RenderStateMT>(dynamic_cast<RenderContextBase&>(context), state_settings);
 }
 
-RenderStateMT::RenderStateMT(ContextBase& context, const Settings& settings)
+RenderStateMT::RenderStateMT(RenderContextBase& context, const Settings& settings)
     : RenderStateBase(context, settings)
 {
     ITT_FUNCTION_TASK();
@@ -216,8 +208,8 @@ void RenderStateMT::Reset(const Settings& settings)
     RenderStateBase::Reset(settings);
     [m_mtl_pipeline_state_desc release];
     [m_mtl_depth_stencil_state_desc release];
-    
-    ProgramMT& metal_program = static_cast<ProgramMT&>(*m_settings.sp_program);
+
+    ProgramMT& metal_program = static_cast<ProgramMT&>(*settings.sp_program);
 
     // Program state
     m_mtl_pipeline_state_desc                           = [[MTLRenderPipelineDescriptor alloc] init];
@@ -226,24 +218,24 @@ void RenderStateMT::Reset(const Settings& settings)
     m_mtl_pipeline_state_desc.vertexDescriptor          = metal_program.GetNativeVertexDescriptor();
     
     // Rasterizer state
-    m_mtl_pipeline_state_desc.sampleCount               = m_settings.rasterizer.sample_count;
-    m_mtl_pipeline_state_desc.alphaToCoverageEnabled    = m_settings.rasterizer.alpha_to_coverage_enabled ? YES : NO;
+    m_mtl_pipeline_state_desc.sampleCount               = settings.rasterizer.sample_count;
+    m_mtl_pipeline_state_desc.alphaToCoverageEnabled    = settings.rasterizer.alpha_to_coverage_enabled;
     m_mtl_pipeline_state_desc.alphaToOneEnabled         = NO; // not supported by Methane
     
     // Blending state
     const std::vector<PixelFormat>& rt_color_formats = metal_program.GetSettings().color_formats;
-    for (uint32_t rt_index = 0; rt_index < m_settings.blending.render_targets.size(); ++rt_index)
+    for (uint32_t rt_index = 0; rt_index < settings.blending.render_targets.size(); ++rt_index)
     {
-        const Blending::RenderTarget& render_target     = m_settings.blending.is_independent
-                                                        ? m_settings.blending.render_targets[rt_index]
-                                                        : m_settings.blending.render_targets[0];
+        const Blending::RenderTarget& render_target     = settings.blending.is_independent
+                                                        ? settings.blending.render_targets[rt_index]
+                                                        : settings.blending.render_targets[0];
         
         // Set render target blending state for color attachment
         MTLRenderPipelineColorAttachmentDescriptor* mtl_color_attach = m_mtl_pipeline_state_desc.colorAttachments[rt_index];
         mtl_color_attach.pixelFormat                    = rt_index < rt_color_formats.size()
                                                         ? TypeConverterMT::DataFormatToMetalPixelType(rt_color_formats[rt_index])
                                                         : MTLPixelFormatInvalid;
-        mtl_color_attach.blendingEnabled                = render_target.blend_enabled && rt_index < rt_color_formats.size() ? YES : NO;
+        mtl_color_attach.blendingEnabled                = render_target.blend_enabled && rt_index < rt_color_formats.size();
         mtl_color_attach.writeMask                      = ConvertRenderTargetWriteMaskToMetal(render_target.write_mask);
         mtl_color_attach.rgbBlendOperation              = ConvertBlendingOperationToMetal(render_target.rgb_blend_op);
         mtl_color_attach.alphaBlendOperation            = ConvertBlendingOperationToMetal(render_target.alpha_blend_op);
@@ -260,25 +252,25 @@ void RenderStateMT::Reset(const Settings& settings)
     
     // Depth-stencil state
     m_mtl_depth_stencil_state_desc                      = [[MTLDepthStencilDescriptor alloc] init];
-    m_mtl_depth_stencil_state_desc.depthWriteEnabled    = m_settings.depth.write_enabled && depth_format != PixelFormat::Unknown ? YES : NO;
-    m_mtl_depth_stencil_state_desc.depthCompareFunction = m_settings.depth.enabled && depth_format != PixelFormat::Unknown
-                                                        ? TypeConverterMT::CompareFunctionToMetal(m_settings.depth.compare)
+    m_mtl_depth_stencil_state_desc.depthWriteEnabled    = settings.depth.write_enabled && depth_format != PixelFormat::Unknown;
+    m_mtl_depth_stencil_state_desc.depthCompareFunction = settings.depth.enabled && depth_format != PixelFormat::Unknown
+                                                        ? TypeConverterMT::CompareFunctionToMetal(settings.depth.compare)
                                                         : MTLCompareFunctionAlways;
-    m_mtl_depth_stencil_state_desc.backFaceStencil      = ConvertStencilDescriptorToMetal(m_settings.stencil, false);
-    m_mtl_depth_stencil_state_desc.frontFaceStencil     = ConvertStencilDescriptorToMetal(m_settings.stencil, true);
+    m_mtl_depth_stencil_state_desc.backFaceStencil      = ConvertStencilDescriptorToMetal(settings.stencil, false);
+    m_mtl_depth_stencil_state_desc.frontFaceStencil     = ConvertStencilDescriptorToMetal(settings.stencil, true);
     
     // Separate state parameters
-    m_mtl_fill_mode          = ConvertRasterizerFillModeToMetal(m_settings.rasterizer.fill_mode);
-    m_mtl_cull_mode          = ConvertRasterizerCullModeToMetal(m_settings.rasterizer.cull_mode);
-    m_mtl_front_face_winding = ConvertRasterizerFrontWindingToMetal(m_settings.rasterizer.is_front_counter_clockwise);
+    m_mtl_fill_mode          = ConvertRasterizerFillModeToMetal(settings.rasterizer.fill_mode);
+    m_mtl_cull_mode          = ConvertRasterizerCullModeToMetal(settings.rasterizer.cull_mode);
+    m_mtl_front_face_winding = ConvertRasterizerFrontWindingToMetal(settings.rasterizer.is_front_counter_clockwise);
     
-    if (!m_settings.viewports.empty())
+    if (!settings.viewports.empty())
     {
-        SetViewports(m_settings.viewports);
+        SetViewports(settings.viewports);
     }
-    if (!m_settings.scissor_rects.empty())
+    if (!settings.scissor_rects.empty())
     {
-        SetScissorRects(m_settings.scissor_rects);
+        SetScissorRects(settings.scissor_rects);
     }
     
     ResetNativeState();
@@ -317,10 +309,11 @@ void RenderStateMT::Apply(RenderCommandListBase& command_list, Group::Mask state
     }
     if (state_groups & Group::BlendingColor)
     {
-        [mtl_cmd_encoder setBlendColorRed:m_settings.blending_color.r()
-                                    green:m_settings.blending_color.g()
-                                     blue:m_settings.blending_color.b()
-                                    alpha:m_settings.blending_color.a()];
+        const Settings& settings = GetSettings();
+        [mtl_cmd_encoder setBlendColorRed:settings.blending_color.GetR()
+                                    green:settings.blending_color.GetG()
+                                     blue:settings.blending_color.GetB()
+                                    alpha:settings.blending_color.GetA()];
     }
 }
 
@@ -334,12 +327,12 @@ void RenderStateMT::SetViewports(const Viewports& viewports)
     for(const Viewport& viewport : viewports)
     {
         MTLViewport mtl_viewport = { };
-        mtl_viewport.originX = viewport.origin.x();
-        mtl_viewport.originY = viewport.origin.y();
+        mtl_viewport.originX = viewport.origin.GetX();
+        mtl_viewport.originY = viewport.origin.GetY();
         mtl_viewport.width   = viewport.size.width;
         mtl_viewport.height  = viewport.size.height;
-        mtl_viewport.znear   = viewport.origin.z();
-        mtl_viewport.zfar    = viewport.origin.z() + viewport.size.depth;
+        mtl_viewport.znear   = viewport.origin.GetZ();
+        mtl_viewport.zfar    = viewport.origin.GetZ() + viewport.size.depth;
         m_mtl_viewports.emplace_back(std::move(mtl_viewport));
     }
 }
@@ -354,8 +347,8 @@ void RenderStateMT::SetScissorRects(const ScissorRects& scissor_rects)
     for(const ScissorRect& scissor_rect : scissor_rects)
     {
         MTLScissorRect mtl_scissor_rect = {};
-        mtl_scissor_rect.x      = static_cast<NSUInteger>(scissor_rect.origin.x());
-        mtl_scissor_rect.y      = static_cast<NSUInteger>(scissor_rect.origin.y());
+        mtl_scissor_rect.x      = static_cast<NSUInteger>(scissor_rect.origin.GetX());
+        mtl_scissor_rect.y      = static_cast<NSUInteger>(scissor_rect.origin.GetY());
         mtl_scissor_rect.width  = static_cast<NSUInteger>(scissor_rect.size.width);
         mtl_scissor_rect.height = static_cast<NSUInteger>(scissor_rect.size.height);
         m_mtl_scissor_rects.emplace_back(std::move(mtl_scissor_rect));
@@ -368,26 +361,55 @@ void RenderStateMT::SetName(const std::string& name)
 
     RenderStateBase::SetName(name);
     
-    NSString* ns_name = Methane::MacOS::ConvertToNSType<std::string, NSString*>(name);
+    NSString* ns_name = Methane::MacOS::ConvertToNsType<std::string, NSString*>(name);
     m_mtl_pipeline_state_desc.label      = ns_name;
     m_mtl_depth_stencil_state_desc.label = ns_name;
     
     ResetNativeState();
 }
+    
+void RenderStateMT::InitializeNativeStates()
+{
+    ITT_FUNCTION_TASK();
+    InitializeNativePipelineState();
+    InitializeNativeDepthStencilState();
+}
+
+void RenderStateMT::InitializeNativePipelineState()
+{
+    ITT_FUNCTION_TASK();
+    if (m_mtl_pipeline_state)
+        return;
+    
+    NSError* ns_error = nil;
+    m_mtl_pipeline_state = [GetRenderContextMT().GetDeviceMT().GetNativeDevice() newRenderPipelineStateWithDescriptor:m_mtl_pipeline_state_desc error:&ns_error];
+    if (!m_mtl_pipeline_state)
+    {
+        const std::string error_msg = MacOS::ConvertFromNsType<NSString, std::string>([ns_error localizedDescription]);
+        throw std::runtime_error("Failed to create Metal pipeline state: " + error_msg);
+    }
+}
+
+void RenderStateMT::InitializeNativeDepthStencilState()
+{
+    ITT_FUNCTION_TASK();
+    if (m_mtl_depth_state)
+        return;
+    
+    assert(m_mtl_depth_stencil_state_desc != nil);
+    m_mtl_depth_state = [GetRenderContextMT().GetDeviceMT().GetNativeDevice() newDepthStencilStateWithDescriptor:m_mtl_depth_stencil_state_desc];
+    if (!m_mtl_depth_state)
+    {
+        throw std::runtime_error("Failed to create Metal depth state.");
+    }
+}
 
 id<MTLRenderPipelineState>& RenderStateMT::GetNativePipelineState()
 {
     ITT_FUNCTION_TASK();
-
     if (!m_mtl_pipeline_state)
     {
-        NSError* ns_error = nil;
-        m_mtl_pipeline_state = [GetContextMT().GetDeviceMT().GetNativeDevice() newRenderPipelineStateWithDescriptor:m_mtl_pipeline_state_desc error:&ns_error];
-        if (!m_mtl_pipeline_state)
-        {
-            const std::string error_msg = MacOS::ConvertFromNSType<NSString, std::string>([ns_error localizedDescription]);
-            throw std::runtime_error("Failed to create Metal pipeline state: " + error_msg);
-        }
+        InitializeNativePipelineState();
     }
     return m_mtl_pipeline_state;
 }
@@ -395,15 +417,9 @@ id<MTLRenderPipelineState>& RenderStateMT::GetNativePipelineState()
 id<MTLDepthStencilState>& RenderStateMT::GetNativeDepthStencilState()
 {
     ITT_FUNCTION_TASK();
-    
     if (!m_mtl_depth_state)
     {
-        assert(m_mtl_depth_stencil_state_desc != nil);
-        m_mtl_depth_state = [GetContextMT().GetDeviceMT().GetNativeDevice() newDepthStencilStateWithDescriptor:m_mtl_depth_stencil_state_desc];
-        if (!m_mtl_depth_state)
-        {
-            throw std::runtime_error("Failed to create Metal depth state.");
-        }
+        InitializeNativeStates();
     }
     return m_mtl_depth_state;
 }
@@ -419,10 +435,10 @@ void RenderStateMT::ResetNativeState()
     m_mtl_depth_state = nil;
 }
 
-ContextMT& RenderStateMT::GetContextMT() noexcept
+RenderContextMT& RenderStateMT::GetRenderContextMT()
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextMT&>(m_context);
+    return dynamic_cast<RenderContextMT&>(GetRenderContext());
 }
 
 } // namespace Methane::Graphics

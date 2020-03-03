@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -34,13 +34,13 @@ namespace Methane::Graphics
 
 namespace wrl = Microsoft::WRL;
 
-class ContextDX;
+struct IContextDX;
 class DescriptorHeapDX;
 
 class ResourceDX : public ResourceBase
 {
 public:
-    class ReleasePoolDX : public ResourceBase::ReleasePool
+    class ReleasePoolDX final : public ReleasePool
     {
     public:
         ReleasePoolDX() = default;
@@ -64,7 +64,7 @@ public:
         D3D12_GPU_VIRTUAL_ADDRESS GetNativeGpuAddress() const noexcept { return GetResourceDX().GetNativeGpuAddress() + GetOffset(); }
 
     private:
-        std::reference_wrapper<ResourceDX> m_resource_dx;
+        Ref<ResourceDX> m_resource_dx;
     };
 
     using LocationsDX = std::vector<LocationDX>;
@@ -75,23 +75,26 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-    ID3D12Resource*             GetNativeResource() const noexcept                              { return m_cp_resource.Get(); }
-    D3D12_GPU_VIRTUAL_ADDRESS   GetNativeGpuAddress() const noexcept                            { return m_cp_resource ? m_cp_resource->GetGPUVirtualAddress() : 0; }
-    D3D12_CPU_DESCRIPTOR_HANDLE GetNativeCPUDescriptorHandle(Usage::Value usage) const noexcept { return GetNativeCPUDescriptorHandle(GetDescriptorByUsage(usage)); }
-    D3D12_CPU_DESCRIPTOR_HANDLE GetNativeCPUDescriptorHandle(const Descriptor& desc) const noexcept;
-    D3D12_GPU_DESCRIPTOR_HANDLE GetNativeGPUDescriptorHandle(Usage::Value usage) const noexcept { return GetNativeGPUDescriptorHandle(GetDescriptorByUsage(usage)); }
-    D3D12_GPU_DESCRIPTOR_HANDLE GetNativeGPUDescriptorHandle(const Descriptor& desc) const noexcept;
+    ID3D12Resource&                     GetNativeResourceRef() const;
+    ID3D12Resource*                     GetNativeResource() const noexcept                                  { return m_cp_resource.Get(); }
+    const wrl::ComPtr<ID3D12Resource>&  GetNativeResourceComPtr() const noexcept                            { return m_cp_resource; }
+    D3D12_GPU_VIRTUAL_ADDRESS           GetNativeGpuAddress() const noexcept                                { return m_cp_resource ? m_cp_resource->GetGPUVirtualAddress() : 0; }
+    D3D12_CPU_DESCRIPTOR_HANDLE         GetNativeCpuDescriptorHandle(Usage::Value usage) const noexcept     { return GetNativeCpuDescriptorHandle(GetDescriptorByUsage(usage)); }
+    D3D12_CPU_DESCRIPTOR_HANDLE         GetNativeCpuDescriptorHandle(const Descriptor& desc) const noexcept;
+    D3D12_GPU_DESCRIPTOR_HANDLE         GetNativeGpuDescriptorHandle(Usage::Value usage) const noexcept     { return GetNativeGpuDescriptorHandle(GetDescriptorByUsage(usage)); }
+    D3D12_GPU_DESCRIPTOR_HANDLE         GetNativeGpuDescriptorHandle(const Descriptor& desc) const noexcept;
 
-    static D3D12_RESOURCE_STATES  GetNativeResourceState(State resource_state) noexcept;
-    static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const Barrier& resource_barrier) noexcept;
+    static D3D12_RESOURCE_STATES        GetNativeResourceState(State resource_state) noexcept;
+    static D3D12_RESOURCE_BARRIER       GetNativeResourceBarrier(const Barrier& resource_barrier) noexcept;
 
 protected:
-    ContextDX& GetContextDX() noexcept;
+    IContextDX& GetContextDX() noexcept;
 
     void InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type,
                                      D3D12_RESOURCE_STATES resource_state, const D3D12_CLEAR_VALUE* p_clear_value = nullptr);
     void InitializeFrameBufferResource(uint32_t frame_buffer_index);
 
+private:
     wrl::ComPtr<ID3D12Resource> m_cp_resource;
 };
 

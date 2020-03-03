@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,18 +25,13 @@ Methane buffer interface: GPU memory buffer resource.
 
 #include "Resource.h"
 
-#include <vector>
-
 namespace Methane::Graphics
 {
 
+struct Context;
+
 struct Buffer : virtual Resource
 {
-    using Ptr     = std::shared_ptr<Buffer>;
-    using WeakPtr = std::weak_ptr<Buffer>;
-    using Ref     = std::reference_wrapper<Buffer>;
-    using Refs    = std::vector<Ref>;
-
     enum class Type
     {
         Data = 0,
@@ -53,11 +48,11 @@ struct Buffer : virtual Resource
     };
 
     // Create Buffer instance
-    static Ptr CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride);
-    static Ptr CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format);
-    static Ptr CreateConstantBuffer(Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    static Ptr<Buffer> CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride);
+    static Ptr<Buffer> CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format);
+    static Ptr<Buffer> CreateConstantBuffer(Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
-    // Auxillary functions
+    // Auxiliary functions
     static Data::Size  GetAlignedBufferSize(Data::Size size) noexcept;
     static std::string GetBufferTypeName(Type type) noexcept;
 

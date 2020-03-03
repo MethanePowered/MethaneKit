@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/Camera.h
-Camera helper implementation allowing to generate view and projectrion matrices.
+Camera helper implementation allowing to generate view and projection matrices.
 
 ******************************************************************************/
 
@@ -59,9 +59,9 @@ public:
 
     void Resize(float width, float height) noexcept;
     void SetProjection(Projection projection) noexcept           { m_projection = projection; }
-    void ResetOrientaion() noexcept                              { m_current_orientation = m_default_orientation; }
+    void ResetOrientation() noexcept                             { m_current_orientation = m_default_orientation; }
     void SetOrientation(const Orientation& orientation) noexcept { m_current_orientation = m_default_orientation = orientation; }
-    void SetParamters(const Parameters& parameters) noexcept     { m_parameters = parameters; }
+    void SetParameters(const Parameters& parameters) noexcept    { m_parameters = parameters; }
     void RotateYaw(float deg) noexcept;
     void RotatePitch(float deg) noexcept;
 
@@ -89,7 +89,7 @@ public:
     void PrintOrientation();
 
 protected:
-    float GetFOVAngleY() const noexcept;
+    float GetFovAngleY() const noexcept;
 
     static float GetAimDistance(const Orientation& orientation) noexcept { return (orientation.aim - orientation.eye).length(); }
     static Vector3f GetLookDirection(const Orientation& orientation) noexcept { return orientation.aim - orientation.eye; }

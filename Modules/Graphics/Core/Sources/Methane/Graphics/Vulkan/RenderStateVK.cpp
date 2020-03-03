@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,20 +29,19 @@ Vulkan implementation of the render state interface.
 #include "ShaderVK.h"
 #include "TypesVK.h"
 
-#include <Methane/Data/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Graphics/RenderContextBase.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-RenderState::Ptr RenderState::Create(Context& context, const RenderState::Settings& state_settings)
+Ptr<RenderState> RenderState::Create(RenderContext& context, const RenderState::Settings& state_settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<RenderStateVK>(static_cast<ContextBase&>(context), state_settings);
+    return std::make_shared<RenderStateVK>(dynamic_cast<RenderContextBase&>(context), state_settings);
 }
 
-RenderStateVK::RenderStateVK(ContextBase& context, const Settings& settings)
+RenderStateVK::RenderStateVK(RenderContextBase& context, const Settings& settings)
     : RenderStateBase(context, settings)
 {
     ITT_FUNCTION_TASK();
@@ -63,16 +62,16 @@ void RenderStateVK::Reset(const Settings& settings)
     }
 
     RenderStateBase::Reset(settings);
-    
-    ProgramVK& vulkan_program = static_cast<ProgramVK&>(*m_settings.sp_program);
 
-    if (!m_settings.viewports.empty())
+    ProgramVK& vulkan_program = static_cast<ProgramVK&>(*settings.sp_program);
+
+    if (!settings.viewports.empty())
     {
-        SetViewports(m_settings.viewports);
+        SetViewports(settings.viewports);
     }
-    if (!m_settings.scissor_rects.empty())
+    if (!settings.scissor_rects.empty())
     {
-        SetScissorRects(m_settings.scissor_rects);
+        SetScissorRects(settings.scissor_rects);
     }
     
     ResetNativeState();
@@ -111,10 +110,10 @@ void RenderStateVK::ResetNativeState()
     ITT_FUNCTION_TASK();
 }
 
-ContextVK& RenderStateVK::GetContextVK() noexcept
+IContextVK& RenderStateVK::GetContextVK() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextVK&>(m_context);
+    return static_cast<IContextVK&>(GetRenderContext());
 }
 
 } // namespace Methane::Graphics

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -35,8 +35,6 @@ class ImageLoader;
 class LogoBadge : public ScreenQuad
 {
 public:
-    using Ptr = std::shared_ptr<LogoBadge>;
-
     enum class FrameCorner : uint32_t
     {
         TopLeft = 0u,
@@ -60,8 +58,8 @@ public:
         { }
     };
 
-    LogoBadge(Context& context, Settings settings = Settings());
-    LogoBadge(Context& context, Texture::Ptr sp_texture, Settings settings = Settings());
+    LogoBadge(RenderContext& context, Settings settings = Settings());
+    LogoBadge(RenderContext& context, Ptr<Texture> sp_texture, Settings settings = Settings());
 
     void Resize(const FrameSize& frame_size);
 

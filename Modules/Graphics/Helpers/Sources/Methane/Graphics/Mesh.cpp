@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/Mesh.cpp
-Procedural mesh generators, including rect, box, etc.
+Abstract mesh class
 
 ******************************************************************************/
 
 #include <Methane/Graphics/Mesh.h>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <cml/mathlib/mathlib.h>
 
@@ -64,6 +64,43 @@ const Mesh::Colors      Mesh::g_colors = {
     { 1.0f, 1.0f, 0.0f, 1.0f },
     { 0.0f, 1.0f, 1.0f, 1.0f },
 };
+
+std::string Mesh::VertexLayout::GetSemanticByVertexField(VertexField vertex_field)
+{
+    ITT_FUNCTION_TASK();
+
+    switch(vertex_field)
+    {
+    case VertexField::Position: return "POSITION";
+    case VertexField::Normal:   return "NORMAL";
+    case VertexField::TexCoord: return "TEXCOORD";
+    case VertexField::Color:    return "COLOR";
+    default:                    assert(0);
+    }
+
+    return "";
+}
+
+std::vector<std::string> Mesh::VertexLayout::GetSemantics() const
+{
+    ITT_FUNCTION_TASK();
+
+    std::vector<std::string> semantic_names;
+    for(VertexField vertex_field : *this)
+    {
+        semantic_names.emplace_back(GetSemanticByVertexField(vertex_field));
+    }
+    return semantic_names;
+}
+
+Mesh::Subset::Subset(Type in_mesh_type, const Slice& in_vertices, const Slice& in_indices, bool in_indices_adjusted)
+    : mesh_type(in_mesh_type)
+    , vertices(in_vertices)
+    , indices(in_indices)
+    , indices_adjusted(in_indices_adjusted)
+{
+    ITT_FUNCTION_TASK();
+}
 
 Mesh::VertexFieldOffsets Mesh::GetVertexFieldOffsets(const VertexLayout& vertex_layout)
 {

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,9 +23,7 @@ Abstract animation class
 
 #pragma once
 
-#include <Methane/Data/Timer.hpp>
-
-#include <memory>
+#include <Methane/Timer.hpp>
 
 namespace Methane::Data
 {
@@ -33,13 +31,17 @@ namespace Methane::Data
 class Animation : public Timer
 {
 public:
-    using Ptr     = std::shared_ptr<Animation>;
-    using WeakPtr = std::weak_ptr<Animation>;
+    enum class State : uint32_t
+    {
+        Running = 0u,
+        Paused,
+        Completed,
+    };
 
     Animation(double duration_sec = std::numeric_limits<double>::max());
     virtual ~Animation();
 
-    bool   IsRunning() const noexcept            { return m_is_running; }
+    State  GetState() const noexcept             { return m_state; }
     double GetDuration() const noexcept          { return m_duration_sec; }
     void   SetDuration(double duration_sec)      { m_duration_sec = duration_sec; }
     void   IncreaseDuration(double duration_sec);
@@ -48,11 +50,18 @@ public:
     virtual void Stop() noexcept;
     virtual bool Update() = 0;
 
+    void Pause();
+    void Resume();
+
 protected:
+    bool IsTimeOver() const noexcept { return GetElapsedSecondsD() >= m_duration_sec; }
+
     using Timer::Reset;
 
-    bool    m_is_running    = true;
-    double  m_duration_sec  = std::numeric_limits<double>::max();
+private:
+    State        m_state           = State::Running;
+    double       m_duration_sec    = std::numeric_limits<double>::max();
+    TimeDuration m_paused_duration;
 };
 
 } // namespace Methane::Data

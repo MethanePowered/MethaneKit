@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ DirectX 12 implementation of the texture interface.
 #include <Methane/Graphics/CommandListBase.h>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Windows/Helpers.h>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <d3dx12.h>
 
@@ -69,10 +69,11 @@ public:
     Data::Size GetDataSize() const override
     {
         ITT_FUNCTION_TASK();
-        return m_settings.dimensions.GetPixelsCount() * GetPixelSize(m_settings.pixel_format);
+        const Settings& settings = GetSettings();
+        return settings.dimensions.GetPixelsCount() * GetPixelSize(settings.pixel_format);
     }
 
-protected:
+private:
     void Initialize(ExtraArgs...);
 };
 

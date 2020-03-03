@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ TEST_CASE("Range set add", "[range-set]")
         { 0, 2 }, { 4, 8 }, { 11, 12 }, { 17, 20 }, { 25, 29 }
     };
     
-    SECTION("Adding non-mergable range")
+    SECTION("Adding non-mergeable range")
     {
         RangeSet<uint32_t> range_set(test_range_set);
         range_set.Add({ 14, 16 });
@@ -70,7 +70,7 @@ TEST_CASE("Range set add", "[range-set]")
         CHECK(range_set == reference_set);
     }
     
-    SECTION("Adding mergable range in the middle")
+    SECTION("Adding mergeable range in the middle")
     {
         RangeSet<uint32_t> range_set(test_range_set);
         range_set.Add({ 5, 12 });
@@ -79,7 +79,7 @@ TEST_CASE("Range set add", "[range-set]")
         CHECK(range_set == reference_set);
     }
 
-    SECTION("Adding mergable range in the beginning")
+    SECTION("Adding mergeable range in the beginning")
     {
         RangeSet<uint32_t> range_set(test_range_set);
         range_set.Add({ 0, 7 });
@@ -88,7 +88,7 @@ TEST_CASE("Range set add", "[range-set]")
         CHECK(range_set == reference_set);
     }
 
-    SECTION("Adding mergable range in the end")
+    SECTION("Adding mergeable range in the end")
     {
         RangeSet<uint32_t> range_set(test_range_set);
         range_set.Add({ 26, 35 });
@@ -97,7 +97,7 @@ TEST_CASE("Range set add", "[range-set]")
         CHECK(range_set == reference_set);
     }
 
-    SECTION("Adding adacent range in the middle")
+    SECTION("Adding adjacent range in the middle")
     {
         RangeSet<uint32_t> range_set(test_range_set);
         range_set.Add({ 8, 11 });

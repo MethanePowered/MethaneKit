@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,9 +31,9 @@ Mesh buffers with texture extension structure.
 #include <Methane/Graphics/Program.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/ParallelRenderCommandList.h>
-#include <Methane/Graphics/Mesh.h>
+#include <Methane/Graphics/Mesh/UberMesh.hpp>
 #include <Methane/Data/AlignedAllocator.hpp>
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Data/Parallel.hpp>
 #include <Methane/Data/Math.hpp>
 
@@ -46,20 +46,16 @@ namespace Methane::Graphics
     
 struct MeshBufferBindings
 {
-    using ResourceBindingsArray = std::vector<Program::ResourceBindings::Ptr>;
-    
-    Buffer::Ptr           sp_uniforms_buffer;
-    ResourceBindingsArray resource_bindings_per_instance;
+    Ptr<Buffer>           sp_uniforms_buffer;
+    Ptrs<ProgramBindings> program_bindings_per_instance;
 };
 
 template<typename UniformsType>
 class MeshBuffers
 {
 public:
-    using Ptr = std::unique_ptr<MeshBuffers<UniformsType>>;
-
     template<typename VType>
-    MeshBuffers(Context& context, const BaseMesh<VType>& mesh_data, const std::string& mesh_name, const Mesh::Subsets& mesh_subsets = Mesh::Subsets())
+    MeshBuffers(RenderContext& context, const BaseMesh<VType>& mesh_data, const std::string& mesh_name, const Mesh::Subsets& mesh_subsets = Mesh::Subsets())
         : m_mesh_name(mesh_name)
         , m_mesh_subsets(!mesh_subsets.empty() ? mesh_subsets
                                                : Mesh::Subsets{ Mesh::Subset(mesh_data.GetType(), { 0, mesh_data.GetVertexCount() },
@@ -90,7 +86,7 @@ public:
     }
 
     template<typename VType>
-    MeshBuffers(Context& context, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
+    MeshBuffers(RenderContext& context, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
         : MeshBuffers(context, uber_mesh_data, mesh_name, uber_mesh_data.GetSubsets())
     {
         ITT_FUNCTION_TASK();
@@ -98,7 +94,7 @@ public:
     
     virtual ~MeshBuffers() = default;
 
-    void Draw(RenderCommandList& cmd_list, Program::ResourceBindings& resource_bindings,
+    void Draw(RenderCommandList& cmd_list, ProgramBindings& program_bindings,
               uint32_t mesh_subset_index = 0, uint32_t instance_count = 1, uint32_t start_instance = 0)
     {
         ITT_FUNCTION_TASK();
@@ -107,7 +103,7 @@ public:
             throw std::invalid_argument("Can not draw mesh subset because its index is out of bounds.");
 
         const Mesh::Subset& mesh_subset = m_mesh_subsets[mesh_subset_index];
-        cmd_list.SetResourceBindings(resource_bindings);
+        cmd_list.SetProgramBindings(program_bindings);
         cmd_list.SetVertexBuffers({ GetVertexBuffer() });
         cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, GetIndexBuffer(),
                              mesh_subset.indices.count, mesh_subset.indices.offset,
@@ -115,15 +111,15 @@ public:
                              instance_count, start_instance);
     }
 
-    void Draw(RenderCommandList& cmd_list, const MeshBufferBindings::ResourceBindingsArray& instance_resource_bindings, uint32_t first_instance_index = 0)
+    void Draw(RenderCommandList& cmd_list, const Ptrs<ProgramBindings>& instance_program_bindings, uint32_t first_instance_index = 0)
     {
-        Draw(cmd_list, instance_resource_bindings.begin(), instance_resource_bindings.end(), first_instance_index);
+        Draw(cmd_list, instance_program_bindings.begin(), instance_program_bindings.end(), first_instance_index);
     }
 
     void Draw(RenderCommandList& cmd_list,
-              const MeshBufferBindings::ResourceBindingsArray::const_iterator& instance_resource_bindings_begin,
-              const MeshBufferBindings::ResourceBindingsArray::const_iterator& instance_resource_bindings_end,
-              Program::ResourceBindings::ApplyBehavior::Mask bindings_apply_behavior = Program::ResourceBindings::ApplyBehavior::AllIncremental,
+              const Ptrs<ProgramBindings>::const_iterator& instance_program_bindings_begin,
+              const Ptrs<ProgramBindings>::const_iterator& instance_program_bindings_end,
+              ProgramBindings::ApplyBehavior::Mask bindings_apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental,
               uint32_t first_instance_index = 0)
     {
         ITT_FUNCTION_TASK();
@@ -131,22 +127,22 @@ public:
         cmd_list.SetVertexBuffers({ GetVertexBuffer() });
 
         Buffer& index_buffer = GetIndexBuffer();
-        for (MeshBufferBindings::ResourceBindingsArray::const_iterator instance_resource_bindings_it = instance_resource_bindings_begin;
-             instance_resource_bindings_it != instance_resource_bindings_end;
-             ++instance_resource_bindings_it)
+        for (Ptrs<ProgramBindings>::const_iterator instance_program_bindings_it = instance_program_bindings_begin;
+             instance_program_bindings_it != instance_program_bindings_end;
+             ++instance_program_bindings_it)
         {
-            const Program::ResourceBindings::Ptr& sp_resource_bindings = *instance_resource_bindings_it;
+            const Ptr<ProgramBindings>& sp_program_bindings = *instance_program_bindings_it;
 
-            if (!sp_resource_bindings)
+            if (!sp_program_bindings)
                 throw std::invalid_argument("Can not set Null resource bindings");
 
-            const uint32_t instance_index = first_instance_index + static_cast<uint32_t>(std::distance(instance_resource_bindings_begin, instance_resource_bindings_it));
+            const uint32_t instance_index = first_instance_index + static_cast<uint32_t>(std::distance(instance_program_bindings_begin, instance_program_bindings_it));
             const uint32_t subset_index = GetSubsetByInstanceIndex(instance_index);
             assert(subset_index < m_mesh_subsets.size());
 
             const Mesh::Subset& mesh_subset = m_mesh_subsets[subset_index];
 
-            cmd_list.SetResourceBindings(*sp_resource_bindings, bindings_apply_behavior);
+            cmd_list.SetProgramBindings(*sp_program_bindings, bindings_apply_behavior);
             cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, index_buffer,
                                  mesh_subset.indices.count, mesh_subset.indices.offset,
                                  mesh_subset.indices_adjusted ? 0 : mesh_subset.vertices.offset,
@@ -154,26 +150,26 @@ public:
         }
     }
 
-    void DrawParallel(ParallelRenderCommandList& parallel_cmd_list, const MeshBufferBindings::ResourceBindingsArray& instance_resource_bindings,
-                      Program::ResourceBindings::ApplyBehavior::Mask bindings_apply_behavior = Program::ResourceBindings::ApplyBehavior::AllIncremental)
+    void DrawParallel(ParallelRenderCommandList& parallel_cmd_list, const Ptrs<ProgramBindings>& instance_program_bindings,
+                      ProgramBindings::ApplyBehavior::Mask bindings_apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental)
     {
         ITT_FUNCTION_TASK();
 
-        const RenderCommandList::Ptrs& render_cmd_lists = parallel_cmd_list.GetParallelCommandLists();
-        const uint32_t instances_count_per_command_list = static_cast<uint32_t>(Data::DivCeil(instance_resource_bindings.size(), render_cmd_lists.size()));
+        const Ptrs<RenderCommandList>& render_cmd_lists = parallel_cmd_list.GetParallelCommandLists();
+        const uint32_t instances_count_per_command_list = static_cast<uint32_t>(Data::DivCeil(instance_program_bindings.size(), render_cmd_lists.size()));
 
         Data::ParallelFor<size_t>(0u, render_cmd_lists.size(),
             [&](size_t cl_index)
             {
-                const RenderCommandList::Ptr& sp_render_command_list = render_cmd_lists[cl_index];
+                const Ptr<RenderCommandList>& sp_render_command_list = render_cmd_lists[cl_index];
                 const uint32_t begin_instance_index = static_cast<uint32_t>(cl_index * instances_count_per_command_list);
                 const uint32_t end_instance_index   = std::min(begin_instance_index + instances_count_per_command_list,
-                                                               static_cast<uint32_t>(instance_resource_bindings.size()));
+                                                               static_cast<uint32_t>(instance_program_bindings.size()));
 
                 assert(!!sp_render_command_list);
                 Draw(*sp_render_command_list,
-                     instance_resource_bindings.begin() + begin_instance_index,
-                     instance_resource_bindings.begin() + end_instance_index,
+                     instance_program_bindings.begin() + begin_instance_index,
+                     instance_program_bindings.begin() + end_instance_index,
                      bindings_apply_behavior, begin_instance_index);
             });
     }
@@ -242,8 +238,8 @@ private:
 
     const std::string   m_mesh_name;
     const Mesh::Subsets m_mesh_subsets;
-    Buffer::Ptr         m_sp_vertex;
-    Buffer::Ptr         m_sp_index;
+    Ptr<Buffer>         m_sp_vertex;
+    Ptr<Buffer>         m_sp_index;
     InstanceUniforms    m_final_pass_instance_uniforms; // Actual uniforms buffers are created separately in Frame dependent resources
 };
 
@@ -251,11 +247,8 @@ template<typename UniformsType>
 class TexturedMeshBuffers : public MeshBuffers<UniformsType>
 {
 public:
-    using Ptr = std::unique_ptr<TexturedMeshBuffers<UniformsType>>;
-
     template<typename VType>
-    TexturedMeshBuffers(Context& context, const BaseMesh<VType>& mesh_data,
-                        const std::string& mesh_name)
+    TexturedMeshBuffers(RenderContext& context, const BaseMesh<VType>& mesh_data, const std::string& mesh_name)
         : MeshBuffers<UniformsType>(context, mesh_data, mesh_name)
     {
         ITT_FUNCTION_TASK();
@@ -263,14 +256,20 @@ public:
     }
 
     template<typename VType>
-    TexturedMeshBuffers(Context& context, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
+    TexturedMeshBuffers(RenderContext& context, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
         : MeshBuffers<UniformsType>(context, uber_mesh_data, mesh_name)
     {
         ITT_FUNCTION_TASK();
         m_subset_textures.resize(MeshBuffers<UniformsType>::GetSubsetsCount());
     }
 
-    const Texture::Ptr& GetSubsetTexturePtr(uint32_t subset_index = 0) const
+    const Ptr<Texture>& GetTexturePtr() const
+    {
+        ITT_FUNCTION_TASK();
+        return GetSubsetTexturePtr(0);
+    }
+
+    const Ptr<Texture>& GetSubsetTexturePtr(uint32_t subset_index) const
     {
         ITT_FUNCTION_TASK();
 
@@ -280,7 +279,7 @@ public:
         return m_subset_textures[subset_index];
     }
 
-    const Texture::Ptr& GetInstanceTexturePtr(uint32_t instance_index = 0) const
+    const Ptr<Texture>& GetInstanceTexturePtr(uint32_t instance_index = 0) const
     {
         ITT_FUNCTION_TASK();
 
@@ -288,7 +287,7 @@ public:
         return GetSubsetTexturePtr(subset_index);
     }
 
-    void SetTexture(const Texture::Ptr& sp_texture)
+    void SetTexture(const Ptr<Texture>& sp_texture)
     {
         ITT_FUNCTION_TASK();
 
@@ -300,7 +299,7 @@ public:
         }
     }
     
-    void SetSubsetTexture(const Texture::Ptr& sp_texture, uint32_t subset_index)
+    void SetSubsetTexture(const Ptr<Texture>& sp_texture, uint32_t subset_index)
     {
         ITT_FUNCTION_TASK();
 
@@ -311,7 +310,7 @@ public:
     }
 
 protected:
-    using Textures = std::vector<Texture::Ptr>;
+    using Textures = std::vector<Ptr<Texture>>;
     
 private:
     Textures m_subset_textures;

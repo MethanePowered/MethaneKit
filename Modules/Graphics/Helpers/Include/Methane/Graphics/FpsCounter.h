@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ FPS counter calculates frame time duration with moving average window algorithm.
 
 #pragma once
 
-#include <Methane/Data/Timer.hpp>
+#include <Methane/Timer.hpp>
 
 #include <cmath>
 #include <queue>
@@ -79,8 +79,8 @@ public:
     const uint32_t  GetFramesPerSecond() const noexcept      { return static_cast<uint32_t>(std::round(1.0 / GetAverageFrameTiming().GetTotalTimeSec())); }
 
 private:
-    Data::Timer             m_frame_timer;
-    Data::Timer             m_present_timer;
+    Timer                   m_frame_timer;
+    Timer                   m_present_timer;
     double                  m_present_on_gpu_wait_time_sec = 0.0;
     uint32_t                m_averaged_timings_count = 100;
     FrameTiming             m_frame_timings_sum;

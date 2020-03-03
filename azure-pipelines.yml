@@ -9,8 +9,9 @@ trigger:
   paths:
     exclude:
     - Build/Windows/Build.bat
-    - Build/Windows/Build.sh
+    - Build/Posix/Build.sh
     - CMakeSettings.json
+    - Folder.DotSettings
     - README.md
     - LICENSE
 
@@ -31,12 +32,13 @@ resources:
       submodules: recursive
 
 variables:
-  buildCmakeFlags: '-DMETHANE_BUILD_NUMBER=$(Build.BuildNumber)
+  buildCmakeFlags: '-DMETHANE_VERSION_BUILD=$(Build.BuildNumber)
     -DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON
     -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON
     -DMETHANE_SCOPE_TIMERS_ENABLED:BOOL=OFF
     -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF
-    -DMETHANE_USE_OPEN_IMAGE_IO:BOOL=OFF'
+    -DMETHANE_USE_OPEN_IMAGE_IO:BOOL=OFF
+    -DMETHANE_COMMAND_EXECUTION_LOGGING:BOOL=OFF'
 
 jobs:
 
@@ -80,10 +82,10 @@ jobs:
   steps:
   - template: Build/Windows/AzureBuild.yml
 
-- job: macOS
+- job: MacOS
 
   pool:
-    vmImage: 'macOS-10.13'
+    vmImage: 'macOS-10.14'
 
   variables:
     platform: 'MacOS'

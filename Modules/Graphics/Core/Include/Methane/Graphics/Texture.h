@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,16 +25,14 @@ Methane graphics interface: graphics texture.
 
 #include "Resource.h"
 
-#include <string>
+#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Memory.hpp>
 
 namespace Methane::Graphics
 {
 
 struct Texture : virtual Resource
 {
-    using Ptr     = std::shared_ptr<Texture>;
-    using WeakPtr = std::weak_ptr<Texture>;
-
     enum class Type : uint32_t
     {
         Texture = 0,
@@ -72,16 +70,16 @@ struct Texture : virtual Resource
     };
 
     // Create Texture instance
-    static Ptr CreateRenderTarget(Context& context, const Settings& settings,
-                                  const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    static Ptr CreateFrameBuffer(Context& context, uint32_t frame_buffer_index,
-                                 const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    static Ptr CreateDepthStencilBuffer(Context& context,
-                                        const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    static Ptr CreateImage(Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped,
-                           const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    static Ptr CreateCube(Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped,
-                          const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    static Ptr<Texture> CreateRenderTarget(RenderContext& context, const Settings& settings,
+                                           const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    static Ptr<Texture> CreateFrameBuffer(RenderContext& context, uint32_t frame_buffer_index,
+                                          const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    static Ptr<Texture> CreateDepthStencilBuffer(RenderContext& context,
+                                                 const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    static Ptr<Texture> CreateImage(Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped,
+                                    const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    static Ptr<Texture> CreateCube(Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped,
+                                   const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
     // Texture interface
     virtual const Settings& GetSettings() const = 0;

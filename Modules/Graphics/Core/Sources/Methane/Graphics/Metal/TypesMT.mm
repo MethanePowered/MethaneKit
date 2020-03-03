@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/Metal/TypesMT.mm
-Methane graphics types convertors to Metal native types.
+Methane graphics types converters to Metal native types.
 
 ******************************************************************************/
 
 #include "TypesMT.hh"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 
@@ -118,7 +118,6 @@ MTLPixelFormat TypeConverterMT::DataFormatToMetalPixelType(PixelFormat data_form
         // MTLPixelFormatDepth32Float_Stencil8;
         // MTLPixelFormatX32_Stencil8;
         // MTLPixelFormatX24_Stencil8;
-        default:                        assert(0);
     }
     return MTLPixelFormatInvalid;
 }
@@ -264,7 +263,7 @@ uint32_t TypeConverterMT::ByteSizeOfVertexFormat(MTLVertexFormat vertex_format) 
 MTLClearColor TypeConverterMT::ColorToMetalClearColor(const Color4f& color) noexcept
 {
     ITT_FUNCTION_TASK();
-    return MTLClearColorMake(color.r(), color.g(), color.b(), color.a());
+    return MTLClearColorMake(color.GetR(), color.GetG(), color.GetB(), color.GetA());
 }
 
 NSRect TypeConverterMT::RectToNS(const FrameRect& rect) noexcept
@@ -276,7 +275,7 @@ NSRect TypeConverterMT::RectToNS(const FrameRect& rect) noexcept
 NSRect TypeConverterMT::CreateNSRect(const FrameSize& size, const Point2i& origin) noexcept
 {
     ITT_FUNCTION_TASK();
-    return NSMakeRect(origin.x(), origin.y(), size.width, size.height);
+    return NSMakeRect(origin.GetX(), origin.GetY(), size.width, size.height);
 }
 
 FrameRect TypeConverterMT::RectFromNS(const NSRect& rect) noexcept
@@ -301,7 +300,6 @@ MTLCompareFunction TypeConverterMT::CompareFunctionToMetal(Compare compare_func)
         case Compare::GreaterEqual: return MTLCompareFunctionGreaterEqual;
         case Compare::Equal:        return MTLCompareFunctionEqual;
         case Compare::NotEqual:     return MTLCompareFunctionNotEqual;
-        default:                    assert(0);
     }
     return MTLCompareFunctionNever;
 }

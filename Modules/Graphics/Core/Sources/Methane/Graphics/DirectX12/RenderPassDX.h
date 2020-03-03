@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -35,10 +35,10 @@ namespace Methane::Graphics
 
 class RenderCommandListDX;
 
-class RenderPassDX : public RenderPassBase
+class RenderPassDX final : public RenderPassBase
 {
 public:
-    RenderPassDX(ContextBase& context, const Settings& settings);
+    RenderPassDX(RenderContextBase& context, const Settings& settings);
 
     // RenderPass interface
     void Update(const Settings& settings) override;

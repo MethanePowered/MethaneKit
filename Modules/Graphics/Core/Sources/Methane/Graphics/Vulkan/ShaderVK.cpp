@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,38 +24,19 @@ Vulkan implementation of the shader interface.
 #include "ShaderVK.h"
 #include "ContextVK.h"
 
-#include <Methane/Data/Instrumentation.h>
+#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-Shader::ResourceBinding::Ptr Shader::ResourceBinding::CreateCopy(const ResourceBinding& other_resource_binging)
+Ptr<Shader> Shader::Create(Shader::Type shader_type, Context& context, const Settings& settings)
 {
     ITT_FUNCTION_TASK();
-    return std::make_shared<ShaderVK::ResourceBindingVK>(static_cast<const ShaderVK::ResourceBindingVK&>(other_resource_binging));
+    return std::make_shared<ShaderVK>(shader_type, dynamic_cast<ContextBase&>(context), settings);
 }
 
-ShaderVK::ResourceBindingVK::ResourceBindingVK(ContextBase& context, const Settings& settings)
-    : ResourceBindingBase(context, settings.base)
-    , m_settings(settings)
-{
-    ITT_FUNCTION_TASK();
-}
-
-void ShaderVK::ResourceBindingVK::SetResourceLocations(const Resource::Locations& resource_locations)
-{
-    ITT_FUNCTION_TASK();
-    
-    ShaderBase::ResourceBindingBase::SetResourceLocations(resource_locations);
-}
-
-Shader::Ptr Shader::Create(Shader::Type shader_type, Context& context, const Settings& settings)
-{
-    ITT_FUNCTION_TASK();
-    return std::make_shared<ShaderVK>(shader_type, static_cast<ContextVK&>(context), settings);
-}
-
-ShaderVK::ShaderVK(Shader::Type shader_type, ContextVK& context, const Settings& settings)
+ShaderVK::ShaderVK(Shader::Type shader_type, ContextBase& context, const Settings& settings)
     : ShaderBase(shader_type, context, settings)
 {
     ITT_FUNCTION_TASK();
@@ -66,21 +47,17 @@ ShaderVK::~ShaderVK()
     ITT_FUNCTION_TASK();
 }
 
-ShaderBase::ResourceBindings ShaderVK::GetResourceBindings(const std::set<std::string>& constant_argument_names,
-                                                           const std::set<std::string>& addressable_argument_names) const
+ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::ArgumentDescriptions&) const
 {
     ITT_FUNCTION_TASK();
-
-    ShaderBase::ResourceBindings resource_bindings;
-    return resource_bindings;
-
-    return resource_bindings;
+    ArgumentBindings argument_bindings;
+    return argument_bindings;
 }
 
-ContextVK& ShaderVK::GetContextVK() noexcept
+IContextVK& ShaderVK::GetContextVK() noexcept
 {
     ITT_FUNCTION_TASK();
-    return static_cast<class ContextVK&>(m_context);
+    return static_cast<IContextVK&>(GetContext());
 }
 
 } // namespace Methane::Graphics

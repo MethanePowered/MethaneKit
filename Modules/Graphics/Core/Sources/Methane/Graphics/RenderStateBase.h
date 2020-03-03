@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ Base implementation of the render state interface.
 namespace Methane::Graphics
 {
 
-class ContextBase;
+class RenderContextBase;
 class RenderCommandListBase;
 
 class RenderStateBase
@@ -39,10 +39,10 @@ class RenderStateBase
     , public std::enable_shared_from_this<RenderStateBase>
 {
 public:
-    RenderStateBase(ContextBase& context, const Settings& settings);
+    RenderStateBase(RenderContextBase& context, const Settings& settings);
 
     // RenderState interface
-    const Settings& GetSettings() const override                 { return m_settings; }
+    const Settings& GetSettings() const override   { return m_settings; }
     void Reset(const Settings& settings) override;
     void SetViewports(const Viewports& viewports) override;
     void SetScissorRects(const ScissorRects& scissor_rects) override;
@@ -50,11 +50,15 @@ public:
     // RenderStateBase interface
     virtual void Apply(RenderCommandListBase& command_list, Group::Mask apply_groups) = 0;
 
-    Ptr GetPtr() { return shared_from_this(); }
+    Ptr<RenderStateBase> GetPtr()           { return shared_from_this(); }
+    RenderContextBase&   GetRenderContext() { return m_context; }
 
 protected:
-    ContextBase& m_context;
-    Settings     m_settings;
+    Program& GetProgram();
+
+private:
+    RenderContextBase& m_context;
+    Settings           m_settings;
 };
 
 } // namespace Methane::Graphics
