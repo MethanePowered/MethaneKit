@@ -88,6 +88,8 @@ Also you can get [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/
   - [Common 3D graphics helpers](/Modules/Graphics/Helpers/Include/Methane/Graphics):
     - [FpsCounter](/Modules/Graphics/Helpers/Include/Methane/Graphics/FpsCounter.h) implements FPS calculation with moving-average algorithm.
     - [Camera](/Modules/Graphics/Helpers/Include/Methane/Graphics/Camera.h) and [ArcBallCamera](/Modules/Graphics/Helpers/Include/Methane/Graphics/ArcBallCamera.h) implement static scene camera and interactive arc-ball camera.
+    - [Mesh](/Modules/Graphics/Helpers/Include/Methane/Graphics/Mesh) generators for Quad, Cube, Sphere, Icosahedron and Uber meshes with customizable vertex fields and layout.
+    - Multi-octave Perlin [Noise](/Modules/Graphics/Helpers/Include/Methane/Graphics/Noise.hpp) generator.
 - **Lightweight**: no heavy external dependencies, almost all external libraries are static or header only.
 - **Performance oriented**:
   - Fast application startup, thanks to prebuilt shaders code.
@@ -99,10 +101,12 @@ Also you can get [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/
 - [x] Continuous integration system
 - [x] Application user input with mouse and keyboard
 - [x] Parallel command lists
-- [x] Improved shaders toolset: use DXC & HLSL 6 instead of glslang & HLSL 5.1
+- [x] Improved shaders toolset (use DXC & HLSL 6 instead of FXC, GLSLang & HLSL 5.1)
 - [ ] Text rendering
 - [ ] Mesh loader
 - [ ] Compute pipeline
+- [ ] Vulkan API implementation
+- [ ] Linux platform implementation
 - [ ] Post-processing pipeline
 - [ ] User-interface library
 - [ ] Dynamic linking support
@@ -465,6 +469,9 @@ are drawen first and sky-box afterwards.
 
 Methane Asteroids sample was inspired by [Intel Asteroids D3D12](https://github.com/GameTechDev/asteroids_d3d12),
 but the whole implementation was re-written from scratch using Methane Kit in cross-platform style.
+
+![Asteroids CPU Trace](Apps/Samples/Asteroids/Screenshots/AsteroidsWinCpuTrace.jpg)
+<p align="center"><i>Trace of Asteroids multi-threaded execution on CPU viewed in <a href="https://software.intel.com/en-us/gpa/graphics-trace-analyzer">Intel GPA Trace Analyzer</a></i></p>
 
 ## Development Tools
 
