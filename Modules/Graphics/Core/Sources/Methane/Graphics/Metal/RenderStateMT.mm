@@ -49,7 +49,6 @@ static MTLCullMode ConvertRasterizerCullModeToMetal(RenderState::Rasterizer::Cul
     return MTLCullModeNone;
 }
 
-
 static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(RenderState::Rasterizer::FillMode fill_mode) noexcept
 {
     ITT_FUNCTION_TASK();

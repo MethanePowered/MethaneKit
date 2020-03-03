@@ -66,8 +66,7 @@ inline uint32_t GetDefaultComplexity()
 #ifdef _DEBUG
     return 1u;
 #else
-    const uint32_t hw_cores_count = std::thread::hardware_concurrency() / 2;
-    return hw_cores_count > 0u ? hw_cores_count - 1u : 0u;
+    return std::thread::hardware_concurrency() / 2;
 #endif
 }
 
