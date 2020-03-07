@@ -12,6 +12,7 @@ set(HEADERS
     ${INCLUDE_DIR}/SkyBox.h
     ${INCLUDE_DIR}/ScreenQuad.h
     ${INCLUDE_DIR}/LogoBadge.h
+    ${INCLUDE_DIR}/Text.h
 )
 
 set(SOURCES
@@ -19,11 +20,13 @@ set(SOURCES
     ${SOURCES_DIR}/SkyBox.cpp
     ${SOURCES_DIR}/ScreenQuad.cpp
     ${SOURCES_DIR}/LogoBadge.cpp
+    ${SOURCES_DIR}/Text.cpp
 )
 
 set(HLSL_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/SkyBox.hlsl
     ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/ScreenQuad.hlsl
+    ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Text.hlsl
 )
 
 set(IMAGES_DIR ${RESOURCES_DIR}/Images)
@@ -44,6 +47,7 @@ target_link_libraries(${TARGET}
     MethanePlatformUtils
     MethaneGraphicsCore
     MethaneInstrumentation
+    freetype
 )
 
 if (METHANE_USE_OPEN_IMAGE_IO)
