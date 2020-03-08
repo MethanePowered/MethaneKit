@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,17 +22,12 @@ Screen Quad rendering primitive.
 ******************************************************************************/
 
 #include <Methane/Graphics/Text.h>
+#include <Methane/Graphics/Font.h>
 
 #include <Methane/Graphics/Mesh/QuadMesh.hpp>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
-
-extern "C"
-{
-#include <ft2build.h>
-#include FT_FREETYPE_H
-}
 
 namespace Methane::Graphics
 {
@@ -53,52 +48,13 @@ struct TextVertex
     };
 };
 
-static const char* GetFTErrorMessage(FT_Error err)
-{
-#undef __FTERRORS_H__
-#define FT_ERRORDEF( e, v, s )  case e: return s;
-#define FT_ERROR_START_LIST     switch (err) {
-#define FT_ERROR_END_LIST       }
-#include FT_ERRORS_H
-    return "(Unknown error)";
-}
-
-class Text::Fonts::Impl
-{
-public:
-    Impl()
-    {
-        FT_Error error = FT_Init_FreeType(&m_p_library);
-        if (error)
-        {
-            std::string message = "Failed to initialize free type library, error occured: ";
-            message += GetFTErrorMessage(error);
-            throw std::runtime_error(message);
-        }
-    }
-
-private:
-    FT_Library m_p_library;
-};
-
-Text::Fonts& Text::Fonts::Get()
-{
-    static Fonts s_fonts;
-    return s_fonts;
-}
-
-Text::Fonts::Fonts()
-    : m_sp_impl(std::make_unique<Impl>())
-{
-}
-
 Text::Text(RenderContext& context, Settings settings)
     : m_settings(std::move(settings))
     , m_debug_region_name(m_settings.name + " Text Render")
 {
     ITT_FUNCTION_TASK();
 
-    Fonts& fonts = Fonts::Get();
+    Font::Library& font_library = Font::Library::Get();
 
     QuadMesh<TextVertex> quad_mesh(TextVertex::layout, 2.f, 2.f);
 

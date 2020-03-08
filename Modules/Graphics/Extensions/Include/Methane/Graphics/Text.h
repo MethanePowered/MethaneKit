@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -49,18 +49,6 @@ public:
         FrameRect          screen_rect;
         bool               alpha_blending_enabled = false;
         Color4f            blend_color = Color4f(1.f, 1.f, 1.f, 1.f);
-    };
-
-    class Fonts
-    {
-    public:
-        static Fonts& Get();
-
-    private:
-        Fonts();
-
-        struct Impl;
-        const UniquePtr<Impl> m_sp_impl;
     };
 
     Text(RenderContext& context, Settings settings);

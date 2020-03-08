@@ -12,6 +12,7 @@ set(HEADERS
     ${INCLUDE_DIR}/SkyBox.h
     ${INCLUDE_DIR}/ScreenQuad.h
     ${INCLUDE_DIR}/LogoBadge.h
+    ${INCLUDE_DIR}/Font.h
     ${INCLUDE_DIR}/Text.h
 )
 
@@ -20,6 +21,7 @@ set(SOURCES
     ${SOURCES_DIR}/SkyBox.cpp
     ${SOURCES_DIR}/ScreenQuad.cpp
     ${SOURCES_DIR}/LogoBadge.cpp
+    ${SOURCES_DIR}/Font.cpp
     ${SOURCES_DIR}/Text.cpp
 )
 
