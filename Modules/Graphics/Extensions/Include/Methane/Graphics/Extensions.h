@@ -28,4 +28,5 @@ Methane graphics extensions: all headers under one umbrella.
 #include "SkyBox.h"
 #include "ScreenQuad.h"
 #include "LogoBadge.h"
+#include "Font.h"
 #include "Text.h"

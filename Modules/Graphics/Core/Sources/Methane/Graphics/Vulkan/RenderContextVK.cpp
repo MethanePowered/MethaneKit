@@ -104,7 +104,13 @@ float RenderContextVK::GetContentScalingFactor() const
     ITT_FUNCTION_TASK();
     return 1.f;
 }
-    
+
+uint32_t RenderContextVK::GetFontResolutionDPI() const
+{
+    ITT_FUNCTION_TASK();
+    return 96u;
+}
+
 CommandQueueVK& RenderContextVK::GetRenderCommandQueueVK()
 {
     ITT_FUNCTION_TASK();

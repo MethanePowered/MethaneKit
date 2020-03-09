@@ -26,6 +26,7 @@ Font atlas textures generation and fonts library management classes.
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/Types.h>
+#include <Methane/Data/Provider.h>
 
 #include <map>
 #include <string>
@@ -39,7 +40,11 @@ class Font
 public:
     struct Settings
     {
-        const std::string  name;
+        std::string name;
+        std::string font_path;
+        uint32_t    font_size_pt;
+        uint32_t    resolution_dpi;
+        std::string letters;
     };
 
     class Library
@@ -49,8 +54,11 @@ public:
     public:
         static Library& Get();
 
-        Ptr<Font>     AddFont(Settings font_settings);
-        WeakPtr<Font> GetFont(std::string font_name);
+        const Ptr<Font>& Add(const Data::Provider& data_provider, const Settings& font_settings);
+        bool  Has(const std::string& font_name) const;
+        Font& Get(const std::string& font_name) const;
+        void  Remove(const std::string& font_name);
+        void  Clear();
 
     protected:
         class Impl;
@@ -59,21 +67,24 @@ public:
     private:
         Library();
 
-        using FontByName = std::map<std::string, WeakPtr<Font>>;
+        using FontByName = std::map<std::string, Ptr<Font>>;
 
         const UniquePtr<Impl> m_sp_impl;
         FontByName            m_font_by_name;
     };
 
+    const Settings& GetSettings() const { return m_settings; }
+
     Texture& GetAtlasTexture(Context& context);
-    void RemoveAtlasTexture(Context& context);
+    void     RemoveAtlasTexture(Context& context);
+
+protected:
+    Font(const Data::Provider& data_provider, const Settings& settings); // Font can be created only via Font::Library::Add
 
 private:
-    Font(Settings settings); // Font can be created with Font::Library::CreateFont
-
     using TextureByContext = std::map<Context*, Ptr<Texture>>;
 
-    const Settings   m_settings;
+    Settings         m_settings;
     TextureByContext m_atlas_textures;
 };
 

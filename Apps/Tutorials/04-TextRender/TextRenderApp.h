@@ -57,7 +57,8 @@ public:
     void OnContextReleased() override;
 
 private:
-    Ptr<gfx::Text>          m_sp_text;
+    Ptr<gfx::Font>  m_sp_font;
+    Ptr<gfx::Text>  m_sp_text;
 };
 
 } // namespace Methane::Tutorials

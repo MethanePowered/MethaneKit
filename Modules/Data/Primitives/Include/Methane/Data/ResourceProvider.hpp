@@ -39,7 +39,7 @@ CMRC_DECLARE(RESOURCE_NAMESPACE);
 namespace RESOURCE_NAMESPACE
 {
 
-class ResourceProvider : public Methane::Data::FileProvider
+class ResourceProvider final : public Methane::Data::FileProvider
 {
 public:
     static Provider& Get()

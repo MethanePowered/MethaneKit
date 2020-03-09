@@ -51,6 +51,13 @@ static const GraphicsApp::AllSettings g_app_settings =  // Application settings:
     }
 };
 
+// TODO: proper system font search should be implemented
+#ifdef _WIN32
+static const std::string g_font_path = R"(C:\Windows\Fonts\arial.ttf)";
+#else
+static const std::string g_font_path = R"()";
+#endif
+
 TextRenderApp::TextRenderApp()
     : GraphicsApp(g_app_settings, "Methane tutorial of text rendering")
 {
@@ -65,6 +72,15 @@ TextRenderApp::~TextRenderApp()
 void TextRenderApp::Init()
 {
     GraphicsApp::Init();
+
+    gfx::Font::Library::Get().Clear();
+    m_sp_font = gfx::Font::Library::Get().Add(
+        Data::FileProvider::Get(),
+        gfx::Font::Settings{
+            "Default", g_font_path, 16, m_sp_context->GetFontResolutionDPI(),
+            R"( !\"#&'()*,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ\_abcdefghijklmnopqrstuvwxyz)"
+        }
+    );
 
     m_sp_text = std::make_shared<gfx::Text>(*m_sp_context, gfx::Text::Settings{ "Label", gfx::FrameRect() });
 

@@ -209,10 +209,21 @@ void RenderContextDX::Present()
 
 float RenderContextDX::GetContentScalingFactor() const
 {
+    ITT_FUNCTION_TASK();
     DEVICE_SCALE_FACTOR device_scale_factor = DEVICE_SCALE_FACTOR_INVALID;
     HMONITOR monitor_handle = MonitorFromWindow(m_platform_env.window_handle, MONITOR_DEFAULTTONEAREST);
     ThrowIfFailed(GetScaleFactorForMonitor(monitor_handle, &device_scale_factor));
     return GetDeviceScaleRatio(device_scale_factor);
+}
+
+uint32_t RenderContextDX::GetFontResolutionDPI() const
+{
+    const HDC window_device_context = GetDC(m_platform_env.window_handle);
+    const int dpi_y = GetDeviceCaps(window_device_context, LOGPIXELSY);
+    // We assume that horizontal and vertical font resolutions are equal
+    assert(dpi_y > 0);
+    assert(dpi_y == GetDeviceCaps(window_device_context, LOGPIXELSX));
+    return dpi_y;
 }
 
 CommandQueueDX& RenderContextDX::GetRenderCommandQueueDX()

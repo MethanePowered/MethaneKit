@@ -41,12 +41,13 @@ public:
     void  WaitForGpu(Context::WaitFor wait_for) override;
 
     // RenderContext interface
-    bool  ReadyToRender() const override;
-    void  Resize(const FrameSize& frame_size) override;
-    void  Present() override;
-    bool  SetVSyncEnabled(bool vsync_enabled) override;
-    bool  SetFrameBuffersCount(uint32_t frame_buffers_count) override;
-    float GetContentScalingFactor() const override;
+    bool     ReadyToRender() const override;
+    void     Resize(const FrameSize& frame_size) override;
+    void     Present() override;
+    bool     SetVSyncEnabled(bool vsync_enabled) override;
+    bool     SetFrameBuffersCount(uint32_t frame_buffers_count) override;
+    float    GetContentScalingFactor() const override;
+    uint32_t GetFontResolutionDPI() const override;
     Platform::AppView GetAppView() const override { return { }; }
 
     // ContextBase overrides

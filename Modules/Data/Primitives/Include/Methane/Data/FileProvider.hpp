@@ -31,6 +31,7 @@ Singleton data provider of files on disk.
 #include <string>
 #include <fstream>
 #include <stdexcept>
+#include <regex>
 
 namespace Methane::Data
 {
@@ -48,14 +49,14 @@ public:
     bool HasData(const std::string& path) const noexcept override
     {
         ITT_FUNCTION_TASK();
-        return std::ifstream(GetDataFilePath(path)).good();
+        return std::ifstream(GetFullFilePath(path)).good();
     }
 
     Data::Chunk GetData(const std::string& path) const override
     {
         ITT_FUNCTION_TASK();
 
-        const std::string file_path = GetDataFilePath(path);
+        const std::string file_path = GetFullFilePath(path);
         std::ifstream fs(file_path, std::ios::binary);
         if (!fs.good())
         {
@@ -65,11 +66,18 @@ public:
     }
 
 protected:
-
-    std::string GetDataFilePath(const std::string& path) const
+    std::string GetFullFilePath(const std::string& path) const
     {
         ITT_FUNCTION_TASK();
-        return m_resources_dir + "/" + path;
+#ifdef _WIN32
+        static const std::string path_delimiter = "\\";
+        static const std::regex root_path_regex(R"(^[a-zA-Z]\:[\\|/].*)");
+#else
+        static const std::string path_delimiter = "/";
+        const std::regex root_path_regex("^/.*");
+#endif
+        const bool is_root_path = std::regex_match(path, root_path_regex);
+        return is_root_path ? path : m_resources_dir + path_delimiter + path;
     }
     
     FileProvider()

@@ -46,6 +46,7 @@ public:
     void Present() override;
     Platform::AppView GetAppView() const override { return { nullptr }; }
     float GetContentScalingFactor() const override;
+    uint32_t GetFontResolutionDPI() const override;
 
     // ContextBase interface
     void Initialize(DeviceBase& device, bool deferred_heap_allocation) override;

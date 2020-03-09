@@ -60,12 +60,13 @@ struct RenderContext : virtual Context
     virtual void Resize(const FrameSize& frame_size) = 0;
     virtual void Present() = 0;
 
-    virtual Platform::AppView     GetAppView() const = 0;
-    virtual CommandQueue&         GetRenderCommandQueue() = 0;
-    virtual const Settings&       GetSettings() const = 0;
-    virtual uint32_t              GetFrameBufferIndex() const = 0;
-    virtual float                 GetContentScalingFactor() const = 0;
-    virtual const FpsCounter&     GetFpsCounter() const = 0;
+    virtual Platform::AppView GetAppView() const = 0;
+    virtual CommandQueue&     GetRenderCommandQueue() = 0;
+    virtual const Settings&   GetSettings() const = 0;
+    virtual uint32_t          GetFrameBufferIndex() const = 0;
+    virtual float             GetContentScalingFactor() const = 0;
+    virtual uint32_t          GetFontResolutionDPI() const = 0;
+    virtual const FpsCounter& GetFpsCounter() const = 0;
 
     virtual bool SetVSyncEnabled(bool vsync_enabled) = 0;
     virtual bool SetFrameBuffersCount(uint32_t frame_buffers_count) = 0;
