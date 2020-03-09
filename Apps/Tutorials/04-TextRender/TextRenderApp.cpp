@@ -55,7 +55,7 @@ static const GraphicsApp::AllSettings g_app_settings =  // Application settings:
 #ifdef _WIN32
 static const std::string g_font_path = R"(C:\Windows\Fonts\arial.ttf)";
 #else
-static const std::string g_font_path = R"()";
+static const std::string g_font_path = R"(/System/Library/Fonts/Supplemental/Arial.ttf)";
 #endif
 
 TextRenderApp::TextRenderApp()
@@ -78,7 +78,7 @@ void TextRenderApp::Init()
         Data::FileProvider::Get(),
         gfx::Font::Settings{
             "Default", g_font_path, 16, m_sp_context->GetFontResolutionDPI(),
-            R"( !\"#&'()*,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ\_abcdefghijklmnopqrstuvwxyz)"
+            L" !\"#&'()*,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ\\_abcdefghijklmnopqrstuvwxyz"
         }
     );
 

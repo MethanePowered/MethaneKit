@@ -40,11 +40,11 @@ class Font
 public:
     struct Settings
     {
-        std::string name;
-        std::string font_path;
-        uint32_t    font_size_pt;
-        uint32_t    resolution_dpi;
-        std::string letters;
+        std::string  name;
+        std::string  font_path;
+        uint32_t     font_size_pt;
+        uint32_t     resolution_dpi;
+        std::wstring letters;
     };
 
     class Library
@@ -73,7 +73,25 @@ public:
         FontByName            m_font_by_name;
     };
 
+    struct Char
+    {
+        class Glyph;
+        using GlyphPtr = UniquePtr<Glyph>;
+        using Code = uint32_t;
+
+        Code      code;
+        FrameSize size;
+        Point2i   offset;
+        Point2i   advance;
+        Point2u   position;
+        GlyphPtr  sp_glyph;
+    };
+
     const Settings& GetSettings() const { return m_settings; }
+
+    bool HasChar(Char::Code char_code);
+    void AddChar(Char char_desc);
+    const Char& GetChar(Char::Code char_code) const;
 
     Texture& GetAtlasTexture(Context& context);
     void     RemoveAtlasTexture(Context& context);
@@ -83,8 +101,10 @@ protected:
 
 private:
     using TextureByContext = std::map<Context*, Ptr<Texture>>;
+    using CharByCode = std::map<Char::Code, Char>;
 
     Settings         m_settings;
+    CharByCode       m_char_by_code;
     TextureByContext m_atlas_textures;
 };
 

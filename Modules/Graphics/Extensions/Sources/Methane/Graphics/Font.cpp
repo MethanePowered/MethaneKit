@@ -25,6 +25,7 @@ Screen Quad rendering primitive.
 
 #include <Methane/Instrumentation.h>
 
+#include <map>
 #include <cassert>
 
 extern "C"
@@ -65,19 +66,40 @@ public:
     Impl()
     {
         ITT_FUNCTION_TASK();
-        ThrowFreeTypeError(FT_Init_FreeType(&m_p_library));
+        ThrowFreeTypeError(FT_Init_FreeType(&m_ft_library));
     }
 
     ~Impl()
     {
         ITT_FUNCTION_TASK();
-        FT_Done_FreeType(m_p_library);
+        FT_Done_FreeType(m_ft_library);
     }
 
-    FT_Library GetFreeTypeLib() const { return m_p_library; }
+    FT_Library GetFreeTypeLib() const { return m_ft_library; }
 
 private:
-    FT_Library m_p_library;
+    FT_Library m_ft_library;
+};
+
+class Font::Char::Glyph
+{
+public:
+    Glyph(FT_Glyph ft_glyph)
+        : m_ft_glyph(ft_glyph)
+    {
+        ITT_FUNCTION_TASK();
+    }
+
+    ~Glyph()
+    {
+        ITT_FUNCTION_TASK();
+        FT_Done_Glyph(m_ft_glyph);
+    }
+
+    FT_Glyph GetFreeTypeGlyph() const { return m_ft_glyph; }
+
+private:
+    FT_Glyph m_ft_glyph;
 };
 
 Font::Library& Font::Library::Get()
@@ -140,35 +162,57 @@ Font::Font(const Data::Provider& data_provider, const Settings& settings)
     ITT_FUNCTION_TASK();
     Data::Chunk font_data = data_provider.GetData(m_settings.font_path);
 
-    FT_Face     ft_face = nullptr;
-    FT_Library  ft_library = Library::Get().GetImpl().GetFreeTypeLib();
+    FT_Face    ft_face = nullptr;
+    FT_Library ft_library = Library::Get().GetImpl().GetFreeTypeLib();
     ThrowFreeTypeError(FT_New_Memory_Face(ft_library, static_cast<const FT_Byte*>(font_data.p_data), static_cast<FT_Long>(font_data.size), 0, &ft_face));
     FT_Set_Char_Size(ft_face,
                      m_settings.font_size_pt * 64, 0, // font Size is measured in 1/64ths of pixels; horizontal and vertical sizes are equal
                      m_settings.resolution_dpi, 0);   // font resolutions are equal for horizontal and vertical
 
-    for (const char letter : m_settings.letters)
+    for (wchar_t letter : m_settings.letters)
     {
-        // TODO: check that letters do not repeat
-        uint32_t char_index = FT_Get_Char_Index(ft_face, static_cast<FT_ULong>(letter));
+        const Char::Code char_code = static_cast<Char::Code>(letter);
+        if (HasChar(char_code))
+            continue;
+
+        uint32_t char_index = FT_Get_Char_Index(ft_face, static_cast<FT_ULong>(char_code));
         if (!char_index)
         {
-            const std::string error_message = "Character " + std::to_string(letter) + " does not exist in font " + m_settings.font_path;
+            const std::string error_message = "Character " + std::to_string(char_code) + " does not exist in font " + m_settings.font_path;
             throw std::runtime_error(error_message);
         }
 
         ThrowFreeTypeError(FT_Load_Glyph(ft_face, char_index, FT_LOAD_RENDER));
 
-        FT_Glyph ft_glyph_atlas = nullptr;
-        ThrowFreeTypeError(FT_Get_Glyph(ft_face->glyph, &ft_glyph_atlas));
+        FT_Glyph ft_glyph = nullptr;
+        ThrowFreeTypeError(FT_Get_Glyph(ft_face->glyph, &ft_glyph));
 
-        // All metrics dimensions are multiplied by 64, so we have to divide by 64
-        int x_offset  = static_cast<int>(ft_face->glyph->metrics.horiBearingX >> 6);
-        int y_offset  = static_cast<int>(ft_face->glyph->metrics.horiBearingY >> 6);
-        int width     = static_cast<int>(ft_face->glyph->metrics.width >> 6);
-        int height    = static_cast<int>(ft_face->glyph->metrics.height >> 6);
-        int x_advance = static_cast<int>(ft_face->glyph->metrics.horiAdvance >> 6);
+        // All glyph metrics are multiplied by 64, so we reverse them back
+        AddChar({ char_code,
+            FrameSize(static_cast<uint32_t>(ft_face->glyph->metrics.width >> 6), static_cast<uint32_t>(ft_face->glyph->metrics.height >> 6)),
+            Point2i(static_cast<int32_t>(ft_face->glyph->metrics.horiBearingX >> 6), static_cast<int32_t>(ft_face->glyph->metrics.horiBearingY >> 6)),
+            Point2i(static_cast<int32_t>(ft_face->glyph->metrics.horiAdvance >> 6), static_cast<int32_t>(ft_face->glyph->metrics.vertAdvance >> 6)),
+            Point2u(),
+            std::make_unique<Char::Glyph>(ft_glyph)
+        });
     }
+}
+
+bool Font::HasChar(Char::Code char_code)
+{
+    return m_char_by_code.count(char_code);
+}
+
+void Font::AddChar(Char char_desc)
+{
+    m_char_by_code.emplace(char_desc.code, std::move(char_desc));
+}
+
+const Font::Char& Font::GetChar(Char::Code char_code) const
+{
+    static const Char s_none_char = {};
+    const auto char_by_code_it = m_char_by_code.find(char_code);
+    return char_by_code_it == m_char_by_code.end() ? s_none_char : char_by_code_it->second;
 }
 
 } // namespace Methane::Graphics

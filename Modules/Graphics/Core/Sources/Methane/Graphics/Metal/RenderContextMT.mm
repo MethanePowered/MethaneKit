@@ -196,7 +196,7 @@ float RenderContextMT::GetContentScalingFactor() const
 uint32_t RenderContextMT::GetFontResolutionDPI() const
 {
     ITT_FUNCTION_TASK();
-    return 96u;
+    return 72u * GetContentScalingFactor();
 }
 
 CommandQueueMT& RenderContextMT::GetRenderCommandQueueMT()
