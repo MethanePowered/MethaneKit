@@ -24,6 +24,7 @@ Text rendering primitive.
 #pragma once
 
 #include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/Font.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/RenderState.h>
@@ -51,7 +52,7 @@ public:
         Color4f            blend_color = Color4f(1.f, 1.f, 1.f, 1.f);
     };
 
-    Text(RenderContext& context, Settings settings);
+    Text(RenderContext& context, Font& font, Settings settings);
 
     void SetBlendColor(const Color4f& blend_color);
     void SetScreenRect(const FrameRect& screen_rect);
@@ -64,11 +65,12 @@ private:
 
     Settings             m_settings;
     const std::string    m_debug_region_name;
+    Ptr<Font>            m_sp_font;
     Ptr<RenderState>     m_sp_state;
     Ptr<Buffer>          m_sp_vertex_buffer;
     Ptr<Buffer>          m_sp_index_buffer;
     Ptr<Buffer>          m_sp_const_buffer;
-    Ptr<Texture>         m_sp_texture;
+    Ptr<Texture>         m_sp_atlas_texture;
     Ptr<Sampler>         m_sp_texture_sampler;
     Ptr<ProgramBindings> m_sp_const_program_bindings;
 };

@@ -11,7 +11,7 @@ set(HEADERS
     ${INCLUDE_DIR}/MeshBuffers.hpp
     ${INCLUDE_DIR}/SkyBox.h
     ${INCLUDE_DIR}/ScreenQuad.h
-    ${INCLUDE_DIR}/LogoBadge.h
+    ${INCLUDE_DIR}/Badge.h
     ${INCLUDE_DIR}/Font.h
     ${INCLUDE_DIR}/Text.h
 )
@@ -20,7 +20,7 @@ set(SOURCES
     ${SOURCES_DIR}/ImageLoader.cpp
     ${SOURCES_DIR}/SkyBox.cpp
     ${SOURCES_DIR}/ScreenQuad.cpp
-    ${SOURCES_DIR}/LogoBadge.cpp
+    ${SOURCES_DIR}/Badge.cpp
     ${SOURCES_DIR}/Font.cpp
     ${SOURCES_DIR}/Text.cpp
 )

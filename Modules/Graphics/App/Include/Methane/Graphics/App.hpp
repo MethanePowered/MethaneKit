@@ -40,7 +40,7 @@ Base frame class provides frame buffer management with resize handling.
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Graphics/ImageLoader.h>
-#include <Methane/Graphics/LogoBadge.h>
+#include <Methane/Graphics/Badge.h>
 #include <Methane/Instrumentation.h>
 
 #include <vector>
@@ -187,7 +187,7 @@ public:
         
         // Create Methane logo badge
         if (m_settings.show_logo_badge)
-            m_sp_logo_badge = std::make_shared<LogoBadge>(*m_sp_context);
+            m_sp_logo_badge = std::make_shared<Badge>(*m_sp_context);
 
         Platform::App::Init();
     }
@@ -430,7 +430,7 @@ protected:
 
     Ptr<RenderContext>      m_sp_context;
     Ptr<Texture>            m_sp_depth_texture;
-    Ptr<LogoBadge>          m_sp_logo_badge;
+    Ptr<Badge>              m_sp_logo_badge;
     std::vector<FrameT>     m_frames;
 
 private:

@@ -99,14 +99,14 @@ Ptr<Texture> Texture::CreateImage(Context& context, const Dimensions& dimensions
 {
     ITT_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<TextureMT>(dynamic_cast<RenderContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureMT>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
 Ptr<Texture> Texture::CreateCube(Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<TextureMT>(dynamic_cast<RenderContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureMT>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
 TextureMT::TextureMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)

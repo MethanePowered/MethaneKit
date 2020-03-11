@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/Text.cpp
-Screen Quad rendering primitive.
+Text rendering primitive.
 
 ******************************************************************************/
 
@@ -48,9 +48,11 @@ struct TextVertex
     };
 };
 
-Text::Text(RenderContext& context, Settings settings)
+Text::Text(RenderContext& context, Font& font, Settings settings)
     : m_settings(std::move(settings))
     , m_debug_region_name(m_settings.name + " Text Render")
+    , m_sp_font(font.shared_from_this())
+    , m_sp_atlas_texture(font.GetAtlasTexturePtr(context))
 {
     ITT_FUNCTION_TASK();
 

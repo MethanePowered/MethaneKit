@@ -194,6 +194,8 @@ enum class PixelFormat
     R32Sint,
     R16Uint,
     R16Sint,
+    R8Uint,
+    R8Sint,
     Depth32Float
 };
 

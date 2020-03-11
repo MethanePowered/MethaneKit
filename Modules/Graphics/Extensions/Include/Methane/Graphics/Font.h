@@ -34,9 +34,8 @@ Font atlas textures generation and fonts library management classes.
 namespace Methane::Graphics
 {
 
-class Font
+class Font : public std::enable_shared_from_this<Font>
 {
-    friend class Library;
 public:
     struct Settings
     {
@@ -44,7 +43,7 @@ public:
         std::string  font_path;
         uint32_t     font_size_pt;
         uint32_t     resolution_dpi;
-        std::wstring letters;
+        std::wstring characters;
     };
 
     class Library
@@ -76,34 +75,45 @@ public:
     struct Char
     {
         class Glyph;
-        using GlyphPtr = UniquePtr<Glyph>;
         using Code = uint32_t;
 
-        Code      code;
-        FrameSize size;
-        Point2i   offset;
-        Point2i   advance;
-        Point2u   position;
-        GlyphPtr  sp_glyph;
+        Code       code = 0u;
+        FrameRect  rect;
+        Point2i    offset;
+        Point2i    advance;
+        Ptr<Glyph> sp_glyph;
+
+        bool operator<(const Char& other) const noexcept
+        { return rect.size.GetPixelsCount() < other.rect.size.GetPixelsCount(); }
+
+        void DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_stride) const;
     };
+
+    using Chars = std::vector<Char>;
 
     const Settings& GetSettings() const { return m_settings; }
 
+    void AddChars(const std::wstring& characters);
+    void AddChar(Char::Code char_code);
     bool HasChar(Char::Code char_code);
-    void AddChar(Char char_desc);
     const Char& GetChar(Char::Code char_code) const;
 
-    Texture& GetAtlasTexture(Context& context);
+    const Ptr<Texture>& GetAtlasTexturePtr(Context& context);
+    Texture& GetAtlasTexture(Context& context) { return *GetAtlasTexturePtr(context); }
     void     RemoveAtlasTexture(Context& context);
+    void     ClearAtlasTextures();
 
 protected:
-    Font(const Data::Provider& data_provider, const Settings& settings); // Font can be created only via Font::Library::Add
+    // Font can be created only via Font::Library::Add
+    Font(const Data::Provider& data_provider, const Settings& settings);
 
 private:
+    class Face;
     using TextureByContext = std::map<Context*, Ptr<Texture>>;
     using CharByCode = std::map<Char::Code, Char>;
 
     Settings         m_settings;
+    UniquePtr<Face>  m_sp_face;
     CharByCode       m_char_by_code;
     TextureByContext m_atlas_textures;
 };

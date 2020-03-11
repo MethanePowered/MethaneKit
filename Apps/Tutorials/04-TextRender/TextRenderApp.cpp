@@ -73,6 +73,7 @@ void TextRenderApp::Init()
 {
     GraphicsApp::Init();
 
+    // Add font to library
     gfx::Font::Library::Get().Clear();
     m_sp_font = gfx::Font::Library::Get().Add(
         Data::FileProvider::Get(),
@@ -82,7 +83,20 @@ void TextRenderApp::Init()
         }
     );
 
-    m_sp_text = std::make_shared<gfx::Text>(*m_sp_context, gfx::Text::Settings{ "Label", gfx::FrameRect() });
+    // Create font atlas texture and badge to displaying it on screen
+    const Ptr<gfx::Texture>& sp_font_atlas_texture = m_sp_font->GetAtlasTexturePtr(*m_sp_context);
+    m_sp_font_atlas_badge = std::make_shared<gfx::Badge>(*m_sp_context, sp_font_atlas_texture,
+        gfx::Badge::Settings
+        {
+            static_cast<const gfx::FrameSize&>(sp_font_atlas_texture->GetSettings().dimensions),
+            gfx::Badge::FrameCorner::BottomRight,
+            16u,
+            1.f,
+        }
+    );
+
+    // Create text rendering primitive bound to the font object
+    m_sp_text = std::make_shared<gfx::Text>(*m_sp_context, *m_sp_font, gfx::Text::Settings{ "Label", gfx::FrameRect() });
 
     // Create per-frame command lists
     for(TextRenderFrame& frame : m_frames)
@@ -101,7 +115,7 @@ bool TextRenderApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     if (!GraphicsApp::Resize(frame_size, is_minimized))
         return false;
 
-    // ...
+    m_sp_font_atlas_badge->Resize(frame_size);
     return true;
 }
 
@@ -114,6 +128,8 @@ bool TextRenderApp::Render()
     // Wait for previous frame rendering is completed and switch to next frame
     m_sp_context->WaitForGpu(gfx::Context::WaitFor::FramePresented);
     TextRenderFrame& frame = GetCurrentFrame();
+
+    m_sp_font_atlas_badge->Draw(*frame.sp_cmd_list);
 
     RenderOverlay(*frame.sp_cmd_list);
 
@@ -129,7 +145,11 @@ bool TextRenderApp::Render()
 
 void TextRenderApp::OnContextReleased()
 {
+    gfx::Font::Library::Get().Clear();
+
+    m_sp_font.reset();
     m_sp_text.reset();
+    m_sp_font_atlas_badge.reset();
 
     GraphicsApp::OnContextReleased();
 }

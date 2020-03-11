@@ -86,6 +86,8 @@ DXGI_FORMAT TypeConverterDX::DataFormatToDXGI(const PixelFormat& data_format) no
     case PixelFormat::R32Sint:       return DXGI_FORMAT_R32_SINT;
     case PixelFormat::R16Uint:       return DXGI_FORMAT_R16_UINT;
     case PixelFormat::R16Sint:       return DXGI_FORMAT_R16_SINT;
+    case PixelFormat::R8Uint:        return DXGI_FORMAT_R8_UINT;
+    case PixelFormat::R8Sint:        return DXGI_FORMAT_R8_SINT;
     default:                         assert(0);
     }
     return DXGI_FORMAT_UNKNOWN;

@@ -25,9 +25,6 @@ Tutorial demonstrating triangle rendering with Methane graphics API
 
 #include <Methane/Graphics/Kit.h>
 
-#include <string>
-#include <array>
-
 namespace Methane::Tutorials
 {
 
@@ -58,6 +55,7 @@ public:
 
 private:
     Ptr<gfx::Font>  m_sp_font;
+    Ptr<gfx::Badge> m_sp_font_atlas_badge;
     Ptr<gfx::Text>  m_sp_text;
 };
 

@@ -16,12 +16,12 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/ScreenQuad.cpp
-Logo badge rendering primitive.
+FILE: Methane/Graphics/Badge.cpp
+Badge rendering primitive displaying fixed texture in specific corner of the screen.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/LogoBadge.h>
+#include <Methane/Graphics/Badge.h>
 
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Data/AppResourceProviders.h>
@@ -32,7 +32,7 @@ Logo badge rendering primitive.
 namespace Methane::Graphics
 {
 
-static LogoBadge::Settings ScaleBadgeSize(LogoBadge::Settings settings, float scale_factor)
+static Badge::Settings ScaleBadgeSize(Badge::Settings settings, float scale_factor)
 {
     settings.size.width  = static_cast<uint32_t>(std::round(scale_factor * settings.size.width));
     settings.size.height = static_cast<uint32_t>(std::round(scale_factor * settings.size.height));
@@ -40,15 +40,15 @@ static LogoBadge::Settings ScaleBadgeSize(LogoBadge::Settings settings, float sc
     return settings;
 }
     
-LogoBadge::LogoBadge(RenderContext& context, Settings settings)
-    : LogoBadge(context,
-                ImageLoader(Data::TextureProvider::Get()).LoadImageToTexture2D(context, "Logo/MethaneLogoNameWatermark.png", true),
-                ScaleBadgeSize(settings, context.GetContentScalingFactor()))
+Badge::Badge(RenderContext& context, Settings settings)
+    : Badge(context,
+            ImageLoader(Data::TextureProvider::Get()).LoadImageToTexture2D(context, "Logo/MethaneLogoNameWatermark.png", true),
+            ScaleBadgeSize(settings, context.GetContentScalingFactor()))
 {
     ITT_FUNCTION_TASK();
 }
 
-LogoBadge::LogoBadge(RenderContext& context, Ptr<Texture> sp_texture, Settings settings)
+Badge::Badge(RenderContext& context, Ptr<Texture> sp_texture, Settings settings)
     : ScreenQuad(context, std::move(sp_texture),
                  ScreenQuad::Settings
                  {
@@ -62,14 +62,14 @@ LogoBadge::LogoBadge(RenderContext& context, Ptr<Texture> sp_texture, Settings s
     ITT_FUNCTION_TASK();
 }
 
-void LogoBadge::Resize(const FrameSize& frame_size)
+void Badge::Resize(const FrameSize& frame_size)
 {
     ITT_FUNCTION_TASK();
     SetScreenRect(GetBadgeRectInFrame(frame_size, m_settings.corner, m_settings.size, m_settings.margins));
 }
 
-FrameRect LogoBadge::GetBadgeRectInFrame(const FrameSize& frame_size, FrameCorner frame_corner,
-                                         const FrameSize& badge_size, uint32_t badge_margins)
+FrameRect Badge::GetBadgeRectInFrame(const FrameSize& frame_size, FrameCorner frame_corner,
+                                     const FrameSize& badge_size, uint32_t badge_margins)
 {
     ITT_FUNCTION_TASK();
 

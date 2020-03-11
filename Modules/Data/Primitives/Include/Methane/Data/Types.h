@@ -69,22 +69,37 @@ struct Rect
         Size(D w, D h) : width(w), height(h) { }
         
         bool operator==(const Size& other) const noexcept
-        { return std::tie(width, height) == std::tie(other.height, other.width); }
+        { return std::tie(width, height) == std::tie(other.width, other.height); }
 
         bool operator!=(const Size& other) const noexcept
-        { return std::tie(width, height) != std::tie(other.height, other.width); }
+        { return std::tie(width, height) != std::tie(other.width, other.height); }
 
-        Size& operator*(D multiplier)
-        {
-            width *= multiplier; height *= multiplier;
-            return *this;
-        }
+        bool operator<=(const Size& other) const noexcept
+        { return std::tie(width, height) <= std::tie(other.width, other.height); }
 
-        Size& operator/(D divisor)
-        {
-            width /= divisor; height /= divisor;
-            return *this;
-        }
+        bool operator<(const Size& other) const noexcept
+        { return std::tie(width, height) < std::tie(other.width, other.height); }
+
+        bool operator>=(const Size& other) const noexcept
+        { return std::tie(width, height) >= std::tie(other.width, other.height); }
+
+        bool operator>(const Size& other) const noexcept
+        { return std::tie(width, height) > std::tie(other.width, other.height); }
+
+        Size operator+(const Size& other) const noexcept
+        { return Size(width + other.width, height + other.height); }
+
+        Size operator-(const Size& other) const noexcept
+        { return Size(width - other.width, height - other.height); }
+
+        Size operator*(D multiplier) const noexcept
+        { return Size(width * multiplier, height * multiplier); }
+
+        Size& operator/(D divisor) const noexcept
+        { return Size(width / divisor, height / divisor); }
+
+        operator bool() const noexcept
+        { return width && height; }
 
         D GetPixelsCount() const noexcept { return width * height; }
         D GetLongestSide() const noexcept { return std::max(width, height); }

@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/LogoBadge.h
-Logo badge rendering primitive.
+FILE: Methane/Graphics/Badge.h
+Badge rendering primitive displaying fixed texture in specific corner of the screen.
 
 ******************************************************************************/
 
@@ -32,7 +32,7 @@ namespace Methane::Graphics
 
 class ImageLoader;
 
-class LogoBadge : public ScreenQuad
+class Badge : public ScreenQuad
 {
 public:
     enum class FrameCorner : uint32_t
@@ -49,17 +49,10 @@ public:
         FrameCorner corner;
         uint32_t    margins;
         float       opacity;
-        
-        Settings()
-            : size(96u, 128u)
-            , corner(FrameCorner::TopRight)
-            , margins(16u)
-            , opacity(0.15f)
-        { }
     };
 
-    LogoBadge(RenderContext& context, Settings settings = Settings());
-    LogoBadge(RenderContext& context, Ptr<Texture> sp_texture, Settings settings = Settings());
+    Badge(RenderContext& context, Settings settings = { { 96u, 128u }, FrameCorner::TopRight, 16u, 0.15f });
+    Badge(RenderContext& context, Ptr<Texture> sp_texture, Settings settings);
 
     void Resize(const FrameSize& frame_size);
 

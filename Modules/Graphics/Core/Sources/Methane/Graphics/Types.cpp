@@ -72,18 +72,22 @@ uint32_t GetPixelSize(PixelFormat data_format) noexcept
     ITT_FUNCTION_TASK();
     switch(data_format)
     {
-        case PixelFormat::RGBA8:
-        case PixelFormat::RGBA8Unorm:
-        case PixelFormat::BGRA8Unorm:
-        case PixelFormat::R32Float:
-        case PixelFormat::R32Uint:
-        case PixelFormat::R32Sint:
-        case PixelFormat::Depth32Float:
-            return 4;
-        case PixelFormat::R16Uint:
-            return 2;
-        default:
-            assert(0);
+    case PixelFormat::RGBA8:
+    case PixelFormat::RGBA8Unorm:
+    case PixelFormat::BGRA8Unorm:
+    case PixelFormat::R32Float:
+    case PixelFormat::R32Uint:
+    case PixelFormat::R32Sint:
+    case PixelFormat::Depth32Float:
+        return 4;
+    case PixelFormat::R16Uint:
+    case PixelFormat::R16Sint:
+        return 2;
+    case PixelFormat::R8Uint:
+    case PixelFormat::R8Sint:
+        return 1;
+    default:
+        assert(0);
     }
     return 0;
 }
