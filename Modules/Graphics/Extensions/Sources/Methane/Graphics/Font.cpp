@@ -106,8 +106,9 @@ private:
 class Font::Face
 {
 public:
-    Face(const Data::Chunk& font_data)
-        : m_ft_face(LoadFace(Library::Get().GetImpl().GetFTLib(), font_data))
+    Face(Data::Chunk&& font_data)
+        : m_font_data(std::move(font_data))
+        , m_ft_face(LoadFace(Library::Get().GetImpl().GetFTLib(), m_font_data))
         , m_has_kerning(static_cast<bool>(FT_HAS_KERNING(m_ft_face)))
     {
         ITT_FUNCTION_TASK();
@@ -192,8 +193,9 @@ private:
         return ft_face;
     }
 
-    const FT_Face m_ft_face = nullptr;
-    const bool    m_has_kerning;
+    const Data::Chunk m_font_data;
+    const FT_Face     m_ft_face = nullptr;
+    const bool        m_has_kerning;
 };
 
 class CharPack
@@ -443,7 +445,12 @@ void Font::Char::DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_strid
 {
     ITT_FUNCTION_TASK();
     if (!rect.size)
-        return;
+        return; 
+
+    // Verify glyph placement
+    const uint32_t atlas_rows_count = static_cast<uint32_t>(atlas_bitmap.size() / atlas_row_stride);
+    assert(rect.origin.GetX() + rect.size.width <= atlas_row_stride);
+    assert(rect.origin.GetY() + rect.size.height <= atlas_rows_count);
 
     // Draw glyph to bitmap
     FT_Glyph ft_glyph = sp_glyph->GetFTGlyph();
