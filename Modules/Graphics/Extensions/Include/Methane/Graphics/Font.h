@@ -83,8 +83,10 @@ public:
         Point2i    advance;
         Ptr<Glyph> sp_glyph;
 
+        inline static bool inversed_less_comparison = true;
         bool operator<(const Char& other) const noexcept
-        { return rect.size.GetPixelsCount() < other.rect.size.GetPixelsCount(); }
+        { return inversed_less_comparison ? rect.size.GetPixelsCount() > other.rect.size.GetPixelsCount()
+                                          : rect.size.GetPixelsCount() <  other.rect.size.GetPixelsCount(); }
 
         void DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_stride) const;
     };

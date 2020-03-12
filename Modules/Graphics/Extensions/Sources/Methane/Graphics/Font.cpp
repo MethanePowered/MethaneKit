@@ -210,8 +210,6 @@ public:
     bool TryPack(Font::Chars& font_chars)
     {
         ITT_FUNCTION_TASK();
-        // Sort chars by increasing of glyph pixels count and the pack into given frame size
-        std::sort(font_chars.begin(), font_chars.end());
         for(Font::Char& font_char : font_chars)
         {
             if (!m_root.TryPack(font_char))
@@ -231,50 +229,49 @@ private:
         bool TryPack(Font::Char& font_char)
         {
             ITT_FUNCTION_TASK();
-            if (font_char.rect.size == FrameSize())
+            if (!font_char.rect.size)
                 return true;
 
             if (IsEmpty())
             {
-                if (font_char.rect.size <= m_rect.size)
+                static const FrameSize s_margin(1u, 1u);
+                const FrameSize char_size_with_margins = font_char.rect.size + s_margin * 2u;
+                if (!(char_size_with_margins <= m_rect.size))
+                    return false;
+
+                // Split node rectangle either vertically or horizontally,
+                // by creating small rectangle and one big rectangle representing free area not taken by glyph
+                const FrameSize delta = m_rect.size - font_char.rect.size;
+                if (delta.width < delta.height)
                 {
-                    const FrameSize delta = m_rect.size - font_char.rect.size;
-
-                    // we split to give one very small leaf and one very big one
-                    // because it allows more efficient use of space
-                    // if you don't do this, the bottom right corner never gets used
-                    if (delta.width < delta.height)
-                    {
-                        // split so the top is cut in half and the rest is one big rect below
-                        m_sp_leaf_1 = std::make_unique<Node>(FrameRect{
-                            Point2i(m_rect.origin.GetX() + font_char.rect.size.width + 2, m_rect.origin.GetY()),
-                            FrameSize(m_rect.size.width - (font_char.rect.size.width + 2), font_char.rect.size.height + 2)
-                        });
-                        m_sp_leaf_2 = std::make_unique<Node>(FrameRect{
-                            Point2i(m_rect.origin.GetX(), m_rect.origin.GetY() + font_char.rect.size.height + 2),
-                            FrameSize(m_rect.size.width, font_char.rect.size.height - (font_char.rect.size.height + 2))
-                        });
-                    }
-                    else
-                    {
-                        // m_pLeaf1 = left (cut in half)
-                        m_sp_leaf_1 = std::make_unique<Node>(FrameRect{
-                            Point2i(m_rect.origin.GetX(), m_rect.origin.GetY() + font_char.rect.size.height + 2),
-                            FrameSize(m_rect.size.width + 2, m_rect.size.height - (font_char.rect.size.height + 2))
-                        });
-                        // m_pLeaf2 = right (not cut)
-                        m_sp_leaf_2 = std::make_unique<Node>(FrameRect{
-                            Point2i(m_rect.origin.GetX() + font_char.rect.size.width + 2, m_rect.origin.GetY()),
-                            FrameSize(m_rect.size.width - (font_char.rect.size.width + 2), font_char.rect.size.height)
-                        });
-
-                    }
-
-                    font_char.rect.origin.SetX(m_rect.origin.GetX() + 1);
-                    font_char.rect.origin.SetY(m_rect.origin.GetY() + 1);
-                    return true;
+                    // Small top rectangle, to the right of character glyph
+                    m_sp_leaf_1 = std::make_unique<Node>(FrameRect{
+                        Point2i(m_rect.origin.GetX() + char_size_with_margins.width, m_rect.origin.GetY()),
+                        FrameSize(m_rect.size.width - char_size_with_margins.width, char_size_with_margins.height)
+                    });
+                    // Big bottom rectangle, under and to the right of character glyph
+                    m_sp_leaf_2 = std::make_unique<Node>(FrameRect{
+                        Point2i(m_rect.origin.GetX(), m_rect.origin.GetY() + char_size_with_margins.height),
+                        FrameSize(m_rect.size.width, m_rect.size.height - char_size_with_margins.height)
+                    });
                 }
-                return false;
+                else
+                {
+                    // Small left rectangle, under the character glyph
+                    m_sp_leaf_1 = std::make_unique<Node>(FrameRect{
+                        Point2i(m_rect.origin.GetX(), m_rect.origin.GetY() + char_size_with_margins.height),
+                        FrameSize(char_size_with_margins.width, m_rect.size.height - char_size_with_margins.height)
+                    });
+                    // Big right rectangle, to the right and under character glyph
+                    m_sp_leaf_2 = std::make_unique<Node>(FrameRect{
+                        Point2i(m_rect.origin.GetX() + char_size_with_margins.width, m_rect.origin.GetY()),
+                        FrameSize(m_rect.size.width - char_size_with_margins.width, m_rect.size.height)
+                    });
+                }
+
+                font_char.rect.origin.SetX(m_rect.origin.GetX() + s_margin.width);
+                font_char.rect.origin.SetY(m_rect.origin.GetY() + s_margin.height);
+                return true;
             }
 
             if (m_sp_leaf_1->TryPack(font_char))
@@ -405,26 +402,25 @@ const Ptr<Texture>& Font::GetAtlasTexturePtr(Context& context)
         [](const auto& code_and_char) { return code_and_char.second; }
     );
 
+    // Sort chars by increasing of glyph pixels count and the pack into given frame size
+    std::sort(font_chars.begin(), font_chars.end());
+
     // Pick square atlas size fitting all character glyphs packed in it
-    uint32_t atlas_dimension = 256u;
-    bool atlas_dimension_sufficient = true;
-    do
+    FrameSize atlas_size(256u, 256u);
+    while(!CharPack(atlas_size).TryPack(font_chars))
     {
-        atlas_dimension *= 2;
-        CharPack char_pack(FrameSize(atlas_dimension, atlas_dimension));
-        atlas_dimension_sufficient = char_pack.TryPack(font_chars);
+        atlas_size *= 2;
     }
-    while(!atlas_dimension_sufficient);
 
     // Render glyphs to texture buffer
-    Data::Bytes atlas_bitmap(atlas_dimension * atlas_dimension, 0);
+    Data::Bytes atlas_bitmap(atlas_size.width * atlas_size.height, 0);
     for(const Char& font_char : font_chars)
     {
-        font_char.DrawToAtlas(atlas_bitmap, atlas_dimension);
+        font_char.DrawToAtlas(atlas_bitmap, atlas_size.width);
     }
 
     // Create atlas texture and render glyphs to it
-    Ptr<Texture> sp_atlas_texture = Texture::CreateImage(context, Dimensions(atlas_dimension, atlas_dimension), 1, PixelFormat::R8Uint, false);
+    Ptr<Texture> sp_atlas_texture = Texture::CreateImage(context, Dimensions(atlas_size), 1, PixelFormat::R8Uint, false);
     sp_atlas_texture->SetData({ Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(atlas_bitmap.data()), atlas_bitmap.size()) });
     return m_atlas_textures.emplace(&context, std::move(sp_atlas_texture)).first->second;
 }

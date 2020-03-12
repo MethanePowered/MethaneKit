@@ -80,6 +80,8 @@ struct Volume
 {
     struct Size : Rect<T, D>::Size
     {
+        using RectSize = typename Rect<T, D>::Size;
+
         D depth = 1;
         
         Size() = default;
@@ -87,10 +89,49 @@ struct Volume
         Size(D w, D h, D d = 1) : Rect<T, D>::Size(w, h), depth(d) { }
 
         bool operator==(const Size& other) const noexcept
-        { return Rect<T, D>::Size::operator==(other) && depth == other.depth; }
+        { return RectSize::operator==(other) && depth == other.depth; }
 
         bool operator!=(const Size& other) const noexcept
-        { return Rect<T, D>::Size::operator!=(other) || depth != other.depth; }
+        { return RectSize::operator!=(other) || depth != other.depth; }
+
+        bool operator<=(const Size& other) const noexcept
+        { return RectSize::operator<=(other) && depth <= other.depth; }
+
+        bool operator<(const Size& other) const noexcept
+        { return RectSize::operator<(other) && depth < other.depth; }
+
+        bool operator>=(const Size& other) const noexcept
+        { return RectSize::operator>=(other) && depth >= other.depth; }
+
+        bool operator>(const Size& other) const noexcept
+        { return RectSize::operator>(other) && depth > other.depth; }
+
+        Size operator+(const Size& other) const noexcept
+        { return Size(RectSize::operator+(other), depth + other.depth); }
+
+        Size operator-(const Size& other) const noexcept
+        { return Size(RectSize::operator-(other), depth - other.depth); }
+
+        Size operator*(D multiplier) const noexcept
+        { return Size(RectSize::operator*(multiplier), depth * multiplier); }
+
+        Size operator/(D divisor) const noexcept
+        { return Size(RectSize::operator/(divisor), depth / divisor); }
+
+        Size& operator+=(const Size& other) noexcept
+        { depth += other.depth; return RectSize::operator+=(other); }
+
+        Size& operator-=(const Size& other) noexcept
+        { depth -= other.depth; return RectSize::operator-=(other); }
+
+        Size& operator*=(D multiplier) noexcept
+        { depth *= multiplier; return RectSize::operator*=(multiplier); }
+
+        Size& operator/=(D divisor) noexcept
+        { depth /= divisor; return RectSize::operator/=(divisor); }
+
+        operator bool() const noexcept
+        { return depth && RectSize::operator bool(); }
 
         D GetPixelsCount() const noexcept { return depth * Rect<T, D>::Size::GetPixelsCount(); }
         D GetLongestSide() const noexcept { return std::max(depth, Rect<T, D>::Size::GetLongestSide()); }

@@ -95,8 +95,20 @@ struct Rect
         Size operator*(D multiplier) const noexcept
         { return Size(width * multiplier, height * multiplier); }
 
-        Size& operator/(D divisor) const noexcept
+        Size operator/(D divisor) const noexcept
         { return Size(width / divisor, height / divisor); }
+
+        Size& operator+=(const Size& other) noexcept
+        { width += other.width; height += other.height; return *this; }
+
+        Size& operator-=(const Size& other) noexcept
+        { width -= other.width; height -= other.height; return *this; }
+
+        Size& operator*=(D multiplier) noexcept
+        { width *= multiplier; height *= multiplier; return *this; }
+
+        Size& operator/=(D divisor) noexcept
+        { width /= divisor; height /= divisor; return *this; }
 
         operator bool() const noexcept
         { return width && height; }
