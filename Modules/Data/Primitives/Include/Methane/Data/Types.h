@@ -75,16 +75,16 @@ struct Rect
         { return std::tie(width, height) != std::tie(other.width, other.height); }
 
         bool operator<=(const Size& other) const noexcept
-        { return std::tie(width, height) <= std::tie(other.width, other.height); }
+        { return width <= other.width && height <= other.height; }
 
         bool operator<(const Size& other) const noexcept
-        { return std::tie(width, height) < std::tie(other.width, other.height); }
+        { return width < other.width && height < other.height; }
 
         bool operator>=(const Size& other) const noexcept
-        { return std::tie(width, height) >= std::tie(other.width, other.height); }
+        { return width >= other.width && height >= other.height; }
 
         bool operator>(const Size& other) const noexcept
-        { return std::tie(width, height) > std::tie(other.width, other.height); }
+        { return width > other.width && height > other.height; }
 
         Size operator+(const Size& other) const noexcept
         { return Size(width + other.width, height + other.height); }
@@ -132,6 +132,11 @@ struct Rect
 
     operator std::string() const
     { return std::string("Rt[") + origin + " + " + size + "]"; }
+
+    T GetLeft() const   { return origin.GetX(); }
+    T GetRight() const  { return origin.GetX() + size.width; }
+    T GetTop() const    { return origin.GetY(); }
+    T GetBottom() const { return origin.GetY() + size.height; }
 
     using Point = Point2T<T>;
 

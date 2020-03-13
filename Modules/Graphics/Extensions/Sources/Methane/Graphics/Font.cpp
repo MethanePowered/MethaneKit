@@ -214,6 +214,9 @@ public:
         {
             if (!m_root.TryPack(font_char))
                 return false;
+
+            assert(font_char.rect.GetLeft() >= 0 && static_cast<uint32_t>(font_char.rect.GetRight())  <= m_root.GetRect().size.width);
+            assert(font_char.rect.GetTop() >= 0  && static_cast<uint32_t>(font_char.rect.GetBottom()) <= m_root.GetRect().size.height);
         }
         return true;
     }
@@ -225,6 +228,7 @@ private:
         Node(FrameRect rect) : m_rect(std::move(rect)) { ITT_FUNCTION_TASK(); }
 
         bool IsEmpty() const noexcept { return !m_sp_leaf_1 && !m_sp_leaf_2; }
+        const FrameRect& GetRect() const noexcept { return m_rect; }
 
         bool TryPack(Font::Char& font_char)
         {
@@ -234,7 +238,7 @@ private:
 
             if (IsEmpty())
             {
-                static const FrameSize s_margin(1u, 1u);
+                static const FrameSize s_margin(0u, 0u);
                 const FrameSize char_size_with_margins = font_char.rect.size + s_margin * 2u;
                 if (!(char_size_with_margins <= m_rect.size))
                     return false;
@@ -271,6 +275,7 @@ private:
 
                 font_char.rect.origin.SetX(m_rect.origin.GetX() + s_margin.width);
                 font_char.rect.origin.SetY(m_rect.origin.GetY() + s_margin.height);
+
                 return true;
             }
 
@@ -406,7 +411,7 @@ const Ptr<Texture>& Font::GetAtlasTexturePtr(Context& context)
     std::sort(font_chars.begin(), font_chars.end());
 
     // Pick square atlas size fitting all character glyphs packed in it
-    FrameSize atlas_size(256u, 256u);
+    FrameSize atlas_size(128u, 128u);
     while(!CharPack(atlas_size).TryPack(font_chars))
     {
         atlas_size *= 2;
@@ -421,7 +426,7 @@ const Ptr<Texture>& Font::GetAtlasTexturePtr(Context& context)
 
     // Create atlas texture and render glyphs to it
     Ptr<Texture> sp_atlas_texture = Texture::CreateImage(context, Dimensions(atlas_size), 1, PixelFormat::R8Uint, false);
-    sp_atlas_texture->SetData({ Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(atlas_bitmap.data()), atlas_bitmap.size()) });
+    sp_atlas_texture->SetData({ Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(atlas_bitmap.data()), static_cast<Data::Size>(atlas_bitmap.size())) });
     return m_atlas_textures.emplace(&context, std::move(sp_atlas_texture)).first->second;
 }
 
@@ -445,8 +450,8 @@ void Font::Char::DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_strid
 
     // Verify glyph placement
     const uint32_t atlas_rows_count = static_cast<uint32_t>(atlas_bitmap.size() / atlas_row_stride);
-    assert(rect.origin.GetX() + rect.size.width <= atlas_row_stride);
-    assert(rect.origin.GetY() + rect.size.height <= atlas_rows_count);
+    assert(rect.GetLeft() >= 0 && static_cast<uint32_t>(rect.GetRight())  <= atlas_row_stride);
+    assert(rect.GetTop()  >= 0 && static_cast<uint32_t>(rect.GetBottom()) <= atlas_rows_count);
 
     // Draw glyph to bitmap
     FT_Glyph ft_glyph = sp_glyph->GetFTGlyph();
