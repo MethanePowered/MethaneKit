@@ -70,6 +70,7 @@ Viewport GetFrameViewport(const FrameSize& frame_size)
 uint32_t GetPixelSize(PixelFormat data_format) noexcept
 {
     ITT_FUNCTION_TASK();
+
     switch(data_format)
     {
     case PixelFormat::RGBA8:
@@ -80,15 +81,25 @@ uint32_t GetPixelSize(PixelFormat data_format) noexcept
     case PixelFormat::R32Sint:
     case PixelFormat::Depth32Float:
         return 4;
+
+    case PixelFormat::R16Float:
     case PixelFormat::R16Uint:
     case PixelFormat::R16Sint:
+    case PixelFormat::R16Unorm:
+    case PixelFormat::R16Snorm:
         return 2;
+
     case PixelFormat::R8Uint:
     case PixelFormat::R8Sint:
+    case PixelFormat::R8Unorm:
+    case PixelFormat::R8Snorm:
+    case PixelFormat::A8Unorm:
         return 1;
+
     default:
         assert(0);
     }
+
     return 0;
 }
 

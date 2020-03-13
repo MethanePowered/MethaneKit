@@ -84,10 +84,16 @@ DXGI_FORMAT TypeConverterDX::DataFormatToDXGI(const PixelFormat& data_format) no
     case PixelFormat::R32Float:      return DXGI_FORMAT_R32_FLOAT;
     case PixelFormat::R32Uint:       return DXGI_FORMAT_R32_UINT;
     case PixelFormat::R32Sint:       return DXGI_FORMAT_R32_SINT;
+    case PixelFormat::R16Float:      return DXGI_FORMAT_R16_FLOAT;
     case PixelFormat::R16Uint:       return DXGI_FORMAT_R16_UINT;
     case PixelFormat::R16Sint:       return DXGI_FORMAT_R16_SINT;
+    case PixelFormat::R16Unorm:      return DXGI_FORMAT_R16_UNORM;
+    case PixelFormat::R16Snorm:      return DXGI_FORMAT_R16_SNORM;
     case PixelFormat::R8Uint:        return DXGI_FORMAT_R8_UINT;
     case PixelFormat::R8Sint:        return DXGI_FORMAT_R8_SINT;
+    case PixelFormat::R8Unorm:       return DXGI_FORMAT_R8_UNORM;
+    case PixelFormat::R8Snorm:       return DXGI_FORMAT_R8_SNORM;
+    case PixelFormat::A8Unorm:       return DXGI_FORMAT_A8_UNORM;
     default:                         assert(0);
     }
     return DXGI_FORMAT_UNKNOWN;

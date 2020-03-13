@@ -207,12 +207,13 @@ public:
         ITT_FUNCTION_TASK();
     }
 
-    bool TryPack(Font::Chars& font_chars)
+    bool TryPack(Font::Chars& font_chars, const FrameSize& char_margin = { 0u, 0u })
     {
         ITT_FUNCTION_TASK();
+
         for(Font::Char& font_char : font_chars)
         {
-            if (!m_root.TryPack(font_char))
+            if (!m_root.TryPack(font_char, char_margin))
                 return false;
 
             assert(font_char.rect.GetLeft() >= 0 && static_cast<uint32_t>(font_char.rect.GetRight())  <= m_root.GetRect().size.width);
@@ -230,7 +231,7 @@ private:
         bool IsEmpty() const noexcept { return !m_sp_leaf_1 && !m_sp_leaf_2; }
         const FrameRect& GetRect() const noexcept { return m_rect; }
 
-        bool TryPack(Font::Char& font_char)
+        bool TryPack(Font::Char& font_char, const FrameSize& char_margin)
         {
             ITT_FUNCTION_TASK();
             if (!font_char.rect.size)
@@ -238,8 +239,7 @@ private:
 
             if (IsEmpty())
             {
-                static const FrameSize s_margin(0u, 0u);
-                const FrameSize char_size_with_margins = font_char.rect.size + s_margin * 2u;
+                const FrameSize char_size_with_margins = font_char.rect.size + char_margin;
                 if (!(char_size_with_margins <= m_rect.size))
                     return false;
 
@@ -273,16 +273,16 @@ private:
                     });
                 }
 
-                font_char.rect.origin.SetX(m_rect.origin.GetX() + s_margin.width);
-                font_char.rect.origin.SetY(m_rect.origin.GetY() + s_margin.height);
+                font_char.rect.origin.SetX(m_rect.origin.GetX());
+                font_char.rect.origin.SetY(m_rect.origin.GetY());
 
                 return true;
             }
 
-            if (m_sp_leaf_1->TryPack(font_char))
+            if (m_sp_leaf_1->TryPack(font_char, char_margin))
                 return true;
 
-            return m_sp_leaf_2->TryPack(font_char);
+            return m_sp_leaf_2->TryPack(font_char, char_margin);
         }
 
     private:
@@ -425,7 +425,7 @@ const Ptr<Texture>& Font::GetAtlasTexturePtr(Context& context)
     }
 
     // Create atlas texture and render glyphs to it
-    Ptr<Texture> sp_atlas_texture = Texture::CreateImage(context, Dimensions(atlas_size), 1, PixelFormat::R8Uint, false);
+    Ptr<Texture> sp_atlas_texture = Texture::CreateImage(context, Dimensions(atlas_size), 1, PixelFormat::R8Unorm, false);
     sp_atlas_texture->SetData({ Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(atlas_bitmap.data()), static_cast<Data::Size>(atlas_bitmap.size())) });
     return m_atlas_textures.emplace(&context, std::move(sp_atlas_texture)).first->second;
 }

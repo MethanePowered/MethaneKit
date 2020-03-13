@@ -46,9 +46,10 @@ public:
     struct Settings
     {
         FrameSize   size;
-        FrameCorner corner;
-        uint32_t    margins;
-        float       opacity;
+        FrameCorner corner      = FrameCorner::TopRight;
+        uint32_t    margins     = 16u;
+        float       opacity     = 1.f;
+        TextureMode texure_mode = TextureMode::RgbaFloat;
     };
 
     Badge(RenderContext& context, Settings settings = { { 96u, 128u }, FrameCorner::TopRight, 16u, 0.15f });

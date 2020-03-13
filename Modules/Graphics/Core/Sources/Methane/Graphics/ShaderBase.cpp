@@ -65,7 +65,7 @@ std::string ShaderBase::GetCompiledEntryFunctionName() const
     entry_func_steam << m_settings.entry_function.file_name << "_" << m_settings.entry_function.function_name;
     for (const auto& define_and_value : m_settings.compile_definitions)
     {
-        entry_func_steam << "_" << define_and_value.first << define_and_value.second;
+        entry_func_steam << "_" << define_and_value.name << define_and_value.value;
     }
     return entry_func_steam.str();
 }

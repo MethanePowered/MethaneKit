@@ -52,7 +52,13 @@ struct Shader
     
     using Types = std::set<Shader::Type>;
 
-    using MacroDefinitions = std::map<std::string, std::string>;
+    struct MacroDefinition
+    {
+        std::string name;
+        std::string value;
+    };
+
+    using MacroDefinitions = std::vector<MacroDefinition>;
 
     struct EntryFunction
     {

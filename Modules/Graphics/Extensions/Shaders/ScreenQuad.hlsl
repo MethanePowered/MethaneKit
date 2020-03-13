@@ -21,16 +21,36 @@ Shaders for screen quad rendering with 2D texture
 
 ******************************************************************************/
 
+#ifndef TTEXEL
+#define TTEXEL float4
+#endif
+
+#ifndef TPIXEL
+#define TPIXEL float4
+#endif
+
+#ifndef VPIXEL
+#define VPIXEL float4(1.f,1.f,1.f,1.f)
+#endif
+
+#ifndef RMASK
+#define RMASK rgba
+#endif
+
+#ifndef WMASK
+#define WMASK rgba
+#endif
+
 struct VSInput
 {
-    float3 position         : POSITION;
-    float2 texcoord         : TEXCOORD;
+    float3 position : POSITION;
+    float2 texcoord : TEXCOORD;
 };
 
 struct PSInput
 {
-    float4 position         : SV_POSITION;
-    float2 texcoord         : TEXCOORD;
+    float4 position : SV_POSITION;
+    float2 texcoord : TEXCOORD;
 };
 
 struct Constants
@@ -39,10 +59,10 @@ struct Constants
 };
 
 ConstantBuffer<Constants> g_constants : register(b1);
-Texture2D                 g_texture   : register(t0);
+Texture2D<TTEXEL>         g_texture   : register(t0);
 SamplerState              g_sampler   : register(s0);
 
-PSInput ScreenQuadVS(VSInput input)
+PSInput QuadVS(VSInput input)
 {
     PSInput output;
     output.position = float4(input.position, 1.0f);
@@ -50,8 +70,9 @@ PSInput ScreenQuadVS(VSInput input)
     return output;
 }
 
-float4 ScreenQuadPS(PSInput input) : SV_TARGET
+TPIXEL QuadPS(PSInput input) : SV_TARGET
 {
-    const float4 texel_color = g_texture.Sample(g_sampler, input.texcoord);
-    return texel_color * g_constants.blend_color;
+    TPIXEL color = VPIXEL;
+    color.WMASK = g_texture.Sample(g_sampler, input.texcoord).RMASK;
+    return color * g_constants.blend_color;
 }

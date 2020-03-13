@@ -204,7 +204,7 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
     std::vector<D3D_SHADER_MACRO> macro_definitions;
     for (const auto& definition : settings.compile_definitions)
     {
-        macro_definitions.push_back({ definition.first.c_str(), definition.second.c_str() });
+        macro_definitions.push_back({ definition.name.c_str(), definition.value.c_str() });
     }
     macro_definitions.push_back({ nullptr, nullptr });
 

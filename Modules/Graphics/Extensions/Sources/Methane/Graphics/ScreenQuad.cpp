@@ -60,6 +60,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
     QuadMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.f, 2.f);
 
     const RenderContext::Settings& context_settings = context.GetSettings();
+    const Shader::MacroDefinitions ps_macro_definitions = GetPixelShaderMacroDefinitions(settings.texture_mode);
 
     RenderState::Settings state_settings;
     state_settings.sp_program = Program::Create(context,
@@ -67,8 +68,8 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
         {
             Program::Shaders
             {
-                Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "ScreenQuad", "ScreenQuadVS" }, { } }),
-                Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "ScreenQuad", "ScreenQuadPS" }, { } }),
+                Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadVS" }, { } }),
+                Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadPS" }, ps_macro_definitions }),
             },
             Program::InputBufferLayouts
             {
@@ -196,6 +197,8 @@ void ScreenQuad::Draw(RenderCommandList& cmd_list) const
 
 void ScreenQuad::UpdateConstantsBuffer() const
 {
+    ITT_FUNCTION_TASK();
+
     ScreenQuadConstants constants = {
         m_settings.blend_color
     };
@@ -206,6 +209,19 @@ void ScreenQuad::UpdateConstantsBuffer() const
             static_cast<Data::Size>(sizeof(constants))
         }
     });
+}
+
+Shader::MacroDefinitions ScreenQuad::GetPixelShaderMacroDefinitions(TextureMode texture_mode)
+{
+    ITT_FUNCTION_TASK();
+
+    switch(texture_mode)
+    {
+    case TextureMode::RgbaFloat:     return { };
+    case TextureMode::RFloatToAlpha: return { { "TTEXEL", "float" }, { "RMASK", "r" }, { "WMASK", "a" } };
+    };
+
+    return { };
 }
 
 } // namespace Methane::Graphics

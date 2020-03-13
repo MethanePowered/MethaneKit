@@ -43,12 +43,19 @@ struct RenderCommandList;
 class ScreenQuad
 {
 public:
+    enum class TextureMode : uint32_t
+    {
+        RgbaFloat       = 0u,
+        RFloatToAlpha,
+    };
+
     struct Settings
     {
         const std::string  name;
         FrameRect   screen_rect;
-        bool        alpha_blending_enabled = false;
-        Color4f     blend_color = Color4f(1.f, 1.f, 1.f, 1.f);
+        bool        alpha_blending_enabled  = false;
+        Color4f     blend_color             = Color4f(1.f, 1.f, 1.f, 1.f);
+        TextureMode texture_mode            = TextureMode::RgbaFloat;
     };
 
     ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings settings);
@@ -61,6 +68,8 @@ public:
 
 private:
     void UpdateConstantsBuffer() const;
+
+    static Shader::MacroDefinitions GetPixelShaderMacroDefinitions(TextureMode texture_mode);
 
     Settings             m_settings;
     const std::string    m_debug_region_name;

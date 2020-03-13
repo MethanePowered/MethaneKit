@@ -233,10 +233,16 @@ enum class PixelFormat
     R32Float,
     R32Uint,
     R32Sint,
+    R16Float,
     R16Uint,
     R16Sint,
+    R16Unorm,
+    R16Snorm,
     R8Uint,
     R8Sint,
+    R8Unorm,
+    R8Snorm,
+    A8Unorm,
     Depth32Float
 };
 

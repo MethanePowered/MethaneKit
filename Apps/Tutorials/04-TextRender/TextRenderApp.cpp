@@ -67,6 +67,9 @@ TextRenderApp::~TextRenderApp()
 {
     // Wait for GPU rendering is completed to release resources
     m_sp_context->WaitForGpu(gfx::Context::WaitFor::RenderComplete);
+
+    // Clear the font library to release all atlas textures
+    gfx::Font::Library::Get().Clear();
 }
 
 void TextRenderApp::Init()
@@ -92,6 +95,7 @@ void TextRenderApp::Init()
             gfx::Badge::FrameCorner::BottomRight,
             16u,
             1.f,
+            gfx::Badge::TextureMode::RFloatToAlpha
         }
     );
 
