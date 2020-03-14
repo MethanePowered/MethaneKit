@@ -52,7 +52,7 @@ public:
         TextureMode texure_mode = TextureMode::RgbaFloat;
     };
 
-    Badge(RenderContext& context, Settings settings = { { 96u, 128u }, FrameCorner::TopRight, 16u, 0.15f });
+    Badge(RenderContext& context, Settings settings = { { 96u, 128u }, FrameCorner::TopRight, 16u, 0.15f, TextureMode::RgbaFloat });
     Badge(RenderContext& context, Ptr<Texture> sp_texture, Settings settings);
 
     void Resize(const FrameSize& frame_size);
