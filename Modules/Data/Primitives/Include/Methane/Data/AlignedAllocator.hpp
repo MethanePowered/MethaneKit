@@ -105,7 +105,7 @@ public:
         return !(*this == other);
     }
 
-    bool operator==(const AlignedAllocator<T, N>& other) const
+    bool operator==(const AlignedAllocator<T, N>&) const
     {
         return true;
     }

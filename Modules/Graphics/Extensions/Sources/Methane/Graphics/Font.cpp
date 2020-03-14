@@ -170,7 +170,7 @@ public:
     int32_t GetKerning(uint32_t left_glyph_index, uint32_t right_glyph_index)
     {
         ITT_FUNCTION_TASK();
-        if (!left_glyph_index || !right_glyph_index)
+        if (!m_has_kerning || !left_glyph_index || !right_glyph_index)
             return 0;
 
         FT_Vector kerning_vec = {};

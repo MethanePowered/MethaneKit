@@ -83,7 +83,7 @@ protected:
 private:
     const Type                m_type;
     Ptr<DeviceBase>           m_sp_device;
-    ResourceManager::Settings m_resource_manager_init_settings = { true };
+    ResourceManager::Settings m_resource_manager_init_settings = { true, {}, {} };
     ResourceManager           m_resource_manager;
     Refs<Callback>            m_callbacks; // ORDER: Keep callbacks before resources for correct auto-delete
     Ptr<CommandQueue>         m_sp_upload_cmd_queue;

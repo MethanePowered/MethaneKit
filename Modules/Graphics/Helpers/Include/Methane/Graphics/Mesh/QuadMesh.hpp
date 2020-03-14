@@ -98,9 +98,9 @@ public:
         }
     }
 
-    const float GetWidth() const noexcept    { return m_width; }
-    const float GetHeight() const noexcept   { return m_height; }
-    const float GetDepthPos() const noexcept { return m_depth_pos; }
+    float GetWidth() const noexcept    { return m_width; }
+    float GetHeight() const noexcept   { return m_height; }
+    float GetDepthPos() const noexcept { return m_depth_pos; }
 
 protected:
     const float m_width;

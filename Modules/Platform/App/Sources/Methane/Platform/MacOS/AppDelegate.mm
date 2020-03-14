@@ -104,18 +104,21 @@ using namespace Methane::Platform;
 - (void) applicationWillFinishLaunching:(NSNotification *)notification
 {
     ITT_FUNCTION_TASK();
+    #pragma unused(notification)
     [self.window makeKeyAndOrderFront:self];
 }
 
 - (void) applicationDidFinishLaunching:(NSNotification *)notification
 {
     ITT_FUNCTION_TASK();
+    #pragma unused(notification)
     [self.window makeFirstResponder: self.viewController.view];
 }
 
 - (void) windowWillEnterFullScreen:(NSNotification *)notification
 {
     ITT_FUNCTION_TASK();
+    #pragma unused(notification)
     AppMac* p_app = [self.viewController getApp];
     assert(!!p_app);
     p_app->SetFullScreenInternal(true);
@@ -124,6 +127,7 @@ using namespace Methane::Platform;
 - (void) windowWillExitFullScreen:(NSNotification *)notification
 {
     ITT_FUNCTION_TASK();
+    #pragma unused(notification)
     AppMac* p_app = [self.viewController getApp];
     assert(!!p_app);
     p_app->SetFullScreenInternal(false);
@@ -132,12 +136,14 @@ using namespace Methane::Platform;
 - (void) applicationWillTerminate:(NSNotification *)notification
 {
     ITT_FUNCTION_TASK();
+    #pragma unused(notification)
     // Insert code here to tear down your application
 }
 
 - (BOOL) applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender
 {
     ITT_FUNCTION_TASK();
+    #pragma unused(sender)
     return YES;
 }
 

@@ -46,7 +46,7 @@ MacOS application view implementation.
 
 CVDisplayLinkRef g_display_link;
 
-static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef display_link,
+static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef /*display_link*/,
                                    const CVTimeStamp* /*now*/,
                                    const CVTimeStamp* /*output_time*/,
                                    CVOptionFlags /*flags_in*/,
@@ -372,9 +372,10 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef display_link,
     return YES;
 }
 
-- (BOOL)acceptsFirstMouse:(NSEvent *)event
+- (BOOL)acceptsFirstMouse:(NSEvent*)event
 {
     ITT_FUNCTION_TASK();
+    #pragma unused(event)
     return YES;
 }
 

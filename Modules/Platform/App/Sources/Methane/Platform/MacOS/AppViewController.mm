@@ -69,6 +69,7 @@ using namespace Methane::Platform;
 - (void) loadView
 {
     ITT_FUNCTION_TASK();
+    
     assert(!!m_p_app);
     m_p_app->InitContext({ self }, { static_cast<uint32_t>(m_frame_rect.size.width), static_cast<uint32_t>(m_frame_rect.size.height) });
 }
@@ -94,11 +95,12 @@ using namespace Methane::Platform;
     m_p_app->Resize( { static_cast<uint32_t>(size.width), static_cast<uint32_t>(size.height) }, false );
 }
 
-- (void) drawInView: (nonnull AppViewMT *) view
+- (void) drawInView: (nonnull AppViewMT*) view
 {
     ITT_FUNCTION_TASK();
+    #pragma unused(view)
+    
     assert(!!m_p_app);
-
     if (!m_is_initialized)
     {
         m_is_initialized = true;
@@ -149,16 +151,18 @@ using namespace Methane::Platform;
 - (void)mouseDown:(NSEvent *)event
 {
     ITT_FUNCTION_TASK();
+    #pragma unused(event)
+    
     assert(!!m_p_app);
-
     m_p_app->InputState().OnMouseButtonChanged(Mouse::Button::Left, Mouse::ButtonState::Pressed);
 }
 
 - (void)mouseUp:(NSEvent *)event
 {
     ITT_FUNCTION_TASK();
+    #pragma unused(event)
+    
     assert(!!m_p_app);
-
     m_p_app->InputState().OnMouseButtonChanged(Mouse::Button::Left, Mouse::ButtonState::Released);
 }
 
@@ -171,16 +175,18 @@ using namespace Methane::Platform;
 - (void)rightMouseDown:(NSEvent *)event
 {
     ITT_FUNCTION_TASK();
+    #pragma unused(event)
+    
     assert(!!m_p_app);
-
     m_p_app->InputState().OnMouseButtonChanged(Mouse::Button::Right, Mouse::ButtonState::Pressed);
 }
 
 - (void)rightMouseUp:(NSEvent *)event
 {
     ITT_FUNCTION_TASK();
+    #pragma unused(event)
+    
     assert(!!m_p_app);
-
     m_p_app->InputState().OnMouseButtonChanged(Mouse::Button::Right, Mouse::ButtonState::Released);
 }
 
@@ -193,8 +199,8 @@ using namespace Methane::Platform;
 - (void)otherMouseDown:(NSEvent *)event
 {
     ITT_FUNCTION_TASK();
+    
     assert(!!m_p_app);
-
     m_p_app->InputState().OnMouseButtonChanged(static_cast<Mouse::Button>(static_cast<int>([event buttonNumber])), Mouse::ButtonState::Pressed);
 }
 
@@ -215,24 +221,26 @@ using namespace Methane::Platform;
 - (void)mouseEntered:(NSEvent *)event
 {
     ITT_FUNCTION_TASK();
+    #pragma unused(event)
+    
     assert(!!m_p_app);
-
     m_p_app->InputState().OnMouseInWindowChanged(true);
 }
 
 - (void)mouseExited:(NSEvent *)event
 {
     ITT_FUNCTION_TASK();
+    #pragma unused(event)
+    
     assert(!!m_p_app);
-
     m_p_app->InputState().OnMouseInWindowChanged(false);
 }
 
 - (void)scrollWheel:(NSEvent *)event
 {
     ITT_FUNCTION_TASK();
+    
     assert(!!m_p_app);
-
     Mouse::Scroll scroll = { [event scrollingDeltaX], -[event scrollingDeltaY] };
     if ([event hasPreciseScrollingDeltas])
         scroll *= 0.1f;

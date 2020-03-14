@@ -101,7 +101,7 @@ public:
     const VertexLayout& GetVertexLayout() const noexcept    { return m_vertex_layout; }
     Data::Size          GetVertexSize() const noexcept      { return m_vertex_size; }
     const Indices&      GetIndices() const noexcept         { return m_indices; }
-    const Index         GetIndex(uint32_t i) const noexcept { return i < m_indices.size() ? m_indices[i] : 0; }
+    Index               GetIndex(uint32_t i) const noexcept { return i < m_indices.size() ? m_indices[i] : 0; }
     Data::Size          GetIndexCount() const noexcept      { return static_cast<Data::Size>(m_indices.size()); }
     Data::Size          GetIndexDataSize() const noexcept   { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
 

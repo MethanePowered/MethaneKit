@@ -46,6 +46,8 @@ BlitCommandListMT::BlitCommandListMT(CommandQueueBase& command_queue)
 void BlitCommandListMT::Reset(const std::string& debug_group)
 {
     ITT_FUNCTION_TASK();
+    #pragma unused(debug_group)
+    
     if (m_mtl_blit_encoder)
         return;
 

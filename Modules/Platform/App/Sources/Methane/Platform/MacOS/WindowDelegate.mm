@@ -53,32 +53,36 @@ using namespace Methane::Platform;
 - (void) windowDidEnterFullScreen:(NSNotification *)notification
 {
     ITT_FUNCTION_TASK();
+    #pragma unused(notification)
+    
     assert(!!m_p_app);
-
     m_p_app->SetFullScreen(true);
 }
 
 - (void) windowDidExitFullScreen:(NSNotification *)notification
 {
     ITT_FUNCTION_TASK();
+    #pragma unused(notification)
+    
     assert(!!m_p_app);
-
     m_p_app->SetFullScreen(false);
 }
 
 - (void) windowDidMiniaturize:(NSNotification *)notification
 {
     ITT_FUNCTION_TASK();
-    assert(!!m_p_app);
+    #pragma unused(notification)
     
+    assert(!!m_p_app);
     m_p_app->Resize(m_p_app->GetFrameSize(), true);
 }
 
 - (void) windowDidDeminiaturize:(NSNotification *)notification
 {
     ITT_FUNCTION_TASK();
-    assert(!!m_p_app);
+    #pragma unused(notification)
     
+    assert(!!m_p_app);
     m_p_app->Resize(m_p_app->GetFrameSize(), false);
 }
 

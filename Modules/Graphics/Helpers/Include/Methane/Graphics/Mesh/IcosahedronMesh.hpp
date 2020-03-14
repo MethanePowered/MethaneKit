@@ -127,7 +127,7 @@ public:
         }
     }
 
-    const float GetRadius() const noexcept  { return m_radius; }
+    float GetRadius() const noexcept  { return m_radius; }
 
     void Subdivide()
     {

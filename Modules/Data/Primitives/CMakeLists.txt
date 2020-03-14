@@ -44,7 +44,8 @@ target_link_libraries(${TARGET}
 if (UNIX)
 
     target_link_libraries(${TARGET}
-        pthread
+        PRIVATE
+            pthread
     )
 
 endif()

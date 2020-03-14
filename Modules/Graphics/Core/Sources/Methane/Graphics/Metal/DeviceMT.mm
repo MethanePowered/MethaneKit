@@ -31,7 +31,7 @@ Metal implementation of the device interface.
 namespace Methane::Graphics
 {
 
-Device::Feature::Mask DeviceMT::GetSupportedFeatures(const id<MTLDevice>& mtl_device)
+Device::Feature::Mask DeviceMT::GetSupportedFeatures(const id<MTLDevice>&)
 {
     ITT_FUNCTION_TASK();
     Device::Feature::Mask supported_features = Device::Feature::Value::BasicRendering;

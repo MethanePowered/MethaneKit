@@ -68,7 +68,7 @@ if(MSVC)
     target_compile_options(MethaneBuildOptions INTERFACE
         # Set maximum warnings level & treat warnings as errors
         /W4 /WX
-        # Disable useless compiler warnings
+        # Disable useless warnings
         /wd4250 # - C4250: inheritance via dominance (used only with abstract interfaces)
         /wd4324 # - C4324: structure was padded due to alignment specifier
     )
@@ -81,6 +81,8 @@ elseif(APPLE)
     target_compile_options(MethaneBuildOptions INTERFACE
         # Set maximum warnings level & treat warnings as errors
         -Werror -Wall -Wextra
+        # Disable useless warnings
+        -Wno-missing-field-initializers
     )
 
 endif()
