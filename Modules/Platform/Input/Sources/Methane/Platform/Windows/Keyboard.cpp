@@ -181,7 +181,7 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
                 next.message == WM_KEYUP ||
                 next.message == WM_SYSKEYUP)
             {
-                if (next.wParam == VK_MENU && (next.lParam & 0x01000000) && next.time == time)
+                if (next.wParam == VK_MENU && (next.lParam & 0x01000000) && next.time == static_cast<DWORD>(time))
                 {
                     // Next message is Right Alt down so discard this
                     return Key::Unknown;

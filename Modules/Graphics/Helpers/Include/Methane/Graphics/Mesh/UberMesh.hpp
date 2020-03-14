@@ -61,7 +61,7 @@ public:
                            [index_offset](const Mesh::Index& index)
                                {
                                    assert(static_cast<Data::Size>(index_offset) + index <= std::numeric_limits<Mesh::Index>::max());
-                                   return index_offset + index;
+                                   return static_cast<Mesh::Index>(index_offset + index);
                                });
         }
         else

@@ -40,7 +40,11 @@ function(add_methane_embedded_textures TARGET EMBEDDED_TEXTURES_DIR EMBEDDED_TEX
         FOLDER "Build/${TARGET}/Resources"
     )
 
-    target_link_libraries(${TARGET}
+    target_link_libraries(${TEXTURE_RESOURCES_TARGET} PRIVATE
+        MethaneBuildOptions
+    )
+
+    target_link_libraries(${TARGET} PRIVATE
         ${TEXTURE_RESOURCES_TARGET}
     )
 

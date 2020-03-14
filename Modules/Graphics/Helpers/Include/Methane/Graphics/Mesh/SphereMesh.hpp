@@ -176,7 +176,7 @@ private:
 
             BaseMeshT::m_indices[index_offset]     = 0;
             BaseMeshT::m_indices[index_offset + 1] = 1;
-            BaseMeshT::m_indices[index_offset + 2] = m_long_lines_count;
+            BaseMeshT::m_indices[index_offset + 2] = static_cast<Index>(m_long_lines_count);
 
             index_offset += 3;
         }
@@ -190,26 +190,26 @@ private:
         {
             for (uint32_t long_line_index = 0; long_line_index < index_long_lines_count; ++long_line_index)
             {
-                BaseMeshT::m_indices[index_offset]     = (lat_line_index      * actual_long_lines_count) + long_line_index + first_vertex_index;
-                BaseMeshT::m_indices[index_offset + 1] = (lat_line_index      * actual_long_lines_count) + long_line_index + first_vertex_index + 1;
-                BaseMeshT::m_indices[index_offset + 2] = (lat_line_index + 1) * actual_long_lines_count  + long_line_index + first_vertex_index;
+                BaseMeshT::m_indices[index_offset]     = static_cast<Index>((lat_line_index      * actual_long_lines_count) + long_line_index + first_vertex_index);
+                BaseMeshT::m_indices[index_offset + 1] = static_cast<Index>((lat_line_index      * actual_long_lines_count) + long_line_index + first_vertex_index + 1);
+                BaseMeshT::m_indices[index_offset + 2] = static_cast<Index>((lat_line_index + 1) * actual_long_lines_count  + long_line_index + first_vertex_index);
 
-                BaseMeshT::m_indices[index_offset + 3] = (lat_line_index + 1) * actual_long_lines_count  + long_line_index + first_vertex_index;
-                BaseMeshT::m_indices[index_offset + 4] = (lat_line_index      * actual_long_lines_count) + long_line_index + first_vertex_index + 1;
-                BaseMeshT::m_indices[index_offset + 5] = (lat_line_index + 1) * actual_long_lines_count  + long_line_index + first_vertex_index + 1;
+                BaseMeshT::m_indices[index_offset + 3] = static_cast<Index>((lat_line_index + 1) * actual_long_lines_count  + long_line_index + first_vertex_index);
+                BaseMeshT::m_indices[index_offset + 4] = static_cast<Index>((lat_line_index      * actual_long_lines_count) + long_line_index + first_vertex_index + 1);
+                BaseMeshT::m_indices[index_offset + 5] = static_cast<Index>((lat_line_index + 1) * actual_long_lines_count  + long_line_index + first_vertex_index + 1);
 
                 index_offset += 6;
             }
 
             if (!has_texcoord)
             {
-                BaseMeshT::m_indices[index_offset]     = (lat_line_index      * actual_long_lines_count) + actual_long_lines_count;
-                BaseMeshT::m_indices[index_offset + 1] = (lat_line_index      * actual_long_lines_count) + 1;
-                BaseMeshT::m_indices[index_offset + 2] = (lat_line_index + 1) * actual_long_lines_count  + actual_long_lines_count;
+                BaseMeshT::m_indices[index_offset]     = static_cast<Index>((lat_line_index      * actual_long_lines_count) + actual_long_lines_count);
+                BaseMeshT::m_indices[index_offset + 1] = static_cast<Index>((lat_line_index      * actual_long_lines_count) + 1);
+                BaseMeshT::m_indices[index_offset + 2] = static_cast<Index>((lat_line_index + 1) * actual_long_lines_count  + actual_long_lines_count);
 
-                BaseMeshT::m_indices[index_offset + 3] = (lat_line_index + 1) * actual_long_lines_count  + actual_long_lines_count;
-                BaseMeshT::m_indices[index_offset + 4] = (lat_line_index      * actual_long_lines_count) + 1;
-                BaseMeshT::m_indices[index_offset + 5] = (lat_line_index + 1) * actual_long_lines_count  + 1;
+                BaseMeshT::m_indices[index_offset + 3] = static_cast<Index>((lat_line_index + 1) * actual_long_lines_count  + actual_long_lines_count);
+                BaseMeshT::m_indices[index_offset + 4] = static_cast<Index>((lat_line_index      * actual_long_lines_count) + 1);
+                BaseMeshT::m_indices[index_offset + 5] = static_cast<Index>((lat_line_index + 1) * actual_long_lines_count  + 1);
 
                 index_offset += 6;
             }
@@ -221,16 +221,16 @@ private:
 
             for (uint32_t long_line_index = 0; long_line_index < index_long_lines_count; ++long_line_index)
             {
-                BaseMeshT::m_indices[index_offset]     = (vertices_count - 1);
-                BaseMeshT::m_indices[index_offset + 1] = (vertices_count - 1) - (long_line_index + 2);
-                BaseMeshT::m_indices[index_offset + 2] = (vertices_count - 1) - (long_line_index + 1);
+                BaseMeshT::m_indices[index_offset]     = static_cast<Index>(vertices_count - 1);
+                BaseMeshT::m_indices[index_offset + 1] = static_cast<Index>((vertices_count - 1) - (long_line_index + 2));
+                BaseMeshT::m_indices[index_offset + 2] = static_cast<Index>((vertices_count - 1) - (long_line_index + 1));
 
                 index_offset += 3;
             }
 
-            BaseMeshT::m_indices[index_offset]     = (vertices_count - 1);
-            BaseMeshT::m_indices[index_offset + 1] = (vertices_count - 2);
-            BaseMeshT::m_indices[index_offset + 2] = (vertices_count - 1) - actual_long_lines_count;
+            BaseMeshT::m_indices[index_offset]     = static_cast<Index>(vertices_count - 1);
+            BaseMeshT::m_indices[index_offset + 1] = static_cast<Index>(vertices_count - 2);
+            BaseMeshT::m_indices[index_offset + 2] = static_cast<Index>((vertices_count - 1) - actual_long_lines_count);
         }
     }
 

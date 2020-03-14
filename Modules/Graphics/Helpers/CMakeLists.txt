@@ -44,12 +44,15 @@ target_include_directories(${TARGET}
 )
 
 target_link_libraries(${TARGET}
-    MethaneDataPrimitives
-    MethaneDataAnimation
-    MethanePlatformUtils
-    MethaneInstrumentation
-    PerlinNoise
-    CML
+    PUBLIC
+        MethaneDataAnimation
+        MethaneDataPrimitives
+        PerlinNoise
+    PRIVATE
+        MethaneBuildOptions
+        MethanePlatformUtils
+        MethaneInstrumentation
+        CML
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})

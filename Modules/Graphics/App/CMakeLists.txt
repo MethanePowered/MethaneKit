@@ -29,12 +29,16 @@ target_include_directories(${TARGET}
 )
 
 target_link_libraries(${TARGET}
+PUBLIC
     MethaneDataPrimitives
     MethanePlatformApp
     MethanePlatformUtils
+    MethanePlatformInput
     MethaneGraphicsCore
     MethaneGraphicsHelpers
     MethaneInstrumentation
+PRIVATE
+    MethaneBuildOptions
 )
 
 set_target_properties(${TARGET}

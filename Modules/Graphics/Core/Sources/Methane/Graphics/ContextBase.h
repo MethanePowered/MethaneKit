@@ -77,7 +77,7 @@ protected:
     void SetDevice(DeviceBase& device);
 
     // ContextBase interface
-    virtual void OnGpuWaitStart(WaitFor wait_for) {}
+    virtual void OnGpuWaitStart(WaitFor) {}
     virtual void OnGpuWaitComplete(WaitFor wait_for);
 
 private:

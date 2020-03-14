@@ -45,25 +45,27 @@ add_methane_shaders(${TARGET} "${HLSL_SOURCES}" "6_0")
 add_methane_embedded_textures(${TARGET} "${IMAGES_DIR}" "${TEXTURES}")
 
 target_link_libraries(${TARGET}
-    MethaneCommonPrimitives
-    MethanePlatformUtils
-    MethaneGraphicsCore
-    MethaneInstrumentation
-    freetype
+    PRIVATE
+        MethaneBuildOptions
+        MethaneCommonPrimitives
+        MethanePlatformUtils
+        MethaneGraphicsCore
+        MethaneInstrumentation
+        freetype
 )
 
 if (METHANE_USE_OPEN_IMAGE_IO)
-    target_link_libraries(${TARGET} OpenImageIO)
+    target_link_libraries(${TARGET} PRIVATE OpenImageIO)
     target_compile_definitions(${TARGET}
         PRIVATE
-        USE_OPEN_IMAGE_IO
+            USE_OPEN_IMAGE_IO
     )
     set_target_properties(${TARGET}
         PROPERTIES
-        PREREQUISITE_MODULES "OpenImageIO"
+            PREREQUISITE_MODULES "OpenImageIO"
     )
 else()
-    target_link_libraries(${TARGET} STB)
+    target_link_libraries(${TARGET} PRIVATE STB)
 endif()
 
 target_include_directories(${TARGET}

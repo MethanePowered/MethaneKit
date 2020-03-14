@@ -33,9 +33,12 @@ target_include_directories(${TARGET}
 )
 
 target_link_libraries(${TARGET}
-    MethaneInstrumentation
-    MethanePlatformUtils
-    CML
+    PUBLIC
+        CML
+    PRIVATE
+        MethaneBuildOptions
+        MethaneInstrumentation
+        MethanePlatformUtils
 )
 
 if (UNIX)

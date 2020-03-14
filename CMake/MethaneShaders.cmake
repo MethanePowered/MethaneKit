@@ -277,6 +277,10 @@ function(add_methane_shaders TARGET HLSL_SOURCES PROFILE_VER)
             ${SHADERS_OBJ_FILES}
         )
 
+        target_link_libraries(${SHADER_RESOURCES_TARGET} PRIVATE
+            MethaneBuildOptions
+        )
+
         foreach(SHADERS_HLSL ${HLSL_SOURCES})
             compile_hlsl_shaders(${TARGET} ${SHADERS_HLSL} ${PROFILE_VER} OUT_COMPILED_SHADER_BINS)
         endforeach()
@@ -286,7 +290,7 @@ function(add_methane_shaders TARGET HLSL_SOURCES PROFILE_VER)
             ${CONFIG_SOURCES}
         )
 
-        target_link_libraries(${TARGET}
+        target_link_libraries(${TARGET} PRIVATE
             ${SHADER_RESOURCES_TARGET}
         )
 

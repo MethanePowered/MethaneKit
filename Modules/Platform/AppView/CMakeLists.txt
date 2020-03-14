@@ -21,7 +21,7 @@ elseif(APPLE)
         ${SOURCES_PLATFORM_DIR}/AppViewMT.mm
     )
 
-    set(LIBRARIES
+    set(PLATFORM_LIBRARIES
         "-framework AppKit \
          -framework Metal \
          -framework QuartzCore"
@@ -57,8 +57,10 @@ add_library(${TARGET} STATIC
 )
 
 target_link_libraries(${TARGET}
-    ${LIBRARIES}
-    MethaneInstrumentation
+    PRIVATE
+        MethaneBuildOptions
+        MethaneInstrumentation
+        ${PLATFORM_LIBRARIES}
 )
 
 target_include_directories(${TARGET}

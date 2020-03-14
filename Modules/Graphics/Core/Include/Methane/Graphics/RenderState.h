@@ -173,8 +173,8 @@ public:
         };
         
         bool           enabled           = false;
-        uint32_t       read_mask         = static_cast<uint32_t>(~0x0);
-        uint32_t       write_mask        = static_cast<uint32_t>(~0x0);
+        uint8_t        read_mask         = static_cast<uint8_t>(~0x0);
+        uint8_t        write_mask        = static_cast<uint8_t>(~0x0);
         FaceOperations front_face;
         FaceOperations back_face;
 

@@ -55,8 +55,8 @@ public:
     void Complete(uint32_t frame_index) override;
 
     // CommandList interface
-    void PushDebugGroup(const std::string& name) override   { throw std::logic_error("Can no use debug groups on parallel render command list."); }
-    void PopDebugGroup() override                           { throw std::logic_error("Can no use debug groups on parallel render command list."); }
+    void PushDebugGroup(const std::string&) override   { throw std::logic_error("Can no use debug groups on parallel render command list."); }
+    void PopDebugGroup() override                      { throw std::logic_error("Can no use debug groups on parallel render command list."); }
     void Commit() override;
 
     // Object interface

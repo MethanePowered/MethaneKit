@@ -62,9 +62,6 @@ ParallelRenderCommandListDX::ParallelRenderCommandListDX(CommandQueueBase& cmd_b
     // Native D3D12 render-pass usage is disabled to do the render target setup and clears
     // in "begin" command list once before parallel rendering
     GetPassDX().SetNativeRenderPassUsage(false);
-
-    const wrl::ComPtr<ID3D12Device>& cp_device = GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice();
-    assert(!!cp_device);
 }
 
 void ParallelRenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)

@@ -65,7 +65,7 @@ static const GraphicsApp::AllSettings g_app_settings =  // Application settings:
         gfx::PixelFormat::BGRA8Unorm,                   // - color_format
         gfx::PixelFormat::Depth32Float,                 // - depth_stencil_format
         gfx::Color4f(0.0f, 0.2f, 0.4f, 1.0f),           // - clear_color
-        gfx::DepthStencil{ 1.f, 0 },                    // - clear_depth_stencil
+        gfx::DepthStencil(1.f, gfx::Stencil(0)),        // - clear_depth_stencil
         3,                                              // - frame_buffers_count
         false,                                          // - vsync_enabled
     }
@@ -432,8 +432,8 @@ bool ShadowCubeApp::Render()
     frame.final_pass.cube.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->GetFinalPassUniforms()), mesh_uniforms_buffer_size } });
 
     // Record commands for shadow & final render passes
-    RenderScene(m_shadow_pass, frame.shadow_pass, *frame.shadow_pass.sp_rt_texture);
-    RenderScene(m_final_pass, frame.final_pass, *frame.shadow_pass.sp_rt_texture);
+    RenderScene(m_shadow_pass, frame.shadow_pass);
+    RenderScene(m_final_pass, frame.final_pass);
 
     // Execute rendering commands and present frame to screen
     m_sp_context->GetRenderCommandQueue().Execute({
@@ -445,7 +445,7 @@ bool ShadowCubeApp::Render()
     return true;
 }
 
-void ShadowCubeApp::RenderScene(const RenderPass &render_pass, ShadowCubeFrame::PassResources &render_pass_resources, gfx::Texture &shadow_texture)
+void ShadowCubeApp::RenderScene(const RenderPass &render_pass, ShadowCubeFrame::PassResources &render_pass_resources)
 {
     gfx::RenderCommandList& cmd_list = *render_pass_resources.sp_cmd_list;
 

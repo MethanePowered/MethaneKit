@@ -59,11 +59,6 @@ if (WIN32)
         Shcore
     )
 
-    set(EXTRA_COMPILE_OPTIONS
-        # Disable useless compiler warnings
-        /wd4250 # C4250: this warning is compiler bug: https://stackoverflow.com/questions/469508/visual-studio-compiler-warning-c4250-class1-inherits-class2member-via-d
-    )
-
 elseif(APPLE)
 
     set(PLATFORM_SOURCES
@@ -165,16 +160,6 @@ else() # Linux
 
 endif()
 
-set(LIBRARIES ${PLATFORM_LIBRARIES}
-    MethaneCommonPrimitives
-    MethaneDataPrimitives
-    MethaneDataRangeSet
-    MethanePlatformUtils
-    MethanePlatformAppView
-    MethaneGraphicsHelpers
-    MethaneInstrumentation
-)
-
 set(HEADERS
     ${INCLUDE_DIR}/Types.h
     ${INCLUDE_DIR}/Device.h
@@ -266,7 +251,17 @@ add_library(${TARGET} STATIC
 )
 
 target_link_libraries(${TARGET}
-    ${LIBRARIES}
+    PUBLIC
+        MethaneDataPrimitives
+        MethaneGraphicsHelpers
+        MethanePlatformAppView
+    PRIVATE
+        MethaneBuildOptions
+        MethaneCommonPrimitives
+        MethaneDataRangeSet
+        MethanePlatformUtils
+        MethaneInstrumentation
+        ${PLATFORM_LIBRARIES}
 )
 
 target_include_directories(${TARGET}
@@ -274,11 +269,6 @@ target_include_directories(${TARGET}
         Sources
     PUBLIC
         Include
-)
-
-target_compile_options(${TARGET}
-    PUBLIC
-    ${EXTRA_COMPILE_OPTIONS}
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})

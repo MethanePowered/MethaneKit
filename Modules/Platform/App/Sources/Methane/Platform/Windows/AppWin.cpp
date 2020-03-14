@@ -408,7 +408,8 @@ void AppWin::ScheduleAlert()
         return;
 
     const BOOL post_result = PostMessage(m_env.window_handle, WM_ALERT, 0, 0);
-    assert(post_result != 0);
+    if (!post_result)
+        throw std::runtime_error("Failed to post window message.");
 }
 
 void AppWin::SetWindowTitle(const std::string& title_text)
@@ -417,7 +418,8 @@ void AppWin::SetWindowTitle(const std::string& title_text)
     assert(!!m_env.window_handle);
 
     BOOL set_result = SetWindowTextW(m_env.window_handle, nowide::widen(title_text).c_str());
-    assert(set_result);
+    if (!set_result)
+        throw std::runtime_error("Failed to set window text.");
 }
 
 bool AppWin::SetFullScreen(bool is_full_screen)
@@ -473,7 +475,8 @@ void AppWin::Close()
     if (m_env.window_handle)
     {
         BOOL post_result = PostMessage(m_env.window_handle, WM_CLOSE, 0, 0);
-        assert(post_result != 0);
+        if (!post_result)
+            throw std::runtime_error("Failed to post window message.");
     }
     else
     {

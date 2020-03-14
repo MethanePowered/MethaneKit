@@ -138,7 +138,7 @@ void ContextBase::RemoveCallback(Callback& callback)
     m_callbacks.erase(callback_it);
 }
 
-void ContextBase::OnGpuWaitComplete(WaitFor wait_for)
+void ContextBase::OnGpuWaitComplete(WaitFor)
 {
     ITT_FUNCTION_TASK();
     m_resource_manager.GetReleasePool().ReleaseResources();

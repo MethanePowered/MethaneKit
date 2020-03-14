@@ -169,7 +169,7 @@ void RenderCommandListBase::DrawIndexed(Primitive primitive_type, Buffer& index_
 }
 
 void RenderCommandListBase::Draw(Primitive primitive_type, uint32_t vertex_count, uint32_t start_vertex,
-                                 uint32_t instance_count, uint32_t start_instance)
+                                 uint32_t instance_count, uint32_t)
 {
     ITT_FUNCTION_TASK();
 
@@ -197,13 +197,13 @@ void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex
         assert(!!p_vertex_buffer);
         const BufferBase& vertex_buffer = *p_vertex_buffer;
         const uint32_t    vertex_count  = vertex_buffer.GetFormattedItemsCount();
-        if (draw_start_vertex + draw_vertex_count <= vertex_count)
-            return;
-
-        throw std::invalid_argument("Can not draw starting from vertex " + std::to_string(draw_start_vertex) +
-                                    (draw_vertex_count ? " with " + std::to_string(draw_vertex_count) + " vertex count " : "") +
-                                    " which is out of bound for vertex buffer \"" + vertex_buffer.GetName() +
-                                    "\" (size " + std::to_string(vertex_count) + ").");
+        if (draw_start_vertex + draw_vertex_count > vertex_count)
+        {
+            throw std::invalid_argument("Can not draw starting from vertex " + std::to_string(draw_start_vertex) +
+                                        (draw_vertex_count ? " with " + std::to_string(draw_vertex_count) + " vertex count " : "") +
+                                        " which is out of bound for vertex buffer \"" + vertex_buffer.GetName() +
+                                        "\" (size " + std::to_string(vertex_count) + ").");
+        }
     }
 }
 

@@ -121,13 +121,13 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
     source_group("Source Files" FILES ${SOURCES})
     source_group("Source Shaders" FILES ${SHADERS_HLSL} ${SHADERS_CONFIG})
 
-    target_link_libraries(${TARGET}
+    target_link_libraries(${TARGET} PRIVATE
         MethaneGraphicsKit
+        MethaneBuildOptions
     )
 
-    target_include_directories(${TARGET}
-        PUBLIC
-            .
+    target_include_directories(${TARGET} PRIVATE
+        .
     )
 
     get_target_property(METHANE_PREREQUISITE_MODULES MethaneGraphicsKit PREREQUISITE_MODULES)

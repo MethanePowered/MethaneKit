@@ -33,6 +33,8 @@ target_link_libraries(${TARGET}
         MethaneCommonPrimitives
         ittnotify
         nowide_static
+    PRIVATE
+        MethaneBuildOptions
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})

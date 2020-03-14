@@ -24,6 +24,8 @@ target_include_directories(${TARGET}
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneInstrumentation
+    PRIVATE
+        MethaneBuildOptions
 )
 
 set_target_properties(${TARGET}

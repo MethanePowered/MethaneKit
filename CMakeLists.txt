@@ -34,6 +34,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CTEST_OUTPUT_ON_FAILURE ON)
 set(PARSE_CATCH_TESTS_VERBOSE OFF)
 
+add_library(MethaneBuildOptions INTERFACE)
+
 if(MSVC)
 
     include(FindWindowsSDK)
@@ -55,22 +57,37 @@ if(MSVC)
 
     set(VS_STARTUP_PROJECT MethaneAsteroids)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>") # use /MT static runtime linking
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")                           # enable multi-threaded build
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")                           # enable multi-threaded build with MSVC
+    string(REPLACE "/W3 " "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 
-    include_directories(${WINDOWSSDK_INCLUDE_DIRS})
-    link_directories(${WINDOWSSDK_LIBRARY_DIRS})
-    add_definitions(-DUNICODE -D_UNICODE -DNOMINMAX -DWIN32_LEAN_AND_MEAN -DUSE_PIX)
+    target_include_directories(MethaneBuildOptions INTERFACE ${WINDOWSSDK_INCLUDE_DIRS})
+    target_link_directories(MethaneBuildOptions INTERFACE ${WINDOWSSDK_LIBRARY_DIRS})
+    target_compile_definitions(MethaneBuildOptions INTERFACE
+        -DUNICODE -D_UNICODE -DNOMINMAX -DWIN32_LEAN_AND_MEAN -DUSE_PIX
+    )
+    target_compile_options(MethaneBuildOptions INTERFACE
+        # Set maximum warnings level & treat warnings as errors
+        /W4 /WX
+        # Disable useless compiler warnings
+        /wd4250 # - C4250: inheritance via dominance (used only with abstract interfaces)
+        /wd4324 # - C4324: structure was padded due to alignment specifier
+    )
 
 elseif(APPLE)
 
     set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
     set(CMAKE_INSTALL_RPATH "@executable_path")
 
+    target_compile_options(MethaneBuildOptions INTERFACE
+        # Set maximum warnings level & treat warnings as errors
+        -Werror -Wall -Wextra
+    )
+
 endif()
 
 message(STATUS "Methane Kit version ${METHANE_VERSION_FULL}")
 split_by_first_delimiter("${METHANE_VERSION_BUILD}" "." METHANE_VERSION_BUILD_MAJOR METHANE_VERSION_BUILD_MINOR)
-add_definitions(
+target_compile_definitions(MethaneBuildOptions INTERFACE
     -DMETHANE_VERSION_MAJOR=${METHANE_VERSION_MAJOR}
     -DMETHANE_VERSION_MINOR=${METHANE_VERSION_MINOR}
     -DMETHANE_VERSION_BUILD=${METHANE_VERSION_BUILD_MAJOR}
@@ -82,12 +99,12 @@ endif()
 
 if(METHANE_ITT_INSTRUMENTATION_ENABLED)
     message(STATUS "Methane ITT instrumentation is enabled")
-    add_definitions(-DITT_INSTRUMENTATION_ENABLED)
+    target_compile_definitions(MethaneBuildOptions INTERFACE -DITT_INSTRUMENTATION_ENABLED)
 endif()
 
 if(METHANE_SCOPE_TIMERS_ENABLED)
     message(STATUS "Methane scope timers are enabled")
-    add_definitions(-DSCOPE_TIMERS_ENABLED)
+    target_compile_definitions(MethaneBuildOptions INTERFACE -DSCOPE_TIMERS_ENABLED)
 endif()
 
 if(METHANE_SHADERS_CODEVIEW_ENABLED)
@@ -100,7 +117,7 @@ endif()
 
 if(METHANE_COMMAND_EXECUTION_LOGGING)
     message(STATUS "Methane command execution debug logging is enabled")
-    add_definitions(-DCOMMAND_EXECUTION_LOGGING)
+    target_compile_definitions(MethaneBuildOptions INTERFACE -DCOMMAND_EXECUTION_LOGGING)
 endif()
 
 if (CMAKE_INSTALL_PREFIX AND EXISTS "${CMAKE_INSTALL_PREFIX}/bin/ctest")

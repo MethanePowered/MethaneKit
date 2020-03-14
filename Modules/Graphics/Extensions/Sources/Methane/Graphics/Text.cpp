@@ -56,8 +56,6 @@ Text::Text(RenderContext& context, Font& font, Settings settings)
 {
     ITT_FUNCTION_TASK();
 
-    Font::Library& font_library = Font::Library::Get();
-
     QuadMesh<TextVertex> quad_mesh(TextVertex::layout, 2.f, 2.f);
 
     const RenderContext::Settings& context_settings = context.GetSettings();

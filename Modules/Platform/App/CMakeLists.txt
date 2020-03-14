@@ -30,7 +30,7 @@ elseif(APPLE)
         ${SOURCES_PLATFORM_DIR}/AppViewController.mm
     )
 
-    set(LIBRARIES
+    set(PLATFORM_LIBRARIES
         "-framework AppKit"
     )
 
@@ -45,16 +45,6 @@ else() # Linux
     )
 
 endif()
-
-set(LIBRARIES ${LIBRARIES}
-    MethaneDataPrimitives
-    MethanePlatformUtils
-    MethanePlatformInput
-    MethanePlatformAppView
-    MethaneInstrumentation
-    nowide_static
-    CLI11
-)
 
 set(HEADERS ${PLATFORM_HEADERS}
     ${INCLUDE_DIR}/App.h
@@ -73,7 +63,17 @@ add_library(${TARGET} STATIC
 )
 
 target_link_libraries(${TARGET}
-    ${LIBRARIES}
+    PUBLIC
+        CLI11
+    PRIVATE
+        MethaneBuildOptions
+        MethaneDataPrimitives
+        MethanePlatformUtils
+        MethanePlatformInput
+        MethanePlatformAppView
+        MethaneInstrumentation
+        nowide_static
+        ${PLATFORM_LIBRARIES}
 )
 
 target_compile_definitions(${TARGET}

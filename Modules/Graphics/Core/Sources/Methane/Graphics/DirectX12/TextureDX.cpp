@@ -223,11 +223,14 @@ ImageTextureDX::TextureDX(ContextBase& render_context, const Settings& settings,
     const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
     const UINT number_of_subresources = GetRequiredSubresourceCount();
     const UINT64 upload_buffer_size   = GetRequiredIntermediateSize(GetNativeResource(), 0, number_of_subresources);
+    const CD3DX12_HEAP_PROPERTIES heap_properties(D3D12_HEAP_TYPE_UPLOAD);
+    const CD3DX12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(upload_buffer_size);
+
     ThrowIfFailed(
         cp_device->CreateCommittedResource(
-            &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+            &heap_properties,
             D3D12_HEAP_FLAG_NONE,
-            &CD3DX12_RESOURCE_DESC::Buffer(upload_buffer_size),
+            &resource_desc,
             D3D12_RESOURCE_STATE_GENERIC_READ,
             nullptr,
             IID_PPV_ARGS(&m_cp_upload_resource)
@@ -267,8 +270,8 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         tex_desc = CD3DX12_RESOURCE_DESC::Tex1D(
             TypeConverterDX::DataFormatToDXGI(settings.pixel_format),
             settings.dimensions.width,
-            settings.array_length,
-            mip_levels_count
+            static_cast<UINT16>(settings.array_length),
+            static_cast<UINT16>(mip_levels_count)
         );
 
         srv_desc.Texture1DArray.MipLevels   = mip_levels_count;
@@ -295,8 +298,8 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
             TypeConverterDX::DataFormatToDXGI(settings.pixel_format),
             settings.dimensions.width,
             settings.dimensions.height,
-            settings.array_length,
-            mip_levels_count
+            static_cast<UINT16>(settings.array_length),
+            static_cast<UINT16>(mip_levels_count)
         );
 
         srv_desc.Texture2DArray.MipLevels   = mip_levels_count;
@@ -315,8 +318,8 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
             TypeConverterDX::DataFormatToDXGI(settings.pixel_format),
             settings.dimensions.width,
             settings.dimensions.height,
-            settings.dimensions.depth,
-            mip_levels_count
+            static_cast<UINT16>(settings.dimensions.depth),
+            static_cast<UINT16>(mip_levels_count)
         );
         srv_desc.Texture3D.MipLevels = mip_levels_count;
         srv_desc.ViewDimension       = D3D12_SRV_DIMENSION_TEXTURE3D;
@@ -339,8 +342,8 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
             TypeConverterDX::DataFormatToDXGI(settings.pixel_format),
             settings.dimensions.width,
             settings.dimensions.height,
-            settings.dimensions.depth * settings.array_length,
-            mip_levels_count
+            static_cast<UINT16>(settings.dimensions.depth * settings.array_length),
+            static_cast<UINT16>(mip_levels_count)
         );
 
         srv_desc.TextureCubeArray.First2DArrayFace = 0;

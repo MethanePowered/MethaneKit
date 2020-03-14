@@ -6,18 +6,11 @@ get_module_dirs("Methane/Platform")
 
 if(APPLE)
 
-    set(LIBRARIES
+    set(PLATFORM_LIBRARIES
         "-framework AppKit"
     )
 
 endif()
-
-set(LIBRARIES ${LIBRARIES}
-    MethaneCommonPrimitives
-    MethaneDataPrimitives
-    MethanePlatformUtils
-    MethaneInstrumentation
-)
 
 set(HEADERS
     ${INCLUDE_PLATFORM_DIR}/Keyboard.h
@@ -45,7 +38,14 @@ add_library(${TARGET} STATIC
 )
 
 target_link_libraries(${TARGET}
-    ${LIBRARIES}
+    PUBLIC
+        MethaneDataPrimitives
+    PRIVATE
+        MethaneBuildOptions
+        MethaneCommonPrimitives
+        MethanePlatformUtils
+        MethaneInstrumentation
+        ${PLATFORM_LIBRARIES}
 )
 
 target_include_directories(${TARGET}

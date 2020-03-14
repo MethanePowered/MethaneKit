@@ -120,7 +120,7 @@ private:
         void Release();
     };
 
-    void RenderScene(const RenderPass &render_pass, ShadowCubeFrame::PassResources &render_pass_resources, gfx::Texture &shadow_texture);
+    void RenderScene(const RenderPass &render_pass, ShadowCubeFrame::PassResources &render_pass_resources);
 
     const float                 m_scene_scale;
     const Constants             m_scene_constants;

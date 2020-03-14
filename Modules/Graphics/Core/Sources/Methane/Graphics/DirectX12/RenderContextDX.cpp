@@ -165,9 +165,6 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
     // With tearing support enabled we will handle ALT+Enter key presses in the window message loop rather than let DXGI handle it by calling SetFullscreenState
     ThrowIfFailed(cp_dxgi_factory->MakeWindowAssociation(m_platform_env.window_handle, DXGI_MWA_NO_ALT_ENTER));
 
-    const wrl::ComPtr<ID3D12Device>& cp_device = static_cast<DeviceDX&>(device).GetNativeDevice();
-    assert(!!cp_device);
-
     UpdateFrameBufferIndex();
 
     ContextDX<RenderContextBase>::Initialize(device, deferred_heap_allocation);
