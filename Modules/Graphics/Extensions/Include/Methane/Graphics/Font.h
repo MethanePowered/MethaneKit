@@ -83,22 +83,20 @@ public:
         Point2i    advance;
         Ptr<Glyph> sp_glyph;
 
-        inline static bool inversed_less_comparison = true;
-        bool operator<(const Char& other) const noexcept
-        { return inversed_less_comparison ? rect.size.GetPixelsCount() > other.rect.size.GetPixelsCount()
-                                          : rect.size.GetPixelsCount() <  other.rect.size.GetPixelsCount(); }
+        bool operator<(const Char& other) const noexcept { return rect.size.GetPixelsCount() < other.rect.size.GetPixelsCount(); }
+        bool operator>(const Char& other) const noexcept { return rect.size.GetPixelsCount() > other.rect.size.GetPixelsCount(); }
 
         void DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_stride) const;
     };
 
-    using Chars = std::vector<Char>;
-
     const Settings& GetSettings() const { return m_settings; }
 
+    void AddChars(const std::string& unicode_characters);
     void AddChars(const std::wstring& characters);
     void AddChar(Char::Code char_code);
     bool HasChar(Char::Code char_code);
     const Char& GetChar(Char::Code char_code) const;
+    Refs<const Char> GetChars() const;
 
     const Ptr<Texture>& GetAtlasTexturePtr(Context& context);
     Texture& GetAtlasTexture(Context& context) { return *GetAtlasTexturePtr(context); }
@@ -109,15 +107,20 @@ protected:
     // Font can be created only via Font::Library::Add
     Font(const Data::Provider& data_provider, const Settings& settings);
 
+    Refs<Char> GetMutableChars();
+    bool PackCharsToAtlas(float pixels_reserve_multiplier);
+
 private:
     class Face;
+    class AtlasPacker;
     using TextureByContext = std::map<Context*, Ptr<Texture>>;
     using CharByCode = std::map<Char::Code, Char>;
 
-    Settings         m_settings;
-    UniquePtr<Face>  m_sp_face;
-    CharByCode       m_char_by_code;
-    TextureByContext m_atlas_textures;
+    Settings                m_settings;
+    UniquePtr<Face>         m_sp_face;
+    UniquePtr<AtlasPacker>  m_sp_atlas_packer;
+    CharByCode              m_char_by_code;
+    TextureByContext        m_atlas_textures;
 };
 
 } // namespace Methane::Graphics
