@@ -76,13 +76,16 @@ void TextRenderApp::Init()
 {
     GraphicsApp::Init();
 
+    const gfx::RenderContext::Settings& context_settings = m_sp_context->GetSettings();
+
     // Add font to library
     gfx::Font::Library::Get().Clear();
     m_sp_font = gfx::Font::Library::Get().Add(
         Data::FileProvider::Get(),
         gfx::Font::Settings{
-            "Default", g_font_path, 16, m_sp_context->GetFontResolutionDPI(),
+            "Default", g_font_path, 24, m_sp_context->GetFontResolutionDPI(),
             L" !\"#&'()*,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ\\_abcdefghijklmnopqrstuvwxyz"
+            L"АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
         }
     );
 
@@ -100,12 +103,14 @@ void TextRenderApp::Init()
     );
 
     // Create text rendering primitive bound to the font object
+
     m_sp_text = std::make_shared<gfx::Text>(*m_sp_context, *m_sp_font,
         gfx::Text::Settings
         {
             "Label",
-            "Wow... The quick brown fox jumps over the lazy dog!",
-            gfx::FrameRect{ { 50, 100 }, { 800u, 200u } },
+            "Wow... The quick brown fox jumps over the lazy dog!\n"
+            "Cъешь ещё этих мягких французских булок, да выпей чаю.",
+            gfx::FrameRect{ { 50, 100 }, { context_settings.frame_size.width * 2 / 3, context_settings.frame_size.width / 4 } },
             gfx::Color4f(1.f, 1.f, 1.f, 1.f)
         }
     );

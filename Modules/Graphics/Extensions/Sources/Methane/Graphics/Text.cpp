@@ -61,7 +61,8 @@ struct Text::Mesh
         ITT_FUNCTION_TASK();
 
         // Left-Bottom corner of the current character in text line
-        FrameRect::Point char_pos = { 0, font.GetMaxGlyphSize().height };
+        const uint32_t line_height = font.GetMaxGlyphSize().height;
+        FrameRect::Point char_pos = { 0, line_height };
 
         const Refs<const Font::Char> font_chars = font.GetTextChars(text);
         vertices.reserve(font_chars.size() * 4);
@@ -72,6 +73,11 @@ struct Text::Mesh
         {
             const Font::Char& font_char = font_char_ref.get();
             assert(!!font_char);
+            if (font_char.IsLineBreak())
+            {
+                char_pos = { 0u, char_pos.GetY() + line_height };
+                continue;
+            }
 
             char_pos += p_prev_font_char ? font.GetKerning(*p_prev_font_char, font_char) : FrameRect::Point();
             AddCharQuad(font_char, char_pos, viewport_size, atlas_size);

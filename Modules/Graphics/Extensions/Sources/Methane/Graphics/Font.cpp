@@ -423,6 +423,10 @@ const Font::Char& Font::GetChar(Char::Code char_code) const
 {
     ITT_FUNCTION_TASK();
     static const Char s_none_char = {};
+    static const Char s_line_break(static_cast<Char::Code>('\n'));
+    if (char_code == s_line_break.code)
+        return s_line_break;
+
     const auto char_by_code_it = m_char_by_code.find(char_code);
     return char_by_code_it == m_char_by_code.end() ? s_none_char : char_by_code_it->second;
 }
@@ -443,7 +447,7 @@ Refs<const Font::Char> Font::GetTextChars(const std::string& text)
     ITT_FUNCTION_TASK();
     Refs<const Char> font_chars;
     const std::wstring characters = nowide::widen(text);
-    for (wchar_t char_code : text)
+    for (wchar_t char_code : characters)
     {
         font_chars.emplace_back(AddChar(static_cast<Char::Code>(char_code)));
     }
@@ -552,6 +556,12 @@ void Font::ClearAtlasTextures()
 {
     ITT_FUNCTION_TASK();
     m_atlas_textures.clear();
+}
+
+Font::Char::Char(Code code)
+    : code(code)
+{
+    ITT_FUNCTION_TASK();
 }
 
 Font::Char::Char(Code code, FrameRect rect, Point2i offset, Point2i advance, UniquePtr<Glyph>&& sp_glyph)

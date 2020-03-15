@@ -84,6 +84,7 @@ public:
         Point2i    advance;
 
         Char() = default;
+        explicit Char(Code code);
         Char(Code code, FrameRect rect, Point2i offset, Point2i advance, UniquePtr<Glyph>&& sp_glyph);
 
         bool operator<(const Char& other) const noexcept { return rect.size.GetPixelsCount() < other.rect.size.GetPixelsCount(); }
@@ -92,6 +93,7 @@ public:
 
         void DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_stride) const;
         uint32_t GetGlyphIndex() const;
+        bool     IsLineBreak() const      { return code == static_cast<Code>('\n'); }
 
     private:
         UniquePtr<Glyph> m_sp_glyph;
