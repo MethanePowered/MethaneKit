@@ -86,8 +86,9 @@ private:
 class Font::Char::Glyph
 {
 public:
-    Glyph(FT_Glyph ft_glyph)
+    Glyph(FT_Glyph ft_glyph, uint32_t face_index)
         : m_ft_glyph(ft_glyph)
+        , m_face_index(face_index)
     {
         ITT_FUNCTION_TASK();
     }
@@ -98,10 +99,12 @@ public:
         FT_Done_Glyph(m_ft_glyph);
     }
 
-    FT_Glyph GetFTGlyph() const { return m_ft_glyph; }
+    FT_Glyph GetFTGlyph() const   { return m_ft_glyph; }
+    uint32_t GetFaceIndex() const { return m_face_index; }
 
 private:
-    FT_Glyph m_ft_glyph;
+    const FT_Glyph m_ft_glyph;
+    const uint32_t m_face_index;
 };
 
 class Font::Face
@@ -152,33 +155,31 @@ public:
         ThrowFreeTypeError(FT_Get_Glyph(m_ft_face->glyph, &ft_glyph));
 
         // All glyph metrics are multiplied by 64, so we reverse them back
-        return Char {
-            char_code,
+        return Char(char_code,
             {
-                Point2i(static_cast<int32_t>(m_ft_face->glyph->metrics.horiAdvance >> 6),
-                        static_cast<int32_t>(m_ft_face->glyph->metrics.vertAdvance >> 6)),
+                Point2i(),
                 FrameSize(static_cast<uint32_t>(m_ft_face->glyph->metrics.width >> 6),
                           static_cast<uint32_t>(m_ft_face->glyph->metrics.height >> 6))
             },
             Point2i(static_cast<int32_t>(m_ft_face->glyph->metrics.horiBearingX >> 6),
-                    static_cast<int32_t>(m_ft_face->glyph->metrics.horiBearingY >> 6)),
-            Point2i(),
-            std::make_unique<Char::Glyph>(ft_glyph)
-        };
+                    -static_cast<int32_t>(m_ft_face->glyph->metrics.horiBearingY >> 6)),
+            Point2i(static_cast<int32_t>(m_ft_face->glyph->metrics.horiAdvance >> 6),
+                    static_cast<int32_t>(m_ft_face->glyph->metrics.vertAdvance >> 6)),
+            std::move(std::make_unique<Char::Glyph>(ft_glyph, char_index))
+        );
     }
 
-    int32_t GetKerning(uint32_t left_glyph_index, uint32_t right_glyph_index)
+    FrameRect::Point GetKerning(uint32_t left_glyph_index, uint32_t right_glyph_index) const
     {
         ITT_FUNCTION_TASK();
+        assert(left_glyph_index && right_glyph_index);
         if (!m_has_kerning || !left_glyph_index || !right_glyph_index)
-            return 0;
+            return FrameRect::Point(0, 0);
 
         FT_Vector kerning_vec = {};
         ThrowFreeTypeError(FT_Get_Kerning(m_ft_face, left_glyph_index, right_glyph_index, FT_KERNING_DEFAULT, &kerning_vec));
-        return kerning_vec.x >> 6;
+        return FrameRect::Point(kerning_vec.x >> 6, 0);
     }
-
-    FT_Face GetFTFace() const noexcept { return m_ft_face; }
 
 private:
     static FT_Face LoadFace(FT_Library ft_library, const Data::Chunk& font_data)
@@ -385,23 +386,31 @@ void Font::AddChars(const std::wstring& characters)
     }
 }
 
-void Font::AddChar(Char::Code char_code)
+const Font::Char& Font::AddChar(Char::Code char_code)
 {
     ITT_FUNCTION_TASK();
-    if (HasChar(char_code))
-        return;
+    const Char& font_char = GetChar(char_code);
+    if (font_char)
+        return font_char;
 
+    // Load char glyph and add it to the font characters map
     auto font_char_it = m_char_by_code.emplace(char_code, m_sp_face->LoadChar(char_code)).first;
+    assert(font_char_it != m_char_by_code.end());
+
+    Char& new_font_char = font_char_it->second;
     if (!m_sp_atlas_packer)
-        return;
+        return new_font_char;
 
     // Attempt to pack new char into existing atlas
-    assert(font_char_it != m_char_by_code.end());
-    if (m_sp_atlas_packer->AddChar(font_char_it->second))
-        return;
+    if (m_sp_atlas_packer->AddChar(new_font_char))
+    {
+        assert(0); // TODO: draw new char to atlas texture
+        return new_font_char;
+    }
 
     // If new char does not fit into existing atlas, repack all chars into new atlas
     PackCharsToAtlas(2.f);
+    return new_font_char;
 }
 
 bool Font::HasChar(Char::Code char_code)
@@ -413,7 +422,7 @@ bool Font::HasChar(Char::Code char_code)
 const Font::Char& Font::GetChar(Char::Code char_code) const
 {
     ITT_FUNCTION_TASK();
-    static const Char s_none_char = {};
+    static const Char s_none_char;
     const auto char_by_code_it = m_char_by_code.find(char_code);
     return char_by_code_it == m_char_by_code.end() ? s_none_char : char_by_code_it->second;
 }
@@ -427,6 +436,25 @@ Refs<const Font::Char> Font::GetChars() const
         font_chars.emplace_back(code_and_char.second);
     }
     return font_chars;
+}
+
+Refs<const Font::Char> Font::GetTextChars(const std::string& text)
+{
+    ITT_FUNCTION_TASK();
+    Refs<const Char> font_chars;
+    const std::wstring characters = nowide::widen(text);
+    for (wchar_t char_code : text)
+    {
+        font_chars.emplace_back(AddChar(static_cast<Char::Code>(char_code)));
+    }
+    return font_chars;
+}
+
+FrameRect::Point Font::GetKerning(const Char& left_char, const Char& right_char) const
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_sp_face);
+    return m_sp_face->GetKerning(left_char.GetGlyphIndex(), right_char.GetGlyphIndex());
 }
 
 Refs<Font::Char> Font::GetMutableChars()
@@ -454,6 +482,7 @@ bool Font::PackCharsToAtlas(float pixels_reserve_multiplier)
         [](const Ref<Char>& left, const Ref<Char>& right) -> bool
         { return left.get() > right.get(); }
     );
+    m_max_glyph_size = font_chars.front().get().rect.size;
 
     // Estimate required atlas size
     uint32_t char_pixels_count = 0u;
@@ -509,6 +538,7 @@ const Ptr<Texture>& Font::GetAtlasTexturePtr(Context& context)
     // Create atlas texture and render glyphs to it
     Ptr<Texture> sp_atlas_texture = Texture::CreateImage(context, Dimensions(atlas_size), 1, PixelFormat::R8Unorm, false);
     sp_atlas_texture->SetData({ Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(atlas_bitmap.data()), static_cast<Data::Size>(atlas_bitmap.size())) });
+    sp_atlas_texture->SetName(m_settings.name + " Font Atlas");
     return m_atlas_textures.emplace(&context, std::move(sp_atlas_texture)).first->second;
 }
 
@@ -524,6 +554,16 @@ void Font::ClearAtlasTextures()
     m_atlas_textures.clear();
 }
 
+Font::Char::Char(Code code, FrameRect rect, Point2i offset, Point2i advance, UniquePtr<Glyph>&& sp_glyph)
+    : code(code)
+    , rect(std::move(rect))
+    , offset(std::move(offset))
+    , advance(std::move(advance))
+    , m_sp_glyph(std::move(sp_glyph))
+{
+    ITT_FUNCTION_TASK();
+}
+
 void Font::Char::DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_stride) const
 {
     ITT_FUNCTION_TASK();
@@ -535,7 +575,7 @@ void Font::Char::DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_strid
     assert(rect.GetTop()  >= 0 && static_cast<uint32_t>(rect.GetBottom()) <= static_cast<uint32_t>(atlas_bitmap.size() / atlas_row_stride));
 
     // Draw glyph to bitmap
-    FT_Glyph ft_glyph = sp_glyph->GetFTGlyph();
+    FT_Glyph ft_glyph = m_sp_glyph->GetFTGlyph();
     ThrowFreeTypeError(FT_Glyph_To_Bitmap(&ft_glyph, FT_RENDER_MODE_NORMAL, nullptr, false));
 
     FT_Bitmap& ft_bitmap = reinterpret_cast<FT_BitmapGlyph>(ft_glyph)->bitmap;
@@ -551,6 +591,13 @@ void Font::Char::DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_strid
 
         std::copy(ft_bitmap.buffer + y * ft_bitmap.width, ft_bitmap.buffer + (y + 1) * ft_bitmap.width, atlas_bitmap.begin() + atlas_index);
     }
+}
+
+uint32_t Font::Char::GetGlyphIndex() const
+{
+    ITT_FUNCTION_TASK();
+    assert(!!m_sp_glyph);
+    return m_sp_glyph->GetFaceIndex();
 }
 
 } // namespace Methane::Graphics

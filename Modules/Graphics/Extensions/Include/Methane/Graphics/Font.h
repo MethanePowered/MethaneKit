@@ -72,8 +72,9 @@ public:
         FontByName            m_font_by_name;
     };
 
-    struct Char
+    class Char
     {
+    public:
         class Glyph;
         using Code = uint32_t;
 
@@ -81,22 +82,32 @@ public:
         FrameRect  rect;
         Point2i    offset;
         Point2i    advance;
-        Ptr<Glyph> sp_glyph;
+
+        Char() = default;
+        Char(Code code, FrameRect rect, Point2i offset, Point2i advance, UniquePtr<Glyph>&& sp_glyph);
 
         bool operator<(const Char& other) const noexcept { return rect.size.GetPixelsCount() < other.rect.size.GetPixelsCount(); }
         bool operator>(const Char& other) const noexcept { return rect.size.GetPixelsCount() > other.rect.size.GetPixelsCount(); }
+        operator bool() const noexcept                   { return code != 0u; }
 
         void DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_stride) const;
+        uint32_t GetGlyphIndex() const;
+
+    private:
+        UniquePtr<Glyph> m_sp_glyph;
     };
 
     const Settings& GetSettings() const { return m_settings; }
 
     void AddChars(const std::string& unicode_characters);
     void AddChars(const std::wstring& characters);
-    void AddChar(Char::Code char_code);
+    const Font::Char& AddChar(Char::Code char_code);
     bool HasChar(Char::Code char_code);
     const Char& GetChar(Char::Code char_code) const;
     Refs<const Char> GetChars() const;
+    Refs<const Char> GetTextChars(const std::string& text);
+    FrameRect::Point GetKerning(const Char& left_char, const Char& right_char) const;
+    const FrameSize& GetMaxGlyphSize() const { return m_max_glyph_size; }
 
     const Ptr<Texture>& GetAtlasTexturePtr(Context& context);
     Texture& GetAtlasTexture(Context& context) { return *GetAtlasTexturePtr(context); }
@@ -121,6 +132,7 @@ private:
     UniquePtr<AtlasPacker>  m_sp_atlas_packer;
     CharByCode              m_char_by_code;
     TextureByContext        m_atlas_textures;
+    FrameSize               m_max_glyph_size;
 };
 
 } // namespace Methane::Graphics

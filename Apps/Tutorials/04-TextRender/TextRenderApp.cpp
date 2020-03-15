@@ -100,7 +100,15 @@ void TextRenderApp::Init()
     );
 
     // Create text rendering primitive bound to the font object
-    m_sp_text = std::make_shared<gfx::Text>(*m_sp_context, *m_sp_font, gfx::Text::Settings{ "Label", gfx::FrameRect() });
+    m_sp_text = std::make_shared<gfx::Text>(*m_sp_context, *m_sp_font,
+        gfx::Text::Settings
+        {
+            "Label",
+            "Wow... The quick brown fox jumps over the lazy dog!",
+            gfx::FrameRect{ { 50, 100 }, { 800u, 200u } },
+            gfx::Color4f(1.f, 1.f, 1.f, 1.f)
+        }
+    );
 
     // Create per-frame command lists
     for(TextRenderFrame& frame : m_frames)
@@ -133,6 +141,7 @@ bool TextRenderApp::Render()
     m_sp_context->WaitForGpu(gfx::Context::WaitFor::FramePresented);
     TextRenderFrame& frame = GetCurrentFrame();
 
+    m_sp_text->Draw(*frame.sp_cmd_list);
     m_sp_font_atlas_badge->Draw(*frame.sp_cmd_list);
 
     RenderOverlay(*frame.sp_cmd_list);
