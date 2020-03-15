@@ -165,7 +165,7 @@ public:
                     -static_cast<int32_t>(m_ft_face->glyph->metrics.horiBearingY >> 6)),
             Point2i(static_cast<int32_t>(m_ft_face->glyph->metrics.horiAdvance >> 6),
                     static_cast<int32_t>(m_ft_face->glyph->metrics.vertAdvance >> 6)),
-            std::move(std::make_unique<Char::Glyph>(ft_glyph, char_index))
+            std::make_unique<Char::Glyph>(ft_glyph, char_index)
         );
     }
 
@@ -422,7 +422,7 @@ bool Font::HasChar(Char::Code char_code)
 const Font::Char& Font::GetChar(Char::Code char_code) const
 {
     ITT_FUNCTION_TASK();
-    static const Char s_none_char;
+    static const Char s_none_char = {};
     const auto char_by_code_it = m_char_by_code.find(char_code);
     return char_by_code_it == m_char_by_code.end() ? s_none_char : char_by_code_it->second;
 }
