@@ -87,6 +87,13 @@ elseif(APPLE)
 
 endif()
 
+target_compile_definitions(MethaneBuildOptions INTERFACE
+    "$<$<CONFIG:Debug>:_DEBUG>"
+    "$<$<CONFIG:Release>:NDEBUG>"
+    "$<$<CONFIG:MinSizeRel>:NDEBUG>"
+    "$<$<CONFIG:RelWithDebInfo>:NDEBUG>"
+)
+
 message(STATUS "Methane Kit version ${METHANE_VERSION_FULL}")
 split_by_first_delimiter("${METHANE_VERSION_BUILD}" "." METHANE_VERSION_BUILD_MAJOR METHANE_VERSION_BUILD_MINOR)
 target_compile_definitions(MethaneBuildOptions INTERFACE
