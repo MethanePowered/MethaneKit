@@ -137,7 +137,7 @@ int AppWin::Run(const RunArgs& args)
 
     // Main message loop
     MSG msg = { 0 };
-    while (true)
+    while (m_is_message_processing)
     {
         // Process any messages in the queue.
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
@@ -149,7 +149,7 @@ int AppWin::Run(const RunArgs& args)
                 break;
         }
 
-        if (init_failed)
+        if (init_failed || !m_is_message_processing)
             continue;
 
 #ifndef _DEBUG
@@ -194,6 +194,8 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
     ITT_FUNCTION_TASK();
 
     AppWin* p_app = reinterpret_cast<AppWin*>(GetWindowLongPtr(h_wnd, GWLP_USERDATA));
+    if (p_app && !p_app->IsMessageProcessing())
+        return DefWindowProc(h_wnd, msg_id, w_param, l_param);
 
 #ifndef _DEBUG
     try
@@ -203,7 +205,6 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
         {
         case WM_CREATE:
         {
-            // Save the DXSample* passed in to CreateWindow.
             LPCREATESTRUCT p_create_struct = reinterpret_cast<LPCREATESTRUCT>(l_param);
             SetWindowLongPtr(h_wnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(p_create_struct->lpCreateParams));
         }
@@ -211,6 +212,10 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
 
         case WM_DESTROY:
         {
+            if (p_app)
+            {
+                p_app->StopMessageProcessing();
+            }
             PostQuitMessage(0);
         }
         return 0;
@@ -419,7 +424,7 @@ void AppWin::SetWindowTitle(const std::string& title_text)
 
     BOOL set_result = SetWindowTextW(m_env.window_handle, nowide::widen(title_text).c_str());
     if (!set_result)
-        throw std::runtime_error("Failed to set window text.");
+        throw std::runtime_error("Failed to set window title.");
 }
 
 bool AppWin::SetFullScreen(bool is_full_screen)

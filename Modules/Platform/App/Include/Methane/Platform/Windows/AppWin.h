@@ -52,6 +52,8 @@ protected:
     void ShowAlert(const Message& msg) override;
     
     void ScheduleAlert();
+    void StopMessageProcessing()     { m_is_message_processing = false; }
+    bool IsMessageProcessing() const { return m_is_message_processing; }
 
     static LRESULT CALLBACK WindowProc(HWND h_wnd, UINT message, WPARAM w_param, LPARAM l_param);
 
@@ -60,6 +62,7 @@ protected:
 private:
     Mouse::State m_mouse_state;
     RECT         m_window_rect = {};
+    bool         m_is_message_processing = true;
 };
 
 } // namespace Methane::Platform
