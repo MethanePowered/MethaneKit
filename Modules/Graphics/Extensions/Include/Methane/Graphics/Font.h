@@ -39,11 +39,11 @@ class Font : public std::enable_shared_from_this<Font>
 public:
     struct Settings
     {
-        std::string  name;
-        std::string  font_path;
-        uint32_t     font_size_pt;
-        uint32_t     resolution_dpi;
-        std::wstring characters;
+        std::string name;
+        std::string font_path;
+        uint32_t    font_size_pt;
+        uint32_t    resolution_dpi;
+        std::string characters;
     };
 
     class Library

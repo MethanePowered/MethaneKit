@@ -374,7 +374,8 @@ Font::Font(const Data::Provider& data_provider, const Settings& settings)
 void Font::AddChars(const std::string& unicode_characters)
 {
     ITT_FUNCTION_TASK();
-    AddChars(nowide::widen(unicode_characters));
+    const std::wstring characters = nowide::widen(unicode_characters);
+    AddChars(characters);
 }
 
 void Font::AddChars(const std::wstring& characters)
