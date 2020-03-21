@@ -51,13 +51,6 @@ static const GraphicsApp::AllSettings g_app_settings =  // Application settings:
     }
 };
 
-// TODO: proper system font search should be implemented
-#ifdef _WIN32
-static const std::string g_font_path = R"(C:\Windows\Fonts\arial.ttf)";
-#else
-static const std::string g_font_path = R"(/System/Library/Fonts/Supplemental/Arial.ttf)";
-#endif
-
 TextRenderApp::TextRenderApp()
     : GraphicsApp(g_app_settings, "Methane tutorial of text rendering")
 {
@@ -79,13 +72,11 @@ void TextRenderApp::Init()
     const gfx::RenderContext::Settings& context_settings = m_sp_context->GetSettings();
 
     // Add font to library
-    gfx::Font::Library::Get().Clear();
     m_sp_font = gfx::Font::Library::Get().Add(
-        Data::FileProvider::Get(),
+        Data::FontProvider::Get(),
         gfx::Font::Settings{
-            "Default", g_font_path, 24, m_sp_context->GetFontResolutionDPI(),
-            " !\"#&'()*,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ\\_abcdefghijklmnopqrstuvwxyz"
-            "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
+            "Default", "Fonts/Roboto/Roboto-Regular.ttf", 24, m_sp_context->GetFontResolutionDPI(),
+            gfx::Font::GetAnsiCharacters() + "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
         }
     );
 

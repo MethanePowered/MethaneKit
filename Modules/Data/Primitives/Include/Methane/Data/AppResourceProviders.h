@@ -17,27 +17,30 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/AppResourceProviders.h
-Application resource providers for Shaders and Textures.
+Application resource providers for Shaders, Textures and Fonts
+either stored in embedded application resources of on file system.
 
 ******************************************************************************/
 
 #pragma once
 
-#ifdef SHADER_RESOURCE_NAMESPACE
+// ========== Shader Resources ==========
+
+#ifdef SHADER_RESOURCES_NAMESPACE
 
 #ifdef RESOURCE_NAMESPACE
 #undef RESOURCE_NAMESPACE
 #endif
 
-#define RESOURCE_NAMESPACE SHADER_RESOURCE_NAMESPACE
+#define RESOURCE_NAMESPACE SHADER_RESOURCES_NAMESPACE
 #include "ResourceProvider.hpp"
 
 namespace Methane::Data
 {
-using ShaderProvider = SHADER_RESOURCE_NAMESPACE::ResourceProvider;
+using ShaderProvider = SHADER_RESOURCES_NAMESPACE::ResourceProvider;
 }
 
-#else
+#else // ifdef SHADER_RESOURCES_NAMESPACE
 
 #include "FileProvider.hpp"
 
@@ -46,24 +49,25 @@ namespace Methane::Data
     using ShaderProvider = FileProvider;
 }
 
-#endif
+#endif // ifdef SHADER_RESOURCES_NAMESPACE
 
+// ========== Texture Resources ==========
 
-#ifdef TEXTURE_RESOURCE_NAMESPACE
+#ifdef TEXTURE_RESOURCES_NAMESPACE
 
 #ifdef RESOURCE_NAMESPACE
 #undef RESOURCE_NAMESPACE
 #endif
 
-#define RESOURCE_NAMESPACE TEXTURE_RESOURCE_NAMESPACE
+#define RESOURCE_NAMESPACE TEXTURE_RESOURCES_NAMESPACE
 #include "ResourceProvider.hpp"
 
 namespace Methane::Data
 {
-using TextureProvider = TEXTURE_RESOURCE_NAMESPACE::ResourceProvider;
+using TextureProvider = TEXTURE_RESOURCES_NAMESPACE::ResourceProvider;
 }
 
-#else
+#else // ifdef TEXTURE_RESOURCES_NAMESPACE
 
 #include "FileProvider.hpp"
 
@@ -72,4 +76,31 @@ namespace Methane::Data
     using TextureProvider = FileProvider;
 }
 
+#endif // ifdef TEXTURE_RESOURCES_NAMESPACE
+
+// ========== Font Resources ==========
+
+#ifdef FONT_RESOURCES_NAMESPACE
+
+#ifdef RESOURCE_NAMESPACE
+#undef RESOURCE_NAMESPACE
 #endif
+
+#define RESOURCE_NAMESPACE FONT_RESOURCES_NAMESPACE
+#include "ResourceProvider.hpp"
+
+namespace Methane::Data
+{
+using FontProvider = FONT_RESOURCES_NAMESPACE::ResourceProvider;
+}
+
+#else // ifdef FONT_RESOURCES_NAMESPACE
+
+#include "FileProvider.hpp"
+
+namespace Methane::Data
+{
+    using FontProvider = FileProvider;
+}
+
+#endif // ifdef FONT_RESOURCES_NAMESPACE

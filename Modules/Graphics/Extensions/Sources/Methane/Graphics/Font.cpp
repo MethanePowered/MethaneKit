@@ -361,6 +361,20 @@ Font::Library::Library()
     ITT_FUNCTION_TASK();
 }
 
+std::string Font::GetAnsiCharacters(const char from, const char to)
+{
+    ITT_FUNCTION_TASK();
+    if (from > to)
+        throw std::invalid_argument("Invalid characters range provided [" + std::to_string(from) + ", " + std::to_string(to) + "]");
+
+    std::string characters(to - from + 1, 0);
+    for(char curr = from; curr <= to; ++curr)
+    {
+        characters[curr - from] = curr;
+    }
+    return characters;
+}
+
 Font::Font(const Data::Provider& data_provider, const Settings& settings)
     : m_settings(settings)
     , m_sp_face(std::make_unique<Face>(data_provider.GetData(m_settings.font_path)))

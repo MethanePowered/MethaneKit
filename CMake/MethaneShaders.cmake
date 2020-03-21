@@ -307,7 +307,7 @@ function(add_methane_shaders TARGET HLSL_SOURCES PROFILE_VER)
 
         target_compile_definitions(${TARGET}
             PRIVATE
-            SHADER_RESOURCE_NAMESPACE=${RESOURCE_NAMESPACE}::Shaders
+            SHADER_RESOURCES_NAMESPACE=${RESOURCE_NAMESPACE}::Shaders
         )
 
     elseif(APPLE)

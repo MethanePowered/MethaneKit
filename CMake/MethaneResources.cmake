@@ -23,15 +23,47 @@ Functions to add textures to the Methane module/application resources.
 
 include(CMakeRC)
 
+function(add_methane_embedded_fonts TARGET EMBEDDED_FONTS_DIR EMBEDDED_FONTS)
+
+    set(FONT_RESOURCES_TARGET ${TARGET}_Fonts)
+    set(FONT_RESOURCES_NAMESPACE ${TARGET}::Fonts)
+
+    cmrc_add_resource_library(${FONT_RESOURCES_TARGET}
+        ALIAS Methane::Resources::Fonts
+        WHENCE "${EMBEDDED_FONTS_DIR}"
+        NAMESPACE ${FONT_RESOURCES_NAMESPACE}
+        ${EMBEDDED_FONTS}
+    )
+
+    set_target_properties(${FONT_RESOURCES_TARGET}
+        PROPERTIES
+        FOLDER "Build/${TARGET}/Resources"
+    )
+
+    target_link_libraries(${FONT_RESOURCES_TARGET} PRIVATE
+        MethaneBuildOptions
+    )
+
+    target_link_libraries(${TARGET} PRIVATE
+        ${FONT_RESOURCES_TARGET}
+    )
+
+    target_compile_definitions(${TARGET}
+        PRIVATE
+        FONT_RESOURCES_NAMESPACE=${FONT_RESOURCES_NAMESPACE}
+    )
+
+endfunction()
+
 function(add_methane_embedded_textures TARGET EMBEDDED_TEXTURES_DIR EMBEDDED_TEXTURES)
 
     set(TEXTURE_RESOURCES_TARGET ${TARGET}_Textures)
-    set(RESOURCE_NAMESPACE ${TARGET})
+    set(TEXTURE_RESOURCES_NAMESPACE ${TARGET}::Textures)
 
     cmrc_add_resource_library(${TEXTURE_RESOURCES_TARGET}
         ALIAS Methane::Resources::Textures
         WHENCE "${EMBEDDED_TEXTURES_DIR}"
-        NAMESPACE ${RESOURCE_NAMESPACE}::Textures
+        NAMESPACE ${TEXTURE_RESOURCES_NAMESPACE}
         ${EMBEDDED_TEXTURES}
     )
 
@@ -50,7 +82,7 @@ function(add_methane_embedded_textures TARGET EMBEDDED_TEXTURES_DIR EMBEDDED_TEX
 
     target_compile_definitions(${TARGET}
         PRIVATE
-        TEXTURE_RESOURCE_NAMESPACE=${RESOURCE_NAMESPACE}::Textures
+        TEXTURE_RESOURCES_NAMESPACE=${TEXTURE_RESOURCES_NAMESPACE}
     )
 
 endfunction()

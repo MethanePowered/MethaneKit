@@ -5,6 +5,10 @@ set(SOURCES
     TextRenderApp.h
     TextRenderApp.cpp
 )
+set(FONTS
+    ${RESOURCES_DIR}/Fonts/Roboto/Roboto-Regular.ttf
+    ${RESOURCES_DIR}/Fonts/Playball/Playball-Regular.ttf
+)
 
 add_methane_application(${TARGET}
     "${SOURCES}"
@@ -16,6 +20,8 @@ add_methane_application(${TARGET}
     "${METHANE_VERSION_SHORT}"
     "${METHANE_VERSION_BUILD}"
 )
+
+add_methane_embedded_fonts(${TARGET} ${RESOURCES_DIR} ${FONTS})
 
 set_target_properties(${TARGET}
     PROPERTIES

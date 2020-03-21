@@ -99,7 +99,7 @@ public:
         UniquePtr<Glyph> m_sp_glyph;
     };
 
-    const Settings& GetSettings() const { return m_settings; }
+    static std::string GetAnsiCharacters(char from = 32, char to = 126);
 
     void AddChars(const std::string& unicode_characters);
     void AddChars(const std::wstring& characters);
@@ -111,6 +111,7 @@ public:
     FrameRect::Point GetKerning(const Char& left_char, const Char& right_char) const;
     const FrameSize& GetMaxGlyphSize() const { return m_max_glyph_size; }
 
+    const Settings& GetSettings() const { return m_settings; }
     const Ptr<Texture>& GetAtlasTexturePtr(Context& context);
     Texture& GetAtlasTexture(Context& context) { return *GetAtlasTexturePtr(context); }
     void     RemoveAtlasTexture(Context& context);
