@@ -79,7 +79,7 @@ private:
     };
 
     const Constants         m_shader_constants;
-    Uniforms                m_shader_uniforms = { };
+    Uniforms                m_shader_uniforms { };
     gfx::Camera             m_camera;
     float                   m_cube_scale;
     Ptr<gfx::RenderState>   m_sp_state;

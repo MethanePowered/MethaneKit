@@ -41,7 +41,7 @@ struct ScreenQuadVertex
     Mesh::Position position;
     Mesh::TexCoord texcoord;
 
-    inline static const Mesh::VertexLayout layout = {
+    inline static const Mesh::VertexLayout layout {
         Mesh::VertexField::Position,
         Mesh::VertexField::TexCoord,
     };
@@ -199,7 +199,7 @@ void ScreenQuad::UpdateConstantsBuffer() const
 {
     ITT_FUNCTION_TASK();
 
-    ScreenQuadConstants constants = {
+    const ScreenQuadConstants constants {
         m_settings.blend_color
     };
 

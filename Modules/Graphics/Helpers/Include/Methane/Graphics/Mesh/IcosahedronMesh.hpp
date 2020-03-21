@@ -51,7 +51,7 @@ public:
 
         const float a = (radius + std::sqrt(radius * 5.f)) / 2.f;
         const float b = radius;
-        const std::array<Mesh::Position, 12> vertex_positions = {{
+        const std::array<Mesh::Position, 12> vertex_positions{ {
             {-b,  a,  0 },
             { b,  a,  0 },
             {-b, -a,  0 },
@@ -64,7 +64,7 @@ public:
             { a,  0,  b },
             {-a,  0, -b },
             {-a,  0,  b },
-        }};
+        } };
 
         BaseMeshT::m_vertices.resize(vertex_positions.size());
         for(size_t vertex_index = 0; vertex_index < vertex_positions.size(); ++vertex_index)
@@ -152,7 +152,7 @@ public:
             const Mesh::Index vm2 = BaseMeshT::AddEdgeMidpoint(Mesh::Edge(vi2, vi3), edge_midpoints);
             const Mesh::Index vm3 = BaseMeshT::AddEdgeMidpoint(Mesh::Edge(vi3, vi1), edge_midpoints);
 
-            std::array<Mesh::Index, 3 * 4> indices = {
+            std::array<Mesh::Index, 3 * 4> indices{
                 vi1, vm1, vm3,
                 vm1, vi2, vm2,
                 vm1, vm2, vm3,

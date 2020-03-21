@@ -55,7 +55,7 @@ public:
 
         for (size_t face_vertex_idx = 0; face_vertex_idx < Mesh::g_face_positions_2d.size(); ++face_vertex_idx)
         {
-            VType vertex = {};
+            VType vertex{};
             {
                 const Mesh::Position2D& pos_2d = Mesh::g_face_positions_2d[face_vertex_idx];
                 Mesh::Position& vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);

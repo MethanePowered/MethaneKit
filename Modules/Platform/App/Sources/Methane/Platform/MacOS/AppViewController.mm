@@ -241,7 +241,7 @@ using namespace Methane::Platform;
     ITT_FUNCTION_TASK();
     
     assert(!!m_p_app);
-    Mouse::Scroll scroll = { [event scrollingDeltaX], -[event scrollingDeltaY] };
+    Mouse::Scroll scroll{ [event scrollingDeltaX], -[event scrollingDeltaY] };
     if ([event hasPreciseScrollingDeltas])
         scroll *= 0.1f;
     

@@ -81,7 +81,7 @@ protected:
 
         const VType& v1 = m_vertices[edge.first_index];
         const VType& v2 = m_vertices[edge.second_index];
-        VType  v_mid = { };
+        VType  v_mid{ };
 
         const Mesh::Position& v1_position = GetVertexField<Mesh::Position>(v1,    Mesh::VertexField::Position);
         const Mesh::Position& v2_position = GetVertexField<Mesh::Position>(v2,    Mesh::VertexField::Position);

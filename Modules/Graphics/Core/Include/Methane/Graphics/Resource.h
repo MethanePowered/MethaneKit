@@ -63,10 +63,10 @@ struct Resource : virtual Object
         };
 
         using BaseValues = std::array<Value, 3>;
-        static constexpr const BaseValues primary_values = { ShaderRead, ShaderWrite, RenderTarget };
+        static constexpr const BaseValues primary_values{ ShaderRead, ShaderWrite, RenderTarget };
 
         using Values = std::array<Value, 4>;
-        static constexpr const Values values = { ShaderRead, ShaderWrite, RenderTarget, Addressable };
+        static constexpr const Values values{ ShaderRead, ShaderWrite, RenderTarget, Addressable };
 
         static std::string ToString(Usage::Value usage) noexcept;
         static std::string ToString(Usage::Mask usage_mask) noexcept;

@@ -103,11 +103,11 @@ private:
         const float texcoord_long_spacing = 1.f / (actual_long_lines_count - 1);
         const float texcoord_lat_spacing  = 1.f / (m_lat_lines_count + 1);
 
-        Matrix33f pitch_step_matrix = { }, yaw_step_matrix = { };
+        Matrix33f pitch_step_matrix{ }, yaw_step_matrix{ };
         cml::matrix_rotation_world_x(pitch_step_matrix, -cml::constants<float>::pi() / (m_lat_lines_count - 1));
         cml::matrix_rotation_world_y(yaw_step_matrix, -2.0 * cml::constants<float>::pi() / m_long_lines_count);
 
-        Matrix33f pitch_matrix = { }, yaw_matrix = { };;
+        Matrix33f pitch_matrix{ }, yaw_matrix{ };
         pitch_matrix.identity();
 
         if (!has_texcoord)

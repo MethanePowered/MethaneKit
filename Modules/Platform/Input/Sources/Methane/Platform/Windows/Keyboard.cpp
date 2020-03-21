@@ -162,7 +162,7 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
     // The Ctrl keys require special handling
     if (native_key.w_param == VK_CONTROL)
     {
-        MSG  next = {};
+        MSG  next {};
         LONG time = 0;
 
         // Right side keys have the extended key bit set

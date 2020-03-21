@@ -31,15 +31,15 @@ Arc-Ball camera unit tests
 using namespace Methane::Graphics;
 using namespace Methane::Data;
 
-static const Point2f             g_test_screen_size      = { 640.f, 480.f };
+static const Point2f             g_test_screen_size      { 640.f, 480.f };
 static const Point2f             g_test_screen_center    = g_test_screen_size / 2.f;
-static const Camera::Orientation g_test_view_orientation = { { 0.f, 5.f, 10.f }, { 0.f, 5.f, 0.f }, { 0.f, 1.f, 0.f } };
-static const Camera::Orientation g_test_dept_orientation = { { 10.f, 7.f, 0.f }, { 0.f, 7.f, 0.f }, { 0.f, 0.f, 1.f } };
+static const Camera::Orientation g_test_view_orientation { { 0.f, 5.f, 10.f }, { 0.f, 5.f, 0.f }, { 0.f, 1.f, 0.f } };
+static const Camera::Orientation g_test_dept_orientation { { 10.f, 7.f, 0.f }, { 0.f, 7.f, 0.f }, { 0.f, 0.f, 1.f } };
 static const float               g_test_radius_ratio     = 0.75f;
 static const float               g_test_radius_pixels    = g_test_screen_center.GetY() * g_test_radius_ratio;
-static const Vector3f            g_axis_x                = { 1.f, 0.f, 0.f };
-static const Vector3f            g_axis_y                = { 0.f, 1.f, 0.f };
-static const Vector3f            g_axis_z                = { 0.f, 0.f, -1.f };
+static const Vector3f            g_axis_x                { 1.f, 0.f, 0.f };
+static const Vector3f            g_axis_y                { 0.f, 1.f, 0.f };
+static const Vector3f            g_axis_z                { 0.f, 0.f, -1.f };
 static float                     g_vectors_equal_epsilon = 0.00001f;
 
 namespace Catch {

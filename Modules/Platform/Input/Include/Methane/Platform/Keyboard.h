@@ -120,7 +120,7 @@ struct Modifier
     };
 
     using Values = std::array<Value, 6>;
-    static constexpr const Values values = { Shift, Control, Alt, Super, CapsLock, NumLock };
+    static constexpr const Values values{ Shift, Control, Alt, Super, CapsLock, NumLock };
 
     static std::string ToString(Value modifier);
     static std::string ToString(Mask modifiers_mask);
@@ -181,7 +181,7 @@ public:
         };
 
         using Values = std::array<Value, 2>;
-        static constexpr const Values values = { KeyStates, Modifiers };
+        static constexpr const Values values{ KeyStates, Modifiers };
 
         static std::string ToString(Value modifier);
         static std::string ToString(Mask modifiers_mask);

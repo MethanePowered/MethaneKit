@@ -37,7 +37,7 @@ struct Vertex
     gfx::Mesh::Normal   normal;
     gfx::Mesh::TexCoord texcoord;
 
-    inline static const gfx::Mesh::VertexLayout layout = {
+    inline static const gfx::Mesh::VertexLayout layout{
         gfx::Mesh::VertexField::Position,
         gfx::Mesh::VertexField::Normal,
         gfx::Mesh::VertexField::TexCoord,
@@ -157,9 +157,9 @@ void ShadowCubeApp::Init()
 
     // ========= Final Pass objects =========
 
-    const gfx::Shader::EntryFunction    vs_main                      = { "ShadowCube", "CubeVS" };
-    const gfx::Shader::EntryFunction    ps_main                      = { "ShadowCube", "CubePS" };
-    const gfx::Shader::MacroDefinitions textured_shadows_definitions = { { "ENABLE_SHADOWS", "" }, { "ENABLE_TEXTURING", "" } };
+    const gfx::Shader::EntryFunction    vs_main{ "ShadowCube", "CubeVS" };
+    const gfx::Shader::EntryFunction    ps_main{ "ShadowCube", "CubePS" };
+    const gfx::Shader::MacroDefinitions textured_shadows_definitions{ { "ENABLE_SHADOWS", "" }, { "ENABLE_TEXTURING", "" } };
 
     // Create final pass rendering state with program
     gfx::RenderState::Settings final_state_settings;
@@ -205,7 +205,7 @@ void ShadowCubeApp::Init()
     // ========= Shadow Pass objects =========
     
     gfx::Texture::Settings        shadow_texture_settings = gfx::Texture::Settings::DepthStencilBuffer(g_shadow_map_size, context_settings.depth_stencil_format, gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead);
-    gfx::Shader::MacroDefinitions textured_definitions    = { { "ENABLE_TEXTURING", "" } };
+    gfx::Shader::MacroDefinitions textured_definitions    { { "ENABLE_TEXTURING", "" } };
 
     // Create shadow-pass rendering state with program
     gfx::RenderState::Settings shadow_state_settings;

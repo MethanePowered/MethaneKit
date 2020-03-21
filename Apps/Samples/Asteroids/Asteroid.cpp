@@ -37,7 +37,7 @@ static gfx::Color3f TransformSrgbToLinear(const gfx::Color3f& srgb_color)
 {
     ITT_FUNCTION_TASK();
 
-    gfx::Color3f linear_color = {};
+    gfx::Color3f linear_color{};
     for (int c = 0; c < 3; ++c)
     {
         linear_color[c] = std::pow(srgb_color[c] / 255.f, 2.2f);
@@ -49,7 +49,7 @@ static AsteroidColorSchema TransformSrgbToLinear(const AsteroidColorSchema& srgb
 {
     ITT_FUNCTION_TASK();
 
-    AsteroidColorSchema linear_color_schema = {};
+    AsteroidColorSchema linear_color_schema{};
     for (size_t i = 0; i < srgb_color_schema.size(); ++i)
     {
         linear_color_schema[i] = TransformSrgbToLinear(srgb_color_schema[i]);
@@ -152,7 +152,7 @@ Asteroid::Colors Asteroid::GetAsteroidRockColors(uint32_t deep_color_index, uint
 {
     ITT_FUNCTION_TASK();
 
-    static const AsteroidColorSchema s_srgb_deep_rock_colors = { {
+    static const AsteroidColorSchema s_srgb_deep_rock_colors{ {
         {  55.f,  49.f,  40.f },
         {  58.f,  38.f,  14.f },
         {  98.f, 101.f, 104.f },
@@ -162,7 +162,7 @@ Asteroid::Colors Asteroid::GetAsteroidRockColors(uint32_t deep_color_index, uint
     } };
     static const AsteroidColorSchema s_linear_deep_rock_colors = TransformSrgbToLinear(s_srgb_deep_rock_colors);
 
-    static const AsteroidColorSchema s_srgb_shallow_rock_colors = { {
+    static const AsteroidColorSchema s_srgb_shallow_rock_colors{ {
         { 156.f, 139.f, 113.f },
         { 198.f, 188.f, 137.f },
         { 239.f, 222.f, 191.f },
@@ -182,7 +182,7 @@ Asteroid::Colors Asteroid::GetAsteroidIceColors(uint32_t deep_color_index, uint3
 {
     ITT_FUNCTION_TASK();
 
-    static const AsteroidColorSchema s_srgb_deep_ice_colors = { {
+    static const AsteroidColorSchema s_srgb_deep_ice_colors{ {
         {   8.f,  57.f,  72.f },
         {  35.f,  79.f, 116.f },
         {   7.f,  25.f,  27.f },
@@ -192,7 +192,7 @@ Asteroid::Colors Asteroid::GetAsteroidIceColors(uint32_t deep_color_index, uint3
     } };
     static const AsteroidColorSchema s_linear_deep_ice_colors = TransformSrgbToLinear(s_srgb_deep_ice_colors);
 
-    static const AsteroidColorSchema s_srgb_shallow_ice_colors = { {
+    static const AsteroidColorSchema s_srgb_shallow_ice_colors{ {
         { 199.f, 212.f, 244.f },
         { 196.f, 227.f, 239.f },
         { 133.f, 177.f, 222.f },
@@ -211,7 +211,7 @@ Asteroid::Colors Asteroid::GetAsteroidIceColors(uint32_t deep_color_index, uint3
 Asteroid::Colors Asteroid::GetAsteroidLodColors(uint32_t lod_index)
 {
     ITT_FUNCTION_TASK();
-    static const AsteroidColorSchema s_srgb_lod_deep_colors = { {
+    static const AsteroidColorSchema s_srgb_lod_deep_colors{ {
         {    0.f, 128.f,   0.f }, // LOD-0: green
         {    0.f,  64.f, 128.f }, // LOD-1: blue
         {   96.f,   0.f, 128.f }, // LOD-2: purple
@@ -221,7 +221,7 @@ Asteroid::Colors Asteroid::GetAsteroidLodColors(uint32_t lod_index)
     } };
     static const AsteroidColorSchema s_linear_lod_deep_colors = TransformSrgbToLinear(s_srgb_lod_deep_colors);
 
-    static const AsteroidColorSchema s_srgb_lod_shallow_colors = { {
+    static const AsteroidColorSchema s_srgb_lod_shallow_colors{ {
         {    0.f, 255.f,   0.f }, // LOD-0: green
         {    0.f, 128.f, 255.f }, // LOD-1: blue
         {  196.f,   0.f, 255.f }, // LOD-2: purple

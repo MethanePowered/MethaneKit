@@ -53,15 +53,15 @@ void ResourceManager::Initialize(const Settings& settings)
         // CPU only accessible descriptor heaps of all types are created for default resource creation
         {
             const uint32_t                 heap_size     = settings.default_heap_sizes[heap_type_idx];
-            const DescriptorHeap::Settings heap_settings = { heap_type, heap_size, m_deferred_heap_allocation, false };
+            const DescriptorHeap::Settings heap_settings{ heap_type, heap_size, m_deferred_heap_allocation, false };
             desc_heaps.push_back(DescriptorHeap::Create(m_context, heap_settings));
         }
 
         // GPU accessible descriptor heaps are created for program resource bindings
         if (DescriptorHeap::IsShaderVisibleHeapType(heap_type))
         {
-            const uint32_t                 heap_size     = settings.shader_visible_heap_sizes[heap_type_idx];
-            const DescriptorHeap::Settings heap_settings = { heap_type, heap_size, m_deferred_heap_allocation, true };
+            const uint32_t                 heap_size    = settings.shader_visible_heap_sizes[heap_type_idx];
+            const DescriptorHeap::Settings heap_settings{ heap_type, heap_size, m_deferred_heap_allocation, true };
             desc_heaps.push_back(DescriptorHeap::Create(m_context, heap_settings));
         }
     }

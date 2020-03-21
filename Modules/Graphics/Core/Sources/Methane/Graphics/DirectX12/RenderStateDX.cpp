@@ -178,7 +178,7 @@ static D3D12_DEPTH_STENCILOP_DESC ConvertStencilFaceOperationsToD3D12(const Rend
 {
     ITT_FUNCTION_TASK();
 
-    D3D12_DEPTH_STENCILOP_DESC stencil_desc = { };
+    D3D12_DEPTH_STENCILOP_DESC stencil_desc{};
 
     stencil_desc.StencilFailOp      = ConvertStencilOperationToD3D12(stencil_face_op.stencil_failure);
     stencil_desc.StencilPassOp      = ConvertStencilOperationToD3D12(stencil_face_op.stencil_pass);

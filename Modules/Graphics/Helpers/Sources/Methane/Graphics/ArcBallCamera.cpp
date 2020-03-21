@@ -138,7 +138,7 @@ void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir)
 void ArcBallCamera::Rotate(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation)
 {
     ITT_FUNCTION_TASK();
-    Matrix44f view_rotation_matrix = { };
+    Matrix44f view_rotation_matrix { };
     cml::matrix_rotation_axis_angle(view_rotation_matrix, view_axis, angle_rad);
 
     const Vector4f look_in_view = m_p_view_camera

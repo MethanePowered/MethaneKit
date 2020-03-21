@@ -46,7 +46,7 @@ class AppController
     , public Platform::Keyboard::ActionControllerBase<AppAction>
 {
 public:
-    inline static const ActionByKeyboardState default_action_by_keyboard_state = {
+    inline static const ActionByKeyboardState default_action_by_keyboard_state {
         { { Platform::Keyboard::Key::F1 },                                       AppAction::ShowControlsHelp    },
         { { Platform::Keyboard::Key::F2 },                                       AppAction::ShowCommandLineHelp },
         { { Platform::Keyboard::Key::LeftControl,  Platform::Keyboard::Key::F }, AppAction::SwitchFullScreen    },

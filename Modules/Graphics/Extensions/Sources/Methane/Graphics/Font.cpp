@@ -176,7 +176,7 @@ public:
         if (!m_has_kerning || !left_glyph_index || !right_glyph_index)
             return FrameRect::Point(0, 0);
 
-        FT_Vector kerning_vec = {};
+        FT_Vector kerning_vec{};
         ThrowFreeTypeError(FT_Get_Kerning(m_ft_face, left_glyph_index, right_glyph_index, FT_KERNING_DEFAULT, &kerning_vec));
         return FrameRect::Point(kerning_vec.x >> 6, 0);
     }
@@ -423,7 +423,7 @@ bool Font::HasChar(Char::Code char_code)
 const Font::Char& Font::GetChar(Char::Code char_code) const
 {
     ITT_FUNCTION_TASK();
-    static const Char s_none_char = {};
+    static const Char s_none_char {};
     static const Char s_line_break(static_cast<Char::Code>('\n'));
     if (char_code == s_line_break.code)
         return s_line_break;

@@ -128,7 +128,7 @@ Resource::SubResource::Index Resource::SubResource::ComputeIndex(uint32_t raw_in
 {
     const uint32_t array_and_depth_index = raw_index / mip_levels_count;
 
-    Index index = {};
+    Index index{};
     index.mip_level   = raw_index % mip_levels_count;
     index.depth_slice = array_and_depth_index % depth;
     index.array_index = array_and_depth_index / depth;

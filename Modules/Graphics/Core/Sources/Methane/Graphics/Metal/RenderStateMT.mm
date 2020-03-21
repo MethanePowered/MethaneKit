@@ -326,7 +326,7 @@ void RenderStateMT::SetViewports(const Viewports& viewports)
     m_mtl_viewports.clear();
     for(const Viewport& viewport : viewports)
     {
-        MTLViewport mtl_viewport = { };
+        MTLViewport mtl_viewport{ };
         mtl_viewport.originX = viewport.origin.GetX();
         mtl_viewport.originY = viewport.origin.GetY();
         mtl_viewport.width   = viewport.size.width;
@@ -346,7 +346,7 @@ void RenderStateMT::SetScissorRects(const ScissorRects& scissor_rects)
     m_mtl_scissor_rects.clear();
     for(const ScissorRect& scissor_rect : scissor_rects)
     {
-        MTLScissorRect mtl_scissor_rect = {};
+        MTLScissorRect mtl_scissor_rect{};
         mtl_scissor_rect.x      = static_cast<NSUInteger>(scissor_rect.origin.GetX());
         mtl_scissor_rect.y      = static_cast<NSUInteger>(scissor_rect.origin.GetY());
         mtl_scissor_rect.width  = static_cast<NSUInteger>(scissor_rect.size.width);

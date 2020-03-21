@@ -65,7 +65,7 @@ int AppWin::Run(const RunArgs& args)
         return base_return_code;
 
     // Initialize the window class.
-    WNDCLASSEX window_class     = { };
+    WNDCLASSEX window_class{};
     window_class.cbSize         = sizeof(WNDCLASSEX);
     window_class.style          = CS_HREDRAW | CS_VREDRAW;
     window_class.lpfnWndProc    = WindowProc;
@@ -87,7 +87,7 @@ int AppWin::Run(const RunArgs& args)
     frame_size.height = app_settings.height < 1.0 ? static_cast<uint32_t>(desktop_height * (app_settings.height > 0.0 ? app_settings.height : 0.7))
                                                   : static_cast<uint32_t>(app_settings.height);
 
-    RECT window_rect = { 0, 0, static_cast<LONG>(frame_size.width), static_cast<LONG>(frame_size.height) };
+    RECT window_rect{ 0, 0, static_cast<LONG>(frame_size.width), static_cast<LONG>(frame_size.height) };
     AdjustWindowRect(&window_rect, WS_OVERLAPPEDWINDOW, FALSE);
     const Data::FrameSize window_size(static_cast<uint32_t>(window_rect.right - window_rect.left),
                                       static_cast<uint32_t>(window_rect.bottom - window_rect.top));
@@ -136,7 +136,7 @@ int AppWin::Run(const RunArgs& args)
 #endif
 
     // Main message loop
-    MSG msg = { 0 };
+    MSG msg{};
     while (m_is_message_processing)
     {
         // Process any messages in the queue.
@@ -224,7 +224,7 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
         {
             if (p_app)
             {
-                RECT window_rect = {};
+                RECT window_rect{};
                 GetWindowRect(h_wnd, &window_rect);
                 p_app->ChangeWindowBounds(Data::FrameRect {
                     Data::Point2i(window_rect.left, window_rect.top),
@@ -232,7 +232,7 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
                               static_cast<uint32_t>(window_rect.bottom - window_rect.top))
                 });
 
-                RECT client_rect = {};
+                RECT client_rect{};
                 GetClientRect(h_wnd, &client_rect);
                 p_app->Resize(Data::FrameSize(
                     static_cast<uint32_t>(client_rect.right  - client_rect.left),
@@ -435,7 +435,7 @@ bool AppWin::SetFullScreen(bool is_full_screen)
 
     assert(!!m_env.window_handle);
     
-    RECT            window_rect     = {};
+    RECT            window_rect{};
     int32_t         window_style    = WS_OVERLAPPEDWINDOW;
     int32_t         window_mode     = 0;
     HWND            window_position = nullptr;
@@ -451,8 +451,8 @@ bool AppWin::SetFullScreen(bool is_full_screen)
 
         // Get resolution and location of the monitor where current window is located
         HMONITOR    monitor_handle = MonitorFromWindow(m_env.window_handle, MONITOR_DEFAULTTONEAREST);
-        MONITORINFO monitor_info   = {};
-        monitor_info.cbSize        = sizeof(MONITORINFO);
+        MONITORINFO monitor_info{};
+        monitor_info.cbSize = sizeof(MONITORINFO);
         GetMonitorInfo(monitor_handle, &monitor_info);
         window_rect = monitor_info.rcMonitor;
     }

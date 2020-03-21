@@ -61,11 +61,11 @@ private:
     ProgramDX& GetProgramDX();
     RenderContextDX& GetRenderContextDX();
 
-    D3D12_GRAPHICS_PIPELINE_STATE_DESC m_pipeline_state_desc = { };
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC m_pipeline_state_desc{ };
     wrl::ComPtr<ID3D12PipelineState>   m_cp_pipeline_state;
     std::vector<CD3DX12_VIEWPORT>      m_viewports;
     std::vector<CD3DX12_RECT>          m_scissor_rects;
-    float                              m_blend_factor[4] = { 0.0, 0.0, 0.0, 0.0 };
+    float                              m_blend_factor[4]{ 0.0, 0.0, 0.0, 0.0 };
 };
 
 } // namespace Methane::Graphics

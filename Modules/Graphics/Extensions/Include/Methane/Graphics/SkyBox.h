@@ -71,7 +71,7 @@ private:
     {
         Mesh::Position position;
 
-        inline static const Mesh::VertexLayout layout = {
+        inline static const Mesh::VertexLayout layout{
             Mesh::VertexField::Position,
         };
     };

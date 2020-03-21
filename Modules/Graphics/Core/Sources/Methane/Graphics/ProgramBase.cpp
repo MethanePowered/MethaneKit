@@ -176,7 +176,7 @@ void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_desc
         Ptr<ProgramBindings::ArgumentBinding> sp_argument_binding;
         for(Shader::Type shader_type : all_shader_types)
         {
-            const Argument argument = { shader_type, argument_name };
+            const Argument argument{ shader_type, argument_name };
             auto binding_by_argument_it = m_binding_by_argument.find(argument);
             if (binding_by_argument_it == m_binding_by_argument.end())
             {

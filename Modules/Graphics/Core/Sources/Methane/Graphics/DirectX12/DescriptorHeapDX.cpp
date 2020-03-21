@@ -96,7 +96,7 @@ void DescriptorHeapDX::Allocate()
 
     wrl::ComPtr<ID3D12DescriptorHeap> cp_old_descriptor_heap = m_cp_descriptor_heap;
 
-    D3D12_DESCRIPTOR_HEAP_DESC heap_desc = {};
+    D3D12_DESCRIPTOR_HEAP_DESC heap_desc{};
     heap_desc.NumDescriptors = m_deferred_size;
     heap_desc.Type           = m_descriptor_heap_type;
     heap_desc.Flags          = m_settings.shader_visible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;

@@ -183,7 +183,7 @@ void DepthStencilBufferTextureDX::Initialize(const std::optional<DepthStencil>& 
         {
         case DescriptorHeap::Type::ShaderResources:
         {
-            D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+            D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
             srv_desc.Format                          = TypeConverterDX::DataFormatToDXGI(settings.pixel_format, TypeConverterDX::ResourceFormatType::ViewRead);
             srv_desc.ViewDimension                   = GetSrvDimension(settings.dimensions);
             srv_desc.Shader4ComponentMapping         = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -193,9 +193,9 @@ void DepthStencilBufferTextureDX::Initialize(const std::optional<DepthStencil>& 
 
         case DescriptorHeap::Type::DepthStencil:
         {
-            D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc   = {};
-            dsv_desc.Format                          = view_write_format;
-            dsv_desc.ViewDimension                   = GetDsvDimension(settings.dimensions);
+            D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc{};
+            dsv_desc.Format        = view_write_format;
+            dsv_desc.ViewDimension = GetDsvDimension(settings.dimensions);
             cp_device->CreateDepthStencilView(GetNativeResource(), &dsv_desc, GetNativeCpuDescriptorHandle(desc));
         } break;
 
@@ -247,8 +247,8 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
     assert(settings.dimensions.width  > 0);
     assert(settings.dimensions.height > 0);
 
-    D3D12_RESOURCE_DESC tex_desc = {};
-    D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+    D3D12_RESOURCE_DESC tex_desc{};
+    D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
     const uint32_t mip_levels_count = GetMipLevelsCount();
 
     switch (settings.dimension_type)
@@ -449,7 +449,7 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
         base_mip_image.pixels          = reinterpret_cast<uint8_t*>(const_cast<void*>(dx_sub_resource.pData)); // FIXME: Dirty casting...
     }
 
-    DirectX::TexMetadata tex_metadata = { };
+    DirectX::TexMetadata tex_metadata{ };
     tex_metadata.width     = settings.dimensions.width;
     tex_metadata.height    = settings.dimensions.height;
     tex_metadata.depth     = is_cube_texture ? 1 : settings.dimensions.depth;

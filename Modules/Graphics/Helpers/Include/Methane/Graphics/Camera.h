@@ -105,11 +105,11 @@ protected:
     const cml::AxisOrientation m_axis_orientation;
 
     Projection      m_projection            = Projection::Perspective;
-    Data::Point2f   m_screen_size           = { 1.f, 1.f };
+    Data::Point2f   m_screen_size           { 1.f, 1.f };
     float           m_aspect_ratio          = 1.0f;
-    Parameters      m_parameters            = { 0.01f, 125.f, 90.f };
-    Orientation     m_default_orientation   = { { 15.0f, 15.0f, -15.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } };
-    Orientation     m_current_orientation   = { };
+    Parameters      m_parameters            { 0.01f, 125.f, 90.f };
+    Orientation     m_default_orientation   { { 15.0f, 15.0f, -15.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } };
+    Orientation     m_current_orientation   { };
 };
 
 } // namespace Methane::Graphics

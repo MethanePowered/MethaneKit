@@ -48,7 +48,7 @@ struct MutableParameters
 };
 
 constexpr uint32_t g_max_complexity = 9;
-static const std::array<MutableParameters, g_max_complexity+1> g_mutable_parameters = {{
+static const std::array<MutableParameters, g_max_complexity+1> g_mutable_parameters{ {
     { 1000u,  35u,   10u, 0.6f  }, // 0
     { 2000u,  50u,   10u, 0.5f  }, // 1
     { 3000u,  75u,   20u, 0.45f }, // 2
@@ -59,7 +59,7 @@ static const std::array<MutableParameters, g_max_complexity+1> g_mutable_paramet
     { 20000u, 500u,  40u, 0.23f }, // 7
     { 35000u, 750u,  50u, 0.2f  }, // 8
     { 50000u, 1000u, 50u, 0.17f }, // 9
-}};
+} };
 
 inline uint32_t GetDefaultComplexity()
 {
@@ -80,7 +80,7 @@ inline const MutableParameters& GetMutableParameters()
     return GetMutableParameters(GetDefaultComplexity());
 }
 
-static const std::map<pal::Keyboard::State, AsteroidsAppAction> g_asteroids_action_by_keyboard_state = {
+static const std::map<pal::Keyboard::State, AsteroidsAppAction> g_asteroids_action_by_keyboard_state{
     { { pal::Keyboard::Key::F3           }, AsteroidsAppAction::ShowParameters              },
     { { pal::Keyboard::Key::RightBracket }, AsteroidsAppAction::IncreaseComplexity          },
     { { pal::Keyboard::Key::LeftBracket  }, AsteroidsAppAction::DecreaseComplexity          },

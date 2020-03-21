@@ -103,7 +103,7 @@ private:
         void                SetShadowPassUniforms(const MeshUniforms& uniforms) { m_shadow_pass_uniforms = uniforms; }
 
     private:
-        MeshUniforms m_shadow_pass_uniforms = {};
+        MeshUniforms m_shadow_pass_uniforms{};
     };
 
     struct RenderPass
@@ -124,7 +124,7 @@ private:
 
     const float                 m_scene_scale;
     const Constants             m_scene_constants;
-    SceneUniforms               m_scene_uniforms = { };
+    SceneUniforms               m_scene_uniforms{ };
     gfx::Camera                 m_view_camera;
     gfx::Camera                 m_light_camera;
 

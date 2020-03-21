@@ -72,11 +72,11 @@ void HelloTriangleApp::Init()
         gfx::Vector3f color;
     };
 
-    const std::array<Vertex, 3> triangle_vertices = {{
+    const std::array<Vertex, 3> triangle_vertices{ {
         { {  0.0f,  0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
         { {  0.5f, -0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
         { { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } },
-    }};
+    } };
 
     // Create vertex buffer with triangle data
     const Data::Size vertex_size      = static_cast<Data::Size>(sizeof(Vertex));

@@ -53,7 +53,7 @@ public:
         gfx::Mesh::Position position;
         gfx::Mesh::Normal   normal;
 
-        inline static const gfx::Mesh::VertexLayout layout = {
+        inline static const gfx::Mesh::VertexLayout layout{
             gfx::Mesh::VertexField::Position,
             gfx::Mesh::VertexField::Normal,
         };

@@ -61,7 +61,7 @@ protected:
 
 private:
     Mouse::State m_mouse_state;
-    RECT         m_window_rect = {};
+    RECT         m_window_rect {};
     bool         m_is_message_processing = true;
 };
 

@@ -142,7 +142,7 @@ protected:
     float                    m_rotate_angle_per_second      = 15.f;
     double                   m_keyboard_action_duration_sec = 0.3;
     MouseAction              m_mouse_action                 = MouseAction::None;
-    Vector3f                 m_mouse_pressed_in_world       = { };
+    Vector3f                 m_mouse_pressed_in_world       { };
     KeyboardActionAnimations m_keyboard_action_animations;
 };
 

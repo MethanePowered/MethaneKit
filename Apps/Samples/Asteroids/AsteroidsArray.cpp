@@ -130,7 +130,7 @@ AsteroidsArray::ContentState::ContentState(const Settings& settings)
     Data::ParallelForEach<TextureArraySubresources::iterator, gfx::Resource::SubResources>(texture_array_subresources.begin(), texture_array_subresources.end(),
         [&](gfx::Resource::SubResources& sub_resources)
         {
-            Asteroid::TextureNoiseParameters noise_parameters = {
+            Asteroid::TextureNoiseParameters noise_parameters{
                 static_cast<uint32_t>(rng()),
                 noise_persistence_distribution(rng),
                 noise_scale_distribution(rng),
@@ -224,7 +224,7 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, Settings settings, C
     const gfx::RenderContext::Settings& context_settings = context.GetSettings();
 
     const size_t textures_array_size = m_settings.textures_array_enabled ? m_settings.textures_count : 1;
-    const gfx::Shader::MacroDefinitions macro_definitions  = { { "TEXTURES_COUNT", std::to_string(textures_array_size) } };
+    const gfx::Shader::MacroDefinitions macro_definitions{ { "TEXTURES_COUNT", std::to_string(textures_array_size) } };
 
     gfx::RenderState::Settings state_settings;
     state_settings.sp_program = gfx::Program::Create(context,
@@ -322,7 +322,7 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
     Data::ParallelFor<uint32_t>(1u, m_settings.instance_count, [&](uint32_t asteroid_index)
     {
         const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(asteroid_index);
-        gfx::ProgramBindings::ResourceLocationsByArgument set_resource_location_by_argument = {
+        gfx::ProgramBindings::ResourceLocationsByArgument set_resource_location_by_argument{
             { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { sp_asteroids_uniforms_buffer, asteroid_uniform_offset } } },
         };
         if (!m_settings.textures_array_enabled)

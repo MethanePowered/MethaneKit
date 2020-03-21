@@ -37,19 +37,19 @@ TEST_CASE("Range set initialization", "[range-set]")
 
     SECTION("Initializer list with non-intersecting ranges")
     {
-        const RangeSet<uint32_t> range_set = { { 0, 2 }, { 4, 8 }, { 11, 12 } };
+        const RangeSet<uint32_t> range_set{ { 0, 2 }, { 4, 8 }, { 11, 12 } };
         CHECK(range_set.Size() == 3);
     }
         
     SECTION("Initializer list with intersecting ranges")
     {
-        const RangeSet<uint32_t> range_set = { { 0, 5 }, { 4, 8 }, { 11, 12 } };
+        const RangeSet<uint32_t> range_set{ { 0, 5 }, { 4, 8 }, { 11, 12 } };
         CHECK(range_set.Size() == 2);
     }
     
     SECTION("Copy constructor")
     {
-        const RangeSet<uint32_t> orig_range_set = { { 0, 5 }, { 4, 8 }, { 11, 12 } };
+        const RangeSet<uint32_t> orig_range_set{ { 0, 5 }, { 4, 8 }, { 11, 12 } };
         const RangeSet<uint32_t> copy_range_set(orig_range_set);
         CHECK(copy_range_set == orig_range_set);
     }
@@ -57,7 +57,7 @@ TEST_CASE("Range set initialization", "[range-set]")
 
 TEST_CASE("Range set add", "[range-set]")
 {
-    const RangeSet<uint32_t> test_range_set = {
+    const RangeSet<uint32_t> test_range_set{
         { 0, 2 }, { 4, 8 }, { 11, 12 }, { 17, 20 }, { 25, 29 }
     };
     
@@ -66,7 +66,7 @@ TEST_CASE("Range set add", "[range-set]")
         RangeSet<uint32_t> range_set(test_range_set);
         range_set.Add({ 14, 16 });
 
-        const std::set<Range<uint32_t>> reference_set = { { 0, 2 }, { 4, 8 }, { 11, 12 }, { 14, 16 }, { 17, 20 }, { 25, 29 } };
+        const std::set<Range<uint32_t>> reference_set{ { 0, 2 }, { 4, 8 }, { 11, 12 }, { 14, 16 }, { 17, 20 }, { 25, 29 } };
         CHECK(range_set == reference_set);
     }
     
@@ -75,7 +75,7 @@ TEST_CASE("Range set add", "[range-set]")
         RangeSet<uint32_t> range_set(test_range_set);
         range_set.Add({ 5, 12 });
 
-        const std::set<Range<uint32_t>> reference_set = { { 0, 2 }, { 4, 12 }, { 17, 20 }, { 25, 29 } };
+        const std::set<Range<uint32_t>> reference_set{ { 0, 2 }, { 4, 12 }, { 17, 20 }, { 25, 29 } };
         CHECK(range_set == reference_set);
     }
 
@@ -84,7 +84,7 @@ TEST_CASE("Range set add", "[range-set]")
         RangeSet<uint32_t> range_set(test_range_set);
         range_set.Add({ 0, 7 });
 
-        const std::set<Range<uint32_t>> reference_set = { { 0, 8 }, { 11, 12 }, { 17, 20 }, { 25, 29 } };
+        const std::set<Range<uint32_t>> reference_set{ { 0, 8 }, { 11, 12 }, { 17, 20 }, { 25, 29 } };
         CHECK(range_set == reference_set);
     }
 
@@ -93,7 +93,7 @@ TEST_CASE("Range set add", "[range-set]")
         RangeSet<uint32_t> range_set(test_range_set);
         range_set.Add({ 26, 35 });
 
-        const std::set<Range<uint32_t>> reference_set = { { 0, 2 }, { 4, 8 }, { 11, 12 }, { 17, 20 }, { 25, 35 } };
+        const std::set<Range<uint32_t>> reference_set{ { 0, 2 }, { 4, 8 }, { 11, 12 }, { 17, 20 }, { 25, 35 } };
         CHECK(range_set == reference_set);
     }
 
@@ -102,14 +102,14 @@ TEST_CASE("Range set add", "[range-set]")
         RangeSet<uint32_t> range_set(test_range_set);
         range_set.Add({ 8, 11 });
 
-        const std::set<Range<uint32_t>> reference_set = { { 0, 2 }, { 4, 12 }, { 17, 20 }, { 25, 29 } };
+        const std::set<Range<uint32_t>> reference_set{ { 0, 2 }, { 4, 12 }, { 17, 20 }, { 25, 29 } };
         CHECK(range_set == reference_set);
     }
 }
 
 TEST_CASE("Range set remove", "[range-set]")
 {
-    const RangeSet<uint32_t> test_range_set = {
+    const RangeSet<uint32_t> test_range_set{
         { 0, 2 }, { 4, 8 }, { 11, 12 }, { 17, 20 }, { 25, 29 }
     };
 
@@ -126,7 +126,7 @@ TEST_CASE("Range set remove", "[range-set]")
         RangeSet<uint32_t> range_set(test_range_set);
         range_set.Remove({ 4, 8 });
 
-        const std::set<Range<uint32_t>> reference_set = { { 0, 2 }, { 11, 12 }, { 17, 20 }, { 25, 29 } };
+        const std::set<Range<uint32_t>> reference_set{ { 0, 2 }, { 11, 12 }, { 17, 20 }, { 25, 29 } };
         CHECK(range_set == reference_set);
     }
 
@@ -135,7 +135,7 @@ TEST_CASE("Range set remove", "[range-set]")
         RangeSet<uint32_t> range_set(test_range_set);
         range_set.Remove({ 6, 18 });
 
-        const std::set<Range<uint32_t>> reference_set = { { 0, 2 }, { 4, 6 }, { 18, 20 }, { 25, 29 } };
+        const std::set<Range<uint32_t>> reference_set{ { 0, 2 }, { 4, 6 }, { 18, 20 }, { 25, 29 } };
         CHECK(range_set == reference_set);
     }
 
@@ -144,7 +144,7 @@ TEST_CASE("Range set remove", "[range-set]")
         RangeSet<uint32_t> range_set(test_range_set);
         range_set.Remove({ 0, 3 });
 
-        const std::set<Range<uint32_t>> reference_set = { { 4, 8 }, { 11, 12 }, { 17, 20 }, { 25, 29 } };
+        const std::set<Range<uint32_t>> reference_set{ { 4, 8 }, { 11, 12 }, { 17, 20 }, { 25, 29 } };
         CHECK(range_set == reference_set);
     }
 
@@ -153,7 +153,7 @@ TEST_CASE("Range set remove", "[range-set]")
         RangeSet<uint32_t> range_set(test_range_set);
         range_set.Remove({ 23, 30 });
 
-        const std::set<Range<uint32_t>> reference_set = { { 0, 2 }, { 4, 8 }, { 11, 12 }, { 17, 20 } };
+        const std::set<Range<uint32_t>> reference_set{ { 0, 2 }, { 4, 8 }, { 11, 12 }, { 17, 20 } };
         CHECK(range_set == reference_set);
     }
 

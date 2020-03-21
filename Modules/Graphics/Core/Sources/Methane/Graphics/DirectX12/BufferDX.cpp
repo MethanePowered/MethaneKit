@@ -34,14 +34,14 @@ namespace Methane::Graphics
 Ptr<Buffer> Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
 {
     ITT_FUNCTION_TASK();
-    const Buffer::Settings settings = { Buffer::Type::Vertex, Usage::Unknown, size };
+    const Buffer::Settings settings{ Buffer::Type::Vertex, Usage::Unknown, size };
     return std::make_shared<VertexBufferDX>(dynamic_cast<ContextBase&>(context), settings, DescriptorByUsage(), stride);
 }
 
 Ptr<Buffer> Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format)
 {
     ITT_FUNCTION_TASK();
-    const Buffer::Settings settings = { Buffer::Type::Index, Usage::Unknown, size };
+    const Buffer::Settings settings{ Buffer::Type::Index, Usage::Unknown, size };
     return std::make_shared<IndexBufferDX>(dynamic_cast<ContextBase&>(context), settings, DescriptorByUsage(), format);
 }
 
@@ -52,7 +52,7 @@ Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool
     if (addressable)
         usage_mask |= Usage::Addressable;
 
-    const Buffer::Settings settings = { Buffer::Type::Constant, usage_mask, size };
+    const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size };
     return std::make_shared<ConstantBufferDX>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 

@@ -106,7 +106,7 @@ private:
     {
         ArgumentBindingDX&          argument_binding;
         uint32_t                    root_parameter_index = 0u;
-        D3D12_GPU_DESCRIPTOR_HANDLE base_descriptor      = {};
+        D3D12_GPU_DESCRIPTOR_HANDLE base_descriptor      {  };
         D3D12_GPU_VIRTUAL_ADDRESS   gpu_virtual_address  = 0u;
     };
 

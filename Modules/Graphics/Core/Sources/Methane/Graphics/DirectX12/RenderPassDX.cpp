@@ -83,7 +83,7 @@ RenderPassDX::AccessDesc::AccessDesc(const ColorAttachment& color_attachment)
 
         const Ptr<Texture> sp_color_rt        = color_attachment.wp_texture.lock();
         const DXGI_FORMAT color_format        = TypeConverterDX::DataFormatToDXGI(sp_color_rt->GetSettings().pixel_format);
-        const float clear_color_components[4] = {
+        const float clear_color_components[4]{
             color_attachment.clear_color.GetR(),
             color_attachment.clear_color.GetG(),
             color_attachment.clear_color.GetB(),

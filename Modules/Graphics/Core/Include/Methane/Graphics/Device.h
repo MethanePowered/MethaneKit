@@ -56,7 +56,7 @@ struct Device : virtual Object
         };
 
         using Values = std::array<Value, 2>;
-        static constexpr const Values values = { BasicRendering, TextureAndSamplerArrays };
+        static constexpr const Values values{ BasicRendering, TextureAndSamplerArrays };
         
         static std::string ToString(Value feature) noexcept;
         static std::string ToString(Mask features) noexcept;

@@ -243,7 +243,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
 
     ShaderBase::ArgumentBindings argument_bindings;
 
-    D3D12_SHADER_DESC shader_desc = { };
+    D3D12_SHADER_DESC shader_desc{};
     m_cp_reflection->GetDesc(&shader_desc);
 
 #ifdef _DEBUG
@@ -253,7 +253,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
 
     for (UINT resource_index = 0; resource_index < shader_desc.BoundResources; ++resource_index)
     {
-        D3D12_SHADER_INPUT_BIND_DESC binding_desc = { };
+        D3D12_SHADER_INPUT_BIND_DESC binding_desc{};
         ThrowIfFailed(m_cp_reflection->GetResourceBindingDesc(resource_index, &binding_desc));
 
         const Program::Argument shader_argument(GetType(), binding_desc.Name);
@@ -314,7 +314,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
     ITT_FUNCTION_TASK();
     assert(!!m_cp_reflection);
 
-    D3D12_SHADER_DESC shader_desc = { };
+    D3D12_SHADER_DESC shader_desc{};
     m_cp_reflection->GetDesc(&shader_desc);
 
 #ifdef _DEBUG
@@ -326,7 +326,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
     std::vector<D3D12_INPUT_ELEMENT_DESC> dx_input_layout;
     for (UINT param_index = 0; param_index < shader_desc.InputParameters; ++param_index)
     {
-        D3D12_SIGNATURE_PARAMETER_DESC param_desc = { };
+        D3D12_SIGNATURE_PARAMETER_DESC param_desc{};
         m_cp_reflection->GetInputParameterDesc(param_index, &param_desc);
 
 #ifdef _DEBUG
@@ -357,7 +357,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
         uint32_t& buffer_byte_offset = input_buffer_byte_offsets[buffer_index];
 
         uint32_t element_byte_size = 0;
-        D3D12_INPUT_ELEMENT_DESC element_desc = { };
+        D3D12_INPUT_ELEMENT_DESC element_desc{};
         element_desc.SemanticName             = param_desc.SemanticName;
         element_desc.SemanticIndex            = param_desc.SemanticIndex;
         element_desc.InputSlot                = buffer_index;

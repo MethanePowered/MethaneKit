@@ -187,7 +187,7 @@ void ProgramDX::InitRootSignature()
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC root_signature_desc;
     root_signature_desc.Init_1_1(static_cast<UINT>(root_parameters.size()), root_parameters.data(), 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
-    D3D12_FEATURE_DATA_ROOT_SIGNATURE feature_data = {};
+    D3D12_FEATURE_DATA_ROOT_SIGNATURE feature_data{};
     feature_data.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
     if (FAILED(GetContextDX().GetDeviceDX().GetNativeDevice()->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &feature_data, sizeof(feature_data))))
     {

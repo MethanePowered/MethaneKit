@@ -62,7 +62,7 @@ struct Text::Mesh
 
         // Left-Bottom corner of the current character in text line
         const uint32_t line_height = font.GetMaxGlyphSize().height;
-        FrameRect::Point char_pos = { 0, line_height };
+        FrameRect::Point char_pos { 0, line_height };
 
         const Refs<const Font::Char> font_chars = font.GetTextChars(text);
         vertices.reserve(font_chars.size() * 4);
@@ -97,7 +97,7 @@ struct Text::Mesh
         view_char_pos -= Point2f(viewport_size.width, viewport_size.height) / 2.f; // relative to viewport center
 
         // Char quad rectangle in viewport coordinates [-1, 1] x [-1, 1]
-        const Rect<float, float> ver_rect = {
+        const Rect<float, float> ver_rect {
             {
                 static_cast<float>(view_char_pos.GetX()) *  2.f / viewport_size.width,
                 static_cast<float>(view_char_pos.GetY()) * -2.f / viewport_size.height,
@@ -109,7 +109,7 @@ struct Text::Mesh
         };
 
         // Char atlas rectangle in texture coordinates [0, 1] x [0, 1]
-        const Rect<float, float> tex_rect = {
+        const Rect<float, float> tex_rect {
             {
                 static_cast<float>(font_char.rect.origin.GetX()) / atlas_size.width,
                 static_cast<float>(font_char.rect.origin.GetY()) / atlas_size.height,
@@ -283,7 +283,7 @@ void Text::UpdateMeshBuffers(RenderContext& context)
 void Text::UpdateConstantsBuffer() const
 {
     ITT_FUNCTION_TASK();
-    TextConstants constants = {
+    TextConstants constants {
         m_settings.blend_color
     };
 

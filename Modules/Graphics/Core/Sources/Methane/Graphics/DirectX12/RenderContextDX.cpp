@@ -44,7 +44,7 @@ static void SetWindowTopMostFlag(HWND window_handle, bool is_top_most)
 {
     ITT_FUNCTION_TASK();
 
-    RECT window_rect = {};
+    RECT window_rect{};
     GetWindowRect(window_handle, &window_rect);
 
     const HWND window_position = is_top_most ? HWND_TOPMOST : HWND_NOTOPMOST;
@@ -130,7 +130,7 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
 
     // Initialize swap-chain
 
-    DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
+    DXGI_SWAP_CHAIN_DESC1 swap_chain_desc{};
     swap_chain_desc.Width                 = settings.frame_size.width;
     swap_chain_desc.Height                = settings.frame_size.height;
     swap_chain_desc.Format                = TypeConverterDX::DataFormatToDXGI(settings.color_format);
@@ -179,7 +179,7 @@ void RenderContextDX::Resize(const FrameSize& frame_size)
     ContextDX<RenderContextBase>::Resize(frame_size);
 
     // Resize the swap chain to the desired dimensions
-    DXGI_SWAP_CHAIN_DESC1 desc = {};
+    DXGI_SWAP_CHAIN_DESC1 desc{};
     m_cp_swap_chain->GetDesc1(&desc);
     ThrowIfFailed(m_cp_swap_chain->ResizeBuffers(GetSettings().frame_buffers_count, frame_size.width, frame_size.height, desc.Format, desc.Flags));
 

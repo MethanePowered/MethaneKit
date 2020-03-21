@@ -51,7 +51,7 @@ CommandQueueDX::CommandQueueDX(ContextBase& context)
     const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
     assert(!!cp_device);
 
-    D3D12_COMMAND_QUEUE_DESC queue_desc = {};
+    D3D12_COMMAND_QUEUE_DESC queue_desc{};
     queue_desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
     queue_desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 

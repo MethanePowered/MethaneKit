@@ -129,7 +129,7 @@ bool Planet::Update(double elapsed_seconds, double)
     cml::matrix_translation(model_translate_matrix, m_settings.position);
     cml::matrix_rotation_world_y(model_rotation_matrix, -m_settings.spin_velocity_rps * elapsed_seconds);
 
-    Uniforms uniforms = {};
+    Uniforms uniforms{};
     uniforms.eye_position   = gfx::Vector4f(m_settings.view_camera.GetOrientation().eye, 1.f);
     uniforms.light_position = m_settings.light_camera.GetOrientation().eye;
     uniforms.model_matrix   = model_scale_matrix * model_rotation_matrix * model_translate_matrix;

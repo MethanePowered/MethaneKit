@@ -137,7 +137,7 @@ protected:
             return RangeOfRanges{ BaseSet::end(), BaseSet::end() };
         }
 
-        RangeOfRanges mergeable_ranges = {
+        RangeOfRanges mergeable_ranges{
             BaseSet::lower_bound(Range<ScalarT>(range.GetStart(), range.GetStart())),
             BaseSet::upper_bound(range)
         };

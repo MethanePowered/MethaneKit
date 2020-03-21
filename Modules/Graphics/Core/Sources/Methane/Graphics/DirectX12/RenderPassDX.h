@@ -60,9 +60,9 @@ public:
 private:
     struct AccessDesc
     {
-        D3D12_CPU_DESCRIPTOR_HANDLE        descriptor = { };
-        D3D12_RENDER_PASS_BEGINNING_ACCESS beginning  = { };
-        D3D12_RENDER_PASS_ENDING_ACCESS    ending     = { };
+        D3D12_CPU_DESCRIPTOR_HANDLE        descriptor { };
+        D3D12_RENDER_PASS_BEGINNING_ACCESS beginning  { };
+        D3D12_RENDER_PASS_ENDING_ACCESS    ending     { };
 
         AccessDesc(const Attachment& attachment);
         AccessDesc(const ColorAttachment& color_attachment);
@@ -77,16 +77,16 @@ private:
 
     struct RTClearInfo
     {
-        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle      = {};
-        float                       clear_color[4]  = {};
+        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle     { };
+        float                       clear_color[4] { };
 
         RTClearInfo(const RenderPassBase::ColorAttachment& color_attach);
     };
 
     struct DSClearInfo
     {
-        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle      = {};
-        D3D12_CLEAR_FLAGS           clear_flags     = {};
+        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle      { };
+        D3D12_CLEAR_FLAGS           clear_flags     { };
         bool                        depth_cleared   = false;
         FLOAT                       depth_value     = 1.f;
         bool                        stencil_cleared = false;
@@ -108,7 +108,7 @@ private:
     // Fallback to input assembler setup
     std::vector<RTClearInfo>                            m_rt_clear_infos;
     DSClearInfo                                         m_ds_clear_info;
-    D3D12_CPU_DESCRIPTOR_HANDLE                         m_depth_stencil_cpu_handle = {};
+    D3D12_CPU_DESCRIPTOR_HANDLE                         m_depth_stencil_cpu_handle{ };
     bool                                                m_is_updated = false;
 };
 

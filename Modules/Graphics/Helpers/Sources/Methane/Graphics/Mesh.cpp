@@ -31,32 +31,32 @@ Abstract mesh class
 namespace Methane::Graphics
 {
 
-const Mesh::VertexFieldSizes Mesh::g_vertex_field_sizes = {{
+const Mesh::VertexFieldSizes Mesh::g_vertex_field_sizes {{
     sizeof(Position), 
     sizeof(Normal),
     sizeof(TexCoord),
     sizeof(Color),
 }};
 
-const Mesh::Positions2D Mesh::g_face_positions_2d = { // Quad vertices in clockwise order
+const Mesh::Positions2D Mesh::g_face_positions_2d { // Quad vertices in clockwise order
     { -0.5f, -0.5f },
     { -0.5f,  0.5f },
     {  0.5f,  0.5f },
     {  0.5f, -0.5f }
 };
 
-const Mesh::TexCoords   Mesh::g_face_texcoords = { // Quad texture-coords for the vertices above
+const Mesh::TexCoords   Mesh::g_face_texcoords{ // Quad texture-coords for the vertices above
     { 0.0f, 1.0f },
     { 0.0f, 0.0f },
     { 1.0f, 0.0f },
     { 1.0f, 1.0f },
 };
 
-const Mesh::Indices     Mesh::g_face_indices = { // Face indices in quad to form two triangles in clockwise order
+const Mesh::Indices     Mesh::g_face_indices{ // Face indices in quad to form two triangles in clockwise order
     0, 1, 2, 0, 2, 3
 };
 
-const Mesh::Colors      Mesh::g_colors = {
+const Mesh::Colors      Mesh::g_colors{
     { 1.0f, 0.0f, 0.0f, 1.0f },
     { 0.0f, 1.0f, 0.0f, 1.0f },
     { 0.0f, 0.0f, 1.0f, 1.0f },
@@ -107,7 +107,7 @@ Mesh::VertexFieldOffsets Mesh::GetVertexFieldOffsets(const VertexLayout& vertex_
     ITT_FUNCTION_TASK();
 
     size_t current_offset = 0;
-    VertexFieldOffsets field_offsets = {};
+    VertexFieldOffsets field_offsets{};
     std::fill(field_offsets.begin(), field_offsets.end(), -1);
     for (VertexField vertex_field : vertex_layout)
     {

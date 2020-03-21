@@ -184,7 +184,7 @@ SamplerDX::SamplerDX(ContextBase& context, const Settings& settings, const Descr
 
     InitializeDefaultDescriptors();
 
-    D3D12_SAMPLER_DESC dx_sampler_desc = {};
+    D3D12_SAMPLER_DESC dx_sampler_desc{};
     dx_sampler_desc.Filter             = ConvertFilterToDX(settings.filter);
     dx_sampler_desc.AddressU           = ConvertAddressModeToDX(settings.address.r);
     dx_sampler_desc.AddressV           = ConvertAddressModeToDX(settings.address.s);

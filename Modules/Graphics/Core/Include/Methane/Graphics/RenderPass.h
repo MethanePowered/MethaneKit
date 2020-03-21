@@ -108,7 +108,7 @@ struct RenderPass
         };
 
         using Values = std::array<Value, 4>;
-        static constexpr Values values = { ShaderResources, Samplers, RenderTargets, DepthStencil };
+        static constexpr Values values{ ShaderResources, Samplers, RenderTargets, DepthStencil };
     };
 
     struct Settings

@@ -50,7 +50,7 @@ public:
         uint32_t        unique_mesh_count        = 50u;
         uint32_t        subdivisions_count       = 3u;
         uint32_t        textures_count           = 10u;
-        gfx::Dimensions texture_dimensions       = { 256u, 256u };
+        gfx::Dimensions texture_dimensions       { 256u, 256u };
         uint32_t        random_seed              = 1337u;
         float           orbit_radius_ratio       = 10.f;
         float           disc_radius_ratio        = 3.f;
