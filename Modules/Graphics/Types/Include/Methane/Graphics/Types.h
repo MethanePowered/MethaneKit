@@ -85,6 +85,8 @@ enum class PixelFormat
 
 using PixelFormats = std::vector<PixelFormat>;
 
+uint32_t GetPixelSize(PixelFormat data_format) noexcept;
+
 enum class Compare : uint32_t
 {
     Never = 0,

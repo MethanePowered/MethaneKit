@@ -27,6 +27,7 @@ Metal implementation of the buffer interface.
 #include "TypesMT.hh"
 
 #include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Types.h>
 #include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
 

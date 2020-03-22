@@ -24,6 +24,8 @@ Methane graphics types converters to Metal native types.
 #pragma once
 
 #include <Methane/Graphics/Types.h>
+#include <Methane/Graphics/Color.hpp>
+#include <Methane/Graphics/Rect.hpp>
 
 #import <Metal/Metal.h>
 
