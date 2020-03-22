@@ -23,7 +23,7 @@ Multi-octave simplex noise generator in range [0, 1]
 
 #pragma once
 
-#include "MathTypes.h"
+#include <Methane/Graphics/Types.h>
 
 #include <simplexnoise1234.h>
 

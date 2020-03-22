@@ -25,6 +25,7 @@ Methane graphics interface: graphics texture.
 
 #include "Resource.h"
 
+#include <Methane/Graphics/Volume.hpp>
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Memory.hpp>
 

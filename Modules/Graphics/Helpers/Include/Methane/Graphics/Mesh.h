@@ -23,8 +23,7 @@ Abstract mesh class
 
 #pragma once
 
-#include "Methane/Graphics/MathTypes.h"
-#include <Methane/Data/Types.h>
+#include <Methane/Graphics/Types.h>
 
 #include <vector>
 #include <array>

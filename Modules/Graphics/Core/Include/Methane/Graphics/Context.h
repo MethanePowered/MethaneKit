@@ -24,9 +24,9 @@ Methane base context interface: wraps graphics device used for GPU interaction.
 #pragma once
 
 #include "Object.h"
-#include "Types.h"
 
 #include <Methane/Memory.hpp>
+#include <Methane/Graphics/Types.h>
 
 namespace Methane::Graphics
 {

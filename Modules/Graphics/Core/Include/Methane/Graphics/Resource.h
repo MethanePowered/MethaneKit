@@ -24,9 +24,9 @@ Methane resource interface: base class of all GPU resources.
 #pragma once
 
 #include "Object.h"
-#include "Types.h"
 
 #include <Methane/Memory.hpp>
+#include <Methane/Graphics/Types.h>
 
 #include <string>
 #include <vector>

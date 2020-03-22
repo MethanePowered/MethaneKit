@@ -161,7 +161,6 @@ else() # Linux
 endif()
 
 set(HEADERS
-    ${INCLUDE_DIR}/Types.h
     ${INCLUDE_DIR}/Device.h
     ${INCLUDE_DIR}/Context.h
     ${INCLUDE_DIR}/RenderContext.h
@@ -242,8 +241,7 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/DescriptorHeap.cpp
     ${SOURCES_DIR}/ResourceManager.h
     ${SOURCES_DIR}/ResourceManager.cpp
-    ${SOURCES_DIR}/Types.cpp
-    Include/Methane/Graphics/Fence.h)
+)
 
 add_library(${TARGET} STATIC
     ${HEADERS}
@@ -253,6 +251,7 @@ add_library(${TARGET} STATIC
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneDataProvider
+        MethaneGraphicsTypes
         MethaneGraphicsHelpers
         MethanePlatformAppView
     PRIVATE

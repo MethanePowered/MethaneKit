@@ -16,14 +16,31 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/MacOS/MathTypes.h
-MacOS specific math types aliases.
+FILE: Methane/Graphics/Rect.hpp
+2D Rect type based on cml::vector
 
 ******************************************************************************/
 
 #pragma once
 
+#include "Point.hpp"
+
+#include <Methane/Data/Rect.hpp>
+
 namespace Methane::Graphics
 {
+
+template<typename T, typename D>
+using Rect = Data::Rect<T, D>;
+
+using FrameRect    = Data::FrameRect;
+using FrameSize    = Data::FrameSize;
+using FloatRect    = Data::FloatRect;
+using FRectSize    = Data::FRectSize;
+using ScissorRect  = Rect<uint32_t, uint32_t>;
+using ScissorRects = std::vector<ScissorRect>;
+
+ScissorRect GetFrameScissorRect(const FrameRect& frame_rect);
+ScissorRect GetFrameScissorRect(const FrameSize& frame_size);
 
 } // namespace Methane::Graphics

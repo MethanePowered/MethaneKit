@@ -37,10 +37,8 @@ Methane graphics helpers: all headers under one umbrella.
 
 #endif
 
-#include "MathTypes.h"
 #include "ActionCamera.h"
 #include "ArcBallCamera.h"
 #include "Camera.h"
 #include "Mesh.h"
-#include "Noise.hpp"
 #include "FpsCounter.h"

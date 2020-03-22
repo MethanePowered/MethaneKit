@@ -47,6 +47,7 @@ add_methane_embedded_textures(${TARGET} "${IMAGES_DIR}" "${TEXTURES}")
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneDataPrimitives
+        MethaneGraphicsTypes
     PRIVATE
         MethaneBuildOptions
         MethaneCommonPrimitives

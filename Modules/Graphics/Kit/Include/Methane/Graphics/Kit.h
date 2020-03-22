@@ -28,6 +28,9 @@ Methane kit interfaces: all headers under one umbrella.
 // Graphics application class
 #include <Methane/Graphics/App.hpp>
 
+// Graphics types
+#include <Methane/Graphics/Types.h>
+
 // Graphics core API classes
 #include <Methane/Graphics/Core.h>
 

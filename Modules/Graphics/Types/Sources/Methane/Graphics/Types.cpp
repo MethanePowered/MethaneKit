@@ -17,11 +17,14 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/Types.cpp
-Methane primitive graphics types.
+Methane graphics type functions implementation.
 
 ******************************************************************************/
 
 #include <Methane/Graphics/Types.h>
+#include <Methane/Graphics/Rect.hpp>
+#include <Methane/Graphics/Volume.hpp>
+
 #include <Methane/Instrumentation.h>
 
 #include <cassert>

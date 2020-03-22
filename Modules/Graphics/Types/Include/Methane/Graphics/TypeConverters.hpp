@@ -16,57 +16,34 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/MathTypes.h
-Math types aliases.
+FILE: Methane/Graphics/TypeConverters.hpp
+Graphics type converter template functions.
 
 ******************************************************************************/
 
 #pragma once
 
-#if defined _WIN32
-
-#include "Windows/MathTypes.h"
-
-#elif defined __APPLE__
-
-#include "MacOS/MathTypes.h"
-
-#elif defined __linux__
-
-#include "Linux/MathTypes.h"
-
-#endif
-
-#include <cml/vector.h>
-#include <cml/mathlib/constants.h>
-#include <cml/matrix.h>
-
-#include <string>
-
-#define SHADER_STRUCT_ALIGNMENT 256
-#define SHADER_STRUCT_ALIGN alignas(SHADER_STRUCT_ALIGNMENT)
-#define SHADER_FIELD_ALIGN  alignas(16)
-#define SHADER_FIELD_PACK   alignas(4)
+#include "Types.h"
 
 namespace Methane::Graphics
 {
 
-constexpr cml::AxisOrientation g_axis_orientation = cml::AxisOrientation::left_handed;
+uint32_t GetPixelSize(PixelFormat data_format) noexcept;
 
-// Use row-major order matrices for DirectX
-using Matrix22i = cml::matrix22i_r;
-using Matrix33i = cml::matrix33i_r;
-using Matrix44i = cml::matrix44i_r;
-using Matrix22f = cml::matrix22f_r;
-using Matrix33f = cml::matrix33f_r;
-using Matrix44f = cml::matrix44f_r;
+template<typename TIndex>
+PixelFormat GetIndexFormat(TIndex) noexcept          { return PixelFormat::Unknown; }
 
-using Vector2i = cml::vector2i;
-using Vector3i = cml::vector3i;
-using Vector4i = cml::vector4i;
-using Vector2f = cml::vector2f;
-using Vector3f = cml::vector3f;
-using Vector4f = cml::vector4f;
+template<>
+inline PixelFormat GetIndexFormat(uint32_t) noexcept { return PixelFormat::R32Uint; }
+
+template<>
+inline PixelFormat GetIndexFormat(int32_t) noexcept  { return PixelFormat::R32Sint; }
+
+template<>
+inline PixelFormat GetIndexFormat(uint16_t) noexcept { return PixelFormat::R16Uint; }
+
+template<>
+inline PixelFormat GetIndexFormat(int16_t) noexcept  { return PixelFormat::R16Sint; }
 
 template<typename T, int vector_size>
 inline std::string VectorToString(const cml::vector<T, cml::fixed<vector_size>>& v)

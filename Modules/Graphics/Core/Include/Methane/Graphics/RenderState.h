@@ -25,9 +25,11 @@ Methane render state interface: specifies configuration of the graphics pipeline
 
 #include "Object.h"
 #include "Program.h"
-#include "Types.h"
 
 #include <Methane/Memory.hpp>
+#include <Methane/Graphics/Types.h>
+#include <Methane/Graphics/Volume.hpp>
+#include <Methane/Graphics/Color.hpp>
 
 namespace Methane::Graphics
 {

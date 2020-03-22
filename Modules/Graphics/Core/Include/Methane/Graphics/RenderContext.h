@@ -26,6 +26,9 @@ provides basic multi-frame rendering synchronization and frame presenting APIs.
 
 #include "Context.h"
 
+#include <Methane/Graphics/Types.h>
+#include <Methane/Graphics/Rect.hpp>
+#include <Methane/Graphics/Color.hpp>
 #include <Methane/Platform/AppEnvironment.h>
 #include <Methane/Platform/AppView.h>
 

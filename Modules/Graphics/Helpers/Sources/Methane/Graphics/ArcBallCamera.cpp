@@ -22,15 +22,14 @@ Arc-ball camera rotation with mouse handling.
 ******************************************************************************/
 
 #include <Methane/Graphics/ArcBallCamera.h>
+#include <Methane/Graphics/Types.h>
+#include <Methane/Graphics/Point.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <cml/mathlib/mathlib.h>
 
 #include <cmath>
 #include <cassert>
-#include "../../../../Core/Include/Methane/Graphics/Types.h"
-
-using namespace Methane::Data;
 
 namespace Methane::Graphics
 {

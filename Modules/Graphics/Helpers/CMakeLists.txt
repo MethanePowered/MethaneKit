@@ -11,7 +11,6 @@ set(HEADERS
     ${INCLUDE_DIR}/ActionCamera.h
     ${INCLUDE_DIR}/FpsCounter.h
     ${INCLUDE_DIR}/Noise.hpp
-    ${INCLUDE_DIR}/MathTypes.h
     ${INCLUDE_DIR}/Mesh.h
     ${INCLUDE_DIR}/Mesh/BaseMesh.hpp
     ${INCLUDE_DIR}/Mesh/QuadMesh.hpp
@@ -20,7 +19,6 @@ set(HEADERS
     ${INCLUDE_DIR}/Mesh/SphereMesh.hpp
     ${INCLUDE_DIR}/Mesh/IcosahedronMesh.hpp
     ${INCLUDE_PLATFORM_DIR}/Helpers.h
-    ${INCLUDE_PLATFORM_DIR}/MathTypes.h
 )
 
 set(SOURCES
@@ -46,7 +44,7 @@ target_include_directories(${TARGET}
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneDataAnimation
-        MethaneDataTypes
+        MethaneGraphicsTypes
         PerlinNoise
     PRIVATE
         MethaneBuildOptions

@@ -28,6 +28,7 @@ target_link_libraries(${TARGET}
         MethaneGraphicsCore
         MethaneGraphicsHelpers
         MethaneGraphicsExtensions
+        MethaneGraphicsTypes
 )
 
 set(PREREQUISITE_TARGETS

@@ -23,10 +23,11 @@ Methane render pass interface: specifies output of the graphics pipeline.
 
 #pragma once
 
-#include "Types.h"
 #include "Texture.h"
 
 #include <Methane/Memory.hpp>
+#include <Methane/Graphics/Types.h>
+#include <Methane/Graphics/Color.hpp>
 
 #include <vector>
 

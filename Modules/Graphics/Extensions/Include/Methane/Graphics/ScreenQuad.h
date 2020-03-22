@@ -30,7 +30,6 @@ ScreenQuad rendering primitive.
 #include <Methane/Graphics/Program.h>
 #include <Methane/Graphics/ProgramBindings.h>
 #include <Methane/Graphics/Sampler.h>
-#include <Methane/Graphics/MathTypes.h>
 #include <Methane/Graphics/Types.h>
 
 #include <memory>

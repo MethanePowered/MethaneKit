@@ -24,6 +24,7 @@ Methane graphics types converters to DirectX 12 native types.
 #pragma once
 
 #include <Methane/Graphics/Types.h>
+#include <Methane/Graphics/Volume.hpp>
 
 #include <d3dx12.h>
 #include <d3d12shader.h>
