@@ -25,8 +25,6 @@ Data parallel processing primitives
 
 #pragma once
 
-#include <Methane/Data/Types.h>
-
 #ifdef _WIN32
 #define METHANE_USE_PPL
 #endif

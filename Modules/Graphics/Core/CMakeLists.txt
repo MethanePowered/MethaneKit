@@ -252,13 +252,14 @@ add_library(${TARGET} STATIC
 
 target_link_libraries(${TARGET}
     PUBLIC
-        MethaneDataPrimitives
+        MethaneDataProvider
         MethaneGraphicsHelpers
         MethanePlatformAppView
     PRIVATE
         MethaneBuildOptions
         MethaneCommonPrimitives
         MethaneDataRangeSet
+        MethaneDataPrimitives
         MethanePlatformUtils
         MethaneInstrumentation
         ${PLATFORM_LIBRARIES}

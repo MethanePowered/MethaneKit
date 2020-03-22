@@ -24,7 +24,7 @@ DirectX 12 implementation of the shader interface.
 #pragma once
 
 #include <Methane/Graphics/ShaderBase.h>
-#include <Methane/Data/Chunk.h>
+#include <Methane/Data/Chunk.hpp>
 
 #include "DescriptorHeapDX.h"
 

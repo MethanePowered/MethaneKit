@@ -23,7 +23,7 @@ Data provider interface used for loading application resources and resource file
 
 #pragma once
 
-#include "Chunk.h"
+#include <Methane/Data/Chunk.hpp>
 
 #include <string>
 

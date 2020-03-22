@@ -27,7 +27,7 @@ DirectX 12 implementation of the resource interface.
 
 #include <wrl.h>
 #include <d3d12.h>
-#include "Methane/Data/Types.h"
+#include "Methane/Data/Provider.h"
 
 namespace Methane::Graphics
 {

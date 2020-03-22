@@ -89,7 +89,7 @@ ShadowCubeApp::ShadowCubeApp()
     m_light_camera.SetOrientation({ { 0.0f,  25.0f, -25.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
     m_light_camera.SetParameters({ -300, 300.f, 90.f });
-    m_light_camera.Resize(80, 80);
+    m_light_camera.Resize({ 80.f, 80.f });
 
     m_animations.push_back(
         std::make_shared<Data::TimeAnimation>(
@@ -112,8 +112,10 @@ void ShadowCubeApp::Init()
     GraphicsApp::Init();
 
     const gfx::RenderContext::Settings& context_settings = m_sp_context->GetSettings();
-    m_view_camera.Resize(static_cast<float>(context_settings.frame_size.width),
-                         static_cast<float>(context_settings.frame_size.height));
+    m_view_camera.Resize({
+        static_cast<float>(context_settings.frame_size.width),
+        static_cast<float>(context_settings.frame_size.height)
+    });
 
     const gfx::Mesh::VertexLayout mesh_layout(Vertex::layout);
     const gfx::CubeMesh<Vertex>  cube_mesh(mesh_layout, 1.f, 1.f, 1.f);
@@ -349,7 +351,10 @@ bool ShadowCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     m_final_pass.sp_state->SetViewports({ gfx::GetFrameViewport(frame_size) });
     m_final_pass.sp_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
 
-    m_view_camera.Resize(static_cast<float>(frame_size.width), static_cast<float>(frame_size.height));
+    m_view_camera.Resize({
+        static_cast<float>(frame_size.width),
+        static_cast<float>(frame_size.height)
+    });
 
     return true;
 }

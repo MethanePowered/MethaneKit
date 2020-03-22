@@ -39,7 +39,7 @@ add_library(${TARGET} STATIC
 
 target_link_libraries(${TARGET}
     PUBLIC
-        MethaneDataPrimitives
+        MethaneDataTypes
     PRIVATE
         MethaneBuildOptions
         MethaneCommonPrimitives

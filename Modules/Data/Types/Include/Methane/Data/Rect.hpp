@@ -23,38 +23,10 @@ Common Methane primitive data types
 
 #pragma once
 
-#include <cml/vector.h>
-#include <string>
-#include <cstdint>
+#include "Point.hpp"
 
 namespace Methane::Data
 {
-
-template<typename T>
-class Point2T : public cml::vector<T, cml::fixed<2>>
-{
-public:
-    using Base = cml::vector<T, cml::fixed<2>>;
-    using Base::Base;
-
-    T GetX() const noexcept { return (*this)[0]; }
-    T GetY() const noexcept { return (*this)[1]; }
-    
-    void SetX(T x) noexcept { (*this)[0] = x; }
-    void SetY(T y) noexcept { (*this)[1] = y; }
-
-    template<typename U>
-    explicit operator Point2T<U>() const
-    { return Point2T<U>(static_cast<U>(GetX()), static_cast<U>(GetY())); }
-
-    operator std::string() const
-    { return "Pt(" + std::to_string(GetX()) + ", " + std::to_string(GetY()) + ")"; }
-};
-
-using Point2i = Point2T<int32_t>;
-using Point2u = Point2T<uint32_t>;
-using Point2f = Point2T<float>;
-using Point2d = Point2T<double>;
 
 template<typename T, typename D>
 struct Rect
@@ -63,11 +35,16 @@ struct Rect
     {
         D width = 0;
         D height = 0;
-        
-        Size() = default;
-        Size(const Size& size) = default;
-        Size(D w, D h) : width(w), height(h) { }
-        
+
+        Size() noexcept = default;
+        Size(const Size& size) noexcept = default;
+        Size(D w, D h) noexcept : width(w), height(h) { }
+
+        template<typename U, typename V>
+        Size(const typename Rect<U,V>::Size& other) noexcept
+            : Size(static_cast<D>(other.width), static_cast<D>(other.height))
+        { }
+
         bool operator==(const Size& other) const noexcept
         { return std::tie(width, height) == std::tie(other.width, other.height); }
 
@@ -113,13 +90,17 @@ struct Rect
         operator bool() const noexcept
         { return width && height; }
 
+        template<typename U, typename V>
+        explicit operator typename Rect<U,V>::Size() const noexcept
+        { return Rect<U,V>::Size(static_cast<V>(width), static_cast<V>(height)); }
+
         D GetPixelsCount() const noexcept { return width * height; }
         D GetLongestSide() const noexcept { return std::max(width, height); }
 
         operator std::string() const
         { return "Sz(" + std::to_string(width) + " x " + std::to_string(height) + ")"; }
     };
-    
+
     template<typename U>
     operator Rect<U, U>() const
     { return { static_cast<Point2T<U>>(origin), static_cast<typename Rect<U, U>::Size>(size) }; }
@@ -147,10 +128,7 @@ struct Rect
 using FrameRect    = Rect<int32_t, uint32_t>;
 using FrameSize    = FrameRect::Size;
 
-using Bytes = std::vector<uint8_t>;
-using Size = uint32_t;
-using Index = Size;
-using RawPtr = uint8_t*;
-using ConstRawPtr = const uint8_t* const;
+using FloatRect    = Rect<float, float>;
+using FRectSize    = FloatRect::Size;
 
 } // namespace Methane::Data

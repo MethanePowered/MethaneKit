@@ -1,17 +1,18 @@
-set(TARGET MethaneDataPrimitives)
+set(TARGET MethaneDataProvider)
 
 include(MethaneModules)
 
 get_module_dirs("Methane/Data")
 
 set(HEADERS
-    ${INCLUDE_DIR}/AlignedAllocator.hpp
-    ${INCLUDE_DIR}/Math.hpp
-    ${INCLUDE_DIR}/Parallel.hpp
+    ${INCLUDE_DIR}/Provider.h
+    ${INCLUDE_DIR}/FileProvider.hpp
+    ${INCLUDE_DIR}/ResourceProvider.hpp
+    ${INCLUDE_DIR}/AppResourceProviders.h
 )
 
 set(SOURCES
-    ${SOURCES_DIR}/Primitives.cpp
+    ${SOURCES_DIR}/Provider.cpp
 )
 
 add_library(${TARGET} STATIC
@@ -28,21 +29,11 @@ target_include_directories(${TARGET}
 
 target_link_libraries(${TARGET}
     PUBLIC
-        CML
+        MethaneDataTypes
+        MethaneInstrumentation
     PRIVATE
         MethaneBuildOptions
-        MethaneInstrumentation
-        MethaneDataTypes
 )
-
-if (UNIX)
-
-    target_link_libraries(${TARGET}
-        PRIVATE
-            pthread
-    )
-
-endif()
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES  ${HEADERS} ${SOURCES})
 

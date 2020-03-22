@@ -23,7 +23,7 @@ Platform abstraction of mouse events.
 
 #pragma once
 
-#include <Methane/Data/Types.h>
+#include <Methane/Data/Point.hpp>
 
 #include <cmath>
 #include <array>
@@ -74,7 +74,6 @@ using ButtonStates = std::array<ButtonState, static_cast<size_t>(Button::Count)>
 
 using Position = Data::Point2i;
 using Scroll = Data::Point2f;
-
 
 using MouseButtonAndDelta = std::pair<Mouse::Button, float>;
 inline MouseButtonAndDelta GetScrollButtonAndDelta(const Scroll& scroll_delta)

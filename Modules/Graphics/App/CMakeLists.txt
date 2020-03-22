@@ -30,7 +30,7 @@ target_include_directories(${TARGET}
 
 target_link_libraries(${TARGET}
 PUBLIC
-    MethaneDataPrimitives
+    MethaneDataProvider
     MethanePlatformApp
     MethanePlatformUtils
     MethanePlatformInput

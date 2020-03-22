@@ -25,7 +25,7 @@ Camera helper implementation allowing to generate view and projection matrices.
 
 #include "MathTypes.h"
 
-#include <Methane/Data/Types.h>
+#include <Methane/Data/Rect.hpp>
 
 #include <cml/mathlib/constants.h>
 
@@ -57,7 +57,7 @@ public:
 
     Camera(cml::AxisOrientation axis_orientation = g_axis_orientation);
 
-    void Resize(float width, float height) noexcept;
+    void Resize(const Data::FRectSize& screen_size) noexcept;
     void SetProjection(Projection projection) noexcept           { m_projection = projection; }
     void ResetOrientation() noexcept                             { m_current_orientation = m_default_orientation; }
     void SetOrientation(const Orientation& orientation) noexcept { m_current_orientation = m_default_orientation = orientation; }
@@ -67,7 +67,7 @@ public:
 
     const Orientation& GetOrientation() const noexcept           { return m_current_orientation; }
     float GetAimDistance() const noexcept                        { return GetAimDistance(m_current_orientation); }
-    const Data::Point2f& GetScreenSize() const noexcept          { return m_screen_size; }
+    const Data::FRectSize& GetScreenSize() const noexcept        { return m_screen_size; }
     Vector3f GetLookDirection() const noexcept                   { return GetLookDirection(m_current_orientation); }
 
     void GetViewProjMatrices(Matrix44f& out_view, Matrix44f& out_proj) const noexcept;
@@ -105,7 +105,7 @@ protected:
     const cml::AxisOrientation m_axis_orientation;
 
     Projection      m_projection            = Projection::Perspective;
-    Data::Point2f   m_screen_size           { 1.f, 1.f };
+    Data::FRectSize m_screen_size           { 1.f, 1.f };
     float           m_aspect_ratio          = 1.0f;
     Parameters      m_parameters            { 0.01f, 125.f, 90.f };
     Orientation     m_default_orientation   { { 15.0f, 15.0f, -15.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } };

@@ -46,7 +46,7 @@ target_include_directories(${TARGET}
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneDataAnimation
-        MethaneDataPrimitives
+        MethaneDataTypes
         PerlinNoise
     PRIVATE
         MethaneBuildOptions

@@ -226,18 +226,18 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
             {
                 RECT window_rect{};
                 GetWindowRect(h_wnd, &window_rect);
-                p_app->ChangeWindowBounds(Data::FrameRect {
+                p_app->ChangeWindowBounds({
                     Data::Point2i(window_rect.left, window_rect.top),
                     Data::FrameSize(static_cast<uint32_t>(window_rect.right  - window_rect.left),
-                              static_cast<uint32_t>(window_rect.bottom - window_rect.top))
+                                    static_cast<uint32_t>(window_rect.bottom - window_rect.top))
                 });
 
                 RECT client_rect{};
                 GetClientRect(h_wnd, &client_rect);
-                p_app->Resize(Data::FrameSize(
-                    static_cast<uint32_t>(client_rect.right  - client_rect.left),
-                    static_cast<uint32_t>(client_rect.bottom - client_rect.top)),
-                    w_param == SIZE_MINIMIZED);
+                p_app->Resize({
+                        static_cast<uint32_t>(client_rect.right  - client_rect.left),
+                        static_cast<uint32_t>(client_rect.bottom - client_rect.top)
+                    }, w_param == SIZE_MINIMIZED);
             }
         }
         break;

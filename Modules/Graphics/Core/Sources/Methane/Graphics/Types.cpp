@@ -32,7 +32,7 @@ namespace Methane::Graphics
 ScissorRect GetFrameScissorRect(const FrameRect& frame_rect)
 {
     ITT_FUNCTION_TASK();
-    return ScissorRect{
+    return {
         ScissorRect::Point(static_cast<uint32_t>(std::max(0, frame_rect.origin.GetX())),
                            static_cast<uint32_t>(std::max(0, frame_rect.origin.GetY()))),
         ScissorRect::Size(frame_rect.origin.GetX() >= 0 ? frame_rect.size.width : frame_rect.size.width + frame_rect.origin.GetX(),

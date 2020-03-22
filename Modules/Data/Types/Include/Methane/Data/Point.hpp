@@ -16,29 +16,44 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Data/Chunk.h
-Data chunk representing owning or non-owning memory container
+FILE: Methane/Data/Point2D.hpp
+2D Point type based on cml::vector
 
 ******************************************************************************/
 
 #pragma once
 
-#include "Types.h"
+#include <cml/vector.h>
+#include <string>
+#include <cstdint>
 
 namespace Methane::Data
 {
 
-struct Chunk
+template<typename T>
+class Point2T : public cml::vector<T, cml::fixed<2>>
 {
-    // NOTE: Data storage is used only when data is not managed by data provider and returned with chunk (when data is loaded from file, for example)
-    const Bytes data;
-    ConstRawPtr p_data = nullptr;
-    const Size  size   = 0;
+public:
+    using Base = cml::vector<T, cml::fixed<2>>;
+    using Base::Base;
 
-    Chunk() = default;
-    Chunk(ConstRawPtr in_p_data, Size in_size) : p_data(in_p_data), size(in_size) { }
-    Chunk(const Bytes&& in_data)  : data(std::move(in_data)), p_data(static_cast<ConstRawPtr>(data.data())), size(static_cast<Size>(data.size())) { }
-    Chunk(Chunk&& other) noexcept : data(std::move(other.data)), p_data(data.empty() ? other.p_data : data.data()), size(data.empty() ? other.size : static_cast<Size>(data.size())) { }
+    T GetX() const noexcept { return (*this)[0]; }
+    T GetY() const noexcept { return (*this)[1]; }
+
+    void SetX(T x) noexcept { (*this)[0] = x; }
+    void SetY(T y) noexcept { (*this)[1] = y; }
+
+    template<typename U>
+    explicit operator Point2T<U>() const
+    { return Point2T<U>(static_cast<U>(GetX()), static_cast<U>(GetY())); }
+
+    operator std::string() const
+    { return "Pt(" + std::to_string(GetX()) + ", " + std::to_string(GetY()) + ")"; }
 };
+
+using Point2i = Point2T<int32_t>;
+using Point2u = Point2T<uint32_t>;
+using Point2f = Point2T<float>;
+using Point2d = Point2T<double>;
 
 } // namespace Methane::Data

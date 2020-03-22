@@ -44,6 +44,8 @@ using Rect = Data::Rect<T, D>;
 
 using FrameRect    = Data::FrameRect;
 using FrameSize    = Data::FrameSize;
+using FloatRect    = Data::FloatRect;
+using FRectSize    = Data::FRectSize;
 using ScissorRect  = Rect<uint32_t, uint32_t>;
 using ScissorRects = std::vector<ScissorRect>;
 

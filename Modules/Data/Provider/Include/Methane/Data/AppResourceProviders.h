@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/AppResourceProviders.h
+FILE: Methane/Graphics/AppResourceProviders.hpp
 Application resource providers for Shaders, Textures and Fonts
 either stored in embedded application resources of on file system.
 

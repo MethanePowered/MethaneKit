@@ -28,6 +28,7 @@ Arc-ball camera rotation with mouse handling.
 
 #include <cmath>
 #include <cassert>
+#include "../../../../Core/Include/Methane/Graphics/Types.h"
 
 using namespace Methane::Data;
 
@@ -83,8 +84,8 @@ void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
 Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_screen_pos, bool is_primary) const
 {
     ITT_FUNCTION_TASK();
-    const Point2f& screen_size = m_p_view_camera ? m_p_view_camera->GetScreenSize() : m_screen_size;
-    const Point2f screen_center(screen_size.GetX() / 2.f, screen_size.GetY() / 2.f);
+    const Data::FRectSize& screen_size = m_p_view_camera ? m_p_view_camera->GetScreenSize() : m_screen_size;
+    const Point2f screen_center(screen_size.width / 2.f, screen_size.height / 2.f);
     Point2f screen_vector = static_cast<Point2f>(mouse_screen_pos) - screen_center;
 
     const float screen_radius = screen_vector.length();

@@ -163,7 +163,7 @@ AsteroidsApp::AsteroidsApp()
     m_light_camera.SetOrientation({ { -100.f, 120.f, 0.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
     m_light_camera.SetParameters({ -300.f, 300.f, 90.f });
-    m_light_camera.Resize(120.f, 120.f);
+    m_light_camera.Resize({ 120.f, 120.f });
 
     InputState().AddControllers({
         std::make_shared<AsteroidsAppController>(*this, g_asteroids_action_by_keyboard_state),
@@ -211,8 +211,9 @@ void AsteroidsApp::Init()
     assert(m_sp_context);
     gfx::RenderContext& context = *m_sp_context;
     const gfx::RenderContext::Settings& context_settings = context.GetSettings();
-    m_view_camera.Resize(static_cast<float>(context_settings.frame_size.width),
-                         static_cast<float>(context_settings.frame_size.height));
+    const Data::FRectSize float_rect_size(static_cast<float>(context_settings.frame_size.width),
+                                          static_cast<float>(context_settings.frame_size.height));
+    m_view_camera.Resize(float_rect_size);
 
     // Create sky-box
     m_sp_sky_box = std::make_shared<gfx::SkyBox>(context, m_image_loader, gfx::SkyBox::Settings{
@@ -350,7 +351,7 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     m_sp_sky_box->Resize(frame_size);
     m_sp_planet->Resize(frame_size);
     m_sp_asteroids_array->Resize(frame_size);
-    m_view_camera.Resize(static_cast<float>(frame_size.width), static_cast<float>(frame_size.height));
+    m_view_camera.Resize({ static_cast<float>(frame_size.width), static_cast<float>(frame_size.height) });
 
     return true;
 }

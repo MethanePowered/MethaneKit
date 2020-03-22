@@ -43,11 +43,11 @@ Camera::Camera(cml::AxisOrientation axis_orientation)
     ResetOrientation();
 }
 
-void Camera::Resize(float width, float height) noexcept
+void Camera::Resize(const Data::FRectSize& screen_size) noexcept
 {
     ITT_FUNCTION_TASK();
-    m_screen_size  = { width, height };
-    m_aspect_ratio = width / height;
+    m_screen_size  = screen_size;
+    m_aspect_ratio = screen_size.width / screen_size.height;
 }
 
 void Camera::RotateYaw(float deg) noexcept
@@ -89,7 +89,7 @@ void Camera::GetProjMatrix(Matrix44f& out_proj) const noexcept
         cml::matrix_perspective_yfov(out_proj, GetFovAngleY(), m_aspect_ratio, m_parameters.near_depth, m_parameters.far_depth, m_axis_orientation, cml::ZClip::z_clip_zero);
         break;
     case Projection::Orthogonal:
-        cml::matrix_orthographic(out_proj, m_screen_size.GetX(), m_screen_size.GetY(), m_parameters.near_depth, m_parameters.far_depth, m_axis_orientation, cml::ZClip::z_clip_zero);
+        cml::matrix_orthographic(out_proj, m_screen_size.width, m_screen_size.height, m_parameters.near_depth, m_parameters.far_depth, m_axis_orientation, cml::ZClip::z_clip_zero);
         break;
     }
 }
@@ -119,8 +119,8 @@ Matrix44f Camera::GetViewProjMatrix() const noexcept
 Vector2f Camera::TransformScreenToProj(const Data::Point2i& screen_pos) const noexcept
 {
     ITT_FUNCTION_TASK();
-    return { 2.f * screen_pos.GetX() / m_screen_size.GetX() - 1.f,
-           -(2.f * screen_pos.GetY() / m_screen_size.GetY() - 1.f) };
+    return { 2.f * screen_pos.GetX() / m_screen_size.width  - 1.f,
+           -(2.f * screen_pos.GetY() / m_screen_size.height - 1.f) };
 }
 
 Vector3f Camera::TransformScreenToView(const Data::Point2i& screen_pos) const noexcept

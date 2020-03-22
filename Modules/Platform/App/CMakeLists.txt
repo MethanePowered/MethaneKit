@@ -67,7 +67,7 @@ target_link_libraries(${TARGET}
         CLI11
     PRIVATE
         MethaneBuildOptions
-        MethaneDataPrimitives
+        MethaneDataTypes
         MethanePlatformUtils
         MethanePlatformInput
         MethanePlatformAppView
