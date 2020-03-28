@@ -1,18 +1,24 @@
-set(TARGET MethaneGraphicsKit)
+set(TARGET MethaneGraphicsCamera)
+
+include(MethaneModules)
 
 get_module_dirs("Methane/Graphics")
 
-set(SOURCES
-    ${SOURCES_DIR}/Kit.cpp
+set(HEADERS
+    ${INCLUDE_DIR}/Camera.h
+    ${INCLUDE_DIR}/ArcBallCamera.h
+    ${INCLUDE_DIR}/ActionCamera.h
 )
 
-set(HEADERS
-    ${INCLUDE_DIR}/Kit.h
+set(SOURCES
+    ${SOURCES_DIR}/Camera.cpp
+    ${SOURCES_DIR}/ArcBallCamera.cpp
+    ${SOURCES_DIR}/ActionCamera.cpp
 )
 
 add_library(${TARGET} STATIC
-    ${SOURCES}
     ${HEADERS}
+    ${SOURCES}
 )
 
 target_include_directories(${TARGET}
@@ -24,19 +30,13 @@ target_include_directories(${TARGET}
 
 target_link_libraries(${TARGET}
     PUBLIC
-        MethaneGraphicsApp
-        MethaneGraphicsCore
-        MethaneGraphicsExtensions
-        MethaneGraphicsPrimitives
-        MethaneGraphicsCamera
+        MethaneDataAnimation
         MethaneGraphicsTypes
+    PRIVATE
+        MethaneBuildOptions
+        MethaneInstrumentation
+        CML
 )
-
-set(PREREQUISITE_TARGETS
-    MethaneGraphicsCore
-    MethaneGraphicsExtensions
-)
-add_prerequisite_modules(${TARGET} "${PREREQUISITE_TARGETS}")
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
@@ -47,9 +47,6 @@ set_target_properties(${TARGET}
 )
 
 install(TARGETS ${TARGET}
-    INCLUDES
-        DESTINATION ${INCLUDE_DIR}
-        COMPONENT Development
     PUBLIC_HEADER
         DESTINATION ${INCLUDE_DIR}
         COMPONENT Development
@@ -57,3 +54,5 @@ install(TARGETS ${TARGET}
         DESTINATION Lib
         COMPONENT Development
 )
+
+add_subdirectory(Test)

@@ -1,7 +1,7 @@
 include(CTest)
 include(ParseAndAddCatchTests)
 
-set(TARGET MethaneGraphicsHelpersTest)
+set(TARGET MethaneGraphicsCameraTest)
 
 add_executable(${TARGET}
     Main.cpp
@@ -9,7 +9,7 @@ add_executable(${TARGET}
 )
 
 target_link_libraries(${TARGET}
-    MethaneGraphicsHelpers
+    MethaneGraphicsCamera
     Catch
 )
 

@@ -1,4 +1,4 @@
-set(TARGET MethaneGraphicsHelpers)
+set(TARGET MethaneGraphicsPrimitives)
 
 include(MethaneModules)
 
@@ -6,9 +6,6 @@ get_module_dirs("Methane/Graphics")
 
 set(HEADERS
     ${INCLUDE_DIR}/Helpers.h
-    ${INCLUDE_DIR}/Camera.h
-    ${INCLUDE_DIR}/ArcBallCamera.h
-    ${INCLUDE_DIR}/ActionCamera.h
     ${INCLUDE_DIR}/FpsCounter.h
     ${INCLUDE_DIR}/Noise.hpp
     ${INCLUDE_DIR}/Mesh.h
@@ -22,9 +19,6 @@ set(HEADERS
 )
 
 set(SOURCES
-    ${SOURCES_DIR}/Camera.cpp
-    ${SOURCES_DIR}/ArcBallCamera.cpp
-    ${SOURCES_DIR}/ActionCamera.cpp
     ${SOURCES_DIR}/FpsCounter.cpp
     ${SOURCES_DIR}/Mesh.cpp
 )
@@ -69,5 +63,3 @@ install(TARGETS ${TARGET}
         DESTINATION Lib
         COMPONENT Development
 )
-
-add_subdirectory(Test)

@@ -35,7 +35,8 @@ PUBLIC
     MethanePlatformUtils
     MethanePlatformInput
     MethaneGraphicsCore
-    MethaneGraphicsHelpers
+    MethaneGraphicsPrimitives
+    MethaneGraphicsCamera
     MethaneInstrumentation
 PRIVATE
     MethaneBuildOptions

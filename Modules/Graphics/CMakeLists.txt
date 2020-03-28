@@ -1,6 +1,7 @@
 add_subdirectory(App)
 add_subdirectory(Core)
-add_subdirectory(Helpers)
 add_subdirectory(Extensions)
+add_subdirectory(Primitives)
+add_subdirectory(Camera)
 add_subdirectory(Types)
 add_subdirectory(Kit)

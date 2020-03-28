@@ -252,13 +252,13 @@ target_link_libraries(${TARGET}
     PUBLIC
         MethaneDataProvider
         MethaneGraphicsTypes
-        MethaneGraphicsHelpers
         MethanePlatformAppView
     PRIVATE
         MethaneBuildOptions
         MethaneCommonPrimitives
         MethaneDataRangeSet
         MethaneDataPrimitives
+        MethaneGraphicsPrimitives
         MethanePlatformUtils
         MethaneInstrumentation
         ${PLATFORM_LIBRARIES}

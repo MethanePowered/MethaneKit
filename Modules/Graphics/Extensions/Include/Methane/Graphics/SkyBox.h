@@ -27,7 +27,6 @@ SkyBox rendering primitive
 #include "MeshBuffers.hpp"
 
 #include <Methane/Graphics/RenderContext.h>
-#include <Methane/Graphics/Camera.h>
 #include <Methane/Graphics/RenderState.h>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/Program.h>
@@ -39,6 +38,8 @@ SkyBox rendering primitive
 
 namespace Methane::Graphics
 {
+
+class Camera;
 
 class SkyBox
 {

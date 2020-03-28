@@ -53,6 +53,8 @@ target_link_libraries(${TARGET}
         MethaneCommonPrimitives
         MethanePlatformUtils
         MethaneGraphicsCore
+        MethaneGraphicsPrimitives
+        MethaneGraphicsCamera
         MethaneDataProvider
         MethaneInstrumentation
         freetype
