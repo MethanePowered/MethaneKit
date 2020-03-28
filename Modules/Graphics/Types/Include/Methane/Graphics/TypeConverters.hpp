@@ -28,8 +28,6 @@ Graphics type converter template functions.
 namespace Methane::Graphics
 {
 
-uint32_t GetPixelSize(PixelFormat data_format) noexcept;
-
 template<typename TIndex>
 PixelFormat GetIndexFormat(TIndex) noexcept          { return PixelFormat::Unknown; }
 
