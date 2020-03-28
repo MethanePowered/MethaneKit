@@ -23,7 +23,7 @@ Random generated asteroid model with mesh and texture ready for rendering
 
 #include "Asteroid.h"
 
-#include <Methane/Graphics/Noise.hpp>
+#include <Methane/Graphics/PerlinNoise.h>
 #include <Methane/Instrumentation.h>
 
 #include <cmath>
@@ -79,7 +79,7 @@ void Asteroid::Mesh::Randomize(uint32_t random_seed)
     std::mt19937 rng(random_seed);
 
     auto random_persistence = std::normal_distribution<float>(0.95f, 0.04f);
-    const gfx::NoiseOctaves<4> perlin_noise(random_persistence(rng));
+    const gfx::PerlinNoise perlin_noise(random_persistence(rng));
 
     auto  random_noise = std::uniform_real_distribution<float>(0.0f, 10000.0f);
     const float noise = random_noise(rng);
@@ -242,8 +242,8 @@ void Asteroid::FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Di
 {
     ITT_FUNCTION_TASK();
 
-    const gfx::NoiseOctaves<4> perlin_noise(persistence);
-    
+    const gfx::PerlinNoise perlin_noise(persistence);
+
     for (size_t row = 0; row < dimensions.height; ++row)
     {
         uint32_t* row_data = reinterpret_cast<uint32_t*>(texture_data.data() + row * row_stride);

@@ -7,7 +7,7 @@ get_module_dirs("Methane/Graphics")
 set(HEADERS
     ${INCLUDE_DIR}/Helpers.h
     ${INCLUDE_DIR}/FpsCounter.h
-    ${INCLUDE_DIR}/Noise.hpp
+    ${INCLUDE_DIR}/PerlinNoise.h
     ${INCLUDE_DIR}/Mesh.h
     ${INCLUDE_DIR}/Mesh/BaseMesh.hpp
     ${INCLUDE_DIR}/Mesh/QuadMesh.hpp
@@ -21,6 +21,7 @@ set(HEADERS
 set(SOURCES
     ${SOURCES_DIR}/FpsCounter.cpp
     ${SOURCES_DIR}/Mesh.cpp
+    ${SOURCES_DIR}/PerlinNoise.cpp
 )
 
 add_library(${TARGET} STATIC
@@ -39,11 +40,11 @@ target_link_libraries(${TARGET}
     PUBLIC
         MethaneDataAnimation
         MethaneGraphicsTypes
-        PerlinNoise
     PRIVATE
         MethaneBuildOptions
         MethanePlatformUtils
         MethaneInstrumentation
+        PerlinNoise
         CML
 )
 

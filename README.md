@@ -89,7 +89,7 @@ Also you can get [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/
     - [FpsCounter](/Modules/Graphics/Helpers/Include/Methane/Graphics/FpsCounter.h) implements FPS calculation with moving-average algorithm.
     - [Camera](/Modules/Graphics/Helpers/Include/Methane/Graphics/Camera.h) and [ArcBallCamera](/Modules/Graphics/Helpers/Include/Methane/Graphics/ArcBallCamera.h) implement static scene camera and interactive arc-ball camera.
     - [Mesh](/Modules/Graphics/Helpers/Include/Methane/Graphics/Mesh) generators for Quad, Cube, Sphere, Icosahedron and Uber meshes with customizable vertex fields and layout.
-    - Multi-octave Perlin [Noise](/Modules/Graphics/Helpers/Include/Methane/Graphics/Noise.hpp) generator.
+    - Multi-octave Perlin [Noise](/Modules/Graphics/Helpers/Include/Methane/Graphics/Noise.h) generator.
 - **Lightweight**: no heavy external dependencies, almost all external libraries are static or header only.
 - **Performance oriented**:
   - Fast application startup, thanks to prebuilt shaders code.
