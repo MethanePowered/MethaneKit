@@ -126,16 +126,16 @@ protected:
 
 private:
     class Face;
-    class AtlasPacker;
+    class CharBinPack;
     using TextureByContext = std::map<Context*, Ptr<Texture>>;
     using CharByCode = std::map<Char::Code, Char>;
 
-    Settings                m_settings;
-    UniquePtr<Face>         m_sp_face;
-    UniquePtr<AtlasPacker>  m_sp_atlas_packer;
-    CharByCode              m_char_by_code;
-    TextureByContext        m_atlas_textures;
-    FrameSize               m_max_glyph_size;
+    Settings               m_settings;
+    UniquePtr<Face>        m_sp_face;
+    UniquePtr<CharBinPack> m_sp_atlas_pack;
+    CharByCode             m_char_by_code;
+    TextureByContext       m_atlas_textures;
+    FrameSize              m_max_glyph_size;
 };
 
 } // namespace Methane::Graphics

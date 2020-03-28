@@ -23,6 +23,7 @@ Font atlas textures generation and fonts library management classes.
 
 #include <Methane/Graphics/Font.h>
 
+#include <Methane/Data/RectBinPack.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <nowide/convert.hpp>
@@ -200,111 +201,27 @@ private:
     const bool        m_has_kerning;
 };
 
-class Font::AtlasPacker
+class Font::CharBinPack : public Data::RectBinPack<FrameRect>
 {
 public:
-    AtlasPacker(FrameSize size, FrameSize char_margins = { 0u, 0u })
-        : m_atlas_node(FrameRect{ Point2i(), std::move(size) })
-        , m_char_margins(std::move(char_margins))
-    {
-        ITT_FUNCTION_TASK();
-    }
+    using FrameBinPack = Data::RectBinPack<FrameRect>;
+    using FrameBinPack::RectBinPack;
 
-    const FrameSize& GetSize() const { return m_atlas_node.GetRect().size; }
-
-    bool AddChars(const Refs<Font::Char>& font_chars)
+    bool TryPack(const Refs<Font::Char>& font_chars)
     {
         ITT_FUNCTION_TASK();
         for(const Ref<Font::Char>& font_char : font_chars)
         {
-            if (!AddChar(font_char.get()))
+            if (!TryPack(font_char.get()))
                 return false;
         }
         return true;
     }
 
-    bool AddChar(Font::Char& font_char)
+    bool TryPack(Font::Char& font_char)
     {
-        ITT_FUNCTION_TASK();
-        if (!m_atlas_node.TryPack(font_char, m_char_margins))
-            return false;
-
-        assert(font_char.rect.GetLeft() >= 0 && static_cast<uint32_t>(font_char.rect.GetRight())  <= m_atlas_node.GetRect().size.width);
-        assert(font_char.rect.GetTop() >= 0  && static_cast<uint32_t>(font_char.rect.GetBottom()) <= m_atlas_node.GetRect().size.height);
-        return true;
+        return FrameBinPack::TryPack(font_char.rect);
     }
-
-private:
-    class Node
-    {
-    public:
-        Node(FrameRect rect) : m_rect(std::move(rect)) { ITT_FUNCTION_TASK(); }
-
-        bool             IsEmpty() const noexcept { return !m_sp_small_node && !m_sp_large_node; }
-        const FrameRect& GetRect() const noexcept { return m_rect; }
-
-        bool TryPack(Font::Char& font_char, const FrameSize& char_margins)
-        {
-            ITT_FUNCTION_TASK();
-            if (!font_char.rect.size)
-                return true;
-
-            if (IsEmpty())
-            {
-                const FrameSize char_size_with_margins = font_char.rect.size + char_margins;
-                if (!(char_size_with_margins <= m_rect.size))
-                    return false;
-
-                // Split node rectangle either vertically or horizontally,
-                // by creating small rectangle and one big rectangle representing free area not taken by glyph
-                const FrameSize delta = m_rect.size - font_char.rect.size;
-                if (delta.width < delta.height)
-                {
-                    // Small top rectangle, to the right of character glyph
-                    m_sp_small_node = std::make_unique<Node>(FrameRect{
-                        Point2i(m_rect.origin.GetX() + char_size_with_margins.width, m_rect.origin.GetY()),
-                        FrameSize(m_rect.size.width - char_size_with_margins.width, char_size_with_margins.height)
-                    });
-                    // Big bottom rectangle, under and to the right of character glyph
-                    m_sp_large_node = std::make_unique<Node>(FrameRect{
-                        Point2i(m_rect.origin.GetX(), m_rect.origin.GetY() + char_size_with_margins.height),
-                        FrameSize(m_rect.size.width, m_rect.size.height - char_size_with_margins.height)
-                    });
-                }
-                else
-                {
-                    // Small left rectangle, under the character glyph
-                    m_sp_small_node = std::make_unique<Node>(FrameRect{
-                        Point2i(m_rect.origin.GetX(), m_rect.origin.GetY() + char_size_with_margins.height),
-                        FrameSize(char_size_with_margins.width, m_rect.size.height - char_size_with_margins.height)
-                    });
-                    // Big right rectangle, to the right and under character glyph
-                    m_sp_large_node = std::make_unique<Node>(FrameRect{
-                        Point2i(m_rect.origin.GetX() + char_size_with_margins.width, m_rect.origin.GetY()),
-                        FrameSize(m_rect.size.width - char_size_with_margins.width, m_rect.size.height)
-                    });
-                }
-
-                font_char.rect.origin.SetX(m_rect.origin.GetX());
-                font_char.rect.origin.SetY(m_rect.origin.GetY());
-
-                return true;
-            }
-
-            if (m_sp_small_node->TryPack(font_char, char_margins))
-                return true;
-
-            return m_sp_large_node->TryPack(font_char, char_margins);
-        }
-
-    private:
-        const FrameRect m_rect;
-        UniquePtr<Node> m_sp_small_node;
-        UniquePtr<Node> m_sp_large_node;
-    };
-
-    Node            m_atlas_node;
-    const FrameSize m_char_margins;
 };
 
 Font::Library& Font::Library::Get()
@@ -413,11 +330,11 @@ const Font::Char& Font::AddChar(Char::Code char_code)
     assert(font_char_it != m_char_by_code.end());
 
     Char& new_font_char = font_char_it->second;
-    if (!m_sp_atlas_packer)
+    if (!m_sp_atlas_pack)
         return new_font_char;
 
     // Attempt to pack new char into existing atlas
-    if (m_sp_atlas_packer->AddChar(new_font_char))
+    if (m_sp_atlas_pack->TryPack(new_font_char))
     {
         assert(0); // TODO: draw new char to atlas texture
         return new_font_char;
@@ -514,11 +431,11 @@ bool Font::PackCharsToAtlas(float pixels_reserve_multiplier)
 
     // Pack all character glyphs intro atlas size with doubling the size until all chars fit in
     FrameSize atlas_size(square_atlas_dimension, square_atlas_dimension);
-    m_sp_atlas_packer = std::make_unique<AtlasPacker>(atlas_size);
-    while(!m_sp_atlas_packer->AddChars(font_chars))
+    m_sp_atlas_pack = std::make_unique<CharBinPack>(atlas_size);
+    while(!m_sp_atlas_pack->TryPack(font_chars))
     {
         atlas_size *= 2;
-        m_sp_atlas_packer = std::make_unique<AtlasPacker>(atlas_size);
+        m_sp_atlas_pack = std::make_unique<CharBinPack>(atlas_size);
     }
     return true;
 }
@@ -538,7 +455,7 @@ const Ptr<Texture>& Font::GetAtlasTexturePtr(Context& context)
     if (m_char_by_code.empty())
         return sp_empty_texture;
 
-    if (!m_sp_atlas_packer)
+    if (!m_sp_atlas_pack)
     {
         // Reserve 20% of pixels for packing space loss and for adding new characters to atlas
         if (!PackCharsToAtlas(1.2f))
@@ -546,8 +463,8 @@ const Ptr<Texture>& Font::GetAtlasTexturePtr(Context& context)
     }
 
     // Render glyphs to atlas buffer
-    assert(m_sp_atlas_packer);
-    FrameSize atlas_size = m_sp_atlas_packer->GetSize();
+    assert(m_sp_atlas_pack);
+    FrameSize atlas_size = m_sp_atlas_pack->GetSize();
     Data::Bytes atlas_bitmap(atlas_size.width * atlas_size.height, 0);
     for(const auto& code_and_char : m_char_by_code)
     {
