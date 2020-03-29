@@ -30,7 +30,7 @@ DirectX 12 implementation of the render state interface.
 #include "TextureDX.h"
 #include "RenderCommandListDX.h"
 
-#include <Methane/Graphics/Windows/Helpers.h>
+#include <Methane/Graphics/Windows/Primitives.h>
 #include <Methane/Platform/Windows/Utils.h>
 #include <Methane/Instrumentation.h>
 

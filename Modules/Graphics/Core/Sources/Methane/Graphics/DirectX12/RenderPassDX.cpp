@@ -30,7 +30,7 @@ DirectX 12 implementation of the render pass interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/Graphics/TextureBase.h>
-#include <Methane/Graphics/Windows/Helpers.h>
+#include <Methane/Graphics/Windows/Primitives.h>
 
 #include <d3dx12.h>
 

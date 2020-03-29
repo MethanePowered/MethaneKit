@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,15 +16,45 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Extensions.h
-Methane graphics extensions: all headers under one umbrella.
+FILE: Methane/Graphics/HeadsUpDisplay.h
+HeadsUpDisplay rendering primitive.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "ImageLoader.h"
-#include "MeshBuffers.hpp"
-#include "SkyBox.h"
-#include "ScreenQuad.h"
-#include "ScreenQuad.h"
+#include <Methane/Graphics/Color.hpp>
+#include <Methane/Timer.hpp>
+#include <Methane/Memory.hpp>
+
+namespace Methane::Graphics
+{
+
+struct RenderContext;
+struct RenderCommandList;
+
+class Font;
+class Text;
+
+class HeadsUpDisplay
+{
+public:
+    struct Settings
+    {
+        Color4f blend_color = Color4f(1.f, 1.f, 1.f, 1.f);
+        double  update_interval_sec = 1.0;
+    };
+
+    HeadsUpDisplay(RenderContext& context, Settings settings);
+
+    void Update() const;
+    void Draw(RenderCommandList& cmd_list) const;
+
+private:
+    Settings   m_settings;
+    Ptr<Font>  m_sp_font;
+    Ptr<Text>  m_sp_text;
+    Timer      m_update_timer;
+};
+
+} // namespace Methane::Graphics

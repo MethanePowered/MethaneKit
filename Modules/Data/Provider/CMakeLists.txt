@@ -31,6 +31,7 @@ target_link_libraries(${TARGET}
     PUBLIC
         MethaneDataTypes
         MethaneInstrumentation
+        MethanePlatformUtils
     PRIVATE
         MethaneBuildOptions
 )

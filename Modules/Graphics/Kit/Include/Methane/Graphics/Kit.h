@@ -37,5 +37,11 @@ Methane kit interfaces: all headers under one umbrella.
 // Graphics extension classes
 #include <Methane/Graphics/Extensions.h>
 
-// Graphics helper classes
-#include <Methane/Graphics/Helpers.h>
+// Graphics user interface classes
+#include <Methane/Graphics/UserInterface.h>
+
+// Graphics camera classes
+#include <Methane/Graphics/Camera.h>
+
+// Graphics primitives classes
+#include <Methane/Graphics/Primitives.h>

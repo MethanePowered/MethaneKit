@@ -23,7 +23,7 @@ Badge rendering primitive displaying fixed texture in specific corner of the scr
 
 #pragma once
 
-#include "ScreenQuad.h"
+#include <Methane/Graphics/ScreenQuad.h>
 
 #include <memory>
 

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,16 +16,33 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/MacOS/Helpers.h
-MacOS platform graphics helpers.
+FILE: Methane/Graphics/HeadsUpDisplay.cpp
+HeadsUpDisplay rendering primitive.
 
 ******************************************************************************/
 
-#pragma once
+#include <Methane/Graphics/HeadsUpDisplay.h>
 
-#import <simd/simd.h>
+#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/Font.h>
+#include <Methane/Graphics/Text.h>
+#include <Methane/Data/AppResourceProviders.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
+
+HeadsUpDisplay::HeadsUpDisplay(RenderContext& /*context*/, Settings settings)
+    : m_settings(std::move(settings))
+{
+    ITT_FUNCTION_TASK();
+
+    //const RenderContext::Settings& context_settings = context.GetSettings();
+}
+
+void HeadsUpDisplay::Draw(RenderCommandList& /*cmd_list*/) const
+{
+    ITT_FUNCTION_TASK();
+}
 
 } // namespace Methane::Graphics

@@ -23,8 +23,7 @@ Methane graphics extensions: all headers under one umbrella.
 
 #pragma once
 
-#include "ImageLoader.h"
-#include "MeshBuffers.hpp"
-#include "SkyBox.h"
-#include "ScreenQuad.h"
-#include "ScreenQuad.h"
+#include "Font.h"
+#include "Text.h"
+#include "Badge.h"
+#include "HeadsUpDisplay.h"

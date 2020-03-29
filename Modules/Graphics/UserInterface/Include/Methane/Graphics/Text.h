@@ -33,8 +33,6 @@ Text rendering primitive.
 #include <Methane/Graphics/Sampler.h>
 #include <Methane/Graphics/Types.h>
 
-#include <memory>
-
 namespace Methane::Graphics
 {
 

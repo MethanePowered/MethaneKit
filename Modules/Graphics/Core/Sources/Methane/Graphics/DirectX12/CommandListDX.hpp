@@ -30,7 +30,7 @@ DirectX 12 base template implementation of the command list interface.
 #include "CommandQueueDX.h"
 
 #include <Methane/Graphics/CommandListBase.h>
-#include <Methane/Graphics/Windows/Helpers.h>
+#include <Methane/Graphics/Windows/Primitives.h>
 
 #include <wrl.h>
 #include <d3d12.h>

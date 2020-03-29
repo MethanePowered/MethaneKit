@@ -27,7 +27,7 @@ DirectX 12 fence implementation.
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/Graphics/Windows/Helpers.h>
+#include <Methane/Graphics/Windows/Primitives.h>
 
 #include <nowide/convert.hpp>
 #include <cassert>

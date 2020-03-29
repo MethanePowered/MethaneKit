@@ -16,15 +16,27 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Extensions.h
-Methane graphics extensions: all headers under one umbrella.
+FILE: Methane/Graphics/Helpers.h
+Methane graphics helpers: all headers under one umbrella.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "ImageLoader.h"
-#include "MeshBuffers.hpp"
-#include "SkyBox.h"
-#include "ScreenQuad.h"
-#include "ScreenQuad.h"
+#if defined _WIN32
+
+#include "Windows/Primitives.h"
+
+#elif defined __APPLE__
+
+#include "MacOS/Primitives.h"
+
+#elif defined __linux__
+
+#include "Linux/Primitives.h"
+
+#endif
+
+#include "Mesh.h"
+#include "FpsCounter.h"
+#include "PerlinNoise.h"

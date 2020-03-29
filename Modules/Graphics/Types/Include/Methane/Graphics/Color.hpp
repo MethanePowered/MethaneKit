@@ -23,6 +23,8 @@ Color type based on cml::vector.
 
 #pragma once
 
+#include "Types.h"
+
 #include <cstdint>
 
 namespace Methane::Graphics

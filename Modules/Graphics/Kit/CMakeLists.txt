@@ -27,6 +27,7 @@ target_link_libraries(${TARGET}
         MethaneGraphicsApp
         MethaneGraphicsCore
         MethaneGraphicsExtensions
+        MethaneGraphicsUserInterface
         MethaneGraphicsPrimitives
         MethaneGraphicsCamera
         MethaneGraphicsTypes

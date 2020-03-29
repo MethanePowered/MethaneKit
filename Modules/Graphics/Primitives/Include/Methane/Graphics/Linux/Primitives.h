@@ -25,4 +25,5 @@ Linux platform graphics helpers.
 
 namespace Methane::Graphics
 {
+
 } // namespace Methane::Graphics

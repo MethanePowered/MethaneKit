@@ -40,7 +40,7 @@ public:
     using TSize  = typename TRect::Size;
     using TPoint = typename TRect::Point;
 
-    RectBinPack(TSize size, TSize char_margins = TSize())
+    explicit RectBinPack(TSize size, TSize char_margins = TSize())
         : m_root_bin(TRect{ TPoint(), std::move(size) })
         , m_rect_margins(std::move(char_margins))
     {
