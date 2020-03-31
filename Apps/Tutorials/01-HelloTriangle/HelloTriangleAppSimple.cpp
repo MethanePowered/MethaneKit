@@ -41,22 +41,22 @@ private:
 
 public:
     HelloTriangleApp() : GraphicsApp(
-        {                                        // Application settings:
-            {                                    // platform_app:
-                "Methane Hello Triangle",        // - name
-                0.8, 0.8,                        // - width, height
-            },                                   //
-            {                                    // graphics_app:
-                RenderPass::Access::None,        // - screen_pass_access
-                false,                           // - animations_enabled
-                true,                            // - show_hud_in_window_title
-                false,                           // - show_logo_badge
-            },                                   //
-            {                                    // render_context:
-                FrameSize(),                     // - frame_size placeholder: actual size is set in InitContext
-                PixelFormat::BGRA8Unorm,         // - color_format
-                PixelFormat::Unknown,            // - depth_stencil_format
-                Color4f(0.0f, 0.2f, 0.4f, 1.0f), // - clear_color
+        {                                               // Application settings:
+            {                                           // platform_app:
+                "Methane Hello Triangle",               // - name
+                0.8, 0.8,                               // - width, height
+            },                                          //
+            {                                           // graphics_app:
+                RenderPass::Access::None,               // - screen_pass_access
+                IApp::HeadsUpDisplayMode::WindowTitle,  // - heads_up_display_mode
+                false,                                  // - animations_enabled
+                false,                                  // - show_logo_badge
+            },                                          //
+            {                                           // render_context:
+                FrameSize(),                            // - frame_size placeholder: set in InitContext
+                PixelFormat::BGRA8Unorm,                // - color_format
+                PixelFormat::Unknown,                   // - depth_stencil_format
+                Color4f(0.0f, 0.2f, 0.4f, 1.0f),        // - clear_color
             }
         })
     { }

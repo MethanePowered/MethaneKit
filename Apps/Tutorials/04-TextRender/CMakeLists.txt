@@ -21,7 +21,7 @@ add_methane_application(${TARGET}
     "${METHANE_VERSION_BUILD}"
 )
 
-add_methane_embedded_fonts(${TARGET} ${RESOURCES_DIR} ${FONTS})
+add_methane_embedded_fonts(${TARGET} "${RESOURCES_DIR}" "${FONTS}")
 
 set_target_properties(${TARGET}
     PROPERTIES

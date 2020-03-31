@@ -36,7 +36,7 @@ enum class AppAction : uint32_t
     None = 0,
 
     SwitchAnimations,
-    SwitchWindowHud,
+    SwitchHeadsUpDisplayMode,
 
     Count
 };
@@ -49,7 +49,7 @@ public:
     using ActionByKeyboardState = Platform::Keyboard::ActionControllerBase<AppAction>::ActionByKeyboardState;
     inline static const ActionByKeyboardState default_action_by_keyboard_state{
         { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::Z }, AppAction::SwitchAnimations  },
-        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::H }, AppAction::SwitchWindowHud   },
+        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::H }, AppAction::SwitchHeadsUpDisplayMode   },
     };
     
     AppController(IApp& application, const std::string& application_help,

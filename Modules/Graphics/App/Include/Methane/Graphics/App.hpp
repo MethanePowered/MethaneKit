@@ -41,6 +41,7 @@ Base frame class provides frame buffer management with resize handling.
 #include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Graphics/Badge.h>
+#include <Methane/Graphics/HeadsUpDisplay.h>
 #include <Methane/Instrumentation.h>
 
 #include <vector>
@@ -85,7 +86,7 @@ public:
         , m_initial_context_settings(settings.render_context)
     {
         ITT_FUNCTION_TASK();
-        add_option("-i,--hud", m_settings.show_hud_in_window_title, "HUD information in window title", true);
+        add_option("-i,--hud", m_settings.heads_up_display_mode, "HUD display mode (0 - hidden, 1 - in window title, 2 - in UI)", true);
         add_option("-a,--animations", m_settings.animations_enabled, "Enable animations", true);
         add_option("-d,--device", m_settings.default_device_index, "Render at adapter index, use -1 for software adapter", true);
         add_option("-v,--vsync", m_initial_context_settings.vsync_enabled, "Vertical synchronization", true);
@@ -189,6 +190,10 @@ public:
         if (m_settings.show_logo_badge)
             m_sp_logo_badge = std::make_shared<Badge>(*m_sp_context);
 
+        // Create heads-up-display (HUD)
+        if (m_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface)
+            m_sp_hud = std::make_shared<HeadsUpDisplay>(*m_sp_context);
+
         Platform::App::Init();
     }
 
@@ -251,6 +256,18 @@ public:
         
         System::Get().CheckForChanges();
 
+        // Update HUD info in window title
+        if (m_settings.heads_up_display_mode == HeadsUpDisplayMode::WindowTitle &&
+            m_title_update_timer.GetElapsedSecondsD() >= g_title_update_interval_sec)
+        {
+            UpdateWindowTitle();
+            m_title_update_timer.Reset();
+        }
+
+        // Update HUD user interface
+        if (m_sp_hud && m_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface)
+            m_sp_hud->Update();
+
         m_animations.Update();
         return true;
     }
@@ -272,20 +289,16 @@ public:
             throw std::runtime_error("RenderContext is not initialized before rendering.");
         }
 
-        // Update HUD info in window title
-        if (m_settings.show_hud_in_window_title &&
-            m_title_update_timer.GetElapsedSecondsD() >= g_title_update_interval_sec)
-        {
-            UpdateWindowTitle();
-            m_title_update_timer.Reset();
-        }
-
         return true;
     }
     
     void RenderOverlay(RenderCommandList& cmd_list)
     {
         ITT_FUNCTION_TASK();
+
+        if (m_sp_hud && m_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface)
+            m_sp_hud->Draw(cmd_list);
+
         if (m_sp_logo_badge)
             m_sp_logo_badge->Draw(cmd_list);
     }
@@ -306,6 +319,7 @@ public:
         m_frames.clear();
         m_sp_depth_texture.reset();
         m_sp_logo_badge.reset();
+        m_sp_hud.reset();
         Deinitialize();
     }
 
@@ -342,13 +356,18 @@ public:
         return true;
     }
 
-    bool SetShowHudInWindowTitle(bool show_hud_in_window_title) override
+    bool SetHeadsUpDisplayMode(HeadsUpDisplayMode heads_up_display_mode) override
     {
-        if (m_settings.show_hud_in_window_title == show_hud_in_window_title)
+        if (m_settings.heads_up_display_mode == heads_up_display_mode)
             return false;
 
-        m_settings.show_hud_in_window_title = show_hud_in_window_title;
+        m_settings.heads_up_display_mode = heads_up_display_mode;
         UpdateWindowTitle();
+
+        if (m_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface && m_sp_context)
+            m_sp_hud = std::make_shared<HeadsUpDisplay>(*m_sp_context);
+        else
+            m_sp_hud.reset();
 
         return true;
     }
@@ -369,7 +388,7 @@ protected:
 
     void UpdateWindowTitle()
     {
-        if (!m_settings.show_hud_in_window_title)
+        if (m_settings.heads_up_display_mode != HeadsUpDisplayMode::WindowTitle)
         {
             SetWindowTitle(GetPlatformAppSettings().name);
             return;
@@ -387,13 +406,13 @@ protected:
         std::stringstream title_ss;
         title_ss.precision(2);
         title_ss << GetPlatformAppSettings().name
-                 << "        "  << average_fps
-                 << " FPS, "    << std::fixed << average_frame_timing.GetTotalTimeMSec()
-                 << " ms, "     << std::fixed << average_frame_timing.GetCpuTimePercent() << "% cpu"
-                 << "  |  "        << context_settings.frame_size.width << " x " << context_settings.frame_size.height
-                 << "  |  "        << std::to_string(context_settings.frame_buffers_count) << " FB"
+                 << "        "    << average_fps
+                 << " FPS, "      << std::fixed << average_frame_timing.GetTotalTimeMSec()
+                 << " ms, "       << std::fixed << average_frame_timing.GetCpuTimePercent() << "% cpu"
+                 << "  |  "       << context_settings.frame_size.width << " x " << context_settings.frame_size.height
+                 << "  |  "       << std::to_string(context_settings.frame_buffers_count) << " FB"
                  << "  |  VSync " << (context_settings.vsync_enabled ? "ON" : "OFF")
-                 << "  |  "   << m_sp_context->GetDevice().GetAdapterName()
+                 << "  |  "       << m_sp_context->GetDevice().GetAdapterName()
                  << "  |  F1 - help";
 
         SetWindowTitle(title_ss.str());
@@ -431,6 +450,7 @@ protected:
     Ptr<RenderContext>      m_sp_context;
     Ptr<Texture>            m_sp_depth_texture;
     Ptr<Badge>              m_sp_logo_badge;
+    Ptr<HeadsUpDisplay>     m_sp_hud;
     std::vector<FrameT>     m_frames;
 
 private:

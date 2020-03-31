@@ -39,7 +39,12 @@ static Badge::Settings ScaleBadgeSize(Badge::Settings settings, float scale_fact
     settings.margins     = static_cast<uint32_t>(std::round(scale_factor * settings.margins));
     return settings;
 }
-    
+
+Badge::Badge(RenderContext& context)
+    : Badge(context, Settings())
+{
+}
+
 Badge::Badge(RenderContext& context, Settings settings)
     : Badge(context,
             ImageLoader(Data::TextureProvider::Get()).LoadImageToTexture2D(context, "Logo/MethaneLogoNameWatermark.png", true),
