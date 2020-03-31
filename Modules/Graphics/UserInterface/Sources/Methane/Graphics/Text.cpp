@@ -151,14 +151,17 @@ struct Text::Mesh
     }
 };
 
-Text::Text(RenderContext& context, Font& font, Settings settings)
+Text::Text(RenderContext& context, Font& font, Settings settings, bool rect_in_pixels)
     : m_settings(std::move(settings))
+    , m_context(context)
     , m_sp_font(font.shared_from_this())
     , m_sp_atlas_texture(font.GetAtlasTexturePtr(context))
 {
     ITT_FUNCTION_TASK();
 
     const RenderContext::Settings& context_settings = context.GetSettings();
+    if (!rect_in_pixels)
+        m_settings.screen_rect *= m_context.GetContentScalingFactor();
 
     RenderState::Settings state_settings;
     state_settings.sp_program = Program::Create(context,
@@ -190,8 +193,8 @@ Text::Text(RenderContext& context, Font& font, Settings settings)
         }
     );
     state_settings.sp_program->SetName(m_settings.name + " Screen-Quad Shading");
-    state_settings.viewports                                            = { GetFrameViewport(settings.screen_rect) };
-    state_settings.scissor_rects                                        = { GetFrameScissorRect(settings.screen_rect) };
+    state_settings.viewports                                            = { GetFrameViewport(m_settings.screen_rect) };
+    state_settings.scissor_rects                                        = { GetFrameScissorRect(m_settings.screen_rect) };
     state_settings.depth.enabled                                        = false;
     state_settings.depth.write_enabled                                  = false;
     state_settings.rasterizer.is_front_counter_clockwise                = true;
@@ -236,17 +239,17 @@ void Text::SetBlendColor(const Color4f& blend_color)
     UpdateConstantsBuffer();
 }
 
-void Text::SetScreenRect(const FrameRect& screen_rect)
+void Text::SetScreenRect(const FrameRect& screen_rect, bool rect_in_pixels)
 {
     ITT_FUNCTION_TASK();
 
     if (m_settings.screen_rect == screen_rect)
         return;
 
-    m_settings.screen_rect = screen_rect;
+    m_settings.screen_rect = rect_in_pixels ? screen_rect : screen_rect * m_context.GetContentScalingFactor();
 
-    m_sp_state->SetViewports({ GetFrameViewport(screen_rect) });
-    m_sp_state->SetScissorRects({ GetFrameScissorRect(screen_rect) });
+    m_sp_state->SetViewports({ GetFrameViewport(m_settings.screen_rect) });
+    m_sp_state->SetScissorRects({ GetFrameScissorRect(m_settings.screen_rect) });
 }
 
 void Text::Draw(RenderCommandList& cmd_list) const

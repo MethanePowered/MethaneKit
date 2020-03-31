@@ -38,28 +38,28 @@ HeadsUpDisplay::HeadsUpDisplay(RenderContext& context)
 
 HeadsUpDisplay::HeadsUpDisplay(RenderContext& context, Settings settings)
     : m_settings(std::move(settings))
-    , m_sp_major_font(Font::Library::Get().Add(
+    , m_sp_major_font(Font::Library::Get().GetFont(
         Data::FontProvider::Get(),
         Font::Settings
         {
             "HUD Major Font", "Fonts/RobotoMono/RobotoMono-Bold.ttf", 18u,
             context.GetFontResolutionDPI(), Font::GetAnsiCharacters()
         }
-    ))
-    , m_sp_minor_font(Font::Library::Get().Add(
+    ).GetPtr())
+    , m_sp_minor_font(Font::Library::Get().GetFont(
         Data::FontProvider::Get(),
         Font::Settings
         {
             "HUD Minor Font", "Fonts/RobotoMono/RobotoMono-Regular.ttf", 12u,
             context.GetFontResolutionDPI(), Font::GetAnsiCharacters()
         }
-    ))
+    ).GetPtr())
     , m_fps_text(context, *m_sp_major_font,
         Text::Settings
         {
             "FPS",
-            "0 FPS",
-            FrameRect{ { 20, 20 }, { 100, 60 } },
+            "000 FPS",
+            FrameRect{ { 20, 20 }, { 150, 60 } },
             m_settings.blend_color
         }
     )

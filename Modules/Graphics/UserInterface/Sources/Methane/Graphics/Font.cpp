@@ -231,23 +231,13 @@ Font::Library& Font::Library::Get()
     return s_library;
 }
 
-const Ptr<Font>& Font::Library::Add(const Data::Provider& data_provider, const Settings& font_settings)
-{
-    ITT_FUNCTION_TASK();
-    auto emplace_result = m_font_by_name.emplace(font_settings.name, Ptr<Font>(new Font(data_provider, font_settings)));
-    if (!emplace_result.second)
-        throw std::invalid_argument("Font with name \"" + font_settings.name + "\" already exists in library.");
-
-    return emplace_result.first->second;
-}
-
-bool Font::Library::Has(const std::string& font_name) const
+bool Font::Library::HasFont(const std::string& font_name) const
 {
     ITT_FUNCTION_TASK();
     return m_font_by_name.count(font_name);
 }
 
-Font& Font::Library::Get(const std::string& font_name) const
+Font& Font::Library::GetFont(const std::string& font_name) const
 {
     ITT_FUNCTION_TASK();
     const auto font_by_name_it = m_font_by_name.find(font_name);
@@ -258,7 +248,29 @@ Font& Font::Library::Get(const std::string& font_name) const
     return *font_by_name_it->second;
 }
 
-void Font::Library::Remove(const std::string& font_name)
+Font& Font::Library::GetFont(const Data::Provider& data_provider, const Settings& font_settings)
+{
+    const auto font_by_name_it = m_font_by_name.find(font_settings.name);
+    if (font_by_name_it != m_font_by_name.end())
+    {
+        assert(font_by_name_it->second);
+        return *font_by_name_it->second;
+    }
+    return AddFont(data_provider, font_settings);
+}
+
+Font& Font::Library::AddFont(const Data::Provider& data_provider, const Settings& font_settings)
+{
+    ITT_FUNCTION_TASK();
+    auto emplace_result = m_font_by_name.emplace(font_settings.name, Ptr<Font>(new Font(data_provider, font_settings)));
+    if (!emplace_result.second)
+        throw std::invalid_argument("Font with name \"" + font_settings.name + "\" already exists in library.");
+
+    assert(emplace_result.first->second);
+    return *emplace_result.first->second;
+}
+
+void Font::Library::RemoveFont(const std::string& font_name)
 {
     ITT_FUNCTION_TASK();
     const auto font_by_name_it = m_font_by_name.find(font_name);

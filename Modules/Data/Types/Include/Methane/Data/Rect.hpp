@@ -111,6 +111,18 @@ struct Rect
     bool operator!=(const Rect& other) const noexcept
     { return std::tie(origin, size) != std::tie(other.origin, other.size); }
 
+    Rect<T, D> operator*(D multiplier) const noexcept
+    { return Rect<T, D>{ origin * multiplier, size * multiplier }; }
+
+    Rect<T, D> operator/(D divisor) const noexcept
+    { return Rect<T, D>{ origin / divisor, size / divisor }; }
+
+    Rect<T, D>& operator*=(D multiplier) noexcept
+    { origin *= multiplier; size *= multiplier; return *this; }
+
+    Rect<T, D>& operator/=(D divisor) noexcept
+    { origin /= divisor; size /= divisor; return *this; }
+
     operator std::string() const
     { return std::string("Rt[") + origin + " + " + size + "]"; }
 

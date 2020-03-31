@@ -72,13 +72,13 @@ void TextRenderApp::Init()
     const gfx::RenderContext::Settings& context_settings = m_sp_context->GetSettings();
 
     // Add font to library
-    m_sp_font = gfx::Font::Library::Get().Add(
+    m_sp_font = gfx::Font::Library::Get().AddFont(
         Data::FontProvider::Get(),
         gfx::Font::Settings{
             "Default", "Fonts/Roboto/Roboto-Regular.ttf", 24, m_sp_context->GetFontResolutionDPI(),
             gfx::Font::GetAnsiCharacters() + "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
         }
-    );
+    ).GetPtr();
 
     // Create font atlas texture and badge to displaying it on screen
     const Ptr<gfx::Texture>& sp_font_atlas_texture = m_sp_font->GetAtlasTexturePtr(*m_sp_context);

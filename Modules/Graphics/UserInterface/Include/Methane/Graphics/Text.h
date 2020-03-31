@@ -49,10 +49,10 @@ public:
         Color4f            blend_color = Color4f(1.f, 1.f, 1.f, 1.f);
     };
 
-    Text(RenderContext& context, Font& font, Settings settings);
+    Text(RenderContext& context, Font& font, Settings settings, bool rect_in_pixels = false);
 
     void SetBlendColor(const Color4f& blend_color);
-    void SetScreenRect(const FrameRect& screen_rect);
+    void SetScreenRect(const FrameRect& screen_rect, bool rect_in_pixels = false);
 
     void Draw(RenderCommandList& cmd_list) const;
 
@@ -63,6 +63,7 @@ private:
     void UpdateConstantsBuffer() const;
 
     Settings             m_settings;
+    RenderContext&       m_context;
     Ptr<Font>            m_sp_font;
     Ptr<RenderState>     m_sp_state;
     Ptr<Buffer>          m_sp_vertex_buffer;
