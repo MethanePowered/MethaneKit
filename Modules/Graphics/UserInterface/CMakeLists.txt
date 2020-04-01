@@ -29,6 +29,11 @@ set(TEXTURES
     ${IMAGES_DIR}/Logo/MethaneLogoNameWatermark.png
 )
 
+set(FONTS
+    ${RESOURCES_DIR}/Fonts/RobotoMono/RobotoMono-Regular.ttf
+    ${RESOURCES_DIR}/Fonts/RobotoMono/RobotoMono-Bold.ttf
+)
+
 add_library(${TARGET} STATIC
     ${HEADERS}
     ${SOURCES}
@@ -36,6 +41,7 @@ add_library(${TARGET} STATIC
 
 add_methane_shaders(${TARGET} "${HLSL_SOURCES}" "6_0")
 add_methane_embedded_textures(${TARGET} "${IMAGES_DIR}" "${TEXTURES}")
+add_methane_embedded_fonts(${TARGET} "${RESOURCES_DIR}" "${FONTS}")
 
 target_link_libraries(${TARGET}
     PUBLIC

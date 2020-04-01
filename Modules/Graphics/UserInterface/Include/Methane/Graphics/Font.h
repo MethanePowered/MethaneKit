@@ -53,10 +53,11 @@ public:
     public:
         static Library& Get();
 
-        const Ptr<Font>& Add(const Data::Provider& data_provider, const Settings& font_settings);
-        bool  Has(const std::string& font_name) const;
-        Font& Get(const std::string& font_name) const;
-        void  Remove(const std::string& font_name);
+        bool  HasFont(const std::string& font_name) const;
+        Font& GetFont(const std::string& font_name) const;
+        Font& GetFont(const Data::Provider& data_provider, const Settings& font_settings);
+        Font& AddFont(const Data::Provider& data_provider, const Settings& font_settings);
+        void  RemoveFont(const std::string& font_name);
         void  Clear();
 
     protected:
@@ -101,6 +102,7 @@ public:
 
     static std::string GetAnsiCharacters(char from = 32, char to = 126);
 
+    Ptr<Font> GetPtr() { return shared_from_this(); }
     void AddChars(const std::string& unicode_characters);
     void AddChars(const std::wstring& characters);
     const Font::Char& AddChar(Char::Code char_code);

@@ -45,14 +45,16 @@ public:
 
     struct Settings
     {
-        FrameSize   size;
+        // Default settings of the Methane Logo badge
+        FrameSize   size        = { 96u, 128u };
         FrameCorner corner      = FrameCorner::TopRight;
         uint32_t    margins     = 16u;
-        float       opacity     = 1.f;
+        float       opacity     = 0.15f;
         TextureMode texure_mode = TextureMode::RgbaFloat;
     };
 
-    Badge(RenderContext& context, Settings settings = { { 96u, 128u }, FrameCorner::TopRight, 16u, 0.15f, TextureMode::RgbaFloat });
+    explicit Badge(RenderContext& context);
+    Badge(RenderContext& context, Settings settings);
     Badge(RenderContext& context, Ptr<Texture> sp_texture, Settings settings);
 
     void Resize(const FrameSize& frame_size);

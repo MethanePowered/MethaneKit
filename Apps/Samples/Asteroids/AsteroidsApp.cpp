@@ -102,8 +102,8 @@ static const GraphicsApp::AllSettings g_app_settings  = // Application settings:
     {                                                   // graphics_app:
         gfx::RenderPass::Access::ShaderResources |      // - screen_pass_access
         gfx::RenderPass::Access::Samplers,              //
+        gfx::IApp::HeadsUpDisplayMode::WindowTitle,     // - heads_up_display_mode
         true,                                           // - animations_enabled
-        true,                                           // - show_hud_in_window_title
         true,                                           // - show_logo_badge
         0                                               // - default_device_index
     },                                                  //

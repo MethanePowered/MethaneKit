@@ -26,6 +26,7 @@ Base graphics application controller
 #include <Methane/Instrumentation.h>
 
 #include <cassert>
+#include "../../../../UserInterface/Include/Methane/Graphics/HeadsUpDisplay.h"
 
 namespace Methane::Graphics
 {
@@ -56,8 +57,9 @@ void AppController::OnKeyboardStateAction(AppAction action)
         m_application.SetAnimationsEnabled(!m_application.GetGraphicsAppSettings().animations_enabled);
         break;
 
-    case AppAction::SwitchWindowHud:
-        m_application.SetShowHudInWindowTitle(!m_application.GetGraphicsAppSettings().show_hud_in_window_title);
+    case AppAction::SwitchHeadsUpDisplayMode:
+        m_application.SetHeadsUpDisplayMode(static_cast<IApp::HeadsUpDisplayMode>(
+            (static_cast<uint32_t>(m_application.GetGraphicsAppSettings().heads_up_display_mode) + 1) % IApp::HeadsUpDisplayMode::Count));
         break;
 
     default: assert(0);
@@ -69,9 +71,9 @@ std::string AppController::GetKeyboardActionName(AppAction action) const
     ITT_FUNCTION_TASK();
     switch (action)
     {
-    case AppAction::None:               return "none";
-    case AppAction::SwitchAnimations:   return "switch animations on/off";
-    case AppAction::SwitchWindowHud:    return "switch HUD in window title on/off";
+    case AppAction::None:                       return "none";
+    case AppAction::SwitchAnimations:           return "switch animations on/off";
+    case AppAction::SwitchHeadsUpDisplayMode:   return "switch heads-up-display mode";
     default: assert(0);
     }
     return "";
