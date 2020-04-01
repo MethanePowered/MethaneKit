@@ -51,6 +51,7 @@ public:
 
     Text(RenderContext& context, Font& font, Settings settings, bool rect_in_pixels = false);
 
+    void SetText(const std::string& text);
     void SetBlendColor(const Color4f& blend_color);
     void SetScreenRect(const FrameRect& screen_rect, bool rect_in_pixels = false);
 
@@ -59,7 +60,7 @@ public:
 private:
     struct Mesh;
 
-    void UpdateMeshBuffers(RenderContext& context);
+    void UpdateMeshBuffers();
     void UpdateConstantsBuffer() const;
 
     Settings             m_settings;

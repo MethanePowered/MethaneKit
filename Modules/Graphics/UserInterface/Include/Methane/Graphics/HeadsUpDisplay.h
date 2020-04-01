@@ -43,17 +43,18 @@ public:
     struct Settings
     {
         Color4f blend_color = Color4f(1.f, 1.f, 1.f, 1.f);
-        double  update_interval_sec = 1.0;
+        double  update_interval_sec = 0.33;
     };
 
     explicit HeadsUpDisplay(RenderContext& context);
     HeadsUpDisplay(RenderContext& context, Settings settings);
 
-    void Update() const;
+    void Update();
     void Draw(RenderCommandList& cmd_list) const;
 
 private:
     Settings        m_settings;
+    RenderContext&  m_context;
     const Ptr<Font> m_sp_major_font;
     const Ptr<Font> m_sp_minor_font;
     Text            m_fps_text;

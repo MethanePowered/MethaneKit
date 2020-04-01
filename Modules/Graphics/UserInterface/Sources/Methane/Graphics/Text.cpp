@@ -217,7 +217,7 @@ Text::Text(RenderContext& context, Font& font, Settings settings, bool rect_in_p
     m_sp_const_buffer = Buffer::CreateConstantBuffer(context, Buffer::GetAlignedBufferSize(const_buffer_size));
     m_sp_const_buffer->SetName(m_settings.name + " Screen-Quad Constants Buffer");
 
-    UpdateMeshBuffers(context);
+    UpdateMeshBuffers();
     UpdateConstantsBuffer();
 
     m_sp_const_program_bindings = ProgramBindings::Create(state_settings.sp_program, {
@@ -225,6 +225,15 @@ Text::Text(RenderContext& context, Font& font, Settings settings, bool rect_in_p
         { { Shader::Type::Pixel, "g_texture"   }, { { m_sp_atlas_texture   } } },
         { { Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler } } },
     });
+}
+
+void Text::SetText(const std::string& text)
+{
+    if (m_settings.text == text)
+        return;
+
+    m_settings.text = text;
+    UpdateMeshBuffers();
 }
 
 void Text::SetBlendColor(const Color4f& blend_color)
@@ -235,7 +244,6 @@ void Text::SetBlendColor(const Color4f& blend_color)
         return;
 
     m_settings.blend_color  = blend_color;
-
     UpdateConstantsBuffer();
 }
 
@@ -262,7 +270,7 @@ void Text::Draw(RenderCommandList& cmd_list) const
     cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
 }
 
-void Text::UpdateMeshBuffers(RenderContext& context)
+void Text::UpdateMeshBuffers()
 {
     ITT_FUNCTION_TASK();
 
@@ -274,11 +282,11 @@ void Text::UpdateMeshBuffers(RenderContext& context)
 
     const Mesh text_mesh(m_settings.text, *m_sp_font, m_settings.screen_rect.size, m_sp_atlas_texture->GetSettings().dimensions);
 
-    m_sp_vertex_buffer = Buffer::CreateVertexBuffer(context, text_mesh.GetVerticesDataSize(), text_mesh.GetVertexSize());
+    m_sp_vertex_buffer = Buffer::CreateVertexBuffer(m_context, text_mesh.GetVerticesDataSize(), text_mesh.GetVertexSize());
     m_sp_vertex_buffer->SetName(m_settings.name + " Text Vertex Buffer");
     m_sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(text_mesh.vertices.data()), text_mesh.GetVerticesDataSize() } });
 
-    m_sp_index_buffer = Buffer::CreateIndexBuffer(context, text_mesh.GetIndicesDataSize(), PixelFormat::R16Uint);
+    m_sp_index_buffer = Buffer::CreateIndexBuffer(m_context, text_mesh.GetIndicesDataSize(), PixelFormat::R16Uint);
     m_sp_index_buffer->SetName(m_settings.name + " Text Index Buffer");
     m_sp_index_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(text_mesh.indices.data()), text_mesh.GetIndicesDataSize() } });
 }
