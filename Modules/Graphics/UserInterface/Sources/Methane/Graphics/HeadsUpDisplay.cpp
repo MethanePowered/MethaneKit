@@ -25,8 +25,11 @@ HeadsUpDisplay rendering primitive.
 
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/Font.h>
+#include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
+
+#include <sstream>
 
 namespace Methane::Graphics
 {
@@ -38,6 +41,7 @@ HeadsUpDisplay::HeadsUpDisplay(RenderContext& context)
 
 HeadsUpDisplay::HeadsUpDisplay(RenderContext& context, Settings settings)
     : m_settings(std::move(settings))
+    , m_context(context)
     , m_sp_major_font(Font::Library::Get().GetFont(
         Data::FontProvider::Get(),
         Font::Settings
@@ -59,7 +63,7 @@ HeadsUpDisplay::HeadsUpDisplay(RenderContext& context, Settings settings)
         {
             "FPS",
             "000 FPS",
-            FrameRect{ { 20, 20 }, { 150, 60 } },
+            FrameRect{ { 20, 20 }, { 500, 60 } },
             m_settings.blend_color
         }
     )
@@ -67,9 +71,25 @@ HeadsUpDisplay::HeadsUpDisplay(RenderContext& context, Settings settings)
     ITT_FUNCTION_TASK();
 }
 
-void HeadsUpDisplay::Update() const
+void HeadsUpDisplay::Update()
 {
     ITT_FUNCTION_TASK();
+
+    if (m_update_timer.GetElapsedSecondsD() < m_settings.update_interval_sec)
+        return;
+
+    const FpsCounter&              fps_counter           = m_context.GetFpsCounter();
+    const uint32_t                 average_fps           = fps_counter.GetFramesPerSecond();
+    const FpsCounter::FrameTiming  average_frame_timing  = fps_counter.GetAverageFrameTiming();
+
+    std::stringstream fps_ss;
+    fps_ss.precision(2);
+    fps_ss << average_fps
+           << " FPS, " << std::fixed << average_frame_timing.GetTotalTimeMSec()
+           << " ms, "  << std::fixed << average_frame_timing.GetCpuTimePercent() << "% CPU";
+    m_fps_text.SetText(fps_ss.str());
+
+    m_update_timer.Reset();
 }
 
 void HeadsUpDisplay::Draw(RenderCommandList& cmd_list) const
