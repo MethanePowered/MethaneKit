@@ -162,6 +162,7 @@ public:
         Data::ParallelFor<size_t>(0u, render_cmd_lists.size(),
             [&](size_t cl_index)
             {
+                ITT_FUNCTION_TASK();
                 const Ptr<RenderCommandList>& sp_render_command_list = render_cmd_lists[cl_index];
                 const uint32_t begin_instance_index = static_cast<uint32_t>(cl_index * instances_count_per_command_list);
                 const uint32_t end_instance_index   = std::min(begin_instance_index + instances_count_per_command_list,

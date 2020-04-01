@@ -172,6 +172,7 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
     Data::ParallelFor<Data::Index>(0u, static_cast<Data::Index>(image_paths.size()),
         [&](Data::Index face_index) -> void
         {
+            ITT_FUNCTION_TASK();
             // NOTE:
             //  we create a copy of the loaded image data (via 3-rd argument of LoadImage)
             //  to resolve a problem of STB image loader which requires an image data to be freed before next image is loaded

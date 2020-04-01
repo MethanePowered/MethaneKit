@@ -59,6 +59,7 @@ void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_stat
     for(size_t render_command_list_index = 0u; render_command_list_index < m_parallel_command_lists.size(); ++render_command_list_index)
 #endif
     {
+        ITT_FUNCTION_TASK();
         const Ptr<RenderCommandList>& sp_render_command_list = m_parallel_command_lists[render_command_list_index];
         assert(sp_render_command_list);
         const std::string render_debug_group = GetThreadCommandListName(debug_group, static_cast<uint32_t>(render_command_list_index));

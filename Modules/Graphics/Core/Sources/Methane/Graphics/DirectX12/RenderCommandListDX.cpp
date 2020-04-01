@@ -81,7 +81,7 @@ RenderCommandListDX::RenderCommandListDX(ParallelRenderCommandListBase& parallel
 
 void RenderCommandListDX::ResetNative(const Ptr<RenderState>& sp_render_state)
 {
-    // Reset command list
+    ITT_FUNCTION_TASK();
     if (!IsCommitted())
         return;
 

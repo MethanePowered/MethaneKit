@@ -86,6 +86,7 @@ void ResourceManager::CompleteInitialization()
         m_deferred_program_bindings.begin(), m_deferred_program_bindings.end(),
         [](const WeakPtr<ProgramBindings>& wp_program_bindings)
         {
+            ITT_FUNCTION_TASK();
             Ptr<ProgramBindings> sp_program_bindings = wp_program_bindings.lock();
             if (!sp_program_bindings)
                 return;
