@@ -69,11 +69,13 @@ struct Rect
         Size operator-(const Size& other) const noexcept
         { return Size(width - other.width, height - other.height); }
 
-        Size operator*(D multiplier) const noexcept
-        { return Size(width * multiplier, height * multiplier); }
+        template<typename M>
+        Size operator*(M multiplier) const noexcept
+        { return Size(static_cast<D>(static_cast<M>(width) * multiplier), static_cast<D>(static_cast<M>(height) * multiplier)); }
 
-        Size operator/(D divisor) const noexcept
-        { return Size(width / divisor, height / divisor); }
+        template<typename M>
+        Size operator/(M divisor) const noexcept
+        { return Size(static_cast<D>(static_cast<M>(width) / divisor), static_cast<D>(static_cast<M>(height) / divisor)); }
 
         Size& operator+=(const Size& other) noexcept
         { width += other.width; height += other.height; return *this; }
@@ -81,11 +83,21 @@ struct Rect
         Size& operator-=(const Size& other) noexcept
         { width -= other.width; height -= other.height; return *this; }
 
-        Size& operator*=(D multiplier) noexcept
-        { width *= multiplier; height *= multiplier; return *this; }
+        template<typename M>
+        Size& operator*=(M multiplier) noexcept
+        {
+            width  = static_cast<D>(static_cast<M>(width) * multiplier);
+            height = static_cast<D>(static_cast<M>(height) * multiplier);
+            return *this;
+        }
 
-        Size& operator/=(D divisor) noexcept
-        { width /= divisor; height /= divisor; return *this; }
+        template<typename M>
+        Size& operator/=(M divisor) noexcept
+        {
+            width  = static_cast<D>(static_cast<M>(width) / divisor);
+            height = static_cast<D>(static_cast<M>(height) / divisor);
+            return *this;
+        }
 
         operator bool() const noexcept
         { return width && height; }
@@ -111,16 +123,20 @@ struct Rect
     bool operator!=(const Rect& other) const noexcept
     { return std::tie(origin, size) != std::tie(other.origin, other.size); }
 
-    Rect<T, D> operator*(D multiplier) const noexcept
+    template<typename M>
+    Rect<T, D> operator*(M multiplier) const noexcept
     { return Rect<T, D>{ origin * multiplier, size * multiplier }; }
 
-    Rect<T, D> operator/(D divisor) const noexcept
+    template<typename M>
+    Rect<T, D> operator/(M divisor) const noexcept
     { return Rect<T, D>{ origin / divisor, size / divisor }; }
 
-    Rect<T, D>& operator*=(D multiplier) noexcept
+    template<typename M>
+    Rect<T, D>& operator*=(M multiplier) noexcept
     { origin *= multiplier; size *= multiplier; return *this; }
 
-    Rect<T, D>& operator/=(D divisor) noexcept
+    template<typename M>
+    Rect<T, D>& operator/=(M divisor) noexcept
     { origin /= divisor; size /= divisor; return *this; }
 
     operator std::string() const

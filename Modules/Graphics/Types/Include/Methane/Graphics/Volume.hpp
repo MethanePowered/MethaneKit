@@ -67,11 +67,13 @@ struct Volume
         Size operator-(const Size& other) const noexcept
         { return Size(RectSize::operator-(other), depth - other.depth); }
 
-        Size operator*(D multiplier) const noexcept
-        { return Size(RectSize::operator*(multiplier), depth * multiplier); }
+        template<typename M>
+        Size operator*(M multiplier) const noexcept
+        { return Size(RectSize::operator*(multiplier), static_cast<D>(static_cast<M>(depth) * multiplier)); }
 
-        Size operator/(D divisor) const noexcept
-        { return Size(RectSize::operator/(divisor), depth / divisor); }
+        template<typename M>
+        Size operator/(M divisor) const noexcept
+        { return Size(RectSize::operator/(divisor), static_cast<D>(static_cast<M>(depth) / divisor)); }
 
         Size& operator+=(const Size& other) noexcept
         { depth += other.depth; return RectSize::operator+=(other); }
@@ -79,11 +81,19 @@ struct Volume
         Size& operator-=(const Size& other) noexcept
         { depth -= other.depth; return RectSize::operator-=(other); }
 
-        Size& operator*=(D multiplier) noexcept
-        { depth *= multiplier; return RectSize::operator*=(multiplier); }
+        template<typename M>
+        Size& operator*=(M multiplier) noexcept
+        {
+            depth = static_cast<D>(static_cast<M>(depth) * multiplier);
+            return RectSize::operator*=(multiplier);
+        }
 
-        Size& operator/=(D divisor) noexcept
-        { depth /= divisor; return RectSize::operator/=(divisor); }
+        template<typename M>
+        Size& operator/=(M divisor) noexcept
+        {
+            depth = static_cast<D>(static_cast<M>(depth) / divisor);
+            return RectSize::operator/=(divisor);
+        }
 
         operator bool() const noexcept
         { return depth && RectSize::operator bool(); }
@@ -104,6 +114,22 @@ struct Volume
 
     bool operator!=(const Volume& other) const noexcept
     { return std::tie(origin, size) != std::tie(other.origin, other.size); }
+
+    template<typename M>
+    Rect<T, D> operator*(M multiplier) const noexcept
+    { return Rect<T, D>{ origin* multiplier, size* multiplier }; }
+
+    template<typename M>
+    Rect<T, D> operator/(M divisor) const noexcept
+    { return Rect<T, D>{ origin / divisor, size / divisor }; }
+
+    template<typename M>
+    Rect<T, D>& operator*=(M multiplier) noexcept
+    { origin *= multiplier; size *= multiplier; return *this; }
+
+    template<typename M>
+    Rect<T, D>& operator/=(M divisor) noexcept
+    { origin /= divisor; size /= divisor; return *this; }
 
     operator std::string() const
     { return std::string("Vm[") + origin + " + " + size + "]"; }
