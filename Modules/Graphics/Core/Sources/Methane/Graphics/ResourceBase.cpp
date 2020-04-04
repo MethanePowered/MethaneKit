@@ -101,30 +101,41 @@ Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, Data::Index in_index)
     ITT_FUNCTION_TASK();
 }
     
-bool Resource::Location::operator==(const Location& other) const
+bool Resource::Location::operator==(const Location& other) const noexcept
 {
     return std::tie(m_sp_resource, m_offset) ==
            std::tie(other.m_sp_resource, other.m_offset);
 }
 
-Resource::SubResource::SubResource(Data::Bytes&& data, Index in_index)
-    : data_storage(std::move(data))
-    , p_data(data_storage.data())
-    , data_size(static_cast<Methane::Data::Size>(data_storage.size()))
-    , index(std::move(in_index))
+Resource::SubResource::SubResource(Data::Bytes&& data, Index index) noexcept
+    : Data::Chunk(std::move(data))
+    , index(std::move(index))
 {
     ITT_FUNCTION_TASK();
 }
 
-Resource::SubResource::SubResource(Data::ConstRawPtr in_p_data, Data::Size in_data_size, Index in_index)
-    : p_data(in_p_data)
-    , data_size(in_data_size)
-    , index(std::move(in_index))
+Resource::SubResource::SubResource(SubResource&& other) noexcept
+    : Data::Chunk(std::move(other))
+    , index(other.index)
 {
     ITT_FUNCTION_TASK();
 }
 
-Resource::SubResource::Index Resource::SubResource::ComputeIndex(uint32_t raw_index, uint32_t depth, uint32_t mip_levels_count)
+Resource::SubResource::SubResource(const SubResource& other) noexcept
+    : Data::Chunk(other)
+    , index(other.index)
+{
+    ITT_FUNCTION_TASK();
+}
+
+Resource::SubResource::SubResource(Data::ConstRawPtr p_data, Data::Size size, Index index) noexcept
+    : Data::Chunk(p_data, size)
+    , index(std::move(index))
+{
+    ITT_FUNCTION_TASK();
+}
+
+Resource::SubResource::Index Resource::SubResource::ComputeIndex(uint32_t raw_index, uint32_t depth, uint32_t mip_levels_count) noexcept
 {
     const uint32_t array_and_depth_index = raw_index / mip_levels_count;
 

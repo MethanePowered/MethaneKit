@@ -61,7 +61,7 @@ public:
             ThrowIfFailed(d3d12_resource.Map(sub_resource.GetRawIndex(), &read_range, reinterpret_cast<void**>(&p_resource_data)));
 
             assert(!!p_resource_data);
-            std::copy(sub_resource.p_data, sub_resource.p_data + sub_resource.data_size, stdext::checked_array_iterator<char*>(p_resource_data, GetDataSize()));
+            std::copy(sub_resource.p_data, sub_resource.p_data + sub_resource.size, stdext::checked_array_iterator<char*>(p_resource_data, GetDataSize()));
 
             d3d12_resource.Unmap(sub_resource.GetRawIndex(), nullptr);
         }

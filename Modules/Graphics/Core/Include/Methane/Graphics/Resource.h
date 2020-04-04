@@ -26,6 +26,7 @@ Methane resource interface: base class of all GPU resources.
 #include "Object.h"
 
 #include <Methane/Memory.hpp>
+#include <Methane/Data/Chunk.hpp>
 #include <Methane/Graphics/Types.h>
 
 #include <string>
@@ -89,11 +90,11 @@ struct Resource : virtual Object
     public:
         Location(Ptr<Resource> sp_resource, Data::Size offset = 0u);
 
-        bool operator==(const Location& other) const;
+        bool operator==(const Location& other) const noexcept;
 
-        const Ptr<Resource>& GetResourcePtr() const   { return m_sp_resource; }
-        Resource&            GetResource() const      { return *m_sp_resource; }
-        Data::Size           GetOffset() const        { return m_offset; }
+        const Ptr<Resource>& GetResourcePtr() const noexcept  { return m_sp_resource; }
+        Resource&            GetResource() const noexcept     { return *m_sp_resource; }
+        Data::Size           GetOffset() const noexcept       { return m_offset; }
 
     private:
         Ptr<Resource> m_sp_resource;
@@ -111,31 +112,28 @@ struct Resource : virtual Object
         return resource_locations;
     }
 
-    struct SubResource
+    struct SubResource : Data::Chunk
     {
         struct Index
         {
             uint32_t depth_slice  = 0u;
             uint32_t array_index  = 0u;
             uint32_t mip_level    = 0u;
-        };
+        } index;
 
-        Data::Bytes         data_storage;
-        Data::ConstRawPtr   p_data      = nullptr;
-        Data::Size          data_size   = 0u;
-        Index               index;
+        SubResource() noexcept = default;
+        explicit SubResource(SubResource&& other) noexcept;
+        explicit SubResource(const SubResource& other) noexcept;
+        explicit SubResource(Data::Bytes&& data, Index index = { 0u, 0u, 0u }) noexcept;
+        SubResource(Data::ConstRawPtr p_data, Data::Size size, Index index = { 0u, 0u, 0u }) noexcept;
 
-        SubResource() = default;
-        SubResource(Data::Bytes&& data, Index in_index = { 0u, 0u, 0u });
-        SubResource(Data::ConstRawPtr in_p_data, Data::Size in_data_size, Index in_index = { 0u, 0u, 0u });
-
-        uint32_t GetRawIndex(uint32_t depth = 1u, uint32_t mip_levels_count = 1u) const
+        uint32_t GetRawIndex(uint32_t depth = 1u, uint32_t mip_levels_count = 1u) const noexcept
         { return ComputeRawIndex(index, depth, mip_levels_count); }
 
-        static uint32_t ComputeRawIndex(const Index& index, uint32_t depth = 1, uint32_t mip_levels_count = 1)
+        static uint32_t ComputeRawIndex(const Index& index, uint32_t depth = 1, uint32_t mip_levels_count = 1) noexcept
         { return (index.array_index * depth + index.depth_slice) * mip_levels_count + index.mip_level; }
 
-        static Index ComputeIndex(uint32_t raw_index, uint32_t depth = 1, uint32_t mip_levels_count = 1);
+        static Index ComputeIndex(uint32_t raw_index, uint32_t depth = 1, uint32_t mip_levels_count = 1) noexcept;
     };
 
     using SubResources = std::vector<SubResource>;

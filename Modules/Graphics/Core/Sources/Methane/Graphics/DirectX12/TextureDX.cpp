@@ -400,7 +400,7 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
         dx_sub_resource.RowPitch   = settings.dimensions.width  * pixel_size;
         dx_sub_resource.SlicePitch = settings.dimensions.height * dx_sub_resource.RowPitch;
 
-        if (dx_sub_resource.SlicePitch > static_cast<LONG_PTR>(sub_resource.data_size))
+        if (dx_sub_resource.SlicePitch > static_cast<LONG_PTR>(sub_resource.size))
         {
             throw std::invalid_argument("Sub-resource data size is smaller than computed slice size. Possible pixel format mismatch.");
         }

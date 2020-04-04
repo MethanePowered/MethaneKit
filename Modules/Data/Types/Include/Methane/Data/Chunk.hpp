@@ -42,14 +42,21 @@ struct Chunk
         , size(in_size)
     { }
 
-    Chunk(const Bytes&& in_data) noexcept
+    explicit Chunk(Bytes&& in_data) noexcept
         : data(std::move(in_data))
         , p_data(static_cast<ConstRawPtr>(data.data()))
         , size(static_cast<Size>(data.size()))
     { }
 
-    Chunk(Chunk&& other) noexcept
+    explicit Chunk(Chunk&& other) noexcept
         : data(std::move(other.data))
+        , p_data(data.empty() ? other.p_data : data.data())
+        , size(data.empty() ? other.size : static_cast<Size>(data.size()))
+    { }
+
+protected:
+    explicit Chunk(const Chunk& other) noexcept
+        : data(other.data)
         , p_data(data.empty() ? other.p_data : data.data())
         , size(data.empty() ? other.size : static_cast<Size>(data.size()))
     { }

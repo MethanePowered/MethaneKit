@@ -55,11 +55,11 @@ void BufferBase::SetData(const SubResources& sub_resources)
     uint32_t data_size = 0;
     for(const SubResource& sub_resource : sub_resources)
     {
-        if (!sub_resource.p_data || !sub_resource.data_size)
+        if (!sub_resource.p_data || !sub_resource.size)
         {
             throw std::invalid_argument("Can not set empty subresource data to buffer.");
         }
-        data_size += sub_resource.data_size;
+        data_size += sub_resource.size;
     }
 
     if (data_size > m_settings.size)

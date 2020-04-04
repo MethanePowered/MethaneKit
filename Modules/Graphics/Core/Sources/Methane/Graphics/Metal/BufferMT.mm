@@ -27,12 +27,9 @@ Metal implementation of the buffer interface.
 #include "TypesMT.hh"
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Graphics/Types.h>
 #include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
 
-#include <algorithm>
-#include <iterator>
 #include <cassert>
 
 namespace Methane::Graphics
@@ -114,8 +111,8 @@ void BufferMT::SetData(const SubResources& sub_resources)
     Data::Size data_size = 0;
     for(const SubResource& sub_resource : sub_resources)
     {
-        std::copy(sub_resource.p_data, sub_resource.p_data + sub_resource.data_size, p_resource_data + data_size);
-        data_size += sub_resource.data_size;
+        std::copy(sub_resource.p_data, sub_resource.p_data + sub_resource.size, p_resource_data + data_size);
+        data_size += sub_resource.size;
     }
 
     if (m_mtl_buffer.storageMode == MTLStorageModeManaged)
