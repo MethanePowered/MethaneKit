@@ -50,18 +50,20 @@ public:
     };
 
     Text(RenderContext& context, Font& font, Settings settings, bool rect_in_pixels = false);
+    ~Text();
 
     void SetText(const std::string& text);
     void SetBlendColor(const Color4f& blend_color);
     void SetScreenRect(const FrameRect& screen_rect, bool rect_in_pixels = false);
 
-    void Draw(RenderCommandList& cmd_list) const;
+    void Draw(RenderCommandList& cmd_list);
 
 private:
     struct Mesh;
+    struct Constants;
 
     void UpdateMeshBuffers();
-    void UpdateConstantsBuffer() const;
+    void UpdateConstantsBuffer();
 
     Settings             m_settings;
     RenderContext&       m_context;
@@ -73,6 +75,8 @@ private:
     Ptr<Texture>         m_sp_atlas_texture;
     Ptr<Sampler>         m_sp_texture_sampler;
     Ptr<ProgramBindings> m_sp_const_program_bindings;
+    UniquePtr<Mesh>      m_sp_new_mesh_data;
+    UniquePtr<Constants> m_sp_new_const_data;
 };
 
 } // namespace Methane::Graphics

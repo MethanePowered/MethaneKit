@@ -31,7 +31,7 @@ Text rendering primitive.
 namespace Methane::Graphics
 {
 
-struct SHADER_STRUCT_ALIGN TextConstants
+struct SHADER_STRUCT_ALIGN Text::Constants
 {
     SHADER_FIELD_ALIGN Color4f blend_color;
 };
@@ -213,11 +213,10 @@ Text::Text(RenderContext& context, Font& font, Settings settings, bool rect_in_p
     });
     m_sp_texture_sampler->SetName(m_settings.name + " Screen-Quad Texture Sampler");
 
-    const Data::Size const_buffer_size = static_cast<Data::Size>(sizeof(TextConstants));
-    m_sp_const_buffer = Buffer::CreateConstantBuffer(context, Buffer::GetAlignedBufferSize(const_buffer_size));
-    m_sp_const_buffer->SetName(m_settings.name + " Screen-Quad Constants Buffer");
-
+    m_sp_new_mesh_data = std::make_unique<Mesh>(m_settings.text, *m_sp_font, m_settings.screen_rect.size, m_sp_atlas_texture->GetSettings().dimensions);
     UpdateMeshBuffers();
+
+    m_sp_new_const_data = std::make_unique<Constants>(Constants{ m_settings.blend_color });
     UpdateConstantsBuffer();
 
     m_sp_const_program_bindings = ProgramBindings::Create(state_settings.sp_program, {
@@ -227,13 +226,28 @@ Text::Text(RenderContext& context, Font& font, Settings settings, bool rect_in_p
     });
 }
 
+Text::~Text() = default;
+
 void Text::SetText(const std::string& text)
 {
     if (m_settings.text == text)
         return;
 
     m_settings.text = text;
-    UpdateMeshBuffers();
+
+    if (m_settings.text.empty())
+    {
+        m_sp_new_mesh_data.reset();
+    }
+    else
+    {
+        assert(!!m_sp_font);
+        assert(!!m_sp_atlas_texture);
+        m_sp_new_mesh_data = std::make_unique<Mesh>(
+            m_settings.text, *m_sp_font, m_settings.screen_rect.size,
+            m_sp_atlas_texture->GetSettings().dimensions
+        );
+    }
 }
 
 void Text::SetBlendColor(const Color4f& blend_color)
@@ -243,8 +257,10 @@ void Text::SetBlendColor(const Color4f& blend_color)
     if (m_settings.blend_color == blend_color)
         return;
 
-    m_settings.blend_color  = blend_color;
-    UpdateConstantsBuffer();
+    m_settings.blend_color = blend_color;
+    m_sp_new_const_data = std::make_unique<Constants>(Constants{
+        m_settings.blend_color
+    });
 }
 
 void Text::SetScreenRect(const FrameRect& screen_rect, bool rect_in_pixels)
@@ -260,9 +276,18 @@ void Text::SetScreenRect(const FrameRect& screen_rect, bool rect_in_pixels)
     m_sp_state->SetScissorRects({ GetFrameScissorRect(m_settings.screen_rect) });
 }
 
-void Text::Draw(RenderCommandList& cmd_list) const
+void Text::Draw(RenderCommandList& cmd_list)
 {
     ITT_FUNCTION_TASK();
+
+    if (m_settings.text.empty())
+        return;
+
+    if (m_sp_new_mesh_data)
+        UpdateMeshBuffers();
+
+    if (m_sp_new_const_data)
+        UpdateConstantsBuffer();
     
     cmd_list.Reset(m_sp_state);
     cmd_list.SetProgramBindings(*m_sp_const_program_bindings);
@@ -273,37 +298,43 @@ void Text::Draw(RenderCommandList& cmd_list) const
 void Text::UpdateMeshBuffers()
 {
     ITT_FUNCTION_TASK();
-
-    assert(!!m_sp_font);
-    assert(!!m_sp_atlas_texture);
-    assert(!m_settings.text.empty());
-    if (m_settings.text.empty())
+    if (!m_sp_new_mesh_data)
         return;
 
-    const Mesh text_mesh(m_settings.text, *m_sp_font, m_settings.screen_rect.size, m_sp_atlas_texture->GetSettings().dimensions);
+    const Data::Size vertices_data_size = m_sp_new_mesh_data->GetVerticesDataSize();
+    if (!m_sp_vertex_buffer || m_sp_vertex_buffer->GetDataSize() < vertices_data_size)
+    {
+        m_sp_vertex_buffer = Buffer::CreateVertexBuffer(m_context, vertices_data_size, m_sp_new_mesh_data->GetVertexSize());
+        m_sp_vertex_buffer->SetName(m_settings.name + " Text Vertex Buffer");
+    }
+    m_sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_sp_new_mesh_data->vertices.data()), vertices_data_size } });
 
-    m_sp_vertex_buffer = Buffer::CreateVertexBuffer(m_context, text_mesh.GetVerticesDataSize(), text_mesh.GetVertexSize());
-    m_sp_vertex_buffer->SetName(m_settings.name + " Text Vertex Buffer");
-    m_sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(text_mesh.vertices.data()), text_mesh.GetVerticesDataSize() } });
+    const Data::Size indices_data_size = m_sp_new_mesh_data->GetIndicesDataSize();
+    if (!m_sp_index_buffer || m_sp_index_buffer->GetDataSize() < indices_data_size)
+    {
+        m_sp_index_buffer = Buffer::CreateIndexBuffer(m_context, indices_data_size, PixelFormat::R16Uint);
+        m_sp_index_buffer->SetName(m_settings.name + " Text Index Buffer");
+    }
+    m_sp_index_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_sp_new_mesh_data->indices.data()), indices_data_size } });
 
-    m_sp_index_buffer = Buffer::CreateIndexBuffer(m_context, text_mesh.GetIndicesDataSize(), PixelFormat::R16Uint);
-    m_sp_index_buffer->SetName(m_settings.name + " Text Index Buffer");
-    m_sp_index_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(text_mesh.indices.data()), text_mesh.GetIndicesDataSize() } });
+    m_sp_new_mesh_data.reset();
 }
 
-void Text::UpdateConstantsBuffer() const
+void Text::UpdateConstantsBuffer()
 {
     ITT_FUNCTION_TASK();
-    TextConstants constants {
-        m_settings.blend_color
-    };
+    if (!m_sp_new_const_data)
+        return;
 
-    m_sp_const_buffer->SetData({
-        {
-            reinterpret_cast<Data::ConstRawPtr>(&constants),
-            static_cast<Data::Size>(sizeof(constants))
-        }
-    });
+    const Data::Size const_data_size = static_cast<Data::Size>(sizeof(Constants));
+    if (!m_sp_const_buffer)
+    {
+        m_sp_const_buffer = Buffer::CreateConstantBuffer(m_context, Buffer::GetAlignedBufferSize(const_data_size));
+        m_sp_const_buffer->SetName(m_settings.name + " Screen-Quad Constants Buffer");
+    }
+    m_sp_const_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_sp_new_const_data.get()), const_data_size } });
+
+    m_sp_new_const_data.reset();
 }
 
 } // namespace Methane::Graphics

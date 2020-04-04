@@ -92,7 +92,7 @@ void HeadsUpDisplay::Update()
     m_update_timer.Reset();
 }
 
-void HeadsUpDisplay::Draw(RenderCommandList& cmd_list) const
+void HeadsUpDisplay::Draw(RenderCommandList& cmd_list)
 {
     ITT_FUNCTION_TASK();
     m_fps_text.Draw(cmd_list);

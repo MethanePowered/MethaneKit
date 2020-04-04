@@ -50,7 +50,7 @@ public:
     HeadsUpDisplay(RenderContext& context, Settings settings);
 
     void Update();
-    void Draw(RenderCommandList& cmd_list) const;
+    void Draw(RenderCommandList& cmd_list);
 
 private:
     Settings        m_settings;
