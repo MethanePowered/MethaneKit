@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: MethaneKit/Modules/Graphics/Extensions/Shaders/Text.hlsl
-Shaders for text rendering using Glyphs atlas texture
+Shaders for text rendering from glyphs atlas texture
 
 ******************************************************************************/
 
@@ -35,7 +35,7 @@ struct PSInput
 
 struct Constants
 {
-    float4 blend_color;
+    float4 color;
 };
 
 ConstantBuffer<Constants> g_constants : register(b1);
@@ -52,6 +52,6 @@ PSInput TextVS(VSInput input)
 
 float4 TextPS(PSInput input) : SV_TARGET
 {
-    const float alpha = g_texture.Sample(g_sampler, input.texcoord);
-    return float4(g_constants.blend_color.rgb, alpha);
+    const float glyph_alpha = g_texture.Sample(g_sampler, input.texcoord);
+    return float4(g_constants.color.rgb, g_constants.color.a * glyph_alpha);
 }

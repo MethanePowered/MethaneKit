@@ -42,12 +42,17 @@ class HeadsUpDisplay
 public:
     struct Settings
     {
-        Color4f blend_color = Color4f(1.f, 1.f, 1.f, 1.f);
+        Color4f text_color          = Color4f(1.f, 1.f, 1.f, 1.f);
         double  update_interval_sec = 0.33;
     };
 
     explicit HeadsUpDisplay(RenderContext& context);
     HeadsUpDisplay(RenderContext& context, Settings settings);
+
+    const Settings& GetSettings() const { return m_settings; }
+
+    void SetTextColor(const Color4f& text_color);
+    void SetUpdateInterval(double update_interval_sec);
 
     void Update();
     void Draw(RenderCommandList& cmd_list);

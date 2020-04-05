@@ -33,7 +33,7 @@ namespace Methane::Graphics
 
 struct SHADER_STRUCT_ALIGN Text::Constants
 {
-    SHADER_FIELD_ALIGN Color4f blend_color;
+    SHADER_FIELD_ALIGN Color4f color;
 };
 
 struct Text::Mesh
@@ -216,7 +216,7 @@ Text::Text(RenderContext& context, Font& font, Settings settings, bool rect_in_p
     m_sp_new_mesh_data = std::make_unique<Mesh>(m_settings.text, *m_sp_font, m_settings.screen_rect.size, m_sp_atlas_texture->GetSettings().dimensions);
     UpdateMeshBuffers();
 
-    m_sp_new_const_data = std::make_unique<Constants>(Constants{ m_settings.blend_color });
+    m_sp_new_const_data = std::make_unique<Constants>(Constants{ m_settings.color });
     UpdateConstantsBuffer();
 
     m_sp_const_program_bindings = ProgramBindings::Create(state_settings.sp_program, {
@@ -250,16 +250,16 @@ void Text::SetText(const std::string& text)
     }
 }
 
-void Text::SetBlendColor(const Color4f& blend_color)
+void Text::SetColor(const Color4f& color)
 {
     ITT_FUNCTION_TASK();
 
-    if (m_settings.blend_color == blend_color)
+    if (m_settings.color == color)
         return;
 
-    m_settings.blend_color = blend_color;
+    m_settings.color = color;
     m_sp_new_const_data = std::make_unique<Constants>(Constants{
-        m_settings.blend_color
+        m_settings.color
     });
 }
 

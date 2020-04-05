@@ -478,8 +478,6 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
                 dx_sub_resource.pData       = p_mip_image->pixels;
                 dx_sub_resource.RowPitch    = p_mip_image->rowPitch;
                 dx_sub_resource.SlicePitch  = p_mip_image->slicePitch;
-
-                m_initialized_data_size += static_cast<Data::Size>(dx_sub_resource.SlicePitch);
             }
         }
     }

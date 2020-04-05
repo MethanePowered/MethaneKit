@@ -64,17 +64,32 @@ HeadsUpDisplay::HeadsUpDisplay(RenderContext& context, Settings settings)
             "FPS",
             "000 FPS",
             FrameRect{ { 20, 20 }, { 500, 60 } },
-            m_settings.blend_color
+            m_settings.text_color
         }
     )
 {
     ITT_FUNCTION_TASK();
 }
 
+void HeadsUpDisplay::SetTextColor(const Color4f& text_color)
+{
+    ITT_FUNCTION_TASK();
+    if (m_settings.text_color == text_color)
+        return;
+
+    m_settings.text_color = text_color;
+    m_fps_text.SetColor(text_color);
+}
+
+void HeadsUpDisplay::SetUpdateInterval(double update_interval_sec)
+{
+    ITT_FUNCTION_TASK();
+    m_settings.update_interval_sec = update_interval_sec;
+}
+
 void HeadsUpDisplay::Update()
 {
     ITT_FUNCTION_TASK();
-
     if (m_update_timer.GetElapsedSecondsD() < m_settings.update_interval_sec)
         return;
 

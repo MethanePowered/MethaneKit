@@ -45,15 +45,15 @@ public:
     {
         const std::string  name;
         std::string        text;
-        FrameRect          screen_rect;
-        Color4f            blend_color = Color4f(1.f, 1.f, 1.f, 1.f);
+        FrameRect screen_rect;
+        Color4f   color = Color4f(1.f, 1.f, 1.f, 1.f);
     };
 
     Text(RenderContext& context, Font& font, Settings settings, bool rect_in_pixels = false);
     ~Text();
 
     void SetText(const std::string& text);
-    void SetBlendColor(const Color4f& blend_color);
+    void SetColor(const Color4f& color);
     void SetScreenRect(const FrameRect& screen_rect, bool rect_in_pixels = false);
 
     void Draw(RenderCommandList& cmd_list);
