@@ -147,7 +147,7 @@ Resource::SubResource::Index Resource::SubResource::Index::FromRawIndex(uint32_t
 {
     ITT_FUNCTION_TASK();
     const uint32_t array_and_depth_index = raw_index / mip_levels_count;
-    return Index(raw_index % mip_levels_count, array_and_depth_index % depth, array_and_depth_index / depth);
+    return Index(array_and_depth_index % depth, array_and_depth_index / depth, raw_index % mip_levels_count);
 }
 
 uint32_t Resource::SubResource::Index::GetRawIndex(uint32_t depth, uint32_t mip_levels_count) const noexcept
