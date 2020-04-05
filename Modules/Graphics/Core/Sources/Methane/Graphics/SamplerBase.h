@@ -44,7 +44,7 @@ public:
 
     // Resource interface
     void        SetData(const SubResources& sub_resources) override;
-    Data::Size  GetDataSize() const override { return 0; }
+    Data::Size  GetDataSize(Data::MemoryState) const noexcept override { return 0; }
 
 protected:
     ContextBase& GetContext() { return m_context; }

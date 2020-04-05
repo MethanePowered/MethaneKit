@@ -97,7 +97,7 @@ void RenderCommandListVK::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
     uint32_t vb_index = 0;
     for (auto vertex_buffer_ref : vertex_buffers)
     {
-        assert(vertex_buffer_ref.get().GetBufferType() == Buffer::Type::Vertex);
+        assert(vertex_buffer_ref.get().GetSettings().type == Buffer::Type::Vertex);
         const BufferVK& vulkan_buffer = static_cast<const BufferVK&>(vertex_buffer_ref.get());
         vb_index++;
     }

@@ -141,7 +141,7 @@ struct Resource : virtual Object
 
     // Resource interface
     virtual void                      SetData(const SubResources& sub_resources) = 0;
-    virtual Data::Size                GetDataSize() const = 0;
+    virtual Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept = 0;
     virtual Type                      GetResourceType() const noexcept = 0;
     virtual Usage::Mask               GetUsageMask() const noexcept = 0;
     virtual const DescriptorByUsage&  GetDescriptorByUsage() const noexcept = 0;

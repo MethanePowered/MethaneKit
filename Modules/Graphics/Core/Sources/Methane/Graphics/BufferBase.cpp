@@ -43,6 +43,12 @@ BufferBase::BufferBase(ContextBase& context, const Settings& settings, const Des
     ITT_FUNCTION_TASK();
 }
 
+Data::Size BufferBase::GetDataSize(Data::MemoryState size_type) const noexcept
+{
+    ITT_FUNCTION_TASK();
+    return size_type == Data::MemoryState::Reserved ? m_settings.size : m_initialized_data_size;
+}
+
 void BufferBase::SetData(const SubResources& sub_resources)
 {
     ITT_FUNCTION_TASK();
@@ -52,21 +58,35 @@ void BufferBase::SetData(const SubResources& sub_resources)
         throw std::invalid_argument("Can not set buffer data from empty sub-resources.");
     }
 
-    uint32_t data_size = 0;
+    Data::Size subresources_data_size = 0u;
     for(const SubResource& sub_resource : sub_resources)
     {
         if (!sub_resource.p_data || !sub_resource.size)
         {
             throw std::invalid_argument("Can not set empty subresource data to buffer.");
         }
-        data_size += sub_resource.size;
+        subresources_data_size += sub_resource.size;
     }
 
-    if (data_size > m_settings.size)
+    if (subresources_data_size > m_settings.size)
     {
-        throw std::runtime_error("Can not set more data (" + std::to_string(data_size) +
+        throw std::runtime_error("Can not set more data (" + std::to_string(subresources_data_size) +
                                  ") than allocated buffer size (" + std::to_string(m_settings.size) + ").");
     }
+
+    m_initialized_data_size = subresources_data_size;
+}
+
+uint32_t BufferBase::GetFormattedItemsCount() const noexcept
+{
+    ITT_FUNCTION_TASK();
+    return m_settings.item_stride_size > 0u ? GetDataSize(Data::MemoryState::Initialized) / m_settings.item_stride_size : 0u;
+}
+
+Ptr<BufferBase> BufferBase::GetPtr()
+{
+    ITT_FUNCTION_TASK();
+    return std::dynamic_pointer_cast<BufferBase>(shared_from_this());
 }
 
 std::string Buffer::GetBufferTypeName(Type type) noexcept

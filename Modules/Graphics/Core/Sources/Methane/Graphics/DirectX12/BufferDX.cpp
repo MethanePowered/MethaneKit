@@ -35,14 +35,14 @@ namespace Methane::Graphics
 Ptr<Buffer> Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
 {
     ITT_FUNCTION_TASK();
-    const Buffer::Settings settings{ Buffer::Type::Vertex, Usage::Unknown, size };
+    const Buffer::Settings settings{ Buffer::Type::Vertex, Usage::Unknown, size, stride, PixelFormat::Unknown };
     return std::make_shared<VertexBufferDX>(dynamic_cast<ContextBase&>(context), settings, DescriptorByUsage(), stride);
 }
 
 Ptr<Buffer> Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format)
 {
     ITT_FUNCTION_TASK();
-    const Buffer::Settings settings{ Buffer::Type::Index, Usage::Unknown, size };
+    const Buffer::Settings settings{ Buffer::Type::Index, Usage::Unknown, size, GetPixelSize(format), format };
     return std::make_shared<IndexBufferDX>(dynamic_cast<ContextBase&>(context), settings, DescriptorByUsage(), format);
 }
 
@@ -53,7 +53,7 @@ Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool
     if (addressable)
         usage_mask |= Usage::Addressable;
 
-    const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size };
+    const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0u, PixelFormat::Unknown };
     return std::make_shared<ConstantBufferDX>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
@@ -69,11 +69,9 @@ void VertexBufferDX::InitializeView(Data::Size stride)
 {
     ITT_FUNCTION_TASK();
 
-    const Data::Size data_size     = GetDataSize();
     m_buffer_view.BufferLocation   = GetNativeGpuAddress();
-    m_buffer_view.SizeInBytes      = static_cast<UINT>(data_size);
+    m_buffer_view.SizeInBytes      = static_cast<UINT>(GetDataSize());
     m_buffer_view.StrideInBytes    = static_cast<UINT>(stride);
-    m_formatted_items_count        = stride > 0 ? data_size / stride : 0;
 }
 
 template<>
@@ -81,12 +79,9 @@ void IndexBufferDX::InitializeView(PixelFormat format)
 {
     ITT_FUNCTION_TASK();
 
-    const Data::Size data_size     = GetDataSize();
-    const Data::Size element_size  = GetPixelSize(format);
     m_buffer_view.BufferLocation   = GetNativeGpuAddress();
-    m_buffer_view.SizeInBytes      = static_cast<UINT>(data_size);
+    m_buffer_view.SizeInBytes      = static_cast<UINT>(GetDataSize());
     m_buffer_view.Format           = TypeConverterDX::DataFormatToDXGI(format);
-    m_formatted_items_count        = element_size > 0 ? data_size / element_size : 0;
 }
 
 template<>

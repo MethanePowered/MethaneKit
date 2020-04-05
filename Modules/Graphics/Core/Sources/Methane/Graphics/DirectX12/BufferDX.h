@@ -67,9 +67,6 @@ public:
         }
     }
 
-    // Buffer interface
-    uint32_t GetFormattedItemsCount() const override { return m_formatted_items_count; }
-
     const TViewNative& GetNativeView() const { return m_buffer_view; }
 
 protected:
@@ -78,7 +75,6 @@ protected:
 private:
     // NOTE: in case of resource context placed in descriptor heap, m_buffer_view field holds context descriptor instead of context
     TViewNative m_buffer_view;
-    uint32_t    m_formatted_items_count = 0;
 };
 
 using VertexBufferDX = BufferDX<D3D12_VERTEX_BUFFER_VIEW, Data::Size>;

@@ -45,6 +45,8 @@ struct Buffer : virtual Resource
         Buffer::Type type;
         Usage::Mask  usage_mask;
         Data::Size   size;
+        Data::Size   item_stride_size;
+        PixelFormat  data_format;
     };
 
     // Create Buffer instance
@@ -57,8 +59,8 @@ struct Buffer : virtual Resource
     static std::string GetBufferTypeName(Type type) noexcept;
 
     // Buffer interface
-    virtual uint32_t     GetFormattedItemsCount() const = 0;
-    virtual Buffer::Type GetBufferType() const noexcept = 0;
+    virtual const Settings& GetSettings() const noexcept = 0;
+    virtual uint32_t        GetFormattedItemsCount() const noexcept = 0;
 };
 
 } // namespace Methane::Graphics

@@ -109,7 +109,7 @@ void TextureVK::SetData(const SubResources& sub_resources)
     }
 }
 
-Data::Size TextureVK::GetDataSize() const
+Data::Size TextureVK::GetDataSize(Data::MemoryState /*size_type*/) const noexcept
 {
     ITT_FUNCTION_TASK();
     throw std::logic_error("Getting of texture data size is not implemented.");

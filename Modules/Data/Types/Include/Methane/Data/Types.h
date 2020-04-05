@@ -32,6 +32,12 @@ Common Methane primitive data types
 namespace Methane::Data
 {
 
+enum class MemoryState : uint32_t
+{
+    Reserved = 0,
+    Initialized,
+};
+
 using Bytes       = std::vector<uint8_t>;
 using Size        = uint32_t;
 using Index       = Size;

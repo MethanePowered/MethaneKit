@@ -166,7 +166,7 @@ void RenderCommandListMT::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
     uint32_t vb_index = 0;
     for (auto vertex_buffer_ref : vertex_buffers)
     {
-        assert(vertex_buffer_ref.get().GetBufferType() == Buffer::Type::Vertex);
+        assert(vertex_buffer_ref.get().GetSettings().type == Buffer::Type::Vertex);
         const BufferMT& metal_buffer = static_cast<const BufferMT&>(vertex_buffer_ref.get());
         [m_mtl_render_encoder setVertexBuffer:metal_buffer.GetNativeBuffer() offset:0 atIndex:vb_index];
         vb_index++;

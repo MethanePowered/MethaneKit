@@ -371,7 +371,7 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
         throw std::invalid_argument("Can not set texture data from empty sub-resources.");
     }
 
-    m_data_size = 0;
+    m_initialized_data_size = 0;
     
     assert(!!m_cp_upload_resource);
 
@@ -405,7 +405,7 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
             throw std::invalid_argument("Sub-resource data size is smaller than computed slice size. Possible pixel format mismatch.");
         }
 
-        m_data_size += static_cast<Data::Size>(dx_sub_resource.SlicePitch);
+        m_initialized_data_size += static_cast<Data::Size>(dx_sub_resource.SlicePitch);
     }
 
     // NOTE: scratch_image is the owner of generated mip-levels memory, which should be hold until UpdateSubresources call completes
@@ -487,7 +487,7 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
                 dx_sub_resource.RowPitch    = p_mip_image->rowPitch;
                 dx_sub_resource.SlicePitch  = p_mip_image->slicePitch;
 
-                m_data_size += static_cast<Data::Size>(dx_sub_resource.SlicePitch);
+                m_initialized_data_size += static_cast<Data::Size>(dx_sub_resource.SlicePitch);
             }
         }
     }

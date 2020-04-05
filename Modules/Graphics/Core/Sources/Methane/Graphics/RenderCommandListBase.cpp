@@ -103,7 +103,7 @@ void RenderCommandListBase::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
     {
         BufferBase& vertex_buffer = static_cast<BufferBase&>(vertex_buffer_ref.get());
 
-        if (vertex_buffer.GetBufferType() != Buffer::Type::Vertex)
+        if (vertex_buffer.GetSettings().type != Buffer::Type::Vertex)
         {
             throw std::invalid_argument("Can not set vertex buffer \"" + vertex_buffer.GetName() +
                                         "\" of wrong type \"" + static_cast<const BufferBase&>(vertex_buffer).GetBufferTypeName() +
@@ -133,7 +133,7 @@ void RenderCommandListBase::DrawIndexed(Primitive primitive_type, Buffer& index_
 {
     ITT_FUNCTION_TASK();
 
-    if (index_buffer.GetBufferType() != Buffer::Type::Index)
+    if (index_buffer.GetSettings().type != Buffer::Type::Index)
     {
         throw std::invalid_argument("Can not draw with index buffer of wrong type \"" + 
                                     static_cast<const BufferBase&>(index_buffer).GetBufferTypeName() +

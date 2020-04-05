@@ -35,15 +35,15 @@ namespace Methane::Graphics
 Ptr<Buffer> Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
 {
     ITT_FUNCTION_TASK();
-    const Buffer::Settings settings{ Buffer::Type::Vertex, Usage::Unknown, size };
-    return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings, stride, PixelFormat::Unknown);
+    const Buffer::Settings settings{ Buffer::Type::Vertex, Usage::Unknown, size, stride, PixelFormat::Unknown };
+    return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings);
 }
 
 Ptr<Buffer> Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format)
 {
     ITT_FUNCTION_TASK();
-    const Buffer::Settings settings{ Buffer::Type::Index, Usage::Unknown, size };
-    return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings, 0, format);
+    const Buffer::Settings settings{ Buffer::Type::Index, Usage::Unknown, size, GetPixelSize(format), format };
+    return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings);
 }
 
 Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
@@ -53,7 +53,7 @@ Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool
     if (addressable)
         usage_mask |= Usage::Addressable;
 
-    const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size };
+    const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0u, PixelFormat::Unknown };
     return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
@@ -67,17 +67,7 @@ BufferVK::BufferVK(ContextBase& context, const Settings& settings, const Descrip
     : BufferBase(context, settings, descriptor_by_usage)
 {
     ITT_FUNCTION_TASK();
-
     InitializeDefaultDescriptors();
-}
-
-BufferVK::BufferVK(ContextBase& context, const Settings& settings, Data::Size stride, PixelFormat format, const DescriptorByUsage& descriptor_by_usage)
-    : BufferVK(context, settings, descriptor_by_usage)
-{
-    ITT_FUNCTION_TASK();
-
-    m_stride = stride;
-    m_format = format;
 }
 
 BufferVK::~BufferVK()
@@ -98,22 +88,6 @@ void BufferVK::SetData(const SubResources& sub_resources)
     ITT_FUNCTION_TASK();
 
     BufferBase::SetData(sub_resources);
-}
-
-uint32_t BufferVK::GetFormattedItemsCount() const
-{
-    ITT_FUNCTION_TASK();
-
-    const Data::Size data_size = GetDataSize();
-    if (m_stride > 0)
-    {
-        return data_size / m_stride;
-    }
-    else
-    {
-        const Data::Size element_size = GetPixelSize(m_format);
-        return element_size > 0 ? data_size / element_size : 0;
-    }
 }
 
 } // namespace Methane::Graphics

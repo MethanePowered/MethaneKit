@@ -136,7 +136,7 @@ void RenderCommandListDX::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
     vertex_buffer_views.reserve(vertex_buffers.size());
     for (auto vertex_buffer_ref : vertex_buffers)
     {
-        assert(vertex_buffer_ref.get().GetBufferType() == Buffer::Type::Vertex);
+        assert(vertex_buffer_ref.get().GetSettings().type == Buffer::Type::Vertex);
         const VertexBufferDX& dx_vertex_buffer = static_cast<const VertexBufferDX&>(vertex_buffer_ref.get());
         vertex_buffer_views.push_back(dx_vertex_buffer.GetNativeView());
     }

@@ -38,17 +38,19 @@ public:
     BufferBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
     // Resource interface
-    Data::Size GetDataSize() const override                 { return m_settings.size; }
+    Data::Size GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override;
     void SetData(const SubResources& sub_resources) override;
 
     // Buffer interface
-    Buffer::Type GetBufferType() const noexcept override    { return m_settings.type; }
+    const Settings& GetSettings() const noexcept override       { return m_settings; }
+    uint32_t GetFormattedItemsCount() const noexcept override;
 
-    Ptr<BufferBase> GetPtr()                                { return std::dynamic_pointer_cast<BufferBase>(shared_from_this()); }
-    std::string GetBufferTypeName() const noexcept          { return Buffer::GetBufferTypeName(m_settings.type); }
+    Ptr<BufferBase> GetPtr();
+    std::string GetBufferTypeName() const noexcept              { return Buffer::GetBufferTypeName(m_settings.type); }
 
 private:
-    Settings m_settings;
+    Settings    m_settings;
+    Data::Size  m_initialized_data_size;
 };
 
 } // namespace Methane::Graphics
