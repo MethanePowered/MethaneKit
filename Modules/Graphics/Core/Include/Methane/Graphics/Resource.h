@@ -116,24 +116,22 @@ struct Resource : virtual Object
     {
         struct Index
         {
-            uint32_t depth_slice  = 0u;
-            uint32_t array_index  = 0u;
-            uint32_t mip_level    = 0u;
-        } index;
+            uint32_t depth_slice;
+            uint32_t array_index;
+            uint32_t mip_level;
+
+            explicit Index(uint32_t depth_slice  = 0u, uint32_t array_index  = 0u, uint32_t mip_level = 0u) noexcept;
+            static Index FromRawIndex(uint32_t raw_index, uint32_t depth = 1, uint32_t mip_levels_count = 1) noexcept;
+            uint32_t GetRawIndex(uint32_t depth = 1u, uint32_t mip_levels_count = 1u) const noexcept;
+        };
+
+        Index index;
 
         SubResource() noexcept = default;
         explicit SubResource(SubResource&& other) noexcept;
         explicit SubResource(const SubResource& other) noexcept;
-        explicit SubResource(Data::Bytes&& data, Index index = { 0u, 0u, 0u }) noexcept;
-        SubResource(Data::ConstRawPtr p_data, Data::Size size, Index index = { 0u, 0u, 0u }) noexcept;
-
-        uint32_t GetRawIndex(uint32_t depth = 1u, uint32_t mip_levels_count = 1u) const noexcept
-        { return ComputeRawIndex(index, depth, mip_levels_count); }
-
-        static uint32_t ComputeRawIndex(const Index& index, uint32_t depth = 1, uint32_t mip_levels_count = 1) noexcept
-        { return (index.array_index * depth + index.depth_slice) * mip_levels_count + index.mip_level; }
-
-        static Index ComputeIndex(uint32_t raw_index, uint32_t depth = 1, uint32_t mip_levels_count = 1) noexcept;
+        explicit SubResource(Data::Bytes&& data, Index index = Index()) noexcept;
+        SubResource(Data::ConstRawPtr p_data, Data::Size size, Index index = Index()) noexcept;
     };
 
     using SubResources = std::vector<SubResource>;

@@ -135,16 +135,25 @@ Resource::SubResource::SubResource(Data::ConstRawPtr p_data, Data::Size size, In
     ITT_FUNCTION_TASK();
 }
 
-Resource::SubResource::Index Resource::SubResource::ComputeIndex(uint32_t raw_index, uint32_t depth, uint32_t mip_levels_count) noexcept
+Resource::SubResource::Index::Index(uint32_t depth_slice, uint32_t array_index, uint32_t mip_level) noexcept
+    : depth_slice(depth_slice)
+    , array_index(array_index)
+    , mip_level(mip_level)
 {
+    ITT_FUNCTION_TASK();
+}
+
+Resource::SubResource::Index Resource::SubResource::Index::FromRawIndex(uint32_t raw_index, uint32_t depth, uint32_t mip_levels_count) noexcept
+{
+    ITT_FUNCTION_TASK();
     const uint32_t array_and_depth_index = raw_index / mip_levels_count;
+    return Index(raw_index % mip_levels_count, array_and_depth_index % depth, array_and_depth_index / depth);
+}
 
-    Index index{};
-    index.mip_level   = raw_index % mip_levels_count;
-    index.depth_slice = array_and_depth_index % depth;
-    index.array_index = array_and_depth_index / depth;
-
-    return index;
+uint32_t Resource::SubResource::Index::GetRawIndex(uint32_t depth, uint32_t mip_levels_count) const noexcept
+{
+    ITT_FUNCTION_TASK();
+    return (array_index * depth + depth_slice) * mip_levels_count + mip_level;
 }
 
 ResourceBase::ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& context, DescriptorByUsage descriptor_by_usage)

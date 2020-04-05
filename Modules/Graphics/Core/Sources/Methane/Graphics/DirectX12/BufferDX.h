@@ -58,12 +58,12 @@ public:
             ID3D12Resource& d3d12_resource = GetNativeResourceRef();
             char* p_resource_data = nullptr;
             CD3DX12_RANGE read_range(0, 0); // Zero range, since we're not going to read this resource on CPU
-            ThrowIfFailed(d3d12_resource.Map(sub_resource.GetRawIndex(), &read_range, reinterpret_cast<void**>(&p_resource_data)));
+            ThrowIfFailed(d3d12_resource.Map(sub_resource.index.GetRawIndex(), &read_range, reinterpret_cast<void**>(&p_resource_data)));
 
             assert(!!p_resource_data);
             std::copy(sub_resource.p_data, sub_resource.p_data + sub_resource.size, stdext::checked_array_iterator<char*>(p_resource_data, GetDataSize()));
 
-            d3d12_resource.Unmap(sub_resource.GetRawIndex(), nullptr);
+            d3d12_resource.Unmap(sub_resource.index.GetRawIndex(), nullptr);
         }
     }
 

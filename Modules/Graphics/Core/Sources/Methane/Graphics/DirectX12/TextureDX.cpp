@@ -390,7 +390,7 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
     std::vector<D3D12_SUBRESOURCE_DATA> dx_sub_resources(required_subresources_count, D3D12_SUBRESOURCE_DATA{});
     for(const SubResource& sub_resource : sub_resources)
     {
-        const uint32_t sub_resource_raw_index = sub_resource.GetRawIndex(settings.dimensions.depth, mip_levels_count);
+        const uint32_t sub_resource_raw_index = sub_resource.index.GetRawIndex(settings.dimensions.depth, mip_levels_count);
         assert(sub_resource_raw_index < dx_sub_resources.size());
         if (sub_resource_raw_index >= dx_sub_resources.size())
             continue;
@@ -436,7 +436,7 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
     for(uint32_t sub_resource_raw_index = 0; sub_resource_raw_index < dx_sub_resources.size(); ++sub_resource_raw_index)
     {
         // Initialize images of base mip-levels only
-        const SubResource::Index sub_resource_index = SubResource::ComputeIndex(sub_resource_raw_index);
+        const SubResource::Index sub_resource_index = SubResource::Index::FromRawIndex(sub_resource_raw_index);
         if (sub_resource_index.mip_level > 0)
             continue;
 
@@ -479,7 +479,7 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
                                              " of texture \"" + GetName() + "\".");
                 }
 
-                const uint32_t dx_sub_resource_index = SubResource::ComputeRawIndex({ depth, item, mip }, static_cast<uint32_t>(tex_metadata.depth), static_cast<uint32_t>(tex_metadata.mipLevels));
+                const uint32_t dx_sub_resource_index = SubResource::Index(depth, item, mip).GetRawIndex(static_cast<uint32_t>(tex_metadata.depth), static_cast<uint32_t>(tex_metadata.mipLevels));
                 assert(dx_sub_resource_index < dx_sub_resources.size());
 
                 D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[dx_sub_resource_index];
