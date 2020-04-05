@@ -40,6 +40,7 @@ public:
     // Texture interface
     const Settings& GetSettings() const override { return m_settings; }
     uint32_t        GetMipLevelsCount() const override;
+    Data::Size      GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override;
 
 protected:
     uint32_t GetRequiredSubresourceCount() const;

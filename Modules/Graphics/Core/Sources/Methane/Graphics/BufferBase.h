@@ -39,7 +39,6 @@ public:
 
     // Resource interface
     Data::Size GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override;
-    void SetData(const SubResources& sub_resources) override;
 
     // Buffer interface
     const Settings& GetSettings() const noexcept override       { return m_settings; }
@@ -50,7 +49,6 @@ public:
 
 private:
     Settings    m_settings;
-    Data::Size  m_initialized_data_size;
 };
 
 } // namespace Methane::Graphics

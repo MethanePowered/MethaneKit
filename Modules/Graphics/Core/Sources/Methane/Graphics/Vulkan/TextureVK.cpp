@@ -98,21 +98,12 @@ void TextureVK::SetData(const SubResources& sub_resources)
 {
     ITT_FUNCTION_TASK();
 
-    if (sub_resources.empty())
-    {
-        throw std::invalid_argument("Can not set texture data from empty sub-resources.");
-    }
+    TextureBase::SetData(sub_resources);
     
     if (GetSettings().mipmapped && sub_resources.size() < GetRequiredSubresourceCount())
     {
         GenerateMipLevels();
     }
-}
-
-Data::Size TextureVK::GetDataSize(Data::MemoryState /*size_type*/) const noexcept
-{
-    ITT_FUNCTION_TASK();
-    throw std::logic_error("Getting of texture data size is not implemented.");
 }
 
 void TextureVK::UpdateFrameBuffer()

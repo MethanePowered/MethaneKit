@@ -94,6 +94,7 @@ public:
     Usage::Mask              GetUsageMask() const noexcept override             { return m_usage_mask; }
     const DescriptorByUsage& GetDescriptorByUsage() const noexcept override     { return m_descriptor_by_usage; }
     const Descriptor&        GetDescriptor(Usage::Value usage) const override;
+    void  SetData(const SubResources& sub_resources) override;
 
     void                     InitializeDefaultDescriptors();
     std::string              GetUsageNames() const noexcept                     { return Usage::ToString(m_usage_mask); }
@@ -107,6 +108,7 @@ protected:
     DescriptorHeap::Type GetDescriptorHeapTypeByUsage(Usage::Value usage) const;
     const Descriptor&    GetDescriptorByUsage(Usage::Value usage) const;
     ContextBase&         GetContext() { return m_context; }
+    Data::Size           GetInitializedDataSize() const noexcept { return m_initialized_data_size; }
 
 private:
     const Type          m_type;
@@ -114,6 +116,7 @@ private:
     ContextBase&        m_context;
     DescriptorByUsage   m_descriptor_by_usage;
     State               m_state = State::Common;
+    Data::Size          m_initialized_data_size = 0u;
 };
 
 } // namespace Methane::Graphics

@@ -144,10 +144,7 @@ void TextureMT::SetData(const SubResources& sub_resources)
     ITT_FUNCTION_TASK();
     assert(m_mtl_texture != nil);
 
-    if (sub_resources.empty())
-    {
-        throw std::invalid_argument("Can not set texture data from empty sub-resources.");
-    }
+    TextureBase::SetData(sub_resources);
 
     const Settings& settings        = GetSettings();
     const uint32_t  bytes_per_row   = settings.dimensions.width  * GetPixelSize(settings.pixel_format);
@@ -185,12 +182,6 @@ void TextureMT::SetData(const SubResources& sub_resources)
     {
         GenerateMipLevels();
     }
-}
-
-Data::Size TextureMT::GetDataSize() const
-{
-    ITT_FUNCTION_TASK();
-    throw std::logic_error("Getting of texture data size is not implemented.");
 }
 
 void TextureMT::UpdateFrameBuffer()

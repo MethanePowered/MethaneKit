@@ -41,7 +41,6 @@ public:
 
     // Resource interface
     void SetData(const SubResources& sub_resources) override;
-    Data::Size GetDataSize() const override;
 
     // Object interface
     void SetName(const std::string& name) override;

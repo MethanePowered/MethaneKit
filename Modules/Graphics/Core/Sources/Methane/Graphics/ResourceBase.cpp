@@ -222,6 +222,35 @@ const Resource::Descriptor& ResourceBase::GetDescriptor(Usage::Value usage) cons
     return descriptor_by_usage_it->second;
 }
 
+void ResourceBase::SetData(const SubResources& sub_resources)
+{
+    ITT_FUNCTION_TASK();
+
+    if (sub_resources.empty())
+    {
+        throw std::invalid_argument("Can not set buffer data from empty sub-resources.");
+    }
+
+    Data::Size sub_resources_data_size = 0u;
+    for(const SubResource& sub_resource : sub_resources)
+    {
+        if (!sub_resource.p_data || !sub_resource.size)
+        {
+            throw std::invalid_argument("Can not set empty subresource data to buffer.");
+        }
+        sub_resources_data_size += sub_resource.size;
+    }
+
+    const Data::Size reserved_data_size = GetDataSize(Data::MemoryState::Reserved);
+    if (sub_resources_data_size > reserved_data_size)
+    {
+        throw std::runtime_error("Can not set more data (" + std::to_string(sub_resources_data_size) +
+                                 ") than allocated buffer size (" + std::to_string(reserved_data_size) + ").");
+    }
+
+    m_initialized_data_size = sub_resources_data_size;
+}
+
 DescriptorHeap::Type ResourceBase::GetDescriptorHeapTypeByUsage(ResourceBase::Usage::Value resource_usage) const
 {
     ITT_FUNCTION_TASK();

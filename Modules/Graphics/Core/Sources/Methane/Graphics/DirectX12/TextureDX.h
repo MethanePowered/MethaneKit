@@ -66,12 +66,6 @@ public:
         throw std::logic_error("Setting texture data is allowed for image textures only.");
     }
 
-    Data::Size GetDataSize(Data::MemoryState) const noexcept override
-    {
-        ITT_FUNCTION_TASK();
-        return GetSettings().dimensions.GetPixelsCount() * GetPixelSize(GetSettings().pixel_format);
-    }
-
 private:
     void Initialize(ExtraArgs...);
 };
@@ -86,20 +80,12 @@ public:
 
     // Resource interface
     void SetData(const SubResources& sub_resources) override;
-    Data::Size GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override
-    {
-        ITT_FUNCTION_TASK();
-        return size_type == Data::MemoryState::Reserved
-                ? GetSettings().dimensions.GetPixelsCount() * GetPixelSize(GetSettings().pixel_format)
-                : m_initialized_data_size;
-    }
 
 protected:
     using ResourceAndViewDesc = std::pair<D3D12_RESOURCE_DESC, D3D12_SHADER_RESOURCE_VIEW_DESC>;
     ResourceAndViewDesc GetResourceAndViewDesc() const;
     void GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_resources, DirectX::ScratchImage& scratch_image);
 
-    Data::Size                  m_initialized_data_size = 0;
     wrl::ComPtr<ID3D12Resource> m_cp_upload_resource;
 };
 

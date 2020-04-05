@@ -36,7 +36,6 @@ public:
 
     // Resource interface
     void SetData(const SubResources& sub_resources) override;
-    Data::Size GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override;
 
     // Object interface
     void SetName(const std::string& name) override;

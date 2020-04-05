@@ -365,15 +365,9 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
 void ImageTextureDX::SetData(const SubResources& sub_resources)
 {
     ITT_FUNCTION_TASK();
-
-    if (sub_resources.empty())
-    {
-        throw std::invalid_argument("Can not set texture data from empty sub-resources.");
-    }
-
-    m_initialized_data_size = 0;
-    
     assert(!!m_cp_upload_resource);
+
+    TextureBase::SetData(sub_resources);
 
     const Settings&  settings                    = GetSettings();
     const Data::Size pixel_size                  = GetPixelSize(settings.pixel_format);
@@ -404,8 +398,6 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
         {
             throw std::invalid_argument("Sub-resource data size is smaller than computed slice size. Possible pixel format mismatch.");
         }
-
-        m_initialized_data_size += static_cast<Data::Size>(dx_sub_resource.SlicePitch);
     }
 
     // NOTE: scratch_image is the owner of generated mip-levels memory, which should be hold until UpdateSubresources call completes

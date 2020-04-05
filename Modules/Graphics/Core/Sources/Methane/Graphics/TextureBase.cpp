@@ -175,6 +175,15 @@ uint32_t TextureBase::GetMipLevelsCount() const
                                 : 1u;
 }
 
+Data::Size TextureBase::GetDataSize(Data::MemoryState size_type) const noexcept
+{
+    ITT_FUNCTION_TASK();
+    const Settings& settings = GetSettings();
+    return size_type == Data::MemoryState::Reserved
+            ? settings.dimensions.GetPixelsCount() * GetPixelSize(settings.pixel_format) * settings.array_length
+            : GetInitializedDataSize();
+}
+
 uint32_t TextureBase::GetRequiredSubresourceCount() const
 {
     ITT_FUNCTION_TASK();

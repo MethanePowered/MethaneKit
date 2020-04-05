@@ -115,7 +115,7 @@ void BufferMT::SetData(const SubResources& sub_resources)
 MTLIndexType BufferMT::GetNativeIndexType() const noexcept
 {
     ITT_FUNCTION_TASK();
-    return TypeConverterMT::DataFormatToMetalIndexType(m_format);
+    return TypeConverterMT::DataFormatToMetalIndexType(GetSettings().data_format);
 }
 
 } // namespace Methane::Graphics
