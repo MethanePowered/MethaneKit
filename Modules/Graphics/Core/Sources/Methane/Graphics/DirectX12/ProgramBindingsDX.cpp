@@ -177,7 +177,7 @@ void ProgramBindingsDX::Initialize()
     ResourceManager& resource_manager = static_cast<ProgramBase&>(GetProgram()).GetContext().GetResourceManager();
     if (resource_manager.DeferredHeapAllocationEnabled())
     {
-        resource_manager.DeferProgramBindingsInitialization(*this);
+        resource_manager.AddProgramBindings(*this);
     }
     else
     {
@@ -294,6 +294,9 @@ void ProgramBindingsDX::UpdateRootParameterBindings()
 
     using DXBindingType     = ArgumentBindingDX::Type;
     using DXDescriptorRange = ArgumentBindingDX::DescriptorRange;
+
+    m_constant_root_parameter_bindings.clear();
+    m_variadic_root_parameter_bindings.clear();
 
     ForEachArgumentBinding([this](ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation)
     {

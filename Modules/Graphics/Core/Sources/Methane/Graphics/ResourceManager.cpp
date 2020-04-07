@@ -71,7 +71,7 @@ void ResourceManager::CompleteInitialization()
 {
     ITT_FUNCTION_TASK();
 
-    std::lock_guard<std::mutex> lock_guard(m_deferred_program_bindings_mutex);
+    std::lock_guard<std::mutex> lock_guard(m_program_bindings_mutex);
 
     for (const Ptrs<DescriptorHeap>& desc_heaps : m_descriptor_heap_types)
     {
@@ -82,19 +82,20 @@ void ResourceManager::CompleteInitialization()
         }
     }
 
+    const auto program_bindings_end_it = std::remove_if(m_program_bindings.begin(), m_program_bindings.end(),
+        [](const WeakPtr<ProgramBindings>& wp_program_bindings)
+        { return wp_program_bindings.expired(); }
+    );
+
     Data::ParallelForEach<WeakPtrs<ProgramBindings>::const_iterator, const WeakPtr<ProgramBindings>>(
-        m_deferred_program_bindings.begin(), m_deferred_program_bindings.end(),
+        m_program_bindings.begin(), program_bindings_end_it,
         [](const WeakPtr<ProgramBindings>& wp_program_bindings)
         {
             ITT_FUNCTION_TASK();
             Ptr<ProgramBindings> sp_program_bindings = wp_program_bindings.lock();
-            if (!sp_program_bindings)
-                return;
-
+            assert(!!sp_program_bindings);
             static_cast<ProgramBindingsBase&>(*sp_program_bindings).CompleteInitialization();
         });
-
-    m_deferred_program_bindings.clear();
 }
 
 void ResourceManager::Release()
@@ -112,12 +113,19 @@ void ResourceManager::Release()
     }
 }
 
-void ResourceManager::DeferProgramBindingsInitialization(ProgramBindings& program_bindings)
+void ResourceManager::AddProgramBindings(ProgramBindings& program_bindings)
 {
     ITT_FUNCTION_TASK();
 
-    std::lock_guard<std::mutex> lock_guard(m_deferred_program_bindings_mutex);
-    m_deferred_program_bindings.push_back(static_cast<ProgramBindingsBase&>(program_bindings).GetPtr());
+    std::lock_guard<std::mutex> lock_guard(m_program_bindings_mutex);
+    const auto program_bindings_it = std::find_if(m_program_bindings.begin(), m_program_bindings.end(),
+        [&program_bindings](const WeakPtr<ProgramBindings>& sp_program_bindings)
+        { return !sp_program_bindings.expired() && sp_program_bindings.lock().get() == std::addressof(program_bindings); }
+    );
+    if (program_bindings_it == m_program_bindings.end())
+    {
+        m_program_bindings.push_back(static_cast<ProgramBindingsBase&>(program_bindings).GetPtr());
+    }
 }
 
 uint32_t ResourceManager::CreateDescriptorHeap(const DescriptorHeap::Settings& settings)

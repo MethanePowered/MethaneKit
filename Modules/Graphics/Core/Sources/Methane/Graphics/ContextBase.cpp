@@ -219,6 +219,7 @@ BlitCommandList& ContextBase::GetUploadCommandList()
     {
         m_sp_upload_cmd_list = BlitCommandList::Create(GetUploadCommandQueue());
         m_sp_upload_cmd_list->SetName("Upload Command List");
+        m_sp_upload_cmd_list->Reset("Upload Resources");
     }
     return *m_sp_upload_cmd_list;
 }
@@ -270,6 +271,8 @@ void ContextBase::UploadResources()
     GetUploadCommandList().Commit();
     GetUploadCommandQueue().Execute({ GetUploadCommandList() });
     WaitForGpu(WaitFor::ResourcesUploaded);
+
+    m_sp_upload_cmd_list.reset();
 }
 
 void ContextBase::SetDevice(DeviceBase& device)

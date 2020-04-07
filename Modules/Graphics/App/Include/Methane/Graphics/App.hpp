@@ -365,10 +365,15 @@ public:
         UpdateWindowTitle();
 
         if (m_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface && m_sp_context)
+        {
+            m_sp_context->WaitForGpu(RenderContext::WaitFor::RenderComplete);
             m_sp_hud = std::make_shared<HeadsUpDisplay>(*m_sp_context);
+            m_sp_context->CompleteInitialization();
+        }
         else
+        {
             m_sp_hud.reset();
-
+        }
         return true;
     }
 

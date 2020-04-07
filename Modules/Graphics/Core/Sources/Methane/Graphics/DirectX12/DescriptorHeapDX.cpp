@@ -104,9 +104,11 @@ void DescriptorHeapDX::Allocate()
     // Allocate new descriptor heap of deferred size
     ThrowIfFailed(cp_device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&m_cp_descriptor_heap)));
 
-    if (cp_old_descriptor_heap && m_allocated_size > 0)
+    if (!m_settings.shader_visible && cp_old_descriptor_heap && m_allocated_size > 0)
     {
-        // Copy descriptors from old heap to the new one
+        // Copy descriptors from old heap to the new one. It works for non-shader-visible CPU heaps only.
+        // Shader-visible heaps must be re-filled with updated descriptors
+        // using ProgramBindings::CompleteInitialization() & ResourceManager::CompleteInitialization()
         cp_device->CopyDescriptorsSimple(m_allocated_size,
                                          m_cp_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),
                                          cp_old_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),

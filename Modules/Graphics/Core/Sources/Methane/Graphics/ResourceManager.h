@@ -56,7 +56,7 @@ public:
     void Release();
 
     bool DeferredHeapAllocationEnabled() const { return m_deferred_heap_allocation; }
-    void DeferProgramBindingsInitialization(ProgramBindings& program_bindings);
+    void AddProgramBindings(ProgramBindings& program_bindings);
 
     uint32_t                    CreateDescriptorHeap(const DescriptorHeap::Settings& settings); // returns index of the created descriptor heap
     const Ptr<DescriptorHeap>&  GetDescriptorHeapPtr(DescriptorHeap::Type type, Data::Index heap_index = 0);
@@ -73,8 +73,8 @@ private:
     ContextBase&                   m_context;
     DescriptorHeapTypes            m_descriptor_heap_types;
     Ptr<ResourceBase::ReleasePool> m_sp_release_pool;
-    WeakPtrs<ProgramBindings>      m_deferred_program_bindings;
-    std::mutex                     m_deferred_program_bindings_mutex;
+    std::mutex                     m_program_bindings_mutex;
+    WeakPtrs<ProgramBindings>      m_program_bindings;
 };
 
 } // namespace Methane::Graphics
