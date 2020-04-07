@@ -100,6 +100,9 @@ public:
 protected:
     DescriptorHeap(ContextBase& context, const Settings& settings);
 
+    ContextBase& GetContext() { return m_context; }
+
+private:
     using ResourcePtrs = std::vector<const ResourceBase*>;
     using RangeSet     = Data::RangeSet<Data::Index>;
 
