@@ -121,24 +121,16 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
     source_group("Source Files" FILES ${SOURCES})
     source_group("Source Shaders" FILES ${SHADERS_HLSL} ${SHADERS_CONFIG})
 
-    if (METHANE_TRACY_PROFILING_ENABLED)
-        target_sources(${TARGET}
-            PRIVATE
-                ${CMAKE_SOURCE_DIR}/Externals/Tracy/TracyClient.cpp
-        )
-        target_compile_definitions(${TARGET}
-            PRIVATE
-                TRACY_ENABLE
-        )
-    endif()
-
-    target_link_libraries(${TARGET} PRIVATE
-        MethaneGraphicsKit
-        MethaneBuildOptions
+    target_link_libraries(${TARGET}
+        PRIVATE
+            MethaneGraphicsKit
+            MethaneBuildOptions
+            $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
     )
 
-    target_include_directories(${TARGET} PRIVATE
-        .
+    target_include_directories(${TARGET}
+        PRIVATE
+            .
     )
 
     get_target_property(METHANE_PREREQUISITE_MODULES MethaneGraphicsKit PREREQUISITE_MODULES)

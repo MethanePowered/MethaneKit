@@ -31,6 +31,7 @@ target_include_directories(${TARGET}
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneCommonPrimitives
+        TracyInstrumentation
         ittnotify
         nowide_static
     PRIVATE

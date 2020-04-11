@@ -118,6 +118,7 @@ endif()
 
 if (METHANE_TRACY_PROFILING_ENABLED)
     message(STATUS "Methane Tracy profiling enabled")
+    target_compile_definitions(MethaneBuildOptions INTERFACE -DTRACY_ENABLE)
 endif()
 
 if(METHANE_SCOPE_TIMERS_ENABLED)
