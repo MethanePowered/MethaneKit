@@ -118,14 +118,18 @@ void ResourceManager::AddProgramBindings(ProgramBindings& program_bindings)
     ITT_FUNCTION_TASK();
 
     std::lock_guard<std::mutex> lock_guard(m_program_bindings_mutex);
+#ifdef _DEBUG
+    // This may cause performance drop on adding massive amount of program bindings,
+    // so we assume that only different program bindings are added and check it in Debug builds only
     const auto program_bindings_it = std::find_if(m_program_bindings.begin(), m_program_bindings.end(),
         [&program_bindings](const WeakPtr<ProgramBindings>& sp_program_bindings)
         { return !sp_program_bindings.expired() && sp_program_bindings.lock().get() == std::addressof(program_bindings); }
     );
-    if (program_bindings_it == m_program_bindings.end())
-    {
-        m_program_bindings.push_back(static_cast<ProgramBindingsBase&>(program_bindings).GetPtr());
-    }
+    assert(program_bindings_it == m_program_bindings.end());
+    if (program_bindings_it != m_program_bindings.end())
+        return;
+#endif
+    m_program_bindings.push_back(static_cast<ProgramBindingsBase&>(program_bindings).GetPtr());
 }
 
 uint32_t ResourceManager::CreateDescriptorHeap(const DescriptorHeap::Settings& settings)
