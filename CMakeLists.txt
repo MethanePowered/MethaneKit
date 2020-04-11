@@ -4,17 +4,21 @@ project(MethaneKit)
 
 enable_testing()
 
+# Build configuration
 option(METHANE_USE_OPEN_IMAGE_IO "Enable using OpenImageIO library for images loading" OFF)
-option(METHANE_ITT_INSTRUMENTATION_ENABLED "Enable ITT instrumentation" OFF)
-option(METHANE_SCOPE_TIMERS_ENABLED "Enable low-overhead profiling with scope-timers" OFF)
 option(METHANE_SHADERS_CODEVIEW_ENABLED "Enable shaders code symbols viewing in debug tools)" OFF)
 option(METHANE_COMMAND_EXECUTION_LOGGING "Enable command execution debug logging" OFF)
 option(METHANE_RUN_TESTS_DURING_BUILD "Run tests during build" ON)
 
-set(METHANE_VERSION_MAJOR 0 CACHE STRING "Methane major version")
-set(METHANE_VERSION_MINOR 3 CACHE STRING "Methane minor version")
-set(METHANE_VERSION_BUILD 0 CACHE STRING "Methane build version")
+# Profiling configuration
+option(METHANE_SCOPE_TIMERS_ENABLED "Enable low-overhead profiling with scope-timers" OFF)
+option(METHANE_ITT_INSTRUMENTATION_ENABLED "Enable ITT instrumentation for trace capture with Intel GPA or VTune" OFF)
+option(METHANE_TRACY_PROFILING_ENABLED "Enable realtime profiling with Tracy" OFF)
 
+# Methane version, build & product info
+set(METHANE_VERSION_MAJOR 0 CACHE STRING "Methane major version")
+set(METHANE_VERSION_MINOR 4 CACHE STRING "Methane minor version")
+set(METHANE_VERSION_BUILD 0 CACHE STRING "Methane build version")
 set(METHANE_VERSION_SHORT "${METHANE_VERSION_MAJOR}.${METHANE_VERSION_MINOR}")
 set(METHANE_VERSION_FULL  "${METHANE_VERSION_SHORT}.${METHANE_VERSION_BUILD}")
 set(METHANE_PRODUCT_NAME  "Methane Kit (https://github.com/egorodet/MethaneKit)")
@@ -67,7 +71,8 @@ if(MSVC)
     )
     target_compile_options(MethaneBuildOptions INTERFACE
         # Set maximum warnings level & treat warnings as errors
-        /W4 /WX
+        /W4
+        $<$<NOT:$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>>:/WX> # TracyClient.cpp compiles with warnings...
         # Disable useless warnings
         /wd4250 # - C4250: inheritance via dominance (used only with abstract interfaces)
         /wd4324 # - C4324: structure was padded due to alignment specifier
@@ -109,6 +114,10 @@ endif()
 if(METHANE_ITT_INSTRUMENTATION_ENABLED)
     message(STATUS "Methane ITT instrumentation is enabled")
     target_compile_definitions(MethaneBuildOptions INTERFACE -DITT_INSTRUMENTATION_ENABLED)
+endif()
+
+if (METHANE_TRACY_PROFILING_ENABLED)
+    message(STATUS "Methane Tracy profiling enabled")
 endif()
 
 if(METHANE_SCOPE_TIMERS_ENABLED)

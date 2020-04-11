@@ -39,6 +39,11 @@
                     "name": "METHANE_USE_OPEN_IMAGE_IO",
                     "value": "false",
                     "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "false",
+                    "type": "BOOL"
                 }
             ]
         },
@@ -79,6 +84,11 @@
                 },
                 {
                     "name": "METHANE_COMMAND_EXECUTION_LOGGING",
+                    "value": "false",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
                     "value": "false",
                     "type": "BOOL"
                 }
@@ -123,6 +133,11 @@
                     "name": "METHANE_USE_OPEN_IMAGE_IO",
                     "value": "false",
                     "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "false",
+                    "type": "BOOL"
                 }
             ]
         },
@@ -164,6 +179,11 @@
                 {
                     "name": "METHANE_USE_OPEN_IMAGE_IO",
                     "value": "false",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "False",
                     "type": "BOOL"
                 }
             ]
