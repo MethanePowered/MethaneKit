@@ -40,7 +40,7 @@ public:
         : QuadMeshT(vertex_layout, width, height, depth / 2.f, 0, QuadMeshT::FaceType::XY, Mesh::Type::Box)
         , m_depth(depth)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         AddFace(QuadMeshT(vertex_layout, width,  height, -depth  / 2.f, 1, QuadMeshT::FaceType::XY));
         AddFace(QuadMeshT(vertex_layout, width,  depth,   height / 2.f, 2, QuadMeshT::FaceType::XZ));
         AddFace(QuadMeshT(vertex_layout, width,  depth,  -height / 2.f, 3, QuadMeshT::FaceType::XZ));
@@ -53,7 +53,7 @@ public:
 protected:
     void AddFace(const QuadMeshT& face_mesh) noexcept
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         const size_t initial_vertices_count = BaseMeshT::m_vertices.size();
 
         const typename BaseMeshT::Vertices& face_vertices = face_mesh.GetVertices();

@@ -35,7 +35,7 @@ using AsteroidColorSchema = std::array<gfx::Color3f, Asteroid::color_schema_size
 
 static gfx::Color3f TransformSrgbToLinear(const gfx::Color3f& srgb_color)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     gfx::Color3f linear_color{};
     for (int c = 0; c < 3; ++c)
@@ -47,7 +47,7 @@ static gfx::Color3f TransformSrgbToLinear(const gfx::Color3f& srgb_color)
 
 static AsteroidColorSchema TransformSrgbToLinear(const AsteroidColorSchema& srgb_color_schema)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     AsteroidColorSchema linear_color_schema{};
     for (size_t i = 0; i < srgb_color_schema.size(); ++i)
@@ -60,7 +60,7 @@ static AsteroidColorSchema TransformSrgbToLinear(const AsteroidColorSchema& srgb
 Asteroid::Mesh::Mesh(uint32_t subdivisions_count, bool randomize)
     : gfx::IcosahedronMesh<Vertex>(Mesh::VertexLayout(Vertex::layout), 0.5f, subdivisions_count, true)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (randomize)
     {
@@ -70,7 +70,7 @@ Asteroid::Mesh::Mesh(uint32_t subdivisions_count, bool randomize)
 
 void Asteroid::Mesh::Randomize(uint32_t random_seed)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const float noise_scale = 0.5f;
     const float radius_scale = 1.8f;
@@ -102,7 +102,7 @@ void Asteroid::Mesh::Randomize(uint32_t random_seed)
 Asteroid::Asteroid(gfx::RenderContext& context)
     : BaseBuffers(context, Mesh(3, true), "Asteroid")
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     SetTexture(GenerateTextureArray(context, gfx::Dimensions(256, 256), 1, true, TextureNoiseParameters()));
 }
@@ -110,7 +110,7 @@ Asteroid::Asteroid(gfx::RenderContext& context)
 Ptr<gfx::Texture> Asteroid::GenerateTextureArray(gfx::RenderContext& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped,
                                                  const TextureNoiseParameters& noise_parameters)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const gfx::Resource::SubResources sub_resources = GenerateTextureArraySubresources(dimensions, array_size, noise_parameters);
     Ptr<gfx::Texture> sp_texture_array = gfx::Texture::CreateImage(context, dimensions, array_size, gfx::PixelFormat::RGBA8Unorm, mipmapped);
@@ -120,7 +120,7 @@ Ptr<gfx::Texture> Asteroid::GenerateTextureArray(gfx::RenderContext& context, co
 
 gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, const TextureNoiseParameters& noise_parameters)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const gfx::PixelFormat pixel_format = gfx::PixelFormat::RGBA8Unorm;
     const uint32_t         pixel_size   = gfx::GetPixelSize(pixel_format);
@@ -150,7 +150,7 @@ gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx
 
 Asteroid::Colors Asteroid::GetAsteroidRockColors(uint32_t deep_color_index, uint32_t shallow_color_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     static const AsteroidColorSchema s_srgb_deep_rock_colors{ {
         {  55.f,  49.f,  40.f },
@@ -180,7 +180,7 @@ Asteroid::Colors Asteroid::GetAsteroidRockColors(uint32_t deep_color_index, uint
 
 Asteroid::Colors Asteroid::GetAsteroidIceColors(uint32_t deep_color_index, uint32_t shallow_color_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     static const AsteroidColorSchema s_srgb_deep_ice_colors{ {
         {   8.f,  57.f,  72.f },
@@ -210,7 +210,7 @@ Asteroid::Colors Asteroid::GetAsteroidIceColors(uint32_t deep_color_index, uint3
 
 Asteroid::Colors Asteroid::GetAsteroidLodColors(uint32_t lod_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     static const AsteroidColorSchema s_srgb_lod_deep_colors{ {
         {    0.f, 128.f,   0.f }, // LOD-0: green
         {    0.f,  64.f, 128.f }, // LOD-1: blue
@@ -240,7 +240,7 @@ Asteroid::Colors Asteroid::GetAsteroidLodColors(uint32_t lod_index)
 void Asteroid::FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Dimensions& dimensions, uint32_t row_stride,
                                         float random_seed, float persistence, float noise_scale, float noise_strength)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const gfx::PerlinNoise perlin_noise(persistence);
 

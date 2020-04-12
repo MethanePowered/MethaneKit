@@ -33,30 +33,30 @@ Animation::Animation(double duration_sec)
     : Timer()
     , m_duration_sec(duration_sec)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 Animation::~Animation()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void Animation::IncreaseDuration(double duration_sec)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_duration_sec = GetElapsedSecondsD() + duration_sec;
 }
 
 void Animation::Restart() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_state = State::Running;
     Timer::Reset();
 }
 
 void Animation::Stop() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_state = State::Completed;
 }
 

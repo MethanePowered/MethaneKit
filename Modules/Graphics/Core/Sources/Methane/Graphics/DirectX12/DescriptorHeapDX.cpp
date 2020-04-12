@@ -35,7 +35,7 @@ namespace Methane::Graphics
 
 static D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeap::Type type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (type)
     {
     case DescriptorHeap::Type::ShaderResources: return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -49,7 +49,7 @@ static D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeap::Type type) n
 
 Ptr<DescriptorHeap> DescriptorHeap::Create(ContextBase& context, const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<DescriptorHeapDX>(context, settings);
 }
 
@@ -58,7 +58,7 @@ DescriptorHeapDX::DescriptorHeapDX(ContextBase& context, const Settings& setting
     , m_descriptor_heap_type(GetNativeHeapType(settings.type))
     , m_descriptor_size(GetContextDX().GetDeviceDX().GetNativeDevice()->GetDescriptorHandleIncrementSize(m_descriptor_heap_type))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (GetDeferredSize() > 0)
     {
         DescriptorHeapDX::Allocate();
@@ -67,12 +67,12 @@ DescriptorHeapDX::DescriptorHeapDX(ContextBase& context, const Settings& setting
 
 DescriptorHeapDX::~DescriptorHeapDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeCpuDescriptorHandle(uint32_t descriptor_index) const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_cp_descriptor_heap);
     assert(descriptor_index < GetAllocatedSize());
     return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_cp_descriptor_heap->GetCPUDescriptorHandleForHeapStart(), descriptor_index, m_descriptor_size);
@@ -80,14 +80,14 @@ D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeCpuDescriptorHandle(uint3
 
 D3D12_GPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeGpuDescriptorHandle(uint32_t descriptor_index) const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_cp_descriptor_heap);
     return CD3DX12_GPU_DESCRIPTOR_HANDLE(m_cp_descriptor_heap->GetGPUDescriptorHandleForHeapStart(), descriptor_index, m_descriptor_size);
 }
 
 void DescriptorHeapDX::Allocate()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const Data::Size allocated_size = GetAllocatedSize();
     const Data::Size deferred_size  = GetDeferredSize();
 
@@ -126,7 +126,7 @@ void DescriptorHeapDX::Allocate()
 
 IContextDX& DescriptorHeapDX::GetContextDX() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextDX&>(GetContext());
 }
 

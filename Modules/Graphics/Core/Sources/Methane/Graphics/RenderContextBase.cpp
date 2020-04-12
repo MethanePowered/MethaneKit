@@ -40,12 +40,12 @@ RenderContextBase::RenderContextBase(DeviceBase& device, const Settings& setting
     , m_settings(settings)
     , m_frame_buffer_index(0)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void RenderContextBase::WaitForGpu(WaitFor wait_for)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     ContextBase::WaitForGpu(wait_for);
 
@@ -73,7 +73,7 @@ void RenderContextBase::WaitForGpu(WaitFor wait_for)
 
 void RenderContextBase::Resize(const FrameSize& frame_size)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
 #ifdef COMMAND_EXECUTION_LOGGING
     Platform::PrintToDebugOutput("RESIZE context \"" + GetName() + "\" from " + static_cast<std::string>(m_settings.frame_size) + " to " + static_cast<std::string>(frame_size));
@@ -84,7 +84,7 @@ void RenderContextBase::Resize(const FrameSize& frame_size)
 
 void RenderContextBase::Present()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
 #ifdef COMMAND_EXECUTION_LOGGING
     Platform::PrintToDebugOutput("PRESENT frame " + std::to_string(m_frame_buffer_index) + " in context \"" + GetName() + "\"");
@@ -95,13 +95,15 @@ void RenderContextBase::Present()
 
 void RenderContextBase::OnCpuPresentComplete(bool signal_frame_fence)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (signal_frame_fence)
     {
         // Schedule a signal command in the queue for a currently finished frame
         GetCurrentFrameFence().Signal();
     }
+
+    META_CPU_FRAME_DELIMITER();
 
 #ifdef COMMAND_EXECUTION_LOGGING
     Platform::PrintToDebugOutput("PRESENT COMPLETE for context \"" + GetName() + "\"");
@@ -112,7 +114,7 @@ void RenderContextBase::OnCpuPresentComplete(bool signal_frame_fence)
 
 Fence& RenderContextBase::GetCurrentFrameFence() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const UniquePtr<Fence>& sp_current_fence = GetCurrentFrameFencePtr();
     assert(!!sp_current_fence);
     return *sp_current_fence;
@@ -120,14 +122,14 @@ Fence& RenderContextBase::GetCurrentFrameFence() const
 
 Fence& RenderContextBase::GetRenderFence() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_sp_render_fence);
     return *m_sp_render_fence;
 }
 
 void RenderContextBase::ResetWithSettings(const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
 #ifdef COMMAND_EXECUTION_LOGGING
     Platform::PrintToDebugOutput("RESET context \"" + GetName() + "\" with new settings.");
@@ -144,7 +146,7 @@ void RenderContextBase::ResetWithSettings(const Settings& settings)
 
 void RenderContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     ContextBase::Initialize(device, deferred_heap_allocation);
 
@@ -159,7 +161,7 @@ void RenderContextBase::Initialize(DeviceBase& device, bool deferred_heap_alloca
 
 void RenderContextBase::Release()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     m_sp_render_fence.reset();
     m_frame_fences.clear();
@@ -170,7 +172,7 @@ void RenderContextBase::Release()
 
 void RenderContextBase::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     ContextBase::SetName(name);
 
@@ -187,7 +189,7 @@ void RenderContextBase::SetName(const std::string& name)
     
 void RenderContextBase::OnGpuWaitStart(WaitFor wait_for)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (wait_for == WaitFor::FramePresented)
     {
         m_fps_counter.OnGpuFramePresentWait();
@@ -197,7 +199,7 @@ void RenderContextBase::OnGpuWaitStart(WaitFor wait_for)
 
 void RenderContextBase::OnGpuWaitComplete(WaitFor wait_for)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (wait_for == WaitFor::FramePresented)
     {
         m_fps_counter.OnGpuFramePresented();
@@ -217,7 +219,7 @@ uint32_t RenderContextBase::GetNextFrameBufferIndex()
 
 CommandQueue& RenderContextBase::GetRenderCommandQueue()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!m_sp_render_cmd_queue)
     {
         m_sp_render_cmd_queue = CommandQueue::Create(*this);
@@ -228,7 +230,7 @@ CommandQueue& RenderContextBase::GetRenderCommandQueue()
 
 bool RenderContextBase::SetVSyncEnabled(bool vsync_enabled)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_settings.vsync_enabled == vsync_enabled)
         return false;
 
@@ -238,7 +240,7 @@ bool RenderContextBase::SetVSyncEnabled(bool vsync_enabled)
 
 bool RenderContextBase::SetFrameBuffersCount(uint32_t frame_buffers_count)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     frame_buffers_count = std::min(std::max(2u, frame_buffers_count), 10u);
 
     if (m_settings.frame_buffers_count == frame_buffers_count)
@@ -253,7 +255,7 @@ bool RenderContextBase::SetFrameBuffersCount(uint32_t frame_buffers_count)
 
 bool RenderContextBase::SetFullScreen(bool is_full_screen)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_settings.is_full_screen == is_full_screen)
         return false;
 

@@ -38,19 +38,19 @@ AppController::AppController(IApp& application, const std::string& application_h
     , Platform::Keyboard::ActionControllerBase<AppAction>(graphics_action_by_keyboard_state, {})
     , m_application(application)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void AppController::OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Platform::Keyboard::StateChange& state_change)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Platform::AppController::OnKeyboardChanged(key, key_state, state_change);
     Platform::Keyboard::ActionControllerBase<AppAction>::OnKeyboardChanged(key, key_state, state_change);
 }
 
 void AppController::OnKeyboardStateAction(AppAction action)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch(action)
     {
     case AppAction::SwitchAnimations:
@@ -68,7 +68,7 @@ void AppController::OnKeyboardStateAction(AppAction action)
 
 std::string AppController::GetKeyboardActionName(AppAction action) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (action)
     {
     case AppAction::None:                       return "none";
@@ -81,7 +81,7 @@ std::string AppController::GetKeyboardActionName(AppAction action) const
 
 Platform::Input::IHelpProvider::HelpLines AppController::GetHelp() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     HelpLines help_lines = Platform::AppController::GetHelp();
     const HelpLines gfx_help_lines = Platform::Keyboard::ActionControllerBase<AppAction>::GetKeyboardHelp();

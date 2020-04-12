@@ -27,4 +27,36 @@ Defines common ITT domain required for instrumentation.
 #include "IttApiHelper.h"
 #include "ScopeTimer.h"
 
+#include <Tracy.hpp>
+
 ITT_DOMAIN_EXTERN();
+
+#define META_CPU_FRAME_DELIMITER() \
+    FrameMark \
+    ITT_THREAD_MARKER("Frame-Delimiter");
+
+#define META_SCOPE_TASK(/*const char* */name) \
+    ZoneScopedN(name) \
+    ITT_SCOPE_TASK(name)
+
+#define META_FUNCTION_TASK() \
+    ZoneScoped \
+    ITT_FUNCTION_TASK()
+
+#define META_GLOBAL_MARKER(/*const char* */name) \
+    ITT_GLOBAL_MARKER(name)
+#define META_PROCESS_MARKER(/*const char* */name) \
+    ITT_PROCESS_MARKER(name)
+#define META_THREAD_MARKER(/*const char* */name) \
+    ITT_THREAD_MARKER(name)
+#define META_TASK_MARKER(/*const char* */name) \
+    ITT_TASK_MARKER(name)
+
+#define META_FUNCTION_GLOBAL_MARKER() \
+    ITT_FUNCTION_GLOBAL_MARKER()
+#define META_FUNCTION_PROCESS_MARKER() \
+    ITT_FUNCTION_PROCESS_MARKER()
+#define META_FUNCTION_THREAD_MARKER() \
+    ITT_FUNCTION_THREAD_MARKER()
+#define META_FUNCTION_TASK_MARKER() \
+    ITT_FUNCTION_TASK_MARKER()

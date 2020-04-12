@@ -38,7 +38,7 @@ public:
         : BaseMeshT(Mesh::Type::Icosahedron, vertex_layout)
         , m_radius(radius)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         const bool has_colors   = Mesh::HasVertexField(Mesh::VertexField::Color);
         const bool has_normals  = Mesh::HasVertexField(Mesh::VertexField::Normal);
@@ -131,7 +131,7 @@ public:
 
     void Subdivide()
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         if (BaseMeshT::m_indices.size() % 3 != 0)
             throw std::logic_error("Icosahedron indices count should be a multiple of three representing triangles list.");
 
@@ -166,7 +166,7 @@ public:
 
     void Spherify()
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         const bool has_normals = Mesh::HasVertexField(Mesh::VertexField::Normal);
 

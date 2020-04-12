@@ -35,7 +35,7 @@ namespace Methane::Samples
 Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings)
     : Planet(context, image_loader, settings, gfx::SphereMesh<Vertex>(Vertex::layout, 1.f, 32, 32))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings, gfx::BaseMesh<Vertex> mesh)
@@ -43,7 +43,7 @@ Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, cons
     , m_context(context)
     , m_mesh_buffers(context, mesh, "Planet")
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const gfx::RenderContext::Settings& context_settings = context.GetSettings();
 
@@ -98,7 +98,7 @@ Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, cons
 
 Ptr<gfx::ProgramBindings> Planet::CreateProgramBindings(const Ptr<gfx::Buffer>& sp_constants_buffer, const Ptr<gfx::Buffer>& sp_uniforms_buffer)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     assert(!!m_sp_state);
     assert(!!m_sp_state->GetSettings().sp_program);
@@ -112,7 +112,7 @@ Ptr<gfx::ProgramBindings> Planet::CreateProgramBindings(const Ptr<gfx::Buffer>& 
 
 void Planet::Resize(const gfx::FrameSize& frame_size)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     assert(m_sp_state);
     m_sp_state->SetViewports({ gfx::GetFrameViewport(frame_size) });
@@ -121,7 +121,7 @@ void Planet::Resize(const gfx::FrameSize& frame_size)
 
 bool Planet::Update(double elapsed_seconds, double)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     gfx::Matrix44f model_scale_matrix, model_translate_matrix, model_rotation_matrix, scene_view_matrix, scene_proj_matrix;
     m_settings.view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
@@ -141,7 +141,7 @@ bool Planet::Update(double elapsed_seconds, double)
 
 void Planet::Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     assert(!!buffer_bindings.sp_uniforms_buffer);
     assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= sizeof(Uniforms));

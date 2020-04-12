@@ -42,7 +42,7 @@ using namespace Methane::Platform;
 
 - (id) initWithApp : (Methane::Platform::AppMac*) p_app andFrameRect : (NSRect) frame_rect
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     self = [super init];
     if (!self)
@@ -57,7 +57,7 @@ using namespace Methane::Platform;
 
 -(NSWindow*) window
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return m_p_app ? m_p_app->GetWindow() : nil;
 }
 
@@ -68,7 +68,7 @@ using namespace Methane::Platform;
 
 - (void) loadView
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     
     assert(!!m_p_app);
     m_p_app->InitContext({ self }, { static_cast<uint32_t>(m_frame_rect.size.width), static_cast<uint32_t>(m_frame_rect.size.height) });
@@ -76,14 +76,14 @@ using namespace Methane::Platform;
 
 - (void)viewDidLoad
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     [super viewDidLoad];
     [self.view.window makeFirstResponder:self];
 }
 
 - (void)appView: (nonnull AppViewMT *) view drawableSizeWillChange: (CGSize)size
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_p_app);
 
     if (!m_is_initialized)
@@ -97,7 +97,7 @@ using namespace Methane::Platform;
 
 - (void) drawInView: (nonnull AppViewMT*) view
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     #pragma unused(view)
     
     assert(!!m_p_app);
@@ -113,7 +113,7 @@ using namespace Methane::Platform;
 
 - (void) keyDown:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_p_app);
 
     m_p_app->InputState().OnKeyboardChanged(Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), Keyboard::KeyState::Pressed);
@@ -121,7 +121,7 @@ using namespace Methane::Platform;
 
 - (void) keyUp:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_p_app);
 
     m_p_app->InputState().OnKeyboardChanged(Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), Keyboard::KeyState::Released);
@@ -129,7 +129,7 @@ using namespace Methane::Platform;
 
 - (void) flagsChanged:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_p_app);
 
     m_p_app->InputState().OnModifiersChanged(Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetModifiers());
@@ -139,7 +139,7 @@ using namespace Methane::Platform;
 
 - (void)mouseMoved:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_p_app);
 
     NSPoint pos = [event locationInWindow];
@@ -150,7 +150,7 @@ using namespace Methane::Platform;
 
 - (void)mouseDown:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     #pragma unused(event)
     
     assert(!!m_p_app);
@@ -159,7 +159,7 @@ using namespace Methane::Platform;
 
 - (void)mouseUp:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     #pragma unused(event)
     
     assert(!!m_p_app);
@@ -168,13 +168,13 @@ using namespace Methane::Platform;
 
 - (void)mouseDragged:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     [self mouseMoved:event];
 }
 
 - (void)rightMouseDown:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     #pragma unused(event)
     
     assert(!!m_p_app);
@@ -183,7 +183,7 @@ using namespace Methane::Platform;
 
 - (void)rightMouseUp:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     #pragma unused(event)
     
     assert(!!m_p_app);
@@ -192,13 +192,13 @@ using namespace Methane::Platform;
 
 - (void)rightMouseDragged:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     [self mouseMoved:event];
 }
 
 - (void)otherMouseDown:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     
     assert(!!m_p_app);
     m_p_app->InputState().OnMouseButtonChanged(static_cast<Mouse::Button>(static_cast<int>([event buttonNumber])), Mouse::ButtonState::Pressed);
@@ -206,7 +206,7 @@ using namespace Methane::Platform;
 
 - (void)otherMouseUp:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_p_app);
 
     m_p_app->InputState().OnMouseButtonChanged(static_cast<Mouse::Button>(static_cast<int>([event buttonNumber])), Mouse::ButtonState::Released);
@@ -214,13 +214,13 @@ using namespace Methane::Platform;
 
 - (void)otherMouseDragged:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     [self mouseMoved:event];
 }
 
 - (void)mouseEntered:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     #pragma unused(event)
     
     assert(!!m_p_app);
@@ -229,7 +229,7 @@ using namespace Methane::Platform;
 
 - (void)mouseExited:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     #pragma unused(event)
     
     assert(!!m_p_app);
@@ -238,7 +238,7 @@ using namespace Methane::Platform;
 
 - (void)scrollWheel:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     
     assert(!!m_p_app);
     Mouse::Scroll scroll{ [event scrollingDeltaX], -[event scrollingDeltaY] };

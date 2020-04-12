@@ -34,7 +34,7 @@ namespace Methane::Graphics
 
 Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, TextureBase::Usage::Mask usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Settings settings;
     settings.type           = Type::Texture;
@@ -55,7 +55,7 @@ Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, uint32_
 
 Texture::Settings Texture::Settings::Cube(uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage::Mask usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Settings settings;
     settings.type           = Type::Texture;
@@ -72,7 +72,7 @@ Texture::Settings Texture::Settings::Cube(uint32_t dimension_size, uint32_t arra
 
 Texture::Settings Texture::Settings::FrameBuffer(const Dimensions& dimensions, PixelFormat pixel_format)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Settings settings;
     settings.type           = Type::FrameBuffer;
@@ -87,7 +87,7 @@ Texture::Settings Texture::Settings::FrameBuffer(const Dimensions& dimensions, P
 
 Texture::Settings Texture::Settings::DepthStencilBuffer(const Dimensions& dimensions, PixelFormat pixel_format, Usage::Mask usage_mask)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Settings settings;
     settings.type           = Type::DepthStencilBuffer;
@@ -103,7 +103,7 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
     : ResourceNT(Resource::Type::Texture, settings.usage_mask, context, descriptor_by_usage)
     , m_settings(settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (m_settings.usage_mask == TextureBase::Usage::Unknown)
     {
@@ -123,7 +123,7 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
 
 void TextureBase::ValidateDimensions(DimensionType dimension_type, const Dimensions& dimensions, bool mipmapped)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (!dimensions.width || !dimensions.height || !dimensions.depth)
     {
@@ -170,14 +170,14 @@ void TextureBase::ValidateDimensions(DimensionType dimension_type, const Dimensi
 
 uint32_t TextureBase::GetMipLevelsCount() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return m_settings.mipmapped ? 1u + static_cast<uint32_t>(std::log2(static_cast<double>(m_settings.dimensions.GetLongestSide())))
                                 : 1u;
 }
 
 Data::Size TextureBase::GetDataSize(Data::MemoryState size_type) const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const Settings& settings = GetSettings();
     return size_type == Data::MemoryState::Reserved
             ? settings.dimensions.GetPixelsCount() * GetPixelSize(settings.pixel_format) * settings.array_length
@@ -186,7 +186,7 @@ Data::Size TextureBase::GetDataSize(Data::MemoryState size_type) const noexcept
 
 uint32_t TextureBase::GetRequiredSubresourceCount() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return m_settings.array_length * m_settings.dimensions.depth * GetMipLevelsCount();
 }
 

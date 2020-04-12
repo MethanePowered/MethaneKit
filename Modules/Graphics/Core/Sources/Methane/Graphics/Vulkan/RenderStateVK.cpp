@@ -37,25 +37,25 @@ namespace Methane::Graphics
 
 Ptr<RenderState> RenderState::Create(RenderContext& context, const RenderState::Settings& state_settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<RenderStateVK>(dynamic_cast<RenderContextBase&>(context), state_settings);
 }
 
 RenderStateVK::RenderStateVK(RenderContextBase& context, const Settings& settings)
     : RenderStateBase(context, settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Reset(settings);
 }
 
 RenderStateVK::~RenderStateVK()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void RenderStateVK::Reset(const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!settings.sp_program)
     {
         throw std::invalid_argument("Can not create state with empty program.");
@@ -79,26 +79,26 @@ void RenderStateVK::Reset(const Settings& settings)
 
 void RenderStateVK::Apply(RenderCommandListBase& command_list, Group::Mask state_groups)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void RenderStateVK::SetViewports(const Viewports& viewports)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     RenderStateBase::SetViewports(viewports);
 }
 
 void RenderStateVK::SetScissorRects(const ScissorRects& scissor_rects)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     RenderStateBase::SetScissorRects(scissor_rects);
 }
 
 void RenderStateVK::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     RenderStateBase::SetName(name);
     
@@ -107,12 +107,12 @@ void RenderStateVK::SetName(const std::string& name)
 
 void RenderStateVK::ResetNativeState()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 IContextVK& RenderStateVK::GetContextVK() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextVK&>(GetRenderContext());
 }
 

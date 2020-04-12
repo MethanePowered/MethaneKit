@@ -32,25 +32,25 @@ namespace Methane::Platform
 
 void PrintToDebugOutput(const std::string& msg)
 {
-    ITT_FUNCTION_TASK();
-    throw std::runtime_error("Method is not implemented yet.");
+    META_FUNCTION_TASK();
+    TracyMessage(msg.c_str(), msg.size());
 }
 
 std::string GetExecutableDir()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     throw std::runtime_error("Method is not implemented yet.");
 }
 
 std::string GetExecutableFileName()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     throw std::runtime_error("Method is not implemented yet.");
 }
 
 std::string GetResourceDir()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     throw std::runtime_error("Method is not implemented yet.");
 }
 

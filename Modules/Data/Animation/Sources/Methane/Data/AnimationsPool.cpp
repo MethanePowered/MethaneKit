@@ -31,7 +31,7 @@ namespace Methane::Data
 
 void AnimationsPool::Update()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_is_paused || empty())
         return;
 

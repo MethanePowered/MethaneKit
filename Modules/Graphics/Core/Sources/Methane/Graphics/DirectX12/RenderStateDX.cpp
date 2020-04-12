@@ -46,7 +46,7 @@ constexpr size_t g_max_rtv_count = sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC::RT
 
 inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<Shader>& sp_shader)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const Data::Chunk* p_byte_code_chunk = sp_shader ? static_cast<const ShaderDX&>(*sp_shader).GetNativeByteCode() : nullptr;
     return p_byte_code_chunk
         ? CD3DX12_SHADER_BYTECODE(p_byte_code_chunk->p_data, p_byte_code_chunk->size)
@@ -55,7 +55,7 @@ inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<Shader>& sp_shader)
 
 static D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(RenderState::Rasterizer::FillMode fill_mode)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using RasterizerFillMode = RenderState::Rasterizer::FillMode;
     
@@ -71,7 +71,7 @@ static D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(RenderState::Rasterizer:
 
 static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(RenderState::Rasterizer::CullMode cull_mode)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using RasterizerCullMode = RenderState::Rasterizer::CullMode;
 
@@ -87,7 +87,7 @@ static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(RenderState::Rasterizer:
 
 static UINT8 ConvertRenderTargetWriteMaskToD3D12(RenderState::Blending::ColorChannel::Mask rt_write_mask)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using ColorChannel = RenderState::Blending::ColorChannel;
 
@@ -105,7 +105,7 @@ static UINT8 ConvertRenderTargetWriteMaskToD3D12(RenderState::Blending::ColorCha
 
 static D3D12_BLEND_OP ConvertBlendingOperationToD3D12(RenderState::Blending::Operation blend_operation)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using BlendOp = RenderState::Blending::Operation;
 
@@ -123,7 +123,7 @@ static D3D12_BLEND_OP ConvertBlendingOperationToD3D12(RenderState::Blending::Ope
 
 static D3D12_BLEND ConvertBlendingFactorToD3D12(RenderState::Blending::Factor blend_factor)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using BlendFactor = RenderState::Blending::Factor;
     
@@ -155,7 +155,7 @@ static D3D12_BLEND ConvertBlendingFactorToD3D12(RenderState::Blending::Factor bl
 
 static D3D12_STENCIL_OP ConvertStencilOperationToD3D12(RenderState::Stencil::Operation operation)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using StencilOperation = RenderState::Stencil::Operation;
     
@@ -176,7 +176,7 @@ static D3D12_STENCIL_OP ConvertStencilOperationToD3D12(RenderState::Stencil::Ope
 
 static D3D12_DEPTH_STENCILOP_DESC ConvertStencilFaceOperationsToD3D12(const RenderState::Stencil::FaceOperations& stencil_face_op)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     D3D12_DEPTH_STENCILOP_DESC stencil_desc{};
 
@@ -190,20 +190,20 @@ static D3D12_DEPTH_STENCILOP_DESC ConvertStencilFaceOperationsToD3D12(const Rend
 
 Ptr<RenderState> RenderState::Create(RenderContext& context, const RenderState::Settings& state_settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<RenderStateDX>(dynamic_cast<RenderContextBase&>(context), state_settings);
 }
 
 RenderStateDX::RenderStateDX(RenderContextBase& context, const Settings& settings)
     : RenderStateBase(context, settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Reset(settings);
 }
 
 void RenderStateDX::Reset(const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     RenderStateBase::Reset(settings);
 
     ProgramDX&         dx_program               = RenderStateDX::GetProgramDX();
@@ -290,7 +290,7 @@ void RenderStateDX::Reset(const Settings& settings)
 
 void RenderStateDX::Apply(RenderCommandListBase& command_list, Group::Mask state_groups)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     RenderCommandListDX& dx_render_command_list = static_cast<RenderCommandListDX&>(command_list);
     ID3D12GraphicsCommandList& d3d12_command_list = dx_render_command_list.GetNativeCommandList();
@@ -321,7 +321,7 @@ void RenderStateDX::Apply(RenderCommandListBase& command_list, Group::Mask state
 
 void RenderStateDX::SetViewports(const Viewports& viewports)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     RenderStateBase::SetViewports(viewports);
 
     m_viewports = TypeConverterDX::ViewportsToD3D(viewports);
@@ -329,7 +329,7 @@ void RenderStateDX::SetViewports(const Viewports& viewports)
 
 void RenderStateDX::SetScissorRects(const ScissorRects& scissor_rects)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     RenderStateBase::SetScissorRects(scissor_rects);
 
@@ -338,7 +338,7 @@ void RenderStateDX::SetScissorRects(const ScissorRects& scissor_rects)
 
 void RenderStateDX::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     RenderStateBase::SetName(name);
 
     if (m_cp_pipeline_state)
@@ -349,7 +349,7 @@ void RenderStateDX::SetName(const std::string& name)
 
 void RenderStateDX::InitializeNativePipelineState()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_cp_pipeline_state)
         return;
 
@@ -359,7 +359,7 @@ void RenderStateDX::InitializeNativePipelineState()
 
 wrl::ComPtr<ID3D12PipelineState>& RenderStateDX::GetNativePipelineState()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!m_cp_pipeline_state)
     {
         InitializeNativePipelineState();
@@ -369,13 +369,13 @@ wrl::ComPtr<ID3D12PipelineState>& RenderStateDX::GetNativePipelineState()
 
 ProgramDX& RenderStateDX::GetProgramDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<ProgramDX&>(GetProgram());
 }
 
 RenderContextDX& RenderStateDX::GetRenderContextDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<RenderContextDX&>(GetRenderContext());
 }
 

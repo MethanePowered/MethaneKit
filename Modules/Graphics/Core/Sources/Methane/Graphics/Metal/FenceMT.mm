@@ -34,7 +34,7 @@ namespace Methane::Graphics
 
 UniquePtr<Fence> Fence::Create(CommandQueue& command_queue)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_unique<FenceMT>(static_cast<CommandQueueBase&>(command_queue));
 }
     
@@ -49,18 +49,18 @@ FenceMT::FenceMT(CommandQueueBase& command_queue)
     , m_mtl_event([GetCommandQueueMT().GetContextMT().GetDeviceMT().GetNativeDevice() newSharedEvent])
     , m_mtl_event_listener([[MTLSharedEventListener alloc] initWithDispatchQueue:GetDispatchQueue()])
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 FenceMT::~FenceMT()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     [m_mtl_event_listener release];
 }
 
 void FenceMT::Signal()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     FenceBase::Signal();
     
@@ -73,7 +73,7 @@ void FenceMT::Signal()
 
 void FenceMT::Wait()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     FenceBase::Wait();
 
@@ -91,13 +91,13 @@ void FenceMT::Wait()
                                     m_is_signalled = true;
                                     m_wait_condition_var.notify_one();
                                 }];
-    std::unique_lock<std::mutex> lock(m_wait_mutex);
+    std::unique_lock<LockableBase(std::mutex)> lock(m_wait_mutex);
     m_wait_condition_var.wait(lock, [this]{ return m_is_signalled; });
 }
 
 void FenceMT::SetName(const std::string& name) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (ObjectBase::GetName() == name)
         return;
 
@@ -108,7 +108,7 @@ void FenceMT::SetName(const std::string& name) noexcept
 
 CommandQueueMT& FenceMT::GetCommandQueueMT()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<CommandQueueMT&>(GetCommandQueue());
 }
 

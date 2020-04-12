@@ -34,7 +34,7 @@ namespace Methane::Graphics
 
 bool RenderPass::Attachment::operator==(const RenderPass::Attachment& other) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return ( (  wp_texture.expired() &&  other.wp_texture.expired() ) ||
              ( !wp_texture.expired() && !other.wp_texture.expired() &&
               std::addressof(*wp_texture.lock()) == std::addressof(*other.wp_texture.lock()) ) ) &&
@@ -47,28 +47,28 @@ bool RenderPass::Attachment::operator==(const RenderPass::Attachment& other) con
 
 bool RenderPass::ColorAttachment::operator==(const RenderPass::ColorAttachment& other) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return Attachment::operator==(other) &&
            clear_color == other.clear_color;
 }
 
 bool RenderPass::DepthAttachment::operator==(const RenderPass::DepthAttachment& other) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return Attachment::operator==(other) &&
            clear_value == other.clear_value;
 }
 
 bool RenderPass::StencilAttachment::operator==(const RenderPass::StencilAttachment& other) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return Attachment::operator==(other) &&
            clear_value == other.clear_value;
 }
 
 bool RenderPass::Settings::operator==(const Settings& other) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return color_attachments  == other.color_attachments &&
            depth_attachment   == other.depth_attachment &&
            stencil_attachment == other.stencil_attachment &&
@@ -77,7 +77,7 @@ bool RenderPass::Settings::operator==(const Settings& other) const
 
 bool RenderPass::Settings::operator!=(const Settings& other) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return !operator==(other);
 }
 
@@ -85,18 +85,18 @@ RenderPassBase::RenderPassBase(RenderContextBase& context, const Settings& setti
     : m_render_context(context)
     , m_settings(settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void RenderPassBase::Update(const RenderPass::Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_settings = settings;
 }
 
 void RenderPassBase::Begin(RenderCommandListBase& command_list)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (m_is_begun)
     {
@@ -132,7 +132,7 @@ void RenderPassBase::Begin(RenderCommandListBase& command_list)
 
 void RenderPassBase::End(RenderCommandListBase&)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (!m_is_begun)
     {
@@ -144,7 +144,7 @@ void RenderPassBase::End(RenderCommandListBase&)
 
 Refs<Resource> RenderPassBase::GetColorAttachmentResources() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Refs<Resource> color_attach_resources;
     color_attach_resources.reserve(m_settings.color_attachments.size());
     for (const ColorAttachment& color_attach : m_settings.color_attachments)

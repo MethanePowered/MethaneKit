@@ -34,21 +34,21 @@ namespace Methane::Graphics
 
 Ptr<Buffer> Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const Buffer::Settings settings{ Buffer::Type::Vertex, Usage::Unknown, size, stride, PixelFormat::Unknown };
     return std::make_shared<VertexBufferDX>(dynamic_cast<ContextBase&>(context), settings, DescriptorByUsage(), stride);
 }
 
 Ptr<Buffer> Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const Buffer::Settings settings{ Buffer::Type::Index, Usage::Unknown, size, GetPixelSize(format), format };
     return std::make_shared<IndexBufferDX>(dynamic_cast<ContextBase&>(context), settings, DescriptorByUsage(), format);
 }
 
 Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Usage::Mask usage_mask = Usage::ShaderRead;
     if (addressable)
         usage_mask |= Usage::Addressable;
@@ -59,7 +59,7 @@ Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool
 
 Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     // Aligned size must be a multiple 256 bytes
     return (size + (D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT - 1)) & ~(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT - 1);
 }
@@ -67,7 +67,7 @@ Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
 template<>
 void VertexBufferDX::InitializeView(Data::Size stride)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     m_buffer_view.BufferLocation   = GetNativeGpuAddress();
     m_buffer_view.SizeInBytes      = static_cast<UINT>(GetDataSize());
@@ -77,7 +77,7 @@ void VertexBufferDX::InitializeView(Data::Size stride)
 template<>
 void IndexBufferDX::InitializeView(PixelFormat format)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     m_buffer_view.BufferLocation   = GetNativeGpuAddress();
     m_buffer_view.SizeInBytes      = static_cast<UINT>(GetDataSize());
@@ -87,7 +87,7 @@ void IndexBufferDX::InitializeView(PixelFormat format)
 template<>
 void ConstantBufferDX::InitializeView()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const Data::Size data_size   = GetDataSize();
     m_buffer_view.BufferLocation = GetNativeGpuAddress();

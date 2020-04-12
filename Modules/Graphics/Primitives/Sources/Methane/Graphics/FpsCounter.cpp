@@ -32,12 +32,12 @@ FpsCounter::FrameTiming::FrameTiming(double total_time_sec, double present_time_
     , m_present_time_sec(present_time_sec)
     , m_gpu_wait_time_sec(gpu_wait_time_sec)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 FpsCounter::FrameTiming& FpsCounter::FrameTiming::operator+=(const FrameTiming& other)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_total_time_sec    += other.m_total_time_sec;
     m_present_time_sec  += other.m_present_time_sec;
     m_gpu_wait_time_sec += other.m_gpu_wait_time_sec;
@@ -46,7 +46,7 @@ FpsCounter::FrameTiming& FpsCounter::FrameTiming::operator+=(const FrameTiming& 
 
 FpsCounter::FrameTiming& FpsCounter::FrameTiming::operator-=(const FrameTiming& other)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_total_time_sec    -= other.m_total_time_sec;
     m_present_time_sec  -= other.m_present_time_sec;
     m_gpu_wait_time_sec -= other.m_gpu_wait_time_sec;
@@ -55,7 +55,7 @@ FpsCounter::FrameTiming& FpsCounter::FrameTiming::operator-=(const FrameTiming& 
 
 FpsCounter::FrameTiming FpsCounter::FrameTiming::operator/(double divisor) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return FrameTiming(m_total_time_sec    / divisor,
                        m_present_time_sec  / divisor,
                        m_gpu_wait_time_sec / divisor);
@@ -63,7 +63,7 @@ FpsCounter::FrameTiming FpsCounter::FrameTiming::operator/(double divisor) const
 
 FpsCounter::FrameTiming FpsCounter::FrameTiming::operator*(double multiplier) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return FrameTiming(m_total_time_sec    * multiplier,
                        m_present_time_sec  * multiplier,
                        m_gpu_wait_time_sec * multiplier);
@@ -71,7 +71,7 @@ FpsCounter::FrameTiming FpsCounter::FrameTiming::operator*(double multiplier) co
 
 void FpsCounter::Reset(uint32_t averaged_timings_count)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_averaged_timings_count = averaged_timings_count;
     while (!m_frame_timings.empty())
     {
@@ -85,25 +85,25 @@ void FpsCounter::Reset(uint32_t averaged_timings_count)
     
 void FpsCounter::OnGpuFramePresentWait()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_present_timer.Reset();
 }
 
 void FpsCounter::OnGpuFramePresented()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_present_on_gpu_wait_time_sec = m_present_timer.GetElapsedSecondsD();
 }
 
 void FpsCounter::OnCpuFrameReadyToPresent()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_present_timer.Reset();
 }
 
 void FpsCounter::OnCpuFramePresented()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_frame_timings.size() >= m_averaged_timings_count)
     {
         m_frame_timings_sum -= m_frame_timings.front();

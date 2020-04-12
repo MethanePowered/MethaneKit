@@ -68,12 +68,12 @@ HeadsUpDisplay::HeadsUpDisplay(RenderContext& context, Settings settings)
         }
     )
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void HeadsUpDisplay::SetTextColor(const Color4f& text_color)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_settings.text_color == text_color)
         return;
 
@@ -83,13 +83,13 @@ void HeadsUpDisplay::SetTextColor(const Color4f& text_color)
 
 void HeadsUpDisplay::SetUpdateInterval(double update_interval_sec)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_settings.update_interval_sec = update_interval_sec;
 }
 
 void HeadsUpDisplay::Update()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_update_timer.GetElapsedSecondsD() < m_settings.update_interval_sec)
         return;
 
@@ -109,7 +109,7 @@ void HeadsUpDisplay::Update()
 
 void HeadsUpDisplay::Draw(RenderCommandList& cmd_list)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_fps_text.Draw(cmd_list);
 }
 

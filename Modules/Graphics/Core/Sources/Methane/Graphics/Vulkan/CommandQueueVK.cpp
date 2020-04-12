@@ -32,31 +32,31 @@ namespace Methane::Graphics
 
 Ptr<CommandQueue> CommandQueue::Create(Context& context)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<CommandQueueVK>(dynamic_cast<ContextBase&>(context));
 }
 
 CommandQueueVK::CommandQueueVK(ContextBase& context)
     : CommandQueueBase(context)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 CommandQueueVK::~CommandQueueVK()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void CommandQueueVK::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     CommandQueueBase::SetName(name);
 }
 
 IContextVK& CommandQueueVK::GetContextVK() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextVK&>(GetContext());
 }
 

@@ -24,6 +24,7 @@ Metal fence implementation.
 #pragma once
 
 #include <Methane/Graphics/FenceBase.h>
+#include <Methane/Instrumentation.h>
 
 #include <mutex>
 #include <condition_variable>
@@ -53,11 +54,11 @@ private:
     
     static dispatch_queue_t& GetDispatchQueue();
 
-    id<MTLSharedEvent>      m_mtl_event;
-    MTLSharedEventListener* m_mtl_event_listener;
-    std::mutex              m_wait_mutex;
-    std::condition_variable m_wait_condition_var;
-    bool                    m_is_signalled = false;
+    id<MTLSharedEvent>        m_mtl_event;
+    MTLSharedEventListener*   m_mtl_event_listener;
+    TracyLockable(std::mutex, m_wait_mutex);
+    std::condition_variable   m_wait_condition_var;
+    bool                      m_is_signalled = false;
 };
 
 } // namespace Methane::Graphics

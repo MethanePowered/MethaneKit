@@ -48,7 +48,7 @@ static std::string GetTrailingCommandListDebugName(const std::string& base_name,
 
 Ptr<ParallelRenderCommandList> ParallelRenderCommandList::Create(CommandQueue& cmd_queue, RenderPass& render_pass)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<ParallelRenderCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue), static_cast<RenderPassBase&>(render_pass));
 }
 
@@ -57,7 +57,7 @@ ParallelRenderCommandListDX::ParallelRenderCommandListDX(CommandQueueBase& cmd_b
     , m_beginning_command_list(cmd_buffer, render_pass)
     , m_ending_command_list(cmd_buffer, render_pass)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     // Native D3D12 render-pass usage is disabled to do the render target setup and clears
     // in "begin" command list once before parallel rendering
@@ -66,7 +66,7 @@ ParallelRenderCommandListDX::ParallelRenderCommandListDX(CommandQueueBase& cmd_b
 
 void ParallelRenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     // Render pass is begun in "beginning" command list only,
     // but it will be ended in the "ending" command list on commit of the parallel CL
@@ -90,7 +90,7 @@ void ParallelRenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state,
 
 void ParallelRenderCommandListDX::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     m_beginning_command_list.SetName(GetTrailingCommandListDebugName(name, true));
     m_ending_command_list.SetName(GetTrailingCommandListDebugName(name, false));
@@ -100,7 +100,7 @@ void ParallelRenderCommandListDX::SetName(const std::string& name)
 
 void ParallelRenderCommandListDX::Commit()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     // Render pass was begun in "beginning" command list,
     // but it is ended in "ending" command list only
@@ -112,7 +112,7 @@ void ParallelRenderCommandListDX::Commit()
 
 void ParallelRenderCommandListDX::Execute(uint32_t frame_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     m_beginning_command_list.Execute(frame_index);
     
@@ -126,7 +126,7 @@ void ParallelRenderCommandListDX::Execute(uint32_t frame_index)
 
 ParallelRenderCommandListDX::D3D12CommandLists ParallelRenderCommandListDX::GetNativeCommandLists() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     D3D12CommandLists dx_command_lists;
     const Ptrs<RenderCommandList>& parallel_command_lists = GetParallelCommandLists();
@@ -146,13 +146,13 @@ ParallelRenderCommandListDX::D3D12CommandLists ParallelRenderCommandListDX::GetN
 
 CommandQueueDX& ParallelRenderCommandListDX::GetCommandQueueDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<CommandQueueDX&>(GetCommandQueueBase());
 }
 
 RenderPassDX& ParallelRenderCommandListDX::GetPassDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<RenderPassDX&>(GetPass());
 }
 

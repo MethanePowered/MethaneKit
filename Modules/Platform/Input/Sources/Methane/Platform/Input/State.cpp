@@ -31,7 +31,7 @@ namespace Methane::Platform::Input
 
 void State::OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button_state)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Mouse::State prev_mouse_state(m_mouse_state);
     m_mouse_state.SetButton(button, button_state);
@@ -44,7 +44,7 @@ void State::OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button
 
 void State::OnMousePositionChanged(const Mouse::Position& mouse_position)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Mouse::State prev_mouse_state(m_mouse_state);
     m_mouse_state.SetPosition(mouse_position);
@@ -57,7 +57,7 @@ void State::OnMousePositionChanged(const Mouse::Position& mouse_position)
 
 void State::OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_delta)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Mouse::State prev_mouse_state(m_mouse_state);
     m_mouse_state.AddScrollDelta(mouse_scroll_delta);
@@ -70,7 +70,7 @@ void State::OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_delta)
 
 void State::OnMouseInWindowChanged(bool is_mouse_in_window)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Mouse::State prev_mouse_state(m_mouse_state);
     m_mouse_state.SetInWindow(is_mouse_in_window);
@@ -83,7 +83,7 @@ void State::OnMouseInWindowChanged(bool is_mouse_in_window)
 
 void State::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Keyboard::State prev_keyboard_state(m_keyboard_state);
     m_keyboard_state.SetKey(key, key_state);
@@ -97,7 +97,7 @@ void State::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state)
 
 void State::OnModifiersChanged(Keyboard::Modifier::Mask modifiers_mask)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Keyboard::State prev_keyboard_state(m_keyboard_state);
     m_keyboard_state.SetModifiersMask(modifiers_mask);
@@ -111,7 +111,7 @@ void State::OnModifiersChanged(Keyboard::Modifier::Mask modifiers_mask)
 
 void State::ReleaseAllKeys()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Keyboard::Keys pressed_keys = m_keyboard_state.GetAllPressedKeys();
     for (Keyboard::Key key : pressed_keys)
     {

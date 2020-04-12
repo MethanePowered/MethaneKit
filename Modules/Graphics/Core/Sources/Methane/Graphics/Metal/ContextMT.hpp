@@ -46,7 +46,7 @@ public:
     ContextMT(DeviceBase& device, const typename ContextBaseT::Settings& settings)
         : ContextBaseT(device, settings)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         //ContextBase::m_resource_manager.Initialize({ true });
     }
 
@@ -54,19 +54,19 @@ public:
 
     DeviceMT& GetDeviceMT() noexcept override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         return static_cast<DeviceMT&>(ContextBase::GetDeviceBase());
     }
 
     CommandQueueMT& GetUploadCommandQueueMT() noexcept override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         return static_cast<CommandQueueMT&>(ContextBase::GetUploadCommandQueue());
     }
 
     const Ptr<ProgramLibraryMT>& GetLibraryMT(const std::string& library_name) override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         const auto library_by_name_it = m_library_by_name.find(library_name);
         if (library_by_name_it != m_library_by_name.end())
             return library_by_name_it->second;

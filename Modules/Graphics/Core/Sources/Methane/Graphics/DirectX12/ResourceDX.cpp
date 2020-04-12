@@ -37,13 +37,13 @@ namespace Methane::Graphics
 
 Ptr<ResourceBase::ReleasePool> ResourceBase::ReleasePool::Create()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<ResourceDX::ReleasePoolDX>();
 }
 
 void ResourceDX::ReleasePoolDX::AddResource(ResourceBase& resource)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     ResourceDX& resource_dx = static_cast<ResourceDX&>(resource);
     const wrl::ComPtr<ID3D12Resource>& cp_native_resource = resource_dx.GetNativeResourceComPtr();
     assert(!!cp_native_resource || resource_dx.GetResourceType() == Resource::Type::Sampler);
@@ -53,7 +53,7 @@ void ResourceDX::ReleasePoolDX::AddResource(ResourceBase& resource)
 
 void ResourceDX::ReleasePoolDX::ReleaseResources()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_resources.clear();
 }
 
@@ -61,14 +61,14 @@ ResourceDX::LocationDX::LocationDX(const Location& location)
     : Location(location)
     , m_resource_dx(dynamic_cast<ResourceDX&>(GetResource()))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 ResourceDX::LocationDX::LocationDX(const LocationDX& location)
     : Location(location)
     , m_resource_dx(dynamic_cast<ResourceDX&>(GetResource()))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 ResourceDX::LocationDX& ResourceDX::LocationDX::operator=(const LocationDX& other)
@@ -81,18 +81,18 @@ ResourceDX::LocationDX& ResourceDX::LocationDX::operator=(const LocationDX& othe
 ResourceDX::ResourceDX(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
     : ResourceBase(type, usage_mask, context, descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 ResourceDX::~ResourceDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     GetContext().GetResourceManager().GetReleasePool().AddResource(*this);
 }
 
 void ResourceDX::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     ResourceBase::SetName(name);
     
     // NOTE: there is no native resource for some resources like DX SamplerBase
@@ -104,26 +104,26 @@ void ResourceDX::SetName(const std::string& name)
 
 ID3D12Resource& ResourceDX::GetNativeResourceRef() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_cp_resource);
     return *m_cp_resource.Get();
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE ResourceDX::GetNativeCpuDescriptorHandle(const Descriptor& desc) const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeCpuDescriptorHandle(desc.index);
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE ResourceDX::GetNativeGpuDescriptorHandle(const Descriptor& desc) const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeGpuDescriptorHandle(desc.index);
 }
 
 D3D12_RESOURCE_STATES ResourceDX::GetNativeResourceState(State resource_state) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (resource_state)
     {
     case State::Common:                    return D3D12_RESOURCE_STATE_COMMON;
@@ -151,7 +151,7 @@ D3D12_RESOURCE_STATES ResourceDX::GetNativeResourceState(State resource_state) n
 
 D3D12_RESOURCE_BARRIER ResourceDX::GetNativeResourceBarrier(const Barrier& resource_barrier) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (resource_barrier.type)
     {
     case Barrier::Type::Transition:
@@ -168,14 +168,14 @@ D3D12_RESOURCE_BARRIER ResourceDX::GetNativeResourceBarrier(const Barrier& resou
 
 IContextDX& ResourceDX::GetContextDX() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextDX&>(GetContext());
 }
 
 void ResourceDX::InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type, 
                                              D3D12_RESOURCE_STATES resource_state, const D3D12_CLEAR_VALUE* p_clear_value)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!m_cp_resource);
 
     const CD3DX12_HEAP_PROPERTIES heap_properties(heap_type);
@@ -193,7 +193,7 @@ void ResourceDX::InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource
 
 void ResourceDX::InitializeFrameBufferResource(uint32_t frame_buffer_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!m_cp_resource);
 
     ThrowIfFailed(

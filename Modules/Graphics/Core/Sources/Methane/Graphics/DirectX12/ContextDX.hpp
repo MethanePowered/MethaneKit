@@ -46,14 +46,14 @@ public:
     ContextDX(DeviceBase& device, const typename ContextBaseT::Settings& settings)
         : ContextBaseT(device, settings)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
     }
 
     // ContextBase interface
 
     void Release() override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         GetMutableDeviceDX().ReleaseNativeDevice();
         ContextBaseT::Release();
         static_cast<SystemDX&>(System::Get()).ReportLiveObjects();
@@ -63,7 +63,7 @@ public:
 
     void SetName(const std::string& name) override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         ContextBaseT::SetName(name);
         GetDevice().SetName(name + " Device");
     }

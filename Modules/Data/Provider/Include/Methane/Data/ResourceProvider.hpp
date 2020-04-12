@@ -44,14 +44,14 @@ class ResourceProvider final : public Methane::Data::FileProvider
 public:
     static Provider& Get()
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         static ResourceProvider s_instance;
         return s_instance;
     }
 
     bool HasData(const std::string& path) const noexcept override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         if (m_resource_fs.exists(path))
             return true;
@@ -61,7 +61,7 @@ public:
 
     Methane::Data::Chunk GetData(const std::string& path) const override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         if (m_resource_fs.exists(path))
         {
@@ -85,7 +85,7 @@ protected:
     ResourceProvider()
         : m_resource_fs(cmrc::RESOURCE_NAMESPACE::get_filesystem())
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
     }
 
     cmrc::embedded_filesystem m_resource_fs;

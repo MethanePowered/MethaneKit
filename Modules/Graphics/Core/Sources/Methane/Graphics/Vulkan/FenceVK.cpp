@@ -35,28 +35,28 @@ namespace Methane::Graphics
 
 UniquePtr<Fence> Fence::Create(CommandQueue& command_queue)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_unique<FenceVK>(static_cast<CommandQueueBase&>(command_queue));
 }
 
 FenceVK::FenceVK(CommandQueueBase& command_queue)
     : FenceBase(command_queue)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     // TODO: create native fence object
 }
 
 FenceVK::~FenceVK()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     // TODO: release native fence object
 }
 
 void FenceVK::Signal()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     FenceBase::Signal();
 
@@ -65,7 +65,7 @@ void FenceVK::Signal()
 
 void FenceVK::Wait()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     FenceBase::Wait();
 
@@ -74,7 +74,7 @@ void FenceVK::Wait()
 
 void FenceVK::SetName(const std::string& name) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (ObjectBase::GetName() == name)
         return;
 
@@ -85,7 +85,7 @@ void FenceVK::SetName(const std::string& name) noexcept
 
 CommandQueueVK& FenceVK::GetCommandQueueVK()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<CommandQueueVK&>(GetCommandQueue());
 }
 

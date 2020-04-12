@@ -33,20 +33,20 @@ namespace Methane
 
 ScopeTimer::Aggregator& ScopeTimer::Aggregator::Get()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     static Aggregator s_scope_aggregator;
     return s_scope_aggregator;
 }
 
 ScopeTimer::Aggregator::~Aggregator()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Flush();
 }
 
 void ScopeTimer::Aggregator::Flush()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_sp_logger)
     {
         LogTimings(*m_sp_logger);
@@ -56,7 +56,7 @@ void ScopeTimer::Aggregator::Flush()
 
 void ScopeTimer::Aggregator::LogTimings(ILogger& logger)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_timing_by_scope_name.empty())
         return;
 
@@ -78,7 +78,7 @@ void ScopeTimer::Aggregator::LogTimings(ILogger& logger)
 
 void ScopeTimer::Aggregator::AddScopeTiming(const std::string& scope_name, TimeDuration duration)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Timing& scope_timing = m_timing_by_scope_name[scope_name];
     scope_timing.count++;
@@ -87,7 +87,7 @@ void ScopeTimer::Aggregator::AddScopeTiming(const std::string& scope_name, TimeD
 
 const ScopeTimer::Aggregator::Timing& ScopeTimer::Aggregator::GetScopeTiming(const std::string& scope_name) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     static Timing s_empty_timing{};
     auto   scope_timing_it = m_timing_by_scope_name.find(scope_name);
@@ -98,12 +98,12 @@ ScopeTimer::ScopeTimer(std::string scope_name)
     : Timer()
     , m_scope_name(std::move(scope_name))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 ScopeTimer::~ScopeTimer()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Aggregator::Get().AddScopeTiming(m_scope_name, GetElapsedDuration());
 }
 

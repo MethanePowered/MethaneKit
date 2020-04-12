@@ -35,33 +35,33 @@ namespace Methane::Graphics
 
 Ptr<ParallelRenderCommandList> ParallelRenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<ParallelRenderCommandListVK>(static_cast<CommandQueueBase&>(command_queue), static_cast<RenderPassBase&>(render_pass));
 }
 
 ParallelRenderCommandListVK::ParallelRenderCommandListVK(CommandQueueBase& command_queue, RenderPassBase& render_pass)
     : ParallelRenderCommandListBase(command_queue, render_pass)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void ParallelRenderCommandListVK::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     ParallelRenderCommandListBase::SetName(name);
 }
 
 void ParallelRenderCommandListVK::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     ParallelRenderCommandListBase::Reset(sp_render_state, debug_group);
 }
 
 void ParallelRenderCommandListVK::Commit()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     
     assert(!IsCommitted());
     ParallelRenderCommandListBase::Commit();
@@ -69,20 +69,20 @@ void ParallelRenderCommandListVK::Commit()
 
 void ParallelRenderCommandListVK::Execute(uint32_t frame_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     ParallelRenderCommandListBase::Execute(frame_index);
 }
 
 CommandQueueVK& ParallelRenderCommandListVK::GetCommandQueueVK() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<class CommandQueueVK&>(GetCommandQueue());
 }
 
 RenderPassVK& ParallelRenderCommandListVK::GetPassVK()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<class RenderPassVK&>(GetPass());
 }
 

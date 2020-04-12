@@ -32,14 +32,14 @@ namespace Methane::Graphics
 
 Ptr<Sampler> Sampler::Create(Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<SamplerVK>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
 SamplerVK::SamplerVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : SamplerBase(context, settings, descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     InitializeDefaultDescriptors();
     
@@ -48,12 +48,12 @@ SamplerVK::SamplerVK(ContextBase& context, const Settings& settings, const Descr
 
 SamplerVK::~SamplerVK()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void SamplerVK::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     SamplerBase::SetName(name);
 
@@ -62,12 +62,12 @@ void SamplerVK::SetName(const std::string& name)
 
 void SamplerVK::ResetSamplerState()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 IContextVK& SamplerVK::GetContextVK() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextVK&>(GetContext());
 }
 

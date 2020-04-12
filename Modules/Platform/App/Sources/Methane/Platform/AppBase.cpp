@@ -38,7 +38,7 @@ AppBase::AppBase(const AppBase::Settings& settings)
     : CLI::App(settings.name, GetExecutableFileName())
     , m_settings(settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     add_option("-w,--width",  m_settings.width,  "Window width in pixels or as ratio of desktop width", true);
     add_option("-x,--height", m_settings.height, "Window height in pixels or as ratio of desktop height", true);
@@ -53,7 +53,7 @@ AppBase::AppBase(const AppBase::Settings& settings)
 
 int AppBase::Run(const RunArgs& args)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     try
     {
@@ -82,19 +82,19 @@ int AppBase::Run(const RunArgs& args)
 
 void AppBase::Init()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_initialized = true;
 }
 
 void AppBase::ChangeWindowBounds(const Data::FrameRect& window_bounds)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_window_bounds = window_bounds;
 }
     
 bool AppBase::Resize(const Data::FrameSize& frame_size, bool is_minimized)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     
     const bool is_resizing = !is_minimized && m_frame_size != frame_size;
     
@@ -109,7 +109,7 @@ bool AppBase::Resize(const Data::FrameSize& frame_size, bool is_minimized)
 
 void AppBase::Alert(const Message& msg, bool deferred)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!deferred)
         return;
 
@@ -118,7 +118,7 @@ void AppBase::Alert(const Message& msg, bool deferred)
 
 void AppBase::ShowAlert(const Message&)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     // Message box interrupts message loop so that application looses all key release events
     // We assume that user has released all previously pressed keys and simulate these events
@@ -137,13 +137,13 @@ void AppBase::UpdateAndRender()
 
 bool AppBase::HasError() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return m_sp_deferred_message ? m_sp_deferred_message->type == Message::Type::Error : false;
 }
 
 bool AppBase::SetFullScreen(bool is_full_screen)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_settings.is_full_screen == is_full_screen)
         return false;
 

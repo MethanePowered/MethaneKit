@@ -40,30 +40,30 @@ BufferBase::BufferBase(ContextBase& context, const Settings& settings, const Des
     {
         throw std::invalid_argument("Can not create buffer of zero size.");
     }
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 Data::Size BufferBase::GetDataSize(Data::MemoryState size_type) const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return size_type == Data::MemoryState::Reserved ? m_settings.size : GetInitializedDataSize();
 }
 
 uint32_t BufferBase::GetFormattedItemsCount() const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return m_settings.item_stride_size > 0u ? GetDataSize(Data::MemoryState::Initialized) / m_settings.item_stride_size : 0u;
 }
 
 Ptr<BufferBase> BufferBase::GetPtr()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::dynamic_pointer_cast<BufferBase>(shared_from_this());
 }
 
 std::string Buffer::GetBufferTypeName(Type type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (type)
     {
     case Type::Data:     return "Data";

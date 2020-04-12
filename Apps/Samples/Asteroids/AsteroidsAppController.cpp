@@ -35,19 +35,19 @@ AsteroidsAppController::AsteroidsAppController(AsteroidsApp& asteroids_app, cons
     , Platform::Keyboard::ActionControllerBase<AsteroidsAppAction>(action_by_keyboard_state, {})
     , m_asteroids_app(asteroids_app)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void AsteroidsAppController::OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state,
                                                const Platform::Keyboard::StateChange& state_change)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Platform::Keyboard::ActionControllerBase<AsteroidsAppAction>::OnKeyboardChanged(key, key_state, state_change);
 }
 
 void AsteroidsAppController::OnKeyboardStateAction(AsteroidsAppAction action)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     
     const uint32_t asteroids_complexity = m_asteroids_app.GetAsteroidsComplexity();
     switch(action)
@@ -91,7 +91,7 @@ void AsteroidsAppController::OnKeyboardStateAction(AsteroidsAppAction action)
 
 std::string AsteroidsAppController::GetKeyboardActionName(AsteroidsAppAction action) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch(action)
     {
     case AsteroidsAppAction::ShowParameters:            return "show simulation parameters";
@@ -108,7 +108,7 @@ std::string AsteroidsAppController::GetKeyboardActionName(AsteroidsAppAction act
 
 Platform::Input::IHelpProvider::HelpLines AsteroidsAppController::GetHelp() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return GetKeyboardHelp();
 }
 

@@ -46,14 +46,14 @@ public:
         , m_start_value(value)
         , m_update_function(update_function)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
     }
 
     // Animation overrides
 
     void Restart() noexcept override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         m_start_value = m_value;
         m_prev_elapsed_seconds = 0.0;
         Animation::Restart();
@@ -61,7 +61,7 @@ public:
 
     bool Update() override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         if (GetState() != State::Running)
             return false;
 

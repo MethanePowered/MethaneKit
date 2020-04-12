@@ -34,7 +34,7 @@ namespace Methane::Graphics
 
 ScissorRect GetFrameScissorRect(const FrameRect& frame_rect)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return {
         ScissorRect::Point(static_cast<uint32_t>(std::max(0, frame_rect.origin.GetX())),
                            static_cast<uint32_t>(std::max(0, frame_rect.origin.GetY()))),
@@ -45,7 +45,7 @@ ScissorRect GetFrameScissorRect(const FrameRect& frame_rect)
 
 ScissorRect GetFrameScissorRect(const FrameSize& frame_size)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return ScissorRect {
         ScissorRect::Point(0u, 0u),
         ScissorRect::Size(frame_size.width, frame_size.height)
@@ -54,7 +54,7 @@ ScissorRect GetFrameScissorRect(const FrameSize& frame_size)
 
 Viewport GetFrameViewport(const FrameRect& frame_rect)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return Viewport{
         Viewport::Point(static_cast<double>(frame_rect.origin.GetX()), static_cast<double>(frame_rect.origin.GetY()), 0.0),
         Viewport::Size(static_cast<double>(frame_rect.size.width), static_cast<double>(frame_rect.size.height), 1.0)
@@ -63,7 +63,7 @@ Viewport GetFrameViewport(const FrameRect& frame_rect)
 
 Viewport GetFrameViewport(const FrameSize& frame_size)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return Viewport {
         Viewport::Point(0.0, 0.0, 0.0),
         Viewport::Size(static_cast<double>(frame_size.width), static_cast<double>(frame_size.height), 1.0)
@@ -72,7 +72,7 @@ Viewport GetFrameViewport(const FrameSize& frame_size)
 
 uint32_t GetPixelSize(PixelFormat data_format) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch(data_format)
     {

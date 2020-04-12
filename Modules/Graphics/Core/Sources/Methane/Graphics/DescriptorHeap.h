@@ -26,6 +26,7 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps
 #include <Methane/Data/RangeSet.hpp>
 #include <Methane/Data/Provider.h>
 #include <Methane/Memory.hpp>
+#include <Methane/Instrumentation.h>
 
 #include <set>
 #include <mutex>
@@ -112,7 +113,7 @@ private:
     Data::Size      m_allocated_size = 0;
     ResourcePtrs    m_resources;
     RangeSet        m_free_ranges;
-    std::mutex      m_modification_mutex;
+    TracyLockable(std::mutex, m_modification_mutex);
 };
 
 } // namespace Methane::Graphics

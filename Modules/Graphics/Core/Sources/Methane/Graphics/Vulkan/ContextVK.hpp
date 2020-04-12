@@ -45,19 +45,19 @@ public:
     ContextVK(DeviceBase& device, const typename ContextBaseT::Settings& settings)
         : ContextBaseT(device, settings)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
     }
 
     ~ContextVK() override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
     }
 
     // Context interface
 
     void WaitForGpu(Context::WaitFor wait_for) override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         ContextBase::WaitForGpu(wait_for);
         // ...
         ContextBase::OnGpuWaitComplete(wait_for);
@@ -67,13 +67,13 @@ public:
 
     void Initialize(DeviceBase& device, bool deferred_heap_allocation) override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         ContextBase::Initialize(device, deferred_heap_allocation);
     }
 
     void Release() override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         ContextBase::Release();
     }
 
@@ -81,13 +81,13 @@ public:
 
     DeviceVK& GetDeviceVK() noexcept override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         return dynamic_cast<DeviceVK&>(ContextBase::GetDeviceBase());
     }
 
     CommandQueueVK& GetUploadCommandQueueVK() noexcept override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         return dynamic_cast<CommandQueueVK&>(ContextBase::GetUploadCommandQueue());
     }
 };

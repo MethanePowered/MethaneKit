@@ -24,6 +24,7 @@
       <file path="$PROJECT_DIR$/Externals/SPIRV" />
       <file path="$PROJECT_DIR$/Externals/STB" />
       <file path="$PROJECT_DIR$/Externals/SonarScanner" />
+      <file path="$PROJECT_DIR$/Externals/Tracy" />
     </libraryRoots>
     <excludeRoots>
       <file path="$PROJECT_DIR$/Apps/Samples/Asteroids/Shaders" />

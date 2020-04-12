@@ -36,7 +36,7 @@ namespace Methane::Graphics
 
 Ptr<Program> Program::Create(Context& context, const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<ProgramMT>(dynamic_cast<ContextBase&>(context), settings);
 }
 
@@ -44,7 +44,7 @@ ProgramMT::ProgramMT(ContextBase& context, const Settings& settings)
     : ProgramBase(context, settings)
     , m_mtl_vertex_desc(GetShaderMT(Shader::Type::Vertex).GetNativeVertexDescriptor(*this))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     // Create dummy pipeline state to get program reflection of vertex and fragment shader arguments
     MTLRenderPipelineDescriptor* mtl_reflection_state_desc = [MTLRenderPipelineDescriptor new];
@@ -87,32 +87,32 @@ ProgramMT::ProgramMT(ContextBase& context, const Settings& settings)
 
 ProgramMT::~ProgramMT()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     [m_mtl_vertex_desc release];
 }
 
 IContextMT& ProgramMT::GetContextMT() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextMT&>(GetContext());
 }
 
 ShaderMT& ProgramMT::GetShaderMT(Shader::Type shader_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<ShaderMT&>(GetShaderRef(shader_type));
 }
 
 id<MTLFunction> ProgramMT::GetNativeShaderFunction(Shader::Type shader_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return HasShader(shader_type) ? static_cast<ShaderMT&>(GetShaderRef(shader_type)).GetNativeFunction() : nil;
 }
 
 void ProgramMT::SetNativeShaderArguments(Shader::Type shader_type, NSArray<MTLArgument*>* mtl_arguments) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (HasShader(shader_type))
     {
         GetShaderMT(shader_type).SetNativeArguments(mtl_arguments);

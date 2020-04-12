@@ -28,6 +28,8 @@ and deferred releasing of GPU resource.
 #include "DescriptorHeap.h"
 #include "ProgramBase.h"
 
+#include <Methane/Instrumentation.h>
+
 #include <array>
 #include <mutex>
 
@@ -73,7 +75,7 @@ private:
     ContextBase&                   m_context;
     DescriptorHeapTypes            m_descriptor_heap_types;
     Ptr<ResourceBase::ReleasePool> m_sp_release_pool;
-    std::mutex                     m_program_bindings_mutex;
+    TracyLockable(std::mutex,      m_program_bindings_mutex);
     WeakPtrs<ProgramBindings>      m_program_bindings;
 };
 

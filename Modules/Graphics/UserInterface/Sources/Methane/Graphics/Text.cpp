@@ -58,7 +58,7 @@ struct Text::Mesh
 
     Mesh(const std::string& text, Font& font, const FrameSize& viewport_size, const FrameSize& atlas_size)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         // Left-Bottom corner of the current character in text line
         const uint32_t line_height = font.GetMaxGlyphSize().height;
@@ -90,7 +90,7 @@ struct Text::Mesh
     void AddCharQuad(const Font::Char& font_char, const FrameRect::Point& screen_char_pos,
                      const FrameSize& viewport_size, const FrameSize& atlas_size)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         Point2f view_char_pos = screen_char_pos + font_char.offset;
         view_char_pos += Point2f(0.f, font_char.rect.size.height); // convert left-bottom to left-top position
@@ -157,7 +157,7 @@ Text::Text(RenderContext& context, Font& font, Settings settings, bool rect_in_p
     , m_sp_font(font.shared_from_this())
     , m_sp_atlas_texture(font.GetAtlasTexturePtr(context))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const RenderContext::Settings& context_settings = context.GetSettings();
     if (!rect_in_pixels)
@@ -252,7 +252,7 @@ void Text::SetText(const std::string& text)
 
 void Text::SetColor(const Color4f& color)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (m_settings.color == color)
         return;
@@ -265,7 +265,7 @@ void Text::SetColor(const Color4f& color)
 
 void Text::SetScreenRect(const FrameRect& screen_rect, bool rect_in_pixels)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (m_settings.screen_rect == screen_rect)
         return;
@@ -278,7 +278,7 @@ void Text::SetScreenRect(const FrameRect& screen_rect, bool rect_in_pixels)
 
 void Text::Draw(RenderCommandList& cmd_list)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (m_settings.text.empty())
         return;
@@ -297,7 +297,7 @@ void Text::Draw(RenderCommandList& cmd_list)
 
 void Text::UpdateMeshBuffers()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!m_sp_new_mesh_data)
         return;
 
@@ -322,7 +322,7 @@ void Text::UpdateMeshBuffers()
 
 void Text::UpdateConstantsBuffer()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!m_sp_new_const_data)
         return;
 

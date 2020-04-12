@@ -33,7 +33,7 @@ namespace Methane::Graphics
 
 Device::Feature::Mask DeviceMT::GetSupportedFeatures(const id<MTLDevice>&)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Device::Feature::Mask supported_features = Device::Feature::Value::BasicRendering;
     return supported_features;
 }
@@ -43,26 +43,26 @@ DeviceMT::DeviceMT(const id<MTLDevice>& mtl_device)
                  GetSupportedFeatures(mtl_device))
     , m_mtl_device(mtl_device)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 DeviceMT::~DeviceMT()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     [m_mtl_device release];
 }
 
 System& System::Get()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     static SystemMT s_system;
     return s_system;
 }
 
 SystemMT::~SystemMT()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_device_observer != nil)
     {
         MTLRemoveDeviceObserver(m_device_observer);
@@ -71,7 +71,7 @@ SystemMT::~SystemMT()
 
 const Ptrs<Device>& SystemMT::UpdateGpuDevices(Device::Feature::Mask supported_features)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_device_observer != nil)
     {
         MTLRemoveDeviceObserver(m_device_observer);
@@ -96,7 +96,7 @@ const Ptrs<Device>& SystemMT::UpdateGpuDevices(Device::Feature::Mask supported_f
 
 void SystemMT::OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificationName device_notification)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (device_notification == MTLDeviceWasAddedNotification)
     {
         AddDevice(mtl_device);
@@ -113,7 +113,7 @@ void SystemMT::OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificat
 
 void SystemMT::NotifyDevice(const id<MTLDevice>& mtl_device, Device::Notification device_notification)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const Ptr<Device>& sp_device = FindMetalDevice(mtl_device);
     if (!sp_device)
     {
@@ -125,7 +125,7 @@ void SystemMT::NotifyDevice(const id<MTLDevice>& mtl_device, Device::Notificatio
 
 void SystemMT::AddDevice(const id<MTLDevice>& mtl_device)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Device::Feature::Mask device_supported_features = DeviceMT::GetSupportedFeatures(mtl_device);
     if (!(device_supported_features & GetGpuSupportedFeatures()))
         return;
@@ -135,7 +135,7 @@ void SystemMT::AddDevice(const id<MTLDevice>& mtl_device)
 
 const Ptr<Device>& SystemMT::FindMetalDevice(const id<MTLDevice>& mtl_device) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const Ptrs<Device>& devices = GetGpuDevices();
     const auto device_it = std::find_if(devices.begin(), devices.end(),
                                         [mtl_device](const Ptr<Device>& sp_device)

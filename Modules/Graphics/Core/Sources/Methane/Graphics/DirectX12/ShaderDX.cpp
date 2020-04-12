@@ -43,7 +43,7 @@ namespace Methane::Graphics
 
 static Resource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_type)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (input_type)
     {
     case D3D_SIT_CBUFFER:
@@ -56,7 +56,7 @@ static Resource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_typ
 
 static std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (input_type)
     {
@@ -79,7 +79,7 @@ static std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type) noex
 
 static std::string GetSRVDimensionName(D3D_SRV_DIMENSION srv_dimension) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (srv_dimension)
     {
@@ -102,7 +102,7 @@ static std::string GetSRVDimensionName(D3D_SRV_DIMENSION srv_dimension) noexcept
 
 static std::string GetReturnTypeName(D3D_RESOURCE_RETURN_TYPE return_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (return_type)
     {
@@ -120,7 +120,7 @@ static std::string GetReturnTypeName(D3D_RESOURCE_RETURN_TYPE return_type) noexc
 
 static std::string GetValueTypeName(D3D_NAME value_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (value_type)
     {
@@ -156,7 +156,7 @@ static std::string GetValueTypeName(D3D_NAME value_type) noexcept
 
 static std::string GetComponentTypeName(D3D_REGISTER_COMPONENT_TYPE component_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (component_type)
     {
@@ -172,7 +172,7 @@ static std::string GetComponentTypeName(D3D_REGISTER_COMPONENT_TYPE component_ty
 using StepType = ProgramBase::InputBufferLayout::StepType;
 static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepType step_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (step_type)
     {
@@ -185,14 +185,14 @@ static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepTyp
 
 Ptr<Shader> Shader::Create(Type type, Context& context, const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<ShaderDX>(type, dynamic_cast<ContextBase&>(context), settings);
 }
 
 ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
     : ShaderBase(type, context, settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
 #if defined(_DEBUG)
     // Enable better shader debugging with the graphics debugging tools.
@@ -238,7 +238,7 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
 
 ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_cp_reflection);
 
     ShaderBase::ArgumentBindings argument_bindings;
@@ -311,7 +311,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
 
 std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(const ProgramDX& program) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_cp_reflection);
 
     D3D12_SHADER_DESC shader_desc{};
@@ -379,7 +379,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
 
 IContextDX& ShaderDX::GetContextDX() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextDX&>(GetContext());
 }
 

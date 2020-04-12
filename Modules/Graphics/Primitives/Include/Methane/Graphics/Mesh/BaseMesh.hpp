@@ -41,7 +41,7 @@ public:
     BaseMesh(Type type, const VertexLayout& vertex_layout)
         : Mesh(type, vertex_layout)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         if (sizeof(VType) != m_vertex_size)
         {
             throw std::invalid_argument("Size of vertex structure differs from vertex size calculated by vertex layout.");
@@ -56,7 +56,7 @@ protected:
     template<typename FType>
     FType& GetVertexField(VType& vertex, VertexField field) noexcept
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         const int32_t field_offset = m_vertex_field_offsets[static_cast<size_t>(field)];
         assert(field_offset >= 0);
         return *reinterpret_cast<FType*>(reinterpret_cast<char*>(&vertex) + field_offset);
@@ -65,7 +65,7 @@ protected:
     template<typename FType>
     const FType& GetVertexField(const VType& vertex, VertexField field) noexcept
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         const int32_t field_offset = m_vertex_field_offsets[static_cast<size_t>(field)];
         assert(field_offset >= 0);
         return *reinterpret_cast<const FType*>(reinterpret_cast<const char*>(&vertex) + field_offset);
@@ -74,7 +74,7 @@ protected:
     using EdgeMidpoints = std::map<Mesh::Edge, Mesh::Index>;
     Index AddEdgeMidpoint(const Edge& edge, EdgeMidpoints& edge_midpoints)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         const auto edge_midpoint_it = edge_midpoints.find(edge);
         if (edge_midpoint_it != edge_midpoints.end())
             return edge_midpoint_it->second;
@@ -120,7 +120,7 @@ protected:
 
     void ComputeAverageNormals()
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         if (!Mesh::HasVertexField(Mesh::VertexField::Normal))
             throw std::logic_error("Mesh should contain normals.");
 

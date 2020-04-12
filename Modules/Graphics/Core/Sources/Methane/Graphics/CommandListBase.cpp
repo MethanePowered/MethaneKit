@@ -39,7 +39,7 @@ namespace Methane::Graphics
 
 std::string CommandListBase::GetStateName(State state)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (state)
     {
     case State::Pending:   return "Pending";
@@ -54,12 +54,12 @@ CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
     , m_sp_command_queue(command_queue.GetPtr())
     , m_sp_command_state(CommandState::Create(type))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void CommandListBase::Reset(const std::string& debug_group)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_state != State::Pending)
         throw std::logic_error("Can not reset command list in committed or executing state.");
 
@@ -82,7 +82,7 @@ void CommandListBase::Reset(const std::string& debug_group)
 
 void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_state != State::Pending)
         throw std::logic_error("Can not set program bindings on committed or executing command list.");
 
@@ -95,7 +95,7 @@ void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, Prog
 
 void CommandListBase::Commit()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (m_state != State::Pending)
     {
@@ -118,7 +118,7 @@ void CommandListBase::Commit()
 
 void CommandListBase::Execute(uint32_t frame_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (m_state != State::Committed)
     {
@@ -139,7 +139,7 @@ void CommandListBase::Execute(uint32_t frame_index)
 
 void CommandListBase::Complete(uint32_t frame_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_state != State::Executing)
     {
         throw std::logic_error("Command list \"" + GetName() + "\" in " + GetStateName(m_state) + " state can not be completed. Only Executing command lists can be completed.");
@@ -159,38 +159,38 @@ void CommandListBase::Complete(uint32_t frame_index)
 
 bool CommandListBase::IsExecutingOnAnyFrame() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return m_state == State::Executing;
 }
 
 bool CommandListBase::IsCommitted(uint32_t frame_index) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return m_state == State::Committed && m_committed_frame_index == frame_index;
 }
 
 bool CommandListBase::IsExecuting(uint32_t frame_index) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return m_state == State::Executing && m_committed_frame_index == frame_index;
 }
 
 CommandQueue& CommandListBase::GetCommandQueue()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_sp_command_queue);
     return static_cast<CommandQueueBase&>(*m_sp_command_queue);
 }
 
 uint32_t CommandListBase::GetCurrentFrameIndex() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return  GetCommandQueueBase().GetCurrentFrameBufferIndex();
 }
 
 void CommandListBase::SetResourceTransitionBarriers(const Refs<Resource>& resources, ResourceBase::State state_before, ResourceBase::State state_after)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     ResourceBase::Barriers resource_barriers;
     resource_barriers.reserve(resources.size());
     for (const Ref<Resource>& resource_ref : resources)
@@ -207,33 +207,33 @@ void CommandListBase::SetResourceTransitionBarriers(const Refs<Resource>& resour
 
 void CommandListBase::ResetCommandState()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_sp_command_state = CommandState::Create(m_type);
 }
 
 CommandListBase::CommandState& CommandListBase::GetCommandState()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_sp_command_state);
     return *m_sp_command_state;
 }
 
 const CommandListBase::CommandState& CommandListBase::GetCommandState() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_sp_command_state);
     return *m_sp_command_state;
 }
 
 CommandQueueBase& CommandListBase::GetCommandQueueBase()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<CommandQueueBase&>(CommandListBase::GetCommandQueue());
 }
 
 const CommandQueueBase& CommandListBase::GetCommandQueueBase() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_sp_command_queue);
     return static_cast<const CommandQueueBase&>(*m_sp_command_queue);
 }

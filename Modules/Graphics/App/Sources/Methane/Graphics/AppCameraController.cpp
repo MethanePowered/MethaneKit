@@ -38,12 +38,12 @@ AppCameraController::AppCameraController(ActionCamera& action_camera, const std:
     , Keyboard::ActionControllerBase<ActionCamera::KeyboardAction>(keyboard_actions_by_state, keyboard_actions_by_key)
     , m_action_camera(action_camera)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void AppCameraController::OnMouseButtonChanged(Platform::Mouse::Button button, Platform::Mouse::ButtonState button_state, const Platform::Mouse::StateChange& state_change)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const ActionCamera::MouseAction action = GetMouseActionByButton(button);
     switch (button_state)
     {
@@ -54,13 +54,13 @@ void AppCameraController::OnMouseButtonChanged(Platform::Mouse::Button button, P
 
 void AppCameraController::OnMousePositionChanged(const Platform::Mouse::Position& mouse_position, const Platform::Mouse::StateChange&)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_action_camera.OnMouseDragged(mouse_position);
 }
 
 void AppCameraController::OnMouseScrollChanged(const Platform::Mouse::Scroll& mouse_scroll_delta, const Platform::Mouse::StateChange&)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const auto mouse_button_and_delta = Platform::Mouse::GetScrollButtonAndDelta(mouse_scroll_delta);
     const ActionCamera::MouseAction action = GetMouseActionByButton(mouse_button_and_delta.first);
     if (action == ActionCamera::MouseAction::Zoom)
@@ -71,13 +71,13 @@ void AppCameraController::OnMouseScrollChanged(const Platform::Mouse::Scroll& mo
 
 void AppCameraController::OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Platform::Keyboard::StateChange& state_change)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Keyboard::ActionControllerBase<ActionCamera::KeyboardAction>::OnKeyboardChanged(key, key_state, state_change);
 }
 
 AppCameraController::HelpLines AppCameraController::GetHelp() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     HelpLines help_lines;
     help_lines.reserve(m_action_by_mouse_button.size() + m_action_by_keyboard_key.size() + m_action_by_keyboard_state.size() + 2);
 
@@ -100,7 +100,7 @@ AppCameraController::HelpLines AppCameraController::GetHelp() const
 
 void AppCameraController::OnKeyboardKeyAction(ActionCamera::KeyboardAction action, Platform::Keyboard::KeyState key_state)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (key_state)
     {
         case Platform::Keyboard::KeyState::Pressed:  m_action_camera.OnKeyPressed(action); break;
@@ -110,19 +110,19 @@ void AppCameraController::OnKeyboardKeyAction(ActionCamera::KeyboardAction actio
 
 void AppCameraController::OnKeyboardStateAction(ActionCamera::KeyboardAction action)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_action_camera.DoKeyboardAction(action);
 }
 
 std::string AppCameraController::GetKeyboardActionName(ActionCamera::KeyboardAction action) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return ActionCamera::GetActionName(action);
 }
 
 std::string AppCameraController::GetMouseActionName(ActionCamera::MouseAction action) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return ActionCamera::GetActionName(action);
 }
 

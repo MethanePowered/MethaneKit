@@ -45,12 +45,12 @@ public:
         : m_action_by_keyboard_key(action_by_keyboard_key)
         , m_action_by_keyboard_state(action_by_keyboard_state)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
     }
     
     void OnKeyboardChanged(Key button, KeyState key_state, const StateChange& state_change)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         if (state_change.changed_properties == State::Property::None)
             return;
         
@@ -69,7 +69,7 @@ public:
     
     Input::IHelpProvider::HelpLines GetKeyboardHelp() const
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         Input::IHelpProvider::HelpLines help_lines;
         if (m_action_by_keyboard_key.empty() && m_action_by_keyboard_state.empty())
             return help_lines;
@@ -113,7 +113,7 @@ protected:
     
     ActionEnum GetKeyboardActionByState(State state) const
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         const auto action_by_keyboard_state_it = m_action_by_keyboard_state.find(state);
         return (action_by_keyboard_state_it != m_action_by_keyboard_state.end())
               ? action_by_keyboard_state_it->second : ActionEnum::None;
@@ -121,7 +121,7 @@ protected:
     
     ActionEnum GetKeyboardActionByKey(Key key) const
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         const auto action_by_keyboard_key_it = m_action_by_keyboard_key.find(key);
         return (action_by_keyboard_key_it != m_action_by_keyboard_key.end())
         ? action_by_keyboard_key_it->second : ActionEnum::None;

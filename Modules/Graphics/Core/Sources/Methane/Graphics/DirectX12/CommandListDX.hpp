@@ -58,7 +58,7 @@ public:
     explicit CommandListDX(ConstructArgs&&... construct_args)
         : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         const wrl::ComPtr<ID3D12Device>& cp_device = GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice();
         assert(!!cp_device);
@@ -72,19 +72,19 @@ public:
 
     void PushDebugGroup(const std::string& name) override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         PIXBeginEvent(m_cp_command_list.Get(), 0, nowide::widen(name).c_str());
     }
 
     void PopDebugGroup() override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         PIXEndEvent(m_cp_command_list.Get());
     }
 
     void Commit() override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         CommandListBaseT::Commit();
 
@@ -96,7 +96,7 @@ public:
 
     void SetResourceBarriers(const ResourceBase::Barriers& resource_barriers) override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         if (resource_barriers.empty())
             return;
@@ -113,7 +113,7 @@ public:
 
     void Execute(uint32_t frame_index) override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         CommandListBaseT::Execute(frame_index);
 
         // NOTE: In DirectX there's no need for tracking command list completion, so it's completed right away
@@ -124,7 +124,7 @@ public:
 
     void Reset(const std::string& debug_group) override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         if (!m_is_committed)
             return;
 
@@ -140,7 +140,7 @@ public:
 
     void SetName(const std::string& name) override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         assert(m_cp_command_list);
         m_cp_command_list->SetName(nowide::widen(name).c_str());

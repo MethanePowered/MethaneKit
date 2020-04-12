@@ -43,7 +43,7 @@ namespace Methane::Graphics
 
 static const char* GetFTErrorMessage(FT_Error err)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
 #undef __FTERRORS_H__
 #define FT_ERRORDEF( e, v, s )  case e: return s;
@@ -68,13 +68,13 @@ class Font::Library::Impl
 public:
     Impl()
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         ThrowFreeTypeError(FT_Init_FreeType(&m_ft_library));
     }
 
     ~Impl()
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         FT_Done_FreeType(m_ft_library);
     }
 
@@ -91,12 +91,12 @@ public:
         : m_ft_glyph(ft_glyph)
         , m_face_index(face_index)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
     }
 
     ~Glyph()
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         FT_Done_Glyph(m_ft_glyph);
     }
 
@@ -116,18 +116,18 @@ public:
         , m_ft_face(LoadFace(Library::Get().GetImpl().GetFTLib(), m_font_data))
         , m_has_kerning(static_cast<bool>(FT_HAS_KERNING(m_ft_face)))
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
     }
 
     ~Face()
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         FT_Done_Face(m_ft_face);
     }
 
     void SetSize(uint32_t font_size_pt, uint32_t resolution_dpi)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         // font Size is measured in 1/64ths of pixels
         // 0 values mean that vertical value is equal horizontal value
         ThrowFreeTypeError(FT_Set_Char_Size(m_ft_face, font_size_pt * 64, 0, resolution_dpi, 0));
@@ -135,13 +135,13 @@ public:
 
     uint32_t GetCharIndex(Char::Code char_code)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         return FT_Get_Char_Index(m_ft_face, static_cast<FT_ULong>(char_code));
     }
 
     Char LoadChar(Char::Code char_code)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         uint32_t char_index = GetCharIndex(char_code);
         if (!char_index)
@@ -172,7 +172,7 @@ public:
 
     FrameRect::Point GetKerning(uint32_t left_glyph_index, uint32_t right_glyph_index) const
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         assert(left_glyph_index && right_glyph_index);
         if (!m_has_kerning || !left_glyph_index || !right_glyph_index)
             return FrameRect::Point(0, 0);
@@ -185,7 +185,7 @@ public:
 private:
     static FT_Face LoadFace(FT_Library ft_library, const Data::Chunk& font_data)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         FT_Face ft_face = nullptr;
         ThrowFreeTypeError(FT_New_Memory_Face(ft_library,
@@ -209,7 +209,7 @@ public:
 
     bool TryPack(const Refs<Font::Char>& font_chars)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         for(const Ref<Font::Char>& font_char : font_chars)
         {
             if (!TryPack(font_char.get()))
@@ -226,20 +226,20 @@ public:
 
 Font::Library& Font::Library::Get()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     static Library s_library;
     return s_library;
 }
 
 bool Font::Library::HasFont(const std::string& font_name) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return m_font_by_name.count(font_name);
 }
 
 Font& Font::Library::GetFont(const std::string& font_name) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const auto font_by_name_it = m_font_by_name.find(font_name);
     if (font_by_name_it == m_font_by_name.end())
         throw std::invalid_argument("There is no font with name \"" + font_name + "\" in library.");
@@ -261,7 +261,7 @@ Font& Font::Library::GetFont(const Data::Provider& data_provider, const Settings
 
 Font& Font::Library::AddFont(const Data::Provider& data_provider, const Settings& font_settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     auto emplace_result = m_font_by_name.emplace(font_settings.name, Ptr<Font>(new Font(data_provider, font_settings)));
     if (!emplace_result.second)
         throw std::invalid_argument("Font with name \"" + font_settings.name + "\" already exists in library.");
@@ -272,7 +272,7 @@ Font& Font::Library::AddFont(const Data::Provider& data_provider, const Settings
 
 void Font::Library::RemoveFont(const std::string& font_name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const auto font_by_name_it = m_font_by_name.find(font_name);
     if (font_by_name_it != m_font_by_name.end())
         m_font_by_name.erase(font_by_name_it);
@@ -280,19 +280,19 @@ void Font::Library::RemoveFont(const std::string& font_name)
 
 void Font::Library::Clear()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_font_by_name.clear();
 }
 
 Font::Library::Library()
     : m_sp_impl(std::make_unique<Impl>())
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 std::string Font::GetAnsiCharacters(const char from, const char to)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (from > to)
         throw std::invalid_argument("Invalid characters range provided [" + std::to_string(from) + ", " + std::to_string(to) + "]");
 
@@ -308,7 +308,7 @@ Font::Font(const Data::Provider& data_provider, const Settings& settings)
     : m_settings(settings)
     , m_sp_face(std::make_unique<Face>(data_provider.GetData(m_settings.font_path)))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     m_sp_face->SetSize(m_settings.font_size_pt, m_settings.resolution_dpi);
     AddChars(m_settings.characters);
@@ -316,14 +316,14 @@ Font::Font(const Data::Provider& data_provider, const Settings& settings)
 
 void Font::AddChars(const std::string& unicode_characters)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const std::wstring characters = nowide::widen(unicode_characters);
     AddChars(characters);
 }
 
 void Font::AddChars(const std::wstring& characters)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     for (wchar_t character : characters)
     {
         AddChar(static_cast<Char::Code>(character));
@@ -332,7 +332,7 @@ void Font::AddChars(const std::wstring& characters)
 
 const Font::Char& Font::AddChar(Char::Code char_code)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const Char& font_char = GetChar(char_code);
     if (font_char)
         return font_char;
@@ -359,13 +359,13 @@ const Font::Char& Font::AddChar(Char::Code char_code)
 
 bool Font::HasChar(Char::Code char_code)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return m_char_by_code.count(char_code);
 }
 
 const Font::Char& Font::GetChar(Char::Code char_code) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     static const Char s_none_char {};
     static const Char s_line_break(static_cast<Char::Code>('\n'));
     if (char_code == s_line_break.code)
@@ -377,7 +377,7 @@ const Font::Char& Font::GetChar(Char::Code char_code) const
 
 Refs<const Font::Char> Font::GetChars() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Refs<const Char> font_chars;
     for(const auto& code_and_char : m_char_by_code)
     {
@@ -388,7 +388,7 @@ Refs<const Font::Char> Font::GetChars() const
 
 Refs<const Font::Char> Font::GetTextChars(const std::string& text)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Refs<const Char> font_chars;
     const std::wstring characters = nowide::widen(text);
     for (wchar_t char_code : characters)
@@ -400,14 +400,14 @@ Refs<const Font::Char> Font::GetTextChars(const std::string& text)
 
 FrameRect::Point Font::GetKerning(const Char& left_char, const Char& right_char) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_sp_face);
     return m_sp_face->GetKerning(left_char.GetGlyphIndex(), right_char.GetGlyphIndex());
 }
 
 Refs<Font::Char> Font::GetMutableChars()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Refs<Char> font_chars;
     for(auto& code_and_char : m_char_by_code)
     {
@@ -418,7 +418,7 @@ Refs<Font::Char> Font::GetMutableChars()
 
 bool Font::PackCharsToAtlas(float pixels_reserve_multiplier)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     // Transform char-map to vector of chars
     Refs<Char> font_chars = GetMutableChars();
@@ -454,7 +454,7 @@ bool Font::PackCharsToAtlas(float pixels_reserve_multiplier)
 
 const Ptr<Texture>& Font::GetAtlasTexturePtr(Context& context)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const auto atlas_texture_it = m_atlas_textures.find(&context);
     if (atlas_texture_it != m_atlas_textures.end())
     {
@@ -492,20 +492,20 @@ const Ptr<Texture>& Font::GetAtlasTexturePtr(Context& context)
 
 void Font::RemoveAtlasTexture(Context& context)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_atlas_textures.erase(&context);
 }
 
 void Font::ClearAtlasTextures()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_atlas_textures.clear();
 }
 
 Font::Char::Char(Code code)
     : code(code)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 Font::Char::Char(Code code, FrameRect rect, Point2i offset, Point2i advance, UniquePtr<Glyph>&& sp_glyph)
@@ -515,12 +515,12 @@ Font::Char::Char(Code code, FrameRect rect, Point2i offset, Point2i advance, Uni
     , advance(std::move(advance))
     , m_sp_glyph(std::move(sp_glyph))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void Font::Char::DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_stride) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!rect.size)
         return; 
 
@@ -549,7 +549,7 @@ void Font::Char::DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_strid
 
 uint32_t Font::Char::GetGlyphIndex() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_sp_glyph);
     return m_sp_glyph->GetFaceIndex();
 }

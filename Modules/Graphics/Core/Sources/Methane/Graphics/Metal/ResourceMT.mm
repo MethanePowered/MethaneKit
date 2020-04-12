@@ -42,7 +42,7 @@ struct ResourceContainerMT
 
 Ptr<ResourceBase::ReleasePool> ResourceBase::ReleasePool::Create()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<ResourceMT::ReleasePoolMT>();
 }
 
@@ -50,12 +50,12 @@ ResourceMT::ReleasePoolMT::ReleasePoolMT()
     : ResourceBase::ReleasePool()
     , m_sp_mtl_resources(new ResourceContainerMT())
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void ResourceMT::ReleasePoolMT::AddResource(ResourceBase& resource)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch(resource.GetResourceType())
     {
@@ -73,7 +73,7 @@ void ResourceMT::ReleasePoolMT::AddResource(ResourceBase& resource)
 
 void ResourceMT::ReleasePoolMT::ReleaseResources()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     assert(!!m_sp_mtl_resources);
     for(id<MTLBuffer>& mtl_buffer : m_sp_mtl_resources->buffers)
@@ -90,12 +90,12 @@ void ResourceMT::ReleasePoolMT::ReleaseResources()
 ResourceMT::ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
     : ResourceBase(type, usage_mask, context, descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 IContextMT& ResourceMT::GetContextMT() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextMT&>(GetContext());
 }
 

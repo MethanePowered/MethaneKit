@@ -30,19 +30,19 @@ namespace Methane::Graphics
 
 Ptr<DescriptorHeap> DescriptorHeap::Create(ContextBase& context, const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<DescriptorHeapVK>(context, settings);
 }
 
 DescriptorHeapVK::DescriptorHeapVK(ContextBase& context, const Settings& settings)
     : DescriptorHeap(context, settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 DescriptorHeapVK::~DescriptorHeapVK()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 } // namespace Methane::Graphics

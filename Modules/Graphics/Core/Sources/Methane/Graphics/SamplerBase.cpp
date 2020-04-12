@@ -52,12 +52,12 @@ SamplerBase::SamplerBase(ContextBase& context, const Settings& settings, const D
     , m_context(context)
     , m_settings(settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void SamplerBase::SetData(const SubResources&)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     throw std::logic_error("Samplers do not support setting the data.");
 }
 

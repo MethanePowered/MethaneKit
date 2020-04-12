@@ -43,7 +43,7 @@ namespace Methane::Graphics
 
 static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_SHADER_INPUT_TYPE input_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (input_type)
     {
@@ -75,7 +75,7 @@ static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_S
 
 static DescriptorHeap::Type GetDescriptorHeapTypeByRangeType(D3D12_DESCRIPTOR_RANGE_TYPE range_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (range_type == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
         return DescriptorHeap::Type::Samplers;
     else
@@ -84,7 +84,7 @@ static DescriptorHeap::Type GetDescriptorHeapTypeByRangeType(D3D12_DESCRIPTOR_RA
 
 static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (shader_type)
     {
     case Shader::Type::All:    return D3D12_SHADER_VISIBILITY_ALL;
@@ -97,7 +97,7 @@ static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_typ
 
 Ptr<Program> Program::Create(Context& context, const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<ProgramDX>(dynamic_cast<ContextBase&>(context), settings);
 }
 
@@ -105,7 +105,7 @@ ProgramDX::ProgramDX(ContextBase& context, const Settings& settings)
     : ProgramBase(context, settings)
     , m_dx_input_layout(GetVertexShaderDX().GetNativeProgramInputLayout(*this))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     InitArgumentBindings(settings.argument_descriptions);
     InitRootSignature();
@@ -113,7 +113,7 @@ ProgramDX::ProgramDX(ContextBase& context, const Settings& settings)
 
 void ProgramDX::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     ObjectBase::SetName(name);
 
@@ -123,7 +123,7 @@ void ProgramDX::SetName(const std::string& name)
 
 void ProgramDX::InitRootSignature()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     struct DescriptorOffsets
     {
@@ -202,31 +202,31 @@ void ProgramDX::InitRootSignature()
 
 IContextDX& ProgramDX::GetContextDX() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextDX&>(GetContext());
 }
 
 const IContextDX& ProgramDX::GetContextDX() const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<const IContextDX&>(GetContext());
 }
 
 ShaderDX& ProgramDX::GetVertexShaderDX() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<ShaderDX&>(GetShaderRef(Shader::Type::Vertex));
 }
 
 ShaderDX& ProgramDX::GetPixelShaderDX() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<ShaderDX&>(GetShaderRef(Shader::Type::Pixel));
 }
 
 D3D12_INPUT_LAYOUT_DESC ProgramDX::GetNativeInputLayoutDesc() const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return {
         m_dx_input_layout.data(),
         static_cast<UINT>(m_dx_input_layout.size())

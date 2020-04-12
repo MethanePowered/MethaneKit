@@ -44,16 +44,16 @@ public:
     using Iterator = typename BaseSet::iterator;
     using ConstIterator = typename BaseSet::const_iterator;
 
-    explicit RangeSet() : BaseSet() { ITT_FUNCTION_TASK(); }
-    RangeSet(const RangeSet& other) : BaseSet(other) { ITT_FUNCTION_TASK(); }
-    RangeSet(InitList init) : BaseSet() { ITT_FUNCTION_TASK(); operator=(init); }
+    explicit RangeSet() : BaseSet() { META_FUNCTION_TASK(); }
+    RangeSet(const RangeSet& other) : BaseSet(other) { META_FUNCTION_TASK(); }
+    RangeSet(InitList init) : BaseSet() { META_FUNCTION_TASK(); operator=(init); }
 
-    bool operator==(const RangeSet<ScalarT>& other) const { ITT_FUNCTION_TASK(); return static_cast<const BaseSet&>(*this) == static_cast<const BaseSet&>(other); }
-    bool operator==(const BaseSet& other) const           { ITT_FUNCTION_TASK(); return static_cast<const BaseSet&>(*this) == other; }
+    bool operator==(const RangeSet<ScalarT>& other) const { META_FUNCTION_TASK(); return static_cast<const BaseSet&>(*this) == static_cast<const BaseSet&>(other); }
+    bool operator==(const BaseSet& other) const           { META_FUNCTION_TASK(); return static_cast<const BaseSet&>(*this) == other; }
 
     RangeSet<ScalarT>& operator=(InitList init)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         for (const Range<ScalarT>& range : init)
             Add(range);
         return *this;
@@ -61,7 +61,7 @@ public:
 
     size_t Size() const              { return BaseSet::size();  }
     bool   IsEmpty() const           { return BaseSet::empty(); }
-    void   Clear()                   { ITT_FUNCTION_TASK(); BaseSet::clear(); }
+    void   Clear()                   { META_FUNCTION_TASK(); BaseSet::clear(); }
 
     const BaseSet& GetRanges() const { return *this; }
     ConstIterator begin() const      { return BaseSet::begin(); }
@@ -69,7 +69,7 @@ public:
 
     void Add(const Range<ScalarT>& range)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         Range<ScalarT> merged_range(range);
         const RangeOfRanges ranges = GetMergeableRanges(range);
 
@@ -86,7 +86,7 @@ public:
 
     void Remove(const Range<ScalarT>& range)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         Ranges remove_ranges, add_ranges;
         RangeOfRanges ranges = GetMergeableRanges(range);
         for (auto range_it = ranges.first; range_it != ranges.second; ++range_it)
@@ -131,7 +131,7 @@ protected:
     using RangeOfRanges = std::pair<ConstIterator, ConstIterator>;
     RangeOfRanges GetMergeableRanges(const Range<ScalarT>& range)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         if (BaseSet::empty())
         {
             return RangeOfRanges{ BaseSet::end(), BaseSet::end() };
@@ -164,7 +164,7 @@ protected:
     using Ranges = std::vector<Range<ScalarT>>;
     inline void RemoveRanges(const Ranges& delete_ranges)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         for (const Range<ScalarT>& delete_range : delete_ranges)
         {
             BaseSet::erase(delete_range);
@@ -173,7 +173,7 @@ protected:
 
     inline void AddRanges(const Ranges& add_ranges)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         for(const Range<ScalarT>& add_range : add_ranges)
         {
             BaseSet::insert(add_range);

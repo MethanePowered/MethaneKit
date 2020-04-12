@@ -33,27 +33,27 @@ namespace Methane::Graphics
 
 Ptr<RenderPass> RenderPass::Create(RenderContext& context, const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<RenderPassVK>(dynamic_cast<RenderContextBase&>(context), settings);
 }
 
 RenderPassVK::RenderPassVK(RenderContextBase& context, const Settings& settings)
     : RenderPassBase(context, settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Reset();
 }
 
 void RenderPassVK::Update(const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     RenderPassBase::Update(settings);
     Reset();
 }
 
 void RenderPassVK::Reset()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     uint32_t color_attach_index = 0;
     for(const ColorAttachment& color_attach : GetSettings().color_attachments)
@@ -75,7 +75,7 @@ void RenderPassVK::Reset()
 
 IContextVK& RenderPassVK::GetContextVK() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextVK&>(GetRenderContext());
 }
 

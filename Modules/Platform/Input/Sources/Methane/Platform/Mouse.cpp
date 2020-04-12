@@ -36,7 +36,7 @@ static const std::string g_properties_separator = "+";
 
 std::string ButtonConverter::ToString() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     static const std::map<Button, std::string> s_name_by_button =
     {
         { Button::Left,     "Left button"         },
@@ -63,7 +63,7 @@ std::string ButtonConverter::ToString() const
 
 std::string State::Property::ToString(State::Property::Value property_value)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (property_value)
     {
     case All:       return "All";
@@ -78,7 +78,7 @@ std::string State::Property::ToString(State::Property::Value property_value)
 
 std::string State::Property::ToString(State::Property::Mask properties_mask)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     std::stringstream ss;
     bool first_property = true;
     for (Value property_value : values)
@@ -101,7 +101,7 @@ State::State(std::initializer_list<Button> pressed_buttons, const Position& posi
     , m_scroll(scroll)
     , m_in_window(in_window)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     for (Button pressed_button : pressed_buttons)
     {
         SetButton(pressed_button, ButtonState::Pressed);
@@ -114,12 +114,12 @@ State::State(const State& other)
     , m_scroll(other.m_scroll)
     , m_in_window(other.m_in_window)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 State& State::operator=(const State& other)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (this != &other)
     {
         m_button_states = other.m_button_states;
@@ -132,7 +132,7 @@ State& State::operator=(const State& other)
 
 bool State::operator==(const State& other) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return m_button_states == other.m_button_states &&
            m_position      == other.m_position &&
            m_scroll        == other.m_scroll &&
@@ -141,7 +141,7 @@ bool State::operator==(const State& other) const
 
 State::Property::Mask State::GetDiff(const State& other) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     State::Property::Mask properties_diff_mask = State::Property::None;
 
     if (m_button_states != other.m_button_states)
@@ -161,7 +161,7 @@ State::Property::Mask State::GetDiff(const State& other) const
 
 Buttons State::GetPressedButtons() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Buttons pressed_buttons;
     for (size_t button_index = 0; button_index < m_button_states.size(); ++button_index)
     {
@@ -176,7 +176,7 @@ Buttons State::GetPressedButtons() const
 
 std::string State::ToString() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     std::stringstream ss;
     ss << "(" << m_position.GetX() << " x " << m_position.GetY() << ") ";
     

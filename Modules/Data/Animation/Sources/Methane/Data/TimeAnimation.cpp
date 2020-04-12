@@ -31,19 +31,19 @@ TimeAnimation::TimeAnimation(const FunctionType& update_function, double duratio
     : Animation(duration_sec)
     , m_update_function(update_function)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void TimeAnimation::Restart() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_prev_elapsed_seconds = 0.0;
     Animation::Restart();
 }
 
 bool TimeAnimation::Update()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (GetState() != State::Running)
         return false;
 

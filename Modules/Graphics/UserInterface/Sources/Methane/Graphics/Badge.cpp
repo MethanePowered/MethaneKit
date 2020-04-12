@@ -50,7 +50,7 @@ Badge::Badge(RenderContext& context, Settings settings)
             ImageLoader(Data::TextureProvider::Get()).LoadImageToTexture2D(context, "Logo/MethaneLogoNameWatermark.png", true),
             ScaleBadgeSize(settings, context.GetContentScalingFactor()))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 Badge::Badge(RenderContext& context, Ptr<Texture> sp_texture, Settings settings)
@@ -65,19 +65,19 @@ Badge::Badge(RenderContext& context, Ptr<Texture> sp_texture, Settings settings)
                  })
     , m_settings(std::move(settings))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void Badge::Resize(const FrameSize& frame_size)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     SetScreenRect(GetBadgeRectInFrame(frame_size, m_settings.corner, m_settings.size, m_settings.margins));
 }
 
 FrameRect Badge::GetBadgeRectInFrame(const FrameSize& frame_size, FrameCorner frame_corner,
                                      const FrameSize& badge_size, uint32_t badge_margins)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch(frame_corner)
     {

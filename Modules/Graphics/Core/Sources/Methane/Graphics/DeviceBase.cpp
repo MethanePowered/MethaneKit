@@ -33,7 +33,7 @@ namespace Methane::Graphics
 
 std::string Device::Feature::ToString(Value feature) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch(feature)
     {
     case Value::Unknown:                    return "Unknown";
@@ -46,7 +46,7 @@ std::string Device::Feature::ToString(Value feature) noexcept
 
 std::string Device::Feature::ToString(Mask features) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     std::stringstream ss;
     bool is_first_feature = true;
     for(Value value : values)
@@ -68,12 +68,12 @@ DeviceBase::DeviceBase(const std::string& adapter_name, bool is_software_adapter
     , m_is_software_adapter(is_software_adapter)
     , m_supported_features(supported_features)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void DeviceBase::Notify(Notification notification)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_notification_callback)
     {
         m_notification_callback(*this, notification);
@@ -82,7 +82,7 @@ void DeviceBase::Notify(Notification notification)
 
 std::string DeviceBase::ToString() const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     std::stringstream ss;
     ss << "GPU \"" << GetAdapterName() << "\" with features: " + Feature::ToString(m_supported_features);
     return ss.str();
@@ -90,7 +90,7 @@ std::string DeviceBase::ToString() const noexcept
 
 Ptr<Device> SystemBase::GetNextGpuDevice(const Device& device) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Ptr<Device> sp_next_device;
     
     if (m_devices.empty())
@@ -107,7 +107,7 @@ Ptr<Device> SystemBase::GetNextGpuDevice(const Device& device) const
 
 Ptr<Device> SystemBase::GetSoftwareGpuDevice() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     auto sw_device_it = std::find_if(m_devices.begin(), m_devices.end(),
         [](const Ptr<Device>& sp_system_device)
         { return sp_system_device && sp_system_device->IsSoftwareAdapter(); });
@@ -117,7 +117,7 @@ Ptr<Device> SystemBase::GetSoftwareGpuDevice() const
 
 std::string SystemBase::ToString() const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     std::stringstream ss;
     ss << m_devices.size() << " system graphics device"
        << (m_devices.size() > 1 ? "s:" : ":") << std::endl;

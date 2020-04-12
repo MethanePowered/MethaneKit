@@ -42,7 +42,7 @@ namespace Methane::Graphics
 
 static void SetWindowTopMostFlag(HWND window_handle, bool is_top_most)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     RECT window_rect{};
     GetWindowRect(window_handle, &window_rect);
@@ -57,7 +57,7 @@ static void SetWindowTopMostFlag(HWND window_handle, bool is_top_most)
 
 static float GetDeviceScaleRatio(DEVICE_SCALE_FACTOR device_scale_factor)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (device_scale_factor)
     {
@@ -85,7 +85,7 @@ static float GetDeviceScaleRatio(DEVICE_SCALE_FACTOR device_scale_factor)
 
 Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, Device& device, const RenderContext::Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     DeviceBase& device_base = static_cast<DeviceBase&>(device);
     Ptr<RenderContextDX> sp_render_context = std::make_shared<RenderContextDX>(env, device_base, settings);
     sp_render_context->Initialize(device_base, true);
@@ -96,17 +96,17 @@ RenderContextDX::RenderContextDX(const Platform::AppEnvironment& env, DeviceBase
     : ContextDX<RenderContextBase>(device, settings)
     , m_platform_env(env)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 RenderContextDX::~RenderContextDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void RenderContextDX::Release()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     m_cp_swap_chain.Reset();
 
@@ -115,7 +115,7 @@ void RenderContextDX::Release()
 
 void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocation)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const Settings& settings = GetSettings();
 
@@ -172,7 +172,7 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
 
 void RenderContextDX::Resize(const FrameSize& frame_size)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     WaitForGpu(WaitFor::RenderComplete);
 
@@ -188,7 +188,7 @@ void RenderContextDX::Resize(const FrameSize& frame_size)
 
 void RenderContextDX::Present()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     SCOPE_TIMER("RenderContextDX::Present");
 
     ContextDX<RenderContextBase>::Present();
@@ -206,7 +206,7 @@ void RenderContextDX::Present()
 
 float RenderContextDX::GetContentScalingFactor() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     DEVICE_SCALE_FACTOR device_scale_factor = DEVICE_SCALE_FACTOR_INVALID;
     HMONITOR monitor_handle = MonitorFromWindow(m_platform_env.window_handle, MONITOR_DEFAULTTONEAREST);
     ThrowIfFailed(GetScaleFactorForMonitor(monitor_handle, &device_scale_factor));
@@ -225,13 +225,13 @@ uint32_t RenderContextDX::GetFontResolutionDPI() const
 
 CommandQueueDX& RenderContextDX::GetRenderCommandQueueDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<CommandQueueDX&>(GetRenderCommandQueue());
 }
 
 uint32_t RenderContextDX::GetNextFrameBufferIndex()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_cp_swap_chain);
     return m_cp_swap_chain->GetCurrentBackBufferIndex();
 }

@@ -41,7 +41,7 @@ public:
     BufferDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraViewArgs... view_args)
         : BufferBase(context, settings, descriptor_by_usage)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         InitializeDefaultDescriptors();
         InitializeCommittedResource(CD3DX12_RESOURCE_DESC::Buffer(settings.size), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
         InitializeView(view_args...);
@@ -50,7 +50,7 @@ public:
     // Resource interface
     void SetData(const SubResources& sub_resources) override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         BufferBase::SetData(sub_resources);
 
         for(const SubResource& sub_resource : sub_resources)

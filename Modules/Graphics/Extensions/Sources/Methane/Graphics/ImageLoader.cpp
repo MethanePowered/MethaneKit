@@ -48,7 +48,7 @@ ImageLoader::ImageData::ImageData(const Dimensions& in_dimensions, uint32_t in_c
     , channels_count(in_channels_count)
     , pixels(std::move(in_pixels))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 ImageLoader::ImageData::ImageData(ImageData&& other)
@@ -56,12 +56,12 @@ ImageLoader::ImageData::ImageData(ImageData&& other)
     , channels_count(other.channels_count)
     , pixels(std::move(other.pixels))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 ImageLoader::ImageData::~ImageData()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
 #ifndef USE_OPEN_IMAGE_IO
     if (pixels.data.empty() && pixels.p_data)
@@ -75,12 +75,12 @@ ImageLoader::ImageData::~ImageData()
 ImageLoader::ImageLoader(Data::Provider& data_provider)
     : m_data_provider(data_provider)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, size_t channels_count, bool create_copy)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Data::Chunk raw_image_data = m_data_provider.GetData(image_path);
 
@@ -150,7 +150,7 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
 
 Ptr<Texture> ImageLoader::LoadImageToTexture2D(Context& context, const std::string& image_path, bool mipmapped)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const ImageData image_data = LoadImage(image_path, 4, false);
     Ptr<Texture> sp_texture = Texture::CreateImage(context, image_data.dimensions, 1, PixelFormat::RGBA8Unorm, mipmapped);
@@ -161,25 +161,25 @@ Ptr<Texture> ImageLoader::LoadImageToTexture2D(Context& context, const std::stri
 
 Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, bool mipmapped)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const uint32_t desired_channels_count = 4;
 
     // Load face image data in parallel
-    std::mutex data_mutex;
+    TracyLockable(std::mutex, data_mutex);
     std::vector<std::pair<Data::Index, ImageData>> face_images_data;
     face_images_data.reserve(image_paths.size());
     Data::ParallelFor<Data::Index>(0u, static_cast<Data::Index>(image_paths.size()),
         [&](Data::Index face_index) -> void
         {
-            ITT_FUNCTION_TASK();
+            META_FUNCTION_TASK();
             // NOTE:
             //  we create a copy of the loaded image data (via 3-rd argument of LoadImage)
             //  to resolve a problem of STB image loader which requires an image data to be freed before next image is loaded
             const std::string& face_image_path = image_paths[face_index];
             ImageLoader::ImageData image_data = LoadImage(face_image_path, desired_channels_count, true);
 
-            std::lock_guard<std::mutex> data_lock(data_mutex);
+            std::lock_guard<LockableBase(std::mutex)> data_lock(data_mutex);
             face_images_data.emplace_back(face_index, std::move(image_data));
         });
 

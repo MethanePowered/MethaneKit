@@ -33,19 +33,19 @@ namespace Methane::Graphics
 
 Ptr<BlitCommandList> BlitCommandList::Create(CommandQueue& command_queue)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<BlitCommandListMT>(static_cast<CommandQueueBase&>(command_queue));
 }
 
 BlitCommandListMT::BlitCommandListMT(CommandQueueBase& command_queue)
     : CommandListBase(command_queue, CommandList::Type::Blit)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void BlitCommandListMT::Reset(const std::string& debug_group)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     #pragma unused(debug_group)
     
     if (m_mtl_blit_encoder)
@@ -68,7 +68,7 @@ void BlitCommandListMT::Reset(const std::string& debug_group)
 
 void BlitCommandListMT::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     CommandListBase::SetName(name);
     
@@ -87,7 +87,7 @@ void BlitCommandListMT::SetName(const std::string& name)
 
 void BlitCommandListMT::PushDebugGroup(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     assert(m_mtl_blit_encoder != nil);
     NSString* ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
@@ -96,7 +96,7 @@ void BlitCommandListMT::PushDebugGroup(const std::string& name)
 
 void BlitCommandListMT::PopDebugGroup()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     assert(m_mtl_blit_encoder != nil);
     [m_mtl_blit_encoder popDebugGroup];
@@ -104,7 +104,7 @@ void BlitCommandListMT::PopDebugGroup()
 
 void BlitCommandListMT::Commit()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     
     assert(!IsCommitted());
 
@@ -124,7 +124,7 @@ void BlitCommandListMT::Commit()
 
 void BlitCommandListMT::Execute(uint32_t frame_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     CommandListBase::Execute(frame_index);
 
@@ -141,7 +141,7 @@ void BlitCommandListMT::Execute(uint32_t frame_index)
 
 CommandQueueMT& BlitCommandListMT::GetCommandQueueMT() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<class CommandQueueMT&>(GetCommandQueue());
 }
 

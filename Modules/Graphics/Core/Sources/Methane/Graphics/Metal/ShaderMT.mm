@@ -40,7 +40,7 @@ namespace Methane::Graphics
 using StepType = ProgramBase::InputBufferLayout::StepType;
 static MTLVertexStepFunction GetVertexStepFunction(StepType step_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch(step_type)
     {
         case StepType::Undefined:   return MTLVertexStepFunctionConstant;
@@ -51,7 +51,7 @@ static MTLVertexStepFunction GetVertexStepFunction(StepType step_type) noexcept
 
 static Resource::Type GetResourceTypeByMetalArgumentType(MTLArgumentType mtl_arg_type)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch(mtl_arg_type)
     {
     case MTLArgumentTypeBuffer:     return Resource::Type::Buffer;
@@ -65,7 +65,7 @@ static Resource::Type GetResourceTypeByMetalArgumentType(MTLArgumentType mtl_arg
 
 static std::string GetMetalArgumentTypeName(MTLArgumentType mtl_arg_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch(mtl_arg_type)
     {
         case MTLArgumentTypeBuffer:             return "Buffer";
@@ -79,7 +79,7 @@ static std::string GetMetalArgumentTypeName(MTLArgumentType mtl_arg_type) noexce
 
 static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch(mtl_arg_access)
     {
         case MTLArgumentAccessReadOnly:     return "R";
@@ -94,7 +94,7 @@ static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access) 
 
 Ptr<Shader> Shader::Create(Shader::Type shader_type, Context& context, const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<ShaderMT>(shader_type, dynamic_cast<ContextBase&>(context), settings);
 }
 
@@ -102,7 +102,7 @@ ShaderMT::ShaderMT(Shader::Type shader_type, ContextBase& context, const Setting
     : ShaderBase(shader_type, context, settings)
     , m_mtl_function([context.GetLibraryMT(settings.entry_function.file_name)->Get() newFunctionWithName: Methane::MacOS::ConvertToNsType<std::string, NSString*>(GetCompiledEntryFunctionName())])
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (m_mtl_function == nil)
     {
@@ -112,14 +112,14 @@ ShaderMT::ShaderMT(Shader::Type shader_type, ContextBase& context, const Setting
 
 ShaderMT::~ShaderMT()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     [m_mtl_function release];
 }
 
 ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     ArgumentBindings argument_bindings;
     if (m_mtl_arguments == nil)
@@ -179,7 +179,7 @@ ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const Program::Argume
 
 MTLVertexDescriptor* ShaderMT::GetNativeVertexDescriptor(const ProgramMT& program) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     
     // Regex matching prefix of the input attributes "in_var_"
     static const std::regex s_attr_suffix_regex("^in_var_");
@@ -227,7 +227,7 @@ MTLVertexDescriptor* ShaderMT::GetNativeVertexDescriptor(const ProgramMT& progra
 
 IContextMT& ShaderMT::GetContextMT() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextMT&>(GetContext());
 }
 

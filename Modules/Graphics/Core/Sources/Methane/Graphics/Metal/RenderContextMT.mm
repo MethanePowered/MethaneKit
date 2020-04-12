@@ -35,7 +35,7 @@ namespace Methane::Graphics
 
 Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, Device& device, const RenderContext::Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     DeviceBase& device_base = static_cast<DeviceBase&>(device);
     Ptr<RenderContextMT> sp_render_context = std::make_shared<RenderContextMT>(env, device_base, settings);
     sp_render_context->Initialize(device_base, true);
@@ -56,7 +56,7 @@ RenderContextMT::RenderContextMT(const Platform::AppEnvironment& env, DeviceBase
     , m_dispatch_semaphore(dispatch_semaphore_create(settings.frame_buffers_count))
 #endif
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     
     m_frame_capture_scope.label = Methane::MacOS::ConvertToNsType<std::string, NSString*>(device.GetName() + " Capture Scope");
     [MTLCaptureManager sharedCaptureManager].defaultCaptureScope = m_frame_capture_scope;
@@ -71,7 +71,7 @@ RenderContextMT::RenderContextMT(const Platform::AppEnvironment& env, DeviceBase
 
 RenderContextMT::~RenderContextMT()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     [m_app_view release];
     
@@ -82,7 +82,7 @@ RenderContextMT::~RenderContextMT()
 
 void RenderContextMT::Release()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     
     m_app_view.redrawing = NO;
     
@@ -95,7 +95,7 @@ void RenderContextMT::Release()
 
 void RenderContextMT::Initialize(DeviceBase& device, bool deferred_heap_allocation)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     ContextMT<RenderContextBase>::Initialize(device, deferred_heap_allocation);
     
@@ -108,13 +108,13 @@ void RenderContextMT::Initialize(DeviceBase& device, bool deferred_heap_allocati
 
 bool RenderContextMT::ReadyToRender() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return m_app_view.currentDrawable != nil;
 }
 
 void RenderContextMT::WaitForGpu(WaitFor wait_for)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
     if (wait_for != WaitFor::FramePresented)
@@ -137,13 +137,13 @@ void RenderContextMT::WaitForGpu(WaitFor wait_for)
 
 void RenderContextMT::Resize(const FrameSize& frame_size)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     ContextMT<RenderContextBase>::Resize(frame_size);
 }
 
 void RenderContextMT::Present()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     ContextMT<RenderContextBase>::Present();
 
     id<MTLCommandBuffer> mtl_cmd_buffer = [GetRenderCommandQueueMT().GetNativeCommandQueue() commandBuffer];
@@ -166,7 +166,7 @@ void RenderContextMT::Present()
 
 bool RenderContextMT::SetVSyncEnabled(bool vsync_enabled)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (ContextMT<RenderContextBase>::SetVSyncEnabled(vsync_enabled))
     {
         m_app_view.vsyncEnabled = vsync_enabled;
@@ -177,7 +177,7 @@ bool RenderContextMT::SetVSyncEnabled(bool vsync_enabled)
 
 bool RenderContextMT::SetFrameBuffersCount(uint32_t frame_buffers_count)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     frame_buffers_count = std::min(std::max(2u, frame_buffers_count), 3u); // Metal supports only 2 or 3 drawable buffers
     if (ContextMT<RenderContextBase>::SetFrameBuffersCount(frame_buffers_count))
     {
@@ -189,19 +189,19 @@ bool RenderContextMT::SetFrameBuffersCount(uint32_t frame_buffers_count)
 
 float RenderContextMT::GetContentScalingFactor() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<float>(m_app_view.appWindow.backingScaleFactor);
 }
 
 uint32_t RenderContextMT::GetFontResolutionDPI() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return 72u * GetContentScalingFactor();
 }
 
 CommandQueueMT& RenderContextMT::GetRenderCommandQueueMT()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<CommandQueueMT&>(ContextMT<RenderContextBase>::GetRenderCommandQueue());
 }
 

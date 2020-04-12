@@ -42,7 +42,7 @@ namespace Methane::Graphics
 
 static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primitive primitive) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (primitive)
     {
     case RenderCommandList::Primitive::Point:          return D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
@@ -57,31 +57,31 @@ static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primiti
 
 Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& cmd_queue, RenderPass& render_pass)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue), static_cast<RenderPassBase&>(render_pass));
 }
 
 Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListDX>(static_cast<ParallelRenderCommandListBase&>(parallel_render_command_list));
 }
 
 RenderCommandListDX::RenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass)
     : CommandListDX<RenderCommandListBase>(cmd_buffer, render_pass)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 RenderCommandListDX::RenderCommandListDX(ParallelRenderCommandListBase& parallel_render_command_list)
     : CommandListDX<RenderCommandListBase>(parallel_render_command_list)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void RenderCommandListDX::ResetNative(const Ptr<RenderState>& sp_render_state)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!IsCommitted())
         return;
 
@@ -105,7 +105,7 @@ void RenderCommandListDX::ResetNative(const Ptr<RenderState>& sp_render_state)
 
 void RenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     ResetNative(sp_render_state);
 
@@ -125,7 +125,7 @@ void RenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state, const s
 
 void RenderCommandListDX::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     RenderCommandListBase::SetVertexBuffers(vertex_buffers);
 
@@ -148,7 +148,7 @@ void RenderCommandListDX::DrawIndexed(Primitive primitive, Buffer& index_buffer,
                                       uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                                       uint32_t instance_count, uint32_t start_instance)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const IndexBufferDX& dx_index_buffer = static_cast<IndexBufferDX&>(index_buffer);
     if (!index_count)
@@ -175,7 +175,7 @@ void RenderCommandListDX::DrawIndexed(Primitive primitive, Buffer& index_buffer,
 void RenderCommandListDX::Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
                                uint32_t instance_count, uint32_t start_instance)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     RenderCommandListBase::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
 
@@ -190,7 +190,7 @@ void RenderCommandListDX::Draw(Primitive primitive, uint32_t vertex_count, uint3
 
 void RenderCommandListDX::Commit()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (!IsParallel())
     {
@@ -206,7 +206,7 @@ void RenderCommandListDX::Commit()
 
 RenderPassDX& RenderCommandListDX::GetPassDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<RenderPassDX&>(GetPass());
 }
 

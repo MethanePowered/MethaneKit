@@ -49,20 +49,20 @@ public:
     TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraArgs... extra_args)
         : TextureBase(context, settings, descriptor_by_usage)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         InitializeDefaultDescriptors();
         Initialize(extra_args...);
     }
 
     ~TextureDX() override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
     }
 
     // Resource interface
     void SetData(const SubResources&) override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         throw std::logic_error("Setting texture data is allowed for image textures only.");
     }
 

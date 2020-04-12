@@ -36,7 +36,7 @@ struct ResourceContainerVK
 
 Ptr<ResourceBase::ReleasePool> ResourceBase::ReleasePool::Create()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<ResourceVK::ReleasePoolVK>();
 }
 
@@ -44,29 +44,29 @@ ResourceVK::ReleasePoolVK::ReleasePoolVK()
     : ResourceBase::ReleasePool()
     , m_sp_vk_resources(new ResourceContainerVK())
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void ResourceVK::ReleasePoolVK::AddResource(ResourceBase& resource)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void ResourceVK::ReleasePoolVK::ReleaseResources()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_sp_vk_resources.reset(new ResourceContainerVK());
 }
 
 ResourceVK::ResourceVK(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
     : ResourceBase(type, usage_mask, context, descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 IContextVK& ResourceVK::GetContextVK() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextVK&>(GetContext());
 }
 

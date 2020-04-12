@@ -33,7 +33,7 @@ namespace Methane::Graphics
 
 std::string Shader::GetTypeName(Type shader_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (shader_type)
     {
     case Type::Vertex:    return "Vertex";
@@ -49,18 +49,18 @@ ShaderBase::ShaderBase(Type type, ContextBase& context, const Settings& settings
     , m_context(context)
     , m_settings(settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 uint32_t ShaderBase::GetProgramInputBufferIndexByArgumentSemantic(const ProgramBase& program, const std::string& argument_semantic) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return program.GetInputBufferIndexByArgumentSemantic(argument_semantic);
 }
 
 std::string ShaderBase::GetCompiledEntryFunctionName() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     std::stringstream entry_func_steam;
     entry_func_steam << m_settings.entry_function.file_name << "_" << m_settings.entry_function.function_name;
     for (const auto& define_and_value : m_settings.compile_definitions)

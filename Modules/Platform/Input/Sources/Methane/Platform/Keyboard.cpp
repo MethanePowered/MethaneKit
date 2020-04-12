@@ -38,26 +38,26 @@ KeyConverter::KeyConverter(Key key)
     : m_key(key)
     , m_modifiers(GetModifierKey())
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 KeyConverter::KeyConverter(Key key, Modifier::Mask modifiers)
     : m_key(key)
     , m_modifiers(modifiers)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 KeyConverter::KeyConverter(const NativeKey& native_key)
     : m_key(GetKeyByNativeCode(native_key))
     , m_modifiers(GetModifiersByNativeCode(native_key))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 Modifier::Value KeyConverter::GetModifierKey() const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (m_key)
     {
     case Key::LeftShift:
@@ -81,7 +81,7 @@ Modifier::Value KeyConverter::GetModifierKey() const noexcept
 
 std::string KeyConverter::ToString() const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     static const std::map<Key, std::string> s_name_by_key =
     {
         // Printable keys
@@ -231,7 +231,7 @@ std::string KeyConverter::ToString() const noexcept
 State::State(std::initializer_list<Key> pressed_keys, Modifier::Mask modifiers_mask)
     : m_modifiers_mask(modifiers_mask)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     for (Key pressed_key : pressed_keys)
     {
         SetKey(pressed_key, KeyState::Pressed);
@@ -242,12 +242,12 @@ State::State(const State& other)
     : m_key_states(other.m_key_states)
     , m_modifiers_mask(other.m_modifiers_mask)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 State& State::operator=(const State& other)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (this != &other)
     {
         m_key_states     = other.m_key_states;
@@ -258,7 +258,7 @@ State& State::operator=(const State& other)
 
 bool State::operator<(const State& other) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_modifiers_mask != other.m_modifiers_mask)
     {
         return m_modifiers_mask < other.m_modifiers_mask;
@@ -268,14 +268,14 @@ bool State::operator<(const State& other) const
 
 bool State::operator==(const State& other) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return m_key_states     == other.m_key_states &&
            m_modifiers_mask == other.m_modifiers_mask;
 }
 
 State::Property::Mask State::GetDiff(const State& other) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     State::Property::Mask properties_diff_mask = State::Property::None;
 
     if (m_key_states != other.m_key_states)
@@ -289,7 +289,7 @@ State::Property::Mask State::GetDiff(const State& other) const
 
 KeyType State::SetKey(Key key, KeyState state)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (key == Key::Unknown)
         return KeyType::Common;
 
@@ -313,7 +313,7 @@ KeyType State::SetKey(Key key, KeyState state)
 
 void State::UpdateModifiersMask(Modifier::Value modifier, bool add_modifier)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (add_modifier)
         m_modifiers_mask |= modifier;
     else
@@ -322,7 +322,7 @@ void State::UpdateModifiersMask(Modifier::Value modifier, bool add_modifier)
 
 Keys State::GetPressedKeys() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Keys pressed_keys;
     for (size_t key_index = 0; key_index < m_key_states.size(); ++key_index)
     {
@@ -337,7 +337,7 @@ Keys State::GetPressedKeys() const
 
 KeyType StateExt::SetKey(Key key, KeyState state)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const KeyType key_type = State::SetKey(key, state);
     if (key_type == KeyType::Modifier)
     {
@@ -355,7 +355,7 @@ KeyType StateExt::SetKey(Key key, KeyState state)
 
 Keys StateExt::GetAllPressedKeys() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Keys all_pressed_keys = GetPressedKeys();
     all_pressed_keys.insert(m_pressed_modifier_keys.begin(), m_pressed_modifier_keys.end());
     return all_pressed_keys;
@@ -363,7 +363,7 @@ Keys StateExt::GetAllPressedKeys() const
 
 std::string Modifier::ToString(Value modifier)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch(modifier)
     {
         case None:      return "None";
@@ -384,7 +384,7 @@ std::string Modifier::ToString(Value modifier)
 
 std::string Modifier::ToString(Modifier::Mask modifiers_mask)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     std::stringstream ss;
     bool first_modifier = true;
     for(Value modifier : values)
@@ -404,7 +404,7 @@ std::string Modifier::ToString(Modifier::Mask modifiers_mask)
 
 std::string State::Property::ToString(State::Property::Value property_value)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (property_value)
     {
     case All:       return "All";
@@ -417,7 +417,7 @@ std::string State::Property::ToString(State::Property::Value property_value)
 
 std::string State::Property::ToString(State::Property::Mask properties_mask)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     std::stringstream ss;
     bool first_property = true;
     for (Value property_value : values)
@@ -437,7 +437,7 @@ std::string State::Property::ToString(State::Property::Mask properties_mask)
 
 std::string State::ToString() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     std::stringstream ss;
     const std::string modifiers_str = Modifier::ToString(m_modifiers_mask);
     if (!modifiers_str.empty())

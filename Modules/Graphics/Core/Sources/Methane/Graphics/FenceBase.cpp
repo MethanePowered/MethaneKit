@@ -35,12 +35,12 @@ namespace Methane::Graphics
 FenceBase::FenceBase(CommandQueueBase& command_queue)
     : m_command_queue(command_queue)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void FenceBase::Signal()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     m_value++;
 
@@ -51,7 +51,7 @@ void FenceBase::Signal()
 
 void FenceBase::Wait()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
 #ifdef COMMAND_EXECUTION_LOGGING
     Platform::PrintToDebugOutput("WAIT fence \"" + GetName() + "\" with value " + std::to_string(m_value));
@@ -60,7 +60,7 @@ void FenceBase::Wait()
 
 void FenceBase::Flush()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Signal();
     Wait();
 }

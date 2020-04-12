@@ -53,7 +53,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
     , m_debug_region_name(m_settings.name + " Screen-Quad rendering")
     , m_sp_texture(std::move(sp_texture))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (!m_sp_texture)
         throw std::invalid_argument("Screen-quad texture can not be empty.");
@@ -149,7 +149,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
 
 void ScreenQuad::SetBlendColor(const Color4f& blend_color)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (m_settings.blend_color == blend_color)
         return;
@@ -161,7 +161,7 @@ void ScreenQuad::SetBlendColor(const Color4f& blend_color)
 
 void ScreenQuad::SetScreenRect(const FrameRect& screen_rect)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (m_settings.screen_rect == screen_rect)
         return;
@@ -174,7 +174,7 @@ void ScreenQuad::SetScreenRect(const FrameRect& screen_rect)
 
 void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (m_settings.alpha_blending_enabled == alpha_blending_enabled)
         return;
@@ -188,7 +188,7 @@ void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled)
 
 void ScreenQuad::Draw(RenderCommandList& cmd_list) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     
     cmd_list.Reset(m_sp_state, m_debug_region_name);
     cmd_list.SetProgramBindings(*m_sp_const_program_bindings);
@@ -198,7 +198,7 @@ void ScreenQuad::Draw(RenderCommandList& cmd_list) const
 
 void ScreenQuad::UpdateConstantsBuffer() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const ScreenQuadConstants constants {
         m_settings.blend_color
@@ -214,7 +214,7 @@ void ScreenQuad::UpdateConstantsBuffer() const
 
 Shader::MacroDefinitions ScreenQuad::GetPixelShaderMacroDefinitions(TextureMode texture_mode)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch(texture_mode)
     {

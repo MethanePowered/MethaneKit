@@ -39,12 +39,12 @@ Program::Argument::Argument(Shader::Type shader_type, std::string argument_name)
     , name(std::move(argument_name))
     , hash(g_argument_name_hash(name) ^ (static_cast<size_t>(shader_type) << 1))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 bool Program::Argument::operator==(const Argument& other) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::tie(hash, shader_type, name) ==
            std::tie(other.hash, other.shader_type, other.name);
 }
@@ -53,19 +53,19 @@ Program::ArgumentDesc::ArgumentDesc(Shader::Type shader_type, std::string argume
     : Argument(shader_type, argument_name)
     , modifiers(modifiers)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 Program::ArgumentDesc::ArgumentDesc(const Argument& argument, Modifiers::Mask modifiers)
     : Argument(argument)
     , modifiers(modifiers)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 Program::ArgumentDescriptions::const_iterator Program::FindArgumentDescription(const ArgumentDescriptions& argument_descriptions, const Argument& argument)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Program::ArgumentDescriptions::const_iterator argument_desc_it = argument_descriptions.find(argument);
     if (argument_desc_it != argument_descriptions.end())
@@ -77,7 +77,7 @@ Program::ArgumentDescriptions::const_iterator Program::FindArgumentDescription(c
 
 ProgramBase::ShadersByType ProgramBase::CreateShadersByType(const Ptrs<Shader>& shaders)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     ProgramBase::ShadersByType shaders_by_type;
     for (const Ptr<Shader>& sp_shader : shaders)
@@ -94,7 +94,7 @@ ProgramBase::ShadersByType ProgramBase::CreateShadersByType(const Ptrs<Shader>& 
 
 Shader::Types CreateShaderTypes(const Ptrs<Shader>& shaders)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Shader::Types shader_types;
     for (const Ptr<Shader>& sp_shader : shaders)
@@ -115,14 +115,14 @@ ProgramBase::ProgramBase(ContextBase& context, const Settings& settings)
     , m_shaders_by_type(CreateShadersByType(settings.shaders))
     , m_shader_types(CreateShaderTypes(settings.shaders))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 ProgramBase::~ProgramBase()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    std::lock_guard<std::mutex> lock_guard(m_constant_descriptor_ranges_reservation_mutex);
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_constant_descriptor_ranges_reservation_mutex);
     for (auto& heap_type_and_desc_range : m_constant_descriptor_range_by_heap_type)
     {
         DescriptorHeapReservation& heap_reservation = heap_type_and_desc_range.second;
@@ -135,7 +135,7 @@ ProgramBase::~ProgramBase()
 
 void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_descriptions)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Shader::Types all_shader_types;
     std::map<std::string, Shader::Types> shader_types_by_argument_name_map;
@@ -199,9 +199,9 @@ void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_desc
 
 const DescriptorHeap::Range& ProgramBase::ReserveConstantDescriptorRange(DescriptorHeap& heap, uint32_t range_length)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    std::lock_guard<std::mutex> lock_guard(m_constant_descriptor_ranges_reservation_mutex);
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_constant_descriptor_ranges_reservation_mutex);
 
     const DescriptorHeap::Type heap_type = heap.GetSettings().type;
     auto constant_descriptor_range_by_heap_type_it = m_constant_descriptor_range_by_heap_type.find(heap_type);
@@ -229,7 +229,7 @@ const DescriptorHeap::Range& ProgramBase::ReserveConstantDescriptorRange(Descrip
 
 Shader& ProgramBase::GetShaderRef(Shader::Type shader_type)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const Ptr<Shader>& sp_shader = GetShader(shader_type);
     if (!sp_shader)
@@ -241,7 +241,7 @@ Shader& ProgramBase::GetShaderRef(Shader::Type shader_type)
 
 uint32_t ProgramBase::GetInputBufferIndexByArgumentSemantic(const std::string& argument_semantic) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     for (size_t buffer_index = 0; buffer_index < m_settings.input_buffer_layouts.size(); buffer_index++)
     {

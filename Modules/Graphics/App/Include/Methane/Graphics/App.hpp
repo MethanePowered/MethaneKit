@@ -59,7 +59,7 @@ struct AppFrame
     Ptr<Texture>    sp_screen_texture;
     Ptr<RenderPass> sp_screen_pass;
 
-    AppFrame(uint32_t frame_index) : index(frame_index) { ITT_FUNCTION_TASK(); }
+    AppFrame(uint32_t frame_index) : index(frame_index) { META_FUNCTION_TASK(); }
 };
 
 template<typename FrameT>
@@ -85,7 +85,7 @@ public:
         , m_settings(settings.graphics_app)
         , m_initial_context_settings(settings.render_context)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         add_option("-i,--hud", m_settings.heads_up_display_mode, "HUD display mode (0 - hidden, 1 - in window title, 2 - in UI)", true);
         add_option("-a,--animations", m_settings.animations_enabled, "Enable animations", true);
         add_option("-d,--device", m_settings.default_device_index, "Render at adapter index, use -1 for software adapter", true);
@@ -100,14 +100,14 @@ public:
         // WARNING: Don't forget to make the following call in the derived Application class
         // Wait for GPU rendering is completed to release resources
         // m_sp_context->WaitForGpu(RenderContext::WaitFor::RenderComplete);
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         m_sp_context->RemoveCallback(*this);
     }
 
     // Platform::App interface
     void InitContext(const Platform::AppEnvironment& env, const FrameSize& frame_size) override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         const Ptrs<Device>& devices = System::Get().UpdateGpuDevices();
         assert(!devices.empty());
 
@@ -131,7 +131,7 @@ public:
 
     void Init() override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         assert(m_sp_context);
         const RenderContext::Settings& context_settings = m_sp_context->GetSettings();
 
@@ -199,7 +199,7 @@ public:
 
     bool Resize(const FrameSize& frame_size, bool is_minimized) override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         if (!AppBase::Resize(frame_size, is_minimized))
             return false;
@@ -250,7 +250,7 @@ public:
     
     bool Update() override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         if (IsMinimized())
             return false;
         
@@ -274,7 +274,7 @@ public:
 
     bool Render() override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         
         if (IsMinimized())
         {
@@ -294,7 +294,7 @@ public:
     
     void RenderOverlay(RenderCommandList& cmd_list)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         if (m_sp_hud && m_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface)
             m_sp_hud->Draw(cmd_list);
@@ -305,7 +305,7 @@ public:
     
     bool SetFullScreen(bool is_full_screen) override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         if (m_sp_context)
             m_sp_context->SetFullScreen(is_full_screen);
         
@@ -315,7 +315,7 @@ public:
     // Context::Callback interface
     void OnContextReleased() override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         m_frames.clear();
         m_sp_depth_texture.reset();
         m_sp_logo_badge.reset();
@@ -326,7 +326,7 @@ public:
     // Context::Callback interface
     void OnContextInitialized() override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         Init();
     }
 
@@ -427,13 +427,13 @@ protected:
 
     Platform::AppView GetView() const override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         return m_sp_context->GetAppView();
     }
 
     inline FrameT& GetCurrentFrame()
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         const uint32_t frame_index = m_sp_context->GetFrameBufferIndex();
         assert(frame_index < m_frames.size());
         return m_frames[frame_index];
@@ -443,7 +443,7 @@ protected:
 
     static std::string IndexedName(const std::string& base_name, uint32_t index)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         std::stringstream ss;
         ss << base_name << " " << std::to_string(index);
         return ss.str();

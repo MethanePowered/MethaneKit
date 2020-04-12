@@ -41,7 +41,7 @@ RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue, Re
     , m_is_parallel(false)
     , m_sp_pass(pass.GetPtr())
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 RenderCommandListBase::RenderCommandListBase(ParallelRenderCommandListBase& parallel_render_command_list)
@@ -50,12 +50,12 @@ RenderCommandListBase::RenderCommandListBase(ParallelRenderCommandListBase& para
     , m_sp_pass(parallel_render_command_list.GetPass().GetPtr())
     , m_wp_parallel_render_command_list(std::static_pointer_cast<ParallelRenderCommandListBase>(parallel_render_command_list.GetPtr()))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void RenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     CommandListBase::Reset(debug_group);
 
@@ -69,7 +69,7 @@ void RenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_state, const
 
 void RenderCommandListBase::SetState(RenderState& render_state, RenderState::Group::Mask state_groups)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     DrawingState& drawing_state = GetDrawingState();
     const RenderState::Group::Mask changed_states = (drawing_state.p_render_state
@@ -88,7 +88,7 @@ void RenderCommandListBase::SetState(RenderState& render_state, RenderState::Gro
 
 void RenderCommandListBase::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (vertex_buffers.empty())
     {
         throw std::invalid_argument("Can not set empty vertex buffers.");
@@ -131,7 +131,7 @@ void RenderCommandListBase::DrawIndexed(Primitive primitive_type, Buffer& index_
                                         uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                                         uint32_t instance_count, uint32_t /*start_instance*/)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (index_buffer.GetSettings().type != Buffer::Type::Index)
     {
@@ -171,7 +171,7 @@ void RenderCommandListBase::DrawIndexed(Primitive primitive_type, Buffer& index_
 void RenderCommandListBase::Draw(Primitive primitive_type, uint32_t vertex_count, uint32_t start_vertex,
                                  uint32_t instance_count, uint32_t)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (vertex_count == 0)
     {
@@ -209,7 +209,7 @@ void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex
 
 RenderPassBase& RenderCommandListBase::GetPass()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_sp_pass);
     return static_cast<RenderPassBase&>(*m_sp_pass);
 }

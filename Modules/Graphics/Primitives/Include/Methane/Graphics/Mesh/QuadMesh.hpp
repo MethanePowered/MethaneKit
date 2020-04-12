@@ -47,7 +47,7 @@ public:
         , m_height(height)
         , m_depth_pos(depth_pos)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         const bool has_colors   = Mesh::HasVertexField(Mesh::VertexField::Color);
         const bool has_normals  = Mesh::HasVertexField(Mesh::VertexField::Normal);

@@ -39,14 +39,14 @@ namespace Methane::Graphics
 
 Ptr<CommandQueue> CommandQueue::Create(Context& context)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<CommandQueueDX>(dynamic_cast<ContextBase&>(context));
 }
 
 CommandQueueDX::CommandQueueDX(ContextBase& context)
     : CommandQueueBase(context)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
     assert(!!cp_device);
@@ -60,7 +60,7 @@ CommandQueueDX::CommandQueueDX(ContextBase& context)
 
 void CommandQueueDX::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     CommandQueueBase::SetName(name);
     m_cp_command_queue->SetName(nowide::widen(name).c_str());
@@ -68,7 +68,7 @@ void CommandQueueDX::SetName(const std::string& name)
 
 void CommandQueueDX::Execute(const Refs<CommandList>& command_lists)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!command_lists.empty());
     if (command_lists.empty())
         return;
@@ -81,7 +81,7 @@ void CommandQueueDX::Execute(const Refs<CommandList>& command_lists)
 
 CommandQueueDX::D3D12CommandLists CommandQueueDX::GetNativeCommandLists(const Refs<CommandList>& command_list_refs)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     D3D12CommandLists dx_command_lists;
     dx_command_lists.reserve(command_list_refs.size());
     for (const Ref<CommandList>& command_list_ref : command_list_refs)
@@ -111,13 +111,13 @@ CommandQueueDX::D3D12CommandLists CommandQueueDX::GetNativeCommandLists(const Re
 
 IContextDX& CommandQueueDX::GetContextDX() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextDX&>(GetContext());
 }
 
 ID3D12CommandQueue& CommandQueueDX::GetNativeCommandQueue()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_cp_command_queue);
     return *m_cp_command_queue.Get();
 }

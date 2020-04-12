@@ -33,7 +33,7 @@ namespace Methane::Graphics
 
 static MTLStoreAction GetMTLStoreAction(RenderPass::Attachment::StoreAction store_action) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch(store_action)
     {
@@ -46,7 +46,7 @@ static MTLStoreAction GetMTLStoreAction(RenderPass::Attachment::StoreAction stor
 
 static MTLLoadAction GetMTLLoadAction(RenderPass::Attachment::LoadAction load_action) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch(load_action)
     {
@@ -59,27 +59,27 @@ static MTLLoadAction GetMTLLoadAction(RenderPass::Attachment::LoadAction load_ac
 
 Ptr<RenderPass> RenderPass::Create(RenderContext& context, const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<RenderPassMT>(dynamic_cast<RenderContextBase&>(context), settings);
 }
 
 RenderPassMT::RenderPassMT(RenderContextBase& context, const Settings& settings)
     : RenderPassBase(context, settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Reset();
 }
 
 void RenderPassMT::Update(const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     RenderPassBase::Update(settings);
     Reset();
 }
 
 void RenderPassMT::Reset()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     m_mtl_pass_descriptor = [MTLRenderPassDescriptor renderPassDescriptor];
     const Settings& settings = GetSettings();
@@ -127,7 +127,7 @@ void RenderPassMT::Reset()
     
 MTLRenderPassDescriptor* RenderPassMT::GetNativeDescriptor(bool reset)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (reset)
     {
         Reset();
@@ -137,7 +137,7 @@ MTLRenderPassDescriptor* RenderPassMT::GetNativeDescriptor(bool reset)
 
 IContextMT& RenderPassMT::GetContextMT() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextMT&>(GetRenderContext());
 }
 

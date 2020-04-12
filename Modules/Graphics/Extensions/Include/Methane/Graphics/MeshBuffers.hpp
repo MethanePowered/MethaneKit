@@ -65,7 +65,7 @@ public:
                                                           static_cast<Data::Size>(mesh_data.GetVertexSize())))
         , m_sp_index( Buffer::CreateIndexBuffer( context, static_cast<Data::Size>(mesh_data.GetIndexDataSize()), GetIndexFormat(mesh_data.GetIndex(0))))
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         m_final_pass_instance_uniforms.resize(m_mesh_subsets.size());
 
@@ -90,7 +90,7 @@ public:
     MeshBuffers(RenderContext& context, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
         : MeshBuffers(context, uber_mesh_data, mesh_name, uber_mesh_data.GetSubsets())
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
     }
     
     virtual ~MeshBuffers() = default;
@@ -98,7 +98,7 @@ public:
     void Draw(RenderCommandList& cmd_list, ProgramBindings& program_bindings,
               uint32_t mesh_subset_index = 0, uint32_t instance_count = 1, uint32_t start_instance = 0)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         if (mesh_subset_index >= m_mesh_subsets.size())
             throw std::invalid_argument("Can not draw mesh subset because its index is out of bounds.");
@@ -123,7 +123,7 @@ public:
               ProgramBindings::ApplyBehavior::Mask bindings_apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental,
               uint32_t first_instance_index = 0)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         cmd_list.SetVertexBuffers({ GetVertexBuffer() });
 
@@ -154,7 +154,7 @@ public:
     void DrawParallel(ParallelRenderCommandList& parallel_cmd_list, const Ptrs<ProgramBindings>& instance_program_bindings,
                       ProgramBindings::ApplyBehavior::Mask bindings_apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         const Ptrs<RenderCommandList>& render_cmd_lists = parallel_cmd_list.GetParallelCommandLists();
         const uint32_t instances_count_per_command_list = static_cast<uint32_t>(Data::DivCeil(instance_program_bindings.size(), render_cmd_lists.size()));
@@ -162,7 +162,7 @@ public:
         Data::ParallelFor<size_t>(0u, render_cmd_lists.size(),
             [&](size_t cl_index)
             {
-                ITT_FUNCTION_TASK();
+                META_FUNCTION_TASK();
                 const Ptr<RenderCommandList>& sp_render_command_list = render_cmd_lists[cl_index];
                 const uint32_t begin_instance_index = static_cast<uint32_t>(cl_index * instances_count_per_command_list);
                 const uint32_t end_instance_index   = std::min(begin_instance_index + instances_count_per_command_list,
@@ -182,7 +182,7 @@ public:
 
     const UniformsType& GetFinalPassUniforms(uint32_t instance_index = 0) const
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         if (instance_index >= m_final_pass_instance_uniforms.size())
             throw std::invalid_argument("Instance index is out of bounds.");
@@ -192,7 +192,7 @@ public:
 
     void SetFinalPassUniforms(UniformsType&& uniforms, uint32_t instance_index = 0)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         if (instance_index >= m_final_pass_instance_uniforms.size())
             throw std::invalid_argument("Instance index is out of bounds.");
@@ -202,7 +202,7 @@ public:
     
     Data::Size GetUniformsBufferSize() const
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         if (m_final_pass_instance_uniforms.empty())
             return 0;
         
@@ -228,7 +228,7 @@ protected:
     
     Data::Size GetUniformsBufferOffset(uint32_t instance_index) const
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         return static_cast<Data::Size>(
             reinterpret_cast<const char*>(&m_final_pass_instance_uniforms[instance_index]) -
             reinterpret_cast<const char*>(m_final_pass_instance_uniforms.data())
@@ -253,7 +253,7 @@ public:
     TexturedMeshBuffers(RenderContext& context, const BaseMesh<VType>& mesh_data, const std::string& mesh_name)
         : MeshBuffers<UniformsType>(context, mesh_data, mesh_name)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         m_subset_textures.resize(1);
     }
 
@@ -261,19 +261,19 @@ public:
     TexturedMeshBuffers(RenderContext& context, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
         : MeshBuffers<UniformsType>(context, uber_mesh_data, mesh_name)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         m_subset_textures.resize(MeshBuffers<UniformsType>::GetSubsetsCount());
     }
 
     const Ptr<Texture>& GetTexturePtr() const
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         return GetSubsetTexturePtr(0);
     }
 
     const Ptr<Texture>& GetSubsetTexturePtr(uint32_t subset_index) const
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         if (subset_index >= MeshBuffers<UniformsType>::GetSubsetsCount())
             throw std::invalid_argument("Subset index is out of bounds.");
@@ -283,7 +283,7 @@ public:
 
     const Ptr<Texture>& GetInstanceTexturePtr(uint32_t instance_index = 0) const
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         const uint32_t subset_index = this->GetSubsetByInstanceIndex(instance_index);
         return GetSubsetTexturePtr(subset_index);
@@ -291,7 +291,7 @@ public:
 
     void SetTexture(const Ptr<Texture>& sp_texture)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         SetSubsetTexture(sp_texture, 0u);
 
@@ -303,7 +303,7 @@ public:
     
     void SetSubsetTexture(const Ptr<Texture>& sp_texture, uint32_t subset_index)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         if (subset_index >= MeshBuffers<UniformsType>::GetSubsetsCount())
             throw std::invalid_argument("Subset index is out of bounds.");

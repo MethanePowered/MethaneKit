@@ -45,12 +45,12 @@ ParallelRenderCommandListBase::ParallelRenderCommandListBase(CommandQueueBase& c
     : CommandListBase(command_queue, Type::ParallelRender)
     , m_sp_pass(pass.GetPtr())
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     // Per-thread render command lists can be reset in parallel only with DirectX 12 on Windows
 #ifdef _WIN32
     Data::ParallelFor<size_t>(0, m_parallel_command_lists.size(),
@@ -59,7 +59,7 @@ void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_stat
     for(size_t render_command_list_index = 0u; render_command_list_index < m_parallel_command_lists.size(); ++render_command_list_index)
 #endif
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         const Ptr<RenderCommandList>& sp_render_command_list = m_parallel_command_lists[render_command_list_index];
         assert(sp_render_command_list);
         const std::string render_debug_group = GetThreadCommandListName(debug_group, static_cast<uint32_t>(render_command_list_index));
@@ -72,7 +72,7 @@ void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_stat
 
 void ParallelRenderCommandListBase::Commit()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     for(const Ptr<RenderCommandList>& sp_render_command_list : m_parallel_command_lists)
     {
@@ -85,7 +85,7 @@ void ParallelRenderCommandListBase::Commit()
 
 void ParallelRenderCommandListBase::SetParallelCommandListsCount(uint32_t count)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     uint32_t initial_count = static_cast<uint32_t>(m_parallel_command_lists.size());
     if (count < initial_count)
@@ -108,7 +108,7 @@ void ParallelRenderCommandListBase::SetParallelCommandListsCount(uint32_t count)
 
 void ParallelRenderCommandListBase::Execute(uint32_t frame_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     for(const Ptr<RenderCommandList>& sp_render_command_list : m_parallel_command_lists)
     {
@@ -122,7 +122,7 @@ void ParallelRenderCommandListBase::Execute(uint32_t frame_index)
 
 void ParallelRenderCommandListBase::Complete(uint32_t frame_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     for(const Ptr<RenderCommandList>& sp_render_command_list : m_parallel_command_lists)
     {
@@ -136,7 +136,7 @@ void ParallelRenderCommandListBase::Complete(uint32_t frame_index)
 
 void ParallelRenderCommandListBase::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     CommandListBase::SetName(name);
 
@@ -154,7 +154,7 @@ void ParallelRenderCommandListBase::SetName(const std::string& name)
 
 RenderPassBase& ParallelRenderCommandListBase::GetPass()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_sp_pass);
     return static_cast<RenderPassBase&>(*m_sp_pass);
 }

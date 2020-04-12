@@ -41,20 +41,20 @@ class FileProvider : public Provider
 public:
     static Provider& Get()
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         static FileProvider s_instance;
         return s_instance;
     }
 
     bool HasData(const std::string& path) const noexcept override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         return std::ifstream(GetFullFilePath(path)).good();
     }
 
     Data::Chunk GetData(const std::string& path) const override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         const std::string file_path = GetFullFilePath(path);
         std::ifstream fs(file_path, std::ios::binary);
@@ -68,7 +68,7 @@ public:
 protected:
     std::string GetFullFilePath(const std::string& path) const
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 #ifdef _WIN32
         static const std::string path_delimiter = "\\";
         static const std::regex root_path_regex(R"(^[a-zA-Z]\:[\\|/].*)");
@@ -83,7 +83,7 @@ protected:
     FileProvider()
         : m_resources_dir(Platform::GetResourceDir())
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
     }
 
     const std::string m_resources_dir;

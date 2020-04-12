@@ -34,21 +34,21 @@ namespace Methane::Graphics
 
 Ptr<Buffer> Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const Buffer::Settings settings{ Buffer::Type::Vertex, Usage::Unknown, size, stride, PixelFormat::Unknown };
     return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings);
 }
 
 Ptr<Buffer> Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const Buffer::Settings settings{ Buffer::Type::Index, Usage::Unknown, size, GetPixelSize(format), format };
     return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings);
 }
 
 Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Usage::Mask usage_mask = Usage::ShaderRead;
     if (addressable)
         usage_mask |= Usage::Addressable;
@@ -59,33 +59,33 @@ Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool
 
 Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return size;
 }
 
 BufferVK::BufferVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : BufferBase(context, settings, descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     InitializeDefaultDescriptors();
 }
 
 BufferVK::~BufferVK()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     GetContext().GetResourceManager().GetReleasePool().AddResource(*this);
 }
 
 void BufferVK::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     BufferBase::SetName(name);
 }
 
 void BufferVK::SetData(const SubResources& sub_resources)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     BufferBase::SetData(sub_resources);
 }

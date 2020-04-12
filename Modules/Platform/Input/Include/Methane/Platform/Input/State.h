@@ -55,7 +55,7 @@ public:
     template<typename ControllerT, typename = std::enable_if_t<std::is_base_of_v<Controller, ControllerT>>>
     Refs<ControllerT> GetControllersOfType() const
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         Refs<ControllerT> controllers;
         const std::type_info& controller_type  = typeid(ControllerT);
         for(const Ptr<Controller>& sp_controller : m_controllers)

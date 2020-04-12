@@ -10,8 +10,11 @@ add_executable(${TARGET}
 )
 
 target_link_libraries(${TARGET}
-    MethaneDataRangeSet
-    Catch
+    PRIVATE
+        MethaneDataRangeSet
+        MethaneBuildOptions
+        $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
+        Catch
 )
 
 if (METHANE_RUN_TESTS_DURING_BUILD)

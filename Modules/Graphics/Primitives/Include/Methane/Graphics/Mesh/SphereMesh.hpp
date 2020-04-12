@@ -40,7 +40,7 @@ public:
         , m_lat_lines_count(lat_lines_count)
         , m_long_lines_count(long_lines_count)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         if (Mesh::HasVertexField(Mesh::VertexField::Color))
         {
@@ -69,7 +69,7 @@ private:
 
     void GenerateSphereVertices()
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         // In case of textured sphere mesh,
         // an additional ending longitude line of vertices is added (with same positions as for the first line),
@@ -151,7 +151,7 @@ private:
 
     void GenerateSphereIndices()
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
 
         const bool     has_texcoord            = Mesh::HasVertexField(Mesh::VertexField::TexCoord);
         const uint32_t actual_long_lines_count = GetActualLongLinesCount();

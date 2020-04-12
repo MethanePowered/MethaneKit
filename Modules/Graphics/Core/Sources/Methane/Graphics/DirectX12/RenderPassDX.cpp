@@ -49,7 +49,7 @@ static D3D12_CPU_DESCRIPTOR_HANDLE GetRenderTargetTextureCpuDescriptor(const Wea
 RenderPassDX::AccessDesc::AccessDesc(const Attachment& attachment)
     : descriptor(GetRenderTargetTextureCpuDescriptor(attachment.wp_texture))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (attachment.wp_texture.expired())
     {
@@ -72,7 +72,7 @@ RenderPassDX::AccessDesc::AccessDesc(const Attachment& attachment)
 RenderPassDX::AccessDesc::AccessDesc(const ColorAttachment& color_attachment)
     : AccessDesc(static_cast<const Attachment&>(color_attachment))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (color_attachment.load_action == Attachment::LoadAction::Clear)
     {
@@ -96,20 +96,20 @@ RenderPassDX::AccessDesc::AccessDesc(const ColorAttachment& color_attachment)
 RenderPassDX::AccessDesc::AccessDesc(const DepthAttachment& depth_attachment, const StencilAttachment& stencil_attachment)
     : AccessDesc(static_cast<const Attachment&>(depth_attachment))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     InitDepthStencilClearValue(depth_attachment, stencil_attachment);
 }
 
 RenderPassDX::AccessDesc::AccessDesc(const StencilAttachment& stencil_attachment, const DepthAttachment& depth_attachment)
     : AccessDesc(static_cast<const Attachment&>(stencil_attachment))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     InitDepthStencilClearValue(depth_attachment, stencil_attachment);
 }
 
 void RenderPassDX::AccessDesc::InitDepthStencilClearValue(const DepthAttachment& depth_attachment, const StencilAttachment& stencil_attachment)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (depth_attachment.wp_texture.expired())
     {
@@ -122,7 +122,7 @@ void RenderPassDX::AccessDesc::InitDepthStencilClearValue(const DepthAttachment&
 
 D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE RenderPassDX::AccessDesc::GetBeginningAccessTypeByLoadAction(Attachment::LoadAction load_action) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (load_action)
     {
@@ -135,7 +135,7 @@ D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE RenderPassDX::AccessDesc::GetBeginningAc
 
 D3D12_RENDER_PASS_ENDING_ACCESS_TYPE RenderPassDX::AccessDesc::GetEndingAccessTypeByStoreAction(Attachment::StoreAction store_action) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (store_action)
     {
@@ -150,7 +150,7 @@ RenderPassDX::RTClearInfo::RTClearInfo(const RenderPass::ColorAttachment& color_
     : cpu_handle(GetRenderTargetTextureCpuDescriptor(color_attach.wp_texture))
     , clear_color{ color_attach.clear_color.GetR(), color_attach.clear_color.GetG(), color_attach.clear_color.GetB(), color_attach.clear_color.GetA() }
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 RenderPassDX::DSClearInfo::DSClearInfo(const RenderPass::DepthAttachment& depth_attach, const RenderPass::StencilAttachment& stencil_attach)
@@ -160,7 +160,7 @@ RenderPassDX::DSClearInfo::DSClearInfo(const RenderPass::DepthAttachment& depth_
     , stencil_cleared(!stencil_attach.wp_texture.expired() && stencil_attach.load_action == RenderPass::Attachment::LoadAction::Clear)
     , stencil_value(stencil_attach.clear_value)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (depth_cleared)
     {
@@ -175,7 +175,7 @@ RenderPassDX::DSClearInfo::DSClearInfo(const RenderPass::DepthAttachment& depth_
 
 static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(RenderPass::Access::Value access) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (access)
     {
@@ -190,19 +190,19 @@ static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(RenderPass::Access::Va
 
 Ptr<RenderPass> RenderPass::Create(RenderContext& context, const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<RenderPassDX>(dynamic_cast<RenderContextBase&>(context), settings);
 }
 
 RenderPassDX::RenderPassDX(RenderContextBase& context, const Settings& settings)
     : RenderPassBase(context, settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void RenderPassDX::Update(const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const bool settings_changed = GetSettings() != settings;
     RenderPassBase::Update(settings);
@@ -220,7 +220,7 @@ void RenderPassDX::Update(const Settings& settings)
 
 void RenderPassDX::UpdateNativeRenderPassDesc(bool settings_changed)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const Settings& settings = GetSettings();
     const bool update_descriptors_only = !settings_changed && m_render_target_descs.size() == settings.color_attachments.size();
@@ -269,7 +269,7 @@ void RenderPassDX::UpdateNativeRenderPassDesc(bool settings_changed)
 
 void RenderPassDX::UpdateNativeClearDesc()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     m_rt_clear_infos.clear();
     const Settings& settings = GetSettings();
@@ -290,7 +290,7 @@ void RenderPassDX::UpdateNativeClearDesc()
 
 void RenderPassDX::Begin(RenderCommandListBase& command_list)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (!m_is_updated)
     {
@@ -344,7 +344,7 @@ void RenderPassDX::Begin(RenderCommandListBase& command_list)
 
 void RenderPassDX::End(RenderCommandListBase& command_list)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (m_is_native_render_pass_available.has_value() && m_is_native_render_pass_available.value())
     {
@@ -361,7 +361,7 @@ void RenderPassDX::End(RenderCommandListBase& command_list)
 
 void RenderPassDX::SetNativeRenderPassUsage(bool use_native_render_pass)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     m_is_native_render_pass_available = use_native_render_pass;
 }
@@ -384,7 +384,7 @@ void RenderPassDX::SetNativeRenderTargets(RenderCommandListDX& dx_command_list)
 
 std::vector<ID3D12DescriptorHeap*> RenderPassDX::GetNativeDescriptorHeaps() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const Settings& settings = GetSettings();
     const RenderContextBase& context = GetRenderContext();
     std::vector<ID3D12DescriptorHeap*> descriptor_heaps;
@@ -402,7 +402,7 @@ std::vector<ID3D12DescriptorHeap*> RenderPassDX::GetNativeDescriptorHeaps() cons
 
 std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> RenderPassDX::GetNativeRenderTargetCPUHandles() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rt_cpu_handles;
     for (const RenderPassBase::ColorAttachment& color_attach : GetSettings().color_attachments)
     {
@@ -417,7 +417,7 @@ std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> RenderPassDX::GetNativeRenderTargetCPUH
 
 const D3D12_CPU_DESCRIPTOR_HANDLE* RenderPassDX::GetNativeDepthStencilCPUHandle()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const Settings& settings = GetSettings();
     if (!settings.depth_attachment.wp_texture.expired())
     {

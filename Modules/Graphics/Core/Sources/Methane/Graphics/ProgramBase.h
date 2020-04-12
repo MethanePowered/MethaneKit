@@ -24,6 +24,7 @@ Base implementation of the program interface.
 #pragma once
 
 #include <Methane/Graphics/Program.h>
+#include <Methane/Instrumentation.h>
 
 #include "ShaderBase.h"
 #include "DescriptorHeap.h"
@@ -87,7 +88,7 @@ private:
     const Shader::Types                 m_shader_types;
     ProgramBindings::ArgumentBindings   m_binding_by_argument;
     DescriptorRangeByHeapType           m_constant_descriptor_range_by_heap_type;
-    std::mutex                          m_constant_descriptor_ranges_reservation_mutex;
+    TracyLockable(std::mutex,           m_constant_descriptor_ranges_reservation_mutex);
 };
 
 } // namespace Methane::Graphics

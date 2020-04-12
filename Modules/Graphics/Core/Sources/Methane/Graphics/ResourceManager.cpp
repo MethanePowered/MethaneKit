@@ -36,12 +36,12 @@ ResourceManager::ResourceManager(ContextBase& context)
     : m_context(context)
     , m_sp_release_pool(ResourceBase::ReleasePool::Create())
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void ResourceManager::Initialize(const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     m_deferred_heap_allocation = settings.deferred_heap_allocation;
     for (uint32_t heap_type_idx = 0; heap_type_idx < static_cast<uint32_t>(DescriptorHeap::Type::Count); ++heap_type_idx)
@@ -69,9 +69,9 @@ void ResourceManager::Initialize(const Settings& settings)
 
 void ResourceManager::CompleteInitialization()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    std::lock_guard<std::mutex> lock_guard(m_program_bindings_mutex);
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_program_bindings_mutex);
 
     for (const Ptrs<DescriptorHeap>& desc_heaps : m_descriptor_heap_types)
     {
@@ -91,7 +91,7 @@ void ResourceManager::CompleteInitialization()
         m_program_bindings.begin(), program_bindings_end_it,
         [](const WeakPtr<ProgramBindings>& wp_program_bindings)
         {
-            ITT_FUNCTION_TASK();
+            META_FUNCTION_TASK();
             Ptr<ProgramBindings> sp_program_bindings = wp_program_bindings.lock();
             assert(!!sp_program_bindings);
             static_cast<ProgramBindingsBase&>(*sp_program_bindings).CompleteInitialization();
@@ -100,7 +100,7 @@ void ResourceManager::CompleteInitialization()
 
 void ResourceManager::Release()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (m_sp_release_pool)
     {
@@ -115,9 +115,9 @@ void ResourceManager::Release()
 
 void ResourceManager::AddProgramBindings(ProgramBindings& program_bindings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    std::lock_guard<std::mutex> lock_guard(m_program_bindings_mutex);
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_program_bindings_mutex);
 #ifdef _DEBUG
     // This may cause performance drop on adding massive amount of program bindings,
     // so we assume that only different program bindings are added and check it in Debug builds only
@@ -134,7 +134,7 @@ void ResourceManager::AddProgramBindings(ProgramBindings& program_bindings)
 
 uint32_t ResourceManager::CreateDescriptorHeap(const DescriptorHeap::Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (settings.type == DescriptorHeap::Type::Undefined ||
         settings.type == DescriptorHeap::Type::Count)
@@ -148,7 +148,7 @@ uint32_t ResourceManager::CreateDescriptorHeap(const DescriptorHeap::Settings& s
 
 const Ptr<DescriptorHeap>& ResourceManager::GetDescriptorHeapPtr(DescriptorHeap::Type type, Data::Index heap_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (type == DescriptorHeap::Type::Undefined ||
         type == DescriptorHeap::Type::Count)
@@ -169,7 +169,7 @@ const Ptr<DescriptorHeap>& ResourceManager::GetDescriptorHeapPtr(DescriptorHeap:
 
 DescriptorHeap& ResourceManager::GetDescriptorHeap(DescriptorHeap::Type type, Data::Index heap_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (type == DescriptorHeap::Type::Undefined ||
         type == DescriptorHeap::Type::Count)
@@ -187,7 +187,7 @@ DescriptorHeap& ResourceManager::GetDescriptorHeap(DescriptorHeap::Type type, Da
 
 const Ptr<DescriptorHeap>&  ResourceManager::GetDefaultShaderVisibleDescriptorHeapPtr(DescriptorHeap::Type type) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (type == DescriptorHeap::Type::Undefined ||
         type == DescriptorHeap::Type::Count)
@@ -210,7 +210,7 @@ const Ptr<DescriptorHeap>&  ResourceManager::GetDefaultShaderVisibleDescriptorHe
 
 DescriptorHeap& ResourceManager::GetDefaultShaderVisibleDescriptorHeap(DescriptorHeap::Type type) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const Ptr<DescriptorHeap>& sp_resource_heap = GetDefaultShaderVisibleDescriptorHeapPtr(type);
     if (!sp_resource_heap)
@@ -222,7 +222,7 @@ DescriptorHeap& ResourceManager::GetDefaultShaderVisibleDescriptorHeap(Descripto
 
 ResourceManager::DescriptorHeapSizeByType ResourceManager::GetDescriptorHeapSizes(bool get_allocated_size, bool for_shader_visible_heaps) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     DescriptorHeapSizeByType descriptor_heap_sizes;
     for (uint32_t heap_type_idx = 0; heap_type_idx < static_cast<uint32_t>(DescriptorHeap::Type::Count); ++heap_type_idx)
@@ -247,7 +247,7 @@ ResourceManager::DescriptorHeapSizeByType ResourceManager::GetDescriptorHeapSize
 
 ResourceBase::ReleasePool& ResourceManager::GetReleasePool()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_sp_release_pool);
     return *m_sp_release_pool;
 }

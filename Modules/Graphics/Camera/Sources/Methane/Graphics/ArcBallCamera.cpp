@@ -42,7 +42,7 @@ ArcBallCamera::ArcBallCamera(Pivot pivot, cml::AxisOrientation axis_orientation)
     , m_p_view_camera(nullptr)
     , m_pivot(pivot)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 ArcBallCamera::ArcBallCamera(const Camera& view_camera, Pivot pivot, cml::AxisOrientation axis_orientation)
@@ -50,12 +50,12 @@ ArcBallCamera::ArcBallCamera(const Camera& view_camera, Pivot pivot, cml::AxisOr
     , m_p_view_camera(&view_camera)
     , m_pivot(pivot)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void ArcBallCamera::OnMousePressed(const Point2i& mouse_screen_pos)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     
     m_mouse_pressed_orientation = m_current_orientation;
     m_mouse_pressed_on_sphere = GetNormalizedSphereProjection(mouse_screen_pos, true);
@@ -63,7 +63,7 @@ void ArcBallCamera::OnMousePressed(const Point2i& mouse_screen_pos)
 
 void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const Vector3f mouse_current_on_sphere = GetNormalizedSphereProjection(mouse_screen_pos, false);
     const Vector3f vectors_cross = cml::cross(m_mouse_pressed_on_sphere, mouse_current_on_sphere);
@@ -82,7 +82,7 @@ void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
 
 Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_screen_pos, bool is_primary) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const Data::FRectSize& screen_size = m_p_view_camera ? m_p_view_camera->GetScreenSize() : m_screen_size;
     const Point2f screen_center(screen_size.width / 2.f, screen_size.height / 2.f);
     Point2f screen_vector = static_cast<Point2f>(mouse_screen_pos) - screen_center;
@@ -126,7 +126,7 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
 
 void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (m_pivot)
     {
     case Pivot::Aim: m_current_orientation.eye = m_current_orientation.aim - look_dir; break;
@@ -137,7 +137,7 @@ void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir)
 
 void ArcBallCamera::Rotate(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Matrix44f view_rotation_matrix { };
     cml::matrix_rotation_axis_angle(view_rotation_matrix, view_axis, angle_rad);
 

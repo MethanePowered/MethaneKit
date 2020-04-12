@@ -32,7 +32,7 @@ namespace Methane::Graphics
 
 MTLIndexType TypeConverterMT::DataFormatToMetalIndexType(PixelFormat data_format) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (data_format)
     {
@@ -45,7 +45,7 @@ MTLIndexType TypeConverterMT::DataFormatToMetalIndexType(PixelFormat data_format
 
 MTLPixelFormat TypeConverterMT::DataFormatToMetalPixelType(PixelFormat data_format) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (data_format)
     {
@@ -122,7 +122,7 @@ MTLPixelFormat TypeConverterMT::DataFormatToMetalPixelType(PixelFormat data_form
 
 MTLVertexFormat TypeConverterMT::MetalDataTypeToVertexFormat(MTLDataType data_type, bool normalized) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch(data_type)
     {
@@ -173,7 +173,7 @@ MTLVertexFormat TypeConverterMT::MetalDataTypeToVertexFormat(MTLDataType data_ty
 
 uint32_t TypeConverterMT::ByteSizeOfVertexFormat(MTLVertexFormat vertex_format) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const uint32_t component_32bit_byte_size = 4;
     const uint32_t component_16bit_byte_size = 2;
@@ -260,25 +260,25 @@ uint32_t TypeConverterMT::ByteSizeOfVertexFormat(MTLVertexFormat vertex_format) 
 
 MTLClearColor TypeConverterMT::ColorToMetalClearColor(const Color4f& color) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return MTLClearColorMake(color.GetR(), color.GetG(), color.GetB(), color.GetA());
 }
 
 NSRect TypeConverterMT::RectToNS(const FrameRect& rect) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return CreateNSRect(rect.size, rect.origin);
 }
 
 NSRect TypeConverterMT::CreateNSRect(const FrameSize& size, const Point2i& origin) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return NSMakeRect(origin.GetX(), origin.GetY(), size.width, size.height);
 }
 
 FrameRect TypeConverterMT::RectFromNS(const NSRect& rect) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return FrameRect {
         Point2i(static_cast<uint32_t>(rect.origin.x), static_cast<uint32_t>(rect.origin.y)),
         FrameSize(static_cast<uint32_t>(rect.size.width), static_cast<uint32_t>(rect.size.height))
@@ -287,7 +287,7 @@ FrameRect TypeConverterMT::RectFromNS(const NSRect& rect) noexcept
 
 MTLCompareFunction TypeConverterMT::CompareFunctionToMetal(Compare compare_func) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch(compare_func)
     {
         case Compare::Never:        return MTLCompareFunctionNever;

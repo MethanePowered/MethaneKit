@@ -38,17 +38,17 @@ namespace Methane::Graphics
 CommandQueueBase::CommandQueueBase(ContextBase& context)
     : m_context(context)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 CommandQueueBase::~CommandQueueBase()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void CommandQueueBase::Execute(const Refs<CommandList>& command_lists)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const uint32_t frame_index = GetCurrentFrameBufferIndex();
 

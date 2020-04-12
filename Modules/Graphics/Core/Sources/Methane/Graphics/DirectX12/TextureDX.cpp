@@ -40,7 +40,7 @@ namespace Methane::Graphics
 
 static D3D12_SRV_DIMENSION GetSrvDimension(const Dimensions& tex_dimensions) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return tex_dimensions.depth == 1 ? (tex_dimensions.height == 1 ? D3D12_SRV_DIMENSION_TEXTURE1D
                                                                    : D3D12_SRV_DIMENSION_TEXTURE2D)
                                      : D3D12_SRV_DIMENSION_TEXTURE3D;
@@ -48,7 +48,7 @@ static D3D12_SRV_DIMENSION GetSrvDimension(const Dimensions& tex_dimensions) noe
 
 static D3D12_DSV_DIMENSION GetDsvDimension(const Dimensions& tex_dimensions)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (tex_dimensions.depth != 1)
     {
         throw std::runtime_error("Depth-stencil view can not be created for 3D texture.");
@@ -59,7 +59,7 @@ static D3D12_DSV_DIMENSION GetDsvDimension(const Dimensions& tex_dimensions)
 
 Ptr<Texture> Texture::CreateRenderTarget(RenderContext& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     
     switch (settings.type)
     {
@@ -71,7 +71,7 @@ Ptr<Texture> Texture::CreateRenderTarget(RenderContext& render_context, const Se
 
 Ptr<Texture> Texture::CreateFrameBuffer(RenderContext& render_context, uint32_t frame_buffer_index, const DescriptorByUsage& descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     
     const RenderContext::Settings& context_settings = render_context.GetSettings();
     const Settings texture_settings = Settings::FrameBuffer(context_settings.frame_size, context_settings.color_format);
@@ -80,7 +80,7 @@ Ptr<Texture> Texture::CreateFrameBuffer(RenderContext& render_context, uint32_t 
 
 Ptr<Texture> Texture::CreateDepthStencilBuffer(RenderContext& render_context, const DescriptorByUsage& descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     
     const RenderContext::Settings& context_settings = render_context.GetSettings();
     const Settings texture_settings = Settings::DepthStencilBuffer(context_settings.frame_size, context_settings.depth_stencil_format);
@@ -89,14 +89,14 @@ Ptr<Texture> Texture::CreateDepthStencilBuffer(RenderContext& render_context, co
 
 Ptr<Texture> Texture::CreateImage(Context& render_context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length, pixel_format, mipmapped, Usage::ShaderRead);
     return std::make_shared<ImageTextureDX>(dynamic_cast<ContextBase&>(render_context), texture_settings, descriptor_by_usage, ImageTextureArg());
 }
 
 Ptr<Texture> Texture::CreateCube(Context& render_context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length, pixel_format, mipmapped, Usage::ShaderRead);
     return std::make_shared<ImageTextureDX>(dynamic_cast<ContextBase&>(render_context), texture_settings, descriptor_by_usage, ImageTextureArg());
 }
@@ -104,7 +104,7 @@ Ptr<Texture> Texture::CreateCube(Context& render_context, uint32_t dimension_siz
 template<>
 void RenderTargetTextureDX::Initialize()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const Settings& settings = GetSettings();
     if (settings.dimensions.depth != 1 || settings.dimensions.width == 0 || settings.dimensions.height == 0)
@@ -123,7 +123,7 @@ void RenderTargetTextureDX::Initialize()
 template<>
 void FrameBufferTextureDX::Initialize(uint32_t frame_buffer_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     InitializeFrameBufferResource(frame_buffer_index);
 
@@ -139,7 +139,7 @@ void FrameBufferTextureDX::Initialize(uint32_t frame_buffer_index)
 template<>
 void DepthStencilBufferTextureDX::Initialize(const std::optional<DepthStencil>& clear_depth_stencil)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const Settings& settings = GetSettings();
     CD3DX12_RESOURCE_DESC tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
@@ -209,7 +209,7 @@ void DepthStencilBufferTextureDX::Initialize(const std::optional<DepthStencil>& 
 ImageTextureDX::TextureDX(ContextBase& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg)
     : TextureBase(render_context, settings, descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (ResourceBase::GetUsageMask() != Usage::ShaderRead)
     {
@@ -364,7 +364,7 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
 
 void ImageTextureDX::SetData(const SubResources& sub_resources)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_cp_upload_resource);
 
     TextureBase::SetData(sub_resources);
@@ -417,7 +417,7 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
 
 void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_resources, DirectX::ScratchImage& scratch_image)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const Settings&           settings          = GetSettings();
     const uint32_t            mip_levels_count  = GetMipLevelsCount();

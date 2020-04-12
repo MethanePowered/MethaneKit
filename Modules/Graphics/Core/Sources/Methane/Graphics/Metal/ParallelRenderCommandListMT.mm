@@ -35,19 +35,19 @@ namespace Methane::Graphics
 
 Ptr<ParallelRenderCommandList> ParallelRenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<ParallelRenderCommandListMT>(static_cast<CommandQueueBase&>(command_queue), static_cast<RenderPassBase&>(render_pass));
 }
 
 ParallelRenderCommandListMT::ParallelRenderCommandListMT(CommandQueueBase& command_queue, RenderPassBase& render_pass)
     : ParallelRenderCommandListBase(command_queue, render_pass)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void ParallelRenderCommandListMT::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     ParallelRenderCommandListBase::SetName(name);
     
@@ -66,7 +66,7 @@ void ParallelRenderCommandListMT::SetName(const std::string& name)
 
 void ParallelRenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_mtl_parallel_render_encoder != nil)
         return;
 
@@ -100,7 +100,7 @@ void ParallelRenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state,
 
 void ParallelRenderCommandListMT::Commit()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     
     assert(!IsCommitted());
 
@@ -117,7 +117,7 @@ void ParallelRenderCommandListMT::Commit()
 
 void ParallelRenderCommandListMT::Execute(uint32_t frame_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     ParallelRenderCommandListBase::Execute(frame_index);
 
@@ -131,13 +131,13 @@ void ParallelRenderCommandListMT::Execute(uint32_t frame_index)
 
 CommandQueueMT& ParallelRenderCommandListMT::GetCommandQueueMT() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<class CommandQueueMT&>(GetCommandQueue());
 }
 
 RenderPassMT& ParallelRenderCommandListMT::GetPassMT()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<class RenderPassMT&>(GetPass());
 }
 

@@ -43,7 +43,7 @@ namespace Methane::Graphics
 
 static std::string GetAdapterNameDxgi(IDXGIAdapter& adapter)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     DXGI_ADAPTER_DESC desc{};
     adapter.GetDesc(&desc);
@@ -52,7 +52,7 @@ static std::string GetAdapterNameDxgi(IDXGIAdapter& adapter)
 
 static bool IsSoftwareAdapterDxgi(IDXGIAdapter1& adapter)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     DXGI_ADAPTER_DESC1 desc{};
     adapter.GetDesc1(&desc);
@@ -61,7 +61,7 @@ static bool IsSoftwareAdapterDxgi(IDXGIAdapter1& adapter)
 
 Device::Feature::Mask DeviceDX::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& /*cp_adapter*/, D3D_FEATURE_LEVEL /*feature_level*/)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return Device::Feature::Value::BasicRendering;
 }
 
@@ -72,17 +72,17 @@ DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVE
     , m_cp_adapter(cp_adapter)
     , m_feature_level(feature_level)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 DeviceDX::~DeviceDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void DeviceDX::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     DeviceBase::SetName(name);
     if (m_cp_device)
     {
@@ -92,7 +92,7 @@ void DeviceDX::SetName(const std::string& name)
 
 const wrl::ComPtr<ID3D12Device>& DeviceDX::GetNativeDevice() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_cp_device)
         return m_cp_device;
 
@@ -113,26 +113,26 @@ const wrl::ComPtr<ID3D12Device>& DeviceDX::GetNativeDevice() const
 
 void DeviceDX::ReleaseNativeDevice()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_cp_device.Reset();
 }
 
 System& System::Get()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     static SystemDX s_system;
     return s_system;
 }
 
 SystemDX::SystemDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Initialize();
 }
 
 SystemDX::~SystemDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     UnregisterAdapterChangeEvent();
 
@@ -144,7 +144,7 @@ SystemDX::~SystemDX()
 
 void SystemDX::Initialize()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     UINT dxgi_factory_flags = 0;
 
 #ifdef _DEBUG
@@ -165,7 +165,7 @@ void SystemDX::Initialize()
 
 void SystemDX::RegisterAdapterChangeEvent()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
 #ifdef ADAPTERS_CHANGE_HANDLING
     wrl::ComPtr<IDXGIFactory7> cp_factory7;
@@ -185,7 +185,7 @@ void SystemDX::RegisterAdapterChangeEvent()
 
 void SystemDX::UnregisterAdapterChangeEvent()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
 #ifdef ADAPTERS_CHANGE_HANDLING
     wrl::ComPtr<IDXGIFactory7> cp_factory7;
@@ -204,7 +204,7 @@ void SystemDX::UnregisterAdapterChangeEvent()
 
 void SystemDX::CheckForChanges()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
 #ifdef ADAPTERS_CHANGE_HANDLING
     const bool adapters_changed = m_adapter_change_event ? WaitForSingleObject(m_adapter_change_event, 0) == WAIT_OBJECT_0
@@ -240,7 +240,7 @@ void SystemDX::CheckForChanges()
 
 const Ptrs<Device>& SystemDX::UpdateGpuDevices(Device::Feature::Mask supported_features)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(m_cp_factory);
 
     const D3D_FEATURE_LEVEL dx_feature_level = D3D_FEATURE_LEVEL_11_0;
@@ -274,7 +274,7 @@ const Ptrs<Device>& SystemDX::UpdateGpuDevices(Device::Feature::Mask supported_f
 
 void SystemDX::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     // Check to see if the adapter supports Direct3D 12, but don't create the actual device yet
     if (!SUCCEEDED(D3D12CreateDevice(cp_adapter.Get(), feature_level, _uuidof(ID3D12Device), nullptr)))
@@ -289,7 +289,7 @@ void SystemDX::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATUR
 
 void SystemDX::ReportLiveObjects()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 #ifdef _DEBUG
     wrl::ComPtr<IDXGIDebug1> dxgi_debug;
     if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgi_debug))))

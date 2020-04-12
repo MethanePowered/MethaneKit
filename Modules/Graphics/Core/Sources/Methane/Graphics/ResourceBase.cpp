@@ -45,7 +45,7 @@ Resource::Location::Location(Ptr<Resource> sp_resource, Data::Size offset)
 
 std::string Resource::GetTypeName(Type type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (type)
     {
     case Resource::Type::Buffer:  return "Buffer";
@@ -58,7 +58,7 @@ std::string Resource::GetTypeName(Type type) noexcept
 
 std::string Resource::Usage::ToString(Usage::Value usage) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (usage)
     {
     case Resource::Usage::ShaderRead:   return "Shader Read";
@@ -72,7 +72,7 @@ std::string Resource::Usage::ToString(Usage::Value usage) noexcept
 
 std::string Resource::Usage::ToString(Usage::Mask usage_mask) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     std::stringstream names_ss;
     bool first_usage = true;
@@ -98,7 +98,7 @@ Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, Data::Index in_index)
     : heap(in_heap)
     , index(in_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
     
 bool Resource::Location::operator==(const Location& other) const noexcept
@@ -111,28 +111,28 @@ Resource::SubResource::SubResource(Data::Bytes&& data, Index index) noexcept
     : Data::Chunk(std::move(data))
     , index(std::move(index))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 Resource::SubResource::SubResource(SubResource&& other) noexcept
     : Data::Chunk(std::move(other))
     , index(other.index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 Resource::SubResource::SubResource(const SubResource& other) noexcept
     : Data::Chunk(other)
     , index(other.index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 Resource::SubResource::SubResource(Data::ConstRawPtr p_data, Data::Size size, Index index) noexcept
     : Data::Chunk(p_data, size)
     , index(std::move(index))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 Resource::SubResource::Index::Index(uint32_t depth_slice, uint32_t array_index, uint32_t mip_level) noexcept
@@ -140,19 +140,19 @@ Resource::SubResource::Index::Index(uint32_t depth_slice, uint32_t array_index, 
     , array_index(array_index)
     , mip_level(mip_level)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 Resource::SubResource::Index Resource::SubResource::Index::FromRawIndex(uint32_t raw_index, uint32_t depth, uint32_t mip_levels_count) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const uint32_t array_and_depth_index = raw_index / mip_levels_count;
     return Index(array_and_depth_index % depth, array_and_depth_index / depth, raw_index % mip_levels_count);
 }
 
 uint32_t Resource::SubResource::Index::GetRawIndex(uint32_t depth, uint32_t mip_levels_count) const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return (array_index * depth + depth_slice) * mip_levels_count + mip_level;
 }
 
@@ -162,7 +162,7 @@ ResourceBase::ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& conte
     , m_context(context)
     , m_descriptor_by_usage(std::move(descriptor_by_usage))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     for (auto& usage_and_descriptor : m_descriptor_by_usage)
     {
@@ -179,7 +179,7 @@ ResourceBase::ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& conte
 
 ResourceBase::~ResourceBase()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     for (const auto& usage_and_descriptor : m_descriptor_by_usage)
     {
@@ -192,7 +192,7 @@ ResourceBase::~ResourceBase()
 
 void ResourceBase::InitializeDefaultDescriptors()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     for (Usage::Value usage : Usage::primary_values)
     {
@@ -212,7 +212,7 @@ void ResourceBase::InitializeDefaultDescriptors()
 
 const Resource::Descriptor& ResourceBase::GetDescriptor(Usage::Value usage) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
     if (descriptor_by_usage_it == m_descriptor_by_usage.end())
@@ -224,7 +224,7 @@ const Resource::Descriptor& ResourceBase::GetDescriptor(Usage::Value usage) cons
 
 void ResourceBase::SetData(const SubResources& sub_resources)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (sub_resources.empty())
     {
@@ -253,7 +253,7 @@ void ResourceBase::SetData(const SubResources& sub_resources)
 
 DescriptorHeap::Type ResourceBase::GetDescriptorHeapTypeByUsage(ResourceBase::Usage::Value resource_usage) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (resource_usage)
     {
@@ -277,7 +277,7 @@ DescriptorHeap::Type ResourceBase::GetDescriptorHeapTypeByUsage(ResourceBase::Us
 
 const Resource::Descriptor& ResourceBase::GetDescriptorByUsage(Usage::Value usage) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
     if (descriptor_by_usage_it == m_descriptor_by_usage.end())
@@ -290,7 +290,7 @@ const Resource::Descriptor& ResourceBase::GetDescriptorByUsage(Usage::Value usag
 
 DescriptorHeap::Types ResourceBase::GetUsedDescriptorHeapTypes() const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     DescriptorHeap::Types heap_types;
     for (auto usage_and_descriptor : m_descriptor_by_usage)
@@ -302,7 +302,7 @@ DescriptorHeap::Types ResourceBase::GetUsedDescriptorHeapTypes() const noexcept
 
 void ResourceBase::SetState(State state, Barriers& out_barriers)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (m_state == state)
         return;

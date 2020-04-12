@@ -57,7 +57,7 @@ template<typename Iterator, typename Value>
 void ParallelForEach(const Iterator& begin_it, const Iterator& end_it,
                      typename IteratorFunction<Iterator, Value>::Type&& body_function)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
 #ifdef METHANE_USE_PPL
 
@@ -99,7 +99,7 @@ void ParallelForEach(const Iterator& begin_it, const Iterator& end_it,
 template<typename IndexType, typename = std::enable_if_t<std::is_integral<IndexType>::value>>
 void ParallelFor(IndexType begin_index, IndexType end_index, std::function<void(IndexType)>&& body_function)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (end_index < begin_index)
     {

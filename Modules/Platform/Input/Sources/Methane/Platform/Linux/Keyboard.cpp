@@ -31,7 +31,7 @@ namespace Methane::Platform::Keyboard
 
 Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     static const std::map<uint8_t, Key> s_key_by_native_code {
         { 0x1D, Key::Num0           },
         { 0x12, Key::Num1           },
@@ -157,7 +157,7 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
 
 Modifier::Mask KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Modifier::Mask modifiers_mask = Modifier::Value::None;
     return modifiers_mask;

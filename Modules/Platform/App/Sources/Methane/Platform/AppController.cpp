@@ -37,18 +37,18 @@ AppController::AppController(AppBase& application, const std::string& applicatio
     , Keyboard::ActionControllerBase<AppAction>(action_by_keyboard_state, {})
     , m_application(application)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void AppController::OnKeyboardChanged(Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Keyboard::StateChange& state_change)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Keyboard::ActionControllerBase<AppAction>::OnKeyboardChanged(key, key_state, state_change);
 }
 
 void AppController::OnKeyboardStateAction(AppAction action)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch(action)
     {
     case AppAction::ShowControlsHelp:    ShowControlsHelp(); break;
@@ -61,7 +61,7 @@ void AppController::OnKeyboardStateAction(AppAction action)
 
 std::string AppController::GetKeyboardActionName(AppAction action) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (action)
     {
     case AppAction::None:                return "none";
@@ -75,13 +75,13 @@ std::string AppController::GetKeyboardActionName(AppAction action) const
 
 Input::IHelpProvider::HelpLines AppController::GetHelp() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return GetKeyboardHelp();
 }
 
 void AppController::ShowControlsHelp()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     std::stringstream help_stream;
     std::string single_offset = "    ";
     bool is_first_controller = true;
@@ -152,7 +152,7 @@ void AppController::ShowControlsHelp()
 
 void AppController::ShowCommandLineHelp()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     std::stringstream help_stream;
 
     const std::string cmd_line_help = m_application.help();

@@ -36,7 +36,7 @@ DescriptorHeap::Reservation::Reservation(const Ref<DescriptorHeap>& in_heap, con
     , constant_range(in_constant_range)
     , mutable_range(in_mutable_range)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 DescriptorHeap::DescriptorHeap(ContextBase& context, const Settings& settings)
@@ -44,7 +44,7 @@ DescriptorHeap::DescriptorHeap(ContextBase& context, const Settings& settings)
     , m_settings(settings)
     , m_deferred_size(settings.size)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (m_deferred_size > 0)
     {
@@ -55,9 +55,9 @@ DescriptorHeap::DescriptorHeap(ContextBase& context, const Settings& settings)
 
 DescriptorHeap::~DescriptorHeap()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    std::lock_guard<std::mutex> lock_guard(m_modification_mutex);
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
 
     // All descriptor ranges must be released when heap is destroyed
     assert((!m_deferred_size && m_free_ranges.IsEmpty()) ||
@@ -66,9 +66,9 @@ DescriptorHeap::~DescriptorHeap()
 
 Data::Index DescriptorHeap::AddResource(const ResourceBase& resource)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    std::lock_guard<std::mutex> lock_guard(m_modification_mutex);
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
 
     if (m_resources.size() >= m_settings.size)
     {
@@ -94,9 +94,9 @@ Data::Index DescriptorHeap::AddResource(const ResourceBase& resource)
 
 Data::Index DescriptorHeap::ReplaceResource(const ResourceBase& resource, Data::Index at_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    std::lock_guard<std::mutex> lock_guard(m_modification_mutex);
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
 
     if (at_index >= m_resources.size())
     {
@@ -110,9 +110,9 @@ Data::Index DescriptorHeap::ReplaceResource(const ResourceBase& resource, Data::
 
 void DescriptorHeap::RemoveResource(Data::Index at_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    std::lock_guard<std::mutex> lock_guard(m_modification_mutex);
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
 
     if (at_index >= m_resources.size())
     {
@@ -126,9 +126,9 @@ void DescriptorHeap::RemoveResource(Data::Index at_index)
 
 Ptr<DescriptorHeap::Range> DescriptorHeap::ReserveRange(Data::Size length)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    std::lock_guard<std::mutex> lock_guard(m_modification_mutex);
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
 
     RangeSet::ConstIterator free_range_it = std::find_if(m_free_ranges.begin(), m_free_ranges.end(),
         [length](const Range& range)
@@ -157,15 +157,15 @@ Ptr<DescriptorHeap::Range> DescriptorHeap::ReserveRange(Data::Size length)
 
 void DescriptorHeap::ReleaseRange(const Range& range)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    std::lock_guard<std::mutex> lock_guard(m_modification_mutex);
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
     m_free_ranges.Add(range);
 }
 
 std::string DescriptorHeap::GetTypeName(Type heap_type)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (heap_type)
     {
         case Type::ShaderResources: return "ShaderBase Resources";

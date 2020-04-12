@@ -31,19 +31,19 @@ namespace Methane::Graphics
 
 Ptr<BlitCommandList> BlitCommandList::Create(CommandQueue& cmd_queue)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<BlitCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue));
 }
 
 BlitCommandListDX::BlitCommandListDX(CommandQueueBase& cmd_buffer)
     : CommandListDX<CommandListBase>(cmd_buffer, Type::Blit)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void BlitCommandListDX::Reset(const std::string& debug_group)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     CommandListDX<CommandListBase>::Reset(debug_group);
 }
 

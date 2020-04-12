@@ -32,7 +32,7 @@ namespace Methane::Graphics
 
 CD3DX12_VIEWPORT TypeConverterDX::ViewportToD3D(const Viewport& viewport) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return CD3DX12_VIEWPORT(static_cast<float>(viewport.origin.GetX()), static_cast<float>(viewport.origin.GetY()),
                             static_cast<float>(viewport.size.width), static_cast<float>(viewport.size.height),
                             static_cast<float>(viewport.origin.GetZ()), static_cast<float>(viewport.origin.GetZ() + viewport.size.depth));
@@ -40,7 +40,7 @@ CD3DX12_VIEWPORT TypeConverterDX::ViewportToD3D(const Viewport& viewport) noexce
 
 CD3DX12_RECT TypeConverterDX::ScissorRectToD3D(const ScissorRect& scissor_rect) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return CD3DX12_RECT(static_cast<LONG>(scissor_rect.origin.GetX()), static_cast<LONG>(scissor_rect.origin.GetY()),
                         static_cast<LONG>(scissor_rect.origin.GetX() + scissor_rect.size.width),
                         static_cast<LONG>(scissor_rect.origin.GetY() + scissor_rect.size.height));
@@ -48,7 +48,7 @@ CD3DX12_RECT TypeConverterDX::ScissorRectToD3D(const ScissorRect& scissor_rect) 
 
 std::vector<CD3DX12_VIEWPORT> TypeConverterDX::ViewportsToD3D(const Viewports& viewports) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     std::vector<CD3DX12_VIEWPORT> d3d_viewports;
     for (const Viewport& viewport : viewports)
@@ -60,7 +60,7 @@ std::vector<CD3DX12_VIEWPORT> TypeConverterDX::ViewportsToD3D(const Viewports& v
 
 std::vector<CD3DX12_RECT> TypeConverterDX::ScissorRectsToD3D(const ScissorRects& scissor_rects) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     std::vector<CD3DX12_RECT> d3d_scissor_rects;
     for (const ScissorRect& scissor_rect : scissor_rects)
@@ -72,7 +72,7 @@ std::vector<CD3DX12_RECT> TypeConverterDX::ScissorRectsToD3D(const ScissorRects&
 
 DXGI_FORMAT TypeConverterDX::DataFormatToDXGI(const PixelFormat& data_format) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (data_format)
     {
@@ -101,7 +101,7 @@ DXGI_FORMAT TypeConverterDX::DataFormatToDXGI(const PixelFormat& data_format) no
 
 DXGI_FORMAT TypeConverterDX::DataFormatToDXGI(const PixelFormat& data_format, ResourceFormatType format_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (data_format)
     {
@@ -122,7 +122,7 @@ DXGI_FORMAT TypeConverterDX::DataFormatToDXGI(const PixelFormat& data_format, Re
 
 D3D12_COMPARISON_FUNC TypeConverterDX::CompareFunctionToDX(Compare compare_func) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (compare_func)
     {
@@ -141,7 +141,7 @@ D3D12_COMPARISON_FUNC TypeConverterDX::CompareFunctionToDX(Compare compare_func)
 
 DXGI_FORMAT TypeConverterDX::ParameterDescToDxgiFormatAndSize(const D3D12_SIGNATURE_PARAMETER_DESC& param_desc, uint32_t& out_element_byte_size) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const uint32_t component_32bit_byte_size = 4;
     if (param_desc.Mask == 1)

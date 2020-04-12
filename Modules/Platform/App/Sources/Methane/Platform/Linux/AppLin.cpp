@@ -31,7 +31,7 @@ namespace Methane::Platform
 AppLin::AppLin(const AppBase::Settings& settings)
     : AppBase(settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 int AppLin::Run(const RunArgs& args)
@@ -41,23 +41,23 @@ int AppLin::Run(const RunArgs& args)
 
 void AppLin::Alert(const Message& msg, bool deferred)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     AppBase::Alert(msg, deferred);
 }
 
 void AppLin::ShowAlert(const Message& msg)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void AppLin::SetWindowTitle(const std::string& title_text)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 bool AppLin::SetFullScreen(bool is_full_screen)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!AppBase::SetFullScreen(is_full_screen))
         return false;
 
@@ -66,7 +66,7 @@ bool AppLin::SetFullScreen(bool is_full_screen)
 
 void AppLin::Close()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 } // namespace Methane::Platform

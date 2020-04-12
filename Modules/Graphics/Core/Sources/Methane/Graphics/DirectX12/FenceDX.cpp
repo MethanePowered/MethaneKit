@@ -37,7 +37,7 @@ namespace Methane::Graphics
 
 UniquePtr<Fence> Fence::Create(CommandQueue& command_queue)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_unique<FenceDX>(static_cast<CommandQueueBase&>(command_queue));
 }
 
@@ -45,7 +45,7 @@ FenceDX::FenceDX(CommandQueueBase& command_queue)
     : FenceBase(command_queue)
     , m_event(CreateEvent(nullptr, FALSE, FALSE, nullptr))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!m_event)
     {
         ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
@@ -59,13 +59,13 @@ FenceDX::FenceDX(CommandQueueBase& command_queue)
 
 FenceDX::~FenceDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     SafeCloseHandle(m_event);
 }
 
 void FenceDX::Signal()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     FenceBase::Signal();
 
@@ -76,7 +76,7 @@ void FenceDX::Signal()
 
 void FenceDX::Wait()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     FenceBase::Wait();
 
@@ -91,7 +91,7 @@ void FenceDX::Wait()
 
 void FenceDX::SetName(const std::string& name) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (ObjectBase::GetName() == name)
         return;
 
@@ -103,7 +103,7 @@ void FenceDX::SetName(const std::string& name) noexcept
 
 CommandQueueDX& FenceDX::GetCommandQueueDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<CommandQueueDX&>(GetCommandQueue());
 }
 

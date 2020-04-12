@@ -37,12 +37,12 @@ public:
     explicit UberMesh(const Mesh::VertexLayout& vertex_layout)
         : BaseMeshT(Mesh::Type::Uber, vertex_layout)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
     }
 
     void AddSubMesh(const BaseMeshT& sub_mesh, bool adjust_indices)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         const typename BaseMeshT::Vertices& sub_vertices = sub_mesh.GetVertices();
         const Mesh::Indices& sub_indices = sub_mesh.GetIndices();
 
@@ -76,7 +76,7 @@ public:
     size_t               GetSubsetCount() const noexcept        { return m_subsets.size(); }
     const Mesh::Subset&  GetSubset(size_t subset_index) const
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         if (subset_index >= m_subsets.size())
             throw std::invalid_argument("Sub mesh index is out of bounds.");
 
@@ -85,14 +85,14 @@ public:
 
     std::pair<const VType*, size_t> GetSubsetVertices(size_t subset_index) const
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         const Mesh::Subset& subset = GetSubset(subset_index);
         return { BaseMeshT::GetVertices().data() + subset.vertices.offset, subset.vertices.count };
     }
 
     std::pair<const Mesh::Index*, size_t> GetSubsetIndices(size_t subset_index) const
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         const Mesh::Subset& subset = GetSubset(subset_index);
         return { Mesh::GetIndices().data() + subset.indices.offset, subset.indices.count };
     }

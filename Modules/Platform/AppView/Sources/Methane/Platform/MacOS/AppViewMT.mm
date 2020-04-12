@@ -53,7 +53,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef /*display_link*/,
                                    CVOptionFlags* /*flags_out*/,
                                    void* p_display_link_context)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     AppViewMT* app_view = (__bridge AppViewMT*) p_display_link_context;
     
@@ -68,7 +68,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef /*display_link*/,
 
 - (instancetype) initWithCoder:(NSCoder *)aDecoder
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if ((self = [super initWithCoder:aDecoder]))
     {
@@ -92,7 +92,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef /*display_link*/,
                   vsyncEnabled:(BOOL) vsync_enabled
          unsyncRefreshInterval:(double) refresh_interval_sec
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     NSScreen* current_screen = (app_window != nil) ? [app_window screen] : [NSScreen mainScreen];
     NSRect frame = [current_screen convertRectFromBacking:backing_frame];
@@ -113,7 +113,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef /*display_link*/,
 
 - (void) dealloc
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     self.redrawing = NO;
     [super dealloc];
@@ -121,7 +121,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef /*display_link*/,
 
 - (void) commonInit
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     self.metalLayer.pixelFormat = self.pixelFormat;
     self.wantsLayer = YES;
@@ -136,19 +136,19 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef /*display_link*/,
 
 - (NSScreen*) currentScreen
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return self.appWindow != nil ? [self.appWindow screen] : [NSScreen mainScreen];
 }
 
 - (CAMetalLayer*) metalLayer
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return (CAMetalLayer*) self.layer;
 }
 
 - (CALayer *) makeBackingLayer
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     CAMetalLayer *layer = [[CAMetalLayer alloc] init];
     layer.bounds = self.bounds;
@@ -167,7 +167,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef /*display_link*/,
 
 - (void) layout
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     [super layout];
     CGFloat scale = self.window ? self.window.screen.backingScaleFactor
@@ -188,7 +188,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef /*display_link*/,
 
 - (void) setUnsyncRefreshInterval: (NSTimeInterval) unsyncRefreshInterval
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (_unsyncRefreshInterval == unsyncRefreshInterval)
         return;
     
@@ -203,7 +203,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef /*display_link*/,
 
 - (void) setVsyncEnabled: (BOOL) vsyncEnabled
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (_vsyncEnabled == vsyncEnabled)
         return;
     
@@ -216,7 +216,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef /*display_link*/,
 
 - (void)setDrawableCount:(NSUInteger)drawableCount
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (_drawableCount == drawableCount)
         return;
 
@@ -232,7 +232,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef /*display_link*/,
 
 - (void) setRedrawing: (BOOL) redrawing
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (_redrawing == redrawing)
         return;
     
@@ -278,7 +278,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef /*display_link*/,
 
 - (void) redraw
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!self.redrawing)
         return;
     
@@ -293,7 +293,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef /*display_link*/,
 
 - (void) windowWillClose:(NSNotification*)notification
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     // Stop the display link when the window is closing because we will
     // not be able to get a drawable, but the display link may continue to fire
@@ -305,7 +305,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef /*display_link*/,
 
 - (void)setViewController:(NSViewController *)newController
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (viewController)
     {
         NSResponder* controller_next_responder = [viewController nextResponder];
@@ -325,7 +325,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef /*display_link*/,
 
 - (void)updateTrackingAreas
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (trackingArea != nil)
     {
@@ -351,7 +351,7 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef /*display_link*/,
 
 - (void)setNextResponder:(NSResponder *)newNextResponder
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (viewController)
     {
         [viewController setNextResponder:newNextResponder];
@@ -362,19 +362,19 @@ static CVReturn OnDisplayLinkFrame(CVDisplayLinkRef /*display_link*/,
 
 - (BOOL)acceptsFirstResponder
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return YES;
 }
 
 - (BOOL)canBecomeKeyView
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return YES;
 }
 
 - (BOOL)acceptsFirstMouse:(NSEvent*)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     #pragma unused(event)
     return YES;
 }

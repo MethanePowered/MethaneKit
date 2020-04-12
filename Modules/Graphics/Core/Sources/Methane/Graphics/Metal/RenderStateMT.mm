@@ -36,7 +36,7 @@ namespace Methane::Graphics
 
 static MTLCullMode ConvertRasterizerCullModeToMetal(RenderState::Rasterizer::CullMode cull_mode) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using RasterizerCullMode = RenderState::Rasterizer::CullMode;
 
@@ -51,7 +51,7 @@ static MTLCullMode ConvertRasterizerCullModeToMetal(RenderState::Rasterizer::Cul
 
 static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(RenderState::Rasterizer::FillMode fill_mode) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using RasterizerFillMode = RenderState::Rasterizer::FillMode;
 
@@ -65,7 +65,7 @@ static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(RenderState::Rasteri
     
 static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(RenderState::Blending::ColorChannel::Mask rt_write_mask)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using ColorChannel = RenderState::Blending::ColorChannel;
 
@@ -83,7 +83,7 @@ static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(RenderState::Blendi
 
 static MTLBlendOperation ConvertBlendingOperationToMetal(RenderState::Blending::Operation blend_operation)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using BlendOp = RenderState::Blending::Operation;
 
@@ -100,7 +100,7 @@ static MTLBlendOperation ConvertBlendingOperationToMetal(RenderState::Blending::
 
 static MTLBlendFactor ConvertBlendingFactorToMetal(RenderState::Blending::Factor blend_factor)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using BlendFactor = RenderState::Blending::Factor;
     
@@ -131,7 +131,7 @@ static MTLBlendFactor ConvertBlendingFactorToMetal(RenderState::Blending::Factor
 
 static MTLStencilOperation ConvertStencilOperationToMetal(RenderState::Stencil::Operation operation) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using StencilOperation = RenderState::Stencil::Operation;
 
@@ -151,13 +151,13 @@ static MTLStencilOperation ConvertStencilOperationToMetal(RenderState::Stencil::
 
 static MTLWinding ConvertRasterizerFrontWindingToMetal(bool is_front_counter_clockwise) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return is_front_counter_clockwise ? MTLWindingCounterClockwise : MTLWindingClockwise;
 }
 
 static MTLStencilDescriptor* ConvertStencilDescriptorToMetal(const RenderState::Stencil& stencil, bool for_front_face)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!stencil.enabled)
         return nil;
     
@@ -176,20 +176,20 @@ static MTLStencilDescriptor* ConvertStencilDescriptorToMetal(const RenderState::
 
 Ptr<RenderState> RenderState::Create(RenderContext& context, const RenderState::Settings& state_settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<RenderStateMT>(dynamic_cast<RenderContextBase&>(context), state_settings);
 }
 
 RenderStateMT::RenderStateMT(RenderContextBase& context, const Settings& settings)
     : RenderStateBase(context, settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Reset(settings);
 }
 
 RenderStateMT::~RenderStateMT()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     [m_mtl_pipeline_state_desc release];
     [m_mtl_depth_stencil_state_desc release];
@@ -199,7 +199,7 @@ RenderStateMT::~RenderStateMT()
 
 void RenderStateMT::Reset(const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!settings.sp_program)
     {
         throw std::invalid_argument("Can not create state with empty program.");
@@ -278,7 +278,7 @@ void RenderStateMT::Reset(const Settings& settings)
 
 void RenderStateMT::Apply(RenderCommandListBase& command_list, Group::Mask state_groups)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     RenderCommandListMT& metal_command_list = static_cast<RenderCommandListMT&>(command_list);
     id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeRenderEncoder();
@@ -319,7 +319,7 @@ void RenderStateMT::Apply(RenderCommandListBase& command_list, Group::Mask state
 
 void RenderStateMT::SetViewports(const Viewports& viewports)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     RenderStateBase::SetViewports(viewports);
     
@@ -339,7 +339,7 @@ void RenderStateMT::SetViewports(const Viewports& viewports)
 
 void RenderStateMT::SetScissorRects(const ScissorRects& scissor_rects)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     RenderStateBase::SetScissorRects(scissor_rects);
     
@@ -357,7 +357,7 @@ void RenderStateMT::SetScissorRects(const ScissorRects& scissor_rects)
 
 void RenderStateMT::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     RenderStateBase::SetName(name);
     
@@ -370,14 +370,14 @@ void RenderStateMT::SetName(const std::string& name)
     
 void RenderStateMT::InitializeNativeStates()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     InitializeNativePipelineState();
     InitializeNativeDepthStencilState();
 }
 
 void RenderStateMT::InitializeNativePipelineState()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_mtl_pipeline_state)
         return;
     
@@ -392,7 +392,7 @@ void RenderStateMT::InitializeNativePipelineState()
 
 void RenderStateMT::InitializeNativeDepthStencilState()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_mtl_depth_state)
         return;
     
@@ -406,7 +406,7 @@ void RenderStateMT::InitializeNativeDepthStencilState()
 
 id<MTLRenderPipelineState>& RenderStateMT::GetNativePipelineState()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!m_mtl_pipeline_state)
     {
         InitializeNativePipelineState();
@@ -416,7 +416,7 @@ id<MTLRenderPipelineState>& RenderStateMT::GetNativePipelineState()
 
 id<MTLDepthStencilState>& RenderStateMT::GetNativeDepthStencilState()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!m_mtl_depth_state)
     {
         InitializeNativeStates();
@@ -426,7 +426,7 @@ id<MTLDepthStencilState>& RenderStateMT::GetNativeDepthStencilState()
 
 void RenderStateMT::ResetNativeState()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     [m_mtl_pipeline_state release];
     m_mtl_pipeline_state = nil;
@@ -437,7 +437,7 @@ void RenderStateMT::ResetNativeState()
 
 RenderContextMT& RenderStateMT::GetRenderContextMT()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return dynamic_cast<RenderContextMT&>(GetRenderContext());
 }
 

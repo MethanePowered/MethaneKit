@@ -151,7 +151,7 @@ AsteroidsApp::AsteroidsApp()
     , m_asteroids_complexity(static_cast<uint32_t>(GetDefaultComplexity()))
     , m_is_parallel_rendering_enabled(true)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     // NOTE: Near and Far values are swapped in camera parameters (1st value is near = max depth, 2nd value is far = min depth)
     // for Reversed-Z buffer values range [ near: 1, far 0], instead of [ near 0, far 1]
@@ -196,14 +196,14 @@ AsteroidsApp::AsteroidsApp()
 
 AsteroidsApp::~AsteroidsApp()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     // Wait for GPU rendering is completed to release resources
     m_sp_context->WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
 }
 
 void AsteroidsApp::Init()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     SCOPE_TIMER("AsteroidsApp::Init");
 
     GraphicsApp::Init();
@@ -326,7 +326,7 @@ void AsteroidsApp::Init()
 
 bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     // Resize screen color and depth textures
     if (!GraphicsApp::Resize(frame_size, is_minimized))
@@ -358,7 +358,7 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 
 bool AsteroidsApp::Update()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     SCOPE_TIMER("AsteroidsApp::Update");
 
     if (!GraphicsApp::Update())
@@ -374,7 +374,7 @@ bool AsteroidsApp::Update()
 
 bool AsteroidsApp::Render()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     SCOPE_TIMER("AsteroidsApp::Render");
 
     // Render only when context is ready
@@ -420,7 +420,7 @@ bool AsteroidsApp::Render()
 
 void AsteroidsApp::OnContextReleased()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     FLUSH_SCOPE_TIMINGS();
 
     if (m_sp_asteroids_array)
@@ -439,7 +439,7 @@ void AsteroidsApp::OnContextReleased()
 
 void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     asteroids_complexity = std::min(g_max_complexity, asteroids_complexity);
     if (m_asteroids_complexity == asteroids_complexity)
@@ -466,7 +466,7 @@ void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
 
 void AsteroidsApp::SetParallelRenderingEnabled(bool is_parallel_rendering_enabled)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_is_parallel_rendering_enabled == is_parallel_rendering_enabled)
         return;
 
@@ -478,14 +478,14 @@ void AsteroidsApp::SetParallelRenderingEnabled(bool is_parallel_rendering_enable
 
 AsteroidsArray& AsteroidsApp::GetAsteroidsArray() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_sp_asteroids_array);
     return *m_sp_asteroids_array;
 }
 
 std::string AsteroidsApp::GetParametersString() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     std::stringstream ss;
     ss << std::endl << "Asteroids simulation parameters:"

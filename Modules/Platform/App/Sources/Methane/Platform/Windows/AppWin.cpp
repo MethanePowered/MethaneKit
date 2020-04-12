@@ -40,7 +40,7 @@ static const wchar_t* g_window_icon  = L"IDI_APP_ICON";
 
 static UINT ConvertMessageTypeToFlags(AppBase::Message::Type msg_type)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (msg_type)
     {
     case AppBase::Message::Type::Information:   return MB_ICONINFORMATION | MB_OK;
@@ -53,12 +53,12 @@ static UINT ConvertMessageTypeToFlags(AppBase::Message::Type msg_type)
 AppWin::AppWin(const AppBase::Settings& settings)
     : AppBase(settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 int AppWin::Run(const RunArgs& args)
 {
-    // Skip instrumentation ITT_FUNCTION_TASK() since this is the only root function running till application close
+    // Skip instrumentation META_FUNCTION_TASK() since this is the only root function running till application close
 
     const int base_return_code = AppBase::Run(args);
     if (base_return_code)
@@ -176,7 +176,7 @@ int AppWin::Run(const RunArgs& args)
 
 void AppWin::Alert(const Message& msg, bool deferred)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     AppBase::Alert(msg, deferred);
 
     if (deferred)
@@ -191,7 +191,7 @@ void AppWin::Alert(const Message& msg, bool deferred)
 
 LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPARAM l_param)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     AppWin* p_app = reinterpret_cast<AppWin*>(GetWindowLongPtr(h_wnd, GWLP_USERDATA));
     if (p_app && !p_app->IsMessageProcessing())
@@ -389,7 +389,7 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
 
 void AppWin::ShowAlert(const Message& msg)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     MessageBox(
         m_env.window_handle,
@@ -408,7 +408,7 @@ void AppWin::ShowAlert(const Message& msg)
 
 void AppWin::ScheduleAlert()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!m_env.window_handle)
         return;
 
@@ -419,7 +419,7 @@ void AppWin::ScheduleAlert()
 
 void AppWin::SetWindowTitle(const std::string& title_text)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_env.window_handle);
 
     BOOL set_result = SetWindowTextW(m_env.window_handle, nowide::widen(title_text).c_str());
@@ -429,7 +429,7 @@ void AppWin::SetWindowTitle(const std::string& title_text)
 
 bool AppWin::SetFullScreen(bool is_full_screen)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!AppBase::SetFullScreen(is_full_screen))
         return false;
 
@@ -476,7 +476,7 @@ bool AppWin::SetFullScreen(bool is_full_screen)
 
 void AppWin::Close()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_env.window_handle)
     {
         BOOL post_result = PostMessage(m_env.window_handle, WM_CLOSE, 0, 0);

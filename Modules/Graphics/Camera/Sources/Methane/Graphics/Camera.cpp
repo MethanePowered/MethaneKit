@@ -39,20 +39,20 @@ namespace Methane::Graphics
 Camera::Camera(cml::AxisOrientation axis_orientation)
     : m_axis_orientation(axis_orientation)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     ResetOrientation();
 }
 
 void Camera::Resize(const Data::FRectSize& screen_size) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_screen_size  = screen_size;
     m_aspect_ratio = screen_size.width / screen_size.height;
 }
 
 void Camera::RotateYaw(float deg) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Matrix33f rotation_matrix{ };
     cml::matrix_rotation_axis_angle(rotation_matrix, m_current_orientation.up, cml::rad(deg));
     m_current_orientation.eye = m_current_orientation.eye * rotation_matrix;
@@ -60,7 +60,7 @@ void Camera::RotateYaw(float deg) noexcept
 
 void Camera::RotatePitch(float deg) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Matrix33f rotation_matrix{ };
     auto right = cml::cross(m_current_orientation.eye, m_current_orientation.up).normalize();
     cml::matrix_rotation_axis_angle(rotation_matrix, right, cml::rad(deg));
@@ -69,20 +69,20 @@ void Camera::RotatePitch(float deg) noexcept
 
 void Camera::GetViewProjMatrices(Matrix44f& out_view, Matrix44f& out_proj) const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     GetViewMatrix(out_view);
     GetProjMatrix(out_proj);
 }
 
 void Camera::GetViewMatrix(Matrix44f& out_view, const Orientation& orientation) const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     cml::matrix_look_at(out_view, orientation.eye, orientation.aim, orientation.up, m_axis_orientation);
 }
 
 void Camera::GetProjMatrix(Matrix44f& out_proj) const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (m_projection)
     {
     case Projection::Perspective:
@@ -96,7 +96,7 @@ void Camera::GetProjMatrix(Matrix44f& out_proj) const noexcept
 
 Matrix44f Camera::GetViewMatrix(const Orientation& orientation) const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Matrix44f view_matrix{ };
     GetViewMatrix(view_matrix, orientation);
     return view_matrix;
@@ -104,7 +104,7 @@ Matrix44f Camera::GetViewMatrix(const Orientation& orientation) const noexcept
 
 Matrix44f Camera::GetProjMatrix() const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Matrix44f proj_matrix{ };
     GetProjMatrix(proj_matrix);
     return proj_matrix;
@@ -112,44 +112,44 @@ Matrix44f Camera::GetProjMatrix() const noexcept
 
 Matrix44f Camera::GetViewProjMatrix() const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return GetViewMatrix() * GetProjMatrix();
 }
 
 Vector2f Camera::TransformScreenToProj(const Data::Point2i& screen_pos) const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return { 2.f * screen_pos.GetX() / m_screen_size.width  - 1.f,
            -(2.f * screen_pos.GetY() / m_screen_size.height - 1.f) };
 }
 
 Vector3f Camera::TransformScreenToView(const Data::Point2i& screen_pos) const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return (cml::inverse(GetProjMatrix()) * Vector4f(TransformScreenToProj(screen_pos), 0.f, 1.f)).subvector(3);
 }
 
 Vector3f Camera::TransformScreenToWorld(const Data::Point2i& screen_pos) const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return TransformViewToWorld(TransformScreenToView(screen_pos));
 }
 
 Vector4f Camera::TransformWorldToView(const Vector4f& world_pos, const Orientation& orientation) const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return cml::inverse(GetViewMatrix(orientation)) * world_pos;
 }
 
 Vector4f Camera::TransformViewToWorld(const Vector4f& view_pos, const Orientation& orientation) const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return GetViewMatrix(orientation) * view_pos;
 }
 
 float Camera::GetFovAngleY() const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     float fov_angle_y = m_parameters.fov_deg * cml::constants<float>::pi() / 180.0f;
     if (m_aspect_ratio != 0.f && m_aspect_ratio < 1.0f)
     {

@@ -34,7 +34,7 @@ namespace Methane::Graphics
 SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings)
     : SkyBox(context, image_loader, settings, SphereMesh<Vertex>(Vertex::layout))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings, BaseMesh<Vertex> mesh)
@@ -42,7 +42,7 @@ SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings
     , m_context(context)
     , m_mesh_buffers(context, mesh, "Sky-Box")
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     m_mesh_buffers.SetTexture(image_loader.LoadImagesToTextureCube(m_context, m_settings.face_resources, m_settings.mipmapped));
 
@@ -98,7 +98,7 @@ SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings
 
 Ptr<ProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& sp_uniforms_buffer)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     assert(!!m_sp_state);
     assert(!!m_sp_state->GetSettings().sp_program);
@@ -111,7 +111,7 @@ Ptr<ProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& sp_uniform
 
 void SkyBox::Resize(const FrameSize& frame_size)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     assert(m_sp_state);
     m_sp_state->SetViewports({ GetFrameViewport(frame_size) });
@@ -120,7 +120,7 @@ void SkyBox::Resize(const FrameSize& frame_size)
 
 void SkyBox::Update()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Matrix44f model_scale_matrix, model_translate_matrix, scene_view_matrix, scene_proj_matrix;
     m_settings.view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
@@ -132,7 +132,7 @@ void SkyBox::Update()
 
 void SkyBox::Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     
     assert(!!buffer_bindings.sp_uniforms_buffer);
     assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= sizeof(Uniforms));

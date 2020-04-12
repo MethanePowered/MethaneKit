@@ -67,7 +67,7 @@ const Mesh::Colors      Mesh::g_colors{
 
 std::string Mesh::VertexLayout::GetSemanticByVertexField(VertexField vertex_field)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch(vertex_field)
     {
@@ -83,7 +83,7 @@ std::string Mesh::VertexLayout::GetSemanticByVertexField(VertexField vertex_fiel
 
 std::vector<std::string> Mesh::VertexLayout::GetSemantics() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     std::vector<std::string> semantic_names;
     for(VertexField vertex_field : *this)
@@ -99,12 +99,12 @@ Mesh::Subset::Subset(Type in_mesh_type, const Slice& in_vertices, const Slice& i
     , indices(in_indices)
     , indices_adjusted(in_indices_adjusted)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 Mesh::VertexFieldOffsets Mesh::GetVertexFieldOffsets(const VertexLayout& vertex_layout)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     size_t current_offset = 0;
     VertexFieldOffsets field_offsets{};
@@ -124,7 +124,7 @@ Mesh::VertexFieldOffsets Mesh::GetVertexFieldOffsets(const VertexLayout& vertex_
 
 Data::Size Mesh::GetVertexSize(const VertexLayout& vertex_layout) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Data::Size vertex_size = 0;
     for (VertexField vertex_field : vertex_layout)
@@ -140,7 +140,7 @@ Mesh::Mesh(Type type, const VertexLayout& vertex_layout)
     , m_vertex_field_offsets(GetVertexFieldOffsets(m_vertex_layout))
     , m_vertex_size(GetVertexSize(m_vertex_layout))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!Mesh::HasVertexField(Mesh::VertexField::Position))
     {
         throw std::invalid_argument("Vertex positions must be available in mesh layout.");
@@ -149,7 +149,7 @@ Mesh::Mesh(Type type, const VertexLayout& vertex_layout)
 
 bool Mesh::HasVertexField(VertexField field) const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return m_vertex_field_offsets[static_cast<size_t>(field)] >= 0;
 }
     

@@ -37,13 +37,14 @@ namespace Methane::Platform
 
 void PrintToDebugOutput(const std::string& msg)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     OutputDebugStringA((msg + "\n").c_str());
+    TracyMessage(msg.c_str(), msg.size());
 }
 
 std::string GetExecutableDir()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     WCHAR path[512];
     DWORD size = GetModuleFileName(nullptr, path, _countof(path));
@@ -64,7 +65,7 @@ std::string GetExecutableDir()
 
 std::string GetExecutableFileName()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     WCHAR path[512];
     DWORD size = GetModuleFileName(nullptr, path, _countof(path));
@@ -80,7 +81,7 @@ std::string GetExecutableFileName()
 
 std::string GetResourceDir()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return GetExecutableDir();
 }
 
@@ -89,7 +90,7 @@ namespace Windows
 
 void GetDesktopResolution(uint32_t& width, uint32_t& height)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     RECT       desktop;
     const HWND h_desktop = GetDesktopWindow();
     GetWindowRect(h_desktop, &desktop);

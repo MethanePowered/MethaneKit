@@ -40,7 +40,7 @@ namespace Methane::Graphics
 #ifdef COMMAND_EXECUTION_LOGGING
 static std::string GetWaitForName(Context::WaitFor wait_for)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (wait_for)
     {
     case Context::WaitFor::RenderComplete:      return "WAIT for Render Complete";
@@ -56,12 +56,12 @@ ContextBase::ContextBase(DeviceBase& device, Type type)
     , m_sp_device(device.GetPtr())
     , m_resource_manager(*this)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void ContextBase::CompleteInitialization()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
 #ifdef COMMAND_EXECUTION_LOGGING
     Platform::PrintToDebugOutput("Complete initialization of context \"" + GetName() + "\"");
@@ -73,7 +73,7 @@ void ContextBase::CompleteInitialization()
 
 void ContextBase::WaitForGpu(WaitFor wait_for)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
 #ifdef COMMAND_EXECUTION_LOGGING
     Platform::PrintToDebugOutput(GetWaitForName(wait_for) + " in context \"" + GetName() + "\"");
@@ -91,7 +91,7 @@ void ContextBase::WaitForGpu(WaitFor wait_for)
 
 void ContextBase::Reset(Device& device)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
 #ifdef COMMAND_EXECUTION_LOGGING
     Platform::PrintToDebugOutput("RESET context \"" + GetName() + "\" with device adapter \"" + device.GetAdapterName() + "\".");
@@ -104,7 +104,7 @@ void ContextBase::Reset(Device& device)
 
 void ContextBase::Reset()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
 #ifdef COMMAND_EXECUTION_LOGGING
     Platform::PrintToDebugOutput("RESET context \"" + GetName() + "\"..");
@@ -119,13 +119,13 @@ void ContextBase::Reset()
 
 void ContextBase::AddCallback(Callback& callback)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_callbacks.push_back(callback);
 }
 
 void ContextBase::RemoveCallback(Callback& callback)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const auto callback_it = std::find_if(m_callbacks.begin(), m_callbacks.end(),
         [&callback](const Ref<Callback>& callback_ref)
         {
@@ -140,13 +140,13 @@ void ContextBase::RemoveCallback(Callback& callback)
 
 void ContextBase::OnGpuWaitComplete(WaitFor)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_resource_manager.GetReleasePool().ReleaseResources();
 }
 
 void ContextBase::Release()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     m_sp_device.reset();
 
@@ -171,7 +171,7 @@ void ContextBase::Release()
 
 void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
 #ifdef COMMAND_EXECUTION_LOGGING
     Platform::PrintToDebugOutput("INITIALIZE context \"" + GetName() + "\"");
@@ -203,7 +203,7 @@ void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation)
 
 CommandQueue& ContextBase::GetUploadCommandQueue()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!m_sp_upload_cmd_queue)
     {
         m_sp_upload_cmd_queue = CommandQueue::Create(*this);
@@ -214,7 +214,7 @@ CommandQueue& ContextBase::GetUploadCommandQueue()
 
 BlitCommandList& ContextBase::GetUploadCommandList()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!m_sp_upload_cmd_list)
     {
         m_sp_upload_cmd_list = BlitCommandList::Create(GetUploadCommandQueue());
@@ -226,33 +226,33 @@ BlitCommandList& ContextBase::GetUploadCommandList()
 
 Device& ContextBase::GetDevice()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_sp_device);
     return *m_sp_device;
 }
     
 CommandQueueBase& ContextBase::GetUploadCommandQueueBase()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<CommandQueueBase&>(GetUploadCommandQueue());
 }
 
 DeviceBase& ContextBase::GetDeviceBase()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<DeviceBase&>(GetDevice());
 }
 
 const DeviceBase& ContextBase::GetDeviceBase() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_sp_device);
     return static_cast<const DeviceBase&>(*m_sp_device);
 }
 
 void ContextBase::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     ObjectBase::SetName(name);
     GetDevice().SetName(name + " Device");
 
@@ -262,7 +262,7 @@ void ContextBase::SetName(const std::string& name)
 
 void ContextBase::UploadResources()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
 #ifdef COMMAND_EXECUTION_LOGGING
     Platform::PrintToDebugOutput("UPLOAD resources for context \"" + GetName() + "\"");

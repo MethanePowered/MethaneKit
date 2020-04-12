@@ -33,41 +33,41 @@ namespace Methane::Graphics
 
 Ptr<BlitCommandList> BlitCommandList::Create(CommandQueue& command_queue)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<BlitCommandListVK>(static_cast<CommandQueueBase&>(command_queue));
 }
 
 BlitCommandListVK::BlitCommandListVK(CommandQueueBase& command_queue)
     : CommandListBase(command_queue, CommandList::Type::Blit)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void BlitCommandListVK::Reset(const std::string& debug_group)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void BlitCommandListVK::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     CommandListBase::SetName(name);
 }
 
 void BlitCommandListVK::PushDebugGroup(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void BlitCommandListVK::PopDebugGroup()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void BlitCommandListVK::Commit()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     
     assert(!IsCommitted());
     CommandListBase::Commit();
@@ -75,14 +75,14 @@ void BlitCommandListVK::Commit()
 
 void BlitCommandListVK::Execute(uint32_t frame_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     CommandListBase::Execute(frame_index);
 }
 
 CommandQueueVK& BlitCommandListVK::GetCommandQueueVK() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<class CommandQueueVK&>(GetCommandQueue());
 }
 

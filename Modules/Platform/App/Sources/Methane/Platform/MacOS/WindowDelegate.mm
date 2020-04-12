@@ -39,7 +39,7 @@ using namespace Methane::Platform;
 
 - (id) initWithApp : (AppMac*) p_app
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     self = [super init];
     if (!self)
@@ -52,7 +52,7 @@ using namespace Methane::Platform;
 
 - (void) windowDidEnterFullScreen:(NSNotification *)notification
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     #pragma unused(notification)
     
     assert(!!m_p_app);
@@ -61,7 +61,7 @@ using namespace Methane::Platform;
 
 - (void) windowDidExitFullScreen:(NSNotification *)notification
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     #pragma unused(notification)
     
     assert(!!m_p_app);
@@ -70,7 +70,7 @@ using namespace Methane::Platform;
 
 - (void) windowDidMiniaturize:(NSNotification *)notification
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     #pragma unused(notification)
     
     assert(!!m_p_app);
@@ -79,7 +79,7 @@ using namespace Methane::Platform;
 
 - (void) windowDidDeminiaturize:(NSNotification *)notification
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     #pragma unused(notification)
     
     assert(!!m_p_app);

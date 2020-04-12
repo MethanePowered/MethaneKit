@@ -36,7 +36,7 @@ namespace Methane::Graphics
 
 static D3D12_FILTER ConvertFilterToDX(const SamplerBase::Filter& filter) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using FilterMinMag = SamplerBase::Filter::MinMag;
     using FilterMip = SamplerBase::Filter::Mip;
@@ -128,7 +128,7 @@ static D3D12_FILTER ConvertFilterToDX(const SamplerBase::Filter& filter) noexcep
 
 static D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDX(SamplerBase::Address::Mode address_mode) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using AddressMode = SamplerBase::Address::Mode;
     
@@ -148,7 +148,7 @@ static D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDX(SamplerBase::Address::M
 
 static void SetColor(const Color4f& in_color, FLOAT* p_out_color) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     for (int i = 0; i < in_color.array_size; ++i)
     {
@@ -158,7 +158,7 @@ static void SetColor(const Color4f& in_color, FLOAT* p_out_color) noexcept
 
 static void ConvertBorderColorToDXColor(SamplerBase::BorderColor border_color, FLOAT* p_out_color) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!p_out_color);
 
     using BorderColor = SamplerBase::BorderColor;
@@ -174,14 +174,14 @@ static void ConvertBorderColorToDXColor(SamplerBase::BorderColor border_color, F
 
 Ptr<Sampler> Sampler::Create(Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<SamplerDX>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
 SamplerDX::SamplerDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : SamplerBase(context, settings, descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     InitializeDefaultDescriptors();
 

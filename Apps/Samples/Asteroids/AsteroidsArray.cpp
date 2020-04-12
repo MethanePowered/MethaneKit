@@ -35,7 +35,7 @@ namespace Methane::Samples
 
 static gfx::Point3f GetRandomDirection(std::mt19937& rng)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     std::normal_distribution<float> distribution;
     gfx::Point3f direction;
@@ -52,14 +52,14 @@ AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivision
     , m_instance_count(instance_count)
     , m_subdivisions_count(subdivisions_count)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     SCOPE_TIMER("AsteroidsArray::UberMesh::UberMesh");
 
     std::mt19937 rng(random_seed);
 
     m_depth_ranges.reserve(static_cast<size_t>(m_instance_count) * m_subdivisions_count);
 
-    std::mutex data_mutex;
+    TracyLockable(std::mutex, data_mutex);
     for (uint32_t subdivision_index = 0; subdivision_index < m_subdivisions_count; ++subdivision_index)
     {
         Asteroid::Mesh base_mesh(subdivision_index, false);
@@ -70,7 +70,7 @@ AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivision
                 Asteroid::Mesh asteroid_mesh(base_mesh);
                 asteroid_mesh.Randomize(rng());
 
-                std::lock_guard<std::mutex> lock_guard(data_mutex);
+                std::lock_guard<LockableBase(std::mutex)> lock_guard(data_mutex);
                 m_depth_ranges.emplace_back(asteroid_mesh.GetDepthRange());
                 AddSubMesh(asteroid_mesh, false);
             });
@@ -79,7 +79,7 @@ AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivision
 
 uint32_t AsteroidsArray::UberMesh::GetSubsetIndex(uint32_t instance_index, uint32_t subdivision_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (instance_index >= m_instance_count)
         throw std::invalid_argument("Uber-mesh instance index is out of range.");
@@ -92,7 +92,7 @@ uint32_t AsteroidsArray::UberMesh::GetSubsetIndex(uint32_t instance_index, uint3
 
 uint32_t AsteroidsArray::UberMesh::GetSubsetSubdivision(uint32_t subset_index) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (subset_index >= GetSubsetCount())
         throw std::invalid_argument("Subset index is out of range.");
@@ -105,7 +105,7 @@ uint32_t AsteroidsArray::UberMesh::GetSubsetSubdivision(uint32_t subset_index) c
 
 const gfx::Vector2f& AsteroidsArray::UberMesh::GetSubsetDepthRange(uint32_t subset_index) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (subset_index >= GetSubsetCount())
         throw std::invalid_argument("Subset index is out of range.");
@@ -117,7 +117,7 @@ const gfx::Vector2f& AsteroidsArray::UberMesh::GetSubsetDepthRange(uint32_t subs
 AsteroidsArray::ContentState::ContentState(const Settings& settings)
     : uber_mesh(settings.unique_mesh_count, settings.subdivisions_count, settings.random_seed)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     SCOPE_TIMER("AsteroidsArray::ContentState::ContentState");
 
     std::mt19937 rng(settings.random_seed);
@@ -208,7 +208,7 @@ AsteroidsArray::ContentState::ContentState(const Settings& settings)
 AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, Settings settings)
     : AsteroidsArray(context, settings, *std::make_shared<ContentState>(settings))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, Settings settings, ContentState& state)
@@ -218,7 +218,7 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, Settings settings, C
     , m_mesh_subset_by_instance_index(m_settings.instance_count, 0u)
     , m_min_mesh_lod_screen_size_log_2(std::log2(m_settings.mesh_lod_min_screen_size))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     SCOPE_TIMER("AsteroidsArray::AsteroidsArray");
     
     const gfx::RenderContext::Settings& context_settings = context.GetSettings();
@@ -299,7 +299,7 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
                                                                             const Ptr<gfx::Buffer> &sp_scene_uniforms_buffer,
                                                                             const Ptr<gfx::Buffer> &sp_asteroids_uniforms_buffer)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     SCOPE_TIMER("AsteroidsArray::CreateProgramBindings");
 
     Ptrs<gfx::ProgramBindings> program_bindings_array;
@@ -339,7 +339,7 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
 
 void AsteroidsArray::Resize(const gfx::FrameSize &frame_size)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     assert(m_sp_render_state);
     m_sp_render_state->SetViewports({ gfx::GetFrameViewport(frame_size) });
@@ -348,7 +348,7 @@ void AsteroidsArray::Resize(const gfx::FrameSize &frame_size)
 
 bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     SCOPE_TIMER("AsteroidsArray::Update");
 
     gfx::Matrix44f view_matrix, proj_matrix;
@@ -361,7 +361,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
     Data::ParallelForEach<Parameters::iterator, Asteroid::Parameters>(m_sp_content_state->parameters.begin(), m_sp_content_state->parameters.end(),
         [this, &view_proj_matrix, elapsed_radians, &eye_position](Asteroid::Parameters& asteroid_parameters)
         {
-            ITT_FUNCTION_TASK();
+            META_FUNCTION_TASK();
 
             const float spin_angle_rad  = asteroid_parameters.spin_angle_rad  + asteroid_parameters.spin_speed  * elapsed_radians;
             const float orbit_angle_rad = asteroid_parameters.orbit_angle_rad - asteroid_parameters.orbit_speed * elapsed_radians;
@@ -408,7 +408,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
 
 void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, gfx::MeshBufferBindings& buffer_bindings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     SCOPE_TIMER("AsteroidsArray::Draw");
 
     const Data::Size uniforms_buffer_size = GetUniformsBufferSize();
@@ -425,7 +425,7 @@ void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, gfx::MeshBufferBindi
 
 void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list, gfx::MeshBufferBindings& buffer_bindings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     SCOPE_TIMER("AsteroidsArray::DrawParallel");
 
     const Data::Size uniforms_buffer_size = GetUniformsBufferSize();
@@ -442,19 +442,19 @@ void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_l
 
 float AsteroidsArray::GetMinMeshLodScreenSize() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::pow(2.f, m_min_mesh_lod_screen_size_log_2);
 }
 
 void AsteroidsArray::SetMinMeshLodScreenSize(float mesh_lod_min_screen_size)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_min_mesh_lod_screen_size_log_2 = std::log2(mesh_lod_min_screen_size);
 }
 
 uint32_t AsteroidsArray::GetSubsetByInstanceIndex(uint32_t instance_index) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     assert(instance_index < m_mesh_subset_by_instance_index.size());
     return m_mesh_subset_by_instance_index[instance_index];

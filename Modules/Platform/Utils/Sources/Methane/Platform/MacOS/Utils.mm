@@ -33,13 +33,14 @@ namespace Methane::Platform
 
 void PrintToDebugOutput(const std::string& msg)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     NSLog(@"%s", msg.c_str());
+    TracyMessage(msg.c_str(), msg.size());
 }
 
 std::string GetExecutableDir()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     std::string exe_dir;
     @autoreleasepool
     {
@@ -55,7 +56,7 @@ std::string GetExecutableDir()
 
 std::string GetExecutableFileName()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     std::string exe_file;
     @autoreleasepool
     {
@@ -71,7 +72,7 @@ std::string GetExecutableFileName()
 
 std::string GetResourceDir()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     std::string res_dir;
     @autoreleasepool
     {

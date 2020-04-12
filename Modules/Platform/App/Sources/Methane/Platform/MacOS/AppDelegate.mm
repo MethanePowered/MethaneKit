@@ -39,7 +39,7 @@ using namespace Methane::Platform;
 
 - (id) initWithApp : (AppMac*) p_app andSettings : (const AppBase::Settings*) p_settings
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     self = [super init];
     if (!self || !p_settings)
@@ -74,14 +74,14 @@ using namespace Methane::Platform;
 
 - (void) run
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     [self.window setContentViewController: self.viewController];
     [self.window setAcceptsMouseMovedEvents:YES];
 }
 
 - (void) alert : (NSString*) ns_title withInformation: (NSString*) ns_info andStyle: (NSAlertStyle) ns_alert_style
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (ns_title == nil || ns_info == nil)
     {
         assert(0);
@@ -103,21 +103,21 @@ using namespace Methane::Platform;
 
 - (void) applicationWillFinishLaunching:(NSNotification *)notification
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     #pragma unused(notification)
     [self.window makeKeyAndOrderFront:self];
 }
 
 - (void) applicationDidFinishLaunching:(NSNotification *)notification
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     #pragma unused(notification)
     [self.window makeFirstResponder: self.viewController.view];
 }
 
 - (void) windowWillEnterFullScreen:(NSNotification *)notification
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     #pragma unused(notification)
     AppMac* p_app = [self.viewController getApp];
     assert(!!p_app);
@@ -126,7 +126,7 @@ using namespace Methane::Platform;
 
 - (void) windowWillExitFullScreen:(NSNotification *)notification
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     #pragma unused(notification)
     AppMac* p_app = [self.viewController getApp];
     assert(!!p_app);
@@ -135,14 +135,14 @@ using namespace Methane::Platform;
 
 - (void) applicationWillTerminate:(NSNotification *)notification
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     #pragma unused(notification)
     // Insert code here to tear down your application
 }
 
 - (BOOL) applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     #pragma unused(sender)
     return YES;
 }
