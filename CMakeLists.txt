@@ -72,9 +72,11 @@ if(MSVC)
         -DUNICODE -D_UNICODE -DNOMINMAX -DWIN32_LEAN_AND_MEAN -DUSE_PIX
     )
     target_compile_options(MethaneBuildOptions INTERFACE
-        # Set maximum warnings level & treat warnings as errors
+        # Set maximum warnings level &
         /W4
-        $<$<NOT:$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>>:/WX> # TracyClient.cpp compiles with warnings...
+        # Treat warnings as errors, but not when Tracy profiling enabled.
+        # TracyClient.cpp must be compiled as a part of target application, but compiles with warnings...
+        $<$<NOT:$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>>:/WX>
         # Disable useless warnings
         /wd4250 # - C4250: inheritance via dominance (used only with abstract interfaces)
         /wd4324 # - C4324: structure was padded due to alignment specifier
@@ -87,7 +89,9 @@ elseif(APPLE)
 
     target_compile_options(MethaneBuildOptions INTERFACE
         # Set maximum warnings level & treat warnings as errors
-        -Werror -Wall -Wextra
+        -Wall -Wextra
+        # Treat warnings as errors, but not when Tracy profiling enabled.
+        $<$<NOT:$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>>:-Werror>
         # Disable useless warnings
         -Wno-missing-field-initializers
     )

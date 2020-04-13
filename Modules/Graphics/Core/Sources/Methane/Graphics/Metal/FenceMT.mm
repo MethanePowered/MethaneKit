@@ -91,7 +91,7 @@ void FenceMT::Wait()
                                     m_is_signalled = true;
                                     m_wait_condition_var.notify_one();
                                 }];
-    std::unique_lock<LockableBase(std::mutex)> lock(m_wait_mutex);
+    std::unique_lock<std::mutex> lock(m_wait_mutex);
     m_wait_condition_var.wait(lock, [this]{ return m_is_signalled; });
 }
 
