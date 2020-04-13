@@ -6,6 +6,7 @@ get_module_dirs("Methane")
 
 set(HEADERS
     ${INCLUDE_DIR}/Instrumentation.h
+    ${INCLUDE_DIR}/InstrumentMemoryAllocations.h
     ${INCLUDE_DIR}/IttApiHelper.h
     ${INCLUDE_DIR}/ScopeTimer.h
     ${INCLUDE_DIR}/ILogger.h
@@ -13,6 +14,7 @@ set(HEADERS
 
 set(SOURCES
     ${SOURCES_DIR}/Instrumentation.cpp
+    ${SOURCES_DIR}/InstrumentMemoryAllocations.cpp
     ${SOURCES_DIR}/ScopeTimer.cpp
 )
 

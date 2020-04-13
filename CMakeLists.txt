@@ -121,11 +121,18 @@ endif()
 if (METHANE_TRACY_PROFILING_ENABLED)
     message(STATUS "Methane Tracy profiling enabled")
     target_compile_definitions(MethaneBuildOptions INTERFACE -DTRACY_ENABLE)
+
+    # Force include header with memory allocation operators override, implementing Tracy memory instrumentation
+    set(FORCE_INCLUDE_PATH ${CMAKE_SOURCE_DIR}/Modules/Common/Instrumentation/Include/Methane/InstrumentMemoryAllocations.h)
+    if (MSVC)
+        target_compile_options(MethaneBuildOptions INTERFACE /FI "${FORCE_INCLUDE_PATH}")
+    else()
+        target_compile_options(MethaneBuildOptions INTERFACE -include "${FORCE_INCLUDE_PATH}")
+    endif()
 endif()
 
 if(METHANE_SCOPE_TIMERS_ENABLED)
     message(STATUS "Methane scope timers are enabled")
-    target_compile_definitions(MethaneBuildOptions INTERFACE -DSCOPE_TIMERS_ENABLED)
 endif()
 
 if(METHANE_SHADERS_CODEVIEW_ENABLED)
