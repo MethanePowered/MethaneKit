@@ -24,8 +24,6 @@ Base implementation of the shader interface.
 #include "ShaderBase.h"
 #include "ProgramBase.h"
 
-#include <Methane/Instrumentation.h>
-
 #include <cassert>
 
 namespace Methane::Graphics

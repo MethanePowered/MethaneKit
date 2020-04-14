@@ -22,7 +22,6 @@ Camera helper implementation allowing to generate view and projection matrices.
 ******************************************************************************/
 
 #include <Methane/Graphics/Camera.h>
-#include <Methane/Instrumentation.h>
 
 #include <cml/mathlib/mathlib.h>
 

@@ -29,8 +29,6 @@ Base implementation of the render command list interface.
 #include "BufferBase.h"
 #include "ProgramBase.h"
 
-#include <Methane/Instrumentation.h>
-
 #include <cassert>
 
 namespace Methane::Graphics

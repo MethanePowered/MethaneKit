@@ -23,7 +23,6 @@ Windows application implementation.
 
 #include <Methane/Platform/Windows/AppWin.h>
 #include <Methane/Platform/Utils.h>
-#include <Methane/Instrumentation.h>
 
 #include <windowsx.h>
 #include <nowide/convert.hpp>

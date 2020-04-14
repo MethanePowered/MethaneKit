@@ -28,7 +28,6 @@ DirectX 12 implementation of the program interface.
 #include "RenderCommandListDX.h"
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Primitives.h>
 
 #include <d3dx12.h>

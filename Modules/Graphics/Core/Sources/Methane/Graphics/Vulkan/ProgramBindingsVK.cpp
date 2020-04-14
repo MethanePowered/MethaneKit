@@ -24,8 +24,6 @@ Vulkan implementation of the program interface.
 #include "ProgramBindingsVK.h"
 #include "RenderCommandListVK.h"
 
-#include <Methane/Instrumentation.h>
-
 namespace Methane::Graphics
 {
 

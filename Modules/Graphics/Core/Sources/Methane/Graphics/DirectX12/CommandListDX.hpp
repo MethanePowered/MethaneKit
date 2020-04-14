@@ -31,7 +31,6 @@ DirectX 12 base template implementation of the command list interface.
 
 #include <Methane/Graphics/CommandListBase.h>
 #include <Methane/Graphics/Windows/Primitives.h>
-#include <Methane/Instrumentation.h>
 
 #include <wrl.h>
 #include <d3d12.h>

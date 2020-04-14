@@ -23,7 +23,6 @@ Linux application implementation.
 
 #include <Methane/Platform/Linux/AppLin.h>
 #include <Methane/Platform/Utils.h>
-#include <Methane/Instrumentation.h>
 
 namespace Methane::Platform
 {

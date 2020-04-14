@@ -23,8 +23,6 @@ Base application interface and platform-independent implementation.
 
 #include <Methane/Platform/AppBase.h>
 #include <Methane/Platform/Utils.h>
-#include <Methane/Instrumentation.h>
-
 #include <CLI/CLI.hpp>
 
 #include <vector>

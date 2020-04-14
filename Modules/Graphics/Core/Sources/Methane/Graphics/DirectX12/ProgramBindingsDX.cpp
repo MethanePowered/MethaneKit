@@ -29,7 +29,6 @@ DirectX 12 implementation of the program bindings interface.
 
 #include <Methane/Graphics/CommandListBase.h>
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Instrumentation.h>
 #include <Methane/Platform/Windows/Utils.h>
 
 #include <d3dx12.h>

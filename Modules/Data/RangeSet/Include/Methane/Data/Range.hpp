@@ -30,8 +30,6 @@ till end (exclusively): [start, end)
 #include <sstream>
 #include <stdexcept>
 
-#include <Methane/Instrumentation.h>
-
 namespace Methane::Data
 {
 

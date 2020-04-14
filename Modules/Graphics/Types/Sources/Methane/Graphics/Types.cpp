@@ -25,8 +25,6 @@ Methane graphics type functions implementation.
 #include <Methane/Graphics/Rect.hpp>
 #include <Methane/Graphics/Volume.hpp>
 
-#include <Methane/Instrumentation.h>
-
 #include <cassert>
 
 namespace Methane::Graphics

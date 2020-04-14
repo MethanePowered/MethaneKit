@@ -22,7 +22,6 @@ Time-based animation of any external entity with an update lambda-function.
 ******************************************************************************/
 
 #include <Methane/Data/TimeAnimation.h>
-#include <Methane/Instrumentation.h>
 
 namespace Methane::Data
 {

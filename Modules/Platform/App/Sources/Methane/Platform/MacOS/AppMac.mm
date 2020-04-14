@@ -23,7 +23,6 @@ MacOS application implementation.
 
 #include <Methane/Platform/MacOS/AppMac.hh>
 #include <Methane/Platform/MacOS/Types.hh>
-#include <Methane/Instrumentation.h>
 
 using namespace Methane::Platform;
 using namespace Methane::MacOS;

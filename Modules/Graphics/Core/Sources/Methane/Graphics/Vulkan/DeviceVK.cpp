@@ -23,8 +23,6 @@ Vulkan implementation of the device interface.
 
 #include "DeviceVK.h"
 
-#include <Methane/Instrumentation.h>
-
 namespace Methane::Graphics
 {
 

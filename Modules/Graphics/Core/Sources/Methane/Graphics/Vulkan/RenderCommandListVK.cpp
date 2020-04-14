@@ -29,8 +29,6 @@ Vulkan implementation of the render command list interface.
 #include "ContextVK.h"
 #include "BufferVK.h"
 
-#include <Methane/Instrumentation.h>
-
 #include <cassert>
 
 namespace Methane::Graphics

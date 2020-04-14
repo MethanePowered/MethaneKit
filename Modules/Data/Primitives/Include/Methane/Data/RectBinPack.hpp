@@ -23,9 +23,7 @@ Rectangle bin packing algorithm implementation.
 
 #include <Methane/Data/Rect.hpp>
 #include <Methane/Data/Point.hpp>
-
 #include <Methane/Memory.hpp>
-#include <Methane/Instrumentation.h>
 
 #include <cassert>
 

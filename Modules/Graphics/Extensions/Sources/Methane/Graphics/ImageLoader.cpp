@@ -24,7 +24,6 @@ by decoding them from popular image formats.
 
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Platform/Utils.h>
-#include <Methane/Instrumentation.h>
 #include <Methane/Data/Parallel.hpp>
 
 #ifdef USE_OPEN_IMAGE_IO

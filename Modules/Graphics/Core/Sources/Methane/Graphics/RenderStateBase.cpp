@@ -23,8 +23,6 @@ Base implementation of the render state interface.
 
 #include "RenderStateBase.h"
 
-#include <Methane/Instrumentation.h>
-
 #include <cassert>
 
 namespace Methane::Graphics

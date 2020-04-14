@@ -26,7 +26,6 @@ Metal implementation of the texture interface.
 #include "BlitCommandListMT.hh"
 #include "TypesMT.hh"
 
-#include <Methane/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
 #include <algorithm>

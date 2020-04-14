@@ -22,7 +22,6 @@ limitations under the License.
 ******************************************************************************/
 
 #include <Methane/Platform/Input/State.h>
-#include <Methane/Instrumentation.h>
 
 #include <cassert>
 

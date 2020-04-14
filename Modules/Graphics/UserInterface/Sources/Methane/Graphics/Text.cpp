@@ -26,7 +26,6 @@ Text rendering primitive.
 
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Data/AppResourceProviders.h>
-#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {

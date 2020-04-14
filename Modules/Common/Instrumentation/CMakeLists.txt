@@ -40,6 +40,14 @@ target_link_libraries(${TARGET}
         MethaneBuildOptions
 )
 
+# Force include header with memory allocation operators override, implementing Tracy memory instrumentation
+set(FORCE_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}/Instrumentation.h)
+if (MSVC)
+    target_compile_options(MethaneInstrumentation PUBLIC /FI "${FORCE_INCLUDE_PATH}")
+else()
+    target_compile_options(MethaneInstrumentation PUBLIC -include "${FORCE_INCLUDE_PATH}")
+endif()
+
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}

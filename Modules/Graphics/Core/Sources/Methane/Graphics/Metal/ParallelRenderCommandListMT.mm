@@ -27,7 +27,6 @@ Metal implementation of the render command list interface.
 #include "CommandQueueMT.hh"
 #include "RenderContextMT.hh"
 
-#include <Methane/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
 namespace Methane::Graphics

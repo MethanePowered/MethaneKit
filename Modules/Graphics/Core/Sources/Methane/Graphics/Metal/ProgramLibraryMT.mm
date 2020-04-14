@@ -26,7 +26,6 @@ Wrapper of the Metal program library.
 
 #include <Methane/Platform/Utils.h>
 #include <Methane/Platform/MacOS/Types.hh>
-#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {

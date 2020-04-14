@@ -27,7 +27,6 @@ HeadsUpDisplay rendering primitive.
 #include <Methane/Graphics/Font.h>
 #include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Data/AppResourceProviders.h>
-#include <Methane/Instrumentation.h>
 
 #include <sstream>
 

@@ -72,26 +72,21 @@ if(MSVC)
         -DUNICODE -D_UNICODE -DNOMINMAX -DWIN32_LEAN_AND_MEAN -DUSE_PIX
     )
     target_compile_options(MethaneBuildOptions INTERFACE
-        # Set maximum warnings level &
-        /W4
-        # Treat warnings as errors, but not when Tracy profiling enabled.
-        # TracyClient.cpp must be compiled as a part of target application, but compiles with warnings...
-        $<$<NOT:$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>>:/WX>
+        # Set maximum warnings level and treat warnings as errors
+        /W4 /WX
         # Disable useless warnings
         /wd4250 # - C4250: inheritance via dominance (used only with abstract interfaces)
         /wd4324 # - C4324: structure was padded due to alignment specifier
     )
 
-elseif(APPLE)
+else()
 
     set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
     set(CMAKE_INSTALL_RPATH "@executable_path")
 
     target_compile_options(MethaneBuildOptions INTERFACE
         # Set maximum warnings level & treat warnings as errors
-        -Wall -Wextra
-        # Treat warnings as errors, but not when Tracy profiling enabled.
-        $<$<NOT:$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>>:-Werror>
+        -Wall -Wextra -Werror
         # Disable useless warnings
         -Wno-missing-field-initializers
     )
@@ -125,14 +120,6 @@ endif()
 if (METHANE_TRACY_PROFILING_ENABLED)
     message(STATUS "Methane Tracy profiling enabled")
     target_compile_definitions(MethaneBuildOptions INTERFACE -DTRACY_ENABLE)
-
-    # Force include header with memory allocation operators override, implementing Tracy memory instrumentation
-    set(FORCE_INCLUDE_PATH ${CMAKE_SOURCE_DIR}/Modules/Common/Instrumentation/Include/Methane/InstrumentMemoryAllocations.h)
-    if (MSVC)
-        target_compile_options(MethaneBuildOptions INTERFACE /FI "${FORCE_INCLUDE_PATH}")
-    else()
-        target_compile_options(MethaneBuildOptions INTERFACE -include "${FORCE_INCLUDE_PATH}")
-    endif()
 endif()
 
 if(METHANE_SCOPE_TIMERS_ENABLED)

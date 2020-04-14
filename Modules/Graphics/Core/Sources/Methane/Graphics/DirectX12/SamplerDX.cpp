@@ -27,7 +27,6 @@ DirectX 12 implementation of the sampler interface.
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/Color.hpp>
-#include <Methane/Instrumentation.h>
 
 #include <cassert>
 

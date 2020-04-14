@@ -28,8 +28,6 @@ and deferred releasing of GPU resource.
 #include "DescriptorHeap.h"
 #include "ProgramBase.h"
 
-#include <Methane/Instrumentation.h>
-
 #include <array>
 #include <mutex>
 

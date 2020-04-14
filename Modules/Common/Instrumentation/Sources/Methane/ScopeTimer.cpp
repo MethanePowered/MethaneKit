@@ -23,8 +23,6 @@ Code scope measurement timer with aggregating and averaging of timings.
 
 #include <Methane/ScopeTimer.h>
 
-#include <Methane/Instrumentation.h>
-
 #include <sstream>
 #include <chrono>
 

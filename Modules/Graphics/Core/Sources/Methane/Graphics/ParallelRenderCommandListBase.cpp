@@ -28,7 +28,6 @@ Base implementation of the parallel render command list interface.
 #include "BufferBase.h"
 #include "ProgramBase.h"
 
-#include <Methane/Instrumentation.h>
 #include <Methane/Data/Parallel.hpp>
 
 #include <cassert>

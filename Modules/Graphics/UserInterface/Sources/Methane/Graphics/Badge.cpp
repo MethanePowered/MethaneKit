@@ -25,7 +25,6 @@ Badge rendering primitive displaying fixed texture in specific corner of the scr
 
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Data/AppResourceProviders.h>
-#include <Methane/Instrumentation.h>
 
 #include <cmath>
 

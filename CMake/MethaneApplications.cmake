@@ -125,6 +125,7 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
         PRIVATE
             MethaneGraphicsKit
             MethaneBuildOptions
+            MethaneInstrumentation
             $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
     )
 

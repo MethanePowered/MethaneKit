@@ -23,10 +23,8 @@ Base graphics application controller
 
 #include <Methane/Graphics/AppController.h>
 #include <Methane/Platform/Utils.h>
-#include <Methane/Instrumentation.h>
 
 #include <cassert>
-#include "../../../../UserInterface/Include/Methane/Graphics/HeadsUpDisplay.h"
 
 namespace Methane::Graphics
 {

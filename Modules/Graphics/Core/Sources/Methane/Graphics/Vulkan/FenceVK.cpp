@@ -26,7 +26,6 @@ Vulkan fence implementation.
 #include "DeviceVK.h"
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Instrumentation.h>
 
 #include <nowide/convert.hpp>
 

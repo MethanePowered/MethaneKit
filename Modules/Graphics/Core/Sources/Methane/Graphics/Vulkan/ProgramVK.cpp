@@ -28,7 +28,6 @@ Vulkan implementation of the program interface.
 #include "RenderCommandListVK.h"
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {

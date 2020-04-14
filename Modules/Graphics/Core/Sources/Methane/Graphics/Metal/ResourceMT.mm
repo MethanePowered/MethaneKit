@@ -27,7 +27,6 @@ Metal implementation of the resource interface.
 #include "TextureMT.hh"
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Instrumentation.h>
 
 #include <vector>
 

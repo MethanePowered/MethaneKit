@@ -24,7 +24,6 @@ MacOS application delegate implementation.
 #import "WindowDelegate.hh"
 
 #include <Methane/Platform/MacOS/AppMac.hh>
-#include <Methane/Instrumentation.h>
 
 #include <cassert>
 

@@ -25,8 +25,6 @@ Base implementation of the buffer interface.
 #include "DescriptorHeap.h"
 #include "ContextBase.h"
 
-#include <Methane/Instrumentation.h>
-
 #include <cassert>
 
 namespace Methane::Graphics

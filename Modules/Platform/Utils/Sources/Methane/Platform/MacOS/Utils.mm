@@ -22,7 +22,6 @@ MacOS platform utility functions.
 ******************************************************************************/
 
 #include <Methane/Platform/MacOS/Utils.hh>
-#include <Methane/Instrumentation.h>
 
 #import <AppKit/AppKit.h>
 

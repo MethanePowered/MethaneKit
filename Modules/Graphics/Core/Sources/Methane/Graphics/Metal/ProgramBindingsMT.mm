@@ -27,8 +27,6 @@ Metal implementation of the program bindings interface.
 #include "SamplerMT.hh"
 #include "RenderCommandListMT.hh"
 
-#include <Methane/Instrumentation.h>
-
 namespace Methane::Graphics
 {
 

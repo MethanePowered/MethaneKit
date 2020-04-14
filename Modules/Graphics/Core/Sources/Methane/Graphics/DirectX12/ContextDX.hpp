@@ -29,7 +29,6 @@ DirectX 12 base template implementation of the context interface.
 #include "CommandQueueDX.h"
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Instrumentation.h>
 
 #include <wrl.h>
 #include <d3d12.h>

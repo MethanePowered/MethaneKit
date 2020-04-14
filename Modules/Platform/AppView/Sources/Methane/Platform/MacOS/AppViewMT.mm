@@ -23,8 +23,6 @@ MacOS application view implementation.
 
 #import <Methane/Platform/MacOS/AppViewMT.hh>
 
-#include <Methane/Instrumentation.h>
-
 @interface AppViewMT ()
 {
     NSTrackingArea* trackingArea;

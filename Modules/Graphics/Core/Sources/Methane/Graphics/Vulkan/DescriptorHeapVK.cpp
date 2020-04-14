@@ -23,8 +23,6 @@ Vulkan "dummy" implementation of the descriptor heap.
 
 #include "DescriptorHeapVK.h"
 
-#include <Methane/Instrumentation.h>
-
 namespace Methane::Graphics
 {
 

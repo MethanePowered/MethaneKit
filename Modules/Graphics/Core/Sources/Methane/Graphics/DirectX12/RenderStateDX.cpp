@@ -32,7 +32,6 @@ DirectX 12 implementation of the render state interface.
 
 #include <Methane/Graphics/Windows/Primitives.h>
 #include <Methane/Platform/Windows/Utils.h>
-#include <Methane/Instrumentation.h>
 
 #include <d3dx12.h>
 #include <D3Dcompiler.h>

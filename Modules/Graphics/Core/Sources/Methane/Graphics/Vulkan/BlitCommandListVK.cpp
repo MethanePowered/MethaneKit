@@ -24,8 +24,6 @@ Vulkan implementation of the blit command list interface.
 #include "BlitCommandListVK.h"
 #include "CommandQueueVK.h"
 
-#include <Methane/Instrumentation.h>
-
 #include <cassert>
 
 namespace Methane::Graphics

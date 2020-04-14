@@ -20,14 +20,27 @@ FILE: Methane/Instrumentation.h
 Common header for instrumentation of the Methane Kit modules with ITT macroses,
 Defines common ITT domain required for instrumentation.
 
+NOTE:
+    This header is force included first in every source file,
+    which is linked with cmake interface target MethaneInstrumentation,
+    when METHANE_TRACY_PROFILING_ENABLED = ON
+
 ******************************************************************************/
 
 #pragma once
 
+// Include Tracy header implementation first
+// before memory allocation operator overrides
+// to minimize possibility of Tracy code self-instrumentation
+#include <Tracy.hpp>
+
 #include "IttApiHelper.h"
 #include "ScopeTimer.h"
 
-#include <Tracy.hpp>
+#ifdef TRACY_ENABLE
+// Override memory allocation operators new/delete with Tracy instrumentation
+#include "InstrumentMemoryAllocations.h"
+#endif
 
 ITT_DOMAIN_EXTERN();
 

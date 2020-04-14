@@ -26,7 +26,6 @@ Singleton data provider of files on disk.
 #include "Provider.h"
 
 #include <Methane/Platform/Utils.h>
-#include <Methane/Instrumentation.h>
 
 #include <string>
 #include <fstream>

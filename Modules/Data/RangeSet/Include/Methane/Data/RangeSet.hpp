@@ -27,8 +27,6 @@ minimum number of continuous ranges by merging or splitting adjacent ranges in s
 
 #include "Range.hpp"
 
-#include <Methane/Instrumentation.h>
-
 #include <set>
 #include <vector>
 
