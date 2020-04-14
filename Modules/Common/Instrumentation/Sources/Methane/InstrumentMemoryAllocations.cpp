@@ -40,7 +40,12 @@ void* operator new(std::size_t size, std::align_val_t align)
 {
 #if defined(_WIN32)
     void* ptr = _aligned_malloc(size, static_cast<std::size_t>(align));
-#else
+#elif defined(__APPLE__)
+    void* ptr = nullptr;
+    const int error = posix_memalign(&ptr, static_cast<size_t>(align), size);
+    if (error)
+        throw std::bad_alloc();
+#else // Linux
     void* ptr = aligned_alloc(static_cast<std::size_t>(align), size);
 #endif
 
@@ -51,13 +56,13 @@ void* operator new(std::size_t size, std::align_val_t align)
     return ptr;
 }
 
-void operator delete(void* ptr)
+void operator delete(void* ptr) throw()
 {
     TracyFree(ptr)
     std::free(ptr);
 }
 
-void operator delete(void* ptr, std::align_val_t)
+void operator delete(void* ptr, std::align_val_t) throw()
 {
     TracyFree(ptr)
 #if defined(_WIN32)

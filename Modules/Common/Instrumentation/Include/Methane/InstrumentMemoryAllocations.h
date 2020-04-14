@@ -30,5 +30,5 @@ Overloading "new" and "delete" operators with additional instrumentation:
 void* operator new(std::size_t size);
 void* operator new(std::size_t size, std::align_val_t align);
 
-void operator delete(void* ptr);
-void operator delete(void* ptr, std::align_val_t align);
+void operator delete(void* ptr) throw();
+void operator delete(void* ptr, std::align_val_t align) throw();
