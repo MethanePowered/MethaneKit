@@ -26,6 +26,7 @@ Random generated asteroids array with uber mesh and textures ready for rendering
 #include <Methane/Graphics/PerlinNoise.h>
 #include <Methane/Data/Parallel.hpp>
 #include <Methane/Data/AppResourceProviders.h>
+#include <Methane/Instrumentation.h>
 
 #include <cmath>
 

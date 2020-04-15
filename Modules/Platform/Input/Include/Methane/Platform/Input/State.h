@@ -25,6 +25,8 @@ Aggregated application input state with controllers.
 
 #include "ControllersPool.h"
 
+#include <Methane/Instrumentation.h>
+
 namespace Methane::Platform::Input
 {
 

@@ -24,6 +24,8 @@ Base implementation of the command queue interface.
 #include "CommandQueueBase.h"
 #include "RenderContextBase.h"
 
+#include <Methane/Instrumentation.h>
+
 #ifdef COMMAND_EXECUTION_LOGGING
 #include <Methane/Platform/Utils.h>
 #endif

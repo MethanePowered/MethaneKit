@@ -27,6 +27,7 @@ Planet rendering primitive
 #include <Methane/Graphics/Mesh/SphereMesh.hpp>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Data/AppResourceProviders.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Samples
 {

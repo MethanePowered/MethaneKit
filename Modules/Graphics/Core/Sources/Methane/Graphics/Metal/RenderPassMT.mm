@@ -26,6 +26,8 @@ Metal implementation of the render pass interface.
 #include "TextureMT.hh"
 #include "TypesMT.hh"
 
+#include <Methane/Instrumentation.h>
+
 namespace Methane::Graphics
 {
 

@@ -24,6 +24,7 @@ and deferred releasing of GPU resource.
 
 #include "ResourceManager.h"
 
+#include <Methane/Instrumentation.h>
 #include <Methane/Data/Parallel.hpp>
 
 #include <cassert>

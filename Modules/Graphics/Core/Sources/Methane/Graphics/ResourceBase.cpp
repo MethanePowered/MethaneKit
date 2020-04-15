@@ -26,6 +26,7 @@ Base implementation of the resource interface.
 #include "ContextBase.h"
 
 #include <Methane/Graphics/Resource.h>
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 #include <sstream>

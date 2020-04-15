@@ -25,6 +25,8 @@ Base implementation of the render pass interface.
 #include "TextureBase.h"
 #include "RenderCommandListBase.h"
 
+#include <Methane/Instrumentation.h>
+
 #include <cassert>
 
 namespace Methane::Graphics

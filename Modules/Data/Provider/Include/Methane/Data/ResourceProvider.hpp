@@ -26,6 +26,8 @@ from RESOURCES_NAMESPACE or external resource files on disk.
 
 #include "FileProvider.hpp"
 
+#include <Methane/Instrumentation.h>
+
 #include <vector>
 #include <string>
 #include <fstream>

@@ -26,6 +26,8 @@
 #include "Input/HelpProvider.h"
 #include "Keyboard.h"
 
+#include <Methane/Instrumentation.h>
+
 #include <map>
 
 namespace Methane::Platform::Keyboard

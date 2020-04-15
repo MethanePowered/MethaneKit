@@ -22,6 +22,7 @@ Windows platform utility functions.
 ******************************************************************************/
 
 #include <Methane/Platform/Windows/Utils.h>
+#include <Methane/Instrumentation.h>
 
 #include <Windows.h>
 #include <shellapi.h>

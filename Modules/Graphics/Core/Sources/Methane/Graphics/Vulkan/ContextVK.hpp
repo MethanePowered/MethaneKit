@@ -28,6 +28,7 @@ Vulkan template implementation of the base context interface.
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/RenderContext.h>
+#include <Methane/Instrumentation.h>
 
 #include <string>
 #include <map>

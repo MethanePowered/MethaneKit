@@ -26,6 +26,7 @@ Graphics context controller for switching parameters in runtime.
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/Device.h>
 #include <Methane/Platform/Utils.h>
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 

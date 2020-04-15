@@ -22,6 +22,7 @@ Abstract mesh class
 ******************************************************************************/
 
 #include <Methane/Graphics/Mesh.h>
+#include <Methane/Instrumentation.h>
 
 #include <cml/mathlib/mathlib.h>
 

@@ -24,6 +24,8 @@ Base implementation of the render context interface.
 #include "RenderContextBase.h"
 #include "DeviceBase.h"
 
+#include <Methane/Instrumentation.h>
+
 #ifdef COMMAND_EXECUTION_LOGGING
 #include <Methane/Platform/Utils.h>
 #endif

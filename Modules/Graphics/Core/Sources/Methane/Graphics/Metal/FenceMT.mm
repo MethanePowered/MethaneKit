@@ -27,6 +27,7 @@ Metal fence implementation.
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {

@@ -26,6 +26,7 @@ DirectX 12 implementation of the render context interface.
 #include "CommandQueueDX.h"
 #include "TypesDX.h"
 
+#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Primitives.h>
 
 #ifdef COMMAND_EXECUTION_LOGGING

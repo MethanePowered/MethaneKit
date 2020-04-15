@@ -29,6 +29,7 @@ DirectX 12 implementation of the texture interface.
 #include "BlitCommandListDX.h"
 #include "TypesDX.h"
 
+#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Primitives.h>
 #include <Methane/Graphics/TypeConverters.hpp>
 

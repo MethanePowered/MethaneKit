@@ -24,6 +24,7 @@ Base implementation of the program interface.
 #pragma once
 
 #include <Methane/Graphics/Program.h>
+#include <Methane/Instrumentation.h>
 
 #include "ShaderBase.h"
 #include "DescriptorHeap.h"

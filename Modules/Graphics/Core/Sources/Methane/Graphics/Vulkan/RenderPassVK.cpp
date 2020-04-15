@@ -26,6 +26,7 @@ Vulkan implementation of the render pass interface.
 #include "TextureVK.h"
 
 #include <Methane/Graphics/RenderContextBase.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {

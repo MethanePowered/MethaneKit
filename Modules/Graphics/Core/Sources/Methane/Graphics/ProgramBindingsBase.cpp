@@ -24,6 +24,7 @@ Base implementation of the program bindings interface.
 #include "ProgramBindingsBase.h"
 #include "ContextBase.h"
 
+#include <Methane/Instrumentation.h>
 #include <Methane/Platform/Utils.h>
 
 #include <cassert>

@@ -26,6 +26,7 @@ Base implementation of the context interface.
 #include "CommandQueueBase.h"
 
 #include <Methane/Graphics/BlitCommandList.h>
+#include <Methane/Instrumentation.h>
 
 #ifdef COMMAND_EXECUTION_LOGGING
 #include <Methane/Platform/Utils.h>

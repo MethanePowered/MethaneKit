@@ -26,6 +26,7 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 
 #include <Methane/Graphics/AppCameraController.h>
 #include <Methane/Data/TimeAnimation.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Platform/Logger.h>
 
 #include <CLI/CLI.hpp>

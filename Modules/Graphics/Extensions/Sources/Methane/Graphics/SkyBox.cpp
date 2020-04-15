@@ -26,6 +26,7 @@ SkyBox rendering primitive
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/Camera.h>
 #include <Methane/Data/AppResourceProviders.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {

@@ -23,6 +23,7 @@ Base application controller providing commands like app close and help.
 
 #include <Methane/Platform/AppController.h>
 #include <Methane/Platform/Utils.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Version.h>
 
 #include <sstream>

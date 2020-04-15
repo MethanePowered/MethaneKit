@@ -24,6 +24,7 @@ Base mesh implementation with customizable vertex types
 #pragma once
 
 #include <Methane/Graphics/Mesh.h>
+#include <Methane/Instrumentation.h>
 
 #include <cassert>
 #include <cml/mathlib/mathlib.h>

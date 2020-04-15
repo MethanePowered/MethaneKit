@@ -42,6 +42,7 @@ Base frame class provides frame buffer management with resize handling.
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Graphics/Badge.h>
 #include <Methane/Graphics/HeadsUpDisplay.h>
+#include <Methane/Instrumentation.h>
 
 #include <vector>
 #include <sstream>

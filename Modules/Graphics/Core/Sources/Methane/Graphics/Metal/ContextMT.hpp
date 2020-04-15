@@ -28,6 +28,7 @@ Metal template implementation of the base context interface.
 #include "ProgramLibraryMT.hh"
 
 #include <Methane/Graphics/ContextBase.h>
+#include <Methane/Instrumentation.h>
 
 #import <Metal/Metal.h>
 

@@ -26,6 +26,7 @@ Vulkan implementation of the texture interface.
 #include "TypesVK.h"
 
 #include <Methane/Graphics/ContextBase.h>
+#include <Methane/Instrumentation.h>
 
 #include <algorithm>
 

@@ -22,6 +22,7 @@ Platform abstraction of keyboard events.
 ******************************************************************************/
 
 #include <Methane/Platform/Keyboard.h>
+#include <Methane/Instrumentation.h>
 
 #include <map>
 #include <sstream>

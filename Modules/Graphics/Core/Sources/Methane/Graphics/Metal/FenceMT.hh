@@ -24,6 +24,7 @@ Metal fence implementation.
 #pragma once
 
 #include <Methane/Graphics/FenceBase.h>
+#include <Methane/Instrumentation.h>
 
 #include <mutex>
 #include <condition_variable>

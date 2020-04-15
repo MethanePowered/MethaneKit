@@ -25,6 +25,7 @@ DirectX 12 implementation of the descriptor heap wrapper.
 #include "DeviceDX.h"
 
 #include <Methane/Graphics/ContextBase.h>
+#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Primitives.h>
 
 #include <cassert>

@@ -24,6 +24,7 @@ DirectX 12 implementation of the blit command list interface.
 #include "BlitCommandListDX.h"
 
 #include <Methane/Graphics/CommandQueueBase.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {

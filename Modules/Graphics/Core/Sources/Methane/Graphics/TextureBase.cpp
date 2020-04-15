@@ -25,6 +25,8 @@ Base implementation of the texture interface.
 #include "DescriptorHeap.h"
 #include "RenderContextBase.h"
 
+#include <Methane/Instrumentation.h>
+
 #include <cassert>
 
 namespace Methane::Graphics

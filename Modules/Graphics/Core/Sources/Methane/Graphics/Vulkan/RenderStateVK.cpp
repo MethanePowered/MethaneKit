@@ -30,6 +30,7 @@ Vulkan implementation of the render state interface.
 #include "TypesVK.h"
 
 #include <Methane/Graphics/RenderContextBase.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {

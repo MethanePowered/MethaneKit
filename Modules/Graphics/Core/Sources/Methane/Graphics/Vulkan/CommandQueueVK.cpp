@@ -25,6 +25,7 @@ Vulkan implementation of the command queue interface.
 #include "ContextVK.h"
 
 #include <Methane/Graphics/ContextBase.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
