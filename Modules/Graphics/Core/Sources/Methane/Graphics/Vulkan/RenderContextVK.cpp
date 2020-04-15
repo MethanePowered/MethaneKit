@@ -38,7 +38,7 @@ Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, De
     return std::make_shared<RenderContextVK>(env, static_cast<DeviceBase&>(device), settings);
 }
 
-RenderContextVK::RenderContextVK(const Platform::AppEnvironment& env, DeviceBase& device, const RenderContext::Settings& settings)
+RenderContextVK::RenderContextVK(const Platform::AppEnvironment& /*env*/, DeviceBase& device, const RenderContext::Settings& settings)
     : ContextVK<RenderContextBase>(device, settings)
 {
     META_FUNCTION_TASK();
@@ -90,13 +90,13 @@ void RenderContextVK::Present()
 bool RenderContextVK::SetVSyncEnabled(bool vsync_enabled)
 {
     META_FUNCTION_TASK();
-    return false;
+    return RenderContextBase::SetVSyncEnabled(vsync_enabled);
 }
 
 bool RenderContextVK::SetFrameBuffersCount(uint32_t frame_buffers_count)
 {
     META_FUNCTION_TASK();
-    return false;
+    return RenderContextBase::SetFrameBuffersCount(frame_buffers_count);
 }
 
 float RenderContextVK::GetContentScalingFactor() const

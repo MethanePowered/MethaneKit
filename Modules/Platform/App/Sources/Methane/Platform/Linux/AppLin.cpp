@@ -34,7 +34,7 @@ AppLin::AppLin(const AppBase::Settings& settings)
     META_FUNCTION_TASK();
 }
 
-int AppLin::Run(const RunArgs& args)
+int AppLin::Run(const RunArgs& /*args*/)
 {
     return 0;
 }
@@ -45,12 +45,12 @@ void AppLin::Alert(const Message& msg, bool deferred)
     AppBase::Alert(msg, deferred);
 }
 
-void AppLin::ShowAlert(const Message& msg)
+void AppLin::ShowAlert(const Message& /*msg*/)
 {
     META_FUNCTION_TASK();
 }
 
-void AppLin::SetWindowTitle(const std::string& title_text)
+void AppLin::SetWindowTitle(const std::string& /*title_text*/)
 {
     META_FUNCTION_TASK();
 }

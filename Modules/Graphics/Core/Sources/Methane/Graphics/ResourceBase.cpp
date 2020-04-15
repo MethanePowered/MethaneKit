@@ -166,14 +166,7 @@ ResourceBase::ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& conte
 
     for (auto& usage_and_descriptor : m_descriptor_by_usage)
     {
-        if (usage_and_descriptor.second.index >= 0)
-        {
-            usage_and_descriptor.second.heap.ReplaceResource(*this, usage_and_descriptor.second.index);
-        }
-        else
-        {
-            usage_and_descriptor.second.index = usage_and_descriptor.second.heap.AddResource(*this);
-        }
+        usage_and_descriptor.second.heap.ReplaceResource(*this, usage_and_descriptor.second.index);
     }
 }
 
@@ -183,10 +176,7 @@ ResourceBase::~ResourceBase()
 
     for (const auto& usage_and_descriptor : m_descriptor_by_usage)
     {
-        if (usage_and_descriptor.second.index >= 0)
-        {
-            usage_and_descriptor.second.heap.RemoveResource(usage_and_descriptor.second.index);
-        }
+        usage_and_descriptor.second.heap.RemoveResource(usage_and_descriptor.second.index);
     }
 }
 

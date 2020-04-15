@@ -142,13 +142,13 @@ void TextureBase::ValidateDimensions(DimensionType dimension_type, const Dimensi
         {
             throw std::invalid_argument("Cube texture depth must be equal to 6.");
         }
-        // NOTE: break is missing intentionally
+        [[fallthrough]];
     case DimensionType::Tex3D:
         if (mipmapped && dimensions.depth % 2)
         {
             throw std::invalid_argument("All dimensions of the mip-mapped texture should be a power of 2, but depth is not.");
         }
-        // NOTE: break is missing intentionally
+        [[fallthrough]];
     case DimensionType::Tex2D:
     case DimensionType::Tex2DArray:
     case DimensionType::Tex2DMultisample:
@@ -156,15 +156,16 @@ void TextureBase::ValidateDimensions(DimensionType dimension_type, const Dimensi
         {
             throw std::invalid_argument("All dimensions of the mip-mapped texture should be a power of 2, but height is not.");
         }
-        // NOTE: break is missing intentionally
+        [[fallthrough]];
     case DimensionType::Tex1D:
     case DimensionType::Tex1DArray:
         if (mipmapped && dimensions.width % 2)
         {
             throw std::invalid_argument("All dimensions of the mip-mapped texture should be a power of 2, but width is not.");
         }
-        // NOTE: break is missing intentionally
-    default: return;
+        [[fallthrough]];
+    default:
+        return;
     }
 }
 

@@ -75,7 +75,7 @@ void RenderCommandListVK::SetName(const std::string& name)
     RenderCommandListBase::SetName(name);
 }
 
-void RenderCommandListVK::PushDebugGroup(const std::string& name)
+void RenderCommandListVK::PushDebugGroup(const std::string& /*debug_group*/)
 {
     META_FUNCTION_TASK();
 }
@@ -93,14 +93,6 @@ void RenderCommandListVK::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
 
     if (!GetDrawingState().flags.vertex_buffers_changed)
         return;
-
-    uint32_t vb_index = 0;
-    for (auto vertex_buffer_ref : vertex_buffers)
-    {
-        assert(vertex_buffer_ref.get().GetSettings().type == Buffer::Type::Vertex);
-        const BufferVK& vulkan_buffer = static_cast<const BufferVK&>(vertex_buffer_ref.get());
-        vb_index++;
-    }
 }
 
 void RenderCommandListVK::DrawIndexed(Primitive primitive, Buffer& index_buffer,

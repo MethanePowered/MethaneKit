@@ -63,8 +63,6 @@ void RenderStateVK::Reset(const Settings& settings)
 
     RenderStateBase::Reset(settings);
 
-    ProgramVK& vulkan_program = static_cast<ProgramVK&>(*settings.sp_program);
-
     if (!settings.viewports.empty())
     {
         SetViewports(settings.viewports);
@@ -77,7 +75,7 @@ void RenderStateVK::Reset(const Settings& settings)
     ResetNativeState();
 }
 
-void RenderStateVK::Apply(RenderCommandListBase& command_list, Group::Mask state_groups)
+void RenderStateVK::Apply(RenderCommandListBase& /*command_list*/, Group::Mask /*state_groups*/)
 {
     META_FUNCTION_TASK();
 }

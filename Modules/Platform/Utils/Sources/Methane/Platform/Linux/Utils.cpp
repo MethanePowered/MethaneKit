@@ -30,7 +30,7 @@ MacOS platform utility functions.
 namespace Methane::Platform
 {
 
-void PrintToDebugOutput(const std::string& msg)
+void PrintToDebugOutput(__attribute__((unused)) const std::string& msg)
 {
     META_FUNCTION_TASK();
     TracyMessage(msg.c_str(), msg.size());

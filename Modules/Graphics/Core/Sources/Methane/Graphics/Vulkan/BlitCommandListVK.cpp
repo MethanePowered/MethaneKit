@@ -46,16 +46,16 @@ BlitCommandListVK::BlitCommandListVK(CommandQueueBase& command_queue)
 void BlitCommandListVK::Reset(const std::string& debug_group)
 {
     META_FUNCTION_TASK();
+    CommandListBase::Reset(debug_group);
 }
 
 void BlitCommandListVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-
     CommandListBase::SetName(name);
 }
 
-void BlitCommandListVK::PushDebugGroup(const std::string& name)
+void BlitCommandListVK::PushDebugGroup(const std::string& /*name*/)
 {
     META_FUNCTION_TASK();
 }
@@ -76,7 +76,6 @@ void BlitCommandListVK::Commit()
 void BlitCommandListVK::Execute(uint32_t frame_index)
 {
     META_FUNCTION_TASK();
-
     CommandListBase::Execute(frame_index);
 }
 

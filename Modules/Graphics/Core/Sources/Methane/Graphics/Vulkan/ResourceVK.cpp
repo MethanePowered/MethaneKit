@@ -47,7 +47,7 @@ ResourceVK::ReleasePoolVK::ReleasePoolVK()
     META_FUNCTION_TASK();
 }
 
-void ResourceVK::ReleasePoolVK::AddResource(ResourceBase& resource)
+void ResourceVK::ReleasePoolVK::AddResource(ResourceBase& /*resource*/)
 {
     META_FUNCTION_TASK();
 }

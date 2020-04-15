@@ -189,7 +189,7 @@
             ]
         },
         {
-            "name": "Linux-Debug",
+            "name": "Linux-GCC-Debug",
             "generator": "Unix Makefiles",
             "configurationType": "Debug",
             "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
@@ -212,7 +212,7 @@
             "variables": []
         },
         {
-            "name": "Linux-Release",
+            "name": "Linux-GCC-Release",
             "generator": "Unix Makefiles",
             "configurationType": "RelWithDebInfo",
             "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
@@ -231,6 +231,66 @@
             "rsyncCommandArgs": "-t --delete --delete-excluded",
             "remoteCopyBuildOutput": false,
             "remoteCopySourcesMethod": "rsync",
+            "addressSanitizerRuntimeFlags": "detect_leaks=0",
+            "variables": []
+        },
+        {
+            "name": "WSL-GCC-Debug",
+            "generator": "Unix Makefiles",
+            "configurationType": "Debug",
+            "buildRoot": "${projectDir}\\out\\build\\${name}",
+            "installRoot": "${projectDir}\\out\\install\\${name}",
+            "cmakeExecutable": "/usr/bin/cmake",
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "-j 10",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "linux_x64" ],
+            "wslPath": "${defaultWSLPath}",
+            "addressSanitizerRuntimeFlags": "detect_leaks=0",
+            "variables": []
+        },
+        {
+            "name": "WSL-GCC-Release",
+            "generator": "Unix Makefiles",
+            "configurationType": "RelWithDebInfo",
+            "buildRoot": "${projectDir}\\out\\build\\${name}",
+            "installRoot": "${projectDir}\\out\\install\\${name}",
+            "cmakeExecutable": "/usr/bin/cmake",
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "-j 10",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "linux_x64" ],
+            "wslPath": "${defaultWSLPath}",
+            "addressSanitizerRuntimeFlags": "detect_leaks=0",
+            "variables": []
+        },
+        {
+            "name": "WSL-Clang-Debug",
+            "generator": "Unix Makefiles",
+            "configurationType": "Debug",
+            "buildRoot": "${projectDir}\\out\\build\\${name}",
+            "installRoot": "${projectDir}\\out\\install\\${name}",
+            "cmakeExecutable": "/usr/bin/cmake",
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "-j 10",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "linux_clang_x64" ],
+            "wslPath": "${defaultWSLPath}",
+            "addressSanitizerRuntimeFlags": "detect_leaks=0",
+            "variables": []
+        },
+        {
+            "name": "WSL-Clang-Release",
+            "generator": "Unix Makefiles",
+            "configurationType": "RelWithDebInfo",
+            "buildRoot": "${projectDir}\\out\\build\\${name}",
+            "installRoot": "${projectDir}\\out\\install\\${name}",
+            "cmakeExecutable": "/usr/bin/cmake",
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "-j 10",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "linux_clang_x64" ],
+            "wslPath": "${defaultWSLPath}",
             "addressSanitizerRuntimeFlags": "detect_leaks=0",
             "variables": []
         }
