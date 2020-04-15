@@ -247,7 +247,43 @@
             "inheritEnvironments": [ "linux_x64" ],
             "wslPath": "${defaultWSLPath}",
             "addressSanitizerRuntimeFlags": "detect_leaks=0",
-            "variables": []
+            "variables": [
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_COMMAND_EXECUTION_LOGGING",
+                    "value": "false",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "false",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "false",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "false",
+                    "type": "BOOL"
+                }
+            ]
         },
         {
             "name": "WSL-GCC-Release",
@@ -262,7 +298,43 @@
             "inheritEnvironments": [ "linux_x64" ],
             "wslPath": "${defaultWSLPath}",
             "addressSanitizerRuntimeFlags": "detect_leaks=0",
-            "variables": []
+            "variables": [
+                {
+                    "name": "METHANE_COMMAND_EXECUTION_LOGGING",
+                    "value": "false",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "false",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "false",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "false",
+                    "type": "BOOL"
+                }
+            ]
         },
         {
             "name": "WSL-Clang-Debug",
@@ -277,7 +349,43 @@
             "inheritEnvironments": [ "linux_clang_x64" ],
             "wslPath": "${defaultWSLPath}",
             "addressSanitizerRuntimeFlags": "detect_leaks=0",
-            "variables": []
+            "variables": [
+                {
+                    "name": "METHANE_COMMAND_EXECUTION_LOGGING",
+                    "value": "false",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "false",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "false",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "false",
+                    "type": "BOOL"
+                }
+            ]
         },
         {
             "name": "WSL-Clang-Release",
@@ -292,7 +400,43 @@
             "inheritEnvironments": [ "linux_clang_x64" ],
             "wslPath": "${defaultWSLPath}",
             "addressSanitizerRuntimeFlags": "detect_leaks=0",
-            "variables": []
+            "variables": [
+                {
+                    "name": "METHANE_COMMAND_EXECUTION_LOGGING",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "false",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "false",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "false",
+                    "type": "BOOL"
+                }
+            ]
         }
     ]
 }
