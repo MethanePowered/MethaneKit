@@ -26,6 +26,7 @@ SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )
 SOURCE_DIR=$SCRIPT_DIR/../..
 OUTPUT_DIR=$SCRIPT_DIR/../Output/$CMAKE_GENERATOR
 INSTALL_DIR=$OUTPUT_DIR/Install
+GRAPHVIZ_FILE=MethaneKitGraph.dot
 CMAKE_FLAGS=" \
     -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON \
     -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF \
@@ -61,9 +62,6 @@ fi
 rm -rf "$OUTPUT_DIR"
 mkdir -p "$BUILD_DIR"
 
-echo Pulling latest changes from submodules...
-git submodule update --init --recursive
-
 echo ---
 
 if [ "$IS_ANALYZE_BUILD" == true ]; then
@@ -90,7 +88,7 @@ if [ "$IS_ANALYZE_BUILD" == true ]; then
 
 else
     echo Building with $CMAKE_GENERATOR...
-    cmake -H"$SOURCE_DIR" -B"$BUILD_DIR" -G "$CMAKE_GENERATOR" -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" $CMAKE_FLAGS
+    cmake -H"$SOURCE_DIR" -B"$BUILD_DIR" -G "$CMAKE_GENERATOR" --graphviz "$GRAPHVIZ_FILE" -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" $CMAKE_FLAGS
     cmake --build "$BUILD_DIR" --config $BUILD_TYPE --target install
 
     echo Running unit-tests...

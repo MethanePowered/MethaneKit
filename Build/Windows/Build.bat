@@ -6,6 +6,7 @@ SET PLATFORM_TYPE=Win64
 SET ARCH_TYPE=x64
 SET BUILD_TYPE=Release
 SET BUILD_VERSION=0.4
+SET GRAPHVIZ_FILE=MethaneKitGraph.dot
 SET CMAKE_FLAGS= ^
     -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON ^
     -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF ^
@@ -59,12 +60,11 @@ IF "%~1"=="--analyze" (
     ECHO =========================================================
 )
 
-ECHO Pulling latest changes from submodules...
-git submodule update --init --recursive
+RD /S /Q "%BUILD_DIR%"
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
-RD /S /Q "%BUILD_DIR%"
 MKDIR "%BUILD_DIR%"
+IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
 ECHO ---
 
@@ -115,7 +115,7 @@ IF %IS_ANALYZE_BUILD% EQU 1 (
 
     ECHO Building with %CMAKE_GENERATOR%...
 
-    cmake -G "%CMAKE_GENERATOR%" -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR% %CMAKE_FLAGS% "%SOURCE_DIR%"
+    cmake -G "%CMAKE_GENERATOR%" --graphviz=%GRAPHVIZ_FILE% -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR% %CMAKE_FLAGS% "%SOURCE_DIR%"
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
     cmake --build . --config %BUILD_TYPE% --target install
