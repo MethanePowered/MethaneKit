@@ -34,13 +34,13 @@ target_link_libraries(${TARGET}
     PUBLIC
         MethaneGraphicsCore
         MethaneDataPrimitives
+        MethaneInstrumentation
     PRIVATE
         MethaneBuildOptions
         MethanePlatformUtils
         MethaneGraphicsPrimitives
         MethaneGraphicsCamera
         MethaneDataProvider
-        MethaneInstrumentation
 )
 
 if (METHANE_USE_OPEN_IMAGE_IO)

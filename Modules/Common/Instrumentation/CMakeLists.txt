@@ -32,7 +32,7 @@ target_include_directories(${TARGET}
 
 target_link_libraries(${TARGET}
     PUBLIC
-        MethaneCommonPrimitives
+        MethanePrimitives
         TracyInstrumentation
         ittnotify
         nowide_static
@@ -41,7 +41,7 @@ target_link_libraries(${TARGET}
 )
 
 # Force include header with memory allocation operators override, implementing Tracy memory instrumentation
-set(FORCE_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}/Instrumentation.h)
+set(FORCE_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}/InstrumentMemoryAllocations.h)
 if (MSVC)
     target_compile_options(MethaneInstrumentation PUBLIC /FI "${FORCE_INCLUDE_PATH}")
 else()
@@ -52,7 +52,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER Modules/Data
+    FOLDER Modules/Common
     PUBLIC_HEADER "${HEADERS}"
 )
 

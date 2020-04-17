@@ -30,9 +30,9 @@ target_include_directories(${TARGET}
 target_link_libraries(${TARGET}
     PUBLIC
         CML
+        MethaneInstrumentation
     PRIVATE
         MethaneBuildOptions
-        MethaneInstrumentation
         MethaneDataTypes
 )
 

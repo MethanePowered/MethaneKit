@@ -40,10 +40,10 @@ target_link_libraries(${TARGET}
     PUBLIC
         MethaneDataAnimation
         MethaneGraphicsTypes
+        MethaneInstrumentation
     PRIVATE
         MethaneBuildOptions
         MethanePlatformUtils
-        MethaneInstrumentation
         PerlinNoise
         CML
 )

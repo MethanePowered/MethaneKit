@@ -1,4 +1,4 @@
-set(TARGET MethaneCommonPrimitives)
+set(TARGET MethanePrimitives)
 
 include(MethaneModules)
 
