@@ -26,16 +26,15 @@ SET GRAPHVIZ_IMG_DIR=%GRAPHVIZ_DIR%\img
 SET GRAPHVIZ_FILE=MethaneKit.dot
 SET GRAPHVIZ_DOT_EXE=dot.exe
 
-IF "%~1"=="--vs2019" (
-SET CMAKE_GENERATOR=Visual Studio 16 2019
-SET CMAKE_FLAGS=-A %ARCH_TYPE% %CMAKE_FLAGS%
+IF "%~1"=="--vs2019" SET USE_VS2019=1
+IF "%~2"=="--vs2019" SET USE_VS2019=1
+
+IF DEFINED USE_VS2019 (
+    SET CMAKE_GENERATOR=Visual Studio 16 2019
+    SET CMAKE_FLAGS=-A %ARCH_TYPE% %CMAKE_FLAGS%
 ) ELSE (
-IF "%~2"=="--vs2019" (
-SET CMAKE_GENERATOR=Visual Studio 16 2019
-SET CMAKE_FLAGS=-A %ARCH_TYPE% %CMAKE_FLAGS% 
-) ELSE (
-SET CMAKE_GENERATOR=Visual Studio 15 2017 %PLATFORM_TYPE%
-) )
+    SET CMAKE_GENERATOR=Visual Studio 15 2017 %PLATFORM_TYPE%
+)
 
 IF "%~1"=="--analyze" (
 
@@ -71,9 +70,8 @@ IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 MKDIR "%BUILD_DIR%"
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
-ECHO ---
-
 IF %IS_ANALYZE_BUILD% EQU 1 (
+
     ECHO Unpacking Sonar Scanner binaries...
     IF EXIST "%SONAR_SCANNER_DIR%" RD /S /Q "%SONAR_SCANNER_DIR%"
     CALL powershell -Command "Expand-Archive %SONAR_SCANNER_ZIP% -DestinationPath %SONAR_SCANNER_DIR%"
@@ -85,16 +83,20 @@ IF %IS_ANALYZE_BUILD% EQU 1 (
     )
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
-    ECHO ---
+    ECHO ----------
     ECHO Analyzing code with Sonar Scanner on branch !GITBRANCH!...
 
     IF NOT EXIST "%BUILD_DIR%" MKDIR "%BUILD_DIR%"
     CD "%BUILD_DIR%"
 
+    ECHO ----------
+    ECHO Generating build files for %CMAKE_GENERATOR% with SonarScanner wrapper...
     "%SONAR_BUILD_WRAPPER_EXE%" --out-dir "%BUILD_DIR%"^
          cmake -G "%CMAKE_GENERATOR%" %CMAKE_FLAGS% "%SOURCE_DIR%"
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
+    ECHO ----------
+    ECHO Building with %CMAKE_GENERATOR% and SonarScanner wrapper...
     CD "%SOURCE_DIR%"
     "%SONAR_SCANNER_MSBUILD_EXE%" begin^
         /k:egorodet_MethaneKit^
