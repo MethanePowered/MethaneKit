@@ -6,7 +6,6 @@ SET PLATFORM_TYPE=Win64
 SET ARCH_TYPE=x64
 SET BUILD_TYPE=Release
 SET BUILD_VERSION=0.4
-SET GRAPHVIZ_FILE=MethaneKitGraph.dot
 SET CMAKE_FLAGS= ^
     -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON ^
     -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF ^
@@ -20,6 +19,12 @@ SET CONFIG_DIR=%~dp0..\Output\VisualStudio\%PLATFORM_TYPE%-%BUILD_TYPE%
 SET INSTALL_DIR=%CONFIG_DIR%\Install
 SET SOURCE_DIR=%~dp0..\..
 SET START_DIR=%cd%
+
+SET GRAPHVIZ_DIR=%CONFIG_DIR%\GraphViz
+SET GRAPHVIZ_DOT_DIR=%GRAPHVIZ_DIR%\dot
+SET GRAPHVIZ_IMG_DIR=%GRAPHVIZ_DIR%\img
+SET GRAPHVIZ_FILE=MethaneKit.dot
+SET GRAPHVIZ_DOT_EXE=dot.exe
 
 IF "%~1"=="--vs2019" (
 SET CMAKE_GENERATOR=Visual Studio 16 2019
@@ -60,7 +65,7 @@ IF "%~1"=="--analyze" (
     ECHO =========================================================
 )
 
-RD /S /Q "%BUILD_DIR%"
+RD /S /Q "%CONFIG_DIR%"
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
 MKDIR "%BUILD_DIR%"
@@ -113,16 +118,33 @@ IF %IS_ANALYZE_BUILD% EQU 1 (
 ) ELSE (
     CD "%BUILD_DIR%"
 
-    ECHO Building with %CMAKE_GENERATOR%...
-
-    cmake -G "%CMAKE_GENERATOR%" --graphviz=%GRAPHVIZ_FILE% -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR% %CMAKE_FLAGS% "%SOURCE_DIR%"
+    ECHO Generating build files for %CMAKE_GENERATOR%...
+    cmake -G "%CMAKE_GENERATOR%" --graphviz="%GRAPHVIZ_DOT_DIR%\%GRAPHVIZ_FILE%" -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR% %CMAKE_FLAGS% "%SOURCE_DIR%"
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
+    ECHO ----------
+    ECHO Locating GraphViz dot converter...
+    where %GRAPHVIZ_DOT_EXE%
+    IF %ERRORLEVEL% EQU 0 (
+        ECHO Converting GraphViz diagram to image...
+        MKDIR "%GRAPHVIZ_IMG_DIR%"
+        IF %ERRORLEVEL% NEQ 0 GOTO ERROR
+        FOR %%f in ("%GRAPHVIZ_DOT_DIR%\*.*") do (
+            ECHO Writing image "%GRAPHVIZ_IMG_DIR%\%%~nxf.png"
+            "%GRAPHVIZ_DOT_EXE%" -Tpng "%%f" -o "%GRAPHVIZ_IMG_DIR%\%%~nxf.png"
+            IF %ERRORLEVEL% NEQ 0 GOTO ERROR
+        )
+    ) ELSE (
+        ECHO "GraphViz `dot` executable was not found. Skipping graph images generation."
+    )
+
+    ECHO ----------
+    ECHO Building with %CMAKE_GENERATOR%...
     cmake --build . --config %BUILD_TYPE% --target install
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
+    ECHO ----------
     ECHO Running tests...
-
     ctest --build-config %BUILD_TYPE% --output-on-failure
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 )
