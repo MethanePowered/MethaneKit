@@ -73,12 +73,16 @@ public:
     void PushDebugGroup(const std::string& name) override
     {
         META_FUNCTION_TASK();
+
+        CommandListBase::PushDebugGroup(name);
         PIXBeginEvent(m_cp_command_list.Get(), 0, nowide::widen(name).c_str());
     }
 
     void PopDebugGroup() override
     {
         META_FUNCTION_TASK();
+
+        CommandListBase::PopDebugGroup();
         PIXEndEvent(m_cp_command_list.Get());
     }
 

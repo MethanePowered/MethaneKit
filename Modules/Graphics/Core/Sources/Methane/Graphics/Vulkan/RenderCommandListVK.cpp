@@ -75,14 +75,16 @@ void RenderCommandListVK::SetName(const std::string& name)
     RenderCommandListBase::SetName(name);
 }
 
-void RenderCommandListVK::PushDebugGroup(const std::string& /*debug_group*/)
+void RenderCommandListVK::PushDebugGroup(const std::string& name)
 {
     META_FUNCTION_TASK();
+    CommandListBase::PushDebugGroup(name);
 }
 
 void RenderCommandListVK::PopDebugGroup()
 {
     META_FUNCTION_TASK();
+    CommandListBase::PopDebugGroup();
 }
 
 void RenderCommandListVK::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)

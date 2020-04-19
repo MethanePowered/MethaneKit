@@ -157,7 +157,8 @@ bool HelloTriangleApp::Render()
     HelloTriangleFrame& frame = GetCurrentFrame();
 
     // Issue commands for triangle rendering
-    frame.sp_cmd_list->Reset(m_sp_state, "Triangle Rendering");
+    static const std::string s_debug_region_name = "Triangle Rendering";
+    frame.sp_cmd_list->Reset(m_sp_state, s_debug_region_name);
     frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
     frame.sp_cmd_list->Draw(gfx::RenderCommandList::Primitive::Triangle, 3u);
 

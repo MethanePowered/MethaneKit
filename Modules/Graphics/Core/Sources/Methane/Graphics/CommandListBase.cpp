@@ -34,6 +34,16 @@ Base implementation of the command list interface.
 
 #include <cassert>
 
+// Disable debug groups instrumentation with discontinuous CPU frames in Tracy,
+// because it is not working for parallel render command lists by some reason
+// #define METHANE_DEBUG_GROUP_FRAMES_ENABLED
+#ifndef METHANE_DEBUG_GROUP_FRAMES_ENABLED
+#undef META_CPU_FRAME_START
+#define META_CPU_FRAME_START(name)
+#undef META_CPU_FRAME_END
+#define META_CPU_FRAME_END(name)
+#endif
+
 namespace Methane::Graphics
 {
 
@@ -57,17 +67,46 @@ CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
     META_FUNCTION_TASK();
 }
 
+void CommandListBase::PushDebugGroup(const std::string& name)
+{
+    META_FUNCTION_TASK();
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("Command list \"" + GetName() + "\" PUSH debug group \"" + name + "\"");
+#endif
+
+    const std::string& dict_name = PushOpenDebugGroup(name);
+    META_CPU_FRAME_START(dict_name.c_str());
+    META_UNUSED(dict_name);
+}
+
+void CommandListBase::PopDebugGroup()
+{
+    META_FUNCTION_TASK();
+    if (m_open_debug_groups.empty())
+    {
+        throw std::underflow_error("Can not pop debug group, since no debug groups were pushed.");
+    }
+
+#ifdef COMMAND_EXECUTION_LOGGING
+    Platform::PrintToDebugOutput("Command list \"" + GetName() + "\" POP debug group \"" + m_open_debug_groups.top().get() + "\"");
+#endif
+
+    META_CPU_FRAME_END(m_open_debug_groups.top().get().c_str());
+    m_open_debug_groups.pop();
+}
+
 void CommandListBase::Reset(const std::string& debug_group)
 {
     META_FUNCTION_TASK();
     if (m_state != State::Pending)
         throw std::logic_error("Can not reset command list in committed or executing state.");
 
-    // ResetCommandState() must be called from the top-most overridden Reset method
+    // NOTE: ResetCommandState() must be called from the top-most overridden Reset method
 
-    const bool debug_group_changed = m_open_debug_group != debug_group;
+    const bool debug_group_changed = m_open_debug_groups.empty() || m_open_debug_groups.top().get() != debug_group;
 
-    if (!m_open_debug_group.empty() && debug_group_changed)
+    if (!m_open_debug_groups.empty() && debug_group_changed)
     {
         PopDebugGroup();
     }
@@ -76,8 +115,6 @@ void CommandListBase::Reset(const std::string& debug_group)
     {
         PushDebugGroup(debug_group);
     }
-
-    m_open_debug_group = debug_group;
 }
 
 void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior)
@@ -109,10 +146,9 @@ void CommandListBase::Commit()
     m_committed_frame_index = GetCurrentFrameIndex();
     m_state = State::Committed;
 
-    if (!m_open_debug_group.empty())
+    if (!m_open_debug_groups.empty())
     {
         PopDebugGroup();
-        m_open_debug_group = "";
     }
 }
 
@@ -155,6 +191,31 @@ void CommandListBase::Complete(uint32_t frame_index)
 #endif
 
     m_state = State::Pending;
+}
+
+const std::string& CommandListBase::GetTopOpenDebugGroup() const
+{
+    META_FUNCTION_TASK();
+    static std::string s_empty_name;
+    return m_open_debug_groups.empty() ? s_empty_name : m_open_debug_groups.top().get();
+}
+
+const std::string& CommandListBase::PushOpenDebugGroup(const std::string& name)
+{
+    META_FUNCTION_TASK();
+    // NOTE: Debug group names pooling is currently required for Tracy discontinuous frames instrumentation
+    const std::string& dict_name = *m_debug_group_names.insert(name).first;
+    m_open_debug_groups.emplace(dict_name);
+    return dict_name;
+}
+
+void CommandListBase::ClearOpenDebugGroups()
+{
+    META_FUNCTION_TASK();
+    while(!m_open_debug_groups.empty())
+    {
+        m_open_debug_groups.pop();
+    }
 }
 
 bool CommandListBase::IsExecutingOnAnyFrame() const

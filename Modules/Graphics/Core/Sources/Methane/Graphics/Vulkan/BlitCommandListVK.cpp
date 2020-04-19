@@ -55,14 +55,16 @@ void BlitCommandListVK::SetName(const std::string& name)
     CommandListBase::SetName(name);
 }
 
-void BlitCommandListVK::PushDebugGroup(const std::string& /*name*/)
+void BlitCommandListVK::PushDebugGroup(const std::string& name)
 {
     META_FUNCTION_TASK();
+    CommandListBase::PushDebugGroup(name);
 }
 
 void BlitCommandListVK::PopDebugGroup()
 {
     META_FUNCTION_TASK();
+    CommandListBase::PopDebugGroup();
 }
 
 void BlitCommandListVK::Commit()

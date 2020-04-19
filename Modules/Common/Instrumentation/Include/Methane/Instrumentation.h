@@ -33,20 +33,29 @@ NOTE:
 // before memory allocation operator overrides
 // to minimize possibility of Tracy code self-instrumentation
 #include <Tracy.hpp>
+#include <TracyC.h>
 
 #include "IttApiHelper.h"
 #include "ScopeTimer.h"
 
 #ifdef TRACY_ENABLE
+
 // Override memory allocation operators new/delete with Tracy instrumentation
 #include "InstrumentMemoryAllocations.h"
+
 #endif
 
 ITT_DOMAIN_EXTERN();
 
 #define META_CPU_FRAME_DELIMITER() \
     FrameMark \
-    ITT_THREAD_MARKER("Frame-Delimiter");
+    ITT_THREAD_MARKER("Frame-Delimiter")
+
+#define META_CPU_FRAME_START(name) \
+    TracyCFrameMarkStart(name)
+
+#define META_CPU_FRAME_END(name) \
+    TracyCFrameMarkEnd(name)
 
 #define META_SCOPE_TASK(/*const char* */name) \
     ZoneScopedN(name) \

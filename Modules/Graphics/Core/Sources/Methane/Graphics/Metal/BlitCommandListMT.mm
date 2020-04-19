@@ -89,6 +89,8 @@ void BlitCommandListMT::PushDebugGroup(const std::string& name)
 {
     META_FUNCTION_TASK();
 
+    CommandListBase::PushDebugGroup(name);
+
     assert(m_mtl_blit_encoder != nil);
     NSString* ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
     [m_mtl_blit_encoder pushDebugGroup:ns_name];
@@ -97,6 +99,8 @@ void BlitCommandListMT::PushDebugGroup(const std::string& name)
 void BlitCommandListMT::PopDebugGroup()
 {
     META_FUNCTION_TASK();
+
+    CommandListBase::PopDebugGroup();
 
     assert(m_mtl_blit_encoder != nil);
     [m_mtl_blit_encoder popDebugGroup];

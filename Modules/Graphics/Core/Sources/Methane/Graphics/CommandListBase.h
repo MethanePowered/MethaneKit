@@ -29,9 +29,10 @@ Base implementation of the command list interface.
 #include <Methane/Graphics/Program.h>
 #include <Methane/Graphics/CommandList.h>
 #include <Methane/Graphics/CommandQueue.h>
+#include <Methane/Memory.hpp>
 
-#include <map>
-#include <mutex>
+#include <stack>
+#include <set>
 
 namespace Methane::Graphics
 {
@@ -73,6 +74,8 @@ public:
 
     // CommandList interface
     Type GetType() const override { return m_type; }
+    void PushDebugGroup(const std::string& name) override;
+    void PopDebugGroup() override;
     void Reset(const std::string& debug_group = "") override;
     void SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
     void Commit() override;
@@ -83,8 +86,11 @@ public:
     virtual void Execute(uint32_t frame_index);
     virtual void Complete(uint32_t frame_index);
 
+    const std::string& GetTopOpenDebugGroup() const;
+    const std::string& PushOpenDebugGroup(const std::string& name);
+    void ClearOpenDebugGroups();
+
     void SetResourceTransitionBarriers(const Refs<Resource>& resources, ResourceBase::State state_before, ResourceBase::State state_after);
-    void SetOpenDebugGroup(const std::string& debug_group)  { m_open_debug_group = debug_group; }
     const ProgramBindingsBase* GetProgramBindings() const   { return GetCommandState().p_program_bindings; }
     Ptr<CommandListBase>       GetPtr()                     { return shared_from_this(); }
 
@@ -105,13 +111,16 @@ protected:
 
 private:
     static std::string GetStateName(State state);
-    
-    using ExecutingOnFrame = std::map<uint32_t, bool>;
+
+    using GroupNamesPool   = std::set<std::string>;
+    using GroupNameRef     = Ref<const std::string>;
+    using GroupNamesStack  = std::stack<GroupNameRef>;
 
     const Type              m_type;
     Ptr<CommandQueue>       m_sp_command_queue;
     UniquePtr<CommandState> m_sp_command_state;
-    std::string             m_open_debug_group;
+    GroupNamesPool          m_debug_group_names;
+    GroupNamesStack         m_open_debug_groups;
     uint32_t                m_committed_frame_index = 0;
     State                   m_state                 = State::Pending;
 };

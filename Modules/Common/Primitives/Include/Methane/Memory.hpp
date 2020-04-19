@@ -54,4 +54,6 @@ using Ref = std::reference_wrapper<T>;
 template<class T>
 using Refs = std::vector<Ref<T>>;
 
+#define META_UNUSED(var) (void)var
+
 } // namespace Methane

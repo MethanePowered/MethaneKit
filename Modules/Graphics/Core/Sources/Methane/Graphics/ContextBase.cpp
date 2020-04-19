@@ -206,8 +206,10 @@ CommandQueue& ContextBase::GetUploadCommandQueue()
     META_FUNCTION_TASK();
     if (!m_sp_upload_cmd_queue)
     {
+        static const std::string s_command_queue_name = "Upload Command Queue";
+
         m_sp_upload_cmd_queue = CommandQueue::Create(*this);
-        m_sp_upload_cmd_queue->SetName("Upload Command Queue");
+        m_sp_upload_cmd_queue->SetName(s_command_queue_name);
     }
     return *m_sp_upload_cmd_queue;
 }
@@ -217,9 +219,12 @@ BlitCommandList& ContextBase::GetUploadCommandList()
     META_FUNCTION_TASK();
     if (!m_sp_upload_cmd_list)
     {
+        static const std::string s_command_list_name = "Upload Command List";
+        static const std::string s_debug_region_name = "Upload Command List";
+
         m_sp_upload_cmd_list = BlitCommandList::Create(GetUploadCommandQueue());
-        m_sp_upload_cmd_list->SetName("Upload Command List");
-        m_sp_upload_cmd_list->Reset("Upload Resources");
+        m_sp_upload_cmd_list->SetName(s_command_list_name);
+        m_sp_upload_cmd_list->Reset(s_debug_region_name);
     }
     return *m_sp_upload_cmd_list;
 }

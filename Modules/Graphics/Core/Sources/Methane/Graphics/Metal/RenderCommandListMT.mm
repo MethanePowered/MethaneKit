@@ -140,6 +140,8 @@ void RenderCommandListMT::PushDebugGroup(const std::string& name)
 {
     META_FUNCTION_TASK();
 
+    CommandListBase::PushDebugGroup(name);
+
     assert(m_mtl_render_encoder != nil);
     NSString* ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
     [m_mtl_render_encoder pushDebugGroup:ns_name];
@@ -148,6 +150,8 @@ void RenderCommandListMT::PushDebugGroup(const std::string& name)
 void RenderCommandListMT::PopDebugGroup()
 {
     META_FUNCTION_TASK();
+
+    CommandListBase::PopDebugGroup();
 
     assert(m_mtl_render_encoder != nil);
     [m_mtl_render_encoder popDebugGroup];
