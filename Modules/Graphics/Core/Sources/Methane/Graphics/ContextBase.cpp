@@ -28,16 +28,12 @@ Base implementation of the context interface.
 #include <Methane/Graphics/BlitCommandList.h>
 #include <Methane/Instrumentation.h>
 
-#ifdef COMMAND_EXECUTION_LOGGING
-#include <Methane/Platform/Utils.h>
-#endif
-
 #include <cassert>
 
 namespace Methane::Graphics
 {
 
-#ifdef COMMAND_EXECUTION_LOGGING
+#ifdef METHANE_LOGGING_ENABLED
 static std::string GetWaitForName(Context::WaitFor wait_for)
 {
     META_FUNCTION_TASK();
@@ -62,10 +58,7 @@ ContextBase::ContextBase(DeviceBase& device, Type type)
 void ContextBase::CompleteInitialization()
 {
     META_FUNCTION_TASK();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("Complete initialization of context \"" + GetName() + "\"");
-#endif
+    META_LOG("Complete initialization of context \"" + GetName() + "\"");
 
     m_resource_manager.CompleteInitialization();
     UploadResources();
@@ -74,10 +67,7 @@ void ContextBase::CompleteInitialization()
 void ContextBase::WaitForGpu(WaitFor wait_for)
 {
     META_FUNCTION_TASK();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput(GetWaitForName(wait_for) + " in context \"" + GetName() + "\"");
-#endif
+    META_LOG(GetWaitForName(wait_for) + " in context \"" + GetName() + "\"");
 
     if (wait_for == WaitFor::ResourcesUploaded)
     {
@@ -92,10 +82,7 @@ void ContextBase::WaitForGpu(WaitFor wait_for)
 void ContextBase::Reset(Device& device)
 {
     META_FUNCTION_TASK();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("RESET context \"" + GetName() + "\" with device adapter \"" + device.GetAdapterName() + "\".");
-#endif
+    META_LOG("RESET context \"" + GetName() + "\" with device adapter \"" + device.GetAdapterName() + "\".");
 
     WaitForGpu(WaitFor::RenderComplete);
     Release();
@@ -105,10 +92,7 @@ void ContextBase::Reset(Device& device)
 void ContextBase::Reset()
 {
     META_FUNCTION_TASK();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("RESET context \"" + GetName() + "\"..");
-#endif
+    META_LOG("RESET context \"" + GetName() + "\"..");
 
     WaitForGpu(WaitFor::RenderComplete);
 
@@ -147,13 +131,9 @@ void ContextBase::OnGpuWaitComplete(WaitFor)
 void ContextBase::Release()
 {
     META_FUNCTION_TASK();
+    META_LOG("RELEASE context \"" + GetName() + "\"");
 
     m_sp_device.reset();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("RELEASE context \"" + GetName() + "\"");
-#endif
-
     m_sp_upload_cmd_queue.reset();
     m_sp_upload_cmd_list.reset();
     m_sp_upload_fence.reset();
@@ -172,10 +152,7 @@ void ContextBase::Release()
 void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation)
 {
     META_FUNCTION_TASK();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("INITIALIZE context \"" + GetName() + "\"");
-#endif
+    META_LOG("INITIALIZE context \"" + GetName() + "\"");
 
     m_sp_device = device.GetPtr();
     m_sp_upload_fence = Fence::Create(GetUploadCommandQueue());
@@ -268,10 +245,7 @@ void ContextBase::SetName(const std::string& name)
 void ContextBase::UploadResources()
 {
     META_FUNCTION_TASK();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("UPLOAD resources for context \"" + GetName() + "\"");
-#endif
+    META_LOG("UPLOAD resources for context \"" + GetName() + "\"");
 
     GetUploadCommandList().Commit();
     GetUploadCommandQueue().Execute({ GetUploadCommandList() });

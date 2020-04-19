@@ -44,10 +44,18 @@ if (METHANE_TRACY_PROFILING_ENABLED)
     # Force include header with memory allocation operators override, implementing Tracy memory instrumentation
     set(FORCE_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}/InstrumentMemoryAllocations.h)
     if (MSVC)
-        target_compile_options(MethaneInstrumentation PUBLIC /FI "${FORCE_INCLUDE_PATH}")
+        target_compile_options(${TARGET} PUBLIC /FI "${FORCE_INCLUDE_PATH}")
     else()
-        target_compile_options(MethaneInstrumentation PUBLIC -include "${FORCE_INCLUDE_PATH}")
+        target_compile_options(${TARGET} PUBLIC -include "${FORCE_INCLUDE_PATH}")
     endif()
+endif()
+
+if (METHANE_LOGGING_ENABLED)
+    target_compile_definitions(${TARGET} INTERFACE -DMETHANE_LOGGING_ENABLED)
+    target_link_libraries(${TARGET}
+        PUBLIC
+            MethanePlatformUtils
+    )
 endif()
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})

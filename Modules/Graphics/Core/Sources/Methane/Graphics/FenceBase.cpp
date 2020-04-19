@@ -26,9 +26,6 @@ DirectX 12 fence wrapper.
 
 #include <Methane/Instrumentation.h>
 
-#ifdef COMMAND_EXECUTION_LOGGING
-#include <Methane/Platform/Utils.h>
-#endif
 namespace Methane::Graphics
 {
 
@@ -41,21 +38,15 @@ FenceBase::FenceBase(CommandQueueBase& command_queue)
 void FenceBase::Signal()
 {
     META_FUNCTION_TASK();
+    META_LOG("SIGNAL fence \"" + GetName() + "\" with value " + std::to_string(m_value + 1));
 
     m_value++;
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("SIGNAL fence \"" + GetName() + "\" with value " + std::to_string(m_value));
-#endif
 }
 
 void FenceBase::Wait()
 {
     META_FUNCTION_TASK();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("WAIT fence \"" + GetName() + "\" with value " + std::to_string(m_value));
-#endif
+    META_LOG("WAIT fence \"" + GetName() + "\" with value " + std::to_string(m_value));
 }
 
 void FenceBase::Flush()

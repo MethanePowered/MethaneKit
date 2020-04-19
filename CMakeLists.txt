@@ -5,15 +5,15 @@ project(MethaneKit)
 enable_testing()
 
 # Build configuration
-option(METHANE_USE_OPEN_IMAGE_IO "Enable using OpenImageIO library for images loading" OFF)
+option(METHANE_RUN_TESTS_DURING_BUILD   "Run tests during build" ON)
 option(METHANE_SHADERS_CODEVIEW_ENABLED "Enable shaders code symbols viewing in debug tools)" OFF)
-option(METHANE_COMMAND_EXECUTION_LOGGING "Enable command execution debug logging" OFF)
-option(METHANE_RUN_TESTS_DURING_BUILD "Run tests during build" ON)
+option(METHANE_LOGGING_ENABLED          "Enable debug logging" OFF)
+option(METHANE_USE_OPEN_IMAGE_IO        "Enable using OpenImageIO library for images loading" OFF)
 
 # Profiling configuration
-option(METHANE_SCOPE_TIMERS_ENABLED "Enable low-overhead profiling with scope-timers" OFF)
-option(METHANE_ITT_INSTRUMENTATION_ENABLED "Enable ITT instrumentation for trace capture with Intel GPA or VTune" OFF)
-option(METHANE_TRACY_PROFILING_ENABLED "Enable realtime profiling with Tracy" OFF)
+option(METHANE_SCOPE_TIMERS_ENABLED         "Enable low-overhead profiling with scope-timers" OFF)
+option(METHANE_ITT_INSTRUMENTATION_ENABLED  "Enable ITT instrumentation for trace capture with Intel GPA or VTune" OFF)
+option(METHANE_TRACY_PROFILING_ENABLED      "Enable realtime profiling with Tracy" OFF)
 
 # Methane version, build & product info
 set(METHANE_VERSION_MAJOR 0 CACHE STRING "Methane major version")
@@ -134,9 +134,8 @@ if(METHANE_RUN_TESTS_DURING_BUILD)
     message(STATUS "Methane tests running during build is enabled")
 endif()
 
-if(METHANE_COMMAND_EXECUTION_LOGGING)
-    message(STATUS "Methane command execution debug logging is enabled")
-    target_compile_definitions(MethaneBuildOptions INTERFACE -DCOMMAND_EXECUTION_LOGGING)
+if(METHANE_LOGGING_ENABLED)
+    message(STATUS "Methane debug logging is enabled")
 endif()
 
 if (CMAKE_INSTALL_PREFIX AND EXISTS "${CMAKE_INSTALL_PREFIX}/bin/ctest")

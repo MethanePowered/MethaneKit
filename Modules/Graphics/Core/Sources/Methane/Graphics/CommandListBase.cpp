@@ -28,10 +28,6 @@ Base implementation of the command list interface.
 
 #include <Methane/Instrumentation.h>
 
-#ifdef COMMAND_EXECUTION_LOGGING
-#include <Methane/Platform/Utils.h>
-#endif
-
 #include <cassert>
 
 // Disable debug groups instrumentation with discontinuous CPU frames in Tracy,
@@ -70,10 +66,7 @@ CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
 void CommandListBase::PushDebugGroup(const std::string& name)
 {
     META_FUNCTION_TASK();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("Command list \"" + GetName() + "\" PUSH debug group \"" + name + "\"");
-#endif
+    META_LOG("Command list \"" + GetName() + "\" PUSH debug group \"" + name + "\"");
 
     const std::string& dict_name = PushOpenDebugGroup(name);
     META_CPU_FRAME_START(dict_name.c_str());
@@ -88,10 +81,7 @@ void CommandListBase::PopDebugGroup()
         throw std::underflow_error("Can not pop debug group, since no debug groups were pushed.");
     }
 
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("Command list \"" + GetName() + "\" POP debug group \"" + m_open_debug_groups.top().get() + "\"");
-#endif
-
+    META_LOG("Command list \"" + GetName() + "\" POP debug group \"" + m_open_debug_groups.top().get() + "\"");
     META_CPU_FRAME_END(m_open_debug_groups.top().get().c_str());
     m_open_debug_groups.pop();
 }
@@ -139,9 +129,7 @@ void CommandListBase::Commit()
         throw std::logic_error("Command list \"" + GetName() + "\" in " + GetStateName(m_state) + " state can not be committed. Only Pending command lists can be committed.");
     }
 
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("CommandList \"" + GetName() + "\" is committed on frame " + std::to_string(GetCurrentFrameIndex()));
-#endif
+    META_LOG("CommandList \"" + GetName() + "\" is committed on frame " + std::to_string(GetCurrentFrameIndex()));
 
     m_committed_frame_index = GetCurrentFrameIndex();
     m_state = State::Committed;
@@ -166,9 +154,7 @@ void CommandListBase::Execute(uint32_t frame_index)
         throw std::logic_error("Command list \"" + GetName() + "\" committed on frame " + std::to_string(m_committed_frame_index) + " can not be executed on frame " + std::to_string(frame_index));
     }
 
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("CommandList \"" + GetName() + "\" is executing on frame " + std::to_string(frame_index));
-#endif
+    META_LOG("CommandList \"" + GetName() + "\" is executing on frame " + std::to_string(frame_index));
 
     m_state = State::Executing;
 }
@@ -186,9 +172,7 @@ void CommandListBase::Complete(uint32_t frame_index)
         throw std::logic_error("Command list \"" + GetName() + "\" committed on frame " + std::to_string(m_committed_frame_index) + " can not be completed on frame " + std::to_string(frame_index));
     }
 
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("CommandList \"" + GetName() + "\" was completed on frame " + std::to_string(frame_index));
-#endif
+    META_LOG("CommandList \"" + GetName() + "\" was completed on frame " + std::to_string(frame_index));
 
     m_state = State::Pending;
 }

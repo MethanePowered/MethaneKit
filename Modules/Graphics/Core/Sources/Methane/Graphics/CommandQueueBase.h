@@ -32,8 +32,6 @@ Base implementation of the command queue interface.
 #include <set>
 #include <mutex>
 
-//#define COMMAND_EXECUTION_LOGGING
-
 namespace Methane::Graphics
 {
 

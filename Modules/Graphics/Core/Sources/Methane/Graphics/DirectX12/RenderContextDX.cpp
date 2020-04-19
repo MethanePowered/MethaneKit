@@ -29,10 +29,6 @@ DirectX 12 implementation of the render context interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Primitives.h>
 
-#ifdef COMMAND_EXECUTION_LOGGING
-#include <Methane/Platform/Utils.h>
-#endif
-
 #include <shellscalingapi.h>
 #include <nowide/convert.hpp>
 #include <cassert>

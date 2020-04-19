@@ -43,18 +43,18 @@ NOTE:
 // Override memory allocation operators new/delete with Tracy instrumentation
 #include "InstrumentMemoryAllocations.h"
 
-#endif
+#endif // TRACY_ENABLE
 
 ITT_DOMAIN_EXTERN();
 
 #define META_CPU_FRAME_DELIMITER() \
     FrameMark \
-    ITT_THREAD_MARKER("Frame-Delimiter")
+    ITT_THREAD_MARKER("Methane-Frame-Delimiter")
 
-#define META_CPU_FRAME_START(name) \
+#define META_CPU_FRAME_START(/*const char* */name) \
     TracyCFrameMarkStart(name)
 
-#define META_CPU_FRAME_END(name) \
+#define META_CPU_FRAME_END(/*const char* */name) \
     TracyCFrameMarkEnd(name)
 
 #define META_SCOPE_TASK(/*const char* */name) \
@@ -82,3 +82,16 @@ ITT_DOMAIN_EXTERN();
     ITT_FUNCTION_THREAD_MARKER()
 #define META_FUNCTION_TASK_MARKER() \
     ITT_FUNCTION_TASK_MARKER()
+
+#ifdef METHANE_LOGGING_ENABLED
+
+#include <Methane/Platform/Utils.h>
+
+#define META_LOG(/*const std::string& */message) \
+    Methane::Platform::PrintToDebugOutput(message)
+
+#else // METHANE_LOGGING_ENABLED
+
+#define META_LOG(/*const std::string& */message)
+
+#endif // METHANE_LOGGING_ENABLED

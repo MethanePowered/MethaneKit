@@ -26,10 +26,6 @@ Base implementation of the render context interface.
 
 #include <Methane/Instrumentation.h>
 
-#ifdef COMMAND_EXECUTION_LOGGING
-#include <Methane/Platform/Utils.h>
-#endif
-
 #include <cassert>
 
 namespace Methane::Graphics
@@ -74,10 +70,7 @@ void RenderContextBase::WaitForGpu(WaitFor wait_for)
 void RenderContextBase::Resize(const FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("RESIZE context \"" + GetName() + "\" from " + static_cast<std::string>(m_settings.frame_size) + " to " + static_cast<std::string>(frame_size));
-#endif
+    META_LOG("RESIZE context \"" + GetName() + "\" from " + static_cast<std::string>(m_settings.frame_size) + " to " + static_cast<std::string>(frame_size));
 
     m_settings.frame_size = frame_size;
 }
@@ -85,10 +78,7 @@ void RenderContextBase::Resize(const FrameSize& frame_size)
 void RenderContextBase::Present()
 {
     META_FUNCTION_TASK();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("PRESENT frame " + std::to_string(m_frame_buffer_index) + " in context \"" + GetName() + "\"");
-#endif
+    META_LOG("PRESENT frame " + std::to_string(m_frame_buffer_index) + " in context \"" + GetName() + "\"");
 
     m_fps_counter.OnCpuFrameReadyToPresent();
 }
@@ -104,10 +94,7 @@ void RenderContextBase::OnCpuPresentComplete(bool signal_frame_fence)
     }
 
     META_CPU_FRAME_DELIMITER();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("PRESENT COMPLETE for context \"" + GetName() + "\"");
-#endif
+    META_LOG("PRESENT COMPLETE for context \"" + GetName() + "\"");
 
     m_fps_counter.OnCpuFramePresented();
 }
@@ -130,10 +117,7 @@ Fence& RenderContextBase::GetRenderFence() const
 void RenderContextBase::ResetWithSettings(const Settings& settings)
 {
     META_FUNCTION_TASK();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("RESET context \"" + GetName() + "\" with new settings.");
-#endif
+    META_LOG("RESET context \"" + GetName() + "\" with new settings.");
 
     WaitForGpu(WaitFor::RenderComplete);
 

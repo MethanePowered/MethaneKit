@@ -26,10 +26,6 @@ Base implementation of the command queue interface.
 
 #include <Methane/Instrumentation.h>
 
-#ifdef COMMAND_EXECUTION_LOGGING
-#include <Methane/Platform/Utils.h>
-#endif
-
 #include <cassert>
 
 namespace Methane::Graphics
@@ -51,10 +47,7 @@ void CommandQueueBase::Execute(const Refs<CommandList>& command_lists)
     META_FUNCTION_TASK();
 
     const uint32_t frame_index = GetCurrentFrameBufferIndex();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-        Platform::PrintToDebugOutput("CommandQueue \"" + GetName() + "\" is executing on frame " + std::to_string(frame_index));
-#endif
+    META_LOG("CommandQueue \"" + GetName() + "\" is executing on frame " + std::to_string(frame_index));
 
     for (const auto& command_list_ref : command_lists)
     {
