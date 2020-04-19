@@ -29,21 +29,11 @@ NOTE:
 
 #pragma once
 
-// Include Tracy header implementation first
-// before memory allocation operator overrides
-// to minimize possibility of Tracy code self-instrumentation
 #include <Tracy.hpp>
 #include <TracyC.h>
 
 #include "IttApiHelper.h"
 #include "ScopeTimer.h"
-
-#ifdef TRACY_ENABLE
-
-// Override memory allocation operators new/delete with Tracy instrumentation
-#include "InstrumentMemoryAllocations.h"
-
-#endif // TRACY_ENABLE
 
 ITT_DOMAIN_EXTERN();
 

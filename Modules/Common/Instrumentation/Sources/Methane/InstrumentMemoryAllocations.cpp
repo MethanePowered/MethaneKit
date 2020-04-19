@@ -22,9 +22,18 @@ Overloading "new" and "delete" operators with additional instrumentation:
 
 ******************************************************************************/
 
-#include <Methane/InstrumentMemoryAllocations.h>
-
 #include <Tracy.hpp>
+
+#include <cstdlib>
+#include <new>
+
+#if defined(TRACY_CALL_STACK_DEPTH) && TRACY_CALL_STACK_DEPTH > 0
+    #define TRACY_ALLOC(ptr, size) TracyAllocS(ptr, size, TRACY_CALL_STACK_DEPTH)
+    #define TRACY_FREE(ptr) TracyFreeS(ptr, TRACY_CALL_STACK_DEPTH)
+#else
+    #define TRACY_ALLOC(ptr, size) TracyAlloc(ptr, size)
+    #define TRACY_FREE(ptr) TracyFree(ptr)
+#endif
 
 void* operator new(std::size_t size)
 {
@@ -32,7 +41,7 @@ void* operator new(std::size_t size)
     if (!ptr)
         throw std::bad_alloc();
 
-    TracyAlloc(ptr, size)
+    TRACY_ALLOC(ptr, size)
     return ptr;
 }
 
@@ -52,28 +61,27 @@ void* operator new(std::size_t size, std::align_val_t align)
     if (!ptr)
         throw std::bad_alloc{};
 
-    TracyAlloc(ptr, size)
+    TRACY_ALLOC(ptr, size)
     return ptr;
 }
 
-void operator delete(void* ptr) throw()
+void operator delete(void* ptr) noexcept
 {
-    TracyFree(ptr)
+    TRACY_FREE(ptr)
     std::free(ptr);
 }
 
-void operator delete(void* ptr, size_t) throw()
+void operator delete(void* ptr, std::align_val_t) noexcept
 {
-    TracyFree(ptr)
-    std::free(ptr);
-}
-
-void operator delete(void* ptr, std::align_val_t) throw()
-{
-    TracyFree(ptr)
+    TRACY_FREE(ptr)
 #if defined(_WIN32)
     _aligned_free(ptr);
 #else
     free(ptr);
 #endif
+}
+
+void operator delete(void* ptr, size_t, std::align_val_t align_tag) noexcept
+{
+    operator delete(ptr, align_tag);
 }

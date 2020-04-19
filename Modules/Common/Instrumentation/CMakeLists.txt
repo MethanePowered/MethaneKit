@@ -6,7 +6,6 @@ get_module_dirs("Methane")
 
 set(HEADERS
     ${INCLUDE_DIR}/Instrumentation.h
-    ${INCLUDE_DIR}/InstrumentMemoryAllocations.h
     ${INCLUDE_DIR}/IttApiHelper.h
     ${INCLUDE_DIR}/ScopeTimer.h
     ${INCLUDE_DIR}/ILogger.h
@@ -14,8 +13,8 @@ set(HEADERS
 
 set(SOURCES
     ${SOURCES_DIR}/Instrumentation.cpp
-    ${SOURCES_DIR}/InstrumentMemoryAllocations.cpp
     ${SOURCES_DIR}/ScopeTimer.cpp
+    $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:${SOURCES_DIR}/InstrumentMemoryAllocations.cpp>
 )
 
 add_library(${TARGET} STATIC
@@ -32,6 +31,7 @@ target_include_directories(${TARGET}
 
 target_link_libraries(${TARGET}
     PUBLIC
+        $<$<BOOL:${METHANE_LOGGING_ENABLED}>:MethanePlatformUtils>
         MethanePrimitives
         TracyInstrumentation
         ittnotify
@@ -40,27 +40,13 @@ target_link_libraries(${TARGET}
         MethaneBuildOptions
 )
 
-if (METHANE_TRACY_PROFILING_ENABLED)
-    # Force include header with memory allocation operators override, implementing Tracy memory instrumentation
-    set(FORCE_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}/InstrumentMemoryAllocations.h)
-    if (MSVC)
-        target_compile_options(${TARGET} PUBLIC /FI "${FORCE_INCLUDE_PATH}")
-    else()
-        target_compile_options(${TARGET} PUBLIC -include "${FORCE_INCLUDE_PATH}")
-    endif()
-endif()
-
-if (METHANE_SCOPE_TIMERS_ENABLED)
-    target_compile_definitions(${TARGET} INTERFACE -DMETHANE_SCOPE_TIMERS_ENABLED)
-endif()
-
-if (METHANE_LOGGING_ENABLED)
-    target_compile_definitions(${TARGET} INTERFACE -DMETHANE_LOGGING_ENABLED)
-    target_link_libraries(${TARGET}
-        PUBLIC
-            MethanePlatformUtils
-    )
-endif()
+target_compile_definitions(${TARGET}
+    PUBLIC
+        $<$<BOOL:${METHANE_SCOPE_TIMERS_ENABLED}>:METHANE_SCOPE_TIMERS_ENABLED>
+        $<$<BOOL:${METHANE_LOGGING_ENABLED}>:METHANE_LOGGING_ENABLED>
+        # Comment out to disable call-stacks collection and reduce profiling overhead
+        $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TRACY_CALL_STACK_DEPTH=20>
+)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
