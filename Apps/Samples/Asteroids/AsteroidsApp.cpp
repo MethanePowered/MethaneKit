@@ -205,7 +205,7 @@ AsteroidsApp::~AsteroidsApp()
 void AsteroidsApp::Init()
 {
     META_FUNCTION_TASK();
-    SCOPE_TIMER("AsteroidsApp::Init");
+    META_SCOPE_TIMER("AsteroidsApp::Init");
 
     GraphicsApp::Init();
 
@@ -360,7 +360,7 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 bool AsteroidsApp::Update()
 {
     META_FUNCTION_TASK();
-    SCOPE_TIMER("AsteroidsApp::Update");
+    META_SCOPE_TIMER("AsteroidsApp::Update");
 
     if (!GraphicsApp::Update())
         return false;
@@ -376,7 +376,7 @@ bool AsteroidsApp::Update()
 bool AsteroidsApp::Render()
 {
     META_FUNCTION_TASK();
-    SCOPE_TIMER("AsteroidsApp::Render");
+    META_SCOPE_TIMER("AsteroidsApp::Render");
 
     // Render only when context is ready
     assert(!!m_sp_context);
@@ -422,7 +422,7 @@ bool AsteroidsApp::Render()
 void AsteroidsApp::OnContextReleased()
 {
     META_FUNCTION_TASK();
-    FLUSH_SCOPE_TIMINGS();
+    META_SCOPE_TIMERS_FLUSH();
 
     if (m_sp_asteroids_array)
     {
@@ -471,7 +471,7 @@ void AsteroidsApp::SetParallelRenderingEnabled(bool is_parallel_rendering_enable
     if (m_is_parallel_rendering_enabled == is_parallel_rendering_enabled)
         return;
 
-    FLUSH_SCOPE_TIMINGS();
+    META_SCOPE_TIMERS_FLUSH();
     m_is_parallel_rendering_enabled = is_parallel_rendering_enabled;
     pal::PrintToDebugOutput(GetParametersString());
 }
@@ -507,6 +507,6 @@ std::string AsteroidsApp::GetParametersString() const
 
 int main(int argc, const char* argv[])
 {
-    SCOPE_TIMER_INITIALIZE(Methane::Platform::Logger);
+    META_SCOPE_TIMERS_INITIALIZE(Methane::Platform::Logger);
     return Methane::Samples::AsteroidsApp().Run({ argc, argv });
 }

@@ -49,7 +49,7 @@ void RenderContextBase::WaitForGpu(WaitFor wait_for)
     {
     case WaitFor::RenderComplete:
     {
-        SCOPE_TIMER("RenderContextDX::WaitForGpu::RenderComplete");
+        META_SCOPE_TIMER("RenderContextDX::WaitForGpu::RenderComplete");
         OnGpuWaitStart(wait_for);
         GetRenderFence().Flush();
         OnGpuWaitComplete(wait_for);
@@ -57,7 +57,7 @@ void RenderContextBase::WaitForGpu(WaitFor wait_for)
 
     case WaitFor::FramePresented:
     {
-        SCOPE_TIMER("RenderContextDX::WaitForGpu::FramePresented");
+        META_SCOPE_TIMER("RenderContextDX::WaitForGpu::FramePresented");
         OnGpuWaitStart(wait_for);
         GetCurrentFrameFence().Wait();
         OnGpuWaitComplete(wait_for);

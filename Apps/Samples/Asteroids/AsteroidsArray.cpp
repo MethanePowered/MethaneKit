@@ -53,7 +53,7 @@ AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivision
     , m_subdivisions_count(subdivisions_count)
 {
     META_FUNCTION_TASK();
-    SCOPE_TIMER("AsteroidsArray::UberMesh::UberMesh");
+    META_SCOPE_TIMER("AsteroidsArray::UberMesh::UberMesh");
 
     std::mt19937 rng(random_seed);
 
@@ -118,7 +118,7 @@ AsteroidsArray::ContentState::ContentState(const Settings& settings)
     : uber_mesh(settings.unique_mesh_count, settings.subdivisions_count, settings.random_seed)
 {
     META_FUNCTION_TASK();
-    SCOPE_TIMER("AsteroidsArray::ContentState::ContentState");
+    META_SCOPE_TIMER("AsteroidsArray::ContentState::ContentState");
 
     std::mt19937 rng(settings.random_seed);
 
@@ -219,7 +219,7 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, Settings settings, C
     , m_min_mesh_lod_screen_size_log_2(std::log2(m_settings.mesh_lod_min_screen_size))
 {
     META_FUNCTION_TASK();
-    SCOPE_TIMER("AsteroidsArray::AsteroidsArray");
+    META_SCOPE_TIMER("AsteroidsArray::AsteroidsArray");
     
     const gfx::RenderContext::Settings& context_settings = context.GetSettings();
 
@@ -300,7 +300,7 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
                                                                             const Ptr<gfx::Buffer> &sp_asteroids_uniforms_buffer)
 {
     META_FUNCTION_TASK();
-    SCOPE_TIMER("AsteroidsArray::CreateProgramBindings");
+    META_SCOPE_TIMER("AsteroidsArray::CreateProgramBindings");
 
     Ptrs<gfx::ProgramBindings> program_bindings_array;
     if (m_settings.instance_count == 0)
@@ -349,7 +349,7 @@ void AsteroidsArray::Resize(const gfx::FrameSize &frame_size)
 bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
 {
     META_FUNCTION_TASK();
-    SCOPE_TIMER("AsteroidsArray::Update");
+    META_SCOPE_TIMER("AsteroidsArray::Update");
 
     gfx::Matrix44f view_matrix, proj_matrix;
     m_settings.view_camera.GetViewProjMatrices(view_matrix, proj_matrix);
@@ -409,7 +409,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
 void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, gfx::MeshBufferBindings& buffer_bindings)
 {
     META_FUNCTION_TASK();
-    SCOPE_TIMER("AsteroidsArray::Draw");
+    META_SCOPE_TIMER("AsteroidsArray::Draw");
 
     const Data::Size uniforms_buffer_size = GetUniformsBufferSize();
     assert(buffer_bindings.sp_uniforms_buffer);
@@ -427,7 +427,7 @@ void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, gfx::MeshBufferBindi
 void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list, gfx::MeshBufferBindings& buffer_bindings)
 {
     META_FUNCTION_TASK();
-    SCOPE_TIMER("AsteroidsArray::DrawParallel");
+    META_SCOPE_TIMER("AsteroidsArray::DrawParallel");
 
     const Data::Size uniforms_buffer_size = GetUniformsBufferSize();
     assert(buffer_bindings.sp_uniforms_buffer);

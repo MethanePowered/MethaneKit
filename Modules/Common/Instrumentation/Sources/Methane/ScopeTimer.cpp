@@ -27,6 +27,7 @@ Code scope measurement timer with aggregating and averaging of timings.
 
 #include <sstream>
 #include <chrono>
+#include <cassert>
 
 namespace Methane
 {
@@ -51,52 +52,67 @@ void ScopeTimer::Aggregator::Flush()
     {
         LogTimings(*m_sp_logger);
     }
-    m_timing_by_scope_name.clear();
+
+    m_timing_by_scope_id.clear();
+    m_scope_id_by_name.clear();
+    m_new_scope_id = 0u;
 }
 
 void ScopeTimer::Aggregator::LogTimings(ILogger& logger)
 {
     META_FUNCTION_TASK();
-    if (m_timing_by_scope_name.empty())
+    if (m_timing_by_scope_id.empty())
         return;
 
     std::stringstream ss;
     ss << std::endl << "Aggregated performance timings:" << std::endl;
 
-    for (const auto& scope_name_and_timing : m_timing_by_scope_name)
+    for (const auto& scope_name_and_id : m_scope_id_by_name)
     {
-        const Timing& scope_timing = scope_name_and_timing.second;
+        const std::string& scope_name = scope_name_and_id.first;
+        const ScopeId      scope_id   = scope_name_and_id.second;
+        assert(scope_id < m_timing_by_scope_id.size());
+
+        const Timing& scope_timing = m_timing_by_scope_id[scope_id];
         const double total_duration_sec = std::chrono::duration_cast<std::chrono::duration<double>>(scope_timing.duration).count();
         const double average_duration_ms = total_duration_sec * 1000.0 / scope_timing.count;
 
-        ss << "  - " << scope_name_and_timing.first << ": "
-           << std::fixed << average_duration_ms << " ms. with " << scope_timing.count << " invocations count;" << std::endl;
+        ss << "  - "       << scope_name
+           << ": "         << std::fixed << average_duration_ms
+           << " ms. with " << scope_timing.count
+           << " invocations count;" << std::endl;
     }
 
     logger.Log(ss.str());
 }
 
-void ScopeTimer::Aggregator::AddScopeTiming(const std::string& scope_name, TimeDuration duration)
+ScopeTimer::Registration ScopeTimer::Aggregator::RegisterScope(const char* scope_name)
 {
     META_FUNCTION_TASK();
+    const auto result = m_scope_id_by_name.emplace(scope_name, m_new_scope_id);
+    if (result.second)
+    {
+        m_new_scope_id++;
+        m_timing_by_scope_id.resize(m_new_scope_id);
+        META_CHART_CONFIG(result.first->first.c_str(), tracy::PlotFormatType::Number);
+    }
+    return Registration{ NameRef(result.first->first), result.first->second };
+}
 
-    Timing& scope_timing = m_timing_by_scope_name[scope_name];
+void ScopeTimer::Aggregator::AddScopeTiming(const Registration& scope_registration, TimeDuration duration)
+{
+    META_FUNCTION_TASK();
+    META_CHART_VALUE(scope_registration.name_ref.get().c_str(), std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count());
+
+    assert(scope_registration.id <= m_timing_by_scope_id.size());
+    Timing& scope_timing = m_timing_by_scope_id[scope_registration.id];
     scope_timing.count++;
     scope_timing.duration += duration;
 }
 
-const ScopeTimer::Aggregator::Timing& ScopeTimer::Aggregator::GetScopeTiming(const std::string& scope_name) const
-{
-    META_FUNCTION_TASK();
-
-    static Timing s_empty_timing{};
-    auto   scope_timing_it = m_timing_by_scope_name.find(scope_name);
-    return scope_timing_it != m_timing_by_scope_name.end() ? scope_timing_it->second : s_empty_timing;
-}
-
-ScopeTimer::ScopeTimer(std::string scope_name)
+ScopeTimer::ScopeTimer(const char* scope_name)
     : Timer()
-    , m_scope_name(std::move(scope_name))
+    , m_registration(Aggregator::Get().RegisterScope(scope_name))
 {
     META_FUNCTION_TASK();
 }
@@ -104,7 +120,7 @@ ScopeTimer::ScopeTimer(std::string scope_name)
 ScopeTimer::~ScopeTimer()
 {
     META_FUNCTION_TASK();
-    Aggregator::Get().AddScopeTiming(m_scope_name, GetElapsedDuration());
+    Aggregator::Get().AddScopeTiming(m_registration, GetElapsedDuration());
 }
 
 } // namespace Methane

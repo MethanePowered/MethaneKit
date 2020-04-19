@@ -50,6 +50,10 @@ if (METHANE_TRACY_PROFILING_ENABLED)
     endif()
 endif()
 
+if (METHANE_SCOPE_TIMERS_ENABLED)
+    target_compile_definitions(${TARGET} INTERFACE -DMETHANE_SCOPE_TIMERS_ENABLED)
+endif()
+
 if (METHANE_LOGGING_ENABLED)
     target_compile_definitions(${TARGET} INTERFACE -DMETHANE_LOGGING_ENABLED)
     target_link_libraries(${TARGET}

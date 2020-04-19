@@ -185,7 +185,7 @@ void RenderContextDX::Resize(const FrameSize& frame_size)
 void RenderContextDX::Present()
 {
     META_FUNCTION_TASK();
-    SCOPE_TIMER("RenderContextDX::Present");
+    META_SCOPE_TIMER("RenderContextDX::Present");
 
     ContextDX<RenderContextBase>::Present();
 

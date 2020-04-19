@@ -83,6 +83,12 @@ ITT_DOMAIN_EXTERN();
 #define META_FUNCTION_TASK_MARKER() \
     ITT_FUNCTION_TASK_MARKER()
 
+#define META_CHART_CONFIG(/*const char* */name, /*tracy::PlotFormatType */tracy_format) \
+    TracyPlotConfig(name, tracy_format);
+
+#define META_CHART_VALUE(/*const char* */name, /*int64_t | float | double */value) \
+    TracyPlot(name, value)
+
 #ifdef METHANE_LOGGING_ENABLED
 
 #include <Methane/Platform/Utils.h>
