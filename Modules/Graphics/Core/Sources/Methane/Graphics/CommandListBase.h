@@ -66,6 +66,8 @@ public:
 
         static UniquePtr<CommandState> Create(Type command_list_type);
 
+        virtual ~CommandState() = default;
+
     protected:
         CommandState() = default;
     };
