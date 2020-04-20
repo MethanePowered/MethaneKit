@@ -37,6 +37,18 @@ NOTE:
 
 ITT_DOMAIN_EXTERN();
 
+#if defined(TRACY_ZONE_CALL_STACK_DEPTH) && TRACY_ZONE_CALL_STACK_DEPTH > 0
+
+#define TRACY_ZONE_SCOPED() ZoneScopedS(TRACY_ZONE_CALL_STACK_DEPTH)
+#define TRACY_ZONE_SCOPED_NAME(name) ZoneScopedNS(name, TRACY_ZONE_CALL_STACK_DEPTH)
+
+#else // TRACY_ZONE_CALL_STACK_DEPTH
+
+#define TRACY_ZONE_SCOPED() ZoneScoped
+#define TRACY_ZONE_SCOPED_NAME(name) ZoneScopedN(name)
+
+#endif // TRACY_ZONE_CALL_STACK_DEPTH
+
 #define META_CPU_FRAME_DELIMITER() \
     FrameMark \
     ITT_THREAD_MARKER("Methane-Frame-Delimiter")
@@ -48,11 +60,11 @@ ITT_DOMAIN_EXTERN();
     TracyCFrameMarkEnd(name)
 
 #define META_SCOPE_TASK(/*const char* */name) \
-    ZoneScopedN(name) \
+    TRACY_ZONE_SCOPED_NAME(name) \
     ITT_SCOPE_TASK(name)
 
 #define META_FUNCTION_TASK() \
-    ZoneScoped \
+    TRACY_ZONE_SCOPED() \
     ITT_FUNCTION_TASK()
 
 #define META_GLOBAL_MARKER(/*const char* */name) \

@@ -27,13 +27,17 @@ Overloading "new" and "delete" operators with additional instrumentation:
 #include <cstdlib>
 #include <new>
 
-#if defined(TRACY_CALL_STACK_DEPTH) && TRACY_CALL_STACK_DEPTH > 0
-    #define TRACY_ALLOC(ptr, size) TracyAllocS(ptr, size, TRACY_CALL_STACK_DEPTH)
-    #define TRACY_FREE(ptr) TracyFreeS(ptr, TRACY_CALL_STACK_DEPTH)
-#else
-    #define TRACY_ALLOC(ptr, size) TracyAlloc(ptr, size)
-    #define TRACY_FREE(ptr) TracyFree(ptr)
-#endif
+#if defined(TRACY_MEMORY_CALL_STACK_DEPTH) && TRACY_MEMORY_CALL_STACK_DEPTH > 0
+
+#define TRACY_ALLOC(ptr, size) TracyAllocS(ptr, size, TRACY_MEMORY_CALL_STACK_DEPTH)
+#define TRACY_FREE(ptr) TracyFreeS(ptr, TRACY_MEMORY_CALL_STACK_DEPTH)
+
+#else // TRACY_MEMORY_CALL_STACK_DEPTH
+
+#define TRACY_ALLOC(ptr, size) TracyAlloc(ptr, size)
+#define TRACY_FREE(ptr) TracyFree(ptr)
+
+#endif // TRACY_MEMORY_CALL_STACK_DEPTH
 
 void* operator new(std::size_t size)
 {
@@ -79,9 +83,4 @@ void operator delete(void* ptr, std::align_val_t) noexcept
 #else
     free(ptr);
 #endif
-}
-
-void operator delete(void* ptr, size_t, std::align_val_t align_tag) noexcept
-{
-    operator delete(ptr, align_tag);
 }

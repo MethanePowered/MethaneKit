@@ -44,8 +44,9 @@ target_compile_definitions(${TARGET}
     PUBLIC
         $<$<BOOL:${METHANE_SCOPE_TIMERS_ENABLED}>:METHANE_SCOPE_TIMERS_ENABLED>
         $<$<BOOL:${METHANE_LOGGING_ENABLED}>:METHANE_LOGGING_ENABLED>
-        # Comment out to disable call-stacks collection and reduce profiling overhead
-        $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TRACY_CALL_STACK_DEPTH=20>
+        # Uncomment to enable call-stacks collection (increases profiling overhead)
+        # $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TRACY_ZONE_CALL_STACK_DEPTH=16>
+        $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TRACY_MEMORY_CALL_STACK_DEPTH=16>
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
