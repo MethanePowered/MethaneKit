@@ -25,6 +25,7 @@ Windows platform graphics helpers.
 
 #include <wrl.h>
 #include <d3dcommon.h>
+#include <d3d12.h>
 
 #include <string>
 #include <stdexcept>
@@ -44,22 +45,31 @@ inline void SafeCloseHandle(HANDLE& handle)
     handle = nullptr;
 }
 
-inline void ThrowIfFailed(HRESULT hr)
+inline void ThrowIfFailed(HRESULT hr, ID3D12Device* p_device = nullptr)
 {
-    if (FAILED(hr))
+    if (!FAILED(hr))
+        return;
+
+    std::string error_msg;
+    if (hr == DXGI_ERROR_DEVICE_REMOVED && p_device)
     {
-        std::string error_msg = "Critical runtime error has occurred: ";
-        error_msg += std::system_category().message(hr);
-        OutputDebugStringA((error_msg + "\n").c_str());
-        throw std::runtime_error(error_msg);
+        error_msg = "DirectX device was removed due to error: ";
+        hr = p_device->GetDeviceRemovedReason();
     }
+    else
+    {
+        error_msg = "Critical DirectX runtime error has occurred: ";
+    }
+    error_msg += std::system_category().message(hr);
+    OutputDebugStringA((error_msg + "\n").c_str());
+    throw std::runtime_error(error_msg);
 }
 
 inline void ThrowIfFailed(HRESULT hr, wrl::ComPtr<ID3DBlob>& error_blob)
 {
     if (FAILED(hr))
     {
-        std::string error_msg = "Critical runtime error has occurred: ";
+        std::string error_msg = "Critical DirectX runtime error has occurred: ";
         error_msg += std::system_category().message(hr);
         if (error_blob.Get())
         {

@@ -194,7 +194,7 @@ void RenderContextDX::Present()
     const uint32_t vsync_interval = GetPresentVSyncInterval();
 
     assert(m_cp_swap_chain);
-    ThrowIfFailed(m_cp_swap_chain->Present(vsync_interval, present_flags));
+    ThrowIfFailed(m_cp_swap_chain->Present(vsync_interval, present_flags), GetDeviceDX().GetNativeDevice().Get());
 
     OnCpuPresentComplete();
     UpdateFrameBufferIndex();
