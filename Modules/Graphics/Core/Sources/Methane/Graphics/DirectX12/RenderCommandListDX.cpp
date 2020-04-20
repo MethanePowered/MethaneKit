@@ -90,8 +90,9 @@ void RenderCommandListDX::ResetNative(const Ptr<RenderState>& sp_render_state)
 
     ID3D12PipelineState* p_dx_initial_state = sp_render_state ? static_cast<RenderStateDX&>(*sp_render_state).GetNativePipelineState().Get() : nullptr;
     ID3D12CommandAllocator& dx_cmd_allocator = GetNativeCommandAllocatorRef();
-    ThrowIfFailed(dx_cmd_allocator.Reset());
-    ThrowIfFailed(GetNativeCommandListRef().Reset(&dx_cmd_allocator, p_dx_initial_state));
+    ID3D12Device* p_native_device = GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice().Get();
+    ThrowIfFailed(dx_cmd_allocator.Reset(), p_native_device);
+    ThrowIfFailed(GetNativeCommandListRef().Reset(&dx_cmd_allocator, p_dx_initial_state), p_native_device);
 
     if (!sp_render_state)
         return;

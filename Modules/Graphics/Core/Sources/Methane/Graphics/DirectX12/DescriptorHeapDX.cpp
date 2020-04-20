@@ -108,7 +108,7 @@ void DescriptorHeapDX::Allocate()
                              : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
     // Allocate new descriptor heap of deferred size
-    ThrowIfFailed(cp_device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&m_cp_descriptor_heap)));
+    ThrowIfFailed(cp_device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&m_cp_descriptor_heap)), cp_device.Get());
 
     if (!is_shader_visible_heap && cp_old_descriptor_heap && allocated_size > 0)
     {

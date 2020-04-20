@@ -303,7 +303,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
     }
 
 #ifdef _DEBUG
-    OutputDebugStringA(log_ss.str().c_str());
+    META_LOG(log_ss.str());
 #endif
 
     return argument_bindings;
@@ -371,7 +371,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
     }
 
 #ifdef _DEBUG
-    OutputDebugStringA(log_ss.str().c_str());
+    META_LOG(log_ss.str().c_str());
 #endif
 
     return dx_input_layout;

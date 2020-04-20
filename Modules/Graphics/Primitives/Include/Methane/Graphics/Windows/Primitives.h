@@ -31,6 +31,8 @@ Windows platform graphics helpers.
 #include <stdexcept>
 #include <system_error>
 
+#include <Methane/Instrumentation.h>
+
 namespace Methane::Graphics
 {
 
@@ -38,6 +40,7 @@ namespace wrl = Microsoft::WRL;
 
 inline void SafeCloseHandle(HANDLE& handle)
 {
+    META_FUNCTION_TASK();
     if (!handle)
         return;
 
@@ -53,7 +56,7 @@ inline void ThrowIfFailed(HRESULT hr, ID3D12Device* p_device = nullptr)
     std::string error_msg;
     if (hr == DXGI_ERROR_DEVICE_REMOVED && p_device)
     {
-        error_msg = "DirectX device was removed due to error: ";
+        error_msg = "DirectX device was removed with error: ";
         hr = p_device->GetDeviceRemovedReason();
     }
     else
@@ -61,25 +64,27 @@ inline void ThrowIfFailed(HRESULT hr, ID3D12Device* p_device = nullptr)
         error_msg = "Critical DirectX runtime error has occurred: ";
     }
     error_msg += std::system_category().message(hr);
-    OutputDebugStringA((error_msg + "\n").c_str());
+
+    META_LOG(error_msg + "\n");
     throw std::runtime_error(error_msg);
 }
 
 inline void ThrowIfFailed(HRESULT hr, wrl::ComPtr<ID3DBlob>& error_blob)
 {
-    if (FAILED(hr))
+    if (!FAILED(hr))
+        return;
+
+    std::string error_msg = "Critical DirectX runtime error has occurred: ";
+    error_msg += std::system_category().message(hr);
+    if (error_blob.Get())
     {
-        std::string error_msg = "Critical DirectX runtime error has occurred: ";
-        error_msg += std::system_category().message(hr);
-        if (error_blob.Get())
-        {
-            error_msg += "\nError details: ";
-            error_msg += static_cast<char*>(error_blob->GetBufferPointer());
-            error_blob->Release();
-        }
-        OutputDebugStringA((error_msg + "\n").c_str());
-        throw std::runtime_error(error_msg);
+        error_msg += "\nError details: ";
+        error_msg += static_cast<char*>(error_blob->GetBufferPointer());
+        error_blob->Release();
     }
+
+    META_LOG(error_msg + "\n");
+    throw std::runtime_error(error_msg);
 }
 
 } // namespace Methane::Graphics

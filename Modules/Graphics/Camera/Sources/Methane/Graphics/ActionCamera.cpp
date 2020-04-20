@@ -158,7 +158,7 @@ void ActionCamera::Move(const Vector3f& move_vector)
     META_FUNCTION_TASK();
     m_current_orientation.aim += move_vector;
     m_current_orientation.eye += move_vector;
-    PrintOrientation();
+    META_LOG(GetOrientationString());
 }
 
 void ActionCamera::Zoom(float zoom_factor)
@@ -167,7 +167,7 @@ void ActionCamera::Zoom(float zoom_factor)
     const Vector3f look_dir   = GetLookDirection(m_current_orientation);
     const float zoom_distance = std::min(std::max(look_dir.length() * zoom_factor, m_zoom_distance_range.first), m_zoom_distance_range.second);
     ApplyLookDirection(cml::normalize(look_dir) * zoom_distance);
-    PrintOrientation();
+    META_LOG(GetOrientationString());
 }
 
 void ActionCamera::StartRotateAction(KeyboardAction rotate_action, const Vector3f& rotation_axis_in_view, double duration_sec)

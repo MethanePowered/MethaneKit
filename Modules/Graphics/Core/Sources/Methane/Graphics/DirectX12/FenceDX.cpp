@@ -54,7 +54,7 @@ FenceDX::FenceDX(CommandQueueBase& command_queue)
     const wrl::ComPtr<ID3D12Device>& cp_device = GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice();
     assert(!!cp_device);
 
-    ThrowIfFailed(cp_device->CreateFence(GetValue(), D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_cp_fence)));
+    ThrowIfFailed(cp_device->CreateFence(GetValue(), D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_cp_fence)), cp_device.Get());
 }
 
 FenceDX::~FenceDX()
@@ -70,8 +70,9 @@ void FenceDX::Signal()
     FenceBase::Signal();
 
     assert(!!m_cp_fence);
-    ID3D12CommandQueue& dx_command_queue = GetCommandQueueDX().GetNativeCommandQueue();
-    ThrowIfFailed(dx_command_queue.Signal(m_cp_fence.Get(), GetValue()));
+    CommandQueueDX& command_queue = GetCommandQueueDX();
+    ThrowIfFailed(command_queue.GetNativeCommandQueue().Signal(m_cp_fence.Get(), GetValue()),
+                  command_queue.GetContextDX().GetDeviceDX().GetNativeDevice().Get());
 }
 
 void FenceDX::Wait()
@@ -84,7 +85,8 @@ void FenceDX::Wait()
     assert(!!m_event);
     if (m_cp_fence->GetCompletedValue() < GetValue())
     {
-        ThrowIfFailed(m_cp_fence->SetEventOnCompletion(GetValue(), m_event));
+        ThrowIfFailed(m_cp_fence->SetEventOnCompletion(GetValue(), m_event),
+                      GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice().Get());
         WaitForSingleObjectEx(m_event, INFINITE, FALSE);
     }
 }

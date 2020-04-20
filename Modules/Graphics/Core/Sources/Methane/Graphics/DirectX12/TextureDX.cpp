@@ -235,7 +235,8 @@ ImageTextureDX::TextureDX(ContextBase& render_context, const Settings& settings,
             D3D12_RESOURCE_STATE_GENERIC_READ,
             nullptr,
             IID_PPV_ARGS(&m_cp_upload_resource)
-        )
+        ),
+        cp_device.Get()
     );
 
     cp_device->CreateShaderResourceView(GetNativeResource(), &tex_and_srv_desc.second, GetNativeCpuDescriptorHandle(Usage::ShaderRead));

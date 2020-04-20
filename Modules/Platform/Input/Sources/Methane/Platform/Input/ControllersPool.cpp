@@ -26,25 +26,15 @@ A pool of input controllers for user actions handling in separate application co
 
 #include <cassert>
 
-// Uncomment define to print user input actions (keyboard, mouse) to debug output
-//#define DEBUG_USER_INPUT
-
-#ifdef DEBUG_USER_INPUT
-#include <Methane/Platform/Utils.h>
-#endif
-
 namespace Methane::Platform::Input
 {
 
 void ControllersPool::OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button_state, const Mouse::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-
-#ifdef DEBUG_USER_INPUT
-    PrintToDebugOutput(std::string("Mouse (button): ") + state_change.current.ToString());
-#endif
-
     META_FUNCTION_THREAD_MARKER();
+    META_LOG(std::string("Mouse (button): ") + state_change.current.ToString());
+
     for (const Ptr<Controller>& sp_controller : *this)
     {
         assert(!!sp_controller);
@@ -58,10 +48,7 @@ void ControllersPool::OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonSt
 void ControllersPool::OnMousePositionChanged(const Mouse::Position& mouse_position, const Mouse::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-
-#ifdef DEBUG_USER_INPUT
-    PrintToDebugOutput(std::string("Mouse (position): ") + state_change.current.ToString());
-#endif
+    META_LOG(std::string("Mouse (position): ") + state_change.current.ToString());
 
     META_FUNCTION_THREAD_MARKER();
     for (const Ptr<Controller>& sp_controller : *this)
@@ -77,13 +64,10 @@ void ControllersPool::OnMousePositionChanged(const Mouse::Position& mouse_positi
 void ControllersPool::OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_delta, const Mouse::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-
-#ifdef DEBUG_USER_INPUT
-    PrintToDebugOutput(std::string("Mouse (scroll): ") + state_change.current.ToString() +
-                       ", scroll delta: " + std::to_string(mouse_scroll_delta.x()) + " x " + std::to_string(mouse_scroll_delta.y()));
-#endif
-
     META_FUNCTION_THREAD_MARKER();
+    META_LOG(std::string("Mouse (scroll): ") + state_change.current.ToString() +
+             ", scroll delta: " + std::to_string(mouse_scroll_delta.GetX()) + " x " + std::to_string(mouse_scroll_delta.GetY()));
+
     for (const Ptr<Controller>& sp_controller : *this)
     {
         assert(!!sp_controller);
@@ -97,12 +81,9 @@ void ControllersPool::OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_del
 void ControllersPool::OnMouseInWindowChanged(bool is_mouse_in_window, const Mouse::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-
-#ifdef DEBUG_USER_INPUT
-    PrintToDebugOutput(std::string("Mouse (in-window): ") + state_change.current.ToString());
-#endif
-
     META_FUNCTION_THREAD_MARKER();
+    META_LOG(std::string("Mouse (in-window): ") + state_change.current.ToString());
+
     for (const Ptr<Controller>& sp_controller : *this)
     {
         assert(!!sp_controller);
@@ -116,12 +97,9 @@ void ControllersPool::OnMouseInWindowChanged(bool is_mouse_in_window, const Mous
 void ControllersPool::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state, const Keyboard::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-
-#ifdef DEBUG_USER_INPUT
-    PrintToDebugOutput(std::string("Keyboard (key): ") + state_change.current.ToString());
-#endif
-
     META_FUNCTION_THREAD_MARKER();
+    META_LOG(std::string("Keyboard (key): ") + state_change.current.ToString());
+
     for (const Ptr<Controller>& sp_controller : *this)
     {
         assert(!!sp_controller);
@@ -135,12 +113,9 @@ void ControllersPool::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState ke
 void ControllersPool::OnModifiersChanged(Keyboard::Modifier::Mask modifiers, const Keyboard::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-
-#ifdef DEBUG_USER_INPUT
-    PrintToDebugOutput(std::string("Keyboard (modifiers): ") + state_change.current.ToString());
-#endif
-
     META_FUNCTION_THREAD_MARKER();
+    META_LOG(std::string("Keyboard (modifiers): ") + state_change.current.ToString());
+
     for (const Ptr<Controller>& sp_controller : *this)
     {
         assert(!!sp_controller);

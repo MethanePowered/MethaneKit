@@ -322,7 +322,7 @@ void AsteroidsApp::Init()
     //  - execute commands to upload resources to GPU
     context.CompleteInitialization();
 
-    pal::PrintToDebugOutput(GetParametersString());
+    META_LOG(GetParametersString());
 }
 
 bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
@@ -473,7 +473,8 @@ void AsteroidsApp::SetParallelRenderingEnabled(bool is_parallel_rendering_enable
 
     META_SCOPE_TIMERS_FLUSH();
     m_is_parallel_rendering_enabled = is_parallel_rendering_enabled;
-    pal::PrintToDebugOutput(GetParametersString());
+
+    META_LOG(GetParametersString());
 }
 
 

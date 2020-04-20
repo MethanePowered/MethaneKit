@@ -330,7 +330,7 @@ bool ProgramBindingsBase::AllArgumentsAreBoundToResources(std::string& missing_a
     if (!all_arguments_are_bound_to_resources)
     {
         missing_args = log_ss.str();
-        Platform::PrintToDebugOutput(missing_args);
+        META_LOG(missing_args);
     }
     return all_arguments_are_bound_to_resources;
 }

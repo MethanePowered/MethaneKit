@@ -63,8 +63,8 @@ public:
         const wrl::ComPtr<ID3D12Device>& cp_device = GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice();
         assert(!!cp_device);
 
-        ThrowIfFailed(cp_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_cp_command_allocator)));
-        ThrowIfFailed(cp_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_cp_command_allocator.Get(), nullptr, IID_PPV_ARGS(&m_cp_command_list)));
+        ThrowIfFailed(cp_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_cp_command_allocator)), cp_device.Get());
+        ThrowIfFailed(cp_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_cp_command_allocator.Get(), nullptr, IID_PPV_ARGS(&m_cp_command_list)), cp_device.Get());
         m_cp_command_list.As(&m_cp_command_list_4);
     }
 
@@ -134,8 +134,9 @@ public:
 
         m_is_committed = false;
 
-        ThrowIfFailed(m_cp_command_allocator->Reset());
-        ThrowIfFailed(m_cp_command_list->Reset(m_cp_command_allocator.Get(), nullptr));
+        const wrl::ComPtr<ID3D12Device>& cp_device = GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice();
+        ThrowIfFailed(m_cp_command_allocator->Reset(), cp_device.Get());
+        ThrowIfFailed(m_cp_command_list->Reset(m_cp_command_allocator.Get(), nullptr), cp_device.Get());
 
         CommandListBase::Reset(debug_group);
     }

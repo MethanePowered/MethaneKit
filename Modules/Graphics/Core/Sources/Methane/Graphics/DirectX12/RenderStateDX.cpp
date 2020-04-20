@@ -353,7 +353,8 @@ void RenderStateDX::InitializeNativePipelineState()
     if (m_cp_pipeline_state)
         return;
 
-    ThrowIfFailed(GetRenderContextDX().GetDeviceDX().GetNativeDevice()->CreateGraphicsPipelineState(&m_pipeline_state_desc, IID_PPV_ARGS(&m_cp_pipeline_state)));
+    const wrl::ComPtr<ID3D12Device>& cp_native_device = GetRenderContextDX().GetDeviceDX().GetNativeDevice();
+    ThrowIfFailed(cp_native_device->CreateGraphicsPipelineState(&m_pipeline_state_desc, IID_PPV_ARGS(&m_cp_pipeline_state)), cp_native_device.Get());
     SetName(GetName());
 }
 

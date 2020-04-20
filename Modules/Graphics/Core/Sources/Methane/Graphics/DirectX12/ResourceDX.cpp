@@ -179,15 +179,17 @@ void ResourceDX::InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource
     assert(!m_cp_resource);
 
     const CD3DX12_HEAP_PROPERTIES heap_properties(heap_type);
+    const wrl::ComPtr<ID3D12Device>& cp_native_device = GetContextDX().GetDeviceDX().GetNativeDevice();
     ThrowIfFailed(
-        GetContextDX().GetDeviceDX().GetNativeDevice()->CreateCommittedResource(
+        cp_native_device->CreateCommittedResource(
             &heap_properties,
             D3D12_HEAP_FLAG_NONE,
             &resource_desc,
             resource_state,
             p_clear_value,
             IID_PPV_ARGS(&m_cp_resource)
-        )
+        ),
+        cp_native_device.Get()
     );
 }
 
@@ -200,7 +202,8 @@ void ResourceDX::InitializeFrameBufferResource(uint32_t frame_buffer_index)
         static_cast<RenderContextDX&>(GetContextDX()).GetNativeSwapChain()->GetBuffer(
             frame_buffer_index,
             IID_PPV_ARGS(&m_cp_resource)
-        )
+        ),
+        GetContextDX().GetDeviceDX().GetNativeDevice().Get()
     );
 }
 

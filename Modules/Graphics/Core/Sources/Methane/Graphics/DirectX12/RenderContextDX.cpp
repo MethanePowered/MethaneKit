@@ -139,7 +139,8 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
     assert(!!cp_dxgi_factory);
 
     BOOL present_tearing_support = FALSE;
-    ThrowIfFailed(cp_dxgi_factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &present_tearing_support, sizeof(present_tearing_support)));
+    ID3D12Device* p_native_device = GetDeviceDX().GetNativeDevice().Get();
+    ThrowIfFailed(cp_dxgi_factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &present_tearing_support, sizeof(present_tearing_support)), p_native_device);
     if (present_tearing_support)
     {
         swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
@@ -147,7 +148,7 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
 
     wrl::ComPtr<IDXGISwapChain1> cp_swap_chain;
     ID3D12CommandQueue& dx_command_queue = GetRenderCommandQueueDX().GetNativeCommandQueue();
-    ThrowIfFailed(cp_dxgi_factory->CreateSwapChainForHwnd(&dx_command_queue, m_platform_env.window_handle, &swap_chain_desc, NULL, NULL, &cp_swap_chain));
+    ThrowIfFailed(cp_dxgi_factory->CreateSwapChainForHwnd(&dx_command_queue, m_platform_env.window_handle, &swap_chain_desc, NULL, NULL, &cp_swap_chain), p_native_device);
     assert(!!cp_swap_chain);
 
     if (settings.is_full_screen)
@@ -156,10 +157,10 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
         SetWindowTopMostFlag(m_platform_env.window_handle, true);
     }
 
-    ThrowIfFailed(cp_swap_chain.As(&m_cp_swap_chain));
+    ThrowIfFailed(cp_swap_chain.As(&m_cp_swap_chain), p_native_device);
 
     // With tearing support enabled we will handle ALT+Enter key presses in the window message loop rather than let DXGI handle it by calling SetFullscreenState
-    ThrowIfFailed(cp_dxgi_factory->MakeWindowAssociation(m_platform_env.window_handle, DXGI_MWA_NO_ALT_ENTER));
+    ThrowIfFailed(cp_dxgi_factory->MakeWindowAssociation(m_platform_env.window_handle, DXGI_MWA_NO_ALT_ENTER), p_native_device);
 
     UpdateFrameBufferIndex();
 
@@ -177,7 +178,8 @@ void RenderContextDX::Resize(const FrameSize& frame_size)
     // Resize the swap chain to the desired dimensions
     DXGI_SWAP_CHAIN_DESC1 desc{};
     m_cp_swap_chain->GetDesc1(&desc);
-    ThrowIfFailed(m_cp_swap_chain->ResizeBuffers(GetSettings().frame_buffers_count, frame_size.width, frame_size.height, desc.Format, desc.Flags));
+    ThrowIfFailed(m_cp_swap_chain->ResizeBuffers(GetSettings().frame_buffers_count, frame_size.width, frame_size.height, desc.Format, desc.Flags),
+                  GetDeviceDX().GetNativeDevice().Get());
 
     UpdateFrameBufferIndex();
 }
@@ -194,7 +196,8 @@ void RenderContextDX::Present()
     const uint32_t vsync_interval = GetPresentVSyncInterval();
 
     assert(m_cp_swap_chain);
-    ThrowIfFailed(m_cp_swap_chain->Present(vsync_interval, present_flags), GetDeviceDX().GetNativeDevice().Get());
+    ThrowIfFailed(m_cp_swap_chain->Present(vsync_interval, present_flags),
+                  GetDeviceDX().GetNativeDevice().Get());
 
     OnCpuPresentComplete();
     UpdateFrameBufferIndex();
