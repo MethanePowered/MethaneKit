@@ -31,7 +31,7 @@ target_include_directories(${TARGET}
 
 target_link_libraries(${TARGET}
     PUBLIC
-        $<$<BOOL:${METHANE_LOGGING_ENABLED}>:MethanePlatformUtils>
+        $<$<BOOL:${METHANE_LOGGING_ENABLED}>:MethanePlatformUtils> # Logging functions
         MethanePrimitives
         TracyInstrumentation
         ittnotify
@@ -44,9 +44,20 @@ target_compile_definitions(${TARGET}
     PUBLIC
         $<$<BOOL:${METHANE_SCOPE_TIMERS_ENABLED}>:METHANE_SCOPE_TIMERS_ENABLED>
         $<$<BOOL:${METHANE_LOGGING_ENABLED}>:METHANE_LOGGING_ENABLED>
-        # Uncomment to enable call-stacks collection (increases profiling overhead)
-        # $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TRACY_ZONE_CALL_STACK_DEPTH=16>
-        $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TRACY_MEMORY_CALL_STACK_DEPTH=16>
+        # Tracy configuration
+        $<$<BOOL:${METHANE_TRACY_PROFILING_ON_DEMAND}>:TRACY_ON_DEMAND>
+        $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TRACY_ENABLE>
+        $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TRACY_MEMORY_CALL_STACK_DEPTH=16> # call stacks for memory new/delete
+        # $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TRACY_ZONE_CALL_STACK_DEPTH=16> # call stacks for each zone
+)
+
+# TracyClient interface target is defined separately in Externals,
+# but it also has to be configured with TRACY_* macro definitions
+# and is required for linking in target application for Tracy profiling
+target_compile_definitions(TracyClient
+    INTERFACE
+        $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TRACY_ENABLE>
+        $<$<BOOL:${METHANE_TRACY_PROFILING_ON_DEMAND}>:TRACY_ON_DEMAND>
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})

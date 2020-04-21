@@ -11,18 +11,13 @@
             "ctestCommandArgs": "",
             "variables": [
                 {
-                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
-                    "value": "True",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
-                    "value": "True",
-                    "type": "BOOL"
-                },
-                {
                     "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
                     "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
                     "type": "BOOL"
                 },
                 {
@@ -32,17 +27,27 @@
                 },
                 {
                     "name": "METHANE_LOGGING_ENABLED",
-                    "value": "false",
+                    "value": "False",
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
-                    "value": "false",
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
                     "type": "BOOL"
                 },
                 {
                     "name": "METHANE_TRACY_PROFILING_ENABLED",
-                    "value": "false",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "False",
                     "type": "BOOL"
                 }
             ]
@@ -58,18 +63,13 @@
             "ctestCommandArgs": "",
             "variables": [
                 {
-                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
-                    "value": "True",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
-                    "value": "True",
-                    "type": "BOOL"
-                },
-                {
                     "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
                     "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
                     "type": "BOOL"
                 },
                 {
@@ -78,18 +78,28 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
-                    "value": "false",
+                    "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_LOGGING_ENABLED",
-                    "value": "false",
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
                     "type": "BOOL"
                 },
                 {
                     "name": "METHANE_TRACY_PROFILING_ENABLED",
-                    "value": "false",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "False",
                     "type": "BOOL"
                 }
             ]
@@ -105,18 +115,13 @@
             "ctestCommandArgs": "",
             "variables": [
                 {
-                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
-                    "value": "True",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
-                    "value": "True",
-                    "type": "BOOL"
-                },
-                {
                     "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
                     "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
                     "type": "BOOL"
                 },
                 {
@@ -126,17 +131,27 @@
                 },
                 {
                     "name": "METHANE_LOGGING_ENABLED",
-                    "value": "false",
+                    "value": "False",
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
-                    "value": "false",
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
                     "type": "BOOL"
                 },
                 {
                     "name": "METHANE_TRACY_PROFILING_ENABLED",
-                    "value": "false",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "False",
                     "type": "BOOL"
                 }
             ]
@@ -152,18 +167,13 @@
             "ctestCommandArgs": "",
             "variables": [
                 {
-                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
-                    "value": "True",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
-                    "value": "True",
-                    "type": "BOOL"
-                },
-                {
                     "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
                     "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
                     "type": "BOOL"
                 },
                 {
@@ -177,12 +187,22 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
-                    "value": "false",
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
                     "type": "BOOL"
                 },
                 {
                     "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
                     "value": "False",
                     "type": "BOOL"
                 }
@@ -209,7 +229,48 @@
             "remoteCopyBuildOutput": false,
             "remoteCopySourcesMethod": "rsync",
             "addressSanitizerRuntimeFlags": "detect_leaks=0",
-            "variables": []
+            "variables": [
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "False",
+                    "type": "BOOL"
+                }
+            ]
         },
         {
             "name": "Linux-GCC-Release",
@@ -232,7 +293,48 @@
             "remoteCopyBuildOutput": false,
             "remoteCopySourcesMethod": "rsync",
             "addressSanitizerRuntimeFlags": "detect_leaks=0",
-            "variables": []
+            "variables": [
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "False",
+                    "type": "BOOL"
+                }
+            ]
         },
         {
             "name": "WSL-GCC-Debug",
@@ -249,7 +351,27 @@
             "addressSanitizerRuntimeFlags": "detect_leaks=0",
             "variables": [
                 {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -259,28 +381,13 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
-                    "value": "True",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_LOGGING_ENABLED",
-                    "value": "false",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
-                    "value": "false",
-                    "type": "BOOL"
-                },
-                {
                     "name": "METHANE_TRACY_PROFILING_ENABLED",
-                    "value": "false",
+                    "value": "False",
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
-                    "value": "false",
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "False",
                     "type": "BOOL"
                 }
             ]
@@ -300,13 +407,13 @@
             "addressSanitizerRuntimeFlags": "detect_leaks=0",
             "variables": [
                 {
-                    "name": "METHANE_LOGGING_ENABLED",
-                    "value": "false",
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
-                    "value": "True",
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
                     "type": "BOOL"
                 },
                 {
@@ -315,23 +422,28 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
-                    "value": "false",
+                    "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
                     "value": "True",
                     "type": "BOOL"
                 },
                 {
                     "name": "METHANE_TRACY_PROFILING_ENABLED",
-                    "value": "false",
+                    "value": "False",
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
-                    "value": "false",
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "False",
                     "type": "BOOL"
                 }
             ]
@@ -351,13 +463,13 @@
             "addressSanitizerRuntimeFlags": "detect_leaks=0",
             "variables": [
                 {
-                    "name": "METHANE_LOGGING_ENABLED",
-                    "value": "false",
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
-                    "value": "True",
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
                     "type": "BOOL"
                 },
                 {
@@ -366,23 +478,28 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
-                    "value": "false",
+                    "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
                     "value": "True",
                     "type": "BOOL"
                 },
                 {
                     "name": "METHANE_TRACY_PROFILING_ENABLED",
-                    "value": "false",
+                    "value": "False",
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
-                    "value": "false",
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "False",
                     "type": "BOOL"
                 }
             ]
@@ -402,7 +519,27 @@
             "addressSanitizerRuntimeFlags": "detect_leaks=0",
             "variables": [
                 {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -412,28 +549,13 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
-                    "value": "false",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
-                    "value": "True",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_TRACY_PROFILING_ENABLED",
-                    "value": "false",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
-                    "value": "false",
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "False",
                     "type": "BOOL"
                 }
             ]
