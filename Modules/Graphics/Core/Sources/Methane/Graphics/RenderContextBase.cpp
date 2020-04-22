@@ -174,6 +174,7 @@ void RenderContextBase::SetName(const std::string& name)
 void RenderContextBase::OnGpuWaitStart(WaitFor wait_for)
 {
     META_FUNCTION_TASK();
+
     if (wait_for == WaitFor::FramePresented)
     {
         m_fps_counter.OnGpuFramePresentWait();
@@ -184,11 +185,16 @@ void RenderContextBase::OnGpuWaitStart(WaitFor wait_for)
 void RenderContextBase::OnGpuWaitComplete(WaitFor wait_for)
 {
     META_FUNCTION_TASK();
+
     if (wait_for == WaitFor::FramePresented)
     {
         m_fps_counter.OnGpuFramePresented();
     }
-    ContextBase::OnGpuWaitComplete(wait_for);
+    // Release resources in base class only when all frame buffers in swap-chain were presented
+    if (wait_for != WaitFor::FramePresented || m_frame_buffer_index == 0)
+    {
+        ContextBase::OnGpuWaitComplete(wait_for);
+    }
 }
     
 void RenderContextBase::UpdateFrameBufferIndex()
