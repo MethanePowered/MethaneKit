@@ -128,8 +128,8 @@ AsteroidsApp::AsteroidsApp()
         {                                               // ================
             gfx::Color4f(1.f, 1.f, 1.f, 1.f),           // - light_color
             1.25f,                                      // - light_power
-            0.1f,                                       // - light_ambient_factor
-            4.f                                         // - light_specular_factor
+            0.03f,                                      // - light_ambient_factor
+            5.f                                         // - light_specular_factor
         })
     , m_asteroids_array_settings(                       // Asteroids array settings:
         {                                               // ================
@@ -228,20 +228,22 @@ void AsteroidsApp::Init()
             "Textures/SkyBox/Galaxy/NegativeZ.jpg"
         },
         m_scene_scale * 100.f,
-        true, true // depth enabled and reversed
+        gfx::ImageLoader::Options::Mipmapped,
+        gfx::SkyBox::Options::DepthEnabled | gfx::SkyBox::Options::DepthReversed
     });
 
     // Create planet
     m_sp_planet = std::make_shared<Planet>(context, m_image_loader, Planet::Settings{
         m_view_camera,
         m_light_camera,
-        "Textures/Planet/Mars.jpg",     // texture_path
-        gfx::Vector3f(0.f, 0.f, 0.f),   // position
-        m_scene_scale * 3.f,            // scale
-        0.1f,                           // spin_velocity_rps
-        true,                           // depth_reversed
-        true,                           // mip-mapped
-        -1.f,                           // lod_bias
+        "Textures/Planet/Mars.jpg",             // texture_path
+        gfx::Vector3f(0.f, 0.f, 0.f),           // position
+        m_scene_scale * 3.f,                    // scale
+        0.1f,                                   // spin_velocity_rps
+        true,                                   // depth_reversed
+        gfx::ImageLoader::Options::Mipmapped |  // image_options
+        gfx::ImageLoader::Options::SrgbColorSpace,
+        -1.f,                                   // lod_bias
     });
 
     // Create asteroids array

@@ -49,24 +49,26 @@ MTLPixelFormat TypeConverterMT::DataFormatToMetalPixelType(PixelFormat data_form
 
     switch (data_format)
     {
-    case PixelFormat::Unknown:       return MTLPixelFormatInvalid;
-    case PixelFormat::RGBA8:         return MTLPixelFormatRGBA8Uint;
-    case PixelFormat::RGBA8Unorm:    return MTLPixelFormatRGBA8Unorm;
-    case PixelFormat::BGRA8Unorm:    return MTLPixelFormatBGRA8Unorm;
-    case PixelFormat::R32Float:      return MTLPixelFormatR32Float;
-    case PixelFormat::R32Uint:       return MTLPixelFormatR32Uint;
-    case PixelFormat::R32Sint:       return MTLPixelFormatR32Sint;
-    case PixelFormat::R16Float:      return MTLPixelFormatR16Float;
-    case PixelFormat::R16Uint:       return MTLPixelFormatR16Uint;
-    case PixelFormat::R16Sint:       return MTLPixelFormatR16Sint;
-    case PixelFormat::R16Unorm:      return MTLPixelFormatR16Unorm;
-    case PixelFormat::R16Snorm:      return MTLPixelFormatR16Snorm;
-    case PixelFormat::R8Uint:        return MTLPixelFormatR8Uint;
-    case PixelFormat::R8Sint:        return MTLPixelFormatR8Sint;
-    case PixelFormat::R8Unorm:       return MTLPixelFormatR8Unorm;
-    case PixelFormat::R8Snorm:       return MTLPixelFormatR8Snorm;
-    case PixelFormat::A8Unorm:       return MTLPixelFormatA8Unorm;
-    case PixelFormat::Depth32Float:  return MTLPixelFormatDepth32Float;
+    case PixelFormat::Unknown:          return MTLPixelFormatInvalid;
+    case PixelFormat::RGBA8:            return MTLPixelFormatRGBA8Uint;
+    case PixelFormat::RGBA8Unorm:       return MTLPixelFormatRGBA8Unorm;
+    case PixelFormat::RGBA8Unorm_sRGB:  return MTLPixelFormatRGBA8Unorm_sRGB;
+    case PixelFormat::BGRA8Unorm:       return MTLPixelFormatBGRA8Unorm;
+    case PixelFormat::BGRA8Unorm_sRGB:  return MTLPixelFormatBGRA8Unorm_sRGB;
+    case PixelFormat::R32Float:         return MTLPixelFormatR32Float;
+    case PixelFormat::R32Uint:          return MTLPixelFormatR32Uint;
+    case PixelFormat::R32Sint:          return MTLPixelFormatR32Sint;
+    case PixelFormat::R16Float:         return MTLPixelFormatR16Float;
+    case PixelFormat::R16Uint:          return MTLPixelFormatR16Uint;
+    case PixelFormat::R16Sint:          return MTLPixelFormatR16Sint;
+    case PixelFormat::R16Unorm:         return MTLPixelFormatR16Unorm;
+    case PixelFormat::R16Snorm:         return MTLPixelFormatR16Snorm;
+    case PixelFormat::R8Uint:           return MTLPixelFormatR8Uint;
+    case PixelFormat::R8Sint:           return MTLPixelFormatR8Sint;
+    case PixelFormat::R8Unorm:          return MTLPixelFormatR8Unorm;
+    case PixelFormat::R8Snorm:          return MTLPixelFormatR8Snorm;
+    case PixelFormat::A8Unorm:          return MTLPixelFormatA8Unorm;
+    case PixelFormat::Depth32Float:     return MTLPixelFormatDepth32Float;
     // MTLPixelFormatRG8Unorm;
     // MTLPixelFormatRG8Snorm;
     // MTLPixelFormatRG8Uint;

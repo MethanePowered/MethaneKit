@@ -37,6 +37,20 @@ namespace Methane::Graphics
 class ImageLoader final
 {
 public:
+    struct Options
+    {
+        using Mask = uint32_t;
+        enum Value : Mask
+        {
+            None            = 0u,
+            Mipmapped       = 1u << 0u,
+            SrgbColorSpace  = 1u << 1u,
+            All             = ~0u,
+        };
+
+        Options() = delete;
+    };
+
     struct ImageData
     {
         Dimensions  dimensions;
@@ -66,8 +80,8 @@ public:
 
     ImageData LoadImage(const std::string& image_path, size_t channels_count, bool create_copy);
 
-    Ptr<Texture> LoadImageToTexture2D(Context& context, const std::string& image_path, bool mipmapped);
-    Ptr<Texture> LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, bool mipmapped);
+    Ptr<Texture> LoadImageToTexture2D(Context& context, const std::string& image_path, Options::Mask options = Options::None);
+    Ptr<Texture> LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, Options::Mask options = Options::None);
 
 private:
     Data::Provider& m_data_provider;

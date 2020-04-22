@@ -47,7 +47,7 @@ Badge::Badge(RenderContext& context)
 
 Badge::Badge(RenderContext& context, Settings settings)
     : Badge(context,
-            ImageLoader(Data::TextureProvider::Get()).LoadImageToTexture2D(context, "Logo/MethaneLogoNameWatermark.png", true),
+            ImageLoader(Data::TextureProvider::Get()).LoadImageToTexture2D(context, "Logo/MethaneLogoNameWatermark.png"),
             ScaleBadgeSize(settings, context.GetContentScalingFactor()))
 {
     META_FUNCTION_TASK();

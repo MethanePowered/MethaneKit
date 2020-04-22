@@ -37,6 +37,11 @@ RenderContextBase::RenderContextBase(DeviceBase& device, const Settings& setting
     , m_frame_buffer_index(0)
 {
     META_FUNCTION_TASK();
+
+    if (IsSrgbColorSpace(m_settings.color_format))
+    {
+        throw std::invalid_argument("Render context can not use color formats with sRGB gamma correction due to modern swap-chain flip model limitations.");
+    }
 }
 
 void RenderContextBase::WaitForGpu(WaitFor wait_for)

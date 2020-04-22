@@ -77,9 +77,9 @@ ShadowCubeApp::ShadowCubeApp()
     , m_scene_constants(                                // Shader constants:
         {                                               // ================
             gfx::Color4f(1.f, 1.f, 0.74f, 1.f),         // - light_color
-            600.f,                                      // - light_power
-            0.2f,                                       // - light_ambient_factor
-            5.f                                         // - light_specular_factor
+            500.f,                                      // - light_power
+            0.05f,                                      // - light_ambient_factor
+            10.f                                        // - light_specular_factor
         })
     , m_shadow_pass(false, "Shadow Render Pass")
     , m_final_pass(true, "Final Render Pass")
@@ -122,11 +122,14 @@ void ShadowCubeApp::Init()
     const gfx::QuadMesh<Vertex> floor_mesh(mesh_layout, 7.f, 7.f, 0.f, 0, gfx::QuadMesh<Vertex>::FaceType::XZ);
 
     // Load textures, vertex and index buffers for cube and floor meshes
+    const gfx::ImageLoader::Options::Mask image_options = gfx::ImageLoader::Options::Mipmapped
+                                                        | gfx::ImageLoader::Options::SrgbColorSpace;
+
     m_sp_cube_buffers  = std::make_unique<TexturedMeshBuffers>(*m_sp_context, cube_mesh, "Cube");
-    m_sp_cube_buffers->SetTexture(m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MethaneBubbles.jpg", true));
+    m_sp_cube_buffers->SetTexture(m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MethaneBubbles.jpg", image_options));
 
     m_sp_floor_buffers = std::make_unique<TexturedMeshBuffers>(*m_sp_context, floor_mesh, "Floor");
-    m_sp_floor_buffers->SetTexture(m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MarbleWhite.jpg", true));
+    m_sp_floor_buffers->SetTexture(m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MarbleWhite.jpg", image_options));
 
     const Data::Size constants_data_size      = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(Constants)));
     const Data::Size scene_uniforms_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(SceneUniforms)));

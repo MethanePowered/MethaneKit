@@ -74,9 +74,9 @@ TexturedCubeApp::TexturedCubeApp()
     , m_shader_constants(                               // Shader constants:
         {                                               // ================
             gfx::Color4f(1.f, 1.f, 0.74f, 1.f),         // - light_color
-            700.f,                                      // - light_power
-            0.2f,                                       // - light_ambient_factor
-            5.f                                         // - light_specular_factor
+            500.f,                                      // - light_power
+            0.05f,                                      // - light_ambient_factor
+            10.f                                        // - light_specular_factor
         })
     , m_cube_scale(15.f)
 {
@@ -152,7 +152,9 @@ void TexturedCubeApp::Init()
     m_sp_state->SetName("Final FB Render Pipeline State");
 
     // Load texture image from file
-    m_sp_cube_texture = m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MethaneBubbles.jpg", true);
+    const gfx::ImageLoader::Options::Mask image_options = gfx::ImageLoader::Options::Mipmapped
+                                                        | gfx::ImageLoader::Options::SrgbColorSpace;
+    m_sp_cube_texture = m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MethaneBubbles.jpg", image_options);
     m_sp_cube_texture->SetName("Cube Texture 2D Image");
 
     // Create sampler for image texture

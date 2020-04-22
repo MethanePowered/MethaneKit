@@ -66,7 +66,9 @@ enum class PixelFormat
     Unknown,
     RGBA8,
     RGBA8Unorm,
+    RGBA8Unorm_sRGB,
     BGRA8Unorm,
+    BGRA8Unorm_sRGB,
     R32Float,
     R32Uint,
     R32Sint,
@@ -85,7 +87,8 @@ enum class PixelFormat
 
 using PixelFormats = std::vector<PixelFormat>;
 
-uint32_t GetPixelSize(PixelFormat data_format) noexcept;
+uint32_t GetPixelSize(PixelFormat pixel_format) noexcept;
+bool IsSrgbColorSpace(PixelFormat pixel_format) noexcept;
 
 enum class Compare : uint32_t
 {

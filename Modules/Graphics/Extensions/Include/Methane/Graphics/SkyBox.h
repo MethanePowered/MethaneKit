@@ -44,14 +44,27 @@ class Camera;
 class SkyBox
 {
 public:
+    struct Options
+    {
+        using Mask = uint32_t;
+        enum Value : Mask
+        {
+            None            = 0u,
+            DepthEnabled    = 1u << 0u,
+            DepthReversed   = 1u << 1u,
+            All             = ~0u,
+        };
+
+        Options() = delete;
+    };
+
     struct Settings
     {
         const Camera&                  view_camera;
         ImageLoader::CubeFaceResources face_resources;
         float                          scale;
-        bool                           depth_enabled = false;
-        bool                           depth_reversed = false;
-        bool                           mipmapped = false;
+        ImageLoader::Options::Mask     image_options  = ImageLoader::Options::None;
+        SkyBox::Options::Mask          render_options = SkyBox::Options::None;
         float                          lod_bias = 0.f;
     };
 

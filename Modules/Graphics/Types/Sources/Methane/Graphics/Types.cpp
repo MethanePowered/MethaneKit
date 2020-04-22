@@ -70,15 +70,17 @@ Viewport GetFrameViewport(const FrameSize& frame_size)
     };
 }
 
-uint32_t GetPixelSize(PixelFormat data_format) noexcept
+uint32_t GetPixelSize(PixelFormat pixel_format) noexcept
 {
     META_FUNCTION_TASK();
 
-    switch(data_format)
+    switch(pixel_format)
     {
     case PixelFormat::RGBA8:
     case PixelFormat::RGBA8Unorm:
+    case PixelFormat::RGBA8Unorm_sRGB:
     case PixelFormat::BGRA8Unorm:
+    case PixelFormat::BGRA8Unorm_sRGB:
     case PixelFormat::R32Float:
     case PixelFormat::R32Uint:
     case PixelFormat::R32Sint:
@@ -104,6 +106,21 @@ uint32_t GetPixelSize(PixelFormat data_format) noexcept
     }
 
     return 0;
+}
+
+bool IsSrgbColorSpace(PixelFormat pixel_format) noexcept
+{
+    META_FUNCTION_TASK();
+
+    switch (pixel_format)
+    {
+    case PixelFormat::RGBA8Unorm_sRGB:
+    case PixelFormat::BGRA8Unorm_sRGB:
+        return true;
+
+    default:
+        return false;
+    }
 }
 
 } // namespace Methane::Graphics

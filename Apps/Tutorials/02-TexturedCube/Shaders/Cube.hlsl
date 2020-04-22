@@ -57,6 +57,16 @@ ConstantBuffer<Uniforms>  g_uniforms  : register(b2);
 Texture2D                 g_texture   : register(t0);
 SamplerState              g_sampler   : register(s0);
 
+float4 LinearToSrgb(float4 color)
+{
+    // Optimized SRGB gamma correction approximation
+    // http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
+    float3 S1 = sqrt(color.rgb);
+    float3 S2 = sqrt(S1);
+    float3 S3 = sqrt(S2);
+    return float4(0.585122381 * S1 + 0.783140355 * S2 - 0.368262736 * S3, color.a);
+}
+
 PSInput CubeVS(VSInput input)
 {
     const float4 position = float4(input.position, 1.0f);
@@ -87,5 +97,5 @@ float4 CubePS(PSInput input) : SV_TARGET
     const float  specular_part  = pow(clamp(dot(fragment_to_eye, light_reflected_from_fragment), 0.0, 1.0), g_constants.light_specular_factor);
     const float4 specular_color = base_color * specular_part / (distance * distance);;
 
-    return ambient_color + diffuse_color + specular_color;
+    return LinearToSrgb(ambient_color + diffuse_color + specular_color);
 }

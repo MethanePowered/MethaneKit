@@ -43,6 +43,11 @@ by decoding them from popular image formats.
 namespace Methane::Graphics
 {
 
+static PixelFormat GetDefaultImageFormat(bool srgb)
+{
+    return srgb ? PixelFormat::RGBA8Unorm_sRGB : PixelFormat::RGBA8Unorm;
+}
+
 ImageLoader::ImageData::ImageData(const Dimensions& in_dimensions, uint32_t in_channels_count, Data::Chunk&& in_pixels)
     : dimensions(in_dimensions)
     , channels_count(in_channels_count)
@@ -148,18 +153,19 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
 #endif
 }
 
-Ptr<Texture> ImageLoader::LoadImageToTexture2D(Context& context, const std::string& image_path, bool mipmapped)
+Ptr<Texture> ImageLoader::LoadImageToTexture2D(Context& context, const std::string& image_path, Options::Mask options)
 {
     META_FUNCTION_TASK();
 
-    const ImageData image_data = LoadImage(image_path, 4, false);
-    Ptr<Texture> sp_texture = Texture::CreateImage(context, image_data.dimensions, 1, PixelFormat::RGBA8Unorm, mipmapped);
+    const ImageData   image_data   = LoadImage(image_path, 4, false);
+    const PixelFormat image_format = GetDefaultImageFormat(options & Options::SrgbColorSpace);
+    Ptr<Texture> sp_texture = Texture::CreateImage(context, image_data.dimensions, 1, image_format, options & Options::Mipmapped);
     sp_texture->SetData({ { image_data.pixels.p_data, image_data.pixels.size } });
 
     return sp_texture;
 }
 
-Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, bool mipmapped)
+Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, Options::Mask options)
 {
     META_FUNCTION_TASK();
 
@@ -211,7 +217,8 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
 
     // Load face images to cube texture
 
-    Ptr<Texture> sp_texture = Texture::CreateCube(context, face_dimensions.width, 1, PixelFormat::RGBA8Unorm, mipmapped);
+    const PixelFormat image_format = GetDefaultImageFormat(options & Options::SrgbColorSpace);
+    Ptr<Texture> sp_texture = Texture::CreateCube(context, face_dimensions.width, 1, image_format, options & Options::Mipmapped);
     sp_texture->SetData(face_resources);
 
     return sp_texture;
