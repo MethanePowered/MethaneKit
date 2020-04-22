@@ -183,7 +183,7 @@ static D3D12_DEPTH_STENCILOP_DESC ConvertStencilFaceOperationsToD3D12(const Rend
     stencil_desc.StencilFailOp      = ConvertStencilOperationToD3D12(stencil_face_op.stencil_failure);
     stencil_desc.StencilPassOp      = ConvertStencilOperationToD3D12(stencil_face_op.stencil_pass);
     stencil_desc.StencilDepthFailOp = ConvertStencilOperationToD3D12(stencil_face_op.depth_failure);
-    stencil_desc.StencilFunc        = TypeConverterDX::CompareFunctionToDX(stencil_face_op.compare);
+    stencil_desc.StencilFunc        = TypeConverterDX::CompareFunctionToD3D(stencil_face_op.compare);
 
     return stencil_desc;
 }
@@ -248,7 +248,7 @@ void RenderStateDX::Reset(const Settings& settings)
     CD3DX12_DEPTH_STENCIL_DESC                  depth_stencil_desc(D3D12_DEFAULT);
     depth_stencil_desc.DepthEnable              = settings.depth.enabled;
     depth_stencil_desc.DepthWriteMask           = settings.depth.write_enabled ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
-    depth_stencil_desc.DepthFunc                = TypeConverterDX::CompareFunctionToDX(settings.depth.compare);
+    depth_stencil_desc.DepthFunc                = TypeConverterDX::CompareFunctionToD3D(settings.depth.compare);
     depth_stencil_desc.StencilEnable            = settings.stencil.enabled;
     depth_stencil_desc.StencilReadMask          = settings.stencil.read_mask;
     depth_stencil_desc.StencilWriteMask         = settings.stencil.write_mask;
@@ -277,10 +277,10 @@ void RenderStateDX::Reset(const Settings& settings)
     uint32_t attachment_index = 0;
     for (PixelFormat color_format : program_settings.color_formats)
     {
-        m_pipeline_state_desc.RTVFormats[attachment_index++] = TypeConverterDX::DataFormatToDXGI(color_format);
+        m_pipeline_state_desc.RTVFormats[attachment_index++] = TypeConverterDX::PixelFormatToDxgi(color_format);
     }
     m_pipeline_state_desc.NumRenderTargets = static_cast<UINT>(program_settings.color_formats.size());
-    m_pipeline_state_desc.DSVFormat = settings.depth.enabled ? TypeConverterDX::DataFormatToDXGI(program_settings.depth_format) : DXGI_FORMAT_UNKNOWN;
+    m_pipeline_state_desc.DSVFormat = settings.depth.enabled ? TypeConverterDX::PixelFormatToDxgi(program_settings.depth_format) : DXGI_FORMAT_UNKNOWN;
 
     m_viewports     = TypeConverterDX::ViewportsToD3D(settings.viewports);
     m_scissor_rects = TypeConverterDX::ScissorRectsToD3D(settings.scissor_rects);

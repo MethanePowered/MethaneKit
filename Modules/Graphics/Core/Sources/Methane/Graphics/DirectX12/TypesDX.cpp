@@ -70,11 +70,30 @@ std::vector<CD3DX12_RECT> TypeConverterDX::ScissorRectsToD3D(const ScissorRects&
     return d3d_scissor_rects;
 }
 
-DXGI_FORMAT TypeConverterDX::DataFormatToDXGI(const PixelFormat& data_format) noexcept
+D3D12_COMPARISON_FUNC TypeConverterDX::CompareFunctionToD3D(Compare compare_func) noexcept
 {
     META_FUNCTION_TASK();
 
-    switch (data_format)
+    switch (compare_func)
+    {
+    case Compare::Never:        return D3D12_COMPARISON_FUNC_NEVER;
+    case Compare::Always:       return D3D12_COMPARISON_FUNC_ALWAYS;
+    case Compare::Less:         return D3D12_COMPARISON_FUNC_LESS;
+    case Compare::LessEqual:    return D3D12_COMPARISON_FUNC_LESS_EQUAL;
+    case Compare::Greater:      return D3D12_COMPARISON_FUNC_GREATER;
+    case Compare::GreaterEqual: return D3D12_COMPARISON_FUNC_GREATER_EQUAL;
+    case Compare::Equal:        return D3D12_COMPARISON_FUNC_EQUAL;
+    case Compare::NotEqual:     return D3D12_COMPARISON_FUNC_NOT_EQUAL;
+    default:                            assert(0);
+    }
+    return D3D12_COMPARISON_FUNC_NEVER;
+}
+
+DXGI_FORMAT TypeConverterDX::PixelFormatToDxgi(const PixelFormat& pixel_format) noexcept
+{
+    META_FUNCTION_TASK();
+
+    switch (pixel_format)
     {
     case PixelFormat::Unknown:       return DXGI_FORMAT_UNKNOWN;
     case PixelFormat::RGBA8:         return DXGI_FORMAT_R8G8B8A8_TYPELESS;
@@ -99,44 +118,26 @@ DXGI_FORMAT TypeConverterDX::DataFormatToDXGI(const PixelFormat& data_format) no
     return DXGI_FORMAT_UNKNOWN;
 }
 
-DXGI_FORMAT TypeConverterDX::DataFormatToDXGI(const PixelFormat& data_format, ResourceFormatType format_type) noexcept
+DXGI_FORMAT TypeConverterDX::PixelFormatToDxgi(const PixelFormat& pixel_format, ResourceFormatType format_type) noexcept
 {
     META_FUNCTION_TASK();
 
-    switch (data_format)
+    switch (pixel_format)
     {
     case PixelFormat::Depth32Float:
     {
         switch (format_type)
         {
         case ResourceFormatType::ResourceBase:  return DXGI_FORMAT_R32_TYPELESS;
-        case ResourceFormatType::ViewRead:  return DXGI_FORMAT_R32_FLOAT;
-        case ResourceFormatType::ViewWrite: return DXGI_FORMAT_D32_FLOAT;
+        case ResourceFormatType::ViewRead:      return DXGI_FORMAT_R32_FLOAT;
+        case ResourceFormatType::ViewWrite:     return DXGI_FORMAT_D32_FLOAT;
         }
     } break;
 
     default: assert(0);
     }
-    return DataFormatToDXGI(data_format);
-}
 
-D3D12_COMPARISON_FUNC TypeConverterDX::CompareFunctionToDX(Compare compare_func) noexcept
-{
-    META_FUNCTION_TASK();
-
-    switch (compare_func)
-    {
-    case Compare::Never:        return D3D12_COMPARISON_FUNC_NEVER;
-    case Compare::Always:       return D3D12_COMPARISON_FUNC_ALWAYS;
-    case Compare::Less:         return D3D12_COMPARISON_FUNC_LESS;
-    case Compare::LessEqual:    return D3D12_COMPARISON_FUNC_LESS_EQUAL;
-    case Compare::Greater:      return D3D12_COMPARISON_FUNC_GREATER;
-    case Compare::GreaterEqual: return D3D12_COMPARISON_FUNC_GREATER_EQUAL;
-    case Compare::Equal:        return D3D12_COMPARISON_FUNC_EQUAL;
-    case Compare::NotEqual:     return D3D12_COMPARISON_FUNC_NOT_EQUAL;
-    default:                            assert(0);
-    }
-    return D3D12_COMPARISON_FUNC_NEVER;
+    return PixelFormatToDxgi(pixel_format);
 }
 
 DXGI_FORMAT TypeConverterDX::ParameterDescToDxgiFormatAndSize(const D3D12_SIGNATURE_PARAMETER_DESC& param_desc, uint32_t& out_element_byte_size) noexcept

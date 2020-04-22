@@ -81,7 +81,7 @@ void IndexBufferDX::InitializeView(PixelFormat format)
 
     m_buffer_view.BufferLocation   = GetNativeGpuAddress();
     m_buffer_view.SizeInBytes      = static_cast<UINT>(GetDataSize());
-    m_buffer_view.Format           = TypeConverterDX::DataFormatToDXGI(format);
+    m_buffer_view.Format           = TypeConverterDX::PixelFormatToDxgi(format);
 }
 
 template<>

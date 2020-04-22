@@ -82,7 +82,7 @@ RenderPassDX::AccessDesc::AccessDesc(const ColorAttachment& color_attachment)
         }
 
         const Ptr<Texture> sp_color_rt        = color_attachment.wp_texture.lock();
-        const DXGI_FORMAT color_format        = TypeConverterDX::DataFormatToDXGI(sp_color_rt->GetSettings().pixel_format);
+        const DXGI_FORMAT color_format        = TypeConverterDX::PixelFormatToDxgi(sp_color_rt->GetSettings().pixel_format);
         const float clear_color_components[4]{
             color_attachment.clear_color.GetR(),
             color_attachment.clear_color.GetG(),
@@ -116,7 +116,7 @@ void RenderPassDX::AccessDesc::InitDepthStencilClearValue(const DepthAttachment&
         throw std::invalid_argument("Depth attachments should point to the depth-stencil texture.");
     }
 
-    const DXGI_FORMAT depth_format = TypeConverterDX::DataFormatToDXGI(depth_attachment.wp_texture.lock()->GetSettings().pixel_format);
+    const DXGI_FORMAT depth_format = TypeConverterDX::PixelFormatToDxgi(depth_attachment.wp_texture.lock()->GetSettings().pixel_format);
     beginning.Clear.ClearValue = CD3DX12_CLEAR_VALUE(depth_format, depth_attachment.clear_value, stencil_attachment.clear_value);
 }
 

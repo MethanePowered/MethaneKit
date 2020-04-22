@@ -129,7 +129,7 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
     DXGI_SWAP_CHAIN_DESC1 swap_chain_desc{};
     swap_chain_desc.Width                 = settings.frame_size.width;
     swap_chain_desc.Height                = settings.frame_size.height;
-    swap_chain_desc.Format                = TypeConverterDX::DataFormatToDXGI(settings.color_format);
+    swap_chain_desc.Format                = TypeConverterDX::PixelFormatToDxgi(settings.color_format);
     swap_chain_desc.BufferCount           = settings.frame_buffers_count;
     swap_chain_desc.BufferUsage           = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     swap_chain_desc.SwapEffect            = DXGI_SWAP_EFFECT_FLIP_DISCARD;

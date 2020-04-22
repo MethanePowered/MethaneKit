@@ -194,7 +194,7 @@ SamplerDX::SamplerDX(ContextBase& context, const Settings& settings, const Descr
     dx_sampler_desc.MaxLOD             = settings.lod.max;
     dx_sampler_desc.MipLODBias         = settings.lod.bias;
     dx_sampler_desc.MaxAnisotropy      = 0;
-    dx_sampler_desc.ComparisonFunc     = TypeConverterDX::CompareFunctionToDX(settings.compare_function);
+    dx_sampler_desc.ComparisonFunc     = TypeConverterDX::CompareFunctionToD3D(settings.compare_function);
     ConvertBorderColorToDXColor(settings.border_color, &dx_sampler_desc.BorderColor[0]);
 
     GetContextDX().GetDeviceDX().GetNativeDevice()->CreateSampler(&dx_sampler_desc, GetNativeCpuDescriptorHandle(Usage::ShaderRead));

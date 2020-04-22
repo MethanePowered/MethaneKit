@@ -113,7 +113,7 @@ void RenderTargetTextureDX::Initialize()
     }
 
     D3D12_RESOURCE_DESC tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
-        TypeConverterDX::DataFormatToDXGI(settings.pixel_format),
+        TypeConverterDX::PixelFormatToDxgi(settings.pixel_format),
         settings.dimensions.width,
         settings.dimensions.height
     );
@@ -143,7 +143,7 @@ void DepthStencilBufferTextureDX::Initialize(const std::optional<DepthStencil>& 
 
     const Settings& settings = GetSettings();
     CD3DX12_RESOURCE_DESC tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
-        TypeConverterDX::DataFormatToDXGI(settings.pixel_format, TypeConverterDX::ResourceFormatType::ResourceBase),
+        TypeConverterDX::PixelFormatToDxgi(settings.pixel_format, TypeConverterDX::ResourceFormatType::ResourceBase),
         settings.dimensions.width, settings.dimensions.height
     );
 
@@ -158,7 +158,7 @@ void DepthStencilBufferTextureDX::Initialize(const std::optional<DepthStencil>& 
         tex_desc.Flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
     }
 
-    const DXGI_FORMAT view_write_format = TypeConverterDX::DataFormatToDXGI(settings.pixel_format, TypeConverterDX::ResourceFormatType::ViewWrite);
+    const DXGI_FORMAT view_write_format = TypeConverterDX::PixelFormatToDxgi(settings.pixel_format, TypeConverterDX::ResourceFormatType::ViewWrite);
 
     if (clear_depth_stencil)
     {
@@ -185,7 +185,7 @@ void DepthStencilBufferTextureDX::Initialize(const std::optional<DepthStencil>& 
         case DescriptorHeap::Type::ShaderResources:
         {
             D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
-            srv_desc.Format                          = TypeConverterDX::DataFormatToDXGI(settings.pixel_format, TypeConverterDX::ResourceFormatType::ViewRead);
+            srv_desc.Format                          = TypeConverterDX::PixelFormatToDxgi(settings.pixel_format, TypeConverterDX::ResourceFormatType::ViewRead);
             srv_desc.ViewDimension                   = GetSrvDimension(settings.dimensions);
             srv_desc.Shader4ComponentMapping         = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
             srv_desc.Texture2D.MipLevels             = 1;
@@ -270,7 +270,7 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         }
 
         tex_desc = CD3DX12_RESOURCE_DESC::Tex1D(
-            TypeConverterDX::DataFormatToDXGI(settings.pixel_format),
+            TypeConverterDX::PixelFormatToDxgi(settings.pixel_format),
             settings.dimensions.width,
             static_cast<UINT16>(settings.array_length),
             static_cast<UINT16>(mip_levels_count)
@@ -297,7 +297,7 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
             throw std::invalid_argument("2D Textures must have depth dimension equal to 1.");
         }
         tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
-            TypeConverterDX::DataFormatToDXGI(settings.pixel_format),
+            TypeConverterDX::PixelFormatToDxgi(settings.pixel_format),
             settings.dimensions.width,
             settings.dimensions.height,
             static_cast<UINT16>(settings.array_length),
@@ -317,7 +317,7 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
             throw std::invalid_argument("Single 3D Texture must have array length equal to 1.");
         }
         tex_desc = CD3DX12_RESOURCE_DESC::Tex3D(
-            TypeConverterDX::DataFormatToDXGI(settings.pixel_format),
+            TypeConverterDX::PixelFormatToDxgi(settings.pixel_format),
             settings.dimensions.width,
             settings.dimensions.height,
             static_cast<UINT16>(settings.dimensions.depth),
@@ -341,7 +341,7 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
             throw std::invalid_argument("Cube textures must have depth dimension equal to 6.");
         }
         tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
-            TypeConverterDX::DataFormatToDXGI(settings.pixel_format),
+            TypeConverterDX::PixelFormatToDxgi(settings.pixel_format),
             settings.dimensions.width,
             settings.dimensions.height,
             static_cast<UINT16>(settings.dimensions.depth * settings.array_length),
