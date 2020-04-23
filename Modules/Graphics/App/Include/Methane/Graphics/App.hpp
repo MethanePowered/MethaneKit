@@ -132,6 +132,13 @@ public:
     void Init() override
     {
         META_FUNCTION_TASK();
+
+        if (!m_settings.animations_enabled)
+        {
+            m_settings.animations_enabled = true;
+            SetAnimationsEnabled(false);
+        }
+
         assert(m_sp_context);
         const RenderContext::Settings& context_settings = m_sp_context->GetSettings();
 
