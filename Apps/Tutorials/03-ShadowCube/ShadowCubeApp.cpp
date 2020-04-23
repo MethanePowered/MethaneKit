@@ -77,9 +77,9 @@ ShadowCubeApp::ShadowCubeApp()
     , m_scene_constants(                                // Shader constants:
         {                                               // ================
             gfx::Color4f(1.f, 1.f, 0.74f, 1.f),         // - light_color
-            500.f,                                      // - light_power
-            0.05f,                                      // - light_ambient_factor
-            10.f                                        // - light_specular_factor
+            700.f,                                      // - light_power
+            0.04f,                                      // - light_ambient_factor
+            30.f                                        // - light_specular_factor
         })
     , m_shadow_pass(false, "Shadow Render Pass")
     , m_final_pass(true, "Final Render Pass")

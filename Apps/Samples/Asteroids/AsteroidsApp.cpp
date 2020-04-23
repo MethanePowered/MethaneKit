@@ -127,9 +127,9 @@ AsteroidsApp::AsteroidsApp()
     , m_scene_constants(                                // Shader constants:
         {                                               // ================
             gfx::Color4f(1.f, 1.f, 1.f, 1.f),           // - light_color
-            1.25f,                                      // - light_power
-            0.03f,                                      // - light_ambient_factor
-            5.f                                         // - light_specular_factor
+            3.0f,                                       // - light_power
+            0.05f,                                      // - light_ambient_factor
+            30.f                                        // - light_specular_factor
         })
     , m_asteroids_array_settings(                       // Asteroids array settings:
         {                                               // ================

@@ -74,9 +74,9 @@ TexturedCubeApp::TexturedCubeApp()
     , m_shader_constants(                               // Shader constants:
         {                                               // ================
             gfx::Color4f(1.f, 1.f, 0.74f, 1.f),         // - light_color
-            500.f,                                      // - light_power
-            0.05f,                                      // - light_ambient_factor
-            10.f                                        // - light_specular_factor
+            700.f,                                      // - light_power
+            0.04f,                                      // - light_ambient_factor
+            30.f                                        // - light_specular_factor
         })
     , m_cube_scale(15.f)
 {

@@ -40,7 +40,7 @@ static gfx::Color3f TransformSrgbToLinear(const gfx::Color3f& srgb_color)
     gfx::Color3f linear_color{};
     for (int c = 0; c < 3; ++c)
     {
-        linear_color[c] = std::pow(srgb_color[c] / 255.f, 2.2f);
+        linear_color[c] = std::pow(srgb_color[c] / 255.f, 2.233333333f);
     }
     return linear_color;
 }
@@ -156,19 +156,19 @@ Asteroid::Colors Asteroid::GetAsteroidRockColors(uint32_t deep_color_index, uint
         {  55.f,  49.f,  40.f },
         {  58.f,  38.f,  14.f },
         {  98.f, 101.f, 104.f },
-        { 205.f, 197.f, 178.f },
+        { 172.f, 158.f, 122.f },
         {  88.f,  88.f,  88.f },
         { 148.f, 108.f, 102.f },
     } };
     static const AsteroidColorSchema s_linear_deep_rock_colors = TransformSrgbToLinear(s_srgb_deep_rock_colors);
 
     static const AsteroidColorSchema s_srgb_shallow_rock_colors{ {
-        { 156.f, 139.f, 113.f },
-        { 198.f, 188.f, 137.f },
-        { 239.f, 222.f, 191.f },
-        { 239.f, 213.f, 198.f },
-        { 153.f, 146.f, 136.f },
-        { 189.f, 181.f, 164.f },
+        { 140.f, 109.f,  61.f },
+        { 172.f, 154.f,  58.f },
+        { 204.f, 177.f, 119.f },
+        { 204.f, 164.f, 136.f },
+        { 130.f, 117.f,  98.f },
+        { 160.f, 145.f, 114.f },
     } };
     static const AsteroidColorSchema s_linear_shallow_rock_colors = TransformSrgbToLinear(s_srgb_shallow_rock_colors);
 
@@ -183,22 +183,22 @@ Asteroid::Colors Asteroid::GetAsteroidIceColors(uint32_t deep_color_index, uint3
     META_FUNCTION_TASK();
 
     static const AsteroidColorSchema s_srgb_deep_ice_colors{ {
-        {   8.f,  57.f,  72.f },
-        {  35.f,  79.f, 116.f },
-        {   7.f,  25.f,  27.f },
-        {  55.f, 116.f, 161.f },
-        {  16.f,  66.f,  66.f },
-        {  48.f, 103.f, 147.f }
+        {  22.f,  51.f,  59.f },
+        {  45.f,  72.f,  93.f },
+        {  14.f,  25.f,  27.f },
+        {  68.f, 103.f, 129.f },
+        {  29.f,  59.f,  59.f },
+        {  59.f,  92.f, 118.f }
     } };
     static const AsteroidColorSchema s_linear_deep_ice_colors = TransformSrgbToLinear(s_srgb_deep_ice_colors);
 
     static const AsteroidColorSchema s_srgb_shallow_ice_colors{ {
-        { 199.f, 212.f, 244.f },
-        { 196.f, 227.f, 239.f },
-        { 133.f, 177.f, 222.f },
-        { 133.f, 186.f, 230.f },
-        { 167.f, 212.f, 239.f },
-        { 200.f, 221.f, 252.f }
+        { 144.f, 163.f, 188.f },
+        { 133.f, 179.f, 189.f },
+        {  74.f, 135.f, 178.f },
+        {  69.f, 143.f, 177.f },
+        { 104.f, 168.f, 185.f },
+        { 140.f, 170.f, 186.f }
     } };
     static const AsteroidColorSchema s_linear_shallow_ice_colors = TransformSrgbToLinear(s_srgb_shallow_ice_colors);
 
