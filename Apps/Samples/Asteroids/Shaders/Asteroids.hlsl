@@ -25,6 +25,8 @@ Optional macro definition: TEXTURES_COUNT=10
 
 ******************************************************************************/
 
+#include "..\..\..\Common\Shaders\Primitives.hlsl"
+
 #ifndef TEXTURES_COUNT
 #define TEXTURES_COUNT 1
 #endif
@@ -75,21 +77,6 @@ ConstantBuffer<MeshUniforms>  g_mesh_uniforms                 : register(b3);
 Texture2DArray<float4>        g_face_textures[TEXTURES_COUNT] : register(t1);
 SamplerState                  g_texture_sampler               : register(s1);
 
-float linstep(float min, float max, float s)
-{
-    return saturate((s - min) / (max - min));
-}
-
-float4 LinearToSrgb(float4 color)
-{
-    // Optimized SRGB gamma correction approximation
-    // http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
-    float3 S1 = sqrt(color.rgb);
-    float3 S2 = sqrt(S1);
-    float3 S3 = sqrt(S2);
-    return float4(0.585122381 * S1 + 0.783140355 * S2 - 0.368262736 * S3, color.a);
-}
-
 PSInput AsteroidVS(VSInput input)
 {
     const float4 position = float4(input.position, 1.0f);
@@ -134,5 +121,5 @@ float4 AsteroidPS(PSInput input) : SV_TARGET
     const float4 specular_color = base_color * specular_part;
     const float  fading_ratio   = saturate(input.position.z * 8000.0f);
 
-    return LinearToSrgb((ambient_color + diffuse_color + specular_color) * fading_ratio);
+    return ColorLinearToSrgb((ambient_color + diffuse_color + specular_color) * fading_ratio);
 }
