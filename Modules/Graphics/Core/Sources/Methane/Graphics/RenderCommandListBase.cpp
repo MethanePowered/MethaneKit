@@ -36,6 +36,21 @@ Base implementation of the render command list interface.
 namespace Methane::Graphics
 {
 
+void RenderCommandListBase::DrawingState::Reset()
+{
+    META_FUNCTION_TASK();
+
+    CommandState::Reset();
+
+    opt_primitive_type.reset();
+    p_index_buffer = nullptr;
+    for(BufferBase*& p_vertex_buffer : vertex_buffers)
+        p_vertex_buffer = nullptr;
+    p_render_state = nullptr;
+    render_state_groups = RenderState::Group::None;
+    flags = {};
+}
+
 RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& pass)
     : CommandListBase(command_queue, Type::Render)
     , m_is_parallel(false)

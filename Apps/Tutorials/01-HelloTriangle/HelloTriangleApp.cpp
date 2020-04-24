@@ -85,6 +85,7 @@ void HelloTriangleApp::Init()
     m_sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(*m_sp_context, vertex_data_size, vertex_size);
     m_sp_vertex_buffer->SetName("Triangle Vertex Buffer");
     m_sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(triangle_vertices.data()), vertex_data_size } });
+    m_draw_vertex_buffers = { *m_sp_vertex_buffer };
 
     // Create render state
     m_sp_state = gfx::RenderState::Create(*m_sp_context,
@@ -127,6 +128,7 @@ void HelloTriangleApp::Init()
     {
         frame.sp_cmd_list = gfx::RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
         frame.sp_cmd_list->SetName(IndexedName("Triangle Rendering", frame.index));
+        frame.execute_cmd_lists = { *frame.sp_cmd_list };
     }
 
     // Complete initialization of render context
@@ -159,7 +161,7 @@ bool HelloTriangleApp::Render()
     // Issue commands for triangle rendering
     static const std::string s_debug_region_name = "Triangle Rendering";
     frame.sp_cmd_list->Reset(m_sp_state, s_debug_region_name);
-    frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
+    frame.sp_cmd_list->SetVertexBuffers(m_draw_vertex_buffers);
     frame.sp_cmd_list->Draw(gfx::RenderCommandList::Primitive::Triangle, 3u);
 
     RenderOverlay(*frame.sp_cmd_list);
@@ -168,7 +170,7 @@ bool HelloTriangleApp::Render()
     frame.sp_cmd_list->Commit();
 
     // Execute command list on render queue and present frame to screen
-    m_sp_context->GetRenderCommandQueue().Execute({ *frame.sp_cmd_list });
+    m_sp_context->GetRenderCommandQueue().Execute(frame.execute_cmd_lists);
     m_sp_context->Present();
 
     return true;

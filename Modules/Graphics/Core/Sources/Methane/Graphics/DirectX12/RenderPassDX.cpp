@@ -382,12 +382,14 @@ void RenderPassDX::SetNativeRenderTargets(RenderCommandListDX& dx_command_list)
     dx_command_list.GetNativeCommandList().OMSetRenderTargets(static_cast<UINT>(rt_cpu_handles.size()), rt_cpu_handles.data(), FALSE, p_depth_stencil_cpu_handle);
 }
 
-std::vector<ID3D12DescriptorHeap*> RenderPassDX::GetNativeDescriptorHeaps() const
+const std::vector<ID3D12DescriptorHeap*>& RenderPassDX::GetNativeDescriptorHeaps() const
 {
     META_FUNCTION_TASK();
+    if (!m_native_descriptor_heaps.empty())
+        return m_native_descriptor_heaps;
+
     const Settings& settings = GetSettings();
     const RenderContextBase& context = GetRenderContext();
-    std::vector<ID3D12DescriptorHeap*> descriptor_heaps;
     for (Access::Value access : Access::values)
     {
         if (!(settings.shader_access_mask & access))
@@ -395,37 +397,46 @@ std::vector<ID3D12DescriptorHeap*> RenderPassDX::GetNativeDescriptorHeaps() cons
 
         DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByAccess(access);
         DescriptorHeapDX& descriptor_heap_dx = static_cast<DescriptorHeapDX&>(context.GetResourceManager().GetDefaultShaderVisibleDescriptorHeap(heap_type));
-        descriptor_heaps.push_back(descriptor_heap_dx.GetNativeDescriptorHeap());
+        m_native_descriptor_heaps.push_back(descriptor_heap_dx.GetNativeDescriptorHeap());
     }
-    return descriptor_heaps;
+
+    return m_native_descriptor_heaps;
 }
 
-std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> RenderPassDX::GetNativeRenderTargetCPUHandles() const
+const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& RenderPassDX::GetNativeRenderTargetCPUHandles() const
 {
     META_FUNCTION_TASK();
-    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rt_cpu_handles;
+    if (!m_native_rt_cpu_handles.empty())
+        return m_native_rt_cpu_handles;
+
     for (const RenderPassBase::ColorAttachment& color_attach : GetSettings().color_attachments)
     {
         if (color_attach.wp_texture.expired())
         {
             throw std::invalid_argument("Can not use color attachment without texture.");
         }
-        rt_cpu_handles.push_back(static_cast<TextureBase&>(*color_attach.wp_texture.lock()).GetNativeCpuDescriptorHandle(ResourceBase::Usage::RenderTarget));
+
+        const Ptr<TextureBase> sp_rt_texture = std::static_pointer_cast<TextureBase>(color_attach.wp_texture.lock());
+        m_native_rt_cpu_handles.push_back(sp_rt_texture->GetNativeCpuDescriptorHandle(ResourceBase::Usage::RenderTarget));
     }
-    return rt_cpu_handles;
+
+    return m_native_rt_cpu_handles;
 }
 
-const D3D12_CPU_DESCRIPTOR_HANDLE* RenderPassDX::GetNativeDepthStencilCPUHandle()
+const D3D12_CPU_DESCRIPTOR_HANDLE* RenderPassDX::GetNativeDepthStencilCPUHandle() const
 {
     META_FUNCTION_TASK();
+    if (m_native_ds_cpu_handle.ptr)
+        return &m_native_ds_cpu_handle;
+
     const Settings& settings = GetSettings();
     if (!settings.depth_attachment.wp_texture.expired())
     {
-        m_depth_stencil_cpu_handle = static_cast<TextureBase&>(*settings.depth_attachment.wp_texture.lock()).GetNativeCpuDescriptorHandle(
-            ResourceBase::Usage::RenderTarget);
-        return &m_depth_stencil_cpu_handle;
+        const Ptr<TextureBase> sp_depth_texture = std::static_pointer_cast<TextureBase>(settings.depth_attachment.wp_texture.lock());
+        m_native_ds_cpu_handle = sp_depth_texture->GetNativeCpuDescriptorHandle(ResourceBase::Usage::RenderTarget);
     }
-    return nullptr;
+
+    return &m_native_ds_cpu_handle;
 }
 
 } // namespace Methane::Graphics

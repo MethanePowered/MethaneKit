@@ -253,7 +253,7 @@ void CommandListBase::SetResourceTransitionBarriers(const Refs<Resource>& resour
 void CommandListBase::ResetCommandState()
 {
     META_FUNCTION_TASK();
-    m_sp_command_state = CommandState::Create(m_type);
+    m_sp_command_state->Reset();
 }
 
 CommandListBase::CommandState& CommandListBase::GetCommandState()

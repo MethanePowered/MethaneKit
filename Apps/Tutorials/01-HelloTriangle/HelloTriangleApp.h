@@ -36,6 +36,7 @@ namespace gfx = Methane::Graphics;
 struct HelloTriangleFrame final : gfx::AppFrame
 {
     Ptr<gfx::RenderCommandList> sp_cmd_list;
+    Refs<gfx::CommandList> execute_cmd_lists;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -59,6 +60,7 @@ public:
 private:
     Ptr<gfx::RenderState>   m_sp_state;
     Ptr<gfx::Buffer>        m_sp_vertex_buffer;
+    Refs<gfx::Buffer>       m_draw_vertex_buffers;
 };
 
 } // namespace Methane::Tutorials

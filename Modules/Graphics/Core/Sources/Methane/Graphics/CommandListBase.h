@@ -66,6 +66,8 @@ public:
 
         static UniquePtr<CommandState> Create(Type command_list_type);
 
+        virtual void Reset() { p_program_bindings = nullptr; }
+
         virtual ~CommandState() = default;
 
     protected:

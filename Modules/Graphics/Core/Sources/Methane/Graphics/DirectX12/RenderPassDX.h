@@ -53,9 +53,9 @@ public:
     void SetNativeDescriptorHeaps(RenderCommandListDX& dx_command_list) const;
     void SetNativeRenderTargets(RenderCommandListDX& dx_command_list);
 
-    std::vector<ID3D12DescriptorHeap*>       GetNativeDescriptorHeaps() const;
-    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> GetNativeRenderTargetCPUHandles() const;
-    const D3D12_CPU_DESCRIPTOR_HANDLE*       GetNativeDepthStencilCPUHandle();
+    const std::vector<ID3D12DescriptorHeap*>&       GetNativeDescriptorHeaps() const;
+    const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& GetNativeRenderTargetCPUHandles() const;
+    const D3D12_CPU_DESCRIPTOR_HANDLE*              GetNativeDepthStencilCPUHandle() const;
 
 private:
     struct AccessDesc
@@ -110,6 +110,11 @@ private:
     DSClearInfo                                         m_ds_clear_info;
     D3D12_CPU_DESCRIPTOR_HANDLE                         m_depth_stencil_cpu_handle{ };
     bool                                                m_is_updated = false;
+
+    // Cache of native type vectors to minimize memory allocation during rendering
+    mutable std::vector<ID3D12DescriptorHeap*>          m_native_descriptor_heaps;
+    mutable std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>    m_native_rt_cpu_handles;
+    mutable D3D12_CPU_DESCRIPTOR_HANDLE                 m_native_ds_cpu_handle{ };
 };
 
 } // namespace Methane::Graphics
