@@ -51,4 +51,23 @@ private:
     Settings    m_settings;
 };
 
+class BuffersBase : public Buffers
+{
+public:
+    BuffersBase(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
+
+    Buffer::Type        GetType() const noexcept override  { return m_buffers_type; }
+    Data::Size          GetCount() const noexcept override { return static_cast<Data::Size>(m_refs.size()); }
+    const Refs<Buffer>& GetRefs() const noexcept override  { return m_refs; }
+    Buffer&             operator[](Data::Index index) const override;
+
+    const RawPtrs<BufferBase>& GetRawPtrs() const noexcept { return m_raw_ptrs; }
+
+private:
+    const Buffer::Type  m_buffers_type;
+    Refs<Buffer>        m_refs;
+    Ptrs<Buffer>        m_ptrs;
+    RawPtrs<BufferBase> m_raw_ptrs;
+};
+
 } // namespace Methane::Graphics

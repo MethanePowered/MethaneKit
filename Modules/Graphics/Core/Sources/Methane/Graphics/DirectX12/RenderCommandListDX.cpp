@@ -124,24 +124,15 @@ void RenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state, const s
     }
 }
 
-void RenderCommandListDX::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
+void RenderCommandListDX::SetVertexBuffers(const Buffers& vertex_buffers)
 {
     META_FUNCTION_TASK();
 
     RenderCommandListBase::SetVertexBuffers(vertex_buffers);
-
     if (!(GetDrawingState().changes & DrawingState::Changes::VertexBuffers))
         return;
 
-    std::vector<D3D12_VERTEX_BUFFER_VIEW> vertex_buffer_views;
-    vertex_buffer_views.reserve(vertex_buffers.size());
-    for (auto vertex_buffer_ref : vertex_buffers)
-    {
-        assert(vertex_buffer_ref.get().GetSettings().type == Buffer::Type::Vertex);
-        const VertexBufferDX& dx_vertex_buffer = static_cast<const VertexBufferDX&>(vertex_buffer_ref.get());
-        vertex_buffer_views.push_back(dx_vertex_buffer.GetNativeView());
-    }
-
+    const std::vector<D3D12_VERTEX_BUFFER_VIEW>& vertex_buffer_views = static_cast<const BuffersDX&>(vertex_buffers).GetNativeVertexBufferViews();
     GetNativeCommandListRef().IASetVertexBuffers(0, static_cast<UINT>(vertex_buffer_views.size()), vertex_buffer_views.data());
 }
 

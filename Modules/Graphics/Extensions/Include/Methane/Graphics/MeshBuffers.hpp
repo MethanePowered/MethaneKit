@@ -61,22 +61,24 @@ public:
         , m_mesh_subsets(!mesh_subsets.empty() ? mesh_subsets
                                                : Mesh::Subsets{ Mesh::Subset(mesh_data.GetType(), { 0, mesh_data.GetVertexCount() },
                                                                                                   { 0, mesh_data.GetIndexCount()  }, true ) })
-        , m_sp_vertex(Buffer::CreateVertexBuffer(context, static_cast<Data::Size>(mesh_data.GetVertexDataSize()),
-                                                          static_cast<Data::Size>(mesh_data.GetVertexSize())))
-        , m_sp_index( Buffer::CreateIndexBuffer( context, static_cast<Data::Size>(mesh_data.GetIndexDataSize()), GetIndexFormat(mesh_data.GetIndex(0))))
     {
         META_FUNCTION_TASK();
 
         m_final_pass_instance_uniforms.resize(m_mesh_subsets.size());
 
-        m_sp_vertex->SetName(mesh_name + " Vertex Buffer");
-        m_sp_vertex->SetData({
+        Ptr<Buffer> sp_vertex_buffer = Buffer::CreateVertexBuffer(context,
+                                                                  static_cast<Data::Size>(mesh_data.GetVertexDataSize()),
+                                                                  static_cast<Data::Size>(mesh_data.GetVertexSize()));
+        sp_vertex_buffer->SetName(mesh_name + " Vertex Buffer");
+        sp_vertex_buffer->SetData({
             {
                 reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetVertices().data()),
                 static_cast<Data::Size>(mesh_data.GetVertexDataSize())
             }
         });
+        m_sp_vertex = Buffers::CreateVertexBuffers({ *sp_vertex_buffer });
 
+        m_sp_index = Buffer::CreateIndexBuffer(context, static_cast<Data::Size>(mesh_data.GetIndexDataSize()), GetIndexFormat(mesh_data.GetIndex(0)));
         m_sp_index->SetName(mesh_name + " Index Buffer");
         m_sp_index->SetData({
             {
@@ -105,7 +107,7 @@ public:
 
         const Mesh::Subset& mesh_subset = m_mesh_subsets[mesh_subset_index];
         cmd_list.SetProgramBindings(program_bindings);
-        cmd_list.SetVertexBuffers({ GetVertexBuffer() });
+        cmd_list.SetVertexBuffers(GetVertexBuffers());
         cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, GetIndexBuffer(),
                              mesh_subset.indices.count, mesh_subset.indices.offset,
                              mesh_subset.indices_adjusted ? 0 : mesh_subset.vertices.offset,
@@ -125,7 +127,7 @@ public:
     {
         META_FUNCTION_TASK();
 
-        cmd_list.SetVertexBuffers({ GetVertexBuffer() });
+        cmd_list.SetVertexBuffers(GetVertexBuffers());
 
         Buffer& index_buffer = GetIndexBuffer();
         for (Ptrs<ProgramBindings>::const_iterator instance_program_bindings_it = instance_program_bindings_begin;
@@ -214,7 +216,7 @@ protected:
     void SetInstanceCount(uint32_t instance_count) { m_final_pass_instance_uniforms.resize(instance_count); }
     virtual uint32_t GetSubsetByInstanceIndex(uint32_t instance_index) const { return instance_index; }
 
-    Buffer& GetVertexBuffer()
+    const Buffers& GetVertexBuffers() const
     {
         assert(!!m_sp_vertex);
         return *m_sp_vertex;
@@ -240,7 +242,7 @@ private:
 
     const std::string   m_mesh_name;
     const Mesh::Subsets m_mesh_subsets;
-    Ptr<Buffer>         m_sp_vertex;
+    Ptr<Buffers>        m_sp_vertex;
     Ptr<Buffer>         m_sp_index;
     InstanceUniforms    m_final_pass_instance_uniforms; // Actual uniforms buffers are created separately in Frame dependent resources
 };

@@ -82,10 +82,10 @@ void HelloTriangleApp::Init()
     const Data::Size vertex_size      = static_cast<Data::Size>(sizeof(Vertex));
     const Data::Size vertex_data_size = static_cast<Data::Size>(sizeof(triangle_vertices));
 
-    m_sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(*m_sp_context, vertex_data_size, vertex_size);
-    m_sp_vertex_buffer->SetName("Triangle Vertex Buffer");
-    m_sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(triangle_vertices.data()), vertex_data_size } });
-    m_draw_vertex_buffers = { *m_sp_vertex_buffer };
+    Ptr<gfx::Buffer> sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(*m_sp_context, vertex_data_size, vertex_size);
+    sp_vertex_buffer->SetName("Triangle Vertex Buffer");
+    sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(triangle_vertices.data()), vertex_data_size } });
+    m_sp_vertex_buffers = gfx::Buffers::CreateVertexBuffers({ *sp_vertex_buffer });
 
     // Create render state
     m_sp_state = gfx::RenderState::Create(*m_sp_context,
@@ -161,7 +161,7 @@ bool HelloTriangleApp::Render()
     // Issue commands for triangle rendering
     static const std::string s_debug_region_name = "Triangle Rendering";
     frame.sp_cmd_list->Reset(m_sp_state, s_debug_region_name);
-    frame.sp_cmd_list->SetVertexBuffers(m_draw_vertex_buffers);
+    frame.sp_cmd_list->SetVertexBuffers(*m_sp_vertex_buffers);
     frame.sp_cmd_list->Draw(gfx::RenderCommandList::Primitive::Triangle, 3u);
 
     RenderOverlay(*frame.sp_cmd_list);
@@ -178,7 +178,7 @@ bool HelloTriangleApp::Render()
 
 void HelloTriangleApp::OnContextReleased()
 {
-    m_sp_vertex_buffer.reset();
+    m_sp_vertex_buffers.reset();
     m_sp_state.reset();
 
     GraphicsApp::OnContextReleased();

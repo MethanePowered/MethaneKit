@@ -59,8 +59,7 @@ public:
 
 private:
     Ptr<gfx::RenderState>   m_sp_state;
-    Ptr<gfx::Buffer>        m_sp_vertex_buffer;
-    Refs<gfx::Buffer>       m_draw_vertex_buffers;
+    Ptr<gfx::Buffers>       m_sp_vertex_buffers;
 };
 
 } // namespace Methane::Tutorials

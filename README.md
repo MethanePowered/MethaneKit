@@ -225,26 +225,26 @@ class HelloTriangleApp final : public GraphicsApp
 {
 private:
     Ptr<RenderState> m_sp_state;
-    Ptr<Buffer>      m_sp_vertex_buffer;
+    Ptr<Buffers>     m_sp_vertex_buffers;
 
 public:
     HelloTriangleApp() : GraphicsApp(
-        {                                        // Application settings:
-            {                                    // platform_app:
-                "Methane Hello Triangle",        // - name
-                0.8, 0.8,                        // - width, height
-            },                                   //
-            {                                    // graphics_app:
-                RenderPass::Access::None,        // - screen_pass_access
-                false,                           // - animations_enabled
-                true,                            // - show_hud_in_window_title
-                false,                           // - show_logo_badge
-            },                                   //
-            {                                    // render_context:
-                FrameSize(),                     // - frame_size placeholder: actual size is set in InitContext
-                PixelFormat::BGRA8Unorm,         // - color_format
-                PixelFormat::Unknown,            // - depth_stencil_format
-                Color4f(0.0f, 0.2f, 0.4f, 1.0f), // - clear_color
+        {                                               // Application settings:
+            {                                           // platform_app:
+                "Methane Hello Triangle",               // - name
+                0.8, 0.8,                               // - width, height
+            },                                          //
+            {                                           // graphics_app:
+                RenderPass::Access::None,               // - screen_pass_access
+                IApp::HeadsUpDisplayMode::WindowTitle,  // - heads_up_display_mode
+                false,                                  // - animations_enabled
+                false,                                  // - show_logo_badge
+            },                                          //
+            {                                           // render_context:
+                FrameSize(),                            // - frame_size placeholder: set in InitContext
+                PixelFormat::BGRA8Unorm,                // - color_format
+                PixelFormat::Unknown,                   // - depth_stencil_format
+                Color4f(0.0f, 0.2f, 0.4f, 1.0f),        // - clear_color
             }
         })
     { }
@@ -259,20 +259,21 @@ public:
         GraphicsApp::Init();
 
         struct Vertex { Vector3f position; Vector3f color; };
-        const std::array<Vertex, 3> triangle_vertices { {
+        const std::array<Vertex, 3> triangle_vertices{ {
             { { 0.0f,   0.5f,  0.0f }, { 1.0f, 0.0f, 0.0f } },
             { { 0.5f,  -0.5f,  0.0f }, { 0.0f, 1.0f, 0.0f } },
             { { -0.5f, -0.5f,  0.0f }, { 0.0f, 0.0f, 1.0f } },
         } };
 
         const Data::Size vertex_buffer_size = static_cast<Data::Size>(sizeof(triangle_vertices));
-        m_sp_vertex_buffer = Buffer::CreateVertexBuffer(*m_sp_context, vertex_buffer_size, static_cast<Data::Size>(sizeof(Vertex)));
-        m_sp_vertex_buffer->SetData(
+        Ptr<Buffer> sp_vertex_buffer = Buffer::CreateVertexBuffer(*m_sp_context, vertex_buffer_size, static_cast<Data::Size>(sizeof(Vertex)));
+        sp_vertex_buffer->SetData(
             Resource::SubResources
             {
                 Resource::SubResource { reinterpret_cast<Data::ConstRawPtr>(triangle_vertices.data()), vertex_buffer_size }
             }
         );
+        m_sp_vertex_buffers = Buffers::CreateVertexBuffers({ *sp_vertex_buffer });
 
         m_sp_state = RenderState::Create(*m_sp_context,
             RenderState::Settings
@@ -328,7 +329,7 @@ public:
         HelloTriangleFrame& frame = GetCurrentFrame();
 
         frame.sp_cmd_list->Reset(m_sp_state);
-        frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
+        frame.sp_cmd_list->SetVertexBuffers(*m_sp_vertex_buffers);
         frame.sp_cmd_list->Draw(RenderCommandList::Primitive::Triangle, 3);
         frame.sp_cmd_list->Commit();
 
@@ -340,17 +341,12 @@ public:
 
     void OnContextReleased() override
     {
-        m_sp_vertex_buffer.reset();
+        m_sp_vertex_buffers.reset();
         m_sp_state.reset();
 
         GraphicsApp::OnContextReleased();
     }
 };
-
-int main(int argc, const char* argv[])
-{
-    return HelloTriangleApp().Run({ argc, argv });
-}
 ```
 
 This tutorial uses simple HLSL shader [Shaders/Triangle.hlsl](/Apps/Tutorials/01-HelloTriangle/Shaders/Triangle.hlsl).

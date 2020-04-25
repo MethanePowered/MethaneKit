@@ -172,9 +172,10 @@ void TexturedCubeApp::Init()
     // Create vertex buffer for cube mesh
     const Data::Size vertex_data_size = static_cast<Data::Size>(cube_mesh.GetVertexDataSize());
     const Data::Size vertex_size      = static_cast<Data::Size>(cube_mesh.GetVertexSize());
-    m_sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(*m_sp_context, vertex_data_size, vertex_size);
-    m_sp_vertex_buffer->SetName("Cube Vertex Buffer");
-    m_sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } });
+    Ptr<gfx::Buffer> sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(*m_sp_context, vertex_data_size, vertex_size);
+    sp_vertex_buffer->SetName("Cube Vertex Buffer");
+    sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } });
+    m_sp_vertex_buffers = gfx::Buffers::CreateVertexBuffers({ *sp_vertex_buffer });
 
     // Create index buffer for cube mesh
     const Data::Size index_data_size = static_cast<Data::Size>(cube_mesh.GetIndexDataSize());
@@ -266,7 +267,7 @@ bool TexturedCubeApp::Render()
     static const std::string s_debug_region_name = "Cube Rendering";
     frame.sp_cmd_list->Reset(m_sp_state, s_debug_region_name);
     frame.sp_cmd_list->SetProgramBindings(*frame.sp_program_bindings);
-    frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
+    frame.sp_cmd_list->SetVertexBuffers(*m_sp_vertex_buffers);
     frame.sp_cmd_list->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
 
     RenderOverlay(*frame.sp_cmd_list);
@@ -287,7 +288,7 @@ void TexturedCubeApp::OnContextReleased()
     m_sp_cube_texture.reset();
     m_sp_const_buffer.reset();
     m_sp_index_buffer.reset();
-    m_sp_vertex_buffer.reset();
+    m_sp_vertex_buffers.reset();
     m_sp_state.reset();
 
     GraphicsApp::OnContextReleased();

@@ -118,4 +118,21 @@ MTLIndexType BufferMT::GetNativeIndexType() const noexcept
     return TypeConverterMT::DataFormatToMetalIndexType(GetSettings().data_format);
 }
 
+Ptr<Buffers> Buffers::Create(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<BuffersMT>(buffers_type, std::move(buffer_refs));
+}
+
+BuffersMT::BuffersMT(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
+    : BuffersBase(buffers_type, std::move(buffer_refs))
+{
+    META_FUNCTION_TASK();
+    switch(buffers_type)
+    {
+    case Buffer::Type::Vertex: break;
+    default: break;
+    }
+}
+
 } // namespace Methane::Graphics

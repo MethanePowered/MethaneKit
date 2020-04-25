@@ -73,7 +73,7 @@ private:
     Settings             m_settings;
     const std::string    m_debug_region_name;
     Ptr<RenderState>     m_sp_state;
-    Ptr<Buffer>          m_sp_vertex_buffer;
+    Ptr<Buffers>         m_sp_vertex_buffers;
     Ptr<Buffer>          m_sp_index_buffer;
     Ptr<Buffer>          m_sp_const_buffer;
     Ptr<Texture>         m_sp_texture;

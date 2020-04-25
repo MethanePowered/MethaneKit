@@ -37,7 +37,7 @@ class HelloTriangleApp final : public GraphicsApp
 {
 private:
     Ptr<RenderState> m_sp_state;
-    Ptr<Buffer>      m_sp_vertex_buffer;
+    Ptr<Buffers>     m_sp_vertex_buffers;
 
 public:
     HelloTriangleApp() : GraphicsApp(
@@ -78,13 +78,14 @@ public:
         } };
 
         const Data::Size vertex_buffer_size = static_cast<Data::Size>(sizeof(triangle_vertices));
-        m_sp_vertex_buffer = Buffer::CreateVertexBuffer(*m_sp_context, vertex_buffer_size, static_cast<Data::Size>(sizeof(Vertex)));
-        m_sp_vertex_buffer->SetData(
+        Ptr<Buffer> sp_vertex_buffer = Buffer::CreateVertexBuffer(*m_sp_context, vertex_buffer_size, static_cast<Data::Size>(sizeof(Vertex)));
+        sp_vertex_buffer->SetData(
             Resource::SubResources
             {
                 Resource::SubResource { reinterpret_cast<Data::ConstRawPtr>(triangle_vertices.data()), vertex_buffer_size }
             }
         );
+        m_sp_vertex_buffers = Buffers::CreateVertexBuffers({ *sp_vertex_buffer });
 
         m_sp_state = RenderState::Create(*m_sp_context,
             RenderState::Settings
@@ -140,7 +141,7 @@ public:
         HelloTriangleFrame& frame = GetCurrentFrame();
 
         frame.sp_cmd_list->Reset(m_sp_state);
-        frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
+        frame.sp_cmd_list->SetVertexBuffers(*m_sp_vertex_buffers);
         frame.sp_cmd_list->Draw(RenderCommandList::Primitive::Triangle, 3);
         frame.sp_cmd_list->Commit();
 
@@ -152,7 +153,7 @@ public:
 
     void OnContextReleased() override
     {
-        m_sp_vertex_buffer.reset();
+        m_sp_vertex_buffers.reset();
         m_sp_state.reset();
 
         GraphicsApp::OnContextReleased();

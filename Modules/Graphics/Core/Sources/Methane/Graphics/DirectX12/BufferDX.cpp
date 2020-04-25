@@ -32,6 +32,21 @@ DirectX 12 implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
+
+static std::vector<D3D12_VERTEX_BUFFER_VIEW> GetNativeVertexBufferViews(const Refs<Buffer>& buffer_refs)
+{
+    META_FUNCTION_TASK();
+    std::vector<D3D12_VERTEX_BUFFER_VIEW> vertex_buffer_views;
+    std::transform(buffer_refs.begin(), buffer_refs.end(), std::back_inserter(vertex_buffer_views),
+                   [](const Ref<Buffer>& buffer_ref)
+                       {
+                           const VertexBufferDX& vertex_buffer = static_cast<const VertexBufferDX&>(buffer_ref.get());
+                           return vertex_buffer.GetNativeView();
+                       }
+    );
+    return vertex_buffer_views;
+}
+
 Ptr<Buffer> Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
 {
     META_FUNCTION_TASK();
@@ -100,6 +115,33 @@ void ConstantBufferDX::InitializeView()
         D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle = GetNativeCpuDescriptorHandle(Usage::ShaderRead);
         GetContextDX().GetDeviceDX().GetNativeDevice()->CreateConstantBufferView(&m_buffer_view, cpu_handle);
     }
+}
+
+Ptr<Buffers> Buffers::Create(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<BuffersDX>(buffers_type, std::move(buffer_refs));
+}
+
+BuffersDX::BuffersDX(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
+    : BuffersBase(buffers_type, std::move(buffer_refs))
+{
+    META_FUNCTION_TASK();
+    switch(buffers_type)
+    {
+    case Buffer::Type::Vertex: m_vertex_buffer_views = Graphics::GetNativeVertexBufferViews(GetRefs()); break;
+    default: break;
+    }
+}
+
+const std::vector<D3D12_VERTEX_BUFFER_VIEW>& BuffersDX::GetNativeVertexBufferViews() const
+{
+    META_FUNCTION_TASK();
+    const Buffer::Type buffers_type = GetType();
+    if (buffers_type != Buffer::Type::Vertex)
+        throw std::logic_error("Unable to get vertex buffer views from buffer of \"" + Buffer::GetBufferTypeName(buffers_type) + "\" type.");
+
+    return m_vertex_buffer_views;
 }
 
 } // namespace Methane::Graphics

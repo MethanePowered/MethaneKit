@@ -75,4 +75,38 @@ std::string Buffer::GetBufferTypeName(Type type) noexcept
     return "Unknown";
 }
 
+BuffersBase::BuffersBase(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
+    : m_buffers_type(buffers_type)
+    , m_refs(std::move(buffer_refs))
+{
+    META_FUNCTION_TASK();
+    if (m_refs.empty())
+    {
+        throw std::invalid_argument("Creating of empty buffers collection is not allowed.");
+    }
+
+    m_ptrs.reserve(m_refs.size());
+    m_raw_ptrs.reserve(m_refs.size());
+    for(const Ref<Buffer>& buffer_ref : m_refs)
+    {
+        if (buffer_ref.get().GetSettings().type != m_buffers_type)
+        {
+            std::invalid_argument("All buffers must be of the same type \"" + Buffer::GetBufferTypeName(m_buffers_type) + "\"");
+        }
+        BufferBase& buffer_base = static_cast<BufferBase&>(buffer_ref.get());
+        m_ptrs.emplace_back(buffer_base.GetPtr());
+        m_raw_ptrs.emplace_back(std::addressof(buffer_base));
+    }
+}
+
+Buffer& BuffersBase::operator[](Data::Index index) const
+{
+    META_FUNCTION_TASK();
+    if (index > m_refs.size())
+        throw std::out_of_range("Buffer index " + std::to_string(index) +
+                                " is out of buffers collection range (size = " + std::to_string(m_refs.size()) + ").");
+
+    return m_refs[index].get();
+}
+
 } // namespace Methane::Graphics

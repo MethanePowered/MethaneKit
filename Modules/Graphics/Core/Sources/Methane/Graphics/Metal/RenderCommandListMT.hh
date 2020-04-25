@@ -51,7 +51,7 @@ public:
 
     // RenderCommandList interface
     void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;
-    void SetVertexBuffers(const Refs<Buffer>& vertex_buffers) override;
+    void SetVertexBuffers(const Buffers& vertex_buffers) override;
     void DrawIndexed(Primitive primitive, Buffer& index_buffer,
                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                      uint32_t instance_count, uint32_t start_instance) override;

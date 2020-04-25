@@ -291,7 +291,7 @@ void Text::Draw(RenderCommandList& cmd_list)
     
     cmd_list.Reset(m_sp_state);
     cmd_list.SetProgramBindings(*m_sp_const_program_bindings);
-    cmd_list.SetVertexBuffers({ *m_sp_vertex_buffer });
+    cmd_list.SetVertexBuffers(*m_sp_vertex_buffers);
     cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
 }
 
@@ -302,12 +302,13 @@ void Text::UpdateMeshBuffers()
         return;
 
     const Data::Size vertices_data_size = m_sp_new_mesh_data->GetVerticesDataSize();
-    if (!m_sp_vertex_buffer || m_sp_vertex_buffer->GetDataSize() < vertices_data_size)
+    if (!m_sp_vertex_buffers || (*m_sp_vertex_buffers)[0].GetDataSize() < vertices_data_size)
     {
-        m_sp_vertex_buffer = Buffer::CreateVertexBuffer(m_context, vertices_data_size, m_sp_new_mesh_data->GetVertexSize());
-        m_sp_vertex_buffer->SetName(m_settings.name + " Text Vertex Buffer");
+        Ptr<Buffer> sp_vertex_buffer = Buffer::CreateVertexBuffer(m_context, vertices_data_size, m_sp_new_mesh_data->GetVertexSize());
+        sp_vertex_buffer->SetName(m_settings.name + " Text Vertex Buffer");
+        m_sp_vertex_buffers = Buffers::CreateVertexBuffers({ *sp_vertex_buffer });
     }
-    m_sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_sp_new_mesh_data->vertices.data()), vertices_data_size } });
+    (*m_sp_vertex_buffers)[0].SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_sp_new_mesh_data->vertices.data()), vertices_data_size } });
 
     const Data::Size indices_data_size = m_sp_new_mesh_data->GetIndicesDataSize();
     if (!m_sp_index_buffer || m_sp_index_buffer->GetDataSize() < indices_data_size)

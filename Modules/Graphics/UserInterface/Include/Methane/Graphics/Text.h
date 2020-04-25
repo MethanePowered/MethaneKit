@@ -69,7 +69,7 @@ private:
     RenderContext&       m_context;
     Ptr<Font>            m_sp_font;
     Ptr<RenderState>     m_sp_state;
-    Ptr<Buffer>          m_sp_vertex_buffer;
+    Ptr<Buffers>         m_sp_vertex_buffers;
     Ptr<Buffer>          m_sp_index_buffer;
     Ptr<Buffer>          m_sp_const_buffer;
     Ptr<Texture>         m_sp_atlas_texture;

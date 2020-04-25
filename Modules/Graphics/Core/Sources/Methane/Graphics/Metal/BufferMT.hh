@@ -49,4 +49,12 @@ private:
     id<MTLBuffer> m_mtl_buffer;
 };
 
+class BuffersMT : public BuffersBase
+{
+public:
+    BuffersMT(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
+
+private:
+};
+
 } // namespace Methane::Graphics

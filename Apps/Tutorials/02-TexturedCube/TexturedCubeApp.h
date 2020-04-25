@@ -83,7 +83,7 @@ private:
     gfx::Camera             m_camera;
     float                   m_cube_scale;
     Ptr<gfx::RenderState>   m_sp_state;
-    Ptr<gfx::Buffer>        m_sp_vertex_buffer;
+    Ptr<gfx::Buffers>       m_sp_vertex_buffers;
     Ptr<gfx::Buffer>        m_sp_index_buffer;
     Ptr<gfx::Buffer>        m_sp_const_buffer;
     Ptr<gfx::Texture>       m_sp_cube_texture;

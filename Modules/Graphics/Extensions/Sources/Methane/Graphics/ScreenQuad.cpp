@@ -114,15 +114,17 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
     m_sp_texture_sampler->SetName(m_settings.name + " Screen-Quad Texture Sampler");
     m_sp_texture->SetName(m_settings.name + " Screen-Quad Texture");
 
-    m_sp_vertex_buffer = Buffer::CreateVertexBuffer(context, static_cast<Data::Size>(quad_mesh.GetVertexDataSize()),
-                                                             static_cast<Data::Size>(quad_mesh.GetVertexSize()));
-    m_sp_vertex_buffer->SetName(m_settings.name + " Screen-Quad Vertex Buffer");
-    m_sp_vertex_buffer->SetData({
+    Ptr<Buffer> sp_vertex_buffer = Buffer::CreateVertexBuffer(context,
+                                                              static_cast<Data::Size>(quad_mesh.GetVertexDataSize()),
+                                                              static_cast<Data::Size>(quad_mesh.GetVertexSize()));
+    sp_vertex_buffer->SetName(m_settings.name + " Screen-Quad Vertex Buffer");
+    sp_vertex_buffer->SetData({
         {
             reinterpret_cast<Data::ConstRawPtr>(quad_mesh.GetVertices().data()),
             static_cast<Data::Size>(quad_mesh.GetVertexDataSize())
         }
     });
+    m_sp_vertex_buffers = Buffers::CreateVertexBuffers({ *sp_vertex_buffer });
 
     m_sp_index_buffer = Buffer::CreateIndexBuffer(context, static_cast<Data::Size>(quad_mesh.GetIndexDataSize()),
                                                            GetIndexFormat(quad_mesh.GetIndex(0)));
@@ -192,7 +194,7 @@ void ScreenQuad::Draw(RenderCommandList& cmd_list) const
     
     cmd_list.Reset(m_sp_state, m_debug_region_name);
     cmd_list.SetProgramBindings(*m_sp_const_program_bindings);
-    cmd_list.SetVertexBuffers({ *m_sp_vertex_buffer });
+    cmd_list.SetVertexBuffers(*m_sp_vertex_buffers);
     cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
 }
 

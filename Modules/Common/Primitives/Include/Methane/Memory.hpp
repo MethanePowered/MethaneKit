@@ -49,6 +49,12 @@ template<class T>
 using UniquePtrs = std::vector<UniquePtr<T>>;
 
 template<class T>
+using RawPtr = T*;
+
+template<class T>
+using RawPtrs = std::vector<RawPtr<T>>;
+
+template<class T>
 using Ref = std::reference_wrapper<T>;
 
 template<class T>

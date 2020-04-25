@@ -86,46 +86,21 @@ void RenderCommandListBase::SetState(RenderState& render_state, RenderState::Gro
     drawing_state.render_state_groups |= state_groups;
 }
 
-void RenderCommandListBase::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
+void RenderCommandListBase::SetVertexBuffers(const Buffers& vertex_buffers)
 {
     META_FUNCTION_TASK();
-    if (vertex_buffers.empty())
+    if (vertex_buffers.GetType() != Buffer::Type::Vertex)
     {
-        throw std::invalid_argument("Can not set empty vertex buffers.");
+        throw std::invalid_argument("Can not set buffers of \"" + Buffer::GetBufferTypeName(vertex_buffers.GetType()) +
+                                    "\" type where \"Vertex\" buffers are required.");
     }
 
+    const BuffersBase& vertex_buffers_base = static_cast<const BuffersBase&>(vertex_buffers);
     DrawingState& drawing_state = GetDrawingState();
-    if (drawing_state.vertex_buffers.size() != vertex_buffers.size())
+    if (drawing_state.vertex_buffers != vertex_buffers_base.GetRawPtrs())
         drawing_state.changes |= DrawingState::Changes::VertexBuffers;
-    drawing_state.vertex_buffers.resize(vertex_buffers.size());
 
-    uint32_t vertex_buffer_index = 0;
-    for (const Ref<Buffer>& vertex_buffer_ref : vertex_buffers)
-    {
-        BufferBase& vertex_buffer = static_cast<BufferBase&>(vertex_buffer_ref.get());
-
-        if (vertex_buffer.GetSettings().type != Buffer::Type::Vertex)
-        {
-            throw std::invalid_argument("Can not set vertex buffer \"" + vertex_buffer.GetName() +
-                                        "\" of wrong type \"" + static_cast<const BufferBase&>(vertex_buffer).GetBufferTypeName() +
-                                        "\". Buffer of \"Vertex\" type is expected.");
-        }
-        if (!vertex_buffer.GetDataSize())
-        {
-            throw std::invalid_argument("Can not set empty vertex buffer.");
-        }
-
-        if (!(drawing_state.changes & DrawingState::Changes::VertexBuffers) &&
-            (vertex_buffer_index >= drawing_state.vertex_buffers.size() ||
-             !drawing_state.vertex_buffers[vertex_buffer_index] ||
-             drawing_state.vertex_buffers[vertex_buffer_index] != std::addressof(vertex_buffer)))
-        {
-            drawing_state.changes |= DrawingState::Changes::VertexBuffers;
-        }
-
-        drawing_state.vertex_buffers[vertex_buffer_index] = &vertex_buffer;
-        vertex_buffer_index++;
-    }
+    drawing_state.vertex_buffers = vertex_buffers_base.GetRawPtrs();
 }
 
 void RenderCommandListBase::DrawIndexed(Primitive primitive_type, Buffer& index_buffer,

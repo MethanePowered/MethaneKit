@@ -63,4 +63,15 @@ struct Buffer : virtual Resource
     virtual uint32_t        GetFormattedItemsCount() const noexcept = 0;
 };
 
+struct Buffers
+{
+    static Ptr<Buffers> Create(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
+    static Ptr<Buffers> CreateVertexBuffers(Refs<Buffer> buffer_refs) { return Buffers::Create(Buffer::Type::Vertex, std::move(buffer_refs)); }
+
+    virtual Buffer::Type        GetType() const noexcept = 0;
+    virtual Data::Size          GetCount() const noexcept = 0;
+    virtual const Refs<Buffer>& GetRefs() const noexcept = 0;
+    virtual Buffer&             operator[](Data::Index index) const = 0;
+};
+
 } // namespace Methane::Graphics

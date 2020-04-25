@@ -157,7 +157,7 @@ void RenderCommandListMT::PopDebugGroup()
     [m_mtl_render_encoder popDebugGroup];
 }
 
-void RenderCommandListMT::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
+void RenderCommandListMT::SetVertexBuffers(const Buffers& vertex_buffers)
 {
     META_FUNCTION_TASK();
 
@@ -167,13 +167,12 @@ void RenderCommandListMT::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
         return;
 
     assert(m_mtl_render_encoder != nil);
-    uint32_t vb_index = 0;
-    for (auto vertex_buffer_ref : vertex_buffers)
+    for (uint32_t vb_index = 0; vb_index < vertex_buffers.GetCount(); ++vb_index)
     {
-        assert(vertex_buffer_ref.get().GetSettings().type == Buffer::Type::Vertex);
-        const BufferMT& metal_buffer = static_cast<const BufferMT&>(vertex_buffer_ref.get());
+        Buffer& vertex_buffer = vertex_buffers[vb_index];
+        assert(vertex_buffer.GetSettings().type == Buffer::Type::Vertex);
+        BufferMT& metal_buffer = static_cast<BufferMT&>(vertex_buffer);
         [m_mtl_render_encoder setVertexBuffer:metal_buffer.GetNativeBuffer() offset:0 atIndex:vb_index];
-        vb_index++;
     }
 }
 
