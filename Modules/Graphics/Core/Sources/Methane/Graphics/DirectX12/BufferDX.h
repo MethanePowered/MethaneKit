@@ -82,7 +82,7 @@ using VertexBufferDX = BufferDX<D3D12_VERTEX_BUFFER_VIEW, Data::Size>;
 using IndexBufferDX = BufferDX<D3D12_INDEX_BUFFER_VIEW, PixelFormat>;
 using ConstantBufferDX = BufferDX<D3D12_CONSTANT_BUFFER_VIEW_DESC>;
 
-class BuffersDX : public BuffersBase
+class BuffersDX final : public BuffersBase
 {
 public:
     BuffersDX(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);

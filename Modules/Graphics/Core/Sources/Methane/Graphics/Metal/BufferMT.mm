@@ -126,13 +126,18 @@ Ptr<Buffers> Buffers::Create(Buffer::Type buffers_type, Refs<Buffer> buffer_refs
 
 BuffersMT::BuffersMT(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
     : BuffersBase(buffers_type, std::move(buffer_refs))
+    , m_mtl_buffer_offsets(GetCount(), 0u)
 {
     META_FUNCTION_TASK();
-    switch(buffers_type)
-    {
-    case Buffer::Type::Vertex: break;
-    default: break;
-    }
+    const Refs<Buffer>& refs = GetRefs();
+    m_mtl_buffers.reserve(refs.size());
+    std::transform(refs.begin(), refs.end(), std::back_inserter(m_mtl_buffers),
+        [](const Ref<Buffer>& buffer_ref)
+        {
+           const BufferMT& metal_buffer = static_cast<const BufferMT&>(buffer_ref.get());
+           return metal_buffer.GetNativeBuffer();
+        }
+    );
 }
 
 } // namespace Methane::Graphics

@@ -167,13 +167,11 @@ void RenderCommandListMT::SetVertexBuffers(const Buffers& vertex_buffers)
         return;
 
     assert(m_mtl_render_encoder != nil);
-    for (uint32_t vb_index = 0; vb_index < vertex_buffers.GetCount(); ++vb_index)
-    {
-        Buffer& vertex_buffer = vertex_buffers[vb_index];
-        assert(vertex_buffer.GetSettings().type == Buffer::Type::Vertex);
-        BufferMT& metal_buffer = static_cast<BufferMT&>(vertex_buffer);
-        [m_mtl_render_encoder setVertexBuffer:metal_buffer.GetNativeBuffer() offset:0 atIndex:vb_index];
-    }
+    const BuffersMT& metal_vertex_buffers = static_cast<const BuffersMT&>(vertex_buffers);
+    const std::vector<id<MTLBuffer>>& mtl_buffers = metal_vertex_buffers.GetNativeBuffers();
+    const std::vector<NSUInteger>&    mtl_offsets = metal_vertex_buffers.GetNativeOffsets();
+    const NSRange                     mtl_range{ 0u, metal_vertex_buffers.GetCount() };
+    [m_mtl_render_encoder setVertexBuffers:mtl_buffers.data() offsets:mtl_offsets.data() withRange:mtl_range];
 }
 
 void RenderCommandListMT::DrawIndexed(Primitive primitive, Buffer& index_buffer,

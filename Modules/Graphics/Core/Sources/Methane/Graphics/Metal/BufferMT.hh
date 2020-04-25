@@ -49,12 +49,17 @@ private:
     id<MTLBuffer> m_mtl_buffer;
 };
 
-class BuffersMT : public BuffersBase
+class BuffersMT final : public BuffersBase
 {
 public:
     BuffersMT(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
 
+    const std::vector<id<MTLBuffer>>& GetNativeBuffers() const noexcept { return m_mtl_buffers; }
+    const std::vector<NSUInteger>&    GetNativeOffsets() const noexcept { return m_mtl_buffer_offsets; }
+
 private:
+    std::vector<id<MTLBuffer>>  m_mtl_buffers;
+    std::vector<NSUInteger>     m_mtl_buffer_offsets;
 };
 
 } // namespace Methane::Graphics

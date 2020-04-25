@@ -72,6 +72,8 @@ struct Buffers
     virtual Data::Size          GetCount() const noexcept = 0;
     virtual const Refs<Buffer>& GetRefs() const noexcept = 0;
     virtual Buffer&             operator[](Data::Index index) const = 0;
+
+    virtual ~Buffers() = default;
 };
 
 } // namespace Methane::Graphics
