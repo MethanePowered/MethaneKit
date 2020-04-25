@@ -34,6 +34,12 @@ struct ResourceContainerVK
 {
 };
 
+Ptr<ResourceBase::Barriers> ResourceBase::Barriers::Create(std::vector<Barrier> barriers)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ResourceVK::BarriersVK>(barriers);
+}
+
 Ptr<ResourceBase::ReleasePool> ResourceBase::ReleasePool::Create()
 {
     META_FUNCTION_TASK();

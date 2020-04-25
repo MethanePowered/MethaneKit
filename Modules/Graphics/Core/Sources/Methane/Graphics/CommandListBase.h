@@ -85,7 +85,6 @@ public:
     const std::string& PushOpenDebugGroup(const std::string& name);
     void ClearOpenDebugGroups();
 
-    void SetResourceTransitionBarriers(const Refs<Resource>& resources, ResourceBase::State state_before, ResourceBase::State state_after);
     const ProgramBindingsBase* GetProgramBindings() const   { return GetCommandState().p_program_bindings; }
     Ptr<CommandListBase>       GetPtr()                     { return shared_from_this(); }
 

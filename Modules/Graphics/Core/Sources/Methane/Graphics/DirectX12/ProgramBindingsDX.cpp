@@ -209,10 +209,10 @@ void ProgramBindingsDX::Apply(CommandListBase& command_list, ApplyBehavior::Mask
     // Set resource transition barriers before applying resource bindings
     if (apply_behavior & ApplyBehavior::StateBarriers)
     {
-        ResourceBase::Barriers resource_transition_barriers = ApplyResourceStates(apply_constant_resource_bindings);
-        if (!resource_transition_barriers.empty())
+        Ptr<ResourceBase::Barriers> sp_resource_transition_barriers = ApplyResourceStates(apply_constant_resource_bindings);
+        if (sp_resource_transition_barriers && !sp_resource_transition_barriers->IsEmpty())
         {
-            command_list.SetResourceBarriers(resource_transition_barriers);
+            command_list.SetResourceBarriers(*sp_resource_transition_barriers);
         }
     }
 
@@ -343,28 +343,27 @@ void ProgramBindingsDX::UpdateRootParameterBindings()
     });
 }
 
-ResourceBase::Barriers ProgramBindingsDX::ApplyResourceStates(bool apply_constant_resource_states) const
+Ptr<ResourceBase::Barriers> ProgramBindingsDX::ApplyResourceStates(bool apply_constant_resource_states) const
 {
     META_FUNCTION_TASK();
-
-    ResourceBase::Barriers resource_transition_barriers;
+    Ptr<ResourceBase::Barriers> sp_resource_transition_barriers;
 
     if (apply_constant_resource_states)
     {
         for(const ResourceState& resource_state : m_constant_resource_states)
         {
             assert(!!resource_state.sp_resource);
-            resource_state.sp_resource->SetState(resource_state.state, resource_transition_barriers);
+            resource_state.sp_resource->SetState(resource_state.state, sp_resource_transition_barriers);
         }
     }
 
     for(const ResourceState& resource_state : m_variadic_resource_states)
     {
         assert(!!resource_state.sp_resource);
-        resource_state.sp_resource->SetState(resource_state.state, resource_transition_barriers);
+        resource_state.sp_resource->SetState(resource_state.state, sp_resource_transition_barriers);
     }
 
-    return resource_transition_barriers;
+    return sp_resource_transition_barriers;
 }
 
 void ProgramBindingsDX::ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const

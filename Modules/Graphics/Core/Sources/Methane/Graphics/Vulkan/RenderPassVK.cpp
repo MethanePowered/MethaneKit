@@ -44,11 +44,12 @@ RenderPassVK::RenderPassVK(RenderContextBase& context, const Settings& settings)
     Reset();
 }
 
-void RenderPassVK::Update(const Settings& settings)
+bool RenderPassVK::Update(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    RenderPassBase::Update(settings);
+    const bool settings_changed = RenderPassBase::Update(settings);
     Reset();
+    return settings_changed;
 }
 
 void RenderPassVK::Reset()

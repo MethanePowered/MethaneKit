@@ -40,6 +40,19 @@ class DescriptorHeapDX;
 class ResourceDX : public ResourceBase
 {
 public:
+    class BarriersDX : public Barriers
+    {
+    public:
+        BarriersDX(std::vector<Barrier> barriers);
+
+        const ResourceBase::Barrier& Add(Barrier::Type type, Resource& resource, State state_before, State state_after) override;
+
+        const std::vector<D3D12_RESOURCE_BARRIER>& GetNativeResourceBarriers() const { return m_native_resource_barriers; }
+
+    private:
+        std::vector<D3D12_RESOURCE_BARRIER> m_native_resource_barriers;
+    };
+
     class ReleasePoolDX final : public ReleasePool
     {
     public:

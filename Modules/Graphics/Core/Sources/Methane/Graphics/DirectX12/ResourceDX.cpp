@@ -35,6 +35,33 @@ DirectX 12 implementation of the resource interface.
 namespace Methane::Graphics
 {
 
+Ptr<ResourceBase::Barriers> ResourceBase::Barriers::Create(std::vector<Barrier> barriers)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ResourceDX::BarriersDX>(barriers);
+}
+
+ResourceDX::BarriersDX::BarriersDX(std::vector<Barrier> barriers)
+    : Barriers(barriers)
+{
+    META_FUNCTION_TASK();
+    std::transform(barriers.begin(), barriers.end(), std::back_inserter(m_native_resource_barriers),
+        [](const Barrier& resource_barrier)
+        {
+            return GetNativeResourceBarrier(resource_barrier);
+        }
+    );
+}
+
+const ResourceBase::Barrier& ResourceDX::BarriersDX::Add(Barrier::Type type, Resource& resource, State state_before, State state_after)
+{
+    META_FUNCTION_TASK();
+    const ResourceBase::Barrier& barrier = ResourceBase::Barriers::Add(type, resource, state_before, state_after);
+    m_native_resource_barriers.emplace_back(GetNativeResourceBarrier(barrier));
+    return barrier;
+}
+
+
 Ptr<ResourceBase::ReleasePool> ResourceBase::ReleasePool::Create()
 {
     META_FUNCTION_TASK();

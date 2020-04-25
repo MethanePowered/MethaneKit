@@ -36,6 +36,12 @@ struct ResourceContainerVK;
 class ResourceVK : public ResourceBase
 {
 public:
+    class BarriersVK : public Barriers
+    {
+    public:
+        BarriersVK(std::vector<Barrier> barriers) : Barriers(barriers) {}
+    };
+
     class ReleasePoolVK final : public ReleasePool
     {
     public:

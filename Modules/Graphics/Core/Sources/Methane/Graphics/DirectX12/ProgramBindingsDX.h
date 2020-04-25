@@ -121,7 +121,7 @@ private:
     void AddRootParameterBinding(const Program::ArgumentDesc& argument_desc, RootParameterBinding root_parameter_binding);
     void AddResourceState(const Program::ArgumentDesc& argument_desc, ResourceState resource_state);
     void UpdateRootParameterBindings();
-    ResourceBase::Barriers ApplyResourceStates(bool apply_constant_resource_states) const;
+    Ptr<ResourceBase::Barriers> ApplyResourceStates(bool apply_constant_resource_states) const;
     void ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const;
     void CopyDescriptorsToGpu();
 

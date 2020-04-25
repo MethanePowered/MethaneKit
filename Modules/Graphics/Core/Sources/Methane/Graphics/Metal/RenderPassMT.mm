@@ -70,11 +70,12 @@ RenderPassMT::RenderPassMT(RenderContextBase& context, const Settings& settings)
     Reset();
 }
 
-void RenderPassMT::Update(const Settings& settings)
+bool RenderPassMT::Update(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    RenderPassBase::Update(settings);
+    const bool settings_changed = RenderPassBase::Update(settings);
     Reset();
+    return settings_changed;
 }
 
 void RenderPassMT::Reset()

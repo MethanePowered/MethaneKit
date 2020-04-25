@@ -35,6 +35,46 @@ Base implementation of the resource interface.
 namespace Methane::Graphics
 {
 
+ResourceBase::Barrier::Barrier(Type type, Resource& resource, State state_before, State state_after)
+    : type(type)
+    , resource(resource)
+    , state_before(state_before)
+    , state_after(state_after)
+{
+    META_FUNCTION_TASK();
+}
+
+Ptr<ResourceBase::Barriers> ResourceBase::Barriers::CreateTransition(const Refs<Resource>& resources, State state_before, State state_after)
+{
+    META_FUNCTION_TASK();
+    std::vector<Barrier> resource_barriers;
+    resource_barriers.reserve(resources.size());
+    for (const Ref<Resource>& resource_ref : resources)
+    {
+        resource_barriers.emplace_back(Barrier{
+            ResourceBase::Barrier::Type::Transition,
+            resource_ref.get(),
+            state_before,
+            state_after
+        });
+    }
+    return Barriers::Create(resource_barriers);
+}
+
+ResourceBase::Barriers::Barriers(std::vector<Barrier> barriers)
+    : m_barriers(std::move(barriers))
+{
+    META_FUNCTION_TASK();
+}
+
+const ResourceBase::Barrier& ResourceBase::Barriers::Add(Barrier::Type type, Resource& resource, State state_before, State state_after)
+{
+    META_FUNCTION_TASK();
+    m_barriers.emplace_back(type, resource, state_before, state_after);
+    return m_barriers.back();
+}
+
+
 Resource::Location::Location(Ptr<Resource> sp_resource, Data::Size offset)
     : m_sp_resource(std::move(sp_resource))
     , m_offset(offset)
@@ -290,7 +330,7 @@ DescriptorHeap::Types ResourceBase::GetUsedDescriptorHeapTypes() const noexcept
     return heap_types;
 }
 
-void ResourceBase::SetState(State state, Barriers& out_barriers)
+void ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
 {
     META_FUNCTION_TASK();
 
@@ -299,8 +339,15 @@ void ResourceBase::SetState(State state, Barriers& out_barriers)
 
     if (m_state != State::Common)
     {
-        assert(state != State::Common);
-        out_barriers.emplace_back(Barrier{ Barrier::Type::Transition, *this, m_state, state });
+        if (state == State::Common)
+        {
+            throw std::logic_error("Resource can not be transitioned to \"Common\" state.");
+        }
+        if (!out_barriers)
+        {
+            out_barriers = Barriers::Create();
+        }
+        out_barriers->Add(Barrier::Type::Transition, *this, m_state, state);
     }
 
     m_state = state;

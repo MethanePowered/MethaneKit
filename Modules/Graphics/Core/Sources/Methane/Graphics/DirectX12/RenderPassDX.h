@@ -41,7 +41,7 @@ public:
     RenderPassDX(RenderContextBase& context, const Settings& settings);
 
     // RenderPass interface
-    void Update(const Settings& settings) override;
+    bool Update(const Settings& settings) override;
 
     // RenderPassBase interface
     void Begin(RenderCommandListBase& command_list) override;

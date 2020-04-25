@@ -127,7 +127,7 @@ struct RenderPass
     static Ptr<RenderPass> Create(RenderContext& context, const Settings& settings);
 
     // RenderPass interface
-    virtual void  Update(const Settings& settings) = 0;
+    virtual bool Update(const Settings& settings) = 0;
     virtual const Settings& GetSettings() const = 0;
 
     virtual ~RenderPass() = default;

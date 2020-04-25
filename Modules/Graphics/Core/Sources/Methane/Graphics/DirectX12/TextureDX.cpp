@@ -240,6 +240,9 @@ ImageTextureDX::TextureDX(ContextBase& render_context, const Settings& settings,
     );
 
     cp_device->CreateShaderResourceView(GetNativeResource(), &tex_and_srv_desc.second, GetNativeCpuDescriptorHandle(Usage::ShaderRead));
+
+    m_sp_upload_transition_barriers = ResourceBase::Barriers::CreateTransition({ static_cast<Resource&>(*this) },
+                                          ResourceBase::State::CopyDest, ResourceBase::State::PixelShaderResource);
 }
 
 ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() const
@@ -413,7 +416,8 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
                        GetNativeResource(), m_cp_upload_resource.Get(), 0, 0,
                        static_cast<UINT>(dx_sub_resources.size()), dx_sub_resources.data());
 
-    upload_cmd_list.SetResourceTransitionBarriers({ static_cast<Resource&>(*this) }, ResourceBase::State::CopyDest, ResourceBase::State::PixelShaderResource);
+    assert(m_sp_upload_transition_barriers);
+    upload_cmd_list.SetResourceBarriers(*m_sp_upload_transition_barriers);
 }
 
 void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_resources, DirectX::ScratchImage& scratch_image)

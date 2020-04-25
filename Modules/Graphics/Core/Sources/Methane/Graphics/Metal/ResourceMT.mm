@@ -53,6 +53,12 @@ ResourceMT::ReleasePoolMT::ReleasePoolMT()
     META_FUNCTION_TASK();
 }
 
+Ptr<ResourceBase::Barriers> ResourceBase::Barriers::Create(std::vector<Barrier> barriers)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ResourceMT::BarriersMT>(barriers);
+}
+
 void ResourceMT::ReleasePoolMT::AddResource(ResourceBase& resource)
 {
     META_FUNCTION_TASK();

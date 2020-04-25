@@ -23,6 +23,8 @@ Base implementation of the render pass interface.
 
 #pragma once
 
+#include "ResourceBase.h"
+
 #include <Methane/Graphics/RenderPass.h>
 
 namespace Methane::Graphics
@@ -39,25 +41,35 @@ public:
     RenderPassBase(RenderContextBase& context, const Settings& settings);
 
     // RenderPass interface
-    void Update(const Settings& settings) override;
+    bool Update(const Settings& settings) override;
     const Settings& GetSettings() const override    { return m_settings; }
 
     // RenderPassBase interface
     virtual void Begin(RenderCommandListBase& command_list);
     virtual void End(RenderCommandListBase& command_list);
 
-    Ptr<RenderPassBase> GetPtr()            { return shared_from_this(); }
-    Refs<Resource>      GetColorAttachmentResources() const;
-    bool                IsBegun() const     { return m_is_begun; }
+    Ptr<RenderPassBase>   GetPtr()            { return shared_from_this(); }
+    const Refs<Resource>& GetColorAttachmentResources() const;
+    bool                  IsBegun() const     { return m_is_begun; }
 
 protected:
     RenderContextBase&        GetRenderContext()        { return m_render_context; }
     const RenderContextBase&  GetRenderContext() const  { return m_render_context; }
 
+    const ResourceBase::Barriers& GetColorBeginTransitionBarriers() const noexcept;
+    const ResourceBase::Barriers& GetColorEndTransitionBarriers() const noexcept;
+
 private:
-    RenderContextBase& m_render_context;
-    Settings           m_settings;
-    bool               m_is_begun = false;
+    RenderContextBase&  m_render_context;
+    Settings            m_settings;
+    bool                m_is_begun = false;
+
+    mutable Refs<Resource>              m_color_attach_resources;
+    mutable Ptr<ResourceBase::Barriers> m_sp_color_begin_transition_barriers;
+    mutable Ptr<ResourceBase::Barriers> m_sp_color_end_transition_barriers;
+    mutable Ptr<ResourceBase::Barriers> m_sp_attach_resources_transition_barriers;
+
+
 };
 
 } // namespace Methane::Graphics

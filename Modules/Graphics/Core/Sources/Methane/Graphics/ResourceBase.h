@@ -72,9 +72,28 @@ public:
         Resource& resource;
         State     state_before;
         State     state_after;
+
+        Barrier(Type type, Resource& resource, State state_before, State state_after);
     };
 
-    using Barriers = std::vector<Barrier>;
+    class Barriers
+    {
+    public:
+        static Ptr<Barriers> Create(std::vector<Barrier> barriers = {});
+        static Ptr<Barriers> CreateTransition(const Refs<Resource>& resources, State state_before, State state_after);
+
+        bool IsEmpty() const noexcept { return m_barriers.empty(); }
+        const std::vector<Barrier>& Get() const noexcept { return m_barriers; }
+
+        virtual const Barrier& Add(Barrier::Type type, Resource& resource, State state_before, State state_after);
+        virtual ~Barriers() = default;
+
+    protected:
+        Barriers(std::vector<Barrier> barriers);
+
+    private:
+        std::vector<Barrier> m_barriers;
+    };
 
     struct ReleasePool
     {
@@ -94,7 +113,7 @@ public:
     Usage::Mask              GetUsageMask() const noexcept override             { return m_usage_mask; }
     const DescriptorByUsage& GetDescriptorByUsage() const noexcept override     { return m_descriptor_by_usage; }
     const Descriptor&        GetDescriptor(Usage::Value usage) const override;
-    void  SetData(const SubResources& sub_resources) override;
+    void                     SetData(const SubResources& sub_resources) override;
 
     void                     InitializeDefaultDescriptors();
     std::string              GetUsageNames() const noexcept                     { return Usage::ToString(m_usage_mask); }
@@ -102,7 +121,7 @@ public:
     DescriptorHeap::Types    GetUsedDescriptorHeapTypes() const noexcept;
 
     State   GetState() const noexcept                                           { return m_state;  }
-    void    SetState(State state, Barriers& out_barriers);
+    void    SetState(State state, Ptr<Barriers>& out_barriers);
 
 protected:
     DescriptorHeap::Type GetDescriptorHeapTypeByUsage(Usage::Value usage) const;

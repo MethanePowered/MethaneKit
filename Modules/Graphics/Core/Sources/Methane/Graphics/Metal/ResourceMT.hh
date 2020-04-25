@@ -36,6 +36,12 @@ struct ResourceContainerMT;
 class ResourceMT : public ResourceBase
 {
 public:
+    class BarriersMT : public Barriers
+    {
+    public:
+        BarriersMT(std::vector<Barrier> barriers) : Barriers(barriers) {}
+    };
+
     class ReleasePoolMT : public ReleasePool
     {
     public:

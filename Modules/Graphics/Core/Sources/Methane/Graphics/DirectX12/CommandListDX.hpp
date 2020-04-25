@@ -101,17 +101,11 @@ public:
     void SetResourceBarriers(const ResourceBase::Barriers& resource_barriers) override
     {
         META_FUNCTION_TASK();
-
-        if (resource_barriers.empty())
+        if (resource_barriers.IsEmpty())
             return;
 
-        std::vector<D3D12_RESOURCE_BARRIER> dx_resource_barriers;
-        for (const ResourceBase::Barrier& resource_barrier : resource_barriers)
-        {
-            dx_resource_barriers.push_back(ResourceDX::GetNativeResourceBarrier(resource_barrier));
-        }
-
         assert(m_cp_command_list);
+        const std::vector<D3D12_RESOURCE_BARRIER>& dx_resource_barriers = static_cast<const ResourceDX::BarriersDX&>(resource_barriers).GetNativeResourceBarriers();
         m_cp_command_list->ResourceBarrier(static_cast<UINT>(dx_resource_barriers.size()), dx_resource_barriers.data());
     }
 

@@ -232,23 +232,6 @@ uint32_t CommandListBase::GetCurrentFrameIndex() const
     return  GetCommandQueueBase().GetCurrentFrameBufferIndex();
 }
 
-void CommandListBase::SetResourceTransitionBarriers(const Refs<Resource>& resources, ResourceBase::State state_before, ResourceBase::State state_after)
-{
-    META_FUNCTION_TASK();
-    ResourceBase::Barriers resource_barriers;
-    resource_barriers.reserve(resources.size());
-    for (const Ref<Resource>& resource_ref : resources)
-    {
-        resource_barriers.push_back({
-            ResourceBase::Barrier::Type::Transition,
-            resource_ref.get(),
-            state_before,
-            state_after
-        });
-    }
-    SetResourceBarriers(resource_barriers);
-}
-
 void CommandListBase::ResetCommandState()
 {
     META_FUNCTION_TASK();
