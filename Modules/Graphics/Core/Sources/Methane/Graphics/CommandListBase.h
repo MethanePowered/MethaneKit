@@ -55,7 +55,7 @@ public:
         Executing,
     };
 
-    struct CommandState
+    struct CommandState final
     {
         // NOTE:
         // Command state uses raw pointers instead of smart pointers for performance reasons:
@@ -63,15 +63,6 @@ public:
         //   - weak pointer should not be used too because 'lock' operation has significant performance overhead
         //   - even if raw pointer becomes obsolete it won't be a problem because it is used only for address comparison with another raw pointer
         ProgramBindingsBase* p_program_bindings = nullptr;
-
-        static UniquePtr<CommandState> Create(Type command_list_type);
-
-        virtual void Reset() { p_program_bindings = nullptr; }
-
-        virtual ~CommandState() = default;
-
-    protected:
-        CommandState() = default;
     };
 
     CommandListBase(CommandQueueBase& command_queue, Type type);
@@ -99,9 +90,10 @@ public:
     Ptr<CommandListBase>       GetPtr()                     { return shared_from_this(); }
 
 protected:
-    void ResetCommandState();
-    CommandState&       GetCommandState();
-    const CommandState& GetCommandState() const;
+    virtual void ResetCommandState();
+
+    CommandState&       GetCommandState()           { return m_command_state; }
+    const CommandState& GetCommandState() const     { return m_command_state; }
 
     CommandQueueBase&       GetCommandQueueBase();
     const CommandQueueBase& GetCommandQueueBase() const;
@@ -122,7 +114,7 @@ private:
 
     const Type              m_type;
     Ptr<CommandQueue>       m_sp_command_queue;
-    UniquePtr<CommandState> m_sp_command_state;
+    CommandState            m_command_state;
     GroupNamesPool          m_debug_group_names;
     GroupNamesStack         m_open_debug_groups;
     uint32_t                m_committed_frame_index = 0;

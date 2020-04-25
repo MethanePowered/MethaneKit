@@ -230,7 +230,6 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/CommandQueueBase.cpp
     ${SOURCES_DIR}/CommandListBase.h
     ${SOURCES_DIR}/CommandListBase.cpp
-    ${SOURCES_DIR}/CommandListState.cpp
     ${SOURCES_DIR}/RenderCommandListBase.h
     ${SOURCES_DIR}/RenderCommandListBase.cpp
     ${SOURCES_DIR}/ParallelRenderCommandListBase.h

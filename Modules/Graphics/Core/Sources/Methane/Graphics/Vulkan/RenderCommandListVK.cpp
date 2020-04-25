@@ -93,7 +93,7 @@ void RenderCommandListVK::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
 
     RenderCommandListBase::SetVertexBuffers(vertex_buffers);
 
-    if (!GetDrawingState().flags.vertex_buffers_changed)
+    if (!(GetDrawingState().changes & DrawingState::Changes::VertexBuffers))
         return;
 }
 

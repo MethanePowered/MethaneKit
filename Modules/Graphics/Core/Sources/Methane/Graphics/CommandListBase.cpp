@@ -58,7 +58,6 @@ std::string CommandListBase::GetStateName(State state)
 CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
     : m_type(type)
     , m_sp_command_queue(command_queue.GetPtr())
-    , m_sp_command_state(CommandState::Create(type))
 {
     META_FUNCTION_TASK();
 }
@@ -117,7 +116,7 @@ void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, Prog
     program_bindings_base.Apply(*this, apply_behavior);
     
     assert(!!m_sp_command_state);
-    m_sp_command_state->p_program_bindings = &program_bindings_base;
+    m_command_state.p_program_bindings = &program_bindings_base;
 }
 
 void CommandListBase::Commit()
@@ -253,21 +252,7 @@ void CommandListBase::SetResourceTransitionBarriers(const Refs<Resource>& resour
 void CommandListBase::ResetCommandState()
 {
     META_FUNCTION_TASK();
-    m_sp_command_state->Reset();
-}
-
-CommandListBase::CommandState& CommandListBase::GetCommandState()
-{
-    META_FUNCTION_TASK();
-    assert(!!m_sp_command_state);
-    return *m_sp_command_state;
-}
-
-const CommandListBase::CommandState& CommandListBase::GetCommandState() const
-{
-    META_FUNCTION_TASK();
-    assert(!!m_sp_command_state);
-    return *m_sp_command_state;
+    m_command_state.p_program_bindings = nullptr;
 }
 
 CommandQueueBase& CommandListBase::GetCommandQueueBase()
