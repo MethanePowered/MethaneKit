@@ -32,7 +32,7 @@ Base implementation of the command list interface.
 
 // Disable debug groups instrumentation with discontinuous CPU frames in Tracy,
 // because it is not working for parallel render command lists by some reason
-// #define METHANE_DEBUG_GROUP_FRAMES_ENABLED
+//#define METHANE_DEBUG_GROUP_FRAMES_ENABLED
 #ifndef METHANE_DEBUG_GROUP_FRAMES_ENABLED
 #undef META_CPU_FRAME_START
 #define META_CPU_FRAME_START(name)
@@ -55,6 +55,31 @@ std::string CommandListBase::GetStateName(State state)
     return "Undefined";
 }
 
+CommandListBase::DebugGroupBase::DebugGroupBase(std::string name)
+    : m_name(std::move(name))
+{
+    META_FUNCTION_TASK();
+}
+
+CommandList::DebugGroup& CommandListBase::DebugGroupBase::AddSubGroup(Data::Index id, std::string name)
+{
+    META_FUNCTION_TASK();
+    if (id >= m_sub_groups.size())
+    {
+        m_sub_groups.resize(id + 1);
+    }
+
+    Ptr<DebugGroup> sp_sub_group = DebugGroup::Create(std::move(name));
+    m_sub_groups[id] = sp_sub_group;
+    return *sp_sub_group;
+}
+
+CommandList::DebugGroup* CommandListBase::DebugGroupBase::GetSubGroup(Data::Index id) const noexcept
+{
+    META_FUNCTION_TASK();
+    return id < m_sub_groups.size() ? m_sub_groups[id].get() : nullptr;
+}
+
 CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
     : m_type(type)
     , m_sp_command_queue(command_queue.GetPtr())
@@ -62,14 +87,13 @@ CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
     META_FUNCTION_TASK();
 }
 
-void CommandListBase::PushDebugGroup(const std::string& name)
+void CommandListBase::PushDebugGroup(DebugGroup& debug_group)
 {
     META_FUNCTION_TASK();
-    META_LOG("Command list \"" + GetName() + "\" PUSH debug group \"" + name + "\"");
+    META_CPU_FRAME_START(debug_group.GetName().c_str());
+    META_LOG("Command list \"" + GetName() + "\" PUSH debug group \"" + debug_group.GetName() + "\"");
 
-    const std::string& dict_name = PushOpenDebugGroup(name);
-    META_CPU_FRAME_START(dict_name.c_str());
-    META_UNUSED(dict_name);
+    PushOpenDebugGroup(debug_group);
 }
 
 void CommandListBase::PopDebugGroup()
@@ -80,12 +104,12 @@ void CommandListBase::PopDebugGroup()
         throw std::underflow_error("Can not pop debug group, since no debug groups were pushed.");
     }
 
-    META_LOG("Command list \"" + GetName() + "\" POP debug group \"" + m_open_debug_groups.top().get() + "\"");
-    META_CPU_FRAME_END(m_open_debug_groups.top().get().c_str());
+    META_LOG("Command list \"" + GetName() + "\" POP debug group \"" + GetTopOpenDebugGroup()->GetName() + "\"");
+    META_CPU_FRAME_END(GetTopOpenDebugGroup()->GetName().c_str());
     m_open_debug_groups.pop();
 }
 
-void CommandListBase::Reset(const std::string& debug_group)
+void CommandListBase::Reset(DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     if (m_state != State::Pending)
@@ -93,16 +117,15 @@ void CommandListBase::Reset(const std::string& debug_group)
 
     // NOTE: ResetCommandState() must be called from the top-most overridden Reset method
 
-    const bool debug_group_changed = m_open_debug_groups.empty() || m_open_debug_groups.top().get() != debug_group;
-
+    const bool debug_group_changed = GetTopOpenDebugGroup() != p_debug_group;
     if (!m_open_debug_groups.empty() && debug_group_changed)
     {
-        META_POP_DEBUG_GROUP(*this);
+        PopDebugGroup();
     }
 
-    if (!debug_group.empty() && debug_group_changed)
+    if (p_debug_group && debug_group_changed)
     {
-        META_PUSH_DEBUG_GROUP(*this, debug_group);
+        PushDebugGroup(*p_debug_group);
     }
 }
 
@@ -175,20 +198,16 @@ void CommandListBase::Complete(uint32_t frame_index)
     m_state = State::Pending;
 }
 
-const std::string& CommandListBase::GetTopOpenDebugGroup() const
+CommandListBase::DebugGroupBase* CommandListBase::GetTopOpenDebugGroup() const
 {
     META_FUNCTION_TASK();
-    static std::string s_empty_name;
-    return m_open_debug_groups.empty() ? s_empty_name : m_open_debug_groups.top().get();
+    return m_open_debug_groups.empty() ? nullptr : m_open_debug_groups.top().get();
 }
 
-const std::string& CommandListBase::PushOpenDebugGroup(const std::string& name)
+void CommandListBase::PushOpenDebugGroup(DebugGroup& debug_group)
 {
     META_FUNCTION_TASK();
-    // NOTE: Debug group names pooling is currently required for Tracy discontinuous frames instrumentation
-    const std::string& dict_name = *m_debug_group_names.insert(name).first;
-    m_open_debug_groups.emplace(dict_name);
-    return dict_name;
+    m_open_debug_groups.emplace(static_cast<DebugGroupBase&>(debug_group).GetPtr());
 }
 
 void CommandListBase::ClearOpenDebugGroups()

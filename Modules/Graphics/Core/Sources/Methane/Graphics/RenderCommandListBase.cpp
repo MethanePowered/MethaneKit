@@ -53,11 +53,11 @@ RenderCommandListBase::RenderCommandListBase(ParallelRenderCommandListBase& para
     META_FUNCTION_TASK();
 }
 
-void RenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
+void RenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 
-    CommandListBase::Reset(debug_group);
+    CommandListBase::Reset(p_debug_group);
 
     // ResetCommandState() must be called from the top-most overridden Reset method
 

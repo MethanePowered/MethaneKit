@@ -199,11 +199,11 @@ BlitCommandList& ContextBase::GetUploadCommandList()
         return *m_sp_upload_cmd_list;
 
     static const std::string s_command_list_name = "Upload Command List";
-    static const std::string s_debug_region_name = "Upload Command List";
+    META_DEBUG_GROUP_CREATE_VAR(s_debug_region_name, "Upload Command List");
 
     m_sp_upload_cmd_list = BlitCommandList::Create(GetUploadCommandQueue());
     m_sp_upload_cmd_list->SetName(s_command_list_name);
-    m_sp_upload_cmd_list->Reset(s_debug_region_name);
+    m_sp_upload_cmd_list->Reset(s_debug_region_name.get());
 
     return *m_sp_upload_cmd_list;
 }

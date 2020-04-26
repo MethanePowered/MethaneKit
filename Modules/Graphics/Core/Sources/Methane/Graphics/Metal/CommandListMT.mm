@@ -24,9 +24,23 @@ Metal command lists sequence implementation
 #include "CommandListMT.h"
 
 #include <Methane/Instrumentation.h>
+#include <Methane/Platform/MacOS/Types.hh>
 
 namespace Methane::Graphics
 {
+
+Ptr<CommandList::DebugGroup> CommandList::DebugGroup::Create(std::string name)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<CommandListMT::DebugGroupMT>(std::move(name));
+}
+
+CommandListMT::DebugGroupMT::DebugGroupMT(std::string name)
+    : CommandListBase::DebugGroupBase(std::move(name))
+    , m_ns_name(MacOS::ConvertToNsType<std::string, NSString*>(name))
+{
+    META_FUNCTION_TASK();
+}
 
 Ptr<CommandLists> CommandLists::Create(Refs<CommandList> command_list_refs)
 {

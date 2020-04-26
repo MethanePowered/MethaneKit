@@ -133,13 +133,13 @@ void SkyBox::Update()
 void SkyBox::Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindings)
 {
     META_FUNCTION_TASK();
+    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Sky-box rendering");
     
     assert(!!buffer_bindings.sp_uniforms_buffer);
     assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= sizeof(Uniforms));
     buffer_bindings.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_mesh_buffers.GetFinalPassUniforms()), sizeof(Uniforms) } });
 
-    static const std::string s_debug_region_name = "Sky-box rendering";
-    cmd_list.Reset(m_sp_state, s_debug_region_name);
+    cmd_list.Reset(m_sp_state, s_debug_group.get());
     
     assert(!buffer_bindings.program_bindings_per_instance.empty());
     assert(!!buffer_bindings.program_bindings_per_instance[0]);

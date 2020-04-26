@@ -50,7 +50,6 @@ struct ScreenQuadVertex
 
 ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings settings)
     : m_settings(std::move(settings))
-    , m_debug_region_name(m_settings.name + " Screen-Quad rendering")
     , m_sp_texture(std::move(sp_texture))
 {
     META_FUNCTION_TASK();
@@ -191,8 +190,9 @@ void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled)
 void ScreenQuad::Draw(RenderCommandList& cmd_list) const
 {
     META_FUNCTION_TASK();
+    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, m_settings.name + " Screen-Quad rendering");
     
-    cmd_list.Reset(m_sp_state, m_debug_region_name);
+    cmd_list.Reset(m_sp_state, s_debug_group.get());
     cmd_list.SetProgramBindings(*m_sp_const_program_bindings);
     cmd_list.SetVertexBuffers(*m_sp_vertex_buffers);
     cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);

@@ -28,6 +28,18 @@ Vulkan command lists sequence implementation
 namespace Methane::Graphics
 {
 
+Ptr<CommandList::DebugGroup> CommandList::DebugGroup::Create(std::string name)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<CommandListVK::DebugGroupVK>(std::move(name));
+}
+
+CommandListVK::DebugGroupVK::DebugGroupVK(std::string name)
+    : CommandListBase::DebugGroupBase(std::move(name))
+{
+    META_FUNCTION_TASK();
+}
+
 Ptr<CommandLists> CommandLists::Create(Refs<CommandList> command_list_refs)
 {
     META_FUNCTION_TASK();

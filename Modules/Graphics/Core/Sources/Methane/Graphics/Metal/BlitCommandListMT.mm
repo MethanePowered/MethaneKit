@@ -43,10 +43,9 @@ BlitCommandListMT::BlitCommandListMT(CommandQueueBase& command_queue)
     META_FUNCTION_TASK();
 }
 
-void BlitCommandListMT::Reset(const std::string& debug_group)
+void BlitCommandListMT::Reset(DebugGroup*)
 {
     META_FUNCTION_TASK();
-    #pragma unused(debug_group)
     
     if (m_mtl_blit_encoder)
         return;
@@ -85,15 +84,14 @@ void BlitCommandListMT::SetName(const std::string& name)
     }
 }
 
-void BlitCommandListMT::PushDebugGroup(const std::string& name)
+void BlitCommandListMT::PushDebugGroup(DebugGroup& debug_group)
 {
     META_FUNCTION_TASK();
 
-    CommandListBase::PushDebugGroup(name);
+    CommandListBase::PushDebugGroup(debug_group);
 
     assert(m_mtl_blit_encoder != nil);
-    NSString* ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
-    [m_mtl_blit_encoder pushDebugGroup:ns_name];
+    [m_mtl_blit_encoder pushDebugGroup:debug_group.GetNSName()];
 }
 
 void BlitCommandListMT::PopDebugGroup()

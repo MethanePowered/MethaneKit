@@ -109,16 +109,12 @@ private:
 
     struct RenderPass
     {
-        RenderPass(bool is_final_pass, std::string command_group_name)
-            : is_final_pass(is_final_pass)
-            , command_group_name(std::move(command_group_name))
-        { }
-
-        const bool              is_final_pass;
-        const std::string       command_group_name;
-        Ptr<gfx::RenderState>   sp_state;
-
+        RenderPass(bool is_final_pass, std::string command_group_name);
         void Release();
+
+        const bool                              is_final_pass;
+        const Ptr<gfx::CommandList::DebugGroup> sp_debug_group;
+        Ptr<gfx::RenderState>                   sp_state;
     };
 
     void RenderScene(const RenderPass &render_pass, ShadowCubeFrame::PassResources &render_pass_resources);

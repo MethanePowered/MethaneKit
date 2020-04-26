@@ -29,24 +29,6 @@ to create instance refer to RenderCommandList, etc. for specific derived interfa
 
 #include <string>
 
-#ifdef METHANE_COMMAND_DEBUG_GROUPS_ENABLED
-
-#define META_PUSH_DEBUG_GROUP(/*CommandList& */cmd_list, /*const std::string& */group_name) \
-    (cmd_list).PushDebugGroup(group_name)
-
-#define META_POP_DEBUG_GROUP(/*CommandList& */cmd_list) \
-    (cmd_list).PopDebugGroup()
-
-#else
-
-#define META_PUSH_DEBUG_GROUP(/*CommandList& */cmd_list, /*const std::string& */group_name) \
-    META_UNUSED(cmd_list); META_UNUSED(group_name)
-
-#define META_POP_DEBUG_GROUP(/*CommandList& */cmd_list) \
-    META_UNUSED(cmd_list)
-
-#endif
-
 namespace Methane::Graphics
 {
 
@@ -61,11 +43,23 @@ struct CommandList : virtual Object
         ParallelRender,
     };
 
+    struct DebugGroup
+    {
+        static Ptr<DebugGroup> Create(std::string name);
+
+        virtual const std::string& GetName() const noexcept = 0;
+        virtual DebugGroup& AddSubGroup(Data::Index id, std::string name) = 0;
+        virtual DebugGroup* GetSubGroup(Data::Index id) const noexcept = 0;
+        virtual bool        HasSubGroups() const noexcept = 0;
+
+        virtual ~DebugGroup() = default;
+    };
+
     // CommandList interface
     virtual Type GetType() const = 0;
-    virtual void PushDebugGroup(const std::string& name) = 0;
+    virtual void PushDebugGroup(DebugGroup& debug_group) = 0;
     virtual void PopDebugGroup() = 0;
-    virtual void Reset(const std::string& debug_group = "") = 0;
+    virtual void Reset(DebugGroup* p_debug_group = nullptr) = 0;
     virtual void SetProgramBindings(ProgramBindings& program_bindings,
                                     ProgramBindings::ApplyBehavior::Mask apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental) = 0;
     virtual void Commit() = 0;
@@ -86,3 +80,33 @@ struct CommandLists
 };
 
 } // namespace Methane::Graphics
+
+#ifdef METHANE_COMMAND_DEBUG_GROUPS_ENABLED
+
+#define META_DEBUG_GROUP_CREATE(/*const std::string& */group_name) \
+    Methane::Graphics::CommandList::DebugGroup::Create(group_name)
+
+#define META_DEBUG_GROUP_PUSH(/*CommandList& */cmd_list, /*const std::string& */group_name) \
+    { \
+        const auto s_local_debug_group = META_DEBUG_GROUP_CREATE(group_name); \
+        (cmd_list).PushDebugGroup(*s_local_debug_group); \
+    }
+
+#define META_DEBUG_GROUP_POP(/*CommandList& */cmd_list) \
+    (cmd_list).PopDebugGroup()
+
+#else
+
+#define META_DEBUG_GROUP_CREATE(/*const std::string& */group_name) \
+    nullptr
+
+#define META_DEBUG_GROUP_PUSH(/*CommandList& */cmd_list, /*const std::string& */group_name) \
+    META_UNUSED(cmd_list); META_UNUSED(group_name)
+
+#define META_DEBUG_GROUP_POP(/*CommandList& */cmd_list) \
+    META_UNUSED(cmd_list)
+
+#endif
+
+#define META_DEBUG_GROUP_CREATE_VAR(variable, /*const std::string& */group_name) \
+    static const Methane::Ptr<Methane::Graphics::CommandList::DebugGroup> variable = META_DEBUG_GROUP_CREATE(group_name)

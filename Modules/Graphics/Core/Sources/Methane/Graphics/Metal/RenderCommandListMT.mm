@@ -74,7 +74,7 @@ RenderCommandListMT::RenderCommandListMT(ParallelRenderCommandListBase& parallel
     META_FUNCTION_TASK();
 }
 
-void RenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
+void RenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group = nullptr)
 {
     META_FUNCTION_TASK();
     
@@ -82,7 +82,7 @@ void RenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, const s
 
     if (m_mtl_render_encoder)
     {
-        RenderCommandListBase::Reset(sp_render_state, debug_group);
+        RenderCommandListBase::Reset(sp_render_state, p_debug_group);
         return;
     }
 
@@ -114,7 +114,7 @@ void RenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, const s
     assert(m_mtl_render_encoder != nil);
     m_mtl_render_encoder.label = MacOS::ConvertToNsType<std::string, NSString*>(GetName());
 
-    RenderCommandListBase::Reset(sp_render_state, debug_group);
+    RenderCommandListBase::Reset(sp_render_state, p_debug_group);
 }
 
 void RenderCommandListMT::SetName(const std::string& name)
@@ -136,15 +136,14 @@ void RenderCommandListMT::SetName(const std::string& name)
     }
 }
 
-void RenderCommandListMT::PushDebugGroup(const std::string& name)
+void RenderCommandListMT::PushDebugGroup(DebugGroup& debug_group)
 {
     META_FUNCTION_TASK();
 
-    CommandListBase::PushDebugGroup(name);
+    CommandListBase::PushDebugGroup(debug_group);
 
     assert(m_mtl_render_encoder != nil);
-    NSString* ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
-    [m_mtl_render_encoder pushDebugGroup:ns_name];
+    [m_mtl_render_encoder pushDebugGroup:debug_group.GetNSName()];
 }
 
 void RenderCommandListMT::PopDebugGroup()

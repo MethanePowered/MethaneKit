@@ -28,8 +28,23 @@ DirectX 12 command lists collection implementation
 
 #include <Methane/Instrumentation.h>
 
+#include <nowide/convert.hpp>
+
 namespace Methane::Graphics
 {
+
+Ptr<CommandList::DebugGroup> CommandList::DebugGroup::Create(std::string name)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ICommandListDX::DebugGroupDX>(std::move(name));
+}
+
+ICommandListDX::DebugGroupDX::DebugGroupDX(std::string name)
+    : CommandListBase::DebugGroupBase(std::move(name))
+    , m_wide_name(nowide::widen(GetName()))
+{
+    META_FUNCTION_TASK();
+}
 
 Ptr<CommandLists> CommandLists::Create(Refs<CommandList> command_list_refs)
 {

@@ -104,13 +104,13 @@ void RenderCommandListDX::ResetNative(const Ptr<RenderState>& sp_render_state)
                                       | RenderState::Group::DepthStencil;
 }
 
-void RenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
+void RenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 
     ResetNative(sp_render_state);
 
-    RenderCommandListBase::Reset(sp_render_state, debug_group);
+    RenderCommandListBase::Reset(sp_render_state, p_debug_group);
 
     RenderPassDX& pass_dx = GetPassDX();
     if (IsParallel())

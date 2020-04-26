@@ -461,7 +461,7 @@ void ShadowCubeApp::RenderScene(const RenderPass &render_pass, ShadowCubeFrame::
     gfx::RenderCommandList& cmd_list = *render_pass_resources.sp_cmd_list;
 
     // Reset command list with initial rendering state
-    cmd_list.Reset(render_pass.sp_state, render_pass.command_group_name);
+    cmd_list.Reset(render_pass.sp_state, render_pass.sp_debug_group.get());
 
     // Draw scene with cube and floor
     m_sp_cube_buffers->Draw(cmd_list, *render_pass_resources.cube.sp_program_bindings);
@@ -488,6 +488,12 @@ void ShadowCubeApp::OnContextReleased()
     m_sp_const_buffer.reset();
 
     GraphicsApp::OnContextReleased();
+}
+
+ShadowCubeApp::RenderPass::RenderPass(bool is_final_pass, std::string debug_group_name)
+    : is_final_pass(is_final_pass)
+    , sp_debug_group(META_DEBUG_GROUP_CREATE(std::move(debug_group_name)))
+{
 }
 
 } // namespace Methane::Tutorials

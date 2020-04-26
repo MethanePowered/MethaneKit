@@ -64,7 +64,7 @@ void ParallelRenderCommandListMT::SetName(const std::string& name)
     }
 }
 
-void ParallelRenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
+void ParallelRenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     if (m_mtl_parallel_render_encoder != nil)
@@ -95,7 +95,7 @@ void ParallelRenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state,
         static_cast<RenderStateMT&>(*sp_render_state).InitializeNativeStates();
     }
 
-    ParallelRenderCommandListBase::Reset(sp_render_state, debug_group);
+    ParallelRenderCommandListBase::Reset(sp_render_state, p_debug_group);
 }
 
 void ParallelRenderCommandListMT::Commit()

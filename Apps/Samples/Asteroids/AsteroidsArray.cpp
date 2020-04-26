@@ -410,14 +410,14 @@ void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, gfx::MeshBufferBindi
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::Draw");
+    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Asteroids rendering");
 
     const Data::Size uniforms_buffer_size = GetUniformsBufferSize();
     assert(buffer_bindings.sp_uniforms_buffer);
     assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= uniforms_buffer_size);
     buffer_bindings.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&GetFinalPassUniforms()), uniforms_buffer_size } });
 
-    static const std::string s_debug_region_name = "Asteroids rendering";
-    cmd_list.Reset(m_sp_render_state, s_debug_region_name);
+    cmd_list.Reset(m_sp_render_state, s_debug_group.get());
 
     assert(buffer_bindings.program_bindings_per_instance.size() == m_settings.instance_count);
     BaseBuffers::Draw(cmd_list, buffer_bindings.program_bindings_per_instance,
@@ -428,14 +428,14 @@ void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_l
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::DrawParallel");
+    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Parallel Asteroids rendering");
 
     const Data::Size uniforms_buffer_size = GetUniformsBufferSize();
     assert(buffer_bindings.sp_uniforms_buffer);
     assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= uniforms_buffer_size);
     buffer_bindings.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&GetFinalPassUniforms()), uniforms_buffer_size } });
 
-    static const std::string s_debug_region_name = "Parallel Asteroids rendering";
-    parallel_cmd_list.Reset(m_sp_render_state, s_debug_region_name);
+    parallel_cmd_list.Reset(m_sp_render_state, s_debug_group.get());
 
     assert(buffer_bindings.program_bindings_per_instance.size() == m_settings.instance_count);
     BaseBuffers::DrawParallel(parallel_cmd_list, buffer_bindings.program_bindings_per_instance,

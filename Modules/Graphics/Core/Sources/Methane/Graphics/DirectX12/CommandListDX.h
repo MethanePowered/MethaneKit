@@ -37,6 +37,17 @@ class CommandQueueDX;
 
 struct ICommandListDX
 {
+    class DebugGroupDX : public CommandListBase::DebugGroupBase
+    {
+    public:
+        DebugGroupDX(std::string name);
+
+        const std::wstring& GetWideName() const noexcept { return m_wide_name; }
+
+    private:
+        const std::wstring m_wide_name;
+    };
+
     virtual CommandQueueDX&             GetCommandQueueDX() = 0;
     virtual ID3D12GraphicsCommandList&  GetNativeCommandList() const = 0;
     virtual ID3D12GraphicsCommandList4* GetNativeCommandList4() const = 0;

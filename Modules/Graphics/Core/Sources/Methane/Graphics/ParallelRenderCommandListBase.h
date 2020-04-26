@@ -45,7 +45,7 @@ public:
     using CommandListBase::Reset;
 
     // ParallelRenderCommandList interface
-    void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;
+    void Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group = nullptr) override;
     void SetParallelCommandListsCount(uint32_t count) override;
     const Ptrs<RenderCommandList>& GetParallelCommandLists() const override { return m_parallel_command_lists; }
 
@@ -55,8 +55,8 @@ public:
     void Complete(uint32_t frame_index) override;
 
     // CommandList interface
-    void PushDebugGroup(const std::string&) override   { throw std::logic_error("Can not use debug groups on parallel render command list."); }
-    void PopDebugGroup() override                      { throw std::logic_error("Can not use debug groups on parallel render command list."); }
+    void PushDebugGroup(DebugGroup&) override   { throw std::logic_error("Can not use debug groups on parallel render command list."); }
+    void PopDebugGroup() override               { throw std::logic_error("Can not use debug groups on parallel render command list."); }
     void Commit() override;
 
     // Object interface

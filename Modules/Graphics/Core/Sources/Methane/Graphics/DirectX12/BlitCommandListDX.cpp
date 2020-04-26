@@ -41,10 +41,10 @@ BlitCommandListDX::BlitCommandListDX(CommandQueueBase& cmd_buffer)
     META_FUNCTION_TASK();
 }
 
-void BlitCommandListDX::Reset(const std::string& debug_group)
+void BlitCommandListDX::Reset(DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
-    CommandListDX<CommandListBase>::Reset(debug_group);
+    CommandListDX<CommandListBase>::Reset(p_debug_group);
 }
 
 } // namespace Methane::Graphics

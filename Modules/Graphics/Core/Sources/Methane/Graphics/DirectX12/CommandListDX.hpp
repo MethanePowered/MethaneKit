@@ -70,12 +70,13 @@ public:
 
     // CommandList interface
 
-    void PushDebugGroup(const std::string& name) override
+    void PushDebugGroup(CommandList::DebugGroup& debug_group) override
     {
         META_FUNCTION_TASK();
 
-        CommandListBase::PushDebugGroup(name);
-        PIXBeginEvent(m_cp_command_list.Get(), 0, nowide::widen(name).c_str());
+        CommandListBase::PushDebugGroup(debug_group);
+        const std::wstring& group_name = static_cast<DebugGroupDX&>(debug_group).GetWideName();
+        PIXBeginEvent(m_cp_command_list.Get(), 0, group_name.c_str());
     }
 
     void PopDebugGroup() override
@@ -120,7 +121,7 @@ public:
 
     // CommandList interface
 
-    void Reset(const std::string& debug_group) override
+    void Reset(CommandList::DebugGroup* p_debug_group) override
     {
         META_FUNCTION_TASK();
         if (!m_is_committed)
@@ -132,7 +133,7 @@ public:
         ThrowIfFailed(m_cp_command_allocator->Reset(), cp_device.Get());
         ThrowIfFailed(m_cp_command_list->Reset(m_cp_command_allocator.Get(), nullptr), cp_device.Get());
 
-        CommandListBase::Reset(debug_group);
+        CommandListBase::Reset(p_debug_group);
     }
 
     // Object interface

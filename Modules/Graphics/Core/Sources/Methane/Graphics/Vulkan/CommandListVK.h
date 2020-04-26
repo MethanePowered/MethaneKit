@@ -28,12 +28,21 @@ Vulkan command lists sequence implementation.
 namespace Methane::Graphics
 {
 
+namespace CommandListVK
+{
+
+class DebugGroupVK : public CommandListBase::DebugGroupBase
+{
+public:
+    DebugGroupVK(std::string name);
+};
+
+} // namespace CommandListVK
+
 class CommandListsVK final : public CommandListsBase
 {
 public:
     CommandListsVK(Refs<CommandList> command_list_refs);
-
-private:
 };
 
 } // namespace Methane::Graphics

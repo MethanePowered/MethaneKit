@@ -65,13 +65,33 @@ public:
         ProgramBindingsBase* p_program_bindings = nullptr;
     };
 
+    class DebugGroupBase
+        : public DebugGroup
+        , public std::enable_shared_from_this<DebugGroupBase>
+    {
+    public:
+        DebugGroupBase(std::string name);
+
+        // DebugGroup interface
+        const std::string& GetName() const noexcept final { return m_name; }
+        DebugGroup& AddSubGroup(Data::Index id, std::string name) final;
+        DebugGroup* GetSubGroup(Data::Index id) const noexcept final;
+        bool        HasSubGroups() const noexcept final { return !m_sub_groups.empty(); }
+
+        Ptr<DebugGroupBase> GetPtr() { return shared_from_this(); }
+
+    private:
+        const std::string m_name;
+        Ptrs<DebugGroup>  m_sub_groups;
+    };
+
     CommandListBase(CommandQueueBase& command_queue, Type type);
 
     // CommandList interface
     Type GetType() const override { return m_type; }
-    void PushDebugGroup(const std::string& name) override;
+    void PushDebugGroup(DebugGroup& debug_group) override;
     void PopDebugGroup() override;
-    void Reset(const std::string& debug_group = "") override;
+    void Reset(DebugGroup* p_debug_group = nullptr) override;
     void SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
     void Commit() override;
     CommandQueue& GetCommandQueue() override;
@@ -81,8 +101,8 @@ public:
     virtual void Execute(uint32_t frame_index);
     virtual void Complete(uint32_t frame_index);
 
-    const std::string& GetTopOpenDebugGroup() const;
-    const std::string& PushOpenDebugGroup(const std::string& name);
+    DebugGroupBase* GetTopOpenDebugGroup() const;
+    void PushOpenDebugGroup(DebugGroup& debug_group);
     void ClearOpenDebugGroups();
 
     const ProgramBindingsBase* GetProgramBindings() const   { return GetCommandState().p_program_bindings; }
@@ -107,17 +127,14 @@ protected:
 private:
     static std::string GetStateName(State state);
 
-    using GroupNamesPool   = std::set<std::string>;
-    using GroupNameRef     = Ref<const std::string>;
-    using GroupNamesStack  = std::stack<GroupNameRef>;
+    using DebugGroupStack  = std::stack<Ptr<DebugGroupBase>>;
 
-    const Type              m_type;
-    Ptr<CommandQueue>       m_sp_command_queue;
-    CommandState            m_command_state;
-    GroupNamesPool          m_debug_group_names;
-    GroupNamesStack         m_open_debug_groups;
-    uint32_t                m_committed_frame_index = 0;
-    State                   m_state                 = State::Pending;
+    const Type        m_type;
+    Ptr<CommandQueue> m_sp_command_queue;
+    CommandState      m_command_state;
+    DebugGroupStack   m_open_debug_groups;
+    uint32_t          m_committed_frame_index = 0;
+    State             m_state                 = State::Pending;
 };
 
 class CommandListsBase : public CommandLists

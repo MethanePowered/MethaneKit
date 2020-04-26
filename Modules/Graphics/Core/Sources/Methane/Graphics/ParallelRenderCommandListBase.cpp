@@ -36,7 +36,7 @@ Base implementation of the parallel render command list interface.
 namespace Methane::Graphics
 {
 
-inline std::string GetThreadCommandListName(const std::string& name, uint32_t index)
+inline std::string GetThreadCommandListName(const std::string& name, Data::Index index)
 {
     return name + " [Thread " + std::to_string(index) + "]";
 }
@@ -48,13 +48,23 @@ ParallelRenderCommandListBase::ParallelRenderCommandListBase(CommandQueueBase& c
     META_FUNCTION_TASK();
 }
 
-void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
+void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
+
+    // Create per-thread debug sub-group:
+    if (p_debug_group && !p_debug_group->HasSubGroups())
+    {
+        for(Data::Index render_command_list_index = 0; render_command_list_index < m_parallel_command_lists.size(); ++render_command_list_index)
+        {
+            p_debug_group->AddSubGroup(render_command_list_index, GetThreadCommandListName(p_debug_group->GetName(), render_command_list_index));
+        }
+    }
+
     // Per-thread render command lists can be reset in parallel only with DirectX 12 on Windows
 #ifdef _WIN32
     Data::ParallelFor<size_t>(0, m_parallel_command_lists.size(),
-    [this, &sp_render_state, &debug_group](size_t render_command_list_index)
+    [this, &sp_render_state, p_debug_group](size_t render_command_list_index)
 #else
     for(size_t render_command_list_index = 0u; render_command_list_index < m_parallel_command_lists.size(); ++render_command_list_index)
 #endif
@@ -62,8 +72,7 @@ void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_stat
         META_FUNCTION_TASK();
         const Ptr<RenderCommandList>& sp_render_command_list = m_parallel_command_lists[render_command_list_index];
         assert(sp_render_command_list);
-        const std::string render_debug_group = GetThreadCommandListName(debug_group, static_cast<uint32_t>(render_command_list_index));
-        sp_render_command_list->Reset(sp_render_state, render_debug_group);
+        sp_render_command_list->Reset(sp_render_state, p_debug_group->GetSubGroup(static_cast<Data::Index>(render_command_list_index)));
     }
 #ifdef _WIN32
     );

@@ -41,7 +41,7 @@ public:
     RenderCommandListMT(ParallelRenderCommandListBase& parallel_render_command_list);
 
     // CommandList interface
-    void PushDebugGroup(const std::string& name) override;
+    void PushDebugGroup(DebugGroup& debug_group) override;
     void PopDebugGroup() override;
     void Commit() override;
 
@@ -50,7 +50,7 @@ public:
     void Execute(uint32_t frame_index) override;
 
     // RenderCommandList interface
-    void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;
+    void Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group = nullptr) override;
     void SetVertexBuffers(const Buffers& vertex_buffers) override;
     void DrawIndexed(Primitive primitive, Buffer& index_buffer,
                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex,

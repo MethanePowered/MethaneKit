@@ -76,7 +76,7 @@ public:
     using CommandListBase::Reset;
 
     // RenderCommandList interface
-    void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;
+    void Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group = nullptr) override;
     void SetState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) override;
     void SetVertexBuffers(const Buffers& vertex_buffers) override;
     void DrawIndexed(Primitive primitive_type, Buffer& index_buffer,

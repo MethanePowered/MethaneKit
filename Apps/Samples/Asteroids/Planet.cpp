@@ -142,13 +142,13 @@ bool Planet::Update(double elapsed_seconds, double)
 void Planet::Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings)
 {
     META_FUNCTION_TASK();
+    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Planet rendering");
 
     assert(!!buffer_bindings.sp_uniforms_buffer);
     assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= sizeof(Uniforms));
     buffer_bindings.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_mesh_buffers.GetFinalPassUniforms()), sizeof(Uniforms) } });
 
-    static const std::string s_debug_region_name = "Planet rendering";
-    cmd_list.Reset(m_sp_state, s_debug_region_name);
+    cmd_list.Reset(m_sp_state, s_debug_group.get());
     
     assert(!buffer_bindings.program_bindings_per_instance.empty());
     assert(!!buffer_bindings.program_bindings_per_instance[0]);
