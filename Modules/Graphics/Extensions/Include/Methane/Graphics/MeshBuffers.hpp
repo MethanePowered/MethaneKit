@@ -63,8 +63,7 @@ public:
                                                                                                   { 0, mesh_data.GetIndexCount()  }, true ) })
     {
         META_FUNCTION_TASK();
-
-        m_final_pass_instance_uniforms.resize(m_mesh_subsets.size());
+        SetInstanceCount(static_cast<Data::Size>(m_mesh_subsets.size()));
 
         Ptr<Buffer> sp_vertex_buffer = Buffer::CreateVertexBuffer(context,
                                                                   static_cast<Data::Size>(mesh_data.GetVertexDataSize()),
@@ -179,29 +178,27 @@ public:
     }
 
     const std::string&  GetMeshName() const      { return m_mesh_name; }
-    uint32_t            GetSubsetsCount() const  { return static_cast<uint32_t>(m_mesh_subsets.size()); }
-    uint32_t            GetInstanceCount() const { return static_cast<uint32_t>(m_final_pass_instance_uniforms.size()); }
+    Data::Size          GetSubsetsCount() const  { return static_cast<Data::Size>(m_mesh_subsets.size()); }
+    Data::Size          GetInstanceCount() const { return static_cast<Data::Size>(m_final_pass_instance_uniforms.size()); }
 
-    const UniformsType& GetFinalPassUniforms(uint32_t instance_index = 0) const
+    const UniformsType& GetFinalPassUniforms(Data::Index instance_index = 0u) const
     {
         META_FUNCTION_TASK();
-
         if (instance_index >= m_final_pass_instance_uniforms.size())
             throw std::invalid_argument("Instance index is out of bounds.");
 
         return m_final_pass_instance_uniforms[instance_index];
     }
 
-    void SetFinalPassUniforms(UniformsType&& uniforms, uint32_t instance_index = 0)
+    void SetFinalPassUniforms(UniformsType&& uniforms, Data::Index instance_index = 0u)
     {
         META_FUNCTION_TASK();
-
         if (instance_index >= m_final_pass_instance_uniforms.size())
             throw std::invalid_argument("Instance index is out of bounds.");
 
         m_final_pass_instance_uniforms[instance_index] = std::move(uniforms);
     }
-    
+
     Data::Size GetUniformsBufferSize() const
     {
         META_FUNCTION_TASK();
@@ -211,10 +208,20 @@ public:
         return Buffer::GetAlignedBufferSize(static_cast<Data::Size>(m_final_pass_instance_uniforms.size() * sizeof(m_final_pass_instance_uniforms[0])));
     }
 
+    const Resource::SubResources& GetFinalPassUniformsSubresources() const { return m_final_pass_instance_uniforms_subresources; }
+
 protected:
     // Allows to override instance to mesh subset mapping, which is 1:1 by default
-    void SetInstanceCount(uint32_t instance_count) { m_final_pass_instance_uniforms.resize(instance_count); }
-    virtual uint32_t GetSubsetByInstanceIndex(uint32_t instance_index) const { return instance_index; }
+    void SetInstanceCount(Data::Size instance_count)
+    {
+        META_FUNCTION_TASK();
+        m_final_pass_instance_uniforms.resize(instance_count);
+        m_final_pass_instance_uniforms_subresources = Resource::SubResources{
+            { reinterpret_cast<Data::ConstRawPtr>(m_final_pass_instance_uniforms.data()), GetUniformsBufferSize() }
+        };
+    }
+
+    virtual Data::Index GetSubsetByInstanceIndex(Data::Index instance_index) const { return instance_index; }
 
     const Buffers& GetVertexBuffers() const
     {
@@ -240,11 +247,12 @@ protected:
 private:
     using InstanceUniforms = std::vector<UniformsType, Data::AlignedAllocator<UniformsType, SHADER_STRUCT_ALIGNMENT>>;
 
-    const std::string   m_mesh_name;
-    const Mesh::Subsets m_mesh_subsets;
-    Ptr<Buffers>        m_sp_vertex;
-    Ptr<Buffer>         m_sp_index;
-    InstanceUniforms    m_final_pass_instance_uniforms; // Actual uniforms buffers are created separately in Frame dependent resources
+    const std::string      m_mesh_name;
+    const Mesh::Subsets    m_mesh_subsets;
+    Ptr<Buffers>           m_sp_vertex;
+    Ptr<Buffer>            m_sp_index;
+    InstanceUniforms       m_final_pass_instance_uniforms; // Actual uniforms buffers are created separately in Frame dependent resources
+    Resource::SubResources m_final_pass_instance_uniforms_subresources;
 };
 
 template<typename UniformsType>

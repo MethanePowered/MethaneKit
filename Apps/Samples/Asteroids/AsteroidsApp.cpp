@@ -393,21 +393,18 @@ bool AsteroidsApp::Render()
     AsteroidsFrame& frame = GetCurrentFrame();
 
     // Upload uniform buffers to GPU
-    frame.sp_scene_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms) } });
+    frame.sp_scene_uniforms_buffer->SetData(m_scene_uniforms_subresources);
 
     // Asteroids rendering in parallel or in main thread
-    Refs<gfx::CommandList> execute_cmd_lists;
     if (m_is_parallel_rendering_enabled)
     {
         GetAsteroidsArray().DrawParallel(*frame.sp_parallel_cmd_list, frame.asteroids);
         frame.sp_parallel_cmd_list->Commit();
-        execute_cmd_lists.push_back(*frame.sp_parallel_cmd_list);
     }
     else
     {
         GetAsteroidsArray().Draw(*frame.sp_serial_cmd_list, frame.asteroids);
         frame.sp_serial_cmd_list->Commit();
-        execute_cmd_lists.push_back(*frame.sp_serial_cmd_list);
     }
     
     // Draw planet and sky-box after asteroids to minimize pixel overdraw
@@ -415,7 +412,6 @@ bool AsteroidsApp::Render()
     m_sp_sky_box->Draw(*frame.sp_final_cmd_list, frame.skybox);
     RenderOverlay(*frame.sp_final_cmd_list);
     frame.sp_final_cmd_list->Commit();
-    execute_cmd_lists.push_back(*frame.sp_final_cmd_list);
 
     // Execute rendering commands and present frame to screen
     m_sp_context->GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_lists);

@@ -100,6 +100,9 @@ private:
     uint32_t                          m_asteroids_complexity          = 0u;
     bool                              m_is_parallel_rendering_enabled = true;
     SceneUniforms                     m_scene_uniforms{ };
+    gfx::Resource::SubResources       m_scene_uniforms_subresources{
+        { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms) }
+    };
     
     Ptr<gfx::Buffer>                  m_sp_const_buffer;
     Ptr<gfx::SkyBox>                  m_sp_sky_box;

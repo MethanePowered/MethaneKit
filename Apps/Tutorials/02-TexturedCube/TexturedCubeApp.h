@@ -89,6 +89,10 @@ private:
     Ptr<gfx::Buffer>        m_sp_const_buffer;
     Ptr<gfx::Texture>       m_sp_cube_texture;
     Ptr<gfx::Sampler>       m_sp_texture_sampler;
+
+    const gfx::Resource::SubResources m_shader_uniforms_subresources{
+        { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(Uniforms) }
+    };
 };
 
 } // namespace Methane::Tutorials

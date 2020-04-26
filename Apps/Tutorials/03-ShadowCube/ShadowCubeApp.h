@@ -100,11 +100,15 @@ private:
     public:
         using TexturedMeshBuffersBase::TexturedMeshBuffersBase;
 
-        const MeshUniforms& GetShadowPassUniforms() const                       { return m_shadow_pass_uniforms; }
-        void                SetShadowPassUniforms(const MeshUniforms& uniforms) { m_shadow_pass_uniforms = uniforms; }
+        void                SetShadowPassUniforms(const MeshUniforms& uniforms) noexcept        { m_shadow_pass_uniforms = uniforms; }
+        const MeshUniforms& GetShadowPassUniforms() const noexcept                              { return m_shadow_pass_uniforms; }
+        const gfx::Resource::SubResources& GetShadowPassUniformsSubresources() const noexcept   { return m_shadow_pass_uniforms_subresources; }
 
     private:
-        MeshUniforms m_shadow_pass_uniforms{};
+        MeshUniforms                m_shadow_pass_uniforms{};
+        gfx::Resource::SubResources m_shadow_pass_uniforms_subresources{
+            { reinterpret_cast<Data::ConstRawPtr>(&m_shadow_pass_uniforms), sizeof(MeshUniforms) }
+        };
     };
 
     struct RenderPass
@@ -122,6 +126,9 @@ private:
     const float                 m_scene_scale;
     const Constants             m_scene_constants;
     SceneUniforms               m_scene_uniforms{ };
+    gfx::Resource::SubResources m_scene_uniforms_subresources{
+        { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms) }
+    };
     gfx::Camera                 m_view_camera;
     gfx::Camera                 m_light_camera;
 

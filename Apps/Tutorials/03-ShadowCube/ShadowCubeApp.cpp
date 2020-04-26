@@ -438,12 +438,11 @@ bool ShadowCubeApp::Render()
     ShadowCubeFrame& frame = GetCurrentFrame();
 
     // Upload uniform buffers to GPU
-    const Data::Size mesh_uniforms_buffer_size = sizeof(MeshUniforms);
-    frame.sp_scene_uniforms_buffer->SetData({ {reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms) } });
-    frame.shadow_pass.floor.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_floor_buffers->GetShadowPassUniforms()), mesh_uniforms_buffer_size } });
-    frame.shadow_pass.cube.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->GetShadowPassUniforms()), mesh_uniforms_buffer_size } });
-    frame.final_pass.floor.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_floor_buffers->GetFinalPassUniforms()), mesh_uniforms_buffer_size } });
-    frame.final_pass.cube.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_sp_cube_buffers->GetFinalPassUniforms()), mesh_uniforms_buffer_size } });
+    frame.sp_scene_uniforms_buffer->SetData(m_scene_uniforms_subresources);
+    frame.shadow_pass.floor.sp_uniforms_buffer->SetData(m_sp_floor_buffers->GetShadowPassUniformsSubresources());
+    frame.shadow_pass.cube.sp_uniforms_buffer->SetData(m_sp_cube_buffers->GetShadowPassUniformsSubresources());
+    frame.final_pass.floor.sp_uniforms_buffer->SetData(m_sp_floor_buffers->GetFinalPassUniformsSubresources());
+    frame.final_pass.cube.sp_uniforms_buffer->SetData(m_sp_cube_buffers->GetFinalPassUniformsSubresources());
 
     // Record commands for shadow & final render passes
     RenderScene(m_shadow_pass, frame.shadow_pass);

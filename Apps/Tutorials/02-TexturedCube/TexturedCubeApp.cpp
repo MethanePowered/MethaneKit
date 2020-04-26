@@ -262,7 +262,7 @@ bool TexturedCubeApp::Render()
     TexturedCubeFrame& frame = GetCurrentFrame();
 
     // Update uniforms buffer related to current frame
-    frame.sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(Uniforms) } });
+    frame.sp_uniforms_buffer->SetData(m_shader_uniforms_subresources);
 
     // Issue commands for cube rendering
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Cube Rendering");
