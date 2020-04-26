@@ -74,8 +74,10 @@ void ParallelRenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state,
     m_ending_command_list.ResetNative();                            // only reset native command list
 
     // Instead of closing debug group (from Reset call) on beginning CL commit, we force to close it in ending CL
+#ifdef METHANE_COMMAND_DEBUG_GROUPS_ENABLED
     m_beginning_command_list.ClearOpenDebugGroups();
     m_ending_command_list.PushOpenDebugGroup(debug_group);
+#endif
 
     if (sp_render_state)
     {

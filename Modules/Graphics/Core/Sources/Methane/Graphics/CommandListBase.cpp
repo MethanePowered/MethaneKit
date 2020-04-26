@@ -97,12 +97,12 @@ void CommandListBase::Reset(const std::string& debug_group)
 
     if (!m_open_debug_groups.empty() && debug_group_changed)
     {
-        PopDebugGroup();
+        META_POP_DEBUG_GROUP(*this);
     }
 
     if (!debug_group.empty() && debug_group_changed)
     {
-        PushDebugGroup(debug_group);
+        META_PUSH_DEBUG_GROUP(*this, debug_group);
     }
 }
 

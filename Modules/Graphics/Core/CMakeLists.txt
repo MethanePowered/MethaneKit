@@ -275,6 +275,11 @@ target_include_directories(${TARGET}
         Include
 )
 
+target_compile_definitions(${TARGET}
+    PUBLIC
+    $<$<BOOL:${METHANE_COMMAND_DEBUG_GROUPS_ENABLED}>:METHANE_COMMAND_DEBUG_GROUPS_ENABLED>
+)
+
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}

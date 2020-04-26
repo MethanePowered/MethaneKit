@@ -29,6 +29,24 @@ to create instance refer to RenderCommandList, etc. for specific derived interfa
 
 #include <string>
 
+#ifdef METHANE_COMMAND_DEBUG_GROUPS_ENABLED
+
+#define META_PUSH_DEBUG_GROUP(/*CommandList& */cmd_list, /*const std::string& */group_name) \
+    (cmd_list).PushDebugGroup(group_name)
+
+#define META_POP_DEBUG_GROUP(/*CommandList& */cmd_list) \
+    (cmd_list).PopDebugGroup()
+
+#else
+
+#define META_PUSH_DEBUG_GROUP(/*CommandList& */cmd_list, /*const std::string& */group_name) \
+    META_UNUSED(cmd_list); META_UNUSED(group_name)
+
+#define META_POP_DEBUG_GROUP(/*CommandList& */cmd_list) \
+    META_UNUSED(cmd_list)
+
+#endif
+
 namespace Methane::Graphics
 {
 

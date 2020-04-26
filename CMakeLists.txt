@@ -7,14 +7,15 @@ enable_testing()
 # Build configuration
 option(METHANE_RUN_TESTS_DURING_BUILD   "Run tests during build" ON)
 option(METHANE_SHADERS_CODEVIEW_ENABLED "Enable shaders code symbols viewing in debug tools)" OFF)
-option(METHANE_LOGGING_ENABLED          "Enable debug logging" OFF)
 option(METHANE_USE_OPEN_IMAGE_IO        "Enable using OpenImageIO library for images loading" OFF)
 
-# Profiling configuration
+# Profiling and instrumentation configuration
+option(METHANE_COMMAND_DEBUG_GROUPS_ENABLED "Enable command list debug groups with frame markup" ON)
+option(METHANE_LOGGING_ENABLED              "Enable debug logging" OFF)
 option(METHANE_SCOPE_TIMERS_ENABLED         "Enable low-overhead profiling with scope-timers" OFF)
 option(METHANE_ITT_INSTRUMENTATION_ENABLED  "Enable ITT instrumentation for trace capture with Intel GPA or VTune" OFF)
 option(METHANE_TRACY_PROFILING_ENABLED      "Enable realtime profiling with Tracy" OFF)
-option(METHANE_TRACY_PROFILING_ON_DEMAND    "Enable Tracy data collection on demand when client connected" OFF)
+option(METHANE_TRACY_PROFILING_ON_DEMAND    "Enable Tracy data collection on demand, after client connection" OFF)
 
 # Methane version, build & product info
 set(METHANE_VERSION_MAJOR 0 CACHE STRING "Methane major version")
@@ -109,8 +110,24 @@ target_compile_definitions(MethaneBuildOptions INTERFACE
     -DMETHANE_VERSION_BUILD=${METHANE_VERSION_BUILD_MAJOR}
 )
 
+if(METHANE_RUN_TESTS_DURING_BUILD)
+    message(STATUS "Methane tests running during build is enabled")
+endif()
+
+if(METHANE_SHADERS_CODEVIEW_ENABLED)
+    message(STATUS "Methane shaders code symbols are enabled")
+endif()
+
 if(METHANE_USE_OPEN_IMAGE_IO)
     message(STATUS "Methane Kit OpenImageIO media-library is enabled.")
+endif()
+
+if(METHANE_COMMAND_DEBUG_GROUPS_ENABLED)
+    message(STATUS "Methane command list debug groups are enabled")
+endif()
+
+if(METHANE_SCOPE_TIMERS_ENABLED)
+    message(STATUS "Methane scope timers are enabled")
 endif()
 
 if(METHANE_ITT_INSTRUMENTATION_ENABLED)
@@ -124,18 +141,6 @@ if (METHANE_TRACY_PROFILING_ENABLED)
     else()
         message(STATUS "Methane Tracy profiling enabled with data collection from application start")
     endif()
-endif()
-
-if(METHANE_SCOPE_TIMERS_ENABLED)
-    message(STATUS "Methane scope timers are enabled")
-endif()
-
-if(METHANE_SHADERS_CODEVIEW_ENABLED)
-    message(STATUS "Methane shaders code symbols are enabled")
-endif()
-
-if(METHANE_RUN_TESTS_DURING_BUILD)
-    message(STATUS "Methane tests running during build is enabled")
 endif()
 
 if(METHANE_LOGGING_ENABLED)
