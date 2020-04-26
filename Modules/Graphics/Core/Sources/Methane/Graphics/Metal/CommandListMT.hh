@@ -25,6 +25,8 @@ Metal command lists sequence implementation.
 
 #include <Methane/Graphics/CommandListBase.h>
 
+#import <Cocoa/Cocoa.h>
+
 namespace Methane::Graphics
 {
 
@@ -36,10 +38,10 @@ class DebugGroupMT : public CommandListBase::DebugGroupBase
 public:
     DebugGroupMT(std::string name);
 
-    const NSString* GetNSName() const noexcept { return m_ns_name; }
+    NSString * _Nonnull GetNSName() const noexcept { return m_ns_name; }
 
 private:
-    const NSString* m_ns_name;
+    NSString* _Nonnull m_ns_name;
 };
 
 } // namespace CommandListMT

@@ -22,6 +22,7 @@ Metal implementation of the render command list interface.
 ******************************************************************************/
 
 #include "RenderCommandListMT.hh"
+#include "CommandListMT.hh"
 #include "ParallelRenderCommandListMT.hh"
 #include "RenderStateMT.hh"
 #include "RenderPassMT.hh"
@@ -74,7 +75,7 @@ RenderCommandListMT::RenderCommandListMT(ParallelRenderCommandListBase& parallel
     META_FUNCTION_TASK();
 }
 
-void RenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group = nullptr)
+void RenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     
@@ -143,7 +144,7 @@ void RenderCommandListMT::PushDebugGroup(DebugGroup& debug_group)
     CommandListBase::PushDebugGroup(debug_group);
 
     assert(m_mtl_render_encoder != nil);
-    [m_mtl_render_encoder pushDebugGroup:debug_group.GetNSName()];
+    [m_mtl_render_encoder pushDebugGroup:static_cast<CommandListMT::DebugGroupMT&>(debug_group).GetNSName()];
 }
 
 void RenderCommandListMT::PopDebugGroup()

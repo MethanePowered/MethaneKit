@@ -271,10 +271,10 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
 void TextureMT::GenerateMipLevels()
 {
     META_FUNCTION_TASK();
+    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Texture MIPs Generation");
 
     BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContext().GetUploadCommandList());
-    static const std::string s_debug_region_name = "Texture MIPs Generation";
-    blit_command_list.Reset(s_debug_region_name);
+    blit_command_list.Reset(s_debug_group.get());
     
     id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeBlitEncoder();
     assert(mtl_blit_encoder != nil);

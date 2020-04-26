@@ -22,6 +22,7 @@ Metal implementation of the blit command list interface.
 ******************************************************************************/
 
 #include "BlitCommandListMT.hh"
+#include "CommandListMT.hh"
 #include "CommandQueueMT.hh"
 #include "RenderContextMT.hh"
 
@@ -91,7 +92,7 @@ void BlitCommandListMT::PushDebugGroup(DebugGroup& debug_group)
     CommandListBase::PushDebugGroup(debug_group);
 
     assert(m_mtl_blit_encoder != nil);
-    [m_mtl_blit_encoder pushDebugGroup:debug_group.GetNSName()];
+    [m_mtl_blit_encoder pushDebugGroup:static_cast<CommandListMT::DebugGroupMT&>(debug_group).GetNSName()];
 }
 
 void BlitCommandListMT::PopDebugGroup()

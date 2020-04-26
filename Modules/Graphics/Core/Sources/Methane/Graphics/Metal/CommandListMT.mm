@@ -21,7 +21,7 @@ Metal command lists sequence implementation
 
 ******************************************************************************/
 
-#include "CommandListMT.h"
+#include "CommandListMT.hh"
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
