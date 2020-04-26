@@ -57,6 +57,7 @@ public:
     void             RemoveCallback(Callback& callback) override;
     CommandQueue&    GetUploadCommandQueue() override;
     BlitCommandList& GetUploadCommandList() override;
+    CommandLists&    GetUploadCommandLists() override;
     Device&          GetDevice() override;
 
     // ContextBase interface
@@ -88,6 +89,7 @@ private:
     Refs<Callback>            m_callbacks; // ORDER: Keep callbacks before resources for correct auto-delete
     Ptr<CommandQueue>         m_sp_upload_cmd_queue;
     Ptr<BlitCommandList>      m_sp_upload_cmd_list;
+    Ptr<CommandLists>         m_sp_upload_cmd_lists;
     UniquePtr<Fence>          m_sp_upload_fence;
 };
 

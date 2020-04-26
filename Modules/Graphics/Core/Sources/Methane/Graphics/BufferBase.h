@@ -56,6 +56,7 @@ class BuffersBase : public Buffers
 public:
     BuffersBase(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
 
+    // Buffers interface
     Buffer::Type        GetType() const noexcept override  { return m_buffers_type; }
     Data::Size          GetCount() const noexcept override { return static_cast<Data::Size>(m_refs.size()); }
     const Refs<Buffer>& GetRefs() const noexcept override  { return m_refs; }

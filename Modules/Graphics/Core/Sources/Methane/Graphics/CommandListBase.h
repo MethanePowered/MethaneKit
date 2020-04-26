@@ -120,4 +120,23 @@ private:
     State                   m_state                 = State::Pending;
 };
 
+class CommandListsBase : public CommandLists
+{
+public:
+    CommandListsBase(Refs<CommandList> command_list_refs);
+
+    // CommandLists interface
+    Data::Size               GetCount() const noexcept override { return static_cast<Data::Size>(m_refs.size()); }
+    const Refs<CommandList>& GetRefs() const noexcept override  { return m_refs; }
+    CommandList&             operator[](Data::Index index) const override;
+
+    const Refs<CommandListBase>& GetBaseRefs() const noexcept { return m_base_refs; }
+    const CommandListBase& GetCommandListBase(Data::Index index) const;
+
+private:
+    Refs<CommandList>     m_refs;
+    Refs<CommandListBase> m_base_refs;
+    Ptrs<CommandListBase> m_base_ptrs;
+};
+
 } // namespace Methane::Graphics

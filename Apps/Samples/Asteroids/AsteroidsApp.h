@@ -41,6 +41,7 @@ struct AsteroidsFrame final : gfx::AppFrame
     Ptr<gfx::ParallelRenderCommandList> sp_parallel_cmd_list;
     Ptr<gfx::RenderCommandList>         sp_serial_cmd_list;
     Ptr<gfx::RenderCommandList>         sp_final_cmd_list;
+    Ptr<gfx::CommandLists>              sp_execute_cmd_lists;
     Ptr<gfx::Buffer>                    sp_scene_uniforms_buffer;
     gfx::MeshBufferBindings             skybox;
     gfx::MeshBufferBindings             planet;
@@ -88,6 +89,8 @@ private:
         SHADER_FIELD_ALIGN gfx::Vector4f  eye_position;
         SHADER_FIELD_ALIGN gfx::Vector3f  light_position;
     };
+
+    Ptr<gfx::CommandLists> CreateExecuteCommandLists(AsteroidsFrame& frame);
 
     gfx::ActionCamera                 m_view_camera;
     gfx::ActionCamera                 m_light_camera;

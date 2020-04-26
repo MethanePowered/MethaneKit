@@ -204,8 +204,9 @@ void TexturedCubeApp::Init()
         });
         
         // Create command list for rendering
-        frame.sp_cmd_list = gfx::RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
-        frame.sp_cmd_list->SetName(IndexedName("Cube Rendering", frame.index));
+        frame.sp_render_cmd_list = gfx::RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
+        frame.sp_render_cmd_list->SetName(IndexedName("Cube Rendering", frame.index));
+        frame.sp_execute_cmd_lists = gfx::CommandLists::Create({ *frame.sp_render_cmd_list });
     }
 
     // Complete initialization of render context:
@@ -265,18 +266,18 @@ bool TexturedCubeApp::Render()
 
     // Issue commands for cube rendering
     static const std::string s_debug_region_name = "Cube Rendering";
-    frame.sp_cmd_list->Reset(m_sp_state, s_debug_region_name);
-    frame.sp_cmd_list->SetProgramBindings(*frame.sp_program_bindings);
-    frame.sp_cmd_list->SetVertexBuffers(*m_sp_vertex_buffers);
-    frame.sp_cmd_list->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
+    frame.sp_render_cmd_list->Reset(m_sp_state, s_debug_region_name);
+    frame.sp_render_cmd_list->SetProgramBindings(*frame.sp_program_bindings);
+    frame.sp_render_cmd_list->SetVertexBuffers(*m_sp_vertex_buffers);
+    frame.sp_render_cmd_list->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
 
-    RenderOverlay(*frame.sp_cmd_list);
+    RenderOverlay(*frame.sp_render_cmd_list);
 
     // Commit command list with present flag
-    frame.sp_cmd_list->Commit();
+    frame.sp_render_cmd_list->Commit();
 
     // Execute command list on render queue and present frame to screen
-    m_sp_context->GetRenderCommandQueue().Execute({ *frame.sp_cmd_list });
+    m_sp_context->GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_lists);
     m_sp_context->Present();
 
     return true;

@@ -28,7 +28,8 @@ using namespace Methane::Graphics;
 
 struct HelloTriangleFrame final : AppFrame
 {
-    Ptr<RenderCommandList> sp_cmd_list;
+    Ptr<RenderCommandList> sp_render_cmd_list;
+    Ptr<CommandLists>      sp_render_cmd_lists;
     using AppFrame::AppFrame;
 };
 
@@ -116,7 +117,8 @@ public:
 
         for (HelloTriangleFrame& frame : m_frames)
         {
-            frame.sp_cmd_list = RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
+            frame.sp_render_cmd_list  = RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
+            frame.sp_render_cmd_lists = CommandLists::Create({ *frame.sp_render_cmd_list });
         }
 
         m_sp_context->CompleteInitialization();
@@ -140,12 +142,12 @@ public:
         m_sp_context->WaitForGpu(Context::WaitFor::FramePresented);
         HelloTriangleFrame& frame = GetCurrentFrame();
 
-        frame.sp_cmd_list->Reset(m_sp_state);
-        frame.sp_cmd_list->SetVertexBuffers(*m_sp_vertex_buffers);
-        frame.sp_cmd_list->Draw(RenderCommandList::Primitive::Triangle, 3);
-        frame.sp_cmd_list->Commit();
+        frame.sp_render_cmd_list->Reset(m_sp_state);
+        frame.sp_render_cmd_list->SetVertexBuffers(*m_sp_vertex_buffers);
+        frame.sp_render_cmd_list->Draw(RenderCommandList::Primitive::Triangle, 3);
+        frame.sp_render_cmd_list->Commit();
 
-        m_sp_context->GetRenderCommandQueue().Execute({ *frame.sp_cmd_list });
+        m_sp_context->GetRenderCommandQueue().Execute(*frame.sp_render_cmd_lists);
         m_sp_context->Present();
 
         return true;

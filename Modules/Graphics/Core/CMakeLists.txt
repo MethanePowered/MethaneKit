@@ -40,6 +40,7 @@ if (WIN32)
         ${SOURCES_GRAPHICS_DIR}/CommandQueueDX.h
         ${SOURCES_GRAPHICS_DIR}/CommandQueueDX.cpp
         ${SOURCES_GRAPHICS_DIR}/CommandListDX.h
+        ${SOURCES_GRAPHICS_DIR}/CommandListDX.cpp
         ${SOURCES_GRAPHICS_DIR}/CommandListDX.hpp
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListDX.h
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListDX.cpp
@@ -96,6 +97,8 @@ elseif(APPLE)
         ${SOURCES_GRAPHICS_DIR}/RenderPassMT.mm
         ${SOURCES_GRAPHICS_DIR}/CommandQueueMT.hh
         ${SOURCES_GRAPHICS_DIR}/CommandQueueMT.mm
+        ${SOURCES_GRAPHICS_DIR}/CommandListMT.h
+        ${SOURCES_GRAPHICS_DIR}/CommandListMT.mm
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListMT.hh
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListMT.mm
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.hh
@@ -150,6 +153,8 @@ else() # Linux
         ${SOURCES_GRAPHICS_DIR}/RenderPassVK.cpp
         ${SOURCES_GRAPHICS_DIR}/CommandQueueVK.h
         ${SOURCES_GRAPHICS_DIR}/CommandQueueVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/CommandListVK.h
+        ${SOURCES_GRAPHICS_DIR}/CommandListVK.cpp
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListVK.h
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListVK.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListVK.h

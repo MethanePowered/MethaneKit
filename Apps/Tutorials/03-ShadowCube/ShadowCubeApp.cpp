@@ -323,6 +323,12 @@ void ShadowCubeApp::Init()
             { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { { frame.final_pass.floor.sp_uniforms_buffer  } } },
             { { gfx::Shader::Type::Pixel,  "g_texture"        }, { { m_sp_floor_buffers->GetTexturePtr()        } } },
         });
+
+        // Rendering command lists sequence
+        frame.sp_execute_cmd_lists = gfx::CommandLists::Create({
+            *frame.shadow_pass.sp_cmd_list,
+            *frame.final_pass.sp_cmd_list
+        });
     }
 
     // Complete initialization of render context:
@@ -444,10 +450,7 @@ bool ShadowCubeApp::Render()
     RenderScene(m_final_pass, frame.final_pass);
 
     // Execute rendering commands and present frame to screen
-    m_sp_context->GetRenderCommandQueue().Execute({
-        *frame.shadow_pass.sp_cmd_list,
-        *frame.final_pass.sp_cmd_list
-    });
+    m_sp_context->GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_lists);
     m_sp_context->Present();
     
     return true;

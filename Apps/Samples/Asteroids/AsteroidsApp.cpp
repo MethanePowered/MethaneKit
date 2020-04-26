@@ -287,6 +287,9 @@ void AsteroidsApp::Init()
         frame.sp_final_cmd_list = gfx::RenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_final_screen_pass);
         frame.sp_final_cmd_list->SetName(IndexedName("Final Rendering", frame.index));
 
+        // Rendering command lists sequence
+        frame.sp_execute_cmd_lists = CreateExecuteCommandLists(frame);
+
         // Create uniforms buffer with volatile parameters for the whole scene rendering
         frame.sp_scene_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(context, scene_uniforms_data_size);
         frame.sp_scene_uniforms_buffer->SetName(IndexedName("Scene Uniforms Buffer", frame.index));
@@ -415,7 +418,7 @@ bool AsteroidsApp::Render()
     execute_cmd_lists.push_back(*frame.sp_final_cmd_list);
 
     // Execute rendering commands and present frame to screen
-    m_sp_context->GetRenderCommandQueue().Execute(execute_cmd_lists);
+    m_sp_context->GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_lists);
     m_sp_context->Present();
 
     return true;
@@ -475,10 +478,13 @@ void AsteroidsApp::SetParallelRenderingEnabled(bool is_parallel_rendering_enable
 
     META_SCOPE_TIMERS_FLUSH();
     m_is_parallel_rendering_enabled = is_parallel_rendering_enabled;
+    for(AsteroidsFrame& frame : m_frames)
+    {
+        frame.sp_execute_cmd_lists = CreateExecuteCommandLists(frame);
+    }
 
     META_LOG(GetParametersString());
 }
-
 
 AsteroidsArray& AsteroidsApp::GetAsteroidsArray() const
 {
@@ -504,6 +510,16 @@ std::string AsteroidsApp::GetParametersString() const
        << std::endl << "  - CPU hardware thread count: " << std::thread::hardware_concurrency();
 
     return ss.str();
+}
+
+Ptr<gfx::CommandLists> AsteroidsApp::CreateExecuteCommandLists(AsteroidsFrame& frame)
+{
+    return gfx::CommandLists::Create({
+        m_is_parallel_rendering_enabled
+            ? static_cast<gfx::CommandList&>(*frame.sp_parallel_cmd_list)
+            : static_cast<gfx::CommandList&>(*frame.sp_serial_cmd_list),
+        *frame.sp_final_cmd_list
+    });
 }
 
 } // namespace Methane::Samples

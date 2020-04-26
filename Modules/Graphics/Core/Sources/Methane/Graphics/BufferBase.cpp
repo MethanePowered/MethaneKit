@@ -104,7 +104,7 @@ Buffer& BuffersBase::operator[](Data::Index index) const
     META_FUNCTION_TASK();
     if (index > m_refs.size())
         throw std::out_of_range("Buffer index " + std::to_string(index) +
-                                " is out of buffers collection range (size = " + std::to_string(m_refs.size()) + ").");
+                                " is out of collection range (size = " + std::to_string(m_refs.size()) + ").");
 
     return m_refs[index].get();
 }

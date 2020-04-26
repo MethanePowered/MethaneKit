@@ -39,7 +39,8 @@ struct TexturedCubeFrame final : gfx::AppFrame
 {
     Ptr<gfx::Buffer>            sp_uniforms_buffer;
     Ptr<gfx::ProgramBindings>   sp_program_bindings;
-    Ptr<gfx::RenderCommandList> sp_cmd_list;
+    Ptr<gfx::RenderCommandList> sp_render_cmd_list;
+    Ptr<gfx::CommandLists>      sp_execute_cmd_lists;
 
     using gfx::AppFrame::AppFrame;
 };

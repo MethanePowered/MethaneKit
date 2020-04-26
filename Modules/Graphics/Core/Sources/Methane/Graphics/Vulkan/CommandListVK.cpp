@@ -16,29 +16,28 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/CommandQueue.h
-Methane command queue interface: queues are used to execute command lists.
+FILE: Methane/Graphics/DirectX12/CommandListVK.cpp
+Vulkan command lists sequence implementation
 
 ******************************************************************************/
 
-#pragma once
+#include "CommandListVK.h"
 
-#include "Object.h"
-#include "CommandList.h"
-#include "Context.h"
-
-#include <Methane/Memory.hpp>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-struct CommandQueue : virtual Object
+Ptr<CommandLists> CommandLists::Create(Refs<CommandList> command_list_refs)
 {
-    // Create CommandQueue instance
-    static Ptr<CommandQueue> Create(Context& context);
+    META_FUNCTION_TASK();
+    return std::make_shared<CommandListsVK>(std::move(command_list_refs));
+}
 
-    // CommandQueue interface
-    virtual void Execute(const CommandLists& command_lists) = 0;
-};
+CommandListsVK::CommandListsVK(Refs<CommandList> command_list_refs)
+    : CommandListsBase(std::move(command_list_refs))
+{
+    META_FUNCTION_TASK();
+}
 
 } // namespace Methane::Graphics

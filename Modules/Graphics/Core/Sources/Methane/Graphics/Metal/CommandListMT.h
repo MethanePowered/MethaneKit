@@ -16,29 +16,24 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/CommandQueue.h
-Methane command queue interface: queues are used to execute command lists.
+FILE: Methane/Graphics/DirectX12/CommandListMT.h
+Metal command lists sequence implementation.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "Object.h"
-#include "CommandList.h"
-#include "Context.h"
-
-#include <Methane/Memory.hpp>
+#include <Methane/Graphics/CommandListBase.h>
 
 namespace Methane::Graphics
 {
 
-struct CommandQueue : virtual Object
+class CommandListsMT final : public CommandListsBase
 {
-    // Create CommandQueue instance
-    static Ptr<CommandQueue> Create(Context& context);
+public:
+    CommandListsMT(Refs<CommandList> command_list_refs);
 
-    // CommandQueue interface
-    virtual void Execute(const CommandLists& command_lists) = 0;
+private:
 };
 
 } // namespace Methane::Graphics

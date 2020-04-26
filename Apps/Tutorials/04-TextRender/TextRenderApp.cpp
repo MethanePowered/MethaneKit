@@ -109,8 +109,10 @@ void TextRenderApp::Init()
     // Create per-frame command lists
     for(TextRenderFrame& frame : m_frames)
     {
-        frame.sp_cmd_list = gfx::RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
-        frame.sp_cmd_list->SetName(IndexedName("Text Rendering", frame.index));
+        frame.sp_render_cmd_list = gfx::RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
+        frame.sp_render_cmd_list->SetName(IndexedName("Text Rendering", frame.index));
+
+        frame.sp_execute_cmd_lists = gfx::CommandLists::Create({ *frame.sp_render_cmd_list });
     }
 
     // Complete initialization of render context
@@ -137,16 +139,16 @@ bool TextRenderApp::Render()
     m_sp_context->WaitForGpu(gfx::Context::WaitFor::FramePresented);
     TextRenderFrame& frame = GetCurrentFrame();
 
-    m_sp_text->Draw(*frame.sp_cmd_list);
-    m_sp_font_atlas_badge->Draw(*frame.sp_cmd_list);
+    m_sp_text->Draw(*frame.sp_render_cmd_list);
+    m_sp_font_atlas_badge->Draw(*frame.sp_render_cmd_list);
 
-    RenderOverlay(*frame.sp_cmd_list);
+    RenderOverlay(*frame.sp_render_cmd_list);
 
     // Commit command list with present flag
-    frame.sp_cmd_list->Commit();
+    frame.sp_render_cmd_list->Commit();
 
     // Execute command list on render queue and present frame to screen
-    m_sp_context->GetRenderCommandQueue().Execute({ *frame.sp_cmd_list });
+    m_sp_context->GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_lists);
     m_sp_context->Present();
 
     return true;

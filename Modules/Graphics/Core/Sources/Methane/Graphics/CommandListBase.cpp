@@ -114,8 +114,7 @@ void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, Prog
 
     ProgramBindingsBase& program_bindings_base = static_cast<ProgramBindingsBase&>(program_bindings);
     program_bindings_base.Apply(*this, apply_behavior);
-    
-    assert(!!m_sp_command_state);
+
     m_command_state.p_program_bindings = &program_bindings_base;
 }
 
@@ -249,6 +248,45 @@ const CommandQueueBase& CommandListBase::GetCommandQueueBase() const
     META_FUNCTION_TASK();
     assert(!!m_sp_command_queue);
     return static_cast<const CommandQueueBase&>(*m_sp_command_queue);
+}
+
+CommandListsBase::CommandListsBase(Refs<CommandList> command_list_refs)
+    : m_refs(std::move(command_list_refs))
+{
+    META_FUNCTION_TASK();
+    if (m_refs.empty())
+    {
+        throw std::invalid_argument("Creating of empty command lists collection is not allowed.");
+    }
+
+    m_base_refs.reserve(m_refs.size());
+    m_base_ptrs.reserve(m_refs.size());
+    for(const Ref<CommandList>& command_list_ref : m_refs)
+    {
+        CommandListBase& command_list_base = dynamic_cast<CommandListBase&>(command_list_ref.get());
+        m_base_refs.emplace_back(command_list_base);
+        m_base_ptrs.emplace_back(command_list_base.GetPtr());
+    }
+}
+
+CommandList& CommandListsBase::operator[](Data::Index index) const
+{
+    META_FUNCTION_TASK();
+    if (index > m_refs.size())
+        throw std::out_of_range("Command list index " + std::to_string(index) +
+                                " is out of collection range (size = " + std::to_string(m_refs.size()) + ").");
+
+    return m_refs[index].get();
+}
+
+const CommandListBase& CommandListsBase::GetCommandListBase(Data::Index index) const
+{
+    META_FUNCTION_TASK();
+    if (index > m_base_refs.size())
+        throw std::out_of_range("Command list index " + std::to_string(index) +
+                                " is out of collection range (size = " + std::to_string(m_refs.size()) + ").");
+
+    return m_base_refs[index].get();
 }
 
 } // namespace Methane::Graphics

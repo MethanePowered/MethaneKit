@@ -66,47 +66,14 @@ void CommandQueueDX::SetName(const std::string& name)
     m_cp_command_queue->SetName(nowide::widen(name).c_str());
 }
 
-void CommandQueueDX::Execute(const Refs<CommandList>& command_lists)
+void CommandQueueDX::Execute(const CommandLists& command_lists)
 {
     META_FUNCTION_TASK();
-    assert(!command_lists.empty());
-    if (command_lists.empty())
-        return;
-
     CommandQueueBase::Execute(command_lists);
 
-    D3D12CommandLists dx_command_lists = GetNativeCommandLists(command_lists);
-    m_cp_command_queue->ExecuteCommandLists(static_cast<UINT>(dx_command_lists.size()), dx_command_lists.data());
-}
-
-CommandQueueDX::D3D12CommandLists CommandQueueDX::GetNativeCommandLists(const Refs<CommandList>& command_list_refs)
-{
-    META_FUNCTION_TASK();
-    D3D12CommandLists dx_command_lists;
-    dx_command_lists.reserve(command_list_refs.size());
-    for (const Ref<CommandList>& command_list_ref : command_list_refs)
-    {
-        CommandListBase& command_list = dynamic_cast<CommandListBase&>(command_list_ref.get());
-        switch (command_list.GetType())
-        {
-        case CommandList::Type::Blit:
-        {
-            dx_command_lists.push_back(&static_cast<BlitCommandListDX&>(command_list).GetNativeCommandList());
-        } break;
-
-        case CommandList::Type::Render:
-        {
-            dx_command_lists.push_back(&static_cast<RenderCommandListDX&>(command_list).GetNativeCommandList());
-        } break;
-
-        case CommandList::Type::ParallelRender:
-        {
-            const D3D12CommandLists dx_parallel_command_lists = static_cast<ParallelRenderCommandListDX&>(command_list).GetNativeCommandLists();
-            dx_command_lists.insert(dx_command_lists.end(), dx_parallel_command_lists.begin(), dx_parallel_command_lists.end());
-        } break;
-        }
-    }
-    return dx_command_lists;
+    const CommandListsDX& dx_command_lists = static_cast<const CommandListsDX&>(command_lists);
+    const CommandListsDX::NativeCommandLists& native_command_lists = dx_command_lists.GetNativeCommandLists();
+    m_cp_command_queue->ExecuteCommandLists(static_cast<UINT>(native_command_lists.size()), native_command_lists.data());
 }
 
 IContextDX& CommandQueueDX::GetContextDX() noexcept

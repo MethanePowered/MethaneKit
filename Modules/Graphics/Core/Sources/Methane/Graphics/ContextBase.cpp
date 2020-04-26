@@ -181,29 +181,42 @@ void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation)
 CommandQueue& ContextBase::GetUploadCommandQueue()
 {
     META_FUNCTION_TASK();
-    if (!m_sp_upload_cmd_queue)
-    {
-        static const std::string s_command_queue_name = "Upload Command Queue";
+    if (m_sp_upload_cmd_queue)
+        return *m_sp_upload_cmd_queue;
 
-        m_sp_upload_cmd_queue = CommandQueue::Create(*this);
-        m_sp_upload_cmd_queue->SetName(s_command_queue_name);
-    }
+    static const std::string s_command_queue_name = "Upload Command Queue";
+
+    m_sp_upload_cmd_queue = CommandQueue::Create(*this);
+    m_sp_upload_cmd_queue->SetName(s_command_queue_name);
+
     return *m_sp_upload_cmd_queue;
 }
 
 BlitCommandList& ContextBase::GetUploadCommandList()
 {
     META_FUNCTION_TASK();
-    if (!m_sp_upload_cmd_list)
-    {
-        static const std::string s_command_list_name = "Upload Command List";
-        static const std::string s_debug_region_name = "Upload Command List";
+    if (m_sp_upload_cmd_list)
+        return *m_sp_upload_cmd_list;
 
-        m_sp_upload_cmd_list = BlitCommandList::Create(GetUploadCommandQueue());
-        m_sp_upload_cmd_list->SetName(s_command_list_name);
-        m_sp_upload_cmd_list->Reset(s_debug_region_name);
-    }
+    static const std::string s_command_list_name = "Upload Command List";
+    static const std::string s_debug_region_name = "Upload Command List";
+
+    m_sp_upload_cmd_list = BlitCommandList::Create(GetUploadCommandQueue());
+    m_sp_upload_cmd_list->SetName(s_command_list_name);
+    m_sp_upload_cmd_list->Reset(s_debug_region_name);
+
     return *m_sp_upload_cmd_list;
+}
+
+CommandLists& ContextBase::GetUploadCommandLists()
+{
+    META_FUNCTION_TASK();
+    if (m_sp_upload_cmd_lists)
+        return *m_sp_upload_cmd_lists;
+
+    m_sp_upload_cmd_lists = CommandLists::Create({ GetUploadCommandList() });
+
+    return *m_sp_upload_cmd_lists;
 }
 
 Device& ContextBase::GetDevice()
@@ -248,7 +261,7 @@ void ContextBase::UploadResources()
     META_LOG("UPLOAD resources for context \"" + GetName() + "\"");
 
     GetUploadCommandList().Commit();
-    GetUploadCommandQueue().Execute({ GetUploadCommandList() });
+    GetUploadCommandQueue().Execute(GetUploadCommandLists());
     WaitForGpu(WaitFor::ResourcesUploaded);
 
     m_sp_upload_cmd_list.reset();

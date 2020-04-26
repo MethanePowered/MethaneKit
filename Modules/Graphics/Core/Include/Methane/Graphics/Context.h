@@ -34,6 +34,7 @@ namespace Methane::Graphics
 struct Device;
 struct CommandQueue;
 struct BlitCommandList;
+struct CommandLists;
 
 struct Context : virtual Object
 {
@@ -70,6 +71,7 @@ struct Context : virtual Object
     virtual Device&          GetDevice() = 0;
     virtual CommandQueue&    GetUploadCommandQueue() = 0;
     virtual BlitCommandList& GetUploadCommandList() = 0;
+    virtual CommandLists&    GetUploadCommandLists() = 0;
 };
 
 } // namespace Methane::Graphics

@@ -126,9 +126,9 @@ void HelloTriangleApp::Init()
     // Create per-frame command lists
     for(HelloTriangleFrame& frame : m_frames)
     {
-        frame.sp_cmd_list = gfx::RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
-        frame.sp_cmd_list->SetName(IndexedName("Triangle Rendering", frame.index));
-        frame.execute_cmd_lists = { *frame.sp_cmd_list };
+        frame.sp_render_cmd_list = gfx::RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
+        frame.sp_render_cmd_list->SetName(IndexedName("Triangle Rendering", frame.index));
+        frame.sp_execute_cmd_lists = gfx::CommandLists::Create({ *frame.sp_render_cmd_list });
     }
 
     // Complete initialization of render context
@@ -160,17 +160,17 @@ bool HelloTriangleApp::Render()
 
     // Issue commands for triangle rendering
     static const std::string s_debug_region_name = "Triangle Rendering";
-    frame.sp_cmd_list->Reset(m_sp_state, s_debug_region_name);
-    frame.sp_cmd_list->SetVertexBuffers(*m_sp_vertex_buffers);
-    frame.sp_cmd_list->Draw(gfx::RenderCommandList::Primitive::Triangle, 3u);
+    frame.sp_render_cmd_list->Reset(m_sp_state, s_debug_region_name);
+    frame.sp_render_cmd_list->SetVertexBuffers(*m_sp_vertex_buffers);
+    frame.sp_render_cmd_list->Draw(gfx::RenderCommandList::Primitive::Triangle, 3u);
 
-    RenderOverlay(*frame.sp_cmd_list);
+    RenderOverlay(*frame.sp_render_cmd_list);
 
     // Commit command list with present flag
-    frame.sp_cmd_list->Commit();
+    frame.sp_render_cmd_list->Commit();
 
     // Execute command list on render queue and present frame to screen
-    m_sp_context->GetRenderCommandQueue().Execute(frame.execute_cmd_lists);
+    m_sp_context->GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_lists);
     m_sp_context->Present();
 
     return true;

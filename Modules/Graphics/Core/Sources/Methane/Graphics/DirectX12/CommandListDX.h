@@ -23,6 +23,8 @@ DirectX 12 command list accessor interface for template class CommandListDX<Comm
 
 #pragma once
 
+#include <Methane/Graphics/CommandListBase.h>
+
 #include <wrl.h>
 #include <d3d12.h>
 
@@ -40,6 +42,18 @@ struct ICommandListDX
     virtual ID3D12GraphicsCommandList4* GetNativeCommandList4() const = 0;
 
     virtual ~ICommandListDX() = default;
+};
+
+class CommandListsDX final : public CommandListsBase
+{
+public:
+    CommandListsDX(Refs<CommandList> command_list_refs);
+
+    using NativeCommandLists = std::vector<ID3D12CommandList*>;
+    const NativeCommandLists& GetNativeCommandLists() const noexcept { return m_native_command_lists; }
+
+private:
+    NativeCommandLists m_native_command_lists;
 };
 
 } // namespace Methane::Graphics

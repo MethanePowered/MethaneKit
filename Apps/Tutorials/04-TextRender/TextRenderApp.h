@@ -32,7 +32,8 @@ namespace gfx = Methane::Graphics;
 
 struct TextRenderFrame final : gfx::AppFrame
 {
-    Ptr<gfx::RenderCommandList> sp_cmd_list;
+    Ptr<gfx::RenderCommandList> sp_render_cmd_list;
+    Ptr<gfx::CommandLists>      sp_execute_cmd_lists;
 
     using gfx::AppFrame::AppFrame;
 };
