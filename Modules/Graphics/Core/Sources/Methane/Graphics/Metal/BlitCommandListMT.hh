@@ -63,6 +63,7 @@ private:
     
     CommandQueueMT& GetCommandQueueMT() noexcept;
 
+    NSString*                   m_ns_name = nil;
     id<MTLCommandBuffer>        m_mtl_cmd_buffer = nil;
     id<MTLBlitCommandEncoder>   m_mtl_blit_encoder = nil;
 };

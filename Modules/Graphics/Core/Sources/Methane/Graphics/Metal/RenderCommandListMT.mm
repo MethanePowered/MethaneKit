@@ -24,7 +24,6 @@ Metal implementation of the render command list interface.
 #include "RenderCommandListMT.hh"
 #include "CommandListMT.hh"
 #include "ParallelRenderCommandListMT.hh"
-#include "RenderStateMT.hh"
 #include "RenderPassMT.hh"
 #include "CommandQueueMT.hh"
 #include "RenderContextMT.hh"
@@ -103,9 +102,9 @@ void RenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, DebugGr
         if (!m_mtl_cmd_buffer)
         {
             m_mtl_cmd_buffer = [GetCommandQueueMT().GetNativeCommandQueue() commandBuffer];
-            assert(m_mtl_cmd_buffer != nil);
 
-            m_mtl_cmd_buffer.label = MacOS::ConvertToNsType<std::string, NSString*>(GetName());
+            assert(m_mtl_cmd_buffer != nil);
+            m_mtl_cmd_buffer.label = m_ns_name;
         }
 
         assert(mtl_render_pass != nil);
@@ -113,7 +112,7 @@ void RenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, DebugGr
     }
 
     assert(m_mtl_render_encoder != nil);
-    m_mtl_render_encoder.label = MacOS::ConvertToNsType<std::string, NSString*>(GetName());
+    m_mtl_render_encoder.label = m_ns_name;
 
     RenderCommandListBase::Reset(sp_render_state, p_debug_group);
 }
@@ -124,16 +123,16 @@ void RenderCommandListMT::SetName(const std::string& name)
 
     RenderCommandListBase::SetName(name);
     
-    NSString* ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
+    m_ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
     
     if (m_mtl_render_encoder != nil)
     {
-        m_mtl_render_encoder.label = ns_name;
+        m_mtl_render_encoder.label = m_ns_name;
     }
     
     if (m_mtl_cmd_buffer != nil)
     {
-        m_mtl_cmd_buffer.label = ns_name;
+        m_mtl_cmd_buffer.label = m_ns_name;
     }
 }
 

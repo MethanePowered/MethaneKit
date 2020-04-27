@@ -68,6 +68,7 @@ private:
     CommandQueueMT& GetCommandQueueMT() noexcept;
     RenderPassMT&   GetRenderPassMT();
 
+    NSString*                   m_ns_name = nil;
     id<MTLCommandBuffer>        m_mtl_cmd_buffer = nil;
     id<MTLRenderCommandEncoder> m_mtl_render_encoder = nil;
 };
