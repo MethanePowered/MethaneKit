@@ -97,7 +97,7 @@ bool RenderPassBase::Update(const RenderPass::Settings& settings)
     m_settings = settings;
     m_color_attach_resources.clear();
     m_sp_color_begin_transition_barriers.reset();
-    m_sp_color_begin_transition_barriers.reset();
+    m_sp_color_end_transition_barriers.reset();
     m_sp_attach_resources_transition_barriers.reset();
     return true;
 }

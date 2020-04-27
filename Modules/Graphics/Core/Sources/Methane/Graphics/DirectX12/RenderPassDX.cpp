@@ -214,7 +214,7 @@ bool RenderPassDX::Update(const Settings& settings)
 
     if (!m_is_native_render_pass_available.has_value() || m_is_native_render_pass_available.value())
     {
-        UpdateNativeRenderPassDesc(!settings_changed);
+        UpdateNativeRenderPassDesc(settings_changed);
     }
     
     if (!m_is_native_render_pass_available.has_value() || !m_is_native_render_pass_available.value())

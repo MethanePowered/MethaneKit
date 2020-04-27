@@ -265,6 +265,7 @@ void ContextBase::UploadResources()
     WaitForGpu(WaitFor::ResourcesUploaded);
 
     m_sp_upload_cmd_list.reset();
+    m_sp_upload_cmd_lists.reset();
 }
 
 void ContextBase::SetDevice(DeviceBase& device)
