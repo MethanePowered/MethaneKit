@@ -30,9 +30,12 @@ Base implementation of the command list interface.
 #include <Methane/Graphics/CommandList.h>
 #include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Memory.hpp>
+#include <Methane/Instrumentation.h>
 
 #include <stack>
 #include <set>
+#include <mutex>
+#include <condition_variable>
 
 namespace Methane::Graphics
 {
@@ -94,28 +97,29 @@ public:
     void Reset(DebugGroup* p_debug_group = nullptr) override;
     void SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
     void Commit() override;
+    void WaitUntilCompleted(uint32_t timeout_ms = 0u) override;
     CommandQueue& GetCommandQueue() override;
 
     // CommandListBase interface
     virtual void SetResourceBarriers(const ResourceBase::Barriers& resource_barriers) = 0;
     virtual void Execute(uint32_t frame_index);
-    virtual void Complete(uint32_t frame_index);
+    virtual void Complete(uint32_t frame_index); // Called from another thread, which is tracking GPU execution
 
     DebugGroupBase* GetTopOpenDebugGroup() const;
     void PushOpenDebugGroup(DebugGroup& debug_group);
     void ClearOpenDebugGroups();
 
-    const ProgramBindingsBase* GetProgramBindings() const   { return GetCommandState().p_program_bindings; }
-    Ptr<CommandListBase>       GetPtr()                     { return shared_from_this(); }
+    CommandQueueBase&          GetCommandQueueBase() noexcept;
+    const CommandQueueBase&    GetCommandQueueBase() const noexcept;
+    const ProgramBindingsBase* GetProgramBindings() const noexcept  { return GetCommandState().p_program_bindings; }
+    State                      GetState() const noexcept            { return m_state; }
+    Ptr<CommandListBase>       GetPtr()                             { return shared_from_this(); }
 
 protected:
     virtual void ResetCommandState();
 
     CommandState&       GetCommandState()           { return m_command_state; }
     const CommandState& GetCommandState() const     { return m_command_state; }
-
-    CommandQueueBase&       GetCommandQueueBase();
-    const CommandQueueBase& GetCommandQueueBase() const;
 
     bool     IsExecutingOnAnyFrame() const;
     bool     IsCommitted(uint32_t frame_index) const;
@@ -129,31 +133,47 @@ private:
 
     using DebugGroupStack  = std::stack<Ptr<DebugGroupBase>>;
 
-    const Type        m_type;
-    Ptr<CommandQueue> m_sp_command_queue;
-    CommandState      m_command_state;
-    DebugGroupStack   m_open_debug_groups;
-    uint32_t          m_committed_frame_index = 0;
-    State             m_state                 = State::Pending;
+    const Type                m_type;
+    Ptr<CommandQueue>         m_sp_command_queue;
+    CommandState              m_command_state;
+    DebugGroupStack           m_open_debug_groups;
+    uint32_t                  m_committed_frame_index = 0;
+    State                     m_state                 = State::Pending;
+    TracyLockable(std::mutex, m_state_mutex);
+    std::mutex                m_state_change_mutex;
+    std::condition_variable   m_state_change_condition_var;
 };
 
-class CommandListsBase : public CommandLists
+class CommandListsBase
+    : public CommandLists
+    , public std::enable_shared_from_this<CommandListsBase>
 {
 public:
     CommandListsBase(Refs<CommandList> command_list_refs);
 
-    // CommandLists interface
+    // CommandLists overrides
     Data::Size               GetCount() const noexcept override { return static_cast<Data::Size>(m_refs.size()); }
     const Refs<CommandList>& GetRefs() const noexcept override  { return m_refs; }
     CommandList&             operator[](Data::Index index) const override;
 
-    const Refs<CommandListBase>& GetBaseRefs() const noexcept { return m_base_refs; }
+    // CommandListsBase interface
+    virtual void Execute(Data::Index frame_index);
+    
+    void Complete() noexcept;
+
+    Ptr<CommandListsBase> GetPtr()                                   { return shared_from_this(); }
+    const Refs<CommandListBase>& GetBaseRefs() const noexcept        { return m_base_refs; }
+    Data::Index            GetExecutingOnFrameIndex() const noexcept { return m_executing_on_frame_index; }
     const CommandListBase& GetCommandListBase(Data::Index index) const;
 
+    CommandQueueBase&       GetCommandQueueBase() noexcept          { return m_base_refs.back().get().GetCommandQueueBase(); }
+    const CommandQueueBase& GetCommandQueueBase() const noexcept    { return m_base_refs.back().get().GetCommandQueueBase(); }
+
 private:
-    Refs<CommandList>     m_refs;
-    Refs<CommandListBase> m_base_refs;
-    Ptrs<CommandListBase> m_base_ptrs;
+    Refs<CommandList>      m_refs;
+    Refs<CommandListBase>  m_base_refs;
+    Ptrs<CommandListBase>  m_base_ptrs;
+    Data::Index            m_executing_on_frame_index = 0u;
 };
 
 } // namespace Methane::Graphics

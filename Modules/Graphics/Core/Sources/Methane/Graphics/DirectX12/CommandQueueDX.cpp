@@ -22,6 +22,7 @@ DirectX 12 implementation of the command queue interface.
 ******************************************************************************/
 
 #include "CommandQueueDX.h"
+#include "CommandListDX.h"
 #include "DeviceDX.h"
 #include "BlitCommandListDX.h"
 #include "RenderCommandListDX.h"
@@ -45,6 +46,7 @@ Ptr<CommandQueue> CommandQueue::Create(Context& context)
 
 CommandQueueDX::CommandQueueDX(ContextBase& context)
     : CommandQueueBase(context)
+    , m_execution_waiting_thread(&CommandQueueDX::WaitForExecution, this)
 {
     META_FUNCTION_TASK();
 
@@ -58,22 +60,46 @@ CommandQueueDX::CommandQueueDX(ContextBase& context)
     ThrowIfFailed(cp_device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&m_cp_command_queue)), cp_device.Get());
 }
 
-void CommandQueueDX::SetName(const std::string& name)
+CommandQueueDX::~CommandQueueDX()
+{
+    META_FUNCTION_TASK();
+    m_execution_waiting = false;
+    m_execution_waiting_condition_var.notify_one();
+    m_execution_waiting_thread.join();
+}
+
+void CommandQueueDX::Execute(CommandLists& command_lists)
 {
     META_FUNCTION_TASK();
 
+    CommandQueueBase::Execute(command_lists);
+
+    CommandListsDX& dx_command_lists = static_cast<CommandListsDX&>(command_lists);
+    {
+        std::lock_guard<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
+        m_executing_command_lists.push(std::static_pointer_cast<CommandListsDX>(dx_command_lists.GetPtr()));
+        m_execution_waiting_condition_var.notify_one();
+    }
+}
+
+void CommandQueueDX::SetName(const std::string& name)
+{
+    META_FUNCTION_TASK();
     CommandQueueBase::SetName(name);
     m_cp_command_queue->SetName(nowide::widen(name).c_str());
 }
 
-void CommandQueueDX::Execute(const CommandLists& command_lists)
+void CommandQueueDX::CompleteExecution(const std::optional<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
-    CommandQueueBase::Execute(command_lists);
-
-    const CommandListsDX& dx_command_lists = static_cast<const CommandListsDX&>(command_lists);
-    const CommandListsDX::NativeCommandLists& native_command_lists = dx_command_lists.GetNativeCommandLists();
-    m_cp_command_queue->ExecuteCommandLists(static_cast<UINT>(native_command_lists.size()), native_command_lists.data());
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
+    while (!m_executing_command_lists.empty() &&
+          (!frame_index.has_value() || m_executing_command_lists.front()->GetExecutingOnFrameIndex() == *frame_index))
+    {
+        m_executing_command_lists.front()->Complete();
+        m_executing_command_lists.pop();
+    }
+    m_execution_waiting_condition_var.notify_one();
 }
 
 IContextDX& CommandQueueDX::GetContextDX() noexcept
@@ -87,6 +113,37 @@ ID3D12CommandQueue& CommandQueueDX::GetNativeCommandQueue()
     META_FUNCTION_TASK();
     assert(!!m_cp_command_queue);
     return *m_cp_command_queue.Get();
+}
+
+void CommandQueueDX::WaitForExecution() noexcept
+{
+    do
+    {
+        // TODO: Add Tracy instrumentation to mutex with conditional variable if possible
+        std::unique_lock<std::mutex> lock(m_execution_waiting_mutex);
+        m_execution_waiting_condition_var.wait(lock,
+            [this]{ return !m_execution_waiting || !m_executing_command_lists.empty(); }
+        );
+
+        while(!m_executing_command_lists.empty())
+        {
+            CommandListsDX* p_command_lists = nullptr;
+            {
+                std::lock_guard<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
+                if (m_executing_command_lists.empty())
+                    break;
+                p_command_lists = m_executing_command_lists.front().get();
+            }
+            assert(p_command_lists);
+            p_command_lists->WaitUntilCompleted();
+            {
+                std::lock_guard<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
+                if (!m_executing_command_lists.empty() && m_executing_command_lists.front().get() == p_command_lists)
+                    m_executing_command_lists.pop();
+            }
+        }
+    }
+    while(m_execution_waiting);
 }
 
 } // namespace Methane::Graphics

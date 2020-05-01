@@ -24,11 +24,17 @@ DirectX 12 implementation of the command queue interface.
 #pragma once
 
 #include <Methane/Graphics/CommandQueueBase.h>
+#include <Methane/Instrumentation.h>
 
 #include <wrl.h>
 #include <d3d12.h>
 
-#include <vector>
+#include <optional>
+#include <queue>
+#include <thread>
+#include <mutex>
+#include <atomic>
+#include <condition_variable>
 
 namespace Methane::Graphics
 {
@@ -37,23 +43,35 @@ namespace wrl = Microsoft::WRL;
 
 struct IContextDX;
 class RenderStateBase;
+class CommandListsDX;
 
 class CommandQueueDX final : public CommandQueueBase
 {
 public:
     CommandQueueDX(ContextBase& context);
+    ~CommandQueueDX() override;
 
     // CommandQueue interface
-    void Execute(const CommandLists& command_lists) override;
+    void Execute(CommandLists& command_lists) override;
 
     // Object interface
     void SetName(const std::string& name) override;
+
+    void CompleteExecution(const std::optional<Data::Index>& frame_index = { });
 
     IContextDX& GetContextDX() noexcept;
     ID3D12CommandQueue& GetNativeCommandQueue();
 
 private:
-    wrl::ComPtr<ID3D12CommandQueue> m_cp_command_queue;
+    void WaitForExecution() noexcept;
+
+    wrl::ComPtr<ID3D12CommandQueue>   m_cp_command_queue;
+    std::queue<Ptr<CommandListsDX>>   m_executing_command_lists;
+    mutable TracyLockable(std::mutex, m_executing_command_lists_mutex);
+    std::mutex                        m_execution_waiting_mutex;
+    std::condition_variable           m_execution_waiting_condition_var;
+    std::atomic<bool>                 m_execution_waiting{ true };
+    std::thread                       m_execution_waiting_thread;
 };
 
 } // namespace Methane::Graphics

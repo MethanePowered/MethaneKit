@@ -54,10 +54,14 @@ Ptr<CommandLists> CommandLists::Create(Refs<CommandList> command_list_refs)
 
 CommandListsDX::CommandListsDX(Refs<CommandList> command_list_refs)
     : CommandListsBase(std::move(command_list_refs))
+    , m_execution_completed_fence(GetCommandQueueBase())
 {
     META_FUNCTION_TASK();
 
     const Refs<CommandListBase>& base_command_list_refs = GetBaseRefs();
+
+    std::stringstream fence_name_ss;
+    fence_name_ss << "Execution completed for command lists:";
 
     m_native_command_lists.reserve(base_command_list_refs.size());
     for(const Ref<CommandListBase>& command_list_ref : base_command_list_refs)
@@ -81,7 +85,38 @@ CommandListsDX::CommandListsDX(Refs<CommandList> command_list_refs)
             m_native_command_lists.insert(m_native_command_lists.end(), native_command_lists.begin(), native_command_lists.end());
         } break;
         }
+
+        fence_name_ss << " \"" << command_list.GetName() << "\"";
     }
+
+    m_execution_completed_fence.SetName(fence_name_ss.str());
+}
+
+void CommandListsDX::Execute(uint32_t frame_index)
+{
+    META_FUNCTION_TASK();
+    CommandListsBase::Execute(frame_index);
+    GetCommandQueueDX().GetNativeCommandQueue().ExecuteCommandLists(static_cast<UINT>(m_native_command_lists.size()), m_native_command_lists.data());
+    m_execution_completed_fence.Signal();
+}
+
+void CommandListsDX::WaitUntilCompleted() noexcept
+{
+    META_FUNCTION_TASK();
+    m_execution_completed_fence.Wait();
+    Complete();
+}
+
+CommandQueueDX& CommandListsDX::GetCommandQueueDX() noexcept
+{
+    META_FUNCTION_TASK();
+    return static_cast<CommandQueueDX&>(GetCommandQueueBase());
+}
+
+const CommandQueueDX& CommandListsDX::GetCommandQueueDX() const noexcept
+{
+    META_FUNCTION_TASK();
+    return static_cast<const CommandQueueDX&>(GetCommandQueueBase());
 }
 
 } // namespace Methane::Graphics

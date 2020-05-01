@@ -40,6 +40,9 @@ public:
 
     ~RenderContextDX() override;
 
+    // Context interface
+    void WaitForGpu(WaitFor wait_for) override;
+
     // RenderContext interface
     bool ReadyToRender() const override { return true; }
     void Resize(const FrameSize& frame_size) override;

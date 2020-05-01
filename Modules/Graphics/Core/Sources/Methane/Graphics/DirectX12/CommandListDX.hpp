@@ -114,9 +114,6 @@ public:
     {
         META_FUNCTION_TASK();
         CommandListBaseT::Execute(frame_index);
-
-        // NOTE: In DirectX there's no need for tracking command list completion, so it's completed right away
-        CommandListBaseT::Complete(frame_index);
     }
 
     // CommandList interface

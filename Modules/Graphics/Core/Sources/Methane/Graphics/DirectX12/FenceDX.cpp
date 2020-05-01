@@ -85,9 +85,13 @@ void FenceDX::Wait()
     assert(!!m_event);
     if (m_cp_fence->GetCompletedValue() < GetValue())
     {
+        META_LOG("SLEEP on fence \"" + GetName() + "\" with value " + std::to_string(GetValue()));
+
         ThrowIfFailed(m_cp_fence->SetEventOnCompletion(GetValue(), m_event),
                       GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice().Get());
         WaitForSingleObjectEx(m_event, INFINITE, FALSE);
+
+        META_LOG("AWAKE on fence \"" + GetName() + "\" with value " + std::to_string(GetValue()));
     }
 }
 

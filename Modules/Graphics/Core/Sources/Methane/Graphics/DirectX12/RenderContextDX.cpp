@@ -100,6 +100,29 @@ RenderContextDX::~RenderContextDX()
     META_FUNCTION_TASK();
 }
 
+// Context interface
+void RenderContextDX::WaitForGpu(WaitFor wait_for)
+{
+    META_FUNCTION_TASK();
+
+    ContextDX<RenderContextBase>::WaitForGpu(wait_for);
+
+    switch (wait_for)
+    {
+    case WaitFor::RenderComplete:
+        GetRenderCommandQueueDX().CompleteExecution();
+        break;
+
+    case WaitFor::FramePresented:
+        GetRenderCommandQueueDX().CompleteExecution(GetFrameBufferIndex());
+        break;
+
+    case WaitFor::ResourcesUploaded:
+        GetUploadCommandQueueDX().CompleteExecution();
+        break;
+    }
+}
+
 void RenderContextDX::Release()
 {
     META_FUNCTION_TASK();

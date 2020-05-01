@@ -63,6 +63,7 @@ struct CommandList : virtual Object
     virtual void SetProgramBindings(ProgramBindings& program_bindings,
                                     ProgramBindings::ApplyBehavior::Mask apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental) = 0;
     virtual void Commit() = 0;
+    virtual void WaitUntilCompleted(uint32_t timeout_ms = 0u) = 0;
     virtual CommandQueue& GetCommandQueue() = 0;
 
     virtual ~CommandList() = default;

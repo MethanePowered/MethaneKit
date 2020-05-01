@@ -112,6 +112,7 @@ void CommandListBase::PopDebugGroup()
 void CommandListBase::Reset(DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
+
     if (m_state != State::Pending)
         throw std::logic_error("Can not reset command list in committed or executing state.");
 
@@ -144,16 +145,18 @@ void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, Prog
 void CommandListBase::Commit()
 {
     META_FUNCTION_TASK();
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
 
     if (m_state != State::Pending)
     {
         throw std::logic_error("Command list \"" + GetName() + "\" in " + GetStateName(m_state) + " state can not be committed. Only Pending command lists can be committed.");
     }
 
-    META_LOG("CommandList \"" + GetName() + "\" is committed on frame " + std::to_string(GetCurrentFrameIndex()));
+    META_LOG("Command list \"" + GetName() + "\" is committed on frame " + std::to_string(GetCurrentFrameIndex()));
 
     m_committed_frame_index = GetCurrentFrameIndex();
     m_state = State::Committed;
+    m_state_change_condition_var.notify_one();
 
     if (!m_open_debug_groups.empty())
     {
@@ -161,9 +164,30 @@ void CommandListBase::Commit()
     }
 }
 
+void CommandListBase::WaitUntilCompleted(uint32_t timeout_ms)
+{
+    META_FUNCTION_TASK();
+    std::unique_lock<std::mutex> pending_state_lock(m_state_change_mutex);
+    if (timeout_ms == 0u)
+    {
+        m_state_change_condition_var.wait(pending_state_lock,
+            [this] { return m_state == State::Pending; }
+        );
+    }
+    else
+    {
+        m_state_change_condition_var.wait_for(pending_state_lock,
+            std::chrono::milliseconds(timeout_ms),
+            [this] { return m_state == State::Pending; }
+        );
+    }
+
+}
+
 void CommandListBase::Execute(uint32_t frame_index)
 {
     META_FUNCTION_TASK();
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
 
     if (m_state != State::Committed)
     {
@@ -175,14 +199,17 @@ void CommandListBase::Execute(uint32_t frame_index)
         throw std::logic_error("Command list \"" + GetName() + "\" committed on frame " + std::to_string(m_committed_frame_index) + " can not be executed on frame " + std::to_string(frame_index));
     }
 
-    META_LOG("CommandList \"" + GetName() + "\" is executing on frame " + std::to_string(frame_index));
+    META_LOG("Command list \"" + GetName() + "\" is executing on frame " + std::to_string(frame_index));
 
     m_state = State::Executing;
+    m_state_change_condition_var.notify_one();
 }
 
 void CommandListBase::Complete(uint32_t frame_index)
 {
     META_FUNCTION_TASK();
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
+
     if (m_state != State::Executing)
     {
         throw std::logic_error("Command list \"" + GetName() + "\" in " + GetStateName(m_state) + " state can not be completed. Only Executing command lists can be completed.");
@@ -193,9 +220,10 @@ void CommandListBase::Complete(uint32_t frame_index)
         throw std::logic_error("Command list \"" + GetName() + "\" committed on frame " + std::to_string(m_committed_frame_index) + " can not be completed on frame " + std::to_string(frame_index));
     }
 
-    META_LOG("CommandList \"" + GetName() + "\" was completed on frame " + std::to_string(frame_index));
+    META_LOG("Command list \"" + GetName() + "\" was completed on frame " + std::to_string(frame_index));
 
     m_state = State::Pending;
+    m_state_change_condition_var.notify_one();
 }
 
 CommandListBase::DebugGroupBase* CommandListBase::GetTopOpenDebugGroup() const
@@ -256,13 +284,13 @@ void CommandListBase::ResetCommandState()
     m_command_state.p_program_bindings = nullptr;
 }
 
-CommandQueueBase& CommandListBase::GetCommandQueueBase()
+CommandQueueBase& CommandListBase::GetCommandQueueBase() noexcept
 {
     META_FUNCTION_TASK();
     return static_cast<CommandQueueBase&>(CommandListBase::GetCommandQueue());
 }
 
-const CommandQueueBase& CommandListBase::GetCommandQueueBase() const
+const CommandQueueBase& CommandListBase::GetCommandQueueBase() const noexcept
 {
     META_FUNCTION_TASK();
     assert(!!m_sp_command_queue);
@@ -275,14 +303,20 @@ CommandListsBase::CommandListsBase(Refs<CommandList> command_list_refs)
     META_FUNCTION_TASK();
     if (m_refs.empty())
     {
-        throw std::invalid_argument("Creating of empty command lists collection is not allowed.");
+        throw std::invalid_argument("Creating of empty command lists sequence is not allowed.");
     }
 
     m_base_refs.reserve(m_refs.size());
     m_base_ptrs.reserve(m_refs.size());
+    CommandQueue& command_queue = m_refs.front().get().GetCommandQueue();
     for(const Ref<CommandList>& command_list_ref : m_refs)
     {
         CommandListBase& command_list_base = dynamic_cast<CommandListBase&>(command_list_ref.get());
+        if (std::addressof(command_list_base.GetCommandQueue()) != std::addressof(command_queue))
+        {
+            throw std::invalid_argument("All command lists in sequence must be created in one command queue.");
+        }
+
         m_base_refs.emplace_back(command_list_base);
         m_base_ptrs.emplace_back(command_list_base.GetPtr());
     }
@@ -296,6 +330,36 @@ CommandList& CommandListsBase::operator[](Data::Index index) const
                                 " is out of collection range (size = " + std::to_string(m_refs.size()) + ").");
 
     return m_refs[index].get();
+}
+
+void CommandListsBase::Execute(Data::Index frame_index)
+{
+    META_FUNCTION_TASK();
+    m_executing_on_frame_index = frame_index;
+    for (const Ref<CommandListBase>& command_list_ref : m_base_refs)
+    {
+        command_list_ref.get().Execute(frame_index);
+    }
+}
+
+void CommandListsBase::Complete() noexcept
+{
+    META_FUNCTION_TASK();
+    for (const Ref<CommandListBase>& command_list_ref : m_base_refs)
+    {
+        CommandListBase& command_list = command_list_ref.get();
+        if (command_list.GetState() != CommandListBase::State::Executing)
+            continue;
+
+        try
+        {
+            command_list_ref.get().Complete(m_executing_on_frame_index);
+        }
+        catch(std::exception&)
+        {
+            assert(false);
+        }
+    }
 }
 
 const CommandListBase& CommandListsBase::GetCommandListBase(Data::Index index) const

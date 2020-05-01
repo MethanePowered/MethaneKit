@@ -52,6 +52,8 @@ void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_stat
 {
     META_FUNCTION_TASK();
 
+    CommandListBase::Reset();
+
     // Create per-thread debug sub-group:
     if (p_debug_group && !p_debug_group->HasSubGroups())
     {
@@ -122,8 +124,8 @@ void ParallelRenderCommandListBase::Execute(uint32_t frame_index)
     for(const Ptr<RenderCommandList>& sp_render_command_list : m_parallel_command_lists)
     {
         assert(!!sp_render_command_list);
-        RenderCommandListBase& metal_render_command_list = static_cast<RenderCommandListBase&>(*sp_render_command_list);
-        metal_render_command_list.Execute(frame_index);
+        RenderCommandListBase& thread_render_command_list = static_cast<RenderCommandListBase&>(*sp_render_command_list);
+        thread_render_command_list.Execute(frame_index);
     }
 
     CommandListBase::Execute(frame_index);
@@ -136,8 +138,8 @@ void ParallelRenderCommandListBase::Complete(uint32_t frame_index)
     for(const Ptr<RenderCommandList>& sp_render_command_list : m_parallel_command_lists)
     {
         assert(!!sp_render_command_list);
-        RenderCommandListBase& metal_render_command_list = static_cast<RenderCommandListBase&>(*sp_render_command_list);
-        metal_render_command_list.Complete(frame_index);
+        RenderCommandListBase& thread_render_command_list = static_cast<RenderCommandListBase&>(*sp_render_command_list);
+        thread_render_command_list.Complete(frame_index);
     }
 
     CommandListBase::Complete(frame_index);

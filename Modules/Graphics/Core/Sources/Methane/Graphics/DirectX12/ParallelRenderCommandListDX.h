@@ -46,6 +46,7 @@ public:
 
     // CommandListBase interface
     void Execute(uint32_t frame_index) override;
+    void Complete(uint32_t frame_index) override;
 
     // Object interface
     void SetName(const std::string& name) override;

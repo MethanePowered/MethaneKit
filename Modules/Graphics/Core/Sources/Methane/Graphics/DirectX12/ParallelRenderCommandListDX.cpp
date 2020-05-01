@@ -122,9 +122,17 @@ void ParallelRenderCommandListDX::Execute(uint32_t frame_index)
     ParallelRenderCommandListBase::Execute(frame_index);
 
     m_ending_command_list.Execute(frame_index);
+}
 
-    // NOTE: In DirectX there's no need for tracking command list completion, so it's completed right away
-    CommandListBase::Complete(frame_index);
+void ParallelRenderCommandListDX::Complete(uint32_t frame_index)
+{
+    META_FUNCTION_TASK();
+
+    m_beginning_command_list.Complete(frame_index);
+
+    ParallelRenderCommandListBase::Complete(frame_index);
+
+    m_ending_command_list.Complete(frame_index);
 }
 
 ParallelRenderCommandListDX::D3D12CommandLists ParallelRenderCommandListDX::GetNativeCommandLists() const

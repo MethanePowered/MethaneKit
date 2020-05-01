@@ -50,8 +50,6 @@ class CommandListsMT final : public CommandListsBase
 {
 public:
     CommandListsMT(Refs<CommandList> command_list_refs);
-
-private:
 };
 
 } // namespace Methane::Graphics

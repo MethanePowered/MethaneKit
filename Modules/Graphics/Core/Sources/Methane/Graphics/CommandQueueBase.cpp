@@ -42,23 +42,14 @@ CommandQueueBase::~CommandQueueBase()
     META_FUNCTION_TASK();
 }
 
-void CommandQueueBase::Execute(const CommandLists& command_lists)
+void CommandQueueBase::Execute(CommandLists& command_lists)
 {
     META_FUNCTION_TASK();
 
     const uint32_t frame_index = GetCurrentFrameBufferIndex();
-    META_LOG("CommandQueue \"" + GetName() + "\" is executing on frame " + std::to_string(frame_index));
+    META_LOG("Command queue \"" + GetName() + "\" is executing on frame " + std::to_string(frame_index));
 
-    const CommandListsBase& command_lists_base = static_cast<const CommandListsBase&>(command_lists);
-    for (const Ref<CommandListBase>& command_list_ref : command_lists_base.GetBaseRefs())
-    {
-        if (std::addressof(command_list_ref.get().GetCommandQueue()) != std::addressof(*this))
-        {
-            throw std::runtime_error("Can not execute command list created in different command queue.");
-        }
-
-        command_list_ref.get().Execute(frame_index);
-    }
+    static_cast<CommandListsBase&>(command_lists).Execute(frame_index);
 }
 
 uint32_t CommandQueueBase::GetCurrentFrameBufferIndex() const

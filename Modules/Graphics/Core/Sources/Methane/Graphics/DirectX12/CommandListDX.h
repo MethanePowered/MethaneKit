@@ -23,10 +23,14 @@ DirectX 12 command list accessor interface for template class CommandListDX<Comm
 
 #pragma once
 
+#include "FenceDX.h"
+
 #include <Methane/Graphics/CommandListBase.h>
 
 #include <wrl.h>
 #include <d3d12.h>
+
+#include <mutex>
 
 namespace Methane::Graphics
 {
@@ -60,11 +64,20 @@ class CommandListsDX final : public CommandListsBase
 public:
     CommandListsDX(Refs<CommandList> command_list_refs);
 
+    // CommandListsBase interface
+    void Execute(uint32_t frame_index) override;
+
+    void WaitUntilCompleted() noexcept;
+
     using NativeCommandLists = std::vector<ID3D12CommandList*>;
     const NativeCommandLists& GetNativeCommandLists() const noexcept { return m_native_command_lists; }
 
+    CommandQueueDX&           GetCommandQueueDX() noexcept;
+    const CommandQueueDX&     GetCommandQueueDX() const noexcept;
+
 private:
-    NativeCommandLists m_native_command_lists;
+    NativeCommandLists          m_native_command_lists;
+    FenceDX                     m_execution_completed_fence;
 };
 
 } // namespace Methane::Graphics
