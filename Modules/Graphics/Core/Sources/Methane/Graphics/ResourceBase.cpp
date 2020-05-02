@@ -101,7 +101,7 @@ std::string Resource::Usage::ToString(Usage::Value usage) noexcept
     META_FUNCTION_TASK();
     switch (usage)
     {
-    case Resource::Usage::CpuReadback:  return "CPU Read-back";
+    case Resource::Usage::CpuReadBack:  return "CPU Read-back";
     case Resource::Usage::ShaderRead:   return "Shader Read";
     case Resource::Usage::ShaderWrite:  return "Shader Write";
     case Resource::Usage::RenderTarget: return "Render Target";
@@ -384,23 +384,23 @@ void ResourceBase::SetData(const SubResources& sub_resources)
 
     m_initialized_data_size = sub_resources_data_size;
 
-    FillSubresourceRanges();
+    if (!m_subresource_count_constant)
+    {
+        FillSubresourceSizes();
+    }
 }
 
-Resource::SubResource ResourceBase::GetData(const BytesRange&)
+Data::Chunk ResourceBase::GetData(const SubResource::Index&, const BytesRange&)
 {
     META_FUNCTION_TASK();
     throw std::logic_error("Reading data is not allowed for this type of resource.");
 }
 
-const Resource::BytesRange& ResourceBase::GetSubresourceDataRange(const SubResource::Index& subresource_index) const
+Data::Size ResourceBase::GetSubResourceDataSize(const SubResource::Index& sub_resource_index) const
 {
     META_FUNCTION_TASK();
-    if (subresource_index >= m_subresource_count)
-        throw std::invalid_argument("Sub-resource "     + static_cast<std::string>(subresource_index) +
-                                    " is out of range " + static_cast<std::string>(m_subresource_count));
-
-    return m_subresource_ranges[subresource_index.GetRawIndex()];
+    ValidateSubResourceIndex(sub_resource_index);
+    return m_subresource_sizes[sub_resource_index.GetRawIndex()];
 }
 
 DescriptorHeap::Type ResourceBase::GetDescriptorHeapTypeByUsage(ResourceBase::Usage::Value resource_usage) const
@@ -475,18 +475,26 @@ void ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
     m_state = state;
 }
 
-void ResourceBase::SetSubresourceCount(const SubResource::Count& sub_resource_count)
+void ResourceBase::SetSubResourceCount(const SubResource::Count& sub_resource_count)
 {
     META_FUNCTION_TASK();
 
     m_subresource_count_constant = true;
     m_subresource_count = sub_resource_count;
-    m_subresource_ranges.clear();
+    m_subresource_sizes.clear();
 
-    FillSubresourceRanges();
+    FillSubresourceSizes();
 }
 
-Data::Size ResourceBase::GetSubresourceDataSize(const SubResource::Index& subresource_index) const
+void ResourceBase::ValidateSubResourceIndex(const SubResource::Index& sub_resource_index) const
+{
+    META_FUNCTION_TASK();
+    if (sub_resource_index >= m_subresource_count)
+        throw std::invalid_argument("Sub-resource "     + static_cast<std::string>(sub_resource_index) +
+                                    " is out of range " + static_cast<std::string>(m_subresource_count));
+}
+
+Data::Size ResourceBase::CalculateSubResourceDataSize(const SubResource::Index& subresource_index) const
 {
     META_FUNCTION_TASK();
     static const SubResource::Index s_zero_index;
@@ -496,22 +504,18 @@ Data::Size ResourceBase::GetSubresourceDataSize(const SubResource::Index& subres
     throw std::invalid_argument("Subresource size is undefined, must be provided by super class override.");
 }
 
-void ResourceBase::FillSubresourceRanges()
+void ResourceBase::FillSubresourceSizes()
 {
     const Data::Size curr_subresource_raw_count = m_subresource_count.GetRawCount();
-    const Data::Size prev_subresource_raw_count = static_cast<Data::Size>(m_subresource_ranges.size());
+    const Data::Size prev_subresource_raw_count = static_cast<Data::Size>(m_subresource_sizes.size());
     if (curr_subresource_raw_count == prev_subresource_raw_count)
         return;
 
-    m_subresource_ranges.reserve(curr_subresource_raw_count);
-    Data::Size subresource_offset = m_subresource_ranges.empty() ? 0u : m_subresource_ranges.back().GetEnd();
+    m_subresource_sizes.reserve(curr_subresource_raw_count);
     for (Data::Index subresource_raw_index = prev_subresource_raw_count; subresource_raw_index < curr_subresource_raw_count; ++subresource_raw_index)
     {
         const SubResource::Index subresource_index = SubResource::Index::FromRawIndex(subresource_raw_index, m_subresource_count);
-        const Data::Size subresource_data_size = GetSubresourceDataSize(subresource_index);
-
-        m_subresource_ranges.emplace_back(subresource_offset, subresource_offset + subresource_data_size);
-        subresource_offset += subresource_data_size;
+        m_subresource_sizes.emplace_back(CalculateSubResourceDataSize(subresource_index));
     }
 }
 

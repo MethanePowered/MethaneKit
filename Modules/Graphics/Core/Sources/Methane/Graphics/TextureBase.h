@@ -43,7 +43,7 @@ public:
 
 protected:
     // ResourceBase overrides
-    Data::Size GetSubresourceDataSize(const SubResource::Index& subresource_index) const override;
+    Data::Size CalculateSubResourceDataSize(const SubResource::Index& sub_resource_index) const override;
 
     static void ValidateDimensions(DimensionType dimension_type, const Dimensions& dimensions, bool mipmapped);
     static Data::Size GetRequiredMipLevelsCount(const Dimensions& dimensions);

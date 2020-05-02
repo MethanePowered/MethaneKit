@@ -114,9 +114,9 @@ public:
     const DescriptorByUsage&  GetDescriptorByUsage() const noexcept override     { return m_descriptor_by_usage; }
     const Descriptor&         GetDescriptor(Usage::Value usage) const override;
     void                      SetData(const SubResources& sub_resources) override;
-    SubResource               GetData(const BytesRange& data_range = BytesRange()) override;
+    Data::Chunk               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const BytesRange& data_range = BytesRange()) override;
     const SubResource::Count& GetSubresourceCount() const noexcept override      { return m_subresource_count; }
-    const BytesRange&         GetSubresourceDataRange(const SubResource::Index& subresource_index = SubResource::Index()) const override;
+    Data::Size                GetSubResourceDataSize(const SubResource::Index& subresource_index = SubResource::Index()) const override;
 
     void                      InitializeDefaultDescriptors();
     std::string               GetUsageNames() const noexcept                     { return Usage::ToString(m_usage_mask); }
@@ -131,14 +131,15 @@ protected:
     const Descriptor&    GetDescriptorByUsage(Usage::Value usage) const;
     ContextBase&         GetContext() { return m_context; }
     Data::Size           GetInitializedDataSize() const noexcept { return m_initialized_data_size; }
-    void                 SetSubresourceCount(const SubResource::Count& sub_resource_count);
+    void                 SetSubResourceCount(const SubResource::Count& sub_resource_count);
+    void                 ValidateSubResourceIndex(const SubResource::Index& sub_resource_index) const;
 
-    virtual Data::Size   GetSubresourceDataSize(const SubResource::Index& subresource_index) const;
+    virtual Data::Size   CalculateSubResourceDataSize(const SubResource::Index& sub_resource_index) const;
 
 private:
-    void FillSubresourceRanges();
+    void FillSubresourceSizes();
 
-    using SubResourceRanges = std::vector<BytesRange>;
+    using SubResourceSizes = std::vector<Data::Size>;
 
     const Type          m_type;
     const Usage::Mask   m_usage_mask;
@@ -148,7 +149,7 @@ private:
     Data::Size          m_initialized_data_size = 0u;
     bool                m_subresource_count_constant = false;
     SubResource::Count  m_subresource_count;
-    SubResourceRanges   m_subresource_ranges;
+    SubResourceSizes    m_subresource_sizes;
 };
 
 } // namespace Methane::Graphics

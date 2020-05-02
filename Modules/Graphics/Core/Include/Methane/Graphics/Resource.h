@@ -56,7 +56,7 @@ struct Resource : virtual Object
         {
             Unknown      = 0u,
             // Primary usages
-            CpuReadback  = 1u << 0u,
+            CpuReadBack  = 1u << 0u,
             ShaderRead   = 1u << 1u,
             ShaderWrite  = 1u << 2u,
             RenderTarget = 1u << 3u,
@@ -66,10 +66,10 @@ struct Resource : virtual Object
         };
 
         using BaseValues = std::array<Value, 4>;
-        static constexpr const BaseValues primary_values{ CpuReadback, ShaderRead, ShaderWrite, RenderTarget };
+        static constexpr const BaseValues primary_values{ CpuReadBack, ShaderRead, ShaderWrite, RenderTarget };
 
         using Values = std::array<Value, 5>;
-        static constexpr const Values values{ CpuReadback, ShaderRead, ShaderWrite, RenderTarget, Addressable };
+        static constexpr const Values values{ CpuReadBack, ShaderRead, ShaderWrite, RenderTarget, Addressable };
 
         static std::string ToString(Usage::Value usage) noexcept;
         static std::string ToString(Usage::Mask usage_mask) noexcept;
@@ -168,9 +168,9 @@ struct Resource : virtual Object
 
     // Resource interface
     virtual void                      SetData(const SubResources& sub_resources) = 0;
-    virtual SubResource               GetData(const BytesRange& data_range = BytesRange()) = 0;
+    virtual Data::Chunk               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const BytesRange& data_range = BytesRange()) = 0;
     virtual Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept = 0;
-    virtual const BytesRange&         GetSubresourceDataRange(const SubResource::Index& sub_resource_index = SubResource::Index()) const = 0;
+    virtual Data::Size                GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const = 0;
     virtual const SubResource::Count& GetSubresourceCount() const noexcept = 0;
     virtual Type                      GetResourceType() const noexcept = 0;
     virtual Usage::Mask               GetUsageMask() const noexcept = 0;

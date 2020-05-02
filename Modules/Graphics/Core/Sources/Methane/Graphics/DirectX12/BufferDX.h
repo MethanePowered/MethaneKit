@@ -42,8 +42,13 @@ public:
         : BufferBase(context, settings, descriptor_by_usage)
     {
         META_FUNCTION_TASK();
+
+        const bool             is_read_back_buffer = settings.usage_mask & Usage::CpuReadBack;
+        const D3D12_HEAP_TYPE       heap_type      = is_read_back_buffer ? D3D12_HEAP_TYPE_READBACK : D3D12_HEAP_TYPE_UPLOAD;
+        const D3D12_RESOURCE_STATES resource_state = is_read_back_buffer ? D3D12_RESOURCE_STATE_COPY_DEST : D3D12_RESOURCE_STATE_GENERIC_READ;
+
         InitializeDefaultDescriptors();
-        InitializeCommittedResource(CD3DX12_RESOURCE_DESC::Buffer(settings.size), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
+        InitializeCommittedResource(CD3DX12_RESOURCE_DESC::Buffer(settings.size), heap_type, resource_state);
         InitializeView(view_args...);
     }
 
@@ -53,26 +58,49 @@ public:
         META_FUNCTION_TASK();
         BufferBase::SetData(sub_resources);
 
+        ID3D12Resource& d3d12_resource = GetNativeResourceRef();
         for(const SubResource& sub_resource : sub_resources)
         {
-            ID3D12Resource& d3d12_resource = GetNativeResourceRef();
-            char* p_resource_data = nullptr;
-            CD3DX12_RANGE read_range(0, 0); // Zero range, since we're not going to read this resource on CPU
-            ThrowIfFailed(d3d12_resource.Map(sub_resource.index.GetRawIndex(), &read_range, reinterpret_cast<void**>(&p_resource_data)),
+            CD3DX12_RANGE read_range; // Zero range, since we're not going to read this resource on CPU
+            Data::RawPtr p_sub_resource_data = nullptr;
+
+            ThrowIfFailed(d3d12_resource.Map(sub_resource.index.GetRawIndex(),
+                          &read_range, reinterpret_cast<void**>(&p_sub_resource_data)),
                           GetContextDX().GetDeviceDX().GetNativeDevice().Get());
 
-            assert(!!p_resource_data);
-            std::copy(sub_resource.p_data, sub_resource.p_data + sub_resource.size, stdext::checked_array_iterator<char*>(p_resource_data, GetDataSize()));
+            if (!p_sub_resource_data)
+                throw std::runtime_error("Failed to map buffer subresource.");
+
+            stdext::checked_array_iterator<Data::RawPtr> sub_resource_data_it(p_sub_resource_data, sub_resource.size);
+            std::copy(sub_resource.p_data, sub_resource.p_data + sub_resource.size, sub_resource_data_it);
 
             d3d12_resource.Unmap(sub_resource.index.GetRawIndex(), nullptr);
         }
     }
 
-    SubResource GetData(const BytesRange& data_range = BytesRange()) override
+    Data::Chunk GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const BytesRange& data_range = BytesRange()) override
     {
         META_FUNCTION_TASK();
-        META_UNUSED(data_range);
-        throw std::runtime_error("Buffer::GetData is not implemented yet.");
+        ValidateSubResourceIndex(sub_resource_index);
+
+        ID3D12Resource& d3d12_resource = GetNativeResourceRef();
+        const CD3DX12_RANGE read_range(data_range.GetStart(), data_range.GetEnd());
+        Data::RawPtr p_sub_resource_data = nullptr;
+
+        ThrowIfFailed(d3d12_resource.Map(sub_resource_index.GetRawIndex(),
+                      &read_range, reinterpret_cast<void**>(&p_sub_resource_data)),
+                      GetContextDX().GetDeviceDX().GetNativeDevice().Get());
+
+        if (!p_sub_resource_data)
+            throw std::runtime_error("Failed to map buffer subresource.");
+
+        stdext::checked_array_iterator<Data::RawPtr> sub_resource_data_it(p_sub_resource_data, data_range.GetLength());
+        Data::Bytes sub_resource_data(data_range.GetLength(), 0);
+        std::copy(sub_resource_data_it, sub_resource_data_it + data_range.GetLength(), sub_resource_data.begin());
+
+        d3d12_resource.Unmap(sub_resource_index.GetRawIndex(), nullptr);
+
+        return Data::Chunk(std::move(sub_resource_data));
     }
 
     const TViewNative& GetNativeView() const { return m_buffer_view; }
@@ -85,9 +113,12 @@ private:
     TViewNative m_buffer_view;
 };
 
+struct ReadBackBufferView { };
+
 using VertexBufferDX = BufferDX<D3D12_VERTEX_BUFFER_VIEW, Data::Size>;
 using IndexBufferDX = BufferDX<D3D12_INDEX_BUFFER_VIEW, PixelFormat>;
 using ConstantBufferDX = BufferDX<D3D12_CONSTANT_BUFFER_VIEW_DESC>;
+using ReadBackBufferDX = BufferDX<ReadBackBufferView>;
 
 class BuffersDX final : public BuffersBase
 {

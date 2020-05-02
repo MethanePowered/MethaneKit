@@ -72,6 +72,12 @@ Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool
     return std::make_shared<ConstantBufferDX>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
+Ptr<Buffer> Buffer::CreateReadBackBuffer(Context& context, Data::Size size)
+{
+    const Buffer::Settings settings{ Buffer::Type::ReadBack, Usage::CpuReadBack, size, 0u, PixelFormat::Unknown };
+    return std::make_shared<ReadBackBufferDX>(dynamic_cast<ContextBase&>(context), settings, DescriptorByUsage());
+}
+
 Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
 {
     META_FUNCTION_TASK();
@@ -115,6 +121,12 @@ void ConstantBufferDX::InitializeView()
         D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle = GetNativeCpuDescriptorHandle(Usage::ShaderRead);
         GetContextDX().GetDeviceDX().GetNativeDevice()->CreateConstantBufferView(&m_buffer_view, cpu_handle);
     }
+}
+
+template<>
+void ReadBackBufferDX::InitializeView()
+{
+    META_FUNCTION_TASK();
 }
 
 Ptr<Buffers> Buffers::Create(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)

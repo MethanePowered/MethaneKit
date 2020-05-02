@@ -119,7 +119,7 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
     }
 
     ValidateDimensions(m_settings.dimension_type, m_settings.dimensions, m_settings.mipmapped);
-    SetSubresourceCount(
+    SetSubResourceCount(
         SubResource::Count(
             settings.dimensions.depth,
             settings.array_length,
@@ -190,21 +190,18 @@ Data::Size TextureBase::GetDataSize(Data::MemoryState size_type) const noexcept
             : GetInitializedDataSize();
 }
 
-Data::Size TextureBase::GetSubresourceDataSize(const SubResource::Index& subresource_index) const
+Data::Size TextureBase::CalculateSubResourceDataSize(const SubResource::Index& sub_resource_index) const
 {
     META_FUNCTION_TASK();
-    const SubResource::Count& subresource_count = GetSubresourceCount();
-    if (subresource_index >= subresource_count)
-        throw std::invalid_argument("Subresource " + static_cast<std::string>(subresource_index) +
-                                    " is out of range " + static_cast<std::string>(subresource_count));
+    ValidateSubResourceIndex(sub_resource_index);
 
     const Data::Size pixel_size = GetPixelSize(m_settings.pixel_format);
-    if (subresource_index.mip_level == 0u)
+    if (sub_resource_index.mip_level == 0u)
     {
         return pixel_size * static_cast<const Data::FrameSize&>(m_settings.dimensions).GetPixelsCount();
     }
 
-    const double mip_divider = std::pow(2.0, subresource_index.mip_level);
+    const double mip_divider = std::pow(2.0, sub_resource_index.mip_level);
     const Data::FrameSize mip_frame_size(
         static_cast<uint32_t>(std::ceil(static_cast<double>(m_settings.dimensions.width) / mip_divider)),
         static_cast<uint32_t>(std::ceil(static_cast<double>(m_settings.dimensions.height) / mip_divider))
