@@ -70,7 +70,7 @@ Viewport GetFrameViewport(const FrameSize& frame_size)
     };
 }
 
-uint32_t GetPixelSize(PixelFormat pixel_format) noexcept
+Data::Size GetPixelSize(PixelFormat pixel_format) noexcept
 {
     META_FUNCTION_TASK();
 

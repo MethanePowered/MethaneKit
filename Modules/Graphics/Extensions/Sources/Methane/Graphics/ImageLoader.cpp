@@ -212,7 +212,7 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
             throw std::runtime_error("All face image of cube texture must have equal dimensions and channels count.");
         }
         face_resources.emplace_back(face_image_data.second.pixels.p_data, face_image_data.second.pixels.size,
-                                    Resource::SubResource::Index{ face_image_data.first });
+                                    Resource::SubResource::Index(face_image_data.first));
     }
 
     // Load face images to cube texture

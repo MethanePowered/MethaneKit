@@ -355,8 +355,10 @@ void CommandListsBase::Complete() noexcept
         {
             command_list_ref.get().Complete(m_executing_on_frame_index);
         }
-        catch(std::exception&)
+        catch(std::exception& ex)
         {
+            META_UNUSED(ex);
+            META_LOG("Failed to complete command list execution, exception occurred: " + std::to_string(ex.what()));
             assert(false);
         }
     }

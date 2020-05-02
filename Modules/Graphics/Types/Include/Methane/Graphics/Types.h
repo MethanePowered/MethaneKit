@@ -87,7 +87,7 @@ enum class PixelFormat
 
 using PixelFormats = std::vector<PixelFormat>;
 
-uint32_t GetPixelSize(PixelFormat pixel_format) noexcept;
+Data::Size GetPixelSize(PixelFormat pixel_format) noexcept;
 bool IsSrgbColorSpace(PixelFormat pixel_format) noexcept;
 
 enum class Compare : uint32_t

@@ -109,18 +109,21 @@ public:
     ~ResourceBase() override;
 
     // Resource interface
-    Type                     GetResourceType() const noexcept override          { return m_type; }
-    Usage::Mask              GetUsageMask() const noexcept override             { return m_usage_mask; }
-    const DescriptorByUsage& GetDescriptorByUsage() const noexcept override     { return m_descriptor_by_usage; }
-    const Descriptor&        GetDescriptor(Usage::Value usage) const override;
-    void                     SetData(const SubResources& sub_resources) override;
+    Type                      GetResourceType() const noexcept override          { return m_type; }
+    Usage::Mask               GetUsageMask() const noexcept override             { return m_usage_mask; }
+    const DescriptorByUsage&  GetDescriptorByUsage() const noexcept override     { return m_descriptor_by_usage; }
+    const Descriptor&         GetDescriptor(Usage::Value usage) const override;
+    void                      SetData(const SubResources& sub_resources) override;
+    SubResource               GetData(const BytesRange& data_range = BytesRange()) override;
+    const SubResource::Count& GetSubresourceCount() const noexcept override      { return m_subresource_count; }
+    const BytesRange&         GetSubresourceDataRange(const SubResource::Index& subresource_index = SubResource::Index()) const;
 
-    void                     InitializeDefaultDescriptors();
-    std::string              GetUsageNames() const noexcept                     { return Usage::ToString(m_usage_mask); }
-    std::string              GetResourceTypeName() const noexcept               { return Resource::GetTypeName(m_type); }
-    DescriptorHeap::Types    GetUsedDescriptorHeapTypes() const noexcept;
+    void                      InitializeDefaultDescriptors();
+    std::string               GetUsageNames() const noexcept                     { return Usage::ToString(m_usage_mask); }
+    std::string               GetResourceTypeName() const noexcept               { return Resource::GetTypeName(m_type); }
+    DescriptorHeap::Types     GetUsedDescriptorHeapTypes() const noexcept;
 
-    State   GetState() const noexcept                                           { return m_state;  }
+    State   GetState() const noexcept                                            { return m_state;  }
     void    SetState(State state, Ptr<Barriers>& out_barriers);
 
 protected:
@@ -128,14 +131,24 @@ protected:
     const Descriptor&    GetDescriptorByUsage(Usage::Value usage) const;
     ContextBase&         GetContext() { return m_context; }
     Data::Size           GetInitializedDataSize() const noexcept { return m_initialized_data_size; }
+    void                 SetSubresourceCount(const SubResource::Count& sub_resource_count);
+
+    virtual Data::Size   GetSubresourceDataSize(const SubResource::Index& subresource_index) const;
 
 private:
+    void FillSubresourceRanges();
+
+    using SubResourceRanges = std::vector<BytesRange>;
+
     const Type          m_type;
     const Usage::Mask   m_usage_mask;
     ContextBase&        m_context;
     DescriptorByUsage   m_descriptor_by_usage;
     State               m_state = State::Common;
     Data::Size          m_initialized_data_size = 0u;
+    bool                m_subresource_count_constant = false;
+    SubResource::Count  m_subresource_count;
+    SubResourceRanges   m_subresource_ranges;
 };
 
 } // namespace Methane::Graphics

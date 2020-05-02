@@ -60,7 +60,7 @@ struct Texture : virtual Resource
         Usage::Mask    usage_mask           = Usage::Value::Unknown;
         PixelFormat    pixel_format         = PixelFormat::Unknown;
         Dimensions     dimensions           = Dimensions();
-        uint32_t       array_length         = 1;
+        uint32_t       array_length         = 1u;
         bool           mipmapped            = false;
         bool           cpu_accessible       = true;
 
@@ -84,7 +84,6 @@ struct Texture : virtual Resource
 
     // Texture interface
     virtual const Settings& GetSettings() const = 0;
-    virtual uint32_t        GetMipLevelsCount() const = 0;
 };
 
 } // namespace Methane::Graphics

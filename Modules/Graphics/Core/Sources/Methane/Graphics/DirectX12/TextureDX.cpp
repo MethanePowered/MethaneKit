@@ -222,8 +222,7 @@ ImageTextureDX::TextureDX(ContextBase& render_context, const Settings& settings,
     InitializeCommittedResource(tex_and_srv_desc.first, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COPY_DEST);
 
     const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
-    const UINT number_of_subresources = GetRequiredSubresourceCount();
-    const UINT64 upload_buffer_size   = GetRequiredIntermediateSize(GetNativeResource(), 0, number_of_subresources);
+    const UINT64 upload_buffer_size = GetRequiredIntermediateSize(GetNativeResource(), 0, GetSubresourceCount().GetRawCount());
     const CD3DX12_HEAP_PROPERTIES heap_properties(D3D12_HEAP_TYPE_UPLOAD);
     const CD3DX12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(upload_buffer_size);
 
@@ -254,7 +253,7 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
 
     D3D12_RESOURCE_DESC tex_desc{};
     D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
-    const uint32_t mip_levels_count = GetMipLevelsCount();
+    const SubResource::Count& sub_resource_count = GetSubresourceCount();
 
     switch (settings.dimension_type)
     {
@@ -263,7 +262,7 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         {
             throw std::invalid_argument("Single 1D Texture must have array length equal to 1.");
         }
-        srv_desc.Texture1D.MipLevels = mip_levels_count;
+        srv_desc.Texture1D.MipLevels = sub_resource_count.mip_levels_count;
         // NOTE: break is missing intentionally
 
     case DimensionType::Tex1DArray:
@@ -275,12 +274,12 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         tex_desc = CD3DX12_RESOURCE_DESC::Tex1D(
             TypeConverterDX::PixelFormatToDxgi(settings.pixel_format),
             settings.dimensions.width,
-            static_cast<UINT16>(settings.array_length),
-            static_cast<UINT16>(mip_levels_count)
+            static_cast<UINT16>(sub_resource_count.array_size),
+            static_cast<UINT16>(sub_resource_count.mip_levels_count)
         );
 
-        srv_desc.Texture1DArray.MipLevels   = mip_levels_count;
-        srv_desc.Texture1DArray.ArraySize   = settings.array_length;
+        srv_desc.Texture1DArray.MipLevels   = sub_resource_count.mip_levels_count;
+        srv_desc.Texture1DArray.ArraySize   = sub_resource_count.array_size;
         srv_desc.ViewDimension              = settings.dimension_type == DimensionType::Tex1D
                                             ? D3D12_SRV_DIMENSION_TEXTURE1D
                                             : D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
@@ -291,7 +290,7 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         {
             throw std::invalid_argument("Single 2D Texture must have array length equal to 1.");
         }
-        srv_desc.Texture2D.MipLevels = mip_levels_count;
+        srv_desc.Texture2D.MipLevels = sub_resource_count.mip_levels_count;
         // NOTE: break is missing intentionally
 
     case DimensionType::Tex2DArray:
@@ -303,12 +302,12 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
             TypeConverterDX::PixelFormatToDxgi(settings.pixel_format),
             settings.dimensions.width,
             settings.dimensions.height,
-            static_cast<UINT16>(settings.array_length),
-            static_cast<UINT16>(mip_levels_count)
+            static_cast<UINT16>(sub_resource_count.array_size),
+            static_cast<UINT16>(sub_resource_count.mip_levels_count)
         );
 
-        srv_desc.Texture2DArray.MipLevels   = mip_levels_count;
-        srv_desc.Texture2DArray.ArraySize   = settings.array_length;
+        srv_desc.Texture2DArray.MipLevels   = sub_resource_count.mip_levels_count;
+        srv_desc.Texture2DArray.ArraySize   = sub_resource_count.array_size;
         srv_desc.ViewDimension              = settings.dimension_type == DimensionType::Tex2D
                                             ? D3D12_SRV_DIMENSION_TEXTURE2D
                                             : D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
@@ -323,10 +322,10 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
             TypeConverterDX::PixelFormatToDxgi(settings.pixel_format),
             settings.dimensions.width,
             settings.dimensions.height,
-            static_cast<UINT16>(settings.dimensions.depth),
-            static_cast<UINT16>(mip_levels_count)
+            static_cast<UINT16>(sub_resource_count.depth),
+            static_cast<UINT16>(sub_resource_count.mip_levels_count)
         );
-        srv_desc.Texture3D.MipLevels = mip_levels_count;
+        srv_desc.Texture3D.MipLevels = sub_resource_count.mip_levels_count;
         srv_desc.ViewDimension       = D3D12_SRV_DIMENSION_TEXTURE3D;
         break;
 
@@ -335,7 +334,7 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         {
             throw std::invalid_argument("Single Cube Texture must have array length equal to 1.");
         }
-        srv_desc.TextureCube.MipLevels = mip_levels_count;
+        srv_desc.TextureCube.MipLevels = sub_resource_count.mip_levels_count;
         // NOTE: break is missing intentionally
 
     case DimensionType::CubeArray:
@@ -347,13 +346,13 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
             TypeConverterDX::PixelFormatToDxgi(settings.pixel_format),
             settings.dimensions.width,
             settings.dimensions.height,
-            static_cast<UINT16>(settings.dimensions.depth * settings.array_length),
-            static_cast<UINT16>(mip_levels_count)
+            static_cast<UINT16>(sub_resource_count.depth * sub_resource_count.array_size),
+            static_cast<UINT16>(sub_resource_count.mip_levels_count)
         );
 
         srv_desc.TextureCubeArray.First2DArrayFace = 0;
-        srv_desc.TextureCubeArray.NumCubes         = settings.array_length;
-        srv_desc.TextureCubeArray.MipLevels        = mip_levels_count;
+        srv_desc.TextureCubeArray.NumCubes         = sub_resource_count.array_size;
+        srv_desc.TextureCubeArray.MipLevels        = sub_resource_count.mip_levels_count;
         srv_desc.ViewDimension                     = settings.dimension_type == DimensionType::Cube
                                                    ? D3D12_SRV_DIMENSION_TEXTURECUBE
                                                    : D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
@@ -375,8 +374,8 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
 
     const Settings&  settings                    = GetSettings();
     const Data::Size pixel_size                  = GetPixelSize(settings.pixel_format);
-    const uint32_t   mip_levels_count            = GetMipLevelsCount();
-    const uint32_t   required_subresources_count = GetRequiredSubresourceCount();
+    const SubResource::Count& sub_resource_count = GetSubresourceCount();
+    const uint32_t   required_subresources_count = sub_resource_count.GetRawCount();
 
     if (!settings.mipmapped && sub_resources.size() < required_subresources_count)
     {
@@ -388,7 +387,7 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
     std::vector<D3D12_SUBRESOURCE_DATA> dx_sub_resources(required_subresources_count, D3D12_SUBRESOURCE_DATA{});
     for(const SubResource& sub_resource : sub_resources)
     {
-        const uint32_t sub_resource_raw_index = sub_resource.index.GetRawIndex(settings.dimensions.depth, mip_levels_count);
+        const uint32_t sub_resource_raw_index = sub_resource.index.GetRawIndex(sub_resource_count);
         assert(sub_resource_raw_index < dx_sub_resources.size());
         if (sub_resource_raw_index >= dx_sub_resources.size())
             continue;
@@ -424,16 +423,16 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
 {
     META_FUNCTION_TASK();
 
-    const Settings&           settings          = GetSettings();
-    const uint32_t            mip_levels_count  = GetMipLevelsCount();
-    const D3D12_RESOURCE_DESC tex_desc          = GetNativeResourceRef().GetDesc();
-    const bool                is_cube_texture   = settings.dimension_type == DimensionType::Cube || settings.dimension_type == DimensionType::CubeArray;
+    const Settings&           settings           = GetSettings();
+    const SubResource::Count& sub_resource_count = GetSubresourceCount();
+    const D3D12_RESOURCE_DESC tex_desc           = GetNativeResourceRef().GetDesc();
+    const bool                is_cube_texture    = settings.dimension_type == DimensionType::Cube || settings.dimension_type == DimensionType::CubeArray;
 
     std::vector<DirectX::Image> sub_resource_images(dx_sub_resources.size(), DirectX::Image{});
     for(uint32_t sub_resource_raw_index = 0; sub_resource_raw_index < dx_sub_resources.size(); ++sub_resource_raw_index)
     {
         // Initialize images of base mip-levels only
-        const SubResource::Index sub_resource_index = SubResource::Index::FromRawIndex(sub_resource_raw_index);
+        const SubResource::Index sub_resource_index = SubResource::Index::FromRawIndex(sub_resource_raw_index, sub_resource_count);
         if (sub_resource_index.mip_level > 0)
             continue;
 
@@ -452,14 +451,20 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
     tex_metadata.height    = settings.dimensions.height;
     tex_metadata.depth     = is_cube_texture ? 1 : settings.dimensions.depth;
     tex_metadata.arraySize = is_cube_texture ? settings.dimensions.depth : settings.array_length;
-    tex_metadata.mipLevels = mip_levels_count;
+    tex_metadata.mipLevels = sub_resource_count.mip_levels_count;
     tex_metadata.format    = tex_desc.Format;
     tex_metadata.dimension = static_cast<DirectX::TEX_DIMENSION>(tex_desc.Dimension);
     tex_metadata.miscFlags = is_cube_texture ? DirectX::TEX_MISC_TEXTURECUBE : 0;
 
+    const SubResource::Count tex_metadata_subres_count(
+        static_cast<Data::Size>(tex_metadata.depth),
+        static_cast<Data::Size>(tex_metadata.arraySize),
+        static_cast<Data::Size>(tex_metadata.mipLevels)
+    );
+
     ThrowIfFailed(DirectX::GenerateMipMaps(sub_resource_images.data(), sub_resource_images.size(),
                                            tex_metadata, DirectX::TEX_FILTER_DEFAULT,
-                                           mip_levels_count, scratch_image));
+                                           sub_resource_count.mip_levels_count, scratch_image));
 
     for (uint32_t depth = 0; depth < tex_metadata.depth; ++depth)
     {
@@ -476,7 +481,7 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
                                              " of texture \"" + GetName() + "\".");
                 }
 
-                const uint32_t dx_sub_resource_index = SubResource::Index(depth, item, mip).GetRawIndex(static_cast<uint32_t>(tex_metadata.depth), static_cast<uint32_t>(tex_metadata.mipLevels));
+                const uint32_t dx_sub_resource_index = SubResource::Index(depth, item, mip).GetRawIndex(tex_metadata_subres_count);
                 assert(dx_sub_resource_index < dx_sub_resources.size());
 
                 D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[dx_sub_resource_index];

@@ -178,7 +178,7 @@ void TextureMT::SetData(const SubResources& sub_resources)
                        bytesPerImage:bytes_per_image];
     }
 
-    if (settings.mipmapped && sub_resources.size() < GetRequiredSubresourceCount())
+    if (settings.mipmapped && sub_resources.size() < GetSubresourceCount().GetRawCount())
     {
         GenerateMipLevels();
     }

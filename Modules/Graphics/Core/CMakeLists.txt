@@ -256,11 +256,11 @@ target_link_libraries(${TARGET}
     PUBLIC
         MethanePrimitives
         MethaneDataProvider
+        MethaneDataRangeSet
         MethaneGraphicsTypes
         MethanePlatformAppView
     PRIVATE
         MethaneBuildOptions
-        MethaneDataRangeSet
         MethaneDataPrimitives
         MethaneGraphicsPrimitives
         MethanePlatformUtils

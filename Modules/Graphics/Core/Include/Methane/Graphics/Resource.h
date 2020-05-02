@@ -27,6 +27,7 @@ Methane resource interface: base class of all GPU resources.
 
 #include <Methane/Memory.hpp>
 #include <Methane/Data/Chunk.hpp>
+#include <Methane/Data/Range.hpp>
 #include <Methane/Graphics/Types.h>
 
 #include <string>
@@ -55,19 +56,20 @@ struct Resource : virtual Object
         {
             Unknown      = 0u,
             // Primary usages
-            ShaderRead   = 1u << 0u,
-            ShaderWrite  = 1u << 1u,
-            RenderTarget = 1u << 2u,
+            CpuReadback  = 1u << 0u,
+            ShaderRead   = 1u << 1u,
+            ShaderWrite  = 1u << 2u,
+            RenderTarget = 1u << 3u,
             // Secondary usages
-            Addressable  = 1u << 3u,
+            Addressable  = 1u << 4u,
             All          = ~0u,
         };
 
-        using BaseValues = std::array<Value, 3>;
-        static constexpr const BaseValues primary_values{ ShaderRead, ShaderWrite, RenderTarget };
+        using BaseValues = std::array<Value, 4>;
+        static constexpr const BaseValues primary_values{ CpuReadback, ShaderRead, ShaderWrite, RenderTarget };
 
-        using Values = std::array<Value, 4>;
-        static constexpr const Values values{ ShaderRead, ShaderWrite, RenderTarget, Addressable };
+        using Values = std::array<Value, 5>;
+        static constexpr const Values values{ CpuReadback, ShaderRead, ShaderWrite, RenderTarget, Addressable };
 
         static std::string ToString(Usage::Value usage) noexcept;
         static std::string ToString(Usage::Mask usage_mask) noexcept;
@@ -114,15 +116,39 @@ struct Resource : virtual Object
 
     struct SubResource : Data::Chunk
     {
+        struct Index;
+
+        struct Count
+        {
+            Data::Size depth;
+            Data::Size array_size;
+            Data::Size mip_levels_count;
+
+            explicit Count(Data::Size array_size  = 1u, Data::Size depth  = 1u, Data::Size mip_levels_count = 1u);
+            Data::Size GetRawCount() const noexcept;
+
+            void operator+=(const Index& index) noexcept;
+            bool operator==(const Count& index) const noexcept;
+            bool operator<(const Count& index) const noexcept;
+            bool operator>=(const Count& index) const noexcept;
+            operator std::string() const noexcept;
+        };
+
         struct Index
         {
-            uint32_t depth_slice;
-            uint32_t array_index;
-            uint32_t mip_level;
+            Data::Index depth_slice;
+            Data::Index array_index;
+            Data::Index mip_level;
 
-            explicit Index(uint32_t depth_slice  = 0u, uint32_t array_index  = 0u, uint32_t mip_level = 0u) noexcept;
-            static Index FromRawIndex(uint32_t raw_index, uint32_t depth = 1, uint32_t mip_levels_count = 1) noexcept;
-            uint32_t GetRawIndex(uint32_t depth = 1u, uint32_t mip_levels_count = 1u) const noexcept;
+            explicit Index(Data::Index depth_slice  = 0u, Data::Index array_index  = 0u, Data::Index mip_level = 0u) noexcept;
+            static Index FromRawIndex(Data::Index raw_index, const Count& count = Count());
+            Data::Index GetRawIndex(const Count& count = Count()) const noexcept;
+
+            bool operator==(const Index& index) const noexcept;
+            bool operator<(const Index& index) const noexcept;
+            bool operator<(const Count& index) const noexcept;
+            bool operator>=(const Count& index) const noexcept;
+            operator std::string() const noexcept;
         };
 
         Index index;
@@ -135,13 +161,17 @@ struct Resource : virtual Object
     };
 
     using SubResources = std::vector<SubResource>;
+    using BytesRange   = Data::Range<Data::Index>;
 
     // Auxiliary functions
     static std::string GetTypeName(Type type) noexcept;
 
     // Resource interface
     virtual void                      SetData(const SubResources& sub_resources) = 0;
+    virtual SubResource               GetData(const BytesRange& data_range = BytesRange()) = 0;
     virtual Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept = 0;
+    virtual const BytesRange&         GetSubresourceDataRange(const SubResource::Index& sub_resource_index = SubResource::Index()) const = 0;
+    virtual const SubResource::Count& GetSubresourceCount() const noexcept = 0;
     virtual Type                      GetResourceType() const noexcept = 0;
     virtual Usage::Mask               GetUsageMask() const noexcept = 0;
     virtual const DescriptorByUsage&  GetDescriptorByUsage() const noexcept = 0;

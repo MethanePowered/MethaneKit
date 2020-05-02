@@ -101,6 +101,7 @@ std::string Resource::Usage::ToString(Usage::Value usage) noexcept
     META_FUNCTION_TASK();
     switch (usage)
     {
+    case Resource::Usage::CpuReadback:  return "CPU Read-back";
     case Resource::Usage::ShaderRead:   return "Shader Read";
     case Resource::Usage::ShaderWrite:  return "Shader Write";
     case Resource::Usage::RenderTarget: return "Render Target";
@@ -175,7 +176,59 @@ Resource::SubResource::SubResource(Data::ConstRawPtr p_data, Data::Size size, In
     META_FUNCTION_TASK();
 }
 
-Resource::SubResource::Index::Index(uint32_t depth_slice, uint32_t array_index, uint32_t mip_level) noexcept
+Resource::SubResource::Count::Count(Data::Size depth, Data::Size array_size, Data::Size mip_levels_count)
+    : depth(depth)
+    , array_size(array_size)
+    , mip_levels_count(mip_levels_count)
+{
+    META_FUNCTION_TASK();
+    if (depth == 0 || array_size == 0 || mip_levels_count == 0)
+        throw std::invalid_argument("Subresource count can not be zero.");
+}
+
+Data::Size Resource::SubResource::Count::GetRawCount() const noexcept
+{
+    META_FUNCTION_TASK();
+    return depth * array_size * mip_levels_count;
+}
+
+void Resource::SubResource::Count::operator+=(const Index& index) noexcept
+{
+    depth            = std::max(depth,            index.depth_slice + 1u);
+    array_size       = std::max(array_size,       index.array_index + 1u);
+    mip_levels_count = std::max(mip_levels_count, index.mip_level   + 1u);
+}
+
+bool Resource::SubResource::Count::operator==(const Count& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return std::tie(depth, array_size, mip_levels_count) ==
+           std::tie(other.depth, other.array_size, other.mip_levels_count);
+}
+
+bool Resource::SubResource::Count::operator<(const Count& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return GetRawCount() < other.GetRawCount();
+}
+
+bool Resource::SubResource::Count::operator>=(const Count& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return GetRawCount() >= other.GetRawCount();
+}
+
+Resource::SubResource::Count::operator std::string() const noexcept
+{
+    META_FUNCTION_TASK();
+    std::stringstream ss;
+    ss << "count(d:" << std::to_string(depth)
+       <<     ", a:" << std::to_string(array_size)
+       <<     ", m:" << std::to_string(mip_levels_count) << ")";
+    return ss.str();
+}
+
+Resource::SubResource::Index::Index(Data::Index depth_slice, Data::Index array_index, Data::Index mip_level) noexcept
     : depth_slice(depth_slice)
     , array_index(array_index)
     , mip_level(mip_level)
@@ -183,17 +236,58 @@ Resource::SubResource::Index::Index(uint32_t depth_slice, uint32_t array_index, 
     META_FUNCTION_TASK();
 }
 
-Resource::SubResource::Index Resource::SubResource::Index::FromRawIndex(uint32_t raw_index, uint32_t depth, uint32_t mip_levels_count) noexcept
+Resource::SubResource::Index Resource::SubResource::Index::FromRawIndex(Data::Index raw_index, const Count& count)
 {
     META_FUNCTION_TASK();
-    const uint32_t array_and_depth_index = raw_index / mip_levels_count;
-    return Index(array_and_depth_index % depth, array_and_depth_index / depth, raw_index % mip_levels_count);
+    const Data::Size raw_count = count.GetRawCount();
+    if (raw_index >= raw_count)
+        throw std::invalid_argument("Subresource raw index (" + std::to_string(raw_index) + " ) is out of range (count: " + std::to_string(raw_count) + ").");
+
+    const uint32_t array_and_depth_index = raw_index / count.mip_levels_count;
+    return Index(array_and_depth_index % count.depth, array_and_depth_index / count.depth, raw_index % count.mip_levels_count);
 }
 
-uint32_t Resource::SubResource::Index::GetRawIndex(uint32_t depth, uint32_t mip_levels_count) const noexcept
+Data::Index Resource::SubResource::Index::GetRawIndex(const Count& count) const noexcept
 {
     META_FUNCTION_TASK();
-    return (array_index * depth + depth_slice) * mip_levels_count + mip_level;
+    return (array_index * count.depth + depth_slice) * count.mip_levels_count + mip_level;
+}
+
+bool Resource::SubResource::Index::operator==(const Index& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return std::tie(depth_slice, array_index, mip_level) ==
+           std::tie(other.depth_slice, other.array_index, other.mip_level);
+}
+
+bool Resource::SubResource::Index::operator<(const Index& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return std::tie(depth_slice, array_index, mip_level) <
+           std::tie(other.depth_slice, other.array_index, other.mip_level);
+}
+
+bool Resource::SubResource::Index::operator<(const Count& count) const noexcept
+{
+    META_FUNCTION_TASK();
+    return std::tie(depth_slice, array_index, mip_level) <
+           std::tie(count.depth, count.array_size, count.mip_levels_count);
+}
+
+bool Resource::SubResource::Index::operator>=(const Count& count) const noexcept
+{
+    META_FUNCTION_TASK();
+    return !operator<(count);
+}
+
+Resource::SubResource::Index::operator std::string() const noexcept
+{
+    META_FUNCTION_TASK();
+    std::stringstream ss;
+    ss << "index(d:" << std::to_string(depth_slice)
+       <<     ", a:" << std::to_string(array_index)
+       <<     ", m:" << std::to_string(mip_level) << ")";
+    return ss.str();
 }
 
 ResourceBase::ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& context, DescriptorByUsage descriptor_by_usage)
@@ -269,6 +363,16 @@ void ResourceBase::SetData(const SubResources& sub_resources)
             throw std::invalid_argument("Can not set empty subresource data to buffer.");
         }
         sub_resources_data_size += sub_resource.size;
+        if (m_subresource_count_constant)
+        {
+            if (sub_resource.index >= m_subresource_count)
+                throw std::invalid_argument("Subresource " + static_cast<std::string>(sub_resource.index) +
+                                            " exceeds available subresources range " + static_cast<std::string>(m_subresource_count));
+        }
+        else
+        {
+            m_subresource_count += sub_resource.index;
+        }
     }
 
     const Data::Size reserved_data_size = GetDataSize(Data::MemoryState::Reserved);
@@ -279,6 +383,24 @@ void ResourceBase::SetData(const SubResources& sub_resources)
     }
 
     m_initialized_data_size = sub_resources_data_size;
+
+    FillSubresourceRanges();
+}
+
+Resource::SubResource ResourceBase::GetData(const BytesRange&)
+{
+    META_FUNCTION_TASK();
+    throw std::logic_error("Reading data is not allowed for this type of resource.");
+}
+
+const Resource::BytesRange& ResourceBase::GetSubresourceDataRange(const SubResource::Index& subresource_index) const
+{
+    META_FUNCTION_TASK();
+    if (subresource_index >= m_subresource_count)
+        throw std::invalid_argument("Sub-resource "     + static_cast<std::string>(subresource_index) +
+                                    " is out of range " + static_cast<std::string>(m_subresource_count));
+
+    return m_subresource_ranges[subresource_index.GetRawIndex()];
 }
 
 DescriptorHeap::Type ResourceBase::GetDescriptorHeapTypeByUsage(ResourceBase::Usage::Value resource_usage) const
@@ -351,6 +473,46 @@ void ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
     }
 
     m_state = state;
+}
+
+void ResourceBase::SetSubresourceCount(const SubResource::Count& sub_resource_count)
+{
+    META_FUNCTION_TASK();
+
+    m_subresource_count_constant = true;
+    m_subresource_count = sub_resource_count;
+    m_subresource_ranges.clear();
+
+    FillSubresourceRanges();
+}
+
+Data::Size ResourceBase::GetSubresourceDataSize(const SubResource::Index& subresource_index) const
+{
+    META_FUNCTION_TASK();
+    static const SubResource::Index s_zero_index;
+    if (subresource_index == s_zero_index && m_subresource_count.GetRawCount() == 1)
+        return GetDataSize();
+
+    throw std::invalid_argument("Subresource size is undefined, must be provided by super class override.");
+}
+
+void ResourceBase::FillSubresourceRanges()
+{
+    const Data::Size curr_subresource_raw_count = m_subresource_count.GetRawCount();
+    const Data::Size prev_subresource_raw_count = static_cast<Data::Size>(m_subresource_ranges.size());
+    if (curr_subresource_raw_count == prev_subresource_raw_count)
+        return;
+
+    m_subresource_ranges.reserve(curr_subresource_raw_count);
+    Data::Size subresource_offset = m_subresource_ranges.empty() ? 0u : m_subresource_ranges.back().GetEnd();
+    for (Data::Index subresource_raw_index = prev_subresource_raw_count; subresource_raw_index < curr_subresource_raw_count; ++subresource_raw_index)
+    {
+        const SubResource::Index subresource_index = SubResource::Index::FromRawIndex(subresource_raw_index, m_subresource_count);
+        const Data::Size subresource_data_size = GetSubresourceDataSize(subresource_index);
+
+        m_subresource_ranges.emplace_back(subresource_offset, subresource_offset + subresource_data_size);
+        subresource_offset += subresource_data_size;
+    }
 }
 
 } // namespace Methane::Graphics

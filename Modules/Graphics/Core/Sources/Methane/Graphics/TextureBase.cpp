@@ -119,6 +119,13 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
     }
 
     ValidateDimensions(m_settings.dimension_type, m_settings.dimensions, m_settings.mipmapped);
+    SetSubresourceCount(
+        SubResource::Count(
+            settings.dimensions.depth,
+            settings.array_length,
+            settings.mipmapped ? GetRequiredMipLevelsCount(settings.dimensions) : 1u
+        )
+    );
 }
 
 void TextureBase::ValidateDimensions(DimensionType dimension_type, const Dimensions& dimensions, bool mipmapped)
@@ -169,26 +176,40 @@ void TextureBase::ValidateDimensions(DimensionType dimension_type, const Dimensi
     }
 }
 
-uint32_t TextureBase::GetMipLevelsCount() const
+Data::Size TextureBase::GetRequiredMipLevelsCount(const Dimensions& dimensions)
 {
     META_FUNCTION_TASK();
-    return m_settings.mipmapped ? 1u + static_cast<uint32_t>(std::log2(static_cast<double>(m_settings.dimensions.GetLongestSide())))
-                                : 1u;
+    return 1u + static_cast<uint32_t>(std::log2(static_cast<double>(dimensions.GetLongestSide())));
 }
 
 Data::Size TextureBase::GetDataSize(Data::MemoryState size_type) const noexcept
 {
     META_FUNCTION_TASK();
-    const Settings& settings = GetSettings();
     return size_type == Data::MemoryState::Reserved
-            ? settings.dimensions.GetPixelsCount() * GetPixelSize(settings.pixel_format) * settings.array_length
+            ? m_settings.dimensions.GetPixelsCount() * GetPixelSize(m_settings.pixel_format) * m_settings.array_length
             : GetInitializedDataSize();
 }
 
-uint32_t TextureBase::GetRequiredSubresourceCount() const
+Data::Size TextureBase::GetSubresourceDataSize(const SubResource::Index& subresource_index) const
 {
     META_FUNCTION_TASK();
-    return m_settings.array_length * m_settings.dimensions.depth * GetMipLevelsCount();
+    const SubResource::Count& subresource_count = GetSubresourceCount();
+    if (subresource_index >= subresource_count)
+        throw std::invalid_argument("Subresource " + static_cast<std::string>(subresource_index) +
+                                    " is out of range " + static_cast<std::string>(subresource_count));
+
+    const Data::Size pixel_size = GetPixelSize(m_settings.pixel_format);
+    if (subresource_index.mip_level == 0u)
+    {
+        return pixel_size * static_cast<const Data::FrameSize&>(m_settings.dimensions).GetPixelsCount();
+    }
+
+    const double mip_divider = std::pow(2.0, subresource_index.mip_level);
+    const Data::FrameSize mip_frame_size(
+        static_cast<uint32_t>(std::ceil(static_cast<double>(m_settings.dimensions.width) / mip_divider)),
+        static_cast<uint32_t>(std::ceil(static_cast<double>(m_settings.dimensions.height) / mip_divider))
+    );
+    return pixel_size * mip_frame_size.GetPixelsCount();
 }
 
 } // namespace Methane::Graphics

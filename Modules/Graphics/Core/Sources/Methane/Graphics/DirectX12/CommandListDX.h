@@ -72,8 +72,10 @@ public:
     using NativeCommandLists = std::vector<ID3D12CommandList*>;
     const NativeCommandLists& GetNativeCommandLists() const noexcept { return m_native_command_lists; }
 
-    CommandQueueDX&           GetCommandQueueDX() noexcept;
-    const CommandQueueDX&     GetCommandQueueDX() const noexcept;
+    CommandQueueDX&       GetCommandQueueDX() noexcept;
+    const CommandQueueDX& GetCommandQueueDX() const noexcept;
+
+    FenceDX& GetExecutionCompletedFenceDX() noexcept { return m_execution_completed_fence; }
 
 private:
     NativeCommandLists          m_native_command_lists;

@@ -68,6 +68,13 @@ public:
         }
     }
 
+    SubResource GetData(const BytesRange& data_range = BytesRange()) override
+    {
+        META_FUNCTION_TASK();
+        META_UNUSED(data_range);
+        throw std::runtime_error("Buffer::GetData is not implemented yet.");
+    }
+
     const TViewNative& GetNativeView() const { return m_buffer_view; }
 
 protected:

@@ -100,7 +100,7 @@ void TextureVK::SetData(const SubResources& sub_resources)
 
     TextureBase::SetData(sub_resources);
     
-    if (GetSettings().mipmapped && sub_resources.size() < GetRequiredSubresourceCount())
+    if (GetSettings().mipmapped && sub_resources.size() < GetSubresourceCount().GetRawCount())
     {
         GenerateMipLevels();
     }

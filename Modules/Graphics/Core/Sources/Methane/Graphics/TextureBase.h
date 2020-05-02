@@ -39,12 +39,14 @@ public:
 
     // Texture interface
     const Settings& GetSettings() const override { return m_settings; }
-    uint32_t        GetMipLevelsCount() const override;
     Data::Size      GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override;
 
 protected:
-    uint32_t GetRequiredSubresourceCount() const;
+    // ResourceBase overrides
+    Data::Size GetSubresourceDataSize(const SubResource::Index& subresource_index) const override;
+
     static void ValidateDimensions(DimensionType dimension_type, const Dimensions& dimensions, bool mipmapped);
+    static Data::Size GetRequiredMipLevelsCount(const Dimensions& dimensions);
 
 private:
     const Settings m_settings;
