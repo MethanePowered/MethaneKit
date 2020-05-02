@@ -116,7 +116,7 @@ public:
     void                      SetData(const SubResources& sub_resources) override;
     SubResource               GetData(const BytesRange& data_range = BytesRange()) override;
     const SubResource::Count& GetSubresourceCount() const noexcept override      { return m_subresource_count; }
-    const BytesRange&         GetSubresourceDataRange(const SubResource::Index& subresource_index = SubResource::Index()) const;
+    const BytesRange&         GetSubresourceDataRange(const SubResource::Index& subresource_index = SubResource::Index()) const override;
 
     void                      InitializeDefaultDescriptors();
     std::string               GetUsageNames() const noexcept                     { return Usage::ToString(m_usage_mask); }

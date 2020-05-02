@@ -252,7 +252,7 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
         mtl_tex_desc.height             = settings.dimensions.height;
         mtl_tex_desc.depth              = settings.dimensions.depth;
         mtl_tex_desc.arrayLength        = settings.array_length;
-        mtl_tex_desc.mipmapLevelCount   = GetMipLevelsCount();
+        mtl_tex_desc.mipmapLevelCount   = GetSubresourceCount().mip_levels_count;
         break;
     }
 
