@@ -375,22 +375,15 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
     const Settings&  settings                    = GetSettings();
     const Data::Size pixel_size                  = GetPixelSize(settings.pixel_format);
     const SubResource::Count& sub_resource_count = GetSubresourceCount();
-    const uint32_t   required_subresources_count = sub_resource_count.GetRawCount();
+    const uint32_t       sub_resources_raw_count = sub_resource_count.GetRawCount();
 
-    if (!settings.mipmapped && sub_resources.size() < required_subresources_count)
-    {
-        throw std::invalid_argument("Number of sub-resources provided (" + std::to_string(sub_resources.size()) + 
-                                    ") is less than required (" + std::to_string(required_subresources_count) + 
-                                    ") for normal texture upload \"" + GetName() + "\".");
-    }
-
-    std::vector<D3D12_SUBRESOURCE_DATA> dx_sub_resources(required_subresources_count, D3D12_SUBRESOURCE_DATA{});
+    std::vector<D3D12_SUBRESOURCE_DATA> dx_sub_resources(sub_resources_raw_count, D3D12_SUBRESOURCE_DATA{});
     for(const SubResource& sub_resource : sub_resources)
     {
+        ValidateSubResource(sub_resource);
+
         const uint32_t sub_resource_raw_index = sub_resource.index.GetRawIndex(sub_resource_count);
         assert(sub_resource_raw_index < dx_sub_resources.size());
-        if (sub_resource_raw_index >= dx_sub_resources.size())
-            continue;
 
         D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[sub_resource_raw_index];
         dx_sub_resource.pData      = sub_resource.p_data;
@@ -405,7 +398,7 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
 
     // NOTE: scratch_image is the owner of generated mip-levels memory, which should be hold until UpdateSubresources call completes
     DirectX::ScratchImage scratch_image; 
-    if (settings.mipmapped && sub_resources.size() < required_subresources_count)
+    if (settings.mipmapped && sub_resources.size() < sub_resources_raw_count)
     {
         GenerateMipLevels(dx_sub_resources, scratch_image);
     }
@@ -432,7 +425,7 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
     for(uint32_t sub_resource_raw_index = 0; sub_resource_raw_index < dx_sub_resources.size(); ++sub_resource_raw_index)
     {
         // Initialize images of base mip-levels only
-        const SubResource::Index sub_resource_index = SubResource::Index::FromRawIndex(sub_resource_raw_index, sub_resource_count);
+        const SubResource::Index sub_resource_index(sub_resource_raw_index, sub_resource_count);
         if (sub_resource_index.mip_level > 0)
             continue;
 

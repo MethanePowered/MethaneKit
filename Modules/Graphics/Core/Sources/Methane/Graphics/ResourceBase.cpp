@@ -101,10 +101,10 @@ std::string Resource::Usage::ToString(Usage::Value usage) noexcept
     META_FUNCTION_TASK();
     switch (usage)
     {
-    case Resource::Usage::CpuReadBack:  return "CPU Read-back";
     case Resource::Usage::ShaderRead:   return "Shader Read";
     case Resource::Usage::ShaderWrite:  return "Shader Write";
     case Resource::Usage::RenderTarget: return "Render Target";
+    case Resource::Usage::ReadBack:     return "Read Back";
     case Resource::Usage::Addressable:  return "Addressable";
     default:                            assert(0);
     }
@@ -148,16 +148,10 @@ bool Resource::Location::operator==(const Location& other) const noexcept
            std::tie(other.m_sp_resource, other.m_offset);
 }
 
-Resource::SubResource::SubResource(Data::Bytes&& data, Index index) noexcept
-    : Data::Chunk(std::move(data))
-    , index(std::move(index))
-{
-    META_FUNCTION_TASK();
-}
-
 Resource::SubResource::SubResource(SubResource&& other) noexcept
-    : Data::Chunk(std::move(other))
-    , index(other.index)
+    : Data::Chunk(std::move(static_cast<Data::Chunk&&>(other)))
+    , index(std::move(other.index))
+    , data_range(std::move(other.data_range))
 {
     META_FUNCTION_TASK();
 }
@@ -165,13 +159,23 @@ Resource::SubResource::SubResource(SubResource&& other) noexcept
 Resource::SubResource::SubResource(const SubResource& other) noexcept
     : Data::Chunk(other)
     , index(other.index)
+    , data_range(other.data_range)
 {
     META_FUNCTION_TASK();
 }
 
-Resource::SubResource::SubResource(Data::ConstRawPtr p_data, Data::Size size, Index index) noexcept
+Resource::SubResource::SubResource(Data::Bytes&& data, Index index, std::optional<BytesRange> data_range) noexcept
+    : Data::Chunk(std::move(data))
+    , index(std::move(index))
+    , data_range(std::move(data_range))
+{
+    META_FUNCTION_TASK();
+}
+
+Resource::SubResource::SubResource(Data::ConstRawPtr p_data, Data::Size size, Index index, std::optional<BytesRange> data_range) noexcept
     : Data::Chunk(p_data, size)
     , index(std::move(index))
+    , data_range(std::move(data_range))
 {
     META_FUNCTION_TASK();
 }
@@ -236,7 +240,7 @@ Resource::SubResource::Index::Index(Data::Index depth_slice, Data::Index array_i
     META_FUNCTION_TASK();
 }
 
-Resource::SubResource::Index Resource::SubResource::Index::FromRawIndex(Data::Index raw_index, const Count& count)
+Resource::SubResource::Index::Index(Data::Index raw_index, const Count& count)
 {
     META_FUNCTION_TASK();
     const Data::Size raw_count = count.GetRawCount();
@@ -244,7 +248,9 @@ Resource::SubResource::Index Resource::SubResource::Index::FromRawIndex(Data::In
         throw std::invalid_argument("Subresource raw index (" + std::to_string(raw_index) + " ) is out of range (count: " + std::to_string(raw_count) + ").");
 
     const uint32_t array_and_depth_index = raw_index / count.mip_levels_count;
-    return Index(array_and_depth_index % count.depth, array_and_depth_index / count.depth, raw_index % count.mip_levels_count);
+    depth_slice = array_and_depth_index % count.depth;
+    array_index = array_and_depth_index / count.depth;
+    mip_level   = raw_index % count.mip_levels_count;
 }
 
 Data::Index Resource::SubResource::Index::GetRawIndex(const Count& count) const noexcept
@@ -363,15 +369,15 @@ void ResourceBase::SetData(const SubResources& sub_resources)
             throw std::invalid_argument("Can not set empty subresource data to buffer.");
         }
         sub_resources_data_size += sub_resource.size;
-        if (m_subresource_count_constant)
+        if (m_sub_resource_count_constant)
         {
-            if (sub_resource.index >= m_subresource_count)
+            if (sub_resource.index >= m_sub_resource_count)
                 throw std::invalid_argument("Subresource " + static_cast<std::string>(sub_resource.index) +
-                                            " exceeds available subresources range " + static_cast<std::string>(m_subresource_count));
+                                            " exceeds available subresources range " + static_cast<std::string>(m_sub_resource_count));
         }
         else
         {
-            m_subresource_count += sub_resource.index;
+            m_sub_resource_count += sub_resource.index;
         }
     }
 
@@ -384,13 +390,13 @@ void ResourceBase::SetData(const SubResources& sub_resources)
 
     m_initialized_data_size = sub_resources_data_size;
 
-    if (!m_subresource_count_constant)
+    if (!m_sub_resource_count_constant)
     {
         FillSubresourceSizes();
     }
 }
 
-Data::Chunk ResourceBase::GetData(const SubResource::Index&, const BytesRange&)
+Resource::SubResource ResourceBase::GetData(const SubResource::Index&, const std::optional<BytesRange>&)
 {
     META_FUNCTION_TASK();
     throw std::logic_error("Reading data is not allowed for this type of resource.");
@@ -399,8 +405,8 @@ Data::Chunk ResourceBase::GetData(const SubResource::Index&, const BytesRange&)
 Data::Size ResourceBase::GetSubResourceDataSize(const SubResource::Index& sub_resource_index) const
 {
     META_FUNCTION_TASK();
-    ValidateSubResourceIndex(sub_resource_index);
-    return m_subresource_sizes[sub_resource_index.GetRawIndex()];
+    ValidateSubResource(sub_resource_index);
+    return m_sub_resource_sizes[sub_resource_index.GetRawIndex(m_sub_resource_count)];
 }
 
 DescriptorHeap::Type ResourceBase::GetDescriptorHeapTypeByUsage(ResourceBase::Usage::Value resource_usage) const
@@ -479,26 +485,72 @@ void ResourceBase::SetSubResourceCount(const SubResource::Count& sub_resource_co
 {
     META_FUNCTION_TASK();
 
-    m_subresource_count_constant = true;
-    m_subresource_count = sub_resource_count;
-    m_subresource_sizes.clear();
+    m_sub_resource_count_constant = true;
+    m_sub_resource_count          = sub_resource_count;
+    m_sub_resource_sizes.clear();
 
     FillSubresourceSizes();
 }
 
-void ResourceBase::ValidateSubResourceIndex(const SubResource::Index& sub_resource_index) const
+void ResourceBase::ValidateSubResource(const SubResource& sub_resource) const
 {
     META_FUNCTION_TASK();
-    if (sub_resource_index >= m_subresource_count)
-        throw std::invalid_argument("Sub-resource "     + static_cast<std::string>(sub_resource_index) +
-                                    " is out of range " + static_cast<std::string>(m_subresource_count));
+    ValidateSubResource(sub_resource.index, sub_resource.data_range);
+
+    const Data::Index sub_resource_raw_index = sub_resource.index.GetRawIndex(m_sub_resource_count);
+    const Data::Size sub_resource_data_size = m_sub_resource_sizes[sub_resource_raw_index];
+
+    if (sub_resource.data_range)
+    {
+        if (sub_resource.size != sub_resource.data_range->GetLength())
+            throw std::invalid_argument("Specified sub-resource "               + static_cast<std::string>(sub_resource.index) +
+                                        " data size ("                          + std::to_string(sub_resource.size) +
+                                        ") differs from length of data range "  + static_cast<std::string>(*sub_resource.data_range));
+
+        if (sub_resource.size > sub_resource_data_size)
+            throw std::out_of_range("Specified sub-resource "                   + static_cast<std::string>(sub_resource.index) +
+                                    " data size ("                              + std::to_string(sub_resource.size) +
+                                    ") is greater than maximum size ("          + std::to_string(sub_resource_data_size) + ")");
+    }
+    else
+    {
+        if (sub_resource.size != sub_resource_data_size)
+            throw std::invalid_argument("Specified sub-resource "               + static_cast<std::string>(sub_resource.index) +
+                                        " data size ("                          + std::to_string(sub_resource.size) +
+                                        ") should be equal to full size ("      + std::to_string(sub_resource_data_size) +
+                                        ") when data range is not specified.");
+    }
+}
+
+void ResourceBase::ValidateSubResource(const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& sub_resource_data_range) const
+{
+    META_FUNCTION_TASK();
+    if (sub_resource_index >= m_sub_resource_count)
+        throw std::invalid_argument("Specified sub-resource "   + static_cast<std::string>(sub_resource_index) +
+                                    " is out of range "         + static_cast<std::string>(m_sub_resource_count));
+
+    if (!sub_resource_data_range)
+        return;
+
+    if (sub_resource_data_range && sub_resource_data_range->IsEmpty())
+        throw std::invalid_argument("Specified sub-resource data range can not be empty.");
+
+    const Data::Index sub_resource_raw_index = sub_resource_index.GetRawIndex(m_sub_resource_count);
+    assert(sub_resource_raw_index < m_sub_resource_sizes.size());
+
+    const Data::Size sub_resource_data_size = m_sub_resource_sizes[sub_resource_raw_index];
+    if (sub_resource_data_range->GetEnd() >= sub_resource_data_size)
+        throw std::out_of_range("Specified data range "      + static_cast<std::string>(*sub_resource_data_range) +
+                                "is out of data bounds [0, " + std::to_string(sub_resource_data_size) +
+                                ") for subresource "         + static_cast<std::string>(sub_resource_index));
 }
 
 Data::Size ResourceBase::CalculateSubResourceDataSize(const SubResource::Index& subresource_index) const
 {
     META_FUNCTION_TASK();
     static const SubResource::Index s_zero_index;
-    if (subresource_index == s_zero_index && m_subresource_count.GetRawCount() == 1)
+    static const SubResource::Count s_one_count;
+    if (subresource_index == s_zero_index && m_sub_resource_count == s_one_count)
         return GetDataSize();
 
     throw std::invalid_argument("Subresource size is undefined, must be provided by super class override.");
@@ -506,16 +558,16 @@ Data::Size ResourceBase::CalculateSubResourceDataSize(const SubResource::Index& 
 
 void ResourceBase::FillSubresourceSizes()
 {
-    const Data::Size curr_subresource_raw_count = m_subresource_count.GetRawCount();
-    const Data::Size prev_subresource_raw_count = static_cast<Data::Size>(m_subresource_sizes.size());
+    const Data::Size curr_subresource_raw_count = m_sub_resource_count.GetRawCount();
+    const Data::Size prev_subresource_raw_count = static_cast<Data::Size>(m_sub_resource_sizes.size());
     if (curr_subresource_raw_count == prev_subresource_raw_count)
         return;
 
-    m_subresource_sizes.reserve(curr_subresource_raw_count);
+    m_sub_resource_sizes.reserve(curr_subresource_raw_count);
     for (Data::Index subresource_raw_index = prev_subresource_raw_count; subresource_raw_index < curr_subresource_raw_count; ++subresource_raw_index)
     {
-        const SubResource::Index subresource_index = SubResource::Index::FromRawIndex(subresource_raw_index, m_subresource_count);
-        m_subresource_sizes.emplace_back(CalculateSubResourceDataSize(subresource_index));
+        const SubResource::Index subresource_index(subresource_raw_index, m_sub_resource_count);
+        m_sub_resource_sizes.emplace_back(CalculateSubResourceDataSize(subresource_index));
     }
 }
 

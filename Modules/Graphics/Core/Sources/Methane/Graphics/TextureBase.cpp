@@ -193,7 +193,7 @@ Data::Size TextureBase::GetDataSize(Data::MemoryState size_type) const noexcept
 Data::Size TextureBase::CalculateSubResourceDataSize(const SubResource::Index& sub_resource_index) const
 {
     META_FUNCTION_TASK();
-    ValidateSubResourceIndex(sub_resource_index);
+    ValidateSubResource(sub_resource_index);
 
     const Data::Size pixel_size = GetPixelSize(m_settings.pixel_format);
     if (sub_resource_index.mip_level == 0u)

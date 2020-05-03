@@ -114,8 +114,8 @@ public:
     const DescriptorByUsage&  GetDescriptorByUsage() const noexcept override     { return m_descriptor_by_usage; }
     const Descriptor&         GetDescriptor(Usage::Value usage) const override;
     void                      SetData(const SubResources& sub_resources) override;
-    Data::Chunk               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const BytesRange& data_range = BytesRange()) override;
-    const SubResource::Count& GetSubresourceCount() const noexcept override      { return m_subresource_count; }
+    SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override;
+    const SubResource::Count& GetSubresourceCount() const noexcept override      { return m_sub_resource_count; }
     Data::Size                GetSubResourceDataSize(const SubResource::Index& subresource_index = SubResource::Index()) const override;
 
     void                      InitializeDefaultDescriptors();
@@ -132,24 +132,24 @@ protected:
     ContextBase&         GetContext() { return m_context; }
     Data::Size           GetInitializedDataSize() const noexcept { return m_initialized_data_size; }
     void                 SetSubResourceCount(const SubResource::Count& sub_resource_count);
-    void                 ValidateSubResourceIndex(const SubResource::Index& sub_resource_index) const;
+    void                 ValidateSubResource(const SubResource& sub_resource) const;
+    void                 ValidateSubResource(const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& sub_resource_data_range = {}) const;
 
     virtual Data::Size   CalculateSubResourceDataSize(const SubResource::Index& sub_resource_index) const;
 
 private:
+    using SubResourceSizes = std::vector<Data::Size>;
     void FillSubresourceSizes();
 
-    using SubResourceSizes = std::vector<Data::Size>;
-
-    const Type          m_type;
-    const Usage::Mask   m_usage_mask;
-    ContextBase&        m_context;
-    DescriptorByUsage   m_descriptor_by_usage;
-    State               m_state = State::Common;
-    Data::Size          m_initialized_data_size = 0u;
-    bool                m_subresource_count_constant = false;
-    SubResource::Count  m_subresource_count;
-    SubResourceSizes    m_subresource_sizes;
+    const Type         m_type;
+    const Usage::Mask  m_usage_mask;
+    ContextBase&       m_context;
+    DescriptorByUsage  m_descriptor_by_usage;
+    State              m_state = State::Common;
+    Data::Size         m_initialized_data_size       = 0u;
+    bool               m_sub_resource_count_constant = false;
+    SubResource::Count m_sub_resource_count;
+    SubResourceSizes   m_sub_resource_sizes;
 };
 
 } // namespace Methane::Graphics

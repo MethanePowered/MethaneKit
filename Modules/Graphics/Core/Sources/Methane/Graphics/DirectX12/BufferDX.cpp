@@ -74,7 +74,7 @@ Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool
 
 Ptr<Buffer> Buffer::CreateReadBackBuffer(Context& context, Data::Size size)
 {
-    const Buffer::Settings settings{ Buffer::Type::ReadBack, Usage::CpuReadBack, size, 0u, PixelFormat::Unknown };
+    const Buffer::Settings settings{ Buffer::Type::ReadBack, Usage::ReadBack, size, 0u, PixelFormat::Unknown };
     return std::make_shared<ReadBackBufferDX>(dynamic_cast<ContextBase&>(context), settings, DescriptorByUsage());
 }
 

@@ -34,6 +34,7 @@ Methane resource interface: base class of all GPU resources.
 #include <vector>
 #include <map>
 #include <array>
+#include <optional>
 
 namespace Methane::Graphics
 {
@@ -56,20 +57,20 @@ struct Resource : virtual Object
         {
             Unknown      = 0u,
             // Primary usages
-            CpuReadBack  = 1u << 0u,
-            ShaderRead   = 1u << 1u,
-            ShaderWrite  = 1u << 2u,
-            RenderTarget = 1u << 3u,
+            ShaderRead   = 1u << 0u,
+            ShaderWrite  = 1u << 1u,
+            RenderTarget = 1u << 2u,
+            ReadBack     = 1u << 3u,
             // Secondary usages
             Addressable  = 1u << 4u,
             All          = ~0u,
         };
 
         using BaseValues = std::array<Value, 4>;
-        static constexpr const BaseValues primary_values{ CpuReadBack, ShaderRead, ShaderWrite, RenderTarget };
+        static constexpr const BaseValues primary_values{ ShaderRead, ShaderWrite, RenderTarget, ReadBack };
 
         using Values = std::array<Value, 5>;
-        static constexpr const Values values{ CpuReadBack, ShaderRead, ShaderWrite, RenderTarget, Addressable };
+        static constexpr const Values values{ ShaderRead, ShaderWrite, RenderTarget, ReadBack, Addressable };
 
         static std::string ToString(Usage::Value usage) noexcept;
         static std::string ToString(Usage::Mask usage_mask) noexcept;
@@ -114,6 +115,8 @@ struct Resource : virtual Object
         return resource_locations;
     }
 
+    using BytesRange = Data::Range<Data::Index>;
+
     struct SubResource : Data::Chunk
     {
         struct Index;
@@ -141,8 +144,8 @@ struct Resource : virtual Object
             Data::Index mip_level;
 
             explicit Index(Data::Index depth_slice  = 0u, Data::Index array_index  = 0u, Data::Index mip_level = 0u) noexcept;
-            static Index FromRawIndex(Data::Index raw_index, const Count& count = Count());
-            Data::Index GetRawIndex(const Count& count = Count()) const noexcept;
+            Index(Data::Index raw_index, const Count& count);
+            Data::Index GetRawIndex(const Count& count) const noexcept;
 
             bool operator==(const Index& index) const noexcept;
             bool operator<(const Index& index) const noexcept;
@@ -152,23 +155,23 @@ struct Resource : virtual Object
         };
 
         Index index;
+        std::optional<BytesRange> data_range;
 
         SubResource() noexcept = default;
         explicit SubResource(SubResource&& other) noexcept;
         explicit SubResource(const SubResource& other) noexcept;
-        explicit SubResource(Data::Bytes&& data, Index index = Index()) noexcept;
-        SubResource(Data::ConstRawPtr p_data, Data::Size size, Index index = Index()) noexcept;
+        explicit SubResource(Data::Bytes&& data, Index index = Index(), std::optional<BytesRange> data_range = {}) noexcept;
+        SubResource(Data::ConstRawPtr p_data, Data::Size size, Index index = Index(), std::optional<BytesRange> data_range = {}) noexcept;
     };
 
     using SubResources = std::vector<SubResource>;
-    using BytesRange   = Data::Range<Data::Index>;
 
     // Auxiliary functions
     static std::string GetTypeName(Type type) noexcept;
 
     // Resource interface
     virtual void                      SetData(const SubResources& sub_resources) = 0;
-    virtual Data::Chunk               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const BytesRange& data_range = BytesRange()) = 0;
+    virtual SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) = 0;
     virtual Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept = 0;
     virtual Data::Size                GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const = 0;
     virtual const SubResource::Count& GetSubresourceCount() const noexcept = 0;
