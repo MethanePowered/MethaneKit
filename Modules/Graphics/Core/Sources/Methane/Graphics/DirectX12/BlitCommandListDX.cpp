@@ -36,7 +36,7 @@ Ptr<BlitCommandList> BlitCommandList::Create(CommandQueue& cmd_queue)
 }
 
 BlitCommandListDX::BlitCommandListDX(CommandQueueBase& cmd_buffer)
-    : CommandListDX<CommandListBase>(cmd_buffer, Type::Blit)
+    : CommandListDX<CommandListBase>(D3D12_COMMAND_LIST_TYPE_DIRECT, cmd_buffer, Type::Blit)
 {
     META_FUNCTION_TASK();
 }

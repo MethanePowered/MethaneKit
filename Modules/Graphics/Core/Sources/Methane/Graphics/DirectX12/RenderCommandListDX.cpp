@@ -68,13 +68,13 @@ Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& para
 }
 
 RenderCommandListDX::RenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass)
-    : CommandListDX<RenderCommandListBase>(cmd_buffer, render_pass)
+    : CommandListDX<RenderCommandListBase>(D3D12_COMMAND_LIST_TYPE_DIRECT, cmd_buffer, render_pass)
 {
     META_FUNCTION_TASK();
 }
 
 RenderCommandListDX::RenderCommandListDX(ParallelRenderCommandListBase& parallel_render_command_list)
-    : CommandListDX<RenderCommandListBase>(parallel_render_command_list)
+    : CommandListDX<RenderCommandListBase>(D3D12_COMMAND_LIST_TYPE_DIRECT, parallel_render_command_list)
 {
     META_FUNCTION_TASK();
 }
