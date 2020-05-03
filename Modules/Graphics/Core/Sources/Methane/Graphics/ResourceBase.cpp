@@ -44,6 +44,29 @@ ResourceBase::Barrier::Barrier(Type type, Resource& resource, State state_before
     META_FUNCTION_TASK();
 }
 
+ResourceBase::Barrier::operator std::string() const noexcept
+{
+    META_FUNCTION_TASK();
+    std::stringstream ss;
+    ss << "Resource \"" << resource.GetName()
+       << "\" " << GetTypeName(type)
+       << " barrier from " << GetStateName(state_before)
+       << " to " << GetStateName(state_after)
+       << " state";
+    return ss.str();
+}
+
+std::string ResourceBase::Barrier::GetTypeName(Type type)
+{
+    META_FUNCTION_TASK();
+    switch(type)
+    {
+    case Type::Transition: return "Transition";
+    }
+    assert(0);
+    return "";
+}
+
 Ptr<ResourceBase::Barriers> ResourceBase::Barriers::CreateTransition(const Refs<Resource>& resources, State state_before, State state_after)
 {
     META_FUNCTION_TASK();
@@ -74,6 +97,21 @@ const ResourceBase::Barrier& ResourceBase::Barriers::Add(Barrier::Type type, Res
     return m_barriers.back();
 }
 
+ResourceBase::Barriers::operator std::string() const noexcept
+{
+    META_FUNCTION_TASK();
+    std::stringstream ss;
+    for(size_t index = 0; index < m_barriers.size(); ++index)
+    {
+        const Barrier& barrier = m_barriers[index];
+        ss << "  - " << static_cast<std::string>(barrier);
+        if (index < m_barriers.size() - 1)
+            ss << ";" << std::endl;
+        else
+            ss << ".";
+    }
+    return ss.str();
+}
 
 Resource::Location::Location(Ptr<Resource> sp_resource, Data::Size offset)
     : m_sp_resource(std::move(sp_resource))
@@ -478,6 +516,7 @@ void ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
         out_barriers->Add(Barrier::Type::Transition, *this, m_state, state);
     }
 
+    //META_LOG("Resource \"" + GetName() + "\" state changed from " + GetStateName(m_state) + " to " + GetStateName(state));
     m_state = state;
 }
 
@@ -558,6 +597,7 @@ Data::Size ResourceBase::CalculateSubResourceDataSize(const SubResource::Index& 
 
 void ResourceBase::FillSubresourceSizes()
 {
+    META_FUNCTION_TASK();
     const Data::Size curr_subresource_raw_count = m_sub_resource_count.GetRawCount();
     const Data::Size prev_subresource_raw_count = static_cast<Data::Size>(m_sub_resource_sizes.size());
     if (curr_subresource_raw_count == prev_subresource_raw_count)
@@ -569,6 +609,34 @@ void ResourceBase::FillSubresourceSizes()
         const SubResource::Index subresource_index(subresource_raw_index, m_sub_resource_count);
         m_sub_resource_sizes.emplace_back(CalculateSubResourceDataSize(subresource_index));
     }
+}
+
+std::string ResourceBase::GetStateName(State state)
+{
+    META_FUNCTION_TASK();
+    switch(state)
+    {
+    case State::Common:                  return "Common";
+    case State::VertexAndConstantBuffer: return "VertexAndConstantBuffer";
+    case State::IndexBuffer:             return "IndexBuffer";
+    case State::RenderTarget:            return "RenderTarget";
+    case State::UnorderedAccess:         return "UnorderedAccess";
+    case State::DepthWrite:              return "DepthWrite";
+    case State::DepthRead:               return "DepthRead";
+    case State::NonPixelShaderResource:  return "NonPixelShaderResource";
+    case State::PixelShaderResource:     return "PixelShaderResource";
+    case State::StreamOut:               return "StreamOut";
+    case State::IndirectArgument:        return "IndirectArgument";
+    case State::CopyDest:                return "CopyDest";
+    case State::CopySource:              return "CopySource";
+    case State::ResolveDest:             return "ResolveDest";
+    case State::ResolveSource:           return "ResolveSource";
+    case State::GenericRead:             return "GenericRead";
+    case State::Present:                 return "Present";
+    case State::Predication:             return "Predication";
+    }
+    assert(0);
+    return "";
 }
 
 } // namespace Methane::Graphics

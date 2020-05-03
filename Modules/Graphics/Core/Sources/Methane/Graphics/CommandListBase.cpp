@@ -358,7 +358,7 @@ void CommandListsBase::Complete() noexcept
         catch(std::exception& ex)
         {
             META_UNUSED(ex);
-            META_LOG("Failed to complete command list execution, exception occurred: " + std::to_string(ex.what()));
+            META_LOG(std::string("Failed to complete command list execution, exception occurred: ") + ex.what());
             assert(false);
         }
     }

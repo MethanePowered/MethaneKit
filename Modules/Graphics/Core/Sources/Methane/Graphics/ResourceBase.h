@@ -74,6 +74,10 @@ public:
         State     state_after;
 
         Barrier(Type type, Resource& resource, State state_before, State state_after);
+
+        operator std::string() const noexcept;
+
+        static std::string GetTypeName(Type type);
     };
 
     class Barriers
@@ -87,6 +91,8 @@ public:
 
         virtual const Barrier& Add(Barrier::Type type, Resource& resource, State state_before, State state_after);
         virtual ~Barriers() = default;
+
+        operator std::string() const noexcept;
 
     protected:
         Barriers(std::vector<Barrier> barriers);
@@ -125,6 +131,8 @@ public:
 
     State   GetState() const noexcept                                            { return m_state;  }
     void    SetState(State state, Ptr<Barriers>& out_barriers);
+
+    static std::string GetStateName(State state);
 
 protected:
     DescriptorHeap::Type GetDescriptorHeapTypeByUsage(Usage::Value usage) const;

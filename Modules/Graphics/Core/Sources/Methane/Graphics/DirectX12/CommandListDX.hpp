@@ -105,6 +105,8 @@ public:
         if (resource_barriers.IsEmpty())
             return;
 
+        META_LOG("Command list \"" + GetName() + "\" set resource barriers:\n" + static_cast<std::string>(resource_barriers));
+
         assert(m_cp_command_list);
         const std::vector<D3D12_RESOURCE_BARRIER>& dx_resource_barriers = static_cast<const ResourceDX::BarriersDX&>(resource_barriers).GetNativeResourceBarriers();
         m_cp_command_list->ResourceBarrier(static_cast<UINT>(dx_resource_barriers.size()), dx_resource_barriers.data());
