@@ -32,6 +32,7 @@ namespace Methane::Graphics
 
 class RenderContextBase;
 class RenderCommandListBase;
+class TextureBase;
 
 class RenderPassBase
     : public RenderPass
@@ -45,31 +46,32 @@ public:
     const Settings& GetSettings() const override    { return m_settings; }
 
     // RenderPassBase interface
-    virtual void Begin(RenderCommandListBase& command_list);
-    virtual void End(RenderCommandListBase& command_list);
+    virtual void Begin(RenderCommandListBase& render_command_list);
+    virtual void End(RenderCommandListBase& render_command_list);
 
-    Ptr<RenderPassBase>   GetPtr()            { return shared_from_this(); }
-    const Refs<Resource>& GetColorAttachmentResources() const;
-    bool                  IsBegun() const     { return m_is_begun; }
+    const Refs<TextureBase>& GetColorAttachmentTextures() const;
+    TextureBase*             GetDepthAttachmentTexture() const;
+    Ptr<RenderPassBase>      GetPtr()                   { return shared_from_this(); }
+    bool                     IsBegun() const            { return m_is_begun; }
 
 protected:
     RenderContextBase&        GetRenderContext()        { return m_render_context; }
     const RenderContextBase&  GetRenderContext() const  { return m_render_context; }
 
-    const ResourceBase::Barriers& GetColorBeginTransitionBarriers() const noexcept;
-    const ResourceBase::Barriers& GetColorEndTransitionBarriers() const noexcept;
-
 private:
-    RenderContextBase&  m_render_context;
-    Settings            m_settings;
-    bool                m_is_begun = false;
+    void InitAttachmentStates();
+    void SetAttachmentStates(const std::optional<ResourceBase::State>& color_state,
+                             const std::optional<ResourceBase::State>& depth_state,
+                             Ptr<ResourceBase::Barriers>& sp_transition_barriers,
+                             RenderCommandListBase& render_command_list);
 
-    mutable Refs<Resource>              m_color_attach_resources;
-    mutable Ptr<ResourceBase::Barriers> m_sp_color_begin_transition_barriers;
-    mutable Ptr<ResourceBase::Barriers> m_sp_color_end_transition_barriers;
-    mutable Ptr<ResourceBase::Barriers> m_sp_attach_resources_transition_barriers;
-
-
+    RenderContextBase&          m_render_context;
+    Settings                    m_settings;
+    bool                        m_is_begun = false;
+    mutable Refs<TextureBase>   m_color_attachment_textures;
+    mutable TextureBase*        m_p_depth_attachment_texture = nullptr;
+    Ptr<ResourceBase::Barriers> m_sp_begin_transition_barriers;
+    Ptr<ResourceBase::Barriers> m_sp_end_transition_barriers;
 };
 
 } // namespace Methane::Graphics

@@ -31,27 +31,105 @@ Base implementation of the resource interface.
 #include <cassert>
 #include <sstream>
 #include <utility>
+#include <algorithm>
 
 namespace Methane::Graphics
 {
 
-ResourceBase::Barrier::Barrier(Type type, Resource& resource, State state_before, State state_after)
+ResourceBase::Barrier::Id::Id(Type type, Resource& resource)
     : type(type)
     , resource(resource)
-    , state_before(state_before)
-    , state_after(state_after)
 {
     META_FUNCTION_TASK();
+}
+
+bool ResourceBase::Barrier::Id::operator<(const Id& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    const Resource* p_this_resource  = std::addressof(resource);
+    const Resource* p_other_resource = std::addressof(other.resource);
+    return std::tie(type, p_this_resource) < std::tie(other.type, p_other_resource);
+}
+
+bool ResourceBase::Barrier::Id::operator==(const Id& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    const Resource* p_this_resource  = std::addressof(resource);
+    const Resource* p_other_resource = std::addressof(other.resource);
+    return std::tie(type, p_this_resource) == std::tie(other.type, p_other_resource);
+}
+
+bool ResourceBase::Barrier::Id::operator!=(const Id& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return !operator==(other);
+}
+
+ResourceBase::Barrier::StateChange::StateChange(State before, State after)
+    : before(before)
+    , after(after)
+{
+    META_FUNCTION_TASK();
+}
+
+bool ResourceBase::Barrier::StateChange::operator<(const StateChange& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return std::tie(before, after) < std::tie(other.before, other.after);
+}
+
+bool ResourceBase::Barrier::StateChange::operator==(const StateChange& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return std::tie(before, after) == std::tie(other.before, other.after);
+}
+
+bool ResourceBase::Barrier::StateChange::operator!=(const StateChange& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return !operator==(other);
+}
+
+ResourceBase::Barrier::Barrier(Id id, StateChange state_change)
+    : id(std::move(id))
+    , state_change(std::move(state_change))
+{
+    META_FUNCTION_TASK();
+}
+
+ResourceBase::Barrier::Barrier(Type type, Resource& resource, State state_before, State state_after)
+    : Barrier(Id(type, resource), StateChange(state_before, state_after))
+{
+    META_FUNCTION_TASK();
+}
+
+
+bool ResourceBase::Barrier::operator<(const Barrier& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return std::tie(id, state_change) < std::tie(other.id, other.state_change);
+}
+
+bool ResourceBase::Barrier::operator==(const Barrier& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return std::tie(id, state_change) == std::tie(other.id, other.state_change);
+}
+
+bool ResourceBase::Barrier::operator!=(const Barrier& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return !operator==(other);
 }
 
 ResourceBase::Barrier::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
     std::stringstream ss;
-    ss << "Resource \"" << resource.GetName()
-       << "\" " << GetTypeName(type)
-       << " barrier from " << GetStateName(state_before)
-       << " to " << GetStateName(state_after)
+    ss << "Resource \"" << id.resource.GetName()
+       << "\" " << GetTypeName(id.type)
+       << " barrier from " << GetStateName(state_change.before)
+       << " to " << GetStateName(state_change.after)
        << " state";
     return ss.str();
 }
@@ -70,11 +148,10 @@ std::string ResourceBase::Barrier::GetTypeName(Type type)
 Ptr<ResourceBase::Barriers> ResourceBase::Barriers::CreateTransition(const Refs<Resource>& resources, State state_before, State state_after)
 {
     META_FUNCTION_TASK();
-    std::vector<Barrier> resource_barriers;
-    resource_barriers.reserve(resources.size());
+    std::set<Barrier> resource_barriers;
     for (const Ref<Resource>& resource_ref : resources)
     {
-        resource_barriers.emplace_back(Barrier{
+        resource_barriers.emplace(Barrier{
             ResourceBase::Barrier::Type::Transition,
             resource_ref.get(),
             state_before,
@@ -84,28 +161,63 @@ Ptr<ResourceBase::Barriers> ResourceBase::Barriers::CreateTransition(const Refs<
     return Barriers::Create(resource_barriers);
 }
 
-ResourceBase::Barriers::Barriers(std::vector<Barrier> barriers)
-    : m_barriers(std::move(barriers))
+ResourceBase::Barriers::Barriers(const Set& barriers)
 {
     META_FUNCTION_TASK();
+    std::transform(barriers.begin(), barriers.end(), std::inserter(m_barriers_map, m_barriers_map.begin()),
+        [](const Barrier& barrier)
+        {
+            return std::pair<Barrier::Id, Barrier::StateChange>{ barrier.id, barrier.state_change };
+        }
+    );
 }
 
-const ResourceBase::Barrier& ResourceBase::Barriers::Add(Barrier::Type type, Resource& resource, State state_before, State state_after)
+ResourceBase::Barriers::Set ResourceBase::Barriers::GetSet() const noexcept
 {
     META_FUNCTION_TASK();
-    m_barriers.emplace_back(type, resource, state_before, state_after);
-    return m_barriers.back();
+    Set barriers;
+    std::transform(m_barriers_map.begin(), m_barriers_map.end(), std::inserter(barriers, barriers.begin()),
+        [](const auto& barrier_pair)
+        {
+           return Barrier(barrier_pair.first, barrier_pair.second);
+        }
+    );
+    return barriers;
+}
+
+bool ResourceBase::Barriers::Add(Barrier::Type type, Resource& resource, State before, State after)
+{
+    META_FUNCTION_TASK();
+    return Add(Barrier::Id(type, resource), Barrier::StateChange(before, after));
+}
+
+bool ResourceBase::Barriers::AddTransition(Resource& resource, State before, State after)
+{
+    META_FUNCTION_TASK();
+    return Add(Barrier::Id(Barrier::Type::Transition, resource), Barrier::StateChange(before, after));
+}
+
+bool ResourceBase::Barriers::Add(const Barrier::Id& id, const Barrier::StateChange& state_change)
+{
+    META_FUNCTION_TASK();
+    const auto emplace_result = m_barriers_map.emplace(id, state_change);
+    if (emplace_result.second)
+        return true;
+    else if (emplace_result.first->second == state_change)
+        return false;
+
+    emplace_result.first->second = state_change;
+    return true;
 }
 
 ResourceBase::Barriers::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
     std::stringstream ss;
-    for(size_t index = 0; index < m_barriers.size(); ++index)
+    for(auto barrier_pair_it = m_barriers_map.begin(); barrier_pair_it != m_barriers_map.end(); ++barrier_pair_it)
     {
-        const Barrier& barrier = m_barriers[index];
-        ss << "  - " << static_cast<std::string>(barrier);
-        if (index < m_barriers.size() - 1)
+        ss << "  - " << static_cast<std::string>(Barrier(barrier_pair_it->first, barrier_pair_it->second));
+        if (barrier_pair_it != std::prev(m_barriers_map.end()))
             ss << ";" << std::endl;
         else
             ss << ".";
@@ -496,12 +608,14 @@ DescriptorHeap::Types ResourceBase::GetUsedDescriptorHeapTypes() const noexcept
     return heap_types;
 }
 
-void ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
+bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
 {
     META_FUNCTION_TASK();
 
     if (m_state == state)
-        return;
+        return false;
+
+    META_LOG("Resource \"" + GetName() + "\" state changed from " + GetStateName(m_state) + " to " + GetStateName(state));
 
     if (m_state != State::Common)
     {
@@ -513,11 +627,11 @@ void ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
         {
             out_barriers = Barriers::Create();
         }
-        out_barriers->Add(Barrier::Type::Transition, *this, m_state, state);
+        out_barriers->AddTransition(*this, m_state, state);
     }
 
-    //META_LOG("Resource \"" + GetName() + "\" state changed from " + GetStateName(m_state) + " to " + GetStateName(state));
     m_state = state;
+    return true;
 }
 
 void ResourceBase::SetSubResourceCount(const SubResource::Count& sub_resource_count)

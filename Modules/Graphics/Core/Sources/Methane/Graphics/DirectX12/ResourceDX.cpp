@@ -35,13 +35,13 @@ DirectX 12 implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-Ptr<ResourceBase::Barriers> ResourceBase::Barriers::Create(std::vector<Barrier> barriers)
+Ptr<ResourceBase::Barriers> ResourceBase::Barriers::Create(const Set& barriers)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ResourceDX::BarriersDX>(barriers);
 }
 
-ResourceDX::BarriersDX::BarriersDX(std::vector<Barrier> barriers)
+ResourceDX::BarriersDX::BarriersDX(const Set& barriers)
     : Barriers(barriers)
 {
     META_FUNCTION_TASK();
@@ -53,12 +53,15 @@ ResourceDX::BarriersDX::BarriersDX(std::vector<Barrier> barriers)
     );
 }
 
-const ResourceBase::Barrier& ResourceDX::BarriersDX::Add(Barrier::Type type, Resource& resource, State state_before, State state_after)
+bool ResourceDX::BarriersDX::Add(const Barrier::Id& id, const Barrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    const ResourceBase::Barrier& barrier = ResourceBase::Barriers::Add(type, resource, state_before, state_after);
-    m_native_resource_barriers.emplace_back(GetNativeResourceBarrier(barrier));
-    return barrier;
+    bool changed = ResourceBase::Barriers::Add(id, state_change);
+    if (changed)
+    {
+        m_native_resource_barriers.emplace_back(GetNativeResourceBarrier(id, state_change));
+    }
+    return changed;
 }
 
 
@@ -176,16 +179,16 @@ D3D12_RESOURCE_STATES ResourceDX::GetNativeResourceState(State resource_state) n
     return D3D12_RESOURCE_STATE_COMMON;
 }
 
-D3D12_RESOURCE_BARRIER ResourceDX::GetNativeResourceBarrier(const Barrier& resource_barrier) noexcept
+D3D12_RESOURCE_BARRIER ResourceDX::GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change) noexcept
 {
     META_FUNCTION_TASK();
-    switch (resource_barrier.type)
+    switch (id.type)
     {
     case Barrier::Type::Transition:
         return CD3DX12_RESOURCE_BARRIER::Transition(
-            dynamic_cast<const ResourceDX&>(resource_barrier.resource).GetNativeResource(),
-            GetNativeResourceState(resource_barrier.state_before),
-            GetNativeResourceState(resource_barrier.state_after)
+            dynamic_cast<const ResourceDX&>(id.resource).GetNativeResource(),
+            GetNativeResourceState(state_change.before),
+            GetNativeResourceState(state_change.after)
         );
     default:
         assert(0);

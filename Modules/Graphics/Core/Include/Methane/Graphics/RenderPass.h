@@ -118,6 +118,7 @@ struct RenderPass
         DepthAttachment    depth_attachment;
         StencilAttachment  stencil_attachment;
         Access::Mask       shader_access_mask = Access::None;
+        bool               is_final_pass = true;
 
         bool operator==(const Settings& other) const;
         bool operator!=(const Settings& other) const;

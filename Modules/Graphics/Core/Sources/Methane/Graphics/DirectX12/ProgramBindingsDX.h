@@ -121,7 +121,7 @@ private:
     void AddRootParameterBinding(const Program::ArgumentDesc& argument_desc, RootParameterBinding root_parameter_binding);
     void AddResourceState(const Program::ArgumentDesc& argument_desc, ResourceState resource_state);
     void UpdateRootParameterBindings();
-    Ptr<ResourceBase::Barriers> ApplyResourceStates(bool apply_constant_resource_states) const;
+    bool ApplyResourceStates(bool apply_constant_resource_states) const;
     void ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const;
     void CopyDescriptorsToGpu();
 
@@ -132,6 +132,8 @@ private:
     using ResourceStates = std::vector<ResourceState>;
     ResourceStates        m_constant_resource_states;
     ResourceStates        m_variadic_resource_states;
+
+    mutable Ptr<ResourceBase::Barriers> m_sp_resource_transition_barriers;
 };
 
 } // namespace Methane::Graphics

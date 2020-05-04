@@ -39,7 +39,7 @@ public:
     class BarriersMT : public Barriers
     {
     public:
-        BarriersMT(std::vector<Barrier> barriers) : Barriers(barriers) {}
+        BarriersMT(const Set& barriers) : Barriers(barriers) {}
     };
 
     class ReleasePoolMT : public ReleasePool

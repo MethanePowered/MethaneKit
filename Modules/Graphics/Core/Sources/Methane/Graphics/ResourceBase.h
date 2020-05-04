@@ -28,6 +28,9 @@ Base implementation of the resource interface.
 #include "ObjectBase.h"
 #include "DescriptorHeap.h"
 
+#include <set>
+#include <map>
+
 namespace Methane::Graphics
 {
 
@@ -68,13 +71,39 @@ public:
             Transition,
         };
 
-        Type      type;
-        Resource& resource;
-        State     state_before;
-        State     state_after;
+        struct Id
+        {
+            const Type      type;
+            const Resource& resource;
 
+            Id(Type type, Resource& resource);
+
+            bool operator<(const Id& other) const noexcept;
+            bool operator==(const Id& other) const noexcept;
+            bool operator!=(const Id& other) const noexcept;
+        };
+
+        struct StateChange
+        {
+            State before;
+            State after;
+
+            StateChange(State before, State after);
+
+            bool operator<(const StateChange& other) const noexcept;
+            bool operator==(const StateChange& other) const noexcept;
+            bool operator!=(const StateChange& other) const noexcept;
+        };
+
+        Id          id;
+        StateChange state_change;
+
+        Barrier(Id id, StateChange state_change);
         Barrier(Type type, Resource& resource, State state_before, State state_after);
 
+        bool operator<(const Barrier& other) const noexcept;
+        bool operator==(const Barrier& other) const noexcept;
+        bool operator!=(const Barrier& other) const noexcept;
         operator std::string() const noexcept;
 
         static std::string GetTypeName(Type type);
@@ -83,22 +112,29 @@ public:
     class Barriers
     {
     public:
-        static Ptr<Barriers> Create(std::vector<Barrier> barriers = {});
+        using Set = std::set<Barrier>;
+        using Map = std::map<Barrier::Id, Barrier::StateChange>;
+
+        static Ptr<Barriers> Create(const Set& barriers = {});
         static Ptr<Barriers> CreateTransition(const Refs<Resource>& resources, State state_before, State state_after);
 
-        bool IsEmpty() const noexcept { return m_barriers.empty(); }
-        const std::vector<Barrier>& Get() const noexcept { return m_barriers; }
+        bool IsEmpty() const noexcept      { return m_barriers_map.empty(); }
+        const Map& GetMap() const noexcept { return m_barriers_map; }
+        Set        GetSet() const noexcept;
 
-        virtual const Barrier& Add(Barrier::Type type, Resource& resource, State state_before, State state_after);
+        bool Add(Barrier::Type type, Resource& resource, State before, State after);
+        bool AddTransition(Resource& resource, State before, State after);
+        virtual bool Add(const Barrier::Id& id, const Barrier::StateChange& state_change);
+
         virtual ~Barriers() = default;
 
         operator std::string() const noexcept;
 
     protected:
-        Barriers(std::vector<Barrier> barriers);
+        Barriers(const Set& barriers);
 
     private:
-        std::vector<Barrier> m_barriers;
+        Map  m_barriers_map;
     };
 
     struct ReleasePool
@@ -130,7 +166,7 @@ public:
     DescriptorHeap::Types     GetUsedDescriptorHeapTypes() const noexcept;
 
     State   GetState() const noexcept                                            { return m_state;  }
-    void    SetState(State state, Ptr<Barriers>& out_barriers);
+    bool    SetState(State state, Ptr<Barriers>& out_barriers);
 
     static std::string GetStateName(State state);
 

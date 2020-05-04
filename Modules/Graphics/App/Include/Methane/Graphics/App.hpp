@@ -187,8 +187,9 @@ public:
                         : 1.f
                 ),
                 RenderPass::StencilAttachment(),
-                m_settings.screen_pass_access
-                });
+                m_settings.screen_pass_access,
+                true // final render pass
+            });
 
             m_frames.emplace_back(std::move(frame));
         }

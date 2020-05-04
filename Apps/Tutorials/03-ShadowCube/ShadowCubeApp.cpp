@@ -272,7 +272,8 @@ void ShadowCubeApp::Init()
                 context_settings.clear_depth_stencil->first
             ),
             gfx::RenderPass::StencilAttachment(),
-            gfx::RenderPass::Access::ShaderResources
+            gfx::RenderPass::Access::ShaderResources,
+            false // intermediate render pass
         });
         
         // Create render pass and command list for shadow pass rendering

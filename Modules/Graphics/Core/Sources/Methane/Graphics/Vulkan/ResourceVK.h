@@ -39,7 +39,7 @@ public:
     class BarriersVK : public Barriers
     {
     public:
-        BarriersVK(std::vector<Barrier> barriers) : Barriers(barriers) {}
+        BarriersVK(const Set& barriers) : Barriers(barriers) {}
     };
 
     class ReleasePoolVK final : public ReleasePool

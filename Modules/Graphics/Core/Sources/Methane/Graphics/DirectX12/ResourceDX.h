@@ -43,9 +43,9 @@ public:
     class BarriersDX : public Barriers
     {
     public:
-        BarriersDX(std::vector<Barrier> barriers);
+        BarriersDX(const Set& barriers);
 
-        const ResourceBase::Barrier& Add(Barrier::Type type, Resource& resource, State state_before, State state_after) override;
+        bool Add(const Barrier::Id& id, const Barrier::StateChange& state_change) override;
 
         const std::vector<D3D12_RESOURCE_BARRIER>& GetNativeResourceBarriers() const { return m_native_resource_barriers; }
 
@@ -98,7 +98,8 @@ public:
     D3D12_GPU_DESCRIPTOR_HANDLE         GetNativeGpuDescriptorHandle(const Descriptor& desc) const noexcept;
 
     static D3D12_RESOURCE_STATES        GetNativeResourceState(State resource_state) noexcept;
-    static D3D12_RESOURCE_BARRIER       GetNativeResourceBarrier(const Barrier& resource_barrier) noexcept;
+    static D3D12_RESOURCE_BARRIER       GetNativeResourceBarrier(const Barrier& resource_barrier) noexcept  { return GetNativeResourceBarrier(resource_barrier.id, resource_barrier.state_change); }
+    static D3D12_RESOURCE_BARRIER       GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change) noexcept;
 
 protected:
     IContextDX& GetContextDX() noexcept;

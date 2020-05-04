@@ -72,7 +72,8 @@ bool RenderPass::Settings::operator==(const Settings& other) const
     return color_attachments  == other.color_attachments &&
            depth_attachment   == other.depth_attachment &&
            stencil_attachment == other.stencil_attachment &&
-           shader_access_mask == other.shader_access_mask;
+           shader_access_mask == other.shader_access_mask &&
+           is_final_pass      == other.is_final_pass;
 }
 
 bool RenderPass::Settings::operator!=(const Settings& other) const
@@ -86,6 +87,7 @@ RenderPassBase::RenderPassBase(RenderContextBase& context, const Settings& setti
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
+    InitAttachmentStates();
 }
 
 bool RenderPassBase::Update(const RenderPass::Settings& settings)
@@ -95,14 +97,16 @@ bool RenderPassBase::Update(const RenderPass::Settings& settings)
         return false;
 
     m_settings = settings;
-    m_color_attach_resources.clear();
-    m_sp_color_begin_transition_barriers.reset();
-    m_sp_color_end_transition_barriers.reset();
-    m_sp_attach_resources_transition_barriers.reset();
+    m_color_attachment_textures.clear();
+    m_p_depth_attachment_texture = nullptr;
+    m_sp_begin_transition_barriers.reset();
+    m_sp_end_transition_barriers.reset();
+
+    InitAttachmentStates();
     return true;
 }
 
-void RenderPassBase::Begin(RenderCommandListBase& command_list)
+void RenderPassBase::Begin(RenderCommandListBase& render_command_list)
 {
     META_FUNCTION_TASK();
 
@@ -111,35 +115,13 @@ void RenderPassBase::Begin(RenderCommandListBase& command_list)
         throw std::logic_error("Can not begin pass which was begun already and was not ended.");
     }
 
-    if (!m_sp_attach_resources_transition_barriers)
-    {
-        for (ColorAttachment& color_attachment : m_settings.color_attachments)
-        {
-            Ptr<Texture> sp_color_texture = color_attachment.wp_texture.lock();
-            if (!sp_color_texture)
-                continue;
-
-            TextureBase& color_texture = dynamic_cast<TextureBase&>(*sp_color_texture);
-            color_texture.SetState(ResourceBase::State::RenderTarget, m_sp_attach_resources_transition_barriers);
-        }
-
-        Ptr<Texture> sp_depth_texture = m_settings.depth_attachment.wp_texture.lock();
-        if (sp_depth_texture)
-        {
-            TextureBase& depth_texture = dynamic_cast<TextureBase&>(*sp_depth_texture);
-            depth_texture.SetState(ResourceBase::State::DepthWrite, m_sp_attach_resources_transition_barriers);
-        }
-    }
-
-    if (m_sp_attach_resources_transition_barriers && !m_sp_attach_resources_transition_barriers->IsEmpty())
-    {
-        command_list.SetResourceBarriers(*m_sp_attach_resources_transition_barriers);
-    }
+    SetAttachmentStates(ResourceBase::State::RenderTarget, ResourceBase::State::DepthWrite,
+                        m_sp_begin_transition_barriers, render_command_list);
 
     m_is_begun = true;
 }
 
-void RenderPassBase::End(RenderCommandListBase&)
+void RenderPassBase::End(RenderCommandListBase& render_command_list)
 {
     META_FUNCTION_TASK();
 
@@ -148,47 +130,82 @@ void RenderPassBase::End(RenderCommandListBase&)
         throw std::logic_error("Can not end render pass, which was not begun.");
     }
 
+    if (m_settings.is_final_pass)
+    {
+        SetAttachmentStates(ResourceBase::State::Present, { },
+                            m_sp_end_transition_barriers, render_command_list);
+    }
+
     m_is_begun = false;
 }
 
-const Refs<Resource>& RenderPassBase::GetColorAttachmentResources() const
+void RenderPassBase::InitAttachmentStates()
+{
+    Ptr<ResourceBase::Barriers> sp_transition_barriers;
+    for (const Ref<TextureBase>& color_texture_ref : GetColorAttachmentTextures())
+    {
+        if (color_texture_ref.get().GetState() == ResourceBase::State::Common)
+            color_texture_ref.get().SetState(ResourceBase::State::Present, sp_transition_barriers);
+    }
+}
+
+void RenderPassBase::SetAttachmentStates(const std::optional<ResourceBase::State>& color_state,
+                                         const std::optional<ResourceBase::State>& depth_state,
+                                         Ptr<ResourceBase::Barriers>& sp_transition_barriers,
+                                         RenderCommandListBase& render_command_list)
 {
     META_FUNCTION_TASK();
-    if (!m_color_attach_resources.empty())
-        return m_color_attach_resources;
+    bool attachment_states_changed = false;
 
-    m_color_attach_resources.reserve(m_settings.color_attachments.size());
+    if (color_state)
+    {
+        for (const Ref<TextureBase>& color_texture_ref : GetColorAttachmentTextures())
+        {
+            attachment_states_changed |= color_texture_ref.get().SetState(*color_state, sp_transition_barriers);
+        }
+    }
+
+    if (depth_state)
+    {
+        TextureBase* p_depth_texture = GetDepthAttachmentTexture();
+        if (p_depth_texture)
+        {
+            attachment_states_changed |= p_depth_texture->SetState(*depth_state, sp_transition_barriers);
+        }
+    }
+
+    if (sp_transition_barriers && attachment_states_changed)
+    {
+        render_command_list.SetResourceBarriers(*sp_transition_barriers);
+    }
+}
+
+const Refs<TextureBase>& RenderPassBase::GetColorAttachmentTextures() const
+{
+    META_FUNCTION_TASK();
+    if (!m_color_attachment_textures.empty())
+        return m_color_attachment_textures;
+
+    m_color_attachment_textures.reserve(m_settings.color_attachments.size());
     for (const ColorAttachment& color_attach : m_settings.color_attachments)
     {
         if (color_attach.wp_texture.expired())
         {
             throw std::invalid_argument("Can not use color attachment without texture.");
         }
-        m_color_attach_resources.push_back(*color_attach.wp_texture.lock());
+        m_color_attachment_textures.push_back(dynamic_cast<TextureBase&>(*color_attach.wp_texture.lock()));
     }
-    return m_color_attach_resources;
+    return m_color_attachment_textures;
 }
 
-const ResourceBase::Barriers& RenderPassBase::GetColorBeginTransitionBarriers() const noexcept
+TextureBase* RenderPassBase::GetDepthAttachmentTexture() const
 {
     META_FUNCTION_TASK();
-    if (m_sp_color_begin_transition_barriers)
-        return *m_sp_color_begin_transition_barriers;
-
-    m_sp_color_begin_transition_barriers = ResourceBase::Barriers::CreateTransition(GetColorAttachmentResources(),
-                                              ResourceBase::State::Present, ResourceBase::State::RenderTarget);
-    return *m_sp_color_begin_transition_barriers;
-}
-
-const ResourceBase::Barriers& RenderPassBase::GetColorEndTransitionBarriers() const noexcept
-{
-    META_FUNCTION_TASK();
-    if (m_sp_color_end_transition_barriers)
-        return *m_sp_color_end_transition_barriers;
-
-    m_sp_color_end_transition_barriers = ResourceBase::Barriers::CreateTransition(GetColorAttachmentResources(),
-                                            ResourceBase::State::RenderTarget, ResourceBase::State::Present);
-    return *m_sp_color_end_transition_barriers;
+    if (!m_p_depth_attachment_texture && !m_settings.depth_attachment.wp_texture.expired())
+    {
+        m_p_depth_attachment_texture = dynamic_cast<TextureBase*>(m_settings.depth_attachment.wp_texture.lock().get());
+    }
+    return m_p_depth_attachment_texture;
 }
 
 } // namespace Methane::Graphics

@@ -312,9 +312,6 @@ void RenderPassDX::Begin(RenderCommandListBase& command_list)
 
     SetNativeDescriptorHeaps(command_list_dx);
 
-    // Set RT transition barriers
-    command_list.SetResourceBarriers(GetColorBeginTransitionBarriers());
-
     ID3D12GraphicsCommandList4* p_dx_command_list_4 = command_list_dx.GetNativeCommandList4();
     if (!m_is_native_render_pass_available.has_value() || m_is_native_render_pass_available.value())
     {
@@ -359,9 +356,6 @@ void RenderPassDX::End(RenderCommandListBase& command_list)
         assert(!!p_dx_command_list_4);
         p_dx_command_list_4->EndRenderPass();
     }
-
-    // Set RT transition barriers
-    command_list.SetResourceBarriers(GetColorEndTransitionBarriers());
 
     RenderPassBase::End(command_list);
 }
