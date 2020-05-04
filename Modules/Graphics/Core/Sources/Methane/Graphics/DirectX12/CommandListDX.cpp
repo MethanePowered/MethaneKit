@@ -92,10 +92,10 @@ CommandListsDX::CommandListsDX(Refs<CommandList> command_list_refs)
     m_execution_completed_fence.SetName(fence_name_ss.str());
 }
 
-void CommandListsDX::Execute(uint32_t frame_index)
+void CommandListsDX::Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
-    CommandListsBase::Execute(frame_index);
+    CommandListsBase::Execute(frame_index, completed_callback);
     GetCommandQueueDX().GetNativeCommandQueue().ExecuteCommandLists(static_cast<UINT>(m_native_command_lists.size()), m_native_command_lists.data());
     m_execution_completed_fence.Signal();
 }

@@ -49,7 +49,7 @@ public:
     ~CommandQueueBase() override;
 
     // CommandQueue interface
-    void Execute(CommandLists& command_lists) override;
+    void Execute(CommandLists& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
 
     Ptr<CommandQueueBase> GetPtr()           { return shared_from_this(); }
     ContextBase&          GetContext()       { return m_context; }

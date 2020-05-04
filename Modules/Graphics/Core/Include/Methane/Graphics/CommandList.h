@@ -43,6 +43,13 @@ struct CommandList : virtual Object
         ParallelRender,
     };
 
+    enum State
+    {
+        Pending,
+        Committed,
+        Executing,
+    };
+
     struct DebugGroup
     {
         static Ptr<DebugGroup> Create(std::string name);
@@ -55,15 +62,18 @@ struct CommandList : virtual Object
         virtual ~DebugGroup() = default;
     };
 
+    using CompletedCallback = std::function<void(CommandList& command_list)>;
+
     // CommandList interface
-    virtual Type GetType() const = 0;
-    virtual void PushDebugGroup(DebugGroup& debug_group) = 0;
-    virtual void PopDebugGroup() = 0;
-    virtual void Reset(DebugGroup* p_debug_group = nullptr) = 0;
-    virtual void SetProgramBindings(ProgramBindings& program_bindings,
-                                    ProgramBindings::ApplyBehavior::Mask apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental) = 0;
-    virtual void Commit() = 0;
-    virtual void WaitUntilCompleted(uint32_t timeout_ms = 0u) = 0;
+    virtual Type  GetType() const noexcept = 0;
+    virtual State GetState() const noexcept = 0;
+    virtual void  PushDebugGroup(DebugGroup& debug_group) = 0;
+    virtual void  PopDebugGroup() = 0;
+    virtual void  Reset(DebugGroup* p_debug_group = nullptr) = 0;
+    virtual void  SetProgramBindings(ProgramBindings& program_bindings,
+                                     ProgramBindings::ApplyBehavior::Mask apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental) = 0;
+    virtual void  Commit() = 0;
+    virtual void  WaitUntilCompleted(uint32_t timeout_ms = 0u) = 0;
     virtual CommandQueue& GetCommandQueue() = 0;
 
     virtual ~CommandList() = default;

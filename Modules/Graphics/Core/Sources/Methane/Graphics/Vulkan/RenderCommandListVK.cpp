@@ -116,24 +116,20 @@ void RenderCommandListVK::Draw(Primitive primitive, uint32_t vertex_count, uint3
                                uint32_t instance_count, uint32_t start_instance)
 {
     META_FUNCTION_TASK();
-
     RenderCommandListBase::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
 }
 
 void RenderCommandListVK::Commit()
 {
     META_FUNCTION_TASK();
-    
     assert(!IsCommitted());
-
     RenderCommandListBase::Commit();
 }
 
-void RenderCommandListVK::Execute(uint32_t frame_index)
+void RenderCommandListVK::Execute(uint32_t frame_index, const CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
-
-    RenderCommandListBase::Execute(frame_index);
+    RenderCommandListBase::Execute(frame_index, completed_callback);
 }
 
 CommandQueueVK& RenderCommandListVK::GetCommandQueueVK() noexcept

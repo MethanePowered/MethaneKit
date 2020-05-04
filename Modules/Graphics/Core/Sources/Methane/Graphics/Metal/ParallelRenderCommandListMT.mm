@@ -115,11 +115,11 @@ void ParallelRenderCommandListMT::Commit()
     [m_mtl_cmd_buffer enqueue];
 }
 
-void ParallelRenderCommandListMT::Execute(uint32_t frame_index)
+void ParallelRenderCommandListMT::Execute(uint32_t frame_index, const CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
 
-    ParallelRenderCommandListBase::Execute(frame_index);
+    ParallelRenderCommandListBase::Execute(frame_index, completed_callback);
 
     [m_mtl_cmd_buffer addCompletedHandler:^(id<MTLCommandBuffer>) {
         Complete(frame_index);

@@ -45,7 +45,7 @@ public:
 
     // CommandListBase interface
     void SetResourceBarriers(const ResourceBase::Barriers&) override { }
-    void Execute(uint32_t frame_index) override;
+    void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {}) override;
 
     // BlitCommandList interface
     void Reset(DebugGroup* p_debug_group = nullptr) override;

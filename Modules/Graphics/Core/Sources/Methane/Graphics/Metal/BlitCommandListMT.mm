@@ -125,11 +125,11 @@ void BlitCommandListMT::Commit()
     [m_mtl_cmd_buffer enqueue];
 }
 
-void BlitCommandListMT::Execute(uint32_t frame_index)
+void BlitCommandListMT::Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
 
-    CommandListBase::Execute(frame_index);
+    CommandListBase::Execute(frame_index, completed_callback);
 
     if (!m_mtl_cmd_buffer)
         return;

@@ -184,7 +184,7 @@ void CommandListBase::WaitUntilCompleted(uint32_t timeout_ms)
 
 }
 
-void CommandListBase::Execute(uint32_t frame_index)
+void CommandListBase::Execute(uint32_t frame_index, const CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
@@ -201,6 +201,7 @@ void CommandListBase::Execute(uint32_t frame_index)
 
     META_LOG("Command list \"" + GetName() + "\" is executing on frame " + std::to_string(frame_index));
 
+    m_completed_callback = completed_callback;
     m_state = State::Executing;
     m_state_change_condition_var.notify_one();
 }
@@ -224,6 +225,9 @@ void CommandListBase::Complete(uint32_t frame_index)
 
     m_state = State::Pending;
     m_state_change_condition_var.notify_one();
+
+    if (m_completed_callback)
+        m_completed_callback(*this);
 }
 
 CommandListBase::DebugGroupBase* CommandListBase::GetTopOpenDebugGroup() const
@@ -332,13 +336,13 @@ CommandList& CommandListsBase::operator[](Data::Index index) const
     return m_refs[index].get();
 }
 
-void CommandListsBase::Execute(Data::Index frame_index)
+void CommandListsBase::Execute(Data::Index frame_index, const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
     m_executing_on_frame_index = frame_index;
     for (const Ref<CommandListBase>& command_list_ref : m_base_refs)
     {
-        command_list_ref.get().Execute(frame_index);
+        command_list_ref.get().Execute(frame_index, completed_callback);
     }
 }
 

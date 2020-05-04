@@ -67,11 +67,10 @@ void ParallelRenderCommandListVK::Commit()
     ParallelRenderCommandListBase::Commit();
 }
 
-void ParallelRenderCommandListVK::Execute(uint32_t frame_index)
+void ParallelRenderCommandListVK::Execute(uint32_t frame_index, const CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
-
-    ParallelRenderCommandListBase::Execute(frame_index);
+    ParallelRenderCommandListBase::Execute(frame_index, completed_callback);
 }
 
 CommandQueueVK& ParallelRenderCommandListVK::GetCommandQueueVK() noexcept

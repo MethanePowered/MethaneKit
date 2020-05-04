@@ -65,7 +65,7 @@ public:
     CommandListsDX(Refs<CommandList> command_list_refs);
 
     // CommandListsBase interface
-    void Execute(uint32_t frame_index) override;
+    void Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback) final;
 
     void WaitUntilCompleted() noexcept;
 

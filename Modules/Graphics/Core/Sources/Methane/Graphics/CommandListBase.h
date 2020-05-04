@@ -51,13 +51,6 @@ class CommandListBase
     friend class CommandQueueBase;
 
 public:
-    enum State
-    {
-        Pending,
-        Committed,
-        Executing,
-    };
-
     struct CommandState final
     {
         // NOTE:
@@ -91,18 +84,19 @@ public:
     CommandListBase(CommandQueueBase& command_queue, Type type);
 
     // CommandList interface
-    Type GetType() const override { return m_type; }
-    void PushDebugGroup(DebugGroup& debug_group) override;
-    void PopDebugGroup() override;
-    void Reset(DebugGroup* p_debug_group = nullptr) override;
-    void SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
-    void Commit() override;
-    void WaitUntilCompleted(uint32_t timeout_ms = 0u) override;
+    Type  GetType() const noexcept override  { return m_type; }
+    State GetState() const noexcept override { return m_state; }
+    void  PushDebugGroup(DebugGroup& debug_group) override;
+    void  PopDebugGroup() override;
+    void  Reset(DebugGroup* p_debug_group = nullptr) override;
+    void  SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
+    void  Commit() override;
+    void  WaitUntilCompleted(uint32_t timeout_ms = 0u) override;
     CommandQueue& GetCommandQueue() override;
 
     // CommandListBase interface
     virtual void SetResourceBarriers(const ResourceBase::Barriers& resource_barriers) = 0;
-    virtual void Execute(uint32_t frame_index);
+    virtual void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {});
     virtual void Complete(uint32_t frame_index); // Called from another thread, which is tracking GPU execution
 
     DebugGroupBase* GetTopOpenDebugGroup() const;
@@ -112,7 +106,6 @@ public:
     CommandQueueBase&          GetCommandQueueBase() noexcept;
     const CommandQueueBase&    GetCommandQueueBase() const noexcept;
     const ProgramBindingsBase* GetProgramBindings() const noexcept  { return GetCommandState().p_program_bindings; }
-    State                      GetState() const noexcept            { return m_state; }
     Ptr<CommandListBase>       GetPtr()                             { return shared_from_this(); }
 
 protected:
@@ -138,6 +131,7 @@ private:
     CommandState              m_command_state;
     DebugGroupStack           m_open_debug_groups;
     uint32_t                  m_committed_frame_index = 0;
+    CompletedCallback         m_completed_callback;
     State                     m_state                 = State::Pending;
     TracyLockable(std::mutex, m_state_mutex);
     std::mutex                m_state_change_mutex;
@@ -157,7 +151,7 @@ public:
     CommandList&             operator[](Data::Index index) const override;
 
     // CommandListsBase interface
-    virtual void Execute(Data::Index frame_index);
+    virtual void Execute(Data::Index frame_index, const CommandList::CompletedCallback& completed_callback);
     
     void Complete() noexcept;
 

@@ -51,7 +51,7 @@ public:
 
     // CommandListBase interface
     void SetResourceBarriers(const ResourceBase::Barriers&) override { throw std::logic_error("Can not set resource barriers on parallel render command list."); }
-    void Execute(uint32_t frame_index) override;
+    void Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback) override;
     void Complete(uint32_t frame_index) override;
 
     // CommandList interface

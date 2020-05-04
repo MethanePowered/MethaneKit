@@ -75,10 +75,10 @@ void BlitCommandListVK::Commit()
     CommandListBase::Commit();
 }
 
-void BlitCommandListVK::Execute(uint32_t frame_index)
+void BlitCommandListVK::Execute(uint32_t frame_index, const CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
-    CommandListBase::Execute(frame_index);
+    CommandListBase::Execute(frame_index, completed_callback);
 }
 
 CommandQueueVK& BlitCommandListVK::GetCommandQueueVK() noexcept

@@ -113,13 +113,13 @@ void ParallelRenderCommandListDX::Commit()
     ParallelRenderCommandListBase::Commit();
 }
 
-void ParallelRenderCommandListDX::Execute(uint32_t frame_index)
+void ParallelRenderCommandListDX::Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
 
     m_beginning_command_list.Execute(frame_index);
     
-    ParallelRenderCommandListBase::Execute(frame_index);
+    ParallelRenderCommandListBase::Execute(frame_index, completed_callback);
 
     m_ending_command_list.Execute(frame_index);
 }

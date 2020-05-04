@@ -240,11 +240,11 @@ void RenderCommandListMT::Commit()
     [m_mtl_cmd_buffer enqueue];
 }
 
-void RenderCommandListMT::Execute(uint32_t frame_index)
+void RenderCommandListMT::Execute(uint32_t frame_index, const CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
 
-    RenderCommandListBase::Execute(frame_index);
+    RenderCommandListBase::Execute(frame_index, completed_callback);
 
     if (IsParallel() || !m_mtl_cmd_buffer)
         return;

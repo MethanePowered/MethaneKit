@@ -42,14 +42,14 @@ CommandQueueBase::~CommandQueueBase()
     META_FUNCTION_TASK();
 }
 
-void CommandQueueBase::Execute(CommandLists& command_lists)
+void CommandQueueBase::Execute(CommandLists& command_lists, const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
 
     const uint32_t frame_index = GetCurrentFrameBufferIndex();
     META_LOG("Command queue \"" + GetName() + "\" is executing on frame " + std::to_string(frame_index));
 
-    static_cast<CommandListsBase&>(command_lists).Execute(frame_index);
+    static_cast<CommandListsBase&>(command_lists).Execute(frame_index, completed_callback);
 }
 
 uint32_t CommandQueueBase::GetCurrentFrameBufferIndex() const

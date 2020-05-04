@@ -117,7 +117,7 @@ void ParallelRenderCommandListBase::SetParallelCommandListsCount(uint32_t count)
     }
 }
 
-void ParallelRenderCommandListBase::Execute(uint32_t frame_index)
+void ParallelRenderCommandListBase::Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
 
@@ -128,7 +128,7 @@ void ParallelRenderCommandListBase::Execute(uint32_t frame_index)
         thread_render_command_list.Execute(frame_index);
     }
 
-    CommandListBase::Execute(frame_index);
+    CommandListBase::Execute(frame_index, completed_callback);
 }
 
 void ParallelRenderCommandListBase::Complete(uint32_t frame_index)
