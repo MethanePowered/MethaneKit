@@ -52,7 +52,7 @@ public:
     ~CommandQueueDX() override;
 
     // CommandQueue interface
-    void Execute(CommandLists& command_lists) override;
+    void Execute(CommandLists& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
 
     // Object interface
     void SetName(const std::string& name) override;

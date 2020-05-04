@@ -45,7 +45,7 @@ public:
     void Commit() override;
 
     // CommandListBase interface
-    void Execute(uint32_t frame_indexc = {}) override;
+    void Execute(uint32_t frame_indexc, const CompletedCallback& completed_callback = {}) override;
     void Complete(uint32_t frame_index) override;
 
     // Object interface

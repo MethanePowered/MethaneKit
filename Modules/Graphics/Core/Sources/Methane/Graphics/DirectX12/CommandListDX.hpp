@@ -112,12 +112,6 @@ public:
         m_cp_command_list->ResourceBarrier(static_cast<UINT>(dx_resource_barriers.size()), dx_resource_barriers.data());
     }
 
-    void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {}) override
-    {
-        META_FUNCTION_TASK();
-        CommandListBaseT::Execute(frame_index, completed_callback);
-    }
-
     // CommandList interface
 
     void Reset(CommandList::DebugGroup* p_debug_group) override

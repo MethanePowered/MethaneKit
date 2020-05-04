@@ -68,11 +68,11 @@ CommandQueueDX::~CommandQueueDX()
     m_execution_waiting_thread.join();
 }
 
-void CommandQueueDX::Execute(CommandLists& command_lists)
+void CommandQueueDX::Execute(CommandLists& command_lists, const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
 
-    CommandQueueBase::Execute(command_lists);
+    CommandQueueBase::Execute(command_lists, completed_callback);
 
     CommandListsDX& dx_command_lists = static_cast<CommandListsDX&>(command_lists);
     {
