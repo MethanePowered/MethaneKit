@@ -23,6 +23,8 @@ DirectX 12 implementation of the command queue interface.
 
 #pragma once
 
+#include "QueryBufferDX.h"
+
 #include <Methane/Graphics/CommandQueueBase.h>
 #include <Methane/Instrumentation.h>
 
@@ -59,8 +61,9 @@ public:
 
     void CompleteExecution(const std::optional<Data::Index>& frame_index = { });
 
-    IContextDX& GetContextDX() noexcept;
-    ID3D12CommandQueue& GetNativeCommandQueue();
+    IContextDX&             GetContextDX() noexcept;
+    ID3D12CommandQueue&     GetNativeCommandQueue() noexcept;
+    QueryBuffer&            GetTimestampQueryBuffer() noexcept  { return m_timestamp_query_buffer; }
 
 private:
     void WaitForExecution() noexcept;
@@ -72,6 +75,7 @@ private:
     std::condition_variable           m_execution_waiting_condition_var;
     std::atomic<bool>                 m_execution_waiting{ true };
     std::thread                       m_execution_waiting_thread;
+    TIMESTAMP_QUERY_BUFFER            m_timestamp_query_buffer;
 };
 
 } // namespace Methane::Graphics

@@ -34,6 +34,9 @@ DirectX 12 base template implementation of the context interface.
 #include <wrl.h>
 #include <d3d12.h>
 
+#include <array>
+#include <cassert>
+
 namespace Methane::Graphics
 {
 
@@ -73,8 +76,29 @@ public:
     const DeviceDX& GetDeviceDX() const noexcept override       { return static_cast<const DeviceDX&>(GetDeviceBase()); }
     CommandQueueDX& GetUploadCommandQueueDX() noexcept override { return static_cast<CommandQueueDX&>(GetUploadCommandQueue()); }
 
+    ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1u << 15u) override
+    {
+        META_FUNCTION_TASK();
+        assert(type < m_query_heaps.size());
+        wrl::ComPtr<ID3D12QueryHeap>& cp_query_heap = m_query_heaps[type];
+        if (!cp_query_heap)
+        {
+            D3D12_QUERY_HEAP_DESC query_heap_desc{};
+            query_heap_desc.Count = max_query_count;
+            query_heap_desc.Type  = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
+            ThrowIfFailed(GetDeviceDX().GetNativeDevice()->CreateQueryHeap(&query_heap_desc, IID_PPV_ARGS(&cp_query_heap)),
+                          GetDeviceDX().GetNativeDevice().Get());
+        }
+        assert(cp_query_heap);
+        return *cp_query_heap.Get();
+    }
+
 protected:
     DeviceDX& GetMutableDeviceDX() noexcept { return static_cast<DeviceDX&>(GetDeviceBase()); }
+
+private:
+    using NativeQueryHeaps = std::array<wrl::ComPtr<ID3D12QueryHeap>, D3D12_QUERY_HEAP_TYPE_COPY_QUEUE_TIMESTAMP + 1>;
+    NativeQueryHeaps m_query_heaps;
 };
 
 } // namespace Methane::Graphics

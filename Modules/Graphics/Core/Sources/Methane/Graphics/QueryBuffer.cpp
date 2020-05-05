@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,28 +16,32 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/ContextDX.h
-DirectX 12 context accessor interface for template class ContextDX<ContextBaseT>
+FILE: Methane/Graphics/DirectX12/QueryBuffer.cpp
+GPU data query buffer base implementation.
 
 ******************************************************************************/
 
-#pragma once
+#include "QueryBuffer.h"
+#include "CommandQueueBase.h"
 
-#include <d3d12.h>
+#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-class CommandQueueDX;
-class DeviceDX;
-
-struct IContextDX
+QueryBuffer::QueryBuffer(CommandQueueBase& command_queue, Type type)
+    : m_type(type)
+    , m_command_queue(command_queue)
+    , m_context(dynamic_cast<Context&>(command_queue.GetContext()))
 {
-    virtual const DeviceDX& GetDeviceDX() const noexcept = 0;
-    virtual CommandQueueDX& GetUploadCommandQueueDX() noexcept = 0;
-    virtual ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1u << 15u) = 0;
+    META_FUNCTION_TASK();
+}
 
-    virtual ~IContextDX() = default;
-};
+TimestampQueryBufferDummy::TimestampQueryBufferDummy(CommandQueueBase& command_queue, uint32_t)
+    : QueryBuffer(command_queue, Type::Timestamp)
+{
+    META_FUNCTION_TASK();
+}
 
 } // namespace Methane::Graphics

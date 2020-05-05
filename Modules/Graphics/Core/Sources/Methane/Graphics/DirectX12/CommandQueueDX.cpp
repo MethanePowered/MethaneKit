@@ -38,6 +38,8 @@ DirectX 12 implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
+constexpr uint32_t g_max_timestamp_queries_count_per_frame = 1000;
+
 Ptr<CommandQueue> CommandQueue::Create(Context& context)
 {
     META_FUNCTION_TASK();
@@ -47,6 +49,7 @@ Ptr<CommandQueue> CommandQueue::Create(Context& context)
 CommandQueueDX::CommandQueueDX(ContextBase& context)
     : CommandQueueBase(context)
     , m_execution_waiting_thread(&CommandQueueDX::WaitForExecution, this)
+    , m_timestamp_query_buffer(*this, g_max_timestamp_queries_count_per_frame)
 {
     META_FUNCTION_TASK();
 
@@ -108,7 +111,7 @@ IContextDX& CommandQueueDX::GetContextDX() noexcept
     return static_cast<IContextDX&>(GetContext());
 }
 
-ID3D12CommandQueue& CommandQueueDX::GetNativeCommandQueue()
+ID3D12CommandQueue& CommandQueueDX::GetNativeCommandQueue() noexcept
 {
     META_FUNCTION_TASK();
     assert(!!m_cp_command_queue);

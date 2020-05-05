@@ -14,6 +14,7 @@ option(METHANE_COMMAND_DEBUG_GROUPS_ENABLED "Enable command list debug groups wi
 option(METHANE_LOGGING_ENABLED              "Enable debug logging" OFF)
 option(METHANE_SCOPE_TIMERS_ENABLED         "Enable low-overhead profiling with scope-timers" OFF)
 option(METHANE_ITT_INSTRUMENTATION_ENABLED  "Enable ITT instrumentation for trace capture with Intel GPA or VTune" OFF)
+option(METHANE_GPU_INSTRUMENTATION_ENABLED  "Enable GPU instrumentation to collect command list execution timings" OFF)
 option(METHANE_TRACY_PROFILING_ENABLED      "Enable realtime profiling with Tracy" OFF)
 option(METHANE_TRACY_PROFILING_ON_DEMAND    "Enable Tracy data collection on demand, after client connection" OFF)
 
@@ -133,6 +134,10 @@ endif()
 if(METHANE_ITT_INSTRUMENTATION_ENABLED)
     message(STATUS "Methane ITT instrumentation is enabled")
     target_compile_definitions(MethaneBuildOptions INTERFACE -DITT_INSTRUMENTATION_ENABLED)
+endif()
+
+if(METHANE_GPU_INSTRUMENTATION_ENABLED)
+    message(STATUS "Methane GPU instrumentation is enabled")
 endif()
 
 if (METHANE_TRACY_PROFILING_ENABLED)

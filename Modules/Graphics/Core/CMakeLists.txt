@@ -29,6 +29,8 @@ if (WIN32)
         ${SOURCES_GRAPHICS_DIR}/ResourceDX.cpp
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.h
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/QueryBufferDX.h
+        ${SOURCES_GRAPHICS_DIR}/QueryBufferDX.cpp
         ${SOURCES_GRAPHICS_DIR}/BufferDX.h
         ${SOURCES_GRAPHICS_DIR}/BufferDX.cpp
         ${SOURCES_GRAPHICS_DIR}/TextureDX.h
@@ -245,6 +247,8 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/DescriptorHeap.cpp
     ${SOURCES_DIR}/ResourceManager.h
     ${SOURCES_DIR}/ResourceManager.cpp
+    ${SOURCES_DIR}/QueryBuffer.h
+    ${SOURCES_DIR}/QueryBuffer.cpp
 )
 
 add_library(${TARGET} STATIC
@@ -277,7 +281,9 @@ target_include_directories(${TARGET}
 
 target_compile_definitions(${TARGET}
     PUBLIC
-    $<$<BOOL:${METHANE_COMMAND_DEBUG_GROUPS_ENABLED}>:METHANE_COMMAND_DEBUG_GROUPS_ENABLED>
+        $<$<BOOL:${METHANE_COMMAND_DEBUG_GROUPS_ENABLED}>:METHANE_COMMAND_DEBUG_GROUPS_ENABLED>
+    PRIVATE
+        $<$<BOOL:${METHANE_GPU_INSTRUMENTATION_ENABLED}>:METHANE_GPU_INSTRUMENTATION_ENABLED>
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
