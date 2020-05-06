@@ -26,6 +26,8 @@ DirectX 12 GPU query results buffer.
 #include <Methane/Graphics/QueryBuffer.h>
 #include <Methane/Memory.hpp>
 
+#include <d3d12.h>
+
 namespace Methane::Graphics
 {
 
@@ -37,19 +39,24 @@ class  ResourceDX;
 class QueryBufferDX : public QueryBuffer
 {
 public:
-    QueryBufferDX(CommandQueueDX& command_queue, Type type, Data::Size buffer_size);
+    QueryBufferDX(CommandQueueDX& command_queue, Type type,
+                  Data::Size max_query_count, Data::Size buffer_size, Data::Size query_size);
 
-    CommandQueueDX&   GetCommandQueueDX() noexcept;
-    const IContextDX& GetContextDX() noexcept              { return m_context_dx; }
-    const ResourceDX& GetResultResourceDX() const noexcept { return m_result_resource_dx; }
+    CommandQueueDX&  GetCommandQueueDX() noexcept;
+    IContextDX&      GetContextDX() noexcept                { return m_context_dx; }
+    ResourceDX&      GetResultResourceDX() const noexcept   { return m_result_resource_dx; }
+    D3D12_QUERY_TYPE GetNativeQueryType() const noexcept    { return m_native_query_type; }
+    ID3D12QueryHeap& GetNativeQueryHeap() noexcept          { return m_native_query_heap; }
 
 protected:
-    Buffer&           GetResultBuffer() noexcept           { return *m_sp_result_buffer; }
+    Buffer& GetResultBuffer() noexcept { return *m_sp_result_buffer; }
 
 private:
     Ptr<Buffer>       m_sp_result_buffer;
-    const ResourceDX& m_result_resource_dx;
-    const IContextDX& m_context_dx;
+    IContextDX&       m_context_dx;
+    ResourceDX&       m_result_resource_dx;
+    D3D12_QUERY_TYPE  m_native_query_type;
+    ID3D12QueryHeap&  m_native_query_heap;
 };
 
 class TimestampQueryBufferDX final
@@ -57,19 +64,14 @@ class TimestampQueryBufferDX final
     , public ITimestampQueryBuffer
 {
 public:
-    explicit TimestampQueryBufferDX(CommandQueueDX& command_queue, uint32_t max_timestamps_per_frame);
+    TimestampQueryBufferDX(CommandQueueDX& command_queue, uint32_t max_timestamps_per_frame);
 
+    // ITimestampQueryBuffer interface
     GpuFrequency GetGpuFrequency() const noexcept override { return m_gpu_frequency; }
 
 private:
     const uint32_t     m_max_timestamps_per_frame;
     const GpuTimestamp m_gpu_frequency;
 };
-
-#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
-#define TIMESTAMP_QUERY_BUFFER TimestampQueryBufferDX
-#else
-#define TIMESTAMP_QUERY_BUFFER TimestampQueryBufferDummy
-#endif
 
 } // namespace Methane::Graphics

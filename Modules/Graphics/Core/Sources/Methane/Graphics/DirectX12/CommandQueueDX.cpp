@@ -46,21 +46,30 @@ Ptr<CommandQueue> CommandQueue::Create(Context& context)
     return std::make_shared<CommandQueueDX>(dynamic_cast<ContextBase&>(context));
 }
 
-CommandQueueDX::CommandQueueDX(ContextBase& context)
-    : CommandQueueBase(context)
-    , m_execution_waiting_thread(&CommandQueueDX::WaitForExecution, this)
-    , m_timestamp_query_buffer(*this, g_max_timestamp_queries_count_per_frame)
+static wrl::ComPtr<ID3D12CommandQueue> CreateNativeCommandQueue(const DeviceDX& device)
 {
     META_FUNCTION_TASK();
-
-    const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
+    const wrl::ComPtr<ID3D12Device>& cp_device = device.GetNativeDevice();
     assert(!!cp_device);
 
     D3D12_COMMAND_QUEUE_DESC queue_desc{};
     queue_desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
     queue_desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
-    ThrowIfFailed(cp_device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&m_cp_command_queue)), cp_device.Get());
+    wrl::ComPtr<ID3D12CommandQueue> cp_command_queue;
+    ThrowIfFailed(cp_device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&cp_command_queue)), cp_device.Get());
+    return cp_command_queue;
+}
+
+CommandQueueDX::CommandQueueDX(ContextBase& context)
+    : CommandQueueBase(context)
+    , m_cp_command_queue(CreateNativeCommandQueue(GetContextDX().GetDeviceDX()))
+    , m_execution_waiting_thread(&CommandQueueDX::WaitForExecution, this)
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+    , m_timestamp_query_buffer(*this, g_max_timestamp_queries_count_per_frame)
+#endif
+{
+    META_FUNCTION_TASK();
 }
 
 CommandQueueDX::~CommandQueueDX()

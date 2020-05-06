@@ -6,6 +6,7 @@ get_module_dirs("Methane/Data")
 
 set(SOURCES
     ${INCLUDE_DIR}/Range.hpp
+    ${INCLUDE_DIR}/RangeUtils.hpp
     ${INCLUDE_DIR}/RangeSet.hpp
     ${SOURCES_DIR}/RangeSet.cpp
 )

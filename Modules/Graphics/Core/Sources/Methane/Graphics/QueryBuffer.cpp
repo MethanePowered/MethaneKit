@@ -25,23 +25,68 @@ GPU data query buffer base implementation.
 #include "CommandQueueBase.h"
 
 #include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Data/RangeUtils.hpp>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-QueryBuffer::QueryBuffer(CommandQueueBase& command_queue, Type type)
+QueryBuffer::Query::Query(QueryBuffer& buffer, Data::Index index, Range data_range)
+    : m_buffer(buffer)
+    , m_index(index)
+    , m_data_range(data_range)
+{
+    META_FUNCTION_TASK();
+}
+
+QueryBuffer::Query::~Query()
+{
+    META_FUNCTION_TASK();
+    m_buffer.ReleaseQuery(*this);
+}
+
+QueryBuffer::QueryBuffer(CommandQueueBase& command_queue, Type type,
+                         Data::Size max_query_count, Data::Size buffer_size, Data::Size query_size)
     : m_type(type)
+    , m_buffer_size(buffer_size)
+    , m_query_size(query_size)
+    , m_free_indices({ { 0u, max_query_count } })
+    , m_free_data_ranges({ { 0u, buffer_size } })
     , m_command_queue(command_queue)
     , m_context(dynamic_cast<Context&>(command_queue.GetContext()))
 {
     META_FUNCTION_TASK();
 }
 
-TimestampQueryBufferDummy::TimestampQueryBufferDummy(CommandQueueBase& command_queue, uint32_t)
-    : QueryBuffer(command_queue, Type::Timestamp)
+Ptr<QueryBuffer::Query> QueryBuffer::CreateQuery()
 {
     META_FUNCTION_TASK();
+    const Data::Range<Data::Index> index_range = Data::ReserveRange(m_free_indices, 1u);
+    if (index_range.IsEmpty())
+        throw std::out_of_range("Maximum queries count is reached.");
+
+    const Query::Range data_range = Data::ReserveRange(m_free_data_ranges, m_query_size);
+    if (index_range.IsEmpty())
+        throw std::out_of_range("There is no space available for new query.");
+
+    return std::make_shared<Query>(*this, index_range.GetStart(), data_range);
+}
+
+void QueryBuffer::ReleaseQuery(const Query& query)
+{
+    META_FUNCTION_TASK();
+    m_free_indices.Add({ query.GetIndex(), query.GetIndex() + 1 });
+    m_free_data_ranges.Add(query.GetDataRange());
+}
+
+Data::Size ITimestampQueryBuffer::GetTimestampResultBufferSize(const Context& context, uint32_t max_timestamps_per_frame)
+{
+    META_FUNCTION_TASK();
+    const uint32_t frames_count = context.GetType() == Context::Type::Render
+                                  ? dynamic_cast<const RenderContext&>(context).GetSettings().frame_buffers_count
+                                  : 1u;
+    return frames_count * max_timestamps_per_frame * sizeof(GpuTimestamp);
 }
 
 } // namespace Methane::Graphics

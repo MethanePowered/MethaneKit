@@ -67,7 +67,7 @@ struct Resource : virtual Object
         };
 
         using BaseValues = std::array<Value, 4>;
-        static constexpr const BaseValues primary_values{ ShaderRead, ShaderWrite, RenderTarget, ReadBack };
+        static constexpr const BaseValues primary_values{ ShaderRead, ShaderWrite, RenderTarget };
 
         using Values = std::array<Value, 5>;
         static constexpr const Values values{ ShaderRead, ShaderWrite, RenderTarget, ReadBack, Addressable };

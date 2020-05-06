@@ -24,10 +24,11 @@ DirectX 12 base template implementation of the command list interface.
 #pragma once
 
 #include "CommandListDX.h"
+#include "CommandQueueDX.h"
 #include "DeviceDX.h"
 #include "ContextDX.h"
 #include "ResourceDX.h"
-#include "CommandQueueDX.h"
+#include "QueryBufferDX.h"
 
 #include <Methane/Graphics/CommandListBase.h>
 #include <Methane/Graphics/Windows/Primitives.h>
@@ -57,6 +58,8 @@ public:
     template<typename... ConstructArgs>
     explicit CommandListDX(D3D12_COMMAND_LIST_TYPE command_list_type, ConstructArgs&&... construct_args)
         : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
+        , m_sp_begin_timestamp_query(CreateTimestampQuery())
+        , m_sp_end_timestamp_query(CreateTimestampQuery())
     {
         META_FUNCTION_TASK();
 
@@ -170,7 +173,18 @@ protected:
         return *m_cp_command_list.Get();
     }
 
+    Ptr<QueryBuffer::Query> CreateTimestampQuery()
+    {
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+        return GetCommandQueueDX().GetTimestampQueryBufferDX().CreateQuery();
+#else
+        return nullptr;
+#endif
+    }
+
 private:
+    Ptr<QueryBuffer::Query>                   m_sp_begin_timestamp_query;
+    Ptr<QueryBuffer::Query>                   m_sp_end_timestamp_query;
     wrl::ComPtr<ID3D12CommandAllocator>       m_cp_command_allocator;
     wrl::ComPtr<ID3D12GraphicsCommandList>    m_cp_command_list;
     wrl::ComPtr<ID3D12GraphicsCommandList4>   m_cp_command_list_4;    // extended interface for the same command list (may be unavailable on older Windows)
