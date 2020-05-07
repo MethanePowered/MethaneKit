@@ -168,7 +168,7 @@ std::string DescriptorHeap::GetTypeName(Type heap_type)
     META_FUNCTION_TASK();
     switch (heap_type)
     {
-        case Type::ShaderResources: return "ShaderBase Resources";
+        case Type::ShaderResources: return "Shader Resources";
         case Type::Samplers:        return "Samplers";
         case Type::RenderTargets:   return "Render Targets";
         case Type::DepthStencil:    return "Depth Stencil";

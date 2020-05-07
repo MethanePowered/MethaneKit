@@ -84,7 +84,8 @@ std::string DeviceBase::ToString() const noexcept
 {
     META_FUNCTION_TASK();
     std::stringstream ss;
-    ss << "GPU \"" << GetAdapterName() << "\" with features: " + Feature::ToString(m_supported_features);
+    ss << "GPU \"" << GetAdapterName();
+    //ss << "\" with features: " + Feature::ToString(m_supported_features);
     return ss.str();
 }
 
@@ -119,8 +120,7 @@ std::string SystemBase::ToString() const noexcept
 {
     META_FUNCTION_TASK();
     std::stringstream ss;
-    ss << m_devices.size() << " system graphics device"
-       << (m_devices.size() > 1 ? "s:" : ":") << std::endl;
+    ss << "Available graphics devices:" << std::endl;
     for(const Ptr<Device>& sp_device : m_devices)
     {
         assert(sp_device);

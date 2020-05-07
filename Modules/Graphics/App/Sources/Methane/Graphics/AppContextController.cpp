@@ -99,7 +99,7 @@ Input::IHelpProvider::HelpLines AppContextController::GetHelp() const
     HelpLines help_lines = GetKeyboardHelp();
 
     // Add description of system graphics devices
-    help_lines.push_back({ "\n" + System::Get().ToString(), "" });
+    // help_lines.push_back({ "\n" + System::Get().ToString(), "" });
 
     return help_lines;
 }

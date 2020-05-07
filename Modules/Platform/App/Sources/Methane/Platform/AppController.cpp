@@ -140,8 +140,8 @@ void AppController::ShowControlsHelp()
     {
         help_stream << std::endl;
     }
-    help_stream << std::endl << "Powered by Methane Kit v" METHANE_VERSION_STR
-                << std::endl << "https://github.com/egorodet/MethaneKit";
+    help_stream << std::endl << "Powered by " << METHANE_PRODUCT_NAME <<" v" METHANE_VERSION_STR
+                << std::endl << METHANE_PRODUCT_URL;
 
     m_application.Alert({
         AppBase::Message::Type::Information,
