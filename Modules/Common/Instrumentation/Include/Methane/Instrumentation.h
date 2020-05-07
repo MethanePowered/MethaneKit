@@ -51,7 +51,7 @@ ITT_DOMAIN_EXTERN();
 
 #define META_CPU_FRAME_DELIMITER() \
     FrameMark \
-    ITT_THREAD_MARKER("Methane-Frame-Delimiter")
+    ITT_PROCESS_MARKER("Methane-Frame-Delimiter")
 
 #define META_CPU_FRAME_START(/*const char* */name) \
     TracyCFrameMarkStart(name)
