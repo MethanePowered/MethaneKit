@@ -85,7 +85,7 @@ public:
     virtual void        RemoveResource(Data::Index at_index);
     virtual void        Allocate() { m_allocated_size = m_deferred_size; }
 
-    Ptr<Range>          ReserveRange(Data::Size length);
+    Range               ReserveRange(Data::Size length);
     void                ReleaseRange(const Range& range);
 
     const Settings&     GetSettings() const                             { return m_settings; }

@@ -44,14 +44,14 @@ public:
     using Iterator = typename BaseSet::iterator;
     using ConstIterator = typename BaseSet::const_iterator;
 
-    explicit RangeSet() : BaseSet() { META_FUNCTION_TASK(); }
-    RangeSet(const RangeSet& other) : BaseSet(other) { META_FUNCTION_TASK(); }
-    RangeSet(InitList init) : BaseSet() { META_FUNCTION_TASK(); operator=(init); }
+    explicit RangeSet() noexcept : BaseSet() { META_FUNCTION_TASK(); }
+    RangeSet(const RangeSet& other) noexcept : BaseSet(other) { META_FUNCTION_TASK(); }
+    RangeSet(InitList init) noexcept : BaseSet() { META_FUNCTION_TASK(); operator=(init); }
 
-    bool operator==(const RangeSet<ScalarT>& other) const { META_FUNCTION_TASK(); return static_cast<const BaseSet&>(*this) == static_cast<const BaseSet&>(other); }
-    bool operator==(const BaseSet& other) const           { META_FUNCTION_TASK(); return static_cast<const BaseSet&>(*this) == other; }
+    bool operator==(const RangeSet<ScalarT>& other) const noexcept { META_FUNCTION_TASK(); return static_cast<const BaseSet&>(*this) == static_cast<const BaseSet&>(other); }
+    bool operator==(const BaseSet& other) const noexcept           { META_FUNCTION_TASK(); return static_cast<const BaseSet&>(*this) == other; }
 
-    RangeSet<ScalarT>& operator=(InitList init)
+    RangeSet<ScalarT>& operator=(InitList init) noexcept
     {
         META_FUNCTION_TASK();
         for (const Range<ScalarT>& range : init)
@@ -59,13 +59,13 @@ public:
         return *this;
     }
 
-    size_t Size() const              { return BaseSet::size();  }
-    bool   IsEmpty() const           { return BaseSet::empty(); }
-    void   Clear()                   { META_FUNCTION_TASK(); BaseSet::clear(); }
+    size_t Size() const noexcept              { return BaseSet::size();  }
+    bool   IsEmpty() const noexcept           { return BaseSet::empty(); }
+    void   Clear() noexcept                   { META_FUNCTION_TASK(); BaseSet::clear(); }
 
-    const BaseSet& GetRanges() const { return *this; }
-    ConstIterator begin() const      { return BaseSet::begin(); }
-    ConstIterator end() const        { return BaseSet::end(); }
+    const BaseSet& GetRanges() const noexcept { return *this; }
+    ConstIterator begin() const noexcept      { return BaseSet::begin(); }
+    ConstIterator end() const noexcept        { return BaseSet::end(); }
 
     void Add(const Range<ScalarT>& range)
     {
@@ -162,7 +162,7 @@ protected:
     }
 
     using Ranges = std::vector<Range<ScalarT>>;
-    inline void RemoveRanges(const Ranges& delete_ranges)
+    inline void RemoveRanges(const Ranges& delete_ranges) noexcept
     {
         META_FUNCTION_TASK();
         for (const Range<ScalarT>& delete_range : delete_ranges)

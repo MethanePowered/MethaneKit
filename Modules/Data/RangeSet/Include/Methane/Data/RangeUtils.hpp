@@ -35,7 +35,7 @@ namespace Methane::Data
 {
 
 template<typename ScalarT>
-Range<ScalarT> ReserveRange(RangeSet<ScalarT>& free_ranges, ScalarT reserved_length)
+Range<ScalarT> ReserveRange(RangeSet<ScalarT>& free_ranges, ScalarT reserved_length) noexcept
 {
     typename RangeSet<ScalarT>::ConstIterator free_range_it = std::find_if(
         free_ranges.begin(), free_ranges.end(),

@@ -262,12 +262,11 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         }
         if (descriptors.mutable_count > 0)
         {
-            Ptr<DescriptorHeap::Range> sp_mutable_heap_range = heap_reservation.heap.get().ReserveRange(descriptors.mutable_count);
-            if (!sp_mutable_heap_range)
+            heap_reservation.mutable_range = heap_reservation.heap.get().ReserveRange(descriptors.mutable_count);
+            if (!heap_reservation.mutable_range)
             {
                 throw std::runtime_error("Failed to reserve mutable descriptor heap range. Descriptor heap is not big enough.");
             }
-            heap_reservation.mutable_range = *sp_mutable_heap_range;
         }
     }
 }

@@ -24,6 +24,7 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps
 #include "DescriptorHeap.h"
 #include "ResourceBase.h"
 
+#include <Methane/Data/RangeUtils.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <cassert>
@@ -124,35 +125,21 @@ void DescriptorHeap::RemoveResource(Data::Index at_index)
     m_free_ranges.Add(Range(at_index, at_index + 1));
 }
 
-Ptr<DescriptorHeap::Range> DescriptorHeap::ReserveRange(Data::Size length)
+DescriptorHeap::Range DescriptorHeap::ReserveRange(Data::Size length)
 {
     META_FUNCTION_TASK();
+    if (!length)
+        throw std::invalid_argument("Unable to reserve empty descriptor range.");
 
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
 
-    RangeSet::ConstIterator free_range_it = std::find_if(m_free_ranges.begin(), m_free_ranges.end(),
-        [length](const Range& range)
-        {
-            return range.GetLength() >= length;
-        }
-    );
+    Range reserved_range = Data::ReserveRange(m_free_ranges, length);
+    if (reserved_range || !m_settings.deferred_allocation)
+        return reserved_range;
 
-    if (free_range_it == m_free_ranges.end())
-    {
-        if (m_settings.deferred_allocation)
-        {
-            Ptr<Range> sp_reserved_range(new Range(m_deferred_size, m_deferred_size + length));
-            m_deferred_size += length;
-            return sp_reserved_range;
-        }
-        else
-            return nullptr;
-    }
-    
-    Ptr<Range> sp_reserved_range(new Range(free_range_it->GetStart(), free_range_it->GetStart() + length));
-    m_free_ranges.Remove(*sp_reserved_range);
-
-    return sp_reserved_range;
+    Range deferred_range(m_deferred_size, m_deferred_size + length);
+    m_deferred_size += length;
+    return deferred_range;
 }
 
 void DescriptorHeap::ReleaseRange(const Range& range)

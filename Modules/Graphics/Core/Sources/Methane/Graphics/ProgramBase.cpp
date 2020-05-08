@@ -219,12 +219,12 @@ const DescriptorHeap::Range& ProgramBase::ReserveConstantDescriptorRange(Descrip
         return heap_reservation.range;
     }
 
-    Ptr<DescriptorHeap::Range> sp_desc_range = heap.ReserveRange(range_length);
-    if (!sp_desc_range)
+    DescriptorHeap::Range const_desc_range = heap.ReserveRange(range_length);
+    if (!const_desc_range)
     {
         throw std::runtime_error("Descriptor heap does not have enough space to reserve constant descriptor range of a program.");
     }
-    return m_constant_descriptor_range_by_heap_type.emplace(heap_type, DescriptorHeapReservation{ heap, *sp_desc_range }).first->second.range;
+    return m_constant_descriptor_range_by_heap_type.emplace(heap_type, DescriptorHeapReservation{ heap, const_desc_range }).first->second.range;
 }
 
 Shader& ProgramBase::GetShaderRef(Shader::Type shader_type)
