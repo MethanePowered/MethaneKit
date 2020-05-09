@@ -9,6 +9,7 @@ set(HEADERS
     ${INCLUDE_DIR}/Point.hpp
     ${INCLUDE_DIR}/Rect.hpp
     ${INCLUDE_DIR}/Chunk.hpp
+    ${INCLUDE_DIR}/TimeRange.hpp
 )
 
 set(SOURCES
@@ -29,6 +30,7 @@ target_include_directories(${TARGET}
 
 target_link_libraries(${TARGET}
     PUBLIC
+        MethaneDataRangeSet
         CML
     PRIVATE
         MethaneBuildOptions

@@ -36,11 +36,12 @@ BufferBase::BufferBase(ContextBase& context, const Settings& settings, const Des
     : ResourceNT(Resource::Type::Buffer, settings.usage_mask, context, descriptor_by_usage)
     , m_settings(settings)
 {
+    META_FUNCTION_TASK();
     if (!m_settings.size)
     {
         throw std::invalid_argument("Can not create buffer of zero size.");
     }
-    META_FUNCTION_TASK();
+    SetSubResourceCount(SubResource::Count());
 }
 
 Data::Size BufferBase::GetDataSize(Data::MemoryState size_type) const noexcept

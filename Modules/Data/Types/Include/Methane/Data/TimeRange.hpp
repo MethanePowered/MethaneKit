@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,33 +16,19 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Data/Types.h
-Common Methane primitive data types
+FILE: Methane/Data/TimeRange.hpp
+Methane time range type definition
 
 ******************************************************************************/
 
 #pragma once
 
-#include "Point.hpp"
-#include "Rect.hpp"
-
-#include <cstdint>
-#include <vector>
+#include <Methane/Data/Types.h>
+#include <Methane/Data/Range.hpp>
 
 namespace Methane::Data
 {
 
-enum class MemoryState : uint32_t
-{
-    Reserved = 0,
-    Initialized,
-};
-
-using Timestamp   = uint64_t;
-using Bytes       = std::vector<uint8_t>;
-using Size        = uint32_t;
-using Index       = Size;
-using RawPtr      = uint8_t*;
-using ConstRawPtr = const uint8_t* const;
+using TimeRange = Range<Timestamp>;
 
 } // namespace Methane::Data

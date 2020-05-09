@@ -23,16 +23,19 @@ GPU data query buffer base implementation.
 
 #pragma once
 
+#include <Methane/Graphics/Resource.h>
 #include <Methane/Data/Types.h>
+#include <Methane/Data/TimeRange.hpp>
 #include <Methane/Data/RangeSet.hpp>
 
 namespace Methane::Graphics
 {
 
 class CommandQueueBase;
+class CommandListBase;
 struct Context;
 
-class QueryBuffer
+class QueryBuffer : public std::enable_shared_from_this<QueryBuffer>
 {
 public:
     enum class Type
@@ -46,33 +49,63 @@ public:
         using Index = Data::Index;
         using Range = Data::Range<Data::Index>;
 
-        Query(QueryBuffer& buffer, Index index, Range data_range);
+        enum class State
+        {
+            Resolved = 0,
+            Begun,
+            Ended,
+        };
+
+        Query(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
         virtual ~Query();
 
-        Index        GetIndex() const noexcept      { return m_index; }
-        const Range& GetDataRange() const noexcept  { return m_data_range; }
+        virtual void Begin();
+        virtual void End();
+        virtual void ResolveData();
+        virtual Resource::SubResource GetData() = 0;
+
+        Index            GetIndex() const noexcept       { return m_index; }
+        const Range&     GetDataRange() const noexcept   { return m_data_range; }
+        State            GetState() const noexcept       { return m_state; }
+        QueryBuffer&     GetQueryBuffer() const noexcept { return *m_sp_buffer; }
+        CommandListBase& GetCommandList() const noexcept { return m_command_list; }
 
     private:
-        QueryBuffer& m_buffer;
-        const Index  m_index;
-        const Range  m_data_range;
+        Ptr<QueryBuffer> m_sp_buffer;
+        CommandListBase& m_command_list;
+        const Index      m_index;
+        const Range      m_data_range;
+        State            m_state = State::Resolved;
     };
 
-    QueryBuffer(CommandQueueBase& command_queue, Type type,
-                Data::Size max_query_count, Data::Size buffer_size, Data::Size query_size);
     virtual ~QueryBuffer() = default;
 
-    virtual Ptr<Query> CreateQuery();
+    template<typename QueryT>
+    Ptr<QueryT> CreateQuery(CommandListBase& command_list)
+    {
+        META_FUNCTION_TASK();
+        const CreateQueryArgs   query_args = GetCreateQueryArguments();
+        return std::make_shared<QueryT>(*this, command_list, std::get<0>(query_args), std::get<1>(query_args));
+    }
 
+    Ptr<QueryBuffer>  GetPtr()                       { return shared_from_this(); }
     Type              GetType() const noexcept       { return m_type; }
     Data::Size        GetBufferSize() const noexcept { return m_buffer_size; }
     Data::Size        GetQuerySize() const noexcept  { return m_query_size; }
     CommandQueueBase& GetCommandQueueBase() noexcept { return m_command_queue; }
     Context&          GetContext() noexcept          { return m_context; }
 
+    static std::string GetTypeName(Type type) noexcept;
+
 protected:
+    QueryBuffer(CommandQueueBase& command_queue, Type type,
+                Data::Size max_query_count, Data::Size buffer_size, Data::Size query_size);
+
     friend class Query;
     virtual void ReleaseQuery(const Query& query);
+
+    using CreateQueryArgs = std::tuple<Query::Index, Query::Range>;
+    CreateQueryArgs GetCreateQueryArguments();
 
 private:
     using RangeSet = Data::RangeSet<Data::Index>;
@@ -86,16 +119,25 @@ private:
     Context&          m_context;
 };
 
-using GpuTimestamp = uint64_t;
 using GpuFrequency = uint64_t;
 
-struct ITimestampQueryBuffer
+struct TimestampQueryBuffer
 {
-    static Data::Size GetTimestampResultBufferSize(const Context& context, uint32_t max_timestamps_per_frame);
+    struct TimestampQuery
+    {
+        virtual void InsertTimestamp() = 0;
+        virtual void ResolveTimestamp() = 0;
+        virtual Timestamp GetTimestamp() = 0;
 
+        virtual ~TimestampQuery() = default;
+    };
+
+    static Ptr<TimestampQueryBuffer> Create(CommandQueueBase& command_queue, uint32_t max_timestamps_per_frame);
+
+    virtual Ptr<TimestampQuery> CreateTimestampQuery(CommandListBase& command_list) = 0;
     virtual GpuFrequency GetGpuFrequency() const noexcept = 0;
 
-    virtual ~ITimestampQueryBuffer() = default;
+    virtual ~TimestampQueryBuffer() = default;
 };
 
 } // namespace Methane::Graphics

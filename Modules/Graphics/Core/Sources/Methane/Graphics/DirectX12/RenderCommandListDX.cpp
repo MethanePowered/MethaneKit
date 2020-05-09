@@ -94,6 +94,11 @@ void RenderCommandListDX::ResetNative(const Ptr<RenderState>& sp_render_state)
     ThrowIfFailed(dx_cmd_allocator.Reset(), p_native_device);
     ThrowIfFailed(GetNativeCommandListRef().Reset(&dx_cmd_allocator, p_dx_initial_state), p_native_device);
 
+    // Insert beginning GPU timestamp query
+    TimestampQueryBuffer::TimestampQuery* p_begin_timestamp_query = GetBeginTimestampQuery();
+    if (p_begin_timestamp_query)
+        p_begin_timestamp_query->InsertTimestamp();
+
     if (!sp_render_state)
         return;
 

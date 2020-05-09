@@ -221,10 +221,11 @@ void CommandListBase::Complete(uint32_t frame_index)
         throw std::logic_error("Command list \"" + GetName() + "\" committed on frame " + std::to_string(m_committed_frame_index) + " can not be completed on frame " + std::to_string(frame_index));
     }
 
-    META_LOG("Command list \"" + GetName() + "\" was completed on frame " + std::to_string(frame_index));
-
     m_state = State::Pending;
     m_state_change_condition_var.notify_one();
+
+    META_LOG("Command list \"" + GetName() + "\" was completed on frame " + std::to_string(frame_index) +
+             ", GPU time range: " + static_cast<std::string>(GetGpuTimeRange()));
 
     if (m_completed_callback)
         m_completed_callback(*this);

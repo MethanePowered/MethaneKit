@@ -92,6 +92,7 @@ public:
     void  SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
     void  Commit() override;
     void  WaitUntilCompleted(uint32_t timeout_ms = 0u) override;
+    Data::TimeRange GetGpuTimeRange() const override { return { 0u, 0u }; }
     CommandQueue& GetCommandQueue() override;
 
     // CommandListBase interface

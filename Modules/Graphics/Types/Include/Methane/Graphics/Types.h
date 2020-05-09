@@ -61,6 +61,8 @@ using Depth = float;
 using Stencil = uint8_t;
 using DepthStencil = std::pair<Depth, Stencil>;
 
+using Timestamp = Data::Timestamp;
+
 enum class PixelFormat
 {
     Unknown,

@@ -33,12 +33,32 @@ namespace Methane::Graphics
 
 struct Buffer;
 struct IContextDX;
+struct ICommandListDX;
 class  CommandQueueDX;
 class  ResourceDX;
 
 class QueryBufferDX : public QueryBuffer
 {
 public:
+    class QueryDX : public Query
+    {
+    public:
+        QueryDX(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
+
+        // Query overrides
+        void Begin() override;
+        void End() override;
+        void ResolveData() override;
+        Resource::SubResource GetData() override;
+
+    protected:
+        QueryBufferDX& GetQueryBufferDX() noexcept  { return static_cast<QueryBufferDX&>(GetQueryBuffer()); }
+
+    private:
+        ID3D12GraphicsCommandList&  m_native_command_list;
+        const D3D12_QUERY_TYPE      m_native_query_type;
+    };
+
     QueryBufferDX(CommandQueueDX& command_queue, Type type,
                   Data::Size max_query_count, Data::Size buffer_size, Data::Size query_size);
 
@@ -61,17 +81,31 @@ private:
 
 class TimestampQueryBufferDX final
     : public QueryBufferDX
-    , public ITimestampQueryBuffer
+    , public TimestampQueryBuffer
 {
 public:
+    class TimestampQueryDX
+        : public QueryDX
+        , public TimestampQuery
+    {
+    public:
+        TimestampQueryDX(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
+
+        // TimestampQuery overrides
+        void InsertTimestamp() override;
+        void ResolveTimestamp() override;
+        Timestamp GetTimestamp() override;
+    };
+
     TimestampQueryBufferDX(CommandQueueDX& command_queue, uint32_t max_timestamps_per_frame);
 
     // ITimestampQueryBuffer interface
+    Ptr<TimestampQuery> CreateTimestampQuery(CommandListBase& command_list) override;
     GpuFrequency GetGpuFrequency() const noexcept override { return m_gpu_frequency; }
 
 private:
     const uint32_t     m_max_timestamps_per_frame;
-    const GpuTimestamp m_gpu_frequency;
+    const Timestamp m_gpu_frequency;
 };
 
 } // namespace Methane::Graphics

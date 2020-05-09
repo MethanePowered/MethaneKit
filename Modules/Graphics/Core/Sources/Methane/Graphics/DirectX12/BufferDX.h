@@ -117,7 +117,7 @@ public:
         if (!p_sub_resource_data)
             throw std::runtime_error("Failed to map buffer subresource.");
 
-        stdext::checked_array_iterator<Data::RawPtr> source_data_it(p_sub_resource_data, data_length);
+        stdext::checked_array_iterator<Data::RawPtr> source_data_it(p_sub_resource_data, data_end);
         Data::Bytes sub_resource_data(data_length, 0);
         std::copy(source_data_it + data_start, source_data_it + data_end, sub_resource_data.begin());
 

@@ -66,7 +66,7 @@ CommandQueueDX::CommandQueueDX(ContextBase& context)
     , m_cp_command_queue(CreateNativeCommandQueue(GetContextDX().GetDeviceDX()))
     , m_execution_waiting_thread(&CommandQueueDX::WaitForExecution, this)
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
-    , m_timestamp_query_buffer(*this, g_max_timestamp_queries_count_per_frame)
+    , m_sp_timestamp_query_buffer(TimestampQueryBuffer::Create(*this, g_max_timestamp_queries_count_per_frame))
 #endif
 {
     META_FUNCTION_TASK();

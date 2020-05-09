@@ -29,11 +29,14 @@ GPU data query buffer base implementation.
 #include <Methane/Data/RangeUtils.hpp>
 #include <Methane/Instrumentation.h>
 
+#include <cassert>
+
 namespace Methane::Graphics
 {
 
-QueryBuffer::Query::Query(QueryBuffer& buffer, Data::Index index, Range data_range)
-    : m_buffer(buffer)
+QueryBuffer::Query::Query(QueryBuffer& buffer, CommandListBase& command_list, Data::Index index, Range data_range)
+    : m_sp_buffer(buffer.GetPtr())
+    , m_command_list(command_list)
     , m_index(index)
     , m_data_range(data_range)
 {
@@ -43,7 +46,38 @@ QueryBuffer::Query::Query(QueryBuffer& buffer, Data::Index index, Range data_ran
 QueryBuffer::Query::~Query()
 {
     META_FUNCTION_TASK();
-    m_buffer.ReleaseQuery(*this);
+    m_sp_buffer->ReleaseQuery(*this);
+}
+
+void QueryBuffer::Query::Begin()
+{
+    META_FUNCTION_TASK();
+    if (GetQueryBuffer().GetType() == QueryBuffer::Type::Timestamp)
+        throw std::logic_error("Timestamp query can not be begun, it can be ended only.");
+
+    if (m_state == State::Begun)
+        throw std::logic_error("Can not begin unresolved or not ended query.");
+
+    m_state = State::Begun;
+}
+
+void QueryBuffer::Query::End()
+{
+    META_FUNCTION_TASK();
+    const QueryBuffer::Type query_type = GetQueryBuffer().GetType();
+    if (query_type != QueryBuffer::Type::Timestamp && m_state != State::Begun)
+        throw std::logic_error("Can not end " + GetTypeName(query_type) + " query that was not begun.");
+
+    m_state = State::Ended;
+}
+
+void QueryBuffer::Query::ResolveData()
+{
+    META_FUNCTION_TASK();
+    if (m_state != State::Ended)
+        throw std::logic_error("Can not resolve data of not ended query.");
+
+    m_state = State::Resolved;
 }
 
 QueryBuffer::QueryBuffer(CommandQueueBase& command_queue, Type type,
@@ -59,7 +93,14 @@ QueryBuffer::QueryBuffer(CommandQueueBase& command_queue, Type type,
     META_FUNCTION_TASK();
 }
 
-Ptr<QueryBuffer::Query> QueryBuffer::CreateQuery()
+void QueryBuffer::ReleaseQuery(const Query& query)
+{
+    META_FUNCTION_TASK();
+    m_free_indices.Add({ query.GetIndex(), query.GetIndex() + 1 });
+    m_free_data_ranges.Add(query.GetDataRange());
+}
+
+QueryBuffer::CreateQueryArgs QueryBuffer::GetCreateQueryArguments()
 {
     META_FUNCTION_TASK();
     const Data::Range<Data::Index> index_range = Data::ReserveRange(m_free_indices, 1u);
@@ -70,23 +111,18 @@ Ptr<QueryBuffer::Query> QueryBuffer::CreateQuery()
     if (index_range.IsEmpty())
         throw std::out_of_range("There is no space available for new query.");
 
-    return std::make_shared<Query>(*this, index_range.GetStart(), data_range);
+    return { index_range.GetStart(), data_range };
 }
 
-void QueryBuffer::ReleaseQuery(const Query& query)
+std::string QueryBuffer::GetTypeName(Type type) noexcept
 {
     META_FUNCTION_TASK();
-    m_free_indices.Add({ query.GetIndex(), query.GetIndex() + 1 });
-    m_free_data_ranges.Add(query.GetDataRange());
-}
-
-Data::Size ITimestampQueryBuffer::GetTimestampResultBufferSize(const Context& context, uint32_t max_timestamps_per_frame)
-{
-    META_FUNCTION_TASK();
-    const uint32_t frames_count = context.GetType() == Context::Type::Render
-                                  ? dynamic_cast<const RenderContext&>(context).GetSettings().frame_buffers_count
-                                  : 1u;
-    return frames_count * max_timestamps_per_frame * sizeof(GpuTimestamp);
+    switch(type)
+    {
+    case Type::Timestamp: return "Timestamp";
+    default: assert(0);
+    }
+    return "Unknown";
 }
 
 } // namespace Methane::Graphics

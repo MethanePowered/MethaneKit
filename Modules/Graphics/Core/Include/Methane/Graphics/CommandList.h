@@ -27,6 +27,9 @@ to create instance refer to RenderCommandList, etc. for specific derived interfa
 #include "Object.h"
 #include "ProgramBindings.h"
 
+#include <Methane/Graphics/Types.h>
+#include <Methane/Data/TimeRange.hpp>
+
 #include <string>
 
 namespace Methane::Graphics
@@ -74,6 +77,7 @@ struct CommandList : virtual Object
                                      ProgramBindings::ApplyBehavior::Mask apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental) = 0;
     virtual void  Commit() = 0;
     virtual void  WaitUntilCompleted(uint32_t timeout_ms = 0u) = 0;
+    virtual Data::TimeRange GetGpuTimeRange() const = 0;
     virtual CommandQueue& GetCommandQueue() = 0;
 
     virtual ~CommandList() = default;
