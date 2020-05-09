@@ -31,4 +31,9 @@ namespace Methane::Data
 
 using TimeRange = Range<Timestamp>;
 
+inline Timestamp ConvertTimeSecondsToNanoseconds(double seconds)
+{
+    return static_cast<Timestamp>(seconds * 1000000000.);
+}
+
 } // namespace Methane::Data

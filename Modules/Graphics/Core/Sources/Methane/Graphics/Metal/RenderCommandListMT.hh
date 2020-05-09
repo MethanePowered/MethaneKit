@@ -44,6 +44,7 @@ public:
     void PushDebugGroup(DebugGroup& debug_group) override;
     void PopDebugGroup() override;
     void Commit() override;
+    Data::TimeRange GetGpuTimeRange() const override;
 
     // CommandListBase interface
     void SetResourceBarriers(const ResourceBase::Barriers&) override { }

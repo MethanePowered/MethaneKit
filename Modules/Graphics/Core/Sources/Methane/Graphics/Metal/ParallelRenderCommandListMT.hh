@@ -46,6 +46,7 @@ public:
 
     // CommandList interface
     void Commit() override;
+    Data::TimeRange GetGpuTimeRange() const override;
 
     // CommandListBase interface
     void Execute(uint32_t frame_index, const CompletedCallback& completed_callback) override;

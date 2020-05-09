@@ -125,6 +125,19 @@ void BlitCommandListMT::Commit()
     [m_mtl_cmd_buffer enqueue];
 }
 
+Data::TimeRange BlitCommandListMT::GetGpuTimeRange() const
+{
+    META_FUNCTION_TASK();
+    if (GetState() != CommandListBase::State::Pending)
+        throw std::logic_error("Can not get GPU time range of executing or not committed command list.");
+
+    assert(m_mtl_cmd_buffer.status == MTLCommandBufferStatusCompleted);
+    return Data::TimeRange(
+        Data::ConvertTimeSecondsToNanoseconds(m_mtl_cmd_buffer.GPUStartTime),
+        Data::ConvertTimeSecondsToNanoseconds(m_mtl_cmd_buffer.GPUEndTime)
+    );
+}
+
 void BlitCommandListMT::Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
@@ -136,10 +149,10 @@ void BlitCommandListMT::Execute(uint32_t frame_index, const CommandList::Complet
 
     [m_mtl_cmd_buffer addCompletedHandler:^(id<MTLCommandBuffer>) {
         Complete(frame_index);
+        m_mtl_cmd_buffer  = nil;
     }];
 
     [m_mtl_cmd_buffer commit];
-    m_mtl_cmd_buffer  = nil;
 }
 
 CommandQueueMT& BlitCommandListMT::GetCommandQueueMT() noexcept
