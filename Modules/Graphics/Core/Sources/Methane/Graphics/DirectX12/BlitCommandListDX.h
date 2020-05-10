@@ -36,9 +36,6 @@ class BlitCommandListDX final
 {
 public:
     BlitCommandListDX(CommandQueueBase& cmd_buffer);
-
-    // BlitCommandList interface
-    void Reset(DebugGroup* p_debug_group = nullptr) final;
 };
 
 } // namespace Methane::Graphics

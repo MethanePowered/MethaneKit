@@ -276,7 +276,7 @@ void TextureMT::GenerateMipLevels()
     BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContext().GetUploadCommandList());
     blit_command_list.Reset(s_debug_group.get());
     
-    id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeBlitEncoder();
+    id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
     assert(mtl_blit_encoder != nil);
     assert(m_mtl_texture != nil);
     

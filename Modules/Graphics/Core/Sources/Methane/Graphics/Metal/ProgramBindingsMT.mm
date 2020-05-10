@@ -236,7 +236,7 @@ void ProgramBindingsMT::Apply(CommandListBase& command_list, ApplyBehavior::Mask
     META_FUNCTION_TASK();
 
     RenderCommandListMT& metal_command_list = static_cast<RenderCommandListMT&>(command_list);
-    id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeRenderEncoder();
+    id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeCommandEncoder();
     
     for(const auto& binding_by_argument : GetArgumentBindings())
     {

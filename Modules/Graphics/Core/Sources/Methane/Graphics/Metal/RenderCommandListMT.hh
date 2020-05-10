@@ -23,6 +23,8 @@ Metal implementation of the render command list interface.
 
 #pragma once
 
+#include "CommandListMT.hpp"
+
 #include <Methane/Graphics/RenderCommandListBase.h>
 
 #import <Metal/Metal.h>
@@ -34,21 +36,12 @@ class CommandQueueMT;
 class BufferMT;
 class RenderPassMT;
 
-class RenderCommandListMT final : public RenderCommandListBase
+class RenderCommandListMT final
+    : public CommandListMT<id<MTLRenderCommandEncoder>, RenderCommandListBase>
 {
 public:
     RenderCommandListMT(CommandQueueBase& command_queue, RenderPassBase& render_pass);
     RenderCommandListMT(ParallelRenderCommandListBase& parallel_render_command_list);
-
-    // CommandList interface
-    void PushDebugGroup(DebugGroup& debug_group) override;
-    void PopDebugGroup() override;
-    void Commit() override;
-    Data::TimeRange GetGpuTimeRange() const override;
-
-    // CommandListBase interface
-    void SetResourceBarriers(const ResourceBase::Barriers&) override { }
-    void Execute(uint32_t frame_index, const CompletedCallback& completed_callback) override;
 
     // RenderCommandList interface
     void Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group = nullptr) override;
@@ -59,19 +52,8 @@ public:
     void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
               uint32_t instance_count, uint32_t start_instance) override;
 
-    // Object interface
-    void SetName(const std::string& label) override;
-
-    id<MTLCommandBuffer>&        GetNativeCommandBuffer() noexcept { return m_mtl_cmd_buffer; }
-    id<MTLRenderCommandEncoder>& GetNativeRenderEncoder() noexcept { return m_mtl_render_encoder; }
-
 private:
-    CommandQueueMT& GetCommandQueueMT() noexcept;
-    RenderPassMT&   GetRenderPassMT();
-
-    NSString*                   m_ns_name = nil;
-    id<MTLCommandBuffer>        m_mtl_cmd_buffer = nil;
-    id<MTLRenderCommandEncoder> m_mtl_render_encoder = nil;
+    RenderPassMT& GetRenderPassMT();
 };
 
 } // namespace Methane::Graphics

@@ -281,7 +281,7 @@ void RenderStateMT::Apply(RenderCommandListBase& command_list, Group::Mask state
     META_FUNCTION_TASK();
 
     RenderCommandListMT& metal_command_list = static_cast<RenderCommandListMT&>(command_list);
-    id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeRenderEncoder();
+    id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeCommandEncoder();
     
     if (state_groups & Group::Program    ||
         state_groups & Group::Rasterizer ||

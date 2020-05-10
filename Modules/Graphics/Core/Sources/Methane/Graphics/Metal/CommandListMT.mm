@@ -32,10 +32,10 @@ namespace Methane::Graphics
 Ptr<CommandList::DebugGroup> CommandList::DebugGroup::Create(std::string name)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<CommandListMT::DebugGroupMT>(std::move(name));
+    return std::make_shared<CommandListDebugGroupMT>(std::move(name));
 }
 
-CommandListMT::DebugGroupMT::DebugGroupMT(std::string name)
+CommandListDebugGroupMT::CommandListDebugGroupMT(std::string name)
     : CommandListBase::DebugGroupBase(std::move(name))
     , m_ns_name(MacOS::ConvertToNsType<std::string, NSString*>(name))
 {

@@ -30,21 +30,16 @@ Metal command lists sequence implementation.
 namespace Methane::Graphics
 {
 
-namespace CommandListMT
-{
-
-class DebugGroupMT : public CommandListBase::DebugGroupBase
+class CommandListDebugGroupMT : public CommandListBase::DebugGroupBase
 {
 public:
-    DebugGroupMT(std::string name);
+    CommandListDebugGroupMT(std::string name);
 
     NSString * _Nonnull GetNSName() const noexcept { return m_ns_name; }
 
 private:
     NSString* _Nonnull m_ns_name;
 };
-
-} // namespace CommandListMT
 
 class CommandListsMT final : public CommandListsBase
 {

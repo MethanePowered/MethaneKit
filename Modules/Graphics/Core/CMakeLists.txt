@@ -101,6 +101,7 @@ elseif(APPLE)
         ${SOURCES_GRAPHICS_DIR}/CommandQueueMT.mm
         ${SOURCES_GRAPHICS_DIR}/CommandListMT.hh
         ${SOURCES_GRAPHICS_DIR}/CommandListMT.mm
+        ${SOURCES_GRAPHICS_DIR}/CommandListMT.hpp
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListMT.hh
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListMT.mm
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.hh
