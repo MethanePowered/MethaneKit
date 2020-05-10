@@ -95,17 +95,23 @@ public:
         void InsertTimestamp() override;
         void ResolveTimestamp() override;
         Timestamp GetTimestamp() override;
+
+    private:
+        TimestampQueryBufferDX& GetTimestampQueryBufferDX() noexcept { return static_cast<TimestampQueryBufferDX&>(GetQueryBuffer()); }
     };
 
     TimestampQueryBufferDX(CommandQueueDX& command_queue, uint32_t max_timestamps_per_frame);
 
     // ITimestampQueryBuffer interface
     Ptr<TimestampQuery> CreateTimestampQuery(CommandListBase& command_list) override;
-    GpuFrequency GetGpuFrequency() const noexcept override { return m_gpu_frequency; }
+
+    Frequency GetGpuFrequency() const noexcept  { return m_gpu_frequency; }
+    TimeDelta GetGpuTimeOffset() const noexcept { return m_gpu_time_offset; }
 
 private:
-    const uint32_t     m_max_timestamps_per_frame;
-    const Timestamp m_gpu_frequency;
+    const uint32_t  m_max_timestamps_per_frame;
+    const Frequency m_gpu_frequency;
+    const TimeDelta m_gpu_time_offset;
 };
 
 } // namespace Methane::Graphics

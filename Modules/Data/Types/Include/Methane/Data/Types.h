@@ -18,7 +18,7 @@ limitations under the License.
 
 FILE: Methane/Data/Types.h
 Common Methane primitive data types
-
+u
 ******************************************************************************/
 
 #pragma once
@@ -38,11 +38,13 @@ enum class MemoryState : uint32_t
     Initialized,
 };
 
-using Timestamp   = uint64_t;
-using Bytes       = std::vector<uint8_t>;
-using Size        = uint32_t;
-using Index       = Size;
-using RawPtr      = uint8_t*;
+using Timestamp = uint64_t;
+using TimeDelta = int64_t;
+using Frequency = Timestamp;
+using Bytes = std::vector<uint8_t>;
+using Size = uint32_t;
+using Index = Size;
+using RawPtr = uint8_t*;
 using ConstRawPtr = const uint8_t* const;
 
 } // namespace Methane::Data

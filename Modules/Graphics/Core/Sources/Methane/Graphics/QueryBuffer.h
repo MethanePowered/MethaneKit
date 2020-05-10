@@ -119,8 +119,6 @@ private:
     Context&          m_context;
 };
 
-using GpuFrequency = uint64_t;
-
 struct TimestampQueryBuffer
 {
     struct TimestampQuery
@@ -135,7 +133,6 @@ struct TimestampQueryBuffer
     static Ptr<TimestampQueryBuffer> Create(CommandQueueBase& command_queue, uint32_t max_timestamps_per_frame);
 
     virtual Ptr<TimestampQuery> CreateTimestampQuery(CommandListBase& command_list) = 0;
-    virtual GpuFrequency GetGpuFrequency() const noexcept = 0;
 
     virtual ~TimestampQueryBuffer() = default;
 };

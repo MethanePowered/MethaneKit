@@ -141,12 +141,21 @@ CommandQueueDX& QueryBufferDX::GetCommandQueueDX() noexcept
     return static_cast<CommandQueueDX&>(GetCommandQueueBase());
 }
 
-static GpuFrequency GetGpuFrequency(ID3D12CommandQueue& native_command_queue, ID3D12Device& native_device)
+static Frequency GetGpuFrequency(ID3D12CommandQueue& native_command_queue, ID3D12Device& native_device)
 {
     META_FUNCTION_TASK();
-    GpuFrequency gpu_frequency = 0u;
+    Frequency gpu_frequency = 0u;
     ThrowIfFailed(native_command_queue.GetTimestampFrequency(&gpu_frequency), &native_device);
     return gpu_frequency;
+}
+
+static TimeDelta GetGpuTimeOffset(ID3D12CommandQueue& native_command_queue, ID3D12Device& native_device)
+{
+    META_FUNCTION_TASK();
+    UINT64 gpu_timestamp = 0u;
+    UINT64 cpu_timestamp = 0u;
+    ThrowIfFailed(native_command_queue.GetClockCalibration(&gpu_timestamp, &cpu_timestamp), &native_device);
+    return static_cast<TimeDelta>(gpu_timestamp - cpu_timestamp);
 }
 
 static Data::Size GetTimestampResultBufferSize(const Context& context, uint32_t max_timestamps_per_frame)
@@ -164,6 +173,7 @@ TimestampQueryBufferDX::TimestampQueryBufferDX(CommandQueueDX& command_queue, ui
                     sizeof(Timestamp))
     , m_max_timestamps_per_frame(max_timestamps_per_frame)
     , m_gpu_frequency(Graphics::GetGpuFrequency(GetCommandQueueDX().GetNativeCommandQueue(), *GetContextDX().GetDeviceDX().GetNativeDevice().Get()))
+    , m_gpu_time_offset(Graphics::GetGpuTimeOffset(GetCommandQueueDX().GetNativeCommandQueue(), *GetContextDX().GetDeviceDX().GetNativeDevice().Get()))
 {
     META_FUNCTION_TASK();
 }
@@ -199,7 +209,9 @@ Timestamp TimestampQueryBufferDX::TimestampQueryDX::GetTimestamp()
     if (query_data.size < sizeof(Timestamp))
         throw std::runtime_error("Query data size is less than expected for timestamp.");
 
-    return *reinterpret_cast<const Timestamp*>(query_data.p_data);
+    Timestamp gpu_timestamp = *reinterpret_cast<const Timestamp*>(query_data.p_data);
+    TimestampQueryBufferDX& timestamp_query_buffer_dx = GetTimestampQueryBufferDX();
+    return Data::ConvertTicksToNanoseconds(gpu_timestamp - timestamp_query_buffer_dx.GetGpuTimeOffset(), timestamp_query_buffer_dx.GetGpuFrequency());
 }
 
 } // namespace Methane::Graphics

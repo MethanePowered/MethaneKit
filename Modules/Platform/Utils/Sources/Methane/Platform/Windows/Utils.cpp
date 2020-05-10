@@ -98,5 +98,22 @@ void GetDesktopResolution(uint32_t& width, uint32_t& height)
     height = static_cast<uint32_t>(desktop.bottom);
 }
 
+bool IsDeveloperModeEnabled()
+{
+    HKEY h_key{};
+    auto err = RegOpenKeyExW(HKEY_LOCAL_MACHINE, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock)", 0, KEY_READ, &h_key);
+    if (err != ERROR_SUCCESS)
+        return false;
+
+    DWORD value{};
+    DWORD dword_size = sizeof(DWORD);
+    err = RegQueryValueExW(h_key, L"AllowDevelopmentWithoutDevLicense", 0, NULL, reinterpret_cast<LPBYTE>(&value), &dword_size);
+    RegCloseKey(h_key);
+    if (err != ERROR_SUCCESS)
+        return false;
+
+    return value != 0;
+}
+
 } // namespace Windows
 } // namespace Methane::Platform

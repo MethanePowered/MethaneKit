@@ -25,6 +25,7 @@ DirectX 12 implementation of the device interface.
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Primitives.h>
+#include <Methane/Platform/Windows/Utils.h>
 
 #ifdef _DEBUG
 #include <dxgidebug.h>
@@ -107,6 +108,18 @@ const wrl::ComPtr<ID3D12Device>& DeviceDX::GetNativeDevice() const
     {
         m_feature_options_5 = feature_options_5;
     }
+
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+    if (Platform::Windows::IsDeveloperModeEnabled())
+    {
+        ThrowIfFailed(m_cp_device->SetStablePowerState(TRUE), m_cp_device.Get());
+    }
+    else
+    {
+        assert(0);
+        META_LOG("GPU instrumentation results are unreliable until GPU can not be switched to stable power state. Enabled Windows Developer Mode to unlock it.");
+    }
+#endif
 
     return m_cp_device;
 }

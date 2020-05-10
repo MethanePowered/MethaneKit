@@ -31,9 +31,16 @@ namespace Methane::Data
 
 using TimeRange = Range<Timestamp>;
 
+constexpr Timestamp g_one_sec_in_nanoseconds = 1000000000;
+
 inline Timestamp ConvertTimeSecondsToNanoseconds(double seconds)
 {
-    return static_cast<Timestamp>(seconds * 1000000000.);
+    return static_cast<Timestamp>(seconds * g_one_sec_in_nanoseconds);
+}
+
+inline Timestamp ConvertTicksToNanoseconds(Timestamp ticks, Frequency frequency)
+{
+    return static_cast<Timestamp>(ticks * g_one_sec_in_nanoseconds / frequency);
 }
 
 } // namespace Methane::Data
