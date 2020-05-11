@@ -43,4 +43,9 @@ inline Timestamp ConvertTicksToNanoseconds(Timestamp ticks, Frequency frequency)
     return static_cast<Timestamp>(ticks * g_one_sec_in_nanoseconds / frequency);
 }
 
+inline float ConvertFrequencyToTickPeriod(Frequency frequency)
+{
+    return static_cast<float>(g_one_sec_in_nanoseconds) / frequency;
+}
+
 } // namespace Methane::Data

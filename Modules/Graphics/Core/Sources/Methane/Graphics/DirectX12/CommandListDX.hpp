@@ -156,7 +156,7 @@ public:
         CommandListBase::Reset(p_debug_group);
     }
 
-    Data::TimeRange GetGpuTimeRange() const override
+    Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const override
     {
         META_FUNCTION_TASK();
         if (m_sp_begin_timestamp_query && m_sp_end_timestamp_query)
@@ -164,9 +164,11 @@ public:
             if (GetState() != CommandListBase::State::Pending)
                 throw std::logic_error("Can not get GPU time range of executing or not committed command list.");
 
-            return { m_sp_begin_timestamp_query->GetTimestamp(), m_sp_end_timestamp_query->GetTimestamp() };
+            return in_cpu_nanoseconds
+                 ? Data::TimeRange(m_sp_begin_timestamp_query->GetCpuNanoseconds(), m_sp_end_timestamp_query->GetCpuNanoseconds())
+                 : Data::TimeRange(m_sp_begin_timestamp_query->GetGpuTimestamp(),   m_sp_end_timestamp_query->GetGpuTimestamp());
         }
-        return CommandListBase::GetGpuTimeRange();
+        return CommandListBase::GetGpuTimeRange(in_cpu_nanoseconds);
     }
 
     // Object interface

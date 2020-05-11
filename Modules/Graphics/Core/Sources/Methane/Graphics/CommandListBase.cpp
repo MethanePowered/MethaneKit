@@ -84,8 +84,10 @@ CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
     : m_type(type)
     , m_sp_command_queue(command_queue.GetPtr())
     , m_tracy_gpu_scope(command_queue.GetTracyContext())
+    , m_sp_tracy_construct_location(CREATE_TRACY_SOURCE_LOCATION(GetName().c_str()))
 {
     META_FUNCTION_TASK();
+    TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(m_tracy_gpu_scope, m_sp_tracy_construct_location.get());
 }
 
 void CommandListBase::PushDebugGroup(DebugGroup& debug_group)
@@ -125,7 +127,9 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
         PopDebugGroup();
     }
 
-    TRACY_GPU_SCOPE_TRY_BEGIN(m_tracy_gpu_scope, GetName().c_str());
+    if (!m_sp_tracy_reset_location)
+        m_sp_tracy_reset_location.reset(CREATE_TRACY_SOURCE_LOCATION(GetName().c_str()));
+    TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(m_tracy_gpu_scope, m_sp_tracy_reset_location.get());
 
     if (p_debug_group && debug_group_changed)
     {
@@ -228,9 +232,9 @@ void CommandListBase::Complete(uint32_t frame_index)
     m_state = State::Pending;
     m_state_change_condition_var.notify_one();
 
-    TRACY_GPU_SCOPE_COMPLETE(m_tracy_gpu_scope, GetGpuTimeRange());
+    TRACY_GPU_SCOPE_COMPLETE(m_tracy_gpu_scope, GetGpuTimeRange(false));
     META_LOG("Command list \"" + GetName() + "\" was completed on frame " + std::to_string(frame_index) +
-             ", GPU time range: " + static_cast<std::string>(GetGpuTimeRange()));
+             ", GPU time range: " + static_cast<std::string>(GetGpuTimeRange(true)));
 
     if (m_completed_callback)
         m_completed_callback(*this);

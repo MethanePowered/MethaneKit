@@ -125,7 +125,8 @@ struct TimestampQueryBuffer
     {
         virtual void InsertTimestamp() = 0;
         virtual void ResolveTimestamp() = 0;
-        virtual Timestamp GetTimestamp() = 0;
+        virtual Timestamp GetGpuTimestamp() = 0;
+        virtual Timestamp GetCpuNanoseconds() = 0;
 
         virtual ~TimestampQuery() = default;
     };

@@ -27,6 +27,7 @@ DirectX 12 implementation of the command queue interface.
 #include "BlitCommandListDX.h"
 #include "RenderCommandListDX.h"
 #include "ParallelRenderCommandListDX.h"
+#include "QueryBufferDX.h"
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Graphics/ContextBase.h>
@@ -62,7 +63,7 @@ static wrl::ComPtr<ID3D12CommandQueue> CreateNativeCommandQueue(const DeviceDX& 
 }
 
 CommandQueueDX::CommandQueueDX(ContextBase& context)
-    : CommandQueueBase(context, Tracy::GpuContext::Settings())
+    : CommandQueueBase(context)
     , m_cp_command_queue(CreateNativeCommandQueue(GetContextDX().GetDeviceDX()))
     , m_execution_waiting_thread(&CommandQueueDX::WaitForExecution, this)
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
@@ -70,6 +71,15 @@ CommandQueueDX::CommandQueueDX(ContextBase& context)
 #endif
 {
     META_FUNCTION_TASK();
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+    TimestampQueryBufferDX& timestamp_query_buffer_dx = static_cast<TimestampQueryBufferDX&>(*m_sp_timestamp_query_buffer);
+    InitializeTracyGpuContext(
+        Tracy::GpuContext::Settings(
+            timestamp_query_buffer_dx.GetGpuCalibrationTimestamp(),
+            Data::ConvertFrequencyToTickPeriod(timestamp_query_buffer_dx.GetGpuFrequency())
+        )
+    );
+#endif
 }
 
 CommandQueueDX::~CommandQueueDX()

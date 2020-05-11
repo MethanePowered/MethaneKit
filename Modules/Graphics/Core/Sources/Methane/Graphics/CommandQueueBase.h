@@ -46,7 +46,7 @@ class CommandQueueBase
     friend class CommandListBase;
 
 public:
-    CommandQueueBase(ContextBase& context, const Tracy::GpuContext::Settings& tracy_settings);
+    CommandQueueBase(ContextBase& context);
     ~CommandQueueBase() override;
 
     // CommandQueue interface
@@ -55,14 +55,15 @@ public:
     Ptr<CommandQueueBase> GetPtr()           { return shared_from_this(); }
     ContextBase&          GetContext()       { return m_context; }
     const ContextBase&    GetContext() const { return m_context; }
-    Tracy::GpuContext&    GetTracyContext()  { return m_tracy_gpu_context; }
+    Tracy::GpuContext&    GetTracyContext();
 
 protected:
+    void InitializeTracyGpuContext(const Tracy::GpuContext::Settings& tracy_settings);
     uint32_t GetCurrentFrameBufferIndex() const;
 
 private:
-    ContextBase&        m_context;
-    Tracy::GpuContext   m_tracy_gpu_context;
+    ContextBase&                 m_context;
+    UniquePtr<Tracy::GpuContext> m_sp_tracy_gpu_context;
 };
 
 } // namespace Methane::Graphics

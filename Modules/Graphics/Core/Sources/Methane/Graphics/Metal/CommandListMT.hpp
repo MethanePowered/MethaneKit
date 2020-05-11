@@ -90,7 +90,7 @@ public:
         [m_mtl_cmd_buffer enqueue];
     }
 
-    Data::TimeRange GetGpuTimeRange() const override
+    Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const override
     {
         META_FUNCTION_TASK();
         if (CommandListBaseT::GetState() != CommandListBase::State::Pending)

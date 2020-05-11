@@ -31,9 +31,8 @@ Base implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
-CommandQueueBase::CommandQueueBase(ContextBase& context, const Tracy::GpuContext::Settings& tracy_settings)
+CommandQueueBase::CommandQueueBase(ContextBase& context)
     : m_context(context)
-    , m_tracy_gpu_context(tracy_settings)
 {
     META_FUNCTION_TASK();
 }
@@ -46,18 +45,31 @@ CommandQueueBase::~CommandQueueBase()
 void CommandQueueBase::Execute(CommandLists& command_lists, const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
-
     const uint32_t frame_index = GetCurrentFrameBufferIndex();
     META_LOG("Command queue \"" + GetName() + "\" is executing on frame " + std::to_string(frame_index));
 
     static_cast<CommandListsBase&>(command_lists).Execute(frame_index, completed_callback);
 }
 
+Tracy::GpuContext& CommandQueueBase::GetTracyContext()
+{
+    META_FUNCTION_TASK();
+    assert(m_sp_tracy_gpu_context);
+    return *m_sp_tracy_gpu_context;
+}
+
+void CommandQueueBase::InitializeTracyGpuContext(const Tracy::GpuContext::Settings& tracy_settings)
+{
+    META_FUNCTION_TASK();
+    m_sp_tracy_gpu_context = std::make_unique<Tracy::GpuContext>(tracy_settings);
+}
+
 uint32_t CommandQueueBase::GetCurrentFrameBufferIndex() const
 {
+    META_FUNCTION_TASK();
     return m_context.GetType() == Context::Type::Render
-                                ? dynamic_cast<const RenderContextBase&>(m_context).GetFrameBufferIndex()
-                                : 0u;
+         ? dynamic_cast<const RenderContextBase&>(m_context).GetFrameBufferIndex()
+         : 0u;
 }
 
 } // namespace Methane::Graphics

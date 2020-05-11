@@ -93,7 +93,7 @@ public:
     void  SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
     void  Commit() override;
     void  WaitUntilCompleted(uint32_t timeout_ms = 0u) override;
-    Data::TimeRange GetGpuTimeRange() const override { return { 0u, 0u }; }
+    Data::TimeRange GetGpuTimeRange(bool) const override { return { 0u, 0u }; }
     CommandQueue& GetCommandQueue() override;
 
     // CommandListBase interface
@@ -138,7 +138,10 @@ private:
     TracyLockable(std::mutex, m_state_mutex);
     std::mutex                m_state_change_mutex;
     std::condition_variable   m_state_change_condition_var;
-    Tracy::GpuScope           m_tracy_gpu_scope;
+
+    Tracy::GpuScope                       m_tracy_gpu_scope;
+    UniquePtr<TRACE_SOURCE_LOCATION_TYPE> m_sp_tracy_construct_location;
+    UniquePtr<TRACE_SOURCE_LOCATION_TYPE> m_sp_tracy_reset_location;
 };
 
 class CommandListsBase

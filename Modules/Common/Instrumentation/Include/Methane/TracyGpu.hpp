@@ -47,30 +47,35 @@ public:
     {
         int64_t gpu_timestamp = 0;
         int64_t cpu_timestamp = 0;
-        float   gpu_time_period = 1.f;
+        float   gpu_time_period = 1.f; // number of nanoseconds required for a timestamp query to be incremented by 1
         bool    is_thread_local = false;
 
 #ifdef TRACY_GPU_ENABLE
+
         Settings()
             : gpu_timestamp(tracy::Profiler::GetTime())
             , cpu_timestamp(gpu_timestamp)
         { }
 
-        Settings(int64_t gpu_timestamp, float gpu_time_period, bool is_thread_local = false)
+        explicit Settings(int64_t gpu_timestamp, float gpu_time_period = 1.f, bool is_thread_local = false)
             : gpu_timestamp(gpu_timestamp)
             , cpu_timestamp(tracy::Profiler::GetTime())
             , gpu_time_period(gpu_time_period)
             , is_thread_local(is_thread_local)
         { }
+
 #else // TRACY_GPU_ENABLE
+
         Settings() = default;
+        explicit Settings(int64_t) { }
+        Settings(int64_t, float) { }
         Settings(int64_t, float, bool) { }
+
 #endif // TRACY_GPU_ENABLE
     };
 
 #ifdef TRACY_GPU_ENABLE
-    // gpu_time_period - number of nanoseconds required for a timestamp query to be incremented by 1
-    GpuContext(const Settings& settings)
+    explicit GpuContext(const Settings& settings)
         : m_id(tracy::GetGpuCtxCounter().fetch_add( 1, std::memory_order_relaxed ))
     {
         ITT_FUNCTION_TASK();
@@ -117,7 +122,7 @@ private:
 
 #else // TRACY_GPU_ENABLE
 
-    GpuContext(const Settings&) { }
+    explicit GpuContext(const Settings&) { }
 
 #endif // TRACY_GPU_ENABLE
 };
@@ -133,7 +138,7 @@ public:
         Completed
     };
 
-    GpuScope(GpuContext& context)
+    explicit GpuScope(GpuContext& context)
         : m_context(context)
     {
         ITT_FUNCTION_TASK();
@@ -232,16 +237,24 @@ private:
 
 } // namespace Methane::Tracy
 
+#define TRACE_SOURCE_LOCATION_TYPE tracy::SourceLocationData
+#define CREATE_TRACY_SOURCE_LOCATION(name) \
+    new TRACE_SOURCE_LOCATION_TYPE{ name, __FUNCTION__,  __FILE__, static_cast<uint32_t>(__LINE__), 0 }
+
+#define TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(gpu_scope, p_location) \
+    gpu_scope.Begin(p_location)
+
+#define TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(gpu_scope, p_location) \
+    if (gpu_scope.GetState() != Methane::Tracy::GpuScope::State::Begun) \
+        gpu_scope.Begin(p_location)
+
 #define TRACY_GPU_SCOPE_BEGIN(gpu_scope, name) \
-    static const tracy::SourceLocationData TracyConcat(__tracy_gpu_source_location,__LINE__) \
-    { name, __FUNCTION__,  __FILE__, (uint32_t)__LINE__, 0 }; \
-    gpu_scope.Begin(&TracyConcat(__tracy_gpu_source_location,__LINE__))
+    static const tracy::SourceLocationData TracyConcat(__tracy_gpu_source_location,__LINE__){ name, __FUNCTION__,  __FILE__, static_cast<uint32_t>(__LINE__), 0 }; \
+    TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(gpu_scope, &TracyConcat(__tracy_gpu_source_location,__LINE__))
 
 #define TRACY_GPU_SCOPE_TRY_BEGIN(gpu_scope, name) \
-    static const tracy::SourceLocationData TracyConcat(__tracy_gpu_source_location,__LINE__) \
-    { name, __FUNCTION__,  __FILE__, (uint32_t)__LINE__, 0 }; \
-    if (gpu_scope.GetState() != Methane::Tracy::GpuScope::State::Begun) \
-        gpu_scope.Begin(&TracyConcat(__tracy_gpu_source_location,__LINE__));
+    static const tracy::SourceLocationData TracyConcat(__tracy_gpu_source_location,__LINE__){ name, __FUNCTION__,  __FILE__, static_cast<uint32_t>(, 0 }; \
+    TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(gpu_scope, &TracyConcat(__tracy_gpu_source_location,__LINE__))
 
 #define TRACY_GPU_SCOPE_END(gpu_scope) \
     gpu_scope.End()
@@ -252,7 +265,7 @@ private:
 
 #else // TRACY_GPU_ENABLE
 
-    GpuScope(GpuContext&) { }
+    explicit GpuScope(GpuContext&) { }
 
     inline void Begin(const void*, int) { }
     inline void End() { }
@@ -261,7 +274,13 @@ private:
 
 } // namespace Methane::Tracy
 
-#define TRACY_GPU_SCOPE_BEGIN(gpu_scope)
+struct SourceLocationStub { };
+
+#define TRACE_SOURCE_LOCATION_TYPE SourceLocationStub
+#define CREATE_TRACY_SOURCE_LOCATION(name) new TRACE_SOURCE_LOCATION_TYPE{}
+#define TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(gpu_scope, p_location)
+#define TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(gpu_scope, p_location)
+#define TRACY_GPU_SCOPE_BEGIN(gpu_scope, name)
 #define TRACY_GPU_SCOPE_TRY_BEGIN(gpu_scope, name)
 #define TRACY_GPU_SCOPE_END(gpu_scope)
 #define TRACY_GPU_SCOPE_COMPLETE(gpu_scope, gpu_time_range)
