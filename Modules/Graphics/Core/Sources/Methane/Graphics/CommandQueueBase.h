@@ -27,6 +27,7 @@ Base implementation of the command queue interface.
 #include "CommandListBase.h"
 
 #include <Methane/Graphics/CommandQueue.h>
+#include <Methane/TracyGpu.hpp>
 
 #include <list>
 #include <set>
@@ -45,7 +46,7 @@ class CommandQueueBase
     friend class CommandListBase;
 
 public:
-    CommandQueueBase(ContextBase& context);
+    CommandQueueBase(ContextBase& context, const Tracy::GpuContext::Settings& tracy_settings);
     ~CommandQueueBase() override;
 
     // CommandQueue interface
@@ -54,12 +55,14 @@ public:
     Ptr<CommandQueueBase> GetPtr()           { return shared_from_this(); }
     ContextBase&          GetContext()       { return m_context; }
     const ContextBase&    GetContext() const { return m_context; }
+    Tracy::GpuContext&    GetTracyContext()  { return m_tracy_gpu_context; }
 
 protected:
     uint32_t GetCurrentFrameBufferIndex() const;
 
 private:
     ContextBase&        m_context;
+    Tracy::GpuContext   m_tracy_gpu_context;
 };
 
 } // namespace Methane::Graphics

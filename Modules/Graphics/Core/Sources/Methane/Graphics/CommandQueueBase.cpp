@@ -31,8 +31,9 @@ Base implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
-CommandQueueBase::CommandQueueBase(ContextBase& context)
+CommandQueueBase::CommandQueueBase(ContextBase& context, const Tracy::GpuContext::Settings& tracy_settings)
     : m_context(context)
+    , m_tracy_gpu_context(tracy_settings)
 {
     META_FUNCTION_TASK();
 }

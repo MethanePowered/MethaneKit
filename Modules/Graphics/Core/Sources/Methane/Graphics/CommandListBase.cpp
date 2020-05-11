@@ -83,6 +83,7 @@ CommandList::DebugGroup* CommandListBase::DebugGroupBase::GetSubGroup(Data::Inde
 CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
     : m_type(type)
     , m_sp_command_queue(command_queue.GetPtr())
+    , m_tracy_gpu_scope(command_queue.GetTracyContext())
 {
     META_FUNCTION_TASK();
 }
@@ -124,6 +125,8 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
         PopDebugGroup();
     }
 
+    TRACY_GPU_SCOPE_TRY_BEGIN(m_tracy_gpu_scope, GetName().c_str());
+
     if (p_debug_group && debug_group_changed)
     {
         PushDebugGroup(*p_debug_group);
@@ -152,6 +155,7 @@ void CommandListBase::Commit()
         throw std::logic_error("Command list \"" + GetName() + "\" in " + GetStateName(m_state) + " state can not be committed. Only Pending command lists can be committed.");
     }
 
+    TRACY_GPU_SCOPE_END(m_tracy_gpu_scope);
     META_LOG("Command list \"" + GetName() + "\" is committed on frame " + std::to_string(GetCurrentFrameIndex()));
 
     m_committed_frame_index = GetCurrentFrameIndex();
@@ -224,6 +228,7 @@ void CommandListBase::Complete(uint32_t frame_index)
     m_state = State::Pending;
     m_state_change_condition_var.notify_one();
 
+    TRACY_GPU_SCOPE_COMPLETE(m_tracy_gpu_scope, GetGpuTimeRange());
     META_LOG("Command list \"" + GetName() + "\" was completed on frame " + std::to_string(frame_index) +
              ", GPU time range: " + static_cast<std::string>(GetGpuTimeRange()));
 

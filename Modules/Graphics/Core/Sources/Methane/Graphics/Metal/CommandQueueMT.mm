@@ -38,7 +38,7 @@ Ptr<CommandQueue> CommandQueue::Create(Context& context)
 }
 
 CommandQueueMT::CommandQueueMT(ContextBase& context)
-    : CommandQueueBase(context)
+    : CommandQueueBase(context, Tracy::GpuContext::Settings())
     , m_mtl_command_queue([GetContextMT().GetDeviceMT().GetNativeDevice() newCommandQueue])
 {
     META_FUNCTION_TASK();

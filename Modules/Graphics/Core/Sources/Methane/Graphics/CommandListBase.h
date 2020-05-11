@@ -30,6 +30,7 @@ Base implementation of the command list interface.
 #include <Methane/Graphics/CommandList.h>
 #include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Memory.hpp>
+#include <Methane/TracyGpu.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <stack>
@@ -137,6 +138,7 @@ private:
     TracyLockable(std::mutex, m_state_mutex);
     std::mutex                m_state_change_mutex;
     std::condition_variable   m_state_change_condition_var;
+    Tracy::GpuScope           m_tracy_gpu_scope;
 };
 
 class CommandListsBase

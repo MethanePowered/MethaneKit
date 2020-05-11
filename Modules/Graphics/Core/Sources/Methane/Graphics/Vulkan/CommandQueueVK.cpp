@@ -37,7 +37,7 @@ Ptr<CommandQueue> CommandQueue::Create(Context& context)
 }
 
 CommandQueueVK::CommandQueueVK(ContextBase& context)
-    : CommandQueueBase(context)
+    : CommandQueueBase(context, Tracy::GpuContext::Settings())
 {
     META_FUNCTION_TASK();
 }

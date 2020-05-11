@@ -62,7 +62,7 @@ static wrl::ComPtr<ID3D12CommandQueue> CreateNativeCommandQueue(const DeviceDX& 
 }
 
 CommandQueueDX::CommandQueueDX(ContextBase& context)
-    : CommandQueueBase(context)
+    : CommandQueueBase(context, Tracy::GpuContext::Settings())
     , m_cp_command_queue(CreateNativeCommandQueue(GetContextDX().GetDeviceDX()))
     , m_execution_waiting_thread(&CommandQueueDX::WaitForExecution, this)
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
