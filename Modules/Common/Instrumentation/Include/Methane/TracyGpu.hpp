@@ -32,11 +32,16 @@ Tracy GPU instrumentation helpers
 
 #include <assert.h>
 #include <stdlib.h>
+#include <mutex>
 
 namespace Methane::Tracy
 {
 
 class GpuScope;
+
+using QueryId   = uint16_t;
+using Timestamp = int64_t;
+using ThreadId  = uint64_t;
 
 class GpuContext
 {
@@ -45,8 +50,8 @@ class GpuContext
 public:
     struct Settings
     {
-        int64_t gpu_timestamp = 0;
-        int64_t cpu_timestamp = 0;
+        Timestamp gpu_timestamp = 0;
+        Timestamp cpu_timestamp = 0;
         float   gpu_time_period = 1.f; // number of nanoseconds required for a timestamp query to be incremented by 1
         bool    is_thread_local = false;
 
@@ -57,7 +62,7 @@ public:
             , cpu_timestamp(gpu_timestamp)
         { }
 
-        explicit Settings(int64_t gpu_timestamp, float gpu_time_period = 1.f, bool is_thread_local = false)
+        explicit Settings(Timestamp gpu_timestamp, float gpu_time_period = 1.f, bool is_thread_local = false)
             : gpu_timestamp(gpu_timestamp)
             , cpu_timestamp(tracy::Profiler::GetTime())
             , gpu_time_period(gpu_time_period)
@@ -67,9 +72,9 @@ public:
 #else // TRACY_GPU_ENABLE
 
         Settings() = default;
-        explicit Settings(int64_t) { }
-        Settings(int64_t, float) { }
-        Settings(int64_t, float, bool) { }
+        explicit Settings(Timestamp) { }
+        Settings(Timestamp, float) { }
+        Settings(Timestamp, float, bool) { }
 
 #endif // TRACY_GPU_ENABLE
     };
@@ -105,9 +110,10 @@ public:
     }
 
 private:
-    tracy_force_inline uint32_t NextQueryId()
+    tracy_force_inline QueryId NextQueryId()
     {
-        m_query_id = ( m_query_id + 1 ) % m_query_count;
+        std::lock_guard<std::mutex> lock_guard(m_query_mutex);
+        m_query_id = (m_query_id + 1) % m_query_count;
         return m_query_id;
     }
 
@@ -116,9 +122,10 @@ private:
         return m_id;
     }
 
-    const uint8_t  m_id;
-    const uint32_t m_query_count = 64 * 1024;
-    uint32_t       m_query_id = 0u;
+    const uint8_t m_id;
+    const QueryId m_query_count = std::numeric_limits<QueryId>::max();
+    QueryId       m_query_id    = 0u;
+    std::mutex    m_query_mutex;
 
 #else // TRACY_GPU_ENABLE
 
@@ -157,15 +164,17 @@ public:
         if (m_state != State::Completed)
             throw std::logic_error("GPU scope can be begun only from completed state.");
 
-        m_state          = State::Begun;
-        m_begin_query_id = m_context.NextQueryId();
+        m_state           = State::Begun;
+        m_begin_thread_id = tracy::GetThreadHandle();
+        m_begin_query_id  = m_context.NextQueryId();
 
         auto item = tracy::Profiler::QueueSerial();
-        tracy::MemWrite(&item->hdr.type, call_stack_depth > 0 ? tracy::QueueType::GpuZoneBeginCallstackSerial : tracy::QueueType::GpuZoneBeginSerial);
+        const tracy::QueueType item_type = call_stack_depth > 0 ? tracy::QueueType::GpuZoneBeginCallstackSerial : tracy::QueueType::GpuZoneBeginSerial;
+        tracy::MemWrite(&item->hdr.type,             item_type);
         tracy::MemWrite(&item->gpuZoneBegin.cpuTime, tracy::Profiler::GetTime());
-        tracy::MemWrite(&item->gpuZoneBegin.srcloc, reinterpret_cast<uint64_t>(src_location));
-        tracy::MemWrite(&item->gpuZoneBegin.thread, tracy::GetThreadHandle());
-        tracy::MemWrite(&item->gpuZoneBegin.queryId, uint16_t(m_begin_query_id));
+        tracy::MemWrite(&item->gpuZoneBegin.srcloc,  reinterpret_cast<uint64_t>(src_location));
+        tracy::MemWrite(&item->gpuZoneBegin.thread,  m_begin_thread_id);
+        tracy::MemWrite(&item->gpuZoneBegin.queryId, m_begin_query_id);
         tracy::MemWrite(&item->gpuZoneBegin.context, m_context.GetId());
         tracy::Profiler::QueueSerialFinish();
 
@@ -188,15 +197,15 @@ public:
         m_end_query_id = m_context.NextQueryId();
 
         auto item = tracy::Profiler::QueueSerial();
-        tracy::MemWrite(&item->hdr.type, tracy::QueueType::GpuZoneEndSerial);
+        tracy::MemWrite(&item->hdr.type,           tracy::QueueType::GpuZoneEndSerial);
         tracy::MemWrite(&item->gpuZoneEnd.cpuTime, tracy::Profiler::GetTime());
-        tracy::MemWrite(&item->gpuZoneEnd.thread, tracy::GetThreadHandle());
-        tracy::MemWrite(&item->gpuZoneEnd.queryId, static_cast<uint16_t>(m_end_query_id));
+        tracy::MemWrite(&item->gpuZoneEnd.thread,  m_begin_thread_id);
+        tracy::MemWrite(&item->gpuZoneEnd.queryId, m_end_query_id);
         tracy::MemWrite(&item->gpuZoneEnd.context, m_context.GetId());
         tracy::Profiler::QueueSerialFinish();
     }
 
-    tracy_force_inline void Complete(int64_t gpu_begin_timestamp, int64_t gpu_end_timestamp)
+    tracy_force_inline void Complete(Timestamp gpu_begin_timestamp, Timestamp gpu_end_timestamp)
     {
         ITT_FUNCTION_TASK();
         if (!m_is_active)
@@ -213,14 +222,14 @@ public:
         auto begin_item = tracy::Profiler::QueueSerial();
         tracy::MemWrite(&begin_item->hdr.type, tracy::QueueType::GpuTime);
         tracy::MemWrite(&begin_item->gpuTime.gpuTime, gpu_begin_timestamp);
-        tracy::MemWrite(&begin_item->gpuTime.queryId, static_cast<uint16_t>(m_begin_query_id));
+        tracy::MemWrite(&begin_item->gpuTime.queryId, m_begin_query_id);
         tracy::MemWrite(&begin_item->gpuTime.context, m_context.GetId());
         tracy::Profiler::QueueSerialFinish();
 
         auto end_item = tracy::Profiler::QueueSerial();
         tracy::MemWrite(&end_item->hdr.type, tracy::QueueType::GpuTime);
         tracy::MemWrite(&end_item->gpuTime.gpuTime, gpu_end_timestamp);
-        tracy::MemWrite(&end_item->gpuTime.queryId, static_cast<uint16_t>(m_end_query_id));
+        tracy::MemWrite(&end_item->gpuTime.queryId, m_end_query_id);
         tracy::MemWrite(&end_item->gpuTime.context, m_context.GetId());
         tracy::Profiler::QueueSerialFinish();
     }
@@ -229,10 +238,11 @@ public:
 
 private:
     GpuContext& m_context;
-    State    m_state          = State::Completed;
-    uint32_t m_begin_query_id = 0u;
-    uint32_t m_end_query_id   = 0u;
-    bool     m_is_active      = true;
+    State       m_state           = State::Completed;
+    ThreadId    m_begin_thread_id = 0u;
+    QueryId     m_begin_query_id  = 0u;
+    QueryId     m_end_query_id    = 0u;
+    bool        m_is_active       = true;
 };
 
 } // namespace Methane::Tracy
@@ -261,7 +271,7 @@ private:
 
 #define TRACY_GPU_SCOPE_COMPLETE(gpu_scope, gpu_time_range) \
     const auto gpu_time_range_var = gpu_time_range; \
-    gpu_scope.Complete(static_cast<int64_t>(gpu_time_range_var.GetStart()), static_cast<int64_t>(gpu_time_range_var.GetEnd()))
+    gpu_scope.Complete(static_cast<Timestamp>(gpu_time_range_var.GetStart()), static_cast<Timestamp>(gpu_time_range_var.GetEnd()))
 
 #else // TRACY_GPU_ENABLE
 
@@ -269,7 +279,7 @@ private:
 
     inline void Begin(const void*, int) { }
     inline void End() { }
-    inline void Complete(int64_t, int64_t) { }
+    inline void Complete(Timestamp, Timestamp) { }
 };
 
 } // namespace Methane::Tracy

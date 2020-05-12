@@ -105,7 +105,7 @@ public:
         CommandListBaseT::Commit();
 
         // Insert ending GPU timestamp query
-        // and resolve timestamp of beginning and ending queries
+        // and resolve timestamps of beginning and ending queries
         if (m_sp_end_timestamp_query)
         {
             m_sp_end_timestamp_query->InsertTimestamp();

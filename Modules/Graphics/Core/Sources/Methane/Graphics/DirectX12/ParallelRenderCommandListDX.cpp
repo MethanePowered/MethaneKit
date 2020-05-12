@@ -105,12 +105,12 @@ void ParallelRenderCommandListDX::Commit()
 {
     META_FUNCTION_TASK();
 
+    ParallelRenderCommandListBase::Commit();
+
     // Render pass was begun in "beginning" command list,
     // but it is ended in "ending" command list only
     m_ending_command_list.Commit();    // ends render pass
     m_beginning_command_list.Commit();
-
-    ParallelRenderCommandListBase::Commit();
 }
 
 void ParallelRenderCommandListDX::Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback)
