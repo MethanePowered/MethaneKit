@@ -28,6 +28,8 @@ Metal implementation of the command queue interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
+#include <QuartzCore/CABase.h>
+
 namespace Methane::Graphics
 {
 
@@ -42,7 +44,11 @@ CommandQueueMT::CommandQueueMT(ContextBase& context)
     , m_mtl_command_queue([GetContextMT().GetDeviceMT().GetNativeDevice() newCommandQueue])
 {
     META_FUNCTION_TASK();
-    InitializeTracyGpuContext(Tracy::GpuContext::Settings());
+    InitializeTracyGpuContext(
+        Tracy::GpuContext::Settings(
+            Data::ConvertTimeSecondsToNanoseconds(CACurrentMediaTime())
+        )
+    );
 }
 
 CommandQueueMT::~CommandQueueMT()

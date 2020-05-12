@@ -93,6 +93,7 @@ public:
     Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const override
     {
         META_FUNCTION_TASK();
+        META_UNUSED(in_cpu_nanoseconds);
         if (CommandListBaseT::GetState() != CommandListBase::State::Pending)
             throw std::logic_error("Can not get GPU time range of executing or not committed command list.");
 
