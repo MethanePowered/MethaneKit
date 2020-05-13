@@ -40,23 +40,23 @@ public:
         Eye,
     };
 
-    ArcBallCamera(Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
-    ArcBallCamera(const Camera& view_camera, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
+    ArcBallCamera(Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation) noexcept;
+    ArcBallCamera(const Camera& view_camera, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation) noexcept;
 
     // Parameters
-    Pivot GetPivot() const                      { return m_pivot; }
-    void  SetPivot(Pivot pivot)                 { m_pivot = pivot; }
+    inline Pivot GetPivot() const noexcept                      { return m_pivot; }
+    inline void  SetPivot(Pivot pivot) noexcept                 { m_pivot = pivot; }
 
-    float GetRadiusRatio() const                { return m_radius_ratio; }
-    void  SetRadiusRatio(float radius_ratio)    { m_radius_ratio = radius_ratio; }
-    float GetRadiusInPixels() const noexcept    { return GetRadiusInPixels(GetScreenSize()); }
+    inline float GetRadiusRatio() const noexcept                { return m_radius_ratio; }
+    inline void  SetRadiusRatio(float radius_ratio) noexcept    { m_radius_ratio = radius_ratio; }
+    inline float GetRadiusInPixels() const noexcept             { return GetRadiusInPixels(GetScreenSize()); }
 
     // Mouse action handlers
-    void OnMousePressed(const Data::Point2i& mouse_screen_pos);
-    void OnMouseDragged(const Data::Point2i& mouse_screen_pos);
+    void OnMousePressed(const Data::Point2i& mouse_screen_pos) noexcept;
+    void OnMouseDragged(const Data::Point2i& mouse_screen_pos) noexcept;
 
 protected:
-    Vector3f GetNormalizedSphereProjection(const Data::Point2i& mouse_screen_pos, bool is_primary) const;
+    Vector3f GetNormalizedSphereProjection(const Data::Point2i& mouse_screen_pos, bool is_primary) const noexcept;
 
     inline float GetRadiusInPixels(const Data::FRectSize& screen_size) const noexcept
     { return std::min(screen_size.width, screen_size.height) * m_radius_ratio / 2.f; }
@@ -65,19 +65,19 @@ protected:
     inline const Camera* GetExternalViewCamera() const noexcept { return m_p_view_camera; }
     inline const Camera& GetViewCamera() const noexcept         { return m_p_view_camera ? *m_p_view_camera : *this; }
 
-    void ApplyLookDirection(const Vector3f& look_dir);
-    void Rotate(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation);
-    void Rotate(const Vector3f& view_axis, float angle_rad) { Rotate(view_axis, angle_rad, GetOrientation()); }
+    void ApplyLookDirection(const Vector3f& look_dir) noexcept;
+    void RotateInView(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation) noexcept;
+    void RotateInView(const Vector3f& view_axis, float angle_rad) noexcept { RotateInView(view_axis, angle_rad, GetOrientation()); }
 
     inline void SetMousePressedOrientation(const Orientation& orientation) noexcept { m_mouse_pressed_orientation = orientation; }
 
 private:
-    const Camera*            m_p_view_camera;
-    Pivot                    m_pivot;
-    float                    m_radius_ratio              = 0.9f;
-    Vector3f                 m_mouse_pressed_on_sphere   { };
-    Vector3f                 m_mouse_pressed_in_world    { };
-    Orientation              m_mouse_pressed_orientation { };
+    const Camera* m_p_view_camera;
+    Pivot         m_pivot;
+    float         m_radius_ratio              = 0.9f;
+    Vector3f      m_mouse_pressed_on_sphere   { };
+    Vector3f      m_mouse_pressed_in_world    { };
+    Orientation   m_mouse_pressed_orientation { };
 };
 
 } // namespace Methane::Graphics

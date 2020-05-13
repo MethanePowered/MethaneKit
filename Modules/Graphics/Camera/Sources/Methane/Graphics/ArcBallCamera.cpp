@@ -37,7 +37,7 @@ namespace Methane::Graphics
 static inline float Square(float x)     { return x * x; }
 static inline float UnitSign(float x)   { return x / std::fabs(x); }
 
-ArcBallCamera::ArcBallCamera(Pivot pivot, cml::AxisOrientation axis_orientation)
+ArcBallCamera::ArcBallCamera(Pivot pivot, cml::AxisOrientation axis_orientation) noexcept
     : Camera(axis_orientation)
     , m_p_view_camera(nullptr)
     , m_pivot(pivot)
@@ -45,7 +45,7 @@ ArcBallCamera::ArcBallCamera(Pivot pivot, cml::AxisOrientation axis_orientation)
     META_FUNCTION_TASK();
 }
 
-ArcBallCamera::ArcBallCamera(const Camera& view_camera, Pivot pivot, cml::AxisOrientation axis_orientation)
+ArcBallCamera::ArcBallCamera(const Camera& view_camera, Pivot pivot, cml::AxisOrientation axis_orientation) noexcept
     : Camera(axis_orientation)
     , m_p_view_camera(&view_camera)
     , m_pivot(pivot)
@@ -53,7 +53,7 @@ ArcBallCamera::ArcBallCamera(const Camera& view_camera, Pivot pivot, cml::AxisOr
     META_FUNCTION_TASK();
 }
 
-void ArcBallCamera::OnMousePressed(const Point2i& mouse_screen_pos)
+void ArcBallCamera::OnMousePressed(const Point2i& mouse_screen_pos) noexcept
 {
     META_FUNCTION_TASK();
     
@@ -61,7 +61,7 @@ void ArcBallCamera::OnMousePressed(const Point2i& mouse_screen_pos)
     m_mouse_pressed_on_sphere = GetNormalizedSphereProjection(mouse_screen_pos, true);
 }
 
-void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
+void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos) noexcept
 {
     META_FUNCTION_TASK();
 
@@ -70,7 +70,7 @@ void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
     const Vector3f rotation_axis = vectors_cross.normalize();
     const float    rotation_angle = std::atan2(vectors_cross.length(), cml::dot(m_mouse_pressed_on_sphere, mouse_current_on_sphere));
 
-    Rotate(rotation_axis, rotation_angle, m_mouse_pressed_orientation);
+    RotateInView(rotation_axis, rotation_angle, m_mouse_pressed_orientation);
 
     // NOTE: fixes rotation axis flip at angles approaching to 180 degrees
     if (std::abs(rotation_angle) > cml::rad(90.f))
@@ -80,7 +80,7 @@ void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
     }
 }
 
-Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_screen_pos, bool is_primary) const
+Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_screen_pos, bool is_primary) const noexcept
 {
     META_FUNCTION_TASK();
     const Data::FRectSize& screen_size = m_p_view_camera ? m_p_view_camera->GetScreenSize() : GetScreenSize();
@@ -124,7 +124,7 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
     return cml::normalize(Vector3f(screen_vector, inside_sphere ? z_sign * std::sqrt(Square(sphere_radius) - screen_vector.length_squared()) : 0.f));
 }
 
-void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir)
+void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir) noexcept
 {
     META_FUNCTION_TASK();
     switch (m_pivot)
@@ -135,7 +135,7 @@ void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir)
     META_LOG(GetOrientationString());
 }
 
-void ArcBallCamera::Rotate(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation)
+void ArcBallCamera::RotateInView(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation) noexcept
 {
     META_FUNCTION_TASK();
     Matrix44f view_rotation_matrix { };

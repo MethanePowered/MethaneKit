@@ -123,8 +123,7 @@ bool Planet::Update(double elapsed_seconds, double)
 {
     META_FUNCTION_TASK();
 
-    gfx::Matrix44f model_scale_matrix, model_translate_matrix, model_rotation_matrix, scene_view_matrix, scene_proj_matrix;
-    m_settings.view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
+    gfx::Matrix44f model_scale_matrix, model_translate_matrix, model_rotation_matrix;
     cml::matrix_uniform_scale(model_scale_matrix, m_settings.scale);
     cml::matrix_translation(model_translate_matrix, m_settings.position);
     cml::matrix_rotation_world_y(model_rotation_matrix, -m_settings.spin_velocity_rps * elapsed_seconds);
@@ -133,7 +132,7 @@ bool Planet::Update(double elapsed_seconds, double)
     uniforms.eye_position   = gfx::Vector4f(m_settings.view_camera.GetOrientation().eye, 1.f);
     uniforms.light_position = m_settings.light_camera.GetOrientation().eye;
     uniforms.model_matrix   = model_scale_matrix * model_rotation_matrix * model_translate_matrix;
-    uniforms.mvp_matrix     = uniforms.model_matrix * scene_view_matrix * scene_proj_matrix;
+    uniforms.mvp_matrix     = uniforms.model_matrix * m_settings.view_camera.GetViewProjMatrix();
 
     m_mesh_buffers.SetFinalPassUniforms(std::move(uniforms));
     return true;

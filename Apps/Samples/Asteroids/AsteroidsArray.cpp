@@ -351,11 +351,8 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::Update");
 
-    gfx::Matrix44f view_matrix, proj_matrix;
-    m_settings.view_camera.GetViewProjMatrices(view_matrix, proj_matrix);
-    const gfx::Vector3f& eye_position = m_settings.view_camera.GetOrientation().eye;
-
-    const gfx::Matrix44f view_proj_matrix = view_matrix * proj_matrix;
+    const gfx::Vector3f&  eye_position     = m_settings.view_camera.GetOrientation().eye;
+    const gfx::Matrix44f& view_proj_matrix = m_settings.view_camera.GetViewProjMatrix();
     const float elapsed_radians = cml::constants<float>::pi()* static_cast<float>(elapsed_seconds);
 
     Data::ParallelForEach<Parameters::iterator, Asteroid::Parameters>(m_sp_content_state->parameters.begin(), m_sp_content_state->parameters.end(),

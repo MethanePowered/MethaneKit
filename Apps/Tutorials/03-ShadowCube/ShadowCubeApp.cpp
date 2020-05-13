@@ -95,8 +95,8 @@ ShadowCubeApp::ShadowCubeApp()
         std::make_shared<Data::TimeAnimation>(
             [this](double, double delta_seconds)
             {
-                m_view_camera.RotateYaw(static_cast<float>(delta_seconds * 360.f / 8.f));
-                m_light_camera.RotateYaw(static_cast<float>(delta_seconds * 360.f / 4.f));
+                m_view_camera.Rotate(m_view_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.f / 8.f));
+                m_light_camera.Rotate(m_light_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.f / 4.f));
                 return true;
             }));
 }
@@ -374,14 +374,8 @@ bool ShadowCubeApp::Update()
     if (!GraphicsApp::Update())
         return false;
 
-    // Update Model, View, Projection matrices based on scene camera location
-    gfx::Matrix44f scale_matrix, scene_view_matrix, scene_proj_matrix;
+    gfx::Matrix44f scale_matrix;
     cml::matrix_uniform_scale(scale_matrix, m_scene_scale);
-    m_view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
-
-    // Update View and Projection matrices based on light camera location
-    gfx::Matrix44f light_view_matrix, light_proj_matrix;
-    m_light_camera.GetViewProjMatrices(light_view_matrix, light_proj_matrix);
     
     // Prepare shadow transform matrix
     static const gfx::Matrix44f s_shadow_transform_matrix = ([]() -> gfx::Matrix44f
@@ -404,24 +398,24 @@ bool ShadowCubeApp::Update()
     // Update Cube uniforms
     m_sp_cube_buffers->SetFinalPassUniforms(MeshUniforms{
         cube_model_matrix,
-        cube_model_matrix * scene_view_matrix * scene_proj_matrix,
-        cube_model_matrix * light_view_matrix * light_proj_matrix * s_shadow_transform_matrix
+        cube_model_matrix * m_view_camera.GetViewProjMatrix(),
+        cube_model_matrix * m_light_camera.GetViewProjMatrix() * s_shadow_transform_matrix
     });
     m_sp_cube_buffers->SetShadowPassUniforms(MeshUniforms{
         cube_model_matrix,
-        cube_model_matrix * light_view_matrix * light_proj_matrix,
+        cube_model_matrix * m_light_camera.GetViewProjMatrix(),
         gfx::Matrix44f()
     });
 
     // Update Floor uniforms
     m_sp_floor_buffers->SetFinalPassUniforms(MeshUniforms{
         scale_matrix,
-        scale_matrix * scene_view_matrix * scene_proj_matrix,
-        scale_matrix * light_view_matrix * light_proj_matrix * s_shadow_transform_matrix
+        scale_matrix * m_view_camera.GetViewProjMatrix(),
+        scale_matrix * m_light_camera.GetViewProjMatrix() * s_shadow_transform_matrix
     });
     m_sp_floor_buffers->SetShadowPassUniforms(MeshUniforms{
         scale_matrix,
-        scale_matrix * light_view_matrix * light_proj_matrix,
+        scale_matrix * m_light_camera.GetViewProjMatrix(),
         gfx::Matrix44f()
     });
     

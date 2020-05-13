@@ -82,46 +82,46 @@ public:
 
     using DistanceRange = std::pair<float /*min_distance*/, float /*max_distance*/>;
 
-    ActionCamera(Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
-    ActionCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation);
+    ActionCamera(Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation) noexcept;
+    ActionCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation) noexcept;
 
     // Parameters
-    uint32_t GetZoomStepsCount() const                              { return m_zoom_steps_count; }
-    void  SetZoomStepsCount(uint32_t steps_count)                   { m_zoom_steps_count = steps_count;}
+    uint32_t GetZoomStepsCount() const noexcept                             { return m_zoom_steps_count; }
+    void     SetZoomStepsCount(uint32_t steps_count) noexcept               { m_zoom_steps_count = steps_count;}
 
-    const DistanceRange& GetZoomDistanceRange() const               { return m_zoom_distance_range; }
-    void SetZoomDistanceRange(const DistanceRange& distance_range)  { m_zoom_distance_range = distance_range; }
+    const DistanceRange& GetZoomDistanceRange() const noexcept              { return m_zoom_distance_range; }
+    void SetZoomDistanceRange(const DistanceRange& distance_range) noexcept { m_zoom_distance_range = distance_range; }
     
-    float GetRotateAnglePerSecond() const                           { return m_rotate_angle_per_second; }
-    void SetRotateAnglePerSecond(float rotate_angle_per_second)     { m_rotate_angle_per_second = rotate_angle_per_second; }
+    float GetRotateAnglePerSecond() const noexcept                          { return m_rotate_angle_per_second; }
+    void  SetRotateAnglePerSecond(float rotate_angle_per_second) noexcept   { m_rotate_angle_per_second = rotate_angle_per_second; }
 
-    float GetMoveDistancePerSecond() const                          { return m_move_distance_per_second; }
-    void SetMoveDistancePerSecond(float distance_per_second)        { m_move_distance_per_second = distance_per_second; }
+    float GetMoveDistancePerSecond() const noexcept                         { return m_move_distance_per_second; }
+    void  SetMoveDistancePerSecond(float distance_per_second) noexcept      { m_move_distance_per_second = distance_per_second; }
 
-    double GetKeyboardActionDurationSec() const                     { return m_keyboard_action_duration_sec; }
-    void SetKeyboardActionDurationSec(double min_duration_sec)      { m_keyboard_action_duration_sec = min_duration_sec; }
+    double GetKeyboardActionDurationSec() const noexcept                    { return m_keyboard_action_duration_sec; }
+    void   SetKeyboardActionDurationSec(double min_duration_sec) noexcept   { m_keyboard_action_duration_sec = min_duration_sec; }
 
     // Mouse action handlers
-    void OnMousePressed(const Data::Point2i& mouse_screen_pos, MouseAction mouse_action);
-    void OnMouseDragged(const Data::Point2i& mouse_screen_pos);
-    void OnMouseReleased(const Data::Point2i&);
+    void OnMousePressed(const Data::Point2i& mouse_screen_pos, MouseAction mouse_action) noexcept;
+    void OnMouseDragged(const Data::Point2i& mouse_screen_pos) noexcept;
+    void OnMouseReleased(const Data::Point2i&) noexcept;
     void OnMouseScrolled(float scroll_delta);
 
     // Keyboard action handlers
     void OnKeyPressed(KeyboardAction keyboard_action);
     void OnKeyReleased(KeyboardAction keyboard_action);
-    void DoKeyboardAction(KeyboardAction keyboard_action);
+    void DoKeyboardAction(KeyboardAction keyboard_action) noexcept;
 
-    static std::string GetActionName(MouseAction mouse_action);
-    static std::string GetActionName(KeyboardAction keyboard_action);
+    static std::string GetActionName(MouseAction mouse_action) noexcept;
+    static std::string GetActionName(KeyboardAction keyboard_action) noexcept;
 
 protected:
     using KeyboardActionAnimations  = std::map<KeyboardAction, WeakPtr<Data::Animation>>;
 
-    void Move(const Vector3f& move_vector);
-    void Zoom(float zoom_factor);
+    void Move(const Vector3f& move_vector) noexcept;
+    void Zoom(float zoom_factor) noexcept;
     
-    inline double GetAccelerationFactor(double elapsed_seconds) { return std::max(1.0, elapsed_seconds / m_keyboard_action_duration_sec); }
+    inline double GetAccelerationFactor(double elapsed_seconds) noexcept { return std::max(1.0, elapsed_seconds / m_keyboard_action_duration_sec); }
     
     void StartRotateAction(KeyboardAction rotate_action, const Vector3f& rotation_axis,
                            double duration_sec = std::numeric_limits<double>::max());

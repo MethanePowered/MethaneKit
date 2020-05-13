@@ -53,52 +53,48 @@ public:
         float fov_deg;
     };
 
-    Camera(cml::AxisOrientation axis_orientation = g_axis_orientation);
+    Camera(cml::AxisOrientation axis_orientation = g_axis_orientation) noexcept;
 
-    void Resize(const Data::FRectSize& screen_size) noexcept;
-    void SetProjection(Projection projection) noexcept              { m_projection = projection; }
-    void ResetOrientation() noexcept                                { m_current_orientation = m_default_orientation; }
-    void ResetOrientation(const Orientation& orientation) noexcept  { m_current_orientation = m_default_orientation = orientation; }
-    void SetOrientation(const Orientation& orientation) noexcept    { m_current_orientation = orientation; }
-    void SetParameters(const Parameters& parameters) noexcept       { m_parameters = parameters; }
-    void RotateYaw(float deg) noexcept;
-    void RotatePitch(float deg) noexcept;
+    inline void Resize(const Data::FRectSize& screen_size) noexcept         { m_screen_size  = screen_size; m_aspect_ratio = screen_size.width / screen_size.height; }
+    inline void SetProjection(Projection projection) noexcept               { m_projection = projection; m_is_current_proj_matrix_dirty = true; }
+    inline void SetParameters(const Parameters& parameters) noexcept        { m_parameters = parameters; m_is_current_proj_matrix_dirty = true; }
+    inline void ResetOrientation() noexcept                                 { m_current_orientation = m_default_orientation; m_is_current_view_matrix_dirty = true; }
+    inline void ResetOrientation(const Orientation& orientation) noexcept   { m_current_orientation = m_default_orientation = orientation; m_is_current_view_matrix_dirty = true; }
+    inline void SetOrientation(const Orientation& orientation) noexcept     { m_current_orientation = orientation; m_is_current_view_matrix_dirty = true; }
+    inline void SetOrientationEye(const Vector3f& eye) noexcept             { m_current_orientation.eye = eye; m_is_current_view_matrix_dirty = true; }
+    inline void SetOrientationAim(const Vector3f& aim) noexcept             { m_current_orientation.aim = aim; m_is_current_view_matrix_dirty = true; }
+    inline void SetOrientationUp(const Vector3f& up) noexcept               { m_current_orientation.up = up;   m_is_current_view_matrix_dirty = true; }
+    void        Rotate(const Vector3f& axis, float deg) noexcept;
 
-    inline void SetOrientationEye(const Vector3f& eye) noexcept     { m_current_orientation.eye = eye; }
-    inline void SetOrientationAim(const Vector3f& aim) noexcept     { m_current_orientation.aim = aim; }
-    inline void SetOrientationUp(const Vector3f& up) noexcept       { m_current_orientation.up = up;   }
+    inline const Data::FRectSize& GetScreenSize() const noexcept            { return m_screen_size; }
+    inline const Orientation& GetOrientation() const noexcept               { return m_current_orientation; }
+    inline float GetAimDistance() const noexcept                            { return GetAimDistance(m_current_orientation); }
+    inline Vector3f GetLookDirection() const noexcept                       { return GetLookDirection(m_current_orientation); }
 
-    const Orientation& GetOrientation() const noexcept              { return m_current_orientation; }
-    float GetAimDistance() const noexcept                           { return GetAimDistance(m_current_orientation); }
-    const Data::FRectSize& GetScreenSize() const noexcept           { return m_screen_size; }
-    Vector3f GetLookDirection() const noexcept                      { return GetLookDirection(m_current_orientation); }
+    const Matrix44f& GetViewMatrix() const noexcept;
+    const Matrix44f& GetProjMatrix() const noexcept;
+    const Matrix44f& GetViewProjMatrix() const noexcept;
 
-    void GetViewProjMatrices(Matrix44f& out_view, Matrix44f& out_proj) const noexcept;
-    void GetViewMatrix(Matrix44f& out_view) const noexcept          { return GetViewMatrix(out_view, m_current_orientation); }
-    void GetProjMatrix(Matrix44f& out_proj) const noexcept;
-
-    Matrix44f GetViewMatrix() const noexcept                        { return GetViewMatrix(m_current_orientation);}
-    Matrix44f GetProjMatrix() const noexcept;
-    Matrix44f GetViewProjMatrix() const noexcept;
-
-    Vector2f  TransformScreenToProj(const Data::Point2i& screen_pos) const noexcept;
-    Vector3f  TransformScreenToView(const Data::Point2i& screen_pos) const noexcept;
-    Vector3f  TransformScreenToWorld(const Data::Point2i& screen_pos) const noexcept;
-    Vector3f  TransformWorldToView(const Vector3f& world_pos) const noexcept    { return TransformWorldToView(world_pos, m_current_orientation); }
-    Vector3f  TransformViewToWorld(const Vector3f& view_pos)  const noexcept    { return TransformViewToWorld(view_pos,  m_current_orientation); }
-    Vector4f  TransformWorldToView(const Vector4f& world_pos) const noexcept    { return TransformWorldToView(world_pos, m_current_orientation); }
-    Vector4f  TransformViewToWorld(const Vector4f& view_pos)  const noexcept    { return TransformViewToWorld(view_pos,  m_current_orientation); }
+    Vector2f TransformScreenToProj(const Data::Point2i& screen_pos) const noexcept;
+    Vector3f TransformScreenToView(const Data::Point2i& screen_pos) const noexcept;
+    Vector3f TransformScreenToWorld(const Data::Point2i& screen_pos) const noexcept;
+    Vector3f TransformWorldToView(const Vector3f& world_pos) const noexcept { return TransformWorldToView(world_pos, m_current_orientation); }
+    Vector3f TransformViewToWorld(const Vector3f& view_pos)  const noexcept { return TransformViewToWorld(view_pos,  m_current_orientation); }
+    Vector4f TransformWorldToView(const Vector4f& world_pos) const noexcept { return TransformWorldToView(world_pos, m_current_orientation); }
+    Vector4f TransformViewToWorld(const Vector4f& view_pos)  const noexcept { return TransformViewToWorld(view_pos,  m_current_orientation); }
 
     std::string GetOrientationString() const;
 
 protected:
     float GetFovAngleY() const noexcept;
 
-    static inline Vector3f GetLookDirection(const Orientation& orientation) noexcept   { return (orientation.aim - orientation.eye); }
-    static inline float GetAimDistance(const Orientation& orientation) noexcept        { return GetLookDirection(orientation).length(); }
+    static inline Vector3f GetLookDirection(const Orientation& orientation) noexcept   { return orientation.aim - orientation.eye; }
+    static inline float    GetAimDistance(const Orientation& orientation) noexcept     { return GetLookDirection(orientation).length(); }
 
-    void GetViewMatrix(Matrix44f& out_view, const Orientation& orientation) const noexcept;
     Matrix44f GetViewMatrix(const Orientation& orientation) const noexcept;
+    void GetViewMatrix(Matrix44f& out_view, const Orientation& orientation) const noexcept;
+    void GetViewMatrix(Matrix44f& out_view) const noexcept { return GetViewMatrix(out_view, m_current_orientation); }
+    void GetProjMatrix(Matrix44f& out_proj) const noexcept;
 
     Vector3f TransformWorldToView(const Vector3f& world_pos, const Orientation& orientation) const noexcept { return TransformWorldToView(Vector4f(world_pos, 1.f), orientation).subvector(3); }
     Vector3f TransformViewToWorld(const Vector3f& view_pos, const Orientation& orientation) const noexcept  { return TransformViewToWorld(Vector4f(view_pos,  1.f), orientation).subvector(3); }
@@ -108,12 +104,18 @@ protected:
 private:
     const cml::AxisOrientation m_axis_orientation;
 
-    Projection      m_projection            = Projection::Perspective;
-    Data::FRectSize m_screen_size           { 1.f, 1.f };
-    float           m_aspect_ratio          = 1.0f;
-    Parameters      m_parameters            { 0.01f, 125.f, 90.f };
-    Orientation     m_default_orientation   { { 15.0f, 15.0f, -15.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } };
-    Orientation     m_current_orientation   { };
+    Projection        m_projection            = Projection::Perspective;
+    Data::FRectSize   m_screen_size           { 1.f, 1.f };
+    float             m_aspect_ratio          = 1.0f;
+    Parameters        m_parameters            { 0.01f, 125.f, 90.f };
+    Orientation       m_default_orientation   { { 15.0f, 15.0f, -15.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } };
+    Orientation       m_current_orientation   { };
+
+    mutable Matrix44f m_current_view_matrix;
+    mutable Matrix44f m_current_proj_matrix;
+    mutable Matrix44f m_current_view_proj_matrix;
+    mutable bool      m_is_current_view_matrix_dirty = true;
+    mutable bool      m_is_current_proj_matrix_dirty = true;
 };
 
 } // namespace Methane::Graphics

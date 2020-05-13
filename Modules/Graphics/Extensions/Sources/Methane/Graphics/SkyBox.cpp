@@ -122,12 +122,11 @@ void SkyBox::Update()
 {
     META_FUNCTION_TASK();
 
-    Matrix44f model_scale_matrix, model_translate_matrix, scene_view_matrix, scene_proj_matrix;
-    m_settings.view_camera.GetViewProjMatrices(scene_view_matrix, scene_proj_matrix);
+    Matrix44f model_scale_matrix, model_translate_matrix;
     cml::matrix_uniform_scale(model_scale_matrix, m_settings.scale);
     cml::matrix_translation(model_translate_matrix, m_settings.view_camera.GetOrientation().eye); // Sky-box is centered in the camera eye to simulate infinity distance
 
-    m_mesh_buffers.SetFinalPassUniforms({ model_scale_matrix * model_translate_matrix * scene_view_matrix * scene_proj_matrix });
+    m_mesh_buffers.SetFinalPassUniforms({ model_scale_matrix * model_translate_matrix * m_settings.view_camera.GetViewProjMatrix() });
 }
 
 void SkyBox::Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindings)

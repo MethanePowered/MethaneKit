@@ -32,42 +32,28 @@ Camera helper implementation allowing to generate view and projection matrices.
 namespace Methane::Graphics
 {
 
-Camera::Camera(cml::AxisOrientation axis_orientation)
+Camera::Camera(cml::AxisOrientation axis_orientation) noexcept
     : m_axis_orientation(axis_orientation)
 {
     META_FUNCTION_TASK();
     ResetOrientation();
 }
 
-void Camera::Resize(const Data::FRectSize& screen_size) noexcept
-{
-    META_FUNCTION_TASK();
-    m_screen_size  = screen_size;
-    m_aspect_ratio = screen_size.width / screen_size.height;
-}
-
-void Camera::RotateYaw(float deg) noexcept
+void Camera::Rotate(const Vector3f& axis, float angle_deg) noexcept
 {
     META_FUNCTION_TASK();
     Matrix33f rotation_matrix{ };
-    cml::matrix_rotation_axis_angle(rotation_matrix, m_current_orientation.up, cml::rad(deg));
-    m_current_orientation.eye = m_current_orientation.eye * rotation_matrix;
+    cml::matrix_rotation_axis_angle(rotation_matrix, axis, cml::rad(angle_deg));
+    Vector3f new_look_dir = GetLookDirection() * rotation_matrix;
+    SetOrientationEye(GetOrientation().aim - new_look_dir);
 }
 
-void Camera::RotatePitch(float deg) noexcept
+Matrix44f Camera::GetViewMatrix(const Orientation& orientation) const noexcept
 {
     META_FUNCTION_TASK();
-    Matrix33f rotation_matrix{ };
-    auto right = cml::cross(m_current_orientation.eye, m_current_orientation.up).normalize();
-    cml::matrix_rotation_axis_angle(rotation_matrix, right, cml::rad(deg));
-    m_current_orientation.eye = m_current_orientation.eye * rotation_matrix;
-}
-
-void Camera::GetViewProjMatrices(Matrix44f& out_view, Matrix44f& out_proj) const noexcept
-{
-    META_FUNCTION_TASK();
-    GetViewMatrix(out_view);
-    GetProjMatrix(out_proj);
+    Matrix44f view_matrix{ };
+    GetViewMatrix(view_matrix, orientation);
+    return view_matrix;
 }
 
 void Camera::GetViewMatrix(Matrix44f& out_view, const Orientation& orientation) const noexcept
@@ -90,26 +76,36 @@ void Camera::GetProjMatrix(Matrix44f& out_proj) const noexcept
     }
 }
 
-Matrix44f Camera::GetViewMatrix(const Orientation& orientation) const noexcept
+const Matrix44f& Camera::GetViewMatrix() const noexcept
 {
     META_FUNCTION_TASK();
-    Matrix44f view_matrix{ };
-    GetViewMatrix(view_matrix, orientation);
-    return view_matrix;
+    if (!m_is_current_view_matrix_dirty)
+        return m_current_view_matrix;
+
+    GetViewMatrix(m_current_view_matrix);
+    m_is_current_view_matrix_dirty = false;
+    return m_current_view_matrix;
 }
 
-Matrix44f Camera::GetProjMatrix() const noexcept
+const Matrix44f& Camera::GetProjMatrix() const noexcept
 {
     META_FUNCTION_TASK();
-    Matrix44f proj_matrix{ };
-    GetProjMatrix(proj_matrix);
-    return proj_matrix;
+    if (!m_is_current_proj_matrix_dirty)
+        return m_current_proj_matrix;
+
+    GetProjMatrix(m_current_proj_matrix);
+    m_is_current_proj_matrix_dirty = false;
+    return m_current_proj_matrix;
 }
 
-Matrix44f Camera::GetViewProjMatrix() const noexcept
+const Matrix44f& Camera::GetViewProjMatrix() const noexcept
 {
     META_FUNCTION_TASK();
-    return GetViewMatrix() * GetProjMatrix();
+    if (!m_is_current_view_matrix_dirty && !m_is_current_proj_matrix_dirty)
+        return m_current_view_proj_matrix;
+
+    m_current_view_proj_matrix = GetViewMatrix() * GetProjMatrix();
+    return m_current_view_proj_matrix;
 }
 
 Vector2f Camera::TransformScreenToProj(const Data::Point2i& screen_pos) const noexcept

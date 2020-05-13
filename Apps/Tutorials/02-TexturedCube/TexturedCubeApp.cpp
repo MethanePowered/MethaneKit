@@ -90,7 +90,7 @@ TexturedCubeApp::TexturedCubeApp()
                 gfx::Matrix33f light_rotate_matrix;
                 cml::matrix_rotation_axis_angle(light_rotate_matrix, m_camera.GetOrientation().up, cml::rad(360.f * delta_seconds / 4.f));
                 m_shader_uniforms.light_position = m_shader_uniforms.light_position * light_rotate_matrix;
-                m_camera.RotateYaw(static_cast<float>(delta_seconds * 360.f / 8.f));
+                m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.f / 8.f));
                 return true;
             }));
 }
@@ -239,12 +239,10 @@ bool TexturedCubeApp::Update()
         return false;
 
     // Update Model, View, Projection matrices based on camera location
-    gfx::Matrix44f model_matrix, view_matrix, proj_matrix;
+    gfx::Matrix44f model_matrix;
     cml::matrix_uniform_scale(model_matrix, m_cube_scale);
-    m_camera.GetViewProjMatrices(view_matrix, proj_matrix);
 
-    gfx::Matrix44f mv_matrix         = model_matrix * view_matrix;
-    m_shader_uniforms.mvp_matrix     = mv_matrix * proj_matrix;
+    m_shader_uniforms.mvp_matrix     = model_matrix * m_camera.GetViewProjMatrix();
     m_shader_uniforms.model_matrix   = model_matrix;
     m_shader_uniforms.eye_position   = gfx::Vector4f(m_camera.GetOrientation().eye, 1.f);
     

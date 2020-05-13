@@ -32,21 +32,21 @@ Interactive action-camera for rotating, moving and zooming with mouse and keyboa
 namespace Methane::Graphics
 {
 
-ActionCamera::ActionCamera(Data::AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation)
+ActionCamera::ActionCamera(Data::AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation) noexcept
     : ArcBallCamera(pivot, axis_orientation)
     , m_animations(animations)
 {
     META_FUNCTION_TASK();
 }
 
-ActionCamera::ActionCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation)
+ActionCamera::ActionCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation) noexcept
     : ArcBallCamera(view_camera, pivot, axis_orientation)
     , m_animations(animations)
 {
     META_FUNCTION_TASK();
 }
 
-void ActionCamera::OnMousePressed(const Data::Point2i& mouse_screen_pos, MouseAction mouse_action)
+void ActionCamera::OnMousePressed(const Data::Point2i& mouse_screen_pos, MouseAction mouse_action) noexcept
 {
     META_FUNCTION_TASK();
     m_mouse_action = mouse_action;
@@ -67,7 +67,7 @@ void ActionCamera::OnMousePressed(const Data::Point2i& mouse_screen_pos, MouseAc
     }
 }
 
-void ActionCamera::OnMouseDragged(const Data::Point2i& mouse_screen_pos)
+void ActionCamera::OnMouseDragged(const Data::Point2i& mouse_screen_pos) noexcept
 {
     META_FUNCTION_TASK();
     switch (m_mouse_action)
@@ -84,7 +84,7 @@ void ActionCamera::OnMouseDragged(const Data::Point2i& mouse_screen_pos)
     }
 }
 
-void ActionCamera::OnMouseReleased(const Data::Point2i&)
+void ActionCamera::OnMouseReleased(const Data::Point2i&) noexcept
 {
     META_FUNCTION_TASK();
     m_mouse_action = MouseAction::None;
@@ -140,7 +140,7 @@ void ActionCamera::OnKeyReleased(KeyboardAction keyboard_action)
     StopKeyboardAction(keyboard_action, m_keyboard_action_duration_sec);
 }
 
-void ActionCamera::DoKeyboardAction(KeyboardAction keyboard_action)
+void ActionCamera::DoKeyboardAction(KeyboardAction keyboard_action) noexcept
 {
     META_FUNCTION_TASK();
     switch(keyboard_action)
@@ -157,7 +157,7 @@ void ActionCamera::DoKeyboardAction(KeyboardAction keyboard_action)
     }
 }
 
-void ActionCamera::Move(const Vector3f& move_vector)
+void ActionCamera::Move(const Vector3f& move_vector) noexcept
 {
     META_FUNCTION_TASK();
     SetOrientationAim(GetOrientation().aim + move_vector);
@@ -165,7 +165,7 @@ void ActionCamera::Move(const Vector3f& move_vector)
     META_LOG(GetOrientationString());
 }
 
-void ActionCamera::Zoom(float zoom_factor)
+void ActionCamera::Zoom(float zoom_factor) noexcept
 {
     META_FUNCTION_TASK();
     const Vector3f look_dir   = GetLookDirection(GetOrientation());
@@ -184,7 +184,7 @@ void ActionCamera::StartRotateAction(KeyboardAction rotate_action, const Vector3
     m_animations.push_back(
         std::make_shared<Data::TimeAnimation>([this, angle_rad_per_second, rotation_axis_in_view](double elapsed_seconds, double delta_seconds)
             {
-                Rotate(rotation_axis_in_view, static_cast<float>(angle_rad_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
+                RotateInView(rotation_axis_in_view, static_cast<float>(angle_rad_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
                 return true;
             },
             duration_sec));
@@ -281,7 +281,7 @@ bool ActionCamera::StopKeyboardAction(KeyboardAction keyboard_action, double dur
     }
 }
 
-std::string ActionCamera::GetActionName(MouseAction mouse_action)
+std::string ActionCamera::GetActionName(MouseAction mouse_action) noexcept
 {
     META_FUNCTION_TASK();
     switch (mouse_action)
@@ -294,7 +294,7 @@ std::string ActionCamera::GetActionName(MouseAction mouse_action)
     }
 }
 
-std::string ActionCamera::GetActionName(KeyboardAction keyboard_action)
+std::string ActionCamera::GetActionName(KeyboardAction keyboard_action) noexcept
 {
     META_FUNCTION_TASK();
     switch (keyboard_action)
