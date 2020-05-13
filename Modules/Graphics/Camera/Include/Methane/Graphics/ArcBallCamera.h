@@ -76,7 +76,6 @@ private:
     Pivot         m_pivot;
     float         m_radius_ratio              = 0.9f;
     Vector3f      m_mouse_pressed_on_sphere   { };
-    Vector3f      m_mouse_pressed_in_world    { };
     Orientation   m_mouse_pressed_orientation { };
 };
 
