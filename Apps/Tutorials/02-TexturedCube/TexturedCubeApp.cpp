@@ -81,7 +81,7 @@ TexturedCubeApp::TexturedCubeApp()
     , m_cube_scale(15.f)
 {
     m_shader_uniforms.light_position = gfx::Vector3f(0.f, 20.f, -25.f);
-    m_camera.SetOrientation({ { 13.0f, 13.0f, -13.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
+    m_camera.ResetOrientation({ { 13.0f, 13.0f, -13.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
 
     m_animations.push_back(
         std::make_shared<Data::TimeAnimation>(

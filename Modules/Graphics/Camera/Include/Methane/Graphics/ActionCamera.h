@@ -135,6 +135,7 @@ protected:
     bool StartKeyboardAction(KeyboardAction keyboard_action, double duration_sec);
     bool StopKeyboardAction(KeyboardAction keyboard_action, double duration_sec);
 
+private:
     Data::AnimationsPool&    m_animations;
     uint32_t                 m_zoom_steps_count             = 3;
     DistanceRange            m_zoom_distance_range          = DistanceRange(1.f, 1000.f);

@@ -84,9 +84,9 @@ ShadowCubeApp::ShadowCubeApp()
     , m_shadow_pass(false, "Shadow Render Pass")
     , m_final_pass(true, "Final Render Pass")
 {
-    m_view_camera.SetOrientation({ { 15.0f, 22.5f, -15.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
+    m_view_camera.ResetOrientation({ { 15.0f, 22.5f, -15.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
 
-    m_light_camera.SetOrientation({ { 0.0f,  25.0f, -25.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
+    m_light_camera.ResetOrientation({ { 0.0f,  25.0f, -25.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
     m_light_camera.SetParameters({ -300, 300.f, 90.f });
     m_light_camera.Resize({ 80.f, 80.f });

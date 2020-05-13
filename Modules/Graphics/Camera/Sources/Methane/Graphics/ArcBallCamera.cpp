@@ -57,7 +57,7 @@ void ArcBallCamera::OnMousePressed(const Point2i& mouse_screen_pos)
 {
     META_FUNCTION_TASK();
     
-    m_mouse_pressed_orientation = m_current_orientation;
+    m_mouse_pressed_orientation = GetOrientation();
     m_mouse_pressed_on_sphere = GetNormalizedSphereProjection(mouse_screen_pos, true);
 }
 
@@ -75,7 +75,7 @@ void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
     // NOTE: fixes rotation axis flip at angles approaching to 180 degrees
     if (std::abs(rotation_angle) > cml::rad(90.f))
     {
-        m_mouse_pressed_orientation = m_current_orientation;
+        m_mouse_pressed_orientation = GetOrientation();
         m_mouse_pressed_on_sphere = mouse_current_on_sphere;
     }
 }
@@ -83,7 +83,7 @@ void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
 Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_screen_pos, bool is_primary) const
 {
     META_FUNCTION_TASK();
-    const Data::FRectSize& screen_size = m_p_view_camera ? m_p_view_camera->GetScreenSize() : m_screen_size;
+    const Data::FRectSize& screen_size = m_p_view_camera ? m_p_view_camera->GetScreenSize() : GetScreenSize();
     const Point2f screen_center(screen_size.width / 2.f, screen_size.height / 2.f);
     Point2f screen_vector = static_cast<Point2f>(mouse_screen_pos) - screen_center;
 
@@ -129,8 +129,8 @@ void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir)
     META_FUNCTION_TASK();
     switch (m_pivot)
     {
-    case Pivot::Aim: m_current_orientation.eye = m_current_orientation.aim - look_dir; break;
-    case Pivot::Eye: m_current_orientation.aim = m_current_orientation.eye + look_dir; break;
+    case Pivot::Aim: SetOrientationEye(GetOrientation().aim - look_dir); break;
+    case Pivot::Eye: SetOrientationAim(GetOrientation().eye + look_dir); break;
     }
     META_LOG(GetOrientationString());
 }
@@ -140,22 +140,25 @@ void ArcBallCamera::Rotate(const Vector3f& view_axis, float angle_rad, const Ori
     META_FUNCTION_TASK();
     Matrix44f view_rotation_matrix { };
     cml::matrix_rotation_axis_angle(view_rotation_matrix, view_axis, angle_rad);
+    const Camera* p_view_camera = GetExternalViewCamera();
 
-    const Vector4f look_in_view = m_p_view_camera
-                                ? m_p_view_camera->TransformWorldToView(Vector4f(GetLookDirection(base_orientation), 1.f))
+    const Vector4f look_in_view = p_view_camera
+                                ? p_view_camera->TransformWorldToView(Vector4f(GetLookDirection(base_orientation), 1.f))
                                 : Vector4f(0.f, 0.f, GetAimDistance(base_orientation), 1.f);
 
-    const Vector3f look_dir     = m_p_view_camera
-                                ? m_p_view_camera->TransformViewToWorld(view_rotation_matrix * look_in_view).subvector(3)
+    const Vector3f look_dir     = p_view_camera
+                                ? p_view_camera->TransformViewToWorld(view_rotation_matrix * look_in_view).subvector(3)
                                 : TransformViewToWorld(view_rotation_matrix * look_in_view, base_orientation).subvector(3);
 
-    const Vector4f up_in_view   = m_p_view_camera
-                                ? m_p_view_camera->TransformWorldToView(Vector4f(base_orientation.up, 1.f))
+    const Vector4f up_in_view   = p_view_camera
+                                ? p_view_camera->TransformWorldToView(Vector4f(base_orientation.up, 1.f))
                                 : Vector4f(0.f, base_orientation.up.length(), 0.f, 1.f);
 
-    m_current_orientation.up    = m_p_view_camera
-                                ? m_p_view_camera->TransformViewToWorld(view_rotation_matrix * up_in_view).subvector(3)
-                                : TransformViewToWorld(view_rotation_matrix * up_in_view, base_orientation).subvector(3);
+    SetOrientationUp(
+        p_view_camera
+            ? p_view_camera->TransformViewToWorld(view_rotation_matrix * up_in_view).subvector(3)
+            : TransformViewToWorld(view_rotation_matrix * up_in_view, base_orientation).subvector(3)
+    );
 
     ApplyLookDirection(look_dir);
 }

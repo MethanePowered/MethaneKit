@@ -157,11 +157,11 @@ AsteroidsApp::AsteroidsApp()
     // NOTE: Near and Far values are swapped in camera parameters (1st value is near = max depth, 2nd value is far = min depth)
     // for Reversed-Z buffer values range [ near: 1, far 0], instead of [ near 0, far 1]
     // which is used for "from near to far" drawing order for reducing pixels overdraw
-    m_view_camera.SetOrientation({ { -110.f, 75.f, 210.f }, { 0.f, -60.f, 25.f }, { 0.f, 1.f, 0.f } });
+    m_view_camera.ResetOrientation({ { -110.f, 75.f, 210.f }, { 0.f, -60.f, 25.f }, { 0.f, 1.f, 0.f } });
     m_view_camera.SetParameters({ 600.f /* near = max depth */, 0.01f /*far = min depth*/, 90.f /* FOV */ });
     m_view_camera.SetZoomDistanceRange({ 60.f , 400.f });
 
-    m_light_camera.SetOrientation({ { -100.f, 120.f, 0.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f } });
+    m_light_camera.ResetOrientation({ { -100.f, 120.f, 0.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
     m_light_camera.SetParameters({ -300.f, 300.f, 90.f });
     m_light_camera.Resize({ 120.f, 120.f });

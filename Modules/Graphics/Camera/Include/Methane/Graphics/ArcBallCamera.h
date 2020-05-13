@@ -49,7 +49,7 @@ public:
 
     float GetRadiusRatio() const                { return m_radius_ratio; }
     void  SetRadiusRatio(float radius_ratio)    { m_radius_ratio = radius_ratio; }
-    float GetRadiusInPixels() const noexcept    { return GetRadiusInPixels(m_screen_size); }
+    float GetRadiusInPixels() const noexcept    { return GetRadiusInPixels(GetScreenSize()); }
 
     // Mouse action handlers
     void OnMousePressed(const Data::Point2i& mouse_screen_pos);
@@ -61,13 +61,17 @@ protected:
     inline float GetRadiusInPixels(const Data::FRectSize& screen_size) const noexcept
     { return std::min(screen_size.width, screen_size.height) * m_radius_ratio / 2.f; }
 
-    inline const Camera& GetViewCamera() const noexcept
-    { return m_p_view_camera ? *m_p_view_camera : *this; }
+    inline bool          IsExternalViewCamera() const noexcept  { return m_p_view_camera; }
+    inline const Camera* GetExternalViewCamera() const noexcept { return m_p_view_camera; }
+    inline const Camera& GetViewCamera() const noexcept         { return m_p_view_camera ? *m_p_view_camera : *this; }
 
     void ApplyLookDirection(const Vector3f& look_dir);
     void Rotate(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation);
-    void Rotate(const Vector3f& view_axis, float angle_rad) { Rotate(view_axis, angle_rad, m_current_orientation ); }
+    void Rotate(const Vector3f& view_axis, float angle_rad) { Rotate(view_axis, angle_rad, GetOrientation()); }
 
+    inline void SetMousePressedOrientation(const Orientation& orientation) noexcept { m_mouse_pressed_orientation = orientation; }
+
+private:
     const Camera*            m_p_view_camera;
     Pivot                    m_pivot;
     float                    m_radius_ratio              = 0.9f;

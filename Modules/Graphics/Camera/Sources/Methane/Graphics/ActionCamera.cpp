@@ -50,7 +50,7 @@ void ActionCamera::OnMousePressed(const Data::Point2i& mouse_screen_pos, MouseAc
 {
     META_FUNCTION_TASK();
     m_mouse_action = mouse_action;
-    m_mouse_pressed_orientation = m_current_orientation;
+    SetMousePressedOrientation(GetOrientation());
 
     switch (m_mouse_action)
     {
@@ -106,7 +106,7 @@ void ActionCamera::OnMouseScrolled(float scroll_delta)
 void ActionCamera::OnKeyPressed(KeyboardAction keyboard_action)
 {
     META_FUNCTION_TASK();
-    const float rotation_axis_sign = m_pivot == Pivot::Aim ? 1.f : -1.f;
+    const float rotation_axis_sign = GetPivot() == Pivot::Aim ? 1.f : -1.f;
 
     switch(keyboard_action)
     {
@@ -146,8 +146,12 @@ void ActionCamera::DoKeyboardAction(KeyboardAction keyboard_action)
     switch(keyboard_action)
     {
         case KeyboardAction::Reset:
-            ResetOrientation(); break;
-        case KeyboardAction::ChangePivot:   SetPivot(m_pivot == Pivot::Aim ? Pivot::Eye : Pivot::Aim); break;
+            ResetOrientation();
+            break;
+
+        case KeyboardAction::ChangePivot:
+            SetPivot(GetPivot() == Pivot::Aim ? Pivot::Eye : Pivot::Aim);
+            break;
         
         default: return;
     }
@@ -156,15 +160,15 @@ void ActionCamera::DoKeyboardAction(KeyboardAction keyboard_action)
 void ActionCamera::Move(const Vector3f& move_vector)
 {
     META_FUNCTION_TASK();
-    m_current_orientation.aim += move_vector;
-    m_current_orientation.eye += move_vector;
+    SetOrientationAim(GetOrientation().aim + move_vector);
+    SetOrientationEye(GetOrientation().eye + move_vector);
     META_LOG(GetOrientationString());
 }
 
 void ActionCamera::Zoom(float zoom_factor)
 {
     META_FUNCTION_TASK();
-    const Vector3f look_dir   = GetLookDirection(m_current_orientation);
+    const Vector3f look_dir   = GetLookDirection(GetOrientation());
     const float zoom_distance = std::min(std::max(look_dir.length() * zoom_factor, m_zoom_distance_range.first), m_zoom_distance_range.second);
     ApplyLookDirection(cml::normalize(look_dir) * zoom_distance);
     META_LOG(GetOrientationString());
@@ -204,7 +208,8 @@ void ActionCamera::StartMoveAction(KeyboardAction move_action, const Vector3f& m
                 Move(move_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds));
                 return true;
             },
-            duration_sec));
+            duration_sec)
+    );
     
     const auto emplace_result = m_keyboard_action_animations.emplace(move_action, m_animations.back());
     assert(emplace_result.second);
@@ -224,7 +229,8 @@ void ActionCamera::StartZoomAction(KeyboardAction zoom_action, float zoom_factor
                 Zoom(1.f - static_cast<float>((1.f - zoom_factor_per_second) * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
                 return true;
             },
-            duration_sec));
+            duration_sec)
+    );
     
     const auto emplace_result = m_keyboard_action_animations.emplace(zoom_action, m_animations.back());
     assert(emplace_result.second);

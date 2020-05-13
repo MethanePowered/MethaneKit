@@ -61,7 +61,7 @@ bool compareEqual(Vector3f const& left, Vector3f const& right)
 inline void SetupCamera(ArcBallCamera& camera, const Camera::Orientation& orientation)
 {
     camera.Resize(g_test_screen_size);
-    camera.SetOrientation(orientation);
+    camera.ResetOrientation(orientation);
     camera.SetRadiusRatio(g_test_radius_ratio);
     CHECK(camera.GetRadiusInPixels() == g_test_radius_pixels);
 }
