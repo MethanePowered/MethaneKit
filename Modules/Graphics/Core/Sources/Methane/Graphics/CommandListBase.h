@@ -139,7 +139,7 @@ private:
     std::mutex                m_state_change_mutex;
     std::condition_variable   m_state_change_condition_var;
 
-    Tracy::GpuScope                       m_tracy_gpu_scope;
+    TRACY_GPU_SCOPE_TYPE                  m_tracy_gpu_scope;
     UniquePtr<TRACE_SOURCE_LOCATION_TYPE> m_sp_tracy_construct_location;
     UniquePtr<TRACE_SOURCE_LOCATION_TYPE> m_sp_tracy_reset_location;
 };

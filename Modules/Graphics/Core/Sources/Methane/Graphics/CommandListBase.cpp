@@ -83,7 +83,7 @@ CommandList::DebugGroup* CommandListBase::DebugGroupBase::GetSubGroup(Data::Inde
 CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
     : m_type(type)
     , m_sp_command_queue(command_queue.GetPtr())
-    , m_tracy_gpu_scope(command_queue.GetTracyContext())
+    , m_tracy_gpu_scope(TRACY_GPU_SCOPE_INIT(command_queue.GetTracyContext()))
     , m_sp_tracy_construct_location(CREATE_TRACY_SOURCE_LOCATION(GetName().c_str()))
 {
     META_FUNCTION_TASK();

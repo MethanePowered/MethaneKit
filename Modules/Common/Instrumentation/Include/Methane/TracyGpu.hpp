@@ -251,6 +251,9 @@ private:
 #define CREATE_TRACY_SOURCE_LOCATION(name) \
     new TRACE_SOURCE_LOCATION_TYPE{ name, __FUNCTION__,  __FILE__, static_cast<uint32_t>(__LINE__), 0 }
 
+#define TRACY_GPU_SCOPE_TYPE GpuScope
+#define TRACY_GPU_SCOPE_INIT(gpu_context) gpu_context
+
 #define TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(gpu_scope, p_location) \
     gpu_scope.Begin(p_location)
 
@@ -288,6 +291,8 @@ struct SourceLocationStub { };
 
 #define TRACE_SOURCE_LOCATION_TYPE SourceLocationStub
 #define CREATE_TRACY_SOURCE_LOCATION(name) new TRACE_SOURCE_LOCATION_TYPE{}
+#define TRACY_GPU_SCOPE_TYPE void*
+#define TRACY_GPU_SCOPE_INIT(gpu_context) nullptr
 #define TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(gpu_scope, p_location)
 #define TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(gpu_scope, p_location)
 #define TRACY_GPU_SCOPE_BEGIN(gpu_scope, name)
