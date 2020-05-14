@@ -251,7 +251,7 @@ private:
 #define CREATE_TRACY_SOURCE_LOCATION(name) \
     new TRACE_SOURCE_LOCATION_TYPE{ name, __FUNCTION__,  __FILE__, static_cast<uint32_t>(__LINE__), 0 }
 
-#define TRACY_GPU_SCOPE_TYPE GpuScope
+#define TRACY_GPU_SCOPE_TYPE Methane::Tracy::GpuScope
 #define TRACY_GPU_SCOPE_INIT(gpu_context) gpu_context
 
 #define TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(gpu_scope, p_location) \
