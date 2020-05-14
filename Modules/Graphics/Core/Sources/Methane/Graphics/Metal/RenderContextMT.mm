@@ -55,8 +55,10 @@ RenderContextMT::RenderContextMT(const Platform::AppEnvironment& env, DeviceBase
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
     , m_dispatch_semaphore(dispatch_semaphore_create(settings.frame_buffers_count))
 #endif
+    , m_tracy_present_scope(TRACY_GPU_SCOPE_INIT(GetRenderCommandQueueMT().GetTracyContext()))
 {
     META_FUNCTION_TASK();
+    META_UNUSED(m_tracy_present_scope);
     
     m_frame_capture_scope.label = Methane::MacOS::ConvertToNsType<std::string, NSString*>(device.GetName() + " Capture Scope");
     [MTLCaptureManager sharedCaptureManager].defaultCaptureScope = m_frame_capture_scope;
@@ -146,22 +148,47 @@ void RenderContextMT::Present()
     META_FUNCTION_TASK();
     ContextMT<RenderContextBase>::Present();
 
+    static const std::string s_present_location_name = "Present context \"" + GetName() + "\"";
+    STATIC_TRACY_SOURCE_LOCATION(s_tracy_present_location, s_present_location_name.c_str());
+    TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(m_tracy_present_scope, &s_tracy_present_location);
+
     id<MTLCommandBuffer> mtl_cmd_buffer = [GetRenderCommandQueueMT().GetNativeCommandQueue() commandBuffer];
     mtl_cmd_buffer.label = MacOS::ConvertToNsType<std::string, NSString*>(GetName() + " Present Command");
     [mtl_cmd_buffer presentDrawable:GetNativeDrawable()];
-#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
-    const bool signal_frame_fence = false;
+
+#if defined(USE_DISPATCH_QUEUE_SEMAPHORE) || defined(METHANE_GPU_INSTRUMENTATION_ENABLED)
     [mtl_cmd_buffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
-        dispatch_semaphore_signal(m_dispatch_semaphore);
-    }];
-#else
-    const bool signal_frame_fence = true;
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+        if (@available(macOS 10.15, *))
+        {
+            TRACY_GPU_SCOPE_COMPLETE(m_tracy_present_scope, Data::TimeRange(
+                Data::ConvertTimeSecondsToNanoseconds(mtl_cmd_buffer.GPUStartTime),
+                Data::ConvertTimeSecondsToNanoseconds(mtl_cmd_buffer.GPUEndTime)
+            ));
+        }
+        else
+        {
+            TRACY_GPU_SCOPE_COMPLETE(m_tracy_present_scope, Data::TimeRange());
+        }
 #endif
+#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
+        dispatch_semaphore_signal(m_dispatch_semaphore);
+#endif
+    }];
+#endif
+
+    [mtl_cmd_buffer enqueue];
+    TRACY_GPU_SCOPE_END(m_tracy_present_scope);
+
     [mtl_cmd_buffer commit];
 
     [m_frame_capture_scope endScope];
 
-    ContextMT<RenderContextBase>::OnCpuPresentComplete(signal_frame_fence);
+#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
+    ContextMT<RenderContextBase>::OnCpuPresentComplete(false);
+#else
+    ContextMT<RenderContextBase>::OnCpuPresentComplete(true);
+#endif
 }
 
 bool RenderContextMT::SetVSyncEnabled(bool vsync_enabled)

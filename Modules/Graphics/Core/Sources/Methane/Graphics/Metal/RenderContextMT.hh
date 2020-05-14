@@ -26,6 +26,7 @@ Metal implementation of the render context interface.
 #include "ContextMT.hpp"
 
 #include <Methane/Graphics/RenderContextBase.h>
+#include <Methane/TracyGpu.hpp>
 
 #import <Methane/Platform/MacOS/AppViewMT.hh>
 #import <Metal/Metal.h>
@@ -70,6 +71,7 @@ private:
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
     dispatch_semaphore_t m_dispatch_semaphore;
 #endif
+    TRACY_GPU_SCOPE_TYPE m_tracy_present_scope;
 };
 
 } // namespace Methane::Graphics
