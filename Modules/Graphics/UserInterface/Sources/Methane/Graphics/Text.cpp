@@ -301,6 +301,7 @@ void Text::UpdateMeshBuffers()
     if (!m_sp_new_mesh_data)
         return;
 
+    // Update vertex buffer
     const Data::Size vertices_data_size = m_sp_new_mesh_data->GetVerticesDataSize();
     if (!m_sp_vertex_buffers || (*m_sp_vertex_buffers)[0].GetDataSize() < vertices_data_size)
     {
@@ -308,15 +309,26 @@ void Text::UpdateMeshBuffers()
         sp_vertex_buffer->SetName(m_settings.name + " Text Vertex Buffer");
         m_sp_vertex_buffers = Buffers::CreateVertexBuffers({ *sp_vertex_buffer });
     }
-    (*m_sp_vertex_buffers)[0].SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_sp_new_mesh_data->vertices.data()), vertices_data_size } });
+    (*m_sp_vertex_buffers)[0].SetData({
+        Resource::SubResource(
+            reinterpret_cast<Data::ConstRawPtr>(m_sp_new_mesh_data->vertices.data()), vertices_data_size,
+            Resource::SubResource::Index(), Resource::BytesRange(0u, vertices_data_size)
+        )
+    });
 
+    // Update index buffer
     const Data::Size indices_data_size = m_sp_new_mesh_data->GetIndicesDataSize();
     if (!m_sp_index_buffer || m_sp_index_buffer->GetDataSize() < indices_data_size)
     {
         m_sp_index_buffer = Buffer::CreateIndexBuffer(m_context, indices_data_size, PixelFormat::R16Uint);
         m_sp_index_buffer->SetName(m_settings.name + " Text Index Buffer");
     }
-    m_sp_index_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_sp_new_mesh_data->indices.data()), indices_data_size } });
+    m_sp_index_buffer->SetData({ 
+        Resource::SubResource(
+            reinterpret_cast<Data::ConstRawPtr>(m_sp_new_mesh_data->indices.data()), indices_data_size,
+            Resource::SubResource::Index(), Resource::BytesRange(0u, indices_data_size)
+        )
+    });
 
     m_sp_new_mesh_data.reset();
 }

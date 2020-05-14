@@ -692,7 +692,7 @@ void ResourceBase::ValidateSubResource(const SubResource::Index& sub_resource_in
     assert(sub_resource_raw_index < m_sub_resource_sizes.size());
 
     const Data::Size sub_resource_data_size = m_sub_resource_sizes[sub_resource_raw_index];
-    if (sub_resource_data_range->GetEnd() >= sub_resource_data_size)
+    if (sub_resource_data_range->GetEnd() > sub_resource_data_size)
         throw std::out_of_range("Specified data range "      + static_cast<std::string>(*sub_resource_data_range) +
                                 "is out of data bounds [0, " + std::to_string(sub_resource_data_size) +
                                 ") for subresource "         + static_cast<std::string>(sub_resource_index));
