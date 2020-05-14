@@ -432,12 +432,11 @@ const D3D12_CPU_DESCRIPTOR_HANDLE* RenderPassDX::GetNativeDepthStencilCPUHandle(
         return &m_native_ds_cpu_handle;
 
     const Settings& settings = GetSettings();
-    if (!settings.depth_attachment.wp_texture.expired())
-    {
-        const Ptr<TextureBase> sp_depth_texture = std::static_pointer_cast<TextureBase>(settings.depth_attachment.wp_texture.lock());
-        m_native_ds_cpu_handle = sp_depth_texture->GetNativeCpuDescriptorHandle(ResourceBase::Usage::RenderTarget);
-    }
+    if (settings.depth_attachment.wp_texture.expired())
+        return nullptr;
 
+    const Ptr<TextureBase> sp_depth_texture = std::static_pointer_cast<TextureBase>(settings.depth_attachment.wp_texture.lock());
+    m_native_ds_cpu_handle = sp_depth_texture->GetNativeCpuDescriptorHandle(ResourceBase::Usage::RenderTarget);
     return &m_native_ds_cpu_handle;
 }
 

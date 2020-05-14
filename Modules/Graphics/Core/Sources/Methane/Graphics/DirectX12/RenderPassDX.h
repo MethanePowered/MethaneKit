@@ -108,7 +108,6 @@ private:
     // Fallback to input assembler setup
     std::vector<RTClearInfo>                            m_rt_clear_infos;
     DSClearInfo                                         m_ds_clear_info;
-    D3D12_CPU_DESCRIPTOR_HANDLE                         m_depth_stencil_cpu_handle{ };
     bool                                                m_is_updated = false;
 
     // Cache of native type vectors to minimize memory allocation during rendering
