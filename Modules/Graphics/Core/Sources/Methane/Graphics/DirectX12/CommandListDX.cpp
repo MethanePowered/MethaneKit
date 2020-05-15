@@ -46,14 +46,14 @@ ICommandListDX::DebugGroupDX::DebugGroupDX(std::string name)
     META_FUNCTION_TASK();
 }
 
-Ptr<CommandLists> CommandLists::Create(Refs<CommandList> command_list_refs)
+Ptr<CommandListSet> CommandListSet::Create(Refs<CommandList> command_list_refs)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<CommandListsDX>(std::move(command_list_refs));
+    return std::make_shared<CommandListSetDX>(std::move(command_list_refs));
 }
 
-CommandListsDX::CommandListsDX(Refs<CommandList> command_list_refs)
-    : CommandListsBase(std::move(command_list_refs))
+CommandListSetDX::CommandListSetDX(Refs<CommandList> command_list_refs)
+    : CommandListSetBase(std::move(command_list_refs))
     , m_execution_completed_fence(GetCommandQueueBase())
 {
     META_FUNCTION_TASK();
@@ -92,28 +92,28 @@ CommandListsDX::CommandListsDX(Refs<CommandList> command_list_refs)
     m_execution_completed_fence.SetName(fence_name_ss.str());
 }
 
-void CommandListsDX::Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback)
+void CommandListSetDX::Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
-    CommandListsBase::Execute(frame_index, completed_callback);
+    CommandListSetBase::Execute(frame_index, completed_callback);
     GetCommandQueueDX().GetNativeCommandQueue().ExecuteCommandLists(static_cast<UINT>(m_native_command_lists.size()), m_native_command_lists.data());
     m_execution_completed_fence.Signal();
 }
 
-void CommandListsDX::WaitUntilCompleted() noexcept
+void CommandListSetDX::WaitUntilCompleted() noexcept
 {
     META_FUNCTION_TASK();
     m_execution_completed_fence.Wait();
     Complete();
 }
 
-CommandQueueDX& CommandListsDX::GetCommandQueueDX() noexcept
+CommandQueueDX& CommandListSetDX::GetCommandQueueDX() noexcept
 {
     META_FUNCTION_TASK();
     return static_cast<CommandQueueDX&>(GetCommandQueueBase());
 }
 
-const CommandQueueDX& CommandListsDX::GetCommandQueueDX() const noexcept
+const CommandQueueDX& CommandListSetDX::GetCommandQueueDX() const noexcept
 {
     META_FUNCTION_TASK();
     return static_cast<const CommandQueueDX&>(GetCommandQueueBase());

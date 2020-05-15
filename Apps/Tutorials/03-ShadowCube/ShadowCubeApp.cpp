@@ -326,7 +326,7 @@ void ShadowCubeApp::Init()
         });
 
         // Rendering command lists sequence
-        frame.sp_execute_cmd_lists = gfx::CommandLists::Create({
+        frame.sp_execute_cmd_lists = gfx::CommandListSet::Create({
             *frame.shadow_pass.sp_cmd_list,
             *frame.final_pass.sp_cmd_list
         });

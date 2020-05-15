@@ -217,7 +217,7 @@ using namespace Methane::Graphics;
 struct HelloTriangleFrame final : AppFrame
 {
     Ptr<RenderCommandList> sp_render_cmd_list;
-    Ptr<CommandLists>      sp_execute_cmd_lists;
+    Ptr<CommandListSet>    sp_execute_cmd_lists;
     using AppFrame::AppFrame;
 };
 
@@ -305,8 +305,8 @@ public:
 
         for (HelloTriangleFrame& frame : m_frames)
         {
-            frame.sp_render_cmd_list  = RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
-            frame.sp_execute_cmd_lists = CommandLists::Create({ *frame.sp_render_cmd_list });
+            frame.sp_render_cmd_list   = RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
+            frame.sp_execute_cmd_lists = CommandListSet::Create({ *frame.sp_render_cmd_list });
         }
 
         m_sp_context->CompleteInitialization();

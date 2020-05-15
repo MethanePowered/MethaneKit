@@ -144,30 +144,29 @@ private:
     UniquePtr<TRACE_SOURCE_LOCATION_TYPE> m_sp_tracy_reset_location;
 };
 
-class CommandListsBase
-    : public CommandLists
-    , public std::enable_shared_from_this<CommandListsBase>
+class CommandListSetBase
+    : public CommandListSet
+    , public std::enable_shared_from_this<CommandListSetBase>
 {
 public:
-    CommandListsBase(Refs<CommandList> command_list_refs);
+    CommandListSetBase(Refs<CommandList> command_list_refs);
 
-    // CommandLists overrides
+    // CommandListSet overrides
     Data::Size               GetCount() const noexcept override { return static_cast<Data::Size>(m_refs.size()); }
     const Refs<CommandList>& GetRefs() const noexcept override  { return m_refs; }
     CommandList&             operator[](Data::Index index) const override;
 
-    // CommandListsBase interface
+    // CommandListSetBase interface
     virtual void Execute(Data::Index frame_index, const CommandList::CompletedCallback& completed_callback);
     
     void Complete() noexcept;
 
-    Ptr<CommandListsBase> GetPtr()                                   { return shared_from_this(); }
-    const Refs<CommandListBase>& GetBaseRefs() const noexcept        { return m_base_refs; }
-    Data::Index            GetExecutingOnFrameIndex() const noexcept { return m_executing_on_frame_index; }
-    const CommandListBase& GetCommandListBase(Data::Index index) const;
-
-    CommandQueueBase&       GetCommandQueueBase() noexcept          { return m_base_refs.back().get().GetCommandQueueBase(); }
-    const CommandQueueBase& GetCommandQueueBase() const noexcept    { return m_base_refs.back().get().GetCommandQueueBase(); }
+    Ptr<CommandListSetBase>      GetPtr()                                   { return shared_from_this(); }
+    const Refs<CommandListBase>& GetBaseRefs() const noexcept               { return m_base_refs; }
+    Data::Index                  GetExecutingOnFrameIndex() const noexcept  { return m_executing_on_frame_index; }
+    const CommandListBase&       GetCommandListBase(Data::Index index) const;
+    CommandQueueBase&            GetCommandQueueBase() noexcept             { return m_base_refs.back().get().GetCommandQueueBase(); }
+    const CommandQueueBase&      GetCommandQueueBase() const noexcept       { return m_base_refs.back().get().GetCommandQueueBase(); }
 
 private:
     Refs<CommandList>      m_refs;

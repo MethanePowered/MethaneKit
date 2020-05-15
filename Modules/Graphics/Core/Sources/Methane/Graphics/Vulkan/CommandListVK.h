@@ -39,10 +39,10 @@ public:
 
 } // namespace CommandListVK
 
-class CommandListsVK final : public CommandListsBase
+class CommandListSetVK final : public CommandListSetBase
 {
 public:
-    CommandListsVK(Refs<CommandList> command_list_refs);
+    CommandListSetVK(Refs<CommandList> command_list_refs);
 };
 
 } // namespace Methane::Graphics

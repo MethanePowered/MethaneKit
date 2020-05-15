@@ -208,13 +208,13 @@ BlitCommandList& ContextBase::GetUploadCommandList()
     return *m_sp_upload_cmd_list;
 }
 
-CommandLists& ContextBase::GetUploadCommandLists()
+CommandListSet& ContextBase::GetUploadCommandListSet()
 {
     META_FUNCTION_TASK();
     if (m_sp_upload_cmd_lists)
         return *m_sp_upload_cmd_lists;
 
-    m_sp_upload_cmd_lists = CommandLists::Create({ GetUploadCommandList() });
+    m_sp_upload_cmd_lists = CommandListSet::Create({ GetUploadCommandList() });
 
     return *m_sp_upload_cmd_lists;
 }
@@ -261,7 +261,7 @@ void ContextBase::UploadResources()
     META_LOG("UPLOAD resources for context \"" + GetName() + "\"");
 
     GetUploadCommandList().Commit();
-    GetUploadCommandQueue().Execute(GetUploadCommandLists());
+    GetUploadCommandQueue().Execute(GetUploadCommandListSet());
     WaitForGpu(WaitFor::ResourcesUploaded);
 
     m_sp_upload_cmd_list.reset();

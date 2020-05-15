@@ -59,12 +59,12 @@ struct ICommandListDX
     virtual ~ICommandListDX() = default;
 };
 
-class CommandListsDX final : public CommandListsBase
+class CommandListSetDX final : public CommandListSetBase
 {
 public:
-    CommandListsDX(Refs<CommandList> command_list_refs);
+    CommandListSetDX(Refs<CommandList> command_list_refs);
 
-    // CommandListsBase interface
+    // CommandListSetBase interface
     void Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback) final;
 
     void WaitUntilCompleted() noexcept;
@@ -78,8 +78,8 @@ public:
     FenceDX& GetExecutionCompletedFenceDX() noexcept { return m_execution_completed_fence; }
 
 private:
-    NativeCommandLists          m_native_command_lists;
-    FenceDX                     m_execution_completed_fence;
+    NativeCommandLists m_native_command_lists;
+    FenceDX            m_execution_completed_fence;
 };
 
 } // namespace Methane::Graphics

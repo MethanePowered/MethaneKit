@@ -311,7 +311,7 @@ const CommandQueueBase& CommandListBase::GetCommandQueueBase() const noexcept
     return static_cast<const CommandQueueBase&>(*m_sp_command_queue);
 }
 
-CommandListsBase::CommandListsBase(Refs<CommandList> command_list_refs)
+CommandListSetBase::CommandListSetBase(Refs<CommandList> command_list_refs)
     : m_refs(std::move(command_list_refs))
 {
     META_FUNCTION_TASK();
@@ -336,7 +336,7 @@ CommandListsBase::CommandListsBase(Refs<CommandList> command_list_refs)
     }
 }
 
-CommandList& CommandListsBase::operator[](Data::Index index) const
+CommandList& CommandListSetBase::operator[](Data::Index index) const
 {
     META_FUNCTION_TASK();
     if (index > m_refs.size())
@@ -346,7 +346,7 @@ CommandList& CommandListsBase::operator[](Data::Index index) const
     return m_refs[index].get();
 }
 
-void CommandListsBase::Execute(Data::Index frame_index, const CommandList::CompletedCallback& completed_callback)
+void CommandListSetBase::Execute(Data::Index frame_index, const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
     m_executing_on_frame_index = frame_index;
@@ -356,7 +356,7 @@ void CommandListsBase::Execute(Data::Index frame_index, const CommandList::Compl
     }
 }
 
-void CommandListsBase::Complete() noexcept
+void CommandListSetBase::Complete() noexcept
 {
     META_FUNCTION_TASK();
     for (const Ref<CommandListBase>& command_list_ref : m_base_refs)
@@ -378,7 +378,7 @@ void CommandListsBase::Complete() noexcept
     }
 }
 
-const CommandListBase& CommandListsBase::GetCommandListBase(Data::Index index) const
+const CommandListBase& CommandListSetBase::GetCommandListBase(Data::Index index) const
 {
     META_FUNCTION_TASK();
     if (index > m_base_refs.size())

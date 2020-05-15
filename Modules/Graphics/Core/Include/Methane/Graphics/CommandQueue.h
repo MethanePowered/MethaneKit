@@ -38,7 +38,7 @@ struct CommandQueue : virtual Object
     static Ptr<CommandQueue> Create(Context& context);
 
     // CommandQueue interface
-    virtual void Execute(CommandLists& command_lists, const CommandList::CompletedCallback& completed_callback = {}) = 0;
+    virtual void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) = 0;
 };
 
 } // namespace Methane::Graphics

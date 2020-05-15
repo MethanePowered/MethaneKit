@@ -40,14 +40,14 @@ CommandListVK::DebugGroupVK::DebugGroupVK(std::string name)
     META_FUNCTION_TASK();
 }
 
-Ptr<CommandLists> CommandLists::Create(Refs<CommandList> command_list_refs)
+Ptr<CommandListSet> CommandListSet::Create(Refs<CommandList> command_list_refs)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<CommandListsVK>(std::move(command_list_refs));
+    return std::make_shared<CommandListSetVK>(std::move(command_list_refs));
 }
 
-CommandListsVK::CommandListsVK(Refs<CommandList> command_list_refs)
-    : CommandListsBase(std::move(command_list_refs))
+CommandListSetVK::CommandListSetVK(Refs<CommandList> command_list_refs)
+    : CommandListSetBase(std::move(command_list_refs))
 {
     META_FUNCTION_TASK();
 }

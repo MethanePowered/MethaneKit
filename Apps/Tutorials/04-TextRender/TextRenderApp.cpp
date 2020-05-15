@@ -112,7 +112,7 @@ void TextRenderApp::Init()
         frame.sp_render_cmd_list = gfx::RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
         frame.sp_render_cmd_list->SetName(IndexedName("Text Rendering", frame.index));
 
-        frame.sp_execute_cmd_lists = gfx::CommandLists::Create({ *frame.sp_render_cmd_list });
+        frame.sp_execute_cmd_lists = gfx::CommandListSet::Create({ *frame.sp_render_cmd_list });
     }
 
     // Complete initialization of render context

@@ -90,16 +90,16 @@ CommandQueueDX::~CommandQueueDX()
     m_execution_waiting_thread.join();
 }
 
-void CommandQueueDX::Execute(CommandLists& command_lists, const CommandList::CompletedCallback& completed_callback)
+void CommandQueueDX::Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
 
     CommandQueueBase::Execute(command_lists, completed_callback);
 
-    CommandListsDX& dx_command_lists = static_cast<CommandListsDX&>(command_lists);
+    CommandListSetDX& dx_command_lists = static_cast<CommandListSetDX&>(command_lists);
     {
         std::lock_guard<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
-        m_executing_command_lists.push(std::static_pointer_cast<CommandListsDX>(dx_command_lists.GetPtr()));
+        m_executing_command_lists.push(std::static_pointer_cast<CommandListSetDX>(dx_command_lists.GetPtr()));
         m_execution_waiting_condition_var.notify_one();
     }
 }
@@ -148,7 +148,7 @@ void CommandQueueDX::WaitForExecution() noexcept
 
         while(!m_executing_command_lists.empty())
         {
-            CommandListsDX* p_command_lists = nullptr;
+            CommandListSetDX* p_command_lists = nullptr;
             {
                 std::lock_guard<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
                 if (m_executing_command_lists.empty())

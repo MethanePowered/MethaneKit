@@ -45,7 +45,7 @@ namespace wrl = Microsoft::WRL;
 
 struct IContextDX;
 class RenderStateBase;
-class CommandListsDX;
+class CommandListSetDX;
 
 class CommandQueueDX final : public CommandQueueBase
 {
@@ -54,7 +54,7 @@ public:
     ~CommandQueueDX() override;
 
     // CommandQueue interface
-    void Execute(CommandLists& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
+    void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
 
     // Object interface
     void SetName(const std::string& name) override;
@@ -69,7 +69,7 @@ private:
     void WaitForExecution() noexcept;
 
     wrl::ComPtr<ID3D12CommandQueue>   m_cp_command_queue;
-    std::queue<Ptr<CommandListsDX>>   m_executing_command_lists;
+    std::queue<Ptr<CommandListSetDX>> m_executing_command_lists;
     mutable TracyLockable(std::mutex, m_executing_command_lists_mutex);
     TracyLockable(std::mutex,         m_execution_waiting_mutex);
     std::condition_variable_any       m_execution_waiting_condition_var;

@@ -35,16 +35,16 @@ class CommandListDebugGroupMT : public CommandListBase::DebugGroupBase
 public:
     CommandListDebugGroupMT(std::string name);
 
-    NSString * _Nonnull GetNSName() const noexcept { return m_ns_name; }
+    NSString* _Nonnull GetNSName() const noexcept { return m_ns_name; }
 
 private:
     NSString* _Nonnull m_ns_name;
 };
 
-class CommandListsMT final : public CommandListsBase
+class CommandListSetMT final : public CommandListSetBase
 {
 public:
-    CommandListsMT(Refs<CommandList> command_list_refs);
+    CommandListSetMT(Refs<CommandList> command_list_refs);
 };
 
 } // namespace Methane::Graphics

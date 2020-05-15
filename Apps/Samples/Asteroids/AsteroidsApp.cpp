@@ -508,9 +508,9 @@ std::string AsteroidsApp::GetParametersString() const
     return ss.str();
 }
 
-Ptr<gfx::CommandLists> AsteroidsApp::CreateExecuteCommandLists(AsteroidsFrame& frame)
+Ptr<gfx::CommandListSet> AsteroidsApp::CreateExecuteCommandLists(AsteroidsFrame& frame)
 {
-    return gfx::CommandLists::Create({
+    return gfx::CommandListSet::Create({
         m_is_parallel_rendering_enabled
             ? static_cast<gfx::CommandList&>(*frame.sp_parallel_cmd_list)
             : static_cast<gfx::CommandList&>(*frame.sp_serial_cmd_list),

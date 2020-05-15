@@ -83,15 +83,15 @@ struct CommandList : virtual Object
     virtual ~CommandList() = default;
 };
 
-struct CommandLists
+struct CommandListSet
 {
-    static Ptr<CommandLists> Create(Refs<CommandList> command_list_refs);
+    static Ptr<CommandListSet> Create(Refs<CommandList> command_list_refs);
 
     virtual Data::Size               GetCount() const noexcept = 0;
     virtual const Refs<CommandList>& GetRefs() const noexcept = 0;
     virtual CommandList&             operator[](Data::Index index) const = 0;
 
-    virtual ~CommandLists() = default;
+    virtual ~CommandListSet() = default;
 };
 
 } // namespace Methane::Graphics
