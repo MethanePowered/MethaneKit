@@ -141,8 +141,7 @@ void CommandQueueDX::WaitForExecution() noexcept
 {
     do
     {
-        // TODO: Add Tracy instrumentation to mutex with conditional variable if possible
-        std::unique_lock<std::mutex> lock(m_execution_waiting_mutex);
+        std::unique_lock<LockableBase(std::mutex)> lock(m_execution_waiting_mutex);
         m_execution_waiting_condition_var.wait(lock,
             [this]{ return !m_execution_waiting || !m_executing_command_lists.empty(); }
         );

@@ -128,16 +128,16 @@ private:
 
     using DebugGroupStack  = std::stack<Ptr<DebugGroupBase>>;
 
-    const Type                m_type;
-    Ptr<CommandQueue>         m_sp_command_queue;
-    CommandState              m_command_state;
-    DebugGroupStack           m_open_debug_groups;
-    uint32_t                  m_committed_frame_index = 0;
-    CompletedCallback         m_completed_callback;
-    State                     m_state                 = State::Pending;
-    TracyLockable(std::mutex, m_state_mutex);
-    std::mutex                m_state_change_mutex;
-    std::condition_variable   m_state_change_condition_var;
+    const Type                  m_type;
+    Ptr<CommandQueue>           m_sp_command_queue;
+    CommandState                m_command_state;
+    DebugGroupStack             m_open_debug_groups;
+    uint32_t                    m_committed_frame_index = 0;
+    CompletedCallback           m_completed_callback;
+    State                       m_state                 = State::Pending;
+    TracyLockable(std::mutex,   m_state_mutex);
+    TracyLockable(std::mutex,   m_state_change_mutex);
+    std::condition_variable_any m_state_change_condition_var;
 
     TRACY_GPU_SCOPE_TYPE                  m_tracy_gpu_scope;
     UniquePtr<TRACE_SOURCE_LOCATION_TYPE> m_sp_tracy_construct_location;

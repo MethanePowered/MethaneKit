@@ -175,7 +175,7 @@ void CommandListBase::Commit()
 void CommandListBase::WaitUntilCompleted(uint32_t timeout_ms)
 {
     META_FUNCTION_TASK();
-    std::unique_lock<std::mutex> pending_state_lock(m_state_change_mutex);
+    std::unique_lock<LockableBase(std::mutex)> pending_state_lock(m_state_change_mutex);
     if (timeout_ms == 0u)
     {
         m_state_change_condition_var.wait(pending_state_lock,

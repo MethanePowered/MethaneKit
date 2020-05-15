@@ -24,7 +24,6 @@ Tracy GPU instrumentation helpers
 #pragma once
 
 #ifdef TRACY_GPU_ENABLE
-#include "IttApiHelper.h"
 #include <Tracy.hpp>
 #include <client/TracyProfiler.hpp>
 #include <client/TracyCallstack.hpp>
@@ -83,8 +82,6 @@ public:
     explicit GpuContext(const Settings& settings)
         : m_id(tracy::GetGpuCtxCounter().fetch_add( 1, std::memory_order_relaxed ))
     {
-        ITT_FUNCTION_TASK();
-
         assert(m_id != 255);
         auto item = tracy::Profiler::QueueSerial();
         tracy::MemWrite(&item->hdr.type, tracy::QueueType::GpuNewContext);
@@ -112,7 +109,7 @@ public:
 private:
     tracy_force_inline QueryId NextQueryId()
     {
-        std::lock_guard<std::mutex> lock_guard(m_query_mutex);
+        std::lock_guard<LockableBase(std::mutex)> lock_guard(m_query_mutex);
         m_query_id = (m_query_id + 1) % m_query_count;
         return m_query_id;
     }
@@ -122,10 +119,10 @@ private:
         return m_id;
     }
 
-    const uint8_t m_id;
-    const QueryId m_query_count = std::numeric_limits<QueryId>::max();
-    QueryId       m_query_id    = 0u;
-    std::mutex    m_query_mutex;
+    const uint8_t               m_id;
+    const QueryId               m_query_count = std::numeric_limits<QueryId>::max();
+    QueryId                     m_query_id    = 0u;
+    TracyLockable(std::mutex,   m_query_mutex);
 
 #else // TRACY_GPU_ENABLE
 
@@ -148,13 +145,10 @@ public:
     explicit GpuScope(GpuContext& context)
         : m_context(context)
     {
-        ITT_FUNCTION_TASK();
     }
 
     tracy_force_inline void Begin(const tracy::SourceLocationData* src_location, int call_stack_depth = 0)
     {
-        ITT_FUNCTION_TASK();
-
 #ifdef TRACY_ON_DEMAND
         m_is_active = tracy::GetProfiler().IsConnected();
 #endif
@@ -186,7 +180,6 @@ public:
 
     tracy_force_inline void End()
     {
-        ITT_FUNCTION_TASK();
         if (!m_is_active)
             return;
 
@@ -207,7 +200,6 @@ public:
 
     tracy_force_inline void Complete(Timestamp gpu_begin_timestamp, Timestamp gpu_end_timestamp)
     {
-        ITT_FUNCTION_TASK();
         if (!m_is_active)
             return;
 
