@@ -55,7 +55,7 @@ public:
 
     Camera(cml::AxisOrientation axis_orientation = g_axis_orientation) noexcept;
 
-    inline void Resize(const Data::FRectSize& screen_size) noexcept         { m_screen_size  = screen_size; m_aspect_ratio = screen_size.width / screen_size.height; }
+    inline void Resize(const Data::FRectSize& screen_size) noexcept         { m_screen_size  = screen_size; m_aspect_ratio = screen_size.width / screen_size.height; m_is_current_proj_matrix_dirty = true; }
     inline void SetProjection(Projection projection) noexcept               { m_projection = projection; m_is_current_proj_matrix_dirty = true; }
     inline void SetParameters(const Parameters& parameters) noexcept        { m_parameters = parameters; m_is_current_proj_matrix_dirty = true; }
     inline void ResetOrientation() noexcept                                 { m_current_orientation = m_default_orientation; m_is_current_view_matrix_dirty = true; }
