@@ -45,7 +45,7 @@ MacOS application view implementation.
 
 @property (nonatomic, weak, nullable) id<MetalAppViewDelegate> delegate;
 @property (nonatomic, readonly, nullable) CAMetalLayer* metalLayer;
-@property (nonatomic, readonly, nullable) id<CAMetalDrawable> currentDrawable;
+@property (nonatomic, readonly, nonnull) id<CAMetalDrawable> currentDrawable;
 
 - (nonnull instancetype)initWithCoder:(nonnull NSCoder*) aDecoder;
 - (nonnull instancetype)initWithFrame:(NSRect) backing_frame

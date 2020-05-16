@@ -112,7 +112,7 @@ Ptr<Texture> Texture::CreateCube(Context& context, uint32_t dimension_size, uint
 TextureMT::TextureMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : TextureBase(context, settings, descriptor_by_usage)
     , m_mtl_texture(settings.type == Texture::Type::FrameBuffer
-                      ? [GetRenderContextMT().GetNativeDrawable() texture]
+                      ? nil // actual frame buffer texture descriptor is set in UpdateFrameBuffer()
                       : [GetContextMT().GetDeviceMT().GetNativeDevice()  newTextureWithDescriptor:GetNativeTextureDescriptor()])
 {
     META_FUNCTION_TASK();

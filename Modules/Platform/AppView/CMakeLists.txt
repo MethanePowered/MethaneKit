@@ -60,6 +60,7 @@ target_link_libraries(${TARGET}
     PRIVATE
         MethaneBuildOptions
         MethaneInstrumentation
+        MethaneDataTypes
         ${PLATFORM_LIBRARIES}
 )
 
@@ -68,6 +69,11 @@ target_include_directories(${TARGET}
         Sources
     PUBLIC
         Include
+)
+
+target_compile_definitions(${TARGET}
+    PRIVATE
+        $<$<BOOL:${METHANE_GPU_INSTRUMENTATION_ENABLED}>:METHANE_GPU_INSTRUMENTATION_ENABLED>
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})

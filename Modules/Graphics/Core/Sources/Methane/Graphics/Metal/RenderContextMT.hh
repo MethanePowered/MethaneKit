@@ -31,11 +31,6 @@ Metal implementation of the render context interface.
 #import <Methane/Platform/MacOS/AppViewMT.hh>
 #import <Metal/Metal.h>
 
-// Either use dispatch queue semaphore or fence primitives for CPU-GPU frames rendering synchronization
-// NOTE: when fences are used for frames synchronization,
-// application runs slower than expected when started from XCode, but runs normally when started from Finder
-//#define USE_DISPATCH_QUEUE_SEMAPHORE
-
 namespace Methane::Graphics
 {
 
@@ -65,13 +60,12 @@ public:
     id<CAMetalDrawable> GetNativeDrawable()       { return m_app_view.currentDrawable; }
     CommandQueueMT&     GetRenderCommandQueueMT();
 
+    void OnGpuExecutionCompleted();
+
 private:
     AppViewMT*           m_app_view;
     id<MTLCaptureScope>  m_frame_capture_scope;
-#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
     dispatch_semaphore_t m_dispatch_semaphore;
-#endif
-    TRACY_GPU_SCOPE_TYPE m_tracy_present_scope;
 };
 
 } // namespace Methane::Graphics

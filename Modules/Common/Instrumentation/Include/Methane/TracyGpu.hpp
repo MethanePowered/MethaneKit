@@ -269,7 +269,7 @@ private:
 
 #define TRACY_GPU_SCOPE_COMPLETE(gpu_scope, gpu_time_range) \
     const auto gpu_time_range_var = gpu_time_range; \
-    gpu_scope.Complete(static_cast<Timestamp>(gpu_time_range_var.GetStart()), static_cast<Timestamp>(gpu_time_range_var.GetEnd()))
+    gpu_scope.Complete(static_cast<Methane::Data::Timestamp>(gpu_time_range_var.GetStart()), static_cast<Methane::Data::Timestamp>(gpu_time_range_var.GetEnd()))
 
 #else // TRACY_GPU_ENABLE
 
