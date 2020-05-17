@@ -31,6 +31,11 @@ MacOS application view implementation.
 #include <mutex>
 
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+// Uncomment ot enable Tracy GPU instrumentation of Present calls completion timings
+//#define TRACY_GPU_PRESENT_INSTRUMENTATION_ENABLED
+#endif
+
+#ifdef TRACY_GPU_PRESENT_INSTRUMENTATION_ENABLED
 
 class DrawablePresentScope;
 using DrawablePresentScopeSet = std::set<DrawablePresentScope>;
@@ -74,7 +79,7 @@ private:
     CVDisplayLinkRef             m_display_link;
     dispatch_source_t            m_display_source;
 
-#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+#ifdef TRACY_GPU_PRESENT_INSTRUMENTATION_ENABLED
     std::unique_ptr<Methane::Tracy::GpuContext> m_sp_gpu_context;
     DrawablePresentScopeSet                     m_present_scopes;
     std::mutex                                  m_present_scopes_mutex;
@@ -156,7 +161,7 @@ private:
 {
     META_FUNCTION_TASK();
 
-#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+#ifdef TRACY_GPU_PRESENT_INSTRUMENTATION_ENABLED
     m_sp_gpu_context = std::make_unique<Methane::Tracy::GpuContext>(
         Methane::Tracy::GpuContext::Settings(
             Methane::Data::ConvertTimeSecondsToNanoseconds(CACurrentMediaTime())
@@ -284,7 +289,7 @@ static CVReturn DispatchRenderLoop(CVDisplayLinkRef /*display_link*/,
     if (m_current_drawable)
         return m_current_drawable;
 
-#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+#ifdef TRACY_GPU_PRESENT_INSTRUMENTATION_ENABLED
     TRACY_GPU_SCOPE_TYPE gpu_scope(TRACY_GPU_SCOPE_INIT(*m_sp_gpu_context));
     TRACY_GPU_SCOPE_BEGIN(gpu_scope, "Request/Present Metal Drawable");
     m_current_drawable = [self.metalLayer nextDrawable];

@@ -115,7 +115,7 @@ void RenderContextMT::Initialize(DeviceBase& device, bool deferred_heap_allocati
 bool RenderContextMT::ReadyToRender() const
 {
     META_FUNCTION_TASK();
-    return m_app_view.currentDrawable != nil;
+    return m_app_view.redrawing;
 }
 
 void RenderContextMT::WaitForGpu(WaitFor wait_for)
