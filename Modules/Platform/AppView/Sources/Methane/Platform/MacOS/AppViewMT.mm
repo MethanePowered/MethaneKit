@@ -194,6 +194,10 @@ static CVReturn DispatchRenderLoop(CVDisplayLinkRef /*display_link*/,
 - (BOOL) setupDisplayLinkForScreen:(NSScreen*) screen
 {
     META_FUNCTION_TASK();
+    if (m_display_link)
+    {
+        [self stopDisplayLink];
+    }
 
     // The CVDisplayLink callback, DispatchRenderLoop, never executes
     // on the main thread. To execute rendering on the main thread, create
