@@ -231,7 +231,7 @@ static CVReturn DispatchRenderLoop(CVDisplayLinkRef /*display_link*/,
         return NO;
 
     // Associate the display link with the display on which the view resides
-    CGDirectDisplayID view_display_id = (CGDirectDisplayID) [self.window.screen.deviceDescription[@"NSScreenNumber"] unsignedIntegerValue];;
+    CGDirectDisplayID view_display_id = (CGDirectDisplayID) [screen.deviceDescription[@"NSScreenNumber"] unsignedIntegerValue];;
     if(CVDisplayLinkSetCurrentCGDisplay(m_display_link, view_display_id) != kCVReturnSuccess)
         return NO;
 
