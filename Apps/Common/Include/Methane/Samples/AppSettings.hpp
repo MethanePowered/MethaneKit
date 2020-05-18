@@ -39,6 +39,8 @@ inline Graphics::AppSettings GetAppSettings(std::string app_name,
                                             bool depth_enabled = true, float clear_depth = 1.f,
                                             std::optional<Graphics::Color4f> clear_color = Graphics::Color4f(0.0f, 0.2f, 0.4f, 1.0f))
 {
+    using Stencil = Graphics::Stencil;
+    using DepthStencilOpt = std::optional<Graphics::DepthStencil>;
     return Graphics::AppSettings
     {                                                               // =========================
         Platform::App::Settings {                                   // platform_app:
@@ -64,8 +66,8 @@ inline Graphics::AppSettings GetAppSettings(std::string app_name,
                 : Graphics::PixelFormat::Unknown,                   //     ...
             std::move(clear_color),                                 //   - clear_color
             depth_enabled                                           //   - clear_depth_stencil
-                ? Graphics::DepthStencil(clear_depth, 0)            //     ...
-                : std::optional<Graphics::DepthStencil>(),          //     ...
+                ? DepthStencilOpt({ clear_depth, Stencil(0) })      //     ...
+                : DepthStencilOpt(),                                //     ...
             3u,                                                     //   - frame_buffers_count
             g_is_apple,                                             //   - vsync_enabled
             false,                                                  //   - is_full_screen
