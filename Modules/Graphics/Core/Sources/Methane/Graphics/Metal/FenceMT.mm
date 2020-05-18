@@ -28,6 +28,7 @@ Metal fence implementation.
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
+#include <Methane/ScopeTimer.h>
 
 namespace Methane::Graphics
 {
@@ -78,12 +79,12 @@ void FenceMT::Wait()
     FenceBase::Wait();
 
     assert(m_mtl_event != nil);
-    assert(m_mtl_event_listener != nil);
     uint64_t signalled_value = m_mtl_event.signaledValue;
     if (signalled_value >= GetValue())
         return;
     
     assert(!m_is_signalled);
+    assert(m_mtl_event_listener != nil);
     [m_mtl_event notifyListener:m_mtl_event_listener
                         atValue:GetValue()
                           block:^(id<MTLSharedEvent>, uint64_t /*value*/)

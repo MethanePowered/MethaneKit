@@ -23,13 +23,14 @@ Base application interface and platform-independent implementation.
 
 #include <Methane/Platform/AppBase.h>
 #include <Methane/Platform/Utils.h>
+#include <Methane/Platform/Logger.h>
+#include <Methane/ScopeTimer.h>
 #include <Methane/Instrumentation.h>
 
 #include <CLI/CLI.hpp>
 
 #include <vector>
 #include <cstdlib>
-#include <cassert>
 
 namespace Methane::Platform
 {
@@ -39,6 +40,7 @@ AppBase::AppBase(const AppBase::Settings& settings)
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
+    META_SCOPE_TIMERS_INITIALIZE(Methane::Platform::Logger);
 
     add_option("-w,--width",  m_settings.width,  "Window width in pixels or as ratio of desktop width", true);
     add_option("-x,--height", m_settings.height, "Window height in pixels or as ratio of desktop height", true);
@@ -95,7 +97,6 @@ void AppBase::ChangeWindowBounds(const Data::FrameRect& window_bounds)
 bool AppBase::Resize(const Data::FrameSize& frame_size, bool is_minimized)
 {
     META_FUNCTION_TASK();
-    
     const bool is_resizing = !is_minimized && m_frame_size != frame_size;
     
     m_is_minimized = is_minimized;
