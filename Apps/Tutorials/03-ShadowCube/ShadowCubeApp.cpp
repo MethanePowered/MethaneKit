@@ -23,6 +23,7 @@ Tutorial demonstrating shadow-pass rendering with Methane graphics API
 
 #include "ShadowCubeApp.h"
 
+#include <Methane/Samples/AppSettings.hpp>
 #include <Methane/Graphics/Mesh/CubeMesh.hpp>
 #include <Methane/Data/TimeAnimation.h>
 
@@ -44,35 +45,12 @@ struct Vertex
     };
 };
 
-// Common application settings
-static const gfx::FrameSize           g_shadow_map_size(1024, 1024);
-static const GraphicsApp::AllSettings g_app_settings =  // Application settings:
-{                                                       // ====================
-    {                                                   // platform_app:
-        "Methane Shadow Cube",                          // - name
-        0.8, 0.8,                                       // - width, height
-    },                                                  //
-    {                                                   // graphics_app:
-        gfx::RenderPass::Access::ShaderResources |      // - screen_pass_access
-        gfx::RenderPass::Access::Samplers,              //
-        gfx::IApp::HeadsUpDisplayMode::WindowTitle,     // - heads_up_display_mode
-        true,                                           // - animations_enabled
-        true,                                           // - show_logo_badge
-        0                                               // - default_device_index
-    },                                                  //
-    {                                                   // render_context:
-        gfx::FrameSize(),                               // - frame_size
-        gfx::PixelFormat::BGRA8Unorm,                   // - color_format
-        gfx::PixelFormat::Depth32Float,                 // - depth_stencil_format
-        gfx::Color4f(0.0f, 0.2f, 0.4f, 1.0f),           // - clear_color
-        gfx::DepthStencil(1.f, gfx::Stencil(0)),        // - clear_depth_stencil
-        3,                                              // - frame_buffers_count
-        false,                                          // - vsync_enabled
-    }
-};
+static const gfx::FrameSize g_shadow_map_size(1024, 1024);
 
 ShadowCubeApp::ShadowCubeApp()
-    : GraphicsApp(g_app_settings, "Methane tutorial of shadow pass rendering")
+    : GraphicsApp(
+        Samples::GetAppSettings("Methane Shadow Cube"),
+        "Methane tutorial of shadow pass rendering")
     , m_scene_scale(15.f)
     , m_scene_constants(                                // Shader constants:
         {                                               // ================

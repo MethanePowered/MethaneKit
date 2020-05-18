@@ -23,36 +23,15 @@ Tutorial demonstrating text rendering with Methane graphics API
 
 #include "TextRenderApp.h"
 
+#include <Methane/Samples/AppSettings.hpp>
+
 namespace Methane::Tutorials
 {
 
-static const GraphicsApp::AllSettings g_app_settings =  // Application settings:
-{                                                       // ====================
-    {                                                   // platform_apps:
-        "Methane Text Rendering",                       // - name
-        0.8, 0.8,                                       // - width, height
-    },                                                  //
-    {                                                   // graphics_app:
-        gfx::RenderPass::Access::ShaderResources |      // - screen_pass_access
-        gfx::RenderPass::Access::Samplers,              //
-        gfx::IApp::HeadsUpDisplayMode::UserInterface,   // - heads_up_display_mode
-        true,                                           // - animations_enabled
-        true,                                           // - show_logo_badge
-        0                                               // - default_device_index
-    },                                                  //
-    {                                                   // render_context:
-        gfx::FrameSize(),                               // - frame_size placeholder: actual size is set in InitContext
-        gfx::PixelFormat::BGRA8Unorm,                   // - color_format
-        gfx::PixelFormat::Unknown,                      // - depth_stencil_format
-        gfx::Color4f(0.0f, 0.2f, 0.4f, 1.0f),           // - clear_color
-        { /* no depth-stencil clearing */ },            // - clear_depth_stencil
-        3,                                              // - frame_buffers_count
-        false,                                          // - vsync_enabled
-    }
-};
-
 TextRenderApp::TextRenderApp()
-    : GraphicsApp(g_app_settings, "Methane tutorial of text rendering")
+    : GraphicsApp(
+        Samples::GetAppSettings("Methane Text Rendering", false /* animations */, true /* logo */, true /* hud ui */, false /* depth */),
+        "Methane tutorial of text rendering")
 {
 }
 

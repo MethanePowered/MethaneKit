@@ -24,11 +24,10 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 #include "AsteroidsApp.h"
 #include "AsteroidsAppController.h"
 
+#include <Methane/Samples/AppSettings.hpp>
 #include <Methane/Graphics/AppCameraController.h>
 #include <Methane/Data/TimeAnimation.h>
 #include <Methane/Instrumentation.h>
-
-#include <CLI/CLI.hpp>
 
 #include <cassert>
 #include <memory>
@@ -90,36 +89,12 @@ static const std::map<pal::Keyboard::State, AsteroidsAppAction> g_asteroids_acti
     { { pal::Keyboard::Key::Semicolon    }, AsteroidsAppAction::DecreaseMeshLodComplexity   },
 };
 
-// Common application settings
-static const std::string              g_app_help_text = "Methane sample demonstrating parallel rendering of massive randomly generated asteroids field observable with arc-ball camera.";
-static const GraphicsApp::AllSettings g_app_settings  = // Application settings:
-{                                                       // ====================
-    {                                                   // platform_app:
-        "Methane Asteroids",                            // - name
-        0.8, 0.8,                                       // - width, height
-        false,                                          // - is_full_screen
-    },                                                  //
-    {                                                   // graphics_app:
-        gfx::RenderPass::Access::ShaderResources |      // - screen_pass_access
-        gfx::RenderPass::Access::Samplers,              //
-        gfx::IApp::HeadsUpDisplayMode::WindowTitle,     // - heads_up_display_mode
-        true,                                           // - animations_enabled
-        true,                                           // - show_logo_badge
-        0                                               // - default_device_index
-    },                                                  //
-    {                                                   // render_context:
-        gfx::FrameSize(),                               // - frame_size
-        gfx::PixelFormat::BGRA8Unorm,                   // - color_format
-        gfx::PixelFormat::Depth32Float,                 // - depth_stencil_format
-        { /* color clearing disabled */ },              // - clear_color
-        gfx::DepthStencil(0.f, gfx::Stencil(0)),        // - clear_depth_stencil
-        3u,                                             // - frame_buffers_count
-        false,                                          // - vsync_enabled
-    }
-};
-
 AsteroidsApp::AsteroidsApp()
-    : GraphicsApp(g_app_settings, g_app_help_text)
+    : GraphicsApp(
+        GetAppSettings("Methane Asteroids",
+                       true /* animations */, true /* logo */, false /* hud ui */,
+                       true /* depth */, 0.f /* depth clear */, { /* color clearing disabled */ }),
+        "Methane sample demonstrating parallel rendering of massive randomly generated asteroids field.")
     , m_view_camera(m_animations, gfx::ActionCamera::Pivot::Aim)
     , m_light_camera(m_view_camera, m_animations, gfx::ActionCamera::Pivot::Aim)
     , m_scene_scale(15.f)

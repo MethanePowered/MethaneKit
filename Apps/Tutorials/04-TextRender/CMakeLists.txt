@@ -23,6 +23,11 @@ add_methane_application(${TARGET}
 
 add_methane_embedded_fonts(${TARGET} "${RESOURCES_DIR}" "${FONTS}")
 
+target_link_libraries(${TARGET}
+    PRIVATE
+        MethaneAppsCommon
+)
+
 set_target_properties(${TARGET}
     PROPERTIES
     FOLDER Apps/Tutorials

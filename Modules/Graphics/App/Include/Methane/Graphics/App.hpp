@@ -62,6 +62,13 @@ struct AppFrame
     AppFrame(uint32_t frame_index) : index(frame_index) { META_FUNCTION_TASK(); }
 };
 
+struct AppSettings
+{
+    Platform::App::Settings platform_app;
+    IApp::Settings          graphics_app;
+    RenderContext::Settings render_context;
+};
+
 template<typename FrameT>
 class App
     : public Graphics::IApp
@@ -71,15 +78,7 @@ class App
     static_assert(std::is_base_of<AppFrame, FrameT>::value, "Application Frame type must be derived from AppFrame.");
 
 public:
-
-    struct AllSettings
-    {
-        Platform::App::Settings platform_app;
-        IApp::Settings          graphics_app;
-        RenderContext::Settings render_context;
-    };
-
-    explicit App(const AllSettings& settings, const std::string& help_description = "Methane Graphics Application")
+    explicit App(const AppSettings& settings, const std::string& help_description = "Methane Graphics Application")
         : Platform::App(settings.platform_app)
         , m_image_loader(Data::TextureProvider::Get())
         , m_settings(settings.graphics_app)

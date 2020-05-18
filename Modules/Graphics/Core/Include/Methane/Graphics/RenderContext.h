@@ -49,10 +49,10 @@ struct RenderContext : virtual Context
         PixelFormat                 depth_stencil_format    = PixelFormat::Unknown;
         std::optional<Color4f>      clear_color;
         std::optional<DepthStencil> clear_depth_stencil;
-        uint32_t                    frame_buffers_count     = 3;
+        uint32_t                    frame_buffers_count     = 3u;
         bool                        vsync_enabled           = true;
         bool                        is_full_screen          = false;
-        uint32_t                    unsync_max_fps          = 1000; // MacOS only
+        uint32_t                    unsync_max_fps          = 1000u; // MacOS only
     };
 
     // Create RenderContext instance
