@@ -45,7 +45,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 add_library(MethaneBuildOptions INTERFACE)
 
-if(MSVC)
+if(WIN32)
 
     include(FindWindowsSDK)
     if(WINDOWSSDK_FOUND)
@@ -64,16 +64,26 @@ if(MSVC)
         message(FATAL_ERROR "Failed to get Windows SDK library directories from ${WINDOWSSDK_LATEST_DIR}")
     endif()
 
-    set(VS_STARTUP_PROJECT MethaneAsteroids)
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>") # use /MT static runtime linking
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")                           # enable multi-threaded build with MSVC
-    string(REPLACE "/W3 " "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
-
     target_include_directories(MethaneBuildOptions INTERFACE ${WINDOWSSDK_INCLUDE_DIRS})
     target_link_directories(MethaneBuildOptions INTERFACE ${WINDOWSSDK_LIBRARY_DIRS})
     target_compile_definitions(MethaneBuildOptions INTERFACE
         -DUNICODE -D_UNICODE -DNOMINMAX -DWIN32_LEAN_AND_MEAN -DUSE_PIX
     )
+
+elseif(APPLE)
+
+    set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
+    set(CMAKE_INSTALL_RPATH "@executable_path")
+
+endif()
+
+if (MSVC)
+
+    set(VS_STARTUP_PROJECT MethaneAsteroids)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>") # use /MT static runtime linking
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")                           # enable multi-threaded build with MSVC
+    string(REPLACE "/W3 " "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+
     target_compile_options(MethaneBuildOptions INTERFACE
         # Set maximum warnings level and treat warnings as errors
         /W4 /WX
@@ -82,10 +92,7 @@ if(MSVC)
         /wd4324 # - C4324: structure was padded due to alignment specifier
     )
 
-else()
-
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
-    set(CMAKE_INSTALL_RPATH "@executable_path")
+else() # Clang or GCC
 
     target_compile_options(MethaneBuildOptions INTERFACE
         # Set maximum warnings level & treat warnings as errors
