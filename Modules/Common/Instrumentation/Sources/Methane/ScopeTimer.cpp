@@ -94,15 +94,15 @@ ScopeTimer::Registration ScopeTimer::Aggregator::RegisterScope(const char* scope
     {
         m_new_scope_id++;
         m_timing_by_scope_id.resize(m_new_scope_id);
-        META_CHART_CONFIG(result.first->first.c_str(), tracy::PlotFormatType::Number);
+        META_CHART_CONFIG(result.first->first, tracy::PlotFormatType::Number);
     }
-    return Registration{ NameRef(result.first->first), result.first->second };
+    return Registration{ result.first->first, result.first->second };
 }
 
 void ScopeTimer::Aggregator::AddScopeTiming(const Registration& scope_registration, TimeDuration duration)
 {
     META_FUNCTION_TASK();
-    META_CHART_VALUE(scope_registration.name_ref.get().c_str(), std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count());
+    META_CHART_VALUE(scope_registration.name, std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count());
 
     assert(scope_registration.id <= m_timing_by_scope_id.size());
     Timing& scope_timing = m_timing_by_scope_id[scope_registration.id];

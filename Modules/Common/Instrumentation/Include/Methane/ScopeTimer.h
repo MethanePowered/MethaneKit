@@ -38,12 +38,11 @@ class ScopeTimer : protected Timer
 {
 public:
     using ScopeId = uint32_t;
-    using NameRef = Ref<const std::string>;
 
     struct Registration
     {
-        NameRef name_ref;
-        ScopeId id;
+        const char* name;
+        ScopeId     id;
     };
 
     class Aggregator
@@ -61,7 +60,7 @@ public:
         ~Aggregator();
 
         void SetLogger(Ptr<ILogger> sp_logger)   { m_sp_logger = std::move(sp_logger); }
-        const Ptr<ILogger>& GetLogger() const { return m_sp_logger; }
+        const Ptr<ILogger>& GetLogger() const    { return m_sp_logger; }
 
         void LogTimings(ILogger& logger);
         void Flush();
@@ -73,7 +72,7 @@ public:
     private:
         Aggregator() = default;
 
-        using ScopeIdByName = std::map<std::string, ScopeId>;
+        using ScopeIdByName = std::map<const char*, ScopeId>;
         using ScopeTimings  = std::vector<Timing>; // index == ScopeId
 
         ScopeId       m_new_scope_id = 0u;
@@ -92,7 +91,7 @@ public:
     ~ScopeTimer();
 
     const Registration& GetRegistration() const { return m_registration; }
-    const std::string&  GetScopeName() const    { return m_registration.name_ref.get(); }
+    const char*         GetScopeName() const    { return m_registration.name; }
     ScopeId             GetScopeId() const      { return m_registration.id; }
 
 private:
