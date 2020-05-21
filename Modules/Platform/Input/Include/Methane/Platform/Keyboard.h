@@ -40,6 +40,7 @@ Platform abstraction of keyboard events.
 #include <array>
 #include <set>
 #include <string>
+#include <ostream>
 
 namespace Methane::Platform::Keyboard
 {
