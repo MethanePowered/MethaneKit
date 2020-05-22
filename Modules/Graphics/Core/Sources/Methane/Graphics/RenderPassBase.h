@@ -23,6 +23,7 @@ Base implementation of the render pass interface.
 
 #pragma once
 
+#include "ObjectBase.h"
 #include "ResourceBase.h"
 
 #include <Methane/Graphics/RenderPass.h>
@@ -36,6 +37,7 @@ class TextureBase;
 
 class RenderPassBase
     : public RenderPass
+    , public ObjectBase
     , public std::enable_shared_from_this<RenderPassBase>
 {
 public:

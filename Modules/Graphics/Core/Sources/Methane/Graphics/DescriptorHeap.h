@@ -23,6 +23,8 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps
 
 #pragma once
 
+#include "ObjectBase.h"
+
 #include <Methane/Data/RangeSet.hpp>
 #include <Methane/Data/Provider.h>
 #include <Methane/Memory.hpp>
@@ -30,6 +32,7 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps
 
 #include <set>
 #include <mutex>
+#include <functional>
 
 namespace Methane::Graphics
 {
@@ -62,6 +65,14 @@ public:
         bool       shader_visible;
     };
 
+    enum class Notification : uint32_t
+    {
+        Allocated,
+    };
+
+    using NotificationCallback = std::function<void(DescriptorHeap&, Notification)>;
+    using NotificationCallbacks = std::vector<std::pair<const ObjectBase*, NotificationCallback>>;
+
     using Types    = std::set<Type>;
     using Range    = Methane::Data::Range<Data::Index>;
 
@@ -83,7 +94,10 @@ public:
     virtual Data::Index AddResource(const ResourceBase& resource);
     virtual Data::Index ReplaceResource(const ResourceBase& resource, Data::Index at_index);
     virtual void        RemoveResource(Data::Index at_index);
-    virtual void        Allocate() { m_allocated_size = m_deferred_size; }
+    virtual void        Allocate();
+
+    void AddNotification(const ObjectBase& target, NotificationCallback notification);
+    void RemoveNotification(const ObjectBase& target);
 
     Range               ReserveRange(Data::Size length);
     void                ReleaseRange(const Range& range);
@@ -101,18 +115,21 @@ public:
 protected:
     DescriptorHeap(ContextBase& context, const Settings& settings);
 
+    void Notify(Notification notification);
+
     ContextBase& GetContext() { return m_context; }
 
 private:
     using ResourcePtrs = std::vector<const ResourceBase*>;
     using RangeSet     = Data::RangeSet<Data::Index>;
 
-    ContextBase&    m_context;
-    const Settings  m_settings;
-    Data::Size      m_deferred_size;
-    Data::Size      m_allocated_size = 0;
-    ResourcePtrs    m_resources;
-    RangeSet        m_free_ranges;
+    ContextBase&              m_context;
+    const Settings            m_settings;
+    Data::Size                m_deferred_size;
+    Data::Size                m_allocated_size = 0;
+    ResourcePtrs              m_resources;
+    RangeSet                  m_free_ranges;
+    NotificationCallbacks     m_notification_callbacks;
     TracyLockable(std::mutex, m_modification_mutex);
 };
 

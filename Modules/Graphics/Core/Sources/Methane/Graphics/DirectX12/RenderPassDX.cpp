@@ -198,6 +198,23 @@ RenderPassDX::RenderPassDX(RenderContextBase& context, const Settings& settings)
     : RenderPassBase(context, settings)
 {
     META_FUNCTION_TASK();
+
+    // Subscribe to descriptor heap notifications
+    ForEachAccessibleDescriptorHeap([this](DescriptorHeap& descriptor_heap)
+    {
+        descriptor_heap.AddNotification(*this, std::bind(&RenderPassDX::OnDescriptorHeapNotification, this, std::placeholders::_1, std::placeholders::_2));
+    });
+}
+
+RenderPassDX::~RenderPassDX()
+{
+    META_FUNCTION_TASK();
+
+    // Unsubscribe from descriptor heap notifications
+    ForEachAccessibleDescriptorHeap([this](DescriptorHeap& descriptor_heap)
+    {
+        descriptor_heap.RemoveNotification(*this);
+    });
 }
 
 bool RenderPassDX::Update(const Settings& settings)
@@ -295,6 +312,32 @@ void RenderPassDX::UpdateNativeClearDesc()
     m_ds_clear_info = DSClearInfo(settings.depth_attachment, settings.stencil_attachment);
 }
 
+void RenderPassDX::ForEachAccessibleDescriptorHeap(const std::function<void(DescriptorHeap& descriptor_heap)>& do_action) const
+{
+    META_FUNCTION_TASK();
+    const Settings& settings = GetSettings();
+    const RenderContextBase& context = GetRenderContext();
+    for (Access::Value access : Access::values)
+    {
+        if (!(settings.shader_access_mask & access))
+            continue;
+
+        const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByAccess(access);
+        do_action(context.GetResourceManager().GetDefaultShaderVisibleDescriptorHeap(heap_type));
+    }
+}
+
+void RenderPassDX::OnDescriptorHeapNotification(DescriptorHeap&, DescriptorHeap::Notification notification)
+{
+    META_FUNCTION_TASK();
+
+    if (notification != DescriptorHeap::Notification::Allocated)
+        return;
+
+    // Clear cached native descriptor heaps so that hey will be updated on next request in GetNativeDescriptorHeaps
+    m_native_descriptor_heaps.clear();
+}
+
 void RenderPassDX::Begin(RenderCommandListBase& command_list)
 {
     META_FUNCTION_TASK();
@@ -390,17 +433,10 @@ const std::vector<ID3D12DescriptorHeap*>& RenderPassDX::GetNativeDescriptorHeaps
     if (!m_native_descriptor_heaps.empty())
         return m_native_descriptor_heaps;
 
-    const Settings& settings = GetSettings();
-    const RenderContextBase& context = GetRenderContext();
-    for (Access::Value access : Access::values)
+    ForEachAccessibleDescriptorHeap([this](DescriptorHeap& descriptor_heap)
     {
-        if (!(settings.shader_access_mask & access))
-            continue;
-
-        DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByAccess(access);
-        DescriptorHeapDX& descriptor_heap_dx = static_cast<DescriptorHeapDX&>(context.GetResourceManager().GetDefaultShaderVisibleDescriptorHeap(heap_type));
-        m_native_descriptor_heaps.push_back(descriptor_heap_dx.GetNativeDescriptorHeap());
-    }
+        m_native_descriptor_heaps.push_back(static_cast<DescriptorHeapDX&>(descriptor_heap).GetNativeDescriptorHeap());
+    });
 
     return m_native_descriptor_heaps;
 }

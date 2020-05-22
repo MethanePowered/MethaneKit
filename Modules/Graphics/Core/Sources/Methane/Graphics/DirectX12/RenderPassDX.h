@@ -39,6 +39,7 @@ class RenderPassDX final : public RenderPassBase
 {
 public:
     RenderPassDX(RenderContextBase& context, const Settings& settings);
+    ~RenderPassDX();
 
     // RenderPass interface
     bool Update(const Settings& settings) override;
@@ -98,6 +99,9 @@ private:
 
     void UpdateNativeRenderPassDesc(bool settings_changed);
     void UpdateNativeClearDesc();
+
+    void ForEachAccessibleDescriptorHeap(const std::function<void(DescriptorHeap& descriptor_heap)>&) const;
+    void OnDescriptorHeapNotification(DescriptorHeap& descriptor_heap, DescriptorHeap::Notification notification);
 
     // D3D12 Render-Pass description
     std::optional<bool>                                 m_is_native_render_pass_available;

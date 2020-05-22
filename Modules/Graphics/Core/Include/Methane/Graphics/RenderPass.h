@@ -24,6 +24,7 @@ Methane render pass interface: specifies output of the graphics pipeline.
 #pragma once
 
 #include "Texture.h"
+#include "Object.h"
 
 #include <Methane/Memory.hpp>
 #include <Methane/Graphics/Types.h>
@@ -36,7 +37,7 @@ namespace Methane::Graphics
 
 struct RenderContext;
 
-struct RenderPass
+struct RenderPass : virtual Object
 {
     struct Attachment
     {
