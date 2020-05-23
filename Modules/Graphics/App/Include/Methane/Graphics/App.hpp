@@ -323,6 +323,7 @@ public:
     void OnContextReleased() override
     {
         META_FUNCTION_TASK();
+        SetAnimationsEnabled(false);
         m_frames.clear();
         m_sp_depth_texture.reset();
         m_sp_logo_badge.reset();
@@ -335,13 +336,15 @@ public:
     {
         META_FUNCTION_TASK();
         Init();
+        SetAnimationsEnabled(true);
     }
 
     // Graphics::IApp interface
-    const IApp::Settings& GetGraphicsAppSettings() const noexcept override        { return m_settings; }
+    const IApp::Settings& GetGraphicsAppSettings() const noexcept override { return m_settings; }
 
     bool SetAnimationsEnabled(bool animations_enabled) override
     {
+        META_FUNCTION_TASK();
         if (m_settings.animations_enabled == animations_enabled)
             return false;
 
