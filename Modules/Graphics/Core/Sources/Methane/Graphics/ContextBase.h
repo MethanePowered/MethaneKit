@@ -88,9 +88,9 @@ private:
     ResourceManager           m_resource_manager;
     Refs<Callback>            m_callbacks; // ORDER: Keep callbacks before resources for correct auto-delete
     Ptr<CommandQueue>         m_sp_upload_cmd_queue;
-    Ptr<BlitCommandList> m_sp_upload_cmd_list;
-    Ptr<CommandListSet>  m_sp_upload_cmd_lists;
-    UniquePtr<Fence>     m_sp_upload_fence;
+    Ptr<BlitCommandList>      m_sp_upload_cmd_list;
+    Ptr<CommandListSet>       m_sp_upload_cmd_lists;
+    UniquePtr<Fence>          m_sp_upload_fence;
 };
 
 } // namespace Methane::Graphics

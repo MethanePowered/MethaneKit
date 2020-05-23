@@ -196,6 +196,12 @@ void DescriptorHeap::ReleaseRange(const Range& range)
     m_free_ranges.Add(range);
 }
 
+void DescriptorHeap::SetDeferredAllocation(bool deferred_allocation)
+{
+    META_FUNCTION_TASK();
+    m_settings.deferred_allocation = deferred_allocation;
+}
+
 std::string DescriptorHeap::GetTypeName(Type heap_type)
 {
     META_FUNCTION_TASK();

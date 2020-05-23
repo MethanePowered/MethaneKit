@@ -102,6 +102,8 @@ public:
     Range               ReserveRange(Data::Size length);
     void                ReleaseRange(const Range& range);
 
+    void                SetDeferredAllocation(bool deferred_allocation);
+
     const Settings&     GetSettings() const                             { return m_settings; }
     Data::Size          GetDeferredSize() const                         { return m_deferred_size; }
     Data::Size          GetAllocatedSize() const                        { return m_allocated_size; }
@@ -124,7 +126,7 @@ private:
     using RangeSet     = Data::RangeSet<Data::Index>;
 
     ContextBase&              m_context;
-    const Settings            m_settings;
+    Settings                  m_settings;
     Data::Size                m_deferred_size;
     Data::Size                m_allocated_size = 0;
     ResourcePtrs              m_resources;

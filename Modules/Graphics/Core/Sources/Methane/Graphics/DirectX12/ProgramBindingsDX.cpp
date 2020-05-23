@@ -175,11 +175,8 @@ void ProgramBindingsDX::Initialize()
     META_FUNCTION_TASK();
 
     ResourceManager& resource_manager = static_cast<ProgramBase&>(GetProgram()).GetContext().GetResourceManager();
-    if (resource_manager.DeferredHeapAllocationEnabled())
-    {
-        resource_manager.AddProgramBindings(*this);
-    }
-    else
+    resource_manager.AddProgramBindings(*this);
+    if (!resource_manager.IsDeferredHeapAllocation())
     {
         CompleteInitialization();
     }

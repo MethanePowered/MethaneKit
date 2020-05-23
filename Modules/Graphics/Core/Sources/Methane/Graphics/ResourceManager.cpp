@@ -70,6 +70,8 @@ void ResourceManager::Initialize(const Settings& settings)
 void ResourceManager::CompleteInitialization()
 {
     META_FUNCTION_TASK();
+    if (!IsDeferredHeapAllocation())
+        return;
 
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_program_bindings_mutex);
 
@@ -87,8 +89,10 @@ void ResourceManager::CompleteInitialization()
         { return wp_program_bindings.expired(); }
     );
 
+    m_program_bindings.erase(program_bindings_end_it, m_program_bindings.end());
+
     Data::ParallelForEach<WeakPtrs<ProgramBindings>::const_iterator, const WeakPtr<ProgramBindings>>(
-        m_program_bindings.begin(), program_bindings_end_it,
+        m_program_bindings.begin(), m_program_bindings.end(),
         [](const WeakPtr<ProgramBindings>& wp_program_bindings)
         {
             META_FUNCTION_TASK();
@@ -111,6 +115,19 @@ void ResourceManager::Release()
     {
         desc_heaps.clear();
     }
+}
+
+void ResourceManager::SetDeferredHeapAllocation(bool deferred_heap_allocation)
+{
+    META_FUNCTION_TASK();
+    if (m_deferred_heap_allocation == deferred_heap_allocation)
+        return;
+
+    m_deferred_heap_allocation = deferred_heap_allocation;
+    ForEachDescriptorHeap([deferred_heap_allocation](DescriptorHeap& descriptor_heap)
+    {
+        descriptor_heap.SetDeferredAllocation(deferred_heap_allocation);
+    });
 }
 
 void ResourceManager::AddProgramBindings(ProgramBindings& program_bindings)
@@ -224,25 +241,41 @@ ResourceManager::DescriptorHeapSizeByType ResourceManager::GetDescriptorHeapSize
 {
     META_FUNCTION_TASK();
 
-    DescriptorHeapSizeByType descriptor_heap_sizes;
+    DescriptorHeapSizeByType max_descriptor_heap_sizes = {};
+    ForEachDescriptorHeap([&](DescriptorHeap& descriptor_heap)
+    {
+        if ( (for_shader_visible_heaps && !descriptor_heap.IsShaderVisible()) ||
+            (!for_shader_visible_heaps &&  descriptor_heap.IsShaderVisible()) )
+            return;
+
+        const uint32_t heap_size = get_allocated_size ? descriptor_heap.GetAllocatedSize() : descriptor_heap.GetDeferredSize();
+        uint32_t& max_desc_heap_size = max_descriptor_heap_sizes[static_cast<size_t>(descriptor_heap.GetSettings().type)];
+        max_desc_heap_size = std::max(max_desc_heap_size, heap_size);
+    });
+
+    return max_descriptor_heap_sizes;
+}
+
+void ResourceManager::ForEachDescriptorHeap(const std::function<void(DescriptorHeap& descriptor_heap)>& process_heap) const
+{
+    META_FUNCTION_TASK();
     for (uint32_t heap_type_idx = 0; heap_type_idx < static_cast<uint32_t>(DescriptorHeap::Type::Count); ++heap_type_idx)
     {
+        const DescriptorHeap::Type  desc_heaps_type = static_cast<DescriptorHeap::Type>(heap_type_idx);
         const Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[heap_type_idx];
-        uint32_t max_heap_size = 0;
         for (const Ptr<DescriptorHeap>& sp_desc_heap : desc_heaps)
         {
-            assert(!!sp_desc_heap);
-            assert(sp_desc_heap->GetSettings().type == static_cast<DescriptorHeap::Type>(heap_type_idx));
-            if ( (for_shader_visible_heaps && !sp_desc_heap->IsShaderVisible()) ||
-                (!for_shader_visible_heaps &&  sp_desc_heap->IsShaderVisible()) )
-                continue;
+            if (!sp_desc_heap)
+                throw std::logic_error("Empty descriptor heap pointer should not be stored in resource manager.");
 
-            const uint32_t heap_size = get_allocated_size ? sp_desc_heap->GetAllocatedSize() : sp_desc_heap->GetDeferredSize();
-            max_heap_size = std::max(max_heap_size, heap_size);
+            const DescriptorHeap::Type heap_type = sp_desc_heap->GetSettings().type;
+            if (heap_type != desc_heaps_type)
+                throw std::logic_error("Wrong type of descriptor heap (" + DescriptorHeap::GetTypeName(heap_type) +
+                                       ") was found in container assuming heaps of " + DescriptorHeap::GetTypeName(desc_heaps_type));
+
+            process_heap(*sp_desc_heap);
         }
-        descriptor_heap_sizes[heap_type_idx] = max_heap_size;
     }
-    return descriptor_heap_sizes;
 }
 
 ResourceBase::ReleasePool& ResourceManager::GetReleasePool()

@@ -62,6 +62,9 @@ void ContextBase::CompleteInitialization()
 
     m_resource_manager.CompleteInitialization();
     UploadResources();
+
+    // Enable deferred heap allocation in case if more resources will be created in runtime
+    m_resource_manager.SetDeferredHeapAllocation(true);
 }
 
 void ContextBase::WaitForGpu(WaitFor wait_for)

@@ -374,9 +374,9 @@ public:
         m_settings.heads_up_display_mode = heads_up_display_mode;
         UpdateWindowTitle();
 
+        m_sp_context->WaitForGpu(RenderContext::WaitFor::RenderComplete);
         if (m_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface && m_sp_context)
         {
-            m_sp_context->WaitForGpu(RenderContext::WaitFor::RenderComplete);
             m_sp_hud = std::make_shared<HeadsUpDisplay>(*m_sp_context);
             m_sp_context->CompleteInitialization();
         }

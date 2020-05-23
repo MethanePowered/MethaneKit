@@ -57,7 +57,9 @@ public:
     void CompleteInitialization();
     void Release();
 
-    bool DeferredHeapAllocationEnabled() const { return m_deferred_heap_allocation; }
+    void SetDeferredHeapAllocation(bool deferred_heap_allocation);
+    bool IsDeferredHeapAllocation() const { return m_deferred_heap_allocation; }
+
     void AddProgramBindings(ProgramBindings& program_bindings);
 
     uint32_t                    CreateDescriptorHeap(const DescriptorHeap::Settings& settings); // returns index of the created descriptor heap
@@ -69,6 +71,8 @@ public:
     ResourceBase::ReleasePool&  GetReleasePool();
 
 private:
+    void ForEachDescriptorHeap(const std::function<void(DescriptorHeap& descriptor_heap)>& process_heap) const;
+
     using DescriptorHeapTypes = std::array<Ptrs<DescriptorHeap>, static_cast<size_t>(DescriptorHeap::Type::Count)>;
 
     bool                           m_deferred_heap_allocation = false;
