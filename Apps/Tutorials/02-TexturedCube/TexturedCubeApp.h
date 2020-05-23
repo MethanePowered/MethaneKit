@@ -60,7 +60,7 @@ public:
     bool Render() override;
 
     // Context::Callback override
-    void OnContextReleased() override;
+    void OnContextReleased(gfx::Context& context) override;
 
 private:
     struct SHADER_STRUCT_ALIGN Constants

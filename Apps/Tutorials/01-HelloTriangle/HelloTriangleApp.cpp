@@ -155,12 +155,12 @@ bool HelloTriangleApp::Render()
     return true;
 }
 
-void HelloTriangleApp::OnContextReleased()
+void HelloTriangleApp::OnContextReleased(gfx::Context& context)
 {
     m_sp_vertex_buffers.reset();
     m_sp_state.reset();
 
-    GraphicsApp::OnContextReleased();
+    GraphicsApp::OnContextReleased(context);
 }
 
 } // namespace Methane::Tutorials

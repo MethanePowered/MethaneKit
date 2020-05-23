@@ -259,7 +259,7 @@ bool TexturedCubeApp::Render()
     return true;
 }
 
-void TexturedCubeApp::OnContextReleased()
+void TexturedCubeApp::OnContextReleased(gfx::Context& context)
 {
     m_sp_texture_sampler.reset();
     m_sp_cube_texture.reset();
@@ -268,7 +268,7 @@ void TexturedCubeApp::OnContextReleased()
     m_sp_vertex_buffers.reset();
     m_sp_state.reset();
 
-    GraphicsApp::OnContextReleased();
+    GraphicsApp::OnContextReleased(context);
 }
 
 } // namespace Methane::Tutorials

@@ -52,8 +52,8 @@ struct Context : virtual Object
 
     struct Callback
     {
-        virtual void OnContextReleased() = 0;
-        virtual void OnContextInitialized() = 0;
+        virtual void OnContextReleased(Context& context) = 0;
+        virtual void OnContextInitialized(Context& context) = 0;
 
         virtual ~Callback() = default;
     };

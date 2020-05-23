@@ -34,7 +34,9 @@ Font atlas textures generation and fonts library management classes.
 namespace Methane::Graphics
 {
 
-class Font : public std::enable_shared_from_this<Font>
+class Font
+    : public std::enable_shared_from_this<Font>
+    , public Context::Callback
 {
 public:
     struct Settings
@@ -102,22 +104,27 @@ public:
 
     static std::string GetAnsiCharacters(char from = 32, char to = 126);
 
-    Ptr<Font> GetPtr() { return shared_from_this(); }
-    void AddChars(const std::string& unicode_characters);
-    void AddChars(const std::wstring& characters);
-    const Font::Char& AddChar(Char::Code char_code);
-    bool HasChar(Char::Code char_code);
-    const Char& GetChar(Char::Code char_code) const;
-    Refs<const Char> GetChars() const;
-    Refs<const Char> GetTextChars(const std::string& text);
-    FrameRect::Point GetKerning(const Char& left_char, const Char& right_char) const;
-    const FrameSize& GetMaxGlyphSize() const { return m_max_glyph_size; }
-
+    Ptr<Font>       GetPtr() { return shared_from_this(); }
     const Settings& GetSettings() const { return m_settings; }
+
+    void              AddChars(const std::string& unicode_characters);
+    void              AddChars(const std::wstring& characters);
+    const Font::Char& AddChar(Char::Code char_code);
+    bool              HasChar(Char::Code char_code);
+    const Char&       GetChar(Char::Code char_code) const;
+    Refs<const Char>  GetChars() const;
+    Refs<const Char>  GetTextChars(const std::string& text);
+    FrameRect::Point  GetKerning(const Char& left_char, const Char& right_char) const;
+    const FrameSize&  GetMaxGlyphSize() const { return m_max_glyph_size; }
+
     const Ptr<Texture>& GetAtlasTexturePtr(Context& context);
-    Texture& GetAtlasTexture(Context& context) { return *GetAtlasTexturePtr(context); }
-    void     RemoveAtlasTexture(Context& context);
-    void     ClearAtlasTextures();
+    Texture&            GetAtlasTexture(Context& context) { return *GetAtlasTexturePtr(context); }
+    void                RemoveAtlasTexture(Context& context);
+    void                ClearAtlasTextures();
+
+    // Context::Callback interface
+    void OnContextReleased(Context& context);
+    void OnContextInitialized(Context&) { }
 
 protected:
     // Font can be created only via Font::Library::Add

@@ -64,7 +64,7 @@ public:
     bool Render() override;
 
     // Context::Callback overrides
-    void OnContextReleased() override;
+    void OnContextReleased(gfx::Context& context) override;
 
     uint32_t GetAsteroidsComplexity() const { return m_asteroids_complexity; }
     void     SetAsteroidsComplexity(uint32_t asteroids_complexity);

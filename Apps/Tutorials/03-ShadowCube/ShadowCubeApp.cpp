@@ -448,7 +448,7 @@ void ShadowCubeApp::RenderScene(const RenderPass &render_pass, ShadowCubeFrame::
     cmd_list.Commit();
 }
 
-void ShadowCubeApp::OnContextReleased()
+void ShadowCubeApp::OnContextReleased(gfx::Context& context)
 {
     m_final_pass.Release();
     m_shadow_pass.Release();
@@ -459,7 +459,7 @@ void ShadowCubeApp::OnContextReleased()
     m_sp_texture_sampler.reset();
     m_sp_const_buffer.reset();
 
-    GraphicsApp::OnContextReleased();
+    GraphicsApp::OnContextReleased(context);
 }
 
 ShadowCubeApp::RenderPass::RenderPass(bool is_final_pass, std::string debug_group_name)

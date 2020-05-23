@@ -133,7 +133,7 @@ bool TextRenderApp::Render()
     return true;
 }
 
-void TextRenderApp::OnContextReleased()
+void TextRenderApp::OnContextReleased(gfx::Context& context)
 {
     gfx::Font::Library::Get().Clear();
 
@@ -141,7 +141,7 @@ void TextRenderApp::OnContextReleased()
     m_sp_text.reset();
     m_sp_font_atlas_badge.reset();
 
-    GraphicsApp::OnContextReleased();
+    GraphicsApp::OnContextReleased(context);
 }
 
 } // namespace Methane::Tutorials

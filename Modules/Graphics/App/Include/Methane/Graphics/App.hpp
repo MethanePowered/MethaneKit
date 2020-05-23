@@ -320,7 +320,7 @@ public:
     }
 
     // Context::Callback interface
-    void OnContextReleased() override
+    void OnContextReleased(Context&) override
     {
         META_FUNCTION_TASK();
         SetAnimationsEnabled(false);
@@ -332,7 +332,7 @@ public:
     }
 
     // Context::Callback interface
-    void OnContextInitialized() override
+    void OnContextInitialized(Context&) override
     {
         META_FUNCTION_TASK();
         Init();

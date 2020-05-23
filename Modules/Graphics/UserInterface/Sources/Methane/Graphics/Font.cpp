@@ -483,6 +483,9 @@ const Ptr<Texture>& Font::GetAtlasTexturePtr(Context& context)
         code_and_char.second.DrawToAtlas(atlas_bitmap, atlas_size.width);
     }
 
+    // Add font as context callback to remove atlas texture when context is released
+    context.AddCallback(*this);
+
     // Create atlas texture and render glyphs to it
     Ptr<Texture> sp_atlas_texture = Texture::CreateImage(context, Dimensions(atlas_size), 1, PixelFormat::R8Unorm, false);
     sp_atlas_texture->SetData({ Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(atlas_bitmap.data()), static_cast<Data::Size>(atlas_bitmap.size())) });
@@ -500,6 +503,12 @@ void Font::ClearAtlasTextures()
 {
     META_FUNCTION_TASK();
     m_atlas_textures.clear();
+}
+
+void Font::OnContextReleased(Context& context)
+{
+    META_FUNCTION_TASK();
+    RemoveAtlasTexture(context);
 }
 
 Font::Char::Char(Code code)

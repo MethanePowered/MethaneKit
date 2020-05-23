@@ -55,7 +55,7 @@ public:
     bool Render() override;
 
     // Context::Callback interface
-    void OnContextReleased() override;
+    void OnContextReleased(gfx::Context& context) override;
 
 private:
     Ptr<gfx::RenderState>   m_sp_state;

@@ -52,7 +52,7 @@ public:
     bool Render() override;
 
     // Context::Callback interface
-    void OnContextReleased() override;
+    void OnContextReleased(gfx::Context& context) override;
 
 private:
     Ptr<gfx::Font>  m_sp_font;

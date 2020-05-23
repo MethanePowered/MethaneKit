@@ -107,7 +107,16 @@ void ContextBase::Reset()
 void ContextBase::AddCallback(Callback& callback)
 {
     META_FUNCTION_TASK();
-    m_callbacks.push_back(callback);
+    const auto callback_it = std::find_if(m_callbacks.begin(), m_callbacks.end(),
+        [&callback](const Ref<Callback>& callback_ref)
+        {
+            return std::addressof(callback_ref.get()) == std::addressof(callback);
+        });
+
+    if (callback_it == m_callbacks.end())
+    {
+        m_callbacks.push_back(callback);
+    }
 }
 
 void ContextBase::RemoveCallback(Callback& callback)
@@ -118,11 +127,11 @@ void ContextBase::RemoveCallback(Callback& callback)
         {
             return std::addressof(callback_ref.get()) == std::addressof(callback);
         });
-    assert(callback_it != m_callbacks.end());
-    if (callback_it == m_callbacks.end())
-        return;
 
-    m_callbacks.erase(callback_it);
+    if (callback_it != m_callbacks.end())
+    {
+        m_callbacks.erase(callback_it);
+    }
 }
 
 void ContextBase::OnGpuWaitComplete(WaitFor)
@@ -143,7 +152,7 @@ void ContextBase::Release()
 
     for (const Ref<Callback>& callback_ref : m_callbacks)
     {
-        callback_ref.get().OnContextReleased();
+        callback_ref.get().OnContextReleased(*this);
     }
 
     m_resource_manager_init_settings.default_heap_sizes         = m_resource_manager.GetDescriptorHeapSizes(true, false);
@@ -177,7 +186,7 @@ void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation)
 
     for (const Ref<Callback>& callback_ref : m_callbacks)
     {
-        callback_ref.get().OnContextInitialized();
+        callback_ref.get().OnContextInitialized(*this);
     }
 }
 

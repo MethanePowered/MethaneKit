@@ -153,12 +153,12 @@ public:
         return true;
     }
 
-    void OnContextReleased() override
+    void OnContextReleased(Context& context) override
     {
         m_sp_vertex_buffers.reset();
         m_sp_state.reset();
 
-        GraphicsApp::OnContextReleased();
+        GraphicsApp::OnContextReleased(context);
     }
 };
 

@@ -394,7 +394,7 @@ bool AsteroidsApp::Render()
     return true;
 }
 
-void AsteroidsApp::OnContextReleased()
+void AsteroidsApp::OnContextReleased(gfx::Context& context)
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMERS_FLUSH();
@@ -410,7 +410,7 @@ void AsteroidsApp::OnContextReleased()
     m_sp_asteroids_array.reset();
     m_sp_const_buffer.reset();
 
-    GraphicsApp::OnContextReleased();
+    GraphicsApp::OnContextReleased(context);
 }
 
 void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
