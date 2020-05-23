@@ -57,6 +57,10 @@ public:
     void Release() override
     {
         META_FUNCTION_TASK();
+        for(wrl::ComPtr<ID3D12QueryHeap>& cp_query_heap : m_query_heaps)
+        {
+            cp_query_heap.Reset();
+        }
         GetMutableDeviceDX().ReleaseNativeDevice();
         ContextBaseT::Release();
         static_cast<SystemDX&>(System::Get()).ReportLiveObjects();
