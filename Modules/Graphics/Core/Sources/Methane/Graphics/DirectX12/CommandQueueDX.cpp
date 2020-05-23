@@ -148,23 +148,19 @@ void CommandQueueDX::WaitForExecution() noexcept
 
         while(!m_executing_command_lists.empty())
         {
-            CommandListSetDX* p_command_lists = nullptr;
+            Ptr<CommandListSetDX> sp_command_lists;
             {
                 std::lock_guard<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
                 if (m_executing_command_lists.empty())
                     break;
-                p_command_lists = m_executing_command_lists.front().get();
+
+                sp_command_lists = m_executing_command_lists.front();
+                m_executing_command_lists.pop();
             }
-            assert(p_command_lists);
-            p_command_lists->GetExecutionCompletedFenceDX().Wait();
-            {
-                std::lock_guard<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
-                if (!m_executing_command_lists.empty() && m_executing_command_lists.front().get() == p_command_lists)
-                {
-                    p_command_lists->Complete();
-                    m_executing_command_lists.pop();
-                }
-            }
+
+            assert(sp_command_lists);
+            sp_command_lists->GetExecutionCompletedFenceDX().Wait();
+            sp_command_lists->Complete();
         }
     }
     while(m_execution_waiting);
