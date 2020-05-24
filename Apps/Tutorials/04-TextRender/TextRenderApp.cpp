@@ -156,7 +156,7 @@ void TextRenderApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
         assert(sp_badge_atlas);
         const gfx::FrameSize& atlas_size = static_cast<const gfx::FrameSize&>(sp_badge_atlas->GetTexture().GetSettings().dimensions);
         sp_badge_atlas->FrameResize(frame_size, atlas_size, badge_margins);
-        badge_margins.SetX(badge_margins.GetX() + atlas_size.width + g_margin_size * scale_factor);
+        badge_margins.SetX(badge_margins.GetX() + atlas_size.width + static_cast<int32_t>(scale_factor * g_margin_size));
     }
 }
 
