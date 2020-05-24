@@ -85,6 +85,7 @@ CommandQueueDX::CommandQueueDX(ContextBase& context)
 CommandQueueDX::~CommandQueueDX()
 {
     META_FUNCTION_TASK();
+    CompleteExecution();
     m_execution_waiting = false;
     m_execution_waiting_condition_var.notify_one();
     m_execution_waiting_thread.join();
@@ -155,12 +156,17 @@ void CommandQueueDX::WaitForExecution() noexcept
                     break;
 
                 sp_command_lists = m_executing_command_lists.front();
-                m_executing_command_lists.pop();
             }
 
             assert(sp_command_lists);
             sp_command_lists->GetExecutionCompletedFenceDX().Wait();
+            
+            std::unique_lock<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
             sp_command_lists->Complete();
+            if (m_executing_command_lists.front().get() == sp_command_lists.get())
+            {
+                m_executing_command_lists.pop();
+            }
         }
     }
     while(m_execution_waiting);
