@@ -231,6 +231,17 @@ Font::Library& Font::Library::Get()
     return s_library;
 }
 
+Refs<Font> Font::Library::GetFonts() const
+{
+    META_FUNCTION_TASK();
+    Refs<Font> font_refs;
+    for(const auto& name_and_font_ptr : m_font_by_name)
+    {
+        font_refs.emplace_back(*name_and_font_ptr.second);
+    }
+    return font_refs;
+}
+
 bool Font::Library::HasFont(const std::string& font_name) const
 {
     META_FUNCTION_TASK();
@@ -312,6 +323,12 @@ Font::Font(const Data::Provider& data_provider, const Settings& settings)
 
     m_sp_face->SetSize(m_settings.font_size_pt, m_settings.resolution_dpi);
     AddChars(m_settings.characters);
+}
+
+Font::~Font()
+{
+    META_FUNCTION_TASK();
+    ClearAtlasTextures();
 }
 
 void Font::AddChars(const std::string& unicode_characters)
@@ -497,11 +514,17 @@ void Font::RemoveAtlasTexture(Context& context)
 {
     META_FUNCTION_TASK();
     m_atlas_textures.erase(&context);
+    context.RemoveCallback(*this);
 }
 
 void Font::ClearAtlasTextures()
 {
     META_FUNCTION_TASK();
+    for(const auto& context_and_texture : m_atlas_textures)
+    {
+        if (context_and_texture.first)
+            context_and_texture.first->RemoveCallback(*this);
+    }
     m_atlas_textures.clear();
 }
 

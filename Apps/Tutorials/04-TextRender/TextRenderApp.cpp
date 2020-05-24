@@ -28,6 +28,8 @@ Tutorial demonstrating text rendering with Methane graphics API
 namespace Methane::Tutorials
 {
 
+constexpr int32_t g_margin_size = 32;
+
 TextRenderApp::TextRenderApp()
     : GraphicsApp(
         Samples::GetAppSettings("Methane Text Rendering", false /* animations */, true /* logo */, true /* hud ui */, false /* depth */),
@@ -59,31 +61,19 @@ void TextRenderApp::Init()
         }
     ).GetPtr();
 
-    // Create font atlas texture and badge to displaying it on screen
-    const Ptr<gfx::Texture>& sp_font_atlas_texture = m_sp_font->GetAtlasTexturePtr(*m_sp_context);
-    m_sp_font_atlas_badge = std::make_shared<gfx::Badge>(*m_sp_context, sp_font_atlas_texture,
-        gfx::Badge::Settings
-        {
-            static_cast<const gfx::FrameSize&>(sp_font_atlas_texture->GetSettings().dimensions),
-            gfx::Badge::FrameCorner::BottomRight,
-            16u,
-            1.f,
-            gfx::Badge::TextureMode::RFloatToAlpha
-        }
-    );
-
     // Create text rendering primitive bound to the font object
-
     m_sp_text = std::make_shared<gfx::Text>(*m_sp_context, *m_sp_font,
         gfx::Text::Settings
         {
             "Label",
             "Wow... The quick brown fox jumps over the lazy dog!\n"
             "Cъешь ещё этих мягких французских булок, да выпей чаю.",
-            gfx::FrameRect{ { 50, 100 }, { context_settings.frame_size.width * 2 / 3, context_settings.frame_size.width / 4 } },
+            gfx::FrameRect{ { g_margin_size, 100 }, { context_settings.frame_size.width * 2 / 3, context_settings.frame_size.width / 4 } },
             gfx::Color4f(1.f, 1.f, 1.f, 1.f)
         }
     );
+
+    InitFontAtlasBadges();
 
     // Create per-frame command lists
     for(TextRenderFrame& frame : m_frames)
@@ -98,13 +88,82 @@ void TextRenderApp::Init()
     m_sp_context->CompleteInitialization();
 }
 
+void TextRenderApp::InitFontAtlasBadges()
+{
+    const Refs<gfx::Font> font_refs = gfx::Font::Library::Get().GetFonts();
+    gfx::Context& context = *m_sp_context;
+
+    // Remove obsolete font atlas badges
+    for(auto badge_it = m_sp_font_atlas_badges.begin(); badge_it != m_sp_font_atlas_badges.end();)
+    {
+        const Ptr<gfx::Badge>& sp_font_atlas_badge = *badge_it;
+        const auto font_ref_it = std::find_if(font_refs.begin(), font_refs.end(),
+            [&sp_font_atlas_badge, &context](const Ref<gfx::Font>& font_ref)
+            {
+               return std::addressof(sp_font_atlas_badge->GetTexture()) == &font_ref.get().GetAtlasTexture(context);
+            }
+        );
+        if (font_ref_it == font_refs.end())
+        {
+            badge_it = m_sp_font_atlas_badges.erase(badge_it);
+        }
+        else
+        {
+            ++badge_it;
+        }
+    }
+
+    // Add new font atlas badges
+    for(const Ref<gfx::Font>& font_ref : font_refs)
+    {
+        const Ptr<gfx::Texture>& sp_font_atlas_texture = font_ref.get().GetAtlasTexturePtr(context);
+        const auto sp_font_atlas_it = std::find_if(m_sp_font_atlas_badges.begin(), m_sp_font_atlas_badges.end(),
+            [&sp_font_atlas_texture](const Ptr<gfx::Badge>& sp_font_atlas_badge)
+            {
+                return std::addressof(sp_font_atlas_badge->GetTexture()) == sp_font_atlas_texture.get();
+            }
+        );
+
+        if (sp_font_atlas_it != m_sp_font_atlas_badges.end())
+            continue;
+
+        m_sp_font_atlas_badges.emplace_back(
+            std::make_shared<gfx::Badge>(
+                *m_sp_context, sp_font_atlas_texture,
+                gfx::Badge::Settings
+                {
+                    static_cast<const gfx::FrameSize&>(sp_font_atlas_texture->GetSettings().dimensions),
+                    gfx::Badge::FrameCorner::BottomLeft,
+                    gfx::Point2u(16u, 16u),
+                    0.33f,
+                    gfx::Badge::TextureMode::RFloatToAlpha
+                }
+            )
+        );
+    }
+
+    LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
+}
+
+void TextRenderApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
+{
+    gfx::Point2i badge_margins(g_margin_size, g_margin_size);
+    for(const Ptr<gfx::Badge>& sp_badge_atlas : m_sp_font_atlas_badges)
+    {
+        assert(sp_badge_atlas);
+        const gfx::FrameSize& atlas_size = static_cast<const gfx::FrameSize&>(sp_badge_atlas->GetTexture().GetSettings().dimensions);
+        sp_badge_atlas->FrameResize(frame_size, atlas_size, badge_margins);
+        badge_margins.SetX(badge_margins.GetX() + atlas_size.width + g_margin_size);
+    }
+}
+
 bool TextRenderApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 {
     // Resize screen color and depth textures
     if (!GraphicsApp::Resize(frame_size, is_minimized))
         return false;
 
-    m_sp_font_atlas_badge->Resize(frame_size);
+    LayoutFontAtlasBadges(frame_size);
     return true;
 }
 
@@ -119,7 +178,10 @@ bool TextRenderApp::Render()
     TextRenderFrame& frame = GetCurrentFrame();
 
     m_sp_text->Draw(*frame.sp_render_cmd_list);
-    m_sp_font_atlas_badge->Draw(*frame.sp_render_cmd_list);
+    for(const Ptr<gfx::Badge>& sp_badge_atlas : m_sp_font_atlas_badges)
+    {
+        sp_badge_atlas->Draw(*frame.sp_render_cmd_list);
+    }
 
     RenderOverlay(*frame.sp_render_cmd_list);
 
@@ -139,7 +201,7 @@ void TextRenderApp::OnContextReleased(gfx::Context& context)
 
     m_sp_font.reset();
     m_sp_text.reset();
-    m_sp_font_atlas_badge.reset();
+    m_sp_font_atlas_badges.clear();
 
     GraphicsApp::OnContextReleased(context);
 }

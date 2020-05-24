@@ -26,6 +26,7 @@ Badge rendering primitive displaying fixed texture in specific corner of the scr
 #include <Methane/Graphics/ScreenQuad.h>
 
 #include <memory>
+#include <optional>
 
 namespace Methane::Graphics
 {
@@ -46,24 +47,28 @@ public:
     struct Settings
     {
         // Default settings of the Methane Logo badge
-        FrameSize   size        = { 96u, 128u };
-        FrameCorner corner      = FrameCorner::TopRight;
-        uint32_t    margins     = 16u;
-        float       opacity     = 0.15f;
-        TextureMode texure_mode = TextureMode::RgbaFloat;
+        FrameSize   size         = { 96u, 128u };
+        FrameCorner corner       = FrameCorner::TopRight;
+        Point2i     margins      = { 16, 16 };
+        float       opacity      = 0.15f;
+        TextureMode texture_mode = TextureMode::RgbaFloat;
     };
 
     explicit Badge(RenderContext& context);
     Badge(RenderContext& context, Settings settings);
     Badge(RenderContext& context, Ptr<Texture> sp_texture, Settings settings);
 
-    void Resize(const FrameSize& frame_size);
+    void FrameResize(const FrameSize& frame_size, std::optional<FrameSize> badge_size = {}, std::optional<Point2i> margins = {});
+    void SetCorner(FrameCorner frame_corner);
+    void SetMargins(Point2i& margins);
+    void SetOpacity(float opacity);
 
 private:
-    static FrameRect GetBadgeRectInFrame(const FrameSize& frame_size, FrameCorner frame_corner, 
-                                         const FrameSize& badge_size, uint32_t badge_margins);
+    FrameRect GetBadgeRectInFrame(const FrameSize& frame_size);
+    static FrameRect GetBadgeRectInFrame(const FrameSize& frame_size, const Settings& settings);
 
-    const Settings m_settings;
+    Settings       m_settings;
+    RenderContext& m_context;
 };
 
 } // namespace Methane::Graphics

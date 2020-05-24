@@ -36,7 +36,7 @@ static Badge::Settings ScaleBadgeSize(Badge::Settings settings, float scale_fact
 {
     settings.size.width  = static_cast<uint32_t>(std::round(scale_factor * settings.size.width));
     settings.size.height = static_cast<uint32_t>(std::round(scale_factor * settings.size.height));
-    settings.margins     = static_cast<uint32_t>(std::round(scale_factor * settings.margins));
+    settings.margins     = settings.margins * scale_factor;
     return settings;
 }
 
@@ -58,44 +58,75 @@ Badge::Badge(RenderContext& context, Ptr<Texture> sp_texture, Settings settings)
                  ScreenQuad::Settings
                  {
                      "Logo Badge",
-                     GetBadgeRectInFrame(context.GetSettings().frame_size, settings.corner, settings.size, settings.margins),
+                     GetBadgeRectInFrame(context.GetSettings().frame_size, settings),
                      true,
                      Color4f(1.f, 1.f, 1.f, settings.opacity),
-                     settings.texure_mode
+                     settings.texture_mode
                  })
     , m_settings(std::move(settings))
+    , m_context(context)
 {
     META_FUNCTION_TASK();
 }
 
-void Badge::Resize(const FrameSize& frame_size)
+void Badge::FrameResize(const FrameSize& frame_size, std::optional<FrameSize> badge_size, std::optional<Point2i> margins)
 {
     META_FUNCTION_TASK();
-    SetScreenRect(GetBadgeRectInFrame(frame_size, m_settings.corner, m_settings.size, m_settings.margins));
+    if (badge_size)
+    {
+        m_settings.size = *badge_size;
+    }
+    if (margins)
+    {
+        m_settings.margins = *margins;
+    }
+    SetScreenRect(GetBadgeRectInFrame(frame_size));
 }
 
-FrameRect Badge::GetBadgeRectInFrame(const FrameSize& frame_size, FrameCorner frame_corner,
-                                     const FrameSize& badge_size, uint32_t badge_margins)
+void Badge::SetCorner(FrameCorner frame_corner)
+{
+    META_FUNCTION_TASK();
+    m_settings.corner = frame_corner;
+    SetScreenRect(GetBadgeRectInFrame(m_context.GetSettings().frame_size));
+}
+
+void Badge::SetMargins(Point2i& margins)
+{
+    META_FUNCTION_TASK();
+    m_settings.margins = margins;
+    SetScreenRect(GetBadgeRectInFrame(m_context.GetSettings().frame_size));
+}
+
+void Badge::SetOpacity(float opacity)
+{
+    META_FUNCTION_TASK();
+    m_settings.opacity = opacity;
+}
+
+FrameRect Badge::GetBadgeRectInFrame(const FrameSize& frame_size)
+{
+    return GetBadgeRectInFrame(frame_size, m_settings);
+}
+
+FrameRect Badge::GetBadgeRectInFrame(const FrameSize& frame_size, const Badge::Settings& settings)
 {
     META_FUNCTION_TASK();
 
-    switch(frame_corner)
+    switch(settings.corner)
     {
     case FrameCorner::TopLeft:
-        return FrameRect{ FrameRect::Point(badge_margins, badge_margins), badge_size };
+        return FrameRect{ settings.margins, settings.size };
 
     case FrameCorner::TopRight:
-        return FrameRect{ FrameRect::Point(frame_size.width - badge_size.width - badge_margins, badge_margins), badge_size };
+        return FrameRect{ FrameRect::Point(frame_size.width - settings.size.width - settings.margins.GetX(), settings.margins.GetY()), settings.size };
 
     case FrameCorner::BottomLeft:
-        return FrameRect{ FrameRect::Point(badge_margins, frame_size.height - badge_size.height - badge_margins), badge_size };
+        return FrameRect{ FrameRect::Point(settings.margins.GetX(), frame_size.height - settings.size.height - settings.margins.GetY()), settings.size };
 
     case FrameCorner::BottomRight:
         return FrameRect{
-            FrameRect::Point(
-                frame_size.width - badge_size.width - badge_margins,
-                frame_size.height - badge_size.height - badge_margins),
-            badge_size
+            FrameRect::Point(frame_size.width  - settings.size.width, frame_size.height - settings.size.height) - settings.margins,
+            settings.size
         };
     }
 

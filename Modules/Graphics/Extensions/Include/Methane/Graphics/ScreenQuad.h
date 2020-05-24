@@ -50,11 +50,11 @@ public:
 
     struct Settings
     {
-        const std::string  name;
-        FrameRect   screen_rect;
-        bool        alpha_blending_enabled  = false;
-        Color4f     blend_color             = Color4f(1.f, 1.f, 1.f, 1.f);
-        TextureMode texture_mode            = TextureMode::RgbaFloat;
+        const std::string name;
+        FrameRect         frame_rect;
+        bool              alpha_blending_enabled  = false;
+        Color4f           blend_color             = Color4f(1.f, 1.f, 1.f, 1.f);
+        TextureMode       texture_mode            = TextureMode::RgbaFloat;
     };
 
     ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings settings);
@@ -62,6 +62,8 @@ public:
     void SetBlendColor(const Color4f& blend_color);
     void SetScreenRect(const FrameRect& screen_rect);
     void SetAlphaBlendingEnabled(bool alpha_blending_enabled);
+
+    const Texture& GetTexture() const;
 
     void Draw(RenderCommandList& cmd_list) const;
 

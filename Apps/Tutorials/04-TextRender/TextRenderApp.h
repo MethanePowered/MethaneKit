@@ -55,9 +55,12 @@ public:
     void OnContextReleased(gfx::Context& context) override;
 
 private:
-    Ptr<gfx::Font>  m_sp_font;
-    Ptr<gfx::Badge> m_sp_font_atlas_badge;
-    Ptr<gfx::Text>  m_sp_text;
+    void InitFontAtlasBadges();
+    void LayoutFontAtlasBadges(const gfx::FrameSize& frame_size);
+
+    Ptr<gfx::Font>   m_sp_font;
+    Ptrs<gfx::Badge> m_sp_font_atlas_badges;
+    Ptr<gfx::Text>   m_sp_text;
 };
 
 } // namespace Methane::Tutorials

@@ -53,7 +53,6 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
     , m_sp_texture(std::move(sp_texture))
 {
     META_FUNCTION_TASK();
-
     if (!m_sp_texture)
         throw std::invalid_argument("Screen-quad texture can not be empty.");
 
@@ -92,8 +91,8 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
         }
     );
     state_settings.sp_program->SetName(m_settings.name + " Screen-Quad Shading");
-    state_settings.viewports            = { GetFrameViewport(settings.screen_rect) };
-    state_settings.scissor_rects        = { GetFrameScissorRect(settings.screen_rect) };
+    state_settings.viewports            = { GetFrameViewport(settings.frame_rect) };
+    state_settings.scissor_rects        = { GetFrameScissorRect(settings.frame_rect) };
     state_settings.depth.enabled        = false;
     state_settings.depth.write_enabled  = false;
     state_settings.rasterizer.is_front_counter_clockwise = true;
@@ -151,7 +150,6 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
 void ScreenQuad::SetBlendColor(const Color4f& blend_color)
 {
     META_FUNCTION_TASK();
-
     if (m_settings.blend_color == blend_color)
         return;
 
@@ -163,11 +161,10 @@ void ScreenQuad::SetBlendColor(const Color4f& blend_color)
 void ScreenQuad::SetScreenRect(const FrameRect& screen_rect)
 {
     META_FUNCTION_TASK();
-
-    if (m_settings.screen_rect == screen_rect)
+    if (m_settings.frame_rect == screen_rect)
         return;
 
-    m_settings.screen_rect = screen_rect;
+    m_settings.frame_rect = screen_rect;
 
     m_sp_state->SetViewports({ GetFrameViewport(screen_rect) });
     m_sp_state->SetScissorRects({ GetFrameScissorRect(screen_rect) });
@@ -176,7 +173,6 @@ void ScreenQuad::SetScreenRect(const FrameRect& screen_rect)
 void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled)
 {
     META_FUNCTION_TASK();
-
     if (m_settings.alpha_blending_enabled == alpha_blending_enabled)
         return;
 
@@ -185,6 +181,13 @@ void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled)
     RenderState::Settings state_settings = m_sp_state->GetSettings();
     state_settings.blending.render_targets[0].blend_enabled = alpha_blending_enabled;
     m_sp_state->Reset(state_settings);
+}
+
+const Texture& ScreenQuad::GetTexture() const
+{
+    META_FUNCTION_TASK();
+    assert(!!m_sp_texture);
+    return *m_sp_texture;
 }
 
 void ScreenQuad::Draw(RenderCommandList& cmd_list) const
@@ -201,7 +204,6 @@ void ScreenQuad::Draw(RenderCommandList& cmd_list) const
 void ScreenQuad::UpdateConstantsBuffer() const
 {
     META_FUNCTION_TASK();
-
     const ScreenQuadConstants constants {
         m_settings.blend_color
     };
@@ -217,7 +219,6 @@ void ScreenQuad::UpdateConstantsBuffer() const
 Shader::MacroDefinitions ScreenQuad::GetPixelShaderMacroDefinitions(TextureMode texture_mode)
 {
     META_FUNCTION_TASK();
-
     switch(texture_mode)
     {
     case TextureMode::RgbaFloat:     return { };

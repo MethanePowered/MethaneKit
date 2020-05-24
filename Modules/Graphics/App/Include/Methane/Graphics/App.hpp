@@ -250,7 +250,7 @@ public:
         }
         
         if (m_sp_logo_badge)
-            m_sp_logo_badge->Resize(frame_size);
+            m_sp_logo_badge->FrameResize(frame_size);
 
         return true;
     }
@@ -450,6 +450,12 @@ protected:
     }
 
     const RenderContext::Settings& GetInitialContextSettings() const { return m_initial_context_settings; }
+
+    RenderContext& GetRenderContext()
+    {
+        assert(m_sp_context);
+        return *m_sp_context;
+    }
 
     static std::string IndexedName(const std::string& base_name, uint32_t index)
     {

@@ -55,6 +55,7 @@ public:
     public:
         static Library& Get();
 
+        Refs<Font> GetFonts() const;
         bool  HasFont(const std::string& font_name) const;
         Font& GetFont(const std::string& font_name) const;
         Font& GetFont(const Data::Provider& data_provider, const Settings& font_settings);
@@ -103,6 +104,8 @@ public:
     };
 
     static std::string GetAnsiCharacters(char from = 32, char to = 126);
+
+    ~Font();
 
     Ptr<Font>       GetPtr() { return shared_from_this(); }
     const Settings& GetSettings() const { return m_settings; }
