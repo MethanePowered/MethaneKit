@@ -35,6 +35,7 @@ TextRenderApp::TextRenderApp()
         Samples::GetAppSettings("Methane Text Rendering", false /* animations */, true /* logo */, true /* hud ui */, false /* depth */),
         "Methane tutorial of text rendering")
 {
+    GetHeadsUpDisplaySettings().position = gfx::Point2i(g_margin_size, g_margin_size);
 }
 
 TextRenderApp::~TextRenderApp()
@@ -147,13 +148,15 @@ void TextRenderApp::InitFontAtlasBadges()
 
 void TextRenderApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
 {
+    const float scale_factor = GetRenderContext().GetContentScalingFactor();
     gfx::Point2i badge_margins(g_margin_size, g_margin_size);
+    badge_margins *= scale_factor;
     for(const Ptr<gfx::Badge>& sp_badge_atlas : m_sp_font_atlas_badges)
     {
         assert(sp_badge_atlas);
         const gfx::FrameSize& atlas_size = static_cast<const gfx::FrameSize&>(sp_badge_atlas->GetTexture().GetSettings().dimensions);
         sp_badge_atlas->FrameResize(frame_size, atlas_size, badge_margins);
-        badge_margins.SetX(badge_margins.GetX() + atlas_size.width + g_margin_size);
+        badge_margins.SetX(badge_margins.GetX() + atlas_size.width + g_margin_size * scale_factor);
     }
 }
 

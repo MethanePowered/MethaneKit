@@ -199,7 +199,7 @@ public:
 
         // Create heads-up-display (HUD)
         if (m_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface)
-            m_sp_hud = std::make_shared<HeadsUpDisplay>(*m_sp_context);
+            m_sp_hud = std::make_shared<HeadsUpDisplay>(*m_sp_context, m_hud_settings);
 
         Platform::App::Init();
     }
@@ -377,7 +377,7 @@ public:
         m_sp_context->WaitForGpu(RenderContext::WaitFor::RenderComplete);
         if (m_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface && m_sp_context)
         {
-            m_sp_hud = std::make_shared<HeadsUpDisplay>(*m_sp_context);
+            m_sp_hud = std::make_shared<HeadsUpDisplay>(*m_sp_context, m_hud_settings);
             m_sp_context->CompleteInitialization();
         }
         else
@@ -457,6 +457,9 @@ protected:
         return *m_sp_context;
     }
 
+    HeadsUpDisplay::Settings& GetHeadsUpDisplaySettings()        { return m_hud_settings; }
+    HeadsUpDisplay*           GetHeadsUpDisplay() const noexcept { return m_sp_hud.get(); }
+
     static std::string IndexedName(const std::string& base_name, uint32_t index)
     {
         META_FUNCTION_TASK();
@@ -465,21 +468,22 @@ protected:
         return ss.str();
     }
 
-    ImageLoader             m_image_loader;
-    Data::AnimationsPool    m_animations;
+    ImageLoader              m_image_loader;
+    Data::AnimationsPool     m_animations;
 
-    Ptr<RenderContext>      m_sp_context;
-    Ptr<Texture>            m_sp_depth_texture;
-    Ptr<Badge>              m_sp_logo_badge;
-    Ptr<HeadsUpDisplay>     m_sp_hud;
-    std::vector<FrameT>     m_frames;
+    Ptr<RenderContext>       m_sp_context;
+    Ptr<Texture>             m_sp_depth_texture;
+    Ptr<Badge>               m_sp_logo_badge;
+    Ptr<HeadsUpDisplay>      m_sp_hud;
+    std::vector<FrameT>      m_frames;
 
 private:
-    IApp::Settings          m_settings;
-    RenderContext::Settings m_initial_context_settings;
-    Timer                   m_title_update_timer;
+    IApp::Settings           m_settings;
+    RenderContext::Settings  m_initial_context_settings;
+    HeadsUpDisplay::Settings m_hud_settings;
+    Timer                    m_title_update_timer;
 
-    static constexpr double g_title_update_interval_sec = 1.0;
+    static constexpr double  g_title_update_interval_sec = 1.0;
 };
 
 } // namespace Methane::Graphics

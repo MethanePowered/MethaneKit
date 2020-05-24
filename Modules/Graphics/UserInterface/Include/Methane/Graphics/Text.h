@@ -43,14 +43,16 @@ class Text
 public:
     struct Settings
     {
-        const std::string  name;
-        std::string        text;
-        FrameRect screen_rect;
-        Color4f   color = Color4f(1.f, 1.f, 1.f, 1.f);
+        const std::string name;
+        std::string       text;
+        FrameRect         screen_rect;
+        Color4f           color = Color4f(1.f, 1.f, 1.f, 1.f);
     };
 
     Text(RenderContext& context, Font& font, Settings settings, bool rect_in_pixels = false);
     ~Text();
+
+    const Settings& GetSettings() const noexcept { return m_settings; }
 
     void SetText(const std::string& text);
     void SetColor(const Color4f& color);

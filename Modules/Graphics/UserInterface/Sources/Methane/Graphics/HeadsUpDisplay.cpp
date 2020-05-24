@@ -63,12 +63,25 @@ HeadsUpDisplay::HeadsUpDisplay(RenderContext& context, Settings settings)
         {
             "FPS",
             "000 FPS",
-            FrameRect{ { 20, 20 }, { 500, 60 } },
+            FrameRect{ settings.position, { 500, 60 } },
             m_settings.text_color
         }
     )
 {
     META_FUNCTION_TASK();
+}
+
+void HeadsUpDisplay::SetPosition(const Point2i& position)
+{
+    META_FUNCTION_TASK();
+    if (m_settings.position == position)
+        return;
+
+    m_settings.position = position;
+
+    FrameRect screen_rect = m_fps_text.GetSettings().screen_rect;
+    screen_rect.origin = position;
+    m_fps_text.SetScreenRect(screen_rect);
 }
 
 void HeadsUpDisplay::SetTextColor(const Color4f& text_color)

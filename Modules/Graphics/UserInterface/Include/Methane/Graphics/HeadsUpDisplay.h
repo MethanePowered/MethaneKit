@@ -42,6 +42,7 @@ class HeadsUpDisplay
 public:
     struct Settings
     {
+        Point2i position            = { 20, 20 };
         Color4f text_color          = Color4f(1.f, 1.f, 1.f, 1.f);
         double  update_interval_sec = 0.33;
     };
@@ -51,6 +52,7 @@ public:
 
     const Settings& GetSettings() const { return m_settings; }
 
+    void SetPosition(const Point2i& position);
     void SetTextColor(const Color4f& text_color);
     void SetUpdateInterval(double update_interval_sec);
 
