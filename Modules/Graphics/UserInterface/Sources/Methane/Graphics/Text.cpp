@@ -73,11 +73,14 @@ struct Text::Mesh
         {
             const Font::Char& font_char = font_char_ref.get();
             assert(!!font_char);
-            if (font_char.IsLineBreak())
-            {
+
+            // Wrap to next line break on "line break" character or when text overruns viewport width
+            if (font_char.IsLineBreak() || char_pos.GetX() + font_char.rect.size.width > viewport_size.width)
                 char_pos = { 0u, char_pos.GetY() + line_height };
+
+            // Skip visualization of "line break" character
+            if (font_char.IsLineBreak())
                 continue;
-            }
 
             char_pos += p_prev_font_char ? font.GetKerning(*p_prev_font_char, font_char) : FrameRect::Point();
             AddCharQuad(font_char, char_pos, viewport_size, atlas_size);

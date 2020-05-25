@@ -50,7 +50,7 @@ public:
         FrameSize   size         = { 96u, 128u };
         FrameCorner corner       = FrameCorner::TopRight;
         Point2i     margins      = { 16, 16 };
-        float       opacity      = 0.15f;
+        Color4f     blend_color  = Color4f(1.f, 1.f, 1.f, 1.f);
         TextureMode texture_mode = TextureMode::RgbaFloat;
     };
 
@@ -61,7 +61,6 @@ public:
     void FrameResize(const FrameSize& frame_size, std::optional<FrameSize> badge_size = {}, std::optional<Point2i> margins = {});
     void SetCorner(FrameCorner frame_corner);
     void SetMargins(Point2i& margins);
-    void SetOpacity(float opacity);
 
 private:
     FrameRect GetBadgeRectInFrame(const FrameSize& frame_size);

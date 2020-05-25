@@ -63,7 +63,8 @@ public:
     void SetScreenRect(const FrameRect& screen_rect);
     void SetAlphaBlendingEnabled(bool alpha_blending_enabled);
 
-    const Texture& GetTexture() const;
+    const Settings& GetSettings() const noexcept { return m_settings; }
+    const Texture&  GetTexture() const noexcept;
 
     void Draw(RenderCommandList& cmd_list) const;
 

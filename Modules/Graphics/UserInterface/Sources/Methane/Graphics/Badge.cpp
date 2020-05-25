@@ -60,7 +60,7 @@ Badge::Badge(RenderContext& context, Ptr<Texture> sp_texture, Settings settings)
                      "Logo Badge",
                      GetBadgeRectInFrame(context.GetSettings().frame_size, settings),
                      true,
-                     Color4f(1.f, 1.f, 1.f, settings.opacity),
+                     settings.blend_color,
                      settings.texture_mode
                  })
     , m_settings(std::move(settings))
@@ -95,12 +95,6 @@ void Badge::SetMargins(Point2i& margins)
     META_FUNCTION_TASK();
     m_settings.margins = margins;
     SetScreenRect(GetBadgeRectInFrame(m_context.GetSettings().frame_size));
-}
-
-void Badge::SetOpacity(float opacity)
-{
-    META_FUNCTION_TASK();
-    m_settings.opacity = opacity;
 }
 
 FrameRect Badge::GetBadgeRectInFrame(const FrameSize& frame_size)

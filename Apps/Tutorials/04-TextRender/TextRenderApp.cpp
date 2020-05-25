@@ -28,7 +28,35 @@ Tutorial demonstrating text rendering with Methane graphics API
 namespace Methane::Tutorials
 {
 
-constexpr int32_t g_margin_size = 32;
+struct FontSettings
+{
+    std::string  name;
+    std::string  path;
+    uint32_t     size;
+    gfx::Color3f color;
+};
+
+constexpr    int32_t                             g_margin_size       = 32;
+static const FontSettings                        g_primary_font      { "Primary",   "Fonts/Roboto/Roboto-Regular.ttf",     24u, { 1.f,  1.f, 0.5f } };
+static const FontSettings                        g_secondary_font    { "Secondary", "Fonts/Playball/Playball-Regular.ttf", 16u, { 0.5f, 1.f, 0.5f } };
+static const gfx::Color3f                        g_misc_font_color   { 1.f, 1.f, 1.f };
+static const std::map<std::string, gfx::Color3f> g_font_color_by_name{
+    { g_primary_font.name,   g_primary_font.color   },
+    { g_secondary_font.name, g_secondary_font.color }
+};
+
+static const std::string g_cyrilyc_chars = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя";
+static const std::string g_pangram_eng   = "The quick brown fox jumps over the lazy dog!";
+static const std::string g_pangram_rus   = "Cъешь ещё этих мягких французских булок, да выпей чаю.";
+static const std::string g_hitchhikers_guide = "A towel is about the most massively useful thing an interstellar hitchhiker can have. " \
+    "Partly it has great practical value. You can wrap it around you for warmth as you bound across the cold moons of Jaglan Beta; " \
+    "you can lie on it on the brilliant marble-sanded beaches of Santraginus V, inhaling the heady sea vapors; " \
+    "you can sleep under it beneath the stars which shine so redly on the desert world of Kakrafoon; " \
+    "use it to sail a miniraft down the slow heavy River Moth; " \
+    "wet it for use in hand-to-hand-combat; " \
+    "wrap it round your head to ward off noxious fumes or avoid the gaze of the Ravenous Bugblatter Beast of Traal " \
+    "(such a mind-boggingly stupid animal, it assumes that if you can't see it, it can't see you); " \
+    "you can wave your towel in emergencies as a distress signal, and of course dry yourself off with it if it still seems to be clean enough.";
 
 TextRenderApp::TextRenderApp()
     : GraphicsApp(
@@ -53,24 +81,41 @@ void TextRenderApp::Init()
 
     const gfx::RenderContext::Settings& context_settings = m_sp_context->GetSettings();
 
-    // Add font to library
-    m_sp_font = gfx::Font::Library::Get().AddFont(
+    // Add fonts to library
+    m_sp_primary_font = gfx::Font::Library::Get().AddFont(
         Data::FontProvider::Get(),
         gfx::Font::Settings{
-            "Default", "Fonts/Roboto/Roboto-Regular.ttf", 24, m_sp_context->GetFontResolutionDPI(),
-            gfx::Font::GetAnsiCharacters() + "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
+            g_primary_font.name, g_primary_font.path, 24, m_sp_context->GetFontResolutionDPI(),
+            gfx::Font::GetAnsiCharacters() + g_cyrilyc_chars
+        }
+    ).GetPtr();
+
+    m_sp_secondary_font = gfx::Font::Library::Get().AddFont(
+        Data::FontProvider::Get(),
+        gfx::Font::Settings{
+            g_secondary_font.name, g_secondary_font.path, 24, m_sp_context->GetFontResolutionDPI(),
+            gfx::Font::GetAnsiCharacters()
         }
     ).GetPtr();
 
     // Create text rendering primitive bound to the font object
-    m_sp_text = std::make_shared<gfx::Text>(*m_sp_context, *m_sp_font,
+    m_sp_primary_text = std::make_shared<gfx::Text>(*m_sp_context, *m_sp_primary_font,
         gfx::Text::Settings
         {
-            "Label",
-            "Wow... The quick brown fox jumps over the lazy dog!\n"
-            "Cъешь ещё этих мягких французских булок, да выпей чаю.",
-            gfx::FrameRect{ { g_margin_size, 100 }, { context_settings.frame_size.width * 2 / 3, context_settings.frame_size.width / 4 } },
-            gfx::Color4f(1.f, 1.f, 1.f, 1.f)
+            "Panagrams",
+            g_pangram_eng + "\n" + g_pangram_rus,
+            gfx::FrameRect{ { g_margin_size, 100 }, { context_settings.frame_size.width / 3, context_settings.frame_size.height / 8 } },
+            gfx::Color4f(g_primary_font.color, 1.f)
+        }
+    );
+
+    m_sp_secondary_text = std::make_shared<gfx::Text>(*m_sp_context, *m_sp_secondary_font,
+        gfx::Text::Settings
+        {
+            "Hitchhikers Guide",
+            g_hitchhikers_guide,
+            gfx::FrameRect{ { g_margin_size, 200 }, { context_settings.frame_size.width / 3, context_settings.frame_size.height / 6 } },
+            gfx::Color4f(g_secondary_font.color, 1.f)
         }
     );
 
@@ -128,6 +173,10 @@ void TextRenderApp::InitFontAtlasBadges()
         if (sp_font_atlas_it != m_sp_font_atlas_badges.end())
             continue;
 
+        const auto font_color_by_name_it = g_font_color_by_name.find(font_ref.get().GetSettings().name);
+        const gfx::Color3f& font_color = font_color_by_name_it != g_font_color_by_name.end()
+                                       ? font_color_by_name_it->second : g_misc_font_color;
+
         m_sp_font_atlas_badges.emplace_back(
             std::make_shared<gfx::Badge>(
                 *m_sp_context, sp_font_atlas_texture,
@@ -136,7 +185,7 @@ void TextRenderApp::InitFontAtlasBadges()
                     static_cast<const gfx::FrameSize&>(sp_font_atlas_texture->GetSettings().dimensions),
                     gfx::Badge::FrameCorner::BottomLeft,
                     gfx::Point2u(16u, 16u),
-                    0.33f,
+                    gfx::Color4f(font_color, 0.5f),
                     gfx::Badge::TextureMode::RFloatToAlpha
                 }
             )
@@ -148,9 +197,20 @@ void TextRenderApp::InitFontAtlasBadges()
 
 void TextRenderApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
 {
+    // Sort atlas badges by size so that largest are displayed first
+    std::sort(m_sp_font_atlas_badges.begin(), m_sp_font_atlas_badges.end(),
+              [](const Ptr<gfx::Badge>& sp_left, const Ptr<gfx::Badge>& sp_right)
+              {
+                  return sp_left->GetSettings().frame_rect.size.GetPixelsCount() >
+                         sp_right->GetSettings().frame_rect.size.GetPixelsCount();
+              }
+    );
+
     const float scale_factor = GetRenderContext().GetContentScalingFactor();
     gfx::Point2i badge_margins(g_margin_size, g_margin_size);
     badge_margins *= scale_factor;
+
+    // Layout badges in a row one after another with a margin spacing
     for(const Ptr<gfx::Badge>& sp_badge_atlas : m_sp_font_atlas_badges)
     {
         assert(sp_badge_atlas);
@@ -178,9 +238,13 @@ bool TextRenderApp::Render()
 
     // Wait for previous frame rendering is completed and switch to next frame
     m_sp_context->WaitForGpu(gfx::Context::WaitFor::FramePresented);
-    TextRenderFrame& frame = GetCurrentFrame();
 
-    m_sp_text->Draw(*frame.sp_render_cmd_list);
+    // Draw text blocks
+    TextRenderFrame& frame = GetCurrentFrame();
+    m_sp_primary_text->Draw(*frame.sp_render_cmd_list);
+    m_sp_secondary_text->Draw(*frame.sp_render_cmd_list);
+
+    // Draw font atlas badges
     for(const Ptr<gfx::Badge>& sp_badge_atlas : m_sp_font_atlas_badges)
     {
         sp_badge_atlas->Draw(*frame.sp_render_cmd_list);
@@ -202,8 +266,8 @@ void TextRenderApp::OnContextReleased(gfx::Context& context)
 {
     gfx::Font::Library::Get().Clear();
 
-    m_sp_font.reset();
-    m_sp_text.reset();
+    m_sp_primary_font.reset();
+    m_sp_primary_text.reset();
     m_sp_font_atlas_badges.clear();
 
     GraphicsApp::OnContextReleased(context);

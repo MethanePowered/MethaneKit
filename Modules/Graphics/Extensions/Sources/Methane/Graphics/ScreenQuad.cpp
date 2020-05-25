@@ -183,7 +183,7 @@ void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled)
     m_sp_state->Reset(state_settings);
 }
 
-const Texture& ScreenQuad::GetTexture() const
+const Texture& ScreenQuad::GetTexture() const noexcept
 {
     META_FUNCTION_TASK();
     assert(!!m_sp_texture);

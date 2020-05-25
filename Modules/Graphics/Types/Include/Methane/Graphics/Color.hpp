@@ -63,6 +63,7 @@ public:
 
     Color4f() : Vector4f(0.f, 0.f, 0.f, 0.f) { }
     Color4f(float r, float g, float b, float a) : Vector4f(r, g, b, a) { }
+    Color4f(Color3f c, float a) : Vector4f(std::move(c), a) { }
 
     float GetR() const noexcept { return (*this)[0]; }
     float GetG() const noexcept { return (*this)[1]; }

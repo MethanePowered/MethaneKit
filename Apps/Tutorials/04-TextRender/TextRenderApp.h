@@ -25,6 +25,8 @@ Tutorial demonstrating triangle rendering with Methane graphics API
 
 #include <Methane/Graphics/Kit.h>
 
+#include <map>
+
 namespace Methane::Tutorials
 {
 
@@ -58,9 +60,11 @@ private:
     void InitFontAtlasBadges();
     void LayoutFontAtlasBadges(const gfx::FrameSize& frame_size);
 
-    Ptr<gfx::Font>   m_sp_font;
+    Ptr<gfx::Font>   m_sp_primary_font;
+    Ptr<gfx::Font>   m_sp_secondary_font;
+    Ptr<gfx::Text>   m_sp_primary_text;
+    Ptr<gfx::Text>   m_sp_secondary_text;
     Ptrs<gfx::Badge> m_sp_font_atlas_badges;
-    Ptr<gfx::Text>   m_sp_text;
 };
 
 } // namespace Methane::Tutorials

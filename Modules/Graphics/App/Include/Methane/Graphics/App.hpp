@@ -195,7 +195,11 @@ public:
         
         // Create Methane logo badge
         if (m_settings.show_logo_badge)
-            m_sp_logo_badge = std::make_shared<Badge>(*m_sp_context);
+        {
+            Badge::Settings logo_badge_settings;
+            logo_badge_settings.blend_color  = Color4f(1.f, 1.f, 1.f, 0.15f);
+            m_sp_logo_badge = std::make_shared<Badge>(*m_sp_context, std::move(logo_badge_settings));
+        }
 
         // Create heads-up-display (HUD)
         if (m_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface)
