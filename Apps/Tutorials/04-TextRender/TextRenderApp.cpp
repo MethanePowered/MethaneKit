@@ -267,7 +267,9 @@ void TextRenderApp::OnContextReleased(gfx::Context& context)
     gfx::Font::Library::Get().Clear();
 
     m_sp_primary_font.reset();
+    m_sp_secondary_font.reset();
     m_sp_primary_text.reset();
+    m_sp_secondary_text.reset();
     m_sp_font_atlas_badges.clear();
 
     GraphicsApp::OnContextReleased(context);
