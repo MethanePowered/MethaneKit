@@ -51,31 +51,32 @@ struct Text::Mesh
     using Indices = std::vector<Index>;
     Indices  indices;
 
+    FrameSize content_size;
+
     Data::Size GetVertexSize() const       { return sizeof(Vertex); }
     Data::Size GetIndexSize() const        { return sizeof(Index); }
     Data::Size GetVerticesDataSize() const { return static_cast<Data::Size>(vertices.size() * GetVertexSize()); }
     Data::Size GetIndicesDataSize() const  { return static_cast<Data::Size>(indices.size() * GetIndexSize()); }
-
-    Mesh(const std::string& text, Font& font, const FrameSize& viewport_size, const FrameSize& atlas_size)
+    
+    using ProcessFontCharAtPosition = const std::function<void(const Font::Char& font_char, const FrameRect::Point& char_pos)>;
+    static void ForEachTextCharacter(const std::string& text, Font& font, uint32_t viewport_width,
+                                     const ProcessFontCharAtPosition& process_char_at_position)
     {
         META_FUNCTION_TASK();
-
-        // Left-Bottom corner of the current character in text line
         const uint32_t line_height = font.GetMaxGlyphSize().height;
-        FrameRect::Point char_pos { 0, line_height };
-
         const Refs<const Font::Char> font_chars = font.GetTextChars(text);
-        vertices.reserve(font_chars.size() * 4);
-        indices.reserve(font_chars.size() * 6);
-
+        
+        // Left-Bottom corner of the current character in text line
+        FrameRect::Point char_pos { 0, line_height };
         const Font::Char* p_prev_font_char = nullptr;
+        
         for(const auto& font_char_ref : font_chars)
         {
             const Font::Char& font_char = font_char_ref.get();
             assert(!!font_char);
 
             // Wrap to next line break on "line break" character or when text overruns viewport width
-            if (font_char.IsLineBreak() || char_pos.GetX() + font_char.rect.size.width > viewport_size.width)
+            if (font_char.IsLineBreak() || (viewport_width && char_pos.GetX() + font_char.rect.size.width > viewport_width))
                 char_pos = { 0u, char_pos.GetY() + line_height };
 
             // Skip visualization of "line break" character
@@ -83,13 +84,67 @@ struct Text::Mesh
                 continue;
 
             char_pos += p_prev_font_char ? font.GetKerning(*p_prev_font_char, font_char) : FrameRect::Point();
-            AddCharQuad(font_char, char_pos, viewport_size, atlas_size);
-
+            process_char_at_position(font_char, char_pos);
+            
             char_pos.SetX(char_pos.GetX() + font_char.advance.GetX());
             p_prev_font_char = &font_char;
         }
     }
+    
+    static void UpdateContentSizeWithChar(const Font::Char& font_char, const FrameRect::Point& char_pos, FrameSize& content_size)
+    {
+        content_size.width  = std::max(content_size.width,  char_pos.GetX() + font_char.offset.GetX() + font_char.rect.size.width);
+        content_size.height = std::max(content_size.height, char_pos.GetY() + font_char.offset.GetY() + font_char.rect.size.height);
+    }
+    
+    static FrameSize CalcContentSize(const std::string& text, Font& font, uint32_t viewport_width = 0u)
+    {
+        META_FUNCTION_TASK();
+        FrameSize content_size;
+        ForEachTextCharacter(text, font, viewport_width,
+            [&content_size](const Font::Char& font_char, const FrameRect::Point& char_pos)
+            {
+                UpdateContentSizeWithChar(font_char, char_pos, content_size);
+            }
+        );
+        return content_size;
+    }
 
+    Mesh(const std::string& text, Font& font, FrameSize& viewport_size, const FrameSize& atlas_size)
+    {
+        META_FUNCTION_TASK();
+        
+        bool is_content_size_initialized = false;
+        if (!viewport_size.width || !viewport_size.height)
+        {
+            content_size = CalcContentSize(text, font, viewport_size.width);
+            is_content_size_initialized = true;
+            if (!viewport_size.width)
+            {
+                viewport_size.width = content_size.width;
+            }
+            if (!viewport_size.height)
+            {
+                viewport_size.height = content_size.height;
+            }
+        }
+        
+        const size_t text_length = text.length();
+        vertices.reserve(text_length * 4);
+        indices.reserve(text_length * 6);
+        
+        ForEachTextCharacter(text, font, viewport_size.width,
+            [&](const Font::Char& font_char, const FrameRect::Point& char_pos)
+            {
+                AddCharQuad(font_char, char_pos, viewport_size, atlas_size);
+                if (!is_content_size_initialized)
+                {
+                    UpdateContentSizeWithChar(font_char, char_pos, content_size);
+                }
+            }
+        );
+    }
+    
     void AddCharQuad(const Font::Char& font_char, const FrameRect::Point& screen_char_pos,
                      const FrameSize& viewport_size, const FrameSize& atlas_size)
     {
@@ -99,15 +154,18 @@ struct Text::Mesh
         view_char_pos += Point2f(0.f, font_char.rect.size.height); // convert left-bottom to left-top position
         view_char_pos -= Point2f(viewport_size.width, viewport_size.height) / 2.f; // relative to viewport center
 
+        const float viewport_width  = viewport_size.width  ? static_cast<float>(viewport_size.width)  :  0.5f;
+        const float viewport_height = viewport_size.height ? static_cast<float>(viewport_size.height) : -0.5f;
+
         // Char quad rectangle in viewport coordinates [-1, 1] x [-1, 1]
         const Rect<float, float> ver_rect {
             {
-                static_cast<float>(view_char_pos.GetX()) *  2.f / viewport_size.width,
-                static_cast<float>(view_char_pos.GetY()) * -2.f / viewport_size.height,
+                static_cast<float>(view_char_pos.GetX()) *  2.f / viewport_width,
+                static_cast<float>(view_char_pos.GetY()) * -2.f / viewport_height,
             },
             {
-                static_cast<float>(font_char.rect.size.width)  * 2.f / viewport_size.width,
-                static_cast<float>(font_char.rect.size.height) * 2.f / viewport_size.height,
+                static_cast<float>(font_char.rect.size.width)  * 2.f / viewport_width,
+                static_cast<float>(font_char.rect.size.height) * 2.f / viewport_height,
             }
         };
 
@@ -154,7 +212,7 @@ struct Text::Mesh
     }
 };
 
-Text::Text(RenderContext& context, Font& font, Settings settings, bool rect_in_pixels)
+Text::Text(RenderContext& context, Font& font, Settings settings)
     : m_settings(std::move(settings))
     , m_context(context)
     , m_sp_font(font.shared_from_this())
@@ -163,8 +221,16 @@ Text::Text(RenderContext& context, Font& font, Settings settings, bool rect_in_p
     META_FUNCTION_TASK();
 
     const RenderContext::Settings& context_settings = context.GetSettings();
-    if (!rect_in_pixels)
-        m_settings.screen_rect *= m_context.GetContentScalingFactor();
+
+    m_viewport_rect = m_settings.screen_rect;
+    if (!m_settings.screen_rect_in_pixels)
+        m_viewport_rect *= m_context.GetContentScalingFactor();
+
+    m_sp_new_mesh_data = std::make_unique<Mesh>(m_settings.text, *m_sp_font, m_viewport_rect.size, m_sp_atlas_texture->GetSettings().dimensions);
+    UpdateMeshBuffers();
+
+    m_sp_new_const_data = std::make_unique<Constants>(Constants{ m_settings.color });
+    UpdateConstantsBuffer();
 
     RenderState::Settings state_settings;
     state_settings.sp_program = Program::Create(context,
@@ -196,8 +262,8 @@ Text::Text(RenderContext& context, Font& font, Settings settings, bool rect_in_p
         }
     );
     state_settings.sp_program->SetName(m_settings.name + " Screen-Quad Shading");
-    state_settings.viewports                                            = { GetFrameViewport(m_settings.screen_rect) };
-    state_settings.scissor_rects                                        = { GetFrameScissorRect(m_settings.screen_rect) };
+    state_settings.viewports                                            = { GetFrameViewport(m_viewport_rect) };
+    state_settings.scissor_rects                                        = { GetFrameScissorRect(m_viewport_rect) };
     state_settings.depth.enabled                                        = false;
     state_settings.depth.write_enabled                                  = false;
     state_settings.rasterizer.is_front_counter_clockwise                = true;
@@ -215,12 +281,6 @@ Text::Text(RenderContext& context, Font& font, Settings settings, bool rect_in_p
         { Sampler::Address::Mode::ClampToZero },
     });
     m_sp_texture_sampler->SetName(m_settings.name + " Screen-Quad Texture Sampler");
-
-    m_sp_new_mesh_data = std::make_unique<Mesh>(m_settings.text, *m_sp_font, m_settings.screen_rect.size, m_sp_atlas_texture->GetSettings().dimensions);
-    UpdateMeshBuffers();
-
-    m_sp_new_const_data = std::make_unique<Constants>(Constants{ m_settings.color });
-    UpdateConstantsBuffer();
 
     m_sp_const_program_bindings = ProgramBindings::Create(state_settings.sp_program, {
         { { Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer    } } },
@@ -241,16 +301,22 @@ void Text::SetText(const std::string& text)
     if (m_settings.text.empty())
     {
         m_sp_new_mesh_data.reset();
+        return;
     }
-    else
-    {
-        assert(!!m_sp_font);
-        assert(!!m_sp_atlas_texture);
-        m_sp_new_mesh_data = std::make_unique<Mesh>(
-            m_settings.text, *m_sp_font, m_settings.screen_rect.size,
-            m_sp_atlas_texture->GetSettings().dimensions
-        );
-    }
+
+    m_viewport_rect = m_settings.screen_rect;
+    if (!m_settings.screen_rect_in_pixels)
+        m_viewport_rect *= m_context.GetContentScalingFactor();
+
+    assert(!!m_sp_font);
+    assert(!!m_sp_atlas_texture);
+    m_sp_new_mesh_data = std::make_unique<Mesh>(
+        m_settings.text, *m_sp_font, m_viewport_rect.size,
+        m_sp_atlas_texture->GetSettings().dimensions
+    );
+
+    m_sp_state->SetViewports({ GetFrameViewport(m_viewport_rect) });
+    m_sp_state->SetScissorRects({ GetFrameScissorRect(m_viewport_rect) });
 }
 
 void Text::SetColor(const Color4f& color)
@@ -270,13 +336,20 @@ void Text::SetScreenRect(const FrameRect& screen_rect, bool rect_in_pixels)
 {
     META_FUNCTION_TASK();
 
-    if (m_settings.screen_rect == screen_rect)
+    if (m_settings.screen_rect == screen_rect && m_settings.screen_rect_in_pixels == rect_in_pixels)
         return;
 
-    m_settings.screen_rect = rect_in_pixels ? screen_rect : screen_rect * m_context.GetContentScalingFactor();
+    m_settings.screen_rect = screen_rect;
+    m_settings.screen_rect_in_pixels = rect_in_pixels;
 
-    m_sp_state->SetViewports({ GetFrameViewport(m_settings.screen_rect) });
-    m_sp_state->SetScissorRects({ GetFrameScissorRect(m_settings.screen_rect) });
+    m_viewport_rect = screen_rect;
+    if (!rect_in_pixels)
+        m_viewport_rect *= m_context.GetContentScalingFactor();
+
+    m_sp_new_mesh_data = std::make_unique<Mesh>(m_settings.text, *m_sp_font, m_viewport_rect.size, m_sp_atlas_texture->GetSettings().dimensions);
+
+    m_sp_state->SetViewports({ GetFrameViewport(m_viewport_rect) });
+    m_sp_state->SetScissorRects({ GetFrameScissorRect(m_viewport_rect) });
 }
 
 void Text::Draw(RenderCommandList& cmd_list)

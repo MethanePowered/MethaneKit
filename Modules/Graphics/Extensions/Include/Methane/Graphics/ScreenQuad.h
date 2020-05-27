@@ -64,6 +64,7 @@ public:
     void SetAlphaBlendingEnabled(bool alpha_blending_enabled);
 
     const Settings& GetSettings() const noexcept { return m_settings; }
+    FrameRect       GetFrameRectInDots() const noexcept { return m_settings.frame_rect / m_context.GetContentScalingFactor(); }
     const Texture&  GetTexture() const noexcept;
 
     void Draw(RenderCommandList& cmd_list) const;
@@ -74,6 +75,7 @@ private:
     static Shader::MacroDefinitions GetPixelShaderMacroDefinitions(TextureMode texture_mode);
 
     Settings             m_settings;
+    RenderContext&       m_context;
     Ptr<RenderState>     m_sp_state;
     Ptr<Buffers>         m_sp_vertex_buffers;
     Ptr<Buffer>          m_sp_index_buffer;

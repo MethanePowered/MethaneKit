@@ -46,13 +46,16 @@ public:
         const std::string name;
         std::string       text;
         FrameRect         screen_rect;
+        bool              screen_rect_in_pixels = false;
         Color4f           color = Color4f(1.f, 1.f, 1.f, 1.f);
     };
 
-    Text(RenderContext& context, Font& font, Settings settings, bool rect_in_pixels = false);
+    Text(RenderContext& context, Font& font, Settings settings);
     ~Text();
 
-    const Settings& GetSettings() const noexcept { return m_settings; }
+    const Settings&  GetSettings() const noexcept       { return m_settings; }
+    const FrameRect& GetViewport() const noexcept       { return m_viewport_rect; }
+    FrameRect        GetViewportInDots() const noexcept { return m_viewport_rect / m_context.GetContentScalingFactor(); }
 
     void SetText(const std::string& text);
     void SetColor(const Color4f& color);
@@ -68,6 +71,7 @@ private:
     void UpdateConstantsBuffer();
 
     Settings             m_settings;
+    FrameRect            m_viewport_rect;
     RenderContext&       m_context;
     Ptr<Font>            m_sp_font;
     Ptr<RenderState>     m_sp_state;

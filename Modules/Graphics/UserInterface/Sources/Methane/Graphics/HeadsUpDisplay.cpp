@@ -63,7 +63,7 @@ HeadsUpDisplay::HeadsUpDisplay(RenderContext& context, Settings settings)
         {
             "FPS",
             "000 FPS",
-            FrameRect{ settings.position, { 500, 60 } },
+            FrameRect{ settings.position, { 500, 60 } }, false,
             m_settings.text_color
         }
     )

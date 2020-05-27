@@ -50,6 +50,7 @@ struct ScreenQuadVertex
 
 ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings settings)
     : m_settings(std::move(settings))
+    , m_context(context)
     , m_sp_texture(std::move(sp_texture))
 {
     META_FUNCTION_TASK();

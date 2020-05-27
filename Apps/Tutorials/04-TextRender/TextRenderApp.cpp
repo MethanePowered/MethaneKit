@@ -36,11 +36,12 @@ struct FontSettings
     gfx::Color3f color;
 };
 
-constexpr    int32_t                             g_margin_size       = 32;
-static const FontSettings                        g_primary_font      { "Primary",   "Fonts/Roboto/Roboto-Regular.ttf",     24u, { 1.f,  1.f, 0.5f } };
-static const FontSettings                        g_secondary_font    { "Secondary", "Fonts/Playball/Playball-Regular.ttf", 16u, { 0.5f, 1.f, 0.5f } };
-static const gfx::Color3f                        g_misc_font_color   { 1.f, 1.f, 1.f };
-static const std::map<std::string, gfx::Color3f> g_font_color_by_name{
+constexpr    int32_t                             g_margin_size_in_dots  = 32;
+constexpr    int32_t                             g_top_text_pos_in_dots = 100;
+static const FontSettings                        g_primary_font         { "Primary",   "Fonts/Roboto/Roboto-Regular.ttf",     24u, { 1.f,  1.f, 0.5f } };
+static const FontSettings                        g_secondary_font       { "Secondary", "Fonts/Playball/Playball-Regular.ttf", 16u, { 0.5f, 1.f, 0.5f } };
+static const gfx::Color3f                        g_misc_font_color      { 1.f, 1.f, 1.f };
+static const std::map<std::string, gfx::Color3f> g_font_color_by_name   {
     { g_primary_font.name,   g_primary_font.color   },
     { g_secondary_font.name, g_secondary_font.color }
 };
@@ -63,7 +64,7 @@ TextRenderApp::TextRenderApp()
         Samples::GetAppSettings("Methane Text Rendering", false /* animations */, true /* logo */, true /* hud ui */, false /* depth */),
         "Methane tutorial of text rendering")
 {
-    GetHeadsUpDisplaySettings().position = gfx::Point2i(g_margin_size, g_margin_size);
+    GetHeadsUpDisplaySettings().position = gfx::Point2i(g_margin_size_in_dots, g_margin_size_in_dots);
 }
 
 TextRenderApp::~TextRenderApp()
@@ -79,7 +80,9 @@ void TextRenderApp::Init()
 {
     GraphicsApp::Init();
 
-    const gfx::RenderContext::Settings& context_settings = m_sp_context->GetSettings();
+    const gfx::FrameSize frame_size_in_dots = GetFrameSizeInDots();
+    const uint32_t frame_width_without_margins = frame_size_in_dots.width - 2 * g_margin_size_in_dots;
+    int32_t vertical_text_pos_in_dots = g_top_text_pos_in_dots;
 
     // Add fonts to library
     m_sp_primary_font = gfx::Font::Library::Get().AddFont(
@@ -104,17 +107,24 @@ void TextRenderApp::Init()
         {
             "Panagrams",
             g_pangram_eng + "\n" + g_pangram_rus,
-            gfx::FrameRect{ { g_margin_size, 100 }, { context_settings.frame_size.width / 3, context_settings.frame_size.height / 8 } },
+            gfx::FrameRect{
+                { g_margin_size_in_dots, vertical_text_pos_in_dots },
+                { frame_width_without_margins - m_sp_logo_badge->GetFrameRectInDots().size.width - g_margin_size_in_dots, 0u /* calculated height */ }
+            }, false, // screen_rect_in_pixels
             gfx::Color4f(g_primary_font.color, 1.f)
         }
     );
 
+    vertical_text_pos_in_dots += m_sp_primary_text->GetViewportInDots().size.height + g_margin_size_in_dots;
     m_sp_secondary_text = std::make_shared<gfx::Text>(*m_sp_context, *m_sp_secondary_font,
         gfx::Text::Settings
         {
             "Hitchhikers Guide",
             g_hitchhikers_guide,
-            gfx::FrameRect{ { g_margin_size, 200 }, { context_settings.frame_size.width / 3, context_settings.frame_size.height / 6 } },
+            gfx::FrameRect{
+                { g_margin_size_in_dots, vertical_text_pos_in_dots },
+                { frame_width_without_margins, 0u /* calculated height */ }
+            }, false, // screen_rect_in_pixels
             gfx::Color4f(g_secondary_font.color, 1.f)
         }
     );
@@ -126,7 +136,6 @@ void TextRenderApp::Init()
     {
         frame.sp_render_cmd_list = gfx::RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
         frame.sp_render_cmd_list->SetName(IndexedName("Text Rendering", frame.index));
-
         frame.sp_execute_cmd_lists = gfx::CommandListSet::Create({ *frame.sp_render_cmd_list });
     }
 
@@ -207,7 +216,7 @@ void TextRenderApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
     );
 
     const float scale_factor = GetRenderContext().GetContentScalingFactor();
-    gfx::Point2i badge_margins(g_margin_size, g_margin_size);
+    gfx::Point2i badge_margins(g_margin_size_in_dots, g_margin_size_in_dots);
     badge_margins *= scale_factor;
 
     // Layout badges in a row one after another with a margin spacing
@@ -216,7 +225,7 @@ void TextRenderApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
         assert(sp_badge_atlas);
         const gfx::FrameSize& atlas_size = static_cast<const gfx::FrameSize&>(sp_badge_atlas->GetTexture().GetSettings().dimensions);
         sp_badge_atlas->FrameResize(frame_size, atlas_size, badge_margins);
-        badge_margins.SetX(badge_margins.GetX() + atlas_size.width + static_cast<int32_t>(scale_factor * g_margin_size));
+        badge_margins.SetX(badge_margins.GetX() + atlas_size.width + static_cast<int32_t>(scale_factor * g_margin_size_in_dots));
     }
 }
 
@@ -225,6 +234,21 @@ bool TextRenderApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     // Resize screen color and depth textures
     if (!GraphicsApp::Resize(frame_size, is_minimized))
         return false;
+
+    const gfx::FrameSize frame_size_in_dots = GetFrameSizeInDots();
+    const uint32_t frame_width_without_margins = frame_size_in_dots.width - 2 * g_margin_size_in_dots;
+    int32_t vertical_text_pos_in_dots = g_top_text_pos_in_dots;
+
+    m_sp_primary_text->SetScreenRect({
+        { g_margin_size_in_dots, vertical_text_pos_in_dots },
+        { frame_width_without_margins - m_sp_logo_badge->GetFrameRectInDots().size.width - g_margin_size_in_dots, 0u /* calculated height */ }
+    });
+
+    vertical_text_pos_in_dots += m_sp_primary_text->GetViewportInDots().size.height + g_margin_size_in_dots;
+    m_sp_secondary_text->SetScreenRect({
+        { g_margin_size_in_dots, vertical_text_pos_in_dots },
+        { frame_width_without_margins, 0u /* calculated height */ }
+    });
 
     LayoutFontAtlasBadges(frame_size);
     return true;

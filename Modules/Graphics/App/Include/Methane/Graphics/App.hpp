@@ -464,6 +464,8 @@ protected:
     HeadsUpDisplay::Settings& GetHeadsUpDisplaySettings()        { return m_hud_settings; }
     HeadsUpDisplay*           GetHeadsUpDisplay() const noexcept { return m_sp_hud.get(); }
 
+    FrameSize GetFrameSizeInDots() const noexcept { return m_sp_context->GetSettings().frame_size / m_sp_context->GetContentScalingFactor(); }
+
     static std::string IndexedName(const std::string& base_name, uint32_t index)
     {
         META_FUNCTION_TASK();
