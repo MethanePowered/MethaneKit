@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="02-TexturedCube" type="CMakeRunConfiguration" factoryName="Application" folderName="Tutorials" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="MethaneKit" TARGET_NAME="MethaneTexturedCube" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="MethaneKit" RUN_TARGET_NAME="MethaneTexturedCube">
+    <method v="2">
+      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+    </method>
+  </configuration>
+</component>
