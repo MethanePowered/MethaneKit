@@ -149,23 +149,22 @@ struct Text::Mesh
                      const FrameSize& viewport_size, const FrameSize& atlas_size)
     {
         META_FUNCTION_TASK();
+        if (!viewport_size.width || !viewport_size.height)
+            throw std::invalid_argument("All dimensions of the text viewport must be greater than zero.");
 
         Point2f view_char_pos = screen_char_pos + font_char.offset;
         view_char_pos += Point2f(0.f, font_char.rect.size.height); // convert left-bottom to left-top position
         view_char_pos -= Point2f(viewport_size.width, viewport_size.height) / 2.f; // relative to viewport center
 
-        const float viewport_width  = viewport_size.width  ? static_cast<float>(viewport_size.width)  :  0.5f;
-        const float viewport_height = viewport_size.height ? static_cast<float>(viewport_size.height) : -0.5f;
-
         // Char quad rectangle in viewport coordinates [-1, 1] x [-1, 1]
         const Rect<float, float> ver_rect {
             {
-                static_cast<float>(view_char_pos.GetX()) *  2.f / viewport_width,
-                static_cast<float>(view_char_pos.GetY()) * -2.f / viewport_height,
+                static_cast<float>(view_char_pos.GetX()) *  2.f / viewport_size.width,
+                static_cast<float>(view_char_pos.GetY()) * -2.f / viewport_size.height,
             },
             {
-                static_cast<float>(font_char.rect.size.width)  * 2.f / viewport_width,
-                static_cast<float>(font_char.rect.size.height) * 2.f / viewport_height,
+                static_cast<float>(font_char.rect.size.width)  * 2.f / viewport_size.width,
+                static_cast<float>(font_char.rect.size.height) * 2.f / viewport_size.height,
             }
         };
 
