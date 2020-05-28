@@ -189,6 +189,157 @@ void AppWin::Alert(const Message& msg, bool deferred)
     }
 }
 
+void AppWin::OnWindowAlert()
+{
+    META_FUNCTION_TASK();
+    if (!m_sp_deferred_message)
+        return;
+
+    ShowAlert(*m_sp_deferred_message);
+}
+
+void AppWin::OnWindowSize(WPARAM w_param, LPARAM l_param)
+{
+    META_FUNCTION_TASK();
+    META_UNUSED(l_param);
+
+    RECT window_rect{};
+    GetWindowRect(m_env.window_handle, &window_rect);
+    ChangeWindowBounds(
+        {
+            Data::Point2i(window_rect.left, window_rect.top),
+            Data::FrameSize(static_cast<uint32_t>(window_rect.right - window_rect.left),
+                            static_cast<uint32_t>(window_rect.bottom - window_rect.top))
+        }
+    );
+
+    RECT client_rect{};
+    GetClientRect(m_env.window_handle, &client_rect);
+    Resize(
+        {
+            static_cast<uint32_t>(client_rect.right - client_rect.left),
+            static_cast<uint32_t>(client_rect.bottom - client_rect.top)
+        },
+        w_param == SIZE_MINIMIZED
+    );
+}
+
+void AppWin::OnWindowKeyboardEvent(WPARAM w_param, LPARAM l_param)
+{
+    META_FUNCTION_TASK();
+
+    const Keyboard::Key      key = Keyboard::KeyConverter({ w_param, l_param }).GetKey();
+    const Keyboard::KeyState key_state = ((l_param >> 31) & 1) ? Keyboard::KeyState::Released : Keyboard::KeyState::Pressed;
+
+    if (key == Keyboard::Key::Unknown)
+        return;
+
+    if (key_state == Keyboard::KeyState::Released && w_param == VK_SHIFT)
+    {
+        // HACK: Release both Shift keys on Shift up event, as when both
+        //       are pressed the first release does not emit any event
+        InputState().OnKeyboardChanged(Keyboard::Key::LeftShift, key_state);
+        InputState().OnKeyboardChanged(Keyboard::Key::RightShift, key_state);
+    }
+    else if (w_param == VK_SNAPSHOT)
+    {
+        // HACK: Key down is not reported for the Print Screen key
+        InputState().OnKeyboardChanged(key, Keyboard::KeyState::Pressed);
+        InputState().OnKeyboardChanged(key, Keyboard::KeyState::Released);
+    }
+    else
+    {
+        InputState().OnKeyboardChanged(key, key_state);
+    }
+}
+
+LRESULT AppWin::OnWindowMouseButtonEvent(UINT msg_id, WPARAM w_param, LPARAM l_param)
+{
+    META_FUNCTION_TASK();
+    META_UNUSED(l_param);
+
+    Mouse::Button button = Mouse::Button::Unknown;
+    if (msg_id == WM_LBUTTONDOWN || msg_id == WM_LBUTTONUP)
+        button = Mouse::Button::Left;
+    else if (msg_id == WM_RBUTTONDOWN || msg_id == WM_RBUTTONUP)
+        button = Mouse::Button::Right;
+    else if (msg_id == WM_MBUTTONDOWN || msg_id == WM_MBUTTONUP)
+        button = Mouse::Button::Middle;
+    else if (GET_XBUTTON_WPARAM(w_param) == XBUTTON1)
+        button = Mouse::Button::Button4;
+    else
+        button = Mouse::Button::Button5;
+
+    const Mouse::ButtonState button_state = (msg_id == WM_LBUTTONDOWN || msg_id == WM_RBUTTONDOWN ||
+        msg_id == WM_MBUTTONDOWN || msg_id == WM_XBUTTONDOWN)
+        ? Mouse::ButtonState::Pressed : Mouse::ButtonState::Released;
+
+    if (m_mouse_state.GetPressedButtons().empty())
+    {
+        SetCapture(m_env.window_handle);
+    }
+
+    m_mouse_state.SetButton(button, button_state);
+    InputState().OnMouseButtonChanged(button, button_state);
+
+    if (m_mouse_state.GetPressedButtons().empty())
+    {
+        ReleaseCapture();
+    }
+
+    if (msg_id == WM_XBUTTONDOWN || msg_id == WM_XBUTTONUP)
+        return TRUE;
+
+    return FALSE;
+}
+
+LRESULT AppWin::OnWindowMouseMoveEvent(WPARAM w_param, LPARAM l_param)
+{
+    META_FUNCTION_TASK();
+    META_UNUSED(w_param);
+
+    const int x = GET_X_LPARAM(l_param);
+    const int y = GET_Y_LPARAM(l_param);
+
+    InputState().OnMousePositionChanged({ x, y });
+
+    if (!GetInputState().GetMouseState().IsInWindow())
+    {
+        // Subscribe window to track WM_MOUSELEAVE
+        TRACKMOUSEEVENT tme;
+        ZeroMemory(&tme, sizeof(tme));
+        tme.cbSize = sizeof(tme);
+        tme.dwFlags = TME_LEAVE;
+        tme.hwndTrack = m_env.window_handle;
+        TrackMouseEvent(&tme);
+
+        InputState().OnMouseInWindowChanged(true);
+    }
+
+    return 0;
+}
+
+LRESULT AppWin::OnWindowMouseWheelEvent(bool is_vertical_scroll, WPARAM w_param, LPARAM l_param)
+{
+    META_FUNCTION_TASK();
+    META_UNUSED(w_param);
+    META_UNUSED(l_param);
+
+    if (is_vertical_scroll)
+    {
+        const float wheel_delta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(w_param)) / WHEEL_DELTA;
+        InputState().OnMouseScrollChanged({ 0.f, wheel_delta });
+    }
+    else
+    {
+        // NOTE: The X-axis is inverted for consistency with macOS and X11
+        const float wheel_delta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(w_param)) / WHEEL_DELTA;
+        InputState().OnMouseScrollChanged({ -wheel_delta, 0.f });
+    }
+
+    return 0;
+}
+
 LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPARAM l_param)
 {
     META_FUNCTION_TASK();
@@ -204,83 +355,32 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
         switch (msg_id)
         {
         case WM_CREATE:
-        {
-            LPCREATESTRUCT p_create_struct = reinterpret_cast<LPCREATESTRUCT>(l_param);
-            SetWindowLongPtr(h_wnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(p_create_struct->lpCreateParams));
-        }
-        return 0;
-
-        case WM_DESTROY:
-        {
-            if (p_app)
-            {
-                p_app->StopMessageProcessing();
-            }
-            PostQuitMessage(0);
-        }
-        return 0;
-
-        case WM_SIZE:
-        {
-            if (p_app)
-            {
-                RECT window_rect{};
-                GetWindowRect(h_wnd, &window_rect);
-                p_app->ChangeWindowBounds({
-                    Data::Point2i(window_rect.left, window_rect.top),
-                    Data::FrameSize(static_cast<uint32_t>(window_rect.right  - window_rect.left),
-                                    static_cast<uint32_t>(window_rect.bottom - window_rect.top))
-                });
-
-                RECT client_rect{};
-                GetClientRect(h_wnd, &client_rect);
-                p_app->Resize({
-                        static_cast<uint32_t>(client_rect.right  - client_rect.left),
-                        static_cast<uint32_t>(client_rect.bottom - client_rect.top)
-                    }, w_param == SIZE_MINIMIZED);
-            }
-        }
-        break;
+            SetWindowLongPtr(h_wnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(reinterpret_cast<LPCREATESTRUCT>(l_param)->lpCreateParams));
+            return 0;
 
         case WM_ALERT:
-        {
-            assert(!!p_app->m_sp_deferred_message);
-            if (p_app->m_sp_deferred_message)
-            {
-                p_app->ShowAlert(*p_app->m_sp_deferred_message);
-            }
-        }
-        break;
+            if (p_app)
+                p_app->OnWindowAlert();
+            break;
+
+        case WM_DESTROY:
+            if (p_app)
+                p_app->StopMessageProcessing();
+            PostQuitMessage(0);
+            return 0;
+
+        case WM_SIZE:
+            if (p_app)
+                p_app->OnWindowSize(w_param, l_param);
+            break;
 
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN:
         case WM_KEYUP:
         case WM_SYSKEYUP:
-        {
-            const Keyboard::Key      key       = Keyboard::KeyConverter({ w_param, l_param }).GetKey();
-            const Keyboard::KeyState key_state = ((l_param >> 31) & 1) ? Keyboard::KeyState::Released : Keyboard::KeyState::Pressed;
-
-            if (key == Keyboard::Key::Unknown)
-                break;
-
-            if (key_state == Keyboard::KeyState::Released && w_param == VK_SHIFT)
-            {
-                // HACK: Release both Shift keys on Shift up event, as when both
-                //       are pressed the first release does not emit any event
-                p_app->InputState().OnKeyboardChanged(Keyboard::Key::LeftShift, key_state);
-                p_app->InputState().OnKeyboardChanged(Keyboard::Key::RightShift, key_state);
-            }
-            else if (w_param == VK_SNAPSHOT)
-            {
-                // HACK: Key down is not reported for the Print Screen key
-                p_app->InputState().OnKeyboardChanged(key, Keyboard::KeyState::Pressed);
-                p_app->InputState().OnKeyboardChanged(key, Keyboard::KeyState::Released);
-            }
-            else
-            {
-                p_app->InputState().OnKeyboardChanged(key, key_state);
-            }
-        } break;
+            if (p_app)
+                p_app->OnWindowKeyboardEvent(w_param, l_param);
+            break;
 
         case WM_LBUTTONDOWN:
         case WM_RBUTTONDOWN:
@@ -290,86 +390,32 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
         case WM_RBUTTONUP:
         case WM_MBUTTONUP:
         case WM_XBUTTONUP:
-        {
-            Mouse::Button button = Mouse::Button::Unknown;
-            if (msg_id == WM_LBUTTONDOWN || msg_id == WM_LBUTTONUP)
-                button = Mouse::Button::Left;
-            else if (msg_id == WM_RBUTTONDOWN || msg_id == WM_RBUTTONUP)
-                button = Mouse::Button::Right;
-            else if (msg_id == WM_MBUTTONDOWN || msg_id == WM_MBUTTONUP)
-                button = Mouse::Button::Middle;
-            else if (GET_XBUTTON_WPARAM(w_param) == XBUTTON1)
-                button = Mouse::Button::Button4;
-            else
-                button = Mouse::Button::Button5;
-
-            const Mouse::ButtonState button_state = (msg_id == WM_LBUTTONDOWN || msg_id == WM_RBUTTONDOWN ||
-                                                     msg_id == WM_MBUTTONDOWN || msg_id == WM_XBUTTONDOWN)
-                                                  ? Mouse::ButtonState::Pressed : Mouse::ButtonState::Released;
-
-            if (p_app->m_mouse_state.GetPressedButtons().empty())
-            {
-                SetCapture(h_wnd);
-            }
-
-            p_app->m_mouse_state.SetButton(button, button_state);
-            p_app->InputState().OnMouseButtonChanged(button, button_state);
-
-            if (p_app->m_mouse_state.GetPressedButtons().empty())
-            {
-                ReleaseCapture();
-            }
-
-            if (msg_id == WM_XBUTTONDOWN || msg_id == WM_XBUTTONUP)
-                return TRUE;
-
-            return 0;
-        }
+            if (p_app)
+                return p_app->OnWindowMouseButtonEvent(msg_id, w_param, l_param);
+            break;
 
         case WM_MOUSEMOVE:
-        {
-            const int x = GET_X_LPARAM(l_param);
-            const int y = GET_Y_LPARAM(l_param);
-
-            p_app->InputState().OnMousePositionChanged({ x, y });
-
-            if (!p_app->GetInputState().GetMouseState().IsInWindow())
-            {
-                // Subscribe window to track WM_MOUSELEAVE
-                TRACKMOUSEEVENT tme;
-                ZeroMemory(&tme, sizeof(tme));
-                tme.cbSize = sizeof(tme);
-                tme.dwFlags = TME_LEAVE;
-                tme.hwndTrack = h_wnd;
-                TrackMouseEvent(&tme);
-
-                p_app->InputState().OnMouseInWindowChanged(true);
-            }
-
-            return 0;
-        }
+            if (p_app)
+                return p_app->OnWindowMouseMoveEvent(w_param, l_param);
+            break;
 
         case WM_MOUSELEAVE:
-        {
-            p_app->InputState().OnMouseInWindowChanged(false);
-            return 0;
-        }
+            if (p_app)
+            {
+                p_app->InputState().OnMouseInWindowChanged(false);
+                return 0;
+            }
+            break;
 
         case WM_MOUSEWHEEL:
-        {
-            const float wheel_delta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(w_param)) / WHEEL_DELTA;
-            p_app->InputState().OnMouseScrollChanged({ 0.f, wheel_delta });
-            return 0;
-        }
+            if (p_app)
+                p_app->OnWindowMouseWheelEvent(true, w_param, l_param);
+            break;
 
-        case WM_MOUSEHWHEEL: // Windows Vista and later
-        {
-            // NOTE: The X-axis is inverted for consistency with macOS and X11
-            const float wheel_delta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(w_param)) / WHEEL_DELTA;
-            p_app->InputState().OnMouseScrollChanged({ -wheel_delta, 0.f });
-            return 0;
-        }
-
+        case WM_MOUSEHWHEEL:
+            if (p_app)
+                p_app->OnWindowMouseWheelEvent(false, w_param, l_param);
+            break;
         }
 #ifndef _DEBUG
     }

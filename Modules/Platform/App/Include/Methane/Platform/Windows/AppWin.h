@@ -55,14 +55,20 @@ protected:
     void StopMessageProcessing()     { m_is_message_processing = false; }
     bool IsMessageProcessing() const { return m_is_message_processing; }
 
+    void    OnWindowAlert();
+    void    OnWindowSize(WPARAM w_param, LPARAM l_param);
+    void    OnWindowKeyboardEvent(WPARAM w_param, LPARAM l_param);
+    LRESULT OnWindowMouseButtonEvent(UINT msg_id, WPARAM w_param, LPARAM l_param);
+    LRESULT OnWindowMouseMoveEvent(WPARAM w_param, LPARAM l_param);
+    LRESULT OnWindowMouseWheelEvent(bool is_vertical_scroll, WPARAM w_param, LPARAM l_param);
+
     static LRESULT CALLBACK WindowProc(HWND h_wnd, UINT message, WPARAM w_param, LPARAM l_param);
 
-    AppEnvironment m_env;
-
 private:
-    Mouse::State m_mouse_state;
-    RECT         m_window_rect {};
-    bool         m_is_message_processing = true;
+    AppEnvironment m_env;
+    Mouse::State   m_mouse_state;
+    RECT           m_window_rect {};
+    bool           m_is_message_processing = true;
 };
 
 } // namespace Methane::Platform
