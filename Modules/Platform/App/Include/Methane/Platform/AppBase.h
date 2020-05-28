@@ -48,6 +48,8 @@ public:
         double      width          = 0.8;   // if width < 1.0 use as ratio of desktop size; else use as exact size in pixels/dots
         double      height         = 0.8;   // same rule applies for height
         bool        is_full_screen = false;
+        uint32_t    min_width      = 640;
+        uint32_t    min_height     = 480;
     };
 
     struct RunArgs

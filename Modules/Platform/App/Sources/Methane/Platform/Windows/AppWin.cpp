@@ -198,7 +198,7 @@ void AppWin::OnWindowAlert()
     ShowAlert(*m_sp_deferred_message);
 }
 
-void AppWin::OnWindowSize(WPARAM w_param, LPARAM l_param)
+void AppWin::OnWindowResized(WPARAM w_param, LPARAM l_param)
 {
     META_FUNCTION_TASK();
     META_UNUSED(l_param);
@@ -222,6 +222,54 @@ void AppWin::OnWindowSize(WPARAM w_param, LPARAM l_param)
         },
         w_param == SIZE_MINIMIZED
     );
+}
+
+LRESULT AppWin::OnWindowResizing(WPARAM w_param, LPARAM l_param)
+{
+    META_FUNCTION_TASK();
+    META_UNUSED(w_param);
+
+    PRECT p_window_rect = reinterpret_cast<PRECT>(l_param);
+    RECT  window_rect{};
+    RECT  client_rect{};
+
+    GetWindowRect(m_env.window_handle, &window_rect);
+    GetClientRect(m_env.window_handle, &client_rect);
+
+    int border = (window_rect.right  - window_rect.left) - client_rect.right;
+    int header = (window_rect.bottom - window_rect.top)  - client_rect.bottom;
+
+    // Window minimum size
+    const Settings& settings = GetPlatformAppSettings();
+    int32_t width  = settings.min_width  + border;
+    int32_t height = settings.min_height + header;
+
+    if (p_window_rect->right - p_window_rect->left < width)
+        p_window_rect->right = p_window_rect->left + width;
+
+    if (p_window_rect->bottom - p_window_rect->top < height)
+        p_window_rect->bottom = p_window_rect->top + height;
+
+    width  = p_window_rect->right - p_window_rect->left;
+    height = p_window_rect->bottom - p_window_rect->top;
+
+    ChangeWindowBounds(
+        {
+            Data::Point2i(p_window_rect->left, p_window_rect->top),
+            Data::FrameSize(static_cast<uint32_t>(width), static_cast<uint32_t>(height))
+        }
+    );
+    Resize(
+        {
+            static_cast<uint32_t>(client_rect.right  - client_rect.left),
+            static_cast<uint32_t>(client_rect.bottom - client_rect.top)
+        },
+        false
+    );
+
+    UpdateAndRender();
+
+    return TRUE;
 }
 
 void AppWin::OnWindowKeyboardEvent(WPARAM w_param, LPARAM l_param)
@@ -371,7 +419,12 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
 
         case WM_SIZE:
             if (p_app)
-                p_app->OnWindowSize(w_param, l_param);
+                p_app->OnWindowResized(w_param, l_param);
+            break;
+
+        case WM_SIZING:
+            if (p_app)
+                p_app->OnWindowResizing(w_param, l_param);
             break;
 
         case WM_KEYDOWN:

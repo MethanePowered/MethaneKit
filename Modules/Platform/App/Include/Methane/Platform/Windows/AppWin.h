@@ -56,7 +56,8 @@ protected:
     bool IsMessageProcessing() const { return m_is_message_processing; }
 
     void    OnWindowAlert();
-    void    OnWindowSize(WPARAM w_param, LPARAM l_param);
+    void    OnWindowResized(WPARAM w_param, LPARAM l_param);
+    LRESULT OnWindowResizing(WPARAM w_param, LPARAM l_param);
     void    OnWindowKeyboardEvent(WPARAM w_param, LPARAM l_param);
     LRESULT OnWindowMouseButtonEvent(UINT msg_id, WPARAM w_param, LPARAM l_param);
     LRESULT OnWindowMouseMoveEvent(WPARAM w_param, LPARAM l_param);
