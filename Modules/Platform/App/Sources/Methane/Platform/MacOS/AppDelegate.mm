@@ -35,7 +35,7 @@ using namespace Methane::Platform;
 
 @implementation AppDelegate
 
-@synthesize window = _window;
+@synthesize window = m_window;
 
 - (id) initWithApp : (AppMac*) p_app andSettings : (const AppBase::Settings*) p_settings
 {
@@ -58,16 +58,17 @@ using namespace Methane::Platform;
                             NSWindowStyleMaskMiniaturizable;
 
     NSBackingStoreType backing = NSBackingStoreBuffered;
-    
-    _window = [[NSWindow alloc] initWithContentRect:frame styleMask:style_mask backing:backing defer:YES];
-    _window.title = MacOS::ConvertToNsType<std::string, NSString*>(p_settings->name);
-    _window.delegate = [[WindowDelegate alloc] initWithApp:p_app];
-    [_window center];
+
+    m_window = [[NSWindow alloc] initWithContentRect:frame styleMask:style_mask backing:backing defer:YES];
+    m_window.contentMinSize = NSMakeSize(static_cast<CGFloat>(p_settings->min_width), static_cast<CGFloat>(p_settings->min_height));
+    m_window.title    = MacOS::ConvertToNsType<std::string, NSString*>(p_settings->name);
+    m_window.delegate = [[WindowDelegate alloc] initWithApp:p_app];
+    [m_window center];
     
     NSRect backing_frame = [ns_main_screen convertRectToBacking:frame];
     self.viewController = [[AppViewController alloc] initWithApp:p_app andFrameRect:backing_frame];
     
-    p_app->SetWindow(_window);
+    p_app->SetWindow(m_window);
     
     return self;
 }
@@ -75,8 +76,8 @@ using namespace Methane::Platform;
 - (void) run
 {
     META_FUNCTION_TASK();
-    [self.window setContentViewController: self.viewController];
-    [self.window setAcceptsMouseMovedEvents:YES];
+    [m_window setContentViewController: self.viewController];
+    [m_window setAcceptsMouseMovedEvents:YES];
 }
 
 - (void) alert : (NSString*) ns_title withInformation: (NSString*) ns_info andStyle: (NSAlertStyle) ns_alert_style
@@ -105,14 +106,14 @@ using namespace Methane::Platform;
 {
     META_FUNCTION_TASK();
     #pragma unused(notification)
-    [self.window makeKeyAndOrderFront:self];
+    [m_window makeKeyAndOrderFront:self];
 }
 
 - (void) applicationDidFinishLaunching:(NSNotification *)notification
 {
     META_FUNCTION_TASK();
     #pragma unused(notification)
-    [self.window makeFirstResponder: self.viewController.view];
+    [m_window makeFirstResponder: self.viewController.view];
 }
 
 - (void) windowWillEnterFullScreen:(NSNotification *)notification
