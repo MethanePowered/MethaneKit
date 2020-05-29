@@ -31,6 +31,7 @@ Base application interface and platform-independent implementation.
 
 #include <vector>
 #include <cstdlib>
+#include <cassert>
 
 namespace Methane::Platform
 {
