@@ -208,6 +208,18 @@ public:
         Platform::App::Init();
     }
 
+    void StartResizing() override
+    {
+        META_FUNCTION_TASK();
+        SetAnimationsEnabled(false);
+    }
+
+    void EndResizing() override
+    {
+        META_FUNCTION_TASK();
+        SetAnimationsEnabled(true);
+    }
+
     bool Resize(const FrameSize& frame_size, bool is_minimized) override
     {
         META_FUNCTION_TASK();

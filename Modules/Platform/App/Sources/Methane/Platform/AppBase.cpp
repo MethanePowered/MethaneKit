@@ -93,6 +93,20 @@ void AppBase::ChangeWindowBounds(const Data::FrameRect& window_bounds)
     META_FUNCTION_TASK();
     m_window_bounds = window_bounds;
 }
+
+void AppBase::StartResizing()
+{
+    META_FUNCTION_TASK();
+    assert(!m_is_resizing);
+    m_is_resizing = true;
+}
+
+void AppBase::EndResizing()
+{
+    META_FUNCTION_TASK();
+    assert(m_is_resizing);
+    m_is_resizing = false;
+}
     
 bool AppBase::Resize(const Data::FrameSize& frame_size, bool is_minimized)
 {

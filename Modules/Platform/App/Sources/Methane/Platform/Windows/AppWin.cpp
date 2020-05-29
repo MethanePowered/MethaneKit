@@ -222,6 +222,11 @@ void AppWin::OnWindowResized(WPARAM w_param, LPARAM l_param)
         },
         w_param == SIZE_MINIMIZED
     );
+
+    if (IsResizing())
+    {
+        EndResizing();
+    }
 }
 
 LRESULT AppWin::OnWindowResizing(WPARAM w_param, LPARAM l_param)
@@ -252,6 +257,11 @@ LRESULT AppWin::OnWindowResizing(WPARAM w_param, LPARAM l_param)
 
     width  = p_window_rect->right - p_window_rect->left;
     height = p_window_rect->bottom - p_window_rect->top;
+
+    if (!IsResizing())
+    {
+        StartResizing();
+    }
 
     ChangeWindowBounds(
         {

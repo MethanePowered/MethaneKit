@@ -80,6 +80,8 @@ public:
     virtual void InitContext(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size) = 0;
     virtual void Init();
     virtual void ChangeWindowBounds(const Data::FrameRect& window_bounds);
+    virtual void StartResizing();
+    virtual void EndResizing();
     virtual bool Resize(const Data::FrameSize& frame_size, bool is_minimized);
     virtual bool Update() = 0;
     virtual bool Render() = 0;
@@ -95,6 +97,7 @@ public:
     const Input::State&     GetInputState() const           { return m_input_state; }
     const Data::FrameSize&  GetFrameSize() const            { return m_frame_size; }
     bool                    IsMinimized() const             { return m_is_minimized; }
+    bool                    IsResizing() const              { return m_is_resizing; }
     Input::State&           InputState()                    { return m_input_state; }
 
 protected:
@@ -112,6 +115,7 @@ private:
     Data::FrameSize      m_frame_size;
     bool                 m_is_minimized = false;
     bool                 m_initialized = false;
+    bool                 m_is_resizing = false;
     Input::State         m_input_state;
 };
 

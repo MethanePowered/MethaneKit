@@ -50,7 +50,7 @@ using namespace Methane::Platform;
     return self;
 }
 
-- (void) windowDidEnterFullScreen:(NSNotification *)notification
+- (void) windowDidEnterFullScreen:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
     #pragma unused(notification)
@@ -59,7 +59,7 @@ using namespace Methane::Platform;
     m_p_app->SetFullScreen(true);
 }
 
-- (void) windowDidExitFullScreen:(NSNotification *)notification
+- (void) windowDidExitFullScreen:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
     #pragma unused(notification)
@@ -68,7 +68,7 @@ using namespace Methane::Platform;
     m_p_app->SetFullScreen(false);
 }
 
-- (void) windowDidMiniaturize:(NSNotification *)notification
+- (void) windowDidMiniaturize:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
     #pragma unused(notification)
@@ -77,13 +77,31 @@ using namespace Methane::Platform;
     m_p_app->Resize(m_p_app->GetFrameSize(), true);
 }
 
-- (void) windowDidDeminiaturize:(NSNotification *)notification
+- (void) windowDidDeminiaturize:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
     #pragma unused(notification)
     
     assert(!!m_p_app);
     m_p_app->Resize(m_p_app->GetFrameSize(), false);
+}
+
+- (void) windowWillStartLiveResize:(NSNotification*) notification
+{
+    META_FUNCTION_TASK();
+    #pragma unused(notification)
+
+    assert(!!m_p_app);
+    m_p_app->StartResizing();
+}
+
+- (void) windowDidEndLiveResize:(NSNotification*) notification
+{
+    META_FUNCTION_TASK();
+    #pragma unused(notification)
+
+    assert(!!m_p_app);
+    m_p_app->EndResizing();
 }
 
 @end
