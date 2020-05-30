@@ -24,6 +24,7 @@ Tutorial demonstrating text rendering with Methane graphics API
 #include "TextRenderApp.h"
 
 #include <Methane/Samples/AppSettings.hpp>
+#include <Methane/Data/TimeAnimation.h>
 
 namespace Methane::Tutorials
 {
@@ -38,6 +39,7 @@ struct FontSettings
 
 constexpr    int32_t                             g_margin_size_in_dots  = 32;
 constexpr    int32_t                             g_top_text_pos_in_dots = 100;
+constexpr    double                              g_text_update_interval_sec = 0.1;
 static const FontSettings                        g_primary_font         { "Primary",   "Fonts/Roboto/Roboto-Regular.ttf",     24u, { 1.f,  1.f, 0.5f } };
 static const FontSettings                        g_secondary_font       { "Secondary", "Fonts/Playball/Playball-Regular.ttf", 16u, { 0.5f, 1.f, 0.5f } };
 static const gfx::Color3f                        g_misc_font_color      { 1.f, 1.f, 1.f };
@@ -61,7 +63,7 @@ static const std::string g_hitchhikers_guide = "A towel is about the most massiv
 
 TextRenderApp::TextRenderApp()
     : GraphicsApp(
-        Samples::GetAppSettings("Methane Text Rendering", false /* animations */, true /* logo */, true /* hud ui */, false /* depth */),
+        Samples::GetAppSettings("Methane Text Rendering", true /* animations */, true /* logo */, true /* hud ui */, false /* depth */),
         "Methane tutorial of text rendering")
 {
     GetHeadsUpDisplaySettings().position = gfx::Point2i(g_margin_size_in_dots, g_margin_size_in_dots);
@@ -120,7 +122,7 @@ void TextRenderApp::Init()
         gfx::Text::Settings
         {
             "Hitchhikers Guide",
-            g_hitchhikers_guide,
+            g_hitchhikers_guide.substr(0, m_secondary_text_displayed_length),
             gfx::FrameRect{
                 { g_margin_size_in_dots, vertical_text_pos_in_dots },
                 { frame_width_without_margins, 0u /* calculated height */ }
@@ -138,6 +140,9 @@ void TextRenderApp::Init()
         frame.sp_render_cmd_list->SetName(IndexedName("Text Rendering", frame.index));
         frame.sp_execute_cmd_lists = gfx::CommandListSet::Create({ *frame.sp_render_cmd_list });
     }
+
+    // Setup animations
+    m_animations.push_back(std::make_shared<Data::TimeAnimation>(std::bind(&TextRenderApp::UpdateText, this, std::placeholders::_1, std::placeholders::_2)));
 
     // Complete initialization of render context
     m_sp_context->CompleteInitialization();
@@ -254,6 +259,22 @@ bool TextRenderApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     return true;
 }
 
+bool TextRenderApp::UpdateText(double elapsed_seconds, double)
+{
+    if (elapsed_seconds - m_text_update_elapsed_sec < g_text_update_interval_sec)
+        return true;
+
+    m_text_update_elapsed_sec = elapsed_seconds;
+
+    if (m_secondary_text_displayed_length < g_hitchhikers_guide.length() - 1)
+        m_secondary_text_displayed_length++;
+    else
+        m_secondary_text_displayed_length = 1;
+
+    m_sp_secondary_text->SetText(g_hitchhikers_guide.substr(0, m_secondary_text_displayed_length));
+    return true;
+}
+
 bool TextRenderApp::Render()
 {
     // Render only when context is ready
@@ -290,6 +311,7 @@ void TextRenderApp::OnContextReleased(gfx::Context& context)
 {
     gfx::Font::Library::Get().Clear();
 
+    m_animations.clear();
     m_sp_primary_font.reset();
     m_sp_secondary_font.reset();
     m_sp_primary_text.reset();
