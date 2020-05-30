@@ -198,6 +198,14 @@ void AppWin::OnWindowAlert()
     ShowAlert(*m_sp_deferred_message);
 }
 
+LRESULT AppWin::OnWindowDestroy()
+{
+    META_FUNCTION_TASK();
+    StopMessageProcessing();
+    PostQuitMessage(0);
+    return 0;
+}
+
 void AppWin::OnWindowResized(WPARAM w_param, LPARAM l_param)
 {
     META_FUNCTION_TASK();
@@ -225,7 +233,7 @@ void AppWin::OnWindowResized(WPARAM w_param, LPARAM l_param)
 
     if (IsResizing())
     {
-        EndResizing();
+        UpdateAndRender();
     }
 }
 
@@ -234,50 +242,38 @@ LRESULT AppWin::OnWindowResizing(WPARAM w_param, LPARAM l_param)
     META_FUNCTION_TASK();
     META_UNUSED(w_param);
 
-    PRECT p_window_rect = reinterpret_cast<PRECT>(l_param);
     RECT  window_rect{};
-    RECT  client_rect{};
-
     GetWindowRect(m_env.window_handle, &window_rect);
+
+    RECT  client_rect{};
     GetClientRect(m_env.window_handle, &client_rect);
 
-    int border = (window_rect.right  - window_rect.left) - client_rect.right;
-    int header = (window_rect.bottom - window_rect.top)  - client_rect.bottom;
+    int border = (window_rect.right - window_rect.left) - client_rect.right;
+    int header = (window_rect.bottom - window_rect.top) - client_rect.bottom;
 
-    // Window minimum size
-    const Settings& settings = GetPlatformAppSettings();
-    int32_t width  = settings.min_width  + border;
-    int32_t height = settings.min_height + header;
+    
+    const Settings& settings  = GetPlatformAppSettings();
+    int32_t min_window_width  = settings.min_width + border;
+    int32_t min_window_height = settings.min_height + header;
 
-    if (p_window_rect->right - p_window_rect->left < width)
-        p_window_rect->right = p_window_rect->left + width;
+    // Update window rectangle with respect to minimum size limit
+    PRECT p_window_rect = reinterpret_cast<PRECT>(l_param);
 
-    if (p_window_rect->bottom - p_window_rect->top < height)
-        p_window_rect->bottom = p_window_rect->top + height;
-
-    width  = p_window_rect->right - p_window_rect->left;
-    height = p_window_rect->bottom - p_window_rect->top;
-
-    if (!IsResizing())
+    if (p_window_rect->right - p_window_rect->left < min_window_width)
     {
-        StartResizing();
+        if (w_param == WMSZ_RIGHT || w_param == WMSZ_BOTTOMRIGHT || w_param == WMSZ_TOPRIGHT)
+            p_window_rect->right = p_window_rect->left + min_window_width;
+        else
+            p_window_rect->left  = p_window_rect->right - min_window_width;
     }
 
-    ChangeWindowBounds(
-        {
-            Data::Point2i(p_window_rect->left, p_window_rect->top),
-            Data::FrameSize(static_cast<uint32_t>(width), static_cast<uint32_t>(height))
-        }
-    );
-    Resize(
-        {
-            static_cast<uint32_t>(client_rect.right  - client_rect.left),
-            static_cast<uint32_t>(client_rect.bottom - client_rect.top)
-        },
-        false
-    );
-
-    UpdateAndRender();
+    if (p_window_rect->bottom - p_window_rect->top < min_window_height)
+    {
+        if (w_param == WMSZ_BOTTOM || w_param == WMSZ_BOTTOMLEFT || w_param == WMSZ_BOTTOMRIGHT)
+            p_window_rect->bottom = p_window_rect->top + min_window_height;
+        else
+            p_window_rect->top    = p_window_rect->bottom - min_window_height;
+    }
 
     return TRUE;
 }
@@ -398,13 +394,28 @@ LRESULT AppWin::OnWindowMouseWheelEvent(bool is_vertical_scroll, WPARAM w_param,
     return 0;
 }
 
+LRESULT AppWin::OnWindowMouseLeave()
+{
+    META_FUNCTION_TASK();
+    InputState().OnMouseInWindowChanged(false);
+    return 0;
+}
+
 LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPARAM l_param)
 {
     META_FUNCTION_TASK();
 
+    if (msg_id == WM_CREATE)
+    {
+        SetWindowLongPtr(h_wnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(reinterpret_cast<LPCREATESTRUCT>(l_param)->lpCreateParams));
+        return 0;
+    }
+
     AppWin* p_app = reinterpret_cast<AppWin*>(GetWindowLongPtr(h_wnd, GWLP_USERDATA));
-    if (p_app && !p_app->IsMessageProcessing())
+    if (!p_app || !p_app->IsMessageProcessing())
+    {
         return DefWindowProc(h_wnd, msg_id, w_param, l_param);
+    }
 
 #ifndef _DEBUG
     try
@@ -412,39 +423,22 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
 #endif
         switch (msg_id)
         {
-        case WM_CREATE:
-            SetWindowLongPtr(h_wnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(reinterpret_cast<LPCREATESTRUCT>(l_param)->lpCreateParams));
-            return 0;
+        case WM_ALERT:          p_app->OnWindowAlert(); break;
+        case WM_DESTROY:        return p_app->OnWindowDestroy();
 
-        case WM_ALERT:
-            if (p_app)
-                p_app->OnWindowAlert();
-            break;
-
-        case WM_DESTROY:
-            if (p_app)
-                p_app->StopMessageProcessing();
-            PostQuitMessage(0);
-            return 0;
-
-        case WM_SIZE:
-            if (p_app)
-                p_app->OnWindowResized(w_param, l_param);
-            break;
-
-        case WM_SIZING:
-            if (p_app)
-                p_app->OnWindowResizing(w_param, l_param);
-            break;
-
+        // Windows resizing events
+        case WM_ENTERSIZEMOVE:  p_app->StartResizing(); break;
+        case WM_EXITSIZEMOVE:   p_app->EndResizing(); break;
+        case WM_SIZING:         return p_app->OnWindowResizing(w_param, l_param);
+        case WM_SIZE:           p_app->OnWindowResized(w_param, l_param); break;
+        
+        // Keyboard events
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN:
         case WM_KEYUP:
-        case WM_SYSKEYUP:
-            if (p_app)
-                p_app->OnWindowKeyboardEvent(w_param, l_param);
-            break;
+        case WM_SYSKEYUP:       p_app->OnWindowKeyboardEvent(w_param, l_param); break;
 
+        // Mouse events
         case WM_LBUTTONDOWN:
         case WM_RBUTTONDOWN:
         case WM_MBUTTONDOWN:
@@ -452,33 +446,11 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
         case WM_LBUTTONUP:
         case WM_RBUTTONUP:
         case WM_MBUTTONUP:
-        case WM_XBUTTONUP:
-            if (p_app)
-                return p_app->OnWindowMouseButtonEvent(msg_id, w_param, l_param);
-            break;
-
-        case WM_MOUSEMOVE:
-            if (p_app)
-                return p_app->OnWindowMouseMoveEvent(w_param, l_param);
-            break;
-
-        case WM_MOUSELEAVE:
-            if (p_app)
-            {
-                p_app->InputState().OnMouseInWindowChanged(false);
-                return 0;
-            }
-            break;
-
-        case WM_MOUSEWHEEL:
-            if (p_app)
-                p_app->OnWindowMouseWheelEvent(true, w_param, l_param);
-            break;
-
-        case WM_MOUSEHWHEEL:
-            if (p_app)
-                p_app->OnWindowMouseWheelEvent(false, w_param, l_param);
-            break;
+        case WM_XBUTTONUP:      return p_app->OnWindowMouseButtonEvent(msg_id, w_param, l_param);
+        case WM_MOUSEMOVE:      return p_app->OnWindowMouseMoveEvent(w_param, l_param);
+        case WM_MOUSEWHEEL:     return p_app->OnWindowMouseWheelEvent(true, w_param, l_param);
+        case WM_MOUSEHWHEEL:    return p_app->OnWindowMouseWheelEvent(false, w_param, l_param);
+        case WM_MOUSELEAVE:     return p_app->OnWindowMouseLeave();
         }
 #ifndef _DEBUG
     }

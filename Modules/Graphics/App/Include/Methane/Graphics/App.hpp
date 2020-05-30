@@ -211,13 +211,16 @@ public:
     void StartResizing() override
     {
         META_FUNCTION_TASK();
+        Platform::App::StartResizing();
+        m_enable_animations_after_resizing = m_settings.animations_enabled;
         SetAnimationsEnabled(false);
     }
 
     void EndResizing() override
     {
         META_FUNCTION_TASK();
-        SetAnimationsEnabled(true);
+        SetAnimationsEnabled(m_enable_animations_after_resizing);
+        Platform::App::EndResizing();
     }
 
     bool Resize(const FrameSize& frame_size, bool is_minimized) override
@@ -500,6 +503,7 @@ private:
     RenderContext::Settings  m_initial_context_settings;
     HeadsUpDisplay::Settings m_hud_settings;
     Timer                    m_title_update_timer;
+    bool                     m_enable_animations_after_resizing = true;
 
     static constexpr double  g_title_update_interval_sec = 1.0;
 };
