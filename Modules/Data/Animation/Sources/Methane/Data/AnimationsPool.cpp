@@ -32,8 +32,15 @@ namespace Methane::Data
 void AnimationsPool::Update()
 {
     META_FUNCTION_TASK();
-    if (m_is_paused || empty())
+    if (empty())
         return;
+
+    if (m_is_paused)
+    {
+        if (m_is_dry_update_on_pause_enabled)
+            DryUpdate();
+        return;
+    }
 
     std::vector<size_t> completed_animation_indices;
     for (size_t animation_index = 0; animation_index < size(); ++animation_index)
@@ -53,8 +60,21 @@ void AnimationsPool::Update()
     }
 }
 
+void AnimationsPool::DryUpdate()
+{
+    META_FUNCTION_TASK();
+    for(const Ptr<Animation>& sp_animation : *this)
+    {
+        if (!sp_animation)
+            continue;
+
+        sp_animation->DryUpdate();
+    }
+}
+
 void AnimationsPool::Pause()
 {
+    META_FUNCTION_TASK();
     if (m_is_paused)
         return;
 
@@ -69,6 +89,7 @@ void AnimationsPool::Pause()
 
 void AnimationsPool::Resume()
 {
+    META_FUNCTION_TASK();
     if (!m_is_paused)
         return;
 

@@ -295,6 +295,7 @@ void AsteroidsApp::Init()
     // Setup animations
     m_animations.push_back(std::make_shared<Data::TimeAnimation>(std::bind(&Planet::Update, m_sp_planet.get(), std::placeholders::_1, std::placeholders::_2)));
     m_animations.push_back(std::make_shared<Data::TimeAnimation>(std::bind(&AsteroidsArray::Update, m_sp_asteroids_array.get(), std::placeholders::_1, std::placeholders::_2)));
+    m_animations.SetDryUpdateOnPauseEnabled(true); // enable dry updates on pause to keep asteroids in sync with projection matrix dependent on window size which may change
 
     // Complete initialization of render context:
     //  - allocate deferred descriptor heaps with calculated sizes

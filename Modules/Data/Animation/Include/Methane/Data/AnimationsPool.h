@@ -38,11 +38,18 @@ class AnimationsPool : public Animations
 {
 public:
     void Update();
+    void DryUpdate();
     void Pause();
     void Resume();
 
+    // When animations are paused dry updates are called on every app update at the same point in time,
+    // such behavior consumes CPU cycles on pause but could be useful to keep GPU state in sync with CPU when it does not depend just on animation time
+    bool IsDryUpdateOnPauseEnabled() const noexcept         { return m_is_dry_update_on_pause_enabled; }
+    void SetDryUpdateOnPauseEnabled(bool enabled) noexcept  { m_is_dry_update_on_pause_enabled = enabled; }
+
 private:
     bool m_is_paused = false;
+    bool m_is_dry_update_on_pause_enabled = false;
 };
 
 } // namespace Methane::Data

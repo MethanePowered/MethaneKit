@@ -58,4 +58,10 @@ bool TimeAnimation::Update()
     return GetState() == State::Running;
 }
 
+void TimeAnimation::DryUpdate()
+{
+    META_FUNCTION_TASK();
+    m_update_function(m_prev_elapsed_seconds, 0.0);
+}
+
 } // namespace Methane::Data

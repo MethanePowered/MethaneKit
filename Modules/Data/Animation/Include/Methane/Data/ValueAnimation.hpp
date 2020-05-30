@@ -76,6 +76,12 @@ public:
         return GetState() == State::Running;
     }
 
+    void DryUpdate() override
+    {
+        META_FUNCTION_TASK();
+        m_update_function(m_value, m_start_value, m_prev_elapsed_seconds, 0.0)
+    }
+
 private:
     ValueType&          m_value;
     ValueType           m_start_value;
