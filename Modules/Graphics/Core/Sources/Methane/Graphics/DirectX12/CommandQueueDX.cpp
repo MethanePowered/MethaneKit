@@ -163,7 +163,8 @@ void CommandQueueDX::WaitForExecution() noexcept
             
             std::unique_lock<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
             sp_command_lists->Complete();
-            if (m_executing_command_lists.front().get() == sp_command_lists.get())
+            if (!m_executing_command_lists.empty() && 
+                m_executing_command_lists.front().get() == sp_command_lists.get())
             {
                 m_executing_command_lists.pop();
             }
