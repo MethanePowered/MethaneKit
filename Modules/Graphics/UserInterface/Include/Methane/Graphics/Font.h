@@ -104,6 +104,7 @@ public:
     };
 
     static std::string GetAnsiCharacters(char from = 32, char to = 126);
+    static std::string GetTextAlphabet(const std::string& text);
 
     ~Font();
 
@@ -137,6 +138,10 @@ protected:
     bool PackCharsToAtlas(float pixels_reserve_multiplier);
 
 private:
+    bool IsAtlasBitmapUpToDate() const;
+    bool UpdateAtlasBitmap();
+    void UpdateAtlasTextures();
+
     class Face;
     class CharBinPack;
     using TextureByContext = std::map<Context*, Ptr<Texture>>;
@@ -146,6 +151,7 @@ private:
     UniquePtr<Face>        m_sp_face;
     UniquePtr<CharBinPack> m_sp_atlas_pack;
     CharByCode             m_char_by_code;
+    Data::Bytes            m_atlas_bitmap;
     TextureByContext       m_atlas_textures;
     FrameSize              m_max_glyph_size;
 };

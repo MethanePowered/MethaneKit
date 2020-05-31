@@ -100,6 +100,7 @@ void TextRenderApp::Init()
         gfx::Font::Settings{
             g_secondary_font.name, g_secondary_font.path, 24, m_sp_context->GetFontResolutionDPI(),
             gfx::Font::GetAnsiCharacters()
+            //gfx::Font::GetTextAlphabet(g_hitchhikers_guide.substr(0, m_secondary_text_displayed_length))
         }
     ).GetPtr();
 

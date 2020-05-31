@@ -28,6 +28,7 @@ Font atlas textures generation and fonts library management classes.
 
 #include <nowide/convert.hpp>
 #include <map>
+#include <set>
 #include <algorithm>
 #include <cassert>
 
@@ -315,6 +316,25 @@ std::string Font::GetAnsiCharacters(const char from, const char to)
     return characters;
 }
 
+std::string Font::GetTextAlphabet(const std::string& text)
+{
+    META_FUNCTION_TASK();
+    std::wstring wide_text = nowide::widen(text);
+
+    std::set<wchar_t> alphabet;
+    for(wchar_t wide_char : wide_text)
+    {
+        alphabet.insert(wide_char);
+    }
+
+    std::wstringstream alphabet_ss;
+    for(wchar_t wide_char : alphabet)
+    {
+        alphabet_ss << wide_char;
+    }
+    return nowide::narrow(alphabet_ss.str());
+}
+
 Font::Font(const Data::Provider& data_provider, const Settings& settings)
     : m_settings(settings)
     , m_sp_face(std::make_unique<Face>(data_provider.GetData(m_settings.font_path)))
@@ -365,12 +385,19 @@ const Font::Char& Font::AddChar(Char::Code char_code)
     // Attempt to pack new char into existing atlas
     if (m_sp_atlas_pack->TryPack(new_font_char))
     {
-        assert(0); // TODO: draw new char to atlas texture
+        if (!IsAtlasBitmapUpToDate())
+        {
+            // Draw char to exist atlas bitmap and update textures;
+            new_font_char.DrawToAtlas(m_atlas_bitmap, m_sp_atlas_pack->GetSize().width);
+            UpdateAtlasTextures();
+        }
         return new_font_char;
     }
 
     // If new char does not fit into existing atlas, repack all chars into new atlas
     PackCharsToAtlas(2.f);
+    UpdateAtlasBitmap();
+
     return new_font_char;
 }
 
@@ -491,23 +518,66 @@ const Ptr<Texture>& Font::GetAtlasTexturePtr(Context& context)
             return sp_empty_texture;
     }
 
-    // Render glyphs to atlas buffer
-    assert(m_sp_atlas_pack);
-    FrameSize atlas_size = m_sp_atlas_pack->GetSize();
-    Data::Bytes atlas_bitmap(atlas_size.width * atlas_size.height, 0);
-    for(const auto& code_and_char : m_char_by_code)
-    {
-        code_and_char.second.DrawToAtlas(atlas_bitmap, atlas_size.width);
-    }
-
     // Add font as context callback to remove atlas texture when context is released
     context.AddCallback(*this);
 
     // Create atlas texture and render glyphs to it
-    Ptr<Texture> sp_atlas_texture = Texture::CreateImage(context, Dimensions(atlas_size), 1, PixelFormat::R8Unorm, false);
-    sp_atlas_texture->SetData({ Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(atlas_bitmap.data()), static_cast<Data::Size>(atlas_bitmap.size())) });
+    UpdateAtlasBitmap();
+    Ptr<Texture> sp_atlas_texture = Texture::CreateImage(context, Dimensions(m_sp_atlas_pack->GetSize()), 1, PixelFormat::R8Unorm, false);
+    sp_atlas_texture->SetData({ Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size())) });
     sp_atlas_texture->SetName(m_settings.name + " Font Atlas");
     return m_atlas_textures.emplace(&context, std::move(sp_atlas_texture)).first->second;
+}
+
+bool Font::IsAtlasBitmapUpToDate() const
+{
+    META_FUNCTION_TASK();
+    return m_sp_atlas_pack && m_atlas_bitmap.size() == m_sp_atlas_pack->GetSize().GetPixelsCount();
+}
+
+bool Font::UpdateAtlasBitmap()
+{
+    META_FUNCTION_TASK();
+    if (!m_sp_atlas_pack)
+        throw std::logic_error("Can not update atlas bitmap until atlas is packed.");
+
+    const FrameSize atlas_size = m_sp_atlas_pack->GetSize();
+    if (m_atlas_bitmap.size() == atlas_size.GetPixelsCount())
+        return false;
+
+    // Clear old atlas content
+    std::fill(m_atlas_bitmap.begin(), m_atlas_bitmap.end(), uint8_t(0));
+    m_atlas_bitmap.resize(atlas_size.GetPixelsCount(), uint8_t(0));
+
+    // Render glyphs to atlas bitmap
+    for (const auto& code_and_char : m_char_by_code)
+    {
+        code_and_char.second.DrawToAtlas(m_atlas_bitmap, atlas_size.width);
+    }
+
+    UpdateAtlasTextures();
+    return true;
+}
+
+void Font::UpdateAtlasTextures()
+{
+    META_FUNCTION_TASK();
+    if (!m_sp_atlas_pack && IsAtlasBitmapUpToDate())
+        throw std::logic_error("Can not update atlas textures until atlas is packed and bitmap is up to date.");
+
+    const FrameSize atlas_size = m_sp_atlas_pack->GetSize();
+    for(const auto& context_and_texture : m_atlas_textures)
+    {
+        const Dimensions& texture_dimensions = context_and_texture.second->GetSettings().dimensions;
+        if (texture_dimensions.width != atlas_size.width || texture_dimensions.height != atlas_size.height)
+        {
+            // TODO: resize atlas texture
+            assert(0);
+        }
+
+        assert(context_and_texture.second);
+        context_and_texture.second->SetData({ Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size())) });
+    }
 }
 
 void Font::RemoveAtlasTexture(Context& context)
