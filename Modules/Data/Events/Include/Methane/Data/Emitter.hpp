@@ -69,6 +69,7 @@ public:
             if (!strong_receiver_ptr)
             {
                 weak_receiver_it = m_weak_receivers.erase(weak_receiver_it);
+                continue;
             }
 
             (strong_receiver_ptr->get().*std::forward<FuncType>(func_ptr))(std::forward<ArgTypes>(args)...);
