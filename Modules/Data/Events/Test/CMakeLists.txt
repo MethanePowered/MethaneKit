@@ -8,6 +8,11 @@ add_executable(${TARGET}
     EventsTest.cpp
 )
 
+target_compile_definitions(${TARGET}
+    PRIVATE
+        $<$<NOT:$<CONFIG:Debug>>:CATCH_CONFIG_ENABLE_BENCHMARKING>
+)
+
 target_link_libraries(${TARGET}
     PRIVATE
         MethaneDataEvents

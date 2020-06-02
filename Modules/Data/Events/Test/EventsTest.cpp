@@ -101,6 +101,10 @@ private:
 
 using namespace Methane::Data;
 
+static constexpr int g_bar_a = 1;
+static constexpr bool g_bar_b = true;
+static constexpr float g_bar_c = 2.3f;
+
 TEST_CASE("Connect 1 Emitter to 1 Receiver", "[events]")
 {
     SECTION("Emit without arguments")
@@ -132,13 +136,13 @@ TEST_CASE("Connect 1 Emitter to 1 Receiver", "[events]")
         CHECK(receiver.GetBarB() == false);
         CHECK(receiver.GetBarC() == 0.f);
 
-        CHECK_NOTHROW(emitter.EmitBar(1, true, 2.3f));
+        CHECK_NOTHROW(emitter.EmitBar(g_bar_a, g_bar_b, g_bar_c));
 
         CHECK(!receiver.IsFooCalled());
         CHECK(receiver.IsBarCalled());
-        CHECK(receiver.GetBarA() == 1);
-        CHECK(receiver.GetBarB() == true);
-        CHECK(receiver.GetBarC() == 2.3f);
+        CHECK(receiver.GetBarA() == g_bar_a);
+        CHECK(receiver.GetBarB() == g_bar_b);
+        CHECK(receiver.GetBarC() == g_bar_c);
     }
 
     SECTION("Emit after disconnect")
@@ -183,7 +187,7 @@ TEST_CASE("Connect 1 Emitter to Many Receivers", "[events]")
     SECTION("Emit without arguments")
     {
         TestEmitter emitter;
-        std::array<TestReceiver, 10> receivers;
+        std::array<TestReceiver, 5> receivers;
 
         for(TestReceiver& receiver : receivers)
         {
@@ -216,15 +220,15 @@ TEST_CASE("Connect 1 Emitter to Many Receivers", "[events]")
             CHECK(receiver.GetBarC() == 0.f);
         }
 
-        CHECK_NOTHROW(emitter.EmitBar(1, true, 2.3f));
+        CHECK_NOTHROW(emitter.EmitBar(g_bar_a, g_bar_b, g_bar_c));
 
         for(TestReceiver& receiver : receivers)
         {
             CHECK(!receiver.IsFooCalled());
             CHECK(receiver.IsBarCalled());
-            CHECK(receiver.GetBarA() == 1);
-            CHECK(receiver.GetBarB() == true);
-            CHECK(receiver.GetBarC() == 2.3f);
+            CHECK(receiver.GetBarA() == g_bar_a);
+            CHECK(receiver.GetBarB() == g_bar_b);
+            CHECK(receiver.GetBarC() == g_bar_c);
         }
     }
 }
@@ -272,26 +276,114 @@ TEST_CASE("Connect Many Emitters to 1 Receiver", "[events]")
         CHECK(receiver.GetBarB() == false);
         CHECK(receiver.GetBarC() == 0.f);
 
-        int a = 1;
-        bool b = true;
-        float    c          = 2.3f;
         uint32_t emit_count = 0;
+        int      bar_a = g_bar_a;
+        bool     bar_b = g_bar_b;
+        float    bar_c = g_bar_c;
 
         for(TestEmitter& emitter : emitters)
         {
-            CHECK_NOTHROW(emitter.EmitBar(a, b, c));
+            CHECK_NOTHROW(emitter.EmitBar(bar_a, bar_b, bar_c));
 
             emit_count++;
             CHECK(receiver.GetBarCallCount() == emit_count);
-            CHECK(receiver.GetBarA() == a);
-            CHECK(receiver.GetBarB() == b);
-            CHECK(receiver.GetBarC() == c);
+            CHECK(receiver.GetBarA() == bar_a);
+            CHECK(receiver.GetBarB() == bar_b);
+            CHECK(receiver.GetBarC() == bar_c);
 
-            a++;
-            b = !b;
-            c = c * 2.f;
+            bar_a++;
+            bar_b = !bar_b;
+            bar_c *= 2.f;
         }
 
         CHECK(!receiver.IsFooCalled());
     }
 }
+
+#ifdef CATCH_CONFIG_ENABLE_BENCHMARKING
+
+static uint32_t EmitBarToManyReceivers(size_t receivers_count, Catch::Benchmark::Chronometer meter)
+{
+    TestEmitter emitter;
+    std::vector<TestReceiver> receivers(receivers_count);
+
+    for(TestReceiver& receiver : receivers)
+    {
+        receiver.Bind(emitter);
+    }
+
+    meter.measure([&]()
+    {
+        emitter.EmitBar(g_bar_a, g_bar_b, g_bar_c);
+    });
+
+    // Prevent code removal by optimizer and check received calls count
+    uint32_t received_calls_count = 0u;
+    for(TestReceiver& receiver : receivers)
+    {
+        received_calls_count += receiver.GetBarCallCount();
+    }
+    CHECK(received_calls_count == receivers_count * meter.runs());
+    return received_calls_count;
+}
+
+static uint32_t ReceiveBarFromManyEmitters(size_t emitters_count, Catch::Benchmark::Chronometer meter)
+{
+    std::vector<TestEmitter> emitters(emitters_count);
+    TestReceiver receiver;
+
+    for (TestEmitter& emitter : emitters)
+    {
+        receiver.Bind(emitter);
+    }
+
+    meter.measure([&]()
+    {
+        for (TestEmitter& emitter : emitters)
+        {
+            emitter.EmitBar(g_bar_a, g_bar_b, g_bar_c);
+        }
+    });
+
+    // Prevent code removal by optimizer and check received calls count
+    CHECK(receiver.GetBarCallCount() == emitters_count * meter.runs());
+    return receiver.GetBarCallCount();
+}
+
+TEST_CASE("Benchmark emit events", "[events][benchmark]")
+{
+
+    SECTION("Emit to many receivers")
+    {
+        BENCHMARK_ADVANCED("Emit to 10 receivers")(Catch::Benchmark::Chronometer meter)
+        {
+            return EmitBarToManyReceivers(10, meter);
+        };
+        BENCHMARK_ADVANCED("Emit to 100 receivers")(Catch::Benchmark::Chronometer meter)
+        {
+            return EmitBarToManyReceivers(100, meter);
+        };
+        BENCHMARK_ADVANCED("Emit to 1000 receivers")(Catch::Benchmark::Chronometer meter)
+        {
+            return EmitBarToManyReceivers(1000, meter);
+        };
+    }
+
+    SECTION("Receive from many emitters")
+    {
+        BENCHMARK_ADVANCED("Receive from 10 emitters")(Catch::Benchmark::Chronometer meter)
+        {
+            return ReceiveBarFromManyEmitters(10, meter);
+        };
+        BENCHMARK_ADVANCED("Receive from 100 emitters")(Catch::Benchmark::Chronometer meter)
+        {
+            return ReceiveBarFromManyEmitters(100, meter);
+        };
+        BENCHMARK_ADVANCED("Receive from 1000 emitters")(Catch::Benchmark::Chronometer meter)
+        {
+            return ReceiveBarFromManyEmitters(1000, meter);
+        };
+    }
+}
+
+#endif
