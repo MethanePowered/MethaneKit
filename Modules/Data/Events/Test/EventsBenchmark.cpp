@@ -21,7 +21,9 @@ Benchmark connection and emit of events with emitter and receiver classes.
 
 ******************************************************************************/
 
-#ifdef CATCH_CONFIG_ENABLE_BENCHMARKING // Can not be done in CMake because of ParseAndAddCatchTests error on expression
+// Catch benchmarks do not work correctly on Windows with unknown reason...
+// File compilation can not be disabled in CMake because of ParseAndAddCatchTests error on expression
+#if !defined(WIN32) && defined(CATCH_CONFIG_ENABLE_BENCHMARKING)
 
 #include "EventWrappers.hpp"
 
@@ -29,7 +31,7 @@ Benchmark connection and emit of events with emitter and receiver classes.
 
 using namespace Methane::Data;
 
-static uint32_t MeasureEmitToManyReceivers(size_t receivers_count, Catch::Benchmark::Chronometer meter)
+static uint32_t MeasureEmitToManyReceivers(uint32_t receivers_count, Catch::Benchmark::Chronometer meter)
 {
     TestEmitter emitter;
     std::vector<TestReceiver> receivers(receivers_count);
@@ -54,7 +56,7 @@ static uint32_t MeasureEmitToManyReceivers(size_t receivers_count, Catch::Benchm
     return received_calls_count;
 }
 
-static uint32_t MeasureConnectAndEmitToManyReceivers(size_t receivers_count, Catch::Benchmark::Chronometer meter)
+static uint32_t MeasureConnectAndEmitToManyReceivers(uint32_t receivers_count, Catch::Benchmark::Chronometer meter)
 {
     std::vector<TestReceiver> receivers(receivers_count);
 
@@ -74,11 +76,11 @@ static uint32_t MeasureConnectAndEmitToManyReceivers(size_t receivers_count, Cat
     {
         received_calls_count += receiver.GetBarCallCount();
     }
-    CHECK(received_calls_count == receivers_count * meter.runs());
+    CHECK(received_calls_count == (receivers_count * meter.runs()));
     return received_calls_count;
 }
 
-static uint32_t MeasureReceiveFromManyEmitters(size_t emitters_count, Catch::Benchmark::Chronometer meter)
+static uint32_t MeasureReceiveFromManyEmitters(uint32_t emitters_count, Catch::Benchmark::Chronometer meter)
 {
     std::vector<TestEmitter> emitters(emitters_count);
     TestReceiver receiver;
@@ -101,10 +103,10 @@ static uint32_t MeasureReceiveFromManyEmitters(size_t emitters_count, Catch::Ben
     return receiver.GetBarCallCount();
 }
 
-static uint32_t MeasureConnectAndReceiveFromManyEmitters(size_t emitters_count, Catch::Benchmark::Chronometer meter)
+static uint32_t MeasureConnectAndReceiveFromManyEmitters(uint32_t emitters_count, Catch::Benchmark::Chronometer meter)
 {
     std::vector<TestEmitter> emitters(emitters_count);
-    size_t received_calls_count = 0u;
+    uint32_t received_calls_count = 0u;
 
     meter.measure([&]()
     {
