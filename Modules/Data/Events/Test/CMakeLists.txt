@@ -5,7 +5,9 @@ set(TARGET MethaneDataEventsTest)
 
 add_executable(${TARGET}
     Main.cpp
+    EventWrappers.hpp
     EventsTest.cpp
+    EventsBenchmark.cpp
 )
 
 target_compile_definitions(${TARGET}
