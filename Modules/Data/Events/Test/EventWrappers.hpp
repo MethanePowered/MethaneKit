@@ -56,19 +56,23 @@ public:
     void Bind(TestEmitter& emitter, bool new_connection = true)
     {
         const size_t connected_receivers_count = emitter.GetConnectedReceiversCount();
+        const size_t connected_emitters_count  = GetConnectedEmittersCount();
 
         emitter.Connect(*this);
 
         CHECK(emitter.GetConnectedReceiversCount() == connected_receivers_count + static_cast<size_t>(new_connection));
+        CHECK(GetConnectedEmittersCount()          == connected_emitters_count  + static_cast<size_t>(new_connection));
     }
 
     void Unbind(TestEmitter& emitter, bool existing_connection = true)
     {
         const size_t connected_receivers_count = emitter.GetConnectedReceiversCount();
+        const size_t connected_emitters_count  = GetConnectedEmittersCount();
 
         emitter.Disconnect(*this);
 
         CHECK(emitter.GetConnectedReceiversCount() == connected_receivers_count - static_cast<size_t>(existing_connection));
+        CHECK(GetConnectedEmittersCount()          == connected_emitters_count  - static_cast<size_t>(existing_connection));
     }
 
     bool     IsFooCalled() const     { return m_foo_call_count > 0u; }
