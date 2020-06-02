@@ -27,61 +27,71 @@ Event emitter base template class implementation.
 
 #include <Methane/Instrumentation.h>
 
-#include <algorithm>
-
 namespace Methane::Data
 {
 
 template<typename EventType>
-class Emitter
+class Emitter : public IEmitter<EventType>
 {
-    using Receivers = WeakPtrs<Ref<Receiver<EventType>>>;
-
 public:
-    void Connect(Receiver<EventType>& receiver)
+    ~Emitter() override
     {
         META_FUNCTION_TASK();
-        m_connected_receiver_weak_ptrs.push_back(receiver.GetSelfPtr());
-    }
+        const Refs<Receiver<EventType>> connected_receiver_refs = m_connected_receiver_refs;
+        m_connected_receiver_refs.clear(); // no need to be processed in Disconnect callbacks from receiver
 
-    void Disconnect(Receiver<EventType>& receiver)
-    {
-        META_FUNCTION_TASK();
-        const auto weak_receiver_it = std::find_if(m_connected_receiver_weak_ptrs.begin(), m_connected_receiver_weak_ptrs.end(),
-                                                   [&receiver](const auto& cur_weak_receiver_ptr)
-            {
-                const auto cur_receiver_ptr = cur_weak_receiver_ptr.lock();
-                return cur_receiver_ptr && std::addressof(cur_receiver_ptr->get()) == std::addressof(receiver);
-            });
-        if (weak_receiver_it != m_connected_receiver_weak_ptrs.end())
+        for(const Ref<Receiver<EventType>>& receiver_ref : connected_receiver_refs)
         {
-            m_connected_receiver_weak_ptrs.erase(weak_receiver_it);
+            receiver_ref.get().OnDisconnected(*this);
         }
     }
 
-    template<typename EventFuncType, typename... EventArgTypes>
-    void Emit(EventFuncType&& event_func, EventArgTypes&&... event_args)
+    void Connect(Receiver<EventType>& receiver) override
     {
         META_FUNCTION_TASK();
-        for(auto connected_receiver_weak_ptr_it = m_connected_receiver_weak_ptrs.begin();
-                 connected_receiver_weak_ptr_it != m_connected_receiver_weak_ptrs.end();)
-        {
-            const auto connected_receiver_ptr = connected_receiver_weak_ptr_it->lock();
-            if (!connected_receiver_ptr)
-            {
-                connected_receiver_weak_ptr_it = m_connected_receiver_weak_ptrs.erase(connected_receiver_weak_ptr_it);
-                continue;
-            }
+        const auto connected_receiver_it = FindConnectedReceiver(receiver);
+        if (connected_receiver_it != m_connected_receiver_refs.end())
+            return;
 
-            (connected_receiver_ptr->get().*std::forward<EventFuncType>(event_func))(std::forward<EventArgTypes>(event_args)...);
-            ++connected_receiver_weak_ptr_it;
+        m_connected_receiver_refs.emplace_back(receiver);
+        receiver.OnConnected(*this);
+    }
+
+    void Disconnect(Receiver<EventType>& receiver) override
+    {
+        META_FUNCTION_TASK();
+        const auto connected_receiver_it = FindConnectedReceiver(receiver);
+        if (connected_receiver_it == m_connected_receiver_refs.end())
+            return;
+
+        m_connected_receiver_refs.erase(connected_receiver_it);
+        connected_receiver_it->get().OnDisconnected(*this);
+    }
+
+    template<typename FuncType, typename... ArgTypes>
+    void Emit(FuncType&& func_ptr, ArgTypes&&... args)
+    {
+        META_FUNCTION_TASK();
+        for(Ref<Receiver<EventType>>& receiver_ref : m_connected_receiver_refs)
+        {
+            (receiver_ref.get().*std::forward<FuncType>(func_ptr))(std::forward<ArgTypes>(args)...);
         }
     }
 
-    size_t GetConnectedReceiversCount() const { return m_connected_receiver_weak_ptrs.size(); }
+    size_t GetConnectedReceiversCount() const noexcept { return m_connected_receiver_refs.size(); }
 
 private:
-    WeakPtrs<Ref<Receiver<EventType>>> m_connected_receiver_weak_ptrs;
+    decltype(auto) FindConnectedReceiver(Receiver<EventType>& receiver)
+    {
+        META_FUNCTION_TASK();
+        return std::find_if(m_connected_receiver_refs.begin(), m_connected_receiver_refs.end(),
+                            [&receiver](Ref<Receiver<EventType>>& connected_receiver_ref)
+                            {
+                                return std::addressof(connected_receiver_ref.get()) == std::addressof(receiver);
+                            });
+    }
+
+    Refs<Receiver<EventType>> m_connected_receiver_refs;
 };
 
 } // namespace Methane::Data

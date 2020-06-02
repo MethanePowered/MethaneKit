@@ -24,29 +24,81 @@ Event receiver base template class implementation.
 #pragma once
 
 #include <Methane/Memory.hpp>
+#include <Methane/Instrumentation.h>
 
 #include <functional>
+#include <algorithm>
 
 namespace Methane::Data
 {
 
+template<class>
+class Receiver;
+
+template<class EventType>
+struct IEmitter
+{
+    virtual void Connect(Receiver<EventType>& receiver) = 0;
+    virtual void Disconnect(Receiver<EventType>& receiver) = 0;
+
+    virtual ~IEmitter() = default;
+};
+
 template<class EventType>
 class Receiver : public EventType
 {
-    using RefType = Ref<Receiver<EventType>>;
-
 public:
-    Receiver() : m_self_ptr(std::make_shared<RefType>(*this)) { }
+    ~Receiver() override
+    {
+        META_FUNCTION_TASK();
+        const auto connected_emitter_refs = m_connected_emitter_refs;
+        m_connected_emitter_refs.clear(); // no need to be processed in OnDisconnected callbacks from emitter
 
-    virtual ~Receiver() = default;
+        // Disconnect all connected emitters on receiver destruction
+        for(const Ref<IEmitter<EventType>>& connected_emitter_ref : connected_emitter_refs)
+        {
+            connected_emitter_ref.get().Disconnect(*this);
+        }
+    }
+
+    size_t GetConnectedEmittersCount() const noexcept { return m_connected_emitter_refs.size(); }
 
 protected:
-    template<class> friend class Emitter;
+    template<class>
+    friend class Emitter;
 
-    const Ptr<RefType>& GetSelfPtr() const noexcept { return m_self_ptr; }
+    void OnConnected(IEmitter<EventType>& emitter)
+    {
+        META_FUNCTION_TASK();
+        const auto connected_emitter_ref_it = FindConnectedEmitter(emitter);
+        if (connected_emitter_ref_it != m_connected_emitter_refs.end())
+            return;
+
+        m_connected_emitter_refs.emplace_back(emitter);
+    }
+
+    void OnDisconnected(IEmitter<EventType>& emitter)
+    {
+        META_FUNCTION_TASK();
+        const auto connected_emitter_ref_it = FindConnectedEmitter(emitter);
+        if (connected_emitter_ref_it == m_connected_emitter_refs.end())
+            return;
+
+        m_connected_emitter_refs.erase(connected_emitter_ref_it);
+    }
 
 private:
-    Ptr<RefType> m_self_ptr;
+    decltype(auto) FindConnectedEmitter(IEmitter<EventType>& emitter)
+    {
+        META_FUNCTION_TASK();
+        return std::find_if(m_connected_emitter_refs.begin(), m_connected_emitter_refs.end(),
+                            [&emitter](const Ref<IEmitter<EventType>>& connected_emitter_ref)
+                            {
+                                return std::addressof(connected_emitter_ref.get()) == std::addressof(emitter);
+                            });
+    }
+
+    Refs<IEmitter<EventType>> m_connected_emitter_refs;
 };
 
 } // namespace Methane::Data
