@@ -37,7 +37,7 @@ TEST_CASE("Connect one emitter to one receiver", "[events]")
         TestEmitter  emitter;
         TestReceiver receiver;
 
-        CHECK_NOTHROW(receiver.Bind(emitter));
+        receiver.CheckBind(emitter);
 
         CHECK(!receiver.IsFooCalled());
         CHECK(!receiver.IsBarCalled());
@@ -53,7 +53,7 @@ TEST_CASE("Connect one emitter to one receiver", "[events]")
         TestEmitter  emitter;
         TestReceiver receiver;
 
-        CHECK_NOTHROW(receiver.Bind(emitter));
+        receiver.CheckBind(emitter);
 
         CHECK(!receiver.IsFooCalled());
         CHECK(!receiver.IsBarCalled());
@@ -75,12 +75,12 @@ TEST_CASE("Connect one emitter to one receiver", "[events]")
         TestEmitter  emitter;
         TestReceiver receiver;
 
-        CHECK_NOTHROW(receiver.Bind(emitter));
+        receiver.CheckBind(emitter);
 
         CHECK(!receiver.IsFooCalled());
         CHECK(!receiver.IsBarCalled());
 
-        CHECK_NOTHROW(receiver.Unbind(emitter));
+        receiver.CheckUnbind(emitter);
         CHECK_NOTHROW(emitter.EmitFoo());
 
         CHECK(!receiver.IsFooCalled());
@@ -92,7 +92,7 @@ TEST_CASE("Connect one emitter to one receiver", "[events]")
         TestEmitter  emitter;
         {
             TestReceiver receiver;
-            CHECK_NOTHROW(receiver.Bind(emitter));
+            receiver.CheckBind(emitter);
         }
         CHECK_NOTHROW(emitter.EmitFoo());
     }
@@ -102,7 +102,7 @@ TEST_CASE("Connect one emitter to one receiver", "[events]")
         TestReceiver receiver;
         {
             TestEmitter emitter;
-            CHECK_NOTHROW(receiver.Bind(emitter));
+            receiver.CheckBind(emitter);
         }
     }
 }
@@ -116,7 +116,7 @@ TEST_CASE("Connect one emitter to many receivers", "[events]")
 
         for(TestReceiver& receiver : receivers)
         {
-            CHECK_NOTHROW(receiver.Bind(emitter));
+            receiver.CheckBind(emitter);
             CHECK(!receiver.IsFooCalled());
             CHECK(!receiver.IsBarCalled());
         }
@@ -137,7 +137,7 @@ TEST_CASE("Connect one emitter to many receivers", "[events]")
 
         for(TestReceiver& receiver : receivers)
         {
-            CHECK_NOTHROW(receiver.Bind(emitter));
+            receiver.CheckBind(emitter);
             CHECK(!receiver.IsFooCalled());
             CHECK(!receiver.IsBarCalled());
             CHECK(receiver.GetBarA() == 0);
@@ -157,6 +157,31 @@ TEST_CASE("Connect one emitter to many receivers", "[events]")
         }
     }
 
+    SECTION("Receivers get connected during emitted call")
+    {
+        TestEmitter emitter;
+        std::array<TestReceiver, 5> receivers;
+
+        for(TestReceiver& receiver : receivers)
+        {
+            receiver.CheckBind(emitter);
+        }
+
+        CHECK(emitter.GetConnectedReceiversCount() == receivers.size());
+        std::vector<TestReceiver>   dynamic_receivers;
+        dynamic_receivers.reserve(receivers.size());
+
+        CHECK_NOTHROW(emitter.EmitCall([&dynamic_receivers, &emitter](size_t)
+        {
+            TestReceiver new_receiver;
+            new_receiver.CheckBind(emitter);
+            dynamic_receivers.emplace_back(std::move(new_receiver));
+        }));
+
+        CHECK(dynamic_receivers.size() == receivers.size());
+        CHECK(emitter.GetConnectedReceiversCount() == dynamic_receivers.size() + receivers.size());
+    }
+
     SECTION("Receivers get destroyed during emitted call")
     {
         TestEmitter emitter;
@@ -166,7 +191,7 @@ TEST_CASE("Connect one emitter to many receivers", "[events]")
         for(Ptr<TestReceiver>& receiver_ptr : receivers_ptrs)
         {
             receiver_ptr = std::make_shared<TestReceiver>(receiver_index++);
-            CHECK_NOTHROW(receiver_ptr->Bind(emitter));
+            receiver_ptr->CheckBind(emitter);
         }
 
         CHECK_NOTHROW(emitter.EmitCall([&receivers_ptrs](size_t receiver_index)
@@ -187,7 +212,7 @@ TEST_CASE("Connect many emitters to one receiver", "[events]")
 
         for(TestEmitter& emitter : emitters)
         {
-            CHECK_NOTHROW(receiver.Bind(emitter));
+            receiver.CheckBind(emitter);
         }
 
         CHECK(!receiver.IsFooCalled());
@@ -212,7 +237,7 @@ TEST_CASE("Connect many emitters to one receiver", "[events]")
 
         for(TestEmitter& emitter : emitters)
         {
-            CHECK_NOTHROW(receiver.Bind(emitter));
+            receiver.CheckBind(emitter);
         }
 
         CHECK(!receiver.IsFooCalled());

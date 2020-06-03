@@ -66,23 +66,33 @@ public:
     TestReceiver() = default;
     TestReceiver(size_t id) : m_id(id) { }
 
-    void Bind(TestEmitter& emitter, bool new_connection = true)
+    void Bind(TestEmitter& emitter)
+    {
+        emitter.Connect(*this);
+    }
+
+    void Unbind(TestEmitter& emitter)
+    {
+        emitter.Disconnect(*this);
+    }
+
+    void CheckBind(TestEmitter& emitter, bool new_connection = true)
     {
         const size_t connected_receivers_count = emitter.GetConnectedReceiversCount();
         const size_t connected_emitters_count  = GetConnectedEmittersCount();
 
-        emitter.Connect(*this);
+        CHECK_NOTHROW(Bind(emitter));
 
         CHECK(emitter.GetConnectedReceiversCount() == connected_receivers_count + static_cast<size_t>(new_connection));
         CHECK(GetConnectedEmittersCount()          == connected_emitters_count  + static_cast<size_t>(new_connection));
     }
 
-    void Unbind(TestEmitter& emitter, bool existing_connection = true)
+    void CheckUnbind(TestEmitter& emitter, bool existing_connection = true)
     {
         const size_t connected_receivers_count = emitter.GetConnectedReceiversCount();
         const size_t connected_emitters_count  = GetConnectedEmittersCount();
 
-        emitter.Disconnect(*this);
+        CHECK_NOTHROW(Unbind(emitter));
 
         CHECK(emitter.GetConnectedReceiversCount() == connected_receivers_count - static_cast<size_t>(existing_connection));
         CHECK(GetConnectedEmittersCount()          == connected_emitters_count  - static_cast<size_t>(existing_connection));

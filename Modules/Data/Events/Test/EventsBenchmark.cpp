@@ -76,7 +76,6 @@ static uint32_t MeasureConnectAndEmitToManyReceivers(uint32_t receivers_count, C
     {
         received_calls_count += receiver.GetBarCallCount();
     }
-    CHECK(received_calls_count == (receivers_count * meter.runs()));
     return received_calls_count;
 }
 
@@ -98,8 +97,6 @@ static uint32_t MeasureReceiveFromManyEmitters(uint32_t emitters_count, Catch::B
         }
     });
 
-    // Prevent code removal by optimizer and check received calls count
-    CHECK(receiver.GetBarCallCount() == emitters_count * meter.runs());
     return receiver.GetBarCallCount();
 }
 
@@ -122,8 +119,6 @@ static uint32_t MeasureConnectAndReceiveFromManyEmitters(uint32_t emitters_count
         received_calls_count += receiver.GetBarCallCount();
     });
 
-    // Prevent code removal by optimizer and check received calls count
-    CHECK(received_calls_count == emitters_count * meter.runs());
     return received_calls_count;
 }
 

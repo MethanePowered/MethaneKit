@@ -56,7 +56,15 @@ public:
         if (connected_receiver_it != m_connected_receiver_opt_refs.end())
             return;
 
-        m_connected_receiver_opt_refs.emplace_back(receiver);
+        if (m_is_emitting)
+        {
+            // Modification of connected receivers collection is prohibited during emit cycle, so we add them to separate collection
+            m_additional_connected_receiver_opt_refs.emplace_back(receiver);
+        }
+        else
+        {
+            m_connected_receiver_opt_refs.emplace_back(receiver);
+        }
         receiver.OnConnected(*this);
     }
 
@@ -67,51 +75,69 @@ public:
         if (connected_receiver_it == m_connected_receiver_opt_refs.end())
             return;
 
-        if (m_is_emitting)
-        {
-            connected_receiver_it->reset();
-            return;
-        }
-
         if (!connected_receiver_it->has_value())
             throw std::logic_error("Something went really wrong with connected receivers at this point.");
 
-        m_connected_receiver_opt_refs.erase(connected_receiver_it);
-        connected_receiver_it->value().get().OnDisconnected(*this);
+        if (m_is_emitting)
+        {
+            // Modification of connected receivers collection is prohibited during emit cycle, so we just clear the reference instead of erasing from collection
+            connected_receiver_it->reset();
+        }
+        else
+        {
+            m_connected_receiver_opt_refs.erase(connected_receiver_it);
+        }
+        receiver.OnDisconnected(*this);
     }
 
     template<typename FuncType, typename... ArgTypes>
     void Emit(FuncType&& func_ptr, ArgTypes&&... args)
     {
         META_FUNCTION_TASK();
-        bool is_cleanup_needed = false;
+        bool is_cleanup_required = false;
 
         m_is_emitting = true;
         for(const auto& receiver_opt_ref : m_connected_receiver_opt_refs)
         {
             if (!receiver_opt_ref)
             {
-                is_cleanup_needed = true;
+                is_cleanup_required = true;
                 continue;
             }
 
+            // Call the emitted event function in receiver
             (receiver_opt_ref->get().*std::forward<FuncType>(func_ptr))(std::forward<ArgTypes>(args)...);
 
-            // Receiver may be disconnected or destroyed during emitted event
             if (!receiver_opt_ref)
             {
-                is_cleanup_needed = true;
+                // Receiver may be disconnected or destroyed during emitted event and it will be cleaned up after full emit cycle
+                is_cleanup_required = true;
             }
         }
         m_is_emitting = false;
 
-        if (is_cleanup_needed)
+        if (is_cleanup_required)
         {
-            Cleanup();
+            // Erase receivers disconnected during emit cycle from the connected receivers
+            for(auto connected_receiver_opt_ref_it  = m_connected_receiver_opt_refs.begin();
+                     connected_receiver_opt_ref_it != m_connected_receiver_opt_refs.end();)
+            {
+                if (connected_receiver_opt_ref_it->has_value())
+                    connected_receiver_opt_ref_it++;
+                else
+                    connected_receiver_opt_ref_it = m_connected_receiver_opt_refs.erase(connected_receiver_opt_ref_it);
+            }
+        }
+
+        // Add receivers connected during emit cycle to the connected receivers
+        if (!m_additional_connected_receiver_opt_refs.empty())
+        {
+            m_connected_receiver_opt_refs.insert(m_connected_receiver_opt_refs.end(), m_additional_connected_receiver_opt_refs.begin(), m_additional_connected_receiver_opt_refs.end());
+            m_additional_connected_receiver_opt_refs.clear();
         }
     }
 
-    size_t GetConnectedReceiversCount() const noexcept { return m_connected_receiver_opt_refs.size(); }
+    size_t GetConnectedReceiversCount() const noexcept { return m_connected_receiver_opt_refs.size() + m_additional_connected_receiver_opt_refs.size(); }
 
 private:
     decltype(auto) FindConnectedReceiver(Receiver<EventType>& receiver)
@@ -125,24 +151,9 @@ private:
         );
     }
 
-    void Cleanup()
-    {
-        for(auto connected_receiver_opt_ref_it  = m_connected_receiver_opt_refs.begin();
-                 connected_receiver_opt_ref_it != m_connected_receiver_opt_refs.end();)
-        {
-            if (connected_receiver_opt_ref_it->has_value())
-            {
-                connected_receiver_opt_ref_it++;
-            }
-            else
-            {
-                connected_receiver_opt_ref_it = m_connected_receiver_opt_refs.erase(connected_receiver_opt_ref_it);
-            }
-        }
-    }
-
     bool m_is_emitting = false;
     Opts<Ref<Receiver<EventType>>> m_connected_receiver_opt_refs;
+    Opts<Ref<Receiver<EventType>>> m_additional_connected_receiver_opt_refs;
 };
 
 } // namespace Methane::Data
