@@ -84,15 +84,31 @@ public:
     void Emit(FuncType&& func_ptr, ArgTypes&&... args)
     {
         META_FUNCTION_TASK();
+        bool is_cleanup_needed = false;
+
         m_is_emitting = true;
         for(const auto& receiver_opt_ref : m_connected_receiver_opt_refs)
         {
             if (!receiver_opt_ref)
+            {
+                is_cleanup_needed = true;
                 continue;
+            }
 
             (receiver_opt_ref->get().*std::forward<FuncType>(func_ptr))(std::forward<ArgTypes>(args)...);
+
+            // Receiver may be disconnected or destroyed during emitted event
+            if (!receiver_opt_ref)
+            {
+                is_cleanup_needed = true;
+            }
         }
         m_is_emitting = false;
+
+        if (is_cleanup_needed)
+        {
+            Cleanup();
+        }
     }
 
     size_t GetConnectedReceiversCount() const noexcept { return m_connected_receiver_opt_refs.size(); }
@@ -107,6 +123,22 @@ private:
                 return connected_receiver_opt_ref && std::addressof(connected_receiver_opt_ref->get()) == std::addressof(receiver);
             }
         );
+    }
+
+    void Cleanup()
+    {
+        for(auto connected_receiver_opt_ref_it  = m_connected_receiver_opt_refs.begin();
+                 connected_receiver_opt_ref_it != m_connected_receiver_opt_refs.end();)
+        {
+            if (connected_receiver_opt_ref_it->has_value())
+            {
+                connected_receiver_opt_ref_it++;
+            }
+            else
+            {
+                connected_receiver_opt_ref_it = m_connected_receiver_opt_refs.erase(connected_receiver_opt_ref_it);
+            }
+        }
     }
 
     bool m_is_emitting = false;

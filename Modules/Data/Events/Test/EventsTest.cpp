@@ -173,6 +173,8 @@ TEST_CASE("Connect one emitter to many receivers", "[events]")
         {
              receivers_ptrs[receiver_index].reset();
         }));
+
+        CHECK(emitter.GetConnectedReceiversCount() == 0);
     }
 }
 
