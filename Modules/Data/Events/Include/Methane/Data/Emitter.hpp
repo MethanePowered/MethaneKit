@@ -37,12 +37,15 @@ public:
     ~Emitter() override
     {
         META_FUNCTION_TASK();
-        const Refs<Receiver<EventType>> connected_receiver_refs = m_connected_receiver_refs;
-        m_connected_receiver_refs.clear(); // no need to be processed in Disconnect callbacks from receiver
+        const auto connected_receiver_refs = m_connected_receiver_opt_refs;
+        m_connected_receiver_opt_refs.clear(); // no need to be processed in Disconnect callbacks from receiver
 
-        for(const Ref<Receiver<EventType>>& receiver_ref : connected_receiver_refs)
+        for(const auto& receiver_opt_ref : connected_receiver_refs)
         {
-            receiver_ref.get().OnDisconnected(*this);
+            if (receiver_opt_ref)
+                continue;
+
+            receiver_opt_ref->get().OnDisconnected(*this);
         }
     }
 
@@ -50,10 +53,10 @@ public:
     {
         META_FUNCTION_TASK();
         const auto connected_receiver_it = FindConnectedReceiver(receiver);
-        if (connected_receiver_it != m_connected_receiver_refs.end())
+        if (connected_receiver_it != m_connected_receiver_opt_refs.end())
             return;
 
-        m_connected_receiver_refs.emplace_back(receiver);
+        m_connected_receiver_opt_refs.emplace_back(receiver);
         receiver.OnConnected(*this);
     }
 
@@ -61,37 +64,53 @@ public:
     {
         META_FUNCTION_TASK();
         const auto connected_receiver_it = FindConnectedReceiver(receiver);
-        if (connected_receiver_it == m_connected_receiver_refs.end())
+        if (connected_receiver_it == m_connected_receiver_opt_refs.end())
             return;
 
-        m_connected_receiver_refs.erase(connected_receiver_it);
-        connected_receiver_it->get().OnDisconnected(*this);
+        if (m_is_emitting)
+        {
+            connected_receiver_it->reset();
+            return;
+        }
+
+        if (!connected_receiver_it->has_value())
+            throw std::logic_error("Something went really wrong with connected receivers at this point.");
+
+        m_connected_receiver_opt_refs.erase(connected_receiver_it);
+        connected_receiver_it->value().get().OnDisconnected(*this);
     }
 
     template<typename FuncType, typename... ArgTypes>
     void Emit(FuncType&& func_ptr, ArgTypes&&... args)
     {
         META_FUNCTION_TASK();
-        for(Ref<Receiver<EventType>>& receiver_ref : m_connected_receiver_refs)
+        m_is_emitting = true;
+        for(const auto& receiver_opt_ref : m_connected_receiver_opt_refs)
         {
-            (receiver_ref.get().*std::forward<FuncType>(func_ptr))(std::forward<ArgTypes>(args)...);
+            if (!receiver_opt_ref)
+                continue;
+
+            (receiver_opt_ref->get().*std::forward<FuncType>(func_ptr))(std::forward<ArgTypes>(args)...);
         }
+        m_is_emitting = false;
     }
 
-    size_t GetConnectedReceiversCount() const noexcept { return m_connected_receiver_refs.size(); }
+    size_t GetConnectedReceiversCount() const noexcept { return m_connected_receiver_opt_refs.size(); }
 
 private:
     decltype(auto) FindConnectedReceiver(Receiver<EventType>& receiver)
     {
         META_FUNCTION_TASK();
-        return std::find_if(m_connected_receiver_refs.begin(), m_connected_receiver_refs.end(),
-                            [&receiver](Ref<Receiver<EventType>>& connected_receiver_ref)
-                            {
-                                return std::addressof(connected_receiver_ref.get()) == std::addressof(receiver);
-                            });
+        return std::find_if(m_connected_receiver_opt_refs.begin(), m_connected_receiver_opt_refs.end(),
+            [&receiver](auto& connected_receiver_opt_ref)
+            {
+                return connected_receiver_opt_ref && std::addressof(connected_receiver_opt_ref->get()) == std::addressof(receiver);
+            }
+        );
     }
 
-    Refs<Receiver<EventType>> m_connected_receiver_refs;
+    bool m_is_emitting = false;
+    Opts<Ref<Receiver<EventType>>> m_connected_receiver_opt_refs;
 };
 
 } // namespace Methane::Data

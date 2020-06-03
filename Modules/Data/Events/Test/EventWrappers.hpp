@@ -25,13 +25,18 @@ Emitter and Recever wrappers for events testing.
 
 #include <Methane/Data/Emitter.hpp>
 
+#include <functional>
+
 namespace Methane::Data
 {
 
 struct ITestEvents
 {
+    using CallFunc = std::function<void(size_t /*receiver_id*/)>;
+
     virtual void Foo() = 0;
     virtual void Bar(int a, bool b, float c) = 0;
+    virtual void Call(CallFunc f) = 0;
 
     virtual ~ITestEvents() = default;
 };
@@ -48,11 +53,19 @@ public:
     {
         Emit(&ITestEvents::Bar, a, b, c);
     }
+
+    void EmitCall(ITestEvents::CallFunc f)
+    {
+        Emit(&ITestEvents::Call, f);
+    }
 };
 
 class TestReceiver : protected Receiver<ITestEvents>
 {
 public:
+    TestReceiver() = default;
+    TestReceiver(size_t id) : m_id(id) { }
+
     void Bind(TestEmitter& emitter, bool new_connection = true)
     {
         const size_t connected_receivers_count = emitter.GetConnectedReceiversCount();
@@ -75,6 +88,8 @@ public:
         CHECK(GetConnectedEmittersCount()          == connected_emitters_count  - static_cast<size_t>(existing_connection));
     }
 
+    size_t   GetId() const           { return m_id; }
+
     bool     IsFooCalled() const     { return m_foo_call_count > 0u; }
     uint32_t GetFooCallCount() const { return m_foo_call_count; }
 
@@ -86,7 +101,9 @@ public:
     float    GetBarC() const         { return m_bar_c; }
 
 protected:
+
     // ITestEvent implementation
+
     void Foo() override
     {
         m_foo_call_count++;
@@ -100,12 +117,18 @@ protected:
         m_bar_c = c;
     }
 
+    void Call(CallFunc f) override
+    {
+        f(m_id);
+    }
+
 private:
-    uint32_t  m_foo_call_count = 0u;
-    uint32_t  m_bar_call_count = 0u;
-    int       m_bar_a = 0;
-    bool      m_bar_b = false;
-    float     m_bar_c = 0.f;
+    const size_t m_id = 0;
+    uint32_t     m_foo_call_count = 0u;
+    uint32_t     m_bar_call_count = 0u;
+    int          m_bar_a = 0;
+    bool         m_bar_b = false;
+    float        m_bar_c = 0.f;
 };
 
 constexpr int   g_bar_a = 1;

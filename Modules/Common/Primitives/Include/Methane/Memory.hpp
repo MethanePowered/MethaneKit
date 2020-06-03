@@ -24,6 +24,7 @@ Methane memory handling smart pointers and references.
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <functional>
 #include <vector>
 
@@ -59,6 +60,12 @@ using Ref = std::reference_wrapper<T>;
 
 template<class T>
 using Refs = std::vector<Ref<T>>;
+
+template<class T>
+using Opt = std::optional<T>;
+
+template<class T>
+using Opts = std::vector<Opt<T>>;
 
 #define META_UNUSED(var) (void)var
 

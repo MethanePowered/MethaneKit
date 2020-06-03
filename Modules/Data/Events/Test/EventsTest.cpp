@@ -27,6 +27,7 @@ Unit tests of event connections with Emitter and Receiver classes
 
 #include <array>
 
+using namespace Methane;
 using namespace Methane::Data;
 
 TEST_CASE("Connect one emitter to one receiver", "[events]")
@@ -154,6 +155,24 @@ TEST_CASE("Connect one emitter to many receivers", "[events]")
             CHECK(receiver.GetBarB() == g_bar_b);
             CHECK(receiver.GetBarC() == g_bar_c);
         }
+    }
+
+    SECTION("Receivers get destroyed during emitted call")
+    {
+        TestEmitter emitter;
+        Ptrs<TestReceiver> receivers_ptrs(5);
+
+        size_t receiver_index = 0;
+        for(Ptr<TestReceiver>& receiver_ptr : receivers_ptrs)
+        {
+            receiver_ptr = std::make_shared<TestReceiver>(receiver_index++);
+            CHECK_NOTHROW(receiver_ptr->Bind(emitter));
+        }
+
+        CHECK_NOTHROW(emitter.EmitCall([&receivers_ptrs](size_t receiver_index)
+        {
+             receivers_ptrs[receiver_index].reset();
+        }));
     }
 }
 
