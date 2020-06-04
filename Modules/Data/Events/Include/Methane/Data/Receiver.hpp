@@ -48,6 +48,17 @@ template<class EventType>
 class Receiver : public EventType
 {
 public:
+    Receiver() = default;
+    Receiver(const Receiver& other)
+        : m_connected_emitter_refs(other.m_connected_emitter_refs)
+    {
+        META_FUNCTION_TASK();
+        for(const Ref<IEmitter<EventType>>& connected_emitter_ref : m_connected_emitter_refs)
+        {
+            connected_emitter_ref.get().Connect(*this);
+        }
+    }
+
     ~Receiver() override
     {
         META_FUNCTION_TASK();

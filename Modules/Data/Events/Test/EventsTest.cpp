@@ -157,7 +157,29 @@ TEST_CASE("Connect one emitter to many receivers", "[events]")
         }
     }
 
-    SECTION("Receivers get connected during emitted call")
+    SECTION("Copied receivers are connected to emitter")
+    {
+        TestEmitter emitter;
+        TestReceiver receiver;
+        receiver.CheckBind(emitter);
+
+        std::vector<TestReceiver> receiver_copies;
+        for(size_t id = 0; id < 5; ++id)
+        {
+            CHECK_NOTHROW(receiver_copies.push_back(receiver));
+        }
+
+        CHECK(emitter.GetConnectedReceiversCount() == receiver_copies.size() + 1);
+        CHECK_NOTHROW(emitter.EmitFoo());
+
+        CHECK(receiver.IsFooCalled());
+        for(TestReceiver& receiver_copy : receiver_copies)
+        {
+            CHECK(receiver_copy.IsFooCalled());
+        }
+    }
+
+    SECTION("Connect receivers during emitted call")
     {
         TestEmitter emitter;
         std::array<TestReceiver, 5> receivers;
@@ -182,7 +204,7 @@ TEST_CASE("Connect one emitter to many receivers", "[events]")
         CHECK(emitter.GetConnectedReceiversCount() == total_receivers_count);
     }
 
-    SECTION("Receivers get destroyed during emitted call")
+    SECTION("Destroy receivers during emitted call")
     {
         TestEmitter emitter;
         Ptrs<TestReceiver> receivers_ptrs(5);
