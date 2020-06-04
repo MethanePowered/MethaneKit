@@ -90,7 +90,7 @@ jobs:
     vcVarsBatFile: 'vcvars64.bat'
     generatorName: '"Visual Studio 15 2017 Win64"'
     cmakeFlags: $(buildProfilingCmakeFlags)
-    buildName: '$(platform)-$(configuration)'
+    buildName: '$(platform)-$(configuration)-Profiling'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
@@ -130,7 +130,7 @@ jobs:
     vcVarsBatFile: 'vcvars32.bat'
     generatorName: '"Visual Studio 15 2017"'
     cmakeFlags: $(buildProfilingCmakeFlags)
-    buildName: '$(platform)-$(configuration)'
+    buildName: '$(platform)-$(configuration)-Profiling'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
@@ -168,7 +168,7 @@ jobs:
     configuration: 'Release'
     generatorName: 'Xcode'
     cmakeFlags: $(buildProfilingCmakeFlags)
-    buildName: '$(platform)-$(configuration)'
+    buildName: '$(platform)-$(configuration)-Profiling'
     buildDir: 'Build/Output/$(buildName)/Build'
     installDir: 'Build/Output/$(buildName)/Install'
     buildInstallDir: '../Install'
