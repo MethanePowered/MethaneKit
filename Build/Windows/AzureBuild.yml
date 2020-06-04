@@ -20,7 +20,11 @@ steps:
       cmakeArgs: '--build . --config $(configuration) --target install'
 
   - script: |
-      for /r "." %%a in (*Test.exe) do "%%~fa" -r junit -o "%%~fa_result.xml"
+      echo Running unit-tests in directory "%cd%"
+      for /r "." %%a in (*Test.exe) do (
+        echo   - %%~na
+        "%%~fa" -r junit -o "%%~fa_result.xml"
+      )
     workingDirectory: '$(installDir)\Tests'
     displayName: 'Run all unit-tests from install directory'
 
