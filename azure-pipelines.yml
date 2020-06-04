@@ -59,7 +59,7 @@ variables:
 
 jobs:
 
-- job: Windows x64 Release
+- job: Windows_x64
 
   pool:
     vmImage: 'vs2017-win2016'
@@ -79,7 +79,7 @@ jobs:
   steps:
   - template: Build/Windows/AzureBuild.yml
 
-- job: Windows x64 Profiling
+- job: Windows_x64_Profiling
 
   pool:
     vmImage: 'vs2017-win2016'
@@ -99,7 +99,7 @@ jobs:
   steps:
   - template: Build/Windows/AzureBuild.yml
 
-- job: Windows x86 Release
+- job: Windows_x86
 
   pool:
     vmImage: 'vs2017-win2016'
@@ -119,7 +119,7 @@ jobs:
   steps:
   - template: Build/Windows/AzureBuild.yml
 
-- job: Windows x86 Profiling
+- job: Windows_x86_Profiling
 
   pool:
     vmImage: 'vs2017-win2016'
@@ -139,7 +139,7 @@ jobs:
   steps:
   - template: Build/Windows/AzureBuild.yml
 
-- job: MacOS Release
+- job: MacOS
 
   pool:
     vmImage: 'macOS-10.14'
@@ -158,7 +158,7 @@ jobs:
   steps:
   - template: Build/Posix/AzureBuild.yml
 
-- job: MacOS Profiling
+- job: MacOS_Profiling
 
   pool:
     vmImage: 'macOS-10.14'
@@ -177,7 +177,7 @@ jobs:
   steps:
   - template: Build/Posix/AzureBuild.yml
 
-- job: Ubuntu Release
+- job: Ubuntu
 
   pool:
     vmImage: 'ubuntu-18.04'
