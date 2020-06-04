@@ -20,11 +20,13 @@ steps:
       cmakeArgs: '--build . --config $(configuration) --target install'
 
   - script: |
+      setlocal enabledelayedexpansion
       echo Running unit-tests in directory "%cd%"
       for /r "." %%a in (*Test.exe) do (
         "%%~fa" -r junit -o "%%~fa_result.xml"
-        echo   - %%~na - error code %errorlevel%
+        echo   - %%~na - completed with !errorlevel! code
       )
+      exit 0
     workingDirectory: '$(installDir)\Tests'
     failOnStderr: false
     displayName: 'Run all unit-tests from install directory'
