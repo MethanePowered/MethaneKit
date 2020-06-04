@@ -105,6 +105,58 @@
             ]
         },
         {
+            "name": "x86-Release-Profiling",
+            "generator": "Ninja",
+            "configurationType": "RelWithDebInfo",
+            "inheritEnvironments": [ "msvc_x86" ],
+            "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
+            "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
+            "buildCommandArgs": "-v",
+            "ctestCommandArgs": "",
+            "variables": [
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "True",
+                    "type": "BOOL"
+                }
+            ]
+        },
+        {
             "name": "x64-Debug",
             "generator": "Ninja",
             "configurationType": "Debug",
@@ -204,6 +256,58 @@
                 {
                     "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
                     "value": "False",
+                    "type": "BOOL"
+                }
+            ]
+        },
+        {
+            "name": "x64-Release-Profiling",
+            "generator": "Ninja",
+            "configurationType": "RelWithDebInfo",
+            "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
+            "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
+            "buildCommandArgs": "-v",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "msvc_x64_x64" ],
+            "variables": [
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "True",
                     "type": "BOOL"
                 }
             ]

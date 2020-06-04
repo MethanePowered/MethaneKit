@@ -32,18 +32,34 @@ resources:
       submodules: recursive
 
 variables:
-  buildCmakeFlags: '-DMETHANE_VERSION_BUILD=$(Build.BuildNumber)
+
+  buildReleaseCmakeFlags: '-DMETHANE_VERSION_BUILD=$(Build.BuildNumber)
     -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON
     -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF
+    -DMETHANE_COMMAND_DEBUG_GROUPS_ENABLED:BOOL=ON
     -DMETHANE_LOGGING_ENABLED:BOOL=OFF
     -DMETHANE_USE_OPEN_IMAGE_IO:BOOL=OFF
     -DMETHANE_SCOPE_TIMERS_ENABLED:BOOL=OFF
+    -DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON
+    -DMETHANE_GPU_INSTRUMENTATION_ENABLED:BOOL=OFF
     -DMETHANE_TRACY_PROFILING_ENABLED:BOOL=OFF
-    -DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON'
+    -DMETHANE_TRACY_PROFILING_ON_DEMAND:BOOL=OFF'
+
+  buildProfilingCmakeFlags: '-DMETHANE_VERSION_BUILD=$(Build.BuildNumber)
+    -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON
+    -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF
+    -DMETHANE_COMMAND_DEBUG_GROUPS_ENABLED:BOOL=ON
+    -DMETHANE_LOGGING_ENABLED:BOOL=OFF
+    -DMETHANE_USE_OPEN_IMAGE_IO:BOOL=OFF
+    -DMETHANE_SCOPE_TIMERS_ENABLED:BOOL=ON
+    -DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON
+    -DMETHANE_GPU_INSTRUMENTATION_ENABLED:BOOL=ON
+    -DMETHANE_TRACY_PROFILING_ENABLED:BOOL=ON
+    -DMETHANE_TRACY_PROFILING_ON_DEMAND:BOOL=ON'
 
 jobs:
 
-- job: Windows_x64
+- job: Windows x64 Release
 
   pool:
     vmImage: 'vs2017-win2016'
@@ -53,7 +69,7 @@ jobs:
     configuration: 'Release'
     vcVarsBatFile: 'vcvars64.bat'
     generatorName: '"Visual Studio 15 2017 Win64"'
-    cmakeFlags: $(buildCmakeFlags)
+    cmakeFlags: $(buildReleaseCmakeFlags)
     buildName: '$(platform)-$(configuration)'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
@@ -63,7 +79,27 @@ jobs:
   steps:
   - template: Build/Windows/AzureBuild.yml
 
-- job: Windows_x86
+- job: Windows x64 Profiling
+
+  pool:
+    vmImage: 'vs2017-win2016'
+
+  variables:
+    platform: 'Win64'
+    configuration: 'Release'
+    vcVarsBatFile: 'vcvars64.bat'
+    generatorName: '"Visual Studio 15 2017 Win64"'
+    cmakeFlags: $(buildProfilingCmakeFlags)
+    buildName: '$(platform)-$(configuration)'
+    buildDir: 'Build\Output\$(buildName)\Build'
+    installDir: 'Build\Output\$(buildName)\Install'
+    buildInstallDir: '..\Install'
+    rootDir: '..\..\..\..'
+
+  steps:
+  - template: Build/Windows/AzureBuild.yml
+
+- job: Windows x86 Release
 
   pool:
     vmImage: 'vs2017-win2016'
@@ -73,7 +109,7 @@ jobs:
     configuration: 'Release'
     vcVarsBatFile: 'vcvars32.bat'
     generatorName: '"Visual Studio 15 2017"'
-    cmakeFlags: $(buildCmakeFlags)
+    cmakeFlags: $(buildReleaseCmakeFlags)
     buildName: '$(platform)-$(configuration)'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
@@ -83,7 +119,27 @@ jobs:
   steps:
   - template: Build/Windows/AzureBuild.yml
 
-- job: MacOS
+- job: Windows x86 Profiling
+
+  pool:
+    vmImage: 'vs2017-win2016'
+
+  variables:
+    platform: 'Win32'
+    configuration: 'Release'
+    vcVarsBatFile: 'vcvars32.bat'
+    generatorName: '"Visual Studio 15 2017"'
+    cmakeFlags: $(buildProfilingCmakeFlags)
+    buildName: '$(platform)-$(configuration)'
+    buildDir: 'Build\Output\$(buildName)\Build'
+    installDir: 'Build\Output\$(buildName)\Install'
+    buildInstallDir: '..\Install'
+    rootDir: '..\..\..\..'
+
+  steps:
+  - template: Build/Windows/AzureBuild.yml
+
+- job: MacOS Release
 
   pool:
     vmImage: 'macOS-10.14'
@@ -92,7 +148,7 @@ jobs:
     platform: 'MacOS'
     configuration: 'Release'
     generatorName: 'Xcode'
-    cmakeFlags: $(buildCmakeFlags)
+    cmakeFlags: $(buildReleaseCmakeFlags)
     buildName: '$(platform)-$(configuration)'
     buildDir: 'Build/Output/$(buildName)/Build'
     installDir: 'Build/Output/$(buildName)/Install'
@@ -102,7 +158,26 @@ jobs:
   steps:
   - template: Build/Posix/AzureBuild.yml
 
-- job: Ubuntu
+- job: MacOS Profiling
+
+  pool:
+    vmImage: 'macOS-10.14'
+
+  variables:
+    platform: 'MacOS'
+    configuration: 'Release'
+    generatorName: 'Xcode'
+    cmakeFlags: $(buildProfilingCmakeFlags)
+    buildName: '$(platform)-$(configuration)'
+    buildDir: 'Build/Output/$(buildName)/Build'
+    installDir: 'Build/Output/$(buildName)/Install'
+    buildInstallDir: '../Install'
+    rootDir: '../../../..'
+
+  steps:
+  - template: Build/Posix/AzureBuild.yml
+
+- job: Ubuntu Release
 
   pool:
     vmImage: 'ubuntu-18.04'
@@ -111,7 +186,7 @@ jobs:
     platform: 'Ubuntu'
     configuration: 'Release'
     generatorName: '"Unix Makefiles"'
-    cmakeFlags: $(buildCmakeFlags)
+    cmakeFlags: $(buildReleaseCmakeFlags)
     buildName: '$(platform)-$(configuration)'
     buildDir: 'Build/Output/$(buildName)/Build'
     installDir: 'Build/Output/$(buildName)/Install'
