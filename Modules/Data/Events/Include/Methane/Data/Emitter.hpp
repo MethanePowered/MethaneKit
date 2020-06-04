@@ -27,6 +27,8 @@ Event emitter base template class implementation.
 
 #include <Methane/Instrumentation.h>
 
+#include <set>
+
 namespace Methane::Data
 {
 
@@ -37,15 +39,15 @@ public:
     ~Emitter() override
     {
         META_FUNCTION_TASK();
-        const auto connected_receiver_refs = m_connected_receiver_opt_refs;
-        m_connected_receiver_opt_refs.clear(); // no need to be processed in Disconnect callbacks from receiver
+        const auto connected_receivers = m_connected_receivers;
+        m_connected_receivers.clear(); // no need to process Disconnect callbacks from Receiver
 
-        for(const auto& receiver_opt_ref : connected_receiver_refs)
+        for(Receiver<EventType>* p_receiver : connected_receivers)
         {
-            if (receiver_opt_ref)
+            if (!p_receiver)
                 continue;
 
-            receiver_opt_ref->get().OnDisconnected(*this);
+            p_receiver->OnDisconnected(*this);
         }
     }
 
@@ -53,17 +55,17 @@ public:
     {
         META_FUNCTION_TASK();
         const auto connected_receiver_it = FindConnectedReceiver(receiver);
-        if (connected_receiver_it != m_connected_receiver_opt_refs.end())
+        if (connected_receiver_it != m_connected_receivers.end())
             return;
 
         if (m_is_emitting)
         {
-            // Modification of connected receivers collection is prohibited during emit cycle, so we add them to separate collection
-            m_additional_connected_receiver_opt_refs.emplace_back(receiver);
+            // Modification of connected receivers collection is prohibited during emit cycle, so we add them to separate collection and merge later
+            m_additional_connected_receivers.insert(&receiver);
         }
         else
         {
-            m_connected_receiver_opt_refs.emplace_back(receiver);
+            m_connected_receivers.emplace_back(&receiver);
         }
         receiver.OnConnected(*this);
     }
@@ -72,20 +74,24 @@ public:
     {
         META_FUNCTION_TASK();
         const auto connected_receiver_it = FindConnectedReceiver(receiver);
-        if (connected_receiver_it == m_connected_receiver_opt_refs.end())
+        if (connected_receiver_it == m_connected_receivers.end())
+        {
+            if (m_is_emitting)
+            {
+                m_additional_connected_receivers.erase(&receiver);
+            }
             return;
+        }
 
-        if (!connected_receiver_it->has_value())
-            throw std::logic_error("Something went really wrong with connected receivers at this point.");
-
+        assert(*connected_receiver_it);
         if (m_is_emitting)
         {
             // Modification of connected receivers collection is prohibited during emit cycle, so we just clear the reference instead of erasing from collection
-            connected_receiver_it->reset();
+            *connected_receiver_it = nullptr;
         }
         else
         {
-            m_connected_receiver_opt_refs.erase(connected_receiver_it);
+            m_connected_receivers.erase(connected_receiver_it);
         }
         receiver.OnDisconnected(*this);
     }
@@ -97,18 +103,18 @@ public:
         bool is_cleanup_required = false;
 
         m_is_emitting = true;
-        for(const auto& receiver_opt_ref : m_connected_receiver_opt_refs)
+        for(Receiver<EventType>*& p_receiver : m_connected_receivers)
         {
-            if (!receiver_opt_ref)
+            if (!p_receiver)
             {
                 is_cleanup_required = true;
                 continue;
             }
 
             // Call the emitted event function in receiver
-            (receiver_opt_ref->get().*std::forward<FuncType>(func_ptr))(std::forward<ArgTypes>(args)...);
+            (p_receiver->*std::forward<FuncType>(func_ptr))(std::forward<ArgTypes>(args)...);
 
-            if (!receiver_opt_ref)
+            if (!p_receiver)
             {
                 // Receiver may be disconnected or destroyed during emitted event and it will be cleaned up after full emit cycle
                 is_cleanup_required = true;
@@ -119,41 +125,41 @@ public:
         if (is_cleanup_required)
         {
             // Erase receivers disconnected during emit cycle from the connected receivers
-            for(auto connected_receiver_opt_ref_it  = m_connected_receiver_opt_refs.begin();
-                     connected_receiver_opt_ref_it != m_connected_receiver_opt_refs.end();)
+            for(auto connected_receiver_it  = m_connected_receivers.begin();
+                     connected_receiver_it != m_connected_receivers.end();)
             {
-                if (connected_receiver_opt_ref_it->has_value())
-                    connected_receiver_opt_ref_it++;
+                if (*connected_receiver_it)
+                    connected_receiver_it++;
                 else
-                    connected_receiver_opt_ref_it = m_connected_receiver_opt_refs.erase(connected_receiver_opt_ref_it);
+                    connected_receiver_it = m_connected_receivers.erase(connected_receiver_it);
             }
         }
 
         // Add receivers connected during emit cycle to the connected receivers
-        if (!m_additional_connected_receiver_opt_refs.empty())
+        if (!m_additional_connected_receivers.empty())
         {
-            m_connected_receiver_opt_refs.insert(m_connected_receiver_opt_refs.end(), m_additional_connected_receiver_opt_refs.begin(), m_additional_connected_receiver_opt_refs.end());
-            m_additional_connected_receiver_opt_refs.clear();
+            m_connected_receivers.insert(m_connected_receivers.end(), m_additional_connected_receivers.begin(), m_additional_connected_receivers.end());
+            m_additional_connected_receivers.clear();
         }
     }
 
-    size_t GetConnectedReceiversCount() const noexcept { return m_connected_receiver_opt_refs.size() + m_additional_connected_receiver_opt_refs.size(); }
+    size_t GetConnectedReceiversCount() const noexcept { return m_connected_receivers.size() + m_additional_connected_receivers.size(); }
 
 private:
     decltype(auto) FindConnectedReceiver(Receiver<EventType>& receiver)
     {
         META_FUNCTION_TASK();
-        return std::find_if(m_connected_receiver_opt_refs.begin(), m_connected_receiver_opt_refs.end(),
-            [&receiver](auto& connected_receiver_opt_ref)
+        return std::find_if(m_connected_receivers.begin(), m_connected_receivers.end(),
+                            [&receiver](Receiver<EventType>* p_connected_receiver)
             {
-                return connected_receiver_opt_ref && std::addressof(connected_receiver_opt_ref->get()) == std::addressof(receiver);
+                return p_connected_receiver && p_connected_receiver == std::addressof(receiver);
             }
         );
     }
 
-    bool m_is_emitting = false;
-    Opts<Ref<Receiver<EventType>>> m_connected_receiver_opt_refs;
-    Opts<Ref<Receiver<EventType>>> m_additional_connected_receiver_opt_refs;
+    bool                              m_is_emitting = false;
+    std::vector<Receiver<EventType>*> m_connected_receivers;
+    std::set<Receiver<EventType>*>    m_additional_connected_receivers;
 };
 
 } // namespace Methane::Data

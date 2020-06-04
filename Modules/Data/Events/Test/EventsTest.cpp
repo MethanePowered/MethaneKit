@@ -168,18 +168,18 @@ TEST_CASE("Connect one emitter to many receivers", "[events]")
         }
 
         CHECK(emitter.GetConnectedReceiversCount() == receivers.size());
-        std::vector<TestReceiver>   dynamic_receivers;
-        dynamic_receivers.reserve(receivers.size());
+        Ptrs<TestReceiver> dynamic_receivers;
 
         CHECK_NOTHROW(emitter.EmitCall([&dynamic_receivers, &emitter](size_t)
         {
-            TestReceiver new_receiver;
-            new_receiver.CheckBind(emitter);
-            dynamic_receivers.emplace_back(std::move(new_receiver));
+            auto new_receiver_ptr = std::make_shared<TestReceiver>();
+            new_receiver_ptr->CheckBind(emitter);
+            dynamic_receivers.emplace_back(std::move(new_receiver_ptr));
         }));
 
+        const size_t total_receivers_count = dynamic_receivers.size() + receivers.size();
         CHECK(dynamic_receivers.size() == receivers.size());
-        CHECK(emitter.GetConnectedReceiversCount() == dynamic_receivers.size() + receivers.size());
+        CHECK(emitter.GetConnectedReceiversCount() == total_receivers_count);
     }
 
     SECTION("Receivers get destroyed during emitted call")
