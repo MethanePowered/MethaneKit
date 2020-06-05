@@ -24,7 +24,7 @@ steps:
       echo Running unit-tests in directory "%cd%"
       for /r "." %%a in (*Test.exe) do (
         "%%~fa" -r junit -o "%%~fa_result.xml"
-        echo   - %%~na - completed with !errorlevel! code
+        echo  - %%~na - completed with !errorlevel! exit status
       )
       exit 0
     workingDirectory: '$(installDir)\Tests'

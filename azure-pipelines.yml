@@ -86,7 +86,7 @@ jobs:
 
   variables:
     platform: 'Win64'
-    configuration: 'Release'
+    configuration: 'RelWithDebInfo'
     vcVarsBatFile: 'vcvars64.bat'
     generatorName: '"Visual Studio 15 2017 Win64"'
     cmakeFlags: $(buildProfilingCmakeFlags)
@@ -126,7 +126,7 @@ jobs:
 
   variables:
     platform: 'Win32'
-    configuration: 'Release'
+    configuration: 'RelWithDebInfo'
     vcVarsBatFile: 'vcvars32.bat'
     generatorName: '"Visual Studio 15 2017"'
     cmakeFlags: $(buildProfilingCmakeFlags)
@@ -165,7 +165,7 @@ jobs:
 
   variables:
     platform: 'MacOS'
-    configuration: 'Release'
+    configuration: 'RelWithDebInfo'
     generatorName: 'Xcode'
     cmakeFlags: $(buildProfilingCmakeFlags)
     buildName: '$(platform)-$(configuration)-Profiling'
