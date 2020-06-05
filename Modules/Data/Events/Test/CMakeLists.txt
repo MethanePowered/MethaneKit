@@ -3,12 +3,21 @@ include(ParseAndAddCatchTests)
 
 set(TARGET MethaneDataEventsTest)
 
-add_executable(${TARGET}
+set(SOURCES
     Main.cpp
     EventWrappers.hpp
     EventsTest.cpp
-    EventsBenchmark.cpp
 )
+
+# Events benchmark is disabled on Windows because of unresolved issue
+# and disabled in Debug builds to let them run faster
+if (NOT WIN32 AND NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    set(SOURCES ${SOURCES}
+        EventsBenchmark.cpp
+    )
+endif()
+
+add_executable(${TARGET} ${SOURCES})
 
 target_compile_definitions(${TARGET}
     PRIVATE

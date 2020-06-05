@@ -21,10 +21,6 @@ Benchmark connection and emit of events with emitter and receiver classes.
 
 ******************************************************************************/
 
-// Catch benchmarks do not work correctly on Windows with unknown reason...
-// File compilation can not be disabled in CMake because of ParseAndAddCatchTests error on expression
-#if !defined(WIN32) && defined(CATCH_CONFIG_ENABLE_BENCHMARKING)
-
 #include "EventWrappers.hpp"
 
 #include <catch2/catch.hpp>
@@ -189,5 +185,3 @@ TEST_CASE("Benchmark connect and emit events", "[events][benchmark]")
         };
     }
 }
-
-#endif
