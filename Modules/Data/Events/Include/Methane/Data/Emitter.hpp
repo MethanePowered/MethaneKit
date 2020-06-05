@@ -36,6 +36,20 @@ template<typename EventType>
 class Emitter : public IEmitter<EventType>
 {
 public:
+    Emitter() = default;
+    Emitter(const Emitter& other)
+        : m_connected_receivers(other.m_connected_receivers)
+    {
+        META_FUNCTION_TASK();
+        for(Receiver<EventType>* p_connected_receiver : m_connected_receivers)
+        {
+            if (p_connected_receiver)
+            {
+                p_connected_receiver->OnConnected(*this);
+            }
+        }
+    }
+
     ~Emitter() override
     {
         META_FUNCTION_TASK();

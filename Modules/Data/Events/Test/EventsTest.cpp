@@ -290,4 +290,32 @@ TEST_CASE("Connect many emitters to one receiver", "[events]")
 
         CHECK(!receiver.IsFooCalled());
     }
+
+    SECTION("Copied emitters are connected to receiver")
+    {
+        TestEmitter emitter;
+        TestReceiver receiver;
+        receiver.CheckBind(emitter);
+
+        std::vector<TestEmitter> emitter_copies;
+        for(size_t id = 0; id < 5; ++id)
+        {
+            CHECK_NOTHROW(emitter_copies.push_back(emitter));
+            CHECK(emitter_copies.back().GetConnectedReceiversCount() == 1);
+        }
+        CHECK(receiver.GetConnectedEmittersCount() == emitter_copies.size() + 1);
+
+        uint32_t foo_call_count = 1;
+        CHECK_NOTHROW(emitter.EmitFoo());
+        CHECK(receiver.GetFooCallCount() == foo_call_count++);
+
+        for(TestEmitter& emitter_copy : emitter_copies)
+        {
+            CHECK_NOTHROW(emitter_copy.EmitFoo());
+            CHECK(receiver.GetFooCallCount() == foo_call_count++);
+        }
+
+        emitter_copies.clear();
+        CHECK(receiver.GetConnectedEmittersCount() == 1);
+    }
 }

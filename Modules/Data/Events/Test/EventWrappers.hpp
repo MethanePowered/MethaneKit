@@ -110,6 +110,8 @@ public:
     bool     GetBarB() const         { return m_bar_b; }
     float    GetBarC() const         { return m_bar_c; }
 
+    using Receiver<ITestEvents>::GetConnectedEmittersCount;
+
 protected:
 
     // ITestEvent implementation
