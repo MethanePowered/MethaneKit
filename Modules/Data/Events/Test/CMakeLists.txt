@@ -9,9 +9,8 @@ set(SOURCES
     EventsTest.cpp
 )
 
-# Events benchmark is disabled on Windows because of unresolved issue
-# and disabled in Debug builds to let them run faster
-if (NOT WIN32 AND NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+# Events benchmark is disabled in Debug builds to let them run faster
+if (NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     set(SOURCES ${SOURCES}
         EventsBenchmark.cpp
     )
