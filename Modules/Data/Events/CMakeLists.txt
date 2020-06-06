@@ -5,10 +5,11 @@ include(MethaneModules)
 get_module_dirs("Methane/Data")
 
 set(SOURCES
+    ${INCLUDE_DIR}/IEmitter.h
     ${INCLUDE_DIR}/Emitter.hpp
     ${INCLUDE_DIR}/Receiver.hpp
     ${SOURCES_DIR}/Events.cpp
-)
+    Include/Methane/Data/IEmitter.h)
 
 add_library(${TARGET} STATIC
     ${SOURCES}

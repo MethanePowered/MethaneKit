@@ -33,6 +33,7 @@ namespace Methane::Graphics
 class DeviceBase
     : public Device
     , public ObjectBase
+    , public Data::Emitter<IDeviceCallback>
     , public std::enable_shared_from_this<DeviceBase>
 {
 public:
@@ -42,8 +43,6 @@ public:
     const std::string&  GetAdapterName() const noexcept override                               { return m_adapter_name; }
     bool                IsSoftwareAdapter() const noexcept override                            { return m_is_software_adapter; }
     Feature::Mask       GetSupportedFeatures() const noexcept override                         { return m_supported_features; }
-    void                SetNotificationCallback(const NotificationCallback& callback) override { m_notification_callback = callback; }
-    void                Notify(Notification notification) override;
     std::string         ToString() const noexcept override;
 
     Ptr<DeviceBase> GetPtr() { return shared_from_this(); }
@@ -52,7 +51,6 @@ private:
     const std::string    m_adapter_name;
     const bool           m_is_software_adapter;
     const Feature::Mask  m_supported_features;
-    NotificationCallback m_notification_callback;
 };
 
 class SystemBase : public System

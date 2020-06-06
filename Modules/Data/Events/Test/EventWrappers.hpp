@@ -58,6 +58,8 @@ public:
     {
         Emit(&ITestEvents::Call, f);
     }
+
+    using Emitter<ITestEvents>::GetConnectedReceiversCount;
 };
 
 class TestReceiver : protected Receiver<ITestEvents>

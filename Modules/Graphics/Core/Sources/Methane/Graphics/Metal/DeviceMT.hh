@@ -40,6 +40,11 @@ public:
     
     id<MTLDevice>& GetNativeDevice() { return m_mtl_device; }
 
+protected:
+    friend class SystemMT;
+
+    void OnNotification(MTLDeviceNotificationName device_notification);
+
 private:
     id<MTLDevice> m_mtl_device;
 };
@@ -54,7 +59,6 @@ public:
     
 private:
     void OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificationName device_notification);
-    void NotifyDevice(const id<MTLDevice>& mtl_device, Device::Notification device_notification);
     void AddDevice(const id<MTLDevice>& mtl_device);
     
     const Ptr<Device>& FindMetalDevice(const id<MTLDevice>& mtl_device) const;

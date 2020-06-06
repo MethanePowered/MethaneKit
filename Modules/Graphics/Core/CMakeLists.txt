@@ -262,6 +262,7 @@ target_link_libraries(${TARGET}
         MethanePrimitives
         MethaneDataProvider
         MethaneDataRangeSet
+        MethaneDataEvents
         MethaneGraphicsTypes
         MethanePlatformAppView
     PRIVATE

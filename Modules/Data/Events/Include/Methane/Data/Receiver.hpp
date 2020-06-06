@@ -23,6 +23,8 @@ Event receiver base template class implementation.
 
 #pragma once
 
+#include "IEmitter.h"
+
 #include <Methane/Memory.hpp>
 #include <Methane/Instrumentation.h>
 
@@ -31,18 +33,6 @@ Event receiver base template class implementation.
 
 namespace Methane::Data
 {
-
-template<class>
-class Receiver;
-
-template<class EventType>
-struct IEmitter
-{
-    virtual void Connect(Receiver<EventType>& receiver) = 0;
-    virtual void Disconnect(Receiver<EventType>& receiver) = 0;
-
-    virtual ~IEmitter() = default;
-};
 
 template<class EventType>
 class Receiver : public EventType
@@ -72,8 +62,6 @@ public:
         }
     }
 
-    size_t GetConnectedEmittersCount() const noexcept { return m_connected_emitter_refs.size(); }
-
 protected:
     template<class>
     friend class Emitter;
@@ -97,6 +85,8 @@ protected:
 
         m_connected_emitter_refs.erase(connected_emitter_ref_it);
     }
+
+    size_t GetConnectedEmittersCount() const noexcept { return m_connected_emitter_refs.size(); }
 
 private:
     decltype(auto) FindConnectedEmitter(IEmitter<EventType>& emitter)

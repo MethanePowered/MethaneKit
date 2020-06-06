@@ -33,7 +33,7 @@ namespace Methane::Data
 {
 
 template<typename EventType>
-class Emitter : public IEmitter<EventType>
+class Emitter : public virtual IEmitter<EventType>
 {
 public:
     Emitter() = default;
@@ -110,6 +110,7 @@ public:
         receiver.OnDisconnected(*this);
     }
 
+protected:
     template<typename FuncType, typename... ArgTypes>
     void Emit(FuncType&& func_ptr, ArgTypes&&... args)
     {

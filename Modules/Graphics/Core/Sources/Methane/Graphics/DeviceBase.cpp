@@ -71,15 +71,6 @@ DeviceBase::DeviceBase(const std::string& adapter_name, bool is_software_adapter
     META_FUNCTION_TASK();
 }
 
-void DeviceBase::Notify(Notification notification)
-{
-    META_FUNCTION_TASK();
-    if (m_notification_callback)
-    {
-        m_notification_callback(*this, notification);
-    }
-}
-
 std::string DeviceBase::ToString() const noexcept
 {
     META_FUNCTION_TASK();
