@@ -355,4 +355,30 @@ TEST_CASE("Connect many emitters to one receiver", "[events]")
         dynamic_emitters.clear();
         CHECK(receiver.GetConnectedEmittersCount() == emitters.size());
     }
+
+    SECTION("Destroy emitters during emitted call")
+    {
+        Ptrs<TestEmitter> emitters;
+        TestReceiver      receiver;
+
+        for (size_t id = 0; id < 6; ++id)
+        {
+            auto new_emitter_ptr = std::make_shared<TestEmitter>();
+            receiver.CheckBind(*new_emitter_ptr);
+            emitters.emplace_back(std::move(new_emitter_ptr));
+        }
+        CHECK(receiver.GetConnectedEmittersCount() == emitters.size());
+
+        const size_t emits_count = 3;
+        for (size_t id = 0; id < emits_count; ++id)
+        {
+            CHECK_NOTHROW(emitters[id]->EmitCall([&emitters](size_t)
+            {
+                emitters.pop_back();
+            }));
+        }
+
+        CHECK(receiver.GetFuncCallCount() == emits_count);
+        CHECK(receiver.GetConnectedEmittersCount() == emits_count);
+    }
 }
