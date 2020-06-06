@@ -28,6 +28,7 @@ Event emitter base template class implementation.
 #include <Methane/Instrumentation.h>
 
 #include <set>
+#include <cassert>
 
 namespace Methane::Data
 {

@@ -26,7 +26,7 @@ is used to create graphics context for rendering.
 
 #include "Object.h"
 
-#include <Methane/Data/Emitter.hpp>
+#include <Methane/Data/IEmitter.h>
 #include <Methane/Memory.hpp>
 
 #include <array>

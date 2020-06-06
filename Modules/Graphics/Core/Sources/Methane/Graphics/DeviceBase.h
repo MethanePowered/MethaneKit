@@ -26,6 +26,7 @@ Base implementation of the device interface.
 #include "ObjectBase.h"
 
 #include <Methane/Graphics/Device.h>
+#include <Methane/Data/Emitter.hpp>
 
 namespace Methane::Graphics
 {
