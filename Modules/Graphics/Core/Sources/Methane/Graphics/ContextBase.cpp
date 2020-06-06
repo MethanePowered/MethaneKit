@@ -104,36 +104,6 @@ void ContextBase::Reset()
     Initialize(*sp_device, true);
 }
 
-void ContextBase::AddCallback(Callback& callback)
-{
-    META_FUNCTION_TASK();
-    const auto callback_it = std::find_if(m_callbacks.begin(), m_callbacks.end(),
-        [&callback](const Ref<Callback>& callback_ref)
-        {
-            return std::addressof(callback_ref.get()) == std::addressof(callback);
-        });
-
-    if (callback_it == m_callbacks.end())
-    {
-        m_callbacks.push_back(callback);
-    }
-}
-
-void ContextBase::RemoveCallback(Callback& callback)
-{
-    META_FUNCTION_TASK();
-    const auto callback_it = std::find_if(m_callbacks.begin(), m_callbacks.end(),
-        [&callback](const Ref<Callback>& callback_ref)
-        {
-            return std::addressof(callback_ref.get()) == std::addressof(callback);
-        });
-
-    if (callback_it != m_callbacks.end())
-    {
-        m_callbacks.erase(callback_it);
-    }
-}
-
 void ContextBase::OnGpuWaitComplete(WaitFor)
 {
     META_FUNCTION_TASK();
@@ -150,10 +120,7 @@ void ContextBase::Release()
     m_sp_upload_cmd_list.reset();
     m_sp_upload_fence.reset();
 
-    for (const Ref<Callback>& callback_ref : m_callbacks)
-    {
-        callback_ref.get().OnContextReleased(*this);
-    }
+    Emit(&IContextCallback::OnContextReleased, std::ref(*this));
 
     m_resource_manager_init_settings.default_heap_sizes         = m_resource_manager.GetDescriptorHeapSizes(true, false);
     m_resource_manager_init_settings.shader_visible_heap_sizes  = m_resource_manager.GetDescriptorHeapSizes(true, true);
@@ -184,10 +151,7 @@ void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation)
 
     m_resource_manager.Initialize(m_resource_manager_init_settings);
 
-    for (const Ref<Callback>& callback_ref : m_callbacks)
-    {
-        callback_ref.get().OnContextInitialized(*this);
-    }
+    Emit(&IContextCallback::OnContextInitialized, std::ref(*this));
 }
 
 CommandQueue& ContextBase::GetUploadCommandQueue()

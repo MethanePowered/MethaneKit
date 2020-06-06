@@ -29,6 +29,7 @@ Base implementation of the context interface.
 #include <Methane/Graphics/Fence.h>
 #include <Methane/Graphics/Context.h>
 #include <Methane/Graphics/Native/ContextNT.h>
+#include <Methane/Data/Emitter.hpp>
 
 #include <memory>
 
@@ -43,6 +44,7 @@ class ContextBase
     : public ObjectBase
     , public virtual Context
     , public IContextNT
+    , public Data::Emitter<IContextCallback>
 {
 public:
     ContextBase(DeviceBase& device, Type type);
@@ -53,8 +55,6 @@ public:
     void             WaitForGpu(WaitFor wait_for) override;
     void             Reset(Device& device) override;
     void             Reset() override;
-    void             AddCallback(Callback& callback) override;
-    void             RemoveCallback(Callback& callback) override;
     CommandQueue&    GetUploadCommandQueue() override;
     BlitCommandList& GetUploadCommandList() override;
     CommandListSet&  GetUploadCommandListSet() override;
@@ -86,7 +86,6 @@ private:
     Ptr<DeviceBase>           m_sp_device;
     ResourceManager::Settings m_resource_manager_init_settings{ true, {}, {} };
     ResourceManager           m_resource_manager;
-    Refs<Callback>            m_callbacks; // ORDER: Keep callbacks before resources for correct auto-delete
     Ptr<CommandQueue>         m_sp_upload_cmd_queue;
     Ptr<BlitCommandList>      m_sp_upload_cmd_list;
     Ptr<CommandListSet>       m_sp_upload_cmd_lists;

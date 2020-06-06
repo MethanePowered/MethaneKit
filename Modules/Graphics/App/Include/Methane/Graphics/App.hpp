@@ -32,6 +32,7 @@ Base frame class provides frame buffer management with resize handling.
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Timer.hpp>
 #include <Methane/Data/AnimationsPool.h>
+#include <Methane/Data/Receiver.hpp>
 #include <Methane/Platform/App.h>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Device.h>
@@ -73,7 +74,7 @@ template<typename FrameT>
 class App
     : public Graphics::IApp
     , public Platform::App
-    , public RenderContext::Callback
+    , public Data::Receiver<IContextCallback>
 {
     static_assert(std::is_base_of<AppFrame, FrameT>::value, "Application Frame type must be derived from AppFrame.");
 
@@ -100,7 +101,10 @@ public:
         // Wait for GPU rendering is completed to release resources
         // m_sp_context->WaitForGpu(RenderContext::WaitFor::RenderComplete);
         META_FUNCTION_TASK();
-        m_sp_context->RemoveCallback(*this);
+        if (m_sp_context)
+        {
+            m_sp_context->Disconnect(*this);
+        }
     }
 
     // Platform::App interface
@@ -121,7 +125,7 @@ public:
         m_initial_context_settings.frame_size = frame_size;
         m_sp_context = RenderContext::Create(env, *sp_device, m_initial_context_settings);
         m_sp_context->SetName("App Render Context");
-        m_sp_context->AddCallback(*this);
+        m_sp_context->Connect(*this);
 
         InputState().AddControllers({ std::make_shared<AppContextController>(*m_sp_context) });
         
@@ -338,7 +342,7 @@ public:
         return Platform::App::SetFullScreen(is_full_screen);
     }
 
-    // Context::Callback interface
+    // IContextCallback implementation
     void OnContextReleased(Context&) override
     {
         META_FUNCTION_TASK();
@@ -350,7 +354,7 @@ public:
         Deinitialize();
     }
 
-    // Context::Callback interface
+    // IContextCallback implementation
     void OnContextInitialized(Context&) override
     {
         META_FUNCTION_TASK();

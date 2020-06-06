@@ -27,6 +27,7 @@ Font atlas textures generation and fonts library management classes.
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Data/Provider.h>
+#include <Methane/Data/Receiver.hpp>
 
 #include <map>
 #include <string>
@@ -36,7 +37,7 @@ namespace Methane::Graphics
 
 class Font
     : public std::enable_shared_from_this<Font>
-    , public Context::Callback
+    , public Data::Receiver<IContextCallback>
 {
 public:
     struct Settings

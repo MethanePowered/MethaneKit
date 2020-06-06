@@ -27,6 +27,7 @@ Methane base context interface: wraps graphics device used for GPU interaction.
 
 #include <Methane/Memory.hpp>
 #include <Methane/Graphics/Types.h>
+#include <Methane/Data/IEmitter.h>
 
 namespace Methane::Graphics
 {
@@ -35,8 +36,19 @@ struct Device;
 struct CommandQueue;
 struct BlitCommandList;
 struct CommandListSet;
+struct Context;
 
-struct Context : virtual Object
+struct IContextCallback
+{
+    virtual void OnContextReleased(Context& context) = 0;
+    virtual void OnContextInitialized(Context& context) = 0;
+
+    virtual ~IContextCallback() = default;
+};
+
+struct Context
+    : virtual Object
+    , virtual Data::IEmitter<IContextCallback>
 {
     enum class Type
     {
@@ -50,23 +62,12 @@ struct Context : virtual Object
         ResourcesUploaded
     };
 
-    struct Callback
-    {
-        virtual void OnContextReleased(Context& context) = 0;
-        virtual void OnContextInitialized(Context& context) = 0;
-
-        virtual ~Callback() = default;
-    };
-
     // Context interface
     virtual Type GetType() const = 0;
     virtual void CompleteInitialization() = 0;
     virtual void WaitForGpu(WaitFor wait_for) = 0;
     virtual void Reset(Device& device) = 0;
     virtual void Reset() = 0;
-
-    virtual void AddCallback(Callback& callback) = 0;
-    virtual void RemoveCallback(Callback& callback) = 0;
 
     virtual Device&          GetDevice() = 0;
     virtual CommandQueue&    GetUploadCommandQueue() = 0;
