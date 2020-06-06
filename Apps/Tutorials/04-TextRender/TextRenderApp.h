@@ -54,7 +54,7 @@ public:
     bool UpdateText(double elapsed_seconds, double delta_seconds);
     bool Render() override;
 
-    // Context::Callback interface
+    // IContextCallback interface
     void OnContextReleased(gfx::Context& context) override;
 
 private:

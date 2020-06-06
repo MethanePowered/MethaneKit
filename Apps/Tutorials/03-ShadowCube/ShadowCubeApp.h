@@ -69,7 +69,7 @@ public:
     bool Update() override;
     bool Render() override;
 
-    // Context::Callback override
+    // IContextCallback override
     void OnContextReleased(gfx::Context& context) override;
 
 private:
