@@ -37,7 +37,7 @@ namespace Methane::Graphics
 
 class Font
     : public std::enable_shared_from_this<Font>
-    , public Data::Receiver<IContextCallback>
+    , protected Data::Receiver<IContextCallback>
 {
 public:
     struct Settings
@@ -127,16 +127,16 @@ public:
     void                RemoveAtlasTexture(Context& context);
     void                ClearAtlasTextures();
 
-    // Context::Callback interface
-    void OnContextReleased(Context& context);
-    void OnContextInitialized(Context&) { }
-
 protected:
     // Font can be created only via Font::Library::Add
     Font(const Data::Provider& data_provider, const Settings& settings);
 
     Refs<Char> GetMutableChars();
     bool PackCharsToAtlas(float pixels_reserve_multiplier);
+
+    // IContextCallback interface
+    void OnContextReleased(Context& context) override;
+    void OnContextInitialized(Context&) override { }
 
 private:
     bool IsAtlasBitmapUpToDate() const;

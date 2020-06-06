@@ -74,7 +74,7 @@ template<typename FrameT>
 class App
     : public Graphics::IApp
     , public Platform::App
-    , public Data::Receiver<IContextCallback>
+    , protected Data::Receiver<IContextCallback>
 {
     static_assert(std::is_base_of<AppFrame, FrameT>::value, "Application Frame type must be derived from AppFrame.");
 
@@ -342,26 +342,6 @@ public:
         return Platform::App::SetFullScreen(is_full_screen);
     }
 
-    // IContextCallback implementation
-    void OnContextReleased(Context&) override
-    {
-        META_FUNCTION_TASK();
-        SetAnimationsEnabled(false);
-        m_frames.clear();
-        m_sp_depth_texture.reset();
-        m_sp_logo_badge.reset();
-        m_sp_hud.reset();
-        Deinitialize();
-    }
-
-    // IContextCallback implementation
-    void OnContextInitialized(Context&) override
-    {
-        META_FUNCTION_TASK();
-        Init();
-        SetAnimationsEnabled(true);
-    }
-
     // Graphics::IApp interface
     const IApp::Settings& GetGraphicsAppSettings() const noexcept override { return m_settings; }
 
@@ -462,6 +442,26 @@ protected:
     {
         META_FUNCTION_TASK();
         return m_sp_context->GetAppView();
+    }
+
+    // IContextCallback implementation
+
+    void OnContextReleased(Context&) override
+    {
+        META_FUNCTION_TASK();
+        SetAnimationsEnabled(false);
+        m_frames.clear();
+        m_sp_depth_texture.reset();
+        m_sp_logo_badge.reset();
+        m_sp_hud.reset();
+        Deinitialize();
+    }
+
+    void OnContextInitialized(Context&) override
+    {
+        META_FUNCTION_TASK();
+        Init();
+        SetAnimationsEnabled(true);
     }
 
     inline FrameT& GetCurrentFrame()
