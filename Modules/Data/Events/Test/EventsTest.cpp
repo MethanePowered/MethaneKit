@@ -318,4 +318,41 @@ TEST_CASE("Connect many emitters to one receiver", "[events]")
         emitter_copies.clear();
         CHECK(receiver.GetConnectedEmittersCount() == 1);
     }
+
+    SECTION("Connect emitters during emitted call")
+    {
+        std::array<TestEmitter, 5> emitters;
+        TestReceiver receiver;
+
+        for(TestEmitter& emitter : emitters)
+        {
+            receiver.CheckBind(emitter);
+        }
+
+        CHECK(receiver.GetConnectedEmittersCount() == emitters.size());
+        Ptrs<TestEmitter> dynamic_emitters;
+
+        for(TestEmitter& emitter : emitters)
+        {
+            CHECK_NOTHROW(emitter.EmitCall([&dynamic_emitters, &receiver](size_t)
+            {
+                auto new_emitter_ptr = std::make_shared<TestEmitter>();
+                receiver.CheckBind(*new_emitter_ptr);
+                dynamic_emitters.emplace_back(std::move(new_emitter_ptr));
+            }));
+        }
+
+        CHECK(receiver.GetFuncCallCount() == emitters.size());
+        CHECK(dynamic_emitters.size() == emitters.size());
+        CHECK(receiver.GetConnectedEmittersCount() == emitters.size() + dynamic_emitters.size());
+
+        for(Ptr<TestEmitter>& emitter_ptr : dynamic_emitters)
+        {
+            emitter_ptr->EmitFoo();
+        }
+        CHECK(receiver.GetFooCallCount() == dynamic_emitters.size());
+
+        dynamic_emitters.clear();
+        CHECK(receiver.GetConnectedEmittersCount() == emitters.size());
+    }
 }

@@ -106,6 +106,8 @@ public:
     bool     IsBarCalled() const     { return m_bar_call_count > 0u; }
     uint32_t GetBarCallCount() const { return m_bar_call_count; }
 
+    uint32_t GetFuncCallCount() const { return m_func_call_count; }
+
     int      GetBarA() const         { return m_bar_a; }
     bool     GetBarB() const         { return m_bar_b; }
     float    GetBarC() const         { return m_bar_c; }
@@ -131,6 +133,7 @@ protected:
 
     void Call(CallFunc f) override
     {
+        m_func_call_count++;
         f(m_id);
     }
 
@@ -138,6 +141,7 @@ private:
     const size_t m_id = 0;
     uint32_t     m_foo_call_count = 0u;
     uint32_t     m_bar_call_count = 0u;
+    uint32_t     m_func_call_count = 0u;
     int          m_bar_a = 0;
     bool         m_bar_b = false;
     float        m_bar_c = 0.f;
