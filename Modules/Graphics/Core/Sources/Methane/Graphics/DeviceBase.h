@@ -48,6 +48,12 @@ public:
 
     Ptr<DeviceBase> GetPtr() { return shared_from_this(); }
 
+protected:
+    friend class SystemBase;
+
+    void OnRemovalRequested();
+    void OnRemoved();
+
 private:
     const std::string    m_adapter_name;
     const bool           m_is_software_adapter;
@@ -67,6 +73,8 @@ protected:
     void SetGpuSupportedFeatures(Device::Feature::Mask supported_features) { m_supported_features = supported_features; }
     void ClearDevices()                     { m_devices.clear(); }
     void AddDevice(Ptr<Device>&& sp_device) { m_devices.emplace_back(std::move(sp_device)); }
+    void RequestRemoveDevice(Device& device);
+    void RemoveDevice(Device& device);
 
 private:
     Device::Feature::Mask m_supported_features = Device::Feature::Value::All;

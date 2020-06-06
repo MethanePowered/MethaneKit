@@ -53,14 +53,6 @@ DeviceMT::~DeviceMT()
     [m_mtl_device release];
 }
 
-void DeviceMT::OnNotification(MTLDeviceNotificationName device_notification)
-{
-    if (device_notification == MTLDeviceRemovalRequestedNotification)
-        Emit(&IDeviceCallback::OnDeviceRemovalRequested);
-    else if (device_notification == MTLDeviceWasRemovedNotification)
-        Emit(&IDeviceCallback::OnDeviceRemoved);
-}
-
 System& System::Get()
 {
     META_FUNCTION_TASK();
@@ -114,7 +106,11 @@ void SystemMT::OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificat
         const Ptr<Device>& sp_device = FindMetalDevice(mtl_device);
         if (!sp_device)
             throw std::logic_error("No device object found");
-        static_cast<DeviceMT&>(*sp_device).OnNotification(device_notification);
+
+        if (device_notification == MTLDeviceRemovalRequestedNotification)
+            RequestRemoveDevice(*sp_device);
+        else if (device_notification == MTLDeviceWasRemovedNotification)
+            RemoveDevice(*sp_device);
     }
 }
 

@@ -80,6 +80,30 @@ std::string DeviceBase::ToString() const noexcept
     return ss.str();
 }
 
+void DeviceBase::OnRemovalRequested()
+{
+    META_FUNCTION_TASK();
+    Emit(&IDeviceCallback::OnDeviceRemovalRequested, std::ref(*this));
+}
+
+void DeviceBase::OnRemoved()
+{
+    META_FUNCTION_TASK();
+    Emit(&IDeviceCallback::OnDeviceRemoved, std::ref(*this));
+}
+
+void SystemBase::RequestRemoveDevice(Device& device)
+{
+    META_FUNCTION_TASK();
+    static_cast<DeviceBase&>(device).OnRemovalRequested();
+}
+
+void SystemBase::RemoveDevice(Device& device)
+{
+    META_FUNCTION_TASK();
+    static_cast<DeviceBase&>(device).OnRemoved();
+}
+
 Ptr<Device> SystemBase::GetNextGpuDevice(const Device& device) const
 {
     META_FUNCTION_TASK();

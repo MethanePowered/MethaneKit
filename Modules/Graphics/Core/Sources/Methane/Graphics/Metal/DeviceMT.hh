@@ -40,11 +40,6 @@ public:
     
     id<MTLDevice>& GetNativeDevice() { return m_mtl_device; }
 
-protected:
-    friend class SystemMT;
-
-    void OnNotification(MTLDeviceNotificationName device_notification);
-
 private:
     id<MTLDevice> m_mtl_device;
 };

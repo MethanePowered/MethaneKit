@@ -229,23 +229,24 @@ void SystemDX::CheckForChanges()
     UnregisterAdapterChangeEvent();
     Initialize();
 
-    Ptrs<Device> prev_devices = m_devices;
-    UpdateGpuDevices(m_supported_features);
+    const Ptrs<Device>& devices = GetGpuDevices();
+    Ptrs<Device>   prev_devices = devices;
+    UpdateGpuDevices(GetGpuSupportedFeatures());
 
     for (const Ptr<Device>& sp_prev_device : prev_devices)
     {
         assert(!!sp_prev_device);
         DeviceDX& prev_device = static_cast<DeviceDX&>(*sp_prev_device);
-        auto device_it = std::find_if(m_devices.begin(), m_devices.end(),
+        auto device_it = std::find_if(devices.begin(), devices.end(),
                                       [prev_device](const Ptr<Device>& sp_device)
                                       {
                                           DeviceDX& device = static_cast<DeviceDX&>(*sp_device);
                                           return prev_device.GetNativeAdapter().GetAddressOf() == device.GetNativeAdapter().GetAddressOf();
                                       });
 
-        if (device_it == m_devices.end())
+        if (device_it == devices.end())
         {
-            prev_device.Notify(Device::Notification::Removed);
+            RemoveDevice(prev_device);
         }
     }
 #endif

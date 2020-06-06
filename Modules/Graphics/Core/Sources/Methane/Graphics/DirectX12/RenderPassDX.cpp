@@ -199,7 +199,7 @@ RenderPassDX::RenderPassDX(RenderContextBase& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
 
-    // Subscribe to descriptor heap notifications
+    // Connect the descriptor heap callback event
     ForEachAccessibleDescriptorHeap([this](DescriptorHeap& descriptor_heap)
     {
         descriptor_heap.Connect(*this);

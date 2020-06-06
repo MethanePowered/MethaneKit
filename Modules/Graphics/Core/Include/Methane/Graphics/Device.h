@@ -35,10 +35,12 @@ is used to create graphics context for rendering.
 namespace Methane::Graphics
 {
 
+struct Device;
+
 struct IDeviceCallback
 {
-    virtual void OnDeviceRemovalRequested() = 0;
-    virtual void OnDeviceRemoved() = 0;
+    virtual void OnDeviceRemovalRequested(Device& device) = 0;
+    virtual void OnDeviceRemoved(Device& device) = 0;
 
     virtual ~IDeviceCallback() = default;
 };
