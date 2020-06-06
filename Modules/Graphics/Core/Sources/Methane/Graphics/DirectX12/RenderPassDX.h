@@ -24,6 +24,7 @@ DirectX 12 implementation of the render pass interface.
 #pragma once
 
 #include <Methane/Graphics/RenderPassBase.h>
+#include <Methane/Data/Receiver.hpp>
 
 #include <d3d12.h>
 
@@ -35,11 +36,12 @@ namespace Methane::Graphics
 
 class RenderCommandListDX;
 
-class RenderPassDX final : public RenderPassBase
+class RenderPassDX final
+    : public RenderPassBase
+    , private Data::Receiver<IDescriptorHeapCallback>
 {
 public:
     RenderPassDX(RenderContextBase& context, const Settings& settings);
-    ~RenderPassDX();
 
     // RenderPass interface
     bool Update(const Settings& settings) override;
@@ -101,7 +103,9 @@ private:
     void UpdateNativeClearDesc();
 
     void ForEachAccessibleDescriptorHeap(const std::function<void(DescriptorHeap& descriptor_heap)>&) const;
-    void OnDescriptorHeapNotification(DescriptorHeap& descriptor_heap, DescriptorHeap::Notification notification);
+
+    // IDescriptorHeapCallback implementation
+    void OnDescriptorHeapAllocated(DescriptorHeap& descriptor_heap) override;
 
     // D3D12 Render-Pass description
     std::optional<bool>                                 m_is_native_render_pass_available;

@@ -128,47 +128,10 @@ void DescriptorHeap::RemoveResource(Data::Index at_index)
 void DescriptorHeap::Allocate()
 {
     META_FUNCTION_TASK();
+
     m_allocated_size = m_deferred_size;
-    Notify(Notification::Allocated);
-}
 
-void DescriptorHeap::AddNotification(const ObjectBase& target, NotificationCallback notification)
-{
-    META_FUNCTION_TASK();
-    auto notification_callback_it = std::find_if(m_notification_callbacks.begin(), m_notification_callbacks.end(),
-        [target](const auto& notification_callback)
-        { return notification_callback.first == std::addressof(target); }
-    );
-    if (notification_callback_it == m_notification_callbacks.end())
-    {
-        m_notification_callbacks.emplace_back(&target, std::move(notification));
-    }
-    else
-    {
-        notification_callback_it->second = std::move(notification);
-    }
-}
-
-void DescriptorHeap::RemoveNotification(const ObjectBase& target)
-{
-    META_FUNCTION_TASK();
-    auto notification_callback_it = std::find_if(m_notification_callbacks.begin(), m_notification_callbacks.end(),
-         [target](const auto& notification_callback)
-         { return notification_callback.first == std::addressof(target); }
-    );
-    if (notification_callback_it == m_notification_callbacks.end())
-        return;
-
-    m_notification_callbacks.erase(notification_callback_it);
-}
-
-void DescriptorHeap::Notify(Notification notification)
-{
-    META_FUNCTION_TASK();
-    for(const auto& notification_callback : m_notification_callbacks)
-    {
-        notification_callback.second(*this, notification);
-    }
+    Emit(&IDescriptorHeapCallback::OnDescriptorHeapAllocated, std::ref(*this));
 }
 
 DescriptorHeap::Range DescriptorHeap::ReserveRange(Data::Size length)

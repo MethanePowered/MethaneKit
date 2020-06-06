@@ -27,6 +27,7 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps
 
 #include <Methane/Data/RangeSet.hpp>
 #include <Methane/Data/Provider.h>
+#include <Methane/Data/Emitter.hpp>
 #include <Methane/Memory.hpp>
 #include <Methane/Instrumentation.h>
 
@@ -39,8 +40,16 @@ namespace Methane::Graphics
 
 class ContextBase;
 class ResourceBase;
+class DescriptorHeap;
 
-class DescriptorHeap
+struct IDescriptorHeapCallback
+{
+    virtual void OnDescriptorHeapAllocated(DescriptorHeap& descriptor_heap) = 0;
+
+    virtual ~IDescriptorHeapCallback() = default;
+};
+
+class DescriptorHeap : public Data::Emitter<IDescriptorHeapCallback>
 {
 public:
     enum class Type : uint32_t
@@ -65,14 +74,6 @@ public:
         bool       shader_visible;
     };
 
-    enum class Notification : uint32_t
-    {
-        Allocated,
-    };
-
-    using NotificationCallback = std::function<void(DescriptorHeap&, Notification)>;
-    using NotificationCallbacks = std::vector<std::pair<const ObjectBase*, NotificationCallback>>;
-
     using Types    = std::set<Type>;
     using Range    = Methane::Data::Range<Data::Index>;
 
@@ -96,9 +97,6 @@ public:
     virtual void        RemoveResource(Data::Index at_index);
     virtual void        Allocate();
 
-    void AddNotification(const ObjectBase& target, NotificationCallback notification);
-    void RemoveNotification(const ObjectBase& target);
-
     Range               ReserveRange(Data::Size length);
     void                ReleaseRange(const Range& range);
 
@@ -117,8 +115,6 @@ public:
 protected:
     DescriptorHeap(ContextBase& context, const Settings& settings);
 
-    void Notify(Notification notification);
-
     ContextBase& GetContext() { return m_context; }
 
 private:
@@ -131,7 +127,6 @@ private:
     Data::Size                m_allocated_size = 0;
     ResourcePtrs              m_resources;
     RangeSet                  m_free_ranges;
-    NotificationCallbacks     m_notification_callbacks;
     TracyLockable(std::mutex, m_modification_mutex);
 };
 

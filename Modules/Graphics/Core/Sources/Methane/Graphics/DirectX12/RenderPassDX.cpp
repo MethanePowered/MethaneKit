@@ -202,18 +202,7 @@ RenderPassDX::RenderPassDX(RenderContextBase& context, const Settings& settings)
     // Subscribe to descriptor heap notifications
     ForEachAccessibleDescriptorHeap([this](DescriptorHeap& descriptor_heap)
     {
-        descriptor_heap.AddNotification(*this, std::bind(&RenderPassDX::OnDescriptorHeapNotification, this, std::placeholders::_1, std::placeholders::_2));
-    });
-}
-
-RenderPassDX::~RenderPassDX()
-{
-    META_FUNCTION_TASK();
-
-    // Unsubscribe from descriptor heap notifications
-    ForEachAccessibleDescriptorHeap([this](DescriptorHeap& descriptor_heap)
-    {
-        descriptor_heap.RemoveNotification(*this);
+        descriptor_heap.Connect(*this);
     });
 }
 
@@ -327,12 +316,9 @@ void RenderPassDX::ForEachAccessibleDescriptorHeap(const std::function<void(Desc
     }
 }
 
-void RenderPassDX::OnDescriptorHeapNotification(DescriptorHeap&, DescriptorHeap::Notification notification)
+void RenderPassDX::OnDescriptorHeapAllocated(DescriptorHeap&)
 {
     META_FUNCTION_TASK();
-
-    if (notification != DescriptorHeap::Notification::Allocated)
-        return;
 
     // Clear cached native descriptor heaps so that hey will be updated on next request in GetNativeDescriptorHeaps
     m_native_descriptor_heaps.clear();
