@@ -139,7 +139,12 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
     m_sp_const_buffer = Buffer::CreateConstantBuffer(context, Buffer::GetAlignedBufferSize(const_buffer_size));
     m_sp_const_buffer->SetName(m_settings.name + " Screen-Quad Constants Buffer");
 
-    ResetProgramBindings();
+    m_sp_const_program_bindings = ProgramBindings::Create(m_sp_state->GetSettings().sp_program, {
+        { { Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer    } } },
+        { { Shader::Type::Pixel, "g_texture"   }, { { m_sp_texture         } } },
+        { { Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler } } },
+    });
+
     UpdateConstantsBuffer();
 }
 
@@ -190,7 +195,11 @@ void ScreenQuad::SetTexture(Ptr<Texture> sp_texture)
 
     m_sp_texture = sp_texture;
 
-    ResetProgramBindings();
+    const Ptr<ProgramBindings::ArgumentBinding>& sp_texture_binding = m_sp_const_program_bindings->Get({ Shader::Type::Pixel, "g_texture" });
+    if (!sp_texture_binding)
+        throw std::logic_error("Can not find screen quad texture argument binding.");
+
+    sp_texture_binding->SetResourceLocations({ { m_sp_texture } });
 }
 
 const Texture& ScreenQuad::GetTexture() const noexcept
@@ -209,20 +218,6 @@ void ScreenQuad::Draw(RenderCommandList& cmd_list) const
     cmd_list.SetProgramBindings(*m_sp_const_program_bindings);
     cmd_list.SetVertexBuffers(*m_sp_vertex_buffers);
     cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
-}
-
-void ScreenQuad::ResetProgramBindings()
-{
-    META_FUNCTION_TASK();
-    assert(m_sp_const_buffer);
-    assert(m_sp_texture);
-    assert(m_sp_texture_sampler);
-
-    m_sp_const_program_bindings = ProgramBindings::Create(m_sp_state->GetSettings().sp_program, {
-        { { Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer    } } },
-        { { Shader::Type::Pixel, "g_texture"   }, { { m_sp_texture         } } },
-        { { Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler } } },
-    });
 }
 
 void ScreenQuad::UpdateConstantsBuffer() const

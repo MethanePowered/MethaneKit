@@ -73,7 +73,6 @@ private:
     struct Mesh;
     struct Constants;
 
-    void ResetProgramBindings();
     void ResetMeshData();
     void UpdateMeshBuffers();
     void UpdateConstantsBuffer();

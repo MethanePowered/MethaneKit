@@ -281,7 +281,11 @@ Text::Text(RenderContext& context, Font& font, Settings settings)
     });
     m_sp_texture_sampler->SetName(m_settings.name + " Screen-Quad Texture Sampler");
 
-    ResetProgramBindings();
+    m_sp_const_program_bindings = ProgramBindings::Create(m_sp_state->GetSettings().sp_program, {
+        { { Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer    } } },
+        { { Shader::Type::Pixel, "g_texture"   }, { { m_sp_atlas_texture   } } },
+        { { Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler } } },
+    });
 
     m_sp_font->Connect(*this);
 }
@@ -372,7 +376,12 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<Texture>& sp_old_atlas_
     assert(m_sp_atlas_texture.get() == sp_old_atlas_texture.get());
     m_sp_atlas_texture = sp_new_atlas_texture;
 
-    ResetProgramBindings();
+    const Ptr<ProgramBindings::ArgumentBinding>& sp_atlas_texture_binding = m_sp_const_program_bindings->Get({ Shader::Type::Pixel, "g_texture" });
+    if (!sp_atlas_texture_binding)
+        throw std::logic_error("Can not find atlas texture argument binding.");
+
+    sp_atlas_texture_binding->SetResourceLocations({ { m_sp_atlas_texture } });
+
     ResetMeshData();
 }
 
@@ -383,20 +392,6 @@ void Text::OnFontAtlasUpdated(Font& font, const Ptr<Texture>& sp_atlas_texture)
         return;
 
     ResetMeshData();
-}
-
-void Text::ResetProgramBindings()
-{
-    META_FUNCTION_TASK();
-    assert(m_sp_const_buffer);
-    assert(m_sp_atlas_texture);
-    assert(m_sp_texture_sampler);
-
-    m_sp_const_program_bindings = ProgramBindings::Create(m_sp_state->GetSettings().sp_program, {
-        { { Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer    } } },
-        { { Shader::Type::Pixel, "g_texture"   }, { { m_sp_atlas_texture   } } },
-        { { Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler } } },
-    });
 }
 
 void Text::ResetMeshData()

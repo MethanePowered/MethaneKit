@@ -71,7 +71,6 @@ public:
     void Draw(RenderCommandList& cmd_list) const;
 
 private:
-    void ResetProgramBindings();
     void UpdateConstantsBuffer() const;
 
     static Shader::MacroDefinitions GetPixelShaderMacroDefinitions(TextureMode texture_mode);
