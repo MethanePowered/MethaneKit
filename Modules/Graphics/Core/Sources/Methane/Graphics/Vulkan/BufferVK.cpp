@@ -73,7 +73,7 @@ BufferVK::BufferVK(ContextBase& context, const Settings& settings, const Descrip
 BufferVK::~BufferVK()
 {
     META_FUNCTION_TASK();
-    GetContext().GetResourceManager().GetReleasePool().AddResource(*this);
+    GetContextBase().GetResourceManager().GetReleasePool().AddResource(*this);
 }
 
 void BufferVK::SetName(const std::string& name)

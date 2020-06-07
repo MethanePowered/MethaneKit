@@ -83,7 +83,7 @@ TextureVK::~TextureVK()
 
     if (GetSettings().type != Texture::Type::FrameBuffer)
     {
-        GetContext().GetResourceManager().GetReleasePool().AddResource(*this);
+        GetContextBase().GetResourceManager().GetReleasePool().AddResource(*this);
     }
 }
 
