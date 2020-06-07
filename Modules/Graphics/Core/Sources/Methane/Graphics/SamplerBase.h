@@ -46,11 +46,7 @@ public:
     void        SetData(const SubResources& sub_resources) override;
     Data::Size  GetDataSize(Data::MemoryState) const noexcept override { return 0; }
 
-protected:
-    ContextBase& GetContext() { return m_context; }
-
 private:
-    ContextBase& m_context;
     Settings     m_settings;
 };
 

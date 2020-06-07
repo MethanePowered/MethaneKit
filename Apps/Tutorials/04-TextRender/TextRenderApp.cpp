@@ -89,7 +89,8 @@ void TextRenderApp::Init()
     // Add fonts to library
     m_sp_primary_font = gfx::Font::Library::Get().AddFont(
         Data::FontProvider::Get(),
-        gfx::Font::Settings{
+        gfx::Font::Settings
+        {
             g_primary_font.name, g_primary_font.path, 24, m_sp_context->GetFontResolutionDPI(),
             gfx::Font::GetAnsiCharacters() + g_cyrilyc_chars
         }
@@ -97,10 +98,10 @@ void TextRenderApp::Init()
 
     m_sp_secondary_font = gfx::Font::Library::Get().AddFont(
         Data::FontProvider::Get(),
-        gfx::Font::Settings{
+        gfx::Font::Settings
+        {
             g_secondary_font.name, g_secondary_font.path, 24, m_sp_context->GetFontResolutionDPI(),
-            gfx::Font::GetAnsiCharacters()
-            //gfx::Font::GetTextAlphabet(g_hitchhikers_guide.substr(0, m_secondary_text_displayed_length))
+            gfx::Font::GetTextAlphabet(g_hitchhikers_guide.substr(0, m_secondary_text_displayed_length))
         }
     ).GetPtr();
 
@@ -110,9 +111,10 @@ void TextRenderApp::Init()
         {
             "Panagrams",
             g_pangram_eng + "\n" + g_pangram_rus,
-            gfx::FrameRect{
+            gfx::FrameRect
+            {
                 { g_margin_size_in_dots, vertical_text_pos_in_dots },
-                { frame_width_without_margins - m_sp_logo_badge->GetFrameRectInDots().size.width - g_margin_size_in_dots, 0u /* calculated height */ }
+                { frame_width_without_margins - m_sp_logo_badge->GetScreenRectInDots().size.width - g_margin_size_in_dots, 0u /* calculated height */ }
             }, false, // screen_rect_in_pixels
             gfx::Color4f(g_primary_font.color, 1.f)
         }
@@ -124,7 +126,8 @@ void TextRenderApp::Init()
         {
             "Hitchhikers Guide",
             g_hitchhikers_guide.substr(0, m_secondary_text_displayed_length),
-            gfx::FrameRect{
+            gfx::FrameRect
+            {
                 { g_margin_size_in_dots, vertical_text_pos_in_dots },
                 { frame_width_without_margins, 0u /* calculated height */ }
             }, false, // screen_rect_in_pixels
@@ -132,7 +135,7 @@ void TextRenderApp::Init()
         }
     );
 
-    InitFontAtlasBadges();
+    UpdateFontAtlasBadges();
 
     // Create per-frame command lists
     for(TextRenderFrame& frame : m_frames)
@@ -149,7 +152,7 @@ void TextRenderApp::Init()
     m_sp_context->CompleteInitialization();
 }
 
-void TextRenderApp::InitFontAtlasBadges()
+void TextRenderApp::UpdateFontAtlasBadges()
 {
     const Refs<gfx::Font> font_refs = gfx::Font::Library::Get().GetFonts();
     gfx::Context& context = *m_sp_context;
@@ -188,6 +191,8 @@ void TextRenderApp::InitFontAtlasBadges()
         if (sp_font_atlas_it != m_sp_font_atlas_badges.end())
             continue;
 
+        font_ref.get().Connect(*this);
+
         const auto font_color_by_name_it = g_font_color_by_name.find(font_ref.get().GetSettings().name);
         const gfx::Color3f& font_color = font_color_by_name_it != g_font_color_by_name.end()
                                        ? font_color_by_name_it->second : g_misc_font_color;
@@ -216,8 +221,8 @@ void TextRenderApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
     std::sort(m_sp_font_atlas_badges.begin(), m_sp_font_atlas_badges.end(),
               [](const Ptr<gfx::Badge>& sp_left, const Ptr<gfx::Badge>& sp_right)
               {
-                  return sp_left->GetSettings().frame_rect.size.GetPixelsCount() >
-                         sp_right->GetSettings().frame_rect.size.GetPixelsCount();
+                  return sp_left->GetSettings().screen_rect.size.GetPixelsCount() >
+                         sp_right->GetSettings().screen_rect.size.GetPixelsCount();
               }
     );
 
@@ -247,7 +252,7 @@ bool TextRenderApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 
     m_sp_primary_text->SetScreenRect({
         { g_margin_size_in_dots, vertical_text_pos_in_dots },
-        { frame_width_without_margins - m_sp_logo_badge->GetFrameRectInDots().size.width - g_margin_size_in_dots, 0u /* calculated height */ }
+        { frame_width_without_margins - m_sp_logo_badge->GetScreenRectInDots().size.width - g_margin_size_in_dots, 0u /* calculated height */ }
     });
 
     vertical_text_pos_in_dots += m_sp_primary_text->GetViewportInDots().size.height + g_margin_size_in_dots;
@@ -320,6 +325,25 @@ void TextRenderApp::OnContextReleased(gfx::Context& context)
     m_sp_font_atlas_badges.clear();
 
     GraphicsApp::OnContextReleased(context);
+}
+
+void TextRenderApp::OnFontAtlasTextureReset(gfx::Font&, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture)
+{
+    const auto sp_font_atlas_badge_it = std::find_if(m_sp_font_atlas_badges.begin(), m_sp_font_atlas_badges.end(),
+        [&sp_old_atlas_texture](const Ptr<gfx::Badge>& sp_font_atlas_badge)
+        {
+           return std::addressof(sp_font_atlas_badge->GetTexture()) == sp_old_atlas_texture.get();
+        }
+    );
+
+    if (sp_font_atlas_badge_it == m_sp_font_atlas_badges.end())
+        return;
+
+    Ptr<gfx::Badge>& sp_badge = *sp_font_atlas_badge_it;
+    sp_badge->SetTexture(sp_new_atlas_texture);
+    sp_badge->SetSize(static_cast<const gfx::FrameSize&>(sp_new_atlas_texture->GetSettings().dimensions));
+
+    LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
 }
 
 } // namespace Methane::Tutorials

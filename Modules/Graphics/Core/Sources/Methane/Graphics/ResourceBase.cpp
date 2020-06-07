@@ -552,6 +552,12 @@ Resource::SubResource ResourceBase::GetData(const SubResource::Index&, const std
     throw std::logic_error("Reading data is not allowed for this type of resource.");
 }
 
+Context& ResourceBase::GetContext() noexcept
+{
+    META_FUNCTION_TASK();
+    return m_context;
+}
+
 Data::Size ResourceBase::GetSubResourceDataSize(const SubResource::Index& sub_resource_index) const
 {
     META_FUNCTION_TASK();

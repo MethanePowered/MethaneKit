@@ -92,8 +92,8 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
         }
     );
     state_settings.sp_program->SetName(m_settings.name + " Screen-Quad Shading");
-    state_settings.viewports            = { GetFrameViewport(settings.frame_rect) };
-    state_settings.scissor_rects        = { GetFrameScissorRect(settings.frame_rect) };
+    state_settings.viewports            = { GetFrameViewport(settings.screen_rect) };
+    state_settings.scissor_rects        = { GetFrameScissorRect(settings.screen_rect) };
     state_settings.depth.enabled        = false;
     state_settings.depth.write_enabled  = false;
     state_settings.rasterizer.is_front_counter_clockwise = true;
@@ -139,12 +139,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
     m_sp_const_buffer = Buffer::CreateConstantBuffer(context, Buffer::GetAlignedBufferSize(const_buffer_size));
     m_sp_const_buffer->SetName(m_settings.name + " Screen-Quad Constants Buffer");
 
-    m_sp_const_program_bindings = ProgramBindings::Create(state_settings.sp_program, {
-        { { Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer    } } },
-        { { Shader::Type::Pixel, "g_texture"   }, { { m_sp_texture         } } },
-        { { Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler } } },
-    });
-
+    ResetProgramBindings();
     UpdateConstantsBuffer();
 }
 
@@ -162,10 +157,10 @@ void ScreenQuad::SetBlendColor(const Color4f& blend_color)
 void ScreenQuad::SetScreenRect(const FrameRect& screen_rect)
 {
     META_FUNCTION_TASK();
-    if (m_settings.frame_rect == screen_rect)
+    if (m_settings.screen_rect == screen_rect)
         return;
 
-    m_settings.frame_rect = screen_rect;
+    m_settings.screen_rect = screen_rect;
 
     m_sp_state->SetViewports({ GetFrameViewport(screen_rect) });
     m_sp_state->SetScissorRects({ GetFrameScissorRect(screen_rect) });
@@ -184,6 +179,20 @@ void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled)
     m_sp_state->Reset(state_settings);
 }
 
+void ScreenQuad::SetTexture(Ptr<Texture> sp_texture)
+{
+    META_FUNCTION_TASK();
+    if (m_sp_texture.get() == sp_texture.get())
+        return;
+
+    if (!sp_texture)
+        throw std::invalid_argument("Can not set null texture to screen quad.");
+
+    m_sp_texture = sp_texture;
+
+    ResetProgramBindings();
+}
+
 const Texture& ScreenQuad::GetTexture() const noexcept
 {
     META_FUNCTION_TASK();
@@ -200,6 +209,20 @@ void ScreenQuad::Draw(RenderCommandList& cmd_list) const
     cmd_list.SetProgramBindings(*m_sp_const_program_bindings);
     cmd_list.SetVertexBuffers(*m_sp_vertex_buffers);
     cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
+}
+
+void ScreenQuad::ResetProgramBindings()
+{
+    META_FUNCTION_TASK();
+    assert(m_sp_const_buffer);
+    assert(m_sp_texture);
+    assert(m_sp_texture_sampler);
+
+    m_sp_const_program_bindings = ProgramBindings::Create(m_sp_state->GetSettings().sp_program, {
+        { { Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer    } } },
+        { { Shader::Type::Pixel, "g_texture"   }, { { m_sp_texture         } } },
+        { { Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler } } },
+    });
 }
 
 void ScreenQuad::UpdateConstantsBuffer() const

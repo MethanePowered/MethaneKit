@@ -225,7 +225,7 @@ Text::Text(RenderContext& context, Font& font, Settings settings)
     if (!m_settings.screen_rect_in_pixels)
         m_viewport_rect *= m_context.GetContentScalingFactor();
 
-    m_sp_new_mesh_data = std::make_unique<Mesh>(m_settings.text, *m_sp_font, m_viewport_rect.size, m_sp_atlas_texture->GetSettings().dimensions);
+    ResetMeshData();
     UpdateMeshBuffers();
 
     m_sp_new_const_data = std::make_unique<Constants>(Constants{ m_settings.color });
@@ -281,11 +281,9 @@ Text::Text(RenderContext& context, Font& font, Settings settings)
     });
     m_sp_texture_sampler->SetName(m_settings.name + " Screen-Quad Texture Sampler");
 
-    m_sp_const_program_bindings = ProgramBindings::Create(state_settings.sp_program, {
-        { { Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer    } } },
-        { { Shader::Type::Pixel, "g_texture"   }, { { m_sp_atlas_texture   } } },
-        { { Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler } } },
-    });
+    ResetProgramBindings();
+
+    m_sp_font->Connect(*this);
 }
 
 Text::~Text() = default;
@@ -307,12 +305,7 @@ void Text::SetText(const std::string& text)
     if (!m_settings.screen_rect_in_pixels)
         m_viewport_rect *= m_context.GetContentScalingFactor();
 
-    assert(!!m_sp_font);
-    assert(!!m_sp_atlas_texture);
-    m_sp_new_mesh_data = std::make_unique<Mesh>(
-        m_settings.text, *m_sp_font, m_viewport_rect.size,
-        m_sp_atlas_texture->GetSettings().dimensions
-    );
+    ResetMeshData();
 
     m_sp_state->SetViewports({ GetFrameViewport(m_viewport_rect) });
     m_sp_state->SetScissorRects({ GetFrameScissorRect(m_viewport_rect) });
@@ -345,7 +338,7 @@ void Text::SetScreenRect(const FrameRect& screen_rect, bool rect_in_pixels)
     if (!rect_in_pixels)
         m_viewport_rect *= m_context.GetContentScalingFactor();
 
-    m_sp_new_mesh_data = std::make_unique<Mesh>(m_settings.text, *m_sp_font, m_viewport_rect.size, m_sp_atlas_texture->GetSettings().dimensions);
+    ResetMeshData();
 
     m_sp_state->SetViewports({ GetFrameViewport(m_viewport_rect) });
     m_sp_state->SetScissorRects({ GetFrameScissorRect(m_viewport_rect) });
@@ -354,7 +347,6 @@ void Text::SetScreenRect(const FrameRect& screen_rect, bool rect_in_pixels)
 void Text::Draw(RenderCommandList& cmd_list)
 {
     META_FUNCTION_TASK();
-
     if (m_settings.text.empty())
         return;
 
@@ -368,6 +360,51 @@ void Text::Draw(RenderCommandList& cmd_list)
     cmd_list.SetProgramBindings(*m_sp_const_program_bindings);
     cmd_list.SetVertexBuffers(*m_sp_vertex_buffers);
     cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
+}
+
+void Text::OnFontAtlasTextureReset(Font& font, const Ptr<Texture>& sp_old_atlas_texture, const Ptr<Texture>& sp_new_atlas_texture)
+{
+    META_FUNCTION_TASK();
+    META_UNUSED(sp_old_atlas_texture);
+    if (m_sp_font.get() != std::addressof(font) || std::addressof(m_context) != std::addressof(sp_new_atlas_texture->GetContext()))
+        return;
+
+    assert(m_sp_atlas_texture.get() == sp_old_atlas_texture.get());
+    m_sp_atlas_texture = sp_new_atlas_texture;
+
+    ResetProgramBindings();
+    ResetMeshData();
+}
+
+void Text::OnFontAtlasUpdated(Font& font, const Ptr<Texture>& sp_atlas_texture)
+{
+    META_FUNCTION_TASK();
+    if (m_sp_font.get() != std::addressof(font) || m_sp_atlas_texture.get() != sp_atlas_texture.get())
+        return;
+
+    ResetMeshData();
+}
+
+void Text::ResetProgramBindings()
+{
+    META_FUNCTION_TASK();
+    assert(m_sp_const_buffer);
+    assert(m_sp_atlas_texture);
+    assert(m_sp_texture_sampler);
+
+    m_sp_const_program_bindings = ProgramBindings::Create(m_sp_state->GetSettings().sp_program, {
+        { { Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer    } } },
+        { { Shader::Type::Pixel, "g_texture"   }, { { m_sp_atlas_texture   } } },
+        { { Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler } } },
+    });
+}
+
+void Text::ResetMeshData()
+{
+    META_FUNCTION_TASK();
+    assert(m_sp_atlas_texture);
+
+    m_sp_new_mesh_data = std::make_unique<Mesh>(m_settings.text, *m_sp_font, m_viewport_rect.size, m_sp_atlas_texture->GetSettings().dimensions);
 }
 
 void Text::UpdateMeshBuffers()

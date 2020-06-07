@@ -126,7 +126,7 @@ TextureMT::~TextureMT()
 
     if (TextureBase::GetSettings().type != Texture::Type::FrameBuffer)
     {
-        GetContext().GetResourceManager().GetReleasePool().AddResource(*this);
+        GetContextBase().GetResourceManager().GetReleasePool().AddResource(*this);
     }
 }
 
@@ -273,7 +273,7 @@ void TextureMT::GenerateMipLevels()
     META_FUNCTION_TASK();
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Texture MIPs Generation");
 
-    BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContext().GetUploadCommandList());
+    BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandList());
     blit_command_list.Reset(s_debug_group.get());
     
     id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
@@ -286,7 +286,7 @@ void TextureMT::GenerateMipLevels()
 RenderContextMT& TextureMT::GetRenderContextMT()
 {
     META_FUNCTION_TASK();
-    if (GetContext().GetType() != Context::Type::Render)
+    if (GetContextBase().GetType() != Context::Type::Render)
         throw std::runtime_error("Incompatible context type.");
     return static_cast<RenderContextMT&>(GetContextMT());
 }

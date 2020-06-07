@@ -24,6 +24,7 @@ Tutorial demonstrating triangle rendering with Methane graphics API
 #pragma once
 
 #include <Methane/Graphics/Kit.h>
+#include <Methane/Data/Receiver.hpp>
 
 #include <map>
 
@@ -42,7 +43,9 @@ struct TextRenderFrame final : gfx::AppFrame
 
 using GraphicsApp = gfx::App<TextRenderFrame>;
 
-class TextRenderApp final : public GraphicsApp
+class TextRenderApp final
+    : public GraphicsApp
+    , private Data::Receiver<gfx::IFontCallback>
 {
 public:
     TextRenderApp();
@@ -54,11 +57,15 @@ public:
     bool UpdateText(double elapsed_seconds, double delta_seconds);
     bool Render() override;
 
-    // IContextCallback interface
+private:
+    // IContextCallback overrides
     void OnContextReleased(gfx::Context& context) override;
 
-private:
-    void InitFontAtlasBadges();
+    // IFontCallback overrides
+    void OnFontAtlasTextureReset(gfx::Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture) override;
+    void OnFontAtlasUpdated(gfx::Font&, const Ptr<gfx::Texture>&) override { }
+
+    void UpdateFontAtlasBadges();
     void LayoutFontAtlasBadges(const gfx::FrameSize& frame_size);
 
     Ptr<gfx::Font>   m_sp_primary_font;

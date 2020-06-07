@@ -159,6 +159,7 @@ public:
     SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override;
     const SubResource::Count& GetSubresourceCount() const noexcept override      { return m_sub_resource_count; }
     Data::Size                GetSubResourceDataSize(const SubResource::Index& subresource_index = SubResource::Index()) const override;
+    Context&                  GetContext() noexcept override;
 
     void                      InitializeDefaultDescriptors();
     std::string               GetUsageNames() const noexcept                     { return Usage::ToString(m_usage_mask); }
@@ -173,8 +174,8 @@ public:
 protected:
     DescriptorHeap::Type GetDescriptorHeapTypeByUsage(Usage::Value usage) const;
     const Descriptor&    GetDescriptorByUsage(Usage::Value usage) const;
-    ContextBase&         GetContext() { return m_context; }
-    Data::Size           GetInitializedDataSize() const noexcept { return m_initialized_data_size; }
+    ContextBase&         GetContextBase()                                       { return m_context; }
+    Data::Size           GetInitializedDataSize() const noexcept                { return m_initialized_data_size; }
     void                 SetSubResourceCount(const SubResource::Count& sub_resource_count);
     void                 ValidateSubResource(const SubResource& sub_resource) const;
     void                 ValidateSubResource(const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& sub_resource_data_range = {}) const;

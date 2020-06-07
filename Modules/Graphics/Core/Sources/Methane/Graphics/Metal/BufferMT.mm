@@ -78,7 +78,7 @@ BufferMT::BufferMT(ContextBase& context, const Settings& settings, const Descrip
 BufferMT::~BufferMT()
 {
     META_FUNCTION_TASK();
-    GetContext().GetResourceManager().GetReleasePool().AddResource(*this);
+    GetContextBase().GetResourceManager().GetReleasePool().AddResource(*this);
 }
 
 void BufferMT::SetName(const std::string& name)

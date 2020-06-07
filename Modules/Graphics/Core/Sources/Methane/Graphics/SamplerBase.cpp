@@ -49,7 +49,6 @@ Sampler::LevelOfDetail::LevelOfDetail(float in_bias, float in_min, float in_max)
 
 SamplerBase::SamplerBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : ResourceNT(Type::Sampler, Usage::ShaderRead, context, descriptor_by_usage)
-    , m_context(context)
     , m_settings(settings)
 {
     META_FUNCTION_TASK();

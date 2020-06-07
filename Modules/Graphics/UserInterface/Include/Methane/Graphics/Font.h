@@ -27,7 +27,7 @@ Font atlas textures generation and fonts library management classes.
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Data/Provider.h>
-#include <Methane/Data/Receiver.hpp>
+#include <Methane/Data/Emitter.hpp>
 
 #include <map>
 #include <string>
@@ -35,8 +35,19 @@ Font atlas textures generation and fonts library management classes.
 namespace Methane::Graphics
 {
 
+class Font;
+
+struct IFontCallback
+{
+    virtual void OnFontAtlasTextureReset(Font& font, const Ptr<Texture>& sp_old_atlas_texture, const Ptr<Texture>& sp_new_atlas_texture) = 0;
+    virtual void OnFontAtlasUpdated(Font& font, const Ptr<Texture>& sp_atlas_texture) = 0;
+
+    virtual ~IFontCallback() = default;
+};
+
 class Font
     : public std::enable_shared_from_this<Font>
+    , public Data::Emitter<IFontCallback>
     , protected Data::Receiver<IContextCallback>
 {
 public:
@@ -139,6 +150,7 @@ protected:
     void OnContextInitialized(Context&) override { }
 
 private:
+    Ptr<Texture> CreateAtlasTexture(Context& context);
     bool IsAtlasBitmapUpToDate() const;
     bool UpdateAtlasBitmap();
     void UpdateAtlasTextures();

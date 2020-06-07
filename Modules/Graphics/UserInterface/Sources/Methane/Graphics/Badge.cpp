@@ -97,6 +97,16 @@ void Badge::SetMargins(Point2i& margins)
     SetScreenRect(GetBadgeRectInFrame(m_context.GetSettings().frame_size));
 }
 
+void Badge::SetSize(const FrameSize& size)
+{
+    META_FUNCTION_TASK();
+    if (m_settings.size == size)
+        return;
+
+    m_settings.size = size;
+    SetScreenRect(GetBadgeRectInFrame(m_context.GetSettings().frame_size));
+}
+
 FrameRect Badge::GetBadgeRectInFrame(const FrameSize& frame_size)
 {
     return GetBadgeRectInFrame(frame_size, m_settings);

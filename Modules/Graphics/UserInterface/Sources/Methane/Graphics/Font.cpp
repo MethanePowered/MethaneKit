@@ -523,10 +523,18 @@ const Ptr<Texture>& Font::GetAtlasTexturePtr(Context& context)
 
     // Create atlas texture and render glyphs to it
     UpdateAtlasBitmap();
+    return m_atlas_textures.emplace(&context, CreateAtlasTexture(context)).first->second;
+}
+
+Ptr<Texture> Font::CreateAtlasTexture(Context& context)
+{
+    META_FUNCTION_TASK();
     Ptr<Texture> sp_atlas_texture = Texture::CreateImage(context, Dimensions(m_sp_atlas_pack->GetSize()), 1, PixelFormat::R8Unorm, false);
-    sp_atlas_texture->SetData({ Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size())) });
     sp_atlas_texture->SetName(m_settings.name + " Font Atlas");
-    return m_atlas_textures.emplace(&context, std::move(sp_atlas_texture)).first->second;
+    sp_atlas_texture->SetData({
+        Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size()))
+    });
+    return sp_atlas_texture;
 }
 
 bool Font::IsAtlasBitmapUpToDate() const
@@ -566,17 +574,27 @@ void Font::UpdateAtlasTextures()
         throw std::logic_error("Can not update atlas textures until atlas is packed and bitmap is up to date.");
 
     const FrameSize atlas_size = m_sp_atlas_pack->GetSize();
-    for(const auto& context_and_texture : m_atlas_textures)
+    for(auto& context_and_texture : m_atlas_textures)
     {
-        const Dimensions& texture_dimensions = context_and_texture.second->GetSettings().dimensions;
+        assert(context_and_texture.first);
+        assert(context_and_texture.second);
+        Context&      context    = *context_and_texture.first;
+        Ptr<Texture>& sp_texture = context_and_texture.second;
+
+        const Dimensions& texture_dimensions = sp_texture->GetSettings().dimensions;
         if (texture_dimensions.width != atlas_size.width || texture_dimensions.height != atlas_size.height)
         {
-            // TODO: resize atlas texture
-            assert(0);
+            const Ptr<Texture> sp_old_texture = sp_texture;
+            sp_texture = CreateAtlasTexture(context);
+            Emit(&IFontCallback::OnFontAtlasTextureReset, *this, sp_old_texture, sp_texture);
         }
-
-        assert(context_and_texture.second);
-        context_and_texture.second->SetData({ Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size())) });
+        else
+        {
+            sp_texture->SetData({
+                Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size()))
+            });
+            Emit(&IFontCallback::OnFontAtlasUpdated, *this, sp_texture);
+        }
     }
 }
 

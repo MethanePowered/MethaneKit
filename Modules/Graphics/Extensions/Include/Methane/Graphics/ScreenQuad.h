@@ -51,7 +51,7 @@ public:
     struct Settings
     {
         const std::string name;
-        FrameRect         frame_rect;
+        FrameRect         screen_rect;
         bool              alpha_blending_enabled  = false;
         Color4f           blend_color             = Color4f(1.f, 1.f, 1.f, 1.f);
         TextureMode       texture_mode            = TextureMode::RgbaFloat;
@@ -62,14 +62,16 @@ public:
     void SetBlendColor(const Color4f& blend_color);
     void SetScreenRect(const FrameRect& screen_rect);
     void SetAlphaBlendingEnabled(bool alpha_blending_enabled);
+    void SetTexture(Ptr<Texture> sp_texture);
 
     const Settings& GetSettings() const noexcept { return m_settings; }
-    FrameRect       GetFrameRectInDots() const noexcept { return m_settings.frame_rect / m_context.GetContentScalingFactor(); }
+    FrameRect       GetScreenRectInDots() const noexcept { return m_settings.screen_rect / m_context.GetContentScalingFactor(); }
     const Texture&  GetTexture() const noexcept;
 
     void Draw(RenderCommandList& cmd_list) const;
 
 private:
+    void ResetProgramBindings();
     void UpdateConstantsBuffer() const;
 
     static Shader::MacroDefinitions GetPixelShaderMacroDefinitions(TextureMode texture_mode);

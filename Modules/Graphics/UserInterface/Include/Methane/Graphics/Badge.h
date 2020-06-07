@@ -61,6 +61,7 @@ public:
     void FrameResize(const FrameSize& frame_size, std::optional<FrameSize> badge_size = {}, std::optional<Point2i> margins = {});
     void SetCorner(FrameCorner frame_corner);
     void SetMargins(Point2i& margins);
+    void SetSize(const FrameSize& size);
 
 private:
     FrameRect GetBadgeRectInFrame(const FrameSize& frame_size);

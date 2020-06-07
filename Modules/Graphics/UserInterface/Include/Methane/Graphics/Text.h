@@ -32,13 +32,14 @@ Text rendering primitive.
 #include <Methane/Graphics/ProgramBindings.h>
 #include <Methane/Graphics/Sampler.h>
 #include <Methane/Graphics/Types.h>
+#include <Methane/Data/Receiver.hpp>
 
 namespace Methane::Graphics
 {
 
 struct RenderCommandList;
 
-class Text
+class Text : protected Data::Receiver<IFontCallback>
 {
 public:
     struct Settings
@@ -63,10 +64,17 @@ public:
 
     void Draw(RenderCommandList& cmd_list);
 
+protected:
+    // IFontCallback interface
+    void OnFontAtlasTextureReset(Font& font, const Ptr<Texture>& sp_old_atlas_texture, const Ptr<Texture>& sp_new_atlas_texture) override;
+    void OnFontAtlasUpdated(Font& font, const Ptr<Texture>& sp_atlas_texture) override;
+
 private:
     struct Mesh;
     struct Constants;
 
+    void ResetProgramBindings();
+    void ResetMeshData();
     void UpdateMeshBuffers();
     void UpdateConstantsBuffer();
 
