@@ -117,7 +117,7 @@ ResourceDX::ResourceDX(Type type, Usage::Mask usage_mask, ContextBase& context, 
 ResourceDX::~ResourceDX()
 {
     META_FUNCTION_TASK();
-    GetContext().GetResourceManager().GetReleasePool().AddResource(*this);
+    GetContextBase().GetResourceManager().GetReleasePool().AddResource(*this);
 }
 
 void ResourceDX::SetName(const std::string& name)
@@ -199,7 +199,7 @@ D3D12_RESOURCE_BARRIER ResourceDX::GetNativeResourceBarrier(const Barrier::Id& i
 IContextDX& ResourceDX::GetContextDX() noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<IContextDX&>(GetContext());
+    return static_cast<IContextDX&>(GetContextBase());
 }
 
 void ResourceDX::InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type, 
