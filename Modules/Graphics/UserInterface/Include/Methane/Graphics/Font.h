@@ -40,7 +40,6 @@ class Font;
 struct IFontCallback
 {
     virtual void OnFontAtlasTextureReset(Font& font, const Ptr<Texture>& sp_old_atlas_texture, const Ptr<Texture>& sp_new_atlas_texture) = 0;
-    virtual void OnFontAtlasUpdated(Font& font, const Ptr<Texture>& sp_atlas_texture) = 0;
 
     virtual ~IFontCallback() = default;
 };
@@ -123,6 +122,8 @@ public:
     Ptr<Font>       GetPtr() { return shared_from_this(); }
     const Settings& GetSettings() const { return m_settings; }
 
+    void              ResetChars(const std::string& unicode_characters);
+    void              ResetChars(const std::wstring& characters);
     void              AddChars(const std::string& unicode_characters);
     void              AddChars(const std::wstring& characters);
     const Font::Char& AddChar(Char::Code char_code);
@@ -135,8 +136,6 @@ public:
 
     const Ptr<Texture>& GetAtlasTexturePtr(Context& context);
     Texture&            GetAtlasTexture(Context& context) { return *GetAtlasTexturePtr(context); }
-    void                RemoveAtlasTexture(Context& context);
-    void                ClearAtlasTextures();
 
 protected:
     // Font can be created only via Font::Library::Add
@@ -151,9 +150,11 @@ protected:
 
 private:
     Ptr<Texture> CreateAtlasTexture(Context& context);
-    bool IsAtlasBitmapUpToDate() const;
+    void RemoveAtlasTexture(Context& context);
+
     bool UpdateAtlasBitmap();
     void UpdateAtlasTextures();
+    void ClearAtlasTextures();
 
     class Face;
     class CharBinPack;

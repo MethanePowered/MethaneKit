@@ -63,8 +63,8 @@ private:
 
     // IFontCallback overrides
     void OnFontAtlasTextureReset(gfx::Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture) override;
-    void OnFontAtlasUpdated(gfx::Font&, const Ptr<gfx::Texture>&) override { }
 
+    Ptr<gfx::Badge> CreateFontAtlasBadge(gfx::Font& font, const Ptr<gfx::Texture>& sp_atlas_texture);
     void UpdateFontAtlasBadges();
     void LayoutFontAtlasBadges(const gfx::FrameSize& frame_size);
 

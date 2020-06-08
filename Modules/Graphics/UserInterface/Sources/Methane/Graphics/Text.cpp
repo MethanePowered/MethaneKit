@@ -385,15 +385,6 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<Texture>& sp_old_atlas_
     ResetMeshData();
 }
 
-void Text::OnFontAtlasUpdated(Font& font, const Ptr<Texture>& sp_atlas_texture)
-{
-    META_FUNCTION_TASK();
-    if (m_sp_font.get() != std::addressof(font) || m_sp_atlas_texture.get() != sp_atlas_texture.get())
-        return;
-
-    ResetMeshData();
-}
-
 void Text::ResetMeshData()
 {
     META_FUNCTION_TASK();

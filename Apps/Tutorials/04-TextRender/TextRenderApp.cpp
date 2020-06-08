@@ -39,7 +39,7 @@ struct FontSettings
 
 constexpr    int32_t                             g_margin_size_in_dots  = 32;
 constexpr    int32_t                             g_top_text_pos_in_dots = 100;
-constexpr    double                              g_text_update_interval_sec = 0.1;
+constexpr    double                              g_text_update_interval_sec = 0.03;
 static const FontSettings                        g_primary_font         { "Primary",   "Fonts/Roboto/Roboto-Regular.ttf",     24u, { 1.f,  1.f, 0.5f } };
 static const FontSettings                        g_secondary_font       { "Secondary", "Fonts/Playball/Playball-Regular.ttf", 16u, { 0.5f, 1.f, 0.5f } };
 static const gfx::Color3f                        g_misc_font_color      { 1.f, 1.f, 1.f };
@@ -152,6 +152,25 @@ void TextRenderApp::Init()
     m_sp_context->CompleteInitialization();
 }
 
+Ptr<gfx::Badge> TextRenderApp::CreateFontAtlasBadge(gfx::Font& font, const Ptr<gfx::Texture>& sp_atlas_texture)
+{
+    const auto font_color_by_name_it = g_font_color_by_name.find(font.GetSettings().name);
+    const gfx::Color3f& font_color = font_color_by_name_it != g_font_color_by_name.end()
+                                   ? font_color_by_name_it->second : g_misc_font_color;
+
+    return std::make_shared<gfx::Badge>(
+        *m_sp_context, sp_atlas_texture,
+        gfx::Badge::Settings
+            {
+                static_cast<const gfx::FrameSize&>(sp_atlas_texture->GetSettings().dimensions),
+                gfx::Badge::FrameCorner::BottomLeft,
+                gfx::Point2u(16u, 16u),
+                gfx::Color4f(font_color, 0.5f),
+                gfx::Badge::TextureMode::RFloatToAlpha
+            }
+    );
+}
+
 void TextRenderApp::UpdateFontAtlasBadges()
 {
     const Refs<gfx::Font> font_refs = gfx::Font::Library::Get().GetFonts();
@@ -193,23 +212,7 @@ void TextRenderApp::UpdateFontAtlasBadges()
 
         font_ref.get().Connect(*this);
 
-        const auto font_color_by_name_it = g_font_color_by_name.find(font_ref.get().GetSettings().name);
-        const gfx::Color3f& font_color = font_color_by_name_it != g_font_color_by_name.end()
-                                       ? font_color_by_name_it->second : g_misc_font_color;
-
-        m_sp_font_atlas_badges.emplace_back(
-            std::make_shared<gfx::Badge>(
-                *m_sp_context, sp_font_atlas_texture,
-                gfx::Badge::Settings
-                {
-                    static_cast<const gfx::FrameSize&>(sp_font_atlas_texture->GetSettings().dimensions),
-                    gfx::Badge::FrameCorner::BottomLeft,
-                    gfx::Point2u(16u, 16u),
-                    gfx::Color4f(font_color, 0.5f),
-                    gfx::Badge::TextureMode::RFloatToAlpha
-                }
-            )
-        );
+        m_sp_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font_ref.get(), sp_font_atlas_texture));
     }
 
     LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
@@ -271,13 +274,16 @@ bool TextRenderApp::UpdateText(double elapsed_seconds, double)
         return true;
 
     m_text_update_elapsed_sec = elapsed_seconds;
-
-    if (m_secondary_text_displayed_length < g_hitchhikers_guide.length() - 1)
-        m_secondary_text_displayed_length++;
-    else
-        m_secondary_text_displayed_length = 1;
+    m_secondary_text_displayed_length = m_secondary_text_displayed_length < g_hitchhikers_guide.length() - 1
+                                      ? m_secondary_text_displayed_length + 1
+                                      : 1;
 
     m_sp_secondary_text->SetText(g_hitchhikers_guide.substr(0, m_secondary_text_displayed_length));
+
+    if (m_secondary_text_displayed_length == 1)
+    {
+        m_sp_secondary_font->ResetChars(gfx::Font::GetTextAlphabet(g_hitchhikers_guide.substr(0, m_secondary_text_displayed_length)));
+    }
     return true;
 }
 
@@ -327,7 +333,7 @@ void TextRenderApp::OnContextReleased(gfx::Context& context)
     GraphicsApp::OnContextReleased(context);
 }
 
-void TextRenderApp::OnFontAtlasTextureReset(gfx::Font&, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture)
+void TextRenderApp::OnFontAtlasTextureReset(gfx::Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture)
 {
     const auto sp_font_atlas_badge_it = std::find_if(m_sp_font_atlas_badges.begin(), m_sp_font_atlas_badges.end(),
         [&sp_old_atlas_texture](const Ptr<gfx::Badge>& sp_font_atlas_badge)
@@ -337,11 +343,15 @@ void TextRenderApp::OnFontAtlasTextureReset(gfx::Font&, const Ptr<gfx::Texture>&
     );
 
     if (sp_font_atlas_badge_it == m_sp_font_atlas_badges.end())
-        return;
-
-    Ptr<gfx::Badge>& sp_badge = *sp_font_atlas_badge_it;
-    sp_badge->SetTexture(sp_new_atlas_texture);
-    sp_badge->SetSize(static_cast<const gfx::FrameSize&>(sp_new_atlas_texture->GetSettings().dimensions));
+    {
+        m_sp_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font, sp_new_atlas_texture));
+    }
+    else
+    {
+        Ptr<gfx::Badge>& sp_badge = *sp_font_atlas_badge_it;
+        sp_badge->SetTexture(sp_new_atlas_texture);
+        sp_badge->SetSize(static_cast<const gfx::FrameSize&>(sp_new_atlas_texture->GetSettings().dimensions));
+    }
 
     LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
 }
