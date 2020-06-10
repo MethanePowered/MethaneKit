@@ -186,11 +186,6 @@ void TexturedCubeApp::Init()
         frame.sp_render_cmd_list->SetName(IndexedName("Cube Rendering", frame.index));
         frame.sp_execute_cmd_lists = gfx::CommandListSet::Create({ *frame.sp_render_cmd_list });
     }
-
-    // Complete initialization of render context:
-    //  - allocate deferred descriptor heaps with calculated sizes
-    //  - execute commands to upload resources to GPU
-    m_sp_context->CompleteInitialization();
 }
 
 bool TexturedCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
@@ -233,11 +228,8 @@ bool TexturedCubeApp::Render()
     if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
         return false;
 
-    // Wait for previous frame rendering is completed and switch to next frame
-    m_sp_context->WaitForGpu(gfx::RenderContext::WaitFor::FramePresented);
-    TexturedCubeFrame& frame = GetCurrentFrame();
-
     // Update uniforms buffer related to current frame
+    TexturedCubeFrame& frame = GetCurrentFrame();
     frame.sp_uniforms_buffer->SetData(m_shader_uniforms_subresources);
 
     // Issue commands for cube rendering

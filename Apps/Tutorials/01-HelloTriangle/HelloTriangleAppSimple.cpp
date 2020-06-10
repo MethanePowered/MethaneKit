@@ -120,8 +120,6 @@ public:
             frame.sp_render_cmd_list  = RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
             frame.sp_render_cmd_lists = CommandListSet::Create({ *frame.sp_render_cmd_list });
         }
-
-        m_sp_context->CompleteInitialization();
     }
 
     bool Resize(const FrameSize& frame_size, bool is_minimized) override
@@ -139,9 +137,7 @@ public:
         if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
             return false;
 
-        m_sp_context->WaitForGpu(Context::WaitFor::FramePresented);
         HelloTriangleFrame& frame = GetCurrentFrame();
-
         frame.sp_render_cmd_list->Reset(m_sp_state);
         frame.sp_render_cmd_list->SetVertexBuffers(*m_sp_vertex_buffers);
         frame.sp_render_cmd_list->Draw(RenderCommandList::Primitive::Triangle, 3);

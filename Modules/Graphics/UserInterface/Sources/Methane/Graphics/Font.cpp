@@ -590,6 +590,9 @@ void Font::UpdateAtlasTextures()
     if (!m_sp_atlas_pack)
         throw std::logic_error("Can not update atlas textures until atlas is packed and bitmap is up to date.");
 
+    if (m_atlas_textures.empty())
+        return;
+
     const FrameSize atlas_size = m_sp_atlas_pack->GetSize();
     for(auto& context_and_texture : m_atlas_textures)
     {
@@ -613,6 +616,8 @@ void Font::UpdateAtlasTextures()
             });
         }
     }
+
+    Emit(&IFontCallback::OnFontAtlasUpdated, *this);
 }
 
 void Font::ClearAtlasTextures()

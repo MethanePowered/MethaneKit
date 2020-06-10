@@ -99,7 +99,8 @@ void ResourceManager::CompleteInitialization()
             Ptr<ProgramBindings> sp_program_bindings = wp_program_bindings.lock();
             assert(!!sp_program_bindings);
             static_cast<ProgramBindingsBase&>(*sp_program_bindings).CompleteInitialization();
-        });
+        }
+    );
 }
 
 void ResourceManager::Release()

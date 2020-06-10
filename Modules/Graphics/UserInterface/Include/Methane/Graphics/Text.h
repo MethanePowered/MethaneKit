@@ -67,6 +67,7 @@ public:
 protected:
     // IFontCallback interface
     void OnFontAtlasTextureReset(Font& font, const Ptr<Texture>& sp_old_atlas_texture, const Ptr<Texture>& sp_new_atlas_texture) override;
+    void OnFontAtlasUpdated(Font&) override {}
 
 private:
     struct Mesh;

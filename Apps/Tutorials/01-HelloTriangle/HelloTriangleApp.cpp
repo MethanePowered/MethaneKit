@@ -109,9 +109,6 @@ void HelloTriangleApp::Init()
         frame.sp_render_cmd_list->SetName(IndexedName("Triangle Rendering", frame.index));
         frame.sp_execute_cmd_lists = gfx::CommandListSet::Create({ *frame.sp_render_cmd_list });
     }
-
-    // Complete initialization of render context
-    m_sp_context->CompleteInitialization();
 }
 
 bool HelloTriangleApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
@@ -133,12 +130,9 @@ bool HelloTriangleApp::Render()
     if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
         return false;
 
-    // Wait for previous frame rendering is completed and switch to next frame
-    m_sp_context->WaitForGpu(gfx::Context::WaitFor::FramePresented);
-    HelloTriangleFrame& frame = GetCurrentFrame();
-
     // Issue commands for triangle rendering
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Triangle Rendering");
+    HelloTriangleFrame& frame = GetCurrentFrame();
     frame.sp_render_cmd_list->Reset(m_sp_state, s_debug_group.get());
     frame.sp_render_cmd_list->SetVertexBuffers(*m_sp_vertex_buffers);
     frame.sp_render_cmd_list->Draw(gfx::RenderCommandList::Primitive::Triangle, 3u);

@@ -40,6 +40,7 @@ class Font;
 struct IFontCallback
 {
     virtual void OnFontAtlasTextureReset(Font& font, const Ptr<Texture>& sp_old_atlas_texture, const Ptr<Texture>& sp_new_atlas_texture) = 0;
+    virtual void OnFontAtlasUpdated(Font& font) = 0;
 
     virtual ~IFontCallback() = default;
 };

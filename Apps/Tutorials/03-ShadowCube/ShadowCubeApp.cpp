@@ -309,11 +309,6 @@ void ShadowCubeApp::Init()
             *frame.final_pass.sp_cmd_list
         });
     }
-
-    // Complete initialization of render context:
-    //  - allocate deferred descriptor heaps with calculated sizes
-    //  - execute commands to upload resources to GPU
-    m_sp_context->CompleteInitialization();
 }
 
 void ShadowCubeApp::RenderPass::Release()
@@ -406,11 +401,8 @@ bool ShadowCubeApp::Render()
     if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
         return false;
 
-    // Wait for previous frame rendering is completed and switch to next frame
-    m_sp_context->WaitForGpu(gfx::Context::WaitFor::FramePresented);
-    ShadowCubeFrame& frame = GetCurrentFrame();
-
     // Upload uniform buffers to GPU
+    ShadowCubeFrame& frame = GetCurrentFrame();
     frame.sp_scene_uniforms_buffer->SetData(m_scene_uniforms_subresources);
     frame.shadow_pass.floor.sp_uniforms_buffer->SetData(m_sp_floor_buffers->GetShadowPassUniformsSubresources());
     frame.shadow_pass.cube.sp_uniforms_buffer->SetData(m_sp_cube_buffers->GetShadowPassUniformsSubresources());

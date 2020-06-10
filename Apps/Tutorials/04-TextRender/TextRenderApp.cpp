@@ -115,7 +115,8 @@ void TextRenderApp::Init()
             {
                 { g_margin_size_in_dots, vertical_text_pos_in_dots },
                 { frame_width_without_margins - m_sp_logo_badge->GetScreenRectInDots().size.width - g_margin_size_in_dots, 0u /* calculated height */ }
-            }, false, // screen_rect_in_pixels
+            },
+            false, // screen_rect_in_pixels
             gfx::Color4f(g_primary_font.color, 1.f)
         }
     );
@@ -130,7 +131,8 @@ void TextRenderApp::Init()
             {
                 { g_margin_size_in_dots, vertical_text_pos_in_dots },
                 { frame_width_without_margins, 0u /* calculated height */ }
-            }, false, // screen_rect_in_pixels
+            },
+            false, // screen_rect_in_pixels
             gfx::Color4f(g_secondary_font.color, 1.f)
         }
     );
@@ -147,9 +149,6 @@ void TextRenderApp::Init()
 
     // Setup animations
     m_animations.push_back(std::make_shared<Data::TimeAnimation>(std::bind(&TextRenderApp::UpdateText, this, std::placeholders::_1, std::placeholders::_2)));
-
-    // Complete initialization of render context
-    m_sp_context->CompleteInitialization();
 }
 
 Ptr<gfx::Badge> TextRenderApp::CreateFontAtlasBadge(gfx::Font& font, const Ptr<gfx::Texture>& sp_atlas_texture)
@@ -161,13 +160,13 @@ Ptr<gfx::Badge> TextRenderApp::CreateFontAtlasBadge(gfx::Font& font, const Ptr<g
     return std::make_shared<gfx::Badge>(
         *m_sp_context, sp_atlas_texture,
         gfx::Badge::Settings
-            {
-                static_cast<const gfx::FrameSize&>(sp_atlas_texture->GetSettings().dimensions),
-                gfx::Badge::FrameCorner::BottomLeft,
-                gfx::Point2u(16u, 16u),
-                gfx::Color4f(font_color, 0.5f),
-                gfx::Badge::TextureMode::RFloatToAlpha
-            }
+        {
+            static_cast<const gfx::FrameSize&>(sp_atlas_texture->GetSettings().dimensions),
+            gfx::Badge::FrameCorner::BottomLeft,
+            gfx::Point2u(16u, 16u),
+            gfx::Color4f(font_color, 0.5f),
+            gfx::Badge::TextureMode::RFloatToAlpha
+        }
     );
 }
 
@@ -293,9 +292,6 @@ bool TextRenderApp::Render()
     if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
         return false;
 
-    // Wait for previous frame rendering is completed and switch to next frame
-    m_sp_context->WaitForGpu(gfx::Context::WaitFor::FramePresented);
-
     // Draw text blocks
     TextRenderFrame& frame = GetCurrentFrame();
     m_sp_primary_text->Draw(*frame.sp_render_cmd_list);
@@ -352,8 +348,14 @@ void TextRenderApp::OnFontAtlasTextureReset(gfx::Font& font, const Ptr<gfx::Text
         sp_badge->SetTexture(sp_new_atlas_texture);
         sp_badge->SetSize(static_cast<const gfx::FrameSize&>(sp_new_atlas_texture->GetSettings().dimensions));
     }
+}
 
+void TextRenderApp::OnFontAtlasUpdated(gfx::Font&)
+{
     LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
+
+    // New font atlas textures must be uploaded to GPU and program bindings need to be updated (in GPU descriptor heaps)
+    RequestContextInitializationCompletion();
 }
 
 } // namespace Methane::Tutorials
