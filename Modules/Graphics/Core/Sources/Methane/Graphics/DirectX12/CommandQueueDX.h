@@ -50,7 +50,7 @@ class CommandListSetDX;
 class CommandQueueDX final : public CommandQueueBase
 {
 public:
-    CommandQueueDX(ContextBase& context);
+    CommandQueueDX(ContextBase& context, CommandList::Type command_lists_type);
     ~CommandQueueDX() override;
 
     // CommandQueue interface

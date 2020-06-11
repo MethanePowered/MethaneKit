@@ -162,7 +162,7 @@ CommandQueue& ContextBase::GetUploadCommandQueue()
 
     static const std::string s_command_queue_name = "Upload Command Queue";
 
-    m_sp_upload_cmd_queue = CommandQueue::Create(*this);
+    m_sp_upload_cmd_queue = CommandQueue::Create(*this, CommandList::Type::Blit);
     m_sp_upload_cmd_queue->SetName(s_command_queue_name);
 
     return *m_sp_upload_cmd_queue;

@@ -46,16 +46,17 @@ class CommandQueueBase
     friend class CommandListBase;
 
 public:
-    CommandQueueBase(ContextBase& context);
+    CommandQueueBase(ContextBase& context, CommandList::Type command_lists_type);
     ~CommandQueueBase() override;
 
     // CommandQueue interface
     void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
+    CommandList::Type GetCommandListsType() const noexcept override { return m_command_lists_type; }
 
-    Ptr<CommandQueueBase> GetPtr()           { return shared_from_this(); }
-    ContextBase&          GetContext()       { return m_context; }
-    const ContextBase&    GetContext() const { return m_context; }
-    Tracy::GpuContext&    GetTracyContext();
+    Ptr<CommandQueueBase> GetPtr()                      { return shared_from_this(); }
+    ContextBase&          GetContext() noexcept         { return m_context; }
+    const ContextBase&    GetContext() const noexcept   { return m_context; }
+    Tracy::GpuContext&    GetTracyContext() noexcept;
 
 protected:
     void InitializeTracyGpuContext(const Tracy::GpuContext::Settings& tracy_settings);
@@ -63,6 +64,7 @@ protected:
 
 private:
     ContextBase&                 m_context;
+    const CommandList::Type      m_command_lists_type;
     UniquePtr<Tracy::GpuContext> m_sp_tracy_gpu_context;
 };
 

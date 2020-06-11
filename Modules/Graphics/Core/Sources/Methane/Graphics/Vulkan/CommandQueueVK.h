@@ -34,7 +34,7 @@ struct IContextVK;
 class CommandQueueVK final : public CommandQueueBase
 {
 public:
-    CommandQueueVK(ContextBase& context);
+    CommandQueueVK(ContextBase& context, CommandList::Type command_lists_type);
     ~CommandQueueVK() override;
 
     // Object interface

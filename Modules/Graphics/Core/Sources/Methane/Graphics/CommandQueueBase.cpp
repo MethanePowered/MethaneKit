@@ -31,8 +31,9 @@ Base implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
-CommandQueueBase::CommandQueueBase(ContextBase& context)
+CommandQueueBase::CommandQueueBase(ContextBase& context, CommandList::Type command_lists_type)
     : m_context(context)
+    , m_command_lists_type(command_lists_type)
 {
     META_FUNCTION_TASK();
 }
@@ -51,7 +52,7 @@ void CommandQueueBase::Execute(CommandListSet& command_lists, const CommandList:
     static_cast<CommandListSetBase&>(command_lists).Execute(frame_index, completed_callback);
 }
 
-Tracy::GpuContext& CommandQueueBase::GetTracyContext()
+Tracy::GpuContext& CommandQueueBase::GetTracyContext() noexcept
 {
     META_FUNCTION_TASK();
     assert(m_sp_tracy_gpu_context);

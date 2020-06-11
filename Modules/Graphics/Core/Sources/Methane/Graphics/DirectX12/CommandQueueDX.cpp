@@ -41,13 +41,32 @@ namespace Methane::Graphics
 
 constexpr uint32_t g_max_timestamp_queries_count_per_frame = 1000;
 
-Ptr<CommandQueue> CommandQueue::Create(Context& context)
+Ptr<CommandQueue> CommandQueue::Create(Context& context, CommandList::Type command_lists_type)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<CommandQueueDX>(dynamic_cast<ContextBase&>(context));
+    return std::make_shared<CommandQueueDX>(dynamic_cast<ContextBase&>(context), command_lists_type);
 }
 
-static wrl::ComPtr<ID3D12CommandQueue> CreateNativeCommandQueue(const DeviceDX& device)
+static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandList::Type command_list_type)
+{
+    META_FUNCTION_TASK();
+    switch(command_list_type)
+    {
+    case CommandList::Type::Blit:
+        // TODO: must be return D3D12_COMMAND_LIST_TYPE_COPY;
+        return D3D12_COMMAND_LIST_TYPE_DIRECT;
+
+    case CommandList::Type::Render:
+    case CommandList::Type::ParallelRender:
+        return D3D12_COMMAND_LIST_TYPE_DIRECT;
+
+    default:
+        assert(0);
+    }
+    return D3D12_COMMAND_LIST_TYPE_DIRECT;
+}
+
+static wrl::ComPtr<ID3D12CommandQueue> CreateNativeCommandQueue(const DeviceDX& device, D3D12_COMMAND_LIST_TYPE command_list_type)
 {
     META_FUNCTION_TASK();
     const wrl::ComPtr<ID3D12Device>& cp_device = device.GetNativeDevice();
@@ -55,16 +74,16 @@ static wrl::ComPtr<ID3D12CommandQueue> CreateNativeCommandQueue(const DeviceDX& 
 
     D3D12_COMMAND_QUEUE_DESC queue_desc{};
     queue_desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-    queue_desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+    queue_desc.Type = command_list_type;
 
     wrl::ComPtr<ID3D12CommandQueue> cp_command_queue;
     ThrowIfFailed(cp_device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&cp_command_queue)), cp_device.Get());
     return cp_command_queue;
 }
 
-CommandQueueDX::CommandQueueDX(ContextBase& context)
-    : CommandQueueBase(context)
-    , m_cp_command_queue(CreateNativeCommandQueue(GetContextDX().GetDeviceDX()))
+CommandQueueDX::CommandQueueDX(ContextBase& context, CommandList::Type command_lists_type)
+    : CommandQueueBase(context, command_lists_type)
+    , m_cp_command_queue(CreateNativeCommandQueue(GetContextDX().GetDeviceDX(), GetNativeCommandListType(command_lists_type)))
     , m_execution_waiting_thread(&CommandQueueDX::WaitForExecution, this)
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
     , m_sp_timestamp_query_buffer(TimestampQueryBuffer::Create(*this, g_max_timestamp_queries_count_per_frame))

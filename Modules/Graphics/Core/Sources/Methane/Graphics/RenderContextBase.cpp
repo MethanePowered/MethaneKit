@@ -218,7 +218,7 @@ CommandQueue& RenderContextBase::GetRenderCommandQueue()
     if (!m_sp_render_cmd_queue)
     {
         static const std::string s_command_queue_name = "Render Command Queue";
-        m_sp_render_cmd_queue = CommandQueue::Create(*this);
+        m_sp_render_cmd_queue = CommandQueue::Create(*this, CommandList::Type::Render);
         m_sp_render_cmd_queue->SetName(s_command_queue_name);
     }
     return *m_sp_render_cmd_queue;
