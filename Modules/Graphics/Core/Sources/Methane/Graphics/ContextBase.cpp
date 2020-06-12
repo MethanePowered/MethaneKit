@@ -60,7 +60,11 @@ void ContextBase::CompleteInitialization()
     META_FUNCTION_TASK();
     META_LOG("Complete initialization of context \"" + GetName() + "\"");
 
-    m_resource_manager.CompleteInitialization();
+    if (m_resource_manager.IsDeferredHeapAllocation())
+    {
+        WaitForGpu(WaitFor::RenderComplete);
+        m_resource_manager.CompleteInitialization();
+    }
     UploadResources();
 
     // Enable deferred heap allocation in case if more resources will be created in runtime
