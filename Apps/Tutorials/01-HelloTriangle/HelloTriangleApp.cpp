@@ -109,6 +109,8 @@ void HelloTriangleApp::Init()
         frame.sp_render_cmd_list->SetName(IndexedName("Triangle Rendering", frame.index));
         frame.sp_execute_cmd_lists = gfx::CommandListSet::Create({ *frame.sp_render_cmd_list });
     }
+
+    GraphicsApp::CompleteInitialization();
 }
 
 bool HelloTriangleApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)

@@ -141,13 +141,13 @@ void RenderCommandListMT::DrawIndexed(Primitive primitive, Buffer& index_buffer,
 
     assert(GetNativeCommandEncoder() != nil);
     [GetNativeCommandEncoder() drawIndexedPrimitives: mtl_primitive_type
-                                     indexCount: index_count
-                                      indexType: mtl_index_type
-                                    indexBuffer: mtl_index_buffer
-                              indexBufferOffset: start_index * mtl_index_stride
-                                  instanceCount: instance_count
-                                     baseVertex: start_vertex
-                                   baseInstance: start_instance];
+                                          indexCount: index_count
+                                           indexType: mtl_index_type
+                                         indexBuffer: mtl_index_buffer
+                                   indexBufferOffset: start_index * mtl_index_stride
+                                       instanceCount: instance_count
+                                          baseVertex: start_vertex
+                                        baseInstance: start_instance];
 }
 
 void RenderCommandListMT::Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,

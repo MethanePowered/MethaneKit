@@ -324,8 +324,7 @@ public:
 
         if (m_is_context_init_completion_required)
         {
-            m_sp_context->CompleteInitialization();
-            m_is_context_init_completion_required = false;
+            CompleteInitialization();
         }
 
         return true;
@@ -449,6 +448,12 @@ protected:
     {
         META_FUNCTION_TASK();
         m_is_context_init_completion_required = true;
+    }
+
+    void CompleteInitialization()
+    {
+        m_sp_context->CompleteInitialization();
+        m_is_context_init_completion_required = false;
     }
 
     // AppBase interface

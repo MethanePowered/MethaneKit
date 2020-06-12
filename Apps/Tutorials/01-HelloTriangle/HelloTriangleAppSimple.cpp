@@ -120,6 +120,8 @@ public:
             frame.sp_render_cmd_list  = RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
             frame.sp_render_cmd_lists = CommandListSet::Create({ *frame.sp_render_cmd_list });
         }
+
+        GraphicsApp::CompleteInitialization();
     }
 
     bool Resize(const FrameSize& frame_size, bool is_minimized) override

@@ -149,6 +149,8 @@ void TextRenderApp::Init()
 
     // Setup animations
     m_animations.push_back(std::make_shared<Data::TimeAnimation>(std::bind(&TextRenderApp::UpdateText, this, std::placeholders::_1, std::placeholders::_2)));
+
+    GraphicsApp::CompleteInitialization();
 }
 
 Ptr<gfx::Badge> TextRenderApp::CreateFontAtlasBadge(gfx::Font& font, const Ptr<gfx::Texture>& sp_atlas_texture)

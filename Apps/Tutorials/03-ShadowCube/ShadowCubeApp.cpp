@@ -309,6 +309,8 @@ void ShadowCubeApp::Init()
             *frame.final_pass.sp_cmd_list
         });
     }
+
+    GraphicsApp::CompleteInitialization();
 }
 
 void ShadowCubeApp::RenderPass::Release()

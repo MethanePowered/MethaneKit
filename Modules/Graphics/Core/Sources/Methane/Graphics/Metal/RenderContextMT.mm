@@ -212,12 +212,4 @@ CommandQueueMT& RenderContextMT::GetRenderCommandQueueMT()
     return static_cast<CommandQueueMT&>(ContextMT<RenderContextBase>::GetRenderCommandQueue());
 }
 
-void RenderContextMT::OnGpuExecutionCompleted()
-{
-    META_FUNCTION_TASK();
-#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
-    dispatch_semaphore_signal(m_dispatch_semaphore);
-#endif
-}
-
 } // namespace Methane::Graphics

@@ -186,6 +186,8 @@ void TexturedCubeApp::Init()
         frame.sp_render_cmd_list->SetName(IndexedName("Cube Rendering", frame.index));
         frame.sp_execute_cmd_lists = gfx::CommandListSet::Create({ *frame.sp_render_cmd_list });
     }
+
+    GraphicsApp::CompleteInitialization();
 }
 
 bool TexturedCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
