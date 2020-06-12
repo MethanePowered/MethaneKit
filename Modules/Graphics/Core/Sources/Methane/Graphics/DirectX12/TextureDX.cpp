@@ -239,9 +239,6 @@ ImageTextureDX::TextureDX(ContextBase& render_context, const Settings& settings,
     );
 
     cp_device->CreateShaderResourceView(GetNativeResource(), &tex_and_srv_desc.second, GetNativeCpuDescriptorHandle(Usage::ShaderRead));
-
-    m_sp_upload_transition_barriers = ResourceBase::Barriers::CreateTransition({ static_cast<Resource&>(*this) },
-                                          ResourceBase::State::CopyDest, ResourceBase::State::PixelShaderResource);
 }
 
 ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() const
@@ -404,12 +401,21 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
     }
 
     BlitCommandListDX& upload_cmd_list = static_cast<BlitCommandListDX&>(GetContext().GetUploadCommandList());
+    const ResourceBase::State final_texture_state = GetState() == State::Common ? State::PixelShaderResource : GetState();
+
+    if (SetState(State::CopyDest, m_sp_upload_begin_transition_barriers) && m_sp_upload_begin_transition_barriers)
+    {
+        upload_cmd_list.SetResourceBarriers(*m_sp_upload_begin_transition_barriers);
+    }
+
     UpdateSubresources(&upload_cmd_list.GetNativeCommandList(),
                        GetNativeResource(), m_cp_upload_resource.Get(), 0, 0,
                        static_cast<UINT>(dx_sub_resources.size()), dx_sub_resources.data());
 
-    assert(m_sp_upload_transition_barriers);
-    upload_cmd_list.SetResourceBarriers(*m_sp_upload_transition_barriers);
+    if (SetState(final_texture_state, m_sp_upload_end_transition_barriers) && m_sp_upload_end_transition_barriers)
+    {
+        upload_cmd_list.SetResourceBarriers(*m_sp_upload_end_transition_barriers);
+    }
 }
 
 void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_resources, DirectX::ScratchImage& scratch_image)
