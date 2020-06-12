@@ -46,9 +46,10 @@ struct CommandList : virtual Object
         ParallelRender,
     };
 
-    enum State
+    enum State : uint32_t
     {
-        Pending,
+        Pending = 0u,
+        Encoding,
         Committed,
         Executing,
     };

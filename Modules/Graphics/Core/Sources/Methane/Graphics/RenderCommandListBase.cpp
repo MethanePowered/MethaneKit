@@ -70,6 +70,7 @@ void RenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_state, Debug
 void RenderCommandListBase::SetState(RenderState& render_state, RenderState::Group::Mask state_groups)
 {
     META_FUNCTION_TASK();
+    VerifyEncodingState();
 
     DrawingState& drawing_state = GetDrawingState();
     const RenderState::Group::Mask changed_states = (drawing_state.p_render_state
@@ -89,6 +90,8 @@ void RenderCommandListBase::SetState(RenderState& render_state, RenderState::Gro
 void RenderCommandListBase::SetVertexBuffers(const Buffers& vertex_buffers)
 {
     META_FUNCTION_TASK();
+    VerifyEncodingState();
+
     if (vertex_buffers.GetType() != Buffer::Type::Vertex)
     {
         throw std::invalid_argument("Can not set buffers of \"" + Buffer::GetBufferTypeName(vertex_buffers.GetType()) +
@@ -108,6 +111,7 @@ void RenderCommandListBase::DrawIndexed(Primitive primitive_type, Buffer& index_
                                         uint32_t instance_count, uint32_t /*start_instance*/)
 {
     META_FUNCTION_TASK();
+    VerifyEncodingState();
 
     if (index_buffer.GetSettings().type != Buffer::Type::Index)
     {
@@ -150,6 +154,7 @@ void RenderCommandListBase::Draw(Primitive primitive_type, uint32_t vertex_count
                                  uint32_t instance_count, uint32_t)
 {
     META_FUNCTION_TASK();
+    VerifyEncodingState();
 
     if (vertex_count == 0)
     {

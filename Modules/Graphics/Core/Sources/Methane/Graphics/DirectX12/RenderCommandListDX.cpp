@@ -86,6 +86,7 @@ void RenderCommandListDX::ResetNative(const Ptr<RenderState>& sp_render_state)
         return;
 
     SetCommitted(false);
+    SetCommandListState(CommandList::State::Encoding);
     ResetCommandState();
 
     ID3D12PipelineState* p_dx_initial_state = sp_render_state ? static_cast<RenderStateDX&>(*sp_render_state).GetNativePipelineState().Get() : nullptr;

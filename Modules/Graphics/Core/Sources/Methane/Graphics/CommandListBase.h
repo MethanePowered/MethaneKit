@@ -116,12 +116,16 @@ protected:
     CommandState&       GetCommandState()           { return m_command_state; }
     const CommandState& GetCommandState() const     { return m_command_state; }
 
+    void     SetCommandListState(State state)       { m_state = state; }
+    void     VerifyEncodingState() const;
     bool     IsExecutingOnAnyFrame() const;
     bool     IsCommitted(uint32_t frame_index) const;
     bool     IsCommitted() const                        { return IsCommitted(GetCurrentFrameIndex()); }
     bool     IsExecuting(uint32_t frame_index) const;
     bool     IsExecuting() const                        { return IsExecuting(GetCurrentFrameIndex()); }
     uint32_t GetCurrentFrameIndex() const;
+
+
 
 private:
     static std::string GetStateName(State state);

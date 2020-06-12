@@ -49,6 +49,7 @@ std::string CommandListBase::GetStateName(State state)
     switch (state)
     {
     case State::Pending:   return "Pending";
+    case State::Encoding:  return "Encoding";
     case State::Committed: return "Committed";
     case State::Executing: return "Executing";
     }
@@ -93,6 +94,8 @@ CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
 void CommandListBase::PushDebugGroup(DebugGroup& debug_group)
 {
     META_FUNCTION_TASK();
+    VerifyEncodingState();
+
     META_CPU_FRAME_START(debug_group.GetName().c_str());
     META_LOG("Command list \"" + GetName() + "\" PUSH debug group \"" + debug_group.GetName() + "\"");
 
@@ -116,10 +119,11 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 
-    if (m_state != State::Pending)
+    if (m_state == State::Committed || m_state == State::Executing)
         throw std::logic_error("Can not reset command list in committed or executing state.");
 
     // NOTE: ResetCommandState() must be called from the top-most overridden Reset method
+    m_state = State::Encoding;
 
     const bool debug_group_changed = GetTopOpenDebugGroup() != p_debug_group;
     if (!m_open_debug_groups.empty() && debug_group_changed)
@@ -140,8 +144,7 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
 void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior)
 {
     META_FUNCTION_TASK();
-    if (m_state != State::Pending)
-        throw std::logic_error("Can not set program bindings on committed or executing command list.");
+    VerifyEncodingState();
 
     ProgramBindingsBase& program_bindings_base = static_cast<ProgramBindingsBase&>(program_bindings);
     program_bindings_base.Apply(*this, apply_behavior);
@@ -154,9 +157,9 @@ void CommandListBase::Commit()
     META_FUNCTION_TASK();
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
 
-    if (m_state != State::Pending)
+    if (m_state != State::Encoding)
     {
-        throw std::logic_error("Command list \"" + GetName() + "\" in " + GetStateName(m_state) + " state can not be committed. Only Pending command lists can be committed.");
+        throw std::logic_error("Command list \"" + GetName() + "\" in \"" + GetStateName(m_state) + "\" state can not be committed. Only command lists in \"Encoding\" state can be committed.");
     }
 
     TRACY_GPU_SCOPE_END(m_tracy_gpu_scope);
@@ -258,6 +261,14 @@ void CommandListBase::ClearOpenDebugGroups()
     while(!m_open_debug_groups.empty())
     {
         m_open_debug_groups.pop();
+    }
+}
+
+void CommandListBase::VerifyEncodingState() const
+{
+    if (m_state != State::Encoding)
+    {
+        throw std::logic_error("Command list encoding is not possible in \"" + GetStateName(m_state) + "\" state.");
     }
 }
 

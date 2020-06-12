@@ -71,7 +71,7 @@ void ParallelRenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state,
     // Render pass is begun in "beginning" command list only,
     // but it will be ended in the "ending" command list on commit of the parallel CL
     m_beginning_command_list.Reset(Ptr<RenderState>(), p_debug_group); // begins render pass
-    m_ending_command_list.ResetNative();                            // only reset native command list
+    m_ending_command_list.ResetNative();                               // only reset native command list
 
     // Instead of closing debug group (from Reset call) on beginning CL commit, we force to close it in ending CL
     if (p_debug_group)

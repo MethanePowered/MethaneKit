@@ -77,6 +77,8 @@ public:
             // Insert beginning GPU timestamp query
             m_sp_begin_timestamp_query->InsertTimestamp();
         }
+
+        SetCommandListState(CommandList::State::Encoding);
     }
 
     // CommandList interface
@@ -162,7 +164,7 @@ public:
         if (m_sp_begin_timestamp_query && m_sp_end_timestamp_query)
         {
             if (GetState() != CommandListBase::State::Pending)
-                throw std::logic_error("Can not get GPU time range of executing or not committed command list.");
+                throw std::logic_error("Can not get GPU time range of encoding, executing or not committed command list.");
 
             return in_cpu_nanoseconds
                  ? Data::TimeRange(m_sp_begin_timestamp_query->GetCpuNanoseconds(), m_sp_end_timestamp_query->GetCpuNanoseconds())
