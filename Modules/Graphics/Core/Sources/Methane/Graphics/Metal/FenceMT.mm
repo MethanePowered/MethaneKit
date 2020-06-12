@@ -101,7 +101,7 @@ void FenceMT::WaitOnGpu(CommandQueue& wait_on_command_queue)
 
     CommandQueueMT& mtl_wait_on_command_queue = static_cast<CommandQueueMT&>(wait_on_command_queue);
     id<MTLCommandBuffer> mtl_command_buffer = [mtl_wait_on_command_queue.GetNativeCommandQueue() commandBuffer];
-    [mtl_command_buffer encodeWaitEvent:m_mtl_event value:GetValue()];
+    [mtl_command_buffer encodeWaitForEvent:m_mtl_event value:GetValue()];
     [mtl_command_buffer commit];
 }
 

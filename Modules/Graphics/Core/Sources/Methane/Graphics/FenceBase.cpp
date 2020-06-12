@@ -52,8 +52,10 @@ void FenceBase::WaitOnCpu()
 void FenceBase::WaitOnGpu(CommandQueue& wait_on_command_queue)
 {
     META_FUNCTION_TASK();
-    META_UNUSED(wait_on_command_queue);
     META_LOG("GPU WAIT fence \"" + GetName() + "\" on command queue \"" + wait_on_command_queue.GetName() + "\" with value " + std::to_string(m_value));
+
+    if (std::addressof(wait_on_command_queue) == std::addressof(m_command_queue))
+        throw std::invalid_argument("Fence can not be waited on GPU at the same command queue where it was signalled.");
 }
 
 void FenceBase::FlushOnCpu()
