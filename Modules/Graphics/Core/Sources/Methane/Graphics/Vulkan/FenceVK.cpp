@@ -33,10 +33,10 @@ Vulkan fence implementation.
 namespace Methane::Graphics
 {
 
-UniquePtr<Fence> Fence::Create(CommandQueue& command_queue)
+Ptr<Fence> Fence::Create(CommandQueue& command_queue)
 {
     META_FUNCTION_TASK();
-    return std::make_unique<FenceVK>(static_cast<CommandQueueBase&>(command_queue));
+    return std::make_shared<FenceVK>(static_cast<CommandQueueBase&>(command_queue));
 }
 
 FenceVK::FenceVK(CommandQueueBase& command_queue)
@@ -63,13 +63,21 @@ void FenceVK::Signal()
     // TODO: signal native fence object
 }
 
-void FenceVK::Wait()
+void FenceVK::WaitOnCpu()
 {
     META_FUNCTION_TASK();
 
-    FenceBase::Wait();
+    FenceBase::WaitOnCpu();
 
-    // TODO: wait for native fence object
+    // TODO: wait on CPU for native fence object
+}
+
+void FenceVK::WaitOnGpu(CommandQueue& wait_on_command_queue)
+{
+    META_FUNCTION_TASK();
+    FenceBase::WaitOnGpu(wait_on_command_queue);
+
+    // TODO: wait on GPU for native fence object
 }
 
 void FenceVK::SetName(const std::string& name) noexcept

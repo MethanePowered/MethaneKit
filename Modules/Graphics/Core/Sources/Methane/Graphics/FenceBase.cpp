@@ -38,22 +38,36 @@ FenceBase::FenceBase(CommandQueueBase& command_queue)
 void FenceBase::Signal()
 {
     META_FUNCTION_TASK();
-    META_LOG("SIGNAL fence \"" + GetName() + "\" with value " + std::to_string(m_value + 1));
+    META_LOG("GPU SIGNAL fence \"" + GetName() + "\" with value " + std::to_string(m_value + 1));
 
     m_value++;
 }
 
-void FenceBase::Wait()
+void FenceBase::WaitOnCpu()
 {
     META_FUNCTION_TASK();
-    META_LOG("WAIT fence \"" + GetName() + "\" with value " + std::to_string(m_value));
+    META_LOG("CPU WAIT fence \"" + GetName() + "\" with value " + std::to_string(m_value));
 }
 
-void FenceBase::Flush()
+void FenceBase::WaitOnGpu(CommandQueue& wait_on_command_queue)
+{
+    META_FUNCTION_TASK();
+    META_UNUSED(wait_on_command_queue);
+    META_LOG("GPU WAIT fence \"" + GetName() + "\" on command queue \"" + wait_on_command_queue.GetName() + "\" with value " + std::to_string(m_value));
+}
+
+void FenceBase::FlushOnCpu()
 {
     META_FUNCTION_TASK();
     Signal();
-    Wait();
+    WaitOnCpu();
+}
+
+void FenceBase::FlushOnGpu(CommandQueue& wait_on_command_queue)
+{
+    META_FUNCTION_TASK();
+    Signal();
+    WaitOnGpu(wait_on_command_queue);
 }
 
 } // namespace Methane::Graphics

@@ -56,7 +56,7 @@ void RenderContextBase::WaitForGpu(WaitFor wait_for)
     {
         META_SCOPE_TIMER("RenderContextDX::WaitForGpu::RenderComplete");
         OnGpuWaitStart(wait_for);
-        GetRenderFence().Flush();
+        GetRenderFence().FlushOnCpu();
         OnGpuWaitComplete(wait_for);
     } break;
 
@@ -64,7 +64,7 @@ void RenderContextBase::WaitForGpu(WaitFor wait_for)
     {
         META_SCOPE_TIMER("RenderContextDX::WaitForGpu::FramePresented");
         OnGpuWaitStart(wait_for);
-        GetCurrentFrameFence().Wait();
+        GetCurrentFrameFence().WaitOnCpu();
         OnGpuWaitComplete(wait_for);
     } break;
 
@@ -107,7 +107,7 @@ void RenderContextBase::OnCpuPresentComplete(bool signal_frame_fence)
 Fence& RenderContextBase::GetCurrentFrameFence() const
 {
     META_FUNCTION_TASK();
-    const UniquePtr<Fence>& sp_current_fence = GetCurrentFrameFencePtr();
+    const Ptr<Fence>& sp_current_fence = GetCurrentFrameFencePtr();
     assert(!!sp_current_fence);
     return *sp_current_fence;
 }
@@ -136,7 +136,6 @@ void RenderContextBase::ResetWithSettings(const Settings& settings)
 void RenderContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation)
 {
     META_FUNCTION_TASK();
-
     ContextBase::Initialize(device, deferred_heap_allocation);
 
     m_frame_fences.clear();
@@ -162,12 +161,11 @@ void RenderContextBase::Release()
 void RenderContextBase::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-
     ContextBase::SetName(name);
 
     for (uint32_t frame_index = 0; frame_index < m_frame_fences.size(); ++frame_index)
     {
-        const UniquePtr<Fence>& sp_frame_fence = m_frame_fences[frame_index];
+        const Ptr<Fence>& sp_frame_fence = m_frame_fences[frame_index];
         assert(!!sp_frame_fence);
         sp_frame_fence->SetName(name + " Frame " + std::to_string(frame_index) + " Fence");
     }
@@ -175,7 +173,18 @@ void RenderContextBase::SetName(const std::string& name)
     if (m_sp_render_fence)
         m_sp_render_fence->SetName(name + " Render Fence");
 }
-    
+
+bool RenderContextBase::UploadResources()
+{
+    META_FUNCTION_TASK();
+    if (!ContextBase::UploadResources())
+        return false;
+
+    // Render commands will wait for resources uploading completion in upload queue
+    GetUploadFence().FlushOnGpu(GetRenderCommandQueue());
+    return true;
+}
+
 void RenderContextBase::OnGpuWaitStart(WaitFor wait_for)
 {
     META_FUNCTION_TASK();

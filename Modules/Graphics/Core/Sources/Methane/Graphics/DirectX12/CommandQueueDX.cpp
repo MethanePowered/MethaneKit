@@ -178,7 +178,7 @@ void CommandQueueDX::WaitForExecution() noexcept
             }
 
             assert(sp_command_lists);
-            sp_command_lists->GetExecutionCompletedFenceDX().Wait();
+            sp_command_lists->GetExecutionCompletedFenceDX().WaitOnCpu();
             
             std::unique_lock<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
             sp_command_lists->Complete();

@@ -35,10 +35,10 @@ DirectX 12 fence implementation.
 namespace Methane::Graphics
 {
 
-UniquePtr<Fence> Fence::Create(CommandQueue& command_queue)
+Ptr<Fence> Fence::Create(CommandQueue& command_queue)
 {
     META_FUNCTION_TASK();
-    return std::make_unique<FenceDX>(static_cast<CommandQueueBase&>(command_queue));
+    return std::make_shared<FenceDX>(static_cast<CommandQueueBase&>(command_queue));
 }
 
 FenceDX::FenceDX(CommandQueueBase& command_queue)
@@ -66,7 +66,6 @@ FenceDX::~FenceDX()
 void FenceDX::Signal()
 {
     META_FUNCTION_TASK();
-
     FenceBase::Signal();
 
     assert(!!m_cp_fence);
@@ -75,11 +74,10 @@ void FenceDX::Signal()
                   command_queue.GetContextDX().GetDeviceDX().GetNativeDevice().Get());
 }
 
-void FenceDX::Wait()
+void FenceDX::WaitOnCpu()
 {
     META_FUNCTION_TASK();
-
-    FenceBase::Wait();
+    FenceBase::WaitOnCpu();
 
     assert(!!m_cp_fence);
     assert(!!m_event);
@@ -93,6 +91,18 @@ void FenceDX::Wait()
 
         META_LOG("AWAKE on fence \"" + GetName() + "\" with value " + std::to_string(GetValue()));
     }
+}
+
+void FenceDX::WaitOnGpu(CommandQueue& wait_on_command_queue)
+{
+    META_FUNCTION_TASK();
+    FenceBase::WaitOnGpu(wait_on_command_queue);
+
+    assert(!!m_cp_fence);
+    CommandQueueDX& dx_wait_on_command_queue = static_cast<CommandQueueDX&>(wait_on_command_queue);
+    ID3D12CommandQueue& native_wait_on_command_queue = dx_wait_on_command_queue.GetNativeCommandQueue();
+    ThrowIfFailed(native_wait_on_command_queue.Wait(m_cp_fence.Get(), GetValue()),
+                  dx_wait_on_command_queue.GetContextDX().GetDeviceDX().GetNativeDevice().Get());
 }
 
 void FenceDX::SetName(const std::string& name) noexcept

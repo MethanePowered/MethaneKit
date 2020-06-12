@@ -74,10 +74,11 @@ public:
     const DeviceBase&       GetDeviceBase() const;
 
 protected:
-    void UploadResources();
     void SetDevice(DeviceBase& device);
+    Fence& GetUploadFence() const noexcept;
 
     // ContextBase interface
+    virtual bool UploadResources();
     virtual void OnGpuWaitStart(WaitFor) {}
     virtual void OnGpuWaitComplete(WaitFor wait_for);
 
@@ -89,7 +90,7 @@ private:
     Ptr<CommandQueue>         m_sp_upload_cmd_queue;
     Ptr<BlitCommandList>      m_sp_upload_cmd_list;
     Ptr<CommandListSet>       m_sp_upload_cmd_lists;
-    UniquePtr<Fence>          m_sp_upload_fence;
+    Ptr<Fence>                m_sp_upload_fence;
 };
 
 } // namespace Methane::Graphics

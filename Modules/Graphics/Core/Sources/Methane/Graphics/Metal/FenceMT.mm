@@ -33,10 +33,10 @@ Metal fence implementation.
 namespace Methane::Graphics
 {
 
-UniquePtr<Fence> Fence::Create(CommandQueue& command_queue)
+Ptr<Fence> Fence::Create(CommandQueue& command_queue)
 {
     META_FUNCTION_TASK();
-    return std::make_unique<FenceMT>(static_cast<CommandQueueBase&>(command_queue));
+    return std::make_shared<FenceMT>(static_cast<CommandQueueBase&>(command_queue));
 }
     
 dispatch_queue_t& FenceMT::GetDispatchQueue()
@@ -62,7 +62,6 @@ FenceMT::~FenceMT()
 void FenceMT::Signal()
 {
     META_FUNCTION_TASK();
-
     FenceBase::Signal();
     
     id<MTLCommandBuffer> mtl_command_buffer = [GetCommandQueueMT().GetNativeCommandQueue() commandBuffer];
@@ -72,11 +71,10 @@ void FenceMT::Signal()
     m_is_signalled = false;
 }
 
-void FenceMT::Wait()
+void FenceMT::WaitOnCpu()
 {
     META_FUNCTION_TASK();
-
-    FenceBase::Wait();
+    FenceBase::WaitOnCpu();
 
     assert(m_mtl_event != nil);
     uint64_t signalled_value = m_mtl_event.signaledValue;
@@ -94,6 +92,17 @@ void FenceMT::Wait()
                                 }];
     std::unique_lock<LockableBase(std::mutex)> lock(m_wait_mutex);
     m_wait_condition_var.wait(lock, [this]{ return m_is_signalled; });
+}
+
+void FenceMT::WaitOnGpu(CommandQueue& wait_on_command_queue)
+{
+    META_FUNCTION_TASK();
+    FenceBase::WaitOnGpu(wait_on_command_queue);
+
+    CommandQueueMT& mtl_wait_on_command_queue = static_cast<CommandQueueMT&>(wait_on_command_queue);
+    id<MTLCommandBuffer> mtl_command_buffer = [mtl_wait_on_command_queue.GetNativeCommandQueue() commandBuffer];
+    [mtl_command_buffer encodeWaitEvent:m_mtl_event value:GetValue()];
+    [mtl_command_buffer commit];
 }
 
 void FenceMT::SetName(const std::string& name) noexcept

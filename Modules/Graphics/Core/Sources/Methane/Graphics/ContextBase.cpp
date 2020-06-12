@@ -77,7 +77,7 @@ void ContextBase::WaitForGpu(WaitFor wait_for)
         META_SCOPE_TIMER("ContextBase::WaitForGpu::ResourcesUploaded");
         assert(!!m_sp_upload_fence);
         OnGpuWaitStart(wait_for);
-        m_sp_upload_fence->Flush();
+        m_sp_upload_fence->FlushOnCpu();
         OnGpuWaitComplete(wait_for);
     }
 }
@@ -191,7 +191,6 @@ CommandListSet& ContextBase::GetUploadCommandListSet()
         return *m_sp_upload_cmd_lists;
 
     m_sp_upload_cmd_lists = CommandListSet::Create({ GetUploadCommandList() });
-
     return *m_sp_upload_cmd_lists;
 }
 
@@ -231,22 +230,32 @@ void ContextBase::SetName(const std::string& name)
         m_sp_upload_fence->SetName(name + " Upload Fence");
 }
 
-void ContextBase::UploadResources()
+bool ContextBase::UploadResources()
 {
     META_FUNCTION_TASK();
+    if (!m_sp_upload_cmd_list)
+        return false;
+
     META_LOG("UPLOAD resources for context \"" + GetName() + "\"");
 
     GetUploadCommandList().Commit();
     GetUploadCommandQueue().Execute(GetUploadCommandListSet());
-    WaitForGpu(WaitFor::ResourcesUploaded);
 
     m_sp_upload_cmd_list.reset();
     m_sp_upload_cmd_lists.reset();
+
+    return true;
 }
 
 void ContextBase::SetDevice(DeviceBase& device)
 {
     m_sp_device = device.GetPtr();
+}
+
+Fence& ContextBase::GetUploadFence() const noexcept
+{
+    assert(m_sp_upload_fence);
+    return *m_sp_upload_fence;
 }
 
 } // namespace Methane::Graphics
