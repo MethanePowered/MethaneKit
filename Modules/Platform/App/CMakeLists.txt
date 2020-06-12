@@ -65,13 +65,14 @@ add_library(${TARGET} STATIC
 target_link_libraries(${TARGET}
     PUBLIC
         CLI11
+        MethanePrimitives
+        MethaneInstrumentation
+        MethaneDataTypes
+        MethanePlatformAppView
+        MethanePlatformInput
     PRIVATE
         MethaneBuildOptions
-        MethaneDataTypes
         MethanePlatformUtils
-        MethanePlatformInput
-        MethanePlatformAppView
-        MethaneInstrumentation
         nowide_static
         ${PLATFORM_LIBRARIES}
 )

@@ -140,7 +140,7 @@ AsteroidsApp::AsteroidsApp()
     m_light_camera.SetParameters({ -300.f, 300.f, 90.f });
     m_light_camera.Resize({ 120.f, 120.f });
 
-    InputState().AddControllers({
+    AddInputControllers({
         std::make_shared<AsteroidsAppController>(*this, g_asteroids_action_by_keyboard_state),
         std::make_shared<gfx::AppCameraController>(m_view_camera,  "VIEW CAMERA"),
         std::make_shared<gfx::AppCameraController>(m_light_camera, "LIGHT SOURCE",

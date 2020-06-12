@@ -92,7 +92,7 @@ public:
         add_option("-v,--vsync", m_initial_context_settings.vsync_enabled, "Vertical synchronization", true);
         add_option("-b,--frame-buffers", m_initial_context_settings.frame_buffers_count, "Frame buffers count in swap-chain", true);
 
-        InputState().AddControllers({ std::make_shared<AppController>(*this, help_description) });
+        AddInputControllers({ std::make_shared<AppController>(*this, help_description) });
     }
 
     ~App() override
@@ -127,7 +127,7 @@ public:
         m_sp_context->SetName("App Render Context");
         m_sp_context->Connect(*this);
 
-        InputState().AddControllers({ std::make_shared<AppContextController>(*m_sp_context) });
+        AddInputControllers({ std::make_shared<AppContextController>(*m_sp_context) });
         
         SetFullScreen(m_initial_context_settings.is_full_screen);
     }
@@ -368,7 +368,7 @@ public:
             m_animations.Pause();
 
         // Disable all camera controllers while animations are paused, since they can not function without animations
-        Refs<AppCameraController> camera_controllers = InputState().template GetControllersOfType<AppCameraController>();
+        Refs<AppCameraController> camera_controllers = GetInputState().template GetControllersOfType<AppCameraController>();
         for(const Ref<AppCameraController> camera_controller : camera_controllers)
         {
             camera_controller.get().SetEnabled(animations_enabled);

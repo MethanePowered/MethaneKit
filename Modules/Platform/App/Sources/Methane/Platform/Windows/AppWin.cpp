@@ -292,18 +292,18 @@ void AppWin::OnWindowKeyboardEvent(WPARAM w_param, LPARAM l_param)
     {
         // HACK: Release both Shift keys on Shift up event, as when both
         //       are pressed the first release does not emit any event
-        InputState().OnKeyboardChanged(Keyboard::Key::LeftShift, key_state);
-        InputState().OnKeyboardChanged(Keyboard::Key::RightShift, key_state);
+        ProcessInput(&Input::IActionController::OnKeyboardChanged, Keyboard::Key::LeftShift, key_state);
+        ProcessInput(&Input::IActionController::OnKeyboardChanged, Keyboard::Key::RightShift, key_state);
     }
     else if (w_param == VK_SNAPSHOT)
     {
         // HACK: Key down is not reported for the Print Screen key
-        InputState().OnKeyboardChanged(key, Keyboard::KeyState::Pressed);
-        InputState().OnKeyboardChanged(key, Keyboard::KeyState::Released);
+        ProcessInput(&Input::IActionController::OnKeyboardChanged, key, Keyboard::KeyState::Pressed);
+        ProcessInput(&Input::IActionController::OnKeyboardChanged, key, Keyboard::KeyState::Released);
     }
     else
     {
-        InputState().OnKeyboardChanged(key, key_state);
+        ProcessInput(&Input::IActionController::OnKeyboardChanged, key, key_state);
     }
 }
 
@@ -334,7 +334,7 @@ LRESULT AppWin::OnWindowMouseButtonEvent(UINT msg_id, WPARAM w_param, LPARAM l_p
     }
 
     m_mouse_state.SetButton(button, button_state);
-    InputState().OnMouseButtonChanged(button, button_state);
+    ProcessInput(&Input::IActionController::OnMouseButtonChanged, button, button_state);
 
     if (m_mouse_state.GetPressedButtons().empty())
     {
@@ -355,7 +355,7 @@ LRESULT AppWin::OnWindowMouseMoveEvent(WPARAM w_param, LPARAM l_param)
     const int x = GET_X_LPARAM(l_param);
     const int y = GET_Y_LPARAM(l_param);
 
-    InputState().OnMousePositionChanged({ x, y });
+    ProcessInput(&Input::IActionController::OnMousePositionChanged, Mouse::Position{ x, y });
 
     if (!GetInputState().GetMouseState().IsInWindow())
     {
@@ -367,7 +367,7 @@ LRESULT AppWin::OnWindowMouseMoveEvent(WPARAM w_param, LPARAM l_param)
         tme.hwndTrack = m_env.window_handle;
         TrackMouseEvent(&tme);
 
-        InputState().OnMouseInWindowChanged(true);
+        ProcessInput(&Input::IActionController::OnMouseInWindowChanged, true);
     }
 
     return 0;
@@ -382,13 +382,13 @@ LRESULT AppWin::OnWindowMouseWheelEvent(bool is_vertical_scroll, WPARAM w_param,
     if (is_vertical_scroll)
     {
         const float wheel_delta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(w_param)) / WHEEL_DELTA;
-        InputState().OnMouseScrollChanged({ 0.f, wheel_delta });
+        ProcessInput(&Input::IActionController::OnMouseScrollChanged, Mouse::Scroll{ 0.f, wheel_delta });
     }
     else
     {
         // NOTE: The X-axis is inverted for consistency with macOS and X11
         const float wheel_delta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(w_param)) / WHEEL_DELTA;
-        InputState().OnMouseScrollChanged({ -wheel_delta, 0.f });
+        ProcessInput(&Input::IActionController::OnMouseScrollChanged, Mouse::Scroll{ -wheel_delta, 0.f });
     }
 
     return 0;
@@ -397,7 +397,7 @@ LRESULT AppWin::OnWindowMouseWheelEvent(bool is_vertical_scroll, WPARAM w_param,
 LRESULT AppWin::OnWindowMouseLeave()
 {
     META_FUNCTION_TASK();
-    InputState().OnMouseInWindowChanged(false);
+    ProcessInput(&Input::IActionController::OnMouseInWindowChanged, false);
     return 0;
 }
 

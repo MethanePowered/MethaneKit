@@ -27,6 +27,7 @@ Base application interface and platform-independent implementation.
 #include <Methane/Platform/Input/State.h>
 #include <Methane/Data/Types.h>
 #include <Methane/Memory.hpp>
+#include <Methane/Instrumentation.h>
 
 #include <CLI/App.hpp>
 
@@ -98,13 +99,35 @@ public:
     const Data::FrameSize&  GetFrameSize() const            { return m_frame_size; }
     bool                    IsMinimized() const             { return m_is_minimized; }
     bool                    IsResizing() const              { return m_is_resizing; }
-    Input::State&           InputState()                    { return m_input_state; }
+
+    template<typename FuncType, typename... ArgTypes>
+    void ProcessInput(FuncType&& func_ptr, ArgTypes&&... args)
+    {
+        META_FUNCTION_TASK();
+#ifndef _DEBUG
+        try
+        {
+#endif
+            (m_input_state.*std::forward<FuncType>(func_ptr))(std::forward<ArgTypes>(args)...);
+#ifndef _DEBUG
+        }
+        catch (std::exception& e)
+        {
+            Alert({ Message::Type::Error, "Application Input Error", e.what() });
+        }
+        catch (...)
+        {
+            Alert({ Message::Type::Error, "Application Input Error", "Unknown exception occurred." });
+        }
+#endif
+    }
 
 protected:
     // AppBase interface
     virtual AppView GetView() const = 0;
     virtual void ShowAlert(const Message& msg);
 
+    void AddInputControllers(const Ptrs<Input::Controller>& controllers) { m_input_state.AddControllers(controllers); }
     void Deinitialize() { m_initialized = false; }
 
     Ptr<Message> m_sp_deferred_message;
