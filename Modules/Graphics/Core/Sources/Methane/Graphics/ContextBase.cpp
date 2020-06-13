@@ -122,6 +122,7 @@ void ContextBase::Release()
     m_sp_device.reset();
     m_sp_upload_cmd_queue.reset();
     m_sp_upload_cmd_list.reset();
+    m_sp_upload_cmd_lists.reset();
     m_sp_upload_fence.reset();
 
     Emit(&IContextCallback::OnContextReleased, std::ref(*this));
