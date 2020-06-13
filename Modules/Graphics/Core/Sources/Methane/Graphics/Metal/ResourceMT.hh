@@ -53,7 +53,18 @@ public:
         void ReleaseFrameResources(uint32_t frame_index) override;
 
     private:
-        std::unique_ptr<ResourceContainerMT> m_sp_mtl_resources;
+        struct IResourceContainerMT
+        {
+            static UniquePtr<IResourceContainerMT> Create(ResourceMT& resource);
+            virtual ~IResourceContainerMT() = default;
+        };
+
+        struct BufferContainerMT;
+        struct TextureContainerMT;
+
+        using MTLResourceContainers = UniquePtrs<IResourceContainerMT>;
+        std::vector<MTLResourceContainers> m_frame_resources;
+        MTLResourceContainers              m_misc_resources;
     };
 
     ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);

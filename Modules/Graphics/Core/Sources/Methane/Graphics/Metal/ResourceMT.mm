@@ -26,7 +26,7 @@ Metal implementation of the resource interface.
 #include "BufferMT.hh"
 #include "TextureMT.hh"
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/Instrumentation.h>
 
 #include <vector>
@@ -34,11 +34,31 @@ Metal implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-struct ResourceContainerMT
+struct ResourceMT::ReleasePoolMT::BufferContainerMT : ResourceMT::ReleasePoolMT::IResourceContainerMT
 {
-    std::vector<id<MTLBuffer>>  buffers;
-    std::vector<id<MTLTexture>> textures;
+    id<MTLBuffer> buffer;
+
+    BufferContainerMT(const BufferMT& buffer) : buffer(buffer.GetNativeBuffer()) { }
 };
+
+struct ResourceMT::ReleasePoolMT::TextureContainerMT : ResourceMT::ReleasePoolMT::IResourceContainerMT
+{
+    id<MTLTexture> texture;
+
+    TextureContainerMT(const TextureMT& texture) : texture(texture.GetNativeTexture()) { }
+};
+
+UniquePtr<ResourceMT::ReleasePoolMT::IResourceContainerMT> ResourceMT::ReleasePoolMT::IResourceContainerMT::Create(ResourceMT &resource)
+{
+    switch(resource.GetResourceType())
+    {
+    case Resource::Type::Buffer:  return std::make_unique<BufferContainerMT>(static_cast<BufferMT&>(resource));
+    case Resource::Type::Texture: return std::make_unique<TextureContainerMT>(static_cast<TextureMT&>(resource));
+    case Resource::Type::Sampler: return nullptr;
+    default:                      assert(0);
+    }
+    return nullptr;
+}
 
 Ptr<ResourceBase::ReleasePool> ResourceBase::ReleasePool::Create()
 {
@@ -48,7 +68,6 @@ Ptr<ResourceBase::ReleasePool> ResourceBase::ReleasePool::Create()
 
 ResourceMT::ReleasePoolMT::ReleasePoolMT()
     : ResourceBase::ReleasePool()
-    , m_sp_mtl_resources(new ResourceContainerMT())
 {
     META_FUNCTION_TASK();
 }
@@ -62,44 +81,39 @@ Ptr<ResourceBase::Barriers> ResourceBase::Barriers::Create(const Set& barriers)
 void ResourceMT::ReleasePoolMT::AddResource(ResourceBase& resource)
 {
     META_FUNCTION_TASK();
-
-    switch(resource.GetResourceType())
+    ResourceMT& resource_mt = static_cast<ResourceMT&>(resource);
+    if (resource_mt.GetContextBase().GetType() == Context::Type::Render)
     {
-        case Resource::Type::Buffer:
-            m_sp_mtl_resources->buffers.push_back(static_cast<BufferMT&>(resource).GetNativeBuffer());
-            break;
-        case Resource::Type::Texture:
-            m_sp_mtl_resources->textures.push_back(static_cast<TextureMT&>(resource).GetNativeTexture());
-            break;
-        case Resource::Type::Sampler:
-            // Nothing to do here
-            break;
+        RenderContextBase& render_context = static_cast<RenderContextBase&>(resource_mt.GetContextBase());
+        if (m_frame_resources.size() != render_context.GetSettings().frame_buffers_count)
+            m_frame_resources.resize(render_context.GetSettings().frame_buffers_count);
+
+        const uint32_t frame_index = render_context.GetFrameBufferIndex();
+        m_frame_resources[frame_index].emplace_back(IResourceContainerMT::Create(resource_mt));
+    }
+    else
+    {
+        m_misc_resources.emplace_back(IResourceContainerMT::Create(resource_mt));
     }
 }
 
 void ResourceMT::ReleasePoolMT::ReleaseAllResources()
 {
     META_FUNCTION_TASK();
-
-    assert(!!m_sp_mtl_resources);
-    for(id<MTLBuffer>& mtl_buffer : m_sp_mtl_resources->buffers)
+    for(MTLResourceContainers& frame_resources : m_frame_resources)
     {
-        [mtl_buffer release];
+        frame_resources.clear();
     }
-    for(id<MTLTexture>& mtl_texture : m_sp_mtl_resources->textures)
-    {
-        [mtl_texture release];
-    }
-    m_sp_mtl_resources.reset(new ResourceContainerMT());
+    m_misc_resources.clear();
 }
 
 void ResourceMT::ReleasePoolMT::ReleaseFrameResources(uint32_t frame_index)
 {
     META_FUNCTION_TASK();
-    META_UNUSED(frame_index);
+    if (frame_index >= m_frame_resources.size())
+        return;
 
-    // TODO: to be implemented
-    ReleaseAllResources();
+    m_frame_resources[frame_index].clear();
 }
 
 ResourceMT::ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
