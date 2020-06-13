@@ -59,6 +59,7 @@ void ContextBase::CompleteInitialization()
 {
     META_FUNCTION_TASK();
     META_LOG("Complete initialization of context \"" + GetName() + "\"");
+    m_is_complete_initialization_required = false;
 
     if (m_resource_manager.IsDeferredHeapAllocation())
     {
@@ -69,8 +70,6 @@ void ContextBase::CompleteInitialization()
 
     // Enable deferred heap allocation in case if more resources will be created in runtime
     m_resource_manager.SetDeferredHeapAllocation(true);
-
-    m_is_complete_initialization_required = false;
 }
 
 void ContextBase::WaitForGpu(WaitFor wait_for)

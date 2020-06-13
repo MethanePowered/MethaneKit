@@ -119,6 +119,8 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
 
         resource_index++;
     }
+
+    GetContext().RequireCompleteInitialization();
 }
 
 void ProgramBindingsDX::ArgumentBindingDX::SetDescriptorRange(const DescriptorRange& descriptor_range)

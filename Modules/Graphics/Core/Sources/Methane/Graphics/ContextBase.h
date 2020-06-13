@@ -67,9 +67,11 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-    void RequireCompleteInitialization() noexcept       { m_is_complete_initialization_required = true; }
-    ResourceManager&        GetResourceManager()        { return m_resource_manager; }
-    const ResourceManager&  GetResourceManager() const  { return m_resource_manager; }
+    void RequireCompleteInitialization() const noexcept     { m_is_complete_initialization_required = true; }
+    bool IsCompleteInitializationRequired() const noexcept  { return m_is_complete_initialization_required; }
+
+    ResourceManager&        GetResourceManager()            { return m_resource_manager; }
+    const ResourceManager&  GetResourceManager() const      { return m_resource_manager; }
     CommandQueueBase&       GetUploadCommandQueueBase();
     DeviceBase&             GetDeviceBase();
     const DeviceBase&       GetDeviceBase() const;
@@ -92,7 +94,7 @@ private:
     Ptr<BlitCommandList>      m_sp_upload_cmd_list;
     Ptr<CommandListSet>       m_sp_upload_cmd_lists;
     Ptr<Fence>                m_sp_upload_fence;
-    bool                      m_is_complete_initialization_required = false;
+    mutable bool              m_is_complete_initialization_required = false;
 };
 
 } // namespace Methane::Graphics
