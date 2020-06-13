@@ -173,10 +173,16 @@ ProgramBindingsDX::ProgramBindingsDX(const ProgramBindingsDX& other_program_bind
 void ProgramBindingsDX::Initialize()
 {
     META_FUNCTION_TASK();
+    ContextBase&     context = static_cast<ProgramBase&>(GetProgram()).GetContext();
+    ResourceManager& resource_manager = context.GetResourceManager();
 
-    ResourceManager& resource_manager = static_cast<ProgramBase&>(GetProgram()).GetContext().GetResourceManager();
     resource_manager.AddProgramBindings(*this);
-    if (!resource_manager.IsDeferredHeapAllocation())
+
+    if (resource_manager.IsDeferredHeapAllocation())
+    {
+        context.RequireCompleteInitialization();
+    }
+    else
     {
         CompleteInitialization();
     }
@@ -185,7 +191,6 @@ void ProgramBindingsDX::Initialize()
 void ProgramBindingsDX::CompleteInitialization()
 {
     META_FUNCTION_TASK();
-
     CopyDescriptorsToGpu();
     UpdateRootParameterBindings();
 }

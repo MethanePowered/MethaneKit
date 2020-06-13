@@ -322,11 +322,6 @@ public:
         // Wait for previous frame rendering is completed and switch to next frame
         m_sp_context->WaitForGpu(Context::WaitFor::FramePresented);
 
-        if (m_is_context_init_completion_required)
-        {
-            CompleteInitialization();
-        }
-
         return true;
     }
     
@@ -389,7 +384,6 @@ public:
         if (m_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface && m_sp_context)
         {
             m_sp_hud = std::make_shared<HeadsUpDisplay>(*m_sp_context, m_hud_settings);
-            RequestContextInitializationCompletion();
         }
         else
         {
@@ -444,16 +438,9 @@ protected:
         SetWindowTitle(title_ss.str());
     }
 
-    void RequestContextInitializationCompletion()
-    {
-        META_FUNCTION_TASK();
-        m_is_context_init_completion_required = true;
-    }
-
     void CompleteInitialization()
     {
         m_sp_context->CompleteInitialization();
-        m_is_context_init_completion_required = false;
     }
 
     // AppBase interface
@@ -477,7 +464,6 @@ protected:
         m_sp_logo_badge.reset();
         m_sp_hud.reset();
 
-        RequestContextInitializationCompletion();
         Deinitialize();
     }
 
@@ -532,7 +518,6 @@ private:
     HeadsUpDisplay::Settings m_hud_settings;
     Timer                    m_title_update_timer;
     bool                     m_restore_animations_enabled = true;
-    bool                     m_is_context_init_completion_required = true;
 
     static constexpr double  g_title_update_interval_sec = 1.0;
 };

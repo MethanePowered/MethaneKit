@@ -54,7 +54,7 @@ public:
     bool              SetFullScreen(bool is_full_screen) override;
 
     // ContextBase interface
-    void Initialize(DeviceBase& device, bool deferred_heap_allocation) override;
+    void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true) override;
     void Release() override;
 
     // Object interface

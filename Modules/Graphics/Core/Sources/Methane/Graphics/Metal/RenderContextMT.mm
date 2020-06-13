@@ -99,11 +99,11 @@ void RenderContextMT::Release()
     ContextMT<RenderContextBase>::Release();
 }
 
-void RenderContextMT::Initialize(DeviceBase& device, bool deferred_heap_allocation)
+void RenderContextMT::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)
 {
     META_FUNCTION_TASK();
 
-    ContextMT<RenderContextBase>::Initialize(device, deferred_heap_allocation);
+    ContextMT<RenderContextBase>::Initialize(device, deferred_heap_allocation, is_callback_emitted);
     
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
     m_dispatch_semaphore = dispatch_semaphore_create(GetSettings().frame_buffers_count);

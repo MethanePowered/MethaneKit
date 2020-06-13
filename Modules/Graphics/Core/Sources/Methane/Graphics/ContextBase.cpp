@@ -69,6 +69,8 @@ void ContextBase::CompleteInitialization()
 
     // Enable deferred heap allocation in case if more resources will be created in runtime
     m_resource_manager.SetDeferredHeapAllocation(true);
+
+    m_is_complete_initialization_required = false;
 }
 
 void ContextBase::WaitForGpu(WaitFor wait_for)
@@ -112,6 +114,11 @@ void ContextBase::OnGpuWaitComplete(WaitFor)
 {
     META_FUNCTION_TASK();
     m_resource_manager.GetReleasePool().ReleaseAllResources();
+
+    if (m_is_complete_initialization_required)
+    {
+        CompleteInitialization();
+    }
 }
 
 void ContextBase::Release()
@@ -133,7 +140,7 @@ void ContextBase::Release()
     m_resource_manager.Release();
 }
 
-void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation)
+void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)
 {
     META_FUNCTION_TASK();
     META_LOG("INITIALIZE context \"" + GetName() + "\"");
@@ -156,7 +163,10 @@ void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation)
 
     m_resource_manager.Initialize(m_resource_manager_init_settings);
 
-    Emit(&IContextCallback::OnContextInitialized, std::ref(*this));
+    if (is_callback_emitted)
+    {
+        Emit(&IContextCallback::OnContextInitialized, *this);
+    }
 }
 
 CommandQueue& ContextBase::GetUploadCommandQueue()

@@ -61,12 +61,13 @@ public:
     Device&          GetDevice() override;
 
     // ContextBase interface
-    virtual void Initialize(DeviceBase& device, bool deferred_heap_allocation);
+    virtual void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true);
     virtual void Release();
 
     // Object interface
     void SetName(const std::string& name) override;
 
+    void RequireCompleteInitialization() noexcept       { m_is_complete_initialization_required = true; }
     ResourceManager&        GetResourceManager()        { return m_resource_manager; }
     const ResourceManager&  GetResourceManager() const  { return m_resource_manager; }
     CommandQueueBase&       GetUploadCommandQueueBase();
@@ -91,6 +92,7 @@ private:
     Ptr<BlitCommandList>      m_sp_upload_cmd_list;
     Ptr<CommandListSet>       m_sp_upload_cmd_lists;
     Ptr<Fence>                m_sp_upload_fence;
+    bool                      m_is_complete_initialization_required = false;
 };
 
 } // namespace Methane::Graphics

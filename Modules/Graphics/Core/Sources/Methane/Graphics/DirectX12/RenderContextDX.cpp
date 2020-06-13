@@ -132,7 +132,7 @@ void RenderContextDX::Release()
     ContextDX<RenderContextBase>::Release();
 }
 
-void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocation)
+void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)
 {
     META_FUNCTION_TASK();
 
@@ -187,7 +187,7 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
 
     UpdateFrameBufferIndex();
 
-    ContextDX<RenderContextBase>::Initialize(device, deferred_heap_allocation);
+    ContextDX<RenderContextBase>::Initialize(device, deferred_heap_allocation, is_callback_emitted);
 }
 
 void RenderContextDX::Resize(const FrameSize& frame_size)

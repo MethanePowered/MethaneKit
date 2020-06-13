@@ -133,9 +133,11 @@ void RenderContextBase::ResetWithSettings(const Settings& settings)
     Initialize(*sp_device, true);
 }
 
-void RenderContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation)
+void RenderContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)
 {
     META_FUNCTION_TASK();
+
+    ContextBase::Initialize(device, deferred_heap_allocation, false);
 
     m_frame_fences.clear();
     for (uint32_t frame_index = 0; frame_index < m_settings.frame_buffers_count; ++frame_index)
@@ -145,7 +147,10 @@ void RenderContextBase::Initialize(DeviceBase& device, bool deferred_heap_alloca
 
     m_sp_render_fence = Fence::Create(GetRenderCommandQueue());
 
-    ContextBase::Initialize(device, deferred_heap_allocation);
+    if (is_callback_emitted)
+    {
+        Emit(&IContextCallback::OnContextInitialized, *this);
+    }
 }
 
 void RenderContextBase::Release()

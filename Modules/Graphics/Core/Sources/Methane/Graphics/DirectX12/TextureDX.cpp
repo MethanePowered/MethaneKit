@@ -416,6 +416,8 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
     {
         upload_cmd_list.SetResourceBarriers(*m_sp_upload_end_transition_barriers);
     }
+
+    GetContextBase().RequireCompleteInitialization();
 }
 
 void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_resources, DirectX::ScratchImage& scratch_image)

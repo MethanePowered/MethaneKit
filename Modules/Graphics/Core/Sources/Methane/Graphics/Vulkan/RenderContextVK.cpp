@@ -55,10 +55,10 @@ void RenderContextVK::Release()
     ContextVK<RenderContextBase>::Release();
 }
 
-void RenderContextVK::Initialize(DeviceBase& device, bool deferred_heap_allocation)
+void RenderContextVK::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)
 {
     META_FUNCTION_TASK();
-    ContextVK<RenderContextBase>::Initialize(device, deferred_heap_allocation);
+    ContextVK<RenderContextBase>::Initialize(device, deferred_heap_allocation, is_callback_emitted);
 }
 
 bool RenderContextVK::ReadyToRender() const

@@ -354,9 +354,6 @@ void TextRenderApp::OnFontAtlasTextureReset(gfx::Font& font, const Ptr<gfx::Text
 void TextRenderApp::OnFontAtlasUpdated(gfx::Font&)
 {
     LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
-
-    // New font atlas textures must be uploaded to GPU and program bindings need to be updated (in GPU descriptor heaps)
-    RequestContextInitializationCompletion();
 }
 
 } // namespace Methane::Tutorials

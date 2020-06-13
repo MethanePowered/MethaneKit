@@ -65,7 +65,7 @@ public:
 
     // ContextBase interface
 
-    void Initialize(DeviceBase& device, bool deferred_heap_allocation) override
+    void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true)  override
     {
         META_FUNCTION_TASK();
         ContextBase::Initialize(device, deferred_heap_allocation);
