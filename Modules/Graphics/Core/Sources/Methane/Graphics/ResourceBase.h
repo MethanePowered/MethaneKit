@@ -142,7 +142,8 @@ public:
         static Ptr<ReleasePool> Create();
 
         virtual void AddResource(ResourceBase& resource) = 0;
-        virtual void ReleaseResources() = 0;
+        virtual void ReleaseAllResources() = 0;
+        virtual void ReleaseFrameResources(uint32_t frame_index) = 0;
 
         virtual ~ReleasePool() = default;
     };

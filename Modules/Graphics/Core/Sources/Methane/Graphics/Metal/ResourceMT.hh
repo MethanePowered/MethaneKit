@@ -49,7 +49,8 @@ public:
 
         // ReleasePool interface
         void AddResource(ResourceBase& resource) override;
-        void ReleaseResources() override;
+        void ReleaseAllResources() override;
+        void ReleaseFrameResources(uint32_t frame_index) override;
 
     private:
         std::unique_ptr<ResourceContainerMT> m_sp_mtl_resources;

@@ -111,7 +111,7 @@ void ContextBase::Reset()
 void ContextBase::OnGpuWaitComplete(WaitFor)
 {
     META_FUNCTION_TASK();
-    m_resource_manager.GetReleasePool().ReleaseResources();
+    m_resource_manager.GetReleasePool().ReleaseAllResources();
 }
 
 void ContextBase::Release()

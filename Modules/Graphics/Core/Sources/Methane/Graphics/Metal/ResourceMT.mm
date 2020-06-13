@@ -77,7 +77,7 @@ void ResourceMT::ReleasePoolMT::AddResource(ResourceBase& resource)
     }
 }
 
-void ResourceMT::ReleasePoolMT::ReleaseResources()
+void ResourceMT::ReleasePoolMT::ReleaseAllResources()
 {
     META_FUNCTION_TASK();
 
@@ -91,6 +91,15 @@ void ResourceMT::ReleasePoolMT::ReleaseResources()
         [mtl_texture release];
     }
     m_sp_mtl_resources.reset(new ResourceContainerMT());
+}
+
+void ResourceMT::ReleasePoolMT::ReleaseFrameResources(uint32_t frame_index)
+{
+    META_FUNCTION_TASK();
+    META_UNUSED(frame_index);
+
+    // TODO: to be implemented
+    ReleaseAllResources();
 }
 
 ResourceMT::ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)

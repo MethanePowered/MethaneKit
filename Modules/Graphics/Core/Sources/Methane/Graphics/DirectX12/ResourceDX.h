@@ -24,10 +24,12 @@ DirectX 12 implementation of the resource interface.
 #pragma once
 
 #include <Methane/Graphics/ResourceBase.h>
+#include <Methane/Data/Provider.h>
 
 #include <wrl.h>
 #include <d3d12.h>
-#include "Methane/Data/Provider.h"
+
+#include <optional>
 
 namespace Methane::Graphics
 {
@@ -59,10 +61,13 @@ public:
         ReleasePoolDX() = default;
 
         void AddResource(ResourceBase& resource) override;
-        void ReleaseResources() override;
+        void ReleaseAllResources() override;
+        void ReleaseFrameResources(uint32_t frame_index) override;
 
     private:
-        std::vector<wrl::ComPtr<ID3D12Resource>> m_resources;
+        using D3DResourceComPtrs = std::vector<wrl::ComPtr<ID3D12Resource>>;
+        std::vector<D3DResourceComPtrs> m_frame_resources;
+        D3DResourceComPtrs              m_misc_resources;
     };
 
     class LocationDX : public Location

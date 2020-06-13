@@ -109,7 +109,7 @@ void ResourceManager::Release()
 
     if (m_sp_release_pool)
     {
-        m_sp_release_pool->ReleaseResources();
+        m_sp_release_pool->ReleaseAllResources();
     }
 
     for (Ptrs<DescriptorHeap>& desc_heaps : m_descriptor_heap_types)

@@ -58,10 +58,19 @@ void ResourceVK::ReleasePoolVK::AddResource(ResourceBase& /*resource*/)
     META_FUNCTION_TASK();
 }
 
-void ResourceVK::ReleasePoolVK::ReleaseResources()
+void ResourceVK::ReleasePoolVK::ReleaseAllResources()
 {
     META_FUNCTION_TASK();
     m_sp_vk_resources.reset(new ResourceContainerVK());
+}
+
+void ResourceVK::ReleasePoolVK::ReleaseFrameResources(uint32_t frame_index)
+{
+    META_FUNCTION_TASK();
+    META_UNUSED(frame_index);
+
+    // TODO: to be implemented
+    ReleaseAllResources();
 }
 
 ResourceVK::ResourceVK(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)

@@ -205,9 +205,13 @@ void RenderContextBase::OnGpuWaitComplete(WaitFor wait_for)
         m_fps_counter.OnGpuFramePresented();
     }
     // Release resources in base class only when all frame buffers in swap-chain were presented
-    if (wait_for != WaitFor::FramePresented || m_frame_buffer_index == 0)
+    if (wait_for == WaitFor::FramePresented)
     {
-        ContextBase::OnGpuWaitComplete(wait_for);
+        GetResourceManager().GetReleasePool().ReleaseFrameResources(GetFrameBufferIndex());
+    }
+    else
+    {
+        GetResourceManager().GetReleasePool().ReleaseAllResources();
     }
 }
     
