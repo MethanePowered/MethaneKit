@@ -31,7 +31,12 @@ namespace Methane::Graphics
 Ptr<DescriptorHeap> DescriptorHeap::Create(ContextBase& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<DescriptorHeapMT>(context, settings);
+    auto sp_descriptor_heap = std::make_shared<DescriptorHeapMT>(context, settings);
+    if (settings.size > 0)
+    {
+        sp_descriptor_heap->Allocate();
+    }
+    return sp_descriptor_heap;
 }
 
 DescriptorHeapMT::DescriptorHeapMT(ContextBase& context, const Settings& settings)

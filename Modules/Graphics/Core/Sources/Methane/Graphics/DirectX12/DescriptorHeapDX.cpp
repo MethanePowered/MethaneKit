@@ -50,7 +50,12 @@ static D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeap::Type type) n
 Ptr<DescriptorHeap> DescriptorHeap::Create(ContextBase& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<DescriptorHeapDX>(context, settings);
+    auto sp_descriptor_heap = std::make_shared<DescriptorHeapDX>(context, settings);
+    if (settings.size > 0)
+    {
+        sp_descriptor_heap->Allocate();
+    }
+    return sp_descriptor_heap;
 }
 
 DescriptorHeapDX::DescriptorHeapDX(ContextBase& context, const Settings& settings)
@@ -59,10 +64,6 @@ DescriptorHeapDX::DescriptorHeapDX(ContextBase& context, const Settings& setting
     , m_descriptor_size(GetContextDX().GetDeviceDX().GetNativeDevice()->GetDescriptorHandleIncrementSize(m_descriptor_heap_type))
 {
     META_FUNCTION_TASK();
-    if (GetDeferredSize() > 0)
-    {
-        DescriptorHeapDX::Allocate();
-    }
 }
 
 DescriptorHeapDX::~DescriptorHeapDX()
