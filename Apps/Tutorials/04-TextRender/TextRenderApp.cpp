@@ -67,6 +67,9 @@ TextRenderApp::TextRenderApp()
         "Methane tutorial of text rendering")
 {
     GetHeadsUpDisplaySettings().position = gfx::Point2i(g_margin_size_in_dots, g_margin_size_in_dots);
+
+    // Setup animations
+    m_animations.push_back(std::make_shared<Data::TimeAnimation>(std::bind(&TextRenderApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
 }
 
 TextRenderApp::~TextRenderApp()
@@ -147,10 +150,7 @@ void TextRenderApp::Init()
         frame.sp_execute_cmd_lists = gfx::CommandListSet::Create({ *frame.sp_render_cmd_list });
     }
 
-    // Setup animations
-    m_animations.push_back(std::make_shared<Data::TimeAnimation>(std::bind(&TextRenderApp::UpdateText, this, std::placeholders::_1, std::placeholders::_2)));
-
-    GraphicsApp::CompleteInitialization();
+    CompleteInitialization();
 }
 
 Ptr<gfx::Badge> TextRenderApp::CreateFontAtlasBadge(gfx::Font& font, const Ptr<gfx::Texture>& sp_atlas_texture)
@@ -269,7 +269,7 @@ bool TextRenderApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     return true;
 }
 
-bool TextRenderApp::UpdateText(double elapsed_seconds, double)
+bool TextRenderApp::Animate(double elapsed_seconds, double)
 {
     if (elapsed_seconds - m_text_update_elapsed_sec < g_text_update_interval_sec)
         return true;
@@ -321,7 +321,6 @@ void TextRenderApp::OnContextReleased(gfx::Context& context)
 {
     gfx::Font::Library::Get().Clear();
 
-    m_animations.clear();
     m_sp_primary_font.reset();
     m_sp_secondary_font.reset();
     m_sp_primary_text.reset();

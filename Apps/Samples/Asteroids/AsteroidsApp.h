@@ -63,17 +63,18 @@ public:
     bool Update() override;
     bool Render() override;
 
-    // IContextCallback overrides
-    void OnContextReleased(gfx::Context& context) override;
-
     uint32_t GetAsteroidsComplexity() const { return m_asteroids_complexity; }
     void     SetAsteroidsComplexity(uint32_t asteroids_complexity);
-    
+
     bool     IsParallelRenderingEnabled() const { return m_is_parallel_rendering_enabled; }
     void     SetParallelRenderingEnabled(bool is_parallel_rendering_enabled);
 
     AsteroidsArray& GetAsteroidsArray() const;
     std::string     GetParametersString() const;
+
+protected:
+    // IContextCallback overrides
+    void OnContextReleased(gfx::Context& context) override;
 
 private:
     struct SHADER_STRUCT_ALIGN Constants
@@ -89,6 +90,8 @@ private:
         SHADER_FIELD_ALIGN gfx::Vector4f  eye_position;
         SHADER_FIELD_ALIGN gfx::Vector3f  light_position;
     };
+
+    bool Animate(double elapsed_seconds, double delta_seconds);
 
     Ptr<gfx::CommandListSet> CreateExecuteCommandLists(AsteroidsFrame& frame);
 

@@ -69,14 +69,8 @@ ShadowCubeApp::ShadowCubeApp()
     m_light_camera.SetParameters({ -300, 300.f, 90.f });
     m_light_camera.Resize({ 80.f, 80.f });
 
-    m_animations.push_back(
-        std::make_shared<Data::TimeAnimation>(
-            [this](double, double delta_seconds)
-            {
-                m_view_camera.Rotate(m_view_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.f / 8.f));
-                m_light_camera.Rotate(m_light_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.f / 4.f));
-                return true;
-            }));
+    // Setup animations
+    m_animations.emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&ShadowCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
 }
 
 ShadowCubeApp::~ShadowCubeApp()
@@ -394,6 +388,13 @@ bool ShadowCubeApp::Update()
         gfx::Matrix44f()
     });
     
+    return true;
+}
+
+bool ShadowCubeApp::Animate(double, double delta_seconds)
+{
+    m_view_camera.Rotate(m_view_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.f / 8.f));
+    m_light_camera.Rotate(m_light_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.f / 4.f));
     return true;
 }
 

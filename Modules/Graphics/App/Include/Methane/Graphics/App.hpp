@@ -216,14 +216,14 @@ public:
     {
         META_FUNCTION_TASK();
         Platform::App::StartResizing();
-        m_enable_animations_after_resizing = m_settings.animations_enabled;
+        m_restore_animations_enabled = m_settings.animations_enabled;
         SetAnimationsEnabled(false);
     }
 
     void EndResizing() override
     {
         META_FUNCTION_TASK();
-        SetAnimationsEnabled(m_enable_animations_after_resizing);
+        SetAnimationsEnabled(m_restore_animations_enabled);
         Platform::App::EndResizing();
     }
 
@@ -469,7 +469,9 @@ protected:
     void OnContextReleased(Context&) override
     {
         META_FUNCTION_TASK();
+        m_restore_animations_enabled = m_settings.animations_enabled;
         SetAnimationsEnabled(false);
+
         m_frames.clear();
         m_sp_depth_texture.reset();
         m_sp_logo_badge.reset();
@@ -483,7 +485,7 @@ protected:
     {
         META_FUNCTION_TASK();
         Init();
-        SetAnimationsEnabled(true);
+        SetAnimationsEnabled(m_restore_animations_enabled);
     }
 
     inline FrameT& GetCurrentFrame()
@@ -529,7 +531,7 @@ private:
     RenderContext::Settings  m_initial_context_settings;
     HeadsUpDisplay::Settings m_hud_settings;
     Timer                    m_title_update_timer;
-    bool                     m_enable_animations_after_resizing = true;
+    bool                     m_restore_animations_enabled = true;
     bool                     m_is_context_init_completion_required = true;
 
     static constexpr double  g_title_update_interval_sec = 1.0;

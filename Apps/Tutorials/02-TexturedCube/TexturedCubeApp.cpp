@@ -61,16 +61,8 @@ TexturedCubeApp::TexturedCubeApp()
     m_shader_uniforms.light_position = gfx::Vector3f(0.f, 20.f, -25.f);
     m_camera.ResetOrientation({ { 13.0f, 13.0f, -13.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
 
-    m_animations.push_back(
-        std::make_shared<Data::TimeAnimation>(
-            [this](double, double delta_seconds)
-            {
-                gfx::Matrix33f light_rotate_matrix;
-                cml::matrix_rotation_axis_angle(light_rotate_matrix, m_camera.GetOrientation().up, cml::rad(360.f * delta_seconds / 4.f));
-                m_shader_uniforms.light_position = m_shader_uniforms.light_position * light_rotate_matrix;
-                m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.f / 8.f));
-                return true;
-            }));
+    // Setup animations
+    m_animations.emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&TexturedCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
 }
 
 TexturedCubeApp::~TexturedCubeApp()
@@ -188,6 +180,15 @@ void TexturedCubeApp::Init()
     }
 
     GraphicsApp::CompleteInitialization();
+}
+
+bool TexturedCubeApp::Animate(double, double delta_seconds)
+{
+    gfx::Matrix33f light_rotate_matrix;
+    cml::matrix_rotation_axis_angle(light_rotate_matrix, m_camera.GetOrientation().up, cml::rad(360.f * delta_seconds / 4.f));
+    m_shader_uniforms.light_position = m_shader_uniforms.light_position * light_rotate_matrix;
+    m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.f / 8.f));
+    return true;
 }
 
 bool TexturedCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)

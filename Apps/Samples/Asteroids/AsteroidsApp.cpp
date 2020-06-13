@@ -167,6 +167,12 @@ AsteroidsApp::AsteroidsApp()
     add_option("-s,--subdiv-count", m_asteroids_array_settings.subdivisions_count, "mesh subdivisions count", true)->group(options_group);
     add_option("-t,--texture-array", m_asteroids_array_settings.textures_array_enabled, "texture array enabled", true)->group(options_group);
     add_option("-r,--parallel-render", m_is_parallel_rendering_enabled, "parallel rendering enabled", true)->group(options_group);
+
+    // Setup animations
+    m_animations.push_back(std::make_shared<Data::TimeAnimation>(std::bind(&AsteroidsApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
+
+    // Enable dry updates on pause to keep asteroids in sync with projection matrix dependent on window size which may change
+    m_animations.SetDryUpdateOnPauseEnabled(true); 
 }
 
 AsteroidsApp::~AsteroidsApp()
@@ -292,12 +298,7 @@ void AsteroidsApp::Init()
         frame.asteroids.program_bindings_per_instance = m_sp_asteroids_array->CreateProgramBindings(m_sp_const_buffer, frame.sp_scene_uniforms_buffer, frame.asteroids.sp_uniforms_buffer);
     }
 
-    // Setup animations
-    m_animations.push_back(std::make_shared<Data::TimeAnimation>(std::bind(&Planet::Update, m_sp_planet.get(), std::placeholders::_1, std::placeholders::_2)));
-    m_animations.push_back(std::make_shared<Data::TimeAnimation>(std::bind(&AsteroidsArray::Update, m_sp_asteroids_array.get(), std::placeholders::_1, std::placeholders::_2)));
-    m_animations.SetDryUpdateOnPauseEnabled(true); // enable dry updates on pause to keep asteroids in sync with projection matrix dependent on window size which may change
-
-    GraphicsApp::CompleteInitialization();
+    CompleteInitialization();
     META_LOG(GetParametersString());
 }
 
@@ -349,6 +350,14 @@ bool AsteroidsApp::Update()
     return true;
 }
 
+bool AsteroidsApp::Animate(double elapsed_seconds, double delta_seconds)
+{
+    META_FUNCTION_TASK();
+    bool update_result = m_sp_planet->Update(elapsed_seconds, delta_seconds);
+    update_result     |= m_sp_asteroids_array->Update(elapsed_seconds, delta_seconds);
+    return update_result;
+}
+
 bool AsteroidsApp::Render()
 {
     META_FUNCTION_TASK();
@@ -398,7 +407,6 @@ void AsteroidsApp::OnContextReleased(gfx::Context& context)
         m_sp_asteroids_array_state = m_sp_asteroids_array->GetState();
     }
 
-    m_animations.clear();
     m_sp_sky_box.reset();
     m_sp_planet.reset();
     m_sp_asteroids_array.reset();

@@ -59,6 +59,7 @@ public:
     bool Update() override;
     bool Render() override;
 
+protected:
     // IContextCallback override
     void OnContextReleased(gfx::Context& context) override;
 
@@ -78,6 +79,8 @@ private:
         SHADER_FIELD_ALIGN gfx::Matrix44f mvp_matrix;
         SHADER_FIELD_ALIGN gfx::Matrix44f model_matrix;
     };
+
+    bool Animate(double elapsed_seconds, double delta_seconds);
 
     const Constants         m_shader_constants;
     Uniforms                m_shader_uniforms { };

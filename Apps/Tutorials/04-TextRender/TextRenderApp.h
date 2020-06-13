@@ -45,7 +45,7 @@ using GraphicsApp = gfx::App<TextRenderFrame>;
 
 class TextRenderApp final
     : public GraphicsApp
-    , private Data::Receiver<gfx::IFontCallback>
+    , protected Data::Receiver<gfx::IFontCallback>
 {
 public:
     TextRenderApp();
@@ -54,16 +54,18 @@ public:
     // GraphicsApp overrides
     void Init() override;
     bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
-    bool UpdateText(double elapsed_seconds, double delta_seconds);
     bool Render() override;
 
-private:
+protected:
     // IContextCallback overrides
     void OnContextReleased(gfx::Context& context) override;
 
     // IFontCallback overrides
     void OnFontAtlasTextureReset(gfx::Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture) override;
     void OnFontAtlasUpdated(gfx::Font& font) override;
+
+private:
+    bool Animate(double elapsed_seconds, double delta_seconds);
 
     Ptr<gfx::Badge> CreateFontAtlasBadge(gfx::Font& font, const Ptr<gfx::Texture>& sp_atlas_texture);
     void UpdateFontAtlasBadges();

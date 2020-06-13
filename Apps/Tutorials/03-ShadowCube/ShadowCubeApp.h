@@ -69,6 +69,7 @@ public:
     bool Update() override;
     bool Render() override;
 
+protected:
     // IContextCallback override
     void OnContextReleased(gfx::Context& context) override;
 
@@ -121,6 +122,7 @@ private:
         Ptr<gfx::RenderState>                   sp_state;
     };
 
+    bool Animate(double elapsed_seconds, double delta_seconds);
     void RenderScene(const RenderPass &render_pass, ShadowCubeFrame::PassResources &render_pass_resources);
 
     const float                 m_scene_scale;
