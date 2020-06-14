@@ -33,6 +33,8 @@ Helper macro-definitions for ITT instrumentation
 #define INTEL_ITTNOTIFY_API_PRIVATE
 #include <ittnotify.h>
 
+#include <stdint.h>
+
 #if ITT_PLATFORM==ITT_PLATFORM_WIN
 #include <nowide/convert.hpp>
 #endif
@@ -48,29 +50,25 @@ namespace Methane::ITT
 
 class Event
 {
-protected:
-    __itt_id            m_id = __itt_null;
-    const __itt_domain* m_p_domain;
-
 public:
-    Event(const __itt_domain* p_domain, __itt_string_handle* p_name)
+    Event(const __itt_domain* p_domain, __itt_string_handle* p_name) noexcept
         : m_id(__itt_id_make(const_cast<__itt_domain*>(p_domain), reinterpret_cast<unsigned long long>(p_name)))
         , m_p_domain(p_domain)
     { }
 
     template<class T>
-    typename std::enable_if<std::is_floating_point<T>::value, void>::type AddArg(__itt_string_handle* p_name, const T& value) const
+    typename std::enable_if<std::is_floating_point<T>::value, void>::type AddArg(__itt_string_handle* p_name, const T& value) const noexcept
     {
         double double_value = static_cast<double>(value);
         __itt_metadata_add(m_p_domain, m_id, p_name, __itt_metadata_double, 1, &double_value);
     }
 
-    void AddArg(__itt_string_handle* p_name, int64_t value) const
+    void AddArg(__itt_string_handle* p_name, int64_t value) const noexcept
     {
         __itt_metadata_add(m_p_domain, m_id, p_name, __itt_metadata_s64, 1, &value);
     }
 
-    void AddArg(__itt_string_handle* p_name, const char* value) const
+    void AddArg(__itt_string_handle* p_name, const char* value) const noexcept
     {
 #if ITT_PLATFORM==ITT_PLATFORM_WIN && (defined(UNICODE) || defined(_UNICODE))
         // string value must be converted to wchar_t
@@ -80,16 +78,19 @@ public:
 #endif
     }
 
-    void AddArg(__itt_string_handle* p_name, void const* const p_value) const
+    void AddArg(__itt_string_handle* p_name, void const* const p_value) const noexcept
     {
         __itt_metadata_add(m_p_domain, m_id, p_name, __itt_metadata_unknown, 1, const_cast<void*>(p_value));
     }
 
-    void AddArg(__itt_string_handle* p_name, const std::string& value) const
+    void AddArg(__itt_string_handle* p_name, const std::string& value) const noexcept
     {
         AddArg(p_name, value.c_str());
     }
 
+protected:
+    __itt_id            m_id = __itt_null;
+    const __itt_domain* m_p_domain;
 };
 
 class Marker : public Event
@@ -103,17 +104,17 @@ public:
         Task    =__itt_scope_task, //means a task that will long until another marker with task scope in this thread occurs
     };
 
-    Marker(const __itt_domain* p_domain, const char* p_name, Scope scope)
+    Marker(const __itt_domain* p_domain, const char* p_name, Scope scope) noexcept
         : Marker(p_domain, UNICODE_AGNOSTIC(__itt_string_handle_create)(p_name), scope)
     { }
 
-    void Notify() const
+    void Notify() const noexcept
     {
         __itt_marker(m_p_domain, m_id, m_p_name, m_scope);
     }
 
 private:
-    Marker(const __itt_domain* p_domain, __itt_string_handle* p_itt_name, Scope scope)
+    Marker(const __itt_domain* p_domain, __itt_string_handle* p_itt_name, Scope scope) noexcept
         : Event(p_domain, p_itt_name)
         , m_p_name(p_itt_name)
         , m_scope(static_cast<__itt_scope>(scope))
@@ -127,7 +128,7 @@ template<bool bRegion = true>
 class Task : public Event
 {
 public:
-    Task(const __itt_domain* p_domain, __itt_string_handle* p_name)
+    Task(const __itt_domain* p_domain, __itt_string_handle* p_name) noexcept
         : Event(p_domain, p_name)
     {
         if (bRegion)
@@ -152,6 +153,42 @@ public:
         }
     }
 };
+
+template<typename ValueType>
+class Counter
+{
+public:
+    Counter(const __itt_domain* p_domain, __itt_string_handle* p_name) noexcept
+        : m_id(__itt_counter_create_typedA(reinterpret_cast<unsigned long long>(p_name), const_cast<__itt_domain*>(p_domain), GetValueType()))
+        , m_p_domain(p_domain)
+    { }
+
+    ~Counter()
+    {
+        __itt_counter_destroy(m_id);
+    }
+
+    void SetValue(ValueType value) const noexcept     { __itt_counter_set_value(m_id, &value); }
+    void IncrementDelta(uint64_t delta) const noexcept{ __itt_counter_inc_delta(m_id, delta); }
+    void DecrementDelta(uint64_t delta) const noexcept{ __itt_counter_dec_delta(m_id, delta); }
+    void Increment() const noexcept                   { __itt_counter_inc(m_id); }
+    void Decrement() const noexcept                   { __itt_counter_inc(m_id); }
+
+private:
+    static __itt_metadata_type GetValueType() noexcept { return __itt_metadata_unknown; }
+
+    __itt_counter       m_id;
+    const __itt_domain* m_p_domain;
+};
+
+template<> __itt_metadata_type Counter<double>::GetValueType()   noexcept { return __itt_metadata_double; }
+template<> __itt_metadata_type Counter<float>::GetValueType()    noexcept { return __itt_metadata_float;  }
+template<> __itt_metadata_type Counter<int16_t>::GetValueType()  noexcept { return __itt_metadata_s16;    }
+template<> __itt_metadata_type Counter<uint16_t>::GetValueType() noexcept { return __itt_metadata_u16;    }
+template<> __itt_metadata_type Counter<int32_t>::GetValueType()  noexcept { return __itt_metadata_s32;    }
+template<> __itt_metadata_type Counter<uint32_t>::GetValueType() noexcept { return __itt_metadata_u32;    }
+template<> __itt_metadata_type Counter<int64_t>::GetValueType()  noexcept { return __itt_metadata_s64;    }
+template<> __itt_metadata_type Counter<uint64_t>::GetValueType() noexcept { return __itt_metadata_u64;    }
 
 #define ITT_DOMAIN_LOCAL(/*const char* */domain)\
     static const __itt_domain* __itt_domain_instance = UNICODE_AGNOSTIC(__itt_domain_create)(domain)
