@@ -94,7 +94,8 @@ ScopeTimer::Registration ScopeTimer::Aggregator::RegisterScope(const char* scope
     {
         m_new_scope_id++;
         m_timing_by_scope_id.resize(m_new_scope_id);
-        META_CHART_CONFIG(result.first->first, tracy::PlotFormatType::Number);
+        m_counters_by_scope_id.emplace_back(ITT_COUNTER_INIT(result.first->first, METHANE_DOMAIN_NAME));
+        TracyPlotConfig(result.first->first, tracy::PlotFormatType::Number);
     }
     return Registration{ result.first->first, result.first->second };
 }
@@ -102,7 +103,8 @@ ScopeTimer::Registration ScopeTimer::Aggregator::RegisterScope(const char* scope
 void ScopeTimer::Aggregator::AddScopeTiming(const Registration& scope_registration, TimeDuration duration)
 {
     META_FUNCTION_TASK();
-    META_CHART_VALUE(scope_registration.name, std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count());
+    ITT_COUNTER_VALUE(m_counters_by_scope_id[scope_registration.id], std::chrono::duration_cast<std::chrono::duration<double>>(duration).count());
+    TracyPlot(scope_registration.name, std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count());
 
     assert(scope_registration.id <= m_timing_by_scope_id.size());
     Timing& scope_timing = m_timing_by_scope_id[scope_registration.id];

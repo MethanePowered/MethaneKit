@@ -158,15 +158,11 @@ template<typename ValueType>
 class Counter
 {
 public:
-    Counter(const __itt_domain* p_domain, __itt_string_handle* p_name) noexcept
-        : m_id(__itt_counter_create_typedA(reinterpret_cast<unsigned long long>(p_name), const_cast<__itt_domain*>(p_domain), GetValueType()))
-        , m_p_domain(p_domain)
+    Counter(const char* p_name, const char* p_domain) noexcept
+        : m_id(UNICODE_AGNOSTIC(__itt_counter_create_typed)(p_name, p_domain, GetValueType()))
     { }
-
-    ~Counter()
-    {
-        __itt_counter_destroy(m_id);
-    }
+    Counter(Counter&& other) : m_id(std::move(other.m_id)) {}
+    ~Counter() { __itt_counter_destroy(m_id); }
 
     void SetValue(ValueType value) const noexcept     { __itt_counter_set_value(m_id, &value); }
     void IncrementDelta(uint64_t delta) const noexcept{ __itt_counter_inc_delta(m_id, delta); }
@@ -175,20 +171,11 @@ public:
     void Decrement() const noexcept                   { __itt_counter_inc(m_id); }
 
 private:
-    static __itt_metadata_type GetValueType() noexcept { return __itt_metadata_unknown; }
+    static __itt_metadata_type
+    GetValueType() noexcept { return __itt_metadata_unknown; }
 
-    __itt_counter       m_id;
-    const __itt_domain* m_p_domain;
+    __itt_counter m_id;
 };
-
-template<> __itt_metadata_type Counter<double>::GetValueType()   noexcept { return __itt_metadata_double; }
-template<> __itt_metadata_type Counter<float>::GetValueType()    noexcept { return __itt_metadata_float;  }
-template<> __itt_metadata_type Counter<int16_t>::GetValueType()  noexcept { return __itt_metadata_s16;    }
-template<> __itt_metadata_type Counter<uint16_t>::GetValueType() noexcept { return __itt_metadata_u16;    }
-template<> __itt_metadata_type Counter<int32_t>::GetValueType()  noexcept { return __itt_metadata_s32;    }
-template<> __itt_metadata_type Counter<uint32_t>::GetValueType() noexcept { return __itt_metadata_u32;    }
-template<> __itt_metadata_type Counter<int64_t>::GetValueType()  noexcept { return __itt_metadata_s64;    }
-template<> __itt_metadata_type Counter<uint64_t>::GetValueType() noexcept { return __itt_metadata_u64;    }
 
 #define ITT_DOMAIN_LOCAL(/*const char* */domain)\
     static const __itt_domain* __itt_domain_instance = UNICODE_AGNOSTIC(__itt_domain_create)(domain)
@@ -265,13 +252,9 @@ template<> __itt_metadata_type Counter<uint64_t>::GetValueType() noexcept { retu
 #define ITT_FUNCTION_THREAD_MARKER() ITT_FUNCTION_MARKER(Methane::ITT::Marker::Scope::Thread)
 #define ITT_FUNCTION_TASK_MARKER() ITT_FUNCTION_MARKER(Methane::ITT::Marker::Scope::Task)
 
-#define ITT_COUNTER(/*const char* */name, /*double */value) { \
-    static __itt_string_handle* __itt_counter_name = UNICODE_AGNOSTIC(__itt_string_handle_create)(name);\
-    ITT_MAGIC_STATIC(__itt_counter_name);\
-    double counter_value = static_cast<double>(value);\
-    ITT_DOMAIN_INIT();\
-    __itt_metadata_add(__itt_domain_instance, __itt_null, __itt_counter_name, __itt_metadata_double, 1, &counter_value);\
-}
+#define ITT_COUNTER_TYPE(value_type) Methane::ITT::Counter<value_type>
+#define ITT_COUNTER_INIT(/*const char* */name, /*const char* */domain) name, domain
+#define ITT_COUNTER_VALUE(counter_var, value) counter_var.SetValue(value)
 
 class ScopeTrack
 {
@@ -316,7 +299,9 @@ public:
 #define ITT_FUNCTION_THREAD_MARKER()
 #define ITT_FUNCTION_TASK_MARKER()
 #define ITT_TASK_MARKER(name)
-#define ITT_COUNTER(name, value)
+#define ITT_COUNTER_TYPE(value_type) void*
+#define ITT_COUNTER_INIT(/*const char* */name, /*const char* */domain) nullptr
+#define ITT_COUNTER_VALUE(counter_var, value)
 #define ITT_SCOPE_TRACK(group, track)
 
 #endif

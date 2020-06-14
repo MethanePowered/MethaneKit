@@ -35,6 +35,8 @@ NOTE:
 #include "IttApiHelper.h"
 #include "ScopeTimer.h"
 
+#define METHANE_DOMAIN_NAME "Methane Kit"
+
 ITT_DOMAIN_EXTERN();
 
 #if defined(TRACY_ZONE_CALL_STACK_DEPTH) && TRACY_ZONE_CALL_STACK_DEPTH > 0
@@ -85,13 +87,6 @@ ITT_DOMAIN_EXTERN();
     ITT_FUNCTION_THREAD_MARKER()
 #define META_FUNCTION_TASK_MARKER() \
     ITT_FUNCTION_TASK_MARKER()
-
-#define META_CHART_CONFIG(/*const char* */name, /*tracy::PlotFormatType */tracy_format) \
-    TracyPlotConfig(name, tracy_format)
-
-#define META_CHART_VALUE(/*const char* */name, /*int64_t | float | double */value) \
-    TracyPlot(name, value) \
-    ITT_COUNTER(name, value)
 
 #ifdef METHANE_LOGGING_ENABLED
 
