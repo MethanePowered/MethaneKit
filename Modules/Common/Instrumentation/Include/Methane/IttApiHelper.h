@@ -306,6 +306,7 @@ public:
 #define ITT_FUNCTION_TASK()
 #define ITT_FUNCTION_ARG(name, value)
 #define ITT_MARKER(scope, name)
+#define ITT_MARKER_ARG(name, value)
 #define ITT_GLOBAL_MARKER(name)
 #define ITT_PROCESS_MARKER(name)
 #define ITT_THREAD_MARKER(name)
