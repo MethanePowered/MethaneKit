@@ -49,9 +49,10 @@ ITT_DOMAIN_EXTERN();
 
 #endif // TRACY_ZONE_CALL_STACK_DEPTH
 
-#define META_CPU_FRAME_DELIMITER() \
+#define META_CPU_FRAME_DELIMITER(/* uint32_t */ frame_buffer_index) \
     FrameMark \
-    ITT_PROCESS_MARKER("Methane-Frame-Delimiter")
+    ITT_PROCESS_MARKER("Methane-Frame-Delimiter"); \
+    ITT_MARKER_ARG("Frame-Buffer-Index", static_cast<int64_t>(frame_buffer_index))
 
 #define META_CPU_FRAME_START(/*const char* */name) \
     TracyCFrameMarkStart(name)
@@ -86,10 +87,11 @@ ITT_DOMAIN_EXTERN();
     ITT_FUNCTION_TASK_MARKER()
 
 #define META_CHART_CONFIG(/*const char* */name, /*tracy::PlotFormatType */tracy_format) \
-    TracyPlotConfig(name, tracy_format);
+    TracyPlotConfig(name, tracy_format)
 
 #define META_CHART_VALUE(/*const char* */name, /*int64_t | float | double */value) \
-    TracyPlot(name, value)
+    TracyPlot(name, value) \
+    ITT_COUNTER(name, value)
 
 #ifdef METHANE_LOGGING_ENABLED
 

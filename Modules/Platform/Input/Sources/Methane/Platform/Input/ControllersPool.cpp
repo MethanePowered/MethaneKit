@@ -33,6 +33,7 @@ void ControllersPool::OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonSt
 {
     META_FUNCTION_TASK();
     META_FUNCTION_THREAD_MARKER();
+    ITT_MARKER_ARG("Mouse-State", state_change.current.ToString());
     META_LOG(std::string("Mouse (button): ") + state_change.current.ToString());
 
     for (const Ptr<Controller>& sp_controller : *this)
@@ -48,9 +49,10 @@ void ControllersPool::OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonSt
 void ControllersPool::OnMousePositionChanged(const Mouse::Position& mouse_position, const Mouse::StateChange& state_change)
 {
     META_FUNCTION_TASK();
+    META_FUNCTION_THREAD_MARKER();
+    ITT_MARKER_ARG("Mouse-State", state_change.current.ToString());
     META_LOG(std::string("Mouse (position): ") + state_change.current.ToString());
 
-    META_FUNCTION_THREAD_MARKER();
     for (const Ptr<Controller>& sp_controller : *this)
     {
         assert(!!sp_controller);
@@ -65,6 +67,7 @@ void ControllersPool::OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_del
 {
     META_FUNCTION_TASK();
     META_FUNCTION_THREAD_MARKER();
+    ITT_MARKER_ARG("Mouse-State", state_change.current.ToString());
     META_LOG(std::string("Mouse (scroll): ") + state_change.current.ToString() +
              ", scroll delta: " + std::to_string(mouse_scroll_delta.GetX()) + " x " + std::to_string(mouse_scroll_delta.GetY()));
 
@@ -82,6 +85,7 @@ void ControllersPool::OnMouseInWindowChanged(bool is_mouse_in_window, const Mous
 {
     META_FUNCTION_TASK();
     META_FUNCTION_THREAD_MARKER();
+    ITT_MARKER_ARG("Mouse-State", state_change.current.ToString());
     META_LOG(std::string("Mouse (in-window): ") + state_change.current.ToString());
 
     for (const Ptr<Controller>& sp_controller : *this)
@@ -98,6 +102,7 @@ void ControllersPool::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState ke
 {
     META_FUNCTION_TASK();
     META_FUNCTION_THREAD_MARKER();
+    ITT_MARKER_ARG("Keyboard-State", state_change.current.ToString());
     META_LOG(std::string("Keyboard (key): ") + state_change.current.ToString());
 
     for (const Ptr<Controller>& sp_controller : *this)
@@ -114,6 +119,7 @@ void ControllersPool::OnModifiersChanged(Keyboard::Modifier::Mask modifiers, con
 {
     META_FUNCTION_TASK();
     META_FUNCTION_THREAD_MARKER();
+    ITT_MARKER_ARG("Keyboard-State", state_change.current.ToString());
     META_LOG(std::string("Keyboard (modifiers): ") + state_change.current.ToString());
 
     for (const Ptr<Controller>& sp_controller : *this)

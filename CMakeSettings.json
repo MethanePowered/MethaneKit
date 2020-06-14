@@ -41,6 +41,11 @@
                     "type": "BOOL"
                 },
                 {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_TRACY_PROFILING_ENABLED",
                     "value": "False",
                     "type": "BOOL"
@@ -93,6 +98,11 @@
                     "type": "BOOL"
                 },
                 {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_TRACY_PROFILING_ENABLED",
                     "value": "False",
                     "type": "BOOL"
@@ -141,6 +151,11 @@
                 },
                 {
                     "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
                     "value": "True",
                     "type": "BOOL"
                 },
@@ -197,6 +212,11 @@
                     "type": "BOOL"
                 },
                 {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_TRACY_PROFILING_ENABLED",
                     "value": "False",
                     "type": "BOOL"
@@ -249,6 +269,11 @@
                     "type": "BOOL"
                 },
                 {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_TRACY_PROFILING_ENABLED",
                     "value": "False",
                     "type": "BOOL"
@@ -297,6 +322,11 @@
                 },
                 {
                     "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
                     "value": "True",
                     "type": "BOOL"
                 },
@@ -365,6 +395,11 @@
                     "type": "BOOL"
                 },
                 {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_TRACY_PROFILING_ENABLED",
                     "value": "False",
                     "type": "BOOL"
@@ -429,6 +464,11 @@
                     "type": "BOOL"
                 },
                 {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_TRACY_PROFILING_ENABLED",
                     "value": "False",
                     "type": "BOOL"
@@ -482,6 +522,11 @@
                 {
                     "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
                     "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "False",
                     "type": "BOOL"
                 },
                 {
@@ -541,6 +586,11 @@
                     "type": "BOOL"
                 },
                 {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_TRACY_PROFILING_ENABLED",
                     "value": "False",
                     "type": "BOOL"
@@ -597,6 +647,11 @@
                     "type": "BOOL"
                 },
                 {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_TRACY_PROFILING_ENABLED",
                     "value": "False",
                     "type": "BOOL"
@@ -650,6 +705,11 @@
                 {
                     "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
                     "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "False",
                     "type": "BOOL"
                 },
                 {

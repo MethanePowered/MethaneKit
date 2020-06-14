@@ -98,7 +98,7 @@ void RenderContextBase::OnCpuPresentComplete(bool signal_frame_fence)
         GetCurrentFrameFence().Signal();
     }
 
-    META_CPU_FRAME_DELIMITER();
+    META_CPU_FRAME_DELIMITER(m_frame_buffer_index);
     META_LOG("PRESENT COMPLETE for context \"" + GetName() + "\"");
 
     m_fps_counter.OnCpuFramePresented();

@@ -23,9 +23,6 @@ Helper macro-definitions for ITT instrumentation
 
 #pragma once
 
-// Enable instrumentation of the ITT function arguments
-//#define ITT_FUNCTION_ARGS_ENABLED
-
 #ifdef ITT_INSTRUMENTATION_ENABLED
 
 #include <stdint.h>
@@ -62,31 +59,37 @@ public:
     { }
 
     template<class T>
-    typename std::enable_if<std::is_floating_point<T>::value, void>::type AddArg(__itt_string_handle* p_name, const T& value)
+    typename std::enable_if<std::is_floating_point<T>::value, void>::type AddArg(__itt_string_handle* p_name, const T& value) const
     {
-        double double_value = value;
+        double double_value = static_cast<double>(value);
         __itt_metadata_add(m_p_domain, m_id, p_name, __itt_metadata_double, 1, &double_value);
     }
 
-    void AddArg(__itt_string_handle* p_name, int64_t value)
+    void AddArg(__itt_string_handle* p_name, int64_t value) const
     {
         __itt_metadata_add(m_p_domain, m_id, p_name, __itt_metadata_s64, 1, &value);
     }
 
-    void AddArg(__itt_string_handle* p_name, const char* value)
+    void AddArg(__itt_string_handle* p_name, const char* value) const
     {
 #if ITT_PLATFORM==ITT_PLATFORM_WIN && (defined(UNICODE) || defined(_UNICODE))
         // string value must be converted to wchar_t
-            __itt_metadata_str_add(m_p_domain, m_id, p_name, nowide::widen(value).c_str(), 0);
+        __itt_metadata_str_add(m_p_domain, m_id, p_name, nowide::widen(value).c_str(), 0);
 #else
         __itt_metadata_str_add(m_p_domain, m_id, p_name, value, 0);
 #endif
     }
 
-    void AddArg(__itt_string_handle* p_name, void const* const pValue)
+    void AddArg(__itt_string_handle* p_name, void const* const p_value) const
     {
-        __itt_metadata_add(m_p_domain, m_id, p_name, __itt_metadata_unknown, 1, const_cast<void*>(pValue));
+        __itt_metadata_add(m_p_domain, m_id, p_name, __itt_metadata_unknown, 1, const_cast<void*>(p_value));
     }
+
+    void AddArg(__itt_string_handle* p_name, const std::string& value) const
+    {
+        AddArg(p_name, value.c_str());
+    }
+
 };
 
 class Marker : public Event
@@ -181,27 +184,38 @@ public:
 #define ITT_SCOPE_TASK(/*const char* */name) ITT_SCOPE(false, name)
 #define ITT_SCOPE_REGION(/*const char* */name) ITT_SCOPE(true, name)
 
-#ifdef ITT_FUNCTION_ARGS_ENABLED
+#define ITT_MARKER(/*Methane::ITT::Marker::Scope*/scope, /*const char* */name) \
+    ITT_DOMAIN_INIT(); \
+    static const Methane::ITT::Marker __itt_marker_item(__itt_domain_instance, name, scope); \
+    __itt_marker_item.Notify()
 
-#define ITT_ARG(/*const char* */name, /*number or string*/ value) {\
-    static __itt_string_handle* __itt_arg_name = UNICODE_AGNOSTIC(__itt_string_handle_create)(name);\
-    ITT_MAGIC_STATIC(__itt_arg_name);\
-    __itt_scope_item.AddArg(__itt_arg_name, value);\
+#define ITT_ARG(item_variable, /*const char* */name, /*number or string*/ value) { \
+    static __itt_string_handle* __itt_arg_name = UNICODE_AGNOSTIC(__itt_string_handle_create)(name); \
+    ITT_MAGIC_STATIC(__itt_arg_name); \
+    item_variable.AddArg(__itt_arg_name, value); \
 }
 
-#define ITT_FUNCTION_TASK() ITT_SCOPE_TASK(__FUNCTION__); ITT_ARG("__file__", __FILE__); ITT_ARG("__line__", __LINE__)
+#ifdef ITT_ARGUMENTS_METADATA_ENABLED
+
+#define ITT_MARKER_ARG(/*const char* */name, /*number or string*/ value) \
+    ITT_ARG(__itt_marker_item, name, value)
+
+#define ITT_FUNCTION_ARG(/*const char* */name, /*number or string*/ value) \
+    ITT_ARG(__itt_scope_item, name, value)
+
+#define ITT_FUNCTION_TASK() \
+    ITT_SCOPE_TASK(__FUNCTION__); \
+    ITT_FUNCTION_ARG("__file__", __FILE__); \
+    ITT_FUNCTION_ARG("__line__", __LINE__)
 
 #else
 
-#define ITT_ARG(/*const char* */name, /*number or string*/ value)
-#define ITT_FUNCTION_TASK() ITT_SCOPE_TASK(__FUNCTION__)
+#define ITT_MARKER_ARG(/*const char* */name, /*number or string*/ value)
+#define ITT_FUNCTION_ARG(/*const char* */name, /*number or string*/ value)
+#define ITT_FUNCTION_TASK() \
+    ITT_SCOPE_TASK(__FUNCTION__)
 
 #endif
-
-#define ITT_MARKER(/*Methane::ITT::Marker::Scope*/scope, /*const char* */name)\
-    ITT_DOMAIN_INIT();\
-    static const Methane::ITT::Marker __itt_marker_item(__itt_domain_instance, name, scope);\
-    __itt_marker_item.Notify()
 
 #define ITT_GLOBAL_MARKER(/*const char* */name) ITT_MARKER(Methane::ITT::Marker::Scope::Global, name)
 #define ITT_PROCESS_MARKER(/*const char* */name) ITT_MARKER(Methane::ITT::Marker::Scope::Process, name)
@@ -217,7 +231,7 @@ public:
 #define ITT_COUNTER(/*const char* */name, /*double */value) { \
     static __itt_string_handle* __itt_counter_name = UNICODE_AGNOSTIC(__itt_string_handle_create)(name);\
     ITT_MAGIC_STATIC(__itt_counter_name);\
-    double counter_value = value;\
+    double counter_value = static_cast<double>(value);\
     ITT_DOMAIN_INIT();\
     __itt_metadata_add(__itt_domain_instance, __itt_null, __itt_counter_name, __itt_metadata_double, 1, &counter_value);\
 }
@@ -253,7 +267,7 @@ public:
 #define ITT_SCOPE_TASK(name)
 #define ITT_SCOPE_REGION(name)
 #define ITT_FUNCTION_TASK()
-#define ITT_ARG(name, value)
+#define ITT_FUNCTION_ARG(name, value)
 #define ITT_MARKER(scope, name)
 #define ITT_GLOBAL_MARKER(name)
 #define ITT_PROCESS_MARKER(name)
