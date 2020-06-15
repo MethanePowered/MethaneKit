@@ -75,7 +75,7 @@ public:
 
         using ScopeIdByName = std::map<const char*, ScopeId>;
         using ScopeTimings  = std::vector<Timing>; // index == ScopeId
-        using ScopeCounters = std::vector<ITT_COUNTER_TYPE(double)>; // index == ScopeId
+        using ScopeCounters = std::vector<ITT_COUNTER_TYPE(uint64_t)>; // index == ScopeId
 
         ScopeId       m_new_scope_id = 0u;
         ScopeIdByName m_scope_id_by_name;

@@ -154,12 +154,22 @@ public:
     }
 };
 
+template<typename Type> inline __itt_metadata_type GetMetadataType(Type)     noexcept { return __itt_metadata_unknown; }
+template<>              inline __itt_metadata_type GetMetadataType(double)   noexcept { return __itt_metadata_double; }
+template<>              inline __itt_metadata_type GetMetadataType(float)    noexcept { return __itt_metadata_float; }
+template<>              inline __itt_metadata_type GetMetadataType(int16_t)  noexcept { return __itt_metadata_s16; }
+template<>              inline __itt_metadata_type GetMetadataType(uint16_t) noexcept { return __itt_metadata_u16; }
+template<>              inline __itt_metadata_type GetMetadataType(int32_t)  noexcept { return __itt_metadata_s32; }
+template<>              inline __itt_metadata_type GetMetadataType(uint32_t) noexcept { return __itt_metadata_u32; }
+template<>              inline __itt_metadata_type GetMetadataType(int64_t)  noexcept { return __itt_metadata_s64; }
+template<>              inline __itt_metadata_type GetMetadataType(uint64_t) noexcept { return __itt_metadata_u64; }
+
 template<typename ValueType>
 class Counter
 {
 public:
     Counter(const char* p_name, const char* p_domain) noexcept
-        : m_id(UNICODE_AGNOSTIC(__itt_counter_create_typed)(p_name, p_domain, GetValueType()))
+        : m_id(UNICODE_AGNOSTIC(__itt_counter_create_typed)(p_name, p_domain, GetMetadataType(ValueType{})))
     { }
     Counter(Counter&& other) : m_id(std::move(other.m_id)) {}
     ~Counter() { __itt_counter_destroy(m_id); }
@@ -171,9 +181,6 @@ public:
     void Decrement() const noexcept                   { __itt_counter_inc(m_id); }
 
 private:
-    static __itt_metadata_type
-    GetValueType() noexcept { return __itt_metadata_unknown; }
-
     __itt_counter m_id;
 };
 

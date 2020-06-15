@@ -103,7 +103,7 @@ ScopeTimer::Registration ScopeTimer::Aggregator::RegisterScope(const char* scope
 void ScopeTimer::Aggregator::AddScopeTiming(const Registration& scope_registration, TimeDuration duration)
 {
     META_FUNCTION_TASK();
-    ITT_COUNTER_VALUE(m_counters_by_scope_id[scope_registration.id], std::chrono::duration_cast<std::chrono::duration<double>>(duration).count());
+    ITT_COUNTER_VALUE(m_counters_by_scope_id[scope_registration.id], std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count());
     TracyPlot(scope_registration.name, std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count());
 
     assert(scope_registration.id <= m_timing_by_scope_id.size());
