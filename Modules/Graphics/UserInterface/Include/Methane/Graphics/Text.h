@@ -42,6 +42,13 @@ struct RenderCommandList;
 class Text : protected Data::Receiver<IFontCallback>
 {
 public:
+    enum class Wrap : uint32_t
+    {
+        None = 0u,
+        Anywhere,
+        Word
+    };
+
     struct Settings
     {
         const std::string name;
@@ -49,6 +56,7 @@ public:
         FrameRect         screen_rect;
         bool              screen_rect_in_pixels = false;
         Color4f           color = Color4f(1.f, 1.f, 1.f, 1.f);
+        Wrap              wrap  = Wrap::Anywhere;
     };
 
     Text(RenderContext& context, Font& font, Settings settings);

@@ -221,7 +221,7 @@ public:
 
     bool TryPack(Font::Char& font_char)
     {
-        return FrameBinPack::TryPack(font_char.rect);
+        return FrameBinPack::TryPack(font_char.m_rect);
     }
 };
 
@@ -427,17 +427,17 @@ const Font::Char& Font::GetChar(Char::Code char_code) const
     META_FUNCTION_TASK();
     static const Char s_none_char {};
     static const Char s_line_break(static_cast<Char::Code>('\n'));
-    if (char_code == s_line_break.code)
+    if (char_code == s_line_break.GetCode())
         return s_line_break;
 
     const auto char_by_code_it = m_char_by_code.find(char_code);
     return char_by_code_it == m_char_by_code.end() ? s_none_char : char_by_code_it->second;
 }
 
-Refs<const Font::Char> Font::GetChars() const
+Font::Chars Font::GetChars() const
 {
     META_FUNCTION_TASK();
-    Refs<const Char> font_chars;
+    Chars font_chars;
     for(const auto& code_and_char : m_char_by_code)
     {
         font_chars.emplace_back(code_and_char.second);
@@ -445,7 +445,7 @@ Refs<const Font::Char> Font::GetChars() const
     return font_chars;
 }
 
-Refs<const Font::Char> Font::GetTextChars(const std::string& text)
+Font::Chars Font::GetTextChars(const std::string& text)
 {
     META_FUNCTION_TASK();
     Refs<const Char> font_chars;
@@ -490,13 +490,13 @@ bool Font::PackCharsToAtlas(float pixels_reserve_multiplier)
         [](const Ref<Char>& left, const Ref<Char>& right) -> bool
         { return left.get() > right.get(); }
     );
-    m_max_glyph_size = font_chars.front().get().rect.size;
+    m_max_glyph_size = font_chars.front().get().GetRect().size;
 
     // Estimate required atlas size
     uint32_t char_pixels_count = 0u;
     for(Font::Char& font_char : font_chars)
     {
-        char_pixels_count += font_char.rect.size.GetPixelsCount();
+        char_pixels_count += font_char.GetRect().size.GetPixelsCount();
     }
     char_pixels_count = static_cast<uint32_t>(char_pixels_count * pixels_reserve_multiplier);
     const uint32_t square_atlas_dimension = static_cast<uint32_t>(std::sqrt(char_pixels_count));
@@ -637,17 +637,34 @@ void Font::OnContextReleased(Context& context)
     RemoveAtlasTexture(context);
 }
 
+static constexpr Font::Char::Code g_line_break_code = static_cast<Font::Char::Code>('\n');
+
+Font::Char::Type::Mask Font::Char::Type::Get(Font::Char::Code code)
+{
+    Font::Char::Type::Mask type_mask = Font::Char::Type::Unknown;
+
+    if (code == g_line_break_code)
+        type_mask |= Font::Char::Type::LineBreak;
+
+    if (std::isspace(static_cast<int>(code)))
+        type_mask |= Font::Char::Type::Whitespace;
+
+    return type_mask;
+}
+
 Font::Char::Char(Code code)
-    : code(code)
+    : m_code(code)
+    , m_type_mask(Type::Get(code))
 {
     META_FUNCTION_TASK();
 }
 
 Font::Char::Char(Code code, FrameRect rect, Point2i offset, Point2i advance, UniquePtr<Glyph>&& sp_glyph)
-    : code(code)
-    , rect(std::move(rect))
-    , offset(std::move(offset))
-    , advance(std::move(advance))
+    : m_code(code)
+    , m_type_mask(Type::Get(code))
+    , m_rect(std::move(rect))
+    , m_offset(std::move(offset))
+    , m_advance(std::move(advance))
     , m_sp_glyph(std::move(sp_glyph))
 {
     META_FUNCTION_TASK();
@@ -656,25 +673,25 @@ Font::Char::Char(Code code, FrameRect rect, Point2i offset, Point2i advance, Uni
 void Font::Char::DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_stride) const
 {
     META_FUNCTION_TASK();
-    if (!rect.size)
+    if (!m_rect.size)
         return; 
 
     // Verify glyph placement
-    assert(rect.GetLeft() >= 0 && static_cast<uint32_t>(rect.GetRight())  <= atlas_row_stride);
-    assert(rect.GetTop()  >= 0 && static_cast<uint32_t>(rect.GetBottom()) <= static_cast<uint32_t>(atlas_bitmap.size() / atlas_row_stride));
+    assert(m_rect.GetLeft() >= 0 && static_cast<uint32_t>(m_rect.GetRight())  <= atlas_row_stride);
+    assert(m_rect.GetTop()  >= 0 && static_cast<uint32_t>(m_rect.GetBottom()) <= static_cast<uint32_t>(atlas_bitmap.size() / atlas_row_stride));
 
     // Draw glyph to bitmap
     FT_Glyph ft_glyph = m_sp_glyph->GetFTGlyph();
     ThrowFreeTypeError(FT_Glyph_To_Bitmap(&ft_glyph, FT_RENDER_MODE_NORMAL, nullptr, false));
 
     FT_Bitmap& ft_bitmap = reinterpret_cast<FT_BitmapGlyph>(ft_glyph)->bitmap;
-    assert(ft_bitmap.width == rect.size.width);
-    assert(ft_bitmap.rows == rect.size.height);
+    assert(ft_bitmap.width == m_rect.size.width);
+    assert(ft_bitmap.rows == m_rect.size.height);
 
     // Copy glyph pixels to output bitmap row-by-row
     for (uint32_t y = 0; y < ft_bitmap.rows; y++)
     {
-        const uint32_t atlas_index = rect.origin.GetX() + (rect.origin.GetY() + y) * atlas_row_stride;
+        const uint32_t atlas_index = m_rect.origin.GetX() + (m_rect.origin.GetY() + y) * atlas_row_stride;
         if (atlas_index + ft_bitmap.width > atlas_bitmap.size())
             throw std::runtime_error("Char glyph does not fit into target atlas bitmap.");
 
@@ -685,7 +702,9 @@ void Font::Char::DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_strid
 uint32_t Font::Char::GetGlyphIndex() const
 {
     META_FUNCTION_TASK();
-    assert(!!m_sp_glyph);
+    if (!m_sp_glyph)
+        throw std::logic_error("No glyph is available for character with code " + std::to_string(m_code));
+
     return m_sp_glyph->GetFaceIndex();
 }
 

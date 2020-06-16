@@ -50,7 +50,7 @@ static const std::map<std::string, gfx::Color3f> g_font_color_by_name   {
 
 static const std::string g_cyrilyc_chars = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя";
 static const std::string g_pangram_eng   = "The quick brown fox jumps over the lazy dog!";
-static const std::string g_pangram_rus   = "Cъешь ещё этих мягких французских булок, да выпей чаю.";
+static const std::string g_pangram_rus   = "Съешь ещё этих мягких французских булок, да выпей чаю.";
 static const std::string g_hitchhikers_guide = "A towel is about the most massively useful thing an interstellar hitchhiker can have. " \
     "Partly it has great practical value. You can wrap it around you for warmth as you bound across the cold moons of Jaglan Beta; " \
     "you can lie on it on the brilliant marble-sanded beaches of Santraginus V, inhaling the heady sea vapors; " \
@@ -120,7 +120,8 @@ void TextRenderApp::Init()
                 { frame_width_without_margins - m_sp_logo_badge->GetScreenRectInDots().size.width - g_margin_size_in_dots, 0u /* calculated height */ }
             },
             false, // screen_rect_in_pixels
-            gfx::Color4f(g_primary_font.color, 1.f)
+            gfx::Color4f(g_primary_font.color, 1.f),
+            gfx::Text::Wrap::Word,
         }
     );
 
@@ -136,7 +137,8 @@ void TextRenderApp::Init()
                 { frame_width_without_margins, 0u /* calculated height */ }
             },
             false, // screen_rect_in_pixels
-            gfx::Color4f(g_secondary_font.color, 1.f)
+            gfx::Color4f(g_secondary_font.color, 1.f),
+            gfx::Text::Wrap::Word
         }
     );
 

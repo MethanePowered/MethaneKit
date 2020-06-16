@@ -31,6 +31,7 @@ Font atlas textures generation and fonts library management classes.
 
 #include <map>
 #include <string>
+#include <cctype>
 
 namespace Methane::Graphics
 {
@@ -88,32 +89,59 @@ public:
         FontByName            m_font_by_name;
     };
 
+    class CharBinPack;
+
     class Char
     {
+        friend class CharBinPack;
+
     public:
         class Glyph;
         using Code = uint32_t;
 
-        Code       code = 0u;
-        FrameRect  rect;
-        Point2i    offset;
-        Point2i    advance;
+        struct Type
+        {
+            using Mask = uint8_t;
+            enum Value : Mask
+            {
+                Unknown    = 0u,
+                Whitespace = 1u << 0u,
+                LineBreak  = 1u << 1u,
+            };
+
+            static Mask Get(Code code);
+
+            Type() = delete;
+        };
 
         Char() = default;
-        explicit Char(Code code);
+        Char(Code code);
         Char(Code code, FrameRect rect, Point2i offset, Point2i advance, UniquePtr<Glyph>&& sp_glyph);
 
-        bool operator<(const Char& other) const noexcept { return rect.size.GetPixelsCount() < other.rect.size.GetPixelsCount(); }
-        bool operator>(const Char& other) const noexcept { return rect.size.GetPixelsCount() > other.rect.size.GetPixelsCount(); }
-        operator bool() const noexcept                   { return code != 0u; }
+        Code             GetCode() const noexcept        { return m_code; }
+        bool             IsLineBreak() const noexcept    { return m_type_mask & Type::LineBreak; }
+        bool             IsWhiteSpace() const noexcept   { return m_type_mask & Type::Whitespace; }
+        const FrameRect& GetRect() const noexcept        { return m_rect; }
+        const Point2i&   GetOffset() const noexcept      { return m_offset; }
+        const Point2i&   GetAdvance() const noexcept     { return m_advance; }
 
-        void DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_stride) const;
+        bool operator<(const Char& other) const noexcept { return m_rect.size.GetPixelsCount() < other.m_rect.size.GetPixelsCount(); }
+        bool operator>(const Char& other) const noexcept { return m_rect.size.GetPixelsCount() > other.m_rect.size.GetPixelsCount(); }
+        operator bool() const noexcept                   { return m_code != 0u; }
+
+        void     DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_stride) const;
         uint32_t GetGlyphIndex() const;
-        bool     IsLineBreak() const      { return code == static_cast<Code>('\n'); }
 
     private:
+        const Code       m_code = 0u;
+        const Type::Mask m_type_mask = Type::Value::Unknown;
+        FrameRect        m_rect;
+        Point2i          m_offset;
+        Point2i          m_advance;
         UniquePtr<Glyph> m_sp_glyph;
     };
+
+    using Chars = Refs<const Char>;
 
     static std::string GetAnsiCharacters(char from = 32, char to = 126);
     static std::string GetTextAlphabet(const std::string& text);
@@ -130,8 +158,8 @@ public:
     const Font::Char& AddChar(Char::Code char_code);
     bool              HasChar(Char::Code char_code);
     const Char&       GetChar(Char::Code char_code) const;
-    Refs<const Char>  GetChars() const;
-    Refs<const Char>  GetTextChars(const std::string& text);
+    Chars             GetChars() const;
+    Chars             GetTextChars(const std::string& text);
     FrameRect::Point  GetKerning(const Char& left_char, const Char& right_char) const;
     const FrameSize&  GetMaxGlyphSize() const { return m_max_glyph_size; }
 
@@ -158,7 +186,6 @@ private:
     void ClearAtlasTextures();
 
     class Face;
-    class CharBinPack;
     using TextureByContext = std::map<Context*, Ptr<Texture>>;
     using CharByCode = std::map<Char::Code, Char>;
 
