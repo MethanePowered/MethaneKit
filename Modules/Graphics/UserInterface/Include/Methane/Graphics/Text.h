@@ -67,8 +67,9 @@ public:
     FrameRect        GetViewportInDots() const noexcept { return m_viewport_rect / m_context.GetContentScalingFactor(); }
 
     void SetText(const std::string& text);
-    void SetColor(const Color4f& color);
+    void SetTextInScreenRect(const std::string& text, const FrameRect& screen_rect, bool rect_in_pixels = false);
     void SetScreenRect(const FrameRect& screen_rect, bool rect_in_pixels = false);
+    void SetColor(const Color4f& color);
 
     void Draw(RenderCommandList& cmd_list);
 

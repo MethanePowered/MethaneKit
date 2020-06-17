@@ -352,10 +352,19 @@ Text::~Text() = default;
 
 void Text::SetText(const std::string& text)
 {
-    if (m_settings.text == text)
+    META_FUNCTION_TASK();
+    SetTextInScreenRect(text, m_settings.screen_rect, m_settings.screen_rect_in_pixels);
+}
+
+void Text::SetTextInScreenRect(const std::string& text, const FrameRect& screen_rect, bool rect_in_pixels)
+{
+    META_FUNCTION_TASK();
+    if (m_settings.text == text && m_settings.screen_rect == screen_rect && m_settings.screen_rect_in_pixels == rect_in_pixels)
         return;
 
     m_settings.text = text;
+    m_settings.screen_rect = screen_rect;
+    m_settings.screen_rect_in_pixels = rect_in_pixels;
 
     if (m_settings.text.empty())
     {
@@ -373,23 +382,9 @@ void Text::SetText(const std::string& text)
     m_sp_state->SetScissorRects({ GetFrameScissorRect(m_viewport_rect) });
 }
 
-void Text::SetColor(const Color4f& color)
-{
-    META_FUNCTION_TASK();
-
-    if (m_settings.color == color)
-        return;
-
-    m_settings.color = color;
-    m_sp_new_const_data = std::make_unique<Constants>(Constants{
-        m_settings.color
-    });
-}
-
 void Text::SetScreenRect(const FrameRect& screen_rect, bool rect_in_pixels)
 {
     META_FUNCTION_TASK();
-
     if (m_settings.screen_rect == screen_rect && m_settings.screen_rect_in_pixels == rect_in_pixels)
         return;
 
@@ -404,6 +399,18 @@ void Text::SetScreenRect(const FrameRect& screen_rect, bool rect_in_pixels)
 
     m_sp_state->SetViewports({ GetFrameViewport(m_viewport_rect) });
     m_sp_state->SetScissorRects({ GetFrameScissorRect(m_viewport_rect) });
+}
+
+void Text::SetColor(const Color4f& color)
+{
+    META_FUNCTION_TASK();
+    if (m_settings.color == color)
+        return;
+
+    m_settings.color = color;
+    m_sp_new_const_data = std::make_unique<Constants>(Constants{
+        m_settings.color
+    });
 }
 
 void Text::Draw(RenderCommandList& cmd_list)

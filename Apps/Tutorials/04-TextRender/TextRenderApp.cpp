@@ -48,9 +48,17 @@ static const std::map<std::string, gfx::Color3f> g_font_color_by_name   {
     { g_secondary_font.name, g_secondary_font.color }
 };
 
-static const std::string g_cyrilyc_chars = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя";
+// Pangrams http://clagnut.com/blog/2380/
 static const std::string g_pangram_eng   = "The quick brown fox jumps over the lazy dog!";
 static const std::string g_pangram_rus   = "Съешь ещё этих мягких французских булок, да выпей чаю.";
+static const std::string g_pangram_grk   = "Ο καλύμνιος σφουγγαράς ψιθύρισε πως θα βουτήξει χωρίς να διστάζει.";
+static const std::string g_pangram_tur   = "Pijamalı hasta, yağız şoföre çabucak güvendi";
+//static const std::string g_pangram_jap   = "いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす";
+//static const std::string g_pangram_chi   = "視野無限廣，窗外有藍天";
+//static const std::string g_pangram_kor   = "다람쥐 헌 쳇바퀴에 타고파";
+//static const std::string g_pangram_arb   = "نص حكيم له سر قاطع وذو شأن عظيم مكتوب على ثوب أخضر ومغلف بجلد أزرق";
+static const std::string g_pangrams_eur  = g_pangram_eng + "\n" + g_pangram_rus + "\n" + g_pangram_grk + "\n" + g_pangram_tur;
+                                         //  g_pangram_jap + "\n" + g_pangram_chi + "    " + g_pangram_kor + "\n" + g_pangram_arb;
 static const std::string g_hitchhikers_guide = "A towel is about the most massively useful thing an interstellar hitchhiker can have. " \
     "Partly it has great practical value. You can wrap it around you for warmth as you bound across the cold moons of Jaglan Beta; " \
     "you can lie on it on the brilliant marble-sanded beaches of Santraginus V, inhaling the heady sea vapors; " \
@@ -90,21 +98,23 @@ void TextRenderApp::Init()
     int32_t vertical_text_pos_in_dots = g_top_text_pos_in_dots;
 
     // Add fonts to library
+    const std::string primary_text = g_pangrams_eur.substr(0, m_primary_text_displayed_length);
     m_sp_primary_font = gfx::Font::Library::Get().AddFont(
         Data::FontProvider::Get(),
         gfx::Font::Settings
         {
             g_primary_font.name, g_primary_font.path, 24, m_sp_context->GetFontResolutionDPI(),
-            gfx::Font::GetAnsiCharacters() + g_cyrilyc_chars
+            gfx::Font::GetTextAlphabet(primary_text)
         }
     ).GetPtr();
 
+    const std::string secondary_text = g_hitchhikers_guide.substr(0, m_secondary_text_displayed_length);
     m_sp_secondary_font = gfx::Font::Library::Get().AddFont(
         Data::FontProvider::Get(),
         gfx::Font::Settings
         {
             g_secondary_font.name, g_secondary_font.path, 24, m_sp_context->GetFontResolutionDPI(),
-            gfx::Font::GetTextAlphabet(g_hitchhikers_guide.substr(0, m_secondary_text_displayed_length))
+            gfx::Font::GetTextAlphabet(secondary_text)
         }
     ).GetPtr();
 
@@ -112,8 +122,8 @@ void TextRenderApp::Init()
     m_sp_primary_text = std::make_shared<gfx::Text>(*m_sp_context, *m_sp_primary_font,
         gfx::Text::Settings
         {
-            "Panagrams",
-            g_pangram_eng + "\n" + g_pangram_rus,
+            "Pangrams",
+            primary_text,
             gfx::FrameRect
             {
                 { g_margin_size_in_dots, vertical_text_pos_in_dots },
@@ -130,7 +140,7 @@ void TextRenderApp::Init()
         gfx::Text::Settings
         {
             "Hitchhikers Guide",
-            g_hitchhikers_guide.substr(0, m_secondary_text_displayed_length),
+            secondary_text,
             gfx::FrameRect
             {
                 { g_margin_size_in_dots, vertical_text_pos_in_dots },
@@ -280,12 +290,26 @@ bool TextRenderApp::Animate(double elapsed_seconds, double)
     m_secondary_text_displayed_length = m_secondary_text_displayed_length < g_hitchhikers_guide.length() - 1
                                       ? m_secondary_text_displayed_length + 1
                                       : 1;
+    m_primary_text_displayed_length   = m_primary_text_displayed_length < g_pangrams_eur.length() - 1
+                                      ? m_primary_text_displayed_length + 1
+                                      : 1;
 
-    m_sp_secondary_text->SetText(g_hitchhikers_guide.substr(0, m_secondary_text_displayed_length));
+    const std::string primary_text = g_pangrams_eur.substr(0, m_primary_text_displayed_length);
+    m_sp_primary_text->SetText(primary_text);
 
+    const std::string secondary_text = g_hitchhikers_guide.substr(0, m_secondary_text_displayed_length);
+    m_sp_secondary_text->SetTextInScreenRect(secondary_text, {
+        { g_margin_size_in_dots, m_sp_primary_text->GetViewportInDots().GetBottom() + g_margin_size_in_dots },
+        { GetFrameSizeInDots().width - 2 * g_margin_size_in_dots, 0u }
+    });
+
+    if (m_primary_text_displayed_length == 1)
+    {
+        m_sp_primary_font->ResetChars(gfx::Font::GetTextAlphabet(primary_text));
+    }
     if (m_secondary_text_displayed_length == 1)
     {
-        m_sp_secondary_font->ResetChars(gfx::Font::GetTextAlphabet(g_hitchhikers_guide.substr(0, m_secondary_text_displayed_length)));
+        m_sp_secondary_font->ResetChars(gfx::Font::GetTextAlphabet(secondary_text));
     }
     return true;
 }

@@ -78,6 +78,7 @@ private:
     Ptrs<gfx::Badge> m_sp_font_atlas_badges;
 
     double m_text_update_elapsed_sec         = 0.0;
+    size_t m_primary_text_displayed_length   = 1;
     size_t m_secondary_text_displayed_length = 1;
 };
 
