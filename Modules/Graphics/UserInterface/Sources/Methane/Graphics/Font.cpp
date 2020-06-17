@@ -367,7 +367,7 @@ void Font::ResetChars(const std::wstring& characters)
 
     AddChars(characters);
     PackCharsToAtlas(1.2f);
-    UpdateAtlasBitmap();
+    UpdateAtlasBitmap(true);
 }
 
 void Font::AddChars(const std::string& unicode_characters)
@@ -405,13 +405,13 @@ const Font::Char& Font::AddChar(Char::Code char_code)
     {
         // Draw char to existing atlas bitmap and update textures;
         new_font_char.DrawToAtlas(m_atlas_bitmap, m_sp_atlas_pack->GetSize().width);
-        UpdateAtlasTextures();
+        UpdateAtlasTextures(true);
         return new_font_char;
     }
 
     // If new char does not fit into existing atlas, repack all chars into new atlas
     PackCharsToAtlas(2.f);
-    UpdateAtlasBitmap();
+    UpdateAtlasBitmap(true);
 
     return new_font_char;
 }
@@ -518,8 +518,8 @@ const Ptr<Texture>& Font::GetAtlasTexturePtr(Context& context)
     const auto atlas_texture_it = m_atlas_textures.find(&context);
     if (atlas_texture_it != m_atlas_textures.end())
     {
-        assert(!!atlas_texture_it->second);
-        return atlas_texture_it->second;
+        assert(!!atlas_texture_it->second.sp_texture);
+        return atlas_texture_it->second.sp_texture;
     }
 
     static const Ptr<Texture> sp_empty_texture;
@@ -538,19 +538,32 @@ const Ptr<Texture>& Font::GetAtlasTexturePtr(Context& context)
     context.Connect(*this);
 
     // Create atlas texture and render glyphs to it
-    UpdateAtlasBitmap();
-    return m_atlas_textures.emplace(&context, CreateAtlasTexture(context)).first->second;
+    UpdateAtlasBitmap(true);
+    return m_atlas_textures.emplace(&context, CreateAtlasTexture(context, true)).first->second.sp_texture;
 }
 
-Ptr<Texture> Font::CreateAtlasTexture(Context& context)
+void Font::UpdateAtlasTexture(Context& context)
+{
+    META_FUNCTION_TASK();
+    const auto atlas_texture_it = m_atlas_textures.find(&context);
+    if (atlas_texture_it == m_atlas_textures.end())
+        return;
+
+    UpdateAtlasTexture(context, atlas_texture_it->second);
+}
+
+Font::AtlasTexture Font::CreateAtlasTexture(Context& context, bool deferred_data_init)
 {
     META_FUNCTION_TASK();
     Ptr<Texture> sp_atlas_texture = Texture::CreateImage(context, Dimensions(m_sp_atlas_pack->GetSize()), 1, PixelFormat::R8Unorm, false);
     sp_atlas_texture->SetName(m_settings.name + " Font Atlas");
-    sp_atlas_texture->SetData({
-        Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size()))
-    });
-    return sp_atlas_texture;
+    if (!deferred_data_init)
+    {
+        sp_atlas_texture->SetData({
+            Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size()))
+        });
+    }
+    return { sp_atlas_texture, deferred_data_init };
 }
 
 void Font::RemoveAtlasTexture(Context& context)
@@ -560,7 +573,7 @@ void Font::RemoveAtlasTexture(Context& context)
     context.Disconnect(*this);
 }
 
-bool Font::UpdateAtlasBitmap()
+bool Font::UpdateAtlasBitmap(bool deferred_textures_update)
 {
     META_FUNCTION_TASK();
     if (!m_sp_atlas_pack)
@@ -580,11 +593,11 @@ bool Font::UpdateAtlasBitmap()
         code_and_char.second.DrawToAtlas(m_atlas_bitmap, atlas_size.width);
     }
 
-    UpdateAtlasTextures();
+    UpdateAtlasTextures(deferred_textures_update);
     return true;
 }
 
-void Font::UpdateAtlasTextures()
+void Font::UpdateAtlasTextures(bool deferred_textures_update)
 {
     META_FUNCTION_TASK();
     if (!m_sp_atlas_pack)
@@ -593,31 +606,44 @@ void Font::UpdateAtlasTextures()
     if (m_atlas_textures.empty())
         return;
 
-    const FrameSize atlas_size = m_sp_atlas_pack->GetSize();
     for(auto& context_and_texture : m_atlas_textures)
     {
-        assert(context_and_texture.first);
-        assert(context_and_texture.second);
-        Context&      context    = *context_and_texture.first;
-        Ptr<Texture>& sp_texture = context_and_texture.second;
-
-        const Dimensions& texture_dimensions = sp_texture->GetSettings().dimensions;
-        if (texture_dimensions.width != atlas_size.width || texture_dimensions.height != atlas_size.height)
+        if (deferred_textures_update)
         {
-            const Ptr<Texture> sp_old_texture = sp_texture;
-            sp_texture = CreateAtlasTexture(context);
-            Emit(&IFontCallback::OnFontAtlasTextureReset, *this, sp_old_texture, sp_texture);
+            context_and_texture.second.is_update_required = true;
         }
         else
         {
-            // TODO: Update only a region of atlas texture containing character bitmap
-            sp_texture->SetData({
-                Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size()))
-            });
+            assert(context_and_texture.first);
+            UpdateAtlasTexture(*context_and_texture.first, context_and_texture.second);
         }
     }
 
     Emit(&IFontCallback::OnFontAtlasUpdated, *this);
+}
+
+void Font::UpdateAtlasTexture(Context& context, AtlasTexture& atlas_texture)
+{
+    META_FUNCTION_TASK();
+    if (!atlas_texture.sp_texture)
+        throw std::invalid_argument("Atlas texture is not initialized.");
+
+    const FrameSize   atlas_size         = m_sp_atlas_pack->GetSize();
+    const Dimensions& texture_dimensions = atlas_texture.sp_texture->GetSettings().dimensions;
+
+    if (texture_dimensions.width != atlas_size.width || texture_dimensions.height != atlas_size.height)
+    {
+        const Ptr<Texture> sp_old_texture = atlas_texture.sp_texture;
+        atlas_texture.sp_texture = CreateAtlasTexture(context, false).sp_texture;
+        Emit(&IFontCallback::OnFontAtlasTextureReset, *this, sp_old_texture, atlas_texture.sp_texture);
+    }
+    else
+    {
+        // TODO: Update only a region of atlas texture containing character bitmap
+        atlas_texture.sp_texture->SetData({
+            Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size()))
+        });
+    }
 }
 
 void Font::ClearAtlasTextures()

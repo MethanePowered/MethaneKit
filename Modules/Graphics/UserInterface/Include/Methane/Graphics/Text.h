@@ -82,7 +82,8 @@ private:
     struct Mesh;
     struct Constants;
 
-    void ResetMeshData();
+    void UpdateAtlasTexture();
+    void UpdateMeshData();
     void UpdateMeshBuffers();
     void UpdateConstantsBuffer();
 
@@ -95,6 +96,7 @@ private:
     Ptr<Buffer>          m_sp_index_buffer;
     Ptr<Buffer>          m_sp_const_buffer;
     Ptr<Texture>         m_sp_atlas_texture;
+    Ptr<Texture>         m_sp_new_atlas_texture;
     Ptr<Sampler>         m_sp_texture_sampler;
     Ptr<ProgramBindings> m_sp_const_program_bindings;
     UniquePtr<Mesh>      m_sp_new_mesh_data;

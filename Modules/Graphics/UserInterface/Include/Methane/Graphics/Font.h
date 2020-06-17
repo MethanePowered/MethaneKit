@@ -165,6 +165,7 @@ public:
 
     const Ptr<Texture>& GetAtlasTexturePtr(Context& context);
     Texture&            GetAtlasTexture(Context& context) { return *GetAtlasTexturePtr(context); }
+    void                UpdateAtlasTexture(Context& context);
 
 protected:
     // Font can be created only via Font::Library::Add
@@ -178,15 +179,22 @@ protected:
     void OnContextInitialized(Context&) override { }
 
 private:
-    Ptr<Texture> CreateAtlasTexture(Context& context);
+    struct AtlasTexture
+    {
+        Ptr<Texture> sp_texture;
+        bool         is_update_required = true;
+    };
+
+    AtlasTexture CreateAtlasTexture(Context& context, bool deferred_data_init);
     void RemoveAtlasTexture(Context& context);
 
-    bool UpdateAtlasBitmap();
-    void UpdateAtlasTextures();
+    bool UpdateAtlasBitmap(bool deferred_textures_update);
+    void UpdateAtlasTextures(bool deferred_textures_update);
+    void UpdateAtlasTexture(Context& context, AtlasTexture& atlas_texture);
     void ClearAtlasTextures();
 
     class Face;
-    using TextureByContext = std::map<Context*, Ptr<Texture>>;
+    using TextureByContext = std::map<Context*, AtlasTexture>;
     using CharByCode = std::map<Char::Code, Char>;
 
     Settings               m_settings;

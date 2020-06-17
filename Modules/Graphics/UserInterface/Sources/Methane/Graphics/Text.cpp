@@ -283,7 +283,7 @@ Text::Text(RenderContext& context, Font& font, Settings settings)
     if (!m_settings.screen_rect_in_pixels)
         m_viewport_rect *= m_context.GetContentScalingFactor();
 
-    ResetMeshData();
+    UpdateMeshData();
     UpdateMeshBuffers();
 
     m_sp_new_const_data = std::make_unique<Constants>(Constants{ m_settings.color });
@@ -376,7 +376,7 @@ void Text::SetTextInScreenRect(const std::string& text, const FrameRect& screen_
     if (!m_settings.screen_rect_in_pixels)
         m_viewport_rect *= m_context.GetContentScalingFactor();
 
-    ResetMeshData();
+    UpdateMeshData();
 
     m_sp_state->SetViewports({ GetFrameViewport(m_viewport_rect) });
     m_sp_state->SetScissorRects({ GetFrameScissorRect(m_viewport_rect) });
@@ -395,7 +395,7 @@ void Text::SetScreenRect(const FrameRect& screen_rect, bool rect_in_pixels)
     if (!rect_in_pixels)
         m_viewport_rect *= m_context.GetContentScalingFactor();
 
-    ResetMeshData();
+    UpdateMeshData();
 
     m_sp_state->SetViewports({ GetFrameViewport(m_viewport_rect) });
     m_sp_state->SetScissorRects({ GetFrameScissorRect(m_viewport_rect) });
@@ -419,11 +419,9 @@ void Text::Draw(RenderCommandList& cmd_list)
     if (m_settings.text.empty())
         return;
 
-    if (m_sp_new_mesh_data)
-        UpdateMeshBuffers();
-
-    if (m_sp_new_const_data)
-        UpdateConstantsBuffer();
+    UpdateAtlasTexture();
+    UpdateMeshBuffers();
+    UpdateConstantsBuffer();
     
     cmd_list.Reset(m_sp_state);
     cmd_list.SetProgramBindings(*m_sp_const_program_bindings);
@@ -439,7 +437,20 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<Texture>& sp_old_atlas_
         return;
 
     assert(m_sp_atlas_texture.get() == sp_old_atlas_texture.get());
-    m_sp_atlas_texture = sp_new_atlas_texture;
+    m_sp_new_atlas_texture = sp_new_atlas_texture;
+}
+
+void Text::UpdateAtlasTexture()
+{
+    META_FUNCTION_TASK();
+
+    m_sp_font->UpdateAtlasTexture(m_context);
+
+    if (!m_sp_new_atlas_texture)
+        return;
+
+    m_sp_atlas_texture = m_sp_new_atlas_texture;
+    m_sp_new_atlas_texture.reset();
 
     const Ptr<ProgramBindings::ArgumentBinding>& sp_atlas_texture_binding = m_sp_const_program_bindings->Get({ Shader::Type::Pixel, "g_texture" });
     if (!sp_atlas_texture_binding)
@@ -447,10 +458,10 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<Texture>& sp_old_atlas_
 
     sp_atlas_texture_binding->SetResourceLocations({ { m_sp_atlas_texture } });
 
-    ResetMeshData();
+    UpdateMeshData();
 }
 
-void Text::ResetMeshData()
+void Text::UpdateMeshData()
 {
     META_FUNCTION_TASK();
     assert(m_sp_atlas_texture);
