@@ -78,7 +78,7 @@ struct Text::Mesh
                 {
                     // Word wrap prediction: check if next word fits in given viewport width
                     bool word_wrap_required = false;
-                    const FrameRect::Point start_char_pos = { char_pos.GetX() + text_char.GetRect().size.width, char_pos.GetY() };
+                    const FrameRect::Point start_char_pos = { char_pos.GetX() + text_char.GetAdvance().GetX(), char_pos.GetY() };
                     ForEachTextCharacterInRange(font, text_chars, char_index + 1, text_chars.size(), start_char_pos, viewport_width, Wrap::Anywhere,
                         [&word_wrap_required, &start_char_pos, &text_chars](const Font::Char& text_char, const FrameRect::Point& char_pos, size_t char_index) -> CharAction
                         {
