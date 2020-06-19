@@ -26,6 +26,8 @@ Tutorial demonstrating text rendering with Methane graphics API
 #include <Methane/Samples/AppSettings.hpp>
 #include <Methane/Data/TimeAnimation.h>
 
+#include <array>
+
 namespace Methane::Tutorials
 {
 
@@ -37,29 +39,43 @@ struct FontSettings
     gfx::Color3f color;
 };
 
-constexpr    int32_t                             g_margin_size_in_dots  = 32;
-constexpr    int32_t                             g_top_text_pos_in_dots = 100;
-constexpr    double                              g_text_update_interval_sec = 0.03;
-static const FontSettings                        g_primary_font         { "Primary",   "Fonts/Roboto/Roboto-Regular.ttf",     24u, { 1.f,  1.f, 0.5f } };
-static const FontSettings                        g_secondary_font       { "Secondary", "Fonts/Playball/Playball-Regular.ttf", 16u, { 0.5f, 1.f, 0.5f } };
-static const gfx::Color3f                        g_misc_font_color      { 1.f, 1.f, 1.f };
-static const std::map<std::string, gfx::Color3f> g_font_color_by_name   {
-    { g_primary_font.name,   g_primary_font.color   },
-    { g_secondary_font.name, g_secondary_font.color }
+constexpr int32_t g_margin_size_in_dots      = 32;
+constexpr int32_t g_top_text_pos_in_dots     = 100;
+constexpr double  g_text_update_interval_sec = 0.03;
+constexpr size_t  g_text_blocks_count        = 2;
+
+static const std::array<FontSettings, g_text_blocks_count> g_font_settings { {
+    { "European",     "Fonts/Roboto/Roboto-Regular.ttf",                 20u, { 1.f,  1.f,  0.5f } },
+//  { "Japanese",     "Fonts/SawarabiMincho/SawarabiMincho-Regular.ttf", 20u, { 1.f,  0.3f, 0.1f } },
+//  { "Arabic",       "Fonts/Amiri/Amiri-Regular.ttf",                   20u, { 1.f,  0.3f, 0.8f } },
+    { "Calligraphic", "Fonts/Playball/Playball-Regular.ttf",             20u, { 0.5f, 1.f,  0.5f } }
+} };
+
+static const gfx::Color3f g_misc_font_color { 1.f, 1.f, 1.f };
+static const std::map<std::string, gfx::Color3f>    g_font_color_by_name   {
+    { g_font_settings[0].name, g_font_settings[0].color },
+    { g_font_settings[1].name, g_font_settings[1].color },
+//  { g_font_settings[2].name, g_font_settings[2].color },
+//  { g_font_settings[3].name, g_font_settings[3].color }
 };
 
-// Pangrams http://clagnut.com/blog/2380/
-static const std::string g_pangram_eng   = "The quick brown fox jumps over the lazy dog!";
-static const std::string g_pangram_rus   = "Съешь ещё этих мягких французских булок, да выпей чаю.";
-static const std::string g_pangram_grk   = "Ο καλύμνιος σφουγγαράς ψιθύρισε πως θα βουτήξει χωρίς να διστάζει.";
-static const std::string g_pangram_tur   = "Pijamalı hasta, yağız şoföre çabucak güvendi";
-//static const std::string g_pangram_jap   = "いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす";
-//static const std::string g_pangram_chi   = "視野無限廣，窗外有藍天";
-//static const std::string g_pangram_kor   = "다람쥐 헌 쳇바퀴에 타고파";
-//static const std::string g_pangram_arb   = "نص حكيم له سر قاطع وذو شأن عظيم مكتوب على ثوب أخضر ومغلف بجلد أزرق";
-static const std::string g_pangrams_eur  = g_pangram_eng + "\n" + g_pangram_rus + "\n" + g_pangram_grk + "\n" + g_pangram_tur;
-                                         //  g_pangram_jap + "\n" + g_pangram_chi + "    " + g_pangram_kor + "\n" + g_pangram_arb;
-static const std::string g_hitchhikers_guide = "A towel is about the most massively useful thing an interstellar hitchhiker can have. " \
+// Pangrams from http://clagnut.com/blog/2380/
+static const std::array<std::string, g_text_blocks_count> g_text_blocks = { {
+
+    // 0: european pangrams
+    "The quick brown fox jumps over the lazy dog!\n" \
+    "Съешь ещё этих мягких французских булок, да выпей чаю.\n" \
+    "Ο καλύμνιος σφουγγαράς ψιθύρισε πως θα βουτήξει χωρίς να διστάζει.\n" \
+    "Pijamalı hasta, yağız şoföre çabucak güvendi.",
+
+    // 1: japanese pangram
+    //"いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす",
+
+    // 2: arabian pangram
+    //"نص حكيم له سر قاطع وذو شأن عظيم مكتوب على ثوب أخضر ومغلف بجلد أزرق",
+
+    // 3: hitchhicker's guide quote
+    "A towel is about the most massively useful thing an interstellar hitchhiker can have. " \
     "Partly it has great practical value. You can wrap it around you for warmth as you bound across the cold moons of Jaglan Beta; " \
     "you can lie on it on the brilliant marble-sanded beaches of Santraginus V, inhaling the heady sea vapors; " \
     "you can sleep under it beneath the stars which shine so redly on the desert world of Kakrafoon; " \
@@ -67,12 +83,14 @@ static const std::string g_hitchhikers_guide = "A towel is about the most massiv
     "wet it for use in hand-to-hand-combat; " \
     "wrap it round your head to ward off noxious fumes or avoid the gaze of the Ravenous Bugblatter Beast of Traal " \
     "(such a mind-boggingly stupid animal, it assumes that if you can't see it, it can't see you); " \
-    "you can wave your towel in emergencies as a distress signal, and of course dry yourself off with it if it still seems to be clean enough.";
+    "you can wave your towel in emergencies as a distress signal, and of course dry yourself off with it if it still seems to be clean enough."
+}};
 
 TextRenderApp::TextRenderApp()
     : GraphicsApp(
         Samples::GetAppSettings("Methane Text Rendering", true /* animations */, true /* logo */, true /* hud ui */, false /* depth */),
         "Methane tutorial of text rendering")
+    , m_displayed_text_lengths(g_text_blocks_count, 1)
 {
     GetHeadsUpDisplaySettings().position = gfx::Point2i(g_margin_size_in_dots, g_margin_size_in_dots);
 
@@ -97,60 +115,42 @@ void TextRenderApp::Init()
     const uint32_t frame_width_without_margins = frame_size_in_dots.width - 2 * g_margin_size_in_dots;
     int32_t vertical_text_pos_in_dots = g_top_text_pos_in_dots;
 
-    // Add fonts to library
-    const std::string primary_text = g_pangrams_eur.substr(0, m_primary_text_displayed_length);
-    m_sp_primary_font = gfx::Font::Library::Get().AddFont(
-        Data::FontProvider::Get(),
-        gfx::Font::Settings
-        {
-            g_primary_font.name, g_primary_font.path, 24, m_sp_context->GetFontResolutionDPI(),
-            gfx::Font::GetTextAlphabet(primary_text)
-        }
-    ).GetPtr();
+    for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
+    {
+        const FontSettings& font_settings = g_font_settings[block_index];
+        const std::string displayed_text_block = g_text_blocks[block_index].substr(0, m_displayed_text_lengths[block_index]);
 
-    const std::string secondary_text = g_hitchhikers_guide.substr(0, m_secondary_text_displayed_length);
-    m_sp_secondary_font = gfx::Font::Library::Get().AddFont(
-        Data::FontProvider::Get(),
-        gfx::Font::Settings
-        {
-            g_secondary_font.name, g_secondary_font.path, 24, m_sp_context->GetFontResolutionDPI(),
-            gfx::Font::GetTextAlphabet(secondary_text)
-        }
-    ).GetPtr();
+        // Add font to library
+        m_fonts.push_back(
+            gfx::Font::Library::Get().AddFont(
+                Data::FontProvider::Get(),
+                gfx::Font::Settings
+                {
+                    font_settings.name, font_settings.path, font_settings.size, m_sp_context->GetFontResolutionDPI(),
+                    gfx::Font::GetTextAlphabet(displayed_text_block)
+                }
+            ).GetPtr()
+        );
 
-    // Create text rendering primitive bound to the font object
-    m_sp_primary_text = std::make_shared<gfx::Text>(*m_sp_context, *m_sp_primary_font,
-        gfx::Text::Settings
-        {
-            "Pangrams",
-            primary_text,
-            gfx::FrameRect
-            {
-                { g_margin_size_in_dots, vertical_text_pos_in_dots },
-                { frame_width_without_margins - m_sp_logo_badge->GetScreenRectInDots().size.width - g_margin_size_in_dots, 0u /* calculated height */ }
-            },
-            false, // screen_rect_in_pixels
-            gfx::Color4f(g_primary_font.color, 1.f),
-            gfx::Text::Wrap::Word,
-        }
-    );
-
-    vertical_text_pos_in_dots += m_sp_primary_text->GetViewportInDots().size.height + g_margin_size_in_dots;
-    m_sp_secondary_text = std::make_shared<gfx::Text>(*m_sp_context, *m_sp_secondary_font,
-        gfx::Text::Settings
-        {
-            "Hitchhikers Guide",
-            secondary_text,
-            gfx::FrameRect
-            {
-                { g_margin_size_in_dots, vertical_text_pos_in_dots },
-                { frame_width_without_margins, 0u /* calculated height */ }
-            },
-            false, // screen_rect_in_pixels
-            gfx::Color4f(g_secondary_font.color, 1.f),
-            gfx::Text::Wrap::Word
-        }
-    );
+        // Add text element
+        m_texts.push_back(
+            std::make_shared<gfx::Text>(*m_sp_context, *m_fonts.back(),
+                gfx::Text::Settings
+                {
+                    font_settings.name,
+                    displayed_text_block,
+                    gfx::FrameRect
+                    {
+                        { g_margin_size_in_dots, vertical_text_pos_in_dots },
+                        { frame_width_without_margins, 0u /* calculated height */ }
+                    },
+                    false, // screen_rect_in_pixels
+                    gfx::Color4f(font_settings.color, 1.f),
+                    gfx::Text::Wrap::Word,
+                }
+            )
+        );
+    }
 
     UpdateFontAtlasBadges();
 
@@ -190,7 +190,7 @@ void TextRenderApp::UpdateFontAtlasBadges()
     gfx::Context& context = *m_sp_context;
 
     // Remove obsolete font atlas badges
-    for(auto badge_it = m_sp_font_atlas_badges.begin(); badge_it != m_sp_font_atlas_badges.end();)
+    for(auto badge_it = m_font_atlas_badges.begin(); badge_it != m_font_atlas_badges.end();)
     {
         const Ptr<gfx::Badge>& sp_font_atlas_badge = *badge_it;
         const auto font_ref_it = std::find_if(font_refs.begin(), font_refs.end(),
@@ -201,7 +201,7 @@ void TextRenderApp::UpdateFontAtlasBadges()
         );
         if (font_ref_it == font_refs.end())
         {
-            badge_it = m_sp_font_atlas_badges.erase(badge_it);
+            badge_it = m_font_atlas_badges.erase(badge_it);
         }
         else
         {
@@ -213,19 +213,19 @@ void TextRenderApp::UpdateFontAtlasBadges()
     for(const Ref<gfx::Font>& font_ref : font_refs)
     {
         const Ptr<gfx::Texture>& sp_font_atlas_texture = font_ref.get().GetAtlasTexturePtr(context);
-        const auto sp_font_atlas_it = std::find_if(m_sp_font_atlas_badges.begin(), m_sp_font_atlas_badges.end(),
-            [&sp_font_atlas_texture](const Ptr<gfx::Badge>& sp_font_atlas_badge)
+        const auto sp_font_atlas_it = std::find_if(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
+                                                   [&sp_font_atlas_texture](const Ptr<gfx::Badge>& sp_font_atlas_badge)
             {
                 return std::addressof(sp_font_atlas_badge->GetTexture()) == sp_font_atlas_texture.get();
             }
         );
 
-        if (sp_font_atlas_it != m_sp_font_atlas_badges.end())
+        if (sp_font_atlas_it != m_font_atlas_badges.end())
             continue;
 
         font_ref.get().Connect(*this);
 
-        m_sp_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font_ref.get(), sp_font_atlas_texture));
+        m_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font_ref.get(), sp_font_atlas_texture));
     }
 
     LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
@@ -234,7 +234,7 @@ void TextRenderApp::UpdateFontAtlasBadges()
 void TextRenderApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
 {
     // Sort atlas badges by size so that largest are displayed first
-    std::sort(m_sp_font_atlas_badges.begin(), m_sp_font_atlas_badges.end(),
+    std::sort(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
               [](const Ptr<gfx::Badge>& sp_left, const Ptr<gfx::Badge>& sp_right)
               {
                   return sp_left->GetSettings().screen_rect.size.GetPixelsCount() >
@@ -247,7 +247,7 @@ void TextRenderApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
     badge_margins *= scale_factor;
 
     // Layout badges in a row one after another with a margin spacing
-    for(const Ptr<gfx::Badge>& sp_badge_atlas : m_sp_font_atlas_badges)
+    for(const Ptr<gfx::Badge>& sp_badge_atlas : m_font_atlas_badges)
     {
         assert(sp_badge_atlas);
         const gfx::FrameSize& atlas_size = static_cast<const gfx::FrameSize&>(sp_badge_atlas->GetTexture().GetSettings().dimensions);
@@ -262,20 +262,18 @@ bool TextRenderApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     if (!GraphicsApp::Resize(frame_size, is_minimized))
         return false;
 
-    const gfx::FrameSize frame_size_in_dots = GetFrameSizeInDots();
+    const gfx::FrameSize frame_size_in_dots    = GetFrameSizeInDots();
     const uint32_t frame_width_without_margins = frame_size_in_dots.width - 2 * g_margin_size_in_dots;
-    int32_t vertical_text_pos_in_dots = g_top_text_pos_in_dots;
+    int32_t        vertical_text_pos_in_dots   = g_top_text_pos_in_dots;
 
-    m_sp_primary_text->SetScreenRect({
-        { g_margin_size_in_dots, vertical_text_pos_in_dots },
-        { frame_width_without_margins - m_sp_logo_badge->GetScreenRectInDots().size.width - g_margin_size_in_dots, 0u /* calculated height */ }
-    });
-
-    vertical_text_pos_in_dots += m_sp_primary_text->GetViewportInDots().size.height + g_margin_size_in_dots;
-    m_sp_secondary_text->SetScreenRect({
-        { g_margin_size_in_dots, vertical_text_pos_in_dots },
-        { frame_width_without_margins, 0u /* calculated height */ }
-    });
+    for(Ptr<gfx::Text>& sp_text : m_texts)
+    {
+        sp_text->SetScreenRect({
+            { g_margin_size_in_dots, vertical_text_pos_in_dots },
+            { frame_width_without_margins, 0u /* calculated height */ }
+        });
+        vertical_text_pos_in_dots += sp_text->GetViewportInDots().size.height + g_margin_size_in_dots;
+    }
 
     LayoutFontAtlasBadges(frame_size);
     return true;
@@ -287,30 +285,28 @@ bool TextRenderApp::Animate(double elapsed_seconds, double)
         return true;
 
     m_text_update_elapsed_sec = elapsed_seconds;
-    m_secondary_text_displayed_length = m_secondary_text_displayed_length < g_hitchhikers_guide.length() - 1
-                                      ? m_secondary_text_displayed_length + 1
-                                      : 1;
-    m_primary_text_displayed_length   = m_primary_text_displayed_length < g_pangrams_eur.length() - 1
-                                      ? m_primary_text_displayed_length + 1
-                                      : 1;
 
-    const std::string primary_text = g_pangrams_eur.substr(0, m_primary_text_displayed_length);
-    m_sp_primary_text->SetText(primary_text);
-
-    const std::string secondary_text = g_hitchhikers_guide.substr(0, m_secondary_text_displayed_length);
-    m_sp_secondary_text->SetTextInScreenRect(secondary_text, {
-        { g_margin_size_in_dots, m_sp_primary_text->GetViewportInDots().GetBottom() + g_margin_size_in_dots },
-        { GetFrameSizeInDots().width - 2 * g_margin_size_in_dots, 0u }
-    });
-
-    if (m_primary_text_displayed_length == 1)
+    int32_t vertical_text_pos_in_dots = g_top_text_pos_in_dots;
+    for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
     {
-        m_sp_primary_font->ResetChars(gfx::Font::GetTextAlphabet(primary_text));
+        size_t& displayed_text_length = m_displayed_text_lengths[block_index];
+        displayed_text_length = displayed_text_length < g_text_blocks[block_index].length() - 1 ? displayed_text_length + 1 : 1;
+        const std::string displayed_text = g_text_blocks[block_index].substr(0, displayed_text_length);
+
+        const Ptr<gfx::Text>& sp_text = m_texts[block_index];
+        sp_text->SetTextInScreenRect(displayed_text, {
+            { g_margin_size_in_dots, vertical_text_pos_in_dots  },
+            { GetFrameSizeInDots().width - 2 * g_margin_size_in_dots, 0u }
+        });
+
+        vertical_text_pos_in_dots = sp_text->GetViewportInDots().GetBottom() + g_margin_size_in_dots;
+
+        if (displayed_text_length == 1)
+        {
+            m_fonts[block_index]->ResetChars(gfx::Font::GetTextAlphabet(displayed_text));
+        }
     }
-    if (m_secondary_text_displayed_length == 1)
-    {
-        m_sp_secondary_font->ResetChars(gfx::Font::GetTextAlphabet(secondary_text));
-    }
+
     return true;
 }
 
@@ -322,11 +318,13 @@ bool TextRenderApp::Render()
 
     // Draw text blocks
     TextRenderFrame& frame = GetCurrentFrame();
-    m_sp_primary_text->Draw(*frame.sp_render_cmd_list);
-    m_sp_secondary_text->Draw(*frame.sp_render_cmd_list);
+    for(Ptr<gfx::Text>& sp_text : m_texts)
+    {
+        sp_text->Draw(*frame.sp_render_cmd_list);
+    }
 
     // Draw font atlas badges
-    for(const Ptr<gfx::Badge>& sp_badge_atlas : m_sp_font_atlas_badges)
+    for(const Ptr<gfx::Badge>& sp_badge_atlas : m_font_atlas_badges)
     {
         sp_badge_atlas->Draw(*frame.sp_render_cmd_list);
     }
@@ -347,27 +345,25 @@ void TextRenderApp::OnContextReleased(gfx::Context& context)
 {
     gfx::Font::Library::Get().Clear();
 
-    m_sp_primary_font.reset();
-    m_sp_secondary_font.reset();
-    m_sp_primary_text.reset();
-    m_sp_secondary_text.reset();
-    m_sp_font_atlas_badges.clear();
+    m_fonts.clear();
+    m_texts.clear();
+    m_font_atlas_badges.clear();
 
     GraphicsApp::OnContextReleased(context);
 }
 
 void TextRenderApp::OnFontAtlasTextureReset(gfx::Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture)
 {
-    const auto sp_font_atlas_badge_it = std::find_if(m_sp_font_atlas_badges.begin(), m_sp_font_atlas_badges.end(),
-        [&sp_old_atlas_texture](const Ptr<gfx::Badge>& sp_font_atlas_badge)
+    const auto sp_font_atlas_badge_it = std::find_if(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
+                                                     [&sp_old_atlas_texture](const Ptr<gfx::Badge>& sp_font_atlas_badge)
         {
            return std::addressof(sp_font_atlas_badge->GetTexture()) == sp_old_atlas_texture.get();
         }
     );
 
-    if (sp_font_atlas_badge_it == m_sp_font_atlas_badges.end())
+    if (sp_font_atlas_badge_it == m_font_atlas_badges.end())
     {
-        m_sp_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font, sp_new_atlas_texture));
+        m_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font, sp_new_atlas_texture));
     }
     else
     {

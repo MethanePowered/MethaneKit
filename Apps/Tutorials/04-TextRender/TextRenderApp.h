@@ -71,15 +71,11 @@ private:
     void UpdateFontAtlasBadges();
     void LayoutFontAtlasBadges(const gfx::FrameSize& frame_size);
 
-    Ptr<gfx::Font>   m_sp_primary_font;
-    Ptr<gfx::Font>   m_sp_secondary_font;
-    Ptr<gfx::Text>   m_sp_primary_text;
-    Ptr<gfx::Text>   m_sp_secondary_text;
-    Ptrs<gfx::Badge> m_sp_font_atlas_badges;
-
-    double m_text_update_elapsed_sec         = 0.0;
-    size_t m_primary_text_displayed_length   = 1;
-    size_t m_secondary_text_displayed_length = 1;
+    Ptrs<gfx::Font>     m_fonts;
+    Ptrs<gfx::Text>     m_texts;
+    Ptrs<gfx::Badge>    m_font_atlas_badges;
+    std::vector<size_t> m_displayed_text_lengths;
+    double              m_text_update_elapsed_sec = 0.0;
 };
 
 } // namespace Methane::Tutorials
