@@ -36,7 +36,7 @@ target_link_libraries(${TARGET}
         MethanePrimitives
         TracyInstrumentation
         ittnotify
-        nowide_static
+        nowide
     PRIVATE
         MethaneBuildOptions
 )

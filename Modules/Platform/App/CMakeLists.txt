@@ -73,7 +73,7 @@ target_link_libraries(${TARGET}
     PRIVATE
         MethaneBuildOptions
         MethanePlatformUtils
-        nowide_static
+        nowide
         ${PLATFORM_LIBRARIES}
 )
 

@@ -7,6 +7,7 @@
       <file path="$PROJECT_DIR$/Modules" />
     </sourceRoots>
     <libraryRoots>
+      <file path="$PROJECT_DIR$/Externals/BoostNowide" />
       <file path="$PROJECT_DIR$/Externals/CLI11" />
       <file path="$PROJECT_DIR$/Externals/CML" />
       <file path="$PROJECT_DIR$/Externals/CMRC" />
@@ -18,7 +19,6 @@
       <file path="$PROJECT_DIR$/Externals/DirectXTex" />
       <file path="$PROJECT_DIR$/Externals/FreeType2" />
       <file path="$PROJECT_DIR$/Externals/IttApi" />
-      <file path="$PROJECT_DIR$/Externals/Nowide" />
       <file path="$PROJECT_DIR$/Externals/OpenImageIO" />
       <file path="$PROJECT_DIR$/Externals/PerlinNoise" />
       <file path="$PROJECT_DIR$/Externals/SPIRV" />
