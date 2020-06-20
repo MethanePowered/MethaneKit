@@ -28,8 +28,6 @@ Text rendering primitive.
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
-#include <codecvt>
-
 namespace Methane::Graphics
 {
 
@@ -108,7 +106,7 @@ struct Text::Mesh
     {
         META_FUNCTION_TASK();
         const Font::Char* p_prev_text_char = nullptr;
-        for(size_t char_index = begin_index; char_index < end_index; ++char_index)
+        for (size_t char_index = begin_index; char_index < end_index; ++char_index)
         {
             const Font::Char& text_char = text_chars[char_index].get();
             assert(!!text_char);

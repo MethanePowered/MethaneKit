@@ -21,6 +21,8 @@ Font atlas textures generation and fonts library management classes.
 
 ******************************************************************************/
 
+#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
+
 #include <Methane/Graphics/Font.h>
 
 #include <Methane/Data/RectBinPack.hpp>
@@ -150,7 +152,7 @@ public:
         uint32_t char_index = GetCharIndex(char_code);
         if (!char_index)
         {
-            const std::string error_message = "Character " + std::to_string(char_code) + " does not exist in font face.";
+            const std::string error_message = "Unicode character U+" + std::to_string(char_code) + " does not exist in font face.";
             throw std::runtime_error(error_message);
         }
 
@@ -711,14 +713,16 @@ void Font::OnContextReleased(Context& context)
 
 static constexpr Font::Char::Code g_line_break_code = static_cast<Font::Char::Code>('\n');
 
-Font::Char::Type::Mask Font::Char::Type::Get(Font::Char::Code code)
+Font::Char::Type::Mask Font::Char::Type::Get(Font::Char::Code char_code)
 {
     Font::Char::Type::Mask type_mask = Font::Char::Type::Unknown;
+    if (char_code > 255)
+        return type_mask;
 
-    if (code == g_line_break_code)
+    if (char_code == g_line_break_code)
         type_mask |= Font::Char::Type::LineBreak;
 
-    if (std::isspace(static_cast<int>(code)))
+    if (std::isspace(static_cast<int>(char_code)))
         type_mask |= Font::Char::Type::Whitespace;
 
     return type_mask;

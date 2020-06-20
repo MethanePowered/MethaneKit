@@ -27,7 +27,6 @@ Tutorial demonstrating text rendering with Methane graphics API
 #include <Methane/Data/TimeAnimation.h>
 
 #include <array>
-#include <codecvt>
 
 namespace Methane::Tutorials
 {
@@ -64,27 +63,31 @@ static const std::map<std::string, gfx::Color3f>    g_font_color_by_name   {
 static const std::array<std::u32string, g_text_blocks_count> g_text_blocks = { {
 
     // 0: european pangrams
-    U"The quick brown fox jumps over the lazy dog!\n" \
-     "Съешь ещё этих мягких французских булок, да выпей чаю.\n" \
-     "Ο καλύμνιος σφουγγαράς ψιθύρισε πως θα βουτήξει χωρίς να διστάζει.\n" \
-     "Pijamalı hasta, yağız şoföre çabucak güvendi.",
+    gfx::Font::ConvertUtf8To32(
+        "The quick brown fox jumps over the lazy dog!\n" \
+         "Съешь ещё этих мягких французских булок, да выпей чаю.\n" \
+         "Ο καλύμνιος σφουγγαράς ψιθύρισε πως θα βουτήξει χωρίς να διστάζει.\n" \
+         "Pijamalı hasta, yağız şoföre çabucak güvendi."),
 
     // 1: japanese pangram
-    U"いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす",
+    gfx::Font::ConvertUtf8To32(
+        "いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす"),
 
-    // 2: arabian pangram
-    //U"نص حكيم له سر قاطع وذو شأن عظيم مكتوب على ثوب أخضر ومغلف بجلد أزرق",
+    // 2: arabic pangram
+    //gfx::Font::ConvertUtf8To32(
+    //  "نص حكيم له سر قاطع وذو شأن عظيم مكتوب على ثوب أخضر ومغلف بجلد أزرق"),
 
     // 3: hitchhicker's guide quote
-    U"A towel is about the most massively useful thing an interstellar hitchhiker can have. " \
-     "Partly it has great practical value. You can wrap it around you for warmth as you bound across the cold moons of Jaglan Beta; " \
-     "you can lie on it on the brilliant marble-sanded beaches of Santraginus V, inhaling the heady sea vapors; " \
-     "you can sleep under it beneath the stars which shine so redly on the desert world of Kakrafoon; " \
-     "use it to sail a miniraft down the slow heavy River Moth; " \
-     "wet it for use in hand-to-hand-combat; " \
-     "wrap it round your head to ward off noxious fumes or avoid the gaze of the Ravenous Bugblatter Beast of Traal " \
-     "(such a mind-boggingly stupid animal, it assumes that if you can't see it, it can't see you); " \
-     "you can wave your towel in emergencies as a distress signal, and of course dry yourself off with it if it still seems to be clean enough."
+    gfx::Font::ConvertUtf8To32(
+        "A towel is about the most massively useful thing an interstellar hitchhiker can have. " \
+        "Partly it has great practical value. You can wrap it around you for warmth as you bound across the cold moons of Jaglan Beta; " \
+        "you can lie on it on the brilliant marble-sanded beaches of Santraginus V, inhaling the heady sea vapors; " \
+        "you can sleep under it beneath the stars which shine so redly on the desert world of Kakrafoon; " \
+        "use it to sail a miniraft down the slow heavy River Moth; " \
+        "wet it for use in hand-to-hand-combat; " \
+        "wrap it round your head to ward off noxious fumes or avoid the gaze of the Ravenous Bugblatter Beast of Traal " \
+        "(such a mind-boggingly stupid animal, it assumes that if you can't see it, it can't see you); " \
+        "you can wave your towel in emergencies as a distress signal, and of course dry yourself off with it if it still seems to be clean enough.")
 }};
 
 TextRenderApp::TextRenderApp()
