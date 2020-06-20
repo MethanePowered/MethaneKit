@@ -54,11 +54,11 @@ class Font
 public:
     struct Settings
     {
-        std::string name;
-        std::string font_path;
-        uint32_t    font_size_pt;
-        uint32_t    resolution_dpi;
-        std::string characters;
+        std::string    name;
+        std::string    font_path;
+        uint32_t       font_size_pt;
+        uint32_t       resolution_dpi;
+        std::u32string characters;
     };
 
     class Library
@@ -97,7 +97,7 @@ public:
 
     public:
         class Glyph;
-        using Code = uint32_t;
+        using Code = char32_t;
 
         struct Type
         {
@@ -143,23 +143,26 @@ public:
 
     using Chars = Refs<const Char>;
 
-    static std::string GetAnsiCharacters(char from = 32, char to = 126);
-    static std::string GetTextAlphabet(const std::string& text);
+    static std::u32string GetAlphabetDefault() { return GetAlphabetInRange(32, 126); }
+    static std::u32string GetAlphabetInRange(char32_t from, char32_t to);
+    static std::u32string GetAlphabetFromText(const std::string& text);
+    static std::u32string GetAlphabetFromText(const std::u32string& text);
 
     ~Font();
 
     Ptr<Font>       GetPtr() { return shared_from_this(); }
     const Settings& GetSettings() const { return m_settings; }
 
-    void              ResetChars(const std::string& unicode_characters);
-    void              ResetChars(const std::wstring& characters);
-    void              AddChars(const std::string& unicode_characters);
-    void              AddChars(const std::wstring& characters);
+    void              ResetChars(const std::string& utf8_characters);
+    void              ResetChars(const std::u32string& utf32_characters);
+    void              AddChars(const std::string& utf8_characters);
+    void              AddChars(const std::u32string& utf32_characters);
     const Font::Char& AddChar(Char::Code char_code);
     bool              HasChar(Char::Code char_code);
     const Char&       GetChar(Char::Code char_code) const;
     Chars             GetChars() const;
     Chars             GetTextChars(const std::string& text);
+    Chars             GetTextChars(const std::u32string& text);
     FrameRect::Point  GetKerning(const Char& left_char, const Char& right_char) const;
     const FrameSize&  GetMaxGlyphSize() const { return m_max_glyph_size; }
 

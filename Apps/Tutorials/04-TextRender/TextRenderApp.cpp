@@ -27,6 +27,7 @@ Tutorial demonstrating text rendering with Methane graphics API
 #include <Methane/Data/TimeAnimation.h>
 
 #include <array>
+#include <codecvt>
 
 namespace Methane::Tutorials
 {
@@ -42,11 +43,11 @@ struct FontSettings
 constexpr int32_t g_margin_size_in_dots      = 32;
 constexpr int32_t g_top_text_pos_in_dots     = 100;
 constexpr double  g_text_update_interval_sec = 0.03;
-constexpr size_t  g_text_blocks_count        = 2;
+constexpr size_t  g_text_blocks_count        = 3;
 
 static const std::array<FontSettings, g_text_blocks_count> g_font_settings { {
     { "European",     "Fonts/Roboto/Roboto-Regular.ttf",                 20u, { 1.f,  1.f,  0.5f } },
-//  { "Japanese",     "Fonts/SawarabiMincho/SawarabiMincho-Regular.ttf", 20u, { 1.f,  0.3f, 0.1f } },
+    { "Japanese",     "Fonts/SawarabiMincho/SawarabiMincho-Regular.ttf", 20u, { 1.f,  0.3f, 0.1f } },
 //  { "Arabic",       "Fonts/Amiri/Amiri-Regular.ttf",                   20u, { 1.f,  0.3f, 0.8f } },
     { "Calligraphic", "Fonts/Playball/Playball-Regular.ttf",             20u, { 0.5f, 1.f,  0.5f } }
 } };
@@ -55,7 +56,7 @@ static const gfx::Color3f g_misc_font_color { 1.f, 1.f, 1.f };
 static const std::map<std::string, gfx::Color3f>    g_font_color_by_name   {
     { g_font_settings[0].name, g_font_settings[0].color },
     { g_font_settings[1].name, g_font_settings[1].color },
-//  { g_font_settings[2].name, g_font_settings[2].color },
+    { g_font_settings[2].name, g_font_settings[2].color },
 //  { g_font_settings[3].name, g_font_settings[3].color }
 };
 
@@ -69,7 +70,7 @@ static const std::array<std::string, g_text_blocks_count> g_text_blocks = { {
     "Pijamalı hasta, yağız şoföre çabucak güvendi.",
 
     // 1: japanese pangram
-    //"いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす",
+    "いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす",
 
     // 2: arabian pangram
     //"نص حكيم له سر قاطع وذو شأن عظيم مكتوب على ثوب أخضر ومغلف بجلد أزرق",
@@ -115,10 +116,11 @@ void TextRenderApp::Init()
     const uint32_t frame_width_without_margins = frame_size_in_dots.width - 2 * g_margin_size_in_dots;
     int32_t vertical_text_pos_in_dots = g_top_text_pos_in_dots;
 
+    std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> string_converter;
     for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
     {
         const FontSettings& font_settings = g_font_settings[block_index];
-        const std::string displayed_text_block = g_text_blocks[block_index].substr(0, m_displayed_text_lengths[block_index]);
+        const std::u32string displayed_text_block = string_converter.from_bytes(g_text_blocks[block_index]).substr(0, m_displayed_text_lengths[block_index]);
 
         // Add font to library
         m_fonts.push_back(
@@ -127,7 +129,7 @@ void TextRenderApp::Init()
                 gfx::Font::Settings
                 {
                     font_settings.name, font_settings.path, font_settings.size, m_sp_context->GetFontResolutionDPI(),
-                    gfx::Font::GetTextAlphabet(displayed_text_block)
+                    gfx::Font::GetAlphabetFromText(displayed_text_block)
                 }
             ).GetPtr()
         );
@@ -135,7 +137,7 @@ void TextRenderApp::Init()
         // Add text element
         m_texts.push_back(
             std::make_shared<gfx::Text>(*m_sp_context, *m_fonts.back(),
-                gfx::Text::Settings
+                gfx::Text::SettingsUtf32
                 {
                     font_settings.name,
                     displayed_text_block,
@@ -287,14 +289,16 @@ bool TextRenderApp::Animate(double elapsed_seconds, double)
     m_text_update_elapsed_sec = elapsed_seconds;
 
     int32_t vertical_text_pos_in_dots = g_top_text_pos_in_dots;
+    std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> string_converter;
     for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
     {
         size_t& displayed_text_length = m_displayed_text_lengths[block_index];
         displayed_text_length = displayed_text_length < g_text_blocks[block_index].length() - 1 ? displayed_text_length + 1 : 1;
         const std::string displayed_text = g_text_blocks[block_index].substr(0, displayed_text_length);
+        const std::u32string displayed_text_block = string_converter.from_bytes(g_text_blocks[block_index]).substr(0, m_displayed_text_lengths[block_index]);
 
         const Ptr<gfx::Text>& sp_text = m_texts[block_index];
-        sp_text->SetTextInScreenRect(displayed_text, {
+        sp_text->SetTextInScreenRect(displayed_text_block, {
             { g_margin_size_in_dots, vertical_text_pos_in_dots  },
             { GetFrameSizeInDots().width - 2 * g_margin_size_in_dots, 0u }
         });
@@ -303,7 +307,7 @@ bool TextRenderApp::Animate(double elapsed_seconds, double)
 
         if (displayed_text_length == 1)
         {
-            m_fonts[block_index]->ResetChars(gfx::Font::GetTextAlphabet(displayed_text));
+            m_fonts[block_index]->ResetChars(gfx::Font::GetAlphabetFromText(displayed_text_block));
         }
     }
 

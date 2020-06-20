@@ -28,6 +28,8 @@ Text rendering primitive.
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
+#include <codecvt>
+
 namespace Methane::Graphics
 {
 
@@ -66,7 +68,7 @@ struct Text::Mesh
     };
 
     using ProcessFontCharAtPosition = const std::function<CharAction(const Font::Char& text_char, const FrameRect::Point& char_pos, size_t char_index)>;
-    static void ForEachTextCharacter(const std::string& text, Font& font, uint32_t viewport_width, Wrap wrap,
+    static void ForEachTextCharacter(const std::u32string& text, Font& font, uint32_t viewport_width, Wrap wrap,
                                      const ProcessFontCharAtPosition& process_char_at_position)
     {
         META_FUNCTION_TASK();
@@ -153,7 +155,7 @@ struct Text::Mesh
         content_size.height = std::max(content_size.height, char_pos.GetY() + font_char.GetOffset().GetY() + font_char.GetRect().size.height);
     }
     
-    static FrameSize CalcContentSize(const std::string& text, Font& font, uint32_t viewport_width = 0u, Wrap wrap = Wrap::None)
+    static FrameSize CalcContentSize(const std::u32string& text, Font& font, uint32_t viewport_width = 0u, Wrap wrap = Wrap::None)
     {
         META_FUNCTION_TASK();
         FrameSize content_size;
@@ -167,7 +169,7 @@ struct Text::Mesh
         return content_size;
     }
 
-    Mesh(const std::string& text, Wrap wrap, Font& font, FrameSize& viewport_size, const FrameSize& atlas_size)
+    Mesh(const std::u32string& text, Wrap wrap, Font& font, FrameSize& viewport_size, const FrameSize& atlas_size)
     {
         META_FUNCTION_TASK();
         
@@ -269,7 +271,20 @@ struct Text::Mesh
     }
 };
 
-Text::Text(RenderContext& context, Font& font, Settings settings)
+Text::Text(RenderContext& context, Font& font, const SettingsUtf8&  settings)
+    : Text(context, font, SettingsUtf32{
+            settings.name,
+            std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>().from_bytes(settings.text),
+            settings.screen_rect,
+            settings.screen_rect_in_pixels,
+            settings.color,
+            settings.wrap
+        })
+{
+    META_FUNCTION_TASK();
+}
+
+Text::Text(RenderContext& context, Font& font, SettingsUtf32 settings)
     : m_settings(std::move(settings))
     , m_context(context)
     , m_sp_font(font.shared_from_this())
@@ -350,13 +365,31 @@ Text::Text(RenderContext& context, Font& font, Settings settings)
 
 Text::~Text() = default;
 
+std::string Text::GetText() const
+{
+    META_FUNCTION_TASK();
+    return std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>().to_bytes(m_settings.text);
+}
+
 void Text::SetText(const std::string& text)
 {
     META_FUNCTION_TASK();
     SetTextInScreenRect(text, m_settings.screen_rect, m_settings.screen_rect_in_pixels);
 }
 
+void Text::SetText(const std::u32string& text)
+{
+    META_FUNCTION_TASK();
+    SetTextInScreenRect(text, m_settings.screen_rect, m_settings.screen_rect_in_pixels);
+}
+
 void Text::SetTextInScreenRect(const std::string& text, const FrameRect& screen_rect, bool rect_in_pixels)
+{
+    META_FUNCTION_TASK();
+    SetTextInScreenRect(std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>().from_bytes(text), screen_rect, rect_in_pixels);
+}
+
+void Text::SetTextInScreenRect(const std::u32string& text, const FrameRect& screen_rect, bool rect_in_pixels)
 {
     META_FUNCTION_TASK();
     if (m_settings.text == text && m_settings.screen_rect == screen_rect && m_settings.screen_rect_in_pixels == rect_in_pixels)
@@ -465,7 +498,6 @@ void Text::UpdateMeshData()
 {
     META_FUNCTION_TASK();
     assert(m_sp_atlas_texture);
-
     m_sp_new_mesh_data = std::make_unique<Mesh>(m_settings.text, m_settings.wrap, *m_sp_font, m_viewport_rect.size, m_sp_atlas_texture->GetSettings().dimensions);
 }
 

@@ -29,6 +29,8 @@ Font atlas textures generation and fonts library management classes.
 #include <nowide/convert.hpp>
 #include <map>
 #include <set>
+#include <locale>
+#include <codecvt>
 #include <algorithm>
 #include <cassert>
 
@@ -302,37 +304,45 @@ Font::Library::Library()
     META_FUNCTION_TASK();
 }
 
-std::string Font::GetAnsiCharacters(const char from, const char to)
+std::u32string Font::GetAlphabetInRange(char32_t from, char32_t to)
 {
     META_FUNCTION_TASK();
     if (from > to)
         throw std::invalid_argument("Invalid characters range provided [" + std::to_string(from) + ", " + std::to_string(to) + "]");
 
-    std::string characters(to - from + 1, 0);
-    for(char curr = from; curr <= to; ++curr)
+    std::u32string alphabet(to - from + 1, 0);
+    for(char32_t utf32_char = from; utf32_char <= to; ++utf32_char)
     {
-        characters[curr - from] = curr;
+        alphabet[utf32_char - from] = utf32_char;
     }
-    return characters;
+    return alphabet;
 }
 
-std::string Font::GetTextAlphabet(const std::string& text)
+std::u32string Font::GetAlphabetFromText(const std::string& text)
 {
     META_FUNCTION_TASK();
-    std::wstring wide_text = nowide::widen(text);
+    std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
+    return GetAlphabetFromText(converter.from_bytes(text));
+}
 
-    std::set<wchar_t> alphabet;
-    for(wchar_t wide_char : wide_text)
+std::u32string Font::GetAlphabetFromText(const std::u32string& utf32_text)
+{
+    META_FUNCTION_TASK();
+
+    std::set<char32_t> alphabet_set;
+    for(char32_t utf32_char : utf32_text)
     {
-        alphabet.insert(wide_char);
+        alphabet_set.insert(utf32_char);
     }
 
-    std::wstringstream alphabet_ss;
-    for(wchar_t wide_char : alphabet)
+    std::u32string alphabet(alphabet_set.size() + 1, 0);
+    size_t alpha_index = 0;
+    for(char32_t utf32_char : alphabet_set)
     {
-        alphabet_ss << wide_char;
+        alphabet[alpha_index++] = utf32_char;
     }
-    return nowide::narrow(alphabet_ss.str());
+
+    return alphabet;
 }
 
 Font::Font(const Data::Provider& data_provider, const Settings& settings)
@@ -351,36 +361,44 @@ Font::~Font()
     ClearAtlasTextures();
 }
 
-void Font::ResetChars(const std::string& unicode_characters)
+void Font::ResetChars(const std::string& utf8_characters)
 {
     META_FUNCTION_TASK();
-    ResetChars(nowide::widen(unicode_characters));
+    std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
+    ResetChars(converter.from_bytes(utf8_characters));
 }
 
-void Font::ResetChars(const std::wstring& characters)
+void Font::ResetChars(const std::u32string& utf32_characters)
 {
     META_FUNCTION_TASK();
+    if (utf32_characters.empty())
+        throw std::invalid_argument("Can not reset font characters with empty string.");
+
     m_sp_atlas_pack.reset();
     m_char_by_code.clear();
     m_atlas_bitmap.clear();
     m_max_glyph_size = FrameSize();
 
-    AddChars(characters);
+    AddChars(utf32_characters);
     PackCharsToAtlas(1.2f);
     UpdateAtlasBitmap(true);
 }
 
-void Font::AddChars(const std::string& unicode_characters)
+void Font::AddChars(const std::string& utf8_characters)
 {
     META_FUNCTION_TASK();
-    AddChars(nowide::widen(unicode_characters));
+    std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
+    ResetChars(converter.from_bytes(utf8_characters));
 }
 
-void Font::AddChars(const std::wstring& characters)
+void Font::AddChars(const std::u32string& utf32_characters)
 {
     META_FUNCTION_TASK();
-    for (wchar_t character : characters)
+    for (char32_t character : utf32_characters)
     {
+        if (!character)
+            break;
+
         AddChar(static_cast<Char::Code>(character));
     }
 }
@@ -448,14 +466,20 @@ Font::Chars Font::GetChars() const
 Font::Chars Font::GetTextChars(const std::string& text)
 {
     META_FUNCTION_TASK();
-    Refs<const Char> font_chars;
-    const std::wstring characters = nowide::widen(text);
-    for (wchar_t char_code : characters)
+    return GetTextChars(std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>().from_bytes(text));
+}
+
+Font::Chars Font::GetTextChars(const std::u32string& text)
+{
+    META_FUNCTION_TASK();
+    Refs<const Char> text_chars;
+    text_chars.reserve(text.size());
+    for (char32_t char_code : text)
     {
-        // TODO: do not update atlast textures on adding every new character to atlas, make deferred atlas updates
-        font_chars.emplace_back(AddChar(static_cast<Char::Code>(char_code)));
+        // TODO: do not update atlas textures on adding every new character to atlas, make deferred atlas updates
+        text_chars.emplace_back(AddChar(char_code));
     }
-    return font_chars;
+    return text_chars;
 }
 
 FrameRect::Point Font::GetKerning(const Char& left_char, const Char& right_char) const

@@ -47,7 +47,7 @@ HeadsUpDisplay::HeadsUpDisplay(RenderContext& context, Settings settings)
         Font::Settings
         {
             "HUD Major Font", "Fonts/RobotoMono/RobotoMono-Bold.ttf", 18u,
-            context.GetFontResolutionDPI(), Font::GetAnsiCharacters()
+            context.GetFontResolutionDPI(), Font::GetAlphabetDefault()
         }
     ).GetPtr())
     , m_sp_minor_font(Font::Library::Get().GetFont(
@@ -55,11 +55,11 @@ HeadsUpDisplay::HeadsUpDisplay(RenderContext& context, Settings settings)
         Font::Settings
         {
             "HUD Minor Font", "Fonts/RobotoMono/RobotoMono-Regular.ttf", 12u,
-            context.GetFontResolutionDPI(), Font::GetAnsiCharacters()
+            context.GetFontResolutionDPI(), Font::GetAlphabetDefault()
         }
     ).GetPtr())
     , m_fps_text(context, *m_sp_major_font,
-        Text::Settings
+        Text::SettingsUtf8
         {
             "FPS",
             "000 FPS",

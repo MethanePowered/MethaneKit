@@ -49,25 +49,34 @@ public:
         Word
     };
 
+    template<typename StringType>
     struct Settings
     {
         const std::string name;
-        std::string       text;
+        StringType        text;
         FrameRect         screen_rect;
         bool              screen_rect_in_pixels = false;
         Color4f           color = Color4f(1.f, 1.f, 1.f, 1.f);
         Wrap              wrap  = Wrap::Anywhere;
     };
 
-    Text(RenderContext& context, Font& font, Settings settings);
+    using SettingsUtf8  = Settings<std::string>;
+    using SettingsUtf32 = Settings<std::u32string>;
+
+    Text(RenderContext& context, Font& font, const SettingsUtf8&  settings);
+    Text(RenderContext& context, Font& font, SettingsUtf32 settings);
     ~Text();
 
-    const Settings&  GetSettings() const noexcept       { return m_settings; }
-    const FrameRect& GetViewport() const noexcept       { return m_viewport_rect; }
-    FrameRect        GetViewportInDots() const noexcept { return m_viewport_rect / m_context.GetContentScalingFactor(); }
+    const SettingsUtf32&  GetSettings() const noexcept       { return m_settings; }
+    const FrameRect&      GetViewport() const noexcept       { return m_viewport_rect; }
+    FrameRect             GetViewportInDots() const noexcept { return m_viewport_rect / m_context.GetContentScalingFactor(); }
+    const std::u32string& GetTextUtf32() const               { return m_settings.text; }
+    std::string           GetText() const;
 
     void SetText(const std::string& text);
+    void SetText(const std::u32string& text);
     void SetTextInScreenRect(const std::string& text, const FrameRect& screen_rect, bool rect_in_pixels = false);
+    void SetTextInScreenRect(const std::u32string& text, const FrameRect& screen_rect, bool rect_in_pixels = false);
     void SetScreenRect(const FrameRect& screen_rect, bool rect_in_pixels = false);
     void SetColor(const Color4f& color);
 
@@ -87,7 +96,7 @@ private:
     void UpdateMeshBuffers();
     void UpdateConstantsBuffer();
 
-    Settings             m_settings;
+    SettingsUtf32        m_settings;
     FrameRect            m_viewport_rect;
     RenderContext&       m_context;
     Ptr<Font>            m_sp_font;

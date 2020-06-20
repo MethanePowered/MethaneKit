@@ -8,7 +8,7 @@ set(SOURCES
 set(FONTS
     ${RESOURCES_DIR}/Fonts/Roboto/Roboto-Regular.ttf
     ${RESOURCES_DIR}/Fonts/Playball/Playball-Regular.ttf
-#   ${RESOURCES_DIR}/Fonts/SawarabiMincho/SawarabiMincho-Regular.ttf
+    ${RESOURCES_DIR}/Fonts/SawarabiMincho/SawarabiMincho-Regular.ttf
 #   ${RESOURCES_DIR}/Fonts/Amiri/Amiri-Regular.ttf
 )
 
