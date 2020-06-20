@@ -41,6 +41,8 @@ extern "C"
 #include FT_FREETYPE_H
 }
 
+static constexpr uint32_t g_ft_dots_in_pixel = 64u; // Freetype measures all font sizes in 1/64ths of pixels
+
 namespace Methane::Graphics
 {
 
@@ -131,9 +133,8 @@ public:
     void SetSize(uint32_t font_size_pt, uint32_t resolution_dpi)
     {
         META_FUNCTION_TASK();
-        // font Size is measured in 1/64ths of pixels
-        // 0 values mean that vertical value is equal horizontal value
-        ThrowFreeTypeError(FT_Set_Char_Size(m_ft_face, font_size_pt * 64, 0, resolution_dpi, 0));
+        // 0 values mean that vertical value is equal to horizontal value
+        ThrowFreeTypeError(FT_Set_Char_Size(m_ft_face, font_size_pt * g_ft_dots_in_pixel, 0, resolution_dpi, 0));
     }
 
     uint32_t GetCharIndex(Char::Code char_code)
@@ -162,13 +163,13 @@ public:
         return Char(char_code,
             {
                 Point2i(),
-                FrameSize(static_cast<uint32_t>(m_ft_face->glyph->metrics.width >> 6),
-                          static_cast<uint32_t>(m_ft_face->glyph->metrics.height >> 6))
+                FrameSize(static_cast<uint32_t>(m_ft_face->glyph->metrics.width  / g_ft_dots_in_pixel),
+                          static_cast<uint32_t>(m_ft_face->glyph->metrics.height / g_ft_dots_in_pixel))
             },
-            Point2i(static_cast<int32_t>(m_ft_face->glyph->metrics.horiBearingX >> 6),
-                    -static_cast<int32_t>(m_ft_face->glyph->metrics.horiBearingY >> 6)),
-            Point2i(static_cast<int32_t>(m_ft_face->glyph->metrics.horiAdvance >> 6),
-                    static_cast<int32_t>(m_ft_face->glyph->metrics.vertAdvance >> 6)),
+            Point2i(static_cast<int32_t>(m_ft_face->glyph->metrics.horiBearingX  / g_ft_dots_in_pixel),
+                    -static_cast<int32_t>(m_ft_face->glyph->metrics.horiBearingY / g_ft_dots_in_pixel)),
+            Point2i(static_cast<int32_t>(m_ft_face->glyph->metrics.horiAdvance   / g_ft_dots_in_pixel),
+                    static_cast<int32_t>(m_ft_face->glyph->metrics.vertAdvance   / g_ft_dots_in_pixel)),
             std::make_unique<Char::Glyph>(ft_glyph, char_index)
         );
     }
@@ -183,6 +184,12 @@ public:
         FT_Vector kerning_vec{};
         ThrowFreeTypeError(FT_Get_Kerning(m_ft_face, left_glyph_index, right_glyph_index, FT_KERNING_DEFAULT, &kerning_vec));
         return FrameRect::Point(kerning_vec.x >> 6, 0);
+    }
+
+    uint32_t GetLineHeight() const noexcept
+    {
+        META_FUNCTION_TASK();
+        return m_ft_face->size->metrics.height / g_ft_dots_in_pixel;
     }
 
 private:
@@ -390,7 +397,6 @@ void Font::ResetChars(const std::u32string& utf32_characters)
     m_sp_atlas_pack.reset();
     m_char_by_code.clear();
     m_atlas_bitmap.clear();
-    m_max_glyph_size = FrameSize();
 
     AddChars(utf32_characters);
     PackCharsToAtlas(1.2f);
@@ -500,6 +506,12 @@ FrameRect::Point Font::GetKerning(const Char& left_char, const Char& right_char)
     return m_sp_face->GetKerning(left_char.GetGlyphIndex(), right_char.GetGlyphIndex());
 }
 
+uint32_t Font::GetLineHeight() const noexcept
+{
+    META_FUNCTION_TASK();
+    return m_sp_face->GetLineHeight();
+}
+
 Refs<Font::Char> Font::GetMutableChars()
 {
     META_FUNCTION_TASK();
@@ -525,7 +537,6 @@ bool Font::PackCharsToAtlas(float pixels_reserve_multiplier)
         [](const Ref<Char>& left, const Ref<Char>& right) -> bool
         { return left.get() > right.get(); }
     );
-    m_max_glyph_size = font_chars.front().get().GetRect().size;
 
     // Estimate required atlas size
     uint32_t char_pixels_count = 0u;

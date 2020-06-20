@@ -98,7 +98,7 @@ struct Text::Mesh
                 return process_char_at_position(text_char, char_pos, char_index);
             };
         ForEachTextCharacterInRange(font, text_chars, 0, text_chars.size(),
-                                    FrameRect::Point{ 0, font.GetMaxGlyphSize().height }, viewport_width, wrap,
+                                    FrameRect::Point{ 0, font.GetLineHeight() }, viewport_width, wrap,
                                     wrap == Wrap::Word && viewport_width ? word_wrap_char_at_position : process_char_at_position);
     }
 
@@ -116,7 +116,7 @@ struct Text::Mesh
             // Wrap to next line break on "line break" character or when text overruns viewport width
             if (text_char.IsLineBreak() || (wrap == Wrap::Anywhere && viewport_width && char_pos.GetX() + text_char.GetRect().size.width > viewport_width))
             {
-                char_pos = { 0u, char_pos.GetY() + font.GetMaxGlyphSize().height };
+                char_pos = { 0u, char_pos.GetY() + font.GetLineHeight() };
                 p_prev_text_char = nullptr;
             }
 
@@ -139,7 +139,7 @@ struct Text::Mesh
                 break;
 
             case CharAction::Wrap:
-                char_pos = { 0u, char_pos.GetY() + font.GetMaxGlyphSize().height };
+                char_pos = { 0u, char_pos.GetY() + font.GetLineHeight() };
                 p_prev_text_char = nullptr;
                 break;
 

@@ -152,22 +152,21 @@ public:
 
     ~Font();
 
-    Ptr<Font>       GetPtr() { return shared_from_this(); }
-    const Settings& GetSettings() const { return m_settings; }
+    Ptr<Font>           GetPtr() { return shared_from_this(); }
+    const Settings&     GetSettings() const { return m_settings; }
 
-    void              ResetChars(const std::string& utf8_characters);
-    void              ResetChars(const std::u32string& utf32_characters);
-    void              AddChars(const std::string& utf8_characters);
-    void              AddChars(const std::u32string& utf32_characters);
-    const Font::Char& AddChar(Char::Code char_code);
-    bool              HasChar(Char::Code char_code);
-    const Char&       GetChar(Char::Code char_code) const;
-    Chars             GetChars() const;
-    Chars             GetTextChars(const std::string& text);
-    Chars             GetTextChars(const std::u32string& text);
-    FrameRect::Point  GetKerning(const Char& left_char, const Char& right_char) const;
-    const FrameSize&  GetMaxGlyphSize() const { return m_max_glyph_size; }
-
+    void                ResetChars(const std::string& utf8_characters);
+    void                ResetChars(const std::u32string& utf32_characters);
+    void                AddChars(const std::string& utf8_characters);
+    void                AddChars(const std::u32string& utf32_characters);
+    const Font::Char&   AddChar(Char::Code char_code);
+    bool                HasChar(Char::Code char_code);
+    const Char&         GetChar(Char::Code char_code) const;
+    Chars               GetChars() const;
+    Chars               GetTextChars(const std::string& text);
+    Chars               GetTextChars(const std::u32string& text);
+    FrameRect::Point    GetKerning(const Char& left_char, const Char& right_char) const;
+    uint32_t            GetLineHeight() const noexcept;
     const Ptr<Texture>& GetAtlasTexturePtr(Context& context);
     Texture&            GetAtlasTexture(Context& context) { return *GetAtlasTexturePtr(context); }
     void                UpdateAtlasTexture(Context& context);
@@ -208,7 +207,6 @@ private:
     CharByCode             m_char_by_code;
     Data::Bytes            m_atlas_bitmap;
     TextureByContext       m_atlas_textures;
-    FrameSize              m_max_glyph_size;
 };
 
 } // namespace Methane::Graphics
