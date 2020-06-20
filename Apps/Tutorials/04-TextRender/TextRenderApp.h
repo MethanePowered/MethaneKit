@@ -66,6 +66,7 @@ protected:
 
 private:
     bool Animate(double elapsed_seconds, double delta_seconds);
+    void ResetAnimation();
 
     Ptr<gfx::Badge> CreateFontAtlasBadge(gfx::Font& font, const Ptr<gfx::Texture>& sp_atlas_texture);
     void UpdateFontAtlasBadges();

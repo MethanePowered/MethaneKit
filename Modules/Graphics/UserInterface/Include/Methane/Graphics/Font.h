@@ -143,6 +143,8 @@ public:
 
     using Chars = Refs<const Char>;
 
+    static std::u32string ConvertUtf8To32(const std::string& text);
+    static std::string    ConvertUtf32To8(const std::u32string& text);
     static std::u32string GetAlphabetDefault() { return GetAlphabetInRange(32, 126); }
     static std::u32string GetAlphabetInRange(char32_t from, char32_t to);
     static std::u32string GetAlphabetFromText(const std::string& text);

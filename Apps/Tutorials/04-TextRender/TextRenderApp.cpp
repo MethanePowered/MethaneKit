@@ -61,38 +61,39 @@ static const std::map<std::string, gfx::Color3f>    g_font_color_by_name   {
 };
 
 // Pangrams from http://clagnut.com/blog/2380/
-static const std::array<std::string, g_text_blocks_count> g_text_blocks = { {
+static const std::array<std::u32string, g_text_blocks_count> g_text_blocks = { {
 
     // 0: european pangrams
-    "The quick brown fox jumps over the lazy dog!\n" \
-    "Съешь ещё этих мягких французских булок, да выпей чаю.\n" \
-    "Ο καλύμνιος σφουγγαράς ψιθύρισε πως θα βουτήξει χωρίς να διστάζει.\n" \
-    "Pijamalı hasta, yağız şoföre çabucak güvendi.",
+    U"The quick brown fox jumps over the lazy dog!\n" \
+     "Съешь ещё этих мягких французских булок, да выпей чаю.\n" \
+     "Ο καλύμνιος σφουγγαράς ψιθύρισε πως θα βουτήξει χωρίς να διστάζει.\n" \
+     "Pijamalı hasta, yağız şoföre çabucak güvendi.",
 
     // 1: japanese pangram
-    "いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす",
+    U"いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす",
 
     // 2: arabian pangram
-    //"نص حكيم له سر قاطع وذو شأن عظيم مكتوب على ثوب أخضر ومغلف بجلد أزرق",
+    //U"نص حكيم له سر قاطع وذو شأن عظيم مكتوب على ثوب أخضر ومغلف بجلد أزرق",
 
     // 3: hitchhicker's guide quote
-    "A towel is about the most massively useful thing an interstellar hitchhiker can have. " \
-    "Partly it has great practical value. You can wrap it around you for warmth as you bound across the cold moons of Jaglan Beta; " \
-    "you can lie on it on the brilliant marble-sanded beaches of Santraginus V, inhaling the heady sea vapors; " \
-    "you can sleep under it beneath the stars which shine so redly on the desert world of Kakrafoon; " \
-    "use it to sail a miniraft down the slow heavy River Moth; " \
-    "wet it for use in hand-to-hand-combat; " \
-    "wrap it round your head to ward off noxious fumes or avoid the gaze of the Ravenous Bugblatter Beast of Traal " \
-    "(such a mind-boggingly stupid animal, it assumes that if you can't see it, it can't see you); " \
-    "you can wave your towel in emergencies as a distress signal, and of course dry yourself off with it if it still seems to be clean enough."
+    U"A towel is about the most massively useful thing an interstellar hitchhiker can have. " \
+     "Partly it has great practical value. You can wrap it around you for warmth as you bound across the cold moons of Jaglan Beta; " \
+     "you can lie on it on the brilliant marble-sanded beaches of Santraginus V, inhaling the heady sea vapors; " \
+     "you can sleep under it beneath the stars which shine so redly on the desert world of Kakrafoon; " \
+     "use it to sail a miniraft down the slow heavy River Moth; " \
+     "wet it for use in hand-to-hand-combat; " \
+     "wrap it round your head to ward off noxious fumes or avoid the gaze of the Ravenous Bugblatter Beast of Traal " \
+     "(such a mind-boggingly stupid animal, it assumes that if you can't see it, it can't see you); " \
+     "you can wave your towel in emergencies as a distress signal, and of course dry yourself off with it if it still seems to be clean enough."
 }};
 
 TextRenderApp::TextRenderApp()
     : GraphicsApp(
         Samples::GetAppSettings("Methane Text Rendering", true /* animations */, true /* logo */, true /* hud ui */, false /* depth */),
         "Methane tutorial of text rendering")
-    , m_displayed_text_lengths(g_text_blocks_count, 1)
+    , m_displayed_text_lengths(g_text_blocks_count, 0)
 {
+    m_displayed_text_lengths[0] = 1;
     GetHeadsUpDisplaySettings().position = gfx::Point2i(g_margin_size_in_dots, g_margin_size_in_dots);
 
     // Setup animations
@@ -116,11 +117,11 @@ void TextRenderApp::Init()
     const uint32_t frame_width_without_margins = frame_size_in_dots.width - 2 * g_margin_size_in_dots;
     int32_t vertical_text_pos_in_dots = g_top_text_pos_in_dots;
 
-    std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> string_converter;
     for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
     {
         const FontSettings& font_settings = g_font_settings[block_index];
-        const std::u32string displayed_text_block = string_converter.from_bytes(g_text_blocks[block_index]).substr(0, m_displayed_text_lengths[block_index]);
+        const size_t displayed_text_length = std::max(m_displayed_text_lengths[block_index], size_t(1));
+        const std::u32string displayed_text_block = g_text_blocks[block_index].substr(0, displayed_text_length);
 
         // Add font to library
         m_fonts.push_back(
@@ -289,29 +290,54 @@ bool TextRenderApp::Animate(double elapsed_seconds, double)
     m_text_update_elapsed_sec = elapsed_seconds;
 
     int32_t vertical_text_pos_in_dots = g_top_text_pos_in_dots;
-    std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> string_converter;
     for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
     {
         size_t& displayed_text_length = m_displayed_text_lengths[block_index];
-        displayed_text_length = displayed_text_length < g_text_blocks[block_index].length() - 1 ? displayed_text_length + 1 : 1;
-        const std::string displayed_text = g_text_blocks[block_index].substr(0, displayed_text_length);
-        const std::u32string displayed_text_block = string_converter.from_bytes(g_text_blocks[block_index]).substr(0, m_displayed_text_lengths[block_index]);
+        if (!displayed_text_length)
+            continue;
 
-        const Ptr<gfx::Text>& sp_text = m_texts[block_index];
-        sp_text->SetTextInScreenRect(displayed_text_block, {
+        const Ptr<gfx::Text>& sp_text    = m_texts[block_index];
+        const std::u32string& text_block = g_text_blocks[block_index];
+        const size_t text_block_length   = text_block.length();
+
+        if (displayed_text_length >= text_block_length - 1)
+        {
+            if (block_index == g_text_blocks_count - 1)
+            {
+                ResetAnimation();
+            }
+            else
+            {
+                vertical_text_pos_in_dots = sp_text->GetViewportInDots().GetBottom() + g_margin_size_in_dots;
+                size_t& next_displayed_text_length = m_displayed_text_lengths[block_index + 1];
+                if (!next_displayed_text_length)
+                    next_displayed_text_length = 1;
+            }
+            continue;
+        }
+
+        const std::u32string displayed_text = text_block.substr(0, displayed_text_length++);
+        sp_text->SetTextInScreenRect(displayed_text, {
             { g_margin_size_in_dots, vertical_text_pos_in_dots  },
             { GetFrameSizeInDots().width - 2 * g_margin_size_in_dots, 0u }
         });
 
         vertical_text_pos_in_dots = sp_text->GetViewportInDots().GetBottom() + g_margin_size_in_dots;
-
-        if (displayed_text_length == 1)
-        {
-            m_fonts[block_index]->ResetChars(gfx::Font::GetAlphabetFromText(displayed_text_block));
-        }
     }
 
     return true;
+}
+
+void TextRenderApp::ResetAnimation()
+{
+    for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
+    {
+        m_displayed_text_lengths[block_index] = block_index ? 0 : 1;
+        const std::u32string displayed_text = g_text_blocks[block_index].substr(0, 1);
+        m_texts[block_index]->SetText(displayed_text);
+        m_fonts[block_index]->ResetChars(displayed_text);
+    }
+    LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
 }
 
 bool TextRenderApp::Render()
@@ -320,11 +346,16 @@ bool TextRenderApp::Render()
     if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
         return false;
 
-    // Draw text blocks
     TextRenderFrame& frame = GetCurrentFrame();
+
+    // Draw text blocks
+    size_t text_block_index = 0;
     for(Ptr<gfx::Text>& sp_text : m_texts)
     {
-        sp_text->Draw(*frame.sp_render_cmd_list);
+        if (m_displayed_text_lengths[text_block_index++])
+        {
+            sp_text->Draw(*frame.sp_render_cmd_list);
+        }
     }
 
     // Draw font atlas badges

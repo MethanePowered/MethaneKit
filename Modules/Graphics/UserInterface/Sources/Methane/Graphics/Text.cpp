@@ -274,7 +274,7 @@ struct Text::Mesh
 Text::Text(RenderContext& context, Font& font, const SettingsUtf8&  settings)
     : Text(context, font, SettingsUtf32{
             settings.name,
-            std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>().from_bytes(settings.text),
+            Font::ConvertUtf8To32(settings.text),
             settings.screen_rect,
             settings.screen_rect_in_pixels,
             settings.color,
@@ -365,10 +365,10 @@ Text::Text(RenderContext& context, Font& font, SettingsUtf32 settings)
 
 Text::~Text() = default;
 
-std::string Text::GetText() const
+std::string Text::GetTextUtf8() const
 {
     META_FUNCTION_TASK();
-    return std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>().to_bytes(m_settings.text);
+    return Font::ConvertUtf32To8(m_settings.text);
 }
 
 void Text::SetText(const std::string& text)
@@ -386,7 +386,7 @@ void Text::SetText(const std::u32string& text)
 void Text::SetTextInScreenRect(const std::string& text, const FrameRect& screen_rect, bool rect_in_pixels)
 {
     META_FUNCTION_TASK();
-    SetTextInScreenRect(std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>().from_bytes(text), screen_rect, rect_in_pixels);
+    SetTextInScreenRect(Font::ConvertUtf8To32(text), screen_rect, rect_in_pixels);
 }
 
 void Text::SetTextInScreenRect(const std::u32string& text, const FrameRect& screen_rect, bool rect_in_pixels)

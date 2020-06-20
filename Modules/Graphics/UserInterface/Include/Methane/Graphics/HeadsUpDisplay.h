@@ -63,7 +63,6 @@ private:
     Settings        m_settings;
     RenderContext&  m_context;
     const Ptr<Font> m_sp_major_font;
-    const Ptr<Font> m_sp_minor_font;
     Text            m_fps_text;
     Timer           m_update_timer;
 };

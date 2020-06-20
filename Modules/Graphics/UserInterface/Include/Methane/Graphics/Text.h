@@ -70,8 +70,8 @@ public:
     const SettingsUtf32&  GetSettings() const noexcept       { return m_settings; }
     const FrameRect&      GetViewport() const noexcept       { return m_viewport_rect; }
     FrameRect             GetViewportInDots() const noexcept { return m_viewport_rect / m_context.GetContentScalingFactor(); }
-    const std::u32string& GetTextUtf32() const               { return m_settings.text; }
-    std::string           GetText() const;
+    const std::u32string& GetTextUtf32() const noexcept      { return m_settings.text; }
+    std::string           GetTextUtf8() const;
 
     void SetText(const std::string& text);
     void SetText(const std::u32string& text);

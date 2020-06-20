@@ -189,8 +189,8 @@ private:
     static FT_Face LoadFace(FT_Library ft_library, const Data::Chunk& font_data)
     {
         META_FUNCTION_TASK();
-
         FT_Face ft_face = nullptr;
+
         ThrowFreeTypeError(FT_New_Memory_Face(ft_library,
             static_cast<const FT_Byte*>(font_data.p_data),
             static_cast<FT_Long>(font_data.size), 0,
@@ -264,6 +264,7 @@ Font& Font::Library::GetFont(const std::string& font_name) const
 
 Font& Font::Library::GetFont(const Data::Provider& data_provider, const Settings& font_settings)
 {
+    META_FUNCTION_TASK();
     const auto font_by_name_it = m_font_by_name.find(font_settings.name);
     if (font_by_name_it != m_font_by_name.end())
     {
@@ -304,6 +305,20 @@ Font::Library::Library()
     META_FUNCTION_TASK();
 }
 
+std::u32string Font::ConvertUtf8To32(const std::string& text)
+{
+    META_FUNCTION_TASK();
+    static std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
+    return converter.from_bytes(text);
+}
+
+std::string Font::ConvertUtf32To8(const std::u32string& text)
+{
+    META_FUNCTION_TASK();
+    static std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
+    return converter.to_bytes(text);
+}
+
 std::u32string Font::GetAlphabetInRange(char32_t from, char32_t to)
 {
     META_FUNCTION_TASK();
@@ -321,8 +336,7 @@ std::u32string Font::GetAlphabetInRange(char32_t from, char32_t to)
 std::u32string Font::GetAlphabetFromText(const std::string& text)
 {
     META_FUNCTION_TASK();
-    std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
-    return GetAlphabetFromText(converter.from_bytes(text));
+    return GetAlphabetFromText(ConvertUtf8To32(text));
 }
 
 std::u32string Font::GetAlphabetFromText(const std::u32string& utf32_text)
@@ -364,8 +378,7 @@ Font::~Font()
 void Font::ResetChars(const std::string& utf8_characters)
 {
     META_FUNCTION_TASK();
-    std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
-    ResetChars(converter.from_bytes(utf8_characters));
+    ResetChars(ConvertUtf8To32(utf8_characters));
 }
 
 void Font::ResetChars(const std::u32string& utf32_characters)
@@ -381,14 +394,13 @@ void Font::ResetChars(const std::u32string& utf32_characters)
 
     AddChars(utf32_characters);
     PackCharsToAtlas(1.2f);
-    UpdateAtlasBitmap(true);
+    UpdateAtlasBitmap(false);
 }
 
 void Font::AddChars(const std::string& utf8_characters)
 {
     META_FUNCTION_TASK();
-    std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
-    ResetChars(converter.from_bytes(utf8_characters));
+    ResetChars(ConvertUtf8To32(utf8_characters));
 }
 
 void Font::AddChars(const std::u32string& utf32_characters)
@@ -466,7 +478,7 @@ Font::Chars Font::GetChars() const
 Font::Chars Font::GetTextChars(const std::string& text)
 {
     META_FUNCTION_TASK();
-    return GetTextChars(std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>().from_bytes(text));
+    return GetTextChars(ConvertUtf8To32(text));
 }
 
 Font::Chars Font::GetTextChars(const std::u32string& text)
@@ -476,7 +488,6 @@ Font::Chars Font::GetTextChars(const std::u32string& text)
     text_chars.reserve(text.size());
     for (char32_t char_code : text)
     {
-        // TODO: do not update atlas textures on adding every new character to atlas, make deferred atlas updates
         text_chars.emplace_back(AddChar(char_code));
     }
     return text_chars;
