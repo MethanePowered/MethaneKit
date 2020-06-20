@@ -64,14 +64,14 @@ jobs:
 - job: Windows_x64
 
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-2019'
 
   variables:
     platform: 'Win64'
     configuration: 'Release'
     vcVarsBatFile: 'vcvars64.bat'
-    generatorName: '"Visual Studio 15 2017 Win64"'
-    cmakeFlags: $(buildReleaseCmakeFlags)
+    generatorName: '"Visual Studio 16 2019"'
+    cmakeFlags: -A x64 $(buildReleaseCmakeFlags)
     buildName: '$(platform)-$(configuration)'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
@@ -84,14 +84,14 @@ jobs:
 - job: Windows_x64_Profiling
 
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-2019'
 
   variables:
     platform: 'Win64'
     configuration: 'RelWithDebInfo'
     vcVarsBatFile: 'vcvars64.bat'
-    generatorName: '"Visual Studio 15 2017 Win64"'
-    cmakeFlags: $(buildProfilingCmakeFlags)
+    generatorName: '"Visual Studio 16 2019"'
+    cmakeFlags: -A x64 $(buildProfilingCmakeFlags)
     buildName: '$(platform)-$(configuration)-Profiling'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
@@ -104,14 +104,14 @@ jobs:
 - job: Windows_x86
 
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-2019'
 
   variables:
     platform: 'Win32'
     configuration: 'Release'
     vcVarsBatFile: 'vcvars32.bat'
-    generatorName: '"Visual Studio 15 2017"'
-    cmakeFlags: $(buildReleaseCmakeFlags)
+    generatorName: '"Visual Studio 16 2019"'
+    cmakeFlags: -A Win32 $(buildReleaseCmakeFlags)
     buildName: '$(platform)-$(configuration)'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
@@ -124,14 +124,14 @@ jobs:
 - job: Windows_x86_Profiling
 
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-2019'
 
   variables:
     platform: 'Win32'
     configuration: 'RelWithDebInfo'
     vcVarsBatFile: 'vcvars32.bat'
-    generatorName: '"Visual Studio 15 2017"'
-    cmakeFlags: $(buildProfilingCmakeFlags)
+    generatorName: '"Visual Studio 16 2019"'
+    cmakeFlags: -A Win32 $(buildProfilingCmakeFlags)
     buildName: '$(platform)-$(configuration)-Profiling'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
