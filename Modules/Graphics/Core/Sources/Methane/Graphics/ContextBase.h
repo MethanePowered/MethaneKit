@@ -51,6 +51,7 @@ public:
 
     // Context interface
     Type             GetType() const override { return m_type; }
+    void             RequireCompleteInitialization() const noexcept override { m_is_complete_initialization_required = true; }
     void             CompleteInitialization() override;
     void             WaitForGpu(WaitFor wait_for) override;
     void             Reset(Device& device) override;
@@ -67,7 +68,6 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-    void RequireCompleteInitialization() const noexcept     { m_is_complete_initialization_required = true; }
     bool IsCompleteInitializationRequired() const noexcept  { return m_is_complete_initialization_required; }
 
     ResourceManager&        GetResourceManager()            { return m_resource_manager; }

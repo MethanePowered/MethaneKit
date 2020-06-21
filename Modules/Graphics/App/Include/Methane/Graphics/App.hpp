@@ -467,6 +467,8 @@ protected:
         Deinitialize();
     }
 
+    void OnContextCompletingInitialization(Context&) override { }
+
     void OnContextInitialized(Context&) override
     {
         META_FUNCTION_TASK();

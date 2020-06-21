@@ -61,6 +61,8 @@ void ContextBase::CompleteInitialization()
     META_LOG("Complete initialization of context \"" + GetName() + "\"");
     m_is_complete_initialization_required = false;
 
+    Emit(&IContextCallback::OnContextCompletingInitialization, *this);
+
     if (m_resource_manager.IsDeferredHeapAllocation())
     {
         WaitForGpu(WaitFor::RenderComplete);

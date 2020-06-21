@@ -169,7 +169,6 @@ public:
     uint32_t            GetLineHeight() const noexcept;
     const Ptr<Texture>& GetAtlasTexturePtr(Context& context);
     Texture&            GetAtlasTexture(Context& context) { return *GetAtlasTexturePtr(context); }
-    void                UpdateAtlasTexture(Context& context);
 
 protected:
     // Font can be created only via Font::Library::Add
@@ -180,6 +179,7 @@ protected:
 
     // IContextCallback interface
     void OnContextReleased(Context& context) override;
+    void OnContextCompletingInitialization(Context& context);
     void OnContextInitialized(Context&) override { }
 
 private:

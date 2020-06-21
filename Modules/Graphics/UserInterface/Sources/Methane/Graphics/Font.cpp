@@ -590,16 +590,6 @@ const Ptr<Texture>& Font::GetAtlasTexturePtr(Context& context)
     return m_atlas_textures.emplace(&context, CreateAtlasTexture(context, true)).first->second.sp_texture;
 }
 
-void Font::UpdateAtlasTexture(Context& context)
-{
-    META_FUNCTION_TASK();
-    const auto atlas_texture_it = m_atlas_textures.find(&context);
-    if (atlas_texture_it == m_atlas_textures.end())
-        return;
-
-    UpdateAtlasTexture(context, atlas_texture_it->second);
-}
-
 Font::AtlasTexture Font::CreateAtlasTexture(Context& context, bool deferred_data_init)
 {
     META_FUNCTION_TASK();
@@ -658,7 +648,10 @@ void Font::UpdateAtlasTextures(bool deferred_textures_update)
     {
         if (deferred_textures_update)
         {
+            // Texture will be updated on GPU context completing initialization,
+            // when next GPU Frame rendering is started and just before uploading data on GPU with upload command queue
             context_and_texture.second.is_update_required = true;
+            context_and_texture.first->RequireCompleteInitialization();
         }
         else
         {
@@ -692,6 +685,8 @@ void Font::UpdateAtlasTexture(Context& context, AtlasTexture& atlas_texture)
             Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size()))
         });
     }
+
+    atlas_texture.is_update_required = false;
 }
 
 void Font::ClearAtlasTextures()
@@ -709,6 +704,16 @@ void Font::OnContextReleased(Context& context)
 {
     META_FUNCTION_TASK();
     RemoveAtlasTexture(context);
+}
+
+void Font::OnContextCompletingInitialization(Context& context)
+{
+    META_FUNCTION_TASK();
+    const auto atlas_texture_it = m_atlas_textures.find(&context);
+    if (atlas_texture_it != m_atlas_textures.end() && atlas_texture_it->second.is_update_required)
+    {
+        UpdateAtlasTexture(context, atlas_texture_it->second);
+    }
 }
 
 static constexpr Font::Char::Code g_line_break_code = static_cast<Font::Char::Code>('\n');

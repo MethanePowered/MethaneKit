@@ -475,8 +475,6 @@ void Text::UpdateAtlasTexture()
 {
     META_FUNCTION_TASK();
 
-    m_sp_font->UpdateAtlasTexture(m_context);
-
     if (!m_sp_new_atlas_texture)
         return;
 

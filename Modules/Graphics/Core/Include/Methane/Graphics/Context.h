@@ -41,6 +41,7 @@ struct Context;
 struct IContextCallback
 {
     virtual void OnContextReleased(Context& context) = 0;
+    virtual void OnContextCompletingInitialization(Context& context) = 0;
     virtual void OnContextInitialized(Context& context) = 0;
 
     virtual ~IContextCallback() = default;
@@ -64,6 +65,7 @@ struct Context
 
     // Context interface
     virtual Type GetType() const = 0;
+    virtual void RequireCompleteInitialization() const noexcept = 0;
     virtual void CompleteInitialization() = 0;
     virtual void WaitForGpu(WaitFor wait_for) = 0;
     virtual void Reset(Device& device) = 0;
