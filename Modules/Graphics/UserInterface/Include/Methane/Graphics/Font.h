@@ -179,7 +179,7 @@ protected:
 
     // IContextCallback interface
     void OnContextReleased(Context& context) override;
-    void OnContextCompletingInitialization(Context& context);
+    void OnContextCompletingInitialization(Context& context) override;
     void OnContextInitialized(Context&) override { }
 
 private:
