@@ -43,7 +43,7 @@ extern "C"
 #include FT_FREETYPE_H
 }
 
-static constexpr uint32_t g_ft_dots_in_pixel = 64u; // Freetype measures all font sizes in 1/64ths of pixels
+static constexpr int32_t g_ft_dots_in_pixel = 64; // Freetype measures all font sizes in 1/64ths of pixels
 
 namespace Methane::Graphics
 {
