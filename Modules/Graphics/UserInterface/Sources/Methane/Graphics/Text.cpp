@@ -167,10 +167,10 @@ struct Text::Mesh
         return content_size;
     }
 
-    Mesh(const std::u32string& text, Wrap wrap, Font& font, FrameSize& viewport_size, const FrameSize& atlas_size)
+    Mesh(const std::u32string& text, Wrap wrap, Font& font, FrameSize& viewport_size)
     {
         META_FUNCTION_TASK();
-        
+
         bool is_content_size_initialized = false;
         if (!viewport_size.width || !viewport_size.height)
         {
@@ -189,7 +189,8 @@ struct Text::Mesh
         const size_t text_length = text.length();
         vertices.reserve(text_length * 4);
         indices.reserve(text_length * 6);
-        
+
+        const FrameSize& atlas_size = font.GetAtlasSize();
         ForEachTextCharacter(text, font, viewport_size.width, wrap,
             [&](const Font::Char& font_char, const FrameRect::Point& char_pos, size_t) -> CharAction
             {
@@ -290,6 +291,8 @@ Text::Text(RenderContext& context, Font& font, SettingsUtf32 settings)
 {
     META_FUNCTION_TASK();
 
+    m_sp_font->Connect(*this);
+
     const RenderContext::Settings& context_settings = context.GetSettings();
 
     m_viewport_rect = m_settings.screen_rect;
@@ -352,13 +355,7 @@ Text::Text(RenderContext& context, Font& font, SettingsUtf32 settings)
     });
     m_sp_texture_sampler->SetName(m_settings.name + " Screen-Quad Texture Sampler");
 
-    m_sp_const_program_bindings = ProgramBindings::Create(m_sp_state->GetSettings().sp_program, {
-        { { Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer    } } },
-        { { Shader::Type::Pixel, "g_texture"   }, { { m_sp_atlas_texture   } } },
-        { { Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler } } },
-    });
-
-    m_sp_font->Connect(*this);
+    m_sp_const_program_bindings = CreateConstProgramBindings();
 }
 
 Text::~Text() = default;
@@ -407,6 +404,12 @@ void Text::SetTextInScreenRect(const std::u32string& text, const FrameRect& scre
     if (!m_settings.screen_rect_in_pixels)
         m_viewport_rect *= m_context.GetContentScalingFactor();
 
+    if (!m_sp_atlas_texture && !m_settings.text.empty())
+    {
+        m_sp_font->AddChars(Font::GetAlphabetFromText(m_settings.text));
+        m_sp_new_atlas_texture = m_sp_font->GetAtlasTexturePtr(m_context);
+    }
+
     UpdateMeshData();
 
     m_sp_state->SetViewports({ GetFrameViewport(m_viewport_rect) });
@@ -447,13 +450,17 @@ void Text::SetColor(const Color4f& color)
 void Text::Draw(RenderCommandList& cmd_list)
 {
     META_FUNCTION_TASK();
-    if (m_settings.text.empty())
+    if (m_settings.text.empty() || (!m_sp_new_atlas_texture && !m_sp_atlas_texture))
         return;
 
     UpdateAtlasTexture();
     UpdateMeshBuffers();
     UpdateConstantsBuffer();
-    
+
+    assert(m_sp_const_program_bindings);
+    assert(m_sp_vertex_buffers);
+    assert(m_sp_index_buffer);
+
     cmd_list.Reset(m_sp_state);
     cmd_list.SetProgramBindings(*m_sp_const_program_bindings);
     cmd_list.SetVertexBuffers(*m_sp_vertex_buffers);
@@ -464,37 +471,68 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<Texture>& sp_old_atlas_
 {
     META_FUNCTION_TASK();
     META_UNUSED(sp_old_atlas_texture);
-    if (m_sp_font.get() != std::addressof(font) || std::addressof(m_context) != std::addressof(sp_new_atlas_texture->GetContext()))
+
+    if (!sp_new_atlas_texture)
+    {
+        assert(m_sp_atlas_texture.get() == sp_old_atlas_texture.get());
+        m_sp_atlas_texture.reset();
+        m_sp_new_atlas_texture.reset();
+        m_sp_const_program_bindings.reset();
+        return;
+    }
+
+    if (m_sp_font.get() != std::addressof(font) ||
+        m_sp_new_atlas_texture.get() == sp_new_atlas_texture.get() ||
+        std::addressof(m_context) != std::addressof(sp_new_atlas_texture->GetContext()))
         return;
 
     assert(m_sp_atlas_texture.get() == sp_old_atlas_texture.get());
     m_sp_new_atlas_texture = sp_new_atlas_texture;
 }
 
+Ptr<ProgramBindings> Text::CreateConstProgramBindings()
+{
+    META_FUNCTION_TASK();
+    if (!m_sp_const_buffer || !m_sp_atlas_texture || !m_sp_texture_sampler)
+        return nullptr;
+
+    return ProgramBindings::Create(m_sp_state->GetSettings().sp_program, {
+        { { Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer    } } },
+        { { Shader::Type::Pixel, "g_texture"   }, { { m_sp_atlas_texture   } } },
+        { { Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler } } },
+    });
+}
+
 void Text::UpdateAtlasTexture()
 {
     META_FUNCTION_TASK();
-
     if (!m_sp_new_atlas_texture)
         return;
 
     m_sp_atlas_texture = m_sp_new_atlas_texture;
     m_sp_new_atlas_texture.reset();
 
-    const Ptr<ProgramBindings::ArgumentBinding>& sp_atlas_texture_binding = m_sp_const_program_bindings->Get({ Shader::Type::Pixel, "g_texture" });
-    if (!sp_atlas_texture_binding)
-        throw std::logic_error("Can not find atlas texture argument binding.");
+    if (m_sp_const_program_bindings)
+    {
+        const Ptr<ProgramBindings::ArgumentBinding>& sp_atlas_texture_binding = m_sp_const_program_bindings->Get({ Shader::Type::Pixel, "g_texture" });
+        if (!sp_atlas_texture_binding)
+            throw std::logic_error("Can not find atlas texture argument binding.");
 
-    sp_atlas_texture_binding->SetResourceLocations({ { m_sp_atlas_texture } });
-
-    UpdateMeshData();
+        sp_atlas_texture_binding->SetResourceLocations({ { m_sp_atlas_texture } });
+    }
+    else
+    {
+        m_sp_const_program_bindings = CreateConstProgramBindings();
+    }
 }
 
 void Text::UpdateMeshData()
 {
     META_FUNCTION_TASK();
-    assert(m_sp_atlas_texture);
-    m_sp_new_mesh_data = std::make_unique<Mesh>(m_settings.text, m_settings.wrap, *m_sp_font, m_viewport_rect.size, m_sp_atlas_texture->GetSettings().dimensions);
+    if (m_sp_font->GetAtlasSize())
+    {
+        m_sp_new_mesh_data = std::make_unique<Mesh>(m_settings.text, m_settings.wrap, *m_sp_font, m_viewport_rect.size);
+    }
 }
 
 void Text::UpdateMeshBuffers()

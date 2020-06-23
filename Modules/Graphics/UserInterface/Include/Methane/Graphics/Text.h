@@ -91,6 +91,8 @@ private:
     struct Mesh;
     struct Constants;
 
+    Ptr<ProgramBindings> CreateConstProgramBindings();
+
     void UpdateAtlasTexture();
     void UpdateMeshData();
     void UpdateMeshBuffers();

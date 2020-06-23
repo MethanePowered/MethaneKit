@@ -167,6 +167,7 @@ public:
     Chars               GetTextChars(const std::u32string& text);
     FrameRect::Point    GetKerning(const Char& left_char, const Char& right_char) const;
     uint32_t            GetLineHeight() const noexcept;
+    const FrameSize&    GetAtlasSize() const noexcept;
     const Ptr<Texture>& GetAtlasTexturePtr(Context& context);
     Texture&            GetAtlasTexture(Context& context) { return *GetAtlasTexturePtr(context); }
 

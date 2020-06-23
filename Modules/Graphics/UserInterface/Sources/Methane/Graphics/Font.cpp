@@ -393,12 +393,19 @@ void Font::ResetChars(const std::string& utf8_characters)
 void Font::ResetChars(const std::u32string& utf32_characters)
 {
     META_FUNCTION_TASK();
-    if (utf32_characters.empty())
-        throw std::invalid_argument("Can not reset font characters with empty string.");
-
     m_sp_atlas_pack.reset();
     m_char_by_code.clear();
     m_atlas_bitmap.clear();
+
+    if (utf32_characters.empty())
+    {
+        for(const auto& context_and_atlas_texture : m_atlas_textures)
+        {
+            Emit(&IFontCallback::OnFontAtlasTextureReset, *this, context_and_atlas_texture.second.sp_texture, nullptr);
+        }
+        m_atlas_textures.clear();
+        return;
+    }
 
     AddChars(utf32_characters);
     PackCharsToAtlas(1.2f);
@@ -434,12 +441,9 @@ const Font::Char& Font::AddChar(Char::Code char_code)
     auto font_char_it = m_char_by_code.emplace(char_code, m_sp_face->LoadChar(char_code)).first;
     assert(font_char_it != m_char_by_code.end());
 
-    Char& new_font_char = font_char_it->second;
-    if (!m_sp_atlas_pack)
-        return new_font_char;
-
     // Attempt to pack new char into existing atlas
-    if (m_sp_atlas_pack->TryPack(new_font_char))
+    Char& new_font_char = font_char_it->second;
+    if (m_sp_atlas_pack && m_sp_atlas_pack->TryPack(new_font_char))
     {
         // Draw char to existing atlas bitmap and update textures;
         new_font_char.DrawToAtlas(m_atlas_bitmap, m_sp_atlas_pack->GetSize().width);
@@ -514,6 +518,13 @@ uint32_t Font::GetLineHeight() const noexcept
     return m_sp_face->GetLineHeight();
 }
 
+const FrameSize& Font::GetAtlasSize() const noexcept
+{
+    META_FUNCTION_TASK();
+    static const FrameSize s_empty_size;
+    return m_sp_atlas_pack ? m_sp_atlas_pack->GetSize() : s_empty_size;
+}
+
 Refs<Font::Char> Font::GetMutableChars()
 {
     META_FUNCTION_TASK();
@@ -571,7 +582,6 @@ const Ptr<Texture>& Font::GetAtlasTexturePtr(Context& context)
     }
 
     static const Ptr<Texture> sp_empty_texture;
-    assert(!m_char_by_code.empty());
     if (m_char_by_code.empty())
         return sp_empty_texture;
 
@@ -587,7 +597,11 @@ const Ptr<Texture>& Font::GetAtlasTexturePtr(Context& context)
 
     // Create atlas texture and render glyphs to it
     UpdateAtlasBitmap(true);
-    return m_atlas_textures.emplace(&context, CreateAtlasTexture(context, true)).first->second.sp_texture;
+
+    const Ptr<Texture>& sp_atlas_texture = m_atlas_textures.emplace(&context, CreateAtlasTexture(context, true)).first->second.sp_texture;
+    Emit(&IFontCallback::OnFontAtlasTextureReset, *this, nullptr, sp_atlas_texture);
+
+    return sp_atlas_texture;
 }
 
 Font::AtlasTexture Font::CreateAtlasTexture(Context& context, bool deferred_data_init)
@@ -601,6 +615,7 @@ Font::AtlasTexture Font::CreateAtlasTexture(Context& context, bool deferred_data
             Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size()))
         });
     }
+
     return { sp_atlas_texture, deferred_data_init };
 }
 
@@ -617,7 +632,7 @@ bool Font::UpdateAtlasBitmap(bool deferred_textures_update)
     if (!m_sp_atlas_pack)
         throw std::logic_error("Can not update atlas bitmap until atlas is packed.");
 
-    const FrameSize atlas_size = m_sp_atlas_pack->GetSize();
+    const FrameSize& atlas_size = m_sp_atlas_pack->GetSize();
     if (m_atlas_bitmap.size() == atlas_size.GetPixelsCount())
         return false;
 

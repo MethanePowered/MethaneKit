@@ -123,7 +123,7 @@ void TextRenderApp::Init()
     for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
     {
         const FontSettings& font_settings = g_font_settings[block_index];
-        const size_t displayed_text_length = std::max(m_displayed_text_lengths[block_index], size_t(1));
+        const size_t displayed_text_length = m_displayed_text_lengths[block_index];
         const std::u32string displayed_text_block = g_text_blocks[block_index].substr(0, displayed_text_length);
 
         // Add font to library
@@ -137,6 +137,7 @@ void TextRenderApp::Init()
                 }
             ).GetPtr()
         );
+        m_fonts.back()->Connect(*this);
 
         // Add text element
         m_texts.push_back(
@@ -219,6 +220,9 @@ void TextRenderApp::UpdateFontAtlasBadges()
     for(const Ref<gfx::Font>& font_ref : font_refs)
     {
         const Ptr<gfx::Texture>& sp_font_atlas_texture = font_ref.get().GetAtlasTexturePtr(context);
+        if (!sp_font_atlas_texture)
+            continue;
+
         const auto sp_font_atlas_it = std::find_if(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
                                                    [&sp_font_atlas_texture](const Ptr<gfx::Badge>& sp_font_atlas_badge)
             {
@@ -228,8 +232,6 @@ void TextRenderApp::UpdateFontAtlasBadges()
 
         if (sp_font_atlas_it != m_font_atlas_badges.end())
             continue;
-
-        font_ref.get().Connect(*this);
 
         m_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font_ref.get(), sp_font_atlas_texture));
     }
@@ -296,12 +298,15 @@ bool TextRenderApp::Animate(double elapsed_seconds, double)
     for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
     {
         size_t& displayed_text_length = m_displayed_text_lengths[block_index];
+        const Ptr<gfx::Text>& sp_text = m_texts[block_index];
         if (!displayed_text_length)
+        {
+            sp_text->SetText("");
             continue;
+        }
 
-        const Ptr<gfx::Text>& sp_text    = m_texts[block_index];
         const std::u32string& text_block = g_text_blocks[block_index];
-        const size_t text_block_length   = text_block.length();
+        const size_t   text_block_length = text_block.length();
 
         if (displayed_text_length >= text_block_length - 1)
         {
@@ -335,8 +340,9 @@ void TextRenderApp::ResetAnimation()
 {
     for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
     {
-        m_displayed_text_lengths[block_index] = block_index ? 0 : 1;
-        const std::u32string displayed_text = g_text_blocks[block_index].substr(0, 1);
+        const size_t displayed_text_length = block_index ? 0 : 1;
+        const std::u32string displayed_text = g_text_blocks[block_index].substr(0, displayed_text_length);
+        m_displayed_text_lengths[block_index] = displayed_text_length;
         m_texts[block_index]->SetText(displayed_text);
         m_fonts[block_index]->ResetChars(displayed_text);
     }
@@ -352,13 +358,9 @@ bool TextRenderApp::Render()
     TextRenderFrame& frame = GetCurrentFrame();
 
     // Draw text blocks
-    size_t text_block_index = 0;
     for(Ptr<gfx::Text>& sp_text : m_texts)
     {
-        if (m_displayed_text_lengths[text_block_index++])
-        {
-            sp_text->Draw(*frame.sp_render_cmd_list);
-        }
+        sp_text->Draw(*frame.sp_render_cmd_list);
     }
 
     // Draw font atlas badges
@@ -402,12 +404,18 @@ void TextRenderApp::OnFontAtlasTextureReset(gfx::Font& font, const Ptr<gfx::Text
     if (sp_font_atlas_badge_it == m_font_atlas_badges.end())
     {
         m_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font, sp_new_atlas_texture));
+        return;
     }
-    else
+
+    if (sp_new_atlas_texture)
     {
         Ptr<gfx::Badge>& sp_badge = *sp_font_atlas_badge_it;
         sp_badge->SetTexture(sp_new_atlas_texture);
         sp_badge->SetSize(static_cast<const gfx::FrameSize&>(sp_new_atlas_texture->GetSettings().dimensions));
+    }
+    else
+    {
+        m_font_atlas_badges.erase(sp_font_atlas_badge_it);
     }
 }
 
