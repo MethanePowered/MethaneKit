@@ -147,7 +147,13 @@ void ResourceManager::AddProgramBindings(ProgramBindings& program_bindings)
     if (program_bindings_it != m_program_bindings.end())
         return;
 #endif
+
     m_program_bindings.push_back(static_cast<ProgramBindingsBase&>(program_bindings).GetPtr());
+}
+
+void ResourceManager::RemoveProgramBindings(ProgramBindings&)
+{
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_program_bindings_mutex);
 }
 
 uint32_t ResourceManager::CreateDescriptorHeap(const DescriptorHeap::Settings& settings)

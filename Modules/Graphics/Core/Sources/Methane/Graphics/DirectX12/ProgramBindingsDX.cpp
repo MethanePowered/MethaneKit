@@ -98,13 +98,13 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
     {
         m_resource_locations_dx.emplace_back(resource_location);
 
-        if (!m_p_descriptor_heap_reservation)
+        if (!p_dx_descriptor_heap)
             continue;
 
         const ResourceDX::LocationDX& dx_resource_location = m_resource_locations_dx.back();
         if (m_descriptor_range.heap_type != descriptor_heap_type)
         {
-            throw std::logic_error("Incompatible heap type \"" + p_dx_descriptor_heap->GetTypeName() +
+            throw std::logic_error("Incompatible heap type \"" + DescriptorHeap::GetTypeName(descriptor_heap_type) +
                                    "\" is set for resource binding on argument \"" + m_settings_dx.argument.name +
                                    "\" of \"" + Shader::GetTypeName(m_settings_dx.argument.shader_type) + "\" shader.");
         }
@@ -170,6 +170,12 @@ ProgramBindingsDX::ProgramBindingsDX(const ProgramBindingsDX& other_program_bind
     : ProgramBindingsBase(other_program_bindings, replace_resource_locations_by_argument)
 {
     META_FUNCTION_TASK();
+}
+
+ProgramBindingsDX::~ProgramBindingsDX()
+{
+    META_FUNCTION_TASK();
+    static_cast<ProgramBase&>(GetProgram()).GetContext().GetResourceManager().RemoveProgramBindings(*this);
 }
 
 void ProgramBindingsDX::Initialize()

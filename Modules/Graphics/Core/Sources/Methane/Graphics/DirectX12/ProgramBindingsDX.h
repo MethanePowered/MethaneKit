@@ -94,6 +94,7 @@ public:
     
     ProgramBindingsDX(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
     ProgramBindingsDX(const ProgramBindingsDX& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument);
+    ~ProgramBindingsDX() override;
 
     void Initialize();
 
