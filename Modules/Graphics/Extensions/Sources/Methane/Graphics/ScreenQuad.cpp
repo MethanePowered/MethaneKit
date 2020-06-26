@@ -81,7 +81,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
             Program::ArgumentDescriptions
             {
                 { { Shader::Type::Pixel, "g_constants" }, Program::Argument::Modifiers::Constant },
-                { { Shader::Type::Pixel, "g_texture"   }, Program::Argument::Modifiers::Constant },
+                { { Shader::Type::Pixel, "g_texture"   }, Program::Argument::Modifiers::None     },
                 { { Shader::Type::Pixel, "g_sampler"   }, Program::Argument::Modifiers::Constant },
             },
             PixelFormats

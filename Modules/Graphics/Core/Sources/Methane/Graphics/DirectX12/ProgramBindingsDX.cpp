@@ -49,6 +49,7 @@ ProgramBindingsDX::ArgumentBindingDX::ArgumentBindingDX(const ContextBase& conte
     , m_settings_dx(std::move(settings))
 {
     META_FUNCTION_TASK();
+    assert(!m_p_descriptor_heap_reservation);
 }
 
 ProgramBindingsDX::ArgumentBindingDX::ArgumentBindingDX(const ArgumentBindingDX& other)
@@ -60,15 +61,17 @@ ProgramBindingsDX::ArgumentBindingDX::ArgumentBindingDX(const ArgumentBindingDX&
     , m_resource_locations_dx(other.m_resource_locations_dx)
 {
     META_FUNCTION_TASK();
+    assert(!m_p_descriptor_heap_reservation || m_p_descriptor_heap_reservation->heap.get().IsShaderVisible());
+    assert(!m_p_descriptor_heap_reservation || m_p_descriptor_heap_reservation->heap.get().GetSettings().type == m_descriptor_range.heap_type);
 }
 
 void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::Locations& resource_locations)
 {
     META_FUNCTION_TASK();
+    if (GetResourceLocations() == resource_locations)
+        return;
 
     ArgumentBindingBase::SetResourceLocations(resource_locations);
-
-    m_resource_locations_dx.clear();
 
     if (m_settings_dx.type == Type::DescriptorTable &&
         resource_locations.size() > m_descriptor_range.count)
@@ -93,6 +96,7 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
     assert(!!cp_native_device);
 
     uint32_t resource_index = 0;
+    m_resource_locations_dx.clear();
     m_resource_locations_dx.reserve(resource_locations.size());
     for(const Resource::Location& resource_location : resource_locations)
     {
@@ -140,6 +144,14 @@ void ProgramBindingsDX::ArgumentBindingDX::SetDescriptorRange(const DescriptorRa
                                  ") will not fit bound shader resources (" + std::to_string(m_settings_dx.resource_count) + ").");
     }
     m_descriptor_range = descriptor_range;
+}
+
+void ProgramBindingsDX::ArgumentBindingDX::SetDescriptorHeapReservation(const DescriptorHeap::Reservation* p_reservation)
+{
+    META_FUNCTION_TASK();
+    m_p_descriptor_heap_reservation = p_reservation;
+    assert(!m_p_descriptor_heap_reservation || m_p_descriptor_heap_reservation->heap.get().IsShaderVisible());
+    assert(!m_p_descriptor_heap_reservation || m_p_descriptor_heap_reservation->heap.get().GetSettings().type == m_descriptor_range.heap_type);
 }
 
 Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)

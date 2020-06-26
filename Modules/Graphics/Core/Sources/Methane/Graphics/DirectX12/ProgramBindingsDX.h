@@ -82,7 +82,7 @@ public:
 
         void SetRootParameterIndex(uint32_t root_parameter_index)                     { m_root_parameter_index = root_parameter_index; }
         void SetDescriptorRange(const DescriptorRange& descriptor_range);
-        void SetDescriptorHeapReservation(const DescriptorHeap::Reservation* p_reservation) { m_p_descriptor_heap_reservation = p_reservation; }
+        void SetDescriptorHeapReservation(const DescriptorHeap::Reservation* p_reservation);
 
     private:
         const SettingsDX                   m_settings_dx;

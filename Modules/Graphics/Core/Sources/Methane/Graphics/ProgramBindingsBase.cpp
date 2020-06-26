@@ -42,8 +42,12 @@ ProgramBindingsBase::ArgumentBindingBase::ArgumentBindingBase(const ContextBase&
 void ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resource::Locations& resource_locations)
 {
     META_FUNCTION_TASK();
+    if (m_resource_locations == resource_locations)
+        return;
 
-    m_resource_locations.clear();
+    if (m_settings.argument.IsConstant() && !m_resource_locations.empty())
+        throw std::logic_error("Can not modify constant program argument binding.");
+
     if (resource_locations.empty())
         throw std::invalid_argument("Can not set empty resources for resource binding.");
 
@@ -154,16 +158,18 @@ ProgramBindingsBase::~ProgramBindingsBase()
     META_FUNCTION_TASK();
 
     // Release mutable descriptor ranges in heaps (constant ranges are released by the program)
-    for (const auto& descriptor_type_and_heap_reservation : m_descriptor_heap_reservations_by_type)
+    for (auto& descriptor_type_and_heap_reservation : m_descriptor_heap_reservations_by_type)
     {
         if (!descriptor_type_and_heap_reservation)
             continue;
 
         const DescriptorHeap::Reservation& heap_reservation = *descriptor_type_and_heap_reservation;
-        if (heap_reservation.mutable_range.IsEmpty())
-            continue;
+        if (!heap_reservation.mutable_range.IsEmpty())
+        {
+            heap_reservation.heap.get().ReleaseRange(heap_reservation.mutable_range);
+        }
 
-        heap_reservation.heap.get().ReleaseRange(heap_reservation.mutable_range);
+        descriptor_type_and_heap_reservation.reset();
     }
 }
 
@@ -217,10 +223,6 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
                     : ArgumentBindingBase::CreateCopy(argument_binding)
             );
         }
-        else if (!binding_settings.argument.IsConstant())
-        {
-            binding_by_argument_it->second = ArgumentBindingBase::CreateCopy(static_cast<const ArgumentBindingBase&>(*binding_by_argument_it->second));
-        }
 
         // NOTE: addressable resource bindings do not require descriptors to be created, instead they use direct GPU memory offset from resource
         if (binding_settings.argument.IsAddressable())
@@ -256,6 +258,9 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         }
 
         DescriptorHeap::Reservation& heap_reservation = *descriptor_heap_reservation_opt;
+        assert(heap_reservation.heap.get().GetSettings().type == heap_type);
+        assert(heap_reservation.heap.get().GetSettings().shader_visible);
+
         if (descriptors.constant_count > 0)
         {
             heap_reservation.constant_range = static_cast<ProgramBase&>(*m_sp_program).ReserveConstantDescriptorRange(heap_reservation.heap.get(), descriptors.constant_count);
