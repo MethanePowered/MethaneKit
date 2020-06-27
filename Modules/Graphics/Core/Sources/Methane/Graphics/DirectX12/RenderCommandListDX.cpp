@@ -130,7 +130,7 @@ void RenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state, DebugGr
     }
 }
 
-void RenderCommandListDX::SetVertexBuffers(const Buffers& vertex_buffers)
+void RenderCommandListDX::SetVertexBuffers(const BufferSet& vertex_buffers)
 {
     META_FUNCTION_TASK();
 
@@ -138,7 +138,7 @@ void RenderCommandListDX::SetVertexBuffers(const Buffers& vertex_buffers)
     if (!(GetDrawingState().changes & DrawingState::Changes::VertexBuffers))
         return;
 
-    const std::vector<D3D12_VERTEX_BUFFER_VIEW>& vertex_buffer_views = static_cast<const BuffersDX&>(vertex_buffers).GetNativeVertexBufferViews();
+    const std::vector<D3D12_VERTEX_BUFFER_VIEW>& vertex_buffer_views = static_cast<const BufferSetDX&>(vertex_buffers).GetNativeVertexBufferViews();
     GetNativeCommandListRef().IASetVertexBuffers(0, static_cast<UINT>(vertex_buffer_views.size()), vertex_buffer_views.data());
 }
 

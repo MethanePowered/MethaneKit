@@ -128,14 +128,14 @@ void ReadBackBufferDX::InitializeView()
     META_FUNCTION_TASK();
 }
 
-Ptr<Buffers> Buffers::Create(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
+Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<BuffersDX>(buffers_type, std::move(buffer_refs));
+    return std::make_shared<BufferSetDX>(buffers_type, std::move(buffer_refs));
 }
 
-BuffersDX::BuffersDX(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
-    : BuffersBase(buffers_type, std::move(buffer_refs))
+BufferSetDX::BufferSetDX(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
+    : BufferSetBase(buffers_type, std::move(buffer_refs))
 {
     META_FUNCTION_TASK();
     switch(buffers_type)
@@ -145,7 +145,7 @@ BuffersDX::BuffersDX(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
     }
 }
 
-const std::vector<D3D12_VERTEX_BUFFER_VIEW>& BuffersDX::GetNativeVertexBufferViews() const
+const std::vector<D3D12_VERTEX_BUFFER_VIEW>& BufferSetDX::GetNativeVertexBufferViews() const
 {
     META_FUNCTION_TASK();
     const Buffer::Type buffers_type = GetType();

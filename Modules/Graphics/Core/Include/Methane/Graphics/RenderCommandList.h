@@ -53,7 +53,7 @@ struct RenderCommandList : virtual CommandList
     // RenderCommandList interface
     virtual void Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group = nullptr) = 0;
     virtual void SetState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) = 0;
-    virtual void SetVertexBuffers(const Buffers& vertex_buffers) = 0;
+    virtual void SetVertexBuffers(const BufferSet& vertex_buffers) = 0;
     virtual void DrawIndexed(Primitive primitive, Buffer& index_buffer, 
                              uint32_t index_count = 0, uint32_t start_index = 0, uint32_t start_vertex = 0, 
                              uint32_t instance_count = 1, uint32_t start_instance = 0) = 0;

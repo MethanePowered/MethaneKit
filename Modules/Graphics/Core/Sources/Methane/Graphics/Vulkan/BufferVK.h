@@ -42,10 +42,10 @@ public:
     void SetName(const std::string& name) override;
 };
 
-class BuffersVK final : public BuffersBase
+class BufferSetVK final : public BufferSetBase
 {
 public:
-    BuffersVK(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
+    BufferSetVK(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
 };
 
 } // namespace Methane::Graphics

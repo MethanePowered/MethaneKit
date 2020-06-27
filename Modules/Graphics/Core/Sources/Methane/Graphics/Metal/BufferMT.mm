@@ -128,11 +128,11 @@ MTLIndexType BufferMT::GetNativeIndexType() const noexcept
 Ptr<Buffers> Buffers::Create(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<BuffersMT>(buffers_type, std::move(buffer_refs));
+    return std::make_shared<BufferSetMT>(buffers_type, std::move(buffer_refs));
 }
 
-BuffersMT::BuffersMT(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
-    : BuffersBase(buffers_type, std::move(buffer_refs))
+BufferSetMT::BufferSetMT(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
+    : BufferSetBase(buffers_type, std::move(buffer_refs))
     , m_mtl_buffer_offsets(GetCount(), 0u)
 {
     META_FUNCTION_TASK();

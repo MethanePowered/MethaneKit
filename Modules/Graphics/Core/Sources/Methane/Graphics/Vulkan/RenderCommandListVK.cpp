@@ -87,7 +87,7 @@ void RenderCommandListVK::PopDebugGroup()
     CommandListBase::PopDebugGroup();
 }
 
-void RenderCommandListVK::SetVertexBuffers(const Buffers& vertex_buffers)
+void RenderCommandListVK::SetVertexBuffers(const BufferSet& vertex_buffers)
 {
     META_FUNCTION_TASK();
 

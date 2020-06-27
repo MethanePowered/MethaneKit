@@ -113,7 +113,7 @@ void RenderCommandListMT::SetVertexBuffers(const Buffers& vertex_buffers)
         return;
 
     assert(GetNativeCommandEncoder() != nil);
-    const BuffersMT& metal_vertex_buffers = static_cast<const BuffersMT&>(vertex_buffers);
+    const BufferSetMT& metal_vertex_buffers = static_cast<const BufferSetMT&>(vertex_buffers);
     const std::vector<id<MTLBuffer>>& mtl_buffers = metal_vertex_buffers.GetNativeBuffers();
     const std::vector<NSUInteger>&    mtl_offsets = metal_vertex_buffers.GetNativeOffsets();
     const NSRange                     mtl_range{ 0u, metal_vertex_buffers.GetCount() };

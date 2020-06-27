@@ -123,7 +123,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
             static_cast<Data::Size>(quad_mesh.GetVertexDataSize())
         }
     });
-    m_sp_vertex_buffers = Buffers::CreateVertexBuffers({ *sp_vertex_buffer });
+    m_sp_vertex_buffers = BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
 
     m_sp_index_buffer = Buffer::CreateIndexBuffer(context, static_cast<Data::Size>(quad_mesh.GetIndexDataSize()),
                                                            GetIndexFormat(quad_mesh.GetIndex(0)));

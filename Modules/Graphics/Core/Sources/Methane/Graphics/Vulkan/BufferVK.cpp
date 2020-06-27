@@ -89,14 +89,14 @@ void BufferVK::SetData(const SubResources& sub_resources)
     BufferBase::SetData(sub_resources);
 }
 
-Ptr<Buffers> Buffers::Create(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
+Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<BuffersVK>(buffers_type, std::move(buffer_refs));
+    return std::make_shared<BufferSetVK>(buffers_type, std::move(buffer_refs));
 }
 
-BuffersVK::BuffersVK(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
-    : BuffersBase(buffers_type, std::move(buffer_refs))
+BufferSetVK::BufferSetVK(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
+    : BufferSetBase(buffers_type, std::move(buffer_refs))
 {
     META_FUNCTION_TASK();
     switch(buffers_type)

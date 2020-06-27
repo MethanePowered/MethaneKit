@@ -144,10 +144,10 @@ using IndexBufferDX = BufferDX<D3D12_INDEX_BUFFER_VIEW, PixelFormat>;
 using ConstantBufferDX = BufferDX<D3D12_CONSTANT_BUFFER_VIEW_DESC>;
 using ReadBackBufferDX = BufferDX<ReadBackBufferView>;
 
-class BuffersDX final : public BuffersBase
+class BufferSetDX final : public BufferSetBase
 {
 public:
-    BuffersDX(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
+    BufferSetDX(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
 
     const std::vector<D3D12_VERTEX_BUFFER_VIEW>& GetNativeVertexBufferViews() const;
 

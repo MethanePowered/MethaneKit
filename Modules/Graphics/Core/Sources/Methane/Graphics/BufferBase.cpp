@@ -76,7 +76,7 @@ std::string Buffer::GetBufferTypeName(Type type) noexcept
     return "Unknown";
 }
 
-BuffersBase::BuffersBase(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
+BufferSetBase::BufferSetBase(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
     : m_buffers_type(buffers_type)
     , m_refs(std::move(buffer_refs))
 {
@@ -100,7 +100,7 @@ BuffersBase::BuffersBase(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
     }
 }
 
-Buffer& BuffersBase::operator[](Data::Index index) const
+Buffer& BufferSetBase::operator[](Data::Index index) const
 {
     META_FUNCTION_TASK();
     if (index > m_refs.size())

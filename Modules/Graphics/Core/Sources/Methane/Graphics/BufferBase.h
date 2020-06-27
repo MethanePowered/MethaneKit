@@ -51,10 +51,10 @@ private:
     Settings    m_settings;
 };
 
-class BuffersBase : public Buffers
+class BufferSetBase : public BufferSet
 {
 public:
-    BuffersBase(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
+    BufferSetBase(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
 
     // Buffers interface
     Buffer::Type        GetType() const noexcept override  { return m_buffers_type; }

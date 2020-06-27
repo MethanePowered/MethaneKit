@@ -38,7 +38,7 @@ class HelloTriangleApp final : public GraphicsApp
 {
 private:
     Ptr<RenderState> m_sp_state;
-    Ptr<Buffers>     m_sp_vertex_buffers;
+    Ptr<BufferSet>   m_sp_vertex_buffers;
 
 public:
     HelloTriangleApp() : GraphicsApp(
@@ -86,7 +86,7 @@ public:
                 Resource::SubResource { reinterpret_cast<Data::ConstRawPtr>(triangle_vertices.data()), vertex_buffer_size }
             }
         );
-        m_sp_vertex_buffers = Buffers::CreateVertexBuffers({ *sp_vertex_buffer });
+        m_sp_vertex_buffers = BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
 
         m_sp_state = RenderState::Create(*m_sp_context,
             RenderState::Settings

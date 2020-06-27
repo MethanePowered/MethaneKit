@@ -75,7 +75,7 @@ public:
                 static_cast<Data::Size>(mesh_data.GetVertexDataSize())
             }
         });
-        m_sp_vertex = Buffers::CreateVertexBuffers({ *sp_vertex_buffer });
+        m_sp_vertex = BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
 
         m_sp_index = Buffer::CreateIndexBuffer(context, static_cast<Data::Size>(mesh_data.GetIndexDataSize()), GetIndexFormat(mesh_data.GetIndex(0)));
         m_sp_index->SetName(mesh_name + " Index Buffer");
@@ -223,7 +223,7 @@ protected:
 
     virtual Data::Index GetSubsetByInstanceIndex(Data::Index instance_index) const { return instance_index; }
 
-    const Buffers& GetVertexBuffers() const
+    const BufferSet& GetVertexBuffers() const
     {
         assert(!!m_sp_vertex);
         return *m_sp_vertex;
@@ -248,9 +248,9 @@ private:
     using InstanceUniforms = std::vector<UniformsType, Data::AlignedAllocator<UniformsType, SHADER_STRUCT_ALIGNMENT>>;
 
     const std::string      m_mesh_name;
-    const Mesh::Subsets    m_mesh_subsets;
-    Ptr<Buffers>           m_sp_vertex;
-    Ptr<Buffer>            m_sp_index;
+    const Mesh::Subsets m_mesh_subsets;
+    Ptr<BufferSet>      m_sp_vertex;
+    Ptr<Buffer>         m_sp_index;
     InstanceUniforms       m_final_pass_instance_uniforms; // Actual uniforms buffers are created separately in Frame dependent resources
     Resource::SubResources m_final_pass_instance_uniforms_subresources;
 };

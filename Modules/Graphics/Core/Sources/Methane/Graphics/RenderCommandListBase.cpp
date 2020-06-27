@@ -87,7 +87,7 @@ void RenderCommandListBase::SetState(RenderState& render_state, RenderState::Gro
     drawing_state.render_state_groups |= state_groups;
 }
 
-void RenderCommandListBase::SetVertexBuffers(const Buffers& vertex_buffers)
+void RenderCommandListBase::SetVertexBuffers(const BufferSet& vertex_buffers)
 {
     META_FUNCTION_TASK();
     VerifyEncodingState();
@@ -98,8 +98,8 @@ void RenderCommandListBase::SetVertexBuffers(const Buffers& vertex_buffers)
                                     "\" type where \"Vertex\" buffers are required.");
     }
 
-    const BuffersBase& vertex_buffers_base = static_cast<const BuffersBase&>(vertex_buffers);
-    DrawingState& drawing_state = GetDrawingState();
+    const BufferSetBase& vertex_buffers_base = static_cast<const BufferSetBase&>(vertex_buffers);
+    DrawingState       & drawing_state       = GetDrawingState();
     if (drawing_state.vertex_buffers != vertex_buffers_base.GetRawPtrs())
         drawing_state.changes |= DrawingState::Changes::VertexBuffers;
 

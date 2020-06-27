@@ -58,8 +58,8 @@ public:
     void OnContextReleased(gfx::Context& context) override;
 
 private:
-    Ptr<gfx::RenderState>   m_sp_state;
-    Ptr<gfx::Buffers>       m_sp_vertex_buffers;
+    Ptr<gfx::RenderState> m_sp_state;
+    Ptr<gfx::BufferSet>   m_sp_vertex_buffers;
 };
 
 } // namespace Methane::Tutorials

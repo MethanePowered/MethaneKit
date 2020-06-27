@@ -547,7 +547,7 @@ void Text::UpdateMeshBuffers()
     {
         Ptr<Buffer> sp_vertex_buffer = Buffer::CreateVertexBuffer(m_context, vertices_data_size, m_sp_new_mesh_data->GetVertexSize());
         sp_vertex_buffer->SetName(m_settings.name + " Text Vertex Buffer");
-        m_sp_vertex_buffers = Buffers::CreateVertexBuffers({ *sp_vertex_buffer });
+        m_sp_vertex_buffers = BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
     }
     (*m_sp_vertex_buffers)[0].SetData({
         Resource::SubResource(

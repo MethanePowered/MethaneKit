@@ -102,9 +102,9 @@ private:
     FrameRect            m_viewport_rect;
     RenderContext&       m_context;
     Ptr<Font>            m_sp_font;
-    Ptr<RenderState>     m_sp_state;
-    Ptr<Buffers>         m_sp_vertex_buffers;
-    Ptr<Buffer>          m_sp_index_buffer;
+    Ptr<RenderState> m_sp_state;
+    Ptr<BufferSet>   m_sp_vertex_buffers;
+    Ptr<Buffer>      m_sp_index_buffer;
     Ptr<Buffer>          m_sp_const_buffer;
     Ptr<Texture>         m_sp_atlas_texture;
     Ptr<Texture>         m_sp_new_atlas_texture;
