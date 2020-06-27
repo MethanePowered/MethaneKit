@@ -29,11 +29,11 @@ Metal GPU release pool for deferred objects release.
 namespace Methane::Graphics
 {
 
+class ResourceMT;
+
 class ReleasePoolMT : public ReleasePool
 {
 public:
-    ReleasePoolMT();
-
     // ReleasePool interface
     void AddResource(ResourceBase& resource) override;
     void ReleaseAllResources() override;

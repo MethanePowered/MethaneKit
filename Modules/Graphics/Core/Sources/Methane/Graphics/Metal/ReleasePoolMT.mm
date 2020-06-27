@@ -22,6 +22,8 @@ Metal GPU release pool for deferred objects release.
 ******************************************************************************/
 
 #include "ReleasePoolMT.hh"
+#include "BufferMT.hh"
+#include "TextureMT.hh"
 
 #include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/Instrumentation.h>
@@ -31,7 +33,7 @@ Metal GPU release pool for deferred objects release.
 namespace Methane::Graphics
 {
 
-struct ResourceMT::ReleasePoolMT::BufferContainerMT : ResourceMT::ReleasePoolMT::IResourceContainerMT
+struct ReleasePoolMT::BufferContainerMT : ReleasePoolMT::IResourceContainerMT
 {
     id <MTLBuffer> buffer;
 
@@ -39,7 +41,7 @@ struct ResourceMT::ReleasePoolMT::BufferContainerMT : ResourceMT::ReleasePoolMT:
     { }
 };
 
-struct ResourceMT::ReleasePoolMT::TextureContainerMT : ResourceMT::ReleasePoolMT::IResourceContainerMT
+struct ReleasePoolMT::TextureContainerMT : ReleasePoolMT::IResourceContainerMT
 {
     id <MTLTexture> texture;
 
@@ -47,7 +49,7 @@ struct ResourceMT::ReleasePoolMT::TextureContainerMT : ResourceMT::ReleasePoolMT
     { }
 };
 
-UniquePtr <ResourceMT::ReleasePoolMT::IResourceContainerMT> ResourceMT::ReleasePoolMT::IResourceContainerMT::Create(ResourceMT& resource)
+UniquePtr<ReleasePoolMT::IResourceContainerMT> ReleasePoolMT::IResourceContainerMT::Create(ResourceMT& resource)
 {
     switch (resource.GetResourceType())
     {
@@ -63,16 +65,48 @@ UniquePtr <ResourceMT::ReleasePoolMT::IResourceContainerMT> ResourceMT::ReleaseP
     return nullptr;
 }
 
-Ptr <ResourceBase::ReleasePool> ResourceBase::ReleasePool::Create()
+Ptr<ReleasePool> ReleasePool::Create()
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ResourceMT::ReleasePoolMT>();
+    return std::make_shared<ReleasePoolMT>();
 }
 
-ResourceMT::ReleasePoolMT::ReleasePoolMT()
-    : ResourceBase::ReleasePool()
+void ReleasePoolMT::AddResource(ResourceBase& resource)
 {
     META_FUNCTION_TASK();
+    ResourceMT& resource_mt = static_cast<ResourceMT&>(resource);
+    if (resource_mt.GetContextBase().GetType() == Context::Type::Render)
+    {
+        RenderContextBase& render_context = static_cast<RenderContextBase&>(resource_mt.GetContextBase());
+        if (m_frame_resources.size() != render_context.GetSettings().frame_buffers_count)
+            m_frame_resources.resize(render_context.GetSettings().frame_buffers_count);
+
+        const uint32_t frame_index = render_context.GetFrameBufferIndex();
+        m_frame_resources[frame_index].emplace_back(IResourceContainerMT::Create(resource_mt));
+    }
+    else
+    {
+        m_misc_resources.emplace_back(IResourceContainerMT::Create(resource_mt));
+    }
+}
+
+void ReleasePoolMT::ReleaseAllResources()
+{
+    META_FUNCTION_TASK();
+    for(MTLResourceContainers& frame_resources : m_frame_resources)
+    {
+        frame_resources.clear();
+    }
+    m_misc_resources.clear();
+}
+
+void ReleasePoolMT::ReleaseFrameResources(uint32_t frame_index)
+{
+    META_FUNCTION_TASK();
+    if (frame_index >= m_frame_resources.size())
+        return;
+
+    m_frame_resources[frame_index].clear();
 }
 
 } // namespace Methane::Graphics
