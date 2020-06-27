@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,32 +16,28 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/ResourceMT.hh
-Metal implementation of the resource interface.
+FILE: Methane/Graphics/ReleasePool.h
+GPU release pool for deferred objects release when they are not used by GPU anymore.
 
 ******************************************************************************/
 #pragma once
 
-#include <Methane/Graphics/ResourceBase.h>
+#include <Methane/Memory.hpp>
 
 namespace Methane::Graphics
 {
 
-struct IContextMT;
+class ResourceBase;
 
-class ResourceMT : public ResourceBase
+struct ReleasePool
 {
-public:
-    class BarriersMT : public Barriers
-    {
-    public:
-        BarriersMT(const Set& barriers) : Barriers(barriers) {}
-    };
+    static Ptr<ReleasePool> Create();
 
-    ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
+    virtual void AddResource(ResourceBase& resource) = 0;
+    virtual void ReleaseAllResources() = 0;
+    virtual void ReleaseFrameResources(uint32_t frame_index) = 0;
 
-protected:
-    IContextMT& GetContextMT() noexcept;
+    virtual ~ReleasePool() = default;
 };
 
-} // namespace Methane::Graphics
+}

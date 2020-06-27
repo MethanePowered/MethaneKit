@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,78 +16,69 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/ResourceMT.mm
-Metal implementation of the resource interface.
+FILE: Methane/Graphics/DirectX12/ReleasePoolDX.h
+DirectX 12 GPU release pool for deferred objects release.
 
 ******************************************************************************/
 
-#include "ResourceMT.hh"
-#include "ContextMT.h"
-#include "BufferMT.hh"
-#include "TextureMT.hh"
+#include "ReleasePoolDX.h"
+#include "ResourceDX.h"
 
 #include <Methane/Graphics/RenderContextBase.h>
+#include <Methane/Graphics/Windows/Primitives.h>
 #include <Methane/Instrumentation.h>
-
-#include <vector>
 
 namespace Methane::Graphics
 {
 
-Ptr<ResourceBase::Barriers> ResourceBase::Barriers::Create(const Set& barriers)
+Ptr<ReleasePool> ReleasePool::Create()
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ResourceMT::BarriersMT>(barriers);
+    return std::make_shared<ReleasePoolDX>();
 }
 
-void ResourceMT::ReleasePoolMT::AddResource(ResourceBase& resource)
+void ReleasePoolDX::AddResource(ResourceBase& resource)
 {
     META_FUNCTION_TASK();
-    ResourceMT& resource_mt = static_cast<ResourceMT&>(resource);
-    if (resource_mt.GetContextBase().GetType() == Context::Type::Render)
+    ResourceDX& resource_dx = static_cast<ResourceDX&>(resource);
+
+    const wrl::ComPtr<ID3D12Resource>& cp_native_resource = resource_dx.GetNativeResourceComPtr();
+    assert(cp_native_resource || resource_dx.GetResourceType() == Resource::Type::Sampler);
+    if (!cp_native_resource)
+        return;
+
+    if (resource_dx.GetContextBase().GetType() == Context::Type::Render)
     {
-        RenderContextBase& render_context = static_cast<RenderContextBase&>(resource_mt.GetContextBase());
+        RenderContextBase& render_context = static_cast<RenderContextBase&>(resource_dx.GetContextBase());
         if (m_frame_resources.size() != render_context.GetSettings().frame_buffers_count)
             m_frame_resources.resize(render_context.GetSettings().frame_buffers_count);
 
         const uint32_t frame_index = render_context.GetFrameBufferIndex();
-        m_frame_resources[frame_index].emplace_back(IResourceContainerMT::Create(resource_mt));
+        m_frame_resources[frame_index].emplace_back(cp_native_resource);
     }
     else
     {
-        m_misc_resources.emplace_back(IResourceContainerMT::Create(resource_mt));
+        m_misc_resources.emplace_back(cp_native_resource);
     }
 }
 
-void ResourceMT::ReleasePoolMT::ReleaseAllResources()
+void ReleasePoolDX::ReleaseAllResources()
 {
     META_FUNCTION_TASK();
-    for(MTLResourceContainers& frame_resources : m_frame_resources)
+    for (D3DResourceComPtrs& frame_resources : m_frame_resources)
     {
         frame_resources.clear();
     }
     m_misc_resources.clear();
 }
 
-void ResourceMT::ReleasePoolMT::ReleaseFrameResources(uint32_t frame_index)
+void ReleasePoolDX::ReleaseFrameResources(uint32_t frame_index)
 {
     META_FUNCTION_TASK();
     if (frame_index >= m_frame_resources.size())
         return;
 
     m_frame_resources[frame_index].clear();
-}
-
-ResourceMT::ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceBase(type, usage_mask, context, descriptor_by_usage)
-{
-    META_FUNCTION_TASK();
-}
-
-IContextMT& ResourceMT::GetContextMT() noexcept
-{
-    META_FUNCTION_TASK();
-    return static_cast<IContextMT&>(GetContextBase());
 }
 
 } // namespace Methane::Graphics

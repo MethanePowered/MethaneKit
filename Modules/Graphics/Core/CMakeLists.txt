@@ -50,6 +50,8 @@ if (WIN32)
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListDX.h
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/ReleasePoolDX.h
+        ${SOURCES_GRAPHICS_DIR}/ReleasePoolDX.cpp
     )
 
     set(PLATFORM_LIBRARIES
@@ -108,6 +110,8 @@ elseif(APPLE)
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.mm
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListMT.hh
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListMT.mm
+        ${SOURCES_GRAPHICS_DIR}/ReleasePoolMT.hh
+        ${SOURCES_GRAPHICS_DIR}/ReleasePoolMT.mm
     )
 
     set(PLATFORM_LIBRARIES
@@ -164,6 +168,8 @@ else() # Linux
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListVK.cpp
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListVK.h
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/ReleasePoolVK.h
+        ${SOURCES_GRAPHICS_DIR}/ReleasePoolVK.cpp
     )
 
 endif()
@@ -248,6 +254,7 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/DescriptorHeap.cpp
     ${SOURCES_DIR}/ResourceManager.h
     ${SOURCES_DIR}/ResourceManager.cpp
+    ${SOURCES_DIR}/ReleasePool.h
     ${SOURCES_DIR}/QueryBuffer.h
     ${SOURCES_DIR}/QueryBuffer.cpp
 )

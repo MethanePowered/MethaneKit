@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,36 +16,54 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/ResourceVK.mm
-Vulkan implementation of the resource interface.
+FILE: Methane/Graphics/Vulkan/ReleasePoolVK.cpp
+Vulkan GPU release pool for deferred objects release.
 
 ******************************************************************************/
 
-#include "ResourceVK.h"
-#include "ContextVK.h"
+#include "ReleasePoolVK.h"
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-Ptr<ResourceBase::Barriers> ResourceBase::Barriers::Create(const Set& barriers)
+struct ResourceContainerVK
+{
+};
+
+Ptr<ReleasePool> ReleasePool::Create()
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ResourceVK::BarriersVK>(barriers);
+    return std::make_shared<ReleasePoolVK>();
 }
 
-ResourceVK::ResourceVK(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceBase(type, usage_mask, context, descriptor_by_usage)
+ReleasePoolVK::ReleasePoolVK()
+    : ReleasePool()
+    , m_sp_vk_resources(new ResourceContainerVK())
 {
     META_FUNCTION_TASK();
 }
 
-IContextVK& ResourceVK::GetContextVK() noexcept
+void ReleasePoolVK::AddResource(ResourceBase& /*resource*/)
 {
     META_FUNCTION_TASK();
-    return static_cast<IContextVK&>(GetContextBase());
+}
+
+void ReleasePoolVK::ReleaseAllResources()
+{
+    META_FUNCTION_TASK();
+    m_sp_vk_resources.reset(new ResourceContainerVK());
+}
+
+void ReleasePoolVK::ReleaseFrameResources(uint32_t frame_index)
+{
+    META_FUNCTION_TASK();
+    META_UNUSED(frame_index);
+
+    // TODO: to be implemented
+    ReleaseAllResources();
 }
 
 } // namespace Methane::Graphics

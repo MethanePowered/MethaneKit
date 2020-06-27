@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,32 +16,38 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/ResourceMT.hh
-Metal implementation of the resource interface.
+FILE: Methane/Graphics/DirectX12/ReleasePoolDX.h
+DirectX 12 GPU release pool for deferred objects release.
 
 ******************************************************************************/
 #pragma once
 
-#include <Methane/Graphics/ResourceBase.h>
+#include <Methane/Graphics/ReleasePool.h>
+
+#include <wrl.h>
+#include <d3d12.h>
+
+#include <vector>
 
 namespace Methane::Graphics
 {
 
-struct IContextMT;
+namespace wrl = Microsoft::WRL;
 
-class ResourceMT : public ResourceBase
+class ReleasePoolDX final : public ReleasePool
 {
 public:
-    class BarriersMT : public Barriers
-    {
-    public:
-        BarriersMT(const Set& barriers) : Barriers(barriers) {}
-    };
+    ReleasePoolDX() = default;
 
-    ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
+    void AddResource(ResourceBase& resource) override;
+    void ReleaseAllResources() override;
+    void ReleaseFrameResources(uint32_t frame_index) override;
 
-protected:
-    IContextMT& GetContextMT() noexcept;
+private:
+    using D3DResourceComPtrs = std::vector<wrl::ComPtr<ID3D12Resource>>;
+
+    std::vector<D3DResourceComPtrs> m_frame_resources;
+    D3DResourceComPtrs              m_misc_resources;
 };
 
-} // namespace Methane::Graphics
+}

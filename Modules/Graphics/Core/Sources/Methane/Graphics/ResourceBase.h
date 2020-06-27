@@ -137,17 +137,6 @@ public:
         Map  m_barriers_map;
     };
 
-    struct ReleasePool
-    {
-        static Ptr<ReleasePool> Create();
-
-        virtual void AddResource(ResourceBase& resource) = 0;
-        virtual void ReleaseAllResources() = 0;
-        virtual void ReleaseFrameResources(uint32_t frame_index) = 0;
-
-        virtual ~ReleasePool() = default;
-    };
-
     ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& context, DescriptorByUsage  descriptor_by_usage);
     ~ResourceBase() override;
 
@@ -170,12 +159,13 @@ public:
     State   GetState() const noexcept                                            { return m_state;  }
     bool    SetState(State state, Ptr<Barriers>& out_barriers);
 
+    ContextBase&              GetContextBase()                                   { return m_context; }
+
     static std::string GetStateName(State state);
 
 protected:
     DescriptorHeap::Type GetDescriptorHeapTypeByUsage(Usage::Value usage) const;
     const Descriptor&    GetDescriptorByUsage(Usage::Value usage) const;
-    ContextBase&         GetContextBase()                                       { return m_context; }
     Data::Size           GetInitializedDataSize() const noexcept                { return m_initialized_data_size; }
     void                 SetSubResourceCount(const SubResource::Count& sub_resource_count);
     void                 ValidateSubResource(const SubResource& sub_resource) const;

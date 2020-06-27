@@ -55,21 +55,6 @@ public:
         std::vector<D3D12_RESOURCE_BARRIER> m_native_resource_barriers;
     };
 
-    class ReleasePoolDX final : public ReleasePool
-    {
-    public:
-        ReleasePoolDX() = default;
-
-        void AddResource(ResourceBase& resource) override;
-        void ReleaseAllResources() override;
-        void ReleaseFrameResources(uint32_t frame_index) override;
-
-    private:
-        using D3DResourceComPtrs = std::vector<wrl::ComPtr<ID3D12Resource>>;
-        std::vector<D3DResourceComPtrs> m_frame_resources;
-        D3DResourceComPtrs              m_misc_resources;
-    };
-
     class LocationDX : public Location
     {
     public:

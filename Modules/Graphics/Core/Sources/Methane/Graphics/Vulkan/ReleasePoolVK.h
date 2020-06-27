@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,32 +16,33 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/ResourceMT.hh
-Metal implementation of the resource interface.
+FILE: Methane/Graphics/Vulkan/ReleasePoolVK.h
+Vulkan GPU release pool for deferred objects release.
 
 ******************************************************************************/
 #pragma once
 
-#include <Methane/Graphics/ResourceBase.h>
+#include <Methane/Graphics/ReleasePool.h>
+
+#include <vector>
 
 namespace Methane::Graphics
 {
 
-struct IContextMT;
+struct ResourceContainerVK;
 
-class ResourceMT : public ResourceBase
+class ReleasePoolVK final : public ReleasePool
 {
 public:
-    class BarriersMT : public Barriers
-    {
-    public:
-        BarriersMT(const Set& barriers) : Barriers(barriers) {}
-    };
+    ReleasePoolVK();
 
-    ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
+    // ReleasePool interface
+    void AddResource(ResourceBase& resource) override;
+    void ReleaseAllResources() override;
+    void ReleaseFrameResources(uint32_t frame_index) override;
 
-protected:
-    IContextMT& GetContextMT() noexcept;
+private:
+    std::unique_ptr<ResourceContainerVK> m_sp_vk_resources;
 };
 
-} // namespace Methane::Graphics
+}

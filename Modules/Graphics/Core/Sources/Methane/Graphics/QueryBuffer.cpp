@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/QueryBuffer.cpp
+FILE: Methane/Graphics/QueryBuffer.cpp
 GPU data query buffer base implementation.
 
 ******************************************************************************/

@@ -34,7 +34,7 @@ namespace Methane::Graphics
 
 ResourceManager::ResourceManager(ContextBase& context)
     : m_context(context)
-    , m_sp_release_pool(ResourceBase::ReleasePool::Create())
+    , m_sp_release_pool(ReleasePool::Create())
 {
     META_FUNCTION_TASK();
 }
@@ -285,7 +285,7 @@ void ResourceManager::ForEachDescriptorHeap(const std::function<void(DescriptorH
     }
 }
 
-ResourceBase::ReleasePool& ResourceManager::GetReleasePool()
+ReleasePool& ResourceManager::GetReleasePool()
 {
     META_FUNCTION_TASK();
     assert(!!m_sp_release_pool);

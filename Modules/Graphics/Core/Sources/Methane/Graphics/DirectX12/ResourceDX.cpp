@@ -65,58 +65,6 @@ bool ResourceDX::BarriersDX::Add(const Barrier::Id& id, const Barrier::StateChan
 }
 
 
-Ptr<ResourceBase::ReleasePool> ResourceBase::ReleasePool::Create()
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<ResourceDX::ReleasePoolDX>();
-}
-
-void ResourceDX::ReleasePoolDX::AddResource(ResourceBase& resource)
-{
-    META_FUNCTION_TASK();
-    ResourceDX& resource_dx = static_cast<ResourceDX&>(resource);
-
-    const wrl::ComPtr<ID3D12Resource>& cp_native_resource = resource_dx.GetNativeResourceComPtr();
-    assert(cp_native_resource || resource_dx.GetResourceType() == Resource::Type::Sampler);
-    if (!cp_native_resource)
-        return;
-
-    if (resource_dx.GetContextBase().GetType() == Context::Type::Render)
-    {
-        RenderContextBase& render_context = static_cast<RenderContextBase&>(resource_dx.GetContextBase());
-        if (m_frame_resources.size() != render_context.GetSettings().frame_buffers_count)
-            m_frame_resources.resize(render_context.GetSettings().frame_buffers_count);
-
-        const uint32_t frame_index = render_context.GetFrameBufferIndex();
-        m_frame_resources[frame_index].emplace_back(cp_native_resource);
-    }
-    else
-    {
-        m_misc_resources.emplace_back(cp_native_resource);
-    }
-
-}
-
-void ResourceDX::ReleasePoolDX::ReleaseAllResources()
-{
-    META_FUNCTION_TASK();
-    for(D3DResourceComPtrs& frame_resources : m_frame_resources)
-    {
-        frame_resources.clear();
-    }
-    m_misc_resources.clear();
-}
-
-void ResourceDX::ReleasePoolDX::ReleaseFrameResources(uint32_t frame_index)
-{
-    META_FUNCTION_TASK();
-    if (frame_index >= m_frame_resources.size())
-        return;
-
-    m_frame_resources[frame_index].clear();
-}
-
-
 ResourceDX::LocationDX::LocationDX(const Location& location)
     : Location(location)
     , m_resource_dx(dynamic_cast<ResourceDX&>(GetResource()))
@@ -137,6 +85,7 @@ ResourceDX::LocationDX& ResourceDX::LocationDX::operator=(const LocationDX& othe
     m_resource_dx = dynamic_cast<ResourceDX&>(GetResource());
     return *this;
 }
+
 
 ResourceDX::ResourceDX(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
     : ResourceBase(type, usage_mask, context, descriptor_by_usage)
