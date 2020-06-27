@@ -93,6 +93,7 @@ void BufferMT::SetName(const std::string& name)
     META_FUNCTION_TASK();
 
     BufferBase::SetName(name);
+
     m_mtl_buffer.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
 }
 
@@ -125,7 +126,7 @@ MTLIndexType BufferMT::GetNativeIndexType() const noexcept
     return TypeConverterMT::DataFormatToMetalIndexType(GetSettings().data_format);
 }
 
-Ptr<Buffers> Buffers::Create(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
+Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
 {
     META_FUNCTION_TASK();
     return std::make_shared<BufferSetMT>(buffers_type, std::move(buffer_refs));

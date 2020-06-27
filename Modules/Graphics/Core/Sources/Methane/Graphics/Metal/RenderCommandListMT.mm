@@ -103,7 +103,7 @@ void RenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, DebugGr
     RenderCommandListBase::Reset(sp_render_state, p_debug_group);
 }
 
-void RenderCommandListMT::SetVertexBuffers(const Buffers& vertex_buffers)
+void RenderCommandListMT::SetVertexBuffers(const BufferSet& vertex_buffers)
 {
     META_FUNCTION_TASK();
 
