@@ -149,43 +149,14 @@ struct Text::Mesh
     
     static void UpdateContentSizeWithChar(const Font::Char& font_char, const FrameRect::Point& char_pos, FrameSize& content_size)
     {
+        META_FUNCTION_TASK();
         content_size.width  = std::max(content_size.width,  char_pos.GetX() + font_char.GetOffset().GetX() + font_char.GetRect().size.width);
         content_size.height = std::max(content_size.height, char_pos.GetY() + font_char.GetOffset().GetY() + font_char.GetRect().size.height);
-    }
-    
-    static FrameSize CalcContentSize(const std::u32string& text, Font& font, uint32_t viewport_width = 0u, Wrap wrap = Wrap::None)
-    {
-        META_FUNCTION_TASK();
-        FrameSize content_size;
-        ForEachTextCharacter(text, font, viewport_width, wrap,
-            [&content_size](const Font::Char& text_char, const FrameRect::Point& char_pos, size_t) -> CharAction
-            {
-                UpdateContentSizeWithChar(text_char, char_pos, content_size);
-                return CharAction::Continue;
-            }
-        );
-        return content_size;
     }
 
     Mesh(const std::u32string& text, Wrap wrap, Font& font, FrameSize& viewport_size)
     {
         META_FUNCTION_TASK();
-
-        bool is_content_size_initialized = false;
-        if (!viewport_size.width || !viewport_size.height)
-        {
-            content_size = CalcContentSize(text, font, viewport_size.width, wrap);
-            is_content_size_initialized = true;
-            if (!viewport_size.width)
-            {
-                viewport_size.width = content_size.width;
-            }
-            if (!viewport_size.height)
-            {
-                viewport_size.height = content_size.height;
-            }
-        }
-        
         const size_t text_length = text.length();
         vertices.reserve(text_length * 4);
         indices.reserve(text_length * 6);
@@ -195,35 +166,57 @@ struct Text::Mesh
             [&](const Font::Char& font_char, const FrameRect::Point& char_pos, size_t) -> CharAction
             {
                 AddCharQuad(font_char, char_pos, viewport_size, atlas_size);
-                if (!is_content_size_initialized)
-                {
-                    UpdateContentSizeWithChar(font_char, char_pos, content_size);
-                }
+                UpdateContentSizeWithChar(font_char, char_pos, content_size);
                 return CharAction::Continue;
             }
         );
+
+        if (viewport_size.width && viewport_size.height)
+            return;
+
+        // Normalize char vertex positions using calculated content size to transform in viewport coordinates
+        for (Vertex& vertex : vertices)
+        {
+            if (!viewport_size.width)
+            {
+                vertex.position[0] = vertex.position[0] * 2.f / content_size.width - 1.f;
+            }
+            if (!viewport_size.height)
+            {
+                vertex.position[1] = vertex.position[1] * 2.f / content_size.height + 1.f;
+            }
+        }
+
+        if (!viewport_size.width)
+        {
+            viewport_size.width = content_size.width;
+        }
+        if (!viewport_size.height)
+        {
+            viewport_size.height = content_size.height;
+        }
     }
     
     void AddCharQuad(const Font::Char& font_char, const FrameRect::Point& screen_char_pos,
                      const FrameSize& viewport_size, const FrameSize& atlas_size)
     {
         META_FUNCTION_TASK();
-        if (!viewport_size.width || !viewport_size.height)
-            throw std::invalid_argument("All dimensions of the text viewport must be greater than zero.");
-
         Point2f view_char_pos = screen_char_pos + font_char.GetOffset();
         view_char_pos += Point2f(0.f, font_char.GetRect().size.height); // convert left-bottom to left-top position
         view_char_pos -= Point2f(viewport_size.width, viewport_size.height) / 2.f; // relative to viewport center
 
+        const float hor_norm_coeff = viewport_size.width  ? 2.f / viewport_size.width  : 1.f;
+        const float ver_norm_coeff = viewport_size.height ? 2.f / viewport_size.height : 1.f;
+
         // Char quad rectangle in viewport coordinates [-1, 1] x [-1, 1]
         const Rect<float, float> ver_rect {
             {
-                static_cast<float>(view_char_pos.GetX()) *  2.f / viewport_size.width,
-                static_cast<float>(view_char_pos.GetY()) * -2.f / viewport_size.height,
+                static_cast<float>(view_char_pos.GetX()) *  hor_norm_coeff,
+                static_cast<float>(view_char_pos.GetY()) * -ver_norm_coeff,
             },
             {
-                static_cast<float>(font_char.GetRect().size.width)  * 2.f / viewport_size.width,
-                static_cast<float>(font_char.GetRect().size.height) * 2.f / viewport_size.height,
+                static_cast<float>(font_char.GetRect().size.width)  * hor_norm_coeff,
+                static_cast<float>(font_char.GetRect().size.height) * ver_norm_coeff,
             }
         };
 
