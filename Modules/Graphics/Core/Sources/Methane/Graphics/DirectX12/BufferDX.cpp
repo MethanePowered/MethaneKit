@@ -32,7 +32,6 @@ DirectX 12 implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
-
 static std::vector<D3D12_VERTEX_BUFFER_VIEW> GetNativeVertexBufferViews(const Refs<Buffer>& buffer_refs)
 {
     META_FUNCTION_TASK();

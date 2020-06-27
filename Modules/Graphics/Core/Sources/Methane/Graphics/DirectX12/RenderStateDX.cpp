@@ -44,6 +44,13 @@ namespace Methane::Graphics
 
 constexpr size_t g_max_rtv_count = sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC::RTVFormats) / sizeof(DXGI_FORMAT);
 
+struct RetainedPipelineStateDX : ReleasePool::RetainedResource
+{
+    wrl::ComPtr<ID3D12PipelineState> cp_pipeline_state;
+
+    RetainedPipelineStateDX(const wrl::ComPtr<ID3D12PipelineState>& cp_pipeline_state) : cp_pipeline_state(cp_pipeline_state) { }
+};
+
 inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<Shader>& sp_shader)
 {
     META_FUNCTION_TASK();
@@ -199,6 +206,11 @@ RenderStateDX::RenderStateDX(RenderContextBase& context, const Settings& setting
 {
     META_FUNCTION_TASK();
     Reset(settings);
+}
+
+RenderStateDX::~RenderStateDX()
+{
+    GetRenderContext().GetResourceManager().GetReleasePool().AddResource(std::make_unique<RetainedPipelineStateDX>(m_cp_pipeline_state));
 }
 
 void RenderStateDX::Reset(const Settings& settings)
