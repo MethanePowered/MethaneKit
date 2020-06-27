@@ -27,17 +27,28 @@ GPU release pool for deferred objects release when they are not used by GPU anym
 namespace Methane::Graphics
 {
 
+class ContextBase;
 class ResourceBase;
 
 struct ReleasePool
 {
-    static Ptr<ReleasePool> Create();
+    struct RetainedResource
+    {
+        virtual ~RetainedResource() = default;
+    };
 
-    virtual void AddResource(ResourceBase& resource) = 0;
-    virtual void ReleaseAllResources() = 0;
-    virtual void ReleaseFrameResources(uint32_t frame_index) = 0;
+    ReleasePool(ContextBase& context);
 
-    virtual ~ReleasePool() = default;
+    void AddResource(UniquePtr<RetainedResource>&& retained_resource);
+    void ReleaseFrameResources(uint32_t frame_index);
+    void ReleaseAllResources();
+
+private:
+    using RetainedResources = UniquePtrs<RetainedResource>;
+
+    ContextBase&                   m_context;
+    std::vector<RetainedResources> m_frame_resources;
+    RetainedResources              m_misc_resources;
 };
 
 }

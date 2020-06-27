@@ -70,7 +70,7 @@ public:
     const Ptr<DescriptorHeap>&  GetDefaultShaderVisibleDescriptorHeapPtr(DescriptorHeap::Type type) const;
     DescriptorHeap&             GetDefaultShaderVisibleDescriptorHeap(DescriptorHeap::Type type) const;
     DescriptorHeapSizeByType    GetDescriptorHeapSizes(bool get_allocated_size, bool for_shader_visible_heaps) const;
-    ReleasePool&                GetReleasePool();
+    ReleasePool&                GetReleasePool() noexcept { return m_release_pool; }
 
 private:
     void ForEachDescriptorHeap(const std::function<void(DescriptorHeap& descriptor_heap)>& process_heap) const;
@@ -80,7 +80,7 @@ private:
     bool                      m_deferred_heap_allocation = false;
     ContextBase&              m_context;
     DescriptorHeapTypes       m_descriptor_heap_types;
-    Ptr<ReleasePool>          m_sp_release_pool;
+    ReleasePool               m_release_pool;
     TracyLockable(std::mutex, m_program_bindings_mutex);
     WeakPtrs<ProgramBindings> m_program_bindings;
 };

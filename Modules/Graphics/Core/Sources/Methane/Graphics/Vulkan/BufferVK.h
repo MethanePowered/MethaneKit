@@ -46,8 +46,6 @@ class BuffersVK final : public BuffersBase
 {
 public:
     BuffersVK(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
-
-private:
 };
 
 } // namespace Methane::Graphics

@@ -80,11 +80,6 @@ TextureVK::TextureVK(ContextBase& context, const Settings& settings, const Descr
 TextureVK::~TextureVK()
 {
     META_FUNCTION_TASK();
-
-    if (GetSettings().type != Texture::Type::FrameBuffer)
-    {
-        GetContextBase().GetResourceManager().GetReleasePool().AddResource(*this);
-    }
 }
 
 void TextureVK::SetName(const std::string& name)

@@ -36,6 +36,13 @@ Metal implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
+struct RetainedBufferMT : ReleasePool::RetainedResource
+{
+    id<MTLBuffer> mtl_buffer;
+
+    RetainedBufferMT(const id<MTLBuffer>& buffer_id) : mtl_buffer(buffer_id) { }
+};
+
 Ptr<Buffer> Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
 {
     META_FUNCTION_TASK();
@@ -78,7 +85,7 @@ BufferMT::BufferMT(ContextBase& context, const Settings& settings, const Descrip
 BufferMT::~BufferMT()
 {
     META_FUNCTION_TASK();
-    GetContextBase().GetResourceManager().GetReleasePool().AddResource(*this);
+    GetContextBase().GetResourceManager().GetReleasePool().AddResource(std::make_unique<RetainedBufferMT>(m_mtl_buffer));
 }
 
 void BufferMT::SetName(const std::string& name)

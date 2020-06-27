@@ -16,63 +16,58 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/ReleasePoolDX.h
-DirectX 12 GPU release pool for deferred objects release.
+FILE: Methane/Graphics/ReleasePool.h
+GPU release pool for deferred objects release when they are not used by GPU anymore.
 
 ******************************************************************************/
 
-#include "ReleasePoolDX.h"
-#include "ResourceDX.h"
+#include "ReleasePool.h"
+#include "ResourceBase.h"
+#include "RenderContextBase.h"
 
-#include <Methane/Graphics/RenderContextBase.h>
-#include <Methane/Graphics/Windows/Primitives.h>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-Ptr<ReleasePool> ReleasePool::Create()
+ReleasePool::ReleasePool(ContextBase& context)
+    : m_context(context)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ReleasePoolDX>();
 }
 
-void ReleasePoolDX::AddResource(ResourceBase& resource)
+void ReleasePool::AddResource(UniquePtr<RetainedResource>&& retained_resource)
 {
     META_FUNCTION_TASK();
-    ResourceDX& resource_dx = static_cast<ResourceDX&>(resource);
-
-    const wrl::ComPtr<ID3D12Resource>& cp_native_resource = resource_dx.GetNativeResourceComPtr();
-    assert(cp_native_resource || resource_dx.GetResourceType() == Resource::Type::Sampler);
-    if (!cp_native_resource)
+    if (!retained_resource)
         return;
 
-    if (resource_dx.GetContextBase().GetType() == Context::Type::Render)
+    if (m_context.GetType() == Context::Type::Render)
     {
-        RenderContextBase& render_context = static_cast<RenderContextBase&>(resource_dx.GetContextBase());
+        RenderContextBase& render_context = static_cast<RenderContextBase&>(m_context);
         if (m_frame_resources.size() != render_context.GetSettings().frame_buffers_count)
             m_frame_resources.resize(render_context.GetSettings().frame_buffers_count);
 
         const uint32_t frame_index = render_context.GetFrameBufferIndex();
-        m_frame_resources[frame_index].emplace_back(cp_native_resource);
+        m_frame_resources[frame_index].emplace_back(std::move(retained_resource));
     }
     else
     {
-        m_misc_resources.emplace_back(cp_native_resource);
+        m_misc_resources.emplace_back(std::move(retained_resource));
     }
 }
 
-void ReleasePoolDX::ReleaseAllResources()
+void ReleasePool::ReleaseAllResources()
 {
     META_FUNCTION_TASK();
-    for (D3DResourceComPtrs& frame_resources : m_frame_resources)
+    for(RetainedResources& frame_resources : m_frame_resources)
     {
         frame_resources.clear();
     }
     m_misc_resources.clear();
 }
 
-void ReleasePoolDX::ReleaseFrameResources(uint32_t frame_index)
+void ReleasePool::ReleaseFrameResources(uint32_t frame_index)
 {
     META_FUNCTION_TASK();
     if (frame_index >= m_frame_resources.size())

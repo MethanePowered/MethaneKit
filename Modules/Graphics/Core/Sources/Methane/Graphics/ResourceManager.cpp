@@ -34,7 +34,7 @@ namespace Methane::Graphics
 
 ResourceManager::ResourceManager(ContextBase& context)
     : m_context(context)
-    , m_sp_release_pool(ReleasePool::Create())
+    , m_release_pool(m_context)
 {
     META_FUNCTION_TASK();
 }
@@ -106,11 +106,7 @@ void ResourceManager::CompleteInitialization()
 void ResourceManager::Release()
 {
     META_FUNCTION_TASK();
-
-    if (m_sp_release_pool)
-    {
-        m_sp_release_pool->ReleaseAllResources();
-    }
+    m_release_pool.ReleaseAllResources();
 
     for (Ptrs<DescriptorHeap>& desc_heaps : m_descriptor_heap_types)
     {
@@ -283,13 +279,6 @@ void ResourceManager::ForEachDescriptorHeap(const std::function<void(DescriptorH
             process_heap(*sp_desc_heap);
         }
     }
-}
-
-ReleasePool& ResourceManager::GetReleasePool()
-{
-    META_FUNCTION_TASK();
-    assert(!!m_sp_release_pool);
-    return *m_sp_release_pool;
 }
 
 } // namespace Methane::Graphics

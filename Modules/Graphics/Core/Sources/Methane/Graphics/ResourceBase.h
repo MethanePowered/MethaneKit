@@ -27,6 +27,7 @@ Base implementation of the resource interface.
 
 #include "ObjectBase.h"
 #include "DescriptorHeap.h"
+#include "ReleasePool.h"
 
 #include <set>
 #include <map>
@@ -159,11 +160,10 @@ public:
     State   GetState() const noexcept                                            { return m_state;  }
     bool    SetState(State state, Ptr<Barriers>& out_barriers);
 
-    ContextBase&              GetContextBase()                                   { return m_context; }
-
     static std::string GetStateName(State state);
 
 protected:
+    ContextBase&         GetContextBase()                                       { return m_context; }
     DescriptorHeap::Type GetDescriptorHeapTypeByUsage(Usage::Value usage) const;
     const Descriptor&    GetDescriptorByUsage(Usage::Value usage) const;
     Data::Size           GetInitializedDataSize() const noexcept                { return m_initialized_data_size; }

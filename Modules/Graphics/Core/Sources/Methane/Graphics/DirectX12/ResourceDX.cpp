@@ -35,6 +35,13 @@ DirectX 12 implementation of the resource interface.
 namespace Methane::Graphics
 {
 
+struct RetainedResourceDX : ReleasePool::RetainedResource
+{
+    wrl::ComPtr<ID3D12Resource> cp_resource;
+
+    RetainedResourceDX(const wrl::ComPtr<ID3D12Resource>& cp_resource) : cp_resource(cp_resource) { }
+};
+
 Ptr<ResourceBase::Barriers> ResourceBase::Barriers::Create(const Set& barriers)
 {
     META_FUNCTION_TASK();
@@ -96,7 +103,10 @@ ResourceDX::ResourceDX(Type type, Usage::Mask usage_mask, ContextBase& context, 
 ResourceDX::~ResourceDX()
 {
     META_FUNCTION_TASK();
-    GetContextBase().GetResourceManager().GetReleasePool().AddResource(*this);
+    if (m_cp_resource)
+    {
+        GetContextBase().GetResourceManager().GetReleasePool().AddResource(std::make_unique<RetainedResourceDX>(m_cp_resource));
+    }
 }
 
 void ResourceDX::SetName(const std::string& name)

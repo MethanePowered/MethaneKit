@@ -35,6 +35,13 @@ Metal implementation of the texture interface.
 namespace Methane::Graphics
 {
 
+struct RetainedTextureMT : ReleasePool::RetainedResource
+{
+    id<MTLTexture> mtl_texture;
+
+    RetainedTextureMT(const id<MTLTexture>& texture_id) : mtl_texture(texture_id) { }
+};
+
 static MTLTextureType GetNativeTextureType(Texture::DimensionType dimension_type)
 {
     META_FUNCTION_TASK();
@@ -126,7 +133,7 @@ TextureMT::~TextureMT()
 
     if (TextureBase::GetSettings().type != Texture::Type::FrameBuffer)
     {
-        GetContextBase().GetResourceManager().GetReleasePool().AddResource(*this);
+        GetContextBase().GetResourceManager().GetReleasePool().AddResource(std::make_unique<RetainedTextureMT>(m_mtl_texture));
     }
 }
 
