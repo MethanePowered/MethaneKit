@@ -30,7 +30,6 @@ Base frame class provides frame buffer management with resize handling.
 #include "AppContextController.h"
 
 #include <Methane/Data/AppResourceProviders.h>
-#include <Methane/Timer.hpp>
 #include <Methane/Data/AnimationsPool.h>
 #include <Methane/Data/Receiver.hpp>
 #include <Methane/Platform/App.h>
@@ -41,8 +40,9 @@ Base frame class provides frame buffer management with resize handling.
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Graphics/ImageLoader.h>
-#include <Methane/Graphics/Badge.h>
-#include <Methane/Graphics/HeadsUpDisplay.h>
+#include <Methane/UserInterface/Badge.h>
+#include <Methane/UserInterface/HeadsUpDisplay.h>
+#include <Methane/Timer.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <vector>

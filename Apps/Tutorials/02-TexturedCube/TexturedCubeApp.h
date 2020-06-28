@@ -23,7 +23,7 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 
 #pragma once
 
-#include <Methane/Graphics/Kit.h>
+#include <Methane/Kit.h>
 
 #include <string>
 #include <vector>

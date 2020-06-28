@@ -209,7 +209,7 @@ cmake --build . --config Release --target install
 
 See how triangle rendering application is implemented in 140 lines of code using Methane Kit ([HelloTriangleAppSimple.cpp](/Apps/Tutorials/01-HelloTriangle/HelloTriangleAppSimple.cpp)):
 ```cpp
-#include <Methane/Graphics/Kit.h>
+#include <Methane/Kit.h>
 
 using namespace Methane;
 using namespace Methane::Graphics;

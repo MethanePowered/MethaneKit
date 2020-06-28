@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Badge.h
+FILE: Methane/UserInterface/Badge.h
 Badge rendering primitive displaying fixed texture in specific corner of the screen.
 
 ******************************************************************************/

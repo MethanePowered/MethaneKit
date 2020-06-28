@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Font.h
+FILE: Methane/UserInterface/Font.h
 Font atlas textures generation and fonts library management classes.
 
 ******************************************************************************/

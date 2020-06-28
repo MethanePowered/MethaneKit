@@ -16,14 +16,14 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Font.cpp
+FILE: Methane/UserInterface/Font.cpp
 Font atlas textures generation and fonts library management classes.
 
 ******************************************************************************/
 
 #define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
 
-#include <Methane/Graphics/Font.h>
+#include <Methane/UserInterface/Font.h>
 
 #include <Methane/Data/RectBinPack.hpp>
 #include <Methane/Instrumentation.h>

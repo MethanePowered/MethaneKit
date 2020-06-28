@@ -1,6 +1,6 @@
-set(TARGET MethaneGraphicsKit)
+set(TARGET MethaneKit)
 
-get_module_dirs("Methane/Graphics")
+get_module_dirs("Methane")
 
 set(SOURCES
     ${SOURCES_DIR}/Kit.cpp
@@ -27,16 +27,18 @@ target_link_libraries(${TARGET}
         MethaneGraphicsApp
         MethaneGraphicsCore
         MethaneGraphicsExtensions
-        MethaneGraphicsUserInterface
         MethaneGraphicsPrimitives
         MethaneGraphicsCamera
         MethaneGraphicsTypes
+        MethaneUserInterfaceTypography
+        MethaneUserInterfaceWidgets
 )
 
 set(PREREQUISITE_TARGETS
     MethaneGraphicsCore
     MethaneGraphicsExtensions
-    MethaneGraphicsUserInterface
+    MethaneUserInterfaceTypography
+    MethaneUserInterfaceWidgets
 )
 add_prerequisite_modules(${TARGET} "${PREREQUISITE_TARGETS}")
 
@@ -44,7 +46,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER Modules/Graphics
+    FOLDER Modules
     PUBLIC_HEADER "${HEADERS}"
 )
 

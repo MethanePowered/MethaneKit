@@ -21,7 +21,7 @@ Simplified tutorial demonstrating triangle rendering with Methane graphics API
 
 ******************************************************************************/
 
-#include <Methane/Graphics/Kit.h>
+#include <Methane/Kit.h>
 
 using namespace Methane;
 using namespace Methane::Graphics;

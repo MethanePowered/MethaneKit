@@ -23,7 +23,7 @@ Tutorial demonstrating triangle rendering with Methane graphics API
 
 #pragma once
 
-#include <Methane/Graphics/Kit.h>
+#include <Methane/Kit.h>
 #include <Methane/Data/Receiver.hpp>
 
 #include <map>

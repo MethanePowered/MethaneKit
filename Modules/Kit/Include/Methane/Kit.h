@@ -16,14 +16,23 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Extensions.h
-Methane graphics extensions: all headers under one umbrella.
+FILE: Methane/Kit.h
+Methane kit interfaces: all headers under one umbrella.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "Font.h"
-#include "Text.h"
-#include "Badge.h"
-#include "HeadsUpDisplay.h"
+// Methane Graphics Headers
+
+#include <Methane/Graphics/App.hpp>
+#include <Methane/Graphics/Types.h>
+#include <Methane/Graphics/Core.h>
+#include <Methane/Graphics/Extensions.h>
+#include <Methane/Graphics/Camera.h>
+#include <Methane/Graphics/Primitives.h>
+
+// Methane User Interface Headers
+
+#include <Methane/UserInterface/Typography.h>
+#include <Methane/UserInterface/Widgets.h>

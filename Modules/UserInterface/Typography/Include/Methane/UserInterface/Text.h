@@ -16,15 +16,15 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Text.h
-Text rendering primitive.
+FILE: Methane/UserInterface/Text.h
+Methane text rendering primitive.
 
 ******************************************************************************/
 
 #pragma once
 
+#include <Methane/UserInterface/Font.h>
 #include <Methane/Graphics/RenderContext.h>
-#include <Methane/Graphics/Font.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/RenderState.h>

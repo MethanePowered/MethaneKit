@@ -123,7 +123,7 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
 
     target_link_libraries(${TARGET}
         PRIVATE
-            MethaneGraphicsKit
+            MethaneKit
             MethaneBuildOptions
             MethaneInstrumentation
             $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
@@ -134,7 +134,7 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
             .
     )
 
-    get_target_property(METHANE_PREREQUISITE_MODULES MethaneGraphicsKit PREREQUISITE_MODULES)
+    get_target_property(METHANE_PREREQUISITE_MODULES MethaneKit PREREQUISITE_MODULES)
     add_prerequisite_binaries(${TARGET} "${METHANE_PREREQUISITE_MODULES}" ${INSTALL_DIR})
 
 endfunction()

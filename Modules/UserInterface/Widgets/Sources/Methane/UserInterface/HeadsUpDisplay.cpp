@@ -16,15 +16,15 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/HeadsUpDisplay.cpp
+FILE: Methane/UserInterface/HeadsUpDisplay.cpp
 HeadsUpDisplay rendering primitive.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/HeadsUpDisplay.h>
+#include <Methane/UserInterface/HeadsUpDisplay.h>
+#include <Methane/UserInterface/Font.h>
 
 #include <Methane/Graphics/RenderContext.h>
-#include <Methane/Graphics/Font.h>
 #include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
