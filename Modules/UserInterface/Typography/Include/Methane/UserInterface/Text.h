@@ -30,7 +30,6 @@ Methane text rendering primitive.
 
 namespace Methane::Graphics
 {
-
 struct RenderContext;
 struct RenderCommandList;
 struct RenderState;
@@ -39,6 +38,12 @@ struct Buffer;
 struct BufferSet;
 struct Texture;
 struct Sampler;
+}
+
+namespace Methane::UserInterface
+{
+
+namespace gfx = Methane::Graphics;
 
 class TextMesh;
 
@@ -57,63 +62,63 @@ public:
     {
         const std::string name;
         StringType        text;
-        FrameRect         screen_rect;
+        gfx::FrameRect    screen_rect;
         bool              screen_rect_in_pixels = false;
-        Color4f           color = Color4f(1.f, 1.f, 1.f, 1.f);
+        gfx::Color4f      color = gfx::Color4f(1.f, 1.f, 1.f, 1.f);
         Wrap              wrap  = Wrap::Anywhere;
     };
 
     using SettingsUtf8  = Settings<std::string>;
     using SettingsUtf32 = Settings<std::u32string>;
 
-    Text(RenderContext& context, Font& font, const SettingsUtf8&  settings);
-    Text(RenderContext& context, Font& font, SettingsUtf32 settings);
+    Text(gfx::RenderContext& context, Font& font, const SettingsUtf8&  settings);
+    Text(gfx::RenderContext& context, Font& font, SettingsUtf32 settings);
     ~Text();
 
     const SettingsUtf32&  GetSettings() const noexcept       { return m_settings; }
-    const FrameRect&      GetViewport() const noexcept       { return m_viewport_rect; }
+    const gfx::FrameRect& GetViewport() const noexcept       { return m_viewport_rect; }
     const std::u32string& GetTextUtf32() const noexcept      { return m_settings.text; }
     std::string           GetTextUtf8() const;
-    FrameRect             GetViewportInDots() const noexcept;
+    gfx::FrameRect        GetViewportInDots() const noexcept;
 
     void SetText(const std::string& text);
     void SetText(const std::u32string& text);
-    void SetTextInScreenRect(const std::string& text, const FrameRect& screen_rect, bool rect_in_pixels = false);
-    void SetTextInScreenRect(const std::u32string& text, const FrameRect& screen_rect, bool rect_in_pixels = false);
-    void SetScreenRect(const FrameRect& screen_rect, bool rect_in_pixels = false);
-    void SetColor(const Color4f& color);
+    void SetTextInScreenRect(const std::string& text, const gfx::FrameRect& screen_rect, bool rect_in_pixels = false);
+    void SetTextInScreenRect(const std::u32string& text, const gfx::FrameRect& screen_rect, bool rect_in_pixels = false);
+    void SetScreenRect(const gfx::FrameRect& screen_rect, bool rect_in_pixels = false);
+    void SetColor(const gfx::Color4f& color);
 
-    void Draw(RenderCommandList& cmd_list);
+    void Draw(gfx::RenderCommandList& cmd_list);
 
 protected:
     // IFontCallback interface
-    void OnFontAtlasTextureReset(Font& font, const Ptr<Texture>& sp_old_atlas_texture, const Ptr<Texture>& sp_new_atlas_texture) override;
+    void OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture) override;
     void OnFontAtlasUpdated(Font&) override {}
 
 private:
     struct Constants;
 
-    Ptr<ProgramBindings> CreateConstProgramBindings();
+    Ptr<gfx::ProgramBindings> CreateConstProgramBindings();
 
     void UpdateAtlasTexture();
     void UpdateMeshData();
     void UpdateMeshBuffers();
     void UpdateConstantsBuffer();
 
-    SettingsUtf32        m_settings;
-    FrameRect            m_viewport_rect;
-    RenderContext&       m_context;
-    Ptr<Font>            m_sp_font;
-    Ptr<RenderState>     m_sp_state;
-    Ptr<BufferSet>       m_sp_vertex_buffers;
-    Ptr<Buffer>          m_sp_index_buffer;
-    Ptr<Buffer>          m_sp_const_buffer;
-    Ptr<Texture>         m_sp_atlas_texture;
-    Ptr<Texture>         m_sp_new_atlas_texture;
-    Ptr<Sampler>         m_sp_texture_sampler;
-    Ptr<ProgramBindings> m_sp_const_program_bindings;
-    UniquePtr<TextMesh>  m_sp_new_mesh_data;
-    UniquePtr<Constants> m_sp_new_const_data;
+    SettingsUtf32             m_settings;
+    gfx::FrameRect            m_viewport_rect;
+    gfx::RenderContext&       m_context;
+    Ptr<Font>                 m_sp_font;
+    Ptr<gfx::RenderState>     m_sp_state;
+    Ptr<gfx::BufferSet>       m_sp_vertex_buffers;
+    Ptr<gfx::Buffer>          m_sp_index_buffer;
+    Ptr<gfx::Buffer>          m_sp_const_buffer;
+    Ptr<gfx::Texture>         m_sp_atlas_texture;
+    Ptr<gfx::Texture>         m_sp_new_atlas_texture;
+    Ptr<gfx::Sampler>         m_sp_texture_sampler;
+    Ptr<gfx::ProgramBindings> m_sp_const_program_bindings;
+    UniquePtr<TextMesh>       m_sp_new_mesh_data;
+    UniquePtr<Constants>      m_sp_new_const_data;
 };
 
 } // namespace Methane::Graphics

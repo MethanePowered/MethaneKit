@@ -70,6 +70,8 @@ struct AppSettings
     RenderContext::Settings render_context;
 };
 
+namespace gui = Methane::UserInterface;
+
 template<typename FrameT>
 class App
     : public Graphics::IApp
@@ -200,14 +202,14 @@ public:
         // Create Methane logo badge
         if (m_settings.show_logo_badge)
         {
-            Badge::Settings logo_badge_settings;
+            gui::Badge::Settings logo_badge_settings;
             logo_badge_settings.blend_color  = Color4f(1.f, 1.f, 1.f, 0.15f);
-            m_sp_logo_badge = std::make_shared<Badge>(*m_sp_context, std::move(logo_badge_settings));
+            m_sp_logo_badge = std::make_shared<gui::Badge>(*m_sp_context, std::move(logo_badge_settings));
         }
 
         // Create heads-up-display (HUD)
         if (m_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface)
-            m_sp_hud = std::make_shared<HeadsUpDisplay>(*m_sp_context, m_hud_settings);
+            m_sp_hud = std::make_shared<gui::HeadsUpDisplay>(*m_sp_context, m_hud_settings);
 
         Platform::App::Init();
     }
@@ -383,7 +385,7 @@ public:
         m_sp_context->WaitForGpu(RenderContext::WaitFor::RenderComplete);
         if (m_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface && m_sp_context)
         {
-            m_sp_hud = std::make_shared<HeadsUpDisplay>(*m_sp_context, m_hud_settings);
+            m_sp_hud = std::make_shared<gui::HeadsUpDisplay>(*m_sp_context, m_hud_settings);
         }
         else
         {
@@ -492,8 +494,8 @@ protected:
         return *m_sp_context;
     }
 
-    HeadsUpDisplay::Settings& GetHeadsUpDisplaySettings()        { return m_hud_settings; }
-    HeadsUpDisplay*           GetHeadsUpDisplay() const noexcept { return m_sp_hud.get(); }
+    gui::HeadsUpDisplay::Settings& GetHeadsUpDisplaySettings()        { return m_hud_settings; }
+    gui::HeadsUpDisplay*           GetHeadsUpDisplay() const noexcept { return m_sp_hud.get(); }
 
     FrameSize GetFrameSizeInDots() const noexcept { return m_sp_context->GetSettings().frame_size / m_sp_context->GetContentScalingFactor(); }
 
@@ -510,16 +512,16 @@ protected:
 
     Ptr<RenderContext>       m_sp_context;
     Ptr<Texture>             m_sp_depth_texture;
-    Ptr<Badge>               m_sp_logo_badge;
-    Ptr<HeadsUpDisplay>      m_sp_hud;
+    Ptr<gui::Badge>          m_sp_logo_badge;
+    Ptr<gui::HeadsUpDisplay> m_sp_hud;
     std::vector<FrameT>      m_frames;
 
 private:
-    IApp::Settings           m_settings;
-    RenderContext::Settings  m_initial_context_settings;
-    HeadsUpDisplay::Settings m_hud_settings;
-    Timer                    m_title_update_timer;
-    bool                     m_restore_animations_enabled = true;
+    IApp::Settings                m_settings;
+    RenderContext::Settings       m_initial_context_settings;
+    gui::HeadsUpDisplay::Settings m_hud_settings;
+    Timer                         m_title_update_timer;
+    bool                          m_restore_animations_enabled = true;
 
     static constexpr double  g_title_update_interval_sec = 1.0;
 };

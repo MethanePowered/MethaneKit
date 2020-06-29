@@ -37,15 +37,15 @@ Methane text rendering primitive.
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
-namespace Methane::Graphics
+namespace Methane::UserInterface
 {
 
 struct SHADER_STRUCT_ALIGN Text::Constants
 {
-    SHADER_FIELD_ALIGN Color4f color;
+    SHADER_FIELD_ALIGN gfx::Color4f color;
 };
 
-Text::Text(RenderContext& context, Font& font, const SettingsUtf8&  settings)
+Text::Text(gfx::RenderContext& context, Font& font, const SettingsUtf8&  settings)
     : Text(context, font,
         SettingsUtf32
         {
@@ -61,7 +61,7 @@ Text::Text(RenderContext& context, Font& font, const SettingsUtf8&  settings)
     META_FUNCTION_TASK();
 }
 
-Text::Text(RenderContext& context, Font& font, SettingsUtf32 settings)
+Text::Text(gfx::RenderContext& context, Font& font, SettingsUtf32 settings)
     : m_settings(std::move(settings))
     , m_context(context)
     , m_sp_font(font.shared_from_this())
@@ -71,7 +71,7 @@ Text::Text(RenderContext& context, Font& font, SettingsUtf32 settings)
 
     m_sp_font->Connect(*this);
 
-    const RenderContext::Settings& context_settings = context.GetSettings();
+    const gfx::RenderContext::Settings& context_settings = context.GetSettings();
 
     m_viewport_rect = m_settings.screen_rect;
     if (!m_settings.screen_rect_in_pixels)
@@ -83,29 +83,29 @@ Text::Text(RenderContext& context, Font& font, SettingsUtf32 settings)
     m_sp_new_const_data = std::make_unique<Constants>(Constants{ m_settings.color });
     UpdateConstantsBuffer();
 
-    RenderState::Settings state_settings;
-    state_settings.sp_program = Program::Create(context,
-        Program::Settings
+    gfx::RenderState::Settings state_settings;
+    state_settings.sp_program = gfx::Program::Create(context,
+        gfx::Program::Settings
         {
-            Program::Shaders
+            gfx::Program::Shaders
             {
-                Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "Text", "TextVS" }, { } }),
-                Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "Text", "TextPS" }, { } }),
+                gfx::Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "Text", "TextVS" }, { } }),
+                gfx::Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "Text", "TextPS" }, { } }),
             },
-            Program::InputBufferLayouts
+            gfx::Program::InputBufferLayouts
             {
-                Program::InputBufferLayout
+                gfx::Program::InputBufferLayout
                 {
-                    Program::InputBufferLayout::ArgumentSemantics { "POSITION", "TEXCOORD" }
+                    gfx::Program::InputBufferLayout::ArgumentSemantics { "POSITION", "TEXCOORD" }
                 }
             },
-            Program::ArgumentDescriptions
+            gfx::Program::ArgumentDescriptions
             {
-                { { Shader::Type::Pixel, "g_constants" }, Program::Argument::Modifiers::Constant },
-                { { Shader::Type::Pixel, "g_texture"   }, Program::Argument::Modifiers::None     },
-                { { Shader::Type::Pixel, "g_sampler"   }, Program::Argument::Modifiers::Constant },
+                { { gfx::Shader::Type::Pixel, "g_constants" }, gfx::Program::Argument::Modifiers::Constant },
+                { { gfx::Shader::Type::Pixel, "g_texture"   }, gfx::Program::Argument::Modifiers::None     },
+                { { gfx::Shader::Type::Pixel, "g_sampler"   }, gfx::Program::Argument::Modifiers::Constant },
             },
-            PixelFormats
+            gfx::PixelFormats
             {
                 context_settings.color_format
             },
@@ -113,23 +113,23 @@ Text::Text(RenderContext& context, Font& font, SettingsUtf32 settings)
         }
     );
     state_settings.sp_program->SetName(m_settings.name + " Screen-Quad Shading");
-    state_settings.viewports                                            = { GetFrameViewport(m_viewport_rect) };
-    state_settings.scissor_rects                                        = { GetFrameScissorRect(m_viewport_rect) };
+    state_settings.viewports                                            = { gfx::GetFrameViewport(m_viewport_rect) };
+    state_settings.scissor_rects                                        = { gfx::GetFrameScissorRect(m_viewport_rect) };
     state_settings.depth.enabled                                        = false;
     state_settings.depth.write_enabled                                  = false;
     state_settings.rasterizer.is_front_counter_clockwise                = true;
     state_settings.blending.render_targets[0].blend_enabled             = true;
-    state_settings.blending.render_targets[0].source_rgb_blend_factor   = RenderState::Blending::Factor::SourceAlpha;
-    state_settings.blending.render_targets[0].dest_rgb_blend_factor     = RenderState::Blending::Factor::OneMinusSourceAlpha;
-    state_settings.blending.render_targets[0].source_alpha_blend_factor = RenderState::Blending::Factor::Zero;
-    state_settings.blending.render_targets[0].dest_alpha_blend_factor   = RenderState::Blending::Factor::Zero;
+    state_settings.blending.render_targets[0].source_rgb_blend_factor   = gfx::RenderState::Blending::Factor::SourceAlpha;
+    state_settings.blending.render_targets[0].dest_rgb_blend_factor     = gfx::RenderState::Blending::Factor::OneMinusSourceAlpha;
+    state_settings.blending.render_targets[0].source_alpha_blend_factor = gfx::RenderState::Blending::Factor::Zero;
+    state_settings.blending.render_targets[0].dest_alpha_blend_factor   = gfx::RenderState::Blending::Factor::Zero;
 
-    m_sp_state = RenderState::Create(context, state_settings);
+    m_sp_state = gfx::RenderState::Create(context, state_settings);
     m_sp_state->SetName(m_settings.name + " Screen-Quad Render State");
 
-    m_sp_texture_sampler = Sampler::Create(context, {
-        { Sampler::Filter::MinMag::Linear     },
-        { Sampler::Address::Mode::ClampToZero },
+    m_sp_texture_sampler = gfx::Sampler::Create(context, {
+        { gfx::Sampler::Filter::MinMag::Linear     },
+        { gfx::Sampler::Address::Mode::ClampToZero },
     });
     m_sp_texture_sampler->SetName(m_settings.name + " Screen-Quad Texture Sampler");
 
@@ -144,7 +144,7 @@ std::string Text::GetTextUtf8() const
     return Font::ConvertUtf32To8(m_settings.text);
 }
 
-FrameRect Text::GetViewportInDots() const noexcept
+gfx::FrameRect Text::GetViewportInDots() const noexcept
 {
     return m_viewport_rect / m_context.GetContentScalingFactor();
 }
@@ -161,13 +161,13 @@ void Text::SetText(const std::u32string& text)
     SetTextInScreenRect(text, m_settings.screen_rect, m_settings.screen_rect_in_pixels);
 }
 
-void Text::SetTextInScreenRect(const std::string& text, const FrameRect& screen_rect, bool rect_in_pixels)
+void Text::SetTextInScreenRect(const std::string& text, const gfx::FrameRect& screen_rect, bool rect_in_pixels)
 {
     META_FUNCTION_TASK();
     SetTextInScreenRect(Font::ConvertUtf8To32(text), screen_rect, rect_in_pixels);
 }
 
-void Text::SetTextInScreenRect(const std::u32string& text, const FrameRect& screen_rect, bool rect_in_pixels)
+void Text::SetTextInScreenRect(const std::u32string& text, const gfx::FrameRect& screen_rect, bool rect_in_pixels)
 {
     META_FUNCTION_TASK();
     if (m_settings.text == text && m_settings.screen_rect == screen_rect && m_settings.screen_rect_in_pixels == rect_in_pixels)
@@ -195,11 +195,11 @@ void Text::SetTextInScreenRect(const std::u32string& text, const FrameRect& scre
 
     UpdateMeshData();
 
-    m_sp_state->SetViewports({ GetFrameViewport(m_viewport_rect) });
-    m_sp_state->SetScissorRects({ GetFrameScissorRect(m_viewport_rect) });
+    m_sp_state->SetViewports({ gfx::GetFrameViewport(m_viewport_rect) });
+    m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(m_viewport_rect) });
 }
 
-void Text::SetScreenRect(const FrameRect& screen_rect, bool rect_in_pixels)
+void Text::SetScreenRect(const gfx::FrameRect& screen_rect, bool rect_in_pixels)
 {
     META_FUNCTION_TASK();
     if (m_settings.screen_rect == screen_rect && m_settings.screen_rect_in_pixels == rect_in_pixels)
@@ -214,11 +214,11 @@ void Text::SetScreenRect(const FrameRect& screen_rect, bool rect_in_pixels)
 
     UpdateMeshData();
 
-    m_sp_state->SetViewports({ GetFrameViewport(m_viewport_rect) });
-    m_sp_state->SetScissorRects({ GetFrameScissorRect(m_viewport_rect) });
+    m_sp_state->SetViewports({ gfx::GetFrameViewport(m_viewport_rect) });
+    m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(m_viewport_rect) });
 }
 
-void Text::SetColor(const Color4f& color)
+void Text::SetColor(const gfx::Color4f& color)
 {
     META_FUNCTION_TASK();
     if (m_settings.color == color)
@@ -230,7 +230,7 @@ void Text::SetColor(const Color4f& color)
     });
 }
 
-void Text::Draw(RenderCommandList& cmd_list)
+void Text::Draw(gfx::RenderCommandList& cmd_list)
 {
     META_FUNCTION_TASK();
     if (m_settings.text.empty() || (!m_sp_new_atlas_texture && !m_sp_atlas_texture))
@@ -247,10 +247,10 @@ void Text::Draw(RenderCommandList& cmd_list)
     cmd_list.Reset(m_sp_state);
     cmd_list.SetProgramBindings(*m_sp_const_program_bindings);
     cmd_list.SetVertexBuffers(*m_sp_vertex_buffers);
-    cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
+    cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
 }
 
-void Text::OnFontAtlasTextureReset(Font& font, const Ptr<Texture>& sp_old_atlas_texture, const Ptr<Texture>& sp_new_atlas_texture)
+void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture)
 {
     META_FUNCTION_TASK();
     META_UNUSED(sp_old_atlas_texture);
@@ -273,16 +273,16 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<Texture>& sp_old_atlas_
     m_sp_new_atlas_texture = sp_new_atlas_texture;
 }
 
-Ptr<ProgramBindings> Text::CreateConstProgramBindings()
+Ptr<gfx::ProgramBindings> Text::CreateConstProgramBindings()
 {
     META_FUNCTION_TASK();
     if (!m_sp_const_buffer || !m_sp_atlas_texture || !m_sp_texture_sampler)
         return nullptr;
 
-    return ProgramBindings::Create(m_sp_state->GetSettings().sp_program, {
-        { { Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer    } } },
-        { { Shader::Type::Pixel, "g_texture"   }, { { m_sp_atlas_texture   } } },
-        { { Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler } } },
+    return gfx::ProgramBindings::Create(m_sp_state->GetSettings().sp_program, {
+        { { gfx::Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer    } } },
+        { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_sp_atlas_texture   } } },
+        { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler } } },
     });
 }
 
@@ -297,7 +297,7 @@ void Text::UpdateAtlasTexture()
 
     if (m_sp_const_program_bindings)
     {
-        const Ptr<ProgramBindings::ArgumentBinding>& sp_atlas_texture_binding = m_sp_const_program_bindings->Get({ Shader::Type::Pixel, "g_texture" });
+        const Ptr<gfx::ProgramBindings::ArgumentBinding>& sp_atlas_texture_binding = m_sp_const_program_bindings->Get({ gfx::Shader::Type::Pixel, "g_texture" });
         if (!sp_atlas_texture_binding)
             throw std::logic_error("Can not find atlas texture argument binding.");
 
@@ -328,14 +328,14 @@ void Text::UpdateMeshBuffers()
     const Data::Size vertices_data_size = m_sp_new_mesh_data->GetVerticesDataSize();
     if (!m_sp_vertex_buffers || (*m_sp_vertex_buffers)[0].GetDataSize() < vertices_data_size)
     {
-        Ptr<Buffer> sp_vertex_buffer = Buffer::CreateVertexBuffer(m_context, vertices_data_size, m_sp_new_mesh_data->GetVertexSize());
+        Ptr<gfx::Buffer> sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(m_context, vertices_data_size, m_sp_new_mesh_data->GetVertexSize());
         sp_vertex_buffer->SetName(m_settings.name + " Text Vertex Buffer");
-        m_sp_vertex_buffers = BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
+        m_sp_vertex_buffers = gfx::BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
     }
     (*m_sp_vertex_buffers)[0].SetData({
-        Resource::SubResource(
+        gfx::Resource::SubResource(
             reinterpret_cast<Data::ConstRawPtr>(m_sp_new_mesh_data->GetVertices().data()), vertices_data_size,
-            Resource::SubResource::Index(), Resource::BytesRange(0u, vertices_data_size)
+            gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0u, vertices_data_size)
         )
     });
 
@@ -343,13 +343,13 @@ void Text::UpdateMeshBuffers()
     const Data::Size indices_data_size = m_sp_new_mesh_data->GetIndicesDataSize();
     if (!m_sp_index_buffer || m_sp_index_buffer->GetDataSize() < indices_data_size)
     {
-        m_sp_index_buffer = Buffer::CreateIndexBuffer(m_context, indices_data_size, PixelFormat::R16Uint);
+        m_sp_index_buffer = gfx::Buffer::CreateIndexBuffer(m_context, indices_data_size, gfx::PixelFormat::R16Uint);
         m_sp_index_buffer->SetName(m_settings.name + " Text Index Buffer");
     }
-    m_sp_index_buffer->SetData({ 
-        Resource::SubResource(
+    m_sp_index_buffer->SetData({
+        gfx::Resource::SubResource(
             reinterpret_cast<Data::ConstRawPtr>(m_sp_new_mesh_data->GetIndices().data()), indices_data_size,
-            Resource::SubResource::Index(), Resource::BytesRange(0u, indices_data_size)
+            gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0u, indices_data_size)
         )
     });
 
@@ -365,7 +365,7 @@ void Text::UpdateConstantsBuffer()
     const Data::Size const_data_size = static_cast<Data::Size>(sizeof(Constants));
     if (!m_sp_const_buffer)
     {
-        m_sp_const_buffer = Buffer::CreateConstantBuffer(m_context, Buffer::GetAlignedBufferSize(const_data_size));
+        m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(m_context, gfx::Buffer::GetAlignedBufferSize(const_data_size));
         m_sp_const_buffer->SetName(m_settings.name + " Screen-Quad Constants Buffer");
     }
     m_sp_const_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_sp_new_const_data.get()), const_data_size } });

@@ -30,9 +30,14 @@ HeadsUpDisplay rendering primitive.
 
 namespace Methane::Graphics
 {
-
 struct RenderContext;
 struct RenderCommandList;
+}
+
+namespace Methane::UserInterface
+{
+
+namespace gfx = Methane::Graphics;
 
 class Font;
 
@@ -41,29 +46,29 @@ class HeadsUpDisplay
 public:
     struct Settings
     {
-        Point2i position            = { 20, 20 };
-        Color4f text_color          = Color4f(1.f, 1.f, 1.f, 1.f);
+        gfx::Point2i position            = { 20, 20 };
+        gfx::Color4f text_color          = gfx::Color4f(1.f, 1.f, 1.f, 1.f);
         double  update_interval_sec = 0.33;
     };
 
-    explicit HeadsUpDisplay(RenderContext& context);
-    HeadsUpDisplay(RenderContext& context, Settings settings);
+    explicit HeadsUpDisplay(gfx::RenderContext& context);
+    HeadsUpDisplay(gfx::RenderContext& context, Settings settings);
 
     const Settings& GetSettings() const { return m_settings; }
 
-    void SetPosition(const Point2i& position);
-    void SetTextColor(const Color4f& text_color);
+    void SetPosition(const gfx::Point2i& position);
+    void SetTextColor(const gfx::Color4f& text_color);
     void SetUpdateInterval(double update_interval_sec);
 
     void Update();
-    void Draw(RenderCommandList& cmd_list);
+    void Draw(gfx::RenderCommandList& cmd_list);
 
 private:
-    Settings        m_settings;
-    RenderContext&  m_context;
-    const Ptr<Font> m_sp_major_font;
-    Text            m_fps_text;
-    Timer           m_update_timer;
+    Settings            m_settings;
+    gfx::RenderContext& m_context;
+    const Ptr<Font>     m_sp_major_font;
+    Text                m_fps_text;
+    Timer               m_update_timer;
 };
 
-} // namespace Methane::Graphics
+} // namespace Methane::UserInterface

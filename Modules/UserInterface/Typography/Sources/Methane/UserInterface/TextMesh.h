@@ -29,41 +29,43 @@ Methane text mesh generation helper.
 
 #include <vector>
 
-namespace Methane::Graphics
+namespace Methane::UserInterface
 {
+
+namespace gfx = Methane::Graphics;
 
 class TextMesh
 {
 public:
     struct Vertex
     {
-        Vector2f position;
-        Vector2f texcoord;
+        gfx::Vector2f position;
+        gfx::Vector2f texcoord;
     };
 
     using Index = uint16_t;
     using Indices = std::vector<Index>;
     using Vertices = std::vector<Vertex>;
 
-    TextMesh(const std::u32string& text, Text::Wrap wrap, Font& font, FrameSize& viewport_size);
+    TextMesh(const std::u32string& text, Text::Wrap wrap, Font& font, gfx::FrameSize& viewport_size);
 
-    const Vertices&  GetVertices() const noexcept    { return vertices; }
-    const Indices&   GetIndices() const noexcept     { return indices; }
-    const FrameSize& GetContentSize() const noexcept { return content_size; }
+    const Vertices&       GetVertices() const noexcept    { return vertices; }
+    const Indices&        GetIndices() const noexcept     { return indices; }
+    const gfx::FrameSize& GetContentSize() const noexcept { return content_size; }
 
-    Data::Size GetVertexSize() const noexcept        { return static_cast<Data::Size>(sizeof(Vertex)); }
-    Data::Size GetVerticesDataSize() const noexcept  { return static_cast<Data::Size>(vertices.size() * sizeof(Vertex)); }
+    Data::Size GetVertexSize() const noexcept             { return static_cast<Data::Size>(sizeof(Vertex)); }
+    Data::Size GetVerticesDataSize() const noexcept       { return static_cast<Data::Size>(vertices.size() * sizeof(Vertex)); }
 
-    Data::Size GetIndexSize() const noexcept         { return static_cast<Data::Size>(sizeof(Index)); }
-    Data::Size GetIndicesDataSize() const noexcept   { return static_cast<Data::Size>(indices.size() * sizeof(Index)); }
+    Data::Size GetIndexSize() const noexcept              { return static_cast<Data::Size>(sizeof(Index)); }
+    Data::Size GetIndicesDataSize() const noexcept        { return static_cast<Data::Size>(indices.size() * sizeof(Index)); }
 
 private:
-    void AddCharQuad(const Font::Char& font_char, const FrameRect::Point& screen_char_pos,
-                     const FrameSize& viewport_size, const FrameSize& atlas_size);
+    void AddCharQuad(const Font::Char& font_char, const gfx::FrameRect::Point& screen_char_pos,
+                     const gfx::FrameSize& viewport_size, const gfx::FrameSize& atlas_size);
 
-    Vertices  vertices;
-    Indices   indices;
-    FrameSize content_size;
+    Vertices       vertices;
+    Indices        indices;
+    gfx::FrameSize content_size;
 };
 
 } // namespace Methane::Graphics

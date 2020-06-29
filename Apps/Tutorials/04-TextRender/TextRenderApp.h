@@ -32,6 +32,7 @@ namespace Methane::Tutorials
 {
 
 namespace gfx = Methane::Graphics;
+namespace gui = Methane::UserInterface;
 
 struct TextRenderFrame final : gfx::AppFrame
 {
@@ -45,7 +46,7 @@ using GraphicsApp = gfx::App<TextRenderFrame>;
 
 class TextRenderApp final
     : public GraphicsApp
-    , protected Data::Receiver<gfx::IFontCallback>
+    , protected Data::Receiver<gui::IFontCallback>
 {
 public:
     TextRenderApp();
@@ -61,20 +62,20 @@ protected:
     void OnContextReleased(gfx::Context& context) override;
 
     // IFontCallback overrides
-    void OnFontAtlasTextureReset(gfx::Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture) override;
-    void OnFontAtlasUpdated(gfx::Font& font) override;
+    void OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture) override;
+    void OnFontAtlasUpdated(gui::Font& font) override;
 
 private:
     bool Animate(double elapsed_seconds, double delta_seconds);
     void ResetAnimation();
 
-    Ptr<gfx::Badge> CreateFontAtlasBadge(gfx::Font& font, const Ptr<gfx::Texture>& sp_atlas_texture);
+    Ptr<gui::Badge> CreateFontAtlasBadge(gui::Font& font, const Ptr<gfx::Texture>& sp_atlas_texture);
     void UpdateFontAtlasBadges();
     void LayoutFontAtlasBadges(const gfx::FrameSize& frame_size);
 
-    Ptrs<gfx::Font>     m_fonts;
-    Ptrs<gfx::Text>     m_texts;
-    Ptrs<gfx::Badge>    m_font_atlas_badges;
+    Ptrs<gui::Font>     m_fonts;
+    Ptrs<gui::Text>     m_texts;
+    Ptrs<gui::Badge>    m_font_atlas_badges;
     std::vector<size_t> m_displayed_text_lengths;
     double              m_text_update_elapsed_sec = 0.0;
 };

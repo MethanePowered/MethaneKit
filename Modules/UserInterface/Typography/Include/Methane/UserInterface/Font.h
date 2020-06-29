@@ -38,13 +38,19 @@ struct Provider;
 
 namespace Methane::Graphics
 {
+struct Texture;
+}
+
+namespace Methane::UserInterface
+{
+
+namespace gfx = Methane::Graphics;
 
 class Font;
-struct Texture;
 
 struct IFontCallback
 {
-    virtual void OnFontAtlasTextureReset(Font& font, const Ptr<Texture>& sp_old_atlas_texture, const Ptr<Texture>& sp_new_atlas_texture) = 0;
+    virtual void OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture) = 0;
     virtual void OnFontAtlasUpdated(Font& font) = 0;
 
     virtual ~IFontCallback() = default;
@@ -53,7 +59,7 @@ struct IFontCallback
 class Font
     : public std::enable_shared_from_this<Font>
     , public Data::Emitter<IFontCallback>
-    , protected Data::Receiver<IContextCallback>
+    , protected Data::Receiver<gfx::IContextCallback>
 {
 public:
     struct Settings
@@ -120,18 +126,18 @@ public:
 
         Char() = default;
         Char(Code code);
-        Char(Code code, FrameRect rect, Point2i offset, Point2i advance, UniquePtr<Glyph>&& sp_glyph);
+        Char(Code code, gfx::FrameRect rect, gfx::Point2i offset, gfx::Point2i advance, UniquePtr<Glyph>&& sp_glyph);
 
-        Code             GetCode() const noexcept        { return m_code; }
-        bool             IsLineBreak() const noexcept    { return m_type_mask & Type::LineBreak; }
-        bool             IsWhiteSpace() const noexcept   { return m_type_mask & Type::Whitespace; }
-        const FrameRect& GetRect() const noexcept        { return m_rect; }
-        const Point2i&   GetOffset() const noexcept      { return m_offset; }
-        const Point2i&   GetAdvance() const noexcept     { return m_advance; }
+        Code                  GetCode() const noexcept        { return m_code; }
+        bool                  IsLineBreak() const noexcept    { return m_type_mask & Type::LineBreak; }
+        bool                  IsWhiteSpace() const noexcept   { return m_type_mask & Type::Whitespace; }
+        const gfx::FrameRect& GetRect() const noexcept        { return m_rect; }
+        const gfx::Point2i&   GetOffset() const noexcept      { return m_offset; }
+        const gfx::Point2i&   GetAdvance() const noexcept     { return m_advance; }
 
-        bool operator<(const Char& other) const noexcept { return m_rect.size.GetPixelsCount() < other.m_rect.size.GetPixelsCount(); }
-        bool operator>(const Char& other) const noexcept { return m_rect.size.GetPixelsCount() > other.m_rect.size.GetPixelsCount(); }
-        operator bool() const noexcept                   { return m_code != 0u; }
+        bool operator<(const Char& other) const noexcept      { return m_rect.size.GetPixelsCount() < other.m_rect.size.GetPixelsCount(); }
+        bool operator>(const Char& other) const noexcept      { return m_rect.size.GetPixelsCount() > other.m_rect.size.GetPixelsCount(); }
+        operator bool() const noexcept                        { return m_code != 0u; }
 
         void     DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_stride) const;
         uint32_t GetGlyphIndex() const;
@@ -139,9 +145,9 @@ public:
     private:
         const Code       m_code = 0u;
         const Type::Mask m_type_mask = Type::Value::Unknown;
-        FrameRect        m_rect;
-        Point2i          m_offset;
-        Point2i          m_advance;
+        gfx::FrameRect   m_rect;
+        gfx::Point2i     m_offset;
+        gfx::Point2i     m_advance;
         UniquePtr<Glyph> m_sp_glyph;
     };
 
@@ -156,24 +162,24 @@ public:
 
     ~Font();
 
-    Ptr<Font>           GetPtr() { return shared_from_this(); }
-    const Settings&     GetSettings() const { return m_settings; }
+    Ptr<Font>               GetPtr() { return shared_from_this(); }
+    const Settings&         GetSettings() const { return m_settings; }
 
-    void                ResetChars(const std::string& utf8_characters);
-    void                ResetChars(const std::u32string& utf32_characters);
-    void                AddChars(const std::string& utf8_characters);
-    void                AddChars(const std::u32string& utf32_characters);
-    const Font::Char&   AddChar(Char::Code char_code);
-    bool                HasChar(Char::Code char_code);
-    const Char&         GetChar(Char::Code char_code) const;
-    Chars               GetChars() const;
-    Chars               GetTextChars(const std::string& text);
-    Chars               GetTextChars(const std::u32string& text);
-    FrameRect::Point    GetKerning(const Char& left_char, const Char& right_char) const;
-    uint32_t            GetLineHeight() const noexcept;
-    const FrameSize&    GetAtlasSize() const noexcept;
-    const Ptr<Texture>& GetAtlasTexturePtr(Context& context);
-    Texture&            GetAtlasTexture(Context& context) { return *GetAtlasTexturePtr(context); }
+    void                    ResetChars(const std::string& utf8_characters);
+    void                    ResetChars(const std::u32string& utf32_characters);
+    void                    AddChars(const std::string& utf8_characters);
+    void                    AddChars(const std::u32string& utf32_characters);
+    const Font::Char&       AddChar(Char::Code char_code);
+    bool                    HasChar(Char::Code char_code);
+    const Char&             GetChar(Char::Code char_code) const;
+    Chars                   GetChars() const;
+    Chars                   GetTextChars(const std::string& text);
+    Chars                   GetTextChars(const std::u32string& text);
+    gfx:: FrameRect::Point  GetKerning(const Char& left_char, const Char& right_char) const;
+    uint32_t                GetLineHeight() const noexcept;
+    const gfx::FrameSize&   GetAtlasSize() const noexcept;
+    const Ptr<gfx::Texture>& GetAtlasTexturePtr(gfx::Context& context);
+    gfx::Texture&           GetAtlasTexture(gfx::Context& context) { return *GetAtlasTexturePtr(context); }
 
 protected:
     // Font can be created only via Font::Library::Add
@@ -183,27 +189,27 @@ protected:
     bool PackCharsToAtlas(float pixels_reserve_multiplier);
 
     // IContextCallback interface
-    void OnContextReleased(Context& context) override;
-    void OnContextCompletingInitialization(Context& context) override;
-    void OnContextInitialized(Context&) override { }
+    void OnContextReleased(gfx::Context& context) override;
+    void OnContextCompletingInitialization(gfx::Context& context) override;
+    void OnContextInitialized(gfx::Context&) override { }
 
 private:
     struct AtlasTexture
     {
-        Ptr<Texture> sp_texture;
-        bool         is_update_required = true;
+        Ptr<gfx::Texture> sp_texture;
+        bool              is_update_required = true;
     };
 
-    AtlasTexture CreateAtlasTexture(Context& context, bool deferred_data_init);
-    void RemoveAtlasTexture(Context& context);
+    AtlasTexture CreateAtlasTexture(gfx::Context& context, bool deferred_data_init);
+    void RemoveAtlasTexture(gfx::Context& context);
 
     bool UpdateAtlasBitmap(bool deferred_textures_update);
     void UpdateAtlasTextures(bool deferred_textures_update);
-    void UpdateAtlasTexture(Context& context, AtlasTexture& atlas_texture);
+    void UpdateAtlasTexture(gfx::Context& context, AtlasTexture& atlas_texture);
     void ClearAtlasTextures();
 
     class Face;
-    using TextureByContext = std::map<Context*, AtlasTexture>;
+    using TextureByContext = std::map<gfx::Context*, AtlasTexture>;
     using CharByCode = std::map<Char::Code, Char>;
 
     Settings               m_settings;

@@ -63,22 +63,22 @@ static const std::map<std::string, gfx::Color3f>    g_font_color_by_name   {
 static const std::array<std::u32string, g_text_blocks_count> g_text_blocks = { {
 
     // 0: european pangrams
-    gfx::Font::ConvertUtf8To32(
+    gui::Font::ConvertUtf8To32(
         "The quick brown fox jumps over the lazy dog!\n" \
          "Съешь ещё этих мягких французских булок, да выпей чаю.\n" \
          "Ο καλύμνιος σφουγγαράς ψιθύρισε πως θα βουτήξει χωρίς να διστάζει.\n" \
          "Pijamalı hasta, yağız şoföre çabucak güvendi."),
 
     // 1: japanese pangram
-    gfx::Font::ConvertUtf8To32(
+    gui::Font::ConvertUtf8To32(
         "いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす"),
 
     // 2: arabic pangram
-    //gfx::Font::ConvertUtf8To32(
+    //gui::Font::ConvertUtf8To32(
     //  "نص حكيم له سر قاطع وذو شأن عظيم مكتوب على ثوب أخضر ومغلف بجلد أزرق"),
 
     // 3: hitchhicker's guide quote
-    gfx::Font::ConvertUtf8To32(
+    gui::Font::ConvertUtf8To32(
         "A towel is about the most massively useful thing an interstellar hitchhiker can have. " \
         "Partly it has great practical value. You can wrap it around you for warmth as you bound across the cold moons of Jaglan Beta; " \
         "you can lie on it on the brilliant marble-sanded beaches of Santraginus V, inhaling the heady sea vapors; " \
@@ -109,7 +109,7 @@ TextRenderApp::~TextRenderApp()
     m_sp_context->WaitForGpu(gfx::Context::WaitFor::RenderComplete);
 
     // Clear the font library to release all atlas textures
-    gfx::Font::Library::Get().Clear();
+    gui::Font::Library::Get().Clear();
 }
 
 void TextRenderApp::Init()
@@ -128,12 +128,12 @@ void TextRenderApp::Init()
 
         // Add font to library
         m_fonts.push_back(
-            gfx::Font::Library::Get().AddFont(
+            gui::Font::Library::Get().AddFont(
                 Data::FontProvider::Get(),
-                gfx::Font::Settings
+                gui::Font::Settings
                 {
                     font_settings.name, font_settings.path, font_settings.size, m_sp_context->GetFontResolutionDPI(),
-                    gfx::Font::GetAlphabetFromText(displayed_text_block)
+                    gui::Font::GetAlphabetFromText(displayed_text_block)
                 }
             ).GetPtr()
         );
@@ -141,8 +141,8 @@ void TextRenderApp::Init()
 
         // Add text element
         m_texts.push_back(
-            std::make_shared<gfx::Text>(*m_sp_context, *m_fonts.back(),
-                gfx::Text::SettingsUtf32
+            std::make_shared<gui::Text>(*m_sp_context, *m_fonts.back(),
+                gui::Text::SettingsUtf32
                 {
                     font_settings.name,
                     displayed_text_block,
@@ -153,7 +153,7 @@ void TextRenderApp::Init()
                     },
                     false, // screen_rect_in_pixels
                     gfx::Color4f(font_settings.color, 1.f),
-                    gfx::Text::Wrap::Word,
+                    gui::Text::Wrap::Word,
                 }
             )
         );
@@ -172,36 +172,36 @@ void TextRenderApp::Init()
     CompleteInitialization();
 }
 
-Ptr<gfx::Badge> TextRenderApp::CreateFontAtlasBadge(gfx::Font& font, const Ptr<gfx::Texture>& sp_atlas_texture)
+Ptr<gui::Badge> TextRenderApp::CreateFontAtlasBadge(gui::Font& font, const Ptr<gfx::Texture>& sp_atlas_texture)
 {
     const auto font_color_by_name_it = g_font_color_by_name.find(font.GetSettings().name);
     const gfx::Color3f& font_color = font_color_by_name_it != g_font_color_by_name.end()
                                    ? font_color_by_name_it->second : g_misc_font_color;
 
-    return std::make_shared<gfx::Badge>(
+    return std::make_shared<gui::Badge>(
         *m_sp_context, sp_atlas_texture,
-        gfx::Badge::Settings
+        gui::Badge::Settings
         {
             static_cast<const gfx::FrameSize&>(sp_atlas_texture->GetSettings().dimensions),
-            gfx::Badge::FrameCorner::BottomLeft,
+            gui::Badge::FrameCorner::BottomLeft,
             gfx::Point2u(16u, 16u),
             gfx::Color4f(font_color, 0.5f),
-            gfx::Badge::TextureMode::RFloatToAlpha
+            gui::Badge::TextureMode::RFloatToAlpha
         }
     );
 }
 
 void TextRenderApp::UpdateFontAtlasBadges()
 {
-    const Refs<gfx::Font> font_refs = gfx::Font::Library::Get().GetFonts();
+    const Refs<gui::Font> font_refs = gui::Font::Library::Get().GetFonts();
     gfx::Context& context = *m_sp_context;
 
     // Remove obsolete font atlas badges
     for(auto badge_it = m_font_atlas_badges.begin(); badge_it != m_font_atlas_badges.end();)
     {
-        const Ptr<gfx::Badge>& sp_font_atlas_badge = *badge_it;
+        const Ptr<gui::Badge>& sp_font_atlas_badge = *badge_it;
         const auto font_ref_it = std::find_if(font_refs.begin(), font_refs.end(),
-            [&sp_font_atlas_badge, &context](const Ref<gfx::Font>& font_ref)
+            [&sp_font_atlas_badge, &context](const Ref<gui::Font>& font_ref)
             {
                return std::addressof(sp_font_atlas_badge->GetTexture()) == &font_ref.get().GetAtlasTexture(context);
             }
@@ -217,14 +217,14 @@ void TextRenderApp::UpdateFontAtlasBadges()
     }
 
     // Add new font atlas badges
-    for(const Ref<gfx::Font>& font_ref : font_refs)
+    for(const Ref<gui::Font>& font_ref : font_refs)
     {
         const Ptr<gfx::Texture>& sp_font_atlas_texture = font_ref.get().GetAtlasTexturePtr(context);
         if (!sp_font_atlas_texture)
             continue;
 
         const auto sp_font_atlas_it = std::find_if(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
-                                                   [&sp_font_atlas_texture](const Ptr<gfx::Badge>& sp_font_atlas_badge)
+                                                   [&sp_font_atlas_texture](const Ptr<gui::Badge>& sp_font_atlas_badge)
             {
                 return std::addressof(sp_font_atlas_badge->GetTexture()) == sp_font_atlas_texture.get();
             }
@@ -243,7 +243,7 @@ void TextRenderApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
 {
     // Sort atlas badges by size so that largest are displayed first
     std::sort(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
-              [](const Ptr<gfx::Badge>& sp_left, const Ptr<gfx::Badge>& sp_right)
+              [](const Ptr<gui::Badge>& sp_left, const Ptr<gui::Badge>& sp_right)
               {
                   return sp_left->GetSettings().screen_rect.size.GetPixelsCount() >
                          sp_right->GetSettings().screen_rect.size.GetPixelsCount();
@@ -255,7 +255,7 @@ void TextRenderApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
     badge_margins *= scale_factor;
 
     // Layout badges in a row one after another with a margin spacing
-    for(const Ptr<gfx::Badge>& sp_badge_atlas : m_font_atlas_badges)
+    for(const Ptr<gui::Badge>& sp_badge_atlas : m_font_atlas_badges)
     {
         assert(sp_badge_atlas);
         const gfx::FrameSize& atlas_size = static_cast<const gfx::FrameSize&>(sp_badge_atlas->GetTexture().GetSettings().dimensions);
@@ -274,7 +274,7 @@ bool TextRenderApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     const uint32_t frame_width_without_margins = frame_size_in_dots.width - 2 * g_margin_size_in_dots;
     int32_t        vertical_text_pos_in_dots   = g_top_text_pos_in_dots;
 
-    for(Ptr<gfx::Text>& sp_text : m_texts)
+    for(Ptr<gui::Text>& sp_text : m_texts)
     {
         sp_text->SetScreenRect({
             { g_margin_size_in_dots, vertical_text_pos_in_dots },
@@ -298,7 +298,7 @@ bool TextRenderApp::Animate(double elapsed_seconds, double)
     for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
     {
         size_t& displayed_text_length = m_displayed_text_lengths[block_index];
-        const Ptr<gfx::Text>& sp_text = m_texts[block_index];
+        const Ptr<gui::Text>& sp_text = m_texts[block_index];
         if (!displayed_text_length)
         {
             sp_text->SetText("");
@@ -358,13 +358,13 @@ bool TextRenderApp::Render()
     TextRenderFrame& frame = GetCurrentFrame();
 
     // Draw text blocks
-    for(Ptr<gfx::Text>& sp_text : m_texts)
+    for(Ptr<gui::Text>& sp_text : m_texts)
     {
         sp_text->Draw(*frame.sp_render_cmd_list);
     }
 
     // Draw font atlas badges
-    for(const Ptr<gfx::Badge>& sp_badge_atlas : m_font_atlas_badges)
+    for(const Ptr<gui::Badge>& sp_badge_atlas : m_font_atlas_badges)
     {
         sp_badge_atlas->Draw(*frame.sp_render_cmd_list);
     }
@@ -383,7 +383,7 @@ bool TextRenderApp::Render()
 
 void TextRenderApp::OnContextReleased(gfx::Context& context)
 {
-    gfx::Font::Library::Get().Clear();
+    gui::Font::Library::Get().Clear();
 
     m_fonts.clear();
     m_texts.clear();
@@ -392,10 +392,10 @@ void TextRenderApp::OnContextReleased(gfx::Context& context)
     GraphicsApp::OnContextReleased(context);
 }
 
-void TextRenderApp::OnFontAtlasTextureReset(gfx::Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture)
+void TextRenderApp::OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture)
 {
     const auto sp_font_atlas_badge_it = std::find_if(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
-                                                     [&sp_old_atlas_texture](const Ptr<gfx::Badge>& sp_font_atlas_badge)
+                                                     [&sp_old_atlas_texture](const Ptr<gui::Badge>& sp_font_atlas_badge)
         {
            return std::addressof(sp_font_atlas_badge->GetTexture()) == sp_old_atlas_texture.get();
         }
@@ -409,7 +409,7 @@ void TextRenderApp::OnFontAtlasTextureReset(gfx::Font& font, const Ptr<gfx::Text
 
     if (sp_new_atlas_texture)
     {
-        Ptr<gfx::Badge>& sp_badge = *sp_font_atlas_badge_it;
+        Ptr<gui::Badge>& sp_badge = *sp_font_atlas_badge_it;
         sp_badge->SetTexture(sp_new_atlas_texture);
         sp_badge->SetSize(static_cast<const gfx::FrameSize&>(sp_new_atlas_texture->GetSettings().dimensions));
     }
@@ -419,7 +419,7 @@ void TextRenderApp::OnFontAtlasTextureReset(gfx::Font& font, const Ptr<gfx::Text
     }
 }
 
-void TextRenderApp::OnFontAtlasUpdated(gfx::Font&)
+void TextRenderApp::OnFontAtlasUpdated(gui::Font&)
 {
     LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
 }

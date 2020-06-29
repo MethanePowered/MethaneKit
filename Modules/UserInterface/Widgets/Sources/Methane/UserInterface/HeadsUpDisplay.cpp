@@ -31,15 +31,15 @@ HeadsUpDisplay rendering primitive.
 
 #include <sstream>
 
-namespace Methane::Graphics
+namespace Methane::UserInterface
 {
 
-HeadsUpDisplay::HeadsUpDisplay(RenderContext& context)
+HeadsUpDisplay::HeadsUpDisplay(gfx::RenderContext& context)
     : HeadsUpDisplay(context, Settings())
 {
 }
 
-HeadsUpDisplay::HeadsUpDisplay(RenderContext& context, Settings settings)
+HeadsUpDisplay::HeadsUpDisplay(gfx::RenderContext& context, Settings settings)
     : m_settings(std::move(settings))
     , m_context(context)
     , m_sp_major_font(Font::Library::Get().GetFont(
@@ -55,7 +55,7 @@ HeadsUpDisplay::HeadsUpDisplay(RenderContext& context, Settings settings)
         {
             "FPS",
             "000 FPS",
-            FrameRect{ settings.position, { 500, 60 } }, false,
+            gfx::FrameRect{ settings.position, { 500, 60 } }, false,
             m_settings.text_color
         }
     )
@@ -63,7 +63,7 @@ HeadsUpDisplay::HeadsUpDisplay(RenderContext& context, Settings settings)
     META_FUNCTION_TASK();
 }
 
-void HeadsUpDisplay::SetPosition(const Point2i& position)
+void HeadsUpDisplay::SetPosition(const gfx::Point2i& position)
 {
     META_FUNCTION_TASK();
     if (m_settings.position == position)
@@ -71,12 +71,12 @@ void HeadsUpDisplay::SetPosition(const Point2i& position)
 
     m_settings.position = position;
 
-    FrameRect screen_rect = m_fps_text.GetSettings().screen_rect;
+    gfx::FrameRect screen_rect = m_fps_text.GetSettings().screen_rect;
     screen_rect.origin = position;
     m_fps_text.SetScreenRect(screen_rect);
 }
 
-void HeadsUpDisplay::SetTextColor(const Color4f& text_color)
+void HeadsUpDisplay::SetTextColor(const gfx::Color4f& text_color)
 {
     META_FUNCTION_TASK();
     if (m_settings.text_color == text_color)
@@ -98,9 +98,9 @@ void HeadsUpDisplay::Update()
     if (m_update_timer.GetElapsedSecondsD() < m_settings.update_interval_sec)
         return;
 
-    const FpsCounter&              fps_counter           = m_context.GetFpsCounter();
-    const uint32_t                 average_fps           = fps_counter.GetFramesPerSecond();
-    const FpsCounter::FrameTiming  average_frame_timing  = fps_counter.GetAverageFrameTiming();
+    const gfx::FpsCounter&              fps_counter           = m_context.GetFpsCounter();
+    const uint32_t                      average_fps           = fps_counter.GetFramesPerSecond();
+    const gfx::FpsCounter::FrameTiming  average_frame_timing  = fps_counter.GetAverageFrameTiming();
 
     std::stringstream fps_ss;
     fps_ss.precision(2);
@@ -112,10 +112,10 @@ void HeadsUpDisplay::Update()
     m_update_timer.Reset();
 }
 
-void HeadsUpDisplay::Draw(RenderCommandList& cmd_list)
+void HeadsUpDisplay::Draw(gfx::RenderCommandList& cmd_list)
 {
     META_FUNCTION_TASK();
     m_fps_text.Draw(cmd_list);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::UserInterface

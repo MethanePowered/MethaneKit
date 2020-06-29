@@ -27,7 +27,7 @@ Methane text mesh generation helper.
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
-namespace Methane::Graphics
+namespace Methane::UserInterface
 {
 
 enum class CharAction
@@ -37,10 +37,10 @@ enum class CharAction
     Stop,
 };
 
-using ProcessFontCharAtPosition = const std::function<CharAction(const Font::Char& text_char, const FrameRect::Point& char_pos, size_t char_index)>;
+using ProcessFontCharAtPosition = const std::function<CharAction(const Font::Char& text_char, const gfx::FrameRect::Point& char_pos, size_t char_index)>;
 
 static void ForEachTextCharacterInRange(Font& font, const Font::Chars& text_chars, size_t begin_index, size_t end_index,
-                                        FrameRect::Point char_pos, uint32_t viewport_width, Text::Wrap wrap,
+                                        gfx::FrameRect::Point char_pos, uint32_t viewport_width, Text::Wrap wrap,
                                         const ProcessFontCharAtPosition& process_char_at_position)
 {
     META_FUNCTION_TASK();
@@ -92,15 +92,15 @@ static void ForEachTextCharacter(const std::u32string& text, Font& font, uint32_
     META_FUNCTION_TASK();
     const Font::Chars text_chars = font.GetTextChars(text);
     const ProcessFontCharAtPosition& word_wrap_char_at_position = // word wrap mode processor
-        [&](const Font::Char& text_char, const FrameRect::Point& char_pos, size_t char_index) -> CharAction
+        [&](const Font::Char& text_char, const gfx::FrameRect::Point& char_pos, size_t char_index) -> CharAction
         {
             if (text_char.IsWhiteSpace())
             {
                 // Word wrap prediction: check if next word fits in given viewport width
                 bool word_wrap_required = false;
-                const FrameRect::Point start_char_pos = { char_pos.GetX() + text_char.GetAdvance().GetX(), char_pos.GetY() };
+                const gfx::FrameRect::Point start_char_pos = { char_pos.GetX() + text_char.GetAdvance().GetX(), char_pos.GetY() };
                 ForEachTextCharacterInRange(font, text_chars, char_index + 1, text_chars.size(), start_char_pos, viewport_width, Text::Wrap::Anywhere,
-                    [&word_wrap_required, &start_char_pos, &text_chars](const Font::Char& text_char, const FrameRect::Point& char_pos, size_t char_index) -> CharAction
+                    [&word_wrap_required, &start_char_pos, &text_chars](const Font::Char& text_char, const gfx::FrameRect::Point& char_pos, size_t char_index) -> CharAction
                     {
                         // Word has ended if whitespace character is received or line break character was passed
                         if (text_char.IsWhiteSpace() || (char_index && text_chars[char_index - 1].get().IsLineBreak()))
@@ -116,29 +116,27 @@ static void ForEachTextCharacter(const std::u32string& text, Font& font, uint32_
             return process_char_at_position(text_char, char_pos, char_index);
         };
     ForEachTextCharacterInRange(font, text_chars, 0, text_chars.size(),
-                                FrameRect::Point{ 0, font.GetLineHeight() }, viewport_width, wrap,
+                                gfx::FrameRect::Point{ 0, font.GetLineHeight() }, viewport_width, wrap,
                                 wrap == Text::Wrap::Word && viewport_width ? word_wrap_char_at_position : process_char_at_position);
 }
 
-
-
-static void UpdateContentSizeWithChar(const Font::Char& font_char, const FrameRect::Point& char_pos, FrameSize& content_size)
+static void UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FrameRect::Point& char_pos, gfx::FrameSize& content_size)
 {
     META_FUNCTION_TASK();
     content_size.width  = std::max(content_size.width,  char_pos.GetX() + font_char.GetOffset().GetX() + font_char.GetRect().size.width);
     content_size.height = std::max(content_size.height, char_pos.GetY() + font_char.GetOffset().GetY() + font_char.GetRect().size.height);
 }
 
-TextMesh::TextMesh(const std::u32string& text, Text::Wrap wrap, Font& font, FrameSize& viewport_size)
+TextMesh::TextMesh(const std::u32string& text, Text::Wrap wrap, Font& font, gfx::FrameSize& viewport_size)
 {
     META_FUNCTION_TASK();
     const size_t text_length = text.length();
     vertices.reserve(text_length * 4);
     indices.reserve(text_length * 6);
 
-    const FrameSize& atlas_size = font.GetAtlasSize();
+    const gfx::FrameSize& atlas_size = font.GetAtlasSize();
     ForEachTextCharacter(text, font, viewport_size.width, wrap,
-        [&](const Font::Char& font_char, const FrameRect::Point& char_pos, size_t) -> CharAction
+        [&](const Font::Char& font_char, const gfx::FrameRect::Point& char_pos, size_t) -> CharAction
         {
             AddCharQuad(font_char, char_pos, viewport_size, atlas_size);
             UpdateContentSizeWithChar(font_char, char_pos, content_size);
@@ -172,19 +170,19 @@ TextMesh::TextMesh(const std::u32string& text, Text::Wrap wrap, Font& font, Fram
     }
 }
 
-void TextMesh::AddCharQuad(const Font::Char& font_char, const FrameRect::Point& screen_char_pos,
-                           const FrameSize& viewport_size, const FrameSize& atlas_size)
+void TextMesh::AddCharQuad(const Font::Char& font_char, const gfx::FrameRect::Point& screen_char_pos,
+                           const gfx::FrameSize& viewport_size, const gfx::FrameSize& atlas_size)
 {
     META_FUNCTION_TASK();
-    Point2f view_char_pos = screen_char_pos + font_char.GetOffset();
-    view_char_pos += Point2f(0.f, font_char.GetRect().size.height); // convert left-bottom to left-top position
-    view_char_pos -= Point2f(viewport_size.width, viewport_size.height) / 2.f; // relative to viewport center
+    gfx::Point2f view_char_pos = screen_char_pos + font_char.GetOffset();
+    view_char_pos += gfx::Point2f(0.f, font_char.GetRect().size.height); // convert left-bottom to left-top position
+    view_char_pos -= gfx::Point2f(viewport_size.width, viewport_size.height) / 2.f; // relative to viewport center
 
     const float hor_norm_coeff = viewport_size.width  ? 2.f / viewport_size.width  : 1.f;
     const float ver_norm_coeff = viewport_size.height ? 2.f / viewport_size.height : 1.f;
 
     // Char quad rectangle in viewport coordinates [-1, 1] x [-1, 1]
-    const Rect<float, float> ver_rect {
+    const gfx::Rect<float, float> ver_rect {
         {
             static_cast<float>(view_char_pos.GetX()) *  hor_norm_coeff,
             static_cast<float>(view_char_pos.GetY()) * -ver_norm_coeff,
@@ -196,7 +194,7 @@ void TextMesh::AddCharQuad(const Font::Char& font_char, const FrameRect::Point& 
     };
 
     // Char atlas rectangle in texture coordinates [0, 1] x [0, 1]
-    const Rect<float, float> tex_rect {
+    const gfx::Rect<float, float> tex_rect {
         {
             static_cast<float>(font_char.GetRect().origin.GetX()) / atlas_size.width,
             static_cast<float>(font_char.GetRect().origin.GetY()) / atlas_size.height,

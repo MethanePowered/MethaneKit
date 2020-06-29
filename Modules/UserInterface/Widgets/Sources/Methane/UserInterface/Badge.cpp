@@ -29,7 +29,7 @@ Badge rendering primitive displaying fixed texture in specific corner of the scr
 
 #include <cmath>
 
-namespace Methane::Graphics
+namespace Methane::UserInterface
 {
 
 static Badge::Settings ScaleBadgeSize(Badge::Settings settings, float scale_factor)
@@ -40,36 +40,37 @@ static Badge::Settings ScaleBadgeSize(Badge::Settings settings, float scale_fact
     return settings;
 }
 
-Badge::Badge(RenderContext& context)
+Badge::Badge(gfx::RenderContext& context)
     : Badge(context, Settings())
 {
 }
 
-Badge::Badge(RenderContext& context, Settings settings)
+Badge::Badge(gfx::RenderContext& context, Settings settings)
     : Badge(context,
-            ImageLoader(Data::TextureProvider::Get()).LoadImageToTexture2D(context, "Logo/MethaneLogoNameWatermark.png"),
+            gfx::ImageLoader(Data::TextureProvider::Get()).LoadImageToTexture2D(context, "Logo/MethaneLogoNameWatermark.png"),
             ScaleBadgeSize(settings, context.GetContentScalingFactor()))
 {
     META_FUNCTION_TASK();
 }
 
-Badge::Badge(RenderContext& context, Ptr<Texture> sp_texture, Settings settings)
+Badge::Badge(gfx::RenderContext& context, Ptr<gfx::Texture> sp_texture, Settings settings)
     : ScreenQuad(context, std::move(sp_texture),
-                 ScreenQuad::Settings
-                 {
-                     "Logo Badge",
-                     GetBadgeRectInFrame(context.GetSettings().frame_size, settings),
-                     true,
-                     settings.blend_color,
-                     settings.texture_mode
-                 })
+        ScreenQuad::Settings
+        {
+            "Logo Badge",
+            GetBadgeRectInFrame(context.GetSettings().frame_size, settings),
+            true,
+            settings.blend_color,
+            settings.texture_mode
+        }
+    )
     , m_settings(std::move(settings))
     , m_context(context)
 {
     META_FUNCTION_TASK();
 }
 
-void Badge::FrameResize(const FrameSize& frame_size, std::optional<FrameSize> badge_size, std::optional<Point2i> margins)
+void Badge::FrameResize(const gfx::FrameSize& frame_size, std::optional<gfx::FrameSize> badge_size, std::optional<gfx::Point2i> margins)
 {
     META_FUNCTION_TASK();
     if (badge_size)
@@ -90,14 +91,14 @@ void Badge::SetCorner(FrameCorner frame_corner)
     SetScreenRect(GetBadgeRectInFrame(m_context.GetSettings().frame_size));
 }
 
-void Badge::SetMargins(Point2i& margins)
+void Badge::SetMargins(gfx::Point2i& margins)
 {
     META_FUNCTION_TASK();
     m_settings.margins = margins;
     SetScreenRect(GetBadgeRectInFrame(m_context.GetSettings().frame_size));
 }
 
-void Badge::SetSize(const FrameSize& size)
+void Badge::SetSize(const gfx::FrameSize& size)
 {
     META_FUNCTION_TASK();
     if (m_settings.size == size)
@@ -107,34 +108,34 @@ void Badge::SetSize(const FrameSize& size)
     SetScreenRect(GetBadgeRectInFrame(m_context.GetSettings().frame_size));
 }
 
-FrameRect Badge::GetBadgeRectInFrame(const FrameSize& frame_size)
+gfx::FrameRect Badge::GetBadgeRectInFrame(const gfx::FrameSize& frame_size)
 {
     return GetBadgeRectInFrame(frame_size, m_settings);
 }
 
-FrameRect Badge::GetBadgeRectInFrame(const FrameSize& frame_size, const Badge::Settings& settings)
+gfx::FrameRect Badge::GetBadgeRectInFrame(const gfx::FrameSize& frame_size, const Badge::Settings& settings)
 {
     META_FUNCTION_TASK();
 
     switch(settings.corner)
     {
     case FrameCorner::TopLeft:
-        return FrameRect{ settings.margins, settings.size };
+        return gfx::FrameRect{ settings.margins, settings.size };
 
     case FrameCorner::TopRight:
-        return FrameRect{ FrameRect::Point(frame_size.width - settings.size.width - settings.margins.GetX(), settings.margins.GetY()), settings.size };
+        return gfx::FrameRect{ gfx::FrameRect::Point(frame_size.width - settings.size.width - settings.margins.GetX(), settings.margins.GetY()), settings.size };
 
     case FrameCorner::BottomLeft:
-        return FrameRect{ FrameRect::Point(settings.margins.GetX(), frame_size.height - settings.size.height - settings.margins.GetY()), settings.size };
+        return gfx::FrameRect{ gfx::FrameRect::Point(settings.margins.GetX(), frame_size.height - settings.size.height - settings.margins.GetY()), settings.size };
 
     case FrameCorner::BottomRight:
-        return FrameRect{
-            FrameRect::Point(frame_size.width  - settings.size.width, frame_size.height - settings.size.height) - settings.margins,
+        return gfx::FrameRect{
+            gfx::FrameRect::Point(frame_size.width  - settings.size.width, frame_size.height - settings.size.height) - settings.margins,
             settings.size
         };
     }
 
-    return FrameRect();
+    return gfx::FrameRect();
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::UserInterface

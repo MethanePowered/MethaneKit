@@ -30,10 +30,15 @@ Badge rendering primitive displaying fixed texture in specific corner of the scr
 
 namespace Methane::Graphics
 {
-
 class ImageLoader;
+}
 
-class Badge : public ScreenQuad
+namespace Methane::UserInterface
+{
+
+namespace gfx = Methane::Graphics;
+
+class Badge : public gfx::ScreenQuad
 {
 public:
     enum class FrameCorner : uint32_t
@@ -47,28 +52,28 @@ public:
     struct Settings
     {
         // Default settings of the Methane Logo badge
-        FrameSize   size         = { 96u, 128u };
-        FrameCorner corner       = FrameCorner::TopRight;
-        Point2i     margins      = { 16, 16 };
-        Color4f     blend_color  = Color4f(1.f, 1.f, 1.f, 1.f);
-        TextureMode texture_mode = TextureMode::RgbaFloat;
+        gfx::FrameSize  size         = { 96u, 128u };
+        FrameCorner     corner       = FrameCorner::TopRight;
+        gfx::Point2i    margins      = { 16, 16 };
+        gfx::Color4f    blend_color  = gfx::Color4f(1.f, 1.f, 1.f, 1.f);
+        TextureMode     texture_mode = TextureMode::RgbaFloat;
     };
 
-    explicit Badge(RenderContext& context);
-    Badge(RenderContext& context, Settings settings);
-    Badge(RenderContext& context, Ptr<Texture> sp_texture, Settings settings);
+    explicit Badge(gfx::RenderContext& context);
+    Badge(gfx::RenderContext& context, Settings settings);
+    Badge(gfx::RenderContext& context, Ptr<gfx::Texture> sp_texture, Settings settings);
 
-    void FrameResize(const FrameSize& frame_size, std::optional<FrameSize> badge_size = {}, std::optional<Point2i> margins = {});
+    void FrameResize(const gfx::FrameSize& frame_size, std::optional<gfx::FrameSize> badge_size = {}, std::optional<gfx::Point2i> margins = {});
     void SetCorner(FrameCorner frame_corner);
-    void SetMargins(Point2i& margins);
-    void SetSize(const FrameSize& size);
+    void SetMargins(gfx::Point2i& margins);
+    void SetSize(const gfx::FrameSize& size);
 
 private:
-    FrameRect GetBadgeRectInFrame(const FrameSize& frame_size);
-    static FrameRect GetBadgeRectInFrame(const FrameSize& frame_size, const Settings& settings);
+    gfx::FrameRect GetBadgeRectInFrame(const gfx::FrameSize& frame_size);
+    static gfx::FrameRect GetBadgeRectInFrame(const gfx::FrameSize& frame_size, const Settings& settings);
 
-    Settings       m_settings;
-    RenderContext& m_context;
+    Settings            m_settings;
+    gfx::RenderContext& m_context;
 };
 
-} // namespace Methane::Graphics
+} // namespace Methane::UserInterface
