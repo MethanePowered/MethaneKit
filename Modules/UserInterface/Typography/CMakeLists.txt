@@ -12,6 +12,8 @@ set(HEADERS
 set(SOURCES
     ${SOURCES_DIR}/Font.cpp
     ${SOURCES_DIR}/Text.cpp
+    ${SOURCES_DIR}/TextMesh.h
+    ${SOURCES_DIR}/TextMesh.cpp
 )
 
 set(HLSL_SOURCES

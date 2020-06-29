@@ -23,20 +23,24 @@ Font atlas textures generation and fonts library management classes.
 
 #pragma once
 
-#include <Methane/Graphics/RenderContext.h>
-#include <Methane/Graphics/Texture.h>
-#include <Methane/Graphics/Types.h>
-#include <Methane/Data/Provider.h>
+#include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/Rect.hpp>
 #include <Methane/Data/Emitter.hpp>
 
 #include <map>
 #include <string>
 #include <cctype>
 
+namespace Methane::Data
+{
+struct Provider;
+}
+
 namespace Methane::Graphics
 {
 
 class Font;
+struct Texture;
 
 struct IFontCallback
 {

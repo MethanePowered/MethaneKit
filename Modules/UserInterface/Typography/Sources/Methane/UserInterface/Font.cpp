@@ -25,6 +25,9 @@ Font atlas textures generation and fonts library management classes.
 
 #include <Methane/UserInterface/Font.h>
 
+#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/Texture.h>
+#include <Methane/Data/Provider.h>
 #include <Methane/Data/RectBinPack.hpp>
 #include <Methane/Instrumentation.h>
 

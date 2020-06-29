@@ -23,21 +23,24 @@ Methane text rendering primitive.
 
 #pragma once
 
-#include <Methane/UserInterface/Font.h>
-#include <Methane/Graphics/RenderContext.h>
-#include <Methane/Graphics/Texture.h>
-#include <Methane/Graphics/Buffer.h>
-#include <Methane/Graphics/RenderState.h>
-#include <Methane/Graphics/Program.h>
-#include <Methane/Graphics/ProgramBindings.h>
-#include <Methane/Graphics/Sampler.h>
-#include <Methane/Graphics/Types.h>
+#include "Font.h"
+
+#include <Methane/Graphics/Color.hpp>
 #include <Methane/Data/Receiver.hpp>
 
 namespace Methane::Graphics
 {
 
+struct RenderContext;
 struct RenderCommandList;
+struct RenderState;
+struct ProgramBindings;
+struct Buffer;
+struct BufferSet;
+struct Texture;
+struct Sampler;
+
+class TextMesh;
 
 class Text : protected Data::Receiver<IFontCallback>
 {
@@ -69,9 +72,9 @@ public:
 
     const SettingsUtf32&  GetSettings() const noexcept       { return m_settings; }
     const FrameRect&      GetViewport() const noexcept       { return m_viewport_rect; }
-    FrameRect             GetViewportInDots() const noexcept { return m_viewport_rect / m_context.GetContentScalingFactor(); }
     const std::u32string& GetTextUtf32() const noexcept      { return m_settings.text; }
     std::string           GetTextUtf8() const;
+    FrameRect             GetViewportInDots() const noexcept;
 
     void SetText(const std::string& text);
     void SetText(const std::u32string& text);
@@ -88,7 +91,6 @@ protected:
     void OnFontAtlasUpdated(Font&) override {}
 
 private:
-    struct Mesh;
     struct Constants;
 
     Ptr<ProgramBindings> CreateConstProgramBindings();
@@ -102,15 +104,15 @@ private:
     FrameRect            m_viewport_rect;
     RenderContext&       m_context;
     Ptr<Font>            m_sp_font;
-    Ptr<RenderState> m_sp_state;
-    Ptr<BufferSet>   m_sp_vertex_buffers;
-    Ptr<Buffer>      m_sp_index_buffer;
+    Ptr<RenderState>     m_sp_state;
+    Ptr<BufferSet>       m_sp_vertex_buffers;
+    Ptr<Buffer>          m_sp_index_buffer;
     Ptr<Buffer>          m_sp_const_buffer;
     Ptr<Texture>         m_sp_atlas_texture;
     Ptr<Texture>         m_sp_new_atlas_texture;
     Ptr<Sampler>         m_sp_texture_sampler;
     Ptr<ProgramBindings> m_sp_const_program_bindings;
-    UniquePtr<Mesh>      m_sp_new_mesh_data;
+    UniquePtr<TextMesh>  m_sp_new_mesh_data;
     UniquePtr<Constants> m_sp_new_const_data;
 };
 
