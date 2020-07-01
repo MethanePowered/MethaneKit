@@ -209,6 +209,7 @@ void RenderContextBase::OnGpuWaitComplete(WaitFor wait_for)
     if (wait_for == WaitFor::FramePresented)
     {
         m_fps_counter.OnGpuFramePresented();
+        m_is_frame_buffer_in_use = false;
     }
 
     // Release resources in base class only when all frame buffers in swap-chain were presented
@@ -230,6 +231,7 @@ void RenderContextBase::OnGpuWaitComplete(WaitFor wait_for)
 void RenderContextBase::UpdateFrameBufferIndex()
 {
     m_frame_buffer_index = GetNextFrameBufferIndex();
+    m_is_frame_buffer_in_use = true;
 }
     
 uint32_t RenderContextBase::GetNextFrameBufferIndex()

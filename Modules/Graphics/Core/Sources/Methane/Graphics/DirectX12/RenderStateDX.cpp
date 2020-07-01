@@ -210,7 +210,10 @@ RenderStateDX::RenderStateDX(RenderContextBase& context, const Settings& setting
 
 RenderStateDX::~RenderStateDX()
 {
-    GetRenderContext().GetResourceManager().GetReleasePool().AddResource(std::make_unique<RetainedPipelineStateDX>(m_cp_pipeline_state));
+    if (m_cp_pipeline_state)
+    {
+        GetRenderContext().GetResourceManager().GetReleasePool().AddResource(std::make_unique<RetainedPipelineStateDX>(m_cp_pipeline_state));
+    }
 }
 
 void RenderStateDX::Reset(const Settings& settings)

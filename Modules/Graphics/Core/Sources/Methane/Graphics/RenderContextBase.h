@@ -60,6 +60,9 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
+    // Frame buffer is in use while there are executing rendering commands contributing to this frame buffer
+    bool IsFrameBufferInUse() const noexcept { return m_is_frame_buffer_in_use; }
+
 protected:
     void ResetWithSettings(const Settings& settings);
     void OnCpuPresentComplete(bool signal_frame_fence = true);
@@ -73,7 +76,7 @@ protected:
     bool UploadResources() override;
     void OnGpuWaitStart(WaitFor wait_for) override;
     void OnGpuWaitComplete(WaitFor wait_for) override;
-    
+
     // RenderContextBase
     virtual uint32_t GetNextFrameBufferIndex();
 
@@ -83,6 +86,7 @@ private:
     Ptrs<Fence>         m_frame_fences;
     Ptr<Fence>          m_sp_render_fence;
     uint32_t            m_frame_buffer_index;
+    bool                m_is_frame_buffer_in_use = true;
     FpsCounter          m_fps_counter;
 };
 

@@ -48,7 +48,14 @@ void ReleasePool::AddResource(UniquePtr<RetainedResource>&& retained_resource)
         if (m_frame_resources.size() != render_context.GetSettings().frame_buffers_count)
             m_frame_resources.resize(render_context.GetSettings().frame_buffers_count);
 
-        const uint32_t frame_index = render_context.GetFrameBufferIndex();
+        uint32_t frame_index = render_context.GetFrameBufferIndex();
+        if (render_context.IsFrameBufferInUse())
+        {
+            // If object was removed while current frame buffer is in use (rendering was not started yet)
+            // then it should be removed on next frame buffer - on next cycle of swap-chain
+            frame_index = (frame_index + 1) % render_context.GetSettings().frame_buffers_count;
+        }
+
         m_frame_resources[frame_index].emplace_back(std::move(retained_resource));
     }
     else
