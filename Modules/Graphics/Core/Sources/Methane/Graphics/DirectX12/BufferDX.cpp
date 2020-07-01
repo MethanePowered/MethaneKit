@@ -37,11 +37,11 @@ static std::vector<D3D12_VERTEX_BUFFER_VIEW> GetNativeVertexBufferViews(const Re
     META_FUNCTION_TASK();
     std::vector<D3D12_VERTEX_BUFFER_VIEW> vertex_buffer_views;
     std::transform(buffer_refs.begin(), buffer_refs.end(), std::back_inserter(vertex_buffer_views),
-                   [](const Ref<Buffer>& buffer_ref)
-                       {
-                           const VertexBufferDX& vertex_buffer = static_cast<const VertexBufferDX&>(buffer_ref.get());
-                           return vertex_buffer.GetNativeView();
-                       }
+        [](const Ref<Buffer>& buffer_ref)
+        {
+           const VertexBufferDX& vertex_buffer = static_cast<const VertexBufferDX&>(buffer_ref.get());
+           return vertex_buffer.GetNativeView();
+        }
     );
     return vertex_buffer_views;
 }
@@ -78,7 +78,7 @@ Ptr<Buffer> Buffer::CreateVolatileBuffer(Context& context, Data::Size size, bool
 
 Ptr<Buffer> Buffer::CreateReadBackBuffer(Context& context, Data::Size size)
 {
-    const Buffer::Settings settings{ Buffer::Type::ReadBack, Usage::ReadBack, size, 0u, PixelFormat::Unknown };
+    const Buffer::Settings settings{ Buffer::Type::ReadBack, Usage::ReadBack, size, 0u, PixelFormat::Unknown, Buffer::StorageMode::Managed };
     return std::make_shared<ReadBackBufferDX>(dynamic_cast<ContextBase&>(context), settings, DescriptorByUsage());
 }
 

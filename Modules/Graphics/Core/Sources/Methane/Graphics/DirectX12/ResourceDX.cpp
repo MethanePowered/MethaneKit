@@ -191,12 +191,10 @@ IContextDX& ResourceDX::GetContextDX() noexcept
     return static_cast<IContextDX&>(GetContextBase());
 }
 
-void ResourceDX::InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type, 
-                                             D3D12_RESOURCE_STATES resource_state, const D3D12_CLEAR_VALUE* p_clear_value)
+wrl::ComPtr<ID3D12Resource> ResourceDX::CreateCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type,
+                                                                D3D12_RESOURCE_STATES resource_state, const D3D12_CLEAR_VALUE* p_clear_value)
 {
-    META_FUNCTION_TASK();
-    assert(!m_cp_resource);
-
+    wrl::ComPtr<ID3D12Resource> cp_resource;
     const CD3DX12_HEAP_PROPERTIES heap_properties(heap_type);
     const wrl::ComPtr<ID3D12Device>& cp_native_device = GetContextDX().GetDeviceDX().GetNativeDevice();
     ThrowIfFailed(
@@ -206,10 +204,21 @@ void ResourceDX::InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource
             &resource_desc,
             resource_state,
             p_clear_value,
-            IID_PPV_ARGS(&m_cp_resource)
+            IID_PPV_ARGS(&cp_resource)
         ),
         cp_native_device.Get()
     );
+    return cp_resource;
+}
+
+void ResourceDX::InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type, 
+                                             D3D12_RESOURCE_STATES resource_state, const D3D12_CLEAR_VALUE* p_clear_value)
+{
+    META_FUNCTION_TASK();
+    if (m_cp_resource)
+        throw std::logic_error("Committed resource is already initialized!");
+
+    m_cp_resource = CreateCommittedResource(resource_desc, heap_type, resource_state, p_clear_value);
 }
 
 void ResourceDX::InitializeFrameBufferResource(uint32_t frame_buffer_index)

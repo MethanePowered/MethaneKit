@@ -221,23 +221,10 @@ ImageTextureDX::TextureDX(ContextBase& render_context, const Settings& settings,
     const ResourceAndViewDesc tex_and_srv_desc = GetResourceAndViewDesc();
     InitializeCommittedResource(tex_and_srv_desc.first, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COPY_DEST);
 
-    const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
     const UINT64 upload_buffer_size = GetRequiredIntermediateSize(GetNativeResource(), 0, GetSubresourceCount().GetRawCount());
-    const CD3DX12_HEAP_PROPERTIES heap_properties(D3D12_HEAP_TYPE_UPLOAD);
-    const CD3DX12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(upload_buffer_size);
+    m_cp_upload_resource = CreateCommittedResource(CD3DX12_RESOURCE_DESC::Buffer(upload_buffer_size), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
 
-    ThrowIfFailed(
-        cp_device->CreateCommittedResource(
-            &heap_properties,
-            D3D12_HEAP_FLAG_NONE,
-            &resource_desc,
-            D3D12_RESOURCE_STATE_GENERIC_READ,
-            nullptr,
-            IID_PPV_ARGS(&m_cp_upload_resource)
-        ),
-        cp_device.Get()
-    );
-
+    const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
     cp_device->CreateShaderResourceView(GetNativeResource(), &tex_and_srv_desc.second, GetNativeCpuDescriptorHandle(Usage::ShaderRead));
 }
 

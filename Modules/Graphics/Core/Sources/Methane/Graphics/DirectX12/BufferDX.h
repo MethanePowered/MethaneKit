@@ -23,6 +23,8 @@ DirectX 12 implementation of the buffer interface.
 
 #pragma once
 
+#include "BlitCommandListDX.h"
+
 #include <Methane/Graphics/BufferBase.h>
 #include <Methane/Graphics/DescriptorHeap.h>
 #include <Methane/Graphics/Windows/Primitives.h>
@@ -43,13 +45,25 @@ public:
     {
         META_FUNCTION_TASK();
 
-        const bool             is_read_back_buffer = settings.usage_mask & Usage::ReadBack;
-        const D3D12_HEAP_TYPE       heap_type      = is_read_back_buffer ? D3D12_HEAP_TYPE_READBACK : D3D12_HEAP_TYPE_UPLOAD;
-        const D3D12_RESOURCE_STATES resource_state = is_read_back_buffer ? D3D12_RESOURCE_STATE_COPY_DEST : D3D12_RESOURCE_STATE_GENERIC_READ;
+        const bool is_private_storage  = settings.storage_mode == Buffer::StorageMode::Private;
+        const bool is_read_back_buffer = settings.usage_mask & Usage::ReadBack;
+
+        const D3D12_HEAP_TYPE            heap_type = is_read_back_buffer
+                                                   ? D3D12_HEAP_TYPE_READBACK
+                                                   : (is_private_storage ? D3D12_HEAP_TYPE_DEFAULT : D3D12_HEAP_TYPE_UPLOAD);
+        const D3D12_RESOURCE_STATES resource_state = is_read_back_buffer || is_private_storage
+                                                   ? D3D12_RESOURCE_STATE_COPY_DEST
+                                                   : D3D12_RESOURCE_STATE_GENERIC_READ;
+        const CD3DX12_RESOURCE_DESC  resource_desc = CD3DX12_RESOURCE_DESC::Buffer(settings.size);
 
         InitializeDefaultDescriptors();
-        InitializeCommittedResource(CD3DX12_RESOURCE_DESC::Buffer(settings.size), heap_type, resource_state);
+        InitializeCommittedResource(resource_desc, heap_type, resource_state);
         InitializeView(view_args...);
+
+        if (is_private_storage)
+        {
+            m_cp_upload_resource = CreateCommittedResource(resource_desc, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
+        }
     }
 
     // Resource interface
@@ -59,7 +73,8 @@ public:
         BufferBase::SetData(sub_resources);
 
         const CD3DX12_RANGE zero_read_range(0u, 0u);
-        ID3D12Resource& d3d12_resource = GetNativeResourceRef();
+        const bool is_private_storage  = GetSettings().storage_mode == Buffer::StorageMode::Private;
+        ID3D12Resource& d3d12_resource = is_private_storage ? *m_cp_upload_resource.Get() : GetNativeResourceRef();
         for(const SubResource& sub_resource : sub_resources)
         {
             ValidateSubResource(sub_resource);
@@ -90,6 +105,28 @@ public:
                 d3d12_resource.Unmap(sub_resource_raw_index, nullptr);
             }
         }
+
+        if (!is_private_storage)
+            return;
+
+        // In case of private GPU storage, copy buffer data from intermediate upload resource to the private GPU resource
+
+        BlitCommandListDX& upload_cmd_list = static_cast<BlitCommandListDX&>(GetContext().GetUploadCommandList());
+        const ResourceBase::State final_buffer_state = GetState() == State::Common ? State::PixelShaderResource : GetState();
+
+        if (SetState(State::CopyDest, m_sp_upload_begin_transition_barriers) && m_sp_upload_begin_transition_barriers)
+        {
+            upload_cmd_list.SetResourceBarriers(*m_sp_upload_begin_transition_barriers);
+        }
+
+        upload_cmd_list.GetNativeCommandList().CopyResource(GetNativeResource(), m_cp_upload_resource.Get());
+
+        if (SetState(final_buffer_state, m_sp_upload_end_transition_barriers) && m_sp_upload_end_transition_barriers)
+        {
+            upload_cmd_list.SetResourceBarriers(*m_sp_upload_end_transition_barriers);
+        }
+
+        GetContextBase().RequireCompleteInitialization();
     }
 
     SubResource GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override
@@ -134,13 +171,17 @@ protected:
 
 private:
     // NOTE: in case of resource context placed in descriptor heap, m_buffer_view field holds context descriptor instead of context
-    TViewNative m_buffer_view;
+    TViewNative                 m_buffer_view;
+
+    wrl::ComPtr<ID3D12Resource> m_cp_upload_resource;
+    Ptr<ResourceBase::Barriers> m_sp_upload_begin_transition_barriers;
+    Ptr<ResourceBase::Barriers> m_sp_upload_end_transition_barriers;
 };
 
 struct ReadBackBufferView { };
 
-using VertexBufferDX = BufferDX<D3D12_VERTEX_BUFFER_VIEW, Data::Size>;
-using IndexBufferDX = BufferDX<D3D12_INDEX_BUFFER_VIEW, PixelFormat>;
+using VertexBufferDX   = BufferDX<D3D12_VERTEX_BUFFER_VIEW, Data::Size>;
+using IndexBufferDX    = BufferDX<D3D12_INDEX_BUFFER_VIEW, PixelFormat>;
 using ConstantBufferDX = BufferDX<D3D12_CONSTANT_BUFFER_VIEW_DESC>;
 using ReadBackBufferDX = BufferDX<ReadBackBufferView>;
 
