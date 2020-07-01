@@ -66,6 +66,9 @@ public:
         bool              screen_rect_in_pixels = false;
         gfx::Color4f      color = gfx::Color4f(1.f, 1.f, 1.f, 1.f);
         Wrap              wrap  = Wrap::Anywhere;
+
+        // Minimize number of vertex/index buffer re-allocations on dynamic text updates by reserving additional size with multiplication of required size
+        Data::Size        mesh_buffers_reservation_multiplier = 2u;
     };
 
     using SettingsUtf8  = Settings<std::string>;

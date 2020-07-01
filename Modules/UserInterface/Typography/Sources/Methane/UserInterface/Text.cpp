@@ -312,7 +312,8 @@ void Text::UpdateMeshData()
 
     if (!m_sp_vertex_buffers || (*m_sp_vertex_buffers)[0].GetDataSize() < vertices_data_size)
     {
-        Ptr<gfx::Buffer> sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(m_context, vertices_data_size, new_text_mesh.GetVertexSize());
+        const Data::Size vertex_buffer_size = vertices_data_size * m_settings.mesh_buffers_reservation_multiplier;
+        Ptr<gfx::Buffer> sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(m_context, vertex_buffer_size, new_text_mesh.GetVertexSize());
         sp_vertex_buffer->SetName(m_settings.name + " Text Vertex Buffer");
         m_sp_vertex_buffers = gfx::BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
     }
@@ -331,7 +332,8 @@ void Text::UpdateMeshData()
 
     if (!m_sp_index_buffer || m_sp_index_buffer->GetDataSize() < indices_data_size)
     {
-        m_sp_index_buffer = gfx::Buffer::CreateIndexBuffer(m_context, indices_data_size, gfx::PixelFormat::R16Uint);
+        const Data::Size index_buffer_size = vertices_data_size * m_settings.mesh_buffers_reservation_multiplier;
+        m_sp_index_buffer = gfx::Buffer::CreateIndexBuffer(m_context, index_buffer_size, gfx::PixelFormat::R16Uint);
         m_sp_index_buffer->SetName(m_settings.name + " Text Index Buffer");
     }
     m_sp_index_buffer->SetData({
