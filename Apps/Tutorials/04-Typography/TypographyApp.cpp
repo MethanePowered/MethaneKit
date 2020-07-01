@@ -16,12 +16,12 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: TextRenderApp.cpp
-Tutorial demonstrating text rendering with Methane graphics API
+FILE: TypographyApp.cpp
+Tutorial demonstrating dynamic text rendering and fonts management with Methane Kit.
 
 ******************************************************************************/
 
-#include "TextRenderApp.h"
+#include "TypographyApp.h"
 
 #include <Methane/Samples/AppSettings.hpp>
 #include <Methane/Data/TimeAnimation.h>
@@ -90,20 +90,20 @@ static const std::array<std::u32string, g_text_blocks_count> g_text_blocks = { {
         "you can wave your towel in emergencies as a distress signal, and of course dry yourself off with it if it still seems to be clean enough.")
 }};
 
-TextRenderApp::TextRenderApp()
+TypographyApp::TypographyApp()
     : GraphicsApp(
-        Samples::GetAppSettings("Methane Text Rendering", true /* animations */, true /* logo */, true /* hud ui */, false /* depth */),
-        "Methane tutorial of text rendering")
+        Samples::GetAppSettings("Methane Typography", true /* animations */, true /* logo */, true /* hud ui */, false /* depth */),
+        "Dynamic text rendering and fonts management tutorial.")
     , m_displayed_text_lengths(g_text_blocks_count, 0)
 {
     m_displayed_text_lengths[0] = 1;
     GetHeadsUpDisplaySettings().position = gfx::Point2i(g_margin_size_in_dots, g_margin_size_in_dots);
 
     // Setup animations
-    m_animations.push_back(std::make_shared<Data::TimeAnimation>(std::bind(&TextRenderApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
+    m_animations.push_back(std::make_shared<Data::TimeAnimation>(std::bind(&TypographyApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
 }
 
-TextRenderApp::~TextRenderApp()
+TypographyApp::~TypographyApp()
 {
     // Wait for GPU rendering is completed to release resources
     m_sp_context->WaitForGpu(gfx::Context::WaitFor::RenderComplete);
@@ -112,7 +112,7 @@ TextRenderApp::~TextRenderApp()
     gui::Font::Library::Get().Clear();
 }
 
-void TextRenderApp::Init()
+void TypographyApp::Init()
 {
     GraphicsApp::Init();
 
@@ -162,7 +162,7 @@ void TextRenderApp::Init()
     UpdateFontAtlasBadges();
 
     // Create per-frame command lists
-    for(TextRenderFrame& frame : m_frames)
+    for(TypographyFrame& frame : m_frames)
     {
         frame.sp_render_cmd_list = gfx::RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
         frame.sp_render_cmd_list->SetName(IndexedName("Text Rendering", frame.index));
@@ -172,7 +172,7 @@ void TextRenderApp::Init()
     CompleteInitialization();
 }
 
-Ptr<gui::Badge> TextRenderApp::CreateFontAtlasBadge(gui::Font& font, const Ptr<gfx::Texture>& sp_atlas_texture)
+Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(gui::Font& font, const Ptr<gfx::Texture>& sp_atlas_texture)
 {
     const auto font_color_by_name_it = g_font_color_by_name.find(font.GetSettings().name);
     const gfx::Color3f& font_color = font_color_by_name_it != g_font_color_by_name.end()
@@ -191,7 +191,7 @@ Ptr<gui::Badge> TextRenderApp::CreateFontAtlasBadge(gui::Font& font, const Ptr<g
     );
 }
 
-void TextRenderApp::UpdateFontAtlasBadges()
+void TypographyApp::UpdateFontAtlasBadges()
 {
     const Refs<gui::Font> font_refs = gui::Font::Library::Get().GetFonts();
     gfx::Context& context = *m_sp_context;
@@ -239,7 +239,7 @@ void TextRenderApp::UpdateFontAtlasBadges()
     LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
 }
 
-void TextRenderApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
+void TypographyApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
 {
     // Sort atlas badges by size so that largest are displayed first
     std::sort(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
@@ -264,7 +264,7 @@ void TextRenderApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
     }
 }
 
-bool TextRenderApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
+bool TypographyApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 {
     // Resize screen color and depth textures
     if (!GraphicsApp::Resize(frame_size, is_minimized))
@@ -287,7 +287,7 @@ bool TextRenderApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     return true;
 }
 
-bool TextRenderApp::Animate(double elapsed_seconds, double)
+bool TypographyApp::Animate(double elapsed_seconds, double)
 {
     if (elapsed_seconds - m_text_update_elapsed_sec < g_text_update_interval_sec)
         return true;
@@ -336,7 +336,7 @@ bool TextRenderApp::Animate(double elapsed_seconds, double)
     return true;
 }
 
-void TextRenderApp::ResetAnimation()
+void TypographyApp::ResetAnimation()
 {
     for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
     {
@@ -349,13 +349,13 @@ void TextRenderApp::ResetAnimation()
     LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
 }
 
-bool TextRenderApp::Render()
+bool TypographyApp::Render()
 {
     // Render only when context is ready
     if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
         return false;
 
-    TextRenderFrame& frame = GetCurrentFrame();
+    TypographyFrame& frame = GetCurrentFrame();
 
     // Draw text blocks
     for(Ptr<gui::Text>& sp_text : m_texts)
@@ -381,7 +381,7 @@ bool TextRenderApp::Render()
     return true;
 }
 
-void TextRenderApp::OnContextReleased(gfx::Context& context)
+void TypographyApp::OnContextReleased(gfx::Context& context)
 {
     gui::Font::Library::Get().Clear();
 
@@ -392,7 +392,7 @@ void TextRenderApp::OnContextReleased(gfx::Context& context)
     GraphicsApp::OnContextReleased(context);
 }
 
-void TextRenderApp::OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture)
+void TypographyApp::OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture)
 {
     const auto sp_font_atlas_badge_it = std::find_if(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
                                                      [&sp_old_atlas_texture](const Ptr<gui::Badge>& sp_font_atlas_badge)
@@ -419,7 +419,7 @@ void TextRenderApp::OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::Text
     }
 }
 
-void TextRenderApp::OnFontAtlasUpdated(gui::Font&)
+void TypographyApp::OnFontAtlasUpdated(gui::Font&)
 {
     LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
 }
@@ -428,5 +428,5 @@ void TextRenderApp::OnFontAtlasUpdated(gui::Font&)
 
 int main(int argc, const char* argv[])
 {
-    return Methane::Tutorials::TextRenderApp().Run({ argc, argv });
+    return Methane::Tutorials::TypographyApp().Run({ argc, argv });
 }

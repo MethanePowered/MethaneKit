@@ -1,9 +1,9 @@
 include(MethaneApplications)
 
-set(TARGET MethaneTextRender)
+set(TARGET MethaneTypography)
 set(SOURCES
-    TextRenderApp.h
-    TextRenderApp.cpp
+    TypographyApp.h
+    TypographyApp.cpp
 )
 set(FONTS
     ${RESOURCES_DIR}/Fonts/Roboto/Roboto-Regular.ttf
@@ -16,8 +16,8 @@ add_methane_application(${TARGET}
     "${SOURCES}"
     "${RESOURCES_DIR}"
     "Apps/Tutorials"
-    "Methane Text Render"
-    "Text rendering tutorial with Methane Kit."
+    "Methane Typography"
+    "Dynamic text rendering and fonts management tutorial with Methane Kit."
     "${METHANE_COPYRIGHT}"
     "${METHANE_VERSION_SHORT}"
     "${METHANE_VERSION_BUILD}"

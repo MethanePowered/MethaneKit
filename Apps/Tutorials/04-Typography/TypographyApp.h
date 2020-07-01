@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: TextRenderApp.cpp
-Tutorial demonstrating triangle rendering with Methane graphics API
+FILE: TypographyApp.h
+Tutorial demonstrating dynamic text rendering and fonts management with Methane Kit.
 
 ******************************************************************************/
 
@@ -34,7 +34,7 @@ namespace Methane::Tutorials
 namespace gfx = Methane::Graphics;
 namespace gui = Methane::UserInterface;
 
-struct TextRenderFrame final : gfx::AppFrame
+struct TypographyFrame final : gfx::AppFrame
 {
     Ptr<gfx::RenderCommandList> sp_render_cmd_list;
     Ptr<gfx::CommandListSet>    sp_execute_cmd_lists;
@@ -42,15 +42,15 @@ struct TextRenderFrame final : gfx::AppFrame
     using gfx::AppFrame::AppFrame;
 };
 
-using GraphicsApp = gfx::App<TextRenderFrame>;
+using GraphicsApp = gfx::App<TypographyFrame>;
 
-class TextRenderApp final
+class TypographyApp final
     : public GraphicsApp
     , protected Data::Receiver<gui::IFontCallback>
 {
 public:
-    TextRenderApp();
-    ~TextRenderApp() override;
+    TypographyApp();
+    ~TypographyApp() override;
 
     // GraphicsApp overrides
     void Init() override;
