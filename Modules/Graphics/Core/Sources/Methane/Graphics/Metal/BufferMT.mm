@@ -25,7 +25,7 @@ Metal implementation of the buffer interface.
 #include "DeviceMT.hh"
 #include "ContextMT.h"
 #include "TypesMT.hh"
-#import "../../../../../../Data/Types/Include/Methane/Data/Types.h"
+#include "BlitCommandListMT.hh"
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Platform/MacOS/Types.hh>
@@ -43,28 +43,43 @@ struct RetainedBufferMT : ReleasePool::RetainedResource
     RetainedBufferMT(const id<MTLBuffer>& buffer_id) : mtl_buffer(buffer_id) { }
 };
 
+static MTLResourceOptions GetNativeResourceOptions(Buffer::StorageMode storage_mode)
+{
+    switch(storage_mode)
+    {
+    case Buffer::StorageMode::Managed: return MTLResourceStorageModeManaged;
+    case Buffer::StorageMode::Private: return MTLResourceStorageModePrivate;
+    }
+    assert(0);
+    return MTLResourceStorageModeShared;
+}
+
 Ptr<Buffer> Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
 {
     META_FUNCTION_TASK();
-    const Buffer::Settings settings{ Buffer::Type::Vertex, Usage::Unknown, size, stride, PixelFormat::Unknown };
+    const Buffer::Settings settings{ Buffer::Type::Vertex, Usage::Unknown, size, stride, PixelFormat::Unknown, Buffer::StorageMode::Private };
     return std::make_shared<BufferMT>(dynamic_cast<ContextBase&>(context), settings);
 }
 
 Ptr<Buffer> Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format)
 {
     META_FUNCTION_TASK();
-    const Buffer::Settings settings{ Buffer::Type::Index, Usage::Unknown, size, GetPixelSize(format), format };
+    const Buffer::Settings settings{ Buffer::Type::Index, Usage::Unknown, size, GetPixelSize(format), format, Buffer::StorageMode::Private };
     return std::make_shared<BufferMT>(dynamic_cast<ContextBase&>(context), settings);
 }
 
 Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
-    Usage::Mask usage_mask = Usage::ShaderRead;
-    if (addressable)
-        usage_mask |= Usage::Addressable;
+    const Usage::Mask usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::Unknown);
+    const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0u, PixelFormat::Unknown, Buffer::StorageMode::Private };
+    return std::make_shared<BufferMT>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
+}
 
-    const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0u, PixelFormat::Unknown };
+Ptr<Buffer> Buffer::CreateVolatileBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
+{
+    const Usage::Mask usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::Unknown);
+    const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0u, PixelFormat::Unknown, Buffer::StorageMode::Managed };
     return std::make_shared<BufferMT>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
@@ -76,7 +91,8 @@ Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
 
 BufferMT::BufferMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : BufferBase(context, settings, descriptor_by_usage)
-    , m_mtl_buffer([GetContextMT().GetDeviceMT().GetNativeDevice() newBufferWithLength:settings.size options:MTLResourceStorageModeManaged])
+    , m_mtl_buffer([GetContextMT().GetDeviceMT().GetNativeDevice() newBufferWithLength:settings.size
+                                                                               options:GetNativeResourceOptions(settings.storage_mode)])
 {
     META_FUNCTION_TASK();
     InitializeDefaultDescriptors();
@@ -103,21 +119,78 @@ void BufferMT::SetData(const SubResources& sub_resources)
 
     BufferBase::SetData(sub_resources);
 
+    switch(GetSettings().storage_mode)
+    {
+    case Buffer::StorageMode::Managed: SetDataToManagedBuffer(sub_resources); break;
+    case Buffer::StorageMode::Private: SetDataToPrivateBuffer(sub_resources); break;
+    }
+}
+
+void BufferMT::SetDataToManagedBuffer(const SubResources& sub_resources)
+{
+    META_FUNCTION_TASK();
+    assert(GetSettings().storage_mode == Buffer::StorageMode::Managed);
     assert(m_mtl_buffer != nil);
+    assert(m_mtl_buffer.storageMode == MTLStorageModeManaged);
+
     Data::RawPtr p_resource_data = static_cast<Data::RawPtr>([m_mtl_buffer contents]);
     assert(p_resource_data != nullptr);
 
-    Data::Size data_size = 0;
+    Data::Size data_offset = 0;
     for(const SubResource& sub_resource : sub_resources)
     {
-        std::copy(sub_resource.p_data, sub_resource.p_data + sub_resource.size, p_resource_data + data_size);
-        data_size += sub_resource.size;
+        if (sub_resource.data_range)
+            data_offset = sub_resource.data_range->GetStart();
+
+        std::copy(sub_resource.p_data, sub_resource.p_data + sub_resource.size, p_resource_data + data_offset);
+
+        [m_mtl_buffer didModifyRange:NSMakeRange(data_offset, data_offset + sub_resource.size)];
+        data_offset += sub_resource.size;
+    }
+}
+
+void BufferMT::SetDataToPrivateBuffer(const SubResources& sub_resources)
+{
+    META_FUNCTION_TASK();
+    assert(GetSettings().storage_mode == Buffer::StorageMode::Private);
+    assert(m_mtl_buffer != nil);
+    assert(m_mtl_buffer.storageMode == MTLStorageModePrivate);
+
+    id<MTLDevice>& mtl_device = GetContextMT().GetDeviceMT().GetNativeDevice();
+
+    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Texture Data Upload");
+    BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandList());
+    if (blit_command_list.GetState() == CommandList::State::Executing)
+        blit_command_list.WaitUntilCompleted();
+
+    blit_command_list.Reset(s_debug_group.get());
+
+    id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
+    assert(mtl_blit_encoder != nil);
+
+    Data::Size data_offset = 0;
+    for(const SubResource& sub_resource : sub_resources)
+    {
+        // Create temporary buffer with shared storage mode for sub-resource data upload to private buffer on GPU
+        id <MTLBuffer> mtl_sub_resource_upload_buffer = [mtl_device newBufferWithBytes:sub_resource.p_data
+                                                                                length:sub_resource.size
+                                                                               options:MTLResourceStorageModeShared];
+
+        if (sub_resource.data_range)
+            data_offset = sub_resource.data_range->GetStart();
+
+        [mtl_blit_encoder copyFromBuffer:mtl_sub_resource_upload_buffer
+                            sourceOffset:0
+                                toBuffer:m_mtl_buffer
+                       destinationOffset:data_offset
+                                    size:sub_resource.size];
+
+        GetContextBase().GetResourceManager().GetReleasePool().AddResource(std::make_unique<RetainedBufferMT>(mtl_sub_resource_upload_buffer));
+        data_offset += sub_resource.size;
     }
 
-    if (m_mtl_buffer.storageMode == MTLStorageModeManaged)
-    {
-        [m_mtl_buffer didModifyRange:NSMakeRange(0, data_size)];
-    }
+    // Upload command list is executed later on GPU context initialization completion
+    GetContextBase().RequireCompleteInitialization();
 }
 
 MTLIndexType BufferMT::GetNativeIndexType() const noexcept

@@ -102,7 +102,6 @@ private:
 
     void UpdateAtlasTexture();
     void UpdateMeshData();
-    void UpdateMeshBuffers();
     void UpdateConstantsBuffer();
 
     SettingsUtf32             m_settings;
@@ -117,7 +116,6 @@ private:
     Ptr<gfx::Texture>         m_sp_new_atlas_texture;
     Ptr<gfx::Sampler>         m_sp_texture_sampler;
     Ptr<gfx::ProgramBindings> m_sp_const_program_bindings;
-    UniquePtr<TextMesh>       m_sp_new_mesh_data;
     UniquePtr<Constants>      m_sp_new_const_data;
 };
 

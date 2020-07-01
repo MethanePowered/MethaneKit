@@ -46,6 +46,9 @@ public:
     MTLIndexType         GetNativeIndexType() const noexcept;
 
 private:
+    void SetDataToManagedBuffer(const SubResources& sub_resources);
+    void SetDataToPrivateBuffer(const SubResources& sub_resources);
+
     id<MTLBuffer> m_mtl_buffer;
 };
 

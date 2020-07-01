@@ -162,7 +162,7 @@ void TexturedCubeApp::Init()
     for(TexturedCubeFrame& frame : m_frames)
     {
         // Create uniforms buffer with volatile parameters for frame rendering
-        frame.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, uniforms_data_size);
+        frame.sp_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(*m_sp_context, uniforms_data_size);
         frame.sp_uniforms_buffer->SetName(IndexedName("Uniforms Buffer", frame.index));
 
         // Configure program resource bindings

@@ -78,9 +78,6 @@ Text::Text(gfx::RenderContext& context, Font& font, SettingsUtf32 settings)
         m_viewport_rect *= m_context.GetContentScalingFactor();
 
     UpdateMeshData();
-    UpdateMeshBuffers();
-
-    m_sp_new_const_data = std::make_unique<Constants>(Constants{ m_settings.color });
     UpdateConstantsBuffer();
 
     gfx::RenderState::Settings state_settings;
@@ -177,12 +174,6 @@ void Text::SetTextInScreenRect(const std::u32string& text, const gfx::FrameRect&
     m_settings.screen_rect = screen_rect;
     m_settings.screen_rect_in_pixels = rect_in_pixels;
 
-    if (m_settings.text.empty())
-    {
-        m_sp_new_mesh_data.reset();
-        return;
-    }
-
     m_viewport_rect = m_settings.screen_rect;
     if (!m_settings.screen_rect_in_pixels)
         m_viewport_rect *= m_context.GetContentScalingFactor();
@@ -225,9 +216,7 @@ void Text::SetColor(const gfx::Color4f& color)
         return;
 
     m_settings.color = color;
-    m_sp_new_const_data = std::make_unique<Constants>(Constants{
-        m_settings.color
-    });
+    UpdateConstantsBuffer();
 }
 
 void Text::Draw(gfx::RenderCommandList& cmd_list)
@@ -237,8 +226,6 @@ void Text::Draw(gfx::RenderCommandList& cmd_list)
         return;
 
     UpdateAtlasTexture();
-    UpdateMeshBuffers();
-    UpdateConstantsBuffer();
 
     assert(m_sp_const_program_bindings);
     assert(m_sp_vertex_buffers);
@@ -312,35 +299,28 @@ void Text::UpdateAtlasTexture()
 void Text::UpdateMeshData()
 {
     META_FUNCTION_TASK();
-    if (m_sp_font->GetAtlasSize())
-    {
-        m_sp_new_mesh_data = std::make_unique<TextMesh>(m_settings.text, m_settings.wrap, *m_sp_font, m_viewport_rect.size);
-    }
-}
-
-void Text::UpdateMeshBuffers()
-{
-    META_FUNCTION_TASK();
-    if (!m_sp_new_mesh_data)
+    if (!m_sp_font->GetAtlasSize())
         return;
 
+    TextMesh new_text_mesh(m_settings.text, m_settings.wrap, *m_sp_font, m_viewport_rect.size);
+
     // Update vertex buffer
-    const Data::Size vertices_data_size = m_sp_new_mesh_data->GetVerticesDataSize();
+    const Data::Size vertices_data_size = new_text_mesh.GetVerticesDataSize();
     if (!m_sp_vertex_buffers || (*m_sp_vertex_buffers)[0].GetDataSize() < vertices_data_size)
     {
-        Ptr<gfx::Buffer> sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(m_context, vertices_data_size, m_sp_new_mesh_data->GetVertexSize());
+        Ptr<gfx::Buffer> sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(m_context, vertices_data_size, new_text_mesh.GetVertexSize());
         sp_vertex_buffer->SetName(m_settings.name + " Text Vertex Buffer");
         m_sp_vertex_buffers = gfx::BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
     }
     (*m_sp_vertex_buffers)[0].SetData({
         gfx::Resource::SubResource(
-            reinterpret_cast<Data::ConstRawPtr>(m_sp_new_mesh_data->GetVertices().data()), vertices_data_size,
+            reinterpret_cast<Data::ConstRawPtr>(new_text_mesh.GetVertices().data()), vertices_data_size,
             gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0u, vertices_data_size)
         )
     });
 
     // Update index buffer
-    const Data::Size indices_data_size = m_sp_new_mesh_data->GetIndicesDataSize();
+    const Data::Size indices_data_size = new_text_mesh.GetIndicesDataSize();
     if (!m_sp_index_buffer || m_sp_index_buffer->GetDataSize() < indices_data_size)
     {
         m_sp_index_buffer = gfx::Buffer::CreateIndexBuffer(m_context, indices_data_size, gfx::PixelFormat::R16Uint);
@@ -348,29 +328,26 @@ void Text::UpdateMeshBuffers()
     }
     m_sp_index_buffer->SetData({
         gfx::Resource::SubResource(
-            reinterpret_cast<Data::ConstRawPtr>(m_sp_new_mesh_data->GetIndices().data()), indices_data_size,
+            reinterpret_cast<Data::ConstRawPtr>(new_text_mesh.GetIndices().data()), indices_data_size,
             gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0u, indices_data_size)
         )
     });
-
-    m_sp_new_mesh_data.reset();
 }
 
 void Text::UpdateConstantsBuffer()
 {
     META_FUNCTION_TASK();
-    if (!m_sp_new_const_data)
-        return;
+    Constants constants{
+        m_settings.color
+    };
+    const Data::Size const_data_size = static_cast<Data::Size>(sizeof(constants));
 
-    const Data::Size const_data_size = static_cast<Data::Size>(sizeof(Constants));
     if (!m_sp_const_buffer)
     {
         m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(m_context, gfx::Buffer::GetAlignedBufferSize(const_data_size));
-        m_sp_const_buffer->SetName(m_settings.name + " Screen-Quad Constants Buffer");
+        m_sp_const_buffer->SetName(m_settings.name + " Text Constants Buffer");
     }
-    m_sp_const_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_sp_new_const_data.get()), const_data_size } });
-
-    m_sp_new_const_data.reset();
+    m_sp_const_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&constants), const_data_size } });
 }
 
 } // namespace Methane::Graphics

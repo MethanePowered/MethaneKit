@@ -213,17 +213,17 @@ void ShadowCubeApp::Init()
     for(ShadowCubeFrame& frame : m_frames)
     {
         // Create uniforms buffer with volatile parameters for the whole scene rendering
-        frame.sp_scene_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, scene_uniforms_data_size);
+        frame.sp_scene_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(*m_sp_context, scene_uniforms_data_size);
         frame.sp_scene_uniforms_buffer->SetName(IndexedName("Scene Uniforms Buffer", frame.index));
 
         // ========= Shadow Pass data =========
 
         // Create uniforms buffer for Cube rendering in Shadow pass
-        frame.shadow_pass.cube.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, mesh_uniforms_data_size);
+        frame.shadow_pass.cube.sp_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(*m_sp_context, mesh_uniforms_data_size);
         frame.shadow_pass.cube.sp_uniforms_buffer->SetName(IndexedName("Cube Uniforms Buffer for Shadow Pass", frame.index));
 
         // Create uniforms buffer for Floor rendering in Shadow pass
-        frame.shadow_pass.floor.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, mesh_uniforms_data_size);
+        frame.shadow_pass.floor.sp_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(*m_sp_context, mesh_uniforms_data_size);
         frame.shadow_pass.floor.sp_uniforms_buffer->SetName(IndexedName("Floor Uniforms Buffer for Shadow Pass", frame.index));
 
         // Create depth texture for shadow map rendering
@@ -265,11 +265,11 @@ void ShadowCubeApp::Init()
         // ========= Final Pass data =========
 
         // Create uniforms buffer for Cube rendering in Final pass
-        frame.final_pass.cube.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, mesh_uniforms_data_size);
+        frame.final_pass.cube.sp_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(*m_sp_context, mesh_uniforms_data_size);
         frame.final_pass.cube.sp_uniforms_buffer->SetName(IndexedName("Cube Uniforms Buffer for Final Pass", frame.index));
 
         // Create uniforms buffer for Floor rendering in Final pass
-        frame.final_pass.floor.sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, mesh_uniforms_data_size);
+        frame.final_pass.floor.sp_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(*m_sp_context, mesh_uniforms_data_size);
         frame.final_pass.floor.sp_uniforms_buffer->SetName(IndexedName("Floor Uniforms Buffer for Final Pass", frame.index));
 
         // Bind final pass RT texture and pass to the frame buffer texture and final pass.

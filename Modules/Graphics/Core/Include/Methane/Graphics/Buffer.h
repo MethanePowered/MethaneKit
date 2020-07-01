@@ -41,6 +41,12 @@ struct Buffer : virtual Resource
         ReadBack,
     };
 
+    enum class StorageMode
+    {
+        Managed, // CPU-GPU buffer with automatic data synchronization managed by graphics runtime
+        Private, // Private GPU buffer asynchronously uploaded through the intermediate shared CPU-GPU buffer
+    };
+
     struct Settings
     {
         Buffer::Type type;
@@ -48,12 +54,14 @@ struct Buffer : virtual Resource
         Data::Size   size;
         Data::Size   item_stride_size;
         PixelFormat  data_format;
+        StorageMode  storage_mode = StorageMode::Managed;
     };
 
     // Create Buffer instance
     static Ptr<Buffer> CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride);
     static Ptr<Buffer> CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format);
     static Ptr<Buffer> CreateConstantBuffer(Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    static Ptr<Buffer> CreateVolatileBuffer(Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
     static Ptr<Buffer> CreateReadBackBuffer(Context& context, Data::Size size);
 
     // Auxiliary functions
