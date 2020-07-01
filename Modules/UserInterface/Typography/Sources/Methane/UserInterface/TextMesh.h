@@ -49,23 +49,24 @@ public:
 
     TextMesh(const std::u32string& text, Text::Wrap wrap, Font& font, gfx::FrameSize& viewport_size);
 
-    const Vertices&       GetVertices() const noexcept    { return vertices; }
-    const Indices&        GetIndices() const noexcept     { return indices; }
-    const gfx::FrameSize& GetContentSize() const noexcept { return content_size; }
+    const Vertices&       GetVertices() const noexcept    { return m_vertices; }
+    const Indices&        GetIndices() const noexcept     { return m_indices; }
+    const gfx::FrameSize& GetContentSize() const noexcept { return m_content_size; }
 
     Data::Size GetVertexSize() const noexcept             { return static_cast<Data::Size>(sizeof(Vertex)); }
-    Data::Size GetVerticesDataSize() const noexcept       { return static_cast<Data::Size>(vertices.size() * sizeof(Vertex)); }
+    Data::Size GetVerticesDataSize() const noexcept       { return static_cast<Data::Size>(m_vertices.size() * sizeof(Vertex)); }
 
     Data::Size GetIndexSize() const noexcept              { return static_cast<Data::Size>(sizeof(Index)); }
-    Data::Size GetIndicesDataSize() const noexcept        { return static_cast<Data::Size>(indices.size() * sizeof(Index)); }
+    Data::Size GetIndicesDataSize() const noexcept        { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
 
 private:
+    void UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FrameRect::Point& char_pos);
     void AddCharQuad(const Font::Char& font_char, const gfx::FrameRect::Point& screen_char_pos,
                      const gfx::FrameSize& viewport_size, const gfx::FrameSize& atlas_size);
 
-    Vertices       vertices;
-    Indices        indices;
-    gfx::FrameSize content_size;
+    Vertices       m_vertices;
+    Indices        m_indices;
+    gfx::FrameSize m_content_size;
 };
 
 } // namespace Methane::Graphics

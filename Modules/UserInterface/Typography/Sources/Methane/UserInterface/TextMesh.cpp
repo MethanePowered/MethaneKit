@@ -120,26 +120,19 @@ static void ForEachTextCharacter(const std::u32string& text, Font& font, uint32_
                                 wrap == Text::Wrap::Word && viewport_width ? word_wrap_char_at_position : process_char_at_position);
 }
 
-static void UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FrameRect::Point& char_pos, gfx::FrameSize& content_size)
-{
-    META_FUNCTION_TASK();
-    content_size.width  = std::max(content_size.width,  char_pos.GetX() + font_char.GetOffset().GetX() + font_char.GetRect().size.width);
-    content_size.height = std::max(content_size.height, char_pos.GetY() + font_char.GetOffset().GetY() + font_char.GetRect().size.height);
-}
-
 TextMesh::TextMesh(const std::u32string& text, Text::Wrap wrap, Font& font, gfx::FrameSize& viewport_size)
 {
     META_FUNCTION_TASK();
     const size_t text_length = text.length();
-    vertices.reserve(text_length * 4);
-    indices.reserve(text_length * 6);
+    m_vertices.reserve(text_length * 4);
+    m_indices.reserve(text_length * 6);
 
     const gfx::FrameSize& atlas_size = font.GetAtlasSize();
     ForEachTextCharacter(text, font, viewport_size.width, wrap,
         [&](const Font::Char& font_char, const gfx::FrameRect::Point& char_pos, size_t) -> CharAction
         {
             AddCharQuad(font_char, char_pos, viewport_size, atlas_size);
-            UpdateContentSizeWithChar(font_char, char_pos, content_size);
+            UpdateContentSizeWithChar(font_char, char_pos);
             return CharAction::Continue;
         }
     );
@@ -148,26 +141,33 @@ TextMesh::TextMesh(const std::u32string& text, Text::Wrap wrap, Font& font, gfx:
         return;
 
     // Normalize char vertex positions using calculated content size to transform in viewport coordinates
-    for (Vertex& vertex : vertices)
+    for (Vertex& vertex : m_vertices)
     {
         if (!viewport_size.width)
         {
-            vertex.position[0] = vertex.position[0] * 2.f / content_size.width - 1.f;
+            vertex.position[0] = vertex.position[0] * 2.f / m_content_size.width - 1.f;
         }
         if (!viewport_size.height)
         {
-            vertex.position[1] = vertex.position[1] * 2.f / content_size.height + 1.f;
+            vertex.position[1] = vertex.position[1] * 2.f / m_content_size.height + 1.f;
         }
     }
 
     if (!viewport_size.width)
     {
-        viewport_size.width = content_size.width;
+        viewport_size.width = m_content_size.width;
     }
     if (!viewport_size.height)
     {
-        viewport_size.height = content_size.height;
+        viewport_size.height = m_content_size.height;
     }
+}
+
+void TextMesh::UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FrameRect::Point& char_pos)
+{
+    META_FUNCTION_TASK();
+    m_content_size.width  = std::max(m_content_size.width,  char_pos.GetX() + font_char.GetOffset().GetX() + font_char.GetRect().size.width);
+    m_content_size.height = std::max(m_content_size.height, char_pos.GetY() + font_char.GetOffset().GetY() + font_char.GetRect().size.height);
 }
 
 void TextMesh::AddCharQuad(const Font::Char& font_char, const gfx::FrameRect::Point& screen_char_pos,
@@ -205,34 +205,34 @@ void TextMesh::AddCharQuad(const Font::Char& font_char, const gfx::FrameRect::Po
         }
     };
 
-    if (vertices.size() + 6 > std::numeric_limits<Index>::max())
+    if (m_vertices.size() + 6 > std::numeric_limits<Index>::max())
         throw std::runtime_error("Text mesh index buffer overflow.");
 
-    const Index start_index = static_cast<Index>(vertices.size());
+    const Index start_index = static_cast<Index>(m_vertices.size());
 
-    vertices.emplace_back(Vertex{
+    m_vertices.emplace_back(Vertex{
         { ver_rect.GetLeft(), ver_rect.GetBottom() },
         { tex_rect.GetLeft(), tex_rect.GetTop() },
     });
-    vertices.emplace_back(Vertex{
+    m_vertices.emplace_back(Vertex{
         { ver_rect.GetLeft(), ver_rect.GetTop() },
         { tex_rect.GetLeft(), tex_rect.GetBottom() },
     });
-    vertices.emplace_back(Vertex{
+    m_vertices.emplace_back(Vertex{
         { ver_rect.GetRight(), ver_rect.GetTop() },
         { tex_rect.GetRight(), tex_rect.GetBottom() },
     });
-    vertices.emplace_back(Vertex{
+    m_vertices.emplace_back(Vertex{
         { ver_rect.GetRight(), ver_rect.GetBottom() },
         { tex_rect.GetRight(), tex_rect.GetTop() },
     });
 
-    indices.push_back(start_index);
-    indices.push_back(start_index + 1);
-    indices.push_back(start_index + 2);
-    indices.push_back(start_index + 2);
-    indices.push_back(start_index + 3);
-    indices.push_back(start_index);
+    m_indices.push_back(start_index);
+    m_indices.push_back(start_index + 1);
+    m_indices.push_back(start_index + 2);
+    m_indices.push_back(start_index + 2);
+    m_indices.push_back(start_index + 3);
+    m_indices.push_back(start_index);
 }
 
 } // namespace Methane::Graphics
