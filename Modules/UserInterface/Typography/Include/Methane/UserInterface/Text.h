@@ -98,9 +98,9 @@ protected:
 private:
     struct Constants;
 
-    Ptr<gfx::ProgramBindings> CreateConstProgramBindings();
+    Ptr<gfx::ProgramBindings> CreateProgramBindings();
 
-    void UpdateAtlasTexture();
+    void UpdateAtlasTexture(const Ptr<gfx::Texture>& sp_new_atlas_texture);
     void UpdateMeshData();
     void UpdateConstantsBuffer();
 
@@ -113,10 +113,10 @@ private:
     Ptr<gfx::Buffer>          m_sp_index_buffer;
     Ptr<gfx::Buffer>          m_sp_const_buffer;
     Ptr<gfx::Texture>         m_sp_atlas_texture;
-    Ptr<gfx::Texture>         m_sp_new_atlas_texture;
     Ptr<gfx::Sampler>         m_sp_texture_sampler;
-    Ptr<gfx::ProgramBindings> m_sp_const_program_bindings;
-    UniquePtr<Constants>      m_sp_new_const_data;
+    Ptr<gfx::ProgramBindings> m_sp_curr_program_bindings;
+    Ptr<gfx::ProgramBindings> m_sp_prev_program_bindings;
+    Data::Index               m_prev_program_bindings_release_on_frame  = 0u;
 };
 
 } // namespace Methane::Graphics

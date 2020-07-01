@@ -130,7 +130,7 @@ Text::Text(gfx::RenderContext& context, Font& font, SettingsUtf32 settings)
     });
     m_sp_texture_sampler->SetName(m_settings.name + " Screen-Quad Texture Sampler");
 
-    m_sp_const_program_bindings = CreateConstProgramBindings();
+    m_sp_curr_program_bindings = CreateProgramBindings();
 }
 
 Text::~Text() = default;
@@ -181,7 +181,7 @@ void Text::SetTextInScreenRect(const std::u32string& text, const gfx::FrameRect&
     if (!m_sp_atlas_texture && !m_settings.text.empty())
     {
         m_sp_font->AddChars(Font::GetAlphabetFromText(m_settings.text));
-        m_sp_new_atlas_texture = m_sp_font->GetAtlasTexturePtr(m_context);
+        UpdateAtlasTexture(m_sp_font->GetAtlasTexturePtr(m_context));
     }
 
     UpdateMeshData();
@@ -222,45 +222,34 @@ void Text::SetColor(const gfx::Color4f& color)
 void Text::Draw(gfx::RenderCommandList& cmd_list)
 {
     META_FUNCTION_TASK();
-    if (m_settings.text.empty() || (!m_sp_new_atlas_texture && !m_sp_atlas_texture))
+    if (m_settings.text.empty() || !m_sp_atlas_texture)
         return;
 
-    UpdateAtlasTexture();
-
-    assert(m_sp_const_program_bindings);
+    assert(m_sp_curr_program_bindings);
     assert(m_sp_vertex_buffers);
     assert(m_sp_index_buffer);
 
     cmd_list.Reset(m_sp_state);
-    cmd_list.SetProgramBindings(*m_sp_const_program_bindings);
+    cmd_list.SetProgramBindings(*m_sp_curr_program_bindings);
     cmd_list.SetVertexBuffers(*m_sp_vertex_buffers);
     cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
+
+    if (m_sp_prev_program_bindings && m_prev_program_bindings_release_on_frame == m_context.GetFrameBufferIndex())
+        m_sp_prev_program_bindings.reset();
 }
 
 void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture)
 {
     META_FUNCTION_TASK();
     META_UNUSED(sp_old_atlas_texture);
-
-    if (!sp_new_atlas_texture)
-    {
-        assert(m_sp_atlas_texture.get() == sp_old_atlas_texture.get());
-        m_sp_atlas_texture.reset();
-        m_sp_new_atlas_texture.reset();
-        m_sp_const_program_bindings.reset();
-        return;
-    }
-
-    if (m_sp_font.get() != std::addressof(font) ||
-        m_sp_new_atlas_texture.get() == sp_new_atlas_texture.get() ||
-        std::addressof(m_context) != std::addressof(sp_new_atlas_texture->GetContext()))
+    if (m_sp_font.get() != std::addressof(font) || (sp_new_atlas_texture && std::addressof(m_context) != std::addressof(sp_new_atlas_texture->GetContext())))
         return;
 
     assert(m_sp_atlas_texture.get() == sp_old_atlas_texture.get());
-    m_sp_new_atlas_texture = sp_new_atlas_texture;
+    UpdateAtlasTexture(sp_new_atlas_texture);
 }
 
-Ptr<gfx::ProgramBindings> Text::CreateConstProgramBindings()
+Ptr<gfx::ProgramBindings> Text::CreateProgramBindings()
 {
     META_FUNCTION_TASK();
     if (!m_sp_const_buffer || !m_sp_atlas_texture || !m_sp_texture_sampler)
@@ -273,39 +262,48 @@ Ptr<gfx::ProgramBindings> Text::CreateConstProgramBindings()
     });
 }
 
-void Text::UpdateAtlasTexture()
+void Text::UpdateAtlasTexture(const Ptr<gfx::Texture>& sp_new_atlas_texture)
 {
     META_FUNCTION_TASK();
-    if (!m_sp_new_atlas_texture)
+    if (m_sp_atlas_texture.get() == sp_new_atlas_texture.get())
         return;
 
-    m_sp_atlas_texture = m_sp_new_atlas_texture;
-    m_sp_new_atlas_texture.reset();
+    m_sp_atlas_texture = sp_new_atlas_texture;
+    m_sp_prev_program_bindings = m_sp_curr_program_bindings;
+    m_prev_program_bindings_release_on_frame = m_context.GetFrameBufferIndex(); // retain previous program bindings until they are used by in flight command lists
 
-    if (m_sp_const_program_bindings)
+    if (!m_sp_atlas_texture)
     {
-        const Ptr<gfx::ProgramBindings::ArgumentBinding>& sp_atlas_texture_binding = m_sp_const_program_bindings->Get({ gfx::Shader::Type::Pixel, "g_texture" });
-        if (!sp_atlas_texture_binding)
-            throw std::logic_error("Can not find atlas texture argument binding.");
+        m_sp_curr_program_bindings.reset();
+        return;
+    }
 
-        sp_atlas_texture_binding->SetResourceLocations({ { m_sp_atlas_texture } });
+    if (m_sp_prev_program_bindings)
+    {
+        m_sp_curr_program_bindings = gfx::ProgramBindings::CreateCopy(*m_sp_prev_program_bindings, {
+            { { gfx::Shader::Type::Pixel, "g_texture" }, { { m_sp_atlas_texture } } },
+        });
     }
     else
     {
-        m_sp_const_program_bindings = CreateConstProgramBindings();
+        m_sp_curr_program_bindings = CreateProgramBindings();
     }
 }
 
 void Text::UpdateMeshData()
 {
     META_FUNCTION_TASK();
-    if (!m_sp_font->GetAtlasSize())
+    if (!m_sp_font->GetAtlasSize() || m_settings.text.empty())
         return;
 
     TextMesh new_text_mesh(m_settings.text, m_settings.wrap, *m_sp_font, m_viewport_rect.size);
 
     // Update vertex buffer
     const Data::Size vertices_data_size = new_text_mesh.GetVerticesDataSize();
+    assert(vertices_data_size);
+    if (!vertices_data_size)
+        return;
+
     if (!m_sp_vertex_buffers || (*m_sp_vertex_buffers)[0].GetDataSize() < vertices_data_size)
     {
         Ptr<gfx::Buffer> sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(m_context, vertices_data_size, new_text_mesh.GetVertexSize());
@@ -321,6 +319,10 @@ void Text::UpdateMeshData()
 
     // Update index buffer
     const Data::Size indices_data_size = new_text_mesh.GetIndicesDataSize();
+    assert(indices_data_size);
+    if (!indices_data_size)
+        return;
+
     if (!m_sp_index_buffer || m_sp_index_buffer->GetDataSize() < indices_data_size)
     {
         m_sp_index_buffer = gfx::Buffer::CreateIndexBuffer(m_context, indices_data_size, gfx::PixelFormat::R16Uint);

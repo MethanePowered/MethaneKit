@@ -48,7 +48,6 @@ Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, uint32_
     settings.pixel_format   = pixel_format;
     settings.usage_mask     = usage;
     settings.mipmapped      = mipmapped;
-    settings.cpu_accessible = true;
 
     return settings;
 }
@@ -65,7 +64,6 @@ Texture::Settings Texture::Settings::Cube(uint32_t dimension_size, uint32_t arra
     settings.pixel_format   = pixel_format;
     settings.usage_mask     = usage;
     settings.mipmapped      = mipmapped;
-    settings.cpu_accessible = true;
 
     return settings;
 }
@@ -80,7 +78,6 @@ Texture::Settings Texture::Settings::FrameBuffer(const Dimensions& dimensions, P
     settings.usage_mask     = Usage::RenderTarget;
     settings.pixel_format   = pixel_format;
     settings.dimensions     = dimensions;
-    settings.cpu_accessible = false;
 
     return settings;
 }
@@ -95,7 +92,7 @@ Texture::Settings Texture::Settings::DepthStencilBuffer(const Dimensions& dimens
     settings.usage_mask     = usage_mask;
     settings.pixel_format   = pixel_format;
     settings.dimensions     = dimensions;
-    settings.cpu_accessible = false;
+
     return settings;
 }
 

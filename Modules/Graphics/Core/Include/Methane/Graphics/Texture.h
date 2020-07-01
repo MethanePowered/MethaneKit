@@ -62,7 +62,6 @@ struct Texture : virtual Resource
         Dimensions     dimensions           = Dimensions();
         uint32_t       array_length         = 1u;
         bool           mipmapped            = false;
-        bool           cpu_accessible       = true;
 
         static Settings Image(const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage::Mask usage);
         static Settings Cube(uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage::Mask usage);

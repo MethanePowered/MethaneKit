@@ -42,6 +42,13 @@ struct RetainedTextureMT : ReleasePool::RetainedResource
     RetainedTextureMT(const id<MTLTexture>& texture_id) : mtl_texture(texture_id) { }
 };
 
+struct RetainedBufferMT : ReleasePool::RetainedResource
+{
+    id<MTLBuffer> mtl_buffer;
+
+    RetainedBufferMT(const id<MTLBuffer>& buffer_id) : mtl_buffer(buffer_id) { }
+};
+
 static MTLTextureType GetNativeTextureType(Texture::DimensionType dimension_type)
 {
     META_FUNCTION_TASK();
@@ -150,8 +157,21 @@ void TextureMT::SetData(const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
     assert(m_mtl_texture != nil);
+    assert(m_mtl_texture.storageMode == MTLStorageModePrivate);
 
     TextureBase::SetData(sub_resources);
+
+    id<MTLDevice>& mtl_device = GetContextMT().GetDeviceMT().GetNativeDevice();
+
+    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Texture Data Upload");
+    BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandList());
+    if (blit_command_list.GetState() == CommandList::State::Executing)
+        blit_command_list.WaitUntilCompleted();
+
+    blit_command_list.Reset(s_debug_group.get());
+
+    id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
+    assert(mtl_blit_encoder != nil);
 
     const Settings& settings        = GetSettings();
     const uint32_t  bytes_per_row   = settings.dimensions.width  * GetPixelSize(settings.pixel_format);
@@ -176,13 +196,23 @@ void TextureMT::SetData(const SubResources& sub_resources)
             default:
                 slice = 0;
         }
-        
-        [m_mtl_texture replaceRegion:texture_region
-                         mipmapLevel:sub_resource.index.mip_level
-                               slice:slice
-                           withBytes:sub_resource.p_data
-                         bytesPerRow:bytes_per_row
-                       bytesPerImage:bytes_per_image];
+
+        // Create temporary buffer with shared storage mode for sub-resource data upload to private texture on GPU
+        id <MTLBuffer> mtl_sub_resource_upload_buffer = [mtl_device newBufferWithBytes:sub_resource.p_data
+                                                                                length:sub_resource.size
+                                                                               options:MTLResourceStorageModeShared];
+
+        [mtl_blit_encoder copyFromBuffer:mtl_sub_resource_upload_buffer
+                            sourceOffset:0
+                       sourceBytesPerRow:bytes_per_row
+                     sourceBytesPerImage:bytes_per_image
+                              sourceSize:texture_region.size
+                               toTexture:m_mtl_texture
+                        destinationSlice:slice
+                        destinationLevel:sub_resource.index.mip_level
+                       destinationOrigin:texture_region.origin];
+
+        GetContextBase().GetResourceManager().GetReleasePool().AddResource(std::make_unique<RetainedBufferMT>(mtl_sub_resource_upload_buffer));
     }
 
     if (settings.mipmapped && sub_resources.size() < GetSubresourceCount().GetRawCount())
@@ -266,10 +296,7 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
     if (!mtl_tex_desc)
         return nil;
 
-    if (!settings.cpu_accessible)
-    {
-        mtl_tex_desc.resourceOptions = MTLResourceStorageModePrivate;
-    }
+    mtl_tex_desc.resourceOptions = MTLResourceStorageModePrivate;
     mtl_tex_desc.usage = GetNativeTextureUsage();
 
     return mtl_tex_desc;
