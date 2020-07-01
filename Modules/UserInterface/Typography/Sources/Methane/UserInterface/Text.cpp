@@ -178,13 +178,13 @@ void Text::SetTextInScreenRect(const std::u32string& text, const gfx::FrameRect&
     if (!m_settings.screen_rect_in_pixels)
         m_viewport_rect *= m_context.GetContentScalingFactor();
 
-    if (!m_sp_atlas_texture && !m_settings.text.empty())
+    UpdateMeshData();
+
+    if (!m_sp_atlas_texture)
     {
-        m_sp_font->AddChars(Font::GetAlphabetFromText(m_settings.text));
+        // If atlas texture was not initialized it has to be requested for current context first to be properly updated in future
         UpdateAtlasTexture(m_sp_font->GetAtlasTexturePtr(m_context));
     }
-
-    UpdateMeshData();
 
     m_sp_state->SetViewports({ gfx::GetFrameViewport(m_viewport_rect) });
     m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(m_viewport_rect) });
@@ -293,7 +293,13 @@ void Text::UpdateAtlasTexture(const Ptr<gfx::Texture>& sp_new_atlas_texture)
 void Text::UpdateMeshData()
 {
     META_FUNCTION_TASK();
-    if (!m_sp_font->GetAtlasSize() || m_settings.text.empty())
+    if (m_settings.text.empty())
+        return;
+
+    // Fill font with new text chars strictly before building the text mesh, to be sure that font atlas size is up to date
+    m_sp_font->AddChars(m_settings.text);
+
+    if (!m_sp_font->GetAtlasSize())
         return;
 
     TextMesh new_text_mesh(m_settings.text, m_settings.wrap, *m_sp_font, m_viewport_rect.size);
