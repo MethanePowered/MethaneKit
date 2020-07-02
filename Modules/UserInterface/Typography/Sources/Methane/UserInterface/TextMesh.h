@@ -49,24 +49,37 @@ public:
 
     TextMesh(const std::u32string& text, Text::Wrap wrap, Font& font, gfx::FrameSize& viewport_size);
 
-    const Vertices&       GetVertices() const noexcept    { return m_vertices; }
-    const Indices&        GetIndices() const noexcept     { return m_indices; }
-    const gfx::FrameSize& GetContentSize() const noexcept { return m_content_size; }
+    bool IsUpdatable(const std::u32string& text, Text::Wrap wrap, Font& font, const gfx::FrameSize& viewport_size) const noexcept;
+    void Update(const std::u32string& text, gfx::FrameSize& viewport_size);
 
-    Data::Size GetVertexSize() const noexcept             { return static_cast<Data::Size>(sizeof(Vertex)); }
-    Data::Size GetVerticesDataSize() const noexcept       { return static_cast<Data::Size>(m_vertices.size() * sizeof(Vertex)); }
+    const std::u32string& GetText() const noexcept          { return m_text; }
+    Font&                 GetFont() noexcept                { return m_font; }
+    Text::Wrap            GetWrap() const noexcept          { return m_wrap; }
+    const gfx::FrameSize& GetViewportSize() const noexcept  { return m_viewport_size; }
+    const gfx::FrameSize& GetContentSize() const noexcept   { return m_content_size; }
 
-    Data::Size GetIndexSize() const noexcept              { return static_cast<Data::Size>(sizeof(Index)); }
-    Data::Size GetIndicesDataSize() const noexcept        { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
+    const Vertices& GetVertices() const noexcept            { return m_vertices; }
+    const Indices&  GetIndices() const noexcept             { return m_indices; }
+
+    Data::Size      GetVertexSize() const noexcept          { return static_cast<Data::Size>(sizeof(Vertex)); }
+    Data::Size      GetVerticesDataSize() const noexcept    { return static_cast<Data::Size>(m_vertices.size() * sizeof(Vertex)); }
+
+    Data::Size      GetIndexSize() const noexcept           { return static_cast<Data::Size>(sizeof(Index)); }
+    Data::Size      GetIndicesDataSize() const noexcept     { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
 
 private:
     void UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FrameRect::Point& char_pos);
     void AddCharQuad(const Font::Char& font_char, const gfx::FrameRect::Point& screen_char_pos,
                      const gfx::FrameSize& viewport_size, const gfx::FrameSize& atlas_size);
 
-    Vertices       m_vertices;
-    Indices        m_indices;
-    gfx::FrameSize m_content_size;
+    std::u32string        m_text;
+    Font&                 m_font;
+    const Text::Wrap      m_wrap;
+    const gfx::FrameSize  m_viewport_size;
+    gfx::FrameSize        m_content_size;
+    gfx::FrameRect::Point m_last_char_pos;
+    Vertices              m_vertices;
+    Indices               m_indices;
 };
 
 } // namespace Methane::Graphics

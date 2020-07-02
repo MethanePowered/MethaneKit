@@ -111,6 +111,7 @@ private:
     gfx::FrameRect            m_viewport_rect;
     gfx::RenderContext&       m_context;
     Ptr<Font>                 m_sp_font;
+    UniquePtr<TextMesh>       m_sp_text_mesh;
     Ptr<gfx::RenderState>     m_sp_state;
     Ptr<gfx::BufferSet>       m_sp_vertex_buffers;
     Ptr<gfx::Buffer>          m_sp_index_buffer;

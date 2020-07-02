@@ -68,7 +68,6 @@ Text::Text(gfx::RenderContext& context, Font& font, SettingsUtf32 settings)
     , m_sp_atlas_texture(font.GetAtlasTexturePtr(context))
 {
     META_FUNCTION_TASK();
-
     m_sp_font->Connect(*this);
 
     const gfx::RenderContext::Settings& context_settings = context.GetSettings();
@@ -143,6 +142,7 @@ std::string Text::GetTextUtf8() const
 
 gfx::FrameRect Text::GetViewportInDots() const noexcept
 {
+    META_FUNCTION_TASK();
     return m_viewport_rect / m_context.GetContentScalingFactor();
 }
 
@@ -247,6 +247,13 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& sp_old_a
 
     assert(m_sp_atlas_texture.get() == sp_old_atlas_texture.get());
     UpdateAtlasTexture(sp_new_atlas_texture);
+
+    if (m_sp_text_mesh)
+    {
+        // Reset text mesh along with font atlas for texture coordinates to match atlas
+        m_sp_text_mesh.reset();
+        UpdateMeshData();
+    }
 }
 
 Ptr<gfx::ProgramBindings> Text::CreateProgramBindings()
@@ -302,10 +309,17 @@ void Text::UpdateMeshData()
     if (!m_sp_font->GetAtlasSize())
         return;
 
-    TextMesh new_text_mesh(m_settings.text, m_settings.wrap, *m_sp_font, m_viewport_rect.size);
+    if (m_sp_text_mesh && m_sp_text_mesh->IsUpdatable(m_settings.text, m_settings.wrap, *m_sp_font, m_viewport_rect.size))
+    {
+        m_sp_text_mesh->Update(m_settings.text, m_viewport_rect.size);
+    }
+    else
+    {
+        m_sp_text_mesh = std::make_unique<TextMesh>(m_settings.text, m_settings.wrap, *m_sp_font, m_viewport_rect.size);
+    }
 
     // Update vertex buffer
-    const Data::Size vertices_data_size = new_text_mesh.GetVerticesDataSize();
+    const Data::Size vertices_data_size = m_sp_text_mesh->GetVerticesDataSize();
     assert(vertices_data_size);
     if (!vertices_data_size)
         return;
@@ -313,19 +327,19 @@ void Text::UpdateMeshData()
     if (!m_sp_vertex_buffers || (*m_sp_vertex_buffers)[0].GetDataSize() < vertices_data_size)
     {
         const Data::Size vertex_buffer_size = vertices_data_size * m_settings.mesh_buffers_reservation_multiplier;
-        Ptr<gfx::Buffer> sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(m_context, vertex_buffer_size, new_text_mesh.GetVertexSize());
+        Ptr<gfx::Buffer> sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(m_context, vertex_buffer_size, m_sp_text_mesh->GetVertexSize());
         sp_vertex_buffer->SetName(m_settings.name + " Text Vertex Buffer");
         m_sp_vertex_buffers = gfx::BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
     }
     (*m_sp_vertex_buffers)[0].SetData({
         gfx::Resource::SubResource(
-            reinterpret_cast<Data::ConstRawPtr>(new_text_mesh.GetVertices().data()), vertices_data_size,
+            reinterpret_cast<Data::ConstRawPtr>(m_sp_text_mesh->GetVertices().data()), vertices_data_size,
             gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0u, vertices_data_size)
         )
     });
 
     // Update index buffer
-    const Data::Size indices_data_size = new_text_mesh.GetIndicesDataSize();
+    const Data::Size indices_data_size = m_sp_text_mesh->GetIndicesDataSize();
     assert(indices_data_size);
     if (!indices_data_size)
         return;
@@ -338,7 +352,7 @@ void Text::UpdateMeshData()
     }
     m_sp_index_buffer->SetData({
         gfx::Resource::SubResource(
-            reinterpret_cast<Data::ConstRawPtr>(new_text_mesh.GetIndices().data()), indices_data_size,
+            reinterpret_cast<Data::ConstRawPtr>(m_sp_text_mesh->GetIndices().data()), indices_data_size,
             gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0u, indices_data_size)
         )
     });

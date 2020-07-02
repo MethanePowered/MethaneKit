@@ -27,6 +27,8 @@ Methane text mesh generation helper.
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
+#include <stdexcept>
+
 namespace Methane::UserInterface
 {
 
@@ -40,7 +42,7 @@ enum class CharAction
 using ProcessFontCharAtPosition = const std::function<CharAction(const Font::Char& text_char, const gfx::FrameRect::Point& char_pos, size_t char_index)>;
 
 static void ForEachTextCharacterInRange(Font& font, const Font::Chars& text_chars, size_t begin_index, size_t end_index,
-                                        gfx::FrameRect::Point char_pos, uint32_t viewport_width, Text::Wrap wrap,
+                                        gfx::FrameRect::Point& char_pos, uint32_t viewport_width, Text::Wrap wrap,
                                         const ProcessFontCharAtPosition& process_char_at_position)
 {
     META_FUNCTION_TASK();
@@ -86,20 +88,21 @@ static void ForEachTextCharacterInRange(Font& font, const Font::Chars& text_char
     }
 }
 
-static void ForEachTextCharacter(const std::u32string& text, Font& font, uint32_t viewport_width, Text::Wrap wrap,
-                                 const ProcessFontCharAtPosition& process_char_at_position)
+static void ForEachTextCharacter(const std::u32string& text, Font& font, gfx::FrameRect::Point& char_pos,
+                                 uint32_t viewport_width, Text::Wrap wrap, const ProcessFontCharAtPosition& process_char_at_position)
 {
     META_FUNCTION_TASK();
     const Font::Chars text_chars = font.GetTextChars(text);
     const ProcessFontCharAtPosition& word_wrap_char_at_position = // word wrap mode processor
-        [&](const Font::Char& text_char, const gfx::FrameRect::Point& char_pos, size_t char_index) -> CharAction
+        [&](const Font::Char& text_char, const gfx::FrameRect::Point& cur_char_pos, size_t char_index) -> CharAction
         {
             if (text_char.IsWhiteSpace())
             {
                 // Word wrap prediction: check if next word fits in given viewport width
                 bool word_wrap_required = false;
-                const gfx::FrameRect::Point start_char_pos = { char_pos.GetX() + text_char.GetAdvance().GetX(), char_pos.GetY() };
-                ForEachTextCharacterInRange(font, text_chars, char_index + 1, text_chars.size(), start_char_pos, viewport_width, Text::Wrap::Anywhere,
+                const gfx::FrameRect::Point start_char_pos = { cur_char_pos.GetX() + text_char.GetAdvance().GetX(), cur_char_pos.GetY() };
+                gfx::FrameRect::Point next_char_pos = start_char_pos;
+                ForEachTextCharacterInRange(font, text_chars, char_index + 1, text_chars.size(), next_char_pos, viewport_width, Text::Wrap::Anywhere,
                     [&word_wrap_required, &start_char_pos, &text_chars](const Font::Char& text_char, const gfx::FrameRect::Point& char_pos, size_t char_index) -> CharAction
                     {
                         // Word has ended if whitespace character is received or line break character was passed
@@ -113,22 +116,59 @@ static void ForEachTextCharacter(const std::u32string& text, Font& font, uint32_
                 if (word_wrap_required)
                     return CharAction::Wrap;
             }
-            return process_char_at_position(text_char, char_pos, char_index);
+            return process_char_at_position(text_char, cur_char_pos, char_index);
         };
-    ForEachTextCharacterInRange(font, text_chars, 0, text_chars.size(),
-                                gfx::FrameRect::Point{ 0, font.GetLineHeight() }, viewport_width, wrap,
+    ForEachTextCharacterInRange(font, text_chars, 0, text_chars.size(), char_pos, viewport_width, wrap,
                                 wrap == Text::Wrap::Word && viewport_width ? word_wrap_char_at_position : process_char_at_position);
 }
 
 TextMesh::TextMesh(const std::u32string& text, Text::Wrap wrap, Font& font, gfx::FrameSize& viewport_size)
+    : m_font(font)
+    , m_wrap(wrap)
+    , m_viewport_size(viewport_size)
+    , m_last_char_pos({ 0, font.GetLineHeight() })
 {
     META_FUNCTION_TASK();
-    const size_t text_length = text.length();
-    m_vertices.reserve(text_length * 4);
-    m_indices.reserve(text_length * 6);
+    Update(text, viewport_size);
+}
 
-    const gfx::FrameSize& atlas_size = font.GetAtlasSize();
-    ForEachTextCharacter(text, font, viewport_size.width, wrap,
+bool TextMesh::IsUpdatable(const std::u32string& text, Text::Wrap wrap, Font& font, const gfx::FrameSize& viewport_size) const noexcept
+{
+    META_FUNCTION_TASK();
+    // Text mesh can be updated when all text visualization parameters are equal to the initial
+    // and new text start with the previously used text, i.e. the text typing is continued
+    return m_viewport_size == viewport_size &&
+           m_wrap == wrap &&
+           std::addressof(m_font) == std::addressof(font) &&
+           text.length() > m_text.length() &&
+           (m_text.empty() || text.find(m_text) == 0);
+}
+
+void TextMesh::Update(const std::u32string& text, gfx::FrameSize& viewport_size)
+{
+    META_FUNCTION_TASK();
+    if (m_viewport_size != viewport_size ||
+        text.length() <= m_text.length() ||
+        (!m_text.empty() && text.find(m_text) != 0))
+    {
+        throw std::invalid_argument("Text mesh can not be updated with a given text and viewport size");
+    }
+
+    const std::u32string  added_text = text.substr(m_text.length());
+    const size_t   added_text_length = added_text.length();
+
+    m_text = text;
+
+    if (!added_text_length)
+        return;
+
+    const gfx::FrameSize& atlas_size          = m_font.GetAtlasSize();
+    const size_t          prev_vertices_count = m_vertices.size();
+    const gfx::FrameSize  prev_content_size   = m_content_size;
+    m_vertices.reserve(m_vertices.size() + added_text_length * 4);
+    m_indices.reserve( m_indices.size()  + added_text_length * 6);
+
+    ForEachTextCharacter(added_text, m_font, m_last_char_pos, viewport_size.width, m_wrap,
         [&](const Font::Char& font_char, const gfx::FrameRect::Point& char_pos, size_t) -> CharAction
         {
             AddCharQuad(font_char, char_pos, viewport_size, atlas_size);
@@ -137,12 +177,32 @@ TextMesh::TextMesh(const std::u32string& text, Text::Wrap wrap, Font& font, gfx:
         }
     );
 
-    if (viewport_size.width && viewport_size.height)
+    if (viewport_size)
         return;
 
-    // Normalize char vertex positions using calculated content size to transform in viewport coordinates
-    for (Vertex& vertex : m_vertices)
+    // Update previously added viewport text positions with re-normalization using new content size// Update previously added viewport text positions with re-normalization using new content size
+    const bool update_prev_width  = !viewport_size.width  && m_content_size.width  != prev_content_size.width;
+    const bool update_prev_height = !viewport_size.height && m_content_size.height != prev_content_size.height;
+    if (update_prev_width || update_prev_height)
     {
+        for (size_t vertex_index = 0; vertex_index < prev_vertices_count; ++vertex_index)
+        {
+            Vertex& vertex = m_vertices[vertex_index];
+            if (update_prev_width)
+            {
+                vertex.position[0] = (vertex.position[0] + 1.f) * prev_content_size.width / m_content_size.width - 1.f;
+            }
+            if (update_prev_height)
+            {
+                vertex.position[1] = (vertex.position[1] - 1.f) * prev_content_size.height / m_content_size.height + 1.f;
+            }
+        }
+    }
+
+    // Normalize char vertex positions using calculated content size to transform in viewport coordinates
+    for (size_t vertex_index = prev_vertices_count; vertex_index < m_vertices.size(); ++vertex_index)
+    {
+        Vertex& vertex = m_vertices[vertex_index];
         if (!viewport_size.width)
         {
             vertex.position[0] = vertex.position[0] * 2.f / m_content_size.width - 1.f;
@@ -153,6 +213,7 @@ TextMesh::TextMesh(const std::u32string& text, Text::Wrap wrap, Font& font, gfx:
         }
     }
 
+    // Update zero viewport sizes by calculated content size
     if (!viewport_size.width)
     {
         viewport_size.width = m_content_size.width;
@@ -161,6 +222,8 @@ TextMesh::TextMesh(const std::u32string& text, Text::Wrap wrap, Font& font, gfx:
     {
         viewport_size.height = m_content_size.height;
     }
+
+    return;
 }
 
 void TextMesh::UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FrameRect::Point& char_pos)

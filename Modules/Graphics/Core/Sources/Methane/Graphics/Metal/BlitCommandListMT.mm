@@ -50,7 +50,7 @@ void BlitCommandListMT::Reset(CommandList::DebugGroup* p_debug_group)
     }
 
     id<MTLCommandBuffer>& mtl_cmd_buffer = InitializeCommandBuffer();
-    assert(!!mtl_cmd_buffer);
+    assert(mtl_cmd_buffer != nil);
     InitializeCommandEncoder([mtl_cmd_buffer blitCommandEncoder]);
     CommandListBase::Reset(p_debug_group);
 }
