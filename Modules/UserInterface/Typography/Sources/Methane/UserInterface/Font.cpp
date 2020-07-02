@@ -607,6 +607,15 @@ const Ptr<gfx::Texture>& Font::GetAtlasTexturePtr(gfx::Context& context)
     return sp_atlas_texture;
 }
 
+gfx::Texture& Font::GetAtlasTexture(gfx::Context& context)
+{
+    const Ptr<gfx::Texture>& sp_texture = GetAtlasTexturePtr(context);
+    if (!sp_texture)
+        throw std::runtime_error("Atlas texture is not available for context.");
+    
+    return *sp_texture;
+}
+
 Font::AtlasTexture Font::CreateAtlasTexture(gfx::Context& context, bool deferred_data_init)
 {
     META_FUNCTION_TASK();

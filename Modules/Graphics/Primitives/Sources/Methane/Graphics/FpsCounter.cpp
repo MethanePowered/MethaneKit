@@ -120,4 +120,16 @@ void FpsCounter::OnCpuFramePresented()
     m_frame_timer.Reset();
 }
 
+FpsCounter::FrameTiming FpsCounter::GetAverageFrameTiming() const noexcept
+{
+    const uint32_t averaged_timings_count = GetAveragedTimingsCount();
+    return averaged_timings_count ? m_frame_timings_sum / averaged_timings_count : FrameTiming();
+}
+
+uint32_t FpsCounter::GetFramesPerSecond() const noexcept
+{
+    double average_frame_time_sec = GetAverageFrameTiming().GetTotalTimeSec();
+    return average_frame_time_sec ? static_cast<uint32_t>(std::round(1.0 / average_frame_time_sec)) : 0u;
+}
+
 } // namespace Methane::Graphics

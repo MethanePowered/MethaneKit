@@ -179,7 +179,7 @@ public:
     uint32_t                GetLineHeight() const noexcept;
     const gfx::FrameSize&   GetAtlasSize() const noexcept;
     const Ptr<gfx::Texture>& GetAtlasTexturePtr(gfx::Context& context);
-    gfx::Texture&           GetAtlasTexture(gfx::Context& context) { return *GetAtlasTexturePtr(context); }
+    gfx::Texture&           GetAtlasTexture(gfx::Context& context);
 
 protected:
     // Font can be created only via Font::Library::Add

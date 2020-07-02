@@ -203,7 +203,7 @@ void TypographyApp::UpdateFontAtlasBadges()
         const auto font_ref_it = std::find_if(font_refs.begin(), font_refs.end(),
             [&sp_font_atlas_badge, &context](const Ref<gui::Font>& font_ref)
             {
-               return std::addressof(sp_font_atlas_badge->GetTexture()) == &font_ref.get().GetAtlasTexture(context);
+                return std::addressof(sp_font_atlas_badge->GetTexture()) == font_ref.get().GetAtlasTexturePtr(context).get();
             }
         );
         if (font_ref_it == font_refs.end())

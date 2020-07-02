@@ -75,8 +75,8 @@ public:
     void OnCpuFramePresented();
 
     uint32_t    GetAveragedTimingsCount() const noexcept { return static_cast<uint32_t>(m_frame_timings.size()); }
-    FrameTiming GetAverageFrameTiming() const noexcept   { return m_frame_timings_sum / GetAveragedTimingsCount(); }
-    uint32_t    GetFramesPerSecond() const noexcept      { return static_cast<uint32_t>(std::round(1.0 / GetAverageFrameTiming().GetTotalTimeSec())); }
+    FrameTiming GetAverageFrameTiming() const noexcept;
+    uint32_t    GetFramesPerSecond() const noexcept;
 
 private:
     Timer                   m_frame_timer;
