@@ -558,16 +558,10 @@ bool AppWin::SetFullScreen(bool is_full_screen)
 void AppWin::Close()
 {
     META_FUNCTION_TASK();
-    if (m_env.window_handle)
-    {
-        BOOL post_result = PostMessage(m_env.window_handle, WM_CLOSE, 0, 0);
-        if (!post_result)
-            throw std::runtime_error("Failed to post window message.");
-    }
-    else
-    {
-        ExitProcess(0);
-    }
+    if (m_env.window_handle && PostMessage(m_env.window_handle, WM_CLOSE, 0, 0))
+        return;
+
+    ExitProcess(0);
 }
 
 } // namespace Methane::Platform
