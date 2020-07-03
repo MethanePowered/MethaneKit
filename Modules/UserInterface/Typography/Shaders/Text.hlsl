@@ -38,14 +38,20 @@ struct Constants
     float4 color;
 };
 
+struct Uniforms
+{
+    float4x4 vp_matrix;
+};
+
 ConstantBuffer<Constants> g_constants : register(b1);
+ConstantBuffer<Uniforms>  g_uniforms  : register(b2);
 Texture2D<float>          g_texture   : register(t0);
 SamplerState              g_sampler   : register(s0);
 
 PSInput TextVS(VSInput input)
 {
     PSInput output;
-    output.position = float4(input.position, 0.f, 1.0f);
+    output.position = float4(mul(g_uniforms.vp_matrix, float4(input.position, 1.f, 1.f)).xy, 0.f, 1.f);
     output.texcoord = input.texcoord;
     return output;
 }

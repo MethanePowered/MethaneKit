@@ -100,11 +100,13 @@ protected:
 
 private:
     struct Constants;
+    struct Uniforms;
 
     Ptr<gfx::ProgramBindings> CreateProgramBindings();
 
     void UpdateAtlasTexture(const Ptr<gfx::Texture>& sp_new_atlas_texture);
     void UpdateMeshData();
+    void UpdateUniformsBuffer();
     void UpdateConstantsBuffer();
 
     SettingsUtf32             m_settings;
@@ -116,6 +118,7 @@ private:
     Ptr<gfx::BufferSet>       m_sp_vertex_buffers;
     Ptr<gfx::Buffer>          m_sp_index_buffer;
     Ptr<gfx::Buffer>          m_sp_const_buffer;
+    Ptr<gfx::Buffer>          m_sp_uniforms_buffer;
     Ptr<gfx::Texture>         m_sp_atlas_texture;
     Ptr<gfx::Sampler>         m_sp_texture_sampler;
     Ptr<gfx::ProgramBindings> m_sp_curr_program_bindings;

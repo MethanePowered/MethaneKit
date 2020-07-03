@@ -69,8 +69,7 @@ public:
 
 private:
     void UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FrameRect::Point& char_pos);
-    void AddCharQuad(const Font::Char& font_char, const gfx::FrameRect::Point& screen_char_pos,
-                     const gfx::FrameSize& viewport_size, const gfx::FrameSize& atlas_size);
+    void AddCharQuad(const Font::Char& font_char, const gfx::FrameRect::Point& screen_char_pos, const gfx::FrameSize& atlas_size);
 
     std::u32string        m_text;
     Font&                 m_font;

@@ -37,12 +37,19 @@ Methane text rendering primitive.
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
+#include <cml/mathlib/mathlib.h>
+
 namespace Methane::UserInterface
 {
 
 struct SHADER_STRUCT_ALIGN Text::Constants
 {
     SHADER_FIELD_ALIGN gfx::Color4f color;
+};
+
+struct SHADER_STRUCT_ALIGN Text::Uniforms
+{
+    SHADER_FIELD_ALIGN gfx::Matrix44f vp_matrix;
 };
 
 Text::Text(gfx::RenderContext& context, Font& font, const SettingsUtf8&  settings)
@@ -77,6 +84,7 @@ Text::Text(gfx::RenderContext& context, Font& font, SettingsUtf32 settings)
         m_viewport_rect *= m_context.GetContentScalingFactor();
 
     UpdateMeshData();
+    UpdateUniformsBuffer();
     UpdateConstantsBuffer();
 
     gfx::RenderState::Settings state_settings;
@@ -97,9 +105,10 @@ Text::Text(gfx::RenderContext& context, Font& font, SettingsUtf32 settings)
             },
             gfx::Program::ArgumentDescriptions
             {
-                { { gfx::Shader::Type::Pixel, "g_constants" }, gfx::Program::Argument::Modifiers::Constant },
-                { { gfx::Shader::Type::Pixel, "g_texture"   }, gfx::Program::Argument::Modifiers::None     },
-                { { gfx::Shader::Type::Pixel, "g_sampler"   }, gfx::Program::Argument::Modifiers::Constant },
+                { { gfx::Shader::Type::Vertex, "g_uniforms"  }, gfx::Program::Argument::Modifiers::Constant },
+                { { gfx::Shader::Type::Pixel,  "g_constants" }, gfx::Program::Argument::Modifiers::Constant },
+                { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::Argument::Modifiers::None     },
+                { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::Argument::Modifiers::Constant },
             },
             gfx::PixelFormats
             {
@@ -179,6 +188,7 @@ void Text::SetTextInScreenRect(const std::u32string& text, const gfx::FrameRect&
         m_viewport_rect *= m_context.GetContentScalingFactor();
 
     UpdateMeshData();
+    UpdateUniformsBuffer();
 
     if (!m_sp_atlas_texture)
     {
@@ -204,6 +214,7 @@ void Text::SetScreenRect(const gfx::FrameRect& screen_rect, bool rect_in_pixels)
         m_viewport_rect *= m_context.GetContentScalingFactor();
 
     UpdateMeshData();
+    UpdateUniformsBuffer();
 
     m_sp_state->SetViewports({ gfx::GetFrameViewport(m_viewport_rect) });
     m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(m_viewport_rect) });
@@ -259,13 +270,14 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& sp_old_a
 Ptr<gfx::ProgramBindings> Text::CreateProgramBindings()
 {
     META_FUNCTION_TASK();
-    if (!m_sp_const_buffer || !m_sp_atlas_texture || !m_sp_texture_sampler)
+    if (!m_sp_uniforms_buffer || !m_sp_const_buffer || !m_sp_atlas_texture || !m_sp_texture_sampler)
         return nullptr;
 
     return gfx::ProgramBindings::Create(m_sp_state->GetSettings().sp_program, {
-        { { gfx::Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer    } } },
-        { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_sp_atlas_texture   } } },
-        { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler } } },
+        { { gfx::Shader::Type::Vertex, "g_uniforms"  }, { { m_sp_uniforms_buffer } } },
+        { { gfx::Shader::Type::Pixel,  "g_constants" }, { { m_sp_const_buffer    } } },
+        { { gfx::Shader::Type::Pixel,  "g_texture"   }, { { m_sp_atlas_texture   } } },
+        { { gfx::Shader::Type::Pixel,  "g_sampler"   }, { { m_sp_texture_sampler } } },
     });
 }
 
@@ -276,8 +288,10 @@ void Text::UpdateAtlasTexture(const Ptr<gfx::Texture>& sp_new_atlas_texture)
         return;
 
     m_sp_atlas_texture = sp_new_atlas_texture;
+
+    // Retain previous program bindings until they are used by in flight command lists
     m_sp_prev_program_bindings = m_sp_curr_program_bindings;
-    m_prev_program_bindings_release_on_frame = m_context.GetFrameBufferIndex(); // retain previous program bindings until they are used by in flight command lists
+    m_prev_program_bindings_release_on_frame = m_context.GetFrameBufferIndex();
 
     if (!m_sp_atlas_texture)
     {
@@ -356,6 +370,35 @@ void Text::UpdateMeshData()
             gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0u, indices_data_size)
         )
     });
+}
+
+void Text::UpdateUniformsBuffer()
+{
+    META_FUNCTION_TASK();
+    if (m_settings.text.empty())
+        return;
+
+    if (!m_viewport_rect.size)
+        throw std::logic_error("Text uniforms buffer can not be updated when one of viewport dimensions is zero.");
+
+    gfx::Matrix44f scale_text_matrix;
+    cml::matrix_scale_2D(scale_text_matrix, 2.f / m_viewport_rect.size.width, 2.f / m_viewport_rect.size.height);
+
+    gfx::Matrix44f translate_text_matrix;
+    cml::matrix_translation_2D(translate_text_matrix, -1.f, 1.f);
+
+    Uniforms uniforms{
+        scale_text_matrix * translate_text_matrix
+    };
+
+    const Data::Size uniforms_data_size = static_cast<Data::Size>(sizeof(uniforms));
+
+    if (!m_sp_uniforms_buffer)
+    {
+        m_sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(m_context, gfx::Buffer::GetAlignedBufferSize(uniforms_data_size));
+        m_sp_uniforms_buffer->SetName(m_settings.name + " Text Uniforms Buffer");
+    }
+    m_sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size } });
 }
 
 void Text::UpdateConstantsBuffer()

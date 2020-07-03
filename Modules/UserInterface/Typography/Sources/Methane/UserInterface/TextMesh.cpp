@@ -163,15 +163,13 @@ void TextMesh::Update(const std::u32string& text, gfx::FrameSize& viewport_size)
         return;
 
     const gfx::FrameSize& atlas_size          = m_font.GetAtlasSize();
-    const size_t          prev_vertices_count = m_vertices.size();
-    const gfx::FrameSize  prev_content_size   = m_content_size;
     m_vertices.reserve(m_vertices.size() + added_text_length * 4);
     m_indices.reserve( m_indices.size()  + added_text_length * 6);
 
     ForEachTextCharacter(added_text, m_font, m_last_char_pos, viewport_size.width, m_wrap,
         [&](const Font::Char& font_char, const gfx::FrameRect::Point& char_pos, size_t) -> CharAction
         {
-            AddCharQuad(font_char, char_pos, viewport_size, atlas_size);
+            AddCharQuad(font_char, char_pos, atlas_size);
             UpdateContentSizeWithChar(font_char, char_pos);
             return CharAction::Continue;
         }
@@ -179,39 +177,6 @@ void TextMesh::Update(const std::u32string& text, gfx::FrameSize& viewport_size)
 
     if (viewport_size)
         return;
-
-    // Update previously added viewport text positions with re-normalization using new content size// Update previously added viewport text positions with re-normalization using new content size
-    const bool update_prev_width  = !viewport_size.width  && m_content_size.width  != prev_content_size.width;
-    const bool update_prev_height = !viewport_size.height && m_content_size.height != prev_content_size.height;
-    if (update_prev_width || update_prev_height)
-    {
-        for (size_t vertex_index = 0; vertex_index < prev_vertices_count; ++vertex_index)
-        {
-            Vertex& vertex = m_vertices[vertex_index];
-            if (update_prev_width)
-            {
-                vertex.position[0] = (vertex.position[0] + 1.f) * prev_content_size.width / m_content_size.width - 1.f;
-            }
-            if (update_prev_height)
-            {
-                vertex.position[1] = (vertex.position[1] - 1.f) * prev_content_size.height / m_content_size.height + 1.f;
-            }
-        }
-    }
-
-    // Normalize char vertex positions using calculated content size to transform in viewport coordinates
-    for (size_t vertex_index = prev_vertices_count; vertex_index < m_vertices.size(); ++vertex_index)
-    {
-        Vertex& vertex = m_vertices[vertex_index];
-        if (!viewport_size.width)
-        {
-            vertex.position[0] = vertex.position[0] * 2.f / m_content_size.width - 1.f;
-        }
-        if (!viewport_size.height)
-        {
-            vertex.position[1] = vertex.position[1] * 2.f / m_content_size.height + 1.f;
-        }
-    }
 
     // Update zero viewport sizes by calculated content size
     if (!viewport_size.width)
@@ -233,26 +198,19 @@ void TextMesh::UpdateContentSizeWithChar(const Font::Char& font_char, const gfx:
     m_content_size.height = std::max(m_content_size.height, char_pos.GetY() + font_char.GetOffset().GetY() + font_char.GetRect().size.height);
 }
 
-void TextMesh::AddCharQuad(const Font::Char& font_char, const gfx::FrameRect::Point& screen_char_pos,
-                           const gfx::FrameSize& viewport_size, const gfx::FrameSize& atlas_size)
+void TextMesh::AddCharQuad(const Font::Char& font_char, const gfx::FrameRect::Point& screen_char_pos, const gfx::FrameSize& atlas_size)
 {
     META_FUNCTION_TASK();
-    gfx::Point2f view_char_pos = screen_char_pos + font_char.GetOffset();
-    view_char_pos += gfx::Point2f(0.f, font_char.GetRect().size.height); // convert left-bottom to left-top position
-    view_char_pos -= gfx::Point2f(viewport_size.width, viewport_size.height) / 2.f; // relative to viewport center
 
-    const float hor_norm_coeff = viewport_size.width  ? 2.f / viewport_size.width  : 1.f;
-    const float ver_norm_coeff = viewport_size.height ? 2.f / viewport_size.height : 1.f;
-
-    // Char quad rectangle in viewport coordinates [-1, 1] x [-1, 1]
+    // Char quad rectangle in text model coordinates [0, 0] x [width, height]
     const gfx::Rect<float, float> ver_rect {
         {
-            static_cast<float>(view_char_pos.GetX()) *  hor_norm_coeff,
-            static_cast<float>(view_char_pos.GetY()) * -ver_norm_coeff,
+            static_cast<float>(screen_char_pos.GetX() + font_char.GetOffset().GetX()),
+            static_cast<float>(screen_char_pos.GetY() + font_char.GetOffset().GetY() + static_cast<int32_t>(font_char.GetRect().size.height)) * -1.f,
         },
         {
-            static_cast<float>(font_char.GetRect().size.width)  * hor_norm_coeff,
-            static_cast<float>(font_char.GetRect().size.height) * ver_norm_coeff,
+            static_cast<float>(font_char.GetRect().size.width),
+            static_cast<float>(font_char.GetRect().size.height),
         }
     };
 
