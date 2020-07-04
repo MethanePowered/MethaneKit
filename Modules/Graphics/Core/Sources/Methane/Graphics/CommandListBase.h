@@ -83,6 +83,7 @@ public:
     };
 
     CommandListBase(CommandQueueBase& command_queue, Type type);
+    ~CommandListBase() override;
 
     // CommandList interface
     Type  GetType() const noexcept override  { return m_type; }
@@ -116,20 +117,20 @@ protected:
     CommandState&       GetCommandState()           { return m_command_state; }
     const CommandState& GetCommandState() const     { return m_command_state; }
 
-    void     SetCommandListState(State state)       { m_state = state; }
-    void     VerifyEncodingState() const;
-    bool     IsExecutingOnAnyFrame() const;
-    bool     IsCommitted(uint32_t frame_index) const;
-    bool     IsCommitted() const                        { return IsCommitted(GetCurrentFrameIndex()); }
-    bool     IsExecuting(uint32_t frame_index) const;
-    bool     IsExecuting() const                        { return IsExecuting(GetCurrentFrameIndex()); }
-    uint32_t GetCurrentFrameIndex() const;
+    void        SetCommandListState(State state)            { m_state = state; }
+    void        VerifyEncodingState() const;
+    bool        IsExecutingOnAnyFrame() const;
+    bool        IsCommitted(uint32_t frame_index) const;
+    bool        IsCommitted() const                         { return IsCommitted(GetCurrentFrameIndex()); }
+    bool        IsExecuting(uint32_t frame_index) const;
+    bool        IsExecuting() const                         { return IsExecuting(GetCurrentFrameIndex()); }
+    uint32_t    GetCurrentFrameIndex() const;
+    std::string GetTypeName() const noexcept                { return GetTypeName(m_type); }
 
-
+    static std::string GetTypeName(Type type) noexcept;
+    static std::string GetStateName(State state) noexcept;
 
 private:
-    static std::string GetStateName(State state);
-
     using DebugGroupStack  = std::stack<Ptr<DebugGroupBase>>;
 
     const Type                  m_type;
@@ -139,7 +140,7 @@ private:
     uint32_t                    m_committed_frame_index = 0;
     CompletedCallback           m_completed_callback;
     State                       m_state                 = State::Pending;
-    TracyLockable(std::mutex,   m_state_mutex);
+    mutable TracyLockable(std::mutex, m_state_mutex);
     TracyLockable(std::mutex,   m_state_change_mutex);
     std::condition_variable_any m_state_change_condition_var;
 

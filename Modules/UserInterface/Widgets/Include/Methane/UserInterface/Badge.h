@@ -52,11 +52,12 @@ public:
     struct Settings
     {
         // Default settings of the Methane Logo badge
-        gfx::FrameSize  size         = { 96u, 128u };
-        FrameCorner     corner       = FrameCorner::TopRight;
-        gfx::Point2i    margins      = { 16, 16 };
-        gfx::Color4f    blend_color  = gfx::Color4f(1.f, 1.f, 1.f, 1.f);
-        TextureMode     texture_mode = TextureMode::RgbaFloat;
+        const std::string name;
+        gfx::FrameSize    size         = { 96u, 128u };
+        FrameCorner       corner       = FrameCorner::TopRight;
+        gfx::Point2i      margins      = { 16, 16 };
+        gfx::Color4f      blend_color  = gfx::Color4f(1.f, 1.f, 1.f, 1.f);
+        TextureMode       texture_mode = TextureMode::RgbaFloat;
     };
 
     explicit Badge(gfx::RenderContext& context);

@@ -182,6 +182,7 @@ Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(gui::Font& font, const Ptr<g
         *m_sp_context, sp_atlas_texture,
         gui::Badge::Settings
         {
+            font.GetSettings().name + " Font Atlas",
             static_cast<const gfx::FrameSize&>(sp_atlas_texture->GetSettings().dimensions),
             gui::Badge::FrameCorner::BottomLeft,
             gfx::Point2u(16u, 16u),

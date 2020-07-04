@@ -57,7 +57,7 @@ Badge::Badge(gfx::RenderContext& context, Ptr<gfx::Texture> sp_texture, Settings
     : ScreenQuad(context, std::move(sp_texture),
         ScreenQuad::Settings
         {
-            "Logo Badge",
+            settings.name,
             GetBadgeRectInFrame(context.GetSettings().frame_size, settings),
             true,
             settings.blend_color,

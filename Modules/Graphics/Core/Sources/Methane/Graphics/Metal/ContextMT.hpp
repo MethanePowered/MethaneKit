@@ -47,7 +47,6 @@ public:
         : ContextBaseT(device, settings)
     {
         META_FUNCTION_TASK();
-        //ContextBase::m_resource_manager.Initialize({ true });
     }
 
     // IContextMT interface

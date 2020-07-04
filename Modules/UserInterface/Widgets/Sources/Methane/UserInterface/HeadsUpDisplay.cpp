@@ -46,7 +46,7 @@ HeadsUpDisplay::HeadsUpDisplay(gfx::RenderContext& context, Settings settings)
         Data::FontProvider::Get(),
         Font::Settings
         {
-            "HUD Major Font", "Fonts/RobotoMono/RobotoMono-Bold.ttf", 18u,
+            "HUD Big", "Fonts/RobotoMono/RobotoMono-Bold.ttf", 18u,
             context.GetFontResolutionDPI(), Font::GetAlphabetDefault()
         }
     ).GetPtr())

@@ -193,6 +193,10 @@ BlitCommandList& ContextBase::GetUploadCommandList()
         m_sp_upload_cmd_list = BlitCommandList::Create(GetUploadCommandQueue());
         m_sp_upload_cmd_list->SetName(s_command_list_name);
     }
+    else if (m_sp_upload_cmd_list->GetState() == CommandList::State::Executing)
+    {
+        m_sp_upload_cmd_list->WaitUntilCompleted();
+    }
 
     if (m_sp_upload_cmd_list->GetState() == CommandList::State::Pending)
     {
@@ -253,14 +257,21 @@ void ContextBase::SetName(const std::string& name)
 bool ContextBase::UploadResources()
 {
     META_FUNCTION_TASK();
-    if (!m_sp_upload_cmd_list || m_sp_upload_cmd_list->GetState() != CommandList::State::Encoding)
+    if (!m_sp_upload_cmd_list)
         return false;
 
+    CommandList::State upload_cmd_state = m_sp_upload_cmd_list->GetState();
+    if (upload_cmd_state == CommandList::State::Pending)
+        return false;
+
+    if (upload_cmd_state == CommandList::State::Executing)
+        return true;
+
+    if (upload_cmd_state == CommandList::State::Encoding)
+        GetUploadCommandList().Commit();
+
     META_LOG("UPLOAD resources for context \"" + GetName() + "\"");
-
-    GetUploadCommandList().Commit();
     GetUploadCommandQueue().Execute(GetUploadCommandListSet());
-
     return true;
 }
 

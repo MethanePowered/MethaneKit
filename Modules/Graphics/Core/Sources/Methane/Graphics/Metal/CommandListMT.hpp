@@ -50,10 +50,16 @@ public:
         META_FUNCTION_TASK();
     }
 
+    ~CommandListMT() override
+    {
+        [m_mtl_cmd_encoder release];
+    }
+
     // CommandList interface
     void PushDebugGroup(CommandList::DebugGroup& debug_group) override
     {
         META_FUNCTION_TASK();
+        std::lock_guard<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
 
         CommandListBaseT::PushDebugGroup(debug_group);
 
@@ -64,6 +70,7 @@ public:
     void PopDebugGroup() override
     {
         META_FUNCTION_TASK();
+        std::lock_guard<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
 
         CommandListBaseT::PopDebugGroup();
 
@@ -78,13 +85,16 @@ public:
         assert(!CommandListBaseT::IsCommitted());
         CommandListBaseT::Commit();
 
+        std::lock_guard<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
+
         if (m_mtl_cmd_encoder)
         {
             [m_mtl_cmd_encoder endEncoding];
+            [m_mtl_cmd_encoder release];
             m_mtl_cmd_encoder = nil;
         }
 
-        if (!m_is_cmd_buffer_enabled || !m_mtl_cmd_buffer)
+        if (!m_is_cmd_buffer_enabled || m_mtl_cmd_buffer != nil)
             return;
 
         [m_mtl_cmd_buffer enqueue];
@@ -101,7 +111,7 @@ public:
             return Data::TimeRange();
 
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
-        if (@available(macOS 10.15, *))
+        if (@available(macOS 10.15, *) && m_mtl_cmd_buffer != nil)
         {
             assert(m_mtl_cmd_buffer.status == MTLCommandBufferStatusCompleted);
             return Data::TimeRange(
@@ -120,6 +130,7 @@ public:
     void Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback) override
     {
         META_FUNCTION_TASK();
+        std::lock_guard<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
 
         CommandListBaseT::Execute(frame_index, completed_callback);
 
@@ -127,7 +138,9 @@ public:
             return;
 
         [m_mtl_cmd_buffer addCompletedHandler:^(id<MTLCommandBuffer>) {
+            std::lock_guard<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
             CommandListBaseT::Complete(frame_index);
+            [m_mtl_cmd_buffer release];
             m_mtl_cmd_buffer  = nil;
         }];
 
@@ -139,6 +152,7 @@ public:
     void SetName(const std::string& name) override
     {
         META_FUNCTION_TASK();
+        std::lock_guard<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
 
         CommandListBaseT::SetName(name);
         m_ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
@@ -154,7 +168,7 @@ public:
         }
     }
 
-    MTLCommandEncoderId& GetNativeCommandEncoder() noexcept { return m_mtl_cmd_encoder; }
+    const MTLCommandEncoderId& GetNativeCommandEncoder() const noexcept { return m_mtl_cmd_encoder; }
 
     CommandQueueMT& GetCommandQueueMT() noexcept
     {
@@ -166,19 +180,31 @@ protected:
     id<MTLCommandBuffer>& InitializeCommandBuffer()
     {
         META_FUNCTION_TASK();
+        std::lock_guard<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
+
         if (m_mtl_cmd_buffer)
             return m_mtl_cmd_buffer;
 
-        m_mtl_cmd_buffer = [GetCommandQueueMT().GetNativeCommandQueue() commandBuffer];
+        id<MTLCommandQueue>& mtl_command_queue = GetCommandQueueMT().GetNativeCommandQueue();
+        assert(mtl_command_queue != nil);
+
+        m_mtl_cmd_buffer = [mtl_command_queue commandBuffer];
         m_mtl_cmd_buffer.label = m_ns_name;
+        
+        assert(m_mtl_cmd_buffer != nil);
+        [m_mtl_cmd_buffer retain];
+        
         return m_mtl_cmd_buffer;
     }
 
-    void InitializeCommandEncoder(MTLCommandEncoderId&& mtl_cmd_encoder)
+    void InitializeCommandEncoder(const MTLCommandEncoderId& mtl_cmd_encoder)
     {
         META_FUNCTION_TASK();
-        m_mtl_cmd_encoder = std::move(mtl_cmd_encoder);
+        assert(m_mtl_cmd_encoder == nil);
+        assert(mtl_cmd_encoder != nil);
+        m_mtl_cmd_encoder = mtl_cmd_encoder;
         m_mtl_cmd_encoder.label = m_ns_name;
+        [m_mtl_cmd_encoder retain];
     }
 
     bool IsCommandBufferInitialized() const noexcept   { return m_mtl_cmd_buffer; }
@@ -189,6 +215,7 @@ private:
     id<MTLCommandBuffer> m_mtl_cmd_buffer = nil;
     MTLCommandEncoderId  m_mtl_cmd_encoder = nil;
     NSString*            m_ns_name = nil;
+    mutable TracyLockable(std::mutex, m_cmd_buffer_mutex);
 };
 
 } // namespace Methane::Graphics

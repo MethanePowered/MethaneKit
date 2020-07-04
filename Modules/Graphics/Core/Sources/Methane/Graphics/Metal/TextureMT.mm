@@ -163,14 +163,8 @@ void TextureMT::SetData(const SubResources& sub_resources)
 
     id<MTLDevice>& mtl_device = GetContextMT().GetDeviceMT().GetNativeDevice();
 
-    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Texture Data Upload");
     BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandList());
-    if (blit_command_list.GetState() == CommandList::State::Executing)
-        blit_command_list.WaitUntilCompleted();
-
-    blit_command_list.Reset(s_debug_group.get());
-
-    id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
+    const id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
     assert(mtl_blit_encoder != nil);
 
     const Settings& settings        = GetSettings();
@@ -310,7 +304,7 @@ void TextureMT::GenerateMipLevels()
     BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandList());
     blit_command_list.Reset(s_debug_group.get());
     
-    id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
+    const id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
     assert(mtl_blit_encoder != nil);
     assert(m_mtl_texture != nil);
     
