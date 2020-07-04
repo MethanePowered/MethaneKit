@@ -111,7 +111,7 @@ public:
             return Data::TimeRange();
 
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
-        if (@available(macOS 10.15, *) && m_mtl_cmd_buffer != nil)
+        if (@available(macOS 10.15, *))
         {
             assert(m_mtl_cmd_buffer.status == MTLCommandBufferStatusCompleted);
             return Data::TimeRange(
