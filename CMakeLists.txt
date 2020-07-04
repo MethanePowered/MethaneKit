@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.13.0)
 
 project(MethaneKit)
 
+cmake_policy(SET CMP0077 NEW) # option() honors normal variables
+
 enable_testing()
 
 # Build configuration
