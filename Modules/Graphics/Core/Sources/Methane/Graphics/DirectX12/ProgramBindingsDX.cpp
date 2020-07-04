@@ -316,6 +316,8 @@ void ProgramBindingsDX::UpdateRootParameterBindings()
 
     m_constant_root_parameter_bindings.clear();
     m_variadic_root_parameter_bindings.clear();
+    m_constant_resource_states.clear();
+    m_variadic_resource_states.clear();
 
     ForEachArgumentBinding([this](ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation)
     {
