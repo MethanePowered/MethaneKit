@@ -429,7 +429,11 @@ void Font::AddChars(const std::u32string& utf32_characters)
         if (!character)
             break;
 
-        AddChar(static_cast<Char::Code>(character));
+        const Char::Code char_code = static_cast<Char::Code>(character);
+        if (HasChar(char_code))
+            continue;
+
+        AddChar(char_code);
     }
 }
 
@@ -464,7 +468,8 @@ const Font::Char& Font::AddChar(Char::Code char_code)
 bool Font::HasChar(Char::Code char_code)
 {
     META_FUNCTION_TASK();
-    return m_char_by_code.count(char_code);
+    return m_char_by_code.count(char_code) ||
+           char_code == static_cast<Char::Code>('\n');
 }
 
 const Font::Char& Font::GetChar(Char::Code char_code) const
