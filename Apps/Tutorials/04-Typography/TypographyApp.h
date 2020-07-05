@@ -57,6 +57,9 @@ public:
     bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
     bool Render() override;
 
+    bool IsIncrementalTextUpdate() const noexcept { return m_is_incremental_text_update; }
+    void SetIncrementalTextUpdate(bool is_incremental_text_update);
+
 protected:
     // IContextCallback overrides
     void OnContextReleased(gfx::Context& context) override;
@@ -78,6 +81,7 @@ private:
     Ptrs<gui::Badge>    m_font_atlas_badges;
     std::vector<size_t> m_displayed_text_lengths;
     double              m_text_update_elapsed_sec = 0.0;
+    bool                m_is_incremental_text_update = true;
 };
 
 } // namespace Methane::Tutorials

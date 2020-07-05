@@ -323,7 +323,8 @@ void Text::UpdateMeshData()
     if (!m_sp_font->GetAtlasSize())
         return;
 
-    if (m_sp_text_mesh && m_sp_text_mesh->IsUpdatable(m_settings.text, m_settings.wrap, *m_sp_font, m_viewport_rect.size))
+    if (m_settings.incremental_update && m_sp_text_mesh &&
+        m_sp_text_mesh->IsUpdatable(m_settings.text, m_settings.wrap, *m_sp_font, m_viewport_rect.size))
     {
         m_sp_text_mesh->Update(m_settings.text, m_viewport_rect.size);
     }

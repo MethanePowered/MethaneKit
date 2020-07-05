@@ -4,6 +4,8 @@ set(TARGET MethaneTypography)
 set(SOURCES
     TypographyApp.h
     TypographyApp.cpp
+    TypographyAppController.h
+    TypographyAppController.cpp
 )
 set(FONTS
     ${RESOURCES_DIR}/Fonts/Roboto/Roboto-Regular.ttf

@@ -64,8 +64,9 @@ public:
         StringType        text;
         gfx::FrameRect    screen_rect;
         bool              screen_rect_in_pixels = false;
-        gfx::Color4f      color = gfx::Color4f(1.f, 1.f, 1.f, 1.f);
-        Wrap              wrap  = Wrap::Anywhere;
+        gfx::Color4f      color                 = gfx::Color4f(1.f, 1.f, 1.f, 1.f);
+        Wrap              wrap                  = Wrap::Anywhere;
+        bool              incremental_update    = true;
 
         // Minimize number of vertex/index buffer re-allocations on dynamic text updates by reserving additional size with multiplication of required size
         Data::Size        mesh_buffers_reservation_multiplier = 2u;
@@ -90,6 +91,7 @@ public:
     void SetTextInScreenRect(const std::u32string& text, const gfx::FrameRect& screen_rect, bool rect_in_pixels = false);
     void SetScreenRect(const gfx::FrameRect& screen_rect, bool rect_in_pixels = false);
     void SetColor(const gfx::Color4f& color);
+    void SetIncrementalUpdate(bool incremental_update) noexcept { m_settings.incremental_update = incremental_update; }
 
     void Draw(gfx::RenderCommandList& cmd_list);
 

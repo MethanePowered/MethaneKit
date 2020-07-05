@@ -22,6 +22,7 @@ Tutorial demonstrating dynamic text rendering and fonts management with Methane 
 ******************************************************************************/
 
 #include "TypographyApp.h"
+#include "TypographyAppController.h"
 
 #include <Methane/Samples/AppSettings.hpp>
 #include <Methane/Data/TimeAnimation.h>
@@ -90,6 +91,12 @@ static const std::array<std::u32string, g_text_blocks_count> g_text_blocks = { {
         "you can wave your towel in emergencies as a distress signal, and of course dry yourself off with it if it still seems to be clean enough.")
 }};
 
+namespace pal = Methane::Platform;
+static const std::map<pal::Keyboard::State, TypographyAppAction> g_typography_action_by_keyboard_state{
+    { { pal::Keyboard::Key::F3                                 }, TypographyAppAction::ShowParameters              },
+    { { pal::Keyboard::Key::LeftControl, pal::Keyboard::Key::U }, TypographyAppAction::SwitchIncrementalTextUpdate },
+};
+
 TypographyApp::TypographyApp()
     : GraphicsApp(
         Samples::GetAppSettings("Methane Typography", true /* animations */, true /* logo */, true /* hud ui */, false /* depth */),
@@ -98,6 +105,10 @@ TypographyApp::TypographyApp()
 {
     m_displayed_text_lengths[0] = 1;
     GetHeadsUpDisplaySettings().position = gfx::Point2i(g_margin_size_in_dots, g_margin_size_in_dots);
+
+    AddInputControllers({
+        std::make_shared<TypographyAppController>(*this, g_typography_action_by_keyboard_state)
+    });
 
     // Setup animations
     m_animations.push_back(std::make_shared<Data::TimeAnimation>(std::bind(&TypographyApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
@@ -154,6 +165,7 @@ void TypographyApp::Init()
                     false, // screen_rect_in_pixels
                     gfx::Color4f(font_settings.color, 1.f),
                     gui::Text::Wrap::Word,
+                    m_is_incremental_text_update
                 }
             )
         );
@@ -380,6 +392,19 @@ bool TypographyApp::Render()
     m_sp_context->Present();
 
     return true;
+}
+
+void TypographyApp::SetIncrementalTextUpdate(bool is_incremental_text_update)
+{
+    if (m_is_incremental_text_update == is_incremental_text_update)
+        return;
+
+    m_is_incremental_text_update = is_incremental_text_update;
+
+    for(const Ptr<gui::Text>& sp_text : m_texts)
+    {
+        sp_text->SetIncrementalUpdate(m_is_incremental_text_update);
+    }
 }
 
 void TypographyApp::OnContextReleased(gfx::Context& context)
