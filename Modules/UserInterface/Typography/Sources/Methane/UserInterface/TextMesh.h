@@ -43,9 +43,11 @@ public:
         gfx::Vector2f texcoord;
     };
 
-    using Index = uint16_t;
-    using Indices = std::vector<Index>;
-    using Vertices = std::vector<Vertex>;
+    using Index         = uint16_t;
+    using Indices       = std::vector<Index>;
+    using Vertices      = std::vector<Vertex>;
+    using CharPosition  = gfx::FrameRect::Point;
+    using CharPositions = std::vector<CharPosition>;
 
     TextMesh(const std::u32string& text, Text::Wrap wrap, Font& font, gfx::FrameSize& viewport_size);
 
@@ -69,16 +71,17 @@ public:
 
 private:
     void UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FrameRect::Point& char_pos);
-    void AddCharQuad(const Font::Char& font_char, const gfx::FrameRect::Point& screen_char_pos, const gfx::FrameSize& atlas_size);
+    void AddCharQuad(const Font::Char& font_char, const gfx::FrameRect::Point& char_pos, const gfx::FrameSize& atlas_size);
 
-    std::u32string        m_text;
-    Font&                 m_font;
-    const Text::Wrap      m_wrap;
-    const gfx::FrameSize  m_viewport_size;
-    gfx::FrameSize        m_content_size;
-    gfx::FrameRect::Point m_last_char_pos;
-    Vertices              m_vertices;
-    Indices               m_indices;
+    std::u32string       m_text;
+    Font&                m_font;
+    const Text::Wrap     m_wrap;
+    const gfx::FrameSize m_viewport_size;
+    gfx::FrameSize       m_content_size;
+    CharPositions        m_char_positions;
+    size_t               m_last_whitespace_index = std::string::npos;
+    Vertices             m_vertices;
+    Indices              m_indices;
 };
 
 } // namespace Methane::Graphics

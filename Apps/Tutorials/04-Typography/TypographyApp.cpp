@@ -153,7 +153,7 @@ void TypographyApp::Init()
                     },
                     false, // screen_rect_in_pixels
                     gfx::Color4f(font_settings.color, 1.f),
-                    gui::Text::Wrap::Anywhere,
+                    gui::Text::Wrap::Word,
                 }
             )
         );
