@@ -42,7 +42,6 @@ struct FontSettings
 
 constexpr int32_t g_margin_size_in_dots      = 32;
 constexpr int32_t g_top_text_pos_in_dots     = 100;
-constexpr double  g_text_update_interval_sec = 0.03;
 constexpr size_t  g_text_blocks_count        = 3;
 
 static const std::array<FontSettings, g_text_blocks_count> g_font_settings { {
@@ -93,8 +92,11 @@ static const std::array<std::u32string, g_text_blocks_count> g_text_blocks = { {
 
 namespace pal = Methane::Platform;
 static const std::map<pal::Keyboard::State, TypographyAppAction> g_typography_action_by_keyboard_state{
-    { { pal::Keyboard::Key::F3                                 }, TypographyAppAction::ShowParameters              },
-    { { pal::Keyboard::Key::LeftControl, pal::Keyboard::Key::U }, TypographyAppAction::SwitchIncrementalTextUpdate },
+    { { pal::Keyboard::Key::F3      }, TypographyAppAction::SwitchParametersDisplayed    },
+    { { pal::Keyboard::Key::U       }, TypographyAppAction::SwitchIncrementalTextUpdate  },
+    { { pal::Keyboard::Key::D       }, TypographyAppAction::SwitchTypingDirection        },
+    { { pal::Keyboard::Key::Equal   }, TypographyAppAction::SpeedupTyping                },
+    { { pal::Keyboard::Key::Minus   }, TypographyAppAction::SlowdownTyping               },
 };
 
 TypographyApp::TypographyApp()
@@ -111,7 +113,9 @@ TypographyApp::TypographyApp()
     });
 
     // Setup animations
-    m_animations.push_back(std::make_shared<Data::TimeAnimation>(std::bind(&TypographyApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
+    m_animations.push_back(
+        std::make_shared<Data::TimeAnimation>(std::bind(&TypographyApp::Animate, this, std::placeholders::_1, std::placeholders::_2))
+    );
 }
 
 TypographyApp::~TypographyApp()
@@ -165,7 +169,7 @@ void TypographyApp::Init()
                     false, // screen_rect_in_pixels
                     gfx::Color4f(font_settings.color, 1.f),
                     gui::Text::Wrap::Word,
-                    m_is_incremental_text_update
+                    m_settings.is_incremental_text_update
                 }
             )
         );
@@ -302,7 +306,7 @@ bool TypographyApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 
 bool TypographyApp::Animate(double elapsed_seconds, double)
 {
-    if (elapsed_seconds - m_text_update_elapsed_sec < g_text_update_interval_sec)
+    if (elapsed_seconds - m_text_update_elapsed_sec < m_settings.typing_update_interval_sec)
         return true;
 
     m_text_update_elapsed_sec = elapsed_seconds;
@@ -396,14 +400,14 @@ bool TypographyApp::Render()
 
 void TypographyApp::SetIncrementalTextUpdate(bool is_incremental_text_update)
 {
-    if (m_is_incremental_text_update == is_incremental_text_update)
+    if (m_settings.is_incremental_text_update == is_incremental_text_update)
         return;
 
-    m_is_incremental_text_update = is_incremental_text_update;
+    m_settings.is_incremental_text_update = is_incremental_text_update;
 
     for(const Ptr<gui::Text>& sp_text : m_texts)
     {
-        sp_text->SetIncrementalUpdate(m_is_incremental_text_update);
+        sp_text->SetIncrementalUpdate(is_incremental_text_update);
     }
 }
 

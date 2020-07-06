@@ -35,8 +35,11 @@ enum class TypographyAppAction : uint32_t
 {
     None = 0u,
 
-    ShowParameters,
+    SwitchParametersDisplayed,
     SwitchIncrementalTextUpdate,
+    SwitchTypingDirection,
+    SpeedupTyping,
+    SlowdownTyping,
 
     Count
 };

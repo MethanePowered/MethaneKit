@@ -45,14 +45,29 @@ void TypographyAppController::OnKeyboardChanged(Platform::Keyboard::Key key, Pla
 void TypographyAppController::OnKeyboardStateAction(TypographyAppAction action)
 {
     META_FUNCTION_TASK();
-    
+    constexpr double s_text_update_interval_delta = 0.01;
+
     switch(action)
     {
-    case TypographyAppAction::ShowParameters:
+    case TypographyAppAction::SwitchParametersDisplayed:
+        m_typography_app.SetParametersDisplayed(!m_typography_app.GetSettings().is_parameters_displayed);
         break;
 
     case TypographyAppAction::SwitchIncrementalTextUpdate:
-        m_typography_app.SetIncrementalTextUpdate(!m_typography_app.IsIncrementalTextUpdate());
+        m_typography_app.SetIncrementalTextUpdate(!m_typography_app.GetSettings().is_incremental_text_update);
+        break;
+
+    case TypographyAppAction::SwitchTypingDirection:
+        m_typography_app.SetForwardTypingDirection(!m_typography_app.GetSettings().is_forward_typing_direction);
+        break;
+
+    case TypographyAppAction::SpeedupTyping:
+        m_typography_app.SetTextUpdateInterval(
+            std::max(s_text_update_interval_delta, m_typography_app.GetSettings().typing_update_interval_sec - s_text_update_interval_delta));
+        break;
+
+    case TypographyAppAction::SlowdownTyping:
+        m_typography_app.SetTextUpdateInterval( m_typography_app.GetSettings().typing_update_interval_sec + s_text_update_interval_delta);
         break;
 
     default:
@@ -65,8 +80,11 @@ std::string TypographyAppController::GetKeyboardActionName(TypographyAppAction a
     META_FUNCTION_TASK();
     switch(action)
     {
-    case TypographyAppAction::ShowParameters:               return "show text parameters";
+    case TypographyAppAction::SwitchParametersDisplayed:    return "switch displaying parameters";
     case TypographyAppAction::SwitchIncrementalTextUpdate:  return "switch incremental text update";
+    case TypographyAppAction::SwitchTypingDirection:        return "switch typing direction";
+    case TypographyAppAction::SpeedupTyping:                return "speedup typing";
+    case TypographyAppAction::SlowdownTyping:               return "slowdown typing";
     default: assert(0);
     }
     return "";
