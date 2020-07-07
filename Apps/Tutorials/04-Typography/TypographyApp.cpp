@@ -314,34 +314,44 @@ bool TypographyApp::Animate(double elapsed_seconds, double)
     int32_t vertical_text_pos_in_dots = g_top_text_pos_in_dots;
     for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
     {
-        size_t& displayed_text_length = m_displayed_text_lengths[block_index];
-        const Ptr<gui::Text>& sp_text = m_texts[block_index];
-        if (!displayed_text_length)
-        {
-            sp_text->SetText("");
-            continue;
-        }
-
+        size_t& displayed_text_length    = m_displayed_text_lengths[block_index];
+        const Ptr<gui::Text>& sp_text    = m_texts[block_index];
         const std::u32string& text_block = g_text_blocks[block_index];
         const size_t   text_block_length = text_block.length();
 
-        if (displayed_text_length >= text_block_length - 1)
+        if (displayed_text_length == (m_settings.is_forward_typing_direction ? 0 : text_block_length))
         {
-            if (block_index == g_text_blocks_count - 1)
+            sp_text->SetText(m_settings.is_forward_typing_direction ? std::u32string() : text_block);
+            if (!m_settings.is_forward_typing_direction)
+                vertical_text_pos_in_dots = sp_text->GetViewportInDots().GetBottom() + g_margin_size_in_dots;
+            continue;
+        }
+
+        if (displayed_text_length == (m_settings.is_forward_typing_direction ? text_block_length : 0))
+        {
+            if (block_index == (m_settings.is_forward_typing_direction ? g_text_blocks_count - 1 : 0))
             {
                 ResetAnimation();
             }
             else
             {
                 vertical_text_pos_in_dots = sp_text->GetViewportInDots().GetBottom() + g_margin_size_in_dots;
-                size_t& next_displayed_text_length = m_displayed_text_lengths[block_index + 1];
-                if (!next_displayed_text_length)
+                size_t next_block_index = block_index + (m_settings.is_forward_typing_direction ? 1 : -1);
+                size_t& next_displayed_text_length = m_displayed_text_lengths[next_block_index];
+                if (m_settings.is_forward_typing_direction && next_displayed_text_length == 0)
                     next_displayed_text_length = 1;
+                if (!m_settings.is_forward_typing_direction && next_displayed_text_length == g_text_blocks[next_block_index].length())
+                    next_displayed_text_length = g_text_blocks[next_block_index].length() - 1;
             }
             continue;
         }
 
-        const std::u32string displayed_text = text_block.substr(0, displayed_text_length++);
+        if (m_settings.is_forward_typing_direction)
+            displayed_text_length++;
+        else
+            displayed_text_length--;
+
+        const std::u32string displayed_text = text_block.substr(0, displayed_text_length);
         sp_text->SetTextInScreenRect(displayed_text, {
             { g_margin_size_in_dots, vertical_text_pos_in_dots  },
             { GetFrameSizeInDots().width - 2 * g_margin_size_in_dots, 0u }
@@ -357,7 +367,9 @@ void TypographyApp::ResetAnimation()
 {
     for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
     {
-        const size_t displayed_text_length = block_index ? 0 : 1;
+        const size_t displayed_text_length  = m_settings.is_forward_typing_direction
+                                            ? (block_index ? 0 : 1)
+                                            : (g_text_blocks[block_index].length() - (block_index == g_text_blocks_count - 1 ? 1 : 0));
         const std::u32string displayed_text = g_text_blocks[block_index].substr(0, displayed_text_length);
         m_displayed_text_lengths[block_index] = displayed_text_length;
         m_texts[block_index]->SetText(displayed_text);
