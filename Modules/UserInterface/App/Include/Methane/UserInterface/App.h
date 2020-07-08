@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,32 +16,39 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/App.h
-Interface of the graphics application base template class defined in App.hpp
+FILE: Methane/UserInterface/App.h
+Interface of the base user interface application template class defined in App.hpp
 
 ******************************************************************************/
 
 #pragma once
 
+#include <Methane/Graphics/App.h>
+
 #include <stdint.h>
 
-namespace Methane::Graphics
+namespace Methane::UserInterface
 {
 
-struct IApp
+struct IApp : Graphics::IApp
 {
-    struct Settings
+    enum HeadsUpDisplayMode : uint32_t
     {
-        uint32_t screen_pass_access         = 0u;
-        bool     animations_enabled         = true;
-        bool     show_hud_in_window_title   = true;
-        int32_t  default_device_index       = 0;
+        Hidden = 0u,
+        WindowTitle,
+        UserInterface,
+
+        Count
     };
 
-    virtual const IApp::Settings& GetGraphicsAppSettings() const noexcept = 0;
-    virtual bool SetAnimationsEnabled(bool animations_enabled) = 0;
+    struct Settings
+    {
+        HeadsUpDisplayMode heads_up_display_mode = HeadsUpDisplayMode::UserInterface;
+        bool               show_logo_badge       = true;
+    };
 
-    virtual ~IApp() = default;
+    virtual const IApp::Settings& GetUserInterfaceAppSettings() const noexcept = 0;
+    virtual bool SetHeadsUpDisplayMode(HeadsUpDisplayMode heads_up_display_mode) = 0;
 };
 
-} // namespace Methane::Graphics
+} // namespace Methane::UserInterface

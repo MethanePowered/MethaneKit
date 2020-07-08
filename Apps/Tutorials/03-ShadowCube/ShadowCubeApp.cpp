@@ -48,8 +48,8 @@ struct Vertex
 static const gfx::FrameSize g_shadow_map_size(1024, 1024);
 
 ShadowCubeApp::ShadowCubeApp()
-    : GraphicsApp(
-        Samples::GetAppSettings("Methane Shadow Cube"),
+    : UserInterfaceApp(
+        Samples::GetGraphicsAppSettings("Methane Shadow Cube"), {},
         "Methane tutorial of shadow pass rendering")
     , m_scene_scale(15.f)
     , m_scene_constants(                                // Shader constants:
@@ -70,20 +70,20 @@ ShadowCubeApp::ShadowCubeApp()
     m_light_camera.Resize({ 80.f, 80.f });
 
     // Setup animations
-    m_animations.emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&ShadowCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
+    GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&ShadowCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
 }
 
 ShadowCubeApp::~ShadowCubeApp()
 {
     // Wait for GPU rendering is completed to release resources
-    m_sp_context->WaitForGpu(gfx::Context::WaitFor::RenderComplete);
+    GetRenderContext().WaitForGpu(gfx::Context::WaitFor::RenderComplete);
 }
 
 void ShadowCubeApp::Init()
 {
-    GraphicsApp::Init();
+    UserInterfaceApp::Init();
 
-    const gfx::RenderContext::Settings& context_settings = m_sp_context->GetSettings();
+    const gfx::RenderContext::Settings& context_settings = GetRenderContext().GetSettings();
     m_view_camera.Resize({
         static_cast<float>(context_settings.frame_size.width),
         static_cast<float>(context_settings.frame_size.height)
@@ -97,23 +97,23 @@ void ShadowCubeApp::Init()
     const gfx::ImageLoader::Options::Mask image_options = gfx::ImageLoader::Options::Mipmapped
                                                         | gfx::ImageLoader::Options::SrgbColorSpace;
 
-    m_sp_cube_buffers  = std::make_unique<TexturedMeshBuffers>(*m_sp_context, cube_mesh, "Cube");
-    m_sp_cube_buffers->SetTexture(m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MethaneBubbles.jpg", image_options));
+    m_sp_cube_buffers  = std::make_unique<TexturedMeshBuffers>(GetRenderContext(), cube_mesh, "Cube");
+    m_sp_cube_buffers->SetTexture(GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "Textures/MethaneBubbles.jpg", image_options));
 
-    m_sp_floor_buffers = std::make_unique<TexturedMeshBuffers>(*m_sp_context, floor_mesh, "Floor");
-    m_sp_floor_buffers->SetTexture(m_image_loader.LoadImageToTexture2D(*m_sp_context, "Textures/MarbleWhite.jpg", image_options));
+    m_sp_floor_buffers = std::make_unique<TexturedMeshBuffers>(GetRenderContext(), floor_mesh, "Floor");
+    m_sp_floor_buffers->SetTexture(GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "Textures/MarbleWhite.jpg", image_options));
 
     const Data::Size constants_data_size      = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(Constants)));
     const Data::Size scene_uniforms_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(SceneUniforms)));
     const Data::Size mesh_uniforms_data_size  = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(MeshUniforms)));
 
     // Create constants buffer for frame rendering
-    m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(*m_sp_context, constants_data_size);
+    m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), constants_data_size);
     m_sp_const_buffer->SetName("Constants Buffer");
     m_sp_const_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } });
 
     // Create sampler for cube and floor textures sampling
-    m_sp_texture_sampler = gfx::Sampler::Create(*m_sp_context,
+    m_sp_texture_sampler = gfx::Sampler::Create(GetRenderContext(),
         gfx::Sampler::Settings
         {
             gfx::Sampler::Filter  { gfx::Sampler::Filter::MinMag::Linear },
@@ -123,7 +123,7 @@ void ShadowCubeApp::Init()
     m_sp_texture_sampler->SetName("Texture Sampler");
 
     // Create sampler for shadow-map texture
-    m_sp_shadow_sampler = gfx::Sampler::Create(*m_sp_context,
+    m_sp_shadow_sampler = gfx::Sampler::Create(GetRenderContext(),
         gfx::Sampler::Settings
         {
             gfx::Sampler::Filter  { gfx::Sampler::Filter::MinMag::Linear },
@@ -140,13 +140,13 @@ void ShadowCubeApp::Init()
 
     // Create final pass rendering state with program
     gfx::RenderState::Settings final_state_settings;
-    final_state_settings.sp_program = gfx::Program::Create(*m_sp_context,
+    final_state_settings.sp_program = gfx::Program::Create(GetRenderContext(),
         gfx::Program::Settings
         {
             gfx::Program::Shaders
             {
-                gfx::Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), vs_main, textured_shadows_definitions }),
-                gfx::Shader::CreatePixel(*m_sp_context,  { Data::ShaderProvider::Get(), ps_main, textured_shadows_definitions }),
+                gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_shadows_definitions }),
+                gfx::Shader::CreatePixel(GetRenderContext(),  { Data::ShaderProvider::Get(), ps_main, textured_shadows_definitions }),
             },
             gfx::Program::InputBufferLayouts
             {
@@ -176,7 +176,7 @@ void ShadowCubeApp::Init()
     final_state_settings.viewports     = { gfx::GetFrameViewport(context_settings.frame_size) };
     final_state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };
     final_state_settings.depth.enabled = true;
-    m_final_pass.sp_state = gfx::RenderState::Create(*m_sp_context, final_state_settings);
+    m_final_pass.sp_state = gfx::RenderState::Create(GetRenderContext(), final_state_settings);
     m_final_pass.sp_state->SetName("Final pass render state");
 
     // ========= Shadow Pass objects =========
@@ -186,12 +186,12 @@ void ShadowCubeApp::Init()
 
     // Create shadow-pass rendering state with program
     gfx::RenderState::Settings shadow_state_settings;
-    shadow_state_settings.sp_program = gfx::Program::Create(*m_sp_context,
+    shadow_state_settings.sp_program = gfx::Program::Create(GetRenderContext(),
         gfx::Program::Settings
         {
             gfx::Program::Shaders
             {
-                gfx::Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), vs_main, textured_definitions }),
+                gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_definitions }),
             },
             final_state_settings.sp_program->GetSettings().input_buffer_layouts,
             gfx::Program::ArgumentDescriptions
@@ -206,32 +206,32 @@ void ShadowCubeApp::Init()
     shadow_state_settings.viewports     = { gfx::GetFrameViewport(g_shadow_map_size) };
     shadow_state_settings.scissor_rects = { gfx::GetFrameScissorRect(g_shadow_map_size) };
     shadow_state_settings.depth.enabled = true;
-    m_shadow_pass.sp_state = gfx::RenderState::Create(*m_sp_context, shadow_state_settings);
+    m_shadow_pass.sp_state = gfx::RenderState::Create(GetRenderContext(), shadow_state_settings);
     m_shadow_pass.sp_state->SetName("Shadow-map render state");
 
     // ========= Per-Frame Data =========
-    for(ShadowCubeFrame& frame : m_frames)
+    for(ShadowCubeFrame& frame : GetFrames())
     {
         // Create uniforms buffer with volatile parameters for the whole scene rendering
-        frame.sp_scene_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(*m_sp_context, scene_uniforms_data_size);
+        frame.sp_scene_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(GetRenderContext(), scene_uniforms_data_size);
         frame.sp_scene_uniforms_buffer->SetName(IndexedName("Scene Uniforms Buffer", frame.index));
 
         // ========= Shadow Pass data =========
 
         // Create uniforms buffer for Cube rendering in Shadow pass
-        frame.shadow_pass.cube.sp_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(*m_sp_context, mesh_uniforms_data_size);
+        frame.shadow_pass.cube.sp_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(GetRenderContext(), mesh_uniforms_data_size);
         frame.shadow_pass.cube.sp_uniforms_buffer->SetName(IndexedName("Cube Uniforms Buffer for Shadow Pass", frame.index));
 
         // Create uniforms buffer for Floor rendering in Shadow pass
-        frame.shadow_pass.floor.sp_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(*m_sp_context, mesh_uniforms_data_size);
+        frame.shadow_pass.floor.sp_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(GetRenderContext(), mesh_uniforms_data_size);
         frame.shadow_pass.floor.sp_uniforms_buffer->SetName(IndexedName("Floor Uniforms Buffer for Shadow Pass", frame.index));
 
         // Create depth texture for shadow map rendering
-        frame.shadow_pass.sp_rt_texture = gfx::Texture::CreateRenderTarget(*m_sp_context, shadow_texture_settings);
+        frame.shadow_pass.sp_rt_texture = gfx::Texture::CreateRenderTarget(GetRenderContext(), shadow_texture_settings);
         frame.shadow_pass.sp_rt_texture->SetName(IndexedName("Shadow Map", frame.index));
         
         // Create shadow pass configuration with depth attachment
-        frame.shadow_pass.sp_pass = gfx::RenderPass::Create(*m_sp_context, {
+        frame.shadow_pass.sp_pass = gfx::RenderPass::Create(GetRenderContext(), {
             { // No color attachments
             },
             gfx::RenderPass::DepthAttachment(
@@ -249,7 +249,7 @@ void ShadowCubeApp::Init()
         });
         
         // Create render pass and command list for shadow pass rendering
-        frame.shadow_pass.sp_cmd_list = gfx::RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.shadow_pass.sp_pass);
+        frame.shadow_pass.sp_cmd_list = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.shadow_pass.sp_pass);
         frame.shadow_pass.sp_cmd_list->SetName(IndexedName("Shadow-Map Rendering", frame.index));
 
         // Shadow-pass resource bindings for cube rendering
@@ -265,11 +265,11 @@ void ShadowCubeApp::Init()
         // ========= Final Pass data =========
 
         // Create uniforms buffer for Cube rendering in Final pass
-        frame.final_pass.cube.sp_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(*m_sp_context, mesh_uniforms_data_size);
+        frame.final_pass.cube.sp_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(GetRenderContext(), mesh_uniforms_data_size);
         frame.final_pass.cube.sp_uniforms_buffer->SetName(IndexedName("Cube Uniforms Buffer for Final Pass", frame.index));
 
         // Create uniforms buffer for Floor rendering in Final pass
-        frame.final_pass.floor.sp_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(*m_sp_context, mesh_uniforms_data_size);
+        frame.final_pass.floor.sp_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(GetRenderContext(), mesh_uniforms_data_size);
         frame.final_pass.floor.sp_uniforms_buffer->SetName(IndexedName("Floor Uniforms Buffer for Final Pass", frame.index));
 
         // Bind final pass RT texture and pass to the frame buffer texture and final pass.
@@ -277,7 +277,7 @@ void ShadowCubeApp::Init()
         frame.final_pass.sp_pass       = frame.sp_screen_pass;
         
         // Create render pass and command list for final pass rendering
-        frame.final_pass.sp_cmd_list = gfx::RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.final_pass.sp_pass);
+        frame.final_pass.sp_cmd_list = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.final_pass.sp_pass);
         frame.final_pass.sp_cmd_list->SetName(IndexedName("Final Scene Rendering", frame.index));
 
         // Final-pass resource bindings for cube rendering
@@ -304,7 +304,7 @@ void ShadowCubeApp::Init()
         });
     }
 
-    GraphicsApp::CompleteInitialization();
+    UserInterfaceApp::CompleteInitialization();
 }
 
 void ShadowCubeApp::RenderPass::Release()
@@ -315,12 +315,12 @@ void ShadowCubeApp::RenderPass::Release()
 bool ShadowCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 {
     // Resize screen color and depth textures
-    for (ShadowCubeFrame& frame : m_frames)
+    for (ShadowCubeFrame& frame : GetFrames())
         frame.final_pass.sp_rt_texture.reset();
 
-    const bool is_resized = GraphicsApp::Resize(frame_size, is_minimized);
+    const bool is_resized = UserInterfaceApp::Resize(frame_size, is_minimized);
 
-    for (ShadowCubeFrame& frame : m_frames)
+    for (ShadowCubeFrame& frame : GetFrames())
         frame.final_pass.sp_rt_texture = frame.sp_screen_texture;
     
     if (!is_resized)
@@ -340,7 +340,7 @@ bool ShadowCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 
 bool ShadowCubeApp::Update()
 {
-    if (!GraphicsApp::Update())
+    if (!UserInterfaceApp::Update())
         return false;
 
     gfx::Matrix44f scale_matrix;
@@ -401,7 +401,7 @@ bool ShadowCubeApp::Animate(double, double delta_seconds)
 bool ShadowCubeApp::Render()
 {
     // Render only when context is ready
-    if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
+    if (!GetRenderContext().ReadyToRender() || !UserInterfaceApp::Render())
         return false;
 
     // Upload uniform buffers to GPU
@@ -417,8 +417,8 @@ bool ShadowCubeApp::Render()
     RenderScene(m_final_pass, frame.final_pass);
 
     // Execute rendering commands and present frame to screen
-    m_sp_context->GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_lists);
-    m_sp_context->Present();
+    GetRenderContext().GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_lists);
+    GetRenderContext().Present();
     
     return true;
 }
@@ -454,7 +454,7 @@ void ShadowCubeApp::OnContextReleased(gfx::Context& context)
     m_sp_texture_sampler.reset();
     m_sp_const_buffer.reset();
 
-    GraphicsApp::OnContextReleased(context);
+    UserInterfaceApp::OnContextReleased(context);
 }
 
 ShadowCubeApp::RenderPass::RenderPass(bool is_final_pass, std::string debug_group_name)

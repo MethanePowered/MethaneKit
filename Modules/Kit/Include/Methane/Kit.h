@@ -34,5 +34,6 @@ Methane kit interfaces: all headers under one umbrella.
 
 // Methane User Interface Headers
 
+#include <Methane/UserInterface/App.hpp>
 #include <Methane/UserInterface/Typography.h>
 #include <Methane/UserInterface/Widgets.h>

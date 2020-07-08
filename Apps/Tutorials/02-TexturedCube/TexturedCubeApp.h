@@ -45,9 +45,9 @@ struct TexturedCubeFrame final : gfx::AppFrame
     using gfx::AppFrame::AppFrame;
 };
 
-using GraphicsApp = gfx::App<TexturedCubeFrame>;
+using UserInterfaceApp = UserInterface::App<TexturedCubeFrame>;
 
-class TexturedCubeApp final : public GraphicsApp
+class TexturedCubeApp final : public UserInterfaceApp
 {
 public:
     TexturedCubeApp();

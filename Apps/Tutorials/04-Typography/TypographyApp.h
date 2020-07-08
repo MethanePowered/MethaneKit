@@ -42,10 +42,10 @@ struct TypographyFrame final : gfx::AppFrame
     using gfx::AppFrame::AppFrame;
 };
 
-using GraphicsApp = gfx::App<TypographyFrame>;
+using UserInterfaceApp = UserInterface::App<TypographyFrame>;
 
 class TypographyApp final
-    : public GraphicsApp
+    : public UserInterfaceApp
     , protected Data::Receiver<gui::IFontCallback>
 {
 public:

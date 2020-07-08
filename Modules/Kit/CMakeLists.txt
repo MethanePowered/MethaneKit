@@ -30,6 +30,7 @@ target_link_libraries(${TARGET}
         MethaneGraphicsPrimitives
         MethaneGraphicsCamera
         MethaneGraphicsTypes
+        MethaneUserInterfaceApp
         MethaneUserInterfaceTypography
         MethaneUserInterfaceWidgets
 )

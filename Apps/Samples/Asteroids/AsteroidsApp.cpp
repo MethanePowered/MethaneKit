@@ -90,13 +90,11 @@ static const std::map<pal::Keyboard::State, AsteroidsAppAction> g_asteroids_acti
 };
 
 AsteroidsApp::AsteroidsApp()
-    : GraphicsApp(
-        GetAppSettings("Methane Asteroids",
-                       true /* animations */, true /* logo */, false /* hud ui */,
-                       true /* depth */, 0.f /* depth clear */, { /* color clearing disabled */ }),
-        "Methane sample demonstrating parallel rendering of massive randomly generated asteroids field.")
-    , m_view_camera(m_animations, gfx::ActionCamera::Pivot::Aim)
-    , m_light_camera(m_view_camera, m_animations, gfx::ActionCamera::Pivot::Aim)
+    : UserInterfaceApp(
+        Samples::GetGraphicsAppSettings("Methane Asteroids", true /* animations */, true /* depth */, 0.f /* depth clear */, { /* color clearing disabled */ }),
+        { }, "Methane sample demonstrating parallel rendering of massive randomly generated asteroids field.")
+    , m_view_camera(GetAnimations(), gfx::ActionCamera::Pivot::Aim)
+    , m_light_camera(m_view_camera, GetAnimations(), gfx::ActionCamera::Pivot::Aim)
     , m_scene_scale(15.f)
     , m_scene_constants(                                // Shader constants:
         {                                               // ================
@@ -169,17 +167,17 @@ AsteroidsApp::AsteroidsApp()
     add_option("-r,--parallel-render", m_is_parallel_rendering_enabled, "parallel rendering enabled", true)->group(options_group);
 
     // Setup animations
-    m_animations.push_back(std::make_shared<Data::TimeAnimation>(std::bind(&AsteroidsApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
+    GetAnimations().push_back(std::make_shared<Data::TimeAnimation>(std::bind(&AsteroidsApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
 
     // Enable dry updates on pause to keep asteroids in sync with projection matrix dependent on window size which may change
-    m_animations.SetDryUpdateOnPauseEnabled(true); 
+    GetAnimations().SetDryUpdateOnPauseEnabled(true);
 }
 
 AsteroidsApp::~AsteroidsApp()
 {
     META_FUNCTION_TASK();
     // Wait for GPU rendering is completed to release resources
-    m_sp_context->WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
+    GetRenderContext().WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
 }
 
 void AsteroidsApp::Init()
@@ -187,17 +185,16 @@ void AsteroidsApp::Init()
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsApp::Init");
 
-    GraphicsApp::Init();
+    UserInterfaceApp::Init();
 
-    assert(m_sp_context);
-    gfx::RenderContext& context = *m_sp_context;
+    gfx::RenderContext& context = GetRenderContext();
     const gfx::RenderContext::Settings& context_settings = context.GetSettings();
     const Data::FRectSize float_rect_size(static_cast<float>(context_settings.frame_size.width),
                                           static_cast<float>(context_settings.frame_size.height));
     m_view_camera.Resize(float_rect_size);
 
     // Create sky-box
-    m_sp_sky_box = std::make_shared<gfx::SkyBox>(context, m_image_loader, gfx::SkyBox::Settings{
+    m_sp_sky_box = std::make_shared<gfx::SkyBox>(context, GetImageLoader(), gfx::SkyBox::Settings{
         m_view_camera,
         {
             "Textures/SkyBox/Galaxy/PositiveX.jpg",
@@ -213,7 +210,7 @@ void AsteroidsApp::Init()
     });
 
     // Create planet
-    m_sp_planet = std::make_shared<Planet>(context, m_image_loader, Planet::Settings{
+    m_sp_planet = std::make_shared<Planet>(context, GetImageLoader(), Planet::Settings{
         m_view_camera,
         m_light_camera,
         "Textures/Planet/Mars.jpg",             // texture_path
@@ -241,7 +238,7 @@ void AsteroidsApp::Init()
     m_sp_const_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } });
 
     // ========= Per-Frame Data =========
-    for(AsteroidsFrame& frame : m_frames)
+    for(AsteroidsFrame& frame : GetFrames())
     {
         // Create initial screen pass for asteroids rendering
         gfx::RenderPass::Settings initial_screen_pass_settings = frame.sp_screen_pass->GetSettings();
@@ -307,22 +304,22 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     META_FUNCTION_TASK();
 
     // Resize screen color and depth textures
-    if (!GraphicsApp::Resize(frame_size, is_minimized))
+    if (!UserInterfaceApp::Resize(frame_size, is_minimized))
         return false;
     
     // Update frame buffer and depth textures in initial & final render passes
-    for (AsteroidsFrame& frame : m_frames)
+    for (AsteroidsFrame& frame : GetFrames())
     {
         assert(!!frame.sp_initial_screen_pass);
-        gfx::RenderPass::Settings initial_pass_settings = frame.sp_initial_screen_pass->GetSettings();
-        initial_pass_settings.color_attachments[0].wp_texture = frame.sp_screen_texture;
-        initial_pass_settings.depth_attachment.wp_texture = m_sp_depth_texture;
+        gfx::RenderPass::Settings initial_pass_settings         = frame.sp_initial_screen_pass->GetSettings();
+        initial_pass_settings.color_attachments[0].wp_texture   = frame.sp_screen_texture;
+        initial_pass_settings.depth_attachment.wp_texture       = GetDepthTexturePtr();
         frame.sp_initial_screen_pass->Update(initial_pass_settings);
         
         assert(!!frame.sp_final_screen_pass);
-        gfx::RenderPass::Settings final_pass_settings = frame.sp_final_screen_pass->GetSettings();
-        final_pass_settings.color_attachments[0].wp_texture = frame.sp_screen_texture;
-        final_pass_settings.depth_attachment.wp_texture = m_sp_depth_texture;
+        gfx::RenderPass::Settings final_pass_settings           = frame.sp_final_screen_pass->GetSettings();
+        final_pass_settings.color_attachments[0].wp_texture     = frame.sp_screen_texture;
+        final_pass_settings.depth_attachment.wp_texture         = GetDepthTexturePtr();
         frame.sp_final_screen_pass->Update(final_pass_settings);
     }
 
@@ -339,7 +336,7 @@ bool AsteroidsApp::Update()
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsApp::Update");
 
-    if (!GraphicsApp::Update())
+    if (!UserInterfaceApp::Update())
         return false;
 
     // Update scene uniforms
@@ -364,8 +361,7 @@ bool AsteroidsApp::Render()
     META_SCOPE_TIMER("AsteroidsApp::Render");
 
     // Render only when context is ready
-    assert(!!m_sp_context);
-    if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
+    if (!GetRenderContext().ReadyToRender() || !UserInterfaceApp::Render())
         return false;
 
     // Upload uniform buffers to GPU
@@ -391,8 +387,8 @@ bool AsteroidsApp::Render()
     frame.sp_final_cmd_list->Commit();
 
     // Execute rendering commands and present frame to screen
-    m_sp_context->GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_lists);
-    m_sp_context->Present();
+    GetRenderContext().GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_lists);
+    GetRenderContext().Present();
 
     return true;
 }
@@ -412,7 +408,7 @@ void AsteroidsApp::OnContextReleased(gfx::Context& context)
     m_sp_asteroids_array.reset();
     m_sp_const_buffer.reset();
 
-    GraphicsApp::OnContextReleased(context);
+    UserInterfaceApp::OnContextReleased(context);
 }
 
 void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
@@ -423,8 +419,8 @@ void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
     if (m_asteroids_complexity == asteroids_complexity)
         return;
 
-    if (m_sp_context)
-        m_sp_context->WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
+    if (IsRenderContextInitialized())
+        GetRenderContext().WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
 
     m_asteroids_complexity = asteroids_complexity;
 
@@ -438,8 +434,8 @@ void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
     m_sp_asteroids_array.reset();
     m_sp_asteroids_array_state.reset();
 
-    if (m_sp_context)
-        m_sp_context->Reset();
+    if (IsRenderContextInitialized())
+        GetRenderContext().Reset();
 }
 
 void AsteroidsApp::SetParallelRenderingEnabled(bool is_parallel_rendering_enabled)
@@ -450,7 +446,7 @@ void AsteroidsApp::SetParallelRenderingEnabled(bool is_parallel_rendering_enable
 
     META_SCOPE_TIMERS_FLUSH();
     m_is_parallel_rendering_enabled = is_parallel_rendering_enabled;
-    for(AsteroidsFrame& frame : m_frames)
+    for(AsteroidsFrame& frame : GetFrames())
     {
         frame.sp_execute_cmd_lists = CreateExecuteCommandLists(frame);
     }

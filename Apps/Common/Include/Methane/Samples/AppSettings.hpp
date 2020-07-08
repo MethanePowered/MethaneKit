@@ -34,10 +34,8 @@ constexpr bool g_is_apple = true;
 constexpr bool g_is_apple = false;
 #endif
 
-inline Graphics::AppSettings GetAppSettings(std::string app_name,
-                                            bool animations_enabled = true, bool show_logo = true, bool hud_ui_enabled = false,
-                                            bool depth_enabled = true, float clear_depth = 1.f,
-                                            std::optional<Graphics::Color4f> clear_color = Graphics::Color4f(0.0f, 0.2f, 0.4f, 1.0f))
+inline Graphics::AppSettings GetGraphicsAppSettings(std::string app_name, bool animations_enabled = true, bool depth_enabled = true, float clear_depth = 1.f,
+                                                    std::optional<Graphics::Color4f> clear_color = Graphics::Color4f(0.0f, 0.2f, 0.4f, 1.0f))
 {
     using Stencil = Graphics::Stencil;
     using DepthStencilOpt = std::optional<Graphics::DepthStencil>;
@@ -51,11 +49,8 @@ inline Graphics::AppSettings GetAppSettings(std::string app_name,
         Graphics::IApp::Settings {                                  // graphics_app:
             Graphics::RenderPass::Access::ShaderResources |         //   - screen_pass_access
             Graphics::RenderPass::Access::Samplers,                 //     ...
-            hud_ui_enabled                                          //   - heads_up_display_mode
-                ? Graphics::IApp::HeadsUpDisplayMode::UserInterface //     ...
-                : Graphics::IApp::HeadsUpDisplayMode::WindowTitle,  //     ...
             animations_enabled,                                     //   - animations_enabled
-            show_logo,                                              //   - show_logo_badge
+            true,                                                   //   - show_hud_in_window_title
             0                                                       //   - default_device_index
         },                                                          // =========================
         Graphics::RenderContext::Settings {                         // render_context:

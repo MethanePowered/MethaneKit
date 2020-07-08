@@ -41,9 +41,9 @@ struct HelloTriangleFrame final : gfx::AppFrame
     using gfx::AppFrame::AppFrame;
 };
 
-using GraphicsApp = gfx::App<HelloTriangleFrame>;
+using UserInterfaceApp = UserInterface::App<HelloTriangleFrame>;
 
-class HelloTriangleApp final : public GraphicsApp
+class HelloTriangleApp final : public UserInterfaceApp
 {
 public:
     HelloTriangleApp();

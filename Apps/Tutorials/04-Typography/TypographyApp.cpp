@@ -100,8 +100,9 @@ static const std::map<pal::Keyboard::State, TypographyAppAction> g_typography_ac
 };
 
 TypographyApp::TypographyApp()
-    : GraphicsApp(
-        Samples::GetAppSettings("Methane Typography", true /* animations */, true /* logo */, true /* hud ui */, false /* depth */),
+    : UserInterfaceApp(
+        Samples::GetGraphicsAppSettings("Methane Typography", true /* animations */, false /* depth */),
+        { gui::IApp::HeadsUpDisplayMode::UserInterface, true },
         "Dynamic text rendering and fonts management tutorial.")
     , m_displayed_text_lengths(g_text_blocks_count, 0)
 {
@@ -113,7 +114,7 @@ TypographyApp::TypographyApp()
     });
 
     // Setup animations
-    m_animations.push_back(
+    GetAnimations().push_back(
         std::make_shared<Data::TimeAnimation>(std::bind(&TypographyApp::Animate, this, std::placeholders::_1, std::placeholders::_2))
     );
 }
@@ -121,7 +122,7 @@ TypographyApp::TypographyApp()
 TypographyApp::~TypographyApp()
 {
     // Wait for GPU rendering is completed to release resources
-    m_sp_context->WaitForGpu(gfx::Context::WaitFor::RenderComplete);
+    GetRenderContext().WaitForGpu(gfx::Context::WaitFor::RenderComplete);
 
     // Clear the font library to release all atlas textures
     gui::Font::Library::Get().Clear();
@@ -129,7 +130,7 @@ TypographyApp::~TypographyApp()
 
 void TypographyApp::Init()
 {
-    GraphicsApp::Init();
+    UserInterfaceApp::Init();
 
     const gfx::FrameSize frame_size_in_dots = GetFrameSizeInDots();
     const uint32_t frame_width_without_margins = frame_size_in_dots.width - 2 * g_margin_size_in_dots;
@@ -147,7 +148,7 @@ void TypographyApp::Init()
                 Data::FontProvider::Get(),
                 gui::Font::Settings
                 {
-                    font_settings.name, font_settings.path, font_settings.size, m_sp_context->GetFontResolutionDPI(),
+                    font_settings.name, font_settings.path, font_settings.size, GetRenderContext().GetFontResolutionDPI(),
                     gui::Font::GetAlphabetFromText(displayed_text_block)
                 }
             ).GetPtr()
@@ -156,7 +157,7 @@ void TypographyApp::Init()
 
         // Add text element
         m_texts.push_back(
-            std::make_shared<gui::Text>(*m_sp_context, *m_fonts.back(),
+            std::make_shared<gui::Text>(GetRenderContext(), *m_fonts.back(),
                 gui::Text::SettingsUtf32
                 {
                     font_settings.name,
@@ -178,9 +179,9 @@ void TypographyApp::Init()
     UpdateFontAtlasBadges();
 
     // Create per-frame command lists
-    for(TypographyFrame& frame : m_frames)
+    for(TypographyFrame& frame : GetFrames())
     {
-        frame.sp_render_cmd_list = gfx::RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
+        frame.sp_render_cmd_list = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.sp_screen_pass);
         frame.sp_render_cmd_list->SetName(IndexedName("Text Rendering", frame.index));
         frame.sp_execute_cmd_lists = gfx::CommandListSet::Create({ *frame.sp_render_cmd_list });
     }
@@ -195,7 +196,7 @@ Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(gui::Font& font, const Ptr<g
                                    ? font_color_by_name_it->second : g_misc_font_color;
 
     return std::make_shared<gui::Badge>(
-        *m_sp_context, sp_atlas_texture,
+        GetRenderContext(), sp_atlas_texture,
         gui::Badge::Settings
         {
             font.GetSettings().name + " Font Atlas",
@@ -211,7 +212,7 @@ Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(gui::Font& font, const Ptr<g
 void TypographyApp::UpdateFontAtlasBadges()
 {
     const Refs<gui::Font> font_refs = gui::Font::Library::Get().GetFonts();
-    gfx::Context& context = *m_sp_context;
+    gfx::RenderContext& context = GetRenderContext();
 
     // Remove obsolete font atlas badges
     for(auto badge_it = m_font_atlas_badges.begin(); badge_it != m_font_atlas_badges.end();)
@@ -284,7 +285,7 @@ void TypographyApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
 bool TypographyApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 {
     // Resize screen color and depth textures
-    if (!GraphicsApp::Resize(frame_size, is_minimized))
+    if (!UserInterfaceApp::Resize(frame_size, is_minimized))
         return false;
 
     const gfx::FrameSize frame_size_in_dots    = GetFrameSizeInDots();
@@ -381,7 +382,7 @@ void TypographyApp::ResetAnimation()
 bool TypographyApp::Render()
 {
     // Render only when context is ready
-    if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
+    if (!GetRenderContext().ReadyToRender() || !UserInterfaceApp::Render())
         return false;
 
     TypographyFrame& frame = GetCurrentFrame();
@@ -404,8 +405,8 @@ bool TypographyApp::Render()
     frame.sp_render_cmd_list->Commit();
 
     // Execute command list on render queue and present frame to screen
-    m_sp_context->GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_lists);
-    m_sp_context->Present();
+    GetRenderContext().GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_lists);
+    GetRenderContext().Present();
 
     return true;
 }
@@ -431,7 +432,7 @@ void TypographyApp::OnContextReleased(gfx::Context& context)
     m_texts.clear();
     m_font_atlas_badges.clear();
 
-    GraphicsApp::OnContextReleased(context);
+    UserInterfaceApp::OnContextReleased(context);
 }
 
 void TypographyApp::OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture)

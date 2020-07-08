@@ -56,8 +56,9 @@ struct ShadowCubeFrame final : gfx::AppFrame
     using gfx::AppFrame::AppFrame;
 };
 
-using GraphicsApp = gfx::App<ShadowCubeFrame>;
-class ShadowCubeApp final : public GraphicsApp
+using UserInterfaceApp = UserInterface::App<ShadowCubeFrame>;
+
+class ShadowCubeApp final : public UserInterfaceApp
 {
 public:
     ShadowCubeApp();

@@ -50,8 +50,9 @@ struct AsteroidsFrame final : gfx::AppFrame
     using gfx::AppFrame::AppFrame;
 };
 
-using GraphicsApp = gfx::App<AsteroidsFrame>;
-class AsteroidsApp final : public GraphicsApp
+using UserInterfaceApp = UserInterface::App<AsteroidsFrame>;
+
+class AsteroidsApp final : public UserInterfaceApp
 {
 public:
     AsteroidsApp();

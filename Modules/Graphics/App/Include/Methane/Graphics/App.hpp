@@ -37,11 +37,10 @@ Base frame class provides frame buffer management with resize handling.
 #include <Methane/Graphics/Device.h>
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/Texture.h>
+#include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Graphics/ImageLoader.h>
-#include <Methane/UserInterface/Badge.h>
-#include <Methane/UserInterface/HeadsUpDisplay.h>
 #include <Methane/Timer.hpp>
 #include <Methane/Instrumentation.h>
 
@@ -70,30 +69,32 @@ struct AppSettings
     RenderContext::Settings render_context;
 };
 
-namespace gui = Methane::UserInterface;
-
-template<typename FrameT>
+template<typename FrameT, typename IAppT = Graphics::IApp>
 class App
-    : public Graphics::IApp
+    : public IAppT
     , public Platform::App
     , protected Data::Receiver<IContextCallback>
 {
     static_assert(std::is_base_of<AppFrame, FrameT>::value, "Application Frame type must be derived from AppFrame.");
 
 public:
-    explicit App(const AppSettings& settings, const std::string& help_description = "Methane Graphics Application")
+    explicit App(const AppSettings& settings)
         : Platform::App(settings.platform_app)
-        , m_image_loader(Data::TextureProvider::Get())
         , m_settings(settings.graphics_app)
         , m_initial_context_settings(settings.render_context)
+        , m_image_loader(Data::TextureProvider::Get())
     {
         META_FUNCTION_TASK();
-        add_option("-i,--hud", m_settings.heads_up_display_mode, "HUD display mode (0 - hidden, 1 - in window title, 2 - in UI)", true);
         add_option("-a,--animations", m_settings.animations_enabled, "Enable animations", true);
         add_option("-d,--device", m_settings.default_device_index, "Render at adapter index, use -1 for software adapter", true);
         add_option("-v,--vsync", m_initial_context_settings.vsync_enabled, "Vertical synchronization", true);
         add_option("-b,--frame-buffers", m_initial_context_settings.frame_buffers_count, "Frame buffers count in swap-chain", true);
+    }
 
+    App(const AppSettings& settings, const std::string& help_description)
+        : App(settings)
+    {
+        META_FUNCTION_TASK();
         AddInputControllers({ std::make_shared<AppController>(*this, help_description) });
     }
 
@@ -103,10 +104,6 @@ public:
         // Wait for GPU rendering is completed to release resources
         // m_sp_context->WaitForGpu(RenderContext::WaitFor::RenderComplete);
         META_FUNCTION_TASK();
-        if (m_sp_context)
-        {
-            m_sp_context->Disconnect(*this);
-        }
     }
 
     // Platform::App interface
@@ -198,18 +195,6 @@ public:
 
             m_frames.emplace_back(std::move(frame));
         }
-        
-        // Create Methane logo badge
-        if (m_settings.show_logo_badge)
-        {
-            gui::Badge::Settings logo_badge_settings;
-            logo_badge_settings.blend_color  = Color4f(1.f, 1.f, 1.f, 0.15f);
-            m_sp_logo_badge = std::make_shared<gui::Badge>(*m_sp_context, std::move(logo_badge_settings));
-        }
-
-        // Create heads-up-display (HUD)
-        if (m_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface)
-            m_sp_hud = std::make_shared<gui::HeadsUpDisplay>(*m_sp_context, m_hud_settings);
 
         Platform::App::Init();
     }
@@ -273,9 +258,6 @@ public:
 
             frame.sp_screen_pass->Update(pass_settings);
         }
-        
-        if (m_sp_logo_badge)
-            m_sp_logo_badge->FrameResize(frame_size);
 
         return true;
     }
@@ -289,18 +271,14 @@ public:
         System::Get().CheckForChanges();
 
         // Update HUD info in window title
-        if (m_settings.heads_up_display_mode == HeadsUpDisplayMode::WindowTitle &&
+        if (m_settings.show_hud_in_window_title &&
             m_title_update_timer.GetElapsedSecondsD() >= g_title_update_interval_sec)
         {
             UpdateWindowTitle();
             m_title_update_timer.Reset();
         }
 
-        // Update HUD user interface
-        if (m_sp_hud && m_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface)
-            m_sp_hud->Update();
-
-        m_animations.Update();
+        GetAnimations().Update();
         return true;
     }
 
@@ -327,17 +305,6 @@ public:
         return true;
     }
     
-    void RenderOverlay(RenderCommandList& cmd_list)
-    {
-        META_FUNCTION_TASK();
-
-        if (m_sp_hud && m_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface)
-            m_sp_hud->Draw(cmd_list);
-
-        if (m_sp_logo_badge)
-            m_sp_logo_badge->Draw(cmd_list);
-    }
-    
     bool SetFullScreen(bool is_full_screen) override
     {
         META_FUNCTION_TASK();
@@ -360,9 +327,9 @@ public:
 
         // Pause animations or resume from the paused state
         if (m_settings.animations_enabled)
-            m_animations.Resume();
+            GetAnimations().Resume();
         else
-            m_animations.Pause();
+            GetAnimations().Pause();
 
         // Disable all camera controllers while animations are paused, since they can not function without animations
         Refs<AppCameraController> camera_controllers = GetInputState().template GetControllersOfType<AppCameraController>();
@@ -374,24 +341,13 @@ public:
         return true;
     }
 
-    bool SetHeadsUpDisplayMode(HeadsUpDisplayMode heads_up_display_mode) override
+    void SetShowHudInWindowTitle(bool show_hud_in_window_title) noexcept
     {
-        if (m_settings.heads_up_display_mode == heads_up_display_mode)
-            return false;
+        if (m_settings.show_hud_in_window_title == show_hud_in_window_title)
+            return;
 
-        m_settings.heads_up_display_mode = heads_up_display_mode;
+        m_settings.show_hud_in_window_title = show_hud_in_window_title;
         UpdateWindowTitle();
-
-        m_sp_context->WaitForGpu(RenderContext::WaitFor::RenderComplete);
-        if (m_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface && m_sp_context)
-        {
-            m_sp_hud = std::make_shared<gui::HeadsUpDisplay>(*m_sp_context, m_hud_settings);
-        }
-        else
-        {
-            m_sp_hud.reset();
-        }
-        return true;
     }
 
 protected:
@@ -410,7 +366,7 @@ protected:
 
     void UpdateWindowTitle()
     {
-        if (m_settings.heads_up_display_mode != HeadsUpDisplayMode::WindowTitle)
+        if (!m_settings.show_hud_in_window_title)
         {
             SetWindowTitle(GetPlatformAppSettings().name);
             return;
@@ -463,8 +419,6 @@ protected:
 
         m_frames.clear();
         m_sp_depth_texture.reset();
-        m_sp_logo_badge.reset();
-        m_sp_hud.reset();
 
         Deinitialize();
     }
@@ -488,14 +442,12 @@ protected:
 
     const RenderContext::Settings& GetInitialContextSettings() const { return m_initial_context_settings; }
 
+    bool IsRenderContextInitialized() { return !!m_sp_context; }
     RenderContext& GetRenderContext()
     {
         assert(m_sp_context);
         return *m_sp_context;
     }
-
-    gui::HeadsUpDisplay::Settings& GetHeadsUpDisplaySettings()        { return m_hud_settings; }
-    gui::HeadsUpDisplay*           GetHeadsUpDisplay() const noexcept { return m_sp_hud.get(); }
 
     FrameSize GetFrameSizeInDots() const noexcept { return m_sp_context->GetSettings().frame_size / m_sp_context->GetContentScalingFactor(); }
 
@@ -507,21 +459,21 @@ protected:
         return ss.str();
     }
 
-    ImageLoader              m_image_loader;
-    Data::AnimationsPool     m_animations;
-
-    Ptr<RenderContext>       m_sp_context;
-    Ptr<Texture>             m_sp_depth_texture;
-    Ptr<gui::Badge>          m_sp_logo_badge;
-    Ptr<gui::HeadsUpDisplay> m_sp_hud;
-    std::vector<FrameT>      m_frames;
+    ImageLoader&          GetImageLoader() noexcept             { return m_image_loader; }
+    Data::AnimationsPool& GetAnimations() noexcept              { return m_animations; }
+    std::vector<FrameT>&  GetFrames() noexcept                  { return m_frames; }
+    const Ptr<Texture>&   GetDepthTexturePtr() const noexcept   { return m_sp_depth_texture; }
 
 private:
-    IApp::Settings                m_settings;
-    RenderContext::Settings       m_initial_context_settings;
-    gui::HeadsUpDisplay::Settings m_hud_settings;
-    Timer                         m_title_update_timer;
-    bool                          m_restore_animations_enabled = true;
+    IApp::Settings           m_settings;
+    RenderContext::Settings  m_initial_context_settings;
+    Timer                    m_title_update_timer;
+    bool                     m_restore_animations_enabled = true;
+    ImageLoader              m_image_loader;
+    Data::AnimationsPool     m_animations;
+    Ptr<RenderContext>       m_sp_context;
+    Ptr<Texture>             m_sp_depth_texture;
+    std::vector<FrameT>      m_frames;
 
     static constexpr double  g_title_update_interval_sec = 1.0;
 };

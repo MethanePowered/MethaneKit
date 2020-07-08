@@ -49,7 +49,6 @@ public:
             },                                          //
             {                                           // graphics_app:
                 RenderPass::Access::None,               // - screen_pass_access
-                IApp::HeadsUpDisplayMode::WindowTitle,  // - heads_up_display_mode
                 false,                                  // - animations_enabled
                 false,                                  // - show_logo_badge
             },                                          //
@@ -64,7 +63,7 @@ public:
 
     ~HelloTriangleApp() override
     {
-        m_sp_context->WaitForGpu(Context::WaitFor::RenderComplete);
+        GetRenderContext().WaitForGpu(Context::WaitFor::RenderComplete);
     }
 
     void Init() override
@@ -79,7 +78,7 @@ public:
         } };
 
         const Data::Size vertex_buffer_size = static_cast<Data::Size>(sizeof(triangle_vertices));
-        Ptr<Buffer> sp_vertex_buffer = Buffer::CreateVertexBuffer(*m_sp_context, vertex_buffer_size, static_cast<Data::Size>(sizeof(Vertex)));
+        Ptr<Buffer> sp_vertex_buffer = Buffer::CreateVertexBuffer(GetRenderContext(), vertex_buffer_size, static_cast<Data::Size>(sizeof(Vertex)));
         sp_vertex_buffer->SetData(
             Resource::SubResources
             {
@@ -88,16 +87,16 @@ public:
         );
         m_sp_vertex_buffers = BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
 
-        m_sp_state = RenderState::Create(*m_sp_context,
+        m_sp_state = RenderState::Create(GetRenderContext(),
             RenderState::Settings
             {
-                Program::Create(*m_sp_context,
+                Program::Create(GetRenderContext(),
                     Program::Settings
                     {
                         Program::Shaders
                         {
-                            Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), { "Triangle", "TriangleVS" } }),
-                            Shader::CreatePixel(*m_sp_context,  { Data::ShaderProvider::Get(), { "Triangle", "TrianglePS" } }),
+                            Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "Triangle", "TriangleVS" } }),
+                            Shader::CreatePixel(GetRenderContext(),  { Data::ShaderProvider::Get(), { "Triangle", "TrianglePS" } }),
                         },
                         Program::InputBufferLayouts
                         {
@@ -107,17 +106,17 @@ public:
                             }
                         },
                         Program::ArgumentDescriptions { },
-                        PixelFormats { m_sp_context->GetSettings().color_format }
+                        PixelFormats { GetRenderContext().GetSettings().color_format }
                     }
                 ),
-                Viewports    { GetFrameViewport(m_sp_context->GetSettings().frame_size)    },
-                ScissorRects { GetFrameScissorRect(m_sp_context->GetSettings().frame_size) },
+                Viewports    { GetFrameViewport(GetRenderContext().GetSettings().frame_size)    },
+                ScissorRects { GetFrameScissorRect(GetRenderContext().GetSettings().frame_size) },
             }
         );
 
-        for (HelloTriangleFrame& frame : m_frames)
+        for (HelloTriangleFrame& frame : GetFrames())
         {
-            frame.sp_render_cmd_list  = RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
+            frame.sp_render_cmd_list  = RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.sp_screen_pass);
             frame.sp_render_cmd_lists = CommandListSet::Create({ *frame.sp_render_cmd_list });
         }
 
@@ -136,7 +135,7 @@ public:
 
     bool Render() override
     {
-        if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
+        if (!GetRenderContext().ReadyToRender() || !GraphicsApp::Render())
             return false;
 
         HelloTriangleFrame& frame = GetCurrentFrame();
@@ -145,8 +144,8 @@ public:
         frame.sp_render_cmd_list->Draw(RenderCommandList::Primitive::Triangle, 3);
         frame.sp_render_cmd_list->Commit();
 
-        m_sp_context->GetRenderCommandQueue().Execute(*frame.sp_render_cmd_lists);
-        m_sp_context->Present();
+        GetRenderContext().GetRenderCommandQueue().Execute(*frame.sp_render_cmd_lists);
+        GetRenderContext().Present();
 
         return true;
     }

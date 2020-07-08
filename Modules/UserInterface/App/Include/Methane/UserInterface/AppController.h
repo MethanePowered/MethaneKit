@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/AppController.h
-Base graphics application controller.
+FILE: Methane/UserInterface/AppController.h
+Base user interface application controller.
 
 ******************************************************************************/
 
@@ -25,44 +25,44 @@ Base graphics application controller.
 
 #include "App.h"
 
-#include <Methane/Platform/AppController.h>
-#include <Methane/Platform/KeyboardActionControllerBase.hpp>
+#include <Methane/Graphics/AppController.h>
 
-namespace Methane::Graphics
+namespace Methane::UserInterface
 {
 
 enum class AppAction : uint32_t
 {
     None = 0,
 
-    SwitchAnimations,
+    SwitchHeadsUpDisplayMode,
 
     Count
 };
 
 class AppController
-    : public Platform::AppController
+    : public Graphics::AppController
     , public Platform::Keyboard::ActionControllerBase<AppAction>
 {
 public:
     using ActionByKeyboardState = Platform::Keyboard::ActionControllerBase<AppAction>::ActionByKeyboardState;
     inline static const ActionByKeyboardState default_action_by_keyboard_state{
-        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::Z }, AppAction::SwitchAnimations  }
+        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::H }, AppAction::SwitchHeadsUpDisplayMode   },
     };
     
     AppController(IApp& application, const std::string& application_help,
                   const Platform::AppController::ActionByKeyboardState& platform_action_by_keyboard_state = Platform::AppController::default_action_by_keyboard_state,
-                  const Graphics::AppController::ActionByKeyboardState& graphics_action_by_keyboard_state = Graphics::AppController::default_action_by_keyboard_state);
+                  const Graphics::AppController::ActionByKeyboardState& graphics_action_by_keyboard_state = Graphics::AppController::default_action_by_keyboard_state,
+                  const UserInterface::AppController::ActionByKeyboardState& ui_action_by_keyboard_state  = UserInterface::AppController::default_action_by_keyboard_state);
     
     // Input::Controller implementation
     void OnKeyboardChanged(Platform::Keyboard::Key, Platform::Keyboard::KeyState, const Platform::Keyboard::StateChange& state_change) override;
     HelpLines GetHelp() const override;
 
 protected:
-    using Platform::AppController::OnKeyboardKeyAction;
-    using Platform::AppController::OnKeyboardStateAction;
-    using Platform::AppController::GetKeyboardActionName;
-    
+    using Graphics::AppController::OnKeyboardKeyAction;
+    using Graphics::AppController::OnKeyboardStateAction;
+    using Graphics::AppController::GetKeyboardActionName;
+
     // Keyboard::ActionControllerBase interface
     void        OnKeyboardKeyAction(AppAction, Platform::Keyboard::KeyState) override { }
     void        OnKeyboardStateAction(AppAction action) override;
@@ -72,4 +72,4 @@ private:
     IApp& m_application;
 };
 
-} // namespace Methane::Platform
+} // namespace Methane::UserInterface
