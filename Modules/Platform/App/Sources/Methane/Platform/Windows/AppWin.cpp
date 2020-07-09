@@ -501,7 +501,8 @@ void AppWin::ScheduleAlert()
 void AppWin::SetWindowTitle(const std::string& title_text)
 {
     META_FUNCTION_TASK();
-    assert(!!m_env.window_handle);
+    if (!m_env.window_handle)
+        return;
 
     BOOL set_result = SetWindowTextW(m_env.window_handle, nowide::widen(title_text).c_str());
     if (!set_result)

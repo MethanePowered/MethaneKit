@@ -43,7 +43,7 @@ struct IApp : Graphics::IApp
 
     struct Settings
     {
-        HeadsUpDisplayMode heads_up_display_mode = HeadsUpDisplayMode::UserInterface;
+        HeadsUpDisplayMode heads_up_display_mode = HeadsUpDisplayMode::WindowTitle;
         bool               show_logo_badge       = true;
     };
 
