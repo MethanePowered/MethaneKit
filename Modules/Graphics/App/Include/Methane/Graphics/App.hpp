@@ -315,7 +315,7 @@ public:
     }
 
     // Graphics::IApp interface
-    const IApp::Settings& GetGraphicsAppSettings() const noexcept override { return m_settings; }
+    const Graphics::IApp::Settings& GetGraphicsAppSettings() const noexcept override { return m_settings; }
 
     bool SetAnimationsEnabled(bool animations_enabled) override
     {
@@ -465,7 +465,7 @@ protected:
     const Ptr<Texture>&   GetDepthTexturePtr() const noexcept   { return m_sp_depth_texture; }
 
 private:
-    IApp::Settings           m_settings;
+    Graphics::IApp::Settings m_settings;
     RenderContext::Settings  m_initial_context_settings;
     Timer                    m_title_update_timer;
     bool                     m_restore_animations_enabled = true;
