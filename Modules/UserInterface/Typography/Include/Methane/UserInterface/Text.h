@@ -90,6 +90,7 @@ public:
     void SetTextInScreenRect(const std::string& text, const gfx::FrameRect& screen_rect, bool rect_in_pixels = false);
     void SetTextInScreenRect(const std::u32string& text, const gfx::FrameRect& screen_rect, bool rect_in_pixels = false);
     void SetScreenRect(const gfx::FrameRect& screen_rect, bool rect_in_pixels = false);
+    void SetScreenOrigin(const gfx::FrameRect::Point& screen_origin, bool in_pixels = false);
     void SetColor(const gfx::Color4f& color);
     void SetIncrementalUpdate(bool incremental_update) noexcept { m_settings.incremental_update = incremental_update; }
 

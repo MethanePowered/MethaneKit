@@ -24,11 +24,10 @@ Base template class of the Methane user interface application.
 #pragma once
 
 #include "App.h"
+#include "AppBase.h"
 #include "AppController.h"
 
 #include <Methane/Graphics/App.hpp>
-#include <Methane/UserInterface/Badge.h>
-#include <Methane/UserInterface/HeadsUpDisplay.h>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::UserInterface
@@ -39,6 +38,7 @@ namespace gfx = Methane::Graphics;
 template<typename FrameT>
 class App
     : public Graphics::App<FrameT, UserInterface::IApp>
+    , protected UserInterface::AppBase
 {
 public:
     using GraphicsApp = Graphics::App<FrameT, UserInterface::IApp>;
@@ -47,31 +47,19 @@ public:
         const UserInterface::IApp::Settings& ui_app_settings = UserInterface::IApp::Settings(),
         const std::string& help_description = "Methane Graphics Application")
         : GraphicsApp(graphics_app_settings)
-        , m_app_settings(ui_app_settings)
+        , UserInterface::AppBase(GraphicsApp::GetRenderContextPtr(), ui_app_settings)
     {
         META_FUNCTION_TASK();
-        CLI::App::add_option("-i,--hud", m_app_settings.heads_up_display_mode, "HUD display mode (0 - hidden, 1 - in window title, 2 - in UI)", true);
-
+        CLI::App::add_option("-i,--hud", AppBase::GetAppSettings().heads_up_display_mode, "HUD display mode (0 - hidden, 1 - in window title, 2 - in UI)", true);
         Platform::App::AddInputControllers({ std::make_shared<AppController>(*this, help_description) });
-        GraphicsApp::SetShowHudInWindowTitle(m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::WindowTitle);
+        GraphicsApp::SetShowHudInWindowTitle(AppBase::GetAppSettings().heads_up_display_mode == IApp::HeadsUpDisplayMode::WindowTitle);
     }
 
     void Init() override
     {
         META_FUNCTION_TASK();
         GraphicsApp::Init();
-        
-        // Create Methane logo badge
-        if (m_app_settings.show_logo_badge)
-        {
-            Badge::Settings logo_badge_settings;
-            logo_badge_settings.blend_color  = gfx::Color4f(1.f, 1.f, 1.f, 0.15f);
-            m_sp_logo_badge = std::make_shared<Badge>(GraphicsApp::GetRenderContext(), std::move(logo_badge_settings));
-        }
-
-        // Create heads-up-display (HUD)
-        if (m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface)
-            m_sp_hud = std::make_shared<HeadsUpDisplay>(GraphicsApp::GetRenderContext(), m_hud_settings);
+        AppBase::Init();
     }
 
     bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override
@@ -80,9 +68,7 @@ public:
         if (!GraphicsApp::Resize(frame_size, is_minimized))
             return false;
         
-        if (m_sp_logo_badge)
-            m_sp_logo_badge->FrameResize(frame_size);
-
+        AppBase::Resize(frame_size, is_minimized);
         return true;
     }
     
@@ -92,68 +78,49 @@ public:
         if (!GraphicsApp::Update())
             return false;
 
-        // Update HUD user interface
-        if (m_sp_hud && m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface)
-            m_sp_hud->Update();
-
+        AppBase::Update();
         return true;
-    }
-    
-    void RenderOverlay(gfx::RenderCommandList& cmd_list)
-    {
-        META_FUNCTION_TASK();
-        if (m_sp_hud && m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface)
-            m_sp_hud->Draw(cmd_list);
-
-        if (m_sp_logo_badge)
-            m_sp_logo_badge->Draw(cmd_list);
     }
 
     // UserInterface::IApp interface
 
-    const UserInterface::IApp::Settings& GetUserInterfaceAppSettings() const noexcept override { return m_app_settings; }
+    const UserInterface::IApp::Settings& GetUserInterfaceAppSettings() const noexcept override { return AppBase::GetAppSettings(); }
 
     bool SetHeadsUpDisplayMode(IApp::HeadsUpDisplayMode heads_up_display_mode) override
     {
-        if (m_app_settings.heads_up_display_mode == heads_up_display_mode)
+        META_FUNCTION_TASK();
+        if (AppBase::GetAppSettings().heads_up_display_mode == heads_up_display_mode)
             return false;
 
-        m_app_settings.heads_up_display_mode = heads_up_display_mode;
-
-        GraphicsApp::SetShowHudInWindowTitle(m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::WindowTitle);
+        GraphicsApp::SetShowHudInWindowTitle(heads_up_display_mode == IApp::HeadsUpDisplayMode::WindowTitle);
         GraphicsApp::GetRenderContext().WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
 
-        if (m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface && GraphicsApp::IsRenderContextInitialized())
-        {
-            m_sp_hud = std::make_shared<HeadsUpDisplay>(GraphicsApp::GetRenderContext(), m_hud_settings);
-        }
-        else
-        {
-            m_sp_hud.reset();
-        }
-        return true;
+        return AppBase::SetHeadsUpDisplayMode(heads_up_display_mode);
     }
 
 protected:
+    // Platform::AppBase overrides
+    void ShowControlsHelp() override
+    {
+        META_FUNCTION_TASK();
+        if (!SetHelpText(Platform::AppBase::GetControlsHelp()))
+            SetHelpText("");
+    }
+
+    void ShowCommandLineHelp() override
+    {
+        META_FUNCTION_TASK();
+        if (!SetHelpText(Platform::AppBase::GetCommandLineHelp()))
+            SetHelpText("");
+    }
+
     // IContextCallback implementation
     void OnContextReleased(gfx::Context& context) override
     {
         META_FUNCTION_TASK();
-
-        m_sp_logo_badge.reset();
-        m_sp_hud.reset();
-
+        AppBase::Release();
         GraphicsApp::OnContextReleased(context);
     }
-
-    HeadsUpDisplay::Settings& GetHeadsUpDisplaySettings()        { return m_hud_settings; }
-    HeadsUpDisplay*           GetHeadsUpDisplay() const noexcept { return m_sp_hud.get(); }
-
-private:
-    UserInterface::IApp::Settings m_app_settings;
-    HeadsUpDisplay::Settings      m_hud_settings;
-    Ptr<Badge>                    m_sp_logo_badge;
-    Ptr<HeadsUpDisplay>           m_sp_hud;
 };
 
 } // namespace Methane::UserInterface

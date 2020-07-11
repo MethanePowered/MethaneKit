@@ -89,6 +89,9 @@ public:
     virtual void Alert(const Message& msg, bool deferred = false);
     virtual void SetWindowTitle(const std::string& title_text) = 0;
     virtual bool SetFullScreen(bool is_full_screen);
+    virtual void ShowControlsHelp();
+    virtual void ShowCommandLineHelp();
+    virtual void ShowParameters() { }
     virtual void Close() = 0;
 
     void UpdateAndRender();
@@ -126,6 +129,9 @@ protected:
     // AppBase interface
     virtual AppView GetView() const = 0;
     virtual void ShowAlert(const Message& msg);
+
+    std::string GetControlsHelp();
+    std::string GetCommandLineHelp() { return CLI::App::help(); }
 
     void AddInputControllers(const Ptrs<Input::Controller>& controllers) { m_input_state.AddControllers(controllers); }
     void Deinitialize() { m_initialized = false; }

@@ -80,7 +80,6 @@ inline const MutableParameters& GetMutableParameters()
 }
 
 static const std::map<pal::Keyboard::State, AsteroidsAppAction> g_asteroids_action_by_keyboard_state{
-    { { pal::Keyboard::Key::F3           }, AsteroidsAppAction::ShowParameters              },
     { { pal::Keyboard::Key::RightBracket }, AsteroidsAppAction::IncreaseComplexity          },
     { { pal::Keyboard::Key::LeftBracket  }, AsteroidsAppAction::DecreaseComplexity          },
     { { pal::Keyboard::Key::P            }, AsteroidsAppAction::SwitchParallelRendering     },
@@ -461,7 +460,7 @@ AsteroidsArray& AsteroidsApp::GetAsteroidsArray() const
     return *m_sp_asteroids_array;
 }
 
-std::string AsteroidsApp::GetParametersString() const
+void AsteroidsApp::ShowParameters()
 {
     META_FUNCTION_TASK();
 
@@ -477,7 +476,8 @@ std::string AsteroidsApp::GetParametersString() const
        << std::endl << "  - parallel rendering: "        << (m_is_parallel_rendering_enabled ? "enabled" : "disabled")
        << std::endl << "  - CPU hardware thread count: " << std::thread::hardware_concurrency();
 
-    return ss.str();
+    if (!UserInterfaceApp::SetParametersText(ss.str()))
+        UserInterfaceApp::SetParametersText("");
 }
 
 Ptr<gfx::CommandListSet> AsteroidsApp::CreateExecuteCommandLists(AsteroidsFrame& frame)

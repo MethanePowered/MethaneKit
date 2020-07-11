@@ -35,6 +35,7 @@ enum class AppAction : uint32_t
     
     ShowControlsHelp,
     ShowCommandLineHelp,
+    ShowParameters,
     SwitchFullScreen,
     CloseApp,
     
@@ -47,9 +48,10 @@ class AppController
 {
 public:
     inline static const ActionByKeyboardState default_action_by_keyboard_state {
-        { { Platform::Keyboard::Key::F1 },                                       AppAction::ShowControlsHelp    },
-        { { Platform::Keyboard::Key::F2 },                                       AppAction::ShowCommandLineHelp },
-        { { Platform::Keyboard::Key::LeftControl,  Platform::Keyboard::Key::F }, AppAction::SwitchFullScreen    },
+        { { Platform::Keyboard::Key::F1 },                                         AppAction::ShowControlsHelp    },
+        { { Platform::Keyboard::Key::F2 },                                         AppAction::ShowCommandLineHelp },
+        { { Platform::Keyboard::Key::F3 },                                         AppAction::ShowParameters      },
+        { { Platform::Keyboard::Key::LeftControl,    Platform::Keyboard::Key::F }, AppAction::SwitchFullScreen    },
         { { Platform::Keyboard::OS::g_key_left_ctrl, Platform::Keyboard::Key::Q }, AppAction::CloseApp            },
     };
     
@@ -59,9 +61,6 @@ public:
     // Input::Controller implementation
     void OnKeyboardChanged(Platform::Keyboard::Key, Platform::Keyboard::KeyState, const Platform::Keyboard::StateChange& state_change) override;
     HelpLines GetHelp() const override;
-    
-    void ShowControlsHelp();
-    void ShowCommandLineHelp();
 
 protected:
     // Keyboard::ActionControllerBase interface

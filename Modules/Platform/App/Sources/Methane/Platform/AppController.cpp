@@ -24,9 +24,7 @@ Base application controller providing commands like app close and help.
 #include <Methane/Platform/AppController.h>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/Version.h>
 
-#include <sstream>
 #include <cassert>
 
 namespace Methane::Platform
@@ -51,8 +49,9 @@ void AppController::OnKeyboardStateAction(AppAction action)
     META_FUNCTION_TASK();
     switch(action)
     {
-    case AppAction::ShowControlsHelp:    ShowControlsHelp(); break;
-    case AppAction::ShowCommandLineHelp: ShowCommandLineHelp(); break;
+    case AppAction::ShowControlsHelp:    m_application.ShowControlsHelp(); break;
+    case AppAction::ShowCommandLineHelp: m_application.ShowCommandLineHelp(); break;
+    case AppAction::ShowParameters:      m_application.ShowParameters(); break;
     case AppAction::SwitchFullScreen:    m_application.SetFullScreen(!m_application.GetPlatformAppSettings().is_full_screen); break;
     case AppAction::CloseApp:            m_application.Close(); break;
     default: assert(0);
@@ -67,6 +66,7 @@ std::string AppController::GetKeyboardActionName(AppAction action) const
     case AppAction::None:                return "none";
     case AppAction::ShowControlsHelp:    return "show application controls help";
     case AppAction::ShowCommandLineHelp: return "show application command-line help";
+    case AppAction::ShowParameters:      return "show application parameters";
     case AppAction::SwitchFullScreen:    return "switch full-screen mode";
     case AppAction::CloseApp:            return "close the application";
     default: assert(0);                  return "";
@@ -77,90 +77,6 @@ Input::IHelpProvider::HelpLines AppController::GetHelp() const
 {
     META_FUNCTION_TASK();
     return GetKeyboardHelp();
-}
-
-void AppController::ShowControlsHelp()
-{
-    META_FUNCTION_TASK();
-    std::stringstream help_stream;
-    std::string single_offset = "    ";
-    bool is_first_controller = true;
-    for (const Ptr<Controller>& sp_controller : m_application.GetInputState().GetControllers())
-    {
-        assert(!!sp_controller);
-        if (!sp_controller) continue;
-        
-        const HelpLines help_lines = sp_controller->GetHelp();
-        if (help_lines.empty()) continue;
-        
-        if (!is_first_controller)
-        {
-            help_stream << std::endl;
-        }
-        is_first_controller = false;
-        
-        std::string controller_offset;
-        if (!sp_controller->GetControllerName().empty())
-        {
-            help_stream << std::endl << sp_controller->GetControllerName();
-            controller_offset = single_offset;
-        }
-        
-        bool first_line = true;
-        bool header_present = false;
-        for (const KeyDescription& key_description : help_lines)
-        {
-            if (key_description.first.empty())
-            {
-                help_stream << std::endl << std::endl << controller_offset << key_description.second << ":";
-                header_present = true;
-            }
-            else
-            {
-                if (first_line && !header_present)
-                {
-                    help_stream << std::endl;
-                }
-                help_stream << std::endl << controller_offset;
-                if (header_present)
-                {
-                    help_stream << single_offset;
-                }
-                help_stream << key_description.first;
-                if (!key_description.second.empty())
-                {
-                    help_stream << " - " << key_description.second << ";";
-                }
-            }
-            first_line = false;
-        }
-    }
-
-    if (!is_first_controller)
-    {
-        help_stream << std::endl;
-    }
-    help_stream << std::endl << "Powered by " << METHANE_PRODUCT_NAME <<" v" METHANE_VERSION_STR
-                << std::endl << METHANE_PRODUCT_URL;
-
-    m_application.Alert({
-        AppBase::Message::Type::Information,
-        "Application Controls Help",
-        help_stream.str()
-    });
-}
-
-void AppController::ShowCommandLineHelp()
-{
-    META_FUNCTION_TASK();
-    std::stringstream help_stream;
-
-    const std::string cmd_line_help = m_application.help();
-    m_application.Alert({
-        AppBase::Message::Type::Information,
-        "Application Command-Line Help",
-        cmd_line_help
-    });
 }
 
 } // namespace Methane::Platform

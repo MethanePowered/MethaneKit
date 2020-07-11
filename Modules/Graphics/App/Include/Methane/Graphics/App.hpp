@@ -443,7 +443,8 @@ protected:
     const RenderContext::Settings& GetInitialContextSettings() const { return m_initial_context_settings; }
 
     bool IsRenderContextInitialized() { return !!m_sp_context; }
-    RenderContext& GetRenderContext()
+    const Ptr<RenderContext>& GetRenderContextPtr() const noexcept { return m_sp_context; }
+    RenderContext& GetRenderContext() const noexcept
     {
         assert(m_sp_context);
         return *m_sp_context;

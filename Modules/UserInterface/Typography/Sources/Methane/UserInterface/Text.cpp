@@ -179,6 +179,9 @@ void Text::SetTextInScreenRect(const std::u32string& text, const gfx::FrameRect&
     if (m_settings.text == text && m_settings.screen_rect == screen_rect && m_settings.screen_rect_in_pixels == rect_in_pixels)
         return;
 
+    const bool text_changed             = m_settings.text != text;
+    const bool screen_rect_size_changed = m_settings.screen_rect.size != screen_rect.size;
+
     m_settings.text = text;
     m_settings.screen_rect = screen_rect;
     m_settings.screen_rect_in_pixels = rect_in_pixels;
@@ -187,8 +190,11 @@ void Text::SetTextInScreenRect(const std::u32string& text, const gfx::FrameRect&
     if (!m_settings.screen_rect_in_pixels)
         m_viewport_rect *= m_context.GetContentScalingFactor();
 
-    UpdateMeshData();
-    UpdateUniformsBuffer();
+    if (screen_rect_size_changed || text_changed)
+    {
+        UpdateMeshData();
+        UpdateUniformsBuffer();
+    }
 
     if (!m_sp_atlas_texture)
     {
@@ -206,6 +212,8 @@ void Text::SetScreenRect(const gfx::FrameRect& screen_rect, bool rect_in_pixels)
     if (m_settings.screen_rect == screen_rect && m_settings.screen_rect_in_pixels == rect_in_pixels)
         return;
 
+    const bool screen_rect_size_changed = m_settings.screen_rect.size != screen_rect.size;
+
     m_settings.screen_rect = screen_rect;
     m_settings.screen_rect_in_pixels = rect_in_pixels;
 
@@ -213,11 +221,26 @@ void Text::SetScreenRect(const gfx::FrameRect& screen_rect, bool rect_in_pixels)
     if (!rect_in_pixels)
         m_viewport_rect *= m_context.GetContentScalingFactor();
 
-    UpdateMeshData();
-    UpdateUniformsBuffer();
+    if (screen_rect_size_changed)
+    {
+        UpdateMeshData();
+        UpdateUniformsBuffer();
+    }
 
     m_sp_state->SetViewports({ gfx::GetFrameViewport(m_viewport_rect) });
     m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(m_viewport_rect) });
+}
+
+void Text::SetScreenOrigin(const gfx::FrameRect::Point& screen_origin, bool in_pixels)
+{
+    META_FUNCTION_TASK();
+    SetScreenRect(
+        {
+            screen_origin,
+            in_pixels ? GetViewport().size : GetViewportInDots().size
+        },
+        in_pixels
+    );
 }
 
 void Text::SetColor(const gfx::Color4f& color)

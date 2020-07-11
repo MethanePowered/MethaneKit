@@ -1,21 +1,31 @@
 set(TARGET MethaneUserInterfaceApp)
 
+include(MethaneResources)
+
 get_module_dirs("Methane/UserInterface")
 
 set(HEADERS
     ${INCLUDE_DIR}/App.h
     ${INCLUDE_DIR}/App.hpp
+    ${INCLUDE_DIR}/AppBase.h
     ${INCLUDE_DIR}/AppController.h
 )
 
 set(SOURCES
+    ${SOURCES_DIR}/AppBase.cpp
     ${SOURCES_DIR}/AppController.cpp
+)
+
+set(FONTS
+    ${RESOURCES_DIR}/Fonts/Roboto/Roboto-Regular.ttf
 )
 
 add_library(${TARGET} STATIC
     ${HEADERS}
     ${SOURCES}
 )
+
+add_methane_embedded_fonts(${TARGET} "${RESOURCES_DIR}" "${FONTS}")
 
 target_include_directories(${TARGET}
     PRIVATE

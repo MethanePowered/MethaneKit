@@ -46,8 +46,8 @@ class HeadsUpDisplay
 public:
     struct Settings
     {
-        gfx::Point2i position            = { 20, 20 };
-        gfx::Color4f text_color          = gfx::Color4f(1.f, 1.f, 1.f, 1.f);
+        gfx::Point2i position       { 20, 20 };
+        gfx::Color4f text_color     { 1.f, 1.f, 1.f, 1.f };
         double  update_interval_sec = 0.33;
     };
 

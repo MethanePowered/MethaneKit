@@ -24,6 +24,8 @@ Interface of the base user interface application template class defined in App.h
 #pragma once
 
 #include <Methane/Graphics/App.h>
+#include <Methane/Graphics/Color.hpp>
+#include <Methane/Graphics/Rect.hpp>
 
 #include <stdint.h>
 
@@ -43,8 +45,10 @@ struct IApp : Graphics::IApp
 
     struct Settings
     {
-        HeadsUpDisplayMode heads_up_display_mode = HeadsUpDisplayMode::WindowTitle;
-        bool               show_logo_badge       = true;
+        HeadsUpDisplayMode  heads_up_display_mode = HeadsUpDisplayMode::WindowTitle;
+        bool                show_logo_badge       = true;
+        Graphics::Color4f   text_color            { 1.f, 1.f, 1.f, 1.f };
+        Graphics::FrameSize text_margins_in_dots  { 20, 20 };
     };
 
     virtual const IApp::Settings& GetUserInterfaceAppSettings() const noexcept = 0;

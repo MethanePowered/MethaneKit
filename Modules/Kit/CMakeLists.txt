@@ -40,6 +40,7 @@ set(PREREQUISITE_TARGETS
     MethaneGraphicsExtensions
     MethaneUserInterfaceTypography
     MethaneUserInterfaceWidgets
+    MethaneUserInterfaceApp
 )
 add_prerequisite_modules(${TARGET} "${PREREQUISITE_TARGETS}")
 

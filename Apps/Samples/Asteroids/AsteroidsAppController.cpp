@@ -51,14 +51,6 @@ void AsteroidsAppController::OnKeyboardStateAction(AsteroidsAppAction action)
     const uint32_t asteroids_complexity = m_asteroids_app.GetAsteroidsComplexity();
     switch(action)
     {
-    case AsteroidsAppAction::ShowParameters:
-        m_asteroids_app.Alert({
-            pal::AppBase::Message::Type::Information,
-            "Methane Asteroids",
-            m_asteroids_app.GetParametersString()
-        });
-        break;
-
     case AsteroidsAppAction::IncreaseComplexity:
         m_asteroids_app.SetAsteroidsComplexity(asteroids_complexity + 1);
         break;
@@ -93,7 +85,6 @@ std::string AsteroidsAppController::GetKeyboardActionName(AsteroidsAppAction act
     META_FUNCTION_TASK();
     switch(action)
     {
-    case AsteroidsAppAction::ShowParameters:            return "show simulation parameters";
     case AsteroidsAppAction::IncreaseComplexity:        return "increase scene complexity";
     case AsteroidsAppAction::DecreaseComplexity:        return "decrease scene complexity";
     case AsteroidsAppAction::SwitchParallelRendering:   return "switch parallel rendering";

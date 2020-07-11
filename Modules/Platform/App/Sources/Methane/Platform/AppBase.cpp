@@ -24,11 +24,14 @@ Base application interface and platform-independent implementation.
 #include <Methane/Platform/AppBase.h>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Platform/Logger.h>
+#include <Methane/Platform/Input/Controller.h>
 #include <Methane/ScopeTimer.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Version.h>
 
 #include <CLI/CLI.hpp>
 
+#include <sstream>
 #include <vector>
 #include <cstdlib>
 #include <cassert>
@@ -165,6 +168,94 @@ bool AppBase::SetFullScreen(bool is_full_screen)
 
     m_settings.is_full_screen = is_full_screen;
     return true;
+}
+
+std::string AppBase::GetControlsHelp()
+{
+    META_FUNCTION_TASK();
+
+    std::stringstream help_stream;
+    std::string single_offset = "    ";
+    bool is_first_controller = true;
+
+    for (const Ptr<Input::Controller>& sp_controller : GetInputState().GetControllers())
+    {
+        assert(!!sp_controller);
+        if (!sp_controller) continue;
+
+        const Input::IHelpProvider::HelpLines help_lines = sp_controller->GetHelp();
+        if (help_lines.empty()) continue;
+
+        if (!is_first_controller)
+        {
+            help_stream << std::endl;
+        }
+        is_first_controller = false;
+
+        std::string controller_offset;
+        if (!sp_controller->GetControllerName().empty())
+        {
+            help_stream << std::endl << sp_controller->GetControllerName();
+            controller_offset = single_offset;
+        }
+
+        bool first_line = true;
+        bool header_present = false;
+        for (const Input::IHelpProvider::KeyDescription& key_description : help_lines)
+        {
+            if (key_description.first.empty())
+            {
+                help_stream << std::endl << std::endl << controller_offset << key_description.second << ":";
+                header_present = true;
+            }
+            else
+            {
+                if (first_line && !header_present)
+                {
+                    help_stream << std::endl;
+                }
+                help_stream << std::endl << controller_offset;
+                if (header_present)
+                {
+                    help_stream << single_offset;
+                }
+                help_stream << key_description.first;
+                if (!key_description.second.empty())
+                {
+                    help_stream << " - " << key_description.second << ";";
+                }
+            }
+            first_line = false;
+        }
+    }
+
+    if (!is_first_controller)
+    {
+        help_stream << std::endl;
+    }
+    help_stream << std::endl << "Powered by " << METHANE_PRODUCT_NAME <<" v" METHANE_VERSION_STR
+                << std::endl << METHANE_PRODUCT_URL;
+    return help_stream.str();
+}
+
+void AppBase::ShowControlsHelp()
+{
+    META_FUNCTION_TASK();
+    Alert({
+        AppBase::Message::Type::Information,
+        "Application Controls Help",
+        GetControlsHelp()
+    });
+}
+
+void AppBase::ShowCommandLineHelp()
+{
+    META_FUNCTION_TASK();
+    Alert({
+        AppBase::Message::Type::Information,
+        "Application Command-Line Help",
+        GetCommandLineHelp()
+    });
 }
 
 } // namespace Methane::Platform

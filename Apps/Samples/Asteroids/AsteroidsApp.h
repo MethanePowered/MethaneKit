@@ -71,7 +71,9 @@ public:
     void     SetParallelRenderingEnabled(bool is_parallel_rendering_enabled);
 
     AsteroidsArray& GetAsteroidsArray() const;
-    std::string     GetParametersString() const;
+
+    // Platform::AppBase overrides
+    void ShowParameters() override;
 
 protected:
     // IContextCallback overrides
