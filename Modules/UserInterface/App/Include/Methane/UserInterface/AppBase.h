@@ -41,7 +41,7 @@ class AppBase
 public:
     AppBase(const Ptr<gfx::RenderContext>& sp_render_context, const IApp::Settings& ui_app_settings);
 
-    void Init();
+    void Init(const gfx::FrameSize& frame_size);
     void Release();
     bool Resize(const gfx::FrameSize& frame_size, bool is_minimized);
     bool Update();
@@ -51,8 +51,8 @@ public:
     bool SetHelpText(const std::string& help_str);
     bool SetParametersText(const std::string& parameters_str);
 
-    bool IsHelpTextDisplayed() const noexcept                               { return !!m_sp_help_text; }
-    bool IsParametersTextDisplayed() const noexcept                         { return !!m_sp_parameters_text; }
+    bool IsHelpTextDisplayed() const noexcept                               { return !!m_help_columns.first.sp_text; }
+    bool IsParametersTextDisplayed() const noexcept                         { return !!m_parameters.sp_text; }
     void GetParametersText(const std::string& parameters_str);
     Font& GetMainFont();
 
@@ -68,6 +68,12 @@ private:
     void UpdateHelpTextPosition();
     void UpdateParametersTextPosition();
 
+    struct TextItem
+    {
+        std::string text_str;
+        Ptr<Text>   sp_text;
+    };
+
     const Ptr<gfx::RenderContext>& m_sp_render_context;
     IApp::Settings                 m_app_settings;
     HeadsUpDisplay::Settings       m_hud_settings;
@@ -76,8 +82,9 @@ private:
     Ptr<Badge>                     m_sp_logo_badge;
     Ptr<HeadsUpDisplay>            m_sp_hud;
     Ptr<Font>                      m_sp_main_font;
-    Ptr<Text>                      m_sp_help_text;
-    Ptr<Text>                      m_sp_parameters_text;
+    std::string                    m_help_text_str;
+    std::pair<TextItem, TextItem>  m_help_columns;
+    TextItem                       m_parameters;
 };
 
 } // namespace Methane::UserInterface

@@ -15,23 +15,10 @@ set(SOURCES
     ${SOURCES_DIR}/HeadsUpDisplay.cpp
 )
 
-set(IMAGES_DIR ${RESOURCES_DIR}/Images)
-set(TEXTURES
-    ${IMAGES_DIR}/Logo/MethaneLogoNameWatermark.png
-)
-
-set(FONTS
-    ${RESOURCES_DIR}/Fonts/RobotoMono/RobotoMono-Regular.ttf
-    ${RESOURCES_DIR}/Fonts/RobotoMono/RobotoMono-Bold.ttf
-)
-
 add_library(${TARGET} STATIC
     ${HEADERS}
     ${SOURCES}
 )
-
-add_methane_embedded_textures(${TARGET} "${IMAGES_DIR}" "${TEXTURES}")
-add_methane_embedded_fonts(${TARGET} "${RESOURCES_DIR}" "${FONTS}")
 
 target_link_libraries(${TARGET}
     PUBLIC

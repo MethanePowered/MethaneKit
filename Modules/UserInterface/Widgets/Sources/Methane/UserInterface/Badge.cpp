@@ -40,14 +40,9 @@ static Badge::Settings ScaleBadgeSize(Badge::Settings settings, float scale_fact
     return settings;
 }
 
-Badge::Badge(gfx::RenderContext& context)
-    : Badge(context, Settings())
-{
-}
-
-Badge::Badge(gfx::RenderContext& context, Settings settings)
+Badge::Badge(gfx::RenderContext& context, Data::Provider& data_provider, const std::string& image_path, Settings settings)
     : Badge(context,
-            gfx::ImageLoader(Data::TextureProvider::Get()).LoadImageToTexture2D(context, "Logo/MethaneLogoNameWatermark.png"),
+            gfx::ImageLoader(data_provider).LoadImageToTexture2D(context, image_path),
             ScaleBadgeSize(settings, context.GetContentScalingFactor()))
 {
     META_FUNCTION_TASK();

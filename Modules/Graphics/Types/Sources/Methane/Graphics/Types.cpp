@@ -38,7 +38,7 @@ ScissorRect GetFrameScissorRect(const FrameRect& frame_rect)
     return {
         ScissorRect::Point(static_cast<uint32_t>(std::max(0, frame_rect.origin.GetX())),
                            static_cast<uint32_t>(std::max(0, frame_rect.origin.GetY()))),
-        ScissorRect::Size(frame_rect.origin.GetX() >= 0 ? frame_rect.size.width : frame_rect.size.width + frame_rect.origin.GetX(),
+        ScissorRect::Size(frame_rect.origin.GetX() >= 0 ? frame_rect.size.width  : frame_rect.size.width  + frame_rect.origin.GetX(),
                           frame_rect.origin.GetY() >= 0 ? frame_rect.size.height : frame_rect.size.height + frame_rect.origin.GetY())
     };
 }

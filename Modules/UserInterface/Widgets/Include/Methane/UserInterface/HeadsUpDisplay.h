@@ -24,6 +24,7 @@ HeadsUpDisplay rendering primitive.
 #pragma once
 
 #include <Methane/UserInterface/Text.h>
+#include <Methane/UserInterface/Font.h>
 #include <Methane/Graphics/Color.hpp>
 #include <Methane/Timer.hpp>
 #include <Methane/Memory.hpp>
@@ -46,13 +47,13 @@ class HeadsUpDisplay
 public:
     struct Settings
     {
-        gfx::Point2i position       { 20, 20 };
-        gfx::Color4f text_color     { 1.f, 1.f, 1.f, 1.f };
-        double  update_interval_sec = 0.33;
+        Font::Description major_font;
+        gfx::Point2i      position   { 20, 20 };
+        gfx::Color4f      text_color { 1.f, 1.f, 1.f, 1.f };
+        double   update_interval_sec = 0.33;
     };
 
-    explicit HeadsUpDisplay(gfx::RenderContext& context);
-    HeadsUpDisplay(gfx::RenderContext& context, Settings settings);
+    HeadsUpDisplay(gfx::RenderContext& context, const Data::Provider& font_data_provider, Settings settings);
 
     const Settings& GetSettings() const { return m_settings; }
 

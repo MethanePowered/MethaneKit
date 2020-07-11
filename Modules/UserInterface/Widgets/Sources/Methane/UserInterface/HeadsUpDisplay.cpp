@@ -34,21 +34,11 @@ HeadsUpDisplay rendering primitive.
 namespace Methane::UserInterface
 {
 
-HeadsUpDisplay::HeadsUpDisplay(gfx::RenderContext& context)
-    : HeadsUpDisplay(context, Settings())
-{
-}
-
-HeadsUpDisplay::HeadsUpDisplay(gfx::RenderContext& context, Settings settings)
+HeadsUpDisplay::HeadsUpDisplay(gfx::RenderContext& context, const Data::Provider& font_data_provider, Settings settings)
     : m_settings(std::move(settings))
     , m_context(context)
     , m_sp_major_font(Font::Library::Get().GetFont(
-        Data::FontProvider::Get(),
-        Font::Settings
-        {
-            "HUD Big", "Fonts/RobotoMono/RobotoMono-Bold.ttf", 18u,
-            context.GetFontResolutionDPI(), Font::GetAlphabetDefault()
-        }
+        font_data_provider, Font::Settings { m_settings.major_font, context.GetFontResolutionDPI(), Font::GetAlphabetDefault() }
     ).GetPtr())
     , m_fps_text(context, *m_sp_major_font,
         Text::SettingsUtf8

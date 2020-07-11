@@ -187,17 +187,19 @@ std::string AppBase::GetControlsHelp()
         if (help_lines.empty()) continue;
 
         if (!is_first_controller)
-        {
             help_stream << std::endl;
-        }
-        is_first_controller = false;
 
         std::string controller_offset;
         if (!sp_controller->GetControllerName().empty())
         {
-            help_stream << std::endl << sp_controller->GetControllerName();
+            if (!is_first_controller)
+                help_stream << std::endl;
+
+            help_stream << sp_controller->GetControllerName();
             controller_offset = single_offset;
         }
+
+        is_first_controller = false;
 
         bool first_line = true;
         bool header_present = false;
@@ -222,7 +224,7 @@ std::string AppBase::GetControlsHelp()
                 help_stream << key_description.first;
                 if (!key_description.second.empty())
                 {
-                    help_stream << " - " << key_description.second << ";";
+                    help_stream << " - " << key_description.second;
                 }
             }
             first_line = false;

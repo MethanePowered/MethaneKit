@@ -25,16 +25,12 @@ Font atlas textures generation and fonts library management classes.
 
 #include <Methane/Graphics/Context.h>
 #include <Methane/Graphics/Rect.hpp>
+#include <Methane/Data/Provider.h>
 #include <Methane/Data/Emitter.hpp>
 
 #include <map>
 #include <string>
 #include <cctype>
-
-namespace Methane::Data
-{
-struct Provider;
-}
 
 namespace Methane::Graphics
 {
@@ -62,11 +58,16 @@ class Font
     , protected Data::Receiver<gfx::IContextCallback>
 {
 public:
+    struct Description
+    {
+        std::string name;
+        std::string path;
+        uint32_t    size_pt;
+    };
+
     struct Settings
     {
-        std::string    name;
-        std::string    font_path;
-        uint32_t       font_size_pt;
+        Description    description;
         uint32_t       resolution_dpi;
         std::u32string characters;
     };
@@ -162,24 +163,24 @@ public:
 
     ~Font();
 
-    Ptr<Font>               GetPtr() { return shared_from_this(); }
-    const Settings&         GetSettings() const { return m_settings; }
+    Ptr<Font>       GetPtr()            { return shared_from_this(); }
+    const Settings& GetSettings() const { return m_settings; }
 
-    void                    ResetChars(const std::string& utf8_characters);
-    void                    ResetChars(const std::u32string& utf32_characters);
-    void                    AddChars(const std::string& utf8_characters);
-    void                    AddChars(const std::u32string& utf32_characters);
-    const Font::Char&       AddChar(Char::Code char_code);
-    bool                    HasChar(Char::Code char_code);
-    const Char&             GetChar(Char::Code char_code) const;
-    Chars                   GetChars() const;
-    Chars                   GetTextChars(const std::string& text);
-    Chars                   GetTextChars(const std::u32string& text);
-    gfx:: FrameRect::Point  GetKerning(const Char& left_char, const Char& right_char) const;
-    uint32_t                GetLineHeight() const noexcept;
-    const gfx::FrameSize&   GetAtlasSize() const noexcept;
+    void                     ResetChars(const std::string& utf8_characters);
+    void                     ResetChars(const std::u32string& utf32_characters);
+    void                     AddChars(const std::string& utf8_characters);
+    void                     AddChars(const std::u32string& utf32_characters);
+    const Font::Char&        AddChar(Char::Code char_code);
+    bool                     HasChar(Char::Code char_code);
+    const Char&              GetChar(Char::Code char_code) const;
+    Chars                    GetChars() const;
+    Chars                    GetTextChars(const std::string& text);
+    Chars                    GetTextChars(const std::u32string& text);
+    gfx:: FrameRect::Point   GetKerning(const Char& left_char, const Char& right_char) const;
+    uint32_t                 GetLineHeight() const noexcept;
+    const gfx::FrameSize&    GetAtlasSize() const noexcept;
     const Ptr<gfx::Texture>& GetAtlasTexturePtr(gfx::Context& context);
-    gfx::Texture&           GetAtlasTexture(gfx::Context& context);
+    gfx::Texture&            GetAtlasTexture(gfx::Context& context);
 
 protected:
     // Font can be created only via Font::Library::Add

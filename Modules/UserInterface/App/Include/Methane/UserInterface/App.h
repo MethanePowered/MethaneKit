@@ -47,6 +47,7 @@ struct IApp : Graphics::IApp
     {
         HeadsUpDisplayMode  heads_up_display_mode = HeadsUpDisplayMode::WindowTitle;
         bool                show_logo_badge       = true;
+        Graphics::Color4f   logo_badge_color      { 1.f, 1.f, 1.f, 0.15f };
         Graphics::Color4f   text_color            { 1.f, 1.f, 1.f, 1.f };
         Graphics::FrameSize text_margins_in_dots  { 20, 20 };
     };

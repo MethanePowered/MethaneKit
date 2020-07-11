@@ -139,13 +139,13 @@ protected:
     Ptr<Message> m_sp_deferred_message;
 
 private:
-    Settings             m_settings;
-    Data::FrameRect      m_window_bounds;
-    Data::FrameSize      m_frame_size;
-    bool                 m_is_minimized = false;
-    bool                 m_initialized = false;
-    bool                 m_is_resizing = false;
-    Input::State         m_input_state;
+    Settings        m_settings;
+    Data::FrameRect m_window_bounds;
+    Data::FrameSize m_frame_size;
+    bool            m_is_minimized = false;
+    bool            m_initialized = false;
+    bool            m_is_resizing = false;
+    Input::State    m_input_state;
 };
 
 } // namespace Methane::Platform

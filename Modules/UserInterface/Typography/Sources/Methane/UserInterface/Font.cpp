@@ -27,7 +27,6 @@ Font atlas textures generation and fonts library management classes.
 
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/Texture.h>
-#include <Methane/Data/Provider.h>
 #include <Methane/Data/RectBinPack.hpp>
 #include <Methane/Instrumentation.h>
 
@@ -277,7 +276,7 @@ Font& Font::Library::GetFont(const std::string& font_name) const
 Font& Font::Library::GetFont(const Data::Provider& data_provider, const Settings& font_settings)
 {
     META_FUNCTION_TASK();
-    const auto font_by_name_it = m_font_by_name.find(font_settings.name);
+    const auto font_by_name_it = m_font_by_name.find(font_settings.description.name);
     if (font_by_name_it != m_font_by_name.end())
     {
         assert(font_by_name_it->second);
@@ -289,9 +288,9 @@ Font& Font::Library::GetFont(const Data::Provider& data_provider, const Settings
 Font& Font::Library::AddFont(const Data::Provider& data_provider, const Settings& font_settings)
 {
     META_FUNCTION_TASK();
-    auto emplace_result = m_font_by_name.emplace(font_settings.name, Ptr<Font>(new Font(data_provider, font_settings)));
+    auto emplace_result = m_font_by_name.emplace(font_settings.description.name, Ptr<Font>(new Font(data_provider, font_settings)));
     if (!emplace_result.second)
-        throw std::invalid_argument("Font with name \"" + font_settings.name + "\" already exists in library.");
+        throw std::invalid_argument("Font with name \"" + font_settings.description.name + "\" already exists in library.");
 
     assert(emplace_result.first->second);
     return *emplace_result.first->second;
@@ -373,11 +372,11 @@ std::u32string Font::GetAlphabetFromText(const std::u32string& utf32_text)
 
 Font::Font(const Data::Provider& data_provider, const Settings& settings)
     : m_settings(settings)
-    , m_sp_face(std::make_unique<Face>(data_provider.GetData(m_settings.font_path)))
+    , m_sp_face(std::make_unique<Face>(data_provider.GetData(m_settings.description.path)))
 {
     META_FUNCTION_TASK();
 
-    m_sp_face->SetSize(m_settings.font_size_pt, m_settings.resolution_dpi);
+    m_sp_face->SetSize(m_settings.description.size_pt, m_settings.resolution_dpi);
     AddChars(m_settings.characters);
 }
 
@@ -625,7 +624,7 @@ Font::AtlasTexture Font::CreateAtlasTexture(gfx::Context& context, bool deferred
 {
     META_FUNCTION_TASK();
     Ptr<gfx::Texture> sp_atlas_texture = gfx::Texture::CreateImage(context, gfx::Dimensions(m_sp_atlas_pack->GetSize()), 1, gfx::PixelFormat::R8Unorm, false);
-    sp_atlas_texture->SetName(m_settings.name + " Font Atlas");
+    sp_atlas_texture->SetName(m_settings.description.name + " Font Atlas");
     if (!deferred_data_init)
     {
         sp_atlas_texture->SetData({

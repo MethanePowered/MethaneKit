@@ -59,7 +59,7 @@ public:
     {
         META_FUNCTION_TASK();
         GraphicsApp::Init();
-        AppBase::Init();
+        AppBase::Init(GraphicsApp::GetFrameSize());
     }
 
     bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override

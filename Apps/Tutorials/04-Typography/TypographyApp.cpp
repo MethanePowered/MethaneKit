@@ -191,7 +191,7 @@ void TypographyApp::Init()
 
 Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(gui::Font& font, const Ptr<gfx::Texture>& sp_atlas_texture)
 {
-    const auto font_color_by_name_it = g_font_color_by_name.find(font.GetSettings().name);
+    const auto font_color_by_name_it = g_font_color_by_name.find(font.GetSettings().description.name);
     const gfx::Color3f& font_color = font_color_by_name_it != g_font_color_by_name.end()
                                    ? font_color_by_name_it->second : g_misc_font_color;
 
@@ -199,7 +199,7 @@ Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(gui::Font& font, const Ptr<g
         GetRenderContext(), sp_atlas_texture,
         gui::Badge::Settings
         {
-            font.GetSettings().name + " Font Atlas",
+            font.GetSettings().description.name + " Font Atlas",
             static_cast<const gfx::FrameSize&>(sp_atlas_texture->GetSettings().dimensions),
             gui::Badge::FrameCorner::BottomLeft,
             gfx::Point2u(16u, 16u),
