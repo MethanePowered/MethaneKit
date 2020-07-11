@@ -419,7 +419,10 @@ void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
         return;
 
     if (IsRenderContextInitialized())
+    {
         GetRenderContext().WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
+        GetRenderContext().WaitForGpu(gfx::RenderContext::WaitFor::ResourcesUploaded);
+    }
 
     m_asteroids_complexity = asteroids_complexity;
 
@@ -433,11 +436,11 @@ void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
     m_sp_asteroids_array.reset();
     m_sp_asteroids_array_state.reset();
 
-    if (IsParametersTextDisplayed())
-        ShowParameters();
-
     if (IsRenderContextInitialized())
         GetRenderContext().Reset();
+
+    if (IsParametersTextDisplayed())
+        ShowParameters();
 }
 
 void AsteroidsApp::SetParallelRenderingEnabled(bool is_parallel_rendering_enabled)
