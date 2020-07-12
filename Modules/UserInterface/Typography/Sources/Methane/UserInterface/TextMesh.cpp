@@ -145,82 +145,33 @@ bool TextMesh::IsUpdatable(const std::u32string& text, Text::Wrap wrap, Font& fo
 {
     META_FUNCTION_TASK();
     // Text mesh can be updated when all text visualization parameters are equal to the initial
-    // and new text start with the previously used text, i.e. the text typing is continued
+    // and new text start with the previously used text (typing continued),
+    // or previous text starts with the new one (deleting with backspace)
     return m_viewport_size == viewport_size &&
            m_wrap == wrap &&
            std::addressof(m_font) == std::addressof(font) &&
-           text.length() > m_text.length() &&
-           (m_text.empty() || text.find(m_text) == 0);
+           (IsNewTextStartsWithOldOne(text) || IsOldTextStartsWithNewOne(text));
 }
 
 void TextMesh::Update(const std::u32string& text, gfx::FrameSize& viewport_size)
 {
     META_FUNCTION_TASK();
-    if (m_viewport_size != viewport_size ||
-        text.length() <= m_text.length() ||
-        (!m_text.empty() && text.find(m_text) != 0))
+    const bool new_text_starts_with_old_one = IsNewTextStartsWithOldOne(text);
+    const bool old_text_starts_with_new_one = IsOldTextStartsWithNewOne(text);
+
+    if (m_viewport_size != viewport_size || (!new_text_starts_with_old_one && !old_text_starts_with_new_one))
     {
         throw std::invalid_argument("Text mesh can not be updated with a given text and viewport size");
     }
 
-    if (m_wrap == Text::Wrap::Word && m_last_whitespace_index != std::string::npos)
+    if (new_text_starts_with_old_one)
     {
-        // Start adding new text characters from the previous text word so that it can be properly wrapped
-        const size_t prev_text_length = m_text.length();
-        assert(m_last_whitespace_index < prev_text_length);
-        const size_t removed_trailing_text_length = prev_text_length - m_last_whitespace_index;
-        
-        assert(m_char_positions.size() == prev_text_length + 1);
-        m_text.erase(m_text.begin() + m_last_whitespace_index, m_text.end());
-        m_char_positions.erase(m_char_positions.begin() + m_last_whitespace_index + 1, m_char_positions.end());
-
-        // removed chars start with one whitespace and other non-whitespace chars
-        const size_t mesh_chars_count = m_vertices.size() / 4;
-        assert(mesh_chars_count * 6 == m_indices.size());
-        assert(mesh_chars_count >= removed_trailing_text_length - 1);
-        const size_t new_non_whitespace_chars_count = mesh_chars_count - (removed_trailing_text_length - 1);
-        m_vertices.erase(m_vertices.begin() + new_non_whitespace_chars_count * 4, m_vertices.end());
-        m_indices.erase( m_indices.begin()  + new_non_whitespace_chars_count * 6, m_indices.end());
-
-        m_last_whitespace_index      = std::string::npos;
+        AppendChars(text.substr(m_text.length()));
     }
-
-    const size_t init_text_length = m_text.length();
-    const std::u32string added_text = text.substr(init_text_length);
-    const size_t  added_text_length = added_text.length();
-
-    m_text = text;
-
-    if (!added_text_length)
-        return;
-
-    const gfx::FrameSize& atlas_size = m_font.GetAtlasSize();
-    m_vertices.reserve(m_vertices.size() + added_text_length * 4);
-    m_indices.reserve( m_indices.size()  + added_text_length * 6);
-
-    if (m_char_positions.empty())
+    else if (old_text_starts_with_new_one)
     {
-        m_char_positions.emplace_back(CharPosition{ 0, m_font.GetLineHeight() });
+        EraseTrailingChars(m_text.length() - text.length(), true, true);
     }
-    m_char_positions.reserve(m_char_positions.size() + added_text.length());
-
-    ForEachTextCharacter(added_text, m_font, m_char_positions, viewport_size.width, m_wrap,
-        [&](const Font::Char& font_char, const gfx::FrameRect::Point& char_pos, size_t char_index) -> CharAction
-        {
-            if (font_char.IsWhiteSpace())
-                m_last_whitespace_index = char_index;
-
-            if (font_char.IsLineBreak())
-                return CharAction::Continue;
-
-            AddCharQuad(font_char, char_pos, atlas_size);
-            UpdateContentSizeWithChar(font_char, char_pos);
-            return CharAction::Continue;
-        }
-    );
-    
-    if (m_last_whitespace_index != std::string::npos)
-        m_last_whitespace_index += init_text_length;
 
     if (viewport_size)
         return;
@@ -236,6 +187,102 @@ void TextMesh::Update(const std::u32string& text, gfx::FrameSize& viewport_size)
     }
 
     return;
+}
+
+void TextMesh::EraseTrailingChars(uint32_t erase_chars_count, bool fixup_whitespace, bool update_content_size)
+{
+    META_FUNCTION_TASK();
+    if (!erase_chars_count)
+        return;
+
+    if (erase_chars_count > m_text.length())
+        throw std::invalid_argument("Unable to erase " + std::to_string(erase_chars_count) +
+                                    " characters, more than text length (" + std::to_string(m_text.length()) + ").");
+
+    const size_t erase_chars_from_index = m_text.length() - erase_chars_count;
+    const size_t empty_symbols_count    = std::count_if(m_text.begin() + erase_chars_from_index, m_text.end(),
+                                                        [](char32_t char_code) { return std::isspace(static_cast<int>(char_code)) || char_code == '\n'; });
+    const size_t erase_symbols_count    = erase_chars_count - empty_symbols_count;
+
+    m_char_positions.erase(m_char_positions.begin() + m_char_positions.size() - erase_chars_count, m_char_positions.end());
+    m_vertices.erase(m_vertices.begin() + m_vertices.size() - erase_symbols_count * 4, m_vertices.end());
+    m_indices.erase( m_indices.begin()  + m_indices.size()  - erase_symbols_count * 6, m_indices.end());
+    m_text.erase(m_text.begin() + erase_chars_from_index, m_text.end());
+
+    if (fixup_whitespace && m_last_whitespace_index >= m_text.length())
+    {
+        const auto whitespace_it = std::find_if(m_text.rbegin(), m_text.rend(), [](char32_t char_code) { return std::isspace(static_cast<int>(char_code)); });
+        m_last_whitespace_index = whitespace_it == m_text.rend() ? std::string::npos : std::distance(m_text.begin(), whitespace_it.base());
+    }
+
+    if (update_content_size)
+    {
+        UpdateContentSize();
+    }
+}
+
+void TextMesh::AppendChars(std::u32string added_text)
+{
+    META_FUNCTION_TASK();
+    if (added_text.empty())
+        return;
+
+    // Start adding new text characters from the previous text word so that it can be properly wrapped
+    if (m_wrap == Text::Wrap::Word && m_last_whitespace_index != std::string::npos)
+    {
+        // Remove characters starting with last whitespace and other non-whitespace symbols
+        assert(m_last_whitespace_index < m_text.length());
+        added_text = m_text.substr(m_last_whitespace_index) + added_text;
+        EraseTrailingChars(m_text.length() - m_last_whitespace_index, false, false);
+        m_last_whitespace_index = std::string::npos;
+    }
+
+    const size_t init_text_length  = m_text.length();
+    const size_t added_text_length = added_text.length();
+
+    m_text.insert(m_text.end(), added_text.begin(), added_text.end());
+
+    const gfx::FrameSize& atlas_size = m_font.GetAtlasSize();
+    m_vertices.reserve(m_vertices.size() + added_text_length * 4);
+    m_indices.reserve(m_indices.size() + added_text_length * 6);
+
+    if (m_char_positions.empty())
+    {
+        m_char_positions.emplace_back(CharPosition{ 0, m_font.GetLineHeight() });
+    }
+    m_char_positions.reserve(m_char_positions.size() + added_text.length());
+
+    ForEachTextCharacter(added_text, m_font, m_char_positions, m_viewport_size.width, m_wrap,
+        [&](const Font::Char& font_char, const gfx::FrameRect::Point& char_pos, size_t char_index) -> CharAction
+        {
+            if (font_char.IsWhiteSpace())
+            {
+                m_last_whitespace_index = char_index;
+                return CharAction::Continue;
+            }
+
+            if (font_char.IsLineBreak())
+                return CharAction::Continue;
+
+            AddCharQuad(font_char, char_pos, atlas_size);
+            UpdateContentSizeWithChar(font_char, char_pos);
+            return CharAction::Continue;
+        }
+    );
+
+    if (m_last_whitespace_index != std::string::npos)
+        m_last_whitespace_index += init_text_length;
+}
+
+void TextMesh::UpdateContentSize()
+{
+    META_FUNCTION_TASK();
+    m_content_size = { 0u, 0u };
+    for(uint32_t vertex_index = 2; vertex_index < m_vertices.size(); vertex_index += 4)
+    {
+        m_content_size.width  = std::max(m_content_size.width,  static_cast<uint32_t>(m_vertices[vertex_index].position[0]));
+        m_content_size.height = std::max(m_content_size.height, static_cast<uint32_t>(-m_vertices[vertex_index].position[1]));
+    }
 }
 
 void TextMesh::UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FrameRect::Point& char_pos)

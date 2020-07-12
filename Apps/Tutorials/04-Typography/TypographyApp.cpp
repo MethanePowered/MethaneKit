@@ -34,10 +34,8 @@ namespace Methane::Tutorials
 
 struct FontSettings
 {
-    std::string  name;
-    std::string  path;
-    uint32_t     size;
-    gfx::Color3f color;
+    gui::Font::Description desc;
+    gfx::Color3f           color;
 };
 
 constexpr int32_t g_margin_size_in_dots      = 32;
@@ -45,18 +43,18 @@ constexpr int32_t g_top_text_pos_in_dots     = 100;
 constexpr size_t  g_text_blocks_count        = 3;
 
 static const std::array<FontSettings, g_text_blocks_count> g_font_settings { {
-    { "European",     "Fonts/Roboto/Roboto-Regular.ttf",                 20u, { 1.f,  1.f,  0.5f } },
-    { "Japanese",     "Fonts/SawarabiMincho/SawarabiMincho-Regular.ttf", 20u, { 1.f,  0.3f, 0.1f } },
-//  { "Arabic",       "Fonts/Amiri/Amiri-Regular.ttf",                   20u, { 1.f,  0.3f, 0.8f } },
-    { "Calligraphic", "Fonts/Playball/Playball-Regular.ttf",             20u, { 0.5f, 1.f,  0.5f } }
+    { { "European",     "Fonts/Roboto/Roboto-Regular.ttf",                 20u }, { 1.f,  1.f,  0.5f } },
+    { { "Japanese",     "Fonts/SawarabiMincho/SawarabiMincho-Regular.ttf", 20u }, { 1.f,  0.3f, 0.1f } },
+//  { { "Arabic",       "Fonts/Amiri/Amiri-Regular.ttf",                   20u }, { 1.f,  0.3f, 0.8f } },
+    { { "Calligraphic", "Fonts/Playball/Playball-Regular.ttf",             20u }, { 0.5f, 1.f,  0.5f } }
 } };
 
 static const gfx::Color3f g_misc_font_color { 1.f, 1.f, 1.f };
 static const std::map<std::string, gfx::Color3f>    g_font_color_by_name   {
-    { g_font_settings[0].name, g_font_settings[0].color },
-    { g_font_settings[1].name, g_font_settings[1].color },
-    { g_font_settings[2].name, g_font_settings[2].color },
-//  { g_font_settings[3].name, g_font_settings[3].color }
+    { g_font_settings[0].desc.name, g_font_settings[0].color },
+    { g_font_settings[1].desc.name, g_font_settings[1].color },
+    { g_font_settings[2].desc.name, g_font_settings[2].color },
+//  { g_font_settings[3].desc.name, g_font_settings[3].color }
 };
 
 // Pangrams from http://clagnut.com/blog/2380/
@@ -148,7 +146,7 @@ void TypographyApp::Init()
                 Data::FontProvider::Get(),
                 gui::Font::Settings
                 {
-                    font_settings.name, font_settings.path, font_settings.size, GetRenderContext().GetFontResolutionDPI(),
+                    font_settings.desc, GetRenderContext().GetFontResolutionDPI(),
                     gui::Font::GetAlphabetFromText(displayed_text_block)
                 }
             ).GetPtr()
@@ -160,7 +158,7 @@ void TypographyApp::Init()
             std::make_shared<gui::Text>(GetRenderContext(), *m_fonts.back(),
                 gui::Text::SettingsUtf32
                 {
-                    font_settings.name,
+                    font_settings.desc.name,
                     displayed_text_block,
                     gfx::FrameRect
                     {
