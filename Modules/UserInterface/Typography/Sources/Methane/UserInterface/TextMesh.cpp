@@ -189,7 +189,7 @@ void TextMesh::Update(const std::u32string& text, gfx::FrameSize& viewport_size)
     return;
 }
 
-void TextMesh::EraseTrailingChars(uint32_t erase_chars_count, bool fixup_whitespace, bool update_content_size)
+void TextMesh::EraseTrailingChars(size_t erase_chars_count, bool fixup_whitespace, bool update_content_size)
 {
     META_FUNCTION_TASK();
     if (!erase_chars_count)
@@ -274,24 +274,6 @@ void TextMesh::AppendChars(std::u32string added_text)
         m_last_whitespace_index += init_text_length;
 }
 
-void TextMesh::UpdateContentSize()
-{
-    META_FUNCTION_TASK();
-    m_content_size = { 0u, 0u };
-    for(uint32_t vertex_index = 2; vertex_index < m_vertices.size(); vertex_index += 4)
-    {
-        m_content_size.width  = std::max(m_content_size.width,  static_cast<uint32_t>(m_vertices[vertex_index].position[0]));
-        m_content_size.height = std::max(m_content_size.height, static_cast<uint32_t>(-m_vertices[vertex_index].position[1]));
-    }
-}
-
-void TextMesh::UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FrameRect::Point& char_pos)
-{
-    META_FUNCTION_TASK();
-    m_content_size.width  = std::max(m_content_size.width,  char_pos.GetX() + font_char.GetOffset().GetX() + font_char.GetRect().size.width);
-    m_content_size.height = std::max(m_content_size.height, char_pos.GetY() + font_char.GetOffset().GetY() + font_char.GetRect().size.height);
-}
-
 void TextMesh::AddCharQuad(const Font::Char& font_char, const gfx::FrameRect::Point& char_pos, const gfx::FrameSize& atlas_size)
 {
     META_FUNCTION_TASK();
@@ -348,6 +330,24 @@ void TextMesh::AddCharQuad(const Font::Char& font_char, const gfx::FrameRect::Po
     m_indices.push_back(start_index + 2);
     m_indices.push_back(start_index + 3);
     m_indices.push_back(start_index);
+}
+
+void TextMesh::UpdateContentSize()
+{
+    META_FUNCTION_TASK();
+    m_content_size = { 0u, 0u };
+    for(uint32_t vertex_index = 2; vertex_index < m_vertices.size(); vertex_index += 4)
+    {
+        m_content_size.width  = std::max(m_content_size.width,  static_cast<uint32_t>(m_vertices[vertex_index].position[0]));
+        m_content_size.height = std::max(m_content_size.height, static_cast<uint32_t>(-m_vertices[vertex_index].position[1]));
+    }
+}
+
+void TextMesh::UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FrameRect::Point& char_pos)
+{
+    META_FUNCTION_TASK();
+    m_content_size.width  = std::max(m_content_size.width,  char_pos.GetX() + font_char.GetOffset().GetX() + font_char.GetRect().size.width);
+    m_content_size.height = std::max(m_content_size.height, char_pos.GetY() + font_char.GetOffset().GetY() + font_char.GetRect().size.height);
 }
 
 } // namespace Methane::Graphics

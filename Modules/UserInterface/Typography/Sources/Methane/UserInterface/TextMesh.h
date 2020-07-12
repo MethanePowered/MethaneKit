@@ -53,8 +53,6 @@ public:
 
     bool IsUpdatable(const std::u32string& text, Text::Wrap wrap, Font& font, const gfx::FrameSize& viewport_size) const noexcept;
     void Update(const std::u32string& text, gfx::FrameSize& viewport_size);
-    void EraseTrailingChars(uint32_t erase_chars_count, bool fixup_whitespace, bool update_content_size);
-    void AppendChars(std::u32string added_text);
 
     const std::u32string& GetText() const noexcept          { return m_text; }
     Font&                 GetFont() noexcept                { return m_font; }
@@ -72,9 +70,11 @@ public:
     Data::Size      GetIndicesDataSize() const noexcept     { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
 
 private:
+    void EraseTrailingChars(size_t erase_chars_count, bool fixup_whitespace, bool update_content_size);
+    void AppendChars(std::u32string added_text);
+    void AddCharQuad(const Font::Char& font_char, const gfx::FrameRect::Point& char_pos, const gfx::FrameSize& atlas_size);
     void UpdateContentSize();
     void UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FrameRect::Point& char_pos);
-    void AddCharQuad(const Font::Char& font_char, const gfx::FrameRect::Point& char_pos, const gfx::FrameSize& atlas_size);
 
     bool IsNewTextStartsWithOldOne(const std::u32string& text) const noexcept { return m_text.empty() || (m_text.length() < text.length()   && text.find(m_text) == 0); }
     bool IsOldTextStartsWithNewOne(const std::u32string& text) const noexcept { return !text.empty()  &&  text.length()   < m_text.length() && m_text.find(text) == 0; }
