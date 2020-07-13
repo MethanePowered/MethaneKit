@@ -44,6 +44,7 @@ public:
 
     // When animations are paused dry updates are called on every app update at the same point in time,
     // such behavior consumes CPU cycles on pause but could be useful to keep GPU state in sync with CPU when it does not depend just on animation time
+    bool IsPaused() const noexcept                          { return m_is_paused; }
     bool IsDryUpdateOnPauseEnabled() const noexcept         { return m_is_dry_update_on_pause_enabled; }
     void SetDryUpdateOnPauseEnabled(bool enabled) noexcept  { m_is_dry_update_on_pause_enabled = enabled; }
 

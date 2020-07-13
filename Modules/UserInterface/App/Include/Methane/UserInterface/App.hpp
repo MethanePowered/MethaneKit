@@ -98,7 +98,24 @@ public:
         return AppBase::SetHeadsUpDisplayMode(heads_up_display_mode);
     }
 
+    bool SetAnimationsEnabled(bool animations_enabled) override
+    {
+        META_FUNCTION_TASK();
+        if (!GraphicsApp::SetAnimationsEnabled(animations_enabled))
+            return false;
+
+        UpdateParametersText();
+        return true;
+    }
+
 protected:
+    void UpdateParametersText()
+    {
+        META_FUNCTION_TASK();
+        if (IsParametersTextDisplayed())
+            ShowParameters();
+    }
+
     // Platform::AppBase overrides
     void ShowControlsHelp() override
     {

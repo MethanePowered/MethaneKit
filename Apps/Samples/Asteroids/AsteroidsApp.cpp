@@ -437,8 +437,7 @@ void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
     if (IsRenderContextInitialized())
         GetRenderContext().Reset();
 
-    if (IsParametersTextDisplayed())
-        ShowParameters();
+    UpdateParametersText();
 }
 
 void AsteroidsApp::SetParallelRenderingEnabled(bool is_parallel_rendering_enabled)
@@ -454,9 +453,7 @@ void AsteroidsApp::SetParallelRenderingEnabled(bool is_parallel_rendering_enable
         frame.sp_execute_cmd_list_set = CreateExecuteCommandListSet(frame);
     }
 
-    if (IsParametersTextDisplayed())
-        ShowParameters();
-
+    UpdateParametersText();
     META_LOG(GetParametersString());
 }
 
@@ -472,15 +469,16 @@ void AsteroidsApp::ShowParameters()
     META_FUNCTION_TASK();
 
     std::stringstream ss;
-    ss << std::endl << "Asteroids simulation parameters:"
+    ss << "Asteroids simulation parameters:"
        << std::endl << "  - simulation complexity [0.."  << g_max_complexity << "]: " << m_asteroids_complexity
        << std::endl << "  - asteroid instances count:     " << m_asteroids_array_settings.instance_count
        << std::endl << "  - unique meshes count:          " << m_asteroids_array_settings.unique_mesh_count
        << std::endl << "  - mesh subdivisions count:      " << m_asteroids_array_settings.subdivisions_count
        << std::endl << "  - unique textures count:        " << m_asteroids_array_settings.textures_count << " "
                                                             << static_cast<std::string>(m_asteroids_array_settings.texture_dimensions)
-       << std::endl << "  - textures array binding:       " << (m_asteroids_array_settings.textures_array_enabled ? "enabled" : "disabled")
-       << std::endl << "  - parallel rendering:           " << (m_is_parallel_rendering_enabled ? "enabled" : "disabled")
+       << std::endl << "  - textures array binding:       " << (m_asteroids_array_settings.textures_array_enabled ? "ON" : "OFF")
+       << std::endl << "  - parallel rendering:           " << (m_is_parallel_rendering_enabled ? "ON" : "OFF")
+       << std::endl << "  - asteroid animations:          " << (!GetAnimations().IsPaused() ? "ON" : "OFF")
        << std::endl << "  - CPU h/w thread count:         " << std::thread::hardware_concurrency();
 
     if (!UserInterfaceApp::SetParametersText(ss.str()))

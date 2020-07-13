@@ -64,6 +64,9 @@ public:
     bool Update() override;
     bool Render() override;
 
+    // Platform::AppBase overrides
+    void ShowParameters() override;
+
     uint32_t GetAsteroidsComplexity() const { return m_asteroids_complexity; }
     void     SetAsteroidsComplexity(uint32_t asteroids_complexity);
 
@@ -71,9 +74,6 @@ public:
     void     SetParallelRenderingEnabled(bool is_parallel_rendering_enabled);
 
     AsteroidsArray& GetAsteroidsArray() const;
-
-    // Platform::AppBase overrides
-    void ShowParameters() override;
 
 protected:
     // IContextCallback overrides

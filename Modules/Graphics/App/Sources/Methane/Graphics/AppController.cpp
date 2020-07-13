@@ -65,8 +65,8 @@ std::string AppController::GetKeyboardActionName(AppAction action) const
     META_FUNCTION_TASK();
     switch (action)
     {
-    case AppAction::None:                       return "none";
-    case AppAction::SwitchAnimations:           return "switch animations on/off";
+    case AppAction::None:             return "none";
+    case AppAction::SwitchAnimations: return "switch animations on/off";
     default: assert(0);
     }
     return "";

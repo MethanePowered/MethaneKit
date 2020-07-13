@@ -268,7 +268,8 @@ bool AppBase::UpdateText(Ptr<Text>& sp_text, const std::string& help_str)
                  "Help",
                  help_str,
                  gfx::FrameRect{}, true,
-                 m_app_settings.text_color
+                 m_app_settings.text_color,
+                 Text::Wrap::None
              }
         );
     }

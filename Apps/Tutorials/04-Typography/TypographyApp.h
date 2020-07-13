@@ -51,7 +51,6 @@ class TypographyApp final
 public:
     struct Settings
     {
-        bool   is_parameters_displayed     = false;
         bool   is_incremental_text_update  = true;
         bool   is_forward_typing_direction = true;
         double typing_update_interval_sec  = 0.03;
@@ -65,11 +64,14 @@ public:
     bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
     bool Render() override;
 
-    const Settings& GetSettings() const noexcept                        { return m_settings; }
-    void  SetParametersDisplayed(bool is_parameters_displayed)          { m_settings.is_parameters_displayed = is_parameters_displayed; }
-    void  SetForwardTypingDirection(bool is_forward_typing_direction)   { m_settings.is_forward_typing_direction = is_forward_typing_direction; }
-    void  SetTextUpdateInterval(double text_update_interval_sec)        { m_settings.typing_update_interval_sec = text_update_interval_sec; }
-    void  SetIncrementalTextUpdate(bool is_incremental_text_update);
+    // Platform::AppBase overrides
+    void ShowParameters() override;
+
+    void SetForwardTypingDirection(bool is_forward_typing_direction);
+    void SetTextUpdateInterval(double text_update_interval_sec);
+    void SetIncrementalTextUpdate(bool is_incremental_text_update);
+
+    const Settings& GetSettings() const noexcept { return m_settings; }
 
 protected:
     // IContextCallback overrides

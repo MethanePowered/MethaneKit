@@ -90,7 +90,6 @@ static const std::array<std::u32string, g_text_blocks_count> g_text_blocks = { {
 
 namespace pal = Methane::Platform;
 static const std::map<pal::Keyboard::State, TypographyAppAction> g_typography_action_by_keyboard_state{
-    { { pal::Keyboard::Key::F3      }, TypographyAppAction::SwitchParametersDisplayed    },
     { { pal::Keyboard::Key::U       }, TypographyAppAction::SwitchIncrementalTextUpdate  },
     { { pal::Keyboard::Key::D       }, TypographyAppAction::SwitchTypingDirection        },
     { { pal::Keyboard::Key::Equal   }, TypographyAppAction::SpeedupTyping                },
@@ -408,17 +407,50 @@ bool TypographyApp::Render()
     return true;
 }
 
+// Platform::AppBase overrides
+void TypographyApp::ShowParameters()
+{
+    std::stringstream ss;
+    ss << "Text rendering parameters:"
+       << std::endl << "  - typing animation:     " << (!GetAnimations().IsPaused() ? "ON" : "OFF")
+       << std::endl << "  - typing mode:          " << (m_settings.is_forward_typing_direction ? "Appending" : "Backspace")
+       << std::endl << "  - typing interval (ms): " << static_cast<uint32_t>(m_settings.typing_update_interval_sec * 1000)
+       << std::endl << "  - incremental updates:  " << (m_settings.is_incremental_text_update ? "ON" : "OFF");
+
+    if (!UserInterfaceApp::SetParametersText(ss.str()))
+        UserInterfaceApp::SetParametersText("");
+}
+
+void TypographyApp::SetForwardTypingDirection(bool is_forward_typing_direction)
+{
+    if (m_settings.is_forward_typing_direction == is_forward_typing_direction)
+        return;
+
+    m_settings.is_forward_typing_direction = is_forward_typing_direction;
+    UpdateParametersText();
+}
+
+void TypographyApp::SetTextUpdateInterval(double text_update_interval_sec)
+{
+    if (m_settings.typing_update_interval_sec == text_update_interval_sec)
+        return;
+
+    m_settings.typing_update_interval_sec = text_update_interval_sec;
+    UpdateParametersText();
+}
+
 void TypographyApp::SetIncrementalTextUpdate(bool is_incremental_text_update)
 {
     if (m_settings.is_incremental_text_update == is_incremental_text_update)
         return;
 
     m_settings.is_incremental_text_update = is_incremental_text_update;
-
     for(const Ptr<gui::Text>& sp_text : m_texts)
     {
         sp_text->SetIncrementalUpdate(is_incremental_text_update);
     }
+
+    UpdateParametersText();
 }
 
 void TypographyApp::OnContextReleased(gfx::Context& context)

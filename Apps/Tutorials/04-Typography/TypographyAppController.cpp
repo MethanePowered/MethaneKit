@@ -49,10 +49,6 @@ void TypographyAppController::OnKeyboardStateAction(TypographyAppAction action)
 
     switch(action)
     {
-    case TypographyAppAction::SwitchParametersDisplayed:
-        m_typography_app.SetParametersDisplayed(!m_typography_app.GetSettings().is_parameters_displayed);
-        break;
-
     case TypographyAppAction::SwitchIncrementalTextUpdate:
         m_typography_app.SetIncrementalTextUpdate(!m_typography_app.GetSettings().is_incremental_text_update);
         break;
@@ -80,7 +76,6 @@ std::string TypographyAppController::GetKeyboardActionName(TypographyAppAction a
     META_FUNCTION_TASK();
     switch(action)
     {
-    case TypographyAppAction::SwitchParametersDisplayed:    return "switch displaying parameters";
     case TypographyAppAction::SwitchIncrementalTextUpdate:  return "switch incremental text update";
     case TypographyAppAction::SwitchTypingDirection:        return "switch typing direction";
     case TypographyAppAction::SpeedupTyping:                return "speedup typing";
