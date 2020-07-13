@@ -97,6 +97,11 @@ public:
     const char*         GetScopeName() const    { return m_registration.name; }
     ScopeId             GetScopeId() const      { return m_registration.id; }
 
+    using Timer::GetElapsedDuration;
+    using Timer::GetElapsedSecondsU;
+    using Timer::GetElapsedSecondsD;
+    using Timer::GetElapsedSecondsF;
+
 private:
     const Registration m_registration;
 };

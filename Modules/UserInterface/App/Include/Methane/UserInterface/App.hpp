@@ -108,12 +108,23 @@ public:
         return true;
     }
 
+    void ShowParameters() override
+    {
+        META_FUNCTION_TASK();
+        if (IsParametersTextDisplayed())
+            SetParametersText("");
+        else
+            SetParametersText(GetParametersString());
+    }
+
+    std::string GetParametersString() override { return ""; }
+
 protected:
     void UpdateParametersText()
     {
         META_FUNCTION_TASK();
         if (IsParametersTextDisplayed())
-            ShowParameters();
+            SetParametersText(GetParametersString());
     }
 
     // Platform::AppBase overrides

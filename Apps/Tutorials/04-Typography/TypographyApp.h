@@ -64,8 +64,8 @@ public:
     bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
     bool Render() override;
 
-    // Platform::AppBase overrides
-    void ShowParameters() override;
+    // UserInterface::App overrides
+    std::string GetParametersString() override;
 
     void SetForwardTypingDirection(bool is_forward_typing_direction);
     void SetTextUpdateInterval(double text_update_interval_sec);
@@ -95,6 +95,7 @@ private:
     Ptrs<gui::Badge>    m_font_atlas_badges;
     std::vector<size_t> m_displayed_text_lengths;
     double              m_text_update_elapsed_sec = 0.0;
+    Timer::TimeDuration m_text_update_duration;
 };
 
 } // namespace Methane::Tutorials

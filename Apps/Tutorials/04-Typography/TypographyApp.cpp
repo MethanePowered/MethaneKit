@@ -350,14 +350,18 @@ bool TypographyApp::Animate(double elapsed_seconds, double)
             displayed_text_length--;
 
         const std::u32string displayed_text = text_block.substr(0, displayed_text_length);
-        sp_text->SetTextInScreenRect(displayed_text, {
-            { g_margin_size_in_dots, vertical_text_pos_in_dots  },
-            { GetFrameSizeInDots().width - 2 * g_margin_size_in_dots, 0u }
-        });
-
+        {
+            Methane::ScopeTimer scope_timer("Text update");
+            sp_text->SetTextInScreenRect(displayed_text, {
+                { g_margin_size_in_dots, vertical_text_pos_in_dots  },
+                { GetFrameSizeInDots().width - 2 * g_margin_size_in_dots, 0u }
+            });
+            m_text_update_duration = scope_timer.GetElapsedDuration();
+        }
         vertical_text_pos_in_dots = sp_text->GetViewportInDots().GetBottom() + g_margin_size_in_dots;
     }
 
+    UpdateParametersText();
     return true;
 }
 
@@ -407,18 +411,17 @@ bool TypographyApp::Render()
     return true;
 }
 
-// Platform::AppBase overrides
-void TypographyApp::ShowParameters()
+std::string TypographyApp::GetParametersString()
 {
     std::stringstream ss;
-    ss << "Text rendering parameters:"
-       << std::endl << "  - typing animation:     " << (!GetAnimations().IsPaused() ? "ON" : "OFF")
-       << std::endl << "  - typing mode:          " << (m_settings.is_forward_typing_direction ? "Appending" : "Backspace")
-       << std::endl << "  - typing interval (ms): " << static_cast<uint32_t>(m_settings.typing_update_interval_sec * 1000)
-       << std::endl << "  - incremental updates:  " << (m_settings.is_incremental_text_update ? "ON" : "OFF");
+    ss << "Typography demo parameters:"
+       << std::endl << "  - text typing animation:     " << (!GetAnimations().IsPaused() ? "ON" : "OFF")
+       << std::endl << "  - text typing mode:          " << (m_settings.is_forward_typing_direction ? "Appending" : "Backspace")
+       << std::endl << "  - text typing interval (ms): " << static_cast<uint32_t>(m_settings.typing_update_interval_sec * 1000)
+       << std::endl << "  - incremental text updates:  " << (m_settings.is_incremental_text_update ? "ON" : "OFF")
+       << std::endl << "  - text update duration (us): " << static_cast<double>(m_text_update_duration.count()) / 1000;
 
-    if (!UserInterfaceApp::SetParametersText(ss.str()))
-        UserInterfaceApp::SetParametersText("");
+    return ss.str();
 }
 
 void TypographyApp::SetForwardTypingDirection(bool is_forward_typing_direction)
