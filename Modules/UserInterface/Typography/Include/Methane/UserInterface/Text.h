@@ -118,7 +118,7 @@ private:
     Ptr<Font>                 m_sp_font;
     UniquePtr<TextMesh>       m_sp_text_mesh;
     Ptr<gfx::RenderState>     m_sp_state;
-    Ptr<gfx::BufferSet>       m_sp_vertex_buffers;
+    Ptr<gfx::BufferSet>       m_sp_vertex_buffer_set;
     Ptr<gfx::Buffer>          m_sp_index_buffer;
     Ptr<gfx::Buffer>          m_sp_const_buffer;
     Ptr<gfx::Buffer>          m_sp_uniforms_buffer;

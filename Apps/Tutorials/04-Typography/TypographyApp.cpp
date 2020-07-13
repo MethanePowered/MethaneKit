@@ -181,7 +181,7 @@ void TypographyApp::Init()
     {
         frame.sp_render_cmd_list = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.sp_screen_pass);
         frame.sp_render_cmd_list->SetName(IndexedName("Text Rendering", frame.index));
-        frame.sp_execute_cmd_lists = gfx::CommandListSet::Create({ *frame.sp_render_cmd_list });
+        frame.sp_execute_cmd_list_set = gfx::CommandListSet::Create({ *frame.sp_render_cmd_list });
     }
 
     CompleteInitialization();
@@ -379,8 +379,7 @@ void TypographyApp::ResetAnimation()
 
 bool TypographyApp::Render()
 {
-    // Render only when context is ready
-    if (!GetRenderContext().ReadyToRender() || !UserInterfaceApp::Render())
+    if (!UserInterfaceApp::Render())
         return false;
 
     TypographyFrame& frame = GetCurrentFrame();
@@ -403,7 +402,7 @@ bool TypographyApp::Render()
     frame.sp_render_cmd_list->Commit();
 
     // Execute command list on render queue and present frame to screen
-    GetRenderContext().GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_lists);
+    GetRenderContext().GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_list_set);
     GetRenderContext().Present();
 
     return true;

@@ -41,7 +41,7 @@ struct AsteroidsFrame final : gfx::AppFrame
     Ptr<gfx::ParallelRenderCommandList> sp_parallel_cmd_list;
     Ptr<gfx::RenderCommandList>         sp_serial_cmd_list;
     Ptr<gfx::RenderCommandList>         sp_final_cmd_list;
-    Ptr<gfx::CommandListSet>            sp_execute_cmd_lists;
+    Ptr<gfx::CommandListSet>            sp_execute_cmd_list_set;
     Ptr<gfx::Buffer>                    sp_scene_uniforms_buffer;
     gfx::MeshBufferBindings             skybox;
     gfx::MeshBufferBindings             planet;
@@ -96,7 +96,7 @@ private:
 
     bool Animate(double elapsed_seconds, double delta_seconds);
 
-    Ptr<gfx::CommandListSet> CreateExecuteCommandLists(AsteroidsFrame& frame);
+    Ptr<gfx::CommandListSet> CreateExecuteCommandListSet(AsteroidsFrame& frame);
 
     gfx::ActionCamera                 m_view_camera;
     gfx::ActionCamera                 m_light_camera;

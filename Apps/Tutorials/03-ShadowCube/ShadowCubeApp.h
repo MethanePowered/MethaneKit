@@ -51,7 +51,7 @@ struct ShadowCubeFrame final : gfx::AppFrame
     PassResources            shadow_pass;
     PassResources            final_pass;
     Ptr<gfx::Buffer>         sp_scene_uniforms_buffer;
-    Ptr<gfx::CommandListSet> sp_execute_cmd_lists;
+    Ptr<gfx::CommandListSet> sp_execute_cmd_list_set;
 
     using gfx::AppFrame::AppFrame;
 };

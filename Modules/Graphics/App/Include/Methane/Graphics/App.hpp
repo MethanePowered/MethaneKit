@@ -299,6 +299,9 @@ public:
             throw std::runtime_error("RenderContext is not initialized before rendering.");
         }
 
+        if (!m_sp_context->ReadyToRender())
+            return false;
+
         // Wait for previous frame rendering is completed and switch to next frame
         m_sp_context->WaitForGpu(Context::WaitFor::FramePresented);
 

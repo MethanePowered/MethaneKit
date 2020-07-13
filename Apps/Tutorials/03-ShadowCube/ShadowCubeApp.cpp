@@ -298,7 +298,7 @@ void ShadowCubeApp::Init()
         });
 
         // Rendering command lists sequence
-        frame.sp_execute_cmd_lists = gfx::CommandListSet::Create({
+        frame.sp_execute_cmd_list_set = gfx::CommandListSet::Create({
             *frame.shadow_pass.sp_cmd_list,
             *frame.final_pass.sp_cmd_list
         });
@@ -400,8 +400,7 @@ bool ShadowCubeApp::Animate(double, double delta_seconds)
 
 bool ShadowCubeApp::Render()
 {
-    // Render only when context is ready
-    if (!GetRenderContext().ReadyToRender() || !UserInterfaceApp::Render())
+    if (!UserInterfaceApp::Render())
         return false;
 
     // Upload uniform buffers to GPU
@@ -417,7 +416,7 @@ bool ShadowCubeApp::Render()
     RenderScene(m_final_pass, frame.final_pass);
 
     // Execute rendering commands and present frame to screen
-    GetRenderContext().GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_lists);
+    GetRenderContext().GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_list_set);
     GetRenderContext().Present();
     
     return true;

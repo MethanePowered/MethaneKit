@@ -37,7 +37,7 @@ namespace gui = Methane::UserInterface;
 struct TypographyFrame final : gfx::AppFrame
 {
     Ptr<gfx::RenderCommandList> sp_render_cmd_list;
-    Ptr<gfx::CommandListSet>    sp_execute_cmd_lists;
+    Ptr<gfx::CommandListSet>    sp_execute_cmd_list_set;
 
     using gfx::AppFrame::AppFrame;
 };

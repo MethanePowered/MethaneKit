@@ -260,12 +260,12 @@ void Text::Draw(gfx::RenderCommandList& cmd_list)
         return;
 
     assert(m_sp_curr_program_bindings);
-    assert(m_sp_vertex_buffers);
+    assert(m_sp_vertex_buffer_set);
     assert(m_sp_index_buffer);
 
     cmd_list.Reset(m_sp_state);
     cmd_list.SetProgramBindings(*m_sp_curr_program_bindings);
-    cmd_list.SetVertexBuffers(*m_sp_vertex_buffers);
+    cmd_list.SetVertexBuffers(*m_sp_vertex_buffer_set);
     cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
 
     if (m_sp_prev_program_bindings && m_prev_program_bindings_release_on_frame == m_context.GetFrameBufferIndex())
@@ -362,14 +362,14 @@ void Text::UpdateMeshData()
     if (!vertices_data_size)
         return;
 
-    if (!m_sp_vertex_buffers || (*m_sp_vertex_buffers)[0].GetDataSize() < vertices_data_size)
+    if (!m_sp_vertex_buffer_set || (*m_sp_vertex_buffer_set)[0].GetDataSize() < vertices_data_size)
     {
         const Data::Size vertex_buffer_size = vertices_data_size * m_settings.mesh_buffers_reservation_multiplier;
         Ptr<gfx::Buffer> sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(m_context, vertex_buffer_size, m_sp_text_mesh->GetVertexSize());
         sp_vertex_buffer->SetName(m_settings.name + " Text Vertex Buffer");
-        m_sp_vertex_buffers = gfx::BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
+        m_sp_vertex_buffer_set = gfx::BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
     }
-    (*m_sp_vertex_buffers)[0].SetData({
+    (*m_sp_vertex_buffer_set)[0].SetData({
         gfx::Resource::SubResource(
             reinterpret_cast<Data::ConstRawPtr>(m_sp_text_mesh->GetVertices().data()), vertices_data_size,
             gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0u, vertices_data_size)

@@ -264,7 +264,7 @@ void AsteroidsApp::Init()
         frame.sp_final_cmd_list->SetName(IndexedName("Final Rendering", frame.index));
 
         // Rendering command lists sequence
-        frame.sp_execute_cmd_lists = CreateExecuteCommandLists(frame);
+        frame.sp_execute_cmd_list_set = CreateExecuteCommandListSet(frame);
 
         // Create uniforms buffer with volatile parameters for the whole scene rendering
         frame.sp_scene_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(context, scene_uniforms_data_size);
@@ -358,9 +358,7 @@ bool AsteroidsApp::Render()
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsApp::Render");
-
-    // Render only when context is ready
-    if (!GetRenderContext().ReadyToRender() || !UserInterfaceApp::Render())
+    if (!UserInterfaceApp::Render())
         return false;
 
     // Upload uniform buffers to GPU
@@ -386,7 +384,7 @@ bool AsteroidsApp::Render()
     frame.sp_final_cmd_list->Commit();
 
     // Execute rendering commands and present frame to screen
-    GetRenderContext().GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_lists);
+    GetRenderContext().GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_list_set);
     GetRenderContext().Present();
 
     return true;
@@ -453,7 +451,7 @@ void AsteroidsApp::SetParallelRenderingEnabled(bool is_parallel_rendering_enable
     m_is_parallel_rendering_enabled = is_parallel_rendering_enabled;
     for(AsteroidsFrame& frame : GetFrames())
     {
-        frame.sp_execute_cmd_lists = CreateExecuteCommandLists(frame);
+        frame.sp_execute_cmd_list_set = CreateExecuteCommandListSet(frame);
     }
 
     if (IsParametersTextDisplayed())
@@ -489,7 +487,7 @@ void AsteroidsApp::ShowParameters()
         UserInterfaceApp::SetParametersText("");
 }
 
-Ptr<gfx::CommandListSet> AsteroidsApp::CreateExecuteCommandLists(AsteroidsFrame& frame)
+Ptr<gfx::CommandListSet> AsteroidsApp::CreateExecuteCommandListSet(AsteroidsFrame& frame)
 {
     return gfx::CommandListSet::Create({
         m_is_parallel_rendering_enabled

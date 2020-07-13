@@ -64,7 +64,7 @@ void HelloTriangleApp::Init()
     Ptr<gfx::Buffer> sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), vertex_data_size, vertex_size);
     sp_vertex_buffer->SetName("Triangle Vertex Buffer");
     sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(triangle_vertices.data()), vertex_data_size } });
-    m_sp_vertex_buffers = gfx::BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
+    m_sp_vertex_buffer_set = gfx::BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
 
     // Create render state
     m_sp_state = gfx::RenderState::Create(GetRenderContext(),
@@ -107,7 +107,7 @@ void HelloTriangleApp::Init()
     {
         frame.sp_render_cmd_list = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.sp_screen_pass);
         frame.sp_render_cmd_list->SetName(IndexedName("Triangle Rendering", frame.index));
-        frame.sp_execute_cmd_lists = gfx::CommandListSet::Create({ *frame.sp_render_cmd_list });
+        frame.sp_execute_cmd_list_set = gfx::CommandListSet::Create({ *frame.sp_render_cmd_list });
     }
 
     UserInterfaceApp::CompleteInitialization();
@@ -128,15 +128,14 @@ bool HelloTriangleApp::Resize(const gfx::FrameSize& frame_size, bool is_minimize
 
 bool HelloTriangleApp::Render()
 {
-    // Render only when context is ready
-    if (!GetRenderContext().ReadyToRender() || !UserInterfaceApp::Render())
+    if (!UserInterfaceApp::Render())
         return false;
 
     // Issue commands for triangle rendering
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Triangle Rendering");
     HelloTriangleFrame& frame = GetCurrentFrame();
     frame.sp_render_cmd_list->Reset(m_sp_state, s_debug_group.get());
-    frame.sp_render_cmd_list->SetVertexBuffers(*m_sp_vertex_buffers);
+    frame.sp_render_cmd_list->SetVertexBuffers(*m_sp_vertex_buffer_set);
     frame.sp_render_cmd_list->Draw(gfx::RenderCommandList::Primitive::Triangle, 3u);
 
     RenderOverlay(*frame.sp_render_cmd_list);
@@ -145,7 +144,7 @@ bool HelloTriangleApp::Render()
     frame.sp_render_cmd_list->Commit();
 
     // Execute command list on render queue and present frame to screen
-    GetRenderContext().GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_lists);
+    GetRenderContext().GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_list_set);
     GetRenderContext().Present();
 
     return true;
@@ -153,7 +152,7 @@ bool HelloTriangleApp::Render()
 
 void HelloTriangleApp::OnContextReleased(gfx::Context& context)
 {
-    m_sp_vertex_buffers.reset();
+    m_sp_vertex_buffer_set.reset();
     m_sp_state.reset();
 
     UserInterfaceApp::OnContextReleased(context);

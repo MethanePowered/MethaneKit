@@ -40,7 +40,7 @@ struct TexturedCubeFrame final : gfx::AppFrame
     Ptr<gfx::Buffer>            sp_uniforms_buffer;
     Ptr<gfx::ProgramBindings>   sp_program_bindings;
     Ptr<gfx::RenderCommandList> sp_render_cmd_list;
-    Ptr<gfx::CommandListSet>    sp_execute_cmd_lists;
+    Ptr<gfx::CommandListSet>    sp_execute_cmd_list_set;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -82,16 +82,16 @@ private:
 
     bool Animate(double elapsed_seconds, double delta_seconds);
 
-    const Constants         m_shader_constants;
-    Uniforms                m_shader_uniforms { };
-    gfx::Camera             m_camera;
-    float                   m_cube_scale;
-    Ptr<gfx::RenderState>   m_sp_state;
-    Ptr<gfx::BufferSet>     m_sp_vertex_buffers;
-    Ptr<gfx::Buffer>        m_sp_index_buffer;
-    Ptr<gfx::Buffer>        m_sp_const_buffer;
-    Ptr<gfx::Texture>       m_sp_cube_texture;
-    Ptr<gfx::Sampler>       m_sp_texture_sampler;
+    const Constants       m_shader_constants;
+    Uniforms              m_shader_uniforms { };
+    gfx::Camera           m_camera;
+    float                 m_cube_scale;
+    Ptr<gfx::RenderState> m_sp_render_state;
+    Ptr<gfx::BufferSet>   m_sp_vertex_buffer_set;
+    Ptr<gfx::Buffer>      m_sp_index_buffer;
+    Ptr<gfx::Buffer>      m_sp_const_buffer;
+    Ptr<gfx::Texture>     m_sp_cube_texture;
+    Ptr<gfx::Sampler>     m_sp_texture_sampler;
 
     const gfx::Resource::SubResources m_shader_uniforms_subresources{
         { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(Uniforms) }

@@ -217,7 +217,7 @@ using namespace Methane::Graphics;
 struct HelloTriangleFrame final : AppFrame
 {
     Ptr<RenderCommandList> sp_render_cmd_list;
-    Ptr<CommandListSet>    sp_execute_cmd_lists;
+    Ptr<CommandListSet>    sp_execute_cmd_list_set;
     using AppFrame::AppFrame;
 };
 
@@ -226,7 +226,7 @@ class HelloTriangleApp final : public GraphicsApp
 {
 private:
     Ptr<RenderState> m_sp_state;
-    Ptr<Buffers>     m_sp_vertex_buffers;
+    Ptr<BufferSet>   m_sp_vertex_buffer_set;
 
 public:
     HelloTriangleApp() : GraphicsApp(
@@ -237,9 +237,7 @@ public:
             },                                          //
             {                                           // graphics_app:
                 RenderPass::Access::None,               // - screen_pass_access
-                IApp::HeadsUpDisplayMode::WindowTitle,  // - heads_up_display_mode
                 false,                                  // - animations_enabled
-                false,                                  // - show_logo_badge
             },                                          //
             {                                           // render_context:
                 FrameSize(),                            // - frame_size placeholder: set in InitContext
@@ -252,7 +250,7 @@ public:
 
     ~HelloTriangleApp() override
     {
-        m_sp_context->WaitForGpu(Context::WaitFor::RenderComplete);
+        GetRenderContext().WaitForGpu(Context::WaitFor::RenderComplete);
     }
 
     void Init() override
@@ -267,25 +265,25 @@ public:
         } };
 
         const Data::Size vertex_buffer_size = static_cast<Data::Size>(sizeof(triangle_vertices));
-        Ptr<Buffer> sp_vertex_buffer = Buffer::CreateVertexBuffer(*m_sp_context, vertex_buffer_size, static_cast<Data::Size>(sizeof(Vertex)));
+        Ptr<Buffer> sp_vertex_buffer = Buffer::CreateVertexBuffer(GetRenderContext(), vertex_buffer_size, static_cast<Data::Size>(sizeof(Vertex)));
         sp_vertex_buffer->SetData(
             Resource::SubResources
             {
                 Resource::SubResource { reinterpret_cast<Data::ConstRawPtr>(triangle_vertices.data()), vertex_buffer_size }
             }
         );
-        m_sp_vertex_buffers = Buffers::CreateVertexBuffers({ *sp_vertex_buffer });
+        m_sp_vertex_buffer_set = BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
 
-        m_sp_state = RenderState::Create(*m_sp_context,
+        m_sp_state = RenderState::Create(GetRenderContext(),
             RenderState::Settings
             {
-                Program::Create(*m_sp_context,
+                Program::Create(GetRenderContext(),
                     Program::Settings
                     {
                         Program::Shaders
                         {
-                            Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), { "Triangle", "TriangleVS" } }),
-                            Shader::CreatePixel(*m_sp_context,  { Data::ShaderProvider::Get(), { "Triangle", "TrianglePS" } }),
+                            Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "Triangle", "TriangleVS" } }),
+                            Shader::CreatePixel(GetRenderContext(),  { Data::ShaderProvider::Get(), { "Triangle", "TrianglePS" } }),
                         },
                         Program::InputBufferLayouts
                         {
@@ -295,19 +293,21 @@ public:
                             }
                         },
                         Program::ArgumentDescriptions { },
-                        PixelFormats { m_sp_context->GetSettings().color_format }
+                        PixelFormats { GetRenderContext().GetSettings().color_format }
                     }
                 ),
-                Viewports    { GetFrameViewport(m_sp_context->GetSettings().frame_size)    },
-                ScissorRects { GetFrameScissorRect(m_sp_context->GetSettings().frame_size) },
+                Viewports    { GetFrameViewport(GetRenderContext().GetSettings().frame_size)    },
+                ScissorRects { GetFrameScissorRect(GetRenderContext().GetSettings().frame_size) },
             }
         );
 
-        for (HelloTriangleFrame& frame : m_frames)
+        for (HelloTriangleFrame& frame : GetFrames())
         {
-            frame.sp_render_cmd_list   = RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
-            frame.sp_execute_cmd_lists = CommandListSet::Create({ *frame.sp_render_cmd_list });
+            frame.sp_render_cmd_list      = RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.sp_screen_pass);
+            frame.sp_execute_cmd_list_set = CommandListSet::Create({ *frame.sp_render_cmd_list });
         }
+
+        GraphicsApp::CompleteInitialization();
     }
 
     bool Resize(const FrameSize& frame_size, bool is_minimized) override
@@ -322,24 +322,24 @@ public:
 
     bool Render() override
     {
-        if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
+        if (!GraphicsApp::Render())
             return false;
 
         HelloTriangleFrame& frame = GetCurrentFrame();
         frame.sp_render_cmd_list->Reset(m_sp_state);
-        frame.sp_render_cmd_list->SetVertexBuffers(*m_sp_vertex_buffers);
+        frame.sp_render_cmd_list->SetVertexBuffers(*m_sp_vertex_buffer_set);
         frame.sp_render_cmd_list->Draw(RenderCommandList::Primitive::Triangle, 3);
         frame.sp_render_cmd_list->Commit();
 
-        m_sp_context->GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_lists);
-        m_sp_context->Present();
+        GetRenderContext().GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_list_set);
+        GetRenderContext().Present();
 
         return true;
     }
 
     void OnContextReleased(Context& context) override
     {
-        m_sp_vertex_buffers.reset();
+        m_sp_vertex_buffer_set.reset();
         m_sp_state.reset();
 
         GraphicsApp::OnContextReleased(context);

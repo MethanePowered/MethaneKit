@@ -123,7 +123,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
             static_cast<Data::Size>(quad_mesh.GetVertexDataSize())
         }
     });
-    m_sp_vertex_buffers = BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
+    m_sp_vertex_buffer_set = BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
 
     m_sp_index_buffer = Buffer::CreateIndexBuffer(context, static_cast<Data::Size>(quad_mesh.GetIndexDataSize()),
                                                            GetIndexFormat(quad_mesh.GetIndex(0)));
@@ -216,7 +216,7 @@ void ScreenQuad::Draw(RenderCommandList& cmd_list) const
     
     cmd_list.Reset(m_sp_state, s_debug_group.get());
     cmd_list.SetProgramBindings(*m_sp_const_program_bindings);
-    cmd_list.SetVertexBuffers(*m_sp_vertex_buffers);
+    cmd_list.SetVertexBuffers(*m_sp_vertex_buffer_set);
     cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
 }
 

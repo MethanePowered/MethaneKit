@@ -118,8 +118,8 @@ void TexturedCubeApp::Init()
     state_settings.viewports     = { gfx::GetFrameViewport(context_settings.frame_size) };
     state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };
     state_settings.depth.enabled = true;
-    m_sp_state = gfx::RenderState::Create(GetRenderContext(), state_settings);
-    m_sp_state->SetName("Final FB Render Pipeline State");
+    m_sp_render_state = gfx::RenderState::Create(GetRenderContext(), state_settings);
+    m_sp_render_state->SetName("Final FB Render Pipeline State");
 
     // Load texture image from file
     const gfx::ImageLoader::Options::Mask image_options = gfx::ImageLoader::Options::Mipmapped
@@ -145,7 +145,7 @@ void TexturedCubeApp::Init()
     Ptr<gfx::Buffer> sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), vertex_data_size, vertex_size);
     sp_vertex_buffer->SetName("Cube Vertex Buffer");
     sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } });
-    m_sp_vertex_buffers = gfx::BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
+    m_sp_vertex_buffer_set = gfx::BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
 
     // Create index buffer for cube mesh
     const Data::Size index_data_size = static_cast<Data::Size>(cube_mesh.GetIndexDataSize());
@@ -176,7 +176,7 @@ void TexturedCubeApp::Init()
         // Create command list for rendering
         frame.sp_render_cmd_list = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.sp_screen_pass);
         frame.sp_render_cmd_list->SetName(IndexedName("Cube Rendering", frame.index));
-        frame.sp_execute_cmd_lists = gfx::CommandListSet::Create({ *frame.sp_render_cmd_list });
+        frame.sp_execute_cmd_list_set = gfx::CommandListSet::Create({ *frame.sp_render_cmd_list });
     }
 
     UserInterfaceApp::CompleteInitialization();
@@ -198,8 +198,8 @@ bool TexturedCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized
         return false;
 
     // Update viewports and scissor rects state
-    m_sp_state->SetViewports({ gfx::GetFrameViewport(frame_size) });
-    m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
+    m_sp_render_state->SetViewports({ gfx::GetFrameViewport(frame_size) });
+    m_sp_render_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
 
     m_camera.Resize({
         static_cast<float>(frame_size.width),
@@ -227,8 +227,7 @@ bool TexturedCubeApp::Update()
 
 bool TexturedCubeApp::Render()
 {
-    // Render only when context is ready
-    if (!GetRenderContext().ReadyToRender() || !UserInterfaceApp::Render())
+    if (!UserInterfaceApp::Render())
         return false;
 
     // Update uniforms buffer related to current frame
@@ -237,9 +236,9 @@ bool TexturedCubeApp::Render()
 
     // Issue commands for cube rendering
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Cube Rendering");
-    frame.sp_render_cmd_list->Reset(m_sp_state, s_debug_group.get());
+    frame.sp_render_cmd_list->Reset(m_sp_render_state, s_debug_group.get());
     frame.sp_render_cmd_list->SetProgramBindings(*frame.sp_program_bindings);
-    frame.sp_render_cmd_list->SetVertexBuffers(*m_sp_vertex_buffers);
+    frame.sp_render_cmd_list->SetVertexBuffers(*m_sp_vertex_buffer_set);
     frame.sp_render_cmd_list->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
 
     RenderOverlay(*frame.sp_render_cmd_list);
@@ -248,7 +247,7 @@ bool TexturedCubeApp::Render()
     frame.sp_render_cmd_list->Commit();
 
     // Execute command list on render queue and present frame to screen
-    GetRenderContext().GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_lists);
+    GetRenderContext().GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_list_set);
     GetRenderContext().Present();
 
     return true;
@@ -260,8 +259,8 @@ void TexturedCubeApp::OnContextReleased(gfx::Context& context)
     m_sp_cube_texture.reset();
     m_sp_const_buffer.reset();
     m_sp_index_buffer.reset();
-    m_sp_vertex_buffers.reset();
-    m_sp_state.reset();
+    m_sp_vertex_buffer_set.reset();
+    m_sp_render_state.reset();
 
     UserInterfaceApp::OnContextReleased(context);
 }

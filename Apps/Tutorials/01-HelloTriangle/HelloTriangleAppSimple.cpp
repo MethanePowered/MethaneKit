@@ -29,7 +29,7 @@ using namespace Methane::Graphics;
 struct HelloTriangleFrame final : AppFrame
 {
     Ptr<RenderCommandList> sp_render_cmd_list;
-    Ptr<CommandListSet>    sp_render_cmd_lists;
+    Ptr<CommandListSet>    sp_execute_cmd_list_set;
     using AppFrame::AppFrame;
 };
 
@@ -38,7 +38,7 @@ class HelloTriangleApp final : public GraphicsApp
 {
 private:
     Ptr<RenderState> m_sp_state;
-    Ptr<BufferSet>   m_sp_vertex_buffers;
+    Ptr<BufferSet>   m_sp_vertex_buffer_set;
 
 public:
     HelloTriangleApp() : GraphicsApp(
@@ -50,7 +50,6 @@ public:
             {                                           // graphics_app:
                 RenderPass::Access::None,               // - screen_pass_access
                 false,                                  // - animations_enabled
-                false,                                  // - show_logo_badge
             },                                          //
             {                                           // render_context:
                 FrameSize(),                            // - frame_size placeholder: set in InitContext
@@ -85,7 +84,7 @@ public:
                 Resource::SubResource { reinterpret_cast<Data::ConstRawPtr>(triangle_vertices.data()), vertex_buffer_size }
             }
         );
-        m_sp_vertex_buffers = BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
+        m_sp_vertex_buffer_set = BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
 
         m_sp_state = RenderState::Create(GetRenderContext(),
             RenderState::Settings
@@ -116,8 +115,8 @@ public:
 
         for (HelloTriangleFrame& frame : GetFrames())
         {
-            frame.sp_render_cmd_list  = RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.sp_screen_pass);
-            frame.sp_render_cmd_lists = CommandListSet::Create({ *frame.sp_render_cmd_list });
+            frame.sp_render_cmd_list      = RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.sp_screen_pass);
+            frame.sp_execute_cmd_list_set = CommandListSet::Create({ *frame.sp_render_cmd_list });
         }
 
         GraphicsApp::CompleteInitialization();
@@ -135,16 +134,16 @@ public:
 
     bool Render() override
     {
-        if (!GetRenderContext().ReadyToRender() || !GraphicsApp::Render())
+        if (!GraphicsApp::Render())
             return false;
 
         HelloTriangleFrame& frame = GetCurrentFrame();
         frame.sp_render_cmd_list->Reset(m_sp_state);
-        frame.sp_render_cmd_list->SetVertexBuffers(*m_sp_vertex_buffers);
+        frame.sp_render_cmd_list->SetVertexBuffers(*m_sp_vertex_buffer_set);
         frame.sp_render_cmd_list->Draw(RenderCommandList::Primitive::Triangle, 3);
         frame.sp_render_cmd_list->Commit();
 
-        GetRenderContext().GetRenderCommandQueue().Execute(*frame.sp_render_cmd_lists);
+        GetRenderContext().GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_list_set);
         GetRenderContext().Present();
 
         return true;
@@ -152,7 +151,7 @@ public:
 
     void OnContextReleased(Context& context) override
     {
-        m_sp_vertex_buffers.reset();
+        m_sp_vertex_buffer_set.reset();
         m_sp_state.reset();
 
         GraphicsApp::OnContextReleased(context);
