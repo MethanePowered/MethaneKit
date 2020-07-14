@@ -355,7 +355,10 @@ void ProgramBindingsDX::UpdateRootParameterBindings()
 
             const ResourceBase::State resource_state = binding_settings.argument.shader_type == Shader::Type::Pixel
                                                      ? ResourceBase::State::PixelShaderResource
-                                                     : ResourceBase::State::NonPixelShaderResource;
+                                                     : (binding_settings.argument.shader_type == Shader::Type::Vertex &&
+                                                        binding_settings.resource_type == Resource::Type::Buffer
+                                                            ? ResourceBase::State::VertexAndConstantBuffer
+                                                            : ResourceBase::State::NonPixelShaderResource);
             AddResourceState(binding_settings.argument, {
                 std::dynamic_pointer_cast<ResourceBase>(resource_location_dx.GetResourcePtr()),
                 resource_state
