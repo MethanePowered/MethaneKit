@@ -95,6 +95,7 @@ private:
     Ptr<CommandListSet>       m_sp_upload_cmd_lists;
     Ptr<Fence>                m_sp_upload_fence;
     mutable bool              m_is_complete_initialization_required = false;
+    mutable bool              m_is_completing_initialization = false;
 };
 
 } // namespace Methane::Graphics

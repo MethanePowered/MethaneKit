@@ -58,8 +58,11 @@ ContextBase::ContextBase(DeviceBase& device, Type type)
 void ContextBase::CompleteInitialization()
 {
     META_FUNCTION_TASK();
+    if (m_is_completing_initialization)
+        return;
+
+    m_is_completing_initialization = true;
     META_LOG("Complete initialization of context \"" + GetName() + "\"");
-    m_is_complete_initialization_required = false;
 
     Emit(&IContextCallback::OnContextCompletingInitialization, *this);
 
@@ -68,10 +71,14 @@ void ContextBase::CompleteInitialization()
         WaitForGpu(WaitFor::RenderComplete);
         m_resource_manager.CompleteInitialization();
     }
+
     UploadResources();
 
     // Enable deferred heap allocation in case if more resources will be created in runtime
     m_resource_manager.SetDeferredHeapAllocation(true);
+
+    m_is_completing_initialization        = false;
+    m_is_complete_initialization_required = false;
 }
 
 void ContextBase::WaitForGpu(WaitFor wait_for)
