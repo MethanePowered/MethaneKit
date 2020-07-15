@@ -31,7 +31,7 @@ target_link_libraries(${TARGET}
 
 set_target_properties(${TARGET}
     PROPERTIES
-        FOLDER ${NAMESPACE_DIR}
+        FOLDER Modules/Data
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})

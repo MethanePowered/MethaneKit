@@ -52,7 +52,7 @@ PRIVATE
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER ${NAMESPACE_DIR}
+    FOLDER Modules/UserInterface
     PUBLIC_HEADER "${HEADERS}"
 )
 

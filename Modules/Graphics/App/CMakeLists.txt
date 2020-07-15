@@ -44,7 +44,7 @@ PRIVATE
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER ${NAMESPACE_DIR}
+    FOLDER Modules/Graphics
     PUBLIC_HEADER "${HEADERS}"
 )
 
