@@ -438,7 +438,9 @@ void Text::UpdateConstantsBuffer()
         m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(m_context, gfx::Buffer::GetAlignedBufferSize(const_data_size));
         m_sp_const_buffer->SetName(m_settings.name + " Text Constants Buffer");
     }
-    m_sp_const_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&constants), const_data_size } });
+    m_sp_const_buffer->SetData({
+        gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(&constants), const_data_size)
+    });
 }
 
 } // namespace Methane::Graphics

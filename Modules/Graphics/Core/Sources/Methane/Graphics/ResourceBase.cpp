@@ -185,6 +185,22 @@ ResourceBase::Barriers::Set ResourceBase::Barriers::GetSet() const noexcept
     return barriers;
 }
 
+bool ResourceBase::Barriers::Has(Barrier::Type type, Resource& resource, State before, State after)
+{
+    META_FUNCTION_TASK();
+    const auto barrier_it = m_barriers_map.find(Barrier::Id(type, resource));
+    if (barrier_it == m_barriers_map.end())
+        return false;
+
+    return barrier_it->second == Barrier::StateChange(before, after);
+}
+
+bool ResourceBase::Barriers::HasTransition(Resource& resource, State before, State after)
+{
+    META_FUNCTION_TASK();
+    return Has(Barrier::Type::Transition, resource, before, after);
+}
+
 bool ResourceBase::Barriers::Add(Barrier::Type type, Resource& resource, State before, State after)
 {
     META_FUNCTION_TASK();
@@ -629,7 +645,7 @@ bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
         {
             throw std::logic_error("Resource can not be transitioned to \"Common\" state.");
         }
-        if (!out_barriers)
+        if (!out_barriers || !out_barriers->HasTransition(*this, m_state, state))
         {
             out_barriers = Barriers::Create();
         }

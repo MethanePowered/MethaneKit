@@ -119,10 +119,12 @@ public:
         static Ptr<Barriers> Create(const Set& barriers = {});
         static Ptr<Barriers> CreateTransition(const Refs<Resource>& resources, State state_before, State state_after);
 
-        bool IsEmpty() const noexcept      { return m_barriers_map.empty(); }
-        const Map& GetMap() const noexcept { return m_barriers_map; }
+        bool       IsEmpty() const noexcept { return m_barriers_map.empty(); }
+        const Map& GetMap() const noexcept  { return m_barriers_map; }
         Set        GetSet() const noexcept;
 
+        bool Has(Barrier::Type type, Resource& resource, State before, State after);
+        bool HasTransition(Resource& resource, State before, State after);
         bool Add(Barrier::Type type, Resource& resource, State before, State after);
         bool AddTransition(Resource& resource, State before, State after);
         virtual bool Add(const Barrier::Id& id, const Barrier::StateChange& state_change);
