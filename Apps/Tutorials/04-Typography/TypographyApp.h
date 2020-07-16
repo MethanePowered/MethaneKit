@@ -46,6 +46,7 @@ using UserInterfaceApp = UserInterface::App<TypographyFrame>;
 
 class TypographyApp final
     : public UserInterfaceApp
+    , protected Data::Receiver<gui::IFontLibraryCallback>
     , protected Data::Receiver<gui::IFontCallback>
 {
 public:
@@ -77,7 +78,11 @@ protected:
     // IContextCallback overrides
     void OnContextReleased(gfx::Context& context) override;
 
-    // IFontCallback overrides
+    // IFontLibraryCallback implementation
+    void OnFontAdded(gui::Font& font) override;
+    void OnFontRemoved(gui::Font&) override { }
+
+    // IFontCallback implementation
     void OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture) override;
     void OnFontAtlasUpdated(gui::Font& font) override;
 

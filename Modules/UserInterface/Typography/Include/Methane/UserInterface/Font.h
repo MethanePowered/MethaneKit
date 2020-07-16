@@ -44,6 +44,14 @@ namespace gfx = Methane::Graphics;
 
 class Font;
 
+struct IFontLibraryCallback
+{
+    virtual void OnFontAdded(Font& font) = 0;
+    virtual void OnFontRemoved(Font& font) = 0;
+
+    virtual ~IFontLibraryCallback() = default;
+};
+
 struct IFontCallback
 {
     virtual void OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture) = 0;
@@ -73,6 +81,7 @@ public:
     };
 
     class Library
+        : public Data::Emitter<IFontLibraryCallback>
     {
         friend class Font;
 

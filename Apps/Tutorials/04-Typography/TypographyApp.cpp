@@ -106,6 +106,7 @@ TypographyApp::TypographyApp()
     m_displayed_text_lengths[0] = 1;
     GetHeadsUpDisplaySettings().position = gfx::Point2i(g_margin_size_in_dots, g_margin_size_in_dots);
 
+    gui::Font::Library::Get().Connect(*this);
     AddInputControllers({
         std::make_shared<TypographyAppController>(*this, g_typography_action_by_keyboard_state)
     });
@@ -150,7 +151,6 @@ void TypographyApp::Init()
                 }
             ).GetPtr()
         );
-        m_fonts.back()->Connect(*this);
 
         // Add text element
         m_texts.push_back(
@@ -467,6 +467,11 @@ void TypographyApp::OnContextReleased(gfx::Context& context)
     UserInterfaceApp::OnContextReleased(context);
 }
 
+void TypographyApp::OnFontAdded(gui::Font& font)
+{
+    font.Connect(*this);
+}
+
 void TypographyApp::OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture)
 {
     const auto sp_font_atlas_badge_it = std::find_if(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
@@ -479,6 +484,7 @@ void TypographyApp::OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::Text
     if (sp_font_atlas_badge_it == m_font_atlas_badges.end())
     {
         m_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font, sp_new_atlas_texture));
+        LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
         return;
     }
 
@@ -491,6 +497,7 @@ void TypographyApp::OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::Text
     else
     {
         m_font_atlas_badges.erase(sp_font_atlas_badge_it);
+        LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
     }
 }
 

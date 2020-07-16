@@ -293,6 +293,7 @@ Font& Font::Library::AddFont(const Data::Provider& data_provider, const Settings
         throw std::invalid_argument("Font with name \"" + font_settings.description.name + "\" already exists in library.");
 
     assert(emplace_result.first->second);
+    Emit(&IFontLibraryCallback::OnFontAdded, *emplace_result.first->second);
     return *emplace_result.first->second;
 }
 
@@ -300,8 +301,11 @@ void Font::Library::RemoveFont(const std::string& font_name)
 {
     META_FUNCTION_TASK();
     const auto font_by_name_it = m_font_by_name.find(font_name);
-    if (font_by_name_it != m_font_by_name.end())
-        m_font_by_name.erase(font_by_name_it);
+    if (font_by_name_it == m_font_by_name.end())
+        return;
+
+    Emit(&IFontLibraryCallback::OnFontRemoved, *font_by_name_it->second);
+    m_font_by_name.erase(font_by_name_it);
 }
 
 void Font::Library::Clear()
@@ -725,8 +729,11 @@ void Font::ClearAtlasTextures()
     META_FUNCTION_TASK();
     for(const auto& context_and_texture : m_atlas_textures)
     {
-        if (context_and_texture.first)
-            context_and_texture.first->Disconnect(*this);
+        if (!context_and_texture.first)
+            continue;
+
+        context_and_texture.first->Disconnect(*this);
+        Emit(&IFontCallback::OnFontAtlasTextureReset, *this, context_and_texture.second.sp_texture, nullptr);
     }
     m_atlas_textures.clear();
 }

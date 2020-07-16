@@ -183,6 +183,7 @@ bool AppBase::SetHeadsUpDisplayMode(IApp::HeadsUpDisplayMode heads_up_display_mo
     else
     {
         m_sp_hud.reset();
+        Font::Library::Get().RemoveFont(m_hud_settings.major_font.name);
     }
     return true;
 }
@@ -250,6 +251,12 @@ bool AppBase::UpdateText(Ptr<Text>& sp_text, const std::string& help_str)
     if (help_str.empty())
     {
         sp_text.reset();
+        // If main font is hold only by this class and Font::Library, then it can be removed as unused
+        if (m_sp_main_font.use_count() == 2)
+        {
+            Font::Library::Get().RemoveFont(g_main_font_desc.name);
+            m_sp_main_font.reset();
+        }
         return false;
     }
 
