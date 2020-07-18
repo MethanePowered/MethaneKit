@@ -23,6 +23,7 @@ HeadsUpDisplay rendering primitive.
 
 #pragma once
 
+#include <Methane/UserInterface/Item.h>
 #include <Methane/UserInterface/Text.h>
 #include <Methane/UserInterface/Font.h>
 #include <Methane/Graphics/Color.hpp>
@@ -31,7 +32,6 @@ HeadsUpDisplay rendering primitive.
 
 namespace Methane::Graphics
 {
-struct RenderContext;
 struct RenderCommandList;
 }
 
@@ -42,7 +42,7 @@ namespace gfx = Methane::Graphics;
 
 class Font;
 
-class HeadsUpDisplay
+class HeadsUpDisplay : public Item
 {
 public:
     struct Settings
@@ -53,7 +53,7 @@ public:
         double   update_interval_sec = 0.33;
     };
 
-    HeadsUpDisplay(gfx::RenderContext& context, const Data::Provider& font_data_provider, Settings settings);
+    HeadsUpDisplay(Context& ui_context, const Data::Provider& font_data_provider, Settings settings);
 
     const Settings& GetSettings() const { return m_settings; }
 
@@ -65,11 +65,10 @@ public:
     void Draw(gfx::RenderCommandList& cmd_list);
 
 private:
-    Settings            m_settings;
-    gfx::RenderContext& m_context;
-    const Ptr<Font>     m_sp_major_font;
-    Text                m_fps_text;
-    Timer               m_update_timer;
+    Settings        m_settings;
+    const Ptr<Font> m_sp_major_font;
+    Text            m_fps_text;
+    Timer           m_update_timer;
 };
 
 } // namespace Methane::UserInterface

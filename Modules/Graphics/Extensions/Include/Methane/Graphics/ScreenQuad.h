@@ -60,7 +60,7 @@ public:
         const std::string name;
         FrameRect         screen_rect;
         bool              alpha_blending_enabled = false;
-        Color4f           blend_color            = Color4f(1.f, 1.f, 1.f, 1.f);
+        Color4f           blend_color            { 1.f, 1.f, 1.f, 1.f };
         TextureMode       texture_mode           = TextureMode::Constant;
         TextureColorMode  texture_color_mode     = TextureColorMode::RgbaFloat;
     };
@@ -78,6 +78,9 @@ public:
     const Texture&  GetTexture() const noexcept;
 
     void Draw(RenderCommandList& cmd_list) const;
+
+protected:
+    RenderContext& GetRenderContext() noexcept { return m_context; }
 
 private:
     void UpdateConstantsBuffer() const;

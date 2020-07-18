@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,25 +16,19 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Kit.h
-Methane kit interfaces: all headers under one umbrella.
+FILE: Methane/UserInterface/Types.h
+Methane user interface types root header.
 
 ******************************************************************************/
 
 #pragma once
 
-// Methane Graphics Headers
+#include "Item.h"
+#include "Container.h"
 
 #include <Methane/Graphics/Types.h>
-#include <Methane/Graphics/Core.h>
-#include <Methane/Graphics/Extensions.h>
-#include <Methane/Graphics/Camera.h>
-#include <Methane/Graphics/Primitives.h>
-#include <Methane/Graphics/App.hpp>
 
-// Methane User Interface Headers
+namespace Methane::UserInterface
+{
 
-#include <Methane/UserInterface/Types.h>
-#include <Methane/UserInterface/Typography.h>
-#include <Methane/UserInterface/Widgets.h>
-#include <Methane/UserInterface/App.hpp>
+} // namespace Methane::UserInterface

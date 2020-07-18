@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,25 +16,31 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Kit.h
-Methane kit interfaces: all headers under one umbrella.
+FILE: Methane/UserInterface/Context.cpp
+Methane user interface context used by all widgets for rendering.
 
 ******************************************************************************/
 
-#pragma once
+#include <Methane/UserInterface/Context.h>
 
-// Methane Graphics Headers
+#include <Methane/Graphics/RenderContext.h>
 
-#include <Methane/Graphics/Types.h>
-#include <Methane/Graphics/Core.h>
-#include <Methane/Graphics/Extensions.h>
-#include <Methane/Graphics/Camera.h>
-#include <Methane/Graphics/Primitives.h>
-#include <Methane/Graphics/App.hpp>
+namespace Methane::UserInterface
+{
 
-// Methane User Interface Headers
+Context::Context(gfx::RenderContext& render_context)
+    : m_render_context(render_context)
+{
+}
 
-#include <Methane/UserInterface/Types.h>
-#include <Methane/UserInterface/Typography.h>
-#include <Methane/UserInterface/Widgets.h>
-#include <Methane/UserInterface/App.hpp>
+float Context::GetDotsToPixelsFactor() const
+{
+    return m_render_context.GetContentScalingFactor();
+}
+
+uint32_t Context::GetFontResolutionDPI() const
+{
+    return m_render_context.GetFontResolutionDPI();
+}
+
+} // namespace Methane::UserInterface

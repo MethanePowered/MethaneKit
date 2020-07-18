@@ -24,15 +24,16 @@ target_include_directories(${TARGET}
 
 target_link_libraries(${TARGET}
     PUBLIC
-        MethaneGraphicsApp
-        MethaneGraphicsCore
-        MethaneGraphicsExtensions
+        MethaneGraphicsTypes
         MethaneGraphicsPrimitives
         MethaneGraphicsCamera
-        MethaneGraphicsTypes
-        MethaneUserInterfaceApp
+        MethaneGraphicsCore
+        MethaneGraphicsExtensions
+        MethaneGraphicsApp
+        MethaneUserInterfaceTypes
         MethaneUserInterfaceTypography
         MethaneUserInterfaceWidgets
+        MethaneUserInterfaceApp
 )
 
 set(PREREQUISITE_TARGETS

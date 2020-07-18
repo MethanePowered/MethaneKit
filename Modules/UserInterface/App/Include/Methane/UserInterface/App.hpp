@@ -28,6 +28,7 @@ Base template class of the Methane user interface application.
 #include "AppController.h"
 
 #include <Methane/Graphics/App.hpp>
+#include <Methane/UserInterface/Context.h>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::UserInterface
@@ -47,7 +48,7 @@ public:
         const UserInterface::IApp::Settings& ui_app_settings = UserInterface::IApp::Settings(),
         const std::string& help_description = "Methane Graphics Application")
         : GraphicsApp(graphics_app_settings)
-        , UserInterface::AppBase(GraphicsApp::GetRenderContextPtr(), ui_app_settings)
+        , UserInterface::AppBase(ui_app_settings)
     {
         META_FUNCTION_TASK();
         CLI::App::add_option("-i,--hud", AppBase::GetAppSettings().heads_up_display_mode, "HUD display mode (0 - hidden, 1 - in window title, 2 - in UI)", true);
@@ -59,7 +60,7 @@ public:
     {
         META_FUNCTION_TASK();
         GraphicsApp::Init();
-        AppBase::Init(GraphicsApp::GetFrameSize());
+        AppBase::Init(GraphicsApp::GetRenderContext(), GraphicsApp::GetFrameSize());
     }
 
     bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override

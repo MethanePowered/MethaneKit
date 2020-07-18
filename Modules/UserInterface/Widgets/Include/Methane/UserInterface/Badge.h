@@ -17,16 +17,15 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/UserInterface/Badge.h
-Badge rendering primitive displaying fixed texture in specific corner of the screen.
+Badge widget displaying texture in specific corner of the screen.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/ScreenQuad.h>
+#include <Methane/UserInterface/Item.h>
 
-#include <memory>
-#include <optional>
+#include <Methane/Graphics/ScreenQuad.h>
 
 namespace Methane::Graphics
 {
@@ -38,7 +37,9 @@ namespace Methane::UserInterface
 
 namespace gfx = Methane::Graphics;
 
-class Badge : public gfx::ScreenQuad
+class Badge
+    : public Item
+    , public gfx::ScreenQuad
 {
 public:
     enum class FrameCorner : uint32_t
@@ -60,8 +61,8 @@ public:
         TextureColorMode  texture_color_mode = TextureColorMode::RgbaFloat;
     };
 
-    Badge(gfx::RenderContext& context, Data::Provider& data_provider, const std::string& image_path, Settings settings);
-    Badge(gfx::RenderContext& context, Ptr<gfx::Texture> sp_texture, Settings settings);
+    Badge(Context& ui_context, Data::Provider& data_provider, const std::string& image_path, Settings settings);
+    Badge(Context& ui_context, Ptr<gfx::Texture> sp_texture, Settings settings);
 
     void FrameResize(const gfx::FrameSize& frame_size, std::optional<gfx::FrameSize> badge_size = {}, std::optional<gfx::Point2i> margins = {});
     void SetCorner(FrameCorner frame_corner);
@@ -72,8 +73,7 @@ private:
     gfx::FrameRect GetBadgeRectInFrame(const gfx::FrameSize& frame_size);
     static gfx::FrameRect GetBadgeRectInFrame(const gfx::FrameSize& frame_size, const Settings& settings);
 
-    Settings            m_settings;
-    gfx::RenderContext& m_context;
+    Settings m_settings;
 };
 
 } // namespace Methane::UserInterface

@@ -23,6 +23,7 @@ Base implementation of the Methane user interface application.
 
 #include <Methane/UserInterface/AppBase.h>
 
+#include <Methane/UserInterface/Context.h>
 #include <Methane/UserInterface/Text.h>
 #include <Methane/UserInterface/Badge.h>
 #include <Methane/Graphics/ImageLoader.h>
@@ -62,9 +63,8 @@ static void SplitTextToColumns(const std::string& text_str, std::string& left_co
     right_column_str = text_str.substr(middle_line_break_position + 1);
 };
 
-AppBase::AppBase(const Ptr<gfx::RenderContext>& sp_render_context, const IApp::Settings& ui_app_settings)
-    : m_sp_render_context(sp_render_context)
-    , m_app_settings(ui_app_settings)
+AppBase::AppBase(const IApp::Settings& ui_app_settings)
+    : m_app_settings(ui_app_settings)
     , m_hud_settings({
         g_major_font_desc, { ui_app_settings.text_margins_in_dots.width, ui_app_settings.text_margins_in_dots.height }
     })
@@ -73,14 +73,15 @@ AppBase::AppBase(const Ptr<gfx::RenderContext>& sp_render_context, const IApp::S
     m_hud_settings.text_color = m_app_settings.text_color;
 }
 
-void AppBase::Init(const gfx::FrameSize& frame_size)
+AppBase::~AppBase() = default;
+
+void AppBase::Init(gfx::RenderContext& render_context, const gfx::FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
-    if (!m_sp_render_context)
-        throw std::logic_error("User interface app can not be initialized without render context.");
 
     m_frame_size = frame_size;
-    m_text_margins = m_app_settings.text_margins_in_dots * m_sp_render_context->GetContentScalingFactor();
+    m_sp_ui_context = std::make_unique<Context>(render_context);
+    m_text_margins = m_app_settings.text_margins_in_dots * m_sp_ui_context->GetDotsToPixelsFactor();
 
     // Create Methane logo badge
     if (m_app_settings.show_logo_badge)
@@ -88,7 +89,7 @@ void AppBase::Init(const gfx::FrameSize& frame_size)
         Badge::Settings logo_badge_settings;
         logo_badge_settings.blend_color  = m_app_settings.logo_badge_color;
         m_sp_logo_badge = std::make_shared<Badge>(
-            *m_sp_render_context, Data::TextureProvider::Get(), "Logo/MethaneLogoNameWatermark.png", std::move(logo_badge_settings)
+            *m_sp_ui_context, Data::TextureProvider::Get(), "Logo/MethaneLogoNameWatermark.png", std::move(logo_badge_settings)
         );
     }
 
@@ -96,7 +97,7 @@ void AppBase::Init(const gfx::FrameSize& frame_size)
     m_hud_settings.position = { m_text_margins.width, m_text_margins.height };
     if (m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface)
     {
-        m_sp_hud = std::make_shared<HeadsUpDisplay>(*m_sp_render_context, Data::FontProvider::Get(), m_hud_settings);
+        m_sp_hud = std::make_shared<HeadsUpDisplay>(*m_sp_ui_context, Data::FontProvider::Get(), m_hud_settings);
     }
 
     // Update displayed text blocks
@@ -121,6 +122,7 @@ void AppBase::Release()
     m_help_columns.first.sp_text.reset();
     m_help_columns.second.sp_text.reset();
     m_parameters.sp_text.reset();
+    m_sp_ui_context.reset();
 }
 
 bool AppBase::Resize(const gfx::FrameSize& frame_size, bool)
@@ -176,9 +178,9 @@ bool AppBase::SetHeadsUpDisplayMode(IApp::HeadsUpDisplayMode heads_up_display_mo
 
     m_app_settings.heads_up_display_mode = heads_up_display_mode;
 
-    if (m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface && m_sp_render_context)
+    if (m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface && m_sp_ui_context)
     {
-        m_sp_hud = std::make_shared<HeadsUpDisplay>(*m_sp_render_context, Data::FontProvider::Get(), m_hud_settings);
+        m_sp_hud = std::make_shared<HeadsUpDisplay>(*m_sp_ui_context, Data::FontProvider::Get(), m_hud_settings);
     }
     else
     {
@@ -260,7 +262,7 @@ bool AppBase::UpdateText(Ptr<Text>& sp_text, const std::string& help_str)
         return false;
     }
 
-    if (!m_sp_render_context)
+    if (!m_sp_ui_context)
         throw std::logic_error("Help text can not be initialized without render context.");
 
     if (sp_text)
@@ -269,7 +271,7 @@ bool AppBase::UpdateText(Ptr<Text>& sp_text, const std::string& help_str)
     }
     else
     {
-        sp_text = std::make_shared<Text>(*m_sp_render_context, GetMainFont(),
+        sp_text = std::make_shared<Text>(*m_sp_ui_context, GetMainFont(),
              Text::SettingsUtf8
              {
                  "Help",
@@ -336,12 +338,12 @@ Font& AppBase::GetMainFont()
     if (m_sp_main_font)
         return *m_sp_main_font;
 
-    if (!m_sp_render_context)
+    if (!m_sp_ui_context)
         throw std::logic_error("Main font can not be initialized without render context.");
 
     m_sp_main_font = Font::Library::Get().GetFont(
         Data::FontProvider::Get(),
-        Font::Settings{ g_main_font_desc, m_sp_render_context->GetFontResolutionDPI(), Font::GetAlphabetDefault() }
+        Font::Settings{ g_main_font_desc, m_sp_ui_context->GetFontResolutionDPI(), Font::GetAlphabetDefault() }
     ).GetPtr();
     return *m_sp_main_font;
 }

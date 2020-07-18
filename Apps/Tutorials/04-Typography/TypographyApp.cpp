@@ -146,7 +146,7 @@ void TypographyApp::Init()
                 Data::FontProvider::Get(),
                 gui::Font::Settings
                 {
-                    font_settings.desc, GetRenderContext().GetFontResolutionDPI(),
+                    font_settings.desc, GetUIContext().GetFontResolutionDPI(),
                     gui::Font::GetAlphabetFromText(displayed_text_block)
                 }
             ).GetPtr()
@@ -154,7 +154,7 @@ void TypographyApp::Init()
 
         // Add text element
         m_texts.push_back(
-            std::make_shared<gui::Text>(GetRenderContext(), *m_fonts.back(),
+            std::make_shared<gui::Text>(GetUIContext(), *m_fonts.back(),
                 gui::Text::SettingsUtf32
                 {
                     font_settings.desc.name,
@@ -195,7 +195,7 @@ Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(gui::Font& font, const Ptr<g
                                    ? font_color_by_name_it->second : g_misc_font_color;
 
     return std::make_shared<gui::Badge>(
-        GetRenderContext(), sp_atlas_texture,
+        GetUIContext(), sp_atlas_texture,
         gui::Badge::Settings
         {
             font.GetSettings().description.name + " Font Atlas",
@@ -268,7 +268,7 @@ void TypographyApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
               }
     );
 
-    const float scale_factor = GetRenderContext().GetContentScalingFactor();
+    const float scale_factor = GetUIContext().GetDotsToPixelsFactor();
     gfx::Point2i badge_margins(g_margin_size_in_dots, g_margin_size_in_dots);
     badge_margins *= scale_factor;
 

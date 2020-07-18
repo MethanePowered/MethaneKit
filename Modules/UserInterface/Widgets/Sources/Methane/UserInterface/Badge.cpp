@@ -17,11 +17,12 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/UserInterface/Badge.cpp
-Badge rendering primitive displaying fixed texture in specific corner of the screen.
+Badge widget displaying texture in specific corner of the screen.
 
 ******************************************************************************/
 
 #include <Methane/UserInterface/Badge.h>
+#include <Methane/UserInterface/Context.h>
 
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Data/AppResourceProviders.h>
@@ -43,20 +44,21 @@ static Badge::Settings UpdateBadgeSettings(Badge::Settings settings, float scale
     return settings;
 }
 
-Badge::Badge(gfx::RenderContext& context, Data::Provider& data_provider, const std::string& image_path, Settings settings)
-    : Badge(context,
-            gfx::ImageLoader(data_provider).LoadImageToTexture2D(context, image_path),
-            UpdateBadgeSettings(settings, context.GetContentScalingFactor(), true))
+Badge::Badge(Context& ui_context, Data::Provider& data_provider, const std::string& image_path, Settings settings)
+    : Badge(ui_context,
+            gfx::ImageLoader(data_provider).LoadImageToTexture2D(ui_context.GetRenderContext(), image_path),
+            UpdateBadgeSettings(settings, ui_context.GetDotsToPixelsFactor(), true))
 {
     META_FUNCTION_TASK();
 }
 
-Badge::Badge(gfx::RenderContext& context, Ptr<gfx::Texture> sp_texture, Settings settings)
-    : ScreenQuad(context, std::move(sp_texture),
+Badge::Badge(Context& ui_context, Ptr<gfx::Texture> sp_texture, Settings settings)
+    : Item(ui_context, GetBadgeRectInFrame(ui_context.GetRenderContext().GetSettings().frame_size, settings))
+    , ScreenQuad(ui_context.GetRenderContext(), std::move(sp_texture),
         ScreenQuad::Settings
         {
             settings.name,
-            GetBadgeRectInFrame(context.GetSettings().frame_size, settings),
+            GetRect(),
             true, // alpha_blending_enabled
             settings.blend_color,
             settings.texture_mode,
@@ -64,7 +66,6 @@ Badge::Badge(gfx::RenderContext& context, Ptr<gfx::Texture> sp_texture, Settings
         }
     )
     , m_settings(std::move(settings))
-    , m_context(context)
 {
     META_FUNCTION_TASK();
 }
@@ -87,14 +88,14 @@ void Badge::SetCorner(FrameCorner frame_corner)
 {
     META_FUNCTION_TASK();
     m_settings.corner = frame_corner;
-    SetScreenRect(GetBadgeRectInFrame(m_context.GetSettings().frame_size));
+    SetScreenRect(GetBadgeRectInFrame(GetRenderContext().GetSettings().frame_size));
 }
 
 void Badge::SetMargins(gfx::Point2i& margins)
 {
     META_FUNCTION_TASK();
     m_settings.margins = margins;
-    SetScreenRect(GetBadgeRectInFrame(m_context.GetSettings().frame_size));
+    SetScreenRect(GetBadgeRectInFrame(GetRenderContext().GetSettings().frame_size));
 }
 
 void Badge::SetSize(const gfx::FrameSize& size)
@@ -104,7 +105,7 @@ void Badge::SetSize(const gfx::FrameSize& size)
         return;
 
     m_settings.size = size;
-    SetScreenRect(GetBadgeRectInFrame(m_context.GetSettings().frame_size));
+    SetScreenRect(GetBadgeRectInFrame(GetRenderContext().GetSettings().frame_size));
 }
 
 gfx::FrameRect Badge::GetBadgeRectInFrame(const gfx::FrameSize& frame_size)

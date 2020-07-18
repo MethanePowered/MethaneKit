@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,25 +16,41 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Kit.h
-Methane kit interfaces: all headers under one umbrella.
+FILE: Methane/UserInterface/Container.h
+Methane user interface container of items.
 
 ******************************************************************************/
 
 #pragma once
 
-// Methane Graphics Headers
+#include "Item.h"
 
-#include <Methane/Graphics/Types.h>
-#include <Methane/Graphics/Core.h>
-#include <Methane/Graphics/Extensions.h>
-#include <Methane/Graphics/Camera.h>
-#include <Methane/Graphics/Primitives.h>
-#include <Methane/Graphics/App.hpp>
+namespace Methane::UserInterface
+{
 
-// Methane User Interface Headers
+class Container;
 
-#include <Methane/UserInterface/Types.h>
-#include <Methane/UserInterface/Typography.h>
-#include <Methane/UserInterface/Widgets.h>
-#include <Methane/UserInterface/App.hpp>
+struct IContainerCallback
+{
+    virtual void ChildrenChanged(Container& container) = 0;
+
+    virtual ~IContainerCallback() = default;
+};
+
+class Container
+    : public Item
+    , public Data::Emitter<IContainerCallback>
+{
+public:
+    Container(Context& ui_context, const gfx::FrameRect& rect = {}, Ptrs<Item> children = {});
+
+    const Ptrs<Item>& GetChildren() const noexcept { return m_children; }
+
+    virtual bool AddChild(Item& item);
+    virtual bool RemoveChild(Item& item);
+
+private:
+    Ptrs<Item> m_children;
+};
+
+} // namespace Methane::UserInterface

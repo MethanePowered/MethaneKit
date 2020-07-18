@@ -16,25 +16,47 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Kit.h
-Methane kit interfaces: all headers under one umbrella.
+FILE: Methane/UserInterface/Panel.h
+Panel widget with opaque background containing other widgets.
 
 ******************************************************************************/
 
 #pragma once
 
-// Methane Graphics Headers
+#include <Methane/UserInterface/Container.h>
 
-#include <Methane/Graphics/Types.h>
-#include <Methane/Graphics/Core.h>
-#include <Methane/Graphics/Extensions.h>
-#include <Methane/Graphics/Camera.h>
-#include <Methane/Graphics/Primitives.h>
-#include <Methane/Graphics/App.hpp>
+#include <Methane/Graphics/ScreenQuad.h>
 
-// Methane User Interface Headers
+namespace Methane::Graphics
+{
+class ImageLoader;
+}
 
-#include <Methane/UserInterface/Types.h>
-#include <Methane/UserInterface/Typography.h>
-#include <Methane/UserInterface/Widgets.h>
-#include <Methane/UserInterface/App.hpp>
+namespace Methane::UserInterface
+{
+
+namespace gfx = Methane::Graphics;
+
+class Panel
+    : public Container
+    , public gfx::ScreenQuad
+{
+public:
+    struct Settings
+    {
+        std::string  name;
+        gfx::Color4f background_color { 0.f, 0.f, 0.f, 0.66f };
+    };
+
+    Panel(Context& ui_context, const gfx::FrameRect& rect, Settings settings);
+
+    const Settings& GetSettings() const noexcept { return m_settings; }
+
+    // Item overrides
+    bool SetRect(const gfx::FrameRect& rect) override;
+
+private:
+    Settings m_settings;
+};
+
+} // namespace Methane::UserInterface

@@ -24,6 +24,7 @@ Methane text rendering primitive.
 #include "TextMesh.h"
 
 #include <Methane/UserInterface/Text.h>
+#include <Methane/UserInterface/Context.h>
 
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/RenderCommandList.h>
@@ -52,8 +53,8 @@ struct SHADER_STRUCT_ALIGN Text::Uniforms
     SHADER_FIELD_ALIGN gfx::Matrix44f vp_matrix;
 };
 
-Text::Text(gfx::RenderContext& context, Font& font, const SettingsUtf8&  settings)
-    : Text(context, font,
+Text::Text(Context& ui_context, Font& font, const SettingsUtf8&  settings)
+    : Text(ui_context, font,
         SettingsUtf32
         {
             settings.name,
@@ -68,33 +69,33 @@ Text::Text(gfx::RenderContext& context, Font& font, const SettingsUtf8&  setting
     META_FUNCTION_TASK();
 }
 
-Text::Text(gfx::RenderContext& context, Font& font, SettingsUtf32 settings)
-    : m_settings(std::move(settings))
-    , m_context(context)
+Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
+    : Item(ui_context, settings.screen_rect)
+    , m_settings(std::move(settings))
     , m_sp_font(font.shared_from_this())
-    , m_sp_atlas_texture(font.GetAtlasTexturePtr(context))
+    , m_sp_atlas_texture(font.GetAtlasTexturePtr(GetUIContext().GetRenderContext()))
 {
     META_FUNCTION_TASK();
     m_sp_font->Connect(*this);
 
-    const gfx::RenderContext::Settings& context_settings = context.GetSettings();
+    const gfx::RenderContext::Settings& context_settings = GetUIContext().GetRenderContext().GetSettings();
 
     m_viewport_rect = m_settings.screen_rect;
     if (!m_settings.screen_rect_in_pixels)
-        m_viewport_rect *= m_context.GetContentScalingFactor();
+        m_viewport_rect *= GetUIContext().GetDotsToPixelsFactor();
 
     UpdateMeshData();
     UpdateUniformsBuffer();
     UpdateConstantsBuffer();
 
     gfx::RenderState::Settings state_settings;
-    state_settings.sp_program = gfx::Program::Create(context,
+    state_settings.sp_program = gfx::Program::Create(GetUIContext().GetRenderContext(),
         gfx::Program::Settings
         {
             gfx::Program::Shaders
             {
-                gfx::Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "Text", "TextVS" }, { } }),
-                gfx::Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "Text", "TextPS" }, { } }),
+                gfx::Shader::CreateVertex(GetUIContext().GetRenderContext(), { Data::ShaderProvider::Get(), { "Text", "TextVS" }, { } }),
+                gfx::Shader::CreatePixel( GetUIContext().GetRenderContext(), { Data::ShaderProvider::Get(), { "Text", "TextPS" }, { } }),
             },
             gfx::Program::InputBufferLayouts
             {
@@ -129,10 +130,10 @@ Text::Text(gfx::RenderContext& context, Font& font, SettingsUtf32 settings)
     state_settings.blending.render_targets[0].source_alpha_blend_factor = gfx::RenderState::Blending::Factor::Zero;
     state_settings.blending.render_targets[0].dest_alpha_blend_factor   = gfx::RenderState::Blending::Factor::Zero;
 
-    m_sp_state = gfx::RenderState::Create(context, state_settings);
+    m_sp_state = gfx::RenderState::Create(GetUIContext().GetRenderContext(), state_settings);
     m_sp_state->SetName(m_settings.name + " Screen-Quad Render State");
 
-    m_sp_texture_sampler = gfx::Sampler::Create(context, {
+    m_sp_texture_sampler = gfx::Sampler::Create(GetUIContext().GetRenderContext(), {
         { gfx::Sampler::Filter::MinMag::Linear     },
         { gfx::Sampler::Address::Mode::ClampToZero },
     });
@@ -159,7 +160,7 @@ std::string Text::GetTextUtf8() const
 gfx::FrameRect Text::GetViewportInDots() const noexcept
 {
     META_FUNCTION_TASK();
-    return m_viewport_rect / m_context.GetContentScalingFactor();
+    return m_viewport_rect / GetUIContext().GetDotsToPixelsFactor();
 }
 
 void Text::SetText(const std::string& text)
@@ -195,7 +196,7 @@ void Text::SetTextInScreenRect(const std::u32string& text, const gfx::FrameRect&
 
     m_viewport_rect = m_settings.screen_rect;
     if (!m_settings.screen_rect_in_pixels)
-        m_viewport_rect *= m_context.GetContentScalingFactor();
+        m_viewport_rect *= GetUIContext().GetDotsToPixelsFactor();
 
     if (screen_rect_size_changed || text_changed)
     {
@@ -206,7 +207,7 @@ void Text::SetTextInScreenRect(const std::u32string& text, const gfx::FrameRect&
     if (!m_sp_atlas_texture)
     {
         // If atlas texture was not initialized it has to be requested for current context first to be properly updated in future
-        UpdateAtlasTexture(m_sp_font->GetAtlasTexturePtr(m_context));
+        UpdateAtlasTexture(m_sp_font->GetAtlasTexturePtr(GetUIContext().GetRenderContext()));
     }
 
     m_sp_state->SetViewports({ gfx::GetFrameViewport(m_viewport_rect) });
@@ -226,7 +227,7 @@ void Text::SetScreenRect(const gfx::FrameRect& screen_rect, bool rect_in_pixels)
 
     m_viewport_rect = screen_rect;
     if (!rect_in_pixels)
-        m_viewport_rect *= m_context.GetContentScalingFactor();
+        m_viewport_rect *= GetUIContext().GetDotsToPixelsFactor();
 
     if (screen_rect_size_changed)
     {
@@ -275,7 +276,7 @@ void Text::Draw(gfx::RenderCommandList& cmd_list)
     cmd_list.SetVertexBuffers(*m_sp_vertex_buffer_set);
     cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
 
-    if (m_sp_prev_program_bindings && m_prev_program_bindings_release_on_frame == m_context.GetFrameBufferIndex())
+    if (m_sp_prev_program_bindings && m_prev_program_bindings_release_on_frame == GetUIContext().GetRenderContext().GetFrameBufferIndex())
         m_sp_prev_program_bindings.reset();
 }
 
@@ -283,7 +284,7 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& sp_old_a
 {
     META_FUNCTION_TASK();
     META_UNUSED(sp_old_atlas_texture);
-    if (m_sp_font.get() != std::addressof(font) || (sp_new_atlas_texture && std::addressof(m_context) != std::addressof(sp_new_atlas_texture->GetContext())))
+    if (m_sp_font.get() != std::addressof(font) || (sp_new_atlas_texture && std::addressof(GetUIContext().GetRenderContext()) != std::addressof(sp_new_atlas_texture->GetContext())))
         return;
 
     assert(m_sp_atlas_texture.get() == sp_old_atlas_texture.get());
@@ -321,7 +322,7 @@ void Text::UpdateAtlasTexture(const Ptr<gfx::Texture>& sp_new_atlas_texture)
 
     // Retain previous program bindings until they are used by in flight command lists
     m_sp_prev_program_bindings = m_sp_curr_program_bindings;
-    m_prev_program_bindings_release_on_frame = m_context.GetFrameBufferIndex();
+    m_prev_program_bindings_release_on_frame = GetUIContext().GetRenderContext().GetFrameBufferIndex();
 
     if (!m_sp_atlas_texture)
     {
@@ -372,7 +373,7 @@ void Text::UpdateMeshData()
     if (!m_sp_vertex_buffer_set || (*m_sp_vertex_buffer_set)[0].GetDataSize() < vertices_data_size)
     {
         const Data::Size vertex_buffer_size = vertices_data_size * m_settings.mesh_buffers_reservation_multiplier;
-        Ptr<gfx::Buffer> sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(m_context, vertex_buffer_size, m_sp_text_mesh->GetVertexSize());
+        Ptr<gfx::Buffer> sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(GetUIContext().GetRenderContext(), vertex_buffer_size, m_sp_text_mesh->GetVertexSize());
         sp_vertex_buffer->SetName(m_settings.name + " Text Vertex Buffer");
         m_sp_vertex_buffer_set = gfx::BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
     }
@@ -392,7 +393,7 @@ void Text::UpdateMeshData()
     if (!m_sp_index_buffer || m_sp_index_buffer->GetDataSize() < indices_data_size)
     {
         const Data::Size index_buffer_size = vertices_data_size * m_settings.mesh_buffers_reservation_multiplier;
-        m_sp_index_buffer = gfx::Buffer::CreateIndexBuffer(m_context, index_buffer_size, gfx::PixelFormat::R16Uint);
+        m_sp_index_buffer = gfx::Buffer::CreateIndexBuffer(GetUIContext().GetRenderContext(), index_buffer_size, gfx::PixelFormat::R16Uint);
         m_sp_index_buffer->SetName(m_settings.name + " Text Index Buffer");
     }
     m_sp_index_buffer->SetData({
@@ -426,7 +427,7 @@ void Text::UpdateUniformsBuffer()
 
     if (!m_sp_uniforms_buffer)
     {
-        m_sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(m_context, gfx::Buffer::GetAlignedBufferSize(uniforms_data_size));
+        m_sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(GetUIContext().GetRenderContext(), gfx::Buffer::GetAlignedBufferSize(uniforms_data_size));
         m_sp_uniforms_buffer->SetName(m_settings.name + " Text Uniforms Buffer");
     }
     m_sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size } });
@@ -442,7 +443,7 @@ void Text::UpdateConstantsBuffer()
 
     if (!m_sp_const_buffer)
     {
-        m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(m_context, gfx::Buffer::GetAlignedBufferSize(const_data_size));
+        m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(GetUIContext().GetRenderContext(), gfx::Buffer::GetAlignedBufferSize(const_data_size));
         m_sp_const_buffer->SetName(m_settings.name + " Text Constants Buffer");
     }
     m_sp_const_buffer->SetData({

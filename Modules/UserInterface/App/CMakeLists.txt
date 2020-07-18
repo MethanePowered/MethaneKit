@@ -48,6 +48,7 @@ PUBLIC
     MethaneInstrumentation
 PRIVATE
     MethaneBuildOptions
+    MethaneUserInterfaceTypes
 )
 
 set_target_properties(${TARGET}

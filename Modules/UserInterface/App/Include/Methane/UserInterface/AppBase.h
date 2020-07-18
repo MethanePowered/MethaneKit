@@ -35,13 +35,15 @@ namespace gfx = Methane::Graphics;
 class Font;
 class Badge;
 class Text;
+class Context;
 
 class AppBase
 {
 public:
-    AppBase(const Ptr<gfx::RenderContext>& sp_render_context, const IApp::Settings& ui_app_settings);
+    AppBase(const IApp::Settings& ui_app_settings);
+    ~AppBase();
 
-    void Init(const gfx::FrameSize& frame_size);
+    void Init(gfx::RenderContext& render_context, const gfx::FrameSize& frame_size);
     void Release();
     bool Resize(const gfx::FrameSize& frame_size, bool is_minimized);
     bool Update();
@@ -57,11 +59,14 @@ public:
     Font& GetMainFont();
 
     const UserInterface::IApp::Settings& GetAppSettings() const noexcept    { return m_app_settings; }
+
     HeadsUpDisplay::Settings&            GetHeadsUpDisplaySettings()        { return m_hud_settings; }
     HeadsUpDisplay*                      GetHeadsUpDisplay() const noexcept { return m_sp_hud.get(); }
 
 protected:
-    UserInterface::IApp::Settings& GetAppSettings() noexcept { return m_app_settings; }
+    UserInterface::IApp::Settings& GetAppSettings() noexcept                { return m_app_settings; }
+    const Context&                 GetUIContext() const noexcept            { return *m_sp_ui_context; }
+    Context&                       GetUIContext() noexcept                  { return *m_sp_ui_context; }
 
 private:
     bool UpdateText(Ptr<Text>& sp_text, const std::string& help_str);
@@ -74,7 +79,7 @@ private:
         Ptr<Text>   sp_text;
     };
 
-    const Ptr<gfx::RenderContext>& m_sp_render_context;
+    UniquePtr<Context>             m_sp_ui_context;
     IApp::Settings                 m_app_settings;
     HeadsUpDisplay::Settings       m_hud_settings;
     Graphics::FrameSize            m_frame_size;

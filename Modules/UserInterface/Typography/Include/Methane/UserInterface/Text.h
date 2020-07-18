@@ -25,6 +25,7 @@ Methane text rendering primitive.
 
 #include "Font.h"
 
+#include <Methane/UserInterface/Item.h>
 #include <Methane/Graphics/Color.hpp>
 #include <Methane/Data/Receiver.hpp>
 
@@ -47,7 +48,9 @@ namespace gfx = Methane::Graphics;
 
 class TextMesh;
 
-class Text : protected Data::Receiver<IFontCallback>
+class Text
+    : public Item
+    , protected Data::Receiver<IFontCallback>
 {
 public:
     enum class Wrap : uint32_t
@@ -75,8 +78,8 @@ public:
     using SettingsUtf8  = Settings<std::string>;
     using SettingsUtf32 = Settings<std::u32string>;
 
-    Text(gfx::RenderContext& context, Font& font, const SettingsUtf8&  settings);
-    Text(gfx::RenderContext& context, Font& font, SettingsUtf32 settings);
+    Text(Context& ui_context, Font& font, const SettingsUtf8&  settings);
+    Text(Context& ui_context, Font& font, SettingsUtf32 settings);
     ~Text();
 
     const SettingsUtf32&  GetSettings() const noexcept       { return m_settings; }
@@ -114,7 +117,6 @@ private:
 
     SettingsUtf32             m_settings;
     gfx::FrameRect            m_viewport_rect;
-    gfx::RenderContext&       m_context;
     Ptr<Font>                 m_sp_font;
     UniquePtr<TextMesh>       m_sp_text_mesh;
     Ptr<gfx::RenderState>     m_sp_state;
