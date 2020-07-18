@@ -171,6 +171,8 @@ void TypographyApp::Init()
                 }
             )
         );
+
+        vertical_text_pos_in_dots = m_texts.back()->GetViewportInDots().GetBottom() + g_margin_size_in_dots;
     }
 
     UpdateFontAtlasBadges();
