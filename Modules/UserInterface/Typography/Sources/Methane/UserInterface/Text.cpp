@@ -141,7 +141,14 @@ Text::Text(gfx::RenderContext& context, Font& font, SettingsUtf32 settings)
     m_sp_curr_program_bindings = CreateProgramBindings();
 }
 
-Text::~Text() = default;
+Text::~Text()
+{
+    META_FUNCTION_TASK();
+
+    // Manually disconnect font, so that if it will be released along with text,
+    // the destroyed text won't receive font atlas update callback leading to access violation
+    m_sp_font->Disconnect(*this);
+}
 
 std::string Text::GetTextUtf8() const
 {

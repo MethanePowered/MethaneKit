@@ -481,20 +481,21 @@ void TypographyApp::OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::Text
         }
     );
 
-    if (sp_font_atlas_badge_it == m_font_atlas_badges.end())
-    {
-        m_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font, sp_new_atlas_texture));
-        LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
-        return;
-    }
-
     if (sp_new_atlas_texture)
     {
-        Ptr<gui::Badge>& sp_badge = *sp_font_atlas_badge_it;
-        sp_badge->SetTexture(sp_new_atlas_texture);
-        sp_badge->SetSize(static_cast<const gfx::FrameSize&>(sp_new_atlas_texture->GetSettings().dimensions));
+        if (sp_font_atlas_badge_it == m_font_atlas_badges.end())
+        {
+            m_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font, sp_new_atlas_texture));
+            LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
+        }
+        else
+        {
+            Ptr<gui::Badge>& sp_badge = *sp_font_atlas_badge_it;
+            sp_badge->SetTexture(sp_new_atlas_texture);
+            sp_badge->SetSize(static_cast<const gfx::FrameSize&>(sp_new_atlas_texture->GetSettings().dimensions));
+        }
     }
-    else
+    else if (sp_font_atlas_badge_it != m_font_atlas_badges.end())
     {
         m_font_atlas_badges.erase(sp_font_atlas_badge_it);
         LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
