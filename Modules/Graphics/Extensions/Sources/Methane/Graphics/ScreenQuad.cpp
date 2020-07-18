@@ -48,19 +48,35 @@ struct ScreenQuadVertex
     };
 };
 
+ScreenQuad::ScreenQuad(RenderContext& context, Settings settings)
+    : ScreenQuad(context, nullptr, settings)
+{
+}
+
 ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings settings)
     : m_settings(std::move(settings))
     , m_context(context)
     , m_sp_texture(std::move(sp_texture))
 {
     META_FUNCTION_TASK();
-    if (!m_sp_texture)
-        throw std::invalid_argument("Screen-quad texture can not be empty.");
+    if (m_settings.texture_mode != TextureMode::Disabled && !m_sp_texture)
+        throw std::invalid_argument("Screen-quad texture can not be empty when quad texturing is enabled.");
 
-    QuadMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.f, 2.f);
-
+    QuadMesh<ScreenQuadVertex>     quad_mesh(ScreenQuadVertex::layout, 2.f, 2.f);
     const RenderContext::Settings& context_settings = context.GetSettings();
-    const Shader::MacroDefinitions ps_macro_definitions = GetPixelShaderMacroDefinitions(settings.texture_mode);
+    const Shader::MacroDefinitions ps_macro_definitions = GetPixelShaderMacroDefinitions(m_settings.texture_color_mode);
+    Program::ArgumentDescriptions  program_argument_descriptions = {
+        { { Shader::Type::Pixel, "g_constants" }, Program::Argument::Modifiers::Constant }
+    };
+
+    if (m_settings.texture_mode != TextureMode::Disabled)
+    {
+        const Program::Argument::Modifiers::Mask texture_argument_modifiers = m_settings.texture_mode == TextureMode::Constant
+                                                                              ? Program::Argument::Modifiers::Constant
+                                                                              : Program::Argument::Modifiers::None;
+        program_argument_descriptions.emplace(Shader::Type::Pixel, "g_texture", texture_argument_modifiers);
+        program_argument_descriptions.emplace(Shader::Type::Pixel, "g_sampler", Program::Argument::Modifiers::Constant);
+    }
 
     RenderState::Settings state_settings;
     state_settings.sp_program = Program::Create(context,
@@ -78,12 +94,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
                     Program::InputBufferLayout::ArgumentSemantics { quad_mesh.GetVertexLayout().GetSemantics() }
                 }
             },
-            Program::ArgumentDescriptions
-            {
-                { { Shader::Type::Pixel, "g_constants" }, Program::Argument::Modifiers::Constant },
-                { { Shader::Type::Pixel, "g_texture"   }, Program::Argument::Modifiers::None     },
-                { { Shader::Type::Pixel, "g_sampler"   }, Program::Argument::Modifiers::Constant },
-            },
+            program_argument_descriptions,
             PixelFormats
             {
                 context_settings.color_format
@@ -92,8 +103,8 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
         }
     );
     state_settings.sp_program->SetName(m_settings.name + " Screen-Quad Shading");
-    state_settings.viewports            = { GetFrameViewport(settings.screen_rect) };
-    state_settings.scissor_rects        = { GetFrameScissorRect(settings.screen_rect) };
+    state_settings.viewports            = { GetFrameViewport(m_settings.screen_rect) };
+    state_settings.scissor_rects        = { GetFrameScissorRect(m_settings.screen_rect) };
     state_settings.depth.enabled        = false;
     state_settings.depth.write_enabled  = false;
     state_settings.rasterizer.is_front_counter_clockwise = true;
@@ -106,12 +117,15 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
     m_sp_state = RenderState::Create(context, state_settings);
     m_sp_state->SetName(m_settings.name + " Screen-Quad Render State");
 
-    m_sp_texture_sampler = Sampler::Create(context, {
-        { Sampler::Filter::MinMag::Linear     },
-        { Sampler::Address::Mode::ClampToZero },
-    });
-    m_sp_texture_sampler->SetName(m_settings.name + " Screen-Quad Texture Sampler");
-    m_sp_texture->SetName(m_settings.name + " Screen-Quad Texture");
+    if (m_settings.texture_mode != TextureMode::Disabled)
+    {
+        m_sp_texture_sampler = Sampler::Create(context, {
+            { Sampler::Filter::MinMag::Linear     },
+            { Sampler::Address::Mode::ClampToZero },
+            });
+        m_sp_texture_sampler->SetName(m_settings.name + " Screen-Quad Texture Sampler");
+        m_sp_texture->SetName(m_settings.name + " Screen-Quad Texture");
+    }
 
     Ptr<Buffer> sp_vertex_buffer = Buffer::CreateVertexBuffer(context,
                                                               static_cast<Data::Size>(quad_mesh.GetVertexDataSize()),
@@ -139,11 +153,17 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
     m_sp_const_buffer = Buffer::CreateConstantBuffer(context, Buffer::GetAlignedBufferSize(const_buffer_size));
     m_sp_const_buffer->SetName(m_settings.name + " Screen-Quad Constants Buffer");
 
-    m_sp_const_program_bindings = ProgramBindings::Create(m_sp_state->GetSettings().sp_program, {
-        { { Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer    } } },
-        { { Shader::Type::Pixel, "g_texture"   }, { { m_sp_texture         } } },
-        { { Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler } } },
-    });
+    ProgramBindings::ResourceLocationsByArgument program_binding_resource_locations = {
+        { { Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer    } } }
+    };
+
+    if (m_settings.texture_mode != TextureMode::Disabled)
+    {
+        program_binding_resource_locations.emplace(Program::Argument(Shader::Type::Pixel, "g_texture"), Resource::Locations{ { m_sp_texture } });
+        program_binding_resource_locations.emplace(Program::Argument(Shader::Type::Pixel, "g_sampler"), Resource::Locations{ { m_sp_texture_sampler } });
+    }
+
+    m_sp_const_program_bindings = ProgramBindings::Create(m_sp_state->GetSettings().sp_program, program_binding_resource_locations);
 
     UpdateConstantsBuffer();
 }
@@ -187,6 +207,9 @@ void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled)
 void ScreenQuad::SetTexture(Ptr<Texture> sp_texture)
 {
     META_FUNCTION_TASK();
+    if (m_settings.texture_mode != TextureMode::Volatile)
+        throw std::logic_error("Can not change texture of screen quad when texture argument is not configured as volatile");
+
     if (m_sp_texture.get() == sp_texture.get())
         return;
 
@@ -235,13 +258,13 @@ void ScreenQuad::UpdateConstantsBuffer() const
     });
 }
 
-Shader::MacroDefinitions ScreenQuad::GetPixelShaderMacroDefinitions(TextureMode texture_mode)
+Shader::MacroDefinitions ScreenQuad::GetPixelShaderMacroDefinitions(TextureColorMode texture_mode)
 {
     META_FUNCTION_TASK();
     switch(texture_mode)
     {
-    case TextureMode::RgbaFloat:     return { };
-    case TextureMode::RFloatToAlpha: return { { "TTEXEL", "float" }, { "RMASK", "r" }, { "WMASK", "a" } };
+    case TextureColorMode::RgbaFloat:     return { };
+    case TextureColorMode::RFloatToAlpha: return { { "TTEXEL", "float" }, { "RMASK", "r" }, { "WMASK", "a" } };
     };
 
     return { };

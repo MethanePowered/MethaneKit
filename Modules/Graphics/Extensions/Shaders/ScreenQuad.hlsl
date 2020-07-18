@@ -21,6 +21,8 @@ Shaders for screen quad rendering with 2D texture
 
 ******************************************************************************/
 
+// TEXTURE_DISABLED - disables texture sampling and draws just a colored quad
+
 #ifndef TTEXEL
 #define TTEXEL float4
 #endif
@@ -59,8 +61,11 @@ struct Constants
 };
 
 ConstantBuffer<Constants> g_constants : register(b1);
+
+#ifndef TEXTURE_DISABLED
 Texture2D<TTEXEL>         g_texture   : register(t0);
 SamplerState              g_sampler   : register(s0);
+#endif
 
 PSInput QuadVS(VSInput input)
 {
@@ -72,7 +77,11 @@ PSInput QuadVS(VSInput input)
 
 TPIXEL QuadPS(PSInput input) : SV_TARGET
 {
+#ifdef TEXTURE_DISABLED
+    return g_constants.blend_color;
+#else
     TPIXEL color = VPIXEL;
     color.WMASK = g_texture.Sample(g_sampler, input.texcoord).RMASK;
     return color * g_constants.blend_color;
+#endif
 }

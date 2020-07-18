@@ -32,18 +32,21 @@ Badge rendering primitive displaying fixed texture in specific corner of the scr
 namespace Methane::UserInterface
 {
 
-static Badge::Settings ScaleBadgeSize(Badge::Settings settings, float scale_factor)
+static Badge::Settings UpdateBadgeSettings(Badge::Settings settings, float scale_factor, bool is_constant_texture)
 {
-    settings.size.width  = static_cast<uint32_t>(std::round(scale_factor * settings.size.width));
-    settings.size.height = static_cast<uint32_t>(std::round(scale_factor * settings.size.height));
-    settings.margins     = settings.margins * scale_factor;
+    settings.size.width   = static_cast<uint32_t>(std::round(scale_factor * settings.size.width));
+    settings.size.height  = static_cast<uint32_t>(std::round(scale_factor * settings.size.height));
+    settings.margins      = settings.margins * scale_factor;
+    settings.texture_mode = is_constant_texture
+                          ? gfx::ScreenQuad::TextureMode::Constant
+                          : gfx::ScreenQuad::TextureMode::Volatile;
     return settings;
 }
 
 Badge::Badge(gfx::RenderContext& context, Data::Provider& data_provider, const std::string& image_path, Settings settings)
     : Badge(context,
             gfx::ImageLoader(data_provider).LoadImageToTexture2D(context, image_path),
-            ScaleBadgeSize(settings, context.GetContentScalingFactor()))
+            UpdateBadgeSettings(settings, context.GetContentScalingFactor(), true))
 {
     META_FUNCTION_TASK();
 }
@@ -54,9 +57,10 @@ Badge::Badge(gfx::RenderContext& context, Ptr<gfx::Texture> sp_texture, Settings
         {
             settings.name,
             GetBadgeRectInFrame(context.GetSettings().frame_size, settings),
-            true,
+            true, // alpha_blending_enabled
             settings.blend_color,
-            settings.texture_mode
+            settings.texture_mode,
+            settings.texture_color_mode
         }
     )
     , m_settings(std::move(settings))

@@ -52,11 +52,12 @@ public:
     struct Settings
     {
         const std::string name;
-        gfx::FrameSize    size         = { 96u, 128u };
-        FrameCorner       corner       = FrameCorner::TopRight;
-        gfx::Point2i      margins      = { 16, 16 };
-        gfx::Color4f      blend_color  = gfx::Color4f(1.f, 1.f, 1.f, 1.f);
-        TextureMode       texture_mode = TextureMode::RgbaFloat;
+        gfx::FrameSize    size               = { 96u, 128u };
+        FrameCorner       corner             = FrameCorner::TopRight;
+        gfx::Point2i      margins            = { 16, 16 };
+        gfx::Color4f      blend_color        = gfx::Color4f(1.f, 1.f, 1.f, 1.f);
+        TextureMode       texture_mode       = TextureMode::Constant;
+        TextureColorMode  texture_color_mode = TextureColorMode::RgbaFloat;
     };
 
     Badge(gfx::RenderContext& context, Data::Provider& data_provider, const std::string& image_path, Settings settings);

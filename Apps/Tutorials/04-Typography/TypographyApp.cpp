@@ -203,7 +203,8 @@ Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(gui::Font& font, const Ptr<g
             gui::Badge::FrameCorner::BottomLeft,
             gfx::Point2u(16u, 16u),
             gfx::Color4f(font_color, 0.5f),
-            gui::Badge::TextureMode::RFloatToAlpha
+            gui::Badge::TextureMode::Volatile,
+            gui::Badge::TextureColorMode::RFloatToAlpha,
         }
     );
 }

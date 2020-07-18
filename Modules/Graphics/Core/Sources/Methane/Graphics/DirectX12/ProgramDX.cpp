@@ -157,9 +157,11 @@ void ProgramDX::InitRootSignature()
         case ArgumentBindingDX::Type::DescriptorTable:
         {
             const D3D12_DESCRIPTOR_RANGE_TYPE  range_type  = GetDescriptorRangeTypeByShaderInputType(bind_settings.input_type);
-            const D3D12_DESCRIPTOR_RANGE_FLAGS range_flags = (bind_settings.input_type == D3D_SIT_CBUFFER)
-                                                           ? D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC
-                                                           : D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
+            const D3D12_DESCRIPTOR_RANGE_FLAGS range_flags = (range_type == D3D12_DESCRIPTOR_RANGE_TYPE::D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
+                                                           ? D3D12_DESCRIPTOR_RANGE_FLAG_NONE
+                                                           : (bind_settings.argument.IsConstant()
+                                                               ? D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC
+                                                               : D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
             
             descriptor_ranges.emplace_back(range_type, bind_settings.resource_count, bind_settings.point, bind_settings.space, range_flags);
             root_parameters.back().InitAsDescriptorTable(1, &descriptor_ranges.back(), shader_visibility);
