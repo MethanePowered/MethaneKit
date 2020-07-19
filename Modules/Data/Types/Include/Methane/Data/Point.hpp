@@ -31,18 +31,54 @@ namespace Methane::Data
 {
 
 template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-class Point2T : public cml::vector<T, cml::fixed<2>>
+class Point2T : protected cml::vector<T, cml::fixed<2>>
 {
 public:
     using CoordinateType = T;
     using Base = cml::vector<T, cml::fixed<2>>;
+
     using Base::Base;
+    using Base::length;
+    using Base::length_squared;
+    using Base::normalize;
+
+    template<typename V>
+    Point2T(const Point2T<V>& other) : Base(other.AsVector()) {}
+
+    Base& AsVector() noexcept               { return *this; }
+    const Base& AsVector() const noexcept   { return *this; }
 
     T GetX() const noexcept { return (*this)[0]; }
     T GetY() const noexcept { return (*this)[1]; }
 
     void SetX(T x) noexcept { (*this)[0] = x; }
     void SetY(T y) noexcept { (*this)[1] = y; }
+
+    bool operator==(const Point2T<T>& other) const noexcept
+    { return static_cast<const Base&>(*this) == static_cast<const Base&>(other); }
+
+    bool operator!=(const Point2T<T>& other) const noexcept
+    { return static_cast<const Base&>(*this) != static_cast<const Base&>(other); }
+
+    Point2T<T> operator+(const Point2T<T>& other) const noexcept
+    { return Point2T<T>(GetX() + other.GetX(), GetY() + other.GetY()); }
+
+    Point2T<T> operator-(const Point2T<T>& other) const noexcept
+    { return Point2T<T>(GetX() - other.GetX(), GetY() - other.GetY()); }
+
+    Point2T<T>& operator+=(const Point2T<T>& other) noexcept
+    {
+        SetX(GetX() + other.GetX());
+        SetY(GetY() + other.GetY());
+        return *this;
+    }
+
+    Point2T<T>& operator-=(const Point2T<T>& other) noexcept
+    {
+        SetX(GetX() - other.GetX());
+        SetY(GetY() - other.GetY());
+        return *this;
+    }
 
     template<typename M, typename = std::enable_if_t<std::is_arithmetic_v<M>>>
     Point2T<T> operator*(M multiplier) const noexcept
@@ -93,7 +129,7 @@ public:
     }
 
     template<typename U>
-    explicit operator Point2T<U>() const
+    explicit operator Point2T<U>() const noexcept
     { return Point2T<U>(static_cast<U>(GetX()), static_cast<U>(GetY())); }
 
     operator std::string() const

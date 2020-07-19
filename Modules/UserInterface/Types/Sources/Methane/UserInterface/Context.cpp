@@ -49,6 +49,7 @@ UnitSize Context::GetFrameSizeInUnits(Units units) const noexcept
     case Units::Pixels: return GetFrameSizeInPixels();
     case Units::Dots:   return GetFrameSizeInDots();
     }
+    return UnitSize();
 }
 
 UnitPoint Context::ConvertToPixels(const FloatPoint& point) const noexcept

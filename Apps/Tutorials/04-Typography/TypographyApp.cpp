@@ -104,7 +104,7 @@ TypographyApp::TypographyApp()
     , m_displayed_text_lengths(g_text_blocks_count, 0)
 {
     m_displayed_text_lengths[0] = 1;
-    GetHeadsUpDisplaySettings().position = gfx::Point2i(g_margin_size_in_dots, g_margin_size_in_dots);
+    GetHeadsUpDisplaySettings().position = gui::UnitPoint(g_margin_size_in_dots, g_margin_size_in_dots, gui::Units::Dots);
 
     gui::Font::Library::Get().Connect(*this);
     AddInputControllers({

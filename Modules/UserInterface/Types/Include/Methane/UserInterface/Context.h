@@ -77,6 +77,7 @@ public:
         case Units::Pixels: return ConvertToPixels(value);
         case Units::Dots:   return ConvertToDots(value);
         }
+        return UnitType();
     }
 
     template<typename UnitType>

@@ -121,7 +121,7 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
         }
     }
 
-    return cml::normalize(Vector3f(screen_vector, inside_sphere ? z_sign * std::sqrt(Square(sphere_radius) - screen_vector.length_squared()) : 0.f));
+    return cml::normalize(Vector3f(screen_vector.AsVector(), inside_sphere ? z_sign * std::sqrt(Square(sphere_radius) - screen_vector.length_squared()) : 0.f));
 }
 
 void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir) noexcept
