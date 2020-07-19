@@ -58,7 +58,7 @@ public:
 protected:
     Vector3f GetNormalizedSphereProjection(const Data::Point2i& mouse_screen_pos, bool is_primary) const noexcept;
 
-    inline float GetRadiusInPixels(const Data::FRectSize& screen_size) const noexcept
+    inline float GetRadiusInPixels(const Data::FloatSize& screen_size) const noexcept
     { return std::min(screen_size.width, screen_size.height) * m_radius_ratio / 2.f; }
 
     inline bool          IsExternalViewCamera() const noexcept  { return m_p_view_camera; }

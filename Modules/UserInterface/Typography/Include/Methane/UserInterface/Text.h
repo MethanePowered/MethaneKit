@@ -44,8 +44,6 @@ struct Sampler;
 namespace Methane::UserInterface
 {
 
-namespace gfx = Methane::Graphics;
-
 class TextMesh;
 
 class Text
@@ -65,9 +63,8 @@ public:
     {
         const std::string name;
         StringType        text;
-        gfx::FrameRect    screen_rect;
-        bool              screen_rect_in_pixels = false;
-        gfx::Color4f      color                 = gfx::Color4f(1.f, 1.f, 1.f, 1.f);
+        UnitRect          screen_rect;
+        Color4f           color                 { 1.f, 1.f, 1.f, 1.f };
         Wrap              wrap                  = Wrap::Anywhere;
         bool              incremental_update    = true;
 
@@ -82,20 +79,22 @@ public:
     Text(Context& ui_context, Font& font, SettingsUtf32 settings);
     ~Text();
 
-    const SettingsUtf32&  GetSettings() const noexcept       { return m_settings; }
-    const gfx::FrameRect& GetViewport() const noexcept       { return m_viewport_rect; }
-    const std::u32string& GetTextUtf32() const noexcept      { return m_settings.text; }
+    const SettingsUtf32&  GetSettings() const noexcept         { return m_settings; }
+    const gfx::FrameRect& GetViewport() const noexcept         { return m_viewport_rect; }
+    const std::u32string& GetTextUtf32() const noexcept        { return m_settings.text; }
     std::string           GetTextUtf8() const;
-    gfx::FrameRect        GetViewportInDots() const noexcept;
+    const UnitRect&       GetViewportInPixels() const noexcept { return m_viewport_rect; }
+    UnitRect              GetViewportInDots() const;
 
     void SetText(const std::string& text);
     void SetText(const std::u32string& text);
-    void SetTextInScreenRect(const std::string& text, const gfx::FrameRect& screen_rect, bool rect_in_pixels = false);
-    void SetTextInScreenRect(const std::u32string& text, const gfx::FrameRect& screen_rect, bool rect_in_pixels = false);
-    void SetScreenRect(const gfx::FrameRect& screen_rect, bool rect_in_pixels = false);
-    void SetScreenOrigin(const gfx::FrameRect::Point& screen_origin, bool in_pixels = false);
+    void SetTextInScreenRect(const std::string& text, const UnitRect& ui_rect);
+    void SetTextInScreenRect(const std::u32string& text, const UnitRect& ui_rect);
     void SetColor(const gfx::Color4f& color);
     void SetIncrementalUpdate(bool incremental_update) noexcept { m_settings.incremental_update = incremental_update; }
+
+    // Item overrides
+    bool SetRect(const UnitRect& ui_rect) override;
 
     void Draw(gfx::RenderCommandList& cmd_list);
 
@@ -116,7 +115,7 @@ private:
     void UpdateConstantsBuffer();
 
     SettingsUtf32             m_settings;
-    gfx::FrameRect            m_viewport_rect;
+    UnitRect                  m_viewport_rect;
     Ptr<Font>                 m_sp_font;
     UniquePtr<TextMesh>       m_sp_text_mesh;
     Ptr<gfx::RenderState>     m_sp_state;

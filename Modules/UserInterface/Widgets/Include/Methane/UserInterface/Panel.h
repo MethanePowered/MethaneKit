@@ -35,8 +35,6 @@ class ImageLoader;
 namespace Methane::UserInterface
 {
 
-namespace gfx = Methane::Graphics;
-
 class Panel
     : public Container
     , public gfx::ScreenQuad
@@ -48,12 +46,12 @@ public:
         gfx::Color4f background_color { 0.f, 0.f, 0.f, 0.66f };
     };
 
-    Panel(Context& ui_context, const gfx::FrameRect& rect, Settings settings);
+    Panel(Context& ui_context, const UnitRect& rect, Settings settings);
 
     const Settings& GetSettings() const noexcept { return m_settings; }
 
     // Item overrides
-    bool SetRect(const gfx::FrameRect& rect) override;
+    bool SetRect(const UnitRect& ui_rect) override;
 
 private:
     Settings m_settings;

@@ -35,8 +35,6 @@ class ImageLoader;
 namespace Methane::UserInterface
 {
 
-namespace gfx = Methane::Graphics;
-
 class Badge
     : public Item
     , public gfx::ScreenQuad
@@ -53,10 +51,10 @@ public:
     struct Settings
     {
         const std::string name;
-        gfx::FrameSize    size               = { 96u, 128u };
+        UnitSize          size               { 96u, 128u, Units::Dots };
         FrameCorner       corner             = FrameCorner::TopRight;
-        gfx::Point2i      margins            = { 16, 16 };
-        gfx::Color4f      blend_color        = gfx::Color4f(1.f, 1.f, 1.f, 1.f);
+        UnitPoint         margins            { 16, 16, Units::Dots };
+        Color4f           blend_color        { 1.f, 1.f, 1.f, 1.f };
         TextureMode       texture_mode       = TextureMode::Constant;
         TextureColorMode  texture_color_mode = TextureColorMode::RgbaFloat;
     };
@@ -64,14 +62,19 @@ public:
     Badge(Context& ui_context, Data::Provider& data_provider, const std::string& image_path, Settings settings);
     Badge(Context& ui_context, Ptr<gfx::Texture> sp_texture, Settings settings);
 
-    void FrameResize(const gfx::FrameSize& frame_size, std::optional<gfx::FrameSize> badge_size = {}, std::optional<gfx::Point2i> margins = {});
+    void FrameResize(const UnitSize& frame_size, std::optional<UnitSize> badge_size = {}, std::optional<UnitPoint> margins = {});
     void SetCorner(FrameCorner frame_corner);
-    void SetMargins(gfx::Point2i& margins);
-    void SetSize(const gfx::FrameSize& size);
+    void SetMargins(UnitPoint& margins);
 
 private:
-    gfx::FrameRect GetBadgeRectInFrame(const gfx::FrameSize& frame_size);
-    static gfx::FrameRect GetBadgeRectInFrame(const gfx::FrameSize& frame_size, const Settings& settings);
+    // Item overrides
+    bool SetRect(const UnitRect& ui_rect) override;
+    using Item::SetOrigin;
+
+    UnitRect GetBadgeRectInFrame(const UnitSize& frame_size) { return GetBadgeRectInFrame(GetUIContext(), frame_size, m_settings); }
+    static UnitRect GetBadgeRectInFrame(Context& ui_context, const UnitSize& frame_size, const Settings& settings);
+    static UnitRect GetBadgeRectInFrame(const UnitSize& frame_size, const UnitSize& badge_size,
+                                        const UnitPoint& badge_margins, Badge::FrameCorner frame_corner);
 
     Settings m_settings;
 };

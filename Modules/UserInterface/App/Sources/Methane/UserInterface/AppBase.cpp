@@ -66,7 +66,7 @@ static void SplitTextToColumns(const std::string& text_str, std::string& left_co
 AppBase::AppBase(const IApp::Settings& ui_app_settings)
     : m_app_settings(ui_app_settings)
     , m_hud_settings({
-        g_major_font_desc, { ui_app_settings.text_margins_in_dots.width, ui_app_settings.text_margins_in_dots.height }
+        g_major_font_desc, ui_app_settings.text_margins
     })
 {
     META_FUNCTION_TASK();
@@ -78,10 +78,9 @@ AppBase::~AppBase() = default;
 void AppBase::Init(gfx::RenderContext& render_context, const gfx::FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
-
-    m_frame_size = frame_size;
     m_sp_ui_context = std::make_unique<Context>(render_context);
-    m_text_margins = m_app_settings.text_margins_in_dots * m_sp_ui_context->GetDotsToPixelsFactor();
+    m_frame_size    = UnitSize(frame_size, Units::Pixels);
+    m_text_margins  = m_sp_ui_context->ConvertToPixels(m_app_settings.text_margins);
 
     // Create Methane logo badge
     if (m_app_settings.show_logo_badge)
@@ -94,7 +93,7 @@ void AppBase::Init(gfx::RenderContext& render_context, const gfx::FrameSize& fra
     }
 
     // Create heads-up-display (HUD)
-    m_hud_settings.position = { m_text_margins.width, m_text_margins.height };
+    m_hud_settings.position = m_app_settings.text_margins;
     if (m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface)
     {
         m_sp_hud = std::make_shared<HeadsUpDisplay>(*m_sp_ui_context, Data::FontProvider::Get(), m_hud_settings);
@@ -131,10 +130,10 @@ bool AppBase::Resize(const gfx::FrameSize& frame_size, bool)
     if (m_frame_size == frame_size)
         return false;
 
-    m_frame_size = frame_size;
+    m_frame_size = UnitSize(frame_size, Units::Pixels);
 
     if (m_sp_logo_badge)
-        m_sp_logo_badge->FrameResize(frame_size);
+        m_sp_logo_badge->FrameResize(UnitSize(frame_size));
 
     UpdateHelpTextPosition();
     UpdateParametersTextPosition();
@@ -208,7 +207,7 @@ bool AppBase::SetHelpText(const std::string& help_str)
     // when single column does not fit into half of window height
     // and estimated width of two columns first in 2/3 of window width
     const gfx::FrameSize single_column_size = m_help_columns.first.sp_text->GetViewport().size;
-    if (single_column_size.height + m_text_margins.height > m_frame_size.height / 2 &&
+    if (single_column_size.height + m_text_margins.GetY() > m_frame_size.height / 2 &&
         single_column_size.width < m_frame_size.width / 2)
     {
         SplitTextToColumns(m_help_text_str, m_help_columns.first.text_str, m_help_columns.second.text_str);
@@ -267,7 +266,7 @@ bool AppBase::UpdateText(Ptr<Text>& sp_text, const std::string& help_str)
 
     if (sp_text)
     {
-        sp_text->SetTextInScreenRect(help_str, {}, true);
+        sp_text->SetTextInScreenRect(help_str, {});
     }
     else
     {
@@ -276,7 +275,7 @@ bool AppBase::UpdateText(Ptr<Text>& sp_text, const std::string& help_str)
              {
                  "Help",
                  help_str,
-                 gfx::FrameRect{}, true,
+                 UnitRect{},
                  m_app_settings.text_color,
                  Text::Wrap::None
              }
@@ -293,26 +292,22 @@ void AppBase::UpdateHelpTextPosition()
         return;
 
     // Help text columns are located in bottom-left corner
-    const gfx::FrameSize& first_column_size = m_help_columns.first.sp_text->GetViewport().size;
-    m_help_columns.first.sp_text->SetScreenOrigin(
-        {
-            m_text_margins.width,
-            m_frame_size.height - first_column_size.height - m_text_margins.height
-        },
-        true
-    );
+    const gfx::FrameSize& first_column_size = m_help_columns.first.sp_text->GetViewportInPixels().size;
+    m_help_columns.first.sp_text->SetOrigin(UnitPoint(
+        m_text_margins.GetX(),
+        m_frame_size.height - first_column_size.height - m_text_margins.GetY(),
+        Units::Pixels
+    ));
 
     if (!m_help_columns.second.sp_text)
         return;
 
-    const gfx::FrameSize& second_column_size = m_help_columns.first.sp_text->GetViewport().size;
-    m_help_columns.second.sp_text->SetScreenOrigin(
-        {
-            first_column_size.width + 2 * m_text_margins.width,
-            m_frame_size.height - second_column_size.height - m_text_margins.height
-        },
-        true
-    );
+    const gfx::FrameSize& second_column_size = m_help_columns.first.sp_text->GetViewportInPixels().size;
+    m_help_columns.second.sp_text->SetOrigin(UnitPoint(
+        first_column_size.width + 2 * m_text_margins.GetX(),
+        m_frame_size.height - second_column_size.height - m_text_margins.GetY(),
+        Units::Pixels
+    ));
 }
 
 void AppBase::UpdateParametersTextPosition()
@@ -322,14 +317,12 @@ void AppBase::UpdateParametersTextPosition()
         return;
 
     // Parameters text is located in bottom-right corner
-    const gfx::FrameSize& parameters_size = m_parameters.sp_text->GetViewport().size;
-    m_parameters.sp_text->SetScreenOrigin(
-        {
-            m_frame_size.width  - parameters_size.width  - m_text_margins.width,
-            m_frame_size.height - parameters_size.height - m_text_margins.height
-        },
-        true
-    );
+    const gfx::FrameSize& parameters_size = m_parameters.sp_text->GetViewportInPixels().size;
+    m_parameters.sp_text->SetOrigin(UnitPoint(
+        m_frame_size.width  - parameters_size.width  - m_text_margins.GetX(),
+        m_frame_size.height - parameters_size.height - m_text_margins.GetY(),
+        Units::Pixels
+    ));
 }
 
 Font& AppBase::GetMainFont()
@@ -343,7 +336,7 @@ Font& AppBase::GetMainFont()
 
     m_sp_main_font = Font::Library::Get().GetFont(
         Data::FontProvider::Get(),
-        Font::Settings{ g_main_font_desc, m_sp_ui_context->GetFontResolutionDPI(), Font::GetAlphabetDefault() }
+        Font::Settings{ g_main_font_desc, m_sp_ui_context->GetFontResolutionDpi(), Font::GetAlphabetDefault() }
     ).GetPtr();
     return *m_sp_main_font;
 }

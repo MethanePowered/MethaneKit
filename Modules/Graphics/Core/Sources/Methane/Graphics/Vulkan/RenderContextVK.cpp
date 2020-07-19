@@ -105,7 +105,7 @@ float RenderContextVK::GetContentScalingFactor() const
     return 1.f;
 }
 
-uint32_t RenderContextVK::GetFontResolutionDPI() const
+uint32_t RenderContextVK::GetFontResolutionDpi() const
 {
     META_FUNCTION_TASK();
     return 96u;

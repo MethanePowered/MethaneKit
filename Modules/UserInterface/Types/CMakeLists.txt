@@ -8,7 +8,7 @@ set(HEADERS
     ${INCLUDE_DIR}/Context.h
     ${INCLUDE_DIR}/Item.h
     ${INCLUDE_DIR}/Container.h
-    ${INCLUDE_DIR}/Types.h
+    ${INCLUDE_DIR}/Types.hpp
 )
 
 set(SOURCES

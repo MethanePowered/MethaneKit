@@ -185,7 +185,7 @@ public:
     Chars                    GetChars() const;
     Chars                    GetTextChars(const std::string& text);
     Chars                    GetTextChars(const std::u32string& text);
-    gfx:: FrameRect::Point   GetKerning(const Char& left_char, const Char& right_char) const;
+    gfx:: FramePoint         GetKerning(const Char& left_char, const Char& right_char) const;
     uint32_t                 GetLineHeight() const noexcept;
     const gfx::FrameSize&    GetAtlasSize() const noexcept;
     const Ptr<gfx::Texture>& GetAtlasTexturePtr(gfx::Context& context);

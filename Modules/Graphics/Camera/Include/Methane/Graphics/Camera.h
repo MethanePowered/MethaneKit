@@ -55,7 +55,7 @@ public:
 
     Camera(cml::AxisOrientation axis_orientation = g_axis_orientation) noexcept;
 
-    inline void Resize(const Data::FRectSize& screen_size) noexcept         { m_screen_size  = screen_size; m_aspect_ratio = screen_size.width / screen_size.height; m_is_current_proj_matrix_dirty = true; }
+    inline void Resize(const Data::FloatSize& screen_size) noexcept         { m_screen_size = screen_size; m_aspect_ratio = screen_size.width / screen_size.height; m_is_current_proj_matrix_dirty = true; }
     inline void SetProjection(Projection projection) noexcept               { m_projection = projection; m_is_current_proj_matrix_dirty = true; }
     inline void SetParameters(const Parameters& parameters) noexcept        { m_parameters = parameters; m_is_current_proj_matrix_dirty = true; }
     inline void ResetOrientation() noexcept                                 { m_current_orientation = m_default_orientation; m_is_current_view_matrix_dirty = true; }
@@ -66,7 +66,7 @@ public:
     inline void SetOrientationUp(const Vector3f& up) noexcept               { m_current_orientation.up = up;   m_is_current_view_matrix_dirty = true; }
     void        Rotate(const Vector3f& axis, float deg) noexcept;
 
-    inline const Data::FRectSize& GetScreenSize() const noexcept            { return m_screen_size; }
+    inline const Data::FloatSize& GetScreenSize() const noexcept            { return m_screen_size; }
     inline const Orientation& GetOrientation() const noexcept               { return m_current_orientation; }
     inline float GetAimDistance() const noexcept                            { return GetAimDistance(m_current_orientation); }
     inline Vector3f GetLookDirection() const noexcept                       { return GetLookDirection(m_current_orientation); }
@@ -105,7 +105,7 @@ private:
     const cml::AxisOrientation m_axis_orientation;
 
     Projection        m_projection            = Projection::Perspective;
-    Data::FRectSize   m_screen_size           { 1.f, 1.f };
+    Data::FloatSize   m_screen_size           { 1.f, 1.f };
     float             m_aspect_ratio          = 1.0f;
     Parameters        m_parameters            { 0.01f, 125.f, 90.f };
     Orientation       m_default_orientation   { { 15.0f, 15.0f, -15.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } };

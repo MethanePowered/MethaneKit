@@ -83,7 +83,7 @@ void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos) noexcept
 Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_screen_pos, bool is_primary) const noexcept
 {
     META_FUNCTION_TASK();
-    const Data::FRectSize& screen_size = m_p_view_camera ? m_p_view_camera->GetScreenSize() : GetScreenSize();
+    const Data::FloatSize& screen_size = m_p_view_camera ? m_p_view_camera->GetScreenSize() : GetScreenSize();
     const Point2f screen_center(screen_size.width / 2.f, screen_size.height / 2.f);
     Point2f screen_vector = static_cast<Point2f>(mouse_screen_pos) - screen_center;
 

@@ -178,16 +178,16 @@ public:
         );
     }
 
-    gfx::FrameRect::Point GetKerning(uint32_t left_glyph_index, uint32_t right_glyph_index) const
+    gfx::FramePoint GetKerning(uint32_t left_glyph_index, uint32_t right_glyph_index) const
     {
         META_FUNCTION_TASK();
         assert(left_glyph_index && right_glyph_index);
         if (!m_has_kerning || !left_glyph_index || !right_glyph_index)
-            return gfx::FrameRect::Point(0, 0);
+            return gfx::FramePoint(0, 0);
 
         FT_Vector kerning_vec{};
         ThrowFreeTypeError(FT_Get_Kerning(m_ft_face, left_glyph_index, right_glyph_index, FT_KERNING_DEFAULT, &kerning_vec));
-        return gfx::FrameRect::Point(kerning_vec.x >> 6, 0);
+        return gfx::FramePoint(kerning_vec.x >> 6, 0);
     }
 
     uint32_t GetLineHeight() const noexcept
@@ -516,7 +516,7 @@ Font::Chars Font::GetTextChars(const std::u32string& text)
     return text_chars;
 }
 
-gfx::FrameRect::Point Font::GetKerning(const Char& left_char, const Char& right_char) const
+gfx::FramePoint Font::GetKerning(const Char& left_char, const Char& right_char) const
 {
     META_FUNCTION_TASK();
     assert(!!m_sp_face);

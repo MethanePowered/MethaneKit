@@ -82,8 +82,8 @@ private:
     UniquePtr<Context>             m_sp_ui_context;
     IApp::Settings                 m_app_settings;
     HeadsUpDisplay::Settings       m_hud_settings;
-    Graphics::FrameSize            m_frame_size;
-    Graphics::FrameSize            m_text_margins;
+    UnitSize                       m_frame_size;
+    UnitPoint                      m_text_margins;
     Ptr<Badge>                     m_sp_logo_badge;
     Ptr<HeadsUpDisplay>            m_sp_hud;
     Ptr<Font>                      m_sp_main_font;

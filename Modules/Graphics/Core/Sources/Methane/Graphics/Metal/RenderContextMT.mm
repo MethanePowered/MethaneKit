@@ -200,7 +200,7 @@ float RenderContextMT::GetContentScalingFactor() const
     return static_cast<float>(m_app_view.appWindow.backingScaleFactor);
 }
 
-uint32_t RenderContextMT::GetFontResolutionDPI() const
+uint32_t RenderContextMT::GetFontResolutionDpi() const
 {
     META_FUNCTION_TASK();
     return 72u * GetContentScalingFactor();

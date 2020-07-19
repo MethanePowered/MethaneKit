@@ -235,7 +235,7 @@ float RenderContextDX::GetContentScalingFactor() const
     return GetDeviceScaleRatio(device_scale_factor);
 }
 
-uint32_t RenderContextDX::GetFontResolutionDPI() const
+uint32_t RenderContextDX::GetFontResolutionDpi() const
 {
     const HDC window_device_context = GetDC(m_platform_env.window_handle);
     const int dpi_y = GetDeviceCaps(window_device_context, LOGPIXELSY);

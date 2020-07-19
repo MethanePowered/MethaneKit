@@ -30,13 +30,13 @@ Panel widget with opaque background containing other widgets.
 namespace Methane::UserInterface
 {
 
-Panel::Panel(Context& ui_context, const gfx::FrameRect& rect, Settings settings)
-    : Container(ui_context, rect)
+Panel::Panel(Context& ui_context, const UnitRect& ui_rect, Settings settings)
+    : Container(ui_context, ui_rect)
     , ScreenQuad(ui_context.GetRenderContext(),
         ScreenQuad::Settings
         {
             settings.name,
-            rect,
+            ui_context.ConvertToPixels(ui_rect),
             true, // alpha_blending_enabled
             settings.background_color,
             TextureMode::Disabled
@@ -48,13 +48,13 @@ Panel::Panel(Context& ui_context, const gfx::FrameRect& rect, Settings settings)
 }
 
 // Item overrides
-bool Panel::SetRect(const gfx::FrameRect& rect)
+bool Panel::SetRect(const UnitRect& ui_rect)
 {
     META_FUNCTION_TASK();
-    if (!Container::SetRect(rect))
+    if (!Container::SetRect(ui_rect))
         return false;
 
-    gfx::ScreenQuad::SetScreenRect(rect);
+    gfx::ScreenQuad::SetScreenRect(GetUIContext().ConvertToPixels(ui_rect));
     return true;
 }
 

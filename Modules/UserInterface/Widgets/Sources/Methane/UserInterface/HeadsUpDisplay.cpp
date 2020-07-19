@@ -39,32 +39,19 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
     : Item(ui_context)
     , m_settings(std::move(settings))
     , m_sp_major_font(Font::Library::Get().GetFont(
-        font_data_provider, Font::Settings { m_settings.major_font, GetUIContext().GetFontResolutionDPI(), Font::GetAlphabetDefault() }
+        font_data_provider, Font::Settings{ m_settings.major_font, GetUIContext().GetFontResolutionDpi(), Font::GetAlphabetDefault() }
     ).GetPtr())
     , m_fps_text(ui_context, *m_sp_major_font,
         Text::SettingsUtf8
         {
             "FPS",
             "000 FPS",
-            gfx::FrameRect{ settings.position, { 500, 60 } }, false,
+            UnitRect(settings.position, { }, settings.position.units),
             m_settings.text_color
         }
     )
 {
     META_FUNCTION_TASK();
-}
-
-void HeadsUpDisplay::SetPosition(const gfx::Point2i& position)
-{
-    META_FUNCTION_TASK();
-    if (m_settings.position == position)
-        return;
-
-    m_settings.position = position;
-
-    gfx::FrameRect screen_rect = m_fps_text.GetSettings().screen_rect;
-    screen_rect.origin = position;
-    m_fps_text.SetScreenRect(screen_rect);
 }
 
 void HeadsUpDisplay::SetTextColor(const gfx::Color4f& text_color)
@@ -81,6 +68,16 @@ void HeadsUpDisplay::SetUpdateInterval(double update_interval_sec)
 {
     META_FUNCTION_TASK();
     m_settings.update_interval_sec = update_interval_sec;
+}
+
+bool HeadsUpDisplay::SetRect(const UnitRect& rect)
+{
+    META_FUNCTION_TASK();
+    if (!Item::SetRect(rect))
+        return false;
+
+    m_fps_text.SetRect(rect);
+    return true;
 }
 
 void HeadsUpDisplay::Update()

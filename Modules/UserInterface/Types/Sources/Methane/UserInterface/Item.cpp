@@ -22,35 +22,61 @@ Methane user interface item - base type of all user interface widgets and text.
 ******************************************************************************/
 
 #include <Methane/UserInterface/Item.h>
+#include <Methane/UserInterface/Context.h>
 
 #include <Methane/Instrumentation.h>
 
 namespace Methane::UserInterface
 {
 
-Item::Item(Context& ui_context, const gfx::FrameRect& rect)
+Item::Item(Context& ui_context, const UnitRect& ui_rect)
     : m_ui_context(ui_context)
-    , m_rect(rect)
+    , m_ui_rect_px(m_ui_context.ConvertToPixels(ui_rect))
 {
     META_FUNCTION_TASK();
 }
 
-bool Item::SetRect(const gfx::FrameRect& rect)
+UnitRect Item::GetRectInDots() const noexcept
 {
     META_FUNCTION_TASK();
-    if (m_rect == rect)
+    assert(m_ui_rect_px.units == Units::Pixels);
+    return m_ui_context.ConvertToDots(m_ui_rect_px);
+}
+
+UnitRect Item::GetRectInUnits(Units units) const noexcept
+{
+    META_FUNCTION_TASK();
+    return m_ui_context.ConvertToUnits(m_ui_rect_px, units);
+}
+
+bool Item::SetRect(const UnitRect& rect)
+{
+    META_FUNCTION_TASK();
+    if (m_ui_rect_px == rect)
         return false;
 
-    m_rect = rect;
+    const UnitRect rect_px = m_ui_context.ConvertToPixels(rect);
+    if (m_ui_rect_px == rect_px)
+        return false;
+
+    m_ui_rect_px = rect_px;
     Emit(&IItemCallback::RectChanged, *this);
 
     return true;
 }
 
-bool Item::SetOrigin(const gfx::FrameRect::Point& origin)
+bool Item::SetOrigin(const UnitPoint& origin)
 {
     META_FUNCTION_TASK();
-    return SetRect({ origin, m_rect.size });
+    assert(m_ui_rect_px.units == Units::Pixels);
+    return SetRect(UnitRect(m_ui_context.ConvertToPixels(origin), m_ui_rect_px.size, m_ui_rect_px.units));
+}
+
+bool Item::SetSize(const UnitSize& size)
+{
+    META_FUNCTION_TASK();
+    assert(m_ui_rect_px.units == Units::Pixels);
+    return SetRect(UnitRect(m_ui_rect_px.origin, m_ui_context.ConvertToPixels(size), m_ui_rect_px.units));
 }
 
 } // namespace Methane::UserInterface

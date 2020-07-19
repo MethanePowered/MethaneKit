@@ -146,7 +146,7 @@ void TypographyApp::Init()
                 Data::FontProvider::Get(),
                 gui::Font::Settings
                 {
-                    font_settings.desc, GetUIContext().GetFontResolutionDPI(),
+                    font_settings.desc, GetUIContext().GetFontResolutionDpi(),
                     gui::Font::GetAlphabetFromText(displayed_text_block)
                 }
             ).GetPtr()
@@ -159,12 +159,12 @@ void TypographyApp::Init()
                 {
                     font_settings.desc.name,
                     displayed_text_block,
-                    gfx::FrameRect
+                    gui::UnitRect
                     {
                         { g_margin_size_in_dots, vertical_text_pos_in_dots },
-                        { frame_width_without_margins, 0u /* calculated height */ }
+                        { frame_width_without_margins, 0u /* calculated height */ },
+                        gui::Units::Dots
                     },
-                    false, // screen_rect_in_pixels
                     gfx::Color4f(font_settings.color, 1.f),
                     gui::Text::Wrap::Word,
                     m_settings.is_incremental_text_update
@@ -191,7 +191,7 @@ void TypographyApp::Init()
 Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(gui::Font& font, const Ptr<gfx::Texture>& sp_atlas_texture)
 {
     const auto font_color_by_name_it = g_font_color_by_name.find(font.GetSettings().description.name);
-    const gfx::Color3f& font_color = font_color_by_name_it != g_font_color_by_name.end()
+    const gui::Color3f& font_color = font_color_by_name_it != g_font_color_by_name.end()
                                    ? font_color_by_name_it->second : g_misc_font_color;
 
     return std::make_shared<gui::Badge>(
@@ -199,10 +199,10 @@ Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(gui::Font& font, const Ptr<g
         gui::Badge::Settings
         {
             font.GetSettings().description.name + " Font Atlas",
-            static_cast<const gfx::FrameSize&>(sp_atlas_texture->GetSettings().dimensions),
+            gui::UnitSize(static_cast<const gfx::FrameSize&>(sp_atlas_texture->GetSettings().dimensions), gui::Units::Pixels),
             gui::Badge::FrameCorner::BottomLeft,
-            gfx::Point2u(16u, 16u),
-            gfx::Color4f(font_color, 0.5f),
+            gui::UnitPoint(16u, 16u, gui::Units::Dots),
+            gui::Color4f(font_color, 0.5f),
             gui::Badge::TextureMode::Volatile,
             gui::Badge::TextureColorMode::RFloatToAlpha,
         }
@@ -268,17 +268,14 @@ void TypographyApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
               }
     );
 
-    const float scale_factor = GetUIContext().GetDotsToPixelsFactor();
-    gfx::Point2i badge_margins(g_margin_size_in_dots, g_margin_size_in_dots);
-    badge_margins *= scale_factor;
-
     // Layout badges in a row one after another with a margin spacing
+    gui::UnitPoint badge_margins(g_margin_size_in_dots, g_margin_size_in_dots, gui::Units::Dots);
     for(const Ptr<gui::Badge>& sp_badge_atlas : m_font_atlas_badges)
     {
         assert(sp_badge_atlas);
-        const gfx::FrameSize& atlas_size = static_cast<const gfx::FrameSize&>(sp_badge_atlas->GetTexture().GetSettings().dimensions);
-        sp_badge_atlas->FrameResize(frame_size, atlas_size, badge_margins);
-        badge_margins.SetX(badge_margins.GetX() + atlas_size.width + static_cast<int32_t>(scale_factor * g_margin_size_in_dots));
+        const gui::UnitSize atlas_size = GetUIContext().ConvertToDots(gui::UnitSize(static_cast<const gfx::FrameSize&>(sp_badge_atlas->GetTexture().GetSettings().dimensions), gui::Units::Pixels));
+        sp_badge_atlas->FrameResize(gui::UnitSize(frame_size, gui::Units::Pixels), atlas_size, badge_margins);
+        badge_margins += gui::UnitPoint(atlas_size.width + static_cast<int32_t>(g_margin_size_in_dots), 0u, gui::Units::Dots);
     }
 }
 
@@ -294,10 +291,11 @@ bool TypographyApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 
     for(Ptr<gui::Text>& sp_text : m_texts)
     {
-        sp_text->SetScreenRect({
+        sp_text->SetRect(gui::UnitRect(
             { g_margin_size_in_dots, vertical_text_pos_in_dots },
-            { frame_width_without_margins, 0u /* calculated height */ }
-        });
+            { frame_width_without_margins, 0u /* calculated height */ },
+            gui::Units::Dots
+        ));
         vertical_text_pos_in_dots += sp_text->GetViewportInDots().size.height + g_margin_size_in_dots;
     }
 
@@ -355,10 +353,11 @@ bool TypographyApp::Animate(double elapsed_seconds, double)
         const std::u32string displayed_text = text_block.substr(0, displayed_text_length);
         {
             Methane::ScopeTimer scope_timer("Text update");
-            sp_text->SetTextInScreenRect(displayed_text, {
+            sp_text->SetTextInScreenRect(displayed_text, gui::UnitRect(
                 { g_margin_size_in_dots, vertical_text_pos_in_dots  },
-                { GetFrameSizeInDots().width - 2 * g_margin_size_in_dots, 0u }
-            });
+                { GetFrameSizeInDots().width - 2 * g_margin_size_in_dots, 0u },
+                gui::Units::Dots
+            ));
             m_text_update_duration = scope_timer.GetElapsedDuration();
         }
         vertical_text_pos_in_dots = sp_text->GetViewportInDots().GetBottom() + g_margin_size_in_dots;
@@ -495,7 +494,7 @@ void TypographyApp::OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::Text
         {
             Ptr<gui::Badge>& sp_badge = *sp_font_atlas_badge_it;
             sp_badge->SetTexture(sp_new_atlas_texture);
-            sp_badge->SetSize(static_cast<const gfx::FrameSize&>(sp_new_atlas_texture->GetSettings().dimensions));
+            sp_badge->SetSize(gui::UnitSize(static_cast<const gfx::FrameSize&>(sp_new_atlas_texture->GetSettings().dimensions), gui::Units::Pixels));
         }
     }
     else if (sp_font_atlas_badge_it != m_font_atlas_badges.end())

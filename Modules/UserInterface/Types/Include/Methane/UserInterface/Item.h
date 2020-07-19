@@ -23,7 +23,7 @@ Methane user interface item - base type of all user interface widgets and text.
 
 #pragma once
 
-#include <Methane/Graphics/Rect.hpp>
+#include <Methane/UserInterface/Types.hpp>
 #include <Methane/Data/Emitter.hpp>
 #include <Methane/Memory.hpp>
 
@@ -47,20 +47,23 @@ class Item
     , public std::enable_shared_from_this<Item>
 {
 public:
-    Item(Context& ui_context, const gfx::FrameRect& rect = {});
+    Item(Context& ui_context, const UnitRect& ui_rect = {});
 
-    Ptr<Item>             GetPtr()                      { return shared_from_this(); }
-    const Context&        GetUIContext() const noexcept { return m_ui_context; }
-    Context&              GetUIContext() noexcept       { return m_ui_context; }
-    const gfx::FrameRect& GetRect() const noexcept      { return m_rect; }
+    Ptr<Item>       GetPtr()                                        { return shared_from_this(); }
+    const Context&  GetUIContext() const noexcept                   { return m_ui_context; }
+    Context&        GetUIContext() noexcept                         { return m_ui_context; }
+    const UnitRect& GetRectInPixels() const noexcept                { return m_ui_rect_px; }
+    UnitRect        GetRectInDots() const noexcept;
+    UnitRect        GetRectInUnits(Units units) const noexcept;
 
-    virtual bool SetRect(const gfx::FrameRect& rect);
+    virtual bool SetRect(const UnitRect& rect);
 
-    bool SetOrigin(const gfx::FrameRect::Point& origin);
+    bool SetOrigin(const UnitPoint& origin);
+    bool SetSize(const UnitSize& size);
 
 private:
-    Context&       m_ui_context;
-    gfx::FrameRect m_rect;
+    Context& m_ui_context;
+    UnitRect m_ui_rect_px;
 };
 
 } // namespace Methane::UserInterface

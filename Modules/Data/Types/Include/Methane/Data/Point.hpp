@@ -30,10 +30,11 @@ FILE: Methane/Data/Point2D.hpp
 namespace Methane::Data
 {
 
-template<typename T>
+template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
 class Point2T : public cml::vector<T, cml::fixed<2>>
 {
 public:
+    using CoordinateType = T;
     using Base = cml::vector<T, cml::fixed<2>>;
     using Base::Base;
 
@@ -42,6 +43,54 @@ public:
 
     void SetX(T x) noexcept { (*this)[0] = x; }
     void SetY(T y) noexcept { (*this)[1] = y; }
+
+    template<typename M, typename = std::enable_if_t<std::is_arithmetic_v<M>>>
+    Point2T<T> operator*(M multiplier) const noexcept
+    { return Point2T<T>(static_cast<T>(static_cast<M>(GetX()) * multiplier), static_cast<T>(static_cast<M>(GetY()) * multiplier)); }
+
+    template<typename M, typename = std::enable_if_t<std::is_arithmetic_v<M>>>
+    Point2T<T> operator/(M divisor) const noexcept
+    { return Point2T<T>(static_cast<T>(static_cast<M>(GetX()) / divisor), static_cast<T>(static_cast<M>(GetY()) / divisor)); }
+
+    template<typename M>
+    Point2T<T> operator*(const Point2T<M>& multiplier) const noexcept
+    { return Point2T<T>(static_cast<T>(static_cast<M>(GetX()) * multiplier.GetX()), static_cast<T>(static_cast<M>(GetY()) * multiplier.GetY())); }
+
+    template<typename M>
+    Point2T<T> operator/(const Point2T<M>& divisor) const noexcept
+    { return Point2T<T>(static_cast<T>(static_cast<M>(GetX()) / divisor.GetX()), static_cast<T>(static_cast<M>(GetY()) / divisor.GetY())); }
+
+    template<typename M, typename = std::enable_if_t<std::is_arithmetic_v<M>>>
+    Point2T<T>& operator*=(M multiplier) noexcept
+    {
+        SetX(static_cast<T>(static_cast<M>(GetX()) * multiplier));
+        SetY(static_cast<T>(static_cast<M>(GetY()) * multiplier));
+        return *this;
+    }
+
+    template<typename M, typename = std::enable_if_t<std::is_arithmetic_v<M>>>
+    Point2T<T>& operator/=(M divisor) noexcept
+    {
+        SetX(static_cast<T>(static_cast<M>(GetX()) / divisor));
+        SetY(static_cast<T>(static_cast<M>(GetY()) / divisor));
+        return *this;
+    }
+
+    template<typename M>
+    Point2T<T>& operator*=(const Point2T<M>& multiplier) noexcept
+    {
+        SetX(static_cast<T>(static_cast<M>(GetX()) * multiplier.GetX()));
+        SetY(static_cast<T>(static_cast<M>(GetY()) * multiplier.GetY()));
+        return *this;
+    }
+
+    template<typename M>
+    Point2T<T>& operator/=(const Point2T<M>& divisor) noexcept
+    {
+        SetX(static_cast<T>(static_cast<M>(GetX()) / divisor.GetX()));
+        SetY(static_cast<T>(static_cast<M>(GetY()) / divisor.GetY()));
+        return *this;
+    }
 
     template<typename U>
     explicit operator Point2T<U>() const

@@ -38,8 +38,6 @@ struct RenderCommandList;
 namespace Methane::UserInterface
 {
 
-namespace gfx = Methane::Graphics;
-
 class Font;
 
 class HeadsUpDisplay : public Item
@@ -48,18 +46,20 @@ public:
     struct Settings
     {
         Font::Description major_font;
-        gfx::Point2i      position   { 20, 20 };
-        gfx::Color4f      text_color { 1.f, 1.f, 1.f, 1.f };
-        double   update_interval_sec = 0.33;
+        UnitPoint         position            { 20, 20, Units::Dots };
+        Color4f           text_color          { 1.f, 1.f, 1.f, 1.f };
+        double            update_interval_sec = 0.33;
     };
 
     HeadsUpDisplay(Context& ui_context, const Data::Provider& font_data_provider, Settings settings);
 
     const Settings& GetSettings() const { return m_settings; }
 
-    void SetPosition(const gfx::Point2i& position);
-    void SetTextColor(const gfx::Color4f& text_color);
+    void SetTextColor(const Color4f& text_color);
     void SetUpdateInterval(double update_interval_sec);
+
+    // Item overrides
+    bool SetRect(const UnitRect& rect) override;
 
     void Update();
     void Draw(gfx::RenderCommandList& cmd_list);

@@ -35,8 +35,10 @@ using Rect = Data::Rect<T, D>;
 
 using FrameRect    = Data::FrameRect;
 using FrameSize    = Data::FrameSize;
+using FramePoint   = Data::FramePoint;
 using FloatRect    = Data::FloatRect;
-using FRectSize    = Data::FRectSize;
+using FloatSize    = Data::FloatSize;
+using FloatPoint   = Data::FloatPoint;
 using ScissorRect  = Rect<uint32_t, uint32_t>;
 using ScissorRects = std::vector<ScissorRect>;
 

@@ -31,7 +31,7 @@ Arc-Ball camera unit tests
 using namespace Methane::Graphics;
 using namespace Methane::Data;
 
-static const FRectSize           g_test_screen_size      { 640.f, 480.f };
+static const FloatSize           g_test_screen_size      { 640.f, 480.f };
 static const Point2f             g_test_screen_center    { g_test_screen_size.width / 2.f, g_test_screen_size.height / 2.f };
 static const Camera::Orientation g_test_view_orientation { { 0.f, 5.f, 10.f }, { 0.f, 5.f, 0.f }, { 0.f, 1.f, 0.f } };
 static const Camera::Orientation g_test_dept_orientation { { 10.f, 7.f, 0.f }, { 0.f, 7.f, 0.f }, { 0.f, 0.f, 1.f } };

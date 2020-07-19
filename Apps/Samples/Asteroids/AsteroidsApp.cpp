@@ -188,7 +188,7 @@ void AsteroidsApp::Init()
 
     gfx::RenderContext& context = GetRenderContext();
     const gfx::RenderContext::Settings& context_settings = context.GetSettings();
-    const Data::FRectSize float_rect_size(static_cast<float>(context_settings.frame_size.width),
+    const Data::FloatSize float_rect_size(static_cast<float>(context_settings.frame_size.width),
                                           static_cast<float>(context_settings.frame_size.height));
     m_view_camera.Resize(float_rect_size);
 

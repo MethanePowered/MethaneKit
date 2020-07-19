@@ -39,7 +39,7 @@ enum class CharAction
     Stop,
 };
 
-using ProcessFontCharAtPosition = const std::function<CharAction(const Font::Char& text_char, const gfx::FrameRect::Point& char_pos, size_t char_index)>;
+using ProcessFontCharAtPosition = const std::function<CharAction(const Font::Char& text_char, const gfx::FramePoint& char_pos, size_t char_index)>;
 
 static void ForEachTextCharacterInRange(Font& font, const Font::Chars& text_chars, size_t begin_index, size_t end_index,
                                         TextMesh::CharPositions& char_positions, uint32_t viewport_width, Text::Wrap wrap,
@@ -102,17 +102,17 @@ static void ForEachTextCharacter(const std::u32string& text, Font& font, TextMes
     META_FUNCTION_TASK();
     const Font::Chars text_chars = font.GetTextChars(text);
     const ProcessFontCharAtPosition& word_wrap_char_at_position = // word wrap mode processor
-        [&](const Font::Char& text_char, const gfx::FrameRect::Point& cur_char_pos, size_t char_index) -> CharAction
+        [&](const Font::Char& text_char, const gfx::FramePoint& cur_char_pos, size_t char_index) -> CharAction
         {
             if (text_char.IsWhiteSpace())
             {
                 // Word wrap prediction: check if next word fits in given viewport width
                 bool word_wrap_required = false;
-                const gfx::FrameRect::Point start_char_pos = { cur_char_pos.GetX() + text_char.GetAdvance().GetX(), cur_char_pos.GetY() };
+                const gfx::FramePoint start_char_pos = { cur_char_pos.GetX() + text_char.GetAdvance().GetX(), cur_char_pos.GetY() };
                 const size_t start_chars_count = char_positions.size();
                 char_positions.emplace_back(start_char_pos);
                 ForEachTextCharacterInRange(font, text_chars, char_index + 1, text_chars.size(), char_positions, viewport_width, Text::Wrap::Anywhere,
-                    [&word_wrap_required, &start_char_pos, &text_chars](const Font::Char& text_char, const gfx::FrameRect::Point& char_pos, size_t char_index) -> CharAction
+                    [&word_wrap_required, &start_char_pos, &text_chars](const Font::Char& text_char, const gfx::FramePoint& char_pos, size_t char_index) -> CharAction
                     {
                         // Word has ended if whitespace character is received or line break character was passed
                         if (text_char.IsWhiteSpace() || (char_index && text_chars[char_index - 1].get().IsLineBreak()))
@@ -253,7 +253,7 @@ void TextMesh::AppendChars(std::u32string added_text)
     m_char_positions.reserve(m_char_positions.size() + added_text.length());
 
     ForEachTextCharacter(added_text, m_font, m_char_positions, m_viewport_size.width, m_wrap,
-        [&](const Font::Char& font_char, const gfx::FrameRect::Point& char_pos, size_t char_index) -> CharAction
+        [&](const Font::Char& font_char, const gfx::FramePoint& char_pos, size_t char_index) -> CharAction
         {
             if (font_char.IsWhiteSpace())
             {
@@ -274,7 +274,7 @@ void TextMesh::AppendChars(std::u32string added_text)
         m_last_whitespace_index += init_text_length;
 }
 
-void TextMesh::AddCharQuad(const Font::Char& font_char, const gfx::FrameRect::Point& char_pos, const gfx::FrameSize& atlas_size)
+void TextMesh::AddCharQuad(const Font::Char& font_char, const gfx::FramePoint& char_pos, const gfx::FrameSize& atlas_size)
 {
     META_FUNCTION_TASK();
 
@@ -343,7 +343,7 @@ void TextMesh::UpdateContentSize()
     }
 }
 
-void TextMesh::UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FrameRect::Point& char_pos)
+void TextMesh::UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FramePoint& char_pos)
 {
     META_FUNCTION_TASK();
     m_content_size.width  = std::max(m_content_size.width,  char_pos.GetX() + font_char.GetOffset().GetX() + font_char.GetRect().size.width);

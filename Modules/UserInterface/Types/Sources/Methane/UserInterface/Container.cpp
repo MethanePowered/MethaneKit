@@ -28,8 +28,8 @@ Methane user interface container of items.
 namespace Methane::UserInterface
 {
 
-Container::Container(Context& ui_context, const gfx::FrameRect& rect, Ptrs<Item> children)
-    : Item(ui_context, rect)
+Container::Container(Context& ui_context, const UnitRect& ui_rect, Ptrs<Item> children)
+    : Item(ui_context, ui_rect)
     , m_children(children)
 {
     META_FUNCTION_TASK();

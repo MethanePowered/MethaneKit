@@ -60,7 +60,6 @@ Text::Text(Context& ui_context, Font& font, const SettingsUtf8&  settings)
             settings.name,
             Font::ConvertUtf8To32(settings.text),
             settings.screen_rect,
-            settings.screen_rect_in_pixels,
             settings.color,
             settings.wrap
         }
@@ -79,10 +78,7 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
     m_sp_font->Connect(*this);
 
     const gfx::RenderContext::Settings& context_settings = GetUIContext().GetRenderContext().GetSettings();
-
-    m_viewport_rect = m_settings.screen_rect;
-    if (!m_settings.screen_rect_in_pixels)
-        m_viewport_rect *= GetUIContext().GetDotsToPixelsFactor();
+    m_viewport_rect = GetUIContext().ConvertToPixels(m_settings.screen_rect);
 
     UpdateMeshData();
     UpdateUniformsBuffer();
@@ -157,46 +153,43 @@ std::string Text::GetTextUtf8() const
     return Font::ConvertUtf32To8(m_settings.text);
 }
 
-gfx::FrameRect Text::GetViewportInDots() const noexcept
+UnitRect Text::GetViewportInDots() const
 {
     META_FUNCTION_TASK();
-    return m_viewport_rect / GetUIContext().GetDotsToPixelsFactor();
+    return GetUIContext().ConvertToDots(m_viewport_rect);
 }
 
 void Text::SetText(const std::string& text)
 {
     META_FUNCTION_TASK();
-    SetTextInScreenRect(text, m_settings.screen_rect, m_settings.screen_rect_in_pixels);
+    SetTextInScreenRect(text, m_settings.screen_rect);
 }
 
 void Text::SetText(const std::u32string& text)
 {
     META_FUNCTION_TASK();
-    SetTextInScreenRect(text, m_settings.screen_rect, m_settings.screen_rect_in_pixels);
+    SetTextInScreenRect(text, m_settings.screen_rect);
 }
 
-void Text::SetTextInScreenRect(const std::string& text, const gfx::FrameRect& screen_rect, bool rect_in_pixels)
+void Text::SetTextInScreenRect(const std::string& text, const UnitRect& ui_rect)
 {
     META_FUNCTION_TASK();
-    SetTextInScreenRect(Font::ConvertUtf8To32(text), screen_rect, rect_in_pixels);
+    SetTextInScreenRect(Font::ConvertUtf8To32(text), ui_rect);
 }
 
-void Text::SetTextInScreenRect(const std::u32string& text, const gfx::FrameRect& screen_rect, bool rect_in_pixels)
+void Text::SetTextInScreenRect(const std::u32string& text, const UnitRect& ui_rect)
 {
     META_FUNCTION_TASK();
-    if (m_settings.text == text && m_settings.screen_rect == screen_rect && m_settings.screen_rect_in_pixels == rect_in_pixels)
+    const UnitRect ui_rect_in_units = GetUIContext().ConvertToUnits(ui_rect, m_settings.screen_rect.units);
+    if (m_settings.text == text && m_settings.screen_rect == ui_rect_in_units)
         return;
 
     const bool text_changed             = m_settings.text != text;
-    const bool screen_rect_size_changed = m_settings.screen_rect.size != screen_rect.size;
+    const bool screen_rect_size_changed = m_settings.screen_rect.size != ui_rect_in_units.size;
 
     m_settings.text = text;
-    m_settings.screen_rect = screen_rect;
-    m_settings.screen_rect_in_pixels = rect_in_pixels;
-
-    m_viewport_rect = m_settings.screen_rect;
-    if (!m_settings.screen_rect_in_pixels)
-        m_viewport_rect *= GetUIContext().GetDotsToPixelsFactor();
+    m_settings.screen_rect = ui_rect_in_units;
+    m_viewport_rect = GetUIContext().ConvertToPixels(m_settings.screen_rect);
 
     if (screen_rect_size_changed || text_changed)
     {
@@ -214,20 +207,20 @@ void Text::SetTextInScreenRect(const std::u32string& text, const gfx::FrameRect&
     m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(m_viewport_rect) });
 }
 
-void Text::SetScreenRect(const gfx::FrameRect& screen_rect, bool rect_in_pixels)
+bool Text::SetRect(const UnitRect& ui_rect)
 {
     META_FUNCTION_TASK();
-    if (m_settings.screen_rect == screen_rect && m_settings.screen_rect_in_pixels == rect_in_pixels)
-        return;
+    if (!Item::SetRect(ui_rect))
+        return false;
 
-    const bool screen_rect_size_changed = m_settings.screen_rect.size != screen_rect.size;
+    const UnitRect ui_rect_in_units = GetUIContext().ConvertToUnits(ui_rect, m_settings.screen_rect.units);
+    const bool screen_rect_size_changed = m_settings.screen_rect.size != ui_rect_in_units.size;
 
-    m_settings.screen_rect = screen_rect;
-    m_settings.screen_rect_in_pixels = rect_in_pixels;
-
-    m_viewport_rect = screen_rect;
-    if (!rect_in_pixels)
-        m_viewport_rect *= GetUIContext().GetDotsToPixelsFactor();
+    m_settings.screen_rect = ui_rect_in_units;
+    if (screen_rect_size_changed)
+        m_viewport_rect = GetUIContext().ConvertToPixels(m_settings.screen_rect);
+    else
+        m_viewport_rect.origin = GetUIContext().ConvertToPixels(m_settings.screen_rect).origin;
 
     if (screen_rect_size_changed)
     {
@@ -237,18 +230,7 @@ void Text::SetScreenRect(const gfx::FrameRect& screen_rect, bool rect_in_pixels)
 
     m_sp_state->SetViewports({ gfx::GetFrameViewport(m_viewport_rect) });
     m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(m_viewport_rect) });
-}
-
-void Text::SetScreenOrigin(const gfx::FrameRect::Point& screen_origin, bool in_pixels)
-{
-    META_FUNCTION_TASK();
-    SetScreenRect(
-        {
-            screen_origin,
-            in_pixels ? GetViewport().size : GetViewportInDots().size
-        },
-        in_pixels
-    );
+    return true;
 }
 
 void Text::SetColor(const gfx::Color4f& color)
