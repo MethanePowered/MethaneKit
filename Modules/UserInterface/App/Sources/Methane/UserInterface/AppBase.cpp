@@ -86,7 +86,7 @@ void AppBase::Init(gfx::RenderContext& render_context, const gfx::FrameSize& fra
     if (m_app_settings.show_logo_badge)
     {
         Badge::Settings logo_badge_settings;
-        logo_badge_settings.blend_color  = m_app_settings.logo_badge_color;
+        logo_badge_settings.blend_color = m_app_settings.logo_badge_color;
         m_sp_logo_badge = std::make_shared<Badge>(
             *m_sp_ui_context, Data::TextureProvider::Get(), "Logo/MethaneLogoNameWatermark.png", std::move(logo_badge_settings)
         );

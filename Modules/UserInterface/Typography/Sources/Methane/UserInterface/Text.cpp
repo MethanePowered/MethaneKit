@@ -210,8 +210,7 @@ void Text::SetTextInScreenRect(const std::u32string& text, const UnitRect& ui_re
 bool Text::SetRect(const UnitRect& ui_rect)
 {
     META_FUNCTION_TASK();
-    if (!Item::SetRect(ui_rect))
-        return false;
+    const bool is_rect_changed = Item::SetRect(ui_rect);
 
     const UnitRect ui_rect_in_units = GetUIContext().ConvertToUnits(ui_rect, m_settings.screen_rect.units);
     const bool screen_rect_size_changed = m_settings.screen_rect.size != ui_rect_in_units.size;
@@ -230,7 +229,7 @@ bool Text::SetRect(const UnitRect& ui_rect)
 
     m_sp_state->SetViewports({ gfx::GetFrameViewport(m_viewport_rect) });
     m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(m_viewport_rect) });
-    return true;
+    return is_rect_changed;
 }
 
 void Text::SetColor(const gfx::Color4f& color)
