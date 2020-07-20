@@ -57,7 +57,8 @@ struct Shader
         std::string name;
         std::string value;
 
-        explicit MacroDefinition(std::string name, std::string value = "") : name(std::move(name)), value(std::move(value)) { }
+        explicit MacroDefinition(std::string name) : name(std::move(name)) { }
+        MacroDefinition(std::string name, std::string value) : name(std::move(name)), value(std::move(value)) { }
     };
 
     using MacroDefinitions = std::vector<MacroDefinition>;
