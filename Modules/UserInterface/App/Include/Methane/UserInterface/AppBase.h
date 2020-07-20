@@ -35,6 +35,7 @@ namespace gfx = Methane::Graphics;
 class Font;
 class Badge;
 class Text;
+class Panel;
 class Context;
 
 class AppBase
@@ -69,15 +70,20 @@ protected:
     Context&                       GetUIContext() noexcept                  { return *m_sp_ui_context; }
 
 private:
-    bool UpdateText(Ptr<Text>& sp_text, const std::string& help_str);
-    void UpdateHelpTextPosition();
-    void UpdateParametersTextPosition();
-
     struct TextItem
     {
         std::string text_str;
+        std::string text_name;
+        Ptr<Panel>  sp_panel;
         Ptr<Text>   sp_text;
+
+        void Draw(gfx::RenderCommandList& cmd_list);
+        void Reset();
     };
+
+    bool UpdateTextItem(TextItem& item);
+    void UpdateHelpTextPosition();
+    void UpdateParametersTextPosition();
 
     UniquePtr<Context>             m_sp_ui_context;
     IApp::Settings                 m_app_settings;

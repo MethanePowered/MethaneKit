@@ -25,6 +25,7 @@ Base implementation of the Methane user interface application.
 
 #include <Methane/UserInterface/Context.h>
 #include <Methane/UserInterface/Text.h>
+#include <Methane/UserInterface/Panel.h>
 #include <Methane/UserInterface/Badge.h>
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Data/AppResourceProviders.h>
@@ -71,6 +72,9 @@ AppBase::AppBase(const IApp::Settings& ui_app_settings)
 {
     META_FUNCTION_TASK();
     m_hud_settings.text_color = m_app_settings.text_color;
+    m_help_columns.first.text_name  = "Help Left";
+    m_help_columns.second.text_name = "Help Right";
+    m_parameters.text_name          = "Parameters";
 }
 
 AppBase::~AppBase() = default;
@@ -100,13 +104,13 @@ void AppBase::Init(gfx::RenderContext& render_context, const gfx::FrameSize& fra
     }
 
     // Update displayed text blocks
-    if (!m_help_columns.first.text_str.empty()  && UpdateText(m_help_columns.first.sp_text,  m_help_columns.first.text_str) &&
-        (m_help_columns.second.text_str.empty() || UpdateText(m_help_columns.second.sp_text, m_help_columns.second.text_str)))
+    if (!m_help_columns.first.text_str.empty() && UpdateTextItem(m_help_columns.first) &&
+        (m_help_columns.second.text_str.empty() || UpdateTextItem(m_help_columns.second)))
     {
         UpdateHelpTextPosition();
     }
 
-    if (!m_parameters.text_str.empty() && UpdateText(m_parameters.sp_text, m_parameters.text_str))
+    if (!m_parameters.text_str.empty() && UpdateTextItem(m_parameters))
     {
         UpdateParametersTextPosition();
     }
@@ -156,18 +160,35 @@ void AppBase::RenderOverlay(gfx::RenderCommandList& cmd_list)
     if (m_sp_hud && m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface)
         m_sp_hud->Draw(cmd_list);
 
+    m_help_columns.first.Draw(cmd_list);
+    m_help_columns.second.Draw(cmd_list);
+    m_parameters.Draw(cmd_list);
+
     if (m_sp_logo_badge)
         m_sp_logo_badge->Draw(cmd_list);
-
-    if (m_help_columns.first.sp_text)
-        m_help_columns.first.sp_text->Draw(cmd_list);
-
-    if (m_help_columns.second.sp_text)
-        m_help_columns.second.sp_text->Draw(cmd_list);
-
-    if (m_parameters.sp_text)
-        m_parameters.sp_text->Draw(cmd_list);
 }
+
+void AppBase::TextItem::Draw(gfx::RenderCommandList& cmd_list)
+{
+    META_FUNCTION_TASK();
+    if (sp_panel)
+    {
+        sp_panel->Draw(cmd_list);
+    }
+    if (sp_text)
+    {
+        sp_text->Draw(cmd_list);
+    }
+}
+
+void AppBase::TextItem::Reset()
+{
+    META_FUNCTION_TASK();
+    text_str.clear();
+    sp_text.reset();
+    sp_panel.reset();
+}
+
 
 bool AppBase::SetHeadsUpDisplayMode(IApp::HeadsUpDisplayMode heads_up_display_mode)
 {
@@ -196,10 +217,11 @@ bool AppBase::SetHelpText(const std::string& help_str)
         return false;
 
     m_help_text_str = help_str;
+    m_help_columns.first.text_str = help_str;
 
-    if (!UpdateText(m_help_columns.first.sp_text, m_help_text_str))
+    if (!UpdateTextItem(m_help_columns.first))
     {
-        m_help_columns.second.sp_text.reset();
+        m_help_columns.second.Reset();
         return false;
     }
 
@@ -213,15 +235,14 @@ bool AppBase::SetHelpText(const std::string& help_str)
         SplitTextToColumns(m_help_text_str, m_help_columns.first.text_str, m_help_columns.second.text_str);
         if (!m_help_columns.second.text_str.empty())
         {
-            UpdateText(m_help_columns.first.sp_text, m_help_columns.first.text_str);
-            UpdateText(m_help_columns.second.sp_text, m_help_columns.second.text_str);
+            UpdateTextItem(m_help_columns.first);
+            UpdateTextItem(m_help_columns.second);
         }
     }
     else
     {
         m_help_columns.first.text_str = m_help_text_str;
-        m_help_columns.second.text_str.clear();
-        m_help_columns.second.sp_text.reset();
+        m_help_columns.second.Reset();
     }
 
     UpdateHelpTextPosition();
@@ -236,22 +257,23 @@ bool AppBase::SetParametersText(const std::string& parameters_str)
 
     m_parameters.text_str = parameters_str;
 
-    if (!UpdateText(m_parameters.sp_text, m_parameters.text_str))
+    if (!UpdateTextItem(m_parameters))
         return false;
 
     UpdateParametersTextPosition();
     return true;
 }
 
-bool AppBase::UpdateText(Ptr<Text>& sp_text, const std::string& help_str)
+bool AppBase::UpdateTextItem(TextItem& item)
 {
-    if ((!sp_text && help_str.empty()) ||
-        (sp_text && sp_text->GetTextUtf8() == help_str))
+    if ((!item.sp_text && item.text_str.empty()) ||
+        (item.sp_text && item.sp_text->GetTextUtf8() == item.text_str))
         return false;
 
-    if (help_str.empty())
+    if (item.text_str.empty())
     {
-        sp_text.reset();
+        item.Reset();
+
         // If main font is hold only by this class and Font::Library, then it can be removed as unused
         if (m_sp_main_font.use_count() == 2)
         {
@@ -264,24 +286,36 @@ bool AppBase::UpdateText(Ptr<Text>& sp_text, const std::string& help_str)
     if (!m_sp_ui_context)
         throw std::logic_error("Help text can not be initialized without render context.");
 
-    if (sp_text)
+    if (!item.sp_panel)
     {
-        sp_text->SetTextInScreenRect(help_str, {});
+        item.sp_panel = std::make_shared<Panel>(*m_sp_ui_context, UnitRect(),
+            Panel::Settings
+            {
+                item.text_name + " Panel"
+            }
+        );
+    }
+
+    if (item.sp_text)
+    {
+        item.sp_text->SetTextInScreenRect(item.text_str, {});
     }
     else
     {
-        sp_text = std::make_shared<Text>(*m_sp_ui_context, GetMainFont(),
+        item.sp_text = std::make_shared<Text>(*m_sp_ui_context, GetMainFont(),
              Text::SettingsUtf8
              {
-                 "Help",
-                 help_str,
+                 item.text_name,
+                 item.text_str,
                  UnitRect{},
                  m_app_settings.text_color,
                  Text::Wrap::None
              }
         );
+        item.sp_panel->AddChild(*item.sp_text);
     }
 
+    item.sp_panel->SetRect(item.sp_text->GetRectInPixels());
     return true;
 }
 
@@ -299,6 +333,9 @@ void AppBase::UpdateHelpTextPosition()
         Units::Pixels
     ));
 
+    if (m_help_columns.first.sp_panel)
+        m_help_columns.first.sp_panel->SetRect(m_help_columns.first.sp_text->GetRectInPixels());
+
     if (!m_help_columns.second.sp_text)
         return;
 
@@ -308,6 +345,9 @@ void AppBase::UpdateHelpTextPosition()
         m_frame_size.height - second_column_size.height - m_text_margins.GetY(),
         Units::Pixels
     ));
+
+    if (m_help_columns.second.sp_panel)
+        m_help_columns.second.sp_panel->SetRect(m_help_columns.second.sp_text->GetRectInPixels());
 }
 
 void AppBase::UpdateParametersTextPosition()
@@ -323,6 +363,9 @@ void AppBase::UpdateParametersTextPosition()
         m_frame_size.height - parameters_size.height - m_text_margins.GetY(),
         Units::Pixels
     ));
+
+    if (m_parameters.sp_panel)
+        m_parameters.sp_panel->SetRect(m_parameters.sp_text->GetRectInPixels());
 }
 
 Font& AppBase::GetMainFont()

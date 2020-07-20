@@ -64,7 +64,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
 
     QuadMesh<ScreenQuadVertex>     quad_mesh(ScreenQuadVertex::layout, 2.f, 2.f);
     const RenderContext::Settings& context_settings = context.GetSettings();
-    const Shader::MacroDefinitions ps_macro_definitions = GetPixelShaderMacroDefinitions(m_settings.texture_color_mode);
+    const Shader::MacroDefinitions ps_macro_definitions = GetPixelShaderMacroDefinitions(m_settings.texture_mode, m_settings.texture_color_mode);
     Program::ArgumentDescriptions  program_argument_descriptions = {
         { { Shader::Type::Pixel, "g_constants" }, Program::Argument::Modifiers::Constant }
     };
@@ -258,16 +258,26 @@ void ScreenQuad::UpdateConstantsBuffer() const
     });
 }
 
-Shader::MacroDefinitions ScreenQuad::GetPixelShaderMacroDefinitions(TextureColorMode texture_mode)
+Shader::MacroDefinitions ScreenQuad::GetPixelShaderMacroDefinitions(TextureMode texture_mode, TextureColorMode color_mode)
 {
     META_FUNCTION_TASK();
-    switch(texture_mode)
+    Shader::MacroDefinitions macro_definitions;
+    if (texture_mode == TextureMode::Disabled)
+        macro_definitions.emplace_back("TEXTURE_DISABLED", "");
+
+    switch(color_mode)
     {
-    case TextureColorMode::RgbaFloat:     return { };
-    case TextureColorMode::RFloatToAlpha: return { { "TTEXEL", "float" }, { "RMASK", "r" }, { "WMASK", "a" } };
+    case TextureColorMode::RgbaFloat:
+        break;
+
+    case TextureColorMode::RFloatToAlpha:
+        macro_definitions.emplace_back("TTEXEL", "float");
+        macro_definitions.emplace_back("RMASK", "r");
+        macro_definitions.emplace_back("WMASK", "a");
+        break;
     };
 
-    return { };
+    return macro_definitions;
 }
 
 } // namespace Methane::Graphics

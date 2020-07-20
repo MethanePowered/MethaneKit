@@ -53,6 +53,9 @@ public:
     // Item overrides
     bool SetRect(const UnitRect& ui_rect) override;
 
+protected:
+    using gfx::ScreenQuad::SetScreenRect;
+
 private:
     Settings m_settings;
 };

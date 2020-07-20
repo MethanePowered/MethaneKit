@@ -85,7 +85,7 @@ protected:
 private:
     void UpdateConstantsBuffer() const;
 
-    static Shader::MacroDefinitions GetPixelShaderMacroDefinitions(TextureColorMode texture_mode);
+    static Shader::MacroDefinitions GetPixelShaderMacroDefinitions(TextureMode texture_mode, TextureColorMode color_mode);
 
     Settings             m_settings;
     RenderContext&       m_context;
