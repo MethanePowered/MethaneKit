@@ -62,12 +62,19 @@ public:
 
     UnitPoint ConvertToPixels(const UnitPoint& point) const noexcept;
     UnitPoint ConvertToDots(const UnitPoint& point) const noexcept;
+    UnitPoint ConvertToDots(const FramePoint& point_px) const noexcept;
 
     UnitSize  ConvertToPixels(const UnitSize& size) const noexcept;
     UnitSize  ConvertToDots(const UnitSize& size) const noexcept;
+    UnitSize  ConvertToDots(const FrameSize& size_px) const noexcept;
 
     UnitRect  ConvertToPixels(const UnitRect& rect) const noexcept;
     UnitRect  ConvertToDots(const UnitRect& rect) const noexcept;
+    UnitRect  ConvertToDots(const FrameRect& rect_px) const noexcept;
+
+    UnitPoint ConvertToUnits(const FramePoint& point_px, Units units) const noexcept;
+    UnitSize  ConvertToUnits(const FrameSize&  size_px,  Units units) const noexcept;
+    UnitRect  ConvertToUnits(const FrameRect&  rect_px,  Units units) const noexcept;
 
     template<typename UnitType>
     UnitType ConvertToUnits(const UnitType& value, Units units) const noexcept

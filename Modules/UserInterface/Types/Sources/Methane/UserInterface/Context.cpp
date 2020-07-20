@@ -104,6 +104,12 @@ UnitPoint Context::ConvertToDots(const UnitPoint& point) const noexcept
     return point.units == Units::Dots ? point : UnitPoint(point / m_dots_to_pixels_factor, Units::Dots);
 }
 
+UnitPoint Context::ConvertToDots(const FramePoint& point_px) const noexcept
+{
+    META_FUNCTION_TASK();
+    return UnitPoint(point_px / m_dots_to_pixels_factor, Units::Dots);
+}
+
 UnitSize Context::ConvertToPixels(const UnitSize& size) const noexcept
 {
     META_FUNCTION_TASK();
@@ -116,6 +122,12 @@ UnitSize Context::ConvertToDots(const UnitSize& size) const noexcept
     return size.units == Units::Dots ? size : UnitSize(size / m_dots_to_pixels_factor, Units::Dots);
 }
 
+UnitSize Context::ConvertToDots(const FrameSize& size_px) const noexcept
+{
+    META_FUNCTION_TASK();
+    return UnitSize(size_px / m_dots_to_pixels_factor, Units::Dots);
+}
+
 UnitRect Context::ConvertToPixels(const UnitRect& rect) const noexcept
 {
     META_FUNCTION_TASK();
@@ -126,6 +138,45 @@ UnitRect Context::ConvertToDots(const UnitRect& rect) const noexcept
 {
     META_FUNCTION_TASK();
     return rect.units == Units::Dots ? rect : UnitRect(rect / m_dots_to_pixels_factor, Units::Dots);
+}
+
+UnitRect Context::ConvertToDots(const FrameRect& rect_px) const noexcept
+{
+    META_FUNCTION_TASK();
+    return UnitRect(rect_px / m_dots_to_pixels_factor, Units::Dots);
+}
+
+UnitPoint Context::ConvertToUnits(const FramePoint& point_px, Units units) const noexcept
+{
+    META_FUNCTION_TASK();
+    switch(units)
+    {
+    case Units::Pixels: return UnitPoint(point_px, units);
+    case Units::Dots:   return ConvertToDots(point_px);
+    }
+    return UnitPoint();
+}
+
+UnitSize Context::ConvertToUnits(const FrameSize& size_px, Units units) const noexcept
+{
+    META_FUNCTION_TASK();
+    switch(units)
+    {
+    case Units::Pixels: return UnitSize(size_px, units);
+    case Units::Dots:   return ConvertToDots(size_px);
+    }
+    return UnitSize();
+}
+
+UnitRect Context::ConvertToUnits(const FrameRect& rect_px, Units units) const noexcept
+{
+    META_FUNCTION_TASK();
+    switch(units)
+    {
+    case Units::Pixels: return UnitRect(rect_px, units);
+    case Units::Dots:   return ConvertToDots(rect_px);
+    }
+    return UnitRect();
 }
 
 } // namespace Methane::UserInterface

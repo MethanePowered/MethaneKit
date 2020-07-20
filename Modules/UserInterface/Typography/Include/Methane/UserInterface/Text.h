@@ -63,10 +63,10 @@ public:
     {
         const std::string name;
         StringType        text;
-        UnitRect          screen_rect;
-        Color4f           color                 { 1.f, 1.f, 1.f, 1.f };
-        Wrap              wrap                  = Wrap::Anywhere;
-        bool              incremental_update    = true;
+        UnitRect          rect;
+        Color4f           color              { 1.f, 1.f, 1.f, 1.f };
+        Wrap              wrap               = Wrap::Anywhere;
+        bool              incremental_update = true;
 
         // Minimize number of vertex/index buffer re-allocations on dynamic text updates by reserving additional size with multiplication of required size
         Data::Size        mesh_buffers_reservation_multiplier = 2u;

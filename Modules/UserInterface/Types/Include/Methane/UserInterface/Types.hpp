@@ -55,23 +55,36 @@ inline std::string UnitsToString(Units units) noexcept
     }
 }
 
-struct UnitSize : FrameSize
+template<typename BaseType>
+struct UnitType : BaseType
 {
     Units units = Units::Pixels;
 
-    using FrameSize::FrameSize;
+    using BaseType::BaseType;
 
-    explicit UnitSize(const FrameSize& size) noexcept : FrameSize(size), units(Units::Pixels) { }
-    UnitSize(const FrameSize& size, Units units) noexcept : FrameSize(size), units(units) { }
-    UnitSize(DimensionType w, DimensionType h, Units units) noexcept : FrameSize(w, h), units(units) { }
+    explicit UnitType(const BaseType& size) noexcept : BaseType(size), units(Units::Pixels) { }
+    UnitType(const BaseType& size, Units units) noexcept : BaseType(size), units(units) { }
 
-    inline void CheckUnitsCompatibility(const UnitSize& other) const { if (units != other.units) throw std::invalid_argument("Incompatible size units."); }
+    template<typename... BaseArgs>
+    UnitType(Units units, BaseArgs... base_args) noexcept : BaseType(base_args...), units(units) { }
+
+    operator std::string() const                                            { return BaseType::operator std::string() + " in " + UnitsToString(units); }
+    bool operator==(const UnitType& other) const noexcept                   { return BaseType::operator==(other) && units == other.units; }
+    bool operator!=(const UnitType& other) const noexcept                   { return BaseType::operator!=(other) || units != other.units; }
+
+protected:
+    inline void CheckUnitsCompatibility(const UnitType& other) const { if (units != other.units) throw std::invalid_argument("Incompatible size units."); }
+};
+
+struct UnitSize : UnitType<FrameSize>
+{
+    using UnitType<FrameSize>::UnitType;
+    UnitSize(DimensionType w, DimensionType h, Units units) noexcept : UnitType<FrameSize>(units, w, h) { }
 
     using FrameSize::operator bool;
-    operator std::string() const                                         { return FrameSize::operator std::string() + " in " + UnitsToString(units); }
+    using UnitType<FrameSize>::operator==;
+    using UnitType<FrameSize>::operator!=;
 
-    bool operator==(const UnitSize& other) const noexcept                { return FrameSize::operator==(other) && units == other.units; }
-    bool operator!=(const UnitSize& other) const noexcept                { return FrameSize::operator!=(other) || units != other.units; }
     bool operator<=(const UnitSize& other) const noexcept                { return FrameSize::operator<=(other) && units == other.units; }
     bool operator<(const UnitSize& other) const noexcept                 { return FrameSize::operator<(other)  && units == other.units; }
     bool operator>=(const UnitSize& other) const noexcept                { return FrameSize::operator>=(other) && units == other.units; }
@@ -100,22 +113,15 @@ struct UnitSize : FrameSize
     template<typename M> UnitSize& operator/=(const RectSize<M>& divisor) noexcept          { FrameSize::operator/=(divisor); return *this; }
 };
 
-struct UnitPoint : FramePoint
+struct UnitPoint : UnitType<FramePoint>
 {
-    Units units = Units::Pixels;
-
-    using FramePoint::FramePoint;
-
-    UnitPoint(const FramePoint& point, Units units) noexcept : FramePoint(point), units(units) { }
-    UnitPoint(CoordinateType x, CoordinateType y, Units units) noexcept : FramePoint(x, y), units(units) { }
+    using UnitType<FramePoint>::UnitType;
+    UnitPoint(CoordinateType x, CoordinateType y, Units units) noexcept : UnitType<FramePoint>(units, x, y) { }
     UnitPoint(const UnitSize& size) noexcept : UnitPoint(size.width, size.height, size.units) { }
 
-    inline void CheckUnitsCompatibility(const UnitPoint& other) const { if (units != other.units) throw std::invalid_argument("Incompatible point units."); }
+    using UnitType<FramePoint>::operator==;
+    using UnitType<FramePoint>::operator!=;
 
-    operator std::string() const                                                            { return FramePoint::operator std::string() + " in " + UnitsToString(units); }
-
-    bool operator==(const UnitPoint& other) const noexcept                                  { return static_cast<const FramePoint&>(*this) == other && units == other.units; }
-    bool operator!=(const UnitPoint& other) const noexcept                                  { return static_cast<const FramePoint&>(*this) != other || units != other.units; }
     bool operator<=(const UnitPoint& other) const noexcept                                  { return static_cast<const FramePoint&>(*this) <= other && units == other.units; }
     bool operator<(const UnitPoint& other) const noexcept                                   { return static_cast<const FramePoint&>(*this) <  other && units == other.units; }
     bool operator>=(const UnitPoint& other) const noexcept                                  { return static_cast<const FramePoint&>(*this) >= other && units == other.units; }
@@ -137,18 +143,13 @@ struct UnitPoint : FramePoint
     template<typename M> UnitPoint& operator/=(const Point2T<M>& divisor) noexcept          { FramePoint::operator/=(divisor); return *this; }
 };
 
-struct UnitRect : FrameRect
+struct UnitRect : UnitType<FrameRect>
 {
-    Units units = Units::Pixels;
+    using UnitType<FrameRect>::UnitType;
+    UnitRect(Point origin, Size size, Units units) noexcept : UnitType<FrameRect>(units, origin, size) { }
 
-    using FrameRect::FrameRect;
-
-    UnitRect(const FrameRect& rect, Units units) noexcept   : FrameRect(rect), units(units) { }
-    UnitRect(Point origin, Size size, Units units) noexcept : FrameRect(origin, size), units(units) { }
-
-    operator std::string() const                                            { return FrameRect::operator std::string() + " in " + UnitsToString(units); }
-    bool operator==(const UnitRect& other) const noexcept                   { return FrameRect::operator==(other) && units == other.units; }
-    bool operator!=(const UnitRect& other) const noexcept                   { return FrameRect::operator!=(other) || units != other.units; }
+    using UnitType<FrameRect>::operator==;
+    using UnitType<FrameRect>::operator!=;
 
     template<typename M> UnitRect operator*(M multiplier) const noexcept    { return UnitRect(FrameRect::operator*(multiplier), units); }
     template<typename M> UnitRect operator/(M divisor) const noexcept       { return UnitRect(FrameRect::operator/(divisor), units); }

@@ -59,7 +59,7 @@ Text::Text(Context& ui_context, Font& font, const SettingsUtf8&  settings)
         {
             settings.name,
             Font::ConvertUtf8To32(settings.text),
-            settings.screen_rect,
+            settings.rect,
             settings.color,
             settings.wrap
         }
@@ -69,7 +69,7 @@ Text::Text(Context& ui_context, Font& font, const SettingsUtf8&  settings)
 }
 
 Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
-    : Item(ui_context, settings.screen_rect)
+    : Item(ui_context, settings.rect)
     , m_settings(std::move(settings))
     , m_sp_font(font.shared_from_this())
     , m_sp_atlas_texture(font.GetAtlasTexturePtr(GetUIContext().GetRenderContext()))
@@ -78,7 +78,7 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
     m_sp_font->Connect(*this);
 
     const gfx::RenderContext::Settings& context_settings = GetUIContext().GetRenderContext().GetSettings();
-    m_viewport_rect = GetUIContext().ConvertToPixels(m_settings.screen_rect);
+    m_viewport_rect = GetUIContext().ConvertToPixels(m_settings.rect);
 
     UpdateMeshData();
     UpdateUniformsBuffer();
@@ -162,13 +162,13 @@ UnitRect Text::GetViewportInDots() const
 void Text::SetText(const std::string& text)
 {
     META_FUNCTION_TASK();
-    SetTextInScreenRect(text, m_settings.screen_rect);
+    SetTextInScreenRect(text, m_settings.rect);
 }
 
 void Text::SetText(const std::u32string& text)
 {
     META_FUNCTION_TASK();
-    SetTextInScreenRect(text, m_settings.screen_rect);
+    SetTextInScreenRect(text, m_settings.rect);
 }
 
 void Text::SetTextInScreenRect(const std::string& text, const UnitRect& ui_rect)
@@ -180,16 +180,16 @@ void Text::SetTextInScreenRect(const std::string& text, const UnitRect& ui_rect)
 void Text::SetTextInScreenRect(const std::u32string& text, const UnitRect& ui_rect)
 {
     META_FUNCTION_TASK();
-    const UnitRect ui_rect_in_units = GetUIContext().ConvertToUnits(ui_rect, m_settings.screen_rect.units);
-    if (m_settings.text == text && m_settings.screen_rect == ui_rect_in_units)
+    const UnitRect ui_rect_in_units = GetUIContext().ConvertToUnits(ui_rect, m_settings.rect.units);
+    if (m_settings.text == text && m_settings.rect == ui_rect_in_units)
         return;
 
     const bool text_changed             = m_settings.text != text;
-    const bool screen_rect_size_changed = m_settings.screen_rect.size != ui_rect_in_units.size;
+    const bool screen_rect_size_changed = m_settings.rect.size != ui_rect_in_units.size;
 
     m_settings.text = text;
-    m_settings.screen_rect = ui_rect_in_units;
-    m_viewport_rect = GetUIContext().ConvertToPixels(m_settings.screen_rect);
+    m_settings.rect = ui_rect_in_units;
+    m_viewport_rect = GetUIContext().ConvertToPixels(m_settings.rect);
 
     if (screen_rect_size_changed || text_changed)
     {
@@ -210,16 +210,14 @@ void Text::SetTextInScreenRect(const std::u32string& text, const UnitRect& ui_re
 bool Text::SetRect(const UnitRect& ui_rect)
 {
     META_FUNCTION_TASK();
-    const bool is_rect_changed = Item::SetRect(ui_rect);
+    const UnitRect ui_rect_in_units = GetUIContext().ConvertToUnits(ui_rect, m_settings.rect.units);
+    const bool screen_rect_size_changed = m_settings.rect.size != ui_rect_in_units.size;
 
-    const UnitRect ui_rect_in_units = GetUIContext().ConvertToUnits(ui_rect, m_settings.screen_rect.units);
-    const bool screen_rect_size_changed = m_settings.screen_rect.size != ui_rect_in_units.size;
-
-    m_settings.screen_rect = ui_rect_in_units;
+    m_settings.rect = ui_rect_in_units;
     if (screen_rect_size_changed)
-        m_viewport_rect = GetUIContext().ConvertToPixels(m_settings.screen_rect);
+        m_viewport_rect = GetUIContext().ConvertToPixels(m_settings.rect);
     else
-        m_viewport_rect.origin = GetUIContext().ConvertToPixels(m_settings.screen_rect).origin;
+        m_viewport_rect.origin = GetUIContext().ConvertToPixels(m_settings.rect).origin;
 
     if (screen_rect_size_changed)
     {
@@ -229,7 +227,7 @@ bool Text::SetRect(const UnitRect& ui_rect)
 
     m_sp_state->SetViewports({ gfx::GetFrameViewport(m_viewport_rect) });
     m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(m_viewport_rect) });
-    return is_rect_changed;
+    return Item::SetRect(GetUIContext().ConvertToUnits(m_viewport_rect, ui_rect.units));
 }
 
 void Text::SetColor(const gfx::Color4f& color)
