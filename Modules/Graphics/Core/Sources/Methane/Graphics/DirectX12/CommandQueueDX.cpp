@@ -94,7 +94,7 @@ CommandQueueDX::CommandQueueDX(ContextBase& context, CommandList::Type command_l
     TimestampQueryBufferDX& timestamp_query_buffer_dx = static_cast<TimestampQueryBufferDX&>(*m_sp_timestamp_query_buffer);
     InitializeTracyGpuContext(
         Tracy::GpuContext::Settings(
-            tracy::GpuContextType::Direct3D12,
+            Tracy::GpuContext::Type::DirectX12,
             timestamp_query_buffer_dx.GetGpuCalibrationTimestamp(),
             Data::ConvertFrequencyToTickPeriod(timestamp_query_buffer_dx.GetGpuFrequency())
         )

@@ -47,23 +47,31 @@ class GpuContext
     friend class GpuScope;
 
 public:
+    enum class Type : uint8_t
+    {
+        Undefined = 0,
+        DirectX12,
+        Vulkan,
+        Metal,
+    };
+
     struct Settings
     {
-        tracy::GpuContextType type = tracy::GpuContextType::Invalid;
-        Timestamp    gpu_timestamp = 0;
-        Timestamp    cpu_timestamp = 0;
-        float      gpu_time_period = 1.f; // number of nanoseconds required for a timestamp query to be incremented by 1
-        bool       is_thread_local = false;
+        Type      type            = Type::Undefined;
+        Timestamp gpu_timestamp   = 0;
+        Timestamp cpu_timestamp   = 0;
+        float     gpu_time_period = 1.f; // number of nanoseconds required for a timestamp query to be incremented by 1
+        bool      is_thread_local = false;
 
 #ifdef TRACY_GPU_ENABLE
 
-        Settings(tracy::GpuContextType type = tracy::GpuContextType::Invalid)
+        Settings(Type type = Type::Undefined)
             : type(type)
             , gpu_timestamp(tracy::Profiler::GetTime())
             , cpu_timestamp(gpu_timestamp)
         { }
 
-        explicit Settings(tracy::GpuContextType type, Timestamp gpu_timestamp, float gpu_time_period = 1.f, bool is_thread_local = false)
+        explicit Settings(Type type, Timestamp gpu_timestamp, float gpu_time_period = 1.f, bool is_thread_local = false)
             : type(type)
             , gpu_timestamp(gpu_timestamp)
             , cpu_timestamp(tracy::Profiler::GetTime())
@@ -82,6 +90,18 @@ public:
     };
 
 #ifdef TRACY_GPU_ENABLE
+
+    static tracy::GpuContextType GetTracyGpuContextType(Type type)
+    {
+        switch(type)
+        {
+        case Type::DirectX12: return tracy::GpuContextType::Direct3D12;
+        case Type::Vulkan:    return tracy::GpuContextType::Vulkan;
+        case Type::Metal:     return tracy::GpuContextType::Invalid;
+        }
+        return tracy::GpuContextType::Invalid;
+    }
+
     explicit GpuContext(const Settings& settings)
         : m_id(tracy::GetGpuCtxCounter().fetch_add( 1, std::memory_order_relaxed ))
     {
@@ -93,7 +113,7 @@ public:
         tracy::MemWrite(&item->gpuNewContext.period,        settings.gpu_time_period);
         tracy::MemWrite(&item->gpuNewContext.context,       m_id);
         tracy::MemWrite(&item->gpuNewContext.accuracyBits,  uint8_t(0));
-        tracy::MemWrite(&item->gpuNewContext.type,          settings.type);
+        tracy::MemWrite(&item->gpuNewContext.type,          GetTracyGpuContextType(settings.type));
         if (settings.is_thread_local)
         {
             const auto thread = tracy::GetThreadHandle();
