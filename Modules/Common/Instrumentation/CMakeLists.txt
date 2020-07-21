@@ -57,7 +57,8 @@ target_compile_definitions(${TARGET}
         $<$<BOOL:${METHANE_TRACY_PROFILING_ON_DEMAND}>:TRACY_ON_DEMAND>
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TRACY_ENABLE>
         $<$<AND:$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>,$<BOOL:${METHANE_GPU_INSTRUMENTATION_ENABLED}>>:TRACY_GPU_ENABLE>
-        $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TRACY_MEMORY_CALL_STACK_DEPTH=16> # call stacks for memory new/delete
+        # Call stacks collection does not work on MacOS
+        # $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TRACY_MEMORY_CALL_STACK_DEPTH=16> # call stacks for memory new/delete
         # $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TRACY_ZONE_CALL_STACK_DEPTH=16> # call stacks for each zone
 )
 
