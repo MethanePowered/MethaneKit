@@ -65,13 +65,13 @@ public:
 
 #ifdef TRACY_GPU_ENABLE
 
-        Settings(Type type = Type::Undefined)
+        explicit Settings(Type type = Type::Undefined)
             : type(type)
             , gpu_timestamp(tracy::Profiler::GetTime())
             , cpu_timestamp(gpu_timestamp)
         { }
 
-        explicit Settings(Type type, Timestamp gpu_timestamp, float gpu_time_period = 1.f, bool is_thread_local = false)
+        Settings(Type type, Timestamp gpu_timestamp, float gpu_time_period = 1.f, bool is_thread_local = false)
             : type(type)
             , gpu_timestamp(gpu_timestamp)
             , cpu_timestamp(tracy::Profiler::GetTime())
@@ -82,9 +82,10 @@ public:
 #else // TRACY_GPU_ENABLE
 
         Settings() = default;
-        explicit Settings(Timestamp) { }
-        Settings(Timestamp, float) { }
-        Settings(Timestamp, float, bool) { }
+        explicit Settings(Type) { }
+        Settings(Type, Timestamp) { }
+        Settings(Type, Timestamp, float) { }
+        Settings(Type, Timestamp, float, bool) { }
 
 #endif // TRACY_GPU_ENABLE
     };
