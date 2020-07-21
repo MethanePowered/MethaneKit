@@ -49,20 +49,23 @@ class GpuContext
 public:
     struct Settings
     {
-        Timestamp gpu_timestamp = 0;
-        Timestamp cpu_timestamp = 0;
-        float   gpu_time_period = 1.f; // number of nanoseconds required for a timestamp query to be incremented by 1
-        bool    is_thread_local = false;
+        tracy::GpuContextType type = tracy::GpuContextType::Invalid;
+        Timestamp    gpu_timestamp = 0;
+        Timestamp    cpu_timestamp = 0;
+        float      gpu_time_period = 1.f; // number of nanoseconds required for a timestamp query to be incremented by 1
+        bool       is_thread_local = false;
 
 #ifdef TRACY_GPU_ENABLE
 
-        Settings()
-            : gpu_timestamp(tracy::Profiler::GetTime())
+        Settings(tracy::GpuContextType type = tracy::GpuContextType::Invalid)
+            : type(type)
+            , gpu_timestamp(tracy::Profiler::GetTime())
             , cpu_timestamp(gpu_timestamp)
         { }
 
-        explicit Settings(Timestamp gpu_timestamp, float gpu_time_period = 1.f, bool is_thread_local = false)
-            : gpu_timestamp(gpu_timestamp)
+        explicit Settings(tracy::GpuContextType type, Timestamp gpu_timestamp, float gpu_time_period = 1.f, bool is_thread_local = false)
+            : type(type)
+            , gpu_timestamp(gpu_timestamp)
             , cpu_timestamp(tracy::Profiler::GetTime())
             , gpu_time_period(gpu_time_period)
             , is_thread_local(is_thread_local)
@@ -84,12 +87,13 @@ public:
     {
         assert(m_id != 255);
         auto item = tracy::Profiler::QueueSerial();
-        tracy::MemWrite(&item->hdr.type, tracy::QueueType::GpuNewContext);
-        tracy::MemWrite(&item->gpuNewContext.cpuTime, settings.cpu_timestamp);
-        tracy::MemWrite(&item->gpuNewContext.gpuTime, settings.gpu_timestamp);
-        tracy::MemWrite(&item->gpuNewContext.period,  settings.gpu_time_period);
-        tracy::MemWrite(&item->gpuNewContext.context, m_id);
-        tracy::MemWrite(&item->gpuNewContext.accuracyBits, uint8_t(0));
+        tracy::MemWrite(&item->hdr.type,                    tracy::QueueType::GpuNewContext);
+        tracy::MemWrite(&item->gpuNewContext.cpuTime,       settings.cpu_timestamp);
+        tracy::MemWrite(&item->gpuNewContext.gpuTime,       settings.gpu_timestamp);
+        tracy::MemWrite(&item->gpuNewContext.period,        settings.gpu_time_period);
+        tracy::MemWrite(&item->gpuNewContext.context,       m_id);
+        tracy::MemWrite(&item->gpuNewContext.accuracyBits,  uint8_t(0));
+        tracy::MemWrite(&item->gpuNewContext.type,          settings.type);
         if (settings.is_thread_local)
         {
             const auto thread = tracy::GetThreadHandle();
@@ -97,7 +101,7 @@ public:
         }
         else
         {
-            memset( &item->gpuNewContext.thread, 0, sizeof( item->gpuNewContext.thread ) );
+            memset(&item->gpuNewContext.thread, 0, sizeof(item->gpuNewContext.thread));
         }
 
 #ifdef TRACY_ON_DEMAND

@@ -46,6 +46,7 @@ CommandQueueMT::CommandQueueMT(ContextBase& context, CommandList::Type command_l
     META_FUNCTION_TASK();
     InitializeTracyGpuContext(
         Tracy::GpuContext::Settings(
+            tracy::GpuContextType::Invalid,
             Data::ConvertTimeSecondsToNanoseconds(CACurrentMediaTime())
         )
     );
