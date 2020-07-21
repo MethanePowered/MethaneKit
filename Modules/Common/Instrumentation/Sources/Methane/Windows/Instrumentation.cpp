@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/InstrumentationWin.cpp
+FILE: Methane/Windows/Instrumentation.cpp
 Windows implementation of the platform specific instrumentation functions.
 
 ******************************************************************************/

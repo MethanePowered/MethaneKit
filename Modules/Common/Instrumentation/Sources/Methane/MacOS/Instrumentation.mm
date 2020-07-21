@@ -16,31 +16,23 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/InstrumentationPosix.cpp
-Posix implementation of the platform specific instrumentation functions.
+FILE: Methane/MacOS/Instrumentation.mm
+MacOS implementation of the platform specific instrumentation functions.
 
 ******************************************************************************/
 
 #include <pthread.h>
 
-#include <cstring>
+#import <Foundation/Foundation.h>
 
 namespace Methane
 {
 
 void SetThreadName(const char* name)
 {
-    const std::size_t name_length = strlen(name);
-    if(name_length < 16)
-    {
-        pthread_setname_np(pthread_self(), name );
-        return;
-    }
-
-    char buf[16];
-    memcpy(buf, name, 15);
-    buf[15] = '\0';
-    pthread_setname_np(pthread_self(), buf);
+    NSString* ns_name = [[NSString alloc] initWithUTF8String:name];
+    [[NSThread currentThread] setName:ns_name];
+    pthread_setname_np(name);
 }
 
 } // namespace Methane

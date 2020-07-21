@@ -4,16 +4,6 @@ include(MethaneModules)
 
 get_module_dirs("Methane")
 
-if (WIN32)
-    set(PLATFORM_SOURCES
-        ${SOURCES_PLATFORM_DIR}/InstrumentationWin.cpp
-    )
-else()
-    set(PLATFORM_SOURCES
-        ${SOURCES_DIR}/Posix/InstrumentationPosix.cpp
-    )
-endif()
-
 set(HEADERS
     ${INCLUDE_DIR}/Instrumentation.h
     ${INCLUDE_DIR}/IttApiHelper.h
@@ -23,7 +13,7 @@ set(HEADERS
 )
 
 set(SOURCES
-    ${PLATFORM_SOURCES}
+    ${SOURCES_PLATFORM_DIR}/Instrumentation.${CPP_EXT}
     ${SOURCES_DIR}/Instrumentation.cpp
     ${SOURCES_DIR}/ScopeTimer.cpp
     $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:${SOURCES_DIR}/InstrumentMemoryAllocations.cpp>
@@ -51,6 +41,13 @@ target_link_libraries(${TARGET}
     PRIVATE
         MethaneBuildOptions
 )
+
+if(APPLE)
+    target_link_libraries(${TARGET}
+        PRIVATE
+            "-framework Foundation"
+    )
+endif()
 
 target_compile_definitions(${TARGET}
     PUBLIC
