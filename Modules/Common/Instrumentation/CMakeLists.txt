@@ -4,6 +4,16 @@ include(MethaneModules)
 
 get_module_dirs("Methane")
 
+if (WIN32)
+    set(PLATFORM_SOURCES
+        ${SOURCES_PLATFORM_DIR}/InstrumentationWin.cpp
+    )
+else()
+    set(PLATFORM_SOURCES
+        ${SOURCES_DIR}/Posix/InstrumentationPosix.cpp
+    )
+endif()
+
 set(HEADERS
     ${INCLUDE_DIR}/Instrumentation.h
     ${INCLUDE_DIR}/IttApiHelper.h
@@ -13,6 +23,7 @@ set(HEADERS
 )
 
 set(SOURCES
+    ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/Instrumentation.cpp
     ${SOURCES_DIR}/ScopeTimer.cpp
     $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:${SOURCES_DIR}/InstrumentMemoryAllocations.cpp>

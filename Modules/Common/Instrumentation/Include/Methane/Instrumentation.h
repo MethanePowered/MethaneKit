@@ -35,6 +35,11 @@ NOTE:
 #include "IttApiHelper.h"
 #include "ScopeTimer.h"
 
+namespace Methane
+{
+void SetThreadName(const char* name);
+}
+
 #define METHANE_DOMAIN_NAME "Methane Kit"
 
 ITT_DOMAIN_EXTERN();
@@ -50,6 +55,16 @@ ITT_DOMAIN_EXTERN();
 #define TRACY_ZONE_SCOPED_NAME(name) ZoneScopedN(name)
 
 #endif // TRACY_ZONE_CALL_STACK_DEPTH
+
+#ifdef TRACY_ENABLE
+
+#define TRACY_SET_THREAD_NAME(name) tracy::SetThreadName(name)
+
+#else
+
+#define TRACY_SET_THREAD_NAME(name)
+
+#endif
 
 #define META_CPU_FRAME_DELIMITER(/* uint32_t */ frame_buffer_index) \
     FrameMark \
@@ -87,6 +102,11 @@ ITT_DOMAIN_EXTERN();
     ITT_FUNCTION_THREAD_MARKER()
 #define META_FUNCTION_TASK_MARKER() \
     ITT_FUNCTION_TASK_MARKER()
+
+#define META_THREAD_NAME(/*const char* */name) \
+    TRACY_SET_THREAD_NAME(name); \
+    ITT_THREAD_NAME(name); \
+    Methane::SetThreadName(name)
 
 #ifdef METHANE_LOGGING_ENABLED
 

@@ -282,6 +282,9 @@ public:
     ITT_MAGIC_STATIC(itt_track_name);\
     Methane::ITT::ScopeTrack itt_track(itt_track_name);
 
+#define ITT_THREAD_NAME(/*const char* */name) \
+    UNICODE_AGNOSTIC(__itt_thread_set_name)(name)
+
 } // namespace Methane::ITT
 
 #else
@@ -310,5 +313,6 @@ public:
 #define ITT_COUNTER_INIT(/*const char* */name, /*const char* */domain) nullptr
 #define ITT_COUNTER_VALUE(counter_var, value)
 #define ITT_SCOPE_TRACK(group, track)
+#define ITT_THREAD_NAME(/*const char* */name)
 
 #endif

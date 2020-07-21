@@ -159,12 +159,20 @@ ID3D12CommandQueue& CommandQueueDX::GetNativeCommandQueue() noexcept
 
 void CommandQueueDX::WaitForExecution() noexcept
 {
+    std::string command_queue_name;
     do
     {
         std::unique_lock<LockableBase(std::mutex)> lock(m_execution_waiting_mutex);
         m_execution_waiting_condition_var.wait(lock,
             [this]{ return !m_execution_waiting || !m_executing_command_lists.empty(); }
         );
+
+        if (command_queue_name != GetName())
+        {
+            command_queue_name = GetName();
+            const std::string thread_name = command_queue_name + " Wait for Execution";
+            META_THREAD_NAME(thread_name.c_str());
+        }
 
         while(!m_executing_command_lists.empty())
         {

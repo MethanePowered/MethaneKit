@@ -43,6 +43,7 @@ AppBase::AppBase(const AppBase::Settings& settings)
     : CLI::App(settings.name, GetExecutableFileName())
     , m_settings(settings)
 {
+    META_THREAD_NAME("Main Thread");
     META_FUNCTION_TASK();
     META_SCOPE_TIMERS_INITIALIZE(Methane::Platform::Logger);
 
