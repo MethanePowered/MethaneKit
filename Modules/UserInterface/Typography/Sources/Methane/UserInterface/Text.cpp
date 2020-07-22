@@ -203,8 +203,7 @@ void Text::SetTextInScreenRect(const std::u32string& text, const UnitRect& ui_re
         UpdateAtlasTexture(m_sp_font->GetAtlasTexturePtr(GetUIContext().GetRenderContext()));
     }
 
-    m_sp_state->SetViewports({ gfx::GetFrameViewport(m_viewport_rect) });
-    m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(m_viewport_rect) });
+    UpdateViewportRect(ui_rect.units);
 }
 
 bool Text::SetRect(const UnitRect& ui_rect)
@@ -225,9 +224,7 @@ bool Text::SetRect(const UnitRect& ui_rect)
         UpdateUniformsBuffer();
     }
 
-    m_sp_state->SetViewports({ gfx::GetFrameViewport(m_viewport_rect) });
-    m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(m_viewport_rect) });
-    return Item::SetRect(GetUIContext().ConvertToUnits(m_viewport_rect, ui_rect.units));
+    return UpdateViewportRect(ui_rect.units);
 }
 
 void Text::SetColor(const gfx::Color4f& color)
@@ -289,6 +286,14 @@ Ptr<gfx::ProgramBindings> Text::CreateProgramBindings()
         { { gfx::Shader::Type::Pixel,  "g_texture"   }, { { m_sp_atlas_texture   } } },
         { { gfx::Shader::Type::Pixel,  "g_sampler"   }, { { m_sp_texture_sampler } } },
     });
+}
+
+bool Text::UpdateViewportRect(Units ui_rect_units)
+{
+    META_FUNCTION_TASK();
+    m_sp_state->SetViewports({ gfx::GetFrameViewport(m_viewport_rect) });
+    m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(m_viewport_rect) });
+    return Item::SetRect(GetUIContext().ConvertToUnits(m_viewport_rect, ui_rect_units));
 }
 
 void Text::UpdateAtlasTexture(const Ptr<gfx::Texture>& sp_new_atlas_texture)

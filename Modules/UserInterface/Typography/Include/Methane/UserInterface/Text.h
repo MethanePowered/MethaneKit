@@ -109,6 +109,7 @@ private:
 
     Ptr<gfx::ProgramBindings> CreateProgramBindings();
 
+    bool UpdateViewportRect(Units ui_rect_units);
     void UpdateAtlasTexture(const Ptr<gfx::Texture>& sp_new_atlas_texture);
     void UpdateMeshData();
     void UpdateUniformsBuffer();
