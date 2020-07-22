@@ -69,7 +69,7 @@ bool Container::SetRect(const UnitRect& ui_rect)
     if (!Item::SetRect(ui_rect))
         return false;
 
-    const UnitPoint& panel_origin_px = GetRectInPixels().origin;
+    const UnitPoint& panel_origin_px = GetRectInPixels().GetUnitOrigin();
     for (const Ptr<Item>& sp_child_item : GetChildren())
     {
         assert(sp_child_item);

@@ -352,11 +352,12 @@ void AppBase::UpdateParametersTextPosition()
         return;
 
     // Parameters text is located in bottom-right corner
+    const FrameSize  text_margins_size(m_text_margins);
     const FrameSize& parameters_text_size = m_parameters.sp_text->GetViewportInPixels().size;
-    const FrameSize  parameters_origin_size = m_frame_size - parameters_text_size - m_text_margins * 3;
     m_parameters.sp_panel->SetRect(UnitRect(
-        FramePoint(parameters_origin_size.width, parameters_origin_size.height),
-        parameters_text_size + m_text_margins * 2,
+        FramePoint(m_frame_size.width  - parameters_text_size.width  - text_margins_size.width  * 3,
+                   m_frame_size.height - parameters_text_size.height - text_margins_size.height * 3),
+        parameters_text_size + text_margins_size * 2u,
         Units::Pixels
     ));
 }
