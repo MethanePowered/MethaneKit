@@ -49,21 +49,26 @@ class Item
 public:
     Item(Context& ui_context, const UnitRect& ui_rect = {});
 
-    Ptr<Item>       GetPtr()                                        { return shared_from_this(); }
-    const Context&  GetUIContext() const noexcept                   { return m_ui_context; }
-    Context&        GetUIContext() noexcept                         { return m_ui_context; }
-    const UnitRect& GetRectInPixels() const noexcept                { return m_ui_rect_px; }
-    UnitRect        GetRectInDots() const noexcept;
-    UnitRect        GetRectInUnits(Units units) const noexcept;
+    Ptr<Item>        GetPtr()                                           { return shared_from_this(); }
+    const Context&   GetUIContext() const noexcept                      { return m_ui_context; }
+    Context&         GetUIContext() noexcept                            { return m_ui_context; }
+    const UnitPoint& GetRelOriginInPixels() const noexcept              { return m_rel_origin_px; }
+    UnitPoint        GetRelOriginInDots() const noexcept;
+    UnitPoint        GetRelOriginInUnits(Units units) const noexcept;
+    const UnitRect&  GetRectInPixels() const noexcept                   { return m_abs_rect_px; }
+    UnitRect         GetRectInDots() const noexcept;
+    UnitRect         GetRectInUnits(Units units) const noexcept;
 
     virtual bool SetRect(const UnitRect& rect);
 
+    void SetRelOrigin(const UnitPoint& rel_origin);
     bool SetOrigin(const UnitPoint& origin);
     bool SetSize(const UnitSize& size);
 
 private:
-    Context& m_ui_context;
-    UnitRect m_ui_rect_px;
+    Context&  m_ui_context;
+    UnitPoint m_rel_origin_px;
+    UnitRect  m_abs_rect_px;
 };
 
 } // namespace Methane::UserInterface

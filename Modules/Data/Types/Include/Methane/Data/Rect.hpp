@@ -41,6 +41,9 @@ struct RectSize
     RectSize(D w, D h) noexcept : width(w), height(h) { }
 
     template<typename V>
+    RectSize(const Point2T<V>& point) noexcept : width(static_cast<D>(point.GetX())), height(static_cast<D>(point.GetY())) { }
+
+    template<typename V>
     RectSize(const RectSize<V>& other) noexcept
         : RectSize(static_cast<D>(other.width), static_cast<D>(other.height))
     { }

@@ -46,8 +46,12 @@ public:
 
     const Ptrs<Item>& GetChildren() const noexcept { return m_children; }
 
+    // Container interface
     virtual bool AddChild(Item& item);
     virtual bool RemoveChild(Item& item);
+
+    // Item overrides
+    bool SetRect(const UnitRect& ui_rect) override;
 
 private:
     Ptrs<Item> m_children;

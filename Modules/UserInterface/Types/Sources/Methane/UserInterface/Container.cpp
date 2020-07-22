@@ -63,4 +63,20 @@ bool Container::RemoveChild(Item& item)
     return true;
 }
 
+bool Container::SetRect(const UnitRect& ui_rect)
+{
+    META_FUNCTION_TASK();
+    if (!Item::SetRect(ui_rect))
+        return false;
+
+    const UnitPoint& panel_origin_px = GetRectInPixels().origin;
+    for (const Ptr<Item>& sp_child_item : GetChildren())
+    {
+        assert(sp_child_item);
+        sp_child_item->SetOrigin(panel_origin_px + sp_child_item->GetRelOriginInPixels());
+    }
+
+    return true;
+}
+
 } // namespace Methane::UserInterface

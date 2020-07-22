@@ -307,7 +307,7 @@ bool AppBase::UpdateTextItem(TextItem& item)
              {
                  item.text_name,
                  item.text_str,
-                 UnitRect{},
+                 UnitRect(m_app_settings.text_margins),
                  m_app_settings.text_color,
                  Text::Wrap::None
              }
@@ -322,32 +322,27 @@ bool AppBase::UpdateTextItem(TextItem& item)
 void AppBase::UpdateHelpTextPosition()
 {
     META_FUNCTION_TASK();
-    if (!m_help_columns.first.sp_text)
+    if (!m_help_columns.first.sp_panel)
         return;
 
     // Help text columns are located in bottom-left corner
-    const gfx::FrameSize& first_column_size = m_help_columns.first.sp_text->GetViewportInPixels().size;
-    m_help_columns.first.sp_text->SetOrigin(UnitPoint(
-        m_text_margins.GetX(),
-        m_frame_size.height - first_column_size.height - m_text_margins.GetY(),
+    const FrameSize& first_text_size = m_help_columns.first.sp_text->GetViewportInPixels().size;
+    m_help_columns.first.sp_panel->SetRect(UnitRect(
+        FramePoint(m_text_margins.GetX(), m_frame_size.height - first_text_size.height - m_text_margins.GetY() * 3),
+        first_text_size + m_text_margins * 2,
         Units::Pixels
     ));
 
-    if (m_help_columns.first.sp_panel)
-        m_help_columns.first.sp_panel->SetRect(m_help_columns.first.sp_text->GetRectInPixels());
-
-    if (!m_help_columns.second.sp_text)
+    if (!m_help_columns.second.sp_panel)
         return;
 
-    const gfx::FrameSize& second_column_size = m_help_columns.first.sp_text->GetViewportInPixels().size;
-    m_help_columns.second.sp_text->SetOrigin(UnitPoint(
-        first_column_size.width + 2 * m_text_margins.GetX(),
-        m_frame_size.height - second_column_size.height - m_text_margins.GetY(),
+    const FrameSize& second_text_size = m_help_columns.first.sp_text->GetViewportInPixels().size;
+    const UnitRect&  first_panel_rect = m_help_columns.first.sp_panel->GetRectInPixels();
+    m_help_columns.second.sp_panel->SetRect(UnitRect(
+        FramePoint(first_panel_rect.GetRight() + m_text_margins.GetX(), first_panel_rect.GetTop()),
+        second_text_size + m_text_margins * 2,
         Units::Pixels
     ));
-
-    if (m_help_columns.second.sp_panel)
-        m_help_columns.second.sp_panel->SetRect(m_help_columns.second.sp_text->GetRectInPixels());
 }
 
 void AppBase::UpdateParametersTextPosition()
@@ -357,15 +352,13 @@ void AppBase::UpdateParametersTextPosition()
         return;
 
     // Parameters text is located in bottom-right corner
-    const gfx::FrameSize& parameters_size = m_parameters.sp_text->GetViewportInPixels().size;
-    m_parameters.sp_text->SetOrigin(UnitPoint(
-        m_frame_size.width  - parameters_size.width  - m_text_margins.GetX(),
-        m_frame_size.height - parameters_size.height - m_text_margins.GetY(),
+    const FrameSize& parameters_text_size = m_parameters.sp_text->GetViewportInPixels().size;
+    const FrameSize  parameters_origin_size = m_frame_size - parameters_text_size - m_text_margins * 3;
+    m_parameters.sp_panel->SetRect(UnitRect(
+        FramePoint(parameters_origin_size.width, parameters_origin_size.height),
+        parameters_text_size + m_text_margins * 2,
         Units::Pixels
     ));
-
-    if (m_parameters.sp_panel)
-        m_parameters.sp_panel->SetRect(m_parameters.sp_text->GetRectInPixels());
 }
 
 Font& AppBase::GetMainFont()

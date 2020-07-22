@@ -80,6 +80,7 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
     const gfx::RenderContext::Settings& context_settings = GetUIContext().GetRenderContext().GetSettings();
     m_viewport_rect = GetUIContext().ConvertToPixels(m_settings.rect);
 
+    SetRelOrigin(m_settings.rect.GetUnitOrigin());
     UpdateMeshData();
     UpdateUniformsBuffer();
     UpdateConstantsBuffer();

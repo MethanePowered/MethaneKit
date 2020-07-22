@@ -31,52 +31,72 @@ namespace Methane::UserInterface
 
 Item::Item(Context& ui_context, const UnitRect& ui_rect)
     : m_ui_context(ui_context)
-    , m_ui_rect_px(m_ui_context.ConvertToPixels(ui_rect))
+    , m_abs_rect_px(m_ui_context.ConvertToPixels(ui_rect))
 {
     META_FUNCTION_TASK();
+}
+
+UnitPoint Item::GetRelOriginInDots() const noexcept
+{
+    META_FUNCTION_TASK();
+    assert(m_rel_origin_px.units == Units::Pixels);
+    return m_ui_context.ConvertToDots(m_rel_origin_px);
+}
+
+UnitPoint Item::GetRelOriginInUnits(Units units) const noexcept
+{
+    META_FUNCTION_TASK();
+    assert(m_rel_origin_px.units == Units::Pixels);
+    return m_ui_context.ConvertToUnits(m_rel_origin_px, units);
 }
 
 UnitRect Item::GetRectInDots() const noexcept
 {
     META_FUNCTION_TASK();
-    assert(m_ui_rect_px.units == Units::Pixels);
-    return m_ui_context.ConvertToDots(m_ui_rect_px);
+    assert(m_abs_rect_px.units == Units::Pixels);
+    return m_ui_context.ConvertToDots(m_abs_rect_px);
 }
 
 UnitRect Item::GetRectInUnits(Units units) const noexcept
 {
     META_FUNCTION_TASK();
-    return m_ui_context.ConvertToUnits(m_ui_rect_px, units);
+    return m_ui_context.ConvertToUnits(m_abs_rect_px, units);
 }
 
 bool Item::SetRect(const UnitRect& rect)
 {
     META_FUNCTION_TASK();
-    if (m_ui_rect_px == rect)
+    if (m_abs_rect_px == rect)
         return false;
 
     const UnitRect rect_px = m_ui_context.ConvertToPixels(rect);
-    if (m_ui_rect_px == rect_px)
+    if (m_abs_rect_px == rect_px)
         return false;
 
-    m_ui_rect_px = rect_px;
+    m_abs_rect_px = rect_px;
     Emit(&IItemCallback::RectChanged, *this);
 
     return true;
 }
 
+void Item::SetRelOrigin(const UnitPoint& rel_origin)
+{
+    META_FUNCTION_TASK();
+    m_rel_origin_px = m_ui_context.ConvertToPixels(rel_origin);
+}
+
 bool Item::SetOrigin(const UnitPoint& origin)
 {
     META_FUNCTION_TASK();
-    assert(m_ui_rect_px.units == Units::Pixels);
-    return SetRect(UnitRect(m_ui_context.ConvertToPixels(origin), m_ui_rect_px.size, m_ui_rect_px.units));
+    assert(m_abs_rect_px.units == Units::Pixels);
+    return SetRect(UnitRect(m_ui_context.ConvertToPixels(origin), m_abs_rect_px.size, m_abs_rect_px.units));
 }
 
 bool Item::SetSize(const UnitSize& size)
 {
     META_FUNCTION_TASK();
-    assert(m_ui_rect_px.units == Units::Pixels);
-    return SetRect(UnitRect(m_ui_rect_px.origin, m_ui_context.ConvertToPixels(size), m_ui_rect_px.units));
+    assert(m_abs_rect_px.units == Units::Pixels);
+    return SetRect(UnitRect(m_abs_rect_px.origin, m_ui_context.ConvertToPixels(size), m_abs_rect_px.units));
 }
 
 } // namespace Methane::UserInterface

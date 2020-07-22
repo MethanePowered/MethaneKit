@@ -146,10 +146,14 @@ struct UnitPoint : UnitType<FramePoint>
 struct UnitRect : UnitType<FrameRect>
 {
     using UnitType<FrameRect>::UnitType;
+    explicit UnitRect(const UnitPoint& origin, const Size = {}) noexcept : UnitType<FrameRect>(origin.units, origin, Size{}) { }
     UnitRect(Point origin, Size size, Units units) noexcept : UnitType<FrameRect>(units, origin, size) { }
 
     using UnitType<FrameRect>::operator==;
     using UnitType<FrameRect>::operator!=;
+
+    UnitPoint GetUnitOrigin() const noexcept { return UnitPoint(origin, units); }
+    UnitSize  GetUnitSize() const noexcept   { return UnitSize(size, units); }
 
     template<typename M> UnitRect operator*(M multiplier) const noexcept    { return UnitRect(FrameRect::operator*(multiplier), units); }
     template<typename M> UnitRect operator/(M divisor) const noexcept       { return UnitRect(FrameRect::operator/(divisor), units); }
