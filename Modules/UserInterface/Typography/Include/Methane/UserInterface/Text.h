@@ -91,12 +91,15 @@ public:
     void SetTextInScreenRect(const std::string& text, const UnitRect& ui_rect);
     void SetTextInScreenRect(const std::u32string& text, const UnitRect& ui_rect);
     void SetColor(const gfx::Color4f& color);
+    void SetWrap(Wrap wrap);
     void SetIncrementalUpdate(bool incremental_update) noexcept { m_settings.incremental_update = incremental_update; }
 
     // Item overrides
     bool SetRect(const UnitRect& ui_rect) override;
 
     void Draw(gfx::RenderCommandList& cmd_list);
+
+    static std::string GetWrapName(Wrap wrap) noexcept;
 
 protected:
     // IFontCallback interface

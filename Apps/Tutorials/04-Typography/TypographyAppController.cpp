@@ -49,6 +49,10 @@ void TypographyAppController::OnKeyboardStateAction(TypographyAppAction action)
 
     switch(action)
     {
+    case TypographyAppAction::SwitchTextWrapMode:
+        m_typography_app.SetTextWrap(static_cast<gui::Text::Wrap>((static_cast<uint32_t>(m_typography_app.GetSettings().text_wrap) + 1) % 3));
+        break;
+
     case TypographyAppAction::SwitchIncrementalTextUpdate:
         m_typography_app.SetIncrementalTextUpdate(!m_typography_app.GetSettings().is_incremental_text_update);
         break;
@@ -76,6 +80,7 @@ std::string TypographyAppController::GetKeyboardActionName(TypographyAppAction a
     META_FUNCTION_TASK();
     switch(action)
     {
+    case TypographyAppAction::SwitchTextWrapMode:           return "switch text wrap mode";
     case TypographyAppAction::SwitchIncrementalTextUpdate:  return "switch incremental text update";
     case TypographyAppAction::SwitchTypingDirection:        return "switch typing direction";
     case TypographyAppAction::SpeedupTyping:                return "speedup typing";

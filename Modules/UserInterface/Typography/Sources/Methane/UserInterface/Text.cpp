@@ -238,6 +238,19 @@ void Text::SetColor(const gfx::Color4f& color)
     UpdateConstantsBuffer();
 }
 
+void Text::SetWrap(Wrap wrap)
+{
+    META_FUNCTION_TASK();
+    if (m_settings.wrap == wrap)
+        return;
+
+    m_settings.wrap = wrap;
+
+    UpdateMeshData();
+    UpdateUniformsBuffer();
+    UpdateViewportRect(m_viewport_rect.units);
+}
+
 void Text::Draw(gfx::RenderCommandList& cmd_list)
 {
     META_FUNCTION_TASK();
@@ -434,6 +447,18 @@ void Text::UpdateConstantsBuffer()
     m_sp_const_buffer->SetData({
         gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(&constants), const_data_size)
     });
+}
+
+std::string Text::GetWrapName(Wrap wrap) noexcept
+{
+    META_FUNCTION_TASK();
+    switch (wrap)
+    {
+    case Wrap::None:     return "No Wrap";
+    case Wrap::Anywhere: return "Wrap Anywhere";
+    case Wrap::Word:     return "Wrap Words";
+    }
+    return "Undefined Wrap";
 }
 
 } // namespace Methane::Graphics

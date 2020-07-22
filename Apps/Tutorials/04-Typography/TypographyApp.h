@@ -52,9 +52,10 @@ class TypographyApp final
 public:
     struct Settings
     {
-        bool   is_incremental_text_update  = true;
-        bool   is_forward_typing_direction = true;
-        double typing_update_interval_sec  = 0.03;
+        gui::Text::Wrap text_wrap                   = gui::Text::Wrap::Word;
+        bool            is_incremental_text_update  = true;
+        bool            is_forward_typing_direction = true;
+        double          typing_update_interval_sec  = 0.03;
     };
 
     TypographyApp();
@@ -68,6 +69,7 @@ public:
     // UserInterface::App overrides
     std::string GetParametersString() override;
 
+    void SetTextWrap(gui::Text::Wrap text_wrap);
     void SetForwardTypingDirection(bool is_forward_typing_direction);
     void SetTextUpdateInterval(double text_update_interval_sec);
     void SetIncrementalTextUpdate(bool is_incremental_text_update);

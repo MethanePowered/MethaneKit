@@ -90,6 +90,7 @@ static const std::array<std::u32string, g_text_blocks_count> g_text_blocks = { {
 
 namespace pal = Methane::Platform;
 static const std::map<pal::Keyboard::State, TypographyAppAction> g_typography_action_by_keyboard_state{
+    { { pal::Keyboard::Key::W       }, TypographyAppAction::SwitchTextWrapMode  },
     { { pal::Keyboard::Key::U       }, TypographyAppAction::SwitchIncrementalTextUpdate  },
     { { pal::Keyboard::Key::D       }, TypographyAppAction::SwitchTypingDirection        },
     { { pal::Keyboard::Key::Equal   }, TypographyAppAction::SpeedupTyping                },
@@ -417,6 +418,7 @@ std::string TypographyApp::GetParametersString()
 {
     std::stringstream ss;
     ss << "Typography demo parameters:"
+       << std::endl << "  - text wrap mode:            " << gui::Text::GetWrapName(m_settings.text_wrap)
        << std::endl << "  - text typing animation:     " << (!GetAnimations().IsPaused() ? "ON" : "OFF")
        << std::endl << "  - text typing mode:          " << (m_settings.is_forward_typing_direction ? "Appending" : "Backspace")
        << std::endl << "  - text typing interval (ms): " << static_cast<uint32_t>(m_settings.typing_update_interval_sec * 1000)
@@ -424,6 +426,20 @@ std::string TypographyApp::GetParametersString()
        << std::endl << "  - text update duration (us): " << static_cast<double>(m_text_update_duration.count()) / 1000;
 
     return ss.str();
+}
+
+void TypographyApp::SetTextWrap(gui::Text::Wrap text_wrap)
+{
+    if (m_settings.text_wrap == text_wrap)
+        return;
+
+    m_settings.text_wrap = text_wrap;
+    for (const Ptr<gui::Text>& sp_text : m_texts)
+    {
+        sp_text->SetWrap(text_wrap);
+    }
+
+    UpdateParametersText();
 }
 
 void TypographyApp::SetForwardTypingDirection(bool is_forward_typing_direction)
