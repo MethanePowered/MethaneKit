@@ -24,7 +24,6 @@ Random generated asteroids array with uber mesh and textures ready for rendering
 #include "AsteroidsArray.h"
 
 #include <Methane/Graphics/PerlinNoise.h>
-#include <Methane/Data/Parallel.hpp>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
@@ -65,7 +64,8 @@ AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivision
         Asteroid::Mesh base_mesh(subdivision_index, false);
         base_mesh.Spherify();
 
-        Data::ParallelFor<uint32_t>(0u, m_instance_count, [&](uint32_t)
+        tf::Taskflow task_flow;
+        task_flow.parallel_for(0, static_cast<int>(m_instance_count), 1, [&](const int)
             {
                 Asteroid::Mesh asteroid_mesh(base_mesh);
                 asteroid_mesh.Randomize(rng());
@@ -74,6 +74,7 @@ AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivision
                 m_depth_ranges.emplace_back(asteroid_mesh.GetDepthRange());
                 AddSubMesh(asteroid_mesh, false);
             });
+        tf::Executor().run(task_flow).get();
     }
 }
 
@@ -127,7 +128,8 @@ AsteroidsArray::ContentState::ContentState(const Settings& settings)
     std::uniform_real_distribution<float> noise_scale_distribution(0.05f, 0.1f);
 
     texture_array_subresources.resize(settings.textures_count);
-    Data::ParallelForEach<TextureArraySubresources::iterator, gfx::Resource::SubResources>(texture_array_subresources.begin(), texture_array_subresources.end(),
+    tf::Taskflow task_flow;
+    task_flow.parallel_for(texture_array_subresources.begin(), texture_array_subresources.end(),
         [&](gfx::Resource::SubResources& sub_resources)
         {
             Asteroid::TextureNoiseParameters noise_parameters{
@@ -138,6 +140,7 @@ AsteroidsArray::ContentState::ContentState(const Settings& settings)
             };
             sub_resources = Asteroid::GenerateTextureArraySubresources(settings.texture_dimensions, 3, noise_parameters);
         });
+    tf::Executor().run(task_flow).get();
 
     // Randomly distribute textures between uber-mesh subsets
     std::uniform_int_distribution<uint32_t> textures_distribution(0u, settings.textures_count - 1);
@@ -296,8 +299,8 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, Settings settings, C
 }
     
 Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::Buffer> &sp_constants_buffer,
-                                                                            const Ptr<gfx::Buffer> &sp_scene_uniforms_buffer,
-                                                                            const Ptr<gfx::Buffer> &sp_asteroids_uniforms_buffer)
+                                                                 const Ptr<gfx::Buffer> &sp_scene_uniforms_buffer,
+                                                                 const Ptr<gfx::Buffer> &sp_asteroids_uniforms_buffer)
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::CreateProgramBindings");
@@ -319,20 +322,22 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
         { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { { m_sp_texture_sampler     } } },
     });
 
-    Data::ParallelFor<uint32_t>(1u, m_settings.instance_count, [&](uint32_t asteroid_index)
+    tf::Taskflow task_flow;
+    task_flow.parallel_for(1, static_cast<int>(m_settings.instance_count), 1, [&](const int asteroid_index)
     {
-        const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(asteroid_index);
+        const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(static_cast<uint32_t>(asteroid_index));
         gfx::ProgramBindings::ResourceLocationsByArgument set_resource_location_by_argument{
             { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { sp_asteroids_uniforms_buffer, asteroid_uniform_offset } } },
         };
         if (!m_settings.textures_array_enabled)
         {
             set_resource_location_by_argument.insert(
-                { { gfx::Shader::Type::Pixel, "g_face_textures"  }, { { GetInstanceTexturePtr(asteroid_index) } } }
+                { { gfx::Shader::Type::Pixel, "g_face_textures"  }, { { GetInstanceTexturePtr(static_cast<uint32_t>(asteroid_index)) } } }
             );
         }
         program_bindings_array[asteroid_index] = gfx::ProgramBindings::CreateCopy(*program_bindings_array[0], set_resource_location_by_argument);
     });
+    m_parallel_executor.run(task_flow).get();
     
     return program_bindings_array;
 }
@@ -355,7 +360,8 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
     const gfx::Matrix44f& view_proj_matrix = m_settings.view_camera.GetViewProjMatrix();
     const float elapsed_radians = cml::constants<float>::pi()* static_cast<float>(elapsed_seconds);
 
-    Data::ParallelForEach<Parameters::iterator, Asteroid::Parameters>(m_sp_content_state->parameters.begin(), m_sp_content_state->parameters.end(),
+    tf::Taskflow update_task_flow;
+    update_task_flow.parallel_for(m_sp_content_state->parameters.begin(), m_sp_content_state->parameters.end(),
         [this, &view_proj_matrix, elapsed_radians, &eye_position](Asteroid::Parameters& asteroid_parameters)
         {
             META_FUNCTION_TASK();
@@ -400,6 +406,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
         }
     );
 
+    m_parallel_executor.run(update_task_flow).get();
     return true;
 }
 

@@ -32,6 +32,8 @@ Random generated asteroids array with uber-mesh and textures ready for rendering
 #include <Methane/Graphics/MeshBuffers.hpp>
 #include <Methane/Graphics/Camera.h>
 
+#include <taskflow/taskflow.hpp>
+
 namespace Methane::Samples
 {
 
@@ -124,6 +126,7 @@ private:
     using MeshSubsetByInstanceIndex = std::vector<uint32_t>;
 
     const Settings            m_settings;
+    tf::Executor              m_parallel_executor;
     Ptr<ContentState>         m_sp_content_state;
     Textures                  m_unique_textures;
     Ptr<gfx::Sampler>         m_sp_texture_sampler;
