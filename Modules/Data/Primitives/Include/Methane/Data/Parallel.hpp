@@ -111,8 +111,8 @@ void ParallelFor(IndexType begin_index, IndexType end_index, std::function<void(
 
 #else
 
-    const IndexType count   = end_index - begin_index;
-    const size_t chunk_size = GetParallelChunkSize(items_count);
+    const IndexType count      = end_index - begin_index;
+    const IndexType chunk_size = GetParallelChunkSize(count);
 
     std::vector<std::future<void>> futures;
     futures.reserve(static_cast<size_t>(count));
