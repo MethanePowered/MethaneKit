@@ -25,6 +25,7 @@ Random generated asteroids array with uber mesh and textures ready for rendering
 
 #include <Methane/Graphics/PerlinNoise.h>
 #include <Methane/Data/AppResourceProviders.h>
+#include <Methane/Data/Math.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <cmath>
@@ -65,7 +66,8 @@ AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivision
         base_mesh.Spherify();
 
         tf::Taskflow task_flow;
-        task_flow.parallel_for(0, static_cast<int>(m_instance_count), 1, [&](const int)
+        task_flow.parallel_for(0, static_cast<int>(m_instance_count), 1,
+            [&](const int)
             {
                 Asteroid::Mesh asteroid_mesh(base_mesh);
                 asteroid_mesh.Randomize(rng());
@@ -73,7 +75,9 @@ AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivision
                 std::lock_guard<LockableBase(std::mutex)> lock_guard(data_mutex);
                 m_depth_ranges.emplace_back(asteroid_mesh.GetDepthRange());
                 AddSubMesh(asteroid_mesh, false);
-            });
+            },
+            Data::GetParallelChunkSize(static_cast<int>(m_instance_count), 5)
+        );
         tf::Executor().run(task_flow).get();
     }
 }
@@ -139,7 +143,9 @@ AsteroidsArray::ContentState::ContentState(const Settings& settings)
                 1.5f
             };
             sub_resources = Asteroid::GenerateTextureArraySubresources(settings.texture_dimensions, 3, noise_parameters);
-        });
+        },
+        Data::GetParallelChunkSize(static_cast<int>(texture_array_subresources.size()), 5)
+    );
     tf::Executor().run(task_flow).get();
 
     // Randomly distribute textures between uber-mesh subsets
@@ -323,20 +329,23 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
     });
 
     tf::Taskflow task_flow;
-    task_flow.parallel_for(1, static_cast<int>(m_settings.instance_count), 1, [&](const int asteroid_index)
-    {
-        const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(static_cast<uint32_t>(asteroid_index));
-        gfx::ProgramBindings::ResourceLocationsByArgument set_resource_location_by_argument{
-            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { sp_asteroids_uniforms_buffer, asteroid_uniform_offset } } },
-        };
-        if (!m_settings.textures_array_enabled)
+    task_flow.parallel_for(1, static_cast<int>(m_settings.instance_count), 1,
+        [&](const int asteroid_index)
         {
-            set_resource_location_by_argument.insert(
-                { { gfx::Shader::Type::Pixel, "g_face_textures"  }, { { GetInstanceTexturePtr(static_cast<uint32_t>(asteroid_index)) } } }
-            );
-        }
-        program_bindings_array[asteroid_index] = gfx::ProgramBindings::CreateCopy(*program_bindings_array[0], set_resource_location_by_argument);
-    });
+            const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(static_cast<uint32_t>(asteroid_index));
+            gfx::ProgramBindings::ResourceLocationsByArgument set_resource_location_by_argument{
+                { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { sp_asteroids_uniforms_buffer, asteroid_uniform_offset } } },
+            };
+            if (!m_settings.textures_array_enabled)
+            {
+                set_resource_location_by_argument.insert(
+                    { { gfx::Shader::Type::Pixel, "g_face_textures"  }, { { GetInstanceTexturePtr(static_cast<uint32_t>(asteroid_index)) } } }
+                );
+            }
+            program_bindings_array[asteroid_index] = gfx::ProgramBindings::CreateCopy(*program_bindings_array[0], set_resource_location_by_argument);
+        },
+        Data::GetParallelChunkSize(static_cast<int>(m_settings.instance_count))
+    );
     m_parallel_executor.run(task_flow).get();
     
     return program_bindings_array;
@@ -403,7 +412,8 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
                 },
                 asteroid_parameters.index
             );
-        }
+        },
+        Data::GetParallelChunkSize(static_cast<int>(m_sp_content_state->parameters.size()), 5)
     );
 
     m_parallel_executor.run(update_task_flow).get();

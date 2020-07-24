@@ -65,9 +65,8 @@ void ParallelForEach(const Iterator& begin_it, const Iterator& end_it,
 
 #else
 
-    const size_t items_count     = std::distance(begin_it, end_it);
-    const size_t hw_theads_count = std::thread::hardware_concurrency();
-    const size_t chunk_size      = Data::DivCeil(items_count, hw_theads_count);
+    const size_t items_count = std::distance(begin_it, end_it);
+    const size_t chunk_size  = GetParallelChunkSize(items_count);
 
     std::vector<std::future<void>> futures;
     futures.reserve(items_count);
@@ -112,9 +111,8 @@ void ParallelFor(IndexType begin_index, IndexType end_index, std::function<void(
 
 #else
 
-    const IndexType count            = end_index - begin_index;
-    const IndexType hw_threads_count = static_cast<IndexType>(std::thread::hardware_concurrency());
-    const IndexType chunk_size       = Data::DivCeil(count, hw_threads_count);
+    const IndexType count   = end_index - begin_index;
+    const size_t chunk_size = GetParallelChunkSize(items_count);
 
     std::vector<std::future<void>> futures;
     futures.reserve(static_cast<size_t>(count));

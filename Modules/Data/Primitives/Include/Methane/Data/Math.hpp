@@ -42,4 +42,11 @@ std::enable_if_t<std::is_signed<T>::value, T> DivCeil(T numerator, T denominator
                    : res.quot;
 }
 
+template<typename T>
+std::enable_if_t<std::is_integral<T>::value, T> GetParallelChunkSize(T items_count, T thread_granularity = 1)
+{
+    const size_t hw_theads_count = std::thread::hardware_concurrency();
+    return static_cast<T>(Data::DivCeil(items_count, static_cast<T>(hw_theads_count) * thread_granularity));
+}
+
 } // namespace Methane::Data
