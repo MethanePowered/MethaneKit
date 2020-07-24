@@ -29,8 +29,9 @@ Base implementation of the parallel render command list interface.
 #include "ProgramBase.h"
 
 #include <Methane/Instrumentation.h>
-#include <Methane/Data/Parallel.hpp>
+#include <Methane/Data/Math.hpp>
 
+#include <taskflow/taskflow.hpp>
 #include <cassert>
 
 namespace Methane::Graphics
@@ -51,7 +52,6 @@ ParallelRenderCommandListBase::ParallelRenderCommandListBase(CommandQueueBase& c
 void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
-
     CommandListBase::Reset();
 
     // Create per-thread debug sub-group:
@@ -64,27 +64,27 @@ void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_stat
     }
 
     // Per-thread render command lists can be reset in parallel only with DirectX 12 on Windows
+    tf::Taskflow task_flow;
+    task_flow.parallel_for(0, static_cast<int>(m_parallel_command_lists.size()), 1,
+        [this, &sp_render_state, p_debug_group](const int render_command_list_index)
+        {
+            META_FUNCTION_TASK();
+            const Ptr<RenderCommandList>& sp_render_command_list = m_parallel_command_lists[render_command_list_index];
+            assert(sp_render_command_list);
+            sp_render_command_list->Reset(sp_render_state, p_debug_group->GetSubGroup(static_cast<Data::Index>(render_command_list_index)));
+        },
 #ifdef _WIN32
-    Data::ParallelFor<size_t>(0, m_parallel_command_lists.size(),
-    [this, &sp_render_state, p_debug_group](size_t render_command_list_index)
+        Data::GetParallelChunkSizeAsInt(m_parallel_command_lists.size())
 #else
-    for(size_t render_command_list_index = 0u; render_command_list_index < m_parallel_command_lists.size(); ++render_command_list_index)
+        static_cast<int>(m_parallel_command_lists.size())
 #endif
-    {
-        META_FUNCTION_TASK();
-        const Ptr<RenderCommandList>& sp_render_command_list = m_parallel_command_lists[render_command_list_index];
-        assert(sp_render_command_list);
-        sp_render_command_list->Reset(sp_render_state, p_debug_group->GetSubGroup(static_cast<Data::Index>(render_command_list_index)));
-    }
-#ifdef _WIN32
     );
-#endif
+    tf::Executor().run(task_flow).get();
 }
 
 void ParallelRenderCommandListBase::Commit()
 {
     META_FUNCTION_TASK();
-
     for(const Ptr<RenderCommandList>& sp_render_command_list : m_parallel_command_lists)
     {
         assert(!!sp_render_command_list);
@@ -97,7 +97,6 @@ void ParallelRenderCommandListBase::Commit()
 void ParallelRenderCommandListBase::SetParallelCommandListsCount(uint32_t count)
 {
     META_FUNCTION_TASK();
-
     uint32_t initial_count = static_cast<uint32_t>(m_parallel_command_lists.size());
     if (count < initial_count)
     {
@@ -120,7 +119,6 @@ void ParallelRenderCommandListBase::SetParallelCommandListsCount(uint32_t count)
 void ParallelRenderCommandListBase::Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
-
     for(const Ptr<RenderCommandList>& sp_render_command_list : m_parallel_command_lists)
     {
         assert(!!sp_render_command_list);
@@ -134,7 +132,6 @@ void ParallelRenderCommandListBase::Execute(uint32_t frame_index, const CommandL
 void ParallelRenderCommandListBase::Complete(uint32_t frame_index)
 {
     META_FUNCTION_TASK();
-
     for(const Ptr<RenderCommandList>& sp_render_command_list : m_parallel_command_lists)
     {
         assert(!!sp_render_command_list);
@@ -148,7 +145,6 @@ void ParallelRenderCommandListBase::Complete(uint32_t frame_index)
 void ParallelRenderCommandListBase::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-
     CommandListBase::SetName(name);
 
     if (name.empty())

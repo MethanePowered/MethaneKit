@@ -25,7 +25,9 @@ by decoding them from popular image formats.
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/Data/Parallel.hpp>
+#include <Methane/Data/Math.hpp>
+
+#include <taskflow/taskflow.hpp>
 
 #ifdef USE_OPEN_IMAGE_IO
 
@@ -175,8 +177,10 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
     TracyLockable(std::mutex, data_mutex);
     std::vector<std::pair<Data::Index, ImageData>> face_images_data;
     face_images_data.reserve(image_paths.size());
-    Data::ParallelFor<Data::Index>(0u, static_cast<Data::Index>(image_paths.size()),
-        [&](Data::Index face_index) -> void
+
+    tf::Taskflow load_task_flow;
+    load_task_flow.parallel_for(0, static_cast<int>(image_paths.size()), 1,
+        [&](const int face_index)
         {
             META_FUNCTION_TASK();
             // NOTE:
@@ -187,7 +191,9 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
 
             std::lock_guard<LockableBase(std::mutex)> data_lock(data_mutex);
             face_images_data.emplace_back(face_index, std::move(image_data));
-        });
+        }
+    );
+    tf::Executor().run(load_task_flow).get();
 
     // Verify cube textures
 

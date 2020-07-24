@@ -76,7 +76,7 @@ AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivision
                 m_depth_ranges.emplace_back(asteroid_mesh.GetDepthRange());
                 AddSubMesh(asteroid_mesh, false);
             },
-            Data::GetParallelChunkSize(static_cast<int>(m_instance_count), 5)
+            Data::GetParallelChunkSizeAsInt(m_instance_count, 5)
         );
         tf::Executor().run(task_flow).get();
     }
@@ -144,7 +144,7 @@ AsteroidsArray::ContentState::ContentState(const Settings& settings)
             };
             sub_resources = Asteroid::GenerateTextureArraySubresources(settings.texture_dimensions, 3, noise_parameters);
         },
-        Data::GetParallelChunkSize(static_cast<int>(texture_array_subresources.size()), 5)
+        Data::GetParallelChunkSizeAsInt(texture_array_subresources.size(), 5)
     );
     tf::Executor().run(task_flow).get();
 
@@ -344,7 +344,7 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
             }
             program_bindings_array[asteroid_index] = gfx::ProgramBindings::CreateCopy(*program_bindings_array[0], set_resource_location_by_argument);
         },
-        Data::GetParallelChunkSize(static_cast<int>(m_settings.instance_count))
+        Data::GetParallelChunkSizeAsInt(m_settings.instance_count, 5)
     );
     m_parallel_executor.run(task_flow).get();
     
@@ -413,7 +413,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
                 asteroid_parameters.index
             );
         },
-        Data::GetParallelChunkSize(static_cast<int>(m_sp_content_state->parameters.size()), 5)
+        Data::GetParallelChunkSizeAsInt(m_sp_content_state->parameters.size(), 5)
     );
 
     m_parallel_executor.run(update_task_flow).get();

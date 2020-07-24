@@ -273,6 +273,7 @@ target_link_libraries(${TARGET}
         MethaneGraphicsPrimitives
         MethanePlatformUtils
         MethaneInstrumentation
+        TaskFlow
         ${PLATFORM_LIBRARIES}
 )
 

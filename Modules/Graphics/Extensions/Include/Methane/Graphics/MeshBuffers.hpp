@@ -38,6 +38,8 @@ Mesh buffers with texture extension structure.
 #include <Methane/Data/Math.hpp>
 #include <Methane/Instrumentation.h>
 
+#include <taskflow/taskflow.hpp>
+
 #include <memory>
 #include <string>
 #include <cassert>
@@ -160,12 +162,13 @@ public:
         const Ptrs<RenderCommandList>& render_cmd_lists = parallel_cmd_list.GetParallelCommandLists();
         const uint32_t instances_count_per_command_list = static_cast<uint32_t>(Data::DivCeil(instance_program_bindings.size(), render_cmd_lists.size()));
 
-        Data::ParallelFor<size_t>(0u, render_cmd_lists.size(),
-            [&](size_t cl_index)
+        tf::Taskflow render_task_flow;
+        render_task_flow.parallel_for(0, static_cast<int>(render_cmd_lists.size()), 1,
+            [&](const int cmd_list_index)
             {
                 META_FUNCTION_TASK();
-                const Ptr<RenderCommandList>& sp_render_command_list = render_cmd_lists[cl_index];
-                const uint32_t begin_instance_index = static_cast<uint32_t>(cl_index * instances_count_per_command_list);
+                const Ptr<RenderCommandList>& sp_render_command_list = render_cmd_lists[cmd_list_index];
+                const uint32_t begin_instance_index = static_cast<uint32_t>(cmd_list_index * instances_count_per_command_list);
                 const uint32_t end_instance_index   = std::min(begin_instance_index + instances_count_per_command_list,
                                                                static_cast<uint32_t>(instance_program_bindings.size()));
 
@@ -174,7 +177,10 @@ public:
                      instance_program_bindings.begin() + begin_instance_index,
                      instance_program_bindings.begin() + end_instance_index,
                      bindings_apply_behavior, begin_instance_index);
-            });
+            },
+            Data::GetParallelChunkSizeAsInt(render_cmd_lists.size())
+        );
+        m_parallel_executor.run(render_task_flow).get();
     }
 
     const std::string&  GetMeshName() const      { return m_mesh_name; }
@@ -248,11 +254,12 @@ private:
     using InstanceUniforms = std::vector<UniformsType, Data::AlignedAllocator<UniformsType, SHADER_STRUCT_ALIGNMENT>>;
 
     const std::string      m_mesh_name;
-    const Mesh::Subsets m_mesh_subsets;
-    Ptr<BufferSet>      m_sp_vertex;
-    Ptr<Buffer>         m_sp_index;
+    const Mesh::Subsets    m_mesh_subsets;
+    Ptr<BufferSet>         m_sp_vertex;
+    Ptr<Buffer>            m_sp_index;
     InstanceUniforms       m_final_pass_instance_uniforms; // Actual uniforms buffers are created separately in Frame dependent resources
     Resource::SubResources m_final_pass_instance_uniforms_subresources;
+    tf::Executor           m_parallel_executor;
 };
 
 template<typename UniformsType>

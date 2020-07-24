@@ -24,6 +24,7 @@ Math primitive functions.
 #pragma once
 
 #include <type_traits>
+#include <thread>
 
 namespace Methane::Data
 {
@@ -46,7 +47,13 @@ template<typename T>
 std::enable_if_t<std::is_integral<T>::value, T> GetParallelChunkSize(T items_count, T thread_granularity = 1)
 {
     const size_t hw_theads_count = std::thread::hardware_concurrency();
-    return static_cast<T>(Data::DivCeil(items_count, static_cast<T>(hw_theads_count) * thread_granularity));
+    return Data::DivCeil(items_count, static_cast<T>(hw_theads_count) * thread_granularity);
+}
+
+template<typename T, typename G = T>
+std::enable_if_t<std::is_integral<T>::value, int> GetParallelChunkSizeAsInt(T items_count, G thread_granularity = 1)
+{
+    return static_cast<int>(GetParallelChunkSize(items_count, static_cast<T>(thread_granularity)));
 }
 
 } // namespace Methane::Data

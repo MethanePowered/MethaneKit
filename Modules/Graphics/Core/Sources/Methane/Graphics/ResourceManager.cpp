@@ -25,9 +25,10 @@ and deferred releasing of GPU resource.
 #include "ResourceManager.h"
 
 #include <Methane/Instrumentation.h>
-#include <Methane/Data/Parallel.hpp>
+#include <Methane/Data/Math.hpp>
 
 #include <cassert>
+#include <taskflow/taskflow.hpp>
 
 namespace Methane::Graphics
 {
@@ -91,16 +92,18 @@ void ResourceManager::CompleteInitialization()
 
     m_program_bindings.erase(program_bindings_end_it, m_program_bindings.end());
 
-    Data::ParallelForEach<WeakPtrs<ProgramBindings>::const_iterator, const WeakPtr<ProgramBindings>>(
-        m_program_bindings.begin(), m_program_bindings.end(),
+    tf::Taskflow task_flow;
+    task_flow.parallel_for(m_program_bindings.begin(), m_program_bindings.end(),
         [](const WeakPtr<ProgramBindings>& wp_program_bindings)
         {
             META_FUNCTION_TASK();
             Ptr<ProgramBindings> sp_program_bindings = wp_program_bindings.lock();
             assert(!!sp_program_bindings);
             static_cast<ProgramBindingsBase&>(*sp_program_bindings).CompleteInitialization();
-        }
+        },
+        Data::GetParallelChunkSizeAsInt(m_program_bindings.size(), 3)
     );
+    tf::Executor().run(task_flow).get();
 }
 
 void ResourceManager::Release()

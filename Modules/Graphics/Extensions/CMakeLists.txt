@@ -41,6 +41,7 @@ target_link_libraries(${TARGET}
         MethaneGraphicsPrimitives
         MethaneGraphicsCamera
         MethaneDataProvider
+        TaskFlow
 )
 
 if (METHANE_USE_OPEN_IMAGE_IO)
