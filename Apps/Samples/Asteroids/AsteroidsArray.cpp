@@ -47,7 +47,7 @@ static gfx::Point3f GetRandomDirection(std::mt19937& rng)
     return cml::normalize(direction);
 }
 
-AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed)
+AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed)
     : gfx::UberMesh<Asteroid::Vertex>(Asteroid::Vertex::layout)
     , m_instance_count(instance_count)
     , m_subdivisions_count(subdivisions_count)
@@ -78,7 +78,7 @@ AsteroidsArray::UberMesh::UberMesh(uint32_t instance_count, uint32_t subdivision
             },
             Data::GetParallelChunkSizeAsInt(m_instance_count, 5)
         );
-        tf::Executor().run(task_flow).get();
+        parallel_executor.run(task_flow).get();
     }
 }
 
@@ -119,8 +119,8 @@ const gfx::Vector2f& AsteroidsArray::UberMesh::GetSubsetDepthRange(uint32_t subs
     return m_depth_ranges[subset_index];
 }
 
-AsteroidsArray::ContentState::ContentState(const Settings& settings)
-    : uber_mesh(settings.unique_mesh_count, settings.subdivisions_count, settings.random_seed)
+AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, const Settings& settings)
+    : uber_mesh(parallel_executor, settings.unique_mesh_count, settings.subdivisions_count, settings.random_seed)
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::ContentState::ContentState");
@@ -146,7 +146,7 @@ AsteroidsArray::ContentState::ContentState(const Settings& settings)
         },
         Data::GetParallelChunkSizeAsInt(texture_array_subresources.size(), 5)
     );
-    tf::Executor().run(task_flow).get();
+    parallel_executor.run(task_flow).get();
 
     // Randomly distribute textures between uber-mesh subsets
     std::uniform_int_distribution<uint32_t> textures_distribution(0u, settings.textures_count - 1);
@@ -215,7 +215,7 @@ AsteroidsArray::ContentState::ContentState(const Settings& settings)
 }
 
 AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, Settings settings)
-    : AsteroidsArray(context, settings, *std::make_shared<ContentState>(settings))
+    : AsteroidsArray(context, settings, *std::make_shared<ContentState>(context.GetParallelExecutor(), settings))
 {
     META_FUNCTION_TASK();
 }
@@ -346,7 +346,7 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
         },
         Data::GetParallelChunkSizeAsInt(m_settings.instance_count, 5)
     );
-    m_parallel_executor.run(task_flow).get();
+    GetRenderContext().GetParallelExecutor().run(task_flow).get();
     
     return program_bindings_array;
 }
@@ -416,7 +416,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
         Data::GetParallelChunkSizeAsInt(m_sp_content_state->parameters.size(), 5)
     );
 
-    m_parallel_executor.run(update_task_flow).get();
+    GetRenderContext().GetParallelExecutor().run(update_task_flow).get();
     return true;
 }
 

@@ -73,6 +73,7 @@ target_link_libraries(${TARGET}
     PRIVATE
         MethaneBuildOptions
         MethanePlatformUtils
+        TaskFlow
         nowide
         ${PLATFORM_LIBRARIES}
 )

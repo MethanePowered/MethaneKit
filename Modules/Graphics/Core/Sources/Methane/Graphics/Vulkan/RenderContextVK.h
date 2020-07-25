@@ -34,7 +34,7 @@ namespace Methane::Graphics
 class RenderContextVK final : public ContextVK<RenderContextBase>
 {
 public:
-    RenderContextVK(const Platform::AppEnvironment& env, DeviceBase& device, const RenderContext::Settings& settings);
+    RenderContextVK(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings);
     ~RenderContextVK() override;
 
     // Context interface

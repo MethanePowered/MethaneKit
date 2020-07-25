@@ -38,17 +38,17 @@ Metal implementation of the render context interface.
 namespace Methane::Graphics
 {
 
-Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, Device& device, const RenderContext::Settings& settings)
+Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, Device& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
 {
     META_FUNCTION_TASK();
     DeviceBase& device_base = static_cast<DeviceBase&>(device);
-    Ptr<RenderContextMT> sp_render_context = std::make_shared<RenderContextMT>(env, device_base, settings);
+    Ptr<RenderContextMT> sp_render_context = std::make_shared<RenderContextMT>(env, device_base, parallel_executor, settings);
     sp_render_context->Initialize(device_base, true);
     return sp_render_context;
 }
 
-RenderContextMT::RenderContextMT(const Platform::AppEnvironment& env, DeviceBase& device, const RenderContext::Settings& settings)
-    : ContextMT<RenderContextBase>(device, settings)
+RenderContextMT::RenderContextMT(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
+    : ContextMT<RenderContextBase>(device, parallel_executor, settings)
     , m_app_view([[AppViewMT alloc] initWithFrame: TypeConverterMT::CreateNSRect(settings.frame_size)
                                         appWindow: env.ns_app_delegate.window
                                            device: ContextMT<RenderContextBase>::GetDeviceMT().GetNativeDevice()

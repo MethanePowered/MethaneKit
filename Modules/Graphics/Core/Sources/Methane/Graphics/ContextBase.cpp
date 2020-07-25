@@ -47,9 +47,10 @@ static std::string GetWaitForName(Context::WaitFor wait_for)
 }
 #endif
 
-ContextBase::ContextBase(DeviceBase& device, Type type)
+ContextBase::ContextBase(DeviceBase& device, tf::Executor& parallel_executor, Type type)
     : m_type(type)
     , m_sp_device(device.GetPtr())
+    , m_parallel_executor(parallel_executor)
     , m_resource_manager(*this)
 {
     META_FUNCTION_TASK();

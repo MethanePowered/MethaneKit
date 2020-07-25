@@ -37,7 +37,7 @@ class RenderContextBase
     , public RenderContext
 {
 public:
-    RenderContextBase(DeviceBase& device, const Settings& settings);
+    RenderContextBase(DeviceBase& device, tf::Executor& parallel_executor, const Settings& settings);
 
     // Context interface
     void WaitForGpu(WaitFor wait_for) override;

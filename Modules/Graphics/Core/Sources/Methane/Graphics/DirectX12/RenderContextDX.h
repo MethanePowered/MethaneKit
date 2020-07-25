@@ -36,7 +36,7 @@ namespace Methane::Graphics
 class RenderContextDX final : public ContextDX<RenderContextBase>
 {
 public:
-    RenderContextDX(const Platform::AppEnvironment& env, DeviceBase& device, const RenderContext::Settings& settings);
+    RenderContextDX(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings);
 
     ~RenderContextDX() override;
 

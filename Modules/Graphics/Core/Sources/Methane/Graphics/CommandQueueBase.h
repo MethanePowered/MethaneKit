@@ -54,8 +54,7 @@ public:
     CommandList::Type GetCommandListsType() const noexcept override { return m_command_lists_type; }
 
     Ptr<CommandQueueBase> GetPtr()                      { return shared_from_this(); }
-    ContextBase&          GetContext() noexcept         { return m_context; }
-    const ContextBase&    GetContext() const noexcept   { return m_context; }
+    ContextBase&          GetContext() const noexcept   { return m_context; }
     Tracy::GpuContext&    GetTracyContext() noexcept;
 
 protected:

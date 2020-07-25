@@ -56,7 +56,7 @@ struct RenderContext : virtual Context
     };
 
     // Create RenderContext instance
-    static Ptr<RenderContext> Create(const Platform::AppEnvironment& env, Device& device, const Settings& settings);
+    static Ptr<RenderContext> Create(const Platform::AppEnvironment& env, Device& device, tf::Executor& parallel_executor, const Settings& settings);
 
     // RenderContext interface
     virtual bool ReadyToRender() const = 0;

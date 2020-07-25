@@ -32,14 +32,14 @@ Vulkan implementation of the render context interface.
 namespace Methane::Graphics
 {
 
-Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, Device& device, const RenderContext::Settings& settings)
+Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, Device& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderContextVK>(env, static_cast<DeviceBase&>(device), settings);
+    return std::make_shared<RenderContextVK>(env, static_cast<DeviceBase&>(device), parallel_executor, settings);
 }
 
-RenderContextVK::RenderContextVK(const Platform::AppEnvironment& /*env*/, DeviceBase& device, const RenderContext::Settings& settings)
-    : ContextVK<RenderContextBase>(device, settings)
+RenderContextVK::RenderContextVK(const Platform::AppEnvironment& /*env*/, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
+    : ContextVK<RenderContextBase>(device, parallel_executor, settings)
 {
     META_FUNCTION_TASK();
 }

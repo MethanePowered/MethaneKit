@@ -66,7 +66,7 @@ public:
     class UberMesh : public gfx::UberMesh<Asteroid::Vertex>
     {
     public:
-        UberMesh(uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed);
+        UberMesh(tf::Executor& parallel_executor, uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed);
 
         uint32_t GetInstanceCount() const       { return m_instance_count; }
         uint32_t GetSubdivisionsCount() const   { return m_subdivisions_count; }
@@ -86,7 +86,7 @@ public:
 
     struct ContentState : public std::enable_shared_from_this<ContentState>
     {
-        ContentState(const Settings& settings);
+        ContentState(tf::Executor& parallel_executor, const Settings& settings);
 
         using MeshSubsetTextureIndices = std::vector<uint32_t>;
 
@@ -126,7 +126,6 @@ private:
     using MeshSubsetByInstanceIndex = std::vector<uint32_t>;
 
     const Settings            m_settings;
-    tf::Executor              m_parallel_executor;
     Ptr<ContentState>         m_sp_content_state;
     Textures                  m_unique_textures;
     Ptr<gfx::Sampler>         m_sp_texture_sampler;

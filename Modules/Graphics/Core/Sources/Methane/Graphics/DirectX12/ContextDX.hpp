@@ -46,8 +46,8 @@ template<class ContextBaseT, typename = std::enable_if_t<std::is_base_of_v<Conte
 class ContextDX : public ContextBaseT
 {
 public:
-    ContextDX(DeviceBase& device, const typename ContextBaseT::Settings& settings)
-        : ContextBaseT(device, settings)
+    ContextDX(DeviceBase& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
+        : ContextBaseT(device, parallel_executor, settings)
     {
         META_FUNCTION_TASK();
     }

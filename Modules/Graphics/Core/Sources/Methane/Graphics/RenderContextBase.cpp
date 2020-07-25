@@ -31,8 +31,8 @@ Base implementation of the render context interface.
 namespace Methane::Graphics
 {
 
-RenderContextBase::RenderContextBase(DeviceBase& device, const Settings& settings)
-    : ContextBase(device, Type::Render)
+RenderContextBase::RenderContextBase(DeviceBase& device, tf::Executor& parallel_executor, const Settings& settings)
+    : ContextBase(device, parallel_executor, Type::Render)
     , m_settings(settings)
     , m_frame_buffer_index(0)
 {

@@ -79,17 +79,17 @@ static float GetDeviceScaleRatio(DEVICE_SCALE_FACTOR device_scale_factor)
     return 1.f;
 }
 
-Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, Device& device, const RenderContext::Settings& settings)
+Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, Device& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
 {
     META_FUNCTION_TASK();
     DeviceBase& device_base = static_cast<DeviceBase&>(device);
-    Ptr<RenderContextDX> sp_render_context = std::make_shared<RenderContextDX>(env, device_base, settings);
+    Ptr<RenderContextDX> sp_render_context = std::make_shared<RenderContextDX>(env, device_base, parallel_executor, settings);
     sp_render_context->Initialize(device_base, true);
     return sp_render_context;
 }
 
-RenderContextDX::RenderContextDX(const Platform::AppEnvironment& env, DeviceBase& device, const RenderContext::Settings& settings)
-    : ContextDX<RenderContextBase>(device, settings)
+RenderContextDX::RenderContextDX(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
+    : ContextDX<RenderContextBase>(device, parallel_executor, settings)
     , m_platform_env(env)
 {
     META_FUNCTION_TASK();

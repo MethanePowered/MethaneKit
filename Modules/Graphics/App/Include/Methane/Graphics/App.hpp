@@ -122,7 +122,7 @@ public:
         
         // Create render context of the current window size
         m_initial_context_settings.frame_size = frame_size;
-        m_sp_context = RenderContext::Create(env, *sp_device, m_initial_context_settings);
+        m_sp_context = RenderContext::Create(env, *sp_device, GetParallelExecutor(), m_initial_context_settings);
         m_sp_context->SetName("App Render Context");
         m_sp_context->Connect(*this);
 

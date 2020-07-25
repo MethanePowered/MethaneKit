@@ -29,6 +29,13 @@ Methane base context interface: wraps graphics device used for GPU interaction.
 #include <Methane/Graphics/Types.h>
 #include <Methane/Data/IEmitter.h>
 
+namespace tf
+{
+// TaskFlow Executor class forward declaration:
+// #include <taskflow/core/executor.hpp>
+class Executor;
+}
+
 namespace Methane::Graphics
 {
 
@@ -64,7 +71,8 @@ struct Context
     };
 
     // Context interface
-    virtual Type GetType() const = 0;
+    virtual Type GetType() const noexcept = 0;
+    virtual tf::Executor& GetParallelExecutor() const noexcept = 0;
     virtual void RequireCompleteInitialization() const noexcept = 0;
     virtual void CompleteInitialization() = 0;
     virtual void WaitForGpu(WaitFor wait_for) = 0;

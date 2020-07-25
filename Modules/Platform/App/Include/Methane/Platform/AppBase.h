@@ -35,6 +35,13 @@ Base application interface and platform-independent implementation.
 #include <vector>
 #include <memory>
 
+namespace tf
+{
+// TaskFlow Executor class forward declaration:
+// #include <taskflow/core/executor.hpp>
+class Executor;
+}
+
 namespace Methane::Platform
 {
 
@@ -74,7 +81,7 @@ public:
     };
 
     AppBase(const Settings& settings);
-    virtual ~AppBase() = default;
+    ~AppBase() override;
 
     // AppBase interface
     virtual int  Run(const RunArgs& args);
@@ -97,11 +104,12 @@ public:
     void UpdateAndRender();
     bool HasError() const;
 
-    const Settings&         GetPlatformAppSettings() const  { return m_settings; }
-    const Input::State&     GetInputState() const           { return m_input_state; }
-    const Data::FrameSize&  GetFrameSize() const            { return m_frame_size; }
-    bool                    IsMinimized() const             { return m_is_minimized; }
-    bool                    IsResizing() const              { return m_is_resizing; }
+    tf::Executor&           GetParallelExecutor() const;
+    const Settings&         GetPlatformAppSettings() const noexcept { return m_settings; }
+    const Input::State&     GetInputState() const noexcept          { return m_input_state; }
+    const Data::FrameSize&  GetFrameSize() const noexcept           { return m_frame_size; }
+    bool                    IsMinimized() const noexcept            { return m_is_minimized; }
+    bool                    IsResizing() const noexcept             { return m_is_resizing; }
 
     template<typename FuncType, typename... ArgTypes>
     void ProcessInput(FuncType&& func_ptr, ArgTypes&&... args)
@@ -146,6 +154,8 @@ private:
     bool            m_initialized = false;
     bool            m_is_resizing = false;
     Input::State    m_input_state;
+
+    mutable UniquePtr<tf::Executor> m_sp_parallel_executor;
 };
 
 } // namespace Methane::Platform

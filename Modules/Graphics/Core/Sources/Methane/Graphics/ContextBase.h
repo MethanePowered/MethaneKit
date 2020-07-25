@@ -33,6 +33,13 @@ Base implementation of the context interface.
 
 #include <memory>
 
+namespace tf
+{
+// TaskFlow Executor class forward declaration:
+// #include <taskflow/core/executor.hpp>
+class Executor;
+}
+
 namespace Methane::Graphics
 {
 
@@ -47,10 +54,11 @@ class ContextBase
     , public Data::Emitter<IContextCallback>
 {
 public:
-    ContextBase(DeviceBase& device, Type type);
+    ContextBase(DeviceBase& device, tf::Executor& parallel_executor, Type type);
 
     // Context interface
-    Type             GetType() const override { return m_type; }
+    Type             GetType() const noexcept override                       { return m_type; }
+    tf::Executor&    GetParallelExecutor() const noexcept override           { return m_parallel_executor; }
     void             RequireCompleteInitialization() const noexcept override { m_is_complete_initialization_required = true; }
     void             CompleteInitialization() override;
     void             WaitForGpu(WaitFor wait_for) override;
@@ -88,6 +96,7 @@ protected:
 private:
     const Type                m_type;
     Ptr<DeviceBase>           m_sp_device;
+    tf::Executor&             m_parallel_executor;
     ResourceManager::Settings m_resource_manager_init_settings{ true, {}, {} };
     ResourceManager           m_resource_manager;
     Ptr<CommandQueue>         m_sp_upload_cmd_queue;

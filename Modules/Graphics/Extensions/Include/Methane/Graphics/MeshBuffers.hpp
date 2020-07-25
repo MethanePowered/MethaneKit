@@ -59,7 +59,8 @@ class MeshBuffers
 public:
     template<typename VType>
     MeshBuffers(RenderContext& context, const BaseMesh<VType>& mesh_data, const std::string& mesh_name, const Mesh::Subsets& mesh_subsets = Mesh::Subsets())
-        : m_mesh_name(mesh_name)
+        : m_render_context(context)
+        , m_mesh_name(mesh_name)
         , m_mesh_subsets(!mesh_subsets.empty() ? mesh_subsets
                                                : Mesh::Subsets{ Mesh::Subset(mesh_data.GetType(), { 0, mesh_data.GetVertexCount() },
                                                                                                   { 0, mesh_data.GetIndexCount()  }, true ) })
@@ -97,6 +98,8 @@ public:
     }
     
     virtual ~MeshBuffers() = default;
+
+    RenderContext& GetRenderContext() const noexcept { return m_render_context; }
 
     void Draw(RenderCommandList& cmd_list, ProgramBindings& program_bindings,
               uint32_t mesh_subset_index = 0, uint32_t instance_count = 1, uint32_t start_instance = 0)
@@ -180,7 +183,7 @@ public:
             },
             Data::GetParallelChunkSizeAsInt(render_cmd_lists.size())
         );
-        m_parallel_executor.run(render_task_flow).get();
+        m_render_context.GetParallelExecutor().run(render_task_flow).get();
     }
 
     const std::string&  GetMeshName() const      { return m_mesh_name; }
@@ -253,13 +256,13 @@ protected:
 private:
     using InstanceUniforms = std::vector<UniformsType, Data::AlignedAllocator<UniformsType, SHADER_STRUCT_ALIGNMENT>>;
 
+    RenderContext&         m_render_context;
     const std::string      m_mesh_name;
     const Mesh::Subsets    m_mesh_subsets;
     Ptr<BufferSet>         m_sp_vertex;
     Ptr<Buffer>            m_sp_index;
     InstanceUniforms       m_final_pass_instance_uniforms; // Actual uniforms buffers are created separately in Frame dependent resources
     Resource::SubResources m_final_pass_instance_uniforms_subresources;
-    tf::Executor           m_parallel_executor;
 };
 
 template<typename UniformsType>

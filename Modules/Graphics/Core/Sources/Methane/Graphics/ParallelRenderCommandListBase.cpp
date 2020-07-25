@@ -27,6 +27,8 @@ Base implementation of the parallel render command list interface.
 #include "RenderStateBase.h"
 #include "BufferBase.h"
 #include "ProgramBase.h"
+#include "CommandQueueBase.h"
+#include "ContextBase.h"
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Data/Math.hpp>
@@ -79,7 +81,7 @@ void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_stat
         static_cast<int>(m_parallel_command_lists.size())
 #endif
     );
-    tf::Executor().run(task_flow).get();
+    GetCommandQueueBase().GetContext().GetParallelExecutor().run(task_flow).get();
 }
 
 void ParallelRenderCommandListBase::Commit()

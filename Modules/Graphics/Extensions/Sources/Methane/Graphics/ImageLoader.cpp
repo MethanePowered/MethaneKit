@@ -193,7 +193,7 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
             face_images_data.emplace_back(face_index, std::move(image_data));
         }
     );
-    tf::Executor().run(load_task_flow).get();
+    context.GetParallelExecutor().run(load_task_flow).get();
 
     // Verify cube textures
 

@@ -23,6 +23,7 @@ and deferred releasing of GPU resource.
 ******************************************************************************/
 
 #include "ResourceManager.h"
+#include "ContextBase.h"
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Data/Math.hpp>
@@ -103,7 +104,7 @@ void ResourceManager::CompleteInitialization()
         },
         Data::GetParallelChunkSizeAsInt(m_program_bindings.size(), 3)
     );
-    tf::Executor().run(task_flow).get();
+    m_context.GetParallelExecutor().run(task_flow).get();
 }
 
 void ResourceManager::Release()

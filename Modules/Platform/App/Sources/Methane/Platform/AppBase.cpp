@@ -30,6 +30,7 @@ Base application interface and platform-independent implementation.
 #include <Methane/Version.h>
 
 #include <CLI/CLI.hpp>
+#include <taskflow/core/executor.hpp>
 
 #include <sstream>
 #include <vector>
@@ -57,6 +58,8 @@ AppBase::AppBase(const AppBase::Settings& settings)
     allow_extras();
 #endif
 }
+
+AppBase::~AppBase() = default;
 
 int AppBase::Run(const RunArgs& args)
 {
@@ -159,6 +162,15 @@ bool AppBase::HasError() const
 {
     META_FUNCTION_TASK();
     return m_sp_deferred_message ? m_sp_deferred_message->type == Message::Type::Error : false;
+}
+
+tf::Executor& AppBase::GetParallelExecutor() const
+{
+    META_FUNCTION_TASK();
+    if (!m_sp_parallel_executor)
+        m_sp_parallel_executor = std::make_unique<tf::Executor>();
+
+    return *m_sp_parallel_executor;
 }
 
 bool AppBase::SetFullScreen(bool is_full_screen)
