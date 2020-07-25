@@ -37,7 +37,7 @@ namespace Methane::Graphics
 class RenderContextMT final : public ContextMT<RenderContextBase>
 {
 public:
-    RenderContextMT(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, DeviceBase& device, const Settings& settings);
+    RenderContextMT(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor, const Settings& settings);
     ~RenderContextMT() override;
 
     // Context interface
