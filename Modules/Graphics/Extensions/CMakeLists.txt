@@ -35,13 +35,13 @@ target_link_libraries(${TARGET}
         MethaneGraphicsCore
         MethaneDataPrimitives
         MethaneInstrumentation
+        TaskFlow
     PRIVATE
         MethaneBuildOptions
         MethanePlatformUtils
         MethaneGraphicsPrimitives
         MethaneGraphicsCamera
         MethaneDataProvider
-        TaskFlow
 )
 
 if (METHANE_USE_OPEN_IMAGE_IO)
