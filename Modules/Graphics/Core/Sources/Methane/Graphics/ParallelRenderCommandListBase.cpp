@@ -66,22 +66,23 @@ void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_stat
     }
 
     // Per-thread render command lists can be reset in parallel only with DirectX 12 on Windows
-    tf::Taskflow task_flow;
-    task_flow.parallel_for(0, static_cast<int>(m_parallel_command_lists.size()), 1,
-        [this, &sp_render_state, p_debug_group](const int render_command_list_index)
+    const auto reset_command_list_fn = [this, &sp_render_state, p_debug_group](const int command_list_index)
         {
             META_FUNCTION_TASK();
-            const Ptr<RenderCommandList>& sp_render_command_list = m_parallel_command_lists[render_command_list_index];
+            const Ptr<RenderCommandList>& sp_render_command_list = m_parallel_command_lists[command_list_index];
             assert(sp_render_command_list);
-            sp_render_command_list->Reset(sp_render_state, p_debug_group->GetSubGroup(static_cast<Data::Index>(render_command_list_index)));
-        },
+            sp_render_command_list->Reset(sp_render_state, p_debug_group->GetSubGroup(static_cast<Data::Index>(command_list_index)));
+        };
+
 #ifdef _WIN32
-        Data::GetParallelChunkSizeAsInt(m_parallel_command_lists.size())
+    tf::Taskflow reset_task_flow;
+    reset_task_flow.parallel_for(0, static_cast<int>(m_parallel_command_lists.size()), 1, reset_command_list_fn,
+                           Data::GetParallelChunkSizeAsInt(m_parallel_command_lists.size()));
+    GetCommandQueueBase().GetContext().GetParallelExecutor().run(reset_task_flow).get();
 #else
-        static_cast<int>(m_parallel_command_lists.size())
+    for(size_t command_list_index = 0u; command_list_index < m_parallel_command_lists.size(); ++command_list_index)
+        reset_command_list_fn(command_list_index);
 #endif
-    );
-    GetCommandQueueBase().GetContext().GetParallelExecutor().run(task_flow).get();
 }
 
 void ParallelRenderCommandListBase::Commit()
