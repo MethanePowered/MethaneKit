@@ -38,17 +38,17 @@ namespace gfx = Methane::Graphics;
 
 template<typename FrameT>
 class App
-    : public Graphics::App<FrameT, UserInterface::IApp>
-    , protected UserInterface::AppBase
+    : public Graphics::App<FrameT, IApp>
+    , protected AppBase
 {
 public:
-    using GraphicsApp = Graphics::App<FrameT, UserInterface::IApp>;
+    using GraphicsApp = Graphics::App<FrameT, IApp>;
 
     App(const Graphics::AppSettings& graphics_app_settings,
-        const UserInterface::IApp::Settings& ui_app_settings = UserInterface::IApp::Settings(),
+        const IApp::Settings& ui_app_settings = IApp::Settings(),
         const std::string& help_description = "Methane Graphics Application")
         : GraphicsApp(graphics_app_settings)
-        , UserInterface::AppBase(ui_app_settings)
+        , AppBase(ui_app_settings)
     {
         META_FUNCTION_TASK();
         CLI::App::add_option("-i,--hud", AppBase::GetAppSettings().heads_up_display_mode, "HUD display mode (0 - hidden, 1 - in window title, 2 - in UI)", true);
@@ -85,7 +85,7 @@ public:
 
     // UserInterface::IApp interface
 
-    const UserInterface::IApp::Settings& GetUserInterfaceAppSettings() const noexcept override { return AppBase::GetAppSettings(); }
+    const IApp::Settings& GetUserInterfaceAppSettings() const noexcept override { return AppBase::GetAppSettings(); }
 
     bool SetHeadsUpDisplayMode(IApp::HeadsUpDisplayMode heads_up_display_mode) override
     {

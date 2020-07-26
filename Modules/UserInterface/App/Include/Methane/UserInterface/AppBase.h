@@ -59,13 +59,13 @@ public:
     void GetParametersText(const std::string& parameters_str);
     Font& GetMainFont();
 
-    const UserInterface::IApp::Settings& GetAppSettings() const noexcept    { return m_app_settings; }
+    const IApp::Settings& GetAppSettings() const noexcept    { return m_app_settings; }
 
     HeadsUpDisplay::Settings&            GetHeadsUpDisplaySettings()        { return m_hud_settings; }
     HeadsUpDisplay*                      GetHeadsUpDisplay() const noexcept { return m_sp_hud.get(); }
 
 protected:
-    UserInterface::IApp::Settings& GetAppSettings() noexcept                { return m_app_settings; }
+    IApp::Settings& GetAppSettings() noexcept                { return m_app_settings; }
     const Context&                 GetUIContext() const noexcept            { return *m_sp_ui_context; }
     Context&                       GetUIContext() noexcept                  { return *m_sp_ui_context; }
 
