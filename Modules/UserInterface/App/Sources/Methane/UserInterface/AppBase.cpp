@@ -104,7 +104,7 @@ void AppBase::Init(gfx::RenderContext& render_context, const gfx::FrameSize& fra
     }
 
     // Update displayed text blocks
-    if (!m_help_columns.first.text_str.empty() && UpdateTextItem(m_help_columns.first) &&
+    if (!m_help_columns.first.text_str.empty()  && UpdateTextItem(m_help_columns.first) &&
         (m_help_columns.second.text_str.empty() || UpdateTextItem(m_help_columns.second)))
     {
         UpdateHelpTextPosition();
@@ -122,9 +122,9 @@ void AppBase::Release()
     m_sp_logo_badge.reset();
     m_sp_hud.reset();
     m_sp_main_font.reset();
-    m_help_columns.first.sp_text.reset();
-    m_help_columns.second.sp_text.reset();
-    m_parameters.sp_text.reset();
+    m_help_columns.first.Reset(false);
+    m_help_columns.second.Reset(false);
+    m_parameters.Reset(false);
     m_sp_ui_context.reset();
 }
 
@@ -181,12 +181,15 @@ void AppBase::TextItem::Draw(gfx::RenderCommandList& cmd_list)
     }
 }
 
-void AppBase::TextItem::Reset()
+void AppBase::TextItem::Reset(bool forget_text_string)
 {
     META_FUNCTION_TASK();
-    text_str.clear();
+
     sp_text.reset();
     sp_panel.reset();
+
+    if (forget_text_string)
+        text_str.clear();
 }
 
 
@@ -221,7 +224,7 @@ bool AppBase::SetHelpText(const std::string& help_str)
 
     if (!UpdateTextItem(m_help_columns.first))
     {
-        m_help_columns.second.Reset();
+        m_help_columns.second.Reset(true);
         return false;
     }
 
@@ -242,7 +245,7 @@ bool AppBase::SetHelpText(const std::string& help_str)
     else
     {
         m_help_columns.first.text_str = m_help_text_str;
-        m_help_columns.second.Reset();
+        m_help_columns.second.Reset(true);
     }
 
     UpdateHelpTextPosition();
@@ -267,12 +270,12 @@ bool AppBase::SetParametersText(const std::string& parameters_str)
 bool AppBase::UpdateTextItem(TextItem& item)
 {
     if ((!item.sp_text && item.text_str.empty()) ||
-        (item.sp_text && item.sp_text->GetTextUtf8() == item.text_str))
+        (item.sp_text  && item.sp_text->GetTextUtf8() == item.text_str))
         return false;
 
     if (item.text_str.empty())
     {
-        item.Reset();
+        item.Reset(true);
 
         // If main font is hold only by this class and Font::Library, then it can be removed as unused
         if (m_sp_main_font.use_count() == 2)
@@ -315,7 +318,6 @@ bool AppBase::UpdateTextItem(TextItem& item)
         item.sp_panel->AddChild(*item.sp_text);
     }
 
-    item.sp_panel->SetRect(item.sp_text->GetRectInPixels());
     return true;
 }
 

@@ -78,7 +78,7 @@ private:
         Ptr<Text>   sp_text;
 
         void Draw(gfx::RenderCommandList& cmd_list);
-        void Reset();
+        void Reset(bool forget_text_string);
     };
 
     bool UpdateTextItem(TextItem& item);
