@@ -110,8 +110,15 @@ private:
     struct Constants;
     struct Uniforms;
 
+    struct UpdateRectResult
+    {
+        bool rect_changed = false;
+        bool size_changed = false;
+    };
+
     Ptr<gfx::ProgramBindings> CreateProgramBindings();
 
+    UpdateRectResult UpdateRect(const UnitRect& ui_rect, bool viewport_reset);
     bool UpdateViewportRect(Units ui_rect_units);
     void UpdateAtlasTexture(const Ptr<gfx::Texture>& sp_new_atlas_texture);
     void UpdateMeshData();

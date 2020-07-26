@@ -301,7 +301,7 @@ bool AppBase::UpdateTextItem(TextItem& item)
 
     if (item.sp_text)
     {
-        item.sp_text->SetTextInScreenRect(item.text_str, {});
+        item.sp_text->SetText(item.text_str);
     }
     else
     {

@@ -181,18 +181,14 @@ void Text::SetTextInScreenRect(const std::string& text, const UnitRect& ui_rect)
 void Text::SetTextInScreenRect(const std::u32string& text, const UnitRect& ui_rect)
 {
     META_FUNCTION_TASK();
-    const UnitRect ui_rect_in_units = GetUIContext().ConvertToUnits(ui_rect, m_settings.rect.units);
-    if (m_settings.text == text && m_settings.rect == ui_rect_in_units)
+    const bool             text_changed  = m_settings.text != text;
+    const UpdateRectResult update_result = UpdateRect(ui_rect, text_changed);
+    if (!text_changed && !update_result.rect_changed)
         return;
 
-    const bool text_changed             = m_settings.text != text;
-    const bool screen_rect_size_changed = m_settings.rect.size != ui_rect_in_units.size;
-
     m_settings.text = text;
-    m_settings.rect = ui_rect_in_units;
-    m_viewport_rect = GetUIContext().ConvertToPixels(m_settings.rect);
 
-    if (screen_rect_size_changed || text_changed)
+    if (text_changed || update_result.size_changed)
     {
         UpdateMeshData();
         UpdateUniformsBuffer();
@@ -210,22 +206,35 @@ void Text::SetTextInScreenRect(const std::u32string& text, const UnitRect& ui_re
 bool Text::SetRect(const UnitRect& ui_rect)
 {
     META_FUNCTION_TASK();
-    const UnitRect ui_rect_in_units = GetUIContext().ConvertToUnits(ui_rect, m_settings.rect.units);
-    const bool screen_rect_size_changed = m_settings.rect.size != ui_rect_in_units.size;
+    const UpdateRectResult update_result = UpdateRect(ui_rect, false);
+    if (!update_result.rect_changed)
+        return false;
 
-    m_settings.rect = ui_rect_in_units;
-    if (screen_rect_size_changed)
-        m_viewport_rect = GetUIContext().ConvertToPixels(m_settings.rect);
-    else
-        m_viewport_rect.origin = GetUIContext().ConvertToPixels(m_settings.rect).origin;
-
-    if (screen_rect_size_changed)
+    if (update_result.size_changed)
     {
         UpdateMeshData();
         UpdateUniformsBuffer();
     }
 
     return UpdateViewportRect(ui_rect.units);
+}
+
+Text::UpdateRectResult Text::UpdateRect(const UnitRect& ui_rect, bool viewport_reset)
+{
+    META_FUNCTION_TASK();
+    const UnitRect ui_rect_in_units = GetUIContext().ConvertToUnits(ui_rect, m_settings.rect.units);
+    const bool     ui_rect_changed  = m_settings.rect != ui_rect_in_units;
+    const bool     ui_size_changed  = ui_rect_changed && m_settings.rect.size != ui_rect_in_units.size;
+
+    m_settings.rect = ui_rect_in_units;
+
+    const UnitRect rect_in_pixels = GetUIContext().ConvertToPixels(m_settings.rect);
+    if (viewport_reset || ui_size_changed)
+        m_viewport_rect = rect_in_pixels;
+    else
+        m_viewport_rect.origin = rect_in_pixels.origin;
+
+    return { ui_rect_changed, ui_size_changed };
 }
 
 void Text::SetColor(const gfx::Color4f& color)

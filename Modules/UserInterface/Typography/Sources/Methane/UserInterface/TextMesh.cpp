@@ -211,7 +211,9 @@ void TextMesh::EraseTrailingChars(size_t erase_chars_count, bool fixup_whitespac
 
     if (fixup_whitespace && m_last_whitespace_index >= m_text.length())
     {
-        const auto whitespace_it = std::find_if(m_text.rbegin(), m_text.rend(), [](char32_t char_code) { return std::isspace(static_cast<int>(char_code)); });
+        const auto whitespace_it = std::find_if(m_text.rbegin(), m_text.rend(), [](char32_t char_code)
+            { return 0 <= char_code && char_code <= 255 && std::isspace(static_cast<int>(char_code)); }
+        );
         m_last_whitespace_index = whitespace_it == m_text.rend() ? std::string::npos : std::distance(m_text.begin(), whitespace_it.base());
     }
 
