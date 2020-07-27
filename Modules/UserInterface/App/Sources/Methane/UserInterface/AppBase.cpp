@@ -77,7 +77,13 @@ AppBase::AppBase(const IApp::Settings& ui_app_settings)
     m_parameters.text_name          = "Parameters";
 }
 
-AppBase::~AppBase() = default;
+AppBase::~AppBase()
+{
+    META_FUNCTION_TASK();
+
+    // Clear static signleton fonts library to guarantee atlas textures destruction before descriptor heaps release
+    Font::Library::Get().Clear();
+}
 
 void AppBase::Init(gfx::RenderContext& render_context, const gfx::FrameSize& frame_size)
 {
