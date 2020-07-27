@@ -222,17 +222,20 @@ bool Text::SetRect(const UnitRect& ui_rect)
 Text::UpdateRectResult Text::UpdateRect(const UnitRect& ui_rect, bool viewport_reset)
 {
     META_FUNCTION_TASK();
-    const UnitRect ui_rect_in_units = GetUIContext().ConvertToUnits(ui_rect, m_settings.rect.units);
-    const bool     ui_rect_changed  = m_settings.rect != ui_rect_in_units;
-    const bool     ui_size_changed  = ui_rect_changed && m_settings.rect.size != ui_rect_in_units.size;
+    const UnitRect& ui_curr_rect_px  = GetRectInPixels();
+    const UnitRect  ui_rect_in_units = GetUIContext().ConvertToUnits(ui_rect, m_settings.rect.units);
+    const UnitRect  ui_rect_in_px    = GetUIContext().ConvertToPixels(ui_rect);
+    const bool      ui_rect_changed  = ui_curr_rect_px != ui_rect_in_px;
+    const bool      ui_size_changed  = ui_rect_changed && ui_curr_rect_px.size != ui_rect_in_px.size;
 
-    m_settings.rect = ui_rect_in_units;
+    m_settings.rect.origin = ui_rect_in_units.origin;
+    if (ui_size_changed)
+        m_settings.rect.size = ui_rect_in_units.size;
 
-    const UnitRect rect_in_pixels = GetUIContext().ConvertToPixels(m_settings.rect);
     if (viewport_reset || ui_size_changed)
-        m_viewport_rect = rect_in_pixels;
+        m_viewport_rect = ui_rect_in_px;
     else
-        m_viewport_rect.origin = rect_in_pixels.origin;
+        m_viewport_rect.origin = ui_rect_in_px.origin;
 
     return { ui_rect_changed, ui_size_changed };
 }

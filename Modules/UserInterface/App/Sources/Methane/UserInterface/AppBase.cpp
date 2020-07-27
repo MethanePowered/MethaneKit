@@ -137,13 +137,14 @@ void AppBase::Release()
 bool AppBase::Resize(const gfx::FrameSize& frame_size, bool)
 {
     META_FUNCTION_TASK();
-    if (m_frame_size == frame_size)
+    const UnitSize frame_size_px(frame_size, Units::Pixels);
+    if (m_frame_size == frame_size_px)
         return false;
 
-    m_frame_size = UnitSize(frame_size, Units::Pixels);
+    m_frame_size = frame_size_px;
 
     if (m_sp_logo_badge)
-        m_sp_logo_badge->FrameResize(UnitSize(frame_size));
+        m_sp_logo_badge->FrameResize(frame_size_px);
 
     UpdateHelpTextPosition();
     UpdateParametersTextPosition();
