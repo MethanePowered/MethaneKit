@@ -285,6 +285,9 @@ void AppWin::OnWindowKeyboardEvent(WPARAM w_param, LPARAM l_param)
     const Keyboard::Key      key = Keyboard::KeyConverter({ w_param, l_param }).GetKey();
     const Keyboard::KeyState key_state = ((l_param >> 31) & 1) ? Keyboard::KeyState::Released : Keyboard::KeyState::Pressed;
 
+    std::string msg = "Key " + Keyboard::KeyConverter(key).ToString() + " was " + (key_state == Keyboard::KeyState::Pressed ? "Pressed" : "Released") + "\n";
+    OutputDebugStringA(msg.c_str());
+
     if (key == Keyboard::Key::Unknown)
         return;
 
@@ -433,6 +436,8 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
         case WM_SIZE:           p_app->OnWindowResized(w_param, l_param); break;
         
         // Keyboard events
+        case WM_SETFOCUS:       p_app->SetKeyboardFocus(true);  break;
+        case WM_KILLFOCUS:      p_app->SetKeyboardFocus(false); break;
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN:
         case WM_KEYUP:

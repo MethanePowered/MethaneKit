@@ -110,6 +110,7 @@ public:
     const Data::FrameSize&  GetFrameSize() const noexcept           { return m_frame_size; }
     bool                    IsMinimized() const noexcept            { return m_is_minimized; }
     bool                    IsResizing() const noexcept             { return m_is_resizing; }
+    bool                    HasKeyboardFocus() const noexcept       { return m_has_keyboard_focus; }
 
     template<typename FuncType, typename... ArgTypes>
     void ProcessInput(FuncType&& func_ptr, ArgTypes&&... args)
@@ -137,6 +138,7 @@ protected:
     // AppBase interface
     virtual AppView GetView() const = 0;
     virtual void ShowAlert(const Message& msg);
+    virtual bool SetKeyboardFocus(bool has_keyboard_focus);
 
     std::string GetControlsHelp();
     std::string GetCommandLineHelp() { return CLI::App::help(); }
@@ -153,6 +155,7 @@ private:
     bool            m_is_minimized = false;
     bool            m_initialized = false;
     bool            m_is_resizing = false;
+    bool            m_has_keyboard_focus = false;
     Input::State    m_input_state;
 
     mutable UniquePtr<tf::Executor> m_sp_parallel_executor;

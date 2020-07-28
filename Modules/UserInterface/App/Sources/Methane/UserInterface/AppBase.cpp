@@ -199,7 +199,6 @@ void AppBase::TextItem::Reset(bool forget_text_string)
         text_str.clear();
 }
 
-
 bool AppBase::SetHeadsUpDisplayMode(IApp::HeadsUpDisplayMode heads_up_display_mode)
 {
     META_FUNCTION_TASK();
