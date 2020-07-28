@@ -181,6 +181,8 @@ bool AppBase::SetFullScreen(bool is_full_screen)
         return false;
 
     m_settings.is_full_screen = is_full_screen;
+    m_input_state.ReleaseAllKeys();
+
     return true;
 }
 
