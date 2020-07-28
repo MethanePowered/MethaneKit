@@ -104,4 +104,22 @@ using namespace Methane::Platform;
     m_p_app->EndResizing();
 }
 
+- (void) windowDidBecomeKey:(NSNotification*) notification
+{
+    META_FUNCTION_TASK();
+    #pragma unused(notification)
+
+    assert(!!m_p_app);
+    m_p_app->SetKeyboardFocus(true);
+}
+
+- (void) windowDidResignKey:(NSNotification*) notification
+{
+    META_FUNCTION_TASK();
+    #pragma unused(notification)
+
+    assert(!!m_p_app);
+    m_p_app->SetKeyboardFocus(false);
+}
+
 @end

@@ -96,6 +96,7 @@ public:
     virtual void Alert(const Message& msg, bool deferred = false);
     virtual void SetWindowTitle(const std::string& title_text) = 0;
     virtual bool SetFullScreen(bool is_full_screen);
+    virtual bool SetKeyboardFocus(bool has_keyboard_focus);
     virtual void ShowControlsHelp();
     virtual void ShowCommandLineHelp();
     virtual void ShowParameters() { }
@@ -138,7 +139,6 @@ protected:
     // AppBase interface
     virtual AppView GetView() const = 0;
     virtual void ShowAlert(const Message& msg);
-    virtual bool SetKeyboardFocus(bool has_keyboard_focus);
 
     std::string GetControlsHelp();
     std::string GetCommandLineHelp() { return CLI::App::help(); }

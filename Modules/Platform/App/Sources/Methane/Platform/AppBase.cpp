@@ -148,20 +148,6 @@ void AppBase::ShowAlert(const Message&)
     m_input_state.ReleaseAllKeys();
 }
 
-bool AppBase::SetKeyboardFocus(bool has_keyboard_focus)
-{
-    META_FUNCTION_TASK();
-    if (m_has_keyboard_focus == has_keyboard_focus)
-        return false;
-
-    m_has_keyboard_focus = has_keyboard_focus;
-    if (!m_has_keyboard_focus)
-    {
-        m_input_state.ReleaseAllKeys();
-    }
-    return true;
-}
-
 void AppBase::UpdateAndRender()
 {
     META_FUNCTION_TASK();
@@ -195,6 +181,18 @@ bool AppBase::SetFullScreen(bool is_full_screen)
         return false;
 
     m_settings.is_full_screen = is_full_screen;
+    return true;
+}
+
+bool AppBase::SetKeyboardFocus(bool has_keyboard_focus)
+{
+    META_FUNCTION_TASK();
+    if (m_has_keyboard_focus == has_keyboard_focus)
+        return false;
+
+    m_has_keyboard_focus = has_keyboard_focus;
+    m_input_state.ReleaseAllKeys();
+
     return true;
 }
 

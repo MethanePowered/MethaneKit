@@ -114,6 +114,7 @@ using namespace Methane::Platform;
     META_FUNCTION_TASK();
     #pragma unused(notification)
     [m_window makeFirstResponder: self.viewController.view];
+    [m_window makeKeyAndOrderFront: nil];
 }
 
 - (void) windowWillEnterFullScreen:(NSNotification *)notification
