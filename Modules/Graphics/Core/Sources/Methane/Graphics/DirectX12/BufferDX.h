@@ -66,7 +66,28 @@ public:
         }
     }
 
-    // Resource interface
+    ~BufferDX() override
+    {
+        META_FUNCTION_TASK();
+        if (m_cp_upload_resource)
+        {
+            GetContextBase().GetResourceManager().GetReleasePool().AddResource(std::make_unique<RetainedResourceDX>(m_cp_upload_resource));
+        }
+    }
+
+    // Object overrides
+    void SetName(const std::string& name) override
+    {
+        META_FUNCTION_TASK();
+        BufferBase::SetName(name);
+
+        if (m_cp_upload_resource)
+        {
+            m_cp_upload_resource->SetName(nowide::widen(name + " Upload Resource").c_str());
+        }
+    }
+
+    // Resource overrides
     void SetData(const SubResources& sub_resources) override
     {
         META_FUNCTION_TASK();
