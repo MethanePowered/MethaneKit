@@ -142,10 +142,7 @@ TextureMT::~TextureMT()
         return;
 
     GetContextBase().GetResourceManager().GetReleasePool().AddResource(std::make_unique<RetainedTextureMT>(m_mtl_texture));
-    if (GetSettings().storage_mode == Buffer::StorageMode::Private)
-    {
-        GetContextBase().GetResourceManager().GetReleasePool().AddUploadResource(std::make_unique<RetainedBufferMT>(m_mtl_texture));
-    }
+    GetContextBase().GetResourceManager().GetReleasePool().AddUploadResource(std::make_unique<RetainedTextureMT>(m_mtl_texture));
 }
 
 void TextureMT::SetName(const std::string& name)
