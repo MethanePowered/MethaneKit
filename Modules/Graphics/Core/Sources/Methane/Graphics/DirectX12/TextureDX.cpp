@@ -232,7 +232,8 @@ ImageTextureDX::~TextureDX()
 {
     META_FUNCTION_TASK();
     assert(m_cp_upload_resource);
-    GetContextBase().GetResourceManager().GetReleasePool().AddResource(std::make_unique<RetainedResourceDX>(m_cp_upload_resource));
+    GetContextBase().GetResourceManager().GetReleasePool().AddUploadResource(std::make_unique<RetainedResourceDX>(m_cp_upload_resource));
+    GetContextBase().GetResourceManager().GetReleasePool().AddUploadResource(std::make_unique<RetainedResourceDX>(GetNativeResourceComPtr()));
 }
 
 void ImageTextureDX::SetName(const std::string& name)

@@ -138,9 +138,13 @@ TextureMT::~TextureMT()
 {
     META_FUNCTION_TASK();
 
-    if (TextureBase::GetSettings().type != Texture::Type::FrameBuffer)
+    if (TextureBase::GetSettings().type == Texture::Type::FrameBuffer)
+        return;
+
+    GetContextBase().GetResourceManager().GetReleasePool().AddResource(std::make_unique<RetainedTextureMT>(m_mtl_texture));
+    if (GetSettings().storage_mode == Buffer::StorageMode::Private)
     {
-        GetContextBase().GetResourceManager().GetReleasePool().AddResource(std::make_unique<RetainedTextureMT>(m_mtl_texture));
+        GetContextBase().GetResourceManager().GetReleasePool().AddUploadResource(std::make_unique<RetainedBufferMT>(m_mtl_texture));
     }
 }
 
@@ -206,7 +210,7 @@ void TextureMT::SetData(const SubResources& sub_resources)
                         destinationLevel:sub_resource.index.mip_level
                        destinationOrigin:texture_region.origin];
 
-        GetContextBase().GetResourceManager().GetReleasePool().AddResource(std::make_unique<RetainedBufferMT>(mtl_sub_resource_upload_buffer));
+        GetContextBase().GetResourceManager().GetReleasePool().AddUploadResource(std::make_unique<RetainedBufferMT>(mtl_sub_resource_upload_buffer));
     }
 
     if (settings.mipmapped && sub_resources.size() < GetSubresourceCount().GetRawCount())

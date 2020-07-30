@@ -419,7 +419,6 @@ void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
     if (IsRenderContextInitialized())
     {
         GetRenderContext().WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
-        GetRenderContext().WaitForGpu(gfx::RenderContext::WaitFor::ResourcesUploaded);
     }
 
     m_asteroids_complexity = asteroids_complexity;

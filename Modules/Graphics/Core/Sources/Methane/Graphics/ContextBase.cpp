@@ -119,14 +119,22 @@ void ContextBase::Reset()
     Initialize(*sp_device, true);
 }
 
-void ContextBase::OnGpuWaitComplete(WaitFor)
+void ContextBase::OnGpuWaitComplete(WaitFor wait_for)
 {
     META_FUNCTION_TASK();
-    m_resource_manager.GetReleasePool().ReleaseAllResources();
 
-    if (m_is_complete_initialization_required)
+    if (wait_for == WaitFor::ResourcesUploaded)
     {
-        CompleteInitialization();
+        m_resource_manager.GetReleasePool().ReleaseUploadResources();
+    }
+    else
+    {
+        m_resource_manager.GetReleasePool().ReleaseAllResources();
+
+        if (m_is_complete_initialization_required)
+        {
+            CompleteInitialization();
+        }
     }
 }
 
@@ -279,7 +287,13 @@ bool ContextBase::UploadResources()
         GetUploadCommandList().Commit();
 
     META_LOG("UPLOAD resources for context \"" + GetName() + "\"");
-    GetUploadCommandQueue().Execute(GetUploadCommandListSet());
+    ReleasePool& release_pool = m_resource_manager.GetReleasePool();
+    GetUploadCommandQueue().Execute(GetUploadCommandListSet(),
+        [&release_pool](CommandList&) // upload completed callback
+        {
+            release_pool.ReleaseUploadResources();
+        }
+    );
     return true;
 }
 

@@ -42,6 +42,7 @@ void ReleasePool::AddResource(UniquePtr<RetainedResource>&& retained_resource)
     if (!retained_resource)
         return;
 
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_mutex);
     if (m_context.GetType() == Context::Type::Render)
     {
         RenderContextBase& render_context = static_cast<RenderContextBase&>(m_context);
@@ -64,14 +65,14 @@ void ReleasePool::AddResource(UniquePtr<RetainedResource>&& retained_resource)
     }
 }
 
-void ReleasePool::ReleaseAllResources()
+void ReleasePool::AddUploadResource(UniquePtr<RetainedResource>&& retained_resource)
 {
     META_FUNCTION_TASK();
-    for(RetainedResources& frame_resources : m_frame_resources)
-    {
-        frame_resources.clear();
-    }
-    m_misc_resources.clear();
+    if (!retained_resource)
+        return;
+
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_mutex);
+    m_upload_resources.emplace_back(std::move(retained_resource));
 }
 
 void ReleasePool::ReleaseFrameResources(uint32_t frame_index)
@@ -80,7 +81,27 @@ void ReleasePool::ReleaseFrameResources(uint32_t frame_index)
     if (frame_index >= m_frame_resources.size())
         return;
 
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_mutex);
     m_frame_resources[frame_index].clear();
+}
+
+void ReleasePool::ReleaseUploadResources()
+{
+    META_FUNCTION_TASK();
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_mutex);
+    m_upload_resources.clear();
+}
+
+void ReleasePool::ReleaseAllResources()
+{
+    META_FUNCTION_TASK();
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_mutex);
+    for (RetainedResources& frame_resources : m_frame_resources)
+    {
+        frame_resources.clear();
+    }
+    m_upload_resources.clear();
+    m_misc_resources.clear();
 }
 
 } // namespace Methane::Graphics

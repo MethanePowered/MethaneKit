@@ -23,6 +23,9 @@ GPU release pool for deferred objects release when they are not used by GPU anym
 #pragma once
 
 #include <Methane/Memory.hpp>
+#include <Methane/Instrumentation.h>
+
+#include <mutex>
 
 namespace Methane::Graphics
 {
@@ -40,7 +43,9 @@ struct ReleasePool
     ReleasePool(ContextBase& context);
 
     void AddResource(UniquePtr<RetainedResource>&& retained_resource);
+    void AddUploadResource(UniquePtr<RetainedResource>&& retained_resource);
     void ReleaseFrameResources(uint32_t frame_index);
+    void ReleaseUploadResources();
     void ReleaseAllResources();
 
 private:
@@ -48,7 +53,9 @@ private:
 
     ContextBase&                   m_context;
     std::vector<RetainedResources> m_frame_resources;
+    RetainedResources              m_upload_resources;
     RetainedResources              m_misc_resources;
+    TracyLockable(std::mutex,      m_mutex);
 };
 
 }

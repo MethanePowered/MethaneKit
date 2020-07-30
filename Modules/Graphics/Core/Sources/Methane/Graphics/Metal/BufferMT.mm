@@ -102,6 +102,10 @@ BufferMT::~BufferMT()
 {
     META_FUNCTION_TASK();
     GetContextBase().GetResourceManager().GetReleasePool().AddResource(std::make_unique<RetainedBufferMT>(m_mtl_buffer));
+    if (GetSettings().storage_mode == Buffer::StorageMode::Private)
+    {
+        GetContextBase().GetResourceManager().GetReleasePool().AddUploadResource(std::make_unique<RetainedBufferMT>(m_mtl_buffer));
+    }
 }
 
 void BufferMT::SetName(const std::string& name)
@@ -179,7 +183,7 @@ void BufferMT::SetDataToPrivateBuffer(const SubResources& sub_resources)
                        destinationOffset:data_offset
                                     size:sub_resource.size];
 
-        GetContextBase().GetResourceManager().GetReleasePool().AddResource(std::make_unique<RetainedBufferMT>(mtl_sub_resource_upload_buffer));
+        GetContextBase().GetResourceManager().GetReleasePool().AddUploadResource(std::make_unique<RetainedBufferMT>(mtl_sub_resource_upload_buffer));
         data_offset += sub_resource.size;
     }
 

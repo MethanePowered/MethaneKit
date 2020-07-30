@@ -57,6 +57,7 @@ void RenderContextBase::WaitForGpu(WaitFor wait_for)
         META_SCOPE_TIMER("RenderContextDX::WaitForGpu::RenderComplete");
         OnGpuWaitStart(wait_for);
         GetRenderFence().FlushOnCpu();
+        GetUploadFence().FlushOnCpu();
         OnGpuWaitComplete(wait_for);
     } break;
 
@@ -210,11 +211,8 @@ void RenderContextBase::OnGpuWaitComplete(WaitFor wait_for)
     {
         m_fps_counter.OnGpuFramePresented();
         m_is_frame_buffer_in_use = false;
-    }
 
-    // Release resources in base class only when all frame buffers in swap-chain were presented
-    if (wait_for == WaitFor::FramePresented)
-    {
+        // Release resources in base class only when all frame buffers in swap-chain were presented
         GetResourceManager().GetReleasePool().ReleaseFrameResources(GetFrameBufferIndex());
 
         if (IsCompleteInitializationRequired())
