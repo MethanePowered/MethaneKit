@@ -109,7 +109,7 @@ public:
         return true;
     }
 
-    void ShowParameters() override
+    void ShowParameters() final
     {
         META_FUNCTION_TASK();
         if (IsParametersTextDisplayed())

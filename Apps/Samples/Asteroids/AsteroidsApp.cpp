@@ -463,7 +463,7 @@ AsteroidsArray& AsteroidsApp::GetAsteroidsArray() const
     return *m_sp_asteroids_array;
 }
 
-void AsteroidsApp::ShowParameters()
+std::string AsteroidsApp::GetParametersString()
 {
     META_FUNCTION_TASK();
 
@@ -480,8 +480,7 @@ void AsteroidsApp::ShowParameters()
        << std::endl << "  - asteroid animations:          " << (!GetAnimations().IsPaused() ? "ON" : "OFF")
        << std::endl << "  - CPU h/w thread count:         " << std::thread::hardware_concurrency();
 
-    if (!UserInterfaceApp::SetParametersText(ss.str()))
-        UserInterfaceApp::SetParametersText("");
+    return ss.str();
 }
 
 Ptr<gfx::CommandListSet> AsteroidsApp::CreateExecuteCommandListSet(AsteroidsFrame& frame)
