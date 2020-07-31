@@ -49,14 +49,14 @@ public:
     using CharPosition  = gfx::FramePoint;
     using CharPositions = std::vector<CharPosition>;
 
-    TextMesh(const std::u32string& text, Text::Wrap wrap, Font& font, gfx::FrameSize& viewport_size);
+    TextMesh(const std::u32string& text, Text::Layout layout, Font& font, gfx::FrameSize& viewport_size);
 
-    bool IsUpdatable(const std::u32string& text, Text::Wrap wrap, Font& font, const gfx::FrameSize& viewport_size) const noexcept;
+    bool IsUpdatable(const std::u32string& text, const Text::Layout& layout, Font& font, const gfx::FrameSize& viewport_size) const noexcept;
     void Update(const std::u32string& text, gfx::FrameSize& viewport_size);
 
     const std::u32string& GetText() const noexcept          { return m_text; }
     Font&                 GetFont() noexcept                { return m_font; }
-    Text::Wrap            GetWrap() const noexcept          { return m_wrap; }
+    Text::Layout          GetLayout() const noexcept        { return m_layout; }
     const gfx::FrameSize& GetViewportSize() const noexcept  { return m_viewport_size; }
     const gfx::FrameSize& GetContentSize() const noexcept   { return m_content_size; }
 
@@ -81,10 +81,10 @@ private:
 
     std::u32string       m_text;
     Font&                m_font;
-    const Text::Wrap     m_wrap;
+    const Text::Layout   m_layout;
     const gfx::FrameSize m_viewport_size;
     gfx::FrameSize       m_content_size;
-    CharPositions        m_char_positions;
+    CharPositions        m_char_positions; // char positions without any hor/ver alignment
     size_t               m_last_whitespace_index = std::string::npos;
     Vertices             m_vertices;
     Indices              m_indices;

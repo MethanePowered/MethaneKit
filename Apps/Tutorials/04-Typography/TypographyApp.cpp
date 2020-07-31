@@ -166,8 +166,8 @@ void TypographyApp::Init()
                         { frame_width_without_margins, 0u /* calculated height */ },
                         gui::Units::Dots
                     },
+                    gui::Text::Layout{ m_settings.text_wrap },
                     gfx::Color4f(font_settings.color, 1.f),
-                    gui::Text::Wrap::Word,
                     m_settings.is_incremental_text_update
                 }
             )

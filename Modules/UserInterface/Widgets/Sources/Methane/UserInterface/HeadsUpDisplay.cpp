@@ -47,6 +47,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
             "FPS",
             "000 FPS",
             UnitRect(settings.position, { }, settings.position.units),
+            Text::Layout{ },
             m_settings.text_color
         }
     )

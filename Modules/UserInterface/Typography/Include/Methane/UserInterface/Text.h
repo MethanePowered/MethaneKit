@@ -58,15 +58,42 @@ public:
         Word
     };
 
+    enum class HorizontalAlignment : uint32_t
+    {
+        Left = 0u,
+        Right,
+        Center
+    };
+
+    enum class VerticalAlignment : uint32_t
+    {
+        Top = 0u,
+        Bottom,
+        Center
+    };
+
+    struct Layout
+    {
+        Wrap                wrap                 = Wrap::Anywhere;
+        HorizontalAlignment horizontal_alignment = HorizontalAlignment::Left;
+        VerticalAlignment   vertical_alignment   = VerticalAlignment::Top;
+
+        bool operator==(const Layout& other) const noexcept
+        {
+            return std::tie(wrap, horizontal_alignment, vertical_alignment) ==
+                   std::tie(other.wrap, other.horizontal_alignment, other.vertical_alignment);
+        }
+    };
+
     template<typename StringType>
     struct Settings
     {
-        const std::string name;
-        StringType        text;
-        UnitRect          rect;
-        Color4f           color              { 1.f, 1.f, 1.f, 1.f };
-        Wrap              wrap               = Wrap::Anywhere;
-        bool              incremental_update = true;
+        const std::string   name;
+        StringType          text;
+        UnitRect            rect;
+        Layout              layout;
+        Color4f             color                { 1.f, 1.f, 1.f, 1.f };
+        bool                incremental_update   = true;
 
         // Minimize number of vertex/index buffer re-allocations on dynamic text updates by reserving additional size with multiplication of required size
         Data::Size        mesh_buffers_reservation_multiplier = 2u;
@@ -91,7 +118,10 @@ public:
     void SetTextInScreenRect(const std::string& text, const UnitRect& ui_rect);
     void SetTextInScreenRect(const std::u32string& text, const UnitRect& ui_rect);
     void SetColor(const gfx::Color4f& color);
+    void SetLayout(const Layout& layout);
     void SetWrap(Wrap wrap);
+    void SetHorizontalAlignment(HorizontalAlignment alignment);
+    void SetVerticalAlignment(VerticalAlignment alignment);
     void SetIncrementalUpdate(bool incremental_update) noexcept { m_settings.incremental_update = incremental_update; }
 
     // Item overrides

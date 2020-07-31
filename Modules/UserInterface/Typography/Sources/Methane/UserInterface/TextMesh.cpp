@@ -132,23 +132,23 @@ static void ForEachTextCharacter(const std::u32string& text, Font& font, TextMes
                                 wrap == Text::Wrap::Word && viewport_width ? word_wrap_char_at_position : process_char_at_position);
 }
 
-TextMesh::TextMesh(const std::u32string& text, Text::Wrap wrap, Font& font, gfx::FrameSize& viewport_size)
+TextMesh::TextMesh(const std::u32string& text, Text::Layout layout, Font& font, gfx::FrameSize& viewport_size)
     : m_font(font)
-    , m_wrap(wrap)
+    , m_layout(std::move(layout))
     , m_viewport_size(viewport_size)
 {
     META_FUNCTION_TASK();
     Update(text, viewport_size);
 }
 
-bool TextMesh::IsUpdatable(const std::u32string& text, Text::Wrap wrap, Font& font, const gfx::FrameSize& viewport_size) const noexcept
+bool TextMesh::IsUpdatable(const std::u32string& text, const Text::Layout& layout, Font& font, const gfx::FrameSize& viewport_size) const noexcept
 {
     META_FUNCTION_TASK();
     // Text mesh can be updated when all text visualization parameters are equal to the initial
     // and new text start with the previously used text (typing continued),
     // or previous text starts with the new one (deleting with backspace)
     return m_viewport_size == viewport_size &&
-           m_wrap == wrap &&
+           m_layout == layout &&
            std::addressof(m_font) == std::addressof(font) &&
            (IsNewTextStartsWithOldOne(text) || IsOldTextStartsWithNewOne(text));
 }
@@ -230,7 +230,7 @@ void TextMesh::AppendChars(std::u32string added_text)
         return;
 
     // Start adding new text characters from the previous text word so that it can be properly wrapped
-    if (m_wrap == Text::Wrap::Word && m_last_whitespace_index != std::string::npos)
+    if (m_layout.wrap == Text::Wrap::Word && m_last_whitespace_index != std::string::npos)
     {
         // Remove characters starting with last whitespace and other non-whitespace symbols
         assert(m_last_whitespace_index < m_text.length());
@@ -254,7 +254,7 @@ void TextMesh::AppendChars(std::u32string added_text)
     }
     m_char_positions.reserve(m_char_positions.size() + added_text.length());
 
-    ForEachTextCharacter(added_text, m_font, m_char_positions, m_viewport_size.width, m_wrap,
+    ForEachTextCharacter(added_text, m_font, m_char_positions, m_viewport_size.width, m_layout.wrap,
         [&](const Font::Char& font_char, const gfx::FramePoint& char_pos, size_t char_index) -> CharAction
         {
             if (font_char.IsWhiteSpace())

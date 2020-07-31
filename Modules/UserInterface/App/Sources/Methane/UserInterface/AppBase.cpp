@@ -317,8 +317,8 @@ bool AppBase::UpdateTextItem(TextItem& item)
                  item.text_name,
                  item.text_str,
                  UnitRect(m_app_settings.text_margins),
-                 m_app_settings.text_color,
-                 Text::Wrap::None
+                 Text::Layout{ Text::Wrap::None },
+                 m_app_settings.text_color
              }
         );
         item.sp_panel->AddChild(*item.sp_text);

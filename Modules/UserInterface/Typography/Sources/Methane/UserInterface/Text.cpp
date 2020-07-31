@@ -60,8 +60,8 @@ Text::Text(Context& ui_context, Font& font, const SettingsUtf8&  settings)
             settings.name,
             Font::ConvertUtf8To32(settings.text),
             settings.rect,
-            settings.color,
-            settings.wrap
+            settings.layout,
+            settings.color
         }
     )
 {
@@ -250,17 +250,41 @@ void Text::SetColor(const gfx::Color4f& color)
     UpdateConstantsBuffer();
 }
 
-void Text::SetWrap(Wrap wrap)
+void Text::SetLayout(const Layout& layout)
 {
     META_FUNCTION_TASK();
-    if (m_settings.wrap == wrap)
+    if (m_settings.layout == layout)
         return;
 
-    m_settings.wrap = wrap;
+    m_settings.layout = layout;
 
     UpdateMeshData();
     UpdateUniformsBuffer();
     UpdateViewportRect(m_viewport_rect.units);
+}
+
+void Text::SetWrap(Wrap wrap)
+{
+    META_FUNCTION_TASK();
+    Layout layout = m_settings.layout;
+    layout.wrap = wrap;
+    SetLayout(layout);
+}
+
+void Text::SetHorizontalAlignment(HorizontalAlignment alignment)
+{
+    META_FUNCTION_TASK();
+    Layout layout = m_settings.layout;
+    layout.horizontal_alignment = alignment;
+    SetLayout(layout);
+}
+
+void Text::SetVerticalAlignment(VerticalAlignment alignment)
+{
+    META_FUNCTION_TASK();
+    Layout layout = m_settings.layout;
+    layout.vertical_alignment = alignment;
+    SetLayout(layout);
 }
 
 void Text::Draw(gfx::RenderCommandList& cmd_list)
@@ -365,13 +389,13 @@ void Text::UpdateMeshData()
         return;
 
     if (m_settings.incremental_update && m_sp_text_mesh &&
-        m_sp_text_mesh->IsUpdatable(m_settings.text, m_settings.wrap, *m_sp_font, m_viewport_rect.size))
+        m_sp_text_mesh->IsUpdatable(m_settings.text, m_settings.layout, *m_sp_font, m_viewport_rect.size))
     {
         m_sp_text_mesh->Update(m_settings.text, m_viewport_rect.size);
     }
     else
     {
-        m_sp_text_mesh = std::make_unique<TextMesh>(m_settings.text, m_settings.wrap, *m_sp_font, m_viewport_rect.size);
+        m_sp_text_mesh = std::make_unique<TextMesh>(m_settings.text, m_settings.layout, *m_sp_font, m_viewport_rect.size);
     }
 
     // Update vertex buffer
