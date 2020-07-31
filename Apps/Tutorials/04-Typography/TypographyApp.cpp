@@ -90,11 +90,13 @@ static const std::array<std::u32string, g_text_blocks_count> g_text_blocks = { {
 
 namespace pal = Methane::Platform;
 static const std::map<pal::Keyboard::State, TypographyAppAction> g_typography_action_by_keyboard_state{
-    { { pal::Keyboard::Key::W       }, TypographyAppAction::SwitchTextWrapMode  },
-    { { pal::Keyboard::Key::U       }, TypographyAppAction::SwitchIncrementalTextUpdate  },
-    { { pal::Keyboard::Key::D       }, TypographyAppAction::SwitchTypingDirection        },
-    { { pal::Keyboard::Key::Equal   }, TypographyAppAction::SpeedupTyping                },
-    { { pal::Keyboard::Key::Minus   }, TypographyAppAction::SlowdownTyping               },
+    { { pal::Keyboard::Key::W       }, TypographyAppAction::SwitchTextWrapMode            },
+    { { pal::Keyboard::Key::H       }, TypographyAppAction::SwitchTextHorizontalAlignment },
+    { { pal::Keyboard::Key::V       }, TypographyAppAction::SwitchTextVerticalAlignment   },
+    { { pal::Keyboard::Key::U       }, TypographyAppAction::SwitchIncrementalTextUpdate   },
+    { { pal::Keyboard::Key::D       }, TypographyAppAction::SwitchTypingDirection         },
+    { { pal::Keyboard::Key::Equal   }, TypographyAppAction::SpeedupTyping                 },
+    { { pal::Keyboard::Key::Minus   }, TypographyAppAction::SlowdownTyping                },
 };
 
 TypographyApp::TypographyApp()
@@ -166,7 +168,7 @@ void TypographyApp::Init()
                         { frame_width_without_margins, 0u /* calculated height */ },
                         gui::Units::Dots
                     },
-                    gui::Text::Layout{ m_settings.text_wrap },
+                    m_settings.text_layout,
                     gfx::Color4f(font_settings.color, 1.f),
                     m_settings.is_incremental_text_update
                 }
@@ -418,25 +420,27 @@ std::string TypographyApp::GetParametersString()
 {
     std::stringstream ss;
     ss << "Typography demo parameters:"
-       << std::endl << "  - text wrap mode:            " << gui::Text::GetWrapName(m_settings.text_wrap)
-       << std::endl << "  - text typing animation:     " << (!GetAnimations().IsPaused() ? "ON" : "OFF")
+       << std::endl << "  - text wrap mode:            " << gui::Text::GetWrapName(m_settings.text_layout.wrap)
+       << std::endl << "  - horizontal text alignment: " << gui::Text::GetHorizontalAlignmentName(m_settings.text_layout.horizontal_alignment)
+       << std::endl << "  - vertical text alignment:   " << gui::Text::GetVerticalAlignmentName(m_settings.text_layout.vertical_alignment)
        << std::endl << "  - text typing mode:          " << (m_settings.is_forward_typing_direction ? "Appending" : "Backspace")
        << std::endl << "  - text typing interval (ms): " << static_cast<uint32_t>(m_settings.typing_update_interval_sec * 1000)
+       << std::endl << "  - text typing animation:     " << (!GetAnimations().IsPaused() ? "ON" : "OFF")
        << std::endl << "  - incremental text updates:  " << (m_settings.is_incremental_text_update ? "ON" : "OFF")
        << std::endl << "  - text update duration (us): " << static_cast<double>(m_text_update_duration.count()) / 1000;
 
     return ss.str();
 }
 
-void TypographyApp::SetTextWrap(gui::Text::Wrap text_wrap)
+void TypographyApp::SetTextLayout(const gui::Text::Layout& text_layout)
 {
-    if (m_settings.text_wrap == text_wrap)
+    if (m_settings.text_layout == text_layout)
         return;
 
-    m_settings.text_wrap = text_wrap;
+    m_settings.text_layout = text_layout;
     for (const Ptr<gui::Text>& sp_text : m_texts)
     {
-        sp_text->SetWrap(text_wrap);
+        sp_text->SetLayout(text_layout);
     }
 
     UpdateParametersText();

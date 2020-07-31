@@ -46,11 +46,23 @@ void TypographyAppController::OnKeyboardStateAction(TypographyAppAction action)
 {
     META_FUNCTION_TASK();
     constexpr double s_text_update_interval_delta = 0.01;
+    gui::Text::Layout text_layout = m_typography_app.GetSettings().text_layout;
 
     switch(action)
     {
     case TypographyAppAction::SwitchTextWrapMode:
-        m_typography_app.SetTextWrap(static_cast<gui::Text::Wrap>((static_cast<uint32_t>(m_typography_app.GetSettings().text_wrap) + 1) % 3));
+        text_layout.wrap = static_cast<gui::Text::Wrap>((static_cast<uint32_t>(text_layout.wrap) + 1) % 3);
+        m_typography_app.SetTextLayout(text_layout);
+        break;
+
+    case TypographyAppAction::SwitchTextHorizontalAlignment:
+        text_layout.horizontal_alignment = static_cast<gui::Text::HorizontalAlignment>((static_cast<uint32_t>(text_layout.horizontal_alignment) + 1) % 3);
+        m_typography_app.SetTextLayout(text_layout);
+        break;
+
+    case TypographyAppAction::SwitchTextVerticalAlignment:
+        text_layout.vertical_alignment = static_cast<gui::Text::VerticalAlignment>((static_cast<uint32_t>(text_layout.vertical_alignment) + 1) % 3);
+        m_typography_app.SetTextLayout(text_layout);
         break;
 
     case TypographyAppAction::SwitchIncrementalTextUpdate:
@@ -80,11 +92,13 @@ std::string TypographyAppController::GetKeyboardActionName(TypographyAppAction a
     META_FUNCTION_TASK();
     switch(action)
     {
-    case TypographyAppAction::SwitchTextWrapMode:           return "switch text wrap mode";
-    case TypographyAppAction::SwitchIncrementalTextUpdate:  return "switch incremental text update";
-    case TypographyAppAction::SwitchTypingDirection:        return "switch typing direction";
-    case TypographyAppAction::SpeedupTyping:                return "speedup typing";
-    case TypographyAppAction::SlowdownTyping:               return "slowdown typing";
+    case TypographyAppAction::SwitchTextWrapMode:            return "switch text wrap mode";
+    case TypographyAppAction::SwitchTextHorizontalAlignment: return "switch horizontal text alignment";
+    case TypographyAppAction::SwitchTextVerticalAlignment:   return "switch vertical text alignment";
+    case TypographyAppAction::SwitchIncrementalTextUpdate:   return "switch incremental text update";
+    case TypographyAppAction::SwitchTypingDirection:         return "switch typing direction";
+    case TypographyAppAction::SpeedupTyping:                 return "speedup typing";
+    case TypographyAppAction::SlowdownTyping:                return "slowdown typing";
     default: assert(0);
     }
     return "";

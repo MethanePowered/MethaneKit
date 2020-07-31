@@ -130,6 +130,8 @@ public:
     void Draw(gfx::RenderCommandList& cmd_list);
 
     static std::string GetWrapName(Wrap wrap) noexcept;
+    static std::string GetHorizontalAlignmentName(HorizontalAlignment alignment) noexcept;
+    static std::string GetVerticalAlignmentName(VerticalAlignment alignment) noexcept;
 
 protected:
     // IFontCallback interface

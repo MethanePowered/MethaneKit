@@ -497,4 +497,28 @@ std::string Text::GetWrapName(Wrap wrap) noexcept
     return "Undefined Wrap";
 }
 
+std::string Text::GetHorizontalAlignmentName(HorizontalAlignment alignment) noexcept
+{
+    META_FUNCTION_TASK();
+    switch(alignment)
+    {
+    case HorizontalAlignment::Left:   return "Left";
+    case HorizontalAlignment::Right:  return "Right";
+    case HorizontalAlignment::Center: return "Center";
+    }
+    return "Undefined Alignment";
+}
+
+std::string Text::GetVerticalAlignmentName(VerticalAlignment alignment) noexcept
+{
+    META_FUNCTION_TASK();
+    switch(alignment)
+    {
+    case VerticalAlignment::Top:    return "Top";
+    case VerticalAlignment::Bottom: return "Bottom";
+    case VerticalAlignment::Center: return "Center";
+    }
+    return "Undefined Alignment";
+}
+
 } // namespace Methane::Graphics
