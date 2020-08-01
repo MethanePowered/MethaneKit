@@ -285,9 +285,6 @@ void AppWin::OnWindowKeyboardEvent(WPARAM w_param, LPARAM l_param)
     const Keyboard::Key      key = Keyboard::KeyConverter({ w_param, l_param }).GetKey();
     const Keyboard::KeyState key_state = ((l_param >> 31) & 1) ? Keyboard::KeyState::Released : Keyboard::KeyState::Pressed;
 
-    std::string msg = "Key " + Keyboard::KeyConverter(key).ToString() + " was " + (key_state == Keyboard::KeyState::Pressed ? "Pressed" : "Released") + "\n";
-    OutputDebugStringA(msg.c_str());
-
     if (key == Keyboard::Key::Unknown)
         return;
 

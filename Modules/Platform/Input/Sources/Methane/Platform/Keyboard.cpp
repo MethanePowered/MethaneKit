@@ -213,7 +213,9 @@ std::string KeyConverter::ToString() const noexcept
         { Key::LeftSuper,       "LEFT_SUPER"    },
         { Key::RightSuper,      "RIGHT_SUPER"   },
 #endif
-        { Key::Menu,            "MENU"          }
+        { Key::Menu,            "MENU"          },
+
+        { Key::Unknown,         "Unknown"       }
     };
 
     auto key_and_name_it = s_name_by_key.find(m_key);
