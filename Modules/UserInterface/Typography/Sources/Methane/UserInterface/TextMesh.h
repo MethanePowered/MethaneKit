@@ -57,7 +57,7 @@ public:
     const std::u32string& GetText() const noexcept          { return m_text; }
     Font&                 GetFont() noexcept                { return m_font; }
     Text::Layout          GetLayout() const noexcept        { return m_layout; }
-    const gfx::FrameSize& GetViewportSize() const noexcept  { return m_viewport_size; }
+    const gfx::FrameSize& GetFrameSize() const noexcept     { return m_frame_size; }
     const gfx::FrameSize& GetContentSize() const noexcept   { return m_content_size; }
 
     const Vertices& GetVertices() const noexcept            { return m_vertices; }
@@ -82,7 +82,7 @@ private:
     std::u32string       m_text;
     Font&                m_font;
     const Text::Layout   m_layout;
-    const gfx::FrameSize m_viewport_size;
+    const gfx::FrameSize m_frame_size;
     gfx::FrameSize       m_content_size;
     CharPositions        m_char_positions; // char positions without any hor/ver alignment
     size_t               m_last_whitespace_index = std::string::npos;

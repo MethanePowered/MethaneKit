@@ -78,7 +78,7 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
     m_sp_font->Connect(*this);
 
     const gfx::RenderContext::Settings& context_settings = GetUIContext().GetRenderContext().GetSettings();
-    m_viewport_rect = GetUIContext().ConvertToPixels(m_settings.rect);
+    m_content_rect = GetUIContext().ConvertToPixels(m_settings.rect);
 
     SetRelOrigin(m_settings.rect.GetUnitOrigin());
     UpdateMeshData();
@@ -116,8 +116,8 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
         }
     );
     state_settings.sp_program->SetName(m_settings.name + " Screen-Quad Shading");
-    state_settings.viewports                                            = { gfx::GetFrameViewport(m_viewport_rect) };
-    state_settings.scissor_rects                                        = { gfx::GetFrameScissorRect(m_viewport_rect) };
+    state_settings.viewports                                            = { gfx::GetFrameViewport(m_content_rect) };
+    state_settings.scissor_rects                                        = { gfx::GetFrameScissorRect(m_content_rect) };
     state_settings.depth.enabled                                        = false;
     state_settings.depth.write_enabled                                  = false;
     state_settings.rasterizer.is_front_counter_clockwise                = true;
@@ -154,10 +154,10 @@ std::string Text::GetTextUtf8() const
     return Font::ConvertUtf32To8(m_settings.text);
 }
 
-UnitRect Text::GetViewportInDots() const
+UnitRect Text::GetContentRectInDots() const
 {
     META_FUNCTION_TASK();
-    return GetUIContext().ConvertToDots(m_viewport_rect);
+    return GetUIContext().ConvertToDots(m_content_rect);
 }
 
 void Text::SetText(const std::string& text)
@@ -200,7 +200,7 @@ void Text::SetTextInScreenRect(const std::u32string& text, const UnitRect& ui_re
         UpdateAtlasTexture(m_sp_font->GetAtlasTexturePtr(GetUIContext().GetRenderContext()));
     }
 
-    UpdateViewportRect(ui_rect.units);
+    UpdateContentRect(ui_rect.units);
 }
 
 bool Text::SetRect(const UnitRect& ui_rect)
@@ -216,10 +216,10 @@ bool Text::SetRect(const UnitRect& ui_rect)
         UpdateUniformsBuffer();
     }
 
-    return UpdateViewportRect(ui_rect.units);
+    return UpdateContentRect(ui_rect.units);
 }
 
-Text::UpdateRectResult Text::UpdateRect(const UnitRect& ui_rect, bool viewport_reset)
+Text::UpdateRectResult Text::UpdateRect(const UnitRect& ui_rect, bool reset_content_rect)
 {
     META_FUNCTION_TASK();
     const UnitRect& ui_curr_rect_px  = GetRectInPixels();
@@ -232,10 +232,10 @@ Text::UpdateRectResult Text::UpdateRect(const UnitRect& ui_rect, bool viewport_r
     if (ui_size_changed)
         m_settings.rect.size = ui_rect_in_units.size;
 
-    if (viewport_reset || ui_size_changed)
-        m_viewport_rect = ui_rect_in_px;
+    if (reset_content_rect || ui_size_changed)
+        m_content_rect = ui_rect_in_px;
     else
-        m_viewport_rect.origin = ui_rect_in_px.origin;
+        m_content_rect.origin = ui_rect_in_px.origin;
 
     return { ui_rect_changed, ui_size_changed };
 }
@@ -260,7 +260,7 @@ void Text::SetLayout(const Layout& layout)
 
     UpdateMeshData();
     UpdateUniformsBuffer();
-    UpdateViewportRect(m_viewport_rect.units);
+    UpdateContentRect(m_content_rect.units);
 }
 
 void Text::SetWrap(Wrap wrap)
@@ -338,12 +338,12 @@ Ptr<gfx::ProgramBindings> Text::CreateProgramBindings()
     });
 }
 
-bool Text::UpdateViewportRect(Units ui_rect_units)
+bool Text::UpdateContentRect(Units ui_rect_units)
 {
     META_FUNCTION_TASK();
-    m_sp_state->SetViewports({ gfx::GetFrameViewport(m_viewport_rect) });
-    m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(m_viewport_rect) });
-    return Item::SetRect(GetUIContext().ConvertToUnits(m_viewport_rect, ui_rect_units));
+    m_sp_state->SetViewports({ gfx::GetFrameViewport(m_content_rect) });
+    m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(m_content_rect) });
+    return Item::SetRect(GetUIContext().ConvertToUnits(m_content_rect, ui_rect_units));
 }
 
 void Text::UpdateAtlasTexture(const Ptr<gfx::Texture>& sp_new_atlas_texture)
@@ -389,13 +389,13 @@ void Text::UpdateMeshData()
         return;
 
     if (m_settings.incremental_update && m_sp_text_mesh &&
-        m_sp_text_mesh->IsUpdatable(m_settings.text, m_settings.layout, *m_sp_font, m_viewport_rect.size))
+        m_sp_text_mesh->IsUpdatable(m_settings.text, m_settings.layout, *m_sp_font, m_content_rect.size))
     {
-        m_sp_text_mesh->Update(m_settings.text, m_viewport_rect.size);
+        m_sp_text_mesh->Update(m_settings.text, m_content_rect.size);
     }
     else
     {
-        m_sp_text_mesh = std::make_unique<TextMesh>(m_settings.text, m_settings.layout, *m_sp_font, m_viewport_rect.size);
+        m_sp_text_mesh = std::make_unique<TextMesh>(m_settings.text, m_settings.layout, *m_sp_font, m_content_rect.size);
     }
 
     // Update vertex buffer
@@ -444,11 +444,11 @@ void Text::UpdateUniformsBuffer()
     if (m_settings.text.empty())
         return;
 
-    if (!m_viewport_rect.size)
-        throw std::logic_error("Text uniforms buffer can not be updated when one of viewport dimensions is zero.");
+    if (!m_content_rect.size)
+        throw std::logic_error("Text uniforms buffer can not be updated when one of content rectangle dimensions is zero.");
 
     gfx::Matrix44f scale_text_matrix;
-    cml::matrix_scale_2D(scale_text_matrix, 2.f / m_viewport_rect.size.width, 2.f / m_viewport_rect.size.height);
+    cml::matrix_scale_2D(scale_text_matrix, 2.f / m_content_rect.size.width, 2.f / m_content_rect.size.height);
 
     gfx::Matrix44f translate_text_matrix;
     cml::matrix_translation_2D(translate_text_matrix, -1.f, 1.f);

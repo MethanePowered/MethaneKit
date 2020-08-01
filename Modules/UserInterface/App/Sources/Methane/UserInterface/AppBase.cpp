@@ -237,7 +237,7 @@ bool AppBase::SetHelpText(const std::string& help_str)
     // Split help text into two columns
     // when single column does not fit into half of window height
     // and estimated width of two columns first in 2/3 of window width
-    const gfx::FrameSize single_column_size = m_help_columns.first.sp_text->GetViewport().size;
+    const gfx::FrameSize single_column_size = m_help_columns.first.sp_text->GetContentRectInPixels().size;
     if (single_column_size.height + m_text_margins.GetY() > m_frame_size.height / 2 &&
         single_column_size.width < m_frame_size.width / 2)
     {
@@ -334,7 +334,7 @@ void AppBase::UpdateHelpTextPosition()
         return;
 
     // Help text columns are located in bottom-left corner
-    const FrameSize& first_text_size = m_help_columns.first.sp_text->GetViewportInPixels().size;
+    const FrameSize& first_text_size = m_help_columns.first.sp_text->GetContentRectInPixels().size;
     m_help_columns.first.sp_panel->SetRect(UnitRect(
         FramePoint(m_text_margins.GetX(), m_frame_size.height - first_text_size.height - m_text_margins.GetY() * 3),
         first_text_size + m_text_margins * 2,
@@ -344,7 +344,7 @@ void AppBase::UpdateHelpTextPosition()
     if (!m_help_columns.second.sp_panel)
         return;
 
-    const FrameSize& second_text_size = m_help_columns.first.sp_text->GetViewportInPixels().size;
+    const FrameSize& second_text_size = m_help_columns.first.sp_text->GetContentRectInPixels().size;
     const UnitRect&  first_panel_rect = m_help_columns.first.sp_panel->GetRectInPixels();
     m_help_columns.second.sp_panel->SetRect(UnitRect(
         FramePoint(first_panel_rect.GetRight() + m_text_margins.GetX(), first_panel_rect.GetTop()),
@@ -361,7 +361,7 @@ void AppBase::UpdateParametersTextPosition()
 
     // Parameters text is located in bottom-right corner
     const FrameSize  text_margins_size(m_text_margins);
-    const FrameSize& parameters_text_size = m_parameters.sp_text->GetViewportInPixels().size;
+    const FrameSize& parameters_text_size = m_parameters.sp_text->GetContentRectInPixels().size;
     m_parameters.sp_panel->SetRect(UnitRect(
         FramePoint(m_frame_size.width  - parameters_text_size.width  - text_margins_size.width  * 3,
                    m_frame_size.height - parameters_text_size.height - text_margins_size.height * 3),

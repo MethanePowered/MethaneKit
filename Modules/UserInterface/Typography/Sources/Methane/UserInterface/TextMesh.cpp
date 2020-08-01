@@ -42,7 +42,7 @@ enum class CharAction
 using ProcessFontCharAtPosition = const std::function<CharAction(const Font::Char& text_char, const gfx::FramePoint& char_pos, size_t char_index)>;
 
 static void ForEachTextCharacterInRange(Font& font, const Font::Chars& text_chars, size_t begin_index, size_t end_index,
-                                        TextMesh::CharPositions& char_positions, uint32_t viewport_width, Text::Wrap wrap,
+                                        TextMesh::CharPositions& char_positions, uint32_t frame_width, Text::Wrap wrap,
                                         const ProcessFontCharAtPosition& process_char_at_position)
 {
     META_FUNCTION_TASK();
@@ -55,8 +55,8 @@ static void ForEachTextCharacterInRange(Font& font, const Font::Chars& text_char
         const Font::Char& text_char = text_chars[char_index].get();
         assert(!!text_char);
 
-        // Wrap to next line break on "line break" character or when text overruns viewport width
-        if (text_char.IsLineBreak() || (wrap == Text::Wrap::Anywhere && viewport_width && char_pos.GetX() + text_char.GetRect().size.width > viewport_width))
+        // Wrap to next line break on "line break" character or when text overruns frame width
+        if (text_char.IsLineBreak() || (wrap == Text::Wrap::Anywhere && frame_width && char_pos.GetX() + text_char.GetRect().size.width > frame_width))
         {
             char_pos = { 0u, char_pos.GetY() + font.GetLineHeight() };
             p_prev_text_char = nullptr;
@@ -97,7 +97,7 @@ static void ForEachTextCharacterInRange(Font& font, const Font::Chars& text_char
 }
 
 static void ForEachTextCharacter(const std::u32string& text, Font& font, TextMesh::CharPositions& char_positions,
-                                 uint32_t viewport_width, Text::Wrap wrap, const ProcessFontCharAtPosition& process_char_at_position)
+                                 uint32_t frame_width, Text::Wrap wrap, const ProcessFontCharAtPosition& process_char_at_position)
 {
     META_FUNCTION_TASK();
     const Font::Chars text_chars = font.GetTextChars(text);
@@ -106,13 +106,13 @@ static void ForEachTextCharacter(const std::u32string& text, Font& font, TextMes
         {
             if (text_char.IsWhiteSpace())
             {
-                // Word wrap prediction: check if next word fits in given viewport width
+                // Word wrap prediction: check if next word fits in given frame width
                 bool word_wrap_required = false;
                 const gfx::FramePoint start_char_pos = { cur_char_pos.GetX() + text_char.GetAdvance().GetX(), cur_char_pos.GetY() };
                 const size_t start_chars_count = char_positions.size();
                 char_positions.emplace_back(start_char_pos);
-                ForEachTextCharacterInRange(font, text_chars, char_index + 1, text_chars.size(), char_positions, viewport_width, Text::Wrap::Anywhere,
-                    [&word_wrap_required, &start_char_pos, &text_chars](const Font::Char& text_char, const gfx::FramePoint& char_pos, size_t char_index) -> CharAction
+                ForEachTextCharacterInRange(font, text_chars, char_index + 1, text_chars.size(), char_positions, frame_width, Text::Wrap::Anywhere,
+                                            [&word_wrap_required, &start_char_pos, &text_chars](const Font::Char& text_char, const gfx::FramePoint& char_pos, size_t char_index) -> CharAction
                     {
                         // Word has ended if whitespace character is received or line break character was passed
                         if (text_char.IsWhiteSpace() || (char_index && text_chars[char_index - 1].get().IsLineBreak()))
@@ -128,40 +128,41 @@ static void ForEachTextCharacter(const std::u32string& text, Font& font, TextMes
             }
             return process_char_at_position(text_char, cur_char_pos, char_index);
         };
-    ForEachTextCharacterInRange(font, text_chars, 0, text_chars.size(), char_positions, viewport_width, wrap,
-                                wrap == Text::Wrap::Word && viewport_width ? word_wrap_char_at_position : process_char_at_position);
+    ForEachTextCharacterInRange(font, text_chars, 0, text_chars.size(), char_positions, frame_width, wrap,
+                                wrap == Text::Wrap::Word && frame_width ? word_wrap_char_at_position : process_char_at_position);
 }
 
-TextMesh::TextMesh(const std::u32string& text, Text::Layout layout, Font& font, gfx::FrameSize& viewport_size)
+TextMesh::TextMesh(const std::u32string& text, Text::Layout layout, Font& font, gfx::FrameSize& frame_size)
     : m_font(font)
     , m_layout(std::move(layout))
-    , m_viewport_size(viewport_size)
+    , m_frame_size(frame_size)
 {
     META_FUNCTION_TASK();
-    Update(text, viewport_size);
+    Update(text, frame_size);
 }
 
-bool TextMesh::IsUpdatable(const std::u32string& text, const Text::Layout& layout, Font& font, const gfx::FrameSize& viewport_size) const noexcept
+bool TextMesh::IsUpdatable(const std::u32string& text, const Text::Layout& layout, Font& font, const gfx::FrameSize& frame_size) const noexcept
 {
     META_FUNCTION_TASK();
     // Text mesh can be updated when all text visualization parameters are equal to the initial
     // and new text start with the previously used text (typing continued),
     // or previous text starts with the new one (deleting with backspace)
-    return m_viewport_size == viewport_size &&
-           m_layout == layout &&
+    return m_frame_size == frame_size &&
+           m_layout.wrap == layout.wrap &&
+           m_layout.horizontal_alignment == layout.horizontal_alignment && // vertical_alignment is not handled in TextMesh
            std::addressof(m_font) == std::addressof(font) &&
            (IsNewTextStartsWithOldOne(text) || IsOldTextStartsWithNewOne(text));
 }
 
-void TextMesh::Update(const std::u32string& text, gfx::FrameSize& viewport_size)
+void TextMesh::Update(const std::u32string& text, gfx::FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
     const bool new_text_starts_with_old_one = IsNewTextStartsWithOldOne(text);
     const bool old_text_starts_with_new_one = IsOldTextStartsWithNewOne(text);
 
-    if (m_viewport_size != viewport_size || (!new_text_starts_with_old_one && !old_text_starts_with_new_one))
+    if (m_frame_size != frame_size || (!new_text_starts_with_old_one && !old_text_starts_with_new_one))
     {
-        throw std::invalid_argument("Text mesh can not be updated with a given text and viewport size");
+        throw std::invalid_argument("Text mesh can not be updated with a given text and frame size");
     }
 
     if (new_text_starts_with_old_one)
@@ -173,17 +174,17 @@ void TextMesh::Update(const std::u32string& text, gfx::FrameSize& viewport_size)
         EraseTrailingChars(m_text.length() - text.length(), true, true);
     }
 
-    if (viewport_size)
+    if (frame_size)
         return;
 
-    // Update zero viewport sizes by calculated content size
-    if (!viewport_size.width)
+    // Update zero frame sizes by calculated content size
+    if (!frame_size.width)
     {
-        viewport_size.width = m_content_size.width;
+        frame_size.width = m_content_size.width;
     }
-    if (!viewport_size.height)
+    if (!frame_size.height)
     {
-        viewport_size.height = m_content_size.height;
+        frame_size.height = m_content_size.height;
     }
 
     return;
@@ -254,8 +255,8 @@ void TextMesh::AppendChars(std::u32string added_text)
     }
     m_char_positions.reserve(m_char_positions.size() + added_text.length());
 
-    ForEachTextCharacter(added_text, m_font, m_char_positions, m_viewport_size.width, m_layout.wrap,
-        [&](const Font::Char& font_char, const gfx::FramePoint& char_pos, size_t char_index) -> CharAction
+    ForEachTextCharacter(added_text, m_font, m_char_positions, m_frame_size.width, m_layout.wrap,
+                         [&](const Font::Char& font_char, const gfx::FramePoint& char_pos, size_t char_index) -> CharAction
         {
             if (font_char.IsWhiteSpace())
             {

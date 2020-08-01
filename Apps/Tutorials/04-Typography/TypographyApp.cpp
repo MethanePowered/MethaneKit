@@ -175,7 +175,7 @@ void TypographyApp::Init()
             )
         );
 
-        vertical_text_pos_in_dots = m_texts.back()->GetViewportInDots().GetBottom() + g_margin_size_in_dots;
+        vertical_text_pos_in_dots = m_texts.back()->GetContentRectInDots().GetBottom() + g_margin_size_in_dots;
     }
 
     UpdateFontAtlasBadges();
@@ -299,7 +299,7 @@ bool TypographyApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
             { frame_width_without_margins, 0u /* calculated height */ },
             gui::Units::Dots
         ));
-        vertical_text_pos_in_dots += sp_text->GetViewportInDots().size.height + g_margin_size_in_dots;
+        vertical_text_pos_in_dots += sp_text->GetContentRectInDots().size.height + g_margin_size_in_dots;
     }
 
     LayoutFontAtlasBadges(frame_size);
@@ -325,7 +325,7 @@ bool TypographyApp::Animate(double elapsed_seconds, double)
         {
             sp_text->SetText(m_settings.is_forward_typing_direction ? std::u32string() : text_block);
             if (!m_settings.is_forward_typing_direction)
-                vertical_text_pos_in_dots = sp_text->GetViewportInDots().GetBottom() + g_margin_size_in_dots;
+                vertical_text_pos_in_dots = sp_text->GetContentRectInDots().GetBottom() + g_margin_size_in_dots;
             continue;
         }
 
@@ -337,7 +337,7 @@ bool TypographyApp::Animate(double elapsed_seconds, double)
             }
             else
             {
-                vertical_text_pos_in_dots = sp_text->GetViewportInDots().GetBottom() + g_margin_size_in_dots;
+                vertical_text_pos_in_dots = sp_text->GetContentRectInDots().GetBottom() + g_margin_size_in_dots;
                 size_t next_block_index = block_index + (m_settings.is_forward_typing_direction ? 1 : -1);
                 size_t& next_displayed_text_length = m_displayed_text_lengths[next_block_index];
                 if (m_settings.is_forward_typing_direction && next_displayed_text_length == 0)
@@ -363,7 +363,7 @@ bool TypographyApp::Animate(double elapsed_seconds, double)
             ));
             m_text_update_duration = scope_timer.GetElapsedDuration();
         }
-        vertical_text_pos_in_dots = sp_text->GetViewportInDots().GetBottom() + g_margin_size_in_dots;
+        vertical_text_pos_in_dots = sp_text->GetContentRectInDots().GetBottom() + g_margin_size_in_dots;
     }
 
     UpdateParametersText();
