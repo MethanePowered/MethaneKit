@@ -317,41 +317,33 @@ void TextMesh::AppendChars(std::u32string added_text)
         }
     );
 
+    ApplyAlignmentOffset(init_text_length, init_line_start_index);
+}
+
+void TextMesh::ApplyAlignmentOffset(const size_t init_text_length, const size_t init_line_start_index)
+{
+    META_FUNCTION_TASK();
     if (m_layout.horizontal_alignment == Text::HorizontalAlignment::Left)
         return;
 
-    // Apply horizontal alignment offset to newly added and last line character quads
     assert(m_char_positions[init_line_start_index].is_line_start);
-    const size_t end_char_index = m_char_positions.size() - 1;
-    const int32_t content_width = static_cast<int32_t>(m_frame_size.width ? m_frame_size.width : m_content_size.width);
-    int32_t horizontal_alignment_offset      = 0;   // Alignment offset of the recently appended character
-    int32_t horizontal_alignment_adjustement = 0;   // Alignment adjustment of the existing character of the last line of text
+    const size_t  end_char_index                  = m_char_positions.size() - 1;
+    const int32_t frame_width                     = static_cast<int32_t>(m_frame_size.width ? m_frame_size.width : m_content_size.width);
+    int32_t       horizontal_alignment_offset     = 0; // Alignment offset of the recently appended character
+    int32_t       horizontal_alignment_adjustment = 0; // Alignment adjustment of the existing character of the last line of text
+
+    // Apply horizontal alignment offset to newly added and existing character quads at last line
     for(size_t char_index = init_line_start_index; char_index < end_char_index; ++char_index)
     {
         const CharPosition& char_position = m_char_positions[char_index];
         if (char_position.is_line_start && char_index < end_char_index - 1)
         {
-            // Find next line start or end of text and step back to get end of line position
-            auto line_end_position_it = std::find_if(m_char_positions.begin() + char_index + 1, m_char_positions.end() - 2,
-                [](const CharPosition& char_position) { return char_position.is_line_start; }
-            );
-            while(line_end_position_it->is_line_start && line_end_position_it != m_char_positions.begin())
-                --line_end_position_it;
-
-            // Calculate current line width and alignment offset
-            const int32_t line_width = line_end_position_it->GetX() + line_end_position_it->glyph_width - char_position.GetX();
-            switch(m_layout.horizontal_alignment)
-            {
-            case Text::HorizontalAlignment::Right:  horizontal_alignment_offset = (content_width - line_width); break;
-            case Text::HorizontalAlignment::Center: horizontal_alignment_offset = (content_width - line_width) / 2; break;
-            default:                                horizontal_alignment_offset = 0; break;
-            }
-
-            // Caculate previously aligned characters ajustment
+            horizontal_alignment_offset = GetHorizontalLineAlignmentOffset(char_index, frame_width);
             if (char_index < init_text_length)
             {
+                // Calculate previously aligned characters adjustment
                 assert(char_position.start_vertex_index < m_vertices.size());
-                horizontal_alignment_adjustement = horizontal_alignment_offset - static_cast<int32_t>(m_vertices[char_position.start_vertex_index].position[0]);
+                horizontal_alignment_adjustment = horizontal_alignment_offset - static_cast<int32_t>(m_vertices[char_position.start_vertex_index].position[0]);
             }
         }
 
@@ -360,12 +352,35 @@ void TextMesh::AppendChars(std::u32string added_text)
 
         // Apply line alignment offset to the character quad vertices
         assert(char_position.start_vertex_index < m_vertices.size());
-        const int32_t alignment_offset = char_index < init_text_length ? horizontal_alignment_adjustement : horizontal_alignment_offset;
+        const int32_t alignment_offset = char_index < init_text_length ? horizontal_alignment_adjustment : horizontal_alignment_offset;
         for (size_t vertex_id = 0; vertex_id < 4; ++vertex_id)
         {
-            Vertex& vertex = m_vertices[char_position.start_vertex_index + vertex_id];
-            vertex.position[0] += alignment_offset;
+            m_vertices[char_position.start_vertex_index + vertex_id].position[0] += alignment_offset;
         }
+    }
+}
+
+int32_t TextMesh::GetHorizontalLineAlignmentOffset(size_t line_start_index, int32_t frame_width) const
+{
+    META_FUNCTION_TASK();
+    assert(m_char_positions[line_start_index].is_line_start);
+
+    // Find next line start or end of text
+    auto line_end_position_it = std::find_if(m_char_positions.begin() + line_start_index + 1, m_char_positions.end() - 2,
+        [](const CharPosition& line_char_pos) { return line_char_pos.is_line_start; }
+    );
+
+    // Step back from next line start to get end of line position
+    while(line_end_position_it->is_line_start && line_end_position_it != m_char_positions.begin())
+        --line_end_position_it;
+
+    // Calculate current line width and alignment offset
+    const int32_t line_width = line_end_position_it->GetX() + line_end_position_it->glyph_width - m_char_positions[line_start_index].GetX();
+    switch(m_layout.horizontal_alignment)
+    {
+    case Text::HorizontalAlignment::Right:  return (frame_width - line_width);
+    case Text::HorizontalAlignment::Center: return (frame_width - line_width) / 2;
+    default:                                return 0;
     }
 }
 
