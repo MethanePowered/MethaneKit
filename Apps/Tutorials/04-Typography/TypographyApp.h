@@ -52,7 +52,7 @@ class TypographyApp final
 public:
     struct Settings
     {
-        gui::Text::Layout text_layout                 { gui::Text::Wrap::Word };
+        gui::Text::Layout text_layout                 { gui::Text::Wrap::Word, gui::Text::HorizontalAlignment::Center, gui::Text::VerticalAlignment::Top };
         bool              is_incremental_text_update  = true;
         bool              is_forward_typing_direction = true;
         double            typing_update_interval_sec  = 0.03;

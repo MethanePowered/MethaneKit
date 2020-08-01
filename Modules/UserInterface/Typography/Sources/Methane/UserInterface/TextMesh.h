@@ -46,7 +46,17 @@ public:
     using Index         = uint16_t;
     using Indices       = std::vector<Index>;
     using Vertices      = std::vector<Vertex>;
-    using CharPosition  = gfx::FramePoint;
+
+    struct CharPosition : gfx::FramePoint
+    {
+        CharPosition(CoordinateType x, CoordinateType y, bool is_line_start = false);
+
+        bool     is_line_start              = false; // start of new line: either after line break `\n` or text wrap
+        bool     is_whitespace_or_linebreak = false;
+        size_t   start_vertex_index         = std::numeric_limits<size_t>::max();
+        uint32_t glyph_width                = 0u;
+    };
+
     using CharPositions = std::vector<CharPosition>;
 
     TextMesh(const std::u32string& text, Text::Layout layout, Font& font, gfx::FrameSize& viewport_size);
@@ -86,6 +96,7 @@ private:
     gfx::FrameSize       m_content_size;
     CharPositions        m_char_positions; // char positions without any hor/ver alignment
     size_t               m_last_whitespace_index = std::string::npos;
+    size_t               m_last_line_start_index = 0u;
     Vertices             m_vertices;
     Indices              m_indices;
 };
