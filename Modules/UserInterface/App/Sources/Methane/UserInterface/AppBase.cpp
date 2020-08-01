@@ -266,6 +266,9 @@ bool AppBase::SetParametersText(const std::string& parameters_str)
 
     m_parameters.text_str = parameters_str;
 
+    if (!m_sp_ui_context)
+        return true;
+
     if (!UpdateTextItem(m_parameters))
         return false;
 

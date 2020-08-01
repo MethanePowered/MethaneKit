@@ -118,6 +118,8 @@ TypographyApp::TypographyApp()
     GetAnimations().push_back(
         std::make_shared<Data::TimeAnimation>(std::bind(&TypographyApp::Animate, this, std::placeholders::_1, std::placeholders::_2))
     );
+
+    ShowParameters();
 }
 
 TypographyApp::~TypographyApp()

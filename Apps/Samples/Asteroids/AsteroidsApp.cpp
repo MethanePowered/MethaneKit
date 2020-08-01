@@ -170,6 +170,8 @@ AsteroidsApp::AsteroidsApp()
 
     // Enable dry updates on pause to keep asteroids in sync with projection matrix dependent on window size which may change
     GetAnimations().SetDryUpdateOnPauseEnabled(true);
+
+    ShowParameters();
 }
 
 AsteroidsApp::~AsteroidsApp()
