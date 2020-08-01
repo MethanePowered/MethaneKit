@@ -103,9 +103,13 @@ struct Volume
 
         operator std::string() const
         {
-            return "Sz(" + std::to_string(Rect<T, D>::Size::width) +
-                   " x " + std::to_string(Rect<T, D>::Size::height) +
-                   " x " + std::to_string(depth) + ")";
+            std::string result = "Sz(" + std::to_string(Rect<T, D>::Size::width);
+            if (Rect<T, D>::Size::height != 1 || depth != 1)
+                result += " x " + std::to_string(Rect<T, D>::Size::height);
+            if (depth != 1)
+                result += " x " + std::to_string(depth);
+            result += ")";
+            return result;
         }
     };
 

@@ -476,7 +476,7 @@ std::string AsteroidsApp::GetParametersString()
        << std::endl << "  - unique meshes count:          " << m_asteroids_array_settings.unique_mesh_count
        << std::endl << "  - mesh subdivisions count:      " << m_asteroids_array_settings.subdivisions_count
        << std::endl << "  - unique textures count:        " << m_asteroids_array_settings.textures_count << " "
-                                                            << static_cast<std::string>(m_asteroids_array_settings.texture_dimensions)
+       << std::endl << "  - asteroid textures size:       " << static_cast<std::string>(m_asteroids_array_settings.texture_dimensions)
        << std::endl << "  - textures array binding:       " << (m_asteroids_array_settings.textures_array_enabled ? "ON" : "OFF")
        << std::endl << "  - parallel rendering:           " << (m_is_parallel_rendering_enabled ? "ON" : "OFF")
        << std::endl << "  - asteroid animations:          " << (!GetAnimations().IsPaused() ? "ON" : "OFF")
