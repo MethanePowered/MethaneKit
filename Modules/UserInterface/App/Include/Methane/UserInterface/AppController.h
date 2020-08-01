@@ -46,7 +46,7 @@ class AppController
 public:
     using ActionByKeyboardState = Platform::Keyboard::ActionControllerBase<AppAction>::ActionByKeyboardState;
     inline static const ActionByKeyboardState default_action_by_keyboard_state{
-        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::H }, AppAction::SwitchHeadsUpDisplayMode   },
+        { { Platform::Keyboard::Key::F4 }, AppAction::SwitchHeadsUpDisplayMode },
     };
     
     AppController(IApp& application, const std::string& application_help,
