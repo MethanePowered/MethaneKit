@@ -99,6 +99,23 @@ static const std::map<pal::Keyboard::State, TypographyAppAction> g_typography_ac
     { { pal::Keyboard::Key::Minus   }, TypographyAppAction::SlowdownTyping                },
 };
 
+static gui::UnitRect GetTextBlockRectInDots(size_t block_index, int32_t vertical_pos_in_dots, const gfx::FrameSize& frame_size_in_dots)
+{
+    return gui::UnitRect(
+        {
+            g_margin_size_in_dots,
+            vertical_pos_in_dots
+        },
+        {
+            frame_size_in_dots.width - 2 * g_margin_size_in_dots,
+            block_index == g_text_blocks_count - 1
+            ? frame_size_in_dots.height - vertical_pos_in_dots - g_margin_size_in_dots  // last text block fills all available space
+            : 0u                                                                        // other text blocks have calculated height
+        },
+        gui::Units::Dots
+    );
+}
+
 TypographyApp::TypographyApp()
     : UserInterfaceApp(
         Samples::GetGraphicsAppSettings("Methane Typography", true /* animations */, false /* depth */),
@@ -177,7 +194,7 @@ void TypographyApp::Init()
             )
         );
 
-        vertical_text_pos_in_dots = m_texts.back()->GetContentRectInDots().GetBottom() + g_margin_size_in_dots;
+        vertical_text_pos_in_dots = m_texts.back()->GetRectInDots().GetBottom() + g_margin_size_in_dots;
     }
 
     UpdateFontAtlasBadges();
@@ -290,21 +307,23 @@ bool TypographyApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     if (!UserInterfaceApp::Resize(frame_size, is_minimized))
         return false;
 
-    const gfx::FrameSize frame_size_in_dots    = GetFrameSizeInDots();
-    const uint32_t frame_width_without_margins = frame_size_in_dots.width - 2 * g_margin_size_in_dots;
-    int32_t        vertical_text_pos_in_dots   = g_top_text_pos_in_dots;
+    const gfx::FrameSize frame_size_in_dots = GetFrameSizeInDots();
+    int32_t       vertical_text_pos_in_dots = g_top_text_pos_in_dots;
 
-    for(Ptr<gui::Text>& sp_text : m_texts)
+    for (size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
     {
-        sp_text->SetRect(gui::UnitRect(
-            { g_margin_size_in_dots, vertical_text_pos_in_dots },
-            { frame_width_without_margins, 0u /* calculated height */ },
-            gui::Units::Dots
-        ));
-        vertical_text_pos_in_dots += sp_text->GetContentRectInDots().size.height + g_margin_size_in_dots;
+        const Ptr<gui::Text>& sp_text = m_texts[block_index];
+        const gui::UnitRect text_block_rect = GetTextBlockRectInDots(block_index, vertical_text_pos_in_dots, frame_size_in_dots);
+        {
+            Methane::ScopeTimer scope_timer("Text update");
+            sp_text->SetRect(text_block_rect);
+            m_text_update_duration = scope_timer.GetElapsedDuration();
+        }
+        vertical_text_pos_in_dots += sp_text->GetRectInDots().size.height + g_margin_size_in_dots;
     }
 
     LayoutFontAtlasBadges(frame_size);
+    UpdateParametersText(); // show text update timing
     return true;
 }
 
@@ -315,7 +334,9 @@ bool TypographyApp::Animate(double elapsed_seconds, double)
 
     m_text_update_elapsed_sec = elapsed_seconds;
 
+    const gfx::FrameSize frame_size_in_dots = GetFrameSizeInDots();
     int32_t vertical_text_pos_in_dots = g_top_text_pos_in_dots;
+
     for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
     {
         size_t& displayed_text_length    = m_displayed_text_lengths[block_index];
@@ -327,7 +348,7 @@ bool TypographyApp::Animate(double elapsed_seconds, double)
         {
             sp_text->SetText(m_settings.is_forward_typing_direction ? std::u32string() : text_block);
             if (!m_settings.is_forward_typing_direction)
-                vertical_text_pos_in_dots = sp_text->GetContentRectInDots().GetBottom() + g_margin_size_in_dots;
+                vertical_text_pos_in_dots = sp_text->GetRectInDots().GetBottom() + g_margin_size_in_dots;
             continue;
         }
 
@@ -339,7 +360,7 @@ bool TypographyApp::Animate(double elapsed_seconds, double)
             }
             else
             {
-                vertical_text_pos_in_dots = sp_text->GetContentRectInDots().GetBottom() + g_margin_size_in_dots;
+                vertical_text_pos_in_dots = sp_text->GetRectInDots().GetBottom() + g_margin_size_in_dots;
                 size_t next_block_index = block_index + (m_settings.is_forward_typing_direction ? 1 : -1);
                 size_t& next_displayed_text_length = m_displayed_text_lengths[next_block_index];
                 if (m_settings.is_forward_typing_direction && next_displayed_text_length == 0)
@@ -356,16 +377,13 @@ bool TypographyApp::Animate(double elapsed_seconds, double)
             displayed_text_length--;
 
         const std::u32string displayed_text = text_block.substr(0, displayed_text_length);
+        const gui::UnitRect  text_block_rect = GetTextBlockRectInDots(block_index, vertical_text_pos_in_dots, frame_size_in_dots);
         {
             Methane::ScopeTimer scope_timer("Text update");
-            sp_text->SetTextInScreenRect(displayed_text, gui::UnitRect(
-                { g_margin_size_in_dots, vertical_text_pos_in_dots  },
-                { GetFrameSizeInDots().width - 2 * g_margin_size_in_dots, 0u },
-                gui::Units::Dots
-            ));
+            sp_text->SetTextInScreenRect(displayed_text, text_block_rect);
             m_text_update_duration = scope_timer.GetElapsedDuration();
         }
-        vertical_text_pos_in_dots = sp_text->GetContentRectInDots().GetBottom() + g_margin_size_in_dots;
+        vertical_text_pos_in_dots = sp_text->GetRectInDots().GetBottom() + g_margin_size_in_dots;
     }
 
     UpdateParametersText();
@@ -421,7 +439,7 @@ bool TypographyApp::Render()
 std::string TypographyApp::GetParametersString()
 {
     std::stringstream ss;
-    ss << "Typography demo parameters:"
+    ss << "Typography parameters:"
        << std::endl << "  - text wrap mode:            " << gui::Text::GetWrapName(m_settings.text_layout.wrap)
        << std::endl << "  - horizontal text alignment: " << gui::Text::GetHorizontalAlignmentName(m_settings.text_layout.horizontal_alignment)
        << std::endl << "  - vertical text alignment:   " << gui::Text::GetVerticalAlignmentName(m_settings.text_layout.vertical_alignment)

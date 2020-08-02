@@ -109,8 +109,6 @@ public:
     const SettingsUtf32&  GetSettings() const noexcept            { return m_settings; }
     const std::u32string& GetTextUtf32() const noexcept           { return m_settings.text; }
     std::string           GetTextUtf8() const;
-    const UnitRect&       GetContentRectInPixels() const noexcept { return m_content_rect; }
-    UnitRect              GetContentRectInDots() const;
 
     void SetText(const std::string& text);
     void SetText(const std::u32string& text);
@@ -150,14 +148,15 @@ private:
     Ptr<gfx::ProgramBindings> CreateProgramBindings();
 
     UpdateRectResult UpdateRect(const UnitRect& ui_rect, bool reset_content_rect);
-    bool UpdateContentRect(Units ui_rect_units);
+    FrameRect GetAlignedViewportRect();
+    bool UpdateViewportAndItemRect(Units ui_rect_units);
     void UpdateAtlasTexture(const Ptr<gfx::Texture>& sp_new_atlas_texture);
     void UpdateMeshData();
     void UpdateUniformsBuffer();
     void UpdateConstantsBuffer();
 
     SettingsUtf32             m_settings;
-    UnitRect                  m_content_rect;
+    UnitRect                  m_frame_rect;
     Ptr<Font>                 m_sp_font;
     UniquePtr<TextMesh>       m_sp_text_mesh;
     Ptr<gfx::RenderState>     m_sp_state;

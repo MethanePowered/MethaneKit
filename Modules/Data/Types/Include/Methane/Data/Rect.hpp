@@ -209,6 +209,7 @@ struct Rect
     using Point = Point2T<T>;
     using Size  = RectSize<D>;
 
+    explicit Rect(Size size) noexcept : size(std::move(size)) { }
     Rect(Point origin, Size size) noexcept : origin(std::move(origin)), size(std::move(size)) { }
     Rect(const Rect&) noexcept = default;
     Rect() noexcept = default;

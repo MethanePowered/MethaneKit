@@ -149,6 +149,7 @@ TextMesh::TextMesh(const std::u32string& text, Text::Layout layout, Font& font, 
     , m_frame_size(frame_size)
 {
     META_FUNCTION_TASK();
+    m_content_size.width = m_frame_size.width;
     Update(text, frame_size);
 }
 
@@ -234,7 +235,7 @@ void TextMesh::EraseTrailingChars(size_t erase_chars_count, bool fixup_whitespac
         );
         m_last_whitespace_index = whitespace_it == m_text.rend()
                                 ? std::string::npos
-                                : std::distance(m_text.begin(), whitespace_it.base());
+                                : std::distance(m_text.begin(), whitespace_it.base()) - 1;
         assert(m_last_whitespace_index == std::string::npos ||
                (m_char_positions[m_last_whitespace_index].is_whitespace_or_linebreak &&
                 std::isspace(static_cast<int>(m_text[m_last_whitespace_index]))));
@@ -329,7 +330,7 @@ void TextMesh::ApplyAlignmentOffset(const size_t init_text_length, const size_t 
 
     assert(m_char_positions[init_line_start_index].is_line_start);
     const size_t  end_char_index                  = m_char_positions.size() - 1;
-    const int32_t frame_width                     = static_cast<int32_t>(m_frame_size.width ? m_frame_size.width : m_content_size.width);
+    const int32_t frame_width                     = static_cast<int32_t>(m_content_size.width);
     int32_t       horizontal_alignment_offset     = 0; // Alignment offset of the recently appended character
     int32_t       horizontal_alignment_adjustment = 0; // Alignment adjustment of the existing character of the last line of text
 

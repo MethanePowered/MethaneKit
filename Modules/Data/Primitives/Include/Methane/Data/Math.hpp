@@ -30,6 +30,12 @@ namespace Methane::Data
 {
 
 template<typename T>
+std::enable_if_t<std::is_arithmetic<T>::value, T> AbsSubtract(T a, T b)
+{
+    return a >= b ? a - b : b - a;
+}
+
+template<typename T>
 std::enable_if_t<std::is_unsigned<T>::value, T> DivCeil(T numerator, T denominator)
 {
     return numerator > 0 ? (1 + ((numerator - 1) / denominator)) : 0;

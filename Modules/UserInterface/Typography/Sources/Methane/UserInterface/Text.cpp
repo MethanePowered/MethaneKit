@@ -36,6 +36,7 @@ Methane text rendering primitive.
 #include <Methane/Graphics/Sampler.h>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Data/AppResourceProviders.h>
+#include <Methane/Data/Math.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <cml/mathlib/mathlib.h>
@@ -78,12 +79,14 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
     m_sp_font->Connect(*this);
 
     const gfx::RenderContext::Settings& context_settings = GetUIContext().GetRenderContext().GetSettings();
-    m_content_rect = GetUIContext().ConvertToPixels(m_settings.rect);
+    m_frame_rect = GetUIContext().ConvertToPixels(m_settings.rect);
 
     SetRelOrigin(m_settings.rect.GetUnitOrigin());
     UpdateMeshData();
     UpdateUniformsBuffer();
     UpdateConstantsBuffer();
+
+    const FrameRect viewport_rect = m_sp_text_mesh ? GetAlignedViewportRect() : m_frame_rect;
 
     gfx::RenderState::Settings state_settings;
     state_settings.sp_program = gfx::Program::Create(GetUIContext().GetRenderContext(),
@@ -116,8 +119,8 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
         }
     );
     state_settings.sp_program->SetName(m_settings.name + " Screen-Quad Shading");
-    state_settings.viewports                                            = { gfx::GetFrameViewport(m_content_rect) };
-    state_settings.scissor_rects                                        = { gfx::GetFrameScissorRect(m_content_rect) };
+    state_settings.viewports                                            = { gfx::GetFrameViewport(viewport_rect) };
+    state_settings.scissor_rects                                        = { gfx::GetFrameScissorRect(viewport_rect) };
     state_settings.depth.enabled                                        = false;
     state_settings.depth.write_enabled                                  = false;
     state_settings.rasterizer.is_front_counter_clockwise                = true;
@@ -137,6 +140,8 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
     m_sp_texture_sampler->SetName(m_settings.name + " Screen-Quad Texture Sampler");
 
     m_sp_curr_program_bindings = CreateProgramBindings();
+
+    Item::SetRect(m_frame_rect);
 }
 
 Text::~Text()
@@ -152,12 +157,6 @@ std::string Text::GetTextUtf8() const
 {
     META_FUNCTION_TASK();
     return Font::ConvertUtf32To8(m_settings.text);
-}
-
-UnitRect Text::GetContentRectInDots() const
-{
-    META_FUNCTION_TASK();
-    return GetUIContext().ConvertToDots(m_content_rect);
 }
 
 void Text::SetText(const std::string& text)
@@ -200,7 +199,7 @@ void Text::SetTextInScreenRect(const std::u32string& text, const UnitRect& ui_re
         UpdateAtlasTexture(m_sp_font->GetAtlasTexturePtr(GetUIContext().GetRenderContext()));
     }
 
-    UpdateContentRect(ui_rect.units);
+    UpdateViewportAndItemRect(ui_rect.units);
 }
 
 bool Text::SetRect(const UnitRect& ui_rect)
@@ -216,7 +215,7 @@ bool Text::SetRect(const UnitRect& ui_rect)
         UpdateUniformsBuffer();
     }
 
-    return UpdateContentRect(ui_rect.units);
+    return UpdateViewportAndItemRect(ui_rect.units);
 }
 
 Text::UpdateRectResult Text::UpdateRect(const UnitRect& ui_rect, bool reset_content_rect)
@@ -233,9 +232,9 @@ Text::UpdateRectResult Text::UpdateRect(const UnitRect& ui_rect, bool reset_cont
         m_settings.rect.size = ui_rect_in_units.size;
 
     if (reset_content_rect || ui_size_changed)
-        m_content_rect = ui_rect_in_px;
+        m_frame_rect = ui_rect_in_px;
     else
-        m_content_rect.origin = ui_rect_in_px.origin;
+        m_frame_rect.origin = ui_rect_in_px.origin;
 
     return { ui_rect_changed, ui_size_changed };
 }
@@ -260,7 +259,7 @@ void Text::SetLayout(const Layout& layout)
 
     UpdateMeshData();
     UpdateUniformsBuffer();
-    UpdateContentRect(m_content_rect.units);
+    UpdateViewportAndItemRect(m_frame_rect.units);
 }
 
 void Text::SetWrap(Wrap wrap)
@@ -338,12 +337,54 @@ Ptr<gfx::ProgramBindings> Text::CreateProgramBindings()
     });
 }
 
-bool Text::UpdateContentRect(Units ui_rect_units)
+FrameRect Text::GetAlignedViewportRect()
 {
     META_FUNCTION_TASK();
-    m_sp_state->SetViewports({ gfx::GetFrameViewport(m_content_rect) });
-    m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(m_content_rect) });
-    return Item::SetRect(GetUIContext().ConvertToUnits(m_content_rect, ui_rect_units));
+    if (!m_sp_text_mesh)
+        throw std::logic_error("Text mesh must be initialized.");
+
+    const FrameSize& content_size = m_sp_text_mesh->GetContentSize();
+    if (!content_size)
+        throw std::logic_error("All dimension of text content size should be non-zero.");
+
+    if (!m_frame_rect.size)
+        throw std::logic_error("All dimension of frame size should be non-zero.");
+
+    // Position viewport rect inside frame rect based on text alignment
+    FrameRect viewport_rect(m_frame_rect.origin, content_size);
+
+    if (content_size.width != m_frame_rect.size.width)
+    {
+        switch (m_settings.layout.horizontal_alignment)
+        {
+        case HorizontalAlignment::Left:   break;
+        case HorizontalAlignment::Right:  viewport_rect.origin.SetX(m_frame_rect.origin.GetX() + Data::AbsSubtract(m_frame_rect.size.width, content_size.width)); break;
+        case HorizontalAlignment::Center: viewport_rect.origin.SetX(m_frame_rect.origin.GetX() + Data::AbsSubtract(m_frame_rect.size.width, content_size.width) / 2); break;
+        }
+    }
+    if (content_size.height != m_frame_rect.size.height)
+    {
+        switch (m_settings.layout.vertical_alignment)
+        {
+        case VerticalAlignment::Top:      break;
+        case VerticalAlignment::Bottom:   viewport_rect.origin.SetY(m_frame_rect.origin.GetY() + Data::AbsSubtract(m_frame_rect.size.height, content_size.height)); break;
+        case VerticalAlignment::Center:   viewport_rect.origin.SetY(m_frame_rect.origin.GetY() + Data::AbsSubtract(m_frame_rect.size.height, content_size.height) / 2); break;
+        }
+    }
+
+    return viewport_rect;
+}
+
+bool Text::UpdateViewportAndItemRect(Units ui_rect_units)
+{
+    META_FUNCTION_TASK();
+    if (m_sp_text_mesh)
+    {
+        const FrameRect viewport_rect = GetAlignedViewportRect();
+        m_sp_state->SetViewports({ gfx::GetFrameViewport(viewport_rect) });
+        m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(viewport_rect) });
+    }
+    return Item::SetRect(GetUIContext().ConvertToUnits(m_frame_rect, ui_rect_units));
 }
 
 void Text::UpdateAtlasTexture(const Ptr<gfx::Texture>& sp_new_atlas_texture)
@@ -380,7 +421,10 @@ void Text::UpdateMeshData()
 {
     META_FUNCTION_TASK();
     if (m_settings.text.empty())
+    {
+        m_sp_text_mesh.reset();
         return;
+    }
 
     // Fill font with new text chars strictly before building the text mesh, to be sure that font atlas size is up to date
     m_sp_font->AddChars(m_settings.text);
@@ -389,13 +433,13 @@ void Text::UpdateMeshData()
         return;
 
     if (m_settings.incremental_update && m_sp_text_mesh &&
-        m_sp_text_mesh->IsUpdatable(m_settings.text, m_settings.layout, *m_sp_font, m_content_rect.size))
+        m_sp_text_mesh->IsUpdatable(m_settings.text, m_settings.layout, *m_sp_font, m_frame_rect.size))
     {
-        m_sp_text_mesh->Update(m_settings.text, m_content_rect.size);
+        m_sp_text_mesh->Update(m_settings.text, m_frame_rect.size);
     }
     else
     {
-        m_sp_text_mesh = std::make_unique<TextMesh>(m_settings.text, m_settings.layout, *m_sp_font, m_content_rect.size);
+        m_sp_text_mesh = std::make_unique<TextMesh>(m_settings.text, m_settings.layout, *m_sp_font, m_frame_rect.size);
     }
 
     // Update vertex buffer
@@ -444,11 +488,15 @@ void Text::UpdateUniformsBuffer()
     if (m_settings.text.empty())
         return;
 
-    if (!m_content_rect.size)
-        throw std::logic_error("Text uniforms buffer can not be updated when one of content rectangle dimensions is zero.");
+    if (!m_sp_text_mesh)
+        throw std::logic_error("Text mesh must be initialized with vertex and index data.");
+
+    const gfx::FrameSize& content_size = m_sp_text_mesh->GetContentSize();
+    if (!content_size)
+        throw std::logic_error("Text uniforms buffer can not be updated when one of content size dimensions is zero.");
 
     gfx::Matrix44f scale_text_matrix;
-    cml::matrix_scale_2D(scale_text_matrix, 2.f / m_content_rect.size.width, 2.f / m_content_rect.size.height);
+    cml::matrix_scale_2D(scale_text_matrix, 2.f / content_size.width, 2.f / content_size.height);
 
     gfx::Matrix44f translate_text_matrix;
     cml::matrix_translation_2D(translate_text_matrix, -1.f, 1.f);
