@@ -265,13 +265,20 @@ void TextMesh::AppendChars(std::u32string added_text)
     if (added_text.empty())
         return;
 
-    // Start adding new text characters from the previous text word so that it can be properly wrapped
-    if (m_layout.wrap == Text::Wrap::Word && m_last_whitespace_index != std::string::npos)
+    // Start adding new text characters from the previous text word (so that it can be properly wrapped) or from the last line start
+    if (m_layout.wrap == Text::Wrap::Word && !m_text.empty() &&
+         (m_last_whitespace_index != std::string::npos ||
+          m_last_line_start_index != std::string::npos))
     {
         // Remove characters starting with last whitespace and other non-whitespace symbols
-        assert(m_last_whitespace_index < m_text.length());
-        added_text = m_text.substr(m_last_whitespace_index) + added_text;
-        EraseTrailingChars(m_text.length() - m_last_whitespace_index, false, false);
+        const size_t update_from_index = m_last_whitespace_index != std::string::npos
+                                       ? (m_last_line_start_index != std::string::npos ? std::max(m_last_whitespace_index, m_last_line_start_index) : m_last_whitespace_index)
+                                       : m_last_line_start_index;
+        if (update_from_index < m_text.length())
+        {
+            added_text = m_text.substr(update_from_index) + added_text;
+            EraseTrailingChars(m_text.length() - update_from_index, false, false);
+        }
         m_last_whitespace_index = std::string::npos;
     }
 
@@ -319,6 +326,9 @@ void TextMesh::AppendChars(std::u32string added_text)
         }
     );
 
+    if (m_char_positions.back().is_line_start)
+        m_last_line_start_index = m_char_positions.size() - 1;
+
     ApplyAlignmentOffset(init_text_length, init_line_start_index);
 }
 
@@ -338,7 +348,7 @@ void TextMesh::ApplyAlignmentOffset(const size_t init_text_length, const size_t 
     for(size_t char_index = init_line_start_index; char_index < end_char_index; ++char_index)
     {
         const CharPosition& char_position = m_char_positions[char_index];
-        if (char_position.is_line_start && char_index < end_char_index - 1)
+        if (char_position.is_line_start && char_index <= end_char_index - 1)
         {
             horizontal_alignment_offset = GetHorizontalLineAlignmentOffset(char_index, frame_width);
             if (char_index < init_text_length)
@@ -368,7 +378,7 @@ int32_t TextMesh::GetHorizontalLineAlignmentOffset(size_t line_start_index, int3
     assert(m_char_positions[line_start_index].is_line_start);
 
     // Find next line start or end of text
-    auto line_end_position_it = std::find_if(m_char_positions.begin() + line_start_index + 1, m_char_positions.end() - 2,
+    auto line_end_position_it = std::find_if(m_char_positions.begin() + line_start_index + 1, m_char_positions.end() - 1,
         [](const CharPosition& line_char_pos) { return line_char_pos.is_line_start; }
     );
 
