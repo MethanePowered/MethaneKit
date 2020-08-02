@@ -54,7 +54,7 @@ public:
         bool     is_line_start              = false; // start of new line: either after line break `\n` or text wrap
         bool     is_whitespace_or_linebreak = false;
         size_t   start_vertex_index         = std::numeric_limits<size_t>::max();
-        uint32_t glyph_width                = 0u;
+        uint32_t visual_width               = 0u;
     };
 
     using CharPositions = std::vector<CharPosition>;

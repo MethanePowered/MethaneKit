@@ -57,7 +57,7 @@ static void ForEachTextCharacterInRange(Font& font, const Font::Chars& text_char
 
         TextMesh::CharPosition& char_pos = char_positions.back();
         char_pos.is_whitespace_or_linebreak = text_char.IsLineBreak() || text_char.IsWhiteSpace();
-        char_pos.glyph_width = text_char.GetRect().size.width;
+        char_pos.visual_width               = text_char.GetVisualSize().width;
 
         // Wrap to next line and skip visualization of "line break" character
         if (text_char.IsLineBreak())
@@ -68,7 +68,8 @@ static void ForEachTextCharacterInRange(Font& font, const Font::Chars& text_char
         }
 
         // Wrap to next line on text overrun of frame width
-        if (wrap == Text::Wrap::Anywhere && frame_width && char_pos.GetX() + char_pos.glyph_width > frame_width)
+        const uint32_t char_right_pos = char_pos.GetX() + (text_char.IsWhiteSpace() ? 0u : char_pos.visual_width);
+        if (wrap == Text::Wrap::Anywhere && frame_width && char_right_pos > frame_width)
         {
             char_pos.SetX(0);
             char_pos.SetY(char_pos.GetY() + font.GetLineHeight());
@@ -375,7 +376,7 @@ int32_t TextMesh::GetHorizontalLineAlignmentOffset(size_t line_start_index, int3
         --line_end_position_it;
 
     // Calculate current line width and alignment offset
-    const int32_t line_width = line_end_position_it->GetX() + line_end_position_it->glyph_width - m_char_positions[line_start_index].GetX();
+    const int32_t line_width = line_end_position_it->GetX() + line_end_position_it->visual_width - m_char_positions[line_start_index].GetX();
     switch(m_layout.horizontal_alignment)
     {
     case Text::HorizontalAlignment::Right:  return (frame_width - line_width);
@@ -456,8 +457,8 @@ void TextMesh::UpdateContentSize()
 void TextMesh::UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FramePoint& char_pos)
 {
     META_FUNCTION_TASK();
-    m_content_size.width  = std::max(m_content_size.width,  char_pos.GetX() + font_char.GetOffset().GetX() + font_char.GetRect().size.width);
-    m_content_size.height = std::max(m_content_size.height, char_pos.GetY() + font_char.GetOffset().GetY() + font_char.GetRect().size.height);
+    m_content_size.width  = std::max(m_content_size.width,  char_pos.GetX() + font_char.GetVisualSize().width);
+    m_content_size.height = std::max(m_content_size.height, char_pos.GetY() + font_char.GetVisualSize().height);
 }
 
 } // namespace Methane::Graphics

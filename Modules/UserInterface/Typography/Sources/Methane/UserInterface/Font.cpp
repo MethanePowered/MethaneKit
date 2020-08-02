@@ -784,6 +784,8 @@ Font::Char::Char(Code code, gfx::FrameRect rect, gfx::Point2i offset, gfx::Point
     , m_rect(std::move(rect))
     , m_offset(std::move(offset))
     , m_advance(std::move(advance))
+    , m_visual_size(IsWhiteSpace() ? m_advance.GetX() : m_offset.GetX() + m_rect.size.width,
+                    IsWhiteSpace() ? m_advance.GetY() : m_offset.GetY() + m_rect.size.height)
     , m_sp_glyph(std::move(sp_glyph))
 {
     META_FUNCTION_TASK();
