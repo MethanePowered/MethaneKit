@@ -149,7 +149,7 @@ TextMesh::TextMesh(const std::u32string& text, Text::Layout layout, Font& font, 
     , m_frame_size(frame_size)
 {
     META_FUNCTION_TASK();
-    m_content_size.width = m_frame_size.width;
+    m_content_size.width = frame_size.width;
     Update(text, frame_size);
 }
 
@@ -202,7 +202,7 @@ void TextMesh::Update(const std::u32string& text, gfx::FrameSize& frame_size)
     return;
 }
 
-void TextMesh::EraseTrailingChars(size_t erase_chars_count, bool fixup_whitespace, bool update_content_size)
+void TextMesh::EraseTrailingChars(size_t erase_chars_count, bool fixup_whitespace, bool update_alignment_and_content_size)
 {
     META_FUNCTION_TASK();
     if (!erase_chars_count)
@@ -253,9 +253,10 @@ void TextMesh::EraseTrailingChars(size_t erase_chars_count, bool fixup_whitespac
                m_char_positions[m_last_line_start_index].is_line_start);
     }
 
-    if (update_content_size)
+    if (update_alignment_and_content_size)
     {
         UpdateContentSize();
+        ApplyAlignmentOffset(m_text.length(), m_last_line_start_index);
     }
 }
 
@@ -332,26 +333,26 @@ void TextMesh::AppendChars(std::u32string added_text)
     ApplyAlignmentOffset(init_text_length, init_line_start_index);
 }
 
-void TextMesh::ApplyAlignmentOffset(const size_t init_text_length, const size_t init_line_start_index)
+void TextMesh::ApplyAlignmentOffset(const size_t aligned_text_length, const size_t line_start_index)
 {
     META_FUNCTION_TASK();
     if (m_layout.horizontal_alignment == Text::HorizontalAlignment::Left)
         return;
 
-    assert(m_char_positions[init_line_start_index].is_line_start);
+    assert(m_char_positions[line_start_index].is_line_start);
     const size_t  end_char_index                  = m_char_positions.size() - 1;
     const int32_t frame_width                     = static_cast<int32_t>(m_content_size.width);
     int32_t       horizontal_alignment_offset     = 0; // Alignment offset of the recently appended character
     int32_t       horizontal_alignment_adjustment = 0; // Alignment adjustment of the existing character of the last line of text
 
     // Apply horizontal alignment offset to newly added and existing character quads at last line
-    for(size_t char_index = init_line_start_index; char_index < end_char_index; ++char_index)
+    for(size_t char_index = line_start_index; char_index < end_char_index; ++char_index)
     {
         const CharPosition& char_position = m_char_positions[char_index];
         if (char_position.is_line_start && char_index <= end_char_index - 1)
         {
             horizontal_alignment_offset = GetHorizontalLineAlignmentOffset(char_index, frame_width);
-            if (char_index < init_text_length)
+            if (char_index < aligned_text_length)
             {
                 // Calculate previously aligned characters adjustment
                 assert(char_position.start_vertex_index < m_vertices.size());
@@ -364,7 +365,7 @@ void TextMesh::ApplyAlignmentOffset(const size_t init_text_length, const size_t 
 
         // Apply line alignment offset to the character quad vertices
         assert(char_position.start_vertex_index < m_vertices.size());
-        const int32_t alignment_offset = char_index < init_text_length ? horizontal_alignment_adjustment : horizontal_alignment_offset;
+        const int32_t alignment_offset = char_index < aligned_text_length ? horizontal_alignment_adjustment : horizontal_alignment_offset;
         for (size_t vertex_id = 0; vertex_id < 4; ++vertex_id)
         {
             m_vertices[char_position.start_vertex_index + vertex_id].position[0] += alignment_offset;
@@ -460,9 +461,11 @@ void TextMesh::UpdateContentSize()
     m_content_size = { 0u, 0u };
     for(uint32_t vertex_index = 2; vertex_index < m_vertices.size(); vertex_index += 4)
     {
-        m_content_size.width  = std::max(m_content_size.width,  static_cast<uint32_t>(m_vertices[vertex_index].position[0]));
+        m_content_size.width  = std::max(m_content_size.width,  static_cast<uint32_t>( m_vertices[vertex_index].position[0]));
         m_content_size.height = std::max(m_content_size.height, static_cast<uint32_t>(-m_vertices[vertex_index].position[1]));
     }
+    if (m_frame_size.width)
+        m_content_size.width = m_frame_size.width;
 }
 
 void TextMesh::UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FramePoint& char_pos)

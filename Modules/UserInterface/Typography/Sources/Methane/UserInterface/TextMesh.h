@@ -80,10 +80,10 @@ public:
     Data::Size      GetIndicesDataSize() const noexcept     { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
 
 private:
-    void EraseTrailingChars(size_t erase_chars_count, bool fixup_whitespace, bool update_content_size);
+    void EraseTrailingChars(size_t erase_chars_count, bool fixup_whitespace, bool update_alignment_and_content_size);
     void AppendChars(std::u32string added_text);
     void AddCharQuad(const Font::Char& font_char, const gfx::FramePoint& char_pos, const gfx::FrameSize& atlas_size);
-    void ApplyAlignmentOffset(const size_t init_text_length, const size_t init_line_start_index);
+    void ApplyAlignmentOffset(const size_t aligned_text_length, const size_t line_start_index);
     int32_t GetHorizontalLineAlignmentOffset(size_t line_start_index, int32_t frame_width) const;
     void UpdateContentSize();
     void UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FramePoint& char_pos);
