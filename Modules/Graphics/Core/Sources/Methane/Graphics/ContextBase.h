@@ -59,7 +59,7 @@ public:
     // Context interface
     Type             GetType() const noexcept override                       { return m_type; }
     tf::Executor&    GetParallelExecutor() const noexcept override           { return m_parallel_executor; }
-    void             RequireCompleteInitialization() const noexcept override { m_is_complete_initialization_required = true; }
+    void             RequestDeferredAction(DeferredAction action) const noexcept;
     void             CompleteInitialization() override;
     void             WaitForGpu(WaitFor wait_for) override;
     void             Reset(Device& device) override;
@@ -76,15 +76,15 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-    bool IsCompleteInitializationRequired() const noexcept  { return m_is_complete_initialization_required; }
-
-    ResourceManager&        GetResourceManager()            { return m_resource_manager; }
-    const ResourceManager&  GetResourceManager() const      { return m_resource_manager; }
+    DeferredAction          GetRequestedAction() const noexcept  { return m_requested_action; }
+    ResourceManager&        GetResourceManager() noexcept        { return m_resource_manager; }
+    const ResourceManager&  GetResourceManager() const noexcept  { return m_resource_manager; }
     CommandQueueBase&       GetUploadCommandQueueBase();
-    DeviceBase&             GetDeviceBase();
-    const DeviceBase&       GetDeviceBase() const;
+    DeviceBase&             GetDeviceBase() noexcept;
+    const DeviceBase&       GetDeviceBase() const noexcept;
 
 protected:
+    void PerformRequestedAction();
     void SetDevice(DeviceBase& device);
     Fence& GetUploadFence() const noexcept;
 
@@ -103,7 +103,7 @@ private:
     Ptr<BlitCommandList>      m_sp_upload_cmd_list;
     Ptr<CommandListSet>       m_sp_upload_cmd_lists;
     Ptr<Fence>                m_sp_upload_fence;
-    mutable bool              m_is_complete_initialization_required = false;
+    mutable DeferredAction    m_requested_action = DeferredAction::None;
     mutable bool              m_is_completing_initialization = false;
 };
 

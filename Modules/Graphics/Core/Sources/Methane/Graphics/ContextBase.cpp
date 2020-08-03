@@ -56,6 +56,12 @@ ContextBase::ContextBase(DeviceBase& device, tf::Executor& parallel_executor, Ty
     META_FUNCTION_TASK();
 }
 
+void ContextBase::RequestDeferredAction(DeferredAction action) const noexcept
+{
+    META_FUNCTION_TASK();
+    m_requested_action = std::max(m_requested_action, action);
+}
+
 void ContextBase::CompleteInitialization()
 {
     META_FUNCTION_TASK();
@@ -78,8 +84,8 @@ void ContextBase::CompleteInitialization()
     // Enable deferred heap allocation in case if more resources will be created in runtime
     m_resource_manager.SetDeferredHeapAllocation(true);
 
-    m_is_completing_initialization        = false;
-    m_is_complete_initialization_required = false;
+    m_requested_action = DeferredAction::None;
+    m_is_completing_initialization = false;
 }
 
 void ContextBase::WaitForGpu(WaitFor wait_for)
@@ -130,11 +136,7 @@ void ContextBase::OnGpuWaitComplete(WaitFor wait_for)
     else
     {
         m_resource_manager.GetReleasePool().ReleaseAllResources();
-
-        if (m_is_complete_initialization_required)
-        {
-            CompleteInitialization();
-        }
+        PerformRequestedAction();
     }
 }
 
@@ -247,13 +249,13 @@ CommandQueueBase& ContextBase::GetUploadCommandQueueBase()
     return static_cast<CommandQueueBase&>(GetUploadCommandQueue());
 }
 
-DeviceBase& ContextBase::GetDeviceBase()
+DeviceBase& ContextBase::GetDeviceBase() noexcept
 {
     META_FUNCTION_TASK();
     return static_cast<DeviceBase&>(GetDevice());
 }
 
-const DeviceBase& ContextBase::GetDeviceBase() const
+const DeviceBase& ContextBase::GetDeviceBase() const noexcept
 {
     META_FUNCTION_TASK();
     assert(!!m_sp_device);
@@ -297,8 +299,21 @@ bool ContextBase::UploadResources()
     return true;
 }
 
+void ContextBase::PerformRequestedAction()
+{
+    META_FUNCTION_TASK();
+    switch(m_requested_action)
+    {
+    case DeferredAction::None: break;
+    case DeferredAction::UploadResources:        UploadResources(); break;
+    case DeferredAction::CompleteInitialization: CompleteInitialization(); break;
+    }
+    m_requested_action = DeferredAction::None;
+}
+
 void ContextBase::SetDevice(DeviceBase& device)
 {
+    META_FUNCTION_TASK();
     m_sp_device = device.GetPtr();
 }
 

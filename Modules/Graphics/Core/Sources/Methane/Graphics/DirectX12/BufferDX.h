@@ -148,7 +148,7 @@ public:
             upload_cmd_list.SetResourceBarriers(*m_sp_upload_end_transition_barriers);
         }
 
-        GetContextBase().RequireCompleteInitialization();
+        GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
     }
 
     SubResource GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override

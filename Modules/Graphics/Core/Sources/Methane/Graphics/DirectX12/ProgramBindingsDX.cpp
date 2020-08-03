@@ -124,7 +124,7 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
         resource_index++;
     }
 
-    GetContext().RequireCompleteInitialization();
+    GetContext().RequestDeferredAction(Context::DeferredAction::CompleteInitialization);
 }
 
 void ProgramBindingsDX::ArgumentBindingDX::SetDescriptorRange(const DescriptorRange& descriptor_range)
@@ -200,7 +200,7 @@ void ProgramBindingsDX::Initialize()
 
     if (resource_manager.IsDeferredHeapAllocation())
     {
-        context.RequireCompleteInitialization();
+        context.RequestDeferredAction(Context::DeferredAction::CompleteInitialization);
     }
     else
     {

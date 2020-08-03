@@ -686,7 +686,7 @@ void Font::UpdateAtlasTextures(bool deferred_textures_update)
             // Texture will be updated on GPU context completing initialization,
             // when next GPU Frame rendering is started and just before uploading data on GPU with upload command queue
             context_and_texture.second.is_update_required = true;
-            context_and_texture.first->RequireCompleteInitialization();
+            context_and_texture.first->RequestDeferredAction(gfx::Context::DeferredAction::CompleteInitialization);
         }
         else
         {
