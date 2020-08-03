@@ -187,8 +187,7 @@ void BufferMT::SetDataToPrivateBuffer(const SubResources& sub_resources)
         data_offset += sub_resource.size;
     }
 
-    // Upload command list is executed later on GPU context initialization completion
-    GetContextBase().RequireCompleteInitialization();
+    GetContextBase().RequestDeferredAction(Context::DeferredAction::UploadResources);
 }
 
 MTLIndexType BufferMT::GetNativeIndexType() const noexcept

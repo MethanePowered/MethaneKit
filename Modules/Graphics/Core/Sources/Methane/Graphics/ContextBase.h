@@ -59,7 +59,7 @@ public:
     // Context interface
     Type             GetType() const noexcept override                       { return m_type; }
     tf::Executor&    GetParallelExecutor() const noexcept override           { return m_parallel_executor; }
-    void             RequestDeferredAction(DeferredAction action) const noexcept;
+    void             RequestDeferredAction(DeferredAction action) const noexcept override;
     void             CompleteInitialization() override;
     void             WaitForGpu(WaitFor wait_for) override;
     void             Reset(Device& device) override;

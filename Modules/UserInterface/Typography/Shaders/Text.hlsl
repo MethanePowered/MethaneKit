@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: MethaneKit/Modules/Graphics/Extensions/Shaders/Text.hlsl
+FILE: MethaneKit/Modules/UserInterface/Typography/Shaders/Text.hlsl
 Shaders for text rendering from glyphs atlas texture
 
 ******************************************************************************/

@@ -311,8 +311,7 @@ void TextureMT::GenerateMipLevels()
     
     [mtl_blit_encoder generateMipmapsForTexture: m_mtl_texture];
 
-    // Upload command list is executed later on GPU context initialization completion
-    GetContextBase().RequireCompleteInitialization();
+    GetContextBase().RequestDeferredAction(Context::DeferredAction::UploadResources);
 }
 
 RenderContextMT& TextureMT::GetRenderContextMT()
