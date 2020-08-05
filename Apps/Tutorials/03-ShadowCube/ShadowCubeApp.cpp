@@ -90,8 +90,8 @@ void ShadowCubeApp::Init()
     });
 
     const gfx::Mesh::VertexLayout mesh_layout(Vertex::layout);
-    const gfx::CubeMesh<Vertex>  cube_mesh(mesh_layout, 1.f, 1.f, 1.f);
-    const gfx::QuadMesh<Vertex> floor_mesh(mesh_layout, 7.f, 7.f, 0.f, 0, gfx::QuadMesh<Vertex>::FaceType::XZ);
+    const gfx::CubeMesh<Vertex>   cube_mesh(mesh_layout, 1.f, 1.f, 1.f);
+    const gfx::QuadMesh<Vertex>   floor_mesh(mesh_layout, 7.f, 7.f, 0.f, 0, gfx::QuadMesh<Vertex>::FaceType::XZ);
 
     // Load textures, vertex and index buffers for cube and floor meshes
     const gfx::ImageLoader::Options::Mask image_options = gfx::ImageLoader::Options::Mipmapped
