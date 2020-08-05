@@ -116,42 +116,26 @@ protected:
     void Emit(FuncType&& func_ptr, ArgTypes&&... args)
     {
         META_FUNCTION_TASK();
-        bool is_cleanup_required = false;
 
-        m_is_emitting = true;
-        for(Receiver<EventType>*& p_receiver : m_connected_receivers)
+        // Additional receivers may be non-empty before emitting connected receiver calls
+        // only in case when current emit is called during another emitted callback for the same emitter
+        if (m_is_emitting && !m_additional_connected_receivers.empty())
         {
-            if (!p_receiver)
-            {
-                is_cleanup_required = true;
-                continue;
-            }
+            // Create copy of the additional connected receivers to iterate over,
+            // because original set of additional receivers may change during emitted calls
+            auto additional_connected_receivers = m_additional_connected_receivers;
+            EmitFuncOfReceivers(additional_connected_receivers, func_ptr, std::forward<ArgTypes>(args)...);
+        }
 
-            // Call the emitted event function in receiver
-            (p_receiver->*std::forward<FuncType>(func_ptr))(std::forward<ArgTypes>(args)...);
-
-            if (!p_receiver)
-            {
-                // Receiver may be disconnected or destroyed during emitted event and it will be cleaned up after full emit cycle
-                is_cleanup_required = true;
-            }
+        // Emit function of connected receivers
+        m_is_emitting = true;
+        if (EmitFuncOfReceivers(m_connected_receivers, func_ptr, std::forward<ArgTypes>(args)...))
+        {
+            CleanupConnectedReceivers();
         }
         m_is_emitting = false;
 
-        if (is_cleanup_required)
-        {
-            // Erase receivers disconnected during emit cycle from the connected receivers
-            for(auto connected_receiver_it  = m_connected_receivers.begin();
-                     connected_receiver_it != m_connected_receivers.end();)
-            {
-                if (*connected_receiver_it)
-                    connected_receiver_it++;
-                else
-                    connected_receiver_it = m_connected_receivers.erase(connected_receiver_it);
-            }
-        }
-
-        // Add receivers connected during emit cycle to the connected receivers
+        // Add additional receivers connected during emit cycle to the connected receivers
         if (!m_additional_connected_receivers.empty())
         {
             m_connected_receivers.insert(m_connected_receivers.end(), m_additional_connected_receivers.begin(), m_additional_connected_receivers.end());
@@ -171,6 +155,42 @@ private:
                 return p_connected_receiver && p_connected_receiver == std::addressof(receiver);
             }
         );
+    }
+
+    template<typename ReceiversContainerType, typename FuncType, typename... ArgTypes>
+    bool EmitFuncOfReceivers(ReceiversContainerType& receivers, FuncType&& func_ptr, ArgTypes&&... args)
+    {
+        bool is_cleanup_required = false;
+        for(Receiver<EventType>* const& p_receiver : receivers)
+        {
+            if (!p_receiver)
+            {
+                is_cleanup_required = true;
+                continue;
+            }
+
+            // Call the emitted event function in receiver
+            (p_receiver->*std::forward<FuncType>(func_ptr))(std::forward<ArgTypes>(args)...);
+
+            if (!p_receiver)
+            {
+                // Receiver may be disconnected or destroyed during emitted event and it will be cleaned up after full emit cycle
+                is_cleanup_required = true;
+            }
+        }
+        return is_cleanup_required;
+    }
+
+    inline void CleanupConnectedReceivers()
+    {
+        // Erase receivers disconnected during emit cycle from the connected receivers
+        for(auto connected_receiver_it  = m_connected_receivers.begin(); connected_receiver_it != m_connected_receivers.end();)
+        {
+            if (*connected_receiver_it)
+                connected_receiver_it++;
+            else
+                connected_receiver_it = m_connected_receivers.erase(connected_receiver_it);
+        }
     }
 
     bool                              m_is_emitting = false;

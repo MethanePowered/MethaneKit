@@ -183,7 +183,6 @@ TEST_CASE("Connect one emitter to many receivers", "[events]")
     {
         TestEmitter emitter;
         std::array<TestReceiver, 5> receivers;
-
         for(TestReceiver& receiver : receivers)
         {
             receiver.CheckBind(emitter);
@@ -198,6 +197,39 @@ TEST_CASE("Connect one emitter to many receivers", "[events]")
             new_receiver_ptr->CheckBind(emitter);
             dynamic_receivers.emplace_back(std::move(new_receiver_ptr));
         }));
+
+        const size_t total_receivers_count = dynamic_receivers.size() + receivers.size();
+        CHECK(dynamic_receivers.size() == receivers.size());
+        CHECK(emitter.GetConnectedReceiversCount() == total_receivers_count);
+    }
+
+    SECTION("Emit receivers connected during emitted call")
+    {
+        TestEmitter emitter;
+        std::array<TestReceiver, 5> receivers;
+        for(TestReceiver& receiver : receivers)
+        {
+            receiver.CheckBind(emitter);
+        }
+
+        CHECK(emitter.GetConnectedReceiversCount() == receivers.size());
+        Ptrs<TestReceiver> dynamic_receivers;
+
+        CHECK_NOTHROW(emitter.EmitCall([&dynamic_receivers, &emitter](size_t)
+        {
+            auto new_receiver_ptr = std::make_shared<TestReceiver>();
+            new_receiver_ptr->CheckBind(emitter);
+            dynamic_receivers.emplace_back(std::move(new_receiver_ptr));
+
+            // Emit Foo call during the other emit right after new receiver connection
+            emitter.EmitFoo(); // this should call new_receiver_ptr->Foo()
+        }));
+
+        // Check that all dynamic receivers received Foo calls
+        for(size_t dynamic_receiver_index = 0; dynamic_receiver_index < dynamic_receivers.size(); ++dynamic_receiver_index)
+        {
+            CHECK(dynamic_receivers[dynamic_receiver_index]->GetFooCallCount() == receivers.size() - dynamic_receiver_index);
+        }
 
         const size_t total_receivers_count = dynamic_receivers.size() + receivers.size();
         CHECK(dynamic_receivers.size() == receivers.size());
