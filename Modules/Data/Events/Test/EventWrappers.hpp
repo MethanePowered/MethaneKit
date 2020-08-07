@@ -36,7 +36,7 @@ struct ITestEvents
 
     virtual void Foo() = 0;
     virtual void Bar(int a, bool b, float c) = 0;
-    virtual void Call(CallFunc f) = 0;
+    virtual void Call(const CallFunc& f) = 0;
 
     virtual ~ITestEvents() = default;
 };
@@ -54,7 +54,7 @@ public:
         Emit(&ITestEvents::Bar, a, b, c);
     }
 
-    void EmitCall(ITestEvents::CallFunc f)
+    void EmitCall(const ITestEvents::CallFunc& f)
     {
         Emit(&ITestEvents::Call, f);
     }
@@ -133,7 +133,7 @@ protected:
         m_bar_c = c;
     }
 
-    void Call(CallFunc f) override
+    void Call(const CallFunc& f) override
     {
         m_func_call_count++;
         f(m_id);

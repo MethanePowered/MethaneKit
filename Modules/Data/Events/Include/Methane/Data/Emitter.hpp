@@ -128,15 +128,16 @@ protected:
         }
 
         // Emit function of connected receivers
+        bool was_emitting = m_is_emitting;
         m_is_emitting = true;
         if (EmitFuncOfReceivers(m_connected_receivers, func_ptr, std::forward<ArgTypes>(args)...))
         {
             CleanupConnectedReceivers();
         }
-        m_is_emitting = false;
+        m_is_emitting = was_emitting;
 
         // Add additional receivers connected during emit cycle to the connected receivers
-        if (!m_additional_connected_receivers.empty())
+        if (!was_emitting && !m_additional_connected_receivers.empty())
         {
             m_connected_receivers.insert(m_connected_receivers.end(), m_additional_connected_receivers.begin(), m_additional_connected_receivers.end());
             m_additional_connected_receivers.clear();
