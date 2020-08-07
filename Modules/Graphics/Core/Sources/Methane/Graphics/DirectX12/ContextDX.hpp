@@ -83,7 +83,7 @@ public:
     ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1u << 15u) override
     {
         META_FUNCTION_TASK();
-        assert(type < m_query_heaps.size());
+        assert(static_cast<size_t>(type) < m_query_heaps.size());
         wrl::ComPtr<ID3D12QueryHeap>& cp_query_heap = m_query_heaps[type];
         if (!cp_query_heap)
         {
