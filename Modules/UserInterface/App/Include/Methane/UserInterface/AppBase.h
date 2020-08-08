@@ -77,6 +77,7 @@ private:
         Ptr<Panel>  sp_panel;
         Ptr<Text>   sp_text;
 
+        void Update();
         void Draw(gfx::RenderCommandList& cmd_list);
         void Reset(bool forget_text_string);
     };

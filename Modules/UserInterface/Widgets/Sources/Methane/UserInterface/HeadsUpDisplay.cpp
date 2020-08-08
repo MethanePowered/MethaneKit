@@ -85,7 +85,10 @@ void HeadsUpDisplay::Update()
 {
     META_FUNCTION_TASK();
     if (m_update_timer.GetElapsedSecondsD() < m_settings.update_interval_sec)
+    {
+        m_fps_text.Update();
         return;
+    }
 
     const gfx::FpsCounter&              fps_counter           = GetUIContext().GetRenderContext().GetFpsCounter();
     const uint32_t                      average_fps           = fps_counter.GetFramesPerSecond();
@@ -97,6 +100,7 @@ void HeadsUpDisplay::Update()
            << " FPS, " << std::fixed << average_frame_timing.GetTotalTimeMSec()
            << " ms, "  << std::fixed << average_frame_timing.GetCpuTimePercent() << "% CPU";
     m_fps_text.SetText(fps_ss.str());
+    m_fps_text.Update();
 
     m_update_timer.Reset();
 }

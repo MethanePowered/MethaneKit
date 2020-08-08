@@ -124,6 +124,7 @@ public:
     // Item overrides
     bool SetRect(const UnitRect& ui_rect) override;
 
+    void Update();
     void Draw(gfx::RenderCommandList& cmd_list);
 
     static std::string GetWrapName(Wrap wrap) noexcept;
@@ -139,36 +140,75 @@ private:
     struct Constants;
     struct Uniforms;
 
+    struct Dirty
+    {
+        using Mask = uint32_t;
+        enum Value : Mask
+        {
+            None         = 0u,
+            Mesh         = 1u << 0u,
+            Uniforms     = 1u << 1u,
+            Atlas        = 1u << 2u,
+            All          = ~0u,
+        };
+    };
+
+    class FrameResources
+    {
+    public:
+        FrameResources(gfx::RenderState& state, gfx::RenderContext& render_context,
+                       const Ptr<gfx::Buffer>& sp_const_buffer, const Ptr<gfx::Texture>& sp_atlas_texture, const Ptr<gfx::Sampler>& sp_atlas_sampler,
+                       const TextMesh& text_mesh, const std::string& text_name, Data::Size reservation_multiplier);
+
+        void SetDirty(Dirty::Mask dirty_flags) noexcept         { m_dirty_mask |= dirty_flags; }
+        bool IsDirty() const noexcept                           { return m_dirty_mask != Dirty::None; }
+        bool IsDirty(Dirty::Mask dirty_flags) const noexcept    { return m_dirty_mask & dirty_flags; }
+        bool IsInitializedAndClean() const noexcept             { return m_sp_program_bindings && m_sp_vertex_buffer_set && m_sp_index_buffer && !IsDirty(); }
+        bool IsAtlasInitialized() const noexcept                { return !!m_sp_atlas_texture; }
+
+        gfx::BufferSet&       GetVertexBufferSet() const;
+        gfx::Buffer&          GetIndexBuffer() const;
+        gfx::ProgramBindings& GetProgramBindings() const;
+
+        bool UpdateAtlasTexture(const Ptr<gfx::Texture>& sp_new_atlas_texture); // returns true if probram bindings were updated, false if bindings have to be initialized
+        void UpdateMeshBuffers(gfx::RenderContext& render_context, const TextMesh& text_mesh, const std::string& text_name, Data::Size reservation_multiplier);
+        void UpdateUniformsBuffer(gfx::RenderContext& render_context, const TextMesh& text_mesh, const std::string& text_name);
+        void InitializeProgramBindings(gfx::RenderState& state, const Ptr<gfx::Buffer>& sp_const_buffer, const Ptr<gfx::Sampler>& sp_atlas_sampler);
+
+    private:
+        Dirty::Mask               m_dirty_mask = Dirty::None;
+        Ptr<gfx::BufferSet>       m_sp_vertex_buffer_set;
+        Ptr<gfx::Buffer>          m_sp_index_buffer;
+        Ptr<gfx::Buffer>          m_sp_uniforms_buffer;
+        Ptr<gfx::Texture>         m_sp_atlas_texture;
+        Ptr<gfx::ProgramBindings> m_sp_program_bindings;
+    };
+
+    void InitializeFrameResources();
+    void MakeFrameResourcesDirty(Dirty::Mask dirty_flags);
+    FrameResources& GetCurrentFrameResources();
+
+    void UpdateTextMesh();
+    void UpdateConstantsBuffer();
+
     struct UpdateRectResult
     {
         bool rect_changed = false;
         bool size_changed = false;
     };
 
-    Ptr<gfx::ProgramBindings> CreateProgramBindings();
-
     UpdateRectResult UpdateRect(const UnitRect& ui_rect, bool reset_content_rect);
     FrameRect GetAlignedViewportRect();
     bool UpdateViewportAndItemRect(Units ui_rect_units);
-    void UpdateAtlasTexture(const Ptr<gfx::Texture>& sp_new_atlas_texture);
-    void UpdateMeshData();
-    void UpdateUniformsBuffer();
-    void UpdateConstantsBuffer();
 
-    SettingsUtf32             m_settings;
-    UnitRect                  m_frame_rect;
-    Ptr<Font>                 m_sp_font;
-    UniquePtr<TextMesh>       m_sp_text_mesh;
-    Ptr<gfx::RenderState>     m_sp_state;
-    Ptr<gfx::BufferSet>       m_sp_vertex_buffer_set;
-    Ptr<gfx::Buffer>          m_sp_index_buffer;
-    Ptr<gfx::Buffer>          m_sp_const_buffer;
-    Ptr<gfx::Buffer>          m_sp_uniforms_buffer;
-    Ptr<gfx::Texture>         m_sp_atlas_texture;
-    Ptr<gfx::Sampler>         m_sp_texture_sampler;
-    Ptr<gfx::ProgramBindings> m_sp_curr_program_bindings;
-    Ptr<gfx::ProgramBindings> m_sp_prev_program_bindings;
-    Data::Index               m_prev_program_bindings_release_on_frame  = 0u;
+    SettingsUtf32               m_settings;
+    UnitRect                    m_frame_rect;
+    Ptr<Font>                   m_sp_font;
+    UniquePtr<TextMesh>         m_sp_text_mesh;
+    Ptr<gfx::RenderState>       m_sp_state;
+    Ptr<gfx::Buffer>            m_sp_const_buffer;
+    Ptr<gfx::Sampler>           m_sp_atlas_sampler;
+    std::vector<FrameResources> m_frame_resources;
 };
 
 } // namespace Methane::Graphics

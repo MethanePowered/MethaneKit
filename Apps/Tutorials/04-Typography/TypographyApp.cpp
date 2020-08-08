@@ -405,6 +405,20 @@ void TypographyApp::ResetAnimation()
     LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
 }
 
+bool TypographyApp::Update()
+{
+    if (!UserInterfaceApp::Update())
+        return false;
+
+    // Update text block resources
+    for(Ptr<gui::Text>& sp_text : m_texts)
+    {
+        sp_text->Update();
+    }
+
+    return true;
+}
+
 bool TypographyApp::Render()
 {
     if (!UserInterfaceApp::Render())

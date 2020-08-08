@@ -64,6 +64,7 @@ public:
     // GraphicsApp overrides
     void Init() override;
     bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
+    bool Update() override;
     bool Render() override;
 
     // UserInterface::App overrides

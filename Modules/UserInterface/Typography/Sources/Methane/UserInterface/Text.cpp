@@ -73,7 +73,6 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
     : Item(ui_context, settings.rect)
     , m_settings(std::move(settings))
     , m_sp_font(font.shared_from_this())
-    , m_sp_atlas_texture(font.GetAtlasTexturePtr(GetUIContext().GetRenderContext()))
 {
     META_FUNCTION_TASK();
     m_sp_font->Connect(*this);
@@ -82,8 +81,7 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
     m_frame_rect = GetUIContext().ConvertToPixels(m_settings.rect);
 
     SetRelOrigin(m_settings.rect.GetUnitOrigin());
-    UpdateMeshData();
-    UpdateUniformsBuffer();
+    UpdateTextMesh();
     UpdateConstantsBuffer();
 
     const FrameRect viewport_rect = m_sp_text_mesh ? GetAlignedViewportRect() : m_frame_rect;
@@ -106,7 +104,7 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
             },
             gfx::Program::ArgumentDescriptions
             {
-                { { gfx::Shader::Type::Vertex, "g_uniforms"  }, gfx::Program::Argument::Modifiers::Constant },
+                { { gfx::Shader::Type::Vertex, "g_uniforms"  }, gfx::Program::Argument::Modifiers::None     },
                 { { gfx::Shader::Type::Pixel,  "g_constants" }, gfx::Program::Argument::Modifiers::Constant },
                 { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::Argument::Modifiers::None     },
                 { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::Argument::Modifiers::Constant },
@@ -133,14 +131,16 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
     m_sp_state = gfx::RenderState::Create(GetUIContext().GetRenderContext(), state_settings);
     m_sp_state->SetName(m_settings.name + " Screen-Quad Render State");
 
-    m_sp_texture_sampler = gfx::Sampler::Create(GetUIContext().GetRenderContext(), {
+    m_sp_atlas_sampler = gfx::Sampler::Create(GetUIContext().GetRenderContext(), {
         { gfx::Sampler::Filter::MinMag::Linear     },
         { gfx::Sampler::Address::Mode::ClampToZero },
     });
-    m_sp_texture_sampler->SetName(m_settings.name + " Screen-Quad Texture Sampler");
+    m_sp_atlas_sampler->SetName(m_settings.name + " Screen-Quad Texture Sampler");
 
-    m_sp_curr_program_bindings = CreateProgramBindings();
-
+    if (m_sp_text_mesh)
+    {
+        InitializeFrameResources();
+    }
     Item::SetRect(m_frame_rect);
 }
 
@@ -189,14 +189,14 @@ void Text::SetTextInScreenRect(const std::u32string& text, const UnitRect& ui_re
 
     if (text_changed || update_result.size_changed)
     {
-        UpdateMeshData();
-        UpdateUniformsBuffer();
+        UpdateTextMesh();
     }
 
-    if (!m_sp_atlas_texture)
+    FrameResources& frame_resources = GetCurrentFrameResources();
+    if (!frame_resources.IsAtlasInitialized())
     {
         // If atlas texture was not initialized it has to be requested for current context first to be properly updated in future
-        UpdateAtlasTexture(m_sp_font->GetAtlasTexturePtr(GetUIContext().GetRenderContext()));
+        frame_resources.UpdateAtlasTexture(m_sp_font->GetAtlasTexturePtr(GetUIContext().GetRenderContext()));
     }
 
     UpdateViewportAndItemRect(ui_rect.units);
@@ -211,8 +211,7 @@ bool Text::SetRect(const UnitRect& ui_rect)
 
     if (update_result.size_changed)
     {
-        UpdateMeshData();
-        UpdateUniformsBuffer();
+        UpdateTextMesh();
     }
 
     return UpdateViewportAndItemRect(ui_rect.units);
@@ -257,9 +256,7 @@ void Text::SetLayout(const Layout& layout)
 
     m_settings.layout = layout;
 
-    UpdateMeshData();
-    UpdateUniformsBuffer();
-    UpdateViewportAndItemRect(m_frame_rect.units);
+    UpdateTextMesh();
 }
 
 void Text::SetWrap(Wrap wrap)
@@ -286,54 +283,318 @@ void Text::SetVerticalAlignment(VerticalAlignment alignment)
     SetLayout(layout);
 }
 
+void Text::Update()
+{
+    META_FUNCTION_TASK();
+    if (m_frame_resources.empty())
+        return;
+
+    FrameResources& frame_resources = GetCurrentFrameResources();
+
+    if (frame_resources.IsDirty(Dirty::Mesh) && m_sp_text_mesh)
+    {
+        frame_resources.UpdateMeshBuffers(GetUIContext().GetRenderContext(), *m_sp_text_mesh, m_settings.name, m_settings.mesh_buffers_reservation_multiplier);
+    }
+    if (frame_resources.IsDirty(Dirty::Atlas) && m_sp_font)
+    {
+        if (!frame_resources.UpdateAtlasTexture(m_sp_font->GetAtlasTexturePtr(GetUIContext().GetRenderContext())))
+        {
+            frame_resources.InitializeProgramBindings(*m_sp_state, m_sp_const_buffer, m_sp_atlas_sampler);
+        }
+    }
+    if (frame_resources.IsDirty(Dirty::Uniforms) && m_sp_text_mesh)
+    {
+        frame_resources.UpdateUniformsBuffer(GetUIContext().GetRenderContext(), *m_sp_text_mesh, m_settings.name);
+    }
+}
+
 void Text::Draw(gfx::RenderCommandList& cmd_list)
 {
     META_FUNCTION_TASK();
-    if (m_settings.text.empty() || !m_sp_atlas_texture)
+    if (m_frame_resources.empty())
         return;
 
-    assert(m_sp_curr_program_bindings);
-    assert(m_sp_vertex_buffer_set);
-    assert(m_sp_index_buffer);
+    FrameResources& frame_resources = GetCurrentFrameResources();
+    if (!frame_resources.IsInitializedAndClean())
+        return;
 
     cmd_list.Reset(m_sp_state);
-    cmd_list.SetProgramBindings(*m_sp_curr_program_bindings);
-    cmd_list.SetVertexBuffers(*m_sp_vertex_buffer_set);
-    cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
-
-    if (m_sp_prev_program_bindings && m_prev_program_bindings_release_on_frame == GetUIContext().GetRenderContext().GetFrameBufferIndex())
-        m_sp_prev_program_bindings.reset();
+    cmd_list.SetProgramBindings(frame_resources.GetProgramBindings());
+    cmd_list.SetVertexBuffers(frame_resources.GetVertexBufferSet());
+    cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, frame_resources.GetIndexBuffer());
 }
 
 void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture)
 {
     META_FUNCTION_TASK();
     META_UNUSED(sp_old_atlas_texture);
-    if (m_sp_font.get() != std::addressof(font) || (sp_new_atlas_texture && std::addressof(GetUIContext().GetRenderContext()) != std::addressof(sp_new_atlas_texture->GetContext())))
+    if (m_sp_font.get() != std::addressof(font) || m_frame_resources.empty() ||
+        (sp_new_atlas_texture && std::addressof(GetUIContext().GetRenderContext()) != std::addressof(sp_new_atlas_texture->GetContext())))
         return;
 
-    assert(m_sp_atlas_texture.get() == sp_old_atlas_texture.get());
-    UpdateAtlasTexture(sp_new_atlas_texture);
+    MakeFrameResourcesDirty(Dirty::Atlas);
 
     if (m_sp_text_mesh)
     {
-        // Reset text mesh along with font atlas for texture coordinates to match atlas
+        // Reset text mesh along with font atlas for texture coordinates in mesh to match atlas dimensions
         m_sp_text_mesh.reset();
-        UpdateMeshData();
+        UpdateTextMesh();
     }
 }
 
-Ptr<gfx::ProgramBindings> Text::CreateProgramBindings()
+Text::FrameResources::FrameResources(gfx::RenderState& state, gfx::RenderContext& render_context,
+                                     const Ptr<gfx::Buffer>& sp_const_buffer, const Ptr<gfx::Texture>& sp_atlas_texture, const Ptr<gfx::Sampler>& sp_atlas_sampler,
+                                     const TextMesh& text_mesh, const std::string& text_name, Data::Size reservation_multiplier)
+     : m_sp_atlas_texture(sp_atlas_texture)
 {
     META_FUNCTION_TASK();
-    if (!m_sp_uniforms_buffer || !m_sp_const_buffer || !m_sp_atlas_texture || !m_sp_texture_sampler)
-        return nullptr;
+    UpdateMeshBuffers(render_context, text_mesh, text_name, reservation_multiplier);
+    UpdateUniformsBuffer(render_context, text_mesh, text_name);
+    InitializeProgramBindings(state, sp_const_buffer, sp_atlas_sampler);
+}
 
-    return gfx::ProgramBindings::Create(m_sp_state->GetSettings().sp_program, {
+void Text::FrameResources::InitializeProgramBindings(gfx::RenderState& state, const Ptr<gfx::Buffer>& sp_const_buffer, const Ptr<gfx::Sampler>& sp_atlas_sampler)
+{
+    META_FUNCTION_TASK();
+    if (m_sp_program_bindings)
+        return;
+
+    if (!sp_const_buffer || !sp_atlas_sampler)
+        throw std::invalid_argument("Can not create text program bindings. Font atlas sampler or constant buffer is not initialized.");
+
+    if (!m_sp_atlas_texture || !m_sp_uniforms_buffer)
+        throw std::logic_error("Can not create text program bindings. Font atlas texture or uniforms buffer is not initialized.");
+
+    m_sp_program_bindings = gfx::ProgramBindings::Create(state.GetSettings().sp_program, {
         { { gfx::Shader::Type::Vertex, "g_uniforms"  }, { { m_sp_uniforms_buffer } } },
-        { { gfx::Shader::Type::Pixel,  "g_constants" }, { { m_sp_const_buffer    } } },
+        { { gfx::Shader::Type::Pixel,  "g_constants" }, { { sp_const_buffer      } } },
         { { gfx::Shader::Type::Pixel,  "g_texture"   }, { { m_sp_atlas_texture   } } },
-        { { gfx::Shader::Type::Pixel,  "g_sampler"   }, { { m_sp_texture_sampler } } },
+        { { gfx::Shader::Type::Pixel,  "g_sampler"   }, { { sp_atlas_sampler     } } },
+    });
+}
+
+gfx::BufferSet& Text::FrameResources::GetVertexBufferSet() const
+{
+    if (!m_sp_vertex_buffer_set)
+        throw std::logic_error("Text vertex buffers are not initialized.");
+
+    return *m_sp_vertex_buffer_set;
+}
+
+gfx::Buffer& Text::FrameResources::GetIndexBuffer() const
+{
+    if (!m_sp_index_buffer)
+        throw std::logic_error("Text index buffer are not initialized.");
+
+    return *m_sp_index_buffer;
+}
+
+gfx::ProgramBindings& Text::FrameResources::GetProgramBindings() const
+{
+    if (!m_sp_program_bindings)
+        throw std::logic_error("Text program bindings are not initialized.");
+
+    return *m_sp_program_bindings;
+}
+
+bool Text::FrameResources::UpdateAtlasTexture(const Ptr<gfx::Texture>& sp_new_atlas_texture)
+{
+    META_FUNCTION_TASK();
+    if (m_sp_atlas_texture.get() == sp_new_atlas_texture.get())
+        return true;
+
+    m_sp_atlas_texture = sp_new_atlas_texture;
+
+    if (!m_sp_atlas_texture)
+    {
+        m_sp_program_bindings.reset();
+        return true;
+    }
+
+    if (!m_sp_program_bindings)
+        return false;
+
+    m_sp_program_bindings->Get({ gfx::Shader::Type::Pixel, "g_texture" })->SetResourceLocations({ { m_sp_atlas_texture } });
+    m_dirty_mask &= ~Dirty::Atlas;
+    return true;
+}
+
+void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context, const TextMesh& text_mesh,
+                                             const std::string& text_name, Data::Size reservation_multiplier)
+{
+    META_FUNCTION_TASK();
+
+    // Update vertex buffer
+    const Data::Size vertices_data_size = text_mesh.GetVerticesDataSize();
+    assert(vertices_data_size);
+    if (!vertices_data_size)
+        return;
+
+    if (!m_sp_vertex_buffer_set || (*m_sp_vertex_buffer_set)[0].GetDataSize() < vertices_data_size)
+    {
+        const Data::Size vertex_buffer_size = vertices_data_size * reservation_multiplier;
+        Ptr<gfx::Buffer> sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(render_context, vertex_buffer_size, text_mesh.GetVertexSize());
+        sp_vertex_buffer->SetName(text_name + " Text Vertex Buffer");
+        m_sp_vertex_buffer_set = gfx::BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
+    }
+    (*m_sp_vertex_buffer_set)[0].SetData({
+        gfx::Resource::SubResource(
+            reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetVertices().data()), vertices_data_size,
+            gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0u, vertices_data_size)
+        )
+    });
+
+    // Update index buffer
+    const Data::Size indices_data_size = text_mesh.GetIndicesDataSize();
+    assert(indices_data_size);
+    if (!indices_data_size)
+        return;
+
+    if (!m_sp_index_buffer || m_sp_index_buffer->GetDataSize() < indices_data_size)
+    {
+        const Data::Size index_buffer_size = vertices_data_size * reservation_multiplier;
+        m_sp_index_buffer = gfx::Buffer::CreateIndexBuffer(render_context, index_buffer_size, gfx::PixelFormat::R16Uint);
+        m_sp_index_buffer->SetName(text_name + " Text Index Buffer");
+    }
+
+    m_sp_index_buffer->SetData({
+        gfx::Resource::SubResource(
+            reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetIndices().data()), indices_data_size,
+            gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0u, indices_data_size)
+        )
+    });
+
+    m_dirty_mask &= ~Dirty::Mesh;
+}
+
+void Text::FrameResources::UpdateUniformsBuffer(gfx::RenderContext& render_context, const TextMesh& text_mesh, const std::string& text_name)
+{
+    META_FUNCTION_TASK();
+    const gfx::FrameSize& content_size = text_mesh.GetContentSize();
+    if (!content_size)
+        throw std::logic_error("Text uniforms buffer can not be updated when one of content size dimensions is zero.");
+
+    gfx::Matrix44f scale_text_matrix;
+    cml::matrix_scale_2D(scale_text_matrix, 2.f / content_size.width, 2.f / content_size.height);
+
+    gfx::Matrix44f translate_text_matrix;
+    cml::matrix_translation_2D(translate_text_matrix, -1.f, 1.f);
+
+    Uniforms uniforms{
+        scale_text_matrix * translate_text_matrix
+    };
+
+    const Data::Size uniforms_data_size = static_cast<Data::Size>(sizeof(uniforms));
+
+    if (!m_sp_uniforms_buffer)
+    {
+        m_sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(render_context, gfx::Buffer::GetAlignedBufferSize(uniforms_data_size));
+        m_sp_uniforms_buffer->SetName(text_name + " Text Uniforms Buffer");
+
+        if (m_sp_program_bindings)
+        {
+            m_sp_program_bindings->Get({ gfx::Shader::Type::Vertex, "g_uniforms" })->SetResourceLocations({ { m_sp_uniforms_buffer } });
+        }
+    }
+    m_sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size } });
+
+    m_dirty_mask &= ~Dirty::Uniforms;
+}
+
+void Text::InitializeFrameResources()
+{
+    META_FUNCTION_TASK();
+    if (!m_frame_resources.empty())
+        throw std::logic_error("Frame resources have been already initialized.");
+
+    if (!m_sp_state)
+        throw std::logic_error("Text render state is not initialized.");
+
+    if (!m_sp_text_mesh)
+        throw std::logic_error("Text mesh is not initialized.");
+
+    gfx::RenderContext& render_context = GetUIContext().GetRenderContext();
+    const uint32_t frame_buffers_count = render_context.GetSettings().frame_buffers_count;
+    m_frame_resources.reserve(frame_buffers_count);
+
+    const Ptr<gfx::Texture>& sp_atlas_texture = m_sp_font->GetAtlasTexturePtr(render_context);
+    for(uint32_t frame_buffer_index = 0u; frame_buffer_index < frame_buffers_count; ++frame_buffer_index)
+    {
+        m_frame_resources.emplace_back(
+            *m_sp_state, render_context, m_sp_const_buffer, sp_atlas_texture, m_sp_atlas_sampler,
+            *m_sp_text_mesh, m_settings.name, m_settings.mesh_buffers_reservation_multiplier
+        );
+    }
+}
+
+Text::FrameResources& Text::GetCurrentFrameResources()
+{
+    META_FUNCTION_TASK();
+    const uint32_t frame_index = GetUIContext().GetRenderContext().GetFrameBufferIndex();
+    if (frame_index >= m_frame_resources.size())
+        throw std::logic_error("No resources available for current frame buffer index.");
+
+    return m_frame_resources[frame_index];
+}
+
+void Text::MakeFrameResourcesDirty(Dirty::Mask dirty_flags)
+{
+    META_FUNCTION_TASK();
+    for(FrameResources& frame_resources : m_frame_resources)
+    {
+        frame_resources.SetDirty(dirty_flags);
+    }
+}
+
+void Text::UpdateTextMesh()
+{
+    META_FUNCTION_TASK();
+    if (m_settings.text.empty())
+    {
+        m_sp_text_mesh.reset();
+        return;
+    }
+
+    // Fill font with new text chars strictly before building the text mesh, to be sure that font atlas size is up to date
+    m_sp_font->AddChars(m_settings.text);
+
+    if (!m_sp_font->GetAtlasSize())
+        return;
+
+    if (m_settings.incremental_update && m_sp_text_mesh &&
+        m_sp_text_mesh->IsUpdatable(m_settings.text, m_settings.layout, *m_sp_font, m_frame_rect.size))
+    {
+        m_sp_text_mesh->Update(m_settings.text, m_frame_rect.size);
+    }
+    else
+    {
+        m_sp_text_mesh = std::make_unique<TextMesh>(m_settings.text, m_settings.layout, *m_sp_font, m_frame_rect.size);
+    }
+
+    if (m_frame_resources.empty() && m_sp_state)
+    {
+        InitializeFrameResources();
+        return;
+    }
+    
+    MakeFrameResourcesDirty(Dirty::Mesh | Dirty::Uniforms);
+}
+
+void Text::UpdateConstantsBuffer()
+{
+    META_FUNCTION_TASK();
+    Constants constants{
+        m_settings.color
+    };
+    const Data::Size const_data_size = static_cast<Data::Size>(sizeof(constants));
+
+    if (!m_sp_const_buffer)
+    {
+        m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(GetUIContext().GetRenderContext(), gfx::Buffer::GetAlignedBufferSize(const_data_size));
+        m_sp_const_buffer->SetName(m_settings.name + " Text Constants Buffer");
+    }
+    m_sp_const_buffer->SetData({
+        gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(&constants), const_data_size)
     });
 }
 
@@ -385,152 +646,6 @@ bool Text::UpdateViewportAndItemRect(Units ui_rect_units)
         m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(viewport_rect) });
     }
     return Item::SetRect(GetUIContext().ConvertToUnits(m_frame_rect, ui_rect_units));
-}
-
-void Text::UpdateAtlasTexture(const Ptr<gfx::Texture>& sp_new_atlas_texture)
-{
-    META_FUNCTION_TASK();
-    if (m_sp_atlas_texture.get() == sp_new_atlas_texture.get())
-        return;
-
-    m_sp_atlas_texture = sp_new_atlas_texture;
-
-    // Retain previous program bindings until they are used by in flight command lists
-    m_sp_prev_program_bindings = m_sp_curr_program_bindings;
-    m_prev_program_bindings_release_on_frame = GetUIContext().GetRenderContext().GetFrameBufferIndex();
-
-    if (!m_sp_atlas_texture)
-    {
-        m_sp_curr_program_bindings.reset();
-        return;
-    }
-
-    if (m_sp_prev_program_bindings)
-    {
-        m_sp_curr_program_bindings = gfx::ProgramBindings::CreateCopy(*m_sp_prev_program_bindings, {
-            { { gfx::Shader::Type::Pixel, "g_texture" }, { { m_sp_atlas_texture } } },
-        });
-    }
-    else
-    {
-        m_sp_curr_program_bindings = CreateProgramBindings();
-    }
-}
-
-void Text::UpdateMeshData()
-{
-    META_FUNCTION_TASK();
-    if (m_settings.text.empty())
-    {
-        m_sp_text_mesh.reset();
-        return;
-    }
-
-    // Fill font with new text chars strictly before building the text mesh, to be sure that font atlas size is up to date
-    m_sp_font->AddChars(m_settings.text);
-
-    if (!m_sp_font->GetAtlasSize())
-        return;
-
-    if (m_settings.incremental_update && m_sp_text_mesh &&
-        m_sp_text_mesh->IsUpdatable(m_settings.text, m_settings.layout, *m_sp_font, m_frame_rect.size))
-    {
-        m_sp_text_mesh->Update(m_settings.text, m_frame_rect.size);
-    }
-    else
-    {
-        m_sp_text_mesh = std::make_unique<TextMesh>(m_settings.text, m_settings.layout, *m_sp_font, m_frame_rect.size);
-    }
-
-    // Update vertex buffer
-    const Data::Size vertices_data_size = m_sp_text_mesh->GetVerticesDataSize();
-    assert(vertices_data_size);
-    if (!vertices_data_size)
-        return;
-
-    if (!m_sp_vertex_buffer_set || (*m_sp_vertex_buffer_set)[0].GetDataSize() < vertices_data_size)
-    {
-        const Data::Size vertex_buffer_size = vertices_data_size * m_settings.mesh_buffers_reservation_multiplier;
-        Ptr<gfx::Buffer> sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(GetUIContext().GetRenderContext(), vertex_buffer_size, m_sp_text_mesh->GetVertexSize());
-        sp_vertex_buffer->SetName(m_settings.name + " Text Vertex Buffer");
-        m_sp_vertex_buffer_set = gfx::BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
-    }
-    (*m_sp_vertex_buffer_set)[0].SetData({
-        gfx::Resource::SubResource(
-            reinterpret_cast<Data::ConstRawPtr>(m_sp_text_mesh->GetVertices().data()), vertices_data_size,
-            gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0u, vertices_data_size)
-        )
-    });
-
-    // Update index buffer
-    const Data::Size indices_data_size = m_sp_text_mesh->GetIndicesDataSize();
-    assert(indices_data_size);
-    if (!indices_data_size)
-        return;
-
-    if (!m_sp_index_buffer || m_sp_index_buffer->GetDataSize() < indices_data_size)
-    {
-        const Data::Size index_buffer_size = vertices_data_size * m_settings.mesh_buffers_reservation_multiplier;
-        m_sp_index_buffer = gfx::Buffer::CreateIndexBuffer(GetUIContext().GetRenderContext(), index_buffer_size, gfx::PixelFormat::R16Uint);
-        m_sp_index_buffer->SetName(m_settings.name + " Text Index Buffer");
-    }
-    m_sp_index_buffer->SetData({
-        gfx::Resource::SubResource(
-            reinterpret_cast<Data::ConstRawPtr>(m_sp_text_mesh->GetIndices().data()), indices_data_size,
-            gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0u, indices_data_size)
-        )
-    });
-}
-
-void Text::UpdateUniformsBuffer()
-{
-    META_FUNCTION_TASK();
-    if (m_settings.text.empty())
-        return;
-
-    if (!m_sp_text_mesh)
-        throw std::logic_error("Text mesh must be initialized with vertex and index data.");
-
-    const gfx::FrameSize& content_size = m_sp_text_mesh->GetContentSize();
-    if (!content_size)
-        throw std::logic_error("Text uniforms buffer can not be updated when one of content size dimensions is zero.");
-
-    gfx::Matrix44f scale_text_matrix;
-    cml::matrix_scale_2D(scale_text_matrix, 2.f / content_size.width, 2.f / content_size.height);
-
-    gfx::Matrix44f translate_text_matrix;
-    cml::matrix_translation_2D(translate_text_matrix, -1.f, 1.f);
-
-    Uniforms uniforms{
-        scale_text_matrix * translate_text_matrix
-    };
-
-    const Data::Size uniforms_data_size = static_cast<Data::Size>(sizeof(uniforms));
-
-    if (!m_sp_uniforms_buffer)
-    {
-        m_sp_uniforms_buffer = gfx::Buffer::CreateConstantBuffer(GetUIContext().GetRenderContext(), gfx::Buffer::GetAlignedBufferSize(uniforms_data_size));
-        m_sp_uniforms_buffer->SetName(m_settings.name + " Text Uniforms Buffer");
-    }
-    m_sp_uniforms_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size } });
-}
-
-void Text::UpdateConstantsBuffer()
-{
-    META_FUNCTION_TASK();
-    Constants constants{
-        m_settings.color
-    };
-    const Data::Size const_data_size = static_cast<Data::Size>(sizeof(constants));
-
-    if (!m_sp_const_buffer)
-    {
-        m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(GetUIContext().GetRenderContext(), gfx::Buffer::GetAlignedBufferSize(const_data_size));
-        m_sp_const_buffer->SetName(m_settings.name + " Text Constants Buffer");
-    }
-    m_sp_const_buffer->SetData({
-        gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(&constants), const_data_size)
-    });
 }
 
 std::string Text::GetWrapName(Wrap wrap) noexcept

@@ -158,6 +158,9 @@ bool AppBase::Update()
     if (m_sp_hud && m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface)
         m_sp_hud->Update();
 
+    m_help_columns.first.Update();
+    m_help_columns.second.Update();
+    m_parameters.Update();
     return true;
 }
 
@@ -173,6 +176,15 @@ void AppBase::RenderOverlay(gfx::RenderCommandList& cmd_list)
 
     if (m_sp_logo_badge)
         m_sp_logo_badge->Draw(cmd_list);
+}
+
+void AppBase::TextItem::Update()
+{
+    META_FUNCTION_TASK();
+    if (sp_text)
+    {
+        sp_text->Update();
+    }
 }
 
 void AppBase::TextItem::Draw(gfx::RenderCommandList& cmd_list)
