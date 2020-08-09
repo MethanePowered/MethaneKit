@@ -297,7 +297,7 @@ void Text::Update()
     }
     if (frame_resources.IsDirty(Dirty::Atlas) && m_sp_font)
     {
-        if (!frame_resources.UpdateAtlasTexture(m_sp_font->GetAtlasTexturePtr(GetUIContext().GetRenderContext())))
+        if (!frame_resources.UpdateAtlasTexture(m_sp_font->GetAtlasTexturePtr(GetUIContext().GetRenderContext())) && m_sp_state)
         {
             frame_resources.InitializeProgramBindings(*m_sp_state, m_sp_const_buffer, m_sp_atlas_sampler);
         }
@@ -306,6 +306,7 @@ void Text::Update()
     {
         frame_resources.UpdateUniformsBuffer(GetUIContext().GetRenderContext(), *m_sp_text_mesh, m_settings.name);
     }
+    assert(!frame_resources.IsDirty() || !m_sp_text_mesh || !m_sp_font || !m_sp_text_mesh);
 }
 
 void Text::Draw(gfx::RenderCommandList& cmd_list)
@@ -428,8 +429,12 @@ void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context,
     const Data::Size vertices_data_size = text_mesh.GetVerticesDataSize();
     assert(vertices_data_size);
     if (!vertices_data_size)
+    {
+        m_sp_index_buffer.reset();
+        m_sp_vertex_buffer_set.reset();
         return;
-
+    }
+    
     if (!m_sp_vertex_buffer_set || (*m_sp_vertex_buffer_set)[0].GetDataSize() < vertices_data_size)
     {
         const Data::Size vertex_buffer_size = vertices_data_size * reservation_multiplier;
@@ -448,7 +453,10 @@ void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context,
     const Data::Size indices_data_size = text_mesh.GetIndicesDataSize();
     assert(indices_data_size);
     if (!indices_data_size)
+    {
+        m_sp_index_buffer.reset();
         return;
+    }
 
     if (!m_sp_index_buffer || m_sp_index_buffer->GetDataSize() < indices_data_size)
     {

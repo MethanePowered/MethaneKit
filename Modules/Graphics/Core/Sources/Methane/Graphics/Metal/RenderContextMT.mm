@@ -136,7 +136,6 @@ void RenderContextMT::WaitForGpu(WaitFor wait_for)
         dispatch_semaphore_wait(m_dispatch_semaphore, DISPATCH_TIME_FOREVER);
         OnGpuWaitComplete(wait_for);
 #endif
-        UpdateFrameBufferIndex();
         [m_frame_capture_scope beginScope];
     }
 }
@@ -169,6 +168,8 @@ void RenderContextMT::Present()
 #else
     ContextMT<RenderContextBase>::OnCpuPresentComplete(true);
 #endif
+    
+    UpdateFrameBufferIndex();
 }
 
 bool RenderContextMT::SetVSyncEnabled(bool vsync_enabled)
