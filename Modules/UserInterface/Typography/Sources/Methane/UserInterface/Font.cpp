@@ -629,13 +629,16 @@ Font::AtlasTexture Font::CreateAtlasTexture(gfx::Context& context, bool deferred
     META_FUNCTION_TASK();
     Ptr<gfx::Texture> sp_atlas_texture = gfx::Texture::CreateImage(context, gfx::Dimensions(m_sp_atlas_pack->GetSize()), 1, gfx::PixelFormat::R8Unorm, false);
     sp_atlas_texture->SetName(m_settings.description.name + " Font Atlas");
-    if (!deferred_data_init)
+    if (deferred_data_init)
+    {
+        context.RequestDeferredAction(gfx::Context::DeferredAction::CompleteInitialization);
+    }
+    else
     {
         sp_atlas_texture->SetData({
             gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size()))
         });
     }
-
     return { sp_atlas_texture, deferred_data_init };
 }
 
