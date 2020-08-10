@@ -182,7 +182,7 @@ void Text::SetTextInScreenRect(const std::u32string& text, const UnitRect& ui_re
     META_FUNCTION_TASK();
     const bool             text_changed  = m_settings.text != text;
     const UpdateRectResult update_result = UpdateRect(ui_rect, text_changed);
-    if (!text_changed && !update_result.rect_changed)
+    if (!text_changed && (!update_result.rect_changed || m_settings.text.empty()))
         return;
 
     m_settings.text = text;
@@ -191,6 +191,9 @@ void Text::SetTextInScreenRect(const std::u32string& text, const UnitRect& ui_re
     {
         UpdateTextMesh();
     }
+
+    if (m_frame_resources.empty())
+        return;
 
     FrameResources& frame_resources = GetCurrentFrameResources();
     if (!frame_resources.IsAtlasInitialized())
@@ -559,6 +562,7 @@ void Text::UpdateTextMesh()
     META_FUNCTION_TASK();
     if (m_settings.text.empty())
     {
+        m_frame_resources.clear();
         m_sp_text_mesh.reset();
         return;
     }
