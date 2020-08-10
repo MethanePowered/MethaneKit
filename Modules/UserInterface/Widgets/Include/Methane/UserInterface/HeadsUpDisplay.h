@@ -17,13 +17,13 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/UserInterface/HeadsUpDisplay.h
-HeadsUpDisplay rendering primitive.
+Heads-Up-Display widget for displaying graphics application runtime parameters.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/UserInterface/Item.h>
+#include <Methane/UserInterface/Panel.h>
 #include <Methane/UserInterface/Text.h>
 #include <Methane/UserInterface/Font.h>
 #include <Methane/Graphics/Color.hpp>
@@ -40,14 +40,16 @@ namespace Methane::UserInterface
 
 class Font;
 
-class HeadsUpDisplay : public Item
+class HeadsUpDisplay final : public Panel
 {
 public:
     struct Settings
     {
         Font::Description major_font;
+        Font::Description minor_font;
         UnitPoint         position            { 20, 20, Units::Dots };
         Color4f           text_color          { 1.f, 1.f, 1.f, 1.f };
+        UnitSize          text_margins        { 16, 8, Units::Dots };
         double            update_interval_sec = 0.33;
     };
 
@@ -58,17 +60,33 @@ public:
     void SetTextColor(const Color4f& text_color);
     void SetUpdateInterval(double update_interval_sec);
 
-    // Item overrides
-    bool SetRect(const UnitRect& rect) override;
-
     void Update();
     void Draw(gfx::RenderCommandList& cmd_list);
 
 private:
-    Settings        m_settings;
-    const Ptr<Font> m_sp_major_font;
-    Text            m_fps_text;
-    Timer           m_update_timer;
+    void LayoutTextBlocks();
+    void UpdateAllTextBlocks();
+
+    enum TextBlock : size_t
+    {
+        Fps = 0u,
+        FrameTime,
+        CpuTime,
+        GpuName,
+        HelpKey,
+        FrameBuffers,
+        VSync,
+
+        Count
+    };
+
+    using TextBlockPtrs = std::array<Ptr<Text>, TextBlock::Count>;
+
+    Settings            m_settings;
+    const Ptr<Font>     m_sp_major_font;
+    const Ptr<Font>     m_sp_minor_font;
+    const TextBlockPtrs m_text_blocks;
+    Timer               m_update_timer;
 };
 
 } // namespace Methane::UserInterface

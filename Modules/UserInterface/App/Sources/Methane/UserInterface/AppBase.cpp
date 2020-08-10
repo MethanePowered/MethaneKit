@@ -34,8 +34,9 @@ Base implementation of the Methane user interface application.
 namespace Methane::UserInterface
 {
 
-static const Font::Description g_major_font_desc = { "Major", "Fonts/RobotoMono/RobotoMono-Bold.ttf",    18u };
-static const Font::Description g_main_font_desc  = { "Main",  "Fonts/RobotoMono/RobotoMono-Regular.ttf", 10u };
+static const Font::Description g_major_font_desc = { "Major", "Fonts/RobotoMono/RobotoMono-Bold.ttf",    32u };
+static const Font::Description g_minor_font_desc = { "Minor", "Fonts/RobotoMono/RobotoMono-Regular.ttf", 10u };
+static const Font::Description g_main_font_desc  = { "Main",  "Fonts/RobotoMono/RobotoMono-Regular.ttf", 12u };
 
 static std::vector<size_t> GetLineBreakPositions(const std::string& text_str)
 {
@@ -67,7 +68,7 @@ static void SplitTextToColumns(const std::string& text_str, std::string& left_co
 AppBase::AppBase(const IApp::Settings& ui_app_settings)
     : m_app_settings(ui_app_settings)
     , m_hud_settings({
-        g_major_font_desc, ui_app_settings.text_margins
+        g_major_font_desc, g_minor_font_desc, ui_app_settings.text_margins
     })
 {
     META_FUNCTION_TASK();

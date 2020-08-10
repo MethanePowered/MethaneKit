@@ -76,6 +76,18 @@ public:
     UnitSize  ConvertToUnits(const FrameSize&  size_px,  Units units) const noexcept;
     UnitRect  ConvertToUnits(const FrameRect&  rect_px,  Units units) const noexcept;
 
+    template<typename IntegralT>
+    std::enable_if_t<std::is_integral_v<IntegralT>, IntegralT> ConvertPixelsToDots(const IntegralT& pixels) const noexcept
+    {
+        return static_cast<IntegralT>(std::round(static_cast<float>(pixels) / m_dots_to_pixels_factor));
+    }
+
+    template<typename IntegralT>
+    std::enable_if_t<std::is_integral_v<IntegralT>, IntegralT> ConvertDotsToPixels(const IntegralT& dots) const noexcept
+    {
+        return static_cast<IntegralT>(std::round(static_cast<float>(dots) * m_dots_to_pixels_factor));
+    }
+
     template<typename UnitType>
     UnitType ConvertToUnits(const UnitType& value, Units units) const noexcept
     {
