@@ -150,6 +150,7 @@ TextMesh::TextMesh(const std::u32string& text, Text::Layout layout, Font& font, 
 {
     META_FUNCTION_TASK();
     m_content_size.width = frame_size.width;
+
     Update(text, frame_size);
 }
 
@@ -196,7 +197,7 @@ void TextMesh::Update(const std::u32string& text, gfx::FrameSize& frame_size)
     }
     if (!frame_size.height)
     {
-        frame_size.height = m_content_size.height;
+        frame_size.height = m_content_size.height - GetContentTopOffset();
     }
 
     return;
@@ -459,11 +460,14 @@ void TextMesh::UpdateContentSize()
 {
     META_FUNCTION_TASK();
     m_content_size = { 0u, 0u };
-    for(uint32_t vertex_index = 2; vertex_index < m_vertices.size(); vertex_index += 4)
+    m_content_top_offset = std::numeric_limits<uint32_t>::max();
+    for(uint32_t vertex_index = 0; vertex_index < m_vertices.size(); vertex_index += 4)
     {
-        m_content_size.width  = std::max(m_content_size.width,  static_cast<uint32_t>( m_vertices[vertex_index].position[0]));
-        m_content_size.height = std::max(m_content_size.height, static_cast<uint32_t>(-m_vertices[vertex_index].position[1]));
+        m_content_top_offset  = std::min(m_content_top_offset,  static_cast<uint32_t>(-m_vertices[vertex_index].position[1]));
+        m_content_size.width  = std::max(m_content_size.width,  static_cast<uint32_t>( m_vertices[vertex_index + 2].position[0]));
+        m_content_size.height = std::max(m_content_size.height, static_cast<uint32_t>(-m_vertices[vertex_index + 2].position[1]));
     }
+
     if (m_frame_size.width)
         m_content_size.width = m_frame_size.width;
 }
@@ -471,6 +475,7 @@ void TextMesh::UpdateContentSize()
 void TextMesh::UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FramePoint& char_pos)
 {
     META_FUNCTION_TASK();
+    m_content_top_offset  = std::min(m_content_top_offset,  static_cast<uint32_t>(char_pos.GetY() + font_char.GetOffset().GetY()));
     m_content_size.width  = std::max(m_content_size.width,  char_pos.GetX() + font_char.GetVisualSize().width);
     m_content_size.height = std::max(m_content_size.height, char_pos.GetY() + font_char.GetVisualSize().height);
 }

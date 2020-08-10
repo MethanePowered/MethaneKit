@@ -64,20 +64,21 @@ public:
     bool IsUpdatable(const std::u32string& text, const Text::Layout& layout, Font& font, const gfx::FrameSize& viewport_size) const noexcept;
     void Update(const std::u32string& text, gfx::FrameSize& viewport_size);
 
-    const std::u32string& GetText() const noexcept          { return m_text; }
-    Font&                 GetFont() noexcept                { return m_font; }
-    Text::Layout          GetLayout() const noexcept        { return m_layout; }
-    const gfx::FrameSize& GetFrameSize() const noexcept     { return m_frame_size; }
-    const gfx::FrameSize& GetContentSize() const noexcept   { return m_content_size; }
+    const std::u32string& GetText() const noexcept              { return m_text; }
+    Font&                 GetFont() noexcept                    { return m_font; }
+    Text::Layout          GetLayout() const noexcept            { return m_layout; }
+    const gfx::FrameSize& GetFrameSize() const noexcept         { return m_frame_size; }
+    const gfx::FrameSize& GetContentSize() const noexcept       { return m_content_size; }
+    uint32_t              GetContentTopOffset() const noexcept  { return m_content_top_offset == std::numeric_limits<uint32_t>::max() ? 0u : m_content_top_offset; }
 
-    const Vertices& GetVertices() const noexcept            { return m_vertices; }
-    const Indices&  GetIndices() const noexcept             { return m_indices; }
+    const Vertices& GetVertices() const noexcept                { return m_vertices; }
+    const Indices&  GetIndices() const noexcept                 { return m_indices; }
 
-    Data::Size      GetVertexSize() const noexcept          { return static_cast<Data::Size>(sizeof(Vertex)); }
-    Data::Size      GetVerticesDataSize() const noexcept    { return static_cast<Data::Size>(m_vertices.size() * sizeof(Vertex)); }
+    Data::Size      GetVertexSize() const noexcept              { return static_cast<Data::Size>(sizeof(Vertex)); }
+    Data::Size      GetVerticesDataSize() const noexcept        { return static_cast<Data::Size>(m_vertices.size() * sizeof(Vertex)); }
 
-    Data::Size      GetIndexSize() const noexcept           { return static_cast<Data::Size>(sizeof(Index)); }
-    Data::Size      GetIndicesDataSize() const noexcept     { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
+    Data::Size      GetIndexSize() const noexcept               { return static_cast<Data::Size>(sizeof(Index)); }
+    Data::Size      GetIndicesDataSize() const noexcept         { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
 
 private:
     void EraseTrailingChars(size_t erase_chars_count, bool fixup_whitespace, bool update_alignment_and_content_size);
@@ -96,6 +97,7 @@ private:
     const Text::Layout   m_layout;
     const gfx::FrameSize m_frame_size;
     gfx::FrameSize       m_content_size;
+    uint32_t             m_content_top_offset = std::numeric_limits<uint32_t>::max(); // minimum distance from frame top border to character quads in first text line
     CharPositions        m_char_positions; // char positions without any hor/ver alignment
     size_t               m_last_whitespace_index = std::string::npos;
     size_t               m_last_line_start_index = 0u;

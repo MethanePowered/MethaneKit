@@ -34,9 +34,9 @@ Base implementation of the Methane user interface application.
 namespace Methane::UserInterface
 {
 
-static const Font::Description g_major_font_desc = { "Major", "Fonts/RobotoMono/RobotoMono-Bold.ttf",    32u };
-static const Font::Description g_minor_font_desc = { "Minor", "Fonts/RobotoMono/RobotoMono-Regular.ttf", 10u };
-static const Font::Description g_main_font_desc  = { "Main",  "Fonts/RobotoMono/RobotoMono-Regular.ttf", 12u };
+static const Font::Description g_major_font_desc = { "Major", "Fonts/RobotoMono/RobotoMono-Bold.ttf",    24u };
+static const Font::Description g_minor_font_desc = { "Minor", "Fonts/RobotoMono/RobotoMono-Regular.ttf", 8u };
+static const Font::Description g_main_font_desc  = { "Main",  "Fonts/RobotoMono/RobotoMono-Regular.ttf", 10u };
 
 static std::vector<size_t> GetLineBreakPositions(const std::string& text_str)
 {

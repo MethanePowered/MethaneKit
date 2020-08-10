@@ -616,7 +616,7 @@ FrameRect Text::GetAlignedViewportRect()
     if (!m_sp_text_mesh)
         throw std::logic_error("Text mesh must be initialized.");
 
-    const FrameSize& content_size = m_sp_text_mesh->GetContentSize();
+    FrameSize content_size = m_sp_text_mesh->GetContentSize();
     if (!content_size)
         throw std::logic_error("All dimension of text content size should be non-zero.");
 
@@ -626,13 +626,19 @@ FrameRect Text::GetAlignedViewportRect()
     // Position viewport rect inside frame rect based on text alignment
     FrameRect viewport_rect(m_frame_rect.origin, content_size);
 
+    // Apply vertical offset to make top of content match the rect top coordinate
+    const uint32_t content_top_offset = m_sp_text_mesh->GetContentTopOffset();
+    assert(content_top_offset <= content_size.height);
+    content_size.height -= content_top_offset;
+    viewport_rect.origin.SetY(m_frame_rect.origin.GetY() - content_top_offset);
+
     if (content_size.width != m_frame_rect.size.width)
     {
         switch (m_settings.layout.horizontal_alignment)
         {
         case HorizontalAlignment::Left:   break;
-        case HorizontalAlignment::Right:  viewport_rect.origin.SetX(m_frame_rect.origin.GetX() + Data::AbsSubtract(m_frame_rect.size.width, content_size.width)); break;
-        case HorizontalAlignment::Center: viewport_rect.origin.SetX(m_frame_rect.origin.GetX() + Data::AbsSubtract(m_frame_rect.size.width, content_size.width) / 2); break;
+        case HorizontalAlignment::Right:  viewport_rect.origin.SetX(viewport_rect.origin.GetX() + Data::AbsSubtract(m_frame_rect.size.width, content_size.width)); break;
+        case HorizontalAlignment::Center: viewport_rect.origin.SetX(viewport_rect.origin.GetX() + Data::AbsSubtract(m_frame_rect.size.width, content_size.width) / 2); break;
         }
     }
     if (content_size.height != m_frame_rect.size.height)
@@ -640,8 +646,8 @@ FrameRect Text::GetAlignedViewportRect()
         switch (m_settings.layout.vertical_alignment)
         {
         case VerticalAlignment::Top:      break;
-        case VerticalAlignment::Bottom:   viewport_rect.origin.SetY(m_frame_rect.origin.GetY() + Data::AbsSubtract(m_frame_rect.size.height, content_size.height)); break;
-        case VerticalAlignment::Center:   viewport_rect.origin.SetY(m_frame_rect.origin.GetY() + Data::AbsSubtract(m_frame_rect.size.height, content_size.height) / 2); break;
+        case VerticalAlignment::Bottom:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + Data::AbsSubtract(m_frame_rect.size.height, content_size.height)); break;
+        case VerticalAlignment::Center:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + Data::AbsSubtract(m_frame_rect.size.height, content_size.height) / 2); break;
         }
     }
 

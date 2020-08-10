@@ -74,8 +74,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
             Font::Settings
             {
                 m_settings.major_font,
-                GetUIContext().GetFontResolutionDpi(),
-                Font::GetAlphabetDefault()
+                GetUIContext().GetFontResolutionDpi()
             }
         ).GetPtr()
     )
@@ -84,8 +83,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
             Font::Settings
             {
                 m_settings.minor_font,
-                GetUIContext().GetFontResolutionDpi(),
-                Font::GetAlphabetDefault()
+                GetUIContext().GetFontResolutionDpi()
             }
         ).GetPtr()
     )
@@ -96,7 +94,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
                 "FPS",
                 "000 FPS",
                 UnitRect{ { }, { 0u, GetFpsTextHeightInDots(ui_context, *m_sp_major_font, *m_sp_minor_font, m_settings.text_margins) }, Units::Dots },
-                Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Top },
+                Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Center },
                 m_settings.text_color
             }
         ),
@@ -126,7 +124,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
                 "GPU",
                 "Graphics Adapter",
                 UnitRect{ },
-                Text::Layout{ Text::Wrap::None },
+                Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Center },
                 m_settings.text_color
             }
         ),
@@ -136,7 +134,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
                 "Help",
                 "F1 - Help",
                 UnitRect{ },
-                Text::Layout{ Text::Wrap::None },
+                Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Center },
                 m_settings.text_color
             }
         ),
@@ -146,7 +144,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
                 "Frame Buffers",
                 "0000 x 0000   3 FB",
                 UnitRect{ },
-                Text::Layout{ Text::Wrap::None },
+                Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Center },
                 m_settings.text_color
             }
         ),
@@ -156,7 +154,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
                 "VSync",
                 "VSync ON",
                 UnitRect{ },
-                Text::Layout{ Text::Wrap::None },
+                Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Center },
                 m_settings.text_color
             }
         )
