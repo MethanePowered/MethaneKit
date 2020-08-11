@@ -52,9 +52,9 @@ void ReleasePool::AddResource(UniquePtr<RetainedResource>&& retained_resource)
         uint32_t frame_index = render_context.GetFrameBufferIndex();
         if (render_context.IsFrameBufferInUse())
         {
-            // If object was removed while current frame buffer is in use (rendering was not started yet)
-            // then it should be removed on next frame buffer - on next cycle of swap-chain
-            frame_index = (frame_index + 1) % render_context.GetSettings().frame_buffers_count;
+            // If object was removed while current frame buffer is in use (encoding has completed and issued for rendering on GPU)
+            // then it should be removed on previous frame index (in one swap-chain cycle)
+            frame_index = (frame_index ? frame_index : render_context.GetSettings().frame_buffers_count) - 1;
         }
 
         m_frame_resources[frame_index].emplace_back(std::move(retained_resource));
