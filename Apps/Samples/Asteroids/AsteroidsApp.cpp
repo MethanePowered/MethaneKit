@@ -91,7 +91,8 @@ static const std::map<pal::Keyboard::State, AsteroidsAppAction> g_asteroids_acti
 AsteroidsApp::AsteroidsApp()
     : UserInterfaceApp(
         Samples::GetGraphicsAppSettings("Methane Asteroids", true /* animations */, true /* depth */, 0.f /* depth clear */, { /* color clearing disabled */ }),
-        { }, "Methane Asteroids sample is demonstrating parallel rendering\nof massive asteroids field dynamic simulation.")
+        { HeadsUpDisplayMode::UserInterface, true },
+        "Methane Asteroids sample is demonstrating parallel rendering\nof massive asteroids field dynamic simulation.")
     , m_view_camera(GetAnimations(), gfx::ActionCamera::Pivot::Aim)
     , m_light_camera(m_view_camera, GetAnimations(), gfx::ActionCamera::Pivot::Aim)
     , m_scene_scale(15.f)

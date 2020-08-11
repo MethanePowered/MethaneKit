@@ -104,12 +104,52 @@ public:
         
         return help_lines;
     }
+
+    Keyboard::State GetKeyboardStateByAction(ActionEnum action) const noexcept
+    {
+        META_FUNCTION_TASK();
+        const State& key_state = GetKeyboardStateByAction(m_action_by_keyboard_state, action);
+        if (key_state)
+            return key_state;
+
+        const Key key = GetKeyboardKeyByAction(m_action_by_keyboard_key, action);
+        if (key != Key::Unknown)
+            return Keyboard::State({ key });
+
+        return Keyboard::State();
+    }
+
+    static const State& GetKeyboardStateByAction(const ActionByKeyboardState& action_by_keyboard_state, ActionEnum action) noexcept
+    {
+        META_FUNCTION_TASK();
+        const auto action_by_keyboard_state_it = std::find_if(
+            action_by_keyboard_state.begin(), action_by_keyboard_state.end(),
+            [action](const auto& keyboard_state_and_action) { return keyboard_state_and_action.second == action; }
+        );
+
+        static const Keyboard::State empty_state;
+        return action_by_keyboard_state_it == action_by_keyboard_state.end() ? empty_state : action_by_keyboard_state_it->first;
+    }
+
+    static Key GetKeyboardKeyByAction(const ActionByKeyboardKey& action_by_key, ActionEnum action) noexcept
+    {
+        META_FUNCTION_TASK();
+        const auto action_by_key_it = std::find_if(
+            action_by_key.begin(), action_by_key.end(),
+            [action](const auto& key_and_action) { return key_and_action.second == action; }
+        );
+
+        return action_by_key_it == action_by_key.end() ? Key::Unknown : action_by_key_it->first;
+    }
     
 protected:
     // Keyboard::ActionControllerBase interface
     virtual void        OnKeyboardKeyAction(ActionEnum action, KeyState key_state) = 0;
     virtual void        OnKeyboardStateAction(ActionEnum action) = 0;
     virtual std::string GetKeyboardActionName(ActionEnum action) const = 0;
+
+    const ActionByKeyboardKey&   GetActionByKeyboardKey() const noexcept   { return m_action_by_keyboard_key; }
+    const ActionByKeyboardState& GetActionByKeyboardState() const noexcept { return m_action_by_keyboard_state; }
     
     ActionEnum GetKeyboardActionByState(State state) const
     {
@@ -126,7 +166,8 @@ protected:
         return (action_by_keyboard_key_it != m_action_by_keyboard_key.end())
         ? action_by_keyboard_key_it->second : ActionEnum::None;
     }
-    
+
+private:
     ActionByKeyboardKey   m_action_by_keyboard_key;
     ActionByKeyboardState m_action_by_keyboard_state;
 };

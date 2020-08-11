@@ -132,10 +132,10 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
             Text::SettingsUtf8
             {
                 "Help",
-                "F1 - Help",
+                m_settings.help_shortcut ? m_settings.help_shortcut.ToString() + " - Help" : "",
                 UnitRect{ },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Center },
-                m_settings.text_color
+                m_settings.help_color
             }
         ),
         std::make_shared<Text>(ui_context, *m_sp_minor_font,
@@ -155,17 +155,21 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
                 "VSync ON",
                 UnitRect{ },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Center },
-                m_settings.text_color
+                m_settings.on_color
             }
         )
     })
 {
     META_FUNCTION_TASK();
+
+    // Add HUD text blocks as children to the base panel container
     for(const Ptr<Text>& sp_text : m_text_blocks)
     {
         AddChild(*sp_text);
     }
-    LayoutTextBlocks();
+
+    // Reset timer behind so that HUD is filled with actual values on first update
+    m_update_timer.ResetToSeconds(m_settings.update_interval_sec);
 }
 
 void HeadsUpDisplay::SetTextColor(const gfx::Color4f& text_color)
@@ -201,7 +205,8 @@ void HeadsUpDisplay::Update()
     const gfx::RenderContext::Settings& context_settings = GetUIContext().GetRenderContext().GetSettings();
 
     std::stringstream frame_buffers_ss;
-    frame_buffers_ss << context_settings.frame_size.width << " x " << context_settings.frame_size.height << "    " << context_settings.frame_buffers_count << " FB";
+    frame_buffers_ss << context_settings.frame_size.width << " x " << context_settings.frame_size.height << "    "
+                     << context_settings.frame_buffers_count << " FB";
 
     m_text_blocks[TextBlock::Fps]->SetText(std::to_string(fps_counter.GetFramesPerSecond()) + " FPS");
     m_text_blocks[TextBlock::FrameTime]->SetText(ToStringWithPrecision(fps_counter.GetAverageFrameTiming().GetTotalTimeMSec(), 2) + " ms");
@@ -209,6 +214,7 @@ void HeadsUpDisplay::Update()
     m_text_blocks[TextBlock::GpuName]->SetText(GetUIContext().GetRenderContext().GetDevice().GetAdapterName());
     m_text_blocks[TextBlock::FrameBuffers]->SetText(frame_buffers_ss.str());
     m_text_blocks[TextBlock::VSync]->SetText(context_settings.vsync_enabled ? "VSync ON" : "VSync OFF");
+    m_text_blocks[TextBlock::VSync]->SetColor(context_settings.vsync_enabled ? m_settings.on_color : m_settings.off_color);
 
     LayoutTextBlocks();
     UpdateAllTextBlocks();

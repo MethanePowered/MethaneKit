@@ -54,20 +54,20 @@ public:
     bool SetHelpText(const std::string& help_str);
     bool SetParametersText(const std::string& parameters_str);
 
-    bool IsHelpTextDisplayed() const noexcept                               { return !!m_help_columns.first.sp_text; }
-    bool IsParametersTextDisplayed() const noexcept                         { return !!m_parameters.sp_text; }
+    bool IsHelpTextDisplayed() const noexcept                    { return !!m_help_columns.first.sp_text; }
+    bool IsParametersTextDisplayed() const noexcept              { return !!m_parameters.sp_text; }
     void GetParametersText(const std::string& parameters_str);
     Font& GetMainFont();
 
-    const IApp::Settings& GetAppSettings() const noexcept    { return m_app_settings; }
+    const IApp::Settings& GetAppSettings() const noexcept        { return m_app_settings; }
 
-    HeadsUpDisplay::Settings&            GetHeadsUpDisplaySettings()        { return m_hud_settings; }
-    HeadsUpDisplay*                      GetHeadsUpDisplay() const noexcept { return m_sp_hud.get(); }
+    HeadsUpDisplay::Settings& GetHeadsUpDisplaySettings()        { return m_app_settings.hud_settings; }
+    HeadsUpDisplay*           GetHeadsUpDisplay() const noexcept { return m_sp_hud.get(); }
 
 protected:
-    IApp::Settings& GetAppSettings() noexcept                { return m_app_settings; }
-    const Context&                 GetUIContext() const noexcept            { return *m_sp_ui_context; }
-    Context&                       GetUIContext() noexcept                  { return *m_sp_ui_context; }
+    IApp::Settings& GetAppSettings() noexcept                    { return m_app_settings; }
+    const Context&  GetUIContext() const noexcept                { return *m_sp_ui_context; }
+    Context&        GetUIContext() noexcept                      { return *m_sp_ui_context; }
 
 private:
     struct TextItem
@@ -88,7 +88,6 @@ private:
 
     UniquePtr<Context>             m_sp_ui_context;
     IApp::Settings                 m_app_settings;
-    HeadsUpDisplay::Settings       m_hud_settings;
     UnitSize                       m_frame_size;
     UnitPoint                      m_text_margins;
     Ptr<Badge>                     m_sp_logo_badge;

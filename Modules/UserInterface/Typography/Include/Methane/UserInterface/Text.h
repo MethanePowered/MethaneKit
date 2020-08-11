@@ -209,7 +209,6 @@ private:
     Ptr<gfx::Buffer>            m_sp_const_buffer;
     Ptr<gfx::Sampler>           m_sp_atlas_sampler;
     std::vector<FrameResources> m_frame_resources;
-    bool                        m_is_rendering = false;
 };
 
 } // namespace Methane::Graphics

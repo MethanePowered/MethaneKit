@@ -34,10 +34,6 @@ Base implementation of the Methane user interface application.
 namespace Methane::UserInterface
 {
 
-static const Font::Description g_major_font_desc = { "Major", "Fonts/RobotoMono/RobotoMono-Bold.ttf",    24u };
-static const Font::Description g_minor_font_desc = { "Minor", "Fonts/RobotoMono/RobotoMono-Regular.ttf", 8u };
-static const Font::Description g_main_font_desc  = { "Main",  "Fonts/RobotoMono/RobotoMono-Regular.ttf", 10u };
-
 static std::vector<size_t> GetLineBreakPositions(const std::string& text_str)
 {
     std::vector<size_t> line_break_positions;
@@ -67,12 +63,8 @@ static void SplitTextToColumns(const std::string& text_str, std::string& left_co
 
 AppBase::AppBase(const IApp::Settings& ui_app_settings)
     : m_app_settings(ui_app_settings)
-    , m_hud_settings({
-        g_major_font_desc, g_minor_font_desc, ui_app_settings.text_margins
-    })
 {
     META_FUNCTION_TASK();
-    m_hud_settings.text_color = m_app_settings.text_color;
     m_help_columns.first.text_name  = "Help Left";
     m_help_columns.second.text_name = "Help Right";
     m_parameters.text_name          = "Parameters";
@@ -104,10 +96,10 @@ void AppBase::Init(gfx::RenderContext& render_context, const gfx::FrameSize& fra
     }
 
     // Create heads-up-display (HUD)
-    m_hud_settings.position = m_app_settings.text_margins;
+    m_app_settings.hud_settings.position = m_app_settings.text_margins;
     if (m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface)
     {
-        m_sp_hud = std::make_shared<HeadsUpDisplay>(*m_sp_ui_context, Data::FontProvider::Get(), m_hud_settings);
+        m_sp_hud = std::make_shared<HeadsUpDisplay>(*m_sp_ui_context, Data::FontProvider::Get(), m_app_settings.hud_settings);
     }
 
     // Update displayed text blocks
@@ -222,12 +214,12 @@ bool AppBase::SetHeadsUpDisplayMode(IApp::HeadsUpDisplayMode heads_up_display_mo
 
     if (m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface && m_sp_ui_context)
     {
-        m_sp_hud = std::make_shared<HeadsUpDisplay>(*m_sp_ui_context, Data::FontProvider::Get(), m_hud_settings);
+        m_sp_hud = std::make_shared<HeadsUpDisplay>(*m_sp_ui_context, Data::FontProvider::Get(), m_app_settings.hud_settings);
     }
     else
     {
         m_sp_hud.reset();
-        Font::Library::Get().RemoveFont(m_hud_settings.major_font.name);
+        Font::Library::Get().RemoveFont(m_app_settings.hud_settings.major_font.name);
     }
     return true;
 }
@@ -302,7 +294,7 @@ bool AppBase::UpdateTextItem(TextItem& item)
         // If main font is hold only by this class and Font::Library, then it can be removed as unused
         if (m_sp_main_font.use_count() == 2)
         {
-            Font::Library::Get().RemoveFont(g_main_font_desc.name);
+            Font::Library::Get().RemoveFont(m_app_settings.main_font.name);
             m_sp_main_font.reset();
         }
         return false;
@@ -397,7 +389,7 @@ Font& AppBase::GetMainFont()
 
     m_sp_main_font = Font::Library::Get().GetFont(
         Data::FontProvider::Get(),
-        Font::Settings{ g_main_font_desc, m_sp_ui_context->GetFontResolutionDpi(), Font::GetAlphabetDefault() }
+        Font::Settings{ m_app_settings.main_font, m_sp_ui_context->GetFontResolutionDpi(), Font::GetAlphabetDefault() }
     ).GetPtr();
     return *m_sp_main_font;
 }
