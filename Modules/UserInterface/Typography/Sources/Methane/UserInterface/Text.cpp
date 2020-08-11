@@ -319,7 +319,7 @@ void Text::Draw(gfx::RenderCommandList& cmd_list)
         return;
 
     FrameResources& frame_resources = GetCurrentFrameResources();
-    if (!frame_resources.IsInitializedAndClean())
+    if (!frame_resources.IsInitialized())
         return;
 
     cmd_list.Reset(m_sp_state);
@@ -343,6 +343,13 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& sp_old_a
         // Reset text mesh along with font atlas for texture coordinates in mesh to match atlas dimensions
         m_sp_text_mesh.reset();
         UpdateTextMesh();
+    }
+
+    if (GetUIContext().GetRenderContext().IsCompletingInitialization())
+    {
+        // If font atlas was auto-updated on context initialization complete,
+        // the atlas texture and mesh buffers need to be updated now for current frame rendering
+        Update();
     }
 }
 

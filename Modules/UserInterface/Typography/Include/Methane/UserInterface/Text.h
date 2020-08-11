@@ -163,7 +163,7 @@ private:
         void SetDirty(Dirty::Mask dirty_flags) noexcept         { m_dirty_mask |= dirty_flags; }
         bool IsDirty() const noexcept                           { return m_dirty_mask != Dirty::None; }
         bool IsDirty(Dirty::Mask dirty_flags) const noexcept    { return m_dirty_mask & dirty_flags; }
-        bool IsInitializedAndClean() const noexcept             { return m_sp_program_bindings && m_sp_vertex_buffer_set && m_sp_index_buffer && !IsDirty(); }
+        bool IsInitialized() const noexcept                     { return m_sp_program_bindings && m_sp_vertex_buffer_set && m_sp_index_buffer; }
         bool IsAtlasInitialized() const noexcept                { return !!m_sp_atlas_texture; }
 
         gfx::BufferSet&       GetVertexBufferSet() const;
@@ -209,6 +209,7 @@ private:
     Ptr<gfx::Buffer>            m_sp_const_buffer;
     Ptr<gfx::Sampler>           m_sp_atlas_sampler;
     std::vector<FrameResources> m_frame_resources;
+    bool                        m_is_rendering = false;
 };
 
 } // namespace Methane::Graphics

@@ -61,6 +61,7 @@ public:
     tf::Executor&    GetParallelExecutor() const noexcept override           { return m_parallel_executor; }
     void             RequestDeferredAction(DeferredAction action) const noexcept override;
     void             CompleteInitialization() override;
+    bool             IsCompletingInitialization() const noexcept override    { return m_is_completing_initialization; }
     void             WaitForGpu(WaitFor wait_for) override;
     void             Reset(Device& device) override;
     void             Reset() override;

@@ -82,6 +82,7 @@ struct Context
     virtual tf::Executor& GetParallelExecutor() const noexcept = 0;
     virtual void RequestDeferredAction(DeferredAction action) const noexcept = 0;
     virtual void CompleteInitialization() = 0;
+    virtual bool IsCompletingInitialization() const noexcept = 0;
     virtual void WaitForGpu(WaitFor wait_for) = 0;
     virtual void Reset(Device& device) = 0;
     virtual void Reset() = 0;
