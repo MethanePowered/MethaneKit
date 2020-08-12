@@ -451,8 +451,11 @@ const Font::Char& Font::AddChar(Char::Code char_code)
     auto font_char_it = m_char_by_code.emplace(char_code, m_sp_face->LoadChar(char_code)).first;
     assert(font_char_it != m_char_by_code.end());
 
-    // Attempt to pack new char into existing atlas
     Char& new_font_char = font_char_it->second;
+    m_max_glyph_size.width  = std::max(m_max_glyph_size.width,  new_font_char.GetRect().size.width);
+    m_max_glyph_size.height = std::max(m_max_glyph_size.height, new_font_char.GetRect().size.height);
+
+    // Attempt to pack new char into existing atlas
     if (m_sp_atlas_pack && m_sp_atlas_pack->TryPack(new_font_char))
     {
         // Draw char to existing atlas bitmap and update textures;

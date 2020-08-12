@@ -26,7 +26,6 @@ Interface of the base user interface application template class defined in App.h
 #include <Methane/Graphics/App.h>
 #include <Methane/UserInterface/Types.hpp>
 #include <Methane/UserInterface/HeadsUpDisplay.h>
-#include <Methane/Platform/AppController.h>
 
 namespace Methane::UserInterface
 {
@@ -50,11 +49,7 @@ struct IApp : Graphics::IApp
         Color4f                  text_color            { 1.f, 1.f, 1.f, 1.f };
         UnitPoint                text_margins          { 20, 20, Units::Dots };
         Font::Description        main_font             { "Main",  "Fonts/RobotoMono/RobotoMono-Regular.ttf", 11u };
-        HeadsUpDisplay::Settings hud_settings          = []() {
-            HeadsUpDisplay::Settings hud_settings;
-            hud_settings.help_shortcut = Platform::AppController::GetKeyboardStateByAction(Platform::AppController::default_action_by_keyboard_state, Platform::AppAction::ShowControlsHelp);
-            return hud_settings;
-        }();
+        HeadsUpDisplay::Settings hud_settings;
     };
 
     virtual const IApp::Settings& GetUserInterfaceAppSettings() const noexcept = 0;

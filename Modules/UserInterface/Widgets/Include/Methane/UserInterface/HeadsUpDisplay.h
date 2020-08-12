@@ -55,7 +55,7 @@ public:
         Color4f                   off_color           { 1.f,  0.3f, 0.3f, 1.f   };
         Color4f                   help_color          { 1.f,  1.f,  0.0f, 1.f   };
         Color4f                   background_color    { 0.f,  0.f,  0.f,  0.66f };
-        Platform::Keyboard::State help_shortcut       { };
+        Platform::Keyboard::State help_shortcut       { Platform::Keyboard::Key::F1 };
         double                    update_interval_sec = 0.33;
     };
 

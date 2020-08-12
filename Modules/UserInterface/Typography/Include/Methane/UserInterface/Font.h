@@ -189,6 +189,7 @@ public:
     Chars                    GetTextChars(const std::u32string& text);
     gfx:: FramePoint         GetKerning(const Char& left_char, const Char& right_char) const;
     uint32_t                 GetLineHeight() const noexcept;
+    const gfx::FrameSize&    GetMaxGlyphSize() const noexcept { return m_max_glyph_size; }
     const gfx::FrameSize&    GetAtlasSize() const noexcept;
     const Ptr<gfx::Texture>& GetAtlasTexturePtr(gfx::Context& context);
     gfx::Texture&            GetAtlasTexture(gfx::Context& context);
@@ -230,6 +231,7 @@ private:
     CharByCode             m_char_by_code;
     Data::Bytes            m_atlas_bitmap;
     TextureByContext       m_atlas_textures;
+    gfx::FrameSize         m_max_glyph_size;
 };
 
 } // namespace Methane::Graphics
