@@ -37,6 +37,7 @@ DirectX 12 implementation of the command queue interface.
 #include <mutex>
 #include <atomic>
 #include <condition_variable>
+#include <exception>
 
 namespace Methane::Graphics
 {
@@ -75,6 +76,7 @@ private:
     std::condition_variable_any       m_execution_waiting_condition_var;
     std::atomic<bool>                 m_execution_waiting{ true };
     std::thread                       m_execution_waiting_thread;
+    std::exception_ptr                m_sp_execution_waiting_exception;
     Ptr<TimestampQueryBuffer>         m_sp_timestamp_query_buffer;
 };
 

@@ -142,7 +142,7 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
         throw std::logic_error("Can not reset command list in committed or executing state.");
 
     // NOTE: ResetCommandState() must be called from the top-most overridden Reset method
-    m_state = State::Encoding;
+    SetCommandListStateNoLock(State::Encoding);
 
     META_LOG(GetTypeName(m_type) + " Command list \"" + GetName() + "\" RESET for commands encoding.");
 
@@ -185,8 +185,8 @@ void CommandListBase::Commit()
     META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" COMMIT on frame " + std::to_string(GetCurrentFrameIndex()));
 
     m_committed_frame_index = GetCurrentFrameIndex();
-    m_state = State::Committed;
-    m_state_change_condition_var.notify_one();
+
+    SetCommandListStateNoLock(State::Committed);
 
     if (!m_open_debug_groups.empty())
     {
@@ -199,6 +199,9 @@ void CommandListBase::WaitUntilCompleted(uint32_t timeout_ms)
     META_FUNCTION_TASK();
     std::unique_lock<LockableBase(std::mutex)> pending_state_lock(m_state_change_mutex);
     const auto is_completed = [this] { return m_state != State::Executing; };
+    if (is_completed())
+        return;
+
     if (timeout_ms == 0u)
     {
         m_state_change_condition_var.wait(pending_state_lock, is_completed);
@@ -223,27 +226,28 @@ void CommandListBase::Execute(uint32_t frame_index, const CompletedCallback& com
     META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" EXECUTE on frame " + std::to_string(frame_index));
 
     m_completed_callback = completed_callback;
-    m_state = State::Executing;
-    m_state_change_condition_var.notify_one();
+
+    SetCommandListStateNoLock(State::Executing);
 }
 
 void CommandListBase::Complete(uint32_t frame_index)
 {
     META_FUNCTION_TASK();
-    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
+    {
+        std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
 
-    if (m_state != State::Executing)
-        throw std::logic_error(GetTypeName() + " Command list \"" + GetName() + "\" in " + GetStateName(m_state) + " state can not be completed. Only Executing command lists can be completed.");
+        if (m_state != State::Executing)
+            throw std::logic_error(GetTypeName() + " Command list \"" + GetName() + "\" in " + GetStateName(m_state) + " state can not be completed. Only Executing command lists can be completed.");
 
-    if (m_committed_frame_index != frame_index)
-        throw std::logic_error(GetTypeName() + " Command list \"" + GetName() + "\" committed on frame " + std::to_string(m_committed_frame_index) + " can not be completed on frame " + std::to_string(frame_index));
+        if (m_committed_frame_index != frame_index)
+            throw std::logic_error(GetTypeName() + " Command list \"" + GetName() + "\" committed on frame " + std::to_string(m_committed_frame_index) + " can not be completed on frame " + std::to_string(frame_index));
 
-    m_state = State::Pending;
-    m_state_change_condition_var.notify_one();
+        SetCommandListStateNoLock(State::Pending);
 
-    TRACY_GPU_SCOPE_COMPLETE(m_tracy_gpu_scope, GetGpuTimeRange(false));
-    META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" was COMPLETED on frame " + std::to_string(frame_index) +
-             ", GPU time range: " + static_cast<std::string>(GetGpuTimeRange(true)));
+        TRACY_GPU_SCOPE_COMPLETE(m_tracy_gpu_scope, GetGpuTimeRange(false));
+        META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" was COMPLETED on frame " + std::to_string(frame_index) +
+                 ", GPU time range: " + static_cast<std::string>(GetGpuTimeRange(true)));
+    }
 
     if (m_completed_callback)
         m_completed_callback(*this);
@@ -270,8 +274,23 @@ void CommandListBase::ClearOpenDebugGroups()
     }
 }
 
+void CommandListBase::SetCommandListState(State state)
+{
+    META_FUNCTION_TASK();
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
+    SetCommandListStateNoLock(state);
+}
+
+void CommandListBase::SetCommandListStateNoLock(State state)
+{
+    META_FUNCTION_TASK();
+    m_state = state;
+    m_state_change_condition_var.notify_one();
+}
+
 void CommandListBase::VerifyEncodingState() const
 {
+    META_FUNCTION_TASK();
     if (m_state != State::Encoding)
     {
         throw std::logic_error(GetTypeName() + " Command list encoding is not possible in \"" + GetStateName(m_state) + "\" state.");

@@ -117,7 +117,8 @@ protected:
     CommandState&       GetCommandState()           { return m_command_state; }
     const CommandState& GetCommandState() const     { return m_command_state; }
 
-    void        SetCommandListState(State state)            { m_state = state; }
+    void        SetCommandListState(State state);
+    void        SetCommandListStateNoLock(State state);
     void        VerifyEncodingState() const;
     bool        IsExecutingOnAnyFrame() const;
     bool        IsCommitted(uint32_t frame_index) const;

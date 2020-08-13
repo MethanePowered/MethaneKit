@@ -34,6 +34,7 @@ DirectX 12 implementation of the command queue interface.
 #include <Methane/Graphics/Windows/Primitives.h>
 
 #include <nowide/convert.hpp>
+#include <stdexcept>
 #include <cassert>
 
 namespace Methane::Graphics
@@ -114,8 +115,20 @@ CommandQueueDX::~CommandQueueDX()
 void CommandQueueDX::Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
-
     CommandQueueBase::Execute(command_lists, completed_callback);
+
+    if (!m_execution_waiting)
+    {
+        m_execution_waiting_thread.join();
+        if (m_sp_execution_waiting_exception)
+        {
+            std::rethrow_exception(m_sp_execution_waiting_exception);
+        }
+        else
+        {
+            throw std::logic_error("Command queue \"" + GetName() + "\" execution waiting thread has unexpectedly finished.");
+        }
+    }
 
     CommandListSetDX& dx_command_lists = static_cast<CommandListSetDX&>(command_lists);
     {
@@ -161,44 +174,52 @@ ID3D12CommandQueue& CommandQueueDX::GetNativeCommandQueue() noexcept
 void CommandQueueDX::WaitForExecution() noexcept
 {
     std::string command_queue_name;
-    do
+    try
     {
-        std::unique_lock<LockableBase(std::mutex)> lock(m_execution_waiting_mutex);
-        m_execution_waiting_condition_var.wait(lock,
-            [this]{ return !m_execution_waiting || !m_executing_command_lists.empty(); }
-        );
-
-        if (command_queue_name != GetName())
+        do
         {
-            command_queue_name = GetName();
-            const std::string thread_name = command_queue_name + " Wait for Execution";
-            META_THREAD_NAME(thread_name.c_str());
-        }
+            std::unique_lock<LockableBase(std::mutex)> lock(m_execution_waiting_mutex);
+            m_execution_waiting_condition_var.wait(lock,
+                [this] { return !m_execution_waiting || !m_executing_command_lists.empty(); }
+            );
 
-        while(!m_executing_command_lists.empty())
-        {
-            Ptr<CommandListSetDX> sp_command_lists;
+            if (command_queue_name != GetName())
             {
-                std::lock_guard<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
-                if (m_executing_command_lists.empty())
-                    break;
-
-                sp_command_lists = m_executing_command_lists.front();
+                command_queue_name = GetName();
+                const std::string thread_name = command_queue_name + " Wait for Execution";
+                META_THREAD_NAME(thread_name.c_str());
             }
 
-            assert(sp_command_lists);
-            sp_command_lists->GetExecutionCompletedFenceDX().WaitOnCpu();
-            
-            std::unique_lock<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
-            sp_command_lists->Complete();
-            if (!m_executing_command_lists.empty() && 
-                m_executing_command_lists.front().get() == sp_command_lists.get())
+            while (!m_executing_command_lists.empty())
             {
-                m_executing_command_lists.pop();
+                Ptr<CommandListSetDX> sp_command_lists;
+                {
+                    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
+                    if (m_executing_command_lists.empty())
+                        break;
+
+                    sp_command_lists = m_executing_command_lists.front();
+                }
+
+                assert(sp_command_lists);
+                sp_command_lists->GetExecutionCompletedFenceDX().WaitOnCpu();
+
+                std::unique_lock<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
+                sp_command_lists->Complete();
+                if (!m_executing_command_lists.empty() &&
+                    m_executing_command_lists.front().get() == sp_command_lists.get())
+                {
+                    m_executing_command_lists.pop();
+                }
             }
         }
+        while (m_execution_waiting);
     }
-    while(m_execution_waiting);
+    catch (...)
+    {
+        m_sp_execution_waiting_exception = std::current_exception();
+        m_execution_waiting = false;
+    }
 }
 
 } // namespace Methane::Graphics
