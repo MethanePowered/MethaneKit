@@ -244,10 +244,10 @@ void HeadsUpDisplay::LayoutTextBlocks()
     const UnitSize text_margins_in_dots = GetUIContext().ConvertToDots(m_settings.text_margins);
 
     // Layout Left column text blocks
-    const FrameSize& gpu_name_size      = m_text_blocks[TextBlock::GpuName]->GetRectInDots().size;
-    const FrameSize& fps_size           = m_text_blocks[TextBlock::Fps]->GetRectInDots().size;
-    const FrameSize& frame_buffers_size = m_text_blocks[TextBlock::FrameBuffers]->GetRectInDots().size;
-    const uint32_t   left_column_width  = std::max({ gpu_name_size.width, fps_size.width, frame_buffers_size.width });
+    const FrameSize gpu_name_size      = m_text_blocks[TextBlock::GpuName]->GetRectInDots().size;
+    const FrameSize fps_size           = m_text_blocks[TextBlock::Fps]->GetRectInDots().size;
+    const FrameSize frame_buffers_size = m_text_blocks[TextBlock::FrameBuffers]->GetRectInDots().size;
+    const uint32_t  left_column_width  = std::max({ gpu_name_size.width, fps_size.width, frame_buffers_size.width });
 
     UnitPoint position(text_margins_in_dots.width, text_margins_in_dots.height, Units::Dots);
     m_text_blocks[TextBlock::GpuName]->SetRelOrigin(position);
@@ -259,11 +259,11 @@ void HeadsUpDisplay::LayoutTextBlocks()
     m_text_blocks[TextBlock::FrameBuffers]->SetRelOrigin(position);
 
     // LayoutRight column text block sizes
-    const FrameSize& help_size          = m_text_blocks[TextBlock::HelpKey]->GetRectInDots().size;
-    const FrameSize& frame_time_size    = m_text_blocks[TextBlock::FrameTime]->GetRectInDots().size;
-    const FrameSize& cpu_time_size      = m_text_blocks[TextBlock::CpuTime]->GetRectInDots().size;
-    const FrameSize& vsync_size         = m_text_blocks[TextBlock::VSync]->GetRectInDots().size;
-    const uint32_t   right_column_width = std::max({ help_size.width, frame_time_size.width, cpu_time_size.width, vsync_size.width });
+    const FrameSize help_size          = m_text_blocks[TextBlock::HelpKey]->GetRectInDots().size;
+    const FrameSize frame_time_size    = m_text_blocks[TextBlock::FrameTime]->GetRectInDots().size;
+    const FrameSize cpu_time_size      = m_text_blocks[TextBlock::CpuTime]->GetRectInDots().size;
+    const FrameSize vsync_size         = m_text_blocks[TextBlock::VSync]->GetRectInDots().size;
+    const uint32_t  right_column_width = std::max({ help_size.width, frame_time_size.width, cpu_time_size.width, vsync_size.width });
 
     // Layout right column
     position.SetX(left_column_width + 2 * text_margins_in_dots.width);
