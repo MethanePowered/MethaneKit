@@ -142,9 +142,9 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
         throw std::logic_error("Can not reset command list in committed or executing state.");
 
     // NOTE: ResetCommandState() must be called from the top-most overridden Reset method
-    SetCommandListStateNoLock(State::Encoding);
-
     META_LOG(GetTypeName(m_type) + " Command list \"" + GetName() + "\" RESET for commands encoding.");
+
+    SetCommandListStateNoLock(State::Encoding);
 
     const bool debug_group_changed = GetTopOpenDebugGroup() != p_debug_group;
     if (!m_open_debug_groups.empty() && debug_group_changed)
@@ -201,6 +201,8 @@ void CommandListBase::WaitUntilCompleted(uint32_t timeout_ms)
     const auto is_completed = [this] { return m_state != State::Executing; };
     if (is_completed())
         return;
+
+    META_LOG("WAIT for completion of " + GetTypeName(m_type) + " Command list \"" + GetName() + "\".");
 
     if (timeout_ms == 0u)
     {
@@ -284,6 +286,11 @@ void CommandListBase::SetCommandListState(State state)
 void CommandListBase::SetCommandListStateNoLock(State state)
 {
     META_FUNCTION_TASK();
+    if (m_state == state)
+        return;
+
+    META_LOG(GetTypeName(m_type) + " Command list \"" + GetName() + "\" change state from " + GetStateName(m_state) + " to " + GetStateName(state));
+
     m_state = state;
     m_state_change_condition_var.notify_one();
 }

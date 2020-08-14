@@ -211,9 +211,12 @@ BlitCommandList& ContextBase::GetUploadCommandList()
         m_sp_upload_cmd_list = BlitCommandList::Create(GetUploadCommandQueue());
         m_sp_upload_cmd_list->SetName(s_command_list_name);
     }
-    else if (m_sp_upload_cmd_list->GetState() == CommandList::State::Executing)
+    else
     {
-        m_sp_upload_cmd_list->WaitUntilCompleted();
+        // FIXME: while with wait timeout are used as a workaround for occasional deadlock on command list wait for completion
+        //  reproduced at high rate of resource updates (on typography tutorial)
+        while(m_sp_upload_cmd_list->GetState() == CommandList::State::Executing)
+            m_sp_upload_cmd_list->WaitUntilCompleted(16);
     }
 
     if (m_sp_upload_cmd_list->GetState() == CommandList::State::Pending)
