@@ -260,6 +260,7 @@ void Text::SetLayout(const Layout& layout)
     m_settings.layout = layout;
 
     UpdateTextMesh();
+    UpdateViewportAndItemRect(Units::Pixels);
 }
 
 void Text::SetWrap(Wrap wrap)
@@ -644,8 +645,8 @@ FrameRect Text::GetAlignedViewportRect()
         switch (m_settings.layout.horizontal_alignment)
         {
         case HorizontalAlignment::Left:   break;
-        case HorizontalAlignment::Right:  viewport_rect.origin.SetX(viewport_rect.origin.GetX() + Data::AbsSubtract(m_frame_rect.size.width, content_size.width)); break;
-        case HorizontalAlignment::Center: viewport_rect.origin.SetX(viewport_rect.origin.GetX() + Data::AbsSubtract(m_frame_rect.size.width, content_size.width) / 2); break;
+        case HorizontalAlignment::Right:  viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.width - content_size.width)); break;
+        case HorizontalAlignment::Center: viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.width - content_size.width) / 2); break;
         }
     }
     if (content_size.height != m_frame_rect.size.height)
@@ -653,8 +654,8 @@ FrameRect Text::GetAlignedViewportRect()
         switch (m_settings.layout.vertical_alignment)
         {
         case VerticalAlignment::Top:      break;
-        case VerticalAlignment::Bottom:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + Data::AbsSubtract(m_frame_rect.size.height, content_size.height)); break;
-        case VerticalAlignment::Center:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + Data::AbsSubtract(m_frame_rect.size.height, content_size.height) / 2); break;
+        case VerticalAlignment::Bottom:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.height - content_size.height)); break;
+        case VerticalAlignment::Center:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.height - content_size.height) / 2); break;
         }
     }
 
