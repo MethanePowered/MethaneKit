@@ -17,17 +17,17 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/UserInterface/HeadsUpDisplay.cpp
-Heads-Up-Display widget for displaying graphics application runtime parameters.
+Heads-Up-Display widget for displaying runtime rendering parameters.
 
- ╔═══════════════════════════╤══════════════╗
- ║ GPU Name                  ┆ F1 - Help    ║
- ╟┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈╢
- ║                           ┆ Frame Time   ║
- ║   123 FPS (Major Font)    ├┈┈┈┈┈┈┈┈┈┈┈┈┈┈╢
- ║                           ┆ CPU Time %   ║
- ╟┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈╢
- ║ Frame Buffers Res & Count ┆ VSync ON/OFF ║
- ╚═══════════════════════════╧══════════════╝
+ ╔═══════════════╤════════════════════════════════╗
+ ║ F1 - Help     │ GPU Adapter Name               ║
+ ╟───────────────┼────────────────────────────────╢
+ ║ Frame Time ms │                                ║
+ ╟───────────────┥ 123 FPS (Major Font)           ║
+ ║ CPU Time %    │                                ║
+ ╟───────────────┼────────────────────────────────╢
+ ║ VSync ON/OFF  │ Frame Buffs Resolution & Count ║
+ ╚═══════════════╧════════════════════════════════╝
 
 ******************************************************************************/
 
@@ -64,6 +64,7 @@ inline uint32_t GetTimingTextHeightInDots(Context& ui_context, Font& major_font,
 template <typename T>
 std::string ToStringWithPrecision(const T value, const int precision)
 {
+    META_FUNCTION_TASK();
     std::ostringstream ss;
     ss.precision(precision);
     ss << std::fixed << value;
@@ -243,34 +244,14 @@ void HeadsUpDisplay::LayoutTextBlocks()
     META_FUNCTION_TASK();
     const UnitSize text_margins_in_dots = GetUIContext().ConvertToDots(m_settings.text_margins);
 
-    // Layout Left column text blocks
-    const FrameSize gpu_name_size      = m_text_blocks[TextBlock::GpuName]->GetRectInDots().size;
-    const FrameSize fps_size           = m_text_blocks[TextBlock::Fps]->GetRectInDots().size;
-    const FrameSize frame_buffers_size = m_text_blocks[TextBlock::FrameBuffers]->GetRectInDots().size;
-    const uint32_t  left_column_width  = std::max({ gpu_name_size.width, fps_size.width, frame_buffers_size.width });
-
-    UnitPoint position(text_margins_in_dots.width, text_margins_in_dots.height, Units::Dots);
-    m_text_blocks[TextBlock::GpuName]->SetRelOrigin(position);
-
-    position.SetY(position.GetY() + gpu_name_size.height + text_margins_in_dots.height);
-    m_text_blocks[TextBlock::Fps]->SetRelOrigin(position);
-
-    position.SetY(position.GetY() + fps_size.height + text_margins_in_dots.height);
-    m_text_blocks[TextBlock::FrameBuffers]->SetRelOrigin(position);
-
-    // LayoutRight column text block sizes
+    // Layout left column text blocks
     const FrameSize help_size          = m_text_blocks[TextBlock::HelpKey]->GetRectInDots().size;
     const FrameSize frame_time_size    = m_text_blocks[TextBlock::FrameTime]->GetRectInDots().size;
     const FrameSize cpu_time_size      = m_text_blocks[TextBlock::CpuTime]->GetRectInDots().size;
     const FrameSize vsync_size         = m_text_blocks[TextBlock::VSync]->GetRectInDots().size;
-    const uint32_t  right_column_width = std::max({ help_size.width, frame_time_size.width, cpu_time_size.width, vsync_size.width });
+    const uint32_t  left_column_width  = std::max({ help_size.width, frame_time_size.width, cpu_time_size.width, vsync_size.width });
 
-    // Layout right column
-    position.SetX(left_column_width + 2 * text_margins_in_dots.width);
-    m_text_blocks[TextBlock::VSync]->SetRelOrigin(position);
-    const UnitPoint right_bottom_position = position;
-
-    position.SetY(text_margins_in_dots.height);
+    UnitPoint position(text_margins_in_dots.width, text_margins_in_dots.height, Units::Dots);
     m_text_blocks[TextBlock::HelpKey]->SetRelOrigin(position);
 
     position.SetY(position.GetY() + help_size.height + text_margins_in_dots.height);
@@ -279,11 +260,31 @@ void HeadsUpDisplay::LayoutTextBlocks()
     position.SetY(position.GetY() + frame_time_size.height + text_margins_in_dots.height);
     m_text_blocks[TextBlock::CpuTime]->SetRelOrigin(position);
 
+    position.SetY(position.GetY() + cpu_time_size.height + text_margins_in_dots.height);
+    m_text_blocks[TextBlock::VSync]->SetRelOrigin(position);
+
+    // Layout right column text blocks
+    const FrameSize gpu_name_size      = m_text_blocks[TextBlock::GpuName]->GetRectInDots().size;
+    const FrameSize fps_size           = m_text_blocks[TextBlock::Fps]->GetRectInDots().size;
+    const FrameSize frame_buffers_size = m_text_blocks[TextBlock::FrameBuffers]->GetRectInDots().size;
+    const uint32_t  right_column_width = std::max({ gpu_name_size.width, fps_size.width, frame_buffers_size.width });
+
+    position.SetX(left_column_width + 2 * text_margins_in_dots.width);
+    m_text_blocks[TextBlock::FrameBuffers]->SetRelOrigin(position);
+
+    const UnitPoint right_bottom_position = position;
+
+    position.SetY(text_margins_in_dots.height);
+    m_text_blocks[TextBlock::GpuName]->SetRelOrigin(position);
+
+    position.SetY(position.GetY() + gpu_name_size.height + text_margins_in_dots.height);
+    m_text_blocks[TextBlock::Fps]->SetRelOrigin(position);
+
     Panel::SetRect(UnitRect{
         m_settings.position,
         {
             right_bottom_position.GetX() + right_column_width + text_margins_in_dots.width,
-            right_bottom_position.GetY() + vsync_size.height  + text_margins_in_dots.height
+            right_bottom_position.GetY() + vsync_size.height + text_margins_in_dots.height
         },
         Units::Dots
     });

@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/UserInterface/HeadsUpDisplay.h
-Heads-Up-Display widget for displaying graphics application runtime parameters.
+Heads-Up-Display widget for displaying runtime rendering parameters.
 
 ******************************************************************************/
 
