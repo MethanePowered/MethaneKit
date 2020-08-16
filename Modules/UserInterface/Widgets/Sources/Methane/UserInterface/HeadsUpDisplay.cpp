@@ -46,6 +46,8 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 namespace Methane::UserInterface
 {
 
+static constexpr uint32_t g_first_line_height_decrement = 5;
+
 inline uint32_t GetTextHeightInDots(Context& ui_context, Font& font)
 {
     return ui_context.ConvertPixelsToDots(font.GetMaxGlyphSize().height);
@@ -130,8 +132,8 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
             {
                 "GPU",
                 "Graphics Adapter",
-                UnitRect{ { }, { 0u, GetTextHeightInDots(ui_context, *m_sp_minor_font) }, Units::Dots },
-                Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Bottom },
+                UnitRect{ { }, { 0u, GetTextHeightInDots(ui_context, *m_sp_minor_font) - g_first_line_height_decrement }, Units::Dots },
+                Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Top },
                 m_settings.text_color
             }
         ),
@@ -140,8 +142,8 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
             {
                 "Help",
                 m_settings.help_shortcut ? m_settings.help_shortcut.ToString() + " - Help" : "",
-                UnitRect{ { }, { 0u, GetTextHeightInDots(ui_context, *m_sp_minor_font) }, Units::Dots },
-                Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Bottom },
+                UnitRect{ { }, { 0u, GetTextHeightInDots(ui_context, *m_sp_minor_font) - g_first_line_height_decrement }, Units::Dots },
+                Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Top },
                 m_settings.help_color
             }
         ),

@@ -88,12 +88,13 @@ public:
     template<typename StringType>
     struct Settings
     {
-        const std::string   name;
-        StringType          text;
-        UnitRect            rect;
-        Layout              layout;
-        Color4f             color                { 1.f, 1.f, 1.f, 1.f };
-        bool                incremental_update   = true;
+        const std::string name;
+        StringType        text;
+        UnitRect          rect;
+        Layout            layout;
+        Color4f           color                { 1.f, 1.f, 1.f, 1.f };
+        bool              incremental_update   = true;
+        bool              adjust_vertical_content_offset = true;
 
         // Minimize number of vertex/index buffer re-allocations on dynamic text updates by reserving additional size with multiplication of required size
         Data::Size        mesh_buffers_reservation_multiplier = 2u;

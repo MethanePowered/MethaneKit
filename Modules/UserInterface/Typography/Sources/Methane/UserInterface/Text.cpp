@@ -634,11 +634,14 @@ FrameRect Text::GetAlignedViewportRect()
     // Position viewport rect inside frame rect based on text alignment
     FrameRect viewport_rect(m_frame_rect.origin, content_size);
 
-    // Apply vertical offset to make top of content match the rect top coordinate
-    const uint32_t content_top_offset = m_sp_text_mesh->GetContentTopOffset();
-    assert(content_top_offset <= content_size.height);
-    content_size.height -= content_top_offset;
-    viewport_rect.origin.SetY(m_frame_rect.origin.GetY() - content_top_offset);
+    if (m_settings.adjust_vertical_content_offset)
+    {
+        // Apply vertical offset to make top of content match the rect top coordinate
+        const uint32_t content_top_offset = m_sp_text_mesh->GetContentTopOffset();
+        assert(content_top_offset <= content_size.height);
+        content_size.height -= content_top_offset;
+        viewport_rect.origin.SetY(m_frame_rect.origin.GetY() - content_top_offset);
+    }
 
     if (content_size.width != m_frame_rect.size.width)
     {
