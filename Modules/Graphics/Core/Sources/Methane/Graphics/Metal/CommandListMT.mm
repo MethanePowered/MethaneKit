@@ -37,7 +37,7 @@ Ptr<CommandList::DebugGroup> CommandList::DebugGroup::Create(std::string name)
 
 CommandListDebugGroupMT::CommandListDebugGroupMT(std::string name)
     : CommandListBase::DebugGroupBase(std::move(name))
-    , m_ns_name(MacOS::ConvertToNsType<std::string, NSString*>(name))
+    , m_ns_name(MacOS::ConvertToNsType<std::string, NSString*>(GetName()))
 {
     META_FUNCTION_TASK();
 }
