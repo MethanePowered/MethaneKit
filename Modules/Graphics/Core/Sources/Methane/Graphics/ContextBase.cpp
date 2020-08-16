@@ -49,7 +49,7 @@ static std::string GetWaitForName(Context::WaitFor wait_for)
 
 ContextBase::ContextBase(DeviceBase& device, tf::Executor& parallel_executor, Type type)
     : m_type(type)
-    , m_sp_device(device.GetPtr())
+    , m_sp_device(device.GetDevicePtr())
     , m_parallel_executor(parallel_executor)
     , m_resource_manager(*this)
 {
@@ -164,7 +164,7 @@ void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation, 
     META_FUNCTION_TASK();
     META_LOG("INITIALIZE context \"" + GetName() + "\"");
 
-    m_sp_device = device.GetPtr();
+    m_sp_device = device.GetDevicePtr();
     m_sp_upload_fence = Fence::Create(GetUploadCommandQueue());
 
     const std::string& context_name = GetName();
@@ -317,7 +317,7 @@ void ContextBase::PerformRequestedAction()
 void ContextBase::SetDevice(DeviceBase& device)
 {
     META_FUNCTION_TASK();
-    m_sp_device = device.GetPtr();
+    m_sp_device = device.GetDevicePtr();
 }
 
 Fence& ContextBase::GetUploadFence() const noexcept

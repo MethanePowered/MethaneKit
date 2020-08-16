@@ -63,9 +63,10 @@ public:
     void SetName(const std::string& name) override;
 
     RenderPassBase& GetPass();
+    Ptr<ParallelRenderCommandListBase> GetParallelRenderCommandListPtr() { return std::dynamic_pointer_cast<ParallelRenderCommandListBase>(GetPtr()); }
 
 private:
-    const Ptr<RenderPass>   m_sp_pass;
+    const Ptr<RenderPass>   m_sp_render_pass;
     Ptrs<RenderCommandList> m_parallel_command_lists;
 };
 

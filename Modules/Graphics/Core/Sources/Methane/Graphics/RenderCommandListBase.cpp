@@ -39,7 +39,7 @@ namespace Methane::Graphics
 RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& pass)
     : CommandListBase(command_queue, Type::Render)
     , m_is_parallel(false)
-    , m_sp_pass(pass.GetPtr())
+    , m_sp_render_pass(pass.GetRenderPassPtr())
 {
     META_FUNCTION_TASK();
 }
@@ -47,8 +47,8 @@ RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue, Re
 RenderCommandListBase::RenderCommandListBase(ParallelRenderCommandListBase& parallel_render_command_list)
     : CommandListBase(static_cast<CommandQueueBase&>(parallel_render_command_list.GetCommandQueue()), Type::Render)
     , m_is_parallel(true)
-    , m_sp_pass(parallel_render_command_list.GetPass().GetPtr())
-    , m_wp_parallel_render_command_list(std::static_pointer_cast<ParallelRenderCommandListBase>(parallel_render_command_list.GetPtr()))
+    , m_sp_render_pass(parallel_render_command_list.GetPass().GetRenderPassPtr())
+    , m_wp_parallel_render_command_list(parallel_render_command_list.GetParallelRenderCommandListPtr())
 {
     META_FUNCTION_TASK();
 }
@@ -209,8 +209,8 @@ void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex
 RenderPassBase& RenderCommandListBase::GetPass()
 {
     META_FUNCTION_TASK();
-    assert(!!m_sp_pass);
-    return static_cast<RenderPassBase&>(*m_sp_pass);
+    assert(!!m_sp_render_pass);
+    return static_cast<RenderPassBase&>(*m_sp_render_pass);
 }
 
 } // namespace Methane::Graphics

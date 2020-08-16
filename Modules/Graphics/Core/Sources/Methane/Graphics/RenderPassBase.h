@@ -38,7 +38,6 @@ class TextureBase;
 class RenderPassBase
     : public RenderPass
     , public ObjectBase
-    , public std::enable_shared_from_this<RenderPassBase>
 {
 public:
     RenderPassBase(RenderContextBase& context, const Settings& settings);
@@ -53,7 +52,7 @@ public:
 
     const Refs<TextureBase>& GetColorAttachmentTextures() const;
     TextureBase*             GetDepthAttachmentTexture() const;
-    Ptr<RenderPassBase>      GetPtr()                   { return shared_from_this(); }
+    Ptr<RenderPassBase>      GetRenderPassPtr()         { return std::dynamic_pointer_cast<RenderPassBase>(GetPtr()); }
     bool                     IsBegun() const            { return m_is_begun; }
 
 protected:

@@ -56,12 +56,6 @@ uint32_t BufferBase::GetFormattedItemsCount() const noexcept
     return m_settings.item_stride_size > 0u ? GetDataSize(Data::MemoryState::Initialized) / m_settings.item_stride_size : 0u;
 }
 
-Ptr<BufferBase> BufferBase::GetPtr()
-{
-    META_FUNCTION_TASK();
-    return std::dynamic_pointer_cast<BufferBase>(shared_from_this());
-}
-
 std::string Buffer::GetBufferTypeName(Type type) noexcept
 {
     META_FUNCTION_TASK();
@@ -95,7 +89,7 @@ BufferSetBase::BufferSetBase(Buffer::Type buffers_type, Refs<Buffer> buffer_refs
             std::invalid_argument("All buffers must be of the same type \"" + Buffer::GetBufferTypeName(m_buffers_type) + "\"");
         }
         BufferBase& buffer_base = static_cast<BufferBase&>(buffer_ref.get());
-        m_ptrs.emplace_back(buffer_base.GetPtr());
+        m_ptrs.emplace_back(buffer_base.GetBufferPtr());
         m_raw_ptrs.emplace_back(std::addressof(buffer_base));
     }
 }

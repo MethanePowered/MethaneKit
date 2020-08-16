@@ -41,7 +41,6 @@ class RenderContextBase;
 class CommandQueueBase
     : public ObjectBase
     , public CommandQueue
-    , public std::enable_shared_from_this<CommandQueueBase>
 {
     friend class CommandListBase;
 
@@ -53,7 +52,7 @@ public:
     void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
     CommandList::Type GetCommandListsType() const noexcept override { return m_command_lists_type; }
 
-    Ptr<CommandQueueBase> GetPtr()                      { return shared_from_this(); }
+    Ptr<CommandQueueBase> GetCommandQueuePtr()          { return std::dynamic_pointer_cast<CommandQueueBase>(GetPtr()); }
     ContextBase&          GetContext() const noexcept   { return m_context; }
     Tracy::GpuContext&    GetTracyContext() noexcept;
 

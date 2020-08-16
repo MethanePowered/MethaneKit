@@ -36,7 +36,6 @@ class RenderCommandListBase;
 class RenderStateBase
     : public ObjectBase
     , public RenderState
-    , public std::enable_shared_from_this<RenderStateBase>
 {
 public:
     RenderStateBase(RenderContextBase& context, const Settings& settings);
@@ -50,8 +49,8 @@ public:
     // RenderStateBase interface
     virtual void Apply(RenderCommandListBase& command_list, Group::Mask apply_groups) = 0;
 
-    Ptr<RenderStateBase> GetPtr()           { return shared_from_this(); }
-    RenderContextBase&   GetRenderContext() { return m_context; }
+    Ptr<RenderStateBase> GetRenderStatePtr()    { return std::dynamic_pointer_cast<RenderStateBase>(GetPtr()); }
+    RenderContextBase&   GetRenderContext()     { return m_context; }
 
 protected:
     Program& GetProgram();

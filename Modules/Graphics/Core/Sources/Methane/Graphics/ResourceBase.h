@@ -40,7 +40,6 @@ class ContextBase;
 class ResourceBase
     : public virtual Resource
     , public ObjectBase
-    , public std::enable_shared_from_this<ResourceBase>
 {
 public:
     enum class State

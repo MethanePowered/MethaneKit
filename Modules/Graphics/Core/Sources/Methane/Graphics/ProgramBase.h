@@ -43,7 +43,6 @@ class CommandListBase;
 class ProgramBase
     : public Program
     , public ObjectBase
-    , public std::enable_shared_from_this<ProgramBase>
 {
     friend class ShaderBase;
     friend class ProgramBindingsBase;
@@ -60,7 +59,7 @@ public:
 
     ContextBase&         GetContext()       { return m_context; }
     const ContextBase&   GetContext() const { return m_context; }
-    Ptr<ProgramBase>     GetPtr()           { return shared_from_this(); }
+    Ptr<ProgramBase>     GetProgramPtr()    { return std::dynamic_pointer_cast<ProgramBase>(GetPtr()); }
 
 protected:
     void InitArgumentBindings(const ArgumentDescriptions& argument_descriptions);

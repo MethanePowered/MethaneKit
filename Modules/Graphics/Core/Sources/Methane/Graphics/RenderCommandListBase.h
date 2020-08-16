@@ -76,7 +76,7 @@ public:
     using CommandListBase::Reset;
 
     // RenderCommandList interface
-    RenderPass& GetRenderPass() const noexcept override { return *m_sp_pass; }
+    RenderPass& GetRenderPass() const noexcept override { return *m_sp_render_pass; }
     void Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group = nullptr) override;
     void SetState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) override;
     void SetVertexBuffers(const BufferSet& vertex_buffers) override;
@@ -101,7 +101,7 @@ protected:
 
 private:
     const bool                             m_is_parallel;
-    const Ptr<RenderPass>                  m_sp_pass;
+    const Ptr<RenderPass>                  m_sp_render_pass;
     WeakPtr<ParallelRenderCommandListBase> m_wp_parallel_render_command_list;
     DrawingState                           m_drawing_state;
 };

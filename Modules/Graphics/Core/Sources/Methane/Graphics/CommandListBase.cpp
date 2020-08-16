@@ -95,7 +95,7 @@ CommandList::DebugGroup* CommandListBase::DebugGroupBase::GetSubGroup(Data::Inde
 
 CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
     : m_type(type)
-    , m_sp_command_queue(command_queue.GetPtr())
+    , m_sp_command_queue(command_queue.GetCommandQueuePtr())
     , m_tracy_gpu_scope(TRACY_GPU_SCOPE_INIT(command_queue.GetTracyContext()))
     , m_sp_tracy_construct_location(CREATE_TRACY_SOURCE_LOCATION(GetName().c_str()))
 {
@@ -375,7 +375,7 @@ CommandListSetBase::CommandListSetBase(Refs<CommandList> command_list_refs)
         }
 
         m_base_refs.emplace_back(command_list_base);
-        m_base_ptrs.emplace_back(command_list_base.GetPtr());
+        m_base_ptrs.emplace_back(command_list_base.GetCommandListPtr());
     }
 }
 

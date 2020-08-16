@@ -44,9 +44,9 @@ inline std::string GetThreadCommandListName(const std::string& name, Data::Index
     return name + " [Thread " + std::to_string(index) + "]";
 }
 
-ParallelRenderCommandListBase::ParallelRenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& pass)
+ParallelRenderCommandListBase::ParallelRenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass)
     : CommandListBase(command_queue, Type::ParallelRender)
-    , m_sp_pass(pass.GetPtr())
+    , m_sp_render_pass(render_pass.GetRenderPassPtr())
 {
     META_FUNCTION_TASK();
 }
@@ -165,8 +165,8 @@ void ParallelRenderCommandListBase::SetName(const std::string& name)
 RenderPassBase& ParallelRenderCommandListBase::GetPass()
 {
     META_FUNCTION_TASK();
-    assert(!!m_sp_pass);
-    return static_cast<RenderPassBase&>(*m_sp_pass);
+    assert(!!m_sp_render_pass);
+    return static_cast<RenderPassBase&>(*m_sp_render_pass);
 }
 
 } // namespace Methane::Graphics

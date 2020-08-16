@@ -35,7 +35,6 @@ class DeviceBase
     : public Device
     , public ObjectBase
     , public Data::Emitter<IDeviceCallback>
-    , public std::enable_shared_from_this<DeviceBase>
 {
 public:
     DeviceBase(const std::string& adapter_name, bool is_software_adapter, Feature::Mask supported_features);
@@ -46,7 +45,7 @@ public:
     Feature::Mask       GetSupportedFeatures() const noexcept override                         { return m_supported_features; }
     std::string         ToString() const noexcept override;
 
-    Ptr<DeviceBase> GetPtr() { return shared_from_this(); }
+    Ptr<DeviceBase>     GetDevicePtr() { return std::dynamic_pointer_cast<DeviceBase>(GetPtr()); }
 
 protected:
     friend class SystemBase;

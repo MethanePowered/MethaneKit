@@ -47,7 +47,6 @@ class ProgramBindingsBase;
 class CommandListBase
     : public ObjectBase
     , public virtual CommandList
-    , public std::enable_shared_from_this<CommandListBase>
 {
     friend class CommandQueueBase;
 
@@ -109,7 +108,7 @@ public:
     CommandQueueBase&          GetCommandQueueBase() noexcept;
     const CommandQueueBase&    GetCommandQueueBase() const noexcept;
     const ProgramBindingsBase* GetProgramBindings() const noexcept  { return GetCommandState().p_program_bindings; }
-    Ptr<CommandListBase>       GetPtr()                             { return shared_from_this(); }
+    Ptr<CommandListBase>       GetCommandListPtr()                  { return std::dynamic_pointer_cast<CommandListBase>(GetPtr()); }
 
 protected:
     virtual void ResetCommandState();
