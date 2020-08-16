@@ -22,11 +22,11 @@ Base implementation of the Methane user interface application.
 ******************************************************************************/
 
 #include <Methane/UserInterface/AppBase.h>
-
 #include <Methane/UserInterface/Context.h>
 #include <Methane/UserInterface/Text.h>
 #include <Methane/UserInterface/Panel.h>
 #include <Methane/UserInterface/Badge.h>
+#include <Methane/Graphics/CommandList.h>
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
@@ -160,15 +160,17 @@ bool AppBase::Update()
 void AppBase::RenderOverlay(gfx::RenderCommandList& cmd_list)
 {
     META_FUNCTION_TASK();
-    if (m_sp_hud && m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface)
-        m_sp_hud->Draw(cmd_list);
+    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Overlay Rendering");
 
-    m_help_columns.first.Draw(cmd_list);
-    m_help_columns.second.Draw(cmd_list);
-    m_parameters.Draw(cmd_list);
+    if (m_sp_hud && m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface)
+        m_sp_hud->Draw(cmd_list, s_debug_group.get());
+
+    m_help_columns.first.Draw(cmd_list, s_debug_group.get());
+    m_help_columns.second.Draw(cmd_list, s_debug_group.get());
+    m_parameters.Draw(cmd_list, s_debug_group.get());
 
     if (m_sp_logo_badge)
-        m_sp_logo_badge->Draw(cmd_list);
+        m_sp_logo_badge->Draw(cmd_list, s_debug_group.get());
 }
 
 void AppBase::TextItem::Update()
@@ -180,16 +182,16 @@ void AppBase::TextItem::Update()
     }
 }
 
-void AppBase::TextItem::Draw(gfx::RenderCommandList& cmd_list)
+void AppBase::TextItem::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     if (sp_panel)
     {
-        sp_panel->Draw(cmd_list);
+        sp_panel->Draw(cmd_list, p_debug_group);
     }
     if (sp_text)
     {
-        sp_text->Draw(cmd_list);
+        sp_text->Draw(cmd_list, p_debug_group);
     }
 }
 

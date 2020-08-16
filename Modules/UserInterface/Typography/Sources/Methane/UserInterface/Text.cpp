@@ -313,7 +313,7 @@ void Text::Update()
     assert(!frame_resources.IsDirty() || !m_sp_text_mesh || !m_sp_font || !m_sp_text_mesh);
 }
 
-void Text::Draw(gfx::RenderCommandList& cmd_list)
+void Text::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     if (m_frame_resources.empty())
@@ -323,7 +323,7 @@ void Text::Draw(gfx::RenderCommandList& cmd_list)
     if (!frame_resources.IsInitialized())
         return;
 
-    cmd_list.Reset(m_sp_state);
+    cmd_list.Reset(m_sp_state, p_debug_group);
     cmd_list.SetProgramBindings(frame_resources.GetProgramBindings());
     cmd_list.SetVertexBuffers(frame_resources.GetVertexBufferSet());
     cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, frame_resources.GetIndexBuffer());

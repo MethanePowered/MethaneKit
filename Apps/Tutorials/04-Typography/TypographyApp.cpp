@@ -427,15 +427,17 @@ bool TypographyApp::Render()
     TypographyFrame& frame = GetCurrentFrame();
 
     // Draw text blocks
+    META_DEBUG_GROUP_CREATE_VAR(s_text_debug_group, "Text Blocks Rendering");
     for(Ptr<gui::Text>& sp_text : m_texts)
     {
-        sp_text->Draw(*frame.sp_render_cmd_list);
+        sp_text->Draw(*frame.sp_render_cmd_list, s_text_debug_group.get());
     }
 
     // Draw font atlas badges
+    META_DEBUG_GROUP_CREATE_VAR(s_atlas_debug_group, "Font Atlases Rendering");
     for(const Ptr<gui::Badge>& sp_badge_atlas : m_font_atlas_badges)
     {
-        sp_badge_atlas->Draw(*frame.sp_render_cmd_list);
+        sp_badge_atlas->Draw(*frame.sp_render_cmd_list, s_atlas_debug_group.get());
     }
 
     RenderOverlay(*frame.sp_render_cmd_list);

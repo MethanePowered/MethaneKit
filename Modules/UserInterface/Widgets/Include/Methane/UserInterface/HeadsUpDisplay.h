@@ -27,6 +27,7 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 #include <Methane/UserInterface/Text.h>
 #include <Methane/UserInterface/Font.h>
 #include <Methane/Graphics/Color.hpp>
+#include <Methane/Graphics/CommandList.h>
 #include <Methane/Platform/Keyboard.h>
 #include <Methane/Timer.hpp>
 #include <Methane/Memory.hpp>
@@ -67,7 +68,7 @@ public:
     void SetUpdateInterval(double update_interval_sec);
 
     void Update();
-    void Draw(gfx::RenderCommandList& cmd_list);
+    void Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group = nullptr);
 
 private:
     void LayoutTextBlocks();

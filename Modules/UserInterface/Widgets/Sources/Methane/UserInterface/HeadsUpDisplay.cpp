@@ -230,14 +230,14 @@ void HeadsUpDisplay::Update()
     m_update_timer.Reset();
 }
 
-void HeadsUpDisplay::Draw(gfx::RenderCommandList& cmd_list)
+void HeadsUpDisplay::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
-    Panel::Draw(cmd_list);
+    Panel::Draw(cmd_list, p_debug_group);
 
     for(const Ptr<Text>& sp_text : m_text_blocks)
     {
-        sp_text->Draw(cmd_list);
+        sp_text->Draw(cmd_list, p_debug_group);
     }
 }
 

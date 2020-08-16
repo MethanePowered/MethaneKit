@@ -24,6 +24,7 @@ ScreenQuad rendering primitive.
 #pragma once
 
 #include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/CommandList.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/RenderState.h>
@@ -77,7 +78,7 @@ public:
     FrameRect       GetScreenRectInDots() const noexcept { return m_settings.screen_rect / m_context.GetContentScalingFactor(); }
     const Texture&  GetTexture() const noexcept;
 
-    void Draw(RenderCommandList& cmd_list) const;
+    void Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_debug_group = nullptr) const;
 
 protected:
     RenderContext& GetRenderContext() noexcept { return m_context; }

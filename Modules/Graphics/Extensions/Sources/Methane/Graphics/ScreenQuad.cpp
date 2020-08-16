@@ -232,12 +232,10 @@ const Texture& ScreenQuad::GetTexture() const noexcept
     return *m_sp_texture;
 }
 
-void ScreenQuad::Draw(RenderCommandList& cmd_list) const
+void ScreenQuad::Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_debug_group) const
 {
     META_FUNCTION_TASK();
-    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, m_settings.name + " Screen-Quad rendering");
-    
-    cmd_list.Reset(m_sp_state, s_debug_group.get());
+    cmd_list.Reset(m_sp_state, p_debug_group);
     cmd_list.SetProgramBindings(*m_sp_const_program_bindings);
     cmd_list.SetVertexBuffers(*m_sp_vertex_buffer_set);
     cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
