@@ -54,7 +54,9 @@ bool Panel::SetRect(const UnitRect& ui_rect)
     if (!Container::SetRect(ui_rect))
         return false;
 
-    gfx::ScreenQuad::SetScreenRect(GetUIContext().ConvertToPixels(ui_rect));
+    gfx::ScreenQuad::SetScreenRect(
+        GetUIContext().ConvertToPixels(ui_rect),
+        GetUIContext().GetRenderContext().GetSettings().frame_size);
     return true;
 }
 

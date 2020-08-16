@@ -62,6 +62,7 @@ Badge::Badge(Context& ui_context, Ptr<gfx::Texture> sp_texture, Settings setting
         }
     )
     , m_settings(std::move(settings))
+    , m_frame_size(ui_context.GetFrameSizeInPixels())
 {
     META_FUNCTION_TASK();
 }
@@ -69,6 +70,9 @@ Badge::Badge(Context& ui_context, Ptr<gfx::Texture> sp_texture, Settings setting
 void Badge::FrameResize(const UnitSize& frame_size, std::optional<UnitSize> badge_size, std::optional<UnitPoint> margins)
 {
     META_FUNCTION_TASK();
+    
+    m_frame_size = frame_size;
+    
     if (badge_size)
     {
         m_settings.size = *badge_size;
@@ -77,7 +81,7 @@ void Badge::FrameResize(const UnitSize& frame_size, std::optional<UnitSize> badg
     {
         m_settings.margins = *margins;
     }
-    SetRect(GetBadgeRectInFrame(frame_size));
+    SetRect(GetBadgeRectInFrame());
 }
 
 void Badge::SetCorner(FrameCorner frame_corner)
@@ -88,7 +92,7 @@ void Badge::SetCorner(FrameCorner frame_corner)
 
     m_settings.corner = frame_corner;
 
-    SetRect(GetBadgeRectInFrame(GetUIContext().GetFrameSizeInPixels()));
+    SetRect(GetBadgeRectInFrame());
 }
 
 void Badge::SetMargins(UnitPoint& margins)
@@ -99,7 +103,7 @@ void Badge::SetMargins(UnitPoint& margins)
 
     m_settings.margins = margins;
 
-    SetRect(GetBadgeRectInFrame(GetUIContext().GetFrameSizeInPixels()));
+    SetRect(GetBadgeRectInFrame());
 }
 
 bool Badge::SetRect(const UnitRect& ui_rect)
@@ -108,14 +112,14 @@ bool Badge::SetRect(const UnitRect& ui_rect)
     if (!Item::SetRect(ui_rect))
         return false;
 
-    gfx::ScreenQuad::SetScreenRect(Item::GetRectInPixels());
+    gfx::ScreenQuad::SetScreenRect(Item::GetRectInPixels(), m_frame_size);
     return true;
 }
 
 UnitRect Badge::GetBadgeRectInFrame(Context& ui_context, const UnitSize& frame_size, const Settings& settings)
 {
     return GetBadgeRectInFrame(frame_size,
-                               ui_context.ConvertToUnits(settings.size, frame_size.units),
+                               ui_context.ConvertToUnits(settings.size,    frame_size.units),
                                ui_context.ConvertToUnits(settings.margins, frame_size.units),
                                settings.corner);
 }

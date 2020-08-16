@@ -126,7 +126,7 @@ public:
     // Item overrides
     bool SetRect(const UnitRect& ui_rect) override;
 
-    void Update();
+    void Update(const gfx::FrameSize& render_attachment_size);
     void Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group = nullptr);
 
     static std::string GetWrapName(Wrap wrap) noexcept;
@@ -142,22 +142,22 @@ private:
     struct Constants;
     struct Uniforms;
 
-    struct Dirty
-    {
-        using Mask = uint32_t;
-        enum Value : Mask
-        {
-            None         = 0u,
-            Mesh         = 1u << 0u,
-            Uniforms     = 1u << 1u,
-            Atlas        = 1u << 2u,
-            All          = ~0u,
-        };
-    };
-
     class FrameResources
     {
     public:
+        struct Dirty
+        {
+            using Mask = uint32_t;
+            enum Value : Mask
+            {
+                None         = 0u,
+                Mesh         = 1u << 0u,
+                Uniforms     = 1u << 1u,
+                Atlas        = 1u << 2u,
+                All          = ~0u,
+            };
+        };
+
         FrameResources(gfx::RenderState& state, gfx::RenderContext& render_context,
                        const Ptr<gfx::Buffer>& sp_const_buffer, const Ptr<gfx::Texture>& sp_atlas_texture, const Ptr<gfx::Sampler>& sp_atlas_sampler,
                        const TextMesh& text_mesh, const std::string& text_name, Data::Size reservation_multiplier);
@@ -187,7 +187,7 @@ private:
     };
 
     void InitializeFrameResources();
-    void MakeFrameResourcesDirty(Dirty::Mask dirty_flags);
+    void MakeFrameResourcesDirty(FrameResources::Dirty::Mask dirty_flags);
     FrameResources& GetCurrentFrameResources();
 
     void UpdateTextMesh();
@@ -201,16 +201,18 @@ private:
 
     UpdateRectResult UpdateRect(const UnitRect& ui_rect, bool reset_content_rect);
     FrameRect GetAlignedViewportRect();
-    bool UpdateViewportAndItemRect(Units ui_rect_units);
+    void UpdateViewport(const gfx::FrameSize& render_attachment_size);
 
     SettingsUtf32               m_settings;
     UnitRect                    m_frame_rect;
+    FrameSize                   m_render_attachment_size = FrameSize::Max();
     Ptr<Font>                   m_sp_font;
     UniquePtr<TextMesh>         m_sp_text_mesh;
     Ptr<gfx::RenderState>       m_sp_state;
     Ptr<gfx::Buffer>            m_sp_const_buffer;
     Ptr<gfx::Sampler>           m_sp_atlas_sampler;
     std::vector<FrameResources> m_frame_resources;
+    bool                        m_is_viewport_dirty;
 };
 
 } // namespace Methane::Graphics

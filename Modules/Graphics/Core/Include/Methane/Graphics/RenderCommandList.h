@@ -51,6 +51,7 @@ struct RenderCommandList : virtual CommandList
     static Ptr<RenderCommandList> Create(ParallelRenderCommandList& parallel_command_list);
     
     // RenderCommandList interface
+    virtual RenderPass& GetRenderPass() const noexcept = 0;
     virtual void Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group = nullptr) = 0;
     virtual void SetState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) = 0;
     virtual void SetVertexBuffers(const BufferSet& vertex_buffers) = 0;

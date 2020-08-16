@@ -201,12 +201,12 @@ void HeadsUpDisplay::SetUpdateInterval(double update_interval_sec)
     m_settings.update_interval_sec = update_interval_sec;
 }
 
-void HeadsUpDisplay::Update()
+void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
 {
     META_FUNCTION_TASK();
     if (m_update_timer.GetElapsedSecondsD() < m_settings.update_interval_sec)
     {
-        UpdateAllTextBlocks();
+        UpdateAllTextBlocks(render_attachment_size);
         return;
     }
 
@@ -226,7 +226,7 @@ void HeadsUpDisplay::Update()
     m_text_blocks[TextBlock::VSync]->SetColor(context_settings.vsync_enabled ? m_settings.on_color : m_settings.off_color);
 
     LayoutTextBlocks();
-    UpdateAllTextBlocks();
+    UpdateAllTextBlocks(render_attachment_size);
     m_update_timer.Reset();
 }
 
@@ -292,12 +292,12 @@ void HeadsUpDisplay::LayoutTextBlocks()
     });
 }
 
-void HeadsUpDisplay::UpdateAllTextBlocks()
+void HeadsUpDisplay::UpdateAllTextBlocks(const FrameSize& render_attachment_size)
 {
     META_FUNCTION_TASK();
     for(const Ptr<Text>& sp_text : m_text_blocks)
     {
-        sp_text->Update();
+        sp_text->Update(render_attachment_size);
     }
 }
 

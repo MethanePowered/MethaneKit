@@ -179,7 +179,7 @@ void ScreenQuad::SetBlendColor(const Color4f& blend_color)
     UpdateConstantsBuffer();
 }
 
-void ScreenQuad::SetScreenRect(const FrameRect& screen_rect)
+void ScreenQuad::SetScreenRect(const FrameRect& screen_rect, const FrameSize& render_attachment_size)
 {
     META_FUNCTION_TASK();
     if (m_settings.screen_rect == screen_rect)
@@ -188,7 +188,7 @@ void ScreenQuad::SetScreenRect(const FrameRect& screen_rect)
     m_settings.screen_rect = screen_rect;
 
     m_sp_state->SetViewports({ GetFrameViewport(screen_rect) });
-    m_sp_state->SetScissorRects({ GetFrameScissorRect(screen_rect) });
+    m_sp_state->SetScissorRects({ GetFrameScissorRect(screen_rect, render_attachment_size) });
 }
 
 void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled)

@@ -76,6 +76,7 @@ public:
     using CommandListBase::Reset;
 
     // RenderCommandList interface
+    RenderPass& GetRenderPass() const noexcept override { return *m_sp_pass; }
     void Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group = nullptr) override;
     void SetState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) override;
     void SetVertexBuffers(const BufferSet& vertex_buffers) override;

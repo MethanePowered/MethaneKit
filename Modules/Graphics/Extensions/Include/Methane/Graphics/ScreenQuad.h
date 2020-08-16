@@ -70,7 +70,7 @@ public:
     ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings settings);
 
     void SetBlendColor(const Color4f& blend_color);
-    void SetScreenRect(const FrameRect& screen_rect);
+    void SetScreenRect(const FrameRect& screen_rect, const FrameSize& render_attachment_size);
     void SetAlphaBlendingEnabled(bool alpha_blending_enabled);
     void SetTexture(Ptr<Texture> sp_texture);
 

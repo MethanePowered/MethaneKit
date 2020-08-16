@@ -71,12 +71,13 @@ private:
     bool SetRect(const UnitRect& ui_rect) override;
     using Item::SetOrigin;
 
-    UnitRect GetBadgeRectInFrame(const UnitSize& frame_size) { return GetBadgeRectInFrame(GetUIContext(), frame_size, m_settings); }
+    UnitRect GetBadgeRectInFrame() { return GetBadgeRectInFrame(GetUIContext(), m_frame_size, m_settings); }
     static UnitRect GetBadgeRectInFrame(Context& ui_context, const UnitSize& frame_size, const Settings& settings);
     static UnitRect GetBadgeRectInFrame(const UnitSize& frame_size, const UnitSize& badge_size,
                                         const UnitPoint& badge_margins, Badge::FrameCorner frame_corner);
 
     Settings m_settings;
+    UnitSize m_frame_size;
 };
 
 } // namespace Methane::UserInterface

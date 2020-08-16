@@ -202,7 +202,8 @@ void Text::SetTextInScreenRect(const std::u32string& text, const UnitRect& ui_re
         frame_resources.UpdateAtlasTexture(m_sp_font->GetAtlasTexturePtr(GetUIContext().GetRenderContext()));
     }
 
-    UpdateViewportAndItemRect(ui_rect.units);
+    m_is_viewport_dirty = true;
+    Item::SetRect(GetUIContext().ConvertToPixels(m_frame_rect));
 }
 
 bool Text::SetRect(const UnitRect& ui_rect)
@@ -217,7 +218,8 @@ bool Text::SetRect(const UnitRect& ui_rect)
         UpdateTextMesh();
     }
 
-    return UpdateViewportAndItemRect(ui_rect.units);
+    m_is_viewport_dirty = true;
+    return Item::SetRect(GetUIContext().ConvertToPixels(m_frame_rect));
 }
 
 Text::UpdateRectResult Text::UpdateRect(const UnitRect& ui_rect, bool reset_content_rect)
@@ -260,7 +262,9 @@ void Text::SetLayout(const Layout& layout)
     m_settings.layout = layout;
 
     UpdateTextMesh();
-    UpdateViewportAndItemRect(Units::Pixels);
+
+    m_is_viewport_dirty = true;
+    Item::SetRect(GetUIContext().ConvertToPixels(m_frame_rect));
 }
 
 void Text::SetWrap(Wrap wrap)
@@ -287,7 +291,7 @@ void Text::SetVerticalAlignment(VerticalAlignment alignment)
     SetLayout(layout);
 }
 
-void Text::Update()
+void Text::Update(const gfx::FrameSize& render_attachment_size)
 {
     META_FUNCTION_TASK();
     if (m_frame_resources.empty())
@@ -295,18 +299,22 @@ void Text::Update()
 
     FrameResources& frame_resources = GetCurrentFrameResources();
 
-    if (frame_resources.IsDirty(Dirty::Mesh) && m_sp_text_mesh)
+    if (m_is_viewport_dirty)
+    {
+        UpdateViewport(render_attachment_size);
+    }
+    if (frame_resources.IsDirty(FrameResources::Dirty::Mesh) && m_sp_text_mesh)
     {
         frame_resources.UpdateMeshBuffers(GetUIContext().GetRenderContext(), *m_sp_text_mesh, m_settings.name, m_settings.mesh_buffers_reservation_multiplier);
     }
-    if (frame_resources.IsDirty(Dirty::Atlas) && m_sp_font)
+    if (frame_resources.IsDirty(FrameResources::Dirty::Atlas) && m_sp_font)
     {
         if (!frame_resources.UpdateAtlasTexture(m_sp_font->GetAtlasTexturePtr(GetUIContext().GetRenderContext())) && m_sp_state)
         {
             frame_resources.InitializeProgramBindings(*m_sp_state, m_sp_const_buffer, m_sp_atlas_sampler);
         }
     }
-    if (frame_resources.IsDirty(Dirty::Uniforms) && m_sp_text_mesh)
+    if (frame_resources.IsDirty(FrameResources::Dirty::Uniforms) && m_sp_text_mesh)
     {
         frame_resources.UpdateUniformsBuffer(GetUIContext().GetRenderContext(), *m_sp_text_mesh, m_settings.name);
     }
@@ -337,7 +345,7 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& sp_old_a
         (sp_new_atlas_texture && std::addressof(GetUIContext().GetRenderContext()) != std::addressof(sp_new_atlas_texture->GetContext())))
         return;
 
-    MakeFrameResourcesDirty(Dirty::Atlas);
+    MakeFrameResourcesDirty(FrameResources::Dirty::Atlas);
 
     if (m_sp_text_mesh)
     {
@@ -350,7 +358,7 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& sp_old_a
     {
         // If font atlas was auto-updated on context initialization complete,
         // the atlas texture and mesh buffers need to be updated now for current frame rendering
-        Update();
+        Update(m_render_attachment_size);
     }
 }
 
@@ -556,7 +564,7 @@ Text::FrameResources& Text::GetCurrentFrameResources()
     return m_frame_resources[frame_index];
 }
 
-void Text::MakeFrameResourcesDirty(Dirty::Mask dirty_flags)
+void Text::MakeFrameResourcesDirty(FrameResources::Dirty::Mask dirty_flags)
 {
     META_FUNCTION_TASK();
     for(FrameResources& frame_resources : m_frame_resources)
@@ -597,7 +605,7 @@ void Text::UpdateTextMesh()
         return;
     }
     
-    MakeFrameResourcesDirty(Dirty::Mesh | Dirty::Uniforms);
+    MakeFrameResourcesDirty(FrameResources::Dirty::Mesh | FrameResources::Dirty::Uniforms);
 }
 
 void Text::UpdateConstantsBuffer()
@@ -665,16 +673,15 @@ FrameRect Text::GetAlignedViewportRect()
     return viewport_rect;
 }
 
-bool Text::UpdateViewportAndItemRect(Units ui_rect_units)
+void Text::UpdateViewport(const gfx::FrameSize& render_attachment_size)
 {
     META_FUNCTION_TASK();
-    if (m_sp_text_mesh)
-    {
-        const FrameRect viewport_rect = GetAlignedViewportRect();
-        m_sp_state->SetViewports({ gfx::GetFrameViewport(viewport_rect) });
-        m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(viewport_rect) });
-    }
-    return Item::SetRect(GetUIContext().ConvertToUnits(m_frame_rect, ui_rect_units));
+    if (!m_sp_text_mesh)
+        return;
+
+    const FrameRect viewport_rect = GetAlignedViewportRect();
+    m_sp_state->SetViewports({ gfx::GetFrameViewport(viewport_rect) });
+    m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(viewport_rect, render_attachment_size) });
 }
 
 std::string Text::GetWrapName(Wrap wrap) noexcept

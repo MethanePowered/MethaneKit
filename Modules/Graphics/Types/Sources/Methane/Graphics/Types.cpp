@@ -32,14 +32,19 @@ Methane graphics type functions implementation.
 namespace Methane::Graphics
 {
 
-ScissorRect GetFrameScissorRect(const FrameRect& frame_rect)
+inline uint32_t GetNormalizedDimensionSize(int32_t offset, uint32_t dimension_size, uint32_t render_attachment_size)
+{
+    return std::min(dimension_size + offset, render_attachment_size) - (offset >= 0 ? offset : 0);
+}
+
+ScissorRect GetFrameScissorRect(const FrameRect& frame_rect, const FrameSize& render_attachment_size)
 {
     META_FUNCTION_TASK();
     return {
         ScissorRect::Point(static_cast<uint32_t>(std::max(0, frame_rect.origin.GetX())),
                            static_cast<uint32_t>(std::max(0, frame_rect.origin.GetY()))),
-        ScissorRect::Size(frame_rect.origin.GetX() >= 0 ? frame_rect.size.width  : frame_rect.size.width  + frame_rect.origin.GetX(),
-                          frame_rect.origin.GetY() >= 0 ? frame_rect.size.height : frame_rect.size.height + frame_rect.origin.GetY())
+        ScissorRect::Size(GetNormalizedDimensionSize(frame_rect.origin.GetX(), frame_rect.size.width,  render_attachment_size.width),
+                          GetNormalizedDimensionSize(frame_rect.origin.GetY(), frame_rect.size.height, render_attachment_size.height))
     };
 }
 

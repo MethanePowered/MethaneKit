@@ -413,7 +413,7 @@ bool TypographyApp::Update()
     // Update text block resources
     for(Ptr<gui::Text>& sp_text : m_texts)
     {
-        sp_text->Update();
+        sp_text->Update(GetFrameSize());
     }
 
     return true;

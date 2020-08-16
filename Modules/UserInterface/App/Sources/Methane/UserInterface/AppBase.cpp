@@ -149,11 +149,11 @@ bool AppBase::Update()
 {
     META_FUNCTION_TASK();
     if (m_sp_hud && m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface)
-        m_sp_hud->Update();
+        m_sp_hud->Update(m_frame_size);
 
-    m_help_columns.first.Update();
-    m_help_columns.second.Update();
-    m_parameters.Update();
+    m_help_columns.first.Update(m_frame_size);
+    m_help_columns.second.Update(m_frame_size);
+    m_parameters.Update(m_frame_size);
     return true;
 }
 
@@ -173,12 +173,12 @@ void AppBase::RenderOverlay(gfx::RenderCommandList& cmd_list)
         m_sp_logo_badge->Draw(cmd_list, s_debug_group.get());
 }
 
-void AppBase::TextItem::Update()
+void AppBase::TextItem::Update(const FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
     if (sp_text)
     {
-        sp_text->Update();
+        sp_text->Update(frame_size);
     }
 }
 

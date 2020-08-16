@@ -40,6 +40,8 @@ struct RectSize
     RectSize(const RectSize& size) noexcept = default;
     RectSize(D w, D h) noexcept : width(w), height(h) { }
 
+    static RectSize<D> Max() noexcept { return RectSize(std::numeric_limits<D>::max(), std::numeric_limits<D>::max()); }
+
     template<typename V>
     RectSize(const Point2T<V>& point) noexcept : width(static_cast<D>(point.GetX())), height(static_cast<D>(point.GetY())) { }
 

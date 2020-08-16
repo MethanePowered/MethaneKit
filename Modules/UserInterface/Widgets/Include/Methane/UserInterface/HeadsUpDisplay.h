@@ -67,12 +67,12 @@ public:
     void SetTextColor(const Color4f& text_color);
     void SetUpdateInterval(double update_interval_sec);
 
-    void Update();
+    void Update(const FrameSize& render_attachment_size);
     void Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group = nullptr);
 
 private:
     void LayoutTextBlocks();
-    void UpdateAllTextBlocks();
+    void UpdateAllTextBlocks(const FrameSize& render_attachment_size);
 
     enum TextBlock : size_t
     {
