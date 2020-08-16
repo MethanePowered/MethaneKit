@@ -86,56 +86,72 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
 
     const FrameRect viewport_rect = m_sp_text_mesh ? GetAlignedViewportRect() : m_frame_rect;
 
-    gfx::RenderState::Settings state_settings;
-    state_settings.sp_program = gfx::Program::Create(GetUIContext().GetRenderContext(),
-        gfx::Program::Settings
-        {
-            gfx::Program::Shaders
+    const std::string state_name = m_settings.name + " Screen-Quad Shading";
+    m_sp_state = std::dynamic_pointer_cast<gfx::RenderState>(ui_context.GetGraphicsObjectFromCache(state_name));
+    if (!m_sp_state)
+    {
+        gfx::RenderState::Settings state_settings;
+        state_settings.sp_program = gfx::Program::Create(GetUIContext().GetRenderContext(),
+            gfx::Program::Settings
             {
-                gfx::Shader::CreateVertex(GetUIContext().GetRenderContext(), { Data::ShaderProvider::Get(), { "Text", "TextVS" }, { } }),
-                gfx::Shader::CreatePixel( GetUIContext().GetRenderContext(), { Data::ShaderProvider::Get(), { "Text", "TextPS" }, { } }),
-            },
-            gfx::Program::InputBufferLayouts
-            {
-                gfx::Program::InputBufferLayout
+                gfx::Program::Shaders
                 {
-                    gfx::Program::InputBufferLayout::ArgumentSemantics { "POSITION", "TEXCOORD" }
-                }
-            },
-            gfx::Program::ArgumentDescriptions
-            {
-                { { gfx::Shader::Type::Vertex, "g_uniforms"  }, gfx::Program::Argument::Modifiers::None     },
-                { { gfx::Shader::Type::Pixel,  "g_constants" }, gfx::Program::Argument::Modifiers::Constant },
-                { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::Argument::Modifiers::None     },
-                { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::Argument::Modifiers::Constant },
-            },
-            gfx::PixelFormats
-            {
-                context_settings.color_format
-            },
-            context_settings.depth_stencil_format
-        }
-    );
-    state_settings.sp_program->SetName(m_settings.name + " Screen-Quad Shading");
-    state_settings.viewports                                            = { gfx::GetFrameViewport(viewport_rect) };
-    state_settings.scissor_rects                                        = { gfx::GetFrameScissorRect(viewport_rect) };
-    state_settings.depth.enabled                                        = false;
-    state_settings.depth.write_enabled                                  = false;
-    state_settings.rasterizer.is_front_counter_clockwise                = true;
-    state_settings.blending.render_targets[0].blend_enabled             = true;
-    state_settings.blending.render_targets[0].source_rgb_blend_factor   = gfx::RenderState::Blending::Factor::SourceAlpha;
-    state_settings.blending.render_targets[0].dest_rgb_blend_factor     = gfx::RenderState::Blending::Factor::OneMinusSourceAlpha;
-    state_settings.blending.render_targets[0].source_alpha_blend_factor = gfx::RenderState::Blending::Factor::Zero;
-    state_settings.blending.render_targets[0].dest_alpha_blend_factor   = gfx::RenderState::Blending::Factor::Zero;
+                    gfx::Shader::CreateVertex(GetUIContext().GetRenderContext(), { Data::ShaderProvider::Get(), { "Text", "TextVS" }, { } }),
+                    gfx::Shader::CreatePixel( GetUIContext().GetRenderContext(), { Data::ShaderProvider::Get(), { "Text", "TextPS" }, { } }),
+                },
+                gfx::Program::InputBufferLayouts
+                {
+                    gfx::Program::InputBufferLayout
+                    {
+                        gfx::Program::InputBufferLayout::ArgumentSemantics { "POSITION", "TEXCOORD" }
+                    }
+                },
+                gfx::Program::ArgumentDescriptions
+                {
+                    { { gfx::Shader::Type::Vertex, "g_uniforms"  }, gfx::Program::Argument::Modifiers::None     },
+                    { { gfx::Shader::Type::Pixel,  "g_constants" }, gfx::Program::Argument::Modifiers::Constant },
+                    { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::Argument::Modifiers::None     },
+                    { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::Argument::Modifiers::Constant },
+                },
+                gfx::PixelFormats
+                {
+                    context_settings.color_format
+                },
+                context_settings.depth_stencil_format
+            }
+        );
+        state_settings.sp_program->SetName(m_settings.name + " Screen-Quad Shading");
+        state_settings.viewports                                            = { gfx::GetFrameViewport(viewport_rect) };
+        state_settings.scissor_rects                                        = { gfx::GetFrameScissorRect(viewport_rect) };
+        state_settings.depth.enabled                                        = false;
+        state_settings.depth.write_enabled                                  = false;
+        state_settings.rasterizer.is_front_counter_clockwise                = true;
+        state_settings.blending.render_targets[0].blend_enabled             = true;
+        state_settings.blending.render_targets[0].source_rgb_blend_factor   = gfx::RenderState::Blending::Factor::SourceAlpha;
+        state_settings.blending.render_targets[0].dest_rgb_blend_factor     = gfx::RenderState::Blending::Factor::OneMinusSourceAlpha;
+        state_settings.blending.render_targets[0].source_alpha_blend_factor = gfx::RenderState::Blending::Factor::Zero;
+        state_settings.blending.render_targets[0].dest_alpha_blend_factor   = gfx::RenderState::Blending::Factor::Zero;
 
-    m_sp_state = gfx::RenderState::Create(GetUIContext().GetRenderContext(), state_settings);
-    m_sp_state->SetName(m_settings.name + " Screen-Quad Render State");
+        m_sp_state = gfx::RenderState::Create(GetUIContext().GetRenderContext(), state_settings);
+        m_sp_state->SetName(state_name);
 
-    m_sp_atlas_sampler = gfx::Sampler::Create(GetUIContext().GetRenderContext(), {
-        { gfx::Sampler::Filter::MinMag::Linear     },
-        { gfx::Sampler::Address::Mode::ClampToZero },
-    });
-    m_sp_atlas_sampler->SetName(m_settings.name + " Screen-Quad Texture Sampler");
+        if (!ui_context.AddGraphicsObjectToCache(*m_sp_state))
+            throw std::logic_error("Graphics object with same name already exists in UI context cache");
+    }
+
+    const std::string sampler_name = m_settings.name + " Screen-Quad Texture Sampler";
+    m_sp_atlas_sampler = std::dynamic_pointer_cast<gfx::Sampler>(ui_context.GetGraphicsObjectFromCache(sampler_name));
+    if (!m_sp_atlas_sampler)
+    {
+        m_sp_atlas_sampler = gfx::Sampler::Create(GetUIContext().GetRenderContext(), {
+            { gfx::Sampler::Filter::MinMag::Linear },
+            { gfx::Sampler::Address::Mode::ClampToZero },
+        });
+        m_sp_atlas_sampler->SetName(sampler_name);
+
+        if (!ui_context.AddGraphicsObjectToCache(*m_sp_atlas_sampler))
+            throw std::logic_error("Graphics object with same name already exists in UI context cache");
+    }
 
     if (m_sp_text_mesh)
     {

@@ -25,9 +25,14 @@ Methane user interface context used by all widgets for rendering.
 
 #include "Types.hpp"
 
+#include <Methane/Memory.hpp>
+
+#include <map>
+
 namespace Methane::Graphics
 {
 struct RenderContext;
+struct Object;
 }
 
 namespace Methane::UserInterface
@@ -39,6 +44,9 @@ class Context
 {
 public:
     Context(gfx::RenderContext& render_context) noexcept;
+
+    bool AddGraphicsObjectToCache(gfx::Object& graphics_object);
+    Ptr<gfx::Object> GetGraphicsObjectFromCache(const std::string& object_name) const noexcept;
 
     const gfx::RenderContext& GetRenderContext() const noexcept         { return m_render_context; }
     gfx::RenderContext&       GetRenderContext() noexcept               { return m_render_context; }
@@ -108,9 +116,12 @@ public:
     }
 
 private:
-    gfx::RenderContext& m_render_context;
-    float               m_dots_to_pixels_factor;
-    uint32_t            m_font_resolution_dpi;
+    using GraphicsObjectByName = std::map<std::string, WeakPtr<gfx::Object>>;
+
+    gfx::RenderContext&  m_render_context;
+    float                m_dots_to_pixels_factor;
+    uint32_t             m_font_resolution_dpi;
+    GraphicsObjectByName m_graphics_object_by_name;
 };
 
 } // namespace Methane::UserInterface

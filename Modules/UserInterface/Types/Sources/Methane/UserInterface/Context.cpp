@@ -36,6 +36,28 @@ Context::Context(gfx::RenderContext& render_context) noexcept
     META_FUNCTION_TASK();
 }
 
+bool Context::AddGraphicsObjectToCache(gfx::Object& graphics_object)
+{
+    META_FUNCTION_TASK();
+    if (graphics_object.GetName().empty())
+        throw std::logic_error("Can not add graphics object without a name to UI context cache.");
+
+    const auto add_result = m_graphics_object_by_name.emplace(graphics_object.GetName(), graphics_object.GetPtr());
+    if (!add_result.second && add_result.first->second.expired())
+    {
+        add_result.first->second = graphics_object.GetPtr();
+        return true;
+    }
+    return add_result.second;
+}
+
+Ptr<gfx::Object> Context::GetGraphicsObjectFromCache(const std::string& object_name) const noexcept
+{
+    META_FUNCTION_TASK();
+    const auto graphics_object_by_name_it = m_graphics_object_by_name.find(object_name);
+    return graphics_object_by_name_it == m_graphics_object_by_name.end() ? nullptr : graphics_object_by_name_it->second.lock();
+}
+
 const FrameSize& Context::GetFrameSize() const noexcept
 {
     return m_render_context.GetSettings().frame_size;
