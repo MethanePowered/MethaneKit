@@ -33,6 +33,26 @@ namespace Methane::Graphics
 class RenderContextBase;
 class RenderCommandListBase;
 
+class ViewStateBase
+    : public ObjectBase
+    , public ViewState
+{
+public:
+    ViewStateBase(const Settings& settings);
+
+    // ViewState overrides
+    const Settings& GetSettings() const noexcept override   { return m_settings; }
+    bool Reset(const Settings& settings) override;
+    bool SetViewports(const Viewports& viewports) override;
+    bool SetScissorRects(const ScissorRects& scissor_rects) override;
+
+    // ViewStateBase interface
+    virtual void Apply(RenderCommandListBase& command_list) = 0;
+
+private:
+    Settings m_settings;
+};
+
 class RenderStateBase
     : public ObjectBase
     , public RenderState
@@ -40,11 +60,9 @@ class RenderStateBase
 public:
     RenderStateBase(RenderContextBase& context, const Settings& settings);
 
-    // RenderState interface
-    const Settings& GetSettings() const override   { return m_settings; }
+    // RenderState overrides
+    const Settings& GetSettings() const noexcept override   { return m_settings; }
     void Reset(const Settings& settings) override;
-    void SetViewports(const Viewports& viewports) override;
-    void SetScissorRects(const ScissorRects& scissor_rects) override;
 
     // RenderStateBase interface
     virtual void Apply(RenderCommandListBase& command_list, Group::Mask apply_groups) = 0;

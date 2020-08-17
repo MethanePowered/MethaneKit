@@ -68,9 +68,8 @@ public:
     Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings);
 
     Ptr<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& sp_constants_buffer, const Ptr<gfx::Buffer>& sp_uniforms_buffer);
-    void Resize(const gfx::FrameSize& frame_size);
     bool Update(double elapsed_seconds, double delta_seconds);
-    void Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings);
+    void Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
 
 private:
     using TexturedMeshBuffers = gfx::TexturedMeshBuffers<Uniforms>;
@@ -90,11 +89,11 @@ private:
 
     Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings, gfx::BaseMesh<Vertex> mesh);
 
-    Settings                    m_settings;
-    gfx::RenderContext&         m_context;
-    TexturedMeshBuffers         m_mesh_buffers;
-    Ptr<gfx::Sampler>           m_sp_texture_sampler;
-    Ptr<gfx::RenderState>       m_sp_state;
+    Settings              m_settings;
+    gfx::RenderContext&   m_context;
+    TexturedMeshBuffers   m_mesh_buffers;
+    Ptr<gfx::Sampler>     m_sp_texture_sampler;
+    Ptr<gfx::RenderState> m_sp_render_state;
 };
 
 } // namespace Methane::Graphics

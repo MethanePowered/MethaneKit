@@ -63,11 +63,11 @@ void RenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_state, Debug
 
     if (sp_render_state)
     {
-        SetState(*sp_render_state);
+        SetRenderState(*sp_render_state);
     }
 }
 
-void RenderCommandListBase::SetState(RenderState& render_state, RenderState::Group::Mask state_groups)
+void RenderCommandListBase::SetRenderState(RenderState& render_state, RenderState::Group::Mask state_groups)
 {
     META_FUNCTION_TASK();
     VerifyEncodingState();
@@ -87,6 +87,22 @@ void RenderCommandListBase::SetState(RenderState& render_state, RenderState::Gro
     drawing_state.render_state_groups |= state_groups;
 }
 
+void RenderCommandListBase::SetViewState(ViewState& view_state)
+{
+    META_FUNCTION_TASK();
+    VerifyEncodingState();
+
+    DrawingState& drawing_state = GetDrawingState();
+    ViewStateBase* p_prev_view_state = drawing_state.p_view_state;
+    drawing_state.p_view_state = static_cast<ViewStateBase*>(&view_state);
+
+    if (p_prev_view_state && p_prev_view_state->GetSettings() == view_state.GetSettings())
+        return;
+
+    drawing_state.p_view_state->Apply(*this);
+    drawing_state.changes |= DrawingState::Changes::ViewState;
+}
+
 void RenderCommandListBase::SetVertexBuffers(const BufferSet& vertex_buffers)
 {
     META_FUNCTION_TASK();
@@ -99,7 +115,7 @@ void RenderCommandListBase::SetVertexBuffers(const BufferSet& vertex_buffers)
     }
 
     const BufferSetBase& vertex_buffers_base = static_cast<const BufferSetBase&>(vertex_buffers);
-    DrawingState       & drawing_state       = GetDrawingState();
+    DrawingState&        drawing_state       = GetDrawingState();
     if (drawing_state.vertex_buffers != vertex_buffers_base.GetRawPtrs())
         drawing_state.changes |= DrawingState::Changes::VertexBuffers;
 

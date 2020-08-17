@@ -78,15 +78,13 @@ SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings
         }
     );
     state_settings.sp_program->SetName("Sky-box shading");
-    state_settings.viewports            = { GetFrameViewport(context_settings.frame_size) };
-    state_settings.scissor_rects        = { GetFrameScissorRect(context_settings.frame_size) };
     state_settings.depth.enabled        = m_settings.render_options & Options::DepthEnabled;
     state_settings.depth.write_enabled  = false;
     state_settings.depth.compare        = m_settings.render_options & Options::DepthReversed ? Compare::GreaterEqual : Compare::Less;
     state_settings.rasterizer.is_front_counter_clockwise = true;
 
-    m_sp_state = RenderState::Create(context, state_settings);
-    m_sp_state->SetName("Sky-box render state");
+    m_sp_render_state = RenderState::Create(context, state_settings);
+    m_sp_render_state->SetName("Sky-box render state");
 
     m_sp_texture_sampler = Sampler::Create(context, {
         { Sampler::Filter::MinMag::Linear     },
@@ -100,22 +98,13 @@ Ptr<ProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& sp_uniform
 {
     META_FUNCTION_TASK();
 
-    assert(!!m_sp_state);
-    assert(!!m_sp_state->GetSettings().sp_program);
-    return ProgramBindings::Create(m_sp_state->GetSettings().sp_program, {
+    assert(!!m_sp_render_state);
+    assert(!!m_sp_render_state->GetSettings().sp_program);
+    return ProgramBindings::Create(m_sp_render_state->GetSettings().sp_program, {
         { { Shader::Type::Vertex, "g_skybox_uniforms" }, { { sp_uniforms_buffer             } } },
         { { Shader::Type::Pixel,  "g_skybox_texture"  }, { { m_mesh_buffers.GetTexturePtr() } } },
         { { Shader::Type::Pixel,  "g_texture_sampler" }, { { m_sp_texture_sampler           } } },
     });
-}
-
-void SkyBox::Resize(const FrameSize& frame_size)
-{
-    META_FUNCTION_TASK();
-
-    assert(m_sp_state);
-    m_sp_state->SetViewports({ GetFrameViewport(frame_size) });
-    m_sp_state->SetScissorRects({ GetFrameScissorRect(frame_size) });
 }
 
 void SkyBox::Update()
@@ -129,7 +118,7 @@ void SkyBox::Update()
     m_mesh_buffers.SetFinalPassUniforms({ model_scale_matrix * model_translate_matrix * m_settings.view_camera.GetViewProjMatrix() });
 }
 
-void SkyBox::Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindings)
+void SkyBox::Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindings, ViewState& view_state)
 {
     META_FUNCTION_TASK();
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Sky-box rendering");
@@ -138,7 +127,8 @@ void SkyBox::Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindin
     assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= sizeof(Uniforms));
     buffer_bindings.sp_uniforms_buffer->SetData(m_mesh_buffers.GetFinalPassUniformsSubresources());
 
-    cmd_list.Reset(m_sp_state, s_debug_group.get());
+    cmd_list.Reset(m_sp_render_state, s_debug_group.get());
+    cmd_list.SetViewState(view_state);
     
     assert(!buffer_bindings.program_bindings_per_instance.empty());
     assert(!!buffer_bindings.program_bindings_per_instance[0]);

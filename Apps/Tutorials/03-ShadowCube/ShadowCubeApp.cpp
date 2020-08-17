@@ -173,11 +173,11 @@ void ShadowCubeApp::Init()
         }
     );
     final_state_settings.sp_program->SetName("Textured, Shadows & Lighting");
-    final_state_settings.viewports     = { gfx::GetFrameViewport(context_settings.frame_size) };
-    final_state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };
-    final_state_settings.depth.enabled = true;
-    m_final_pass.sp_state = gfx::RenderState::Create(GetRenderContext(), final_state_settings);
-    m_final_pass.sp_state->SetName("Final pass render state");
+    final_state_settings.depth.enabled  = true;
+    m_final_pass.sp_render_state        = gfx::RenderState::Create(GetRenderContext(), final_state_settings);
+    m_final_pass.sp_render_state->SetName("Final pass render state");
+
+    m_final_pass.sp_view_state = GetViewStatePtr();
 
     // ========= Shadow Pass objects =========
     
@@ -203,11 +203,14 @@ void ShadowCubeApp::Init()
         }
     );
     shadow_state_settings.sp_program->SetName("Vertex Only: Textured, Lighting");
-    shadow_state_settings.viewports     = { gfx::GetFrameViewport(g_shadow_map_size) };
-    shadow_state_settings.scissor_rects = { gfx::GetFrameScissorRect(g_shadow_map_size) };
     shadow_state_settings.depth.enabled = true;
-    m_shadow_pass.sp_state = gfx::RenderState::Create(GetRenderContext(), shadow_state_settings);
-    m_shadow_pass.sp_state->SetName("Shadow-map render state");
+    m_shadow_pass.sp_render_state       = gfx::RenderState::Create(GetRenderContext(), shadow_state_settings);
+    m_shadow_pass.sp_render_state->SetName("Shadow-map render state");
+
+    m_shadow_pass.sp_view_state = gfx::ViewState::Create({
+        { gfx::GetFrameViewport(g_shadow_map_size)    },
+        { gfx::GetFrameScissorRect(g_shadow_map_size) }
+    });
 
     // ========= Per-Frame Data =========
     for(ShadowCubeFrame& frame : GetFrames())
@@ -309,7 +312,8 @@ void ShadowCubeApp::Init()
 
 void ShadowCubeApp::RenderPass::Release()
 {
-    sp_state.reset();
+    sp_render_state.reset();
+    sp_view_state.reset();
 }
 
 bool ShadowCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
@@ -325,10 +329,6 @@ bool ShadowCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     
     if (!is_resized)
         return false;
-
-    // Update viewports and scissor rects state
-    m_final_pass.sp_state->SetViewports({ gfx::GetFrameViewport(frame_size) });
-    m_final_pass.sp_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
 
     m_view_camera.Resize({
         static_cast<float>(frame_size.width),
@@ -427,7 +427,8 @@ void ShadowCubeApp::RenderScene(const RenderPass &render_pass, ShadowCubeFrame::
     gfx::RenderCommandList& cmd_list = *render_pass_resources.sp_cmd_list;
 
     // Reset command list with initial rendering state
-    cmd_list.Reset(render_pass.sp_state, render_pass.sp_debug_group.get());
+    cmd_list.Reset(render_pass.sp_render_state, render_pass.sp_debug_group.get());
+    cmd_list.SetViewState(*render_pass.sp_view_state);
 
     // Draw scene with cube and floor
     m_sp_cube_buffers->Draw(cmd_list, *render_pass_resources.cube.sp_program_bindings);

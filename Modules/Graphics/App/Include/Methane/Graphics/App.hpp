@@ -151,6 +151,11 @@ public:
             m_sp_depth_texture->SetName("Depth Texture");
         }
 
+        m_sp_view_state = ViewState::Create({
+            { GetFrameViewport(context_settings.frame_size)    },
+            { GetFrameScissorRect(context_settings.frame_size) }
+        });
+
         // Create frame resources
         for (uint32_t frame_index = 0; frame_index < context_settings.frame_buffers_count; ++frame_index)
         {
@@ -217,11 +222,14 @@ public:
     bool Resize(const FrameSize& frame_size, bool is_minimized) override
     {
         META_FUNCTION_TASK();
-
         if (!AppBase::Resize(frame_size, is_minimized))
             return false;
 
         m_initial_context_settings.frame_size = frame_size;
+
+        // Update viewports and scissor rects state
+        m_sp_view_state->SetViewports({ GetFrameViewport(frame_size) });
+        m_sp_view_state->SetScissorRects({ GetFrameScissorRect(frame_size) });
 
         // Save frame and depth textures restore information and delete obsolete resources
         std::vector<ResourceRestoreInfo> frame_restore_infos;
@@ -422,6 +430,7 @@ protected:
 
         m_frames.clear();
         m_sp_depth_texture.reset();
+        m_sp_view_state.reset();
 
         Deinitialize();
     }
@@ -444,14 +453,11 @@ protected:
     }
 
     const RenderContext::Settings& GetInitialContextSettings() const { return m_initial_context_settings; }
-
-    bool IsRenderContextInitialized() { return !!m_sp_context; }
-    const Ptr<RenderContext>& GetRenderContextPtr() const noexcept { return m_sp_context; }
-    RenderContext& GetRenderContext() const noexcept
-    {
-        assert(m_sp_context);
-        return *m_sp_context;
-    }
+    bool IsRenderContextInitialized()                                { return !!m_sp_context; }
+    const Ptr<RenderContext>& GetRenderContextPtr() const noexcept   { return m_sp_context; }
+    RenderContext& GetRenderContext() const noexcept                 { return *m_sp_context; }
+    const Ptr<ViewState>& GetViewStatePtr() const noexcept           { return m_sp_view_state; }
+    ViewState& GetViewState() noexcept                               { return *m_sp_view_state; }
 
     FrameSize GetFrameSizeInDots() const noexcept { return m_sp_context->GetSettings().frame_size / m_sp_context->GetContentScalingFactor(); }
 
@@ -477,6 +483,7 @@ private:
     Data::AnimationsPool     m_animations;
     Ptr<RenderContext>       m_sp_context;
     Ptr<Texture>             m_sp_depth_texture;
+    Ptr<ViewState>           m_sp_view_state;
     std::vector<FrameT>      m_frames;
 
     static constexpr double  g_title_update_interval_sec = 1.0;

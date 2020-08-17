@@ -67,7 +67,7 @@ void HelloTriangleApp::Init()
     m_sp_vertex_buffer_set = gfx::BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
 
     // Create render state
-    m_sp_state = gfx::RenderState::Create(GetRenderContext(),
+    m_sp_render_state = gfx::RenderState::Create(GetRenderContext(),
         gfx::RenderState::Settings
         {
             gfx::Program::Create(GetRenderContext(),
@@ -88,19 +88,11 @@ void HelloTriangleApp::Init()
                     gfx::Program::ArgumentDescriptions { },
                     gfx::PixelFormats { GetRenderContext().GetSettings().color_format }
                 }
-            ),
-            gfx::Viewports
-            {
-                gfx::GetFrameViewport(GetInitialContextSettings().frame_size)
-            },
-            gfx::ScissorRects
-            {
-                gfx::GetFrameScissorRect(GetInitialContextSettings().frame_size)
-            },
+            )
         }
     );
-    m_sp_state->GetSettings().sp_program->SetName("Colored Triangle Shading");
-    m_sp_state->SetName("Triangle Pipeline State");
+    m_sp_render_state->GetSettings().sp_program->SetName("Colored Triangle Shading");
+    m_sp_render_state->SetName("Triangle Pipeline State");
 
     // Create per-frame command lists
     for(HelloTriangleFrame& frame : GetFrames())
@@ -113,19 +105,6 @@ void HelloTriangleApp::Init()
     UserInterfaceApp::CompleteInitialization();
 }
 
-bool HelloTriangleApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
-{
-    // Resize screen color and depth textures
-    if (!UserInterfaceApp::Resize(frame_size, is_minimized))
-        return false;
-
-    // Update viewports and scissor rects state
-    m_sp_state->SetViewports(    { gfx::GetFrameViewport(frame_size)    } );
-    m_sp_state->SetScissorRects( { gfx::GetFrameScissorRect(frame_size) } );
-
-    return true;
-}
-
 bool HelloTriangleApp::Render()
 {
     if (!UserInterfaceApp::Render())
@@ -134,7 +113,8 @@ bool HelloTriangleApp::Render()
     // Issue commands for triangle rendering
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Triangle Rendering");
     HelloTriangleFrame& frame = GetCurrentFrame();
-    frame.sp_render_cmd_list->Reset(m_sp_state, s_debug_group.get());
+    frame.sp_render_cmd_list->Reset(m_sp_render_state, s_debug_group.get());
+    frame.sp_render_cmd_list->SetViewState(GetViewState());
     frame.sp_render_cmd_list->SetVertexBuffers(*m_sp_vertex_buffer_set);
     frame.sp_render_cmd_list->Draw(gfx::RenderCommandList::Primitive::Triangle, 3u);
 
@@ -153,7 +133,7 @@ bool HelloTriangleApp::Render()
 void HelloTriangleApp::OnContextReleased(gfx::Context& context)
 {
     m_sp_vertex_buffer_set.reset();
-    m_sp_state.reset();
+    m_sp_render_state.reset();
 
     UserInterfaceApp::OnContextReleased(context);
 }

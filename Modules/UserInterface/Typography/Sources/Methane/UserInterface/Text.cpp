@@ -86,9 +86,9 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
 
     const FrameRect viewport_rect = m_sp_text_mesh ? GetAlignedViewportRect() : m_frame_rect;
 
-    const std::string state_name = m_settings.name + " Screen-Quad Shading";
-    m_sp_state = std::dynamic_pointer_cast<gfx::RenderState>(ui_context.GetGraphicsObjectFromCache(state_name));
-    if (!m_sp_state)
+    static const std::string s_state_name = "Text Render State";
+    m_sp_render_state = std::dynamic_pointer_cast<gfx::RenderState>(ui_context.GetGraphicsObjectFromCache(s_state_name));
+    if (!m_sp_render_state)
     {
         gfx::RenderState::Settings state_settings;
         state_settings.sp_program = gfx::Program::Create(GetUIContext().GetRenderContext(),
@@ -109,7 +109,7 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
                 gfx::Program::ArgumentDescriptions
                 {
                     { { gfx::Shader::Type::Vertex, "g_uniforms"  }, gfx::Program::Argument::Modifiers::None     },
-                    { { gfx::Shader::Type::Pixel,  "g_constants" }, gfx::Program::Argument::Modifiers::Constant },
+                    { { gfx::Shader::Type::Pixel,  "g_constants" }, gfx::Program::Argument::Modifiers::None     },
                     { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::Argument::Modifiers::None     },
                     { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::Argument::Modifiers::Constant },
                 },
@@ -120,9 +120,7 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
                 context_settings.depth_stencil_format
             }
         );
-        state_settings.sp_program->SetName(m_settings.name + " Screen-Quad Shading");
-        state_settings.viewports                                            = { gfx::GetFrameViewport(viewport_rect) };
-        state_settings.scissor_rects                                        = { gfx::GetFrameScissorRect(viewport_rect) };
+        state_settings.sp_program->SetName("Text Shading");
         state_settings.depth.enabled                                        = false;
         state_settings.depth.write_enabled                                  = false;
         state_settings.rasterizer.is_front_counter_clockwise                = true;
@@ -132,22 +130,27 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
         state_settings.blending.render_targets[0].source_alpha_blend_factor = gfx::RenderState::Blending::Factor::Zero;
         state_settings.blending.render_targets[0].dest_alpha_blend_factor   = gfx::RenderState::Blending::Factor::Zero;
 
-        m_sp_state = gfx::RenderState::Create(GetUIContext().GetRenderContext(), state_settings);
-        m_sp_state->SetName(state_name);
+        m_sp_render_state = gfx::RenderState::Create(GetUIContext().GetRenderContext(), state_settings);
+        m_sp_render_state->SetName(s_state_name);
 
-        if (!ui_context.AddGraphicsObjectToCache(*m_sp_state))
+        if (!ui_context.AddGraphicsObjectToCache(*m_sp_render_state))
             throw std::logic_error("Graphics object with same name already exists in UI context cache");
     }
 
-    const std::string sampler_name = m_settings.name + " Screen-Quad Texture Sampler";
-    m_sp_atlas_sampler = std::dynamic_pointer_cast<gfx::Sampler>(ui_context.GetGraphicsObjectFromCache(sampler_name));
+    m_sp_view_state = gfx::ViewState::Create({
+        { gfx::GetFrameViewport(viewport_rect)    },
+        { gfx::GetFrameScissorRect(viewport_rect) }
+    });
+
+    static const std::string s_sampler_name = "Font Atlas Sampler";
+    m_sp_atlas_sampler = std::dynamic_pointer_cast<gfx::Sampler>(ui_context.GetGraphicsObjectFromCache(s_sampler_name));
     if (!m_sp_atlas_sampler)
     {
         m_sp_atlas_sampler = gfx::Sampler::Create(GetUIContext().GetRenderContext(), {
             { gfx::Sampler::Filter::MinMag::Linear },
             { gfx::Sampler::Address::Mode::ClampToZero },
         });
-        m_sp_atlas_sampler->SetName(sampler_name);
+        m_sp_atlas_sampler->SetName(s_sampler_name);
 
         if (!ui_context.AddGraphicsObjectToCache(*m_sp_atlas_sampler))
             throw std::logic_error("Graphics object with same name already exists in UI context cache");
@@ -325,9 +328,9 @@ void Text::Update(const gfx::FrameSize& render_attachment_size)
     }
     if (frame_resources.IsDirty(FrameResources::Dirty::Atlas) && m_sp_font)
     {
-        if (!frame_resources.UpdateAtlasTexture(m_sp_font->GetAtlasTexturePtr(GetUIContext().GetRenderContext())) && m_sp_state)
+        if (!frame_resources.UpdateAtlasTexture(m_sp_font->GetAtlasTexturePtr(GetUIContext().GetRenderContext())) && m_sp_render_state)
         {
-            frame_resources.InitializeProgramBindings(*m_sp_state, m_sp_const_buffer, m_sp_atlas_sampler);
+            frame_resources.InitializeProgramBindings(*m_sp_render_state, m_sp_const_buffer, m_sp_atlas_sampler);
         }
     }
     if (frame_resources.IsDirty(FrameResources::Dirty::Uniforms) && m_sp_text_mesh)
@@ -347,7 +350,8 @@ void Text::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* 
     if (!frame_resources.IsInitialized())
         return;
 
-    cmd_list.Reset(m_sp_state, p_debug_group);
+    cmd_list.Reset(m_sp_render_state, p_debug_group);
+    cmd_list.SetViewState(*m_sp_view_state);
     cmd_list.SetProgramBindings(frame_resources.GetProgramBindings());
     cmd_list.SetVertexBuffers(frame_resources.GetVertexBufferSet());
     cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, frame_resources.GetIndexBuffer());
@@ -550,7 +554,7 @@ void Text::InitializeFrameResources()
     if (!m_frame_resources.empty())
         throw std::logic_error("Frame resources have been already initialized.");
 
-    if (!m_sp_state)
+    if (!m_sp_render_state)
         throw std::logic_error("Text render state is not initialized.");
 
     if (!m_sp_text_mesh)
@@ -564,7 +568,7 @@ void Text::InitializeFrameResources()
     for(uint32_t frame_buffer_index = 0u; frame_buffer_index < frame_buffers_count; ++frame_buffer_index)
     {
         m_frame_resources.emplace_back(
-            *m_sp_state, render_context, m_sp_const_buffer, sp_atlas_texture, m_sp_atlas_sampler,
+            *m_sp_render_state, render_context, m_sp_const_buffer, sp_atlas_texture, m_sp_atlas_sampler,
             *m_sp_text_mesh, m_settings.name, m_settings.mesh_buffers_reservation_multiplier
         );
     }
@@ -615,7 +619,7 @@ void Text::UpdateTextMesh()
         m_sp_text_mesh = std::make_unique<TextMesh>(m_settings.text, m_settings.layout, *m_sp_font, m_frame_rect.size);
     }
 
-    if (m_frame_resources.empty() && m_sp_state)
+    if (m_frame_resources.empty() && m_sp_render_state)
     {
         InitializeFrameResources();
         return;
@@ -696,8 +700,8 @@ void Text::UpdateViewport(const gfx::FrameSize& render_attachment_size)
         return;
 
     const FrameRect viewport_rect = GetAlignedViewportRect();
-    m_sp_state->SetViewports({ gfx::GetFrameViewport(viewport_rect) });
-    m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(viewport_rect, render_attachment_size) });
+    m_sp_view_state->SetViewports({ gfx::GetFrameViewport(viewport_rect) });
+    m_sp_view_state->SetScissorRects({ gfx::GetFrameScissorRect(viewport_rect, render_attachment_size) });
 }
 
 std::string Text::GetWrapName(Wrap wrap) noexcept

@@ -120,7 +120,8 @@ private:
 
         const bool                              is_final_pass;
         const Ptr<gfx::CommandList::DebugGroup> sp_debug_group;
-        Ptr<gfx::RenderState>                   sp_state;
+        Ptr<gfx::RenderState>                   sp_render_state;
+        Ptr<gfx::ViewState>                     sp_view_state;
     };
 
     bool Animate(double elapsed_seconds, double delta_seconds);

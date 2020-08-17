@@ -77,7 +77,7 @@ void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_stat
 #ifdef _WIN32
     tf::Taskflow reset_task_flow;
     reset_task_flow.parallel_for(0, static_cast<int>(m_parallel_command_lists.size()), 1, reset_command_list_fn,
-                           Data::GetParallelChunkSizeAsInt(m_parallel_command_lists.size()));
+                                 Data::GetParallelChunkSizeAsInt(m_parallel_command_lists.size()));
     GetCommandQueueBase().GetContext().GetParallelExecutor().run(reset_task_flow).get();
 #else
     for(size_t command_list_index = 0u; command_list_index < m_parallel_command_lists.size(); ++command_list_index)
@@ -95,6 +95,16 @@ void ParallelRenderCommandListBase::Commit()
     }
 
     CommandListBase::Commit();
+}
+
+void ParallelRenderCommandListBase::SetViewState(ViewState& view_state)
+{
+    META_FUNCTION_TASK();
+    for(const Ptr<RenderCommandList>& sp_render_command_list : m_parallel_command_lists)
+    {
+        assert(!!sp_render_command_list);
+        sp_render_command_list->SetViewState(view_state);
+    }
 }
 
 void ParallelRenderCommandListBase::SetParallelCommandListsCount(uint32_t count)

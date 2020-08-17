@@ -76,9 +76,8 @@ public:
     SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings);
 
     Ptr<ProgramBindings> CreateProgramBindings(const Ptr<Buffer>& sp_uniforms_buffer);
-    void Resize(const FrameSize& frame_size);
     void Update();
-    void Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindings);
+    void Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindings, ViewState& view_state);
 
 private:
     struct Vertex
@@ -96,7 +95,7 @@ private:
     RenderContext&                m_context;
     TexturedMeshBuffers<Uniforms> m_mesh_buffers;
     Ptr<Sampler>                  m_sp_texture_sampler;
-    Ptr<RenderState>              m_sp_state;
+    Ptr<RenderState>              m_sp_render_state;
 };
 
 } // namespace Methane::Graphics

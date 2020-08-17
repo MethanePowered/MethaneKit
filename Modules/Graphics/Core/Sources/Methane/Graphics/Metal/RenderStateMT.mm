@@ -174,6 +174,103 @@ static MTLStencilDescriptor* ConvertStencilDescriptorToMetal(const RenderState::
     return mtl_stencil_desc;
 }
 
+static std::vector<MTLViewport> ConvertViewportsToMetal(const Viewports& viewports)
+{
+    META_FUNCTION_TASK();
+    std::vector<MTLViewport> mtl_viewports;
+    mtl_viewports.reserve(viewports.size());
+
+    for(const Viewport& viewport : viewports)
+    {
+        MTLViewport mtl_viewport{ };
+        mtl_viewport.originX = viewport.origin.GetX();
+        mtl_viewport.originY = viewport.origin.GetY();
+        mtl_viewport.width   = viewport.size.width;
+        mtl_viewport.height  = viewport.size.height;
+        mtl_viewport.znear   = viewport.origin.GetZ();
+        mtl_viewport.zfar    = viewport.origin.GetZ() + viewport.size.depth;
+        mtl_viewports.emplace_back(std::move(mtl_viewport));
+    }
+
+    return mtl_viewports;
+}
+
+static std::vector<MTLScissorRect> ConvertScissorRectsToMetal(const ScissorRects& scissor_rects)
+{
+    META_FUNCTION_TASK();
+    std::vector<MTLScissorRect> mtl_scissor_rects;
+    mtl_scissor_rects.reserve(scissor_rects.size());
+
+    for(const ScissorRect& scissor_rect : scissor_rects)
+    {
+        MTLScissorRect mtl_scissor_rect{};
+        mtl_scissor_rect.x      = static_cast<NSUInteger>(scissor_rect.origin.GetX());
+        mtl_scissor_rect.y      = static_cast<NSUInteger>(scissor_rect.origin.GetY());
+        mtl_scissor_rect.width  = static_cast<NSUInteger>(scissor_rect.size.width);
+        mtl_scissor_rect.height = static_cast<NSUInteger>(scissor_rect.size.height);
+        mtl_scissor_rects.emplace_back(std::move(mtl_scissor_rect));
+    }
+
+    return mtl_scissor_rects;
+}
+
+Ptr<ViewState> ViewState::Create(const ViewState::Settings& state_settings)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ViewStateMT>(state_settings);
+}
+
+ViewStateMT::ViewStateMT(const Settings& settings)
+    : ViewStateBase(settings)
+    , m_mtl_viewports(ConvertViewportsToMetal(settings.viewports))
+    , m_mtl_scissor_rects(ConvertScissorRectsToMetal(settings.scissor_rects))
+{
+    META_FUNCTION_TASK();
+}
+
+// ViewState overrides
+bool ViewStateMT::Reset(const Settings& settings)
+{
+    META_FUNCTION_TASK();
+    if (!ViewStateBase::Reset(settings))
+        return false;
+
+    m_mtl_viewports     = ConvertViewportsToMetal(settings.viewports);
+    m_mtl_scissor_rects = ConvertScissorRectsToMetal(settings.scissor_rects);
+    return true;
+}
+
+bool ViewStateMT::SetViewports(const Viewports& viewports)
+{
+    META_FUNCTION_TASK();
+    if (!ViewStateBase::SetViewports(viewports))
+        return false;
+
+    m_mtl_viewports = ConvertViewportsToMetal(viewports);
+    return true;
+}
+
+bool ViewStateMT::SetScissorRects(const ScissorRects& scissor_rects)
+{
+    META_FUNCTION_TASK();
+    if (!ViewStateBase::SetScissorRects(scissor_rects))
+        return false;
+
+    m_mtl_scissor_rects = ConvertScissorRectsToMetal(scissor_rects);
+    return true;
+}
+
+void ViewStateMT::Apply(RenderCommandListBase& command_list)
+{
+    META_FUNCTION_TASK();
+
+    RenderCommandListMT& metal_command_list = static_cast<RenderCommandListMT&>(command_list);
+    const id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeCommandEncoder();
+
+    [mtl_cmd_encoder setViewports: m_mtl_viewports.data() count:static_cast<uint32_t>(m_mtl_viewports.size())];
+    [mtl_cmd_encoder setScissorRects: m_mtl_scissor_rects.data() count:static_cast<uint32_t>(m_mtl_scissor_rects.size())];
+}
+
 Ptr<RenderState> RenderState::Create(RenderContext& context, const RenderState::Settings& state_settings)
 {
     META_FUNCTION_TASK();
@@ -264,15 +361,6 @@ void RenderStateMT::Reset(const Settings& settings)
     m_mtl_cull_mode          = ConvertRasterizerCullModeToMetal(settings.rasterizer.cull_mode);
     m_mtl_front_face_winding = ConvertRasterizerFrontWindingToMetal(settings.rasterizer.is_front_counter_clockwise);
     
-    if (!settings.viewports.empty())
-    {
-        SetViewports(settings.viewports);
-    }
-    if (!settings.scissor_rects.empty())
-    {
-        SetScissorRects(settings.scissor_rects);
-    }
-    
     ResetNativeState();
 }
 
@@ -299,14 +387,6 @@ void RenderStateMT::Apply(RenderCommandListBase& command_list, Group::Mask state
         [mtl_cmd_encoder setFrontFacingWinding: m_mtl_front_face_winding];
         [mtl_cmd_encoder setCullMode: m_mtl_cull_mode];
     }
-    if (state_groups & Group::Viewports && !m_mtl_viewports.empty())
-    {
-        [mtl_cmd_encoder setViewports: m_mtl_viewports.data() count:static_cast<uint32_t>(m_mtl_viewports.size())];
-    }
-    if (state_groups & Group::ScissorRects && !m_mtl_scissor_rects.empty())
-    {
-        [mtl_cmd_encoder setScissorRects: m_mtl_scissor_rects.data() count:static_cast<uint32_t>(m_mtl_scissor_rects.size())];
-    }
     if (state_groups & Group::BlendingColor)
     {
         const Settings& settings = GetSettings();
@@ -314,44 +394,6 @@ void RenderStateMT::Apply(RenderCommandListBase& command_list, Group::Mask state
                                     green:settings.blending_color.GetG()
                                      blue:settings.blending_color.GetB()
                                     alpha:settings.blending_color.GetA()];
-    }
-}
-
-void RenderStateMT::SetViewports(const Viewports& viewports)
-{
-    META_FUNCTION_TASK();
-
-    RenderStateBase::SetViewports(viewports);
-    
-    m_mtl_viewports.clear();
-    for(const Viewport& viewport : viewports)
-    {
-        MTLViewport mtl_viewport{ };
-        mtl_viewport.originX = viewport.origin.GetX();
-        mtl_viewport.originY = viewport.origin.GetY();
-        mtl_viewport.width   = viewport.size.width;
-        mtl_viewport.height  = viewport.size.height;
-        mtl_viewport.znear   = viewport.origin.GetZ();
-        mtl_viewport.zfar    = viewport.origin.GetZ() + viewport.size.depth;
-        m_mtl_viewports.emplace_back(std::move(mtl_viewport));
-    }
-}
-
-void RenderStateMT::SetScissorRects(const ScissorRects& scissor_rects)
-{
-    META_FUNCTION_TASK();
-
-    RenderStateBase::SetScissorRects(scissor_rects);
-    
-    m_mtl_scissor_rects.clear();
-    for(const ScissorRect& scissor_rect : scissor_rects)
-    {
-        MTLScissorRect mtl_scissor_rect{};
-        mtl_scissor_rect.x      = static_cast<NSUInteger>(scissor_rect.origin.GetX());
-        mtl_scissor_rect.y      = static_cast<NSUInteger>(scissor_rect.origin.GetY());
-        mtl_scissor_rect.width  = static_cast<NSUInteger>(scissor_rect.size.width);
-        mtl_scissor_rect.height = static_cast<NSUInteger>(scissor_rect.size.height);
-        m_mtl_scissor_rects.emplace_back(std::move(mtl_scissor_rect));
     }
 }
 

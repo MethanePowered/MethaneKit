@@ -35,6 +35,7 @@ namespace Methane::Graphics
 struct RenderContext;
 struct RenderCommandList;
 struct RenderState;
+struct ViewState;
 struct ProgramBindings;
 struct Buffer;
 struct BufferSet;
@@ -208,7 +209,8 @@ private:
     FrameSize                   m_render_attachment_size = FrameSize::Max();
     Ptr<Font>                   m_sp_font;
     UniquePtr<TextMesh>         m_sp_text_mesh;
-    Ptr<gfx::RenderState>       m_sp_state;
+    Ptr<gfx::RenderState>       m_sp_render_state;
+    Ptr<gfx::ViewState>         m_sp_view_state;
     Ptr<gfx::Buffer>            m_sp_const_buffer;
     Ptr<gfx::Sampler>           m_sp_atlas_sampler;
     std::vector<FrameResources> m_frame_resources;

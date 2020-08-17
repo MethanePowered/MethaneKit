@@ -75,13 +75,10 @@ Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, cons
         }
     );
     state_settings.sp_program->SetName("Planet Shaders");
-    state_settings.viewports     = { gfx::GetFrameViewport(context_settings.frame_size) };
-    state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };
     state_settings.depth.enabled = true;
     state_settings.depth.compare = m_settings.depth_reversed ? gfx::Compare::GreaterEqual : gfx::Compare::Less;
-
-    m_sp_state = gfx::RenderState::Create(context, state_settings);
-    m_sp_state->SetName("Planet Render State");
+    m_sp_render_state = gfx::RenderState::Create(context, state_settings);
+    m_sp_render_state->SetName("Planet Render State");
     
     m_mesh_buffers.SetTexture(image_loader.LoadImageToTexture2D(m_context, m_settings.texture_path, m_settings.image_options));
 
@@ -100,23 +97,14 @@ Ptr<gfx::ProgramBindings> Planet::CreateProgramBindings(const Ptr<gfx::Buffer>& 
 {
     META_FUNCTION_TASK();
 
-    assert(!!m_sp_state);
-    assert(!!m_sp_state->GetSettings().sp_program);
-    return gfx::ProgramBindings::Create(m_sp_state->GetSettings().sp_program, {
+    assert(!!m_sp_render_state);
+    assert(!!m_sp_render_state->GetSettings().sp_program);
+    return gfx::ProgramBindings::Create(m_sp_render_state->GetSettings().sp_program, {
         { { gfx::Shader::Type::All,   "g_uniforms"  }, { { sp_uniforms_buffer             } } },
         { { gfx::Shader::Type::Pixel, "g_constants" }, { { sp_constants_buffer            } } },
         { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_mesh_buffers.GetTexturePtr() } } },
         { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler           } } },
     });
-}
-
-void Planet::Resize(const gfx::FrameSize& frame_size)
-{
-    META_FUNCTION_TASK();
-
-    assert(m_sp_state);
-    m_sp_state->SetViewports({ gfx::GetFrameViewport(frame_size) });
-    m_sp_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
 }
 
 bool Planet::Update(double elapsed_seconds, double)
@@ -138,7 +126,7 @@ bool Planet::Update(double elapsed_seconds, double)
     return true;
 }
 
-void Planet::Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings)
+void Planet::Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state)
 {
     META_FUNCTION_TASK();
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Planet rendering");
@@ -147,7 +135,8 @@ void Planet::Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buf
     assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= sizeof(Uniforms));
     buffer_bindings.sp_uniforms_buffer->SetData(m_mesh_buffers.GetFinalPassUniformsSubresources());
 
-    cmd_list.Reset(m_sp_state, s_debug_group.get());
+    cmd_list.Reset(m_sp_render_state, s_debug_group.get());
+    cmd_list.SetViewState(view_state);
     
     assert(!buffer_bindings.program_bindings_per_instance.empty());
     assert(!!buffer_bindings.program_bindings_per_instance[0]);

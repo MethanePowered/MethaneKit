@@ -30,6 +30,65 @@ Base implementation of the render state interface.
 namespace Methane::Graphics
 {
 
+inline void Validate(const Viewports& viewports)
+{
+    if (viewports.empty())
+    {
+        throw std::invalid_argument("Can not set empty viewports to state.");
+    }
+}
+
+inline void Validate(const ScissorRects& scissor_rects)
+{
+    if (scissor_rects.empty())
+    {
+        throw std::invalid_argument("Can not set empty scissor rectangles to state.");
+    }
+}
+
+ViewStateBase::ViewStateBase(const Settings& settings)
+    : m_settings(settings)
+{
+    META_FUNCTION_TASK();
+    Validate(settings.viewports);
+    Validate(settings.scissor_rects);
+}
+
+bool ViewStateBase::Reset(const Settings& settings)
+{
+    META_FUNCTION_TASK();
+    if (m_settings == settings)
+        return false;
+
+    Validate(settings.viewports);
+    Validate(settings.scissor_rects);
+
+    m_settings = settings;
+    return true;
+}
+
+bool ViewStateBase::SetViewports(const Viewports& viewports)
+{
+    META_FUNCTION_TASK();
+    if (m_settings.viewports == viewports)
+        return false;
+
+    Validate(viewports);
+    m_settings.viewports = viewports;
+    return true;
+}
+
+bool ViewStateBase::SetScissorRects(const ScissorRects& scissor_rects)
+{
+    META_FUNCTION_TASK()
+    if (m_settings.scissor_rects == scissor_rects)
+        return false;
+
+    Validate(scissor_rects);
+    m_settings.scissor_rects = scissor_rects;
+    return true;
+}
+
 bool RenderState::Rasterizer::operator==(const Rasterizer& other) const noexcept
 {
     META_FUNCTION_TASK();
@@ -140,16 +199,6 @@ RenderState::Group::Mask RenderState::Settings::Compare(const Settings& left, co
     {
         changed_state_groups |= Group::DepthStencil;
     }
-    if (compare_groups & Group::Viewports &&
-        left.viewports != right.viewports)
-    {
-        changed_state_groups |= Group::Viewports;
-    }
-    if (compare_groups & Group::ScissorRects &&
-        left.scissor_rects != right.scissor_rects)
-    {
-        changed_state_groups |= Group::ScissorRects;
-    }
     
     return changed_state_groups;
 }
@@ -165,26 +214,6 @@ void RenderStateBase::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();
     m_settings = settings;
-}
-
-void RenderStateBase::SetViewports(const Viewports& viewports)
-{
-    META_FUNCTION_TASK();
-    if (viewports.empty())
-    {
-        throw std::invalid_argument("Can not set empty viewports to state.");
-    }
-    m_settings.viewports = viewports;
-}
-
-void RenderStateBase::SetScissorRects(const ScissorRects& scissor_rects)
-{
-    META_FUNCTION_TASK();
-    if (scissor_rects.empty())
-    {
-        throw std::invalid_argument("Can not set empty scissor rectangles to state.");
-    }
-    m_settings.scissor_rects = scissor_rects;
 }
 
 Program& RenderStateBase::GetProgram()

@@ -37,6 +37,29 @@ namespace Methane::Graphics
 struct RenderContext;
 struct RenderCommandList;
 
+struct ViewState
+{
+    struct Settings
+    {
+        Viewports    viewports;
+        ScissorRects scissor_rects;
+
+        bool operator==(const Settings& other) const noexcept { return viewports == other.viewports && scissor_rects == other.scissor_rects; }
+        bool operator!=(const Settings& other) const noexcept { return !operator==(other); }
+    };
+
+    // Create ViewState instance
+    static Ptr<ViewState> Create(const Settings& state_settings);
+
+    // ViewState interface
+    virtual const Settings& GetSettings() const noexcept = 0;
+    virtual bool Reset(const Settings& settings) = 0;
+    virtual bool SetViewports(const Viewports& viewports) = 0;
+    virtual bool SetScissorRects(const ScissorRects& scissor_rects) = 0;
+
+    virtual ~ViewState() = default;
+};
+
 struct RenderState : virtual Object
 {
 public:
@@ -195,8 +218,6 @@ public:
             Blending            = 1u << 2u,
             BlendingColor       = 1u << 3u,
             DepthStencil        = 1u << 4u,
-            Viewports           = 1u << 5u,
-            ScissorRects        = 1u << 6u,
             All                 = ~0u
         };
 
@@ -209,8 +230,6 @@ public:
         //       for convenient setup with initializer lists
         //       (default states may be skipped at initialization)
         Ptr<Program> sp_program;
-        Viewports    viewports;
-        ScissorRects scissor_rects;
         Rasterizer   rasterizer;
         Depth        depth;
         Stencil      stencil;
@@ -224,10 +243,8 @@ public:
     static Ptr<RenderState> Create(RenderContext& context, const Settings& state_settings);
 
     // RenderState interface
-    virtual const Settings& GetSettings() const = 0;
+    virtual const Settings& GetSettings() const noexcept = 0;
     virtual void Reset(const Settings& settings) = 0;
-    virtual void SetViewports(const Viewports& viewports) = 0;
-    virtual void SetScissorRects(const ScissorRects& scissor_rects) = 0;
 
     virtual ~RenderState() = default;
 };

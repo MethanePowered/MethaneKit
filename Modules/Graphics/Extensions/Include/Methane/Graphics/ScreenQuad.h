@@ -90,7 +90,8 @@ private:
 
     Settings             m_settings;
     RenderContext&       m_context;
-    Ptr<RenderState>     m_sp_state;
+    Ptr<RenderState>     m_sp_render_state;
+    Ptr<ViewState>       m_sp_view_state;
     Ptr<BufferSet>       m_sp_vertex_buffer_set;
     Ptr<Buffer>          m_sp_index_buffer;
     Ptr<Buffer>          m_sp_const_buffer;

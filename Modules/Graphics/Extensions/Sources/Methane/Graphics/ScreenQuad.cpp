@@ -103,8 +103,6 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
         }
     );
     state_settings.sp_program->SetName(m_settings.name + " Screen-Quad Shading");
-    state_settings.viewports            = { GetFrameViewport(m_settings.screen_rect) };
-    state_settings.scissor_rects        = { GetFrameScissorRect(m_settings.screen_rect) };
     state_settings.depth.enabled        = false;
     state_settings.depth.write_enabled  = false;
     state_settings.rasterizer.is_front_counter_clockwise = true;
@@ -114,8 +112,13 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
     state_settings.blending.render_targets[0].source_alpha_blend_factor = RenderState::Blending::Factor::Zero;
     state_settings.blending.render_targets[0].dest_alpha_blend_factor   = RenderState::Blending::Factor::Zero;
 
-    m_sp_state = RenderState::Create(context, state_settings);
-    m_sp_state->SetName(m_settings.name + " Screen-Quad Render State");
+    m_sp_render_state = RenderState::Create(context, state_settings);
+    m_sp_render_state->SetName(m_settings.name + " Screen-Quad Render State");
+
+    m_sp_view_state = ViewState::Create({
+        { GetFrameViewport(m_settings.screen_rect)    },
+        { GetFrameScissorRect(m_settings.screen_rect) }
+    });
 
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
@@ -163,7 +166,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
         program_binding_resource_locations.emplace(Program::Argument(Shader::Type::Pixel, "g_sampler"), Resource::Locations{ { m_sp_texture_sampler } });
     }
 
-    m_sp_const_program_bindings = ProgramBindings::Create(m_sp_state->GetSettings().sp_program, program_binding_resource_locations);
+    m_sp_const_program_bindings = ProgramBindings::Create(m_sp_render_state->GetSettings().sp_program, program_binding_resource_locations);
 
     UpdateConstantsBuffer();
 }
@@ -187,8 +190,8 @@ void ScreenQuad::SetScreenRect(const FrameRect& screen_rect, const FrameSize& re
 
     m_settings.screen_rect = screen_rect;
 
-    m_sp_state->SetViewports({ GetFrameViewport(screen_rect) });
-    m_sp_state->SetScissorRects({ GetFrameScissorRect(screen_rect, render_attachment_size) });
+    m_sp_view_state->SetViewports({ GetFrameViewport(screen_rect) });
+    m_sp_view_state->SetScissorRects({ GetFrameScissorRect(screen_rect, render_attachment_size) });
 }
 
 void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled)
@@ -199,9 +202,9 @@ void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled)
 
     m_settings.alpha_blending_enabled = alpha_blending_enabled;
 
-    RenderState::Settings state_settings = m_sp_state->GetSettings();
+    RenderState::Settings state_settings = m_sp_render_state->GetSettings();
     state_settings.blending.render_targets[0].blend_enabled = alpha_blending_enabled;
-    m_sp_state->Reset(state_settings);
+    m_sp_render_state->Reset(state_settings);
 }
 
 void ScreenQuad::SetTexture(Ptr<Texture> sp_texture)
@@ -235,7 +238,8 @@ const Texture& ScreenQuad::GetTexture() const noexcept
 void ScreenQuad::Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_debug_group) const
 {
     META_FUNCTION_TASK();
-    cmd_list.Reset(m_sp_state, p_debug_group);
+    cmd_list.Reset(m_sp_render_state, p_debug_group);
+    cmd_list.SetViewState(*m_sp_view_state);
     cmd_list.SetProgramBindings(*m_sp_const_program_bindings);
     cmd_list.SetVertexBuffers(*m_sp_vertex_buffer_set);
     cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);

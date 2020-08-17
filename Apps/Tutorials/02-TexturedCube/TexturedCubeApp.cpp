@@ -115,8 +115,6 @@ void TexturedCubeApp::Init()
         }
     );
     state_settings.sp_program->SetName("Textured Phong Lighting");
-    state_settings.viewports     = { gfx::GetFrameViewport(context_settings.frame_size) };
-    state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };
     state_settings.depth.enabled = true;
     m_sp_render_state = gfx::RenderState::Create(GetRenderContext(), state_settings);
     m_sp_render_state->SetName("Final FB Render Pipeline State");
@@ -197,10 +195,6 @@ bool TexturedCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized
     if (!UserInterfaceApp::Resize(frame_size, is_minimized))
         return false;
 
-    // Update viewports and scissor rects state
-    m_sp_render_state->SetViewports({ gfx::GetFrameViewport(frame_size) });
-    m_sp_render_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
-
     m_camera.Resize({
         static_cast<float>(frame_size.width),
         static_cast<float>(frame_size.height)
@@ -237,6 +231,7 @@ bool TexturedCubeApp::Render()
     // Issue commands for cube rendering
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Cube Rendering");
     frame.sp_render_cmd_list->Reset(m_sp_render_state, s_debug_group.get());
+    frame.sp_render_cmd_list->SetViewState(GetViewState());
     frame.sp_render_cmd_list->SetProgramBindings(*frame.sp_program_bindings);
     frame.sp_render_cmd_list->SetVertexBuffers(*m_sp_vertex_buffer_set);
     frame.sp_render_cmd_list->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);

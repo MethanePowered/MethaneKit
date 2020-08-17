@@ -54,6 +54,7 @@ public:
                 PrimitiveType = 1u << 0u,
                 IndexBuffer   = 1u << 1u,
                 VertexBuffers = 1u << 2u,
+                ViewState     = 1u << 3u,
                 All           = ~0u,
             };
 
@@ -66,6 +67,7 @@ public:
         RawPtr<BufferBase>       p_index_buffer      = nullptr;
         RawPtrs<BufferBase>      vertex_buffers;
         RenderStateBase*         p_render_state      = nullptr;
+        ViewStateBase*           p_view_state        = nullptr;
         RenderState::Group::Mask render_state_groups = RenderState::Group::None;
         Changes::Mask            changes             = Changes::None;
     };
@@ -78,7 +80,8 @@ public:
     // RenderCommandList interface
     RenderPass& GetRenderPass() const noexcept override { return *m_sp_render_pass; }
     void Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group = nullptr) override;
-    void SetState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) override;
+    void SetRenderState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) override;
+    void SetViewState(ViewState& view_state) override;
     void SetVertexBuffers(const BufferSet& vertex_buffers) override;
     void DrawIndexed(Primitive primitive_type, Buffer& index_buffer,
                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex,

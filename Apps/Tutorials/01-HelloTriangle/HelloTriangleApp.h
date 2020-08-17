@@ -51,14 +51,13 @@ public:
 
     // GraphicsApp overrides
     void Init() override;
-    bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
     bool Render() override;
 
     // IContextCallback interface
     void OnContextReleased(gfx::Context& context) override;
 
 private:
-    Ptr<gfx::RenderState> m_sp_state;
+    Ptr<gfx::RenderState> m_sp_render_state;
     Ptr<gfx::BufferSet>   m_sp_vertex_buffer_set;
 };
 

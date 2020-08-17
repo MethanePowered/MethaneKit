@@ -325,9 +325,6 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
         frame.sp_final_screen_pass->Update(final_pass_settings);
     }
 
-    m_sp_sky_box->Resize(frame_size);
-    m_sp_planet->Resize(frame_size);
-    m_sp_asteroids_array->Resize(frame_size);
     m_view_camera.Resize({ static_cast<float>(frame_size.width), static_cast<float>(frame_size.height) });
 
     return true;
@@ -371,18 +368,18 @@ bool AsteroidsApp::Render()
     // Asteroids rendering in parallel or in main thread
     if (m_is_parallel_rendering_enabled)
     {
-        GetAsteroidsArray().DrawParallel(*frame.sp_parallel_cmd_list, frame.asteroids);
+        GetAsteroidsArray().DrawParallel(*frame.sp_parallel_cmd_list, frame.asteroids, GetViewState());
         frame.sp_parallel_cmd_list->Commit();
     }
     else
     {
-        GetAsteroidsArray().Draw(*frame.sp_serial_cmd_list, frame.asteroids);
+        GetAsteroidsArray().Draw(*frame.sp_serial_cmd_list, frame.asteroids, GetViewState());
         frame.sp_serial_cmd_list->Commit();
     }
     
     // Draw planet and sky-box after asteroids to minimize pixel overdraw
-    m_sp_planet->Draw(*frame.sp_final_cmd_list, frame.planet);
-    m_sp_sky_box->Draw(*frame.sp_final_cmd_list, frame.skybox);
+    m_sp_planet->Draw(*frame.sp_final_cmd_list, frame.planet, GetViewState());
+    m_sp_sky_box->Draw(*frame.sp_final_cmd_list, frame.skybox, GetViewState());
     RenderOverlay(*frame.sp_final_cmd_list);
     frame.sp_final_cmd_list->Commit();
 

@@ -266,8 +266,6 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, Settings settings, C
         }
     );
     state_settings.sp_program->SetName("Asteroid Shaders");
-    state_settings.viewports     = { gfx::GetFrameViewport(context_settings.frame_size) };
-    state_settings.scissor_rects = { gfx::GetFrameScissorRect(context_settings.frame_size) };
     state_settings.depth.enabled = true;
     state_settings.depth.compare = m_settings.depth_reversed ? gfx::Compare::GreaterEqual : gfx::Compare::Less;
     
@@ -351,15 +349,6 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
     return program_bindings_array;
 }
 
-void AsteroidsArray::Resize(const gfx::FrameSize &frame_size)
-{
-    META_FUNCTION_TASK();
-
-    assert(m_sp_render_state);
-    m_sp_render_state->SetViewports({ gfx::GetFrameViewport(frame_size) });
-    m_sp_render_state->SetScissorRects({ gfx::GetFrameScissorRect(frame_size) });
-}
-
 bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
 {
     META_FUNCTION_TASK();
@@ -420,7 +409,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
     return true;
 }
 
-void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, gfx::MeshBufferBindings& buffer_bindings)
+void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state)
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::Draw");
@@ -431,13 +420,14 @@ void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, gfx::MeshBufferBindi
     buffer_bindings.sp_uniforms_buffer->SetData(GetFinalPassUniformsSubresources());
 
     cmd_list.Reset(m_sp_render_state, s_debug_group.get());
+    cmd_list.SetViewState(view_state);
 
     assert(buffer_bindings.program_bindings_per_instance.size() == m_settings.instance_count);
     BaseBuffers::Draw(cmd_list, buffer_bindings.program_bindings_per_instance,
                       gfx::ProgramBindings::ApplyBehavior::ConstantOnce);
 }
 
-void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list, gfx::MeshBufferBindings& buffer_bindings)
+void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list, gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state)
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::DrawParallel");
@@ -448,6 +438,7 @@ void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_l
     buffer_bindings.sp_uniforms_buffer->SetData(GetFinalPassUniformsSubresources());
 
     parallel_cmd_list.Reset(m_sp_render_state, s_debug_group.get());
+    parallel_cmd_list.SetViewState(view_state);
 
     assert(buffer_bindings.program_bindings_per_instance.size() == m_settings.instance_count);
     BaseBuffers::DrawParallel(parallel_cmd_list, buffer_bindings.program_bindings_per_instance,
