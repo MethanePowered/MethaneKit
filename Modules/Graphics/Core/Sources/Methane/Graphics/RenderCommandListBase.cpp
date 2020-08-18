@@ -198,6 +198,7 @@ void RenderCommandListBase::ResetCommandState()
     m_drawing_state.p_index_buffer = nullptr;
     std::fill(m_drawing_state.vertex_buffers.begin(), m_drawing_state.vertex_buffers.end(), nullptr);
     m_drawing_state.p_render_state = nullptr;
+    m_drawing_state.p_view_state = nullptr;
     m_drawing_state.render_state_groups = RenderState::Group::None;
     m_drawing_state.changes = DrawingState::Changes::None;
 }
