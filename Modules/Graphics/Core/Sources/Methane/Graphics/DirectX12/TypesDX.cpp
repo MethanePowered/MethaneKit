@@ -30,46 +30,6 @@ Methane graphics types converters to DirectX 12 native types.
 namespace Methane::Graphics
 {
 
-CD3DX12_VIEWPORT TypeConverterDX::ViewportToD3D(const Viewport& viewport) noexcept
-{
-    META_FUNCTION_TASK();
-    return CD3DX12_VIEWPORT(static_cast<float>(viewport.origin.GetX()), static_cast<float>(viewport.origin.GetY()),
-                            static_cast<float>(viewport.size.width), static_cast<float>(viewport.size.height),
-                            static_cast<float>(viewport.origin.GetZ()), static_cast<float>(viewport.origin.GetZ() + viewport.size.depth));
-}
-
-CD3DX12_RECT TypeConverterDX::ScissorRectToD3D(const ScissorRect& scissor_rect) noexcept
-{
-    META_FUNCTION_TASK();
-    return CD3DX12_RECT(static_cast<LONG>(scissor_rect.origin.GetX()), static_cast<LONG>(scissor_rect.origin.GetY()),
-                        static_cast<LONG>(scissor_rect.origin.GetX() + scissor_rect.size.width),
-                        static_cast<LONG>(scissor_rect.origin.GetY() + scissor_rect.size.height));
-}
-
-std::vector<CD3DX12_VIEWPORT> TypeConverterDX::ViewportsToD3D(const Viewports& viewports) noexcept
-{
-    META_FUNCTION_TASK();
-
-    std::vector<CD3DX12_VIEWPORT> d3d_viewports;
-    for (const Viewport& viewport : viewports)
-    {
-        d3d_viewports.push_back(ViewportToD3D(viewport));
-    }
-    return d3d_viewports;
-}
-
-std::vector<CD3DX12_RECT> TypeConverterDX::ScissorRectsToD3D(const ScissorRects& scissor_rects) noexcept
-{
-    META_FUNCTION_TASK();
-
-    std::vector<CD3DX12_RECT> d3d_scissor_rects;
-    for (const ScissorRect& scissor_rect : scissor_rects)
-    {
-        d3d_scissor_rects.push_back(ScissorRectToD3D(scissor_rect));
-    }
-    return d3d_scissor_rects;
-}
-
 D3D12_COMPARISON_FUNC TypeConverterDX::CompareFunctionToD3D(Compare compare_func) noexcept
 {
     META_FUNCTION_TASK();

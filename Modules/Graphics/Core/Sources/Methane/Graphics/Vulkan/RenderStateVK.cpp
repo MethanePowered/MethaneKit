@@ -35,6 +35,53 @@ Vulkan implementation of the render state interface.
 namespace Methane::Graphics
 {
 
+Ptr<ViewState> ViewState::Create(const ViewState::Settings& state_settings)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ViewStateVK>(state_settings);
+}
+
+ViewStateVK::ViewStateVK(const Settings& settings)
+    : ViewStateBase(settings)
+{
+    META_FUNCTION_TASK();
+}
+
+bool ViewStateVK::Reset(const Settings& settings)
+{
+    META_FUNCTION_TASK();
+    if (!ViewStateBase::Reset(settings))
+        return false;
+
+    return true;
+}
+
+bool ViewStateVK::SetViewports(const Viewports& viewports)
+{
+    META_FUNCTION_TASK();
+    if (!ViewStateBase::SetViewports(viewports))
+        return false;
+
+    return true;
+}
+
+bool ViewStateVK::SetScissorRects(const ScissorRects& scissor_rects)
+{
+    META_FUNCTION_TASK();
+    if (!ViewStateBase::SetScissorRects(scissor_rects))
+        return false;
+
+    return true;
+}
+
+void ViewStateVK::Apply(RenderCommandListBase& command_list)
+{
+    META_FUNCTION_TASK();
+
+    RenderCommandListVK& vulkan_command_list = static_cast<RenderCommandListVK&>(command_list);
+    META_UNUSED(vulkan_command_list);
+}
+
 Ptr<RenderState> RenderState::Create(RenderContext& context, const RenderState::Settings& state_settings)
 {
     META_FUNCTION_TASK();
@@ -62,36 +109,12 @@ void RenderStateVK::Reset(const Settings& settings)
     }
 
     RenderStateBase::Reset(settings);
-
-    if (!settings.viewports.empty())
-    {
-        SetViewports(settings.viewports);
-    }
-    if (!settings.scissor_rects.empty())
-    {
-        SetScissorRects(settings.scissor_rects);
-    }
-    
     ResetNativeState();
 }
 
 void RenderStateVK::Apply(RenderCommandListBase& /*command_list*/, Group::Mask /*state_groups*/)
 {
     META_FUNCTION_TASK();
-}
-
-void RenderStateVK::SetViewports(const Viewports& viewports)
-{
-    META_FUNCTION_TASK();
-
-    RenderStateBase::SetViewports(viewports);
-}
-
-void RenderStateVK::SetScissorRects(const ScissorRects& scissor_rects)
-{
-    META_FUNCTION_TASK();
-
-    RenderStateBase::SetScissorRects(scissor_rects);
 }
 
 void RenderStateVK::SetName(const std::string& name)

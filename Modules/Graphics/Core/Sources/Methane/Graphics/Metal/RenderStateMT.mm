@@ -228,7 +228,6 @@ ViewStateMT::ViewStateMT(const Settings& settings)
     META_FUNCTION_TASK();
 }
 
-// ViewState overrides
 bool ViewStateMT::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();

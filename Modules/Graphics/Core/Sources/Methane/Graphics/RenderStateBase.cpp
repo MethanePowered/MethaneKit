@@ -80,7 +80,7 @@ bool ViewStateBase::SetViewports(const Viewports& viewports)
 
 bool ViewStateBase::SetScissorRects(const ScissorRects& scissor_rects)
 {
-    META_FUNCTION_TASK()
+    META_FUNCTION_TASK();
     if (m_settings.scissor_rects == scissor_rects)
         return false;
 

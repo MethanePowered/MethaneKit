@@ -44,10 +44,6 @@ public:
         ViewWrite
     };
 
-    static CD3DX12_VIEWPORT                 ViewportToD3D(const Viewport& viewport) noexcept;
-    static std::vector<CD3DX12_VIEWPORT>    ViewportsToD3D(const Viewports& viewports) noexcept;
-    static CD3DX12_RECT                     ScissorRectToD3D(const ScissorRect& scissor_rect) noexcept;
-    static std::vector<CD3DX12_RECT>        ScissorRectsToD3D(const ScissorRects& scissor_rects) noexcept;
     static D3D12_COMPARISON_FUNC            CompareFunctionToD3D(Compare compare_func) noexcept;
     static DXGI_FORMAT                      PixelFormatToDxgi(const PixelFormat& pixel_format) noexcept;
     static DXGI_FORMAT                      PixelFormatToDxgi(const PixelFormat& pixel_format, ResourceFormatType format_type) noexcept;

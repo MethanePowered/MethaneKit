@@ -32,6 +32,20 @@ namespace Methane::Graphics
 
 struct IContextVK;
 
+class ViewStateVK final : public ViewStateBase
+{
+public:
+    ViewStateVK(const Settings& settings);
+
+    // ViewState overrides
+    bool Reset(const Settings& settings) override;
+    bool SetViewports(const Viewports& viewports) override;
+    bool SetScissorRects(const ScissorRects& scissor_rects) override;
+
+    // ViewStateBase interface
+    void Apply(RenderCommandListBase& command_list) override;
+};
+
 class RenderStateVK final : public RenderStateBase
 {
 public:
@@ -40,8 +54,6 @@ public:
     
     // RenderState interface
     void Reset(const Settings& settings) override;
-    void SetViewports(const Viewports& viewports) override;
-    void SetScissorRects(const ScissorRects& scissor_rects) override;
 
     // RenderStateBase interface
     void Apply(RenderCommandListBase& command_list, Group::Mask state_groups) override;
