@@ -26,6 +26,8 @@ Base implementation of the named object interface.
 #include <Methane/Graphics/Object.h>
 #include <Methane/Memory.hpp>
 
+#include <map>
+
 namespace Methane::Graphics
 {
 
@@ -34,6 +36,16 @@ class ObjectBase
     , public std::enable_shared_from_this<ObjectBase>
 {
 public:
+    class CacheBase : public Cache
+    {
+    public:
+        bool        AddGraphicsObjectToCache(Object& object) override;
+        Ptr<Object> GetGraphicsObjectFromCache(const std::string& object_name) const noexcept override;
+
+    private:
+        std::map<std::string, WeakPtr<Object>> m_object_by_name;
+    };
+
     ObjectBase() = default;
 
     // Object interface

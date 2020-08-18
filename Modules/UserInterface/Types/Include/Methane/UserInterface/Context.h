@@ -45,9 +45,6 @@ class Context
 public:
     Context(gfx::RenderContext& render_context) noexcept;
 
-    bool AddGraphicsObjectToCache(gfx::Object& graphics_object);
-    Ptr<gfx::Object> GetGraphicsObjectFromCache(const std::string& object_name) const noexcept;
-
     const gfx::RenderContext& GetRenderContext() const noexcept         { return m_render_context; }
     gfx::RenderContext&       GetRenderContext() noexcept               { return m_render_context; }
 
@@ -116,12 +113,9 @@ public:
     }
 
 private:
-    using GraphicsObjectByName = std::map<std::string, WeakPtr<gfx::Object>>;
-
     gfx::RenderContext&  m_render_context;
     float                m_dots_to_pixels_factor;
     uint32_t             m_font_resolution_dpi;
-    GraphicsObjectByName m_graphics_object_by_name;
 };
 
 } // namespace Methane::UserInterface

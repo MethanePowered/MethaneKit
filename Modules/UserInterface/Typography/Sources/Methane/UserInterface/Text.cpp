@@ -85,9 +85,10 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
     UpdateConstantsBuffer();
 
     const FrameRect viewport_rect = m_sp_text_mesh ? GetAlignedViewportRect() : m_frame_rect;
+    gfx::Object::Cache& graphics_object_cache = ui_context.GetRenderContext().GetObjectsCache();
 
     static const std::string s_state_name = "Text Render State";
-    m_sp_render_state = std::dynamic_pointer_cast<gfx::RenderState>(ui_context.GetGraphicsObjectFromCache(s_state_name));
+    m_sp_render_state = std::dynamic_pointer_cast<gfx::RenderState>(graphics_object_cache.GetGraphicsObjectFromCache(s_state_name));
     if (!m_sp_render_state)
     {
         gfx::RenderState::Settings state_settings;
@@ -133,7 +134,7 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
         m_sp_render_state = gfx::RenderState::Create(GetUIContext().GetRenderContext(), state_settings);
         m_sp_render_state->SetName(s_state_name);
 
-        if (!ui_context.AddGraphicsObjectToCache(*m_sp_render_state))
+        if (!graphics_object_cache.AddGraphicsObjectToCache(*m_sp_render_state))
             throw std::logic_error("Graphics object with same name already exists in UI context cache");
     }
 
@@ -143,7 +144,7 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
     });
 
     static const std::string s_sampler_name = "Font Atlas Sampler";
-    m_sp_atlas_sampler = std::dynamic_pointer_cast<gfx::Sampler>(ui_context.GetGraphicsObjectFromCache(s_sampler_name));
+    m_sp_atlas_sampler = std::dynamic_pointer_cast<gfx::Sampler>(graphics_object_cache.GetGraphicsObjectFromCache(s_sampler_name));
     if (!m_sp_atlas_sampler)
     {
         m_sp_atlas_sampler = gfx::Sampler::Create(GetUIContext().GetRenderContext(), {
@@ -152,7 +153,7 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
         });
         m_sp_atlas_sampler->SetName(s_sampler_name);
 
-        if (!ui_context.AddGraphicsObjectToCache(*m_sp_atlas_sampler))
+        if (!graphics_object_cache.AddGraphicsObjectToCache(*m_sp_atlas_sampler))
             throw std::logic_error("Graphics object with same name already exists in UI context cache");
     }
 

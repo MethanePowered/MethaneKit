@@ -59,6 +59,7 @@ public:
     // Context interface
     Type             GetType() const noexcept override                       { return m_type; }
     tf::Executor&    GetParallelExecutor() const noexcept override           { return m_parallel_executor; }
+    Object::Cache&   GetObjectsCache() noexcept override                     { return m_objects_cache; }
     void             RequestDeferredAction(DeferredAction action) const noexcept override;
     void             CompleteInitialization() override;
     bool             IsCompletingInitialization() const noexcept override    { return m_is_completing_initialization; }
@@ -98,6 +99,7 @@ private:
     const Type                m_type;
     Ptr<DeviceBase>           m_sp_device;
     tf::Executor&             m_parallel_executor;
+    ObjectBase::CacheBase     m_objects_cache;
     ResourceManager::Settings m_resource_manager_init_settings{ true, {}, {} };
     ResourceManager           m_resource_manager;
     Ptr<CommandQueue>         m_sp_upload_cmd_queue;

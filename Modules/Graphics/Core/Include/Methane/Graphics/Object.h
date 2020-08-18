@@ -32,6 +32,14 @@ namespace Methane::Graphics
 
 struct Object
 {
+    struct Cache
+    {
+        virtual bool        AddGraphicsObjectToCache(Object& graphics_object) = 0;
+        virtual Ptr<Object> GetGraphicsObjectFromCache(const std::string& object_name) const noexcept = 0;
+
+        virtual ~Cache() = default;
+    };
+
     // Object interface
     virtual void               SetName(const std::string& name) = 0;
     virtual const std::string& GetName() const noexcept = 0;

@@ -208,6 +208,7 @@ set(SOURCES ${PLATFORM_SOURCES}
 
     # Base implementation
     ${SOURCES_DIR}/ObjectBase.h
+    ${SOURCES_DIR}/ObjectBase.cpp
     ${SOURCES_DIR}/DeviceBase.h
     ${SOURCES_DIR}/DeviceBase.cpp
     ${SOURCES_DIR}/ContextBase.h
