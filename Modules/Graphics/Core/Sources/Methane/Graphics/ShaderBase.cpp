@@ -53,7 +53,9 @@ std::string Shader::ConvertMacroDefinitionsToString(const MacroDefinitions& macr
     {
         if (!is_first_defintion)
             ss << splitter;
+
         ss << macro_definition.name << "=" << macro_definition.value;
+        is_first_defintion = false;
     }
     return ss.str();
 }

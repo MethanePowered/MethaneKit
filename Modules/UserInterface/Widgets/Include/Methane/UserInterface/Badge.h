@@ -50,7 +50,7 @@ public:
 
     struct Settings
     {
-        const std::string name;
+        const std::string name         = "Badge";
         UnitSize          size         { 96u, 128u, Units::Dots };
         FrameCorner       corner       = FrameCorner::TopRight;
         UnitPoint         margins      { 16, 16, Units::Dots };

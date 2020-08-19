@@ -88,7 +88,7 @@ void AppBase::Init(gfx::RenderContext& render_context, const gfx::FrameSize& fra
     // Create Methane logo badge
     if (m_app_settings.show_logo_badge)
     {
-        Badge::Settings logo_badge_settings;
+        Badge::Settings logo_badge_settings { "Methane Logo" };
         logo_badge_settings.blend_color = m_app_settings.logo_badge_color;
         m_sp_logo_badge = std::make_shared<Badge>(
             *m_sp_ui_context, Data::TextureProvider::Get(), "Logo/MethaneLogoNameWatermark.png", std::move(logo_badge_settings)
@@ -222,6 +222,7 @@ bool AppBase::SetHeadsUpDisplayMode(IApp::HeadsUpDisplayMode heads_up_display_mo
     {
         m_sp_hud.reset();
         Font::Library::Get().RemoveFont(m_app_settings.hud_settings.major_font.name);
+        Font::Library::Get().RemoveFont(m_app_settings.hud_settings.minor_font.name);
     }
     return true;
 }

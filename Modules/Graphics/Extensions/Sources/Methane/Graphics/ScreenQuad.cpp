@@ -64,19 +64,18 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
 
     static const QuadMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.f, 2.f);
     const RenderContext::Settings&          context_settings              = context.GetSettings();
-    const Shader::MacroDefinitions          ps_macro_definitions          = GetPixelShaderMacroDefinitions(m_settings.texture_mode, m_settings.texture_mode);
+    const Shader::MacroDefinitions          ps_macro_definitions          = GetPixelShaderMacroDefinitions(m_settings.texture_mode);
     Program::ArgumentDescriptions           program_argument_descriptions = {
         { { Shader::Type::Pixel, "g_constants" }, Program::Argument::Modifiers::None }
     };
 
-    std::stringstream quad_name_ss;
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
         program_argument_descriptions.emplace(Shader::Type::Pixel, "g_texture", Program::Argument::Modifiers::None);
         program_argument_descriptions.emplace(Shader::Type::Pixel, "g_sampler", Program::Argument::Modifiers::Constant);
-        quad_name_ss << "Textured ";
     }
 
+    std::stringstream quad_name_ss;
     quad_name_ss << "Screen-Quad";
     if (m_settings.alpha_blending_enabled)
         quad_name_ss << " with Alpha-Blending";
@@ -289,15 +288,17 @@ void ScreenQuad::UpdateConstantsBuffer() const
     });
 }
 
-Shader::MacroDefinitions ScreenQuad::GetPixelShaderMacroDefinitions(TextureMode texture_mode, TextureMode color_mode)
+Shader::MacroDefinitions ScreenQuad::GetPixelShaderMacroDefinitions(TextureMode texture_mode)
 {
     META_FUNCTION_TASK();
     Shader::MacroDefinitions macro_definitions;
-    if (texture_mode == TextureMode::Disabled)
-        macro_definitions.emplace_back("TEXTURE_DISABLED", "");
 
-    switch(color_mode)
+    switch(texture_mode)
     {
+    case TextureMode::Disabled:
+        macro_definitions.emplace_back("TEXTURE_DISABLED", "");
+        break;
+
     case TextureMode::RgbaFloat:
         break;
 
