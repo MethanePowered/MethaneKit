@@ -80,7 +80,7 @@ struct Context
     // Context interface
     virtual Type GetType() const noexcept = 0;
     virtual tf::Executor& GetParallelExecutor() const noexcept = 0;
-    virtual Object::Cache& GetObjectsCache() noexcept = 0;
+    virtual Object::Registry& GetObjectsRegistry() noexcept = 0;
     virtual void RequestDeferredAction(DeferredAction action) const noexcept = 0;
     virtual void CompleteInitialization() = 0;
     virtual bool IsCompletingInitialization() const noexcept = 0;

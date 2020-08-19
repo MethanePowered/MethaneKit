@@ -44,6 +44,20 @@ std::string Shader::GetTypeName(Type shader_type) noexcept
     return "Unknown";
 }
 
+std::string Shader::ConvertMacroDefinitionsToString(const MacroDefinitions& macro_definitions, const std::string& splitter) noexcept
+{
+    META_FUNCTION_TASK();
+    std::stringstream ss;
+    bool is_first_defintion = true;
+    for(const MacroDefinition& macro_definition : macro_definitions)
+    {
+        if (!is_first_defintion)
+            ss << splitter;
+        ss << macro_definition.name << "=" << macro_definition.value;
+    }
+    return ss.str();
+}
+
 ShaderBase::ShaderBase(Type type, ContextBase& context, const Settings& settings)
     : m_type(type)
     , m_context(context)

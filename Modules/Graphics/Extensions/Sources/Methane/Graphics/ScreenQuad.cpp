@@ -62,58 +62,70 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
     if (m_settings.texture_mode != TextureMode::Disabled && !m_sp_texture)
         throw std::invalid_argument("Screen-quad texture can not be empty when quad texturing is enabled.");
 
-    QuadMesh<ScreenQuadVertex>     quad_mesh(ScreenQuadVertex::layout, 2.f, 2.f);
-    const RenderContext::Settings& context_settings = context.GetSettings();
-    const Shader::MacroDefinitions ps_macro_definitions = GetPixelShaderMacroDefinitions(m_settings.texture_mode, m_settings.texture_color_mode);
-    Program::ArgumentDescriptions  program_argument_descriptions = {
-        { { Shader::Type::Pixel, "g_constants" }, Program::Argument::Modifiers::Constant }
+    static const QuadMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.f, 2.f);
+    const RenderContext::Settings&          context_settings              = context.GetSettings();
+    const Shader::MacroDefinitions          ps_macro_definitions          = GetPixelShaderMacroDefinitions(m_settings.texture_mode, m_settings.texture_mode);
+    Program::ArgumentDescriptions           program_argument_descriptions = {
+        { { Shader::Type::Pixel, "g_constants" }, Program::Argument::Modifiers::None }
     };
 
+    std::stringstream quad_name_ss;
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
-        const Program::Argument::Modifiers::Mask texture_argument_modifiers = m_settings.texture_mode == TextureMode::Constant
-                                                                              ? Program::Argument::Modifiers::Constant
-                                                                              : Program::Argument::Modifiers::None;
-        program_argument_descriptions.emplace(Shader::Type::Pixel, "g_texture", texture_argument_modifiers);
+        program_argument_descriptions.emplace(Shader::Type::Pixel, "g_texture", Program::Argument::Modifiers::None);
         program_argument_descriptions.emplace(Shader::Type::Pixel, "g_sampler", Program::Argument::Modifiers::Constant);
+        quad_name_ss << "Textured ";
     }
 
-    RenderState::Settings state_settings;
-    state_settings.sp_program = Program::Create(context,
-        Program::Settings
-        {
-            Program::Shaders
-            {
-                Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadVS" }, { } }),
-                Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadPS" }, ps_macro_definitions }),
-            },
-            Program::InputBufferLayouts
-            {
-                Program::InputBufferLayout
-                {
-                    Program::InputBufferLayout::ArgumentSemantics { quad_mesh.GetVertexLayout().GetSemantics() }
-                }
-            },
-            program_argument_descriptions,
-            PixelFormats
-            {
-                context_settings.color_format
-            },
-            context_settings.depth_stencil_format
-        }
-    );
-    state_settings.sp_program->SetName(m_settings.name + " Screen-Quad Shading");
-    state_settings.depth.enabled        = false;
-    state_settings.depth.write_enabled  = false;
-    state_settings.rasterizer.is_front_counter_clockwise = true;
-    state_settings.blending.render_targets[0].blend_enabled             = m_settings.alpha_blending_enabled;
-    state_settings.blending.render_targets[0].source_rgb_blend_factor   = RenderState::Blending::Factor::SourceAlpha;
-    state_settings.blending.render_targets[0].dest_rgb_blend_factor     = RenderState::Blending::Factor::OneMinusSourceAlpha;
-    state_settings.blending.render_targets[0].source_alpha_blend_factor = RenderState::Blending::Factor::Zero;
-    state_settings.blending.render_targets[0].dest_alpha_blend_factor   = RenderState::Blending::Factor::Zero;
+    quad_name_ss << "Screen-Quad";
+    if (m_settings.alpha_blending_enabled)
+        quad_name_ss << " with Alpha-Blending";
+    if (!ps_macro_definitions.empty())
+        quad_name_ss << " " << Shader::ConvertMacroDefinitionsToString(ps_macro_definitions);
 
-    m_sp_render_state = RenderState::Create(context, state_settings);
-    m_sp_render_state->SetName(m_settings.name + " Screen-Quad Render State");
+    const std::string s_state_name = quad_name_ss.str() + " Render State";
+    m_sp_render_state = std::dynamic_pointer_cast<RenderState>(m_context.GetObjectsRegistry().GetGraphicsObject(s_state_name));
+    if (!m_sp_render_state)
+    {
+        RenderState::Settings state_settings;
+        state_settings.sp_program = Program::Create(context,
+            Program::Settings
+            {
+                Program::Shaders
+                {
+                    Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadVS" }, { } }),
+                    Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadPS" }, ps_macro_definitions }),
+                },
+                Program::InputBufferLayouts
+                {
+                    Program::InputBufferLayout
+                    {
+                        Program::InputBufferLayout::ArgumentSemantics { quad_mesh.GetVertexLayout().GetSemantics() }
+                    }
+                },
+                program_argument_descriptions,
+                PixelFormats
+                {
+                    context_settings.color_format
+                },
+                context_settings.depth_stencil_format
+            }
+        );
+        state_settings.sp_program->SetName(quad_name_ss.str() + " Shading");
+        state_settings.depth.enabled                                        = false;
+        state_settings.depth.write_enabled                                  = false;
+        state_settings.rasterizer.is_front_counter_clockwise                = true;
+        state_settings.blending.render_targets[0].blend_enabled             = m_settings.alpha_blending_enabled;
+        state_settings.blending.render_targets[0].source_rgb_blend_factor   = RenderState::Blending::Factor::SourceAlpha;
+        state_settings.blending.render_targets[0].dest_rgb_blend_factor     = RenderState::Blending::Factor::OneMinusSourceAlpha;
+        state_settings.blending.render_targets[0].source_alpha_blend_factor = RenderState::Blending::Factor::Zero;
+        state_settings.blending.render_targets[0].dest_alpha_blend_factor   = RenderState::Blending::Factor::Zero;
+
+        m_sp_render_state = RenderState::Create(context, state_settings);
+        m_sp_render_state->SetName(s_state_name);
+
+        m_context.GetObjectsRegistry().AddGraphicsObject(*m_sp_render_state);
+    }
 
     m_sp_view_state = ViewState::Create({
         { GetFrameViewport(m_settings.screen_rect)    },
@@ -122,35 +134,52 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
 
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
-        m_sp_texture_sampler = Sampler::Create(context, {
-            { Sampler::Filter::MinMag::Linear     },
-            { Sampler::Address::Mode::ClampToZero },
+        static const std::string s_sampler_name = "Screen-Quad Sampler";
+        m_sp_texture_sampler = std::dynamic_pointer_cast<Sampler>(m_context.GetObjectsRegistry().GetGraphicsObject(s_sampler_name));
+        if (!m_sp_texture_sampler)
+        {
+            m_sp_texture_sampler = Sampler::Create(context, {
+                { Sampler::Filter::MinMag::Linear     },
+                { Sampler::Address::Mode::ClampToZero },
             });
-        m_sp_texture_sampler->SetName(m_settings.name + " Screen-Quad Texture Sampler");
+            m_sp_texture_sampler->SetName(s_sampler_name);
+            m_context.GetObjectsRegistry().AddGraphicsObject(*m_sp_texture_sampler);
+        }
+
         m_sp_texture->SetName(m_settings.name + " Screen-Quad Texture");
     }
 
-    Ptr<Buffer> sp_vertex_buffer = Buffer::CreateVertexBuffer(context,
-                                                              static_cast<Data::Size>(quad_mesh.GetVertexDataSize()),
-                                                              static_cast<Data::Size>(quad_mesh.GetVertexSize()));
-    sp_vertex_buffer->SetName(m_settings.name + " Screen-Quad Vertex Buffer");
-    sp_vertex_buffer->SetData({
-        {
-            reinterpret_cast<Data::ConstRawPtr>(quad_mesh.GetVertices().data()),
-            static_cast<Data::Size>(quad_mesh.GetVertexDataSize())
-        }
-    });
+    static const std::string s_vertex_buffer_name = "Screen-Quad Vertex Buffer";
+    Ptr<Buffer> sp_vertex_buffer = std::dynamic_pointer_cast<Buffer>(m_context.GetObjectsRegistry().GetGraphicsObject(s_vertex_buffer_name));
+    if (!sp_vertex_buffer)
+    {
+        sp_vertex_buffer = Buffer::CreateVertexBuffer(context, static_cast<Data::Size>(quad_mesh.GetVertexDataSize()), static_cast<Data::Size>(quad_mesh.GetVertexSize()));
+        sp_vertex_buffer->SetName(s_vertex_buffer_name);
+        sp_vertex_buffer->SetData({
+            {
+                reinterpret_cast<Data::ConstRawPtr>(quad_mesh.GetVertices().data()),
+                static_cast<Data::Size>(quad_mesh.GetVertexDataSize())
+            }
+        });
+        m_context.GetObjectsRegistry().AddGraphicsObject(*sp_vertex_buffer);
+    }
+
     m_sp_vertex_buffer_set = BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
 
-    m_sp_index_buffer = Buffer::CreateIndexBuffer(context, static_cast<Data::Size>(quad_mesh.GetIndexDataSize()),
-                                                           GetIndexFormat(quad_mesh.GetIndex(0)));
-    m_sp_index_buffer->SetName(m_settings.name + " Screen-Quad Index Buffer");
-    m_sp_index_buffer->SetData({
-        {
-            reinterpret_cast<Data::ConstRawPtr>(quad_mesh.GetIndices().data()),
-            static_cast<Data::Size>(quad_mesh.GetIndexDataSize())
-        }
-    });
+    static const std::string s_index_buffer_name = "Screen-Quad Index Buffer";
+    m_sp_index_buffer = std::dynamic_pointer_cast<Buffer>(m_context.GetObjectsRegistry().GetGraphicsObject(s_index_buffer_name));
+    if (!m_sp_index_buffer)
+    {
+        m_sp_index_buffer = Buffer::CreateIndexBuffer(context, static_cast<Data::Size>(quad_mesh.GetIndexDataSize()), GetIndexFormat(quad_mesh.GetIndex(0)));
+        m_sp_index_buffer->SetName(s_index_buffer_name);
+        m_sp_index_buffer->SetData({
+            {
+                reinterpret_cast<Data::ConstRawPtr>(quad_mesh.GetIndices().data()),
+                static_cast<Data::Size>(quad_mesh.GetIndexDataSize())
+            }
+        });
+        m_context.GetObjectsRegistry().AddGraphicsObject(*m_sp_index_buffer);
+    }
 
     const Data::Size const_buffer_size = static_cast<Data::Size>(sizeof(ScreenQuadConstants));
     m_sp_const_buffer = Buffer::CreateConstantBuffer(context, Buffer::GetAlignedBufferSize(const_buffer_size));
@@ -162,7 +191,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings
 
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
-        program_binding_resource_locations.emplace(Program::Argument(Shader::Type::Pixel, "g_texture"), Resource::Locations{ { m_sp_texture } });
+        program_binding_resource_locations.emplace(Program::Argument(Shader::Type::Pixel, "g_texture"), Resource::Locations{ { m_sp_texture         } });
         program_binding_resource_locations.emplace(Program::Argument(Shader::Type::Pixel, "g_sampler"), Resource::Locations{ { m_sp_texture_sampler } });
     }
 
@@ -210,8 +239,8 @@ void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled)
 void ScreenQuad::SetTexture(Ptr<Texture> sp_texture)
 {
     META_FUNCTION_TASK();
-    if (m_settings.texture_mode != TextureMode::Volatile)
-        throw std::logic_error("Can not change texture of screen quad when texture argument is not configured as volatile");
+    if (m_settings.texture_mode == TextureMode::Disabled)
+        throw std::logic_error("Can not set texture of screen quad with Disabled texture mode.");
 
     if (m_sp_texture.get() == sp_texture.get())
         return;
@@ -260,7 +289,7 @@ void ScreenQuad::UpdateConstantsBuffer() const
     });
 }
 
-Shader::MacroDefinitions ScreenQuad::GetPixelShaderMacroDefinitions(TextureMode texture_mode, TextureColorMode color_mode)
+Shader::MacroDefinitions ScreenQuad::GetPixelShaderMacroDefinitions(TextureMode texture_mode, TextureMode color_mode)
 {
     META_FUNCTION_TASK();
     Shader::MacroDefinitions macro_definitions;
@@ -269,10 +298,10 @@ Shader::MacroDefinitions ScreenQuad::GetPixelShaderMacroDefinitions(TextureMode 
 
     switch(color_mode)
     {
-    case TextureColorMode::RgbaFloat:
+    case TextureMode::RgbaFloat:
         break;
 
-    case TextureColorMode::RFloatToAlpha:
+    case TextureMode::RFloatToAlpha:
         macro_definitions.emplace_back("TTEXEL", "float");
         macro_definitions.emplace_back("RMASK", "r");
         macro_definitions.emplace_back("WMASK", "a");

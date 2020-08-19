@@ -36,11 +36,12 @@ class ObjectBase
     , public std::enable_shared_from_this<ObjectBase>
 {
 public:
-    class CacheBase : public Cache
+    class RegistryBase : public Registry
     {
     public:
-        bool        AddGraphicsObjectToCache(Object& object) override;
-        Ptr<Object> GetGraphicsObjectFromCache(const std::string& object_name) const noexcept override;
+        void        AddGraphicsObject(Object& object) override;
+        Ptr<Object> GetGraphicsObject(const std::string& object_name) const noexcept override;
+        bool        HasGraphicsObject(const std::string& object_name) const noexcept override;
 
     private:
         std::map<std::string, WeakPtr<Object>> m_object_by_name;

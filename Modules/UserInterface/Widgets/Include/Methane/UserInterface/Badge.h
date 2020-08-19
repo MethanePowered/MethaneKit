@@ -51,12 +51,11 @@ public:
     struct Settings
     {
         const std::string name;
-        UnitSize          size               { 96u, 128u, Units::Dots };
-        FrameCorner       corner             = FrameCorner::TopRight;
-        UnitPoint         margins            { 16, 16, Units::Dots };
-        Color4f           blend_color        { 1.f, 1.f, 1.f, 1.f };
-        TextureMode       texture_mode       = TextureMode::Constant;
-        TextureColorMode  texture_color_mode = TextureColorMode::RgbaFloat;
+        UnitSize          size         { 96u, 128u, Units::Dots };
+        FrameCorner       corner       = FrameCorner::TopRight;
+        UnitPoint         margins      { 16, 16, Units::Dots };
+        Color4f           blend_color  { 1.f, 1.f, 1.f, 1.f };
+        TextureMode       texture_mode = TextureMode::RgbaFloat;
     };
 
     Badge(Context& ui_context, Data::Provider& data_provider, const std::string& image_path, Settings settings);

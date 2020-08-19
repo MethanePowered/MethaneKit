@@ -86,6 +86,7 @@ struct Shader
 
     // Auxiliary functions
     static std::string GetTypeName(Type shader_type) noexcept;
+    static std::string ConvertMacroDefinitionsToString(const MacroDefinitions& macro_definitions, const std::string& splitter = ", ") noexcept;
 
     // Shader interface
     virtual Type            GetType() const noexcept = 0;

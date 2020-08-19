@@ -30,26 +30,32 @@ Base implementation of the named object interface.
 namespace Methane::Graphics
 {
 
-bool ObjectBase::CacheBase::AddGraphicsObjectToCache(Object& object)
+void ObjectBase::RegistryBase::AddGraphicsObject(Object& object)
 {
     META_FUNCTION_TASK();
     if (object.GetName().empty())
-        throw std::logic_error("Can not add graphics object without a name to UI context cache.");
+        throw std::logic_error("Can not add graphics object without name to the objects registry.");
 
     const auto add_result = m_object_by_name.emplace(object.GetName(), object.GetPtr());
-    if (!add_result.second && add_result.first->second.expired())
-    {
-        add_result.first->second = object.GetPtr();
-        return true;
-    }
-    return add_result.second;
+    if (!add_result.second && !add_result.first->second.expired() && add_result.first->second.lock().get() != std::addressof(object))
+        throw std::logic_error("Can not add graphics object with name " + object.GetName() +
+                               " to the objects registry because another object with the same name is already registered.");
+
+    add_result.first->second = object.GetPtr();
 }
 
-Ptr<Object> ObjectBase::CacheBase::GetGraphicsObjectFromCache(const std::string& object_name) const noexcept
+Ptr<Object> ObjectBase::RegistryBase::GetGraphicsObject(const std::string& object_name) const noexcept
 {
     META_FUNCTION_TASK();
-    const auto graphics_object_by_name_it = m_object_by_name.find(object_name);
-    return graphics_object_by_name_it == m_object_by_name.end() ? nullptr : graphics_object_by_name_it->second.lock();
+    const auto object_by_name_it = m_object_by_name.find(object_name);
+    return object_by_name_it == m_object_by_name.end() ? nullptr : object_by_name_it->second.lock();
+}
+
+bool ObjectBase::RegistryBase::HasGraphicsObject(const std::string& object_name) const noexcept
+{
+    META_FUNCTION_TASK();
+    const auto object_by_name_it = m_object_by_name.find(object_name);
+    return object_by_name_it != m_object_by_name.end() && !object_by_name_it->second.expired();
 }
 
 } // namespace Methane::Graphics

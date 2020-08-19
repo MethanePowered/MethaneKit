@@ -33,18 +33,8 @@ Badge widget displaying texture in specific corner of the screen.
 namespace Methane::UserInterface
 {
 
-static Badge::Settings UpdateBadgeSettings(Badge::Settings settings, bool is_constant_texture)
-{
-    settings.texture_mode = is_constant_texture
-                          ? gfx::ScreenQuad::TextureMode::Constant
-                          : gfx::ScreenQuad::TextureMode::Volatile;
-    return settings;
-}
-
 Badge::Badge(Context& ui_context, Data::Provider& data_provider, const std::string& image_path, Settings settings)
-    : Badge(ui_context,
-            gfx::ImageLoader(data_provider).LoadImageToTexture2D(ui_context.GetRenderContext(), image_path),
-            UpdateBadgeSettings(settings, true))
+    : Badge(ui_context, gfx::ImageLoader(data_provider).LoadImageToTexture2D(ui_context.GetRenderContext(), image_path), settings)
 {
 }
 
@@ -58,7 +48,6 @@ Badge::Badge(Context& ui_context, Ptr<gfx::Texture> sp_texture, Settings setting
             true, // alpha_blending_enabled
             settings.blend_color,
             settings.texture_mode,
-            settings.texture_color_mode
         }
     )
     , m_settings(std::move(settings))
