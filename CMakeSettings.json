@@ -343,148 +343,10 @@
             ]
         },
         {
-            "name": "Linux-GCC-Debug",
-            "generator": "Unix Makefiles",
-            "configurationType": "Debug",
-            "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
-            "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-            "cmakeExecutable": "/usr/bin/cmake",
-            "remoteCopySourcesExclusionList": [ ".vs", ".git", "Build/Output" ],
-            "cmakeCommandArgs": "",
-            "buildCommandArgs": "-j 4",
-            "ctestCommandArgs": "",
-            "inheritEnvironments": [ "linux_x64" ],
-            "remoteMachineName": "${defaultRemoteMachineName}",
-            "remoteCMakeListsRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/src",
-            "remoteBuildRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/out/build/${name}",
-            "remoteInstallRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/out/install/${name}",
-            "remoteCopySources": true,
-            "rsyncCommandArgs": "-t --delete --delete-excluded",
-            "remoteCopyBuildOutput": false,
-            "remoteCopySourcesMethod": "rsync",
-            "addressSanitizerRuntimeFlags": "detect_leaks=0",
-            "variables": [
-                {
-                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
-                    "value": "True",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
-                    "value": "False",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
-                    "value": "False",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_LOGGING_ENABLED",
-                    "value": "False",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
-                    "value": "False",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
-                    "value": "True",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_ITT_METADATA_ENABLED",
-                    "value": "False",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_TRACY_PROFILING_ENABLED",
-                    "value": "False",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
-                    "value": "False",
-                    "type": "BOOL"
-                }
-            ]
-        },
-        {
-            "name": "Linux-GCC-Release",
-            "generator": "Unix Makefiles",
-            "configurationType": "RelWithDebInfo",
-            "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
-            "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-            "cmakeExecutable": "/usr/bin/cmake",
-            "remoteCopySourcesExclusionList": [ ".vs", ".git", "Build/Output" ],
-            "cmakeCommandArgs": "",
-            "buildCommandArgs": "-j 4",
-            "ctestCommandArgs": "",
-            "inheritEnvironments": [ "linux_x64" ],
-            "remoteMachineName": "${defaultRemoteMachineName}",
-            "remoteCMakeListsRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/src",
-            "remoteBuildRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/out/build/${name}",
-            "remoteInstallRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/out/install/${name}",
-            "remoteCopySources": true,
-            "rsyncCommandArgs": "-t --delete --delete-excluded",
-            "remoteCopyBuildOutput": false,
-            "remoteCopySourcesMethod": "rsync",
-            "addressSanitizerRuntimeFlags": "detect_leaks=0",
-            "variables": [
-                {
-                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
-                    "value": "True",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
-                    "value": "False",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
-                    "value": "False",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_LOGGING_ENABLED",
-                    "value": "False",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
-                    "value": "False",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
-                    "value": "True",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_ITT_METADATA_ENABLED",
-                    "value": "False",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_TRACY_PROFILING_ENABLED",
-                    "value": "False",
-                    "type": "BOOL"
-                },
-                {
-                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
-                    "value": "False",
-                    "type": "BOOL"
-                }
-            ]
-        },
-        {
             "name": "WSL-GCC-Debug",
             "generator": "Unix Makefiles",
             "configurationType": "Debug",
-            "buildRoot": "${projectDir}\\out\\build\\${name}",
+            "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
             "installRoot": "${projectDir}\\out\\install\\${name}",
             "cmakeExecutable": "/usr/bin/cmake",
             "cmakeCommandArgs": "",
@@ -545,7 +407,7 @@
             "name": "WSL-GCC-Release",
             "generator": "Unix Makefiles",
             "configurationType": "RelWithDebInfo",
-            "buildRoot": "${projectDir}\\out\\build\\${name}",
+            "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
             "installRoot": "${projectDir}\\out\\install\\${name}",
             "cmakeExecutable": "/usr/bin/cmake",
             "cmakeCommandArgs": "",
@@ -606,7 +468,7 @@
             "name": "WSL-Clang-Debug",
             "generator": "Unix Makefiles",
             "configurationType": "Debug",
-            "buildRoot": "${projectDir}\\out\\build\\${name}",
+            "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
             "installRoot": "${projectDir}\\out\\install\\${name}",
             "cmakeExecutable": "/usr/bin/cmake",
             "cmakeCommandArgs": "",
@@ -667,7 +529,7 @@
             "name": "WSL-Clang-Release",
             "generator": "Unix Makefiles",
             "configurationType": "RelWithDebInfo",
-            "buildRoot": "${projectDir}\\out\\build\\${name}",
+            "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
             "installRoot": "${projectDir}\\out\\install\\${name}",
             "cmakeExecutable": "/usr/bin/cmake",
             "cmakeCommandArgs": "",
