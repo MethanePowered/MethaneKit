@@ -66,10 +66,11 @@ ITT_DOMAIN_EXTERN();
 
 #endif
 
-#define META_CPU_FRAME_DELIMITER(/* uint32_t */ frame_buffer_index) \
+#define META_CPU_FRAME_DELIMITER(/* uint32_t */ frame_buffer_index, /* uint32_t */ frame_index) \
     FrameMark \
     ITT_PROCESS_MARKER("Methane-Frame-Delimiter"); \
-    ITT_MARKER_ARG("Frame-Buffer-Index", static_cast<int64_t>(frame_buffer_index))
+    ITT_MARKER_ARG("Frame-Buffer-Index", static_cast<int64_t>(frame_buffer_index)); \
+    ITT_MARKER_ARG("Frame-Index", static_cast<int64_t>(frame_index))
 
 #define META_CPU_FRAME_START(/*const char* */name) \
     TracyCFrameMarkStart(name)

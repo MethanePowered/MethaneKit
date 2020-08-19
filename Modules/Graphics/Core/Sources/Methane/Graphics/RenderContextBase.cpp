@@ -99,7 +99,7 @@ void RenderContextBase::OnCpuPresentComplete(bool signal_frame_fence)
         GetCurrentFrameFence().Signal();
     }
 
-    META_CPU_FRAME_DELIMITER(m_frame_buffer_index);
+    META_CPU_FRAME_DELIMITER(m_frame_buffer_index, m_frame_index);
     META_LOG("PRESENT COMPLETE for context \"" + GetName() + "\"");
 
     m_fps_counter.OnCpuFramePresented();
@@ -147,6 +147,7 @@ void RenderContextBase::Initialize(DeviceBase& device, bool deferred_heap_alloca
     }
 
     m_sp_render_fence = Fence::Create(GetRenderCommandQueue());
+    m_frame_index = 0u;
 
     if (is_callback_emitted)
     {
@@ -225,6 +226,7 @@ void RenderContextBase::OnGpuWaitComplete(WaitFor wait_for)
 void RenderContextBase::UpdateFrameBufferIndex()
 {
     m_frame_buffer_index = GetNextFrameBufferIndex();
+    m_frame_index++;
     m_is_frame_buffer_in_use = true;
 }
     
