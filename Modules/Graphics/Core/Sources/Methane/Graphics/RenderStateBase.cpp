@@ -27,6 +27,12 @@ Base implementation of the render state interface.
 
 #include <cassert>
 
+#define COMPARE_STATE_GROUPS_WITH_MEMCMP
+
+#ifdef COMPARE_STATE_GROUPS_WITH_MEMCMP
+#include <cstring>
+#endif
+
 namespace Methane::Graphics
 {
 
@@ -92,8 +98,12 @@ bool ViewStateBase::SetScissorRects(const ScissorRects& scissor_rects)
 bool RenderState::Rasterizer::operator==(const Rasterizer& other) const noexcept
 {
     META_FUNCTION_TASK();
+#ifdef COMPARE_STATE_GROUPS_WITH_MEMCMP
+    return std::memcmp(this, &other, sizeof(RenderState::Rasterizer)) == 0;
+#else
     return std::tie(is_front_counter_clockwise, cull_mode, fill_mode, sample_count, alpha_to_coverage_enabled) ==
            std::tie(other.is_front_counter_clockwise, other.cull_mode, other.fill_mode, other.sample_count, other.alpha_to_coverage_enabled);
+#endif
 }
 
 bool RenderState::Rasterizer::operator!=(const Rasterizer& other) const noexcept
@@ -105,10 +115,14 @@ bool RenderState::Rasterizer::operator!=(const Rasterizer& other) const noexcept
 bool RenderState::Blending::RenderTarget::operator==(const RenderTarget& other) const noexcept
 {
     META_FUNCTION_TASK();
+#ifdef COMPARE_STATE_GROUPS_WITH_MEMCMP
+    return std::memcmp(this, &other, sizeof(RenderState::Blending::RenderTarget)) == 0;
+#else
     return std::tie(blend_enabled, write_mask, rgb_blend_op, alpha_blend_op, 
                     source_rgb_blend_factor, source_alpha_blend_factor, dest_rgb_blend_factor, dest_alpha_blend_factor) ==
            std::tie(other.blend_enabled, other.write_mask, other.rgb_blend_op, other.alpha_blend_op,
                     other.source_rgb_blend_factor, other.source_alpha_blend_factor, other.dest_rgb_blend_factor, other.dest_alpha_blend_factor);
+#endif
 }
 
 bool RenderState::Blending::RenderTarget::operator!=(const RenderTarget& other) const noexcept
@@ -120,8 +134,12 @@ bool RenderState::Blending::RenderTarget::operator!=(const RenderTarget& other) 
 bool RenderState::Blending::operator==(const Blending& other) const noexcept
 {
     META_FUNCTION_TASK();
+#ifdef COMPARE_STATE_GROUPS_WITH_MEMCMP
+    return std::memcmp(this, &other, sizeof(RenderState::Blending)) == 0;
+#else
     return std::tie(is_independent, render_targets) ==
            std::tie(other.is_independent, other.render_targets);
+#endif
 }
 
 bool RenderState::Blending::operator!=(const Blending& other) const noexcept
@@ -133,8 +151,12 @@ bool RenderState::Blending::operator!=(const Blending& other) const noexcept
 bool RenderState::Depth::operator==(const Depth& other) const noexcept
 {
     META_FUNCTION_TASK();
+#ifdef COMPARE_STATE_GROUPS_WITH_MEMCMP
+    return std::memcmp(this, &other, sizeof(RenderState::Depth)) == 0;
+#else
     return std::tie(enabled, write_enabled, compare) ==
            std::tie(other.enabled, other.write_enabled, other.compare);
+#endif
 }
 bool RenderState::Depth::operator!=(const Depth& other) const noexcept
 {
@@ -145,8 +167,12 @@ bool RenderState::Depth::operator!=(const Depth& other) const noexcept
 bool RenderState::Stencil::FaceOperations::operator==(const FaceOperations& other) const noexcept
 {
     META_FUNCTION_TASK();
+#ifdef COMPARE_STATE_GROUPS_WITH_MEMCMP
+    return std::memcmp(this, &other, sizeof(RenderState::Stencil::FaceOperations)) == 0;
+#else
     return std::tie(stencil_failure, stencil_pass, depth_failure, depth_stencil_pass, compare) ==
            std::tie(other.stencil_failure, other.stencil_pass, other.depth_failure, other.depth_stencil_pass, other.compare);
+#endif
 }
 
 bool RenderState::Stencil::FaceOperations::operator!=(const FaceOperations& other) const noexcept
@@ -158,9 +184,14 @@ bool RenderState::Stencil::FaceOperations::operator!=(const FaceOperations& othe
 bool RenderState::Stencil::operator==(const Stencil& other) const noexcept
 {
     META_FUNCTION_TASK();
+#ifdef COMPARE_STATE_GROUPS_WITH_MEMCMP
+    return std::memcmp(this, &other, sizeof(RenderState::Stencil)) == 0;
+#else
     return std::tie(enabled, read_mask, write_mask, front_face, back_face) ==
            std::tie(other.enabled, other.read_mask, other.write_mask, other.front_face, other.back_face);
+#endif
 }
+
 bool RenderState::Stencil::operator!=(const Stencil& other) const noexcept
 {
     META_FUNCTION_TASK();
