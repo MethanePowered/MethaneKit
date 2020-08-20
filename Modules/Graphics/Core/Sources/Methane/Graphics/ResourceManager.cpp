@@ -36,7 +36,6 @@ namespace Methane::Graphics
 
 ResourceManager::ResourceManager(ContextBase& context)
     : m_context(context)
-    , m_release_pool(m_context)
 {
     META_FUNCTION_TASK();
 }
@@ -110,8 +109,6 @@ void ResourceManager::CompleteInitialization()
 void ResourceManager::Release()
 {
     META_FUNCTION_TASK();
-    m_release_pool.ReleaseAllResources();
-
     for (Ptrs<DescriptorHeap>& desc_heaps : m_descriptor_heap_types)
     {
         desc_heaps.clear();

@@ -72,15 +72,9 @@ public:
 
     using LocationsDX = std::vector<LocationDX>;
 
-    struct RetainedResourceDX : ReleasePool::RetainedResource
-    {
-        wrl::ComPtr<ID3D12Resource> cp_resource;
-
-        RetainedResourceDX(const wrl::ComPtr<ID3D12Resource>& cp_resource) : cp_resource(cp_resource) { }
-    };
-
     ResourceDX(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
-    ~ResourceDX() override;
+
+    void ForceReleaseResource() { m_cp_resource.Reset(); }
 
     // Object interface
     void SetName(const std::string& name) override;

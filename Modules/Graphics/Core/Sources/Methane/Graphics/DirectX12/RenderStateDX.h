@@ -60,7 +60,6 @@ class RenderStateDX final : public RenderStateBase
 {
 public:
     RenderStateDX(RenderContextBase& context, const Settings& settings);
-    ~RenderStateDX() override;
 
     // RenderState interface
     void Reset(const Settings& settings) override;

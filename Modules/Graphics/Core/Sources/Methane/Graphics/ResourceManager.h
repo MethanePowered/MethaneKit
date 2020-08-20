@@ -27,7 +27,6 @@ and deferred releasing of GPU resource.
 #include "ResourceBase.h"
 #include "DescriptorHeap.h"
 #include "ProgramBase.h"
-#include "ReleasePool.h"
 
 #include <Methane/Instrumentation.h>
 
@@ -70,7 +69,6 @@ public:
     const Ptr<DescriptorHeap>&  GetDefaultShaderVisibleDescriptorHeapPtr(DescriptorHeap::Type type) const;
     DescriptorHeap&             GetDefaultShaderVisibleDescriptorHeap(DescriptorHeap::Type type) const;
     DescriptorHeapSizeByType    GetDescriptorHeapSizes(bool get_allocated_size, bool for_shader_visible_heaps) const;
-    ReleasePool&                GetReleasePool() noexcept { return m_release_pool; }
 
 private:
     void ForEachDescriptorHeap(const std::function<void(DescriptorHeap& descriptor_heap)>& process_heap) const;
@@ -80,7 +78,6 @@ private:
     bool                      m_deferred_heap_allocation = false;
     ContextBase&              m_context;
     DescriptorHeapTypes       m_descriptor_heap_types;
-    ReleasePool               m_release_pool;
     TracyLockable(std::mutex, m_program_bindings_mutex);
     WeakPtrs<ProgramBindings> m_program_bindings;
 };

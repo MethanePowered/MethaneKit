@@ -97,6 +97,7 @@ bool RenderPassBase::Update(const RenderPass::Settings& settings)
         return false;
 
     m_settings = settings;
+
     m_color_attachment_textures.clear();
     m_p_depth_attachment_texture = nullptr;
     m_sp_begin_transition_barriers.reset();
@@ -203,9 +204,42 @@ TextureBase* RenderPassBase::GetDepthAttachmentTexture() const
     META_FUNCTION_TASK();
     if (!m_p_depth_attachment_texture && !m_settings.depth_attachment.wp_texture.expired())
     {
-        m_p_depth_attachment_texture = dynamic_cast<TextureBase*>(m_settings.depth_attachment.wp_texture.lock().get());
+        m_p_depth_attachment_texture = static_cast<TextureBase*>(m_settings.depth_attachment.wp_texture.lock().get());
     }
     return m_p_depth_attachment_texture;
+}
+
+Ptrs<TextureBase> RenderPassBase::GetNonFrameBufferAttachmentPtrs() const
+{
+    META_FUNCTION_TASK();
+    Ptrs<TextureBase> non_frame_buffer_attachment_textures;
+    non_frame_buffer_attachment_textures.reserve(m_settings.color_attachments.size() + 2);
+
+    for (const ColorAttachment& color_attach : m_settings.color_attachments)
+    {
+        if (color_attach.wp_texture.expired())
+        {
+            throw std::invalid_argument("Can not use color attachment without texture.");
+        }
+
+        Ptr<TextureBase> sp_attachment_texture = std::static_pointer_cast<TextureBase>(color_attach.wp_texture.lock());
+        if (sp_attachment_texture->GetSettings().type == Texture::Type::FrameBuffer)
+            continue;
+
+        non_frame_buffer_attachment_textures.emplace_back();
+    }
+
+    if (!m_settings.depth_attachment.wp_texture.expired())
+    {
+        non_frame_buffer_attachment_textures.emplace_back(std::static_pointer_cast<TextureBase>(m_settings.depth_attachment.wp_texture.lock()));
+    }
+
+    if (!m_settings.stencil_attachment.wp_texture.expired())
+    {
+        non_frame_buffer_attachment_textures.emplace_back(std::static_pointer_cast<TextureBase>(m_settings.stencil_attachment.wp_texture.lock()));
+    }
+
+    return non_frame_buffer_attachment_textures;
 }
 
 } // namespace Methane::Graphics

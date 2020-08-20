@@ -66,16 +66,6 @@ public:
         }
     }
 
-    ~BufferDX() override
-    {
-        META_FUNCTION_TASK();
-        if (m_cp_upload_resource)
-        {
-            GetContextBase().GetResourceManager().GetReleasePool().AddUploadResource(std::make_unique<RetainedResourceDX>(m_cp_upload_resource));
-            GetContextBase().GetResourceManager().GetReleasePool().AddUploadResource(std::make_unique<RetainedResourceDX>(GetNativeResourceComPtr()));
-        }
-    }
-
     // Object overrides
     void SetName(const std::string& name) override
     {

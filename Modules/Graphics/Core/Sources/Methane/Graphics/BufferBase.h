@@ -44,14 +44,16 @@ public:
     const Settings& GetSettings() const noexcept override       { return m_settings; }
     uint32_t GetFormattedItemsCount() const noexcept override;
 
-    Ptr<BufferBase> GetBufferPtr()                              { return std::dynamic_pointer_cast<BufferBase>(GetPtr()); }
+    Ptr<BufferBase> GetBufferPtr()                              { return std::static_pointer_cast<BufferBase>(GetBasePtr()); }
     std::string GetBufferTypeName() const noexcept              { return Buffer::GetBufferTypeName(m_settings.type); }
 
 private:
     Settings    m_settings;
 };
 
-class BufferSetBase : public BufferSet
+class BufferSetBase
+    : public BufferSet
+    , public std::enable_shared_from_this<BufferSetBase>
 {
 public:
     BufferSetBase(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
@@ -62,6 +64,7 @@ public:
     const Refs<Buffer>& GetRefs() const noexcept override  { return m_refs; }
     Buffer&             operator[](Data::Index index) const override;
 
+    Ptr<BufferSet>             GetPtr()                    { return shared_from_this(); }
     const RawPtrs<BufferBase>& GetRawPtrs() const noexcept { return m_raw_ptrs; }
 
 private:

@@ -59,7 +59,7 @@ public:
 
     ContextBase&         GetContext()       { return m_context; }
     const ContextBase&   GetContext() const { return m_context; }
-    Ptr<ProgramBase>     GetProgramPtr()    { return std::dynamic_pointer_cast<ProgramBase>(GetPtr()); }
+    Ptr<ProgramBase>     GetProgramPtr()    { return std::static_pointer_cast<ProgramBase>(GetBasePtr()); }
 
 protected:
     void InitArgumentBindings(const ArgumentDescriptions& argument_descriptions);

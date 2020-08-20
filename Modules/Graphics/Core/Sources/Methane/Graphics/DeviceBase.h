@@ -45,7 +45,7 @@ public:
     Feature::Mask       GetSupportedFeatures() const noexcept override                         { return m_supported_features; }
     std::string         ToString() const noexcept override;
 
-    Ptr<DeviceBase>     GetDevicePtr() { return std::dynamic_pointer_cast<DeviceBase>(GetPtr()); }
+    Ptr<DeviceBase>     GetDevicePtr() { return std::static_pointer_cast<DeviceBase>(GetBasePtr()); }
 
 protected:
     friend class SystemBase;

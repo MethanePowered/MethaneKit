@@ -141,7 +141,6 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
     if (m_state == State::Committed || m_state == State::Executing)
         throw std::logic_error("Can not reset command list in committed or executing state.");
 
-    // NOTE: ResetCommandState() must be called from the top-most overridden Reset method
     META_LOG(GetTypeName(m_type) + " Command list \"" + GetName() + "\" RESET for commands encoding.");
 
     SetCommandListStateNoLock(State::Encoding);
@@ -170,7 +169,7 @@ void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, Prog
     ProgramBindingsBase& program_bindings_base = static_cast<ProgramBindingsBase&>(program_bindings);
     program_bindings_base.Apply(*this, apply_behavior);
 
-    m_command_state.p_program_bindings = &program_bindings_base;
+    m_command_state.sp_program_bindings = program_bindings_base.GetPtr();
 }
 
 void CommandListBase::Commit()
@@ -245,6 +244,7 @@ void CommandListBase::Complete(uint32_t frame_index)
             throw std::logic_error(GetTypeName() + " Command list \"" + GetName() + "\" committed on frame " + std::to_string(m_committed_frame_index) + " can not be completed on frame " + std::to_string(frame_index));
 
         SetCommandListStateNoLock(State::Pending);
+        ResetCommandState();
 
         TRACY_GPU_SCOPE_COMPLETE(m_tracy_gpu_scope, GetGpuTimeRange(false));
         META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" was COMPLETED on frame " + std::to_string(frame_index) +
@@ -338,7 +338,7 @@ uint32_t CommandListBase::GetCurrentFrameIndex() const
 void CommandListBase::ResetCommandState()
 {
     META_FUNCTION_TASK();
-    m_command_state.p_program_bindings = nullptr;
+    m_command_state.sp_program_bindings.reset();
 }
 
 CommandQueueBase& CommandListBase::GetCommandQueueBase() noexcept

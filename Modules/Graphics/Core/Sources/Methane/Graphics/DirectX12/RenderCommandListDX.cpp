@@ -87,7 +87,6 @@ void RenderCommandListDX::ResetNative(const Ptr<RenderState>& sp_render_state)
 
     SetCommitted(false);
     SetCommandListState(CommandList::State::Encoding);
-    ResetCommandState();
 
     ID3D12PipelineState* p_dx_initial_state = sp_render_state ? static_cast<RenderStateDX&>(*sp_render_state).GetNativePipelineState().Get() : nullptr;
     ID3D12CommandAllocator& dx_cmd_allocator = GetNativeCommandAllocatorRef();
@@ -104,7 +103,7 @@ void RenderCommandListDX::ResetNative(const Ptr<RenderState>& sp_render_state)
         return;
 
     DrawingState& drawing_state = GetDrawingState();
-    drawing_state.p_render_state     = static_cast<RenderStateBase*>(sp_render_state.get());
+    drawing_state.sp_render_state     = std::static_pointer_cast<RenderStateBase>(sp_render_state);
     drawing_state.render_state_groups = RenderState::Group::Program
                                       | RenderState::Group::Rasterizer
                                       | RenderState::Group::DepthStencil;
@@ -130,7 +129,7 @@ void RenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state, DebugGr
     }
 }
 
-void RenderCommandListDX::SetVertexBuffers(const BufferSet& vertex_buffers)
+void RenderCommandListDX::SetVertexBuffers(BufferSet& vertex_buffers)
 {
     META_FUNCTION_TASK();
 

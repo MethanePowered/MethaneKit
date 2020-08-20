@@ -222,9 +222,9 @@ void ProgramBindingsDX::Apply(CommandListBase& command_list, ApplyBehavior::Mask
     using DXBindingType     = ArgumentBindingDX::Type;
     using DXDescriptorRange = ArgumentBindingDX::DescriptorRange;
 
-    ICommandListDX&            command_list_dx            = dynamic_cast<ICommandListDX&>(command_list);
-    const ProgramBindingsBase* p_applied_program_bindings = command_list.GetProgramBindings();
-    const bool           apply_constant_resource_bindings = apply_behavior & ~ApplyBehavior::ConstantOnce || !p_applied_program_bindings;
+    ICommandListDX&                 command_list_dx                  = dynamic_cast<ICommandListDX&>(command_list);
+    const Ptr<ProgramBindingsBase>& sp_applied_program_bindings      = command_list.GetProgramBindings();
+    const bool                      apply_constant_resource_bindings = apply_behavior & ~ApplyBehavior::ConstantOnce || !sp_applied_program_bindings;
 
     ID3D12GraphicsCommandList& d3d12_command_list = command_list_dx.GetNativeCommandList();
 
@@ -246,8 +246,8 @@ void ProgramBindingsDX::Apply(CommandListBase& command_list, ApplyBehavior::Mask
 
     for(const RootParameterBinding& root_parameter_binding : m_variadic_root_parameter_bindings)
     {
-        if (apply_behavior & ApplyBehavior::ChangesOnly && p_applied_program_bindings &&
-            root_parameter_binding.argument_binding.IsAlreadyApplied(GetProgram(), *p_applied_program_bindings))
+        if (apply_behavior & ApplyBehavior::ChangesOnly && sp_applied_program_bindings &&
+            root_parameter_binding.argument_binding.IsAlreadyApplied(GetProgram(), *sp_applied_program_bindings))
             continue;
 
         ApplyRootParameterBinding(root_parameter_binding, d3d12_command_list);

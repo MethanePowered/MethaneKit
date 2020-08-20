@@ -53,12 +53,7 @@ class CommandListBase
 public:
     struct CommandState final
     {
-        // NOTE:
-        // Command state uses raw pointers instead of smart pointers for performance reasons:
-        //   - shared pointers can not be used here, because they keep resources from deletion on context release
-        //   - weak pointer should not be used too because 'lock' operation has significant performance overhead
-        //   - even if raw pointer becomes obsolete it won't be a problem because it is used only for address comparison with another raw pointer
-        ProgramBindingsBase* p_program_bindings = nullptr;
+        Ptr<ProgramBindingsBase> sp_program_bindings;
     };
 
     class DebugGroupBase
@@ -105,10 +100,10 @@ public:
     void PushOpenDebugGroup(DebugGroup& debug_group);
     void ClearOpenDebugGroups();
 
-    CommandQueueBase&          GetCommandQueueBase() noexcept;
-    const CommandQueueBase&    GetCommandQueueBase() const noexcept;
-    const ProgramBindingsBase* GetProgramBindings() const noexcept  { return GetCommandState().p_program_bindings; }
-    Ptr<CommandListBase>       GetCommandListPtr()                  { return std::dynamic_pointer_cast<CommandListBase>(GetPtr()); }
+    CommandQueueBase&               GetCommandQueueBase() noexcept;
+    const CommandQueueBase&         GetCommandQueueBase() const noexcept;
+    const Ptr<ProgramBindingsBase>& GetProgramBindings() const noexcept  { return GetCommandState().sp_program_bindings; }
+    Ptr<CommandListBase>            GetCommandListPtr()                  { return std::static_pointer_cast<CommandListBase>(GetBasePtr()); }
 
 protected:
     virtual void ResetCommandState();

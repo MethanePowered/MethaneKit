@@ -67,7 +67,7 @@ public:
     // RenderStateBase interface
     virtual void Apply(RenderCommandListBase& command_list, Group::Mask apply_groups) = 0;
 
-    Ptr<RenderStateBase> GetRenderStatePtr()    { return std::dynamic_pointer_cast<RenderStateBase>(GetPtr()); }
+    Ptr<RenderStateBase> GetRenderStatePtr()    { return std::static_pointer_cast<RenderStateBase>(GetBasePtr()); }
     RenderContextBase&   GetRenderContext()     { return m_context; }
 
 protected:

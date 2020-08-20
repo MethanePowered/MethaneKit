@@ -249,8 +249,6 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/DescriptorHeap.cpp
     ${SOURCES_DIR}/ResourceManager.h
     ${SOURCES_DIR}/ResourceManager.cpp
-    ${SOURCES_DIR}/ReleasePool.cpp
-    ${SOURCES_DIR}/ReleasePool.h
     ${SOURCES_DIR}/QueryBuffer.h
     ${SOURCES_DIR}/QueryBuffer.cpp
 )

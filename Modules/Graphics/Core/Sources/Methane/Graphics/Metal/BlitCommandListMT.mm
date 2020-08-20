@@ -44,8 +44,6 @@ void BlitCommandListMT::Reset(CommandList::DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 
-    CommandListBase::ResetCommandState();
-
     if (IsCommandEncoderInitialized())
     {
         CommandListBase::Reset(p_debug_group);

@@ -54,11 +54,6 @@ public:
         Initialize(extra_args...);
     }
 
-    ~TextureDX() override
-    {
-        META_FUNCTION_TASK();
-    }
-
     // Resource interface
     void SetData(const SubResources&) override
     {
@@ -77,7 +72,6 @@ class TextureDX<ImageTextureArg> : public TextureBase
 {
 public:
     TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg);
-    ~TextureDX() override;
 
     // Object overrides
     void SetName(const std::string& name) override;

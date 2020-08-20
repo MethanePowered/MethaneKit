@@ -93,15 +93,6 @@ ResourceDX::ResourceDX(Type type, Usage::Mask usage_mask, ContextBase& context, 
     META_FUNCTION_TASK();
 }
 
-ResourceDX::~ResourceDX()
-{
-    META_FUNCTION_TASK();
-    if (m_cp_resource)
-    {
-        GetContextBase().GetResourceManager().GetReleasePool().AddResource(std::make_unique<RetainedResourceDX>(m_cp_resource));
-    }
-}
-
 void ResourceDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();

@@ -52,7 +52,8 @@ public:
 
     const Refs<TextureBase>& GetColorAttachmentTextures() const;
     TextureBase*             GetDepthAttachmentTexture() const;
-    Ptr<RenderPassBase>      GetRenderPassPtr()         { return std::dynamic_pointer_cast<RenderPassBase>(GetPtr()); }
+    Ptrs<TextureBase>        GetNonFrameBufferAttachmentPtrs() const;
+    Ptr<RenderPassBase>      GetRenderPassPtr()         { return std::static_pointer_cast<RenderPassBase>(GetBasePtr()); }
     bool                     IsBegun() const            { return m_is_begun; }
 
 protected:

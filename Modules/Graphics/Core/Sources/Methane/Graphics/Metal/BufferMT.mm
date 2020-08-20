@@ -36,13 +36,6 @@ Metal implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
-struct RetainedBufferMT : ReleasePool::RetainedResource
-{
-    id<MTLBuffer> mtl_buffer;
-
-    RetainedBufferMT(const id<MTLBuffer>& buffer_id) : mtl_buffer(buffer_id) { }
-};
-
 static MTLResourceOptions GetNativeResourceOptions(Buffer::StorageMode storage_mode)
 {
     switch(storage_mode)
@@ -96,16 +89,6 @@ BufferMT::BufferMT(ContextBase& context, const Settings& settings, const Descrip
 {
     META_FUNCTION_TASK();
     InitializeDefaultDescriptors();
-}
-
-BufferMT::~BufferMT()
-{
-    META_FUNCTION_TASK();
-    GetContextBase().GetResourceManager().GetReleasePool().AddResource(std::make_unique<RetainedBufferMT>(m_mtl_buffer));
-    if (GetSettings().storage_mode == Buffer::StorageMode::Private)
-    {
-        GetContextBase().GetResourceManager().GetReleasePool().AddUploadResource(std::make_unique<RetainedBufferMT>(m_mtl_buffer));
-    }
 }
 
 void BufferMT::SetName(const std::string& name)
@@ -183,7 +166,6 @@ void BufferMT::SetDataToPrivateBuffer(const SubResources& sub_resources)
                        destinationOffset:data_offset
                                     size:sub_resource.size];
 
-        GetContextBase().GetResourceManager().GetReleasePool().AddUploadResource(std::make_unique<RetainedBufferMT>(mtl_sub_resource_upload_buffer));
         data_offset += sub_resource.size;
     }
 

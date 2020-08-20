@@ -232,7 +232,13 @@ protected:
 
     virtual Data::Index GetSubsetByInstanceIndex(Data::Index instance_index) const { return instance_index; }
 
-    const BufferSet& GetVertexBuffers() const
+    const BufferSet& GetVertexBuffers() const noexcept
+    {
+        assert(!!m_sp_vertex);
+        return *m_sp_vertex;
+    }
+
+    BufferSet& GetVertexBuffers() noexcept
     {
         assert(!!m_sp_vertex);
         return *m_sp_vertex;

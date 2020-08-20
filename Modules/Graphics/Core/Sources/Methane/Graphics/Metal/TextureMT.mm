@@ -35,20 +35,6 @@ Metal implementation of the texture interface.
 namespace Methane::Graphics
 {
 
-struct RetainedTextureMT : ReleasePool::RetainedResource
-{
-    id<MTLTexture> mtl_texture;
-
-    RetainedTextureMT(const id<MTLTexture>& texture_id) : mtl_texture(texture_id) { }
-};
-
-struct RetainedBufferMT : ReleasePool::RetainedResource
-{
-    id<MTLBuffer> mtl_buffer;
-
-    RetainedBufferMT(const id<MTLBuffer>& buffer_id) : mtl_buffer(buffer_id) { }
-};
-
 static MTLTextureType GetNativeTextureType(Texture::DimensionType dimension_type)
 {
     META_FUNCTION_TASK();
@@ -134,17 +120,6 @@ TextureMT::TextureMT(ContextBase& context, const Settings& settings, const Descr
     InitializeDefaultDescriptors();
 }
 
-TextureMT::~TextureMT()
-{
-    META_FUNCTION_TASK();
-
-    if (TextureBase::GetSettings().type == Texture::Type::FrameBuffer)
-        return;
-
-    GetContextBase().GetResourceManager().GetReleasePool().AddResource(std::make_unique<RetainedTextureMT>(m_mtl_texture));
-    GetContextBase().GetResourceManager().GetReleasePool().AddUploadResource(std::make_unique<RetainedTextureMT>(m_mtl_texture));
-}
-
 void TextureMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
@@ -206,8 +181,6 @@ void TextureMT::SetData(const SubResources& sub_resources)
                         destinationSlice:slice
                         destinationLevel:sub_resource.index.mip_level
                        destinationOrigin:texture_region.origin];
-
-        GetContextBase().GetResourceManager().GetReleasePool().AddUploadResource(std::make_unique<RetainedBufferMT>(mtl_sub_resource_upload_buffer));
     }
 
     if (settings.mipmapped && sub_resources.size() < GetSubresourceCount().GetRawCount())

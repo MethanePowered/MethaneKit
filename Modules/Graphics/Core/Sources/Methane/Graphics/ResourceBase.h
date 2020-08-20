@@ -27,7 +27,6 @@ Base implementation of the resource interface.
 
 #include "ObjectBase.h"
 #include "DescriptorHeap.h"
-#include "ReleasePool.h"
 
 #include <set>
 #include <map>

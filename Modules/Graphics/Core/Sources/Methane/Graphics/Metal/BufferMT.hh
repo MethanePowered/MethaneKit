@@ -34,7 +34,6 @@ class BufferMT final : public BufferBase
 {
 public:
     BufferMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    ~BufferMT() override;
 
     // Resource interface
     void SetData(const SubResources& sub_resources) override;

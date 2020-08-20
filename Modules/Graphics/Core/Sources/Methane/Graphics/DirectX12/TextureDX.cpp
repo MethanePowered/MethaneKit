@@ -228,14 +228,6 @@ ImageTextureDX::TextureDX(ContextBase& render_context, const Settings& settings,
     cp_device->CreateShaderResourceView(GetNativeResource(), &tex_and_srv_desc.second, GetNativeCpuDescriptorHandle(Usage::ShaderRead));
 }
 
-ImageTextureDX::~TextureDX()
-{
-    META_FUNCTION_TASK();
-    assert(m_cp_upload_resource);
-    GetContextBase().GetResourceManager().GetReleasePool().AddUploadResource(std::make_unique<RetainedResourceDX>(m_cp_upload_resource));
-    GetContextBase().GetResourceManager().GetReleasePool().AddUploadResource(std::make_unique<RetainedResourceDX>(GetNativeResourceComPtr()));
-}
-
 void ImageTextureDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();

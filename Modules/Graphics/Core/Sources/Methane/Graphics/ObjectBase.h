@@ -54,6 +54,8 @@ public:
     const std::string& GetName() const noexcept override         { return m_name; }
     Ptr<Object>        GetPtr() override                         { return std::dynamic_pointer_cast<Object>(shared_from_this()); }
 
+    Ptr<ObjectBase>    GetBasePtr()                              { return shared_from_this(); }
+
 private:
     std::string m_name;
 };

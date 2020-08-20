@@ -61,12 +61,11 @@ public:
             Changes() = delete;
         };
 
-        // NOTE: justification why raw pointers are used is provided in base class notice, see CommandState for more details
-
+        Ptrs<TextureBase>        sp_render_pass_attachments;
+        Ptr<RenderStateBase>     sp_render_state;
+        Ptr<BufferSet>           sp_vertex_buffer_set;
+        Ptr<BufferBase>          sp_index_buffer;
         std::optional<Primitive> opt_primitive_type;
-        RawPtr<BufferBase>       p_index_buffer      = nullptr;
-        RawPtrs<BufferBase>      vertex_buffers;
-        RenderStateBase*         p_render_state      = nullptr;
         ViewStateBase*           p_view_state        = nullptr;
         RenderState::Group::Mask render_state_groups = RenderState::Group::None;
         Changes::Mask            changes             = Changes::None;
@@ -82,7 +81,7 @@ public:
     void Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group = nullptr) override;
     void SetRenderState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) override;
     void SetViewState(ViewState& view_state) override;
-    void SetVertexBuffers(const BufferSet& vertex_buffers) override;
+    void SetVertexBuffers(BufferSet& vertex_buffers) override;
     void DrawIndexed(Primitive primitive_type, Buffer& index_buffer,
                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                      uint32_t instance_count, uint32_t start_instance) override;
@@ -104,7 +103,7 @@ protected:
 
 private:
     const bool                             m_is_parallel;
-    const Ptr<RenderPass>                  m_sp_render_pass;
+    const Ptr<RenderPassBase>              m_sp_render_pass;
     WeakPtr<ParallelRenderCommandListBase> m_wp_parallel_render_command_list;
     DrawingState                           m_drawing_state;
 };

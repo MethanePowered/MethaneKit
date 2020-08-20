@@ -52,7 +52,7 @@ public:
     void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
     CommandList::Type GetCommandListsType() const noexcept override { return m_command_lists_type; }
 
-    Ptr<CommandQueueBase> GetCommandQueuePtr()          { return std::dynamic_pointer_cast<CommandQueueBase>(GetPtr()); }
+    Ptr<CommandQueueBase> GetCommandQueuePtr()          { return std::static_pointer_cast<CommandQueueBase>(GetBasePtr()); }
     ContextBase&          GetContext() const noexcept   { return m_context; }
     Tracy::GpuContext&    GetTracyContext() noexcept;
 
