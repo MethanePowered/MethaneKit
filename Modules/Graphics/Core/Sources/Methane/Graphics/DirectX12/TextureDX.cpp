@@ -397,8 +397,9 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
     }
 
     BlitCommandListDX& upload_cmd_list = static_cast<BlitCommandListDX&>(GetContext().GetUploadCommandList());
-    const ResourceBase::State final_texture_state = GetState() == State::Common ? State::PixelShaderResource : GetState();
+    upload_cmd_list.RetainResource(*this);
 
+    const ResourceBase::State final_texture_state = GetState() == State::Common ? State::PixelShaderResource : GetState();
     if (SetState(State::CopyDest, m_sp_upload_begin_transition_barriers) && m_sp_upload_begin_transition_barriers)
     {
         upload_cmd_list.SetResourceBarriers(*m_sp_upload_begin_transition_barriers);

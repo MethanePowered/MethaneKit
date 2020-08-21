@@ -54,6 +54,7 @@ public:
     struct CommandState final
     {
         Ptr<ProgramBindingsBase> sp_program_bindings;
+        Ptrs<ObjectBase>         retained_resources;
     };
 
     class DebugGroupBase
@@ -104,6 +105,17 @@ public:
     const CommandQueueBase&         GetCommandQueueBase() const noexcept;
     const Ptr<ProgramBindingsBase>& GetProgramBindings() const noexcept  { return GetCommandState().sp_program_bindings; }
     Ptr<CommandListBase>            GetCommandListPtr()                  { return std::static_pointer_cast<CommandListBase>(GetBasePtr()); }
+
+    void RetainResource(Ptr<ObjectBase> sp_resource)  { if (sp_resource) m_command_state.retained_resources.emplace_back(std::move(sp_resource)); }
+    void RetainResource(ObjectBase& resource)         { m_command_state.retained_resources.emplace_back(resource.GetBasePtr()); }
+
+    template<typename T, typename = std::enable_if_t<std::is_base_of_v<ObjectBase, T>>>
+    void RetainResources(const Ptrs<T>& resource_ptrs)
+    {
+        m_command_state.retained_resources.reserve(m_command_state.retained_resources.size() + resource_ptrs.size());
+        for(const Ptr<T>& sp_resource : resource_ptrs)
+            RetainResource(std::static_pointer_cast<ObjectBase>(sp_resource));
+    }
 
 protected:
     virtual void ResetCommandState();

@@ -28,6 +28,7 @@ Base implementation of the render command list interface.
 #include "RenderStateBase.h"
 #include "BufferBase.h"
 #include "ProgramBase.h"
+#include "TextureBase.h"
 
 #include <Methane/Instrumentation.h>
 
@@ -73,19 +74,25 @@ void RenderCommandListBase::SetRenderState(RenderState& render_state, RenderStat
 
     VerifyEncodingState();
 
-    DrawingState& drawing_state = GetDrawingState();
-    const RenderState::Group::Mask changed_states = (drawing_state.sp_render_state
+    const bool render_state_changed = m_drawing_state.sp_render_state.get() != std::addressof(render_state);
+    const RenderState::Group::Mask changed_states = (m_drawing_state.sp_render_state && render_state_changed
                                                   ? RenderState::Settings::Compare(render_state.GetSettings(),
-                                                      drawing_state.sp_render_state->GetSettings(),
-                                                      drawing_state.render_state_groups)
-                                                  : RenderState::Group::All)
-                                                  | ~drawing_state.render_state_groups;
+                                                                                   m_drawing_state.sp_render_state->GetSettings(),
+                                                                                   m_drawing_state.render_state_groups)
+                                                  : (m_drawing_state.sp_render_state ? RenderState::Group::None
+                                                                                     : RenderState::Group::All))
+                                                  | ~m_drawing_state.render_state_groups;
 
     RenderStateBase& render_state_base = static_cast<RenderStateBase&>(render_state);
     render_state_base.Apply(*this, changed_states & state_groups);
 
-    drawing_state.sp_render_state = std::static_pointer_cast<RenderStateBase>(render_state_base.GetBasePtr());
-    drawing_state.render_state_groups |= state_groups;
+    m_drawing_state.sp_render_state = std::static_pointer_cast<RenderStateBase>(render_state_base.GetBasePtr());
+    m_drawing_state.render_state_groups |= state_groups;
+
+    if (render_state_changed)
+    {
+        RetainResource(m_drawing_state.sp_render_state);
+    }
 }
 
 void RenderCommandListBase::SetViewState(ViewState& view_state)
@@ -119,7 +126,7 @@ void RenderCommandListBase::SetVertexBuffers(BufferSet& vertex_buffers)
     if (drawing_state.sp_vertex_buffer_set.get() == std::addressof(vertex_buffers))
         return;
 
-    drawing_state.sp_vertex_buffer_set = static_cast<BufferSetBase&>(vertex_buffers).GetPtr();
+    drawing_state.sp_vertex_buffer_set = std::static_pointer_cast<BufferSetBase>(static_cast<BufferSetBase&>(vertex_buffers).GetBasePtr());
     drawing_state.changes |= DrawingState::Changes::VertexBuffers;
 }
 
@@ -165,6 +172,8 @@ void RenderCommandListBase::DrawIndexed(Primitive primitive_type, Buffer& index_
     if (!drawing_state.opt_primitive_type || *drawing_state.opt_primitive_type != primitive_type)
         drawing_state.changes |= DrawingState::Changes::PrimitiveType;
     drawing_state.opt_primitive_type = primitive_type;
+
+    RetainDrawingResources();
 }
 
 void RenderCommandListBase::Draw(Primitive primitive_type, uint32_t vertex_count, uint32_t start_vertex,
@@ -188,6 +197,8 @@ void RenderCommandListBase::Draw(Primitive primitive_type, uint32_t vertex_count
     if (!drawing_state.opt_primitive_type || *drawing_state.opt_primitive_type != primitive_type)
         drawing_state.changes |= DrawingState::Changes::PrimitiveType;
     drawing_state.opt_primitive_type = primitive_type;
+
+    RetainDrawingResources();
 }
 
 void RenderCommandListBase::ResetCommandState()
@@ -205,15 +216,26 @@ void RenderCommandListBase::ResetCommandState()
     m_drawing_state.changes = DrawingState::Changes::None;
 }
 
+void RenderCommandListBase::RetainDrawingResources()
+{
+    META_FUNCTION_TASK();
+    if (m_drawing_state.changes & DrawingState::Changes::VertexBuffers)
+    {
+        RetainResource(m_drawing_state.sp_vertex_buffer_set);
+    }
+    if (m_drawing_state.changes & DrawingState::Changes::IndexBuffer)
+    {
+        RetainResource(m_drawing_state.sp_index_buffer);
+    }
+}
+
 void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count)
 {
     META_FUNCTION_TASK();
-
-    DrawingState& drawing_state = GetDrawingState();
-    const Data::Size vertex_buffers_count = drawing_state.sp_vertex_buffer_set->GetCount();
+    const Data::Size vertex_buffers_count = m_drawing_state.sp_vertex_buffer_set->GetCount();
     for (Data::Index vertex_buffer_index = 0u; vertex_buffer_index < vertex_buffers_count; ++vertex_buffer_index)
     {
-        Buffer&        vertex_buffer = (*drawing_state.sp_vertex_buffer_set)[vertex_buffer_index];
+        Buffer&        vertex_buffer = (*m_drawing_state.sp_vertex_buffer_set)[vertex_buffer_index];
         const uint32_t vertex_count  = vertex_buffer.GetFormattedItemsCount();
         if (draw_start_vertex + draw_vertex_count > vertex_count)
         {

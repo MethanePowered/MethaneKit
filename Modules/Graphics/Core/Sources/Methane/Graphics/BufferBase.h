@@ -53,7 +53,7 @@ private:
 
 class BufferSetBase
     : public BufferSet
-    , public std::enable_shared_from_this<BufferSetBase>
+    , public ObjectBase
 {
 public:
     BufferSetBase(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
@@ -64,7 +64,6 @@ public:
     const Refs<Buffer>& GetRefs() const noexcept override  { return m_refs; }
     Buffer&             operator[](Data::Index index) const override;
 
-    Ptr<BufferSet>             GetPtr()                    { return shared_from_this(); }
     const RawPtrs<BufferBase>& GetRawPtrs() const noexcept { return m_raw_ptrs; }
 
 private:

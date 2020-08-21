@@ -28,6 +28,7 @@ Base implementation of the program bindings interface.
 
 #include "DescriptorHeap.h"
 #include "CommandListBase.h"
+#include "ObjectBase.h"
 
 #include <optional>
 
@@ -39,7 +40,7 @@ class CommandListBase;
 
 class ProgramBindingsBase
     : public ProgramBindings
-    , public std::enable_shared_from_this<ProgramBindingsBase>
+    , public ObjectBase
 {
 public:
     class ArgumentBindingBase
@@ -76,7 +77,6 @@ public:
     ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
     ~ProgramBindingsBase() override;
 
-    Ptr<ProgramBindingsBase>  GetPtr()              { return shared_from_this(); }
     const Program::Arguments& GetArguments() const  { return m_arguments; }
     const Program&            GetProgram() const;
 

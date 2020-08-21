@@ -145,7 +145,7 @@ void ResourceManager::AddProgramBindings(ProgramBindings& program_bindings)
         return;
 #endif
 
-    m_program_bindings.push_back(static_cast<ProgramBindingsBase&>(program_bindings).GetPtr());
+    m_program_bindings.push_back(std::static_pointer_cast<ProgramBindingsBase>(static_cast<ProgramBindingsBase&>(program_bindings).GetBasePtr()));
 }
 
 void ResourceManager::RemoveProgramBindings(ProgramBindings&)

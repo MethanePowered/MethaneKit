@@ -169,7 +169,11 @@ void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, Prog
     ProgramBindingsBase& program_bindings_base = static_cast<ProgramBindingsBase&>(program_bindings);
     program_bindings_base.Apply(*this, apply_behavior);
 
-    m_command_state.sp_program_bindings = program_bindings_base.GetPtr();
+    if (m_command_state.sp_program_bindings.get() == &program_bindings_base)
+        return;
+
+    m_command_state.sp_program_bindings = std::static_pointer_cast<ProgramBindingsBase>(program_bindings_base.GetBasePtr());
+    RetainResource(m_command_state.sp_program_bindings);
 }
 
 void CommandListBase::Commit()
@@ -339,6 +343,7 @@ void CommandListBase::ResetCommandState()
 {
     META_FUNCTION_TASK();
     m_command_state.sp_program_bindings.reset();
+    m_command_state.retained_resources.clear();
 }
 
 CommandQueueBase& CommandListBase::GetCommandQueueBase() noexcept

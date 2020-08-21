@@ -124,8 +124,9 @@ public:
         // In case of private GPU storage, copy buffer data from intermediate upload resource to the private GPU resource
 
         BlitCommandListDX& upload_cmd_list = static_cast<BlitCommandListDX&>(GetContext().GetUploadCommandList());
-        const ResourceBase::State final_buffer_state = GetState() == State::Common ? State::PixelShaderResource : GetState();
+        upload_cmd_list.RetainResource(*this);
 
+        const ResourceBase::State final_buffer_state = GetState() == State::Common ? State::PixelShaderResource : GetState();
         if (SetState(State::CopyDest, m_sp_upload_begin_transition_barriers) && m_sp_upload_begin_transition_barriers)
         {
             upload_cmd_list.SetResourceBarriers(*m_sp_upload_begin_transition_barriers);

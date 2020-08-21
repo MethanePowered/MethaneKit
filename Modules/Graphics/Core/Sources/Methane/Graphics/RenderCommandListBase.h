@@ -63,7 +63,7 @@ public:
 
         Ptrs<TextureBase>        sp_render_pass_attachments;
         Ptr<RenderStateBase>     sp_render_state;
-        Ptr<BufferSet>           sp_vertex_buffer_set;
+        Ptr<BufferSetBase>       sp_vertex_buffer_set;
         Ptr<BufferBase>          sp_index_buffer;
         std::optional<Primitive> opt_primitive_type;
         ViewStateBase*           p_view_state        = nullptr;
@@ -99,6 +99,7 @@ protected:
     bool                               IsParallel() const             { return m_is_parallel; }
     Ptr<ParallelRenderCommandListBase> GetParallelRenderCommandList() { return m_wp_parallel_render_command_list.lock(); }
 
+    void RetainDrawingResources();
     void ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count = 0);
 
 private:

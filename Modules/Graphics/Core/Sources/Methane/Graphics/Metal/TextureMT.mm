@@ -140,6 +140,8 @@ void TextureMT::SetData(const SubResources& sub_resources)
     id<MTLDevice>& mtl_device = GetContextMT().GetDeviceMT().GetNativeDevice();
 
     BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandList());
+    blit_command_list.RetainResource(*this);
+
     const id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
     assert(mtl_blit_encoder != nil);
 
