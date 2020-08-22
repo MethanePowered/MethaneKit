@@ -43,8 +43,9 @@ public:
     RenderPassBase(RenderContextBase& context, const Settings& settings);
 
     // RenderPass interface
-    bool Update(const Settings& settings) override;
     const Settings& GetSettings() const override    { return m_settings; }
+    bool Update(const Settings& settings) override;
+    void ReleaseAttachmentTextures() override;
 
     // RenderPassBase interface
     virtual void Begin(RenderCommandListBase& render_command_list);
@@ -52,7 +53,7 @@ public:
 
     const Refs<TextureBase>& GetColorAttachmentTextures() const;
     TextureBase*             GetDepthAttachmentTexture() const;
-    Ptrs<TextureBase>        GetNonFrameBufferAttachmentPtrs() const;
+    const Ptrs<TextureBase>& GetNonFrameBufferAttachmentTextures() const;
     Ptr<RenderPassBase>      GetRenderPassPtr()         { return std::static_pointer_cast<RenderPassBase>(GetBasePtr()); }
     bool                     IsBegun() const            { return m_is_begun; }
 
@@ -71,6 +72,7 @@ private:
     Settings                    m_settings;
     bool                        m_is_begun = false;
     mutable Refs<TextureBase>   m_color_attachment_textures;
+    mutable Ptrs<TextureBase>   m_non_frame_buffer_attachment_textures;
     mutable TextureBase*        m_p_depth_attachment_texture = nullptr;
     Ptr<ResourceBase::Barriers> m_sp_begin_transition_barriers;
     Ptr<ResourceBase::Barriers> m_sp_end_transition_barriers;

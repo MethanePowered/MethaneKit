@@ -60,7 +60,7 @@ void RenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_state, Debug
 
     CommandListBase::Reset(p_debug_group);
 
-    m_drawing_state.sp_render_pass_attachments = m_sp_render_pass->GetNonFrameBufferAttachmentPtrs();
+    m_drawing_state.sp_render_pass_attachments = m_sp_render_pass->GetNonFrameBufferAttachmentTextures();
 
     if (sp_render_state)
     {

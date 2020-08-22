@@ -88,6 +88,14 @@ static const std::map<pal::Keyboard::State, AsteroidsAppAction> g_asteroids_acti
     { { pal::Keyboard::Key::Semicolon    }, AsteroidsAppAction::DecreaseMeshLodComplexity   },
 };
 
+void AsteroidsFrame::ReleaseScreenPassAttachmentTextures()
+{
+    META_FUNCTION_TASK();
+    sp_initial_screen_pass->ReleaseAttachmentTextures();
+    sp_final_screen_pass->ReleaseAttachmentTextures();
+    AppFrame::ReleaseScreenPassAttachmentTextures();
+}
+
 AsteroidsApp::AsteroidsApp()
     : UserInterfaceApp(
         Samples::GetGraphicsAppSettings("Methane Asteroids", true /* animations */, true /* depth */, 0.f /* depth clear */, { /* color clearing disabled */ }),
@@ -314,14 +322,14 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     {
         assert(!!frame.sp_initial_screen_pass);
         gfx::RenderPass::Settings initial_pass_settings         = frame.sp_initial_screen_pass->GetSettings();
-        initial_pass_settings.color_attachments[0].wp_texture = frame.sp_screen_texture;
-        initial_pass_settings.depth_attachment.wp_texture     = GetDepthTexturePtr();
+        initial_pass_settings.color_attachments[0].sp_texture = frame.sp_screen_texture;
+        initial_pass_settings.depth_attachment.sp_texture     = GetDepthTexturePtr();
         frame.sp_initial_screen_pass->Update(initial_pass_settings);
         
         assert(!!frame.sp_final_screen_pass);
         gfx::RenderPass::Settings final_pass_settings           = frame.sp_final_screen_pass->GetSettings();
-        final_pass_settings.color_attachments[0].wp_texture = frame.sp_screen_texture;
-        final_pass_settings.depth_attachment.wp_texture     = GetDepthTexturePtr();
+        final_pass_settings.color_attachments[0].sp_texture = frame.sp_screen_texture;
+        final_pass_settings.depth_attachment.sp_texture     = GetDepthTexturePtr();
         frame.sp_final_screen_pass->Update(final_pass_settings);
     }
 

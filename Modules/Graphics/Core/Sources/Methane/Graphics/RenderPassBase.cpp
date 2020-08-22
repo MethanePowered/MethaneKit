@@ -35,13 +35,11 @@ namespace Methane::Graphics
 bool RenderPass::Attachment::operator==(const RenderPass::Attachment& other) const
 {
     META_FUNCTION_TASK();
-    return ( (  wp_texture.expired() &&  other.wp_texture.expired() ) ||
-             ( !wp_texture.expired() && !other.wp_texture.expired() &&
-              std::addressof(*wp_texture.lock()) == std::addressof(*other.wp_texture.lock()) ) ) &&
-           level == other.level &&
-           slice == other.slice &&
-           depth_plane == other.depth_plane &&
-           load_action == other.load_action &&
+    return sp_texture   == other.sp_texture &&
+           level        == other.level &&
+           slice        == other.slice &&
+           depth_plane  == other.depth_plane &&
+           load_action  == other.load_action &&
            store_action == other.store_action;
 }
 
@@ -98,6 +96,7 @@ bool RenderPassBase::Update(const RenderPass::Settings& settings)
 
     m_settings = settings;
 
+    m_non_frame_buffer_attachment_textures.clear();
     m_color_attachment_textures.clear();
     m_p_depth_attachment_texture = nullptr;
     m_sp_begin_transition_barriers.reset();
@@ -107,10 +106,21 @@ bool RenderPassBase::Update(const RenderPass::Settings& settings)
     return true;
 }
 
+void RenderPassBase::ReleaseAttachmentTextures()
+{
+    META_FUNCTION_TASK();
+    m_non_frame_buffer_attachment_textures.clear();
+    m_settings.depth_attachment.sp_texture.reset();
+    m_settings.stencil_attachment.sp_texture.reset();
+    for(ColorAttachment& color_attachment : m_settings.color_attachments)
+    {
+        color_attachment.sp_texture.reset();
+    }
+}
+
 void RenderPassBase::Begin(RenderCommandListBase& render_command_list)
 {
     META_FUNCTION_TASK();
-
     if (m_is_begun)
     {
         throw std::logic_error("Can not begin pass which was begun already and was not ended.");
@@ -125,7 +135,6 @@ void RenderPassBase::Begin(RenderCommandListBase& render_command_list)
 void RenderPassBase::End(RenderCommandListBase& render_command_list)
 {
     META_FUNCTION_TASK();
-
     if (!m_is_begun)
     {
         throw std::logic_error("Can not end render pass, which was not begun.");
@@ -190,11 +199,11 @@ const Refs<TextureBase>& RenderPassBase::GetColorAttachmentTextures() const
     m_color_attachment_textures.reserve(m_settings.color_attachments.size());
     for (const ColorAttachment& color_attach : m_settings.color_attachments)
     {
-        if (color_attach.wp_texture.expired())
+        if (!color_attach.sp_texture)
         {
             throw std::invalid_argument("Can not use color attachment without texture.");
         }
-        m_color_attachment_textures.push_back(dynamic_cast<TextureBase&>(*color_attach.wp_texture.lock()));
+        m_color_attachment_textures.push_back(static_cast<TextureBase&>(*color_attach.sp_texture));
     }
     return m_color_attachment_textures;
 }
@@ -202,44 +211,46 @@ const Refs<TextureBase>& RenderPassBase::GetColorAttachmentTextures() const
 TextureBase* RenderPassBase::GetDepthAttachmentTexture() const
 {
     META_FUNCTION_TASK();
-    if (!m_p_depth_attachment_texture && !m_settings.depth_attachment.wp_texture.expired())
+    if (!m_p_depth_attachment_texture && m_settings.depth_attachment.sp_texture)
     {
-        m_p_depth_attachment_texture = static_cast<TextureBase*>(m_settings.depth_attachment.wp_texture.lock().get());
+        m_p_depth_attachment_texture = static_cast<TextureBase*>(m_settings.depth_attachment.sp_texture.get());
     }
     return m_p_depth_attachment_texture;
 }
 
-Ptrs<TextureBase> RenderPassBase::GetNonFrameBufferAttachmentPtrs() const
+const Ptrs<TextureBase>& RenderPassBase::GetNonFrameBufferAttachmentTextures() const
 {
     META_FUNCTION_TASK();
-    Ptrs<TextureBase> non_frame_buffer_attachment_textures;
-    non_frame_buffer_attachment_textures.reserve(m_settings.color_attachments.size() + 2);
+    if (!m_non_frame_buffer_attachment_textures.empty())
+        return m_non_frame_buffer_attachment_textures;
+
+    m_non_frame_buffer_attachment_textures.reserve(m_settings.color_attachments.size() + 2);
 
     for (const ColorAttachment& color_attach : m_settings.color_attachments)
     {
-        if (color_attach.wp_texture.expired())
+        if (!color_attach.sp_texture)
         {
             throw std::invalid_argument("Can not use color attachment without texture.");
         }
 
-        Ptr<TextureBase> sp_attachment_texture = std::static_pointer_cast<TextureBase>(color_attach.wp_texture.lock());
-        if (sp_attachment_texture->GetSettings().type == Texture::Type::FrameBuffer)
+        Ptr<TextureBase> sp_color_attachment = std::static_pointer_cast<TextureBase>(color_attach.sp_texture);
+        if (sp_color_attachment->GetSettings().type == Texture::Type::FrameBuffer)
             continue;
 
-        non_frame_buffer_attachment_textures.emplace_back();
+        m_non_frame_buffer_attachment_textures.emplace_back(std::move(sp_color_attachment));
     }
 
-    if (!m_settings.depth_attachment.wp_texture.expired())
+    if (m_settings.depth_attachment.sp_texture)
     {
-        non_frame_buffer_attachment_textures.emplace_back(std::static_pointer_cast<TextureBase>(m_settings.depth_attachment.wp_texture.lock()));
+        m_non_frame_buffer_attachment_textures.emplace_back(std::static_pointer_cast<TextureBase>(m_settings.depth_attachment.sp_texture));
     }
 
-    if (!m_settings.stencil_attachment.wp_texture.expired())
+    if (m_settings.stencil_attachment.sp_texture)
     {
-        non_frame_buffer_attachment_textures.emplace_back(std::static_pointer_cast<TextureBase>(m_settings.stencil_attachment.wp_texture.lock()));
+        m_non_frame_buffer_attachment_textures.emplace_back(std::static_pointer_cast<TextureBase>(m_settings.stencil_attachment.sp_texture));
     }
 
-    return non_frame_buffer_attachment_textures;
+    return m_non_frame_buffer_attachment_textures;
 }
 
 } // namespace Methane::Graphics

@@ -60,6 +60,13 @@ struct AppFrame
     Ptr<RenderPass> sp_screen_pass;
 
     AppFrame(uint32_t frame_index) : index(frame_index) { META_FUNCTION_TASK(); }
+
+    // AppFrame interface
+    virtual void ReleaseScreenPassAttachmentTextures()
+    {
+        sp_screen_pass->ReleaseAttachmentTextures();
+        sp_screen_texture.reset();
+    }
 };
 
 struct AppSettings
@@ -69,7 +76,7 @@ struct AppSettings
     RenderContext::Settings render_context;
 };
 
-template<typename FrameT, typename IAppT = Graphics::IApp>
+template<typename FrameT, typename IAppT = Graphics::IApp, typename = std::enable_if_t<std::is_base_of_v<AppFrame, FrameT>>>
 class App
     : public IAppT
     , public Platform::App
@@ -233,10 +240,11 @@ public:
 
         // Save frame and depth textures restore information and delete obsolete resources
         std::vector<ResourceRestoreInfo> frame_restore_infos;
+        frame_restore_infos.reserve(m_frames.size());
         for (FrameT& frame : m_frames)
         {
             frame_restore_infos.emplace_back(frame.sp_screen_texture);
-            frame.sp_screen_texture.reset();
+            frame.ReleaseScreenPassAttachmentTextures();
         }
         const ResourceRestoreInfo depth_restore_info(m_sp_depth_texture);
         m_sp_depth_texture.reset();
@@ -261,8 +269,8 @@ public:
             frame.sp_screen_texture = Texture::CreateFrameBuffer(*m_sp_context, frame.index, frame_restore_info.descriptor_by_usage);
             frame.sp_screen_texture->SetName(frame_restore_info.name);
 
-            pass_settings.color_attachments[0].wp_texture = frame.sp_screen_texture;
-            pass_settings.depth_attachment.wp_texture     = m_sp_depth_texture;
+            pass_settings.color_attachments[0].sp_texture = frame.sp_screen_texture;
+            pass_settings.depth_attachment.sp_texture     = m_sp_depth_texture;
 
             frame.sp_screen_pass->Update(pass_settings);
         }
@@ -412,7 +420,7 @@ protected:
         m_sp_context->CompleteInitialization();
     }
 
-    // AppBase interface
+    // Platform::AppBase interface
 
     Platform::AppView GetView() const override
     {

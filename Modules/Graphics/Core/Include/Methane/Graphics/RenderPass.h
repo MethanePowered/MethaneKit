@@ -55,12 +55,12 @@ struct RenderPass : virtual Object
             Resolve,
         };
         
-        WeakPtr<Texture> wp_texture;
-        uint32_t         level        = 0u;
-        uint32_t         slice        = 0u;
-        uint32_t         depth_plane  = 0u;
-        LoadAction       load_action  = LoadAction::DontCare;
-        StoreAction      store_action = StoreAction::DontCare;
+        Ptr<Texture> sp_texture;
+        uint32_t     level        = 0u;
+        uint32_t     slice        = 0u;
+        uint32_t     depth_plane  = 0u;
+        LoadAction   load_action  = LoadAction::DontCare;
+        StoreAction  store_action = StoreAction::DontCare;
         
         bool operator==(const Attachment& other) const;
     };
@@ -129,8 +129,9 @@ struct RenderPass : virtual Object
     static Ptr<RenderPass> Create(RenderContext& context, const Settings& settings);
 
     // RenderPass interface
-    virtual bool Update(const Settings& settings) = 0;
     virtual const Settings& GetSettings() const = 0;
+    virtual bool Update(const Settings& settings) = 0;
+    virtual void ReleaseAttachmentTextures() = 0;
 
     virtual ~RenderPass() = default;
 };

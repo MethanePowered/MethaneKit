@@ -48,6 +48,9 @@ struct AsteroidsFrame final : gfx::AppFrame
     gfx::MeshBufferBindings             asteroids;
 
     using gfx::AppFrame::AppFrame;
+
+    // AppFrame overrides
+    void ReleaseScreenPassAttachmentTextures() override;
 };
 
 using UserInterfaceApp = UserInterface::App<AsteroidsFrame>;

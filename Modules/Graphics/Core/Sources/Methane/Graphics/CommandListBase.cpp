@@ -166,11 +166,11 @@ void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, Prog
     META_FUNCTION_TASK();
     VerifyEncodingState();
 
+    if (m_command_state.sp_program_bindings.get() == &program_bindings)
+        return;
+
     ProgramBindingsBase& program_bindings_base = static_cast<ProgramBindingsBase&>(program_bindings);
     program_bindings_base.Apply(*this, apply_behavior);
-
-    if (m_command_state.sp_program_bindings.get() == &program_bindings_base)
-        return;
 
     m_command_state.sp_program_bindings = std::static_pointer_cast<ProgramBindingsBase>(program_bindings_base.GetBasePtr());
     RetainResource(m_command_state.sp_program_bindings);

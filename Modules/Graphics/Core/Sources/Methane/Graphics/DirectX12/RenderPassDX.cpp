@@ -39,27 +39,27 @@ DirectX 12 implementation of the render pass interface.
 namespace Methane::Graphics
 {
 
-static D3D12_CPU_DESCRIPTOR_HANDLE GetRenderTargetTextureCpuDescriptor(const WeakPtr<Texture>& wp_texture)
+inline D3D12_CPU_DESCRIPTOR_HANDLE GetRenderTargetTextureCpuDescriptor(const Ptr<Texture>& sp_texture)
 {
-    return !wp_texture.expired()
-         ? static_cast<TextureBase&>(*wp_texture.lock()).GetNativeCpuDescriptorHandle(Resource::Usage::RenderTarget)
+    return sp_texture
+         ? static_cast<TextureBase&>(*sp_texture).GetNativeCpuDescriptorHandle(Resource::Usage::RenderTarget)
          : D3D12_CPU_DESCRIPTOR_HANDLE();
 }
 
 RenderPassDX::AccessDesc::AccessDesc(const Attachment& attachment)
-    : descriptor(GetRenderTargetTextureCpuDescriptor(attachment.wp_texture))
+    : descriptor(GetRenderTargetTextureCpuDescriptor(attachment.sp_texture))
 {
     META_FUNCTION_TASK();
 
-    if (attachment.wp_texture.expired())
-    {
-        beginning.Type = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS;
-        ending.Type    = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS;
-    }
-    else
+    if (attachment.sp_texture)
     {
         beginning.Type = GetBeginningAccessTypeByLoadAction(attachment.load_action);
         ending.Type    = GetEndingAccessTypeByStoreAction(attachment.store_action);
+    }
+    else
+    {
+        beginning.Type = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS;
+        ending.Type    = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS;
     }
 
     if (attachment.store_action == Attachment::StoreAction::Resolve)
@@ -76,13 +76,12 @@ RenderPassDX::AccessDesc::AccessDesc(const ColorAttachment& color_attachment)
 
     if (color_attachment.load_action == Attachment::LoadAction::Clear)
     {
-        if (color_attachment.wp_texture.expired())
+        if (!color_attachment.sp_texture)
         {
             throw std::invalid_argument("Can not clear render target attachment without texture.");
         }
 
-        const Ptr<Texture> sp_color_rt        = color_attachment.wp_texture.lock();
-        const DXGI_FORMAT color_format        = TypeConverterDX::PixelFormatToDxgi(sp_color_rt->GetSettings().pixel_format);
+        const DXGI_FORMAT color_format = TypeConverterDX::PixelFormatToDxgi(color_attachment.sp_texture->GetSettings().pixel_format);
         const float clear_color_components[4]{
             color_attachment.clear_color.GetR(),
             color_attachment.clear_color.GetG(),
@@ -110,13 +109,12 @@ RenderPassDX::AccessDesc::AccessDesc(const StencilAttachment& stencil_attachment
 void RenderPassDX::AccessDesc::InitDepthStencilClearValue(const DepthAttachment& depth_attachment, const StencilAttachment& stencil_attachment)
 {
     META_FUNCTION_TASK();
-
-    if (depth_attachment.wp_texture.expired())
+    if (!depth_attachment.sp_texture)
     {
-        throw std::invalid_argument("Depth attachments should point to the depth-stencil texture.");
+        throw std::invalid_argument("Depth attachment should point to the depth-stencil texture.");
     }
 
-    const DXGI_FORMAT depth_format = TypeConverterDX::PixelFormatToDxgi(depth_attachment.wp_texture.lock()->GetSettings().pixel_format);
+    const DXGI_FORMAT depth_format = TypeConverterDX::PixelFormatToDxgi(depth_attachment.sp_texture->GetSettings().pixel_format);
     beginning.Clear.ClearValue = CD3DX12_CLEAR_VALUE(depth_format, depth_attachment.clear_value, stencil_attachment.clear_value);
 }
 
@@ -147,17 +145,17 @@ D3D12_RENDER_PASS_ENDING_ACCESS_TYPE RenderPassDX::AccessDesc::GetEndingAccessTy
 }
 
 RenderPassDX::RTClearInfo::RTClearInfo(const RenderPass::ColorAttachment& color_attach)
-    : cpu_handle(GetRenderTargetTextureCpuDescriptor(color_attach.wp_texture))
+    : cpu_handle(GetRenderTargetTextureCpuDescriptor(color_attach.sp_texture))
     , clear_color{ color_attach.clear_color.GetR(), color_attach.clear_color.GetG(), color_attach.clear_color.GetB(), color_attach.clear_color.GetA() }
 {
     META_FUNCTION_TASK();
 }
 
 RenderPassDX::DSClearInfo::DSClearInfo(const RenderPass::DepthAttachment& depth_attach, const RenderPass::StencilAttachment& stencil_attach)
-    : cpu_handle(GetRenderTargetTextureCpuDescriptor(depth_attach.wp_texture))
-    , depth_cleared(!depth_attach.wp_texture.expired() && depth_attach.load_action == RenderPass::Attachment::LoadAction::Clear)
+    : cpu_handle(GetRenderTargetTextureCpuDescriptor(depth_attach.sp_texture))
+    , depth_cleared(depth_attach.sp_texture && depth_attach.load_action == RenderPass::Attachment::LoadAction::Clear)
     , depth_value(depth_attach.clear_value)
-    , stencil_cleared(!stencil_attach.wp_texture.expired() && stencil_attach.load_action == RenderPass::Attachment::LoadAction::Clear)
+    , stencil_cleared(stencil_attach.sp_texture && stencil_attach.load_action == RenderPass::Attachment::LoadAction::Clear)
     , stencil_value(stencil_attach.clear_value)
 {
     META_FUNCTION_TASK();
@@ -248,7 +246,7 @@ void RenderPassDX::UpdateNativeRenderPassDesc(bool settings_changed)
     {
         if (update_descriptors_only)
         {
-            m_render_target_descs[color_attachment_index].cpuDescriptor = GetRenderTargetTextureCpuDescriptor(color_attachment.wp_texture);
+            m_render_target_descs[color_attachment_index].cpuDescriptor = GetRenderTargetTextureCpuDescriptor(color_attachment.sp_texture);
             color_attachment_index++;
         }
         else
@@ -260,11 +258,11 @@ void RenderPassDX::UpdateNativeRenderPassDesc(bool settings_changed)
         }
     }
 
-    if (!settings.depth_attachment.wp_texture.expired())
+    if (settings.depth_attachment.sp_texture)
     {
         if (update_descriptors_only && m_depth_stencil_desc)
         {
-            m_depth_stencil_desc->cpuDescriptor = GetRenderTargetTextureCpuDescriptor(settings.depth_attachment.wp_texture);
+            m_depth_stencil_desc->cpuDescriptor = GetRenderTargetTextureCpuDescriptor(settings.depth_attachment.sp_texture);
         }
         else
         {
@@ -291,7 +289,7 @@ void RenderPassDX::UpdateNativeClearDesc()
         if (color_attach.load_action != RenderPassBase::Attachment::LoadAction::Clear)
             continue;
 
-        if (color_attach.wp_texture.expired())
+        if (!color_attach.sp_texture)
         {
             throw std::invalid_argument("Can not clear render target attachment without texture.");
         }
@@ -435,13 +433,13 @@ const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& RenderPassDX::GetNativeRenderTar
 
     for (const RenderPassBase::ColorAttachment& color_attach : GetSettings().color_attachments)
     {
-        if (color_attach.wp_texture.expired())
+        if (!color_attach.sp_texture)
         {
             throw std::invalid_argument("Can not use color attachment without texture.");
         }
 
-        const Ptr<TextureBase> sp_rt_texture = std::static_pointer_cast<TextureBase>(color_attach.wp_texture.lock());
-        m_native_rt_cpu_handles.push_back(sp_rt_texture->GetNativeCpuDescriptorHandle(ResourceBase::Usage::RenderTarget));
+        TextureBase& rt_texture = static_cast<TextureBase&>(*color_attach.sp_texture);
+        m_native_rt_cpu_handles.push_back(rt_texture.GetNativeCpuDescriptorHandle(ResourceBase::Usage::RenderTarget));
     }
 
     return m_native_rt_cpu_handles;
@@ -454,11 +452,11 @@ const D3D12_CPU_DESCRIPTOR_HANDLE* RenderPassDX::GetNativeDepthStencilCPUHandle(
         return &m_native_ds_cpu_handle;
 
     const Settings& settings = GetSettings();
-    if (settings.depth_attachment.wp_texture.expired())
+    if (!settings.depth_attachment.sp_texture)
         return nullptr;
 
-    const Ptr<TextureBase> sp_depth_texture = std::static_pointer_cast<TextureBase>(settings.depth_attachment.wp_texture.lock());
-    m_native_ds_cpu_handle = sp_depth_texture->GetNativeCpuDescriptorHandle(ResourceBase::Usage::RenderTarget);
+    TextureBase& depth_texture = static_cast<TextureBase&>(*settings.depth_attachment.sp_texture);
+    m_native_ds_cpu_handle = depth_texture.GetNativeCpuDescriptorHandle(ResourceBase::Usage::RenderTarget);
     return &m_native_ds_cpu_handle;
 }
 
