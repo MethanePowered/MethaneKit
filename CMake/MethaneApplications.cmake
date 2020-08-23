@@ -134,10 +134,12 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
             .
     )
 
-    install(FILES $<TARGET_PDB_FILE:${TARGET}>
-        DESTINATION ${INSTALL_DIR}
-        OPTIONAL
-    )
+    if (WIN32 AND MSVC)
+        install(FILES $<TARGET_PDB_FILE:${TARGET}>
+            DESTINATION ${INSTALL_DIR}
+            OPTIONAL
+        )
+    endif()
 
     get_target_property(METHANE_PREREQUISITE_MODULES MethaneKit PREREQUISITE_MODULES)
     add_prerequisite_binaries(${TARGET} "${METHANE_PREREQUISITE_MODULES}" ${INSTALL_DIR})
