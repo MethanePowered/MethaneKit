@@ -81,8 +81,8 @@ public:
     ~CommandListBase() override;
 
     // CommandList interface
-    Type  GetType() const noexcept override  { return m_type; }
-    State GetState() const noexcept override { return m_state; }
+    Type  GetType() const noexcept override                         { return m_type; }
+    State GetState() const noexcept override                        { return m_state; }
     void  PushDebugGroup(DebugGroup& debug_group) override;
     void  PopDebugGroup() override;
     void  Reset(DebugGroup* p_debug_group = nullptr) override;
@@ -106,13 +106,12 @@ public:
     const Ptr<ProgramBindingsBase>& GetProgramBindings() const noexcept  { return GetCommandState().sp_program_bindings; }
     Ptr<CommandListBase>            GetCommandListPtr()                  { return std::static_pointer_cast<CommandListBase>(GetBasePtr()); }
 
-    void RetainResource(Ptr<ObjectBase> sp_resource)  { if (sp_resource) m_command_state.retained_resources.emplace_back(std::move(sp_resource)); }
-    void RetainResource(ObjectBase& resource)         { m_command_state.retained_resources.emplace_back(resource.GetBasePtr()); }
+    inline void RetainResource(Ptr<ObjectBase>&& sp_resource) { if (sp_resource) m_command_state.retained_resources.emplace_back(std::move(sp_resource)); }
+    inline void RetainResource(ObjectBase& resource)          { m_command_state.retained_resources.emplace_back(resource.GetBasePtr()); }
 
     template<typename T, typename = std::enable_if_t<std::is_base_of_v<ObjectBase, T>>>
-    void RetainResources(const Ptrs<T>& resource_ptrs)
+    inline void RetainResources(const Ptrs<T>& resource_ptrs)
     {
-        m_command_state.retained_resources.reserve(m_command_state.retained_resources.size() + resource_ptrs.size());
         for(const Ptr<T>& sp_resource : resource_ptrs)
             RetainResource(std::static_pointer_cast<ObjectBase>(sp_resource));
     }
@@ -125,14 +124,19 @@ protected:
 
     void        SetCommandListState(State state);
     void        SetCommandListStateNoLock(State state);
-    void        VerifyEncodingState() const;
-    bool        IsExecutingOnAnyFrame() const;
-    bool        IsCommitted(uint32_t frame_index) const;
+    bool        IsExecutingOnAnyFrame() const               { return m_state == State::Executing; }
+    bool        IsCommitted(uint32_t frame_index) const     { return m_state == State::Committed && m_committed_frame_index == frame_index; }
     bool        IsCommitted() const                         { return IsCommitted(GetCurrentFrameIndex()); }
-    bool        IsExecuting(uint32_t frame_index) const;
+    bool        IsExecuting(uint32_t frame_index) const     { return m_state == State::Executing && m_committed_frame_index == frame_index; }
     bool        IsExecuting() const                         { return IsExecuting(GetCurrentFrameIndex()); }
     uint32_t    GetCurrentFrameIndex() const;
     std::string GetTypeName() const noexcept                { return GetTypeName(m_type); }
+
+    inline void VerifyEncodingState() const
+    {
+        if (m_state != State::Encoding)
+            throw std::logic_error(GetTypeName() + " Command list encoding is not possible in \"" + GetStateName(m_state) + "\" state.");
+    }
 
     static std::string GetTypeName(Type type) noexcept;
     static std::string GetStateName(State state) noexcept;
@@ -146,7 +150,7 @@ private:
     DebugGroupStack             m_open_debug_groups;
     uint32_t                    m_committed_frame_index = 0;
     CompletedCallback           m_completed_callback;
-    State                       m_state                 = State::Pending;
+    State                       m_state = State::Pending;
     mutable TracyLockable(std::mutex, m_state_mutex);
     TracyLockable(std::mutex,   m_state_change_mutex);
     std::condition_variable_any m_state_change_condition_var;

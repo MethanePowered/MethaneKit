@@ -51,6 +51,17 @@ ParallelRenderCommandListBase::ParallelRenderCommandListBase(CommandQueueBase& c
     META_FUNCTION_TASK();
 }
 
+void ParallelRenderCommandListBase::SetValidationEnabled(bool is_validation_enabled) noexcept
+{
+    META_FUNCTION_TASK();
+    m_is_validation_enabled = is_validation_enabled;
+    for(const Ptr<RenderCommandList>& sp_render_command_list : m_parallel_command_lists)
+    {
+        assert(!!sp_render_command_list);
+        sp_render_command_list->SetValidationEnabled(m_is_validation_enabled);
+    }
+}
+
 void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();

@@ -132,13 +132,15 @@ void RenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state, DebugGr
 void RenderCommandListDX::SetVertexBuffers(BufferSet& vertex_buffers)
 {
     META_FUNCTION_TASK();
-
     RenderCommandListBase::SetVertexBuffers(vertex_buffers);
-    if (!(GetDrawingState().changes & DrawingState::Changes::VertexBuffers))
+
+    DrawingState& drawing_state = GetDrawingState();
+    if (!(drawing_state.changes & DrawingState::Changes::VertexBuffers))
         return;
 
     const std::vector<D3D12_VERTEX_BUFFER_VIEW>& vertex_buffer_views = static_cast<const BufferSetDX&>(vertex_buffers).GetNativeVertexBufferViews();
     GetNativeCommandListRef().IASetVertexBuffers(0, static_cast<UINT>(vertex_buffer_views.size()), vertex_buffer_views.data());
+    drawing_state.changes &= ~DrawingState::Changes::VertexBuffers;
 }
 
 void RenderCommandListDX::DrawIndexed(Primitive primitive, Buffer& index_buffer,
@@ -156,15 +158,17 @@ void RenderCommandListDX::DrawIndexed(Primitive primitive, Buffer& index_buffer,
     RenderCommandListBase::DrawIndexed(primitive, index_buffer, index_count, start_index, start_vertex, instance_count, start_instance);
 
     ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
-    const DrawingState& drawing_state = GetDrawingState();
+    DrawingState& drawing_state = GetDrawingState();
     if (drawing_state.changes & DrawingState::Changes::PrimitiveType)
     {
         const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
         dx_command_list.IASetPrimitiveTopology(primitive_topology);
+        drawing_state.changes &= ~DrawingState::Changes::PrimitiveType;
     }
     if (drawing_state.changes & DrawingState::Changes::IndexBuffer)
     {
         dx_command_list.IASetIndexBuffer(&dx_index_buffer.GetNativeView());
+        drawing_state.changes &= ~DrawingState::Changes::IndexBuffer;
     }
     dx_command_list.DrawIndexedInstanced(index_count, instance_count, start_index, start_vertex, start_instance);
 }
@@ -177,10 +181,12 @@ void RenderCommandListDX::Draw(Primitive primitive, uint32_t vertex_count, uint3
     RenderCommandListBase::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
 
     ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
-    if (GetDrawingState().changes & DrawingState::Changes::PrimitiveType)
+    DrawingState& drawing_state = GetDrawingState();
+    if (drawing_state.changes & DrawingState::Changes::PrimitiveType)
     {
         const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
         dx_command_list.IASetPrimitiveTopology(primitive_topology);
+        drawing_state.changes &= ~DrawingState::Changes::PrimitiveType;
     }
     dx_command_list.DrawInstanced(vertex_count, instance_count, start_vertex, start_instance);
 }

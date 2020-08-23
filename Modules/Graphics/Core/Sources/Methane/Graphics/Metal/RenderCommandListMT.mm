@@ -107,7 +107,8 @@ void RenderCommandListMT::SetVertexBuffers(BufferSet& vertex_buffers)
 
     RenderCommandListBase::SetVertexBuffers(vertex_buffers);
 
-    if (!(GetDrawingState().changes & DrawingState::Changes::VertexBuffers))
+    DrawingState& drawing_state = GetDrawingState();
+    if (!(drawing_state.changes & DrawingState::Changes::VertexBuffers))
         return;
 
     assert(GetNativeCommandEncoder() != nil);
@@ -116,6 +117,8 @@ void RenderCommandListMT::SetVertexBuffers(BufferSet& vertex_buffers)
     const std::vector<NSUInteger>&    mtl_offsets = metal_vertex_buffers.GetNativeOffsets();
     const NSRange                     mtl_range{ 0u, metal_vertex_buffers.GetCount() };
     [GetNativeCommandEncoder() setVertexBuffers:mtl_buffers.data() offsets:mtl_offsets.data() withRange:mtl_range];
+
+    drawing_state.changes &= ~DrawingState::Changes::VertexBuffers;
 }
 
 void RenderCommandListMT::DrawIndexed(Primitive primitive, Buffer& index_buffer,

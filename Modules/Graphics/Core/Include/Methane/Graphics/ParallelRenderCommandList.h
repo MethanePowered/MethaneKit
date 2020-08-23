@@ -40,6 +40,8 @@ struct ParallelRenderCommandList : virtual CommandList
     static Ptr<ParallelRenderCommandList> Create(CommandQueue& command_queue, RenderPass& render_pass);
     
     // ParallelRenderCommandList interface
+    virtual bool IsValidationEnabled() const noexcept = 0;
+    virtual void SetValidationEnabled(bool is_validation_enabled) noexcept = 0;
     virtual void Reset(const Ptr<RenderState>& sp_render_state = nullptr, DebugGroup* p_debug_group = nullptr) = 0;
     virtual void SetViewState(ViewState& view_state) = 0;
     virtual void SetParallelCommandListsCount(uint32_t count) = 0;

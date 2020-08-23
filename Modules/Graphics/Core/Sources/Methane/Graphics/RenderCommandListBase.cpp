@@ -86,12 +86,13 @@ void RenderCommandListBase::SetRenderState(RenderState& render_state, RenderStat
     RenderStateBase& render_state_base = static_cast<RenderStateBase&>(render_state);
     render_state_base.Apply(*this, changed_states & state_groups);
 
-    m_drawing_state.sp_render_state = std::static_pointer_cast<RenderStateBase>(render_state_base.GetBasePtr());
+    Ptr<ObjectBase> sp_render_state_object = render_state_base.GetBasePtr();
+    m_drawing_state.sp_render_state = std::static_pointer_cast<RenderStateBase>(sp_render_state_object);
     m_drawing_state.render_state_groups |= state_groups;
 
     if (render_state_changed)
     {
-        RetainResource(m_drawing_state.sp_render_state);
+        RetainResource(std::move(sp_render_state_object));
     }
 }
 
@@ -108,7 +109,6 @@ void RenderCommandListBase::SetViewState(ViewState& view_state)
         return;
 
     drawing_state.p_view_state->Apply(*this);
-    drawing_state.changes |= DrawingState::Changes::ViewState;
 }
 
 void RenderCommandListBase::SetVertexBuffers(BufferSet& vertex_buffers)
@@ -126,8 +126,10 @@ void RenderCommandListBase::SetVertexBuffers(BufferSet& vertex_buffers)
     if (drawing_state.sp_vertex_buffer_set.get() == std::addressof(vertex_buffers))
         return;
 
-    drawing_state.sp_vertex_buffer_set = std::static_pointer_cast<BufferSetBase>(static_cast<BufferSetBase&>(vertex_buffers).GetBasePtr());
+    Ptr<ObjectBase> sp_vertex_buffer_set_object = static_cast<BufferSetBase&>(vertex_buffers).GetBasePtr();
+    drawing_state.sp_vertex_buffer_set = std::static_pointer_cast<BufferSetBase>(sp_vertex_buffer_set_object);
     drawing_state.changes |= DrawingState::Changes::VertexBuffers;
+    RetainResource(std::move(sp_vertex_buffer_set_object));
 }
 
 void RenderCommandListBase::DrawIndexed(Primitive primitive_type, Buffer& index_buffer,
@@ -137,43 +139,37 @@ void RenderCommandListBase::DrawIndexed(Primitive primitive_type, Buffer& index_
     META_FUNCTION_TASK();
     VerifyEncodingState();
 
-    if (index_buffer.GetSettings().type != Buffer::Type::Index)
+    if (m_is_validation_enabled)
     {
-        throw std::invalid_argument("Can not draw with index buffer of wrong type \"" + 
-                                    static_cast<const BufferBase&>(index_buffer).GetBufferTypeName() +
-                                    "\". Buffer of \"Index\" type is expected.");
+        if (index_buffer.GetSettings().type != Buffer::Type::Index)
+        {
+            throw std::invalid_argument("Can not draw with index buffer of wrong type \"" +
+                                        static_cast<const BufferBase&>(index_buffer).GetBufferTypeName() +
+                                        "\". Buffer of \"Index\" type is expected.");
+        }
+
+        const uint32_t formatted_items_count = index_buffer.GetFormattedItemsCount();
+        if (formatted_items_count == 0)
+        {
+            throw std::invalid_argument("Can not draw with index buffer which contains no formatted vertices.");
+        }
+        if (index_count == 0)
+        {
+            throw std::invalid_argument("Can not draw zero index/vertex count.");
+        }
+        if (start_index + index_count > formatted_items_count)
+        {
+            throw std::invalid_argument("Ending index is out of buffer bounds.");
+        }
+        if (instance_count == 0)
+        {
+            throw std::invalid_argument("Can not draw zero instances.");
+        }
+
+        ValidateDrawVertexBuffers(start_vertex);
     }
 
-    const uint32_t formatted_items_count = index_buffer.GetFormattedItemsCount();
-    if (formatted_items_count == 0)
-    {
-        throw std::invalid_argument("Can not draw with index buffer which contains no formatted vertices.");
-    }
-    if (index_count == 0)
-    {
-        throw std::invalid_argument("Can not draw zero index/vertex count.");
-    }
-    if (start_index + index_count > formatted_items_count)
-    {
-        throw std::invalid_argument("Ending index is out of buffer bounds.");
-    }
-    if (instance_count == 0)
-    {
-        throw std::invalid_argument("Can not draw zero instances.");
-    }
-
-    ValidateDrawVertexBuffers(start_vertex);
-
-    DrawingState& drawing_state = GetDrawingState();
-    if (!drawing_state.sp_index_buffer || drawing_state.sp_index_buffer.get() != std::addressof(index_buffer))
-        drawing_state.changes |= DrawingState::Changes::IndexBuffer;
-    drawing_state.sp_index_buffer = std::static_pointer_cast<BufferBase>(static_cast<BufferBase&>(index_buffer).GetBasePtr());
-
-    if (!drawing_state.opt_primitive_type || *drawing_state.opt_primitive_type != primitive_type)
-        drawing_state.changes |= DrawingState::Changes::PrimitiveType;
-    drawing_state.opt_primitive_type = primitive_type;
-
-    RetainDrawingResources();
+    UpdateDrawingState(primitive_type, &index_buffer);
 }
 
 void RenderCommandListBase::Draw(Primitive primitive_type, uint32_t vertex_count, uint32_t start_vertex,
@@ -182,23 +178,21 @@ void RenderCommandListBase::Draw(Primitive primitive_type, uint32_t vertex_count
     META_FUNCTION_TASK();
     VerifyEncodingState();
 
-    if (vertex_count == 0)
+    if (m_is_validation_enabled)
     {
-        throw std::invalid_argument("Can not draw zero vertices.");
+        if (vertex_count == 0)
+        {
+            throw std::invalid_argument("Can not draw zero vertices.");
+        }
+        if (instance_count == 0)
+        {
+            throw std::invalid_argument("Can not draw zero instances.");
+        }
+
+        ValidateDrawVertexBuffers(start_vertex, vertex_count);
     }
-    if (instance_count == 0)
-    {
-        throw std::invalid_argument("Can not draw zero instances.");
-    }
 
-    ValidateDrawVertexBuffers(start_vertex, vertex_count);
-
-    DrawingState& drawing_state = GetDrawingState();
-    if (!drawing_state.opt_primitive_type || *drawing_state.opt_primitive_type != primitive_type)
-        drawing_state.changes |= DrawingState::Changes::PrimitiveType;
-    drawing_state.opt_primitive_type = primitive_type;
-
-    RetainDrawingResources();
+    UpdateDrawingState(primitive_type);
 }
 
 void RenderCommandListBase::ResetCommandState()
@@ -216,16 +210,23 @@ void RenderCommandListBase::ResetCommandState()
     m_drawing_state.changes = DrawingState::Changes::None;
 }
 
-void RenderCommandListBase::RetainDrawingResources()
+void RenderCommandListBase::UpdateDrawingState(Primitive primitive_type, Buffer* p_index_buffer)
 {
     META_FUNCTION_TASK();
-    if (m_drawing_state.changes & DrawingState::Changes::VertexBuffers)
+    DrawingState& drawing_state = GetDrawingState();
+
+    if (p_index_buffer && (!drawing_state.sp_index_buffer || drawing_state.sp_index_buffer.get() != p_index_buffer))
     {
-        RetainResource(m_drawing_state.sp_vertex_buffer_set);
+        Ptr<ObjectBase> sp_index_buffer_object = static_cast<BufferBase&>(*p_index_buffer).GetBasePtr();
+        drawing_state.sp_index_buffer = std::static_pointer_cast<BufferBase>(sp_index_buffer_object);
+        drawing_state.changes |= DrawingState::Changes::IndexBuffer;
+        RetainResource(std::move(sp_index_buffer_object));
     }
-    if (m_drawing_state.changes & DrawingState::Changes::IndexBuffer)
+
+    if (!drawing_state.opt_primitive_type || *drawing_state.opt_primitive_type != primitive_type)
     {
-        RetainResource(m_drawing_state.sp_index_buffer);
+        drawing_state.changes |= DrawingState::Changes::PrimitiveType;
+        drawing_state.opt_primitive_type = primitive_type;
     }
 }
 

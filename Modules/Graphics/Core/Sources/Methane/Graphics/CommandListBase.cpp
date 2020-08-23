@@ -164,16 +164,15 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
 void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior)
 {
     META_FUNCTION_TASK();
-    VerifyEncodingState();
-
     if (m_command_state.sp_program_bindings.get() == &program_bindings)
         return;
 
     ProgramBindingsBase& program_bindings_base = static_cast<ProgramBindingsBase&>(program_bindings);
     program_bindings_base.Apply(*this, apply_behavior);
 
-    m_command_state.sp_program_bindings = std::static_pointer_cast<ProgramBindingsBase>(program_bindings_base.GetBasePtr());
-    RetainResource(m_command_state.sp_program_bindings);
+    Ptr<ObjectBase> sp_program_bindings_object = program_bindings_base.GetBasePtr();
+    m_command_state.sp_program_bindings = std::static_pointer_cast<ProgramBindingsBase>(sp_program_bindings_object);
+    RetainResource(std::move(sp_program_bindings_object));
 }
 
 void CommandListBase::Commit()
@@ -297,33 +296,6 @@ void CommandListBase::SetCommandListStateNoLock(State state)
 
     m_state = state;
     m_state_change_condition_var.notify_one();
-}
-
-void CommandListBase::VerifyEncodingState() const
-{
-    META_FUNCTION_TASK();
-    if (m_state != State::Encoding)
-    {
-        throw std::logic_error(GetTypeName() + " Command list encoding is not possible in \"" + GetStateName(m_state) + "\" state.");
-    }
-}
-
-bool CommandListBase::IsExecutingOnAnyFrame() const
-{
-    META_FUNCTION_TASK();
-    return m_state == State::Executing;
-}
-
-bool CommandListBase::IsCommitted(uint32_t frame_index) const
-{
-    META_FUNCTION_TASK();
-    return m_state == State::Committed && m_committed_frame_index == frame_index;
-}
-
-bool CommandListBase::IsExecuting(uint32_t frame_index) const
-{
-    META_FUNCTION_TASK();
-    return m_state == State::Executing && m_committed_frame_index == frame_index;
 }
 
 CommandQueue& CommandListBase::GetCommandQueue()

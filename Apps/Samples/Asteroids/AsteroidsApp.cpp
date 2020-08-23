@@ -265,14 +265,17 @@ void AsteroidsApp::Init()
         frame.sp_parallel_cmd_list = gfx::ParallelRenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_initial_screen_pass);
         frame.sp_parallel_cmd_list->SetParallelCommandListsCount(std::thread::hardware_concurrency());
         frame.sp_parallel_cmd_list->SetName(IndexedName("Parallel Rendering", frame.index));
+        frame.sp_parallel_cmd_list->SetValidationEnabled(false);
 
         // Create serial command list for asteroids rendering
         frame.sp_serial_cmd_list = gfx::RenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_initial_screen_pass);
         frame.sp_serial_cmd_list->SetName(IndexedName("Serial Rendering", frame.index));
+        frame.sp_serial_cmd_list->SetValidationEnabled(false);
 
         // Create final command list for sky-box and planet rendering
         frame.sp_final_cmd_list = gfx::RenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_final_screen_pass);
         frame.sp_final_cmd_list->SetName(IndexedName("Final Rendering", frame.index));
+        frame.sp_final_cmd_list->SetValidationEnabled(false);
 
         // Rendering command lists sequence
         frame.sp_execute_cmd_list_set = CreateExecuteCommandListSet(frame);

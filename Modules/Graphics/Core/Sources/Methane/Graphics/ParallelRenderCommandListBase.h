@@ -45,6 +45,8 @@ public:
     using CommandListBase::Reset;
 
     // ParallelRenderCommandList interface
+    bool IsValidationEnabled() const noexcept override { return m_is_validation_enabled; }
+    void SetValidationEnabled(bool is_validation_enabled) noexcept override;
     void Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group = nullptr) override;
     void SetViewState(ViewState& view_state) override;
     void SetParallelCommandListsCount(uint32_t count) override;
@@ -69,6 +71,7 @@ public:
 private:
     const Ptr<RenderPass>   m_sp_render_pass;
     Ptrs<RenderCommandList> m_parallel_command_lists;
+    bool                    m_is_validation_enabled = true;
 };
 
 } // namespace Methane::Graphics

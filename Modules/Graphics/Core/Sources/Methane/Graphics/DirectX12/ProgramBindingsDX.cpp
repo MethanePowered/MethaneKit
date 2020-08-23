@@ -217,25 +217,25 @@ void ProgramBindingsDX::CompleteInitialization()
 
 void ProgramBindingsDX::Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const
 {
+    Apply(dynamic_cast<ICommandListDX&>(command_list), command_list.GetProgramBindings().get(), apply_behavior);
+}
+
+void ProgramBindingsDX::Apply(ICommandListDX& command_list_dx, ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior::Mask apply_behavior) const
+{
     META_FUNCTION_TASK();
 
-    using DXBindingType     = ArgumentBindingDX::Type;
-    using DXDescriptorRange = ArgumentBindingDX::DescriptorRange;
-
-    ICommandListDX&                 command_list_dx                  = dynamic_cast<ICommandListDX&>(command_list);
-    const Ptr<ProgramBindingsBase>& sp_applied_program_bindings      = command_list.GetProgramBindings();
-    const bool                      apply_constant_resource_bindings = apply_behavior & ~ApplyBehavior::ConstantOnce || !sp_applied_program_bindings;
-
+    const bool apply_constant_resource_bindings = apply_behavior & ~ApplyBehavior::ConstantOnce || !p_applied_program_bindings;
     ID3D12GraphicsCommandList& d3d12_command_list = command_list_dx.GetNativeCommandList();
 
     // Set resource transition barriers before applying resource bindings
-    if (apply_behavior & ApplyBehavior::StateBarriers && ApplyResourceStates(apply_constant_resource_bindings) && 
+    if (apply_behavior & ApplyBehavior::StateBarriers && ApplyResourceStates(apply_constant_resource_bindings) &&
         m_sp_resource_transition_barriers && !m_sp_resource_transition_barriers->IsEmpty())
     {
-        command_list.SetResourceBarriers(*m_sp_resource_transition_barriers);
+        command_list_dx.SetResourceBarriersDX(*m_sp_resource_transition_barriers);
     }
 
     // Apply root parameter bindings after resource barriers
+
     if (apply_constant_resource_bindings)
     {
         for (const RootParameterBinding& root_parameter_binding : m_constant_root_parameter_bindings)
@@ -246,8 +246,8 @@ void ProgramBindingsDX::Apply(CommandListBase& command_list, ApplyBehavior::Mask
 
     for(const RootParameterBinding& root_parameter_binding : m_variadic_root_parameter_bindings)
     {
-        if (apply_behavior & ApplyBehavior::ChangesOnly && sp_applied_program_bindings &&
-            root_parameter_binding.argument_binding.IsAlreadyApplied(GetProgram(), *sp_applied_program_bindings))
+        if (apply_behavior & ApplyBehavior::ChangesOnly && p_applied_program_bindings &&
+            root_parameter_binding.argument_binding.IsAlreadyApplied(GetProgram(), *p_applied_program_bindings))
             continue;
 
         ApplyRootParameterBinding(root_parameter_binding, d3d12_command_list);

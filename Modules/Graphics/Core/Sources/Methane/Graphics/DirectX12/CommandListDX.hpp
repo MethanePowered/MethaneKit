@@ -29,6 +29,7 @@ DirectX 12 base template implementation of the command list interface.
 #include "ContextDX.h"
 #include "ResourceDX.h"
 #include "QueryBufferDX.h"
+#include "ProgramBindingsDX.h"
 
 #include <Methane/Graphics/CommandListBase.h>
 #include <Methane/Graphics/Windows/Primitives.h>
@@ -158,6 +159,21 @@ public:
         CommandListBase::Reset(p_debug_group);
     }
 
+    void SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override
+    {
+        META_FUNCTION_TASK();
+        CommandListBase::CommandState& command_state = CommandListBase::GetCommandState();
+        if (command_state.sp_program_bindings.get() == &program_bindings)
+            return;
+
+        ProgramBindingsDX& program_bindings_dx = static_cast<ProgramBindingsDX&>(program_bindings);
+        program_bindings_dx.Apply(*this, CommandListBase::GetProgramBindings().get(), apply_behavior);
+
+        Ptr<ObjectBase> sp_program_bindings_object = program_bindings_dx.GetBasePtr();
+        command_state.sp_program_bindings = std::static_pointer_cast<ProgramBindingsBase>(sp_program_bindings_object);
+        CommandListBase::RetainResource(std::move(sp_program_bindings_object));
+    }
+
     Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const override
     {
         META_FUNCTION_TASK();
@@ -190,6 +206,7 @@ public:
 
     // ICommandListDX interface
 
+    void SetResourceBarriersDX(const ResourceBase::Barriers& resource_barriers) override { SetResourceBarriers(resource_barriers); }
     CommandQueueDX&             GetCommandQueueDX() override           { return static_cast<CommandQueueDX&>(GetCommandQueueBase()); }
     ID3D12GraphicsCommandList&  GetNativeCommandList() const override
     {

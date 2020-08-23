@@ -54,7 +54,6 @@ public:
                 PrimitiveType = 1u << 0u,
                 IndexBuffer   = 1u << 1u,
                 VertexBuffers = 1u << 2u,
-                ViewState     = 1u << 3u,
                 All           = ~0u,
             };
 
@@ -77,7 +76,9 @@ public:
     using CommandListBase::Reset;
 
     // RenderCommandList interface
-    RenderPass& GetRenderPass() const noexcept override { return *m_sp_render_pass; }
+    bool IsValidationEnabled() const noexcept override                      { return m_is_validation_enabled; }
+    void SetValidationEnabled(bool is_validation_enabled) noexcept override { m_is_validation_enabled = is_validation_enabled; }
+    RenderPass& GetRenderPass() const noexcept override                     { return *m_sp_render_pass; }
     void Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group = nullptr) override;
     void SetRenderState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) override;
     void SetViewState(ViewState& view_state) override;
@@ -99,14 +100,15 @@ protected:
     bool                               IsParallel() const             { return m_is_parallel; }
     Ptr<ParallelRenderCommandListBase> GetParallelRenderCommandList() { return m_wp_parallel_render_command_list.lock(); }
 
-    void RetainDrawingResources();
-    void ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count = 0);
+    inline void UpdateDrawingState(Primitive primitive_type, Buffer* p_index_buffer = nullptr);
+    inline void ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count = 0);
 
 private:
     const bool                             m_is_parallel;
     const Ptr<RenderPassBase>              m_sp_render_pass;
     WeakPtr<ParallelRenderCommandListBase> m_wp_parallel_render_command_list;
     DrawingState                           m_drawing_state;
+    bool                                   m_is_validation_enabled = true;
 };
 
 } // namespace Methane::Graphics

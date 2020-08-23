@@ -51,6 +51,8 @@ struct RenderCommandList : virtual CommandList
     static Ptr<RenderCommandList> Create(ParallelRenderCommandList& parallel_command_list);
     
     // RenderCommandList interface
+    virtual bool IsValidationEnabled() const noexcept = 0;
+    virtual void SetValidationEnabled(bool is_validation_enabled) noexcept = 0;
     virtual RenderPass& GetRenderPass() const noexcept = 0;
     virtual void Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group = nullptr) = 0;
     virtual void SetRenderState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) = 0;
