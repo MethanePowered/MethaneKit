@@ -41,7 +41,7 @@ Ptr<CommandList::DebugGroup> CommandList::DebugGroup::Create(std::string name)
 
 ICommandListDX::DebugGroupDX::DebugGroupDX(std::string name)
     : CommandListBase::DebugGroupBase(std::move(name))
-    , m_wide_name(nowide::widen(GetName()))
+    , m_wide_name(nowide::widen(ObjectBase::GetName()))
 {
     META_FUNCTION_TASK();
 }

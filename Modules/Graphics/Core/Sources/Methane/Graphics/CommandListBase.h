@@ -59,22 +59,21 @@ public:
 
     class DebugGroupBase
         : public DebugGroup
-        , public std::enable_shared_from_this<DebugGroupBase>
+        , public ObjectBase
     {
     public:
         DebugGroupBase(std::string name);
 
+        // Object overrides
+        void SetName(const std::string&) override { throw std::logic_error("Debug Group can not be renamed"); }
+
         // DebugGroup interface
-        const std::string& GetName() const noexcept final { return m_name; }
         DebugGroup& AddSubGroup(Data::Index id, std::string name) final;
         DebugGroup* GetSubGroup(Data::Index id) const noexcept final;
         bool        HasSubGroups() const noexcept final { return !m_sub_groups.empty(); }
 
-        Ptr<DebugGroupBase> GetPtr() { return shared_from_this(); }
-
     private:
-        const std::string m_name;
-        Ptrs<DebugGroup>  m_sub_groups;
+        Ptrs<DebugGroup> m_sub_groups;
     };
 
     CommandListBase(CommandQueueBase& command_queue, Type type);

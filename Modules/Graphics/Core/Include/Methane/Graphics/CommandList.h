@@ -54,11 +54,10 @@ struct CommandList : virtual Object
         Executing,
     };
 
-    struct DebugGroup
+    struct DebugGroup : virtual Object
     {
         static Ptr<DebugGroup> Create(std::string name);
 
-        virtual const std::string& GetName() const noexcept = 0;
         virtual DebugGroup& AddSubGroup(Data::Index id, std::string name) = 0;
         virtual DebugGroup* GetSubGroup(Data::Index id) const noexcept = 0;
         virtual bool        HasSubGroups() const noexcept = 0;

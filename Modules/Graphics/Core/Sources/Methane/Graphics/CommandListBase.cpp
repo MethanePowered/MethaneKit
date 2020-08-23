@@ -69,7 +69,7 @@ std::string CommandListBase::GetStateName(State state) noexcept
 }
 
 CommandListBase::DebugGroupBase::DebugGroupBase(std::string name)
-    : m_name(std::move(name))
+    : ObjectBase(std::move(name))
 {
     META_FUNCTION_TASK();
 }
@@ -267,7 +267,7 @@ CommandListBase::DebugGroupBase* CommandListBase::GetTopOpenDebugGroup() const
 void CommandListBase::PushOpenDebugGroup(DebugGroup& debug_group)
 {
     META_FUNCTION_TASK();
-    m_open_debug_groups.emplace(static_cast<DebugGroupBase&>(debug_group).GetPtr());
+    m_open_debug_groups.emplace(std::static_pointer_cast<DebugGroupBase>(static_cast<DebugGroupBase&>(debug_group).GetBasePtr()));
 }
 
 void CommandListBase::ClearOpenDebugGroups()
