@@ -40,8 +40,8 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES  ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER Modules/Data
-    PUBLIC_HEADER "${HEADERS}"
+        FOLDER Modules/Data
+        PUBLIC_HEADER "${HEADERS}"
 )
 
 install(TARGETS ${TARGET}

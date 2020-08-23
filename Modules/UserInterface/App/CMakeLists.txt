@@ -53,8 +53,8 @@ PRIVATE
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER Modules/UserInterface
-    PUBLIC_HEADER "${HEADERS}"
+        FOLDER Modules/UserInterface
+        PUBLIC_HEADER "${HEADERS}"
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
@@ -67,3 +67,4 @@ install(TARGETS ${TARGET}
         DESTINATION Lib
         COMPONENT Development
 )
+

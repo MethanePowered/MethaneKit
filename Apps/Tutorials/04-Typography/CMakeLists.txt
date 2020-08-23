@@ -17,7 +17,7 @@ set(FONTS
 add_methane_application(${TARGET}
     "${SOURCES}"
     "${RESOURCES_DIR}"
-    "Apps/Tutorials"
+    "Apps"
     "Methane Typography"
     "Dynamic text rendering and fonts management tutorial with Methane Kit."
     "${METHANE_COPYRIGHT}"

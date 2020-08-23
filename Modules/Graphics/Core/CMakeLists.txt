@@ -294,9 +294,9 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER Modules/Graphics
-    PUBLIC_HEADER "${HEADERS}"
-    PREREQUISITE_MODULES "DirectXCompiler"
+        FOLDER Modules/Graphics
+        PUBLIC_HEADER "${HEADERS}"
+        PREREQUISITE_MODULES "DirectXCompiler"
 )
 
 install(TARGETS ${TARGET}

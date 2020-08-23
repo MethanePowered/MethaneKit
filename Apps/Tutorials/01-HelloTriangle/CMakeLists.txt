@@ -14,7 +14,7 @@ set(SOURCES
 add_methane_application(${TARGET}
     "${SOURCES}"
     "${RESOURCES_DIR}"
-    "Apps/Tutorials"
+    "Apps"
     "Methane Hello Triangle"
     "Hello World tutorial of colored triangle rendering with Methane Kit."
     "${METHANE_COPYRIGHT}"
@@ -40,7 +40,7 @@ set(TARGET_SIMPLE ${TARGET}Simple)
 add_methane_application(${TARGET_SIMPLE}
     "HelloTriangleAppSimple.cpp"
     "${RESOURCES_DIR}"
-    "Apps/Tutorials"
+    "Apps"
     "Methane Hello Triangle"
     "Hello World tutorial of the colored triangle rendering with Methane Kit."
     "${METHANE_COPYRIGHT}"

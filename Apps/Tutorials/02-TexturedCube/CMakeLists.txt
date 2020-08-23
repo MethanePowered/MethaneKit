@@ -16,7 +16,7 @@ set(TEXTURES ${IMAGES_DIR}/Textures/MethaneBubbles.jpg)
 add_methane_application(${TARGET}
     "${SOURCES}"
     "${RESOURCES_DIR}"
-    "Apps/Tutorials"
+    "Apps"
     "Methane Textured Cube"
     "Tutorial of the textured cube rendering with Methane Kit."
     "${METHANE_COPYRIGHT}"

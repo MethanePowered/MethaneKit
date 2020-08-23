@@ -57,10 +57,18 @@ target_compile_definitions(${TARGET}
         $<$<BOOL:${METHANE_TRACY_PROFILING_ON_DEMAND}>:TRACY_ON_DEMAND>
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TRACY_ENABLE>
         $<$<AND:$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>,$<BOOL:${METHANE_GPU_INSTRUMENTATION_ENABLED}>>:TRACY_GPU_ENABLE>
-        # Call stacks collection does not work on MacOS
-        # $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TRACY_MEMORY_CALL_STACK_DEPTH=16> # call stacks for memory new/delete
-        # $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TRACY_ZONE_CALL_STACK_DEPTH=16> # call stacks for each zone
 )
+
+# Tracy call stacks collection: enabled on Windows only, does not work on MacOS (reasons unknown)
+#  - it is mostly useful for memory profiling to know where each new/delete comes from
+#  - zone call stacks can be collected in sampling mode when client application is started under Administrator
+if (WIN32 AND METHANE_TRACY_PROFILING_ENABLED)
+    target_compile_definitions(${TARGET}
+        PUBLIC
+        TRACY_MEMORY_CALL_STACK_DEPTH=16 # call stacks for memory new/delete
+        # TRACY_ZONE_CALL_STACK_DEPTH=16 # call stacks for each zone
+    )
+endif()
 
 # TracyClient interface target is defined separately in Externals,
 # but it also has to be configured with TRACY_* macro definitions
@@ -75,8 +83,8 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER Modules/Common
-    PUBLIC_HEADER "${HEADERS}"
+        FOLDER Modules/Common
+        PUBLIC_HEADER "${HEADERS}"
 )
 
 install(TARGETS ${TARGET}

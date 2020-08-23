@@ -36,7 +36,7 @@ set(SHADERS_HLSL
 add_methane_application(${TARGET}
     "${SOURCES}"
     "${RESOURCES_DIR}"
-    "Apps/Samples"
+    "Apps"
     "Methane Asteroids"
     "Asteroids sample demonstrates parallel rendering of the asteroids field observable with interactive camera."
     "${METHANE_COPYRIGHT}"

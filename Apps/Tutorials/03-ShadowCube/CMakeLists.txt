@@ -19,7 +19,7 @@ set(TEXTURES
 add_methane_application(${TARGET}
     "${SOURCES}"
     "${RESOURCES_DIR}"
-    "Apps/Tutorials"
+    "Apps"
     "Methane Shadow Cube"
     "Tutorial of the shadow pass rendering with Methane Kit."
     "${METHANE_COPYRIGHT}"
