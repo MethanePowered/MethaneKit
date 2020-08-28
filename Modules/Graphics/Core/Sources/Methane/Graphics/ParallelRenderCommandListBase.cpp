@@ -87,7 +87,7 @@ void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_stat
 
 #ifdef _WIN32
     tf::Taskflow reset_task_flow;
-    reset_task_flow.parallel_for(0, static_cast<int>(m_parallel_command_lists.size()), 1, reset_command_list_fn,
+    reset_task_flow.for_each_index_guided(0, static_cast<int>(m_parallel_command_lists.size()), 1, reset_command_list_fn,
                                  Data::GetParallelChunkSizeAsInt(m_parallel_command_lists.size()));
     GetCommandQueueBase().GetContext().GetParallelExecutor().run(reset_task_flow).get();
 #else

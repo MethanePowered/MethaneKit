@@ -179,7 +179,7 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
     face_images_data.reserve(image_paths.size());
 
     tf::Taskflow load_task_flow;
-    load_task_flow.parallel_for(0, static_cast<int>(image_paths.size()), 1,
+    load_task_flow.for_each_index_guided(0, static_cast<int>(image_paths.size()), 1,
         [&](const int face_index)
         {
             META_FUNCTION_TASK();

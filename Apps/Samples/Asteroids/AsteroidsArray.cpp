@@ -66,7 +66,7 @@ AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t ins
         base_mesh.Spherify();
 
         tf::Taskflow task_flow;
-        task_flow.parallel_for(0, static_cast<int>(m_instance_count), 1,
+        task_flow.for_each_index_guided(0, static_cast<int>(m_instance_count), 1,
             [&](const int)
             {
                 Asteroid::Mesh asteroid_mesh(base_mesh);
@@ -133,7 +133,7 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
 
     texture_array_subresources.resize(settings.textures_count);
     tf::Taskflow task_flow;
-    task_flow.parallel_for(texture_array_subresources.begin(), texture_array_subresources.end(),
+    task_flow.for_each_guided(texture_array_subresources.begin(), texture_array_subresources.end(),
         [&](gfx::Resource::SubResources& sub_resources)
         {
             Asteroid::TextureNoiseParameters noise_parameters{
@@ -327,7 +327,7 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
     });
 
     tf::Taskflow task_flow;
-    task_flow.parallel_for(1, static_cast<int>(m_settings.instance_count), 1,
+    task_flow.for_each_index_guided(1, static_cast<int>(m_settings.instance_count), 1,
         [&](const int asteroid_index)
         {
             const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(static_cast<uint32_t>(asteroid_index));
@@ -359,7 +359,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
     const float elapsed_radians = cml::constants<float>::pi()* static_cast<float>(elapsed_seconds);
 
     tf::Taskflow update_task_flow;
-    update_task_flow.parallel_for(m_sp_content_state->parameters.begin(), m_sp_content_state->parameters.end(),
+    update_task_flow.for_each_guided(m_sp_content_state->parameters.begin(), m_sp_content_state->parameters.end(),
         [this, &view_proj_matrix, elapsed_radians, &eye_position](Asteroid::Parameters& asteroid_parameters)
         {
             META_FUNCTION_TASK();

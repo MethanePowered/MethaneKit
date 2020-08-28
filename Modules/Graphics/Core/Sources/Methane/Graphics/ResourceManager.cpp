@@ -93,7 +93,7 @@ void ResourceManager::CompleteInitialization()
     m_program_bindings.erase(program_bindings_end_it, m_program_bindings.end());
 
     tf::Taskflow task_flow;
-    task_flow.parallel_for(m_program_bindings.begin(), m_program_bindings.end(),
+    task_flow.for_each_guided(m_program_bindings.begin(), m_program_bindings.end(),
         [](const WeakPtr<ProgramBindings>& wp_program_bindings)
         {
             META_FUNCTION_TASK();
