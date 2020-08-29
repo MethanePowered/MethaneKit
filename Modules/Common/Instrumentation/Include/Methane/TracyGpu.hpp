@@ -109,13 +109,13 @@ public:
     {
         assert(m_id != 255);
         auto item = tracy::Profiler::QueueSerial();
-        tracy::MemWrite(&item->hdr.type,                    tracy::QueueType::GpuNewContext);
-        tracy::MemWrite(&item->gpuNewContext.cpuTime,       settings.cpu_timestamp);
-        tracy::MemWrite(&item->gpuNewContext.gpuTime,       settings.gpu_timestamp);
-        tracy::MemWrite(&item->gpuNewContext.period,        settings.gpu_time_period);
-        tracy::MemWrite(&item->gpuNewContext.context,       m_id);
-        tracy::MemWrite(&item->gpuNewContext.accuracyBits,  uint8_t(0));
-        tracy::MemWrite(&item->gpuNewContext.type,          GetTracyGpuContextType(settings.type));
+        tracy::MemWrite(&item->hdr.type,              tracy::QueueType::GpuNewContext);
+        tracy::MemWrite(&item->gpuNewContext.cpuTime, settings.cpu_timestamp);
+        tracy::MemWrite(&item->gpuNewContext.gpuTime, settings.gpu_timestamp);
+        tracy::MemWrite(&item->gpuNewContext.period,  settings.gpu_time_period);
+        tracy::MemWrite(&item->gpuNewContext.context, m_id);
+        tracy::MemWrite(&item->gpuNewContext.flags,   tracy::GpuContextCalibration);
+        tracy::MemWrite(&item->gpuNewContext.type,    GetTracyGpuContextType(settings.type));
         if (settings.is_thread_local)
         {
             const auto thread = tracy::GetThreadHandle();
