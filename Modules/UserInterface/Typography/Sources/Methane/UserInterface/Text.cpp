@@ -701,6 +701,7 @@ void Text::UpdateViewport(const gfx::FrameSize& render_attachment_size)
     const FrameRect viewport_rect = GetAlignedViewportRect();
     m_sp_view_state->SetViewports({ gfx::GetFrameViewport(viewport_rect) });
     m_sp_view_state->SetScissorRects({ gfx::GetFrameScissorRect(viewport_rect, render_attachment_size) });
+    m_is_viewport_dirty = false;
 }
 
 std::string Text::GetWrapName(Wrap wrap) noexcept

@@ -302,9 +302,9 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, Settings settings, C
     Update(0.0, 0.0);
 }
     
-Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::Buffer> &sp_constants_buffer,
-                                                                 const Ptr<gfx::Buffer> &sp_scene_uniforms_buffer,
-                                                                 const Ptr<gfx::Buffer> &sp_asteroids_uniforms_buffer)
+Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::Buffer>& sp_constants_buffer,
+                                                                 const Ptr<gfx::Buffer>& sp_scene_uniforms_buffer,
+                                                                 const Ptr<gfx::Buffer>& sp_asteroids_uniforms_buffer)
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::CreateProgramBindings");
