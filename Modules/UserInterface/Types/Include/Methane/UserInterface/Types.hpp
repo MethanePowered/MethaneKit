@@ -85,15 +85,15 @@ struct UnitSize : UnitType<FrameSize>
     using UnitType<FrameSize>::operator==;
     using UnitType<FrameSize>::operator!=;
 
-    bool operator<=(const UnitSize& other) const noexcept                { return FrameSize::operator<=(other) && units == other.units; }
-    bool operator<(const UnitSize& other) const noexcept                 { return FrameSize::operator<(other)  && units == other.units; }
-    bool operator>=(const UnitSize& other) const noexcept                { return FrameSize::operator>=(other) && units == other.units; }
-    bool operator>(const UnitSize& other) const noexcept                 { return FrameSize::operator>(other)  && units == other.units; }
+    bool operator<=(const UnitSize& other) const noexcept                  { return FrameSize::operator<=(other) && units == other.units; }
+    bool operator<(const UnitSize& other) const noexcept                   { return FrameSize::operator<(other)  && units == other.units; }
+    bool operator>=(const UnitSize& other) const noexcept                  { return FrameSize::operator>=(other) && units == other.units; }
+    bool operator>(const UnitSize& other) const noexcept                   { return FrameSize::operator>(other)  && units == other.units; }
 
-    UnitSize operator+(const UnitSize& other) const                      { CheckUnitsCompatibility(other); return UnitSize(FrameSize::operator+(other), units); }
-    UnitSize operator-(const UnitSize& other) const                      { CheckUnitsCompatibility(other); return UnitSize(FrameSize::operator-(other), units); }
-    UnitSize& operator+=(const UnitSize& other) noexcept                 { CheckUnitsCompatibility(other); FrameSize::operator+=(other); return *this; }
-    UnitSize& operator-=(const UnitSize& other) noexcept                 { CheckUnitsCompatibility(other); FrameSize::operator-=(other); return *this; }
+    UnitSize operator+(const UnitSize& other) const                        { CheckUnitsCompatibility(other); return UnitSize(FrameSize::operator+(other), units); }
+    UnitSize operator-(const UnitSize& other) const                        { CheckUnitsCompatibility(other); return UnitSize(FrameSize::operator-(other), units); }
+    UnitSize& operator+=(const UnitSize& other)                            { CheckUnitsCompatibility(other); FrameSize::operator+=(other); return *this; }
+    UnitSize& operator-=(const UnitSize& other)                            { CheckUnitsCompatibility(other); FrameSize::operator-=(other); return *this; }
 
     template<typename M> UnitSize operator*(M multiplier) const noexcept                    { return UnitSize(FrameSize::operator*(multiplier), units); }
     template<typename M> UnitSize operator/(M divisor) const noexcept                       { return UnitSize(FrameSize::operator/(divisor), units); }
@@ -122,15 +122,15 @@ struct UnitPoint : UnitType<FramePoint>
     using UnitType<FramePoint>::operator==;
     using UnitType<FramePoint>::operator!=;
 
-    bool operator<=(const UnitPoint& other) const noexcept                                  { return static_cast<const FramePoint&>(*this) <= other && units == other.units; }
-    bool operator<(const UnitPoint& other) const noexcept                                   { return static_cast<const FramePoint&>(*this) <  other && units == other.units; }
-    bool operator>=(const UnitPoint& other) const noexcept                                  { return static_cast<const FramePoint&>(*this) >= other && units == other.units; }
-    bool operator>(const UnitPoint& other) const noexcept                                   { return static_cast<const FramePoint&>(*this) >  other && units == other.units; }
+    bool operator<=(const UnitPoint& other) const noexcept                 { return static_cast<const FramePoint&>(*this) <= other && units == other.units; }
+    bool operator<(const UnitPoint& other) const noexcept                  { return static_cast<const FramePoint&>(*this) <  other && units == other.units; }
+    bool operator>=(const UnitPoint& other) const noexcept                 { return static_cast<const FramePoint&>(*this) >= other && units == other.units; }
+    bool operator>(const UnitPoint& other) const noexcept                  { return static_cast<const FramePoint&>(*this) >  other && units == other.units; }
 
-    UnitPoint operator+(const UnitPoint& other) const                                       { CheckUnitsCompatibility(other); return UnitPoint(static_cast<const FramePoint&>(*this) + other, units); }
-    UnitPoint operator-(const UnitPoint& other) const                                       { CheckUnitsCompatibility(other); return UnitPoint(static_cast<const FramePoint&>(*this) - other, units); }
-    UnitPoint& operator+=(const UnitPoint& other) noexcept                                  { CheckUnitsCompatibility(other); FramePoint::operator+=(other); return *this; }
-    UnitPoint& operator-=(const UnitPoint& other) noexcept                                  { CheckUnitsCompatibility(other); FramePoint::operator-=(other); return *this; }
+    UnitPoint operator+(const UnitPoint& other) const                      { CheckUnitsCompatibility(other); return UnitPoint(static_cast<const FramePoint&>(*this) + other, units); }
+    UnitPoint operator-(const UnitPoint& other) const                      { CheckUnitsCompatibility(other); return UnitPoint(static_cast<const FramePoint&>(*this) - other, units); }
+    UnitPoint& operator+=(const UnitPoint& other)                          { CheckUnitsCompatibility(other); FramePoint::operator+=(other); return *this; }
+    UnitPoint& operator-=(const UnitPoint& other)                          { CheckUnitsCompatibility(other); FramePoint::operator-=(other); return *this; }
 
     template<typename M> UnitPoint  operator*(M multiplier) const noexcept                  { return UnitPoint(FramePoint::operator*(multiplier), units); }
     template<typename M> UnitPoint  operator/(M divisor) const noexcept                     { return UnitPoint(FramePoint::operator/(divisor), units); }

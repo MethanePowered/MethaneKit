@@ -180,7 +180,7 @@ public:
                      instance_program_bindings.begin() + end_instance_index,
                      bindings_apply_behavior, begin_instance_index);
             },
-            Data::GetParallelChunkSizeAsInt(render_cmd_lists.size())
+            Data::GetParallelChunkSizeAsInt(render_cmd_lists.size(), 5)
         );
         m_render_context.GetParallelExecutor().run(render_task_flow).get();
     }

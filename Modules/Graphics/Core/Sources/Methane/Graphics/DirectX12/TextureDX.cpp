@@ -74,7 +74,7 @@ Ptr<Texture> Texture::CreateFrameBuffer(RenderContext& render_context, uint32_t 
     META_FUNCTION_TASK();
     
     const RenderContext::Settings& context_settings = render_context.GetSettings();
-    const Settings texture_settings = Settings::FrameBuffer(context_settings.frame_size, context_settings.color_format);
+    const Settings texture_settings = Settings::FrameBuffer(Dimensions(context_settings.frame_size), context_settings.color_format);
     return std::make_shared<FrameBufferTextureDX>(static_cast<RenderContextBase&>(render_context), texture_settings, descriptor_by_usage, frame_buffer_index);
 }
 
@@ -83,7 +83,7 @@ Ptr<Texture> Texture::CreateDepthStencilBuffer(RenderContext& render_context, co
     META_FUNCTION_TASK();
     
     const RenderContext::Settings& context_settings = render_context.GetSettings();
-    const Settings texture_settings = Settings::DepthStencilBuffer(context_settings.frame_size, context_settings.depth_stencil_format);
+    const Settings texture_settings = Settings::DepthStencilBuffer(Dimensions(context_settings.frame_size), context_settings.depth_stencil_format);
     return std::make_shared<DepthStencilBufferTextureDX>(static_cast<RenderContextBase&>(render_context), texture_settings, descriptor_by_usage, context_settings.clear_depth_stencil);
 }
 

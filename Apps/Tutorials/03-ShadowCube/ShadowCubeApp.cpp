@@ -181,7 +181,11 @@ void ShadowCubeApp::Init()
 
     // ========= Shadow Pass objects =========
     
-    gfx::Texture::Settings        shadow_texture_settings = gfx::Texture::Settings::DepthStencilBuffer(g_shadow_map_size, context_settings.depth_stencil_format, gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead);
+    gfx::Texture::Settings shadow_texture_settings = gfx::Texture::Settings::DepthStencilBuffer(
+        gfx::Dimensions(g_shadow_map_size),
+        context_settings.depth_stencil_format,
+        gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead
+    );
     gfx::Shader::MacroDefinitions textured_definitions    { { "ENABLE_TEXTURING", "" } };
 
     // Create shadow-pass rendering state with program

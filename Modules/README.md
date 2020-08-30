@@ -51,7 +51,7 @@
 - [x] Parallel command lists
 - [x] Improved shaders toolset (use DXC & HLSL 6 instead of FXC, GLSLang & HLSL 5.1)
 - [x] Text rendering
-- [*] Mesh loader
+- [ ] Mesh loader
 - [ ] Compute pipeline
 - [ ] Vulkan API implementation
 - [ ] Linux platform implementation

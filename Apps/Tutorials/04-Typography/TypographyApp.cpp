@@ -45,7 +45,6 @@ constexpr size_t  g_text_blocks_count        = 3;
 static const std::array<FontSettings, g_text_blocks_count> g_font_settings { {
     { { "European",     "Fonts/Roboto/Roboto-Regular.ttf",                 20u }, { 1.f,  1.f,  0.5f } },
     { { "Japanese",     "Fonts/SawarabiMincho/SawarabiMincho-Regular.ttf", 20u }, { 1.f,  0.3f, 0.1f } },
-//  { { "Arabic",       "Fonts/Amiri/Amiri-Regular.ttf",                   20u }, { 1.f,  0.3f, 0.8f } },
     { { "Calligraphic", "Fonts/Playball/Playball-Regular.ttf",             20u }, { 0.5f, 1.f,  0.5f } }
 } };
 
@@ -54,12 +53,10 @@ static const std::map<std::string, gfx::Color3f>    g_font_color_by_name   {
     { g_font_settings[0].desc.name, g_font_settings[0].color },
     { g_font_settings[1].desc.name, g_font_settings[1].color },
     { g_font_settings[2].desc.name, g_font_settings[2].color },
-//  { g_font_settings[3].desc.name, g_font_settings[3].color }
 };
 
 // Pangrams from http://clagnut.com/blog/2380/
 static const std::array<std::u32string, g_text_blocks_count> g_text_blocks = { {
-
     // 0: european pangrams
     gui::Font::ConvertUtf8To32(
         "The quick brown fox jumps over the lazy dog!\n" \
@@ -71,11 +68,7 @@ static const std::array<std::u32string, g_text_blocks_count> g_text_blocks = { {
     gui::Font::ConvertUtf8To32(
         "いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす"),
 
-    // 2: arabic pangram
-    //gui::Font::ConvertUtf8To32(
-    //  "نص حكيم له سر قاطع وذو شأن عظيم مكتوب على ثوب أخضر ومغلف بجلد أزرق"),
-
-    // 3: hitchhicker's guide quote
+    // 2: hitchhicker's guide quote
     gui::Font::ConvertUtf8To32(
         "A towel is about the most massively useful thing an interstellar hitchhiker can have. " \
         "Partly it has great practical value. You can wrap it around you for warmth as you bound across the cold moons of Jaglan Beta; " \

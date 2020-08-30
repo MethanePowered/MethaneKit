@@ -59,7 +59,7 @@ struct AppFrame
     Ptr<Texture>    sp_screen_texture;
     Ptr<RenderPass> sp_screen_pass;
 
-    AppFrame(uint32_t frame_index) : index(frame_index) { META_FUNCTION_TASK(); }
+    explicit AppFrame(uint32_t frame_index) : index(frame_index) { META_FUNCTION_TASK(); }
 
     // AppFrame interface
     virtual void ReleaseScreenPassAttachmentTextures()

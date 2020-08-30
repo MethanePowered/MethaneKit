@@ -120,7 +120,6 @@ static uint32_t MeasureConnectAndReceiveFromManyEmitters(uint32_t emitters_count
 
 TEST_CASE("Benchmark connect and emit events", "[events][benchmark]")
 {
-
     SECTION("Emit to many receivers")
     {
         BENCHMARK_ADVANCED("Emit to 10 receivers")(Catch::Benchmark::Chronometer meter)

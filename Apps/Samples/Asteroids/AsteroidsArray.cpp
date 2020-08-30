@@ -44,7 +44,7 @@ static gfx::Point3f GetRandomDirection(std::mt19937& rng)
         direction = { distribution(rng), distribution(rng), distribution(rng) };
     }
     while (direction.length_squared() <= std::numeric_limits<float>::min());
-    return cml::normalize(direction);
+    return gfx::Point3f(cml::normalize(direction));
 }
 
 AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed)

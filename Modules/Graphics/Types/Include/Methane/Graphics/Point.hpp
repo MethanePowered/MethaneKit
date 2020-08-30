@@ -45,7 +45,7 @@ public:
     Point3T(T x, T y, T z) : cml::vector<T, cml::fixed<3>>(x, y, z)
     { }
 
-    Point3T(const cml::vector<T, cml::fixed<3>>& v) : cml::vector<T, cml::fixed<3>>(v)
+    explicit Point3T(const cml::vector<T, cml::fixed<3>>& v) : cml::vector<T, cml::fixed<3>>(v)
     { }
 
     T GetX() const noexcept

@@ -81,7 +81,6 @@ public:
     }
 
 protected:
-    
     ResourceProvider()
         : m_resource_fs(cmrc::RESOURCE_NAMESPACE::get_filesystem())
     {

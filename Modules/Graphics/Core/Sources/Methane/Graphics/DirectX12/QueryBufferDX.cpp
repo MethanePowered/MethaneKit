@@ -156,7 +156,6 @@ static std::pair<Timestamp, TimeDelta> GetGpuTimeCalibration(ID3D12CommandQueue&
     UINT64 cpu_timestamp = 0u;
     ThrowIfFailed(native_command_queue.GetClockCalibration(&gpu_timestamp, &cpu_timestamp), &native_device);
     return { gpu_timestamp, static_cast<TimeDelta>(gpu_timestamp - cpu_timestamp) };
-
 }
 
 static Data::Size GetTimestampResultBufferSize(const Context& context, uint32_t max_timestamps_per_frame)

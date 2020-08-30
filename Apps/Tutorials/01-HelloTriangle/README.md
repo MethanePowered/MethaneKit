@@ -18,7 +18,7 @@ using GraphicsApp = App<HelloTriangleFrame>;
 class HelloTriangleApp final : public GraphicsApp
 {
 private:
-    Ptr<RenderState> m_sp_state;
+    Ptr<RenderState> m_sp_render_state;
     Ptr<BufferSet>   m_sp_vertex_buffer_set;
 
 public:
@@ -67,7 +67,7 @@ public:
         );
         m_sp_vertex_buffer_set = BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
 
-        m_sp_state = RenderState::Create(GetRenderContext(),
+        m_sp_render_state = RenderState::Create(GetRenderContext(),
             RenderState::Settings
             {
                 Program::Create(GetRenderContext(),
@@ -88,9 +88,7 @@ public:
                         Program::ArgumentDescriptions { },
                         PixelFormats { GetRenderContext().GetSettings().color_format }
                     }
-                ),
-                Viewports    { GetFrameViewport(GetRenderContext().GetSettings().frame_size)    },
-                ScissorRects { GetFrameScissorRect(GetRenderContext().GetSettings().frame_size) },
+                )
             }
         );
 
@@ -103,23 +101,14 @@ public:
         GraphicsApp::CompleteInitialization();
     }
 
-    bool Resize(const FrameSize& frame_size, bool is_minimized) override
-    {
-        if (!GraphicsApp::Resize(frame_size, is_minimized))
-            return false;
-
-        m_sp_state->SetViewports(    { GetFrameViewport(frame_size)    } );
-        m_sp_state->SetScissorRects( { GetFrameScissorRect(frame_size) } );
-        return true;
-    }
-
     bool Render() override
     {
         if (!GraphicsApp::Render())
             return false;
 
         HelloTriangleFrame& frame = GetCurrentFrame();
-        frame.sp_render_cmd_list->Reset(m_sp_state);
+        frame.sp_render_cmd_list->Reset(m_sp_render_state);
+        frame.sp_render_cmd_list->SetViewState(GetViewState());
         frame.sp_render_cmd_list->SetVertexBuffers(*m_sp_vertex_buffer_set);
         frame.sp_render_cmd_list->Draw(RenderCommandList::Primitive::Triangle, 3);
         frame.sp_render_cmd_list->Commit();
@@ -133,7 +122,7 @@ public:
     void OnContextReleased(Context& context) override
     {
         m_sp_vertex_buffer_set.reset();
-        m_sp_state.reset();
+        m_sp_render_state.reset();
 
         GraphicsApp::OnContextReleased(context);
     }
@@ -179,7 +168,7 @@ float4 TrianglePS(PSInput input) : SV_TARGET
 Shaders configuration file [Shaders/Triangle.cfg](/Apps/Tutorials/01-HelloTriangle/Shaders/Triangle.cfg) 
 is created in pair with every shaders file and describes shader types along with entry points and 
 optional sets of macro definitions used to prebuild shaders to bytecode at build time:
-```
+```ini
 frag=TrianglePS
 vert=TriangleVS
 ```

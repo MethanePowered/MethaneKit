@@ -66,7 +66,7 @@ class TestReceiver : protected Receiver<ITestEvents>
 {
 public:
     TestReceiver() = default;
-    TestReceiver(size_t id) : m_id(id) { }
+    explicit TestReceiver(size_t id) : m_id(id) { }
 
     void Bind(TestEmitter& emitter)
     {
@@ -117,9 +117,7 @@ public:
     using Receiver<ITestEvents>::GetConnectedEmittersCount;
 
 protected:
-
     // ITestEvent implementation
-
     void Foo() override
     {
         m_foo_call_count++;

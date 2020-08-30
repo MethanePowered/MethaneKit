@@ -120,7 +120,7 @@ private:
 class Font::Face
 {
 public:
-    Face(Data::Chunk&& font_data)
+    explicit Face(Data::Chunk&& font_data)
         : m_font_data(std::move(font_data))
         , m_ft_face(LoadFace(Library::Get().GetImpl().GetFTLib(), m_font_data))
         , m_has_kerning(static_cast<bool>(FT_HAS_KERNING(m_ft_face)))

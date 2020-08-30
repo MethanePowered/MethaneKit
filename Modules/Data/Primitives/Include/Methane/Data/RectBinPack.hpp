@@ -65,7 +65,7 @@ private:
     class Bin
     {
     public:
-        Bin(TRect rect) : m_rect(std::move(rect)) { META_FUNCTION_TASK(); }
+        explicit Bin(TRect rect) : m_rect(std::move(rect)) { META_FUNCTION_TASK(); }
 
         bool         IsEmpty() const noexcept { return !m_sp_small_bin && !m_sp_large_bin; }
         const TRect& GetRect() const noexcept { return m_rect; }
