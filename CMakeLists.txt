@@ -86,18 +86,46 @@ if (MSVC)
 
     set(VS_STARTUP_PROJECT MethaneAsteroids)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>") # use /MT static runtime linking
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")                           # enable multi-threaded build with MSVC
     string(REPLACE "/W3 " "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+    
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 
-    target_compile_options(MethaneBuildOptions INTERFACE
-        # Set maximum warnings level and treat warnings as errors
-        /W4 /WX
-        # Disable useless warnings
-        /wd4250 # - C4250: inheritance via dominance (used only with abstract interfaces)
-        /wd4324 # - C4324: structure was padded due to alignment specifier
-    )
+        # Enable multi-threaded build with MSVC
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+        target_compile_options(MethaneBuildOptions INTERFACE
+            # Set maximum warnings level and treat warnings as errors
+            /W4 /WX
+            # Disable useless warnings
+            /wd4250 # - C4250: inheritance via dominance (used only with abstract interfaces)
+            /wd4324 # - C4324: structure was padded due to alignment specifier
+        )
 
-else() # Clang or GCC
+    else() # Clang compiler on Windows
+
+        target_compile_options(MethaneBuildOptions INTERFACE
+            # Set maximum warnings level & treat warnings as errors
+            -Werror
+            # Disable useless warnings produced by Windows headers
+            -Wno-unknown-pragmas
+            -Wno-unused-local-typedef
+            -Wno-ignored-pragma-intrinsic
+            -Wno-expansion-to-defined
+            -Wno-nonportable-include-path
+            -Wno-pragma-pack
+            -Wno-unused-value
+            -Wno-microsoft-template
+            -Wno-microsoft-template-shadow
+            -Wno-microsoft-sealed
+            -Wno-microsoft-exception-spec
+            -Wno-ignored-attributes
+            -Wno-macro-redefined
+            -Wno-extern-c-compat
+            -Wno-invalid-noreturn
+        )
+
+    endif()
+
+else() # Clang or GCC on Linux/MacOS
 
     target_compile_options(MethaneBuildOptions INTERFACE
         # Set maximum warnings level & treat warnings as errors

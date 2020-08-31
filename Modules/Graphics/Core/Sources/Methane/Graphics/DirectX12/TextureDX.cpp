@@ -278,6 +278,9 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
                                             : D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
         break;
 
+    case DimensionType::Tex2DMultisample:
+        throw std::invalid_argument("Texture 2D Multisample is not supported yet.");
+
     case DimensionType::Tex2D:
         if (settings.array_length != 1)
         {
