@@ -196,6 +196,10 @@ RenderPassDX::RenderPassDX(RenderContextBase& context, const Settings& settings)
     : RenderPassBase(context, settings)
 {
     META_FUNCTION_TASK();
+    if (context.GetSettings().is_emulated_render_pass)
+    {
+        m_is_native_render_pass_available = false;
+    }
 
     // Connect the descriptor heap callback event
     ForEachAccessibleDescriptorHeap([this](DescriptorHeap& descriptor_heap)

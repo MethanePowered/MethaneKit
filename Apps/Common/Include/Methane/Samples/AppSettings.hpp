@@ -66,6 +66,7 @@ inline Graphics::AppSettings GetGraphicsAppSettings(std::string app_name, bool a
             3u,                                                     //   - frame_buffers_count
             g_is_apple,                                             //   - vsync_enabled
             false,                                                  //   - is_full_screen
+            false,                                                  //   - is_emulated_render_pass
             1000u,                                                  //   - unsync_max_fps (MacOS only)
         }                                                           // =========================
     };
