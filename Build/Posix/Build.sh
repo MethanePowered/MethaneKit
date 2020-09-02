@@ -122,8 +122,7 @@ else
         for DOT_PATH in $GRAPHVIZ_DOT_DIR/*; do
             DOT_IMG=$GRAPHVIZ_IMG_DIR/${DOT_PATH##*/}.png
             echo Writing image $DOT_IMG...
-            "$GRAPHVIZ_DOT_EXE" -Tpng "$DOT_PATH" -o "$DOT_IMG"
-            if [ $? -ne 0 ]; then
+            if ! "$GRAPHVIZ_DOT_EXE" -Tpng "$DOT_PATH" -o "$DOT_IMG"; then
                 echo "Dot failed to generate diagram image."
                 exit 1
             fi

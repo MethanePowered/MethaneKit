@@ -44,9 +44,9 @@ class App
 public:
     using GraphicsApp = Graphics::App<FrameT, IApp>;
 
-    App(const Graphics::AppSettings& graphics_app_settings,
-        const IApp::Settings& ui_app_settings = { },
-        const std::string& help_description = "Methane Graphics Application")
+    explicit App(const Graphics::AppSettings& graphics_app_settings,
+                 const IApp::Settings& ui_app_settings = { },
+                 const std::string& help_description = "Methane Graphics Application")
         : GraphicsApp(graphics_app_settings)
         , AppBase(ui_app_settings)
     {

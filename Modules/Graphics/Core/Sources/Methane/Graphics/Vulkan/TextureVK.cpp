@@ -43,7 +43,7 @@ Ptr<Texture> Texture::CreateFrameBuffer(RenderContext& context, uint32_t /*frame
 {
     META_FUNCTION_TASK();
     const RenderContext::Settings& context_settings = context.GetSettings();
-    const Settings texture_settings = Settings::FrameBuffer(context_settings.frame_size, context_settings.color_format);
+    const Settings texture_settings = Settings::FrameBuffer(Dimensions(context_settings.frame_size), context_settings.color_format);
     return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
@@ -51,7 +51,7 @@ Ptr<Texture> Texture::CreateDepthStencilBuffer(RenderContext& context, const Des
 {
     META_FUNCTION_TASK();
     const RenderContext::Settings& context_settings = context.GetSettings();
-    const Settings texture_settings = Settings::DepthStencilBuffer(context_settings.frame_size, context_settings.depth_stencil_format);
+    const Settings texture_settings = Settings::DepthStencilBuffer(Dimensions(context_settings.frame_size), context_settings.depth_stencil_format);
     return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 

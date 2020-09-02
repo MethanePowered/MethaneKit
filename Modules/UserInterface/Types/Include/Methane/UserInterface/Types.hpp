@@ -117,7 +117,7 @@ struct UnitPoint : UnitType<FramePoint>
 {
     using UnitType<FramePoint>::UnitType;
     UnitPoint(CoordinateType x, CoordinateType y, Units units) noexcept : UnitType<FramePoint>(units, x, y) { }
-    UnitPoint(const UnitSize& size) noexcept : UnitPoint(size.width, size.height, size.units) { }
+    explicit UnitPoint(const UnitSize& size) noexcept : UnitPoint(size.width, size.height, size.units) { }
 
     using UnitType<FramePoint>::operator==;
     using UnitType<FramePoint>::operator!=;

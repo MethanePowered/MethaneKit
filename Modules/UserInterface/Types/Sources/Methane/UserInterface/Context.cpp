@@ -55,19 +55,19 @@ UnitSize Context::GetFrameSizeInUnits(Units units) const noexcept
 UnitPoint Context::ConvertToPixels(const FloatPoint& point) const noexcept
 {
     META_FUNCTION_TASK();
-    return GetFrameSizeInPixels() * point;
+    return UnitPoint(GetFrameSizeInPixels() * point);
 }
 
 UnitPoint Context::ConvertToDots(const FloatPoint& point) const noexcept
 {
     META_FUNCTION_TASK();
-    return GetFrameSizeInDots() * point;
+    return UnitPoint(GetFrameSizeInDots() * point);
 }
 
 UnitSize Context::ConvertToPixels(const FloatSize& fsize) const noexcept
 {
     META_FUNCTION_TASK();
-    return GetFrameSizeInPixels() * fsize;
+    return UnitPoint(GetFrameSizeInPixels() * fsize);
 }
 
 UnitSize Context::ConvertToDots(const FloatSize& fsize) const noexcept

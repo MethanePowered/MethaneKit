@@ -40,7 +40,7 @@ struct Volume
         D depth = 1;
 
         Size() = default;
-        Size(const typename Rect<T, D>::Size& rect_size, D d = 1) : Rect<T, D>::Size(rect_size), depth(d) { }
+        explicit Size(const typename Rect<T, D>::Size& rect_size, D d = 1) : Rect<T, D>::Size(rect_size), depth(d) { }
         Size(D w, D h, D d = 1) : Rect<T, D>::Size(w, h), depth(d) { }
 
         bool operator==(const Size& other) const noexcept

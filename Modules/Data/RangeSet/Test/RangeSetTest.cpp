@@ -156,5 +156,4 @@ TEST_CASE("Range set remove", "[range-set]")
         const std::set<Range<uint32_t>> reference_set{ { 0, 2 }, { 4, 8 }, { 11, 12 }, { 17, 20 } };
         CHECK(range_set == reference_set);
     }
-
 }
