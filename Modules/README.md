@@ -1,11 +1,12 @@
-# Methane Kit Modules
+# Methane Kit Libraries
 
 ## Features
 
 - **Cross-platform**
   - Supported platforms:
-    - Windows 10 with DirectX 12 API
-    - MacOS 10.13 with Metal API
+    - Windows 10 with DirectX 12 graphics API
+    - MacOS 10.13 with Metal graphics API
+    - Ubuntu Linux with Vulkan graphics API (builds, but graphics api is not supported yet)
   - Application infrastructure is GLFW free:
     - [Methane CMake modules](/CMake) implement toolchain for cross-platform graphics applications build configuration.
     - [AppBase](/Modules/Platform/App/Include/Methane/Platform/AppBase.h) base application class and [App](/Modules/Platform/App/Include/Methane/Platform/App.h) platform-specific implementations.
@@ -14,7 +15,7 @@
     - [Animations](Modules/Data/Animation/Include/Methane/Data/Animation.h) execution infrastructure.
     - [Paralel](/Modules/Data/Primitives/Include/Methane/Data/Parallel.hpp) execution primitives.
     - [Graphics application](/Modules/Graphics/App/Include/Methane/Graphics/App.hpp) base template class with graphics app implementation:
-- **One shader code for all APIs and platforms**
+- **One shader code for all graphics APIs on all platforms**
   - Shaders are written in HLSL 6.x
   - Shaders are converted to native API shading language (Metal on MacOS) at build time with [DirectXShaderCompiler](https://github.com/microsoft/DirectXShaderCompiler) and [SPIRV-Cross](https://github.com/KhronosGroup/SPIRV-Cross) tools
   - Shaders are compiled at build time and embedded in application resources as bytecode (with all variations of preprocessor definitions configured by developer)

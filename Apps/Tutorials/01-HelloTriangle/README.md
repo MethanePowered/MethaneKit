@@ -1,6 +1,10 @@
 # Hello Triangle Tutorial
 
-See how triangle rendering application is implemented in 140 lines of code using Methane Kit ([HelloTriangleAppSimple.cpp](/Apps/Tutorials/01-HelloTriangle/HelloTriangleAppSimple.cpp)):
+| Windows (DirectX 12) | MacOS (Metal) |
+| -------------------- | ------------- |
+| ![Hello Triangle on Windows](Screenshots/HelloTriangleWinDirectX12.jpg) | ![Hello Triangle on MacOS](Screenshots/HelloTriangleMacMetal.jpg) |
+
+This tutorial demonstrates colored triangle rendering application implemented in just 120 lines of code using Methane Kit - see [HelloTriangleAppSimple.cpp](HelloTriangleAppSimple.cpp).
 ```cpp
 #include <Methane/Kit.h>
 

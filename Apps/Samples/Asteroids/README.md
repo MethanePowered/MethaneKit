@@ -4,7 +4,7 @@
 | -------------------- | ------------- |
 | ![Asteroids on Windows](Screenshots/AsteroidsWinDirectX12.jpg) | ![Asteroids on MacOS](Screenshots/AsteroidsMacMetal.jpg) |
 
-Asteroids sample demonstrates multi-threaded rendering of large number of heterogenous objects with [ParallelRenderCommandList](/Modules/Graphics/Core/Include/Methane/Graphics/ParallelRenderCommandList.h).
+Asteroids sample demonstrates multi-threaded rendering of large number of heterogenous asteroid meshes with [ParallelRenderCommandList](/Modules/Graphics/Core/Include/Methane/Graphics/ParallelRenderCommandList.h).
 Thousands of unique asteroid instances (1000-50000) are drawn with individual Draw-calls in parallel with a random combination of:
 - random-generated mesh (from array of up to 1000 unique meshes)
 - random generated perlin-noise array texture each with 3 projections (from array of up to 50 unique textures)

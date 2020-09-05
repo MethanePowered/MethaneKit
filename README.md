@@ -30,7 +30,7 @@ Also you can get [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/
 ![Asteroids sample on Windows](Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg)
 <p align="center"><i><a href="#asteroids">Asteroids sample</a> demonstrating multi-threaded rendering with Methane Graphics API</i></p>
 
-## Getting Started
+## Building from Sources 
 
 ### Prerequisites
 
@@ -39,7 +39,7 @@ Also you can get [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/
   - CMake 3.15 or later
 - **Windows**
   - Windows 10 RS5 (build 1809) or later
-  - Visual Studio 2017 or later
+  - Visual Studio 2019 or later
   - MSVC v141 or later
   - Windows 10 SDK
 - **MacOS**
@@ -54,12 +54,15 @@ Also you can get [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/
 since it does not include content of [External](https://github.com/egorodet/MethaneExternals/tree/master) submodules.
 Use `git clone` command as described below.
 
-- **First time initialization**
+#### First time initialization
+
 ```console
 git clone --recurse-submodules https://github.com/egorodet/MethaneKit.git
 cd MethaneKit
 ```
-- **Update sources to latest version**
+
+#### Update sources to latest version
+
 ```console
 cd MethaneKit
 git pull && git submodule update --init --recursive
@@ -67,18 +70,11 @@ git pull && git submodule update --init --recursive
 
 ### Build
 
-#### Windows Build
+#### Windows Build with Visual Studio 2019
 
 Start Command Prompt, then go to MethaneKit root directory (don't forget to pull dependent submodules as [described above](#fetch-sources))
 and either start auxiliary build script [Build/Windows/Build.bat (--vs2019)](Build/Windows/Build.bat) or build with cmake manually:
 
-- **Build with Visual Studio 2017**
-```console
-mkdir Build\Output\VisualStudio\Build && cd Build\Output\VisualStudio\Build
-cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_INSTALL_PREFIX="%cd%\..\Install" "..\..\..\.."
-cmake --build . --config Release --target install
-```
-- **Build with Visual Studio 2019**
 ```console
 mkdir Build\Output\VisualStudio\Build && cd Build\Output\VisualStudio\Build
 cmake -G "Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX="%cd%\..\Install" "..\..\..\.."
@@ -90,7 +86,7 @@ with native CMake support and build it using "Ninja" generator using provided co
 
 Run built applications from the installation directory `Build\Output\VisualStudio\Install\Apps`
 
-#### MacOS Build
+#### MacOS Build with XCode
 
 Start terminal, then go to MethaneKit root directory (don't forget to pull dependent submodules as [described above](#fetch-sources))
 and either start auxiliary build script [Build/Posix/Build.sh](Build/Posix/Build.sh) or build with cmake manually:
@@ -104,7 +100,7 @@ Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) and build it fr
 
 Run applications from the installation directory `Build/Output/XCode/Install/Apps`
 
-#### Linux Build
+#### Linux Build with Unix Makefiles
 
 Build on Linux works fine using "Unix Makefiles" generator, but the platform abstraction layer and graphics API implementation are currently stubbed.
 So in spite of it builds, do not expect anything to work on Linux now.
@@ -114,31 +110,53 @@ cmake -H../../../.. -B. -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$(pwd)/../In
 cmake --build . --config Release --target install
 ```
 
-## Tutorials and Samples
+## Getting Started
 
-| Reference  | Windows (DirectX 12) | MacOS (Metal) |
-| ---------- | -------------------- | ------------- |
-| [Code + Doc](/Apps/Tutorials/01-HelloTriangle) | ![Hello Triangle on Windows](/Apps/Tutorials/01-HelloTriangle/Screenshots/HelloTriangleWinDirectX12.jpg) | ![Hello Triangle on MacOS](/Apps/Tutorials/01-HelloTriangle/Screenshots/HelloTriangleMacMetal.jpg) |
-| [Code](/Apps/Tutorials/02-TexturedCube) | ![Textured Cube on Windows](/Apps/Tutorials/02-TexturedCube/Screenshots/TexturedCubeWinDirectX12.jpg) | ![Textured Cube on MacOS](/Apps/Tutorials/02-TexturedCube/Screenshots/TexturedCubeMacMetal.jpg) |
-| [Code](/Apps/Tutorials/03-ShadowCube) | ![Shadow Cube on Windows](/Apps/Tutorials/03-ShadowCube/Screenshots/ShadowCubeWinDirectX12.jpg) | ![Shadow Cube on MacOS](/Apps/Tutorials/03-ShadowCube/Screenshots/ShadowCubeMacMetal.jpg) |
-| [Code](/Apps/Tutorials/04-Typography) | ![Typography on Windows](/Apps/Tutorials/04-Typography/Screenshots/TypographyWinDirectX12.jpg) | ![Typography on MacOS](/Apps/Tutorials/04-Typography/Screenshots/TypographyMacMetal.jpg) |
-| [Code + Doc](/Apps/Samples/Asteroids) | ![Asteroids on Windows](/Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg) | ![Asteroids on MacOS](/Apps/Samples/Asteroids/Screenshots/AsteroidsMacMetal.jpg) |
+### Features
 
-## Development Tools
+For detailed features description and development plans please refer to [Modules documentation](Modules).
 
-**Supported development environments**:<a href="https://www.jetbrains.com/?from=MethaneKit" target="_blank"><img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Partners/JetBrains.png" width=200 align="right" valign="bottom"/></a>
-- Microsoft Visual Studio 2017-2019
+### Tutorials
+
+**NOTE**: Use name link to read tutorial documentation.
+
+| Name  | Screenshot | Description |
+| ----- | ---------- | ----------- |
+| [Hello Triangle Tutorial](/Apps/Tutorials/01-HelloTriangle) | ![Hello Triangle on Windows](Apps/Tutorials/01-HelloTriangle/Screenshots/HelloTriangleWinDirectX12.jpg) | Colored triangle rendering in just 120 lines of code! |
+| [Textured Cube Tutorial](/Apps/Tutorials/02-TexturedCube) | ![Textured Cube on Windows](Apps/Tutorials/02-TexturedCube/Screenshots/TexturedCubeWinDirectX12.jpg) | Textured cube introduces buffers and textures usage along with program bindings. |
+| [Shadow Cube Tutorial](/Apps/Tutorials/03-ShadowCube) | ![Shadow Cube on Windows](Apps/Tutorials/03-ShadowCube/Screenshots/ShadowCubeWinDirectX12.jpg) | Shadow cube introduces multi-pass rendering with render passes. |
+| [Typography Tutorial](/Apps/Tutorials/04-Typography) | ![Typography on Windows](Apps/Tutorials/04-Typography/Screenshots/TypographyWinDirectX12.jpg) | Typography demonstrates animated text rendering with dynamic font atlas updates using Methane UI. |
+
+### Samples
+
+**NOTE**: Use name link to read sample documentation.
+
+| Name  | Screenshot | Description |
+| ----- | ---------- | ----------- |
+| [Asteroids Sample](/Apps/Samples/Asteroids) | ![Asteroids on Windows](Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg) | Demonstrate parallel multi-threaded rendering of the large number of heterogenous asteroid meshes. |
+
+## Supported Development Tools
+
+### Development Environments
+
+<a href="https://www.jetbrains.com/?from=MethaneKit" target="_blank"><img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Partners/JetBrains.png" width=200 align="right" valign="bottom"/></a>
+- Microsoft Visual Studio 2019
   - Solutions and projects build (generate with [Build.bat](/Build/Windows/Build.bat))
   - Ninja build with CMake native support (pre-configured with [CMakeSettings.json](/CMakeSettings.json))
-- Apple XCode 10, 11
+- Apple XCode 11
   - XCode workspace and projects (generate with [Build.sh](/Build/Posix/Build.sh))
-- Microsoft VS Code (pre-configured with [.vscode/settings.json](/.vscode/settings.json))
+- Microsoft VS Code and [GitPod](https://gitpod.io/#https://github.com/egorodet/MethaneKit) (pre-configured with [.vscode/settings.json](/.vscode/settings.json))
 - Jet Brains CLion (pre-configured with [.idea](/.idea))
 - Jet Brains ReSharper C++ (pre-configured with [Folder.DotSettings](/Folder.DotSettings))
 - Qt Creator with CMake native support
 
-**NOTE:** Methane Kit is being developed with support of [Jet Brains](https://www.jetbrains.com/?from=MethaneKit) development tools.
-Open source project development license is provided free of charge for all key contributors of Methane Kit project.
+Methane Kit is being developed with support of [Jet Brains](https://www.jetbrains.com/?from=MethaneKit) development tools.
+Open source project development license is provided free of charge to all key contributors of Methane Kit project.
+
+### Profiling Tools
+
+- [Tracy Profiler](https://github.com/wolfpld/tracy)
+- [Intel Graphics Performance Analyzers](https://software.intel.com/en-us/gpa/graphics-trace-analyzer)
 
 ## External Dependencies
 
