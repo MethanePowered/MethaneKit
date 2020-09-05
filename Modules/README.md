@@ -59,3 +59,7 @@
 - [ ] Post-processing pipeline
 - [ ] User-interface library
 - [ ] Dynamic linking support
+
+## Modules Dependencies Diagram
+
+![Methane Kit Modules Diagram](../Docs/Diagrams/MethaneKit_Modules_Diagram.png)

@@ -1,0 +1,142 @@
+digraph "Methane Kit" {
+    node [ fontsize = "16" ];
+subgraph clusterLegend {
+  label = "Legend";
+  color = black;
+  edge [ style = invis ];
+  legendNode0 [ label = "Executable", shape = egg ];
+  legendNode1 [ label = "Static Library", shape = octagon ];
+  legendNode2 [ label = "Shared Library", shape = doubleoctagon ];
+  legendNode3 [ label = "Module Library", shape = tripleoctagon ];
+  legendNode4 [ label = "Interface Library", shape = pentagon ];
+  legendNode5 [ label = "Object Library", shape = hexagon ];
+  legendNode6 [ label = "Unknown Library", shape = septagon ];
+  legendNode7 [ label = "Custom Target", shape = box ];
+  legendNode0 -> legendNode1 [ style = solid ];
+  legendNode0 -> legendNode2 [ style = solid ];
+  legendNode0 -> legendNode3;
+  legendNode1 -> legendNode4 [ label = "Interface", style = dashed ];
+  legendNode2 -> legendNode5 [ label = "Private", style = dotted ];
+  legendNode3 -> legendNode6 [ style = solid ];
+  legendNode0 -> legendNode7;
+}
+    "node0" [ label = "CLI11\n(CLI11::CLI11)", shape = pentagon ];
+    "node1" [ label = "CML", shape = pentagon ];
+    "node2" [ label = "DirectXCompiler", shape = octagon ];
+    "node3" [ label = "MethaneAppsCommon", shape = pentagon ];
+    "node4" [ label = "MethaneGraphicsApp", shape = octagon ];
+    "node5" [ label = "MethaneDataProvider", shape = octagon ];
+    "node6" [ label = "MethaneDataTypes", shape = octagon ];
+    "node6" -> "node1"  // MethaneDataTypes -> CML
+    "node7" [ label = "MethaneDataRangeSet", shape = octagon ];
+    "node8" [ label = "MethanePrimitives", shape = octagon ];
+    "node9" [ label = "nowide\n(nowide::nowide)", shape = octagon ];
+    "node6" -> "node7"  // MethaneDataTypes -> MethaneDataRangeSet
+    "node5" -> "node6"  // MethaneDataProvider -> MethaneDataTypes
+    "node10" [ label = "MethanePlatformUtils", shape = octagon ];
+    "node10" -> "node9"  // MethanePlatformUtils -> nowide
+    "node5" -> "node10"  // MethaneDataProvider -> MethanePlatformUtils
+    "node4" -> "node5"  // MethaneGraphicsApp -> MethaneDataProvider
+    "node11" [ label = "MethaneGraphicsCamera", shape = octagon ];
+    "node11" -> "node1" [ style = dotted ] // MethaneGraphicsCamera -> CML
+    "node12" [ label = "MethaneDataAnimation", shape = octagon ];
+    "node12" -> "node8" [ style = dotted ] // MethaneDataAnimation -> MethanePrimitives
+    "node11" -> "node12"  // MethaneGraphicsCamera -> MethaneDataAnimation
+    "node13" [ label = "MethaneGraphicsTypes", shape = octagon ];
+    "node13" -> "node6"  // MethaneGraphicsTypes -> MethaneDataTypes
+    "node11" -> "node13"  // MethaneGraphicsCamera -> MethaneGraphicsTypes
+    "node4" -> "node11"  // MethaneGraphicsApp -> MethaneGraphicsCamera
+    "node14" [ label = "MethaneGraphicsCore", shape = octagon ];
+    "node15" [ label = "MethaneDataEvents", shape = octagon ];
+    "node15" -> "node8"  // MethaneDataEvents -> MethanePrimitives
+    "node14" -> "node15"  // MethaneGraphicsCore -> MethaneDataEvents
+    "node16" [ label = "MethaneDataPrimitives", shape = octagon ];
+    "node16" -> "node1"  // MethaneDataPrimitives -> CML
+    "node16" -> "node6" [ style = dotted ] // MethaneDataPrimitives -> MethaneDataTypes
+    "node14" -> "node16" [ style = dotted ] // MethaneGraphicsCore -> MethaneDataPrimitives
+    "node14" -> "node5"  // MethaneGraphicsCore -> MethaneDataProvider
+    "node14" -> "node7"  // MethaneGraphicsCore -> MethaneDataRangeSet
+    "node17" [ label = "MethaneGraphicsPrimitives", shape = octagon ];
+    "node17" -> "node1" [ style = dotted ] // MethaneGraphicsPrimitives -> CML
+    "node17" -> "node12"  // MethaneGraphicsPrimitives -> MethaneDataAnimation
+    "node17" -> "node13"  // MethaneGraphicsPrimitives -> MethaneGraphicsTypes
+    "node17" -> "node10" [ style = dotted ] // MethaneGraphicsPrimitives -> MethanePlatformUtils
+    "node18" [ label = "PerlinNoise", shape = octagon ];
+    "node17" -> "node18" [ style = dotted ] // MethaneGraphicsPrimitives -> PerlinNoise
+    "node14" -> "node17" [ style = dotted ] // MethaneGraphicsCore -> MethaneGraphicsPrimitives
+    "node14" -> "node13"  // MethaneGraphicsCore -> MethaneGraphicsTypes
+    "node19" [ label = "MethanePlatformAppView", shape = octagon ];
+    "node19" -> "node6" [ style = dotted ] // MethanePlatformAppView -> MethaneDataTypes
+    "node14" -> "node19"  // MethaneGraphicsCore -> MethanePlatformAppView
+    "node14" -> "node10" [ style = dotted ] // MethaneGraphicsCore -> MethanePlatformUtils
+    "node14" -> "node8"  // MethaneGraphicsCore -> MethanePrimitives
+    "node20" [ label = "Taskflow\n(TaskFlow)", shape = pentagon ];
+    "node14" -> "node20" [ style = dotted ] // MethaneGraphicsCore -> Taskflow
+    "node4" -> "node14"  // MethaneGraphicsApp -> MethaneGraphicsCore
+    "node4" -> "node17"  // MethaneGraphicsApp -> MethaneGraphicsPrimitives
+    "node21" [ label = "MethanePlatformApp", shape = octagon ];
+    "node21" -> "node0"  // MethanePlatformApp -> CLI11
+    "node21" -> "node6"  // MethanePlatformApp -> MethaneDataTypes
+    "node21" -> "node19"  // MethanePlatformApp -> MethanePlatformAppView
+    "node22" [ label = "MethanePlatformInput", shape = octagon ];
+    "node22" -> "node6"  // MethanePlatformInput -> MethaneDataTypes
+    "node22" -> "node10" [ style = dotted ] // MethanePlatformInput -> MethanePlatformUtils
+    "node22" -> "node8" [ style = dotted ] // MethanePlatformInput -> MethanePrimitives
+    "node21" -> "node22"  // MethanePlatformApp -> MethanePlatformInput
+    "node21" -> "node10" [ style = dotted ] // MethanePlatformApp -> MethanePlatformUtils
+    "node21" -> "node8"  // MethanePlatformApp -> MethanePrimitives
+    "node21" -> "node20" [ style = dotted ] // MethanePlatformApp -> Taskflow
+    "node21" -> "node9" [ style = dotted ] // MethanePlatformApp -> nowide
+    "node4" -> "node21"  // MethaneGraphicsApp -> MethanePlatformApp
+    "node4" -> "node22"  // MethaneGraphicsApp -> MethanePlatformInput
+    "node4" -> "node10"  // MethaneGraphicsApp -> MethanePlatformUtils
+    "node3" -> "node4" [ style = dashed ] // MethaneAppsCommon -> MethaneGraphicsApp
+    "node23" [ label = "MethaneKit", shape = octagon ];
+    "node23" -> "node4"  // MethaneKit -> MethaneGraphicsApp
+    "node23" -> "node11"  // MethaneKit -> MethaneGraphicsCamera
+    "node23" -> "node14"  // MethaneKit -> MethaneGraphicsCore
+    "node24" [ label = "MethaneGraphicsExtensions", shape = octagon ];
+    "node24" -> "node16"  // MethaneGraphicsExtensions -> MethaneDataPrimitives
+    "node24" -> "node5" [ style = dotted ] // MethaneGraphicsExtensions -> MethaneDataProvider
+    "node24" -> "node11" [ style = dotted ] // MethaneGraphicsExtensions -> MethaneGraphicsCamera
+    "node24" -> "node14"  // MethaneGraphicsExtensions -> MethaneGraphicsCore
+    "node24" -> "node17" [ style = dotted ] // MethaneGraphicsExtensions -> MethaneGraphicsPrimitives
+    "node24" -> "node10" [ style = dotted ] // MethaneGraphicsExtensions -> MethanePlatformUtils
+    "node25" [ label = "STB", shape = pentagon ];
+    "node24" -> "node25" [ style = dotted ] // MethaneGraphicsExtensions -> STB
+    "node24" -> "node20"  // MethaneGraphicsExtensions -> Taskflow
+    "node23" -> "node24"  // MethaneKit -> MethaneGraphicsExtensions
+    "node23" -> "node17"  // MethaneKit -> MethaneGraphicsPrimitives
+    "node23" -> "node13"  // MethaneKit -> MethaneGraphicsTypes
+    "node26" [ label = "MethaneUserInterfaceApp", shape = octagon ];
+    "node26" -> "node4"  // MethaneUserInterfaceApp -> MethaneGraphicsApp
+    "node27" [ label = "MethaneUserInterfaceTypes", shape = octagon ];
+    "node27" -> "node15"  // MethaneUserInterfaceTypes -> MethaneDataEvents
+    "node27" -> "node14" [ style = dotted ] // MethaneUserInterfaceTypes -> MethaneGraphicsCore
+    "node27" -> "node13"  // MethaneUserInterfaceTypes -> MethaneGraphicsTypes
+    "node26" -> "node27" [ style = dotted ] // MethaneUserInterfaceApp -> MethaneUserInterfaceTypes
+    "node28" [ label = "MethaneUserInterfaceWidgets", shape = octagon ];
+    "node28" -> "node24"  // MethaneUserInterfaceWidgets -> MethaneGraphicsExtensions
+    "node28" -> "node17" [ style = dotted ] // MethaneUserInterfaceWidgets -> MethaneGraphicsPrimitives
+    "node28" -> "node22"  // MethaneUserInterfaceWidgets -> MethanePlatformInput
+    "node28" -> "node27"  // MethaneUserInterfaceWidgets -> MethaneUserInterfaceTypes
+    "node29" [ label = "MethaneUserInterfaceTypography", shape = octagon ];
+    "node29" -> "node15"  // MethaneUserInterfaceTypography -> MethaneDataEvents
+    "node29" -> "node16" [ style = dotted ] // MethaneUserInterfaceTypography -> MethaneDataPrimitives
+    "node29" -> "node5"  // MethaneUserInterfaceTypography -> MethaneDataProvider
+    "node29" -> "node14"  // MethaneUserInterfaceTypography -> MethaneGraphicsCore
+    "node29" -> "node27"  // MethaneUserInterfaceTypography -> MethaneUserInterfaceTypes
+    "node30" [ label = "freetype", shape = octagon ];
+    "node29" -> "node30" [ style = dotted ] // MethaneUserInterfaceTypography -> freetype
+    "node28" -> "node29"  // MethaneUserInterfaceWidgets -> MethaneUserInterfaceTypography
+    "node26" -> "node28"  // MethaneUserInterfaceApp -> MethaneUserInterfaceWidgets
+    "node23" -> "node26"  // MethaneKit -> MethaneUserInterfaceApp
+    "node23" -> "node27"  // MethaneKit -> MethaneUserInterfaceTypes
+    "node23" -> "node29"  // MethaneKit -> MethaneUserInterfaceTypography
+    "node23" -> "node28"  // MethaneKit -> MethaneUserInterfaceWidgets
+    "node31" [ label = "default_settings\n(tf::default_settings)", shape = pentagon ];
+    "node32" [ label = "error_settings\n(tf::error_settings)", shape = pentagon ];
+    "node31" -> "node32" [ style = dashed ] // default_settings -> error_settings
+    "node33" [ label = "features_settings\n(tf::features_settings)", shape = pentagon ];
+    "node31" -> "node33" [ style = dashed ] // default_settings -> features_settings
+}
