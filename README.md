@@ -36,30 +36,56 @@ Also you can get [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/
 
 Methane Kit architecture is clearly distributing library modules between 5 layers from low to high level of abstraction.
 ![High Level Architecture](Docs/Diagrams/MethaneKit_HighLevel_Architecture.svg)
-<p align="center"><i>High-level architecture diagram module and layer headers contains clickable hyperlinks to source code.</i></p>
 
 ### Features
+
+- **Cross-platform application & input classes**: Windows & MacOS are supported, Linux is coming soon
+  - **CMake modules** for convenient application build configuration, adding shaders and embedded resources
+  - **Shaders in HLSL** serving all graphics API converted and compiled in build time with SPIRV-Cross & DirectXCompiler
+- **Modern graphics API abstractions**: DirectX 12 & Metal are supported, Vulkan is coming soon
+  - Render state and program definition with convenient initialization syntax
+  - Program binding objects hide low-level descriptor staff but preserve effectiveness
+  - Automatic resource state tracking for esource transition barriers setup
+  - Extend resources lifetime while they are used on GPU with shared pointers retaining in command list state
+  - Parallel render command list for multi-threaded render commands encoding in single render pass
+  - Multi-command queue execution and synchronization with fences is supported
+  - Private GPU resources asynchronously updated via shared resource through upload command list
+  - Command list execution state tracking with optional GPU time range query
+  - Named objects registry allowing to reuse render states and graphics resources
+- **Graphics primitives and extensions** for:
+  - Graphics application base class implementing frame resizing and other routine operations
+  - Primitive camera and interactive arc-ball camera
+  - Procedural mesh generation
+  - Perlin Noise generation
+  - Screen-quad and sky-box rendering classes
+  - Texture images loader currently done with STB, OpenImageIO is partially supported under the hood.
+- **User Interface** libraries:
+  - UI application base class with integrated HUD, logo badge and help/parameters text panels
+  - Typography library for fonts loading, rendering & text layout
+  - Widgets library (under development)
+- **Application infrastructure helpers**:
+  - Events via callback interfaces with emitters and receivers connection
+  - Animations subsystem
+  - Embedded resources providers
+  - Range Set
+- **Integrated API instrumentation** for performance analysis with Tracy frame profiler and Intel Graphics Trace Analyzer
 
 For detailed features description and development plans please refer to [Modules documentation](Modules).
 
 ### Tutorials
 
-**NOTE**: Use name link to read tutorial documentation.
-
-| Name  | Screenshot | Description |
-| ----- | ---------- | ----------- |
-| [Hello Triangle Tutorial](/Apps/Tutorials/01-HelloTriangle) | ![Hello Triangle on Windows](Apps/Tutorials/01-HelloTriangle/Screenshots/HelloTriangleWinDirectX12.jpg) | Colored triangle rendering in just 120 lines of code! |
-| [Textured Cube Tutorial](/Apps/Tutorials/02-TexturedCube) | ![Textured Cube on Windows](Apps/Tutorials/02-TexturedCube/Screenshots/TexturedCubeWinDirectX12.jpg) | Textured cube introduces buffers and textures usage along with program bindings. |
-| [Shadow Cube Tutorial](/Apps/Tutorials/03-ShadowCube) | ![Shadow Cube on Windows](Apps/Tutorials/03-ShadowCube/Screenshots/ShadowCubeWinDirectX12.jpg) | Shadow cube introduces multi-pass rendering with render passes. |
-| [Typography Tutorial](/Apps/Tutorials/04-Typography) | ![Typography on Windows](Apps/Tutorials/04-Typography/Screenshots/TypographyWinDirectX12.jpg) | Typography demonstrates animated text rendering with dynamic font atlas updates using Methane UI. |
+| <pre><b>Name</b>      </pre> | <pre><b>Screenshot</b></pre> | <pre><b>Description</b>                                                     </pre> |
+| ------------------------------- | ---------------------------- | ---------------------------------------------------------------------------------- |
+| [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) | ![Hello Triangle on Windows](Apps/Tutorials/01-HelloTriangle/Screenshots/HelloTriangleWinDirectX12.jpg) | Colored triangle rendering in just 120 lines of code! |
+| [Textured Cube](/Apps/Tutorials/02-TexturedCube) | ![Textured Cube on Windows](Apps/Tutorials/02-TexturedCube/Screenshots/TexturedCubeWinDirectX12.jpg) | Textured cube introduces buffers and textures usage along with program bindings. |
+| [Shadow Cube](/Apps/Tutorials/03-ShadowCube) | ![Shadow Cube on Windows](Apps/Tutorials/03-ShadowCube/Screenshots/ShadowCubeWinDirectX12.jpg) | Shadow cube introduces multi-pass rendering with render passes. |
+| [Typography](/Apps/Tutorials/04-Typography) | ![Typography on Windows](Apps/Tutorials/04-Typography/Screenshots/TypographyWinDirectX12.jpg) | Typography demonstrates animated text rendering with dynamic font atlas updates using Methane UI. |
 
 ### Samples
 
-**NOTE**: Use name link to read sample documentation.
-
-| Name  | Screenshot | Description |
-| ----- | ---------- | ----------- |
-| [Asteroids Sample](/Apps/Samples/Asteroids) | ![Asteroids on Windows](Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg) | Demonstrate parallel multi-threaded rendering of the large number of heterogenous asteroid meshes. |
+| <pre><b>Name</b>      </pre> | <pre><b>Screenshot</b></pre> | <pre><b>Description</b>                                                     </pre> |
+| ------------------------------- | ---------------------------- | ---------------------------------------------------------------------------------- |
+| [Asteroids](/Apps/Samples/Asteroids) | ![Asteroids on Windows](Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg) | Demonstrate parallel multi-threaded rendering of the large number of heterogenous asteroid objects. |
 
 ## Building from Sources 
 

@@ -8,8 +8,8 @@ Methane Kit architecture is clearly distributing library modules between 5 layer
 - [Platform](Platform) abstraction libraries
 - [Graphics](Graphics) API abstraction libraries
 - [User Interface](UserInterface) libraries
+
 ![High Level Architecture](../Docs/Diagrams/MethaneKit_HighLevel_Architecture.svg)
-<p align="center"><i>High-level architecture diagram module and layer headers contains clickable hyperlinks to source code.</i></p>
 
 ## Modules Relations Diagram
 
@@ -29,7 +29,6 @@ Diagram generated with CMake using integrated GraphViz support shows detailed re
     - [Mouse](/Modules/Platform/Input/Include/Methane/Platform/Mouse.h) and [Keyboard](/Modules/Platform/Input/Include/Methane/Platform/Keyboard.h) input classes with platform abstractions of input states.
     - [Resources Provider](Modules/Data/Primitives/Include/Methane/Data/ResourceProvider.hpp) allows loading shaders and textures from embedded application resources.
     - [Animations](Modules/Data/Animation/Include/Methane/Data/Animation.h) execution infrastructure.
-    - [Paralel](/Modules/Data/Primitives/Include/Methane/Data/Parallel.hpp) execution primitives.
     - [Graphics application](/Modules/Graphics/App/Include/Methane/Graphics/App.hpp) base template class with graphics app implementation:
 - **One shader code for all graphics APIs on all platforms**
   - Shaders are written in HLSL 6.x
@@ -55,11 +54,17 @@ Diagram generated with CMake using integrated GraphViz support shows detailed re
     - [Camera](/Modules/Graphics/Helpers/Include/Methane/Graphics/Camera.h) and [ArcBallCamera](/Modules/Graphics/Helpers/Include/Methane/Graphics/ArcBallCamera.h) implement static scene camera and interactive arc-ball camera.
     - [Mesh](/Modules/Graphics/Helpers/Include/Methane/Graphics/Mesh) generators for Quad, Cube, Sphere, Icosahedron and Uber meshes with customizable vertex fields and layout.
     - Multi-octave Perlin [Noise](/Modules/Graphics/Helpers/Include/Methane/Graphics/Noise.h) generator.
+- **User Interface** libraries:
+  - UI application base class with integrated HUD, logo badge and help/parameters text panels
+  - Typography library for fonts loading, rendering & text layout
+  - Widgets library (under development)
 - **Lightweight**: no heavy external dependencies, almost all external libraries are static or header only.
 - **Performance oriented**:
   - Fast application startup, thanks to prebuilt shaders code.
   - [Deferred rendering](https://docs.microsoft.com/en-us/windows/win32/direct3d11/overviews-direct3d-11-render-multi-thread-render) approach with triple frame buffering by default.
-  - Builtin API instrumentation with [Intel ITT API](https://software.intel.com/en-us/vtune-amplifier-help-instrumentation-and-tracing-technology-apis) for performance analysis with [Intel Vtune Amplifier](https://software.intel.com/en-us/vtune) and [Intel Graphics Trace Analyzer](https://software.intel.com/en-us/gpa/graphics-trace-analyzer).
+  - Builtin API instrumentation with
+    - [Tracy Realtime Frame Profiler](https://github.com/wolfpld/tracy)
+    - [Intel ITT API](https://software.intel.com/en-us/vtune-amplifier-help-instrumentation-and-tracing-technology-apis) for performance analysis with [Intel Vtune Amplifier](https://software.intel.com/en-us/vtune) and [Intel Graphics Trace Analyzer](https://software.intel.com/en-us/gpa/graphics-trace-analyzer).
   
 ## Development Plans
 
