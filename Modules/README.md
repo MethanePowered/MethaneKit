@@ -1,4 +1,20 @@
-# Methane Kit Libraries
+# Methane Kit Modules
+
+## High-Level Architecture
+
+Methane Kit architecture is clearly distributing library modules between 5 layers from low to high level of abstraction:
+- [External](Externals) libraries and tools
+- [Data](Data) processing libraries
+- [Platform](Platform) abstraction libraries
+- [Graphics](Graphics) API abstraction libraries
+- [User Interface](UserInterface) libraries
+![High Level Architecture](../Docs/Diagrams/MethaneKit_HighLevel_Architecture.svg)
+<p align="center"><i>High-level architecture diagram module and layer headers contains clickable hyperlinks to source code.</i></p>
+
+## Modules Relations Diagram
+
+Diagram generated with CMake using integrated GraphViz support shows detailed relations between CMake modules.
+![Modules Relations Diagram](../Docs/Diagrams/MethaneKit_Modules_Relations.png)
 
 ## Features
 
@@ -59,7 +75,3 @@
 - [ ] Post-processing pipeline
 - [ ] User-interface library
 - [ ] Dynamic linking support
-
-## Modules Dependencies Diagram
-
-![Methane Kit Modules Diagram](../Docs/Diagrams/MethaneKit_Modules_Diagram.png)

@@ -15,7 +15,7 @@ Download [release builds](https://github.com/egorodet/MethaneKit/releases) with 
 Also you can get [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/_build?view=runs) **build artifacts** to test latest versions from `develop` branch.  
 
 |     Platform     |   Graphics API   |  Master Build Status  |  Develop Build Status  |
-| ---------------- | ---------------- | --------------------- | --------------------- |
+| ---------------- | ---------------- | --------------------- | ---------------------- |
 | <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/Windows.png" width=24 valign="middle"> **Windows x64** | <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/GraphicsApi/DirectX12Small.png" width=24 valign="middle"> DirectX 12 | [![Windows x64 Master Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Windows_x64)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Windows x64 Develop Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=Windows_x64)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
 | <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/Windows.png" width=24 valign="middle"> **Windows x86** | <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/GraphicsApi/DirectX12Small.png" width=24 valign="middle"> DirectX 12 | [![Windows x86 Master Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Windows_x86)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Windows x86 Develop Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=Windows_x86)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
 | <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/MacOS.png" width=24 valign="middle"> **MacOS** | <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/GraphicsApi/MetalSmall.png" width=24 valign="middle"> Metal | [![MacOS Master Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=MacOS)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![MacOS Develop Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=MacOS)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
@@ -29,6 +29,37 @@ Also you can get [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/
 
 ![Asteroids sample on Windows](Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg)
 <p align="center"><i><a href="#asteroids">Asteroids sample</a> demonstrating multi-threaded rendering with Methane Graphics API</i></p>
+
+## Getting Started
+
+## High-Level Architecture
+
+Methane Kit architecture is clearly distributing library modules between 5 layers from low to high level of abstraction.
+![High Level Architecture](Docs/Diagrams/MethaneKit_HighLevel_Architecture.svg)
+<p align="center"><i>High-level architecture diagram module and layer headers contains clickable hyperlinks to source code.</i></p>
+
+### Features
+
+For detailed features description and development plans please refer to [Modules documentation](Modules).
+
+### Tutorials
+
+**NOTE**: Use name link to read tutorial documentation.
+
+| Name  | Screenshot | Description |
+| ----- | ---------- | ----------- |
+| [Hello Triangle Tutorial](/Apps/Tutorials/01-HelloTriangle) | ![Hello Triangle on Windows](Apps/Tutorials/01-HelloTriangle/Screenshots/HelloTriangleWinDirectX12.jpg) | Colored triangle rendering in just 120 lines of code! |
+| [Textured Cube Tutorial](/Apps/Tutorials/02-TexturedCube) | ![Textured Cube on Windows](Apps/Tutorials/02-TexturedCube/Screenshots/TexturedCubeWinDirectX12.jpg) | Textured cube introduces buffers and textures usage along with program bindings. |
+| [Shadow Cube Tutorial](/Apps/Tutorials/03-ShadowCube) | ![Shadow Cube on Windows](Apps/Tutorials/03-ShadowCube/Screenshots/ShadowCubeWinDirectX12.jpg) | Shadow cube introduces multi-pass rendering with render passes. |
+| [Typography Tutorial](/Apps/Tutorials/04-Typography) | ![Typography on Windows](Apps/Tutorials/04-Typography/Screenshots/TypographyWinDirectX12.jpg) | Typography demonstrates animated text rendering with dynamic font atlas updates using Methane UI. |
+
+### Samples
+
+**NOTE**: Use name link to read sample documentation.
+
+| Name  | Screenshot | Description |
+| ----- | ---------- | ----------- |
+| [Asteroids Sample](/Apps/Samples/Asteroids) | ![Asteroids on Windows](Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg) | Demonstrate parallel multi-threaded rendering of the large number of heterogenous asteroid meshes. |
 
 ## Building from Sources 
 
@@ -110,31 +141,6 @@ cmake -H../../../.. -B. -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$(pwd)/../In
 cmake --build . --config Release --target install
 ```
 
-## Getting Started
-
-### Features
-
-For detailed features description and development plans please refer to [Modules documentation](Modules).
-
-### Tutorials
-
-**NOTE**: Use name link to read tutorial documentation.
-
-| Name  | Screenshot | Description |
-| ----- | ---------- | ----------- |
-| [Hello Triangle Tutorial](/Apps/Tutorials/01-HelloTriangle) | ![Hello Triangle on Windows](Apps/Tutorials/01-HelloTriangle/Screenshots/HelloTriangleWinDirectX12.jpg) | Colored triangle rendering in just 120 lines of code! |
-| [Textured Cube Tutorial](/Apps/Tutorials/02-TexturedCube) | ![Textured Cube on Windows](Apps/Tutorials/02-TexturedCube/Screenshots/TexturedCubeWinDirectX12.jpg) | Textured cube introduces buffers and textures usage along with program bindings. |
-| [Shadow Cube Tutorial](/Apps/Tutorials/03-ShadowCube) | ![Shadow Cube on Windows](Apps/Tutorials/03-ShadowCube/Screenshots/ShadowCubeWinDirectX12.jpg) | Shadow cube introduces multi-pass rendering with render passes. |
-| [Typography Tutorial](/Apps/Tutorials/04-Typography) | ![Typography on Windows](Apps/Tutorials/04-Typography/Screenshots/TypographyWinDirectX12.jpg) | Typography demonstrates animated text rendering with dynamic font atlas updates using Methane UI. |
-
-### Samples
-
-**NOTE**: Use name link to read sample documentation.
-
-| Name  | Screenshot | Description |
-| ----- | ---------- | ----------- |
-| [Asteroids Sample](/Apps/Samples/Asteroids) | ![Asteroids on Windows](Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg) | Demonstrate parallel multi-threaded rendering of the large number of heterogenous asteroid meshes. |
-
 ## Supported Development Tools
 
 ### Development Environments
@@ -157,6 +163,10 @@ Open source project development license is provided free of charge to all key co
 
 - [Tracy Profiler](https://github.com/wolfpld/tracy)
 - [Intel Graphics Performance Analyzers](https://software.intel.com/en-us/gpa/graphics-trace-analyzer)
+
+| Tracy Frame Profiler | Intel Graphics Trace Analyzer |
+| -------------- | ----------------------------- |
+| ![Asteroids Trace in Tracy](Apps/Samples/Asteroids/Screenshots/AsteroidsWinTracyProfiling.jpg) | ![Asteroids Trace in GPA Trace Analyzer](Apps/Samples/Asteroids/Screenshots/AsteroidsWinGPATraceAnalyzer.jpg) |
 
 ## External Dependencies
 
