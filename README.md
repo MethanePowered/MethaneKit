@@ -41,40 +41,41 @@ Methane Kit architecture is clearly distributing library modules between 5 layer
 
 - **Cross-platform application & input classes**: Windows & MacOS are supported, Linux is coming soon
   - **CMake modules** for convenient application build configuration, adding shaders and embedded resources
-  - **Shaders in HLSL** serving all graphics API converted and compiled in build time with SPIRV-Cross & DirectXCompiler
-- **Modern graphics API abstractions**: DirectX 12 & Metal are supported, Vulkan is coming soon
-  - Render state and program definition with convenient initialization syntax
-  - Program binding objects hide low-level descriptor staff but preserve effectiveness
-  - Automatic resource state tracking for esource transition barriers setup
-  - Extend resources lifetime while they are used on GPU with shared pointers retaining in command list state
+  - **HLSL-6 Shaders** serving all graphics APIs converted to native shader language and compiled in build time with SPIRV-Cross & DirectXCompiler
+- **Modern Graphics API abstractions**: DirectX 12 & Metal are supported, Vulkan is coming soon
+  - Render state and program configuration with compact initialization syntax
+  - Program binding objects auto-generated with help of shader reflection implement efficient setup of shader argument bindings to resources
+  - Automatic resource state tracking for resource transition barriers setup
+  - Resources are automatically retained from destroying while they are used on GPU using resource shared pointers in command list state
+  - Command list execution state tracking with optional GPU timestamps query on completion
   - Parallel render command list for multi-threaded render commands encoding in single render pass
-  - Multi-command queue execution and synchronization with fences is supported
-  - Private GPU resources asynchronously updated via shared resource through upload command list
-  - Command list execution state tracking with optional GPU time range query
-  - Named objects registry allowing to reuse render states and graphics resources
+  - Multiple command queues execution on GPU with synchronization using fences
+  - Private GPU resources asynchronously updated via shared resource implicitly through the upload command list
+  - Registry of named graphics objects used for reusing render states and graphics resources between UI items
 - **Graphics primitives and extensions** for:
   - Graphics application base class implementing frame resizing and other routine operations
-  - Primitive camera and interactive arc-ball camera
-  - Procedural mesh generation
+  - Camera primitive and interactive arc-ball camera
+  - Procedural mesh generation for quad, box, sphere, icosahedron and uber-mesh
   - Perlin Noise generation
-  - Screen-quad and sky-box rendering classes
-  - Texture images loader currently done with STB, OpenImageIO is partially supported under the hood.
+  - Screen-quad and sky-box rendering extension classes
+  - Texture image loader currently implemented with STB, planned to replace with OpenImageIO (partially supported under the hood).
 - **User Interface** libraries:
   - UI application base class with integrated HUD, logo badge and help/parameters text panels
-  - Typography library for fonts loading, rendering & text layout
+  - Typography library for fonts loading, text rendering & layout
   - Widgets library (under development)
 - **Application infrastructure helpers**:
-  - Events via callback interfaces with emitters and receivers connection
+  - Events mechanism connecting emitters and receivers via callback interfaces
   - Animations subsystem
-  - Embedded resources providers
-  - Range Set
-- **Integrated API instrumentation** for performance analysis with Tracy frame profiler and Intel Graphics Trace Analyzer
+  - Embedded resource providers
+  - Range Set implementation
+- **Integrated API instrumentation** for performance analysis with [profiling tools](#profiling-tools)
+- **Continuous integration** with builds, unit-tests and static code analysis in Azure Pipelines and other systems.
 
 For detailed features description and development plans please refer to [Modules documentation](Modules).
 
 ### Tutorials
 
-| <pre><b>Name</b>      </pre> | <pre><b>Screenshot</b></pre> | <pre><b>Description</b>                                                     </pre> |
+| <pre><b>Name / Link</b></pre> | <pre><b>Screenshot</b></pre> | <pre><b>Description</b>                                                     </pre> |
 | ------------------------------- | ---------------------------- | ---------------------------------------------------------------------------------- |
 | [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) | ![Hello Triangle on Windows](Apps/Tutorials/01-HelloTriangle/Screenshots/HelloTriangleWinDirectX12.jpg) | Colored triangle rendering in just 120 lines of code! |
 | [Textured Cube](/Apps/Tutorials/02-TexturedCube) | ![Textured Cube on Windows](Apps/Tutorials/02-TexturedCube/Screenshots/TexturedCubeWinDirectX12.jpg) | Textured cube introduces buffers and textures usage along with program bindings. |
@@ -83,9 +84,9 @@ For detailed features description and development plans please refer to [Modules
 
 ### Samples
 
-| <pre><b>Name</b>      </pre> | <pre><b>Screenshot</b></pre> | <pre><b>Description</b>                                                     </pre> |
+| <pre><b>Name / Link</b></pre> | <pre><b>Screenshot</b></pre> | <pre><b>Description</b>                                                     </pre> |
 | ------------------------------- | ---------------------------- | ---------------------------------------------------------------------------------- |
-| [Asteroids](/Apps/Samples/Asteroids) | ![Asteroids on Windows](Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg) | Demonstrate parallel multi-threaded rendering of the large number of heterogenous asteroid objects. |
+| [Asteroids](/Apps/Samples/Asteroids) | ![Asteroids on Windows](Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg) | Benchmark demonstrating parallel render commands encoding in a single render pass for the large number of heterogeneous asteroid objects processed in multiple threads. |
 
 ## Building from Sources 
 
@@ -96,8 +97,7 @@ For detailed features description and development plans please refer to [Modules
   - CMake 3.15 or later
 - **Windows**
   - Windows 10 RS5 (build 1809) or later
-  - Visual Studio 2019 or later
-  - MSVC v141 or later
+  - Visual Studio 2019 with MSVC v142 or later
   - Windows 10 SDK
 - **MacOS**
   - MacOS 10.13 "El Capitan" or later
@@ -118,7 +118,7 @@ git clone --recurse-submodules https://github.com/egorodet/MethaneKit.git
 cd MethaneKit
 ```
 
-#### Update sources to latest version
+#### Update sources to latest revision
 
 ```console
 cd MethaneKit
@@ -129,8 +129,8 @@ git pull && git submodule update --init --recursive
 
 #### Windows Build with Visual Studio 2019
 
-Start Command Prompt, then go to MethaneKit root directory (don't forget to pull dependent submodules as [described above](#fetch-sources))
-and either start auxiliary build script [Build/Windows/Build.bat (--vs2019)](Build/Windows/Build.bat) or build with cmake manually:
+Start Command Prompt, go to MethaneKit root directory (don't forget to pull dependent submodules as [described above](#fetch-sources))
+and either start auxiliary build script [Build/Windows/Build.bat](Build/Windows/Build.bat) or build with CMake command line:
 
 ```console
 mkdir Build\Output\VisualStudio\Build && cd Build\Output\VisualStudio\Build
@@ -138,29 +138,32 @@ cmake -G "Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX="%cd%\..\Install"
 cmake --build . --config Release --target install
 ```
 
-Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) directly in Visual Studio or [any other IDE of choice](#development-tools)
-with native CMake support and build it using "Ninja" generator using provided configuration file [CMakeSettings.json](CMakeSettings.json).
+Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) directly in Visual Studio or [any other IDE of choice](#development-environments)
+with native CMake support and build it with Ninja using provided configurations in [CMakeSettings.json](CMakeSettings.json).
 
 Run built applications from the installation directory `Build\Output\VisualStudio\Install\Apps`
 
 #### MacOS Build with XCode
 
-Start terminal, then go to MethaneKit root directory (don't forget to pull dependent submodules as [described above](#fetch-sources))
-and either start auxiliary build script [Build/Posix/Build.sh](Build/Posix/Build.sh) or build with cmake manually:
+Start Terminal, go to MethaneKit root directory (don't forget to pull dependent submodules as [described above](#fetch-sources))
+and either start auxiliary build script [Build/Posix/Build.sh](Build/Posix/Build.sh) or build with CMake command line:
+
 ```console
 mkdir -p Build/Output/XCode/Build && cd Build/Output/XCode/Build
 cmake -H../../../.. -B. -G Xcode -DCMAKE_INSTALL_PREFIX="$(pwd)/../Install"
 cmake --build . --config Release --target install
 ```
 
-Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) and build it from [any IDE with native CMake support](#development-tools).
+Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) and build it from [any IDE with native CMake support](#development-environments).
 
-Run applications from the installation directory `Build/Output/XCode/Install/Apps`
+Run built applications from the installation directory `Build/Output/XCode/Install/Apps`
 
 #### Linux Build with Unix Makefiles
 
-Build on Linux works fine using "Unix Makefiles" generator, but the platform abstraction layer and graphics API implementation are currently stubbed.
-So in spite of it builds, do not expect anything to work on Linux now.
+Build on Linux is supported with "Unix Makefiles" generator.
+But Linux platform abstraction layer and Vulkan graphics API abstraction implementations are currently stubbed,
+so in spite of it builds fine, do not expect anything to work on Linux now besides unit-tests.
+
 ```console
 mkdir -p Build/Output/Linux/Build && cd Build/Output/Linux/Build
 cmake -H../../../.. -B. -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$(pwd)/../Install"
@@ -187,12 +190,36 @@ Open source project development license is provided free of charge to all key co
 
 ### Profiling Tools
 
-- [Tracy Profiler](https://github.com/wolfpld/tracy)
-- [Intel Graphics Performance Analyzers](https://software.intel.com/en-us/gpa/graphics-trace-analyzer)
+Methane Kit contains integrated instrumentation of all libraries for performance analysis with trace collection using following tools:
+- [Tracy Profiler](https://github.com/wolfpld/tracy) - can be tried with `Profiling` release build
+  - Profiling build options:
+    - `METHANE_TRACY_PROFILING_ENABLED:BOOL=ON` - enables Tracy instrumentation and client connection
+    - `METHANE_TRACY_PROFILING_ON_DEMAND:BOOL=ON` - enable trace collection after Tracy profiler connection (otherwise from app start)
+    - `METHANE_GPU_INSTRUMENTATION_ENABLED:BOOL=ON` - enable GPU timestamp queries (affects performance)
+  - Instructions for analysis:
+- [Intel Graphics Trace Analyzer](https://software.intel.com/en-us/gpa/graphics-trace-analyzer)
+  - Profiling build options:
+    - `METHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON` - enable ITT instrumentation
+    - `METHANE_ITT_METADATA_ENABLED:BOOL=ON` - enable metadata collection (like source paths and lines or frame numbers)
+  - Instructions for analysis:
+
+Common profiling build options:
+  - `METHANE_SCOPE_TIMERS_ENABLED:BOOL=ON` - enable scope timer measurements (displayed on charts in the tools above)
+  - `METHANE_LOGGING_ENABLED:BOOL=ON` - enable logging (log messages are displayed in Tracy log)
 
 | Tracy Frame Profiler | Intel Graphics Trace Analyzer |
 | -------------- | ----------------------------- |
 | ![Asteroids Trace in Tracy](Apps/Samples/Asteroids/Screenshots/AsteroidsWinTracyProfiling.jpg) | ![Asteroids Trace in GPA Trace Analyzer](Apps/Samples/Asteroids/Screenshots/AsteroidsWinGPATraceAnalyzer.jpg) |
+
+### Frame Profiling and Debugging Tools
+
+- [Intel Graphics Frame Analyzer](https://software.intel.com/en-us/gpa/graphics-frame-analyzer)
+- [Apple XCode Metal Debugger](https://developer.apple.com/documentation/metal/basic_tasks_and_concepts/viewing_your_gpu_workload_with_the_metal_debugger)
+- [RenderDoc](https://renderdoc.org)
+- [Microsoft PIX](https://devblogs.microsoft.com/pix/)
+- [NVidia Nsight Graphics](https://developer.nvidia.com/nsight-graphics)
+
+Captured frame API Log is instrumented with debug groups enabled by default with build option `METHANE_COMMAND_DEBUG_GROUPS_ENABLED:BOOL=ON`.
 
 ## External Dependencies
 
