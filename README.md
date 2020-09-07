@@ -44,39 +44,39 @@ Methane Kit architecture is clearly distributing library modules between 5 layer
   - **HLSL-6 Shaders** serving all graphics APIs converted to native shader language and compiled in build time with SPIRV-Cross & DirectXCompiler
 - **Modern Graphics API abstractions**: DirectX 12 & Metal are supported, Vulkan is coming soon
   - Render state and program configuration with compact initialization syntax
-  - Program binding objects auto-generated with help of shader reflection implement efficient setup of shader argument bindings to resources
-  - Automatic resource state tracking for resource transition barriers setup
-  - Resources are automatically retained from destroying while they are used on GPU using resource shared pointers in command list state
+  - Program binding objects partially initialized with help of shader reflection implement efficient binding of shader arguments to resources
+  - Automatic resource state tracking used for resource transition barriers setup
+  - Resources are automatically retained from destroying while they in use on GPU with shared pointers in command list state
   - Command list execution state tracking with optional GPU timestamps query on completion
   - Parallel render command list for multi-threaded render commands encoding in single render pass
   - Multiple command queues execution on GPU with synchronization using fences
   - Private GPU resources asynchronously updated via shared resource implicitly through the upload command list
   - Registry of named graphics objects used for reusing render states and graphics resources between UI items
 - **Graphics primitives and extensions** for:
-  - Graphics application base class implementing frame resizing and other routine operations
+  - Graphics application base class with per-frame resource management, frame buffers resizing and other routine operations
   - Camera primitive and interactive arc-ball camera
   - Procedural mesh generation for quad, box, sphere, icosahedron and uber-mesh
   - Perlin Noise generation
   - Screen-quad and sky-box rendering extension classes
-  - Texture image loader currently implemented with STB, planned to replace with OpenImageIO (partially supported under the hood).
+  - Texture image loader currently implemented with STB (planned for replacement with OpenImageIO, partially supported under the hood)
 - **User Interface** libraries:
   - UI application base class with integrated HUD, logo badge and help/parameters text panels
-  - Typography library for fonts loading, text rendering & layout
+  - Typography library for fonts loading, dynamic atlas updating, text rendering & layout
   - Widgets library (under development)
 - **Application infrastructure helpers**:
   - Events mechanism connecting emitters and receivers via callback interfaces
   - Animations subsystem
   - Embedded resource providers
   - Range Set implementation
-- **Integrated API instrumentation** for performance analysis with [profiling tools](#profiling-tools)
-- **Continuous integration** with builds, unit-tests and static code analysis in Azure Pipelines and other systems.
+- **Integrated API instrumentation** for performance analysis with [trace profiling tools](#trace-profiling-tools)
+- **Continuous integration** with builds, unit-tests and static code analysis in Azure Pipelines.
 
 For detailed features description and development plans please refer to [Modules documentation](Modules).
 
 ### Tutorials
 
-| <pre><b>Name / Link</b></pre> | <pre><b>Screenshot</b></pre> | <pre><b>Description</b>                                                     </pre> |
-| ------------------------------- | ---------------------------- | ---------------------------------------------------------------------------------- |
+| <pre><b>Name / Link</b></pre> | <pre><b>Screenshot</b></pre> | <pre><b>Description</b>                                         </pre> |
+| ----------------------------- | ---------------------------- | ---------------------------------------------------------------------- |
 | [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) | ![Hello Triangle on Windows](Apps/Tutorials/01-HelloTriangle/Screenshots/HelloTriangleWinDirectX12.jpg) | Colored triangle rendering in just 120 lines of code! |
 | [Textured Cube](/Apps/Tutorials/02-TexturedCube) | ![Textured Cube on Windows](Apps/Tutorials/02-TexturedCube/Screenshots/TexturedCubeWinDirectX12.jpg) | Textured cube introduces buffers and textures usage along with program bindings. |
 | [Shadow Cube](/Apps/Tutorials/03-ShadowCube) | ![Shadow Cube on Windows](Apps/Tutorials/03-ShadowCube/Screenshots/ShadowCubeWinDirectX12.jpg) | Shadow cube introduces multi-pass rendering with render passes. |
@@ -84,8 +84,8 @@ For detailed features description and development plans please refer to [Modules
 
 ### Samples
 
-| <pre><b>Name / Link</b></pre> | <pre><b>Screenshot</b></pre> | <pre><b>Description</b>                                                     </pre> |
-| ------------------------------- | ---------------------------- | ---------------------------------------------------------------------------------- |
+| <pre><b>Name / Link</b></pre> | <pre><b>Screenshot</b></pre> | <pre><b>Description</b>                                         </pre> |
+| ----------------------------- | ---------------------------- | ---------------------------------------------------------------------- |
 | [Asteroids](/Apps/Samples/Asteroids) | ![Asteroids on Windows](Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg) | Benchmark demonstrating parallel render commands encoding in a single render pass for the large number of heterogeneous asteroid objects processed in multiple threads. |
 
 ## Building from Sources 
@@ -108,7 +108,7 @@ For detailed features description and development plans please refer to [Modules
 ### Fetch Sources
 
 **IMPORTANT:** Do not download source code via Zip archive, 
-since it does not include content of [External](https://github.com/egorodet/MethaneExternals/tree/master) submodules.
+since it does not include content of [Externals](https://github.com/egorodet/MethaneExternals/tree/master) submodules.
 Use `git clone` command as described below.
 
 #### First time initialization
@@ -188,7 +188,7 @@ cmake --build . --config Release --target install
 Methane Kit is being developed with support of [Jet Brains](https://www.jetbrains.com/?from=MethaneKit) development tools.
 Open source project development license is provided free of charge to all key contributors of Methane Kit project.
 
-### Profiling Tools
+### Trace Profiling Tools
 
 Methane Kit contains integrated instrumentation of all libraries for performance analysis with trace collection using following tools:
 - [Tracy Profiler](https://github.com/wolfpld/tracy) - can be tried with `Profiling` release build
@@ -197,11 +197,19 @@ Methane Kit contains integrated instrumentation of all libraries for performance
     - `METHANE_TRACY_PROFILING_ON_DEMAND:BOOL=ON` - enable trace collection after Tracy profiler connection (otherwise from app start)
     - `METHANE_GPU_INSTRUMENTATION_ENABLED:BOOL=ON` - enable GPU timestamp queries (affects performance)
   - Instructions for analysis:
+    1. Run Methane application built with Tracy profiling enabled (see above) or from `Profiling` [release build](https://github.com/egorodet/MethaneKit/releases)
+    2. Run [Tracy profiler v0.7.1](https://github.com/egorodet/Tracy/releases/tag/v0.7.1), run from Terminal on MacOS
+    3. Click Methane application record in the Tracy connection dialog. Realtime trace collection begins.
 - [Intel Graphics Trace Analyzer](https://software.intel.com/en-us/gpa/graphics-trace-analyzer)
   - Profiling build options:
     - `METHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON` - enable ITT instrumentation
     - `METHANE_ITT_METADATA_ENABLED:BOOL=ON` - enable metadata collection (like source paths and lines or frame numbers)
   - Instructions for analysis:
+    1. Start Graphics Monitor (optional: click `Options` button, select `Trace` tab change settings, like trace duration)
+    2. On the `Desktop Applications` launcher screen: select `Trace` mode from combo-box in the right-bottom corner
+    3. Enter path to the Methane application executable built with ITT instrumentation enabled (any [release build](https://github.com/egorodet/MethaneKit/releases) can be used)
+    4. Click `Start` button to start application. Press `CTRL+SHIFT+T` to capture a trace of required duration of events prior the current moment
+    5. Collected trace appears in Graphics Monitor right-side list, double-click it to open.
 
 Common profiling build options:
   - `METHANE_SCOPE_TIMERS_ENABLED:BOOL=ON` - enable scope timer measurements (displayed on charts in the tools above)
@@ -219,7 +227,9 @@ Common profiling build options:
 - [Microsoft PIX](https://devblogs.microsoft.com/pix/)
 - [NVidia Nsight Graphics](https://developer.nvidia.com/nsight-graphics)
 
-Captured frame API Log is instrumented with debug groups enabled by default with build option `METHANE_COMMAND_DEBUG_GROUPS_ENABLED:BOOL=ON`.
+Common frame debugging build options:
+- `METHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON` - enable shaders code embedded in compiled Obj files to be available in debugging tools
+- `METHANE_COMMAND_DEBUG_GROUPS_ENABLED:BOOL=ON` - enable named debug groups in captured frame API logs
 
 ## External Dependencies
 
