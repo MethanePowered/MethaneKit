@@ -16,6 +16,7 @@
       <file path="$PROJECT_DIR$/Externals/D3DCompilerToDXC" />
       <file path="$PROJECT_DIR$/Externals/DirectXCompiler" />
       <file path="$PROJECT_DIR$/Externals/DirectXLibraries" />
+      <file path="$PROJECT_DIR$/Externals/DirectXLibs" />
       <file path="$PROJECT_DIR$/Externals/DirectXTex" />
       <file path="$PROJECT_DIR$/Externals/FreeType2" />
       <file path="$PROJECT_DIR$/Externals/IttApi" />
@@ -28,10 +29,6 @@
       <file path="$PROJECT_DIR$/Externals/Tracy" />
     </libraryRoots>
     <excludeRoots>
-      <file path="$PROJECT_DIR$/Apps/Samples/Asteroids/Shaders" />
-      <file path="$PROJECT_DIR$/Apps/Tutorials/01-HelloTriangle/Shaders" />
-      <file path="$PROJECT_DIR$/Apps/Tutorials/02-TexturedCube/Shaders" />
-      <file path="$PROJECT_DIR$/Apps/Tutorials/03-ShadowCube/Shaders" />
       <file path="$PROJECT_DIR$/Build/Output" />
       <file path="$PROJECT_DIR$/Modules/Graphics/Extensions/Shaders" />
     </excludeRoots>
