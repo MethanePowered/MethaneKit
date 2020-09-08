@@ -191,29 +191,33 @@ Open source project development license is provided free of charge to all key co
 ### Trace Profiling Tools
 
 Methane Kit contains integrated instrumentation of all libraries for performance analysis with trace collection using following tools:
-- [Tracy Profiler](https://github.com/wolfpld/tracy) - can be tried with `Profiling` release build
+- [Tracy Profiler](https://github.com/wolfpld/tracy)
   - Profiling build options:
     - `METHANE_TRACY_PROFILING_ENABLED:BOOL=ON` - enables Tracy instrumentation and client connection
     - `METHANE_TRACY_PROFILING_ON_DEMAND:BOOL=ON` - enable trace collection after Tracy profiler connection (otherwise from app start)
     - `METHANE_GPU_INSTRUMENTATION_ENABLED:BOOL=ON` - enable GPU timestamp queries (affects performance)
   - Instructions for analysis:
-    1. Run Methane application built with Tracy profiling enabled (see above) or from `Profiling` [release build](https://github.com/egorodet/MethaneKit/releases)
-    2. Run [Tracy profiler v0.7.1](https://github.com/egorodet/Tracy/releases/tag/v0.7.1), run from Terminal on MacOS
+    1. Run Methane application built with Tracy profiling enabled or get `Profiling` [release build](https://github.com/egorodet/MethaneKit/releases)
+    2. Run [Tracy profiler v0.7.1](https://github.com/egorodet/Tracy/releases/tag/v0.7.1), run it from Terminal on MacOS
     3. Click Methane application record in the Tracy connection dialog. Realtime trace collection begins.
 - [Intel Graphics Trace Analyzer](https://software.intel.com/en-us/gpa/graphics-trace-analyzer)
   - Profiling build options:
     - `METHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON` - enable ITT instrumentation
     - `METHANE_ITT_METADATA_ENABLED:BOOL=ON` - enable metadata collection (like source paths and lines or frame numbers)
   - Instructions for analysis:
-    1. Start Graphics Monitor (optional: click `Options` button, select `Trace` tab change settings, like trace duration)
+    1. Start Graphics Monitor and configure trace options:
+       - Click `Options` button, select `Trace` tab to change settings
+       - Set the trace duration in seconds
+       - In `GPA Domains` tab either select `Methane Kit` domain (to see Methane functions instrumentation) or
+      `WinPixEventsRuntime` domain (to see command list debug group instrumentation) but not both - otherwise trace will display incorrectly.
     2. On the `Desktop Applications` launcher screen: select `Trace` mode from combo-box in the right-bottom corner
     3. Enter path to the Methane application executable built with ITT instrumentation enabled (any [release build](https://github.com/egorodet/MethaneKit/releases) can be used)
-    4. Click `Start` button to start application. Press `CTRL+SHIFT+T` to capture a trace of required duration of events prior the current moment
-    5. Collected trace appears in Graphics Monitor right-side list, double-click it to open.
+    4. Click `Start` button to start application. Press `CTRL+SHIFT+T` to capture a trace of requested duration with events prior the current moment
+    5. Collected trace appears in the Graphics Monitor right-side list, double-click it to open.
 
-Common profiling build options:
-  - `METHANE_SCOPE_TIMERS_ENABLED:BOOL=ON` - enable scope timer measurements (displayed on charts in the tools above)
-  - `METHANE_LOGGING_ENABLED:BOOL=ON` - enable logging (log messages are displayed in Tracy log)
+Other trace profiling build options:
+- `METHANE_SCOPE_TIMERS_ENABLED:BOOL=ON` - enable scope timer measurements (displayed on charts in the tools above)
+- `METHANE_LOGGING_ENABLED:BOOL=ON` - enable logging (log messages are displayed in Tracy log)
 
 | Tracy Frame Profiler | Intel Graphics Trace Analyzer |
 | -------------- | ----------------------------- |
@@ -227,7 +231,7 @@ Common profiling build options:
 - [Microsoft PIX](https://devblogs.microsoft.com/pix/)
 - [NVidia Nsight Graphics](https://developer.nvidia.com/nsight-graphics)
 
-Common frame debugging build options:
+Frame debugging build options:
 - `METHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON` - enable shaders code embedded in compiled Obj files to be available in debugging tools
 - `METHANE_COMMAND_DEBUG_GROUPS_ENABLED:BOOL=ON` - enable named debug groups in captured frame API logs
 
