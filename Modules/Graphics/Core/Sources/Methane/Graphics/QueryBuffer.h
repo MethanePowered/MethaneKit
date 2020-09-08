@@ -67,11 +67,11 @@ public:
         Index            GetIndex() const noexcept       { return m_index; }
         const Range&     GetDataRange() const noexcept   { return m_data_range; }
         State            GetState() const noexcept       { return m_state; }
-        QueryBuffer&     GetQueryBuffer() const noexcept { return *m_sp_buffer; }
+        QueryBuffer&     GetQueryBuffer() const noexcept { return *m_buffer_ptr; }
         CommandListBase& GetCommandList() const noexcept { return m_command_list; }
 
     private:
-        Ptr<QueryBuffer> m_sp_buffer;
+        Ptr<QueryBuffer> m_buffer_ptr;
         CommandListBase& m_command_list;
         const Index      m_index;
         const Range      m_data_range;

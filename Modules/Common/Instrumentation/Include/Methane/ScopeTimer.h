@@ -60,8 +60,8 @@ public:
         static Aggregator& Get();
         ~Aggregator();
 
-        void SetLogger(Ptr<ILogger> sp_logger)   { m_sp_logger = std::move(sp_logger); }
-        const Ptr<ILogger>& GetLogger() const    { return m_sp_logger; }
+        void SetLogger(Ptr<ILogger> logger_ptr)   { m_logger_ptr = std::move(logger_ptr); }
+        const Ptr<ILogger>& GetLogger() const    { return m_logger_ptr; }
 
         void LogTimings(ILogger& logger);
         void Flush();
@@ -81,7 +81,7 @@ public:
         ScopeIdByName m_scope_id_by_name;
         ScopeTimings  m_timing_by_scope_id;
         ScopeCounters m_counters_by_scope_id;
-        Ptr<ILogger>  m_sp_logger;
+        Ptr<ILogger>  m_logger_ptr;
     };
 
     template<typename TLogger>

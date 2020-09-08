@@ -103,7 +103,7 @@ RenderStateVK::~RenderStateVK()
 void RenderStateVK::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    if (!settings.sp_program)
+    if (!settings.program_ptr)
     {
         throw std::invalid_argument("Can not create state with empty program.");
     }

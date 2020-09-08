@@ -49,13 +49,13 @@ public:
     // ShaderBase overrides
     ArgumentBindings GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const override;
 
-    const Data::Chunk*                    GetNativeByteCode() const noexcept { return m_sp_byte_code_chunk.get(); }
+    const Data::Chunk*                    GetNativeByteCode() const noexcept { return m_byte_code_chunk_ptr.get(); }
     std::vector<D3D12_INPUT_ELEMENT_DESC> GetNativeProgramInputLayout(const ProgramDX& program) const;
 
 private:
     IContextDX& GetContextDX() noexcept;
 
-    UniquePtr<Data::Chunk>              m_sp_byte_code_chunk;
+    UniquePtr<Data::Chunk>              m_byte_code_chunk_ptr;
     wrl::ComPtr<ID3DBlob>               m_cp_byte_code;
     wrl::ComPtr<ID3D12ShaderReflection> m_cp_reflection;
 };

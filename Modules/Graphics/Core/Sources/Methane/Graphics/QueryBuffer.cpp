@@ -35,7 +35,7 @@ namespace Methane::Graphics
 {
 
 QueryBuffer::Query::Query(QueryBuffer& buffer, CommandListBase& command_list, Data::Index index, Range data_range)
-    : m_sp_buffer(buffer.GetPtr())
+    : m_buffer_ptr(buffer.GetPtr())
     , m_command_list(command_list)
     , m_index(index)
     , m_data_range(data_range)
@@ -46,7 +46,7 @@ QueryBuffer::Query::Query(QueryBuffer& buffer, CommandListBase& command_list, Da
 QueryBuffer::Query::~Query()
 {
     META_FUNCTION_TASK();
-    m_sp_buffer->ReleaseQuery(*this);
+    m_buffer_ptr->ReleaseQuery(*this);
 }
 
 void QueryBuffer::Query::Begin()

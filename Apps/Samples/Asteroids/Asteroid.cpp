@@ -113,9 +113,9 @@ Ptr<gfx::Texture> Asteroid::GenerateTextureArray(gfx::RenderContext& context, co
     META_FUNCTION_TASK();
 
     const gfx::Resource::SubResources sub_resources = GenerateTextureArraySubresources(dimensions, array_size, noise_parameters);
-    Ptr<gfx::Texture> sp_texture_array = gfx::Texture::CreateImage(context, dimensions, array_size, gfx::PixelFormat::RGBA8Unorm, mipmapped);
-    sp_texture_array->SetData(sub_resources);
-    return sp_texture_array;
+    Ptr<gfx::Texture> texture_array_ptr = gfx::Texture::CreateImage(context, dimensions, array_size, gfx::PixelFormat::RGBA8Unorm, mipmapped);
+    texture_array_ptr->SetData(sub_resources);
+    return texture_array_ptr;
 }
 
 gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, const TextureNoiseParameters& noise_parameters)

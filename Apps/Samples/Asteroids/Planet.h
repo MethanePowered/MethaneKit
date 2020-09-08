@@ -67,7 +67,7 @@ public:
 
     Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings);
 
-    Ptr<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& sp_constants_buffer, const Ptr<gfx::Buffer>& sp_uniforms_buffer);
+    Ptr<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr, const Ptr<gfx::Buffer>& uniforms_buffer_ptr);
     bool Update(double elapsed_seconds, double delta_seconds);
     void Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
 
@@ -92,8 +92,8 @@ private:
     Settings              m_settings;
     gfx::RenderContext&   m_context;
     TexturedMeshBuffers   m_mesh_buffers;
-    Ptr<gfx::Sampler>     m_sp_texture_sampler;
-    Ptr<gfx::RenderState> m_sp_render_state;
+    Ptr<gfx::Sampler>     m_texture_sampler_ptr;
+    Ptr<gfx::RenderState> m_render_state_ptr;
 };
 
 } // namespace Methane::Graphics

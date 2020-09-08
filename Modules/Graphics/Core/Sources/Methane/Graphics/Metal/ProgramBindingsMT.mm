@@ -156,10 +156,10 @@ static void SetMetalResourcesForAll(Shader::Type shader_type, const Program& pro
     }
 }
 
-Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
+Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramBindingsMT>(sp_program, resource_locations_by_argument);
+    return std::make_shared<ProgramBindingsMT>(program_ptr, resource_locations_by_argument);
 }
 
 Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
@@ -219,8 +219,8 @@ void ProgramBindingsMT::ArgumentBindingMT::SetResourceLocations(const Resource::
     }
 }
 
-ProgramBindingsMT::ProgramBindingsMT(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
-    : ProgramBindingsBase(sp_program, resource_locations_by_argument)
+ProgramBindingsMT::ProgramBindingsMT(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument)
+    : ProgramBindingsBase(program_ptr, resource_locations_by_argument)
 {
     META_FUNCTION_TASK();
 }

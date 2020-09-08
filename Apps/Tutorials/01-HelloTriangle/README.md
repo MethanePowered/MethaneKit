@@ -9,11 +9,11 @@ This tutorial application demonstrates colored triangle rendering implemented in
 Application class `HelloTriangleApp` is derived from the base template class `Graphics::App<HelloTriangleFrame>` 
 which implements some routine aspect of the graphics application:
 - Render context initialization available with `GraphicsApp::GetRenderContext()` method 
-- Per-frame resources management from `Graphics::AppFrame` class: frame buffer `sp_screen_texture` and screen render pass `sp_screen_pass`.
+- Per-frame resources management from `Graphics::AppFrame` class: frame buffer `screen_texture_ptr` and screen render pass `screen_pass_ptr`.
 It includes initialization, frame resizing and releasing on context reset.
 
 Application frame class `HelloTriangleFrame` is derived from base class `Graphics::AppFrame` and extends it 
-with render command list `sp_render_cmd_list` and command list set `sp_execute_cmd_list_set` submitted 
+with render command list `render_cmd_list_ptr` and command list set `execute_cmd_list_set_ptr` submitted 
 for rendering to frame buffer `index`. Application is initialized with default settings using `AppSettings` structure.
 Destroying of application along with its resources is delayed until all rendering is completed on GPU.
 
@@ -25,8 +25,8 @@ using namespace Methane::Graphics;
 
 struct HelloTriangleFrame final : AppFrame
 {
-    Ptr<RenderCommandList> sp_render_cmd_list;
-    Ptr<CommandListSet>    sp_execute_cmd_list_set;
+    Ptr<RenderCommandList> render_cmd_list_ptr;
+    Ptr<CommandListSet>    execute_cmd_list_set_ptr;
     using AppFrame::AppFrame;
 };
 
@@ -62,8 +62,8 @@ public:
 };
 ```
 
-Application class `HelloTriangleApp` keeps frame independent resources in class members: render state `m_sp_render_state` and 
-set of vertex buffers used for triangle rendering `m_sp_vertex_buffer_set` - they are initialized in `HelloTriangleApp::Init` method. 
+Application class `HelloTriangleApp` keeps frame independent resources in class members: render state `m_render_state_ptr` and 
+set of vertex buffers used for triangle rendering `m_vertex_buffer_set_ptr` - they are initialized in `HelloTriangleApp::Init` method. 
 Vertex buffer is created with `Buffer::CreateVertexBuffer(...)` factory and filled with vertex data using `Buffer::SetData(...)`
 function via `Resource::SubResource` representing initialization data chunk.
 
@@ -85,8 +85,8 @@ resources initialization to prepare for rendering.
 class HelloTriangleApp final : public GraphicsApp
 {
 private:
-    Ptr<RenderState> m_sp_render_state;
-    Ptr<BufferSet>   m_sp_vertex_buffer_set;
+    Ptr<RenderState> m_render_state_ptr;
+    Ptr<BufferSet>   m_vertex_buffer_set_ptr;
     
 public:
     ...
@@ -103,16 +103,16 @@ public:
         } };
 
         const Data::Size vertex_buffer_size = static_cast<Data::Size>(sizeof(triangle_vertices));
-        Ptr<Buffer> sp_vertex_buffer = Buffer::CreateVertexBuffer(GetRenderContext(), vertex_buffer_size, static_cast<Data::Size>(sizeof(Vertex)));
-        sp_vertex_buffer->SetData(
+        Ptr<Buffer> vertex_buffer_ptr = Buffer::CreateVertexBuffer(GetRenderContext(), vertex_buffer_size, static_cast<Data::Size>(sizeof(Vertex)));
+        vertex_buffer_ptr->SetData(
             Resource::SubResources
             {
                 Resource::SubResource { reinterpret_cast<Data::ConstRawPtr>(triangle_vertices.data()), vertex_buffer_size }
             }
         );
-        m_sp_vertex_buffer_set = BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
+        m_vertex_buffer_set_ptr = BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
-        m_sp_render_state = RenderState::Create(GetRenderContext(),
+        m_render_state_ptr = RenderState::Create(GetRenderContext(),
             RenderState::Settings
             {
                 Program::Create(GetRenderContext(),
@@ -139,8 +139,8 @@ public:
 
         for (HelloTriangleFrame& frame : GetFrames())
         {
-            frame.sp_render_cmd_list      = RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.sp_screen_pass);
-            frame.sp_execute_cmd_list_set = CommandListSet::Create({ *frame.sp_render_cmd_list });
+            frame.render_cmd_list_ptr      = RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.screen_pass_ptr);
+            frame.execute_cmd_list_set_ptr = CommandListSet::Create({ *frame.render_cmd_list_ptr });
         }
 
         GraphicsApp::CompleteInitialization();
@@ -148,8 +148,8 @@ public:
 
     void OnContextReleased(Context& context) override
     {
-        m_sp_vertex_buffer_set.reset();
-        m_sp_render_state.reset();
+        m_vertex_buffer_set_ptr.reset();
+        m_render_state_ptr.reset();
 
         GraphicsApp::OnContextReleased(context);
     }
@@ -183,13 +183,13 @@ class HelloTriangleApp final : public GraphicsApp
             return false;
 
         HelloTriangleFrame& frame = GetCurrentFrame();
-        frame.sp_render_cmd_list->Reset(m_sp_render_state);
-        frame.sp_render_cmd_list->SetViewState(GetViewState());
-        frame.sp_render_cmd_list->SetVertexBuffers(*m_sp_vertex_buffer_set);
-        frame.sp_render_cmd_list->Draw(RenderCommandList::Primitive::Triangle, 3);
-        frame.sp_render_cmd_list->Commit();
+        frame.render_cmd_list_ptr->Reset(m_render_state_ptr);
+        frame.render_cmd_list_ptr->SetViewState(GetViewState());
+        frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
+        frame.render_cmd_list_ptr->Draw(RenderCommandList::Primitive::Triangle, 3);
+        frame.render_cmd_list_ptr->Commit();
 
-        GetRenderContext().GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_list_set);
+        GetRenderContext().GetRenderCommandQueue().Execute(*frame.execute_cmd_list_set_ptr);
         GetRenderContext().Present();
 
         return true;

@@ -136,7 +136,7 @@ public:
 
 protected:
     // IFontCallback interface
-    void OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture) override;
+    void OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& old_atlas_texture_ptr, const Ptr<gfx::Texture>& new_atlas_texture_ptr) override;
     void OnFontAtlasUpdated(Font&) override {}
 
 private:
@@ -160,31 +160,31 @@ private:
         };
 
         FrameResources(gfx::RenderState& state, gfx::RenderContext& render_context,
-                       const Ptr<gfx::Buffer>& sp_const_buffer, const Ptr<gfx::Texture>& sp_atlas_texture, const Ptr<gfx::Sampler>& sp_atlas_sampler,
+                       const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Texture>& atlas_texture_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr,
                        const TextMesh& text_mesh, const std::string& text_name, Data::Size reservation_multiplier);
 
         void SetDirty(Dirty::Mask dirty_flags) noexcept         { m_dirty_mask |= dirty_flags; }
         bool IsDirty() const noexcept                           { return m_dirty_mask != Dirty::None; }
         bool IsDirty(Dirty::Mask dirty_flags) const noexcept    { return m_dirty_mask & dirty_flags; }
-        bool IsInitialized() const noexcept                     { return m_sp_program_bindings && m_sp_vertex_buffer_set && m_sp_index_buffer; }
-        bool IsAtlasInitialized() const noexcept                { return !!m_sp_atlas_texture; }
+        bool IsInitialized() const noexcept                     { return m_program_bindings_ptr && m_vertex_buffer_set_ptr && m_index_buffer_ptr; }
+        bool IsAtlasInitialized() const noexcept                { return !!m_atlas_texture_ptr; }
 
         gfx::BufferSet&       GetVertexBufferSet() const;
         gfx::Buffer&          GetIndexBuffer() const;
         gfx::ProgramBindings& GetProgramBindings() const;
 
-        bool UpdateAtlasTexture(const Ptr<gfx::Texture>& sp_new_atlas_texture); // returns true if probram bindings were updated, false if bindings have to be initialized
+        bool UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas_texture_ptr); // returns true if probram bindings were updated, false if bindings have to be initialized
         void UpdateMeshBuffers(gfx::RenderContext& render_context, const TextMesh& text_mesh, const std::string& text_name, Data::Size reservation_multiplier);
         void UpdateUniformsBuffer(gfx::RenderContext& render_context, const TextMesh& text_mesh, const std::string& text_name);
-        void InitializeProgramBindings(gfx::RenderState& state, const Ptr<gfx::Buffer>& sp_const_buffer, const Ptr<gfx::Sampler>& sp_atlas_sampler);
+        void InitializeProgramBindings(gfx::RenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr);
 
     private:
         Dirty::Mask               m_dirty_mask = Dirty::None;
-        Ptr<gfx::BufferSet>       m_sp_vertex_buffer_set;
-        Ptr<gfx::Buffer>          m_sp_index_buffer;
-        Ptr<gfx::Buffer>          m_sp_uniforms_buffer;
-        Ptr<gfx::Texture>         m_sp_atlas_texture;
-        Ptr<gfx::ProgramBindings> m_sp_program_bindings;
+        Ptr<gfx::BufferSet>       m_vertex_buffer_set_ptr;
+        Ptr<gfx::Buffer>          m_index_buffer_ptr;
+        Ptr<gfx::Buffer>          m_uniforms_buffer_ptr;
+        Ptr<gfx::Texture>         m_atlas_texture_ptr;
+        Ptr<gfx::ProgramBindings> m_program_bindings_ptr;
     };
 
     void InitializeFrameResources();
@@ -207,12 +207,12 @@ private:
     SettingsUtf32               m_settings;
     UnitRect                    m_frame_rect;
     FrameSize                   m_render_attachment_size = FrameSize::Max();
-    Ptr<Font>                   m_sp_font;
-    UniquePtr<TextMesh>         m_sp_text_mesh;
-    Ptr<gfx::RenderState>       m_sp_render_state;
-    Ptr<gfx::ViewState>         m_sp_view_state;
-    Ptr<gfx::Buffer>            m_sp_const_buffer;
-    Ptr<gfx::Sampler>           m_sp_atlas_sampler;
+    Ptr<Font>                   m_font_ptr;
+    UniquePtr<TextMesh>         m_text_mesh_ptr;
+    Ptr<gfx::RenderState>       m_render_state_ptr;
+    Ptr<gfx::ViewState>         m_view_state_ptr;
+    Ptr<gfx::Buffer>            m_const_buffer_ptr;
+    Ptr<gfx::Sampler>           m_atlas_sampler_ptr;
     std::vector<FrameResources> m_frame_resources;
     bool                        m_is_viewport_dirty;
 };

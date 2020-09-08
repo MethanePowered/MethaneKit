@@ -45,8 +45,8 @@ void AnimationsPool::Update()
     std::vector<size_t> completed_animation_indices;
     for (size_t animation_index = 0; animation_index < size(); ++animation_index)
     {
-        Ptr<Animation>& sp_animation = (*this)[animation_index];
-        if (!sp_animation || !sp_animation->Update())
+        Ptr<Animation>& animation_ptr = (*this)[animation_index];
+        if (!animation_ptr || !animation_ptr->Update())
         {
             completed_animation_indices.push_back(animation_index);
         }
@@ -63,12 +63,12 @@ void AnimationsPool::Update()
 void AnimationsPool::DryUpdate()
 {
     META_FUNCTION_TASK();
-    for(const Ptr<Animation>& sp_animation : *this)
+    for(const Ptr<Animation>& animation_ptr : *this)
     {
-        if (!sp_animation)
+        if (!animation_ptr)
             continue;
 
-        sp_animation->DryUpdate();
+        animation_ptr->DryUpdate();
     }
 }
 
@@ -78,10 +78,10 @@ void AnimationsPool::Pause()
     if (m_is_paused)
         return;
 
-    for(const Ptr<Animation>& sp_animation : *this)
+    for(const Ptr<Animation>& animation_ptr : *this)
     {
-        if (sp_animation->GetState() == Animation::State::Running)
-            sp_animation->Pause();
+        if (animation_ptr->GetState() == Animation::State::Running)
+            animation_ptr->Pause();
     }
 
     m_is_paused = true;
@@ -93,10 +93,10 @@ void AnimationsPool::Resume()
     if (!m_is_paused)
         return;
 
-    for(const Ptr<Animation>& sp_animation : *this)
+    for(const Ptr<Animation>& animation_ptr : *this)
     {
-        if (sp_animation->GetState() == Animation::State::Paused)
-            sp_animation->Resume();
+        if (animation_ptr->GetState() == Animation::State::Paused)
+            animation_ptr->Resume();
     }
 
     m_is_paused = false;

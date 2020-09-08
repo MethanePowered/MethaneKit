@@ -72,21 +72,21 @@ RenderCommandListMT::RenderCommandListMT(ParallelRenderCommandListBase& parallel
     META_FUNCTION_TASK();
 }
 
-void RenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group)
+void RenderCommandListMT::Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 
     if (IsCommandEncoderInitialized())
     {
-        RenderCommandListBase::Reset(sp_render_state, p_debug_group);
+        RenderCommandListBase::Reset(render_state_ptr, p_debug_group);
         return;
     }
 
     if (IsParallel())
     {
-        Ptr<ParallelRenderCommandListMT> sp_parallel_render_cmd_list = std::static_pointer_cast<ParallelRenderCommandListMT>(GetParallelRenderCommandList());
-        assert(!!sp_parallel_render_cmd_list);
-        InitializeCommandEncoder([sp_parallel_render_cmd_list->GetNativeCommandEncoder() renderCommandEncoder]);
+        Ptr<ParallelRenderCommandListMT> parallel_render_cmd_list_ptr = std::static_pointer_cast<ParallelRenderCommandListMT>(GetParallelRenderCommandList());
+        assert(!!parallel_render_cmd_list_ptr);
+        InitializeCommandEncoder([parallel_render_cmd_list_ptr->GetNativeCommandEncoder() renderCommandEncoder]);
     }
     else
     {
@@ -98,7 +98,7 @@ void RenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, DebugGr
         InitializeCommandEncoder([mtl_cmd_buffer renderCommandEncoderWithDescriptor:mtl_render_pass]);
     }
 
-    RenderCommandListBase::Reset(sp_render_state, p_debug_group);
+    RenderCommandListBase::Reset(render_state_ptr, p_debug_group);
 }
 
 void RenderCommandListMT::SetVertexBuffers(BufferSet& vertex_buffers)

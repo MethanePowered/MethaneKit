@@ -76,7 +76,7 @@ std::string ToStringWithPrecision(const T value, const int precision)
 HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_data_provider, Settings settings)
     : Panel(ui_context, { }, { "Heads Up Display" })
     , m_settings(std::move(settings))
-    , m_sp_major_font(
+    , m_major_font_ptr(
         Font::Library::Get().GetFont(font_data_provider,
             Font::Settings
             {
@@ -86,7 +86,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
             }
         ).GetPtr()
     )
-    , m_sp_minor_font(
+    , m_minor_font_ptr(
         Font::Library::Get().GetFont(font_data_provider,
             Font::Settings
             {
@@ -97,72 +97,72 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
         ).GetPtr()
     )
     , m_text_blocks({
-        std::make_shared<Text>(ui_context, *m_sp_major_font,
+        std::make_shared<Text>(ui_context, *m_major_font_ptr,
             Text::SettingsUtf8
             {
                 "FPS",
                 "000 FPS",
-                UnitRect{ { }, { 0u, GetFpsTextHeightInDots(ui_context, *m_sp_major_font, *m_sp_minor_font, m_settings.text_margins) }, Units::Dots },
+                UnitRect{ { }, { 0u, GetFpsTextHeightInDots(ui_context, *m_major_font_ptr, *m_minor_font_ptr, m_settings.text_margins) }, Units::Dots },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Center },
                 m_settings.text_color
             }
         ),
-        std::make_shared<Text>(ui_context, *m_sp_minor_font,
+        std::make_shared<Text>(ui_context, *m_minor_font_ptr,
             Text::SettingsUtf8
             {
                 "Frame Time",
                 "00.00 ms",
-                UnitRect{ { }, { 0u, GetTimingTextHeightInDots(ui_context, *m_sp_major_font, *m_sp_minor_font, m_settings.text_margins) }, Units::Dots },
+                UnitRect{ { }, { 0u, GetTimingTextHeightInDots(ui_context, *m_major_font_ptr, *m_minor_font_ptr, m_settings.text_margins) }, Units::Dots },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Center },
                 m_settings.text_color
             }
         ),
-        std::make_shared<Text>(ui_context, *m_sp_minor_font,
+        std::make_shared<Text>(ui_context, *m_minor_font_ptr,
             Text::SettingsUtf8
             {
                 "CPU Time",
                 "00.00% cpu",
-                UnitRect{ { }, { 0u, GetTimingTextHeightInDots(ui_context, *m_sp_major_font, *m_sp_minor_font, m_settings.text_margins) }, Units::Dots },
+                UnitRect{ { }, { 0u, GetTimingTextHeightInDots(ui_context, *m_major_font_ptr, *m_minor_font_ptr, m_settings.text_margins) }, Units::Dots },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Center },
                 m_settings.text_color
             }
         ),
-        std::make_shared<Text>(ui_context, *m_sp_minor_font,
+        std::make_shared<Text>(ui_context, *m_minor_font_ptr,
             Text::SettingsUtf8
             {
                 "GPU",
                 "Graphics Adapter",
-                UnitRect{ { }, { 0u, GetTextHeightInDots(ui_context, *m_sp_minor_font) - g_first_line_height_decrement }, Units::Dots },
+                UnitRect{ { }, { 0u, GetTextHeightInDots(ui_context, *m_minor_font_ptr) - g_first_line_height_decrement }, Units::Dots },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Top },
                 m_settings.text_color
             }
         ),
-        std::make_shared<Text>(ui_context, *m_sp_minor_font,
+        std::make_shared<Text>(ui_context, *m_minor_font_ptr,
             Text::SettingsUtf8
             {
                 "Help",
                 m_settings.help_shortcut ? m_settings.help_shortcut.ToString() + " - Help" : "",
-                UnitRect{ { }, { 0u, GetTextHeightInDots(ui_context, *m_sp_minor_font) - g_first_line_height_decrement }, Units::Dots },
+                UnitRect{ { }, { 0u, GetTextHeightInDots(ui_context, *m_minor_font_ptr) - g_first_line_height_decrement }, Units::Dots },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Top },
                 m_settings.help_color
             }
         ),
-        std::make_shared<Text>(ui_context, *m_sp_minor_font,
+        std::make_shared<Text>(ui_context, *m_minor_font_ptr,
             Text::SettingsUtf8
             {
                 "Frame Buffers",
                 "0000 x 0000   3 FB",
-                UnitRect{ { }, { 0u, GetTextHeightInDots(ui_context, *m_sp_minor_font) }, Units::Dots },
+                UnitRect{ { }, { 0u, GetTextHeightInDots(ui_context, *m_minor_font_ptr) }, Units::Dots },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Top },
                 m_settings.text_color
             }
         ),
-        std::make_shared<Text>(ui_context, *m_sp_minor_font,
+        std::make_shared<Text>(ui_context, *m_minor_font_ptr,
             Text::SettingsUtf8
             {
                 "VSync",
                 "VSync ON",
-                UnitRect{ { }, { 0u, GetTextHeightInDots(ui_context, *m_sp_minor_font) }, Units::Dots },
+                UnitRect{ { }, { 0u, GetTextHeightInDots(ui_context, *m_minor_font_ptr) }, Units::Dots },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Top },
                 m_settings.on_color
             }
@@ -172,9 +172,9 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
     META_FUNCTION_TASK();
 
     // Add HUD text blocks as children to the base panel container
-    for(const Ptr<Text>& sp_text : m_text_blocks)
+    for(const Ptr<Text>& text_ptr : m_text_blocks)
     {
-        AddChild(*sp_text);
+        AddChild(*text_ptr);
     }
 
     // Reset timer behind so that HUD is filled with actual values on first update
@@ -189,9 +189,9 @@ void HeadsUpDisplay::SetTextColor(const gfx::Color4f& text_color)
 
     m_settings.text_color = text_color;
 
-    for(const Ptr<Text>& sp_text : m_text_blocks)
+    for(const Ptr<Text>& text_ptr : m_text_blocks)
     {
-        sp_text->SetColor(text_color);
+        text_ptr->SetColor(text_color);
     }
 }
 
@@ -235,9 +235,9 @@ void HeadsUpDisplay::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::De
     META_FUNCTION_TASK();
     Panel::Draw(cmd_list, p_debug_group);
 
-    for(const Ptr<Text>& sp_text : m_text_blocks)
+    for(const Ptr<Text>& text_ptr : m_text_blocks)
     {
-        sp_text->Draw(cmd_list, p_debug_group);
+        text_ptr->Draw(cmd_list, p_debug_group);
     }
 }
 
@@ -295,9 +295,9 @@ void HeadsUpDisplay::LayoutTextBlocks()
 void HeadsUpDisplay::UpdateAllTextBlocks(const FrameSize& render_attachment_size)
 {
     META_FUNCTION_TASK();
-    for(const Ptr<Text>& sp_text : m_text_blocks)
+    for(const Ptr<Text>& text_ptr : m_text_blocks)
     {
-        sp_text->Update(render_attachment_size);
+        text_ptr->Update(render_attachment_size);
     }
 }
 

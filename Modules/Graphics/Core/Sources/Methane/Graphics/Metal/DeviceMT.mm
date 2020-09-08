@@ -103,14 +103,14 @@ void SystemMT::OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificat
     }
     else
     {
-        const Ptr<Device>& sp_device = FindMetalDevice(mtl_device);
-        if (!sp_device)
+        const Ptr<Device>& device_ptr = FindMetalDevice(mtl_device);
+        if (!device_ptr)
             throw std::logic_error("No device object found");
 
         if (device_notification == MTLDeviceRemovalRequestedNotification)
-            RequestRemoveDevice(*sp_device);
+            RequestRemoveDevice(*device_ptr);
         else if (device_notification == MTLDeviceWasRemovedNotification)
-            RemoveDevice(*sp_device);
+            RemoveDevice(*device_ptr);
     }
 }
 
@@ -129,16 +129,16 @@ const Ptr<Device>& SystemMT::FindMetalDevice(const id<MTLDevice>& mtl_device) co
     META_FUNCTION_TASK();
     const Ptrs<Device>& devices = GetGpuDevices();
     const auto device_it = std::find_if(devices.begin(), devices.end(),
-                                        [mtl_device](const Ptr<Device>& sp_device)
+                                        [mtl_device](const Ptr<Device>& device_ptr)
                                         {
-                                            assert(!!sp_device);
-                                            if (!sp_device) return false;
-                                            DeviceMT& metal_device = static_cast<DeviceMT&>(*sp_device);
+                                            assert(!!device_ptr);
+                                            if (!device_ptr) return false;
+                                            DeviceMT& metal_device = static_cast<DeviceMT&>(*device_ptr);
                                             return metal_device.GetNativeDevice() == mtl_device;
                                         });
     
-    static const Ptr<Device> s_sp_empty_device;
-    return device_it != devices.end() ? *device_it : s_sp_empty_device;
+    static const Ptr<Device> s_empty_device_ptr;
+    return device_it != devices.end() ? *device_it : s_empty_device_ptr;
 }
 
 } // namespace Methane::Graphics

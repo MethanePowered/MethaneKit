@@ -64,7 +64,7 @@ public:
 
     IContextDX&             GetContextDX() noexcept;
     ID3D12CommandQueue&     GetNativeCommandQueue() noexcept;
-    TimestampQueryBuffer*   GetTimestampQueryBuffer() noexcept { return m_sp_timestamp_query_buffer.get(); }
+    TimestampQueryBuffer*   GetTimestampQueryBuffer() noexcept { return m_timestamp_query_buffer_ptr.get(); }
 
 private:
     void WaitForExecution() noexcept;
@@ -76,8 +76,8 @@ private:
     std::condition_variable_any       m_execution_waiting_condition_var;
     std::atomic<bool>                 m_execution_waiting{ true };
     std::thread                       m_execution_waiting_thread;
-    std::exception_ptr                m_sp_execution_waiting_exception;
-    Ptr<TimestampQueryBuffer>         m_sp_timestamp_query_buffer;
+    std::exception_ptr                m_execution_waiting_exception_ptr;
+    Ptr<TimestampQueryBuffer>         m_timestamp_query_buffer_ptr;
 };
 
 } // namespace Methane::Graphics

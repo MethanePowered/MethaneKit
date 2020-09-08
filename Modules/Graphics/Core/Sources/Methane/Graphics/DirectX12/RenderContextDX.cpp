@@ -83,9 +83,9 @@ Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, De
 {
     META_FUNCTION_TASK();
     DeviceBase& device_base = static_cast<DeviceBase&>(device);
-    Ptr<RenderContextDX> sp_render_context = std::make_shared<RenderContextDX>(env, device_base, parallel_executor, settings);
-    sp_render_context->Initialize(device_base, true);
-    return sp_render_context;
+    Ptr<RenderContextDX> render_context_ptr = std::make_shared<RenderContextDX>(env, device_base, parallel_executor, settings);
+    render_context_ptr->Initialize(device_base, true);
+    return render_context_ptr;
 }
 
 RenderContextDX::RenderContextDX(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)

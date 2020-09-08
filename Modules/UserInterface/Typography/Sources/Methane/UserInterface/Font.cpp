@@ -315,7 +315,7 @@ void Font::Library::Clear()
 }
 
 Font::Library::Library()
-    : m_sp_impl(std::make_unique<Impl>())
+    : m_impl_ptr(std::make_unique<Impl>())
 {
     META_FUNCTION_TASK();
 }
@@ -376,11 +376,11 @@ std::u32string Font::GetAlphabetFromText(const std::u32string& utf32_text)
 
 Font::Font(const Data::Provider& data_provider, const Settings& settings)
     : m_settings(settings)
-    , m_sp_face(std::make_unique<Face>(data_provider.GetData(m_settings.description.path)))
+    , m_face_ptr(std::make_unique<Face>(data_provider.GetData(m_settings.description.path)))
 {
     META_FUNCTION_TASK();
 
-    m_sp_face->SetSize(m_settings.description.size_pt, m_settings.resolution_dpi);
+    m_face_ptr->SetSize(m_settings.description.size_pt, m_settings.resolution_dpi);
     AddChars(m_settings.characters);
 }
 
@@ -399,7 +399,7 @@ void Font::ResetChars(const std::string& utf8_characters)
 void Font::ResetChars(const std::u32string& utf32_characters)
 {
     META_FUNCTION_TASK();
-    m_sp_atlas_pack.reset();
+    m_atlas_pack_ptr.reset();
     m_char_by_code.clear();
     m_atlas_bitmap.clear();
 
@@ -407,7 +407,7 @@ void Font::ResetChars(const std::u32string& utf32_characters)
     {
         for(const auto& context_and_atlas_texture : m_atlas_textures)
         {
-            Emit(&IFontCallback::OnFontAtlasTextureReset, *this, context_and_atlas_texture.second.sp_texture, nullptr);
+            Emit(&IFontCallback::OnFontAtlasTextureReset, *this, context_and_atlas_texture.second.texture_ptr, nullptr);
         }
         m_atlas_textures.clear();
         return;
@@ -448,7 +448,7 @@ const Font::Char& Font::AddChar(Char::Code char_code)
         return font_char;
 
     // Load char glyph and add it to the font characters map
-    auto font_char_it = m_char_by_code.emplace(char_code, m_sp_face->LoadChar(char_code)).first;
+    auto font_char_it = m_char_by_code.emplace(char_code, m_face_ptr->LoadChar(char_code)).first;
     assert(font_char_it != m_char_by_code.end());
 
     Char& new_font_char = font_char_it->second;
@@ -456,10 +456,10 @@ const Font::Char& Font::AddChar(Char::Code char_code)
     m_max_glyph_size.height = std::max(m_max_glyph_size.height, new_font_char.GetRect().size.height);
 
     // Attempt to pack new char into existing atlas
-    if (m_sp_atlas_pack && m_sp_atlas_pack->TryPack(new_font_char))
+    if (m_atlas_pack_ptr && m_atlas_pack_ptr->TryPack(new_font_char))
     {
         // Draw char to existing atlas bitmap and update textures;
-        new_font_char.DrawToAtlas(m_atlas_bitmap, m_sp_atlas_pack->GetSize().width);
+        new_font_char.DrawToAtlas(m_atlas_bitmap, m_atlas_pack_ptr->GetSize().width);
         UpdateAtlasTextures(true);
         return new_font_char;
     }
@@ -522,21 +522,21 @@ Font::Chars Font::GetTextChars(const std::u32string& text)
 gfx::FramePoint Font::GetKerning(const Char& left_char, const Char& right_char) const
 {
     META_FUNCTION_TASK();
-    assert(!!m_sp_face);
-    return m_sp_face->GetKerning(left_char.GetGlyphIndex(), right_char.GetGlyphIndex());
+    assert(!!m_face_ptr);
+    return m_face_ptr->GetKerning(left_char.GetGlyphIndex(), right_char.GetGlyphIndex());
 }
 
 uint32_t Font::GetLineHeight() const noexcept
 {
     META_FUNCTION_TASK();
-    return m_sp_face->GetLineHeight();
+    return m_face_ptr->GetLineHeight();
 }
 
 const gfx::FrameSize& Font::GetAtlasSize() const noexcept
 {
     META_FUNCTION_TASK();
     static const gfx::FrameSize s_empty_size;
-    return m_sp_atlas_pack ? m_sp_atlas_pack->GetSize() : s_empty_size;
+    return m_atlas_pack_ptr ? m_atlas_pack_ptr->GetSize() : s_empty_size;
 }
 
 Refs<Font::Char> Font::GetMutableChars()
@@ -576,11 +576,11 @@ bool Font::PackCharsToAtlas(float pixels_reserve_multiplier)
 
     // Pack all character glyphs intro atlas size with doubling the size until all chars fit in
     gfx::FrameSize atlas_size(square_atlas_dimension, square_atlas_dimension);
-    m_sp_atlas_pack = std::make_unique<CharBinPack>(atlas_size);
-    while(!m_sp_atlas_pack->TryPack(font_chars))
+    m_atlas_pack_ptr = std::make_unique<CharBinPack>(atlas_size);
+    while(!m_atlas_pack_ptr->TryPack(font_chars))
     {
         atlas_size *= 2;
-        m_sp_atlas_pack = std::make_unique<CharBinPack>(atlas_size);
+        m_atlas_pack_ptr = std::make_unique<CharBinPack>(atlas_size);
     }
     return true;
 }
@@ -591,19 +591,19 @@ const Ptr<gfx::Texture>& Font::GetAtlasTexturePtr(gfx::Context& context)
     const auto atlas_texture_it = m_atlas_textures.find(&context);
     if (atlas_texture_it != m_atlas_textures.end())
     {
-        assert(!!atlas_texture_it->second.sp_texture);
-        return atlas_texture_it->second.sp_texture;
+        assert(!!atlas_texture_it->second.texture_ptr);
+        return atlas_texture_it->second.texture_ptr;
     }
 
-    static const Ptr<gfx::Texture> sp_empty_texture;
+    static const Ptr<gfx::Texture> empty_texture_ptr;
     if (m_char_by_code.empty())
-        return sp_empty_texture;
+        return empty_texture_ptr;
 
-    if (!m_sp_atlas_pack)
+    if (!m_atlas_pack_ptr)
     {
         // Reserve 20% of pixels for packing space loss and for adding new characters to atlas
         if (!PackCharsToAtlas(1.2f))
-            return sp_empty_texture;
+            return empty_texture_ptr;
     }
 
     // Add font as context callback to remove atlas texture when context is released
@@ -612,37 +612,37 @@ const Ptr<gfx::Texture>& Font::GetAtlasTexturePtr(gfx::Context& context)
     // Create atlas texture and render glyphs to it
     UpdateAtlasBitmap(true);
 
-    const Ptr<gfx::Texture>& sp_atlas_texture = m_atlas_textures.emplace(&context, CreateAtlasTexture(context, true)).first->second.sp_texture;
-    Emit(&IFontCallback::OnFontAtlasTextureReset, *this, nullptr, sp_atlas_texture);
+    const Ptr<gfx::Texture>& atlas_texture_ptr = m_atlas_textures.emplace(&context, CreateAtlasTexture(context, true)).first->second.texture_ptr;
+    Emit(&IFontCallback::OnFontAtlasTextureReset, *this, nullptr, atlas_texture_ptr);
 
-    return sp_atlas_texture;
+    return atlas_texture_ptr;
 }
 
 gfx::Texture& Font::GetAtlasTexture(gfx::Context& context)
 {
-    const Ptr<gfx::Texture>& sp_texture = GetAtlasTexturePtr(context);
-    if (!sp_texture)
+    const Ptr<gfx::Texture>& texture_ptr = GetAtlasTexturePtr(context);
+    if (!texture_ptr)
         throw std::runtime_error("Atlas texture is not available for context.");
     
-    return *sp_texture;
+    return *texture_ptr;
 }
 
 Font::AtlasTexture Font::CreateAtlasTexture(gfx::Context& context, bool deferred_data_init)
 {
     META_FUNCTION_TASK();
-    Ptr<gfx::Texture> sp_atlas_texture = gfx::Texture::CreateImage(context, gfx::Dimensions(m_sp_atlas_pack->GetSize()), 1, gfx::PixelFormat::R8Unorm, false);
-    sp_atlas_texture->SetName(m_settings.description.name + " Font Atlas");
+    Ptr<gfx::Texture> atlas_texture_ptr = gfx::Texture::CreateImage(context, gfx::Dimensions(m_atlas_pack_ptr->GetSize()), 1, gfx::PixelFormat::R8Unorm, false);
+    atlas_texture_ptr->SetName(m_settings.description.name + " Font Atlas");
     if (deferred_data_init)
     {
         context.RequestDeferredAction(gfx::Context::DeferredAction::CompleteInitialization);
     }
     else
     {
-        sp_atlas_texture->SetData({
+        atlas_texture_ptr->SetData({
             gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size()))
         });
     }
-    return { sp_atlas_texture, deferred_data_init };
+    return { atlas_texture_ptr, deferred_data_init };
 }
 
 void Font::RemoveAtlasTexture(gfx::Context& context)
@@ -655,10 +655,10 @@ void Font::RemoveAtlasTexture(gfx::Context& context)
 bool Font::UpdateAtlasBitmap(bool deferred_textures_update)
 {
     META_FUNCTION_TASK();
-    if (!m_sp_atlas_pack)
+    if (!m_atlas_pack_ptr)
         throw std::logic_error("Can not update atlas bitmap until atlas is packed.");
 
-    const gfx::FrameSize& atlas_size = m_sp_atlas_pack->GetSize();
+    const gfx::FrameSize& atlas_size = m_atlas_pack_ptr->GetSize();
     if (m_atlas_bitmap.size() == atlas_size.GetPixelsCount())
         return false;
 
@@ -679,7 +679,7 @@ bool Font::UpdateAtlasBitmap(bool deferred_textures_update)
 void Font::UpdateAtlasTextures(bool deferred_textures_update)
 {
     META_FUNCTION_TASK();
-    if (!m_sp_atlas_pack)
+    if (!m_atlas_pack_ptr)
         throw std::logic_error("Can not update atlas textures until atlas is packed and bitmap is up to date.");
 
     if (m_atlas_textures.empty())
@@ -707,22 +707,22 @@ void Font::UpdateAtlasTextures(bool deferred_textures_update)
 void Font::UpdateAtlasTexture(gfx::Context& context, AtlasTexture& atlas_texture)
 {
     META_FUNCTION_TASK();
-    if (!atlas_texture.sp_texture)
+    if (!atlas_texture.texture_ptr)
         throw std::invalid_argument("Atlas texture is not initialized.");
 
-    const gfx::FrameSize   atlas_size         = m_sp_atlas_pack->GetSize();
-    const gfx::Dimensions& texture_dimensions = atlas_texture.sp_texture->GetSettings().dimensions;
+    const gfx::FrameSize   atlas_size         = m_atlas_pack_ptr->GetSize();
+    const gfx::Dimensions& texture_dimensions = atlas_texture.texture_ptr->GetSettings().dimensions;
 
     if (texture_dimensions.width != atlas_size.width || texture_dimensions.height != atlas_size.height)
     {
-        const Ptr<gfx::Texture> sp_old_texture = atlas_texture.sp_texture;
-        atlas_texture.sp_texture = CreateAtlasTexture(context, false).sp_texture;
-        Emit(&IFontCallback::OnFontAtlasTextureReset, *this, sp_old_texture, atlas_texture.sp_texture);
+        const Ptr<gfx::Texture> old_texture_ptr = atlas_texture.texture_ptr;
+        atlas_texture.texture_ptr = CreateAtlasTexture(context, false).texture_ptr;
+        Emit(&IFontCallback::OnFontAtlasTextureReset, *this, old_texture_ptr, atlas_texture.texture_ptr);
     }
     else
     {
         // TODO: Update only a region of atlas texture containing character bitmap
-        atlas_texture.sp_texture->SetData({
+        atlas_texture.texture_ptr->SetData({
             gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size()))
         });
     }
@@ -739,7 +739,7 @@ void Font::ClearAtlasTextures()
             continue;
 
         context_and_texture.first->Disconnect(*this);
-        Emit(&IFontCallback::OnFontAtlasTextureReset, *this, context_and_texture.second.sp_texture, nullptr);
+        Emit(&IFontCallback::OnFontAtlasTextureReset, *this, context_and_texture.second.texture_ptr, nullptr);
     }
     m_atlas_textures.clear();
 }
@@ -784,7 +784,7 @@ Font::Char::Char(Code code)
     META_FUNCTION_TASK();
 }
 
-Font::Char::Char(Code code, gfx::FrameRect rect, gfx::Point2i offset, gfx::Point2i advance, UniquePtr<Glyph>&& sp_glyph)
+Font::Char::Char(Code code, gfx::FrameRect rect, gfx::Point2i offset, gfx::Point2i advance, UniquePtr<Glyph>&& glyph_ptr)
     : m_code(code)
     , m_type_mask(Type::Get(code))
     , m_rect(std::move(rect))
@@ -792,7 +792,7 @@ Font::Char::Char(Code code, gfx::FrameRect rect, gfx::Point2i offset, gfx::Point
     , m_advance(std::move(advance))
     , m_visual_size(IsWhiteSpace() ? m_advance.GetX() : m_offset.GetX() + m_rect.size.width,
                     IsWhiteSpace() ? m_advance.GetY() : m_offset.GetY() + m_rect.size.height)
-    , m_sp_glyph(std::move(sp_glyph))
+    , m_glyph_ptr(std::move(glyph_ptr))
 {
     META_FUNCTION_TASK();
 }
@@ -808,7 +808,7 @@ void Font::Char::DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_strid
     assert(m_rect.GetTop()  >= 0 && static_cast<uint32_t>(m_rect.GetBottom()) <= static_cast<uint32_t>(atlas_bitmap.size() / atlas_row_stride));
 
     // Draw glyph to bitmap
-    FT_Glyph ft_glyph = m_sp_glyph->GetFTGlyph();
+    FT_Glyph ft_glyph = m_glyph_ptr->GetFTGlyph();
     ThrowFreeTypeError(FT_Glyph_To_Bitmap(&ft_glyph, FT_RENDER_MODE_NORMAL, nullptr, false));
 
     FT_Bitmap& ft_bitmap = reinterpret_cast<FT_BitmapGlyph>(ft_glyph)->bitmap;
@@ -829,10 +829,10 @@ void Font::Char::DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_strid
 uint32_t Font::Char::GetGlyphIndex() const
 {
     META_FUNCTION_TASK();
-    if (!m_sp_glyph)
+    if (!m_glyph_ptr)
         throw std::logic_error("No glyph is available for character with code " + std::to_string(m_code));
 
-    return m_sp_glyph->GetFaceIndex();
+    return m_glyph_ptr->GetFaceIndex();
 }
 
 } // namespace Methane::Graphics

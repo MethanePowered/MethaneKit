@@ -38,9 +38,9 @@ Badge::Badge(Context& ui_context, Data::Provider& data_provider, const std::stri
 {
 }
 
-Badge::Badge(Context& ui_context, Ptr<gfx::Texture> sp_texture, Settings settings)
+Badge::Badge(Context& ui_context, Ptr<gfx::Texture> texture_ptr, Settings settings)
     : Item(ui_context, GetBadgeRectInFrame(ui_context, ui_context.GetFrameSizeInPixels(), settings))
-    , ScreenQuad(ui_context.GetRenderContext(), std::move(sp_texture),
+    , ScreenQuad(ui_context.GetRenderContext(), std::move(texture_ptr),
         ScreenQuad::Settings
         {
             settings.name,

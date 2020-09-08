@@ -68,10 +68,10 @@ void AppContextController::OnKeyboardStateAction(AppContextAction action)
 
         case AppContextAction::SwitchDevice:
         {
-            const Ptr<Device> sp_next_device = System::Get().GetNextGpuDevice(m_context.GetDevice());
-            if (sp_next_device)
+            const Ptr<Device> next_device_ptr = System::Get().GetNextGpuDevice(m_context.GetDevice());
+            if (next_device_ptr)
             {
-                m_context.Reset(*sp_next_device);
+                m_context.Reset(*next_device_ptr);
             }
         } break;
 

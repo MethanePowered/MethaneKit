@@ -36,13 +36,13 @@ void ControllersPool::OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonSt
     ITT_MARKER_ARG("Mouse-State", state_change.current.ToString());
     META_LOG(std::string("Mouse (button): ") + state_change.current.ToString());
 
-    for (const Ptr<Controller>& sp_controller : *this)
+    for (const Ptr<Controller>& controller_ptr : *this)
     {
-        assert(!!sp_controller);
-        if (!sp_controller || !sp_controller->IsEnabled())
+        assert(!!controller_ptr);
+        if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
         
-        sp_controller->OnMouseButtonChanged(button, button_state, state_change);
+        controller_ptr->OnMouseButtonChanged(button, button_state, state_change);
     }
 }
 
@@ -53,13 +53,13 @@ void ControllersPool::OnMousePositionChanged(const Mouse::Position& mouse_positi
     ITT_MARKER_ARG("Mouse-State", state_change.current.ToString());
     META_LOG(std::string("Mouse (position): ") + state_change.current.ToString());
 
-    for (const Ptr<Controller>& sp_controller : *this)
+    for (const Ptr<Controller>& controller_ptr : *this)
     {
-        assert(!!sp_controller);
-        if (!sp_controller || !sp_controller->IsEnabled())
+        assert(!!controller_ptr);
+        if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
 
-        sp_controller->OnMousePositionChanged(mouse_position, state_change);
+        controller_ptr->OnMousePositionChanged(mouse_position, state_change);
     }
 }
 
@@ -71,13 +71,13 @@ void ControllersPool::OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_del
     META_LOG(std::string("Mouse (scroll): ") + state_change.current.ToString() +
              ", scroll delta: " + std::to_string(mouse_scroll_delta.GetX()) + " x " + std::to_string(mouse_scroll_delta.GetY()));
 
-    for (const Ptr<Controller>& sp_controller : *this)
+    for (const Ptr<Controller>& controller_ptr : *this)
     {
-        assert(!!sp_controller);
-        if (!sp_controller || !sp_controller->IsEnabled())
+        assert(!!controller_ptr);
+        if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
 
-        sp_controller->OnMouseScrollChanged(mouse_scroll_delta, state_change);
+        controller_ptr->OnMouseScrollChanged(mouse_scroll_delta, state_change);
     }
 }
 
@@ -88,13 +88,13 @@ void ControllersPool::OnMouseInWindowChanged(bool is_mouse_in_window, const Mous
     ITT_MARKER_ARG("Mouse-State", state_change.current.ToString());
     META_LOG(std::string("Mouse (in-window): ") + state_change.current.ToString());
 
-    for (const Ptr<Controller>& sp_controller : *this)
+    for (const Ptr<Controller>& controller_ptr : *this)
     {
-        assert(!!sp_controller);
-        if (!sp_controller || !sp_controller->IsEnabled())
+        assert(!!controller_ptr);
+        if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
 
-        sp_controller->OnMouseInWindowChanged(is_mouse_in_window, state_change);
+        controller_ptr->OnMouseInWindowChanged(is_mouse_in_window, state_change);
     }
 }
 
@@ -105,13 +105,13 @@ void ControllersPool::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState ke
     ITT_MARKER_ARG("Keyboard-State", state_change.current.ToString());
     META_LOG(std::string("Keyboard (key): ") + state_change.current.ToString());
 
-    for (const Ptr<Controller>& sp_controller : *this)
+    for (const Ptr<Controller>& controller_ptr : *this)
     {
-        assert(!!sp_controller);
-        if (!sp_controller || !sp_controller->IsEnabled())
+        assert(!!controller_ptr);
+        if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
         
-        sp_controller->OnKeyboardChanged(key, key_state, state_change);
+        controller_ptr->OnKeyboardChanged(key, key_state, state_change);
     }
 }
 
@@ -122,13 +122,13 @@ void ControllersPool::OnModifiersChanged(Keyboard::Modifier::Mask modifiers, con
     ITT_MARKER_ARG("Keyboard-State", state_change.current.ToString());
     META_LOG(std::string("Keyboard (modifiers): ") + state_change.current.ToString());
 
-    for (const Ptr<Controller>& sp_controller : *this)
+    for (const Ptr<Controller>& controller_ptr : *this)
     {
-        assert(!!sp_controller);
-        if (!sp_controller || !sp_controller->IsEnabled())
+        assert(!!controller_ptr);
+        if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
         
-        sp_controller->OnModifiersChanged(modifiers, state_change);
+        controller_ptr->OnModifiersChanged(modifiers, state_change);
     }
 }
 
@@ -137,15 +137,15 @@ IHelpProvider::HelpLines ControllersPool::GetHelp() const
     META_FUNCTION_TASK();
 
     HelpLines all_help_lines;
-    for (const Ptr<Controller>& sp_controller : *this)
+    for (const Ptr<Controller>& controller_ptr : *this)
     {
-        assert(!!sp_controller);
-        if (!sp_controller || !sp_controller->IsEnabled())
+        assert(!!controller_ptr);
+        if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
 
-        const HelpLines help_lines = sp_controller->GetHelp();
+        const HelpLines help_lines = controller_ptr->GetHelp();
 
-        all_help_lines.push_back({ "", sp_controller->GetControllerName() });
+        all_help_lines.push_back({ "", controller_ptr->GetControllerName() });
         all_help_lines.insert(all_help_lines.end(), help_lines.begin(), help_lines.end());
     }
     return all_help_lines;

@@ -60,12 +60,12 @@ RenderCommandListVK::RenderCommandListVK(ParallelRenderCommandListBase& parallel
     META_FUNCTION_TASK();
 }
 
-void RenderCommandListVK::Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group)
+void RenderCommandListVK::Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 
     RenderCommandListBase::ResetCommandState();
-    RenderCommandListBase::Reset(sp_render_state, p_debug_group);
+    RenderCommandListBase::Reset(render_state_ptr, p_debug_group);
 }
 
 void RenderCommandListVK::SetName(const std::string& name)

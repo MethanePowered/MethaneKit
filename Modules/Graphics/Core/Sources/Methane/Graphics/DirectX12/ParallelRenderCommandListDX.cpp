@@ -64,7 +64,7 @@ ParallelRenderCommandListDX::ParallelRenderCommandListDX(CommandQueueBase& cmd_b
     GetPassDX().SetNativeRenderPassUsage(false);
 }
 
-void ParallelRenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group)
+void ParallelRenderCommandListDX::Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 
@@ -80,15 +80,15 @@ void ParallelRenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state,
         m_ending_command_list.PushOpenDebugGroup(*p_debug_group);
     }
 
-    if (sp_render_state)
+    if (render_state_ptr)
     {
         // Initialize native pipeline state before resetting per-thread command lists
         // to allow parallel reset of all CLs at once with using native pipeline state for each reset
-        RenderStateDX& dx_render_state = static_cast<RenderStateDX&>(*sp_render_state);
+        RenderStateDX& dx_render_state = static_cast<RenderStateDX&>(*render_state_ptr);
         dx_render_state.InitializeNativePipelineState();
     }
 
-    ParallelRenderCommandListBase::Reset(sp_render_state, p_debug_group);
+    ParallelRenderCommandListBase::Reset(render_state_ptr, p_debug_group);
 }
 
 void ParallelRenderCommandListDX::SetName(const std::string& name)
@@ -144,10 +144,10 @@ ParallelRenderCommandListDX::D3D12CommandLists ParallelRenderCommandListDX::GetN
     dx_command_lists.reserve(parallel_command_lists.size() + 2); // 2 command lists reserved for beginning and ending
     dx_command_lists.push_back(&m_beginning_command_list.GetNativeCommandList());
 
-    for (const Ptr<RenderCommandList>& sp_command_list : parallel_command_lists)
+    for (const Ptr<RenderCommandList>& command_list_ptr : parallel_command_lists)
     {
-        assert(!!sp_command_list);
-        RenderCommandListDX& dx_command_list = static_cast<RenderCommandListDX&>(*sp_command_list);
+        assert(!!command_list_ptr);
+        RenderCommandListDX& dx_command_list = static_cast<RenderCommandListDX&>(*command_list_ptr);
         dx_command_lists.push_back(&dx_command_list.GetNativeCommandList());
     }
 

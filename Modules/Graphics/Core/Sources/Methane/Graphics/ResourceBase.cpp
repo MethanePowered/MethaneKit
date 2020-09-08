@@ -241,11 +241,11 @@ ResourceBase::Barriers::operator std::string() const noexcept
     return ss.str();
 }
 
-Resource::Location::Location(Ptr<Resource> sp_resource, Data::Size offset)
-    : m_sp_resource(std::move(sp_resource))
+Resource::Location::Location(Ptr<Resource> resource_ptr, Data::Size offset)
+    : m_resource_ptr(std::move(resource_ptr))
     , m_offset(offset)
 {
-    if (!m_sp_resource)
+    if (!m_resource_ptr)
         throw std::invalid_argument("Can not create Resource Location for an empty resource.");
 }
 
@@ -310,8 +310,8 @@ Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, Data::Index in_index)
     
 bool Resource::Location::operator==(const Location& other) const noexcept
 {
-    return std::tie(m_sp_resource, m_offset) ==
-           std::tie(other.m_sp_resource, other.m_offset);
+    return std::tie(m_resource_ptr, m_offset) ==
+           std::tie(other.m_resource_ptr, other.m_offset);
 }
 
 Resource::SubResource::SubResource(SubResource&& other) noexcept

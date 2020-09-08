@@ -65,7 +65,7 @@ private:
     void InitAttachmentStates();
     void SetAttachmentStates(const std::optional<ResourceBase::State>& color_state,
                              const std::optional<ResourceBase::State>& depth_state,
-                             Ptr<ResourceBase::Barriers>& sp_transition_barriers,
+                             Ptr<ResourceBase::Barriers>& transition_barriers_ptr,
                              RenderCommandListBase& render_command_list);
 
     RenderContextBase&          m_render_context;
@@ -74,8 +74,8 @@ private:
     mutable Refs<TextureBase>   m_color_attachment_textures;
     mutable Ptrs<TextureBase>   m_non_frame_buffer_attachment_textures;
     mutable TextureBase*        m_p_depth_attachment_texture = nullptr;
-    Ptr<ResourceBase::Barriers> m_sp_begin_transition_barriers;
-    Ptr<ResourceBase::Barriers> m_sp_end_transition_barriers;
+    Ptr<ResourceBase::Barriers> m_begin_transition_barriers_ptr;
+    Ptr<ResourceBase::Barriers> m_end_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics

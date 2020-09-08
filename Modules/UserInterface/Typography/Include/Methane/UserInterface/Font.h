@@ -54,7 +54,7 @@ struct IFontLibraryCallback
 
 struct IFontCallback
 {
-    virtual void OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& sp_old_atlas_texture, const Ptr<gfx::Texture>& sp_new_atlas_texture) = 0;
+    virtual void OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& old_atlas_texture_ptr, const Ptr<gfx::Texture>& new_atlas_texture_ptr) = 0;
     virtual void OnFontAtlasUpdated(Font& font) = 0;
 
     virtual ~IFontCallback() = default;
@@ -98,14 +98,14 @@ public:
 
     protected:
         class Impl;
-        Impl& GetImpl() { return *m_sp_impl; }
+        Impl& GetImpl() { return *m_impl_ptr; }
 
     private:
         Library();
 
         using FontByName = std::map<std::string, Ptr<Font>>;
 
-        const UniquePtr<Impl> m_sp_impl;
+        const UniquePtr<Impl> m_impl_ptr;
         FontByName            m_font_by_name;
     };
 
@@ -136,7 +136,7 @@ public:
 
         Char() = default;
         Char(Code code);
-        Char(Code code, gfx::FrameRect rect, gfx::Point2i offset, gfx::Point2i advance, UniquePtr<Glyph>&& sp_glyph);
+        Char(Code code, gfx::FrameRect rect, gfx::Point2i offset, gfx::Point2i advance, UniquePtr<Glyph>&& glyph_ptr);
 
         Code                  GetCode() const noexcept        { return m_code; }
         bool                  IsLineBreak() const noexcept    { return m_type_mask & Type::LineBreak; }
@@ -160,7 +160,7 @@ public:
         gfx::Point2i     m_offset;
         gfx::Point2i     m_advance;
         gfx::FrameSize   m_visual_size;
-        UniquePtr<Glyph> m_sp_glyph;
+        UniquePtr<Glyph> m_glyph_ptr;
     };
 
     using Chars = Refs<const Char>;
@@ -209,7 +209,7 @@ protected:
 private:
     struct AtlasTexture
     {
-        Ptr<gfx::Texture> sp_texture;
+        Ptr<gfx::Texture> texture_ptr;
         bool              is_update_required = true;
     };
 
@@ -226,8 +226,8 @@ private:
     using CharByCode = std::map<Char::Code, Char>;
 
     Settings               m_settings;
-    UniquePtr<Face>        m_sp_face;
-    UniquePtr<CharBinPack> m_sp_atlas_pack;
+    UniquePtr<Face>        m_face_ptr;
+    UniquePtr<CharBinPack> m_atlas_pack_ptr;
     CharByCode             m_char_by_code;
     Data::Bytes            m_atlas_bitmap;
     TextureByContext       m_atlas_textures;

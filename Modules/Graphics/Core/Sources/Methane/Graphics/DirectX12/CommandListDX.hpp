@@ -72,11 +72,11 @@ public:
         TimestampQueryBuffer* p_query_buffer = GetCommandQueueDX().GetTimestampQueryBuffer();
         if (p_query_buffer)
         {
-            m_sp_begin_timestamp_query = p_query_buffer->CreateTimestampQuery(*this);
-            m_sp_end_timestamp_query   = p_query_buffer->CreateTimestampQuery(*this);
+            m_begin_timestamp_query_ptr = p_query_buffer->CreateTimestampQuery(*this);
+            m_end_timestamp_query_ptr   = p_query_buffer->CreateTimestampQuery(*this);
 
             // Insert beginning GPU timestamp query
-            m_sp_begin_timestamp_query->InsertTimestamp();
+            m_begin_timestamp_query_ptr->InsertTimestamp();
         }
 
         SetCommandListState(CommandList::State::Encoding);
@@ -109,14 +109,14 @@ public:
 
         // Insert ending GPU timestamp query
         // and resolve timestamps of beginning and ending queries
-        if (m_sp_end_timestamp_query)
+        if (m_end_timestamp_query_ptr)
         {
-            m_sp_end_timestamp_query->InsertTimestamp();
-            m_sp_end_timestamp_query->ResolveTimestamp();
+            m_end_timestamp_query_ptr->InsertTimestamp();
+            m_end_timestamp_query_ptr->ResolveTimestamp();
         }
-        if (m_sp_begin_timestamp_query)
+        if (m_begin_timestamp_query_ptr)
         {
-            m_sp_begin_timestamp_query->ResolveTimestamp();
+            m_begin_timestamp_query_ptr->ResolveTimestamp();
         }
 
         m_cp_command_list->Close();
@@ -153,8 +153,8 @@ public:
         ThrowIfFailed(m_cp_command_list->Reset(m_cp_command_allocator.Get(), nullptr), cp_device.Get());
 
         // Insert beginning GPU timestamp query
-        if (m_sp_begin_timestamp_query)
-            m_sp_begin_timestamp_query->InsertTimestamp();
+        if (m_begin_timestamp_query_ptr)
+            m_begin_timestamp_query_ptr->InsertTimestamp();
 
         CommandListBase::Reset(p_debug_group);
     }
@@ -163,28 +163,28 @@ public:
     {
         META_FUNCTION_TASK();
         CommandListBase::CommandState& command_state = CommandListBase::GetCommandState();
-        if (command_state.sp_program_bindings.get() == &program_bindings)
+        if (command_state.program_bindings_ptr.get() == &program_bindings)
             return;
 
         ProgramBindingsDX& program_bindings_dx = static_cast<ProgramBindingsDX&>(program_bindings);
         program_bindings_dx.Apply(*this, CommandListBase::GetProgramBindings().get(), apply_behavior);
 
-        Ptr<ObjectBase> sp_program_bindings_object = program_bindings_dx.GetBasePtr();
-        command_state.sp_program_bindings = std::static_pointer_cast<ProgramBindingsBase>(sp_program_bindings_object);
-        CommandListBase::RetainResource(std::move(sp_program_bindings_object));
+        Ptr<ObjectBase> program_bindings_object_ptr = program_bindings_dx.GetBasePtr();
+        command_state.program_bindings_ptr = std::static_pointer_cast<ProgramBindingsBase>(program_bindings_object_ptr);
+        CommandListBase::RetainResource(std::move(program_bindings_object_ptr));
     }
 
     Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const override
     {
         META_FUNCTION_TASK();
-        if (m_sp_begin_timestamp_query && m_sp_end_timestamp_query)
+        if (m_begin_timestamp_query_ptr && m_end_timestamp_query_ptr)
         {
             if (GetState() != CommandListBase::State::Pending)
                 throw std::logic_error("Can not get GPU time range of encoding, executing or not committed command list.");
 
             return in_cpu_nanoseconds
-                 ? Data::TimeRange(m_sp_begin_timestamp_query->GetCpuNanoseconds(), m_sp_end_timestamp_query->GetCpuNanoseconds())
-                 : Data::TimeRange(m_sp_begin_timestamp_query->GetGpuTimestamp(),   m_sp_end_timestamp_query->GetGpuTimestamp());
+                 ? Data::TimeRange(m_begin_timestamp_query_ptr->GetCpuNanoseconds(), m_end_timestamp_query_ptr->GetCpuNanoseconds())
+                 : Data::TimeRange(m_begin_timestamp_query_ptr->GetGpuTimestamp(),   m_end_timestamp_query_ptr->GetGpuTimestamp());
         }
         return CommandListBase::GetGpuTimeRange(in_cpu_nanoseconds);
     }
@@ -231,12 +231,12 @@ protected:
         return *m_cp_command_list.Get();
     }
 
-    TimestampQueryBuffer::TimestampQuery* GetBeginTimestampQuery() noexcept { return m_sp_begin_timestamp_query.get(); }
-    TimestampQueryBuffer::TimestampQuery* GetEndTimestampQuery() noexcept   { return m_sp_end_timestamp_query.get(); }
+    TimestampQueryBuffer::TimestampQuery* GetBeginTimestampQuery() noexcept { return m_begin_timestamp_query_ptr.get(); }
+    TimestampQueryBuffer::TimestampQuery* GetEndTimestampQuery() noexcept   { return m_end_timestamp_query_ptr.get(); }
 
 private:
-    Ptr<TimestampQueryBuffer::TimestampQuery> m_sp_begin_timestamp_query;
-    Ptr<TimestampQueryBuffer::TimestampQuery> m_sp_end_timestamp_query;
+    Ptr<TimestampQueryBuffer::TimestampQuery> m_begin_timestamp_query_ptr;
+    Ptr<TimestampQueryBuffer::TimestampQuery> m_end_timestamp_query_ptr;
     wrl::ComPtr<ID3D12CommandAllocator>       m_cp_command_allocator;
     wrl::ComPtr<ID3D12GraphicsCommandList>    m_cp_command_list;
     wrl::ComPtr<ID3D12GraphicsCommandList4>   m_cp_command_list_4;    // extended interface for the same command list (may be unavailable on older Windows)

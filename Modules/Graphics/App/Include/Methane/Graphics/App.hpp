@@ -56,16 +56,16 @@ namespace Methane::Graphics
 struct AppFrame
 {
     const uint32_t  index = 0;
-    Ptr<Texture>    sp_screen_texture;
-    Ptr<RenderPass> sp_screen_pass;
+    Ptr<Texture>    screen_texture_ptr;
+    Ptr<RenderPass> screen_pass_ptr;
 
     explicit AppFrame(uint32_t frame_index) : index(frame_index) { META_FUNCTION_TASK(); }
 
     // AppFrame interface
     virtual void ReleaseScreenPassAttachmentTextures()
     {
-        sp_screen_pass->ReleaseAttachmentTextures();
-        sp_screen_texture.reset();
+        screen_pass_ptr->ReleaseAttachmentTextures();
+        screen_texture_ptr.reset();
     }
 };
 
@@ -110,7 +110,7 @@ public:
     {
         // WARNING: Don't forget to make the following call in the derived Application class
         // Wait for GPU rendering is completed to release resources
-        // m_sp_context->WaitForGpu(RenderContext::WaitFor::RenderComplete);
+        // m_context_ptr->WaitForGpu(RenderContext::WaitFor::RenderComplete);
         META_FUNCTION_TASK();
     }
 
@@ -121,20 +121,20 @@ public:
         const Ptrs<Device>& devices = System::Get().UpdateGpuDevices();
         assert(!devices.empty());
 
-        Ptr<Device> sp_device = m_settings.default_device_index < 0
+        Ptr<Device> device_ptr = m_settings.default_device_index < 0
                       ? System::Get().GetSoftwareGpuDevice()
                       : (static_cast<size_t>(m_settings.default_device_index) < devices.size()
                            ? devices[m_settings.default_device_index]
                            : devices.front());
-        assert(sp_device);
+        assert(device_ptr);
         
         // Create render context of the current window size
         m_initial_context_settings.frame_size = frame_size;
-        m_sp_context = RenderContext::Create(env, *sp_device, GetParallelExecutor(), m_initial_context_settings);
-        m_sp_context->SetName("App Render Context");
-        m_sp_context->Connect(*this);
+        m_context_ptr = RenderContext::Create(env, *device_ptr, GetParallelExecutor(), m_initial_context_settings);
+        m_context_ptr->SetName("App Render Context");
+        m_context_ptr->Connect(*this);
 
-        AddInputControllers({ std::make_shared<AppContextController>(*m_sp_context) });
+        AddInputControllers({ std::make_shared<AppContextController>(*m_context_ptr) });
         
         SetFullScreen(m_initial_context_settings.is_full_screen);
     }
@@ -149,17 +149,17 @@ public:
             SetAnimationsEnabled(false);
         }
 
-        assert(m_sp_context);
-        const RenderContext::Settings& context_settings = m_sp_context->GetSettings();
+        assert(m_context_ptr);
+        const RenderContext::Settings& context_settings = m_context_ptr->GetSettings();
 
         // Create depth texture for FB rendering
         if (context_settings.depth_stencil_format != PixelFormat::Unknown)
         {
-            m_sp_depth_texture = Texture::CreateDepthStencilBuffer(*m_sp_context);
-            m_sp_depth_texture->SetName("Depth Texture");
+            m_depth_texture_ptr = Texture::CreateDepthStencilBuffer(*m_context_ptr);
+            m_depth_texture_ptr->SetName("Depth Texture");
         }
 
-        m_sp_view_state = ViewState::Create({
+        m_view_state_ptr = ViewState::Create({
             { GetFrameViewport(context_settings.frame_size)    },
             { GetFrameScissorRect(context_settings.frame_size) }
         });
@@ -170,15 +170,15 @@ public:
             FrameT frame(frame_index);
 
             // Create color texture for frame buffer
-            frame.sp_screen_texture = Texture::CreateFrameBuffer(*m_sp_context, frame.index);
-            frame.sp_screen_texture->SetName(IndexedName("Frame Buffer", frame.index));
+            frame.screen_texture_ptr = Texture::CreateFrameBuffer(*m_context_ptr, frame.index);
+            frame.screen_texture_ptr->SetName(IndexedName("Frame Buffer", frame.index));
 
             // Configure render pass: color, depth, stencil attachments and shader access
-            frame.sp_screen_pass = RenderPass::Create(*m_sp_context, {
+            frame.screen_pass_ptr = RenderPass::Create(*m_context_ptr, {
                 {
                     RenderPass::ColorAttachment(
                         {
-                            frame.sp_screen_texture, 0, 0, 0,
+                            frame.screen_texture_ptr, 0, 0, 0,
                             context_settings.clear_color.has_value()
                                 ? RenderPass::Attachment::LoadAction::Clear
                                 : RenderPass::Attachment::LoadAction::DontCare,
@@ -191,7 +191,7 @@ public:
                 },
                 RenderPass::DepthAttachment(
                     {
-                        m_sp_depth_texture, 0, 0, 0,
+                        m_depth_texture_ptr, 0, 0, 0,
                         context_settings.clear_depth_stencil.has_value()
                             ? RenderPass::Attachment::LoadAction::Clear
                             : RenderPass::Attachment::LoadAction::DontCare,
@@ -236,44 +236,44 @@ public:
         m_initial_context_settings.frame_size = frame_size;
 
         // Update viewports and scissor rects state
-        m_sp_view_state->SetViewports({ GetFrameViewport(frame_size) });
-        m_sp_view_state->SetScissorRects({ GetFrameScissorRect(frame_size) });
+        m_view_state_ptr->SetViewports({ GetFrameViewport(frame_size) });
+        m_view_state_ptr->SetScissorRects({ GetFrameScissorRect(frame_size) });
 
         // Save frame and depth textures restore information and delete obsolete resources
         std::vector<ResourceRestoreInfo> frame_restore_infos;
         frame_restore_infos.reserve(m_frames.size());
         for (FrameT& frame : m_frames)
         {
-            frame_restore_infos.emplace_back(frame.sp_screen_texture);
+            frame_restore_infos.emplace_back(frame.screen_texture_ptr);
             frame.ReleaseScreenPassAttachmentTextures();
         }
-        const ResourceRestoreInfo depth_restore_info(m_sp_depth_texture);
-        m_sp_depth_texture.reset();
+        const ResourceRestoreInfo depth_restore_info(m_depth_texture_ptr);
+        m_depth_texture_ptr.reset();
 
         // Resize render context
-        assert(m_sp_context);
-        m_sp_context->Resize(frame_size);
+        assert(m_context_ptr);
+        m_context_ptr->Resize(frame_size);
 
         // Restore depth texture with new size
         if (!depth_restore_info.descriptor_by_usage.empty())
         {
-            m_sp_depth_texture = Texture::CreateDepthStencilBuffer(*m_sp_context, depth_restore_info.descriptor_by_usage);
-            m_sp_depth_texture->SetName(depth_restore_info.name);
+            m_depth_texture_ptr = Texture::CreateDepthStencilBuffer(*m_context_ptr, depth_restore_info.descriptor_by_usage);
+            m_depth_texture_ptr->SetName(depth_restore_info.name);
         }
 
         // Restore frame buffers with new size and update textures in render pass settings
         for (FrameT& frame : m_frames)
         {
             ResourceRestoreInfo& frame_restore_info = frame_restore_infos[frame.index];
-            RenderPass::Settings pass_settings      = frame.sp_screen_pass->GetSettings();
+            RenderPass::Settings pass_settings      = frame.screen_pass_ptr->GetSettings();
 
-            frame.sp_screen_texture = Texture::CreateFrameBuffer(*m_sp_context, frame.index, frame_restore_info.descriptor_by_usage);
-            frame.sp_screen_texture->SetName(frame_restore_info.name);
+            frame.screen_texture_ptr = Texture::CreateFrameBuffer(*m_context_ptr, frame.index, frame_restore_info.descriptor_by_usage);
+            frame.screen_texture_ptr->SetName(frame_restore_info.name);
 
-            pass_settings.color_attachments[0].sp_texture = frame.sp_screen_texture;
-            pass_settings.depth_attachment.sp_texture     = m_sp_depth_texture;
+            pass_settings.color_attachments[0].texture_ptr = frame.screen_texture_ptr;
+            pass_settings.depth_attachment.texture_ptr     = m_depth_texture_ptr;
 
-            frame.sp_screen_pass->Update(pass_settings);
+            frame.screen_pass_ptr->Update(pass_settings);
         }
 
         return true;
@@ -311,16 +311,16 @@ public:
             return false;
         }
 
-        if (!m_sp_context)
+        if (!m_context_ptr)
         {
             throw std::runtime_error("RenderContext is not initialized before rendering.");
         }
 
-        if (!m_sp_context->ReadyToRender())
+        if (!m_context_ptr->ReadyToRender())
             return false;
 
         // Wait for previous frame rendering is completed and switch to next frame
-        m_sp_context->WaitForGpu(Context::WaitFor::FramePresented);
+        m_context_ptr->WaitForGpu(Context::WaitFor::FramePresented);
 
         return true;
     }
@@ -328,8 +328,8 @@ public:
     bool SetFullScreen(bool is_full_screen) override
     {
         META_FUNCTION_TASK();
-        if (m_sp_context)
-            m_sp_context->SetFullScreen(is_full_screen);
+        if (m_context_ptr)
+            m_context_ptr->SetFullScreen(is_full_screen);
         
         return Platform::App::SetFullScreen(is_full_screen);
     }
@@ -378,9 +378,9 @@ protected:
 
         ResourceRestoreInfo() = default;
         ResourceRestoreInfo(const ResourceRestoreInfo&) = default;
-        explicit ResourceRestoreInfo(const Ptr<Resource>& sp_resource)
-            : descriptor_by_usage(sp_resource ? sp_resource->GetDescriptorByUsage() : Resource::DescriptorByUsage())
-            , name(sp_resource ? sp_resource->GetName() : std::string())
+        explicit ResourceRestoreInfo(const Ptr<Resource>& resource_ptr)
+            : descriptor_by_usage(resource_ptr ? resource_ptr->GetDescriptorByUsage() : Resource::DescriptorByUsage())
+            , name(resource_ptr ? resource_ptr->GetName() : std::string())
         { }
     };
 
@@ -392,12 +392,12 @@ protected:
             return;
         }
 
-        assert(m_sp_context);
-        if (!m_sp_context)
+        assert(m_context_ptr);
+        if (!m_context_ptr)
             return;
 
-        const RenderContext::Settings& context_settings      = m_sp_context->GetSettings();
-        const FpsCounter&              fps_counter           = m_sp_context->GetFpsCounter();
+        const RenderContext::Settings& context_settings      = m_context_ptr->GetSettings();
+        const FpsCounter&              fps_counter           = m_context_ptr->GetFpsCounter();
         const uint32_t                 average_fps           = fps_counter.GetFramesPerSecond();
         const FpsCounter::FrameTiming  average_frame_timing  = fps_counter.GetAverageFrameTiming();
 
@@ -410,7 +410,7 @@ protected:
                  << "  |  "       << context_settings.frame_size.width << " x " << context_settings.frame_size.height
                  << "  |  "       << std::to_string(context_settings.frame_buffers_count) << " FB"
                  << "  |  VSync " << (context_settings.vsync_enabled ? "ON" : "OFF")
-                 << "  |  "       << m_sp_context->GetDevice().GetAdapterName()
+                 << "  |  "       << m_context_ptr->GetDevice().GetAdapterName()
                  << "  |  F1 - help";
 
         SetWindowTitle(title_ss.str());
@@ -418,7 +418,7 @@ protected:
 
     void CompleteInitialization()
     {
-        m_sp_context->CompleteInitialization();
+        m_context_ptr->CompleteInitialization();
     }
 
     // Platform::AppBase interface
@@ -426,7 +426,7 @@ protected:
     Platform::AppView GetView() const override
     {
         META_FUNCTION_TASK();
-        return m_sp_context->GetAppView();
+        return m_context_ptr->GetAppView();
     }
 
     // IContextCallback implementation
@@ -438,8 +438,8 @@ protected:
         SetAnimationsEnabled(false);
 
         m_frames.clear();
-        m_sp_depth_texture.reset();
-        m_sp_view_state.reset();
+        m_depth_texture_ptr.reset();
+        m_view_state_ptr.reset();
 
         Deinitialize();
     }
@@ -456,19 +456,19 @@ protected:
     inline FrameT& GetCurrentFrame()
     {
         META_FUNCTION_TASK();
-        const uint32_t frame_index = m_sp_context->GetFrameBufferIndex();
+        const uint32_t frame_index = m_context_ptr->GetFrameBufferIndex();
         assert(frame_index < m_frames.size());
         return m_frames[frame_index];
     }
 
     const RenderContext::Settings& GetInitialContextSettings() const { return m_initial_context_settings; }
-    bool IsRenderContextInitialized()                                { return !!m_sp_context; }
-    const Ptr<RenderContext>& GetRenderContextPtr() const noexcept   { return m_sp_context; }
-    RenderContext& GetRenderContext() const noexcept                 { return *m_sp_context; }
-    const Ptr<ViewState>& GetViewStatePtr() const noexcept           { return m_sp_view_state; }
-    ViewState& GetViewState() noexcept                               { return *m_sp_view_state; }
+    bool IsRenderContextInitialized()                                { return !!m_context_ptr; }
+    const Ptr<RenderContext>& GetRenderContextPtr() const noexcept   { return m_context_ptr; }
+    RenderContext& GetRenderContext() const noexcept                 { return *m_context_ptr; }
+    const Ptr<ViewState>& GetViewStatePtr() const noexcept           { return m_view_state_ptr; }
+    ViewState& GetViewState() noexcept                               { return *m_view_state_ptr; }
 
-    FrameSize GetFrameSizeInDots() const noexcept { return m_sp_context->GetSettings().frame_size / m_sp_context->GetContentScalingFactor(); }
+    FrameSize GetFrameSizeInDots() const noexcept { return m_context_ptr->GetSettings().frame_size / m_context_ptr->GetContentScalingFactor(); }
 
     static std::string IndexedName(const std::string& base_name, uint32_t index)
     {
@@ -481,7 +481,7 @@ protected:
     ImageLoader&          GetImageLoader() noexcept             { return m_image_loader; }
     Data::AnimationsPool& GetAnimations() noexcept              { return m_animations; }
     std::vector<FrameT>&  GetFrames() noexcept                  { return m_frames; }
-    const Ptr<Texture>&   GetDepthTexturePtr() const noexcept   { return m_sp_depth_texture; }
+    const Ptr<Texture>&   GetDepthTexturePtr() const noexcept   { return m_depth_texture_ptr; }
 
 private:
     Graphics::IApp::Settings m_settings;
@@ -490,9 +490,9 @@ private:
     bool                     m_restore_animations_enabled = true;
     ImageLoader              m_image_loader;
     Data::AnimationsPool     m_animations;
-    Ptr<RenderContext>       m_sp_context;
-    Ptr<Texture>             m_sp_depth_texture;
-    Ptr<ViewState>           m_sp_view_state;
+    Ptr<RenderContext>       m_context_ptr;
+    Ptr<Texture>             m_depth_texture_ptr;
+    Ptr<ViewState>           m_view_state_ptr;
     std::vector<FrameT>      m_frames;
 
     static constexpr double  g_title_update_interval_sec = 1.0;

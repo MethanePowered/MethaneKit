@@ -223,17 +223,17 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
             &error_blob
         ), error_blob);
 
-        m_sp_byte_code_chunk = std::make_unique<Data::Chunk>(static_cast<Data::ConstRawPtr>(m_cp_byte_code->GetBufferPointer()),
+        m_byte_code_chunk_ptr = std::make_unique<Data::Chunk>(static_cast<Data::ConstRawPtr>(m_cp_byte_code->GetBufferPointer()),
                                                              static_cast<Data::Size>(m_cp_byte_code->GetBufferSize()));
     }
     else
     {
         const std::string compiled_func_name = GetCompiledEntryFunctionName();
-        m_sp_byte_code_chunk = std::make_unique<Data::Chunk>(settings.data_provider.GetData(compiled_func_name + ".obj"));
+        m_byte_code_chunk_ptr = std::make_unique<Data::Chunk>(settings.data_provider.GetData(compiled_func_name + ".obj"));
     }
 
-    assert(!!m_sp_byte_code_chunk);
-    ThrowIfFailed(D3DReflect(m_sp_byte_code_chunk->p_data, m_sp_byte_code_chunk->size, IID_PPV_ARGS(&m_cp_reflection)));
+    assert(!!m_byte_code_chunk_ptr);
+    ThrowIfFailed(D3DReflect(m_byte_code_chunk_ptr->p_data, m_byte_code_chunk_ptr->size, IID_PPV_ARGS(&m_cp_reflection)));
 }
 
 ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const

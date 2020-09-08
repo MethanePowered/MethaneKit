@@ -80,7 +80,7 @@ private:
     dispatch_source_t            m_display_source;
 
 #ifdef TRACY_GPU_PRESENT_INSTRUMENTATION_ENABLED
-    std::unique_ptr<Methane::Tracy::GpuContext> m_sp_gpu_context;
+    std::unique_ptr<Methane::Tracy::GpuContext> m_gpu_context_ptr;
     DrawablePresentScopeSet                     m_present_scopes;
     std::mutex                                  m_present_scopes_mutex;
 #endif
@@ -162,7 +162,7 @@ private:
     META_FUNCTION_TASK();
 
 #ifdef TRACY_GPU_PRESENT_INSTRUMENTATION_ENABLED
-    m_sp_gpu_context = std::make_unique<Methane::Tracy::GpuContext>(
+    m_gpu_context_ptr = std::make_unique<Methane::Tracy::GpuContext>(
         Methane::Tracy::GpuContext::Settings(
             Methane::Data::ConvertTimeSecondsToNanoseconds(CACurrentMediaTime())
         )
@@ -290,7 +290,7 @@ static CVReturn DispatchRenderLoop(CVDisplayLinkRef /*display_link*/,
         return m_current_drawable;
 
 #ifdef TRACY_GPU_PRESENT_INSTRUMENTATION_ENABLED
-    TRACY_GPU_SCOPE_TYPE gpu_scope(TRACY_GPU_SCOPE_INIT(*m_sp_gpu_context));
+    TRACY_GPU_SCOPE_TYPE gpu_scope(TRACY_GPU_SCOPE_INIT(*m_gpu_context_ptr));
     TRACY_GPU_SCOPE_BEGIN(gpu_scope, "Request/Present Metal Drawable");
     m_current_drawable = [self.metalLayer nextDrawable];
     TRACY_GPU_SCOPE_END(gpu_scope);

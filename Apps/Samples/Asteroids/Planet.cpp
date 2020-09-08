@@ -48,7 +48,7 @@ Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, cons
     const gfx::RenderContext::Settings& context_settings = context.GetSettings();
 
     gfx::RenderState::Settings state_settings;
-    state_settings.sp_program = gfx::Program::Create(context,
+    state_settings.program_ptr = gfx::Program::Create(context,
         gfx::Program::Settings
         {
             gfx::Program::Shaders
@@ -74,36 +74,36 @@ Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, cons
             context_settings.depth_stencil_format
         }
     );
-    state_settings.sp_program->SetName("Planet Shaders");
+    state_settings.program_ptr->SetName("Planet Shaders");
     state_settings.depth.enabled = true;
     state_settings.depth.compare = m_settings.depth_reversed ? gfx::Compare::GreaterEqual : gfx::Compare::Less;
-    m_sp_render_state = gfx::RenderState::Create(context, state_settings);
-    m_sp_render_state->SetName("Planet Render State");
+    m_render_state_ptr = gfx::RenderState::Create(context, state_settings);
+    m_render_state_ptr->SetName("Planet Render State");
     
     m_mesh_buffers.SetTexture(image_loader.LoadImageToTexture2D(m_context, m_settings.texture_path, m_settings.image_options));
 
-    m_sp_texture_sampler = gfx::Sampler::Create(context, {
+    m_texture_sampler_ptr = gfx::Sampler::Create(context, {
         { gfx::Sampler::Filter::MinMag::Linear     },
         { gfx::Sampler::Address::Mode::ClampToEdge },
         gfx::Sampler::LevelOfDetail(m_settings.lod_bias)
     });
-    m_sp_texture_sampler->SetName("Planet Texture Sampler");
+    m_texture_sampler_ptr->SetName("Planet Texture Sampler");
 
     // Initialize default uniforms to be ready to render right away
     Update(0.0, 0.0);
 }
 
-Ptr<gfx::ProgramBindings> Planet::CreateProgramBindings(const Ptr<gfx::Buffer>& sp_constants_buffer, const Ptr<gfx::Buffer>& sp_uniforms_buffer)
+Ptr<gfx::ProgramBindings> Planet::CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr, const Ptr<gfx::Buffer>& uniforms_buffer_ptr)
 {
     META_FUNCTION_TASK();
 
-    assert(!!m_sp_render_state);
-    assert(!!m_sp_render_state->GetSettings().sp_program);
-    return gfx::ProgramBindings::Create(m_sp_render_state->GetSettings().sp_program, {
-        { { gfx::Shader::Type::All,   "g_uniforms"  }, { { sp_uniforms_buffer             } } },
-        { { gfx::Shader::Type::Pixel, "g_constants" }, { { sp_constants_buffer            } } },
+    assert(!!m_render_state_ptr);
+    assert(!!m_render_state_ptr->GetSettings().program_ptr);
+    return gfx::ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
+        { { gfx::Shader::Type::All,   "g_uniforms"  }, { { uniforms_buffer_ptr             } } },
+        { { gfx::Shader::Type::Pixel, "g_constants" }, { { constants_buffer_ptr            } } },
         { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_mesh_buffers.GetTexturePtr() } } },
-        { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler           } } },
+        { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_texture_sampler_ptr           } } },
     });
 }
 
@@ -131,11 +131,11 @@ void Planet::Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buf
     META_FUNCTION_TASK();
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Planet rendering");
 
-    assert(!!buffer_bindings.sp_uniforms_buffer);
-    assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= sizeof(Uniforms));
-    buffer_bindings.sp_uniforms_buffer->SetData(m_mesh_buffers.GetFinalPassUniformsSubresources());
+    assert(!!buffer_bindings.uniforms_buffer_ptr);
+    assert(buffer_bindings.uniforms_buffer_ptr->GetDataSize() >= sizeof(Uniforms));
+    buffer_bindings.uniforms_buffer_ptr->SetData(m_mesh_buffers.GetFinalPassUniformsSubresources());
 
-    cmd_list.Reset(m_sp_render_state, s_debug_group.get());
+    cmd_list.Reset(m_render_state_ptr, s_debug_group.get());
     cmd_list.SetViewState(view_state);
     
     assert(!buffer_bindings.program_bindings_per_instance.empty());

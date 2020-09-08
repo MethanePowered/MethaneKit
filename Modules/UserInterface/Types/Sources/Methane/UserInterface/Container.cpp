@@ -39,7 +39,7 @@ bool Container::AddChild(Item& item)
 {
     META_FUNCTION_TASK();
     const auto child_it = std::find_if(m_children.begin(), m_children.end(),
-        [&item](const Ptr<Item>& sp_item) { return sp_item.get() == std::addressof(item); }
+        [&item](const Ptr<Item>& item_ptr) { return item_ptr.get() == std::addressof(item); }
     );
     if (child_it != m_children.end())
         return false;
@@ -53,7 +53,7 @@ bool Container::RemoveChild(Item& item)
 {
     META_FUNCTION_TASK();
     const auto child_it = std::find_if(m_children.begin(), m_children.end(),
-        [&item](const Ptr<Item>& sp_item) { return sp_item.get() == std::addressof(item); }
+        [&item](const Ptr<Item>& item_ptr) { return item_ptr.get() == std::addressof(item); }
     );
     if (child_it == m_children.end())
         return false;
@@ -70,10 +70,10 @@ bool Container::SetRect(const UnitRect& ui_rect)
         return false;
 
     const UnitPoint& panel_origin_px = GetRectInPixels().GetUnitOrigin();
-    for (const Ptr<Item>& sp_child_item : GetChildren())
+    for (const Ptr<Item>& child_item_ptr : GetChildren())
     {
-        assert(sp_child_item);
-        sp_child_item->SetOrigin(panel_origin_px + sp_child_item->GetRelOriginInPixels());
+        assert(child_item_ptr);
+        child_item_ptr->SetOrigin(panel_origin_px + child_item_ptr->GetRelOriginInPixels());
     }
 
     return true;

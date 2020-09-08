@@ -59,7 +59,7 @@ public:
     };
 
     Badge(Context& ui_context, Data::Provider& data_provider, const std::string& image_path, Settings settings);
-    Badge(Context& ui_context, Ptr<gfx::Texture> sp_texture, Settings settings);
+    Badge(Context& ui_context, Ptr<gfx::Texture> texture_ptr, Settings settings);
 
     void FrameResize(const UnitSize& frame_size, std::optional<UnitSize> badge_size = {}, std::optional<UnitPoint> margins = {});
     void SetCorner(FrameCorner frame_corner);

@@ -100,12 +100,12 @@ public:
     AsteroidsArray(gfx::RenderContext& context, Settings settings, ContentState& state);
 
     const Settings& GetSettings() const         { return m_settings; }
-    const Ptr<ContentState>& GetState() const   { return m_sp_content_state; }
+    const Ptr<ContentState>& GetState() const   { return m_content_state_ptr; }
     using BaseBuffers::GetUniformsBufferSize;
 
-    Ptrs<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& sp_constants_buffer,
-                                                      const Ptr<gfx::Buffer>& sp_scene_uniforms_buffer,
-                                                      const Ptr<gfx::Buffer>& sp_asteroids_uniforms_buffer);
+    Ptrs<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr,
+                                                      const Ptr<gfx::Buffer>& scene_uniforms_buffer_ptr,
+                                                      const Ptr<gfx::Buffer>& asteroids_uniforms_buffer_ptr);
 
     bool Update(double elapsed_seconds, double delta_seconds);
     void Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
@@ -125,10 +125,10 @@ private:
     using MeshSubsetByInstanceIndex = std::vector<uint32_t>;
 
     const Settings            m_settings;
-    Ptr<ContentState>         m_sp_content_state;
+    Ptr<ContentState>         m_content_state_ptr;
     Textures                  m_unique_textures;
-    Ptr<gfx::Sampler>         m_sp_texture_sampler;
-    Ptr<gfx::RenderState>     m_sp_render_state;
+    Ptr<gfx::Sampler>         m_texture_sampler_ptr;
+    Ptr<gfx::RenderState>     m_render_state_ptr;
     MeshSubsetByInstanceIndex m_mesh_subset_by_instance_index;
     bool  m_mesh_lod_coloring_enabled = false;
     float m_min_mesh_lod_screen_size_log_2;

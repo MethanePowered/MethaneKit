@@ -55,14 +55,14 @@ void CommandQueueBase::Execute(CommandListSet& command_lists, const CommandList:
 Tracy::GpuContext& CommandQueueBase::GetTracyContext() noexcept
 {
     META_FUNCTION_TASK();
-    assert(m_sp_tracy_gpu_context);
-    return *m_sp_tracy_gpu_context;
+    assert(m_tracy_gpu_context_ptr);
+    return *m_tracy_gpu_context_ptr;
 }
 
 void CommandQueueBase::InitializeTracyGpuContext(const Tracy::GpuContext::Settings& tracy_settings)
 {
     META_FUNCTION_TASK();
-    m_sp_tracy_gpu_context = std::make_unique<Tracy::GpuContext>(tracy_settings);
+    m_tracy_gpu_context_ptr = std::make_unique<Tracy::GpuContext>(tracy_settings);
 }
 
 uint32_t CommandQueueBase::GetCurrentFrameBufferIndex() const

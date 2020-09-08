@@ -85,7 +85,7 @@ void TexturedCubeApp::Init()
 
     // Create render state with program
     gfx::RenderState::Settings state_settings;
-    state_settings.sp_program = gfx::Program::Create(GetRenderContext(),
+    state_settings.program_ptr = gfx::Program::Create(GetRenderContext(),
         gfx::Program::Settings
         {
             gfx::Program::Shaders
@@ -114,19 +114,19 @@ void TexturedCubeApp::Init()
             context_settings.depth_stencil_format
         }
     );
-    state_settings.sp_program->SetName("Textured Phong Lighting");
+    state_settings.program_ptr->SetName("Textured Phong Lighting");
     state_settings.depth.enabled = true;
-    m_sp_render_state = gfx::RenderState::Create(GetRenderContext(), state_settings);
-    m_sp_render_state->SetName("Final FB Render Pipeline State");
+    m_render_state_ptr = gfx::RenderState::Create(GetRenderContext(), state_settings);
+    m_render_state_ptr->SetName("Final FB Render Pipeline State");
 
     // Load texture image from file
     const gfx::ImageLoader::Options::Mask image_options = gfx::ImageLoader::Options::Mipmapped
                                                         | gfx::ImageLoader::Options::SrgbColorSpace;
-    m_sp_cube_texture = GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "Textures/MethaneBubbles.jpg", image_options);
-    m_sp_cube_texture->SetName("Cube Texture 2D Image");
+    m_cube_texture_ptr = GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "Textures/MethaneBubbles.jpg", image_options);
+    m_cube_texture_ptr->SetName("Cube Texture 2D Image");
 
     // Create sampler for image texture
-    m_sp_texture_sampler = gfx::Sampler::Create(GetRenderContext(),
+    m_texture_sampler_ptr = gfx::Sampler::Create(GetRenderContext(),
         gfx::Sampler::Settings
         {
             gfx::Sampler::Filter  { gfx::Sampler::Filter::MinMag::Linear },
@@ -140,41 +140,41 @@ void TexturedCubeApp::Init()
     // Create vertex buffer for cube mesh
     const Data::Size vertex_data_size = static_cast<Data::Size>(cube_mesh.GetVertexDataSize());
     const Data::Size vertex_size      = static_cast<Data::Size>(cube_mesh.GetVertexSize());
-    Ptr<gfx::Buffer> sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), vertex_data_size, vertex_size);
-    sp_vertex_buffer->SetName("Cube Vertex Buffer");
-    sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } });
-    m_sp_vertex_buffer_set = gfx::BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
+    Ptr<gfx::Buffer> vertex_buffer_ptr = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), vertex_data_size, vertex_size);
+    vertex_buffer_ptr->SetName("Cube Vertex Buffer");
+    vertex_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } });
+    m_vertex_buffer_set_ptr = gfx::BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
     // Create index buffer for cube mesh
     const Data::Size index_data_size = static_cast<Data::Size>(cube_mesh.GetIndexDataSize());
-    m_sp_index_buffer  = gfx::Buffer::CreateIndexBuffer(GetRenderContext(), index_data_size, gfx::GetIndexFormat(cube_mesh.GetIndex(0)));
-    m_sp_index_buffer->SetName("Cube Index Buffer");
-    m_sp_index_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()), index_data_size } });
+    m_index_buffer_ptr  = gfx::Buffer::CreateIndexBuffer(GetRenderContext(), index_data_size, gfx::GetIndexFormat(cube_mesh.GetIndex(0)));
+    m_index_buffer_ptr->SetName("Cube Index Buffer");
+    m_index_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()), index_data_size } });
 
     // Create constants buffer for frame rendering
-    m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), constants_data_size);
-    m_sp_const_buffer->SetName("Constants Buffer");
-    m_sp_const_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), sizeof(m_shader_constants) } });
+    m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), constants_data_size);
+    m_const_buffer_ptr->SetName("Constants Buffer");
+    m_const_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), sizeof(m_shader_constants) } });
 
     // Create frame buffer data
     for(TexturedCubeFrame& frame : GetFrames())
     {
         // Create uniforms buffer with volatile parameters for frame rendering
-        frame.sp_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(GetRenderContext(), uniforms_data_size);
-        frame.sp_uniforms_buffer->SetName(IndexedName("Uniforms Buffer", frame.index));
+        frame.uniforms_buffer_ptr = gfx::Buffer::CreateVolatileBuffer(GetRenderContext(), uniforms_data_size);
+        frame.uniforms_buffer_ptr->SetName(IndexedName("Uniforms Buffer", frame.index));
 
         // Configure program resource bindings
-        frame.sp_program_bindings = gfx::ProgramBindings::Create(state_settings.sp_program, {
-            { { gfx::Shader::Type::All,   "g_uniforms"  }, { { frame.sp_uniforms_buffer } } },
-            { { gfx::Shader::Type::Pixel, "g_constants" }, { { m_sp_const_buffer        } } },
-            { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_sp_cube_texture        } } },
-            { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_sp_texture_sampler     } } },
+        frame.program_bindings_ptr = gfx::ProgramBindings::Create(state_settings.program_ptr, {
+            { { gfx::Shader::Type::All,   "g_uniforms"  }, { { frame.uniforms_buffer_ptr } } },
+            { { gfx::Shader::Type::Pixel, "g_constants" }, { { m_const_buffer_ptr        } } },
+            { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_cube_texture_ptr        } } },
+            { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_texture_sampler_ptr     } } },
         });
         
         // Create command list for rendering
-        frame.sp_render_cmd_list = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.sp_screen_pass);
-        frame.sp_render_cmd_list->SetName(IndexedName("Cube Rendering", frame.index));
-        frame.sp_execute_cmd_list_set = gfx::CommandListSet::Create({ *frame.sp_render_cmd_list });
+        frame.render_cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.screen_pass_ptr);
+        frame.render_cmd_list_ptr->SetName(IndexedName("Cube Rendering", frame.index));
+        frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({ *frame.render_cmd_list_ptr });
     }
 
     UserInterfaceApp::CompleteInitialization();
@@ -226,23 +226,23 @@ bool TexturedCubeApp::Render()
 
     // Update uniforms buffer related to current frame
     TexturedCubeFrame& frame = GetCurrentFrame();
-    frame.sp_uniforms_buffer->SetData(m_shader_uniforms_subresources);
+    frame.uniforms_buffer_ptr->SetData(m_shader_uniforms_subresources);
 
     // Issue commands for cube rendering
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Cube Rendering");
-    frame.sp_render_cmd_list->Reset(m_sp_render_state, s_debug_group.get());
-    frame.sp_render_cmd_list->SetViewState(GetViewState());
-    frame.sp_render_cmd_list->SetProgramBindings(*frame.sp_program_bindings);
-    frame.sp_render_cmd_list->SetVertexBuffers(*m_sp_vertex_buffer_set);
-    frame.sp_render_cmd_list->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_sp_index_buffer);
+    frame.render_cmd_list_ptr->Reset(m_render_state_ptr, s_debug_group.get());
+    frame.render_cmd_list_ptr->SetViewState(GetViewState());
+    frame.render_cmd_list_ptr->SetProgramBindings(*frame.program_bindings_ptr);
+    frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
+    frame.render_cmd_list_ptr->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_index_buffer_ptr);
 
-    RenderOverlay(*frame.sp_render_cmd_list);
+    RenderOverlay(*frame.render_cmd_list_ptr);
 
     // Commit command list with present flag
-    frame.sp_render_cmd_list->Commit();
+    frame.render_cmd_list_ptr->Commit();
 
     // Execute command list on render queue and present frame to screen
-    GetRenderContext().GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_list_set);
+    GetRenderContext().GetRenderCommandQueue().Execute(*frame.execute_cmd_list_set_ptr);
     GetRenderContext().Present();
 
     return true;
@@ -250,12 +250,12 @@ bool TexturedCubeApp::Render()
 
 void TexturedCubeApp::OnContextReleased(gfx::Context& context)
 {
-    m_sp_texture_sampler.reset();
-    m_sp_cube_texture.reset();
-    m_sp_const_buffer.reset();
-    m_sp_index_buffer.reset();
-    m_sp_vertex_buffer_set.reset();
-    m_sp_render_state.reset();
+    m_texture_sampler_ptr.reset();
+    m_cube_texture_ptr.reset();
+    m_const_buffer_ptr.reset();
+    m_index_buffer_ptr.reset();
+    m_vertex_buffer_set_ptr.reset();
+    m_render_state_ptr.reset();
 
     UserInterfaceApp::OnContextReleased(context);
 }

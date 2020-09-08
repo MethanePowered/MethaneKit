@@ -60,12 +60,12 @@ public:
     };
 
     ScreenQuad(RenderContext& context, Settings settings);
-    ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings settings);
+    ScreenQuad(RenderContext& context, Ptr<Texture> texture_ptr, Settings settings);
 
     void SetBlendColor(const Color4f& blend_color);
     void SetScreenRect(const FrameRect& screen_rect, const FrameSize& render_attachment_size);
     void SetAlphaBlendingEnabled(bool alpha_blending_enabled);
-    void SetTexture(Ptr<Texture> sp_texture);
+    void SetTexture(Ptr<Texture> texture_ptr);
 
     const Settings& GetSettings() const noexcept { return m_settings; }
     FrameRect       GetScreenRectInDots() const noexcept { return m_settings.screen_rect / m_context.GetContentScalingFactor(); }
@@ -83,14 +83,14 @@ private:
 
     Settings             m_settings;
     RenderContext&       m_context;
-    Ptr<RenderState>     m_sp_render_state;
-    Ptr<ViewState>       m_sp_view_state;
-    Ptr<BufferSet>       m_sp_vertex_buffer_set;
-    Ptr<Buffer>          m_sp_index_buffer;
-    Ptr<Buffer>          m_sp_const_buffer;
-    Ptr<Texture>         m_sp_texture;
-    Ptr<Sampler>         m_sp_texture_sampler;
-    Ptr<ProgramBindings> m_sp_const_program_bindings;
+    Ptr<RenderState>     m_render_state_ptr;
+    Ptr<ViewState>       m_view_state_ptr;
+    Ptr<BufferSet>       m_vertex_buffer_set_ptr;
+    Ptr<Buffer>          m_index_buffer_ptr;
+    Ptr<Buffer>          m_const_buffer_ptr;
+    Ptr<Texture>         m_texture_ptr;
+    Ptr<Sampler>         m_texture_sampler_ptr;
+    Ptr<ProgramBindings> m_const_program_bindings_ptr;
 };
 
 } // namespace Methane::Graphics

@@ -229,7 +229,7 @@ public:
         // NOTE: members are ordered by the usage frequency,
         //       for convenient setup with initializer lists
         //       (default states may be skipped at initialization)
-        Ptr<Program> sp_program;
+        Ptr<Program> program_ptr;
         Rasterizer   rasterizer;
         Depth        depth;
         Stencil      stencil;

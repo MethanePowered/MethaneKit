@@ -79,7 +79,7 @@ RenderCommandListDX::RenderCommandListDX(ParallelRenderCommandListBase& parallel
     META_FUNCTION_TASK();
 }
 
-void RenderCommandListDX::ResetNative(const Ptr<RenderState>& sp_render_state)
+void RenderCommandListDX::ResetNative(const Ptr<RenderState>& render_state_ptr)
 {
     META_FUNCTION_TASK();
     if (!IsCommitted())
@@ -88,7 +88,7 @@ void RenderCommandListDX::ResetNative(const Ptr<RenderState>& sp_render_state)
     SetCommitted(false);
     SetCommandListState(CommandList::State::Encoding);
 
-    ID3D12PipelineState* p_dx_initial_state = sp_render_state ? static_cast<RenderStateDX&>(*sp_render_state).GetNativePipelineState().Get() : nullptr;
+    ID3D12PipelineState* p_dx_initial_state = render_state_ptr ? static_cast<RenderStateDX&>(*render_state_ptr).GetNativePipelineState().Get() : nullptr;
     ID3D12CommandAllocator& dx_cmd_allocator = GetNativeCommandAllocatorRef();
     ID3D12Device* p_native_device = GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice().Get();
     ThrowIfFailed(dx_cmd_allocator.Reset(), p_native_device);
@@ -99,23 +99,23 @@ void RenderCommandListDX::ResetNative(const Ptr<RenderState>& sp_render_state)
     if (p_begin_timestamp_query)
         p_begin_timestamp_query->InsertTimestamp();
 
-    if (!sp_render_state)
+    if (!render_state_ptr)
         return;
 
     DrawingState& drawing_state = GetDrawingState();
-    drawing_state.sp_render_state     = std::static_pointer_cast<RenderStateBase>(sp_render_state);
+    drawing_state.render_state_ptr     = std::static_pointer_cast<RenderStateBase>(render_state_ptr);
     drawing_state.render_state_groups = RenderState::Group::Program
                                       | RenderState::Group::Rasterizer
                                       | RenderState::Group::DepthStencil;
 }
 
-void RenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group)
+void RenderCommandListDX::Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 
-    ResetNative(sp_render_state);
+    ResetNative(render_state_ptr);
 
-    RenderCommandListBase::Reset(sp_render_state, p_debug_group);
+    RenderCommandListBase::Reset(render_state_ptr, p_debug_group);
 
     RenderPassDX& pass_dx = GetPassDX();
     if (IsParallel())

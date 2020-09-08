@@ -80,14 +80,14 @@ ProgramBase::ShadersByType ProgramBase::CreateShadersByType(const Ptrs<Shader>& 
     META_FUNCTION_TASK();
 
     ProgramBase::ShadersByType shaders_by_type;
-    for (const Ptr<Shader>& sp_shader : shaders)
+    for (const Ptr<Shader>& shader_ptr : shaders)
     {
-        if (!sp_shader)
+        if (!shader_ptr)
         {
             throw std::runtime_error("Can not use empty shader pointer for program creation.");
         }
         
-        shaders_by_type[static_cast<size_t>(sp_shader->GetType())] = sp_shader;
+        shaders_by_type[static_cast<size_t>(shader_ptr->GetType())] = shader_ptr;
     }
     return shaders_by_type;
 }
@@ -97,14 +97,14 @@ Shader::Types CreateShaderTypes(const Ptrs<Shader>& shaders)
     META_FUNCTION_TASK();
 
     Shader::Types shader_types;
-    for (const Ptr<Shader>& sp_shader : shaders)
+    for (const Ptr<Shader>& shader_ptr : shaders)
     {
-        if (!sp_shader)
+        if (!shader_ptr)
         {
             throw std::runtime_error("Can not use empty shader pointer for program creation.");
         }
         
-        shader_types.insert(sp_shader->GetType());
+        shader_types.insert(shader_ptr->GetType());
     }
     return shader_types;
 }
@@ -141,26 +141,26 @@ void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_desc
     std::map<std::string, Shader::Types> shader_types_by_argument_name_map;
     
     m_binding_by_argument.clear();
-    for (const Ptr<Shader>& sp_shader : m_settings.shaders)
+    for (const Ptr<Shader>& shader_ptr : m_settings.shaders)
     {
-        if (!sp_shader)
+        if (!shader_ptr)
         {
             throw std::runtime_error("Empty shader pointer in program is not allowed.");
         }
         
-        const Shader::Type shader_type = sp_shader->GetType();
+        const Shader::Type shader_type = shader_ptr->GetType();
         all_shader_types.insert(shader_type);
         
-        const ShaderBase::ArgumentBindings argument_bindings = static_cast<const ShaderBase&>(*sp_shader).GetArgumentBindings(argument_descriptions);
-        for (const Ptr<ProgramBindingsBase::ArgumentBindingBase>& sp_argument_binging : argument_bindings)
+        const ShaderBase::ArgumentBindings argument_bindings = static_cast<const ShaderBase&>(*shader_ptr).GetArgumentBindings(argument_descriptions);
+        for (const Ptr<ProgramBindingsBase::ArgumentBindingBase>& argument_binging_ptr : argument_bindings)
         {
-            if (!sp_argument_binging)
+            if (!argument_binging_ptr)
             {
                 throw std::runtime_error("Empty resource binding provided by shader.");
             }
 
-            const Argument& shader_argument = sp_argument_binging->GetSettings().argument;
-            m_binding_by_argument.emplace(shader_argument, sp_argument_binging);
+            const Argument& shader_argument = argument_binging_ptr->GetSettings().argument;
+            m_binding_by_argument.emplace(shader_argument, argument_binging_ptr);
             shader_types_by_argument_name_map[shader_argument.name].insert(shader_argument.shader_type);
         }
     }
@@ -173,7 +173,7 @@ void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_desc
             continue;
 
         const std::string& argument_name = shader_types_by_argument_name.first;
-        Ptr<ProgramBindings::ArgumentBinding> sp_argument_binding;
+        Ptr<ProgramBindings::ArgumentBinding> argument_binding_ptr;
         for(Shader::Type shader_type : all_shader_types)
         {
             const Argument argument{ shader_type, argument_name };
@@ -182,18 +182,18 @@ void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_desc
             {
                 throw std::runtime_error("Resource binding was not provided for " + Shader::GetTypeName(shader_type) + " shader argument \"" + argument_name + "\"");
             }
-            if (!sp_argument_binding)
+            if (!argument_binding_ptr)
             {
-                sp_argument_binding = binding_by_argument_it->second;
+                argument_binding_ptr = binding_by_argument_it->second;
             }
             m_binding_by_argument.erase(binding_by_argument_it);
         }
 
-        if (!sp_argument_binding)
+        if (!argument_binding_ptr)
         {
             throw std::runtime_error("Failed to create resource binding for argument \"" + argument_name + "\".");
         }
-        m_binding_by_argument.emplace( Argument{ Shader::Type::All, argument_name }, sp_argument_binding);
+        m_binding_by_argument.emplace( Argument{ Shader::Type::All, argument_name }, argument_binding_ptr);
     }
 }
 
@@ -231,12 +231,12 @@ Shader& ProgramBase::GetShaderRef(Shader::Type shader_type)
 {
     META_FUNCTION_TASK();
 
-    const Ptr<Shader>& sp_shader = GetShader(shader_type);
-    if (!sp_shader)
+    const Ptr<Shader>& shader_ptr = GetShader(shader_type);
+    if (!shader_ptr)
     {
         throw std::runtime_error(Shader::GetTypeName(shader_type) + "shader was not found in program \"" + GetName() + "\".");
     }
-    return *sp_shader;
+    return *shader_ptr;
 }
 
 uint32_t ProgramBase::GetInputBufferIndexByArgumentSemantic(const std::string& argument_semantic) const

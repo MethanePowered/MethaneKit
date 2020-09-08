@@ -82,9 +82,9 @@ CommandList::DebugGroup& CommandListBase::DebugGroupBase::AddSubGroup(Data::Inde
         m_sub_groups.resize(id + 1);
     }
 
-    Ptr<DebugGroup> sp_sub_group = DebugGroup::Create(std::move(name));
-    m_sub_groups[id] = sp_sub_group;
-    return *sp_sub_group;
+    Ptr<DebugGroup> sub_group_ptr = DebugGroup::Create(std::move(name));
+    m_sub_groups[id] = sub_group_ptr;
+    return *sub_group_ptr;
 }
 
 CommandList::DebugGroup* CommandListBase::DebugGroupBase::GetSubGroup(Data::Index id) const noexcept
@@ -95,12 +95,12 @@ CommandList::DebugGroup* CommandListBase::DebugGroupBase::GetSubGroup(Data::Inde
 
 CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
     : m_type(type)
-    , m_sp_command_queue(command_queue.GetCommandQueuePtr())
+    , m_command_queue_ptr(command_queue.GetCommandQueuePtr())
     , m_tracy_gpu_scope(TRACY_GPU_SCOPE_INIT(command_queue.GetTracyContext()))
-    , m_sp_tracy_construct_location(CREATE_TRACY_SOURCE_LOCATION(GetName().c_str()))
+    , m_tracy_construct_location_ptr(CREATE_TRACY_SOURCE_LOCATION(GetName().c_str()))
 {
     META_FUNCTION_TASK();
-    TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(m_tracy_gpu_scope, m_sp_tracy_construct_location.get());
+    TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(m_tracy_gpu_scope, m_tracy_construct_location_ptr.get());
     META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" was created.");
 }
 
@@ -151,9 +151,9 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
         PopDebugGroup();
     }
 
-    if (!m_sp_tracy_reset_location)
-        m_sp_tracy_reset_location.reset(CREATE_TRACY_SOURCE_LOCATION(GetName().c_str()));
-    TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(m_tracy_gpu_scope, m_sp_tracy_reset_location.get());
+    if (!m_tracy_reset_location_ptr)
+        m_tracy_reset_location_ptr.reset(CREATE_TRACY_SOURCE_LOCATION(GetName().c_str()));
+    TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(m_tracy_gpu_scope, m_tracy_reset_location_ptr.get());
 
     if (p_debug_group && debug_group_changed)
     {
@@ -164,15 +164,15 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
 void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior)
 {
     META_FUNCTION_TASK();
-    if (m_command_state.sp_program_bindings.get() == &program_bindings)
+    if (m_command_state.program_bindings_ptr.get() == &program_bindings)
         return;
 
     ProgramBindingsBase& program_bindings_base = static_cast<ProgramBindingsBase&>(program_bindings);
     program_bindings_base.Apply(*this, apply_behavior);
 
-    Ptr<ObjectBase> sp_program_bindings_object = program_bindings_base.GetBasePtr();
-    m_command_state.sp_program_bindings = std::static_pointer_cast<ProgramBindingsBase>(sp_program_bindings_object);
-    RetainResource(std::move(sp_program_bindings_object));
+    Ptr<ObjectBase> program_bindings_object_ptr = program_bindings_base.GetBasePtr();
+    m_command_state.program_bindings_ptr = std::static_pointer_cast<ProgramBindingsBase>(program_bindings_object_ptr);
+    RetainResource(std::move(program_bindings_object_ptr));
 }
 
 void CommandListBase::Commit()
@@ -301,8 +301,8 @@ void CommandListBase::SetCommandListStateNoLock(State state)
 CommandQueue& CommandListBase::GetCommandQueue()
 {
     META_FUNCTION_TASK();
-    assert(!!m_sp_command_queue);
-    return static_cast<CommandQueueBase&>(*m_sp_command_queue);
+    assert(!!m_command_queue_ptr);
+    return static_cast<CommandQueueBase&>(*m_command_queue_ptr);
 }
 
 uint32_t CommandListBase::GetCurrentFrameIndex() const
@@ -314,7 +314,7 @@ uint32_t CommandListBase::GetCurrentFrameIndex() const
 void CommandListBase::ResetCommandState()
 {
     META_FUNCTION_TASK();
-    m_command_state.sp_program_bindings.reset();
+    m_command_state.program_bindings_ptr.reset();
     m_command_state.retained_resources.clear();
 }
 
@@ -327,8 +327,8 @@ CommandQueueBase& CommandListBase::GetCommandQueueBase() noexcept
 const CommandQueueBase& CommandListBase::GetCommandQueueBase() const noexcept
 {
     META_FUNCTION_TASK();
-    assert(!!m_sp_command_queue);
-    return static_cast<const CommandQueueBase&>(*m_sp_command_queue);
+    assert(!!m_command_queue_ptr);
+    return static_cast<const CommandQueueBase&>(*m_command_queue_ptr);
 }
 
 CommandListSetBase::CommandListSetBase(Refs<CommandList> command_list_refs)

@@ -59,12 +59,12 @@ void RenderPassVK::Reset()
     uint32_t color_attach_index = 0;
     for(const ColorAttachment& color_attach : GetSettings().color_attachments)
     {
-        if (!color_attach.sp_texture)
+        if (!color_attach.texture_ptr)
         {
             throw std::invalid_argument("Can not use color attachment without texture.");
         }
 
-        TextureVK& color_texture = static_cast<TextureVK&>(*color_attach.sp_texture);
+        TextureVK& color_texture = static_cast<TextureVK&>(*color_attach.texture_ptr);
         if (color_texture.GetSettings().type == Texture::Type::FrameBuffer)
         {
             color_texture.UpdateFrameBuffer();

@@ -88,12 +88,12 @@ void RenderPassMT::Reset()
     uint32_t color_attach_index = 0;
     for(const ColorAttachment& color_attach : settings.color_attachments)
     {
-        if (!color_attach.sp_texture)
+        if (!color_attach.texture_ptr)
         {
             throw std::invalid_argument("Can not use color attachment without texture.");
         }
 
-        TextureMT& color_texture = static_cast<TextureMT&>(*color_attach.sp_texture);
+        TextureMT& color_texture = static_cast<TextureMT&>(*color_attach.texture_ptr);
         if (color_texture.GetSettings().type == Texture::Type::FrameBuffer)
         {
             color_texture.UpdateFrameBuffer();
@@ -107,18 +107,18 @@ void RenderPassMT::Reset()
         color_attach_index++;
     }
     
-    if (settings.depth_attachment.sp_texture)
+    if (settings.depth_attachment.texture_ptr)
     {
-        const TextureMT& depth_texture = static_cast<const TextureMT&>(*settings.depth_attachment.sp_texture);
+        const TextureMT& depth_texture = static_cast<const TextureMT&>(*settings.depth_attachment.texture_ptr);
         m_mtl_pass_descriptor.depthAttachment.texture         = depth_texture.GetNativeTexture();
         m_mtl_pass_descriptor.depthAttachment.clearDepth      = settings.depth_attachment.clear_value;
         m_mtl_pass_descriptor.depthAttachment.loadAction      = GetMTLLoadAction(settings.depth_attachment.load_action);
         m_mtl_pass_descriptor.depthAttachment.storeAction     = GetMTLStoreAction(settings.depth_attachment.store_action);
     }
     
-    if (settings.stencil_attachment.sp_texture)
+    if (settings.stencil_attachment.texture_ptr)
     {
-        const TextureMT& stencil_texture = static_cast<const TextureMT&>(*settings.stencil_attachment.sp_texture);
+        const TextureMT& stencil_texture = static_cast<const TextureMT&>(*settings.stencil_attachment.texture_ptr);
         m_mtl_pass_descriptor.stencilAttachment.texture       = stencil_texture.GetNativeTexture();
         m_mtl_pass_descriptor.stencilAttachment.clearStencil  = settings.stencil_attachment.clear_value;
         m_mtl_pass_descriptor.stencilAttachment.loadAction    = GetMTLLoadAction(settings.stencil_attachment.load_action);

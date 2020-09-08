@@ -136,7 +136,7 @@ void AppBase::Alert(const Message& msg, bool deferred)
     if (!deferred)
         return;
 
-    m_sp_deferred_message.reset(new Message(msg));
+    m_deferred_message_ptr.reset(new Message(msg));
 }
 
 void AppBase::ShowAlert(const Message&)
@@ -162,16 +162,16 @@ void AppBase::UpdateAndRender()
 bool AppBase::HasError() const
 {
     META_FUNCTION_TASK();
-    return m_sp_deferred_message ? m_sp_deferred_message->type == Message::Type::Error : false;
+    return m_deferred_message_ptr ? m_deferred_message_ptr->type == Message::Type::Error : false;
 }
 
 tf::Executor& AppBase::GetParallelExecutor() const
 {
     META_FUNCTION_TASK();
-    if (!m_sp_parallel_executor)
-        m_sp_parallel_executor = std::make_unique<tf::Executor>();
+    if (!m_parallel_executor_ptr)
+        m_parallel_executor_ptr = std::make_unique<tf::Executor>();
 
-    return *m_sp_parallel_executor;
+    return *m_parallel_executor_ptr;
 }
 
 bool AppBase::SetFullScreen(bool is_full_screen)
@@ -206,24 +206,24 @@ std::string AppBase::GetControlsHelp()
     std::string single_offset = "    ";
     bool is_first_controller = true;
 
-    for (const Ptr<Input::Controller>& sp_controller : GetInputState().GetControllers())
+    for (const Ptr<Input::Controller>& controller_ptr : GetInputState().GetControllers())
     {
-        assert(!!sp_controller);
-        if (!sp_controller) continue;
+        assert(!!controller_ptr);
+        if (!controller_ptr) continue;
 
-        const Input::IHelpProvider::HelpLines help_lines = sp_controller->GetHelp();
+        const Input::IHelpProvider::HelpLines help_lines = controller_ptr->GetHelp();
         if (help_lines.empty()) continue;
 
         if (!is_first_controller)
             help_stream << std::endl;
 
         std::string controller_offset;
-        if (!sp_controller->GetControllerName().empty())
+        if (!controller_ptr->GetControllerName().empty())
         {
             if (!is_first_controller)
                 help_stream << std::endl;
 
-            help_stream << sp_controller->GetControllerName();
+            help_stream << controller_ptr->GetControllerName();
             controller_offset = single_offset;
         }
 

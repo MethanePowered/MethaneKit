@@ -35,7 +35,7 @@ namespace Methane::Graphics
 bool RenderPass::Attachment::operator==(const RenderPass::Attachment& other) const
 {
     META_FUNCTION_TASK();
-    return sp_texture   == other.sp_texture &&
+    return texture_ptr   == other.texture_ptr &&
            level        == other.level &&
            slice        == other.slice &&
            depth_plane  == other.depth_plane &&
@@ -99,8 +99,8 @@ bool RenderPassBase::Update(const RenderPass::Settings& settings)
     m_non_frame_buffer_attachment_textures.clear();
     m_color_attachment_textures.clear();
     m_p_depth_attachment_texture = nullptr;
-    m_sp_begin_transition_barriers.reset();
-    m_sp_end_transition_barriers.reset();
+    m_begin_transition_barriers_ptr.reset();
+    m_end_transition_barriers_ptr.reset();
 
     InitAttachmentStates();
     return true;
@@ -110,11 +110,11 @@ void RenderPassBase::ReleaseAttachmentTextures()
 {
     META_FUNCTION_TASK();
     m_non_frame_buffer_attachment_textures.clear();
-    m_settings.depth_attachment.sp_texture.reset();
-    m_settings.stencil_attachment.sp_texture.reset();
+    m_settings.depth_attachment.texture_ptr.reset();
+    m_settings.stencil_attachment.texture_ptr.reset();
     for(ColorAttachment& color_attachment : m_settings.color_attachments)
     {
-        color_attachment.sp_texture.reset();
+        color_attachment.texture_ptr.reset();
     }
 }
 
@@ -127,7 +127,7 @@ void RenderPassBase::Begin(RenderCommandListBase& render_command_list)
     }
 
     SetAttachmentStates(ResourceBase::State::RenderTarget, ResourceBase::State::DepthWrite,
-                        m_sp_begin_transition_barriers, render_command_list);
+                        m_begin_transition_barriers_ptr, render_command_list);
 
     m_is_begun = true;
 }
@@ -143,7 +143,7 @@ void RenderPassBase::End(RenderCommandListBase& render_command_list)
     if (m_settings.is_final_pass)
     {
         SetAttachmentStates(ResourceBase::State::Present, { },
-                            m_sp_end_transition_barriers, render_command_list);
+                            m_end_transition_barriers_ptr, render_command_list);
     }
 
     m_is_begun = false;
@@ -151,17 +151,17 @@ void RenderPassBase::End(RenderCommandListBase& render_command_list)
 
 void RenderPassBase::InitAttachmentStates()
 {
-    Ptr<ResourceBase::Barriers> sp_transition_barriers;
+    Ptr<ResourceBase::Barriers> transition_barriers_ptr;
     for (const Ref<TextureBase>& color_texture_ref : GetColorAttachmentTextures())
     {
         if (color_texture_ref.get().GetState() == ResourceBase::State::Common)
-            color_texture_ref.get().SetState(ResourceBase::State::Present, sp_transition_barriers);
+            color_texture_ref.get().SetState(ResourceBase::State::Present, transition_barriers_ptr);
     }
 }
 
 void RenderPassBase::SetAttachmentStates(const std::optional<ResourceBase::State>& color_state,
                                          const std::optional<ResourceBase::State>& depth_state,
-                                         Ptr<ResourceBase::Barriers>& sp_transition_barriers,
+                                         Ptr<ResourceBase::Barriers>& transition_barriers_ptr,
                                          RenderCommandListBase& render_command_list)
 {
     META_FUNCTION_TASK();
@@ -171,7 +171,7 @@ void RenderPassBase::SetAttachmentStates(const std::optional<ResourceBase::State
     {
         for (const Ref<TextureBase>& color_texture_ref : GetColorAttachmentTextures())
         {
-            attachment_states_changed |= color_texture_ref.get().SetState(*color_state, sp_transition_barriers);
+            attachment_states_changed |= color_texture_ref.get().SetState(*color_state, transition_barriers_ptr);
         }
     }
 
@@ -180,13 +180,13 @@ void RenderPassBase::SetAttachmentStates(const std::optional<ResourceBase::State
         TextureBase* p_depth_texture = GetDepthAttachmentTexture();
         if (p_depth_texture)
         {
-            attachment_states_changed |= p_depth_texture->SetState(*depth_state, sp_transition_barriers);
+            attachment_states_changed |= p_depth_texture->SetState(*depth_state, transition_barriers_ptr);
         }
     }
 
-    if (sp_transition_barriers && attachment_states_changed)
+    if (transition_barriers_ptr && attachment_states_changed)
     {
-        render_command_list.SetResourceBarriers(*sp_transition_barriers);
+        render_command_list.SetResourceBarriers(*transition_barriers_ptr);
     }
 }
 
@@ -199,11 +199,11 @@ const Refs<TextureBase>& RenderPassBase::GetColorAttachmentTextures() const
     m_color_attachment_textures.reserve(m_settings.color_attachments.size());
     for (const ColorAttachment& color_attach : m_settings.color_attachments)
     {
-        if (!color_attach.sp_texture)
+        if (!color_attach.texture_ptr)
         {
             throw std::invalid_argument("Can not use color attachment without texture.");
         }
-        m_color_attachment_textures.push_back(static_cast<TextureBase&>(*color_attach.sp_texture));
+        m_color_attachment_textures.push_back(static_cast<TextureBase&>(*color_attach.texture_ptr));
     }
     return m_color_attachment_textures;
 }
@@ -211,9 +211,9 @@ const Refs<TextureBase>& RenderPassBase::GetColorAttachmentTextures() const
 TextureBase* RenderPassBase::GetDepthAttachmentTexture() const
 {
     META_FUNCTION_TASK();
-    if (!m_p_depth_attachment_texture && m_settings.depth_attachment.sp_texture)
+    if (!m_p_depth_attachment_texture && m_settings.depth_attachment.texture_ptr)
     {
-        m_p_depth_attachment_texture = static_cast<TextureBase*>(m_settings.depth_attachment.sp_texture.get());
+        m_p_depth_attachment_texture = static_cast<TextureBase*>(m_settings.depth_attachment.texture_ptr.get());
     }
     return m_p_depth_attachment_texture;
 }
@@ -228,26 +228,26 @@ const Ptrs<TextureBase>& RenderPassBase::GetNonFrameBufferAttachmentTextures() c
 
     for (const ColorAttachment& color_attach : m_settings.color_attachments)
     {
-        if (!color_attach.sp_texture)
+        if (!color_attach.texture_ptr)
         {
             throw std::invalid_argument("Can not use color attachment without texture.");
         }
 
-        Ptr<TextureBase> sp_color_attachment = std::static_pointer_cast<TextureBase>(color_attach.sp_texture);
-        if (sp_color_attachment->GetSettings().type == Texture::Type::FrameBuffer)
+        Ptr<TextureBase> color_attachment_ptr = std::static_pointer_cast<TextureBase>(color_attach.texture_ptr);
+        if (color_attachment_ptr->GetSettings().type == Texture::Type::FrameBuffer)
             continue;
 
-        m_non_frame_buffer_attachment_textures.emplace_back(std::move(sp_color_attachment));
+        m_non_frame_buffer_attachment_textures.emplace_back(std::move(color_attachment_ptr));
     }
 
-    if (m_settings.depth_attachment.sp_texture)
+    if (m_settings.depth_attachment.texture_ptr)
     {
-        m_non_frame_buffer_attachment_textures.emplace_back(std::static_pointer_cast<TextureBase>(m_settings.depth_attachment.sp_texture));
+        m_non_frame_buffer_attachment_textures.emplace_back(std::static_pointer_cast<TextureBase>(m_settings.depth_attachment.texture_ptr));
     }
 
-    if (m_settings.stencil_attachment.sp_texture)
+    if (m_settings.stencil_attachment.texture_ptr)
     {
-        m_non_frame_buffer_attachment_textures.emplace_back(std::static_pointer_cast<TextureBase>(m_settings.stencil_attachment.sp_texture));
+        m_non_frame_buffer_attachment_textures.emplace_back(std::static_pointer_cast<TextureBase>(m_settings.stencil_attachment.texture_ptr));
     }
 
     return m_non_frame_buffer_attachment_textures;

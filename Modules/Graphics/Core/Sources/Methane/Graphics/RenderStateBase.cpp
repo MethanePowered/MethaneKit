@@ -205,7 +205,7 @@ RenderState::Group::Mask RenderState::Settings::Compare(const Settings& left, co
     Group::Mask changed_state_groups = Group::None;
     
     if (compare_groups & Group::Program &&
-        left.sp_program.get() != right.sp_program.get())
+        left.program_ptr.get() != right.program_ptr.get())
     {
         changed_state_groups |= Group::Program;
     }
@@ -250,8 +250,8 @@ void RenderStateBase::Reset(const Settings& settings)
 Program& RenderStateBase::GetProgram()
 {
     META_FUNCTION_TASK();
-    assert(!!m_settings.sp_program);
-    return *m_settings.sp_program;
+    assert(!!m_settings.program_ptr);
+    return *m_settings.program_ptr;
 }
 
 } // namespace Methane::Graphics

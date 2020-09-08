@@ -37,10 +37,10 @@ namespace dat = Methane::Data;
 
 struct TexturedCubeFrame final : gfx::AppFrame
 {
-    Ptr<gfx::Buffer>            sp_uniforms_buffer;
-    Ptr<gfx::ProgramBindings>   sp_program_bindings;
-    Ptr<gfx::RenderCommandList> sp_render_cmd_list;
-    Ptr<gfx::CommandListSet>    sp_execute_cmd_list_set;
+    Ptr<gfx::Buffer>            uniforms_buffer_ptr;
+    Ptr<gfx::ProgramBindings>   program_bindings_ptr;
+    Ptr<gfx::RenderCommandList> render_cmd_list_ptr;
+    Ptr<gfx::CommandListSet>    execute_cmd_list_set_ptr;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -86,12 +86,12 @@ private:
     Uniforms              m_shader_uniforms { };
     gfx::Camera           m_camera;
     float                 m_cube_scale;
-    Ptr<gfx::RenderState> m_sp_render_state;
-    Ptr<gfx::BufferSet>   m_sp_vertex_buffer_set;
-    Ptr<gfx::Buffer>      m_sp_index_buffer;
-    Ptr<gfx::Buffer>      m_sp_const_buffer;
-    Ptr<gfx::Texture>     m_sp_cube_texture;
-    Ptr<gfx::Sampler>     m_sp_texture_sampler;
+    Ptr<gfx::RenderState> m_render_state_ptr;
+    Ptr<gfx::BufferSet>   m_vertex_buffer_set_ptr;
+    Ptr<gfx::Buffer>      m_index_buffer_ptr;
+    Ptr<gfx::Buffer>      m_const_buffer_ptr;
+    Ptr<gfx::Texture>     m_cube_texture_ptr;
+    Ptr<gfx::Sampler>     m_texture_sampler_ptr;
 
     const gfx::Resource::SubResources m_shader_uniforms_subresources{
         { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(Uniforms) }

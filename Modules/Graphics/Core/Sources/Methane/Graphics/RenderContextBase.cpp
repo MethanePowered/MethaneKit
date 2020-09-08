@@ -108,16 +108,16 @@ void RenderContextBase::OnCpuPresentComplete(bool signal_frame_fence)
 Fence& RenderContextBase::GetCurrentFrameFence() const
 {
     META_FUNCTION_TASK();
-    const Ptr<Fence>& sp_current_fence = GetCurrentFrameFencePtr();
-    assert(!!sp_current_fence);
-    return *sp_current_fence;
+    const Ptr<Fence>& current_fence_ptr = GetCurrentFrameFencePtr();
+    assert(!!current_fence_ptr);
+    return *current_fence_ptr;
 }
 
 Fence& RenderContextBase::GetRenderFence() const
 {
     META_FUNCTION_TASK();
-    assert(!!m_sp_render_fence);
-    return *m_sp_render_fence;
+    assert(!!m_render_fence_ptr);
+    return *m_render_fence_ptr;
 }
 
 void RenderContextBase::ResetWithSettings(const Settings& settings)
@@ -127,11 +127,11 @@ void RenderContextBase::ResetWithSettings(const Settings& settings)
 
     WaitForGpu(WaitFor::RenderComplete);
 
-    Ptr<DeviceBase> sp_device = GetDeviceBase().GetDevicePtr();
+    Ptr<DeviceBase> device_ptr = GetDeviceBase().GetDevicePtr();
     m_settings = settings;
 
     Release();
-    Initialize(*sp_device, true);
+    Initialize(*device_ptr, true);
 }
 
 void RenderContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)
@@ -146,7 +146,7 @@ void RenderContextBase::Initialize(DeviceBase& device, bool deferred_heap_alloca
         m_frame_fences.emplace_back(Fence::Create(GetRenderCommandQueue()));
     }
 
-    m_sp_render_fence = Fence::Create(GetRenderCommandQueue());
+    m_render_fence_ptr = Fence::Create(GetRenderCommandQueue());
     m_frame_index = 0u;
 
     if (is_callback_emitted)
@@ -159,9 +159,9 @@ void RenderContextBase::Release()
 {
     META_FUNCTION_TASK();
 
-    m_sp_render_fence.reset();
+    m_render_fence_ptr.reset();
     m_frame_fences.clear();
-    m_sp_render_cmd_queue.reset();
+    m_render_cmd_queue_ptr.reset();
 
     ContextBase::Release();
 }
@@ -173,13 +173,13 @@ void RenderContextBase::SetName(const std::string& name)
 
     for (uint32_t frame_index = 0; frame_index < m_frame_fences.size(); ++frame_index)
     {
-        const Ptr<Fence>& sp_frame_fence = m_frame_fences[frame_index];
-        assert(!!sp_frame_fence);
-        sp_frame_fence->SetName(name + " Frame " + std::to_string(frame_index) + " Fence");
+        const Ptr<Fence>& frame_fence_ptr = m_frame_fences[frame_index];
+        assert(!!frame_fence_ptr);
+        frame_fence_ptr->SetName(name + " Frame " + std::to_string(frame_index) + " Fence");
     }
 
-    if (m_sp_render_fence)
-        m_sp_render_fence->SetName(name + " Render Fence");
+    if (m_render_fence_ptr)
+        m_render_fence_ptr->SetName(name + " Render Fence");
 }
 
 bool RenderContextBase::UploadResources()
@@ -235,13 +235,13 @@ uint32_t RenderContextBase::GetNextFrameBufferIndex()
 CommandQueue& RenderContextBase::GetRenderCommandQueue()
 {
     META_FUNCTION_TASK();
-    if (!m_sp_render_cmd_queue)
+    if (!m_render_cmd_queue_ptr)
     {
         static const std::string s_command_queue_name = "Render Command Queue";
-        m_sp_render_cmd_queue = CommandQueue::Create(*this, CommandList::Type::Render);
-        m_sp_render_cmd_queue->SetName(s_command_queue_name);
+        m_render_cmd_queue_ptr = CommandQueue::Create(*this, CommandList::Type::Render);
+        m_render_cmd_queue_ptr->SetName(s_command_queue_name);
     }
-    return *m_sp_render_cmd_queue;
+    return *m_render_cmd_queue_ptr;
 }
 
 bool RenderContextBase::SetVSyncEnabled(bool vsync_enabled)

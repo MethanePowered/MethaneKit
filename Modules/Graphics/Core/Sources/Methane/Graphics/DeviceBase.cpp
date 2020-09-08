@@ -107,16 +107,16 @@ void SystemBase::RemoveDevice(Device& device)
 Ptr<Device> SystemBase::GetNextGpuDevice(const Device& device) const
 {
     META_FUNCTION_TASK();
-    Ptr<Device> sp_next_device;
+    Ptr<Device> next_device_ptr;
     
     if (m_devices.empty())
-        return sp_next_device;
+        return next_device_ptr;
     
     auto device_it = std::find_if(m_devices.begin(), m_devices.end(),
-                                  [&device](const Ptr<Device>& sp_system_device)
-                                  { return std::addressof(device) == sp_system_device.get(); });
+                                  [&device](const Ptr<Device>& system_device_ptr)
+                                  { return std::addressof(device) == system_device_ptr.get(); });
     if (device_it == m_devices.end())
-        return sp_next_device;
+        return next_device_ptr;
     
     return device_it == m_devices.end() - 1 ? m_devices.front() : *(device_it + 1);
 }
@@ -125,8 +125,8 @@ Ptr<Device> SystemBase::GetSoftwareGpuDevice() const
 {
     META_FUNCTION_TASK();
     auto sw_device_it = std::find_if(m_devices.begin(), m_devices.end(),
-        [](const Ptr<Device>& sp_system_device)
-        { return sp_system_device && sp_system_device->IsSoftwareAdapter(); });
+        [](const Ptr<Device>& system_device_ptr)
+        { return system_device_ptr && system_device_ptr->IsSoftwareAdapter(); });
 
     return sw_device_it != m_devices.end() ? *sw_device_it : Ptr<Device>();
 }
@@ -136,11 +136,11 @@ std::string SystemBase::ToString() const noexcept
     META_FUNCTION_TASK();
     std::stringstream ss;
     ss << "Available graphics devices:" << std::endl;
-    for(const Ptr<Device>& sp_device : m_devices)
+    for(const Ptr<Device>& device_ptr : m_devices)
     {
-        assert(sp_device);
-        if (!sp_device) continue;
-        ss << "  - " << sp_device->ToString() << ";" << std::endl;
+        assert(device_ptr);
+        if (!device_ptr) continue;
+        ss << "  - " << device_ptr->ToString() << ";" << std::endl;
     }
     return ss.str();
 }

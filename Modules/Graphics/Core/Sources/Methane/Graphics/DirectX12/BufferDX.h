@@ -127,16 +127,16 @@ public:
         upload_cmd_list.RetainResource(*this);
 
         const ResourceBase::State final_buffer_state = GetState() == State::Common ? State::PixelShaderResource : GetState();
-        if (SetState(State::CopyDest, m_sp_upload_begin_transition_barriers) && m_sp_upload_begin_transition_barriers)
+        if (SetState(State::CopyDest, m_upload_begin_transition_barriers_ptr) && m_upload_begin_transition_barriers_ptr)
         {
-            upload_cmd_list.SetResourceBarriers(*m_sp_upload_begin_transition_barriers);
+            upload_cmd_list.SetResourceBarriers(*m_upload_begin_transition_barriers_ptr);
         }
 
         upload_cmd_list.GetNativeCommandList().CopyResource(GetNativeResource(), m_cp_upload_resource.Get());
 
-        if (SetState(final_buffer_state, m_sp_upload_end_transition_barriers) && m_sp_upload_end_transition_barriers)
+        if (SetState(final_buffer_state, m_upload_end_transition_barriers_ptr) && m_upload_end_transition_barriers_ptr)
         {
-            upload_cmd_list.SetResourceBarriers(*m_sp_upload_end_transition_barriers);
+            upload_cmd_list.SetResourceBarriers(*m_upload_end_transition_barriers_ptr);
         }
 
         GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
@@ -187,8 +187,8 @@ private:
     TViewNative                 m_buffer_view;
 
     wrl::ComPtr<ID3D12Resource> m_cp_upload_resource;
-    Ptr<ResourceBase::Barriers> m_sp_upload_begin_transition_barriers;
-    Ptr<ResourceBase::Barriers> m_sp_upload_end_transition_barriers;
+    Ptr<ResourceBase::Barriers> m_upload_begin_transition_barriers_ptr;
+    Ptr<ResourceBase::Barriers> m_upload_end_transition_barriers_ptr;
 };
 
 struct ReadBackBufferView { };

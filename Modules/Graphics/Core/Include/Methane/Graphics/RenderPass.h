@@ -55,7 +55,7 @@ struct RenderPass : virtual Object
             Resolve,
         };
         
-        Ptr<Texture> sp_texture;
+        Ptr<Texture> texture_ptr;
         uint32_t     level        = 0u;
         uint32_t     slice        = 0u;
         uint32_t     depth_plane  = 0u;

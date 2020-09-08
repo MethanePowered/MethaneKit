@@ -48,9 +48,9 @@ ScopeTimer::Aggregator::~Aggregator()
 void ScopeTimer::Aggregator::Flush()
 {
     META_FUNCTION_TASK();
-    if (m_sp_logger)
+    if (m_logger_ptr)
     {
-        LogTimings(*m_sp_logger);
+        LogTimings(*m_logger_ptr);
     }
 
     m_timing_by_scope_id.clear();

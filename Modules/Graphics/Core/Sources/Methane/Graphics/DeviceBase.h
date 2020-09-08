@@ -71,7 +71,7 @@ public:
 protected:
     void SetGpuSupportedFeatures(Device::Feature::Mask supported_features) { m_supported_features = supported_features; }
     void ClearDevices()                     { m_devices.clear(); }
-    void AddDevice(Ptr<Device>&& sp_device) { m_devices.emplace_back(std::move(sp_device)); }
+    void AddDevice(Ptr<Device>&& device_ptr) { m_devices.emplace_back(std::move(device_ptr)); }
     void RequestRemoveDevice(Device& device);
     void RemoveDevice(Device& device);
 

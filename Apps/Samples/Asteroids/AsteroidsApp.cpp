@@ -91,8 +91,8 @@ static const std::map<pal::Keyboard::State, AsteroidsAppAction> g_asteroids_acti
 void AsteroidsFrame::ReleaseScreenPassAttachmentTextures()
 {
     META_FUNCTION_TASK();
-    sp_initial_screen_pass->ReleaseAttachmentTextures();
-    sp_final_screen_pass->ReleaseAttachmentTextures();
+    initial_screen_pass_ptr->ReleaseAttachmentTextures();
+    final_screen_pass_ptr->ReleaseAttachmentTextures();
     AppFrame::ReleaseScreenPassAttachmentTextures();
 }
 
@@ -204,7 +204,7 @@ void AsteroidsApp::Init()
     m_view_camera.Resize(float_rect_size);
 
     // Create sky-box
-    m_sp_sky_box = std::make_shared<gfx::SkyBox>(context, GetImageLoader(), gfx::SkyBox::Settings{
+    m_sky_box_ptr = std::make_shared<gfx::SkyBox>(context, GetImageLoader(), gfx::SkyBox::Settings{
         m_view_camera,
         {
             "Textures/SkyBox/Galaxy/PositiveX.jpg",
@@ -220,7 +220,7 @@ void AsteroidsApp::Init()
     });
 
     // Create planet
-    m_sp_planet = std::make_shared<Planet>(context, GetImageLoader(), Planet::Settings{
+    m_planet_ptr = std::make_shared<Planet>(context, GetImageLoader(), Planet::Settings{
         m_view_camera,
         m_light_camera,
         "Textures/Planet/Mars.jpg",             // texture_path
@@ -234,78 +234,78 @@ void AsteroidsApp::Init()
     });
 
     // Create asteroids array
-    m_sp_asteroids_array = m_sp_asteroids_array_state
-                         ? std::make_unique<AsteroidsArray>(context, m_asteroids_array_settings, *m_sp_asteroids_array_state)
+    m_asteroids_array_ptr = m_asteroids_array_state_ptr
+                         ? std::make_unique<AsteroidsArray>(context, m_asteroids_array_settings, *m_asteroids_array_state_ptr)
                          : std::make_unique<AsteroidsArray>(context, m_asteroids_array_settings);
 
     const Data::Size constants_data_size         = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(Constants)));
     const Data::Size scene_uniforms_data_size    = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(SceneUniforms)));
-    const Data::Size asteroid_uniforms_data_size = m_sp_asteroids_array->GetUniformsBufferSize();
+    const Data::Size asteroid_uniforms_data_size = m_asteroids_array_ptr->GetUniformsBufferSize();
 
     // Create constants buffer for frame rendering
-    m_sp_const_buffer = gfx::Buffer::CreateConstantBuffer(context, constants_data_size);
-    m_sp_const_buffer->SetName("Constants Buffer");
-    m_sp_const_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } });
+    m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(context, constants_data_size);
+    m_const_buffer_ptr->SetName("Constants Buffer");
+    m_const_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } });
 
     // ========= Per-Frame Data =========
     for(AsteroidsFrame& frame : GetFrames())
     {
         // Create initial screen pass for asteroids rendering
-        gfx::RenderPass::Settings initial_screen_pass_settings = frame.sp_screen_pass->GetSettings();
+        gfx::RenderPass::Settings initial_screen_pass_settings = frame.screen_pass_ptr->GetSettings();
         initial_screen_pass_settings.depth_attachment.store_action = gfx::RenderPass::Attachment::StoreAction::Store;
-        frame.sp_initial_screen_pass = gfx::RenderPass::Create(context, initial_screen_pass_settings);
+        frame.initial_screen_pass_ptr = gfx::RenderPass::Create(context, initial_screen_pass_settings);
 
         // Create final screen pass for sky-box and planet rendering
-        gfx::RenderPass::Settings final_screen_pass_settings = frame.sp_screen_pass->GetSettings();
+        gfx::RenderPass::Settings final_screen_pass_settings = frame.screen_pass_ptr->GetSettings();
         final_screen_pass_settings.color_attachments[0].load_action = gfx::RenderPass::Attachment::LoadAction::Load;
         final_screen_pass_settings.depth_attachment.load_action     = gfx::RenderPass::Attachment::LoadAction::Load;
-        frame.sp_final_screen_pass = gfx::RenderPass::Create(context, final_screen_pass_settings);
+        frame.final_screen_pass_ptr = gfx::RenderPass::Create(context, final_screen_pass_settings);
 
         // Create parallel command list for asteroids rendering
-        frame.sp_parallel_cmd_list = gfx::ParallelRenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_initial_screen_pass);
-        frame.sp_parallel_cmd_list->SetParallelCommandListsCount(std::thread::hardware_concurrency());
-        frame.sp_parallel_cmd_list->SetName(IndexedName("Parallel Rendering", frame.index));
-        frame.sp_parallel_cmd_list->SetValidationEnabled(false);
+        frame.parallel_cmd_list_ptr = gfx::ParallelRenderCommandList::Create(context.GetRenderCommandQueue(), *frame.initial_screen_pass_ptr);
+        frame.parallel_cmd_list_ptr->SetParallelCommandListsCount(std::thread::hardware_concurrency());
+        frame.parallel_cmd_list_ptr->SetName(IndexedName("Parallel Rendering", frame.index));
+        frame.parallel_cmd_list_ptr->SetValidationEnabled(false);
 
         // Create serial command list for asteroids rendering
-        frame.sp_serial_cmd_list = gfx::RenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_initial_screen_pass);
-        frame.sp_serial_cmd_list->SetName(IndexedName("Serial Rendering", frame.index));
-        frame.sp_serial_cmd_list->SetValidationEnabled(false);
+        frame.serial_cmd_list_ptr = gfx::RenderCommandList::Create(context.GetRenderCommandQueue(), *frame.initial_screen_pass_ptr);
+        frame.serial_cmd_list_ptr->SetName(IndexedName("Serial Rendering", frame.index));
+        frame.serial_cmd_list_ptr->SetValidationEnabled(false);
 
         // Create final command list for sky-box and planet rendering
-        frame.sp_final_cmd_list = gfx::RenderCommandList::Create(context.GetRenderCommandQueue(), *frame.sp_final_screen_pass);
-        frame.sp_final_cmd_list->SetName(IndexedName("Final Rendering", frame.index));
-        frame.sp_final_cmd_list->SetValidationEnabled(false);
+        frame.final_cmd_list_ptr = gfx::RenderCommandList::Create(context.GetRenderCommandQueue(), *frame.final_screen_pass_ptr);
+        frame.final_cmd_list_ptr->SetName(IndexedName("Final Rendering", frame.index));
+        frame.final_cmd_list_ptr->SetValidationEnabled(false);
 
         // Rendering command lists sequence
-        frame.sp_execute_cmd_list_set = CreateExecuteCommandListSet(frame);
+        frame.execute_cmd_list_set_ptr = CreateExecuteCommandListSet(frame);
 
         // Create uniforms buffer with volatile parameters for the whole scene rendering
-        frame.sp_scene_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(context, scene_uniforms_data_size);
-        frame.sp_scene_uniforms_buffer->SetName(IndexedName("Scene Uniforms Buffer", frame.index));
+        frame.scene_uniforms_buffer_ptr = gfx::Buffer::CreateVolatileBuffer(context, scene_uniforms_data_size);
+        frame.scene_uniforms_buffer_ptr->SetName(IndexedName("Scene Uniforms Buffer", frame.index));
 
         // Create uniforms buffer for Sky-Box rendering
-        frame.skybox.sp_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(context, sizeof(gfx::SkyBox::Uniforms));
-        frame.skybox.sp_uniforms_buffer->SetName(IndexedName("Sky-box Uniforms Buffer", frame.index));
+        frame.skybox.uniforms_buffer_ptr = gfx::Buffer::CreateVolatileBuffer(context, sizeof(gfx::SkyBox::Uniforms));
+        frame.skybox.uniforms_buffer_ptr->SetName(IndexedName("Sky-box Uniforms Buffer", frame.index));
 
         // Create uniforms buffer for Planet rendering
-        frame.planet.sp_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(context, sizeof(Planet::Uniforms));
-        frame.planet.sp_uniforms_buffer->SetName(IndexedName("Planet Uniforms Buffer", frame.index));
+        frame.planet.uniforms_buffer_ptr = gfx::Buffer::CreateVolatileBuffer(context, sizeof(Planet::Uniforms));
+        frame.planet.uniforms_buffer_ptr->SetName(IndexedName("Planet Uniforms Buffer", frame.index));
 
         // Create uniforms buffer for Asteroids array rendering
-        frame.asteroids.sp_uniforms_buffer = gfx::Buffer::CreateVolatileBuffer(context, asteroid_uniforms_data_size, true);
-        frame.asteroids.sp_uniforms_buffer->SetName(IndexedName("Asteroids Array Uniforms Buffer", frame.index));
+        frame.asteroids.uniforms_buffer_ptr = gfx::Buffer::CreateVolatileBuffer(context, asteroid_uniforms_data_size, true);
+        frame.asteroids.uniforms_buffer_ptr->SetName(IndexedName("Asteroids Array Uniforms Buffer", frame.index));
 
         // Resource bindings for Sky-Box rendering
         frame.skybox.program_bindings_per_instance.resize(1);
-        frame.skybox.program_bindings_per_instance[0] = m_sp_sky_box->CreateProgramBindings(frame.skybox.sp_uniforms_buffer);
+        frame.skybox.program_bindings_per_instance[0] = m_sky_box_ptr->CreateProgramBindings(frame.skybox.uniforms_buffer_ptr);
 
         // Resource bindings for Planet rendering
         frame.planet.program_bindings_per_instance.resize(1);
-        frame.planet.program_bindings_per_instance[0] = m_sp_planet->CreateProgramBindings(m_sp_const_buffer, frame.planet.sp_uniforms_buffer);
+        frame.planet.program_bindings_per_instance[0] = m_planet_ptr->CreateProgramBindings(m_const_buffer_ptr, frame.planet.uniforms_buffer_ptr);
 
         // Resource bindings for Asteroids rendering
-        frame.asteroids.program_bindings_per_instance = m_sp_asteroids_array->CreateProgramBindings(m_sp_const_buffer, frame.sp_scene_uniforms_buffer, frame.asteroids.sp_uniforms_buffer);
+        frame.asteroids.program_bindings_per_instance = m_asteroids_array_ptr->CreateProgramBindings(m_const_buffer_ptr, frame.scene_uniforms_buffer_ptr, frame.asteroids.uniforms_buffer_ptr);
     }
 
     CompleteInitialization();
@@ -323,17 +323,17 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     // Update frame buffer and depth textures in initial & final render passes
     for (AsteroidsFrame& frame : GetFrames())
     {
-        assert(!!frame.sp_initial_screen_pass);
-        gfx::RenderPass::Settings initial_pass_settings         = frame.sp_initial_screen_pass->GetSettings();
-        initial_pass_settings.color_attachments[0].sp_texture = frame.sp_screen_texture;
-        initial_pass_settings.depth_attachment.sp_texture     = GetDepthTexturePtr();
-        frame.sp_initial_screen_pass->Update(initial_pass_settings);
+        assert(!!frame.initial_screen_pass_ptr);
+        gfx::RenderPass::Settings initial_pass_settings         = frame.initial_screen_pass_ptr->GetSettings();
+        initial_pass_settings.color_attachments[0].texture_ptr = frame.screen_texture_ptr;
+        initial_pass_settings.depth_attachment.texture_ptr     = GetDepthTexturePtr();
+        frame.initial_screen_pass_ptr->Update(initial_pass_settings);
         
-        assert(!!frame.sp_final_screen_pass);
-        gfx::RenderPass::Settings final_pass_settings           = frame.sp_final_screen_pass->GetSettings();
-        final_pass_settings.color_attachments[0].sp_texture = frame.sp_screen_texture;
-        final_pass_settings.depth_attachment.sp_texture     = GetDepthTexturePtr();
-        frame.sp_final_screen_pass->Update(final_pass_settings);
+        assert(!!frame.final_screen_pass_ptr);
+        gfx::RenderPass::Settings final_pass_settings           = frame.final_screen_pass_ptr->GetSettings();
+        final_pass_settings.color_attachments[0].texture_ptr = frame.screen_texture_ptr;
+        final_pass_settings.depth_attachment.texture_ptr     = GetDepthTexturePtr();
+        frame.final_screen_pass_ptr->Update(final_pass_settings);
     }
 
     m_view_camera.Resize({ static_cast<float>(frame_size.width), static_cast<float>(frame_size.height) });
@@ -353,15 +353,15 @@ bool AsteroidsApp::Update()
     m_scene_uniforms.eye_position    = gfx::Vector4f(m_view_camera.GetOrientation().eye, 1.f);
     m_scene_uniforms.light_position  = m_light_camera.GetOrientation().eye;
 
-    m_sp_sky_box->Update();
+    m_sky_box_ptr->Update();
     return true;
 }
 
 bool AsteroidsApp::Animate(double elapsed_seconds, double delta_seconds)
 {
     META_FUNCTION_TASK();
-    bool update_result = m_sp_planet->Update(elapsed_seconds, delta_seconds);
-    update_result     |= m_sp_asteroids_array->Update(elapsed_seconds, delta_seconds);
+    bool update_result = m_planet_ptr->Update(elapsed_seconds, delta_seconds);
+    update_result     |= m_asteroids_array_ptr->Update(elapsed_seconds, delta_seconds);
     return update_result;
 }
 
@@ -374,28 +374,28 @@ bool AsteroidsApp::Render()
 
     // Upload uniform buffers to GPU
     AsteroidsFrame& frame = GetCurrentFrame();
-    frame.sp_scene_uniforms_buffer->SetData(m_scene_uniforms_subresources);
+    frame.scene_uniforms_buffer_ptr->SetData(m_scene_uniforms_subresources);
 
     // Asteroids rendering in parallel or in main thread
     if (m_is_parallel_rendering_enabled)
     {
-        GetAsteroidsArray().DrawParallel(*frame.sp_parallel_cmd_list, frame.asteroids, GetViewState());
-        frame.sp_parallel_cmd_list->Commit();
+        GetAsteroidsArray().DrawParallel(*frame.parallel_cmd_list_ptr, frame.asteroids, GetViewState());
+        frame.parallel_cmd_list_ptr->Commit();
     }
     else
     {
-        GetAsteroidsArray().Draw(*frame.sp_serial_cmd_list, frame.asteroids, GetViewState());
-        frame.sp_serial_cmd_list->Commit();
+        GetAsteroidsArray().Draw(*frame.serial_cmd_list_ptr, frame.asteroids, GetViewState());
+        frame.serial_cmd_list_ptr->Commit();
     }
     
     // Draw planet and sky-box after asteroids to minimize pixel overdraw
-    m_sp_planet->Draw(*frame.sp_final_cmd_list, frame.planet, GetViewState());
-    m_sp_sky_box->Draw(*frame.sp_final_cmd_list, frame.skybox, GetViewState());
-    RenderOverlay(*frame.sp_final_cmd_list);
-    frame.sp_final_cmd_list->Commit();
+    m_planet_ptr->Draw(*frame.final_cmd_list_ptr, frame.planet, GetViewState());
+    m_sky_box_ptr->Draw(*frame.final_cmd_list_ptr, frame.skybox, GetViewState());
+    RenderOverlay(*frame.final_cmd_list_ptr);
+    frame.final_cmd_list_ptr->Commit();
 
     // Execute rendering commands and present frame to screen
-    GetRenderContext().GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_list_set);
+    GetRenderContext().GetRenderCommandQueue().Execute(*frame.execute_cmd_list_set_ptr);
     GetRenderContext().Present();
 
     return true;
@@ -406,15 +406,15 @@ void AsteroidsApp::OnContextReleased(gfx::Context& context)
     META_FUNCTION_TASK();
     META_SCOPE_TIMERS_FLUSH();
 
-    if (m_sp_asteroids_array)
+    if (m_asteroids_array_ptr)
     {
-        m_sp_asteroids_array_state = m_sp_asteroids_array->GetState();
+        m_asteroids_array_state_ptr = m_asteroids_array_ptr->GetState();
     }
 
-    m_sp_sky_box.reset();
-    m_sp_planet.reset();
-    m_sp_asteroids_array.reset();
-    m_sp_const_buffer.reset();
+    m_sky_box_ptr.reset();
+    m_planet_ptr.reset();
+    m_asteroids_array_ptr.reset();
+    m_const_buffer_ptr.reset();
 
     UserInterfaceApp::OnContextReleased(context);
 }
@@ -441,8 +441,8 @@ void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
     m_asteroids_array_settings.min_asteroid_scale_ratio = mutable_parameters.scale_ratio / 10.f;
     m_asteroids_array_settings.max_asteroid_scale_ratio = mutable_parameters.scale_ratio;
 
-    m_sp_asteroids_array.reset();
-    m_sp_asteroids_array_state.reset();
+    m_asteroids_array_ptr.reset();
+    m_asteroids_array_state_ptr.reset();
 
     if (IsRenderContextInitialized())
         GetRenderContext().Reset();
@@ -460,7 +460,7 @@ void AsteroidsApp::SetParallelRenderingEnabled(bool is_parallel_rendering_enable
     m_is_parallel_rendering_enabled = is_parallel_rendering_enabled;
     for(AsteroidsFrame& frame : GetFrames())
     {
-        frame.sp_execute_cmd_list_set = CreateExecuteCommandListSet(frame);
+        frame.execute_cmd_list_set_ptr = CreateExecuteCommandListSet(frame);
     }
 
     UpdateParametersText();
@@ -470,8 +470,8 @@ void AsteroidsApp::SetParallelRenderingEnabled(bool is_parallel_rendering_enable
 AsteroidsArray& AsteroidsApp::GetAsteroidsArray() const
 {
     META_FUNCTION_TASK();
-    assert(!!m_sp_asteroids_array);
-    return *m_sp_asteroids_array;
+    assert(!!m_asteroids_array_ptr);
+    return *m_asteroids_array_ptr;
 }
 
 std::string AsteroidsApp::GetParametersString()
@@ -498,9 +498,9 @@ Ptr<gfx::CommandListSet> AsteroidsApp::CreateExecuteCommandListSet(AsteroidsFram
 {
     return gfx::CommandListSet::Create({
         m_is_parallel_rendering_enabled
-            ? static_cast<gfx::CommandList&>(*frame.sp_parallel_cmd_list)
-            : static_cast<gfx::CommandList&>(*frame.sp_serial_cmd_list),
-        *frame.sp_final_cmd_list
+            ? static_cast<gfx::CommandList&>(*frame.parallel_cmd_list_ptr)
+            : static_cast<gfx::CommandList&>(*frame.serial_cmd_list_ptr),
+        *frame.final_cmd_list_ptr
     });
 }
 

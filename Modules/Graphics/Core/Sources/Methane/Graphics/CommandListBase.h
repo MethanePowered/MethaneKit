@@ -53,7 +53,7 @@ class CommandListBase
 public:
     struct CommandState final
     {
-        Ptr<ProgramBindingsBase> sp_program_bindings;
+        Ptr<ProgramBindingsBase> program_bindings_ptr;
         Ptrs<ObjectBase>         retained_resources;
     };
 
@@ -102,17 +102,17 @@ public:
 
     CommandQueueBase&               GetCommandQueueBase() noexcept;
     const CommandQueueBase&         GetCommandQueueBase() const noexcept;
-    const Ptr<ProgramBindingsBase>& GetProgramBindings() const noexcept  { return GetCommandState().sp_program_bindings; }
+    const Ptr<ProgramBindingsBase>& GetProgramBindings() const noexcept  { return GetCommandState().program_bindings_ptr; }
     Ptr<CommandListBase>            GetCommandListPtr()                  { return std::static_pointer_cast<CommandListBase>(GetBasePtr()); }
 
-    inline void RetainResource(Ptr<ObjectBase>&& sp_resource) { if (sp_resource) m_command_state.retained_resources.emplace_back(std::move(sp_resource)); }
+    inline void RetainResource(Ptr<ObjectBase>&& resource_ptr) { if (resource_ptr) m_command_state.retained_resources.emplace_back(std::move(resource_ptr)); }
     inline void RetainResource(ObjectBase& resource)          { m_command_state.retained_resources.emplace_back(resource.GetBasePtr()); }
 
     template<typename T, typename = std::enable_if_t<std::is_base_of_v<ObjectBase, T>>>
     inline void RetainResources(const Ptrs<T>& resource_ptrs)
     {
-        for(const Ptr<T>& sp_resource : resource_ptrs)
-            RetainResource(std::static_pointer_cast<ObjectBase>(sp_resource));
+        for(const Ptr<T>& resource_ptr : resource_ptrs)
+            RetainResource(std::static_pointer_cast<ObjectBase>(resource_ptr));
     }
 
 protected:
@@ -144,7 +144,7 @@ private:
     using DebugGroupStack  = std::stack<Ptr<DebugGroupBase>>;
 
     const Type                  m_type;
-    Ptr<CommandQueue>           m_sp_command_queue;
+    Ptr<CommandQueue>           m_command_queue_ptr;
     CommandState                m_command_state;
     DebugGroupStack             m_open_debug_groups;
     uint32_t                    m_committed_frame_index = 0;
@@ -155,8 +155,8 @@ private:
     std::condition_variable_any m_state_change_condition_var;
 
     TRACY_GPU_SCOPE_TYPE                  m_tracy_gpu_scope;
-    UniquePtr<TRACE_SOURCE_LOCATION_TYPE> m_sp_tracy_construct_location;
-    UniquePtr<TRACE_SOURCE_LOCATION_TYPE> m_sp_tracy_reset_location;
+    UniquePtr<TRACE_SOURCE_LOCATION_TYPE> m_tracy_construct_location_ptr;
+    UniquePtr<TRACE_SOURCE_LOCATION_TYPE> m_tracy_reset_location_ptr;
 };
 
 class CommandListSetBase

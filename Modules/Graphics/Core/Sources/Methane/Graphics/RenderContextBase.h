@@ -83,9 +83,9 @@ protected:
 
 private:
     Settings            m_settings;
-    Ptr<CommandQueue>   m_sp_render_cmd_queue;
+    Ptr<CommandQueue>   m_render_cmd_queue_ptr;
     Ptrs<Fence>         m_frame_fences;
-    Ptr<Fence>          m_sp_render_fence;
+    Ptr<Fence>          m_render_fence_ptr;
     uint32_t            m_frame_buffer_index = 0u;
     uint32_t            m_frame_index = 0u;
     bool                m_is_frame_buffer_in_use = true;

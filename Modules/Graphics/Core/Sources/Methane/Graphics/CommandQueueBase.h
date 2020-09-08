@@ -63,7 +63,7 @@ protected:
 private:
     ContextBase&                 m_context;
     const CommandList::Type      m_command_lists_type;
-    UniquePtr<Tracy::GpuContext> m_sp_tracy_gpu_context;
+    UniquePtr<Tracy::GpuContext> m_tracy_gpu_context_ptr;
 };
 
 } // namespace Methane::Graphics

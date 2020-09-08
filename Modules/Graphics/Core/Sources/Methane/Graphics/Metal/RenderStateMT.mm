@@ -296,7 +296,7 @@ RenderStateMT::~RenderStateMT()
 void RenderStateMT::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    if (!settings.sp_program)
+    if (!settings.program_ptr)
     {
         throw std::invalid_argument("Can not create state with empty program.");
     }
@@ -305,7 +305,7 @@ void RenderStateMT::Reset(const Settings& settings)
     [m_mtl_pipeline_state_desc release];
     [m_mtl_depth_stencil_state_desc release];
 
-    ProgramMT& metal_program = static_cast<ProgramMT&>(*settings.sp_program);
+    ProgramMT& metal_program = static_cast<ProgramMT&>(*settings.program_ptr);
 
     // Program state
     m_mtl_pipeline_state_desc                           = [[MTLRenderPipelineDescriptor alloc] init];

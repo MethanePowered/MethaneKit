@@ -93,7 +93,7 @@ public:
         ResourceDX::LocationsDX            m_resource_locations_dx;
     };
     
-    ProgramBindingsDX(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
+    ProgramBindingsDX(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument);
     ProgramBindingsDX(const ProgramBindingsDX& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument);
     ~ProgramBindingsDX() override;
 
@@ -116,7 +116,7 @@ private:
 
     struct ResourceState
     {
-        Ptr<ResourceBase>     sp_resource;
+        Ptr<ResourceBase>     resource_ptr;
         ResourceBase::State   state;
     };
 
@@ -137,7 +137,7 @@ private:
     ResourceStates        m_constant_resource_states;
     ResourceStates        m_variadic_resource_states;
 
-    mutable Ptr<ResourceBase::Barriers> m_sp_resource_transition_barriers;
+    mutable Ptr<ResourceBase::Barriers> m_resource_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics

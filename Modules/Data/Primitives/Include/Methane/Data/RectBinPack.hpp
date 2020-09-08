@@ -67,7 +67,7 @@ private:
     public:
         explicit Bin(TRect rect) : m_rect(std::move(rect)) { META_FUNCTION_TASK(); }
 
-        bool         IsEmpty() const noexcept { return !m_sp_small_bin && !m_sp_large_bin; }
+        bool         IsEmpty() const noexcept { return !m_small_bin_ptr && !m_large_bin_ptr; }
         const TRect& GetRect() const noexcept { return m_rect; }
 
         bool TryPack(TRect& rect, const TSize& char_margins)
@@ -88,12 +88,12 @@ private:
                 if (delta.width < delta.height)
                 {
                     // Small top rectangle, to the right of character glyph
-                    m_sp_small_bin = std::make_unique<Bin>(TRect{
+                    m_small_bin_ptr = std::make_unique<Bin>(TRect{
                         TPoint(m_rect.origin.GetX() + char_size_with_margins.width, m_rect.origin.GetY()),
                         TSize(m_rect.size.width - char_size_with_margins.width, char_size_with_margins.height)
                     });
                     // Big bottom rectangle, under and to the right of character glyph
-                    m_sp_large_bin = std::make_unique<Bin>(TRect{
+                    m_large_bin_ptr = std::make_unique<Bin>(TRect{
                         TPoint(m_rect.origin.GetX(), m_rect.origin.GetY() + char_size_with_margins.height),
                         TSize(m_rect.size.width, m_rect.size.height - char_size_with_margins.height)
                     });
@@ -101,12 +101,12 @@ private:
                 else
                 {
                     // Small left rectangle, under the character glyph
-                    m_sp_small_bin = std::make_unique<Bin>(TRect{
+                    m_small_bin_ptr = std::make_unique<Bin>(TRect{
                         TPoint(m_rect.origin.GetX(), m_rect.origin.GetY() + char_size_with_margins.height),
                         TSize(char_size_with_margins.width, m_rect.size.height - char_size_with_margins.height)
                     });
                     // Big right rectangle, to the right and under character glyph
-                    m_sp_large_bin = std::make_unique<Bin>(TRect{
+                    m_large_bin_ptr = std::make_unique<Bin>(TRect{
                         TPoint(m_rect.origin.GetX() + char_size_with_margins.width, m_rect.origin.GetY()),
                         TSize(m_rect.size.width - char_size_with_margins.width, m_rect.size.height)
                     });
@@ -118,16 +118,16 @@ private:
                 return true;
             }
 
-            if (m_sp_small_bin->TryPack(rect, char_margins))
+            if (m_small_bin_ptr->TryPack(rect, char_margins))
                 return true;
 
-            return m_sp_large_bin->TryPack(rect, char_margins);
+            return m_large_bin_ptr->TryPack(rect, char_margins);
         }
 
     private:
         const TRect    m_rect;
-        UniquePtr<Bin> m_sp_small_bin;
-        UniquePtr<Bin> m_sp_large_bin;
+        UniquePtr<Bin> m_small_bin_ptr;
+        UniquePtr<Bin> m_large_bin_ptr;
     };
 
     Bin         m_root_bin;

@@ -78,28 +78,28 @@ void ResourceManager::CompleteInitialization()
 
     for (const Ptrs<DescriptorHeap>& desc_heaps : m_descriptor_heap_types)
     {
-        for (const Ptr<DescriptorHeap>& sp_desc_heap : desc_heaps)
+        for (const Ptr<DescriptorHeap>& desc_heap_ptr : desc_heaps)
         {
-            assert(!!sp_desc_heap);
-            sp_desc_heap->Allocate();
+            assert(!!desc_heap_ptr);
+            desc_heap_ptr->Allocate();
         }
     }
 
     const auto program_bindings_end_it = std::remove_if(m_program_bindings.begin(), m_program_bindings.end(),
-        [](const WeakPtr<ProgramBindings>& wp_program_bindings)
-        { return wp_program_bindings.expired(); }
+        [](const WeakPtr<ProgramBindings>& program_bindings_wptr)
+        { return program_bindings_wptr.expired(); }
     );
 
     m_program_bindings.erase(program_bindings_end_it, m_program_bindings.end());
 
     tf::Taskflow task_flow;
     task_flow.for_each_guided(m_program_bindings.begin(), m_program_bindings.end(),
-        [](const WeakPtr<ProgramBindings>& wp_program_bindings)
+        [](const WeakPtr<ProgramBindings>& program_bindings_wptr)
         {
             META_FUNCTION_TASK();
-            Ptr<ProgramBindings> sp_program_bindings = wp_program_bindings.lock();
-            assert(!!sp_program_bindings);
-            static_cast<ProgramBindingsBase&>(*sp_program_bindings).CompleteInitialization();
+            Ptr<ProgramBindings> program_bindings_ptr = program_bindings_wptr.lock();
+            assert(!!program_bindings_ptr);
+            static_cast<ProgramBindingsBase&>(*program_bindings_ptr).CompleteInitialization();
         },
         Data::GetParallelChunkSizeAsInt(m_program_bindings.size(), 3)
     );
@@ -137,8 +137,8 @@ void ResourceManager::AddProgramBindings(ProgramBindings& program_bindings)
     // This may cause performance drop on adding massive amount of program bindings,
     // so we assume that only different program bindings are added and check it in Debug builds only
     const auto program_bindings_it = std::find_if(m_program_bindings.begin(), m_program_bindings.end(),
-        [&program_bindings](const WeakPtr<ProgramBindings>& sp_program_bindings)
-        { return !sp_program_bindings.expired() && sp_program_bindings.lock().get() == std::addressof(program_bindings); }
+        [&program_bindings](const WeakPtr<ProgramBindings>& program_bindings_ptr)
+        { return !program_bindings_ptr.expired() && program_bindings_ptr.lock().get() == std::addressof(program_bindings); }
     );
     assert(program_bindings_it == m_program_bindings.end());
     if (program_bindings_it != m_program_bindings.end())
@@ -197,13 +197,13 @@ DescriptorHeap& ResourceManager::GetDescriptorHeap(DescriptorHeap::Type type, Da
     {
         throw std::invalid_argument("Can not get reference to \"Undefined\" descriptor heap.");
     }
-    const Ptr<DescriptorHeap>& sp_resource_heap = GetDescriptorHeapPtr(type, heap_index);
-    if (!sp_resource_heap)
+    const Ptr<DescriptorHeap>& resource_heap_ptr = GetDescriptorHeapPtr(type, heap_index);
+    if (!resource_heap_ptr)
     {
         throw std::invalid_argument("Descriptor heap of type \"" + DescriptorHeap::GetTypeName(type) +
                                     "\" and index " + std::to_string(heap_index) + " does not exist.");
     }
-    return *sp_resource_heap;
+    return *resource_heap_ptr;
 }
 
 const Ptr<DescriptorHeap>&  ResourceManager::GetDefaultShaderVisibleDescriptorHeapPtr(DescriptorHeap::Type type) const
@@ -219,10 +219,10 @@ const Ptr<DescriptorHeap>&  ResourceManager::GetDefaultShaderVisibleDescriptorHe
 
     const Ptrs<DescriptorHeap>& descriptor_heaps = m_descriptor_heap_types[static_cast<uint32_t>(type)];
     auto descriptor_heaps_it = std::find_if(descriptor_heaps.begin(), descriptor_heaps.end(),
-        [](const Ptr<DescriptorHeap>& sp_descriptor_heap)
+        [](const Ptr<DescriptorHeap>& descriptor_heap_ptr)
         {
-            assert(sp_descriptor_heap);
-            return sp_descriptor_heap && sp_descriptor_heap->GetSettings().shader_visible;
+            assert(descriptor_heap_ptr);
+            return descriptor_heap_ptr && descriptor_heap_ptr->GetSettings().shader_visible;
         });
 
     static const Ptr<DescriptorHeap> s_empty_heap_ptr;
@@ -233,12 +233,12 @@ DescriptorHeap& ResourceManager::GetDefaultShaderVisibleDescriptorHeap(Descripto
 {
     META_FUNCTION_TASK();
 
-    const Ptr<DescriptorHeap>& sp_resource_heap = GetDefaultShaderVisibleDescriptorHeapPtr(type);
-    if (!sp_resource_heap)
+    const Ptr<DescriptorHeap>& resource_heap_ptr = GetDefaultShaderVisibleDescriptorHeapPtr(type);
+    if (!resource_heap_ptr)
     {
         throw std::invalid_argument("There is no shader visible descriptor heap of type \"" + DescriptorHeap::GetTypeName(type) + "\".");
     }
-    return *sp_resource_heap;
+    return *resource_heap_ptr;
 }
 
 ResourceManager::DescriptorHeapSizeByType ResourceManager::GetDescriptorHeapSizes(bool get_allocated_size, bool for_shader_visible_heaps) const
@@ -267,17 +267,17 @@ void ResourceManager::ForEachDescriptorHeap(const std::function<void(DescriptorH
     {
         const DescriptorHeap::Type  desc_heaps_type = static_cast<DescriptorHeap::Type>(heap_type_idx);
         const Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[heap_type_idx];
-        for (const Ptr<DescriptorHeap>& sp_desc_heap : desc_heaps)
+        for (const Ptr<DescriptorHeap>& desc_heap_ptr : desc_heaps)
         {
-            if (!sp_desc_heap)
+            if (!desc_heap_ptr)
                 throw std::logic_error("Empty descriptor heap pointer should not be stored in resource manager.");
 
-            const DescriptorHeap::Type heap_type = sp_desc_heap->GetSettings().type;
+            const DescriptorHeap::Type heap_type = desc_heap_ptr->GetSettings().type;
             if (heap_type != desc_heaps_type)
                 throw std::logic_error("Wrong type of descriptor heap (" + DescriptorHeap::GetTypeName(heap_type) +
                                        ") was found in container assuming heaps of " + DescriptorHeap::GetTypeName(desc_heaps_type));
 
-            process_heap(*sp_desc_heap);
+            process_heap(*desc_heap_ptr);
         }
     }
 }

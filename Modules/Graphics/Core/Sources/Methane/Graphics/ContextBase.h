@@ -97,15 +97,15 @@ protected:
 
 private:
     const Type                m_type;
-    Ptr<DeviceBase>           m_sp_device;
+    Ptr<DeviceBase>           m_device_ptr;
     tf::Executor&             m_parallel_executor;
     ObjectBase::RegistryBase  m_objects_cache;
     ResourceManager::Settings m_resource_manager_init_settings{ true, {}, {} };
     ResourceManager           m_resource_manager;
-    Ptr<CommandQueue>         m_sp_upload_cmd_queue;
-    Ptr<BlitCommandList>      m_sp_upload_cmd_list;
-    Ptr<CommandListSet>       m_sp_upload_cmd_lists;
-    Ptr<Fence>                m_sp_upload_fence;
+    Ptr<CommandQueue>         m_upload_cmd_queue_ptr;
+    Ptr<BlitCommandList>      m_upload_cmd_list_ptr;
+    Ptr<CommandListSet>       m_upload_cmd_lists_ptr;
+    Ptr<Fence>                m_upload_fence_ptr;
     mutable DeferredAction    m_requested_action = DeferredAction::None;
     mutable bool              m_is_completing_initialization = false;
 };

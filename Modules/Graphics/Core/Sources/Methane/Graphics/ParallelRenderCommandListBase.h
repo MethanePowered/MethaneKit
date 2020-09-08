@@ -47,7 +47,7 @@ public:
     // ParallelRenderCommandList interface
     bool IsValidationEnabled() const noexcept override { return m_is_validation_enabled; }
     void SetValidationEnabled(bool is_validation_enabled) noexcept override;
-    void Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group = nullptr) override;
+    void Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) override;
     void SetViewState(ViewState& view_state) override;
     void SetParallelCommandListsCount(uint32_t count) override;
     const Ptrs<RenderCommandList>& GetParallelCommandLists() const override { return m_parallel_command_lists; }
@@ -69,7 +69,7 @@ public:
     Ptr<ParallelRenderCommandListBase> GetParallelRenderCommandListPtr() { return std::static_pointer_cast<ParallelRenderCommandListBase>(GetBasePtr()); }
 
 private:
-    const Ptr<RenderPass>   m_sp_render_pass;
+    const Ptr<RenderPass>   m_render_pass_ptr;
     Ptrs<RenderCommandList> m_parallel_command_lists;
     bool                    m_is_validation_enabled = true;
 };

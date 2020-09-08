@@ -92,16 +92,16 @@ struct Resource : virtual Object
     class Location
     {
     public:
-        Location(Ptr<Resource> sp_resource, Data::Size offset = 0u);
+        Location(Ptr<Resource> resource_ptr, Data::Size offset = 0u);
 
         bool operator==(const Location& other) const noexcept;
 
-        const Ptr<Resource>& GetResourcePtr() const noexcept  { return m_sp_resource; }
-        Resource&            GetResource() const noexcept     { return *m_sp_resource; }
+        const Ptr<Resource>& GetResourcePtr() const noexcept  { return m_resource_ptr; }
+        Resource&            GetResource() const noexcept     { return *m_resource_ptr; }
         Data::Size           GetOffset() const noexcept       { return m_offset; }
 
     private:
-        Ptr<Resource> m_sp_resource;
+        Ptr<Resource> m_resource_ptr;
         Data::Size    m_offset;
     };
 
@@ -112,7 +112,7 @@ struct Resource : virtual Object
     {
         Resource::Locations resource_locations;
         std::transform(resources.begin(), resources.end(), std::back_inserter(resource_locations),
-                       [](const std::shared_ptr<TResource>& sp_resource) { return Location(sp_resource); });
+                       [](const std::shared_ptr<TResource>& resource_ptr) { return Location(resource_ptr); });
         return resource_locations;
     }
 

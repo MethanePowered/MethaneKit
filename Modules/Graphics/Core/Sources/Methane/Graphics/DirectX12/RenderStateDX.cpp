@@ -44,10 +44,10 @@ namespace Methane::Graphics
 
 constexpr size_t g_max_rtv_count = sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC::RTVFormats) / sizeof(DXGI_FORMAT);
 
-inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<Shader>& sp_shader)
+inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<Shader>& shader_ptr)
 {
     META_FUNCTION_TASK();
-    const Data::Chunk* p_byte_code_chunk = sp_shader ? static_cast<const ShaderDX&>(*sp_shader).GetNativeByteCode() : nullptr;
+    const Data::Chunk* p_byte_code_chunk = shader_ptr ? static_cast<const ShaderDX&>(*shader_ptr).GetNativeByteCode() : nullptr;
     return p_byte_code_chunk
         ? CD3DX12_SHADER_BYTECODE(p_byte_code_chunk->p_data, p_byte_code_chunk->size)
         : CD3DX12_SHADER_BYTECODE(NULL, 0);

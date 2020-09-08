@@ -29,10 +29,10 @@ Vulkan implementation of the program interface.
 namespace Methane::Graphics
 {
 
-Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
+Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramBindingsVK>(sp_program, resource_locations_by_argument);
+    return std::make_shared<ProgramBindingsVK>(program_ptr, resource_locations_by_argument);
 }
 
 Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument)
@@ -61,8 +61,8 @@ void ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::
     ArgumentBindingBase::SetResourceLocations(resource_locations);
 }
 
-ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
-    : ProgramBindingsBase(sp_program, resource_locations_by_argument)
+ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument)
+    : ProgramBindingsBase(program_ptr, resource_locations_by_argument)
 {
     META_FUNCTION_TASK();
 }

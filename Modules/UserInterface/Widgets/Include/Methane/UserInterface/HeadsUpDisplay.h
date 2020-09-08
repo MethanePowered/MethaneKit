@@ -90,8 +90,8 @@ private:
     using TextBlockPtrs = std::array<Ptr<Text>, TextBlock::Count>;
 
     Settings            m_settings;
-    const Ptr<Font>     m_sp_major_font;
-    const Ptr<Font>     m_sp_minor_font;
+    const Ptr<Font>     m_major_font_ptr;
+    const Ptr<Font>     m_minor_font_ptr;
     const TextBlockPtrs m_text_blocks;
     Timer               m_update_timer;
 };

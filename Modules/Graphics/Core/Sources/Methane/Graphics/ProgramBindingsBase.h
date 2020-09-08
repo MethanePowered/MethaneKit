@@ -73,7 +73,7 @@ public:
         Resource::Locations m_resource_locations;
     };
 
-    ProgramBindingsBase(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
+    ProgramBindingsBase(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument);
     ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
     ~ProgramBindingsBase() override;
 
@@ -104,7 +104,7 @@ private:
     using DescriptorHeapReservationByType = std::array<std::optional<DescriptorHeap::Reservation>,
                                                        static_cast<uint32_t>(DescriptorHeap::Type::Count)>;
 
-    const Ptr<Program>              m_sp_program;
+    const Ptr<Program>              m_program_ptr;
     Program::Arguments              m_arguments;
     BindingByArgument               m_binding_by_argument;
     DescriptorHeapReservationByType m_descriptor_heap_reservations_by_type;

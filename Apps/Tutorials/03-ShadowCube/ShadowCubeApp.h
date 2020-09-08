@@ -37,21 +37,21 @@ struct ShadowCubeFrame final : gfx::AppFrame
     {
         struct MeshResources
         {
-            Ptr<gfx::Buffer>          sp_uniforms_buffer;
-            Ptr<gfx::ProgramBindings> sp_program_bindings;
+            Ptr<gfx::Buffer>          uniforms_buffer_ptr;
+            Ptr<gfx::ProgramBindings> program_bindings_ptr;
         };
 
         MeshResources               cube;
         MeshResources               floor;
-        Ptr<gfx::Texture>           sp_rt_texture;
-        Ptr<gfx::RenderPass>        sp_pass;
-        Ptr<gfx::RenderCommandList> sp_cmd_list;
+        Ptr<gfx::Texture>           rt_texture_ptr;
+        Ptr<gfx::RenderPass>        pass_ptr;
+        Ptr<gfx::RenderCommandList> cmd_list_ptr;
     };
 
     PassResources            shadow_pass;
     PassResources            final_pass;
-    Ptr<gfx::Buffer>         sp_scene_uniforms_buffer;
-    Ptr<gfx::CommandListSet> sp_execute_cmd_list_set;
+    Ptr<gfx::Buffer>         scene_uniforms_buffer_ptr;
+    Ptr<gfx::CommandListSet> execute_cmd_list_set_ptr;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -119,9 +119,9 @@ private:
         void Release();
 
         const bool                              is_final_pass;
-        const Ptr<gfx::CommandList::DebugGroup> sp_debug_group;
-        Ptr<gfx::RenderState>                   sp_render_state;
-        Ptr<gfx::ViewState>                     sp_view_state;
+        const Ptr<gfx::CommandList::DebugGroup> debug_group_ptr;
+        Ptr<gfx::RenderState>                   render_state_ptr;
+        Ptr<gfx::ViewState>                     view_state_ptr;
     };
 
     bool Animate(double elapsed_seconds, double delta_seconds);
@@ -136,11 +136,11 @@ private:
     gfx::Camera                 m_view_camera;
     gfx::Camera                 m_light_camera;
 
-    Ptr<gfx::Buffer>            m_sp_const_buffer;
-    Ptr<gfx::Sampler>           m_sp_texture_sampler;
-    Ptr<gfx::Sampler>           m_sp_shadow_sampler;
-    Ptr<TexturedMeshBuffers>    m_sp_cube_buffers;
-    Ptr<TexturedMeshBuffers>    m_sp_floor_buffers;
+    Ptr<gfx::Buffer>            m_const_buffer_ptr;
+    Ptr<gfx::Sampler>           m_texture_sampler_ptr;
+    Ptr<gfx::Sampler>           m_shadow_sampler_ptr;
+    Ptr<TexturedMeshBuffers>    m_cube_buffers_ptr;
+    Ptr<TexturedMeshBuffers>    m_floor_buffers_ptr;
     RenderPass                  m_shadow_pass;
     RenderPass                  m_final_pass;
 };

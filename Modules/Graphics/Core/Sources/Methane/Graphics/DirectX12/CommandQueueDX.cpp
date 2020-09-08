@@ -87,12 +87,12 @@ CommandQueueDX::CommandQueueDX(ContextBase& context, CommandList::Type command_l
     , m_cp_command_queue(CreateNativeCommandQueue(GetContextDX().GetDeviceDX(), GetNativeCommandListType(command_lists_type)))
     , m_execution_waiting_thread(&CommandQueueDX::WaitForExecution, this)
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
-    , m_sp_timestamp_query_buffer(TimestampQueryBuffer::Create(*this, g_max_timestamp_queries_count_per_frame))
+    , m_timestamp_query_buffer_ptr(TimestampQueryBuffer::Create(*this, g_max_timestamp_queries_count_per_frame))
 #endif
 {
     META_FUNCTION_TASK();
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
-    TimestampQueryBufferDX& timestamp_query_buffer_dx = static_cast<TimestampQueryBufferDX&>(*m_sp_timestamp_query_buffer);
+    TimestampQueryBufferDX& timestamp_query_buffer_dx = static_cast<TimestampQueryBufferDX&>(*m_timestamp_query_buffer_ptr);
     InitializeTracyGpuContext(
         Tracy::GpuContext::Settings(
             Tracy::GpuContext::Type::DirectX12,
@@ -120,9 +120,9 @@ void CommandQueueDX::Execute(CommandListSet& command_lists, const CommandList::C
     if (!m_execution_waiting)
     {
         m_execution_waiting_thread.join();
-        if (m_sp_execution_waiting_exception)
+        if (m_execution_waiting_exception_ptr)
         {
-            std::rethrow_exception(m_sp_execution_waiting_exception);
+            std::rethrow_exception(m_execution_waiting_exception_ptr);
         }
         else
         {
@@ -192,22 +192,22 @@ void CommandQueueDX::WaitForExecution() noexcept
 
             while (!m_executing_command_lists.empty())
             {
-                Ptr<CommandListSetDX> sp_command_lists;
+                Ptr<CommandListSetDX> command_lists_ptr;
                 {
                     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
                     if (m_executing_command_lists.empty())
                         break;
 
-                    sp_command_lists = m_executing_command_lists.front();
+                    command_lists_ptr = m_executing_command_lists.front();
                 }
 
-                assert(sp_command_lists);
-                sp_command_lists->GetExecutionCompletedFenceDX().WaitOnCpu();
+                assert(command_lists_ptr);
+                command_lists_ptr->GetExecutionCompletedFenceDX().WaitOnCpu();
 
                 std::unique_lock<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
-                sp_command_lists->Complete();
+                command_lists_ptr->Complete();
                 if (!m_executing_command_lists.empty() &&
-                    m_executing_command_lists.front().get() == sp_command_lists.get())
+                    m_executing_command_lists.front().get() == command_lists_ptr.get())
                 {
                     m_executing_command_lists.pop();
                 }
@@ -217,7 +217,7 @@ void CommandQueueDX::WaitForExecution() noexcept
     }
     catch (...)
     {
-        m_sp_execution_waiting_exception = std::current_exception();
+        m_execution_waiting_exception_ptr = std::current_exception();
         m_execution_waiting = false;
     }
 }

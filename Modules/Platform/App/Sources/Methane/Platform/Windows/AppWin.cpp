@@ -109,7 +109,7 @@ int AppWin::Run(const RunArgs& args)
     ShowWindow(m_env.window_handle, SW_SHOW);
 
     // If there's a deferred message, schedule it to show for the current window message loop
-    if (m_sp_deferred_message)
+    if (m_deferred_message_ptr)
     {
         ScheduleAlert();
     }
@@ -192,10 +192,10 @@ void AppWin::Alert(const Message& msg, bool deferred)
 void AppWin::OnWindowAlert()
 {
     META_FUNCTION_TASK();
-    if (!m_sp_deferred_message)
+    if (!m_deferred_message_ptr)
         return;
 
-    ShowAlert(*m_sp_deferred_message);
+    ShowAlert(*m_deferred_message_ptr);
 }
 
 LRESULT AppWin::OnWindowDestroy()

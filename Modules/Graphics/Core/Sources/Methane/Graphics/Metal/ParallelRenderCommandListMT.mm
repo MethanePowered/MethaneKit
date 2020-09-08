@@ -43,12 +43,12 @@ ParallelRenderCommandListMT::ParallelRenderCommandListMT(CommandQueueBase& comma
     META_FUNCTION_TASK();
 }
 
-void ParallelRenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group)
+void ParallelRenderCommandListMT::Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     if (IsCommandEncoderInitialized())
     {
-        ParallelRenderCommandListBase::Reset(sp_render_state, p_debug_group);
+        ParallelRenderCommandListBase::Reset(render_state_ptr, p_debug_group);
         return;
     }
 
@@ -59,12 +59,12 @@ void ParallelRenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state,
     id<MTLCommandBuffer>& mtl_cmd_buffer = InitializeCommandBuffer();
     InitializeCommandEncoder([mtl_cmd_buffer parallelRenderCommandEncoderWithDescriptor: mtl_render_pass]);
     
-    if (sp_render_state)
+    if (render_state_ptr)
     {
-        static_cast<RenderStateMT&>(*sp_render_state).InitializeNativeStates();
+        static_cast<RenderStateMT&>(*render_state_ptr).InitializeNativeStates();
     }
 
-    ParallelRenderCommandListBase::Reset(sp_render_state, p_debug_group);
+    ParallelRenderCommandListBase::Reset(render_state_ptr, p_debug_group);
 }
 
 RenderPassMT& ParallelRenderCommandListMT::GetRenderPassMT()

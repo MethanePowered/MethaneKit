@@ -54,28 +54,28 @@ public:
     bool SetHelpText(const std::string& help_str);
     bool SetParametersText(const std::string& parameters_str);
 
-    bool IsHelpTextDisplayed() const noexcept                    { return !!m_help_columns.first.sp_text; }
-    bool IsParametersTextDisplayed() const noexcept              { return !!m_parameters.sp_text; }
+    bool IsHelpTextDisplayed() const noexcept                    { return !!m_help_columns.first.text_ptr; }
+    bool IsParametersTextDisplayed() const noexcept              { return !!m_parameters.text_ptr; }
     void GetParametersText(const std::string& parameters_str);
     Font& GetMainFont();
 
     const IApp::Settings& GetAppSettings() const noexcept        { return m_app_settings; }
 
     HeadsUpDisplay::Settings& GetHeadsUpDisplaySettings()        { return m_app_settings.hud_settings; }
-    HeadsUpDisplay*           GetHeadsUpDisplay() const noexcept { return m_sp_hud.get(); }
+    HeadsUpDisplay*           GetHeadsUpDisplay() const noexcept { return m_hud_ptr.get(); }
 
 protected:
     IApp::Settings& GetAppSettings() noexcept                    { return m_app_settings; }
-    const Context&  GetUIContext() const noexcept                { return *m_sp_ui_context; }
-    Context&        GetUIContext() noexcept                      { return *m_sp_ui_context; }
+    const Context&  GetUIContext() const noexcept                { return *m_ui_context_ptr; }
+    Context&        GetUIContext() noexcept                      { return *m_ui_context_ptr; }
 
 private:
     struct TextItem
     {
         std::string text_str;
         std::string text_name;
-        Ptr<Panel>  sp_panel;
-        Ptr<Text>   sp_text;
+        Ptr<Panel>  panel_ptr;
+        Ptr<Text>   text_ptr;
 
         void Update(const FrameSize& frame_size);
         void Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group);
@@ -86,13 +86,13 @@ private:
     void UpdateHelpTextPosition();
     void UpdateParametersTextPosition();
 
-    UniquePtr<Context>             m_sp_ui_context;
+    UniquePtr<Context>             m_ui_context_ptr;
     IApp::Settings                 m_app_settings;
     UnitSize                       m_frame_size;
     UnitPoint                      m_text_margins;
-    Ptr<Badge>                     m_sp_logo_badge;
-    Ptr<HeadsUpDisplay>            m_sp_hud;
-    Ptr<Font>                      m_sp_main_font;
+    Ptr<Badge>                     m_logo_badge_ptr;
+    Ptr<HeadsUpDisplay>            m_hud_ptr;
+    Ptr<Font>                      m_main_font_ptr;
     std::string                    m_help_text_str;
     std::pair<TextItem, TextItem>  m_help_columns;
     TextItem                       m_parameters;

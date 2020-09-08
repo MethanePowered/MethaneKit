@@ -233,14 +233,14 @@ void SystemDX::CheckForChanges()
     Ptrs<Device>   prev_devices = devices;
     UpdateGpuDevices(GetGpuSupportedFeatures());
 
-    for (const Ptr<Device>& sp_prev_device : prev_devices)
+    for (const Ptr<Device>& prev_device_ptr : prev_devices)
     {
-        assert(!!sp_prev_device);
-        DeviceDX& prev_device = static_cast<DeviceDX&>(*sp_prev_device);
+        assert(!!prev_device_ptr);
+        DeviceDX& prev_device = static_cast<DeviceDX&>(*prev_device_ptr);
         auto device_it = std::find_if(devices.begin(), devices.end(),
-                                      [prev_device](const Ptr<Device>& sp_device)
+                                      [prev_device](const Ptr<Device>& device_ptr)
                                       {
-                                          DeviceDX& device = static_cast<DeviceDX&>(*sp_device);
+                                          DeviceDX& device = static_cast<DeviceDX&>(*device_ptr);
                                           return prev_device.GetNativeAdapter().GetAddressOf() == device.GetNativeAdapter().GetAddressOf();
                                       });
 

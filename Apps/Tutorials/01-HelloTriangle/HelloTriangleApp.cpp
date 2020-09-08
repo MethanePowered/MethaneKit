@@ -61,13 +61,13 @@ void HelloTriangleApp::Init()
     const Data::Size vertex_size      = static_cast<Data::Size>(sizeof(Vertex));
     const Data::Size vertex_data_size = static_cast<Data::Size>(sizeof(triangle_vertices));
 
-    Ptr<gfx::Buffer> sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), vertex_data_size, vertex_size);
-    sp_vertex_buffer->SetName("Triangle Vertex Buffer");
-    sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(triangle_vertices.data()), vertex_data_size } });
-    m_sp_vertex_buffer_set = gfx::BufferSet::CreateVertexBuffers({ *sp_vertex_buffer });
+    Ptr<gfx::Buffer> vertex_buffer_ptr = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), vertex_data_size, vertex_size);
+    vertex_buffer_ptr->SetName("Triangle Vertex Buffer");
+    vertex_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(triangle_vertices.data()), vertex_data_size } });
+    m_vertex_buffer_set_ptr = gfx::BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
     // Create render state
-    m_sp_render_state = gfx::RenderState::Create(GetRenderContext(),
+    m_render_state_ptr = gfx::RenderState::Create(GetRenderContext(),
         gfx::RenderState::Settings
         {
             gfx::Program::Create(GetRenderContext(),
@@ -91,15 +91,15 @@ void HelloTriangleApp::Init()
             )
         }
     );
-    m_sp_render_state->GetSettings().sp_program->SetName("Colored Triangle Shading");
-    m_sp_render_state->SetName("Triangle Pipeline State");
+    m_render_state_ptr->GetSettings().program_ptr->SetName("Colored Triangle Shading");
+    m_render_state_ptr->SetName("Triangle Pipeline State");
 
     // Create per-frame command lists
     for(HelloTriangleFrame& frame : GetFrames())
     {
-        frame.sp_render_cmd_list = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.sp_screen_pass);
-        frame.sp_render_cmd_list->SetName(IndexedName("Triangle Rendering", frame.index));
-        frame.sp_execute_cmd_list_set = gfx::CommandListSet::Create({ *frame.sp_render_cmd_list });
+        frame.render_cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.screen_pass_ptr);
+        frame.render_cmd_list_ptr->SetName(IndexedName("Triangle Rendering", frame.index));
+        frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({ *frame.render_cmd_list_ptr });
     }
 
     UserInterfaceApp::CompleteInitialization();
@@ -113,18 +113,18 @@ bool HelloTriangleApp::Render()
     // Issue commands for triangle rendering
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Triangle Rendering");
     HelloTriangleFrame& frame = GetCurrentFrame();
-    frame.sp_render_cmd_list->Reset(m_sp_render_state, s_debug_group.get());
-    frame.sp_render_cmd_list->SetViewState(GetViewState());
-    frame.sp_render_cmd_list->SetVertexBuffers(*m_sp_vertex_buffer_set);
-    frame.sp_render_cmd_list->Draw(gfx::RenderCommandList::Primitive::Triangle, 3u);
+    frame.render_cmd_list_ptr->Reset(m_render_state_ptr, s_debug_group.get());
+    frame.render_cmd_list_ptr->SetViewState(GetViewState());
+    frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
+    frame.render_cmd_list_ptr->Draw(gfx::RenderCommandList::Primitive::Triangle, 3u);
 
-    RenderOverlay(*frame.sp_render_cmd_list);
+    RenderOverlay(*frame.render_cmd_list_ptr);
 
     // Commit command list with present flag
-    frame.sp_render_cmd_list->Commit();
+    frame.render_cmd_list_ptr->Commit();
 
     // Execute command list on render queue and present frame to screen
-    GetRenderContext().GetRenderCommandQueue().Execute(*frame.sp_execute_cmd_list_set);
+    GetRenderContext().GetRenderCommandQueue().Execute(*frame.execute_cmd_list_set_ptr);
     GetRenderContext().Present();
 
     return true;
@@ -132,8 +132,8 @@ bool HelloTriangleApp::Render()
 
 void HelloTriangleApp::OnContextReleased(gfx::Context& context)
 {
-    m_sp_vertex_buffer_set.reset();
-    m_sp_render_state.reset();
+    m_vertex_buffer_set_ptr.reset();
+    m_render_state_ptr.reset();
 
     UserInterfaceApp::OnContextReleased(context);
 }

@@ -49,7 +49,7 @@ SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings
     const RenderContext::Settings& context_settings = context.GetSettings();
 
     RenderState::Settings state_settings;
-    state_settings.sp_program = Program::Create(context,
+    state_settings.program_ptr = Program::Create(context,
         Program::Settings
         {
             Program::Shaders
@@ -77,33 +77,33 @@ SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings
             context_settings.depth_stencil_format
         }
     );
-    state_settings.sp_program->SetName("Sky-box shading");
+    state_settings.program_ptr->SetName("Sky-box shading");
     state_settings.depth.enabled        = m_settings.render_options & Options::DepthEnabled;
     state_settings.depth.write_enabled  = false;
     state_settings.depth.compare        = m_settings.render_options & Options::DepthReversed ? Compare::GreaterEqual : Compare::Less;
     state_settings.rasterizer.is_front_counter_clockwise = true;
 
-    m_sp_render_state = RenderState::Create(context, state_settings);
-    m_sp_render_state->SetName("Sky-box render state");
+    m_render_state_ptr = RenderState::Create(context, state_settings);
+    m_render_state_ptr->SetName("Sky-box render state");
 
-    m_sp_texture_sampler = Sampler::Create(context, {
+    m_texture_sampler_ptr = Sampler::Create(context, {
         { Sampler::Filter::MinMag::Linear     },
         { Sampler::Address::Mode::ClampToZero },
         Sampler::LevelOfDetail(m_settings.lod_bias)
     });
-    m_sp_texture_sampler->SetName("Sky-box Texture Sampler");
+    m_texture_sampler_ptr->SetName("Sky-box Texture Sampler");
 }
 
-Ptr<ProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& sp_uniforms_buffer)
+Ptr<ProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& uniforms_buffer_ptr)
 {
     META_FUNCTION_TASK();
 
-    assert(!!m_sp_render_state);
-    assert(!!m_sp_render_state->GetSettings().sp_program);
-    return ProgramBindings::Create(m_sp_render_state->GetSettings().sp_program, {
-        { { Shader::Type::Vertex, "g_skybox_uniforms" }, { { sp_uniforms_buffer             } } },
+    assert(!!m_render_state_ptr);
+    assert(!!m_render_state_ptr->GetSettings().program_ptr);
+    return ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
+        { { Shader::Type::Vertex, "g_skybox_uniforms" }, { { uniforms_buffer_ptr             } } },
         { { Shader::Type::Pixel,  "g_skybox_texture"  }, { { m_mesh_buffers.GetTexturePtr() } } },
-        { { Shader::Type::Pixel,  "g_texture_sampler" }, { { m_sp_texture_sampler           } } },
+        { { Shader::Type::Pixel,  "g_texture_sampler" }, { { m_texture_sampler_ptr           } } },
     });
 }
 
@@ -123,11 +123,11 @@ void SkyBox::Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindin
     META_FUNCTION_TASK();
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Sky-box rendering");
     
-    assert(!!buffer_bindings.sp_uniforms_buffer);
-    assert(buffer_bindings.sp_uniforms_buffer->GetDataSize() >= sizeof(Uniforms));
-    buffer_bindings.sp_uniforms_buffer->SetData(m_mesh_buffers.GetFinalPassUniformsSubresources());
+    assert(!!buffer_bindings.uniforms_buffer_ptr);
+    assert(buffer_bindings.uniforms_buffer_ptr->GetDataSize() >= sizeof(Uniforms));
+    buffer_bindings.uniforms_buffer_ptr->SetData(m_mesh_buffers.GetFinalPassUniformsSubresources());
 
-    cmd_list.Reset(m_sp_render_state, s_debug_group.get());
+    cmd_list.Reset(m_render_state_ptr, s_debug_group.get());
     cmd_list.SetViewState(view_state);
     
     assert(!buffer_bindings.program_bindings_per_instance.empty());

@@ -52,11 +52,11 @@ void ParallelRenderCommandListVK::SetName(const std::string& name)
     ParallelRenderCommandListBase::SetName(name);
 }
 
-void ParallelRenderCommandListVK::Reset(const Ptr<RenderState>& sp_render_state, DebugGroup* p_debug_group)
+void ParallelRenderCommandListVK::Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 
-    ParallelRenderCommandListBase::Reset(sp_render_state, p_debug_group);
+    ParallelRenderCommandListBase::Reset(render_state_ptr, p_debug_group);
 }
 
 void ParallelRenderCommandListVK::Commit()

@@ -111,12 +111,12 @@ bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& p
     return false;
 }
 
-ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
-    : m_sp_program(sp_program)
+ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument)
+    : m_program_ptr(program_ptr)
 {
     META_FUNCTION_TASK();
 
-    if (!m_sp_program)
+    if (!m_program_ptr)
     {
         throw std::runtime_error("Can not create resource bindings for an empty program.");
     }
@@ -127,7 +127,7 @@ ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& sp_program, const R
 }
 
 ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
-    : m_sp_program(other_program_bindings.m_sp_program)
+    : m_program_ptr(other_program_bindings.m_program_ptr)
     , m_descriptor_heap_reservations_by_type(other_program_bindings.m_descriptor_heap_reservations_by_type)
 {
     META_FUNCTION_TASK();
@@ -176,15 +176,15 @@ ProgramBindingsBase::~ProgramBindingsBase()
 const Program& ProgramBindingsBase::GetProgram() const
 {
     META_FUNCTION_TASK();
-    assert(!!m_sp_program);
-    return *m_sp_program;
+    assert(!!m_program_ptr);
+    return *m_program_ptr;
 }
 
 Program& ProgramBindingsBase::GetProgram()
 {
     META_FUNCTION_TASK();
-    assert(!!m_sp_program);
-    return *m_sp_program;
+    assert(!!m_program_ptr);
+    return *m_program_ptr;
 }
 
 void ProgramBindingsBase::ReserveDescriptorHeapRanges()
@@ -197,7 +197,7 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         uint32_t mutable_count = 0;
     };
 
-    assert(!!m_sp_program);
+    assert(!!m_program_ptr);
     const ProgramBase& program = static_cast<const ProgramBase&>(GetProgram());
 
     // Count the number of constant and mutable descriptors to be allocated in each descriptor heap
@@ -263,7 +263,7 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
 
         if (descriptors.constant_count > 0)
         {
-            heap_reservation.constant_range = static_cast<ProgramBase&>(*m_sp_program).ReserveConstantDescriptorRange(heap_reservation.heap.get(), descriptors.constant_count);
+            heap_reservation.constant_range = static_cast<ProgramBase&>(*m_program_ptr).ReserveConstantDescriptorRange(heap_reservation.heap.get(), descriptors.constant_count);
         }
         if (descriptors.mutable_count > 0)
         {
@@ -283,13 +283,13 @@ void ProgramBindingsBase::SetResourcesForArguments(const ResourceLocationsByArgu
     for (const auto& argument_and_resource_locations : resource_locations_by_argument)
     {
         const Program::Argument argument = argument_and_resource_locations.first;
-        const Ptr<ArgumentBinding>& sp_binding = Get(argument);
-        if (!sp_binding)
+        const Ptr<ArgumentBinding>& binding_ptr = Get(argument);
+        if (!binding_ptr)
         {
 #ifndef PROGRAM_IGNORE_MISSING_ARGUMENTS
             const Program::Argument all_shaders_argument(Shader::Type::All, argument.name);
             const bool all_shaders_argument_found = !!Get(all_shaders_argument);
-            throw std::runtime_error("Program \"" + m_sp_program->GetName() +
+            throw std::runtime_error("Program \"" + m_program_ptr->GetName() +
                                      "\" does not have argument \"" + argument.name +
                                      "\" of " + Shader::GetTypeName(argument.shader_type) + " shader." +
                                      (all_shaders_argument_found ? " Instead this argument is used in All shaders." : "") );
@@ -297,7 +297,7 @@ void ProgramBindingsBase::SetResourcesForArguments(const ResourceLocationsByArgu
             continue;
 #endif
         }
-        sp_binding->SetResourceLocations(argument_and_resource_locations.second);
+        binding_ptr->SetResourceLocations(argument_and_resource_locations.second);
     }
 }
 
@@ -305,10 +305,10 @@ const Ptr<ProgramBindings::ArgumentBinding>& ProgramBindingsBase::Get(const Prog
 {
     META_FUNCTION_TASK();
 
-    static const Ptr<ArgumentBinding> s_sp_empty_argument_binding;
+    static const Ptr<ArgumentBinding> s_empty_argument_binding_ptr;
     auto binding_by_argument_it  = m_binding_by_argument.find(shader_argument);
     return binding_by_argument_it != m_binding_by_argument.end()
-         ? binding_by_argument_it->second : s_sp_empty_argument_binding;
+         ? binding_by_argument_it->second : s_empty_argument_binding_ptr;
 }
 
 bool ProgramBindingsBase::AllArgumentsAreBoundToResources(std::string& missing_args) const
@@ -323,7 +323,7 @@ bool ProgramBindingsBase::AllArgumentsAreBoundToResources(std::string& missing_a
         if (resource_locations.empty())
         {
             log_ss << std::endl 
-                   << "   - Program \"" << m_sp_program->GetName()
+                   << "   - Program \"" << m_program_ptr->GetName()
                    << "\" argument \"" << binding_by_argument.first.name
                    << "\" of " << Shader::GetTypeName(binding_by_argument.first.shader_type)
                    << " shader is not bound to any resource." ;
@@ -347,7 +347,7 @@ void ProgramBindingsBase::VerifyAllArgumentsAreBoundToResources()
     std::string missing_args;
     if (!AllArgumentsAreBoundToResources(missing_args))
     {
-        throw std::runtime_error("Some arguments of program \"" + m_sp_program->GetName() +
+        throw std::runtime_error("Some arguments of program \"" + m_program_ptr->GetName() +
                                  "\" are not bound to any resource:\n" + missing_args);
     }
 #endif

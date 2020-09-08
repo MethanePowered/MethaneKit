@@ -69,10 +69,10 @@ public:
     ID3D12QueryHeap& GetNativeQueryHeap() noexcept          { return m_native_query_heap; }
 
 protected:
-    Buffer& GetResultBuffer() noexcept { return *m_sp_result_buffer; }
+    Buffer& GetResultBuffer() noexcept { return *m_result_buffer_ptr; }
 
 private:
-    Ptr<Buffer>       m_sp_result_buffer;
+    Ptr<Buffer>       m_result_buffer_ptr;
     IContextDX&       m_context_dx;
     ResourceDX&       m_result_resource_dx;
     D3D12_QUERY_TYPE  m_native_query_type;

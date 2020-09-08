@@ -146,7 +146,7 @@ protected:
     void AddInputControllers(const Ptrs<Input::Controller>& controllers) { m_input_state.AddControllers(controllers); }
     void Deinitialize() { m_initialized = false; }
 
-    Ptr<Message> m_sp_deferred_message;
+    Ptr<Message> m_deferred_message_ptr;
 
 private:
     Settings        m_settings;
@@ -158,7 +158,7 @@ private:
     bool            m_has_keyboard_focus = false;
     Input::State    m_input_state;
 
-    mutable UniquePtr<tf::Executor> m_sp_parallel_executor;
+    mutable UniquePtr<tf::Executor> m_parallel_executor_ptr;
 };
 
 } // namespace Methane::Platform

@@ -161,10 +161,10 @@ Ptr<Texture> ImageLoader::LoadImageToTexture2D(Context& context, const std::stri
 
     const ImageData   image_data   = LoadImage(image_path, 4, false);
     const PixelFormat image_format = GetDefaultImageFormat(options & Options::SrgbColorSpace);
-    Ptr<Texture> sp_texture = Texture::CreateImage(context, image_data.dimensions, 1, image_format, options & Options::Mipmapped);
-    sp_texture->SetData({ { image_data.pixels.p_data, image_data.pixels.size } });
+    Ptr<Texture> texture_ptr = Texture::CreateImage(context, image_data.dimensions, 1, image_format, options & Options::Mipmapped);
+    texture_ptr->SetData({ { image_data.pixels.p_data, image_data.pixels.size } });
 
-    return sp_texture;
+    return texture_ptr;
 }
 
 Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, Options::Mask options)
@@ -224,10 +224,10 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
     // Load face images to cube texture
 
     const PixelFormat image_format = GetDefaultImageFormat(options & Options::SrgbColorSpace);
-    Ptr<Texture> sp_texture = Texture::CreateCube(context, face_dimensions.width, 1, image_format, options & Options::Mipmapped);
-    sp_texture->SetData(face_resources);
+    Ptr<Texture> texture_ptr = Texture::CreateCube(context, face_dimensions.width, 1, image_format, options & Options::Mipmapped);
+    texture_ptr->SetData(face_resources);
 
-    return sp_texture;
+    return texture_ptr;
 }
 
 } // namespace Methane::Graphics
