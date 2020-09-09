@@ -28,7 +28,7 @@ Also you can get [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/
 [![Total lines](https://tokei.rs/b1/github/egorodet/MethaneKit)](https://github.com/egorodet/MethaneKit)
 
 ![Asteroids sample on Windows](Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg)
-<p align="center"><i><a href="#asteroids">Asteroids sample</a> demonstrating multi-threaded rendering with Methane Graphics API</i></p>
+<p align="center"><i><a href="https://github.com/egorodet/MethaneKit/tree/master/Apps/Samples/Asteroids">Asteroids sample</a> demonstrating multi-threaded rendering with Methane Graphics API</i></p>
 
 ## Getting Started
 
