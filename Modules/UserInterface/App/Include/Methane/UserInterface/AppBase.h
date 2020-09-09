@@ -54,8 +54,8 @@ public:
     bool SetHelpText(const std::string& help_str);
     bool SetParametersText(const std::string& parameters_str);
 
-    bool IsHelpTextDisplayed() const noexcept                    { return !!m_help_columns.first.text_ptr; }
-    bool IsParametersTextDisplayed() const noexcept              { return !!m_parameters.text_ptr; }
+    bool IsHelpTextDisplayed() const noexcept                    { return !m_help_columns.first.text_str.empty(); }
+    bool IsParametersTextDisplayed() const noexcept              { return !m_parameters.text_str.empty(); }
     void GetParametersText(const std::string& parameters_str);
     Font& GetMainFont();
 

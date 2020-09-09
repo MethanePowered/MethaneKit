@@ -59,6 +59,8 @@ public:
     void Init() override
     {
         META_FUNCTION_TASK();
+        // Update parameters since they could change after parsing command line arguments
+        UpdateParametersText();
         GraphicsApp::Init();
         AppBase::Init(GraphicsApp::GetRenderContext(), GraphicsApp::GetFrameSize());
     }
