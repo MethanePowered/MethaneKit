@@ -170,6 +170,27 @@ cmake -H../../../.. -B. -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$(pwd)/../In
 cmake --build . --config Release --target install
 ```
 
+#### CMake Build Options
+
+Build options can be configured in cmake generator command line:
+```console
+cmake -G [Generator] ... -D[BUILD_OPTION_NAME]:BOOL=ON
+```
+
+| Build Option Name                            | Default Value | Release Build | Profiling Build | Description                |
+| -------------------------------------------- | ------------- | ------------- | --------------- | -------------------------- |
+| METHANE_RUN_TESTS_DURING_BUILD               | **ON**        | OFF           | OFF             | Run tests during build     |
+| METHANE_SHADERS_CODEVIEW_ENABLED             | OFF           | **ON**        | **ON**          | Enable shaders code symbols viewing in debug tools  |
+| METHANE_USE_OPEN_IMAGE_IO                    | OFF           | OFF           | OFF             | Enable using OpenImageIO library for images loading |
+| METHANE_COMMAND_DEBUG_GROUPS_ENABLED         | OFF           | **ON**        | **ON**          | Enable command list debug groups with frame markup  |
+| METHANE_LOGGING_ENABLED                      | OFF           | OFF           | OFF             | Enable debug logging       | 
+| METHANE_SCOPE_TIMERS_ENABLED                 | OFF           | OFF           | **ON**          | Enable low-overhead profiling with scope-timers     |
+| METHANE_ITT_INSTRUMENTATION_ENABLED          | OFF           | **ON**        | **ON**          | Enable ITT instrumentation for trace capture with Intel GPA or VTune |
+| METHANE_ITT_METADATA_ENABLED                 | OFF           | OFF           | **ON**          | Enable ITT metadata for tasks and events like function source locations |
+| METHANE_GPU_INSTRUMENTATION_ENABLED          | OFF           | OFF           | **ON**          | Enable GPU instrumentation to collect command list execution timings |
+| METHANE_TRACY_PROFILING_ENABLED              | OFF           | OFF           | **ON**          | Enable realtime profiling with Tracy |
+| METHANE_TRACY_PROFILING_ON_DEMAND            | OFF           | OFF           | **ON**          | Enable Tracy data collection on demand, after client connection |
+
 ## Supported Development Tools
 
 ### Development Environments
@@ -191,36 +212,13 @@ Open source project development license is provided free of charge to all key co
 ### Trace Profiling Tools
 
 Methane Kit contains integrated instrumentation of all libraries for performance analysis with trace collection using following tools:
-- [Tracy Profiler](https://github.com/wolfpld/tracy)
-  - Profiling build options:
-    - `METHANE_TRACY_PROFILING_ENABLED:BOOL=ON` - enables Tracy instrumentation and client connection
-    - `METHANE_TRACY_PROFILING_ON_DEMAND:BOOL=ON` - enable trace collection after Tracy profiler connection (otherwise from app start)
-    - `METHANE_GPU_INSTRUMENTATION_ENABLED:BOOL=ON` - enable GPU timestamp queries (affects performance)
-  - Instructions for analysis:
-    1. Run Methane application built with Tracy profiling enabled or get `Profiling` [release build](https://github.com/egorodet/MethaneKit/releases)
-    2. Run [Tracy profiler v0.7.1](https://github.com/egorodet/Tracy/releases/tag/v0.7.1), run it from Terminal on MacOS
-    3. Click Methane application record in the Tracy connection dialog. Realtime trace collection begins.
+- [Tracy Frame Profiler](https://github.com/wolfpld/tracy)
 - [Intel Graphics Trace Analyzer](https://software.intel.com/en-us/gpa/graphics-trace-analyzer)
-  - Profiling build options:
-    - `METHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON` - enable ITT instrumentation
-    - `METHANE_ITT_METADATA_ENABLED:BOOL=ON` - enable metadata collection (like source paths and lines or frame numbers)
-  - Instructions for analysis:
-    1. Start Graphics Monitor and configure trace options:
-       - Click `Options` button, select `Trace` tab to change settings
-       - Set the trace duration in seconds
-       - In `GPA Domains` tab either select `Methane Kit` domain (to see Methane functions instrumentation) or
-      `WinPixEventsRuntime` domain (to see command list debug group instrumentation) but not both - otherwise trace will display incorrectly.
-    2. On the `Desktop Applications` launcher screen: select `Trace` mode from combo-box in the right-bottom corner
-    3. Enter path to the Methane application executable built with ITT instrumentation enabled (any [release build](https://github.com/egorodet/MethaneKit/releases) can be used)
-    4. Click `Start` button to start application. Press `CTRL+SHIFT+T` to capture a trace of requested duration with events prior the current moment
-    5. Collected trace appears in the Graphics Monitor right-side list, double-click it to open.
 
-Other trace profiling build options:
-- `METHANE_SCOPE_TIMERS_ENABLED:BOOL=ON` - enable scope timer measurements (displayed on charts in the tools above)
-- `METHANE_LOGGING_ENABLED:BOOL=ON` - enable logging (log messages are displayed in Tracy log)
+Please refer to [Methane Instrumentation](Modules/Common/Instrumentation) document for more details on traces collection and related build options.
 
 | Tracy Frame Profiler | Intel Graphics Trace Analyzer |
-| -------------- | ----------------------------- |
+| -------------------- | ----------------------------- |
 | ![Asteroids Trace in Tracy](Apps/Samples/Asteroids/Screenshots/AsteroidsWinTracyProfiling.jpg) | ![Asteroids Trace in GPA Trace Analyzer](Apps/Samples/Asteroids/Screenshots/AsteroidsWinGPATraceAnalyzer.jpg) |
 
 ### Frame Profiling and Debugging Tools

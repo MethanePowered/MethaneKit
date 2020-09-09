@@ -14,7 +14,7 @@ option(METHANE_SHADERS_CODEVIEW_ENABLED "Enable shaders code symbols viewing in 
 option(METHANE_USE_OPEN_IMAGE_IO        "Enable using OpenImageIO library for images loading" OFF)
 
 # Profiling and instrumentation configuration
-option(METHANE_COMMAND_DEBUG_GROUPS_ENABLED "Enable command list debug groups with frame markup" ON)
+option(METHANE_COMMAND_DEBUG_GROUPS_ENABLED "Enable command list debug groups with frame markup" OFF)
 option(METHANE_LOGGING_ENABLED              "Enable debug logging" OFF)
 option(METHANE_SCOPE_TIMERS_ENABLED         "Enable low-overhead profiling with scope-timers" OFF)
 option(METHANE_ITT_INSTRUMENTATION_ENABLED  "Enable ITT instrumentation for trace capture with Intel GPA or VTune" OFF)
