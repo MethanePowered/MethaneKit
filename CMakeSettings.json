@@ -125,9 +125,9 @@
             ]
         },
         {
-            "name": "x86-MSVC-Release-Profiling",
+            "name": "x86-MSVC-RelWithDebInfo-Profiling",
             "generator": "Ninja",
-            "configurationType": "Release",
+            "configurationType": "RelWithDebInfo",
             "inheritEnvironments": [ "msvc_x86" ],
             "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
             "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
@@ -311,9 +311,9 @@
             ]
         },
         {
-            "name": "x64-MSVC-Release-Profiling",
+            "name": "x64-MSVC-RelWithDebInfo-Profiling",
             "generator": "Ninja",
-            "configurationType": "Release",
+            "configurationType": "RelWithDebInfo",
             "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
             "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
             "buildCommandArgs": "-v",
@@ -507,9 +507,9 @@
             ]
         },
         {
-            "name": "x64-Clang-Release-Profiling",
+            "name": "x64-Clang-RelWithDebInfo-Profiling",
             "generator": "Ninja",
-            "configurationType": "Release",
+            "configurationType": "RelWithDebInfo",
             "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
             "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
             "buildCommandArgs": "-v",
