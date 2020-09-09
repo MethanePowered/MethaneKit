@@ -177,19 +177,19 @@ Build options can be configured in cmake generator command line:
 cmake -G [Generator] ... -D[BUILD_OPTION_NAME]:BOOL=ON
 ```
 
-| Build Option Name                            | Default Value | Release Build | Profiling Build | Description                |
-| -------------------------------------------- | ------------- | ------------- | --------------- | -------------------------- |
-| METHANE_RUN_TESTS_DURING_BUILD               | **ON**        | OFF           | OFF             | Run tests during build     |
-| METHANE_SHADERS_CODEVIEW_ENABLED             | OFF           | **ON**        | **ON**          | Enable shaders code symbols viewing in debug tools  |
-| METHANE_USE_OPEN_IMAGE_IO                    | OFF           | OFF           | OFF             | Enable using OpenImageIO library for images loading |
-| METHANE_COMMAND_DEBUG_GROUPS_ENABLED         | OFF           | **ON**        | **ON**          | Enable command list debug groups with frame markup  |
-| METHANE_LOGGING_ENABLED                      | OFF           | OFF           | OFF             | Enable debug logging       | 
-| METHANE_SCOPE_TIMERS_ENABLED                 | OFF           | OFF           | **ON**          | Enable low-overhead profiling with scope-timers     |
-| METHANE_ITT_INSTRUMENTATION_ENABLED          | OFF           | **ON**        | **ON**          | Enable ITT instrumentation for trace capture with Intel GPA or VTune |
-| METHANE_ITT_METADATA_ENABLED                 | OFF           | OFF           | **ON**          | Enable ITT metadata for tasks and events like function source locations |
-| METHANE_GPU_INSTRUMENTATION_ENABLED          | OFF           | OFF           | **ON**          | Enable GPU instrumentation to collect command list execution timings |
-| METHANE_TRACY_PROFILING_ENABLED              | OFF           | OFF           | **ON**          | Enable realtime profiling with Tracy |
-| METHANE_TRACY_PROFILING_ON_DEMAND            | OFF           | OFF           | **ON**          | Enable Tracy data collection on demand, after client connection |
+| Build Option Name                               | Default Value  | Release Build  | Profiling Build | Description                |
+| ----------------------------------------------- | -------------- | -------------- | --------------- | -------------------------- |
+| <sub>METHANE_RUN_TESTS_DURING_BUILD</sub>       | <sub>ON</sub>  | <sub>OFF</sub> | <sub>OFF</sub>  | <sub>Run tests during build</sub> |
+| <sub>METHANE_SHADERS_CODEVIEW_ENABLED</sub>     | <sub>OFF</sub> | <sub>ON</sub>  | <sub>ON</sub>   | <sub>Enable shaders code symbols viewing in debug tools</sub>  |
+| <sub>METHANE_USE_OPEN_IMAGE_IO</sub>            | <sub>OFF</sub> | <sub>OFF</sub> | <sub>OFF</sub>  | <sub>Enable using OpenImageIO library for images loading</sub> |
+| <sub>METHANE_COMMAND_DEBUG_GROUPS_ENABLED</sub> | <sub>OFF</sub> | <sub>ON</sub>  | <sub>ON</sub    | <sub>Enable command list debug groups with frame markup</sub>  |
+| <sub>METHANE_LOGGING_ENABLED</sub>              | <sub>OFF</sub> | <sub>OFF</sub> | <sub>OFF</sub>  | <sub>Enable debug logging</sub> | 
+| <sub>METHANE_SCOPE_TIMERS_ENABLED</sub>         | <sub>OFF</sub> | <sub>OFF</sub> | <sub>ON</sub>   | <sub>Enable low-overhead profiling with scope-timers</sub> |
+| <sub>METHANE_ITT_INSTRUMENTATION_ENABLED</sub>  | <sub>OFF</sub> | <sub>ON</sub>  | <sub>ON</sub>   | <sub>Enable ITT instrumentation for trace capture with Intel GPA or VTune</sub> |
+| <sub>METHANE_ITT_METADATA_ENABLED</sub>         | <sub>OFF</sub> | <sub>OFF</sub> | <sub>ON</sub>   | <sub>Enable ITT metadata for tasks and events like function source locations</sub> |
+| <sub>METHANE_GPU_INSTRUMENTATION_ENABLED</sub>  | <sub>OFF</sub> | <sub>OFF</sub> | <sub>ON</sub>   | <sub>Enable GPU instrumentation to collect command list execution timings</sub> |
+| <sub>METHANE_TRACY_PROFILING_ENABLED</sub>      | <sub>OFF</sub> | <sub>OFF</sub> | <sub>ON</sub>   | <sub>Enable realtime profiling with Tracy</sub> |
+| <sub>METHANE_TRACY_PROFILING_ON_DEMAND</sub>    | <sub>OFF</sub> | <sub>OFF</sub> | <sub>ON</sub>   | <sub>Enable Tracy data collection on demand, after client connection</sub> |
 
 ## Supported Development Tools
 
@@ -228,10 +228,6 @@ Please refer to [Methane Instrumentation](Modules/Common/Instrumentation) docume
 - [RenderDoc](https://renderdoc.org)
 - [Microsoft PIX](https://devblogs.microsoft.com/pix/)
 - [NVidia Nsight Graphics](https://developer.nvidia.com/nsight-graphics)
-
-Frame debugging build options:
-- `METHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON` - enable shaders code embedded in compiled Obj files to be available in debugging tools
-- `METHANE_COMMAND_DEBUG_GROUPS_ENABLED:BOOL=ON` - enable named debug groups in captured frame API logs
 
 ## External Dependencies
 
