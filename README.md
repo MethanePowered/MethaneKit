@@ -182,7 +182,7 @@ cmake -G [Generator] ... -D[BUILD_OPTION_NAME]:BOOL=ON
 | <sub>METHANE_RUN_TESTS_DURING_BUILD</sub>       | <sub>ON</sub>  | <sub>OFF</sub> | <sub>OFF</sub>  | <sub>Run tests during build</sub> |
 | <sub>METHANE_SHADERS_CODEVIEW_ENABLED</sub>     | <sub>OFF</sub> | <sub>ON</sub>  | <sub>ON</sub>   | <sub>Enable shaders code symbols viewing in debug tools</sub>  |
 | <sub>METHANE_USE_OPEN_IMAGE_IO</sub>            | <sub>OFF</sub> | <sub>OFF</sub> | <sub>OFF</sub>  | <sub>Enable using OpenImageIO library for images loading</sub> |
-| <sub>METHANE_COMMAND_DEBUG_GROUPS_ENABLED</sub> | <sub>OFF</sub> | <sub>ON</sub>  | <sub>ON</sub    | <sub>Enable command list debug groups with frame markup</sub>  |
+| <sub>METHANE_COMMAND_DEBUG_GROUPS_ENABLED</sub> | <sub>OFF</sub> | <sub>ON</sub>  | <sub>ON</sub>   | <sub>Enable command list debug groups with frame markup</sub>  |
 | <sub>METHANE_LOGGING_ENABLED</sub>              | <sub>OFF</sub> | <sub>OFF</sub> | <sub>OFF</sub>  | <sub>Enable debug logging</sub> | 
 | <sub>METHANE_SCOPE_TIMERS_ENABLED</sub>         | <sub>OFF</sub> | <sub>OFF</sub> | <sub>ON</sub>   | <sub>Enable low-overhead profiling with scope-timers</sub> |
 | <sub>METHANE_ITT_INSTRUMENTATION_ENABLED</sub>  | <sub>OFF</sub> | <sub>ON</sub>  | <sub>ON</sub>   | <sub>Enable ITT instrumentation for trace capture with Intel GPA or VTune</sub> |
@@ -211,13 +211,10 @@ Open source project development license is provided free of charge to all key co
 
 ### Trace Profiling Tools
 
-Methane Kit contains integrated instrumentation of all libraries for performance analysis with trace collection using following tools:
-- [Tracy Frame Profiler](https://github.com/wolfpld/tracy)
-- [Intel Graphics Trace Analyzer](https://software.intel.com/en-us/gpa/graphics-trace-analyzer)
+Methane Kit contains integrated instrumentation of all libraries for performance analysis with trace collection using following tools.
+Please refer to [Methane Instrumentation](Modules/Common/Instrumentation) document for more details on trace collection instructions and related build options.
 
-Please refer to [Methane Instrumentation](Modules/Common/Instrumentation) document for more details on traces collection and related build options.
-
-| Tracy Frame Profiler | Intel Graphics Trace Analyzer |
+| [Tracy Frame Profiler](https://github.com/wolfpld/tracy) | [Intel Graphics Trace Analyzer](https://software.intel.com/en-us/gpa/graphics-trace-analyzer) |
 | -------------------- | ----------------------------- |
 | ![Asteroids Trace in Tracy](Apps/Samples/Asteroids/Screenshots/AsteroidsWinTracyProfiling.jpg) | ![Asteroids Trace in GPA Trace Analyzer](Apps/Samples/Asteroids/Screenshots/AsteroidsWinGPATraceAnalyzer.jpg) |
 

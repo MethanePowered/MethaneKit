@@ -69,8 +69,8 @@ Various GPU events and metrics are collected by [Intel GPA](https://software.int
 
 ## Scope Timer primitive
 
-[ScopeTimer](ScopeTimer.h) is a code primitive for low-overhead time measurement of some particular code scope
-by adding macro-definitions to functions or other code scopes. This instrumentation is enabled with
+[ScopeTimer](ScopeTimer.h) is a code primitive for low-overhead time measurement of functions or other code scopes
+by simply adding single line macro-definitions as shows example below. This instrumentation is enabled with
 `METHANE_SCOPE_TIMERS_ENABLED:BOOL=ON` build option.
 
 ```cpp
@@ -89,7 +89,7 @@ void Foo()
 
 Scope timers measure duration of the code scope by creating named `ScopeTimer` object on stack and saving 
 duration between object construction and destruction in `ScopeTimer::Aggregator` singleton.
-Aggregator accumulates scope timings and logs the results for all scopes to the debug output 
+Aggregator accumulates scope timings and logs the results for all entered scopes to the debug output 
 when macros `META_SCOPE_TIMERS_FLUSH();` is called or application exits.
 
 Additionally when scope timers are used together with ITT or Tracy instrumentation enabled, all scope timings are
