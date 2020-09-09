@@ -68,8 +68,8 @@ public:
         SetInstanceCount(static_cast<Data::Size>(m_mesh_subsets.size()));
 
         Ptr<Buffer> vertex_buffer_ptr = Buffer::CreateVertexBuffer(context,
-                                                                  static_cast<Data::Size>(mesh_data.GetVertexDataSize()),
-                                                                  static_cast<Data::Size>(mesh_data.GetVertexSize()));
+                                                                   static_cast<Data::Size>(mesh_data.GetVertexDataSize()),
+                                                                   static_cast<Data::Size>(mesh_data.GetVertexSize()));
         vertex_buffer_ptr->SetName(mesh_name + " Vertex Buffer");
         vertex_buffer_ptr->SetData({
             {

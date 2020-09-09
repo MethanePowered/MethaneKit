@@ -322,7 +322,7 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
         { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, { { asteroids_uniforms_buffer_ptr, GetUniformsBufferOffset(0) } } },
         { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { { scene_uniforms_buffer_ptr } } },
         { { gfx::Shader::Type::Pixel,  "g_constants"      }, { { constants_buffer_ptr      } } },
-        { { gfx::Shader::Type::Pixel,  "g_face_textures"  },     face_texture_locations       },
+        { { gfx::Shader::Type::Pixel,  "g_face_textures"  },     face_texture_locations        },
         { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { { m_texture_sampler_ptr     } } },
     });
 

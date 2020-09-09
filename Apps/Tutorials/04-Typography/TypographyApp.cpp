@@ -39,7 +39,7 @@ struct FontSettings
 };
 
 constexpr int32_t g_margin_size_in_dots      = 32;
-constexpr int32_t g_top_text_pos_in_dots     = 100;
+constexpr int32_t g_top_text_pos_in_dots     = 110;
 constexpr size_t  g_text_blocks_count        = 3;
 
 static const std::array<FontSettings, g_text_blocks_count> g_font_settings { {
@@ -255,14 +255,14 @@ void TypographyApp::UpdateFontAtlasBadges()
         if (!font_atlas_texture_ptr)
             continue;
 
-        const auto font_atlas_it_ptr = std::find_if(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
+        const auto font_atlas_ptr_it = std::find_if(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
                                                    [&font_atlas_texture_ptr](const Ptr<gui::Badge>& font_atlas_badge_ptr)
             {
                 return std::addressof(font_atlas_badge_ptr->GetTexture()) == font_atlas_texture_ptr.get();
             }
         );
 
-        if (font_atlas_it_ptr != m_font_atlas_badges.end())
+        if (font_atlas_ptr_it != m_font_atlas_badges.end())
             continue;
 
         m_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font_ref.get(), font_atlas_texture_ptr));
@@ -332,7 +332,7 @@ bool TypographyApp::Animate(double elapsed_seconds, double)
     for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
     {
         size_t& displayed_text_length    = m_displayed_text_lengths[block_index];
-        const Ptr<gui::Text>& text_ptr    = m_texts[block_index];
+        const Ptr<gui::Text>& text_ptr   = m_texts[block_index];
         const std::u32string& text_block = g_text_blocks[block_index];
         const size_t   text_block_length = text_block.length();
 
@@ -524,7 +524,7 @@ void TypographyApp::OnFontAdded(gui::Font& font)
 
 void TypographyApp::OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::Texture>& old_atlas_texture_ptr, const Ptr<gfx::Texture>& new_atlas_texture_ptr)
 {
-    const auto font_atlas_badge_it_ptr = std::find_if(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
+    const auto font_atlas_badge_ptr_it = std::find_if(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
                                                      [&old_atlas_texture_ptr](const Ptr<gui::Badge>& font_atlas_badge_ptr)
         {
            return std::addressof(font_atlas_badge_ptr->GetTexture()) == old_atlas_texture_ptr.get();
@@ -533,21 +533,21 @@ void TypographyApp::OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::Text
 
     if (new_atlas_texture_ptr)
     {
-        if (font_atlas_badge_it_ptr == m_font_atlas_badges.end())
+        if (font_atlas_badge_ptr_it == m_font_atlas_badges.end())
         {
             m_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font, new_atlas_texture_ptr));
             LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
         }
         else
         {
-            Ptr<gui::Badge>& badge_ptr = *font_atlas_badge_it_ptr;
+            Ptr<gui::Badge>& badge_ptr = *font_atlas_badge_ptr_it;
             badge_ptr->SetTexture(new_atlas_texture_ptr);
             badge_ptr->SetSize(gui::UnitSize(static_cast<const gfx::FrameSize&>(new_atlas_texture_ptr->GetSettings().dimensions), gui::Units::Pixels));
         }
     }
-    else if (font_atlas_badge_it_ptr != m_font_atlas_badges.end())
+    else if (font_atlas_badge_ptr_it != m_font_atlas_badges.end())
     {
-        m_font_atlas_badges.erase(font_atlas_badge_it_ptr);
+        m_font_atlas_badges.erase(font_atlas_badge_ptr_it);
         LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
     }
 }

@@ -100,10 +100,10 @@ Ptr<gfx::ProgramBindings> Planet::CreateProgramBindings(const Ptr<gfx::Buffer>& 
     assert(!!m_render_state_ptr);
     assert(!!m_render_state_ptr->GetSettings().program_ptr);
     return gfx::ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
-        { { gfx::Shader::Type::All,   "g_uniforms"  }, { { uniforms_buffer_ptr             } } },
-        { { gfx::Shader::Type::Pixel, "g_constants" }, { { constants_buffer_ptr            } } },
+        { { gfx::Shader::Type::All,   "g_uniforms"  }, { { uniforms_buffer_ptr            } } },
+        { { gfx::Shader::Type::Pixel, "g_constants" }, { { constants_buffer_ptr           } } },
         { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_mesh_buffers.GetTexturePtr() } } },
-        { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_texture_sampler_ptr           } } },
+        { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_texture_sampler_ptr          } } },
     });
 }
 

@@ -147,7 +147,7 @@ void TexturedCubeApp::Init()
 
     // Create index buffer for cube mesh
     const Data::Size index_data_size = static_cast<Data::Size>(cube_mesh.GetIndexDataSize());
-    m_index_buffer_ptr  = gfx::Buffer::CreateIndexBuffer(GetRenderContext(), index_data_size, gfx::GetIndexFormat(cube_mesh.GetIndex(0)));
+    m_index_buffer_ptr = gfx::Buffer::CreateIndexBuffer(GetRenderContext(), index_data_size, gfx::GetIndexFormat(cube_mesh.GetIndex(0)));
     m_index_buffer_ptr->SetName("Cube Index Buffer");
     m_index_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()), index_data_size } });
 
