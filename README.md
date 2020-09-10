@@ -12,7 +12,7 @@
 
 Click **"Open in Gitpod" button** above to explore Methane Kit codebase right away in a familiar VSCode-like IDE environment in your web-browser with navigation by symbols and cloud-build.
 Download [release builds](https://github.com/egorodet/MethaneKit/releases) with built samples and tutorials to try them out.
-Also you can get [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/_build?view=runs) **build artifacts** to test latest versions from `develop` branch.  
+Also you can get [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/_build?view=runs) **build artifacts** to test latest versions from `develop` branch. For manual build instruction see topic [Building from Sources](#building-from-sources) described below. Start learning Methane Graphics API with [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) tutorial documentation.
 
 |     Platform     |   Graphics API   |  Master Build Status  |  Develop Build Status  |
 | ---------------- | ---------------- | --------------------- | ---------------------- |
@@ -75,6 +75,8 @@ For detailed features description and development plans please refer to [Modules
 
 ### Tutorials
 
+Start learning Methane Graphics API with [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) tutorial documentation. Other tutorials will be documented soon.
+
 | <pre><b>Name / Link</b></pre> | <pre><b>Screenshot</b></pre> | <pre><b>Description</b>                                         </pre> |
 | ----------------------------- | ---------------------------- | ---------------------------------------------------------------------- |
 | [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) | ![Hello Triangle on Windows](Apps/Tutorials/01-HelloTriangle/Screenshots/HelloTriangleWinDirectX12.jpg) | Colored triangle rendering in just 120 lines of code! |
@@ -83,6 +85,8 @@ For detailed features description and development plans please refer to [Modules
 | [Typography](/Apps/Tutorials/04-Typography) | ![Typography on Windows](Apps/Tutorials/04-Typography/Screenshots/TypographyWinDirectX12.jpg) | Typography demonstrates animated text rendering with dynamic font atlas updates using Methane UI. |
 
 ### Samples
+
+Methane samples demonstrate advanced techniques and usage scenarios with a more complex implementation than tutorials above.
 
 | <pre><b>Name / Link</b></pre> | <pre><b>Screenshot</b></pre> | <pre><b>Description</b>                                         </pre> |
 | ----------------------------- | ---------------------------- | ---------------------------------------------------------------------- |
