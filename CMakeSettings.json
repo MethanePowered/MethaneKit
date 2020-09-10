@@ -125,7 +125,7 @@
             ]
         },
         {
-            "name": "x86-MSVC-RelWithDebInfo-Profiling",
+            "name": "x86-MSVC-ReleaseDbg-Profiling",
             "generator": "Ninja",
             "configurationType": "RelWithDebInfo",
             "inheritEnvironments": [ "msvc_x86" ],
@@ -311,7 +311,7 @@
             ]
         },
         {
-            "name": "x64-MSVC-RelWithDebInfo-Profiling",
+            "name": "x64-MSVC-ReleaseDbg-Profiling",
             "generator": "Ninja",
             "configurationType": "RelWithDebInfo",
             "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
@@ -507,7 +507,7 @@
             ]
         },
         {
-            "name": "x64-Clang-RelWithDebInfo-Profiling",
+            "name": "x64-Clang-ReleaseDbg-Profiling",
             "generator": "Ninja",
             "configurationType": "RelWithDebInfo",
             "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
