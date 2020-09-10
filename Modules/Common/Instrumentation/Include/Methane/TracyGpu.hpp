@@ -181,9 +181,6 @@ public:
         if (!m_is_active)
             return;
 
-        if (m_state != State::Completed)
-            throw std::logic_error("GPU scope can begin only from completed state.");
-
         m_state           = State::Begun;
         m_begin_thread_id = tracy::GetThreadHandle();
         m_begin_query_id  = m_context.NextQueryId();
