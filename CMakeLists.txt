@@ -130,11 +130,19 @@ else() # Clang or GCC on Linux/MacOS
     target_compile_options(MethaneBuildOptions INTERFACE
         # Set maximum warnings level & treat warnings as errors
         -Wall -Wextra -Werror
-        # Disable useless warnings
+        # Disable useless Clang and GCC warnings
         -Wno-missing-field-initializers
-        -Wno-ignored-qualifiers
-        -Wno-deprecated-copy
     )
+
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # GCC
+
+        target_compile_options(MethaneBuildOptions INTERFACE
+            # Disable useless GCC warnings
+            -Wno-ignored-qualifiers
+            -Wno-deprecated-copy
+        )
+
+    endif()
 
 endif()
 
