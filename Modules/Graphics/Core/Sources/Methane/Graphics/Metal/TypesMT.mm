@@ -32,7 +32,7 @@ namespace Methane::Graphics
 
 MTLIndexType TypeConverterMT::DataFormatToMetalIndexType(PixelFormat data_format) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (data_format)
     {
@@ -45,86 +45,86 @@ MTLIndexType TypeConverterMT::DataFormatToMetalIndexType(PixelFormat data_format
 
 MTLPixelFormat TypeConverterMT::DataFormatToMetalPixelType(PixelFormat data_format) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (data_format)
     {
-        case PixelFormat::Unknown:       return MTLPixelFormatInvalid;
-        case PixelFormat::RGBA8:         return MTLPixelFormatRGBA8Uint;
-        case PixelFormat::RGBA8Unorm:    return MTLPixelFormatRGBA8Unorm;
-        case PixelFormat::BGRA8Unorm:    return MTLPixelFormatBGRA8Unorm;
-        case PixelFormat::R32Float:      return MTLPixelFormatR32Float;
-        case PixelFormat::R32Uint:       return MTLPixelFormatR32Uint;
-        case PixelFormat::R32Sint:       return MTLPixelFormatR32Sint;
-        case PixelFormat::R16Uint:       return MTLPixelFormatRG16Uint;
-        case PixelFormat::R16Sint:       return MTLPixelFormatRG16Sint;
-        case PixelFormat::Depth32Float:  return MTLPixelFormatDepth32Float;
-        // MTLPixelFormatA8Unorm;
-        // MTLPixelFormatR8Unorm;
-        // MTLPixelFormatR8Snorm;
-        // MTLPixelFormatR8Uint;
-        // MTLPixelFormatR8Sint;
-        // MTLPixelFormatR16Unorm;
-        // MTLPixelFormatR16Snorm;
-        // MTLPixelFormatR16Uint;
-        // MTLPixelFormatR16Sint;
-        // MTLPixelFormatR16Float;
-        // MTLPixelFormatRG8Unorm;
-        // MTLPixelFormatRG8Snorm;
-        // MTLPixelFormatRG8Uint;
-        // MTLPixelFormatRG8Sint;
-        // MTLPixelFormatRG16Unorm;
-        // MTLPixelFormatRG16Snorm;
-        // MTLPixelFormatRG16Float;
-        // MTLPixelFormatRGBA8Unorm_sRGB;
-        // MTLPixelFormatRGBA8Snorm;
-        // MTLPixelFormatRGBA8Sint;
-        // MTLPixelFormatBGRA8Unorm_sRGB;
-        // MTLPixelFormatRGB10A2Unorm;
-        // MTLPixelFormatRGB10A2Uint;
-        // MTLPixelFormatRG11B10Float;
-        // MTLPixelFormatRGB9E5Float;
-        // MTLPixelFormatBGR10A2Unorm;
-        // MTLPixelFormatRG32Uint;
-        // MTLPixelFormatRG32Sint;
-        // MTLPixelFormatRG32Float;
-        // MTLPixelFormatRGBA16Unorm;
-        // MTLPixelFormatRGBA16Snorm;
-        // MTLPixelFormatRGBA16Uint;
-        // MTLPixelFormatRGBA16Sint;
-        // MTLPixelFormatRGBA16Float;
-        // MTLPixelFormatRGBA32Uint;
-        // MTLPixelFormatRGBA32Sint;
-        // MTLPixelFormatRGBA32Float;
-        // MTLPixelFormatBC1_RGBA;
-        // MTLPixelFormatBC1_RGBA_sRGB;
-        // MTLPixelFormatBC2_RGBA;
-        // MTLPixelFormatBC2_RGBA_sRGB;
-        // MTLPixelFormatBC3_RGBA;
-        // MTLPixelFormatBC3_RGBA_sRGB;
-        // MTLPixelFormatBC4_RUnorm;
-        // MTLPixelFormatBC4_RSnorm;
-        // MTLPixelFormatBC5_RGUnorm;
-        // MTLPixelFormatBC5_RGSnorm;
-        // MTLPixelFormatBC6H_RGBFloat;
-        // MTLPixelFormatBC6H_RGBUfloat;
-        // MTLPixelFormatBC7_RGBAUnorm;
-        // MTLPixelFormatBC7_RGBAUnorm_sRGB;
-        // MTLPixelFormatGBGR422;
-        // MTLPixelFormatBGRG422;
-        // MTLPixelFormatDepth16Unorm;
-        // MTLPixelFormatStencil8;
-        // MTLPixelFormatDepth24Unorm_Stencil8;
-        // MTLPixelFormatDepth32Float_Stencil8;
-        // MTLPixelFormatX32_Stencil8;
-        // MTLPixelFormatX24_Stencil8;
+    case PixelFormat::Unknown:          return MTLPixelFormatInvalid;
+    case PixelFormat::RGBA8:            return MTLPixelFormatRGBA8Uint;
+    case PixelFormat::RGBA8Unorm:       return MTLPixelFormatRGBA8Unorm;
+    case PixelFormat::RGBA8Unorm_sRGB:  return MTLPixelFormatRGBA8Unorm_sRGB;
+    case PixelFormat::BGRA8Unorm:       return MTLPixelFormatBGRA8Unorm;
+    case PixelFormat::BGRA8Unorm_sRGB:  return MTLPixelFormatBGRA8Unorm_sRGB;
+    case PixelFormat::R32Float:         return MTLPixelFormatR32Float;
+    case PixelFormat::R32Uint:          return MTLPixelFormatR32Uint;
+    case PixelFormat::R32Sint:          return MTLPixelFormatR32Sint;
+    case PixelFormat::R16Float:         return MTLPixelFormatR16Float;
+    case PixelFormat::R16Uint:          return MTLPixelFormatR16Uint;
+    case PixelFormat::R16Sint:          return MTLPixelFormatR16Sint;
+    case PixelFormat::R16Unorm:         return MTLPixelFormatR16Unorm;
+    case PixelFormat::R16Snorm:         return MTLPixelFormatR16Snorm;
+    case PixelFormat::R8Uint:           return MTLPixelFormatR8Uint;
+    case PixelFormat::R8Sint:           return MTLPixelFormatR8Sint;
+    case PixelFormat::R8Unorm:          return MTLPixelFormatR8Unorm;
+    case PixelFormat::R8Snorm:          return MTLPixelFormatR8Snorm;
+    case PixelFormat::A8Unorm:          return MTLPixelFormatA8Unorm;
+    case PixelFormat::Depth32Float:     return MTLPixelFormatDepth32Float;
+    // MTLPixelFormatRG8Unorm;
+    // MTLPixelFormatRG8Snorm;
+    // MTLPixelFormatRG8Uint;
+    // MTLPixelFormatRG8Sint;
+    // MTLPixelFormatRG16Unorm;
+    // MTLPixelFormatRG16Snorm;
+    // MTLPixelFormatRG16Float;
+    // MTLPixelFormatRGBA8Unorm_sRGB;
+    // MTLPixelFormatRGBA8Snorm;
+    // MTLPixelFormatRGBA8Sint;
+    // MTLPixelFormatBGRA8Unorm_sRGB;
+    // MTLPixelFormatRGB10A2Unorm;
+    // MTLPixelFormatRGB10A2Uint;
+    // MTLPixelFormatRG11B10Float;
+    // MTLPixelFormatRGB9E5Float;
+    // MTLPixelFormatBGR10A2Unorm;
+    // MTLPixelFormatRG32Uint;
+    // MTLPixelFormatRG32Sint;
+    // MTLPixelFormatRG32Float;
+    // MTLPixelFormatRGBA16Unorm;
+    // MTLPixelFormatRGBA16Snorm;
+    // MTLPixelFormatRGBA16Uint;
+    // MTLPixelFormatRGBA16Sint;
+    // MTLPixelFormatRGBA16Float;
+    // MTLPixelFormatRGBA32Uint;
+    // MTLPixelFormatRGBA32Sint;
+    // MTLPixelFormatRGBA32Float;
+    // MTLPixelFormatBC1_RGBA;
+    // MTLPixelFormatBC1_RGBA_sRGB;
+    // MTLPixelFormatBC2_RGBA;
+    // MTLPixelFormatBC2_RGBA_sRGB;
+    // MTLPixelFormatBC3_RGBA;
+    // MTLPixelFormatBC3_RGBA_sRGB;
+    // MTLPixelFormatBC4_RUnorm;
+    // MTLPixelFormatBC4_RSnorm;
+    // MTLPixelFormatBC5_RGUnorm;
+    // MTLPixelFormatBC5_RGSnorm;
+    // MTLPixelFormatBC6H_RGBFloat;
+    // MTLPixelFormatBC6H_RGBUfloat;
+    // MTLPixelFormatBC7_RGBAUnorm;
+    // MTLPixelFormatBC7_RGBAUnorm_sRGB;
+    // MTLPixelFormatGBGR422;
+    // MTLPixelFormatBGRG422;
+    // MTLPixelFormatDepth16Unorm;
+    // MTLPixelFormatStencil8;
+    // MTLPixelFormatDepth24Unorm_Stencil8;
+    // MTLPixelFormatDepth32Float_Stencil8;
+    // MTLPixelFormatX32_Stencil8;
+    // MTLPixelFormatX24_Stencil8;
     }
     return MTLPixelFormatInvalid;
 }
 
 MTLVertexFormat TypeConverterMT::MetalDataTypeToVertexFormat(MTLDataType data_type, bool normalized) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch(data_type)
     {
@@ -175,7 +175,7 @@ MTLVertexFormat TypeConverterMT::MetalDataTypeToVertexFormat(MTLDataType data_ty
 
 uint32_t TypeConverterMT::ByteSizeOfVertexFormat(MTLVertexFormat vertex_format) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const uint32_t component_32bit_byte_size = 4;
     const uint32_t component_16bit_byte_size = 2;
@@ -262,25 +262,25 @@ uint32_t TypeConverterMT::ByteSizeOfVertexFormat(MTLVertexFormat vertex_format) 
 
 MTLClearColor TypeConverterMT::ColorToMetalClearColor(const Color4f& color) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return MTLClearColorMake(color.GetR(), color.GetG(), color.GetB(), color.GetA());
 }
 
 NSRect TypeConverterMT::RectToNS(const FrameRect& rect) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return CreateNSRect(rect.size, rect.origin);
 }
 
 NSRect TypeConverterMT::CreateNSRect(const FrameSize& size, const Point2i& origin) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return NSMakeRect(origin.GetX(), origin.GetY(), size.width, size.height);
 }
 
 FrameRect TypeConverterMT::RectFromNS(const NSRect& rect) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return FrameRect {
         Point2i(static_cast<uint32_t>(rect.origin.x), static_cast<uint32_t>(rect.origin.y)),
         FrameSize(static_cast<uint32_t>(rect.size.width), static_cast<uint32_t>(rect.size.height))
@@ -289,7 +289,7 @@ FrameRect TypeConverterMT::RectFromNS(const NSRect& rect) noexcept
 
 MTLCompareFunction TypeConverterMT::CompareFunctionToMetal(Compare compare_func) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch(compare_func)
     {
         case Compare::Never:        return MTLCompareFunctionNever;

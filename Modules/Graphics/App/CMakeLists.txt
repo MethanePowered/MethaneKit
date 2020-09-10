@@ -29,26 +29,26 @@ target_include_directories(${TARGET}
 )
 
 target_link_libraries(${TARGET}
-    MethaneDataPrimitives
+PUBLIC
+    MethaneDataProvider
     MethanePlatformApp
     MethanePlatformUtils
+    MethanePlatformInput
     MethaneGraphicsCore
-    MethaneGraphicsHelpers
+    MethaneGraphicsPrimitives
+    MethaneGraphicsCamera
     MethaneInstrumentation
+PRIVATE
+    MethaneBuildOptions
 )
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER Modules/Graphics
+        FOLDER Modules/Graphics
+        PUBLIC_HEADER "${HEADERS}"
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
-
-set_target_properties(${TARGET}
-    PROPERTIES
-    FOLDER Modules/Graphics
-    PUBLIC_HEADER "${HEADERS}"
-)
 
 install(TARGETS ${TARGET}
     PUBLIC_HEADER

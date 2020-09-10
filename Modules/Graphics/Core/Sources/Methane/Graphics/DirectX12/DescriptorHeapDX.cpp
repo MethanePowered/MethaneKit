@@ -26,7 +26,7 @@ DirectX 12 implementation of the descriptor heap wrapper.
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/Graphics/Windows/Helpers.h>
+#include <Methane/Graphics/Windows/Primitives.h>
 
 #include <cassert>
 
@@ -35,7 +35,7 @@ namespace Methane::Graphics
 
 static D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeap::Type type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (type)
     {
     case DescriptorHeap::Type::ShaderResources: return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -49,65 +49,74 @@ static D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeap::Type type) n
 
 Ptr<DescriptorHeap> DescriptorHeap::Create(ContextBase& context, const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
-    return std::make_shared<DescriptorHeapDX>(context, settings);
+    META_FUNCTION_TASK();
+    auto descriptor_heap_ptr = std::make_shared<DescriptorHeapDX>(context, settings);
+    if (settings.size > 0)
+    {
+        descriptor_heap_ptr->Allocate();
+    }
+    return descriptor_heap_ptr;
 }
 
 DescriptorHeapDX::DescriptorHeapDX(ContextBase& context, const Settings& settings)
     : DescriptorHeap(context, settings)
-    , m_descriptor_heap_type(GetNativeHeapType(m_settings.type))
+    , m_descriptor_heap_type(GetNativeHeapType(settings.type))
     , m_descriptor_size(GetContextDX().GetDeviceDX().GetNativeDevice()->GetDescriptorHandleIncrementSize(m_descriptor_heap_type))
 {
-    ITT_FUNCTION_TASK();
-    if (m_deferred_size > 0)
-    {
-        DescriptorHeapDX::Allocate();
-    }
+    META_FUNCTION_TASK();
 }
 
 DescriptorHeapDX::~DescriptorHeapDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeCpuDescriptorHandle(uint32_t descriptor_index) const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_cp_descriptor_heap);
-    assert(descriptor_index < m_allocated_size);
+    assert(descriptor_index < GetAllocatedSize());
     return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_cp_descriptor_heap->GetCPUDescriptorHandleForHeapStart(), descriptor_index, m_descriptor_size);
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeGpuDescriptorHandle(uint32_t descriptor_index) const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_cp_descriptor_heap);
     return CD3DX12_GPU_DESCRIPTOR_HANDLE(m_cp_descriptor_heap->GetGPUDescriptorHandleForHeapStart(), descriptor_index, m_descriptor_size);
 }
 
 void DescriptorHeapDX::Allocate()
 {
-    ITT_FUNCTION_TASK();
-    if (m_allocated_size == m_deferred_size)
+    META_FUNCTION_TASK();
+    const Data::Size allocated_size = GetAllocatedSize();
+    const Data::Size deferred_size  = GetDeferredSize();
+
+    if (allocated_size == deferred_size)
         return;
 
     const wrl::ComPtr<ID3D12Device>&  cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
     assert(!!cp_device);
 
+    const bool is_shader_visible_heap = GetSettings().shader_visible;
     wrl::ComPtr<ID3D12DescriptorHeap> cp_old_descriptor_heap = m_cp_descriptor_heap;
 
-    D3D12_DESCRIPTOR_HEAP_DESC heap_desc = {};
-    heap_desc.NumDescriptors = m_deferred_size;
+    D3D12_DESCRIPTOR_HEAP_DESC heap_desc{};
+    heap_desc.NumDescriptors = deferred_size;
     heap_desc.Type           = m_descriptor_heap_type;
-    heap_desc.Flags          = m_settings.shader_visible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    heap_desc.Flags          = is_shader_visible_heap
+                             ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
+                             : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
     // Allocate new descriptor heap of deferred size
-    ThrowIfFailed(cp_device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&m_cp_descriptor_heap)));
+    ThrowIfFailed(cp_device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&m_cp_descriptor_heap)), cp_device.Get());
 
-    if (cp_old_descriptor_heap && m_allocated_size > 0)
+    if (!is_shader_visible_heap && cp_old_descriptor_heap && allocated_size > 0)
     {
-        // Copy descriptors from old heap to the new one
-        cp_device->CopyDescriptorsSimple(m_allocated_size,
+        // Copy descriptors from old heap to the new one. It works for non-shader-visible CPU heaps only.
+        // Shader-visible heaps must be re-filled with updated descriptors
+        // using ProgramBindings::CompleteInitialization() & ResourceManager::CompleteInitialization()
+        cp_device->CopyDescriptorsSimple(allocated_size,
                                          m_cp_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),
                                          cp_old_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),
                                          m_descriptor_heap_type);
@@ -118,8 +127,8 @@ void DescriptorHeapDX::Allocate()
 
 IContextDX& DescriptorHeapDX::GetContextDX() noexcept
 {
-    ITT_FUNCTION_TASK();
-    return static_cast<IContextDX&>(m_context);
+    META_FUNCTION_TASK();
+    return static_cast<IContextDX&>(GetContext());
 }
 
 } // namespace Methane::Graphics

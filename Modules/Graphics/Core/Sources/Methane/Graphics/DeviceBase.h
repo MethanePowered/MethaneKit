@@ -26,6 +26,7 @@ Base implementation of the device interface.
 #include "ObjectBase.h"
 
 #include <Methane/Graphics/Device.h>
+#include <Methane/Data/Emitter.hpp>
 
 namespace Methane::Graphics
 {
@@ -33,7 +34,7 @@ namespace Methane::Graphics
 class DeviceBase
     : public Device
     , public ObjectBase
-    , public std::enable_shared_from_this<DeviceBase>
+    , public Data::Emitter<IDeviceCallback>
 {
 public:
     DeviceBase(const std::string& adapter_name, bool is_software_adapter, Feature::Mask supported_features);
@@ -42,17 +43,20 @@ public:
     const std::string&  GetAdapterName() const noexcept override                               { return m_adapter_name; }
     bool                IsSoftwareAdapter() const noexcept override                            { return m_is_software_adapter; }
     Feature::Mask       GetSupportedFeatures() const noexcept override                         { return m_supported_features; }
-    void                SetNotificationCallback(const NotificationCallback& callback) override { m_notification_callback = callback; }
-    void                Notify(Notification notification) override;
     std::string         ToString() const noexcept override;
 
-    Ptr<DeviceBase> GetPtr() { return shared_from_this(); }
+    Ptr<DeviceBase>     GetDevicePtr() { return std::static_pointer_cast<DeviceBase>(GetBasePtr()); }
+
+protected:
+    friend class SystemBase;
+
+    void OnRemovalRequested();
+    void OnRemoved();
 
 private:
     const std::string    m_adapter_name;
     const bool           m_is_software_adapter;
     const Feature::Mask  m_supported_features;
-    NotificationCallback m_notification_callback;
 };
 
 class SystemBase : public System
@@ -67,7 +71,9 @@ public:
 protected:
     void SetGpuSupportedFeatures(Device::Feature::Mask supported_features) { m_supported_features = supported_features; }
     void ClearDevices()                     { m_devices.clear(); }
-    void AddDevice(Ptr<Device>&& sp_device) { m_devices.emplace_back(std::move(sp_device)); }
+    void AddDevice(Ptr<Device>&& device_ptr) { m_devices.emplace_back(std::move(device_ptr)); }
+    void RequestRemoveDevice(Device& device);
+    void RemoveDevice(Device& device);
 
 private:
     Device::Feature::Mask m_supported_features = Device::Feature::Value::All;

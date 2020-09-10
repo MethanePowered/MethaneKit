@@ -30,7 +30,7 @@ DirectX 12 implementation of the render state interface.
 #include "TextureDX.h"
 #include "RenderCommandListDX.h"
 
-#include <Methane/Graphics/Windows/Helpers.h>
+#include <Methane/Graphics/Windows/Primitives.h>
 #include <Methane/Platform/Windows/Utils.h>
 #include <Methane/Instrumentation.h>
 
@@ -44,10 +44,10 @@ namespace Methane::Graphics
 
 constexpr size_t g_max_rtv_count = sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC::RTVFormats) / sizeof(DXGI_FORMAT);
 
-inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<Shader>& sp_shader)
+inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<Shader>& shader_ptr)
 {
-    ITT_FUNCTION_TASK();
-    const Data::Chunk* p_byte_code_chunk = sp_shader ? static_cast<const ShaderDX&>(*sp_shader).GetNativeByteCode() : nullptr;
+    META_FUNCTION_TASK();
+    const Data::Chunk* p_byte_code_chunk = shader_ptr ? static_cast<const ShaderDX&>(*shader_ptr).GetNativeByteCode() : nullptr;
     return p_byte_code_chunk
         ? CD3DX12_SHADER_BYTECODE(p_byte_code_chunk->p_data, p_byte_code_chunk->size)
         : CD3DX12_SHADER_BYTECODE(NULL, 0);
@@ -55,8 +55,7 @@ inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<Shader>& sp_shader)
 
 static D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(RenderState::Rasterizer::FillMode fill_mode)
 {
-    ITT_FUNCTION_TASK();
-
+    META_FUNCTION_TASK();
     using RasterizerFillMode = RenderState::Rasterizer::FillMode;
     
     switch (fill_mode)
@@ -68,11 +67,9 @@ static D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(RenderState::Rasterizer:
     return D3D12_FILL_MODE_SOLID;
 }
 
-
 static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(RenderState::Rasterizer::CullMode cull_mode)
 {
-    ITT_FUNCTION_TASK();
-
+    META_FUNCTION_TASK();
     using RasterizerCullMode = RenderState::Rasterizer::CullMode;
 
     switch (cull_mode)
@@ -87,8 +84,7 @@ static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(RenderState::Rasterizer:
 
 static UINT8 ConvertRenderTargetWriteMaskToD3D12(RenderState::Blending::ColorChannel::Mask rt_write_mask)
 {
-    ITT_FUNCTION_TASK();
-
+    META_FUNCTION_TASK();
     using ColorChannel = RenderState::Blending::ColorChannel;
 
     UINT8 d3d12_color_write_mask = 0;
@@ -105,8 +101,7 @@ static UINT8 ConvertRenderTargetWriteMaskToD3D12(RenderState::Blending::ColorCha
 
 static D3D12_BLEND_OP ConvertBlendingOperationToD3D12(RenderState::Blending::Operation blend_operation)
 {
-    ITT_FUNCTION_TASK();
-
+    META_FUNCTION_TASK();
     using BlendOp = RenderState::Blending::Operation;
 
     switch(blend_operation)
@@ -123,8 +118,7 @@ static D3D12_BLEND_OP ConvertBlendingOperationToD3D12(RenderState::Blending::Ope
 
 static D3D12_BLEND ConvertBlendingFactorToD3D12(RenderState::Blending::Factor blend_factor)
 {
-    ITT_FUNCTION_TASK();
-
+    META_FUNCTION_TASK();
     using BlendFactor = RenderState::Blending::Factor;
     
     switch (blend_factor)
@@ -155,8 +149,7 @@ static D3D12_BLEND ConvertBlendingFactorToD3D12(RenderState::Blending::Factor bl
 
 static D3D12_STENCIL_OP ConvertStencilOperationToD3D12(RenderState::Stencil::Operation operation)
 {
-    ITT_FUNCTION_TASK();
-
+    META_FUNCTION_TASK();
     using StencilOperation = RenderState::Stencil::Operation;
     
     switch (operation)
@@ -176,34 +169,128 @@ static D3D12_STENCIL_OP ConvertStencilOperationToD3D12(RenderState::Stencil::Ope
 
 static D3D12_DEPTH_STENCILOP_DESC ConvertStencilFaceOperationsToD3D12(const RenderState::Stencil::FaceOperations& stencil_face_op)
 {
-    ITT_FUNCTION_TASK();
-
-    D3D12_DEPTH_STENCILOP_DESC stencil_desc = { };
+    META_FUNCTION_TASK();
+    D3D12_DEPTH_STENCILOP_DESC stencil_desc{};
 
     stencil_desc.StencilFailOp      = ConvertStencilOperationToD3D12(stencil_face_op.stencil_failure);
     stencil_desc.StencilPassOp      = ConvertStencilOperationToD3D12(stencil_face_op.stencil_pass);
     stencil_desc.StencilDepthFailOp = ConvertStencilOperationToD3D12(stencil_face_op.depth_failure);
-    stencil_desc.StencilFunc        = TypeConverterDX::CompareFunctionToDX(stencil_face_op.compare);
+    stencil_desc.StencilFunc        = TypeConverterDX::CompareFunctionToD3D(stencil_face_op.compare);
 
     return stencil_desc;
 }
 
+static CD3DX12_VIEWPORT ViewportToD3D(const Viewport& viewport) noexcept
+{
+    META_FUNCTION_TASK();
+    return CD3DX12_VIEWPORT(static_cast<float>(viewport.origin.GetX()), static_cast<float>(viewport.origin.GetY()),
+                            static_cast<float>(viewport.size.width), static_cast<float>(viewport.size.height),
+                            static_cast<float>(viewport.origin.GetZ()), static_cast<float>(viewport.origin.GetZ() + viewport.size.depth));
+}
+
+static CD3DX12_RECT ScissorRectToD3D(const ScissorRect& scissor_rect) noexcept
+{
+    META_FUNCTION_TASK();
+    return CD3DX12_RECT(static_cast<LONG>(scissor_rect.origin.GetX()), static_cast<LONG>(scissor_rect.origin.GetY()),
+                        static_cast<LONG>(scissor_rect.origin.GetX() + scissor_rect.size.width),
+                        static_cast<LONG>(scissor_rect.origin.GetY() + scissor_rect.size.height));
+}
+
+static std::vector<CD3DX12_VIEWPORT> ViewportsToD3D(const Viewports& viewports) noexcept
+{
+    META_FUNCTION_TASK();
+
+    std::vector<CD3DX12_VIEWPORT> d3d_viewports;
+    for (const Viewport& viewport : viewports)
+    {
+        d3d_viewports.push_back(ViewportToD3D(viewport));
+    }
+    return d3d_viewports;
+}
+
+static std::vector<CD3DX12_RECT> ScissorRectsToD3D(const ScissorRects& scissor_rects) noexcept
+{
+    META_FUNCTION_TASK();
+
+    std::vector<CD3DX12_RECT> d3d_scissor_rects;
+    for (const ScissorRect& scissor_rect : scissor_rects)
+    {
+        d3d_scissor_rects.push_back(ScissorRectToD3D(scissor_rect));
+    }
+    return d3d_scissor_rects;
+}
+
+Ptr<ViewState> ViewState::Create(const ViewState::Settings& state_settings)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ViewStateDX>(state_settings);
+}
+
+ViewStateDX::ViewStateDX(const Settings& settings)
+    : ViewStateBase(settings)
+    , m_dx_viewports(ViewportsToD3D(settings.viewports))
+    , m_dx_scissor_rects(ScissorRectsToD3D(settings.scissor_rects))
+{
+    META_FUNCTION_TASK();
+}
+
+bool ViewStateDX::Reset(const Settings& settings)
+{
+    META_FUNCTION_TASK();
+    if (!ViewStateBase::Reset(settings))
+        return false;
+
+    m_dx_viewports     = ViewportsToD3D(settings.viewports);
+    m_dx_scissor_rects = ScissorRectsToD3D(settings.scissor_rects);
+    return true;
+}
+
+bool ViewStateDX::SetViewports(const Viewports& viewports)
+{
+    META_FUNCTION_TASK();
+    if (!ViewStateBase::SetViewports(viewports))
+        return false;
+
+    m_dx_viewports = ViewportsToD3D(viewports);
+    return true;
+}
+
+bool ViewStateDX::SetScissorRects(const ScissorRects& scissor_rects)
+{
+    META_FUNCTION_TASK();
+    if (!ViewStateBase::SetScissorRects(scissor_rects))
+        return false;
+
+    m_dx_scissor_rects = ScissorRectsToD3D(scissor_rects);
+    return true;
+}
+
+void ViewStateDX::Apply(RenderCommandListBase& command_list)
+{
+    META_FUNCTION_TASK();
+    RenderCommandListDX& dx_render_command_list = static_cast<RenderCommandListDX&>(command_list);
+    ID3D12GraphicsCommandList& d3d12_command_list = dx_render_command_list.GetNativeCommandList();
+
+    d3d12_command_list.RSSetViewports(static_cast<UINT>(m_dx_viewports.size()), m_dx_viewports.data());
+    d3d12_command_list.RSSetScissorRects(static_cast<UINT>(m_dx_scissor_rects.size()), m_dx_scissor_rects.data());
+}
+
 Ptr<RenderState> RenderState::Create(RenderContext& context, const RenderState::Settings& state_settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<RenderStateDX>(dynamic_cast<RenderContextBase&>(context), state_settings);
 }
 
 RenderStateDX::RenderStateDX(RenderContextBase& context, const Settings& settings)
     : RenderStateBase(context, settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Reset(settings);
 }
 
 void RenderStateDX::Reset(const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     RenderStateBase::Reset(settings);
 
     ProgramDX&         dx_program               = RenderStateDX::GetProgramDX();
@@ -248,7 +335,7 @@ void RenderStateDX::Reset(const Settings& settings)
     CD3DX12_DEPTH_STENCIL_DESC                  depth_stencil_desc(D3D12_DEFAULT);
     depth_stencil_desc.DepthEnable              = settings.depth.enabled;
     depth_stencil_desc.DepthWriteMask           = settings.depth.write_enabled ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
-    depth_stencil_desc.DepthFunc                = TypeConverterDX::CompareFunctionToDX(settings.depth.compare);
+    depth_stencil_desc.DepthFunc                = TypeConverterDX::CompareFunctionToD3D(settings.depth.compare);
     depth_stencil_desc.StencilEnable            = settings.stencil.enabled;
     depth_stencil_desc.StencilReadMask          = settings.stencil.read_mask;
     depth_stencil_desc.StencilWriteMask         = settings.stencil.write_mask;
@@ -277,20 +364,17 @@ void RenderStateDX::Reset(const Settings& settings)
     uint32_t attachment_index = 0;
     for (PixelFormat color_format : program_settings.color_formats)
     {
-        m_pipeline_state_desc.RTVFormats[attachment_index++] = TypeConverterDX::DataFormatToDXGI(color_format);
+        m_pipeline_state_desc.RTVFormats[attachment_index++] = TypeConverterDX::PixelFormatToDxgi(color_format);
     }
     m_pipeline_state_desc.NumRenderTargets = static_cast<UINT>(program_settings.color_formats.size());
-    m_pipeline_state_desc.DSVFormat = settings.depth.enabled ? TypeConverterDX::DataFormatToDXGI(program_settings.depth_format) : DXGI_FORMAT_UNKNOWN;
-
-    m_viewports     = TypeConverterDX::ViewportsToD3D(settings.viewports);
-    m_scissor_rects = TypeConverterDX::ScissorRectsToD3D(settings.scissor_rects);
+    m_pipeline_state_desc.DSVFormat = settings.depth.enabled ? TypeConverterDX::PixelFormatToDxgi(program_settings.depth_format) : DXGI_FORMAT_UNKNOWN;
 
     m_cp_pipeline_state.Reset();
 }
 
 void RenderStateDX::Apply(RenderCommandListBase& command_list, Group::Mask state_groups)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     RenderCommandListDX& dx_render_command_list = static_cast<RenderCommandListDX&>(command_list);
     ID3D12GraphicsCommandList& d3d12_command_list = dx_render_command_list.GetNativeCommandList();
@@ -305,40 +389,15 @@ void RenderStateDX::Apply(RenderCommandListBase& command_list, Group::Mask state
 
     d3d12_command_list.SetGraphicsRootSignature(GetProgramDX().GetNativeRootSignature().Get());
 
-    if (state_groups & Group::Viewports)
-    {
-        d3d12_command_list.RSSetViewports(static_cast<UINT>(m_viewports.size()), m_viewports.data());
-    }
-    if (state_groups & Group::ScissorRects)
-    {
-        d3d12_command_list.RSSetScissorRects(static_cast<UINT>(m_scissor_rects.size()), m_scissor_rects.data());
-    }
     if (state_groups & Group::BlendingColor)
     {
         d3d12_command_list.OMSetBlendFactor(m_blend_factor);
     }
 }
 
-void RenderStateDX::SetViewports(const Viewports& viewports)
-{
-    ITT_FUNCTION_TASK();
-    RenderStateBase::SetViewports(viewports);
-
-    m_viewports = TypeConverterDX::ViewportsToD3D(viewports);
-}
-
-void RenderStateDX::SetScissorRects(const ScissorRects& scissor_rects)
-{
-    ITT_FUNCTION_TASK();
-
-    RenderStateBase::SetScissorRects(scissor_rects);
-
-    m_scissor_rects = TypeConverterDX::ScissorRectsToD3D(scissor_rects);
-}
-
 void RenderStateDX::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     RenderStateBase::SetName(name);
 
     if (m_cp_pipeline_state)
@@ -349,17 +408,18 @@ void RenderStateDX::SetName(const std::string& name)
 
 void RenderStateDX::InitializeNativePipelineState()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_cp_pipeline_state)
         return;
 
-    ThrowIfFailed(GetRenderContextDX().GetDeviceDX().GetNativeDevice()->CreateGraphicsPipelineState(&m_pipeline_state_desc, IID_PPV_ARGS(&m_cp_pipeline_state)));
+    const wrl::ComPtr<ID3D12Device>& cp_native_device = GetRenderContextDX().GetDeviceDX().GetNativeDevice();
+    ThrowIfFailed(cp_native_device->CreateGraphicsPipelineState(&m_pipeline_state_desc, IID_PPV_ARGS(&m_cp_pipeline_state)), cp_native_device.Get());
     SetName(GetName());
 }
 
 wrl::ComPtr<ID3D12PipelineState>& RenderStateDX::GetNativePipelineState()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!m_cp_pipeline_state)
     {
         InitializeNativePipelineState();
@@ -369,13 +429,13 @@ wrl::ComPtr<ID3D12PipelineState>& RenderStateDX::GetNativePipelineState()
 
 ProgramDX& RenderStateDX::GetProgramDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<ProgramDX&>(GetProgram());
 }
 
 RenderContextDX& RenderStateDX::GetRenderContextDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<RenderContextDX&>(GetRenderContext());
 }
 

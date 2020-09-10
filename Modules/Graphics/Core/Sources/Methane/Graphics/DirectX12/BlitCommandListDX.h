@@ -36,9 +36,6 @@ class BlitCommandListDX final
 {
 public:
     BlitCommandListDX(CommandQueueBase& cmd_buffer);
-
-    // BlitCommandList interface
-    void Reset(const std::string& debug_group = "") override;
 };
 
 } // namespace Methane::Graphics

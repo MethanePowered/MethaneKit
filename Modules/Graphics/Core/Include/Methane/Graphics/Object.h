@@ -23,6 +23,8 @@ Methane object interface: represents any named object.
 
 #pragma once
 
+#include <Methane/Memory.hpp>
+
 #include <string>
 
 namespace Methane::Graphics
@@ -30,9 +32,19 @@ namespace Methane::Graphics
 
 struct Object
 {
+    struct Registry
+    {
+        virtual void        AddGraphicsObject(Object& graphics_object) = 0;
+        virtual Ptr<Object> GetGraphicsObject(const std::string& object_name) const noexcept = 0;
+        virtual bool        HasGraphicsObject(const std::string& object_name) const noexcept = 0;
+
+        virtual ~Registry() = default;
+    };
+
     // Object interface
     virtual void               SetName(const std::string& name) = 0;
     virtual const std::string& GetName() const noexcept = 0;
+    virtual Ptr<Object>        GetPtr() = 0;
 
     virtual ~Object() = default;
 };

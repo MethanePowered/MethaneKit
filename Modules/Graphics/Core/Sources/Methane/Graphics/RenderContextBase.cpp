@@ -26,26 +26,27 @@ Base implementation of the render context interface.
 
 #include <Methane/Instrumentation.h>
 
-#ifdef COMMAND_EXECUTION_LOGGING
-#include <Methane/Platform/Utils.h>
-#endif
-
 #include <cassert>
 
 namespace Methane::Graphics
 {
 
-RenderContextBase::RenderContextBase(DeviceBase& device, const Settings& settings)
-    : ContextBase(device, Type::Render)
+RenderContextBase::RenderContextBase(DeviceBase& device, tf::Executor& parallel_executor, const Settings& settings)
+    : ContextBase(device, parallel_executor, Type::Render)
     , m_settings(settings)
     , m_frame_buffer_index(0)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+
+    if (IsSrgbColorSpace(m_settings.color_format))
+    {
+        throw std::invalid_argument("Render context can not use color formats with sRGB gamma correction due to modern swap-chain flip model limitations.");
+    }
 }
 
 void RenderContextBase::WaitForGpu(WaitFor wait_for)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     ContextBase::WaitForGpu(wait_for);
 
@@ -53,17 +54,18 @@ void RenderContextBase::WaitForGpu(WaitFor wait_for)
     {
     case WaitFor::RenderComplete:
     {
-        SCOPE_TIMER("RenderContextDX::WaitForGpu::RenderComplete");
+        META_SCOPE_TIMER("RenderContextDX::WaitForGpu::RenderComplete");
         OnGpuWaitStart(wait_for);
-        GetRenderFence().Flush();
+        GetRenderFence().FlushOnCpu();
+        GetUploadFence().FlushOnCpu();
         OnGpuWaitComplete(wait_for);
     } break;
 
     case WaitFor::FramePresented:
     {
-        SCOPE_TIMER("RenderContextDX::WaitForGpu::FramePresented");
+        META_SCOPE_TIMER("RenderContextDX::WaitForGpu::FramePresented");
         OnGpuWaitStart(wait_for);
-        GetCurrentFrameFence().Wait();
+        GetCurrentFrameFence().WaitOnCpu();
         OnGpuWaitComplete(wait_for);
     } break;
 
@@ -73,29 +75,23 @@ void RenderContextBase::WaitForGpu(WaitFor wait_for)
 
 void RenderContextBase::Resize(const FrameSize& frame_size)
 {
-    ITT_FUNCTION_TASK();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("RESIZE context \"" + GetName() + "\" from " + static_cast<std::string>(m_settings.frame_size) + " to " + static_cast<std::string>(frame_size));
-#endif
+    META_FUNCTION_TASK();
+    META_LOG("RESIZE context \"" + GetName() + "\" from " + static_cast<std::string>(m_settings.frame_size) + " to " + static_cast<std::string>(frame_size));
 
     m_settings.frame_size = frame_size;
 }
 
 void RenderContextBase::Present()
 {
-    ITT_FUNCTION_TASK();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("PRESENT frame " + std::to_string(m_frame_buffer_index) + " in context \"" + GetName() + "\"");
-#endif
+    META_FUNCTION_TASK();
+    META_LOG("PRESENT frame " + std::to_string(m_frame_buffer_index) + " in context \"" + GetName() + "\"");
 
     m_fps_counter.OnCpuFrameReadyToPresent();
 }
 
 void RenderContextBase::OnCpuPresentComplete(bool signal_frame_fence)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (signal_frame_fence)
     {
@@ -103,50 +99,46 @@ void RenderContextBase::OnCpuPresentComplete(bool signal_frame_fence)
         GetCurrentFrameFence().Signal();
     }
 
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("PRESENT COMPLETE for context \"" + GetName() + "\"");
-#endif
+    META_CPU_FRAME_DELIMITER(m_frame_buffer_index, m_frame_index);
+    META_LOG("PRESENT COMPLETE for context \"" + GetName() + "\"");
 
     m_fps_counter.OnCpuFramePresented();
 }
 
 Fence& RenderContextBase::GetCurrentFrameFence() const
 {
-    ITT_FUNCTION_TASK();
-    const UniquePtr<Fence>& sp_current_fence = GetCurrentFrameFencePtr();
-    assert(!!sp_current_fence);
-    return *sp_current_fence;
+    META_FUNCTION_TASK();
+    const Ptr<Fence>& current_fence_ptr = GetCurrentFrameFencePtr();
+    assert(!!current_fence_ptr);
+    return *current_fence_ptr;
 }
 
 Fence& RenderContextBase::GetRenderFence() const
 {
-    ITT_FUNCTION_TASK();
-    assert(!!m_sp_render_fence);
-    return *m_sp_render_fence;
+    META_FUNCTION_TASK();
+    assert(!!m_render_fence_ptr);
+    return *m_render_fence_ptr;
 }
 
 void RenderContextBase::ResetWithSettings(const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("RESET context \"" + GetName() + "\" with new settings.");
-#endif
+    META_FUNCTION_TASK();
+    META_LOG("RESET context \"" + GetName() + "\" with new settings.");
 
     WaitForGpu(WaitFor::RenderComplete);
 
-    Ptr<DeviceBase> sp_device = GetDeviceBase().GetPtr();
+    Ptr<DeviceBase> device_ptr = GetDeviceBase().GetDevicePtr();
     m_settings = settings;
 
     Release();
-    Initialize(*sp_device, true);
+    Initialize(*device_ptr, true);
 }
 
-void RenderContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation)
+void RenderContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    ContextBase::Initialize(device, deferred_heap_allocation);
+    ContextBase::Initialize(device, deferred_heap_allocation, false);
 
     m_frame_fences.clear();
     for (uint32_t frame_index = 0; frame_index < m_settings.frame_buffers_count; ++frame_index)
@@ -154,40 +146,57 @@ void RenderContextBase::Initialize(DeviceBase& device, bool deferred_heap_alloca
         m_frame_fences.emplace_back(Fence::Create(GetRenderCommandQueue()));
     }
 
-    m_sp_render_fence = Fence::Create(GetRenderCommandQueue());
+    m_render_fence_ptr = Fence::Create(GetRenderCommandQueue());
+    m_frame_index = 0u;
+
+    if (is_callback_emitted)
+    {
+        Emit(&IContextCallback::OnContextInitialized, *this);
+    }
 }
 
 void RenderContextBase::Release()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    m_sp_render_fence.reset();
+    m_render_fence_ptr.reset();
     m_frame_fences.clear();
-    m_sp_render_cmd_queue.reset();
+    m_render_cmd_queue_ptr.reset();
 
     ContextBase::Release();
 }
 
 void RenderContextBase::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
-
+    META_FUNCTION_TASK();
     ContextBase::SetName(name);
 
     for (uint32_t frame_index = 0; frame_index < m_frame_fences.size(); ++frame_index)
     {
-        const UniquePtr<Fence>& sp_frame_fence = m_frame_fences[frame_index];
-        assert(!!sp_frame_fence);
-        sp_frame_fence->SetName(name + " Frame " + std::to_string(frame_index) + " Fence");
+        const Ptr<Fence>& frame_fence_ptr = m_frame_fences[frame_index];
+        assert(!!frame_fence_ptr);
+        frame_fence_ptr->SetName(name + " Frame " + std::to_string(frame_index) + " Fence");
     }
 
-    if (m_sp_render_fence)
-        m_sp_render_fence->SetName(name + " Render Fence");
+    if (m_render_fence_ptr)
+        m_render_fence_ptr->SetName(name + " Render Fence");
 }
-    
+
+bool RenderContextBase::UploadResources()
+{
+    META_FUNCTION_TASK();
+    if (!ContextBase::UploadResources())
+        return false;
+
+    // Render commands will wait for resources uploading completion in upload queue
+    GetUploadFence().FlushOnGpu(GetRenderCommandQueue());
+    return true;
+}
+
 void RenderContextBase::OnGpuWaitStart(WaitFor wait_for)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+
     if (wait_for == WaitFor::FramePresented)
     {
         m_fps_counter.OnGpuFramePresentWait();
@@ -197,17 +206,25 @@ void RenderContextBase::OnGpuWaitStart(WaitFor wait_for)
 
 void RenderContextBase::OnGpuWaitComplete(WaitFor wait_for)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+
     if (wait_for == WaitFor::FramePresented)
     {
         m_fps_counter.OnGpuFramePresented();
+        m_is_frame_buffer_in_use = false;
+        PerformRequestedAction();
     }
-    ContextBase::OnGpuWaitComplete(wait_for);
+    else
+    {
+        ContextBase::OnGpuWaitComplete(wait_for);
+    }
 }
     
 void RenderContextBase::UpdateFrameBufferIndex()
 {
     m_frame_buffer_index = GetNextFrameBufferIndex();
+    m_frame_index++;
+    m_is_frame_buffer_in_use = true;
 }
     
 uint32_t RenderContextBase::GetNextFrameBufferIndex()
@@ -217,18 +234,19 @@ uint32_t RenderContextBase::GetNextFrameBufferIndex()
 
 CommandQueue& RenderContextBase::GetRenderCommandQueue()
 {
-    ITT_FUNCTION_TASK();
-    if (!m_sp_render_cmd_queue)
+    META_FUNCTION_TASK();
+    if (!m_render_cmd_queue_ptr)
     {
-        m_sp_render_cmd_queue = CommandQueue::Create(*this);
-        m_sp_render_cmd_queue->SetName("Render Command Queue");
+        static const std::string s_command_queue_name = "Render Command Queue";
+        m_render_cmd_queue_ptr = CommandQueue::Create(*this, CommandList::Type::Render);
+        m_render_cmd_queue_ptr->SetName(s_command_queue_name);
     }
-    return *m_sp_render_cmd_queue;
+    return *m_render_cmd_queue_ptr;
 }
 
 bool RenderContextBase::SetVSyncEnabled(bool vsync_enabled)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_settings.vsync_enabled == vsync_enabled)
         return false;
 
@@ -238,7 +256,7 @@ bool RenderContextBase::SetVSyncEnabled(bool vsync_enabled)
 
 bool RenderContextBase::SetFrameBuffersCount(uint32_t frame_buffers_count)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     frame_buffers_count = std::min(std::max(2u, frame_buffers_count), 10u);
 
     if (m_settings.frame_buffers_count == frame_buffers_count)
@@ -253,7 +271,7 @@ bool RenderContextBase::SetFrameBuffersCount(uint32_t frame_buffers_count)
 
 bool RenderContextBase::SetFullScreen(bool is_full_screen)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_settings.is_full_screen == is_full_screen)
         return false;
 

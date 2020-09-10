@@ -24,7 +24,8 @@ DirectX 12 implementation of the device interface.
 #include "DeviceDX.h"
 
 #include <Methane/Instrumentation.h>
-#include <Methane/Graphics/Windows/Helpers.h>
+#include <Methane/Graphics/Windows/Primitives.h>
+#include <Methane/Platform/Windows/Utils.h>
 
 #ifdef _DEBUG
 #include <dxgidebug.h>
@@ -43,25 +44,25 @@ namespace Methane::Graphics
 
 static std::string GetAdapterNameDxgi(IDXGIAdapter& adapter)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    DXGI_ADAPTER_DESC desc = {};
+    DXGI_ADAPTER_DESC desc{};
     adapter.GetDesc(&desc);
     return nowide::narrow(desc.Description);
 }
 
 static bool IsSoftwareAdapterDxgi(IDXGIAdapter1& adapter)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    DXGI_ADAPTER_DESC1 desc = {};
+    DXGI_ADAPTER_DESC1 desc{};
     adapter.GetDesc1(&desc);
     return desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE;
 }
 
 Device::Feature::Mask DeviceDX::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& /*cp_adapter*/, D3D_FEATURE_LEVEL /*feature_level*/)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return Device::Feature::Value::BasicRendering;
 }
 
@@ -72,17 +73,17 @@ DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVE
     , m_cp_adapter(cp_adapter)
     , m_feature_level(feature_level)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 DeviceDX::~DeviceDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void DeviceDX::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     DeviceBase::SetName(name);
     if (m_cp_device)
     {
@@ -92,7 +93,7 @@ void DeviceDX::SetName(const std::string& name)
 
 const wrl::ComPtr<ID3D12Device>& DeviceDX::GetNativeDevice() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_cp_device)
         return m_cp_device;
 
@@ -102,37 +103,49 @@ const wrl::ComPtr<ID3D12Device>& DeviceDX::GetNativeDevice() const
         m_cp_device->SetName(nowide::widen(GetName()).c_str());
     }
 
-    D3D12_FEATURE_DATA_D3D12_OPTIONS5 feature_options_5 = {};
+    D3D12_FEATURE_DATA_D3D12_OPTIONS5 feature_options_5{};
     if (m_cp_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &feature_options_5, sizeof(feature_options_5)) == S_OK)
     {
         m_feature_options_5 = feature_options_5;
     }
+
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+    if (Platform::Windows::IsDeveloperModeEnabled())
+    {
+        ThrowIfFailed(m_cp_device->SetStablePowerState(TRUE), m_cp_device.Get());
+    }
+    else
+    {
+        assert(0);
+        META_LOG("GPU instrumentation results are unreliable until GPU can not be switched to stable power state. Enabled Windows Developer Mode to unlock it.");
+    }
+#endif
 
     return m_cp_device;
 }
 
 void DeviceDX::ReleaseNativeDevice()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_cp_device.Reset();
 }
 
 System& System::Get()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     static SystemDX s_system;
     return s_system;
 }
 
 SystemDX::SystemDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Initialize();
 }
 
 SystemDX::~SystemDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     UnregisterAdapterChangeEvent();
 
@@ -144,7 +157,7 @@ SystemDX::~SystemDX()
 
 void SystemDX::Initialize()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     UINT dxgi_factory_flags = 0;
 
 #ifdef _DEBUG
@@ -165,7 +178,7 @@ void SystemDX::Initialize()
 
 void SystemDX::RegisterAdapterChangeEvent()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
 #ifdef ADAPTERS_CHANGE_HANDLING
     wrl::ComPtr<IDXGIFactory7> cp_factory7;
@@ -185,7 +198,7 @@ void SystemDX::RegisterAdapterChangeEvent()
 
 void SystemDX::UnregisterAdapterChangeEvent()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
 #ifdef ADAPTERS_CHANGE_HANDLING
     wrl::ComPtr<IDXGIFactory7> cp_factory7;
@@ -204,7 +217,7 @@ void SystemDX::UnregisterAdapterChangeEvent()
 
 void SystemDX::CheckForChanges()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
 #ifdef ADAPTERS_CHANGE_HANDLING
     const bool adapters_changed = m_adapter_change_event ? WaitForSingleObject(m_adapter_change_event, 0) == WAIT_OBJECT_0
@@ -216,23 +229,24 @@ void SystemDX::CheckForChanges()
     UnregisterAdapterChangeEvent();
     Initialize();
 
-    Ptrs<Device> prev_devices = m_devices;
-    UpdateGpuDevices(m_supported_features);
+    const Ptrs<Device>& devices = GetGpuDevices();
+    Ptrs<Device>   prev_devices = devices;
+    UpdateGpuDevices(GetGpuSupportedFeatures());
 
-    for (const Ptr<Device>& sp_prev_device : prev_devices)
+    for (const Ptr<Device>& prev_device_ptr : prev_devices)
     {
-        assert(!!sp_prev_device);
-        DeviceDX& prev_device = static_cast<DeviceDX&>(*sp_prev_device);
-        auto device_it = std::find_if(m_devices.begin(), m_devices.end(),
-                                      [prev_device](const Ptr<Device>& sp_device)
+        assert(!!prev_device_ptr);
+        DeviceDX& prev_device = static_cast<DeviceDX&>(*prev_device_ptr);
+        auto device_it = std::find_if(devices.begin(), devices.end(),
+                                      [prev_device](const Ptr<Device>& device_ptr)
                                       {
-                                          DeviceDX& device = static_cast<DeviceDX&>(*sp_device);
+                                          DeviceDX& device = static_cast<DeviceDX&>(*device_ptr);
                                           return prev_device.GetNativeAdapter().GetAddressOf() == device.GetNativeAdapter().GetAddressOf();
                                       });
 
-        if (device_it == m_devices.end())
+        if (device_it == devices.end())
         {
-            prev_device.Notify(Device::Notification::Removed);
+            RemoveDevice(prev_device);
         }
     }
 #endif
@@ -240,7 +254,7 @@ void SystemDX::CheckForChanges()
 
 const Ptrs<Device>& SystemDX::UpdateGpuDevices(Device::Feature::Mask supported_features)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(m_cp_factory);
 
     const D3D_FEATURE_LEVEL dx_feature_level = D3D_FEATURE_LEVEL_11_0;
@@ -274,7 +288,7 @@ const Ptrs<Device>& SystemDX::UpdateGpuDevices(Device::Feature::Mask supported_f
 
 void SystemDX::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     // Check to see if the adapter supports Direct3D 12, but don't create the actual device yet
     if (!SUCCEEDED(D3D12CreateDevice(cp_adapter.Get(), feature_level, _uuidof(ID3D12Device), nullptr)))
@@ -289,7 +303,7 @@ void SystemDX::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATUR
 
 void SystemDX::ReportLiveObjects()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 #ifdef _DEBUG
     wrl::ComPtr<IDXGIDebug1> dxgi_debug;
     if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgi_debug))))

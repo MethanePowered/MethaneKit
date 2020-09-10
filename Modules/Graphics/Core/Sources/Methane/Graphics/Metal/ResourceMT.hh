@@ -20,33 +20,22 @@ FILE: Methane/Graphics/Metal/ResourceMT.hh
 Metal implementation of the resource interface.
 
 ******************************************************************************/
-
 #pragma once
 
 #include <Methane/Graphics/ResourceBase.h>
-
-#include <memory>
 
 namespace Methane::Graphics
 {
 
 struct IContextMT;
-struct ResourceContainerMT;
 
 class ResourceMT : public ResourceBase
 {
 public:
-    class ReleasePoolMT : public ReleasePool
+    class BarriersMT : public Barriers
     {
     public:
-        ReleasePoolMT();
-
-        // ReleasePool interface
-        void AddResource(ResourceBase& resource) override;
-        void ReleaseResources() override;
-
-    private:
-        std::unique_ptr<ResourceContainerMT> m_sp_mtl_resources;
+        BarriersMT(const Set& barriers) : Barriers(barriers) {}
     };
 
     ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);

@@ -26,6 +26,9 @@ provides basic multi-frame rendering synchronization and frame presenting APIs.
 
 #include "Context.h"
 
+#include <Methane/Graphics/Types.h>
+#include <Methane/Graphics/Rect.hpp>
+#include <Methane/Graphics/Color.hpp>
 #include <Methane/Platform/AppEnvironment.h>
 #include <Methane/Platform/AppView.h>
 
@@ -46,26 +49,29 @@ struct RenderContext : virtual Context
         PixelFormat                 depth_stencil_format    = PixelFormat::Unknown;
         std::optional<Color4f>      clear_color;
         std::optional<DepthStencil> clear_depth_stencil;
-        uint32_t                    frame_buffers_count     = 3;
+        uint32_t                    frame_buffers_count     = 3u;
         bool                        vsync_enabled           = true;
         bool                        is_full_screen          = false;
-        uint32_t                    unsync_max_fps          = 1000; // MacOS only
+        bool                        is_emulated_render_pass = false; // Windows only
+        uint32_t                    unsync_max_fps          = 1000u; // MacOS only
     };
 
     // Create RenderContext instance
-    static Ptr<RenderContext> Create(const Platform::AppEnvironment& env, Device& device, const Settings& settings);
+    static Ptr<RenderContext> Create(const Platform::AppEnvironment& env, Device& device, tf::Executor& parallel_executor, const Settings& settings);
 
     // RenderContext interface
     virtual bool ReadyToRender() const = 0;
     virtual void Resize(const FrameSize& frame_size) = 0;
     virtual void Present() = 0;
 
-    virtual Platform::AppView     GetAppView() const = 0;
-    virtual CommandQueue&         GetRenderCommandQueue() = 0;
-    virtual const Settings&       GetSettings() const = 0;
-    virtual uint32_t              GetFrameBufferIndex() const = 0;
-    virtual float                 GetContentScalingFactor() const = 0;
-    virtual const FpsCounter&     GetFpsCounter() const = 0;
+    virtual Platform::AppView GetAppView() const = 0;
+    virtual CommandQueue&     GetRenderCommandQueue() = 0;
+    virtual const Settings&   GetSettings() const noexcept = 0;
+    virtual uint32_t          GetFrameBufferIndex() const noexcept = 0;
+    virtual uint32_t          GetFrameIndex() const noexcept = 0;
+    virtual float             GetContentScalingFactor() const = 0;
+    virtual uint32_t          GetFontResolutionDpi() const = 0;
+    virtual const FpsCounter& GetFpsCounter() const noexcept = 0;
 
     virtual bool SetVSyncEnabled(bool vsync_enabled) = 0;
     virtual bool SetFrameBuffersCount(uint32_t frame_buffers_count) = 0;

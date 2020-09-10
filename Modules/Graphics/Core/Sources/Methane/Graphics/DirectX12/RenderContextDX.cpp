@@ -27,11 +27,7 @@ DirectX 12 implementation of the render context interface.
 #include "TypesDX.h"
 
 #include <Methane/Instrumentation.h>
-#include <Methane/Graphics/Windows/Helpers.h>
-
-#ifdef COMMAND_EXECUTION_LOGGING
-#include <Methane/Platform/Utils.h>
-#endif
+#include <Methane/Graphics/Windows/Primitives.h>
 
 #include <shellscalingapi.h>
 #include <nowide/convert.hpp>
@@ -42,9 +38,9 @@ namespace Methane::Graphics
 
 static void SetWindowTopMostFlag(HWND window_handle, bool is_top_most)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    RECT window_rect = {};
+    RECT window_rect{};
     GetWindowRect(window_handle, &window_rect);
 
     const HWND window_position = is_top_most ? HWND_TOPMOST : HWND_NOTOPMOST;
@@ -57,7 +53,7 @@ static void SetWindowTopMostFlag(HWND window_handle, bool is_top_most)
 
 static float GetDeviceScaleRatio(DEVICE_SCALE_FACTOR device_scale_factor)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (device_scale_factor)
     {
@@ -83,39 +79,62 @@ static float GetDeviceScaleRatio(DEVICE_SCALE_FACTOR device_scale_factor)
     return 1.f;
 }
 
-Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, Device& device, const RenderContext::Settings& settings)
+Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, Device& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     DeviceBase& device_base = static_cast<DeviceBase&>(device);
-    Ptr<RenderContextDX> sp_render_context = std::make_shared<RenderContextDX>(env, device_base, settings);
-    sp_render_context->Initialize(device_base, true);
-    return sp_render_context;
+    Ptr<RenderContextDX> render_context_ptr = std::make_shared<RenderContextDX>(env, device_base, parallel_executor, settings);
+    render_context_ptr->Initialize(device_base, true);
+    return render_context_ptr;
 }
 
-RenderContextDX::RenderContextDX(const Platform::AppEnvironment& env, DeviceBase& device, const RenderContext::Settings& settings)
-    : ContextDX<RenderContextBase>(device, settings)
+RenderContextDX::RenderContextDX(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
+    : ContextDX<RenderContextBase>(device, parallel_executor, settings)
     , m_platform_env(env)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 RenderContextDX::~RenderContextDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+}
+
+// Context interface
+void RenderContextDX::WaitForGpu(WaitFor wait_for)
+{
+    META_FUNCTION_TASK();
+
+    ContextDX<RenderContextBase>::WaitForGpu(wait_for);
+
+    switch (wait_for)
+    {
+    case WaitFor::RenderComplete:
+        GetRenderCommandQueueDX().CompleteExecution();
+        break;
+
+    case WaitFor::FramePresented:
+        GetRenderCommandQueueDX().CompleteExecution(GetFrameBufferIndex());
+        break;
+
+    case WaitFor::ResourcesUploaded:
+        GetUploadCommandQueueDX().CompleteExecution();
+        break;
+    }
 }
 
 void RenderContextDX::Release()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     m_cp_swap_chain.Reset();
 
     ContextDX<RenderContextBase>::Release();
 }
 
-void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocation)
+void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const Settings& settings = GetSettings();
 
@@ -130,10 +149,10 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
 
     // Initialize swap-chain
 
-    DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
+    DXGI_SWAP_CHAIN_DESC1 swap_chain_desc{};
     swap_chain_desc.Width                 = settings.frame_size.width;
     swap_chain_desc.Height                = settings.frame_size.height;
-    swap_chain_desc.Format                = TypeConverterDX::DataFormatToDXGI(settings.color_format);
+    swap_chain_desc.Format                = TypeConverterDX::PixelFormatToDxgi(settings.color_format);
     swap_chain_desc.BufferCount           = settings.frame_buffers_count;
     swap_chain_desc.BufferUsage           = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     swap_chain_desc.SwapEffect            = DXGI_SWAP_EFFECT_FLIP_DISCARD;
@@ -143,7 +162,8 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
     assert(!!cp_dxgi_factory);
 
     BOOL present_tearing_support = FALSE;
-    ThrowIfFailed(cp_dxgi_factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &present_tearing_support, sizeof(present_tearing_support)));
+    ID3D12Device* p_native_device = GetDeviceDX().GetNativeDevice().Get();
+    ThrowIfFailed(cp_dxgi_factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &present_tearing_support, sizeof(present_tearing_support)), p_native_device);
     if (present_tearing_support)
     {
         swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
@@ -151,7 +171,7 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
 
     wrl::ComPtr<IDXGISwapChain1> cp_swap_chain;
     ID3D12CommandQueue& dx_command_queue = GetRenderCommandQueueDX().GetNativeCommandQueue();
-    ThrowIfFailed(cp_dxgi_factory->CreateSwapChainForHwnd(&dx_command_queue, m_platform_env.window_handle, &swap_chain_desc, NULL, NULL, &cp_swap_chain));
+    ThrowIfFailed(cp_dxgi_factory->CreateSwapChainForHwnd(&dx_command_queue, m_platform_env.window_handle, &swap_chain_desc, NULL, NULL, &cp_swap_chain), p_native_device);
     assert(!!cp_swap_chain);
 
     if (settings.is_full_screen)
@@ -160,39 +180,37 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
         SetWindowTopMostFlag(m_platform_env.window_handle, true);
     }
 
-    ThrowIfFailed(cp_swap_chain.As(&m_cp_swap_chain));
+    ThrowIfFailed(cp_swap_chain.As(&m_cp_swap_chain), p_native_device);
 
     // With tearing support enabled we will handle ALT+Enter key presses in the window message loop rather than let DXGI handle it by calling SetFullscreenState
-    ThrowIfFailed(cp_dxgi_factory->MakeWindowAssociation(m_platform_env.window_handle, DXGI_MWA_NO_ALT_ENTER));
-
-    const wrl::ComPtr<ID3D12Device>& cp_device = static_cast<DeviceDX&>(device).GetNativeDevice();
-    assert(!!cp_device);
+    ThrowIfFailed(cp_dxgi_factory->MakeWindowAssociation(m_platform_env.window_handle, DXGI_MWA_NO_ALT_ENTER), p_native_device);
 
     UpdateFrameBufferIndex();
 
-    ContextDX<RenderContextBase>::Initialize(device, deferred_heap_allocation);
+    ContextDX<RenderContextBase>::Initialize(device, deferred_heap_allocation, is_callback_emitted);
 }
 
 void RenderContextDX::Resize(const FrameSize& frame_size)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     WaitForGpu(WaitFor::RenderComplete);
 
     ContextDX<RenderContextBase>::Resize(frame_size);
 
     // Resize the swap chain to the desired dimensions
-    DXGI_SWAP_CHAIN_DESC1 desc = {};
+    DXGI_SWAP_CHAIN_DESC1 desc{};
     m_cp_swap_chain->GetDesc1(&desc);
-    ThrowIfFailed(m_cp_swap_chain->ResizeBuffers(GetSettings().frame_buffers_count, frame_size.width, frame_size.height, desc.Format, desc.Flags));
+    ThrowIfFailed(m_cp_swap_chain->ResizeBuffers(GetSettings().frame_buffers_count, frame_size.width, frame_size.height, desc.Format, desc.Flags),
+                  GetDeviceDX().GetNativeDevice().Get());
 
     UpdateFrameBufferIndex();
 }
 
 void RenderContextDX::Present()
 {
-    ITT_FUNCTION_TASK();
-    SCOPE_TIMER("RenderContextDX::Present");
+    META_FUNCTION_TASK();
+    META_SCOPE_TIMER("RenderContextDX::Present");
 
     ContextDX<RenderContextBase>::Present();
 
@@ -201,7 +219,8 @@ void RenderContextDX::Present()
     const uint32_t vsync_interval = GetPresentVSyncInterval();
 
     assert(m_cp_swap_chain);
-    ThrowIfFailed(m_cp_swap_chain->Present(vsync_interval, present_flags));
+    ThrowIfFailed(m_cp_swap_chain->Present(vsync_interval, present_flags),
+                  GetDeviceDX().GetNativeDevice().Get());
 
     OnCpuPresentComplete();
     UpdateFrameBufferIndex();
@@ -209,21 +228,32 @@ void RenderContextDX::Present()
 
 float RenderContextDX::GetContentScalingFactor() const
 {
+    META_FUNCTION_TASK();
     DEVICE_SCALE_FACTOR device_scale_factor = DEVICE_SCALE_FACTOR_INVALID;
     HMONITOR monitor_handle = MonitorFromWindow(m_platform_env.window_handle, MONITOR_DEFAULTTONEAREST);
     ThrowIfFailed(GetScaleFactorForMonitor(monitor_handle, &device_scale_factor));
     return GetDeviceScaleRatio(device_scale_factor);
 }
 
+uint32_t RenderContextDX::GetFontResolutionDpi() const
+{
+    const HDC window_device_context = GetDC(m_platform_env.window_handle);
+    const int dpi_y = GetDeviceCaps(window_device_context, LOGPIXELSY);
+    // We assume that horizontal and vertical font resolutions are equal
+    assert(dpi_y > 0);
+    assert(dpi_y == GetDeviceCaps(window_device_context, LOGPIXELSX));
+    return dpi_y;
+}
+
 CommandQueueDX& RenderContextDX::GetRenderCommandQueueDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<CommandQueueDX&>(GetRenderCommandQueue());
 }
 
 uint32_t RenderContextDX::GetNextFrameBufferIndex()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_cp_swap_chain);
     return m_cp_swap_chain->GetCurrentBackBufferIndex();
 }

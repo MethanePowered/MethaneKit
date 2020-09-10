@@ -17,127 +17,59 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/Metal/ParallelRenderCommandListMT.mm
-Metal implementation of the render command list interface.
+Metal implementation of the parallel render command list interface.
 
 ******************************************************************************/
 
 #include "ParallelRenderCommandListMT.hh"
 #include "RenderPassMT.hh"
 #include "RenderStateMT.hh"
-#include "CommandQueueMT.hh"
 #include "RenderContextMT.hh"
 
 #include <Methane/Instrumentation.h>
-#include <Methane/Platform/MacOS/Types.hh>
 
 namespace Methane::Graphics
 {
 
 Ptr<ParallelRenderCommandList> ParallelRenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<ParallelRenderCommandListMT>(static_cast<CommandQueueBase&>(command_queue), static_cast<RenderPassBase&>(render_pass));
 }
 
 ParallelRenderCommandListMT::ParallelRenderCommandListMT(CommandQueueBase& command_queue, RenderPassBase& render_pass)
-    : ParallelRenderCommandListBase(command_queue, render_pass)
+    : CommandListMT<id<MTLParallelRenderCommandEncoder>, ParallelRenderCommandListBase>(true, command_queue, render_pass)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
-void ParallelRenderCommandListMT::SetName(const std::string& name)
+void ParallelRenderCommandListMT::Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
 {
-    ITT_FUNCTION_TASK();
-
-    ParallelRenderCommandListBase::SetName(name);
-    
-    NSString* ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
-    
-    if (m_mtl_parallel_render_encoder != nil)
+    META_FUNCTION_TASK();
+    if (IsCommandEncoderInitialized())
     {
-        m_mtl_parallel_render_encoder.label = ns_name;
-    }
-    
-    if (m_mtl_cmd_buffer != nil)
-    {
-        m_mtl_cmd_buffer.label = ns_name;
-    }
-}
-
-void ParallelRenderCommandListMT::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
-{
-    ITT_FUNCTION_TASK();
-    if (m_mtl_parallel_render_encoder != nil)
+        ParallelRenderCommandListBase::Reset(render_state_ptr, p_debug_group);
         return;
-
-    // NOTE:
-    //  If command buffer was not created for current frame yet,
-    //  then render pass descriptor should be reset with new frame drawable
-    RenderPassMT& render_pass = GetPassMT();
-    MTLRenderPassDescriptor* mtl_render_pass = render_pass.GetNativeDescriptor(m_mtl_cmd_buffer == nil);
-
-    if (m_mtl_cmd_buffer == nil)
-    {
-        m_mtl_cmd_buffer = [GetCommandQueueMT().GetNativeCommandQueue() commandBuffer];
-        assert(m_mtl_cmd_buffer != nil);
-
-        m_mtl_cmd_buffer.label = MacOS::ConvertToNsType<std::string, NSString*>(GetName());
     }
 
+    // NOTE: If command buffer was not created for current frame yet,
+    // then render pass descriptor should be reset with new frame drawable
+    MTLRenderPassDescriptor* mtl_render_pass = GetRenderPassMT().GetNativeDescriptor(!IsCommandBufferInitialized());
     assert(mtl_render_pass != nil);
-    m_mtl_parallel_render_encoder = [m_mtl_cmd_buffer parallelRenderCommandEncoderWithDescriptor: mtl_render_pass];
-
-    assert(m_mtl_parallel_render_encoder != nil);
-    m_mtl_parallel_render_encoder.label = MacOS::ConvertToNsType<std::string, NSString*>(GetName());
+    id<MTLCommandBuffer>& mtl_cmd_buffer = InitializeCommandBuffer();
+    InitializeCommandEncoder([mtl_cmd_buffer parallelRenderCommandEncoderWithDescriptor: mtl_render_pass]);
     
-    if (sp_render_state)
+    if (render_state_ptr)
     {
-        static_cast<RenderStateMT&>(*sp_render_state).InitializeNativeStates();
+        static_cast<RenderStateMT&>(*render_state_ptr).InitializeNativeStates();
     }
 
-    ParallelRenderCommandListBase::Reset(sp_render_state, debug_group);
+    ParallelRenderCommandListBase::Reset(render_state_ptr, p_debug_group);
 }
 
-void ParallelRenderCommandListMT::Commit()
+RenderPassMT& ParallelRenderCommandListMT::GetRenderPassMT()
 {
-    ITT_FUNCTION_TASK();
-    
-    assert(!IsCommitted());
-
-    ParallelRenderCommandListBase::Commit();
-    
-    if (!m_mtl_cmd_buffer || !m_mtl_parallel_render_encoder)
-        return;
-
-    [m_mtl_parallel_render_encoder endEncoding];
-    m_mtl_parallel_render_encoder = nil;
-
-    [m_mtl_cmd_buffer enqueue];
-}
-
-void ParallelRenderCommandListMT::Execute(uint32_t frame_index)
-{
-    ITT_FUNCTION_TASK();
-
-    ParallelRenderCommandListBase::Execute(frame_index);
-
-    [m_mtl_cmd_buffer addCompletedHandler:^(id<MTLCommandBuffer>) {
-        Complete(frame_index);
-    }];
-
-    [m_mtl_cmd_buffer commit];
-    m_mtl_cmd_buffer  = nil;
-}
-
-CommandQueueMT& ParallelRenderCommandListMT::GetCommandQueueMT() noexcept
-{
-    ITT_FUNCTION_TASK();
-    return static_cast<class CommandQueueMT&>(GetCommandQueue());
-}
-
-RenderPassMT& ParallelRenderCommandListMT::GetPassMT()
-{
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<class RenderPassMT&>(GetPass());
 }
 

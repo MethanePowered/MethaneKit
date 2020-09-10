@@ -26,14 +26,10 @@ Metal implementation of the render context interface.
 #include "ContextMT.hpp"
 
 #include <Methane/Graphics/RenderContextBase.h>
+#include <Methane/TracyGpu.hpp>
 
 #import <Methane/Platform/MacOS/AppViewMT.hh>
 #import <Metal/Metal.h>
-
-// Either use dispatch queue semaphore or fence primitives for CPU-GPU frames rendering synchronization
-// NOTE: when fences are used for frames synchronization,
-// application runs slower than expected when started from XCode, but runs normally when started from Finder
-//#define USE_DISPATCH_QUEUE_SEMAPHORE
 
 namespace Methane::Graphics
 {
@@ -41,34 +37,35 @@ namespace Methane::Graphics
 class RenderContextMT final : public ContextMT<RenderContextBase>
 {
 public:
-    RenderContextMT(const Platform::AppEnvironment& env, DeviceBase& device, const Settings& settings);
+    RenderContextMT(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor, const Settings& settings);
     ~RenderContextMT() override;
 
     // Context interface
     void  WaitForGpu(WaitFor wait_for) override;
 
     // RenderContext interface
-    bool  ReadyToRender() const override;
-    void  Resize(const FrameSize& frame_size) override;
-    void  Present() override;
-    bool  SetVSyncEnabled(bool vsync_enabled) override;
-    bool  SetFrameBuffersCount(uint32_t frame_buffers_count) override;
-    float GetContentScalingFactor() const override;
+    bool     ReadyToRender() const override;
+    void     Resize(const FrameSize& frame_size) override;
+    void     Present() override;
+    bool     SetVSyncEnabled(bool vsync_enabled) override;
+    bool     SetFrameBuffersCount(uint32_t frame_buffers_count) override;
+    float    GetContentScalingFactor() const override;
+    uint32_t GetFontResolutionDpi() const override;
     Platform::AppView GetAppView() const override { return { m_app_view }; }
 
     // ContextBase overrides
-    void Initialize(DeviceBase& device, bool deferred_heap_allocation) override;
+    void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true)  override;
     void Release() override;
 
     id<CAMetalDrawable> GetNativeDrawable()       { return m_app_view.currentDrawable; }
     CommandQueueMT&     GetRenderCommandQueueMT();
 
+    void OnGpuExecutionCompleted();
+
 private:
     AppViewMT*           m_app_view;
     id<MTLCaptureScope>  m_frame_capture_scope;
-#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
     dispatch_semaphore_t m_dispatch_semaphore;
-#endif
 };
 
 } // namespace Methane::Graphics

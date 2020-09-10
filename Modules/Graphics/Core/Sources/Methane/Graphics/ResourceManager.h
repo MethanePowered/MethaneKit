@@ -28,6 +28,8 @@ and deferred releasing of GPU resource.
 #include "DescriptorHeap.h"
 #include "ProgramBase.h"
 
+#include <Methane/Instrumentation.h>
+
 #include <array>
 #include <mutex>
 
@@ -55,8 +57,11 @@ public:
     void CompleteInitialization();
     void Release();
 
-    bool DeferredHeapAllocationEnabled() const { return m_deferred_heap_allocation; }
-    void DeferProgramBindingsInitialization(ProgramBindings& program_bindings);
+    void SetDeferredHeapAllocation(bool deferred_heap_allocation);
+    bool IsDeferredHeapAllocation() const { return m_deferred_heap_allocation; }
+
+    void AddProgramBindings(ProgramBindings& program_bindings);
+    void RemoveProgramBindings(ProgramBindings&);
 
     uint32_t                    CreateDescriptorHeap(const DescriptorHeap::Settings& settings); // returns index of the created descriptor heap
     const Ptr<DescriptorHeap>&  GetDescriptorHeapPtr(DescriptorHeap::Type type, Data::Index heap_index = 0);
@@ -64,17 +69,17 @@ public:
     const Ptr<DescriptorHeap>&  GetDefaultShaderVisibleDescriptorHeapPtr(DescriptorHeap::Type type) const;
     DescriptorHeap&             GetDefaultShaderVisibleDescriptorHeap(DescriptorHeap::Type type) const;
     DescriptorHeapSizeByType    GetDescriptorHeapSizes(bool get_allocated_size, bool for_shader_visible_heaps) const;
-    ResourceBase::ReleasePool&  GetReleasePool();
 
 private:
+    void ForEachDescriptorHeap(const std::function<void(DescriptorHeap& descriptor_heap)>& process_heap) const;
+
     using DescriptorHeapTypes = std::array<Ptrs<DescriptorHeap>, static_cast<size_t>(DescriptorHeap::Type::Count)>;
 
-    bool                           m_deferred_heap_allocation = false;
-    ContextBase&                   m_context;
-    DescriptorHeapTypes            m_descriptor_heap_types;
-    Ptr<ResourceBase::ReleasePool> m_sp_release_pool;
-    WeakPtrs<ProgramBindings>      m_deferred_program_bindings;
-    std::mutex                     m_deferred_program_bindings_mutex;
+    bool                      m_deferred_heap_allocation = false;
+    ContextBase&              m_context;
+    DescriptorHeapTypes       m_descriptor_heap_types;
+    TracyLockable(std::mutex, m_program_bindings_mutex);
+    WeakPtrs<ProgramBindings> m_program_bindings;
 };
 
 } // namespace Methane::Graphics

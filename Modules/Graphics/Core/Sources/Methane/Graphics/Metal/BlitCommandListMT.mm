@@ -22,125 +22,37 @@ Metal implementation of the blit command list interface.
 ******************************************************************************/
 
 #include "BlitCommandListMT.hh"
-#include "CommandQueueMT.hh"
-#include "RenderContextMT.hh"
 
 #include <Methane/Instrumentation.h>
-#include <Methane/Platform/MacOS/Types.hh>
 
 namespace Methane::Graphics
 {
 
 Ptr<BlitCommandList> BlitCommandList::Create(CommandQueue& command_queue)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<BlitCommandListMT>(static_cast<CommandQueueBase&>(command_queue));
 }
 
 BlitCommandListMT::BlitCommandListMT(CommandQueueBase& command_queue)
-    : CommandListBase(command_queue, CommandList::Type::Blit)
+    : CommandListMT<id<MTLBlitCommandEncoder>, CommandListBase>(true, command_queue, CommandList::Type::Blit)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
-void BlitCommandListMT::Reset(const std::string& debug_group)
+void BlitCommandListMT::Reset(CommandList::DebugGroup* p_debug_group)
 {
-    ITT_FUNCTION_TASK();
-    if (m_mtl_blit_encoder)
+    META_FUNCTION_TASK();
+
+    if (IsCommandEncoderInitialized())
+    {
+        CommandListBase::Reset(p_debug_group);
         return;
-
-    if (!m_mtl_cmd_buffer)
-    {
-        m_mtl_cmd_buffer = [GetCommandQueueMT().GetNativeCommandQueue() commandBuffer];
-        assert(m_mtl_cmd_buffer != nil);
-
-        m_mtl_cmd_buffer.label = MacOS::ConvertToNsType<std::string, NSString*>(GetName());
     }
 
-    assert(m_mtl_cmd_buffer != nil);
-    m_mtl_blit_encoder = [m_mtl_cmd_buffer blitCommandEncoder];
-
-    assert(m_mtl_blit_encoder != nil);
-    m_mtl_blit_encoder.label = MacOS::ConvertToNsType<std::string, NSString*>(GetName());
-}
-
-void BlitCommandListMT::SetName(const std::string& name)
-{
-    ITT_FUNCTION_TASK();
-
-    CommandListBase::SetName(name);
-    
-    NSString* ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
-    
-    if (m_mtl_blit_encoder != nil)
-    {
-        m_mtl_blit_encoder.label = ns_name;
-    }
-    
-    if (m_mtl_cmd_buffer != nil)
-    {
-        m_mtl_cmd_buffer.label = ns_name;
-    }
-}
-
-void BlitCommandListMT::PushDebugGroup(const std::string& name)
-{
-    ITT_FUNCTION_TASK();
-
-    assert(m_mtl_blit_encoder != nil);
-    NSString* ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
-    [m_mtl_blit_encoder pushDebugGroup:ns_name];
-}
-
-void BlitCommandListMT::PopDebugGroup()
-{
-    ITT_FUNCTION_TASK();
-
-    assert(m_mtl_blit_encoder != nil);
-    [m_mtl_blit_encoder popDebugGroup];
-}
-
-void BlitCommandListMT::Commit()
-{
-    ITT_FUNCTION_TASK();
-    
-    assert(!IsCommitted());
-
-    CommandListBase::Commit();
-
-    if (m_mtl_blit_encoder)
-    {
-        [m_mtl_blit_encoder endEncoding];
-        m_mtl_blit_encoder = nil;
-    }
-
-    if (!m_mtl_cmd_buffer)
-        return;
-
-    [m_mtl_cmd_buffer enqueue];
-}
-
-void BlitCommandListMT::Execute(uint32_t frame_index)
-{
-    ITT_FUNCTION_TASK();
-
-    CommandListBase::Execute(frame_index);
-
-    if (!m_mtl_cmd_buffer)
-        return;
-
-    [m_mtl_cmd_buffer addCompletedHandler:^(id<MTLCommandBuffer>) {
-        Complete(frame_index);
-    }];
-
-    [m_mtl_cmd_buffer commit];
-    m_mtl_cmd_buffer  = nil;
-}
-
-CommandQueueMT& BlitCommandListMT::GetCommandQueueMT() noexcept
-{
-    ITT_FUNCTION_TASK();
-    return static_cast<class CommandQueueMT&>(GetCommandQueue());
+    id<MTLCommandBuffer>& mtl_cmd_buffer = InitializeCommandBuffer();
+    InitializeCommandEncoder([mtl_cmd_buffer blitCommandEncoder]);
+    CommandListBase::Reset(p_debug_group);
 }
 
 } // namespace Methane::Graphics

@@ -33,21 +33,19 @@ class BufferVK final : public BufferBase
 {
 public:
     BufferVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    BufferVK(ContextBase& context, const Settings& settings, Data::Size stride, PixelFormat format, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
     ~BufferVK() override;
 
     // Resource interface
     void SetData(const SubResources& sub_resources) override;
-    
-    // Buffer interface
-    uint32_t GetFormattedItemsCount() const override;
 
     // Object interface
     void SetName(const std::string& name) override;
+};
 
-private:
-    Data::Size    m_stride = 0;
-    PixelFormat   m_format = PixelFormat::Unknown;
+class BufferSetVK final : public BufferSetBase
+{
+public:
+    BufferSetVK(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
 };
 
 } // namespace Methane::Graphics

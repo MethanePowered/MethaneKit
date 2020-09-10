@@ -31,7 +31,7 @@ namespace Methane::Platform::Keyboard
 
 Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     static const std::map<uint32_t, Key> s_key_by_native_code =
     {
         { 0x00B, Key::Num0          },
@@ -162,7 +162,7 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
     // The Ctrl keys require special handling
     if (native_key.w_param == VK_CONTROL)
     {
-        MSG  next = {};
+        MSG  next {};
         LONG time = 0;
 
         // Right side keys have the extended key bit set
@@ -181,7 +181,7 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
                 next.message == WM_KEYUP ||
                 next.message == WM_SYSKEYUP)
             {
-                if (next.wParam == VK_MENU && (next.lParam & 0x01000000) && next.time == time)
+                if (next.wParam == VK_MENU && (next.lParam & 0x01000000) && next.time == static_cast<DWORD>(time))
                 {
                     // Next message is Right Alt down so discard this
                     return Key::Unknown;
@@ -205,7 +205,7 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
 
 Modifier::Mask KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (native_key.w_param)
     {
     case VK_CONTROL: return Modifier::Value::Control;

@@ -31,22 +31,14 @@ namespace Methane::Graphics
 {
 
 struct IContextVK;
-struct ResourceContainerVK;
 
 class ResourceVK : public ResourceBase
 {
 public:
-    class ReleasePoolVK final : public ReleasePool
+    class BarriersVK : public Barriers
     {
     public:
-        ReleasePoolVK();
-
-        // ReleasePool interface
-        void AddResource(ResourceBase& resource) override;
-        void ReleaseResources() override;
-
-    private:
-        std::unique_ptr<ResourceContainerVK> m_sp_vk_resources;
+        BarriersVK(const Set& barriers) : Barriers(barriers) {}
     };
 
     ResourceVK(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);

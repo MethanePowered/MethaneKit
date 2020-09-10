@@ -25,6 +25,8 @@ Optional macro definition: TEXTURES_COUNT=10
 
 ******************************************************************************/
 
+#include "..\..\..\Common\Shaders\Primitives.hlsl"
+
 #ifndef TEXTURES_COUNT
 #define TEXTURES_COUNT 1
 #endif
@@ -75,11 +77,6 @@ ConstantBuffer<MeshUniforms>  g_mesh_uniforms                 : register(b3);
 Texture2DArray<float4>        g_face_textures[TEXTURES_COUNT] : register(t1);
 SamplerState                  g_texture_sampler               : register(s1);
 
-float linstep(float min, float max, float s)
-{
-    return saturate((s - min) / (max - min));
-}
-
 PSInput AsteroidVS(VSInput input)
 {
     const float4 position = float4(input.position, 1.0f);
@@ -122,7 +119,7 @@ float4 AsteroidPS(PSInput input) : SV_TARGET
 
     const float  specular_part  = pow(clamp(dot(fragment_to_eye, light_reflected_from_fragment), 0.0, 1.0), g_constants.light_specular_factor);
     const float4 specular_color = base_color * specular_part;
-    const float  fading_ratio   = saturate(input.position.z * 20000.0f);
+    const float  fading_ratio   = saturate(input.position.z * 8000.0f);
 
-    return (ambient_color + diffuse_color + specular_color) * fading_ratio;
+    return ColorLinearToSrgb((ambient_color + diffuse_color + specular_color) * fading_ratio);
 }

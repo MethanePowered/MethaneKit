@@ -37,13 +37,14 @@ namespace Methane::Platform
 
 void PrintToDebugOutput(const std::string& msg)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     OutputDebugStringA((msg + "\n").c_str());
+    TracyMessage(msg.c_str(), msg.size());
 }
 
 std::string GetExecutableDir()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     WCHAR path[512];
     DWORD size = GetModuleFileName(nullptr, path, _countof(path));
@@ -64,7 +65,7 @@ std::string GetExecutableDir()
 
 std::string GetExecutableFileName()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     WCHAR path[512];
     DWORD size = GetModuleFileName(nullptr, path, _countof(path));
@@ -80,7 +81,7 @@ std::string GetExecutableFileName()
 
 std::string GetResourceDir()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return GetExecutableDir();
 }
 
@@ -89,12 +90,29 @@ namespace Windows
 
 void GetDesktopResolution(uint32_t& width, uint32_t& height)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     RECT       desktop;
     const HWND h_desktop = GetDesktopWindow();
     GetWindowRect(h_desktop, &desktop);
     width = static_cast<uint32_t>(desktop.right);
     height = static_cast<uint32_t>(desktop.bottom);
+}
+
+bool IsDeveloperModeEnabled()
+{
+    HKEY h_key{};
+    auto err = RegOpenKeyExW(HKEY_LOCAL_MACHINE, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock)", 0, KEY_READ, &h_key);
+    if (err != ERROR_SUCCESS)
+        return false;
+
+    DWORD value{};
+    DWORD dword_size = sizeof(DWORD);
+    err = RegQueryValueExW(h_key, L"AllowDevelopmentWithoutDevLicense", 0, NULL, reinterpret_cast<LPBYTE>(&value), &dword_size);
+    RegCloseKey(h_key);
+    if (err != ERROR_SUCCESS)
+        return false;
+
+    return value != 0;
 }
 
 } // namespace Windows

@@ -24,6 +24,7 @@ Optional macro definition: ENABLE_SHADOWS, ENABLE_TEXTURING
 
 ******************************************************************************/
 
+#include "..\..\..\Common\Shaders\Primitives.hlsl"
 
 struct VSInput
 {
@@ -133,5 +134,5 @@ float4 CubePS(PSInput input) : SV_TARGET
     const float  specular_part  = pow(clamp(dot(fragment_to_eye, light_reflected_from_fragment), 0.0, 1.0), g_constants.light_specular_factor);
     const float4 specular_color = base_color * specular_part / (distance * distance);
 
-    return ambient_color + (1.f - shadow_ratio) * (diffuse_color + specular_color);
+    return ColorLinearToSrgb(ambient_color + (1.f - shadow_ratio) * (diffuse_color + specular_color));
 }

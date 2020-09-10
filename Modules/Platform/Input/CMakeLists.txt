@@ -6,18 +6,11 @@ get_module_dirs("Methane/Platform")
 
 if(APPLE)
 
-    set(LIBRARIES
+    set(PLATFORM_LIBRARIES
         "-framework AppKit"
     )
 
 endif()
-
-set(LIBRARIES ${LIBRARIES}
-    MethaneCommonPrimitives
-    MethaneDataPrimitives
-    MethanePlatformUtils
-    MethaneInstrumentation
-)
 
 set(HEADERS
     ${INCLUDE_PLATFORM_DIR}/Keyboard.h
@@ -45,7 +38,14 @@ add_library(${TARGET} STATIC
 )
 
 target_link_libraries(${TARGET}
-    ${LIBRARIES}
+    PUBLIC
+        MethaneDataTypes
+        MethaneInstrumentation
+    PRIVATE
+        MethaneBuildOptions
+        MethanePrimitives
+        MethanePlatformUtils
+        ${PLATFORM_LIBRARIES}
 )
 
 target_include_directories(${TARGET}
@@ -59,8 +59,8 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER Modules/Platform
-    PUBLIC_HEADER "${HEADERS}"
+        FOLDER Modules/Platform
+        PUBLIC_HEADER "${HEADERS}"
 )
 
 install(TARGETS ${TARGET}

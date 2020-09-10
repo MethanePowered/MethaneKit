@@ -32,28 +32,67 @@ resources:
       submodules: recursive
 
 variables:
-  buildCmakeFlags: '-DMETHANE_VERSION_BUILD=$(Build.BuildNumber)
-    -DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON
+
+  buildReleaseCmakeFlags: '-DMETHANE_VERSION_BUILD=$(Build.BuildNumber)
     -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON
-    -DMETHANE_SCOPE_TIMERS_ENABLED:BOOL=OFF
     -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF
+    -DMETHANE_COMMAND_DEBUG_GROUPS_ENABLED:BOOL=ON
+    -DMETHANE_LOGGING_ENABLED:BOOL=OFF
     -DMETHANE_USE_OPEN_IMAGE_IO:BOOL=OFF
-    -DMETHANE_COMMAND_EXECUTION_LOGGING:BOOL=OFF'
+    -DMETHANE_SCOPE_TIMERS_ENABLED:BOOL=OFF
+    -DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON
+    -DMETHANE_ITT_METADATA_ENABLED:BOOL=OFF
+    -DMETHANE_GPU_INSTRUMENTATION_ENABLED:BOOL=OFF
+    -DMETHANE_TRACY_PROFILING_ENABLED:BOOL=OFF
+    -DMETHANE_TRACY_PROFILING_ON_DEMAND:BOOL=OFF'
+
+  buildProfilingCmakeFlags: '-DMETHANE_VERSION_BUILD=$(Build.BuildNumber)
+    -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON
+    -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF
+    -DMETHANE_COMMAND_DEBUG_GROUPS_ENABLED:BOOL=ON
+    -DMETHANE_LOGGING_ENABLED:BOOL=OFF
+    -DMETHANE_USE_OPEN_IMAGE_IO:BOOL=OFF
+    -DMETHANE_SCOPE_TIMERS_ENABLED:BOOL=ON
+    -DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=ON
+    -DMETHANE_ITT_METADATA_ENABLED:BOOL=ON
+    -DMETHANE_GPU_INSTRUMENTATION_ENABLED:BOOL=ON
+    -DMETHANE_TRACY_PROFILING_ENABLED:BOOL=ON
+    -DMETHANE_TRACY_PROFILING_ON_DEMAND:BOOL=ON'
 
 jobs:
 
 - job: Windows_x64
 
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-2019'
 
   variables:
     platform: 'Win64'
     configuration: 'Release'
     vcVarsBatFile: 'vcvars64.bat'
-    generatorName: '"Visual Studio 15 2017 Win64"'
-    cmakeFlags: $(buildCmakeFlags)
+    generatorName: '"Visual Studio 16 2019"'
+    cmakeFlags: -A x64 $(buildReleaseCmakeFlags)
     buildName: '$(platform)-$(configuration)'
+    buildDir: 'Build\Output\$(buildName)\Build'
+    installDir: 'Build\Output\$(buildName)\Install'
+    buildInstallDir: '..\Install'
+    rootDir: '..\..\..\..'
+
+  steps:
+  - template: Build/Windows/AzureBuild.yml
+
+- job: Windows_x64_Profiling
+
+  pool:
+    vmImage: 'windows-2019'
+
+  variables:
+    platform: 'Win64'
+    configuration: 'RelWithDebInfo'
+    vcVarsBatFile: 'vcvars64.bat'
+    generatorName: '"Visual Studio 16 2019"'
+    cmakeFlags: -A x64 $(buildProfilingCmakeFlags)
+    buildName: '$(platform)-$(configuration)-Profiling'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
@@ -65,15 +104,35 @@ jobs:
 - job: Windows_x86
 
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-2019'
 
   variables:
     platform: 'Win32'
     configuration: 'Release'
     vcVarsBatFile: 'vcvars32.bat'
-    generatorName: '"Visual Studio 15 2017"'
-    cmakeFlags: $(buildCmakeFlags)
+    generatorName: '"Visual Studio 16 2019"'
+    cmakeFlags: -A Win32 $(buildReleaseCmakeFlags)
     buildName: '$(platform)-$(configuration)'
+    buildDir: 'Build\Output\$(buildName)\Build'
+    installDir: 'Build\Output\$(buildName)\Install'
+    buildInstallDir: '..\Install'
+    rootDir: '..\..\..\..'
+
+  steps:
+  - template: Build/Windows/AzureBuild.yml
+
+- job: Windows_x86_Profiling
+
+  pool:
+    vmImage: 'windows-2019'
+
+  variables:
+    platform: 'Win32'
+    configuration: 'RelWithDebInfo'
+    vcVarsBatFile: 'vcvars32.bat'
+    generatorName: '"Visual Studio 16 2019"'
+    cmakeFlags: -A Win32 $(buildProfilingCmakeFlags)
+    buildName: '$(platform)-$(configuration)-Profiling'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
@@ -91,8 +150,27 @@ jobs:
     platform: 'MacOS'
     configuration: 'Release'
     generatorName: 'Xcode'
-    cmakeFlags: $(buildCmakeFlags)
+    cmakeFlags: $(buildReleaseCmakeFlags)
     buildName: '$(platform)-$(configuration)'
+    buildDir: 'Build/Output/$(buildName)/Build'
+    installDir: 'Build/Output/$(buildName)/Install'
+    buildInstallDir: '../Install'
+    rootDir: '../../../..'
+
+  steps:
+  - template: Build/Posix/AzureBuild.yml
+
+- job: MacOS_Profiling
+
+  pool:
+    vmImage: 'macOS-10.14'
+
+  variables:
+    platform: 'MacOS'
+    configuration: 'RelWithDebInfo'
+    generatorName: 'Xcode'
+    cmakeFlags: $(buildProfilingCmakeFlags)
+    buildName: '$(platform)-$(configuration)-Profiling'
     buildDir: 'Build/Output/$(buildName)/Build'
     installDir: 'Build/Output/$(buildName)/Install'
     buildInstallDir: '../Install'
@@ -110,7 +188,7 @@ jobs:
     platform: 'Ubuntu'
     configuration: 'Release'
     generatorName: '"Unix Makefiles"'
-    cmakeFlags: $(buildCmakeFlags)
+    cmakeFlags: $(buildReleaseCmakeFlags)
     buildName: '$(platform)-$(configuration)'
     buildDir: 'Build/Output/$(buildName)/Build'
     installDir: 'Build/Output/$(buildName)/Install'

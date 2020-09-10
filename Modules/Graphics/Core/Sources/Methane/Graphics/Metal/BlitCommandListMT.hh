@@ -23,6 +23,8 @@ Metal implementation of the blit command list interface.
 
 #pragma once
 
+#include "CommandListMT.hpp"
+
 #include <Methane/Graphics/BlitCommandList.h>
 #include <Methane/Graphics/CommandListBase.h>
 
@@ -34,37 +36,14 @@ namespace Methane::Graphics
 class CommandQueueMT;
 
 class BlitCommandListMT final
-    : public CommandListBase
+    : public CommandListMT<id<MTLBlitCommandEncoder>, CommandListBase>
     , public BlitCommandList
 {
 public:
     BlitCommandListMT(CommandQueueBase& command_queue);
 
     // CommandList interface
-    void PushDebugGroup(const std::string& name) override;
-    void PopDebugGroup() override;
-    void Commit() override;
-
-    // CommandListBase interface
-    void SetResourceBarriers(const ResourceBase::Barriers&) override { }
-    void Execute(uint32_t frame_index) override;
-
-    // BlitCommandList interface
-    void Reset(const std::string& debug_group = "") override;
-
-    // Object interface
-    void SetName(const std::string& label) override;
-
-    id<MTLCommandBuffer>&        GetNativeCommandBuffer() noexcept { return m_mtl_cmd_buffer; }
-    id<MTLBlitCommandEncoder>&   GetNativeBlitEncoder() noexcept   { return m_mtl_blit_encoder; }
-
-private:
-    void InitializeCommandBuffer();
-    
-    CommandQueueMT& GetCommandQueueMT() noexcept;
-
-    id<MTLCommandBuffer>        m_mtl_cmd_buffer = nil;
-    id<MTLBlitCommandEncoder>   m_mtl_blit_encoder = nil;
+    void Reset(CommandList::DebugGroup* p_debug_group = nullptr) override;
 };
 
 } // namespace Methane::Graphics

@@ -38,6 +38,7 @@ namespace Methane::Graphics
 
 class ResourceDX;
 class RenderCommandListDX;
+struct ICommandListDX;
 
 namespace wrl = Microsoft::WRL;
 
@@ -82,7 +83,7 @@ public:
 
         void SetRootParameterIndex(uint32_t root_parameter_index)                     { m_root_parameter_index = root_parameter_index; }
         void SetDescriptorRange(const DescriptorRange& descriptor_range);
-        void SetDescriptorHeapReservation(const DescriptorHeap::Reservation* p_reservation) { m_p_descriptor_heap_reservation = p_reservation; }
+        void SetDescriptorHeapReservation(const DescriptorHeap::Reservation* p_reservation);
 
     private:
         const SettingsDX                   m_settings_dx;
@@ -92,8 +93,9 @@ public:
         ResourceDX::LocationsDX            m_resource_locations_dx;
     };
     
-    ProgramBindingsDX(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument);
+    ProgramBindingsDX(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument);
     ProgramBindingsDX(const ProgramBindingsDX& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument);
+    ~ProgramBindingsDX() override;
 
     void Initialize();
 
@@ -101,18 +103,20 @@ public:
     void CompleteInitialization() override;
     void Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const override;
 
+    void Apply(ICommandListDX& command_list_dx, ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior::Mask apply_behavior) const;
+
 private:
     struct RootParameterBinding
     {
         ArgumentBindingDX&          argument_binding;
         uint32_t                    root_parameter_index = 0u;
-        D3D12_GPU_DESCRIPTOR_HANDLE base_descriptor      = {};
+        D3D12_GPU_DESCRIPTOR_HANDLE base_descriptor      {  };
         D3D12_GPU_VIRTUAL_ADDRESS   gpu_virtual_address  = 0u;
     };
 
     struct ResourceState
     {
-        Ptr<ResourceBase>     sp_resource;
+        Ptr<ResourceBase>     resource_ptr;
         ResourceBase::State   state;
     };
 
@@ -121,7 +125,7 @@ private:
     void AddRootParameterBinding(const Program::ArgumentDesc& argument_desc, RootParameterBinding root_parameter_binding);
     void AddResourceState(const Program::ArgumentDesc& argument_desc, ResourceState resource_state);
     void UpdateRootParameterBindings();
-    ResourceBase::Barriers ApplyResourceStates(bool apply_constant_resource_states) const;
+    bool ApplyResourceStates(bool apply_constant_resource_states) const;
     void ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const;
     void CopyDescriptorsToGpu();
 
@@ -132,6 +136,8 @@ private:
     using ResourceStates = std::vector<ResourceState>;
     ResourceStates        m_constant_resource_states;
     ResourceStates        m_variadic_resource_states;
+
+    mutable Ptr<ResourceBase::Barriers> m_resource_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics

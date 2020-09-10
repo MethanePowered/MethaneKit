@@ -33,48 +33,56 @@ Vulkan fence implementation.
 namespace Methane::Graphics
 {
 
-UniquePtr<Fence> Fence::Create(CommandQueue& command_queue)
+Ptr<Fence> Fence::Create(CommandQueue& command_queue)
 {
-    ITT_FUNCTION_TASK();
-    return std::make_unique<FenceVK>(static_cast<CommandQueueBase&>(command_queue));
+    META_FUNCTION_TASK();
+    return std::make_shared<FenceVK>(static_cast<CommandQueueBase&>(command_queue));
 }
 
 FenceVK::FenceVK(CommandQueueBase& command_queue)
     : FenceBase(command_queue)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     // TODO: create native fence object
 }
 
 FenceVK::~FenceVK()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     // TODO: release native fence object
 }
 
 void FenceVK::Signal()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     FenceBase::Signal();
 
     // TODO: signal native fence object
 }
 
-void FenceVK::Wait()
+void FenceVK::WaitOnCpu()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    FenceBase::Wait();
+    FenceBase::WaitOnCpu();
 
-    // TODO: wait for native fence object
+    // TODO: wait on CPU for native fence object
+}
+
+void FenceVK::WaitOnGpu(CommandQueue& wait_on_command_queue)
+{
+    META_FUNCTION_TASK();
+    FenceBase::WaitOnGpu(wait_on_command_queue);
+
+    // TODO: wait on GPU for native fence object
 }
 
 void FenceVK::SetName(const std::string& name) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (ObjectBase::GetName() == name)
         return;
 
@@ -85,7 +93,7 @@ void FenceVK::SetName(const std::string& name) noexcept
 
 CommandQueueVK& FenceVK::GetCommandQueueVK()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<CommandQueueVK&>(GetCommandQueue());
 }
 

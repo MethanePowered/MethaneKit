@@ -38,7 +38,8 @@ public:
 
     // Fence overrides
     void Signal() override;
-    void Wait() override;
+    void WaitOnCpu() override;
+    void WaitOnGpu(CommandQueue& wait_on_command_queue) override;
 
     // Object override
     void SetName(const std::string& name) noexcept override;

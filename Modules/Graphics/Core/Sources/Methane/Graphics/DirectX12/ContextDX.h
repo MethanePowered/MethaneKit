@@ -23,6 +23,8 @@ DirectX 12 context accessor interface for template class ContextDX<ContextBaseT>
 
 #pragma once
 
+#include <d3d12.h>
+
 namespace Methane::Graphics
 {
 
@@ -33,6 +35,7 @@ struct IContextDX
 {
     virtual const DeviceDX& GetDeviceDX() const noexcept = 0;
     virtual CommandQueueDX& GetUploadCommandQueueDX() noexcept = 0;
+    virtual ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1u << 15u) = 0;
 
     virtual ~IContextDX() = default;
 };

@@ -23,12 +23,21 @@ DirectX 12 implementation of the command queue interface.
 
 #pragma once
 
+#include "QueryBufferDX.h"
+
 #include <Methane/Graphics/CommandQueueBase.h>
+#include <Methane/Instrumentation.h>
 
 #include <wrl.h>
 #include <d3d12.h>
 
-#include <vector>
+#include <optional>
+#include <queue>
+#include <thread>
+#include <mutex>
+#include <atomic>
+#include <condition_variable>
+#include <exception>
 
 namespace Methane::Graphics
 {
@@ -37,27 +46,38 @@ namespace wrl = Microsoft::WRL;
 
 struct IContextDX;
 class RenderStateBase;
+class CommandListSetDX;
 
 class CommandQueueDX final : public CommandQueueBase
 {
 public:
-    CommandQueueDX(ContextBase& context);
+    CommandQueueDX(ContextBase& context, CommandList::Type command_lists_type);
+    ~CommandQueueDX() override;
 
     // CommandQueue interface
-    void Execute(const Refs<CommandList>& command_lists) override;
+    void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
 
     // Object interface
     void SetName(const std::string& name) override;
 
-    IContextDX& GetContextDX() noexcept;
-    ID3D12CommandQueue& GetNativeCommandQueue();
+    void CompleteExecution(const std::optional<Data::Index>& frame_index = { });
 
-protected:
-    using D3D12CommandLists = std::vector<ID3D12CommandList*>;
-    static D3D12CommandLists GetNativeCommandLists(const Refs<CommandList>& command_list_refs);
+    IContextDX&             GetContextDX() noexcept;
+    ID3D12CommandQueue&     GetNativeCommandQueue() noexcept;
+    TimestampQueryBuffer*   GetTimestampQueryBuffer() noexcept { return m_timestamp_query_buffer_ptr.get(); }
 
 private:
-    wrl::ComPtr<ID3D12CommandQueue> m_cp_command_queue;
+    void WaitForExecution() noexcept;
+
+    wrl::ComPtr<ID3D12CommandQueue>   m_cp_command_queue;
+    std::queue<Ptr<CommandListSetDX>> m_executing_command_lists;
+    mutable TracyLockable(std::mutex, m_executing_command_lists_mutex);
+    TracyLockable(std::mutex,         m_execution_waiting_mutex);
+    std::condition_variable_any       m_execution_waiting_condition_var;
+    std::atomic<bool>                 m_execution_waiting{ true };
+    std::thread                       m_execution_waiting_thread;
+    std::exception_ptr                m_execution_waiting_exception_ptr;
+    Ptr<TimestampQueryBuffer>         m_timestamp_query_buffer_ptr;
 };
 
 } // namespace Methane::Graphics

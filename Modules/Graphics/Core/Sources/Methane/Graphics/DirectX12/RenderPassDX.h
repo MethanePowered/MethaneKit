@@ -24,6 +24,7 @@ DirectX 12 implementation of the render pass interface.
 #pragma once
 
 #include <Methane/Graphics/RenderPassBase.h>
+#include <Methane/Data/Receiver.hpp>
 
 #include <d3d12.h>
 
@@ -35,13 +36,15 @@ namespace Methane::Graphics
 
 class RenderCommandListDX;
 
-class RenderPassDX final : public RenderPassBase
+class RenderPassDX final
+    : public RenderPassBase
+    , private Data::Receiver<IDescriptorHeapCallback>
 {
 public:
     RenderPassDX(RenderContextBase& context, const Settings& settings);
 
     // RenderPass interface
-    void Update(const Settings& settings) override;
+    bool Update(const Settings& settings) override;
 
     // RenderPassBase interface
     void Begin(RenderCommandListBase& command_list) override;
@@ -53,16 +56,16 @@ public:
     void SetNativeDescriptorHeaps(RenderCommandListDX& dx_command_list) const;
     void SetNativeRenderTargets(RenderCommandListDX& dx_command_list);
 
-    std::vector<ID3D12DescriptorHeap*>       GetNativeDescriptorHeaps() const;
-    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> GetNativeRenderTargetCPUHandles() const;
-    const D3D12_CPU_DESCRIPTOR_HANDLE*       GetNativeDepthStencilCPUHandle();
+    const std::vector<ID3D12DescriptorHeap*>&       GetNativeDescriptorHeaps() const;
+    const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& GetNativeRenderTargetCPUHandles() const;
+    const D3D12_CPU_DESCRIPTOR_HANDLE*              GetNativeDepthStencilCPUHandle() const;
 
 private:
     struct AccessDesc
     {
-        D3D12_CPU_DESCRIPTOR_HANDLE        descriptor = { };
-        D3D12_RENDER_PASS_BEGINNING_ACCESS beginning  = { };
-        D3D12_RENDER_PASS_ENDING_ACCESS    ending     = { };
+        D3D12_CPU_DESCRIPTOR_HANDLE        descriptor { };
+        D3D12_RENDER_PASS_BEGINNING_ACCESS beginning  { };
+        D3D12_RENDER_PASS_ENDING_ACCESS    ending     { };
 
         AccessDesc(const Attachment& attachment);
         AccessDesc(const ColorAttachment& color_attachment);
@@ -77,16 +80,16 @@ private:
 
     struct RTClearInfo
     {
-        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle      = {};
-        float                       clear_color[4]  = {};
+        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle     { };
+        float                       clear_color[4] { };
 
         RTClearInfo(const RenderPassBase::ColorAttachment& color_attach);
     };
 
     struct DSClearInfo
     {
-        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle      = {};
-        D3D12_CLEAR_FLAGS           clear_flags     = {};
+        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle      { };
+        D3D12_CLEAR_FLAGS           clear_flags     { };
         bool                        depth_cleared   = false;
         FLOAT                       depth_value     = 1.f;
         bool                        stencil_cleared = false;
@@ -99,6 +102,11 @@ private:
     void UpdateNativeRenderPassDesc(bool settings_changed);
     void UpdateNativeClearDesc();
 
+    void ForEachAccessibleDescriptorHeap(const std::function<void(DescriptorHeap& descriptor_heap)>&) const;
+
+    // IDescriptorHeapCallback implementation
+    void OnDescriptorHeapAllocated(DescriptorHeap& descriptor_heap) override;
+
     // D3D12 Render-Pass description
     std::optional<bool>                                 m_is_native_render_pass_available;
     std::vector<D3D12_RENDER_PASS_RENDER_TARGET_DESC>   m_render_target_descs;
@@ -108,8 +116,12 @@ private:
     // Fallback to input assembler setup
     std::vector<RTClearInfo>                            m_rt_clear_infos;
     DSClearInfo                                         m_ds_clear_info;
-    D3D12_CPU_DESCRIPTOR_HANDLE                         m_depth_stencil_cpu_handle = {};
     bool                                                m_is_updated = false;
+
+    // Cache of native type vectors to minimize memory allocation during rendering
+    mutable std::vector<ID3D12DescriptorHeap*>          m_native_descriptor_heaps;
+    mutable std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>    m_native_rt_cpu_handles;
+    mutable D3D12_CPU_DESCRIPTOR_HANDLE                 m_native_ds_cpu_handle{ };
 };
 
 } // namespace Methane::Graphics

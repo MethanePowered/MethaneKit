@@ -41,17 +41,17 @@ public:
     RenderCommandListVK(ParallelRenderCommandListBase& parallel_render_command_list);
 
     // CommandList interface
-    void PushDebugGroup(const std::string& name) override;
+    void PushDebugGroup(DebugGroup& debug_group) override;
     void PopDebugGroup() override;
     void Commit() override;
 
     // CommandListBase interface
     void SetResourceBarriers(const ResourceBase::Barriers&) override { }
-    void Execute(uint32_t frame_index) override;
+    void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {}) override;
 
     // RenderCommandList interface
-    void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;
-    void SetVertexBuffers(const Refs<Buffer>& vertex_buffers) override;
+    void Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) override;
+    void SetVertexBuffers(BufferSet& vertex_buffers) override;
     void DrawIndexed(Primitive primitive, Buffer& index_buffer,
                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                      uint32_t instance_count, uint32_t start_instance) override;

@@ -29,21 +29,21 @@ Vulkan implementation of the program interface.
 namespace Methane::Graphics
 {
 
-Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
+Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument)
 {
-    ITT_FUNCTION_TASK();
-    return std::make_shared<ProgramBindingsVK>(sp_program, resource_locations_by_argument);
+    META_FUNCTION_TASK();
+    return std::make_shared<ProgramBindingsVK>(program_ptr, resource_locations_by_argument);
 }
 
 Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<ProgramBindingsVK>(static_cast<const ProgramBindingsVK&>(other_program_bindings), replace_resource_location_by_argument);
 }
 
 Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindingBase::CreateCopy(const ArgumentBindingBase& other_argument_binding)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<ProgramBindingsVK::ArgumentBindingVK>(static_cast<const ProgramBindingsVK::ArgumentBindingVK&>(other_argument_binding));
 }
 
@@ -51,31 +51,31 @@ ProgramBindingsVK::ArgumentBindingVK::ArgumentBindingVK(const ContextBase& conte
     : ArgumentBindingBase(context, settings)
     , m_settings_vk(std::move(settings))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::Locations& resource_locations)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     ArgumentBindingBase::SetResourceLocations(resource_locations);
 }
 
-ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
-    : ProgramBindingsBase(sp_program, resource_locations_by_argument)
+ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument)
+    : ProgramBindingsBase(program_ptr, resource_locations_by_argument)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument)
     : ProgramBindingsBase(other_program_bindings, replace_resource_location_by_argument)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void ProgramBindingsVK::Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     RenderCommandListVK& vulkan_command_list = static_cast<RenderCommandListVK&>(command_list);
 

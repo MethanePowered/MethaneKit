@@ -49,15 +49,14 @@ Sampler::LevelOfDetail::LevelOfDetail(float in_bias, float in_min, float in_max)
 
 SamplerBase::SamplerBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : ResourceNT(Type::Sampler, Usage::ShaderRead, context, descriptor_by_usage)
-    , m_context(context)
     , m_settings(settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void SamplerBase::SetData(const SubResources&)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     throw std::logic_error("Samplers do not support setting the data.");
 }
 

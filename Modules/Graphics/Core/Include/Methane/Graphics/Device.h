@@ -26,6 +26,7 @@ is used to create graphics context for rendering.
 
 #include "Object.h"
 
+#include <Methane/Data/IEmitter.h>
 #include <Methane/Memory.hpp>
 
 #include <array>
@@ -34,16 +35,20 @@ is used to create graphics context for rendering.
 namespace Methane::Graphics
 {
 
-struct Device : virtual Object
-{
-    enum class Notification : uint32_t
-    {
-        RemoveRequested = 0,
-        Removed,
-    };
-    
-    using NotificationCallback = std::function<void(Device&, Notification)>;
+struct Device;
 
+struct IDeviceCallback
+{
+    virtual void OnDeviceRemovalRequested(Device& device) = 0;
+    virtual void OnDeviceRemoved(Device& device) = 0;
+
+    virtual ~IDeviceCallback() = default;
+};
+
+struct Device
+    : virtual Object
+    , virtual Data::IEmitter<IDeviceCallback>
+{
     struct Feature
     {
         using Mask = uint32_t;
@@ -56,7 +61,7 @@ struct Device : virtual Object
         };
 
         using Values = std::array<Value, 2>;
-        static constexpr const Values values = { BasicRendering, TextureAndSamplerArrays };
+        static constexpr const Values values{ BasicRendering, TextureAndSamplerArrays };
         
         static std::string ToString(Value feature) noexcept;
         static std::string ToString(Mask features) noexcept;
@@ -68,8 +73,6 @@ struct Device : virtual Object
     virtual const std::string& GetAdapterName() const noexcept = 0;
     virtual bool               IsSoftwareAdapter() const noexcept = 0;
     virtual Feature::Mask      GetSupportedFeatures() const noexcept = 0;
-    virtual void               SetNotificationCallback(const NotificationCallback& callback) = 0;
-    virtual void               Notify(Notification notification) = 0;
     virtual std::string        ToString() const noexcept = 0;
 };
 

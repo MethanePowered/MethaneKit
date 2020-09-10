@@ -28,31 +28,39 @@ Metal implementation of the command queue interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
 
+#include <QuartzCore/CABase.h>
+
 namespace Methane::Graphics
 {
 
-Ptr<CommandQueue> CommandQueue::Create(Context& context)
+Ptr<CommandQueue> CommandQueue::Create(Context& context, CommandList::Type command_lists_type)
 {
-    ITT_FUNCTION_TASK();
-    return std::make_shared<CommandQueueMT>(dynamic_cast<ContextBase&>(context));
+    META_FUNCTION_TASK();
+    return std::make_shared<CommandQueueMT>(dynamic_cast<ContextBase&>(context), command_lists_type);
 }
 
-CommandQueueMT::CommandQueueMT(ContextBase& context)
-    : CommandQueueBase(context)
+CommandQueueMT::CommandQueueMT(ContextBase& context, CommandList::Type command_lists_type)
+    : CommandQueueBase(context, command_lists_type)
     , m_mtl_command_queue([GetContextMT().GetDeviceMT().GetNativeDevice() newCommandQueue])
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    InitializeTracyGpuContext(
+        Tracy::GpuContext::Settings(
+            Tracy::GpuContext::Type::Metal,
+            Data::ConvertTimeSecondsToNanoseconds(CACurrentMediaTime())
+        )
+    );
 }
 
 CommandQueueMT::~CommandQueueMT()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     [m_mtl_command_queue release];
 }
 
 void CommandQueueMT::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     CommandQueueBase::SetName(name);
 
@@ -62,13 +70,13 @@ void CommandQueueMT::SetName(const std::string& name)
 
 IContextMT& CommandQueueMT::GetContextMT() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextMT&>(GetContext());
 }
 
 RenderContextMT& CommandQueueMT::GetRenderContextMT()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     ContextBase& context = GetContext();
     if (context.GetType() != Context::Type::Render)
     {

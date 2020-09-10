@@ -29,6 +29,8 @@ if (WIN32)
         ${SOURCES_GRAPHICS_DIR}/ResourceDX.cpp
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.h
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/QueryBufferDX.h
+        ${SOURCES_GRAPHICS_DIR}/QueryBufferDX.cpp
         ${SOURCES_GRAPHICS_DIR}/BufferDX.h
         ${SOURCES_GRAPHICS_DIR}/BufferDX.cpp
         ${SOURCES_GRAPHICS_DIR}/TextureDX.h
@@ -40,6 +42,7 @@ if (WIN32)
         ${SOURCES_GRAPHICS_DIR}/CommandQueueDX.h
         ${SOURCES_GRAPHICS_DIR}/CommandQueueDX.cpp
         ${SOURCES_GRAPHICS_DIR}/CommandListDX.h
+        ${SOURCES_GRAPHICS_DIR}/CommandListDX.cpp
         ${SOURCES_GRAPHICS_DIR}/CommandListDX.hpp
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListDX.h
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListDX.cpp
@@ -57,11 +60,6 @@ if (WIN32)
         dxgi
         dxguid
         Shcore
-    )
-
-    set(EXTRA_COMPILE_OPTIONS
-        # Disable useless compiler warnings
-        /wd4250 # C4250: this warning is compiler bug: https://stackoverflow.com/questions/469508/visual-studio-compiler-warning-c4250-class1-inherits-class2member-via-d
     )
 
 elseif(APPLE)
@@ -101,6 +99,9 @@ elseif(APPLE)
         ${SOURCES_GRAPHICS_DIR}/RenderPassMT.mm
         ${SOURCES_GRAPHICS_DIR}/CommandQueueMT.hh
         ${SOURCES_GRAPHICS_DIR}/CommandQueueMT.mm
+        ${SOURCES_GRAPHICS_DIR}/CommandListMT.hh
+        ${SOURCES_GRAPHICS_DIR}/CommandListMT.mm
+        ${SOURCES_GRAPHICS_DIR}/CommandListMT.hpp
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListMT.hh
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListMT.mm
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.hh
@@ -155,6 +156,8 @@ else() # Linux
         ${SOURCES_GRAPHICS_DIR}/RenderPassVK.cpp
         ${SOURCES_GRAPHICS_DIR}/CommandQueueVK.h
         ${SOURCES_GRAPHICS_DIR}/CommandQueueVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/CommandListVK.h
+        ${SOURCES_GRAPHICS_DIR}/CommandListVK.cpp
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListVK.h
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListVK.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListVK.h
@@ -165,18 +168,7 @@ else() # Linux
 
 endif()
 
-set(LIBRARIES ${PLATFORM_LIBRARIES}
-    MethaneCommonPrimitives
-    MethaneDataPrimitives
-    MethaneDataRangeSet
-    MethanePlatformUtils
-    MethanePlatformAppView
-    MethaneGraphicsHelpers
-    MethaneInstrumentation
-)
-
 set(HEADERS
-    ${INCLUDE_DIR}/Types.h
     ${INCLUDE_DIR}/Device.h
     ${INCLUDE_DIR}/Context.h
     ${INCLUDE_DIR}/RenderContext.h
@@ -216,6 +208,7 @@ set(SOURCES ${PLATFORM_SOURCES}
 
     # Base implementation
     ${SOURCES_DIR}/ObjectBase.h
+    ${SOURCES_DIR}/ObjectBase.cpp
     ${SOURCES_DIR}/DeviceBase.h
     ${SOURCES_DIR}/DeviceBase.cpp
     ${SOURCES_DIR}/ContextBase.h
@@ -246,7 +239,6 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/CommandQueueBase.cpp
     ${SOURCES_DIR}/CommandListBase.h
     ${SOURCES_DIR}/CommandListBase.cpp
-    ${SOURCES_DIR}/CommandListState.cpp
     ${SOURCES_DIR}/RenderCommandListBase.h
     ${SOURCES_DIR}/RenderCommandListBase.cpp
     ${SOURCES_DIR}/ParallelRenderCommandListBase.h
@@ -257,8 +249,9 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/DescriptorHeap.cpp
     ${SOURCES_DIR}/ResourceManager.h
     ${SOURCES_DIR}/ResourceManager.cpp
-    ${SOURCES_DIR}/Types.cpp
-    Include/Methane/Graphics/Fence.h)
+    ${SOURCES_DIR}/QueryBuffer.h
+    ${SOURCES_DIR}/QueryBuffer.cpp
+)
 
 add_library(${TARGET} STATIC
     ${HEADERS}
@@ -266,7 +259,21 @@ add_library(${TARGET} STATIC
 )
 
 target_link_libraries(${TARGET}
-    ${LIBRARIES}
+    PUBLIC
+        MethanePrimitives
+        MethaneDataProvider
+        MethaneDataRangeSet
+        MethaneDataEvents
+        MethaneGraphicsTypes
+        MethanePlatformAppView
+    PRIVATE
+        MethaneBuildOptions
+        MethaneDataPrimitives
+        MethaneGraphicsPrimitives
+        MethanePlatformUtils
+        MethaneInstrumentation
+        TaskFlow
+        ${PLATFORM_LIBRARIES}
 )
 
 target_include_directories(${TARGET}
@@ -276,18 +283,20 @@ target_include_directories(${TARGET}
         Include
 )
 
-target_compile_options(${TARGET}
+target_compile_definitions(${TARGET}
     PUBLIC
-    ${EXTRA_COMPILE_OPTIONS}
+        $<$<BOOL:${METHANE_COMMAND_DEBUG_GROUPS_ENABLED}>:METHANE_COMMAND_DEBUG_GROUPS_ENABLED>
+    PRIVATE
+        $<$<BOOL:${METHANE_GPU_INSTRUMENTATION_ENABLED}>:METHANE_GPU_INSTRUMENTATION_ENABLED>
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER Modules/Graphics
-    PUBLIC_HEADER "${HEADERS}"
-    PREREQUISITE_MODULES "DirectXCompiler"
+        FOLDER Modules/Graphics
+        PUBLIC_HEADER "${HEADERS}"
+        PREREQUISITE_MODULES "DirectXCompiler"
 )
 
 install(TARGETS ${TARGET}

@@ -33,37 +33,38 @@ namespace Methane::Graphics
 
 Ptr<RenderPass> RenderPass::Create(RenderContext& context, const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<RenderPassVK>(dynamic_cast<RenderContextBase&>(context), settings);
 }
 
 RenderPassVK::RenderPassVK(RenderContextBase& context, const Settings& settings)
     : RenderPassBase(context, settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Reset();
 }
 
-void RenderPassVK::Update(const Settings& settings)
+bool RenderPassVK::Update(const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
-    RenderPassBase::Update(settings);
+    META_FUNCTION_TASK();
+    const bool settings_changed = RenderPassBase::Update(settings);
     Reset();
+    return settings_changed;
 }
 
 void RenderPassVK::Reset()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     uint32_t color_attach_index = 0;
     for(const ColorAttachment& color_attach : GetSettings().color_attachments)
     {
-        if (color_attach.wp_texture.expired())
+        if (!color_attach.texture_ptr)
         {
             throw std::invalid_argument("Can not use color attachment without texture.");
         }
 
-        TextureVK& color_texture = static_cast<TextureVK&>(*color_attach.wp_texture.lock());
+        TextureVK& color_texture = static_cast<TextureVK&>(*color_attach.texture_ptr);
         if (color_texture.GetSettings().type == Texture::Type::FrameBuffer)
         {
             color_texture.UpdateFrameBuffer();
@@ -75,7 +76,7 @@ void RenderPassVK::Reset()
 
 IContextVK& RenderPassVK::GetContextVK() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextVK&>(GetRenderContext());
 }
 

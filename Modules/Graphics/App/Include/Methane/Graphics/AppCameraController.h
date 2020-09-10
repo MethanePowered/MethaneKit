@@ -37,13 +37,13 @@ class AppCameraController final
     , public Platform::Keyboard::ActionControllerBase<ActionCamera::KeyboardAction>
 {
 public:
-    inline static const ActionByMouseButton default_actions_by_mouse_button = {
+    inline static const ActionByMouseButton default_actions_by_mouse_button{
         { Platform::Mouse::Button::Left,            ActionCamera::MouseAction::Rotate },
         { Platform::Mouse::Button::VScroll,         ActionCamera::MouseAction::Zoom   },
         { Platform::Mouse::Button::Middle,          ActionCamera::MouseAction::Move   },
     };
     
-    inline static const ActionByKeyboardKey default_actions_by_keyboard_key = {
+    inline static const ActionByKeyboardKey default_actions_by_keyboard_key{
         // Move
         { Platform::Keyboard::Key::W,               ActionCamera::KeyboardAction::MoveForward },
         { Platform::Keyboard::Key::S,               ActionCamera::KeyboardAction::MoveBack    },
@@ -65,10 +65,10 @@ public:
         { Platform::Keyboard::Key::KeyPadEqual,     ActionCamera::KeyboardAction::ZoomIn      },
     };
 
-    inline static const ActionByKeyboardState default_actions_by_keyboard_state = {
+    inline static const ActionByKeyboardState default_actions_by_keyboard_state{
         // Other
-        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::R }, ActionCamera::KeyboardAction::Reset       },
-        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::P }, ActionCamera::KeyboardAction::ChangePivot },
+        { { Platform::Keyboard::Key::LeftAlt, Platform::Keyboard::Key::R }, ActionCamera::KeyboardAction::Reset       },
+        { { Platform::Keyboard::Key::LeftAlt, Platform::Keyboard::Key::P }, ActionCamera::KeyboardAction::ChangePivot },
     };
 
     AppCameraController(ActionCamera& action_camera, const std::string& camera_name,

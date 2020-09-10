@@ -14,7 +14,7 @@ set(SOURCES
 add_methane_application(${TARGET}
     "${SOURCES}"
     "${RESOURCES_DIR}"
-    "Apps/Tutorials"
+    "Apps"
     "Methane Hello Triangle"
     "Hello World tutorial of colored triangle rendering with Methane Kit."
     "${METHANE_COPYRIGHT}"
@@ -22,6 +22,11 @@ add_methane_application(${TARGET}
     "${METHANE_VERSION_BUILD}"
 )
 add_methane_shaders(${TARGET} "${SHADERS_HLSL}" "6_0")
+
+target_link_libraries(${TARGET}
+    PRIVATE
+        MethaneAppsCommon
+)
 
 set_target_properties(${TARGET}
     PROPERTIES
@@ -35,7 +40,7 @@ set(TARGET_SIMPLE ${TARGET}Simple)
 add_methane_application(${TARGET_SIMPLE}
     "HelloTriangleAppSimple.cpp"
     "${RESOURCES_DIR}"
-    "Apps/Tutorials"
+    "Apps"
     "Methane Hello Triangle"
     "Hello World tutorial of the colored triangle rendering with Methane Kit."
     "${METHANE_COPYRIGHT}"

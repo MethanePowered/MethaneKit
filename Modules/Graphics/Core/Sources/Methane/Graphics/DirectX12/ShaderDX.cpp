@@ -29,7 +29,7 @@ DirectX 12 implementation of the shader interface.
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/Graphics/Windows/Helpers.h>
+#include <Methane/Graphics/Windows/Primitives.h>
 #include <Methane/Data/Provider.h>
 
 #include <d3dx12.h>
@@ -43,7 +43,7 @@ namespace Methane::Graphics
 
 static Resource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_type)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (input_type)
     {
     case D3D_SIT_CBUFFER:
@@ -56,7 +56,7 @@ static Resource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_typ
 
 static std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (input_type)
     {
@@ -79,7 +79,7 @@ static std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type) noex
 
 static std::string GetSRVDimensionName(D3D_SRV_DIMENSION srv_dimension) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (srv_dimension)
     {
@@ -102,7 +102,7 @@ static std::string GetSRVDimensionName(D3D_SRV_DIMENSION srv_dimension) noexcept
 
 static std::string GetReturnTypeName(D3D_RESOURCE_RETURN_TYPE return_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (return_type)
     {
@@ -120,7 +120,7 @@ static std::string GetReturnTypeName(D3D_RESOURCE_RETURN_TYPE return_type) noexc
 
 static std::string GetValueTypeName(D3D_NAME value_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (value_type)
     {
@@ -156,7 +156,7 @@ static std::string GetValueTypeName(D3D_NAME value_type) noexcept
 
 static std::string GetComponentTypeName(D3D_REGISTER_COMPONENT_TYPE component_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (component_type)
     {
@@ -172,7 +172,7 @@ static std::string GetComponentTypeName(D3D_REGISTER_COMPONENT_TYPE component_ty
 using StepType = ProgramBase::InputBufferLayout::StepType;
 static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepType step_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (step_type)
     {
@@ -185,14 +185,14 @@ static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepTyp
 
 Ptr<Shader> Shader::Create(Type type, Context& context, const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<ShaderDX>(type, dynamic_cast<ContextBase&>(context), settings);
 }
 
 ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
     : ShaderBase(type, context, settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
 #if defined(_DEBUG)
     // Enable better shader debugging with the graphics debugging tools.
@@ -204,7 +204,7 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
     std::vector<D3D_SHADER_MACRO> macro_definitions;
     for (const auto& definition : settings.compile_definitions)
     {
-        macro_definitions.push_back({ definition.first.c_str(), definition.second.c_str() });
+        macro_definitions.push_back({ definition.name.c_str(), definition.value.c_str() });
     }
     macro_definitions.push_back({ nullptr, nullptr });
 
@@ -223,27 +223,27 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
             &error_blob
         ), error_blob);
 
-        m_sp_byte_code_chunk = std::make_unique<Data::Chunk>(static_cast<Data::ConstRawPtr>(m_cp_byte_code->GetBufferPointer()),
+        m_byte_code_chunk_ptr = std::make_unique<Data::Chunk>(static_cast<Data::ConstRawPtr>(m_cp_byte_code->GetBufferPointer()),
                                                              static_cast<Data::Size>(m_cp_byte_code->GetBufferSize()));
     }
     else
     {
         const std::string compiled_func_name = GetCompiledEntryFunctionName();
-        m_sp_byte_code_chunk = std::make_unique<Data::Chunk>(settings.data_provider.GetData(compiled_func_name + ".obj"));
+        m_byte_code_chunk_ptr = std::make_unique<Data::Chunk>(settings.data_provider.GetData(compiled_func_name + ".obj"));
     }
 
-    assert(!!m_sp_byte_code_chunk);
-    ThrowIfFailed(D3DReflect(m_sp_byte_code_chunk->p_data, m_sp_byte_code_chunk->size, IID_PPV_ARGS(&m_cp_reflection)));
+    assert(!!m_byte_code_chunk_ptr);
+    ThrowIfFailed(D3DReflect(m_byte_code_chunk_ptr->p_data, m_byte_code_chunk_ptr->size, IID_PPV_ARGS(&m_cp_reflection)));
 }
 
 ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_cp_reflection);
 
     ShaderBase::ArgumentBindings argument_bindings;
 
-    D3D12_SHADER_DESC shader_desc = { };
+    D3D12_SHADER_DESC shader_desc{};
     m_cp_reflection->GetDesc(&shader_desc);
 
 #ifdef _DEBUG
@@ -253,7 +253,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
 
     for (UINT resource_index = 0; resource_index < shader_desc.BoundResources; ++resource_index)
     {
-        D3D12_SHADER_INPUT_BIND_DESC binding_desc = { };
+        D3D12_SHADER_INPUT_BIND_DESC binding_desc{};
         ThrowIfFailed(m_cp_reflection->GetResourceBindingDesc(resource_index, &binding_desc));
 
         const Program::Argument shader_argument(GetType(), binding_desc.Name);
@@ -303,7 +303,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
     }
 
 #ifdef _DEBUG
-    OutputDebugStringA(log_ss.str().c_str());
+    META_LOG(log_ss.str());
 #endif
 
     return argument_bindings;
@@ -311,10 +311,10 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
 
 std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(const ProgramDX& program) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_cp_reflection);
 
-    D3D12_SHADER_DESC shader_desc = { };
+    D3D12_SHADER_DESC shader_desc{};
     m_cp_reflection->GetDesc(&shader_desc);
 
 #ifdef _DEBUG
@@ -326,7 +326,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
     std::vector<D3D12_INPUT_ELEMENT_DESC> dx_input_layout;
     for (UINT param_index = 0; param_index < shader_desc.InputParameters; ++param_index)
     {
-        D3D12_SIGNATURE_PARAMETER_DESC param_desc = { };
+        D3D12_SIGNATURE_PARAMETER_DESC param_desc{};
         m_cp_reflection->GetInputParameterDesc(param_index, &param_desc);
 
 #ifdef _DEBUG
@@ -357,7 +357,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
         uint32_t& buffer_byte_offset = input_buffer_byte_offsets[buffer_index];
 
         uint32_t element_byte_size = 0;
-        D3D12_INPUT_ELEMENT_DESC element_desc = { };
+        D3D12_INPUT_ELEMENT_DESC element_desc{};
         element_desc.SemanticName             = param_desc.SemanticName;
         element_desc.SemanticIndex            = param_desc.SemanticIndex;
         element_desc.InputSlot                = buffer_index;
@@ -371,7 +371,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
     }
 
 #ifdef _DEBUG
-    OutputDebugStringA(log_ss.str().c_str());
+    META_LOG(log_ss.str().c_str());
 #endif
 
     return dx_input_layout;
@@ -379,7 +379,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
 
 IContextDX& ShaderDX::GetContextDX() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextDX&>(GetContext());
 }
 

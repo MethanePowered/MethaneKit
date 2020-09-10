@@ -26,9 +26,9 @@ pipeline via state object and used to create resource binding objects.
 
 #include "Shader.h"
 #include "Object.h"
-#include "Types.h"
 
 #include <Methane/Memory.hpp>
+#include <Methane/Graphics/Types.h>
 
 #include <vector>
 #include <string>

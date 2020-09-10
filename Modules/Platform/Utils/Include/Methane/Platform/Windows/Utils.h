@@ -30,5 +30,6 @@ namespace Methane::Platform::Windows
 {
 
 void GetDesktopResolution(uint32_t& width, uint32_t& height);
+bool IsDeveloperModeEnabled();
 
 } // namespace Methane::Platform::Windows

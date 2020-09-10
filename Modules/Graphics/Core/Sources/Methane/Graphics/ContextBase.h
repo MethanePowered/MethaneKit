@@ -29,8 +29,16 @@ Base implementation of the context interface.
 #include <Methane/Graphics/Fence.h>
 #include <Methane/Graphics/Context.h>
 #include <Methane/Graphics/Native/ContextNT.h>
+#include <Methane/Data/Emitter.hpp>
 
 #include <memory>
+
+namespace tf
+{
+// TaskFlow Executor class forward declaration:
+// #include <taskflow/core/executor.hpp>
+class Executor;
+}
 
 namespace Methane::Graphics
 {
@@ -43,52 +51,63 @@ class ContextBase
     : public ObjectBase
     , public virtual Context
     , public IContextNT
+    , public Data::Emitter<IContextCallback>
 {
 public:
-    ContextBase(DeviceBase& device, Type type);
+    ContextBase(DeviceBase& device, tf::Executor& parallel_executor, Type type);
 
     // Context interface
-    Type             GetType() const override { return m_type; }
+    Type             GetType() const noexcept override                       { return m_type; }
+    tf::Executor&    GetParallelExecutor() const noexcept override           { return m_parallel_executor; }
+    Object::Registry&   GetObjectsRegistry() noexcept override                     { return m_objects_cache; }
+    void             RequestDeferredAction(DeferredAction action) const noexcept override;
     void             CompleteInitialization() override;
+    bool             IsCompletingInitialization() const noexcept override    { return m_is_completing_initialization; }
     void             WaitForGpu(WaitFor wait_for) override;
     void             Reset(Device& device) override;
     void             Reset() override;
-    void             AddCallback(Callback& callback) override;
-    void             RemoveCallback(Callback& callback) override;
     CommandQueue&    GetUploadCommandQueue() override;
     BlitCommandList& GetUploadCommandList() override;
+    CommandListSet&  GetUploadCommandListSet() override;
     Device&          GetDevice() override;
 
     // ContextBase interface
-    virtual void Initialize(DeviceBase& device, bool deferred_heap_allocation);
+    virtual void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true);
     virtual void Release();
 
     // Object interface
     void SetName(const std::string& name) override;
 
-    ResourceManager&        GetResourceManager()        { return m_resource_manager; }
-    const ResourceManager&  GetResourceManager() const  { return m_resource_manager; }
+    DeferredAction          GetRequestedAction() const noexcept  { return m_requested_action; }
+    ResourceManager&        GetResourceManager() noexcept        { return m_resource_manager; }
+    const ResourceManager&  GetResourceManager() const noexcept  { return m_resource_manager; }
     CommandQueueBase&       GetUploadCommandQueueBase();
-    DeviceBase&             GetDeviceBase();
-    const DeviceBase&       GetDeviceBase() const;
+    DeviceBase&             GetDeviceBase() noexcept;
+    const DeviceBase&       GetDeviceBase() const noexcept;
 
 protected:
-    void UploadResources();
+    void PerformRequestedAction();
     void SetDevice(DeviceBase& device);
+    Fence& GetUploadFence() const noexcept;
 
     // ContextBase interface
-    virtual void OnGpuWaitStart(WaitFor wait_for) {}
+    virtual bool UploadResources();
+    virtual void OnGpuWaitStart(WaitFor) {}
     virtual void OnGpuWaitComplete(WaitFor wait_for);
 
 private:
     const Type                m_type;
-    Ptr<DeviceBase>           m_sp_device;
-    ResourceManager::Settings m_resource_manager_init_settings = { true };
+    Ptr<DeviceBase>           m_device_ptr;
+    tf::Executor&             m_parallel_executor;
+    ObjectBase::RegistryBase  m_objects_cache;
+    ResourceManager::Settings m_resource_manager_init_settings{ true, {}, {} };
     ResourceManager           m_resource_manager;
-    Refs<Callback>            m_callbacks; // ORDER: Keep callbacks before resources for correct auto-delete
-    Ptr<CommandQueue>         m_sp_upload_cmd_queue;
-    Ptr<BlitCommandList>      m_sp_upload_cmd_list;
-    UniquePtr<Fence>          m_sp_upload_fence;
+    Ptr<CommandQueue>         m_upload_cmd_queue_ptr;
+    Ptr<BlitCommandList>      m_upload_cmd_list_ptr;
+    Ptr<CommandListSet>       m_upload_cmd_lists_ptr;
+    Ptr<Fence>                m_upload_fence_ptr;
+    mutable DeferredAction    m_requested_action = DeferredAction::None;
+    mutable bool              m_is_completing_initialization = false;
 };
 
 } // namespace Methane::Graphics

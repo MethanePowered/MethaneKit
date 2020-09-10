@@ -23,20 +23,33 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps
 
 #pragma once
 
+#include "ObjectBase.h"
+
 #include <Methane/Data/RangeSet.hpp>
-#include <Methane/Data/Types.h>
+#include <Methane/Data/Provider.h>
+#include <Methane/Data/Emitter.hpp>
 #include <Methane/Memory.hpp>
+#include <Methane/Instrumentation.h>
 
 #include <set>
 #include <mutex>
+#include <functional>
 
 namespace Methane::Graphics
 {
 
 class ContextBase;
 class ResourceBase;
+class DescriptorHeap;
 
-class DescriptorHeap
+struct IDescriptorHeapCallback
+{
+    virtual void OnDescriptorHeapAllocated(DescriptorHeap& descriptor_heap) = 0;
+
+    virtual ~IDescriptorHeapCallback() = default;
+};
+
+class DescriptorHeap : public Data::Emitter<IDescriptorHeapCallback>
 {
 public:
     enum class Type : uint32_t
@@ -82,10 +95,12 @@ public:
     virtual Data::Index AddResource(const ResourceBase& resource);
     virtual Data::Index ReplaceResource(const ResourceBase& resource, Data::Index at_index);
     virtual void        RemoveResource(Data::Index at_index);
-    virtual void        Allocate() { m_allocated_size = m_deferred_size; }
+    virtual void        Allocate();
 
-    Ptr<Range>          ReserveRange(Data::Size length);
+    Range               ReserveRange(Data::Size length);
     void                ReleaseRange(const Range& range);
+
+    void                SetDeferredAllocation(bool deferred_allocation);
 
     const Settings&     GetSettings() const                             { return m_settings; }
     Data::Size          GetDeferredSize() const                         { return m_deferred_size; }
@@ -100,16 +115,19 @@ public:
 protected:
     DescriptorHeap(ContextBase& context, const Settings& settings);
 
+    ContextBase& GetContext() { return m_context; }
+
+private:
     using ResourcePtrs = std::vector<const ResourceBase*>;
     using RangeSet     = Data::RangeSet<Data::Index>;
 
-    ContextBase&    m_context;
-    const Settings  m_settings;
-    Data::Size      m_deferred_size;
-    Data::Size      m_allocated_size = 0;
-    ResourcePtrs    m_resources;
-    RangeSet        m_free_ranges;
-    std::mutex      m_modification_mutex;
+    ContextBase&              m_context;
+    Settings                  m_settings;
+    Data::Size                m_deferred_size;
+    Data::Size                m_allocated_size = 0;
+    ResourcePtrs              m_resources;
+    RangeSet                  m_free_ranges;
+    TracyLockable(std::mutex, m_modification_mutex);
 };
 
 } // namespace Methane::Graphics

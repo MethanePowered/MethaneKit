@@ -26,39 +26,65 @@ DirectX 12 implementation of the buffer interface.
 #include "TypesDX.h"
 
 #include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/TypeConverters.hpp>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
+static std::vector<D3D12_VERTEX_BUFFER_VIEW> GetNativeVertexBufferViews(const Refs<Buffer>& buffer_refs)
+{
+    META_FUNCTION_TASK();
+    std::vector<D3D12_VERTEX_BUFFER_VIEW> vertex_buffer_views;
+    std::transform(buffer_refs.begin(), buffer_refs.end(), std::back_inserter(vertex_buffer_views),
+        [](const Ref<Buffer>& buffer_ref)
+        {
+           const VertexBufferDX& vertex_buffer = static_cast<const VertexBufferDX&>(buffer_ref.get());
+           return vertex_buffer.GetNativeView();
+        }
+    );
+    return vertex_buffer_views;
+}
+
 Ptr<Buffer> Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
 {
-    ITT_FUNCTION_TASK();
-    const Buffer::Settings settings = { Buffer::Type::Vertex, Usage::Unknown, size };
+    META_FUNCTION_TASK();
+    const Buffer::Settings settings{ Buffer::Type::Vertex, Usage::Unknown, size, stride, PixelFormat::Unknown, Buffer::StorageMode::Private };
     return std::make_shared<VertexBufferDX>(dynamic_cast<ContextBase&>(context), settings, DescriptorByUsage(), stride);
 }
 
 Ptr<Buffer> Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format)
 {
-    ITT_FUNCTION_TASK();
-    const Buffer::Settings settings = { Buffer::Type::Index, Usage::Unknown, size };
+    META_FUNCTION_TASK();
+    const Buffer::Settings settings{ Buffer::Type::Index, Usage::Unknown, size, GetPixelSize(format), format, Buffer::StorageMode::Private };
     return std::make_shared<IndexBufferDX>(dynamic_cast<ContextBase&>(context), settings, DescriptorByUsage(), format);
 }
 
 Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
-    Usage::Mask usage_mask = Usage::ShaderRead;
-    if (addressable)
-        usage_mask |= Usage::Addressable;
+    META_FUNCTION_TASK();
 
-    const Buffer::Settings settings = { Buffer::Type::Constant, usage_mask, size };
+    const Usage::Mask usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::Unknown);
+    const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0u, PixelFormat::Unknown, Buffer::StorageMode::Private };
     return std::make_shared<ConstantBufferDX>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
+}
+
+Ptr<Buffer> Buffer::CreateVolatileBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
+{
+    const Usage::Mask usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::Unknown);
+    const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0u, PixelFormat::Unknown, Buffer::StorageMode::Managed };
+    return std::make_shared<ConstantBufferDX>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
+}
+
+Ptr<Buffer> Buffer::CreateReadBackBuffer(Context& context, Data::Size size)
+{
+    const Buffer::Settings settings{ Buffer::Type::ReadBack, Usage::ReadBack, size, 0u, PixelFormat::Unknown, Buffer::StorageMode::Managed };
+    return std::make_shared<ReadBackBufferDX>(dynamic_cast<ContextBase&>(context), settings, DescriptorByUsage());
 }
 
 Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     // Aligned size must be a multiple 256 bytes
     return (size + (D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT - 1)) & ~(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT - 1);
 }
@@ -66,32 +92,27 @@ Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
 template<>
 void VertexBufferDX::InitializeView(Data::Size stride)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    const Data::Size data_size     = GetDataSize();
     m_buffer_view.BufferLocation   = GetNativeGpuAddress();
-    m_buffer_view.SizeInBytes      = static_cast<UINT>(data_size);
+    m_buffer_view.SizeInBytes      = static_cast<UINT>(GetDataSize());
     m_buffer_view.StrideInBytes    = static_cast<UINT>(stride);
-    m_formatted_items_count        = stride > 0 ? data_size / stride : 0;
 }
 
 template<>
 void IndexBufferDX::InitializeView(PixelFormat format)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    const Data::Size data_size     = GetDataSize();
-    const Data::Size element_size  = GetPixelSize(format);
     m_buffer_view.BufferLocation   = GetNativeGpuAddress();
-    m_buffer_view.SizeInBytes      = static_cast<UINT>(data_size);
-    m_buffer_view.Format           = TypeConverterDX::DataFormatToDXGI(format);
-    m_formatted_items_count        = element_size > 0 ? data_size / element_size : 0;
+    m_buffer_view.SizeInBytes      = static_cast<UINT>(GetDataSize());
+    m_buffer_view.Format           = TypeConverterDX::PixelFormatToDxgi(format);
 }
 
 template<>
 void ConstantBufferDX::InitializeView()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const Data::Size data_size   = GetDataSize();
     m_buffer_view.BufferLocation = GetNativeGpuAddress();
@@ -104,6 +125,39 @@ void ConstantBufferDX::InitializeView()
         D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle = GetNativeCpuDescriptorHandle(Usage::ShaderRead);
         GetContextDX().GetDeviceDX().GetNativeDevice()->CreateConstantBufferView(&m_buffer_view, cpu_handle);
     }
+}
+
+template<>
+void ReadBackBufferDX::InitializeView()
+{
+    META_FUNCTION_TASK();
+}
+
+Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<BufferSetDX>(buffers_type, std::move(buffer_refs));
+}
+
+BufferSetDX::BufferSetDX(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
+    : BufferSetBase(buffers_type, std::move(buffer_refs))
+{
+    META_FUNCTION_TASK();
+    switch(buffers_type)
+    {
+    case Buffer::Type::Vertex: m_vertex_buffer_views = Graphics::GetNativeVertexBufferViews(GetRefs()); break;
+    default: break;
+    }
+}
+
+const std::vector<D3D12_VERTEX_BUFFER_VIEW>& BufferSetDX::GetNativeVertexBufferViews() const
+{
+    META_FUNCTION_TASK();
+    const Buffer::Type buffers_type = GetType();
+    if (buffers_type != Buffer::Type::Vertex)
+        throw std::logic_error("Unable to get vertex buffer views from buffer of \"" + Buffer::GetBufferTypeName(buffers_type) + "\" type.");
+
+    return m_vertex_buffer_views;
 }
 
 } // namespace Methane::Graphics

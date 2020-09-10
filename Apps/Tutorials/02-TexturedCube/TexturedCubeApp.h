@@ -23,7 +23,7 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 
 #pragma once
 
-#include <Methane/Graphics/Kit.h>
+#include <Methane/Kit.h>
 
 #include <string>
 #include <vector>
@@ -37,16 +37,17 @@ namespace dat = Methane::Data;
 
 struct TexturedCubeFrame final : gfx::AppFrame
 {
-    Ptr<gfx::Buffer>            sp_uniforms_buffer;
-    Ptr<gfx::ProgramBindings>   sp_program_bindings;
-    Ptr<gfx::RenderCommandList> sp_cmd_list;
+    Ptr<gfx::Buffer>            uniforms_buffer_ptr;
+    Ptr<gfx::ProgramBindings>   program_bindings_ptr;
+    Ptr<gfx::RenderCommandList> render_cmd_list_ptr;
+    Ptr<gfx::CommandListSet>    execute_cmd_list_set_ptr;
 
     using gfx::AppFrame::AppFrame;
 };
 
-using GraphicsApp = gfx::App<TexturedCubeFrame>;
+using UserInterfaceApp = UserInterface::App<TexturedCubeFrame>;
 
-class TexturedCubeApp final : public GraphicsApp
+class TexturedCubeApp final : public UserInterfaceApp
 {
 public:
     TexturedCubeApp();
@@ -58,8 +59,9 @@ public:
     bool Update() override;
     bool Render() override;
 
-    // Context::Callback override
-    void OnContextReleased() override;
+protected:
+    // IContextCallback override
+    void OnContextReleased(gfx::Context& context) override;
 
 private:
     struct SHADER_STRUCT_ALIGN Constants
@@ -78,16 +80,22 @@ private:
         SHADER_FIELD_ALIGN gfx::Matrix44f model_matrix;
     };
 
-    const Constants         m_shader_constants;
-    Uniforms                m_shader_uniforms = { };
-    gfx::Camera             m_camera;
-    float                   m_cube_scale;
-    Ptr<gfx::RenderState>   m_sp_state;
-    Ptr<gfx::Buffer>        m_sp_vertex_buffer;
-    Ptr<gfx::Buffer>        m_sp_index_buffer;
-    Ptr<gfx::Buffer>        m_sp_const_buffer;
-    Ptr<gfx::Texture>       m_sp_cube_texture;
-    Ptr<gfx::Sampler>       m_sp_texture_sampler;
+    bool Animate(double elapsed_seconds, double delta_seconds);
+
+    const Constants       m_shader_constants;
+    Uniforms              m_shader_uniforms { };
+    gfx::Camera           m_camera;
+    float                 m_cube_scale;
+    Ptr<gfx::RenderState> m_render_state_ptr;
+    Ptr<gfx::BufferSet>   m_vertex_buffer_set_ptr;
+    Ptr<gfx::Buffer>      m_index_buffer_ptr;
+    Ptr<gfx::Buffer>      m_const_buffer_ptr;
+    Ptr<gfx::Texture>     m_cube_texture_ptr;
+    Ptr<gfx::Sampler>     m_texture_sampler_ptr;
+
+    const gfx::Resource::SubResources m_shader_uniforms_subresources{
+        { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(Uniforms) }
+    };
 };
 
 } // namespace Methane::Tutorials

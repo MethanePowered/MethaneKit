@@ -36,42 +36,29 @@ BufferBase::BufferBase(ContextBase& context, const Settings& settings, const Des
     : ResourceNT(Resource::Type::Buffer, settings.usage_mask, context, descriptor_by_usage)
     , m_settings(settings)
 {
+    META_FUNCTION_TASK();
     if (!m_settings.size)
     {
         throw std::invalid_argument("Can not create buffer of zero size.");
     }
-    ITT_FUNCTION_TASK();
+    SetSubResourceCount(SubResource::Count());
 }
 
-void BufferBase::SetData(const SubResources& sub_resources)
+Data::Size BufferBase::GetDataSize(Data::MemoryState size_type) const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    return size_type == Data::MemoryState::Reserved ? m_settings.size : GetInitializedDataSize();
+}
 
-    if (sub_resources.empty())
-    {
-        throw std::invalid_argument("Can not set buffer data from empty sub-resources.");
-    }
-
-    uint32_t data_size = 0;
-    for(const SubResource& sub_resource : sub_resources)
-    {
-        if (!sub_resource.p_data || !sub_resource.data_size)
-        {
-            throw std::invalid_argument("Can not set empty subresource data to buffer.");
-        }
-        data_size += sub_resource.data_size;
-    }
-
-    if (data_size > m_settings.size)
-    {
-        throw std::runtime_error("Can not set more data (" + std::to_string(data_size) +
-                                 ") than allocated buffer size (" + std::to_string(m_settings.size) + ").");
-    }
+uint32_t BufferBase::GetFormattedItemsCount() const noexcept
+{
+    META_FUNCTION_TASK();
+    return m_settings.item_stride_size > 0u ? GetDataSize(Data::MemoryState::Initialized) / m_settings.item_stride_size : 0u;
 }
 
 std::string Buffer::GetBufferTypeName(Type type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (type)
     {
     case Type::Data:     return "Data";
@@ -81,6 +68,40 @@ std::string Buffer::GetBufferTypeName(Type type) noexcept
     default:             assert(0);
     }
     return "Unknown";
+}
+
+BufferSetBase::BufferSetBase(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
+    : m_buffers_type(buffers_type)
+    , m_refs(std::move(buffer_refs))
+{
+    META_FUNCTION_TASK();
+    if (m_refs.empty())
+    {
+        throw std::invalid_argument("Creating of empty buffers collection is not allowed.");
+    }
+
+    m_ptrs.reserve(m_refs.size());
+    m_raw_ptrs.reserve(m_refs.size());
+    for(const Ref<Buffer>& buffer_ref : m_refs)
+    {
+        if (buffer_ref.get().GetSettings().type != m_buffers_type)
+        {
+            std::invalid_argument("All buffers must be of the same type \"" + Buffer::GetBufferTypeName(m_buffers_type) + "\"");
+        }
+        BufferBase& buffer_base = static_cast<BufferBase&>(buffer_ref.get());
+        m_ptrs.emplace_back(buffer_base.GetBufferPtr());
+        m_raw_ptrs.emplace_back(std::addressof(buffer_base));
+    }
+}
+
+Buffer& BufferSetBase::operator[](Data::Index index) const
+{
+    META_FUNCTION_TASK();
+    if (index > m_refs.size())
+        throw std::out_of_range("Buffer index " + std::to_string(index) +
+                                " is out of collection range (size = " + std::to_string(m_refs.size()) + ").");
+
+    return m_refs[index].get();
 }
 
 } // namespace Methane::Graphics

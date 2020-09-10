@@ -35,30 +35,30 @@ namespace Methane::Graphics
 
 Ptr<Program> Program::Create(Context& context, const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<ProgramVK>(dynamic_cast<ContextBase&>(context), settings);
 }
 
 ProgramVK::ProgramVK(ContextBase& context, const Settings& settings)
     : ProgramBase(context, settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 ProgramVK::~ProgramVK()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 IContextVK& ProgramVK::GetContextVK() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextVK&>(GetContext());
 }
 
 ShaderVK& ProgramVK::GetShaderVK(Shader::Type shader_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<ShaderVK&>(GetShaderRef(shader_type));
 }
 

@@ -42,7 +42,7 @@ using namespace Methane::Platform;
 
 - (id) initWithApp : (Methane::Platform::AppMac*) p_app andFrameRect : (NSRect) frame_rect
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     self = [super init];
     if (!self)
@@ -57,7 +57,7 @@ using namespace Methane::Platform;
 
 -(NSWindow*) window
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return m_p_app ? m_p_app->GetWindow() : nil;
 }
 
@@ -68,21 +68,22 @@ using namespace Methane::Platform;
 
 - (void) loadView
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    
     assert(!!m_p_app);
     m_p_app->InitContext({ self }, { static_cast<uint32_t>(m_frame_rect.size.width), static_cast<uint32_t>(m_frame_rect.size.height) });
 }
 
 - (void)viewDidLoad
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     [super viewDidLoad];
     [self.view.window makeFirstResponder:self];
 }
 
 - (void)appView: (nonnull AppViewMT *) view drawableSizeWillChange: (CGSize)size
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_p_app);
 
     if (!m_is_initialized)
@@ -94,11 +95,12 @@ using namespace Methane::Platform;
     m_p_app->Resize( { static_cast<uint32_t>(size.width), static_cast<uint32_t>(size.height) }, false );
 }
 
-- (void) drawInView: (nonnull AppViewMT *) view
+- (void) drawInView: (nonnull AppViewMT*) view
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    #pragma unused(view)
+    
     assert(!!m_p_app);
-
     if (!m_is_initialized)
     {
         m_is_initialized = true;
@@ -111,136 +113,142 @@ using namespace Methane::Platform;
 
 - (void) keyDown:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_p_app);
 
-    m_p_app->InputState().OnKeyboardChanged(Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), Keyboard::KeyState::Pressed);
+    m_p_app->ProcessInput(&Input::IActionController::OnKeyboardChanged, Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), Keyboard::KeyState::Pressed);
 }
 
 - (void) keyUp:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_p_app);
 
-    m_p_app->InputState().OnKeyboardChanged(Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), Keyboard::KeyState::Released);
+    m_p_app->ProcessInput(&Input::IActionController::OnKeyboardChanged, Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), Keyboard::KeyState::Released);
 }
 
 - (void) flagsChanged:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_p_app);
 
-    m_p_app->InputState().OnModifiersChanged(Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetModifiers());
+    m_p_app->ProcessInput(&Input::IActionController::OnModifiersChanged, Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetModifiers());
 }
 
 // ====== Mouse event handlers ======
 
 - (void)mouseMoved:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_p_app);
 
     NSPoint pos = [event locationInWindow];
     pos.x *= self.view.window.backingScaleFactor;
     pos.y = (m_frame_rect.size.height - pos.y) * self.view.window.backingScaleFactor;
-    m_p_app->InputState().OnMousePositionChanged({ static_cast<int>(pos.x), static_cast<int>(pos.y) });
+    m_p_app->ProcessInput(&Input::IActionController::OnMousePositionChanged, Mouse::Position{ static_cast<int>(pos.x), static_cast<int>(pos.y) });
 }
 
 - (void)mouseDown:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    #pragma unused(event)
+    
     assert(!!m_p_app);
-
-    m_p_app->InputState().OnMouseButtonChanged(Mouse::Button::Left, Mouse::ButtonState::Pressed);
+    m_p_app->ProcessInput(&Input::IActionController::OnMouseButtonChanged, Mouse::Button::Left, Mouse::ButtonState::Pressed);
 }
 
 - (void)mouseUp:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    #pragma unused(event)
+    
     assert(!!m_p_app);
-
-    m_p_app->InputState().OnMouseButtonChanged(Mouse::Button::Left, Mouse::ButtonState::Released);
+    m_p_app->ProcessInput(&Input::IActionController::OnMouseButtonChanged, Mouse::Button::Left, Mouse::ButtonState::Released);
 }
 
 - (void)mouseDragged:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     [self mouseMoved:event];
 }
 
 - (void)rightMouseDown:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    #pragma unused(event)
+    
     assert(!!m_p_app);
-
-    m_p_app->InputState().OnMouseButtonChanged(Mouse::Button::Right, Mouse::ButtonState::Pressed);
+    m_p_app->ProcessInput(&Input::IActionController::OnMouseButtonChanged, Mouse::Button::Right, Mouse::ButtonState::Pressed);
 }
 
 - (void)rightMouseUp:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    #pragma unused(event)
+    
     assert(!!m_p_app);
-
-    m_p_app->InputState().OnMouseButtonChanged(Mouse::Button::Right, Mouse::ButtonState::Released);
+    m_p_app->ProcessInput(&Input::IActionController::OnMouseButtonChanged, Mouse::Button::Right, Mouse::ButtonState::Released);
 }
 
 - (void)rightMouseDragged:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     [self mouseMoved:event];
 }
 
 - (void)otherMouseDown:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    
     assert(!!m_p_app);
-
-    m_p_app->InputState().OnMouseButtonChanged(static_cast<Mouse::Button>(static_cast<int>([event buttonNumber])), Mouse::ButtonState::Pressed);
+    m_p_app->ProcessInput(&Input::IActionController::OnMouseButtonChanged, static_cast<Mouse::Button>(static_cast<int>([event buttonNumber])), Mouse::ButtonState::Pressed);
 }
 
 - (void)otherMouseUp:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_p_app);
 
-    m_p_app->InputState().OnMouseButtonChanged(static_cast<Mouse::Button>(static_cast<int>([event buttonNumber])), Mouse::ButtonState::Released);
+    m_p_app->ProcessInput(&Input::IActionController::OnMouseButtonChanged, static_cast<Mouse::Button>(static_cast<int>([event buttonNumber])), Mouse::ButtonState::Released);
 }
 
 - (void)otherMouseDragged:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     [self mouseMoved:event];
 }
 
 - (void)mouseEntered:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    #pragma unused(event)
+    
     assert(!!m_p_app);
-
-    m_p_app->InputState().OnMouseInWindowChanged(true);
+    m_p_app->ProcessInput(&Input::IActionController::OnMouseInWindowChanged, true);
 }
 
 - (void)mouseExited:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    #pragma unused(event)
+    
     assert(!!m_p_app);
-
-    m_p_app->InputState().OnMouseInWindowChanged(false);
+    m_p_app->ProcessInput(&Input::IActionController::OnMouseInWindowChanged, false);
 }
 
 - (void)scrollWheel:(NSEvent *)event
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    
     assert(!!m_p_app);
-
-    Mouse::Scroll scroll = { [event scrollingDeltaX], -[event scrollingDeltaY] };
+    Mouse::Scroll scroll{ [event scrollingDeltaX], -[event scrollingDeltaY] };
     if ([event hasPreciseScrollingDeltas])
         scroll *= 0.1f;
     
     if (fabs(scroll.GetX()) < 0.00001 && fabs(scroll.GetY()) > 0.00001)
         return;
 
-    m_p_app->InputState().OnMouseScrollChanged(scroll);
+    m_p_app->ProcessInput(&Input::IActionController::OnMouseScrollChanged, scroll);
 }
 
 @end

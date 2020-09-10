@@ -26,7 +26,7 @@ DirectX 12 implementation of the texture interface.
 #include <Methane/Graphics/TextureBase.h>
 #include <Methane/Graphics/CommandListBase.h>
 #include <Methane/Graphics/Types.h>
-#include <Methane/Graphics/Windows/Helpers.h>
+#include <Methane/Graphics/Windows/Primitives.h>
 #include <Methane/Instrumentation.h>
 
 #include <d3dx12.h>
@@ -49,28 +49,16 @@ public:
     TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraArgs... extra_args)
         : TextureBase(context, settings, descriptor_by_usage)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         InitializeDefaultDescriptors();
         Initialize(extra_args...);
-    }
-
-    ~TextureDX() override
-    {
-        ITT_FUNCTION_TASK();
     }
 
     // Resource interface
     void SetData(const SubResources&) override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         throw std::logic_error("Setting texture data is allowed for image textures only.");
-    }
-
-    Data::Size GetDataSize() const override
-    {
-        ITT_FUNCTION_TASK();
-        const Settings& settings = GetSettings();
-        return settings.dimensions.GetPixelsCount() * GetPixelSize(settings.pixel_format);
     }
 
 private:
@@ -85,17 +73,20 @@ class TextureDX<ImageTextureArg> : public TextureBase
 public:
     TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg);
 
-    // Resource interface
+    // Object overrides
+    void SetName(const std::string& name) override;
+
+    // Resource overrides
     void SetData(const SubResources& sub_resources) override;
-    Data::Size GetDataSize() const override { return m_data_size; }
 
 protected:
     using ResourceAndViewDesc = std::pair<D3D12_RESOURCE_DESC, D3D12_SHADER_RESOURCE_VIEW_DESC>;
     ResourceAndViewDesc GetResourceAndViewDesc() const;
     void GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_resources, DirectX::ScratchImage& scratch_image);
 
-    Data::Size                  m_data_size = 0;
     wrl::ComPtr<ID3D12Resource> m_cp_upload_resource;
+    Ptr<ResourceBase::Barriers> m_upload_begin_transition_barriers_ptr;
+    Ptr<ResourceBase::Barriers> m_upload_end_transition_barriers_ptr;
 };
 
 using RenderTargetTextureDX         = TextureDX<>;

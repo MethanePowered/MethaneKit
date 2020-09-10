@@ -24,13 +24,13 @@ ScreenQuad rendering primitive.
 #pragma once
 
 #include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/CommandList.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/RenderState.h>
 #include <Methane/Graphics/Program.h>
 #include <Methane/Graphics/ProgramBindings.h>
 #include <Methane/Graphics/Sampler.h>
-#include <Methane/Graphics/MathTypes.h>
 #include <Methane/Graphics/Types.h>
 
 #include <memory>
@@ -43,34 +43,54 @@ struct RenderCommandList;
 class ScreenQuad
 {
 public:
-    struct Settings
+    enum class TextureMode : uint32_t
     {
-        const std::string  name;
-        FrameRect   screen_rect;
-        bool        alpha_blending_enabled = false;
-        Color4f     blend_color = Color4f(1.f, 1.f, 1.f, 1.f);
+        Disabled = 0u,
+        RgbaFloat,
+        RFloatToAlpha,
     };
 
-    ScreenQuad(RenderContext& context, Ptr<Texture> sp_texture, Settings settings);
+    struct Settings
+    {
+        const std::string name;
+        FrameRect         screen_rect;
+        bool              alpha_blending_enabled = false;
+        Color4f           blend_color            { 1.f, 1.f, 1.f, 1.f };
+        TextureMode       texture_mode           = TextureMode::RgbaFloat;
+    };
+
+    ScreenQuad(RenderContext& context, Settings settings);
+    ScreenQuad(RenderContext& context, Ptr<Texture> texture_ptr, Settings settings);
 
     void SetBlendColor(const Color4f& blend_color);
-    void SetScreenRect(const FrameRect& screen_rect);
+    void SetScreenRect(const FrameRect& screen_rect, const FrameSize& render_attachment_size);
     void SetAlphaBlendingEnabled(bool alpha_blending_enabled);
+    void SetTexture(Ptr<Texture> texture_ptr);
 
-    void Draw(RenderCommandList& cmd_list) const;
+    const Settings& GetSettings() const noexcept { return m_settings; }
+    FrameRect       GetScreenRectInDots() const noexcept { return m_settings.screen_rect / m_context.GetContentScalingFactor(); }
+    const Texture&  GetTexture() const noexcept;
+
+    void Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_debug_group = nullptr) const;
+
+protected:
+    RenderContext& GetRenderContext() noexcept { return m_context; }
 
 private:
     void UpdateConstantsBuffer() const;
 
+    static Shader::MacroDefinitions GetPixelShaderMacroDefinitions(TextureMode texture_mode);
+
     Settings             m_settings;
-    const std::string    m_debug_region_name;
-    Ptr<RenderState>     m_sp_state;
-    Ptr<Buffer>          m_sp_vertex_buffer;
-    Ptr<Buffer>          m_sp_index_buffer;
-    Ptr<Buffer>          m_sp_const_buffer;
-    Ptr<Texture>         m_sp_texture;
-    Ptr<Sampler>         m_sp_texture_sampler;
-    Ptr<ProgramBindings> m_sp_const_program_bindings;
+    RenderContext&       m_context;
+    Ptr<RenderState>     m_render_state_ptr;
+    Ptr<ViewState>       m_view_state_ptr;
+    Ptr<BufferSet>       m_vertex_buffer_set_ptr;
+    Ptr<Buffer>          m_index_buffer_ptr;
+    Ptr<Buffer>          m_const_buffer_ptr;
+    Ptr<Texture>         m_texture_ptr;
+    Ptr<Sampler>         m_texture_sampler_ptr;
+    Ptr<ProgramBindings> m_const_program_bindings_ptr;
 };
 
 } // namespace Methane::Graphics

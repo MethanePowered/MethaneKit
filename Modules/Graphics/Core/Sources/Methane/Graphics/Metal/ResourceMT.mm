@@ -26,7 +26,7 @@ Metal implementation of the resource interface.
 #include "BufferMT.hh"
 #include "TextureMT.hh"
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/Instrumentation.h>
 
 #include <vector>
@@ -34,69 +34,22 @@ Metal implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-struct ResourceContainerMT
+Ptr<ResourceBase::Barriers> ResourceBase::Barriers::Create(const Set& barriers)
 {
-    std::vector<id<MTLBuffer>>  buffers;
-    std::vector<id<MTLTexture>> textures;
-};
-
-Ptr<ResourceBase::ReleasePool> ResourceBase::ReleasePool::Create()
-{
-    ITT_FUNCTION_TASK();
-    return std::make_shared<ResourceMT::ReleasePoolMT>();
-}
-
-ResourceMT::ReleasePoolMT::ReleasePoolMT()
-    : ResourceBase::ReleasePool()
-    , m_sp_mtl_resources(new ResourceContainerMT())
-{
-    ITT_FUNCTION_TASK();
-}
-
-void ResourceMT::ReleasePoolMT::AddResource(ResourceBase& resource)
-{
-    ITT_FUNCTION_TASK();
-
-    switch(resource.GetResourceType())
-    {
-        case Resource::Type::Buffer:
-            m_sp_mtl_resources->buffers.push_back(static_cast<BufferMT&>(resource).GetNativeBuffer());
-            break;
-        case Resource::Type::Texture:
-            m_sp_mtl_resources->textures.push_back(static_cast<TextureMT&>(resource).GetNativeTexture());
-            break;
-        case Resource::Type::Sampler:
-            // Nothing to do here
-            break;
-    }
-}
-
-void ResourceMT::ReleasePoolMT::ReleaseResources()
-{
-    ITT_FUNCTION_TASK();
-
-    assert(!!m_sp_mtl_resources);
-    for(id<MTLBuffer>& mtl_buffer : m_sp_mtl_resources->buffers)
-    {
-        [mtl_buffer release];
-    }
-    for(id<MTLTexture>& mtl_texture : m_sp_mtl_resources->textures)
-    {
-        [mtl_texture release];
-    }
-    m_sp_mtl_resources.reset(new ResourceContainerMT());
+    META_FUNCTION_TASK();
+    return std::make_shared<ResourceMT::BarriersMT>(barriers);
 }
 
 ResourceMT::ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
     : ResourceBase(type, usage_mask, context, descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 IContextMT& ResourceMT::GetContextMT() noexcept
 {
-    ITT_FUNCTION_TASK();
-    return static_cast<IContextMT&>(GetContext());
+    META_FUNCTION_TASK();
+    return static_cast<IContextMT&>(GetContextBase());
 }
 
 } // namespace Methane::Graphics

@@ -27,8 +27,8 @@ Unit tests of the Mouse data types
 
 using namespace Methane::Platform::Mouse;
 
-static const Position g_test_position   = { 12, 34 };
-static const Scroll   g_test_scroll     = { 2.f, 3.f };
+static const Position g_test_position { 12, 34 };
+static const Scroll   g_test_scroll   { 2.f, 3.f };
 
 TEST_CASE("Mouse state initialization", "[mouse-state]")
 {
@@ -45,7 +45,7 @@ TEST_CASE("Mouse state initialization", "[mouse-state]")
 
     SECTION("Initializer list constructor")
     {
-        const State mouse_state = { Button::Left, Button::Right };
+        const State mouse_state{ Button::Left, Button::Right };
         CHECK(mouse_state.GetPressedButtons() == Buttons{ Button::Left, Button::Right });
         CHECK(mouse_state.GetPosition()       == Position(0, 0));
     }
@@ -83,7 +83,7 @@ TEST_CASE("Mouse state modification", "[mouse-state]")
 
     SECTION("Release buttons")
     {
-        State mouse_state = { Button::Left, Button::Middle, Button::Right };
+        State mouse_state{ Button::Left, Button::Middle, Button::Right };
         mouse_state.ReleaseButton(Button::Left);
         mouse_state.ReleaseButton(Button::Right);
         CHECK(mouse_state.GetPressedButtons() == Buttons{ Button::Middle });
@@ -91,14 +91,14 @@ TEST_CASE("Mouse state modification", "[mouse-state]")
 
     SECTION("Set position")
     {
-        State mouse_state = { };
+        State mouse_state{ };
         mouse_state.SetPosition(g_test_position);
         CHECK(mouse_state.GetPosition() == g_test_position);
     }
 
     SECTION("Scroll")
     {
-        State mouse_state = { };
+        State mouse_state{ };
         mouse_state.AddScrollDelta(g_test_scroll);
         CHECK(mouse_state.GetScroll() == g_test_scroll);
         mouse_state.AddScrollDelta(g_test_scroll);
@@ -107,7 +107,7 @@ TEST_CASE("Mouse state modification", "[mouse-state]")
 
     SECTION("In Window flag")
     {
-        State mouse_state = { };
+        State mouse_state{ };
         mouse_state.SetInWindow(true);
         CHECK(mouse_state.IsInWindow() == true);
     }

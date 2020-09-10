@@ -40,18 +40,18 @@ AppContextController::AppContextController(RenderContext& context, const ActionB
     , Keyboard::ActionControllerBase<AppContextAction>(action_by_keyboard_state, {})
     , m_context(context)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void AppContextController::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state, const Keyboard::StateChange& state_change)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Keyboard::ActionControllerBase<AppContextAction>::OnKeyboardChanged(key, key_state, state_change);
 }
 
 void AppContextController::OnKeyboardStateAction(AppContextAction action)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (action)
     {
         case AppContextAction::SwitchVSync:
@@ -68,10 +68,10 @@ void AppContextController::OnKeyboardStateAction(AppContextAction action)
 
         case AppContextAction::SwitchDevice:
         {
-            const Ptr<Device> sp_next_device = System::Get().GetNextGpuDevice(m_context.GetDevice());
-            if (sp_next_device)
+            const Ptr<Device> next_device_ptr = System::Get().GetNextGpuDevice(m_context.GetDevice());
+            if (next_device_ptr)
             {
-                m_context.Reset(*sp_next_device);
+                m_context.Reset(*next_device_ptr);
             }
         } break;
 
@@ -81,7 +81,7 @@ void AppContextController::OnKeyboardStateAction(AppContextAction action)
 
 std::string AppContextController::GetKeyboardActionName(AppContextAction action) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (action)
     {
         case AppContextAction::None:                            return "none";
@@ -95,11 +95,11 @@ std::string AppContextController::GetKeyboardActionName(AppContextAction action)
 
 Input::IHelpProvider::HelpLines AppContextController::GetHelp() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     HelpLines help_lines = GetKeyboardHelp();
 
     // Add description of system graphics devices
-    help_lines.push_back({ "\n" + System::Get().ToString(), "" });
+    // help_lines.push_back({ "\n" + System::Get().ToString(), "" });
 
     return help_lines;
 }

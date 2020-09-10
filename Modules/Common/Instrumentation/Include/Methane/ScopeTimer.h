@@ -25,6 +25,7 @@ Code scope measurement timer with aggregating and averaging of timings.
 
 #include "ILogger.h"
 
+#include <Methane/IttApiHelper.h>
 #include <Methane/Timer.hpp>
 #include <Methane/Memory.hpp>
 
@@ -37,8 +38,18 @@ namespace Methane
 class ScopeTimer : protected Timer
 {
 public:
+    using ScopeId = uint32_t;
+
+    struct Registration
+    {
+        const char* name;
+        ScopeId     id;
+    };
+
     class Aggregator
     {
+        friend class ScopeTimer;
+
     public:
         struct Timing
         {
@@ -49,22 +60,28 @@ public:
         static Aggregator& Get();
         ~Aggregator();
 
-        void SetLogger(Ptr<ILogger> sp_logger)   { m_sp_logger = std::move(sp_logger); }
-        const Ptr<ILogger>& GetLogger() const { return m_sp_logger; }
-
-        void AddScopeTiming(const std::string& scope_name, TimeDuration duration);
-        const Timing& GetScopeTiming(const std::string& scope_name) const;
+        void SetLogger(Ptr<ILogger> logger_ptr)   { m_logger_ptr = std::move(logger_ptr); }
+        const Ptr<ILogger>& GetLogger() const    { return m_logger_ptr; }
 
         void LogTimings(ILogger& logger);
         void Flush();
 
+    protected:
+        Registration RegisterScope(const char* scope_name);
+        void AddScopeTiming(const Registration& scope_registration, TimeDuration duration);
+
     private:
         Aggregator() = default;
 
-        using ScopeTimings = std::map<std::string, Timing>;
+        using ScopeIdByName = std::map<const char*, ScopeId>;
+        using ScopeTimings  = std::vector<Timing>; // index == ScopeId
+        using ScopeCounters = std::vector<ITT_COUNTER_TYPE(uint64_t)>; // index == ScopeId
 
-        ScopeTimings m_timing_by_scope_name;
-        Ptr<ILogger> m_sp_logger;
+        ScopeId       m_new_scope_id = 0u;
+        ScopeIdByName m_scope_id_by_name;
+        ScopeTimings  m_timing_by_scope_id;
+        ScopeCounters m_counters_by_scope_id;
+        Ptr<ILogger>  m_logger_ptr;
     };
 
     template<typename TLogger>
@@ -73,29 +90,36 @@ public:
         Aggregator::Get().SetLogger(std::make_shared<TLogger>());
     }
 
-    ScopeTimer(std::string scope_name);
+    ScopeTimer(const char* scope_name);
     ~ScopeTimer();
 
-    const std::string& GetScopeName() const { return m_scope_name; }
+    const Registration& GetRegistration() const { return m_registration; }
+    const char*         GetScopeName() const    { return m_registration.name; }
+    ScopeId             GetScopeId() const      { return m_registration.id; }
+
+    using Timer::GetElapsedDuration;
+    using Timer::GetElapsedSecondsU;
+    using Timer::GetElapsedSecondsD;
+    using Timer::GetElapsedSecondsF;
 
 private:
-    std::string m_scope_name;
+    const Registration m_registration;
 };
 
 } // namespace Methane
 
-#ifdef SCOPE_TIMERS_ENABLED
+#ifdef METHANE_SCOPE_TIMERS_ENABLED
 
-#define SCOPE_TIMER_INITIALIZE(LOGGER_TYPE) Methane::ScopeTimer::InitializeLogger<LOGGER_TYPE>()
-#define SCOPE_TIMER(SCOPE_NAME) Methane::ScopeTimer scope_timer(SCOPE_NAME)
-#define FUNCTION_SCOPE_TIMER() SCOPE_TIMER(__func__)
-#define FLUSH_SCOPE_TIMINGS() Methane::ScopeTimer::Aggregator::Get().Flush()
+#define META_SCOPE_TIMERS_INITIALIZE(LOGGER_TYPE) Methane::ScopeTimer::InitializeLogger<LOGGER_TYPE>()
+#define META_SCOPE_TIMER(SCOPE_NAME) Methane::ScopeTimer scope_timer(SCOPE_NAME)
+#define META_FUNCTION_TIMER() META_SCOPE_TIMER(__func__)
+#define META_SCOPE_TIMERS_FLUSH() Methane::ScopeTimer::Aggregator::Get().Flush()
 
-#else // ifdef SCOPE_TIMERS_ENABLED
+#else // ifdef METHANE_SCOPE_TIMERS_ENABLED
 
-#define SCOPE_TIMER_INITIALIZE(LOGGER_TYPE)
-#define SCOPE_TIMER(SCOPE_NAME)
-#define FUNCTION_SCOPE_TIMER()
-#define FLUSH_SCOPE_TIMINGS()
+#define META_SCOPE_TIMERS_INITIALIZE(LOGGER_TYPE)
+#define META_SCOPE_TIMER(SCOPE_NAME)
+#define META_FUNCTION_TIMER()
+#define META_SCOPE_TIMERS_FLUSH()
 
-#endif // ifdef SCOPE_TIMERS_ENABLED
+#endif // ifdef METHANE_SCOPE_TIMERS_ENABLED

@@ -31,9 +31,9 @@ Metal implementation of the device interface.
 namespace Methane::Graphics
 {
 
-Device::Feature::Mask DeviceMT::GetSupportedFeatures(const id<MTLDevice>& mtl_device)
+Device::Feature::Mask DeviceMT::GetSupportedFeatures(const id<MTLDevice>&)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Device::Feature::Mask supported_features = Device::Feature::Value::BasicRendering;
     return supported_features;
 }
@@ -43,26 +43,26 @@ DeviceMT::DeviceMT(const id<MTLDevice>& mtl_device)
                  GetSupportedFeatures(mtl_device))
     , m_mtl_device(mtl_device)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 DeviceMT::~DeviceMT()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     [m_mtl_device release];
 }
 
 System& System::Get()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     static SystemMT s_system;
     return s_system;
 }
 
 SystemMT::~SystemMT()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_device_observer != nil)
     {
         MTLRemoveDeviceObserver(m_device_observer);
@@ -71,7 +71,7 @@ SystemMT::~SystemMT()
 
 const Ptrs<Device>& SystemMT::UpdateGpuDevices(Device::Feature::Mask supported_features)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_device_observer != nil)
     {
         MTLRemoveDeviceObserver(m_device_observer);
@@ -96,36 +96,27 @@ const Ptrs<Device>& SystemMT::UpdateGpuDevices(Device::Feature::Mask supported_f
 
 void SystemMT::OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificationName device_notification)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (device_notification == MTLDeviceWasAddedNotification)
     {
         AddDevice(mtl_device);
     }
-    else if (device_notification == MTLDeviceRemovalRequestedNotification)
+    else
     {
-        NotifyDevice(mtl_device, Device::Notification::RemoveRequested);
-    }
-    else if (device_notification == MTLDeviceWasRemovedNotification)
-    {
-        NotifyDevice(mtl_device, Device::Notification::Removed);
-    }
-}
+        const Ptr<Device>& device_ptr = FindMetalDevice(mtl_device);
+        if (!device_ptr)
+            throw std::logic_error("No device object found");
 
-void SystemMT::NotifyDevice(const id<MTLDevice>& mtl_device, Device::Notification device_notification)
-{
-    ITT_FUNCTION_TASK();
-    const Ptr<Device>& sp_device = FindMetalDevice(mtl_device);
-    if (!sp_device)
-    {
-        assert(0);
-        return;
+        if (device_notification == MTLDeviceRemovalRequestedNotification)
+            RequestRemoveDevice(*device_ptr);
+        else if (device_notification == MTLDeviceWasRemovedNotification)
+            RemoveDevice(*device_ptr);
     }
-    sp_device->Notify(device_notification);
 }
 
 void SystemMT::AddDevice(const id<MTLDevice>& mtl_device)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Device::Feature::Mask device_supported_features = DeviceMT::GetSupportedFeatures(mtl_device);
     if (!(device_supported_features & GetGpuSupportedFeatures()))
         return;
@@ -135,19 +126,19 @@ void SystemMT::AddDevice(const id<MTLDevice>& mtl_device)
 
 const Ptr<Device>& SystemMT::FindMetalDevice(const id<MTLDevice>& mtl_device) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const Ptrs<Device>& devices = GetGpuDevices();
     const auto device_it = std::find_if(devices.begin(), devices.end(),
-                                        [mtl_device](const Ptr<Device>& sp_device)
+                                        [mtl_device](const Ptr<Device>& device_ptr)
                                         {
-                                            assert(!!sp_device);
-                                            if (!sp_device) return false;
-                                            DeviceMT& metal_device = static_cast<DeviceMT&>(*sp_device);
+                                            assert(!!device_ptr);
+                                            if (!device_ptr) return false;
+                                            DeviceMT& metal_device = static_cast<DeviceMT&>(*device_ptr);
                                             return metal_device.GetNativeDevice() == mtl_device;
                                         });
     
-    static const Ptr<Device> s_sp_empty_device;
-    return device_it != devices.end() ? *device_it : s_sp_empty_device;
+    static const Ptr<Device> s_empty_device_ptr;
+    return device_it != devices.end() ? *device_it : s_empty_device_ptr;
 }
 
 } // namespace Methane::Graphics

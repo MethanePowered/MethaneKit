@@ -23,10 +23,16 @@ Base application interface and platform-independent implementation.
 
 #include <Methane/Platform/AppBase.h>
 #include <Methane/Platform/Utils.h>
+#include <Methane/Platform/Logger.h>
+#include <Methane/Platform/Input/Controller.h>
+#include <Methane/ScopeTimer.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Version.h>
 
 #include <CLI/CLI.hpp>
+#include <taskflow/core/executor.hpp>
 
+#include <sstream>
 #include <vector>
 #include <cstdlib>
 #include <cassert>
@@ -38,7 +44,9 @@ AppBase::AppBase(const AppBase::Settings& settings)
     : CLI::App(settings.name, GetExecutableFileName())
     , m_settings(settings)
 {
-    ITT_FUNCTION_TASK();
+    META_THREAD_NAME("Main Thread");
+    META_FUNCTION_TASK();
+    META_SCOPE_TIMERS_INITIALIZE(Methane::Platform::Logger);
 
     add_option("-w,--width",  m_settings.width,  "Window width in pixels or as ratio of desktop width", true);
     add_option("-x,--height", m_settings.height, "Window height in pixels or as ratio of desktop height", true);
@@ -51,9 +59,11 @@ AppBase::AppBase(const AppBase::Settings& settings)
 #endif
 }
 
+AppBase::~AppBase() = default;
+
 int AppBase::Run(const RunArgs& args)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     try
     {
@@ -82,20 +92,33 @@ int AppBase::Run(const RunArgs& args)
 
 void AppBase::Init()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_initialized = true;
 }
 
 void AppBase::ChangeWindowBounds(const Data::FrameRect& window_bounds)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     m_window_bounds = window_bounds;
+}
+
+void AppBase::StartResizing()
+{
+    META_FUNCTION_TASK();
+    assert(!m_is_resizing);
+    m_is_resizing = true;
+}
+
+void AppBase::EndResizing()
+{
+    META_FUNCTION_TASK();
+    assert(m_is_resizing);
+    m_is_resizing = false;
 }
     
 bool AppBase::Resize(const Data::FrameSize& frame_size, bool is_minimized)
 {
-    ITT_FUNCTION_TASK();
-    
+    META_FUNCTION_TASK();
     const bool is_resizing = !is_minimized && m_frame_size != frame_size;
     
     m_is_minimized = is_minimized;
@@ -109,16 +132,16 @@ bool AppBase::Resize(const Data::FrameSize& frame_size, bool is_minimized)
 
 void AppBase::Alert(const Message& msg, bool deferred)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!deferred)
         return;
 
-    m_sp_deferred_message.reset(new Message(msg));
+    m_deferred_message_ptr.reset(new Message(msg));
 }
 
 void AppBase::ShowAlert(const Message&)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     // Message box interrupts message loop so that application looses all key release events
     // We assume that user has released all previously pressed keys and simulate these events
@@ -127,6 +150,7 @@ void AppBase::ShowAlert(const Message&)
 
 void AppBase::UpdateAndRender()
 {
+    META_FUNCTION_TASK();
     // Do not render if error has occurred and is being displayed in message box
     if (HasError())
         return;
@@ -137,18 +161,131 @@ void AppBase::UpdateAndRender()
 
 bool AppBase::HasError() const
 {
-    ITT_FUNCTION_TASK();
-    return m_sp_deferred_message ? m_sp_deferred_message->type == Message::Type::Error : false;
+    META_FUNCTION_TASK();
+    return m_deferred_message_ptr ? m_deferred_message_ptr->type == Message::Type::Error : false;
+}
+
+tf::Executor& AppBase::GetParallelExecutor() const
+{
+    META_FUNCTION_TASK();
+    if (!m_parallel_executor_ptr)
+        m_parallel_executor_ptr = std::make_unique<tf::Executor>();
+
+    return *m_parallel_executor_ptr;
 }
 
 bool AppBase::SetFullScreen(bool is_full_screen)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_settings.is_full_screen == is_full_screen)
         return false;
 
     m_settings.is_full_screen = is_full_screen;
+    m_input_state.ReleaseAllKeys();
+
     return true;
+}
+
+bool AppBase::SetKeyboardFocus(bool has_keyboard_focus)
+{
+    META_FUNCTION_TASK();
+    if (m_has_keyboard_focus == has_keyboard_focus)
+        return false;
+
+    m_has_keyboard_focus = has_keyboard_focus;
+    m_input_state.ReleaseAllKeys();
+
+    return true;
+}
+
+std::string AppBase::GetControlsHelp()
+{
+    META_FUNCTION_TASK();
+
+    std::stringstream help_stream;
+    std::string single_offset = "    ";
+    bool is_first_controller = true;
+
+    for (const Ptr<Input::Controller>& controller_ptr : GetInputState().GetControllers())
+    {
+        assert(!!controller_ptr);
+        if (!controller_ptr) continue;
+
+        const Input::IHelpProvider::HelpLines help_lines = controller_ptr->GetHelp();
+        if (help_lines.empty()) continue;
+
+        if (!is_first_controller)
+            help_stream << std::endl;
+
+        std::string controller_offset;
+        if (!controller_ptr->GetControllerName().empty())
+        {
+            if (!is_first_controller)
+                help_stream << std::endl;
+
+            help_stream << controller_ptr->GetControllerName();
+            controller_offset = single_offset;
+        }
+
+        is_first_controller = false;
+
+        bool first_line = true;
+        bool header_present = false;
+        for (const Input::IHelpProvider::KeyDescription& key_description : help_lines)
+        {
+            if (key_description.first.empty())
+            {
+                help_stream << std::endl << std::endl << controller_offset << key_description.second << ":";
+                header_present = true;
+            }
+            else
+            {
+                if (first_line && !header_present)
+                {
+                    help_stream << std::endl;
+                }
+                help_stream << std::endl << controller_offset;
+                if (header_present)
+                {
+                    help_stream << single_offset;
+                }
+                help_stream << key_description.first;
+                if (!key_description.second.empty())
+                {
+                    help_stream << " - " << key_description.second;
+                }
+            }
+            first_line = false;
+        }
+    }
+
+    if (!is_first_controller)
+    {
+        help_stream << std::endl;
+    }
+    help_stream << std::endl << "Powered by " << METHANE_PRODUCT_NAME <<" v" METHANE_VERSION_STR
+                << std::endl << METHANE_PRODUCT_URL;
+    return help_stream.str();
+}
+
+void AppBase::ShowControlsHelp()
+{
+    META_FUNCTION_TASK();
+    Alert({
+        AppBase::Message::Type::Information,
+        "Application Controls Help",
+        GetControlsHelp()
+    });
+}
+
+void AppBase::ShowCommandLineHelp()
+{
+    META_FUNCTION_TASK();
+    Alert({
+        AppBase::Message::Type::Information,
+        "Application Command-Line Help",
+        GetCommandLineHelp()
+    });
 }
 
 } // namespace Methane::Platform

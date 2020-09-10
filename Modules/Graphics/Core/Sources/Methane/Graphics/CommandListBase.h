@@ -29,9 +29,14 @@ Base implementation of the command list interface.
 #include <Methane/Graphics/Program.h>
 #include <Methane/Graphics/CommandList.h>
 #include <Methane/Graphics/CommandQueue.h>
+#include <Methane/Memory.hpp>
+#include <Methane/TracyGpu.hpp>
+#include <Methane/Instrumentation.h>
 
-#include <map>
+#include <stack>
+#include <set>
 #include <mutex>
+#include <condition_variable>
 
 namespace Methane::Graphics
 {
@@ -42,78 +47,147 @@ class ProgramBindingsBase;
 class CommandListBase
     : public ObjectBase
     , public virtual CommandList
-    , public std::enable_shared_from_this<CommandListBase>
 {
     friend class CommandQueueBase;
 
 public:
-    enum State
+    struct CommandState final
     {
-        Pending,
-        Committed,
-        Executing,
+        Ptr<ProgramBindingsBase> program_bindings_ptr;
+        Ptrs<ObjectBase>         retained_resources;
     };
 
-    struct CommandState
+    class DebugGroupBase
+        : public DebugGroup
+        , public ObjectBase
     {
-        // NOTE:
-        // Command state uses raw pointers instead of smart pointers for performance reasons:
-        //   - shared pointers can not be used here, because they keep resources from deletion on context release
-        //   - weak pointer should not be used too because 'lock' operation has significant performance overhead
-        //   - even if raw pointer becomes obsolete it won't be a problem because it is used only for address comparison with another raw pointer
-        ProgramBindingsBase* p_program_bindings = nullptr;
+    public:
+        DebugGroupBase(std::string name);
 
-        static UniquePtr<CommandState> Create(Type command_list_type);
+        // Object overrides
+        void SetName(const std::string&) override { throw std::logic_error("Debug Group can not be renamed"); }
 
-    protected:
-        CommandState() = default;
+        // DebugGroup interface
+        DebugGroup& AddSubGroup(Data::Index id, std::string name) final;
+        DebugGroup* GetSubGroup(Data::Index id) const noexcept final;
+        bool        HasSubGroups() const noexcept final { return !m_sub_groups.empty(); }
+
+    private:
+        Ptrs<DebugGroup> m_sub_groups;
     };
 
     CommandListBase(CommandQueueBase& command_queue, Type type);
+    ~CommandListBase() override;
 
     // CommandList interface
-    Type GetType() const override { return m_type; }
-    void Reset(const std::string& debug_group = "") override;
-    void SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
-    void Commit() override;
+    Type  GetType() const noexcept override                         { return m_type; }
+    State GetState() const noexcept override                        { return m_state; }
+    void  PushDebugGroup(DebugGroup& debug_group) override;
+    void  PopDebugGroup() override;
+    void  Reset(DebugGroup* p_debug_group = nullptr) override;
+    void  SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
+    void  Commit() override;
+    void  WaitUntilCompleted(uint32_t timeout_ms = 0u) override;
+    Data::TimeRange GetGpuTimeRange(bool) const override { return { 0u, 0u }; }
     CommandQueue& GetCommandQueue() override;
 
     // CommandListBase interface
     virtual void SetResourceBarriers(const ResourceBase::Barriers& resource_barriers) = 0;
-    virtual void Execute(uint32_t frame_index);
-    virtual void Complete(uint32_t frame_index);
+    virtual void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {});
+    virtual void Complete(uint32_t frame_index); // Called from another thread, which is tracking GPU execution
 
-    void SetResourceTransitionBarriers(const Refs<Resource>& resources, ResourceBase::State state_before, ResourceBase::State state_after);
-    void SetOpenDebugGroup(const std::string& debug_group)  { m_open_debug_group = debug_group; }
-    const ProgramBindingsBase* GetProgramBindings() const   { return GetCommandState().p_program_bindings; }
-    Ptr<CommandListBase>       GetPtr()                     { return shared_from_this(); }
+    DebugGroupBase* GetTopOpenDebugGroup() const;
+    void PushOpenDebugGroup(DebugGroup& debug_group);
+    void ClearOpenDebugGroups();
+
+    CommandQueueBase&               GetCommandQueueBase() noexcept;
+    const CommandQueueBase&         GetCommandQueueBase() const noexcept;
+    const Ptr<ProgramBindingsBase>& GetProgramBindings() const noexcept  { return GetCommandState().program_bindings_ptr; }
+    Ptr<CommandListBase>            GetCommandListPtr()                  { return std::static_pointer_cast<CommandListBase>(GetBasePtr()); }
+
+    inline void RetainResource(Ptr<ObjectBase>&& resource_ptr) { if (resource_ptr) m_command_state.retained_resources.emplace_back(std::move(resource_ptr)); }
+    inline void RetainResource(ObjectBase& resource)          { m_command_state.retained_resources.emplace_back(resource.GetBasePtr()); }
+
+    template<typename T, typename = std::enable_if_t<std::is_base_of_v<ObjectBase, T>>>
+    inline void RetainResources(const Ptrs<T>& resource_ptrs)
+    {
+        for(const Ptr<T>& resource_ptr : resource_ptrs)
+            RetainResource(std::static_pointer_cast<ObjectBase>(resource_ptr));
+    }
 
 protected:
-    void ResetCommandState();
-    CommandState&       GetCommandState();
-    const CommandState& GetCommandState() const;
+    virtual void ResetCommandState();
 
-    CommandQueueBase&       GetCommandQueueBase();
-    const CommandQueueBase& GetCommandQueueBase() const;
+    CommandState&       GetCommandState()           { return m_command_state; }
+    const CommandState& GetCommandState() const     { return m_command_state; }
 
-    bool     IsExecutingOnAnyFrame() const;
-    bool     IsCommitted(uint32_t frame_index) const;
-    bool     IsCommitted() const                        { return IsCommitted(GetCurrentFrameIndex()); }
-    bool     IsExecuting(uint32_t frame_index) const;
-    bool     IsExecuting() const                        { return IsExecuting(GetCurrentFrameIndex()); }
-    uint32_t GetCurrentFrameIndex() const;
+    void        SetCommandListState(State state);
+    void        SetCommandListStateNoLock(State state);
+    bool        IsExecutingOnAnyFrame() const               { return m_state == State::Executing; }
+    bool        IsCommitted(uint32_t frame_index) const     { return m_state == State::Committed && m_committed_frame_index == frame_index; }
+    bool        IsCommitted() const                         { return IsCommitted(GetCurrentFrameIndex()); }
+    bool        IsExecuting(uint32_t frame_index) const     { return m_state == State::Executing && m_committed_frame_index == frame_index; }
+    bool        IsExecuting() const                         { return IsExecuting(GetCurrentFrameIndex()); }
+    uint32_t    GetCurrentFrameIndex() const;
+    std::string GetTypeName() const noexcept                { return GetTypeName(m_type); }
+
+    inline void VerifyEncodingState() const
+    {
+        if (m_state != State::Encoding)
+            throw std::logic_error(GetTypeName() + " Command list encoding is not possible in \"" + GetStateName(m_state) + "\" state.");
+    }
+
+    static std::string GetTypeName(Type type) noexcept;
+    static std::string GetStateName(State state) noexcept;
 
 private:
-    static std::string GetStateName(State state);
-    
-    using ExecutingOnFrame = std::map<uint32_t, bool>;
+    using DebugGroupStack  = std::stack<Ptr<DebugGroupBase>>;
 
-    const Type              m_type;
-    Ptr<CommandQueue>       m_sp_command_queue;
-    UniquePtr<CommandState> m_sp_command_state;
-    std::string             m_open_debug_group;
-    uint32_t                m_committed_frame_index = 0;
-    State                   m_state                 = State::Pending;
+    const Type                  m_type;
+    Ptr<CommandQueue>           m_command_queue_ptr;
+    CommandState                m_command_state;
+    DebugGroupStack             m_open_debug_groups;
+    uint32_t                    m_committed_frame_index = 0;
+    CompletedCallback           m_completed_callback;
+    State                       m_state = State::Pending;
+    mutable TracyLockable(std::mutex, m_state_mutex);
+    TracyLockable(std::mutex,   m_state_change_mutex);
+    std::condition_variable_any m_state_change_condition_var;
+
+    TRACY_GPU_SCOPE_TYPE                  m_tracy_gpu_scope;
+    UniquePtr<TRACE_SOURCE_LOCATION_TYPE> m_tracy_construct_location_ptr;
+    UniquePtr<TRACE_SOURCE_LOCATION_TYPE> m_tracy_reset_location_ptr;
+};
+
+class CommandListSetBase
+    : public CommandListSet
+    , public std::enable_shared_from_this<CommandListSetBase>
+{
+public:
+    CommandListSetBase(Refs<CommandList> command_list_refs);
+
+    // CommandListSet overrides
+    Data::Size               GetCount() const noexcept override { return static_cast<Data::Size>(m_refs.size()); }
+    const Refs<CommandList>& GetRefs() const noexcept override  { return m_refs; }
+    CommandList&             operator[](Data::Index index) const override;
+
+    // CommandListSetBase interface
+    virtual void Execute(Data::Index frame_index, const CommandList::CompletedCallback& completed_callback);
+    
+    void Complete() noexcept;
+
+    Ptr<CommandListSetBase>      GetPtr()                                   { return shared_from_this(); }
+    const Refs<CommandListBase>& GetBaseRefs() const noexcept               { return m_base_refs; }
+    Data::Index                  GetExecutingOnFrameIndex() const noexcept  { return m_executing_on_frame_index; }
+    const CommandListBase&       GetCommandListBase(Data::Index index) const;
+    CommandQueueBase&            GetCommandQueueBase() noexcept             { return m_base_refs.back().get().GetCommandQueueBase(); }
+    const CommandQueueBase&      GetCommandQueueBase() const noexcept       { return m_base_refs.back().get().GetCommandQueueBase(); }
+
+private:
+    Refs<CommandList>      m_refs;
+    Refs<CommandListBase>  m_base_refs;
+    Ptrs<CommandListBase>  m_base_ptrs;
+    Data::Index            m_executing_on_frame_index = 0u;
 };
 
 } // namespace Methane::Graphics

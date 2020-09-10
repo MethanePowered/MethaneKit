@@ -34,12 +34,14 @@ struct CommandQueue;
 
 struct Fence : virtual Object
 {
-    static UniquePtr<Fence> Create(CommandQueue& command_queue);
+    static Ptr<Fence> Create(CommandQueue& command_queue);
 
     // Fence interface
     virtual void Signal() = 0;
-    virtual void Wait() = 0;
-    virtual void Flush() = 0;
+    virtual void WaitOnCpu() = 0;
+    virtual void WaitOnGpu(CommandQueue& wait_on_command_queue) = 0;
+    virtual void FlushOnCpu() = 0;
+    virtual void FlushOnGpu(CommandQueue& wait_on_command_queue) = 0;
 };
 
 } // namespace Methane::Graphics

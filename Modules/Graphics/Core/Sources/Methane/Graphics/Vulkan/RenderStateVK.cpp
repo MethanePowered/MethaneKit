@@ -35,70 +35,91 @@ Vulkan implementation of the render state interface.
 namespace Methane::Graphics
 {
 
+Ptr<ViewState> ViewState::Create(const ViewState::Settings& state_settings)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ViewStateVK>(state_settings);
+}
+
+ViewStateVK::ViewStateVK(const Settings& settings)
+    : ViewStateBase(settings)
+{
+    META_FUNCTION_TASK();
+}
+
+bool ViewStateVK::Reset(const Settings& settings)
+{
+    META_FUNCTION_TASK();
+    if (!ViewStateBase::Reset(settings))
+        return false;
+
+    return true;
+}
+
+bool ViewStateVK::SetViewports(const Viewports& viewports)
+{
+    META_FUNCTION_TASK();
+    if (!ViewStateBase::SetViewports(viewports))
+        return false;
+
+    return true;
+}
+
+bool ViewStateVK::SetScissorRects(const ScissorRects& scissor_rects)
+{
+    META_FUNCTION_TASK();
+    if (!ViewStateBase::SetScissorRects(scissor_rects))
+        return false;
+
+    return true;
+}
+
+void ViewStateVK::Apply(RenderCommandListBase& command_list)
+{
+    META_FUNCTION_TASK();
+
+    RenderCommandListVK& vulkan_command_list = static_cast<RenderCommandListVK&>(command_list);
+    META_UNUSED(vulkan_command_list);
+}
+
 Ptr<RenderState> RenderState::Create(RenderContext& context, const RenderState::Settings& state_settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<RenderStateVK>(dynamic_cast<RenderContextBase&>(context), state_settings);
 }
 
 RenderStateVK::RenderStateVK(RenderContextBase& context, const Settings& settings)
     : RenderStateBase(context, settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Reset(settings);
 }
 
 RenderStateVK::~RenderStateVK()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void RenderStateVK::Reset(const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
-    if (!settings.sp_program)
+    META_FUNCTION_TASK();
+    if (!settings.program_ptr)
     {
         throw std::invalid_argument("Can not create state with empty program.");
     }
 
     RenderStateBase::Reset(settings);
-
-    ProgramVK& vulkan_program = static_cast<ProgramVK&>(*settings.sp_program);
-
-    if (!settings.viewports.empty())
-    {
-        SetViewports(settings.viewports);
-    }
-    if (!settings.scissor_rects.empty())
-    {
-        SetScissorRects(settings.scissor_rects);
-    }
-    
     ResetNativeState();
 }
 
-void RenderStateVK::Apply(RenderCommandListBase& command_list, Group::Mask state_groups)
+void RenderStateVK::Apply(RenderCommandListBase& /*command_list*/, Group::Mask /*state_groups*/)
 {
-    ITT_FUNCTION_TASK();
-}
-
-void RenderStateVK::SetViewports(const Viewports& viewports)
-{
-    ITT_FUNCTION_TASK();
-
-    RenderStateBase::SetViewports(viewports);
-}
-
-void RenderStateVK::SetScissorRects(const ScissorRects& scissor_rects)
-{
-    ITT_FUNCTION_TASK();
-
-    RenderStateBase::SetScissorRects(scissor_rects);
+    META_FUNCTION_TASK();
 }
 
 void RenderStateVK::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     RenderStateBase::SetName(name);
     
@@ -107,12 +128,12 @@ void RenderStateVK::SetName(const std::string& name)
 
 void RenderStateVK::ResetNativeState()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 IContextVK& RenderStateVK::GetContextVK() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextVK&>(GetRenderContext());
 }
 

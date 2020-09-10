@@ -39,13 +39,14 @@ public:
     ParallelRenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass);
 
     // ParallelRenderCommandList interface
-    void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;
+    void Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) override;
 
     // CommandList interface
     void Commit() override;
 
     // CommandListBase interface
-    void Execute(uint32_t frame_index) override;
+    void Execute(uint32_t frame_indexc, const CompletedCallback& completed_callback = {}) override;
+    void Complete(uint32_t frame_index) override;
 
     // Object interface
     void SetName(const std::string& name) override;

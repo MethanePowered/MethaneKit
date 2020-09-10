@@ -23,7 +23,7 @@ Tutorial demonstrating triangle rendering with Methane graphics API
 
 #pragma once
 
-#include <Methane/Graphics/Kit.h>
+#include <Methane/Kit.h>
 
 #include <string>
 #include <array>
@@ -35,14 +35,15 @@ namespace gfx = Methane::Graphics;
 
 struct HelloTriangleFrame final : gfx::AppFrame
 {
-    Ptr<gfx::RenderCommandList> sp_cmd_list;
+    Ptr<gfx::RenderCommandList> render_cmd_list_ptr;
+    Ptr<gfx::CommandListSet>    execute_cmd_list_set_ptr;
 
     using gfx::AppFrame::AppFrame;
 };
 
-using GraphicsApp = gfx::App<HelloTriangleFrame>;
+using UserInterfaceApp = UserInterface::App<HelloTriangleFrame>;
 
-class HelloTriangleApp final : public GraphicsApp
+class HelloTriangleApp final : public UserInterfaceApp
 {
 public:
     HelloTriangleApp();
@@ -50,15 +51,14 @@ public:
 
     // GraphicsApp overrides
     void Init() override;
-    bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
     bool Render() override;
 
-    // Context::Callback interface
-    void OnContextReleased() override;
+    // IContextCallback interface
+    void OnContextReleased(gfx::Context& context) override;
 
 private:
-    Ptr<gfx::RenderState>   m_sp_state;
-    Ptr<gfx::Buffer>        m_sp_vertex_buffer;
+    Ptr<gfx::RenderState> m_render_state_ptr;
+    Ptr<gfx::BufferSet>   m_vertex_buffer_set_ptr;
 };
 
 } // namespace Methane::Tutorials

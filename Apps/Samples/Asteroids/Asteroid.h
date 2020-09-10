@@ -24,7 +24,6 @@ Random generated asteroid model with mesh and texture ready for rendering.
 #pragma once
 
 #include <Methane/Graphics/RenderContext.h>
-#include <Methane/Graphics/MathTypes.h>
 #include <Methane/Graphics/MeshBuffers.hpp>
 #include <Methane/Graphics/Mesh/IcosahedronMesh.hpp>
 
@@ -53,7 +52,7 @@ public:
         gfx::Mesh::Position position;
         gfx::Mesh::Normal   normal;
 
-        inline static const gfx::Mesh::VertexLayout layout = {
+        inline static const gfx::Mesh::VertexLayout layout{
             gfx::Mesh::VertexField::Position,
             gfx::Mesh::VertexField::Normal,
         };

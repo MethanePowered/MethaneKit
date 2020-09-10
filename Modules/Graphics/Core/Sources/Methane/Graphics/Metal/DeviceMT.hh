@@ -54,7 +54,6 @@ public:
     
 private:
     void OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificationName device_notification);
-    void NotifyDevice(const id<MTLDevice>& mtl_device, Device::Notification device_notification);
     void AddDevice(const id<MTLDevice>& mtl_device);
     
     const Ptr<Device>& FindMetalDevice(const id<MTLDevice>& mtl_device) const;

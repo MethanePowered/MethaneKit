@@ -30,9 +30,9 @@ Planet rendering primitive
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/Program.h>
 #include <Methane/Graphics/Sampler.h>
-#include <Methane/Graphics/MathTypes.h>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Mesh.h>
+#include <Methane/Graphics/ImageLoader.h>
 
 #include <memory>
 
@@ -46,15 +46,15 @@ class Planet
 public:
     struct Settings
     {
-        const gfx::Camera& view_camera;
-        const gfx::Camera& light_camera;
-        std::string        texture_path;
-        gfx::Vector3f      position;
-        float              scale;
-        float              spin_velocity_rps = 0.3f; // (rps = radians per second)
-        bool               depth_reversed = false;
-        bool               mipmapped = false;
-        float              lod_bias = 0.f;
+        const gfx::Camera&              view_camera;
+        const gfx::Camera&              light_camera;
+        std::string                     texture_path;
+        gfx::Vector3f                   position;
+        float                           scale;
+        float                           spin_velocity_rps   = 0.3f; // (rps = radians per second)
+        bool                            depth_reversed      = false;
+        gfx::ImageLoader::Options::Mask image_options       = gfx::ImageLoader::Options::None;
+        float                           lod_bias            = 0.f;
     };
 
     struct SHADER_STRUCT_ALIGN Uniforms
@@ -67,10 +67,9 @@ public:
 
     Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings);
 
-    Ptr<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& sp_constants_buffer, const Ptr<gfx::Buffer>& sp_uniforms_buffer);
-    void Resize(const gfx::FrameSize& frame_size);
+    Ptr<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr, const Ptr<gfx::Buffer>& uniforms_buffer_ptr);
     bool Update(double elapsed_seconds, double delta_seconds);
-    void Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings);
+    void Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
 
 private:
     using TexturedMeshBuffers = gfx::TexturedMeshBuffers<Uniforms>;
@@ -81,7 +80,7 @@ private:
         gfx::Mesh::Normal   normal;
         gfx::Mesh::TexCoord texcoord;
 
-        inline static const gfx::Mesh::VertexLayout layout = {
+        inline static const gfx::Mesh::VertexLayout layout{
             gfx::Mesh::VertexField::Position,
             gfx::Mesh::VertexField::Normal,
             gfx::Mesh::VertexField::TexCoord,
@@ -90,11 +89,11 @@ private:
 
     Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings, gfx::BaseMesh<Vertex> mesh);
 
-    Settings                    m_settings;
-    gfx::RenderContext&         m_context;
-    TexturedMeshBuffers         m_mesh_buffers;
-    Ptr<gfx::Sampler>           m_sp_texture_sampler;
-    Ptr<gfx::RenderState>       m_sp_state;
+    Settings              m_settings;
+    gfx::RenderContext&   m_context;
+    TexturedMeshBuffers   m_mesh_buffers;
+    Ptr<gfx::Sampler>     m_texture_sampler_ptr;
+    Ptr<gfx::RenderState> m_render_state_ptr;
 };
 
 } // namespace Methane::Graphics

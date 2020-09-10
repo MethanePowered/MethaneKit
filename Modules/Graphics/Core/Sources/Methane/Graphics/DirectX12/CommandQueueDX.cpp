@@ -22,104 +22,204 @@ DirectX 12 implementation of the command queue interface.
 ******************************************************************************/
 
 #include "CommandQueueDX.h"
+#include "CommandListDX.h"
 #include "DeviceDX.h"
 #include "BlitCommandListDX.h"
 #include "RenderCommandListDX.h"
 #include "ParallelRenderCommandListDX.h"
+#include "QueryBufferDX.h"
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Graphics/Windows/Helpers.h>
+#include <Methane/Graphics/Windows/Primitives.h>
 
 #include <nowide/convert.hpp>
+#include <stdexcept>
 #include <cassert>
 
 namespace Methane::Graphics
 {
 
-Ptr<CommandQueue> CommandQueue::Create(Context& context)
+constexpr uint32_t g_max_timestamp_queries_count_per_frame = 1000;
+
+Ptr<CommandQueue> CommandQueue::Create(Context& context, CommandList::Type command_lists_type)
 {
-    ITT_FUNCTION_TASK();
-    return std::make_shared<CommandQueueDX>(dynamic_cast<ContextBase&>(context));
+    META_FUNCTION_TASK();
+    return std::make_shared<CommandQueueDX>(dynamic_cast<ContextBase&>(context), command_lists_type);
 }
 
-CommandQueueDX::CommandQueueDX(ContextBase& context)
-    : CommandQueueBase(context)
+static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandList::Type command_list_type)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    switch(command_list_type)
+    {
+    case CommandList::Type::Blit:
+        // TODO: must be return D3D12_COMMAND_LIST_TYPE_COPY;
+        return D3D12_COMMAND_LIST_TYPE_DIRECT;
 
-    const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
+    case CommandList::Type::Render:
+    case CommandList::Type::ParallelRender:
+        return D3D12_COMMAND_LIST_TYPE_DIRECT;
+
+    default:
+        assert(0);
+    }
+    return D3D12_COMMAND_LIST_TYPE_DIRECT;
+}
+
+static wrl::ComPtr<ID3D12CommandQueue> CreateNativeCommandQueue(const DeviceDX& device, D3D12_COMMAND_LIST_TYPE command_list_type)
+{
+    META_FUNCTION_TASK();
+    const wrl::ComPtr<ID3D12Device>& cp_device = device.GetNativeDevice();
     assert(!!cp_device);
 
-    D3D12_COMMAND_QUEUE_DESC queue_desc = {};
+    D3D12_COMMAND_QUEUE_DESC queue_desc{};
     queue_desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-    queue_desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+    queue_desc.Type = command_list_type;
 
-    ThrowIfFailed(cp_device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&m_cp_command_queue)));
+    wrl::ComPtr<ID3D12CommandQueue> cp_command_queue;
+    ThrowIfFailed(cp_device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&cp_command_queue)), cp_device.Get());
+    return cp_command_queue;
+}
+
+CommandQueueDX::CommandQueueDX(ContextBase& context, CommandList::Type command_lists_type)
+    : CommandQueueBase(context, command_lists_type)
+    , m_cp_command_queue(CreateNativeCommandQueue(GetContextDX().GetDeviceDX(), GetNativeCommandListType(command_lists_type)))
+    , m_execution_waiting_thread(&CommandQueueDX::WaitForExecution, this)
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+    , m_timestamp_query_buffer_ptr(TimestampQueryBuffer::Create(*this, g_max_timestamp_queries_count_per_frame))
+#endif
+{
+    META_FUNCTION_TASK();
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+    TimestampQueryBufferDX& timestamp_query_buffer_dx = static_cast<TimestampQueryBufferDX&>(*m_timestamp_query_buffer_ptr);
+    InitializeTracyGpuContext(
+        Tracy::GpuContext::Settings(
+            Tracy::GpuContext::Type::DirectX12,
+            timestamp_query_buffer_dx.GetGpuCalibrationTimestamp(),
+            Data::ConvertFrequencyToTickPeriod(timestamp_query_buffer_dx.GetGpuFrequency())
+        )
+    );
+#endif
+}
+
+CommandQueueDX::~CommandQueueDX()
+{
+    META_FUNCTION_TASK();
+    CompleteExecution();
+    m_execution_waiting = false;
+    m_execution_waiting_condition_var.notify_one();
+    m_execution_waiting_thread.join();
+}
+
+void CommandQueueDX::Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback)
+{
+    META_FUNCTION_TASK();
+    CommandQueueBase::Execute(command_lists, completed_callback);
+
+    if (!m_execution_waiting)
+    {
+        m_execution_waiting_thread.join();
+        if (m_execution_waiting_exception_ptr)
+        {
+            std::rethrow_exception(m_execution_waiting_exception_ptr);
+        }
+        else
+        {
+            throw std::logic_error("Command queue \"" + GetName() + "\" execution waiting thread has unexpectedly finished.");
+        }
+    }
+
+    CommandListSetDX& dx_command_lists = static_cast<CommandListSetDX&>(command_lists);
+    {
+        std::lock_guard<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
+        m_executing_command_lists.push(std::static_pointer_cast<CommandListSetDX>(dx_command_lists.GetPtr()));
+        m_execution_waiting_condition_var.notify_one();
+    }
 }
 
 void CommandQueueDX::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
-
+    META_FUNCTION_TASK();
     CommandQueueBase::SetName(name);
     m_cp_command_queue->SetName(nowide::widen(name).c_str());
 }
 
-void CommandQueueDX::Execute(const Refs<CommandList>& command_lists)
+void CommandQueueDX::CompleteExecution(const std::optional<Data::Index>& frame_index)
 {
-    ITT_FUNCTION_TASK();
-    assert(!command_lists.empty());
-    if (command_lists.empty())
-        return;
-
-    CommandQueueBase::Execute(command_lists);
-
-    D3D12CommandLists dx_command_lists = GetNativeCommandLists(command_lists);
-    m_cp_command_queue->ExecuteCommandLists(static_cast<UINT>(dx_command_lists.size()), dx_command_lists.data());
-}
-
-CommandQueueDX::D3D12CommandLists CommandQueueDX::GetNativeCommandLists(const Refs<CommandList>& command_list_refs)
-{
-    ITT_FUNCTION_TASK();
-    D3D12CommandLists dx_command_lists;
-    dx_command_lists.reserve(command_list_refs.size());
-    for (const Ref<CommandList>& command_list_ref : command_list_refs)
+    META_FUNCTION_TASK();
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
+    while (!m_executing_command_lists.empty() &&
+          (!frame_index.has_value() || m_executing_command_lists.front()->GetExecutingOnFrameIndex() == *frame_index))
     {
-        CommandListBase& command_list = dynamic_cast<CommandListBase&>(command_list_ref.get());
-        switch (command_list.GetType())
-        {
-        case CommandList::Type::Blit:
-        {
-            dx_command_lists.push_back(&static_cast<BlitCommandListDX&>(command_list).GetNativeCommandList());
-        } break;
-
-        case CommandList::Type::Render:
-        {
-            dx_command_lists.push_back(&static_cast<RenderCommandListDX&>(command_list).GetNativeCommandList());
-        } break;
-
-        case CommandList::Type::ParallelRender:
-        {
-            const D3D12CommandLists dx_parallel_command_lists = static_cast<ParallelRenderCommandListDX&>(command_list).GetNativeCommandLists();
-            dx_command_lists.insert(dx_command_lists.end(), dx_parallel_command_lists.begin(), dx_parallel_command_lists.end());
-        } break;
-        }
+        m_executing_command_lists.front()->Complete();
+        m_executing_command_lists.pop();
     }
-    return dx_command_lists;
+    m_execution_waiting_condition_var.notify_one();
 }
 
 IContextDX& CommandQueueDX::GetContextDX() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextDX&>(GetContext());
 }
 
-ID3D12CommandQueue& CommandQueueDX::GetNativeCommandQueue()
+ID3D12CommandQueue& CommandQueueDX::GetNativeCommandQueue() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!m_cp_command_queue);
     return *m_cp_command_queue.Get();
+}
+
+void CommandQueueDX::WaitForExecution() noexcept
+{
+    std::string command_queue_name;
+    try
+    {
+        do
+        {
+            std::unique_lock<LockableBase(std::mutex)> lock(m_execution_waiting_mutex);
+            m_execution_waiting_condition_var.wait(lock,
+                [this] { return !m_execution_waiting || !m_executing_command_lists.empty(); }
+            );
+
+            if (command_queue_name != GetName())
+            {
+                command_queue_name = GetName();
+                const std::string thread_name = command_queue_name + " Wait for Execution";
+                META_THREAD_NAME(thread_name.c_str());
+            }
+
+            while (!m_executing_command_lists.empty())
+            {
+                Ptr<CommandListSetDX> command_lists_ptr;
+                {
+                    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
+                    if (m_executing_command_lists.empty())
+                        break;
+
+                    command_lists_ptr = m_executing_command_lists.front();
+                }
+
+                assert(command_lists_ptr);
+                command_lists_ptr->GetExecutionCompletedFenceDX().WaitOnCpu();
+
+                std::unique_lock<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
+                command_lists_ptr->Complete();
+                if (!m_executing_command_lists.empty() &&
+                    m_executing_command_lists.front().get() == command_lists_ptr.get())
+                {
+                    m_executing_command_lists.pop();
+                }
+            }
+        }
+        while (m_execution_waiting);
+    }
+    catch (...)
+    {
+        m_execution_waiting_exception_ptr = std::current_exception();
+        m_execution_waiting = false;
+    }
 }
 
 } // namespace Methane::Graphics

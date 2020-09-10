@@ -32,56 +32,56 @@ Vulkan implementation of the render context interface.
 namespace Methane::Graphics
 {
 
-Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, Device& device, const RenderContext::Settings& settings)
+Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, Device& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
 {
-    ITT_FUNCTION_TASK();
-    return std::make_shared<RenderContextVK>(env, static_cast<DeviceBase&>(device), settings);
+    META_FUNCTION_TASK();
+    return std::make_shared<RenderContextVK>(env, static_cast<DeviceBase&>(device), parallel_executor, settings);
 }
 
-RenderContextVK::RenderContextVK(const Platform::AppEnvironment& env, DeviceBase& device, const RenderContext::Settings& settings)
-    : ContextVK<RenderContextBase>(device, settings)
+RenderContextVK::RenderContextVK(const Platform::AppEnvironment& /*env*/, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
+    : ContextVK<RenderContextBase>(device, parallel_executor, settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 RenderContextVK::~RenderContextVK()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void RenderContextVK::Release()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     ContextVK<RenderContextBase>::Release();
 }
 
-void RenderContextVK::Initialize(DeviceBase& device, bool deferred_heap_allocation)
+void RenderContextVK::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)
 {
-    ITT_FUNCTION_TASK();
-    ContextVK<RenderContextBase>::Initialize(device, deferred_heap_allocation);
+    META_FUNCTION_TASK();
+    ContextVK<RenderContextBase>::Initialize(device, deferred_heap_allocation, is_callback_emitted);
 }
 
 bool RenderContextVK::ReadyToRender() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return true;
 }
 
 void RenderContextVK::WaitForGpu(Context::WaitFor wait_for)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     ContextVK<RenderContextBase>::WaitForGpu(wait_for);
 }
 
 void RenderContextVK::Resize(const FrameSize& frame_size)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     ContextVK<RenderContextBase>::Resize(frame_size);
 }
 
 void RenderContextVK::Present()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     ContextVK<RenderContextBase>::Present();
     // ...
     ContextVK<RenderContextBase>::OnCpuPresentComplete();
@@ -89,25 +89,31 @@ void RenderContextVK::Present()
 
 bool RenderContextVK::SetVSyncEnabled(bool vsync_enabled)
 {
-    ITT_FUNCTION_TASK();
-    return false;
+    META_FUNCTION_TASK();
+    return RenderContextBase::SetVSyncEnabled(vsync_enabled);
 }
 
 bool RenderContextVK::SetFrameBuffersCount(uint32_t frame_buffers_count)
 {
-    ITT_FUNCTION_TASK();
-    return false;
+    META_FUNCTION_TASK();
+    return RenderContextBase::SetFrameBuffersCount(frame_buffers_count);
 }
 
 float RenderContextVK::GetContentScalingFactor() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return 1.f;
 }
-    
+
+uint32_t RenderContextVK::GetFontResolutionDpi() const
+{
+    META_FUNCTION_TASK();
+    return 96u;
+}
+
 CommandQueueVK& RenderContextVK::GetRenderCommandQueueVK()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<CommandQueueVK&>(ContextVK<RenderContextBase>::GetRenderCommandQueue());
 }
 

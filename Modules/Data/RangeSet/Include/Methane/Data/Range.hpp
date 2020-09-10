@@ -39,29 +39,30 @@ template<typename ScalarT>
 class Range
 {
 public:
-    Range(ScalarT start, ScalarT end) : m_start(start), m_end(end) { ITT_FUNCTION_TASK(); Validate(); }
+    Range(ScalarT start, ScalarT end) : m_start(start), m_end(end) { META_FUNCTION_TASK(); Validate(); }
     Range(std::initializer_list<ScalarT> init) : Range(*init.begin(), *(init.begin() + 1)) { }
     Range(const Range& other) : Range(other.m_start, other.m_end) { }
+    Range() noexcept: Range({}, {}) { }
 
-    Range<ScalarT>& operator=(const Range<ScalarT>& other)         { ITT_FUNCTION_TASK(); m_start = other.m_start; m_end = other.m_end; return *this; }
-    bool            operator==(const Range<ScalarT>& other) const  { ITT_FUNCTION_TASK(); return m_start == other.m_start && m_end == other.m_end; }
-    bool            operator!=(const Range<ScalarT>& other) const  { ITT_FUNCTION_TASK(); return !operator==(other); }
-    bool            operator< (const Range<ScalarT>& other) const  { ITT_FUNCTION_TASK(); return m_end  <= other.m_start; }
-    bool            operator> (const Range<ScalarT>& other) const  { ITT_FUNCTION_TASK(); return m_start > other.end; }
+    Range<ScalarT>& operator=(const Range<ScalarT>& other) noexcept        { META_FUNCTION_TASK(); m_start = other.m_start; m_end = other.m_end; return *this; }
+    bool            operator==(const Range<ScalarT>& other) const noexcept { META_FUNCTION_TASK(); return m_start == other.m_start && m_end == other.m_end; }
+    bool            operator!=(const Range<ScalarT>& other) const noexcept { META_FUNCTION_TASK(); return !operator==(other); }
+    bool            operator< (const Range<ScalarT>& other) const noexcept { META_FUNCTION_TASK(); return m_end  <= other.m_start; }
+    bool            operator> (const Range<ScalarT>& other) const noexcept { META_FUNCTION_TASK(); return m_start > other.end; }
 
-    ScalarT GetStart() const                            { return m_start; }
-    ScalarT GetEnd() const                              { return m_end; }
-    ScalarT GetLength() const                           { return m_end - m_start; }
-    bool    IsEmpty() const                             { return m_start == m_end; }
+    ScalarT GetStart() const noexcept                           { return m_start; }
+    ScalarT GetEnd() const noexcept                             { return m_end; }
+    ScalarT GetLength() const noexcept                          { return m_end - m_start; }
+    bool    IsEmpty() const noexcept                            { return m_start == m_end; }
 
-    bool    IsAdjacent(const Range& other) const        { ITT_FUNCTION_TASK(); return m_start == other.m_end   || other.m_start == m_end; }
-    bool    IsOverlapping(const Range& other) const     { ITT_FUNCTION_TASK(); return m_start <  other.m_end   && other.m_start <  m_end;  }
-    bool    IsMergeable(const Range& other) const       { ITT_FUNCTION_TASK(); return m_start <= other.m_end   && other.m_start <= m_end; }
-    bool    Contains(const Range& other) const          { ITT_FUNCTION_TASK(); return m_start <= other.m_start && other.m_end   <= m_end; }
+    bool    IsAdjacent(const Range& other) const noexcept       { META_FUNCTION_TASK(); return m_start == other.m_end   || other.m_start == m_end; }
+    bool    IsOverlapping(const Range& other) const noexcept    { META_FUNCTION_TASK(); return m_start <  other.m_end   && other.m_start <  m_end;  }
+    bool    IsMergeable(const Range& other) const noexcept      { META_FUNCTION_TASK(); return m_start <= other.m_end   && other.m_start <= m_end; }
+    bool    Contains(const Range& other) const noexcept         { META_FUNCTION_TASK(); return m_start <= other.m_start && other.m_end   <= m_end; }
 
     Range operator+(const Range& other) const // merge
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         if (!IsMergeable(other))
         {
             throw std::invalid_argument("Can not merge: ranges are not mergeable.");
@@ -71,7 +72,7 @@ public:
 
     Range operator%(const Range& other) const // intersect
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         if (!IsMergeable(other))
         {
             throw std::invalid_argument("Can not intersect: ranges are not overlapping or adjacent.");
@@ -81,7 +82,7 @@ public:
 
     Range operator-(const Range& other) const // subtract
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         if (!IsOverlapping(other))
         {
             throw std::invalid_argument("Can not subtract: ranges are not overlapping.");
@@ -93,9 +94,15 @@ public:
         return (m_start <= other.m_start) ? Range(m_start, other.m_start) : Range(other.m_end, m_end);
     }
 
-    explicit operator std::string() const
+    operator bool() const noexcept
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
+        return !IsEmpty();
+    }
+
+    explicit operator std::string() const noexcept
+    {
+        META_FUNCTION_TASK();
         std::stringstream ss;
         ss << "[" << m_start << ", " << m_end << ")";
         return ss.str();
@@ -104,11 +111,9 @@ public:
 protected:
     void Validate() const
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         if (m_start <= m_end)
-        {
             return;
-        }
         throw std::invalid_argument("Range start must be less of equal than end.");
     }
 

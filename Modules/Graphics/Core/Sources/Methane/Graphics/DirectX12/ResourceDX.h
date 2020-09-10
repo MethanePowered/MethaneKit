@@ -24,10 +24,12 @@ DirectX 12 implementation of the resource interface.
 #pragma once
 
 #include <Methane/Graphics/ResourceBase.h>
+#include <Methane/Data/Provider.h>
 
 #include <wrl.h>
 #include <d3d12.h>
-#include "Methane/Data/Types.h"
+
+#include <optional>
 
 namespace Methane::Graphics
 {
@@ -40,16 +42,17 @@ class DescriptorHeapDX;
 class ResourceDX : public ResourceBase
 {
 public:
-    class ReleasePoolDX final : public ReleasePool
+    class BarriersDX : public Barriers
     {
     public:
-        ReleasePoolDX() = default;
+        BarriersDX(const Set& barriers);
 
-        void AddResource(ResourceBase& resource) override;
-        void ReleaseResources() override;
+        bool Add(const Barrier::Id& id, const Barrier::StateChange& state_change) override;
+
+        const std::vector<D3D12_RESOURCE_BARRIER>& GetNativeResourceBarriers() const { return m_native_resource_barriers; }
 
     private:
-        std::vector<wrl::ComPtr<ID3D12Resource>> m_resources;
+        std::vector<D3D12_RESOURCE_BARRIER> m_native_resource_barriers;
     };
 
     class LocationDX : public Location
@@ -70,7 +73,8 @@ public:
     using LocationsDX = std::vector<LocationDX>;
 
     ResourceDX(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
-    ~ResourceDX() override;
+
+    void ForceReleaseResource() { m_cp_resource.Reset(); }
 
     // Object interface
     void SetName(const std::string& name) override;
@@ -85,10 +89,14 @@ public:
     D3D12_GPU_DESCRIPTOR_HANDLE         GetNativeGpuDescriptorHandle(const Descriptor& desc) const noexcept;
 
     static D3D12_RESOURCE_STATES        GetNativeResourceState(State resource_state) noexcept;
-    static D3D12_RESOURCE_BARRIER       GetNativeResourceBarrier(const Barrier& resource_barrier) noexcept;
+    static D3D12_RESOURCE_BARRIER       GetNativeResourceBarrier(const Barrier& resource_barrier) noexcept  { return GetNativeResourceBarrier(resource_barrier.id, resource_barrier.state_change); }
+    static D3D12_RESOURCE_BARRIER       GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change) noexcept;
 
 protected:
     IContextDX& GetContextDX() noexcept;
+
+    wrl::ComPtr<ID3D12Resource> CreateCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type,
+                                                        D3D12_RESOURCE_STATES resource_state, const D3D12_CLEAR_VALUE* p_clear_value = nullptr);
 
     void InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type,
                                      D3D12_RESOURCE_STATES resource_state, const D3D12_CLEAR_VALUE* p_clear_value = nullptr);

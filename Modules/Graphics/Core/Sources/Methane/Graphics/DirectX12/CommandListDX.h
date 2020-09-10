@@ -23,8 +23,14 @@ DirectX 12 command list accessor interface for template class CommandListDX<Comm
 
 #pragma once
 
+#include "FenceDX.h"
+
+#include <Methane/Graphics/CommandListBase.h>
+
 #include <wrl.h>
 #include <d3d12.h>
+
+#include <mutex>
 
 namespace Methane::Graphics
 {
@@ -35,11 +41,46 @@ class CommandQueueDX;
 
 struct ICommandListDX
 {
+    class DebugGroupDX : public CommandListBase::DebugGroupBase
+    {
+    public:
+        DebugGroupDX(std::string name);
+
+        const std::wstring& GetWideName() const noexcept { return m_wide_name; }
+
+    private:
+        const std::wstring m_wide_name;
+    };
+
     virtual CommandQueueDX&             GetCommandQueueDX() = 0;
     virtual ID3D12GraphicsCommandList&  GetNativeCommandList() const = 0;
     virtual ID3D12GraphicsCommandList4* GetNativeCommandList4() const = 0;
+    virtual void SetResourceBarriersDX(const ResourceBase::Barriers& resource_barriers) = 0;
 
     virtual ~ICommandListDX() = default;
+};
+
+class CommandListSetDX final : public CommandListSetBase
+{
+public:
+    CommandListSetDX(Refs<CommandList> command_list_refs);
+
+    // CommandListSetBase interface
+    void Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback) final;
+
+    void WaitUntilCompleted() noexcept;
+
+    using NativeCommandLists = std::vector<ID3D12CommandList*>;
+    const NativeCommandLists& GetNativeCommandLists() const noexcept { return m_native_command_lists; }
+
+    CommandQueueDX&       GetCommandQueueDX() noexcept;
+    const CommandQueueDX& GetCommandQueueDX() const noexcept;
+
+    FenceDX& GetExecutionCompletedFenceDX() noexcept { return m_execution_completed_fence; }
+
+private:
+    NativeCommandLists m_native_command_lists;
+    FenceDX            m_execution_completed_fence;
 };
 
 } // namespace Methane::Graphics

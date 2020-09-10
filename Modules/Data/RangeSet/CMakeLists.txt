@@ -6,6 +6,7 @@ get_module_dirs("Methane/Data")
 
 set(SOURCES
     ${INCLUDE_DIR}/Range.hpp
+    ${INCLUDE_DIR}/RangeUtils.hpp
     ${INCLUDE_DIR}/RangeSet.hpp
     ${SOURCES_DIR}/RangeSet.cpp
 )
@@ -24,6 +25,8 @@ target_include_directories(${TARGET}
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneInstrumentation
+    PRIVATE
+        MethaneBuildOptions
 )
 
 set_target_properties(${TARGET}

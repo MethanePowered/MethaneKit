@@ -38,17 +38,39 @@ public:
     BufferBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
     // Resource interface
-    Data::Size GetDataSize() const override                 { return m_settings.size; }
-    void SetData(const SubResources& sub_resources) override;
+    Data::Size GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override;
 
     // Buffer interface
-    Buffer::Type GetBufferType() const noexcept override    { return m_settings.type; }
+    const Settings& GetSettings() const noexcept override       { return m_settings; }
+    uint32_t GetFormattedItemsCount() const noexcept override;
 
-    Ptr<BufferBase> GetPtr()                                { return std::dynamic_pointer_cast<BufferBase>(shared_from_this()); }
-    std::string GetBufferTypeName() const noexcept          { return Buffer::GetBufferTypeName(m_settings.type); }
+    Ptr<BufferBase> GetBufferPtr()                              { return std::static_pointer_cast<BufferBase>(GetBasePtr()); }
+    std::string GetBufferTypeName() const noexcept              { return Buffer::GetBufferTypeName(m_settings.type); }
 
 private:
-    Settings m_settings;
+    Settings    m_settings;
+};
+
+class BufferSetBase
+    : public BufferSet
+    , public ObjectBase
+{
+public:
+    BufferSetBase(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
+
+    // Buffers interface
+    Buffer::Type        GetType() const noexcept override  { return m_buffers_type; }
+    Data::Size          GetCount() const noexcept override { return static_cast<Data::Size>(m_refs.size()); }
+    const Refs<Buffer>& GetRefs() const noexcept override  { return m_refs; }
+    Buffer&             operator[](Data::Index index) const override;
+
+    const RawPtrs<BufferBase>& GetRawPtrs() const noexcept { return m_raw_ptrs; }
+
+private:
+    const Buffer::Type  m_buffers_type;
+    Refs<Buffer>        m_refs;
+    Ptrs<Buffer>        m_ptrs;
+    RawPtrs<BufferBase> m_raw_ptrs;
 };
 
 } // namespace Methane::Graphics

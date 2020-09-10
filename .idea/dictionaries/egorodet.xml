@@ -37,6 +37,7 @@
       <w>phong</w>
       <w>printscreen</w>
       <w>processkey</w>
+      <w>ptrs</w>
       <w>rasterizer</w>
       <w>sampler</w>
       <w>scrollock</w>
@@ -58,6 +59,7 @@
       <w>uncreatable</w>
       <w>unorm</w>
       <w>unsync</w>
+      <w>updatable</w>
       <w>vsync</w>
       <w>windowssdk</w>
       <w>wireframe</w>

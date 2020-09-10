@@ -21,7 +21,7 @@ elseif(APPLE)
         ${SOURCES_PLATFORM_DIR}/AppViewMT.mm
     )
 
-    set(LIBRARIES
+    set(PLATFORM_LIBRARIES
         "-framework AppKit \
          -framework Metal \
          -framework QuartzCore"
@@ -57,8 +57,11 @@ add_library(${TARGET} STATIC
 )
 
 target_link_libraries(${TARGET}
-    ${LIBRARIES}
-    MethaneInstrumentation
+    PRIVATE
+        MethaneBuildOptions
+        MethaneInstrumentation
+        MethaneDataTypes
+        ${PLATFORM_LIBRARIES}
 )
 
 target_include_directories(${TARGET}
@@ -68,12 +71,17 @@ target_include_directories(${TARGET}
         Include
 )
 
+target_compile_definitions(${TARGET}
+    PRIVATE
+        $<$<BOOL:${METHANE_GPU_INSTRUMENTATION_ENABLED}>:METHANE_GPU_INSTRUMENTATION_ENABLED>
+)
+
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER Modules/Platform
-    PUBLIC_HEADER "${HEADERS}"
+        FOLDER Modules/Platform
+        PUBLIC_HEADER "${HEADERS}"
 )
 
 install(TARGETS ${TARGET}
@@ -84,3 +92,4 @@ install(TARGETS ${TARGET}
         DESTINATION Lib
         COMPONENT Development
 )
+

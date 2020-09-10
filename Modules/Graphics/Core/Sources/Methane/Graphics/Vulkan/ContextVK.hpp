@@ -42,22 +42,22 @@ template<class ContextBaseT, typename = std::enable_if_t<std::is_base_of_v<Conte
 class ContextVK : public ContextBaseT
 {
 public:
-    ContextVK(DeviceBase& device, const typename ContextBaseT::Settings& settings)
-        : ContextBaseT(device, settings)
+    ContextVK(DeviceBase& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
+        : ContextBaseT(device, parallel_executor, settings)
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
     }
 
     ~ContextVK() override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
     }
 
     // Context interface
 
     void WaitForGpu(Context::WaitFor wait_for) override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         ContextBase::WaitForGpu(wait_for);
         // ...
         ContextBase::OnGpuWaitComplete(wait_for);
@@ -65,15 +65,15 @@ public:
 
     // ContextBase interface
 
-    void Initialize(DeviceBase& device, bool deferred_heap_allocation) override
+    void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true) override
     {
-        ITT_FUNCTION_TASK();
-        ContextBase::Initialize(device, deferred_heap_allocation);
+        META_FUNCTION_TASK();
+        ContextBase::Initialize(device, deferred_heap_allocation, is_callback_emitted);
     }
 
     void Release() override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         ContextBase::Release();
     }
 
@@ -81,13 +81,13 @@ public:
 
     DeviceVK& GetDeviceVK() noexcept override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         return dynamic_cast<DeviceVK&>(ContextBase::GetDeviceBase());
     }
 
     CommandQueueVK& GetUploadCommandQueueVK() noexcept override
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         return dynamic_cast<CommandQueueVK&>(ContextBase::GetUploadCommandQueue());
     }
 };

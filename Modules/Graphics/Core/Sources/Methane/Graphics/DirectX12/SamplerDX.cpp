@@ -26,6 +26,7 @@ DirectX 12 implementation of the sampler interface.
 #include "TypesDX.h"
 
 #include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Color.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <cassert>
@@ -35,7 +36,7 @@ namespace Methane::Graphics
 
 static D3D12_FILTER ConvertFilterToDX(const SamplerBase::Filter& filter) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using FilterMinMag = SamplerBase::Filter::MinMag;
     using FilterMip = SamplerBase::Filter::Mip;
@@ -127,7 +128,7 @@ static D3D12_FILTER ConvertFilterToDX(const SamplerBase::Filter& filter) noexcep
 
 static D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDX(SamplerBase::Address::Mode address_mode) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using AddressMode = SamplerBase::Address::Mode;
     
@@ -147,7 +148,7 @@ static D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDX(SamplerBase::Address::M
 
 static void SetColor(const Color4f& in_color, FLOAT* p_out_color) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     for (int i = 0; i < in_color.array_size; ++i)
     {
@@ -157,7 +158,7 @@ static void SetColor(const Color4f& in_color, FLOAT* p_out_color) noexcept
 
 static void ConvertBorderColorToDXColor(SamplerBase::BorderColor border_color, FLOAT* p_out_color) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(!!p_out_color);
 
     using BorderColor = SamplerBase::BorderColor;
@@ -173,18 +174,18 @@ static void ConvertBorderColorToDXColor(SamplerBase::BorderColor border_color, F
 
 Ptr<Sampler> Sampler::Create(Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<SamplerDX>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
 SamplerDX::SamplerDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : SamplerBase(context, settings, descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     InitializeDefaultDescriptors();
 
-    D3D12_SAMPLER_DESC dx_sampler_desc = {};
+    D3D12_SAMPLER_DESC dx_sampler_desc{};
     dx_sampler_desc.Filter             = ConvertFilterToDX(settings.filter);
     dx_sampler_desc.AddressU           = ConvertAddressModeToDX(settings.address.r);
     dx_sampler_desc.AddressV           = ConvertAddressModeToDX(settings.address.s);
@@ -193,7 +194,7 @@ SamplerDX::SamplerDX(ContextBase& context, const Settings& settings, const Descr
     dx_sampler_desc.MaxLOD             = settings.lod.max;
     dx_sampler_desc.MipLODBias         = settings.lod.bias;
     dx_sampler_desc.MaxAnisotropy      = 0;
-    dx_sampler_desc.ComparisonFunc     = TypeConverterDX::CompareFunctionToDX(settings.compare_function);
+    dx_sampler_desc.ComparisonFunc     = TypeConverterDX::CompareFunctionToD3D(settings.compare_function);
     ConvertBorderColorToDXColor(settings.border_color, &dx_sampler_desc.BorderColor[0]);
 
     GetContextDX().GetDeviceDX().GetNativeDevice()->CreateSampler(&dx_sampler_desc, GetNativeCpuDescriptorHandle(Usage::ShaderRead));

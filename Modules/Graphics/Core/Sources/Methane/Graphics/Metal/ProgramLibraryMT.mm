@@ -41,7 +41,7 @@ ProgramLibraryMT::ProgramLibraryMT(DeviceMT& metal_device, const std::string& li
                     ? [metal_device.GetNativeDevice() newDefaultLibrary]
                     : [metal_device.GetNativeDevice() newLibraryWithFile:GetLibraryFullPath(library_name) error:&m_ns_error])
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!m_mtl_library)
     {
         const std::string error_msg = MacOS::ConvertFromNsType<NSString, std::string>([m_ns_error localizedDescription]);
@@ -51,7 +51,7 @@ ProgramLibraryMT::ProgramLibraryMT(DeviceMT& metal_device, const std::string& li
 
 ProgramLibraryMT::~ProgramLibraryMT()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     [m_mtl_library release];
 }
 

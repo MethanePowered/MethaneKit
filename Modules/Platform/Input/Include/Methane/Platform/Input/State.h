@@ -55,16 +55,16 @@ public:
     template<typename ControllerT, typename = std::enable_if_t<std::is_base_of_v<Controller, ControllerT>>>
     Refs<ControllerT> GetControllersOfType() const
     {
-        ITT_FUNCTION_TASK();
+        META_FUNCTION_TASK();
         Refs<ControllerT> controllers;
         const std::type_info& controller_type  = typeid(ControllerT);
-        for(const Ptr<Controller>& sp_controller : m_controllers)
+        for(const Ptr<Controller>& controller_ptr : m_controllers)
         {
-            if (!sp_controller)
+            if (!controller_ptr)
                 continue;
-            Controller& controller = *sp_controller;
+            Controller& controller = *controller_ptr;
             if (typeid(controller) == controller_type)
-                controllers.emplace_back(static_cast<ControllerT&>(*sp_controller));
+                controllers.emplace_back(static_cast<ControllerT&>(*controller_ptr));
         }
         return controllers;
     }

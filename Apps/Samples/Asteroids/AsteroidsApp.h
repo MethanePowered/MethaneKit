@@ -26,7 +26,7 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 #include "Planet.h"
 #include "AsteroidsArray.h"
 
-#include <Methane/Graphics/Kit.h>
+#include <Methane/Kit.h>
 
 namespace Methane::Samples
 {
@@ -36,21 +36,26 @@ namespace pal = Platform;
 
 struct AsteroidsFrame final : gfx::AppFrame
 {
-    Ptr<gfx::RenderPass>                sp_initial_screen_pass;
-    Ptr<gfx::RenderPass>                sp_final_screen_pass;
-    Ptr<gfx::ParallelRenderCommandList> sp_parallel_cmd_list;
-    Ptr<gfx::RenderCommandList>         sp_serial_cmd_list;
-    Ptr<gfx::RenderCommandList>         sp_final_cmd_list;
-    Ptr<gfx::Buffer>                    sp_scene_uniforms_buffer;
+    Ptr<gfx::RenderPass>                initial_screen_pass_ptr;
+    Ptr<gfx::RenderPass>                final_screen_pass_ptr;
+    Ptr<gfx::ParallelRenderCommandList> parallel_cmd_list_ptr;
+    Ptr<gfx::RenderCommandList>         serial_cmd_list_ptr;
+    Ptr<gfx::RenderCommandList>         final_cmd_list_ptr;
+    Ptr<gfx::CommandListSet>            execute_cmd_list_set_ptr;
+    Ptr<gfx::Buffer>                    scene_uniforms_buffer_ptr;
     gfx::MeshBufferBindings             skybox;
     gfx::MeshBufferBindings             planet;
     gfx::MeshBufferBindings             asteroids;
 
     using gfx::AppFrame::AppFrame;
+
+    // AppFrame overrides
+    void ReleaseScreenPassAttachmentTextures() override;
 };
 
-using GraphicsApp = gfx::App<AsteroidsFrame>;
-class AsteroidsApp final : public GraphicsApp
+using UserInterfaceApp = UserInterface::App<AsteroidsFrame>;
+
+class AsteroidsApp final : public UserInterfaceApp
 {
 public:
     AsteroidsApp();
@@ -62,17 +67,20 @@ public:
     bool Update() override;
     bool Render() override;
 
-    // Context::Callback overrides
-    void OnContextReleased() override;
+    // UserInterface::App overrides
+    std::string GetParametersString() override;
 
     uint32_t GetAsteroidsComplexity() const { return m_asteroids_complexity; }
     void     SetAsteroidsComplexity(uint32_t asteroids_complexity);
-    
+
     bool     IsParallelRenderingEnabled() const { return m_is_parallel_rendering_enabled; }
     void     SetParallelRenderingEnabled(bool is_parallel_rendering_enabled);
 
     AsteroidsArray& GetAsteroidsArray() const;
-    std::string     GetParametersString() const;
+
+protected:
+    // IContextCallback overrides
+    void OnContextReleased(gfx::Context& context) override;
 
 private:
     struct SHADER_STRUCT_ALIGN Constants
@@ -89,6 +97,10 @@ private:
         SHADER_FIELD_ALIGN gfx::Vector3f  light_position;
     };
 
+    bool Animate(double elapsed_seconds, double delta_seconds);
+
+    Ptr<gfx::CommandListSet> CreateExecuteCommandListSet(AsteroidsFrame& frame);
+
     gfx::ActionCamera                 m_view_camera;
     gfx::ActionCamera                 m_light_camera;
     const float                       m_scene_scale;
@@ -96,13 +108,16 @@ private:
     AsteroidsArray::Settings          m_asteroids_array_settings;
     uint32_t                          m_asteroids_complexity          = 0u;
     bool                              m_is_parallel_rendering_enabled = true;
-    SceneUniforms                     m_scene_uniforms = { };
+    SceneUniforms                     m_scene_uniforms{ };
+    gfx::Resource::SubResources       m_scene_uniforms_subresources{
+        { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms) }
+    };
     
-    Ptr<gfx::Buffer>                  m_sp_const_buffer;
-    Ptr<gfx::SkyBox>                  m_sp_sky_box;
-    Ptr<Planet>                       m_sp_planet;
-    Ptr<AsteroidsArray>               m_sp_asteroids_array;
-    Ptr<AsteroidsArray::ContentState> m_sp_asteroids_array_state;
+    Ptr<gfx::Buffer>                  m_const_buffer_ptr;
+    Ptr<gfx::SkyBox>                  m_sky_box_ptr;
+    Ptr<Planet>                       m_planet_ptr;
+    Ptr<AsteroidsArray>               m_asteroids_array_ptr;
+    Ptr<AsteroidsArray::ContentState> m_asteroids_array_state_ptr;
 };
 
 } // namespace Methane::Samples

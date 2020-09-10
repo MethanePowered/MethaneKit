@@ -24,6 +24,7 @@ Base implementation of the program interface.
 #pragma once
 
 #include <Methane/Graphics/Program.h>
+#include <Methane/Instrumentation.h>
 
 #include "ShaderBase.h"
 #include "DescriptorHeap.h"
@@ -42,7 +43,6 @@ class CommandListBase;
 class ProgramBase
     : public Program
     , public ObjectBase
-    , public std::enable_shared_from_this<ProgramBase>
 {
     friend class ShaderBase;
     friend class ProgramBindingsBase;
@@ -59,7 +59,7 @@ public:
 
     ContextBase&         GetContext()       { return m_context; }
     const ContextBase&   GetContext() const { return m_context; }
-    Ptr<ProgramBase>     GetPtr()           { return shared_from_this(); }
+    Ptr<ProgramBase>     GetProgramPtr()    { return std::static_pointer_cast<ProgramBase>(GetBasePtr()); }
 
 protected:
     void InitArgumentBindings(const ArgumentDescriptions& argument_descriptions);
@@ -87,7 +87,7 @@ private:
     const Shader::Types                 m_shader_types;
     ProgramBindings::ArgumentBindings   m_binding_by_argument;
     DescriptorRangeByHeapType           m_constant_descriptor_range_by_heap_type;
-    std::mutex                          m_constant_descriptor_ranges_reservation_mutex;
+    TracyLockable(std::mutex,           m_constant_descriptor_ranges_reservation_mutex);
 };
 
 } // namespace Methane::Graphics

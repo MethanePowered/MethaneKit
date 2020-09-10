@@ -29,7 +29,7 @@ DirectX 12 implementation of the program interface.
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/Graphics/Windows/Helpers.h>
+#include <Methane/Graphics/Windows/Primitives.h>
 
 #include <d3dx12.h>
 #include <D3Dcompiler.h>
@@ -43,7 +43,7 @@ namespace Methane::Graphics
 
 static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_SHADER_INPUT_TYPE input_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (input_type)
     {
@@ -75,7 +75,7 @@ static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_S
 
 static DescriptorHeap::Type GetDescriptorHeapTypeByRangeType(D3D12_DESCRIPTOR_RANGE_TYPE range_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (range_type == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
         return DescriptorHeap::Type::Samplers;
     else
@@ -84,7 +84,7 @@ static DescriptorHeap::Type GetDescriptorHeapTypeByRangeType(D3D12_DESCRIPTOR_RA
 
 static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_type) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (shader_type)
     {
     case Shader::Type::All:    return D3D12_SHADER_VISIBILITY_ALL;
@@ -97,7 +97,7 @@ static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_typ
 
 Ptr<Program> Program::Create(Context& context, const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<ProgramDX>(dynamic_cast<ContextBase&>(context), settings);
 }
 
@@ -105,7 +105,7 @@ ProgramDX::ProgramDX(ContextBase& context, const Settings& settings)
     : ProgramBase(context, settings)
     , m_dx_input_layout(GetVertexShaderDX().GetNativeProgramInputLayout(*this))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     InitArgumentBindings(settings.argument_descriptions);
     InitRootSignature();
@@ -113,7 +113,7 @@ ProgramDX::ProgramDX(ContextBase& context, const Settings& settings)
 
 void ProgramDX::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     ObjectBase::SetName(name);
 
@@ -123,7 +123,7 @@ void ProgramDX::SetName(const std::string& name)
 
 void ProgramDX::InitRootSignature()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     struct DescriptorOffsets
     {
@@ -157,9 +157,11 @@ void ProgramDX::InitRootSignature()
         case ArgumentBindingDX::Type::DescriptorTable:
         {
             const D3D12_DESCRIPTOR_RANGE_TYPE  range_type  = GetDescriptorRangeTypeByShaderInputType(bind_settings.input_type);
-            const D3D12_DESCRIPTOR_RANGE_FLAGS range_flags = (bind_settings.input_type == D3D_SIT_CBUFFER)
-                                                           ? D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC
-                                                           : D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
+            const D3D12_DESCRIPTOR_RANGE_FLAGS range_flags = (range_type == D3D12_DESCRIPTOR_RANGE_TYPE::D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
+                                                           ? D3D12_DESCRIPTOR_RANGE_FLAG_NONE
+                                                           : (bind_settings.argument.IsConstant()
+                                                               ? D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC
+                                                               : D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
             
             descriptor_ranges.emplace_back(range_type, bind_settings.resource_count, bind_settings.point, bind_settings.space, range_flags);
             root_parameters.back().InitAsDescriptorTable(1, &descriptor_ranges.back(), shader_visibility);
@@ -187,9 +189,11 @@ void ProgramDX::InitRootSignature()
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC root_signature_desc;
     root_signature_desc.Init_1_1(static_cast<UINT>(root_parameters.size()), root_parameters.data(), 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
-    D3D12_FEATURE_DATA_ROOT_SIGNATURE feature_data = {};
+    D3D12_FEATURE_DATA_ROOT_SIGNATURE feature_data{};
     feature_data.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
-    if (FAILED(GetContextDX().GetDeviceDX().GetNativeDevice()->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &feature_data, sizeof(feature_data))))
+
+    const wrl::ComPtr<ID3D12Device>& cp_native_device = GetContextDX().GetDeviceDX().GetNativeDevice();
+    if (FAILED(cp_native_device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &feature_data, sizeof(feature_data))))
     {
         feature_data.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
     }
@@ -197,36 +201,36 @@ void ProgramDX::InitRootSignature()
     wrl::ComPtr<ID3DBlob> root_signature_blob;
     wrl::ComPtr<ID3DBlob> error_blob;
     ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&root_signature_desc, feature_data.HighestVersion, &root_signature_blob, &error_blob), error_blob);
-    ThrowIfFailed(GetContextDX().GetDeviceDX().GetNativeDevice()->CreateRootSignature(0, root_signature_blob->GetBufferPointer(), root_signature_blob->GetBufferSize(), IID_PPV_ARGS(&m_cp_root_signature)));
+    ThrowIfFailed(cp_native_device->CreateRootSignature(0, root_signature_blob->GetBufferPointer(), root_signature_blob->GetBufferSize(), IID_PPV_ARGS(&m_cp_root_signature)), cp_native_device.Get());
 }
 
 IContextDX& ProgramDX::GetContextDX() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextDX&>(GetContext());
 }
 
 const IContextDX& ProgramDX::GetContextDX() const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<const IContextDX&>(GetContext());
 }
 
 ShaderDX& ProgramDX::GetVertexShaderDX() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<ShaderDX&>(GetShaderRef(Shader::Type::Vertex));
 }
 
 ShaderDX& ProgramDX::GetPixelShaderDX() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<ShaderDX&>(GetShaderRef(Shader::Type::Pixel));
 }
 
 D3D12_INPUT_LAYOUT_DESC ProgramDX::GetNativeInputLayoutDesc() const noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return {
         m_dx_input_layout.data(),
         static_cast<UINT>(m_dx_input_layout.size())

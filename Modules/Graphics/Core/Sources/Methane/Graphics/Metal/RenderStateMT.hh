@@ -34,6 +34,24 @@ namespace Methane::Graphics
 
 class RenderContextMT;
 
+class ViewStateMT final : public ViewStateBase
+{
+public:
+    ViewStateMT(const Settings& settings);
+
+    // ViewState overrides
+    bool Reset(const Settings& settings) override;
+    bool SetViewports(const Viewports& viewports) override;
+    bool SetScissorRects(const ScissorRects& scissor_rects) override;
+
+    // ViewStateBase interface
+    void Apply(RenderCommandListBase& command_list) override;
+
+private:
+    std::vector<MTLViewport>    m_mtl_viewports;
+    std::vector<MTLScissorRect> m_mtl_scissor_rects;
+};
+
 class RenderStateMT final : public RenderStateBase
 {
 public:
@@ -42,8 +60,6 @@ public:
     
     // RenderState interface
     void Reset(const Settings& settings) override;
-    void SetViewports(const Viewports& viewports) override;
-    void SetScissorRects(const ScissorRects& scissor_rects) override;
 
     // RenderStateBase interface
     void Apply(RenderCommandListBase& command_list, Group::Mask state_groups) override;
@@ -69,8 +85,6 @@ private:
     MTLDepthStencilDescriptor*   m_mtl_depth_stencil_state_desc = nil;
     id<MTLRenderPipelineState>   m_mtl_pipeline_state = nil;
     id<MTLDepthStencilState>     m_mtl_depth_state = nil;
-    std::vector<MTLViewport>     m_mtl_viewports;
-    std::vector<MTLScissorRect>  m_mtl_scissor_rects;
     MTLTriangleFillMode          m_mtl_fill_mode = MTLTriangleFillModeFill;
     MTLCullMode                  m_mtl_cull_mode = MTLCullModeBack;
     MTLWinding                   m_mtl_front_face_winding = MTLWindingClockwise;

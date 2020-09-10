@@ -26,43 +26,50 @@ DirectX 12 fence wrapper.
 
 #include <Methane/Instrumentation.h>
 
-#ifdef COMMAND_EXECUTION_LOGGING
-#include <Methane/Platform/Utils.h>
-#endif
 namespace Methane::Graphics
 {
 
 FenceBase::FenceBase(CommandQueueBase& command_queue)
     : m_command_queue(command_queue)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void FenceBase::Signal()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    META_LOG("GPU SIGNAL fence \"" + GetName() + "\" with value " + std::to_string(m_value + 1));
 
     m_value++;
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("SIGNAL fence \"" + GetName() + "\" with value " + std::to_string(m_value));
-#endif
 }
 
-void FenceBase::Wait()
+void FenceBase::WaitOnCpu()
 {
-    ITT_FUNCTION_TASK();
-
-#ifdef COMMAND_EXECUTION_LOGGING
-    Platform::PrintToDebugOutput("WAIT fence \"" + GetName() + "\" with value " + std::to_string(m_value));
-#endif
+    META_FUNCTION_TASK();
+    META_LOG("CPU WAIT fence \"" + GetName() + "\" with value " + std::to_string(m_value));
 }
 
-void FenceBase::Flush()
+void FenceBase::WaitOnGpu(CommandQueue& wait_on_command_queue)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    META_LOG("GPU WAIT fence \"" + GetName() + "\" on command queue \"" + wait_on_command_queue.GetName() + "\" with value " + std::to_string(m_value));
+
+    if (std::addressof(wait_on_command_queue) == std::addressof(m_command_queue))
+        throw std::invalid_argument("Fence can not be waited on GPU at the same command queue where it was signalled.");
+}
+
+void FenceBase::FlushOnCpu()
+{
+    META_FUNCTION_TASK();
     Signal();
-    Wait();
+    WaitOnCpu();
+}
+
+void FenceBase::FlushOnGpu(CommandQueue& wait_on_command_queue)
+{
+    META_FUNCTION_TASK();
+    Signal();
+    WaitOnGpu(wait_on_command_queue);
 }
 
 } // namespace Methane::Graphics

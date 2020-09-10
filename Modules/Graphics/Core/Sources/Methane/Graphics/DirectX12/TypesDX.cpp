@@ -30,91 +30,9 @@ Methane graphics types converters to DirectX 12 native types.
 namespace Methane::Graphics
 {
 
-CD3DX12_VIEWPORT TypeConverterDX::ViewportToD3D(const Viewport& viewport) noexcept
+D3D12_COMPARISON_FUNC TypeConverterDX::CompareFunctionToD3D(Compare compare_func) noexcept
 {
-    ITT_FUNCTION_TASK();
-    return CD3DX12_VIEWPORT(static_cast<float>(viewport.origin.GetX()), static_cast<float>(viewport.origin.GetY()),
-                            static_cast<float>(viewport.size.width), static_cast<float>(viewport.size.height),
-                            static_cast<float>(viewport.origin.GetZ()), static_cast<float>(viewport.origin.GetZ() + viewport.size.depth));
-}
-
-CD3DX12_RECT TypeConverterDX::ScissorRectToD3D(const ScissorRect& scissor_rect) noexcept
-{
-    ITT_FUNCTION_TASK();
-    return CD3DX12_RECT(static_cast<LONG>(scissor_rect.origin.GetX()), static_cast<LONG>(scissor_rect.origin.GetY()),
-                        static_cast<LONG>(scissor_rect.origin.GetX() + scissor_rect.size.width),
-                        static_cast<LONG>(scissor_rect.origin.GetY() + scissor_rect.size.height));
-}
-
-std::vector<CD3DX12_VIEWPORT> TypeConverterDX::ViewportsToD3D(const Viewports& viewports) noexcept
-{
-    ITT_FUNCTION_TASK();
-
-    std::vector<CD3DX12_VIEWPORT> d3d_viewports;
-    for (const Viewport& viewport : viewports)
-    {
-        d3d_viewports.push_back(ViewportToD3D(viewport));
-    }
-    return d3d_viewports;
-}
-
-std::vector<CD3DX12_RECT> TypeConverterDX::ScissorRectsToD3D(const ScissorRects& scissor_rects) noexcept
-{
-    ITT_FUNCTION_TASK();
-
-    std::vector<CD3DX12_RECT> d3d_scissor_rects;
-    for (const ScissorRect& scissor_rect : scissor_rects)
-    {
-        d3d_scissor_rects.push_back(ScissorRectToD3D(scissor_rect));
-    }
-    return d3d_scissor_rects;
-}
-
-DXGI_FORMAT TypeConverterDX::DataFormatToDXGI(const PixelFormat& data_format) noexcept
-{
-    ITT_FUNCTION_TASK();
-
-    switch (data_format)
-    {
-    case PixelFormat::Unknown:       return DXGI_FORMAT_UNKNOWN;
-    case PixelFormat::RGBA8:         return DXGI_FORMAT_R8G8B8A8_TYPELESS;
-    case PixelFormat::RGBA8Unorm:    return DXGI_FORMAT_R8G8B8A8_UNORM;
-    case PixelFormat::BGRA8Unorm:    return DXGI_FORMAT_B8G8R8A8_UNORM;
-    case PixelFormat::Depth32Float:  return DXGI_FORMAT_D32_FLOAT;
-    case PixelFormat::R32Float:      return DXGI_FORMAT_R32_FLOAT;
-    case PixelFormat::R32Uint:       return DXGI_FORMAT_R32_UINT;
-    case PixelFormat::R32Sint:       return DXGI_FORMAT_R32_SINT;
-    case PixelFormat::R16Uint:       return DXGI_FORMAT_R16_UINT;
-    case PixelFormat::R16Sint:       return DXGI_FORMAT_R16_SINT;
-    default:                         assert(0);
-    }
-    return DXGI_FORMAT_UNKNOWN;
-}
-
-DXGI_FORMAT TypeConverterDX::DataFormatToDXGI(const PixelFormat& data_format, ResourceFormatType format_type) noexcept
-{
-    ITT_FUNCTION_TASK();
-
-    switch (data_format)
-    {
-    case PixelFormat::Depth32Float:
-    {
-        switch (format_type)
-        {
-        case ResourceFormatType::ResourceBase:  return DXGI_FORMAT_R32_TYPELESS;
-        case ResourceFormatType::ViewRead:  return DXGI_FORMAT_R32_FLOAT;
-        case ResourceFormatType::ViewWrite: return DXGI_FORMAT_D32_FLOAT;
-        }
-    } break;
-
-    default: assert(0);
-    }
-    return DataFormatToDXGI(data_format);
-}
-
-D3D12_COMPARISON_FUNC TypeConverterDX::CompareFunctionToDX(Compare compare_func) noexcept
-{
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch (compare_func)
     {
@@ -131,9 +49,62 @@ D3D12_COMPARISON_FUNC TypeConverterDX::CompareFunctionToDX(Compare compare_func)
     return D3D12_COMPARISON_FUNC_NEVER;
 }
 
+DXGI_FORMAT TypeConverterDX::PixelFormatToDxgi(const PixelFormat& pixel_format) noexcept
+{
+    META_FUNCTION_TASK();
+
+    switch (pixel_format)
+    {
+    case PixelFormat::Unknown:          return DXGI_FORMAT_UNKNOWN;
+    case PixelFormat::RGBA8:            return DXGI_FORMAT_R8G8B8A8_TYPELESS;
+    case PixelFormat::RGBA8Unorm:       return DXGI_FORMAT_R8G8B8A8_UNORM;
+    case PixelFormat::RGBA8Unorm_sRGB:  return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    case PixelFormat::BGRA8Unorm:       return DXGI_FORMAT_B8G8R8A8_UNORM;
+    case PixelFormat::BGRA8Unorm_sRGB:  return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+    case PixelFormat::Depth32Float:     return DXGI_FORMAT_D32_FLOAT;
+    case PixelFormat::R32Float:         return DXGI_FORMAT_R32_FLOAT;
+    case PixelFormat::R32Uint:          return DXGI_FORMAT_R32_UINT;
+    case PixelFormat::R32Sint:          return DXGI_FORMAT_R32_SINT;
+    case PixelFormat::R16Float:         return DXGI_FORMAT_R16_FLOAT;
+    case PixelFormat::R16Uint:          return DXGI_FORMAT_R16_UINT;
+    case PixelFormat::R16Sint:          return DXGI_FORMAT_R16_SINT;
+    case PixelFormat::R16Unorm:         return DXGI_FORMAT_R16_UNORM;
+    case PixelFormat::R16Snorm:         return DXGI_FORMAT_R16_SNORM;
+    case PixelFormat::R8Uint:           return DXGI_FORMAT_R8_UINT;
+    case PixelFormat::R8Sint:           return DXGI_FORMAT_R8_SINT;
+    case PixelFormat::R8Unorm:          return DXGI_FORMAT_R8_UNORM;
+    case PixelFormat::R8Snorm:          return DXGI_FORMAT_R8_SNORM;
+    case PixelFormat::A8Unorm:          return DXGI_FORMAT_A8_UNORM;
+    default:                            assert(0);
+    }
+    return DXGI_FORMAT_UNKNOWN;
+}
+
+DXGI_FORMAT TypeConverterDX::PixelFormatToDxgi(const PixelFormat& pixel_format, ResourceFormatType format_type) noexcept
+{
+    META_FUNCTION_TASK();
+
+    switch (pixel_format)
+    {
+    case PixelFormat::Depth32Float:
+    {
+        switch (format_type)
+        {
+        case ResourceFormatType::ResourceBase:  return DXGI_FORMAT_R32_TYPELESS;
+        case ResourceFormatType::ViewRead:      return DXGI_FORMAT_R32_FLOAT;
+        case ResourceFormatType::ViewWrite:     return DXGI_FORMAT_D32_FLOAT;
+        }
+    } break;
+
+    default: assert(0);
+    }
+
+    return PixelFormatToDxgi(pixel_format);
+}
+
 DXGI_FORMAT TypeConverterDX::ParameterDescToDxgiFormatAndSize(const D3D12_SIGNATURE_PARAMETER_DESC& param_desc, uint32_t& out_element_byte_size) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const uint32_t component_32bit_byte_size = 4;
     if (param_desc.Mask == 1)

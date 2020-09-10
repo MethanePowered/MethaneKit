@@ -36,7 +36,7 @@ class RenderContextMT;
 class CommandQueueMT final : public CommandQueueBase
 {
 public:
-    CommandQueueMT(ContextBase& context);
+    CommandQueueMT(ContextBase& context, CommandList::Type command_lists_type);
     ~CommandQueueMT() override;
 
     // Object interface

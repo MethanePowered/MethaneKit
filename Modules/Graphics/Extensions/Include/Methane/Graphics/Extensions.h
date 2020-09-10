@@ -27,4 +27,4 @@ Methane graphics extensions: all headers under one umbrella.
 #include "MeshBuffers.hpp"
 #include "SkyBox.h"
 #include "ScreenQuad.h"
-#include "LogoBadge.h"
+#include "ScreenQuad.h"

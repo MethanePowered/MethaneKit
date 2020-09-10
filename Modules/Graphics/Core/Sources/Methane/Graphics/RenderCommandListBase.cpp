@@ -28,6 +28,7 @@ Base implementation of the render command list interface.
 #include "RenderStateBase.h"
 #include "BufferBase.h"
 #include "ProgramBase.h"
+#include "TextureBase.h"
 
 #include <Methane/Instrumentation.h>
 
@@ -39,179 +40,219 @@ namespace Methane::Graphics
 RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& pass)
     : CommandListBase(command_queue, Type::Render)
     , m_is_parallel(false)
-    , m_sp_pass(pass.GetPtr())
+    , m_render_pass_ptr(pass.GetRenderPassPtr())
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 RenderCommandListBase::RenderCommandListBase(ParallelRenderCommandListBase& parallel_render_command_list)
     : CommandListBase(static_cast<CommandQueueBase&>(parallel_render_command_list.GetCommandQueue()), Type::Render)
     , m_is_parallel(true)
-    , m_sp_pass(parallel_render_command_list.GetPass().GetPtr())
-    , m_wp_parallel_render_command_list(std::static_pointer_cast<ParallelRenderCommandListBase>(parallel_render_command_list.GetPtr()))
+    , m_render_pass_ptr(parallel_render_command_list.GetPass().GetRenderPassPtr())
+    , m_parallel_render_command_list_wptr(parallel_render_command_list.GetParallelRenderCommandListPtr())
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
-void RenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
+void RenderCommandListBase::Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    CommandListBase::Reset(debug_group);
+    CommandListBase::Reset(p_debug_group);
 
-    // ResetCommandState() must be called from the top-most overridden Reset method
+    m_drawing_state.render_pass_attachments_ptr = m_render_pass_ptr->GetNonFrameBufferAttachmentTextures();
 
-    if (sp_render_state)
+    if (render_state_ptr)
     {
-        SetState(*sp_render_state);
+        SetRenderState(*render_state_ptr);
     }
 }
 
-void RenderCommandListBase::SetState(RenderState& render_state, RenderState::Group::Mask state_groups)
+void RenderCommandListBase::SetRenderState(RenderState& render_state, RenderState::Group::Mask state_groups)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    DrawingState& drawing_state = GetDrawingState();
-    const RenderState::Group::Mask changed_states = (drawing_state.p_render_state
+    VerifyEncodingState();
+
+    const bool render_state_changed = m_drawing_state.render_state_ptr.get() != std::addressof(render_state);
+    const RenderState::Group::Mask changed_states = (m_drawing_state.render_state_ptr && render_state_changed
                                                   ? RenderState::Settings::Compare(render_state.GetSettings(),
-                                                      drawing_state.p_render_state->GetSettings(),
-                                                      drawing_state.render_state_groups)
-                                                  : RenderState::Group::All)
-                                                  | ~drawing_state.render_state_groups;
+                                                                                   m_drawing_state.render_state_ptr->GetSettings(),
+                                                                                   m_drawing_state.render_state_groups)
+                                                  : (m_drawing_state.render_state_ptr ? RenderState::Group::None
+                                                                                     : RenderState::Group::All))
+                                                  | ~m_drawing_state.render_state_groups;
 
     RenderStateBase& render_state_base = static_cast<RenderStateBase&>(render_state);
     render_state_base.Apply(*this, changed_states & state_groups);
 
-    drawing_state.p_render_state = &render_state_base;
-    drawing_state.render_state_groups |= state_groups;
+    Ptr<ObjectBase> render_state_object_ptr = render_state_base.GetBasePtr();
+    m_drawing_state.render_state_ptr = std::static_pointer_cast<RenderStateBase>(render_state_object_ptr);
+    m_drawing_state.render_state_groups |= state_groups;
+
+    if (render_state_changed)
+    {
+        RetainResource(std::move(render_state_object_ptr));
+    }
 }
 
-void RenderCommandListBase::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
+void RenderCommandListBase::SetViewState(ViewState& view_state)
 {
-    ITT_FUNCTION_TASK();
-    if (vertex_buffers.empty())
-    {
-        throw std::invalid_argument("Can not set empty vertex buffers.");
-    }
+    META_FUNCTION_TASK();
+    VerifyEncodingState();
 
     DrawingState& drawing_state = GetDrawingState();
-    drawing_state.flags.vertex_buffers_changed = drawing_state.vertex_buffers.size() != vertex_buffers.size();
-    drawing_state.vertex_buffers.resize(vertex_buffers.size());
+    ViewStateBase* p_prev_view_state = drawing_state.p_view_state;
+    drawing_state.p_view_state = static_cast<ViewStateBase*>(&view_state);
 
-    uint32_t vertex_buffer_index = 0;
-    for (const Ref<Buffer>& vertex_buffer_ref : vertex_buffers)
+    if (p_prev_view_state && p_prev_view_state->GetSettings() == view_state.GetSettings())
+        return;
+
+    drawing_state.p_view_state->Apply(*this);
+}
+
+void RenderCommandListBase::SetVertexBuffers(BufferSet& vertex_buffers)
+{
+    META_FUNCTION_TASK();
+    VerifyEncodingState();
+
+    if (vertex_buffers.GetType() != Buffer::Type::Vertex)
     {
-        BufferBase& vertex_buffer = static_cast<BufferBase&>(vertex_buffer_ref.get());
-
-        if (vertex_buffer.GetBufferType() != Buffer::Type::Vertex)
-        {
-            throw std::invalid_argument("Can not set vertex buffer \"" + vertex_buffer.GetName() +
-                                        "\" of wrong type \"" + static_cast<const BufferBase&>(vertex_buffer).GetBufferTypeName() +
-                                        "\". Buffer of \"Vertex\" type is expected.");
-        }
-        if (!vertex_buffer.GetDataSize())
-        {
-            throw std::invalid_argument("Can not set empty vertex buffer.");
-        }
-
-        if (!drawing_state.flags.vertex_buffers_changed &&
-            (vertex_buffer_index >= drawing_state.vertex_buffers.size() ||
-             !drawing_state.vertex_buffers[vertex_buffer_index] ||
-             drawing_state.vertex_buffers[vertex_buffer_index] != std::addressof(vertex_buffer)))
-        {
-            drawing_state.flags.vertex_buffers_changed = true;
-        }
-
-        drawing_state.vertex_buffers[vertex_buffer_index] = &vertex_buffer;
-        vertex_buffer_index++;
+        throw std::invalid_argument("Can not set buffers of \"" + Buffer::GetBufferTypeName(vertex_buffers.GetType()) +
+                                    "\" type where \"Vertex\" buffers are required.");
     }
+
+    DrawingState&  drawing_state = GetDrawingState();
+    if (drawing_state.vertex_buffer_set_ptr.get() == std::addressof(vertex_buffers))
+        return;
+
+    Ptr<ObjectBase> vertex_buffer_set_object_ptr = static_cast<BufferSetBase&>(vertex_buffers).GetBasePtr();
+    drawing_state.vertex_buffer_set_ptr = std::static_pointer_cast<BufferSetBase>(vertex_buffer_set_object_ptr);
+    drawing_state.changes |= DrawingState::Changes::VertexBuffers;
+    RetainResource(std::move(vertex_buffer_set_object_ptr));
 }
 
 void RenderCommandListBase::DrawIndexed(Primitive primitive_type, Buffer& index_buffer,
                                         uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                                         uint32_t instance_count, uint32_t /*start_instance*/)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    VerifyEncodingState();
 
-    if (index_buffer.GetBufferType() != Buffer::Type::Index)
+    if (m_is_validation_enabled)
     {
-        throw std::invalid_argument("Can not draw with index buffer of wrong type \"" + 
-                                    static_cast<const BufferBase&>(index_buffer).GetBufferTypeName() +
-                                    "\". Buffer of \"Index\" type is expected.");
+        if (index_buffer.GetSettings().type != Buffer::Type::Index)
+        {
+            throw std::invalid_argument("Can not draw with index buffer of wrong type \"" +
+                                        static_cast<const BufferBase&>(index_buffer).GetBufferTypeName() +
+                                        "\". Buffer of \"Index\" type is expected.");
+        }
+
+        const uint32_t formatted_items_count = index_buffer.GetFormattedItemsCount();
+        if (formatted_items_count == 0)
+        {
+            throw std::invalid_argument("Can not draw with index buffer which contains no formatted vertices.");
+        }
+        if (index_count == 0)
+        {
+            throw std::invalid_argument("Can not draw zero index/vertex count.");
+        }
+        if (start_index + index_count > formatted_items_count)
+        {
+            throw std::invalid_argument("Ending index is out of buffer bounds.");
+        }
+        if (instance_count == 0)
+        {
+            throw std::invalid_argument("Can not draw zero instances.");
+        }
+
+        ValidateDrawVertexBuffers(start_vertex);
     }
 
-    const uint32_t formatted_items_count = index_buffer.GetFormattedItemsCount();
-    if (formatted_items_count == 0)
-    {
-        throw std::invalid_argument("Can not draw with index buffer which contains no formatted vertices.");
-    }
-    if (index_count == 0)
-    {
-        throw std::invalid_argument("Can not draw zero index/vertex count.");
-    }
-    if (start_index + index_count > formatted_items_count)
-    {
-        throw std::invalid_argument("Ending index is out of buffer bounds.");
-    }
-    if (instance_count == 0)
-    {
-        throw std::invalid_argument("Can not draw zero instances.");
-    }
-
-    ValidateDrawVertexBuffers(start_vertex);
-
-    DrawingState& drawing_state = GetDrawingState();
-    drawing_state.flags.index_buffer_changed = !drawing_state.p_index_buffer || drawing_state.p_index_buffer != std::addressof(index_buffer);
-    drawing_state.p_index_buffer             = static_cast<BufferBase*>(&index_buffer);
-
-    drawing_state.flags.primitive_type_changed = !drawing_state.opt_primitive_type || *drawing_state.opt_primitive_type != primitive_type;
-    drawing_state.opt_primitive_type = primitive_type;
+    UpdateDrawingState(primitive_type, &index_buffer);
 }
 
 void RenderCommandListBase::Draw(Primitive primitive_type, uint32_t vertex_count, uint32_t start_vertex,
-                                 uint32_t instance_count, uint32_t start_instance)
+                                 uint32_t instance_count, uint32_t)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    VerifyEncodingState();
 
-    if (vertex_count == 0)
+    if (m_is_validation_enabled)
     {
-        throw std::invalid_argument("Can not draw zero vertices.");
-    }
-    if (instance_count == 0)
-    {
-        throw std::invalid_argument("Can not draw zero instances.");
+        if (vertex_count == 0)
+        {
+            throw std::invalid_argument("Can not draw zero vertices.");
+        }
+        if (instance_count == 0)
+        {
+            throw std::invalid_argument("Can not draw zero instances.");
+        }
+
+        ValidateDrawVertexBuffers(start_vertex, vertex_count);
     }
 
-    ValidateDrawVertexBuffers(start_vertex, vertex_count);
+    UpdateDrawingState(primitive_type);
+}
 
+void RenderCommandListBase::ResetCommandState()
+{
+    META_FUNCTION_TASK();
+    CommandListBase::ResetCommandState();
+
+    m_drawing_state.render_pass_attachments_ptr.clear();
+    m_drawing_state.render_state_ptr.reset();
+    m_drawing_state.vertex_buffer_set_ptr.reset();
+    m_drawing_state.index_buffer_ptr.reset();
+    m_drawing_state.opt_primitive_type.reset();
+    m_drawing_state.p_view_state    = nullptr;
+    m_drawing_state.render_state_groups = RenderState::Group::None;
+    m_drawing_state.changes = DrawingState::Changes::None;
+}
+
+void RenderCommandListBase::UpdateDrawingState(Primitive primitive_type, Buffer* p_index_buffer)
+{
+    META_FUNCTION_TASK();
     DrawingState& drawing_state = GetDrawingState();
-    drawing_state.flags.primitive_type_changed = !drawing_state.opt_primitive_type || *drawing_state.opt_primitive_type != primitive_type;
-    drawing_state.opt_primitive_type = primitive_type;
+
+    if (p_index_buffer && (!drawing_state.index_buffer_ptr || drawing_state.index_buffer_ptr.get() != p_index_buffer))
+    {
+        Ptr<ObjectBase> index_buffer_object_ptr = static_cast<BufferBase&>(*p_index_buffer).GetBasePtr();
+        drawing_state.index_buffer_ptr = std::static_pointer_cast<BufferBase>(index_buffer_object_ptr);
+        drawing_state.changes |= DrawingState::Changes::IndexBuffer;
+        RetainResource(std::move(index_buffer_object_ptr));
+    }
+
+    if (!drawing_state.opt_primitive_type || *drawing_state.opt_primitive_type != primitive_type)
+    {
+        drawing_state.changes |= DrawingState::Changes::PrimitiveType;
+        drawing_state.opt_primitive_type = primitive_type;
+    }
 }
 
 void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count)
 {
-    DrawingState& drawing_state = GetDrawingState();
-    for (BufferBase* p_vertex_buffer : drawing_state.vertex_buffers)
+    META_FUNCTION_TASK();
+    const Data::Size vertex_buffers_count = m_drawing_state.vertex_buffer_set_ptr->GetCount();
+    for (Data::Index vertex_buffer_index = 0u; vertex_buffer_index < vertex_buffers_count; ++vertex_buffer_index)
     {
-        assert(!!p_vertex_buffer);
-        const BufferBase& vertex_buffer = *p_vertex_buffer;
-        const uint32_t    vertex_count  = vertex_buffer.GetFormattedItemsCount();
-        if (draw_start_vertex + draw_vertex_count <= vertex_count)
-            return;
-
-        throw std::invalid_argument("Can not draw starting from vertex " + std::to_string(draw_start_vertex) +
-                                    (draw_vertex_count ? " with " + std::to_string(draw_vertex_count) + " vertex count " : "") +
-                                    " which is out of bound for vertex buffer \"" + vertex_buffer.GetName() +
-                                    "\" (size " + std::to_string(vertex_count) + ").");
+        Buffer&        vertex_buffer = (*m_drawing_state.vertex_buffer_set_ptr)[vertex_buffer_index];
+        const uint32_t vertex_count  = vertex_buffer.GetFormattedItemsCount();
+        if (draw_start_vertex + draw_vertex_count > vertex_count)
+        {
+            throw std::invalid_argument("Can not draw starting from vertex " + std::to_string(draw_start_vertex) +
+                                        (draw_vertex_count ? " with " + std::to_string(draw_vertex_count) + " vertex count " : "") +
+                                        " which is out of bound for vertex buffer \"" + vertex_buffer.GetName() +
+                                        "\" (size " + std::to_string(vertex_count) + ").");
+        }
     }
 }
 
 RenderPassBase& RenderCommandListBase::GetPass()
 {
-    ITT_FUNCTION_TASK();
-    assert(!!m_sp_pass);
-    return static_cast<RenderPassBase&>(*m_sp_pass);
+    META_FUNCTION_TASK();
+    assert(!!m_render_pass_ptr);
+    return static_cast<RenderPassBase&>(*m_render_pass_ptr);
 }
 
 } // namespace Methane::Graphics

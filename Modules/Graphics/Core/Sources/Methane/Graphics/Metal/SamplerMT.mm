@@ -35,7 +35,7 @@ namespace Methane::Graphics
 
 static MTLSamplerAddressMode ConvertAddressModeToMetal(const SamplerBase::Address::Mode& address_mode) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using AddressMode = SamplerBase::Address::Mode;
 
@@ -51,7 +51,7 @@ static MTLSamplerAddressMode ConvertAddressModeToMetal(const SamplerBase::Addres
 
 static MTLSamplerMinMagFilter ConvertMinMagFilterToMetal(const SamplerBase::Filter::MinMag& min_mag_filter) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using MinMagFilter = SamplerBase::Filter::MinMag;
 
@@ -64,7 +64,7 @@ static MTLSamplerMinMagFilter ConvertMinMagFilterToMetal(const SamplerBase::Filt
 
 static MTLSamplerMipFilter ConvertMipFilterToMetal(const SamplerBase::Filter::Mip& mip_filter) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using MipFilter = SamplerBase::Filter::Mip;
 
@@ -78,7 +78,7 @@ static MTLSamplerMipFilter ConvertMipFilterToMetal(const SamplerBase::Filter::Mi
 
 static MTLSamplerBorderColor ConvertBorderColorToMetal(const SamplerBase::BorderColor& border_color) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using BorderColor = SamplerBase::BorderColor;
 
@@ -92,7 +92,7 @@ static MTLSamplerBorderColor ConvertBorderColorToMetal(const SamplerBase::Border
 
 Ptr<Sampler> Sampler::Create(Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<SamplerMT>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
@@ -100,7 +100,7 @@ SamplerMT::SamplerMT(ContextBase& context, const Settings& settings, const Descr
     : SamplerBase(context, settings, descriptor_by_usage)
     , m_mtl_sampler_desc([[MTLSamplerDescriptor alloc] init])
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     InitializeDefaultDescriptors();
     
@@ -124,7 +124,7 @@ SamplerMT::SamplerMT(ContextBase& context, const Settings& settings, const Descr
 
 SamplerMT::~SamplerMT()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     [m_mtl_sampler_state release];
     [m_mtl_sampler_desc release];
@@ -132,7 +132,7 @@ SamplerMT::~SamplerMT()
 
 void SamplerMT::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     SamplerBase::SetName(name);
 
@@ -144,7 +144,7 @@ void SamplerMT::SetName(const std::string& name)
 
 void SamplerMT::ResetSamplerState()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (m_mtl_sampler_state)
     {

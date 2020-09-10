@@ -32,7 +32,7 @@ DirectX 12 implementation of the render command list interface.
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/Graphics/Windows/Helpers.h>
+#include <Methane/Graphics/Windows/Primitives.h>
 
 #include <d3dx12.h>
 #include <cassert>
@@ -42,7 +42,7 @@ namespace Methane::Graphics
 
 static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primitive primitive) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (primitive)
     {
     case RenderCommandList::Primitive::Point:          return D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
@@ -57,59 +57,65 @@ static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primiti
 
 Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& cmd_queue, RenderPass& render_pass)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue), static_cast<RenderPassBase&>(render_pass));
 }
 
 Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListDX>(static_cast<ParallelRenderCommandListBase&>(parallel_render_command_list));
 }
 
 RenderCommandListDX::RenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass)
-    : CommandListDX<RenderCommandListBase>(cmd_buffer, render_pass)
+    : CommandListDX<RenderCommandListBase>(D3D12_COMMAND_LIST_TYPE_DIRECT, cmd_buffer, render_pass)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 RenderCommandListDX::RenderCommandListDX(ParallelRenderCommandListBase& parallel_render_command_list)
-    : CommandListDX<RenderCommandListBase>(parallel_render_command_list)
+    : CommandListDX<RenderCommandListBase>(D3D12_COMMAND_LIST_TYPE_DIRECT, parallel_render_command_list)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
-void RenderCommandListDX::ResetNative(const Ptr<RenderState>& sp_render_state)
+void RenderCommandListDX::ResetNative(const Ptr<RenderState>& render_state_ptr)
 {
-    // Reset command list
+    META_FUNCTION_TASK();
     if (!IsCommitted())
         return;
 
     SetCommitted(false);
-    ResetCommandState();
+    SetCommandListState(CommandList::State::Encoding);
 
-    ID3D12PipelineState* p_dx_initial_state = sp_render_state ? static_cast<RenderStateDX&>(*sp_render_state).GetNativePipelineState().Get() : nullptr;
+    ID3D12PipelineState* p_dx_initial_state = render_state_ptr ? static_cast<RenderStateDX&>(*render_state_ptr).GetNativePipelineState().Get() : nullptr;
     ID3D12CommandAllocator& dx_cmd_allocator = GetNativeCommandAllocatorRef();
-    ThrowIfFailed(dx_cmd_allocator.Reset());
-    ThrowIfFailed(GetNativeCommandListRef().Reset(&dx_cmd_allocator, p_dx_initial_state));
+    ID3D12Device* p_native_device = GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice().Get();
+    ThrowIfFailed(dx_cmd_allocator.Reset(), p_native_device);
+    ThrowIfFailed(GetNativeCommandListRef().Reset(&dx_cmd_allocator, p_dx_initial_state), p_native_device);
 
-    if (!sp_render_state)
+    // Insert beginning GPU timestamp query
+    TimestampQueryBuffer::TimestampQuery* p_begin_timestamp_query = GetBeginTimestampQuery();
+    if (p_begin_timestamp_query)
+        p_begin_timestamp_query->InsertTimestamp();
+
+    if (!render_state_ptr)
         return;
 
     DrawingState& drawing_state = GetDrawingState();
-    drawing_state.p_render_state     = static_cast<RenderStateBase*>(sp_render_state.get());
+    drawing_state.render_state_ptr     = std::static_pointer_cast<RenderStateBase>(render_state_ptr);
     drawing_state.render_state_groups = RenderState::Group::Program
                                       | RenderState::Group::Rasterizer
                                       | RenderState::Group::DepthStencil;
 }
 
-void RenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
+void RenderCommandListDX::Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    ResetNative(sp_render_state);
+    ResetNative(render_state_ptr);
 
-    RenderCommandListBase::Reset(sp_render_state, debug_group);
+    RenderCommandListBase::Reset(render_state_ptr, p_debug_group);
 
     RenderPassDX& pass_dx = GetPassDX();
     if (IsParallel())
@@ -123,32 +129,25 @@ void RenderCommandListDX::Reset(const Ptr<RenderState>& sp_render_state, const s
     }
 }
 
-void RenderCommandListDX::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
+void RenderCommandListDX::SetVertexBuffers(BufferSet& vertex_buffers)
 {
-    ITT_FUNCTION_TASK();
-
+    META_FUNCTION_TASK();
     RenderCommandListBase::SetVertexBuffers(vertex_buffers);
 
-    if (!GetDrawingState().flags.vertex_buffers_changed)
+    DrawingState& drawing_state = GetDrawingState();
+    if (!(drawing_state.changes & DrawingState::Changes::VertexBuffers))
         return;
 
-    std::vector<D3D12_VERTEX_BUFFER_VIEW> vertex_buffer_views;
-    vertex_buffer_views.reserve(vertex_buffers.size());
-    for (auto vertex_buffer_ref : vertex_buffers)
-    {
-        assert(vertex_buffer_ref.get().GetBufferType() == Buffer::Type::Vertex);
-        const VertexBufferDX& dx_vertex_buffer = static_cast<const VertexBufferDX&>(vertex_buffer_ref.get());
-        vertex_buffer_views.push_back(dx_vertex_buffer.GetNativeView());
-    }
-
+    const std::vector<D3D12_VERTEX_BUFFER_VIEW>& vertex_buffer_views = static_cast<const BufferSetDX&>(vertex_buffers).GetNativeVertexBufferViews();
     GetNativeCommandListRef().IASetVertexBuffers(0, static_cast<UINT>(vertex_buffer_views.size()), vertex_buffer_views.data());
+    drawing_state.changes &= ~DrawingState::Changes::VertexBuffers;
 }
 
 void RenderCommandListDX::DrawIndexed(Primitive primitive, Buffer& index_buffer,
                                       uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                                       uint32_t instance_count, uint32_t start_instance)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     const IndexBufferDX& dx_index_buffer = static_cast<IndexBufferDX&>(index_buffer);
     if (!index_count)
@@ -160,14 +159,16 @@ void RenderCommandListDX::DrawIndexed(Primitive primitive, Buffer& index_buffer,
 
     ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
     DrawingState& drawing_state = GetDrawingState();
-    if (drawing_state.flags.primitive_type_changed)
+    if (drawing_state.changes & DrawingState::Changes::PrimitiveType)
     {
         const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
         dx_command_list.IASetPrimitiveTopology(primitive_topology);
+        drawing_state.changes &= ~DrawingState::Changes::PrimitiveType;
     }
-    if (drawing_state.flags.index_buffer_changed)
+    if (drawing_state.changes & DrawingState::Changes::IndexBuffer)
     {
         dx_command_list.IASetIndexBuffer(&dx_index_buffer.GetNativeView());
+        drawing_state.changes &= ~DrawingState::Changes::IndexBuffer;
     }
     dx_command_list.DrawIndexedInstanced(index_count, instance_count, start_index, start_vertex, start_instance);
 }
@@ -175,22 +176,24 @@ void RenderCommandListDX::DrawIndexed(Primitive primitive, Buffer& index_buffer,
 void RenderCommandListDX::Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
                                uint32_t instance_count, uint32_t start_instance)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     RenderCommandListBase::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
 
     ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
-    if (GetDrawingState().flags.primitive_type_changed)
+    DrawingState& drawing_state = GetDrawingState();
+    if (drawing_state.changes & DrawingState::Changes::PrimitiveType)
     {
         const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
         dx_command_list.IASetPrimitiveTopology(primitive_topology);
+        drawing_state.changes &= ~DrawingState::Changes::PrimitiveType;
     }
     dx_command_list.DrawInstanced(vertex_count, instance_count, start_vertex, start_instance);
 }
 
 void RenderCommandListDX::Commit()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (!IsParallel())
     {
@@ -206,7 +209,7 @@ void RenderCommandListDX::Commit()
 
 RenderPassDX& RenderCommandListDX::GetPassDX()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<RenderPassDX&>(GetPass());
 }
 

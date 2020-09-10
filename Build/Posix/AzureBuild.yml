@@ -21,8 +21,11 @@ steps:
 
   - bash: |
       result_ext='_result.xml'
+      echo Running unit-tests in directory $PWD
       for test_exe in *Test
-      do ./$test_exe -r junit -o "$test_exe$result_ext"
+      do
+        ./$test_exe -r junit -o "$test_exe$result_ext"
+        echo  - $test_exe - completed with $? exit status
       done
     workingDirectory: '$(installDir)/Tests'
     displayName: 'Run all unit-tests from install directory'

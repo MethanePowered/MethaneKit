@@ -1,0 +1,8 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Data Events Test" type="CMakeCatchTestRunConfigurationType" factoryName="Catch Test" singleton="false" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="MethaneKit" TARGET_NAME="MethaneDataEventsTest" CONFIG_NAME="Debug x64" RUN_TARGET_PROJECT_NAME="MethaneKit" RUN_TARGET_NAME="MethaneDataEventsTest" TEST_MODE="SUITE_TEST">
+    <method v="2">
+      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      <option name="BeforeTestRunTask" enabled="true" />
+    </method>
+  </configuration>
+</component>

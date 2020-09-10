@@ -40,6 +40,7 @@ Platform abstraction of keyboard events.
 #include <array>
 #include <set>
 #include <string>
+#include <ostream>
 
 namespace Methane::Platform::Keyboard
 {
@@ -120,7 +121,7 @@ struct Modifier
     };
 
     using Values = std::array<Value, 6>;
-    static constexpr const Values values = { Shift, Control, Alt, Super, CapsLock, NumLock };
+    static constexpr const Values values{ Shift, Control, Alt, Super, CapsLock, NumLock };
 
     static std::string ToString(Value modifier);
     static std::string ToString(Mask modifiers_mask);
@@ -181,7 +182,7 @@ public:
         };
 
         using Values = std::array<Value, 2>;
-        static constexpr const Values values = { KeyStates, Modifiers };
+        static constexpr const Values values{ KeyStates, Modifiers };
 
         static std::string ToString(Value modifier);
         static std::string ToString(Mask modifiers_mask);
@@ -190,30 +191,31 @@ public:
         ~Property() = delete;
     };
 
-    State() = default;
-    State(std::initializer_list<Key> pressed_keys, Modifier::Mask modifiers_mask = Modifier::Value::None);
-    State(const State& other);
+    State() noexcept = default;
+    State(std::initializer_list<Key> pressed_keys, Modifier::Mask modifiers_mask = Modifier::Value::None) noexcept;
+    State(const State& other) noexcept;
 
-    State& operator=(const State& other);
-    bool   operator<(const State& other) const;
-    bool   operator==(const State& other) const;
-    bool   operator!=(const State& other) const     { return !operator==(other); }
-    const  KeyState& operator[](Key key) const      { return m_key_states[static_cast<size_t>(key)]; }
-    operator std::string() const                    { return ToString(); }
+    State& operator=(const State& other) noexcept;
+    bool   operator<(const State& other) const noexcept;
+    bool   operator==(const State& other) const noexcept;
+    bool   operator!=(const State& other) const noexcept    { return !operator==(other); }
+    const  KeyState& operator[](Key key) const noexcept     { return m_key_states[static_cast<size_t>(key)]; }
+    operator std::string() const                            { return ToString(); }
+    operator bool() const noexcept;
 
-    KeyType SetKey(Key key, KeyState state);
-    void    SetModifiersMask(Modifier::Mask mask)   { m_modifiers_mask = mask; }
-    void    PressKey(Key key)                       { SetKey(key, KeyState::Pressed); }
-    void    ReleaseKey(Key key)                     { SetKey(key, KeyState::Released); }
+    KeyType SetKey(Key key, KeyState state) noexcept;
+    void    SetModifiersMask(Modifier::Mask mask) noexcept  { m_modifiers_mask = mask; }
+    void    PressKey(Key key) noexcept                      { SetKey(key, KeyState::Pressed); }
+    void    ReleaseKey(Key key) noexcept                    { SetKey(key, KeyState::Released); }
 
-    Keys                GetPressedKeys() const;
-    const KeyStates&    GetKeyStates() const        { return m_key_states; }
-    Modifier::Mask      GetModifiersMask() const    { return m_modifiers_mask; }
-    Property::Mask      GetDiff(const State& other) const;
-    std::string         ToString() const;
+    Keys             GetPressedKeys() const noexcept;
+    const KeyStates& GetKeyStates() const noexcept          { return m_key_states; }
+    Modifier::Mask   GetModifiersMask() const noexcept      { return m_modifiers_mask; }
+    Property::Mask   GetDiff(const State& other) const noexcept;
+    std::string      ToString() const;
 
 private:
-    void UpdateModifiersMask(Modifier::Value modifier_value, bool add_modifier);
+    void UpdateModifiersMask(Modifier::Value modifier_value, bool add_modifier) noexcept;
 
     KeyStates       m_key_states{};
     Modifier::Mask  m_modifiers_mask = Modifier::None;

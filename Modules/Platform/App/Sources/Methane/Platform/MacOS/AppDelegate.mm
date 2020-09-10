@@ -35,11 +35,11 @@ using namespace Methane::Platform;
 
 @implementation AppDelegate
 
-@synthesize window = _window;
+@synthesize window = m_window;
 
 - (id) initWithApp : (AppMac*) p_app andSettings : (const AppBase::Settings*) p_settings
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     self = [super init];
     if (!self || !p_settings)
@@ -58,30 +58,31 @@ using namespace Methane::Platform;
                             NSWindowStyleMaskMiniaturizable;
 
     NSBackingStoreType backing = NSBackingStoreBuffered;
-    
-    _window = [[NSWindow alloc] initWithContentRect:frame styleMask:style_mask backing:backing defer:YES];
-    _window.title = MacOS::ConvertToNsType<std::string, NSString*>(p_settings->name);
-    _window.delegate = [[WindowDelegate alloc] initWithApp:p_app];
-    [_window center];
+
+    m_window = [[NSWindow alloc] initWithContentRect:frame styleMask:style_mask backing:backing defer:YES];
+    m_window.contentMinSize = NSMakeSize(static_cast<CGFloat>(p_settings->min_width), static_cast<CGFloat>(p_settings->min_height));
+    m_window.title    = MacOS::ConvertToNsType<std::string, NSString*>(p_settings->name);
+    m_window.delegate = [[WindowDelegate alloc] initWithApp:p_app];
+    [m_window center];
     
     NSRect backing_frame = [ns_main_screen convertRectToBacking:frame];
     self.viewController = [[AppViewController alloc] initWithApp:p_app andFrameRect:backing_frame];
     
-    p_app->SetWindow(_window);
+    p_app->SetWindow(m_window);
     
     return self;
 }
 
 - (void) run
 {
-    ITT_FUNCTION_TASK();
-    [self.window setContentViewController: self.viewController];
-    [self.window setAcceptsMouseMovedEvents:YES];
+    META_FUNCTION_TASK();
+    [m_window setContentViewController: self.viewController];
+    [m_window setAcceptsMouseMovedEvents:YES];
 }
 
 - (void) alert : (NSString*) ns_title withInformation: (NSString*) ns_info andStyle: (NSAlertStyle) ns_alert_style
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (ns_title == nil || ns_info == nil)
     {
         assert(0);
@@ -103,19 +104,23 @@ using namespace Methane::Platform;
 
 - (void) applicationWillFinishLaunching:(NSNotification *)notification
 {
-    ITT_FUNCTION_TASK();
-    [self.window makeKeyAndOrderFront:self];
+    META_FUNCTION_TASK();
+    #pragma unused(notification)
+    [m_window makeKeyAndOrderFront:self];
 }
 
 - (void) applicationDidFinishLaunching:(NSNotification *)notification
 {
-    ITT_FUNCTION_TASK();
-    [self.window makeFirstResponder: self.viewController.view];
+    META_FUNCTION_TASK();
+    #pragma unused(notification)
+    [m_window makeFirstResponder: self.viewController.view];
+    [m_window makeKeyAndOrderFront: nil];
 }
 
 - (void) windowWillEnterFullScreen:(NSNotification *)notification
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    #pragma unused(notification)
     AppMac* p_app = [self.viewController getApp];
     assert(!!p_app);
     p_app->SetFullScreenInternal(true);
@@ -123,7 +128,8 @@ using namespace Methane::Platform;
 
 - (void) windowWillExitFullScreen:(NSNotification *)notification
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    #pragma unused(notification)
     AppMac* p_app = [self.viewController getApp];
     assert(!!p_app);
     p_app->SetFullScreenInternal(false);
@@ -131,13 +137,15 @@ using namespace Methane::Platform;
 
 - (void) applicationWillTerminate:(NSNotification *)notification
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    #pragma unused(notification)
     // Insert code here to tear down your application
 }
 
 - (BOOL) applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    #pragma unused(sender)
     return YES;
 }
 

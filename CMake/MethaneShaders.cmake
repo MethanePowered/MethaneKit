@@ -247,7 +247,8 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
             FOLDER "Build/${FOR_TARGET}/Shaders"
         )
 
-        add_dependencies(${FOR_TARGET}_Shaders ${COMPILE_SHADER_TARGET})
+        shorten_target_name(${FOR_TARGET}_Shaders SHADER_RESOURCES_TARGET)
+        add_dependencies(${SHADER_RESOURCES_TARGET} ${COMPILE_SHADER_TARGET})
     endforeach()
 
     set(${OUT_COMPILED_SHADER_BINS} ${_OUT_COMPILED_SHADER_BINS} PARENT_SCOPE)
@@ -268,12 +269,16 @@ function(add_methane_shaders TARGET HLSL_SOURCES PROFILE_VER)
         
         get_target_shaders_dir(${TARGET} TARGET_SHADERS_DIR)
 
-        set(SHADER_RESOURCES_TARGET ${TARGET}_Shaders)
+        shorten_target_name(${TARGET}_Shaders SHADER_RESOURCES_TARGET)
         cmrc_add_resource_library(${SHADER_RESOURCES_TARGET}
             ALIAS Methane::Resources::Shaders
             WHENCE "${TARGET_SHADERS_DIR}"
             NAMESPACE ${RESOURCE_NAMESPACE}::Shaders
             ${SHADERS_OBJ_FILES}
+        )
+
+        target_link_libraries(${SHADER_RESOURCES_TARGET} PRIVATE
+            MethaneBuildOptions
         )
 
         foreach(SHADERS_HLSL ${HLSL_SOURCES})
@@ -285,7 +290,7 @@ function(add_methane_shaders TARGET HLSL_SOURCES PROFILE_VER)
             ${CONFIG_SOURCES}
         )
 
-        target_link_libraries(${TARGET}
+        target_link_libraries(${TARGET} PRIVATE
             ${SHADER_RESOURCES_TARGET}
         )
 
@@ -302,7 +307,7 @@ function(add_methane_shaders TARGET HLSL_SOURCES PROFILE_VER)
 
         target_compile_definitions(${TARGET}
             PRIVATE
-            SHADER_RESOURCE_NAMESPACE=${RESOURCE_NAMESPACE}::Shaders
+            SHADER_RESOURCES_NAMESPACE=${RESOURCE_NAMESPACE}::Shaders
         )
 
     elseif(APPLE)

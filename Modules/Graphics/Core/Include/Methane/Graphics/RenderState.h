@@ -25,15 +25,40 @@ Methane render state interface: specifies configuration of the graphics pipeline
 
 #include "Object.h"
 #include "Program.h"
-#include "Types.h"
 
 #include <Methane/Memory.hpp>
+#include <Methane/Graphics/Types.h>
+#include <Methane/Graphics/Volume.hpp>
+#include <Methane/Graphics/Color.hpp>
 
 namespace Methane::Graphics
 {
 
 struct RenderContext;
 struct RenderCommandList;
+
+struct ViewState
+{
+    struct Settings
+    {
+        Viewports    viewports;
+        ScissorRects scissor_rects;
+
+        bool operator==(const Settings& other) const noexcept { return viewports == other.viewports && scissor_rects == other.scissor_rects; }
+        bool operator!=(const Settings& other) const noexcept { return !operator==(other); }
+    };
+
+    // Create ViewState instance
+    static Ptr<ViewState> Create(const Settings& state_settings);
+
+    // ViewState interface
+    virtual const Settings& GetSettings() const noexcept = 0;
+    virtual bool Reset(const Settings& settings) = 0;
+    virtual bool SetViewports(const Viewports& viewports) = 0;
+    virtual bool SetScissorRects(const ScissorRects& scissor_rects) = 0;
+
+    virtual ~ViewState() = default;
+};
 
 struct RenderState : virtual Object
 {
@@ -173,8 +198,8 @@ public:
         };
         
         bool           enabled           = false;
-        uint32_t       read_mask         = static_cast<uint32_t>(~0x0);
-        uint32_t       write_mask        = static_cast<uint32_t>(~0x0);
+        uint8_t        read_mask         = static_cast<uint8_t>(~0x0);
+        uint8_t        write_mask        = static_cast<uint8_t>(~0x0);
         FaceOperations front_face;
         FaceOperations back_face;
 
@@ -193,8 +218,6 @@ public:
             Blending            = 1u << 2u,
             BlendingColor       = 1u << 3u,
             DepthStencil        = 1u << 4u,
-            Viewports           = 1u << 5u,
-            ScissorRects        = 1u << 6u,
             All                 = ~0u
         };
 
@@ -206,9 +229,7 @@ public:
         // NOTE: members are ordered by the usage frequency,
         //       for convenient setup with initializer lists
         //       (default states may be skipped at initialization)
-        Ptr<Program> sp_program;
-        Viewports    viewports;
-        ScissorRects scissor_rects;
+        Ptr<Program> program_ptr;
         Rasterizer   rasterizer;
         Depth        depth;
         Stencil      stencil;
@@ -222,10 +243,8 @@ public:
     static Ptr<RenderState> Create(RenderContext& context, const Settings& state_settings);
 
     // RenderState interface
-    virtual const Settings& GetSettings() const = 0;
+    virtual const Settings& GetSettings() const noexcept = 0;
     virtual void Reset(const Settings& settings) = 0;
-    virtual void SetViewports(const Viewports& viewports) = 0;
-    virtual void SetScissorRects(const ScissorRects& scissor_rects) = 0;
 
     virtual ~RenderState() = default;
 };

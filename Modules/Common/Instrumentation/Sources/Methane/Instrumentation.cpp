@@ -24,4 +24,4 @@ Defines common ITT domain required for instrumentation.
 
 #include <Methane/Instrumentation.h>
 
-ITT_DOMAIN_GLOBAL("Methane Kit");
+ITT_DOMAIN_GLOBAL(METHANE_DOMAIN_NAME);

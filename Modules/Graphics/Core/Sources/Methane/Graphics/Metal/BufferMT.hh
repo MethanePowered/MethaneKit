@@ -34,14 +34,9 @@ class BufferMT final : public BufferBase
 {
 public:
     BufferMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    BufferMT(ContextBase& context, const Settings& settings, Data::Size stride, PixelFormat format, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    ~BufferMT() override;
 
     // Resource interface
     void SetData(const SubResources& sub_resources) override;
-    
-    // Buffer interface
-    uint32_t GetFormattedItemsCount() const override;
 
     // Object interface
     void SetName(const std::string& name) override;
@@ -50,9 +45,23 @@ public:
     MTLIndexType         GetNativeIndexType() const noexcept;
 
 private:
+    void SetDataToManagedBuffer(const SubResources& sub_resources);
+    void SetDataToPrivateBuffer(const SubResources& sub_resources);
+
     id<MTLBuffer> m_mtl_buffer;
-    Data::Size    m_stride = 0;
-    PixelFormat   m_format = PixelFormat::Unknown;
+};
+
+class BufferSetMT final : public BufferSetBase
+{
+public:
+    BufferSetMT(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
+
+    const std::vector<id<MTLBuffer>>& GetNativeBuffers() const noexcept { return m_mtl_buffers; }
+    const std::vector<NSUInteger>&    GetNativeOffsets() const noexcept { return m_mtl_buffer_offsets; }
+
+private:
+    std::vector<id<MTLBuffer>>  m_mtl_buffers;
+    std::vector<NSUInteger>     m_mtl_buffer_offsets;
 };
 
 } // namespace Methane::Graphics

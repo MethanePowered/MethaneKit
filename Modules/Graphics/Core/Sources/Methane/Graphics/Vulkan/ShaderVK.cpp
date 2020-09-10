@@ -32,31 +32,31 @@ namespace Methane::Graphics
 
 Ptr<Shader> Shader::Create(Shader::Type shader_type, Context& context, const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<ShaderVK>(shader_type, dynamic_cast<ContextBase&>(context), settings);
 }
 
 ShaderVK::ShaderVK(Shader::Type shader_type, ContextBase& context, const Settings& settings)
     : ShaderBase(shader_type, context, settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 ShaderVK::~ShaderVK()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::ArgumentDescriptions&) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     ArgumentBindings argument_bindings;
     return argument_bindings;
 }
 
 IContextVK& ShaderVK::GetContextVK() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextVK&>(GetContext());
 }
 

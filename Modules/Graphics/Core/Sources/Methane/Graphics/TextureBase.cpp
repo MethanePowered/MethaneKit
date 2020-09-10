@@ -34,7 +34,7 @@ namespace Methane::Graphics
 
 Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, TextureBase::Usage::Mask usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Settings settings;
     settings.type           = Type::Texture;
@@ -48,14 +48,13 @@ Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, uint32_
     settings.pixel_format   = pixel_format;
     settings.usage_mask     = usage;
     settings.mipmapped      = mipmapped;
-    settings.cpu_accessible = true;
 
     return settings;
 }
 
 Texture::Settings Texture::Settings::Cube(uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage::Mask usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Settings settings;
     settings.type           = Type::Texture;
@@ -65,14 +64,13 @@ Texture::Settings Texture::Settings::Cube(uint32_t dimension_size, uint32_t arra
     settings.pixel_format   = pixel_format;
     settings.usage_mask     = usage;
     settings.mipmapped      = mipmapped;
-    settings.cpu_accessible = true;
 
     return settings;
 }
 
 Texture::Settings Texture::Settings::FrameBuffer(const Dimensions& dimensions, PixelFormat pixel_format)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Settings settings;
     settings.type           = Type::FrameBuffer;
@@ -80,14 +78,13 @@ Texture::Settings Texture::Settings::FrameBuffer(const Dimensions& dimensions, P
     settings.usage_mask     = Usage::RenderTarget;
     settings.pixel_format   = pixel_format;
     settings.dimensions     = dimensions;
-    settings.cpu_accessible = false;
 
     return settings;
 }
 
 Texture::Settings Texture::Settings::DepthStencilBuffer(const Dimensions& dimensions, PixelFormat pixel_format, Usage::Mask usage_mask)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     Settings settings;
     settings.type           = Type::DepthStencilBuffer;
@@ -95,7 +92,7 @@ Texture::Settings Texture::Settings::DepthStencilBuffer(const Dimensions& dimens
     settings.usage_mask     = usage_mask;
     settings.pixel_format   = pixel_format;
     settings.dimensions     = dimensions;
-    settings.cpu_accessible = false;
+
     return settings;
 }
 
@@ -103,7 +100,7 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
     : ResourceNT(Resource::Type::Texture, settings.usage_mask, context, descriptor_by_usage)
     , m_settings(settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (m_settings.usage_mask == TextureBase::Usage::Unknown)
     {
@@ -119,11 +116,18 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
     }
 
     ValidateDimensions(m_settings.dimension_type, m_settings.dimensions, m_settings.mipmapped);
+    SetSubResourceCount(
+        SubResource::Count(
+            settings.dimensions.depth,
+            settings.array_length,
+            settings.mipmapped ? GetRequiredMipLevelsCount(settings.dimensions) : 1u
+        )
+    );
 }
 
 void TextureBase::ValidateDimensions(DimensionType dimension_type, const Dimensions& dimensions, bool mipmapped)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (!dimensions.width || !dimensions.height || !dimensions.depth)
     {
@@ -142,13 +146,13 @@ void TextureBase::ValidateDimensions(DimensionType dimension_type, const Dimensi
         {
             throw std::invalid_argument("Cube texture depth must be equal to 6.");
         }
-        // NOTE: break is missing intentionally
+        [[fallthrough]];
     case DimensionType::Tex3D:
         if (mipmapped && dimensions.depth % 2)
         {
             throw std::invalid_argument("All dimensions of the mip-mapped texture should be a power of 2, but depth is not.");
         }
-        // NOTE: break is missing intentionally
+        [[fallthrough]];
     case DimensionType::Tex2D:
     case DimensionType::Tex2DArray:
     case DimensionType::Tex2DMultisample:
@@ -156,29 +160,50 @@ void TextureBase::ValidateDimensions(DimensionType dimension_type, const Dimensi
         {
             throw std::invalid_argument("All dimensions of the mip-mapped texture should be a power of 2, but height is not.");
         }
-        // NOTE: break is missing intentionally
+        [[fallthrough]];
     case DimensionType::Tex1D:
     case DimensionType::Tex1DArray:
         if (mipmapped && dimensions.width % 2)
         {
             throw std::invalid_argument("All dimensions of the mip-mapped texture should be a power of 2, but width is not.");
         }
-        // NOTE: break is missing intentionally
-    default: return;
+        [[fallthrough]];
+    default:
+        return;
     }
 }
 
-uint32_t TextureBase::GetMipLevelsCount() const
+Data::Size TextureBase::GetRequiredMipLevelsCount(const Dimensions& dimensions)
 {
-    ITT_FUNCTION_TASK();
-    return m_settings.mipmapped ? 1u + static_cast<uint32_t>(std::log2(static_cast<double>(m_settings.dimensions.GetLongestSide())))
-                                : 1u;
+    META_FUNCTION_TASK();
+    return 1u + static_cast<uint32_t>(std::log2(static_cast<double>(dimensions.GetLongestSide())));
 }
 
-uint32_t TextureBase::GetRequiredSubresourceCount() const
+Data::Size TextureBase::GetDataSize(Data::MemoryState size_type) const noexcept
 {
-    ITT_FUNCTION_TASK();
-    return m_settings.array_length * m_settings.dimensions.depth * GetMipLevelsCount();
+    META_FUNCTION_TASK();
+    return size_type == Data::MemoryState::Reserved
+            ? m_settings.dimensions.GetPixelsCount() * GetPixelSize(m_settings.pixel_format) * m_settings.array_length
+            : GetInitializedDataSize();
+}
+
+Data::Size TextureBase::CalculateSubResourceDataSize(const SubResource::Index& sub_resource_index) const
+{
+    META_FUNCTION_TASK();
+    ValidateSubResource(sub_resource_index);
+
+    const Data::Size pixel_size = GetPixelSize(m_settings.pixel_format);
+    if (sub_resource_index.mip_level == 0u)
+    {
+        return pixel_size * static_cast<const Data::FrameSize&>(m_settings.dimensions).GetPixelsCount();
+    }
+
+    const double mip_divider = std::pow(2.0, sub_resource_index.mip_level);
+    const Data::FrameSize mip_frame_size(
+        static_cast<uint32_t>(std::ceil(static_cast<double>(m_settings.dimensions.width) / mip_divider)),
+        static_cast<uint32_t>(std::ceil(static_cast<double>(m_settings.dimensions.height) / mip_divider))
+    );
+    return pixel_size * mip_frame_size.GetPixelsCount();
 }
 
 } // namespace Methane::Graphics

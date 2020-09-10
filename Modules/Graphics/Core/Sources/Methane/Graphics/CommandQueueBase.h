@@ -27,12 +27,11 @@ Base implementation of the command queue interface.
 #include "CommandListBase.h"
 
 #include <Methane/Graphics/CommandQueue.h>
+#include <Methane/TracyGpu.hpp>
 
 #include <list>
 #include <set>
 #include <mutex>
-
-//#define COMMAND_EXECUTION_LOGGING
 
 namespace Methane::Graphics
 {
@@ -42,26 +41,29 @@ class RenderContextBase;
 class CommandQueueBase
     : public ObjectBase
     , public CommandQueue
-    , public std::enable_shared_from_this<CommandQueueBase>
 {
     friend class CommandListBase;
 
 public:
-    CommandQueueBase(ContextBase& context);
+    CommandQueueBase(ContextBase& context, CommandList::Type command_lists_type);
     ~CommandQueueBase() override;
 
     // CommandQueue interface
-    void Execute(const Refs<CommandList>& command_lists) override;
+    void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
+    CommandList::Type GetCommandListsType() const noexcept override { return m_command_lists_type; }
 
-    Ptr<CommandQueueBase> GetPtr()           { return shared_from_this(); }
-    ContextBase&          GetContext()       { return m_context; }
-    const ContextBase&    GetContext() const { return m_context; }
+    Ptr<CommandQueueBase> GetCommandQueuePtr()          { return std::static_pointer_cast<CommandQueueBase>(GetBasePtr()); }
+    ContextBase&          GetContext() const noexcept   { return m_context; }
+    Tracy::GpuContext&    GetTracyContext() noexcept;
 
 protected:
+    void InitializeTracyGpuContext(const Tracy::GpuContext::Settings& tracy_settings);
     uint32_t GetCurrentFrameBufferIndex() const;
 
 private:
-    ContextBase&        m_context;
+    ContextBase&                 m_context;
+    const CommandList::Type      m_command_lists_type;
+    UniquePtr<Tracy::GpuContext> m_tracy_gpu_context_ptr;
 };
 
 } // namespace Methane::Graphics

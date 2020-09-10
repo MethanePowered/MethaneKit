@@ -33,7 +33,7 @@ namespace Methane::Graphics
 
 static MTLStoreAction GetMTLStoreAction(RenderPass::Attachment::StoreAction store_action) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch(store_action)
     {
@@ -46,7 +46,7 @@ static MTLStoreAction GetMTLStoreAction(RenderPass::Attachment::StoreAction stor
 
 static MTLLoadAction GetMTLLoadAction(RenderPass::Attachment::LoadAction load_action) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     switch(load_action)
     {
@@ -59,27 +59,28 @@ static MTLLoadAction GetMTLLoadAction(RenderPass::Attachment::LoadAction load_ac
 
 Ptr<RenderPass> RenderPass::Create(RenderContext& context, const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<RenderPassMT>(dynamic_cast<RenderContextBase&>(context), settings);
 }
 
 RenderPassMT::RenderPassMT(RenderContextBase& context, const Settings& settings)
     : RenderPassBase(context, settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Reset();
 }
 
-void RenderPassMT::Update(const Settings& settings)
+bool RenderPassMT::Update(const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
-    RenderPassBase::Update(settings);
+    META_FUNCTION_TASK();
+    const bool settings_changed = RenderPassBase::Update(settings);
     Reset();
+    return settings_changed;
 }
 
 void RenderPassMT::Reset()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     m_mtl_pass_descriptor = [MTLRenderPassDescriptor renderPassDescriptor];
     const Settings& settings = GetSettings();
@@ -87,12 +88,12 @@ void RenderPassMT::Reset()
     uint32_t color_attach_index = 0;
     for(const ColorAttachment& color_attach : settings.color_attachments)
     {
-        if (color_attach.wp_texture.expired())
+        if (!color_attach.texture_ptr)
         {
             throw std::invalid_argument("Can not use color attachment without texture.");
         }
 
-        TextureMT& color_texture = static_cast<TextureMT&>(*color_attach.wp_texture.lock());
+        TextureMT& color_texture = static_cast<TextureMT&>(*color_attach.texture_ptr);
         if (color_texture.GetSettings().type == Texture::Type::FrameBuffer)
         {
             color_texture.UpdateFrameBuffer();
@@ -106,18 +107,18 @@ void RenderPassMT::Reset()
         color_attach_index++;
     }
     
-    if (!settings.depth_attachment.wp_texture.expired())
+    if (settings.depth_attachment.texture_ptr)
     {
-        const TextureMT& depth_texture = static_cast<const TextureMT&>(*settings.depth_attachment.wp_texture.lock());
+        const TextureMT& depth_texture = static_cast<const TextureMT&>(*settings.depth_attachment.texture_ptr);
         m_mtl_pass_descriptor.depthAttachment.texture         = depth_texture.GetNativeTexture();
         m_mtl_pass_descriptor.depthAttachment.clearDepth      = settings.depth_attachment.clear_value;
         m_mtl_pass_descriptor.depthAttachment.loadAction      = GetMTLLoadAction(settings.depth_attachment.load_action);
         m_mtl_pass_descriptor.depthAttachment.storeAction     = GetMTLStoreAction(settings.depth_attachment.store_action);
     }
     
-    if (!settings.stencil_attachment.wp_texture.expired())
+    if (settings.stencil_attachment.texture_ptr)
     {
-        const TextureMT& stencil_texture = static_cast<const TextureMT&>(*settings.stencil_attachment.wp_texture.lock());
+        const TextureMT& stencil_texture = static_cast<const TextureMT&>(*settings.stencil_attachment.texture_ptr);
         m_mtl_pass_descriptor.stencilAttachment.texture       = stencil_texture.GetNativeTexture();
         m_mtl_pass_descriptor.stencilAttachment.clearStencil  = settings.stencil_attachment.clear_value;
         m_mtl_pass_descriptor.stencilAttachment.loadAction    = GetMTLLoadAction(settings.stencil_attachment.load_action);
@@ -127,7 +128,7 @@ void RenderPassMT::Reset()
     
 MTLRenderPassDescriptor* RenderPassMT::GetNativeDescriptor(bool reset)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (reset)
     {
         Reset();
@@ -137,7 +138,7 @@ MTLRenderPassDescriptor* RenderPassMT::GetNativeDescriptor(bool reset)
 
 IContextMT& RenderPassMT::GetContextMT() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<IContextMT&>(GetRenderContext());
 }
 

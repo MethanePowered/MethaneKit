@@ -122,15 +122,26 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
     source_group("Source Shaders" FILES ${SHADERS_HLSL} ${SHADERS_CONFIG})
 
     target_link_libraries(${TARGET}
-        MethaneGraphicsKit
+        PRIVATE
+            MethaneKit
+            MethaneBuildOptions
+            MethaneInstrumentation
+            $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
     )
 
     target_include_directories(${TARGET}
-        PUBLIC
+        PRIVATE
             .
     )
 
-    get_target_property(METHANE_PREREQUISITE_MODULES MethaneGraphicsKit PREREQUISITE_MODULES)
+    if (WIN32 AND MSVC)
+        install(FILES $<TARGET_PDB_FILE:${TARGET}>
+            DESTINATION ${INSTALL_DIR}
+            OPTIONAL
+        )
+    endif()
+
+    get_target_property(METHANE_PREREQUISITE_MODULES MethaneKit PREREQUISITE_MODULES)
     add_prerequisite_binaries(${TARGET} "${METHANE_PREREQUISITE_MODULES}" ${INSTALL_DIR})
 
 endfunction()

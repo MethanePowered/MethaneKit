@@ -23,6 +23,9 @@ Base implementation of the render pass interface.
 
 #pragma once
 
+#include "ObjectBase.h"
+#include "ResourceBase.h"
+
 #include <Methane/Graphics/RenderPass.h>
 
 namespace Methane::Graphics
@@ -30,34 +33,49 @@ namespace Methane::Graphics
 
 class RenderContextBase;
 class RenderCommandListBase;
+class TextureBase;
 
 class RenderPassBase
     : public RenderPass
-    , public std::enable_shared_from_this<RenderPassBase>
+    , public ObjectBase
 {
 public:
     RenderPassBase(RenderContextBase& context, const Settings& settings);
 
     // RenderPass interface
-    void Update(const Settings& settings) override;
     const Settings& GetSettings() const override    { return m_settings; }
+    bool Update(const Settings& settings) override;
+    void ReleaseAttachmentTextures() override;
 
     // RenderPassBase interface
-    virtual void Begin(RenderCommandListBase& command_list);
-    virtual void End(RenderCommandListBase& command_list);
+    virtual void Begin(RenderCommandListBase& render_command_list);
+    virtual void End(RenderCommandListBase& render_command_list);
 
-    Ptr<RenderPassBase> GetPtr()            { return shared_from_this(); }
-    Refs<Resource>      GetColorAttachmentResources() const;
-    bool                IsBegun() const     { return m_is_begun; }
+    const Refs<TextureBase>& GetColorAttachmentTextures() const;
+    TextureBase*             GetDepthAttachmentTexture() const;
+    const Ptrs<TextureBase>& GetNonFrameBufferAttachmentTextures() const;
+    Ptr<RenderPassBase>      GetRenderPassPtr()         { return std::static_pointer_cast<RenderPassBase>(GetBasePtr()); }
+    bool                     IsBegun() const            { return m_is_begun; }
 
 protected:
     RenderContextBase&        GetRenderContext()        { return m_render_context; }
     const RenderContextBase&  GetRenderContext() const  { return m_render_context; }
 
 private:
-    RenderContextBase& m_render_context;
-    Settings           m_settings;
-    bool               m_is_begun = false;
+    void InitAttachmentStates();
+    void SetAttachmentStates(const std::optional<ResourceBase::State>& color_state,
+                             const std::optional<ResourceBase::State>& depth_state,
+                             Ptr<ResourceBase::Barriers>& transition_barriers_ptr,
+                             RenderCommandListBase& render_command_list);
+
+    RenderContextBase&          m_render_context;
+    Settings                    m_settings;
+    bool                        m_is_begun = false;
+    mutable Refs<TextureBase>   m_color_attachment_textures;
+    mutable Ptrs<TextureBase>   m_non_frame_buffer_attachment_textures;
+    mutable TextureBase*        m_p_depth_attachment_texture = nullptr;
+    Ptr<ResourceBase::Barriers> m_begin_transition_barriers_ptr;
+    Ptr<ResourceBase::Barriers> m_end_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics

@@ -36,14 +36,18 @@ ProgramBindingsBase::ArgumentBindingBase::ArgumentBindingBase(const ContextBase&
     : m_context(context)
     , m_settings(std::move(settings))
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resource::Locations& resource_locations)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    if (m_resource_locations == resource_locations)
+        return;
 
-    m_resource_locations.clear();
+    if (m_settings.argument.IsConstant() && !m_resource_locations.empty())
+        throw std::logic_error("Can not modify constant program argument binding.");
+
     if (resource_locations.empty())
         throw std::invalid_argument("Can not set empty resources for resource binding.");
 
@@ -72,7 +76,7 @@ void ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resour
 
 DescriptorHeap::Type ProgramBindingsBase::ArgumentBindingBase::GetDescriptorHeapType() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return (m_settings.resource_type == Resource::Type::Sampler)
         ? DescriptorHeap::Type::Samplers
         : DescriptorHeap::Type::ShaderResources;
@@ -82,7 +86,7 @@ bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& p
                                                                 const ProgramBindingsBase& applied_program_bindings,
                                                                 bool check_binding_value_changes) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (std::addressof(applied_program_bindings.GetProgram()) != std::addressof(program))
         return false;
@@ -107,12 +111,12 @@ bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& p
     return false;
 }
 
-ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& sp_program, const ResourceLocationsByArgument& resource_locations_by_argument)
-    : m_sp_program(sp_program)
+ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument)
+    : m_program_ptr(program_ptr)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    if (!m_sp_program)
+    if (!m_program_ptr)
     {
         throw std::runtime_error("Can not create resource bindings for an empty program.");
     }
@@ -123,10 +127,10 @@ ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& sp_program, const R
 }
 
 ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
-    : m_sp_program(other_program_bindings.m_sp_program)
+    : m_program_ptr(other_program_bindings.m_program_ptr)
     , m_descriptor_heap_reservations_by_type(other_program_bindings.m_descriptor_heap_reservations_by_type)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     // Form map of volatile resource bindings with replaced resource locations
     ResourceLocationsByArgument resource_locations_by_argument = replace_resource_locations_by_argument;
@@ -151,39 +155,41 @@ ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_progra
 
 ProgramBindingsBase::~ProgramBindingsBase()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     // Release mutable descriptor ranges in heaps (constant ranges are released by the program)
-    for (const auto& descriptor_type_and_heap_reservation : m_descriptor_heap_reservations_by_type)
+    for (auto& descriptor_type_and_heap_reservation : m_descriptor_heap_reservations_by_type)
     {
         if (!descriptor_type_and_heap_reservation)
             continue;
 
         const DescriptorHeap::Reservation& heap_reservation = *descriptor_type_and_heap_reservation;
-        if (heap_reservation.mutable_range.IsEmpty())
-            continue;
+        if (!heap_reservation.mutable_range.IsEmpty())
+        {
+            heap_reservation.heap.get().ReleaseRange(heap_reservation.mutable_range);
+        }
 
-        heap_reservation.heap.get().ReleaseRange(heap_reservation.mutable_range);
+        descriptor_type_and_heap_reservation.reset();
     }
 }
 
 const Program& ProgramBindingsBase::GetProgram() const
 {
-    ITT_FUNCTION_TASK();
-    assert(!!m_sp_program);
-    return *m_sp_program;
+    META_FUNCTION_TASK();
+    assert(!!m_program_ptr);
+    return *m_program_ptr;
 }
 
 Program& ProgramBindingsBase::GetProgram()
 {
-    ITT_FUNCTION_TASK();
-    assert(!!m_sp_program);
-    return *m_sp_program;
+    META_FUNCTION_TASK();
+    assert(!!m_program_ptr);
+    return *m_program_ptr;
 }
 
 void ProgramBindingsBase::ReserveDescriptorHeapRanges()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     struct DescriptorsCount
     {
@@ -191,7 +197,7 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         uint32_t mutable_count = 0;
     };
 
-    assert(!!m_sp_program);
+    assert(!!m_program_ptr);
     const ProgramBase& program = static_cast<const ProgramBase&>(GetProgram());
 
     // Count the number of constant and mutable descriptors to be allocated in each descriptor heap
@@ -216,10 +222,6 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
                     ? binding_by_argument.second
                     : ArgumentBindingBase::CreateCopy(argument_binding)
             );
-        }
-        else if (!binding_settings.argument.IsConstant())
-        {
-            binding_by_argument_it->second = ArgumentBindingBase::CreateCopy(static_cast<const ArgumentBindingBase&>(*binding_by_argument_it->second));
         }
 
         // NOTE: addressable resource bindings do not require descriptors to be created, instead they use direct GPU memory offset from resource
@@ -256,36 +258,38 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         }
 
         DescriptorHeap::Reservation& heap_reservation = *descriptor_heap_reservation_opt;
+        assert(heap_reservation.heap.get().GetSettings().type == heap_type);
+        assert(heap_reservation.heap.get().GetSettings().shader_visible);
+
         if (descriptors.constant_count > 0)
         {
-            heap_reservation.constant_range = static_cast<ProgramBase&>(*m_sp_program).ReserveConstantDescriptorRange(heap_reservation.heap.get(), descriptors.constant_count);
+            heap_reservation.constant_range = static_cast<ProgramBase&>(*m_program_ptr).ReserveConstantDescriptorRange(heap_reservation.heap.get(), descriptors.constant_count);
         }
         if (descriptors.mutable_count > 0)
         {
-            Ptr<DescriptorHeap::Range> sp_mutable_heap_range = heap_reservation.heap.get().ReserveRange(descriptors.mutable_count);
-            if (!sp_mutable_heap_range)
+            heap_reservation.mutable_range = heap_reservation.heap.get().ReserveRange(descriptors.mutable_count);
+            if (!heap_reservation.mutable_range)
             {
                 throw std::runtime_error("Failed to reserve mutable descriptor heap range. Descriptor heap is not big enough.");
             }
-            heap_reservation.mutable_range = *sp_mutable_heap_range;
         }
     }
 }
 
 void ProgramBindingsBase::SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     for (const auto& argument_and_resource_locations : resource_locations_by_argument)
     {
         const Program::Argument argument = argument_and_resource_locations.first;
-        const Ptr<ArgumentBinding>& sp_binding = Get(argument);
-        if (!sp_binding)
+        const Ptr<ArgumentBinding>& binding_ptr = Get(argument);
+        if (!binding_ptr)
         {
 #ifndef PROGRAM_IGNORE_MISSING_ARGUMENTS
             const Program::Argument all_shaders_argument(Shader::Type::All, argument.name);
             const bool all_shaders_argument_found = !!Get(all_shaders_argument);
-            throw std::runtime_error("Program \"" + m_sp_program->GetName() +
+            throw std::runtime_error("Program \"" + m_program_ptr->GetName() +
                                      "\" does not have argument \"" + argument.name +
                                      "\" of " + Shader::GetTypeName(argument.shader_type) + " shader." +
                                      (all_shaders_argument_found ? " Instead this argument is used in All shaders." : "") );
@@ -293,23 +297,23 @@ void ProgramBindingsBase::SetResourcesForArguments(const ResourceLocationsByArgu
             continue;
 #endif
         }
-        sp_binding->SetResourceLocations(argument_and_resource_locations.second);
+        binding_ptr->SetResourceLocations(argument_and_resource_locations.second);
     }
 }
 
 const Ptr<ProgramBindings::ArgumentBinding>& ProgramBindingsBase::Get(const Program::Argument& shader_argument) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    static const Ptr<ArgumentBinding> s_sp_empty_argument_binding;
+    static const Ptr<ArgumentBinding> s_empty_argument_binding_ptr;
     auto binding_by_argument_it  = m_binding_by_argument.find(shader_argument);
     return binding_by_argument_it != m_binding_by_argument.end()
-         ? binding_by_argument_it->second : s_sp_empty_argument_binding;
+         ? binding_by_argument_it->second : s_empty_argument_binding_ptr;
 }
 
 bool ProgramBindingsBase::AllArgumentsAreBoundToResources(std::string& missing_args) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     std::stringstream log_ss;
     bool all_arguments_are_bound_to_resources = true;
@@ -319,7 +323,7 @@ bool ProgramBindingsBase::AllArgumentsAreBoundToResources(std::string& missing_a
         if (resource_locations.empty())
         {
             log_ss << std::endl 
-                   << "   - Program \"" << m_sp_program->GetName()
+                   << "   - Program \"" << m_program_ptr->GetName()
                    << "\" argument \"" << binding_by_argument.first.name
                    << "\" of " << Shader::GetTypeName(binding_by_argument.first.shader_type)
                    << " shader is not bound to any resource." ;
@@ -330,20 +334,20 @@ bool ProgramBindingsBase::AllArgumentsAreBoundToResources(std::string& missing_a
     if (!all_arguments_are_bound_to_resources)
     {
         missing_args = log_ss.str();
-        Platform::PrintToDebugOutput(missing_args);
+        META_LOG(missing_args);
     }
     return all_arguments_are_bound_to_resources;
 }
 
 void ProgramBindingsBase::VerifyAllArgumentsAreBoundToResources()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     // Verify that resources are set for all program arguments
 #ifndef PROGRAM_IGNORE_MISSING_ARGUMENTS
     std::string missing_args;
     if (!AllArgumentsAreBoundToResources(missing_args))
     {
-        throw std::runtime_error("Some arguments of program \"" + m_sp_program->GetName() +
+        throw std::runtime_error("Some arguments of program \"" + m_program_ptr->GetName() +
                                  "\" are not bound to any resource:\n" + missing_args);
     }
 #endif
@@ -351,7 +355,7 @@ void ProgramBindingsBase::VerifyAllArgumentsAreBoundToResources()
 
 const std::optional<DescriptorHeap::Reservation>& ProgramBindingsBase::GetDescriptorHeapReservationByType(DescriptorHeap::Type heap_type) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     assert(heap_type != DescriptorHeap::Type::Undefined);
     return m_descriptor_heap_reservations_by_type[static_cast<uint32_t>(heap_type)];
 }

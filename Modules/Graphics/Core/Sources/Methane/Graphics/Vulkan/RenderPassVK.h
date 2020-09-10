@@ -36,7 +36,7 @@ public:
     RenderPassVK(RenderContextBase& context, const Settings& settings);
 
     // RenderPass interface
-    void Update(const Settings& settings) override;
+    bool Update(const Settings& settings) override;
     
     void Reset();
 

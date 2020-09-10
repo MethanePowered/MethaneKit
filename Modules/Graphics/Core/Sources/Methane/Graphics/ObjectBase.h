@@ -24,18 +24,38 @@ Base implementation of the named object interface.
 #pragma once
 
 #include <Methane/Graphics/Object.h>
+#include <Methane/Memory.hpp>
+
+#include <map>
 
 namespace Methane::Graphics
 {
 
-class ObjectBase : public virtual Object
+class ObjectBase
+    : public virtual Object
+    , public std::enable_shared_from_this<ObjectBase>
 {
 public:
+    class RegistryBase : public Registry
+    {
+    public:
+        void        AddGraphicsObject(Object& object) override;
+        Ptr<Object> GetGraphicsObject(const std::string& object_name) const noexcept override;
+        bool        HasGraphicsObject(const std::string& object_name) const noexcept override;
+
+    private:
+        std::map<std::string, WeakPtr<Object>> m_object_by_name;
+    };
+
     ObjectBase() = default;
+    ObjectBase(std::string name) : m_name(std::move(name)) { }
 
     // Object interface
     void               SetName(const std::string& name) override { m_name = name; }
     const std::string& GetName() const noexcept override         { return m_name; }
+    Ptr<Object>        GetPtr() override                         { return std::dynamic_pointer_cast<Object>(shared_from_this()); }
+
+    Ptr<ObjectBase>    GetBasePtr()                              { return shared_from_this(); }
 
 private:
     std::string m_name;

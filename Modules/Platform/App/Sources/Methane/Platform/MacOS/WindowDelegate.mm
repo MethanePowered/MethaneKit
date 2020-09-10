@@ -39,7 +39,7 @@ using namespace Methane::Platform;
 
 - (id) initWithApp : (AppMac*) p_app
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     self = [super init];
     if (!self)
@@ -50,36 +50,76 @@ using namespace Methane::Platform;
     return self;
 }
 
-- (void) windowDidEnterFullScreen:(NSNotification *)notification
+- (void) windowDidEnterFullScreen:(NSNotification*) notification
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    #pragma unused(notification)
+    
     assert(!!m_p_app);
-
     m_p_app->SetFullScreen(true);
 }
 
-- (void) windowDidExitFullScreen:(NSNotification *)notification
+- (void) windowDidExitFullScreen:(NSNotification*) notification
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    #pragma unused(notification)
+    
     assert(!!m_p_app);
-
     m_p_app->SetFullScreen(false);
 }
 
-- (void) windowDidMiniaturize:(NSNotification *)notification
+- (void) windowDidMiniaturize:(NSNotification*) notification
 {
-    ITT_FUNCTION_TASK();
-    assert(!!m_p_app);
+    META_FUNCTION_TASK();
+    #pragma unused(notification)
     
+    assert(!!m_p_app);
     m_p_app->Resize(m_p_app->GetFrameSize(), true);
 }
 
-- (void) windowDidDeminiaturize:(NSNotification *)notification
+- (void) windowDidDeminiaturize:(NSNotification*) notification
 {
-    ITT_FUNCTION_TASK();
-    assert(!!m_p_app);
+    META_FUNCTION_TASK();
+    #pragma unused(notification)
     
+    assert(!!m_p_app);
     m_p_app->Resize(m_p_app->GetFrameSize(), false);
+}
+
+- (void) windowWillStartLiveResize:(NSNotification*) notification
+{
+    META_FUNCTION_TASK();
+    #pragma unused(notification)
+
+    assert(!!m_p_app);
+    m_p_app->StartResizing();
+}
+
+- (void) windowDidEndLiveResize:(NSNotification*) notification
+{
+    META_FUNCTION_TASK();
+    #pragma unused(notification)
+
+    assert(!!m_p_app);
+    m_p_app->EndResizing();
+}
+
+- (void) windowDidBecomeKey:(NSNotification*) notification
+{
+    META_FUNCTION_TASK();
+    #pragma unused(notification)
+
+    assert(!!m_p_app);
+    m_p_app->SetKeyboardFocus(true);
+}
+
+- (void) windowDidResignKey:(NSNotification*) notification
+{
+    META_FUNCTION_TASK();
+    #pragma unused(notification)
+
+    assert(!!m_p_app);
+    m_p_app->SetKeyboardFocus(false);
 }
 
 @end

@@ -23,6 +23,7 @@ Vulkan implementation of the buffer interface.
 
 #include "BufferVK.h"
 
+#include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 
@@ -33,85 +34,79 @@ namespace Methane::Graphics
 
 Ptr<Buffer> Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
 {
-    ITT_FUNCTION_TASK();
-    const Buffer::Settings settings = { Buffer::Type::Vertex, Usage::Unknown, size };
-    return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings, stride, PixelFormat::Unknown);
+    META_FUNCTION_TASK();
+    const Buffer::Settings settings{ Buffer::Type::Vertex, Usage::Unknown, size, stride, PixelFormat::Unknown, Buffer::StorageMode::Private };
+    return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings);
 }
 
 Ptr<Buffer> Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format)
 {
-    ITT_FUNCTION_TASK();
-    const Buffer::Settings settings = { Buffer::Type::Index, Usage::Unknown, size };
-    return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings, 0, format);
+    META_FUNCTION_TASK();
+    const Buffer::Settings settings{ Buffer::Type::Index, Usage::Unknown, size, GetPixelSize(format), format, Buffer::StorageMode::Private };
+    return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings);
 }
 
 Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
-    Usage::Mask usage_mask = Usage::ShaderRead;
-    if (addressable)
-        usage_mask |= Usage::Addressable;
+    META_FUNCTION_TASK();
+    const Usage::Mask usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::Unknown);
+    const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0u, PixelFormat::Unknown, Buffer::StorageMode::Private };
+    return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
+}
 
-    const Buffer::Settings settings = { Buffer::Type::Constant, usage_mask, size };
+Ptr<Buffer> Buffer::CreateVolatileBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
+{
+    const Usage::Mask usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::Unknown);
+    const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0u, PixelFormat::Unknown, Buffer::StorageMode::Managed };
     return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
 Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return size;
 }
 
 BufferVK::BufferVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : BufferBase(context, settings, descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
-
+    META_FUNCTION_TASK();
     InitializeDefaultDescriptors();
-}
-
-BufferVK::BufferVK(ContextBase& context, const Settings& settings, Data::Size stride, PixelFormat format, const DescriptorByUsage& descriptor_by_usage)
-    : BufferVK(context, settings, descriptor_by_usage)
-{
-    ITT_FUNCTION_TASK();
-
-    m_stride = stride;
-    m_format = format;
 }
 
 BufferVK::~BufferVK()
 {
-    ITT_FUNCTION_TASK();
-    GetContext().GetResourceManager().GetReleasePool().AddResource(*this);
+    META_FUNCTION_TASK();
 }
 
 void BufferVK::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     BufferBase::SetName(name);
 }
 
 void BufferVK::SetData(const SubResources& sub_resources)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     BufferBase::SetData(sub_resources);
 }
 
-uint32_t BufferVK::GetFormattedItemsCount() const
+Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    return std::make_shared<BufferSetVK>(buffers_type, std::move(buffer_refs));
+}
 
-    const Data::Size data_size = GetDataSize();
-    if (m_stride > 0)
+BufferSetVK::BufferSetVK(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
+    : BufferSetBase(buffers_type, std::move(buffer_refs))
+{
+    META_FUNCTION_TASK();
+    switch(buffers_type)
     {
-        return data_size / m_stride;
-    }
-    else
-    {
-        const Data::Size element_size = GetPixelSize(m_format);
-        return element_size > 0 ? data_size / element_size : 0;
+    case Buffer::Type::Vertex: break;
+    default: break;
     }
 }
 

@@ -31,16 +31,18 @@ target_include_directories(${TARGET}
 
 target_link_libraries(${TARGET}
     PUBLIC
-        MethaneCommonPrimitives
         MethaneInstrumentation
+    PRIVATE
+        MethaneBuildOptions
+        MethanePrimitives
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER Modules/Data
-    PUBLIC_HEADER "${HEADERS}"
+        FOLDER Modules/Data
+        PUBLIC_HEADER "${HEADERS}"
 )
 
 install(TARGETS ${TARGET}

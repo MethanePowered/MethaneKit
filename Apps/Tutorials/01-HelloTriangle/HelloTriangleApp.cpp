@@ -23,48 +23,27 @@ Tutorial demonstrating triangle rendering with Methane graphics API
 
 #include "HelloTriangleApp.h"
 
+#include <Methane/Samples/AppSettings.hpp>
+
 namespace Methane::Tutorials
 {
 
-static const GraphicsApp::AllSettings g_app_settings =  // Application settings:
-{                                                       // ====================
-    {                                                   // platform_apps:
-        "Methane Hello Triangle",                       // - name
-        0.8, 0.8,                                       // - width, height
-    },                                                  //
-    {                                                   // graphics_app:
-        gfx::RenderPass::Access::ShaderResources |      // - screen_pass_access
-        gfx::RenderPass::Access::Samplers,              //
-        true,                                           // - animations_enabled
-        true,                                           // - show_hud_in_window_title
-        true,                                           // - show_logo_badge
-        0                                               // - default_device_index
-    },                                                  //
-    {                                                   // render_context:
-        gfx::FrameSize(),                               // - frame_size placeholder: actual size is set in InitContext
-        gfx::PixelFormat::BGRA8Unorm,                   // - color_format
-        gfx::PixelFormat::Unknown,                      // - depth_stencil_format
-        gfx::Color4f(0.0f, 0.2f, 0.4f, 1.0f),           // - clear_color
-        { /* no depth-stencil clearing */ },            // - clear_depth_stencil
-        3,                                              // - frame_buffers_count
-        false,                                          // - vsync_enabled
-    }
-};
-
 HelloTriangleApp::HelloTriangleApp()
-    : GraphicsApp(g_app_settings, "Methane tutorial of simple triangle rendering")
+    : UserInterfaceApp(
+        Samples::GetGraphicsAppSettings("Methane Hello Triangle", false /* animations */, false /* depth */), {},
+        "Methane tutorial of simple triangle rendering")
 {
 }
 
 HelloTriangleApp::~HelloTriangleApp()
 {
     // Wait for GPU rendering is completed to release resources
-    m_sp_context->WaitForGpu(gfx::Context::WaitFor::RenderComplete);
+    GetRenderContext().WaitForGpu(gfx::Context::WaitFor::RenderComplete);
 }
 
 void HelloTriangleApp::Init()
 {
-    GraphicsApp::Init();
+    UserInterfaceApp::Init();
 
     struct Vertex
     {
@@ -72,31 +51,32 @@ void HelloTriangleApp::Init()
         gfx::Vector3f color;
     };
 
-    const std::array<Vertex, 3> triangle_vertices = {{
+    const std::array<Vertex, 3> triangle_vertices{ {
         { {  0.0f,  0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
         { {  0.5f, -0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
         { { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } },
-    }};
+    } };
 
     // Create vertex buffer with triangle data
     const Data::Size vertex_size      = static_cast<Data::Size>(sizeof(Vertex));
     const Data::Size vertex_data_size = static_cast<Data::Size>(sizeof(triangle_vertices));
 
-    m_sp_vertex_buffer = gfx::Buffer::CreateVertexBuffer(*m_sp_context, vertex_data_size, vertex_size);
-    m_sp_vertex_buffer->SetName("Triangle Vertex Buffer");
-    m_sp_vertex_buffer->SetData({ { reinterpret_cast<Data::ConstRawPtr>(triangle_vertices.data()), vertex_data_size } });
+    Ptr<gfx::Buffer> vertex_buffer_ptr = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), vertex_data_size, vertex_size);
+    vertex_buffer_ptr->SetName("Triangle Vertex Buffer");
+    vertex_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(triangle_vertices.data()), vertex_data_size } });
+    m_vertex_buffer_set_ptr = gfx::BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
     // Create render state
-    m_sp_state = gfx::RenderState::Create(*m_sp_context,
+    m_render_state_ptr = gfx::RenderState::Create(GetRenderContext(),
         gfx::RenderState::Settings
         {
-            gfx::Program::Create(*m_sp_context,
+            gfx::Program::Create(GetRenderContext(),
                 gfx::Program::Settings
                 {
                     gfx::Program::Shaders
                     {
-                        gfx::Shader::CreateVertex(*m_sp_context, { Data::ShaderProvider::Get(), { "Triangle", "TriangleVS" } }),
-                        gfx::Shader::CreatePixel( *m_sp_context, { Data::ShaderProvider::Get(), { "Triangle", "TrianglePS" } }),
+                        gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "Triangle", "TriangleVS" } }),
+                        gfx::Shader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "Triangle", "TrianglePS" } }),
                     },
                     gfx::Program::InputBufferLayouts
                     {
@@ -106,79 +86,56 @@ void HelloTriangleApp::Init()
                         }
                     },
                     gfx::Program::ArgumentDescriptions { },
-                    gfx::PixelFormats { m_sp_context->GetSettings().color_format }
+                    gfx::PixelFormats { GetRenderContext().GetSettings().color_format }
                 }
-            ),
-            gfx::Viewports
-            {
-                gfx::GetFrameViewport(GetInitialContextSettings().frame_size)
-            },
-            gfx::ScissorRects
-            {
-                gfx::GetFrameScissorRect(GetInitialContextSettings().frame_size)
-            },
+            )
         }
     );
-    m_sp_state->GetSettings().sp_program->SetName("Colored Triangle Shading");
-    m_sp_state->SetName("Triangle Pipeline State");
+    m_render_state_ptr->GetSettings().program_ptr->SetName("Colored Triangle Shading");
+    m_render_state_ptr->SetName("Triangle Pipeline State");
 
     // Create per-frame command lists
-    for(HelloTriangleFrame& frame : m_frames)
+    for(HelloTriangleFrame& frame : GetFrames())
     {
-        frame.sp_cmd_list = gfx::RenderCommandList::Create(m_sp_context->GetRenderCommandQueue(), *frame.sp_screen_pass);
-        frame.sp_cmd_list->SetName(IndexedName("Triangle Rendering", frame.index));
+        frame.render_cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.screen_pass_ptr);
+        frame.render_cmd_list_ptr->SetName(IndexedName("Triangle Rendering", frame.index));
+        frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({ *frame.render_cmd_list_ptr });
     }
 
-    // Complete initialization of render context
-    m_sp_context->CompleteInitialization();
-}
-
-bool HelloTriangleApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
-{
-    // Resize screen color and depth textures
-    if (!GraphicsApp::Resize(frame_size, is_minimized))
-        return false;
-
-    // Update viewports and scissor rects state
-    m_sp_state->SetViewports(    { gfx::GetFrameViewport(frame_size)    } );
-    m_sp_state->SetScissorRects( { gfx::GetFrameScissorRect(frame_size) } );
-
-    return true;
+    UserInterfaceApp::CompleteInitialization();
 }
 
 bool HelloTriangleApp::Render()
 {
-    // Render only when context is ready
-    if (!m_sp_context->ReadyToRender() || !GraphicsApp::Render())
+    if (!UserInterfaceApp::Render())
         return false;
 
-    // Wait for previous frame rendering is completed and switch to next frame
-    m_sp_context->WaitForGpu(gfx::Context::WaitFor::FramePresented);
-    HelloTriangleFrame& frame = GetCurrentFrame();
-
     // Issue commands for triangle rendering
-    frame.sp_cmd_list->Reset(m_sp_state, "Triangle Rendering");
-    frame.sp_cmd_list->SetVertexBuffers({ *m_sp_vertex_buffer });
-    frame.sp_cmd_list->Draw(gfx::RenderCommandList::Primitive::Triangle, 3u);
+    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Triangle Rendering");
+    HelloTriangleFrame& frame = GetCurrentFrame();
+    frame.render_cmd_list_ptr->Reset(m_render_state_ptr, s_debug_group.get());
+    frame.render_cmd_list_ptr->SetViewState(GetViewState());
+    frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
+    frame.render_cmd_list_ptr->Draw(gfx::RenderCommandList::Primitive::Triangle, 3u);
 
-    RenderOverlay(*frame.sp_cmd_list);
+    RenderOverlay(*frame.render_cmd_list_ptr);
 
     // Commit command list with present flag
-    frame.sp_cmd_list->Commit();
+    frame.render_cmd_list_ptr->Commit();
 
     // Execute command list on render queue and present frame to screen
-    m_sp_context->GetRenderCommandQueue().Execute({ *frame.sp_cmd_list });
-    m_sp_context->Present();
+    GetRenderContext().GetRenderCommandQueue().Execute(*frame.execute_cmd_list_set_ptr);
+    GetRenderContext().Present();
 
     return true;
 }
 
-void HelloTriangleApp::OnContextReleased()
+void HelloTriangleApp::OnContextReleased(gfx::Context& context)
 {
-    m_sp_vertex_buffer.reset();
-    m_sp_state.reset();
+    m_vertex_buffer_set_ptr.reset();
+    m_render_state_ptr.reset();
 
-    GraphicsApp::OnContextReleased();
+    UserInterfaceApp::OnContextReleased(context);
 }
 
 } // namespace Methane::Tutorials

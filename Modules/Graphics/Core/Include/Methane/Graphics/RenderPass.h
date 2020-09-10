@@ -23,10 +23,12 @@ Methane render pass interface: specifies output of the graphics pipeline.
 
 #pragma once
 
-#include "Types.h"
 #include "Texture.h"
+#include "Object.h"
 
 #include <Methane/Memory.hpp>
+#include <Methane/Graphics/Types.h>
+#include <Methane/Graphics/Color.hpp>
 
 #include <vector>
 
@@ -35,7 +37,7 @@ namespace Methane::Graphics
 
 struct RenderContext;
 
-struct RenderPass
+struct RenderPass : virtual Object
 {
     struct Attachment
     {
@@ -53,12 +55,12 @@ struct RenderPass
             Resolve,
         };
         
-        WeakPtr<Texture> wp_texture;
-        uint32_t         level        = 0u;
-        uint32_t         slice        = 0u;
-        uint32_t         depth_plane  = 0u;
-        LoadAction       load_action  = LoadAction::DontCare;
-        StoreAction      store_action = StoreAction::DontCare;
+        Ptr<Texture> texture_ptr;
+        uint32_t     level        = 0u;
+        uint32_t     slice        = 0u;
+        uint32_t     depth_plane  = 0u;
+        LoadAction   load_action  = LoadAction::DontCare;
+        StoreAction  store_action = StoreAction::DontCare;
         
         bool operator==(const Attachment& other) const;
     };
@@ -108,7 +110,7 @@ struct RenderPass
         };
 
         using Values = std::array<Value, 4>;
-        static constexpr Values values = { ShaderResources, Samplers, RenderTargets, DepthStencil };
+        static constexpr Values values{ ShaderResources, Samplers, RenderTargets, DepthStencil };
     };
 
     struct Settings
@@ -117,6 +119,7 @@ struct RenderPass
         DepthAttachment    depth_attachment;
         StencilAttachment  stencil_attachment;
         Access::Mask       shader_access_mask = Access::None;
+        bool               is_final_pass = true;
 
         bool operator==(const Settings& other) const;
         bool operator!=(const Settings& other) const;
@@ -126,8 +129,9 @@ struct RenderPass
     static Ptr<RenderPass> Create(RenderContext& context, const Settings& settings);
 
     // RenderPass interface
-    virtual void  Update(const Settings& settings) = 0;
     virtual const Settings& GetSettings() const = 0;
+    virtual bool Update(const Settings& settings) = 0;
+    virtual void ReleaseAttachmentTextures() = 0;
 
     virtual ~RenderPass() = default;
 };

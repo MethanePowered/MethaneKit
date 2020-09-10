@@ -35,36 +35,36 @@ namespace Methane::Graphics
 
 Ptr<Texture> Texture::CreateRenderTarget(RenderContext& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
 Ptr<Texture> Texture::CreateFrameBuffer(RenderContext& context, uint32_t /*frame_buffer_index*/, const DescriptorByUsage& descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const RenderContext::Settings& context_settings = context.GetSettings();
-    const Settings texture_settings = Settings::FrameBuffer(context_settings.frame_size, context_settings.color_format);
+    const Settings texture_settings = Settings::FrameBuffer(Dimensions(context_settings.frame_size), context_settings.color_format);
     return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
 Ptr<Texture> Texture::CreateDepthStencilBuffer(RenderContext& context, const DescriptorByUsage& descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const RenderContext::Settings& context_settings = context.GetSettings();
-    const Settings texture_settings = Settings::DepthStencilBuffer(context_settings.frame_size, context_settings.depth_stencil_format);
+    const Settings texture_settings = Settings::DepthStencilBuffer(Dimensions(context_settings.frame_size), context_settings.depth_stencil_format);
     return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
 Ptr<Texture> Texture::CreateImage(Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length, pixel_format, mipmapped, Usage::ShaderRead);
     return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
 Ptr<Texture> Texture::CreateCube(Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length, pixel_format, mipmapped, Usage::ShaderRead);
     return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
@@ -72,52 +72,38 @@ Ptr<Texture> Texture::CreateCube(Context& context, uint32_t dimension_size, uint
 TextureVK::TextureVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : TextureBase(context, settings, descriptor_by_usage)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     InitializeDefaultDescriptors();
 }
 
 TextureVK::~TextureVK()
 {
-    ITT_FUNCTION_TASK();
-
-    if (GetSettings().type != Texture::Type::FrameBuffer)
-    {
-        GetContext().GetResourceManager().GetReleasePool().AddResource(*this);
-    }
+    META_FUNCTION_TASK();
 }
 
 void TextureVK::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     TextureBase::SetName(name);
 }
 
 void TextureVK::SetData(const SubResources& sub_resources)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    if (sub_resources.empty())
-    {
-        throw std::invalid_argument("Can not set texture data from empty sub-resources.");
-    }
+    TextureBase::SetData(sub_resources);
     
-    if (GetSettings().mipmapped && sub_resources.size() < GetRequiredSubresourceCount())
+    if (GetSettings().mipmapped && sub_resources.size() < GetSubresourceCount().GetRawCount())
     {
         GenerateMipLevels();
     }
 }
 
-Data::Size TextureVK::GetDataSize() const
-{
-    ITT_FUNCTION_TASK();
-    throw std::logic_error("Getting of texture data size is not implemented.");
-}
-
 void TextureVK::UpdateFrameBuffer()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (GetSettings().type != Texture::Type::FrameBuffer)
     {
@@ -127,7 +113,7 @@ void TextureVK::UpdateFrameBuffer()
 
 void TextureVK::GenerateMipLevels()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 } // namespace Methane::Graphics

@@ -16,14 +16,14 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/App.hpp
+FILE: Methane/Graphics/App.h
 Interface of the graphics application base template class defined in App.hpp
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/RenderPass.h>
+#include <stdint.h>
 
 namespace Methane::Graphics
 {
@@ -32,16 +32,14 @@ struct IApp
 {
     struct Settings
     {
-        RenderPass::Access::Mask screen_pass_access         = RenderPass::Access::None;
-        bool                     animations_enabled         = true;
-        bool                     show_hud_in_window_title   = true;
-        bool                     show_logo_badge            = true;
-        int32_t                  default_device_index       = 0;
+        uint32_t screen_pass_access         = 0u;
+        bool     animations_enabled         = true;
+        bool     show_hud_in_window_title   = true;
+        int32_t  default_device_index       = 0;
     };
 
     virtual const IApp::Settings& GetGraphicsAppSettings() const noexcept = 0;
     virtual bool SetAnimationsEnabled(bool animations_enabled) = 0;
-    virtual bool SetShowHudInWindowTitle(bool show_hud_in_window_title) = 0;
 
     virtual ~IApp() = default;
 };

@@ -24,6 +24,7 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps
 #include "DescriptorHeap.h"
 #include "ResourceBase.h"
 
+#include <Methane/Data/RangeUtils.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <cassert>
@@ -36,7 +37,7 @@ DescriptorHeap::Reservation::Reservation(const Ref<DescriptorHeap>& in_heap, con
     , constant_range(in_constant_range)
     , mutable_range(in_mutable_range)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 DescriptorHeap::DescriptorHeap(ContextBase& context, const Settings& settings)
@@ -44,7 +45,7 @@ DescriptorHeap::DescriptorHeap(ContextBase& context, const Settings& settings)
     , m_settings(settings)
     , m_deferred_size(settings.size)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     if (m_deferred_size > 0)
     {
@@ -55,9 +56,9 @@ DescriptorHeap::DescriptorHeap(ContextBase& context, const Settings& settings)
 
 DescriptorHeap::~DescriptorHeap()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    std::lock_guard<std::mutex> lock_guard(m_modification_mutex);
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
 
     // All descriptor ranges must be released when heap is destroyed
     assert((!m_deferred_size && m_free_ranges.IsEmpty()) ||
@@ -66,9 +67,9 @@ DescriptorHeap::~DescriptorHeap()
 
 Data::Index DescriptorHeap::AddResource(const ResourceBase& resource)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    std::lock_guard<std::mutex> lock_guard(m_modification_mutex);
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
 
     if (m_resources.size() >= m_settings.size)
     {
@@ -94,9 +95,9 @@ Data::Index DescriptorHeap::AddResource(const ResourceBase& resource)
 
 Data::Index DescriptorHeap::ReplaceResource(const ResourceBase& resource, Data::Index at_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    std::lock_guard<std::mutex> lock_guard(m_modification_mutex);
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
 
     if (at_index >= m_resources.size())
     {
@@ -110,9 +111,9 @@ Data::Index DescriptorHeap::ReplaceResource(const ResourceBase& resource, Data::
 
 void DescriptorHeap::RemoveResource(Data::Index at_index)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    std::lock_guard<std::mutex> lock_guard(m_modification_mutex);
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
 
     if (at_index >= m_resources.size())
     {
@@ -124,51 +125,52 @@ void DescriptorHeap::RemoveResource(Data::Index at_index)
     m_free_ranges.Add(Range(at_index, at_index + 1));
 }
 
-Ptr<DescriptorHeap::Range> DescriptorHeap::ReserveRange(Data::Size length)
+void DescriptorHeap::Allocate()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    std::lock_guard<std::mutex> lock_guard(m_modification_mutex);
+    m_allocated_size = m_deferred_size;
 
-    RangeSet::ConstIterator free_range_it = std::find_if(m_free_ranges.begin(), m_free_ranges.end(),
-        [length](const Range& range)
-        {
-            return range.GetLength() >= length;
-        }
-    );
+    Emit(&IDescriptorHeapCallback::OnDescriptorHeapAllocated, std::ref(*this));
+}
 
-    if (free_range_it == m_free_ranges.end())
-    {
-        if (m_settings.deferred_allocation)
-        {
-            Ptr<Range> sp_reserved_range(new Range(m_deferred_size, m_deferred_size + length));
-            m_deferred_size += length;
-            return sp_reserved_range;
-        }
-        else
-            return nullptr;
-    }
-    
-    Ptr<Range> sp_reserved_range(new Range(free_range_it->GetStart(), free_range_it->GetStart() + length));
-    m_free_ranges.Remove(*sp_reserved_range);
+DescriptorHeap::Range DescriptorHeap::ReserveRange(Data::Size length)
+{
+    META_FUNCTION_TASK();
+    if (!length)
+        throw std::invalid_argument("Unable to reserve empty descriptor range.");
 
-    return sp_reserved_range;
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
+
+    Range reserved_range = Data::ReserveRange(m_free_ranges, length);
+    if (reserved_range || !m_settings.deferred_allocation)
+        return reserved_range;
+
+    Range deferred_range(m_deferred_size, m_deferred_size + length);
+    m_deferred_size += length;
+    return deferred_range;
 }
 
 void DescriptorHeap::ReleaseRange(const Range& range)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
-    std::lock_guard<std::mutex> lock_guard(m_modification_mutex);
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
     m_free_ranges.Add(range);
+}
+
+void DescriptorHeap::SetDeferredAllocation(bool deferred_allocation)
+{
+    META_FUNCTION_TASK();
+    m_settings.deferred_allocation = deferred_allocation;
 }
 
 std::string DescriptorHeap::GetTypeName(Type heap_type)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch (heap_type)
     {
-        case Type::ShaderResources: return "ShaderBase Resources";
+        case Type::ShaderResources: return "Shader Resources";
         case Type::Samplers:        return "Samplers";
         case Type::RenderTargets:   return "Render Targets";
         case Type::DepthStencil:    return "Depth Stencil";

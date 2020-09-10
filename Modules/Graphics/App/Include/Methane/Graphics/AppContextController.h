@@ -50,7 +50,7 @@ class AppContextController final
     , public Platform::Keyboard::ActionControllerBase<AppContextAction>
 {
 public:
-    inline static const ActionByKeyboardState default_action_by_keyboard_state = {
+    inline static const ActionByKeyboardState default_action_by_keyboard_state{
         { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::V     }, AppContextAction::SwitchVSync                    },
         { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::X     }, AppContextAction::SwitchDevice                   },
         { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::Equal }, AppContextAction::AddFrameBufferToSwapChain      },

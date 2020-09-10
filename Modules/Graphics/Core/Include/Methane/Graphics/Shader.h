@@ -52,7 +52,16 @@ struct Shader
     
     using Types = std::set<Shader::Type>;
 
-    using MacroDefinitions = std::map<std::string, std::string>;
+    struct MacroDefinition
+    {
+        std::string name;
+        std::string value;
+
+        explicit MacroDefinition(std::string name) : name(std::move(name)) { }
+        MacroDefinition(std::string name, std::string value) : name(std::move(name)), value(std::move(value)) { }
+    };
+
+    using MacroDefinitions = std::vector<MacroDefinition>;
 
     struct EntryFunction
     {
@@ -77,6 +86,7 @@ struct Shader
 
     // Auxiliary functions
     static std::string GetTypeName(Type shader_type) noexcept;
+    static std::string ConvertMacroDefinitionsToString(const MacroDefinitions& macro_definitions, const std::string& splitter = ", ") noexcept;
 
     // Shader interface
     virtual Type            GetType() const noexcept = 0;

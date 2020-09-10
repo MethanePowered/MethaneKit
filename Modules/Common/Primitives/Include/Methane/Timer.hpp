@@ -54,6 +54,17 @@ public:
         Reset(Clock::now());
     }
 
+    void Reset(TimeDuration duration) noexcept
+    {
+        Reset(Clock::now() - duration);
+    }
+
+    template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+    void ResetToSeconds(T seconds) noexcept
+    {
+        Reset(std::chrono::duration_cast<TimeDuration>(std::chrono::duration<T>(seconds)));
+    }
+
 protected:
     void Reset(TimePoint time_point)
     {

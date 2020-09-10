@@ -27,65 +27,100 @@ Base implementation of the parallel render command list interface.
 #include "RenderStateBase.h"
 #include "BufferBase.h"
 #include "ProgramBase.h"
+#include "CommandQueueBase.h"
+#include "ContextBase.h"
 
 #include <Methane/Instrumentation.h>
-#include <Methane/Data/Parallel.hpp>
+#include <Methane/Data/Math.hpp>
 
+#include <taskflow/taskflow.hpp>
 #include <cassert>
 
 namespace Methane::Graphics
 {
 
-inline std::string GetThreadCommandListName(const std::string& name, uint32_t index)
+inline std::string GetThreadCommandListName(const std::string& name, Data::Index index)
 {
     return name + " [Thread " + std::to_string(index) + "]";
 }
 
-ParallelRenderCommandListBase::ParallelRenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& pass)
+ParallelRenderCommandListBase::ParallelRenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass)
     : CommandListBase(command_queue, Type::ParallelRender)
-    , m_sp_pass(pass.GetPtr())
+    , m_render_pass_ptr(render_pass.GetRenderPassPtr())
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
-void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
+void ParallelRenderCommandListBase::SetValidationEnabled(bool is_validation_enabled) noexcept
 {
-    ITT_FUNCTION_TASK();
-    // Per-thread render command lists can be reset in parallel only with DirectX 12 on Windows
-#ifdef _WIN32
-    Data::ParallelFor<size_t>(0, m_parallel_command_lists.size(),
-    [this, &sp_render_state, &debug_group](size_t render_command_list_index)
-#else
-    for(size_t render_command_list_index = 0u; render_command_list_index < m_parallel_command_lists.size(); ++render_command_list_index)
-#endif
+    META_FUNCTION_TASK();
+    m_is_validation_enabled = is_validation_enabled;
+    for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
     {
-        const Ptr<RenderCommandList>& sp_render_command_list = m_parallel_command_lists[render_command_list_index];
-        assert(sp_render_command_list);
-        const std::string render_debug_group = GetThreadCommandListName(debug_group, static_cast<uint32_t>(render_command_list_index));
-        sp_render_command_list->Reset(sp_render_state, render_debug_group);
+        assert(!!render_command_list_ptr);
+        render_command_list_ptr->SetValidationEnabled(m_is_validation_enabled);
     }
+}
+
+void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
+{
+    META_FUNCTION_TASK();
+    CommandListBase::Reset();
+
+    // Create per-thread debug sub-group:
+    if (p_debug_group && !p_debug_group->HasSubGroups())
+    {
+        for(Data::Index render_command_list_index = 0; render_command_list_index < m_parallel_command_lists.size(); ++render_command_list_index)
+        {
+            p_debug_group->AddSubGroup(render_command_list_index, GetThreadCommandListName(p_debug_group->GetName(), render_command_list_index));
+        }
+    }
+
+    // Per-thread render command lists can be reset in parallel only with DirectX 12 on Windows
+    const auto reset_command_list_fn = [this, &render_state_ptr, p_debug_group](const int command_list_index)
+    {
+        META_FUNCTION_TASK();
+        const Ptr<RenderCommandList>& render_command_list_ptr = m_parallel_command_lists[command_list_index];
+        assert(render_command_list_ptr);
+        render_command_list_ptr->Reset(render_state_ptr, p_debug_group ? p_debug_group->GetSubGroup(static_cast<Data::Index>(command_list_index)) : nullptr);
+    };
+
 #ifdef _WIN32
-    );
+    tf::Taskflow reset_task_flow;
+    reset_task_flow.for_each_index_guided(0, static_cast<int>(m_parallel_command_lists.size()), 1, reset_command_list_fn,
+                                 Data::GetParallelChunkSizeAsInt(m_parallel_command_lists.size()));
+    GetCommandQueueBase().GetContext().GetParallelExecutor().run(reset_task_flow).get();
+#else
+    for(size_t command_list_index = 0u; command_list_index < m_parallel_command_lists.size(); ++command_list_index)
+        reset_command_list_fn(command_list_index);
 #endif
 }
 
 void ParallelRenderCommandListBase::Commit()
 {
-    ITT_FUNCTION_TASK();
-
-    for(const Ptr<RenderCommandList>& sp_render_command_list : m_parallel_command_lists)
+    META_FUNCTION_TASK();
+    for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
     {
-        assert(!!sp_render_command_list);
-        sp_render_command_list->Commit();
+        assert(!!render_command_list_ptr);
+        render_command_list_ptr->Commit();
     }
 
     CommandListBase::Commit();
 }
 
+void ParallelRenderCommandListBase::SetViewState(ViewState& view_state)
+{
+    META_FUNCTION_TASK();
+    for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
+    {
+        assert(!!render_command_list_ptr);
+        render_command_list_ptr->SetViewState(view_state);
+    }
+}
+
 void ParallelRenderCommandListBase::SetParallelCommandListsCount(uint32_t count)
 {
-    ITT_FUNCTION_TASK();
-
+    META_FUNCTION_TASK();
     uint32_t initial_count = static_cast<uint32_t>(m_parallel_command_lists.size());
     if (count < initial_count)
     {
@@ -105,29 +140,27 @@ void ParallelRenderCommandListBase::SetParallelCommandListsCount(uint32_t count)
     }
 }
 
-void ParallelRenderCommandListBase::Execute(uint32_t frame_index)
+void ParallelRenderCommandListBase::Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback)
 {
-    ITT_FUNCTION_TASK();
-
-    for(const Ptr<RenderCommandList>& sp_render_command_list : m_parallel_command_lists)
+    META_FUNCTION_TASK();
+    for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
     {
-        assert(!!sp_render_command_list);
-        RenderCommandListBase& metal_render_command_list = static_cast<RenderCommandListBase&>(*sp_render_command_list);
-        metal_render_command_list.Execute(frame_index);
+        assert(!!render_command_list_ptr);
+        RenderCommandListBase& thread_render_command_list = static_cast<RenderCommandListBase&>(*render_command_list_ptr);
+        thread_render_command_list.Execute(frame_index);
     }
 
-    CommandListBase::Execute(frame_index);
+    CommandListBase::Execute(frame_index, completed_callback);
 }
 
 void ParallelRenderCommandListBase::Complete(uint32_t frame_index)
 {
-    ITT_FUNCTION_TASK();
-
-    for(const Ptr<RenderCommandList>& sp_render_command_list : m_parallel_command_lists)
+    META_FUNCTION_TASK();
+    for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
     {
-        assert(!!sp_render_command_list);
-        RenderCommandListBase& metal_render_command_list = static_cast<RenderCommandListBase&>(*sp_render_command_list);
-        metal_render_command_list.Complete(frame_index);
+        assert(!!render_command_list_ptr);
+        RenderCommandListBase& thread_render_command_list = static_cast<RenderCommandListBase&>(*render_command_list_ptr);
+        thread_render_command_list.Complete(frame_index);
     }
 
     CommandListBase::Complete(frame_index);
@@ -135,27 +168,26 @@ void ParallelRenderCommandListBase::Complete(uint32_t frame_index)
 
 void ParallelRenderCommandListBase::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
-
+    META_FUNCTION_TASK();
     CommandListBase::SetName(name);
 
     if (name.empty())
         return;
 
     uint32_t render_cmd_list_index = 0;
-    for(const Ptr<RenderCommandList>& sp_render_cmd_list : m_parallel_command_lists)
+    for(const Ptr<RenderCommandList>& render_cmd_list_ptr : m_parallel_command_lists)
     {
-        assert(!!sp_render_cmd_list);
-        sp_render_cmd_list->SetName(GetThreadCommandListName(name, render_cmd_list_index));
+        assert(!!render_cmd_list_ptr);
+        render_cmd_list_ptr->SetName(GetThreadCommandListName(name, render_cmd_list_index));
         render_cmd_list_index++;
     }
 }
 
 RenderPassBase& ParallelRenderCommandListBase::GetPass()
 {
-    ITT_FUNCTION_TASK();
-    assert(!!m_sp_pass);
-    return static_cast<RenderPassBase&>(*m_sp_pass);
+    META_FUNCTION_TASK();
+    assert(!!m_render_pass_ptr);
+    return static_cast<RenderPassBase&>(*m_render_pass_ptr);
 }
 
 } // namespace Methane::Graphics

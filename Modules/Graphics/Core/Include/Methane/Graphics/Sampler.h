@@ -24,9 +24,9 @@ Methane sampler interface: GPU resource for texture sampling.
 #pragma once
 
 #include "Resource.h"
-#include "Types.h"
 
 #include <Methane/Memory.hpp>
+#include <Methane/Graphics/Types.h>
 
 #include <string>
 #include <limits>

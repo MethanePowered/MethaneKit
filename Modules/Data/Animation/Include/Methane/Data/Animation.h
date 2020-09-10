@@ -49,6 +49,7 @@ public:
     virtual void Restart() noexcept;
     virtual void Stop() noexcept;
     virtual bool Update() = 0;
+    virtual void DryUpdate() = 0;
 
     void Pause();
     void Resume();

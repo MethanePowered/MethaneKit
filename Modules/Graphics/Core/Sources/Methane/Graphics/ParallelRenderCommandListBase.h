@@ -45,28 +45,33 @@ public:
     using CommandListBase::Reset;
 
     // ParallelRenderCommandList interface
-    void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;
+    bool IsValidationEnabled() const noexcept override { return m_is_validation_enabled; }
+    void SetValidationEnabled(bool is_validation_enabled) noexcept override;
+    void Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) override;
+    void SetViewState(ViewState& view_state) override;
     void SetParallelCommandListsCount(uint32_t count) override;
     const Ptrs<RenderCommandList>& GetParallelCommandLists() const override { return m_parallel_command_lists; }
 
     // CommandListBase interface
     void SetResourceBarriers(const ResourceBase::Barriers&) override { throw std::logic_error("Can not set resource barriers on parallel render command list."); }
-    void Execute(uint32_t frame_index) override;
+    void Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback) override;
     void Complete(uint32_t frame_index) override;
 
     // CommandList interface
-    void PushDebugGroup(const std::string& name) override   { throw std::logic_error("Can no use debug groups on parallel render command list."); }
-    void PopDebugGroup() override                           { throw std::logic_error("Can no use debug groups on parallel render command list."); }
+    void PushDebugGroup(DebugGroup&) override   { throw std::logic_error("Can not use debug groups on parallel render command list."); }
+    void PopDebugGroup() override               { throw std::logic_error("Can not use debug groups on parallel render command list."); }
     void Commit() override;
 
     // Object interface
     void SetName(const std::string& name) override;
 
     RenderPassBase& GetPass();
+    Ptr<ParallelRenderCommandListBase> GetParallelRenderCommandListPtr() { return std::static_pointer_cast<ParallelRenderCommandListBase>(GetBasePtr()); }
 
 private:
-    const Ptr<RenderPass>   m_sp_pass;
+    const Ptr<RenderPass>   m_render_pass_ptr;
     Ptrs<RenderCommandList> m_parallel_command_lists;
+    bool                    m_is_validation_enabled = true;
 };
 
 } // namespace Methane::Graphics

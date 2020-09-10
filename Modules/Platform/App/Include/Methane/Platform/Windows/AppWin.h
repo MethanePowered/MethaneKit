@@ -52,14 +52,26 @@ protected:
     void ShowAlert(const Message& msg) override;
     
     void ScheduleAlert();
+    void StopMessageProcessing()     { m_is_message_processing = false; }
+    bool IsMessageProcessing() const { return m_is_message_processing; }
+
+    void    OnWindowAlert();
+    LRESULT OnWindowDestroy();
+    void    OnWindowResized(WPARAM w_param, LPARAM l_param);
+    LRESULT OnWindowResizing(WPARAM w_param, LPARAM l_param);
+    void    OnWindowKeyboardEvent(WPARAM w_param, LPARAM l_param);
+    LRESULT OnWindowMouseButtonEvent(UINT msg_id, WPARAM w_param, LPARAM l_param);
+    LRESULT OnWindowMouseMoveEvent(WPARAM w_param, LPARAM l_param);
+    LRESULT OnWindowMouseWheelEvent(bool is_vertical_scroll, WPARAM w_param, LPARAM l_param);
+    LRESULT OnWindowMouseLeave();
 
     static LRESULT CALLBACK WindowProc(HWND h_wnd, UINT message, WPARAM w_param, LPARAM l_param);
 
-    AppEnvironment m_env;
-
 private:
-    Mouse::State m_mouse_state;
-    RECT         m_window_rect = {};
+    AppEnvironment m_env;
+    Mouse::State   m_mouse_state;
+    RECT           m_window_rect {};
+    bool           m_is_message_processing = true;
 };
 
 } // namespace Methane::Platform

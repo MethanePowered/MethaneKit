@@ -38,76 +38,70 @@ namespace Methane::Graphics
 
 Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListVK>(static_cast<CommandQueueBase&>(command_queue), static_cast<RenderPassBase&>(render_pass));
 }
 
 Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListVK>(static_cast<ParallelRenderCommandListBase&>(parallel_render_command_list));
 }
 
 RenderCommandListVK::RenderCommandListVK(CommandQueueBase& command_queue, RenderPassBase& render_pass)
     : RenderCommandListBase(command_queue, render_pass)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 RenderCommandListVK::RenderCommandListVK(ParallelRenderCommandListBase& parallel_render_command_list)
     : RenderCommandListBase(parallel_render_command_list)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
-void RenderCommandListVK::Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group)
+void RenderCommandListVK::Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     RenderCommandListBase::ResetCommandState();
-    RenderCommandListBase::Reset(sp_render_state, debug_group);
+    RenderCommandListBase::Reset(render_state_ptr, p_debug_group);
 }
 
 void RenderCommandListVK::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     RenderCommandListBase::SetName(name);
 }
 
-void RenderCommandListVK::PushDebugGroup(const std::string& name)
+void RenderCommandListVK::PushDebugGroup(DebugGroup& debug_group)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    CommandListBase::PushDebugGroup(debug_group);
 }
 
 void RenderCommandListVK::PopDebugGroup()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
+    CommandListBase::PopDebugGroup();
 }
 
-void RenderCommandListVK::SetVertexBuffers(const Refs<Buffer>& vertex_buffers)
+void RenderCommandListVK::SetVertexBuffers(BufferSet& vertex_buffers)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     RenderCommandListBase::SetVertexBuffers(vertex_buffers);
 
-    if (!GetDrawingState().flags.vertex_buffers_changed)
+    if (!(GetDrawingState().changes & DrawingState::Changes::VertexBuffers))
         return;
-
-    uint32_t vb_index = 0;
-    for (auto vertex_buffer_ref : vertex_buffers)
-    {
-        assert(vertex_buffer_ref.get().GetBufferType() == Buffer::Type::Vertex);
-        const BufferVK& vulkan_buffer = static_cast<const BufferVK&>(vertex_buffer_ref.get());
-        vb_index++;
-    }
 }
 
 void RenderCommandListVK::DrawIndexed(Primitive primitive, Buffer& index_buffer,
                                       uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                                       uint32_t instance_count, uint32_t start_instance)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     
     const BufferVK& vulkan_index_buffer = static_cast<const BufferVK&>(index_buffer);
     if (index_count == 0)
@@ -121,36 +115,32 @@ void RenderCommandListVK::DrawIndexed(Primitive primitive, Buffer& index_buffer,
 void RenderCommandListVK::Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
                                uint32_t instance_count, uint32_t start_instance)
 {
-    ITT_FUNCTION_TASK();
-
+    META_FUNCTION_TASK();
     RenderCommandListBase::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
 }
 
 void RenderCommandListVK::Commit()
 {
-    ITT_FUNCTION_TASK();
-    
+    META_FUNCTION_TASK();
     assert(!IsCommitted());
-
     RenderCommandListBase::Commit();
 }
 
-void RenderCommandListVK::Execute(uint32_t frame_index)
+void RenderCommandListVK::Execute(uint32_t frame_index, const CompletedCallback& completed_callback)
 {
-    ITT_FUNCTION_TASK();
-
-    RenderCommandListBase::Execute(frame_index);
+    META_FUNCTION_TASK();
+    RenderCommandListBase::Execute(frame_index, completed_callback);
 }
 
 CommandQueueVK& RenderCommandListVK::GetCommandQueueVK() noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<class CommandQueueVK&>(GetCommandQueue());
 }
 
 RenderPassVK& RenderCommandListVK::GetPassVK()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return static_cast<class RenderPassVK&>(GetPass());
 }
 

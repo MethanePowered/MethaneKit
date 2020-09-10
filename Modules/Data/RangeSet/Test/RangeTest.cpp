@@ -38,7 +38,7 @@ TEST_CASE("Range initialization", "[range]")
 
     SECTION("Initializer list")
     {
-        const Range<float> float_range = { 1.23f, 4.56f };
+        const Range<float> float_range{ 1.23f, 4.56f };
         CHECK(float_range.GetStart() == 1.23f);
         CHECK(float_range.GetEnd() == 4.56f);
     }

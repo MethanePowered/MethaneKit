@@ -26,7 +26,6 @@ Asteroids application controller.
 
 #include <Methane/Instrumentation.h>
 
-
 namespace Methane::Samples
 {
 
@@ -35,31 +34,23 @@ AsteroidsAppController::AsteroidsAppController(AsteroidsApp& asteroids_app, cons
     , Platform::Keyboard::ActionControllerBase<AsteroidsAppAction>(action_by_keyboard_state, {})
     , m_asteroids_app(asteroids_app)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 void AsteroidsAppController::OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state,
                                                const Platform::Keyboard::StateChange& state_change)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Platform::Keyboard::ActionControllerBase<AsteroidsAppAction>::OnKeyboardChanged(key, key_state, state_change);
 }
 
 void AsteroidsAppController::OnKeyboardStateAction(AsteroidsAppAction action)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     
     const uint32_t asteroids_complexity = m_asteroids_app.GetAsteroidsComplexity();
     switch(action)
     {
-    case AsteroidsAppAction::ShowParameters:
-        m_asteroids_app.Alert({
-            pal::AppBase::Message::Type::Information,
-            "Methane Asteroids",
-            m_asteroids_app.GetParametersString()
-        });
-        break;
-
     case AsteroidsAppAction::IncreaseComplexity:
         m_asteroids_app.SetAsteroidsComplexity(asteroids_complexity + 1);
         break;
@@ -91,10 +82,9 @@ void AsteroidsAppController::OnKeyboardStateAction(AsteroidsAppAction action)
 
 std::string AsteroidsAppController::GetKeyboardActionName(AsteroidsAppAction action) const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     switch(action)
     {
-    case AsteroidsAppAction::ShowParameters:            return "show simulation parameters";
     case AsteroidsAppAction::IncreaseComplexity:        return "increase scene complexity";
     case AsteroidsAppAction::DecreaseComplexity:        return "decrease scene complexity";
     case AsteroidsAppAction::SwitchParallelRendering:   return "switch parallel rendering";
@@ -108,7 +98,7 @@ std::string AsteroidsAppController::GetKeyboardActionName(AsteroidsAppAction act
 
 Platform::Input::IHelpProvider::HelpLines AsteroidsAppController::GetHelp() const
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return GetKeyboardHelp();
 }
 

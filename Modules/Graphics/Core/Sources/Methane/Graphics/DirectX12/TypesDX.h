@@ -24,6 +24,7 @@ Methane graphics types converters to DirectX 12 native types.
 #pragma once
 
 #include <Methane/Graphics/Types.h>
+#include <Methane/Graphics/Volume.hpp>
 
 #include <d3dx12.h>
 #include <d3d12shader.h>
@@ -43,13 +44,9 @@ public:
         ViewWrite
     };
 
-    static CD3DX12_VIEWPORT                 ViewportToD3D(const Viewport& viewport) noexcept;
-    static std::vector<CD3DX12_VIEWPORT>    ViewportsToD3D(const Viewports& viewports) noexcept;
-    static CD3DX12_RECT                     ScissorRectToD3D(const ScissorRect& scissor_rect) noexcept;
-    static std::vector<CD3DX12_RECT>        ScissorRectsToD3D(const ScissorRects& scissor_rects) noexcept;
-    static DXGI_FORMAT                      DataFormatToDXGI(const PixelFormat& data_format) noexcept;
-    static DXGI_FORMAT                      DataFormatToDXGI(const PixelFormat& data_format, ResourceFormatType format_type) noexcept;
-    static D3D12_COMPARISON_FUNC            CompareFunctionToDX(Compare compare_func) noexcept;
+    static D3D12_COMPARISON_FUNC            CompareFunctionToD3D(Compare compare_func) noexcept;
+    static DXGI_FORMAT                      PixelFormatToDxgi(const PixelFormat& pixel_format) noexcept;
+    static DXGI_FORMAT                      PixelFormatToDxgi(const PixelFormat& pixel_format, ResourceFormatType format_type) noexcept;
     static DXGI_FORMAT                      ParameterDescToDxgiFormatAndSize(const D3D12_SIGNATURE_PARAMETER_DESC& param_desc, uint32_t& out_element_byte_size) noexcept;
 
 private:

@@ -40,6 +40,7 @@ public:
     // Animation overrides
     void Restart() noexcept override;
     bool Update() override;
+    void DryUpdate() override;
 
 private:
     const FunctionType  m_update_function;

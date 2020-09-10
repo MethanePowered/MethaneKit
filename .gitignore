@@ -4,4 +4,5 @@
 /.sonarqube
 /*.srctrl*
 /out
+/compileData.scor
 /CMakeLists.txt.user

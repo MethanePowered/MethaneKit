@@ -36,9 +36,12 @@ namespace Methane::Graphics
 class RenderContextDX final : public ContextDX<RenderContextBase>
 {
 public:
-    RenderContextDX(const Platform::AppEnvironment& env, DeviceBase& device, const RenderContext::Settings& settings);
+    RenderContextDX(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings);
 
     ~RenderContextDX() override;
+
+    // Context interface
+    void WaitForGpu(WaitFor wait_for) override;
 
     // RenderContext interface
     bool ReadyToRender() const override { return true; }
@@ -46,9 +49,10 @@ public:
     void Present() override;
     Platform::AppView GetAppView() const override { return { nullptr }; }
     float GetContentScalingFactor() const override;
+    uint32_t GetFontResolutionDpi() const override;
 
     // ContextBase interface
-    void Initialize(DeviceBase& device, bool deferred_heap_allocation) override;
+    void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true)  override;
     void Release() override;
 
     CommandQueueDX& GetRenderCommandQueueDX();

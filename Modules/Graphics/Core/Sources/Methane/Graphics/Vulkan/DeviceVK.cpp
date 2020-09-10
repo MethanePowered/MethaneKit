@@ -31,29 +31,29 @@ namespace Methane::Graphics
 DeviceVK::DeviceVK()
     : DeviceBase("", false, Device::Feature::Value::BasicRendering)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 DeviceVK::~DeviceVK()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 System& System::Get()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     static SystemVK s_system;
     return s_system;
 }
 
 SystemVK::~SystemVK()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 }
 
 const Ptrs<Device>& SystemVK::UpdateGpuDevices(Device::Feature::Mask supported_features)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     SetGpuSupportedFeatures(supported_features);
     ClearDevices();
     return GetGpuDevices();

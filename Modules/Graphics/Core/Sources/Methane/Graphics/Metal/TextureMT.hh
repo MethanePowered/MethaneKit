@@ -37,11 +37,9 @@ class TextureMT final : public TextureBase
 {
 public:
     TextureMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    ~TextureMT() override;
 
     // Resource interface
     void SetData(const SubResources& sub_resources) override;
-    Data::Size GetDataSize() const override;
 
     // Object interface
     void SetName(const std::string& name) override;

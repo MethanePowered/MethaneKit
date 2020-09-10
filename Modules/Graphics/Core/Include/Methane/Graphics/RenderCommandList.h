@@ -51,9 +51,13 @@ struct RenderCommandList : virtual CommandList
     static Ptr<RenderCommandList> Create(ParallelRenderCommandList& parallel_command_list);
     
     // RenderCommandList interface
-    virtual void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") = 0;
-    virtual void SetState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) = 0;
-    virtual void SetVertexBuffers(const Refs<Buffer>& vertex_buffers) = 0;
+    virtual bool IsValidationEnabled() const noexcept = 0;
+    virtual void SetValidationEnabled(bool is_validation_enabled) noexcept = 0;
+    virtual RenderPass& GetRenderPass() const noexcept = 0;
+    virtual void Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) = 0;
+    virtual void SetRenderState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) = 0;
+    virtual void SetViewState(ViewState& view_state) = 0;
+    virtual void SetVertexBuffers(BufferSet& vertex_buffers) = 0;
     virtual void DrawIndexed(Primitive primitive, Buffer& index_buffer, 
                              uint32_t index_count = 0, uint32_t start_index = 0, uint32_t start_vertex = 0, 
                              uint32_t instance_count = 1, uint32_t start_instance = 0) = 0;

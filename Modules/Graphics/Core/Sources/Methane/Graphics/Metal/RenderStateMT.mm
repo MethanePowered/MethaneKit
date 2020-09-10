@@ -36,7 +36,7 @@ namespace Methane::Graphics
 
 static MTLCullMode ConvertRasterizerCullModeToMetal(RenderState::Rasterizer::CullMode cull_mode) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using RasterizerCullMode = RenderState::Rasterizer::CullMode;
 
@@ -51,7 +51,7 @@ static MTLCullMode ConvertRasterizerCullModeToMetal(RenderState::Rasterizer::Cul
 
 static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(RenderState::Rasterizer::FillMode fill_mode) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using RasterizerFillMode = RenderState::Rasterizer::FillMode;
 
@@ -65,7 +65,7 @@ static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(RenderState::Rasteri
     
 static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(RenderState::Blending::ColorChannel::Mask rt_write_mask)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using ColorChannel = RenderState::Blending::ColorChannel;
 
@@ -83,7 +83,7 @@ static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(RenderState::Blendi
 
 static MTLBlendOperation ConvertBlendingOperationToMetal(RenderState::Blending::Operation blend_operation)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using BlendOp = RenderState::Blending::Operation;
 
@@ -100,7 +100,7 @@ static MTLBlendOperation ConvertBlendingOperationToMetal(RenderState::Blending::
 
 static MTLBlendFactor ConvertBlendingFactorToMetal(RenderState::Blending::Factor blend_factor)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using BlendFactor = RenderState::Blending::Factor;
     
@@ -131,7 +131,7 @@ static MTLBlendFactor ConvertBlendingFactorToMetal(RenderState::Blending::Factor
 
 static MTLStencilOperation ConvertStencilOperationToMetal(RenderState::Stencil::Operation operation) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     using StencilOperation = RenderState::Stencil::Operation;
 
@@ -151,13 +151,13 @@ static MTLStencilOperation ConvertStencilOperationToMetal(RenderState::Stencil::
 
 static MTLWinding ConvertRasterizerFrontWindingToMetal(bool is_front_counter_clockwise) noexcept
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return is_front_counter_clockwise ? MTLWindingCounterClockwise : MTLWindingClockwise;
 }
 
 static MTLStencilDescriptor* ConvertStencilDescriptorToMetal(const RenderState::Stencil& stencil, bool for_front_face)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!stencil.enabled)
         return nil;
     
@@ -174,22 +174,118 @@ static MTLStencilDescriptor* ConvertStencilDescriptorToMetal(const RenderState::
     return mtl_stencil_desc;
 }
 
+static std::vector<MTLViewport> ConvertViewportsToMetal(const Viewports& viewports)
+{
+    META_FUNCTION_TASK();
+    std::vector<MTLViewport> mtl_viewports;
+    mtl_viewports.reserve(viewports.size());
+
+    for(const Viewport& viewport : viewports)
+    {
+        MTLViewport mtl_viewport{ };
+        mtl_viewport.originX = viewport.origin.GetX();
+        mtl_viewport.originY = viewport.origin.GetY();
+        mtl_viewport.width   = viewport.size.width;
+        mtl_viewport.height  = viewport.size.height;
+        mtl_viewport.znear   = viewport.origin.GetZ();
+        mtl_viewport.zfar    = viewport.origin.GetZ() + viewport.size.depth;
+        mtl_viewports.emplace_back(std::move(mtl_viewport));
+    }
+
+    return mtl_viewports;
+}
+
+static std::vector<MTLScissorRect> ConvertScissorRectsToMetal(const ScissorRects& scissor_rects)
+{
+    META_FUNCTION_TASK();
+    std::vector<MTLScissorRect> mtl_scissor_rects;
+    mtl_scissor_rects.reserve(scissor_rects.size());
+
+    for(const ScissorRect& scissor_rect : scissor_rects)
+    {
+        MTLScissorRect mtl_scissor_rect{};
+        mtl_scissor_rect.x      = static_cast<NSUInteger>(scissor_rect.origin.GetX());
+        mtl_scissor_rect.y      = static_cast<NSUInteger>(scissor_rect.origin.GetY());
+        mtl_scissor_rect.width  = static_cast<NSUInteger>(scissor_rect.size.width);
+        mtl_scissor_rect.height = static_cast<NSUInteger>(scissor_rect.size.height);
+        mtl_scissor_rects.emplace_back(std::move(mtl_scissor_rect));
+    }
+
+    return mtl_scissor_rects;
+}
+
+Ptr<ViewState> ViewState::Create(const ViewState::Settings& state_settings)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ViewStateMT>(state_settings);
+}
+
+ViewStateMT::ViewStateMT(const Settings& settings)
+    : ViewStateBase(settings)
+    , m_mtl_viewports(ConvertViewportsToMetal(settings.viewports))
+    , m_mtl_scissor_rects(ConvertScissorRectsToMetal(settings.scissor_rects))
+{
+    META_FUNCTION_TASK();
+}
+
+bool ViewStateMT::Reset(const Settings& settings)
+{
+    META_FUNCTION_TASK();
+    if (!ViewStateBase::Reset(settings))
+        return false;
+
+    m_mtl_viewports     = ConvertViewportsToMetal(settings.viewports);
+    m_mtl_scissor_rects = ConvertScissorRectsToMetal(settings.scissor_rects);
+    return true;
+}
+
+bool ViewStateMT::SetViewports(const Viewports& viewports)
+{
+    META_FUNCTION_TASK();
+    if (!ViewStateBase::SetViewports(viewports))
+        return false;
+
+    m_mtl_viewports = ConvertViewportsToMetal(viewports);
+    return true;
+}
+
+bool ViewStateMT::SetScissorRects(const ScissorRects& scissor_rects)
+{
+    META_FUNCTION_TASK();
+    if (!ViewStateBase::SetScissorRects(scissor_rects))
+        return false;
+
+    m_mtl_scissor_rects = ConvertScissorRectsToMetal(scissor_rects);
+    return true;
+}
+
+void ViewStateMT::Apply(RenderCommandListBase& command_list)
+{
+    META_FUNCTION_TASK();
+
+    RenderCommandListMT& metal_command_list = static_cast<RenderCommandListMT&>(command_list);
+    const id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeCommandEncoder();
+
+    [mtl_cmd_encoder setViewports: m_mtl_viewports.data() count:static_cast<uint32_t>(m_mtl_viewports.size())];
+    [mtl_cmd_encoder setScissorRects: m_mtl_scissor_rects.data() count:static_cast<uint32_t>(m_mtl_scissor_rects.size())];
+}
+
 Ptr<RenderState> RenderState::Create(RenderContext& context, const RenderState::Settings& state_settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return std::make_shared<RenderStateMT>(dynamic_cast<RenderContextBase&>(context), state_settings);
 }
 
 RenderStateMT::RenderStateMT(RenderContextBase& context, const Settings& settings)
     : RenderStateBase(context, settings)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     Reset(settings);
 }
 
 RenderStateMT::~RenderStateMT()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     [m_mtl_pipeline_state_desc release];
     [m_mtl_depth_stencil_state_desc release];
@@ -199,8 +295,8 @@ RenderStateMT::~RenderStateMT()
 
 void RenderStateMT::Reset(const Settings& settings)
 {
-    ITT_FUNCTION_TASK();
-    if (!settings.sp_program)
+    META_FUNCTION_TASK();
+    if (!settings.program_ptr)
     {
         throw std::invalid_argument("Can not create state with empty program.");
     }
@@ -209,7 +305,7 @@ void RenderStateMT::Reset(const Settings& settings)
     [m_mtl_pipeline_state_desc release];
     [m_mtl_depth_stencil_state_desc release];
 
-    ProgramMT& metal_program = static_cast<ProgramMT&>(*settings.sp_program);
+    ProgramMT& metal_program = static_cast<ProgramMT&>(*settings.program_ptr);
 
     // Program state
     m_mtl_pipeline_state_desc                           = [[MTLRenderPipelineDescriptor alloc] init];
@@ -264,24 +360,15 @@ void RenderStateMT::Reset(const Settings& settings)
     m_mtl_cull_mode          = ConvertRasterizerCullModeToMetal(settings.rasterizer.cull_mode);
     m_mtl_front_face_winding = ConvertRasterizerFrontWindingToMetal(settings.rasterizer.is_front_counter_clockwise);
     
-    if (!settings.viewports.empty())
-    {
-        SetViewports(settings.viewports);
-    }
-    if (!settings.scissor_rects.empty())
-    {
-        SetScissorRects(settings.scissor_rects);
-    }
-    
     ResetNativeState();
 }
 
 void RenderStateMT::Apply(RenderCommandListBase& command_list, Group::Mask state_groups)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     RenderCommandListMT& metal_command_list = static_cast<RenderCommandListMT&>(command_list);
-    id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeRenderEncoder();
+    const id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeCommandEncoder();
     
     if (state_groups & Group::Program    ||
         state_groups & Group::Rasterizer ||
@@ -299,14 +386,6 @@ void RenderStateMT::Apply(RenderCommandListBase& command_list, Group::Mask state
         [mtl_cmd_encoder setFrontFacingWinding: m_mtl_front_face_winding];
         [mtl_cmd_encoder setCullMode: m_mtl_cull_mode];
     }
-    if (state_groups & Group::Viewports && !m_mtl_viewports.empty())
-    {
-        [mtl_cmd_encoder setViewports: m_mtl_viewports.data() count:static_cast<uint32_t>(m_mtl_viewports.size())];
-    }
-    if (state_groups & Group::ScissorRects && !m_mtl_scissor_rects.empty())
-    {
-        [mtl_cmd_encoder setScissorRects: m_mtl_scissor_rects.data() count:static_cast<uint32_t>(m_mtl_scissor_rects.size())];
-    }
     if (state_groups & Group::BlendingColor)
     {
         const Settings& settings = GetSettings();
@@ -317,47 +396,9 @@ void RenderStateMT::Apply(RenderCommandListBase& command_list, Group::Mask state
     }
 }
 
-void RenderStateMT::SetViewports(const Viewports& viewports)
-{
-    ITT_FUNCTION_TASK();
-
-    RenderStateBase::SetViewports(viewports);
-    
-    m_mtl_viewports.clear();
-    for(const Viewport& viewport : viewports)
-    {
-        MTLViewport mtl_viewport = { };
-        mtl_viewport.originX = viewport.origin.GetX();
-        mtl_viewport.originY = viewport.origin.GetY();
-        mtl_viewport.width   = viewport.size.width;
-        mtl_viewport.height  = viewport.size.height;
-        mtl_viewport.znear   = viewport.origin.GetZ();
-        mtl_viewport.zfar    = viewport.origin.GetZ() + viewport.size.depth;
-        m_mtl_viewports.emplace_back(std::move(mtl_viewport));
-    }
-}
-
-void RenderStateMT::SetScissorRects(const ScissorRects& scissor_rects)
-{
-    ITT_FUNCTION_TASK();
-
-    RenderStateBase::SetScissorRects(scissor_rects);
-    
-    m_mtl_scissor_rects.clear();
-    for(const ScissorRect& scissor_rect : scissor_rects)
-    {
-        MTLScissorRect mtl_scissor_rect = {};
-        mtl_scissor_rect.x      = static_cast<NSUInteger>(scissor_rect.origin.GetX());
-        mtl_scissor_rect.y      = static_cast<NSUInteger>(scissor_rect.origin.GetY());
-        mtl_scissor_rect.width  = static_cast<NSUInteger>(scissor_rect.size.width);
-        mtl_scissor_rect.height = static_cast<NSUInteger>(scissor_rect.size.height);
-        m_mtl_scissor_rects.emplace_back(std::move(mtl_scissor_rect));
-    }
-}
-
 void RenderStateMT::SetName(const std::string& name)
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     RenderStateBase::SetName(name);
     
@@ -370,14 +411,14 @@ void RenderStateMT::SetName(const std::string& name)
     
 void RenderStateMT::InitializeNativeStates()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     InitializeNativePipelineState();
     InitializeNativeDepthStencilState();
 }
 
 void RenderStateMT::InitializeNativePipelineState()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_mtl_pipeline_state)
         return;
     
@@ -392,7 +433,7 @@ void RenderStateMT::InitializeNativePipelineState()
 
 void RenderStateMT::InitializeNativeDepthStencilState()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (m_mtl_depth_state)
         return;
     
@@ -406,7 +447,7 @@ void RenderStateMT::InitializeNativeDepthStencilState()
 
 id<MTLRenderPipelineState>& RenderStateMT::GetNativePipelineState()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!m_mtl_pipeline_state)
     {
         InitializeNativePipelineState();
@@ -416,7 +457,7 @@ id<MTLRenderPipelineState>& RenderStateMT::GetNativePipelineState()
 
 id<MTLDepthStencilState>& RenderStateMT::GetNativeDepthStencilState()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     if (!m_mtl_depth_state)
     {
         InitializeNativeStates();
@@ -426,7 +467,7 @@ id<MTLDepthStencilState>& RenderStateMT::GetNativeDepthStencilState()
 
 void RenderStateMT::ResetNativeState()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
 
     [m_mtl_pipeline_state release];
     m_mtl_pipeline_state = nil;
@@ -437,7 +478,7 @@ void RenderStateMT::ResetNativeState()
 
 RenderContextMT& RenderStateMT::GetRenderContextMT()
 {
-    ITT_FUNCTION_TASK();
+    META_FUNCTION_TASK();
     return dynamic_cast<RenderContextMT&>(GetRenderContext());
 }
 

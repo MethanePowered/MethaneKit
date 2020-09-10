@@ -43,26 +43,31 @@ class RenderCommandListBase
     , public CommandListBase
 {
 public:
-    struct DrawingState final : CommandState
+    struct DrawingState final
     {
-        struct Flags
+        struct Changes
         {
-            bool primitive_type_changed = false;
-            bool index_buffer_changed = false;
-            bool vertex_buffers_changed = false;
+            using Mask = uint32_t;
+            enum Value : Mask
+            {
+                None          = 0u,
+                PrimitiveType = 1u << 0u,
+                IndexBuffer   = 1u << 1u,
+                VertexBuffers = 1u << 2u,
+                All           = ~0u,
+            };
+
+            Changes() = delete;
         };
 
-        // NOTE: justification why raw pointers are used is provided in base class notice, see CommandState for more details
-
+        Ptrs<TextureBase>        render_pass_attachments_ptr;
+        Ptr<RenderStateBase>     render_state_ptr;
+        Ptr<BufferSetBase>       vertex_buffer_set_ptr;
+        Ptr<BufferBase>          index_buffer_ptr;
         std::optional<Primitive> opt_primitive_type;
-        BufferBase*              p_index_buffer     = nullptr;
-        std::vector<BufferBase*> vertex_buffers;
-        RenderStateBase*         p_render_state     = nullptr;
-        RenderState::Group::Mask render_state_groups;
-
-        Flags                    flags;
-
-        DrawingState() = default;
+        ViewStateBase*           p_view_state        = nullptr;
+        RenderState::Group::Mask render_state_groups = RenderState::Group::None;
+        Changes::Mask            changes             = Changes::None;
     };
 
     RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass);
@@ -71,9 +76,13 @@ public:
     using CommandListBase::Reset;
 
     // RenderCommandList interface
-    void Reset(const Ptr<RenderState>& sp_render_state, const std::string& debug_group = "") override;
-    void SetState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) override;
-    void SetVertexBuffers(const Refs<Buffer>& vertex_buffers) override;
+    bool IsValidationEnabled() const noexcept override                      { return m_is_validation_enabled; }
+    void SetValidationEnabled(bool is_validation_enabled) noexcept override { m_is_validation_enabled = is_validation_enabled; }
+    RenderPass& GetRenderPass() const noexcept override                     { return *m_render_pass_ptr; }
+    void Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) override;
+    void SetRenderState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) override;
+    void SetViewState(ViewState& view_state) override;
+    void SetVertexBuffers(BufferSet& vertex_buffers) override;
     void DrawIndexed(Primitive primitive_type, Buffer& index_buffer,
                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                      uint32_t instance_count, uint32_t start_instance) override;
@@ -83,16 +92,23 @@ public:
     RenderPassBase& GetPass();
 
 protected:
-    void ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count = 0);
-    DrawingState&                      GetDrawingState()              { return static_cast<DrawingState&>(GetCommandState()); }
-    const DrawingState&                GetDrawingState() const        { return static_cast<const DrawingState&>(GetCommandState()); }
+    // CommandListBase overrides
+    void ResetCommandState() override;
+
+    DrawingState&                      GetDrawingState()              { return m_drawing_state; }
+    const DrawingState&                GetDrawingState() const        { return m_drawing_state; }
     bool                               IsParallel() const             { return m_is_parallel; }
-    Ptr<ParallelRenderCommandListBase> GetParallelRenderCommandList() { return m_wp_parallel_render_command_list.lock(); }
+    Ptr<ParallelRenderCommandListBase> GetParallelRenderCommandList() { return m_parallel_render_command_list_wptr.lock(); }
+
+    inline void UpdateDrawingState(Primitive primitive_type, Buffer* p_index_buffer = nullptr);
+    inline void ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count = 0);
 
 private:
     const bool                             m_is_parallel;
-    const Ptr<RenderPass>                  m_sp_pass;
-    WeakPtr<ParallelRenderCommandListBase> m_wp_parallel_render_command_list;
+    const Ptr<RenderPassBase>              m_render_pass_ptr;
+    WeakPtr<ParallelRenderCommandListBase> m_parallel_render_command_list_wptr;
+    DrawingState                           m_drawing_state;
+    bool                                   m_is_validation_enabled = true;
 };
 
 } // namespace Methane::Graphics

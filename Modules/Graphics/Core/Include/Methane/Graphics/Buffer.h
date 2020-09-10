@@ -38,6 +38,13 @@ struct Buffer : virtual Resource
         Index,
         Vertex,
         Constant,
+        ReadBack,
+    };
+
+    enum class StorageMode
+    {
+        Managed, // CPU-GPU buffer with automatic data synchronization managed by graphics runtime
+        Private, // Private GPU buffer asynchronously uploaded through the intermediate shared CPU-GPU buffer
     };
 
     struct Settings
@@ -45,20 +52,38 @@ struct Buffer : virtual Resource
         Buffer::Type type;
         Usage::Mask  usage_mask;
         Data::Size   size;
+        Data::Size   item_stride_size;
+        PixelFormat  data_format;
+        StorageMode  storage_mode = StorageMode::Managed;
     };
 
     // Create Buffer instance
     static Ptr<Buffer> CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride);
     static Ptr<Buffer> CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format);
     static Ptr<Buffer> CreateConstantBuffer(Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    static Ptr<Buffer> CreateVolatileBuffer(Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    static Ptr<Buffer> CreateReadBackBuffer(Context& context, Data::Size size);
 
     // Auxiliary functions
     static Data::Size  GetAlignedBufferSize(Data::Size size) noexcept;
     static std::string GetBufferTypeName(Type type) noexcept;
 
     // Buffer interface
-    virtual uint32_t     GetFormattedItemsCount() const = 0;
-    virtual Buffer::Type GetBufferType() const noexcept = 0;
+    virtual const Settings& GetSettings() const noexcept = 0;
+    virtual uint32_t        GetFormattedItemsCount() const noexcept = 0;
+};
+
+struct BufferSet
+{
+    static Ptr<BufferSet> Create(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
+    static Ptr<BufferSet> CreateVertexBuffers(Refs<Buffer> buffer_refs) { return BufferSet::Create(Buffer::Type::Vertex, std::move(buffer_refs)); }
+
+    virtual Buffer::Type        GetType() const noexcept = 0;
+    virtual Data::Size          GetCount() const noexcept = 0;
+    virtual const Refs<Buffer>& GetRefs() const noexcept = 0;
+    virtual Buffer&             operator[](Data::Index index) const = 0;
+
+    virtual ~BufferSet() = default;
 };
 
 } // namespace Methane::Graphics

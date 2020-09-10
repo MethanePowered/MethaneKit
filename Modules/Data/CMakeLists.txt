@@ -1,3 +1,6 @@
+add_subdirectory(Types)
+add_subdirectory(Events)
+add_subdirectory(Provider)
 add_subdirectory(Primitives)
 add_subdirectory(RangeSet)
 add_subdirectory(Animation)

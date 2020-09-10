@@ -38,6 +38,24 @@ class RenderCommandListBase;
 class RenderContextDX;
 class ProgramDX;
 
+class ViewStateDX final : public ViewStateBase
+{
+public:
+    ViewStateDX(const Settings& settings);
+
+    // ViewState overrides
+    bool Reset(const Settings& settings) override;
+    bool SetViewports(const Viewports& viewports) override;
+    bool SetScissorRects(const ScissorRects& scissor_rects) override;
+
+    // ViewStateBase interface
+    void Apply(RenderCommandListBase& command_list) override;
+
+private:
+    std::vector<CD3DX12_VIEWPORT> m_dx_viewports;
+    std::vector<CD3DX12_RECT>     m_dx_scissor_rects;
+};
+
 class RenderStateDX final : public RenderStateBase
 {
 public:
@@ -45,8 +63,6 @@ public:
 
     // RenderState interface
     void Reset(const Settings& settings) override;
-    void SetViewports(const Viewports& viewports) override;
-    void SetScissorRects(const ScissorRects& scissor_rects) override;
 
     // RenderStateBase interface
     void Apply(RenderCommandListBase& command_list, Group::Mask state_groups) override;
@@ -61,11 +77,9 @@ private:
     ProgramDX& GetProgramDX();
     RenderContextDX& GetRenderContextDX();
 
-    D3D12_GRAPHICS_PIPELINE_STATE_DESC m_pipeline_state_desc = { };
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC m_pipeline_state_desc{ };
     wrl::ComPtr<ID3D12PipelineState>   m_cp_pipeline_state;
-    std::vector<CD3DX12_VIEWPORT>      m_viewports;
-    std::vector<CD3DX12_RECT>          m_scissor_rects;
-    float                              m_blend_factor[4] = { 0.0, 0.0, 0.0, 0.0 };
+    float                              m_blend_factor[4]{ 0.0, 0.0, 0.0, 0.0 };
 };
 
 } // namespace Methane::Graphics
