@@ -107,9 +107,12 @@ For detailed features description and development plans please refer to [Modules
 
 ### Fetch Sources
 
-**IMPORTANT:** Do not download source code via Zip archive, 
-since it does not include content of [Externals](https://github.com/egorodet/MethaneExternals/tree/master) submodules.
+**IMPORTANT!**
+- <ins>Do not download source code via Zip archive</ins>, since it does not include content of 
+[Externals](https://github.com/egorodet/MethaneExternals/tree/master) submodules.
 Use `git clone` command as described below.
+- Consider using <ins>short path for repository location on Windows</ins> (for example `c:\Git`),
+which may be required to resolve problem with support of paths longer than 260 symbols in some Microsoft build tools.
 
 #### First time initialization
 
