@@ -78,12 +78,12 @@ void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& render_state_p
 
     // Per-thread render command lists can be reset in parallel only with DirectX 12 on Windows
     const auto reset_command_list_fn = [this, &render_state_ptr, p_debug_group](const int command_list_index)
-        {
-            META_FUNCTION_TASK();
-            const Ptr<RenderCommandList>& render_command_list_ptr = m_parallel_command_lists[command_list_index];
-            assert(render_command_list_ptr);
-            render_command_list_ptr->Reset(render_state_ptr, p_debug_group->GetSubGroup(static_cast<Data::Index>(command_list_index)));
-        };
+    {
+        META_FUNCTION_TASK();
+        const Ptr<RenderCommandList>& render_command_list_ptr = m_parallel_command_lists[command_list_index];
+        assert(render_command_list_ptr);
+        render_command_list_ptr->Reset(render_state_ptr, p_debug_group ? p_debug_group->GetSubGroup(static_cast<Data::Index>(command_list_index)) : nullptr);
+    };
 
 #ifdef _WIN32
     tf::Taskflow reset_task_flow;
