@@ -132,6 +132,8 @@ else() # Clang or GCC on Linux/MacOS
         -Wall -Wextra -Werror
         # Disable useless warnings
         -Wno-missing-field-initializers
+        -Wno-ignored-qualifiers
+        -Wno-deprecated-copy
     )
 
 endif()

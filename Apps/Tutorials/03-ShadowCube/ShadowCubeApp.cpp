@@ -465,6 +465,7 @@ ShadowCubeApp::RenderPass::RenderPass(bool is_final_pass, std::string debug_grou
     : is_final_pass(is_final_pass)
     , debug_group_ptr(META_DEBUG_GROUP_CREATE(std::move(debug_group_name)))
 {
+    META_UNUSED(debug_group_name);
 }
 
 } // namespace Methane::Tutorials
