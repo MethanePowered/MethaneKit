@@ -157,12 +157,13 @@ and either start auxiliary build script [Build/Posix/Build.sh](Build/Posix/Build
 
 ```console
 mkdir -p Build/Output/XCode/Build && cd Build/Output/XCode/Build
-cmake -H../../../.. -B. -G Xcode [-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64] -DCMAKE_INSTALL_PREFIX="$(pwd)/../Install"
+cmake -H../../../.. -B. -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_INSTALL_PREFIX="$(pwd)/../Install"
 cmake --build . --config Release --target install
 ```
 
 Note that starting with XCode 12 and Clang 12 build architectures have to be specified explicitly
-using CMake generator command line option `-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64` to build the fat binary.
+using CMake generator command line option `-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"` to build the fat binary.
+This option can be omitted with earlier versions of Clang on macOS.
 
 Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) and build it from [any IDE with native CMake support](#development-environments).
 
