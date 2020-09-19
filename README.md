@@ -134,7 +134,7 @@ git pull && git submodule update --init --recursive
 
 ### Build
 
-#### Windows Build with Visual Studio 2019
+#### <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/Windows.png" width=24 valign="middle"> Windows Build with Visual Studio 2019
 
 Start Command Prompt, go to MethaneKit root directory (don't forget to pull dependent submodules as [described above](#fetch-sources))
 and either start auxiliary build script [Build/Windows/Build.bat](Build/Windows/Build.bat) or build with CMake command line:
@@ -150,22 +150,25 @@ with native CMake support and build it with Ninja using provided configurations 
 
 Run built applications from the installation directory `Build\Output\VisualStudio\Install\Apps`
 
-#### MacOS Build with XCode
+#### <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/MacOS.png" width=24 valign="middle"> MacOS Build with XCode
 
 Start Terminal, go to MethaneKit root directory (don't forget to pull dependent submodules as [described above](#fetch-sources))
 and either start auxiliary build script [Build/Posix/Build.sh](Build/Posix/Build.sh) or build with CMake command line:
 
 ```console
 mkdir -p Build/Output/XCode/Build && cd Build/Output/XCode/Build
-cmake -H../../../.. -B. -G Xcode -DCMAKE_INSTALL_PREFIX="$(pwd)/../Install"
+cmake -H../../../.. -B. -G Xcode [-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64] -DCMAKE_INSTALL_PREFIX="$(pwd)/../Install"
 cmake --build . --config Release --target install
 ```
+
+Note that starting with XCode 12 and Clang 12 build architectures have to be specified explicitly
+using CMake generator command line option `-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64` to build the fat binary.
 
 Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) and build it from [any IDE with native CMake support](#development-environments).
 
 Run built applications from the installation directory `Build/Output/XCode/Install/Apps`
 
-#### Linux Build with Unix Makefiles
+#### <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/Ubuntu.png" width=24 valign="middle"> Linux Build with Unix Makefiles
 
 Build on Linux is supported with "Unix Makefiles" generator.
 But Linux platform abstraction layer and Vulkan graphics API abstraction implementations are currently stubbed,

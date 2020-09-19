@@ -39,6 +39,14 @@ CMAKE_FLAGS=" \
     -DMETHANE_TRACY_PROFILING_ENABLED:BOOL=OFF \
     -DMETHANE_TRACY_PROFILING_ON_DEMAND:BOOL=OFF"
 
+if [ "$CMAKE_GENERATOR" == "Xcode" ]; then
+    # Build architectures have to be set explicitly via generator command line starting with XCode and Clang v12
+    CLANG_VERSION="$(clang --version | grep -o -E 'version [0-9]+\.' | grep -o -E '[0-9]+')"
+    if [ $CLANG_VERSION -ge 12 ]; then
+        CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+    fi
+fi
+
 GRAPHVIZ_DIR=$OUTPUT_DIR/GraphViz
 GRAPHVIZ_DOT_DIR=$GRAPHVIZ_DIR/dot
 GRAPHVIZ_IMG_DIR=$GRAPHVIZ_DIR/img
