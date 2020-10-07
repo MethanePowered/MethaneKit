@@ -7,7 +7,7 @@
 This tutorial application demonstrates colored triangle rendering implemented in just 120 lines of code using Methane Kit - see [HelloTriangleAppSimple.cpp](HelloTriangleAppSimple.cpp).
 
 Application class `HelloTriangleApp` is derived from the base template class `Graphics::App<HelloTriangleFrame>` 
-which implements some routine aspect of the graphics application:
+which implements some routine aspects of the graphics application:
 - Render context initialization available with `GraphicsApp::GetRenderContext()` method 
 - Per-frame resources management from `Graphics::AppFrame` class: frame buffer `screen_texture_ptr` and screen render pass `screen_pass_ptr`.
 It includes initialization, frame resizing and releasing on context reset.

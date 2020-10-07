@@ -25,17 +25,12 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 
 #include <Methane/Kit.h>
 
-#include <string>
-#include <vector>
-#include <array>
-
 namespace Methane::Tutorials
 {
 
 namespace gfx = Methane::Graphics;
-namespace dat = Methane::Data;
 
-struct TexturedCubeFrame final : gfx::AppFrame
+struct TexturedCubeFrame final : Graphics::AppFrame
 {
     Ptr<gfx::Buffer>            uniforms_buffer_ptr;
     Ptr<gfx::ProgramBindings>   program_bindings_ptr;

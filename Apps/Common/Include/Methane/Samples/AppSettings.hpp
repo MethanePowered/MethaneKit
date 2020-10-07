@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Apps/Settings.hpp
+FILE: Methane/Samples/AppSettings.hpp
 Common application settings for Methane samples and tutorials.
 
 ******************************************************************************/
