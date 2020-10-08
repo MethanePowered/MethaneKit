@@ -32,10 +32,10 @@ struct IApp
 {
     struct Settings
     {
-        uint32_t screen_pass_access         = 0u;
+        uint32_t screen_pass_access         = 0u;   // Graphics::RenderPass::Access::Mask
         bool     animations_enabled         = true;
         bool     show_hud_in_window_title   = true;
-        int32_t  default_device_index       = 0;
+        int32_t  default_device_index       = 0;    // 0 - default h/w GPU, 1 - second h/w GPU, -1 - emulated WARP device
     };
 
     virtual const IApp::Settings& GetGraphicsAppSettings() const noexcept = 0;
