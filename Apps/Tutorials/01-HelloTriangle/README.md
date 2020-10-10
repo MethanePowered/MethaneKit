@@ -6,11 +6,10 @@
 
 This tutorial application demonstrates colored triangle rendering implemented in just 120 lines of code using Methane Kit - see [HelloTriangleAppSimple.cpp](HelloTriangleAppSimple.cpp).
 
-Application class `HelloTriangleApp` is derived from the base template class `Graphics::App<HelloTriangleFrame>` 
-which implements some routine aspects of the graphics application:
-- Render context initialization available with `GraphicsApp::GetRenderContext()` method 
-- Per-frame resources management from `Graphics::AppFrame` class: frame buffer `screen_texture_ptr` and screen render pass `screen_pass_ptr`.
-It includes initialization, frame resizing and releasing on context reset.
+## Application and Frame Class Definitions
+
+Application class `HelloTriangleApp` is derived from the base template class [Graphics::App<HelloTriangleFrame>](../../../Modules/Graphics/App) 
+which implements the infrastructure of the graphics application designed for deferred rendering approach (instead of immediate rendering).
 
 Application frame class `HelloTriangleFrame` is derived from base class `Graphics::AppFrame` and extends it 
 with render command list `render_cmd_list_ptr` and command list set `execute_cmd_list_set_ptr` submitted 
@@ -61,6 +60,8 @@ public:
     ...
 };
 ```
+
+## Graphics Resources Initialization
 
 Application class `HelloTriangleApp` keeps frame independent resources in class members: render state `m_render_state_ptr` and 
 set of vertex buffers used for triangle rendering `m_vertex_buffer_set_ptr` - they are initialized in `HelloTriangleApp::Init` method. 
@@ -158,6 +159,8 @@ public:
 };
 ```
 
+## Frame Rendering Cycle
+
 Rendering is implemented in overridden `HelloTriangleApp::Render` method. First, base graphics application
 rendering logic is called with `GraphicsApp::Render()` and rendering is continued only when it allows.
 Then current frame resources are requested with `GraphicsApp::GetCurrentFrame()` and used for render commands encoding to 
@@ -206,6 +209,8 @@ int main(int argc, const char* argv[])
 }
 ```
 
+## Colored Triangle Shaders
+
 This tutorial uses simple HLSL shader [Shaders/Triangle.hlsl](Shaders/Triangle.hlsl).
 Note that semantic names of `VSInput` structure members, passed as argument to vertex shader function `TriangleVS(VSInput input)`, 
 are matching to input buffer layout arguments `Program::InputBufferLayout::ArgumentSemantics { "POSITION", "COLOR" }`
@@ -246,6 +251,8 @@ optional sets of macro definitions used to pre-build shaders to bytecode at buil
 frag=TrianglePS
 vert=TriangleVS
 ```
+
+## CMake Build Configuration
 
 Finally CMake build configuration [CMakeLists.txt](CMakeLists.txt) of the application
 is powered by the included Methane CMake modules:
