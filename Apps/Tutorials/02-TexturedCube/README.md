@@ -5,7 +5,14 @@
 | ![Textured Cube on Windows](Screenshots/TexturedCubeWinDirectX12.jpg) | ![Textured Cube on MacOS](Screenshots/TexturedCubeMacMetal.jpg) |
 
 This tutorial demonstrates textured cube rendering using Methane Kit.
-Cube and light source are animated with rotation in opposite directions.
+Tutorial demonstrates using of the following Methane Kit features additionally to features demonstrated in [HelloTriangle](../02-TexturedCube):
+- Base user interface application implementing graphics UI overlay rendering
+- Creating 2D textures with data loaded data from images and creating samplers
+- Binding buffers and textures to program arguments and configuring argument modifiers
+- Generating cube mesh vertices and indices data with custom vertex layout
+- Using camera for view and projection matrices generation
+- Time animations used for camera and light rotation
+- SRGB gamma-correction support in textures loader and color transformation in pixel shaders
 
 ## Application and Frame Class Definitions
 
@@ -475,6 +482,15 @@ bool TexturedCubeApp::Render()
     GetRenderContext().Present();
 
     return true;
+}
+```
+
+Graphics render loop is started from `main(...)` entry function using `GraphicsApp::Run(...)` method which is also parsing command line arguments.
+
+```cpp
+int main(int argc, const char* argv[])
+{
+    return HelloTriangleApp().Run({ argc, argv });
 }
 ```
 

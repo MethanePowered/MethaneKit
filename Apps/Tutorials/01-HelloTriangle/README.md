@@ -5,6 +5,13 @@
 | ![Hello Triangle on Windows](Screenshots/HelloTriangleWinDirectX12.jpg) | ![Hello Triangle on MacOS](Screenshots/HelloTriangleMacMetal.jpg) |
 
 This tutorial application demonstrates colored triangle rendering implemented in just 120 lines of code using Methane Kit - see [HelloTriangleAppSimple.cpp](HelloTriangleAppSimple.cpp).
+Tutorial demonstrates using of the following Methane Kit features:
+- Base graphics application implementing deferred frames rendering
+- Loading shaders, creating program and render state
+- Creating vertex buffers on GPU and filling with data
+- Using render command lists for encoding draw commands
+- Executing command lists on GPU and presenting frame buffers on screen
+- Configuring cross-platform application build with shaders compilation to embedded resources
 
 ## Application and Frame Class Definitions
 
