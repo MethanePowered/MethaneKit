@@ -1,5 +1,8 @@
 # Platform App
 
+Platform abstraction of the windowed application with main purpose for graphics content rendering.
+Graphics rendering infrastructure itself is split into derived class defined in a separate library.
+
 ### [Platform::App](Include/Methane/Platform/App.h)
 
 Defines alias type `Platform::App` pointing to one of platform-specific implementations of the `AppBase` abstract class:

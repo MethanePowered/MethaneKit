@@ -13,15 +13,8 @@ Let's start from the application header file [TexturedCubeApp.h](TexturedCubeApp
 application class `TexturedCubeApp` derived from the base class `UserInterface::App<TexturedCubeFrame>`
 and frame class `TexturedCubeFrame` derived from the base class `Graphics::AppFrame` 
 similar to how it was done in [HelloTriangle](../01-HelloTriangle) tutorial.
-The difference here is the `UserInterface::App` base class used instead of `Graphics::App` class.
-`UserInterface::App` application base class is in fact inherited from `Graphics::App` and extends 
-basic graphics application with common UI functionality, like:
-- Logo badge rendering in top-right corner.
-- Controls and shortcuts help rendering in UI panel in left-bottom corner displayed by `F1` key.
-- Command-line options help rendering in UI panel in left-bottom corner displayed by `F2` key.
-- Optional application parameters rendering in UI panel in right-bottom corner displayed by `F3` key.
-- Heads-Up-Display (HUD) rendering in a UI panel in left-top-corner.
-If HUD panel is hidden by default it can be displayed by `F4` key.
+The difference here is the [UserInterface::App](../../../Modules/UserInterface/App) base class used instead of
+[Graphics::App](../../../Modules/Graphics/App) class for visualization of optional UI elements and rendering it in screen overlay. 
 
 ```cpp
 #pragma once

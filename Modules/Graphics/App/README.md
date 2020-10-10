@@ -1,5 +1,8 @@
 # Graphics App
 
+Graphics application rendering infrastructure implemented on top of [application platform abstraction](../../Platform/App)
+and [graphics Core API](../Core).
+
 ## Graphics Application Base Class
 
 ### [Graphics::IApp](Include/Methane/Graphics/App.h)
@@ -49,7 +52,8 @@ Some parameters of the render context settings can be also changed with command 
 
 ### [Graphics::AppController](Include/Methane/Graphics/AppController.h)
 
-Graphics **application** controller implements the following actions:
+Graphics **application** controller is derived from [Platform application controller](../../Platform/App/README.md#platformappcontrollerincludemethaneplatformappcontrollerh) and
+extends it with the following actions:
 
 | Application Action                  | Keyboard Shortcut   |
 |-------------------------------------|---------------------|
