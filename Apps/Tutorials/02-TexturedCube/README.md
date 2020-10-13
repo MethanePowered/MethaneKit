@@ -5,7 +5,7 @@
 | ![Textured Cube on Windows](Screenshots/TexturedCubeWinDirectX12.jpg) | ![Textured Cube on MacOS](Screenshots/TexturedCubeMacMetal.jpg) |
 
 This tutorial demonstrates textured cube rendering using Methane Kit.
-Tutorial demonstrates using of the following Methane Kit features additionally to features demonstrated in [HelloTriangle](../02-TexturedCube):
+Tutorial demonstrates using of the following Methane Kit features additionally to features demonstrated in [HelloTriangle](../01-HelloTriangle):
 - Base user interface application implementing graphics UI overlay rendering
 - Creating 2D textures with data loaded data from images and creating samplers
 - Binding buffers and textures to program arguments and configuring argument modifiers
@@ -88,7 +88,7 @@ struct TexturedCubeFrame final : Graphics::AppFrame
 };
 ```
 
-Private section of the `TexturedCubeApp` class contains definition of `Constants` and `Uniforms` structures with data
+Private section of the `TexturedCubeApp` class contains declaration of `Constants` and `Uniforms` structures with data
 saved in constants buffer `m_const_buffer_ptr` defined below and uniforms buffer `uniforms_buffer_ptr` defined in `TexturedCubeFrame` structure above.
 Both structures layout is matching definition of the equally named structures in [HLSL shader code](#textured-cube-shaders)
 and use alignment and packing macroses to guarantee that.

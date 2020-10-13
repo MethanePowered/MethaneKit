@@ -29,7 +29,6 @@ namespace Methane::Tutorials
 {
 
 namespace gfx = Methane::Graphics;
-namespace dat = Methane::Data;
 
 struct ShadowCubeFrame final : gfx::AppFrame
 {
