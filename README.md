@@ -52,18 +52,18 @@ Methane Kit architecture is clearly distributing library modules between 5 layer
   - Multiple command queues execution on GPU with synchronization using fences
   - Private GPU resources asynchronously updated via shared resource implicitly through the upload command list
   - Registry of named graphics objects used for reusing render states and graphics resources between UI items
-- **Graphics primitives and extensions** for:
+- **Graphics primitives and extensions**:
   - Graphics application base class with per-frame resource management, frame buffers resizing and other routine operations
   - Camera primitive and interactive arc-ball camera
   - Procedural mesh generation for quad, box, sphere, icosahedron and uber-mesh
   - Perlin Noise generation
   - Screen-quad and sky-box rendering extension classes
   - Texture image loader currently implemented with STB (planned for replacement with OpenImageIO, partially supported under the hood)
-- **User Interface** libraries:
+- **User Interface**:
   - UI application base class with integrated HUD, logo badge and help/parameters text panels
   - Typography library for fonts loading, dynamic atlas updating, text rendering & layout
   - Widgets library (under development)
-- **Application infrastructure helpers**:
+- **Application infrastructure**:
   - Events mechanism connecting emitters and receivers via callback interfaces
   - Animations subsystem
   - Embedded resource providers
@@ -98,7 +98,7 @@ Methane samples demonstrate advanced techniques and usage scenarios with a more 
 
 - **Common**
   - Git (required to pull sub-modules)
-  - CMake 3.15 or later
+  - CMake 3.16 or later
 - **Windows**
   - Windows 10 RS5 (build 1809) or later
   - Visual Studio 2019 with MSVC v142 or later
