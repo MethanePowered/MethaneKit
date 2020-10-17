@@ -52,6 +52,30 @@ if (WIN32)
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListDX.cpp
     )
 
+    set(PRECOMPILED_PLATFORM_HEADERS
+        <windows.h>
+        <wrl.h>
+        <d3d12.h>
+        ${SOURCES_GRAPHICS_DIR}/DeviceDX.h
+        ${SOURCES_GRAPHICS_DIR}/ContextDX.h
+        ${SOURCES_GRAPHICS_DIR}/RenderContextDX.h
+        ${SOURCES_GRAPHICS_DIR}/ResourceDX.h
+        ${SOURCES_GRAPHICS_DIR}/BufferDX.h
+        ${SOURCES_GRAPHICS_DIR}/TextureDX.h
+        ${SOURCES_GRAPHICS_DIR}/ProgramBindingsDX.h
+        ${SOURCES_GRAPHICS_DIR}/RenderPassDX.h
+        ${SOURCES_GRAPHICS_DIR}/RenderStateDX.h
+        ${SOURCES_GRAPHICS_DIR}/ShaderDX.h
+        ${SOURCES_GRAPHICS_DIR}/ProgramDX.h
+        ${SOURCES_GRAPHICS_DIR}/FenceDX.h
+        ${SOURCES_GRAPHICS_DIR}/CommandQueueDX.h
+        ${SOURCES_GRAPHICS_DIR}/CommandListDX.h
+        ${SOURCES_GRAPHICS_DIR}/RenderCommandListDX.h
+        ${SOURCES_GRAPHICS_DIR}/BlitCommandListDX.h
+        ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.h
+        ${SOURCES_GRAPHICS_DIR}/TypesDX.h
+    )
+
     set(PLATFORM_LIBRARIES
         D3DX12
         DirectXTex
@@ -110,6 +134,26 @@ elseif(APPLE)
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListMT.mm
     )
 
+    set(PRECOMPILED_PLATFORM_HEADERS
+        ${SOURCES_GRAPHICS_DIR}/DeviceMT.h
+        ${SOURCES_GRAPHICS_DIR}/ContextMT.h
+        ${SOURCES_GRAPHICS_DIR}/RenderContextMT.h
+        ${SOURCES_GRAPHICS_DIR}/ResourceMT.h
+        ${SOURCES_GRAPHICS_DIR}/BufferMT.h
+        ${SOURCES_GRAPHICS_DIR}/TextureMT.h
+        ${SOURCES_GRAPHICS_DIR}/ProgramBindingsMT.h
+        ${SOURCES_GRAPHICS_DIR}/RenderPassMT.h
+        ${SOURCES_GRAPHICS_DIR}/RenderStateMT.h
+        ${SOURCES_GRAPHICS_DIR}/ShaderMT.h
+        ${SOURCES_GRAPHICS_DIR}/ProgramMT.h
+        ${SOURCES_GRAPHICS_DIR}/FenceMT.h
+        ${SOURCES_GRAPHICS_DIR}/CommandQueueMT.h
+        ${SOURCES_GRAPHICS_DIR}/CommandListMT.h
+        ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.h
+        ${SOURCES_GRAPHICS_DIR}/BlitCommandListMT.h
+        ${SOURCES_GRAPHICS_DIR}/TypesMT.h
+    )
+
     set(PLATFORM_LIBRARIES
         "-framework Metal"
     )
@@ -164,6 +208,26 @@ else() # Linux
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListVK.cpp
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListVK.h
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListVK.cpp
+    )
+
+    set(PRECOMPILED_PLATFORM_HEADERS
+        ${SOURCES_GRAPHICS_DIR}/DeviceVK.h
+        ${SOURCES_GRAPHICS_DIR}/ContextVK.h
+        ${SOURCES_GRAPHICS_DIR}/RenderContextVK.h
+        ${SOURCES_GRAPHICS_DIR}/ResourceVK.h
+        ${SOURCES_GRAPHICS_DIR}/BufferVK.h
+        ${SOURCES_GRAPHICS_DIR}/TextureVK.h
+        ${SOURCES_GRAPHICS_DIR}/ProgramBindingsVK.h
+        ${SOURCES_GRAPHICS_DIR}/RenderPassVK.h
+        ${SOURCES_GRAPHICS_DIR}/RenderStateVK.h
+        ${SOURCES_GRAPHICS_DIR}/ShaderVK.h
+        ${SOURCES_GRAPHICS_DIR}/ProgramVK.h
+        ${SOURCES_GRAPHICS_DIR}/FenceVK.h
+        ${SOURCES_GRAPHICS_DIR}/CommandQueueVK.h
+        ${SOURCES_GRAPHICS_DIR}/CommandListVK.h
+        ${SOURCES_GRAPHICS_DIR}/RenderCommandListVK.h
+        ${SOURCES_GRAPHICS_DIR}/BlitCommandListVK.h
+        ${SOURCES_GRAPHICS_DIR}/TypesVK.h
     )
 
 endif()
@@ -256,6 +320,42 @@ set(SOURCES ${PLATFORM_SOURCES}
 add_library(${TARGET} STATIC
     ${HEADERS}
     ${SOURCES}
+)
+
+target_precompile_headers(${TARGET}
+    PUBLIC
+        ${HEADERS}
+        <string>
+        <vector>
+        <array>
+        <set>
+        <map>
+        <unordered_map>
+        <optional>
+    PRIVATE
+        ${PRECOMPILED_PLATFORM_HEADERS}
+        ${SOURCES_DIR}/DeviceBase.h
+        ${SOURCES_DIR}/ContextBase.h
+        ${SOURCES_DIR}/ObjectBase.h
+        ${SOURCES_DIR}/ResourceBase.h
+        ${SOURCES_DIR}/TextureBase.h
+        ${SOURCES_DIR}/BufferBase.h
+        ${SOURCES_DIR}/SamplerBase.h
+        ${SOURCES_DIR}/RenderPassBase.h
+        ${SOURCES_DIR}/RenderStateBase.h
+        ${SOURCES_DIR}/ProgramBase.h
+        ${SOURCES_DIR}/ProgramBindingsBase.h
+        ${SOURCES_DIR}/CommandQueueBase.h
+        ${SOURCES_DIR}/CommandListBase.h
+        ${SOURCES_DIR}/RenderCommandListBase.h
+        ${SOURCES_DIR}/ParallelRenderCommandListBase.h
+        ${SOURCES_DIR}/DescriptorHeap.h
+        ${SOURCES_DIR}/ResourceManager.h
+        <algorithm>
+        <functional>
+        <exception>
+        <thread>
+        <sstream>
 )
 
 target_link_libraries(${TARGET}

@@ -63,5 +63,3 @@ install(TARGETS ${TARGET}
         DESTINATION Lib
         COMPONENT Development
 )
-
-

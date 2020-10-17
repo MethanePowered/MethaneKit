@@ -84,7 +84,8 @@ if(WIN32)
     target_include_directories(MethaneBuildOptions INTERFACE ${WINDOWSSDK_INCLUDE_DIRS})
     target_link_directories(MethaneBuildOptions INTERFACE ${WINDOWSSDK_LIBRARY_DIRS})
     target_compile_definitions(MethaneBuildOptions INTERFACE
-        -DUNICODE -D_UNICODE -DNOMINMAX -DWIN32_LEAN_AND_MEAN -DUSE_PIX
+        UNICODE _UNICODE NOMINMAX WIN32_LEAN_AND_MEAN USE_PIX
+        _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING # silence warning C4996 about std::wstring_convert deprecation
     )
 
 elseif(APPLE)
@@ -168,9 +169,9 @@ target_compile_definitions(MethaneBuildOptions INTERFACE
 message(STATUS "Methane Kit version ${METHANE_VERSION_FULL}")
 split_by_first_delimiter("${METHANE_VERSION_BUILD}" "." METHANE_VERSION_BUILD_MAJOR METHANE_VERSION_BUILD_MINOR)
 target_compile_definitions(MethaneBuildOptions INTERFACE
-    -DMETHANE_VERSION_MAJOR=${METHANE_VERSION_MAJOR}
-    -DMETHANE_VERSION_MINOR=${METHANE_VERSION_MINOR}
-    -DMETHANE_VERSION_BUILD=${METHANE_VERSION_BUILD_MAJOR}
+    METHANE_VERSION_MAJOR=${METHANE_VERSION_MAJOR}
+    METHANE_VERSION_MINOR=${METHANE_VERSION_MINOR}
+    METHANE_VERSION_BUILD=${METHANE_VERSION_BUILD_MAJOR}
 )
 
 if(METHANE_RUN_TESTS_DURING_BUILD)
@@ -195,11 +196,11 @@ endif()
 
 if(METHANE_ITT_INSTRUMENTATION_ENABLED)
     message(STATUS "Methane ITT instrumentation is enabled")
-    target_compile_definitions(MethaneBuildOptions INTERFACE -DITT_INSTRUMENTATION_ENABLED)
+    target_compile_definitions(MethaneBuildOptions INTERFACE ITT_INSTRUMENTATION_ENABLED)
 
     if(METHANE_ITT_METADATA_ENABLED)
         message(STATUS "Methane ITT metadata is enabled")
-        target_compile_definitions(MethaneBuildOptions INTERFACE -DITT_ARGUMENTS_METADATA_ENABLED)
+        target_compile_definitions(MethaneBuildOptions INTERFACE ITT_ARGUMENTS_METADATA_ENABLED)
     endif()
 endif()
 
