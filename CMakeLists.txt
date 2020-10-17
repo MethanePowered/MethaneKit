@@ -37,7 +37,7 @@ option(METHANE_TRACY_PROFILING_ON_DEMAND    "Enable Tracy data collection on dem
 
 # Methane version, build & product info
 set(METHANE_VERSION_MAJOR 0 CACHE STRING "Methane major version")
-set(METHANE_VERSION_MINOR 4 CACHE STRING "Methane minor version")
+set(METHANE_VERSION_MINOR 5 CACHE STRING "Methane minor version")
 set(METHANE_VERSION_BUILD 0 CACHE STRING "Methane build version")
 set(METHANE_VERSION_SHORT "${METHANE_VERSION_MAJOR}.${METHANE_VERSION_MINOR}")
 set(METHANE_VERSION_FULL  "${METHANE_VERSION_SHORT}.${METHANE_VERSION_BUILD}")
