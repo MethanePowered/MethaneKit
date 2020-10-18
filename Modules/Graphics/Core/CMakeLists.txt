@@ -52,12 +52,6 @@ if (WIN32)
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListDX.cpp
     )
 
-    set(PLATFORM_PRECOMPILED_HEADERS
-        <windows.h>
-        <wrl.h>
-        <d3d12.h>
-    )
-
     set(PLATFORM_LIBRARIES
         D3DX12
         DirectXTex
@@ -124,7 +118,7 @@ elseif(APPLE)
     set_source_files_properties(
         ${PLATFORM_SOURCES}
         PROPERTIES
-        COMPILE_FLAGS -fobjc-weak
+            COMPILE_FLAGS -fobjc-weak
     )
 
 else() # Linux
@@ -264,25 +258,6 @@ add_library(${TARGET} STATIC
     ${SOURCES}
 )
 
-target_precompile_headers(${TARGET}
-    PUBLIC
-        ${HEADERS}
-        <string>
-        <vector>
-        <array>
-        <set>
-        <map>
-        <unordered_map>
-        <optional>
-    PRIVATE
-        ${PLATFORM_PRECOMPILED_HEADERS}
-        <algorithm>
-        <functional>
-        <exception>
-        <thread>
-        <sstream>
-)
-
 target_link_libraries(${TARGET}
     PUBLIC
         MethanePrimitives
@@ -297,9 +272,12 @@ target_link_libraries(${TARGET}
         MethaneGraphicsPrimitives
         MethanePlatformUtils
         MethaneInstrumentation
+        MethanePrecompiledExtraHeaders
         TaskFlow
         ${PLATFORM_LIBRARIES}
 )
+
+target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
 
 target_include_directories(${TARGET}
     PRIVATE
@@ -325,11 +303,11 @@ set_target_properties(${TARGET}
 )
 
 if (APPLE)
-    # Disable precompiled headers on MacOS due to error:
-    # Objective-C was disabled in PCH file but is currently enabled
-    set_target_properties(${TARGET}
+    # Disable precompiled headers on MacOS for Objective-C files:
+    set_source_files_properties(
+        ${PLATFORM_SOURCES}
         PROPERTIES
-            DISABLE_PRECOMPILE_HEADERS ON
+            SKIP_PRECOMPILE_HEADERS
     )
 endif()
 

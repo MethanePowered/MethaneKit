@@ -36,6 +36,11 @@ target_link_libraries(${TARGET}
         MethaneUserInterfaceApp
 )
 
+target_precompile_headers(${TARGET}
+    PUBLIC
+        ${HEADERS}
+)
+
 set(PREREQUISITE_TARGETS
     MethaneGraphicsCore
     MethaneGraphicsExtensions

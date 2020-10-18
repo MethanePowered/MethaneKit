@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/AppView.h
-Methane application view.
+FILE: Methane/Primitives.cpp
+Methane Common dummy function.
 
 ******************************************************************************/
 
-namespace Methane::Platform::AppView
+namespace Methane::Events::RangeSet
 {
 
 void Dummy()
@@ -30,4 +30,4 @@ void Dummy()
     // the table of contents is empty (no object file members in the library define global symbols)
 }
 
-} // namespace Methane::Platform::AppView
+} // namespace Methane::Events::RangeSet

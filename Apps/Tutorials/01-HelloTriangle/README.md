@@ -25,6 +25,7 @@ Destroying of application along with its resources is delayed until all renderin
 
 ```cpp
 #include <Methane/Kit.h>
+#include <Methane/Graphics/App.hpp>
 
 using namespace Methane;
 using namespace Methane::Graphics;

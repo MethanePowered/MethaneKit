@@ -84,6 +84,15 @@ set_target_properties(${TARGET}
         PUBLIC_HEADER "${HEADERS}"
 )
 
+if (APPLE)
+    # Disable precompiled headers on MacOS for Objective-C files:
+    set_source_files_properties(
+        ${PLATFORM_SOURCES}
+        PROPERTIES
+            SKIP_PRECOMPILE_HEADERS
+    )
+endif()
+
 install(TARGETS ${TARGET}
     PUBLIC_HEADER
         DESTINATION ${INCLUDE_DIR}

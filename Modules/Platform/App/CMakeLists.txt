@@ -72,6 +72,7 @@ target_link_libraries(${TARGET}
         MethanePlatformInput
     PRIVATE
         MethaneBuildOptions
+        MethanePrecompiledHeaders
         MethanePlatformUtils
         TaskFlow
         nowide
@@ -82,6 +83,8 @@ target_compile_definitions(${TARGET}
     PRIVATE
     METHANE_RENDER_APP
 )
+
+target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
 
 target_include_directories(${TARGET}
     PRIVATE
@@ -97,6 +100,15 @@ set_target_properties(${TARGET}
         FOLDER Modules/Platform
         PUBLIC_HEADER "${HEADERS}"
 )
+
+if (APPLE)
+    # Disable precompiled headers on MacOS for Objective-C files:
+    set_source_files_properties(
+        ${PLATFORM_SOURCES}
+        PROPERTIES
+            SKIP_PRECOMPILE_HEADERS
+    )
+endif()
 
 install(TARGETS ${TARGET}
     PUBLIC_HEADER

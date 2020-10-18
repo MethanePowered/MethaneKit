@@ -1,2 +1,3 @@
-add_subdirectory(Primitives)
 add_subdirectory(Instrumentation)
+add_subdirectory(PrecompiledHeaders)
+add_subdirectory(Primitives)

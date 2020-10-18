@@ -129,6 +129,8 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
             $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
     )
 
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneKit)
+
     target_include_directories(${TARGET}
         PRIVATE
             .

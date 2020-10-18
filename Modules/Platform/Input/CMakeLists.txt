@@ -24,8 +24,12 @@ set(HEADERS
     ${INCLUDE_DIR}/Input/State.h
 )
 
-set(SOURCES
+set(PLATFORM_SOURCES
     ${SOURCES_PLATFORM_DIR}/Keyboard.${CPP_EXT}
+)
+
+set(SOURCES
+    ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/Keyboard.cpp
     ${SOURCES_DIR}/Mouse.cpp
     ${SOURCES_DIR}/Input/ControllersPool.cpp
@@ -43,10 +47,13 @@ target_link_libraries(${TARGET}
         MethaneInstrumentation
     PRIVATE
         MethaneBuildOptions
+        MethanePrecompiledHeaders
         MethanePrimitives
         MethanePlatformUtils
         ${PLATFORM_LIBRARIES}
 )
+
+target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
 
 target_include_directories(${TARGET}
     PRIVATE
@@ -62,6 +69,15 @@ set_target_properties(${TARGET}
         FOLDER Modules/Platform
         PUBLIC_HEADER "${HEADERS}"
 )
+
+if (APPLE)
+    # Disable precompiled headers on MacOS for Objective-C files:
+    set_source_files_properties(
+        ${PLATFORM_SOURCES}
+        PROPERTIES
+            SKIP_PRECOMPILE_HEADERS
+    )
+endif()
 
 install(TARGETS ${TARGET}
     PUBLIC_HEADER
