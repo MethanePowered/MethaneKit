@@ -300,6 +300,8 @@ set_target_properties(${TARGET}
         FOLDER Modules/Graphics
         PUBLIC_HEADER "${HEADERS}"
         PREREQUISITE_MODULES "DirectXCompiler"
+        UNITY_BUILD ON
+        UNITY_BUILD_BATCH_SIZE 6
 )
 
 if (APPLE)
