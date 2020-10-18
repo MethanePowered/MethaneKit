@@ -79,7 +79,7 @@ if (APPLE)
     set_source_files_properties(
         ${PLATFORM_SOURCES}
         PROPERTIES
-            SKIP_PRECOMPILE_HEADERS
+            SKIP_PRECOMPILE_HEADERS ON
     )
 endif()
 
