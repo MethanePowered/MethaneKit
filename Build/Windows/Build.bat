@@ -119,7 +119,10 @@ IF %IS_ANALYZE_BUILD% EQU 1 (
         -D sonar.projectBaseDir="%SOURCE_DIR%"^
         -D sonar.cfamily.build-wrapper-output="%BUILD_DIR%"^
         -D sonar.host.url="https://sonarcloud.io"^
-        -D sonar.login="6e1dbce6af614f59d75f1d78f0609aaaa60caee1"
+        -D sonar.login="6e1dbce6af614f59d75f1d78f0609aaaa60caee1"^
+        -D sonar.cfamily.threads=16^
+        -D sonar.cfamily.cache.enabled=true^
+        -D sonar.cfamily.cache.path="%SONAR_SCANNER_DIR%\Cache"
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
 ) ELSE (
