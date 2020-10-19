@@ -45,6 +45,7 @@ IF "%~1"=="--analyze" (
 
     SET IS_ANALYZE_BUILD=1
     SET BUILD_DIR=%CONFIG_DIR%\Analyze
+    SET SONAR_TOKEN=%~2
     SET SONAR_SCANNER_VERSION="4.4.0.2170"
     SET SONAR_SCANNER_DIR=%OUTPUT_DIR%\SonarScanner
     SET SONAR_BUILD_WRAPPER_EXE=!SONAR_SCANNER_DIR!\build-wrapper-win-x86\build-wrapper-win-x86-64.exe
@@ -77,8 +78,8 @@ IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
 IF %IS_ANALYZE_BUILD% EQU 1 (
 
-    ECHO Downloading and unpacking SonarScanner binaries...
     IF NOT EXIST "%SONAR_SCANNER_DIR%" (
+        ECHO Downloading and unpacking SonarScanner binaries...
         CALL powershell -ExecutionPolicy Bypass -Command "& '%START_DIR%\SonarDownload.ps1' '%SONAR_SCANNER_VERSION%' '%SONAR_SCANNER_DIR%'" 
         IF %ERRORLEVEL% NEQ 0 GOTO ERROR
     )
@@ -111,18 +112,17 @@ IF %IS_ANALYZE_BUILD% EQU 1 (
     CD "%SOURCE_DIR%"
     CALL "%SONAR_SCANNER_BAT%"^
         -D sonar.organization="egorodet-github"^
-        -D sonar.projectKey="egorodet_MethaneKit"^
-        -D sonar.projectVersion="%BUILD_VERSION%"^
-        -D sonar.sources="%SOURCE_DIR%"^
-        -D sonar.cfamily.build-wrapper-output="%BUILD_DIR%"^
+        -D sonar.projectKey="egorodet_MethaneKit_Windows"^
         -D sonar.branch.name="!GITBRANCH!"^
+        -D sonar.projectVersion="%BUILD_VERSION%"^
         -D sonar.projectBaseDir="%SOURCE_DIR%"^
-        -D sonar.cfamily.build-wrapper-output="%BUILD_DIR%"^
+        -D sonar.sources="Apps,Modules"^
         -D sonar.host.url="https://sonarcloud.io"^
-        -D sonar.login="6e1dbce6af614f59d75f1d78f0609aaaa60caee1"^
+        -D sonar.login="%SONAR_TOKEN%"^
+        -D sonar.cfamily.build-wrapper-output="%BUILD_DIR%"^
+        -D sonar.cfamily.cache.path="%SONAR_SCANNER_DIR%\Cache"^
         -D sonar.cfamily.threads=16^
-        -D sonar.cfamily.cache.enabled=true^
-        -D sonar.cfamily.cache.path="%SONAR_SCANNER_DIR%\Cache"
+        -D sonar.cfamily.cache.enabled=true
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
 ) ELSE (
