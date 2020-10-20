@@ -153,6 +153,7 @@ jobs:
 
   variables:
     platform: 'x64'
+    vcVarsBatFile: 'vcvars64.bat'
     configuration: 'Release'
     generatorName: '"Visual Studio 16 2019"'
     cmakeFlags: -A x64 $(buildReleaseCmakeFlags)

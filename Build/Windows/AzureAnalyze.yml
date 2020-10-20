@@ -33,6 +33,7 @@ steps:
         sonar.branch.name=$(Build.SourceBranchName)
 
   - script: |
+      call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\$(vcVarsBatFile)"
       build-wrapper-win-x86\build-wrapper-win-x86-64.exe --out-dir BuildWrapperOutput MSBuild.exe MethaneKit.sln /p:Configuration=$(configuration) /p:Platform=$(platform) /t:Rebuild
     workingDirectory: $(buildDir)
     displayName: 'Build using Sonar Build-Wrapper with $(generatorName) for $(platform) $(configuration)'
