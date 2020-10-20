@@ -33,7 +33,12 @@ resources:
 
 variables:
 
-  buildReleaseCmakeFlags: '-DMETHANE_VERSION_BUILD=$(Build.BuildNumber)
+  productMajorVersion: 0
+  productMinorVersion: 5
+
+  buildReleaseCmakeFlags: '-DMETHANE_VERSION_MAJOR=$(productMajorVersion)
+    -DMETHANE_VERSION_MINOR=$(productMinorVersion)
+    -DMETHANE_VERSION_BUILD=$(Build.BuildNumber)
     -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON
     -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF
     -DMETHANE_COMMAND_DEBUG_GROUPS_ENABLED:BOOL=ON
@@ -69,7 +74,6 @@ jobs:
   variables:
     platform: 'Win64'
     configuration: 'Release'
-    vcVarsBatFile: 'vcvars64.bat'
     generatorName: '"Visual Studio 16 2019"'
     cmakeFlags: -A x64 $(buildReleaseCmakeFlags)
     buildName: '$(platform)-$(configuration)'
@@ -77,6 +81,7 @@ jobs:
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
     rootDir: '..\..\..\..'
+    productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -89,7 +94,6 @@ jobs:
   variables:
     platform: 'Win64'
     configuration: 'RelWithDebInfo'
-    vcVarsBatFile: 'vcvars64.bat'
     generatorName: '"Visual Studio 16 2019"'
     cmakeFlags: -A x64 $(buildProfilingCmakeFlags)
     buildName: '$(platform)-$(configuration)-Profiling'
@@ -97,6 +101,7 @@ jobs:
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
     rootDir: '..\..\..\..'
+    productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -109,7 +114,6 @@ jobs:
   variables:
     platform: 'Win32'
     configuration: 'Release'
-    vcVarsBatFile: 'vcvars32.bat'
     generatorName: '"Visual Studio 16 2019"'
     cmakeFlags: -A Win32 $(buildReleaseCmakeFlags)
     buildName: '$(platform)-$(configuration)'
@@ -117,6 +121,7 @@ jobs:
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
     rootDir: '..\..\..\..'
+    productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -129,7 +134,6 @@ jobs:
   variables:
     platform: 'Win32'
     configuration: 'RelWithDebInfo'
-    vcVarsBatFile: 'vcvars32.bat'
     generatorName: '"Visual Studio 16 2019"'
     cmakeFlags: -A Win32 $(buildProfilingCmakeFlags)
     buildName: '$(platform)-$(configuration)-Profiling'
@@ -137,9 +141,27 @@ jobs:
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
     rootDir: '..\..\..\..'
+    productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
 
   steps:
   - template: Build/Windows/AzureBuild.yml
+
+- job: Windows_Sonar_Analysis
+
+  pool:
+    vmImage: 'windows-2019'
+
+  variables:
+    platform: 'Win64'
+    configuration: 'Release'
+    generatorName: '"Visual Studio 16 2019"'
+    cmakeFlags: -A x64 $(buildReleaseCmakeFlags)
+    buildDir: 'Build\Output\$(buildName)\Build'
+    rootDir: '..\..\..\..'
+    productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
+
+  steps:
+    - template: Build/Windows/AzureAnalyze.yml
 
 - job: MacOS
 
@@ -156,6 +178,7 @@ jobs:
     installDir: 'Build/Output/$(buildName)/Install'
     buildInstallDir: '../Install'
     rootDir: '../../../..'
+    productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
 
   steps:
   - template: Build/Posix/AzureBuild.yml
@@ -175,6 +198,7 @@ jobs:
     installDir: 'Build/Output/$(buildName)/Install'
     buildInstallDir: '../Install'
     rootDir: '../../../..'
+    productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
 
   steps:
   - template: Build/Posix/AzureBuild.yml
@@ -194,6 +218,7 @@ jobs:
     installDir: 'Build/Output/$(buildName)/Install'
     buildInstallDir: '../Install'
     rootDir: '../../../..'
+    productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
 
   steps:
   - template: Build/Posix/AzureBuild.yml

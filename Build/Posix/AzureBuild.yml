@@ -32,7 +32,7 @@ steps:
 
   - script: |
       cp $(rootDir)/README.md README.md
-      echo Build number: $(Build.BuildNumber), git branch: $(Build.SourceBranchName), commit id: $(Build.SourceVersion) >Build.txt
+      echo Methane Kit v. $(productFullVersion), git branch: $(Build.SourceBranchName), commit id: $(Build.SourceVersion) >Build.txt
     workingDirectory: '$(installDir)'
     displayName: 'Copy ReadMe and write build information'
 

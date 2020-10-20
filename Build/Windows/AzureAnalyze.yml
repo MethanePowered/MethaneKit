@@ -1,0 +1,41 @@
+# Methane Kit CI configuration for Sonar Cloud Analysis on Windows platform
+# https://aka.ms/yaml
+
+steps:
+
+  - script: mkdir $(buildDir)
+    displayName: 'Make build directories for $(platform) $(configuration)'
+
+  - task: CMake@1
+    displayName: 'Generate with $(generatorName) for $(platform) $(configuration)'
+    inputs:
+      workingDirectory: $(buildDir)
+      cmakeArgs: '-G $(generatorName) $(cmakeFlags) $(rootDir)'
+
+  - task: SonarCloudPrepare@1
+    displayName: 'Prepare Sonar Cloud Analysis'
+    inputs:
+      SonarCloud: 'Evgeny Gorodetsky Sonar Cloud'
+      organization: 'egorodet-github'
+      scannerMode: 'MSBuild'
+      projectKey: 'egorodet_MethaneKit_Windows'
+      branchName: $(Build.SourceBranchName)
+      projectVersion: $(productFullVersion)
+      sonar.sources: 'Apps,Modules'
+
+  - task: MSBuild@1
+    displayName: 'Build with $(generatorName) using MSBuild for $(platform) $(configuration)'
+    inputs:
+      solution: '$(buildDir)/MethaneKit.sln'
+      msbuildArchitecture: 'x64'
+      platform: $(platform)
+      configuration: $(configuration)
+      clean: true
+
+  - task: SonarCloudAnalyze@1
+    displayName: 'Analyzing build with Sonar Scanner'
+
+  - task: SonarCloudPublish@1
+    displayName: 'Publishing results of analysis to Sonar Cloud'
+    inputs:
+      pollingTimeoutSec: '300'
