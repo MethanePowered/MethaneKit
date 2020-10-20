@@ -33,7 +33,7 @@ steps:
         sonar.branch.name=$(Build.SourceBranchName)
 
   - script: |
-      build-wrapper-win-x86/build-wrapper-win-x86-64.exe --out-dir BuildWrapperOutput MSBuild.exe MethaneKit.sln /p:Configuration=$(configuration) /p:Platform=$(platform) /t:Rebuild
+      build-wrapper-win-x86\build-wrapper-win-x86-64.exe --out-dir BuildWrapperOutput MSBuild.exe MethaneKit.sln /p:Configuration=$(configuration) /p:Platform=$(platform) /t:Rebuild
     workingDirectory: $(buildDir)
     displayName: 'Build using Sonar Build-Wrapper with $(generatorName) for $(platform) $(configuration)'
 
