@@ -152,7 +152,7 @@ jobs:
     vmImage: 'windows-2019'
 
   variables:
-    platform: 'Win64'
+    platform: 'x64'
     configuration: 'Release'
     generatorName: '"Visual Studio 16 2019"'
     cmakeFlags: -A x64 $(buildReleaseCmakeFlags)
@@ -160,6 +160,7 @@ jobs:
     buildDir: 'Build\Output\$(buildName)\Build'
     rootDir: '..\..\..\..'
     productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
+    sonarProjectKey: 'egorodet_MethaneKit_Windows'
 
   steps:
     - template: Build/Windows/AzureAnalyze.yml
