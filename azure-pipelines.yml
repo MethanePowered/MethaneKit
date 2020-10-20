@@ -158,6 +158,8 @@ jobs:
     cmakeFlags: -A x64 $(buildReleaseCmakeFlags)
     buildName: '$(platform)-$(configuration)-SonarAnalysis'
     buildDir: 'Build\Output\$(buildName)\Build'
+    sonarDir: 'Build\Output\SonarScanner'
+    sonarBuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-win-x86.zip'
     rootDir: '..\..\..\..'
     productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
     sonarProjectKey: 'egorodet_MethaneKit_Windows'

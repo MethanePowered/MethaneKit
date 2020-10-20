@@ -12,25 +12,30 @@ steps:
       workingDirectory: $(buildDir)
       cmakeArgs: '-G $(generatorName) $(cmakeFlags) $(rootDir)'
 
+  - powershell: |
+      Invoke-WebRequest -Uri '$(sonarBuildWrapperUrl)' -OutFile 'build-wrapper.zip'
+      Expand-Archive -Path 'build-wrapper.zip' -DestinationPath '.'
+    workingDirectory: $(buildDir)
+    displayName: 'Download and unpack Sonar Build-Wrapper'
+
   - task: SonarCloudPrepare@1
     displayName: 'Prepare Sonar Cloud Analysis'
     inputs:
       SonarCloud: 'Evgeny Gorodetsky Sonar Cloud'
       organization: 'egorodet-github'
-      scannerMode: 'MSBuild'
-      projectKey: $(sonarProjectKey)
-      branchName: $(Build.SourceBranchName)
-      projectVersion: $(productFullVersion)
-      sonar.sources: 'Apps,Modules'
+      scannerMode: 'CLI'
+      configMode: 'manual'
+      cliProjectKey: $(sonarProjectKey)
+      cliProjectVersion: $(productFullVersion)
+      cliSources: 'Apps,Modules'
+      extraProperties: |
+        sonar.cfamily.build-wrapper-output=$(buildDir)/BuildWrapperOutput
+        sonar.branch.name=$(Build.SourceBranchName)
 
-  - task: MSBuild@1
-    displayName: 'Build with $(generatorName) using MSBuild for $(platform) $(configuration)'
-    inputs:
-      solution: '$(buildDir)/MethaneKit.sln'
-      msbuildArchitecture: 'x64'
-      platform: $(platform)
-      configuration: $(configuration)
-      clean: true
+  - script: |
+      build-wrapper-win-x86/build-wrapper-win-x86-64.exe --out-dir BuildWrapperOutput MSBuild.exe MethaneKit.sln /p:Configuration=$(configuration) /p:Platform=$(platform) /t:Rebuild
+    workingDirectory: $(buildDir)
+    displayName: 'Build using Sonar Build-Wrapper with $(generatorName) for $(platform) $(configuration)'
 
   - task: SonarCloudAnalyze@1
     displayName: 'Analyzing build with Sonar Scanner'
