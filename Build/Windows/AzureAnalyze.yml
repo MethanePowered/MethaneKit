@@ -18,6 +18,12 @@ steps:
     workingDirectory: $(buildDir)
     displayName: 'Download and unpack Sonar Build-Wrapper'
 
+  - task: Cache@2
+    displayName: 'Sonar Scanner Cache'
+    inputs:
+      key: 'SonarCache | $(sonarProjectKey) | "$(Agent.OS)" | $(Build.SourceBranchName)'
+      path: $(sonarCacheDir)
+
   - task: SonarCloudPrepare@1
     displayName: 'Prepare Sonar Cloud Analysis'
     inputs:
@@ -29,8 +35,11 @@ steps:
       cliProjectVersion: $(productFullVersion)
       cliSources: 'Apps,Modules'
       extraProperties: |
-        sonar.cfamily.build-wrapper-output=$(buildDir)/BuildWrapperOutput
         sonar.branch.name=$(Build.SourceBranchName)
+        sonar.cfamily.build-wrapper-output=$(buildDir)/BuildWrapperOutput
+        sonar.cfamily.cache.path=$(sonarCacheDir)
+        sonar.cfamily.cache.enabled=true
+        sonar.cfamily.threads=8
 
   - script: |
       call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\$(vcVarsBatFile)"
