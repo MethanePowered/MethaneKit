@@ -1,4 +1,4 @@
-# Methane Kit CI configuration for Sonar Cloud Analysis on Windows platform
+# Methane Kit CI configuration for Sonar Cloud static code analysis on Windows platform
 # https://aka.ms/yaml
 
 steps:
@@ -36,14 +36,14 @@ steps:
       cliSources: 'Apps,Modules'
       extraProperties: |
         sonar.branch.name=$(Build.SourceBranchName)
-        sonar.cfamily.build-wrapper-output=$(buildDir)/BuildWrapperOutput
+        sonar.cfamily.build-wrapper-output=$(buildDir)\BuildWrapperOutput
         sonar.cfamily.cache.path=$(sonarCacheDir)
         sonar.cfamily.cache.enabled=true
         sonar.cfamily.threads=4
 
   - script: |
-      call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\$(vcVarsBatFile)"
-      build-wrapper-win-x86\build-wrapper-win-x86-64.exe --out-dir BuildWrapperOutput MSBuild.exe MethaneKit.sln /p:Configuration=$(configuration) /p:Platform=$(platform) /t:Rebuild
+      call "$(vcVarsBatFile)"
+      $(sonarBuildWrapperExe) --out-dir BuildWrapperOutput $(sonarBuildCommand)
     workingDirectory: $(buildDir)
     displayName: 'Build under Sonar Build-Wrapper with $(generatorName) for $(platform) $(configuration)'
 

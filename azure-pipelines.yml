@@ -153,16 +153,18 @@ jobs:
 
   variables:
     platform: 'x64'
-    vcVarsBatFile: 'vcvars64.bat'
     configuration: 'Release'
     generatorName: '"Visual Studio 16 2019"'
     cmakeFlags: -A x64 $(buildReleaseCmakeFlags)
     buildName: '$(platform)-$(configuration)-SonarScan'
     buildDir: 'Build\Output\$(buildName)\Build'
     rootDir: '..\..\..\..'
+    vcVarsBatFile: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat'
     productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
     sonarCacheDir: '$(Pipeline.Workspace)\WindowsSonarCache'
     sonarBuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-win-x86.zip'
+    sonarBuildWrapperExe: build-wrapper-win-x86\build-wrapper-win-x86-64.exe
+    sonarBuildCommand: MSBuild.exe MethaneKit.sln /p:Configuration=$(configuration) /p:Platform=$(platform) /t:Rebuild
     sonarProjectKey: 'egorodet_MethaneKit_Windows'
 
   steps:
@@ -208,6 +210,29 @@ jobs:
   steps:
   - template: Build/Posix/AzureBuild.yml
 
+- job: MacOS_Sonar_Scan
+
+  pool:
+    vmImage: 'macOS-10.14'
+
+  variables:
+    platform: 'MacOS'
+    configuration: 'Release'
+    generatorName: 'Xcode'
+    cmakeFlags: $(buildReleaseCmakeFlags)
+    buildName: '$(platform)-$(configuration)-SonarScan'
+    buildDir: 'Build/Output/$(buildName)/Build'
+    rootDir: '../../../..'
+    productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
+    sonarCacheDir: '$(Pipeline.Workspace)/MacSonarCache'
+    sonarBuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-macosx-x86.zip'
+    sonarBuildWrapperExe: build-wrapper-macosx-x86/build-wrapper-macos-x86
+    sonarBuildCommand: xcodebuild -project MethaneKit.xcodeproj -configuration $(configuration) clean build
+    sonarProjectKey: 'egorodet_MethaneKit_MacOS'
+
+  steps:
+    - template: Build/Posix/AzureSonarScan.yml
+
 - job: Ubuntu
 
   pool:
@@ -227,3 +252,26 @@ jobs:
 
   steps:
   - template: Build/Posix/AzureBuild.yml
+
+- job: Ubuntu_Sonar_Scan
+
+  pool:
+    vmImage: 'ubuntu-18.04'
+
+  variables:
+    platform: 'Ubuntu'
+    configuration: 'Release'
+    generatorName: '"Unix Makefiles"'
+    cmakeFlags: $(buildReleaseCmakeFlags)
+    buildName: '$(platform)-$(configuration)-SonarScan'
+    buildDir: 'Build/Output/$(buildName)/Build'
+    rootDir: '../../../..'
+    productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
+    sonarCacheDir: '$(Pipeline.Workspace)/LinuxSonarCache'
+    sonarBuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip'
+    sonarBuildWrapperExe: build-wrapper-linux-x86/build-wrapper-linux-x86-64
+    sonarBuildCommand: make clean all
+    sonarProjectKey: 'egorodet_MethaneKit_Linux'
+
+  steps:
+    - template: Build/Posix/AzureSonarScan.yml
