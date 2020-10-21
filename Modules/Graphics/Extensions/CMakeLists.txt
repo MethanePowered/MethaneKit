@@ -38,11 +38,14 @@ target_link_libraries(${TARGET}
         TaskFlow
     PRIVATE
         MethaneBuildOptions
+        MethanePrecompiledExtraHeaders
         MethanePlatformUtils
         MethaneGraphicsPrimitives
         MethaneGraphicsCamera
         MethaneDataProvider
 )
+
+target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
 
 if (METHANE_USE_OPEN_IMAGE_IO)
     target_link_libraries(${TARGET} PRIVATE OpenImageIO)

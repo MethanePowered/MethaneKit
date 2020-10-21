@@ -29,6 +29,7 @@ mesh drawing passed to constructor as a reference to [BaseMesh<VType>]((../../..
 #pragma once
 
 #include <Methane/Kit.h>
+#include <Methane/UserInterface/App.hpp>
 
 namespace Methane::Tutorials
 {

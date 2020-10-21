@@ -21,9 +21,7 @@ Methane kit dummy function.
 
 ******************************************************************************/
 
-namespace Methane
-{
-namespace Kit
+namespace Methane::Kit
 {
 
 void Dummy()
@@ -32,5 +30,4 @@ void Dummy()
     // the table of contents is empty (no object file members in the library define global symbols)
 }
 
-} // namespace Kit
-} // namespace Methane
+} // namespace Methane::Kit

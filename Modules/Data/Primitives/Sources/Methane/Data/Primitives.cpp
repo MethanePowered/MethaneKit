@@ -20,7 +20,7 @@ FILE: Methane/Data/Primitives.cpp
 
 ******************************************************************************/
 
-namespace Methane::Data
+namespace Methane::Data::Primitives
 {
 
 void Dummy()
@@ -29,4 +29,4 @@ void Dummy()
     // the table of contents is empty (no object file members in the library define global symbols)
 }
 
-} // namespace Methane::Data
+} // namespace Methane::Data::Primitives

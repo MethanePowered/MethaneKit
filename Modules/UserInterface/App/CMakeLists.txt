@@ -41,6 +41,8 @@ target_include_directories(${TARGET}
         Include
 )
 
+target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
+
 target_link_libraries(${TARGET}
 PUBLIC
     MethaneGraphicsApp
@@ -48,6 +50,7 @@ PUBLIC
     MethaneInstrumentation
 PRIVATE
     MethaneBuildOptions
+    MethanePrecompiledExtraHeaders
     MethaneUserInterfaceTypes
 )
 

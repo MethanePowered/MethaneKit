@@ -27,6 +27,7 @@ The difference here is the [UserInterface::App](../../../Modules/UserInterface/A
 #pragma once
 
 #include <Methane/Kit.h>
+#include <Methane/UserInterface/App.hpp>
 
 namespace Methane::Tutorials
 {

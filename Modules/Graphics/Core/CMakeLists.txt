@@ -118,7 +118,7 @@ elseif(APPLE)
     set_source_files_properties(
         ${PLATFORM_SOURCES}
         PROPERTIES
-        COMPILE_FLAGS -fobjc-weak
+            COMPILE_FLAGS -fobjc-weak
     )
 
 else() # Linux
@@ -272,9 +272,12 @@ target_link_libraries(${TARGET}
         MethaneGraphicsPrimitives
         MethanePlatformUtils
         MethaneInstrumentation
+        MethanePrecompiledExtraHeaders
         TaskFlow
         ${PLATFORM_LIBRARIES}
 )
+
+target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
 
 target_include_directories(${TARGET}
     PRIVATE
@@ -297,7 +300,18 @@ set_target_properties(${TARGET}
         FOLDER Modules/Graphics
         PUBLIC_HEADER "${HEADERS}"
         PREREQUISITE_MODULES "DirectXCompiler"
+        UNITY_BUILD ON
+        UNITY_BUILD_BATCH_SIZE 6
 )
+
+if (APPLE)
+    # Disable precompiled headers on MacOS for Objective-C files:
+    set_source_files_properties(
+        ${PLATFORM_SOURCES}
+        PROPERTIES
+            SKIP_PRECOMPILE_HEADERS ON
+    )
+endif()
 
 install(TARGETS ${TARGET}
     PUBLIC_HEADER

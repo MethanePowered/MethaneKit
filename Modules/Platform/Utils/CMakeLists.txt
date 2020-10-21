@@ -21,9 +21,13 @@ set(HEADERS
     ${PLATFORM_HEADERS}
 )
 
+set(PLATFORM_SOURCES
+    ${SOURCES_PLATFORM_DIR}/Utils.${CPP_EXT}
+)
+
 set(SOURCES
     ${SOURCES_DIR}/Utils.cpp
-    ${SOURCES_PLATFORM_DIR}/Utils.${CPP_EXT}
+    ${PLATFORM_SOURCES}
 )
 
 add_library(${TARGET} STATIC
@@ -38,9 +42,12 @@ target_include_directories(${TARGET}
         Include
 )
 
+target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
+
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneBuildOptions
+        MethanePrecompiledHeaders
         MethaneInstrumentation
         nowide
 )
@@ -66,6 +73,15 @@ set_target_properties(${TARGET}
         FOLDER Modules/Platform
         PUBLIC_HEADER "${HEADERS}"
 )
+
+if (APPLE)
+    # Disable precompiled headers on MacOS for Objective-C files:
+    set_source_files_properties(
+        ${PLATFORM_SOURCES}
+        PROPERTIES
+            SKIP_PRECOMPILE_HEADERS ON
+    )
+endif()
 
 install(TARGETS ${TARGET}
     PUBLIC_HEADER

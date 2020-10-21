@@ -24,6 +24,7 @@ Tutorial demonstrating dynamic text rendering and fonts management with Methane 
 #pragma once
 
 #include <Methane/Kit.h>
+#include <Methane/UserInterface/App.hpp>
 #include <Methane/Data/Receiver.hpp>
 
 #include <map>

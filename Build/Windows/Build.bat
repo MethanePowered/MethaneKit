@@ -5,7 +5,7 @@ SETLOCAL ENABLEDELAYEDEXPANSION
 SET PLATFORM_TYPE=Win64
 SET ARCH_TYPE=x64
 SET BUILD_TYPE=Release
-SET BUILD_VERSION=0.4
+SET BUILD_VERSION=0.5
 SET CMAKE_FLAGS= ^
     -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON ^
     -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF ^
@@ -19,7 +19,8 @@ SET CMAKE_FLAGS= ^
     -DMETHANE_TRACY_PROFILING_ENABLED:BOOL=OFF ^
     -DMETHANE_TRACY_PROFILING_ON_DEMAND:BOOL=OFF
 
-SET CONFIG_DIR=%~dp0..\Output\VisualStudio\%PLATFORM_TYPE%-%BUILD_TYPE%
+SET OUTPUT_DIR=%~dp0..\Output
+SET CONFIG_DIR=%OUTPUT_DIR%\VisualStudio\%PLATFORM_TYPE%-%BUILD_TYPE%
 SET INSTALL_DIR=%CONFIG_DIR%\Install
 SET SOURCE_DIR=%~dp0..\..
 SET START_DIR=%cd%
@@ -44,10 +45,11 @@ IF "%~1"=="--analyze" (
 
     SET IS_ANALYZE_BUILD=1
     SET BUILD_DIR=%CONFIG_DIR%\Analyze
-    SET SONAR_SCANNER_DIR=%SOURCE_DIR%\Externals\SonarScanner\binaries\Windows
-    SET SONAR_SCANNER_ZIP=!SONAR_SCANNER_DIR!.zip
-    SET SONAR_BUILD_WRAPPER_EXE=!SONAR_SCANNER_DIR!\build-wrapper-win-x86-64.exe
-    SET SONAR_SCANNER_MSBUILD_EXE=!SONAR_SCANNER_DIR!\SonarScanner.MSBuild.exe
+    SET SONAR_TOKEN=%~2
+    SET SONAR_SCANNER_VERSION="4.4.0.2170"
+    SET SONAR_SCANNER_DIR=%OUTPUT_DIR%\SonarScanner
+    SET SONAR_BUILD_WRAPPER_EXE=!SONAR_SCANNER_DIR!\build-wrapper-win-x86\build-wrapper-win-x86-64.exe
+    SET SONAR_SCANNER_BAT=!SONAR_SCANNER_DIR!\sonar-scanner-!SONAR_SCANNER_VERSION!-windows\bin\sonar-scanner.bat
 
     ECHO =========================================================
     ECHO Code analysis for build Methane %PLATFORM_TYPE% %BUILD_TYPE%
@@ -76,10 +78,11 @@ IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
 IF %IS_ANALYZE_BUILD% EQU 1 (
 
-    ECHO Unpacking Sonar Scanner binaries...
-    IF EXIST "%SONAR_SCANNER_DIR%" RD /S /Q "%SONAR_SCANNER_DIR%"
-    CALL powershell -Command "Expand-Archive %SONAR_SCANNER_ZIP% -DestinationPath %SONAR_SCANNER_DIR%"
-    IF %ERRORLEVEL% NEQ 0 GOTO ERROR
+    IF NOT EXIST "%SONAR_SCANNER_DIR%" (
+        ECHO Downloading and unpacking SonarScanner binaries...
+        CALL powershell -ExecutionPolicy Bypass -Command "& '%START_DIR%\SonarDownload.ps1' '%SONAR_SCANNER_VERSION%' '%SONAR_SCANNER_DIR%'" 
+        IF %ERRORLEVEL% NEQ 0 GOTO ERROR
+    )
 
     SET GITBRANCH=
     FOR /F "tokens=* USEBACKQ" %%F IN (`git rev-parse --abbrev-ref HEAD`) DO (
@@ -94,31 +97,32 @@ IF %IS_ANALYZE_BUILD% EQU 1 (
     CD "%BUILD_DIR%"
 
     ECHO ----------
-    ECHO Generating build files for %CMAKE_GENERATOR% with SonarScanner wrapper...
-    "%SONAR_BUILD_WRAPPER_EXE%" --out-dir "%BUILD_DIR%"^
-         cmake -G "%CMAKE_GENERATOR%" %CMAKE_FLAGS% "%SOURCE_DIR%"
+    ECHO Generating build files for %CMAKE_GENERATOR%...
+    cmake -G "%CMAKE_GENERATOR%" %CMAKE_FLAGS% "%SOURCE_DIR%"
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
     ECHO ----------
-    ECHO Building with %CMAKE_GENERATOR% and SonarScanner wrapper...
+    ECHO Building with %CMAKE_GENERATOR% and SonarScanner build wrapper...
+    "%SONAR_BUILD_WRAPPER_EXE%" --out-dir "%BUILD_DIR%"^
+         cmake --build . --config %BUILD_TYPE%
+    IF %ERRORLEVEL% NEQ 0 GOTO ERROR
+
+    ECHO ----------
+    ECHO Analyzing build with SonarScanner and submitting results...
     CD "%SOURCE_DIR%"
-    "%SONAR_SCANNER_MSBUILD_EXE%" begin^
-        /k:egorodet_MethaneKit^
-        /o:egorodet-github^
-        /v:%BUILD_VERSION%^
-        /d:sonar.branch.name="!GITBRANCH!"^
-        /d:sonar.sources="%SOURCE_DIR%"^
-        /d:sonar.projectBaseDir="%SOURCE_DIR%"^
-        /d:sonar.cfamily.build-wrapper-output="%BUILD_DIR%"^
-        /d:sonar.host.url="https://sonarcloud.io"^
-        /d:sonar.login=6e1dbce6af614f59d75f1d78f0609aaaa60caee1
-    IF %ERRORLEVEL% NEQ 0 GOTO ERROR
-
-    MSBuild.exe "%BUILD_DIR%\MethaneKit.sln" /t:Rebuild
-    IF %ERRORLEVEL% NEQ 0 GOTO ERROR
-
-    "%SONAR_SCANNER_MSBUILD_EXE%" end^
-        /d:sonar.login=6e1dbce6af614f59d75f1d78f0609aaaa60caee1
+    CALL "%SONAR_SCANNER_BAT%"^
+        -D sonar.organization="egorodet-github"^
+        -D sonar.projectKey="egorodet_MethaneKit_Windows"^
+        -D sonar.branch.name="!GITBRANCH!"^
+        -D sonar.projectVersion="%BUILD_VERSION%"^
+        -D sonar.projectBaseDir="%SOURCE_DIR%"^
+        -D sonar.sources="Apps,Modules"^
+        -D sonar.host.url="https://sonarcloud.io"^
+        -D sonar.login="%SONAR_TOKEN%"^
+        -D sonar.cfamily.build-wrapper-output="%BUILD_DIR%"^
+        -D sonar.cfamily.cache.path="%SONAR_SCANNER_DIR%\Cache"^
+        -D sonar.cfamily.threads=16^
+        -D sonar.cfamily.cache.enabled=true
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
 ) ELSE (

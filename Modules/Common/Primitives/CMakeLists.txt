@@ -11,7 +11,7 @@ set(HEADERS
 )
 
 set(SOURCES
-    ${SOURCES_DIR}/Common.cpp
+    ${SOURCES_DIR}/Primitives.cpp
 )
 
 add_library(${TARGET} STATIC
@@ -26,9 +26,12 @@ target_include_directories(${TARGET}
         Include
 )
 
+target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
+
 target_link_libraries(${TARGET}
     PRIVATE
         MethaneBuildOptions
+        MethanePrecompiledHeaders
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})

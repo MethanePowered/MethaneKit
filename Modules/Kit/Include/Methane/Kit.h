@@ -30,11 +30,9 @@ Methane kit interfaces: all headers under one umbrella.
 #include <Methane/Graphics/Extensions.h>
 #include <Methane/Graphics/Camera.h>
 #include <Methane/Graphics/Primitives.h>
-#include <Methane/Graphics/App.hpp>
 
 // Methane User Interface Headers
 
 #include <Methane/UserInterface/Types.hpp>
 #include <Methane/UserInterface/Typography.h>
 #include <Methane/UserInterface/Widgets.h>
-#include <Methane/UserInterface/App.hpp>

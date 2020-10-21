@@ -21,8 +21,6 @@ Font atlas textures generation and fonts library management classes.
 
 ******************************************************************************/
 
-#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
-
 #include <Methane/UserInterface/Font.h>
 
 #include <Methane/Graphics/RenderContext.h>

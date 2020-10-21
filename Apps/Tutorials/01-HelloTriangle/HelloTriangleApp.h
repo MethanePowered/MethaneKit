@@ -24,6 +24,7 @@ Tutorial demonstrating triangle rendering with Methane graphics API
 #pragma once
 
 #include <Methane/Kit.h>
+#include <Methane/UserInterface/App.hpp>
 
 #include <string>
 #include <array>

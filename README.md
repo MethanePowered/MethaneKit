@@ -21,10 +21,16 @@ Also you can get [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/
 | <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/MacOS.png" width=24 valign="middle"> **MacOS** | <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/GraphicsApi/MetalSmall.png" width=24 valign="middle"> Metal | [![MacOS Master Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=MacOS)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![MacOS Develop Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=MacOS)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
 | <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/Ubuntu.png" width=24 valign="middle"> **Ubuntu Linux** | <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/GraphicsApi/VulkanSmall.png" width=24 valign="middle"> Vulkan<sup><sup>soon</sup></sup> | [![Ubuntu Master Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Ubuntu)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Ubuntu Develop Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=Ubuntu)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
 
+**Sonar Cloud static code analysis** results are auto-updated with every build for all supported platforms:
+
+|     Platform     | Master Scan Status | Quality Gate |  Code Smells  | Lines of Code |
+| ---------------- | ------------------ | ------------ | ------------- | ------------- |
+| <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/Windows.png" width=24 valign="middle"> **Windows** | [![Windows Master Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Windows_Sonar_Scan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Windows Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=alert_status)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows) | [![Windows Code Smells](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=code_smells)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows) | [![Windows Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=ncloc)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows) |
+| <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/MacOS.png" width=24 valign="middle"> **MacOS** | [![MacOS Master Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=MacOS_Sonar_Scan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![MacOS Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_MacOS&metric=alert_status)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_MacOS) | [![MacOS Code Smells](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_MacOS&metric=code_smells)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_MacOS) | [![MacOS Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_MacOS&metric=ncloc)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_MacOS) |
+| <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/Ubuntu.png" width=24 valign="middle"> **Linux** | [![Linux Master Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Ubuntu_Sonar_Scan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Linux Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Linux&metric=alert_status)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Linux) | [![Linux Code Smells](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Linux&metric=code_smells)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Linux) | [![Linux Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Linux&metric=ncloc)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Linux) |
+
 [![Codacy](https://api.codacy.com/project/badge/Grade/25ae34bade994076bf636290791b3e0f)](https://www.codacy.com/app/egorodet/MethaneKit?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=egorodet/MethaneKit&amp;utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/egorodet/methanekit/badge)](https://www.codefactor.io/repository/github/egorodet/methanekit)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit&metric=alert_status)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit)
 [![Total lines](https://tokei.rs/b1/github/egorodet/MethaneKit)](https://github.com/egorodet/MethaneKit)
 
 ![Asteroids sample on Windows](Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg)
@@ -52,24 +58,26 @@ Methane Kit architecture is clearly distributing library modules between 5 layer
   - Multiple command queues execution on GPU with synchronization using fences
   - Private GPU resources asynchronously updated via shared resource implicitly through the upload command list
   - Registry of named graphics objects used for reusing render states and graphics resources between UI items
-- **Graphics primitives and extensions** for:
+- **Graphics primitives and extensions**:
   - Graphics application base class with per-frame resource management, frame buffers resizing and other routine operations
   - Camera primitive and interactive arc-ball camera
   - Procedural mesh generation for quad, box, sphere, icosahedron and uber-mesh
   - Perlin Noise generation
   - Screen-quad and sky-box rendering extension classes
   - Texture image loader currently implemented with STB (planned for replacement with OpenImageIO, partially supported under the hood)
-- **User Interface** libraries:
+- **User Interface**:
   - UI application base class with integrated HUD, logo badge and help/parameters text panels
   - Typography library for fonts loading, dynamic atlas updating, text rendering & layout
   - Widgets library (under development)
-- **Application infrastructure helpers**:
+- **Application infrastructure**:
   - Events mechanism connecting emitters and receivers via callback interfaces
   - Animations subsystem
   - Embedded resource providers
   - Range Set implementation
 - **Integrated API instrumentation** for performance analysis with [trace profiling tools](#trace-profiling-tools)
-- **Continuous integration** with builds, unit-tests and static code analysis in Azure Pipelines.
+- **Continuous integration** with automated multi-platform builds, unit-tests and 
+[Sonar Cloud](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows) static code analysis
+in [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/)
 
 For detailed features description and development plans please refer to [Modules documentation](Modules).
 
@@ -98,7 +106,7 @@ Methane samples demonstrate advanced techniques and usage scenarios with a more 
 
 - **Common**
   - Git (required to pull sub-modules)
-  - CMake 3.15 or later
+  - CMake 3.16 or later
 - **Windows**
   - Windows 10 RS5 (build 1809) or later
   - Visual Studio 2019 with MSVC v142 or later

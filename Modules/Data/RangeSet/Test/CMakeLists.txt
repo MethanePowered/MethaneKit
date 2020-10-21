@@ -9,10 +9,13 @@ add_executable(${TARGET}
     RangeSetTest.cpp
 )
 
+target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
+
 target_link_libraries(${TARGET}
     PRIVATE
         MethaneDataRangeSet
         MethaneBuildOptions
+        MethanePrecompiledHeaders
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
         Catch
 )

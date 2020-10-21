@@ -27,6 +27,7 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 #include "AsteroidsArray.h"
 
 #include <Methane/Kit.h>
+#include <Methane/UserInterface/App.hpp>
 
 namespace Methane::Samples
 {

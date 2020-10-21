@@ -29,12 +29,15 @@ target_include_directories(${TARGET}
         Include
 )
 
+target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
+
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneDataTypes
     PRIVATE
         MethaneBuildOptions
         MethaneInstrumentation
+        MethanePrecompiledExtraHeaders
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES  ${HEADERS} ${SOURCES})

@@ -102,6 +102,7 @@ CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
     META_FUNCTION_TASK();
     TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(m_tracy_gpu_scope, m_tracy_construct_location_ptr.get());
     META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" was created.");
+    META_UNUSED(m_tracy_gpu_scope); // silence unused member warning on MacOS when Tracy GPU profiling
 }
 
 CommandListBase::~CommandListBase()
