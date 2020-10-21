@@ -21,7 +21,7 @@ steps:
   - task: Cache@2
     displayName: 'Sonar Scanner Cache'
     inputs:
-      key: 'SonarCache | $(sonarProjectKey) | $(Build.SourceBranchName) | $(configuration) | $(platform) | "$(Agent.OS)" | "$(cmakeFlags)"'
+      key: 'SonarCache | $(sonarProjectKey) | $(Build.SourceBranchName) | $(configuration) | $(platform) | "$(Agent.OS)"'
       path: $(sonarCacheDir)
 
   - task: SonarCloudPrepare@1
