@@ -226,7 +226,7 @@ jobs:
     productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
     sonarCacheDir: '$(Pipeline.Workspace)/MacSonarCache'
     sonarBuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-macosx-x86.zip'
-    sonarBuildWrapperExe: build-wrapper-macosx-x86/build-wrapper-macos-x86
+    sonarBuildWrapperExe: build-wrapper-macosx-x86/build-wrapper-macosx-x86
     sonarBuildCommand: xcodebuild -project MethaneKit.xcodeproj -configuration $(configuration) clean build
     sonarProjectKey: 'egorodet_MethaneKit_MacOS'
 
