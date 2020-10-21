@@ -1,0 +1,56 @@
+# Methane Kit CI configuration for Sonar Cloud static code analysis on MacOS/Linux platform
+# https://aka.ms/yaml
+
+steps:
+
+  - script: |
+      mkdir -p $(buildDir)
+    displayName: 'Make build directories for $(platform) $(configuration)'
+
+  - task: CMake@1
+    displayName: 'Generate with $(generatorName) for $(platform) $(configuration)'
+    inputs:
+      workingDirectory: $(buildDir)
+      cmakeArgs: '-G $(generatorName) -DCMAKE_BUILD_TYPE=$(configuration) $(cmakeFlags) $(rootDir)'
+
+  - script: |
+      curl '$(sonarBuildWrapperUrl)' --output build-wrapper.zip
+      unzip build-wrapper.zip
+    workingDirectory: $(buildDir)
+    displayName: 'Download and unpack Sonar Build-Wrapper'
+
+  - task: Cache@2
+    displayName: 'Sonar Scanner Cache'
+    inputs:
+      key: 'SonarCache | $(sonarProjectKey) | $(Build.SourceBranchName) | $(configuration) | $(platform) | "$(Agent.OS)"'
+      path: $(sonarCacheDir)
+
+  - task: SonarCloudPrepare@1
+    displayName: 'Prepare Sonar Cloud Scanner'
+    inputs:
+      SonarCloud: 'Evgeny Gorodetsky Sonar Cloud'
+      organization: 'egorodet-github'
+      scannerMode: 'CLI'
+      configMode: 'manual'
+      cliProjectKey: $(sonarProjectKey)
+      cliProjectVersion: $(productFullVersion)
+      cliSources: 'Apps,Modules'
+      extraProperties: |
+        sonar.branch.name=$(Build.SourceBranchName)
+        sonar.cfamily.build-wrapper-output=$(buildDir)/BuildWrapperOutput
+        sonar.cfamily.cache.path=$(sonarCacheDir)
+        sonar.cfamily.cache.enabled=true
+        sonar.cfamily.threads=4
+
+  - script: |
+      $(sonarBuildWrapperExe) --out-dir BuildWrapperOutput $(sonarBuildCommand)
+    workingDirectory: $(buildDir)
+    displayName: 'Build under Sonar Build-Wrapper with $(generatorName) for $(platform) $(configuration)'
+
+  - task: SonarCloudAnalyze@1
+    displayName: 'Analyze built sources with Sonar Scanner'
+
+  - task: SonarCloudPublish@1
+    displayName: 'Publish results of analysis to Sonar Cloud'
+    inputs:
+      pollingTimeoutSec: '300'
