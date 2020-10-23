@@ -93,7 +93,7 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
     // Primary screen point is used to determine if rotation is done inside sphere (around X and Y axes) or outside (around Z axis)
     // For secondary screen point the primary result is used
     const bool inside_sphere = ( is_primary && screen_radius <= sphere_radius) ||
-                               (!is_primary && std::fabs(m_mouse_pressed_on_sphere[2]) > 0.000001f);
+                               (!is_primary && std::fabs(m_mouse_pressed_on_sphere[2]) > 0.000001F);
 
     // Reflect coordinates for natural camera movement
     const Point2f mirror_multipliers = m_p_view_camera

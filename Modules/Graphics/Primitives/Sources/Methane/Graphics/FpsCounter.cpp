@@ -129,7 +129,7 @@ FpsCounter::FrameTiming FpsCounter::GetAverageFrameTiming() const noexcept
 uint32_t FpsCounter::GetFramesPerSecond() const noexcept
 {
     double average_frame_time_sec = GetAverageFrameTiming().GetTotalTimeSec();
-    return average_frame_time_sec ? static_cast<uint32_t>(std::round(1.0 / average_frame_time_sec)) : 0u;
+    return average_frame_time_sec ? static_cast<uint32_t>(std::round(1.0 / average_frame_time_sec)) : 0U;
 }
 
 } // namespace Methane::Graphics

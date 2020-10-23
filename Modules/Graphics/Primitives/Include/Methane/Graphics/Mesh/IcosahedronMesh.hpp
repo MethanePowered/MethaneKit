@@ -85,10 +85,10 @@ public:
                 Mesh::TexCoord& vertex_texcoord = BaseMeshT::template GetVertexField<Mesh::TexCoord>(vertex, Mesh::VertexField::TexCoord);
                 const Mesh::Position vertex_direction = cml::normalize(vertex_position);
 
-                vertex_texcoord[0] = std::atan2(vertex_direction[2], vertex_direction[0]) / (2.f * cml::constants<float>::pi()) + 0.5f;
+                vertex_texcoord[0] = std::atan2(vertex_direction[2], vertex_direction[0]) / (2.f * cml::constants<float>::pi()) + 0.5F;
                 assert(0.f <= vertex_texcoord[0] && vertex_texcoord[0] <= 1.f);
 
-                vertex_texcoord[1] = std::asin(vertex_direction[1]) / cml::constants<float>::pi() + 0.5f;
+                vertex_texcoord[1] = std::asin(vertex_direction[1]) / cml::constants<float>::pi() + 0.5F;
                 assert(0.f <= vertex_texcoord[1] && vertex_texcoord[1] <= 1.f);
             }
         }

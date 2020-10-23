@@ -52,7 +52,7 @@ ScissorRect GetFrameScissorRect(const FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
     return ScissorRect {
-        ScissorRect::Point(0u, 0u),
+        ScissorRect::Point(0U, 0U),
         ScissorRect::Size(frame_size.width, frame_size.height)
     };
 }

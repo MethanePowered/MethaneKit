@@ -55,21 +55,21 @@ class Text
 public:
     enum class Wrap : uint32_t
     {
-        None = 0u,
+        None = 0U,
         Anywhere,
         Word
     };
 
     enum class HorizontalAlignment : uint32_t
     {
-        Left = 0u,
+        Left = 0U,
         Right,
         Center
     };
 
     enum class VerticalAlignment : uint32_t
     {
-        Top = 0u,
+        Top = 0U,
         Bottom,
         Center
     };
@@ -99,7 +99,7 @@ public:
         bool              adjust_vertical_content_offset = true;
 
         // Minimize number of vertex/index buffer re-allocations on dynamic text updates by reserving additional size with multiplication of required size
-        Data::Size        mesh_buffers_reservation_multiplier = 2u;
+        Data::Size        mesh_buffers_reservation_multiplier = 2U;
     };
 
     using SettingsUtf8  = Settings<std::string>;
@@ -151,11 +151,11 @@ private:
             using Mask = uint32_t;
             enum Value : Mask
             {
-                None         = 0u,
-                Mesh         = 1u << 0u,
-                Uniforms     = 1u << 1u,
-                Atlas        = 1u << 2u,
-                All          = ~0u,
+                None         = 0U,
+                Mesh         = 1U << 0U,
+                Uniforms     = 1U << 1U,
+                Atlas        = 1U << 2U,
+                All          = ~0U,
             };
         };
 

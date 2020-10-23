@@ -69,7 +69,7 @@ float4 LinearToSrgb(float4 color)
 
 PSInput PlanetVS(VSInput input)
 {
-    const float4 position = float4(input.position, 1.0f);
+    const float4 position = float4(input.position, 1.0F);
 
     PSInput output;
     output.position       = mul(g_uniforms.mvp_matrix, position);

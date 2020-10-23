@@ -49,10 +49,10 @@ public:
         using Mask = uint32_t;
         enum Value : Mask
         {
-            None            = 0u,
-            DepthEnabled    = 1u << 0u,
-            DepthReversed   = 1u << 1u,
-            All             = ~0u,
+            None            = 0U,
+            DepthEnabled    = 1U << 0U,
+            DepthReversed   = 1U << 1U,
+            All             = ~0U,
         };
 
         Options() = delete;

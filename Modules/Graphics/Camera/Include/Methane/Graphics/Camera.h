@@ -106,9 +106,9 @@ private:
 
     Projection        m_projection            = Projection::Perspective;
     Data::FloatSize   m_screen_size           { 1.f, 1.f };
-    float             m_aspect_ratio          = 1.0f;
-    Parameters        m_parameters            { 0.01f, 125.f, 90.f };
-    Orientation       m_default_orientation   { { 15.0f, 15.0f, -15.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } };
+    float             m_aspect_ratio          = 1.0F;
+    Parameters        m_parameters            { 0.01F, 125.f, 90.f };
+    Orientation       m_default_orientation   { { 15.0F, 15.0F, -15.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } };
     Orientation       m_current_orientation   { };
 
     mutable Matrix44f m_current_view_matrix;

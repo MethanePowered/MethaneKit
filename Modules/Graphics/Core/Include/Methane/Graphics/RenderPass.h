@@ -43,22 +43,22 @@ struct RenderPass : virtual Object
     {
         enum class LoadAction : uint32_t
         {
-            DontCare = 0u,
+            DontCare = 0U,
             Load,
             Clear,
         };
 
         enum class StoreAction : uint32_t
         {
-            DontCare = 0u,
+            DontCare = 0U,
             Store,
             Resolve,
         };
         
         Ptr<Texture> texture_ptr;
-        uint32_t     level        = 0u;
-        uint32_t     slice        = 0u;
-        uint32_t     depth_plane  = 0u;
+        uint32_t     level        = 0U;
+        uint32_t     slice        = 0U;
+        uint32_t     depth_plane  = 0U;
         LoadAction   load_action  = LoadAction::DontCare;
         StoreAction  store_action = StoreAction::DontCare;
         
@@ -88,10 +88,10 @@ struct RenderPass : virtual Object
     
     struct StencilAttachment : Attachment
     {
-        Stencil clear_value = 0u;
+        Stencil clear_value = 0U;
         
         StencilAttachment() = default;
-        StencilAttachment(const Attachment&& attach, Stencil in_clear_value = 0u) : Attachment(attach), clear_value(in_clear_value) { }
+        StencilAttachment(const Attachment&& attach, Stencil in_clear_value = 0U) : Attachment(attach), clear_value(in_clear_value) { }
         
         bool operator==(const StencilAttachment& other) const;
     };
@@ -101,12 +101,12 @@ struct RenderPass : virtual Object
         using Mask = uint32_t;
         enum Value : Mask
         {
-            None            = 0u,
-            ShaderResources = 1u << 0u,
-            Samplers        = 1u << 1u,
-            RenderTargets   = 1u << 2u,
-            DepthStencil    = 1u << 3u,
-            All             = ~0u,
+            None            = 0U,
+            ShaderResources = 1U << 0U,
+            Samplers        = 1U << 1U,
+            RenderTargets   = 1U << 2U,
+            DepthStencil    = 1U << 3U,
+            All             = ~0U,
         };
 
         using Values = std::array<Value, 4>;

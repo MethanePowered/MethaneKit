@@ -147,7 +147,7 @@ void RenderContextBase::Initialize(DeviceBase& device, bool deferred_heap_alloca
     }
 
     m_render_fence_ptr = Fence::Create(GetRenderCommandQueue());
-    m_frame_index = 0u;
+    m_frame_index = 0U;
 
     if (is_callback_emitted)
     {
@@ -257,7 +257,7 @@ bool RenderContextBase::SetVSyncEnabled(bool vsync_enabled)
 bool RenderContextBase::SetFrameBuffersCount(uint32_t frame_buffers_count)
 {
     META_FUNCTION_TASK();
-    frame_buffers_count = std::min(std::max(2u, frame_buffers_count), 10u);
+    frame_buffers_count = std::min(std::max(2U, frame_buffers_count), 10U);
 
     if (m_settings.frame_buffers_count == frame_buffers_count)
         return false;

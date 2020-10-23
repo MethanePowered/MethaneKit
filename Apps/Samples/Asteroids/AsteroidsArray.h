@@ -48,17 +48,17 @@ public:
     {
         gfx::Camera&    view_camera;
         float           scale                    = 1.f;
-        uint32_t        instance_count           = 100u;
-        uint32_t        unique_mesh_count        = 50u;
-        uint32_t        subdivisions_count       = 3u;
-        uint32_t        textures_count           = 10u;
-        gfx::Dimensions texture_dimensions       { 256u, 256u };
-        uint32_t        random_seed              = 1337u;
+        uint32_t        instance_count           = 100U;
+        uint32_t        unique_mesh_count        = 50U;
+        uint32_t        subdivisions_count       = 3U;
+        uint32_t        textures_count           = 10U;
+        gfx::Dimensions texture_dimensions       { 256U, 256U };
+        uint32_t        random_seed              = 1337U;
         float           orbit_radius_ratio       = 10.f;
         float           disc_radius_ratio        = 3.f;
-        float           mesh_lod_min_screen_size = 0.06f;
-        float           min_asteroid_scale_ratio = 0.1f;
-        float           max_asteroid_scale_ratio = 0.7f;
+        float           mesh_lod_min_screen_size = 0.06F;
+        float           min_asteroid_scale_ratio = 0.1F;
+        float           max_asteroid_scale_ratio = 0.7F;
         bool            textures_array_enabled   = false;
         bool            depth_reversed           = false;
     };

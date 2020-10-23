@@ -84,7 +84,7 @@ public:
         META_FUNCTION_TASK();
         BufferBase::SetData(sub_resources);
 
-        const CD3DX12_RANGE zero_read_range(0u, 0u);
+        const CD3DX12_RANGE zero_read_range(0U, 0U);
         const bool is_private_storage  = GetSettings().storage_mode == Buffer::StorageMode::Private;
         ID3D12Resource& d3d12_resource = is_private_storage ? *m_cp_upload_resource.Get() : GetNativeResourceRef();
         for(const SubResource& sub_resource : sub_resources)
@@ -103,7 +103,7 @@ public:
             if (!p_sub_resource_data)
                 throw std::runtime_error("Failed to map buffer subresource.");
 
-            const Data::Index target_data_start = sub_resource.data_range ? sub_resource.data_range->GetStart() : 0u;
+            const Data::Index target_data_start = sub_resource.data_range ? sub_resource.data_range->GetStart() : 0U;
             stdext::checked_array_iterator<Data::RawPtr> target_data_it(p_sub_resource_data, sub_resource.size);
             std::copy(sub_resource.p_data, sub_resource.p_data + sub_resource.size, target_data_it);
 
@@ -151,7 +151,7 @@ public:
         ValidateSubResource(sub_resource_index, data_range);
 
         const Data::Index sub_resource_raw_index = sub_resource_index.GetRawIndex(GetSubresourceCount());
-        const Data::Index data_start  = data_range ? data_range->GetStart()  : 0u;
+        const Data::Index data_start  = data_range ? data_range->GetStart()  : 0U;
         const Data::Index data_length = data_range ? data_range->GetLength() : GetSubResourceDataSize(sub_resource_index);
         const Data::Index data_end    = data_start + data_length;
 

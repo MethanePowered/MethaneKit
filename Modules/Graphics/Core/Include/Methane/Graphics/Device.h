@@ -54,10 +54,10 @@ struct Device
         using Mask = uint32_t;
         enum Value : Mask
         {
-            Unknown                 = 0u,
-            BasicRendering          = 1u << 0u,
-            TextureAndSamplerArrays = 1u << 1u,
-            All                     = ~0u,
+            Unknown                 = 0U,
+            BasicRendering          = 1U << 0U,
+            TextureAndSamplerArrays = 1U << 1U,
+            All                     = ~0U,
         };
 
         using Values = std::array<Value, 2>;

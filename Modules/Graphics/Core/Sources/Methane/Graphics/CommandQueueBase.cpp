@@ -70,7 +70,7 @@ uint32_t CommandQueueBase::GetCurrentFrameBufferIndex() const
     META_FUNCTION_TASK();
     return m_context.GetType() == Context::Type::Render
          ? dynamic_cast<const RenderContextBase&>(m_context).GetFrameBufferIndex()
-         : 0u;
+         : 0U;
 }
 
 } // namespace Methane::Graphics

@@ -52,7 +52,7 @@ protected:
 
 private:
     CommandQueueBase& m_command_queue;
-    uint64_t          m_value = 0u;
+    uint64_t          m_value = 0U;
 };
 
 } // namespace Methane::Graphics

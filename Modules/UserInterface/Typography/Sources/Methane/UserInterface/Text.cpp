@@ -483,7 +483,7 @@ void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context,
     (*m_vertex_buffer_set_ptr)[0].SetData({
         gfx::Resource::SubResource(
             reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetVertices().data()), vertices_data_size,
-            gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0u, vertices_data_size)
+            gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0U, vertices_data_size)
         )
     });
 
@@ -506,7 +506,7 @@ void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context,
     m_index_buffer_ptr->SetData({
         gfx::Resource::SubResource(
             reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetIndices().data()), indices_data_size,
-            gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0u, indices_data_size)
+            gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0U, indices_data_size)
         )
     });
 
@@ -564,7 +564,7 @@ void Text::InitializeFrameResources()
     m_frame_resources.reserve(frame_buffers_count);
 
     const Ptr<gfx::Texture>& atlas_texture_ptr = m_font_ptr->GetAtlasTexturePtr(render_context);
-    for(uint32_t frame_buffer_index = 0u; frame_buffer_index < frame_buffers_count; ++frame_buffer_index)
+    for(uint32_t frame_buffer_index = 0U; frame_buffer_index < frame_buffers_count; ++frame_buffer_index)
     {
         m_frame_resources.emplace_back(
             *m_render_state_ptr, render_context, m_const_buffer_ptr, atlas_texture_ptr, m_atlas_sampler_ptr,

@@ -72,7 +72,7 @@ struct Context
 
     enum class DeferredAction : uint32_t
     {
-        None = 0u,
+        None = 0U,
         UploadResources,
         CompleteInitialization
     };

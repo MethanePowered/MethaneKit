@@ -91,7 +91,7 @@ void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& render_state_p
                                  Data::GetParallelChunkSizeAsInt(m_parallel_command_lists.size()));
     GetCommandQueueBase().GetContext().GetParallelExecutor().run(reset_task_flow).get();
 #else
-    for(size_t command_list_index = 0u; command_list_index < m_parallel_command_lists.size(); ++command_list_index)
+    for(size_t command_list_index = 0U; command_list_index < m_parallel_command_lists.size(); ++command_list_index)
         reset_command_list_fn(command_list_index);
 #endif
 }

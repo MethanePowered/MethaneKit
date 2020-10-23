@@ -376,7 +376,7 @@ void AppBase::UpdateParametersTextPosition()
     m_parameters.panel_ptr->SetRect(UnitRect(
         FramePoint(m_frame_size.width  - parameters_text_size.width  - text_margins_size.width  * 3,
                    m_frame_size.height - parameters_text_size.height - text_margins_size.height * 3),
-        parameters_text_size + text_margins_size * 2u,
+        parameters_text_size + text_margins_size * 2U,
         Units::Pixels
     ));
 }

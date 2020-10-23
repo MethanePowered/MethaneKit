@@ -87,7 +87,7 @@ SamplerState                  g_texture_sampler : register(s1);
 
 PSInput CubeVS(VSInput input)
 {
-    const float4 position   = float4(input.position, 1.0f);
+    const float4 position   = float4(input.position, 1.0F);
 
     PSInput output;
     output.position         = mul(g_mesh_uniforms.mvp_matrix, position);
@@ -111,9 +111,9 @@ float4 CubePS(PSInput input) : SV_TARGET
 
 #ifdef ENABLE_SHADOWS
     float3       light_proj_pos = input.shadow_position.xyz / input.shadow_position.w;
-    const float  current_depth  = light_proj_pos.z - 0.0001f;
+    const float  current_depth  = light_proj_pos.z - 0.0001F;
     const float  shadow_depth   = g_shadow_map.Sample(g_shadow_sampler, light_proj_pos.xy).r;
-    const float  shadow_ratio   = current_depth > shadow_depth ? 1.0f : 0.0f;
+    const float  shadow_ratio   = current_depth > shadow_depth ? 1.0F : 0.0F;
 #else
     const float  shadow_ratio   = 0.f;
 #endif
@@ -121,7 +121,7 @@ float4 CubePS(PSInput input) : SV_TARGET
 #ifdef ENABLE_TEXTURING
     const float4 texel_color    = g_texture.Sample(g_texture_sampler, input.texcoord);
 #else
-    const float4 texel_color    = { 0.8f, 0.8f, 0.8f, 1.f };
+    const float4 texel_color    = { 0.8F, 0.8F, 0.8F, 1.f };
 #endif
 
     const float4 ambient_color  = texel_color * g_constants.light_ambient_factor;

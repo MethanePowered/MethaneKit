@@ -50,11 +50,11 @@ public:
             using Mask = uint32_t;
             enum Value : Mask
             {
-                None          = 0u,
-                PrimitiveType = 1u << 0u,
-                IndexBuffer   = 1u << 1u,
-                VertexBuffers = 1u << 2u,
-                All           = ~0u,
+                None          = 0U,
+                PrimitiveType = 1U << 0U,
+                IndexBuffer   = 1U << 1U,
+                VertexBuffers = 1U << 2U,
+                All           = ~0U,
             };
 
             Changes() = delete;

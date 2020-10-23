@@ -102,10 +102,10 @@ public:
 
     size_t   GetId() const           { return m_id; }
 
-    bool     IsFooCalled() const     { return m_foo_call_count > 0u; }
+    bool     IsFooCalled() const     { return m_foo_call_count > 0U; }
     uint32_t GetFooCallCount() const { return m_foo_call_count; }
 
-    bool     IsBarCalled() const     { return m_bar_call_count > 0u; }
+    bool     IsBarCalled() const     { return m_bar_call_count > 0U; }
     uint32_t GetBarCallCount() const { return m_bar_call_count; }
 
     uint32_t GetFuncCallCount() const { return m_func_call_count; }
@@ -139,9 +139,9 @@ protected:
 
 private:
     const size_t m_id = 0;
-    uint32_t     m_foo_call_count = 0u;
-    uint32_t     m_bar_call_count = 0u;
-    uint32_t     m_func_call_count = 0u;
+    uint32_t     m_foo_call_count = 0U;
+    uint32_t     m_bar_call_count = 0U;
+    uint32_t     m_func_call_count = 0U;
     int          m_bar_a = 0;
     bool         m_bar_b = false;
     float        m_bar_c = 0.f;
@@ -149,6 +149,6 @@ private:
 
 constexpr int   g_bar_a = 1;
 constexpr bool  g_bar_b = true;
-constexpr float g_bar_c = 2.3f;
+constexpr float g_bar_c = 2.3F;
 
 } // namespace Methane::Data

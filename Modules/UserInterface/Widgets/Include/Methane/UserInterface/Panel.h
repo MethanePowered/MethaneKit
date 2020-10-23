@@ -43,7 +43,7 @@ public:
     struct Settings
     {
         std::string  name;
-        gfx::Color4f background_color { 0.f, 0.f, 0.f, 0.66f };
+        gfx::Color4f background_color { 0.f, 0.f, 0.f, 0.66F };
     };
 
     Panel(Context& ui_context, const UnitRect& rect, Settings settings);

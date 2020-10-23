@@ -128,8 +128,8 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
     std::mt19937 rng(settings.random_seed);
 
     // Randomly generate perlin-noise textures
-    std::normal_distribution<float>       noise_persistence_distribution(0.9f, 0.2f);
-    std::uniform_real_distribution<float> noise_scale_distribution(0.05f, 0.1f);
+    std::normal_distribution<float>       noise_persistence_distribution(0.9F, 0.2F);
+    std::uniform_real_distribution<float> noise_scale_distribution(0.05F, 0.1F);
 
     texture_array_subresources.resize(settings.textures_count);
     tf::Taskflow task_flow;
@@ -140,7 +140,7 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
                 static_cast<uint32_t>(rng()),
                 noise_persistence_distribution(rng),
                 noise_scale_distribution(rng),
-                1.5f
+                1.5F
             };
             sub_resources = Asteroid::GenerateTextureArraySubresources(settings.texture_dimensions, 3, noise_parameters);
         },
@@ -149,7 +149,7 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
     parallel_executor.run(task_flow).get();
 
     // Randomly distribute textures between uber-mesh subsets
-    std::uniform_int_distribution<uint32_t> textures_distribution(0u, settings.textures_count - 1);
+    std::uniform_int_distribution<uint32_t> textures_distribution(0U, settings.textures_count - 1);
     mesh_subset_texture_indices.resize(static_cast<size_t>(settings.unique_mesh_count) * settings.subdivisions_count);
     for (uint32_t& mesh_subset_texture_index : mesh_subset_texture_indices)
     {
@@ -161,14 +161,14 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
     const float    disc_radius  = settings.disc_radius_ratio  * settings.scale;
 
     std::normal_distribution<float>         normal_distribution;
-    std::uniform_int_distribution<uint32_t> mesh_distribution(0u, settings.unique_mesh_count - 1);
+    std::uniform_int_distribution<uint32_t> mesh_distribution(0U, settings.unique_mesh_count - 1);
     std::uniform_int_distribution<uint32_t> colors_distribution(0, static_cast<uint32_t>(Asteroid::color_schema_size - 1));
     std::uniform_real_distribution<float>   scale_distribution(settings.min_asteroid_scale_ratio, settings.max_asteroid_scale_ratio);
-    std::uniform_real_distribution<float>   scale_proportion_distribution(0.8f, 1.2f);
-    std::uniform_real_distribution<float>   spin_velocity_distribution(-1.7f, 1.7f);
-    std::uniform_real_distribution<float>   orbit_velocity_distribution(1.5f, 5.f);
-    std::normal_distribution<float>         orbit_radius_distribution(orbit_radius, 0.6f * disc_radius);
-    std::normal_distribution<float>         orbit_height_distribution(0.0f, 0.4f * disc_radius);
+    std::uniform_real_distribution<float>   scale_proportion_distribution(0.8F, 1.2F);
+    std::uniform_real_distribution<float>   spin_velocity_distribution(-1.7F, 1.7F);
+    std::uniform_real_distribution<float>   orbit_velocity_distribution(1.5F, 5.f);
+    std::normal_distribution<float>         orbit_radius_distribution(orbit_radius, 0.6F * disc_radius);
+    std::normal_distribution<float>         orbit_height_distribution(0.0F, 0.4F * disc_radius);
 
     parameters.reserve(settings.instance_count);
 
@@ -200,7 +200,7 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
             {
                 asteroid_index,
                 asteroid_mesh_index,
-                settings.textures_array_enabled ? textures_distribution(rng) : 0u,
+                settings.textures_array_enabled ? textures_distribution(rng) : 0U,
                 std::move(asteroid_colors),
                 std::move(scale_translate_matrix),
                 GetRandomDirection(rng),
@@ -224,7 +224,7 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, Settings settings, C
     : BaseBuffers(context, state.uber_mesh, "Asteroids Array")
     , m_settings(std::move(settings))
     , m_content_state_ptr(state.shared_from_this())
-    , m_mesh_subset_by_instance_index(m_settings.instance_count, 0u)
+    , m_mesh_subset_by_instance_index(m_settings.instance_count, 0U)
     , m_min_mesh_lod_screen_size_log_2(std::log2(m_settings.mesh_lod_min_screen_size))
 {
     META_FUNCTION_TASK();
@@ -275,7 +275,7 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, Settings settings, C
     SetInstanceCount(m_settings.instance_count);
 
     // Create texture arrays initialized with sub-resources data
-    uint32_t texture_index = 0u;
+    uint32_t texture_index = 0U;
     m_unique_textures.reserve(m_settings.textures_count);
     for(const gfx::Resource::SubResources& texture_subresources : m_content_state_ptr->texture_array_subresources)
     {
@@ -381,7 +381,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
             const float relative_screen_size_log_2 = std::log2(asteroid_parameters.scale / std::sqrt(distance_to_eye));
 
             const float             mesh_subdiv_float       = std::roundf(relative_screen_size_log_2 - m_min_mesh_lod_screen_size_log_2);
-            const uint32_t          mesh_subdivision_index  = std::min(m_settings.subdivisions_count - 1, static_cast<uint32_t>(std::max(0.0f, mesh_subdiv_float)));
+            const uint32_t          mesh_subdivision_index  = std::min(m_settings.subdivisions_count - 1, static_cast<uint32_t>(std::max(0.0F, mesh_subdiv_float)));
             const uint32_t          mesh_subset_index       = m_content_state_ptr->uber_mesh.GetSubsetIndex(asteroid_parameters.mesh_instance_index, mesh_subdivision_index);
             const gfx::Vector2f&    mesh_subset_depth_range = m_content_state_ptr->uber_mesh.GetSubsetDepthRange(mesh_subset_index);
             const Asteroid::Colors& asteroid_colors         = m_mesh_lod_coloring_enabled ? Asteroid::GetAsteroidLodColors(mesh_subdivision_index)

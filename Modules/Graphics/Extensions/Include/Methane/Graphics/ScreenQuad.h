@@ -45,7 +45,7 @@ class ScreenQuad
 public:
     enum class TextureMode : uint32_t
     {
-        Disabled = 0u,
+        Disabled = 0U,
         RgbaFloat,
         RFloatToAlpha,
     };

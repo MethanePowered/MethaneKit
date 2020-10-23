@@ -85,8 +85,8 @@ QueryBuffer::QueryBuffer(CommandQueueBase& command_queue, Type type,
     : m_type(type)
     , m_buffer_size(buffer_size)
     , m_query_size(query_size)
-    , m_free_indices({ { 0u, max_query_count } })
-    , m_free_data_ranges({ { 0u, buffer_size } })
+    , m_free_indices({ { 0U, max_query_count } })
+    , m_free_data_ranges({ { 0U, buffer_size } })
     , m_command_queue(command_queue)
     , m_context(dynamic_cast<Context&>(command_queue.GetContext()))
 {
@@ -103,7 +103,7 @@ void QueryBuffer::ReleaseQuery(const Query& query)
 QueryBuffer::CreateQueryArgs QueryBuffer::GetCreateQueryArguments()
 {
     META_FUNCTION_TASK();
-    const Data::Range<Data::Index> index_range = Data::ReserveRange(m_free_indices, 1u);
+    const Data::Range<Data::Index> index_range = Data::ReserveRange(m_free_indices, 1U);
     if (index_range.IsEmpty())
         throw std::out_of_range("Maximum queries count is reached.");
 

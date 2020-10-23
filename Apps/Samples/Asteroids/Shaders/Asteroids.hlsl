@@ -79,7 +79,7 @@ SamplerState                  g_texture_sampler               : register(s1);
 
 PSInput AsteroidVS(VSInput input)
 {
-    const float4 position = float4(input.position, 1.0f);
+    const float4 position = float4(input.position, 1.0F);
     const float  depth    = linstep(g_mesh_uniforms.depth_range.x, g_mesh_uniforms.depth_range.y, length(input.position.xyz));
 
     PSInput output;
@@ -89,9 +89,9 @@ PSInput AsteroidVS(VSInput input)
     output.albedo            = lerp(g_mesh_uniforms.deep_color, g_mesh_uniforms.shallow_color, depth);
 
     // Prepare coordinates and blending weights for tri-planar projection texturing
-    output.uvw               = input.position / g_mesh_uniforms.depth_range.y * 0.5f + 0.5f;
+    output.uvw               = input.position / g_mesh_uniforms.depth_range.y * 0.5F + 0.5F;
     output.face_blend_weights = abs(normalize(input.position));
-    output.face_blend_weights = saturate((output.face_blend_weights - 0.2f) * 7.0f);
+    output.face_blend_weights = saturate((output.face_blend_weights - 0.2F) * 7.0F);
     output.face_blend_weights /= (output.face_blend_weights.x + output.face_blend_weights.y + output.face_blend_weights.z).xxx;
 
     return output;
@@ -119,7 +119,7 @@ float4 AsteroidPS(PSInput input) : SV_TARGET
 
     const float  specular_part  = pow(clamp(dot(fragment_to_eye, light_reflected_from_fragment), 0.0, 1.0), g_constants.light_specular_factor);
     const float4 specular_color = base_color * specular_part;
-    const float  fading_ratio   = saturate(input.position.z * 8000.0f);
+    const float  fading_ratio   = saturate(input.position.z * 8000.0F);
 
     return ColorLinearToSrgb((ambient_color + diffuse_color + specular_color) * fading_ratio);
 }

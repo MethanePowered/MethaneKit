@@ -61,11 +61,11 @@ struct ProgramBindings
         using Mask = uint32_t;
         enum Value : Mask
         {
-            Indifferent    = 0u,        // All bindings will be applied indifferently of the previous binding values
-            ConstantOnce   = 1u << 0,   // Constant program arguments will be applied only once for each command list
-            ChangesOnly    = 1u << 1,   // Only changed program argument values will be applied in command sequence
-            StateBarriers  = 1u << 2,   // Resource state barriers will be automatically evaluated and set for command list
-            AllIncremental = ~0u        // All binding values will be applied incrementally along with resource state barriers
+            Indifferent    = 0U,        // All bindings will be applied indifferently of the previous binding values
+            ConstantOnce   = 1U << 0,   // Constant program arguments will be applied only once for each command list
+            ChangesOnly    = 1U << 1,   // Only changed program argument values will be applied in command sequence
+            StateBarriers  = 1U << 2,   // Resource state barriers will be automatically evaluated and set for command list
+            AllIncremental = ~0U        // All binding values will be applied incrementally along with resource state barriers
         };
 
         ApplyBehavior() = delete;

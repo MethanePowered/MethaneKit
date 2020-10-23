@@ -40,7 +40,7 @@ static gfx::Color3f TransformSrgbToLinear(const gfx::Color3f& srgb_color)
     gfx::Color3f linear_color{};
     for (int c = 0; c < 3; ++c)
     {
-        linear_color[c] = std::pow(srgb_color[c] / 255.f, 2.233333333f);
+        linear_color[c] = std::pow(srgb_color[c] / 255.f, 2.233333333F);
     }
     return linear_color;
 }
@@ -58,7 +58,7 @@ static AsteroidColorSchema TransformSrgbToLinear(const AsteroidColorSchema& srgb
 }
 
 Asteroid::Mesh::Mesh(uint32_t subdivisions_count, bool randomize)
-    : gfx::IcosahedronMesh<Vertex>(Mesh::VertexLayout(Vertex::layout), 0.5f, subdivisions_count, true)
+    : gfx::IcosahedronMesh<Vertex>(Mesh::VertexLayout(Vertex::layout), 0.5F, subdivisions_count, true)
 {
     META_FUNCTION_TASK();
 
@@ -72,16 +72,16 @@ void Asteroid::Mesh::Randomize(uint32_t random_seed)
 {
     META_FUNCTION_TASK();
 
-    const float noise_scale = 0.5f;
-    const float radius_scale = 1.8f;
-    const float radius_bias = 0.3f;
+    const float noise_scale = 0.5F;
+    const float radius_scale = 1.8F;
+    const float radius_bias = 0.3F;
 
     std::mt19937 rng(random_seed);
 
-    auto random_persistence = std::normal_distribution<float>(0.95f, 0.04f);
+    auto random_persistence = std::normal_distribution<float>(0.95F, 0.04F);
     const gfx::PerlinNoise perlin_noise(random_persistence(rng));
 
-    auto  random_noise = std::uniform_real_distribution<float>(0.0f, 10000.0f);
+    auto  random_noise = std::uniform_real_distribution<float>(0.0F, 10000.0F);
     const float noise = random_noise(rng);
 
     m_depth_range[0] = std::numeric_limits<float>::max();
@@ -135,7 +135,7 @@ gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx
 
     for (uint32_t array_index = 0; array_index < array_size; ++array_index)
     {
-        Data::Bytes sub_resource_data(pixels_count * pixel_size, 255u);
+        Data::Bytes sub_resource_data(pixels_count * pixel_size, 255U);
         FillPerlinNoiseToTexture(sub_resource_data, dimensions, row_stride,
                                  noise_seed_distribution(rng),
                                  noise_parameters.persistence,
@@ -251,7 +251,7 @@ void Asteroid::FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Di
         for (size_t col = 0; col < dimensions.width; ++col)
         {
             const gfx::Vector3f noise_coordinates(noise_scale * row, noise_scale * col, random_seed);
-            const float         noise_intensity = std::max(0.0f, std::min(1.0f, (perlin_noise(noise_coordinates) - 0.5f) * noise_strength + 0.5f));
+            const float         noise_intensity = std::max(0.0F, std::min(1.0F, (perlin_noise(noise_coordinates) - 0.5F) * noise_strength + 0.5F));
 
             uint8_t* texel_data = reinterpret_cast<uint8_t*>(&row_data[col]);
             for (size_t channel = 0; channel < 3; ++channel)

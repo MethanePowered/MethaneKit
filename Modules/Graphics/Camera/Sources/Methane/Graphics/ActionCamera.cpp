@@ -127,8 +127,8 @@ void ActionCamera::OnKeyPressed(KeyboardAction keyboard_action)
         case KeyboardAction::PitchDown:     StartRotateAction(keyboard_action, Vector3f( 1.f,  0.f,  0.f) * rotation_axis_sign); break;
             
         // Zoom
-        case KeyboardAction::ZoomIn:        StartZoomAction(keyboard_action, 0.9f); break;
-        case KeyboardAction::ZoomOut:       StartZoomAction(keyboard_action, 1.1f); break;
+        case KeyboardAction::ZoomIn:        StartZoomAction(keyboard_action, 0.9F); break;
+        case KeyboardAction::ZoomOut:       StartZoomAction(keyboard_action, 1.1F); break;
             
         default: return;
     }

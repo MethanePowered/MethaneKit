@@ -207,7 +207,7 @@ void CommandListBase::WaitUntilCompleted(uint32_t timeout_ms)
 
     META_LOG("WAIT for completion of " + GetTypeName(m_type) + " Command list \"" + GetName() + "\".");
 
-    if (timeout_ms == 0u)
+    if (timeout_ms == 0U)
     {
         m_state_change_condition_var.wait(pending_state_lock, is_completed);
     }

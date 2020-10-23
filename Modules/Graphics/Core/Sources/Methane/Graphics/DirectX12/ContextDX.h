@@ -35,7 +35,7 @@ struct IContextDX
 {
     virtual const DeviceDX& GetDeviceDX() const noexcept = 0;
     virtual CommandQueueDX& GetUploadCommandQueueDX() noexcept = 0;
-    virtual ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1u << 15u) = 0;
+    virtual ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) = 0;
 
     virtual ~IContextDX() = default;
 };

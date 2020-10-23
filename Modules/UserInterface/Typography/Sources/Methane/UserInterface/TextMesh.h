@@ -54,7 +54,7 @@ public:
         bool     is_line_start              = false; // start of new line: either after line break `\n` or text wrap
         bool     is_whitespace_or_linebreak = false;
         size_t   start_vertex_index         = std::numeric_limits<size_t>::max();
-        uint32_t visual_width               = 0u;
+        uint32_t visual_width               = 0U;
     };
 
     using CharPositions = std::vector<CharPosition>;
@@ -69,7 +69,7 @@ public:
     Text::Layout          GetLayout() const noexcept            { return m_layout; }
     const gfx::FrameSize& GetFrameSize() const noexcept         { return m_frame_size; }
     const gfx::FrameSize& GetContentSize() const noexcept       { return m_content_size; }
-    uint32_t              GetContentTopOffset() const noexcept  { return m_content_top_offset == std::numeric_limits<uint32_t>::max() ? 0u : m_content_top_offset; }
+    uint32_t              GetContentTopOffset() const noexcept  { return m_content_top_offset == std::numeric_limits<uint32_t>::max() ? 0U : m_content_top_offset; }
 
     const Vertices& GetVertices() const noexcept                { return m_vertices; }
     const Indices&  GetIndices() const noexcept                 { return m_indices; }
@@ -100,7 +100,7 @@ private:
     uint32_t             m_content_top_offset = std::numeric_limits<uint32_t>::max(); // minimum distance from frame top border to character quads in first text line
     CharPositions        m_char_positions; // char positions without any hor/ver alignment
     size_t               m_last_whitespace_index = std::string::npos;
-    size_t               m_last_line_start_index = 0u;
+    size_t               m_last_line_start_index = 0U;
     Vertices             m_vertices;
     Indices              m_indices;
 };

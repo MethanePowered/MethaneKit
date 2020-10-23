@@ -43,7 +43,7 @@ static uint32_t MeasureEmitToManyReceivers(uint32_t receivers_count, Catch::Benc
     });
 
     // Prevent code removal by optimizer and check received calls count
-    uint32_t received_calls_count = 0u;
+    uint32_t received_calls_count = 0U;
     for(TestReceiver& receiver : receivers)
     {
         received_calls_count += receiver.GetBarCallCount();
@@ -67,7 +67,7 @@ static uint32_t MeasureConnectAndEmitToManyReceivers(uint32_t receivers_count, C
     });
 
     // Prevent code removal by optimizer and check received calls count
-    uint32_t received_calls_count = 0u;
+    uint32_t received_calls_count = 0U;
     for(TestReceiver& receiver : receivers)
     {
         received_calls_count += receiver.GetBarCallCount();
@@ -99,7 +99,7 @@ static uint32_t MeasureReceiveFromManyEmitters(uint32_t emitters_count, Catch::B
 static uint32_t MeasureConnectAndReceiveFromManyEmitters(uint32_t emitters_count, Catch::Benchmark::Chronometer meter)
 {
     std::vector<TestEmitter> emitters(emitters_count);
-    uint32_t received_calls_count = 0u;
+    uint32_t received_calls_count = 0U;
 
     meter.measure([&]()
     {

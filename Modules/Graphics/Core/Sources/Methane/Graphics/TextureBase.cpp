@@ -120,7 +120,7 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
         SubResource::Count(
             settings.dimensions.depth,
             settings.array_length,
-            settings.mipmapped ? GetRequiredMipLevelsCount(settings.dimensions) : 1u
+            settings.mipmapped ? GetRequiredMipLevelsCount(settings.dimensions) : 1U
         )
     );
 }
@@ -176,7 +176,7 @@ void TextureBase::ValidateDimensions(DimensionType dimension_type, const Dimensi
 Data::Size TextureBase::GetRequiredMipLevelsCount(const Dimensions& dimensions)
 {
     META_FUNCTION_TASK();
-    return 1u + static_cast<uint32_t>(std::log2(static_cast<double>(dimensions.GetLongestSide())));
+    return 1U + static_cast<uint32_t>(std::log2(static_cast<double>(dimensions.GetLongestSide())));
 }
 
 Data::Size TextureBase::GetDataSize(Data::MemoryState size_type) const noexcept
@@ -193,7 +193,7 @@ Data::Size TextureBase::CalculateSubResourceDataSize(const SubResource::Index& s
     ValidateSubResource(sub_resource_index);
 
     const Data::Size pixel_size = GetPixelSize(m_settings.pixel_format);
-    if (sub_resource_index.mip_level == 0u)
+    if (sub_resource_index.mip_level == 0U)
     {
         return pixel_size * static_cast<const Data::FrameSize&>(m_settings.dimensions).GetPixelsCount();
     }

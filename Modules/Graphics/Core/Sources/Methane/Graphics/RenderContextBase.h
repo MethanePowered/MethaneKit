@@ -86,8 +86,8 @@ private:
     Ptr<CommandQueue>   m_render_cmd_queue_ptr;
     Ptrs<Fence>         m_frame_fences;
     Ptr<Fence>          m_render_fence_ptr;
-    uint32_t            m_frame_buffer_index = 0u;
-    uint32_t            m_frame_index = 0u;
+    uint32_t            m_frame_buffer_index = 0U;
+    uint32_t            m_frame_index = 0U;
     bool                m_is_frame_buffer_in_use = true;
     FpsCounter          m_fps_counter;
 };

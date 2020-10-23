@@ -55,7 +55,7 @@ public:
                 FrameSize(),                     // - frame_size placeholder: set in InitContext
                 PixelFormat::BGRA8Unorm,         // - color_format
                 PixelFormat::Unknown,            // - depth_stencil_format
-                Color4f(0.0f, 0.2f, 0.4f, 1.0f), // - clear_color
+                Color4f(0.0F, 0.2F, 0.4F, 1.0F), // - clear_color
             }
         })
     { }
@@ -106,9 +106,9 @@ public:
 
         struct Vertex { Vector3f position; Vector3f color; };
         const std::array<Vertex, 3> triangle_vertices{ {
-            { { 0.0f,   0.5f,  0.0f }, { 1.0f, 0.0f, 0.0f } },
-            { { 0.5f,  -0.5f,  0.0f }, { 0.0f, 1.0f, 0.0f } },
-            { { -0.5f, -0.5f,  0.0f }, { 0.0f, 0.0f, 1.0f } },
+            { { 0.0F,   0.5F,  0.0F }, { 1.0F, 0.0F, 0.0F } },
+            { { 0.5F,  -0.5F,  0.0F }, { 0.0F, 1.0F, 0.0F } },
+            { { -0.5F, -0.5F,  0.0F }, { 0.0F, 0.0F, 1.0F } },
         } };
 
         const Data::Size vertex_buffer_size = static_cast<Data::Size>(sizeof(triangle_vertices));

@@ -100,7 +100,7 @@ void QueryBufferDX::QueryDX::ResolveData()
     m_native_command_list.ResolveQueryData(
         &query_buffer_dx.GetNativeQueryHeap(),
         m_native_query_type,
-        GetIndex(), 1u,
+        GetIndex(), 1U,
         query_buffer_dx.GetResultResourceDX().GetNativeResource(),
         GetDataRange().GetStart()
     );
@@ -144,7 +144,7 @@ CommandQueueDX& QueryBufferDX::GetCommandQueueDX() noexcept
 static Frequency GetGpuFrequency(ID3D12CommandQueue& native_command_queue, ID3D12Device& native_device)
 {
     META_FUNCTION_TASK();
-    Frequency gpu_frequency = 0u;
+    Frequency gpu_frequency = 0U;
     ThrowIfFailed(native_command_queue.GetTimestampFrequency(&gpu_frequency), &native_device);
     return gpu_frequency;
 }
@@ -152,8 +152,8 @@ static Frequency GetGpuFrequency(ID3D12CommandQueue& native_command_queue, ID3D1
 static std::pair<Timestamp, TimeDelta> GetGpuTimeCalibration(ID3D12CommandQueue& native_command_queue, ID3D12Device& native_device)
 {
     META_FUNCTION_TASK();
-    UINT64 gpu_timestamp = 0u;
-    UINT64 cpu_timestamp = 0u;
+    UINT64 gpu_timestamp = 0U;
+    UINT64 cpu_timestamp = 0U;
     ThrowIfFailed(native_command_queue.GetClockCalibration(&gpu_timestamp, &cpu_timestamp), &native_device);
     return { gpu_timestamp, static_cast<TimeDelta>(gpu_timestamp - cpu_timestamp) };
 }
@@ -163,12 +163,12 @@ static Data::Size GetTimestampResultBufferSize(const Context& context, uint32_t 
     META_FUNCTION_TASK();
     const uint32_t frames_count = context.GetType() == Context::Type::Render
                                   ? dynamic_cast<const RenderContext&>(context).GetSettings().frame_buffers_count
-                                  : 1u;
+                                  : 1U;
     return frames_count * max_timestamps_per_frame * sizeof(Timestamp);
 }
 
 TimestampQueryBufferDX::TimestampQueryBufferDX(CommandQueueDX& command_queue, uint32_t max_timestamps_per_frame)
-    : QueryBufferDX(command_queue, Type::Timestamp, 1u << 15u,
+    : QueryBufferDX(command_queue, Type::Timestamp, 1U << 15U,
                     GetTimestampResultBufferSize(command_queue.GetContext(), max_timestamps_per_frame),
                     sizeof(Timestamp))
     , m_max_timestamps_per_frame(max_timestamps_per_frame)

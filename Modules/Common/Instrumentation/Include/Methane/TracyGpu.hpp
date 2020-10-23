@@ -147,7 +147,7 @@ private:
 
     const uint8_t               m_id;
     const QueryId               m_query_count = std::numeric_limits<QueryId>::max();
-    QueryId                     m_query_id    = 0u;
+    QueryId                     m_query_id    = 0U;
     TracyLockable(std::mutex,   m_query_mutex);
 
 #else // TRACY_GPU_ENABLE
@@ -254,9 +254,9 @@ public:
 private:
     GpuContext& m_context;
     State       m_state           = State::Completed;
-    ThreadId    m_begin_thread_id = 0u;
-    QueryId     m_begin_query_id  = 0u;
-    QueryId     m_end_query_id    = 0u;
+    ThreadId    m_begin_thread_id = 0U;
+    QueryId     m_begin_query_id  = 0U;
+    QueryId     m_end_query_id    = 0U;
     bool        m_is_active       = true;
 };
 

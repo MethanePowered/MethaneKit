@@ -33,7 +33,7 @@ class Animation : public Timer
 public:
     enum class State : uint32_t
     {
-        Running = 0u,
+        Running = 0U,
         Paused,
         Completed,
     };

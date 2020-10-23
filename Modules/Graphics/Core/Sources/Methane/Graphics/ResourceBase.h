@@ -182,7 +182,7 @@ private:
     ContextBase&       m_context;
     DescriptorByUsage  m_descriptor_by_usage;
     State              m_state = State::Common;
-    Data::Size         m_initialized_data_size       = 0u;
+    Data::Size         m_initialized_data_size       = 0U;
     bool               m_sub_resource_count_constant = false;
     SubResource::Count m_sub_resource_count;
     SubResourceSizes   m_sub_resource_sizes;

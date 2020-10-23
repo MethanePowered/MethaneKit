@@ -39,17 +39,17 @@ const Mesh::VertexFieldSizes Mesh::g_vertex_field_sizes {{
 }};
 
 const Mesh::Positions2D Mesh::g_face_positions_2d { // Quad vertices in clockwise order
-    { -0.5f, -0.5f },
-    { -0.5f,  0.5f },
-    {  0.5f,  0.5f },
-    {  0.5f, -0.5f }
+    { -0.5F, -0.5F },
+    { -0.5F,  0.5F },
+    {  0.5F,  0.5F },
+    {  0.5F, -0.5F }
 };
 
 const Mesh::TexCoords   Mesh::g_face_texcoords{ // Quad texture-coords for the vertices above
-    { 0.0f, 1.0f },
-    { 0.0f, 0.0f },
-    { 1.0f, 0.0f },
-    { 1.0f, 1.0f },
+    { 0.0F, 1.0F },
+    { 0.0F, 0.0F },
+    { 1.0F, 0.0F },
+    { 1.0F, 1.0F },
 };
 
 const Mesh::Indices     Mesh::g_face_indices{ // Face indices in quad to form two triangles in clockwise order
@@ -57,12 +57,12 @@ const Mesh::Indices     Mesh::g_face_indices{ // Face indices in quad to form tw
 };
 
 const Mesh::Colors      Mesh::g_colors{
-    { 1.0f, 0.0f, 0.0f, 1.0f },
-    { 0.0f, 1.0f, 0.0f, 1.0f },
-    { 0.0f, 0.0f, 1.0f, 1.0f },
-    { 1.0f, 0.0f, 1.0f, 1.0f },
-    { 1.0f, 1.0f, 0.0f, 1.0f },
-    { 0.0f, 1.0f, 1.0f, 1.0f },
+    { 1.0F, 0.0F, 0.0F, 1.0F },
+    { 0.0F, 1.0F, 0.0F, 1.0F },
+    { 0.0F, 0.0F, 1.0F, 1.0F },
+    { 1.0F, 0.0F, 1.0F, 1.0F },
+    { 1.0F, 1.0F, 0.0F, 1.0F },
+    { 0.0F, 1.0F, 1.0F, 1.0F },
 };
 
 std::string Mesh::VertexLayout::GetSemanticByVertexField(VertexField vertex_field)

@@ -412,7 +412,7 @@ void Font::ResetChars(const std::u32string& utf32_characters)
     }
 
     AddChars(utf32_characters);
-    PackCharsToAtlas(1.2f);
+    PackCharsToAtlas(1.2F);
     UpdateAtlasBitmap(false);
 }
 
@@ -564,7 +564,7 @@ bool Font::PackCharsToAtlas(float pixels_reserve_multiplier)
     );
 
     // Estimate required atlas size
-    uint32_t char_pixels_count = 0u;
+    uint32_t char_pixels_count = 0U;
     for(Font::Char& font_char : font_chars)
     {
         char_pixels_count += font_char.GetRect().size.GetPixelsCount();
@@ -600,7 +600,7 @@ const Ptr<gfx::Texture>& Font::GetAtlasTexturePtr(gfx::Context& context)
     if (!m_atlas_pack_ptr)
     {
         // Reserve 20% of pixels for packing space loss and for adding new characters to atlas
-        if (!PackCharsToAtlas(1.2f))
+        if (!PackCharsToAtlas(1.2F))
             return empty_texture_ptr;
     }
 

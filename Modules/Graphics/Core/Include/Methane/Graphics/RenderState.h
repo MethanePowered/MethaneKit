@@ -95,12 +95,12 @@ public:
             using Mask = uint32_t;
             enum Value : Mask
             {
-                None    = 0u,
-                Red     = 1u << 0u,
-                Green   = 1u << 1u,
-                Blue    = 1u << 2u,
-                Alpha   = 1u << 3u,
-                All     = ~0u,
+                None    = 0U,
+                Red     = 1U << 0U,
+                Green   = 1U << 1U,
+                Blue    = 1U << 2U,
+                Alpha   = 1U << 3U,
+                All     = ~0U,
             };
 
             ColorChannel() = delete;
@@ -108,7 +108,7 @@ public:
 
         enum class Operation : uint32_t
         {
-            Add = 0u,
+            Add = 0U,
             Subtract,
             ReverseSubtract,
             Minimum,
@@ -117,7 +117,7 @@ public:
 
         enum class Factor : uint32_t
         {
-            Zero = 0u,
+            Zero = 0U,
             One,
             SourceColor,
             OneMinusSourceColor,
@@ -212,13 +212,13 @@ public:
         using Mask = uint32_t;
         enum Value : Mask
         {
-            None                = 0u,
-            Program             = 1u << 0u,
-            Rasterizer          = 1u << 1u,
-            Blending            = 1u << 2u,
-            BlendingColor       = 1u << 3u,
-            DepthStencil        = 1u << 4u,
-            All                 = ~0u
+            None                = 0U,
+            Program             = 1U << 0U,
+            Rasterizer          = 1U << 1U,
+            Blending            = 1U << 2U,
+            BlendingColor       = 1U << 3U,
+            DepthStencil        = 1U << 4U,
+            All                 = ~0U
         };
 
         Group() = delete;

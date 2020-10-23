@@ -69,7 +69,7 @@ static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(RenderState::Blendi
 
     using ColorChannel = RenderState::Blending::ColorChannel;
 
-    MTLColorWriteMask mtl_color_write_mask = 0u;
+    MTLColorWriteMask mtl_color_write_mask = 0U;
     if (rt_write_mask & ColorChannel::Red)
         mtl_color_write_mask |= MTLColorWriteMaskRed;
     if (rt_write_mask & ColorChannel::Green)

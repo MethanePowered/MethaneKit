@@ -196,7 +196,7 @@ std::string State::ToString() const
         is_first_button = false;
     }
 
-    if (m_scroll.GetX() > 0.1f || m_scroll.GetY() > 0.1f)
+    if (m_scroll.GetX() > 0.1F || m_scroll.GetY() > 0.1F)
     {
         ss << ", scroll=(" << m_scroll.GetX() << " x " << m_scroll.GetY() << ")";
     }

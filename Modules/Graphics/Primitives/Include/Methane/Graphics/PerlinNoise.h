@@ -33,7 +33,7 @@ namespace Methane::Graphics
 class PerlinNoise
 {
 public:
-    PerlinNoise(float persistence = 0.5f, size_t octaves_count = 4);
+    PerlinNoise(float persistence = 0.5F, size_t octaves_count = 4);
     
     float operator()(Vector2f pos) const;
     float operator()(Vector3f pos) const;

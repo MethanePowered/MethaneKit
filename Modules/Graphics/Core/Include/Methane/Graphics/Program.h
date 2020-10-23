@@ -70,10 +70,10 @@ struct Program : virtual Object
             using Mask = uint32_t;
             enum Value : Mask
             {
-                None        = 0u,
-                Constant    = 1u << 0u,
-                Addressable = 1u << 1u,
-                All         = ~0u,
+                None        = 0U,
+                Constant    = 1U << 0U,
+                Addressable = 1U << 1U,
+                All         = ~0U,
             };
 
             Modifiers() = delete;

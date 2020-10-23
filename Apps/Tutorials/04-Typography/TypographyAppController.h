@@ -33,7 +33,7 @@ class TypographyApp;
 
 enum class TypographyAppAction : uint32_t
 {
-    None = 0u,
+    None = 0U,
 
     SwitchTextWrapMode,
     SwitchTextHorizontalAlignment,

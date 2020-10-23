@@ -364,9 +364,9 @@ Data::Size Resource::SubResource::Count::GetRawCount() const noexcept
 
 void Resource::SubResource::Count::operator+=(const Index& index) noexcept
 {
-    depth            = std::max(depth,            index.depth_slice + 1u);
-    array_size       = std::max(array_size,       index.array_index + 1u);
-    mip_levels_count = std::max(mip_levels_count, index.mip_level   + 1u);
+    depth            = std::max(depth,            index.depth_slice + 1U);
+    array_size       = std::max(array_size,       index.array_index + 1U);
+    mip_levels_count = std::max(mip_levels_count, index.mip_level   + 1U);
 }
 
 bool Resource::SubResource::Count::operator==(const Count& other) const noexcept
@@ -527,7 +527,7 @@ void ResourceBase::SetData(const SubResources& sub_resources)
         throw std::invalid_argument("Can not set buffer data from empty sub-resources.");
     }
 
-    Data::Size sub_resources_data_size = 0u;
+    Data::Size sub_resources_data_size = 0U;
     for(const SubResource& sub_resource : sub_resources)
     {
         if (!sub_resource.p_data || !sub_resource.size)

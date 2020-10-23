@@ -34,7 +34,7 @@ struct IApp : Graphics::IApp
 {
     enum HeadsUpDisplayMode : uint32_t
     {
-        Hidden = 0u,
+        Hidden = 0U,
         WindowTitle,
         UserInterface,
 
@@ -45,10 +45,10 @@ struct IApp : Graphics::IApp
     {
         HeadsUpDisplayMode       heads_up_display_mode = HeadsUpDisplayMode::WindowTitle;
         bool                     show_logo_badge       = true;
-        Color4f                  logo_badge_color      { 1.f, 1.f, 1.f, 0.15f };
+        Color4f                  logo_badge_color      { 1.f, 1.f, 1.f, 0.15F };
         Color4f                  text_color            { 1.f, 1.f, 1.f, 1.f };
         UnitPoint                text_margins          { 20, 20, Units::Dots };
-        Font::Description        main_font             { "Main",  "Fonts/RobotoMono/RobotoMono-Regular.ttf", 11u };
+        Font::Description        main_font             { "Main",  "Fonts/RobotoMono/RobotoMono-Regular.ttf", 11U };
         HeadsUpDisplay::Settings hud_settings;
     };
 

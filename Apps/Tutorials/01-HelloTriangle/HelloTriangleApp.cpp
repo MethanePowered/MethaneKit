@@ -52,9 +52,9 @@ void HelloTriangleApp::Init()
     };
 
     const std::array<Vertex, 3> triangle_vertices{ {
-        { {  0.0f,  0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
-        { {  0.5f, -0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
-        { { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } },
+        { {  0.0F,  0.5F, 0.0F }, { 1.0F, 0.0F, 0.0F } },
+        { {  0.5F, -0.5F, 0.0F }, { 0.0F, 1.0F, 0.0F } },
+        { { -0.5F, -0.5F, 0.0F }, { 0.0F, 0.0F, 1.0F } },
     } };
 
     // Create vertex buffer with triangle data
@@ -116,7 +116,7 @@ bool HelloTriangleApp::Render()
     frame.render_cmd_list_ptr->Reset(m_render_state_ptr, s_debug_group.get());
     frame.render_cmd_list_ptr->SetViewState(GetViewState());
     frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
-    frame.render_cmd_list_ptr->Draw(gfx::RenderCommandList::Primitive::Triangle, 3u);
+    frame.render_cmd_list_ptr->Draw(gfx::RenderCommandList::Primitive::Triangle, 3U);
 
     RenderOverlay(*frame.render_cmd_list_ptr);
 

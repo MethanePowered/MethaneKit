@@ -38,9 +38,9 @@ TEST_CASE("Range initialization", "[range]")
 
     SECTION("Initializer list")
     {
-        const Range<float> float_range{ 1.23f, 4.56f };
-        CHECK(float_range.GetStart() == 1.23f);
-        CHECK(float_range.GetEnd() == 4.56f);
+        const Range<float> float_range{ 1.23F, 4.56F };
+        CHECK(float_range.GetStart() == 1.23F);
+        CHECK(float_range.GetEnd() == 4.56F);
     }
 
     SECTION("Copy constructor")
@@ -66,8 +66,8 @@ TEST_CASE("Range length", "[range]")
     CHECK(Range<int32_t>(0, 1).GetLength() == 1);
     CHECK_FALSE(Range<int32_t>(0, 1).IsEmpty());
 
-    CHECK(Range<float>(1.5f, 3.6f).GetLength() == 2.1f);
-    CHECK(Range<float>(3.3f, 6.6f).GetLength() == 3.3f);
+    CHECK(Range<float>(1.5F, 3.6F).GetLength() == 2.1F);
+    CHECK(Range<float>(3.3F, 6.6F).GetLength() == 3.3F);
 }
 
 TEST_CASE("Range relations", "[range]")

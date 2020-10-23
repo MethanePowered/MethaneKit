@@ -54,17 +54,17 @@ ShadowCubeApp::ShadowCubeApp()
     , m_scene_scale(15.f)
     , m_scene_constants(                                // Shader constants:
         {                                               // ================
-            gfx::Color4f(1.f, 1.f, 0.74f, 1.f),         // - light_color
+            gfx::Color4f(1.f, 1.f, 0.74F, 1.f),         // - light_color
             700.f,                                      // - light_power
-            0.04f,                                      // - light_ambient_factor
+            0.04F,                                      // - light_ambient_factor
             30.f                                        // - light_specular_factor
         })
     , m_shadow_pass(false, "Shadow Render Pass")
     , m_final_pass(true, "Final Render Pass")
 {
-    m_view_camera.ResetOrientation({ { 15.0f, 22.5f, -15.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
+    m_view_camera.ResetOrientation({ { 15.0F, 22.5F, -15.0F }, { 0.0F, 7.5F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
 
-    m_light_camera.ResetOrientation({ { 0.0f,  25.0f, -25.0f }, { 0.0f, 7.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
+    m_light_camera.ResetOrientation({ { 0.0F,  25.0F, -25.0F }, { 0.0F, 7.5F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
     m_light_camera.SetParameters({ -300, 300.f, 90.f });
     m_light_camera.Resize({ 80.f, 80.f });
@@ -354,8 +354,8 @@ bool ShadowCubeApp::Update()
     static const gfx::Matrix44f s_shadow_transform_matrix = ([]() -> gfx::Matrix44f
     {
         gfx::Matrix44f shadow_scale_matrix, shadow_translate_matrix;
-        cml::matrix_scale(shadow_scale_matrix, 0.5f, -0.5f, 1.f);
-        cml::matrix_translation(shadow_translate_matrix, 0.5f, 0.5f, 0.f);
+        cml::matrix_scale(shadow_scale_matrix, 0.5F, -0.5F, 1.f);
+        cml::matrix_translation(shadow_translate_matrix, 0.5F, 0.5F, 0.f);
         return shadow_scale_matrix * shadow_translate_matrix;
     })();
 
@@ -365,7 +365,7 @@ bool ShadowCubeApp::Update()
 
     // Cube model matrix
     gfx::Matrix44f cube_model_matrix;
-    cml::matrix_translation(cube_model_matrix, gfx::Vector3f(0.f, 0.5f, 0.f)); // move up by half of cube model height
+    cml::matrix_translation(cube_model_matrix, gfx::Vector3f(0.f, 0.5F, 0.f)); // move up by half of cube model height
     cube_model_matrix = cube_model_matrix * scale_matrix;
 
     // Update Cube uniforms

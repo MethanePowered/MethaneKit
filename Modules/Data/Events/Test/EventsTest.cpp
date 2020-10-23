@@ -272,7 +272,7 @@ TEST_CASE("Connect many emitters to one receiver", "[events]")
         CHECK(!receiver.IsFooCalled());
         CHECK(!receiver.IsBarCalled());
 
-        uint32_t emit_count = 0u;
+        uint32_t emit_count = 0U;
         for(TestEmitter& emitter : emitters)
         {
             CHECK_NOTHROW(emitter.EmitFoo());

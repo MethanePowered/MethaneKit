@@ -42,10 +42,10 @@ public:
         using Mask = uint32_t;
         enum Value : Mask
         {
-            None            = 0u,
-            Mipmapped       = 1u << 0u,
-            SrgbColorSpace  = 1u << 1u,
-            All             = ~0u,
+            None            = 0U,
+            Mipmapped       = 1U << 0U,
+            SrgbColorSpace  = 1U << 1U,
+            All             = ~0U,
         };
 
         Options() = delete;
@@ -64,7 +64,7 @@ public:
 
     enum class CubeFace : size_t
     {
-        PositiveX = 0u,
+        PositiveX = 0U,
         NegativeX,
         PositiveY,
         NegativeY,

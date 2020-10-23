@@ -53,7 +53,7 @@ Data::Size BufferBase::GetDataSize(Data::MemoryState size_type) const noexcept
 uint32_t BufferBase::GetFormattedItemsCount() const noexcept
 {
     META_FUNCTION_TASK();
-    return m_settings.item_stride_size > 0u ? GetDataSize(Data::MemoryState::Initialized) / m_settings.item_stride_size : 0u;
+    return m_settings.item_stride_size > 0U ? GetDataSize(Data::MemoryState::Initialized) / m_settings.item_stride_size : 0U;
 }
 
 std::string Buffer::GetBufferTypeName(Type type) noexcept

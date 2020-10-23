@@ -87,8 +87,8 @@ public:
     void  Reset(DebugGroup* p_debug_group = nullptr) override;
     void  SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
     void  Commit() override;
-    void  WaitUntilCompleted(uint32_t timeout_ms = 0u) override;
-    Data::TimeRange GetGpuTimeRange(bool) const override { return { 0u, 0u }; }
+    void  WaitUntilCompleted(uint32_t timeout_ms = 0U) override;
+    Data::TimeRange GetGpuTimeRange(bool) const override { return { 0U, 0U }; }
     CommandQueue& GetCommandQueue() override;
 
     // CommandListBase interface
@@ -187,7 +187,7 @@ private:
     Refs<CommandList>      m_refs;
     Refs<CommandListBase>  m_base_refs;
     Ptrs<CommandListBase>  m_base_ptrs;
-    Data::Index            m_executing_on_frame_index = 0u;
+    Data::Index            m_executing_on_frame_index = 0U;
 };
 
 } // namespace Methane::Graphics

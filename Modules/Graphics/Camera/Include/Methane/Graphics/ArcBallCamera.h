@@ -74,7 +74,7 @@ protected:
 private:
     const Camera* m_p_view_camera;
     Pivot         m_pivot;
-    float         m_radius_ratio              = 0.9f;
+    float         m_radius_ratio              = 0.9F;
     Vector3f      m_mouse_pressed_on_sphere   { };
     Orientation   m_mouse_pressed_orientation { };
 };

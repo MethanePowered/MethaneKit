@@ -35,12 +35,12 @@ static const FloatSize           g_test_screen_size      { 640.f, 480.f };
 static const Point2f             g_test_screen_center    { g_test_screen_size.width / 2.f, g_test_screen_size.height / 2.f };
 static const Camera::Orientation g_test_view_orientation { { 0.f, 5.f, 10.f }, { 0.f, 5.f, 0.f }, { 0.f, 1.f, 0.f } };
 static const Camera::Orientation g_test_dept_orientation { { 10.f, 7.f, 0.f }, { 0.f, 7.f, 0.f }, { 0.f, 0.f, 1.f } };
-static const float               g_test_radius_ratio     = 0.75f;
+static const float               g_test_radius_ratio     = 0.75F;
 static const float               g_test_radius_pixels    = g_test_screen_center.GetY() * g_test_radius_ratio;
 static const Vector3f            g_axis_x                { 1.f, 0.f, 0.f };
 static const Vector3f            g_axis_y                { 0.f, 1.f, 0.f };
 static const Vector3f            g_axis_z                { 0.f, 0.f, -1.f };
-static float                     g_vectors_equal_epsilon = 0.00001f;
+static float                     g_vectors_equal_epsilon = 0.00001F;
 
 namespace Catch {
 
@@ -80,7 +80,7 @@ inline ArcBallCamera SetupDependentCamera(const ArcBallCamera& view_camera, ArcB
     return dependent_camera;
 }
 
-inline void CheckOrientation(const Camera::Orientation& actual_orientation, const Camera::Orientation& reference_orientation, float epsilon = 0.00001f)
+inline void CheckOrientation(const Camera::Orientation& actual_orientation, const Camera::Orientation& reference_orientation, float epsilon = 0.00001F)
 {
     g_vectors_equal_epsilon = epsilon;
     CHECK(actual_orientation.aim == reference_orientation.aim);
@@ -92,7 +92,7 @@ inline void TestViewCameraRotation(ArcBallCamera::Pivot view_pivot,
                                    const Camera::Orientation& initial_view_orientation,
                                    const Point2i& mouse_press_pos, const Point2i& mouse_drag_pos,
                                    const Camera::Orientation& rotated_view_orientation,
-                                   const float vectors_equality_epsilon = 0.00001f)
+                                   const float vectors_equality_epsilon = 0.00001F)
 {
     ArcBallCamera view_camera = SetupViewCamera(view_pivot, initial_view_orientation);
     view_camera.OnMousePressed(mouse_press_pos);
@@ -106,7 +106,7 @@ inline void TestDependentCameraRotation(ArcBallCamera::Pivot view_pivot,
                                         const Camera::Orientation& initial_dependent_orientation,
                                         const Point2i& mouse_press_pos, const Point2i& mouse_drag_pos,
                                         const Camera::Orientation& rotated_dependent_orientation,
-                                        const float vectors_equality_epsilon = 0.00001f)
+                                        const float vectors_equality_epsilon = 0.00001F)
 {
     ArcBallCamera view_camera      = SetupViewCamera(view_pivot, initial_view_orientation);
     ArcBallCamera dependent_camera = SetupDependentCamera(view_camera, dependent_pivot, initial_dependent_orientation);
@@ -165,7 +165,7 @@ TEST_CASE("View arc-ball camera rotation around Aim pivot < 90 degrees", "[camer
     SECTION("Rotation 45 degrees")
     {
         // Lower equality precision because of integer screen-space coordinates use
-        const float test_equality_epsilon = 0.1f;
+        const float test_equality_epsilon = 0.1F;
         const float test_angle_deg = 45.f;
         const float test_angle_rad = cml::rad(test_angle_deg);
 
@@ -229,7 +229,7 @@ TEST_CASE("View arc-ball camera rotation around Aim pivot > 90 degrees", "[camer
     SECTION("Rotation 135 degrees")
     {
         // Lower equality precision because of integer screen-space coordinates use
-        const float test_equality_epsilon = 0.1f;
+        const float test_equality_epsilon = 0.1F;
         const float test_angle_deg = 135.f;
         const float test_angle_rad = cml::rad(test_angle_deg);
 
@@ -293,7 +293,7 @@ TEST_CASE("View arc-ball camera rotation around Eye pivot < 90 degrees", "[camer
     SECTION("Rotation 45 degrees")
     {
         // Lower equality precision because of integer screen-space coordinates use
-        const float test_equality_epsilon = 0.1f;
+        const float test_equality_epsilon = 0.1F;
         const float test_angle_deg = 45.f;
         const float test_angle_rad = cml::rad(test_angle_deg);
 
@@ -357,7 +357,7 @@ TEST_CASE("View arc-ball camera rotation around Eye pivot > 90 degrees", "[camer
     SECTION("Rotation 135 degrees")
     {
         // Lower equality precision because of integer screen-space coordinates use
-        const float test_equality_epsilon = 0.1f;
+        const float test_equality_epsilon = 0.1F;
         const float test_angle_deg = 135.f;
         const float test_angle_rad = cml::rad(test_angle_deg);
 
@@ -393,7 +393,7 @@ TEST_CASE("Dependent arc-ball camera rotation around Aim pivot < 90 degrees", "[
 
     SECTION("Rotation 90 degrees")
     {
-        const float test_equality_epsilon = 0.00001f;
+        const float test_equality_epsilon = 0.00001F;
 
         SECTION("Around X-axis")
         {
@@ -423,7 +423,7 @@ TEST_CASE("Dependent arc-ball camera rotation around Aim pivot < 90 degrees", "[
     SECTION("Rotation 45 degrees")
     {
         // Lower equality precision because of integer screen-space coordinates use
-        const float test_equality_epsilon = 0.1f;
+        const float test_equality_epsilon = 0.1F;
         const float test_angle_deg = 45.f;
         const float test_angle_rad = cml::rad(test_angle_deg);
 

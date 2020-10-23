@@ -95,9 +95,9 @@ public:
     struct TextureNoiseParameters
     {
         uint32_t random_seed = 0;
-        float    persistence = 0.9f;
-        float    scale       = 0.5f;
-        float    strength    = 1.5f;
+        float    persistence = 0.9F;
+        float    scale       = 0.5F;
+        float    strength    = 1.5F;
     };
 
     explicit Asteroid(gfx::RenderContext& context);
@@ -105,7 +105,7 @@ public:
     static Ptr<gfx::Texture> GenerateTextureArray(gfx::RenderContext& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, const TextureNoiseParameters& noise_parameters);
     static gfx::Resource::SubResources GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, const TextureNoiseParameters& noise_parameters);
 
-    static constexpr size_t color_schema_size = 6u;
+    static constexpr size_t color_schema_size = 6U;
     static Colors GetAsteroidRockColors(uint32_t deep_color_index, uint32_t shallow_color_index);
     static Colors GetAsteroidIceColors(uint32_t deep_color_index, uint32_t shallow_color_index);
     static Colors GetAsteroidLodColors(uint32_t lod_index);

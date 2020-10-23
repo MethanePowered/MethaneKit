@@ -124,9 +124,9 @@ public:
             using Mask = uint8_t;
             enum Value : Mask
             {
-                Unknown    = 0u,
-                Whitespace = 1u << 0u,
-                LineBreak  = 1u << 1u,
+                Unknown    = 0U,
+                Whitespace = 1U << 0U,
+                LineBreak  = 1U << 1U,
             };
 
             static Mask Get(Code code);
@@ -148,13 +148,13 @@ public:
 
         bool operator<(const Char& other) const noexcept      { return m_rect.size.GetPixelsCount() < other.m_rect.size.GetPixelsCount(); }
         bool operator>(const Char& other) const noexcept      { return m_rect.size.GetPixelsCount() > other.m_rect.size.GetPixelsCount(); }
-        operator bool() const noexcept                        { return m_code != 0u; }
+        operator bool() const noexcept                        { return m_code != 0U; }
 
         void     DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_stride) const;
         uint32_t GetGlyphIndex() const;
 
     private:
-        const Code       m_code = 0u;
+        const Code       m_code = 0U;
         const Type::Mask m_type_mask = Type::Value::Unknown;
         gfx::FrameRect   m_rect;
         gfx::Point2i     m_offset;

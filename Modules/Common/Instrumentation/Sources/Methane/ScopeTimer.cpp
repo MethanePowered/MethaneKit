@@ -55,7 +55,7 @@ void ScopeTimer::Aggregator::Flush()
 
     m_timing_by_scope_id.clear();
     m_scope_id_by_name.clear();
-    m_new_scope_id = 0u;
+    m_new_scope_id = 0U;
 }
 
 void ScopeTimer::Aggregator::LogTimings(ILogger& logger)

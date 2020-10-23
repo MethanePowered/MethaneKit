@@ -60,7 +60,7 @@ struct Texture : virtual Resource
         Usage::Mask    usage_mask           = Usage::Value::Unknown;
         PixelFormat    pixel_format         = PixelFormat::Unknown;
         Dimensions     dimensions           = Dimensions();
-        uint32_t       array_length         = 1u;
+        uint32_t       array_length         = 1U;
         bool           mipmapped            = false;
 
         static Settings Image(const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage::Mask usage);

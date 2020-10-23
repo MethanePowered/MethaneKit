@@ -107,7 +107,7 @@ private:
     const float                       m_scene_scale;
     const Constants                   m_scene_constants;
     AsteroidsArray::Settings          m_asteroids_array_settings;
-    uint32_t                          m_asteroids_complexity          = 0u;
+    uint32_t                          m_asteroids_complexity          = 0U;
     bool                              m_is_parallel_rendering_enabled = true;
     SceneUniforms                     m_scene_uniforms{ };
     gfx::Resource::SubResources       m_scene_uniforms_subresources{

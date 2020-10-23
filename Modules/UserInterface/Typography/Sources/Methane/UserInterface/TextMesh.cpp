@@ -68,7 +68,7 @@ static void ForEachTextCharacterInRange(Font& font, const Font::Chars& text_char
         }
 
         // Wrap to next line on text overrun of frame width
-        const uint32_t char_right_pos = char_pos.GetX() + (text_char.IsWhiteSpace() ? 0u : char_pos.visual_width);
+        const uint32_t char_right_pos = char_pos.GetX() + (text_char.IsWhiteSpace() ? 0U : char_pos.visual_width);
         if (wrap == Text::Wrap::Anywhere && frame_width && char_right_pos > frame_width)
         {
             char_pos.SetX(0);
@@ -459,7 +459,7 @@ void TextMesh::AddCharQuad(const Font::Char& font_char, const gfx::FramePoint& c
 void TextMesh::UpdateContentSize()
 {
     META_FUNCTION_TASK();
-    m_content_size = { 0u, 0u };
+    m_content_size = { 0U, 0U };
     m_content_top_offset = std::numeric_limits<uint32_t>::max();
     for(uint32_t vertex_index = 0; vertex_index < m_vertices.size(); vertex_index += 4)
     {

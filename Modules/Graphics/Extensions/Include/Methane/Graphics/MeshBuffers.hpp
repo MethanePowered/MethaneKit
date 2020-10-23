@@ -189,7 +189,7 @@ public:
     Data::Size          GetSubsetsCount() const  { return static_cast<Data::Size>(m_mesh_subsets.size()); }
     Data::Size          GetInstanceCount() const { return static_cast<Data::Size>(m_final_pass_instance_uniforms.size()); }
 
-    const UniformsType& GetFinalPassUniforms(Data::Index instance_index = 0u) const
+    const UniformsType& GetFinalPassUniforms(Data::Index instance_index = 0U) const
     {
         META_FUNCTION_TASK();
         if (instance_index >= m_final_pass_instance_uniforms.size())
@@ -198,7 +198,7 @@ public:
         return m_final_pass_instance_uniforms[instance_index];
     }
 
-    void SetFinalPassUniforms(UniformsType&& uniforms, Data::Index instance_index = 0u)
+    void SetFinalPassUniforms(UniformsType&& uniforms, Data::Index instance_index = 0U)
     {
         META_FUNCTION_TASK();
         if (instance_index >= m_final_pass_instance_uniforms.size())
@@ -318,7 +318,7 @@ public:
     {
         META_FUNCTION_TASK();
 
-        SetSubsetTexture(texture_ptr, 0u);
+        SetSubsetTexture(texture_ptr, 0U);
 
         if (texture_ptr)
         {

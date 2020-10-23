@@ -48,22 +48,22 @@ struct MutableParameters
 
 constexpr uint32_t g_max_complexity = 9;
 static const std::array<MutableParameters, g_max_complexity+1> g_mutable_parameters{ {
-    { 1000u,  35u,   10u, 0.6f  }, // 0
-    { 2000u,  50u,   10u, 0.5f  }, // 1
-    { 3000u,  75u,   20u, 0.45f }, // 2
-    { 4000u,  100u,  20u, 0.4f  }, // 3
-    { 5000u,  200u,  30u, 0.33f }, // 4
-    { 10000u, 300u,  30u, 0.3f  }, // 5
-    { 15000u, 400u,  40u, 0.27f }, // 6
-    { 20000u, 500u,  40u, 0.23f }, // 7
-    { 35000u, 750u,  50u, 0.2f  }, // 8
-    { 50000u, 1000u, 50u, 0.17f }, // 9
+    { 1000U,  35U,   10U, 0.6F  }, // 0
+    { 2000U,  50U,   10U, 0.5F  }, // 1
+    { 3000U,  75U,   20U, 0.45F }, // 2
+    { 4000U,  100U,  20U, 0.4F  }, // 3
+    { 5000U,  200U,  30U, 0.33F }, // 4
+    { 10000U, 300U,  30U, 0.3F  }, // 5
+    { 15000U, 400U,  40U, 0.27F }, // 6
+    { 20000U, 500U,  40U, 0.23F }, // 7
+    { 35000U, 750U,  50U, 0.2F  }, // 8
+    { 50000U, 1000U, 50U, 0.17F }, // 9
 } };
 
 inline uint32_t GetDefaultComplexity()
 {
 #ifdef _DEBUG
-    return 1u;
+    return 1U;
 #else
     return std::thread::hardware_concurrency() / 2;
 #endif
@@ -107,8 +107,8 @@ AsteroidsApp::AsteroidsApp()
     , m_scene_constants(                                // Shader constants:
         {                                               // ================
             gfx::Color4f(1.f, 1.f, 1.f, 1.f),           // - light_color
-            3.0f,                                       // - light_power
-            0.05f,                                      // - light_ambient_factor
+            3.0F,                                       // - light_power
+            0.05F,                                      // - light_ambient_factor
             30.f                                        // - light_specular_factor
         })
     , m_asteroids_array_settings(                       // Asteroids array settings:
@@ -117,13 +117,13 @@ AsteroidsApp::AsteroidsApp()
             m_scene_scale,                              // - scale
             GetMutableParameters().instances_count,     // - instance_count
             GetMutableParameters().unique_mesh_count,   // - unique_mesh_count
-            4u,                                         // - subdivisions_count
+            4U,                                         // - subdivisions_count
             GetMutableParameters().textures_count,      // - textures_count
-            { 256u, 256u },                             // - texture_dimensions
-            1123u,                                      // - random_seed
+            { 256U, 256U },                             // - texture_dimensions
+            1123U,                                      // - random_seed
             13.f,                                       // - orbit_radius_ratio
             4.f,                                        // - disc_radius_ratio
-            0.06f,                                      // - mesh_lod_min_screen_size
+            0.06F,                                      // - mesh_lod_min_screen_size
             GetMutableParameters().scale_ratio / 10.f,  // - min_asteroid_scale_ratio
             GetMutableParameters().scale_ratio,         // - max_asteroid_scale_ratio
             true,                                       // - textures_array_enabled
@@ -138,7 +138,7 @@ AsteroidsApp::AsteroidsApp()
     // for Reversed-Z buffer values range [ near: 1, far 0], instead of [ near 0, far 1]
     // which is used for "from near to far" drawing order for reducing pixels overdraw
     m_view_camera.ResetOrientation({ { -110.f, 75.f, 210.f }, { 0.f, -60.f, 25.f }, { 0.f, 1.f, 0.f } });
-    m_view_camera.SetParameters({ 600.f /* near = max depth */, 0.01f /*far = min depth*/, 90.f /* FOV */ });
+    m_view_camera.SetParameters({ 600.f /* near = max depth */, 0.01F /*far = min depth*/, 90.f /* FOV */ });
     m_view_camera.SetZoomDistanceRange({ 60.f , 400.f });
 
     m_light_camera.ResetOrientation({ { -100.f, 120.f, 0.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f } });
@@ -226,7 +226,7 @@ void AsteroidsApp::Init()
         "Textures/Planet/Mars.jpg",             // texture_path
         gfx::Vector3f(0.f, 0.f, 0.f),           // position
         m_scene_scale * 3.f,                    // scale
-        0.1f,                                   // spin_velocity_rps
+        0.1F,                                   // spin_velocity_rps
         true,                                   // depth_reversed
         gfx::ImageLoader::Options::Mipmapped |  // image_options
         gfx::ImageLoader::Options::SrgbColorSpace,

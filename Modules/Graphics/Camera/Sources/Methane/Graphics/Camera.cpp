@@ -142,8 +142,8 @@ Vector4f Camera::TransformViewToWorld(const Vector4f& view_pos, const Orientatio
 float Camera::GetFovAngleY() const noexcept
 {
     META_FUNCTION_TASK();
-    float fov_angle_y = m_parameters.fov_deg * cml::constants<float>::pi() / 180.0f;
-    if (m_aspect_ratio != 0.f && m_aspect_ratio < 1.0f)
+    float fov_angle_y = m_parameters.fov_deg * cml::constants<float>::pi() / 180.0F;
+    if (m_aspect_ratio != 0.f && m_aspect_ratio < 1.0F)
     {
         fov_angle_y /= m_aspect_ratio;
     }

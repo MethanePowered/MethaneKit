@@ -35,7 +35,7 @@ constexpr bool g_is_apple = false;
 #endif
 
 inline Graphics::AppSettings GetGraphicsAppSettings(std::string app_name, bool animations_enabled = true, bool depth_enabled = true, float clear_depth = 1.f,
-                                                    std::optional<Graphics::Color4f> clear_color = Graphics::Color4f(0.0f, 0.2f, 0.4f, 1.0f))
+                                                    std::optional<Graphics::Color4f> clear_color = Graphics::Color4f(0.0F, 0.2F, 0.4F, 1.0F))
 {
     using Stencil = Graphics::Stencil;
     using DepthStencilOpt = std::optional<Graphics::DepthStencil>;
@@ -63,11 +63,11 @@ inline Graphics::AppSettings GetGraphicsAppSettings(std::string app_name, bool a
             depth_enabled                                           //   - clear_depth_stencil
                 ? DepthStencilOpt({ clear_depth, Stencil(0) })      //     ...
                 : DepthStencilOpt(),                                //     ...
-            3u,                                                     //   - frame_buffers_count
+            3U,                                                     //   - frame_buffers_count
             g_is_apple,                                             //   - vsync_enabled
             false,                                                  //   - is_full_screen
             false,                                                  //   - is_emulated_render_pass
-            1000u,                                                  //   - unsync_max_fps (MacOS only)
+            1000U,                                                  //   - unsync_max_fps (MacOS only)
         }                                                           // =========================
     };
 }

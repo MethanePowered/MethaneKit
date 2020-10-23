@@ -147,15 +147,15 @@ TexturedCubeApp::TexturedCubeApp()
         "Methane tutorial of textured cube rendering")
     , m_shader_constants(                               // Shader constants:
         {                                               // ================
-            gfx::Color4f(1.f, 1.f, 0.74f, 1.f),         // - light_color
+            gfx::Color4f(1.f, 1.f, 0.74F, 1.f),         // - light_color
             700.f,                                      // - light_power
-            0.04f,                                      // - light_ambient_factor
+            0.04F,                                      // - light_ambient_factor
             30.f                                        // - light_specular_factor
         })
     , m_cube_scale(15.f)
 {
     m_shader_uniforms.light_position = gfx::Vector3f(0.f, 20.f, -25.f);
-    m_camera.ResetOrientation({ { 13.0f, 13.0f, -13.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
+    m_camera.ResetOrientation({ { 13.0F, 13.0F, -13.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
 
     // Setup animations
     GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&TexturedCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
@@ -542,7 +542,7 @@ SamplerState              g_sampler   : register(s0);
 
 PSInput CubeVS(VSInput input)
 {
-    const float4 position = float4(input.position, 1.0f);
+    const float4 position = float4(input.position, 1.0F);
 
     PSInput output;
     output.position       = mul(g_uniforms.mvp_matrix, position);

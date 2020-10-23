@@ -243,7 +243,7 @@ using namespace Methane::Platform;
     assert(!!m_p_app);
     Mouse::Scroll scroll{ [event scrollingDeltaX], -[event scrollingDeltaY] };
     if ([event hasPreciseScrollingDeltas])
-        scroll *= 0.1f;
+        scroll *= 0.1F;
     
     if (fabs(scroll.GetX()) < 0.00001 && fabs(scroll.GetY()) > 0.00001)
         return;

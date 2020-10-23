@@ -42,7 +42,7 @@ using Color4f      = Graphics::Color4f;
 
 enum class Units : uint8_t
 {
-    Pixels = 0u,
+    Pixels = 0U,
     Dots,
 };
 
