@@ -45,8 +45,8 @@ steps:
         sonar.cfamily.cache.path=$(sonarCacheDir)
         sonar.cfamily.cache.enabled=true
         sonar.cfamily.threads=4
-        sonar.junit.reportPaths=$(installDir)\Tests\*_result.xml
-        sonar.flex.cobertura.reportPaths=$(installDir)\Tests\*_coverage.xml
+        sonar.junit.reportPaths=$(installDir)\Tests\Result\Junit.xml
+        sonar.flex.cobertura.reportPaths=$(installDir)\Tests\Coverage\Cobertura.xml
 
   - script: |
       call "$(vcVarsBatFile)"
@@ -65,6 +65,12 @@ steps:
     workingDirectory: '$(installDir)\Tests'
     failOnStderr: false
     displayName: 'Collect code coverage from all unit-tests in install directory'
+
+  - task: reportgenerator@4
+      displayName: 'Merge per-test results into one report'
+      inputs:
+        reports: '$(installDir)\Tests\*_result.xml'
+        targetdir: '$(installDir)\Tests\Result'
 
   - task: PublishTestResults@2
     inputs:
