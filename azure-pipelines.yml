@@ -165,7 +165,7 @@ jobs:
     sonarCacheDir: '$(Pipeline.Workspace)\WindowsSonarCache'
     sonarBuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-win-x86.zip'
     sonarBuildWrapperExe: build-wrapper-win-x86\build-wrapper-win-x86-64.exe
-    sonarBuildCommand: MSBuild.exe MethaneKit.sln /t:INSTALL /p:Configuration=$(configuration) /p:Platform=$(platform) /t:Rebuild
+    sonarBuildCommand: MSBuild.exe INSTALL.vcxproj /p:Configuration=$(configuration) /p:Platform=$(platform) /t:Rebuild
     sonarProjectKey: 'egorodet_MethaneKit_Windows'
 
   steps:
