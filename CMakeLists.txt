@@ -22,6 +22,7 @@ enable_testing()
 
 # Build configuration
 option(METHANE_RUN_TESTS_DURING_BUILD   "Run tests during build" ON)
+option(METHANE_UNITY_BUILD_ENABLED      "Enable unity build for some projects" ON)
 option(METHANE_CODE_COVERAGE_ENABLED    "Enable code coverage data collection with GCC and Clang" OFF)
 option(METHANE_SHADERS_CODEVIEW_ENABLED "Enable shaders code symbols viewing in debug tools)" OFF)
 option(METHANE_USE_OPEN_IMAGE_IO        "Enable using OpenImageIO library for images loading" OFF)

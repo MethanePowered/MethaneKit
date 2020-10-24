@@ -56,13 +56,12 @@ steps:
       setlocal enabledelayedexpansion
       echo Running unit-tests in directory "%cd%"
       for /r "." %%a in (*Test.exe) do (
-        "..\$(rootDir)\Externals\Tools\OpenCppCoverage\OpenCppCoverage.exe" --sources "..\$(rootDir)\Modules" --export_type=cobertura:%%~fa_coverage.xml -- "%%~fa" -r junit -o "%%~fa_result.xml"
+        "..\$(rootDir)\Externals\Tools\OpenCppCoverage\OpenCppCoverage.exe" --export_type=cobertura:%%~fa_coverage.xml -- "%%~fa" -r junit -o "%%~fa_result.xml"
         echo  - %%~na - completed with !errorlevel! exit status
       )
       exit 0
     workingDirectory: '$(installDir)\Tests'
     failOnStderr: false
-    continueOnError: true
     displayName: 'Collect code coverage from all unit-tests in install directory'
 
   - task: PublishTestResults@2
@@ -75,7 +74,6 @@ steps:
       buildPlatform: $(platform)
       buildConfiguration: $(configuration)
       testRunTitle: 'Methane Tests $(platform) $(configuration)'
-    continueOnError: true
 
   - task: PublishCodeCoverageResults@1
     inputs:
