@@ -22,6 +22,7 @@ enable_testing()
 
 # Build configuration
 option(METHANE_RUN_TESTS_DURING_BUILD   "Run tests during build" ON)
+option(METHANE_CODE_COVERAGE_ENABLED    "Enable code coverage data collection with GCC and Clang" OFF)
 option(METHANE_SHADERS_CODEVIEW_ENABLED "Enable shaders code symbols viewing in debug tools)" OFF)
 option(METHANE_USE_OPEN_IMAGE_IO        "Enable using OpenImageIO library for images loading" OFF)
 
@@ -57,6 +58,7 @@ include(ParseAndAddCatchTests)
 set(CMAKE_CXX_STANDARD 17)
 set(CTEST_OUTPUT_ON_FAILURE ON)
 set(PARSE_CATCH_TESTS_VERBOSE OFF)
+set(CMAKE_DISABLE_PRECOMPILE_HEADERS OFF)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -176,6 +178,21 @@ target_compile_definitions(MethaneBuildOptions INTERFACE
 
 if(METHANE_RUN_TESTS_DURING_BUILD)
     message(STATUS "Methane tests running during build is enabled")
+endif()
+
+if (METHANE_CODE_COVERAGE_ENABLED)
+
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        message(STATUS "Methane code coverage is enabled with Clang compiler")
+        target_compile_options(MethaneBuildOptions INTERFACE -fprofile-instr-generate -fcoverage-mapping)
+        target_link_options(MethaneBuildOptions INTERFACE -fprofile-instr-generate)
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        message(STATUS "Methane code coverage is enabled with GCC compiler")
+        target_compile_options(MethaneBuildOptions INTERFACE -coverage)
+    else()
+        message(STATUS "Methane code coverage is unavailable with ${CMAKE_CXX_COMPILER_ID} compiler")
+    endif()
+
 endif()
 
 if(METHANE_SHADERS_CODEVIEW_ENABLED)

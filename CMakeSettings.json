@@ -26,6 +26,11 @@
                     "type": "BOOL"
                 },
                 {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_LOGGING_ENABLED",
                     "value": "False",
                     "type": "BOOL"
@@ -84,6 +89,11 @@
                 },
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -150,6 +160,11 @@
                     "type": "BOOL"
                 },
                 {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_LOGGING_ENABLED",
                     "value": "False",
                     "type": "BOOL"
@@ -208,6 +223,11 @@
                 },
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -274,6 +294,11 @@
                     "type": "BOOL"
                 },
                 {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_LOGGING_ENABLED",
                     "value": "False",
                     "type": "BOOL"
@@ -332,6 +357,11 @@
                 },
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -395,6 +425,11 @@
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
                     "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "True",
                     "type": "BOOL"
                 },
                 {
@@ -465,6 +500,11 @@
                     "type": "BOOL"
                 },
                 {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_LOGGING_ENABLED",
                     "value": "False",
                     "type": "BOOL"
@@ -528,6 +568,11 @@
                 },
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -603,6 +648,11 @@
                     "type": "BOOL"
                 },
                 {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_LOGGING_ENABLED",
                     "value": "False",
                     "type": "BOOL"
@@ -666,6 +716,11 @@
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
                     "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "True",
                     "type": "BOOL"
                 },
                 {
@@ -735,6 +790,11 @@
                     "type": "BOOL"
                 },
                 {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_LOGGING_ENABLED",
                     "value": "False",
                     "type": "BOOL"
@@ -797,6 +857,11 @@
                 },
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
