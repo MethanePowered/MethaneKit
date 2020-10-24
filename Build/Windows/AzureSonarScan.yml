@@ -67,10 +67,10 @@ steps:
     displayName: 'Collect code coverage from all unit-tests in install directory'
 
   - task: reportgenerator@4
-      displayName: 'Merge per-test results into one report'
-      inputs:
-        reports: '$(installDir)\Tests\*_result.xml'
-        targetdir: '$(installDir)\Tests\Result'
+    displayName: 'Merge per-test results into one report'
+    inputs:
+      reports: '$(installDir)\Tests\*_result.xml'
+      targetdir: '$(installDir)\Tests\Result'
 
   - task: PublishTestResults@2
     inputs:
