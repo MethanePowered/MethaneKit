@@ -56,13 +56,19 @@ steps:
       setlocal enabledelayedexpansion
       echo Running unit-tests in directory "%cd%"
       for /r "." %%a in (*Test.exe) do (
-        "..\$(rootDir)\Externals\Tools\OpenCppCoverage\OpenCppCoverage.exe" --export_type=cobertura:%%~fa_coverage.xml -- "%%~fa" -r junit -o "%%~fa_result.xml"
+        "..\$(rootDir)\Externals\Tools\OpenCppCoverage\OpenCppCoverage.exe" --sources "$(Build.SourcesDirectory)\Modules" --export_type=cobertura:%%~fa_coverage.xml -- "%%~fa" -r junit -o "%%~fa_result.xml"
         echo  - %%~na - completed with !errorlevel! exit status
       )
       exit 0
     workingDirectory: '$(installDir)\Tests'
     failOnStderr: false
     displayName: 'Collect code coverage from all unit-tests in install directory'
+
+  - task: reportgenerator@4
+    displayName: 'Merge per-test code coverage results into one report'
+    inputs:
+      reports: '$(installDir)\Tests\*_coverage.xml'
+      targetdir: '$(installDir)\Tests\Coverage'
 
   - task: PublishTestResults@2
     inputs:
@@ -78,8 +84,8 @@ steps:
   - task: PublishCodeCoverageResults@1
     inputs:
       codeCoverageTool: 'Cobertura'
-      summaryFileLocation: '$(installDir)\Tests\*_coverage.xml'
-      pathToSources: Modules
+      summaryFileLocation: '$(installDir)\Tests\Coverage\Cobertura.xml'
+      pathToSources: '$(Build.SourcesDirectory)\Modules'
     continueOnError: true
 
   - task: SonarCloudAnalyze@1
