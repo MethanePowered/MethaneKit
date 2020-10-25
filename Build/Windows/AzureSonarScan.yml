@@ -45,8 +45,8 @@ steps:
         sonar.cfamily.cache.path=$(sonarCacheDir)
         sonar.cfamily.cache.enabled=true
         sonar.cfamily.threads=4
-        sonar.junit.reportPaths=$(installDir)\Tests\Result\Junit.xml
-        sonar.flex.cobertura.reportPaths=$(installDir)\Tests\Coverage\Cobertura.xml
+        sonar.cfamily.cppunit.reportsPath=$(installDir)\Tests\MethaneDataEventsTest_result.xml,$(installDir)\Tests\MethaneDataRangeSetTest_result.xml,$(installDir)\Tests\MethaneGraphicsCameraTest_result.xml,$(installDir)\Tests\MethanePlatformInputTest_result.xml
+        sonar.coverageReportPaths=$(installDir)\Tests\Coverage\SonarQube.xml
 
   - script: |
       call "$(vcVarsBatFile)"
@@ -66,12 +66,6 @@ steps:
     failOnStderr: false
     displayName: 'Collect code coverage from all unit-tests in install directory'
 
-  - task: reportgenerator@4
-    displayName: 'Merge per-test results into one report'
-    inputs:
-      reports: '$(installDir)\Tests\*_result.xml'
-      targetdir: '$(installDir)\Tests\Result'
-
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'JUnit'
@@ -88,6 +82,8 @@ steps:
     inputs:
       reports: '$(installDir)\Tests\*_coverage.xml'
       targetdir: '$(installDir)\Tests\Coverage'
+      reporttypes: 'Cobertura;SonarQube'
+      tag: '$(productFullVersion)'
 
   - task: PublishCodeCoverageResults@1
     inputs:
