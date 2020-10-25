@@ -40,7 +40,7 @@ variables:
   sonar.CloudName: 'Evgeny Gorodetsky Sonar Cloud'
   sonar.Organization: 'egorodet-github'
   sonar.Sources: 'Apps,Modules'
-  sonar.Tests: 'Modules/**/Test/'
+  sonar.Tests: 'Modules/Data/Events/Test,Modules/Data/RangeSet/Test,Modules/Platform/Input/Test,Modules/Graphics/Camera/Test'
   sonar.CacheDir: '$(Pipeline.Workspace)/SonarCache'
 
   buildReleaseCmakeFlags: '-DMETHANE_VERSION_MAJOR=$(product.Version.Major)
@@ -98,7 +98,7 @@ jobs:
     vmImage: 'windows-2019'
 
   variables:
-    platform: 'Win64'
+    platform: 'x64'
     configuration: 'RelWithDebInfo'
     generatorName: '"Visual Studio 16 2019"'
     cmakeFlags: $(buildProfilingCmakeFlags)

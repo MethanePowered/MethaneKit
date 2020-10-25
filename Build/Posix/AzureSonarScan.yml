@@ -14,7 +14,7 @@ steps:
       cmakeArgs: '-G $(generatorName) -DCMAKE_BUILD_TYPE=$(configuration) $(cmakeFlags) $(rootDir)'
 
   - script: |
-      curl '$(sonarBuildWrapperUrl)' --output build-wrapper.zip
+      curl '$(sonar.BuildWrapperUrl)' --output build-wrapper.zip
       unzip build-wrapper.zip
     workingDirectory: $(buildDir)
     displayName: 'Download and unpack Sonar Build-Wrapper'
@@ -44,7 +44,7 @@ steps:
         sonar.cfamily.threads=4
 
   - script: |
-      $(sonarBuildWrapperExe) --out-dir BuildWrapperOutput $(sonarBuildCommand)
+      $(sonar.BuildWrapperExe) --out-dir BuildWrapperOutput $(sonar.BuildCommand)
     workingDirectory: $(buildDir)
     displayName: 'Build under Sonar Build-Wrapper with $(generatorName) for $(platform) $(configuration)'
 
