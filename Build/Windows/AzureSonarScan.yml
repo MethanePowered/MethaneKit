@@ -57,6 +57,8 @@ steps:
   - script: |
       setlocal enabledelayedexpansion
       echo Running unit-tests in directory "%cd%"
+      mkdir Results
+      mkdir Coverage
       for /r "." %%a in (*Test.exe) do (
         "..\$(rootDir)\Externals\Tools\OpenCppCoverage\OpenCppCoverage.exe" --sources "$(Build.SourcesDirectory)\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r junit -o "Results\%%~na.xml"
         echo  - %%~na - completed with !errorlevel! exit status
