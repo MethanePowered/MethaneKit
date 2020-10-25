@@ -193,7 +193,8 @@ endif()
 
 if (METHANE_CODE_COVERAGE_ENABLED)
 
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
+        "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
         message(STATUS "Methane code coverage is enabled with Clang compiler")
         target_compile_options(MethaneBuildOptions INTERFACE -fprofile-instr-generate -fcoverage-mapping)
         target_link_options(MethaneBuildOptions INTERFACE -fprofile-instr-generate)

@@ -11,7 +11,7 @@ steps:
     displayName: 'Generate with $(generatorName) for $(platform) $(configuration)'
     inputs:
       workingDirectory: $(buildDir)
-      cmakeArgs: '-G $(generatorName) -DCMAKE_BUILD_TYPE=$(configuration) $(cmakeFlags) $(rootDir)'
+      cmakeArgs: '-G $(generatorName) -DCMAKE_BUILD_TYPE=$(configuration) -DCMAKE_INSTALL_PREFIX:PATH=$(buildInstallDir) $(cmakeFlags) $(rootDir)'
 
   - script: |
       curl '$(sonar.BuildWrapperUrl)' --output build-wrapper.zip
@@ -42,11 +42,64 @@ steps:
         sonar.cfamily.cache.path=$(sonar.CacheDir)
         sonar.cfamily.cache.enabled=true
         sonar.cfamily.threads=4
+        sonar.testExecutionReportPaths=$(installDir)/Tests/Results/MethaneDataEventsTest.xml,$(installDir)/Tests/Results/MethaneDataRangeSetTest.xml,$(installDir)/Tests/Results/MethanePlatformInputTest.xml,$(installDir)/Tests/Results/MethaneGraphicsCameraTest.xml
+        sonar.coverageReportPaths=$(installDir)/Tests/Coverage/Report/SonarQube.xml
 
   - script: |
       $(sonar.BuildWrapperExe) --out-dir BuildWrapperOutput $(sonar.BuildCommand)
     workingDirectory: $(buildDir)
     displayName: 'Build under Sonar Build-Wrapper with $(generatorName) for $(platform) $(configuration)'
+
+  - bash: |
+      result_ext='.xml'
+      echo Running unit-tests in directory $PWD
+      for test_exe in *Test
+      do
+        ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
+        mv default.profraw $test_exe.profraw
+        echo  - $test_exe - completed with $? exit status
+      done
+    workingDirectory: '$(installDir)/Tests'
+    displayName: 'Collect code coverage from all unit-tests in install directory'
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: 'Results/*.xml'
+      searchFolder: '$(installDir)/Tests'
+      mergeTestResults: true
+      failTaskOnFailedTests: true
+      buildPlatform: $(platform)
+      buildConfiguration: $(configuration)
+      testRunTitle: 'Methane Tests $(platform) $(configuration)'
+
+  - bash: |
+      prof_data_ext='.profdata'
+      prof_raw_ext='.profraw'
+      coverage_ext='.txt'
+      for test_exe in *Test
+      do
+        xcrun llvm-profdata merge -o "$test_exe$prof_data_ext" "$test_exe$prof_raw_ext"
+        xcrun llvm-cov show ./$test_exe -instr-profile="$test_exe$prof_data_ext" > "Coverage/$test_exe$coverage_ext"
+      done
+    workingDirectory: '$(installDir)/Tests'
+    condition: eq( variables['Agent.OS'], 'Darwin' )
+    displayName: 'Convert LLVM code coverage data to lcov text format on MacOS'
+
+  - task: reportgenerator@4
+    displayName: 'Merge per-test code coverage results into one report'
+    inputs:
+      reports: '$(installDir)/Tests/Coverage/*.txt'
+      targetdir: '$(installDir)/Tests/Coverage/Report'
+      reporttypes: 'lcov;Cobertura;SonarQube'
+      tag: '$(product.Version.Full)'
+
+  - task: PublishCodeCoverageResults@1
+    inputs:
+      codeCoverageTool: 'Cobertura'
+      summaryFileLocation: '$(installDir)/Tests/Coverage/Report/Cobertura.xml'
+      pathToSources: '$(Build.SourcesDirectory)/Modules'
+    continueOnError: true
 
   - task: SonarCloudAnalyze@1
     displayName: 'Analyze built sources with Sonar Scanner'

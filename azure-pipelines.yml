@@ -159,7 +159,7 @@ jobs:
     configuration: 'Debug'
     generatorName: '"Visual Studio 16 2019"'
     cmakeFlags: -DMETHANE_UNITY_BUILD_ENABLED:BOOL=OFF $(buildReleaseCmakeFlags)
-    buildName: '$(platform)-$(configuration)-SonarScan'
+    buildName: 'Win64-$(configuration)-SonarScan'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
@@ -229,7 +229,7 @@ jobs:
     sonar.ProjectKey: 'egorodet_MethaneKit_MacOS'
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-macosx-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-macosx-x86/build-wrapper-macosx-x86
-    sonar.BuildCommand: xcodebuild -project MethaneKit.xcodeproj -configuration $(configuration) clean build
+    sonar.BuildCommand: xcodebuild -project MethaneKit.xcodeproj -configuration $(configuration) clean install
 
   steps:
     - template: Build/Posix/AzureSonarScan.yml
@@ -271,7 +271,7 @@ jobs:
     sonar.ProjectKey: 'egorodet_MethaneKit_Linux'
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-linux-x86/build-wrapper-linux-x86-64
-    sonar.BuildCommand: make clean all
+    sonar.BuildCommand: make clean install
 
   steps:
     - template: Build/Posix/AzureSonarScan.yml
