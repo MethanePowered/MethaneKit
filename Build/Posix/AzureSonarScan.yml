@@ -89,9 +89,12 @@ steps:
   - task: reportgenerator@4
     displayName: 'Merge per-test code coverage results into one report'
     inputs:
-      reports: '$(installDir)/Tests/Coverage/*.txt'
+      ${{ if eq( variables['Agent.OS'], 'Darwin' ) }}:
+        reports: '$(installDir)/Tests/Coverage/*.txt'
+      ${{ if eq( variables['Agent.OS'], 'Linux' ) }}:
+        reports: '$(installDir)/Tests/*.gcov'
       targetdir: '$(installDir)/Tests/Coverage/Report'
-      reporttypes: 'lcov;Cobertura;SonarQube'
+      reporttypes: 'Cobertura;SonarQube'
       tag: '$(product.Version.Full)'
 
   - task: PublishCodeCoverageResults@1

@@ -229,7 +229,7 @@ jobs:
     sonar.ProjectKey: 'egorodet_MethaneKit_MacOS'
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-macosx-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-macosx-x86/build-wrapper-macosx-x86
-    sonar.BuildCommand: xcodebuild -project MethaneKit.xcodeproj -configuration $(configuration) clean install
+    sonar.BuildCommand: xcodebuild -project MethaneKit.xcodeproj -target install -configuration $(configuration) clean build
 
   steps:
     - template: Build/Posix/AzureSonarScan.yml
@@ -271,7 +271,7 @@ jobs:
     sonar.ProjectKey: 'egorodet_MethaneKit_Linux'
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-linux-x86/build-wrapper-linux-x86-64
-    sonar.BuildCommand: make clean install
+    sonar.BuildCommand: make install
 
   steps:
     - template: Build/Posix/AzureSonarScan.yml
