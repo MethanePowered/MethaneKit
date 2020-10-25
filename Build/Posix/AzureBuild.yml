@@ -1,12 +1,6 @@
 # Methane Kit CI configuration for MacOS platform
 # https://aka.ms/yaml
 
-variables:
-  buildDir: 'Build/Output/$(buildName)/Build'
-  installDir: 'Build/Output/$(buildName)/Install'
-  buildInstallDir: '../Install'
-  rootDir: '../../../..'
-
 steps:
 
   - script: |

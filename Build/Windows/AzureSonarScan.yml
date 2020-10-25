@@ -1,13 +1,6 @@
 # Methane Kit CI configuration for Sonar Cloud static code analysis on Windows platform
 # https://aka.ms/yaml
 
-variables:
-  buildDir: 'Build\Output\$(buildName)\Build'
-  installDir: 'Build\Output\$(buildName)\Install'
-  buildInstallDir: '..\Install'
-  rootDir: '..\..\..\..'
-  sonar.CacheDir: '$(Pipeline.Workspace)\SonarCache'
-
 steps:
 
   - script: mkdir $(buildDir)

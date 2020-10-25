@@ -41,6 +41,7 @@ variables:
   sonar.Organization: 'egorodet-github'
   sonar.Sources: 'Apps,Modules'
   sonar.Tests: 'Modules/**/Test/'
+  sonar.CacheDir: '$(Pipeline.Workspace)/SonarCache'
 
   buildReleaseCmakeFlags: '-DMETHANE_VERSION_MAJOR=$(product.Version.Major)
     -DMETHANE_VERSION_MINOR=$(product.Version.Minor)
@@ -83,6 +84,7 @@ jobs:
     generatorName: '"Visual Studio 16 2019"'
     cmakeFlags: $(buildReleaseCmakeFlags)
     buildName: 'Win64-$(configuration)'
+    - template: Build/AzureVariables.yml
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -98,6 +100,7 @@ jobs:
     generatorName: '"Visual Studio 16 2019"'
     cmakeFlags: $(buildProfilingCmakeFlags)
     buildName: 'Win64-$(configuration)-Profiling'
+    - template: Build/AzureVariables.yml
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -113,6 +116,7 @@ jobs:
     generatorName: '"Visual Studio 16 2019"'
     cmakeFlags: $(buildReleaseCmakeFlags)
     buildName: '$(platform)-$(configuration)'
+    - template: Build/AzureVariables.yml
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -128,6 +132,7 @@ jobs:
     generatorName: '"Visual Studio 16 2019"'
     cmakeFlags: $(buildProfilingCmakeFlags)
     buildName: '$(platform)-$(configuration)-Profiling'
+    - template: Build/AzureVariables.yml
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -148,6 +153,7 @@ jobs:
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-win-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-win-x86\build-wrapper-win-x86-64.exe
     sonar.BuildCommand: MSBuild.exe INSTALL.vcxproj /p:Configuration=$(configuration) /p:Platform=$(platform) /t:Rebuild
+    - template: Build/AzureVariables.yml
 
   steps:
     - template: Build/Windows/AzureSonarScan.yml
@@ -163,6 +169,7 @@ jobs:
     generatorName: 'Xcode'
     cmakeFlags: $(buildReleaseCmakeFlags)
     buildName: '$(platform)-$(configuration)'
+    - template: Build/AzureVariables.yml
 
   steps:
   - template: Build/Posix/AzureBuild.yml
@@ -178,6 +185,7 @@ jobs:
     generatorName: 'Xcode'
     cmakeFlags: $(buildProfilingCmakeFlags)
     buildName: '$(platform)-$(configuration)-Profiling'
+    - template: Build/AzureVariables.yml
 
   steps:
   - template: Build/Posix/AzureBuild.yml
@@ -197,6 +205,7 @@ jobs:
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-macosx-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-macosx-x86/build-wrapper-macosx-x86
     sonar.BuildCommand: xcodebuild -project MethaneKit.xcodeproj -configuration $(configuration) clean build
+    - template: Build/AzureVariables.yml
 
   steps:
     - template: Build/Posix/AzureSonarScan.yml
@@ -212,6 +221,7 @@ jobs:
     generatorName: '"Unix Makefiles"'
     cmakeFlags: $(buildReleaseCmakeFlags)
     buildName: '$(platform)-$(configuration)'
+    - template: Build/AzureVariables.yml
 
   steps:
   - template: Build/Posix/AzureBuild.yml
@@ -231,6 +241,7 @@ jobs:
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-linux-x86/build-wrapper-linux-x86-64
     sonar.BuildCommand: make clean all
+    - template: Build/AzureVariables.yml
 
   steps:
     - template: Build/Posix/AzureSonarScan.yml

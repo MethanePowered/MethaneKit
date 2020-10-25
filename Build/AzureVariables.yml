@@ -1,0 +1,8 @@
+# Methane Kit CI common build variables definition
+# https://aka.ms/yaml
+
+variables:
+  buildDir: 'Build/Output/$(buildName)/Build'
+  installDir: 'Build/Output/$(buildName)/Install'
+  buildInstallDir: '../Install'
+  rootDir: '../../../..'
