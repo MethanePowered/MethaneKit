@@ -53,11 +53,12 @@ steps:
   - bash: |
       result_ext='.xml'
       echo Running unit-tests in directory $PWD
+      mkdir Results
       for test_exe in *Test
       do
         ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
-        mv default.profraw $test_exe.profraw
         echo  - $test_exe - completed with $? exit status
+        mv default.profraw $test_exe.profraw
       done
     workingDirectory: '$(installDir)/Tests'
     displayName: 'Collect code coverage from all unit-tests in install directory'
@@ -77,8 +78,13 @@ steps:
       prof_data_ext='.profdata'
       prof_raw_ext='.profraw'
       coverage_ext='.txt'
+      mkdir Coverage
       for test_exe in *Test
       do
+        if [ ! -f "$test_exe$prof_raw_ext" ]; then
+          continue
+        fi
+        echo  - Convert code coverage from "$test_exe$prof_raw_ext" to lcov text format
         xcrun llvm-profdata merge -o "$test_exe$prof_data_ext" "$test_exe$prof_raw_ext"
         xcrun llvm-cov show ./$test_exe -instr-profile="$test_exe$prof_data_ext" > "Coverage/$test_exe$coverage_ext"
       done
