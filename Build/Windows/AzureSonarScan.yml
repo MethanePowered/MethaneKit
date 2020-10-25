@@ -45,8 +45,8 @@ steps:
         sonar.cfamily.cache.path=$(sonarCacheDir)
         sonar.cfamily.cache.enabled=true
         sonar.cfamily.threads=4
-        sonar.cfamily.cppunit.reportsPath=$(installDir)\Tests\
-        sonar.coverageReportPaths=$(installDir)\Tests\Coverage\SonarQube.xml
+        sonar.cfamily.cppunit.reportsPath=$(installDir)\Tests\Results\
+        sonar.coverageReportPaths=$(installDir)\Tests\Coverage\Report\SonarQube.xml
 
   - script: |
       call "$(vcVarsBatFile)"
@@ -58,7 +58,7 @@ steps:
       setlocal enabledelayedexpansion
       echo Running unit-tests in directory "%cd%"
       for /r "." %%a in (*Test.exe) do (
-        "..\$(rootDir)\Externals\Tools\OpenCppCoverage\OpenCppCoverage.exe" --sources "$(Build.SourcesDirectory)\Modules" --export_type=cobertura:%%~fa_coverage.xml -- "%%~fa" -r junit -o "%%~fa_result.xml"
+        "..\$(rootDir)\Externals\Tools\OpenCppCoverage\OpenCppCoverage.exe" --sources "$(Build.SourcesDirectory)\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r junit -o "Results\%%~na.xml"
         echo  - %%~na - completed with !errorlevel! exit status
       )
       exit 0
@@ -69,7 +69,7 @@ steps:
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'JUnit'
-      testResultsFiles: '**\*_result.xml'
+      testResultsFiles: 'Results\*.xml'
       searchFolder: '$(installDir)\Tests'
       mergeTestResults: true
       failTaskOnFailedTests: true
@@ -80,15 +80,15 @@ steps:
   - task: reportgenerator@4
     displayName: 'Merge per-test code coverage results into one report'
     inputs:
-      reports: '$(installDir)\Tests\*_coverage.xml'
-      targetdir: '$(installDir)\Tests\Coverage'
+      reports: '$(installDir)\Tests\Coverage\*.xml'
+      targetdir: '$(installDir)\Tests\Coverage\Report'
       reporttypes: 'Cobertura;SonarQube'
       tag: '$(productFullVersion)'
 
   - task: PublishCodeCoverageResults@1
     inputs:
       codeCoverageTool: 'Cobertura'
-      summaryFileLocation: '$(installDir)\Tests\Coverage\Cobertura.xml'
+      summaryFileLocation: '$(installDir)\Tests\Coverage\Report\Cobertura.xml'
       pathToSources: '$(Build.SourcesDirectory)\Modules'
     continueOnError: true
 
