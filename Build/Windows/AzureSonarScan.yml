@@ -45,7 +45,7 @@ steps:
         sonar.cfamily.cache.path=$(sonarCacheDir)
         sonar.cfamily.cache.enabled=true
         sonar.cfamily.threads=4
-        sonar.cfamily.cppunit.reportsPath=$(installDir)\Tests\MethaneDataEventsTest_result.xml,$(installDir)\Tests\MethaneDataRangeSetTest_result.xml,$(installDir)\Tests\MethaneGraphicsCameraTest_result.xml,$(installDir)\Tests\MethanePlatformInputTest_result.xml
+        sonar.cfamily.cppunit.reportsPath=$(installDir)\Tests\
         sonar.coverageReportPaths=$(installDir)\Tests\Coverage\SonarQube.xml
 
   - script: |
