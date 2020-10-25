@@ -1,6 +1,13 @@
 # Methane Kit CI configuration for Sonar Cloud static code analysis on MacOS/Linux platform
 # https://aka.ms/yaml
 
+variables:
+  buildDir: 'Build/Output/$(buildName)/Build'
+  installDir: 'Build/Output/$(buildName)/Install'
+  buildInstallDir: '../Install'
+  rootDir: '../../../..'
+  sonar.CacheDir: '$(Pipeline.Workspace)/SonarCache'
+
 steps:
 
   - script: |
@@ -22,23 +29,24 @@ steps:
   - task: Cache@2
     displayName: 'Sonar Scanner Cache'
     inputs:
-      key: 'SonarCache | $(sonarProjectKey) | $(Build.SourceBranchName) | $(configuration) | $(platform) | "$(Agent.OS)"'
-      path: $(sonarCacheDir)
+      key: 'SonarCache | $(sonar.ProjectKey) | $(Build.SourceBranchName) | $(configuration) | $(platform) | "$(Agent.OS)"'
+      path: $(sonar.CacheDir)
 
   - task: SonarCloudPrepare@1
     displayName: 'Prepare Sonar Cloud Scanner'
     inputs:
-      SonarCloud: 'Evgeny Gorodetsky Sonar Cloud'
-      organization: 'egorodet-github'
+      SonarCloud: $(sonar.CloudName)
+      organization: $(sonar.Organization)
       scannerMode: 'CLI'
       configMode: 'manual'
-      cliProjectKey: $(sonarProjectKey)
-      cliProjectVersion: $(productFullVersion)
-      cliSources: 'Apps,Modules'
+      cliProjectKey: $(sonar.ProjectKey)
+      cliProjectVersion: $(product.Version.Full)
+      cliSources: $(sonar.Sources)
       extraProperties: |
         sonar.branch.name=$(Build.SourceBranchName)
+        sonar.tests=$(sonar.Tests)
         sonar.cfamily.build-wrapper-output=$(buildDir)/BuildWrapperOutput
-        sonar.cfamily.cache.path=$(sonarCacheDir)
+        sonar.cfamily.cache.path=$(sonar.CacheDir)
         sonar.cfamily.cache.enabled=true
         sonar.cfamily.threads=4
 
