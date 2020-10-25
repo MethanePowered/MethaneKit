@@ -21,8 +21,10 @@ endif()
 enable_testing()
 
 # Build configuration
-option(METHANE_RUN_TESTS_DURING_BUILD   "Run tests during build" ON)
-option(METHANE_UNITY_BUILD_ENABLED      "Enable unity build for some projects" ON)
+option(METHANE_APPS_BUILD_ENABLED       "Enable applications build" ON)
+option(METHANE_TESTS_BUILD_ENABLED      "Enable tests build" ON)
+option(METHANE_RUN_TESTS_DURING_BUILD   "Enable test auto-run after module build" ON)
+option(METHANE_UNITY_BUILD_ENABLED      "Enable unity build speedup for some modules" ON)
 option(METHANE_CODE_COVERAGE_ENABLED    "Enable code coverage data collection with GCC and Clang" OFF)
 option(METHANE_SHADERS_CODEVIEW_ENABLED "Enable shaders code symbols viewing in debug tools)" OFF)
 option(METHANE_USE_OPEN_IMAGE_IO        "Enable using OpenImageIO library for images loading" OFF)
@@ -177,6 +179,14 @@ target_compile_definitions(MethaneBuildOptions INTERFACE
     METHANE_VERSION_BUILD=${METHANE_VERSION_BUILD_MAJOR}
 )
 
+if (METHANE_TESTS_BUILD_ENABLED)
+    message(STATUS "Methane applications build is enabled")
+endif()
+
+if (METHANE_TESTS_APPS_ENABLED)
+    message(STATUS "Methane tests build is enabled")
+endif()
+
 if(METHANE_RUN_TESTS_DURING_BUILD)
     message(STATUS "Methane tests running during build is enabled")
 endif()
@@ -259,4 +269,11 @@ set(CMAKE_DISABLE_FIND_PACKAGE_Perl TRUE)
 
 add_subdirectory(Externals)
 add_subdirectory(Modules)
-add_subdirectory(Apps)
+
+if (METHANE_APPS_BUILD_ENABLED)
+    add_subdirectory(Apps)
+endif()
+
+if (METHANE_TESTS_BUILD_ENABLED)
+    add_subdirectory(Tests)
+endif()

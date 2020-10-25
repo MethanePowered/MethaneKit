@@ -40,7 +40,7 @@ variables:
   sonar.CloudName: 'Evgeny Gorodetsky Sonar Cloud'
   sonar.Organization: 'egorodet-github'
   sonar.Sources: 'Apps,Modules'
-  sonar.Tests: 'Modules/Data/Events/Test,Modules/Data/RangeSet/Test,Modules/Platform/Input/Test,Modules/Graphics/Camera/Test'
+  sonar.Tests: 'Tests'
   sonar.CacheDir: '$(Pipeline.Workspace)/SonarCache'
 
   buildReleaseCmakeFlags: '-DMETHANE_VERSION_MAJOR=$(product.Version.Major)

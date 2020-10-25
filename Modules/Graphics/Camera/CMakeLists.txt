@@ -57,5 +57,3 @@ install(TARGETS ${TARGET}
         DESTINATION Lib
         COMPONENT Development
 )
-
-add_subdirectory(Test)
