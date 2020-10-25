@@ -70,17 +70,6 @@ steps:
     failOnStderr: false
     displayName: 'Collect code coverage from all unit-tests in install directory'
 
-  - task: PublishTestResults@2
-    inputs:
-      testResultsFormat: 'JUnit'
-      testResultsFiles: 'Results\*.xml'
-      searchFolder: '$(installDir)\Tests'
-      mergeTestResults: true
-      failTaskOnFailedTests: true
-      buildPlatform: $(platform)
-      buildConfiguration: $(configuration)
-      testRunTitle: 'Methane Tests $(platform) $(configuration)'
-
   - task: reportgenerator@4
     displayName: 'Merge per-test code coverage results into one report'
     inputs:

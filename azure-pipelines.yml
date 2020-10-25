@@ -220,7 +220,7 @@ jobs:
     platform: 'MacOS'
     configuration: 'Debug'
     generatorName: 'Xcode'
-    cmakeFlags: -DMETHANE_UNITY_BUILD_ENABLED:BOOL=OFF $(buildReleaseCmakeFlags)
+    cmakeFlags: -DMETHANE_CODE_COVERAGE_ENABLED:BOOL=ON -DMETHANE_UNITY_BUILD_ENABLED:BOOL=OFF $(buildReleaseCmakeFlags)
     buildName: '$(platform)-$(configuration)-SonarScan'
     buildDir: 'Build/Output/$(buildName)/Build'
     installDir: 'Build/Output/$(buildName)/Install'
@@ -262,7 +262,7 @@ jobs:
     platform: 'Ubuntu'
     configuration: 'Debug'
     generatorName: '"Unix Makefiles"'
-    cmakeFlags: -DMETHANE_UNITY_BUILD_ENABLED:BOOL=OFF $(buildReleaseCmakeFlags)
+    cmakeFlags: -DMETHANE_CODE_COVERAGE_ENABLED:BOOL=ON -DMETHANE_UNITY_BUILD_ENABLED:BOOL=OFF $(buildReleaseCmakeFlags)
     buildName: '$(platform)-$(configuration)-SonarScan'
     buildDir: 'Build/Output/$(buildName)/Build'
     installDir: 'Build/Output/$(buildName)/Install'

@@ -58,21 +58,27 @@ steps:
       do
         ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
         echo  - $test_exe - completed with $? exit status
-        mv default.profraw $test_exe.profraw
+        if [ -f default.profraw ]; then
+          mv default.profraw $test_exe.profraw
+        fi
       done
     workingDirectory: '$(installDir)/Tests'
-    displayName: 'Collect code coverage from all unit-tests in install directory'
+    condition: eq( variables['Agent.OS'], 'Darwin' )
+    displayName: 'Collect code coverage from all unit-tests in install directory on MacOS'
 
-  - task: PublishTestResults@2
-    inputs:
-      testResultsFormat: 'JUnit'
-      testResultsFiles: 'Results/*.xml'
-      searchFolder: '$(installDir)/Tests'
-      mergeTestResults: true
-      failTaskOnFailedTests: true
-      buildPlatform: $(platform)
-      buildConfiguration: $(configuration)
-      testRunTitle: 'Methane Tests $(platform) $(configuration)'
+  - bash: |
+      result_ext='.xml'
+      echo Running unit-tests in directory $PWD
+      mkdir Results
+      for test_exe in *Test
+      do
+        ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
+        echo  - $test_exe - completed with $? exit status
+        gcov
+      done
+    workingDirectory: '$(installDir)/Tests'
+    condition: eq( variables['Agent.OS'], 'Linux' )
+    displayName: 'Collect code coverage from all unit-tests in install directory on Linux'
 
   - bash: |
       prof_data_ext='.profdata'
