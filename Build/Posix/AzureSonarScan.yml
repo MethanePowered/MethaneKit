@@ -59,22 +59,14 @@ steps:
     - ${{ step }}
 
   - task: reportgenerator@4
-    displayName: 'Merge per-test code coverage results into one report'
+    displayName: 'Generate SonarCube report with code coverage'
     condition: ne(variables.coverageReports, '')
     inputs:
       reports: $(coverageReports)
       targetdir: '$(installDir)/Tests/Coverage/Report'
-      reporttypes: 'Cobertura;SonarQube'
+      reporttypes: 'SonarQube'
       title: 'Methane Tests Code Coverage on $(platform)'
       tag: '$(product.Version.Full)'
-
-  - task: PublishCodeCoverageResults@1
-    condition: eq(variables.isCoveragePublishedToAzure, true)
-    displayName: 'Publish code coverage report to Azure Pipelines'
-    inputs:
-      codeCoverageTool: 'Cobertura'
-      summaryFileLocation: '$(installDir)/Tests/Coverage/Report/Cobertura.xml'
-      pathToSources: '$(Build.SourcesDirectory)/Modules'
 
   - task: SonarCloudAnalyze@1
     displayName: 'Analyze built sources with Sonar Scanner'

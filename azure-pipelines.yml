@@ -170,7 +170,6 @@ jobs:
     buildInstallDir: '..\Install'
     rootDir: '..\..\..\..'
     vcVarsBatFile: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat'
-    isCoveragePublishedToAzure: false
     sonar.ProjectKey: 'egorodet_MethaneKit_Windows'
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-win-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-win-x86\build-wrapper-win-x86-64.exe
@@ -233,7 +232,6 @@ jobs:
     buildInstallDir: '../Install'
     rootDir: '../../../..'
     coverageReports: '$(installDir)/Tests/Coverage/*.lcov'
-    isCoveragePublishedToAzure: true
     sonar.ProjectKey: 'egorodet_MethaneKit_MacOS'
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-macosx-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-macosx-x86/build-wrapper-macosx-x86
@@ -302,7 +300,6 @@ jobs:
     installDir: 'Build/Output/$(buildName)/Install'
     buildInstallDir: '../Install'
     rootDir: '../../../..'
-    isCoveragePublishedToAzure: false
     coverageReports: ''
     sonar.ProjectKey: 'egorodet_MethaneKit_Linux'
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip'

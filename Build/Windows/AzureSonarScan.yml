@@ -71,7 +71,7 @@ steps:
     displayName: 'Collect code coverage from all unit-tests in install directory'
 
   - task: reportgenerator@4
-    displayName: 'Merge per-test code coverage results into one report'
+    displayName: 'Generate SonarCube and Cobertura code coverage reports'
     inputs:
       reports: '$(installDir)\Tests\Coverage\*.xml'
       targetdir: '$(installDir)\Tests\Coverage\Report'
@@ -80,8 +80,7 @@ steps:
       tag: '$(product.Version.Full)'
 
   - task: PublishCodeCoverageResults@1
-    condition: eq(variables.isCoveragePublishedToAzure, true)
-    displayName: 'Publish code coverage report to Azure Pipelines'
+    displayName: 'Publish Cobertura code coverage report to Azure Pipelines'
     inputs:
       codeCoverageTool: 'Cobertura'
       summaryFileLocation: '$(installDir)\Tests\Coverage\Report\Cobertura.xml'
