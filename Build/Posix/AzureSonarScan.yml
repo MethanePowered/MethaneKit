@@ -73,9 +73,12 @@ steps:
       for test_exe in *Test
       do
         ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
-        echo  - $test_exe - completed with $? exit status
+        echo  - $test_exe - completed with $? exit status, files generated:
         gcov
+        echo    - gcov exist status $?
       done
+      echo List of files generated in directory $PWD
+      ls -la
     workingDirectory: '$(installDir)/Tests'
     condition: eq( variables['Agent.OS'], 'Linux' )
     displayName: 'Collect code coverage from all unit-tests in install directory on Linux'
@@ -84,27 +87,37 @@ steps:
       prof_data_ext='.profdata'
       prof_raw_ext='.profraw'
       coverage_ext='.txt'
+      echo Converting LLVM code coverage data to lcov text format in directory $PWD
       mkdir Coverage
       for test_exe in *Test
       do
         if [ ! -f "$test_exe$prof_raw_ext" ]; then
           continue
         fi
-        echo  - Convert code coverage from "$test_exe$prof_raw_ext" to lcov text format
         xcrun llvm-profdata merge -o "$test_exe$prof_data_ext" "$test_exe$prof_raw_ext"
-        xcrun llvm-cov show ./$test_exe -instr-profile="$test_exe$prof_data_ext" > "Coverage/$test_exe$coverage_ext"
+        xcrun llvm-cov show ./$test_exe -instr-profile="$test_exe$prof_data_ext" > "./Coverage/$test_exe$coverage_ext"
+        echo  - Converted code coverage from "$test_exe$prof_raw_ext" to lcov text format, $? exit status
       done
+      echo List of generated coverage files in directory $PWD/Coverage
+      ls -la ./Coverage
     workingDirectory: '$(installDir)/Tests'
     condition: eq( variables['Agent.OS'], 'Darwin' )
     displayName: 'Convert LLVM code coverage data to lcov text format on MacOS'
 
   - task: reportgenerator@4
-    displayName: 'Merge per-test code coverage results into one report'
+    displayName: 'Merge per-test lcov code coverage into one report on MacOS'
+    condition: eq( variables['Agent.OS'], 'Darwin' )
     inputs:
-      ${{ if eq( variables['Agent.OS'], 'Darwin' ) }}:
-        reports: '$(installDir)/Tests/Coverage/*.txt'
-      ${{ if eq( variables['Agent.OS'], 'Linux' ) }}:
-        reports: '$(installDir)/Tests/*.gcov'
+      reports: '$(installDir)/Tests/Coverage/*.txt'
+      targetdir: '$(installDir)/Tests/Coverage/Report'
+      reporttypes: 'Cobertura;SonarQube'
+      tag: '$(product.Version.Full)'
+
+  - task: reportgenerator@4
+    displayName: 'Merge per-test gcov code coverage into one report on Linux'
+    condition: eq( variables['Agent.OS'], 'Linux' )
+    inputs:
+      reports: '$(installDir)/Tests/*.gcov'
       targetdir: '$(installDir)/Tests/Coverage/Report'
       reporttypes: 'Cobertura;SonarQube'
       tag: '$(product.Version.Full)'
