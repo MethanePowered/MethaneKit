@@ -60,6 +60,7 @@ steps:
 
   - task: reportgenerator@4
     displayName: 'Merge per-test code coverage results into one report'
+    condition: ne(variables.coverageReports, '')
     inputs:
       reports: $(coverageReports)
       targetdir: '$(installDir)/Tests/Coverage/Report'
