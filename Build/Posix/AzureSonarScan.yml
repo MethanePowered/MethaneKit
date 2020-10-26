@@ -86,7 +86,7 @@ steps:
   - bash: |
       prof_data_ext='.profdata'
       prof_raw_ext='.profraw'
-      coverage_ext='.txt'
+      lcov_ext='.lcov'
       echo Converting LLVM code coverage data to lcov text format in directory $PWD
       mkdir Coverage
       for test_exe in *Test
@@ -95,8 +95,8 @@ steps:
           continue
         fi
         xcrun llvm-profdata merge -o "$test_exe$prof_data_ext" "$test_exe$prof_raw_ext"
-        xcrun llvm-cov show ./$test_exe -instr-profile="$test_exe$prof_data_ext" > "./Coverage/$test_exe$coverage_ext"
-        echo  - Converted code coverage from "$test_exe$prof_raw_ext" to lcov text format, $? exit status
+        xcrun llvm-cov export -format lcov -instr-profile="$test_exe$prof_data_ext" ./$test_exe > "./Coverage/$test_exe$lcov_ext"
+        echo  - Converted code coverage from "$test_exe$prof_raw_ext" to lcov text format "./Coverage/$test_exe$lcov_ext", $? exit status
       done
       echo List of generated coverage files in directory $PWD/Coverage
       ls -la ./Coverage
@@ -108,7 +108,7 @@ steps:
     displayName: 'Merge per-test lcov code coverage into one report on MacOS'
     condition: eq( variables['Agent.OS'], 'Darwin' )
     inputs:
-      reports: '$(installDir)/Tests/Coverage/*.txt'
+      reports: '$(installDir)/Tests/Coverage/*.lcov'
       targetdir: '$(installDir)/Tests/Coverage/Report'
       reporttypes: 'Cobertura;SonarQube'
       tag: '$(product.Version.Full)'
