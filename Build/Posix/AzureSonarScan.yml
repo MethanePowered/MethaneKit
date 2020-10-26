@@ -55,8 +55,8 @@ steps:
     workingDirectory: $(buildDir)
     displayName: 'Build under Sonar Build-Wrapper with $(generatorName) for $(platform) $(configuration)'
 
-- ${{ each step in parameters.extraScanSteps }}
-  - ${{ step }}
+  - ${{ each step in parameters.extraScanSteps }}:
+    - ${{ step }}
 
   - task: reportgenerator@4
     displayName: 'Merge per-test code coverage results into one report'

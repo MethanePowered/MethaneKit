@@ -71,6 +71,11 @@ variables:
     -DMETHANE_TRACY_PROFILING_ENABLED:BOOL=ON
     -DMETHANE_TRACY_PROFILING_ON_DEMAND:BOOL=ON'
 
+  buildScanCmakeFlags: '-DMETHANE_VERSION_BUILD=$(Build.BuildNumber)
+    -DMETHANE_CODE_COVERAGE_ENABLED:BOOL=ON
+    -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF
+    -DMETHANE_UNITY_BUILD_ENABLED:BOOL=OFF'
+
 jobs:
 
 - job: Windows_x64
@@ -158,7 +163,7 @@ jobs:
     platform: 'x64'
     configuration: 'Debug'
     generatorName: '"Visual Studio 16 2019"'
-    cmakeFlags: -DMETHANE_UNITY_BUILD_ENABLED:BOOL=OFF $(buildReleaseCmakeFlags)
+    cmakeFlags: $(buildScanCmakeFlags)
     buildName: 'Win64-$(configuration)-SonarScan'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
@@ -221,7 +226,7 @@ jobs:
     platform: 'MacOS'
     configuration: 'Debug'
     generatorName: 'Xcode'
-    cmakeFlags: -DMETHANE_CODE_COVERAGE_ENABLED:BOOL=ON -DMETHANE_UNITY_BUILD_ENABLED:BOOL=OFF $(buildReleaseCmakeFlags)
+    cmakeFlags: $(buildScanCmakeFlags)
     buildName: '$(platform)-$(configuration)-SonarScan'
     buildDir: 'Build/Output/$(buildName)/Build'
     installDir: 'Build/Output/$(buildName)/Install'
@@ -291,7 +296,7 @@ jobs:
     platform: 'Ubuntu'
     configuration: 'Debug'
     generatorName: '"Unix Makefiles"'
-    cmakeFlags: -DMETHANE_CODE_COVERAGE_ENABLED:BOOL=ON -DMETHANE_UNITY_BUILD_ENABLED:BOOL=OFF $(buildReleaseCmakeFlags)
+    cmakeFlags: $(buildScanCmakeFlags)
     buildName: '$(platform)-$(configuration)-SonarScan'
     buildDir: 'Build/Output/$(buildName)/Build'
     installDir: 'Build/Output/$(buildName)/Install'
