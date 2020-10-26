@@ -76,14 +76,16 @@ steps:
       reports: '$(installDir)\Tests\Coverage\*.xml'
       targetdir: '$(installDir)\Tests\Coverage\Report'
       reporttypes: 'Cobertura;SonarQube'
+      title: 'Methane Tests Code Coverage on Windows $(platform)'
       tag: '$(product.Version.Full)'
 
   - task: PublishCodeCoverageResults@1
+    condition: eq(variables.isCoveragePublishedToAzure, true)
+    displayName: 'Publish code coverage report to Azure Pipelines'
     inputs:
       codeCoverageTool: 'Cobertura'
       summaryFileLocation: '$(installDir)\Tests\Coverage\Report\Cobertura.xml'
       pathToSources: '$(Build.SourcesDirectory)\Modules'
-    continueOnError: true
 
   - task: SonarCloudAnalyze@1
     displayName: 'Analyze built sources with Sonar Scanner'

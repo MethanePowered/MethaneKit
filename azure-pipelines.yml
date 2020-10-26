@@ -165,6 +165,7 @@ jobs:
     buildInstallDir: '..\Install'
     rootDir: '..\..\..\..'
     vcVarsBatFile: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat'
+    isCoveragePublishedToAzure: false
     sonar.ProjectKey: 'egorodet_MethaneKit_Windows'
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-win-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-win-x86\build-wrapper-win-x86-64.exe
@@ -226,6 +227,8 @@ jobs:
     installDir: 'Build/Output/$(buildName)/Install'
     buildInstallDir: '../Install'
     rootDir: '../../../..'
+    coverageReports: '$(installDir)/Tests/Coverage/*.lcov'
+    isCoveragePublishedToAzure: true
     sonar.ProjectKey: 'egorodet_MethaneKit_MacOS'
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-macosx-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-macosx-x86/build-wrapper-macosx-x86
@@ -233,6 +236,32 @@ jobs:
 
   steps:
     - template: Build/Posix/AzureSonarScan.yml
+      parameters:
+        extraScanSteps:
+          - bash: |
+              result_ext='.xml'
+              prof_data_ext='.profdata'
+              prof_raw_ext='.profraw'
+              lcov_ext='.lcov'
+              echo Running unit-tests and Converting LLVM code coverage data to lcov text format in directory $PWD
+              mkdir Results
+              mkdir Coverage
+              for test_exe in *Test
+              do
+                ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
+                echo  - $test_exe - completed with $? exit status
+                if [ ! -f default.profraw ]; then
+                  continue
+                fi
+                mv default.profraw "$test_exe$prof_raw_ext"
+                xcrun llvm-profdata merge -o "$test_exe$prof_data_ext" "$test_exe$prof_raw_ext"
+                xcrun llvm-cov export -format lcov -instr-profile="$test_exe$prof_data_ext" ./$test_exe > "./Coverage/$test_exe$lcov_ext"
+                echo  - Converted code coverage from "$test_exe$prof_raw_ext" to lcov text format "./Coverage/$test_exe$lcov_ext", $? exit status
+              done
+              echo List of generated coverage files in directory $PWD/Coverage
+              ls -la ./Coverage
+            workingDirectory: '$(installDir)/Tests'
+            displayName: 'Collect code coverage from all unit-tests in install directory on MacOS'
 
 - job: Ubuntu
 
@@ -268,6 +297,7 @@ jobs:
     installDir: 'Build/Output/$(buildName)/Install'
     buildInstallDir: '../Install'
     rootDir: '../../../..'
+    isCoveragePublishedToAzure: false
     sonar.ProjectKey: 'egorodet_MethaneKit_Linux'
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-linux-x86/build-wrapper-linux-x86-64

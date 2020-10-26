@@ -1,6 +1,11 @@
 # Methane Kit CI configuration for Sonar Cloud static code analysis on MacOS/Linux platform
 # https://aka.ms/yaml
 
+parameters:
+  - name: extraScanSteps
+    type: stepList
+    default: []
+
 steps:
 
   - script: |
@@ -50,84 +55,25 @@ steps:
     workingDirectory: $(buildDir)
     displayName: 'Build under Sonar Build-Wrapper with $(generatorName) for $(platform) $(configuration)'
 
-  - bash: |
-      result_ext='.xml'
-      echo Running unit-tests in directory $PWD
-      mkdir Results
-      for test_exe in *Test
-      do
-        ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
-        echo  - $test_exe - completed with $? exit status
-        if [ -f default.profraw ]; then
-          mv default.profraw $test_exe.profraw
-        fi
-      done
-    workingDirectory: '$(installDir)/Tests'
-    condition: eq( variables['Agent.OS'], 'Darwin' )
-    displayName: 'Collect code coverage from all unit-tests in install directory on MacOS'
-
-  - bash: |
-      result_ext='.xml'
-      echo Running unit-tests in directory $PWD
-      mkdir Results
-      for test_exe in *Test
-      do
-        ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
-        echo  - $test_exe - completed with $? exit status, files generated:
-        gcov
-        echo    - gcov exist status $?
-      done
-      echo List of files generated in directory $PWD
-      ls -la
-    workingDirectory: '$(installDir)/Tests'
-    condition: eq( variables['Agent.OS'], 'Linux' )
-    displayName: 'Collect code coverage from all unit-tests in install directory on Linux'
-
-  - bash: |
-      prof_data_ext='.profdata'
-      prof_raw_ext='.profraw'
-      lcov_ext='.lcov'
-      echo Converting LLVM code coverage data to lcov text format in directory $PWD
-      mkdir Coverage
-      for test_exe in *Test
-      do
-        if [ ! -f "$test_exe$prof_raw_ext" ]; then
-          continue
-        fi
-        xcrun llvm-profdata merge -o "$test_exe$prof_data_ext" "$test_exe$prof_raw_ext"
-        xcrun llvm-cov export -format lcov -instr-profile="$test_exe$prof_data_ext" ./$test_exe > "./Coverage/$test_exe$lcov_ext"
-        echo  - Converted code coverage from "$test_exe$prof_raw_ext" to lcov text format "./Coverage/$test_exe$lcov_ext", $? exit status
-      done
-      echo List of generated coverage files in directory $PWD/Coverage
-      ls -la ./Coverage
-    workingDirectory: '$(installDir)/Tests'
-    condition: eq( variables['Agent.OS'], 'Darwin' )
-    displayName: 'Convert LLVM code coverage data to lcov text format on MacOS'
+  - ${{ each step in parameters.extraScanSteps }}
+      - ${{ step }}
 
   - task: reportgenerator@4
-    displayName: 'Merge per-test lcov code coverage into one report on MacOS'
-    condition: eq( variables['Agent.OS'], 'Darwin' )
+    displayName: 'Merge per-test code coverage results into one report'
     inputs:
-      reports: '$(installDir)/Tests/Coverage/*.lcov'
+      reports: $(coverageReports)
       targetdir: '$(installDir)/Tests/Coverage/Report'
       reporttypes: 'Cobertura;SonarQube'
-      tag: '$(product.Version.Full)'
-
-  - task: reportgenerator@4
-    displayName: 'Merge per-test gcov code coverage into one report on Linux'
-    condition: eq( variables['Agent.OS'], 'Linux' )
-    inputs:
-      reports: '$(installDir)/Tests/*.gcov'
-      targetdir: '$(installDir)/Tests/Coverage/Report'
-      reporttypes: 'Cobertura;SonarQube'
+      title: 'Methane Tests Code Coverage on $(platform)'
       tag: '$(product.Version.Full)'
 
   - task: PublishCodeCoverageResults@1
+    condition: eq(variables.isCoveragePublishedToAzure, true)
+    displayName: 'Publish code coverage report to Azure Pipelines'
     inputs:
       codeCoverageTool: 'Cobertura'
       summaryFileLocation: '$(installDir)/Tests/Coverage/Report/Cobertura.xml'
       pathToSources: '$(Build.SourcesDirectory)/Modules'
-    continueOnError: true
 
   - task: SonarCloudAnalyze@1
     displayName: 'Analyze built sources with Sonar Scanner'
