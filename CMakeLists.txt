@@ -51,6 +51,7 @@ set(METHANE_COPYRIGHT     "Copyright 2019-2020 Evgeny Gorodetskiy")
 list(APPEND CMAKE_MODULE_PATH
     "${CMAKE_CURRENT_SOURCE_DIR}/CMake"
     "${CMAKE_CURRENT_SOURCE_DIR}/Externals/CMakeModules"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Externals/CMakeExtraModules"
     "${CMAKE_CURRENT_SOURCE_DIR}/Externals/Catch2/single_include/cmake"
     "${CMAKE_CURRENT_SOURCE_DIR}/Externals/CMRC"
 )
