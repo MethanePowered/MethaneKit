@@ -300,11 +300,22 @@ jobs:
     installDir: 'Build/Output/$(buildName)/Install'
     buildInstallDir: '../Install'
     rootDir: '../../../..'
-    coverageReports: ''
+    coverageReports: '$(buildDir)/MethaneTestCoverage.info'
     sonar.ProjectKey: 'egorodet_MethaneKit_Linux'
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-linux-x86/build-wrapper-linux-x86-64
-    sonar.BuildCommand: make install
+    sonar.BuildCommand: make clean all
 
   steps:
     - template: Build/Posix/AzureSonarScan.yml
+      parameters:
+        extraInitSteps:
+          - bash: |
+              sudo apt-get update
+              sudo apt-get install lcov
+            displayName: 'Install prerequisite packages on Linux'
+        extraScanSteps:
+          - bash: |
+              make MethaneTestCoverage
+            workingDirectory: '$(buildDir)'
+            displayName: 'Collect code coverage from all unit-tests with gcov/lcov on Linux'
