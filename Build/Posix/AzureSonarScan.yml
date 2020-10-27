@@ -3,8 +3,8 @@
 
 parameters:
   - name: extraInitSteps
-      type: stepList
-      default: [ ]
+    type: stepList
+    default: [ ]
   - name: extraScanSteps
     type: stepList
     default: []
@@ -15,7 +15,7 @@ steps:
     displayName: 'Make build directories for $(platform) $(configuration)'
 
   - ${{ each step in parameters.extraInitSteps }}:
-      - ${{ step }}
+    - ${{ step }}
 
   - task: CMake@1
     displayName: 'Generate with $(generatorName) for $(platform) $(configuration)'
