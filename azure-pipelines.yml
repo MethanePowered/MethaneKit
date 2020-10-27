@@ -304,7 +304,7 @@ jobs:
     sonar.ProjectKey: 'egorodet_MethaneKit_Linux'
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-linux-x86/build-wrapper-linux-x86-64
-    sonar.BuildCommand: make clean all
+    sonar.BuildCommand: make install
 
   steps:
     - template: Build/Posix/AzureSonarScan.yml
@@ -316,6 +316,17 @@ jobs:
             displayName: 'Install prerequisite packages on Linux'
         extraScanSteps:
           - bash: |
+              result_ext='.xml'
+              echo Running unit-tests in directory $PWD
+              mkdir Results
+              for test_exe in *Test
+              do
+                ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
+                echo  - $test_exe - completed with $? exit status
+              done
+            workingDirectory: '$(installDir)/Tests'
+            displayName: 'Run all unit-tests from install directory'
+          - bash: |
               make MethaneTestCoverage
             workingDirectory: '$(buildDir)'
-            displayName: 'Collect code coverage from all unit-tests with gcov/lcov on Linux'
+            displayName: 'Collect tests code coverage using ctest and gcov/lcov on Linux'
