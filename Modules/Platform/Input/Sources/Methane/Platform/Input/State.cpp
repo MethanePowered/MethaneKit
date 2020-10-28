@@ -85,7 +85,7 @@ void State::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state)
 {
     META_FUNCTION_TASK();
 
-    Keyboard::State prev_keyboard_state(m_keyboard_state);
+    Keyboard::State prev_keyboard_state(static_cast<const Keyboard::State&>(m_keyboard_state));
     m_keyboard_state.SetKey(key, key_state);
     Keyboard::State::Property::Mask state_changes_mask = m_keyboard_state.GetDiff(prev_keyboard_state);
 
@@ -99,7 +99,7 @@ void State::OnModifiersChanged(Keyboard::Modifier::Mask modifiers_mask)
 {
     META_FUNCTION_TASK();
 
-    Keyboard::State prev_keyboard_state(m_keyboard_state);
+    Keyboard::State prev_keyboard_state(static_cast<const Keyboard::State&>(m_keyboard_state));
     m_keyboard_state.SetModifiersMask(modifiers_mask);
     Keyboard::State::Property::Mask state_changes_mask = m_keyboard_state.GetDiff(prev_keyboard_state);
     

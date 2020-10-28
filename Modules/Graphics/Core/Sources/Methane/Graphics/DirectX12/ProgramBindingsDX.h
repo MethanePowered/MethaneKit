@@ -70,7 +70,7 @@ public:
             uint32_t             count     = 0;
         };
 
-        ArgumentBindingDX(const ContextBase& context, SettingsDX settings);
+        ArgumentBindingDX(const ContextBase& context, const SettingsDX& settings);
         ArgumentBindingDX(const ArgumentBindingDX& other);
 
         // ArgumentBinding interface

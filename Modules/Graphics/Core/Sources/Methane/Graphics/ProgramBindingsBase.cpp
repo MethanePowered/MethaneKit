@@ -32,9 +32,9 @@ Base implementation of the program bindings interface.
 namespace Methane::Graphics
 {
 
-ProgramBindingsBase::ArgumentBindingBase::ArgumentBindingBase(const ContextBase& context, Settings settings)
+ProgramBindingsBase::ArgumentBindingBase::ArgumentBindingBase(const ContextBase& context, const Settings& settings)
     : m_context(context)
-    , m_settings(std::move(settings))
+    , m_settings(settings)
 {
     META_FUNCTION_TASK();
 }

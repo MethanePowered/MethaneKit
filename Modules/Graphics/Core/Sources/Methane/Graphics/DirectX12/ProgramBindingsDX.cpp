@@ -44,7 +44,7 @@ Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindi
     return std::make_shared<ProgramBindingsDX::ArgumentBindingDX>(static_cast<const ProgramBindingsDX::ArgumentBindingDX&>(other_argument_binding));
 }
 
-ProgramBindingsDX::ArgumentBindingDX::ArgumentBindingDX(const ContextBase& context, SettingsDX settings)
+ProgramBindingsDX::ArgumentBindingDX::c(const ContextBase& context, const SettingsDX& settings)
     : ProgramBindingsBase::ArgumentBindingBase(context, settings)
     , m_settings_dx(std::move(settings))
 {

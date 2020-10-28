@@ -37,7 +37,7 @@ SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings
     META_FUNCTION_TASK();
 }
 
-SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings, BaseMesh<Vertex> mesh)
+SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings, const BaseMesh<Vertex>& mesh)
     : m_settings(settings)
     , m_context(context)
     , m_mesh_buffers(context, mesh, "Sky-Box")

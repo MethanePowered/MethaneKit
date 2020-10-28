@@ -34,7 +34,7 @@ namespace Methane::Graphics
 
 static const std::hash<std::string> g_argument_name_hash;
 
-Program::Argument::Argument(Shader::Type shader_type, std::string argument_name)
+Program::Argument::Argument(Shader::Type shader_type, std::string argument_name) noexcept
     : shader_type(shader_type)
     , name(std::move(argument_name))
     , hash(g_argument_name_hash(name) ^ (static_cast<size_t>(shader_type) << 1))
@@ -42,21 +42,21 @@ Program::Argument::Argument(Shader::Type shader_type, std::string argument_name)
     META_FUNCTION_TASK();
 }
 
-bool Program::Argument::operator==(const Argument& other) const
+bool Program::Argument::operator==(const Argument& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(hash, shader_type, name) ==
            std::tie(other.hash, other.shader_type, other.name);
 }
 
-Program::ArgumentDesc::ArgumentDesc(Shader::Type shader_type, std::string argument_name, Modifiers::Mask modifiers)
+Program::ArgumentDesc::ArgumentDesc(Shader::Type shader_type, std::string argument_name, Modifiers::Mask modifiers) noexcept
     : Argument(shader_type, argument_name)
     , modifiers(modifiers)
 {
     META_FUNCTION_TASK();
 }
 
-Program::ArgumentDesc::ArgumentDesc(const Argument& argument, Modifiers::Mask modifiers)
+Program::ArgumentDesc::ArgumentDesc(const Argument& argument, Modifiers::Mask modifiers) noexcept
     : Argument(argument)
     , modifiers(modifiers)
 {

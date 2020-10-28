@@ -38,7 +38,7 @@ Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, cons
     META_FUNCTION_TASK();
 }
 
-Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings, gfx::BaseMesh<Vertex> mesh)
+Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh)
     : m_settings(settings)
     , m_context(context)
     , m_mesh_buffers(context, mesh, "Planet")

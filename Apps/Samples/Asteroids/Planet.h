@@ -87,7 +87,7 @@ private:
         };
     };
 
-    Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings, gfx::BaseMesh<Vertex> mesh);
+    Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh);
 
     Settings              m_settings;
     gfx::RenderContext&   m_context;

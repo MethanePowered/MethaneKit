@@ -174,7 +174,7 @@ Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindi
     return std::make_shared<ProgramBindingsMT::ArgumentBindingMT>(static_cast<const ProgramBindingsMT::ArgumentBindingMT&>(other_argument_binding));
 }
 
-ProgramBindingsMT::ArgumentBindingMT::ArgumentBindingMT(const ContextBase& context, SettingsMT settings)
+ProgramBindingsMT::ArgumentBindingMT::ArgumentBindingMT(const ContextBase& context, const SettingsMT& settings)
     : ArgumentBindingBase(context, settings)
     , m_settings_mt(std::move(settings))
 {

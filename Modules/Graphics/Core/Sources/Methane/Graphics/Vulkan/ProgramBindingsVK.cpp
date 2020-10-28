@@ -47,7 +47,7 @@ Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindi
     return std::make_shared<ProgramBindingsVK::ArgumentBindingVK>(static_cast<const ProgramBindingsVK::ArgumentBindingVK&>(other_argument_binding));
 }
 
-ProgramBindingsVK::ArgumentBindingVK::ArgumentBindingVK(const ContextBase& context, SettingsVK settings)
+ProgramBindingsVK::ArgumentBindingVK::ArgumentBindingVK(const ContextBase& context, const SettingsVK& settings)
     : ArgumentBindingBase(context, settings)
     , m_settings_vk(std::move(settings))
 {

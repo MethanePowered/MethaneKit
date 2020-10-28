@@ -41,8 +41,9 @@ class Range
 public:
     Range(ScalarT start, ScalarT end) : m_start(start), m_end(end) { META_FUNCTION_TASK(); Validate(); }
     Range(std::initializer_list<ScalarT> init) : Range(*init.begin(), *(init.begin() + 1)) { }
-    Range(const Range& other) : Range(other.m_start, other.m_end) { }
+    Range(const Range& other) noexcept : m_start(other.m_start), m_end(other.m_end) { }
     Range() noexcept: Range({}, {}) { }
+    Range(Range&&) noexcept = default;
 
     Range<ScalarT>& operator=(const Range<ScalarT>& other) noexcept        { META_FUNCTION_TASK(); m_start = other.m_start; m_end = other.m_end; return *this; }
     bool            operator==(const Range<ScalarT>& other) const noexcept { META_FUNCTION_TASK(); return m_start == other.m_start && m_end == other.m_end; }

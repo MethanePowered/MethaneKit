@@ -38,7 +38,7 @@ public:
         {
         };
 
-        ArgumentBindingVK(const ContextBase& context, SettingsVK settings);
+        ArgumentBindingVK(const ContextBase& context, const SettingsVK& settings);
         ArgumentBindingVK(const ArgumentBindingVK& other) = default;
 
         // ArgumentBinding interface

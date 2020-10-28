@@ -50,7 +50,7 @@ public:
     public:
         static Ptr<ArgumentBindingBase> CreateCopy(const ArgumentBindingBase& other_argument_binding);
 
-        ArgumentBindingBase(const ContextBase& context, Settings settings);
+        ArgumentBindingBase(const ContextBase& context, const Settings& settings);
         ArgumentBindingBase(const ArgumentBindingBase& other) = default;
 
         // ArgumentBinding interface

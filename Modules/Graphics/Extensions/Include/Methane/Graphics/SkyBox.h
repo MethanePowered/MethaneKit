@@ -89,7 +89,7 @@ private:
         };
     };
 
-    SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings, BaseMesh<Vertex> mesh);
+    SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings, const BaseMesh<Vertex>& mesh);
 
     Settings                      m_settings;
     RenderContext&                m_context;
