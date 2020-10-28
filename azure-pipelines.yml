@@ -181,7 +181,7 @@ jobs:
 - job: MacOS
 
   pool:
-    vmImage: 'macOS-10.14'
+    vmImage: 'macOS-10.15'
 
   variables:
     platform: 'MacOS'
@@ -200,7 +200,7 @@ jobs:
 - job: MacOS_Profiling
 
   pool:
-    vmImage: 'macOS-10.14'
+    vmImage: 'macOS-10.15'
 
   variables:
     platform: 'MacOS'
@@ -219,7 +219,7 @@ jobs:
 - job: MacOS_Sonar_Scan
 
   pool:
-    vmImage: 'macOS-10.14'
+    vmImage: 'macOS-10.15'
 
   variables:
     platform: 'MacOS'
