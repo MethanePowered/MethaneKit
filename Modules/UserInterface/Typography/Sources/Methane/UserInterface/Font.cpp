@@ -463,7 +463,7 @@ const Font::Char& Font::AddChar(Char::Code char_code)
     }
 
     // If new char does not fit into existing atlas, repack all chars into new atlas
-    PackCharsToAtlas(2.f);
+    PackCharsToAtlas(2.F);
     UpdateAtlasBitmap(true);
 
     return new_font_char;

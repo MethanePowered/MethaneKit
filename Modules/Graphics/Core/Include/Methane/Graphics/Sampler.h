@@ -83,11 +83,11 @@ struct Sampler : virtual Resource
 
     struct LevelOfDetail
     {
-        LevelOfDetail(float in_bias = 0.f, float in_min = 0.f, float in_max = std::numeric_limits<float>::max());
+        LevelOfDetail(float in_bias = 0.F, float in_min = 0.F, float in_max = std::numeric_limits<float>::max());
         
-        float min     = 0.f;
+        float min     = 0.F;
         float max     = std::numeric_limits<float>::max();
-        float bias    = 0.f;
+        float bias    = 0.F;
     };
 
     enum class BorderColor : uint32_t

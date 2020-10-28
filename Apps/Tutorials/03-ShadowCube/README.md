@@ -206,13 +206,13 @@ float4 CubePS(PSInput input) : SV_TARGET
     const float  shadow_depth   = g_shadow_map.Sample(g_shadow_sampler, light_proj_pos.xy).r;
     const float  shadow_ratio   = current_depth > shadow_depth ? 1.0F : 0.0F;
 #else
-    const float  shadow_ratio   = 0.f;
+    const float  shadow_ratio   = 0.F;
 #endif
 
 #ifdef ENABLE_TEXTURING
     const float4 texel_color    = g_texture.Sample(g_texture_sampler, input.texcoord);
 #else
-    const float4 texel_color    = { 0.8F, 0.8F, 0.8F, 1.f };
+    const float4 texel_color    = { 0.8F, 0.8F, 0.8F, 1.F };
 #endif
 
     const float4 ambient_color  = texel_color * g_constants.light_ambient_factor;
@@ -225,7 +225,7 @@ float4 CubePS(PSInput input) : SV_TARGET
     const float  specular_part  = pow(clamp(dot(fragment_to_eye, light_reflected_from_fragment), 0.0, 1.0), g_constants.light_specular_factor);
     const float4 specular_color = base_color * specular_part / (distance * distance);
 
-    return ColorLinearToSrgb(ambient_color + (1.f - shadow_ratio) * (diffuse_color + specular_color));
+    return ColorLinearToSrgb(ambient_color + (1.F - shadow_ratio) * (diffuse_color + specular_color));
 }
 ```
 

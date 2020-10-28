@@ -40,7 +40,7 @@ static gfx::Color3f TransformSrgbToLinear(const gfx::Color3f& srgb_color)
     gfx::Color3f linear_color{};
     for (int c = 0; c < 3; ++c)
     {
-        linear_color[c] = std::pow(srgb_color[c] / 255.f, 2.233333333F);
+        linear_color[c] = std::pow(srgb_color[c] / 255.F, 2.233333333F);
     }
     return linear_color;
 }
@@ -131,7 +131,7 @@ gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx
     sub_resources.reserve(array_size);
 
     std::mt19937 rng(noise_parameters.random_seed);
-    std::uniform_real_distribution<float> noise_seed_distribution(0.f, 10000.f);
+    std::uniform_real_distribution<float> noise_seed_distribution(0.F, 10000.F);
 
     for (uint32_t array_index = 0; array_index < array_size; ++array_index)
     {
@@ -153,22 +153,22 @@ Asteroid::Colors Asteroid::GetAsteroidRockColors(uint32_t deep_color_index, uint
     META_FUNCTION_TASK();
 
     static const AsteroidColorSchema s_srgb_deep_rock_colors{ {
-        {  55.f,  49.f,  40.f },
-        {  58.f,  38.f,  14.f },
-        {  98.f, 101.f, 104.f },
-        { 172.f, 158.f, 122.f },
-        {  88.f,  88.f,  88.f },
-        { 148.f, 108.f, 102.f },
+        {  55.F,  49.F,  40.F },
+        {  58.F,  38.F,  14.F },
+        {  98.F, 101.F, 104.F },
+        { 172.F, 158.F, 122.F },
+        {  88.F,  88.F,  88.F },
+        { 148.F, 108.F, 102.F },
     } };
     static const AsteroidColorSchema s_linear_deep_rock_colors = TransformSrgbToLinear(s_srgb_deep_rock_colors);
 
     static const AsteroidColorSchema s_srgb_shallow_rock_colors{ {
-        { 140.f, 109.f,  61.f },
-        { 172.f, 154.f,  58.f },
-        { 204.f, 177.f, 119.f },
-        { 204.f, 164.f, 136.f },
-        { 130.f, 117.f,  98.f },
-        { 160.f, 145.f, 114.f },
+        { 140.F, 109.F,  61.F },
+        { 172.F, 154.F,  58.F },
+        { 204.F, 177.F, 119.F },
+        { 204.F, 164.F, 136.F },
+        { 130.F, 117.F,  98.F },
+        { 160.F, 145.F, 114.F },
     } };
     static const AsteroidColorSchema s_linear_shallow_rock_colors = TransformSrgbToLinear(s_srgb_shallow_rock_colors);
 
@@ -183,22 +183,22 @@ Asteroid::Colors Asteroid::GetAsteroidIceColors(uint32_t deep_color_index, uint3
     META_FUNCTION_TASK();
 
     static const AsteroidColorSchema s_srgb_deep_ice_colors{ {
-        {  22.f,  51.f,  59.f },
-        {  45.f,  72.f,  93.f },
-        {  14.f,  25.f,  27.f },
-        {  68.f, 103.f, 129.f },
-        {  29.f,  59.f,  59.f },
-        {  59.f,  92.f, 118.f }
+        {  22.F,  51.F,  59.F },
+        {  45.F,  72.F,  93.F },
+        {  14.F,  25.F,  27.F },
+        {  68.F, 103.F, 129.F },
+        {  29.F,  59.F,  59.F },
+        {  59.F,  92.F, 118.F }
     } };
     static const AsteroidColorSchema s_linear_deep_ice_colors = TransformSrgbToLinear(s_srgb_deep_ice_colors);
 
     static const AsteroidColorSchema s_srgb_shallow_ice_colors{ {
-        { 144.f, 163.f, 188.f },
-        { 133.f, 179.f, 189.f },
-        {  74.f, 135.f, 178.f },
-        {  69.f, 143.f, 177.f },
-        { 104.f, 168.f, 185.f },
-        { 140.f, 170.f, 186.f }
+        { 144.F, 163.F, 188.F },
+        { 133.F, 179.F, 189.F },
+        {  74.F, 135.F, 178.F },
+        {  69.F, 143.F, 177.F },
+        { 104.F, 168.F, 185.F },
+        { 140.F, 170.F, 186.F }
     } };
     static const AsteroidColorSchema s_linear_shallow_ice_colors = TransformSrgbToLinear(s_srgb_shallow_ice_colors);
 
@@ -212,22 +212,22 @@ Asteroid::Colors Asteroid::GetAsteroidLodColors(uint32_t lod_index)
 {
     META_FUNCTION_TASK();
     static const AsteroidColorSchema s_srgb_lod_deep_colors{ {
-        {    0.f, 128.f,   0.f }, // LOD-0: green
-        {    0.f,  64.f, 128.f }, // LOD-1: blue
-        {   96.f,   0.f, 128.f }, // LOD-2: purple
-        {  128.f,   0.f,   0.f }, // LOD-3: red
-        {  128.f, 128.f,   0.f }, // LOD-4: yellow
-        {  128.f,  64.f,   0.f }, // LOD-5: orange
+        {    0.F, 128.F,   0.F }, // LOD-0: green
+        {    0.F,  64.F, 128.F }, // LOD-1: blue
+        {   96.F,   0.F, 128.F }, // LOD-2: purple
+        {  128.F,   0.F,   0.F }, // LOD-3: red
+        {  128.F, 128.F,   0.F }, // LOD-4: yellow
+        {  128.F,  64.F,   0.F }, // LOD-5: orange
     } };
     static const AsteroidColorSchema s_linear_lod_deep_colors = TransformSrgbToLinear(s_srgb_lod_deep_colors);
 
     static const AsteroidColorSchema s_srgb_lod_shallow_colors{ {
-        {    0.f, 255.f,   0.f }, // LOD-0: green
-        {    0.f, 128.f, 255.f }, // LOD-1: blue
-        {  196.f,   0.f, 255.f }, // LOD-2: purple
-        {  255.f,   0.f,   0.f }, // LOD-3: red
-        {  255.f, 255.f,   0.f }, // LOD-4: yellow
-        {  255.f, 128.f,   0.f }, // LOD-5: orange
+        {    0.F, 255.F,   0.F }, // LOD-0: green
+        {    0.F, 128.F, 255.F }, // LOD-1: blue
+        {  196.F,   0.F, 255.F }, // LOD-2: purple
+        {  255.F,   0.F,   0.F }, // LOD-3: red
+        {  255.F, 255.F,   0.F }, // LOD-4: yellow
+        {  255.F, 128.F,   0.F }, // LOD-5: orange
     } };
     static const AsteroidColorSchema s_linear_lod_shallow_colors = TransformSrgbToLinear(s_srgb_lod_shallow_colors);
 
@@ -256,7 +256,7 @@ void Asteroid::FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Di
             uint8_t* texel_data = reinterpret_cast<uint8_t*>(&row_data[col]);
             for (size_t channel = 0; channel < 3; ++channel)
             {
-                texel_data[channel] = static_cast<uint8_t>(255.f * noise_intensity);
+                texel_data[channel] = static_cast<uint8_t>(255.F * noise_intensity);
             }
         }
     }

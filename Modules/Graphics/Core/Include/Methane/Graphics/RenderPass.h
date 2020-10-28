@@ -78,10 +78,10 @@ struct RenderPass : virtual Object
     
     struct DepthAttachment : Attachment
     {
-        Depth clear_value = 1.f;
+        Depth clear_value = 1.F;
         
         DepthAttachment() = default;
-        DepthAttachment(const Attachment&& attach, Depth in_clear_value = 1.f) : Attachment(attach), clear_value(in_clear_value) { }
+        DepthAttachment(const Attachment&& attach, Depth in_clear_value = 1.F) : Attachment(attach), clear_value(in_clear_value) { }
         
         bool operator==(const DepthAttachment& other) const;
     };

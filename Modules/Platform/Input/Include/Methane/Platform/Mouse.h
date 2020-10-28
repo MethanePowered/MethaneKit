@@ -81,7 +81,7 @@ inline MouseButtonAndDelta GetScrollButtonAndDelta(const Scroll& scroll_delta)
     const float min_scroll_delta = 0.00001F;
     return std::fabs(scroll_delta.GetY()) > min_scroll_delta ? MouseButtonAndDelta(Button::VScroll, scroll_delta.GetY())
                                                              : (std::fabs(scroll_delta.GetX()) > min_scroll_delta ? MouseButtonAndDelta(Button::HScroll, scroll_delta.GetX())
-                                                             : MouseButtonAndDelta(Button::Unknown, 0.f ) );
+                                                             : MouseButtonAndDelta(Button::Unknown, 0.F ) );
 }
 
 class State

@@ -43,12 +43,12 @@ constexpr int32_t g_top_text_pos_in_dots     = 110;
 constexpr size_t  g_text_blocks_count        = 3;
 
 static const std::array<FontSettings, g_text_blocks_count> g_font_settings { {
-    { { "European",     "Fonts/Roboto/Roboto-Regular.ttf",                 20U }, { 1.f,  1.f,  0.5F } },
-    { { "Japanese",     "Fonts/SawarabiMincho/SawarabiMincho-Regular.ttf", 20U }, { 1.f,  0.3F, 0.1F } },
-    { { "Calligraphic", "Fonts/Playball/Playball-Regular.ttf",             20U }, { 0.5F, 1.f,  0.5F } }
+    { { "European",     "Fonts/Roboto/Roboto-Regular.ttf",                 20U }, { 1.F,  1.F,  0.5F } },
+    { { "Japanese",     "Fonts/SawarabiMincho/SawarabiMincho-Regular.ttf", 20U }, { 1.F,  0.3F, 0.1F } },
+    { { "Calligraphic", "Fonts/Playball/Playball-Regular.ttf",             20U }, { 0.5F, 1.F,  0.5F } }
 } };
 
-static const gfx::Color3f g_misc_font_color { 1.f, 1.f, 1.f };
+static const gfx::Color3f g_misc_font_color { 1.F, 1.F, 1.F };
 static const std::map<std::string, gfx::Color3f>    g_font_color_by_name   {
     { g_font_settings[0].desc.name, g_font_settings[0].color },
     { g_font_settings[1].desc.name, g_font_settings[1].color },
@@ -181,7 +181,7 @@ void TypographyApp::Init()
                         gui::Units::Dots
                     },
                     m_settings.text_layout,
-                    gfx::Color4f(font_settings.color, 1.f),
+                    gfx::Color4f(font_settings.color, 1.F),
                     m_settings.is_incremental_text_update
                 }
             )

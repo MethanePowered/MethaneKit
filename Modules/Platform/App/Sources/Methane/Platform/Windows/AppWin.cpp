@@ -382,13 +382,13 @@ LRESULT AppWin::OnWindowMouseWheelEvent(bool is_vertical_scroll, WPARAM w_param,
     if (is_vertical_scroll)
     {
         const float wheel_delta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(w_param)) / WHEEL_DELTA;
-        ProcessInput(&Input::IActionController::OnMouseScrollChanged, Mouse::Scroll{ 0.f, wheel_delta });
+        ProcessInput(&Input::IActionController::OnMouseScrollChanged, Mouse::Scroll{ 0.F, wheel_delta });
     }
     else
     {
         // NOTE: The X-axis is inverted for consistency with macOS and X11
         const float wheel_delta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(w_param)) / WHEEL_DELTA;
-        ProcessInput(&Input::IActionController::OnMouseScrollChanged, Mouse::Scroll{ -wheel_delta, 0.f });
+        ProcessInput(&Input::IActionController::OnMouseScrollChanged, Mouse::Scroll{ -wheel_delta, 0.F });
     }
 
     return 0;

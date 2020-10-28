@@ -65,7 +65,7 @@ public:
         float                          scale;
         ImageLoader::Options::Mask     image_options  = ImageLoader::Options::None;
         SkyBox::Options::Mask          render_options = SkyBox::Options::None;
-        float                          lod_bias = 0.f;
+        float                          lod_bias = 0.F;
     };
 
     struct SHADER_STRUCT_ALIGN Uniforms

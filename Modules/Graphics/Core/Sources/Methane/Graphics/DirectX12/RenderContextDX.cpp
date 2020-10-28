@@ -65,18 +65,18 @@ static float GetDeviceScaleRatio(DEVICE_SCALE_FACTOR device_scale_factor)
     case SCALE_160_PERCENT: return 1.6F;
     case SCALE_175_PERCENT: return 1.75F;
     case SCALE_180_PERCENT: return 1.8F;
-    case SCALE_200_PERCENT: return 2.f;
+    case SCALE_200_PERCENT: return 2.F;
     case SCALE_225_PERCENT: return 2.25F;
     case SCALE_250_PERCENT: return 2.5F;
-    case SCALE_300_PERCENT: return 3.f;
+    case SCALE_300_PERCENT: return 3.F;
     case SCALE_350_PERCENT: return 3.5F;
-    case SCALE_400_PERCENT: return 4.f;
+    case SCALE_400_PERCENT: return 4.F;
     case SCALE_450_PERCENT: return 4.5F;
-    case SCALE_500_PERCENT: return 5.f;
+    case SCALE_500_PERCENT: return 5.F;
     default:                assert(0);
     }
 
-    return 1.f;
+    return 1.F;
 }
 
 Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, Device& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)

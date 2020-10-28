@@ -111,14 +111,14 @@ const Matrix44f& Camera::GetViewProjMatrix() const noexcept
 Vector2f Camera::TransformScreenToProj(const Data::Point2i& screen_pos) const noexcept
 {
     META_FUNCTION_TASK();
-    return { 2.f * screen_pos.GetX() / m_screen_size.width  - 1.f,
-           -(2.f * screen_pos.GetY() / m_screen_size.height - 1.f) };
+    return { 2.F * screen_pos.GetX() / m_screen_size.width  - 1.F,
+           -(2.F * screen_pos.GetY() / m_screen_size.height - 1.F) };
 }
 
 Vector3f Camera::TransformScreenToView(const Data::Point2i& screen_pos) const noexcept
 {
     META_FUNCTION_TASK();
-    return (cml::inverse(GetProjMatrix()) * Vector4f(TransformScreenToProj(screen_pos), 0.f, 1.f)).subvector(3);
+    return (cml::inverse(GetProjMatrix()) * Vector4f(TransformScreenToProj(screen_pos), 0.F, 1.F)).subvector(3);
 }
 
 Vector3f Camera::TransformScreenToWorld(const Data::Point2i& screen_pos) const noexcept
@@ -143,7 +143,7 @@ float Camera::GetFovAngleY() const noexcept
 {
     META_FUNCTION_TASK();
     float fov_angle_y = m_parameters.fov_deg * cml::constants<float>::pi() / 180.0F;
-    if (m_aspect_ratio != 0.f && m_aspect_ratio < 1.0F)
+    if (m_aspect_ratio != 0.F && m_aspect_ratio < 1.0F)
     {
         fov_angle_y /= m_aspect_ratio;
     }

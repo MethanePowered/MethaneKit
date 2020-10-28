@@ -61,7 +61,7 @@ public:
     using Vector4f::Vector4f;
     using Vector4f::operator=;
 
-    Color4f() : Vector4f(0.f, 0.f, 0.f, 0.f) { }
+    Color4f() : Vector4f(0.F, 0.F, 0.F, 0.F) { }
     Color4f(float r, float g, float b, float a) : Vector4f(r, g, b, a) { }
     Color4f(Color3f c, float a) : Vector4f(std::move(c), a) { }
 

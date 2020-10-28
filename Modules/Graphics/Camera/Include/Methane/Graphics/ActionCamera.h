@@ -138,9 +138,9 @@ protected:
 private:
     Data::AnimationsPool&    m_animations;
     uint32_t                 m_zoom_steps_count             = 3;
-    DistanceRange            m_zoom_distance_range          = DistanceRange(1.f, 1000.f);
-    float                    m_move_distance_per_second     = 5.f;
-    float                    m_rotate_angle_per_second      = 15.f;
+    DistanceRange            m_zoom_distance_range          = DistanceRange(1.F, 1000.F);
+    float                    m_move_distance_per_second     = 5.F;
+    float                    m_rotate_angle_per_second      = 15.F;
     double                   m_keyboard_action_duration_sec = 0.3;
     MouseAction              m_mouse_action                 = MouseAction::None;
     Vector3f                 m_mouse_pressed_in_world       { };

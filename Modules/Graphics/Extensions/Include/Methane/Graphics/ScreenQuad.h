@@ -55,7 +55,7 @@ public:
         const std::string name;
         FrameRect         screen_rect;
         bool              alpha_blending_enabled = false;
-        Color4f           blend_color            { 1.f, 1.f, 1.f, 1.f };
+        Color4f           blend_color            { 1.F, 1.F, 1.F, 1.F };
         TextureMode       texture_mode           = TextureMode::RgbaFloat;
     };
 

@@ -102,7 +102,7 @@ bool RenderContextVK::SetFrameBuffersCount(uint32_t frame_buffers_count)
 float RenderContextVK::GetContentScalingFactor() const
 {
     META_FUNCTION_TASK();
-    return 1.f;
+    return 1.F;
 }
 
 uint32_t RenderContextVK::GetFontResolutionDpi() const

@@ -406,7 +406,7 @@ void TextMesh::AddCharQuad(const Font::Char& font_char, const gfx::FramePoint& c
     const gfx::Rect<float, float> ver_rect {
         {
             static_cast<float>(char_pos.GetX() + font_char.GetOffset().GetX()),
-            static_cast<float>(char_pos.GetY() + font_char.GetOffset().GetY() + static_cast<int32_t>(font_char.GetRect().size.height)) * -1.f,
+            static_cast<float>(char_pos.GetY() + font_char.GetOffset().GetY() + static_cast<int32_t>(font_char.GetRect().size.height)) * -1.F,
         },
         {
             static_cast<float>(font_char.GetRect().size.width),

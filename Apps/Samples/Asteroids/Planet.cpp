@@ -33,7 +33,7 @@ namespace Methane::Samples
 {
 
 Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings)
-    : Planet(context, image_loader, settings, gfx::SphereMesh<Vertex>(Vertex::layout, 1.f, 32, 32))
+    : Planet(context, image_loader, settings, gfx::SphereMesh<Vertex>(Vertex::layout, 1.F, 32, 32))
 {
     META_FUNCTION_TASK();
 }
@@ -117,7 +117,7 @@ bool Planet::Update(double elapsed_seconds, double)
     cml::matrix_rotation_world_y(model_rotation_matrix, -m_settings.spin_velocity_rps * elapsed_seconds);
 
     Uniforms uniforms{};
-    uniforms.eye_position   = gfx::Vector4f(m_settings.view_camera.GetOrientation().eye, 1.f);
+    uniforms.eye_position   = gfx::Vector4f(m_settings.view_camera.GetOrientation().eye, 1.F);
     uniforms.light_position = m_settings.light_camera.GetOrientation().eye;
     uniforms.model_matrix   = model_scale_matrix * model_rotation_matrix * model_translate_matrix;
     uniforms.mvp_matrix     = uniforms.model_matrix * m_settings.view_camera.GetViewProjMatrix();

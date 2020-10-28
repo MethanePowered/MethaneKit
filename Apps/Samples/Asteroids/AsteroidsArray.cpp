@@ -166,7 +166,7 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
     std::uniform_real_distribution<float>   scale_distribution(settings.min_asteroid_scale_ratio, settings.max_asteroid_scale_ratio);
     std::uniform_real_distribution<float>   scale_proportion_distribution(0.8F, 1.2F);
     std::uniform_real_distribution<float>   spin_velocity_distribution(-1.7F, 1.7F);
-    std::uniform_real_distribution<float>   orbit_velocity_distribution(1.5F, 5.f);
+    std::uniform_real_distribution<float>   orbit_velocity_distribution(1.5F, 5.F);
     std::normal_distribution<float>         orbit_radius_distribution(orbit_radius, 0.6F * disc_radius);
     std::normal_distribution<float>         orbit_height_distribution(0.0F, 0.4F * disc_radius);
 
@@ -184,14 +184,14 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
                                                                   scale_proportion_distribution(rng)) * asteroid_scale_ratio;
 
         gfx::Matrix44f translation_matrix;
-        cml::matrix_translation(translation_matrix, asteroid_orbit_radius, asteroid_orbit_height, 0.f);
+        cml::matrix_translation(translation_matrix, asteroid_orbit_radius, asteroid_orbit_height, 0.F);
 
         gfx::Matrix44f scale_matrix;
         cml::matrix_scale(scale_matrix, asteroid_scale_ratios * settings.scale);
 
         gfx::Matrix44f scale_translate_matrix = scale_matrix * translation_matrix;
 
-        Asteroid::Colors asteroid_colors = normal_distribution(rng) <= 1.f
+        Asteroid::Colors asteroid_colors = normal_distribution(rng) <= 1.F
                                          ? Asteroid::GetAsteroidIceColors(colors_distribution(rng), colors_distribution(rng))
                                          : Asteroid::GetAsteroidRockColors(colors_distribution(rng), colors_distribution(rng));
 
@@ -208,7 +208,7 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
                 orbit_velocity_distribution(rng) / (asteroid_scale * asteroid_orbit_radius),
                 spin_velocity_distribution(rng)  / asteroid_scale,
                 cml::constants<float>::pi() * normal_distribution(rng),
-                cml::constants<float>::pi() * normal_distribution(rng) * 2.f
+                cml::constants<float>::pi() * normal_distribution(rng) * 2.F
             }
         );
     }
@@ -448,7 +448,7 @@ void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_l
 float AsteroidsArray::GetMinMeshLodScreenSize() const
 {
     META_FUNCTION_TASK();
-    return std::pow(2.f, m_min_mesh_lod_screen_size_log_2);
+    return std::pow(2.F, m_min_mesh_lod_screen_size_log_2);
 }
 
 void AsteroidsArray::SetMinMeshLodScreenSize(float mesh_lod_min_screen_size)

@@ -51,7 +51,7 @@ SamplerState              g_sampler   : register(s0);
 PSInput TextVS(VSInput input)
 {
     PSInput output;
-    output.position = float4(mul(g_uniforms.vp_matrix, float4(input.position, 1.f, 1.f)).xy, 0.f, 1.f);
+    output.position = float4(mul(g_uniforms.vp_matrix, float4(input.position, 1.F, 1.F)).xy, 0.F, 1.F);
     output.texcoord = input.texcoord;
     return output;
 }

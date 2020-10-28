@@ -91,7 +91,7 @@ private:
         D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle      { };
         D3D12_CLEAR_FLAGS           clear_flags     { };
         bool                        depth_cleared   = false;
-        FLOAT                       depth_value     = 1.f;
+        FLOAT                       depth_value     = 1.F;
         bool                        stencil_cleared = false;
         UINT8                       stencil_value   = 0;
 

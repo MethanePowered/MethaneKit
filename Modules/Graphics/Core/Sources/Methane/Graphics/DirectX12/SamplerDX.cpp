@@ -165,10 +165,10 @@ static void ConvertBorderColorToDXColor(SamplerBase::BorderColor border_color, F
     
     switch (border_color)
     {
-    case BorderColor::TransparentBlack: SetColor({ 0.f, 0.f, 0.f, 0.f }, p_out_color); break;
-    case BorderColor::OpaqueBlack:      SetColor({ 0.f, 0.f, 0.f, 1.f }, p_out_color); break;
-    case BorderColor::OpaqueWhite:      SetColor({ 1.f, 1.f, 1.f, 1.f }, p_out_color); break;
-    default:                            SetColor({ 1.f, 0.f, 0.f, 0.f }, p_out_color);
+    case BorderColor::TransparentBlack: SetColor({ 0.F, 0.F, 0.F, 0.F }, p_out_color); break;
+    case BorderColor::OpaqueBlack:      SetColor({ 0.F, 0.F, 0.F, 1.F }, p_out_color); break;
+    case BorderColor::OpaqueWhite:      SetColor({ 1.F, 1.F, 1.F, 1.F }, p_out_color); break;
+    default:                            SetColor({ 1.F, 0.F, 0.F, 0.F }, p_out_color);
     }
 }
 

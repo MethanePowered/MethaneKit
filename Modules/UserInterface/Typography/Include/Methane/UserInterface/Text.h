@@ -94,7 +94,7 @@ public:
         StringType        text;
         UnitRect          rect;
         Layout            layout;
-        Color4f           color                { 1.f, 1.f, 1.f, 1.f };
+        Color4f           color                { 1.F, 1.F, 1.F, 1.F };
         bool              incremental_update   = true;
         bool              adjust_vertical_content_offset = true;
 

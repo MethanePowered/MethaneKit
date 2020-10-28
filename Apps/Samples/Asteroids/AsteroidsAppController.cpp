@@ -68,11 +68,11 @@ void AsteroidsAppController::OnKeyboardStateAction(AsteroidsAppAction action)
         break;
 
     case AsteroidsAppAction::IncreaseMeshLodComplexity:
-        m_asteroids_app.GetAsteroidsArray().SetMinMeshLodScreenSize(m_asteroids_app.GetAsteroidsArray().GetMinMeshLodScreenSize() / 2.f);
+        m_asteroids_app.GetAsteroidsArray().SetMinMeshLodScreenSize(m_asteroids_app.GetAsteroidsArray().GetMinMeshLodScreenSize() / 2.F);
         break;
 
     case AsteroidsAppAction::DecreaseMeshLodComplexity:
-        m_asteroids_app.GetAsteroidsArray().SetMinMeshLodScreenSize(m_asteroids_app.GetAsteroidsArray().GetMinMeshLodScreenSize() * 2.f);
+        m_asteroids_app.GetAsteroidsArray().SetMinMeshLodScreenSize(m_asteroids_app.GetAsteroidsArray().GetMinMeshLodScreenSize() * 2.F);
         break;
         
     default:

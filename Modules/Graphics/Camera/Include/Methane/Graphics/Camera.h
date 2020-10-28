@@ -96,8 +96,8 @@ protected:
     void GetViewMatrix(Matrix44f& out_view) const noexcept { return GetViewMatrix(out_view, m_current_orientation); }
     void GetProjMatrix(Matrix44f& out_proj) const noexcept;
 
-    Vector3f TransformWorldToView(const Vector3f& world_pos, const Orientation& orientation) const noexcept { return TransformWorldToView(Vector4f(world_pos, 1.f), orientation).subvector(3); }
-    Vector3f TransformViewToWorld(const Vector3f& view_pos, const Orientation& orientation) const noexcept  { return TransformViewToWorld(Vector4f(view_pos,  1.f), orientation).subvector(3); }
+    Vector3f TransformWorldToView(const Vector3f& world_pos, const Orientation& orientation) const noexcept { return TransformWorldToView(Vector4f(world_pos, 1.F), orientation).subvector(3); }
+    Vector3f TransformViewToWorld(const Vector3f& view_pos, const Orientation& orientation) const noexcept  { return TransformViewToWorld(Vector4f(view_pos,  1.F), orientation).subvector(3); }
     Vector4f TransformWorldToView(const Vector4f& world_pos, const Orientation& orientation) const noexcept;
     Vector4f TransformViewToWorld(const Vector4f& view_pos, const Orientation& orientation) const noexcept;
 
@@ -105,9 +105,9 @@ private:
     const cml::AxisOrientation m_axis_orientation;
 
     Projection        m_projection            = Projection::Perspective;
-    Data::FloatSize   m_screen_size           { 1.f, 1.f };
+    Data::FloatSize   m_screen_size           { 1.F, 1.F };
     float             m_aspect_ratio          = 1.0F;
-    Parameters        m_parameters            { 0.01F, 125.f, 90.f };
+    Parameters        m_parameters            { 0.01F, 125.F, 90.F };
     Orientation       m_default_orientation   { { 15.0F, 15.0F, -15.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } };
     Orientation       m_current_orientation   { };
 

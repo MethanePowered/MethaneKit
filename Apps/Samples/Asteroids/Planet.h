@@ -54,7 +54,7 @@ public:
         float                           spin_velocity_rps   = 0.3F; // (rps = radians per second)
         bool                            depth_reversed      = false;
         gfx::ImageLoader::Options::Mask image_options       = gfx::ImageLoader::Options::None;
-        float                           lod_bias            = 0.f;
+        float                           lod_bias            = 0.F;
     };
 
     struct SHADER_STRUCT_ALIGN Uniforms

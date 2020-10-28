@@ -34,7 +34,7 @@ class IcosahedronMesh : public BaseMesh<VType>
 public:
     using BaseMeshT = BaseMesh<VType>;
 
-    explicit IcosahedronMesh(const Mesh::VertexLayout& vertex_layout, float radius = 1.f, uint32_t subdivisions_count = 0, bool spherify = false)
+    explicit IcosahedronMesh(const Mesh::VertexLayout& vertex_layout, float radius = 1.F, uint32_t subdivisions_count = 0, bool spherify = false)
         : BaseMeshT(Mesh::Type::Icosahedron, vertex_layout)
         , m_radius(radius)
     {
@@ -49,7 +49,7 @@ public:
             throw std::invalid_argument("Colored vertices are not supported for icosahedron mesh.");
         }
 
-        const float a = (radius + std::sqrt(radius * 5.f)) / 2.f;
+        const float a = (radius + std::sqrt(radius * 5.F)) / 2.F;
         const float b = radius;
         const std::array<Mesh::Position, 12> vertex_positions{ {
             {-b,  a,  0 },
@@ -85,11 +85,11 @@ public:
                 Mesh::TexCoord& vertex_texcoord = BaseMeshT::template GetVertexField<Mesh::TexCoord>(vertex, Mesh::VertexField::TexCoord);
                 const Mesh::Position vertex_direction = cml::normalize(vertex_position);
 
-                vertex_texcoord[0] = std::atan2(vertex_direction[2], vertex_direction[0]) / (2.f * cml::constants<float>::pi()) + 0.5F;
-                assert(0.f <= vertex_texcoord[0] && vertex_texcoord[0] <= 1.f);
+                vertex_texcoord[0] = std::atan2(vertex_direction[2], vertex_direction[0]) / (2.F * cml::constants<float>::pi()) + 0.5F;
+                assert(0.F <= vertex_texcoord[0] && vertex_texcoord[0] <= 1.F);
 
                 vertex_texcoord[1] = std::asin(vertex_direction[1]) / cml::constants<float>::pi() + 0.5F;
-                assert(0.f <= vertex_texcoord[1] && vertex_texcoord[1] <= 1.f);
+                assert(0.F <= vertex_texcoord[1] && vertex_texcoord[1] <= 1.F);
             }
         }
 

@@ -39,7 +39,7 @@ float PerlinNoise::operator()(Vector2f pos) const
     for (const float weight : m_weights)
     {
         noise += weight * SimplexNoise1234::noise(pos[0], pos[1]);
-        pos *= 2.f;
+        pos *= 2.F;
     }
     return noise * m_norm_multiplier + 0.5F;
 }
@@ -50,18 +50,18 @@ float PerlinNoise::operator()(Vector3f pos) const
     for (const float weight : m_weights)
     {
         noise += weight * SimplexNoise1234::noise(pos[0], pos[1], pos[2]);
-        pos *= 2.f;
+        pos *= 2.F;
     }
     return noise * m_norm_multiplier + 0.5F;
 }
 
 float PerlinNoise::operator()(Vector4f pos) const
 {
-    float noise = 0.f;
+    float noise = 0.F;
     for (const float weight : m_weights)
     {
         noise += weight * SimplexNoise1234::noise(pos[0], pos[1], pos[2], pos[3]);
-        pos *= 2.f;
+        pos *= 2.F;
     }
     return noise * m_norm_multiplier + 0.5F;
 }
@@ -80,7 +80,7 @@ PerlinNoise::Weights PerlinNoise::GetWeights(float persistence, size_t octaves_c
 
 float PerlinNoise::GetWeightsSum(const PerlinNoise::Weights& weights)
 {
-    float weights_sum = 0.f;
+    float weights_sum = 0.F;
     for(float weight : weights)
     {
         weights_sum += weight;

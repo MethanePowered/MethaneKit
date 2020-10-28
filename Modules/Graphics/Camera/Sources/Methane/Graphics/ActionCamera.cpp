@@ -93,11 +93,11 @@ void ActionCamera::OnMouseReleased(const Data::Point2i&) noexcept
 void ActionCamera::OnMouseScrolled(float scroll_delta)
 {
     META_FUNCTION_TASK();
-    const KeyboardAction zoom_action = scroll_delta > 0.f
+    const KeyboardAction zoom_action = scroll_delta > 0.F
                                      ? KeyboardAction::ZoomIn : KeyboardAction::ZoomOut;
-    const float          zoom_factor = scroll_delta > 0.f
-                                     ? 1.f - scroll_delta / m_zoom_steps_count
-                                     : 1.f / (1.f + scroll_delta / m_zoom_steps_count);
+    const float          zoom_factor = scroll_delta > 0.F
+                                     ? 1.F - scroll_delta / m_zoom_steps_count
+                                     : 1.F / (1.F + scroll_delta / m_zoom_steps_count);
     
     StopKeyboardAction(zoom_action == KeyboardAction::ZoomIn ? KeyboardAction::ZoomOut : KeyboardAction::ZoomIn, 0.0);
     StartZoomAction(zoom_action, zoom_factor, m_keyboard_action_duration_sec);
@@ -106,25 +106,25 @@ void ActionCamera::OnMouseScrolled(float scroll_delta)
 void ActionCamera::OnKeyPressed(KeyboardAction keyboard_action)
 {
     META_FUNCTION_TASK();
-    const float rotation_axis_sign = GetPivot() == Pivot::Aim ? 1.f : -1.f;
+    const float rotation_axis_sign = GetPivot() == Pivot::Aim ? 1.F : -1.F;
 
     switch(keyboard_action)
     {
         // Move
-        case KeyboardAction::MoveLeft:      StartMoveAction(keyboard_action,   Vector3f(-1.f,  0.f,  0.f)); break;
-        case KeyboardAction::MoveRight:     StartMoveAction(keyboard_action,   Vector3f( 1.f,  0.f,  0.f)); break;
-        case KeyboardAction::MoveForward:   StartMoveAction(keyboard_action,   Vector3f( 0.f,  0.f,  1.f)); break;
-        case KeyboardAction::MoveBack:      StartMoveAction(keyboard_action,   Vector3f( 0.f,  0.f, -1.f)); break;
-        case KeyboardAction::MoveUp:        StartMoveAction(keyboard_action,   Vector3f( 0.f,  1.f,  0.f)); break;
-        case KeyboardAction::MoveDown:      StartMoveAction(keyboard_action,   Vector3f( 0.f, -1.f,  0.f)); break;
+        case KeyboardAction::MoveLeft:      StartMoveAction(keyboard_action,   Vector3f(-1.F,  0.F,  0.F)); break;
+        case KeyboardAction::MoveRight:     StartMoveAction(keyboard_action,   Vector3f( 1.F,  0.F,  0.F)); break;
+        case KeyboardAction::MoveForward:   StartMoveAction(keyboard_action,   Vector3f( 0.F,  0.F,  1.F)); break;
+        case KeyboardAction::MoveBack:      StartMoveAction(keyboard_action,   Vector3f( 0.F,  0.F, -1.F)); break;
+        case KeyboardAction::MoveUp:        StartMoveAction(keyboard_action,   Vector3f( 0.F,  1.F,  0.F)); break;
+        case KeyboardAction::MoveDown:      StartMoveAction(keyboard_action,   Vector3f( 0.F, -1.F,  0.F)); break;
             
         // Rotate
-        case KeyboardAction::YawLeft:       StartRotateAction(keyboard_action, Vector3f( 0.f, -1.f,  0.f) * rotation_axis_sign); break;
-        case KeyboardAction::YawRight:      StartRotateAction(keyboard_action, Vector3f( 0.f,  1.f,  0.f) * rotation_axis_sign); break;
-        case KeyboardAction::RollLeft:      StartRotateAction(keyboard_action, Vector3f( 0.f,  0.f,  1.f) * rotation_axis_sign); break;
-        case KeyboardAction::RollRight:     StartRotateAction(keyboard_action, Vector3f( 0.f,  0.f, -1.f) * rotation_axis_sign); break;
-        case KeyboardAction::PitchUp:       StartRotateAction(keyboard_action, Vector3f(-1.f,  0.f,  0.f) * rotation_axis_sign); break;
-        case KeyboardAction::PitchDown:     StartRotateAction(keyboard_action, Vector3f( 1.f,  0.f,  0.f) * rotation_axis_sign); break;
+        case KeyboardAction::YawLeft:       StartRotateAction(keyboard_action, Vector3f( 0.F, -1.F,  0.F) * rotation_axis_sign); break;
+        case KeyboardAction::YawRight:      StartRotateAction(keyboard_action, Vector3f( 0.F,  1.F,  0.F) * rotation_axis_sign); break;
+        case KeyboardAction::RollLeft:      StartRotateAction(keyboard_action, Vector3f( 0.F,  0.F,  1.F) * rotation_axis_sign); break;
+        case KeyboardAction::RollRight:     StartRotateAction(keyboard_action, Vector3f( 0.F,  0.F, -1.F) * rotation_axis_sign); break;
+        case KeyboardAction::PitchUp:       StartRotateAction(keyboard_action, Vector3f(-1.F,  0.F,  0.F) * rotation_axis_sign); break;
+        case KeyboardAction::PitchDown:     StartRotateAction(keyboard_action, Vector3f( 1.F,  0.F,  0.F) * rotation_axis_sign); break;
             
         // Zoom
         case KeyboardAction::ZoomIn:        StartZoomAction(keyboard_action, 0.9F); break;
@@ -226,7 +226,7 @@ void ActionCamera::StartZoomAction(KeyboardAction zoom_action, float zoom_factor
     m_animations.push_back(
         std::make_shared<Data::TimeAnimation>([this, zoom_factor_per_second](double elapsed_seconds, double delta_seconds)
             {
-                Zoom(1.f - static_cast<float>((1.f - zoom_factor_per_second) * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
+                Zoom(1.F - static_cast<float>((1.F - zoom_factor_per_second) * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
                 return true;
             },
             duration_sec)

@@ -86,7 +86,7 @@ protected:
         const Mesh::Position& v1_position = GetVertexField<Mesh::Position>(v1,    Mesh::VertexField::Position);
         const Mesh::Position& v2_position = GetVertexField<Mesh::Position>(v2,    Mesh::VertexField::Position);
         Mesh::Position&    v_mid_position = GetVertexField<Mesh::Position>(v_mid, Mesh::VertexField::Position);
-        v_mid_position = (v1_position + v2_position) / 2.f;
+        v_mid_position = (v1_position + v2_position) / 2.F;
 
         if (Mesh::HasVertexField(Mesh::VertexField::Normal))
         {
@@ -101,7 +101,7 @@ protected:
             const Mesh::Color& v1_color = GetVertexField<Mesh::Color>(v1,    Mesh::VertexField::Color);
             const Mesh::Color& v2_color = GetVertexField<Mesh::Color>(v2,    Mesh::VertexField::Color);
             Mesh::Color&    v_mid_color = GetVertexField<Mesh::Color>(v_mid, Mesh::VertexField::Color);
-            v_mid_color = (v1_color + v2_color) / 2.f;
+            v_mid_color = (v1_color + v2_color) / 2.F;
         }
 
         if (Mesh::HasVertexField(Mesh::VertexField::TexCoord))
@@ -109,7 +109,7 @@ protected:
             const Mesh::TexCoord& v1_texcoord = GetVertexField<Mesh::TexCoord>(v1,    Mesh::VertexField::TexCoord);
             const Mesh::TexCoord& v2_texcoord = GetVertexField<Mesh::TexCoord>(v2,    Mesh::VertexField::TexCoord);
             Mesh::TexCoord&    v_mid_texcoord = GetVertexField<Mesh::TexCoord>(v_mid, Mesh::VertexField::TexCoord);
-            v_mid_texcoord = (v1_texcoord + v2_texcoord) / 2.f;
+            v_mid_texcoord = (v1_texcoord + v2_texcoord) / 2.F;
         }
 
         const Mesh::Index v_mid_index = static_cast<Mesh::Index>(m_vertices.size());
@@ -130,7 +130,7 @@ protected:
         for (VType& vertex : m_vertices)
         {
             Mesh::Normal& vertex_normal = GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
-            vertex_normal = { 0.f, 0.f, 0.f };
+            vertex_normal = { 0.F, 0.F, 0.F };
         }
 
         const size_t triangles_count = BaseMesh::m_indices.size() / 3;

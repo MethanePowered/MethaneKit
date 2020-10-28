@@ -62,7 +62,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> texture_ptr, Setting
     if (m_settings.texture_mode != TextureMode::Disabled && !m_texture_ptr)
         throw std::invalid_argument("Screen-quad texture can not be empty when quad texturing is enabled.");
 
-    static const QuadMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.f, 2.f);
+    static const QuadMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.F, 2.F);
     const RenderContext::Settings&          context_settings              = context.GetSettings();
     const Shader::MacroDefinitions          ps_macro_definitions          = GetPixelShaderMacroDefinitions(m_settings.texture_mode);
     Program::ArgumentDescriptions           program_argument_descriptions = {

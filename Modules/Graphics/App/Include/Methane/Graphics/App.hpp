@@ -199,7 +199,7 @@ public:
                     },
                     context_settings.clear_depth_stencil
                         ? context_settings.clear_depth_stencil->first
-                        : 1.f
+                        : 1.F
                 ),
                 RenderPass::StencilAttachment(),
                 m_settings.screen_pass_access,

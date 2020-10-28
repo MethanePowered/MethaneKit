@@ -47,15 +47,15 @@ public:
     struct Settings
     {
         gfx::Camera&    view_camera;
-        float           scale                    = 1.f;
+        float           scale                    = 1.F;
         uint32_t        instance_count           = 100U;
         uint32_t        unique_mesh_count        = 50U;
         uint32_t        subdivisions_count       = 3U;
         uint32_t        textures_count           = 10U;
         gfx::Dimensions texture_dimensions       { 256U, 256U };
         uint32_t        random_seed              = 1337U;
-        float           orbit_radius_ratio       = 10.f;
-        float           disc_radius_ratio        = 3.f;
+        float           orbit_radius_ratio       = 10.F;
+        float           disc_radius_ratio        = 3.F;
         float           mesh_lod_min_screen_size = 0.06F;
         float           min_asteroid_scale_ratio = 0.1F;
         float           max_asteroid_scale_ratio = 0.7F;

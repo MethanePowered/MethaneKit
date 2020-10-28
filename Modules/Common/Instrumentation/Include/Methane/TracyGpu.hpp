@@ -60,7 +60,7 @@ public:
         Type      type            = Type::Undefined;
         Timestamp gpu_timestamp   = 0;
         Timestamp cpu_timestamp   = 0;
-        float     gpu_time_period = 1.f; // number of nanoseconds required for a timestamp query to be incremented by 1
+        float     gpu_time_period = 1.F; // number of nanoseconds required for a timestamp query to be incremented by 1
         bool      is_thread_local = false;
 
 #ifdef TRACY_GPU_ENABLE
@@ -71,7 +71,7 @@ public:
             , cpu_timestamp(gpu_timestamp)
         { }
 
-        Settings(Type type, Timestamp gpu_timestamp, float gpu_time_period = 1.f, bool is_thread_local = false)
+        Settings(Type type, Timestamp gpu_timestamp, float gpu_time_period = 1.F, bool is_thread_local = false)
             : type(type)
             , gpu_timestamp(gpu_timestamp)
             , cpu_timestamp(tracy::Profiler::GetTime())

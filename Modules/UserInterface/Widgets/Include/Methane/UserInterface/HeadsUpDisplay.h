@@ -51,11 +51,11 @@ public:
         Font::Description         minor_font          { "Minor", "Fonts/RobotoMono/RobotoMono-Regular.ttf", 9U };
         UnitPoint                 position            { 20, 20, Units::Dots };
         UnitSize                  text_margins        { 16, 8,  Units::Dots };
-        Color4f                   text_color          { 1.f,  1.f,  1.f,  1.f   };
-        Color4f                   on_color            { 0.3F, 1.f,  0.3F, 1.f   };
-        Color4f                   off_color           { 1.f,  0.3F, 0.3F, 1.f   };
-        Color4f                   help_color          { 1.f,  1.f,  0.0F, 1.f   };
-        Color4f                   background_color    { 0.f,  0.f,  0.f,  0.66F };
+        Color4f                   text_color          { 1.F,  1.F,  1.F,  1.F   };
+        Color4f                   on_color            { 0.3F, 1.F,  0.3F, 1.F   };
+        Color4f                   off_color           { 1.F,  0.3F, 0.3F, 1.F   };
+        Color4f                   help_color          { 1.F,  1.F,  0.0F, 1.F   };
+        Color4f                   background_color    { 0.F,  0.F,  0.F,  0.66F };
         Platform::Keyboard::State help_shortcut       { Platform::Keyboard::Key::F1 };
         double                    update_interval_sec = 0.33;
     };

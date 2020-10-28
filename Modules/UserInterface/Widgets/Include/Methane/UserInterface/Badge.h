@@ -54,7 +54,7 @@ public:
         UnitSize          size         { 96U, 128U, Units::Dots };
         FrameCorner       corner       = FrameCorner::TopRight;
         UnitPoint         margins      { 16, 16, Units::Dots };
-        Color4f           blend_color  { 1.f, 1.f, 1.f, 1.f };
+        Color4f           blend_color  { 1.F, 1.F, 1.F, 1.F };
         TextureMode       texture_mode = TextureMode::RgbaFloat;
     };
 
