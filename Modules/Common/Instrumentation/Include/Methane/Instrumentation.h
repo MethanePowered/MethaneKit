@@ -35,6 +35,10 @@ NOTE:
 #include "IttApiHelper.h"
 #include "ScopeTimer.h"
 
+#if defined(ITT_INSTRUMENTATION_ENABLED) || defined(TRACY_ENABLE)
+#define META_INSTRUMENTATION_ENABLED
+#endif
+
 namespace Methane
 {
 void SetThreadName(const char* name);
@@ -49,22 +53,24 @@ ITT_DOMAIN_EXTERN();
 #define TRACY_ZONE_SCOPED() ZoneScopedS(TRACY_ZONE_CALL_STACK_DEPTH)
 #define TRACY_ZONE_SCOPED_NAME(name) ZoneScopedNS(name, TRACY_ZONE_CALL_STACK_DEPTH)
 
-#else // TRACY_ZONE_CALL_STACK_DEPTH
+#else // defined(TRACY_ZONE_CALL_STACK_DEPTH) && TRACY_ZONE_CALL_STACK_DEPTH > 0
 
 #define TRACY_ZONE_SCOPED() ZoneScoped
 #define TRACY_ZONE_SCOPED_NAME(name) ZoneScopedN(name)
 
-#endif // TRACY_ZONE_CALL_STACK_DEPTH
+#endif // defined(TRACY_ZONE_CALL_STACK_DEPTH) && TRACY_ZONE_CALL_STACK_DEPTH > 0
 
 #ifdef TRACY_ENABLE
 
 #define TRACY_SET_THREAD_NAME(name) tracy::SetThreadName(name)
 
-#else
+#else // ifdef TRACY_ENABLE
 
 #define TRACY_SET_THREAD_NAME(name)
 
-#endif
+#endif // ifdef TRACY_ENABLE
+
+#ifdef META_INSTRUMENTATION_ENABLED
 
 #define META_CPU_FRAME_DELIMITER(/* uint32_t */ frame_buffer_index, /* uint32_t */ frame_index) \
     FrameMark \
@@ -109,6 +115,25 @@ ITT_DOMAIN_EXTERN();
     ITT_THREAD_NAME(name); \
     Methane::SetThreadName(name)
 
+#else // ifdef META_INSTRUMENTATION_ENABLED
+
+#define META_CPU_FRAME_DELIMITER(/* uint32_t */ frame_buffer_index, /* uint32_t */ frame_index)
+#define META_CPU_FRAME_START(/*const char* */name)
+#define META_CPU_FRAME_END(/*const char* */name)
+#define META_SCOPE_TASK(/*const char* */name)
+#define META_FUNCTION_TASK()
+#define META_GLOBAL_MARKER(/*const char* */name)
+#define META_PROCESS_MARKER(/*const char* */name)
+#define META_THREAD_MARKER(/*const char* */name)
+#define META_TASK_MARKER(/*const char* */name)
+#define META_FUNCTION_GLOBAL_MARKER()
+#define META_FUNCTION_PROCESS_MARKER()
+#define META_FUNCTION_THREAD_MARKER()
+#define META_FUNCTION_TASK_MARKER()
+#define META_THREAD_NAME(/*const char* */name)
+
+#endif // ifdef META_INSTRUMENTATION_ENABLED
+
 #ifdef METHANE_LOGGING_ENABLED
 
 #include <Methane/Platform/Utils.h>
@@ -116,8 +141,8 @@ ITT_DOMAIN_EXTERN();
 #define META_LOG(/*const std::string& */message) \
     Methane::Platform::PrintToDebugOutput(message)
 
-#else // METHANE_LOGGING_ENABLED
+#else // ifdef METHANE_LOGGING_ENABLED
 
 #define META_LOG(/*const std::string& */message)
 
-#endif // METHANE_LOGGING_ENABLED
+#endif // ifdef METHANE_LOGGING_ENABLED
