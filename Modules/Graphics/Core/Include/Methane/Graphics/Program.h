@@ -84,7 +84,7 @@ struct Program : virtual Object
         const size_t       hash;
 
         Argument(Shader::Type shader_type, std::string argument_name) noexcept;
-        Argument(const Argument& argument) noexcept = default;
+        Argument(const Argument& argument) = default;
         Argument(Argument&& argument) noexcept = default;
 
         bool operator==(const Argument& other) const noexcept;
@@ -105,7 +105,7 @@ struct Program : virtual Object
                      Modifiers::Mask modifiers_mask = Modifiers::None) noexcept;
         ArgumentDesc(const Argument& argument,
                      Modifiers::Mask modifiers_mask = Modifiers::None) noexcept;
-        ArgumentDesc(const ArgumentDesc& argument_desc) noexcept = default;
+        ArgumentDesc(const ArgumentDesc& argument_desc) = default;
         ArgumentDesc(ArgumentDesc&& argument_desc) noexcept = default;
 
         inline bool IsConstant() const    { return modifiers & Modifiers::Constant; }

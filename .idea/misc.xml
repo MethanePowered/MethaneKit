@@ -11,6 +11,7 @@
       <file path="$PROJECT_DIR$/Externals/CLI11" />
       <file path="$PROJECT_DIR$/Externals/CML" />
       <file path="$PROJECT_DIR$/Externals/CMRC" />
+      <file path="$PROJECT_DIR$/Externals/CMakeExtraModules" />
       <file path="$PROJECT_DIR$/Externals/CMakeModules" />
       <file path="$PROJECT_DIR$/Externals/Catch2" />
       <file path="$PROJECT_DIR$/Externals/D3DCompilerToDXC" />
