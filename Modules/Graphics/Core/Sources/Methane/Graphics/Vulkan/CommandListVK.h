@@ -34,7 +34,7 @@ namespace CommandListVK
 class DebugGroupVK : public CommandListBase::DebugGroupBase
 {
 public:
-    DebugGroupVK(std::string name);
+    explicit DebugGroupVK(std::string name);
 };
 
 } // namespace CommandListVK
@@ -42,7 +42,7 @@ public:
 class CommandListSetVK final : public CommandListSetBase
 {
 public:
-    CommandListSetVK(Refs<CommandList> command_list_refs);
+    explicit CommandListSetVK(Refs<CommandList> command_list_refs);
 };
 
 } // namespace Methane::Graphics

@@ -125,6 +125,11 @@ void ContextBase::Reset()
     Initialize(*device_ptr, true);
 }
 
+void ContextBase::OnGpuWaitStart(WaitFor)
+{
+    // Intentionally unimplemented
+}
+
 void ContextBase::OnGpuWaitComplete(WaitFor wait_for)
 {
     META_FUNCTION_TASK();

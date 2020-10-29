@@ -35,7 +35,7 @@ struct IContextVK;
 class ViewStateVK final : public ViewStateBase
 {
 public:
-    ViewStateVK(const Settings& settings);
+    explicit ViewStateVK(const Settings& settings);
 
     // ViewState overrides
     bool Reset(const Settings& settings) override;

@@ -37,7 +37,7 @@ class FenceBase
     , public ObjectBase
 {
 public:
-    FenceBase(CommandQueueBase& command_queue);
+    explicit FenceBase(CommandQueueBase& command_queue);
 
     // Fence overrides
     void Signal() override;

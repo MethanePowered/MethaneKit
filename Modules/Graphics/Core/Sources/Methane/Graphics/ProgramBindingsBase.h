@@ -74,8 +74,12 @@ public:
     };
 
     ProgramBindingsBase(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument);
-    ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
+    ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument = {});
+    ProgramBindingsBase(ProgramBindingsBase&&) = default;
     ~ProgramBindingsBase() override;
+
+    ProgramBindingsBase& operator=(const ProgramBindingsBase& other) = delete;
+    ProgramBindingsBase& operator=(ProgramBindingsBase&& other) = delete;
 
     const Program::Arguments& GetArguments() const  { return m_arguments; }
     const Program&            GetProgram() const;

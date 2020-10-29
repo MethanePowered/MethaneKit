@@ -39,8 +39,8 @@ class CommandQueueMT;
 class FenceMT final : public FenceBase
 {
 public:
-    FenceMT(CommandQueueBase& command_queue);
-    ~FenceMT();
+    explicit FenceMT(CommandQueueBase& command_queue);
+    ~FenceMT() override;
 
     // Fence overrides
     void Signal() override;

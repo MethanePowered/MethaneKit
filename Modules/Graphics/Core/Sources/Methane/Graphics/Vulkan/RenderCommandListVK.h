@@ -38,7 +38,7 @@ class RenderCommandListVK final : public RenderCommandListBase
 {
 public:
     RenderCommandListVK(CommandQueueBase& command_queue, RenderPassBase& render_pass);
-    RenderCommandListVK(ParallelRenderCommandListBase& parallel_render_command_list);
+    explicit RenderCommandListVK(ParallelRenderCommandListBase& parallel_render_command_list);
 
     // CommandList interface
     void PushDebugGroup(DebugGroup& debug_group) override;

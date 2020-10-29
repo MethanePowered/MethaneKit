@@ -71,7 +71,7 @@ public:
     };
 
     RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass);
-    RenderCommandListBase(ParallelRenderCommandListBase& parallel_render_command_list);
+    explicit RenderCommandListBase(ParallelRenderCommandListBase& parallel_render_command_list);
     
     using CommandListBase::Reset;
 

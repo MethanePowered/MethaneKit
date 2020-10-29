@@ -57,6 +57,8 @@ public:
         };
 
         Query(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
+        Query(const Query&) = delete;
+        Query(Query&&) = delete;
         virtual ~Query();
 
         virtual void Begin();

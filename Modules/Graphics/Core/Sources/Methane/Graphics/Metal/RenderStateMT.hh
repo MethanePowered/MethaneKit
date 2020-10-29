@@ -37,7 +37,7 @@ class RenderContextMT;
 class ViewStateMT final : public ViewStateBase
 {
 public:
-    ViewStateMT(const Settings& settings);
+    explicit ViewStateMT(const Settings& settings);
 
     // ViewState overrides
     bool Reset(const Settings& settings) override;

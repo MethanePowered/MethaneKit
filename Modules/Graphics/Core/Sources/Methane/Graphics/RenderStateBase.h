@@ -38,7 +38,7 @@ class ViewStateBase
     , public ViewState
 {
 public:
-    ViewStateBase(const Settings& settings);
+    explicit ViewStateBase(const Settings& settings);
 
     // ViewState overrides
     const Settings& GetSettings() const noexcept override   { return m_settings; }

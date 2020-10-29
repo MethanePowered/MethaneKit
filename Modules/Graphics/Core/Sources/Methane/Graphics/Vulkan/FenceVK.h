@@ -33,8 +33,8 @@ class CommandQueueVK;
 class FenceVK final : public FenceBase
 {
 public:
-    FenceVK(CommandQueueBase& command_queue);
-    ~FenceVK();
+    explicit FenceVK(CommandQueueBase& command_queue);
+    ~FenceVK() override;
 
     // Fence overrides
     void Signal() override;

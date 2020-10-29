@@ -41,7 +41,7 @@ class ProgramDX;
 class ViewStateDX final : public ViewStateBase
 {
 public:
-    ViewStateDX(const Settings& settings);
+    explicit ViewStateDX(const Settings& settings);
 
     // ViewState overrides
     bool Reset(const Settings& settings) override;

@@ -82,10 +82,22 @@ public:
 #else // TRACY_GPU_ENABLE
 
         Settings() = default;
-        explicit Settings(Type) { }
-        Settings(Type, Timestamp) { }
-        Settings(Type, Timestamp, float) { }
-        Settings(Type, Timestamp, float, bool) { }
+        explicit Settings(Type)
+        {
+            // Intentionally unimplemented: stub
+        }
+        Settings(Type, Timestamp)
+        {
+            // Intentionally unimplemented: stub
+        }
+        Settings(Type, Timestamp, float)
+        {
+            // Intentionally unimplemented: stub
+        }
+        Settings(Type, Timestamp, float, bool)
+        {
+            // Intentionally unimplemented: stub
+        }
 
 #endif // TRACY_GPU_ENABLE
     };
@@ -296,11 +308,23 @@ private:
 
 #else // TRACY_GPU_ENABLE
 
-    explicit GpuScope(GpuContext&) { }
+    explicit GpuScope(GpuContext&)
+    {
+        // Intentionally unimplemented: stub
+    }
 
-    inline void Begin(const void*, int) { }
-    inline void End() { }
-    inline void Complete(Timestamp, Timestamp) { }
+    inline void Begin(const char*, int)
+    {
+        // Intentionally unimplemented: stub
+    }
+    inline void End()
+    {
+        // Intentionally unimplemented: stub
+    }
+    inline void Complete(Timestamp, Timestamp)
+    {
+        // Intentionally unimplemented: stub
+    }
 };
 
 } // namespace Methane::Tracy

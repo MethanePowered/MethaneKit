@@ -57,19 +57,19 @@ public:
     ContextBase(DeviceBase& device, tf::Executor& parallel_executor, Type type);
 
     // Context interface
-    Type             GetType() const noexcept override                       { return m_type; }
-    tf::Executor&    GetParallelExecutor() const noexcept override           { return m_parallel_executor; }
-    Object::Registry&   GetObjectsRegistry() noexcept override                     { return m_objects_cache; }
-    void             RequestDeferredAction(DeferredAction action) const noexcept override;
-    void             CompleteInitialization() override;
-    bool             IsCompletingInitialization() const noexcept override    { return m_is_completing_initialization; }
-    void             WaitForGpu(WaitFor wait_for) override;
-    void             Reset(Device& device) override;
-    void             Reset() override;
-    CommandQueue&    GetUploadCommandQueue() override;
-    BlitCommandList& GetUploadCommandList() override;
-    CommandListSet&  GetUploadCommandListSet() override;
-    Device&          GetDevice() override;
+    Type              GetType() const noexcept override                       { return m_type; }
+    tf::Executor&     GetParallelExecutor() const noexcept override           { return m_parallel_executor; }
+    Object::Registry& GetObjectsRegistry() noexcept override                     { return m_objects_cache; }
+    void              RequestDeferredAction(DeferredAction action) const noexcept override;
+    void              CompleteInitialization() override;
+    bool              IsCompletingInitialization() const noexcept override    { return m_is_completing_initialization; }
+    void              WaitForGpu(WaitFor wait_for) override;
+    void              Reset(Device& device) override;
+    void              Reset() override;
+    CommandQueue&     GetUploadCommandQueue() override;
+    BlitCommandList&  GetUploadCommandList() override;
+    CommandListSet&   GetUploadCommandListSet() override;
+    Device&           GetDevice() override;
 
     // ContextBase interface
     virtual void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true);
@@ -92,7 +92,7 @@ protected:
 
     // ContextBase interface
     virtual bool UploadResources();
-    virtual void OnGpuWaitStart(WaitFor) {}
+    virtual void OnGpuWaitStart(WaitFor);
     virtual void OnGpuWaitComplete(WaitFor wait_for);
 
 private:

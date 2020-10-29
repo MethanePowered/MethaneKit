@@ -33,12 +33,6 @@ Base implementation of the command list interface.
 // Disable debug groups instrumentation with discontinuous CPU frames in Tracy,
 // because it is not working for parallel render command lists by some reason
 //#define METHANE_DEBUG_GROUP_FRAMES_ENABLED
-#ifndef METHANE_DEBUG_GROUP_FRAMES_ENABLED
-#undef META_CPU_FRAME_START
-#define META_CPU_FRAME_START(name)
-#undef META_CPU_FRAME_END
-#define META_CPU_FRAME_END(name)
-#endif
 
 namespace Methane::Graphics
 {
@@ -116,7 +110,9 @@ void CommandListBase::PushDebugGroup(DebugGroup& debug_group)
     META_FUNCTION_TASK();
     VerifyEncodingState();
 
+#ifdef METHANE_DEBUG_GROUP_FRAMES_ENABLED
     META_CPU_FRAME_START(debug_group.GetName().c_str());
+#endif
     META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" PUSH debug group \"" + debug_group.GetName() + "\"");
 
     PushOpenDebugGroup(debug_group);
@@ -131,7 +127,10 @@ void CommandListBase::PopDebugGroup()
     }
 
     META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" POP debug group \"" + GetTopOpenDebugGroup()->GetName() + "\"");
+#ifdef METHANE_DEBUG_GROUP_FRAMES_ENABLED
     META_CPU_FRAME_END(GetTopOpenDebugGroup()->GetName().c_str());
+#endif
+
     m_open_debug_groups.pop();
 }
 

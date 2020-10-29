@@ -36,7 +36,7 @@ class RenderCommandListDX final : public CommandListDX<RenderCommandListBase>
 {
 public:
     RenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass);
-    RenderCommandListDX(ParallelRenderCommandListBase& parallel_render_command_list);
+    explicit RenderCommandListDX(ParallelRenderCommandListBase& parallel_render_command_list);
 
     // CommandList interface
     void Commit() override;

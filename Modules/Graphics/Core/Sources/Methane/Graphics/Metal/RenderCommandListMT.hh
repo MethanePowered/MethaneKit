@@ -41,7 +41,7 @@ class RenderCommandListMT final
 {
 public:
     RenderCommandListMT(CommandQueueBase& command_queue, RenderPassBase& render_pass);
-    RenderCommandListMT(ParallelRenderCommandListBase& parallel_render_command_list);
+    explicit RenderCommandListMT(ParallelRenderCommandListBase& parallel_render_command_list);
 
     // RenderCommandList interface
     void Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) override;

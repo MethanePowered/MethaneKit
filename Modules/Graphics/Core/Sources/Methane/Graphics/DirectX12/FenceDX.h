@@ -38,8 +38,8 @@ class CommandQueueDX;
 class FenceDX final : public FenceBase
 {
 public:
-    FenceDX(CommandQueueBase& command_queue);
-    ~FenceDX();
+    explicit FenceDX(CommandQueueBase& command_queue);
+    ~FenceDX() override;
 
     // Fence overrides
     void Signal() override;

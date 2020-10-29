@@ -103,7 +103,7 @@ public:
         bool operator<(const Barrier& other) const noexcept;
         bool operator==(const Barrier& other) const noexcept;
         bool operator!=(const Barrier& other) const noexcept;
-        operator std::string() const noexcept;
+        explicit operator std::string() const noexcept;
 
         static std::string GetTypeName(Type type);
     };
@@ -129,7 +129,7 @@ public:
 
         virtual ~Barriers() = default;
 
-        operator std::string() const noexcept;
+        explicit operator std::string() const noexcept;
 
     protected:
         Barriers(const Set& barriers);
@@ -139,6 +139,8 @@ public:
     };
 
     ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& context, DescriptorByUsage  descriptor_by_usage);
+    ResourceBase(const ResourceBase&) = delete;
+    ResourceBase(ResourceBase&&) = delete;
     ~ResourceBase() override;
 
     // Resource interface

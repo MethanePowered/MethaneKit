@@ -62,7 +62,7 @@ public:
         , public ObjectBase
     {
     public:
-        DebugGroupBase(std::string name);
+        explicit DebugGroupBase(std::string name);
 
         // Object overrides
         void SetName(const std::string&) override { throw std::logic_error("Debug Group can not be renamed"); }
@@ -164,7 +164,7 @@ class CommandListSetBase
     , public std::enable_shared_from_this<CommandListSetBase>
 {
 public:
-    CommandListSetBase(Refs<CommandList> command_list_refs);
+    explicit CommandListSetBase(Refs<CommandList> command_list_refs);
 
     // CommandListSet overrides
     Data::Size               GetCount() const noexcept override { return static_cast<Data::Size>(m_refs.size()); }
