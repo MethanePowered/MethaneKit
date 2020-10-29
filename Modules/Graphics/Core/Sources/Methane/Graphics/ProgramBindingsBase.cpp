@@ -127,7 +127,8 @@ ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, const 
 }
 
 ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
-    : m_program_ptr(other_program_bindings.m_program_ptr)
+    : ObjectBase(other_program_bindings)
+    , m_program_ptr(other_program_bindings.m_program_ptr)
     , m_descriptor_heap_reservations_by_type(other_program_bindings.m_descriptor_heap_reservations_by_type)
 {
     META_FUNCTION_TASK();

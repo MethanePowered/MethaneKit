@@ -88,7 +88,7 @@ BufferSetBase::BufferSetBase(Buffer::Type buffers_type, Refs<Buffer> buffer_refs
         {
             std::invalid_argument("All buffers must be of the same type \"" + Buffer::GetBufferTypeName(m_buffers_type) + "\"");
         }
-        BufferBase& buffer_base = static_cast<BufferBase&>(buffer_ref.get());
+        auto& buffer_base = static_cast<BufferBase&>(buffer_ref.get());
         m_ptrs.emplace_back(buffer_base.GetBufferPtr());
         m_raw_ptrs.emplace_back(std::addressof(buffer_base));
     }

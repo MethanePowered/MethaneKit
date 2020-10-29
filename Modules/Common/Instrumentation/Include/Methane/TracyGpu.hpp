@@ -308,20 +308,20 @@ private:
 
 #else // TRACY_GPU_ENABLE
 
-    explicit GpuScope(GpuContext&)
+    explicit GpuScope(const GpuContext&)
     {
         // Intentionally unimplemented: stub
     }
 
-    inline void Begin(const char*, int)
+    inline void Begin(const char*, int) const
     {
         // Intentionally unimplemented: stub
     }
-    inline void End()
+    inline void End() const
     {
         // Intentionally unimplemented: stub
     }
-    inline void Complete(Timestamp, Timestamp)
+    inline void Complete(Timestamp, Timestamp) const
     {
         // Intentionally unimplemented: stub
     }
@@ -334,7 +334,7 @@ struct SourceLocationStub { };
 #define TRACE_SOURCE_LOCATION_TYPE SourceLocationStub
 #define CREATE_TRACY_SOURCE_LOCATION(name) new TRACE_SOURCE_LOCATION_TYPE{}
 #define STATIC_TRACY_SOURCE_LOCATION(variable, name)
-#define TRACY_GPU_SCOPE_TYPE void*
+#define TRACY_GPU_SCOPE_TYPE char*
 #define TRACY_GPU_SCOPE_INIT(gpu_context) nullptr
 #define TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(gpu_scope, p_location)
 #define TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(gpu_scope, p_location)

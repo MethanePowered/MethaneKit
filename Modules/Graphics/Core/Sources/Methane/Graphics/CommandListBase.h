@@ -174,7 +174,7 @@ public:
     // CommandListSetBase interface
     virtual void Execute(Data::Index frame_index, const CommandList::CompletedCallback& completed_callback);
     
-    void Complete() noexcept;
+    void Complete() const noexcept;
 
     Ptr<CommandListSetBase>      GetPtr()                                   { return shared_from_this(); }
     const Refs<CommandListBase>& GetBaseRefs() const noexcept               { return m_base_refs; }

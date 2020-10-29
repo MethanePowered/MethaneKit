@@ -167,7 +167,7 @@ void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, Prog
     if (m_command_state.program_bindings_ptr.get() == &program_bindings)
         return;
 
-    ProgramBindingsBase& program_bindings_base = static_cast<ProgramBindingsBase&>(program_bindings);
+    auto& program_bindings_base = static_cast<ProgramBindingsBase&>(program_bindings);
     program_bindings_base.Apply(*this, apply_behavior);
 
     Ptr<ObjectBase> program_bindings_object_ptr = program_bindings_base.GetBasePtr();
@@ -376,7 +376,7 @@ void CommandListSetBase::Execute(Data::Index frame_index, const CommandList::Com
     }
 }
 
-void CommandListSetBase::Complete() noexcept
+void CommandListSetBase::Complete() const noexcept
 {
     META_FUNCTION_TASK();
     for (const Ref<CommandListBase>& command_list_ref : m_base_refs)
@@ -387,7 +387,7 @@ void CommandListSetBase::Complete() noexcept
 
         try
         {
-            command_list_ref.get().Complete(m_executing_on_frame_index);
+            command_list.Complete(m_executing_on_frame_index);
         }
         catch(std::exception& ex)
         {
