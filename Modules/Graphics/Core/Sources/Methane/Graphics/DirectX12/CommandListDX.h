@@ -44,7 +44,7 @@ struct ICommandListDX
     class DebugGroupDX : public CommandListBase::DebugGroupBase
     {
     public:
-        explicit DebugGroupDX(std::string name);
+        explicit DebugGroupDX(const std::string& name);
 
         const std::wstring& GetWideName() const noexcept { return m_wide_name; }
 
@@ -63,7 +63,7 @@ struct ICommandListDX
 class CommandListSetDX final : public CommandListSetBase
 {
 public:
-    explicit CommandListSetDX(Refs<CommandList> command_list_refs);
+    explicit CommandListSetDX(const Refs<CommandList>& command_list_refs);
 
     // CommandListSetBase interface
     void Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback) final;

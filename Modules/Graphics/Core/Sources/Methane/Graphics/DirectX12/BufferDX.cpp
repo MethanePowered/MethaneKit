@@ -133,14 +133,14 @@ void ReadBackBufferDX::InitializeView()
     META_FUNCTION_TASK();
 }
 
-Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
+Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<BufferSetDX>(buffers_type, std::move(buffer_refs));
+    return std::make_shared<BufferSetDX>(buffers_type, buffer_refs);
 }
 
-BufferSetDX::BufferSetDX(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
-    : BufferSetBase(buffers_type, std::move(buffer_refs))
+BufferSetDX::BufferSetDX(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)
+    : BufferSetBase(buffers_type, buffer_refs)
 {
     META_FUNCTION_TASK();
     switch(buffers_type)

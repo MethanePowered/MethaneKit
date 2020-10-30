@@ -56,9 +56,9 @@ struct CommandList : virtual Object
 
     struct DebugGroup : virtual Object
     {
-        static Ptr<DebugGroup> Create(std::string name);
+        static Ptr<DebugGroup> Create(const std::string& name);
 
-        virtual DebugGroup& AddSubGroup(Data::Index id, std::string name) = 0;
+        virtual DebugGroup& AddSubGroup(Data::Index id, const std::string& name) = 0;
         virtual DebugGroup* GetSubGroup(Data::Index id) const noexcept = 0;
         virtual bool        HasSubGroups() const noexcept = 0;
 
@@ -85,7 +85,7 @@ struct CommandList : virtual Object
 
 struct CommandListSet
 {
-    static Ptr<CommandListSet> Create(Refs<CommandList> command_list_refs);
+    static Ptr<CommandListSet> Create(const Refs<CommandList>& command_list_refs);
 
     virtual Data::Size               GetCount() const noexcept = 0;
     virtual const Refs<CommandList>& GetRefs() const noexcept = 0;

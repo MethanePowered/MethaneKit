@@ -54,7 +54,7 @@ private:
 class BufferSetMT final : public BufferSetBase
 {
 public:
-    BufferSetMT(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
+    BufferSetMT(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs);
 
     const std::vector<id<MTLBuffer>>& GetNativeBuffers() const noexcept { return m_mtl_buffers; }
     const std::vector<NSUInteger>&    GetNativeOffsets() const noexcept { return m_mtl_buffer_offsets; }

@@ -62,13 +62,13 @@ std::string CommandListBase::GetStateName(State state) noexcept
     return "Undefined";
 }
 
-CommandListBase::DebugGroupBase::DebugGroupBase(std::string name)
-    : ObjectBase(std::move(name))
+CommandListBase::DebugGroupBase::DebugGroupBase(const std::string& name)
+    : ObjectBase(name)
 {
     META_FUNCTION_TASK();
 }
 
-CommandList::DebugGroup& CommandListBase::DebugGroupBase::AddSubGroup(Data::Index id, std::string name)
+CommandList::DebugGroup& CommandListBase::DebugGroupBase::AddSubGroup(Data::Index id, const std::string& name)
 {
     META_FUNCTION_TASK();
     if (id >= m_sub_groups.size())
@@ -76,7 +76,7 @@ CommandList::DebugGroup& CommandListBase::DebugGroupBase::AddSubGroup(Data::Inde
         m_sub_groups.resize(id + 1);
     }
 
-    Ptr<DebugGroup> sub_group_ptr = DebugGroup::Create(std::move(name));
+    Ptr<DebugGroup> sub_group_ptr = DebugGroup::Create(name);
     m_sub_groups[id] = sub_group_ptr;
     return *sub_group_ptr;
 }
@@ -172,7 +172,7 @@ void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, Prog
 
     Ptr<ObjectBase> program_bindings_object_ptr = program_bindings_base.GetBasePtr();
     m_command_state.program_bindings_ptr = std::static_pointer_cast<ProgramBindingsBase>(program_bindings_object_ptr);
-    RetainResource(std::move(program_bindings_object_ptr));
+    RetainResource(program_bindings_object_ptr);
 }
 
 void CommandListBase::Commit()
@@ -331,8 +331,8 @@ const CommandQueueBase& CommandListBase::GetCommandQueueBase() const noexcept
     return static_cast<const CommandQueueBase&>(*m_command_queue_ptr);
 }
 
-CommandListSetBase::CommandListSetBase(Refs<CommandList> command_list_refs)
-    : m_refs(std::move(command_list_refs))
+CommandListSetBase::CommandListSetBase(const Refs<CommandList>& command_list_refs)
+    : m_refs(command_list_refs)
 {
     META_FUNCTION_TASK();
     if (m_refs.empty())
@@ -345,7 +345,7 @@ CommandListSetBase::CommandListSetBase(Refs<CommandList> command_list_refs)
     CommandQueue& command_queue = m_refs.front().get().GetCommandQueue();
     for(const Ref<CommandList>& command_list_ref : m_refs)
     {
-        CommandListBase& command_list_base = dynamic_cast<CommandListBase&>(command_list_ref.get());
+        auto& command_list_base = dynamic_cast<CommandListBase&>(command_list_ref.get());
         if (std::addressof(command_list_base.GetCommandQueue()) != std::addressof(command_queue))
         {
             throw std::invalid_argument("All command lists in sequence must be created in one command queue.");
@@ -389,7 +389,7 @@ void CommandListSetBase::Complete() const noexcept
         {
             command_list.Complete(m_executing_on_frame_index);
         }
-        catch(std::exception& ex)
+        catch(const std::exception& ex)
         {
             META_UNUSED(ex);
             META_LOG(std::string("Failed to complete command list execution, exception occurred: ") + ex.what());

@@ -158,7 +158,7 @@ AsteroidsApp::AsteroidsApp()
     const std::string options_group = "Asteroids Options";
     add_option_group(options_group);
     add_option("-c,--complexity",
-               [this](CLI::results_t res) {
+               [this](const CLI::results_t& res) {
                        uint32_t complexity = 0;
                        if (CLI::detail::lexical_cast(res[0], complexity))
                        {

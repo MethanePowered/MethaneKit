@@ -48,7 +48,7 @@ public:
     };
 
     ObjectBase() = default;
-    explicit ObjectBase(std::string name) : m_name(std::move(name)) { }
+    explicit ObjectBase(const std::string& name) : m_name(name) { }
 
     // Object interface
     void               SetName(const std::string& name) override { m_name = name; }

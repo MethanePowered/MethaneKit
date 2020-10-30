@@ -70,9 +70,9 @@ std::string Buffer::GetBufferTypeName(Type type) noexcept
     return "Unknown";
 }
 
-BufferSetBase::BufferSetBase(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
+BufferSetBase::BufferSetBase(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)
     : m_buffers_type(buffers_type)
-    , m_refs(std::move(buffer_refs))
+    , m_refs(buffer_refs)
 {
     META_FUNCTION_TASK();
     if (m_refs.empty())

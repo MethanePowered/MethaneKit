@@ -75,8 +75,8 @@ struct Buffer : virtual Resource
 
 struct BufferSet
 {
-    static Ptr<BufferSet> Create(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
-    static Ptr<BufferSet> CreateVertexBuffers(Refs<Buffer> buffer_refs) { return BufferSet::Create(Buffer::Type::Vertex, std::move(buffer_refs)); }
+    static Ptr<BufferSet> Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs);
+    static Ptr<BufferSet> CreateVertexBuffers(const Refs<Buffer>& buffer_refs) { return BufferSet::Create(Buffer::Type::Vertex, buffer_refs); }
 
     virtual Buffer::Type        GetType() const noexcept = 0;
     virtual Data::Size          GetCount() const noexcept = 0;

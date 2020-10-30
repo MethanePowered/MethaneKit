@@ -201,7 +201,7 @@ using ReadBackBufferDX = BufferDX<ReadBackBufferView>;
 class BufferSetDX final : public BufferSetBase
 {
 public:
-    BufferSetDX(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
+    BufferSetDX(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs);
 
     const std::vector<D3D12_VERTEX_BUFFER_VIEW>& GetNativeVertexBufferViews() const;
 

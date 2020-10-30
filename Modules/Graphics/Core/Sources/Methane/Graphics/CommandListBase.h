@@ -62,13 +62,13 @@ public:
         , public ObjectBase
     {
     public:
-        explicit DebugGroupBase(std::string name);
+        explicit DebugGroupBase(const std::string& name);
 
         // Object overrides
         void SetName(const std::string&) override { throw std::logic_error("Debug Group can not be renamed"); }
 
         // DebugGroup interface
-        DebugGroup& AddSubGroup(Data::Index id, std::string name) final;
+        DebugGroup& AddSubGroup(Data::Index id, const std::string& name) final;
         DebugGroup* GetSubGroup(Data::Index id) const noexcept final;
         bool        HasSubGroups() const noexcept final { return !m_sub_groups.empty(); }
 
@@ -105,8 +105,8 @@ public:
     const Ptr<ProgramBindingsBase>& GetProgramBindings() const noexcept  { return GetCommandState().program_bindings_ptr; }
     Ptr<CommandListBase>            GetCommandListPtr()                  { return std::static_pointer_cast<CommandListBase>(GetBasePtr()); }
 
-    inline void RetainResource(Ptr<ObjectBase>&& resource_ptr) { if (resource_ptr) m_command_state.retained_resources.emplace_back(std::move(resource_ptr)); }
-    inline void RetainResource(ObjectBase& resource)          { m_command_state.retained_resources.emplace_back(resource.GetBasePtr()); }
+    inline void RetainResource(const Ptr<ObjectBase>& resource_ptr) { if (resource_ptr) m_command_state.retained_resources.emplace_back(resource_ptr); }
+    inline void RetainResource(ObjectBase& resource)           { m_command_state.retained_resources.emplace_back(resource.GetBasePtr()); }
 
     template<typename T, typename = std::enable_if_t<std::is_base_of_v<ObjectBase, T>>>
     inline void RetainResources(const Ptrs<T>& resource_ptrs)
@@ -164,7 +164,7 @@ class CommandListSetBase
     , public std::enable_shared_from_this<CommandListSetBase>
 {
 public:
-    explicit CommandListSetBase(Refs<CommandList> command_list_refs);
+    explicit CommandListSetBase(const Refs<CommandList>& command_list_refs);
 
     // CommandListSet overrides
     Data::Size               GetCount() const noexcept override { return static_cast<Data::Size>(m_refs.size()); }

@@ -28,26 +28,26 @@ Vulkan command lists sequence implementation
 namespace Methane::Graphics
 {
 
-Ptr<CommandList::DebugGroup> CommandList::DebugGroup::Create(std::string name)
+Ptr<CommandList::DebugGroup> CommandList::DebugGroup::Create(const std::string& name)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<CommandListVK::DebugGroupVK>(std::move(name));
+    return std::make_shared<CommandListVK::DebugGroupVK>(name);
 }
 
-CommandListVK::DebugGroupVK::DebugGroupVK(std::string name)
-    : CommandListBase::DebugGroupBase(std::move(name))
+CommandListVK::DebugGroupVK::DebugGroupVK(const std::string& name)
+    : CommandListBase::DebugGroupBase(name)
 {
     META_FUNCTION_TASK();
 }
 
-Ptr<CommandListSet> CommandListSet::Create(Refs<CommandList> command_list_refs)
+Ptr<CommandListSet> CommandListSet::Create(const Refs<CommandList>& command_list_refs)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<CommandListSetVK>(std::move(command_list_refs));
+    return std::make_shared<CommandListSetVK>(command_list_refs);
 }
 
-CommandListSetVK::CommandListSetVK(Refs<CommandList> command_list_refs)
-    : CommandListSetBase(std::move(command_list_refs))
+CommandListSetVK::CommandListSetVK(const Refs<CommandList>& command_list_refs)
+    : CommandListSetBase(command_list_refs)
 {
     META_FUNCTION_TASK();
 }

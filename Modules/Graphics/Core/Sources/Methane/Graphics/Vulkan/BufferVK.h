@@ -45,7 +45,7 @@ public:
 class BufferSetVK final : public BufferSetBase
 {
 public:
-    BufferSetVK(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
+    BufferSetVK(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs);
 };
 
 } // namespace Methane::Graphics

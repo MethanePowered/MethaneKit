@@ -180,14 +180,14 @@ MTLIndexType BufferMT::GetNativeIndexType() const noexcept
     return TypeConverterMT::DataFormatToMetalIndexType(GetSettings().data_format);
 }
 
-Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
+Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<BufferSetMT>(buffers_type, std::move(buffer_refs));
+    return std::make_shared<BufferSetMT>(buffers_type, buffer_refs);
 }
 
-BufferSetMT::BufferSetMT(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
-    : BufferSetBase(buffers_type, std::move(buffer_refs))
+BufferSetMT::BufferSetMT(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)
+    : BufferSetBase(buffers_type, buffer_refs)
     , m_mtl_buffer_offsets(GetCount(), 0U)
 {
     META_FUNCTION_TASK();

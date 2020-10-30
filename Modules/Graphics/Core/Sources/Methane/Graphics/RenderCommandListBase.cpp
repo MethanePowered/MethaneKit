@@ -92,7 +92,7 @@ void RenderCommandListBase::SetRenderState(RenderState& render_state, RenderStat
 
     if (render_state_changed)
     {
-        RetainResource(std::move(render_state_object_ptr));
+        RetainResource(render_state_object_ptr);
     }
 }
 
@@ -129,7 +129,7 @@ void RenderCommandListBase::SetVertexBuffers(BufferSet& vertex_buffers)
     Ptr<ObjectBase> vertex_buffer_set_object_ptr = static_cast<BufferSetBase&>(vertex_buffers).GetBasePtr();
     drawing_state.vertex_buffer_set_ptr = std::static_pointer_cast<BufferSetBase>(vertex_buffer_set_object_ptr);
     drawing_state.changes |= DrawingState::Changes::VertexBuffers;
-    RetainResource(std::move(vertex_buffer_set_object_ptr));
+    RetainResource(vertex_buffer_set_object_ptr);
 }
 
 void RenderCommandListBase::DrawIndexed(Primitive primitive_type, Buffer& index_buffer,
@@ -220,7 +220,7 @@ void RenderCommandListBase::UpdateDrawingState(Primitive primitive_type, Buffer*
         Ptr<ObjectBase> index_buffer_object_ptr = static_cast<BufferBase&>(*p_index_buffer).GetBasePtr();
         drawing_state.index_buffer_ptr = std::static_pointer_cast<BufferBase>(index_buffer_object_ptr);
         drawing_state.changes |= DrawingState::Changes::IndexBuffer;
-        RetainResource(std::move(index_buffer_object_ptr));
+        RetainResource(index_buffer_object_ptr);
     }
 
     if (!drawing_state.opt_primitive_type || *drawing_state.opt_primitive_type != primitive_type)
