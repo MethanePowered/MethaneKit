@@ -45,7 +45,7 @@ public:
     class BarriersDX : public Barriers
     {
     public:
-        BarriersDX(const Set& barriers);
+        explicit BarriersDX(const Set& barriers);
 
         bool Add(const Barrier::Id& id, const Barrier::StateChange& state_change) override;
 

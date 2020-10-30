@@ -96,8 +96,8 @@ public:
 protected:
     Program& GetProgram();
     void ReserveDescriptorHeapRanges();
-    void SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument);
-    void VerifyAllArgumentsAreBoundToResources();
+    void SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument) const;
+    void VerifyAllArgumentsAreBoundToResources() const;
 
     using BindingByArgument = std::unordered_map<Program::Argument, Ptr<ArgumentBinding>, Program::Argument::Hash>;
     const BindingByArgument& GetArgumentBindings() const { return m_binding_by_argument; }

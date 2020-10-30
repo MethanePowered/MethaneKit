@@ -75,8 +75,7 @@ std::string DeviceBase::ToString() const noexcept
 {
     META_FUNCTION_TASK();
     std::stringstream ss;
-    ss << "GPU \"" << GetAdapterName();
-    //ss << "\" with features: " + Feature::ToString(m_supported_features);
+    ss << "GPU \"" << GetAdapterName() << "\"";
     return ss.str();
 }
 
@@ -92,7 +91,7 @@ void DeviceBase::OnRemoved()
     Emit(&IDeviceCallback::OnDeviceRemoved, std::ref(*this));
 }
 
-void SystemBase::RequestRemoveDevice(Device& device)
+void SystemBase::RequestRemoveDevice(Device& device) const
 {
     META_FUNCTION_TASK();
     static_cast<DeviceBase&>(device).OnRemovalRequested();
@@ -101,6 +100,15 @@ void SystemBase::RequestRemoveDevice(Device& device)
 void SystemBase::RemoveDevice(Device& device)
 {
     META_FUNCTION_TASK();
+    const auto device_it = std::find_if(m_devices.begin(), m_devices.end(),
+        [&device](const Ptr<Device>& device_ptr)
+        { return std::addressof(device) == std::addressof(*device_ptr); }
+    );
+    if (device_it == m_devices.end())
+        return;
+
+    Ptr<Device> device_ptr = *device_it;
+    m_devices.erase(device_it);
     static_cast<DeviceBase&>(device).OnRemoved();
 }
 

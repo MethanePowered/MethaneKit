@@ -39,7 +39,6 @@ namespace Methane::Graphics
 
 RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& pass)
     : CommandListBase(command_queue, Type::Render)
-    , m_is_parallel(false)
     , m_render_pass_ptr(pass.GetRenderPassPtr())
 {
     META_FUNCTION_TASK();
@@ -74,16 +73,17 @@ void RenderCommandListBase::SetRenderState(RenderState& render_state, RenderStat
 
     VerifyEncodingState();
 
-    const bool render_state_changed = m_drawing_state.render_state_ptr.get() != std::addressof(render_state);
-    const RenderState::Group::Mask changed_states = (m_drawing_state.render_state_ptr && render_state_changed
-                                                  ? RenderState::Settings::Compare(render_state.GetSettings(),
-                                                                                   m_drawing_state.render_state_ptr->GetSettings(),
-                                                                                   m_drawing_state.render_state_groups)
-                                                  : (m_drawing_state.render_state_ptr ? RenderState::Group::None
-                                                                                     : RenderState::Group::All))
-                                                  | ~m_drawing_state.render_state_groups;
+    const bool         render_state_changed = m_drawing_state.render_state_ptr.get() != std::addressof(render_state);
+    RenderState::Group::Mask changed_states = m_drawing_state.render_state_ptr ? RenderState::Group::None : RenderState::Group::All;
+    if (m_drawing_state.render_state_ptr && render_state_changed)
+    {
+        changed_states = RenderState::Settings::Compare(render_state.GetSettings(),
+                                                        m_drawing_state.render_state_ptr->GetSettings(),
+                                                        m_drawing_state.render_state_groups);
+    }
+    changed_states |= ~m_drawing_state.render_state_groups;
 
-    RenderStateBase& render_state_base = static_cast<RenderStateBase&>(render_state);
+    auto& render_state_base = static_cast<RenderStateBase&>(render_state);
     render_state_base.Apply(*this, changed_states & state_groups);
 
     Ptr<ObjectBase> render_state_object_ptr = render_state_base.GetBasePtr();
@@ -102,7 +102,7 @@ void RenderCommandListBase::SetViewState(ViewState& view_state)
     VerifyEncodingState();
 
     DrawingState& drawing_state = GetDrawingState();
-    ViewStateBase* p_prev_view_state = drawing_state.p_view_state;
+    const ViewStateBase* p_prev_view_state = drawing_state.p_view_state;
     drawing_state.p_view_state = static_cast<ViewStateBase*>(&view_state);
 
     if (p_prev_view_state && p_prev_view_state->GetSettings() == view_state.GetSettings())
@@ -230,13 +230,13 @@ void RenderCommandListBase::UpdateDrawingState(Primitive primitive_type, Buffer*
     }
 }
 
-void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count)
+void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count) const
 {
     META_FUNCTION_TASK();
     const Data::Size vertex_buffers_count = m_drawing_state.vertex_buffer_set_ptr->GetCount();
     for (Data::Index vertex_buffer_index = 0U; vertex_buffer_index < vertex_buffers_count; ++vertex_buffer_index)
     {
-        Buffer&        vertex_buffer = (*m_drawing_state.vertex_buffer_set_ptr)[vertex_buffer_index];
+        const Buffer&  vertex_buffer = (*m_drawing_state.vertex_buffer_set_ptr)[vertex_buffer_index];
         const uint32_t vertex_count  = vertex_buffer.GetFormattedItemsCount();
         if (draw_start_vertex + draw_vertex_count > vertex_count)
         {

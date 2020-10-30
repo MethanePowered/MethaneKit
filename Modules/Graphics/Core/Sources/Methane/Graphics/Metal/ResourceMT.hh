@@ -35,7 +35,7 @@ public:
     class BarriersMT : public Barriers
     {
     public:
-        BarriersMT(const Set& barriers) : Barriers(barriers) {}
+        explicit BarriersMT(const Set& barriers) : Barriers(barriers) {}
     };
 
     ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);

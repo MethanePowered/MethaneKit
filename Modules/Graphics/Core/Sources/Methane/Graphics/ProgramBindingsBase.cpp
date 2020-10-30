@@ -199,7 +199,7 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
     };
 
     assert(!!m_program_ptr);
-    const ProgramBase& program = static_cast<const ProgramBase&>(GetProgram());
+    const auto& program = static_cast<const ProgramBase&>(GetProgram());
 
     // Count the number of constant and mutable descriptors to be allocated in each descriptor heap
     std::map<DescriptorHeap::Type, DescriptorsCount> descriptors_count_by_heap_type;
@@ -210,8 +210,8 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
             throw std::runtime_error("No resource binding is set for an argument \"" + binding_by_argument.first.name + "\" of shader.");
         }
 
-        const ArgumentBindingBase&       argument_binding = static_cast<const ArgumentBindingBase&>(*binding_by_argument.second);
-        const ArgumentBinding::Settings& binding_settings = argument_binding.GetSettings();
+        const auto& argument_binding = static_cast<const ArgumentBindingBase&>(*binding_by_argument.second);
+        const auto& binding_settings = argument_binding.GetSettings();
         m_arguments.insert(binding_by_argument.first);
 
         auto binding_by_argument_it = m_binding_by_argument.find(binding_by_argument.first);
@@ -277,7 +277,7 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
     }
 }
 
-void ProgramBindingsBase::SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument)
+void ProgramBindingsBase::SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument) const
 {
     META_FUNCTION_TASK();
 
@@ -340,7 +340,7 @@ bool ProgramBindingsBase::AllArgumentsAreBoundToResources(std::string& missing_a
     return all_arguments_are_bound_to_resources;
 }
 
-void ProgramBindingsBase::VerifyAllArgumentsAreBoundToResources()
+void ProgramBindingsBase::VerifyAllArgumentsAreBoundToResources() const
 {
     META_FUNCTION_TASK();
     // Verify that resources are set for all program arguments

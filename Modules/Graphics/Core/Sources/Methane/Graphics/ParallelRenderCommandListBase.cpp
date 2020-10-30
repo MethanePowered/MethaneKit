@@ -77,7 +77,7 @@ void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& render_state_p
     }
 
     // Per-thread render command lists can be reset in parallel only with DirectX 12 on Windows
-    const auto reset_command_list_fn = [this, &render_state_ptr, p_debug_group](const int command_list_index)
+    const auto reset_command_list_fn = [this, &render_state_ptr, p_debug_group](size_t command_list_index)
     {
         META_FUNCTION_TASK();
         const Ptr<RenderCommandList>& render_command_list_ptr = m_parallel_command_lists[command_list_index];
@@ -121,7 +121,7 @@ void ParallelRenderCommandListBase::SetViewState(ViewState& view_state)
 void ParallelRenderCommandListBase::SetParallelCommandListsCount(uint32_t count)
 {
     META_FUNCTION_TASK();
-    uint32_t initial_count = static_cast<uint32_t>(m_parallel_command_lists.size());
+    const auto initial_count = static_cast<uint32_t>(m_parallel_command_lists.size());
     if (count < initial_count)
     {
         m_parallel_command_lists.resize(count);
@@ -146,7 +146,7 @@ void ParallelRenderCommandListBase::Execute(uint32_t frame_index, const CommandL
     for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
     {
         assert(!!render_command_list_ptr);
-        RenderCommandListBase& thread_render_command_list = static_cast<RenderCommandListBase&>(*render_command_list_ptr);
+        auto& thread_render_command_list = static_cast<RenderCommandListBase&>(*render_command_list_ptr);
         thread_render_command_list.Execute(frame_index);
     }
 
@@ -159,7 +159,7 @@ void ParallelRenderCommandListBase::Complete(uint32_t frame_index)
     for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
     {
         assert(!!render_command_list_ptr);
-        RenderCommandListBase& thread_render_command_list = static_cast<RenderCommandListBase&>(*render_command_list_ptr);
+        auto& thread_render_command_list = static_cast<RenderCommandListBase&>(*render_command_list_ptr);
         thread_render_command_list.Complete(frame_index);
     }
 

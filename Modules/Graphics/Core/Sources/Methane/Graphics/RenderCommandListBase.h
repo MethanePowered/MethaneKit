@@ -95,16 +95,16 @@ protected:
     // CommandListBase overrides
     void ResetCommandState() override;
 
-    DrawingState&                      GetDrawingState()              { return m_drawing_state; }
-    const DrawingState&                GetDrawingState() const        { return m_drawing_state; }
-    bool                               IsParallel() const             { return m_is_parallel; }
-    Ptr<ParallelRenderCommandListBase> GetParallelRenderCommandList() { return m_parallel_render_command_list_wptr.lock(); }
+    DrawingState&                      GetDrawingState()                    { return m_drawing_state; }
+    const DrawingState&                GetDrawingState() const              { return m_drawing_state; }
+    bool                               IsParallel() const                   { return m_is_parallel; }
+    Ptr<ParallelRenderCommandListBase> GetParallelRenderCommandList() const { return m_parallel_render_command_list_wptr.lock(); }
 
     inline void UpdateDrawingState(Primitive primitive_type, Buffer* p_index_buffer = nullptr);
-    inline void ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count = 0);
+    inline void ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count = 0) const;
 
 private:
-    const bool                             m_is_parallel;
+    const bool                             m_is_parallel = false;
     const Ptr<RenderPassBase>              m_render_pass_ptr;
     WeakPtr<ParallelRenderCommandListBase> m_parallel_render_command_list_wptr;
     DrawingState                           m_drawing_state;

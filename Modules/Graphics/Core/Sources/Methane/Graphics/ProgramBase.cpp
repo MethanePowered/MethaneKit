@@ -123,9 +123,9 @@ ProgramBase::~ProgramBase()
     META_FUNCTION_TASK();
 
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_constant_descriptor_ranges_reservation_mutex);
-    for (auto& heap_type_and_desc_range : m_constant_descriptor_range_by_heap_type)
+    for (const auto& heap_type_and_desc_range : m_constant_descriptor_range_by_heap_type)
     {
-        DescriptorHeapReservation& heap_reservation = heap_type_and_desc_range.second;
+        const DescriptorHeapReservation& heap_reservation = heap_type_and_desc_range.second;
         if (heap_reservation.range.IsEmpty())
             continue;
 
