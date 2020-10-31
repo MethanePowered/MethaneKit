@@ -116,10 +116,11 @@ void RenderCommandListBase::SetVertexBuffers(BufferSet& vertex_buffers)
     META_FUNCTION_TASK();
     VerifyEncodingState();
 
-    if (vertex_buffers.GetType() != Buffer::Type::Vertex)
+    if (m_is_validation_enabled)
     {
-        throw std::invalid_argument("Can not set buffers of \"" + Buffer::GetBufferTypeName(vertex_buffers.GetType()) +
-                                    "\" type where \"Vertex\" buffers are required.");
+        META_CHECK_ARG_DESCR("vertex_buffers", vertex_buffers.GetType() == Buffer::Type::Vertex,
+            "can not set buffers of \"" + Buffer::GetBufferTypeName(vertex_buffers.GetType()) +
+            "\" type where \"Vertex\" buffers are required");
     }
 
     DrawingState&  drawing_state = GetDrawingState();
@@ -141,30 +142,16 @@ void RenderCommandListBase::DrawIndexed(Primitive primitive_type, Buffer& index_
 
     if (m_is_validation_enabled)
     {
-        if (index_buffer.GetSettings().type != Buffer::Type::Index)
-        {
-            throw std::invalid_argument("Can not draw with index buffer of wrong type \"" +
-                                        static_cast<const BufferBase&>(index_buffer).GetBufferTypeName() +
-                                        "\". Buffer of \"Index\" type is expected.");
-        }
+        META_CHECK_ARG_DESCR("index_buffer", index_buffer.GetSettings().type == Buffer::Type::Index,
+            "can not draw with index buffer of wrong type \"" +
+            static_cast<const BufferBase&>(index_buffer).GetBufferTypeName() +
+            "\". Buffer of \"Index\" type is expected");
 
         const uint32_t formatted_items_count = index_buffer.GetFormattedItemsCount();
-        if (formatted_items_count == 0)
-        {
-            throw std::invalid_argument("Can not draw with index buffer which contains no formatted vertices.");
-        }
-        if (index_count == 0)
-        {
-            throw std::invalid_argument("Can not draw zero index/vertex count.");
-        }
-        if (start_index + index_count > formatted_items_count)
-        {
-            throw std::invalid_argument("Ending index is out of buffer bounds.");
-        }
-        if (instance_count == 0)
-        {
-            throw std::invalid_argument("Can not draw zero instances.");
-        }
+        META_CHECK_ARG_NOT_ZERO_DESCR(formatted_items_count, "can not draw with index buffer which contains no formatted vertices");
+        META_CHECK_ARG_NOT_ZERO_DESCR(index_count, "can not draw zero index/vertex count");
+        META_CHECK_ARG_NOT_ZERO_DESCR(instance_count, "can not draw zero instances");
+        META_CHECK_ARG_IS_LESS_DESCR(start_index, formatted_items_count - index_count + 1U, "ending index is out of buffer bounds");
 
         ValidateDrawVertexBuffers(start_vertex);
     }
@@ -180,14 +167,8 @@ void RenderCommandListBase::Draw(Primitive primitive_type, uint32_t vertex_count
 
     if (m_is_validation_enabled)
     {
-        if (vertex_count == 0)
-        {
-            throw std::invalid_argument("Can not draw zero vertices.");
-        }
-        if (instance_count == 0)
-        {
-            throw std::invalid_argument("Can not draw zero instances.");
-        }
+        META_CHECK_ARG_NOT_ZERO_DESCR(vertex_count, "can not draw zero vertices");
+        META_CHECK_ARG_NOT_ZERO_DESCR(instance_count, "can not draw zero instances");
 
         ValidateDrawVertexBuffers(start_vertex, vertex_count);
     }
@@ -238,13 +219,11 @@ void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex
     {
         const Buffer&  vertex_buffer = (*m_drawing_state.vertex_buffer_set_ptr)[vertex_buffer_index];
         const uint32_t vertex_count  = vertex_buffer.GetFormattedItemsCount();
-        if (draw_start_vertex + draw_vertex_count > vertex_count)
-        {
-            throw std::invalid_argument("Can not draw starting from vertex " + std::to_string(draw_start_vertex) +
-                                        (draw_vertex_count ? " with " + std::to_string(draw_vertex_count) + " vertex count " : "") +
-                                        " which is out of bound for vertex buffer \"" + vertex_buffer.GetName() +
-                                        "\" (size " + std::to_string(vertex_count) + ").");
-        }
+        META_CHECK_ARG_IS_LESS_DESCR(draw_start_vertex, vertex_count - draw_vertex_count + 1U,
+            "can not draw starting from vertex " + std::to_string(draw_start_vertex) +
+            (draw_vertex_count ? " with " + std::to_string(draw_vertex_count) + " vertex count " : "") +
+            " which is out of bound for vertex buffer \"" + vertex_buffer.GetName() +
+            "\" (size " + std::to_string(vertex_count) + ")");
     }
 }
 

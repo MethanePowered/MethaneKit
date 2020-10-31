@@ -335,10 +335,7 @@ CommandListSetBase::CommandListSetBase(const Refs<CommandList>& command_list_ref
     : m_refs(command_list_refs)
 {
     META_FUNCTION_TASK();
-    if (m_refs.empty())
-    {
-        throw std::invalid_argument("Creating of empty command lists sequence is not allowed.");
-    }
+    META_CHECK_ARG_NOT_EMPTY_DESCR(command_list_refs, "creating of empty command lists set is not allowed.");
 
     m_base_refs.reserve(m_refs.size());
     m_base_ptrs.reserve(m_refs.size());
@@ -346,10 +343,8 @@ CommandListSetBase::CommandListSetBase(const Refs<CommandList>& command_list_ref
     for(const Ref<CommandList>& command_list_ref : m_refs)
     {
         auto& command_list_base = dynamic_cast<CommandListBase&>(command_list_ref.get());
-        if (std::addressof(command_list_base.GetCommandQueue()) != std::addressof(command_queue))
-        {
-            throw std::invalid_argument("All command lists in sequence must be created in one command queue.");
-        }
+        META_CHECK_ARG_DESCR("command_list_base", std::addressof(command_list_base.GetCommandQueue()) == std::addressof(command_queue),
+                             "all command lists in set must be created in one command queue");
 
         m_base_refs.emplace_back(command_list_base);
         m_base_ptrs.emplace_back(command_list_base.GetCommandListPtr());
@@ -359,9 +354,7 @@ CommandListSetBase::CommandListSetBase(const Refs<CommandList>& command_list_ref
 CommandList& CommandListSetBase::operator[](Data::Index index) const
 {
     META_FUNCTION_TASK();
-    if (index > m_refs.size())
-        throw std::out_of_range("Command list index " + std::to_string(index) +
-                                " is out of collection range (size = " + std::to_string(m_refs.size()) + ").");
+    META_CHECK_ARG_IS_LESS(index, m_refs.size());
 
     return m_refs[index].get();
 }

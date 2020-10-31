@@ -21,7 +21,7 @@ Methane Common dummy function.
 
 ******************************************************************************/
 
-namespace Methane::Events::RangeSet
+namespace Methane::Primitives
 {
 
 void Dummy()
@@ -30,4 +30,4 @@ void Dummy()
     // the table of contents is empty (no object file members in the library define global symbols)
 }
 
-} // namespace Methane::Events::RangeSet
+} // namespace Methane::Primitives

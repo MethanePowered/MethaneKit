@@ -24,6 +24,7 @@ Base implementation of the program bindings interface.
 #include "ProgramBindingsBase.h"
 #include "ContextBase.h"
 
+#include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Utils.h>
 
@@ -48,27 +49,23 @@ void ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resour
     if (m_settings.argument.IsConstant() && !m_resource_locations.empty())
         throw std::logic_error("Can not modify constant program argument binding.");
 
-    if (resource_locations.empty())
-        throw std::invalid_argument("Can not set empty resources for resource binding.");
+    META_CHECK_ARG_NOT_EMPTY_DESCR(resource_locations, "can not set empty resources for resource binding");
 
     const bool        is_addressable_binding = m_settings.argument.IsAddressable();
     const Resource::Type bound_resource_type = m_settings.resource_type;
 
     for (const Resource::Location& resource_location : resource_locations)
     {
-        if (resource_location.GetResource().GetResourceType() != bound_resource_type)
-        {
-            throw std::invalid_argument("Incompatible resource type \"" + Resource::GetTypeName(resource_location.GetResource().GetResourceType()) +
-                                        "\" is bound to argument \"" + m_settings.argument.name +
-                                        "\" of type \"" + Resource::GetTypeName(bound_resource_type) + "\".");
-        }
+        META_CHECK_ARG_DESCR("resource_location", resource_location.GetResource().GetResourceType() == bound_resource_type,
+                             "Incompatible resource type \"" + Resource::GetTypeName(resource_location.GetResource().GetResourceType()) +
+                             "\" is bound to argument \"" + m_settings.argument.name +
+                             "\" of type \"" + Resource::GetTypeName(bound_resource_type) + "\".");
 
         const Resource::Usage::Mask resource_usage_mask = resource_location.GetResource().GetUsageMask();
-        if (static_cast<bool>(resource_usage_mask & Resource::Usage::Addressable) != is_addressable_binding)
-            throw std::invalid_argument("Resource addressable usage flag does not match with resource binding state.");
-
-        if (!is_addressable_binding && resource_location.GetOffset() > 0)
-            throw std::invalid_argument("Can not set resource location with non-zero offset to non-addressable resource binding.");
+        META_CHECK_ARG_VALUE_DESCR(resource_usage_mask, static_cast<bool>(resource_usage_mask & Resource::Usage::Addressable) == is_addressable_binding,
+                                   "Resource addressable usage flag does not match with resource binding state.");
+        META_CHECK_ARG_DESCR("resource_location", is_addressable_binding || !resource_location.GetOffset(),
+                             "Can not set resource location with non-zero offset to non-addressable resource binding");
     }
 
     m_resource_locations = resource_locations;

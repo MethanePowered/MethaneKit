@@ -25,6 +25,7 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps
 #include "ResourceBase.h"
 
 #include <Methane/Data/RangeUtils.hpp>
+#include <Methane/Exceptions.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <cassert>
@@ -137,8 +138,7 @@ void DescriptorHeap::Allocate()
 DescriptorHeap::Range DescriptorHeap::ReserveRange(Data::Size length)
 {
     META_FUNCTION_TASK();
-    if (!length)
-        throw std::invalid_argument("Unable to reserve empty descriptor range.");
+    META_CHECK_ARG_NOT_ZERO_DESCR(length, "unable to reserve empty descriptor range");
 
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
 

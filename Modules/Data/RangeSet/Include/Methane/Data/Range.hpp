@@ -25,6 +25,8 @@ till end (exclusively): [start, end)
 
 #pragma once
 
+#include <Methane/Checks.hpp>
+
 #include <initializer_list>
 #include <algorithm>
 #include <sstream>
@@ -39,7 +41,7 @@ template<typename ScalarT>
 class Range
 {
 public:
-    Range(ScalarT start, ScalarT end) : m_start(start), m_end(end) { META_FUNCTION_TASK(); Validate(); }
+    Range(ScalarT start, ScalarT end) : m_start(start), m_end(end) { META_CHECK_ARG_VALUE_DESCR(m_start, m_start <= m_end, "range start must be less of equal than end."); }
     Range(std::initializer_list<ScalarT> init) : Range(*init.begin(), *(init.begin() + 1)) { }
     Range(const Range& other) noexcept : m_start(other.m_start), m_end(other.m_end) { }
     Range() noexcept: Range({}, {}) { }
@@ -64,34 +66,22 @@ public:
     Range operator+(const Range& other) const // merge
     {
         META_FUNCTION_TASK();
-        if (!IsMergeable(other))
-        {
-            throw std::invalid_argument("Can not merge: ranges are not mergeable.");
-        }
+        META_CHECK_ARG_VALUE_DESCR(other, IsMergeable(other), "can not merge ranges which are not overlapping or adjacent");
         return Range(std::min(m_start, other.m_start), std::max(m_end, other.m_end));
     }
 
     Range operator%(const Range& other) const // intersect
     {
         META_FUNCTION_TASK();
-        if (!IsMergeable(other))
-        {
-            throw std::invalid_argument("Can not intersect: ranges are not overlapping or adjacent.");
-        }
+        META_CHECK_ARG_VALUE_DESCR(other, IsMergeable(other), "can not intersect ranges which are not overlapping or adjacent");
         return Range(std::max(m_start, other.m_start), std::min(m_end, other.m_end));
     }
 
     Range operator-(const Range& other) const // subtract
     {
         META_FUNCTION_TASK();
-        if (!IsOverlapping(other))
-        {
-            throw std::invalid_argument("Can not subtract: ranges are not overlapping.");
-        }
-        if (Contains(other) || other.Contains(*this))
-        {
-            throw std::invalid_argument("Can not subtract: one of ranges contains another.");
-        }
+        META_CHECK_ARG_VALUE_DESCR(other, IsOverlapping(other), "can not subtract ranges which are not overlapping");
+        META_CHECK_ARG_VALUE_DESCR(other, !Contains(other) && !other.Contains(*this), "can not subtract ranges containing one another");
         return (m_start <= other.m_start) ? Range(m_start, other.m_start) : Range(other.m_end, m_end);
     }
 
@@ -109,15 +99,7 @@ public:
         return ss.str();
     }
 
-protected:
-    void Validate() const
-    {
-        META_FUNCTION_TASK();
-        if (m_start <= m_end)
-            return;
-        throw std::invalid_argument("Range start must be less of equal than end.");
-    }
-
+private:
     ScalarT m_start;
     ScalarT m_end;
 };

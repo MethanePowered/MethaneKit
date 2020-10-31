@@ -70,14 +70,8 @@ public:
                                         static_cast<Methane::Data::Size>(res_file.cend() - res_file.cbegin()));
         }
 
-        if (FileProvider::HasData(path))
-        {
-            return FileProvider::GetData(path);
-        }
-        else
-        {
-            throw std::invalid_argument("Invalid resource path: " + path);
-        }
+        META_CHECK_ARG_DESCR(path, FileProvider::HasData(path), std::string("Invalid resource path: ") + path);
+        return FileProvider::GetData(path);
     }
 
 protected:

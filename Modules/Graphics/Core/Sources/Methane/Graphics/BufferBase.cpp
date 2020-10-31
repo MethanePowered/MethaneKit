@@ -25,6 +25,7 @@ Base implementation of the buffer interface.
 #include "DescriptorHeap.h"
 #include "ContextBase.h"
 
+#include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <cassert>
@@ -37,10 +38,8 @@ BufferBase::BufferBase(ContextBase& context, const Settings& settings, const Des
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
-    if (!m_settings.size)
-    {
-        throw std::invalid_argument("Can not create buffer of zero size.");
-    }
+    META_CHECK_ARG_NOT_ZERO_DESCR(settings.size, "can not create buffer of zero size");
+
     SetSubResourceCount(SubResource::Count());
 }
 
@@ -75,10 +74,7 @@ BufferSetBase::BufferSetBase(Buffer::Type buffers_type, const Refs<Buffer>& buff
     , m_refs(buffer_refs)
 {
     META_FUNCTION_TASK();
-    if (m_refs.empty())
-    {
-        throw std::invalid_argument("Creating of empty buffers collection is not allowed.");
-    }
+    META_CHECK_ARG_NOT_EMPTY_DESCR(buffer_refs, "empty buffers set is not allowed");
 
     m_ptrs.reserve(m_refs.size());
     m_raw_ptrs.reserve(m_refs.size());
@@ -97,9 +93,7 @@ BufferSetBase::BufferSetBase(Buffer::Type buffers_type, const Refs<Buffer>& buff
 Buffer& BufferSetBase::operator[](Data::Index index) const
 {
     META_FUNCTION_TASK();
-    if (index > m_refs.size())
-        throw std::out_of_range("Buffer index " + std::to_string(index) +
-                                " is out of collection range (size = " + std::to_string(m_refs.size()) + ").");
+    META_CHECK_ARG_IS_LESS(index, m_refs.size());
 
     return m_refs[index].get();
 }
