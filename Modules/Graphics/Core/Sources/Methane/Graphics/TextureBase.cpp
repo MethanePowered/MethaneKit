@@ -101,19 +101,9 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
-
-    if (m_settings.usage_mask == TextureBase::Usage::Unknown)
-    {
-        throw std::invalid_argument("Can not create texture with \"Unknown\" usage mask.");
-    }
-    if (m_settings.pixel_format == PixelFormat::Unknown)
-    {
-        throw std::invalid_argument("Can not create texture with \"Unknown\" pixel format.");
-    }
-    if (!m_settings.array_length)
-    {
-        throw std::invalid_argument("Array length should be greater than zero.");
-    }
+    META_CHECK_ARG_VALUE_DESCR(m_settings.usage_mask, m_settings.usage_mask != TextureBase::Usage::Unknown, "can not create texture with \"Unknown\" usage mask");
+    META_CHECK_ARG_DESCR("m_settings.pixel_format", m_settings.pixel_format != PixelFormat::Unknown, "can not create texture with \"Unknown\" pixel format");
+    META_CHECK_ARG_NOT_NULL_DESCR(m_settings.array_length, "array length should be greater than zero");
 
     ValidateDimensions(m_settings.dimension_type, m_settings.dimensions, m_settings.mipmapped);
     SetSubResourceCount(
@@ -128,45 +118,26 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
 void TextureBase::ValidateDimensions(DimensionType dimension_type, const Dimensions& dimensions, bool mipmapped)
 {
     META_FUNCTION_TASK();
-
-    if (!dimensions.width || !dimensions.height || !dimensions.depth)
-    {
-        throw std::invalid_argument("All dimension sizes should be greater than zero.");
-    }
+    META_CHECK_ARG_NOT_ZERO_DESCR(dimensions, "all dimension sizes should be greater than zero");
 
     switch (dimension_type)
     {
     case DimensionType::Cube:
     case DimensionType::CubeArray:
-        if (dimensions.width != dimensions.height)
-        {
-            throw std::invalid_argument("Cube texture must have equal width and height dimensions.");
-        }
-        if (dimensions.depth != 6)
-        {
-            throw std::invalid_argument("Cube texture depth must be equal to 6.");
-        }
+        META_CHECK_ARG_VALUE_DESCR(dimensions, dimensions.width == dimensions.height, "cube texture must have equal width and height dimensions");
+        META_CHECK_ARG_VALUE_DESCR(dimensions, dimensions.depth == 6, "cube texture depth must be equal to 6");
         [[fallthrough]];
     case DimensionType::Tex3D:
-        if (mipmapped && dimensions.depth % 2)
-        {
-            throw std::invalid_argument("All dimensions of the mip-mapped texture should be a power of 2, but depth is not.");
-        }
+        META_CHECK_ARG_VALUE_DESCR(dimensions.depth, !mipmapped || !(dimensions.depth % 2), "all dimensions of the mip-mapped texture should be a power of 2, but depth is not");
         [[fallthrough]];
     case DimensionType::Tex2D:
     case DimensionType::Tex2DArray:
     case DimensionType::Tex2DMultisample:
-        if (mipmapped && dimensions.height % 2)
-        {
-            throw std::invalid_argument("All dimensions of the mip-mapped texture should be a power of 2, but height is not.");
-        }
+        META_CHECK_ARG_VALUE_DESCR(dimensions.height, !mipmapped || !(dimensions.height % 2), "all dimensions of the mip-mapped texture should be a power of 2, but height is not");
         [[fallthrough]];
     case DimensionType::Tex1D:
     case DimensionType::Tex1DArray:
-        if (mipmapped && dimensions.width % 2)
-        {
-            throw std::invalid_argument("All dimensions of the mip-mapped texture should be a power of 2, but width is not.");
-        }
+        META_CHECK_ARG_VALUE_DESCR(dimensions.width, !mipmapped || !(dimensions.width % 2), "all dimensions of the mip-mapped texture should be a power of 2, but width is not");
         [[fallthrough]];
     default:
         return;

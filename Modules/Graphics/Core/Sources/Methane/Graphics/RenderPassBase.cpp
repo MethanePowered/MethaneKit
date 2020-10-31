@@ -25,6 +25,7 @@ Base implementation of the render pass interface.
 #include "TextureBase.h"
 #include "RenderCommandListBase.h"
 
+#include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <cassert>
@@ -35,7 +36,7 @@ namespace Methane::Graphics
 bool RenderPass::Attachment::operator==(const RenderPass::Attachment& other) const
 {
     META_FUNCTION_TASK();
-    return texture_ptr   == other.texture_ptr &&
+    return texture_ptr  == other.texture_ptr &&
            level        == other.level &&
            slice        == other.slice &&
            depth_plane  == other.depth_plane &&
@@ -199,10 +200,7 @@ const Refs<TextureBase>& RenderPassBase::GetColorAttachmentTextures() const
     m_color_attachment_textures.reserve(m_settings.color_attachments.size());
     for (const ColorAttachment& color_attach : m_settings.color_attachments)
     {
-        if (!color_attach.texture_ptr)
-        {
-            throw std::invalid_argument("Can not use color attachment without texture.");
-        }
+        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_ptr, "Can not use color attachment without texture.");
         m_color_attachment_textures.push_back(static_cast<TextureBase&>(*color_attach.texture_ptr));
     }
     return m_color_attachment_textures;
@@ -228,10 +226,7 @@ const Ptrs<TextureBase>& RenderPassBase::GetNonFrameBufferAttachmentTextures() c
 
     for (const ColorAttachment& color_attach : m_settings.color_attachments)
     {
-        if (!color_attach.texture_ptr)
-        {
-            throw std::invalid_argument("Can not use color attachment without texture.");
-        }
+        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_ptr, "Can not use color attachment without texture.");
 
         Ptr<TextureBase> color_attachment_ptr = std::static_pointer_cast<TextureBase>(color_attach.texture_ptr);
         if (color_attachment_ptr->GetSettings().type == Texture::Type::FrameBuffer)

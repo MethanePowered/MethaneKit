@@ -26,6 +26,7 @@ Base implementation of the resource interface.
 #include "ContextBase.h"
 
 #include <Methane/Graphics/Resource.h>
+#include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <cassert>
@@ -245,8 +246,7 @@ Resource::Location::Location(Ptr<Resource> resource_ptr, Data::Size offset)
     : m_resource_ptr(std::move(resource_ptr))
     , m_offset(offset)
 {
-    if (!m_resource_ptr)
-        throw std::invalid_argument("Can not create Resource Location for an empty resource.");
+    META_CHECK_ARG_NOT_NULL_DESCR(m_resource_ptr, "Can not create Resource Location for an empty resource.");
 }
 
 std::string Resource::GetTypeName(Type type) noexcept
@@ -352,8 +352,9 @@ Resource::SubResource::Count::Count(Data::Size depth, Data::Size array_size, Dat
     , mip_levels_count(mip_levels_count)
 {
     META_FUNCTION_TASK();
-    if (depth == 0 || array_size == 0 || mip_levels_count == 0)
-        throw std::invalid_argument("Subresource count can not be zero.");
+    META_CHECK_ARG_NOT_ZERO_DESCR(depth, "subresource count can not be zero");
+    META_CHECK_ARG_NOT_ZERO_DESCR(array_size, "subresource count can not be zero");
+    META_CHECK_ARG_NOT_ZERO_DESCR(mip_levels_count, "subresource count can not be zero");
 }
 
 Data::Size Resource::SubResource::Count::GetRawCount() const noexcept
@@ -409,9 +410,7 @@ Resource::SubResource::Index::Index(Data::Index depth_slice, Data::Index array_i
 Resource::SubResource::Index::Index(Data::Index raw_index, const Count& count)
 {
     META_FUNCTION_TASK();
-    const Data::Size raw_count = count.GetRawCount();
-    if (raw_index >= raw_count)
-        throw std::invalid_argument("Subresource raw index (" + std::to_string(raw_index) + " ) is out of range (count: " + std::to_string(raw_count) + ").");
+    META_CHECK_ARG_IS_LESS(raw_index, count.GetRawCount());
 
     const uint32_t array_and_depth_index = raw_index / count.mip_levels_count;
     depth_slice = array_and_depth_index % count.depth;
@@ -521,25 +520,19 @@ const Resource::Descriptor& ResourceBase::GetDescriptor(Usage::Value usage) cons
 void ResourceBase::SetData(const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
-
-    if (sub_resources.empty())
-    {
-        throw std::invalid_argument("Can not set buffer data from empty sub-resources.");
-    }
+    META_CHECK_ARG_NOT_EMPTY_DESCR(sub_resources, "Can not set buffer data from empty sub-resources.");
 
     Data::Size sub_resources_data_size = 0U;
     for(const SubResource& sub_resource : sub_resources)
     {
-        if (!sub_resource.p_data || !sub_resource.size)
-        {
-            throw std::invalid_argument("Can not set empty subresource data to buffer.");
-        }
+        META_CHECK_ARG_DESCR("sub_resource", sub_resource.p_data && sub_resource.size, "can not set empty subresource data to buffer");
+
         sub_resources_data_size += sub_resource.size;
         if (m_sub_resource_count_constant)
         {
-            if (sub_resource.index >= m_sub_resource_count)
-                throw std::invalid_argument("Subresource " + static_cast<std::string>(sub_resource.index) +
-                                            " exceeds available subresources range " + static_cast<std::string>(m_sub_resource_count));
+            META_CHECK_ARG_DESCR("sub_resource.index", sub_resource.index < m_sub_resource_count,
+                                 "Subresource " + static_cast<std::string>(sub_resource.index) +
+                                 " exceeds available subresources range " + static_cast<std::string>(m_sub_resource_count));
         }
         else
         {
@@ -677,58 +670,59 @@ void ResourceBase::ValidateSubResource(const SubResource& sub_resource) const
 
     if (sub_resource.data_range)
     {
-        if (sub_resource.size != sub_resource.data_range->GetLength())
-            throw std::invalid_argument("Specified sub-resource "               + static_cast<std::string>(sub_resource.index) +
-                                        " data size ("                          + std::to_string(sub_resource.size) +
-                                        ") differs from length of data range "  + static_cast<std::string>(*sub_resource.data_range));
+        META_CHECK_ARG_VALUE_DESCR(sub_resource.size, sub_resource.size == sub_resource.data_range->GetLength(),
+                                   std::string("Specified sub-resource ")  + static_cast<std::string>(sub_resource.index) +
+                                   " data size ("                          + std::to_string(sub_resource.size) +
+                                   ") differs from length of data range "  + static_cast<std::string>(*sub_resource.data_range));
 
-        if (sub_resource.size > sub_resource_data_size)
-            throw std::out_of_range("Specified sub-resource "                   + static_cast<std::string>(sub_resource.index) +
-                                    " data size ("                              + std::to_string(sub_resource.size) +
-                                    ") is greater than maximum size ("          + std::to_string(sub_resource_data_size) + ")");
+        META_CHECK_ARG_IS_LESS_DESCR(sub_resource.size, sub_resource_data_size,
+                                     std::string("Specified sub-resource ")+ static_cast<std::string>(sub_resource.index) +
+                                     " data size ("                        + std::to_string(sub_resource.size) +
+                                     ") is greater than maximum size ("    + std::to_string(sub_resource_data_size) + ")");
     }
     else
     {
-        if (sub_resource.size != sub_resource_data_size)
-            throw std::invalid_argument("Specified sub-resource "               + static_cast<std::string>(sub_resource.index) +
-                                        " data size ("                          + std::to_string(sub_resource.size) +
-                                        ") should be equal to full size ("      + std::to_string(sub_resource_data_size) +
-                                        ") when data range is not specified.");
+        META_CHECK_ARG_VALUE_DESCR(sub_resource.size, sub_resource.size == sub_resource_data_size,
+                                   std::string("Specified sub-resource ")  + static_cast<std::string>(sub_resource.index) +
+                                   " data size ("                          + std::to_string(sub_resource.size) +
+                                   ") should be equal to full size ("      + std::to_string(sub_resource_data_size) +
+                                   ") when data range is not specified.");
     }
 }
 
 void ResourceBase::ValidateSubResource(const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& sub_resource_data_range) const
 {
     META_FUNCTION_TASK();
-    if (sub_resource_index >= m_sub_resource_count)
-        throw std::invalid_argument("Specified sub-resource "   + static_cast<std::string>(sub_resource_index) +
-                                    " is out of range "         + static_cast<std::string>(m_sub_resource_count));
+    META_CHECK_ARG_DESCR(sub_resource_index, sub_resource_index < m_sub_resource_count,
+                         "Specified sub-resource " + static_cast<std::string>(sub_resource_index) +
+                         " is out of range "       + static_cast<std::string>(m_sub_resource_count));
 
     if (!sub_resource_data_range)
         return;
 
-    if (sub_resource_data_range && sub_resource_data_range->IsEmpty())
-        throw std::invalid_argument("Specified sub-resource data range can not be empty.");
+    META_CHECK_ARG_DESCR("sub_resource_data_range", !sub_resource_data_range->IsEmpty(), "Specified sub-resource data range can not be empty.");
 
     const Data::Index sub_resource_raw_index = sub_resource_index.GetRawIndex(m_sub_resource_count);
     assert(sub_resource_raw_index < m_sub_resource_sizes.size());
 
     const Data::Size sub_resource_data_size = m_sub_resource_sizes[sub_resource_raw_index];
-    if (sub_resource_data_range->GetEnd() > sub_resource_data_size)
-        throw std::out_of_range("Specified data range "      + static_cast<std::string>(*sub_resource_data_range) +
-                                "is out of data bounds [0, " + std::to_string(sub_resource_data_size) +
-                                ") for subresource "         + static_cast<std::string>(sub_resource_index));
+    META_CHECK_ARG_IS_LESS_DESCR(sub_resource_data_range->GetEnd(), sub_resource_data_size + 1,
+                                 std::string("Specified data range ") + static_cast<std::string>(*sub_resource_data_range) +
+                                 "is out of data bounds [0, "         + std::to_string(sub_resource_data_size) +
+                                 ") for subresource "                 + static_cast<std::string>(sub_resource_index));
 }
 
 Data::Size ResourceBase::CalculateSubResourceDataSize(const SubResource::Index& subresource_index) const
 {
     META_FUNCTION_TASK();
-    static const SubResource::Index s_zero_index;
-    static const SubResource::Count s_one_count;
-    if (subresource_index == s_zero_index && m_sub_resource_count == s_one_count)
-        return GetDataSize();
 
-    throw std::invalid_argument("Subresource size is undefined, must be provided by super class override.");
+    static const SubResource::Index s_zero_index;
+    META_CHECK_ARG_DESCR(subresource_index, subresource_index == s_zero_index, "subresource size is undefined, must be provided by super class override");
+
+    static const SubResource::Count s_one_count;
+    META_CHECK_ARG_DESCR(m_sub_resource_count, m_sub_resource_count == s_one_count, "subresource size is undefined, must be provided by super class override");
+
+    return GetDataSize();
 }
 
 void ResourceBase::FillSubresourceSizes()

@@ -82,6 +82,9 @@ protected:
     virtual uint32_t GetNextFrameBufferIndex();
 
 private:
+    void WaitForGpuRenderComplete();
+    void WaitForGpuFramePresented();
+
     Settings            m_settings;
     Ptr<CommandQueue>   m_render_cmd_queue_ptr;
     Ptrs<Fence>         m_frame_fences;

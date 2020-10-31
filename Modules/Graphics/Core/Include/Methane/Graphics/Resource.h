@@ -132,9 +132,10 @@ struct Resource : virtual Object
             Data::Size GetRawCount() const noexcept;
 
             void operator+=(const Index& index) noexcept;
-            bool operator==(const Count& index) const noexcept;
-            bool operator<(const Count& index) const noexcept;
-            bool operator>=(const Count& index) const noexcept;
+            bool operator==(const Count& other) const noexcept;
+            bool operator!=(const Count& other) const noexcept { return !operator==(other); }
+            bool operator<(const Count& other) const noexcept;
+            bool operator>=(const Count& other) const noexcept;
             operator std::string() const noexcept;
         };
 
@@ -148,10 +149,11 @@ struct Resource : virtual Object
             Index(Data::Index raw_index, const Count& count);
             Data::Index GetRawIndex(const Count& count) const noexcept;
 
-            bool operator==(const Index& index) const noexcept;
-            bool operator<(const Index& index) const noexcept;
-            bool operator<(const Count& index) const noexcept;
-            bool operator>=(const Count& index) const noexcept;
+            bool operator==(const Index& other) const noexcept;
+            bool operator!=(const Index& other) const noexcept { return !operator==(other); }
+            bool operator<(const Index& other) const noexcept;
+            bool operator<(const Count& count) const noexcept;
+            bool operator>=(const Count& count) const noexcept;
             operator std::string() const noexcept;
         };
 

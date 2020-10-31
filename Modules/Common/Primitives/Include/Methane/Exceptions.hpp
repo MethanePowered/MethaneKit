@@ -97,7 +97,7 @@ private:
     const T m_value{ };
 };
 
-template<typename T, typename = std::enable_if_t<std::is_integral_v<T>, void>>
+template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>, void>>
 class OutOfRangeArgumentException : public ArgumentExceptionBase<std::out_of_range>
 {
 public:
@@ -148,7 +148,7 @@ class UnexpectedEnumArgumentException : public ArgumentExceptionBase<std::invali
 {
 public:
     UnexpectedEnumArgumentException(const std::string& function_name, const std::string& variable_name, T value, const std::string& description = "")
-        : ArgumentExceptionBaseType(function_name, variable_name, std::string("enum value ") + typeid(T).name() + "(" + std::to_string(value) + ") is unexpected", description)
+        : ArgumentExceptionBaseType(function_name, variable_name, std::string("enum value ") + typeid(T).name() + "(" + std::to_string(static_cast<uint32_t>(value)) + ") is unexpected", description)
         , m_value(value)
     { }
 

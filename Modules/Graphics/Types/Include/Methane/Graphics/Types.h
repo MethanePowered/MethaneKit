@@ -65,9 +65,9 @@ using Timestamp = Data::Timestamp;
 using TimeDelta = Data::TimeDelta;
 using Frequency = Data::Frequency;
 
-enum class PixelFormat
+enum class PixelFormat : uint32_t
 {
-    Unknown,
+    Unknown = 0u,
     RGBA8,
     RGBA8Unorm,
     RGBA8Unorm_sRGB,

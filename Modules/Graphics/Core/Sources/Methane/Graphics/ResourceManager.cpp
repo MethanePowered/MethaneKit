@@ -156,12 +156,9 @@ void ResourceManager::RemoveProgramBindings(ProgramBindings&)
 uint32_t ResourceManager::CreateDescriptorHeap(const DescriptorHeap::Settings& settings)
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_DESCR("settings.type", settings.type != DescriptorHeap::Type::Undefined && settings.type == DescriptorHeap::Type::Count,
+                         "can not create \"Undefined\" descriptor heap");
 
-    if (settings.type == DescriptorHeap::Type::Undefined ||
-        settings.type == DescriptorHeap::Type::Count)
-    {
-        throw std::invalid_argument("Can not create \"Undefined\" descriptor heap.");
-    }
     Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[static_cast<size_t>(settings.type)];
     desc_heaps.push_back(DescriptorHeap::Create(m_context, settings));
     return static_cast<uint32_t>(desc_heaps.size() - 1);
@@ -179,30 +176,22 @@ const Ptr<DescriptorHeap>& ResourceManager::GetDescriptorHeapPtr(DescriptorHeap:
     }
 
     Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[static_cast<size_t>(type)];
-    if (heap_index >= desc_heaps.size())
-    {
-        throw std::invalid_argument("There is no \"" + DescriptorHeap::GetTypeName(type) +
-                                    "\" descriptor heap at index " + std::to_string(heap_index) +
-                                    " (there are only " + std::to_string(desc_heaps.size()) + " heaps of this type).");
-    }
+    META_CHECK_ARG_IS_LESS_DESCR(heap_index, desc_heaps.size(), "descriptor heap of type \"" + DescriptorHeap::GetTypeName(type) + "\" index is not valid");
+
     return desc_heaps[heap_index];
 }
 
 DescriptorHeap& ResourceManager::GetDescriptorHeap(DescriptorHeap::Type type, Data::Index heap_index)
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_DESCR("type", type != DescriptorHeap::Type::Undefined && type != DescriptorHeap::Type::Count,
+                         "can not get reference to \"Undefined\" descriptor heap");
 
-    if (type == DescriptorHeap::Type::Undefined ||
-        type == DescriptorHeap::Type::Count)
-    {
-        throw std::invalid_argument("Can not get reference to \"Undefined\" descriptor heap.");
-    }
     const Ptr<DescriptorHeap>& resource_heap_ptr = GetDescriptorHeapPtr(type, heap_index);
-    if (!resource_heap_ptr)
-    {
-        throw std::invalid_argument("Descriptor heap of type \"" + DescriptorHeap::GetTypeName(type) +
-                                    "\" and index " + std::to_string(heap_index) + " does not exist.");
-    }
+    META_CHECK_ARG_NOT_NULL_DESCR(resource_heap_ptr,
+                                  "Descriptor heap of type \"" + DescriptorHeap::GetTypeName(type) +
+                                  "\" and index " + std::to_string(heap_index) + " does not exist.");
+
     return *resource_heap_ptr;
 }
 
@@ -234,10 +223,8 @@ DescriptorHeap& ResourceManager::GetDefaultShaderVisibleDescriptorHeap(Descripto
     META_FUNCTION_TASK();
 
     const Ptr<DescriptorHeap>& resource_heap_ptr = GetDefaultShaderVisibleDescriptorHeapPtr(type);
-    if (!resource_heap_ptr)
-    {
-        throw std::invalid_argument("There is no shader visible descriptor heap of type \"" + DescriptorHeap::GetTypeName(type) + "\".");
-    }
+    META_CHECK_ARG_NOT_NULL_DESCR(resource_heap_ptr, "There is no shader visible descriptor heap of type \"" + DescriptorHeap::GetTypeName(type) + "\"");
+
     return *resource_heap_ptr;
 }
 

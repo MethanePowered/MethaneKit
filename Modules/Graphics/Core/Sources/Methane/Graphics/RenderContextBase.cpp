@@ -24,6 +24,7 @@ Base implementation of the render context interface.
 #include "RenderContextBase.h"
 #include "DeviceBase.h"
 
+#include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <cassert>
@@ -37,11 +38,8 @@ RenderContextBase::RenderContextBase(DeviceBase& device, tf::Executor& parallel_
     , m_frame_buffer_index(0)
 {
     META_FUNCTION_TASK();
-
-    if (IsSrgbColorSpace(m_settings.color_format))
-    {
-        throw std::invalid_argument("Render context can not use color formats with sRGB gamma correction due to modern swap-chain flip model limitations.");
-    }
+    META_CHECK_ARG_DESCR("m_settings.color_format", !IsSrgbColorSpace(m_settings.color_format),
+                         "Render context can not use color formats with sRGB gamma correction due to modern swap-chain flip model limitations.");
 }
 
 void RenderContextBase::WaitForGpu(WaitFor wait_for)
@@ -52,25 +50,32 @@ void RenderContextBase::WaitForGpu(WaitFor wait_for)
 
     switch (wait_for)
     {
-    case WaitFor::RenderComplete:
-    {
-        META_SCOPE_TIMER("RenderContextDX::WaitForGpu::RenderComplete");
-        OnGpuWaitStart(wait_for);
-        GetRenderFence().FlushOnCpu();
-        GetUploadFence().FlushOnCpu();
-        OnGpuWaitComplete(wait_for);
-    } break;
-
-    case WaitFor::FramePresented:
-    {
-        META_SCOPE_TIMER("RenderContextDX::WaitForGpu::FramePresented");
-        OnGpuWaitStart(wait_for);
-        GetCurrentFrameFence().WaitOnCpu();
-        OnGpuWaitComplete(wait_for);
-    } break;
-
+    case WaitFor::RenderComplete: WaitForGpuRenderComplete(); break;
+    case WaitFor::FramePresented: WaitForGpuFramePresented(); break;
     case WaitFor::ResourcesUploaded: break; // Handled in ContextBase::WaitForGpu
+    default: META_UNEXPECTED_ENUM_ARG(wait_for);
     }
+}
+
+void RenderContextBase::WaitForGpuRenderComplete()
+{
+    META_FUNCTION_TASK();
+    META_SCOPE_TIMER("RenderContextDX::WaitForGpu::RenderComplete");
+
+    OnGpuWaitStart(WaitFor::RenderComplete);
+    GetRenderFence().FlushOnCpu();
+    GetUploadFence().FlushOnCpu();
+    OnGpuWaitComplete(WaitFor::RenderComplete);
+}
+
+void RenderContextBase::WaitForGpuFramePresented()
+{
+    META_FUNCTION_TASK();
+    META_SCOPE_TIMER("RenderContextDX::WaitForGpu::FramePresented");
+
+    OnGpuWaitStart(WaitFor::FramePresented);
+    GetCurrentFrameFence().WaitOnCpu();
+    OnGpuWaitComplete(WaitFor::FramePresented);
 }
 
 void RenderContextBase::Resize(const FrameSize& frame_size)

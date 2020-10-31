@@ -26,6 +26,7 @@ Methane short check macroses throwing exceptions on negative check result
   - META_CHECK_ARG_IS_GREATER[_DESCR](argument, min_value[, description])
   - META_CHECK_ARG_NOT_EMPTY[_DESCR](argument[, description])
   - META_CHECK_ARG_NOT_NULL[_DESCR](argument[, description])
+  - META_UNEXPECTED_ENUM_ARG[_DESCR](argument[, description])
 
 ******************************************************************************/
 
@@ -89,3 +90,8 @@ Methane short check macroses throwing exceptions on negative check result
         throw Methane::ZeroArgumentException<decltype(argument)>(__FUNCTION_NAME__, #argument, description)
 
 #define META_CHECK_ARG_NOT_ZERO(argument) META_CHECK_ARG_NOT_ZERO_DESCR(argument, "")
+
+#define META_UNEXPECTED_ENUM_ARG_DESCR(argument, description) \
+    throw Methane::UnexpectedEnumArgumentException<decltype(argument)>(__FUNCTION_NAME__, #argument, argument, description)
+
+#define META_UNEXPECTED_ENUM_ARG(argument) META_UNEXPECTED_ENUM_ARG_DESCR(argument, "")
