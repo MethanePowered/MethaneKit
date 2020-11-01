@@ -567,7 +567,9 @@ Resource::SubResource ResourceBase::GetData(const SubResource::Index&, const std
 {
     META_FUNCTION_TASK();
     META_FUNCTION_NOT_IMPLEMENTED_DESCR("reading data is not allowed for this type of resource");
+#ifndef METHANE_CHECKS_ENABLED
     return Resource::SubResource();
+#endif
 }
 
 Context& ResourceBase::GetContext() noexcept

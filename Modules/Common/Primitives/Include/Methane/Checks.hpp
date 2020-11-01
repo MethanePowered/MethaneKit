@@ -46,7 +46,7 @@ Methane short check macroses throwing exceptions on negative check result
 
 #define META_CHECK_ARG_DESCR(argument, condition, description) \
     if (!(condition)) \
-        throw Methane::InvalidArgumentException<decltype(argument)>(__FUNCTION_NAME__, #argument, argument, description)
+        throw Methane::InvalidArgumentException<typename std::decay<decltype(argument)>::type>(__FUNCTION_NAME__, #argument, argument, description)
 
 #define META_CHECK_ARG(argument, condition) META_CHECK_ARG_DESCR(argument, condition, #condition)
 
@@ -57,7 +57,7 @@ Methane short check macroses throwing exceptions on negative check result
 #define META_CHECK_ARG_NAME(argument_name, condition) META_CHECK_ARG_NAME_DESCR(argument_name, condition, #condition)
 
 #define META_CHECK_ARG_RANGE_DESCR(argument, range_begin, range_end, description) \
-    if (argument < static_cast<std::decay<typename std::decay<decltype(argument)>::type>(range_begin) || argument >= static_cast<typename std::decay<decltype(argument)>::type>(range_end)) \
+    if (argument < static_cast<typename std::decay<decltype(argument)>::type>(range_begin) || argument >= static_cast<typename std::decay<decltype(argument)>::type>(range_end)) \
         throw Methane::OutOfRangeArgumentException<typename std::decay<decltype(argument)>::type, typename std::decay<decltype(range_begin)>::type>(__FUNCTION_NAME__, #argument, argument, \
                     { range_begin, static_cast<typename std::decay<decltype(range_begin)>::type>(range_end) }, description )
 
@@ -79,24 +79,24 @@ Methane short check macroses throwing exceptions on negative check result
 
 #define META_CHECK_ARG_NOT_EMPTY_DESCR(argument, description) \
     if (argument.empty()) \
-        throw Methane::EmptyArgumentException<decltype(argument)>(__FUNCTION_NAME__, #argument, description)
+        throw Methane::EmptyArgumentException<typename std::decay<decltype(argument)>::type>(__FUNCTION_NAME__, #argument, description)
 
 #define META_CHECK_ARG_NOT_EMPTY(argument) META_CHECK_ARG_NOT_EMPTY_DESCR(argument, "")
 
 #define META_CHECK_ARG_NOT_NULL_DESCR(argument, description) \
     if (!argument) \
-        throw Methane::NullPointerArgumentException<decltype(argument)>(__FUNCTION_NAME__, #argument, description)
+        throw Methane::NullPointerArgumentException<typename std::decay<decltype(argument)>::type>(__FUNCTION_NAME__, #argument, description)
 
 #define META_CHECK_ARG_NOT_NULL(argument) META_CHECK_ARG_NOT_NULL_DESCR(argument, "")
 
 #define META_CHECK_ARG_NOT_ZERO_DESCR(argument, description) \
     if (!argument) \
-        throw Methane::ZeroArgumentException<decltype(argument)>(__FUNCTION_NAME__, #argument, description)
+        throw Methane::ZeroArgumentException<typename std::decay<decltype(argument)>::type>(__FUNCTION_NAME__, #argument, description)
 
 #define META_CHECK_ARG_NOT_ZERO(argument) META_CHECK_ARG_NOT_ZERO_DESCR(argument, "")
 
 #define META_UNEXPECTED_ENUM_ARG_DESCR(argument, description) \
-    throw Methane::UnexpectedEnumArgumentException<decltype(argument)>(__FUNCTION_NAME__, #argument, argument, description)
+    throw Methane::UnexpectedEnumArgumentException<typename std::decay<decltype(argument)>::type>(__FUNCTION_NAME__, #argument, argument, description)
 
 #define META_UNEXPECTED_ENUM_ARG(argument) META_UNEXPECTED_ENUM_ARG_DESCR(argument, "")
 
