@@ -54,7 +54,9 @@ static Resource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_typ
     case D3D_SIT_SAMPLER:   return Resource::Type::Sampler;
     default:                META_UNEXPECTED_ENUM_ARG_DESCR(input_type, "unable to determine resource type by DX shader input type");
     }
+#ifndef METHANE_CHECKS_ENABLED
     return Resource::Type::Buffer;
+#endif
 }
 
 static std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type) noexcept

@@ -604,7 +604,9 @@ DescriptorHeap::Type ResourceBase::GetDescriptorHeapTypeByUsage(ResourceBase::Us
     default:
         META_UNEXPECTED_ENUM_ARG_DESCR(resource_usage, "resource usage does not map to descriptor heap");
     }
+#ifndef METHANE_CHECKS_ENABLED
     return DescriptorHeap::Type::Undefined;
+#endif
 }
 
 const Resource::Descriptor& ResourceBase::GetDescriptorByUsage(Usage::Value usage) const
