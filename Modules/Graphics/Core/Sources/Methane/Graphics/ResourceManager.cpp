@@ -156,8 +156,8 @@ void ResourceManager::RemoveProgramBindings(ProgramBindings&)
 uint32_t ResourceManager::CreateDescriptorHeap(const DescriptorHeap::Settings& settings)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NAME_DESCR("settings.type", settings.type != DescriptorHeap::Type::Undefined && settings.type != DescriptorHeap::Type::Count,
-                              "can not create 'Undefined' descriptor heap");
+    META_CHECK_ARG_DESCR(settings.type, settings.type != DescriptorHeap::Type::Undefined && settings.type != DescriptorHeap::Type::Count,
+                         "can not create 'Undefined' descriptor heap");
 
     Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[static_cast<size_t>(settings.type)];
     desc_heaps.push_back(DescriptorHeap::Create(m_context, settings));
@@ -176,7 +176,7 @@ const Ptr<DescriptorHeap>& ResourceManager::GetDescriptorHeapPtr(DescriptorHeap:
     }
 
     Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[static_cast<size_t>(type)];
-    META_CHECK_ARG_IS_LESS_DESCR(heap_index, desc_heaps.size(), fmt::format("descriptor heap of type '{}' index is not valid", DescriptorHeap::GetTypeName(type)));
+    META_CHECK_ARG_LESS_DESCR(heap_index, desc_heaps.size(), fmt::format("descriptor heap of type '{}' index is not valid", DescriptorHeap::GetTypeName(type)));
 
     return desc_heaps[heap_index];
 }
@@ -184,8 +184,8 @@ const Ptr<DescriptorHeap>& ResourceManager::GetDescriptorHeapPtr(DescriptorHeap:
 DescriptorHeap& ResourceManager::GetDescriptorHeap(DescriptorHeap::Type type, Data::Index heap_index)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NAME_DESCR("type", type != DescriptorHeap::Type::Undefined && type != DescriptorHeap::Type::Count,
-                              "can not get reference to 'Undefined' descriptor heap");
+    META_CHECK_ARG_DESCR(type, type != DescriptorHeap::Type::Undefined && type != DescriptorHeap::Type::Count,
+                         "can not get reference to 'Undefined' descriptor heap");
 
     const Ptr<DescriptorHeap>& resource_heap_ptr = GetDescriptorHeapPtr(type, heap_index);
     META_CHECK_ARG_NOT_NULL_DESCR(resource_heap_ptr, fmt::format("descriptor heap of type '{}' at index {} does not exist", DescriptorHeap::GetTypeName(type), heap_index));

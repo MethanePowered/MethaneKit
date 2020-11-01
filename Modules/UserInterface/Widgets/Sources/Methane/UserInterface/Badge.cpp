@@ -117,8 +117,8 @@ UnitRect Badge::GetBadgeRectInFrame(const UnitSize& frame_size, const UnitSize& 
                                     const UnitPoint& badge_margins, Badge::FrameCorner frame_corner)
 {
     META_FUNCTION_TASK();
-    if (frame_size.units != badge_size.units || badge_size.units != badge_margins.units)
-        throw std::invalid_argument("Units of all sizes must be equal.");
+    META_CHECK_ARG_DESCR(frame_size.units, frame_size.units == badge_size.units && badge_size.units == badge_margins.units,
+                         "frame size, badge size and margins units must be equal");
 
     switch(frame_corner)
     {

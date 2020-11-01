@@ -150,7 +150,7 @@ void RenderCommandListBase::DrawIndexed(Primitive primitive_type, Buffer& index_
         META_CHECK_ARG_NOT_ZERO_DESCR(formatted_items_count, "can not draw with index buffer which contains no formatted vertices");
         META_CHECK_ARG_NOT_ZERO_DESCR(index_count, "can not draw zero index/vertex count");
         META_CHECK_ARG_NOT_ZERO_DESCR(instance_count, "can not draw zero instances");
-        META_CHECK_ARG_IS_LESS_DESCR(start_index, formatted_items_count - index_count + 1U, "ending index is out of buffer bounds");
+        META_CHECK_ARG_LESS_DESCR(start_index, formatted_items_count - index_count + 1U, "ending index is out of buffer bounds");
 
         ValidateDrawVertexBuffers(start_vertex);
     }
@@ -213,12 +213,14 @@ void RenderCommandListBase::UpdateDrawingState(Primitive primitive_type, Buffer*
 void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count) const
 {
     META_FUNCTION_TASK();
+    META_UNUSED(draw_vertex_count);
+
     const Data::Size vertex_buffers_count = m_drawing_state.vertex_buffer_set_ptr->GetCount();
     for (Data::Index vertex_buffer_index = 0U; vertex_buffer_index < vertex_buffers_count; ++vertex_buffer_index)
     {
         const Buffer&  vertex_buffer = (*m_drawing_state.vertex_buffer_set_ptr)[vertex_buffer_index];
         const uint32_t vertex_count  = vertex_buffer.GetFormattedItemsCount();
-        META_CHECK_ARG_IS_LESS_DESCR(draw_start_vertex, vertex_count - draw_vertex_count + 1U,
+        META_CHECK_ARG_LESS_DESCR(draw_start_vertex, vertex_count - draw_vertex_count + 1U,
             fmt::format("can not draw starting from vertex {}{} which is out of bounds for vertex buffer '{}' with vertex count {}", draw_start_vertex,
                         draw_vertex_count ? fmt::format(" with {} vertex count", draw_vertex_count) : "",
                         vertex_buffer.GetName(), vertex_count));

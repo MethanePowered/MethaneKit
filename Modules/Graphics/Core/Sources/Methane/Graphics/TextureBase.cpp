@@ -102,7 +102,7 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_DESCR(m_settings.usage_mask, m_settings.usage_mask != TextureBase::Usage::Unknown, "can not create texture with 'Unknown' usage mask");
-    META_CHECK_ARG_NAME_DESCR("m_settings.pixel_format", m_settings.pixel_format != PixelFormat::Unknown, "can not create texture with 'Unknown' pixel format");
+    META_CHECK_ARG_DESCR(m_settings.pixel_format, m_settings.pixel_format != PixelFormat::Unknown, "can not create texture with 'Unknown' pixel format");
     META_CHECK_ARG_NOT_NULL_DESCR(m_settings.array_length, "array length should be greater than zero");
 
     ValidateDimensions(m_settings.dimension_type, m_settings.dimensions, m_settings.mipmapped);
@@ -118,6 +118,7 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
 void TextureBase::ValidateDimensions(DimensionType dimension_type, const Dimensions& dimensions, bool mipmapped)
 {
     META_FUNCTION_TASK();
+    META_UNUSED(mipmapped);
     META_CHECK_ARG_NOT_ZERO_DESCR(dimensions, "all dimension sizes should be greater than zero");
 
     switch (dimension_type)

@@ -173,10 +173,8 @@ void TextMesh::Update(const std::u32string& text, gfx::FrameSize& frame_size)
     const bool new_text_starts_with_old_one = IsNewTextStartsWithOldOne(text);
     const bool old_text_starts_with_new_one = IsOldTextStartsWithNewOne(text);
 
-    if (m_frame_size != frame_size || (!new_text_starts_with_old_one && !old_text_starts_with_new_one))
-    {
-        throw std::invalid_argument("Text mesh can not be updated with a given text and frame size");
-    }
+    META_CHECK_ARG_DESCR(frame_size, frame_size == m_frame_size, "text mesh can be incrementally updated only when frame size does not change");
+    META_CHECK_ARG_NAME_DESCR("text", new_text_starts_with_old_one || old_text_starts_with_new_one, "text mesh can be incrementally updated only when text is appended or backspaced");
 
     if (new_text_starts_with_old_one)
     {
@@ -209,10 +207,7 @@ void TextMesh::EraseTrailingChars(size_t erase_chars_count, bool fixup_whitespac
     if (!erase_chars_count)
         return;
 
-    if (erase_chars_count > m_text.length())
-        throw std::invalid_argument("Unable to erase " + std::to_string(erase_chars_count) +
-                                    " characters, more than text length (" + std::to_string(m_text.length()) + ").");
-
+    META_CHECK_ARG_LESS_DESCR(erase_chars_count, m_text.length() + 1, "unable to erase mote characters than text contains");
     const size_t erase_chars_from_index = m_text.length() - erase_chars_count;
     const size_t empty_symbols_count    = std::count_if(m_text.begin() + erase_chars_from_index, m_text.end(),
                                             [](char32_t char_code) { return char_code < 255 && (char_code == '\n' || std::isspace(static_cast<int>(char_code))); });

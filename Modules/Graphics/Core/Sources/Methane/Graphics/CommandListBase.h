@@ -65,7 +65,7 @@ public:
         explicit DebugGroupBase(const std::string& name);
 
         // Object overrides
-        void SetName(const std::string&) override { throw std::logic_error("Debug Group can not be renamed"); }
+        void SetName(const std::string&) override;
 
         // DebugGroup interface
         DebugGroup& AddSubGroup(Data::Index id, const std::string& name) final;

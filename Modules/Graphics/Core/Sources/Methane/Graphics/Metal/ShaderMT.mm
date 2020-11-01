@@ -31,6 +31,7 @@ Metal implementation of the shader interface.
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <regex>
 
@@ -57,7 +58,7 @@ static Resource::Type GetResourceTypeByMetalArgumentType(MTLArgumentType mtl_arg
     case MTLArgumentTypeBuffer:     return Resource::Type::Buffer;
     case MTLArgumentTypeTexture:    return Resource::Type::Texture;
     case MTLArgumentTypeSampler:    return Resource::Type::Sampler;
-    default:                        throw std::invalid_argument("Unable to determine resource type by DX shader input type.");
+    default:                        META_UNEXPECTED_ENUM_ARG_DESCR(mtl_arg_type, "unable to determine resource type by DX shader input type");
     }
 }
 

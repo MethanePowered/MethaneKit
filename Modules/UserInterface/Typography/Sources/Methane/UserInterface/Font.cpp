@@ -27,6 +27,7 @@ Font atlas textures generation and fonts library management classes.
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Data/RectBinPack.hpp>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <nowide/convert.hpp>
 #include <map>
@@ -263,11 +264,11 @@ bool Font::Library::HasFont(const std::string& font_name) const
 Font& Font::Library::GetFont(const std::string& font_name) const
 {
     META_FUNCTION_TASK();
-    const auto font_by_name_it = m_font_by_name.find(font_name);
-    if (font_by_name_it == m_font_by_name.end())
-        throw std::invalid_argument("There is no font with name \"" + font_name + "\" in library.");
 
-    assert(font_by_name_it->second);
+    const auto font_by_name_it = m_font_by_name.find(font_name);
+    META_CHECK_ARG_DESCR(font_name, font_by_name_it != m_font_by_name.end(), "there is no font with a give name in fonts library");
+    META_CHECK_ARG_NOT_NULL(font_by_name_it->second);
+
     return *font_by_name_it->second;
 }
 
@@ -277,7 +278,7 @@ Font& Font::Library::GetFont(const Data::Provider& data_provider, const Settings
     const auto font_by_name_it = m_font_by_name.find(font_settings.description.name);
     if (font_by_name_it != m_font_by_name.end())
     {
-        assert(font_by_name_it->second);
+        META_CHECK_ARG_NOT_NULL(font_by_name_it->second);
         return *font_by_name_it->second;
     }
     return AddFont(data_provider, font_settings);
@@ -287,11 +288,11 @@ Font& Font::Library::AddFont(const Data::Provider& data_provider, const Settings
 {
     META_FUNCTION_TASK();
     auto emplace_result = m_font_by_name.emplace(font_settings.description.name, Ptr<Font>(new Font(data_provider, font_settings)));
-    if (!emplace_result.second)
-        throw std::invalid_argument("Font with name \"" + font_settings.description.name + "\" already exists in library.");
+    META_CHECK_ARG_DESCR(font_settings.description.name, emplace_result.second, "font with a give name already exists in fonts library");
 
-    assert(emplace_result.first->second);
+    META_CHECK_ARG_NAME("emplace_result", emplace_result.first->second);
     Emit(&IFontLibraryCallback::OnFontAdded, *emplace_result.first->second);
+
     return *emplace_result.first->second;
 }
 
@@ -335,8 +336,7 @@ std::string Font::ConvertUtf32To8(const std::u32string& text)
 std::u32string Font::GetAlphabetInRange(char32_t from, char32_t to)
 {
     META_FUNCTION_TASK();
-    if (from > to)
-        throw std::invalid_argument("Invalid characters range provided [" + std::to_string(from) + ", " + std::to_string(to) + "]");
+    META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(static_cast<uint32_t>(to), static_cast<uint32_t>(from), "invalid characters range");
 
     std::u32string alphabet(to - from + 1, 0);
     for(char32_t utf32_char = from; utf32_char <= to; ++utf32_char)
@@ -705,8 +705,7 @@ void Font::UpdateAtlasTextures(bool deferred_textures_update)
 void Font::UpdateAtlasTexture(gfx::Context& context, AtlasTexture& atlas_texture)
 {
     META_FUNCTION_TASK();
-    if (!atlas_texture.texture_ptr)
-        throw std::invalid_argument("Atlas texture is not initialized.");
+    META_CHECK_ARG_NOT_NULL_DESCR(atlas_texture.texture_ptr, "font atlas texture is not initialized");
 
     const gfx::FrameSize   atlas_size         = m_atlas_pack_ptr->GetSize();
     const gfx::Dimensions& texture_dimensions = atlas_texture.texture_ptr->GetSettings().dimensions;

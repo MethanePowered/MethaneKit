@@ -173,8 +173,8 @@ Asteroid::Colors Asteroid::GetAsteroidRockColors(uint32_t deep_color_index, uint
     } };
     static const AsteroidColorSchema s_linear_shallow_rock_colors = TransformSrgbToLinear(s_srgb_shallow_rock_colors);
 
-    META_CHECK_ARG_IS_LESS(deep_color_index, s_linear_deep_rock_colors.size());
-    META_CHECK_ARG_IS_LESS(shallow_color_index, s_linear_shallow_rock_colors.size());
+    META_CHECK_ARG_LESS(deep_color_index, s_linear_deep_rock_colors.size());
+    META_CHECK_ARG_LESS(shallow_color_index, s_linear_shallow_rock_colors.size());
     return Asteroid::Colors{ s_linear_deep_rock_colors[deep_color_index], s_linear_shallow_rock_colors[shallow_color_index] };
 }
 
@@ -202,8 +202,8 @@ Asteroid::Colors Asteroid::GetAsteroidIceColors(uint32_t deep_color_index, uint3
     } };
     static const AsteroidColorSchema s_linear_shallow_ice_colors = TransformSrgbToLinear(s_srgb_shallow_ice_colors);
 
-    META_CHECK_ARG_IS_LESS(deep_color_index, s_linear_deep_ice_colors.size());
-    META_CHECK_ARG_IS_LESS(shallow_color_index, s_linear_shallow_ice_colors.size());
+    META_CHECK_ARG_LESS(deep_color_index, s_linear_deep_ice_colors.size());
+    META_CHECK_ARG_LESS(shallow_color_index, s_linear_shallow_ice_colors.size());
     return Asteroid::Colors{ s_linear_deep_ice_colors[deep_color_index], s_linear_shallow_ice_colors[shallow_color_index] };
 }
 
@@ -230,8 +230,8 @@ Asteroid::Colors Asteroid::GetAsteroidLodColors(uint32_t lod_index)
     } };
     static const AsteroidColorSchema s_linear_lod_shallow_colors = TransformSrgbToLinear(s_srgb_lod_shallow_colors);
 
-    META_CHECK_ARG_IS_LESS(lod_index, s_linear_lod_deep_colors.size());
-    META_CHECK_ARG_IS_LESS(lod_index, s_linear_lod_shallow_colors.size());
+    META_CHECK_ARG_LESS(lod_index, s_linear_lod_deep_colors.size());
+    META_CHECK_ARG_LESS(lod_index, s_linear_lod_shallow_colors.size());
     return Asteroid::Colors{ s_linear_lod_deep_colors[lod_index], s_linear_lod_shallow_colors[lod_index] };
 }
 

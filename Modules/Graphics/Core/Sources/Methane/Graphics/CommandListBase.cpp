@@ -68,6 +68,12 @@ CommandListBase::DebugGroupBase::DebugGroupBase(const std::string& name)
     META_FUNCTION_TASK();
 }
 
+void CommandListBase::DebugGroupBase::SetName(const std::string&)
+{
+    META_FUNCTION_TASK();
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Debug Group can not be renamed");
+}
+
 CommandList::DebugGroup& CommandListBase::DebugGroupBase::AddSubGroup(Data::Index id, const std::string& name)
 {
     META_FUNCTION_TASK();
@@ -339,11 +345,12 @@ CommandListSetBase::CommandListSetBase(const Refs<CommandList>& command_list_ref
 
     m_base_refs.reserve(m_refs.size());
     m_base_ptrs.reserve(m_refs.size());
-    CommandQueue& command_queue = m_refs.front().get().GetCommandQueue();
+
     for(const Ref<CommandList>& command_list_ref : m_refs)
     {
         auto& command_list_base = dynamic_cast<CommandListBase&>(command_list_ref.get());
-        META_CHECK_ARG_NAME_DESCR("command_list_base", std::addressof(command_list_base.GetCommandQueue()) == std::addressof(command_queue),
+        META_CHECK_ARG_NAME_DESCR("command_list_refs",
+                                  std::addressof(command_list_base.GetCommandQueue()) == std::addressof(m_refs.front().get().GetCommandQueue()),
                                   "all command lists in set must be created in one command queue");
 
         m_base_refs.emplace_back(command_list_base);
@@ -354,7 +361,7 @@ CommandListSetBase::CommandListSetBase(const Refs<CommandList>& command_list_ref
 CommandList& CommandListSetBase::operator[](Data::Index index) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_IS_LESS(index, m_refs.size());
+    META_CHECK_ARG_LESS(index, m_refs.size());
 
     return m_refs[index].get();
 }

@@ -31,6 +31,7 @@ Vulkan implementation of the render state interface.
 
 #include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -103,10 +104,7 @@ RenderStateVK::~RenderStateVK()
 void RenderStateVK::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    if (!settings.program_ptr)
-    {
-        throw std::invalid_argument("Can not create state with empty program.");
-    }
+    META_CHECK_ARG_NOT_NULL_DESCR(settings.program_ptr, "can not create state with empty program");
 
     RenderStateBase::Reset(settings);
     ResetNativeState();

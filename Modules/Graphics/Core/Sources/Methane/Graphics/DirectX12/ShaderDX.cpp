@@ -28,12 +28,14 @@ DirectX 12 implementation of the shader interface.
 #include "TypesDX.h"
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Primitives.h>
 #include <Methane/Data/Provider.h>
+#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <d3dx12.h>
 #include <D3Dcompiler.h>
+
 #include <nowide/convert.hpp>
 #include <sstream>
 #include <cassert>
@@ -50,8 +52,9 @@ static Resource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_typ
     case D3D_SIT_TBUFFER:   return Resource::Type::Buffer;
     case D3D_SIT_TEXTURE:   return Resource::Type::Texture;
     case D3D_SIT_SAMPLER:   return Resource::Type::Sampler;
-    default:                throw std::invalid_argument("Unable to determine resource type by DX shader input type.");
+    default:                META_UNEXPECTED_ENUM_ARG_DESCR(input_type, "unable to determine resource type by DX shader input type");
     }
+    return Resource::Type::Buffer;
 }
 
 static std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type) noexcept
@@ -246,7 +249,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
     D3D12_SHADER_DESC shader_desc{};
     m_cp_reflection->GetDesc(&shader_desc);
 
-#ifdef _DEBUG
+#ifdef METHANE_LOGGING_ENABLED
     std::stringstream log_ss;
     log_ss << std::endl << GetTypeName() << " shader v." << shader_desc.Version << " with argument bindings:" << std::endl;
 #endif
@@ -282,7 +285,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
             }
         ));
 
-#ifdef _DEBUG
+#ifdef METHANE_LOGGING_ENABLED
         log_ss << "  - Argument \"" << binding_desc.Name
                << "\" binding "     << resource_index
                << ": type="         << GetShaderInputTypeName(binding_desc.Type)
@@ -302,10 +305,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
 #endif
     }
 
-#ifdef _DEBUG
     META_LOG(log_ss.str());
-#endif
-
     return argument_bindings;
 }
 
@@ -317,7 +317,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
     D3D12_SHADER_DESC shader_desc{};
     m_cp_reflection->GetDesc(&shader_desc);
 
-#ifdef _DEBUG
+#ifdef METHANE_LOGGING_ENABLED
     std::stringstream log_ss;
     log_ss << std::endl << GetTypeName() << " shader input parameters:" << std::endl;
 #endif
@@ -329,7 +329,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
         D3D12_SIGNATURE_PARAMETER_DESC param_desc{};
         m_cp_reflection->GetInputParameterDesc(param_index, &param_desc);
 
-#ifdef _DEBUG
+#ifdef METHANE_LOGGING_ENABLED
         log_ss  << "  - Parameter "     << param_index
                 << ": semantic_name=\"" << param_desc.SemanticName << "\""
                 << ", semantic_index="  << param_desc.SemanticIndex
@@ -343,12 +343,10 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
 
         const ProgramBase::InputBufferLayouts& input_buffer_layouts = program.GetSettings().input_buffer_layouts;
         const uint32_t buffer_index = GetProgramInputBufferIndexByArgumentSemantic(program, param_desc.SemanticName);
-        if (buffer_index > input_buffer_layouts.size())
-        {
-            throw std::invalid_argument("Provided description of program input layout has insufficient buffers count (" + std::to_string(input_buffer_layouts.size()) +
-                                        "), while shader requires buffer at index " + std::to_string(buffer_index) + ".");
-        }
 
+        META_CHECK_ARG_LESS_DESCR(buffer_index, input_buffer_layouts.size(),
+                                     fmt::format("Provided description of program input layout has insufficient buffers count {}, while shader requires buffer at index {}",
+                                                 input_buffer_layouts.size(), buffer_index));
         const ProgramBase::InputBufferLayout& input_buffer_layout = input_buffer_layouts[buffer_index];
 
         if (buffer_index <= input_buffer_byte_offsets.size())
@@ -370,10 +368,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
         buffer_byte_offset += element_byte_size;
     }
 
-#ifdef _DEBUG
     META_LOG(log_ss.str().c_str());
-#endif
-
     return dx_input_layout;
 }
 

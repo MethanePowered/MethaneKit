@@ -27,6 +27,7 @@ Metal implementation of the render pass interface.
 #include "TypesMT.hh"
 
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -88,11 +89,8 @@ void RenderPassMT::Reset()
     uint32_t color_attach_index = 0;
     for(const ColorAttachment& color_attach : settings.color_attachments)
     {
-        if (!color_attach.texture_ptr)
-        {
-            throw std::invalid_argument("Can not use color attachment without texture.");
-        }
-
+        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_ptr, "can not use color attachment without texture");
+        
         TextureMT& color_texture = static_cast<TextureMT&>(*color_attach.texture_ptr);
         if (color_texture.GetSettings().type == Texture::Type::FrameBuffer)
         {

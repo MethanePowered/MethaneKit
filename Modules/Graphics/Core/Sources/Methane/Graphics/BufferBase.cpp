@@ -93,7 +93,7 @@ BufferSetBase::BufferSetBase(Buffer::Type buffers_type, const Refs<Buffer>& buff
 Buffer& BufferSetBase::operator[](Data::Index index) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_IS_LESS(index, m_refs.size());
+    META_CHECK_ARG_LESS(index, m_refs.size());
 
     return m_refs[index].get();
 }

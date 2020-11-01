@@ -25,6 +25,7 @@ Base mesh implementation with customizable vertex types
 
 #include <Methane/Graphics/Mesh.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <cassert>
 #include <cml/mathlib/mathlib.h>
@@ -42,10 +43,7 @@ public:
         : Mesh(type, vertex_layout)
     {
         META_FUNCTION_TASK();
-        if (sizeof(VType) != m_vertex_size)
-        {
-            throw std::invalid_argument("Size of vertex structure differs from vertex size calculated by vertex layout.");
-        }
+        META_CHECK_ARG_DESCR(m_vertex_size, m_vertex_size == sizeof(VType), "size of vertex structure differs from vertex size calculated by vertex layout");
     }
 
     const Vertices& GetVertices() const noexcept       { return m_vertices; }

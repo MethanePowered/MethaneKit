@@ -19,25 +19,28 @@ limitations under the License.
 FILE: Methane/Checks.hpp
 Methane short check macroses throwing exceptions on negative check result
 
-  - META_CHECK_ARG[_DESCR](argument_name, condition[, description])
-  - META_CHECK_ARG_NAME[_DESCR](argument, condition[, description])
-  - META_CHECK_ARG_IN_RANGE[_DESCR](argument, range_begin, range_end[, description])
-  - META_CHECK_ARG_IS_LESS[_DESCR](argument, upper_limit[, description])
-  - META_CHECK_ARG_IS_GREATER_OR_EQUAL[_DESCR](argument, min_value[, description])
+  - META_CHECK_ARG[_DESCR](argument, condition[, description])
+  - META_CHECK_ARG_NAME[_DESCR](argument_name, condition[, description])
+  - META_CHECK_ARG_RANGE[_DESCR](argument, range_begin, range_end[, description])
+  - META_CHECK_ARG_LESS[_DESCR](argument, upper_limit[, description])
+  - META_CHECK_ARG_GREATER_OR_EQUAL[_DESCR](argument, min_value[, description])
   - META_CHECK_ARG_NOT_EMPTY[_DESCR](argument[, description])
   - META_CHECK_ARG_NOT_NULL[_DESCR](argument[, description])
   - META_UNEXPECTED_ENUM_ARG[_DESCR](argument[, description])
   - META_FUNCTION_NOT_IMPLEMENTED[_DESCR]([description])
 
 ******************************************************************************/
+#pragma once
 
 #include "Exceptions.hpp"
 
+#ifdef METHANE_CHECKS_ENABLED
+
 #ifndef __FUNCTION_NAME__
     #ifdef WIN32
-        #define __FUNCTION_NAME__   __FUNCTION__
+        #define __FUNCTION_NAME__ __FUNCTION__
     #else
-        #define __FUNCTION_NAME__   __func__
+        #define __FUNCTION_NAME__ __func__
     #endif
 #endif
 
@@ -53,26 +56,26 @@ Methane short check macroses throwing exceptions on negative check result
 
 #define META_CHECK_ARG_NAME(argument_name, condition) META_CHECK_ARG_NAME_DESCR(argument_name, condition, #condition)
 
-#define META_CHECK_ARG_IN_RANGE_DESCR(argument, range_begin, range_end, description) \
+#define META_CHECK_ARG_RANGE_DESCR(argument, range_begin, range_end, description) \
     if (argument < range_begin || argument >= range_end) \
         throw Methane::OutOfRangeArgumentException<decltype(argument), decltype(range_begin)>(__FUNCTION_NAME__, #argument, argument, \
                     { range_begin, static_cast<decltype(range_begin)>(range_end) }, description )
 
-#define META_CHECK_ARG_IN_RANGE(argument, range_begin, range_end) META_CHECK_ARG_IN_RANGE_DESCR(argument, range_begin, range_end, "")
+#define META_CHECK_ARG_RANGE(argument, range_begin, range_end) META_CHECK_ARG_RANGE_DESCR(argument, range_begin, range_end, "")
 
-#define META_CHECK_ARG_IS_LESS_DESCR(argument, upper_limit, description) \
+#define META_CHECK_ARG_LESS_DESCR(argument, upper_limit, description) \
     if (argument >= upper_limit) \
         throw Methane::OutOfRangeArgumentException<decltype(argument), decltype(upper_limit)>(__FUNCTION_NAME__, #argument, argument, \
                     { std::numeric_limits<decltype(upper_limit)>::min(), upper_limit }, description )
 
-#define META_CHECK_ARG_IS_LESS(argument, upper_limit) META_CHECK_ARG_IS_LESS_DESCR(argument, upper_limit, "")
+#define META_CHECK_ARG_LESS(argument, upper_limit) META_CHECK_ARG_LESS_DESCR(argument, upper_limit, "")
 
-#define META_CHECK_ARG_IS_GREATER_OR_EQUAL_DESCR(argument, min_value, description) \
+#define META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(argument, min_value, description) \
     if (argument < min_value) \
         throw Methane::OutOfRangeArgumentException<decltype(argument), decltype(min_value)>(__FUNCTION_NAME__, #argument, argument, \
                     { min_value, std::numeric_limits<decltype(min_value)>::max() }, description )
 
-#define META_CHECK_ARG_IS_GREATER_OR_EQUAL(argument, min_value) META_CHECK_ARG_IS_GREATER_OR_EQUAL_DESCR(argument, min_value, "")
+#define META_CHECK_ARG_GREATER_OR_EQUAL(argument, min_value) META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(argument, min_value, "")
 
 #define META_CHECK_ARG_NOT_EMPTY_DESCR(argument, description) \
     if (argument.empty()) \
@@ -101,3 +104,29 @@ Methane short check macroses throwing exceptions on negative check result
     throw Methane::NotImplementedException(__FUNCTION_NAME__, description)
 
 #define META_FUNCTION_NOT_IMPLEMENTED() META_FUNCTION_NOT_IMPLEMENTED_DESCR("")
+
+#else // #ifdef METHANE_CHECKS_ENABLED
+
+// (void)argument is added to suppress unused argument warnings
+#define META_CHECK_ARG_DESCR(argument, condition, description) (void)argument
+#define META_CHECK_ARG(argument, condition) (void)argument
+#define META_CHECK_ARG_NAME_DESCR(argument_name, condition, description)
+#define META_CHECK_ARG_NAME(argument_name, condition)
+#define META_CHECK_ARG_RANGE_DESCR(argument, range_begin, range_end, description) (void)argument
+#define META_CHECK_ARG_RANGE(argument, range_begin, range_end) (void)argument
+#define META_CHECK_ARG_LESS_DESCR(argument, upper_limit, description) (void)argument
+#define META_CHECK_ARG_LESS(argument, upper_limit) (void)argument
+#define META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(argument, min_value, description) (void)argument
+#define META_CHECK_ARG_GREATER_OR_EQUAL(argument, min_value) (void)argument
+#define META_CHECK_ARG_NOT_EMPTY_DESCR(argument, description) (void)argument
+#define META_CHECK_ARG_NOT_EMPTY(argument) (void)argument
+#define META_CHECK_ARG_NOT_NULL_DESCR(argument, description) (void)argument
+#define META_CHECK_ARG_NOT_NULL(argument) (void)argument
+#define META_CHECK_ARG_NOT_ZERO_DESCR(argument, description) (void)argument
+#define META_CHECK_ARG_NOT_ZERO(argument) (void)argument
+#define META_UNEXPECTED_ENUM_ARG_DESCR(argument, description) (void)argument
+#define META_UNEXPECTED_ENUM_ARG(argument) (void)argument
+#define META_FUNCTION_NOT_IMPLEMENTED_DESCR(description)
+#define META_FUNCTION_NOT_IMPLEMENTED()
+
+#endif // #ifdef METHANE_CHECKS_ENABLED

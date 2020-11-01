@@ -23,6 +23,7 @@ enable_testing()
 # Build configuration
 option(METHANE_APPS_BUILD_ENABLED       "Enable applications build" ON)
 option(METHANE_TESTS_BUILD_ENABLED      "Enable tests build" ON)
+option(METHANE_CHECKS_ENABLED           "Enable runtime checks of input arguments" ON)
 option(METHANE_RUN_TESTS_DURING_BUILD   "Enable test auto-run after module build" ON)
 option(METHANE_UNITY_BUILD_ENABLED      "Enable unity build speedup for some modules" ON)
 option(METHANE_CODE_COVERAGE_ENABLED    "Enable code coverage data collection with GCC and Clang" OFF)
@@ -180,12 +181,17 @@ target_compile_definitions(MethaneBuildOptions INTERFACE
     METHANE_VERSION_BUILD=${METHANE_VERSION_BUILD_MAJOR}
 )
 
-if (METHANE_TESTS_BUILD_ENABLED)
+if (METHANE_APPS_BUILD_ENABLED)
     message(STATUS "Methane applications build is enabled")
 endif()
 
-if (METHANE_TESTS_APPS_ENABLED)
+if (METHANE_TESTS_BUILD_ENABLED)
     message(STATUS "Methane tests build is enabled")
+endif()
+
+if (METHANE_CHECKS_ENABLED)
+    message(STATUS "Methane runtime checks of input arguments are enabled")
+    target_compile_definitions(MethaneBuildOptions INTERFACE METHANE_CHECKS_ENABLED)
 endif()
 
 if(METHANE_RUN_TESTS_DURING_BUILD)

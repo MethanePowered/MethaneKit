@@ -23,6 +23,7 @@ Abstract mesh class
 
 #include <Methane/Graphics/Mesh.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <cml/mathlib/mathlib.h>
 
@@ -115,10 +116,8 @@ Mesh::VertexFieldOffsets Mesh::GetVertexFieldOffsets(const VertexLayout& vertex_
         field_offsets[vertex_field_index] = static_cast<int32_t>(current_offset);
         current_offset += g_vertex_field_sizes[vertex_field_index];
     }
-    if (field_offsets[static_cast<size_t>(VertexField::Position)] < 0)
-    {
-        throw std::invalid_argument("Position field must be specified in vertex layout");
-    }
+
+    META_CHECK_ARG_NAME_DESCR("vertex_layout", field_offsets[static_cast<size_t>(VertexField::Position)] >= 0, "position field must be specified in vertex layout");
     return field_offsets;
 }
 
@@ -141,10 +140,7 @@ Mesh::Mesh(Type type, const VertexLayout& vertex_layout)
     , m_vertex_size(GetVertexSize(m_vertex_layout))
 {
     META_FUNCTION_TASK();
-    if (!Mesh::HasVertexField(Mesh::VertexField::Position))
-    {
-        throw std::invalid_argument("Vertex positions must be available in mesh layout.");
-    }
+    META_CHECK_ARG_NAME_DESCR("vertex_layout", Mesh::HasVertexField(Mesh::VertexField::Position), "vertex positions must be available in mesh layout");
 }
 
 bool Mesh::HasVertexField(VertexField field) const noexcept

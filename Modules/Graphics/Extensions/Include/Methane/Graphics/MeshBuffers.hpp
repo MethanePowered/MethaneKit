@@ -36,6 +36,7 @@ Mesh buffers with texture extension structure.
 #include <Methane/Data/AlignedAllocator.hpp>
 #include <Methane/Data/Math.hpp>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <taskflow/taskflow.hpp>
 
@@ -104,9 +105,7 @@ public:
               uint32_t mesh_subset_index = 0, uint32_t instance_count = 1, uint32_t start_instance = 0)
     {
         META_FUNCTION_TASK();
-
-        if (mesh_subset_index >= m_mesh_subsets.size())
-            throw std::invalid_argument("Can not draw mesh subset because its index is out of bounds.");
+        META_CHECK_ARG_LESS_DESCR(mesh_subset_index, m_mesh_subsets.size(), "can not draw mesh subset because its index is out of bounds");
 
         const Mesh::Subset& mesh_subset = m_mesh_subsets[mesh_subset_index];
         cmd_list.SetProgramBindings(program_bindings);
@@ -138,9 +137,7 @@ public:
              ++instance_program_bindings_it)
         {
             const Ptr<ProgramBindings>& program_bindings_ptr = *instance_program_bindings_it;
-
-            if (!program_bindings_ptr)
-                throw std::invalid_argument("Can not set Null resource bindings");
+            META_CHECK_ARG_NOT_NULL(program_bindings_ptr);
 
             const uint32_t instance_index = first_instance_index + static_cast<uint32_t>(std::distance(instance_program_bindings_begin, instance_program_bindings_it));
             const uint32_t subset_index = GetSubsetByInstanceIndex(instance_index);
@@ -192,8 +189,7 @@ public:
     const UniformsType& GetFinalPassUniforms(Data::Index instance_index = 0U) const
     {
         META_FUNCTION_TASK();
-        if (instance_index >= m_final_pass_instance_uniforms.size())
-            throw std::invalid_argument("Instance index is out of bounds.");
+        META_CHECK_ARG_LESS(instance_index, m_final_pass_instance_uniforms.size());
 
         return m_final_pass_instance_uniforms[instance_index];
     }
@@ -201,8 +197,7 @@ public:
     void SetFinalPassUniforms(UniformsType&& uniforms, Data::Index instance_index = 0U)
     {
         META_FUNCTION_TASK();
-        if (instance_index >= m_final_pass_instance_uniforms.size())
-            throw std::invalid_argument("Instance index is out of bounds.");
+        META_CHECK_ARG_LESS(instance_index, m_final_pass_instance_uniforms.size());
 
         m_final_pass_instance_uniforms[instance_index] = std::move(uniforms);
     }
@@ -299,9 +294,7 @@ public:
     const Ptr<Texture>& GetSubsetTexturePtr(uint32_t subset_index) const
     {
         META_FUNCTION_TASK();
-
-        if (subset_index >= MeshBuffers<UniformsType>::GetSubsetsCount())
-            throw std::invalid_argument("Subset index is out of bounds.");
+        META_CHECK_ARG_LESS(subset_index, MeshBuffers<UniformsType>::GetSubsetsCount());
 
         return m_subset_textures[subset_index];
     }
@@ -329,9 +322,7 @@ public:
     void SetSubsetTexture(const Ptr<Texture>& texture_ptr, uint32_t subset_index)
     {
         META_FUNCTION_TASK();
-
-        if (subset_index >= MeshBuffers<UniformsType>::GetSubsetsCount())
-            throw std::invalid_argument("Subset index is out of bounds.");
+        META_CHECK_ARG_LESS(subset_index, MeshBuffers<UniformsType>::GetSubsetsCount());
 
         m_subset_textures[subset_index] = texture_ptr;
     }

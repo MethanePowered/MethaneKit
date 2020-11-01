@@ -28,7 +28,6 @@ Methane common exception types
  - NotImplementedException
 
 ******************************************************************************/
-
 #pragma once
 
 #include <fmt/format.h>
@@ -69,41 +68,36 @@ public:
         : BaseExceptionType(fmt::format("Function '{}' argument '{}' value {}.", function_name, argument_name, invalid_msg + (description.empty() ? "" : (": " + description))))
         , ArgumentException(function_name, argument_name)
     { }
-
-protected:
-    static std::string ToString(const std::string& value) { return value; }
-
-    template<typename V, typename = std::enable_if_t<!std::is_arithmetic_v<V> && !std::is_same_v<V, std::string>, void>>
-    static std::string ToString(const V& value) { return static_cast<std::string>(value); }
-
-    template<typename V, typename = std::enable_if_t<std::is_arithmetic_v<V>, void>>
-    static std::string ToString(V value) { return std::to_string(value); }
 };
 
 template<typename T>
 class InvalidArgumentException : public ArgumentExceptionBase<std::invalid_argument>
 {
 public:
+    using DecayType = typename std::decay<T>::type;
+
     InvalidArgumentException(const std::string& function_name, const std::string& argument_name, const std::string& description = "")
         : ArgumentExceptionBaseType(function_name, argument_name, "is not valid", description)
     { }
 
-    InvalidArgumentException(const std::string& function_name, const std::string& argument_name, T value, const std::string& description = "")
+    InvalidArgumentException(const std::string& function_name, const std::string& argument_name, DecayType value, const std::string& description = "")
         : ArgumentExceptionBaseType(function_name, argument_name, fmt::format("{}({}) is not valid", typeid(T).name(), value), description)
         , m_value(std::move(value))
     { }
 
-    const T& GetValue() const noexcept { return m_value; }
+    const DecayType& GetValue() const noexcept { return m_value; }
 
 private:
-    const T m_value{ };
+    const DecayType m_value{ };
 };
 
-template<typename T, typename V, typename RangeType = std::pair<V, V>>
+template<typename T, typename V, typename RangeType = std::pair<typename std::decay<V>::type, typename std::decay<V>::type>>
 class OutOfRangeArgumentException : public ArgumentExceptionBase<std::out_of_range>
 {
 public:
-    OutOfRangeArgumentException(const std::string& function_name, const std::string& argument_name, T value, RangeType range, const std::string& description = "")
+    using DecayType = typename std::decay<T>::type;
+
+    OutOfRangeArgumentException(const std::string& function_name, const std::string& argument_name, DecayType value, RangeType range, const std::string& description = "")
         : ArgumentExceptionBaseType(function_name, argument_name, fmt::format("{}({}) is out of range [{}, {})", typeid(T).name(), value, range.first, range.second), description)
         , m_value(std::move(value))
         , m_range(std::move(range))
@@ -113,8 +107,8 @@ public:
     const std::pair<T, T>& GetRange() const noexcept { return m_range; }
 
 private:
-    const T m_value;
-    const std::pair<V, V> m_range;
+    const DecayType m_value;
+    const RangeType m_range;
 };
 
 template<typename T>

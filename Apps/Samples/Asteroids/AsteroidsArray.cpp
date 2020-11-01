@@ -86,8 +86,8 @@ AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t ins
 uint32_t AsteroidsArray::UberMesh::GetSubsetIndex(uint32_t instance_index, uint32_t subdivision_index)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_IS_LESS(instance_index, m_instance_count);
-    META_CHECK_ARG_IS_LESS(subdivision_index, m_subdivisions_count);
+    META_CHECK_ARG_LESS(instance_index, m_instance_count);
+    META_CHECK_ARG_LESS(subdivision_index, m_subdivisions_count);
 
     return subdivision_index * m_instance_count + instance_index;
 }
@@ -95,7 +95,7 @@ uint32_t AsteroidsArray::UberMesh::GetSubsetIndex(uint32_t instance_index, uint3
 uint32_t AsteroidsArray::UberMesh::GetSubsetSubdivision(uint32_t subset_index) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_IS_LESS(subset_index, GetSubsetCount());
+    META_CHECK_ARG_LESS(subset_index, GetSubsetCount());
 
     const uint32_t subdivision_index = subset_index / m_instance_count;
     assert(subdivision_index < m_subdivisions_count);
@@ -106,7 +106,7 @@ uint32_t AsteroidsArray::UberMesh::GetSubsetSubdivision(uint32_t subset_index) c
 const gfx::Vector2f& AsteroidsArray::UberMesh::GetSubsetDepthRange(uint32_t subset_index) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_IS_LESS(subset_index, GetSubsetCount());
+    META_CHECK_ARG_LESS(subset_index, GetSubsetCount());
 
     assert(subset_index < m_depth_ranges.size());
     return m_depth_ranges[subset_index];

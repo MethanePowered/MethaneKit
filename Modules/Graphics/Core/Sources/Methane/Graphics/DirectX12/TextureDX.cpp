@@ -107,10 +107,8 @@ void RenderTargetTextureDX::Initialize()
     META_FUNCTION_TASK();
 
     const Settings& settings = GetSettings();
-    if (settings.dimensions.depth != 1 || settings.dimensions.width == 0 || settings.dimensions.height == 0)
-    {
-        throw std::invalid_argument("Render target texture can only be created for 2D texture with dimensions.depth == 1 and non zero width and height.");
-    }
+    META_CHECK_ARG_NOT_ZERO_DESCR(settings.dimensions, "all render target texture dimensions can not be zero");
+    META_CHECK_ARG_DESCR(settings.dimensions.depth, settings.dimensions.depth == 1, "render target texture can have 2D dimensions only");
 
     D3D12_RESOURCE_DESC tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
         TypeConverterDX::PixelFormatToDxgi(settings.pixel_format),
@@ -124,13 +122,9 @@ template<>
 void FrameBufferTextureDX::Initialize(uint32_t frame_buffer_index)
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_DESCR(GetUsageMask(), GetUsageMask() == Usage::RenderTarget, "frame-buffer texture supports only 'RenderTarget' usage");
 
     InitializeFrameBufferResource(frame_buffer_index);
-
-    if (GetUsageMask() != Usage::RenderTarget)
-    {
-        throw std::runtime_error("Frame BufferBase texture supports only Render Target usage.");
-    }
 
     const D3D12_CPU_DESCRIPTOR_HANDLE descriptor_handle = GetNativeCpuDescriptorHandle(Usage::RenderTarget);
     GetContextDX().GetDeviceDX().GetNativeDevice()->CreateRenderTargetView(GetNativeResource(), nullptr, descriptor_handle);
@@ -210,11 +204,7 @@ ImageTextureDX::TextureDX(ContextBase& render_context, const Settings& settings,
     : TextureBase(render_context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();
-
-    if (ResourceBase::GetUsageMask() != Usage::ShaderRead)
-    {
-        throw std::runtime_error("Image texture supports only \"Shader Read\" usage.");
-    }
+    META_CHECK_ARG_DESCR(GetUsageMask(), GetUsageMask() == Usage::ShaderRead, "image texture supports only 'ShaderRead' usage");
 
     InitializeDefaultDescriptors();
 
@@ -251,19 +241,12 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
     switch (settings.dimension_type)
     {
     case DimensionType::Tex1D:
-        if (settings.array_length != 1)
-        {
-            throw std::invalid_argument("Single 1D Texture must have array length equal to 1.");
-        }
+        META_CHECK_ARG_DESCR(settings.array_length, settings.array_length == 1, "single 1D texture must have array length equal to 1");
         srv_desc.Texture1D.MipLevels = sub_resource_count.mip_levels_count;
-        // NOTE: break is missing intentionally
+        [[fallthrough]];
 
     case DimensionType::Tex1DArray:
-        if (settings.dimensions.height != 1 || settings.dimensions.depth != 1)
-        {
-            throw std::invalid_argument("1D Textures must have height and depth dimensions equal to 1.");
-        }
-
+        META_CHECK_ARG_DESCR(settings.dimensions, settings.dimensions.height == 1 && settings.dimensions.depth == 1, "1D textures must have height and depth dimensions equal to 1");
         tex_desc = CD3DX12_RESOURCE_DESC::Tex1D(
             TypeConverterDX::PixelFormatToDxgi(settings.pixel_format),
             settings.dimensions.width,
@@ -279,21 +262,15 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         break;
 
     case DimensionType::Tex2DMultisample:
-        throw std::invalid_argument("Texture 2D Multisample is not supported yet.");
+        META_UNEXPECTED_ENUM_ARG_DESCR(settings.dimension_type, "2D Multisample textures are not supported yet");
 
     case DimensionType::Tex2D:
-        if (settings.array_length != 1)
-        {
-            throw std::invalid_argument("Single 2D Texture must have array length equal to 1.");
-        }
+        META_CHECK_ARG_DESCR(settings.array_length, settings.array_length == 1, "single 2D texture must have array length equal to 1");
         srv_desc.Texture2D.MipLevels = sub_resource_count.mip_levels_count;
-        // NOTE: break is missing intentionally
+        [[fallthrough]];
 
     case DimensionType::Tex2DArray:
-        if (settings.dimensions.depth != 1)
-        {
-            throw std::invalid_argument("2D Textures must have depth dimension equal to 1.");
-        }
+        META_CHECK_ARG_DESCR(settings.dimensions, settings.dimensions.depth == 1, "2D textures must have depth dimension equal to 1");
         tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
             TypeConverterDX::PixelFormatToDxgi(settings.pixel_format),
             settings.dimensions.width,
@@ -310,10 +287,7 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         break;
 
     case DimensionType::Tex3D:
-        if (settings.array_length != 1)
-        {
-            throw std::invalid_argument("Single 3D Texture must have array length equal to 1.");
-        }
+        META_CHECK_ARG_DESCR(settings.array_length, settings.array_length == 1, "single 3D texture must have array length equal to 1");
         tex_desc = CD3DX12_RESOURCE_DESC::Tex3D(
             TypeConverterDX::PixelFormatToDxgi(settings.pixel_format),
             settings.dimensions.width,
@@ -326,18 +300,12 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         break;
 
     case DimensionType::Cube:
-        if (settings.array_length != 1)
-        {
-            throw std::invalid_argument("Single Cube Texture must have array length equal to 1.");
-        }
+        META_CHECK_ARG_DESCR(settings.array_length, settings.array_length == 1, "single Cube texture must have array length equal to 1");
         srv_desc.TextureCube.MipLevels = sub_resource_count.mip_levels_count;
-        // NOTE: break is missing intentionally
+        [[fallthrough]];
 
     case DimensionType::CubeArray:
-        if (settings.dimensions.depth != 6)
-        {
-            throw std::invalid_argument("Cube textures must have depth dimension equal to 6.");
-        }
+        META_CHECK_ARG_DESCR(settings.dimensions, settings.dimensions.depth == 6, "Cube textures depth dimension must be equal to 6");
         tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
             TypeConverterDX::PixelFormatToDxgi(settings.pixel_format),
             settings.dimensions.width,
@@ -386,10 +354,8 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
         dx_sub_resource.RowPitch   = settings.dimensions.width  * pixel_size;
         dx_sub_resource.SlicePitch = settings.dimensions.height * dx_sub_resource.RowPitch;
 
-        if (dx_sub_resource.SlicePitch > static_cast<LONG_PTR>(sub_resource.size))
-        {
-            throw std::invalid_argument("Sub-resource data size is smaller than computed slice size. Possible pixel format mismatch.");
-        }
+        META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(sub_resource.size, dx_sub_resource.SlicePitch,
+                                                 "sub-resource data size is less than computed MIP slice size, possibly due to pixel format mismatch");
     }
 
     // NOTE: scratch_image is the owner of generated mip-levels memory, which should be hold until UpdateSubresources call completes

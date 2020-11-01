@@ -59,8 +59,10 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> texture_ptr, Setting
     , m_texture_ptr(std::move(texture_ptr))
 {
     META_FUNCTION_TASK();
-    if (m_settings.texture_mode != TextureMode::Disabled && !m_texture_ptr)
-        throw std::invalid_argument("Screen-quad texture can not be empty when quad texturing is enabled.");
+    if (m_settings.texture_mode != TextureMode::Disabled)
+    {
+        META_CHECK_ARG_NOT_NULL_DESCR(m_texture_ptr, "screen-quad texture can not be empty when quad texturing is enabled");
+    }
 
     static const QuadMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.F, 2.F);
     const RenderContext::Settings&          context_settings              = context.GetSettings();
@@ -238,20 +240,16 @@ void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled)
 void ScreenQuad::SetTexture(Ptr<Texture> texture_ptr)
 {
     META_FUNCTION_TASK();
-    if (m_settings.texture_mode == TextureMode::Disabled)
-        throw std::logic_error("Can not set texture of screen quad with Disabled texture mode.");
+    META_CHECK_ARG_DESCR(m_settings.texture_mode, m_settings.texture_mode != TextureMode::Disabled, "can not set texture of screen quad with Disabled texture mode");
+    META_CHECK_ARG_NOT_NULL_DESCR(texture_ptr, "can not set null texture to screen quad");
 
     if (m_texture_ptr.get() == texture_ptr.get())
         return;
 
-    if (!texture_ptr)
-        throw std::invalid_argument("Can not set null texture to screen quad.");
-
     m_texture_ptr = texture_ptr;
 
     const Ptr<ProgramBindings::ArgumentBinding>& texture_binding_ptr = m_const_program_bindings_ptr->Get({ Shader::Type::Pixel, "g_texture" });
-    if (!texture_binding_ptr)
-        throw std::logic_error("Can not find screen quad texture argument binding.");
+    META_CHECK_ARG_NOT_NULL_DESCR(texture_binding_ptr, "can not find screen quad texture argument binding");
 
     texture_binding_ptr->SetResourceLocations({ { m_texture_ptr } });
 }

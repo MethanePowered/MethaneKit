@@ -398,11 +398,10 @@ void Text::FrameResources::InitializeProgramBindings(gfx::RenderState& state, co
     if (m_program_bindings_ptr)
         return;
 
-    if (!const_buffer_ptr || !atlas_sampler_ptr)
-        throw std::invalid_argument("Can not create text program bindings. Font atlas sampler or constant buffer is not initialized.");
-
-    if (!m_atlas_texture_ptr || !m_uniforms_buffer_ptr)
-        throw std::logic_error("Can not create text program bindings. Font atlas texture or uniforms buffer is not initialized.");
+    META_CHECK_ARG_NOT_NULL(const_buffer_ptr);
+    META_CHECK_ARG_NOT_NULL(atlas_sampler_ptr);
+    META_CHECK_ARG_NOT_NULL(m_atlas_texture_ptr);
+    META_CHECK_ARG_NOT_NULL(m_uniforms_buffer_ptr);
 
     m_program_bindings_ptr = gfx::ProgramBindings::Create(state.GetSettings().program_ptr, {
         { { gfx::Shader::Type::Vertex, "g_uniforms"  }, { { m_uniforms_buffer_ptr } } },

@@ -77,8 +77,7 @@ public:
     const Mesh::Subset&  GetSubset(size_t subset_index) const
     {
         META_FUNCTION_TASK();
-        if (subset_index >= m_subsets.size())
-            throw std::invalid_argument("Sub mesh index is out of bounds.");
+        META_CHECK_ARG_LESS(subset_index, m_subsets.size());
 
         return m_subsets[subset_index];
     }

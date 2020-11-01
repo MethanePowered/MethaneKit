@@ -29,8 +29,9 @@ DirectX 12 implementation of the program bindings interface.
 
 #include <Methane/Graphics/CommandListBase.h>
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Instrumentation.h>
 #include <Methane/Platform/Windows/Utils.h>
+#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <d3dx12.h>
 #include <cassert>
@@ -73,11 +74,9 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
 
     ArgumentBindingBase::SetResourceLocations(resource_locations);
 
-    if (m_settings_dx.type == Type::DescriptorTable &&
-        resource_locations.size() > m_descriptor_range.count)
+    if (m_settings_dx.type == Type::DescriptorTable)
     {
-        throw std::invalid_argument("The number of bound resources (" + std::to_string(resource_locations.size()) +
-                                    ") exceeds reserved descriptors count (" + std::to_string(m_descriptor_range.count) + ").");
+        META_CHECK_ARG_LESS_DESCR(resource_locations.size(), m_descriptor_range.count + 1, "the number of bound resources exceeds reserved descriptors count");
     }
 
     const uint32_t             descriptor_range_start = m_p_descriptor_heap_reservation
@@ -415,7 +414,7 @@ void ProgramBindingsDX::ApplyRootParameterBinding(const RootParameterBinding& ro
 void ProgramBindingsDX::CopyDescriptorsToGpu()
 {
     META_FUNCTION_TASK();
-    //META_LOG(std::string("Copy descriptors to GPU for program \"") + GetProgram().GetName() + "\"");
+    META_LOG(std::string("Copy descriptors to GPU for program \"") + GetProgram().GetName() + "\"");
 
     const wrl::ComPtr<ID3D12Device>& cp_device = static_cast<const ProgramDX&>(GetProgram()).GetContextDX().GetDeviceDX().GetNativeDevice();
     ForEachArgumentBinding([this, &cp_device](ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation)
@@ -431,31 +430,27 @@ void ProgramBindingsDX::CopyDescriptorsToGpu()
         const D3D12_DESCRIPTOR_HEAP_TYPE          native_heap_type       = dx_descriptor_heap.GetNativeDescriptorHeapType();
 
         argument_binding.SetDescriptorHeapReservation(p_heap_reservation);
-
-        if (descriptor_range.offset >= p_heap_reservation->GetRange(is_constant_bindinig).GetLength())
-        {
-            throw std::invalid_argument("Descriptor range offset is out of bounds of reserved descriptor range.");
-        }
+        META_CHECK_ARG_LESS_DESCR(descriptor_range.offset, p_heap_reservation->GetRange(is_constant_bindinig).GetLength(),
+                                     "descriptor range offset is out of reserved descriptor range bounds");
 
         uint32_t resource_index = 0;
         for (const ResourceDX::LocationDX& resource_location_dx : argument_binding.GetResourceLocationsDX())
         {
             const DescriptorHeap::Types used_heap_types = resource_location_dx.GetResourceDX().GetUsedDescriptorHeapTypes();
-            if (used_heap_types.find(heap_type) == used_heap_types.end())
-            {
-                throw std::invalid_argument("Can not create binding for resource used for " + resource_location_dx.GetResourceDX().GetUsageNames() +
-                    " on descriptor heap of incompatible type \"" + dx_descriptor_heap.GetTypeName() + "\".");
-            }
+            META_CHECK_ARG_DESCR(heap_type, used_heap_types.find(heap_type) != used_heap_types.end(),
+                                 fmt::format("can not create binding for resource used for {} on descriptor heap of incompatible type '{}'",
+                                             resource_location_dx.GetResourceDX().GetUsageNames(), dx_descriptor_heap.GetTypeName()));
 
             const uint32_t descriptor_index = descriptor_range_start + descriptor_range.offset + resource_index;
-            //META_LOG(std::string("  - Resource \"") + resource_location_dx.GetResourceDX().GetName() + 
-            //         "\" range: [" + std::to_string(descriptor_range.offset) + " - " + std::to_string(descriptor_range.offset + descriptor_range.count) +
-            //         "), descriptor: " + std::to_string(descriptor_index));
+            META_LOG(std::string("  - Resource \"") + resource_location_dx.GetResourceDX().GetName() +
+                     "\" range: [" + std::to_string(descriptor_range.offset) + " - " + std::to_string(descriptor_range.offset + descriptor_range.count) +
+                     "), descriptor: " + std::to_string(descriptor_index));
 
             cp_device->CopyDescriptorsSimple(1,
-                                             dx_descriptor_heap.GetNativeCpuDescriptorHandle(descriptor_index),
-                                             resource_location_dx.GetResourceDX().GetNativeCpuDescriptorHandle(ResourceBase::Usage::ShaderRead),
-                                             native_heap_type);
+                dx_descriptor_heap.GetNativeCpuDescriptorHandle(descriptor_index),
+                resource_location_dx.GetResourceDX().GetNativeCpuDescriptorHandle(ResourceBase::Usage::ShaderRead),
+                native_heap_type
+            );
             resource_index++;
         }
     });

@@ -27,10 +27,11 @@ DirectX 12 implementation of the render pass interface.
 #include "DeviceDX.h"
 #include "TypesDX.h"
 
-#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/Graphics/TextureBase.h>
 #include <Methane/Graphics/Windows/Primitives.h>
+#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <d3dx12.h>
 
@@ -76,10 +77,7 @@ RenderPassDX::AccessDesc::AccessDesc(const ColorAttachment& color_attachment)
 
     if (color_attachment.load_action == Attachment::LoadAction::Clear)
     {
-        if (!color_attachment.texture_ptr)
-        {
-            throw std::invalid_argument("Can not clear render target attachment without texture.");
-        }
+        META_CHECK_ARG_NOT_NULL_DESCR(color_attachment.texture_ptr, "can not clear render target attachment without texture");
 
         const DXGI_FORMAT color_format = TypeConverterDX::PixelFormatToDxgi(color_attachment.texture_ptr->GetSettings().pixel_format);
         const float clear_color_components[4]{
@@ -109,10 +107,7 @@ RenderPassDX::AccessDesc::AccessDesc(const StencilAttachment& stencil_attachment
 void RenderPassDX::AccessDesc::InitDepthStencilClearValue(const DepthAttachment& depth_attachment, const StencilAttachment& stencil_attachment)
 {
     META_FUNCTION_TASK();
-    if (!depth_attachment.texture_ptr)
-    {
-        throw std::invalid_argument("Depth attachment should point to the depth-stencil texture.");
-    }
+    META_CHECK_ARG_NOT_NULL_DESCR(depth_attachment.texture_ptr, "depth attachment should point to the depth-stencil texture");
 
     const DXGI_FORMAT depth_format = TypeConverterDX::PixelFormatToDxgi(depth_attachment.texture_ptr->GetSettings().pixel_format);
     beginning.Clear.ClearValue = CD3DX12_CLEAR_VALUE(depth_format, depth_attachment.clear_value, stencil_attachment.clear_value);
@@ -293,10 +288,7 @@ void RenderPassDX::UpdateNativeClearDesc()
         if (color_attach.load_action != RenderPassBase::Attachment::LoadAction::Clear)
             continue;
 
-        if (!color_attach.texture_ptr)
-        {
-            throw std::invalid_argument("Can not clear render target attachment without texture.");
-        }
+        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_ptr, "can not clear render target attachment without texture");
         m_rt_clear_infos.emplace_back(color_attach);
     }
 
@@ -437,11 +429,7 @@ const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& RenderPassDX::GetNativeRenderTar
 
     for (const RenderPassBase::ColorAttachment& color_attach : GetSettings().color_attachments)
     {
-        if (!color_attach.texture_ptr)
-        {
-            throw std::invalid_argument("Can not use color attachment without texture.");
-        }
-
+        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_ptr, "can not use color attachment without texture");
         TextureBase& rt_texture = static_cast<TextureBase&>(*color_attach.texture_ptr);
         m_native_rt_cpu_handles.push_back(rt_texture.GetNativeCpuDescriptorHandle(ResourceBase::Usage::RenderTarget));
     }
