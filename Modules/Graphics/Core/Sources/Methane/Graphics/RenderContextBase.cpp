@@ -38,8 +38,8 @@ RenderContextBase::RenderContextBase(DeviceBase& device, tf::Executor& parallel_
     , m_frame_buffer_index(0)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_DESCR("m_settings.color_format", !IsSrgbColorSpace(m_settings.color_format),
-                         "Render context can not use color formats with sRGB gamma correction due to modern swap-chain flip model limitations.");
+    META_CHECK_ARG_DESCR(m_settings.color_format, !IsSrgbColorSpace(m_settings.color_format),
+                         "render context can not use color formats with sRGB gamma correction due to modern swap-chain flip model limitations");
 }
 
 void RenderContextBase::WaitForGpu(WaitFor wait_for)
@@ -52,7 +52,7 @@ void RenderContextBase::WaitForGpu(WaitFor wait_for)
     {
     case WaitFor::RenderComplete: WaitForGpuRenderComplete(); break;
     case WaitFor::FramePresented: WaitForGpuFramePresented(); break;
-    case WaitFor::ResourcesUploaded: break; // Handled in ContextBase::WaitForGpu
+    //case WaitFor::ResourcesUploaded: break; // Handled in ContextBase::WaitForGpu
     default: META_UNEXPECTED_ENUM_ARG(wait_for);
     }
 }

@@ -33,12 +33,12 @@ namespace Methane::Graphics
 
 inline void Validate(const Viewports& viewports)
 {
-    META_CHECK_ARG_NOT_EMPTY_DESCR(viewports, "Can not set empty viewports to state.");
+    META_CHECK_ARG_NOT_EMPTY_DESCR(viewports, "can not set empty viewports to state");
 }
 
 inline void Validate(const ScissorRects& scissor_rects)
 {
-    META_CHECK_ARG_NOT_EMPTY_DESCR(scissor_rects, "Can not set empty scissor rectangles to state.");
+    META_CHECK_ARG_NOT_EMPTY_DESCR(scissor_rects, "can not set empty scissor rectangles to state");
 }
 
 ViewStateBase::ViewStateBase(const Settings& settings)

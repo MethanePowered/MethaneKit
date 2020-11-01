@@ -200,7 +200,7 @@ const Refs<TextureBase>& RenderPassBase::GetColorAttachmentTextures() const
     m_color_attachment_textures.reserve(m_settings.color_attachments.size());
     for (const ColorAttachment& color_attach : m_settings.color_attachments)
     {
-        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_ptr, "Can not use color attachment without texture.");
+        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_ptr, "can not use color attachment without texture");
         m_color_attachment_textures.push_back(static_cast<TextureBase&>(*color_attach.texture_ptr));
     }
     return m_color_attachment_textures;
@@ -226,7 +226,7 @@ const Ptrs<TextureBase>& RenderPassBase::GetNonFrameBufferAttachmentTextures() c
 
     for (const ColorAttachment& color_attach : m_settings.color_attachments)
     {
-        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_ptr, "Can not use color attachment without texture.");
+        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_ptr, "can not use color attachment without texture");
 
         Ptr<TextureBase> color_attachment_ptr = std::static_pointer_cast<TextureBase>(color_attach.texture_ptr);
         if (color_attachment_ptr->GetSettings().type == Texture::Type::FrameBuffer)

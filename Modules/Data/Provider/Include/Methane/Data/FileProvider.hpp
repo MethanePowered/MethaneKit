@@ -59,7 +59,7 @@ public:
 
         const std::string file_path = GetFullFilePath(path);
         std::ifstream fs(file_path, std::ios::binary);
-        META_CHECK_ARG_VALUE_DESCR(path, fs.good(), std::string("File path does not exist: ") + file_path);
+        META_CHECK_ARG_DESCR(path, fs.good(), fmt::format("File path does not exist '{}'", file_path));
 
         return Data::Chunk(Data::Bytes(std::istreambuf_iterator<char>(fs), {}));
     }

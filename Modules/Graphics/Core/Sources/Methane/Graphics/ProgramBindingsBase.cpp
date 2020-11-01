@@ -56,16 +56,16 @@ void ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resour
 
     for (const Resource::Location& resource_location : resource_locations)
     {
-        META_CHECK_ARG_DESCR("resource_location", resource_location.GetResource().GetResourceType() == bound_resource_type,
-                             "Incompatible resource type \"" + Resource::GetTypeName(resource_location.GetResource().GetResourceType()) +
-                             "\" is bound to argument \"" + m_settings.argument.name +
-                             "\" of type \"" + Resource::GetTypeName(bound_resource_type) + "\".");
+        META_CHECK_ARG_NAME_DESCR("resource_location", resource_location.GetResource().GetResourceType() == bound_resource_type,
+                                  fmt::format("incompatible resource type '{}' is bound to argument '{}' of type '{}'",
+                                              Resource::GetTypeName(resource_location.GetResource().GetResourceType()),
+                                              m_settings.argument.name, Resource::GetTypeName(bound_resource_type)));
 
         const Resource::Usage::Mask resource_usage_mask = resource_location.GetResource().GetUsageMask();
-        META_CHECK_ARG_VALUE_DESCR(resource_usage_mask, static_cast<bool>(resource_usage_mask & Resource::Usage::Addressable) == is_addressable_binding,
-                                   "Resource addressable usage flag does not match with resource binding state.");
-        META_CHECK_ARG_DESCR("resource_location", is_addressable_binding || !resource_location.GetOffset(),
-                             "Can not set resource location with non-zero offset to non-addressable resource binding");
+        META_CHECK_ARG_DESCR(resource_usage_mask, static_cast<bool>(resource_usage_mask & Resource::Usage::Addressable) == is_addressable_binding,
+                             "resource addressable usage flag does not match with resource binding state");
+        META_CHECK_ARG_NAME_DESCR("resource_location", is_addressable_binding || !resource_location.GetOffset(),
+                                  "can not set resource location with non-zero offset to non-addressable resource binding");
     }
 
     m_resource_locations = resource_locations;

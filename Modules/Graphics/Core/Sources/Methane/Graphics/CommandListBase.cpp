@@ -343,8 +343,8 @@ CommandListSetBase::CommandListSetBase(const Refs<CommandList>& command_list_ref
     for(const Ref<CommandList>& command_list_ref : m_refs)
     {
         auto& command_list_base = dynamic_cast<CommandListBase&>(command_list_ref.get());
-        META_CHECK_ARG_DESCR("command_list_base", std::addressof(command_list_base.GetCommandQueue()) == std::addressof(command_queue),
-                             "all command lists in set must be created in one command queue");
+        META_CHECK_ARG_NAME_DESCR("command_list_base", std::addressof(command_list_base.GetCommandQueue()) == std::addressof(command_queue),
+                                  "all command lists in set must be created in one command queue");
 
         m_base_refs.emplace_back(command_list_base);
         m_base_ptrs.emplace_back(command_list_base.GetCommandListPtr());

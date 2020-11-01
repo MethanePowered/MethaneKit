@@ -118,9 +118,9 @@ void RenderCommandListBase::SetVertexBuffers(BufferSet& vertex_buffers)
 
     if (m_is_validation_enabled)
     {
-        META_CHECK_ARG_DESCR("vertex_buffers", vertex_buffers.GetType() == Buffer::Type::Vertex,
-            "can not set buffers of \"" + Buffer::GetBufferTypeName(vertex_buffers.GetType()) +
-            "\" type where \"Vertex\" buffers are required");
+        META_CHECK_ARG_NAME_DESCR("vertex_buffers", vertex_buffers.GetType() == Buffer::Type::Vertex,
+                                  fmt::format("can not set buffers of '{}' type where 'Vertex' buffers are required",
+                                              Buffer::GetBufferTypeName(vertex_buffers.GetType())));
     }
 
     DrawingState&  drawing_state = GetDrawingState();
@@ -142,10 +142,9 @@ void RenderCommandListBase::DrawIndexed(Primitive primitive_type, Buffer& index_
 
     if (m_is_validation_enabled)
     {
-        META_CHECK_ARG_DESCR("index_buffer", index_buffer.GetSettings().type == Buffer::Type::Index,
-            "can not draw with index buffer of wrong type \"" +
-            static_cast<const BufferBase&>(index_buffer).GetBufferTypeName() +
-            "\". Buffer of \"Index\" type is expected");
+        META_CHECK_ARG_NAME_DESCR("index_buffer", index_buffer.GetSettings().type == Buffer::Type::Index,
+                                  fmt::format("can not draw with index buffer of type '{}' when 'Index' buffer is required",
+                                              static_cast<const BufferBase&>(index_buffer).GetBufferTypeName()));
 
         const uint32_t formatted_items_count = index_buffer.GetFormattedItemsCount();
         META_CHECK_ARG_NOT_ZERO_DESCR(formatted_items_count, "can not draw with index buffer which contains no formatted vertices");
@@ -220,10 +219,9 @@ void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex
         const Buffer&  vertex_buffer = (*m_drawing_state.vertex_buffer_set_ptr)[vertex_buffer_index];
         const uint32_t vertex_count  = vertex_buffer.GetFormattedItemsCount();
         META_CHECK_ARG_IS_LESS_DESCR(draw_start_vertex, vertex_count - draw_vertex_count + 1U,
-            "can not draw starting from vertex " + std::to_string(draw_start_vertex) +
-            (draw_vertex_count ? " with " + std::to_string(draw_vertex_count) + " vertex count " : "") +
-            " which is out of bound for vertex buffer \"" + vertex_buffer.GetName() +
-            "\" (size " + std::to_string(vertex_count) + ")");
+            fmt::format("can not draw starting from vertex {}{} which is out of bounds for vertex buffer '{}' with vertex count {}", draw_start_vertex,
+                        draw_vertex_count ? fmt::format(" with {} vertex count", draw_vertex_count) : "",
+                        vertex_buffer.GetName(), vertex_count));
     }
 }
 

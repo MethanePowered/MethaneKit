@@ -25,10 +25,13 @@ Methane common exception types
  - NullPointerArgumentException<T>
  - ZeroArgumentException<T>
  - UnexpectedEnumArgumentException<T>
+ - NotImplementedException
 
 ******************************************************************************/
 
 #pragma once
+
+#include <fmt/format.h>
 
 #include <stdexcept>
 #include <string>
@@ -63,8 +66,7 @@ public:
     using ArgumentExceptionBaseType = ArgumentExceptionBase<BaseExceptionType>;
 
     ArgumentExceptionBase(const std::string& function_name, const std::string& argument_name, const std::string& invalid_msg, const std::string& description = "")
-        : BaseExceptionType(std::string("Function \"") + function_name + "\" argument \"" + argument_name +
-                            "\" value " + invalid_msg + (description.empty() ? "" : (": " + description)))
+        : BaseExceptionType(fmt::format("Function '{}' argument '{}' value {}.", function_name, argument_name, invalid_msg + (description.empty() ? "" : (": " + description))))
         , ArgumentException(function_name, argument_name)
     { }
 
@@ -87,7 +89,7 @@ public:
     { }
 
     InvalidArgumentException(const std::string& function_name, const std::string& argument_name, T value, const std::string& description = "")
-        : ArgumentExceptionBaseType(function_name, argument_name, std::string(typeid(T).name()) + "(" + ToString(value) + ") is not valid", description)
+        : ArgumentExceptionBaseType(function_name, argument_name, fmt::format("{}({}) is not valid", typeid(T).name(), value), description)
         , m_value(std::move(value))
     { }
 
@@ -97,13 +99,12 @@ private:
     const T m_value{ };
 };
 
-template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>, void>>
+template<typename T, typename V, typename RangeType = std::pair<V, V>>
 class OutOfRangeArgumentException : public ArgumentExceptionBase<std::out_of_range>
 {
 public:
-    OutOfRangeArgumentException(const std::string& function_name, const std::string& argument_name, T value, std::pair<T, T> range, const std::string& description = "")
-        : ArgumentExceptionBaseType(function_name, argument_name, std::string(typeid(T).name()) + "(" + ToString(value) +
-                                    ") is out of range [" + std::to_string(range.first) + ", " + std::to_string(range.second) + ")", description)
+    OutOfRangeArgumentException(const std::string& function_name, const std::string& argument_name, T value, RangeType range, const std::string& description = "")
+        : ArgumentExceptionBaseType(function_name, argument_name, fmt::format("{}({}) is out of range [{}, {})", typeid(T).name(), value, range.first, range.second), description)
         , m_value(std::move(value))
         , m_range(std::move(range))
     { }
@@ -113,7 +114,7 @@ public:
 
 private:
     const T m_value;
-    const std::pair<T, T> m_range;
+    const std::pair<V, V> m_range;
 };
 
 template<typename T>
@@ -121,7 +122,7 @@ class EmptyArgumentException : public ArgumentExceptionBase<std::invalid_argumen
 {
 public:
     EmptyArgumentException(const std::string& function_name, const std::string& argument_name, const std::string& description = "")
-        : ArgumentExceptionBaseType(function_name, argument_name, std::string("is empty container of type ") + typeid(T).name(), description)
+        : ArgumentExceptionBaseType(function_name, argument_name, fmt::format("is an empty container {}", typeid(T).name()), description)
     { }
 };
 
@@ -130,7 +131,7 @@ class NullPointerArgumentException : public ArgumentExceptionBase<std::invalid_a
 {
 public:
     NullPointerArgumentException(const std::string& function_name, const std::string& argument_name, const std::string& description = "")
-        : ArgumentExceptionBaseType(function_name, argument_name, std::string("is null pointer of type ") + typeid(T).name(), description)
+        : ArgumentExceptionBaseType(function_name, argument_name, fmt::format("is null pointer of type {}", typeid(T).name()), description)
     { }
 };
 
@@ -139,7 +140,7 @@ class ZeroArgumentException : public ArgumentExceptionBase<std::invalid_argument
 {
 public:
     ZeroArgumentException(const std::string& function_name, const std::string& argument_name, const std::string& description = "")
-        : ArgumentExceptionBaseType(function_name, argument_name, std::string("is zero value of type ") + typeid(T).name(), description)
+        : ArgumentExceptionBaseType(function_name, argument_name, fmt::format("is zero of type {}", typeid(T).name()), description)
     { }
 };
 
@@ -148,7 +149,7 @@ class UnexpectedEnumArgumentException : public ArgumentExceptionBase<std::invali
 {
 public:
     UnexpectedEnumArgumentException(const std::string& function_name, const std::string& variable_name, T value, const std::string& description = "")
-        : ArgumentExceptionBaseType(function_name, variable_name, std::string("enum value ") + typeid(T).name() + "(" + std::to_string(static_cast<uint32_t>(value)) + ") is unexpected", description)
+        : ArgumentExceptionBaseType(function_name, variable_name, fmt::format("enum value {}({}) is unexpected", typeid(T).name(), value), description)
         , m_value(value)
     { }
 
@@ -156,6 +157,20 @@ public:
 
 private:
     const T m_value;
+};
+
+class NotImplementedException : public std::logic_error
+{
+public:
+    NotImplementedException(const std::string& function_name, const std::string& description = "")
+        : std::logic_error(fmt::format("Function '{}' is not implemented{}.", function_name, description.empty() ? "" : fmt::format(": {}", description)))
+        , m_function_name(function_name)
+    { }
+
+    const std::string& GetFunctionName() const noexcept { return m_function_name; }
+
+private:
+    const std::string m_function_name;
 };
 
 } // namespace Methane
