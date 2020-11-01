@@ -391,6 +391,12 @@ bool Resource::SubResource::Count::operator>=(const Count& other) const noexcept
     return GetRawCount() >= other.GetRawCount();
 }
 
+Resource::SubResource::Count::operator Resource::SubResource::Index() const noexcept
+{
+    META_FUNCTION_TASK();
+    return Resource::SubResource::Index(*this);
+}
+
 Resource::SubResource::Count::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
@@ -416,6 +422,14 @@ Resource::SubResource::Index::Index(Data::Index raw_index, const Count& count)
     mip_level   = raw_index % count.mip_levels_count;
 }
 
+Resource::SubResource::Index::Index(const Resource::SubResource::Count& count)
+    : depth_slice(count.depth)
+    , array_index(count.array_size)
+    , mip_level(count.mip_levels_count)
+{
+    META_FUNCTION_TASK();
+}
+
 Data::Index Resource::SubResource::Index::GetRawIndex(const Count& count) const noexcept
 {
     META_FUNCTION_TASK();
@@ -434,6 +448,12 @@ bool Resource::SubResource::Index::operator<(const Index& other) const noexcept
     META_FUNCTION_TASK();
     return std::tie(depth_slice, array_index, mip_level) <
            std::tie(other.depth_slice, other.array_index, other.mip_level);
+}
+
+bool Resource::SubResource::Index::operator>=(const Index& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return !operator<(other);
 }
 
 bool Resource::SubResource::Index::operator<(const Count& count) const noexcept

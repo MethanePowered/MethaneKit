@@ -57,21 +57,21 @@ Methane short check macroses throwing exceptions on negative check result
 #define META_CHECK_ARG_NAME(argument_name, condition) META_CHECK_ARG_NAME_DESCR(argument_name, condition, #condition)
 
 #define META_CHECK_ARG_RANGE_DESCR(argument, range_begin, range_end, description) \
-    if (argument < range_begin || argument >= range_end) \
+    if (argument < static_cast<std::decay<decltype(argument)>::type>(range_begin) || argument >= static_cast<std::decay<decltype(argument)>::type>(range_end)) \
         throw Methane::OutOfRangeArgumentException<decltype(argument), decltype(range_begin)>(__FUNCTION_NAME__, #argument, argument, \
                     { range_begin, static_cast<decltype(range_begin)>(range_end) }, description )
 
 #define META_CHECK_ARG_RANGE(argument, range_begin, range_end) META_CHECK_ARG_RANGE_DESCR(argument, range_begin, range_end, "")
 
 #define META_CHECK_ARG_LESS_DESCR(argument, upper_limit, description) \
-    if (argument >= upper_limit) \
+    if (argument >= static_cast<std::decay<decltype(argument)>::type>(upper_limit)) \
         throw Methane::OutOfRangeArgumentException<decltype(argument), decltype(upper_limit)>(__FUNCTION_NAME__, #argument, argument, \
                     { std::numeric_limits<decltype(upper_limit)>::min(), upper_limit }, description )
 
 #define META_CHECK_ARG_LESS(argument, upper_limit) META_CHECK_ARG_LESS_DESCR(argument, upper_limit, "")
 
 #define META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(argument, min_value, description) \
-    if (argument < min_value) \
+    if (argument < static_cast<std::decay<decltype(argument)>::type>(min_value)) \
         throw Methane::OutOfRangeArgumentException<decltype(argument), decltype(min_value)>(__FUNCTION_NAME__, #argument, argument, \
                     { min_value, std::numeric_limits<decltype(min_value)>::max() }, description )
 
