@@ -99,6 +99,8 @@ Methane short check macroses throwing exceptions on negative check result
     throw Methane::UnexpectedEnumArgumentException<typename std::decay<decltype(argument)>::type>(__FUNCTION_NAME__, #argument, argument, description)
 
 #define META_UNEXPECTED_ENUM_ARG(argument) META_UNEXPECTED_ENUM_ARG_DESCR(argument, "")
+#define META_UNEXPECTED_ENUM_ARG_RETURN(argument, return_value) META_UNEXPECTED_ENUM_ARG_DESCR(argument, "")
+#define META_UNEXPECTED_ENUM_ARG_DESCR_RETURN(argument, return_value, description) META_UNEXPECTED_ENUM_ARG_DESCR(argument, description)
 
 #define META_FUNCTION_NOT_IMPLEMENTED_DESCR(description) \
     throw Methane::NotImplementedException(__FUNCTION_NAME__, description)
@@ -126,6 +128,8 @@ Methane short check macroses throwing exceptions on negative check result
 #define META_CHECK_ARG_NOT_ZERO(argument) (void)argument
 #define META_UNEXPECTED_ENUM_ARG_DESCR(argument, description) (void)argument
 #define META_UNEXPECTED_ENUM_ARG(argument) (void)argument
+#define META_UNEXPECTED_ENUM_ARG_RETURN(argument, return_value) return return_value
+#define META_UNEXPECTED_ENUM_ARG_DESCR_RETURN(argument, return_value, description) return return_value
 #define META_FUNCTION_NOT_IMPLEMENTED_DESCR(description)
 #define META_FUNCTION_NOT_IMPLEMENTED()
 

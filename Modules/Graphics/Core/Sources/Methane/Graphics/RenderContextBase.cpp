@@ -45,14 +45,13 @@ RenderContextBase::RenderContextBase(DeviceBase& device, tf::Executor& parallel_
 void RenderContextBase::WaitForGpu(WaitFor wait_for)
 {
     META_FUNCTION_TASK();
-
     ContextBase::WaitForGpu(wait_for);
 
     switch (wait_for)
     {
     case WaitFor::RenderComplete: WaitForGpuRenderComplete(); break;
     case WaitFor::FramePresented: WaitForGpuFramePresented(); break;
-    //case WaitFor::ResourcesUploaded: break; // Handled in ContextBase::WaitForGpu
+    case WaitFor::ResourcesUploaded: break; // Handled in ContextBase::WaitForGpu
     default: META_UNEXPECTED_ENUM_ARG(wait_for);
     }
 }
