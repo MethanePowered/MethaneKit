@@ -43,6 +43,7 @@ Base frame class provides frame buffer management with resize handling.
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Timer.hpp>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <vector>
 #include <sstream>
@@ -302,7 +303,6 @@ public:
     bool Render() override
     {
         META_FUNCTION_TASK();
-        
         if (IsMinimized())
         {
             // No need to render frames while window is minimized.
@@ -311,11 +311,7 @@ public:
             return false;
         }
 
-        if (!m_context_ptr)
-        {
-            throw std::runtime_error("RenderContext is not initialized before rendering.");
-        }
-
+        META_CHECK_ARG_NOT_NULL_DESCR(m_context_ptr, "RenderContext is not initialized before rendering.");
         if (!m_context_ptr->ReadyToRender())
             return false;
 

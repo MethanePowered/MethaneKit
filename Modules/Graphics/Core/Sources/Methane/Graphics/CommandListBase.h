@@ -31,10 +31,9 @@ Base implementation of the command list interface.
 #include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Memory.hpp>
 #include <Methane/TracyGpu.hpp>
-#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <stack>
-#include <set>
 #include <mutex>
 #include <condition_variable>
 
@@ -94,7 +93,7 @@ public:
     // CommandListBase interface
     virtual void SetResourceBarriers(const ResourceBase::Barriers& resource_barriers) = 0;
     virtual void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {});
-    virtual void Complete(uint32_t frame_index); // Called from another thread, which is tracking GPU execution
+    virtual void Complete(uint32_t frame_index); // Called from command queue thread, which is tracking GPU execution
 
     DebugGroupBase* GetTopOpenDebugGroup() const;
     void PushOpenDebugGroup(DebugGroup& debug_group);
@@ -133,8 +132,8 @@ protected:
 
     inline void VerifyEncodingState() const
     {
-        if (m_state != State::Encoding)
-            throw std::logic_error(GetTypeName() + " Command list encoding is not possible in \"" + GetStateName(m_state) + "\" state.");
+        META_CHECK_ARG_DESCR(m_state, m_state == State::Encoding,
+                             fmt::format("{} command list '{}' encoding is not possible in '{}' state", GetTypeName(), GetName(), GetStateName(m_state)));
     }
 
     static std::string GetTypeName(Type type) noexcept;
@@ -142,6 +141,8 @@ protected:
 
 private:
     using DebugGroupStack  = std::stack<Ptr<DebugGroupBase>>;
+
+    void CompleteInternal(uint32_t frame_index);
 
     const Type                  m_type;
     Ptr<CommandQueue>           m_command_queue_ptr;

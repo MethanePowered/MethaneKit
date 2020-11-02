@@ -192,26 +192,3 @@ struct Resource : virtual Object
 
 } // namespace Methane::Graphics
 
-template<>
-struct fmt::formatter<Methane::Graphics::Resource::SubResource::Index>
-{
-    constexpr auto parse(format_parse_context& ctx) { return ctx.end(); }
-
-    template<typename FormatContext>
-    auto format(const Methane::Graphics::Resource::SubResource::Index& index, FormatContext& ctx)
-    {
-        return format_to(ctx.out(), "{}", static_cast<std::string>(index));
-    }
-};
-
-template<>
-struct fmt::formatter<Methane::Graphics::Resource::SubResource::Count>
-{
-    constexpr auto parse(format_parse_context& ctx) { return ctx.end(); }
-
-    template<typename FormatContext>
-    auto format(const Methane::Graphics::Resource::SubResource::Count& count, FormatContext& ctx)
-    {
-        return format_to(ctx.out(), "{}", static_cast<std::string>(count));
-    }
-};

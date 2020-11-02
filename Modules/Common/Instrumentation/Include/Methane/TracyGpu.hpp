@@ -29,6 +29,8 @@ Tracy GPU instrumentation helpers
 #include <client/TracyCallstack.hpp>
 #endif
 
+#include <Methane/Checks.hpp>
+
 #include <assert.h>
 #include <stdlib.h>
 #include <mutex>
@@ -218,9 +220,7 @@ public:
         if (!m_is_active)
             return;
 
-        if (m_state != State::Begun)
-            throw std::logic_error("GPU scope can end only from begun state.");
-
+        META_CHECK_ARG_DESCR(m_state, m_state == State::Begun, "GPU scope can end only from begun states");
         m_state        = State::Ended;
         m_end_query_id = m_context.NextQueryId();
 
@@ -238,13 +238,9 @@ public:
         if (!m_is_active)
             return;
 
-        if (m_state != State::Ended)
-            throw std::logic_error("GPU scope can be completed only from ended state.");
-
+        META_CHECK_ARG_DESCR(m_state, m_state == State::Ended, "GPU scope can be completed only from ended state");
+        META_CHECK_ARG_RANGE_DESCR(gpu_begin_timestamp, 0, gpu_end_timestamp + 1, "GPU begin timestamp should be less or equal to end timestamp and both should be positive");
         m_state = State::Completed;
-
-        if (gpu_begin_timestamp < 0 || gpu_begin_timestamp > gpu_end_timestamp)
-            throw std::logic_error("GPU begin timestamp should be less or equal to end timestamp and both should be positive.");
 
         auto begin_item = tracy::Profiler::QueueSerial();
         tracy::MemWrite(&begin_item->hdr.type, tracy::QueueType::GpuTime);

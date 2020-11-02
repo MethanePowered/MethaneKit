@@ -23,6 +23,7 @@ Pool of animations for centralized updating, adding and removing in application.
 
 #include <Methane/Data/Animation.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <stdexcept>
 
@@ -62,8 +63,8 @@ void Animation::Stop() noexcept
 
 void Animation::Pause()
 {
-    if (m_state != State::Running)
-        throw std::logic_error("Only running animation can be paused.");
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_DESCR(m_state, m_state == State::Running, "only running animation can be paused");
 
     m_state = State::Paused;
     m_paused_duration = GetElapsedDuration();
@@ -71,8 +72,8 @@ void Animation::Pause()
 
 void Animation::Resume()
 {
-    if (m_state != State::Paused)
-        throw std::logic_error("Only paused animation can be resumed.");
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_DESCR(m_state, m_state == State::Paused, "only paused animation can be resumed");
 
     m_state = State::Running;
     Reset(Clock::now() - m_paused_duration);

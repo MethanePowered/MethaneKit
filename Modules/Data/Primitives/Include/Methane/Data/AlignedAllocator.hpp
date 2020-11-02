@@ -71,7 +71,7 @@ public:
         void* p_memory = nullptr;
         const int error = posix_memalign(&p_memory, N, allocate_size);
         if (error)
-            throw std::runtime_error("Failed to allocate aligned memory! posix_memalign error: " + std::to_string(error));
+            throw std::bad_alloc();
         return static_cast<pointer>(p_memory);
 #endif
     }

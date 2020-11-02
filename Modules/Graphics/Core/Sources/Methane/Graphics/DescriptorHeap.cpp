@@ -69,21 +69,17 @@ DescriptorHeap::~DescriptorHeap()
 Data::Index DescriptorHeap::AddResource(const ResourceBase& resource)
 {
     META_FUNCTION_TASK();
-
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
 
-    if (m_resources.size() >= m_settings.size)
+    if (!m_settings.deferred_allocation)
     {
-        if (m_settings.deferred_allocation)
-        {
-            m_deferred_size++;
-            Allocate();
-        }
-        else
-        {
-            throw std::runtime_error("\"" + GetTypeName() + "\" descriptor heap is full (size: " + std::to_string(m_settings.size) +
-                                     "), no free space to add a resource.");
-        }
+        META_CHECK_ARG_LESS_DESCR(m_resources.size(), m_settings.size + 1,
+                                  fmt::format("{} descriptor heap is full, no free space to add a resource", GetTypeName()));
+    }
+    else if (m_resources.size() >= m_settings.size)
+    {
+        m_deferred_size++;
+        Allocate();
     }
 
     m_resources.push_back(&resource);
@@ -97,15 +93,9 @@ Data::Index DescriptorHeap::AddResource(const ResourceBase& resource)
 Data::Index DescriptorHeap::ReplaceResource(const ResourceBase& resource, Data::Index at_index)
 {
     META_FUNCTION_TASK();
-
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
 
-    if (at_index >= m_resources.size())
-    {
-        throw std::runtime_error("Index " + std::to_string(at_index) + 
-                                 " is out of " + GetTypeName() + " descriptor heap bounds.");
-    }
-
+    META_CHECK_ARG_LESS(at_index, m_resources.size());
     m_resources[at_index] = &resource;
     return at_index;
 }
@@ -113,15 +103,9 @@ Data::Index DescriptorHeap::ReplaceResource(const ResourceBase& resource, Data::
 void DescriptorHeap::RemoveResource(Data::Index at_index)
 {
     META_FUNCTION_TASK();
-
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
 
-    if (at_index >= m_resources.size())
-    {
-        throw std::runtime_error("Can not remove resource: index (" + std::to_string(at_index) + 
-                                 ") is out of \"" + GetTypeName() + "\" descriptor heap bounds.");
-    }
-
+    META_CHECK_ARG_LESS(at_index, m_resources.size());
     m_resources[at_index] = nullptr;
     m_free_ranges.Add(Range(at_index, at_index + 1));
 }
@@ -129,9 +113,7 @@ void DescriptorHeap::RemoveResource(Data::Index at_index)
 void DescriptorHeap::Allocate()
 {
     META_FUNCTION_TASK();
-
     m_allocated_size = m_deferred_size;
-
     Emit(&IDescriptorHeapCallback::OnDescriptorHeapAllocated, std::ref(*this));
 }
 
@@ -139,7 +121,6 @@ DescriptorHeap::Range DescriptorHeap::ReserveRange(Data::Size length)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_ZERO_DESCR(length, "unable to reserve empty descriptor range");
-
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
 
     Range reserved_range = Data::ReserveRange(m_free_ranges, length);
@@ -154,7 +135,6 @@ DescriptorHeap::Range DescriptorHeap::ReserveRange(Data::Size length)
 void DescriptorHeap::ReleaseRange(const Range& range)
 {
     META_FUNCTION_TASK();
-
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
     m_free_ranges.Add(range);
 }
@@ -174,7 +154,7 @@ std::string DescriptorHeap::GetTypeName(Type heap_type)
         case Type::Samplers:        return "Samplers";
         case Type::RenderTargets:   return "Render Targets";
         case Type::DepthStencil:    return "Depth Stencil";
-        default:                    return "Undefined";
+        default: META_UNEXPECTED_ENUM_ARG_RETURN(heap_type, "Undefined");
     }
 }
 

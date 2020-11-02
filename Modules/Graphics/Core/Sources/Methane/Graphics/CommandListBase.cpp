@@ -27,6 +27,7 @@ Base implementation of the command list interface.
 #include "ResourceBase.h"
 
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <cassert>
 
@@ -144,9 +145,8 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
-    if (m_state == State::Committed || m_state == State::Executing)
-        throw std::logic_error("Can not reset command list in committed or executing state.");
 
+    META_CHECK_ARG_DESCR(m_state, m_state != State::Committed && m_state != State::Executing, "can not reset command list in committed or executing state");
     META_LOG(GetTypeName(m_type) + " Command list \"" + GetName() + "\" RESET for commands encoding.");
 
     SetCommandListStateNoLock(State::Encoding);
@@ -186,8 +186,9 @@ void CommandListBase::Commit()
     META_FUNCTION_TASK();
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
 
-    if (m_state != State::Encoding)
-        throw std::logic_error(GetTypeName() + " Command list \"" + GetName() + "\" in \"" + GetStateName(m_state) + "\" state can not be committed. Only command lists in \"Encoding\" state can be committed.");
+    META_CHECK_ARG_DESCR(m_state, m_state == State::Encoding,
+                         fmt::format("{} command list '{}' in {} state can not be committed; only command lists in 'Encoding' state can be committed",
+                                     GetTypeName(), GetName(), GetStateName(m_state)));
 
     TRACY_GPU_SCOPE_END(m_tracy_gpu_scope);
     META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" COMMIT on frame " + std::to_string(GetCurrentFrameIndex()));
@@ -227,11 +228,13 @@ void CommandListBase::Execute(uint32_t frame_index, const CompletedCallback& com
     META_FUNCTION_TASK();
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
 
-    if (m_state != State::Committed)
-        throw std::logic_error(GetTypeName() + " Command list \"" + GetName() + "\" in " + GetStateName(m_state) + " state can not be executed. Only Committed command lists can be executed.");
+    META_CHECK_ARG_DESCR(m_state, m_state == State::Committed,
+                         fmt::format("{} command list '{}' in {} state can not be executed; only command lists in 'Committed' state can be executed",
+                                     GetTypeName(), GetName(), GetStateName(m_state)));
 
-    if (m_committed_frame_index != frame_index)
-        throw std::logic_error(GetTypeName() + " Command list \"" + GetName() + "\" committed on frame " + std::to_string(m_committed_frame_index) + " can not be executed on frame " + std::to_string(frame_index));
+    META_CHECK_ARG_DESCR(frame_index, frame_index == m_committed_frame_index,
+                         fmt::format("{} command list '{}' committed on frame {} can not be executed on frame {}",
+                                     GetTypeName(), GetName(), m_committed_frame_index, frame_index));
 
     META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" EXECUTE on frame " + std::to_string(frame_index));
 
@@ -243,25 +246,30 @@ void CommandListBase::Execute(uint32_t frame_index, const CompletedCallback& com
 void CommandListBase::Complete(uint32_t frame_index)
 {
     META_FUNCTION_TASK();
-    {
-        std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
-
-        if (m_state != State::Executing)
-            throw std::logic_error(GetTypeName() + " Command list \"" + GetName() + "\" in " + GetStateName(m_state) + " state can not be completed. Only Executing command lists can be completed.");
-
-        if (m_committed_frame_index != frame_index)
-            throw std::logic_error(GetTypeName() + " Command list \"" + GetName() + "\" committed on frame " + std::to_string(m_committed_frame_index) + " can not be completed on frame " + std::to_string(frame_index));
-
-        SetCommandListStateNoLock(State::Pending);
-        ResetCommandState();
-
-        TRACY_GPU_SCOPE_COMPLETE(m_tracy_gpu_scope, GetGpuTimeRange(false));
-        META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" was COMPLETED on frame " + std::to_string(frame_index) +
-                 ", GPU time range: " + static_cast<std::string>(GetGpuTimeRange(true)));
-    }
+    CompleteInternal(frame_index);
 
     if (m_completed_callback)
         m_completed_callback(*this);
+}
+
+void CommandListBase::CompleteInternal(uint32_t frame_index)
+{
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
+
+    META_CHECK_ARG_DESCR(m_state, m_state == State::Executing,
+                         fmt::format("{} command list '{}' in {} state can not be completed; only command lists in 'Executing' state can be completed",
+                                     GetTypeName(), GetName(), GetStateName(m_state)));
+
+    META_CHECK_ARG_DESCR(frame_index, frame_index == m_committed_frame_index,
+                         fmt::format("{} command list '{}' committed on frame {} can not be completed on frame {}",
+                                     GetTypeName(), GetName(), m_committed_frame_index, frame_index));
+
+    SetCommandListStateNoLock(State::Pending);
+    ResetCommandState();
+
+    TRACY_GPU_SCOPE_COMPLETE(m_tracy_gpu_scope, GetGpuTimeRange(false));
+    META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" was COMPLETED on frame " + std::to_string(frame_index) +
+             ", GPU time range: " + static_cast<std::string>(GetGpuTimeRange(true)));
 }
 
 CommandListBase::DebugGroupBase* CommandListBase::GetTopOpenDebugGroup() const
@@ -401,10 +409,7 @@ void CommandListSetBase::Complete() const noexcept
 const CommandListBase& CommandListSetBase::GetCommandListBase(Data::Index index) const
 {
     META_FUNCTION_TASK();
-    if (index > m_base_refs.size())
-        throw std::out_of_range("Command list index " + std::to_string(index) +
-                                " is out of collection range (size = " + std::to_string(m_refs.size()) + ").");
-
+    META_CHECK_ARG_LESS(index, m_base_refs.size());
     return m_base_refs[index].get();
 }
 

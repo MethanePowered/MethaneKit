@@ -24,6 +24,7 @@ Base implementation of the resource interface.
 #include "ResourceBase.h"
 #include "TextureBase.h"
 #include "ContextBase.h"
+#include "Formatters.hpp"
 
 #include <Methane/Graphics/Resource.h>
 #include <Methane/Checks.hpp>

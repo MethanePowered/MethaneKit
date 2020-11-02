@@ -19,6 +19,7 @@ limitations under the License.
 FILE: Methane/Checks.hpp
 Methane short check macroses throwing exceptions on negative check result
 
+  - META_INVALID_ARG_DESCR(argument, description)
   - META_CHECK_ARG[_DESCR](argument, condition[, description])
   - META_CHECK_ARG_NAME[_DESCR](argument_name, condition[, description])
   - META_CHECK_ARG_RANGE[_DESCR](argument, range_begin, range_end[, description])
@@ -43,6 +44,9 @@ Methane short check macroses throwing exceptions on negative check result
         #define __FUNCTION_NAME__ __func__
     #endif
 #endif
+
+#define META_INVALID_ARG_DESCR(argument, description) \
+    throw Methane::InvalidArgumentException<typename std::decay<decltype(argument)>::type>(__FUNCTION_NAME__, #argument, argument, description)
 
 #define META_CHECK_ARG_DESCR(argument, condition, description) \
     if (!(condition)) \
@@ -110,6 +114,7 @@ Methane short check macroses throwing exceptions on negative check result
 #else // #ifdef METHANE_CHECKS_ENABLED
 
 // (void)argument is added to suppress unused argument warnings
+#define META_INVALID_ARG_DESCR(argument, description) (void)arguments
 #define META_CHECK_ARG_DESCR(argument, condition, description) (void)argument
 #define META_CHECK_ARG(argument, condition) (void)argument
 #define META_CHECK_ARG_NAME_DESCR(argument_name, condition, description)
