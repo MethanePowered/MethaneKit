@@ -82,6 +82,15 @@ Program::ArgumentDescriptions::const_iterator Program::FindArgumentDescription(c
     return argument_descriptions.find(all_shaders_argument);
 }
 
+Program::Argument::NotFoundException::NotFoundException(const Program& program, const Argument& argument)
+    : std::invalid_argument(fmt::format("Program '{}' does not have argument '{} of {} shader.",
+                                        program.GetName(), argument.name, Shader::GetTypeName(argument.shader_type)))
+    , m_program(program)
+    , m_argument_ptr(std::make_unique<Program::Argument>(argument))
+{
+    META_FUNCTION_TASK();
+}
+
 ProgramBase::ShadersByType ProgramBase::CreateShadersByType(const Ptrs<Shader>& shaders)
 {
     META_FUNCTION_TASK();

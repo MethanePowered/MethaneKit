@@ -30,6 +30,7 @@ Methane program bindings interface for resources binding to program arguments.
 
 #include <string>
 #include <unordered_map>
+#include <stdexcept>
 
 namespace Methane::Graphics
 {
@@ -44,6 +45,12 @@ struct ProgramBindings
             Program::ArgumentDesc argument;
             Resource::Type        resource_type;
             uint32_t              resource_count = 1;
+        };
+
+        class ConstantModificationException : public std::logic_error
+        {
+        public:
+            ConstantModificationException();
         };
 
         // ArgumentBinding interface
@@ -72,6 +79,19 @@ struct ProgramBindings
     };
 
     using ResourceLocationsByArgument = std::unordered_map<Program::Argument, Resource::Locations, Program::Argument::Hash>;
+
+    class UnboundArgumentsException: public std::runtime_error
+    {
+    public:
+        UnboundArgumentsException(const Program& program, const Program::Arguments& unbound_arguments);
+
+        const Program& GetProgram() const noexcept { return m_program; }
+        const Program::Arguments& GetArguments() const noexcept { return m_unbound_arguments; }
+
+    private:
+        const Program& m_program;
+        const Program::Arguments m_unbound_arguments;
+    };
 
     // Create ProgramBindings instance
     static Ptr<ProgramBindings> Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument);

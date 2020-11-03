@@ -23,15 +23,31 @@ Base implementation of the program bindings interface.
 
 #include "ProgramBindingsBase.h"
 #include "ContextBase.h"
+#include "Formatters.hpp"
 
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Utils.h>
 
+#include <fmt/ranges.h>
 #include <cassert>
 
 namespace Methane::Graphics
 {
+
+ProgramBindings::ArgumentBinding::ConstantModificationException::ConstantModificationException()
+    : std::logic_error("Can not modify constant program argument binding.")
+{
+    META_FUNCTION_TASK();
+}
+
+ProgramBindings::UnboundArgumentsException::UnboundArgumentsException(const Program& program, const Program::Arguments& unbound_arguments)
+    : std::runtime_error(fmt::format("Some arguments of program '{}' are not bound to any resource:\n{}", program.GetName(), unbound_arguments))
+    , m_program(program)
+    , m_unbound_arguments(unbound_arguments)
+{
+    META_FUNCTION_TASK();
+}
 
 ProgramBindingsBase::ArgumentBindingBase::ArgumentBindingBase(const ContextBase& context, const Settings& settings)
     : m_context(context)
@@ -47,7 +63,7 @@ void ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resour
         return;
 
     if (m_settings.argument.IsConstant() && !m_resource_locations.empty())
-        throw std::logic_error("Can not modify constant program argument binding.");
+        throw ConstantModificationException();
 
     META_CHECK_ARG_NOT_EMPTY_DESCR(resource_locations, "can not set empty resources for resource binding");
 
@@ -112,11 +128,7 @@ ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, const 
     : m_program_ptr(program_ptr)
 {
     META_FUNCTION_TASK();
-
-    if (!m_program_ptr)
-    {
-        throw std::runtime_error("Can not create resource bindings for an empty program.");
-    }
+    META_CHECK_ARG_NOT_ZERO(program_ptr);
 
     ReserveDescriptorHeapRanges();
     SetResourcesForArguments(resource_locations_by_argument);
@@ -202,10 +214,8 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
     std::map<DescriptorHeap::Type, DescriptorsCount> descriptors_count_by_heap_type;
     for (const auto& binding_by_argument : program.GetArgumentBindings())
     {
-        if (!binding_by_argument.second)
-        {
-            throw std::runtime_error("No resource binding is set for an argument \"" + binding_by_argument.first.name + "\" of shader.");
-        }
+        META_CHECK_ARG_NOT_NULL_DESCR(binding_by_argument.second,
+                                      fmt::format("no resource binding is set for an argument '{}' of shader", binding_by_argument.first.name));
 
         const auto& argument_binding = static_cast<const ArgumentBindingBase&>(*binding_by_argument.second);
         const auto& binding_settings = argument_binding.GetSettings();
@@ -266,10 +276,7 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         if (descriptors.mutable_count > 0)
         {
             heap_reservation.mutable_range = heap_reservation.heap.get().ReserveRange(descriptors.mutable_count);
-            if (!heap_reservation.mutable_range)
-            {
-                throw std::runtime_error("Failed to reserve mutable descriptor heap range. Descriptor heap is not big enough.");
-            }
+            META_CHECK_ARG_NOT_ZERO_DESCR(heap_reservation.mutable_range, "failed to reserve mutable descriptor heap range, descriptor heap is not big enough");
         }
     }
 }
@@ -284,15 +291,10 @@ void ProgramBindingsBase::SetResourcesForArguments(const ResourceLocationsByArgu
         const Ptr<ArgumentBinding>& binding_ptr = Get(argument);
         if (!binding_ptr)
         {
-#ifndef PROGRAM_IGNORE_MISSING_ARGUMENTS
-            const Program::Argument all_shaders_argument(Shader::Type::All, argument.name);
-            const bool all_shaders_argument_found = !!Get(all_shaders_argument);
-            throw std::runtime_error("Program \"" + m_program_ptr->GetName() +
-                                     "\" does not have argument \"" + argument.name +
-                                     "\" of " + Shader::GetTypeName(argument.shader_type) + " shader." +
-                                     (all_shaders_argument_found ? " Instead this argument is used in All shaders." : "") );
-#else
+#ifdef PROGRAM_IGNORE_MISSING_ARGUMENTS
             continue;
+#else
+            throw Program::Argument::NotFoundException(*m_program_ptr, argument);
 #endif
         }
         binding_ptr->SetResourceLocations(argument_and_resource_locations.second);
@@ -309,32 +311,18 @@ const Ptr<ProgramBindings::ArgumentBinding>& ProgramBindingsBase::Get(const Prog
          ? binding_by_argument_it->second : s_empty_argument_binding_ptr;
 }
 
-bool ProgramBindingsBase::AllArgumentsAreBoundToResources(std::string& missing_args) const
+Program::Arguments ProgramBindingsBase::GetUnboundArguments() const
 {
     META_FUNCTION_TASK();
-
-    std::stringstream log_ss;
-    bool all_arguments_are_bound_to_resources = true;
+    Program::Arguments unbound_arguments;
     for (const auto& binding_by_argument : m_binding_by_argument)
     {
-        const Resource::Locations& resource_locations = binding_by_argument.second->GetResourceLocations();
-        if (resource_locations.empty())
+        if (binding_by_argument.second->GetResourceLocations().empty())
         {
-            log_ss << std::endl 
-                   << "   - Program \"" << m_program_ptr->GetName()
-                   << "\" argument \"" << binding_by_argument.first.name
-                   << "\" of " << Shader::GetTypeName(binding_by_argument.first.shader_type)
-                   << " shader is not bound to any resource." ;
-            all_arguments_are_bound_to_resources = false;
+            unbound_arguments.insert(binding_by_argument.first);
         }
     }
-
-    if (!all_arguments_are_bound_to_resources)
-    {
-        missing_args = log_ss.str();
-        META_LOG(missing_args);
-    }
-    return all_arguments_are_bound_to_resources;
+    return unbound_arguments;
 }
 
 void ProgramBindingsBase::VerifyAllArgumentsAreBoundToResources() const
@@ -342,11 +330,10 @@ void ProgramBindingsBase::VerifyAllArgumentsAreBoundToResources() const
     META_FUNCTION_TASK();
     // Verify that resources are set for all program arguments
 #ifndef PROGRAM_IGNORE_MISSING_ARGUMENTS
-    std::string missing_args;
-    if (!AllArgumentsAreBoundToResources(missing_args))
+    Program::Arguments unbound_arguments = GetUnboundArguments();
+    if (!unbound_arguments.empty())
     {
-        throw std::runtime_error("Some arguments of program \"" + m_program_ptr->GetName() +
-                                 "\" are not bound to any resource:\n" + missing_args);
+        throw UnboundArgumentsException(*m_program_ptr, unbound_arguments);
     }
 #endif
 }

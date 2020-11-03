@@ -65,6 +65,19 @@ struct Program : virtual Object
 
     struct Argument
     {
+        class NotFoundException : public std::invalid_argument
+        {
+        public:
+            NotFoundException(const Program& program, const Argument& argument);
+
+            const Program&  GetProgram() const noexcept  { return m_program; }
+            const Argument& GetArgument() const noexcept { return *m_argument_ptr; }
+
+        private:
+            const Program& m_program;
+            const UniquePtr<Argument> m_argument_ptr;
+        };
+
         struct Modifiers
         {
             using Mask = uint32_t;

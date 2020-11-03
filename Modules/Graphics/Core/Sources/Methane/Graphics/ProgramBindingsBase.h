@@ -91,7 +91,7 @@ public:
     virtual void CompleteInitialization() = 0;
     virtual void Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior = ApplyBehavior::AllIncremental) const = 0;
 
-    bool AllArgumentsAreBoundToResources(std::string& missing_args) const;
+    Program::Arguments GetUnboundArguments() const;
 
 protected:
     Program& GetProgram();
