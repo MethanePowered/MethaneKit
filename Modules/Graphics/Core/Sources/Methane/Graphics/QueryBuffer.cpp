@@ -28,6 +28,7 @@ GPU data query buffer base implementation.
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Data/RangeUtils.hpp>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <cassert>
 
@@ -52,31 +53,25 @@ QueryBuffer::Query::~Query()
 void QueryBuffer::Query::Begin()
 {
     META_FUNCTION_TASK();
-    if (GetQueryBuffer().GetType() == QueryBuffer::Type::Timestamp)
-        throw std::logic_error("Timestamp query can not be begun, it can be ended only.");
-
-    if (m_state == State::Begun)
-        throw std::logic_error("Can not begin unresolved or not ended query.");
-
+    const QueryBuffer::Type query_buffer_type = GetQueryBuffer().GetType();
+    META_CHECK_ARG_NOT_EQUAL_DESCR(query_buffer_type, QueryBuffer::Type::Timestamp, "timestamp query can not be begun, it can be ended only");
+    META_CHECK_ARG_NOT_EQUAL_DESCR(m_state, State::Begun, "can not begin unresolved or not ended query");
     m_state = State::Begun;
 }
 
 void QueryBuffer::Query::End()
 {
     META_FUNCTION_TASK();
-    const QueryBuffer::Type query_type = GetQueryBuffer().GetType();
-    if (query_type != QueryBuffer::Type::Timestamp && m_state != State::Begun)
-        throw std::logic_error("Can not end " + GetTypeName(query_type) + " query that was not begun.");
-
+    const QueryBuffer::Type query_buffer_type = GetQueryBuffer().GetType();
+    META_CHECK_ARG_DESCR(m_state, query_buffer_type == QueryBuffer::Type::Timestamp || m_state == State::Begun,
+                         fmt::format("can not end {} query that was not begun", GetTypeName(query_buffer_type)));
     m_state = State::Ended;
 }
 
 void QueryBuffer::Query::ResolveData()
 {
     META_FUNCTION_TASK();
-    if (m_state != State::Ended)
-        throw std::logic_error("Can not resolve data of not ended query.");
-
+    META_CHECK_ARG_EQUAL_DESCR(m_state, State::Ended, "can not resolve data of not ended query");
     m_state = State::Resolved;
 }
 
@@ -104,25 +99,22 @@ QueryBuffer::CreateQueryArgs QueryBuffer::GetCreateQueryArguments()
 {
     META_FUNCTION_TASK();
     const Data::Range<Data::Index> index_range = Data::ReserveRange(m_free_indices, 1U);
-    if (index_range.IsEmpty())
-        throw std::out_of_range("Maximum queries count is reached.");
+    META_CHECK_ARG_DESCR(index_range, !index_range.IsEmpty(), "maximum queries count is reached");
 
     const Query::Range data_range = Data::ReserveRange(m_free_data_ranges, m_query_size);
-    if (index_range.IsEmpty())
-        throw std::out_of_range("There is no space available for new query.");
+    META_CHECK_ARG_DESCR(data_range, !data_range.IsEmpty(), "there is no space available for new query");
 
     return { index_range.GetStart(), data_range };
 }
 
-std::string QueryBuffer::GetTypeName(Type type) noexcept
+std::string QueryBuffer::GetTypeName(Type type)
 {
     META_FUNCTION_TASK();
     switch(type)
     {
     case Type::Timestamp: return "Timestamp";
-    default: assert(0);
+    default: META_UNEXPECTED_ENUM_ARG_RETURN(type, "Unknown");
     }
-    return "Unknown";
 }
 
 } // namespace Methane::Graphics

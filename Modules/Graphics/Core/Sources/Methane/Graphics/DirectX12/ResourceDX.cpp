@@ -26,8 +26,9 @@ DirectX 12 implementation of the resource interface.
 #include "RenderContextDX.h"
 #include "DeviceDX.h"
 
-#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/Primitives.h>
+#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <nowide/convert.hpp>
 #include <cassert>
@@ -199,9 +200,7 @@ void ResourceDX::InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource
                                              D3D12_RESOURCE_STATES resource_state, const D3D12_CLEAR_VALUE* p_clear_value)
 {
     META_FUNCTION_TASK();
-    if (m_cp_resource)
-        throw std::logic_error("Committed resource is already initialized!");
-
+    META_CHECK_ARG_DESCR(m_cp_resource, !m_cp_resource, "committed resource is already initialized");
     m_cp_resource = CreateCommittedResource(resource_desc, heap_type, resource_state, p_clear_value);
 }
 

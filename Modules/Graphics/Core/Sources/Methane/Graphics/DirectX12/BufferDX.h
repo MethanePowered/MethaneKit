@@ -29,6 +29,7 @@ DirectX 12 implementation of the buffer interface.
 #include <Methane/Graphics/DescriptorHeap.h>
 #include <Methane/Graphics/Windows/Primitives.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <d3dx12.h>
 #include <cassert>
@@ -100,9 +101,7 @@ public:
                 GetContextDX().GetDeviceDX().GetNativeDevice().Get()
             );
 
-            if (!p_sub_resource_data)
-                throw std::runtime_error("Failed to map buffer subresource.");
-
+            META_CHECK_ARG_NOT_NULL_DESCR(p_sub_resource_data, "failed to map buffer subresource");
             const Data::Index target_data_start = sub_resource.data_range ? sub_resource.data_range->GetStart() : 0U;
             stdext::checked_array_iterator<Data::RawPtr> target_data_it(p_sub_resource_data, sub_resource.size);
             std::copy(sub_resource.p_data, sub_resource.p_data + sub_resource.size, target_data_it);
@@ -145,8 +144,8 @@ public:
     SubResource GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override
     {
         META_FUNCTION_TASK();
-        if (!(GetUsageMask() & Usage::ReadBack))
-            throw std::logic_error("Getting buffer data from GPU is allowed for buffers with CPU Read-back flag only.");
+        META_CHECK_ARG_DESCR(GetUsageMask(), GetUsageMask() & Usage::ReadBack,
+                             "getting buffer data from GPU is allowed for buffers with CPU Read-back flag only");
 
         ValidateSubResource(sub_resource_index, data_range);
 
@@ -164,8 +163,7 @@ public:
             GetContextDX().GetDeviceDX().GetNativeDevice().Get()
         );
 
-        if (!p_sub_resource_data)
-            throw std::runtime_error("Failed to map buffer subresource.");
+        META_CHECK_ARG_NOT_NULL_DESCR(p_sub_resource_data, "failed to map buffer subresource");
 
         stdext::checked_array_iterator<Data::RawPtr> source_data_it(p_sub_resource_data, data_end);
         Data::Bytes sub_resource_data(data_length, 0);

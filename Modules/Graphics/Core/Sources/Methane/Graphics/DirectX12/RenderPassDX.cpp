@@ -65,8 +65,7 @@ RenderPassDX::AccessDesc::AccessDesc(const Attachment& attachment)
 
     if (attachment.store_action == Attachment::StoreAction::Resolve)
     {
-        throw std::logic_error("Resolve parameters initialization is not implemented yet.");
-        // TODO: ending.Resolve = { ... }
+        META_FUNCTION_NOT_IMPLEMENTED_DESCR("Resolve parameters initialization is not implemented yet");
     }
 }
 

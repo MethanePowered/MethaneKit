@@ -109,12 +109,8 @@ void QueryBufferDX::QueryDX::ResolveData()
 Resource::SubResource QueryBufferDX::QueryDX::GetData()
 {
     META_FUNCTION_TASK();
-    if (GetState() != Query::State::Resolved)
-        throw std::logic_error("Query data can not be retrieved for unresolved query.");
-
-    if (GetCommandList().GetState() != CommandListBase::State::Pending)
-        throw std::logic_error("Query data can be retrieved only when command list is in Pending/Completed state.");
-
+    META_CHECK_ARG_EQUAL_DESCR(GetState(), Query::State::Resolved, "query data can not be retrieved for unresolved query");
+    META_CHECK_ARG_EQUAL_DESCR(GetCommandList().GetState(), CommandListBase::State::Pending, "query data can be retrieved only when command list is in Pending/Completed state");
     return GetQueryBufferDX().GetResultResourceDX().GetData(Resource::SubResource::Index(), GetDataRange());
 }
 
@@ -206,9 +202,7 @@ Timestamp TimestampQueryBufferDX::TimestampQueryDX::GetGpuTimestamp()
 {
     META_FUNCTION_TASK();
     Resource::SubResource query_data = GetData();
-    if (query_data.size < sizeof(Timestamp))
-        throw std::runtime_error("Query data size is less than expected for timestamp.");
-
+    META_CHECK_ARG_LESS_DESCR(query_data.size, sizeof(Timestamp), "query data size is less than expected for timestamp");
     return *reinterpret_cast<const Timestamp*>(query_data.p_data);
 }
 

@@ -27,8 +27,8 @@ Base implementation of the resource interface.
 #include "Formatters.hpp"
 
 #include <Methane/Graphics/Resource.h>
-#include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <fmt/format.h>
 
@@ -523,12 +523,9 @@ void ResourceBase::InitializeDefaultDescriptors()
 const Resource::Descriptor& ResourceBase::GetDescriptor(Usage::Value usage) const
 {
     META_FUNCTION_TASK();
-
     auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
-    if (descriptor_by_usage_it == m_descriptor_by_usage.end())
-    {
-        throw std::runtime_error("Resource \"" + GetName() + "\" does not support \"" + Usage::ToString(usage) + "\" usage");
-    }
+    META_CHECK_ARG_DESCR(usage, descriptor_by_usage_it != m_descriptor_by_usage.end(),
+                         fmt::format("resource '{}' does not support '{}' usage", GetName(), Usage::ToString(usage)));
     return descriptor_by_usage_it->second;
 }
 
@@ -566,11 +563,7 @@ void ResourceBase::SetData(const SubResources& sub_resources)
 
 Resource::SubResource ResourceBase::GetData(const SubResource::Index&, const std::optional<BytesRange>&)
 {
-    META_FUNCTION_TASK();
-    META_FUNCTION_NOT_IMPLEMENTED_DESCR("reading data is not allowed for this type of resource");
-#ifndef METHANE_CHECKS_ENABLED
-    return Resource::SubResource();
-#endif
+    META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(Resource::SubResource(), "reading data is not allowed for this type of resource");
 }
 
 Context& ResourceBase::GetContext() noexcept
@@ -611,11 +604,8 @@ const Resource::Descriptor& ResourceBase::GetDescriptorByUsage(Usage::Value usag
 {
     META_FUNCTION_TASK();
     auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
-    if (descriptor_by_usage_it == m_descriptor_by_usage.end())
-    {
-        throw std::runtime_error("Resource \"" + GetName() + "\" does not have descriptor for usage \"" + Usage::ToString(usage) + "\"");
-    }
-
+    META_CHECK_ARG_DESCR(usage, descriptor_by_usage_it != m_descriptor_by_usage.end(),
+                         fmt::format("Resource '{}' does not have descriptor for usage '{}'", GetName(), Usage::ToString(usage)));
     return descriptor_by_usage_it->second;
 }
 
@@ -640,10 +630,7 @@ bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
 
     if (m_state != State::Common)
     {
-        if (state == State::Common)
-        {
-            throw std::logic_error("Resource can not be transitioned to \"Common\" state.");
-        }
+        META_CHECK_ARG_NOT_EQUAL_DESCR(state, State::Common, "resource can not be transitioned to 'Common' state");
         if (!out_barriers || !out_barriers->HasTransition(*this, m_state, state))
         {
             out_barriers = Barriers::Create();
@@ -676,15 +663,15 @@ void ResourceBase::ValidateSubResource(const SubResource& sub_resource) const
 
     if (sub_resource.data_range)
     {
-        META_CHECK_ARG_DESCR(sub_resource.size, sub_resource.size == sub_resource.data_range->GetLength(),
-                             fmt::format("sub-resource {} data size should be equal to the length of data range", sub_resource.index));
+        META_CHECK_ARG_EQUAL_DESCR(sub_resource.size, sub_resource.data_range->GetLength(),
+                                   fmt::format("sub-resource {} data size should be equal to the length of data range", sub_resource.index));
 
         META_CHECK_ARG_LESS_DESCR(sub_resource.size, sub_resource_data_size + 1,
-                                     fmt::format("sub-resource {} data size should be less or equal than full resource size", sub_resource.index));
+                                  fmt::format("sub-resource {} data size should be less or equal than full resource size", sub_resource.index));
     }
     else
     {
-        META_CHECK_ARG_DESCR(sub_resource.size, sub_resource.size == sub_resource_data_size,
+        META_CHECK_ARG_EQUAL_DESCR(sub_resource.size, sub_resource_data_size,
                              fmt::format("Sub-resource {} data size should be equal to full resource size when data range is not specified", sub_resource.index));
     }
 }
@@ -708,10 +695,10 @@ Data::Size ResourceBase::CalculateSubResourceDataSize(const SubResource::Index& 
 {
     META_FUNCTION_TASK();
     static const SubResource::Index s_zero_index;
-    META_CHECK_ARG_DESCR(subresource_index, subresource_index == s_zero_index, "subresource size is undefined, must be provided by super class override");
+    META_CHECK_ARG_EQUAL_DESCR(subresource_index, s_zero_index, "subresource size is undefined, must be provided by super class override");
 
     static const SubResource::Count s_one_count;
-    META_CHECK_ARG_DESCR(m_sub_resource_count, m_sub_resource_count == s_one_count, "subresource size is undefined, must be provided by super class override");
+    META_CHECK_ARG_EQUAL_DESCR(m_sub_resource_count, s_one_count, "subresource size is undefined, must be provided by super class override");
 
     return GetDataSize();
 }

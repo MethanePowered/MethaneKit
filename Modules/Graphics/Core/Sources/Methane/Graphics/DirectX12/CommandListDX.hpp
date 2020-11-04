@@ -34,6 +34,7 @@ DirectX 12 base template implementation of the command list interface.
 #include <Methane/Graphics/CommandListBase.h>
 #include <Methane/Graphics/Windows/Primitives.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <wrl.h>
 #include <d3d12.h>
@@ -179,9 +180,7 @@ public:
         META_FUNCTION_TASK();
         if (m_begin_timestamp_query_ptr && m_end_timestamp_query_ptr)
         {
-            if (GetState() != CommandListBase::State::Pending)
-                throw std::logic_error("Can not get GPU time range of encoding, executing or not committed command list.");
-
+            META_CHECK_ARG_EQUAL_DESCR(GetState(), CommandListBase::State::Pending, "can not get GPU time range of encoding, executing or not committed command list");
             return in_cpu_nanoseconds
                  ? Data::TimeRange(m_begin_timestamp_query_ptr->GetCpuNanoseconds(), m_end_timestamp_query_ptr->GetCpuNanoseconds())
                  : Data::TimeRange(m_begin_timestamp_query_ptr->GetGpuTimestamp(),   m_end_timestamp_query_ptr->GetGpuTimestamp());
@@ -207,7 +206,7 @@ public:
     // ICommandListDX interface
 
     void SetResourceBarriersDX(const ResourceBase::Barriers& resource_barriers) override { SetResourceBarriers(resource_barriers); }
-    CommandQueueDX&             GetCommandQueueDX() override           { return static_cast<CommandQueueDX&>(GetCommandQueueBase()); }
+    CommandQueueDX&             GetCommandQueueDX() override                             { return static_cast<CommandQueueDX&>(GetCommandQueueBase()); }
     ID3D12GraphicsCommandList&  GetNativeCommandList() const override
     {
         assert(!!m_cp_command_list);

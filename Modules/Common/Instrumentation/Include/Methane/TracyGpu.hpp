@@ -220,7 +220,7 @@ public:
         if (!m_is_active)
             return;
 
-        META_CHECK_ARG_DESCR(m_state, m_state == State::Begun, "GPU scope can end only from begun states");
+        META_CHECK_ARG_EQUAL_DESCR(m_state, State::Begun, "GPU scope can end only from begun states");
         m_state        = State::Ended;
         m_end_query_id = m_context.NextQueryId();
 
@@ -238,7 +238,7 @@ public:
         if (!m_is_active)
             return;
 
-        META_CHECK_ARG_DESCR(m_state, m_state == State::Ended, "GPU scope can be completed only from ended state");
+        META_CHECK_ARG_EQUAL_DESCR(m_state, State::Ended, "GPU scope can be completed only from ended state");
         META_CHECK_ARG_RANGE_DESCR(gpu_begin_timestamp, 0, gpu_end_timestamp + 1, "GPU begin timestamp should be less or equal to end timestamp and both should be positive");
         m_state = State::Completed;
 

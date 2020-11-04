@@ -64,7 +64,7 @@ void Animation::Stop() noexcept
 void Animation::Pause()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_DESCR(m_state, m_state == State::Running, "only running animation can be paused");
+    META_CHECK_ARG_EQUAL_DESCR(m_state, State::Running, "only running animation can be paused");
 
     m_state = State::Paused;
     m_paused_duration = GetElapsedDuration();
@@ -73,7 +73,7 @@ void Animation::Pause()
 void Animation::Resume()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_DESCR(m_state, m_state == State::Paused, "only paused animation can be resumed");
+    META_CHECK_ARG_EQUAL_DESCR(m_state, State::Paused, "only paused animation can be resumed");
 
     m_state = State::Running;
     Reset(Clock::now() - m_paused_duration);

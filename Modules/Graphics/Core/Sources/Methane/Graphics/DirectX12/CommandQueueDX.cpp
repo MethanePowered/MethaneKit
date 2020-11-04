@@ -120,14 +120,8 @@ void CommandQueueDX::Execute(CommandListSet& command_lists, const CommandList::C
     if (!m_execution_waiting)
     {
         m_execution_waiting_thread.join();
-        if (m_execution_waiting_exception_ptr)
-        {
-            std::rethrow_exception(m_execution_waiting_exception_ptr);
-        }
-        else
-        {
-            throw std::logic_error("Command queue \"" + GetName() + "\" execution waiting thread has unexpectedly finished.");
-        }
+        META_CHECK_ARG_NOT_NULL_DESCR(m_execution_waiting_exception_ptr, fmt::format("Command queue '{}' execution waiting thread has unexpectedly finished", GetName()));
+        std::rethrow_exception(m_execution_waiting_exception_ptr);
     }
 
     CommandListSetDX& dx_command_lists = static_cast<CommandListSetDX&>(command_lists);

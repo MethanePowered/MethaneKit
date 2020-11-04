@@ -254,14 +254,11 @@ void ResourceManager::ForEachDescriptorHeap(const std::function<void(DescriptorH
         const Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[heap_type_idx];
         for (const Ptr<DescriptorHeap>& desc_heap_ptr : desc_heaps)
         {
-            if (!desc_heap_ptr)
-                throw std::logic_error("Empty descriptor heap pointer should not be stored in resource manager.");
-
+            META_CHECK_ARG_NOT_NULL(desc_heap_ptr);
             const DescriptorHeap::Type heap_type = desc_heap_ptr->GetSettings().type;
-            if (heap_type != desc_heaps_type)
-                throw std::logic_error("Wrong type of descriptor heap (" + DescriptorHeap::GetTypeName(heap_type) +
-                                       ") was found in container assuming heaps of " + DescriptorHeap::GetTypeName(desc_heaps_type));
-
+            META_CHECK_ARG_EQUAL_DESCR(heap_type, desc_heaps_type,
+                                       fmt::format("wrong type of {} descriptor heap was found in container assuming heaps of {} type",
+                                                   DescriptorHeap::GetTypeName(heap_type), DescriptorHeap::GetTypeName(desc_heaps_type)));
             process_heap(*desc_heap_ptr);
         }
     }

@@ -105,12 +105,10 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
             continue;
 
         const ResourceDX::LocationDX& dx_resource_location = m_resource_locations_dx.back();
-        if (m_descriptor_range.heap_type != descriptor_heap_type)
-        {
-            throw std::logic_error("Incompatible heap type \"" + DescriptorHeap::GetTypeName(descriptor_heap_type) +
-                                   "\" is set for resource binding on argument \"" + m_settings_dx.argument.name +
-                                   "\" of \"" + Shader::GetTypeName(m_settings_dx.argument.shader_type) + "\" shader.");
-        }
+        META_CHECK_ARG_NOT_EQUAL_DESCR(m_descriptor_range.heap_type, descriptor_heap_type,
+                                       fmt::format("incompatible heap type '{}' is set for resource binding on argument '{}' of {} shader",
+                                                   DescriptorHeap::GetTypeName(descriptor_heap_type), m_settings_dx.argument.name,
+                                                   Shader::GetTypeName(m_settings_dx.argument.shader_type)));
 
         const uint32_t descriptor_index = descriptor_range_start + m_descriptor_range.offset + resource_index;
         cp_native_device->CopyDescriptorsSimple(
@@ -129,19 +127,12 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
 void ProgramBindingsDX::ArgumentBindingDX::SetDescriptorRange(const DescriptorRange& descriptor_range)
 {
     META_FUNCTION_TASK();
-
     const DescriptorHeap::Type expected_heap_type = GetDescriptorHeapType();
-    if (descriptor_range.heap_type != expected_heap_type)
-    {
-        throw std::runtime_error("Descriptor heap type \"" + DescriptorHeap::GetTypeName(descriptor_range.heap_type) +
-                                 "\" is incompatible with the resource binding, expected heap type is \"" +
-                                 DescriptorHeap::GetTypeName(expected_heap_type) + "\".");
-    }
-    if (descriptor_range.count < m_settings_dx.resource_count)
-    {
-        throw std::runtime_error("Descriptor range size (" + std::to_string(descriptor_range.count) +
-                                 ") will not fit bound shader resources (" + std::to_string(m_settings_dx.resource_count) + ").");
-    }
+    META_CHECK_ARG_NOT_EQUAL_DESCR(descriptor_range.heap_type, expected_heap_type,
+                                   fmt::format("Descriptor heap type '{}' is incompatible with the resource binding, expected heap type is '{}'",
+                                               DescriptorHeap::GetTypeName(descriptor_range.heap_type), DescriptorHeap::GetTypeName(expected_heap_type)));
+    META_CHECK_ARG_LESS_DESCR(descriptor_range.count, m_settings_dx.resource_count,
+                              fmt::format("Descriptor range size {} will not fit bound shader resources count {}", descriptor_range.count, m_settings_dx.resource_count));
     m_descriptor_range = descriptor_range;
 }
 
@@ -324,9 +315,7 @@ void ProgramBindingsDX::UpdateRootParameterBindings()
 
         if (binding_settings.type == DXBindingType::DescriptorTable)
         {
-            if (!p_heap_reservation)
-               throw std::runtime_error("Descriptor heap reservation is not available for \"Descriptor Table\" resource binding.");
-
+            META_CHECK_ARG_NOT_NULL_DESCR(p_heap_reservation, "descriptor heap reservation is not available for \"Descriptor Table\" resource binding");
             const DescriptorHeapDX&  dx_descriptor_heap = static_cast<const DescriptorHeapDX&>(p_heap_reservation->heap.get());
             const DXDescriptorRange& descriptor_range   = argument_binding.GetDescriptorRange();
             const uint32_t           descriptor_index   = p_heap_reservation->GetRange(binding_settings.argument.IsConstant()).GetStart() + descriptor_range.offset;

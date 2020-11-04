@@ -25,10 +25,8 @@ Base implementation of the render pass interface.
 #include "TextureBase.h"
 #include "RenderCommandListBase.h"
 
-#include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -122,36 +120,27 @@ void RenderPassBase::ReleaseAttachmentTextures()
 void RenderPassBase::Begin(RenderCommandListBase& render_command_list)
 {
     META_FUNCTION_TASK();
-    if (m_is_begun)
-    {
-        throw std::logic_error("Can not begin pass which was begun already and was not ended.");
-    }
+    META_CHECK_ARG_FALSE_DESCR(m_is_begun, "can not begin pass which was begun already and was not ended");
 
-    SetAttachmentStates(ResourceBase::State::RenderTarget, ResourceBase::State::DepthWrite,
-                        m_begin_transition_barriers_ptr, render_command_list);
-
+    SetAttachmentStates(ResourceBase::State::RenderTarget, ResourceBase::State::DepthWrite, m_begin_transition_barriers_ptr, render_command_list);
     m_is_begun = true;
 }
 
 void RenderPassBase::End(RenderCommandListBase& render_command_list)
 {
     META_FUNCTION_TASK();
-    if (!m_is_begun)
-    {
-        throw std::logic_error("Can not end render pass, which was not begun.");
-    }
+    META_CHECK_ARG_TRUE_DESCR(m_is_begun, "can not end render pass, which was not begun");
 
     if (m_settings.is_final_pass)
     {
-        SetAttachmentStates(ResourceBase::State::Present, { },
-                            m_end_transition_barriers_ptr, render_command_list);
+        SetAttachmentStates(ResourceBase::State::Present, { }, m_end_transition_barriers_ptr, render_command_list);
     }
-
     m_is_begun = false;
 }
 
 void RenderPassBase::InitAttachmentStates()
 {
+    META_FUNCTION_TASK();
     Ptr<ResourceBase::Barriers> transition_barriers_ptr;
     for (const Ref<TextureBase>& color_texture_ref : GetColorAttachmentTextures())
     {

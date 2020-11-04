@@ -33,6 +33,7 @@ DirectX 12 implementation of the render state interface.
 #include <Methane/Graphics/Windows/Primitives.h>
 #include <Methane/Platform/Windows/Utils.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <d3dx12.h>
 #include <D3Dcompiler.h>
@@ -355,11 +356,7 @@ void RenderStateDX::Reset(const Settings& settings)
     m_pipeline_state_desc.SampleDesc.Count      = settings.rasterizer.sample_count;
 
     // Set RTV, DSV formats for pipeline state
-    if (program_settings.color_formats.size() > g_max_rtv_count)
-    {
-        throw std::runtime_error("Number of color attachments (" + std::to_string(program_settings.color_formats.size()) +
-                                 ") exceeds maximum RTV count in DirectX (" + std::to_string(g_max_rtv_count) + ")");
-    }
+    META_CHECK_ARG_LESS_DESCR(program_settings.color_formats.size(), g_max_rtv_count + 1, "number of color attachments exceeds maximum RTV count in DirectX");
     std::fill_n(m_pipeline_state_desc.RTVFormats, g_max_rtv_count, DXGI_FORMAT_UNKNOWN);
     uint32_t attachment_index = 0;
     for (PixelFormat color_format : program_settings.color_formats)
@@ -375,7 +372,6 @@ void RenderStateDX::Reset(const Settings& settings)
 void RenderStateDX::Apply(RenderCommandListBase& command_list, Group::Mask state_groups)
 {
     META_FUNCTION_TASK();
-
     RenderCommandListDX& dx_render_command_list = static_cast<RenderCommandListDX&>(command_list);
     ID3D12GraphicsCommandList& d3d12_command_list = dx_render_command_list.GetNativeCommandList();
 

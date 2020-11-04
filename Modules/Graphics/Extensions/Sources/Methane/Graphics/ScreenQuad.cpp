@@ -240,7 +240,7 @@ void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled)
 void ScreenQuad::SetTexture(Ptr<Texture> texture_ptr)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_DESCR(m_settings.texture_mode, m_settings.texture_mode != TextureMode::Disabled, "can not set texture of screen quad with Disabled texture mode");
+    META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.texture_mode, TextureMode::Disabled, "can not set texture of screen quad with Disabled texture mode");
     META_CHECK_ARG_NOT_NULL_DESCR(texture_ptr, "can not set null texture to screen quad");
 
     if (m_texture_ptr.get() == texture_ptr.get())

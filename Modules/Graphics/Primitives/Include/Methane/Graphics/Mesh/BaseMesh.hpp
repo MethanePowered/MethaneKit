@@ -43,7 +43,7 @@ public:
         : Mesh(type, vertex_layout)
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_DESCR(m_vertex_size, m_vertex_size == sizeof(VType), "size of vertex structure differs from vertex size calculated by vertex layout");
+        META_CHECK_ARG_EQUAL_DESCR(m_vertex_size, sizeof(VType), "size of vertex structure differs from vertex size calculated by vertex layout");
     }
 
     const Vertices& GetVertices() const noexcept       { return m_vertices; }

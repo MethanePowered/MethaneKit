@@ -44,7 +44,7 @@ public:
         const bool has_normals  = Mesh::HasVertexField(Mesh::VertexField::Normal);
         const bool has_texcoord = Mesh::HasVertexField(Mesh::VertexField::TexCoord);
 
-        META_CHECK_ARG_DESCR(has_colors, !has_colors, "colored vertices are not supported by icosahedron mesh");
+        META_CHECK_ARG_FALSE_DESCR(has_colors, "colored vertices are not supported by icosahedron mesh");
 
         const float a = (radius + std::sqrt(radius * 5.F)) / 2.F;
         const float b = radius;

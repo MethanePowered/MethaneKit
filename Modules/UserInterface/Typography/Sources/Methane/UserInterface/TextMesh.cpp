@@ -173,7 +173,7 @@ void TextMesh::Update(const std::u32string& text, gfx::FrameSize& frame_size)
     const bool new_text_starts_with_old_one = IsNewTextStartsWithOldOne(text);
     const bool old_text_starts_with_new_one = IsOldTextStartsWithNewOne(text);
 
-    META_CHECK_ARG_DESCR(frame_size, frame_size == m_frame_size, "text mesh can be incrementally updated only when frame size does not change");
+    META_CHECK_ARG_EQUAL_DESCR(frame_size, m_frame_size, "text mesh can be incrementally updated only when frame size does not change");
     META_CHECK_ARG_NAME_DESCR("text", new_text_starts_with_old_one || old_text_starts_with_new_one, "text mesh can be incrementally updated only when text is appended or backspaced");
 
     if (new_text_starts_with_old_one)

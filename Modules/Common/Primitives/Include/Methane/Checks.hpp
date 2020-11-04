@@ -20,15 +20,17 @@ FILE: Methane/Checks.hpp
 Methane short check macroses throwing exceptions on negative check result
 
   - META_INVALID_ARG_DESCR(argument, description)
-  - META_CHECK_ARG[_DESCR](argument, condition[, description])
   - META_CHECK_ARG_NAME[_DESCR](argument_name, condition[, description])
+  - META_CHECK_ARG[_DESCR](argument, condition[, description])
+  - META_CHECK_ARG_[TRUE|FALSE][_DESCR](argument[, description])
+  - META_CHECK_ARG[_NOT]_EQUAL[_DESCR](argument, value, description)
   - META_CHECK_ARG_RANGE[_DESCR](argument, range_begin, range_end[, description])
   - META_CHECK_ARG_LESS[_DESCR](argument, upper_limit[, description])
   - META_CHECK_ARG_GREATER_OR_EQUAL[_DESCR](argument, min_value[, description])
   - META_CHECK_ARG_NOT_EMPTY[_DESCR](argument[, description])
   - META_CHECK_ARG_NOT_NULL[_DESCR](argument[, description])
   - META_UNEXPECTED_ENUM_ARG[_DESCR](argument[, description])
-  - META_FUNCTION_NOT_IMPLEMENTED[_DESCR]([description])
+  - META_FUNCTION_NOT_IMPLEMENTED[_RETURN][_DESCR]([return_value],[description])
 
 ******************************************************************************/
 #pragma once
@@ -59,6 +61,16 @@ Methane short check macroses throwing exceptions on negative check result
         throw Methane::InvalidArgumentException<bool>(__FUNCTION_NAME__, argument_name, description)
 
 #define META_CHECK_ARG_NAME(argument_name, condition) META_CHECK_ARG_NAME_DESCR(argument_name, condition, #condition)
+
+#define META_CHECK_ARG_TRUE_DESCR(argument, description)  META_CHECK_ARG_DESCR(argument, argument, description)
+#define META_CHECK_ARG_FALSE_DESCR(argument, description) META_CHECK_ARG_DESCR(argument, !argument, description)
+#define META_CHECK_ARG_EQUAL_DESCR(argument, value, description)  META_CHECK_ARG_DESCR(argument, argument == value, description)
+#define META_CHECK_ARG_NOT_EQUAL_DESCR(argument, value, description) META_CHECK_ARG_DESCR(argument, argument != value, description)
+
+#define META_CHECK_ARG_TRUE(argument)  META_CHECK_ARG_TRUE_DESCR(argument, argument, "")
+#define META_CHECK_ARG_FALSE(argument) META_CHECK_ARG_FALSE_DESCR(argument, !argument, "")
+#define META_CHECK_ARG_EQUAL(argument, value)  META_CHECK_ARG_EQUAL_DESCR(argument, value, "")
+#define META_CHECK_ARG_NOT_EQUAL(argument, value) META_CHECK_ARG_NOT_EQUAL_DESCR(argument, value, "")
 
 #define META_CHECK_ARG_RANGE_DESCR(argument, range_begin, range_end, description) \
     if (argument < static_cast<typename std::decay<decltype(argument)>::type>(range_begin) || argument >= static_cast<typename std::decay<decltype(argument)>::type>(range_end)) \
@@ -109,14 +121,25 @@ Methane short check macroses throwing exceptions on negative check result
 #define META_FUNCTION_NOT_IMPLEMENTED_DESCR(description) \
     throw Methane::NotImplementedException(__FUNCTION_NAME__, description)
 
+#define META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(return_value, description) META_FUNCTION_NOT_IMPLEMENTED_DESCR(description)
+
 #define META_FUNCTION_NOT_IMPLEMENTED() META_FUNCTION_NOT_IMPLEMENTED_DESCR("")
+#define META_FUNCTION_NOT_IMPLEMENTED_RETURN(return_value) META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(return_value, "")
 
 #else // #ifdef METHANE_CHECKS_ENABLED
 
 // (void)argument is added to suppress unused argument warnings
-#define META_INVALID_ARG_DESCR(argument, description) (void)arguments
+#define META_INVALID_ARG_DESCR(argument, description) (void)argument
 #define META_CHECK_ARG_DESCR(argument, condition, description) (void)argument
 #define META_CHECK_ARG(argument, condition) (void)argument
+#define META_CHECK_ARG_TRUE_DESCR(argument, description) (void)argument
+#define META_CHECK_ARG_TRUE(argument) (void)argument
+#define META_CHECK_ARG_FALSE_DESCR(argument, description) (void)argument
+#define META_CHECK_ARG_FALSE(argument) (void)argument
+#define META_CHECK_ARG_EQUAL_DESCR(argument, value, description) (void)argument
+#define META_CHECK_ARG_EQUAL(argument, value) (void)argument
+#define META_CHECK_ARG_NOT_EQUAL_DESCR(argument, value, description) (void)argument
+#define META_CHECK_ARG_NOT_EQUAL(argument, value) (void)argument
 #define META_CHECK_ARG_NAME_DESCR(argument_name, condition, description)
 #define META_CHECK_ARG_NAME(argument_name, condition)
 #define META_CHECK_ARG_RANGE_DESCR(argument, range_begin, range_end, description) (void)argument
@@ -136,6 +159,8 @@ Methane short check macroses throwing exceptions on negative check result
 #define META_UNEXPECTED_ENUM_ARG_RETURN(argument, return_value) return return_value
 #define META_UNEXPECTED_ENUM_ARG_DESCR_RETURN(argument, return_value, description) return return_value
 #define META_FUNCTION_NOT_IMPLEMENTED_DESCR(description)
+#define META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(return_value, description) return return_value
 #define META_FUNCTION_NOT_IMPLEMENTED()
+#define META_FUNCTION_NOT_IMPLEMENTED_RETURN(return_value) return return_value
 
 #endif // #ifdef METHANE_CHECKS_ENABLED

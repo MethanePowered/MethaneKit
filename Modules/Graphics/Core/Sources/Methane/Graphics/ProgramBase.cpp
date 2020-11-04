@@ -83,7 +83,7 @@ Program::ArgumentDescriptions::const_iterator Program::FindArgumentDescription(c
 }
 
 Program::Argument::NotFoundException::NotFoundException(const Program& program, const Argument& argument)
-    : std::invalid_argument(fmt::format("Program '{}' does not have argument '{} of {} shader.",
+    : std::invalid_argument(fmt::format("Program '{}' does not have argument '{}' of {} shader.",
                                         program.GetName(), argument.name, Shader::GetTypeName(argument.shader_type)))
     , m_program(program)
     , m_argument_ptr(std::make_unique<Program::Argument>(argument))
@@ -201,8 +201,8 @@ const DescriptorHeap::Range& ProgramBase::ReserveConstantDescriptorRange(Descrip
         const DescriptorHeapReservation& heap_reservation = constant_descriptor_range_by_heap_type_it->second;
         META_CHECK_ARG_NAME_DESCR("heap", std::addressof(heap) == std::addressof(heap_reservation.heap.get()),
                                   "constant descriptor range was previously reserved for the program on a different descriptor heap of the same type");
-        META_CHECK_ARG_DESCR(range_length, range_length == heap_reservation.range.GetLength(),
-                             "constant descriptor range previously reserved for the program differs in length from requested reservation");
+        META_CHECK_ARG_EQUAL_DESCR(range_length, heap_reservation.range.GetLength(),
+                                   "constant descriptor range previously reserved for the program differs in length from requested reservation");
         return heap_reservation.range;
     }
 
@@ -230,6 +230,9 @@ uint32_t ProgramBase::GetInputBufferIndexByArgumentSemantic(const std::string& a
             return static_cast<uint32_t>(buffer_index);
     }
     META_INVALID_ARG_DESCR(argument_semantic, fmt::format("input argument with semantic name was not found for program '{}'", GetName()));
+#ifndef METHANE_CHECKS_ENABLED
+    return 0;
+#endif
 }
 
 } // namespace Methane::Graphics

@@ -101,8 +101,8 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_DESCR(m_settings.usage_mask, m_settings.usage_mask != TextureBase::Usage::Unknown, "can not create texture with 'Unknown' usage mask");
-    META_CHECK_ARG_DESCR(m_settings.pixel_format, m_settings.pixel_format != PixelFormat::Unknown, "can not create texture with 'Unknown' pixel format");
+    META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.usage_mask, TextureBase::Usage::Unknown, "can not create texture with 'Unknown' usage mask");
+    META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.pixel_format, PixelFormat::Unknown, "can not create texture with 'Unknown' pixel format");
     META_CHECK_ARG_NOT_NULL_DESCR(m_settings.array_length, "array length should be greater than zero");
 
     ValidateDimensions(m_settings.dimension_type, m_settings.dimensions, m_settings.mipmapped);
@@ -125,8 +125,7 @@ void TextureBase::ValidateDimensions(DimensionType dimension_type, const Dimensi
     {
     case DimensionType::Cube:
     case DimensionType::CubeArray:
-        META_CHECK_ARG_DESCR(dimensions, dimensions.width == dimensions.height, "cube texture must have equal width and height dimensions");
-        META_CHECK_ARG_DESCR(dimensions, dimensions.depth == 6, "cube texture depth must be equal to 6");
+        META_CHECK_ARG_DESCR(dimensions, dimensions.width == dimensions.height && dimensions.depth == 6, "cube texture must have equal width and height dimensions and depth equal to 6");
         [[fallthrough]];
     case DimensionType::Tex3D:
         META_CHECK_ARG_DESCR(dimensions.depth, !mipmapped || !(dimensions.depth % 2), "all dimensions of the mip-mapped texture should be a power of 2, but depth is not");

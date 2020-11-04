@@ -28,11 +28,10 @@ DirectX 12 implementation of the texture interface.
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Windows/Primitives.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <d3dx12.h>
-
 #include <optional>
-#include <cassert>
 
 namespace DirectX
 {
@@ -41,6 +40,8 @@ class ScratchImage;
 
 namespace Methane::Graphics
 {
+
+class ContextBase;
 
 template<typename... ExtraArgs>
 class TextureDX : public TextureBase
@@ -57,8 +58,7 @@ public:
     // Resource interface
     void SetData(const SubResources&) override
     {
-        META_FUNCTION_TASK();
-        throw std::logic_error("Setting texture data is allowed for image textures only.");
+        META_FUNCTION_NOT_IMPLEMENTED_DESCR("setting texture data is allowed for image textures only");
     }
 
 private:

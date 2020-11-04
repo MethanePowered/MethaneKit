@@ -97,7 +97,7 @@ public:
     CommandQueueBase& GetCommandQueueBase() noexcept { return m_command_queue; }
     Context&          GetContext() noexcept          { return m_context; }
 
-    static std::string GetTypeName(Type type) noexcept;
+    static std::string GetTypeName(Type type);
 
 protected:
     QueryBuffer(CommandQueueBase& command_queue, Type type,
