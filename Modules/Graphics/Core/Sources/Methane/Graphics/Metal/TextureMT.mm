@@ -26,8 +26,9 @@ Metal implementation of the texture interface.
 #include "BlitCommandListMT.hh"
 #include "TypesMT.hh"
 
-#include <Methane/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <algorithm>
 #include <cassert>
@@ -116,16 +117,13 @@ TextureMT::TextureMT(ContextBase& context, const Settings& settings, const Descr
                       : [GetContextMT().GetDeviceMT().GetNativeDevice()  newTextureWithDescriptor:GetNativeTextureDescriptor()])
 {
     META_FUNCTION_TASK();
-
     InitializeDefaultDescriptors();
 }
 
 void TextureMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-
     TextureBase::SetName(name);
-
     m_mtl_texture.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
 }
 
@@ -194,19 +192,13 @@ void TextureMT::SetData(const SubResources& sub_resources)
 void TextureMT::UpdateFrameBuffer()
 {
     META_FUNCTION_TASK();
-
-    if (GetSettings().type != Texture::Type::FrameBuffer)
-    {
-        throw std::logic_error("Unable to update frame buffer on non-FB texture.");
-    }
-
+    META_CHECK_ARG_EQUAL_DESCR(GetSettings().type, Texture::Type::FrameBuffer, "unable to update frame buffer on non-FB texture");
     m_mtl_texture = [GetRenderContextMT().GetNativeDrawable() texture];
 }
 
 MTLTextureUsage TextureMT::GetNativeTextureUsage()
 {
     META_FUNCTION_TASK();
-
     NSUInteger texture_usage = MTLTextureUsageUnknown;
     const Settings& settings = GetSettings();
     
@@ -292,8 +284,7 @@ void TextureMT::GenerateMipLevels()
 RenderContextMT& TextureMT::GetRenderContextMT()
 {
     META_FUNCTION_TASK();
-    if (GetContextBase().GetType() != Context::Type::Render)
-        throw std::runtime_error("Incompatible context type.");
+    META_CHECK_ARG_EQUAL_DESCR(GetContextBase().GetType(), Context::Type::Render, "incompatible context type");
     return static_cast<RenderContextMT&>(GetContextMT());
 }
 

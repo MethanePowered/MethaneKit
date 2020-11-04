@@ -23,8 +23,9 @@ Metal implementation of the device interface.
 
 #include "DeviceMT.hh"
 
-#include <Methane/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <algorithm>
 
@@ -104,8 +105,7 @@ void SystemMT::OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificat
     else
     {
         const Ptr<Device>& device_ptr = FindMetalDevice(mtl_device);
-        if (!device_ptr)
-            throw std::logic_error("No device object found");
+        META_CHECK_ARG_NOT_NULL_DESCR(device_ptr, "no device object found");
 
         if (device_notification == MTLDeviceRemovalRequestedNotification)
             RequestRemoveDevice(*device_ptr);

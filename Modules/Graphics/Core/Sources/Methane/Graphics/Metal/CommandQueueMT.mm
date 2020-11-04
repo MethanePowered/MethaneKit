@@ -25,8 +25,9 @@ Metal implementation of the command queue interface.
 #include "DeviceMT.hh"
 #include "RenderContextMT.hh"
 
-#include <Methane/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <QuartzCore/CABase.h>
 
@@ -78,10 +79,7 @@ RenderContextMT& CommandQueueMT::GetRenderContextMT()
 {
     META_FUNCTION_TASK();
     ContextBase& context = GetContext();
-    if (context.GetType() != Context::Type::Render)
-    {
-        throw std::runtime_error("Incompatible context type.");
-    }
+    META_CHECK_ARG_EQUAL_DESCR(context.GetType(), Context::Type::Render, "incompatible context type");
     return static_cast<RenderContextMT&>(context);
 }
 

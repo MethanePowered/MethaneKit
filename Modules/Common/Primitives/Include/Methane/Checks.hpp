@@ -67,8 +67,8 @@ Methane short check macroses throwing exceptions on negative check result
 #define META_CHECK_ARG_EQUAL_DESCR(argument, value, description)  META_CHECK_ARG_DESCR(argument, argument == value, description)
 #define META_CHECK_ARG_NOT_EQUAL_DESCR(argument, value, description) META_CHECK_ARG_DESCR(argument, argument != value, description)
 
-#define META_CHECK_ARG_TRUE(argument)  META_CHECK_ARG_TRUE_DESCR(argument, argument, "")
-#define META_CHECK_ARG_FALSE(argument) META_CHECK_ARG_FALSE_DESCR(argument, !argument, "")
+#define META_CHECK_ARG_TRUE(argument)  META_CHECK_ARG_TRUE_DESCR(argument, "")
+#define META_CHECK_ARG_FALSE(argument) META_CHECK_ARG_FALSE_DESCR(argument, "")
 #define META_CHECK_ARG_EQUAL(argument, value)  META_CHECK_ARG_EQUAL_DESCR(argument, value, "")
 #define META_CHECK_ARG_NOT_EQUAL(argument, value) META_CHECK_ARG_NOT_EQUAL_DESCR(argument, value, "")
 

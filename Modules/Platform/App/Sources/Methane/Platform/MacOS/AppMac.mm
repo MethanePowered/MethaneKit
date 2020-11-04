@@ -24,6 +24,7 @@ MacOS application implementation.
 #include <Methane/Platform/MacOS/AppMac.hh>
 #include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 using namespace Methane::Platform;
 using namespace Methane::MacOS;
@@ -58,17 +59,11 @@ AppMac::~AppMac()
 void AppMac::InitContext(const Platform::AppEnvironment& /*env*/, const Data::FrameSize& /*frame_size*/)
 {
     META_FUNCTION_TASK();
-    AppView app_view = GetView();
-    if (app_view.p_native_view == nil)
-    {
-        throw std::runtime_error("Native app view can not be null.");
-    }
 
-    if (m_ns_window == nil)
-    {
-        throw std::runtime_error("NS Window was not set.");
-    }
-    
+    AppView app_view = GetView();
+    META_CHECK_ARG_NOT_NULL(app_view.p_native_view);
+    META_CHECK_ARG_NOT_NULL(m_ns_window);
+
     [m_ns_window.contentView addSubview: app_view.p_native_view];
 }
 

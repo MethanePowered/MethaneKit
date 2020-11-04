@@ -30,6 +30,7 @@ Metal implementation of the program interface.
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -70,12 +71,10 @@ ProgramMT::ProgramMT(ContextBase& context, const Settings& settings)
                                                                                          options:MTLPipelineOptionArgumentInfo
                                                                                       reflection:&m_mtl_render_pipeline_reflection
                                                                                            error:&ns_error];
-    
-    if (ns_error != nil)
-    {
-        const std::string error_msg = MacOS::ConvertFromNsType<NSString, std::string>([ns_error localizedDescription]);
-        throw std::runtime_error("Failed to create dummy pipeline state for program reflection: " + error_msg);
-    }
+
+    META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_dummy_pipeline_state_for_reflection,
+                                  fmt::format("Failed to create dummy pipeline state for program reflection: {}",
+                                              MacOS::ConvertFromNsType<NSString, std::string>([ns_error localizedDescription])));
 
     if (m_mtl_render_pipeline_reflection)
     {

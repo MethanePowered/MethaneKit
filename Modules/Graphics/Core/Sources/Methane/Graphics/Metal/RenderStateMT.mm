@@ -422,11 +422,9 @@ void RenderStateMT::InitializeNativePipelineState()
     
     NSError* ns_error = nil;
     m_mtl_pipeline_state = [GetRenderContextMT().GetDeviceMT().GetNativeDevice() newRenderPipelineStateWithDescriptor:m_mtl_pipeline_state_desc error:&ns_error];
-    if (!m_mtl_pipeline_state)
-    {
-        const std::string error_msg = MacOS::ConvertFromNsType<NSString, std::string>([ns_error localizedDescription]);
-        throw std::runtime_error("Failed to create Metal pipeline state: " + error_msg);
-    }
+    META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_pipeline_state,
+                                  fmt::format("failed to create Metal pipeline state: {}",
+                                              MacOS::ConvertFromNsType<NSString, std::string>([ns_error localizedDescription])));
 }
 
 void RenderStateMT::InitializeNativeDepthStencilState()
@@ -437,10 +435,7 @@ void RenderStateMT::InitializeNativeDepthStencilState()
     
     assert(m_mtl_depth_stencil_state_desc != nil);
     m_mtl_depth_state = [GetRenderContextMT().GetDeviceMT().GetNativeDevice() newDepthStencilStateWithDescriptor:m_mtl_depth_stencil_state_desc];
-    if (!m_mtl_depth_state)
-    {
-        throw std::runtime_error("Failed to create Metal depth state.");
-    }
+    META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_depth_state, "failed to create Metal depth state");
 }
 
 id<MTLRenderPipelineState>& RenderStateMT::GetNativePipelineState()
