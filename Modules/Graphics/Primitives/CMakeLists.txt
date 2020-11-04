@@ -24,6 +24,12 @@ set(SOURCES
     ${SOURCES_DIR}/PerlinNoise.cpp
 )
 
+if (WIN32)
+    set(SOURCES ${SOURCES}
+        ${SOURCES_PLATFORM_DIR}/Primitives.cpp
+    )
+endif()
+
 add_library(${TARGET} STATIC
     ${HEADERS}
     ${SOURCES}

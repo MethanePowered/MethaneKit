@@ -24,8 +24,9 @@ by decoding them from popular image formats.
 
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Platform/Utils.h>
-#include <Methane/Instrumentation.h>
 #include <Methane/Data/Math.hpp>
+#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <taskflow/taskflow.hpp>
 
@@ -105,19 +106,17 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
 
     // Read image format with general information
     const OIIO::ImageSpec& image_spec = image_buf.spec();
-    if (image_spec.undefined() || !image_buf.read())
-    {
-        throw std::runtime_error("Failed to read image from file \"" + image_path + "\", error: " + image_buf.geterror());
-    }
+    META_CHECK_ARG_DESCR(image_path, !image_spec.undefined(), "failed to load image specification");
+
+    const bool read_success = image_buf.read();
+    META_CHECK_ARG_DESCR(image_path, read_success, fmt::format("failed to read image data from file, error: {}", image_buf.geterror()));
 
     // Convert image pixels data to the target texture format RGBA8 Unorm
     OIIO::ROI image_roi = OIIO::get_roi(image_spec);
     Data::Bytes texture_data(channels_count * image_roi.npixels(), 255);
     const OIIO::TypeDesc texture_format(OIIO::TypeDesc::BASETYPE::UCHAR);
-    if (!image_buf.get_pixels(image_roi, texture_format, texture_data.data(), channels_count * sizeof(texture_data[0])))
-    {
-        throw std::runtime_error("Failed to decode image from file \"" + image_path + "\", error: " + image_buf.geterror());
-    }
+    const decode_success = image_buf.get_pixels(image_roi, texture_format, texture_data.data(), channels_count * sizeof(texture_data[0]));
+    META_CHECK_ARG_DESCR(image_path, decode_success, fmt::format("failed to decode image pixels, error: {}", image_buf.geterror()));
 
     return ImageData(Dimensions(static_cast<uint32_t>(image_spec.width), static_cast<uint32_t>(image_spec.height)),
                                 static_cast<uint32_t>(channels_count),
@@ -130,10 +129,10 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
                                                   &image_width, &image_height, &image_channels_count,
                                                   static_cast<int>(channels_count));
 
-    if (!p_image_data || image_width <= 0 || image_height <= 0 || image_channels_count <= 0)
-    {
-        throw std::runtime_error("Failed to decode image from memory file \"" + image_path + "\".");
-    }
+    META_CHECK_ARG_NOT_NULL_DESCR(p_image_data, "failed to load image data from memory");
+    META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_width, 1, "invalid image width");
+    META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_height, 1, "invalid image height");
+    META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_channels_count, 1, "invalid image channels count");
 
     const Dimensions image_dimensions(static_cast<uint32_t>(image_width), static_cast<uint32_t>(image_height));
     const Data::Size image_data_size = static_cast<Data::Size>(image_width * image_height * channels_count * sizeof(stbi_uc));
@@ -197,28 +196,18 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
 
     // Verify cube textures
 
-    if (face_images_data.size() != image_paths.size())
-    {
-        throw std::runtime_error("Some faces of cube texture have failed to load.");
-    }
+    META_CHECK_ARG_EQUAL_DESCR(face_images_data.size(), image_paths.size(), "some faces of cube texture have failed to load");
     const Dimensions face_dimensions     = face_images_data.front().second.dimensions;
     const uint32_t   face_channels_count = face_images_data.front().second.channels_count;
-    if (face_dimensions.width != face_dimensions.height)
-    {
-        throw std::runtime_error("All images of cube texture faces must have equal width and height.");
-    }
+    META_CHECK_ARG_EQUAL_DESCR(face_dimensions.width, face_dimensions.height, "all images of cube texture faces must have equal width and height");
 
     Resource::SubResources face_resources;
     face_resources.reserve(face_images_data.size());
     for(const std::pair<Data::Index, ImageData>& face_image_data : face_images_data)
     {
-        if (face_dimensions     != face_image_data.second.dimensions ||
-            face_channels_count != face_image_data.second.channels_count)
-        {
-            throw std::runtime_error("All face image of cube texture must have equal dimensions and channels count.");
-        }
-        face_resources.emplace_back(face_image_data.second.pixels.p_data, face_image_data.second.pixels.size,
-                                    Resource::SubResource::Index(face_image_data.first));
+        META_CHECK_ARG_EQUAL_DESCR(face_dimensions, face_image_data.second.dimensions, "all face image of cube texture must have equal dimensions");
+        META_CHECK_ARG_EQUAL_DESCR(face_channels_count, face_image_data.second.channels_count, "all face image of cube texture must have equal channels count");
+        face_resources.emplace_back(face_image_data.second.pixels.p_data, face_image_data.second.pixels.size, Resource::SubResource::Index(face_image_data.first));
     }
 
     // Load face images to cube texture

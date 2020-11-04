@@ -129,8 +129,8 @@ public:
     void Subdivide()
     {
         META_FUNCTION_TASK();
-        if (BaseMeshT::m_indices.size() % 3 != 0)
-            throw std::logic_error("Icosahedron indices count should be a multiple of three representing triangles list.");
+        META_CHECK_ARG_DESCR(BaseMesh::m_indices.size(), BaseMesh::m_indices.size() % 3 == 0,
+                             "icosahedron indices count should be a multiple of three representing triangles list");
 
         Mesh::Indices new_indices;
         new_indices.reserve(BaseMeshT::m_indices.size() * 4);
@@ -164,7 +164,6 @@ public:
     void Spherify()
     {
         META_FUNCTION_TASK();
-
         const bool has_normals = Mesh::HasVertexField(Mesh::VertexField::Normal);
 
         for(VType& vertex : BaseMeshT::m_vertices)

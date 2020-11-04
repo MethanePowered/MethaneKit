@@ -31,6 +31,7 @@ Font atlas textures generation and fonts library management classes.
 #include <map>
 #include <string>
 #include <cctype>
+#include <stdexcept>
 
 namespace Methane::Graphics
 {
@@ -60,6 +61,10 @@ struct IFontCallback
     virtual ~IFontCallback() = default;
 };
 
+#ifndef FT_Error
+typedef int FT_Error;
+#endif
+
 class Font
     : public std::enable_shared_from_this<Font>
     , public Data::Emitter<IFontCallback>
@@ -78,6 +83,17 @@ public:
         Description    description;
         uint32_t       resolution_dpi;
         std::u32string characters;
+    };
+
+    class FreeTypeError : public std::runtime_error
+    {
+    public:
+        FreeTypeError(FT_Error error);
+
+        FT_Error GetError() const noexcept { return m_error; }
+
+    private:
+        const FT_Error m_error;
     };
 
     class Library

@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/MacOS/Helpers.h
-MacOS platform graphics helpers.
+FILE: Methane/Graphics/MacOS/Primitives.h
+MacOS platform graphics primitives.
 
 ******************************************************************************/
 

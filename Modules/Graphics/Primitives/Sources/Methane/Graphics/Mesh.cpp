@@ -82,6 +82,13 @@ std::string Mesh::VertexLayout::GetSemanticByVertexField(VertexField vertex_fiel
     return "";
 }
 
+Mesh::VertexLayout::IncompatibleException::IncompatibleException(VertexField missing_field)
+    : std::logic_error(fmt::format("Mesh vertex layout is incompatible, field {} is missing.", VertexLayout::GetSemanticByVertexField(missing_field)))
+    , m_missing_field(missing_field)
+{
+    META_FUNCTION_TASK();
+}
+
 std::vector<std::string> Mesh::VertexLayout::GetSemantics() const
 {
     META_FUNCTION_TASK();
@@ -140,7 +147,7 @@ Mesh::Mesh(Type type, const VertexLayout& vertex_layout)
     , m_vertex_size(GetVertexSize(m_vertex_layout))
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NAME_DESCR("vertex_layout", Mesh::HasVertexField(Mesh::VertexField::Position), "vertex positions must be available in mesh layout");
+    CheckLayoutHasVertexField(VertexField::Position);
 }
 
 bool Mesh::HasVertexField(VertexField field) const noexcept
@@ -148,7 +155,15 @@ bool Mesh::HasVertexField(VertexField field) const noexcept
     META_FUNCTION_TASK();
     return m_vertex_field_offsets[static_cast<size_t>(field)] >= 0;
 }
-    
+
+void Mesh::CheckLayoutHasVertexField(VertexField field) const
+{
+    META_FUNCTION_TASK();
+    if (!HasVertexField(field))
+        throw VertexLayout::IncompatibleException(field);
+}
+
+
 Mesh::Edge::Edge(Mesh::Index v1_index, Mesh::Index v2_index)
     : first_index( v1_index < v2_index ? v1_index : v2_index)
     , second_index(v1_index < v2_index ? v2_index : v1_index)

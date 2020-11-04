@@ -119,11 +119,9 @@ protected:
     void ComputeAverageNormals()
     {
         META_FUNCTION_TASK();
-        if (!Mesh::HasVertexField(Mesh::VertexField::Normal))
-            throw std::logic_error("Mesh should contain normals.");
-
-        if (BaseMesh::m_indices.size() % 3 != 0)
-            throw std::logic_error("Mesh indices count should be a multiple of three representing triangles list.");
+        CheckLayoutHasVertexField(VertexField::Normal);
+        META_CHECK_ARG_DESCR(BaseMesh::m_indices.size(), BaseMesh::m_indices.size() % 3 == 0,
+                             "mesh indices count should be a multiple of three representing triangles list");
 
         for (VType& vertex : m_vertices)
         {
@@ -169,10 +167,8 @@ protected:
         for(size_t index = 0; index < m_indices.size(); ++index)
         {
             const Index vertex_index = m_indices[index];
-            if (vertex_index >= m_vertices.size())
-                throw std::logic_error("Mesh index buffer value " + std::to_string(vertex_index) +
-                                       " at position " + std::to_string(index) +
-                                       " is out of vertex buffer size " + std::to_string(m_vertices.size()));
+            META_CHECK_ARG_LESS_DESCR(vertex_index, m_vertices.size(),
+                                      fmt::format("mesh index buffer value at position {} is greater is out of vertex buffer bounds", index));
         }
     }
 

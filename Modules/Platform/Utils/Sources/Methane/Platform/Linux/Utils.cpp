@@ -23,6 +23,7 @@ MacOS platform utility functions.
 
 #include <Methane/Platform/MacOS/Utils.hh>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <cassert>
 #include <stdexcept>
@@ -38,20 +39,17 @@ void PrintToDebugOutput(__attribute__((unused)) const std::string& msg)
 
 std::string GetExecutableDir()
 {
-    META_FUNCTION_TASK();
-    throw std::runtime_error("Method is not implemented yet.");
+    META_FUNCTION_NOT_IMPLEMENTED_RETURN("");
 }
 
 std::string GetExecutableFileName()
 {
-    META_FUNCTION_TASK();
-    throw std::runtime_error("Method is not implemented yet.");
+    META_FUNCTION_NOT_IMPLEMENTED_RETURN("");
 }
 
 std::string GetResourceDir()
 {
-    META_FUNCTION_TASK();
-    throw std::runtime_error("Method is not implemented yet.");
+    META_FUNCTION_NOT_IMPLEMENTED_RETURN("");
 }
 
 } // namespace Methane::Platform

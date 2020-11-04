@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Linux/Helpers.h
-Linux platform graphics helpers.
+FILE: Methane/Graphics/Linux/Primitives.h
+Linux platform graphics primitives.
 
 ******************************************************************************/
 

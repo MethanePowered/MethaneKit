@@ -202,7 +202,8 @@ Timestamp TimestampQueryBufferDX::TimestampQueryDX::GetGpuTimestamp()
 {
     META_FUNCTION_TASK();
     Resource::SubResource query_data = GetData();
-    META_CHECK_ARG_LESS_DESCR(query_data.size, sizeof(Timestamp), "query data size is less than expected for timestamp");
+    META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(query_data.size, sizeof(Timestamp), "query data size is less than expected for timestamp");
+    META_CHECK_ARG_NOT_NULL(query_data.p_data);
     return *reinterpret_cast<const Timestamp*>(query_data.p_data);
 }
 

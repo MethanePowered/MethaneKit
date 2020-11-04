@@ -303,8 +303,7 @@ bool AppBase::UpdateTextItem(TextItem& item)
         return false;
     }
 
-    if (!m_ui_context_ptr)
-        throw std::logic_error("Help text can not be initialized without render context.");
+    META_CHECK_ARG_NOT_NULL_DESCR(m_ui_context_ptr, "help text can not be initialized without render context");
 
     if (!item.panel_ptr)
     {
@@ -387,9 +386,7 @@ Font& AppBase::GetMainFont()
     if (m_main_font_ptr)
         return *m_main_font_ptr;
 
-    if (!m_ui_context_ptr)
-        throw std::logic_error("Main font can not be initialized without render context.");
-
+    META_CHECK_ARG_NOT_NULL_DESCR(m_ui_context_ptr, "main font can not be initialized without render context");
     m_main_font_ptr = Font::Library::Get().GetFont(
         Data::FontProvider::Get(),
         Font::Settings{ m_app_settings.main_font, m_ui_context_ptr->GetFontResolutionDpi(), Font::GetAlphabetDefault() }

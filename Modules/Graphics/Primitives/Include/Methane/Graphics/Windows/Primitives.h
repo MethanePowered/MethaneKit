@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Windows/Helpers.h
-Windows platform graphics helpers.
+FILE: Methane/Graphics/Windows/Primitives.h
+Windows platform graphics primitives.
 
 ******************************************************************************/
 
@@ -29,18 +29,28 @@ Windows platform graphics helpers.
 
 #include <string>
 #include <stdexcept>
-#include <system_error>
-
-#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
 namespace wrl = Microsoft::WRL;
 
-inline void SafeCloseHandle(HANDLE& handle)
+class RuntimeException : public std::runtime_error
 {
-    META_FUNCTION_TASK();
+public:
+    RuntimeException(HRESULT hr, ID3D12Device* device = nullptr);
+    RuntimeException(HRESULT hr, wrl::ComPtr<ID3DBlob>& error_blob);
+
+    HRESULT             GetResult() const noexcept { return m_result; }
+    const ID3D12Device* GetDevice() const noexcept { return m_device; }
+
+private:
+    const HRESULT       m_result;
+    const ID3D12Device* m_device = nullptr;
+};
+
+inline void SafeCloseHandle(HANDLE& handle) noexcept
+{
     if (!handle)
         return;
 
@@ -50,41 +60,14 @@ inline void SafeCloseHandle(HANDLE& handle)
 
 inline void ThrowIfFailed(HRESULT hr, ID3D12Device* p_device = nullptr)
 {
-    if (!FAILED(hr))
-        return;
-
-    std::string error_msg;
-    if (hr == DXGI_ERROR_DEVICE_REMOVED && p_device)
-    {
-        error_msg = "DirectX device was removed with error: ";
-        hr = p_device->GetDeviceRemovedReason();
-    }
-    else
-    {
-        error_msg = "Critical DirectX runtime error has occurred: ";
-    }
-    error_msg += std::system_category().message(hr);
-
-    META_LOG(error_msg + "\n");
-    throw std::runtime_error(error_msg);
+    if (FAILED(hr))
+        throw RuntimeException(hr, p_device);
 }
 
 inline void ThrowIfFailed(HRESULT hr, wrl::ComPtr<ID3DBlob>& error_blob)
 {
-    if (!FAILED(hr))
-        return;
-
-    std::string error_msg = "Critical DirectX runtime error has occurred: ";
-    error_msg += std::system_category().message(hr);
-    if (error_blob.Get())
-    {
-        error_msg += "\nError details: ";
-        error_msg += static_cast<char*>(error_blob->GetBufferPointer());
-        error_blob->Release();
-    }
-
-    META_LOG(error_msg + "\n");
-    throw std::runtime_error(error_msg);
+    if (FAILED(hr))
+        throw RuntimeException(hr, error_blob);
 }
 
 } // namespace Methane::Graphics

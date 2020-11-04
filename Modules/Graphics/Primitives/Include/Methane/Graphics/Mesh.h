@@ -87,6 +87,17 @@ public:
     class VertexLayout : public std::vector<VertexField>
     {
     public:
+        class IncompatibleException : public std::logic_error
+        {
+        public:
+            IncompatibleException(VertexField missing_field);
+
+            VertexField GetMissingField() const noexcept { return m_missing_field; }
+
+        private:
+            const VertexField m_missing_field;
+        };
+
         using std::vector<VertexField>::vector;
 
         std::vector<std::string> GetSemantics() const;
@@ -119,6 +130,7 @@ protected:
     using VertexFieldSizes   = std::array<Data::Size,  static_cast<size_t>(VertexField::Count)>;
 
     bool HasVertexField(VertexField field) const noexcept;
+    void CheckLayoutHasVertexField(VertexField field) const;
 
     static VertexFieldOffsets GetVertexFieldOffsets(const VertexLayout& vertex_layout);
     static Data::Size         GetVertexSize(const VertexLayout& vertex_layout) noexcept;

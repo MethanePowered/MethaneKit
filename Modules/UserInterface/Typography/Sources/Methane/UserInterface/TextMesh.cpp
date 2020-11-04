@@ -421,9 +421,7 @@ void TextMesh::AddCharQuad(const Font::Char& font_char, const gfx::FramePoint& c
         }
     };
 
-    if (m_vertices.size() + 6 > std::numeric_limits<Index>::max())
-        throw std::runtime_error("Text mesh index buffer overflow.");
-
+    META_CHECK_ARG_LESS_DESCR(m_vertices.size(), std::numeric_limits<Index>::max() - 5, "text mesh index buffer overflow");
     const Index start_index = static_cast<Index>(m_vertices.size());
 
     m_vertices.emplace_back(Vertex{

@@ -35,7 +35,6 @@ Font atlas textures generation and fonts library management classes.
 #include <locale>
 #include <codecvt>
 #include <algorithm>
-#include <cassert>
 
 extern "C"
 {
@@ -65,10 +64,14 @@ static const char* GetFTErrorMessage(FT_Error err)
 inline void ThrowFreeTypeError(FT_Error error)
 {
     if (error)
-    {
-        const std::string error_msg = "Unexpected free type error occurred: ";
-        throw std::runtime_error(error_msg + GetFTErrorMessage(error));
-    }
+        throw Font::FreeTypeError(error);
+}
+
+Font::FreeTypeError::FreeTypeError(FT_Error error)
+    : std::runtime_error(fmt::format("Unexpected FreeType error occurred '{}'", GetFTErrorMessage(error)))
+    , m_error(error)
+{
+    META_FUNCTION_TASK();
 }
 
 class Font::Library::Impl
@@ -151,11 +154,7 @@ public:
         META_FUNCTION_TASK();
 
         uint32_t char_index = GetCharIndex(char_code);
-        if (!char_index)
-        {
-            const std::string error_message = "Unicode character U+" + std::to_string(char_code) + " does not exist in font face.";
-            throw std::runtime_error(error_message);
-        }
+        META_CHECK_ARG_NOT_ZERO_DESCR(char_index, fmt::format("unicode character U+{} does not exist in font face", static_cast<uint32_t>(char_code)));
 
         ThrowFreeTypeError(FT_Load_Glyph(m_ft_face, char_index, FT_LOAD_RENDER));
 
@@ -180,9 +179,11 @@ public:
     gfx::FramePoint GetKerning(uint32_t left_glyph_index, uint32_t right_glyph_index) const
     {
         META_FUNCTION_TASK();
-        assert(left_glyph_index && right_glyph_index);
-        if (!m_has_kerning || !left_glyph_index || !right_glyph_index)
+        if (!m_has_kerning)
             return gfx::FramePoint(0, 0);
+
+        META_CHECK_ARG_NOT_ZERO(left_glyph_index);
+        META_CHECK_ARG_NOT_ZERO(right_glyph_index);
 
         FT_Vector kerning_vec{};
         ThrowFreeTypeError(FT_Get_Kerning(m_ft_face, left_glyph_index, right_glyph_index, FT_KERNING_DEFAULT, &kerning_vec));
@@ -447,7 +448,7 @@ const Font::Char& Font::AddChar(Char::Code char_code)
 
     // Load char glyph and add it to the font characters map
     auto font_char_it = m_char_by_code.emplace(char_code, m_face_ptr->LoadChar(char_code)).first;
-    assert(font_char_it != m_char_by_code.end());
+    META_CHECK_ARG_DESCR(static_cast<uint32_t>(char_code), font_char_it != m_char_by_code.end(), "font character was not added to character map");
 
     Char& new_font_char = font_char_it->second;
     m_max_glyph_size.width  = std::max(m_max_glyph_size.width,  new_font_char.GetRect().size.width);
@@ -520,7 +521,7 @@ Font::Chars Font::GetTextChars(const std::u32string& text)
 gfx::FramePoint Font::GetKerning(const Char& left_char, const Char& right_char) const
 {
     META_FUNCTION_TASK();
-    assert(!!m_face_ptr);
+    META_CHECK_ARG_NOT_NULL(m_face_ptr);
     return m_face_ptr->GetKerning(left_char.GetGlyphIndex(), right_char.GetGlyphIndex());
 }
 
@@ -589,7 +590,7 @@ const Ptr<gfx::Texture>& Font::GetAtlasTexturePtr(gfx::Context& context)
     const auto atlas_texture_it = m_atlas_textures.find(&context);
     if (atlas_texture_it != m_atlas_textures.end())
     {
-        assert(!!atlas_texture_it->second.texture_ptr);
+        META_CHECK_ARG_NOT_NULL(atlas_texture_it->second.texture_ptr);
         return atlas_texture_it->second.texture_ptr;
     }
 
@@ -619,9 +620,7 @@ const Ptr<gfx::Texture>& Font::GetAtlasTexturePtr(gfx::Context& context)
 gfx::Texture& Font::GetAtlasTexture(gfx::Context& context)
 {
     const Ptr<gfx::Texture>& texture_ptr = GetAtlasTexturePtr(context);
-    if (!texture_ptr)
-        throw std::runtime_error("Atlas texture is not available for context.");
-    
+    META_CHECK_ARG_NOT_NULL_DESCR(texture_ptr, "atlas texture is not available for context");
     return *texture_ptr;
 }
 
@@ -653,8 +652,7 @@ void Font::RemoveAtlasTexture(gfx::Context& context)
 bool Font::UpdateAtlasBitmap(bool deferred_textures_update)
 {
     META_FUNCTION_TASK();
-    if (!m_atlas_pack_ptr)
-        throw std::logic_error("Can not update atlas bitmap until atlas is packed.");
+    META_CHECK_ARG_NOT_NULL_DESCR(m_atlas_pack_ptr, "can not update atlas bitmap until atlas is packed");
 
     const gfx::FrameSize& atlas_size = m_atlas_pack_ptr->GetSize();
     if (m_atlas_bitmap.size() == atlas_size.GetPixelsCount())
@@ -677,9 +675,7 @@ bool Font::UpdateAtlasBitmap(bool deferred_textures_update)
 void Font::UpdateAtlasTextures(bool deferred_textures_update)
 {
     META_FUNCTION_TASK();
-    if (!m_atlas_pack_ptr)
-        throw std::logic_error("Can not update atlas textures until atlas is packed and bitmap is up to date.");
-
+    META_CHECK_ARG_NOT_NULL_DESCR(m_atlas_pack_ptr, "can not update atlas textures until atlas is packed and bitmap is up to date");
     if (m_atlas_textures.empty())
         return;
 
@@ -694,7 +690,7 @@ void Font::UpdateAtlasTextures(bool deferred_textures_update)
         }
         else
         {
-            assert(context_and_texture.first);
+            META_CHECK_ARG_NOT_NULL(context_and_texture.first);
             UpdateAtlasTexture(*context_and_texture.first, context_and_texture.second);
         }
     }
@@ -801,24 +797,24 @@ void Font::Char::DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_strid
         return; 
 
     // Verify glyph placement
-    assert(m_rect.GetLeft() >= 0 && static_cast<uint32_t>(m_rect.GetRight())  <= atlas_row_stride);
-    assert(m_rect.GetTop()  >= 0 && static_cast<uint32_t>(m_rect.GetBottom()) <= static_cast<uint32_t>(atlas_bitmap.size() / atlas_row_stride));
+    META_CHECK_ARG_GREATER_OR_EQUAL(m_rect.GetLeft(), 0);
+    META_CHECK_ARG_GREATER_OR_EQUAL(m_rect.GetTop(),  0);
+    META_CHECK_ARG_LESS(m_rect.GetRight(), atlas_row_stride + 1);
+    META_CHECK_ARG_LESS(m_rect.GetBottom(), atlas_bitmap.size() / atlas_row_stride + 1);
 
     // Draw glyph to bitmap
     FT_Glyph ft_glyph = m_glyph_ptr->GetFTGlyph();
     ThrowFreeTypeError(FT_Glyph_To_Bitmap(&ft_glyph, FT_RENDER_MODE_NORMAL, nullptr, false));
 
     FT_Bitmap& ft_bitmap = reinterpret_cast<FT_BitmapGlyph>(ft_glyph)->bitmap;
-    assert(ft_bitmap.width == m_rect.size.width);
-    assert(ft_bitmap.rows == m_rect.size.height);
+    META_CHECK_ARG_EQUAL(ft_bitmap.width, m_rect.size.width);
+    META_CHECK_ARG_EQUAL(ft_bitmap.rows, m_rect.size.height);
 
     // Copy glyph pixels to output bitmap row-by-row
     for (uint32_t y = 0; y < ft_bitmap.rows; y++)
     {
         const uint32_t atlas_index = m_rect.origin.GetX() + (m_rect.origin.GetY() + y) * atlas_row_stride;
-        if (atlas_index + ft_bitmap.width > atlas_bitmap.size())
-            throw std::runtime_error("Char glyph does not fit into target atlas bitmap.");
-
+        META_CHECK_ARG_LESS_DESCR(atlas_index, atlas_bitmap.size() - ft_bitmap.width + 1, "char glyph does not fit into target atlas bitmap");
         std::copy(ft_bitmap.buffer + y * ft_bitmap.width, ft_bitmap.buffer + (y + 1) * ft_bitmap.width, atlas_bitmap.begin() + atlas_index);
     }
 }
@@ -826,9 +822,7 @@ void Font::Char::DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_strid
 uint32_t Font::Char::GetGlyphIndex() const
 {
     META_FUNCTION_TASK();
-    if (!m_glyph_ptr)
-        throw std::logic_error("No glyph is available for character with code " + std::to_string(m_code));
-
+    META_CHECK_ARG_NOT_NULL_DESCR(m_glyph_ptr, fmt::format("no glyph is available for character with code {}", static_cast<uint32_t>(m_code)));
     return m_glyph_ptr->GetFaceIndex();
 }
 
