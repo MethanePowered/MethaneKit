@@ -87,7 +87,6 @@ ProgramMT::ProgramMT(ContextBase& context, const Settings& settings)
 ProgramMT::~ProgramMT()
 {
     META_FUNCTION_TASK();
-
     [m_mtl_vertex_desc release];
 }
 

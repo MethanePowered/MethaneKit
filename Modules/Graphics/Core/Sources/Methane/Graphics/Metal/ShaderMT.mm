@@ -47,6 +47,7 @@ static MTLVertexStepFunction GetVertexStepFunction(StepType step_type) noexcept
         case StepType::Undefined:   return MTLVertexStepFunctionConstant;
         case StepType::PerVertex:   return MTLVertexStepFunctionPerVertex;
         case StepType::PerInstance: return MTLVertexStepFunctionPerInstance;
+        default:                    META_UNEXPECTED_ENUM_ARG_RETURN(step_type, MTLVertexStepFunctionPerVertex);
     }
 }
 
@@ -58,7 +59,7 @@ static Resource::Type GetResourceTypeByMetalArgumentType(MTLArgumentType mtl_arg
     case MTLArgumentTypeBuffer:     return Resource::Type::Buffer;
     case MTLArgumentTypeTexture:    return Resource::Type::Texture;
     case MTLArgumentTypeSampler:    return Resource::Type::Sampler;
-    default: META_UNEXPECTED_ENUM_ARG_DESCR_RETURN(mtl_arg_type, Resource::Type::Buffer, "unable to determine resource type by DX shader input type");
+    default:                        META_UNEXPECTED_ENUM_ARG_RETURN(mtl_arg_type, Resource::Type::Buffer);
     }
 }
 
@@ -73,9 +74,8 @@ static std::string GetMetalArgumentTypeName(MTLArgumentType mtl_arg_type) noexce
         case MTLArgumentTypeThreadgroupMemory:  return "Thread-group Memory";
         case MTLArgumentTypeTexture:            return "Texture";
         case MTLArgumentTypeSampler:            return "Sampler";
-        default:                                assert(0);
+        default:                                META_UNEXPECTED_ENUM_ARG_RETURN(mtl_arg_type, "Unknown");
     }
-    return "Unknown";
 }
 
 static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access) noexcept
@@ -86,9 +86,8 @@ static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access) 
         case MTLArgumentAccessReadOnly:     return "R";
         case MTLArgumentAccessReadWrite:    return "RW";
         case MTLArgumentAccessWriteOnly:    return "W";
-        default:                            assert(0);
+        default:                            META_UNEXPECTED_ENUM_ARG_RETURN(mtl_arg_access, "Unknown");
     }
-    return "Unknown";
 }
 #endif
 
@@ -207,7 +206,7 @@ MTLVertexDescriptor* ShaderMT::GetNativeVertexDescriptor(const ProgramMT& progra
     }
     
     const ProgramBase::InputBufferLayouts& input_buffer_layouts = program.GetSettings().input_buffer_layouts;
-    assert(input_buffer_byte_offsets.size() == input_buffer_layouts.size());
+    META_CHECK_ARG_EQUAL(input_buffer_byte_offsets.size(), input_buffer_layouts.size());
     for(uint32_t buffer_index = 0; buffer_index < input_buffer_layouts.size(); ++buffer_index)
     {
         const ProgramBase::InputBufferLayout& input_buffer_layout = input_buffer_layouts[buffer_index];

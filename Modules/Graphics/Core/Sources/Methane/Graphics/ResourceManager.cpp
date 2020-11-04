@@ -261,6 +261,7 @@ void ResourceManager::ForEachDescriptorHeap(const std::function<void(DescriptorH
                                                    DescriptorHeap::GetTypeName(heap_type), DescriptorHeap::GetTypeName(desc_heaps_type)));
             process_heap(*desc_heap_ptr);
         }
+        META_UNUSED(desc_heaps_type);
     }
 }
 

@@ -63,6 +63,7 @@ void QueryBuffer::Query::End()
 {
     META_FUNCTION_TASK();
     const QueryBuffer::Type query_buffer_type = GetQueryBuffer().GetType();
+    META_UNUSED(query_buffer_type);
     META_CHECK_ARG_DESCR(m_state, query_buffer_type == QueryBuffer::Type::Timestamp || m_state == State::Begun,
                          fmt::format("can not end {} query that was not begun", GetTypeName(query_buffer_type)));
     m_state = State::Ended;

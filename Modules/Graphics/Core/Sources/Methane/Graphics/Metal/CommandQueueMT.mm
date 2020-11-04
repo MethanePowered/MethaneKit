@@ -62,10 +62,10 @@ CommandQueueMT::~CommandQueueMT()
 void CommandQueueMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_mtl_command_queue);
 
     CommandQueueBase::SetName(name);
 
-    assert(m_mtl_command_queue != nil);
     m_mtl_command_queue.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
 }
 

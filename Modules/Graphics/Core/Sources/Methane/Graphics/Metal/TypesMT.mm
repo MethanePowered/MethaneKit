@@ -24,13 +24,12 @@ Methane graphics types converters to Metal native types.
 #include "TypesMT.hh"
 
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
 
-MTLIndexType TypeConverterMT::DataFormatToMetalIndexType(PixelFormat data_format) noexcept
+MTLIndexType TypeConverterMT::DataFormatToMetalIndexType(PixelFormat data_format)
 {
     META_FUNCTION_TASK();
 
@@ -38,12 +37,11 @@ MTLIndexType TypeConverterMT::DataFormatToMetalIndexType(PixelFormat data_format
     {
         case PixelFormat::R32Uint:       return MTLIndexTypeUInt32;
         case PixelFormat::R16Uint:       return MTLIndexTypeUInt16;
-        default:                        assert(0);
+        default:                         META_UNEXPECTED_ENUM_ARG_RETURN(data_format, MTLIndexTypeUInt32);
     }
-    return MTLIndexTypeUInt32;
 }
 
-MTLPixelFormat TypeConverterMT::DataFormatToMetalPixelType(PixelFormat data_format) noexcept
+MTLPixelFormat TypeConverterMT::DataFormatToMetalPixelType(PixelFormat data_format)
 {
     META_FUNCTION_TASK();
 
@@ -118,11 +116,11 @@ MTLPixelFormat TypeConverterMT::DataFormatToMetalPixelType(PixelFormat data_form
     // MTLPixelFormatDepth32Float_Stencil8;
     // MTLPixelFormatX32_Stencil8;
     // MTLPixelFormatX24_Stencil8;
+    default: META_UNEXPECTED_ENUM_ARG_RETURN(data_format, MTLPixelFormatInvalid);
     }
-    return MTLPixelFormatInvalid;
 }
 
-MTLVertexFormat TypeConverterMT::MetalDataTypeToVertexFormat(MTLDataType data_type, bool normalized) noexcept
+MTLVertexFormat TypeConverterMT::MetalDataTypeToVertexFormat(MTLDataType data_type, bool normalized)
 {
     META_FUNCTION_TASK();
 
@@ -168,12 +166,11 @@ MTLVertexFormat TypeConverterMT::MetalDataTypeToVertexFormat(MTLDataType data_ty
         case MTLDataTypeUChar3:     return normalized ? MTLVertexFormatUChar3 : MTLVertexFormatUChar3Normalized;
         case MTLDataTypeUChar4:     return normalized ? MTLVertexFormatUChar4 : MTLVertexFormatUChar4Normalized;
 
-        default:                    assert(0);
+        default:                    META_UNEXPECTED_ENUM_ARG_RETURN(data_type, MTLVertexFormatInvalid);
     }
-    return MTLVertexFormatInvalid;
 }
 
-uint32_t TypeConverterMT::ByteSizeOfVertexFormat(MTLVertexFormat vertex_format) noexcept
+uint32_t TypeConverterMT::ByteSizeOfVertexFormat(MTLVertexFormat vertex_format)
 {
     META_FUNCTION_TASK();
 
@@ -255,9 +252,8 @@ uint32_t TypeConverterMT::ByteSizeOfVertexFormat(MTLVertexFormat vertex_format) 
             return 4;
 
         default:
-            assert(0);
+            META_UNEXPECTED_ENUM_ARG_RETURN(vertex_format, 0);
     }
-    return 0;
 }
 
 MTLClearColor TypeConverterMT::ColorToMetalClearColor(const Color4f& color) noexcept
@@ -287,7 +283,7 @@ FrameRect TypeConverterMT::RectFromNS(const NSRect& rect) noexcept
     };
 }
 
-MTLCompareFunction TypeConverterMT::CompareFunctionToMetal(Compare compare_func) noexcept
+MTLCompareFunction TypeConverterMT::CompareFunctionToMetal(Compare compare_func)
 {
     META_FUNCTION_TASK();
     switch(compare_func)
@@ -300,8 +296,8 @@ MTLCompareFunction TypeConverterMT::CompareFunctionToMetal(Compare compare_func)
         case Compare::GreaterEqual: return MTLCompareFunctionGreaterEqual;
         case Compare::Equal:        return MTLCompareFunctionEqual;
         case Compare::NotEqual:     return MTLCompareFunctionNotEqual;
+        default:                    META_UNEXPECTED_ENUM_ARG_RETURN(compare_func, MTLCompareFunctionNever);
     }
-    return MTLCompareFunctionNever;
 }
 
 } // namespace Methane::Graphics

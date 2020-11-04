@@ -37,15 +37,15 @@ namespace Methane::Graphics
 class TypeConverterMT
 {
 public:
-    static MTLIndexType DataFormatToMetalIndexType(PixelFormat data_format) noexcept;
-    static MTLPixelFormat DataFormatToMetalPixelType(PixelFormat data_format) noexcept;
-    static MTLVertexFormat MetalDataTypeToVertexFormat(MTLDataType data_type, bool normalized = false) noexcept;
-    static uint32_t ByteSizeOfVertexFormat(MTLVertexFormat vertex_format) noexcept;
+    static MTLIndexType DataFormatToMetalIndexType(PixelFormat data_format);
+    static MTLPixelFormat DataFormatToMetalPixelType(PixelFormat data_format);
+    static MTLVertexFormat MetalDataTypeToVertexFormat(MTLDataType data_type, bool normalized = false);
+    static uint32_t ByteSizeOfVertexFormat(MTLVertexFormat vertex_format);
     static MTLClearColor ColorToMetalClearColor(const Color4f& color) noexcept;
     static NSRect RectToNS(const FrameRect& rect) noexcept;
     static NSRect CreateNSRect(const FrameSize& size, const Point2i& origin = Point2i(0, 0)) noexcept;
     static FrameRect RectFromNS(const NSRect& rect) noexcept;
-    static MTLCompareFunction CompareFunctionToMetal(Compare compare_func) noexcept;
+    static MTLCompareFunction CompareFunctionToMetal(Compare compare_func);
 
 private:
     TypeConverterMT() = default;

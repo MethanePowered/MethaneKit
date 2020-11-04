@@ -37,6 +37,7 @@ NSAlertStyle ConvertMessageTypeToNsAlertStyle(AppBase::Message::Type msg_type)
         case AppBase::Message::Type::Information: return NSAlertStyleInformational;
         case AppBase::Message::Type::Warning:     return NSAlertStyleWarning;
         case AppBase::Message::Type::Error:       return NSAlertStyleCritical;
+        default:                                  META_UNEXPECTED_ENUM_ARG_RETURN(msg_type, NSAlertStyleInformational);
     }
 }
 
@@ -118,7 +119,8 @@ void AppMac::SetWindow(NSWindow* ns_window)
 void AppMac::ShowAlert(const Message& msg)
 {
     META_FUNCTION_TASK();
-    assert(m_ns_app_delegate);
+    META_CHECK_ARG_NOT_NULL(m_ns_app_delegate);
+
     [m_ns_app_delegate alert: ConvertToNsType<std::string, NSString*>(msg.title)
              withInformation: ConvertToNsType<std::string, NSString*>(msg.information)
                     andStyle: ConvertMessageTypeToNsAlertStyle(msg.type)];

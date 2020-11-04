@@ -202,7 +202,6 @@ protected:
     {
         META_FUNCTION_TASK();
         META_CHECK_ARG_NOT_NULL(mtl_cmd_encoder);
-        assert(m_mtl_cmd_encoder == nil);
 
         m_mtl_cmd_encoder = mtl_cmd_encoder;
         m_mtl_cmd_encoder.label = m_ns_name;

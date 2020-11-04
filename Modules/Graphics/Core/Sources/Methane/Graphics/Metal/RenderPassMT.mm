@@ -41,8 +41,8 @@ static MTLStoreAction GetMTLStoreAction(RenderPass::Attachment::StoreAction stor
         case RenderPass::Attachment::StoreAction::DontCare:   return MTLStoreActionDontCare;
         case RenderPass::Attachment::StoreAction::Store:      return MTLStoreActionStore;
         case RenderPass::Attachment::StoreAction::Resolve:    return MTLStoreActionMultisampleResolve;
+        default:                                              META_UNEXPECTED_ENUM_ARG_RETURN(store_action, MTLStoreActionUnknown);
     }
-    return MTLStoreActionUnknown;
 }
 
 static MTLLoadAction GetMTLLoadAction(RenderPass::Attachment::LoadAction load_action) noexcept
@@ -54,8 +54,8 @@ static MTLLoadAction GetMTLLoadAction(RenderPass::Attachment::LoadAction load_ac
         case RenderPass::Attachment::LoadAction::DontCare:    return MTLLoadActionDontCare;
         case RenderPass::Attachment::LoadAction::Load:        return MTLLoadActionLoad;
         case RenderPass::Attachment::LoadAction::Clear:       return MTLLoadActionClear;
+        default:                                              META_UNEXPECTED_ENUM_ARG_RETURN(load_action, MTLLoadActionDontCare);
     }
-    return MTLLoadActionDontCare;
 }
 
 Ptr<RenderPass> RenderPass::Create(RenderContext& context, const Settings& settings)
@@ -90,8 +90,8 @@ void RenderPassMT::Reset()
     for(const ColorAttachment& color_attach : settings.color_attachments)
     {
         META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_ptr, "can not use color attachment without texture");
-        
         TextureMT& color_texture = static_cast<TextureMT&>(*color_attach.texture_ptr);
+
         if (color_texture.GetSettings().type == Texture::Type::FrameBuffer)
         {
             color_texture.UpdateFrameBuffer();

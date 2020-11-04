@@ -26,8 +26,10 @@ MacOS application view controller implementation.
 #include <Methane/Platform/MacOS/AppMac.hh>
 #include <Methane/Data/Types.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <string>
+#include <cassert>
 
 using namespace Methane;
 using namespace Methane::Platform;
@@ -69,8 +71,7 @@ using namespace Methane::Platform;
 - (void) loadView
 {
     META_FUNCTION_TASK();
-    
-    assert(!!m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_p_app);
     m_p_app->InitContext({ self }, { static_cast<uint32_t>(m_frame_rect.size.width), static_cast<uint32_t>(m_frame_rect.size.height) });
 }
 
@@ -84,7 +85,7 @@ using namespace Methane::Platform;
 - (void)appView: (nonnull AppViewMT *) view drawableSizeWillChange: (CGSize)size
 {
     META_FUNCTION_TASK();
-    assert(!!m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_p_app);
 
     if (!m_is_initialized)
     {

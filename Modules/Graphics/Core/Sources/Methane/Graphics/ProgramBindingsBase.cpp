@@ -69,6 +69,8 @@ void ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resour
 
     const bool        is_addressable_binding = m_settings.argument.IsAddressable();
     const Resource::Type bound_resource_type = m_settings.resource_type;
+    META_UNUSED(is_addressable_binding);
+    META_UNUSED(bound_resource_type);
 
     for (const Resource::Location& resource_location : resource_locations)
     {

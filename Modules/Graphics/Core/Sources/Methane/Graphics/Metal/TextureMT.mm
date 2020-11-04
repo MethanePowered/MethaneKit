@@ -51,6 +51,7 @@ static MTLTextureType GetNativeTextureType(Texture::DimensionType dimension_type
     case Texture::DimensionType::CubeArray:         return MTLTextureTypeCubeArray;
     case Texture::DimensionType::Tex3D:             return MTLTextureType3D;
     // TODO: add support for MTLTextureTypeTextureBuffer
+    default:                                        META_UNEXPECTED_ENUM_ARG_RETURN(dimension_type, MTLTextureType1D);
     }
 }
 
@@ -61,17 +62,17 @@ static MTLRegion GetTextureRegion(const Dimensions& dimensions, Texture::Dimensi
     {
     case Texture::DimensionType::Tex1D:
     case Texture::DimensionType::Tex1DArray:
-            return MTLRegionMake1D(0, dimensions.width);
+             return MTLRegionMake1D(0, dimensions.width);
     case Texture::DimensionType::Tex2D:
     case Texture::DimensionType::Tex2DArray:
     case Texture::DimensionType::Tex2DMultisample:
     case Texture::DimensionType::Cube:
     case Texture::DimensionType::CubeArray:
-            return MTLRegionMake2D(0, 0, dimensions.width, dimensions.height);
+             return MTLRegionMake2D(0, 0, dimensions.width, dimensions.height);
     case Texture::DimensionType::Tex3D:
-            return MTLRegionMake3D(0, 0, 0, dimensions.width, dimensions.height, dimensions.depth);
+             return MTLRegionMake3D(0, 0, 0, dimensions.width, dimensions.height, dimensions.depth);
+    default: META_UNEXPECTED_ENUM_ARG_RETURN(dimension_type, MTLRegion{});
     }
-    return {};
 }
 
 Ptr<Texture> Texture::CreateRenderTarget(RenderContext& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
@@ -130,8 +131,8 @@ void TextureMT::SetName(const std::string& name)
 void TextureMT::SetData(const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
-    assert(m_mtl_texture != nil);
-    assert(m_mtl_texture.storageMode == MTLStorageModePrivate);
+    META_CHECK_ARG_NOT_NULL(m_mtl_texture);
+    META_CHECK_ARG_EQUAL(m_mtl_texture.storageMode, MTLStorageModePrivate);
 
     TextureBase::SetData(sub_resources);
 
@@ -141,7 +142,7 @@ void TextureMT::SetData(const SubResources& sub_resources)
     blit_command_list.RetainResource(*this);
 
     const id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
-    assert(mtl_blit_encoder != nil);
+    META_CHECK_ARG_NOT_NULL(mtl_blit_encoder);
 
     const Settings& settings        = GetSettings();
     const uint32_t  bytes_per_row   = settings.dimensions.width  * GetPixelSize(settings.pixel_format);
@@ -253,6 +254,8 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
         mtl_tex_desc.arrayLength        = settings.array_length;
         mtl_tex_desc.mipmapLevelCount   = GetSubresourceCount().mip_levels_count;
         break;
+
+    default: META_UNEXPECTED_ENUM_ARG(settings.dimension_type);
     }
 
     if (!mtl_tex_desc)
@@ -273,8 +276,8 @@ void TextureMT::GenerateMipLevels()
     blit_command_list.Reset(s_debug_group.get());
     
     const id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
-    assert(mtl_blit_encoder != nil);
-    assert(m_mtl_texture != nil);
+    META_CHECK_ARG_NOT_NULL(mtl_blit_encoder);
+    META_CHECK_ARG_NOT_NULL(m_mtl_texture);
     
     [mtl_blit_encoder generateMipmapsForTexture: m_mtl_texture];
 

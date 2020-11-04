@@ -551,6 +551,7 @@ void ResourceBase::SetData(const SubResources& sub_resources)
     }
 
     const Data::Size reserved_data_size = GetDataSize(Data::MemoryState::Reserved);
+    META_UNUSED(reserved_data_size);
 
     META_CHECK_ARG_LESS_DESCR(sub_resources_data_size, reserved_data_size + 1, "can not set more data than allocated buffer size");
     m_initialized_data_size = sub_resources_data_size;
@@ -660,6 +661,7 @@ void ResourceBase::ValidateSubResource(const SubResource& sub_resource) const
 
     const Data::Index sub_resource_raw_index = sub_resource.index.GetRawIndex(m_sub_resource_count);
     const Data::Size sub_resource_data_size = m_sub_resource_sizes[sub_resource_raw_index];
+    META_UNUSED(sub_resource_data_size);
 
     if (sub_resource.data_range)
     {
@@ -685,9 +687,10 @@ void ResourceBase::ValidateSubResource(const SubResource::Index& sub_resource_in
 
     META_CHECK_ARG_NAME_DESCR("sub_resource_data_range", !sub_resource_data_range->IsEmpty(), fmt::format("sub-resource {} data range can not be empty", sub_resource_index));
     const Data::Index sub_resource_raw_index = sub_resource_index.GetRawIndex(m_sub_resource_count);
-    assert(sub_resource_raw_index < m_sub_resource_sizes.size());
+    META_CHECK_ARG_LESS(sub_resource_raw_index, m_sub_resource_sizes.size());
 
     const Data::Size sub_resource_data_size = m_sub_resource_sizes[sub_resource_raw_index];
+    META_UNUSED(sub_resource_data_size);
     META_CHECK_ARG_LESS_DESCR(sub_resource_data_range->GetEnd(), sub_resource_data_size + 1, fmt::format("sub-resource index {}", sub_resource_index));
 }
 

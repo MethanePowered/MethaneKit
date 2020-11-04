@@ -27,8 +27,7 @@ MacOS application delegate implementation.
 #include <Methane/Platform/MacOS/AppMac.hh>
 #include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 using namespace Methane;
 using namespace Methane::Platform;
@@ -83,11 +82,8 @@ using namespace Methane::Platform;
 - (void) alert : (NSString*) ns_title withInformation: (NSString*) ns_info andStyle: (NSAlertStyle) ns_alert_style
 {
     META_FUNCTION_TASK();
-    if (ns_title == nil || ns_info == nil)
-    {
-        assert(0);
-        return;
-    }
+    META_CHECK_ARG_NOT_NULL(ns_title);
+    META_CHECK_ARG_NOT_NULL(ns_info);
     
     NSAlert *ns_alert = [[NSAlert alloc] init];
     [ns_alert addButtonWithTitle:ns_alert_style == NSAlertStyleCritical ? @"Exit" : @"OK"];
@@ -122,7 +118,7 @@ using namespace Methane::Platform;
     META_FUNCTION_TASK();
     #pragma unused(notification)
     AppMac* p_app = [self.viewController getApp];
-    assert(!!p_app);
+    META_CHECK_ARG_NOT_NULL(p_app);
     p_app->SetFullScreenInternal(true);
 }
 
@@ -131,7 +127,7 @@ using namespace Methane::Platform;
     META_FUNCTION_TASK();
     #pragma unused(notification)
     AppMac* p_app = [self.viewController getApp];
-    assert(!!p_app);
+    META_CHECK_ARG_NOT_NULL(p_app);
     p_app->SetFullScreenInternal(false);
 }
 

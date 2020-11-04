@@ -131,8 +131,7 @@ const Ptr<Device>& SystemMT::FindMetalDevice(const id<MTLDevice>& mtl_device) co
     const auto device_it = std::find_if(devices.begin(), devices.end(),
                                         [mtl_device](const Ptr<Device>& device_ptr)
                                         {
-                                            assert(!!device_ptr);
-                                            if (!device_ptr) return false;
+                                            META_CHECK_ARG_NOT_NULL(device_ptr);
                                             DeviceMT& metal_device = static_cast<DeviceMT&>(*device_ptr);
                                             return metal_device.GetNativeDevice() == mtl_device;
                                         });

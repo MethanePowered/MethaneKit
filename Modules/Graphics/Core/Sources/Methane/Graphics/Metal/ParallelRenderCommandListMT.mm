@@ -55,7 +55,8 @@ void ParallelRenderCommandListMT::Reset(const Ptr<RenderState>& render_state_ptr
     // NOTE: If command buffer was not created for current frame yet,
     // then render pass descriptor should be reset with new frame drawable
     MTLRenderPassDescriptor* mtl_render_pass = GetRenderPassMT().GetNativeDescriptor(!IsCommandBufferInitialized());
-    assert(mtl_render_pass != nil);
+    META_CHECK_ARG_NOT_NULL(mtl_render_pass);
+
     id<MTLCommandBuffer>& mtl_cmd_buffer = InitializeCommandBuffer();
     InitializeCommandEncoder([mtl_cmd_buffer parallelRenderCommandEncoderWithDescriptor: mtl_render_pass]);
     

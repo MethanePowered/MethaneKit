@@ -220,6 +220,7 @@ void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex
     {
         const Buffer&  vertex_buffer = (*m_drawing_state.vertex_buffer_set_ptr)[vertex_buffer_index];
         const uint32_t vertex_count  = vertex_buffer.GetFormattedItemsCount();
+        META_UNUSED(vertex_count);
         META_CHECK_ARG_LESS_DESCR(draw_start_vertex, vertex_count - draw_vertex_count + 1U,
             fmt::format("can not draw starting from vertex {}{} which is out of bounds for vertex buffer '{}' with vertex count {}", draw_start_vertex,
                         draw_vertex_count ? fmt::format(" with {} vertex count", draw_vertex_count) : "",
