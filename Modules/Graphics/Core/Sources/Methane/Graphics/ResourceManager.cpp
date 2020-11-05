@@ -34,6 +34,15 @@ and deferred releasing of GPU resource.
 namespace Methane::Graphics
 {
 
+inline void AddDescriptorHeap(Ptrs<DescriptorHeap>& desc_heaps, ContextBase& context, bool deferred_heap_allocation,
+                              const ResourceManager::Settings& settings, DescriptorHeap::Type heap_type, bool is_shader_visible)
+{
+    const auto heap_type_idx = static_cast<uint32_t>(heap_type);
+    const uint32_t heap_size = is_shader_visible ? settings.shader_visible_heap_sizes[heap_type_idx] : settings.default_heap_sizes[heap_type_idx];
+    const DescriptorHeap::Settings heap_settings{ heap_type, heap_size, deferred_heap_allocation, is_shader_visible };
+    desc_heaps.push_back(DescriptorHeap::Create(context, heap_settings));
+}
+
 ResourceManager::ResourceManager(ContextBase& context)
     : m_context(context)
 {
@@ -47,23 +56,17 @@ void ResourceManager::Initialize(const Settings& settings)
     m_deferred_heap_allocation = settings.deferred_heap_allocation;
     for (uint32_t heap_type_idx = 0; heap_type_idx < static_cast<uint32_t>(DescriptorHeap::Type::Count); ++heap_type_idx)
     {
-        const DescriptorHeap::Type heap_type  = static_cast<DescriptorHeap::Type>(heap_type_idx);
-        Ptrs<DescriptorHeap>&      desc_heaps = m_descriptor_heap_types[heap_type_idx];
+        const auto            heap_type  = static_cast<DescriptorHeap::Type>(heap_type_idx);
+        Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[heap_type_idx];
         desc_heaps.clear();
 
         // CPU only accessible descriptor heaps of all types are created for default resource creation
-        {
-            const uint32_t                 heap_size     = settings.default_heap_sizes[heap_type_idx];
-            const DescriptorHeap::Settings heap_settings{ heap_type, heap_size, m_deferred_heap_allocation, false };
-            desc_heaps.push_back(DescriptorHeap::Create(m_context, heap_settings));
-        }
+        AddDescriptorHeap(desc_heaps, m_context, m_deferred_heap_allocation, settings, heap_type, false);
 
         // GPU accessible descriptor heaps are created for program resource bindings
         if (DescriptorHeap::IsShaderVisibleHeapType(heap_type))
         {
-            const uint32_t                 heap_size    = settings.shader_visible_heap_sizes[heap_type_idx];
-            const DescriptorHeap::Settings heap_settings{ heap_type, heap_size, m_deferred_heap_allocation, true };
-            desc_heaps.push_back(DescriptorHeap::Create(m_context, heap_settings));
+            AddDescriptorHeap(desc_heaps, m_context, m_deferred_heap_allocation, settings, heap_type, true);
         }
     }
 }
@@ -145,11 +148,6 @@ void ResourceManager::AddProgramBindings(ProgramBindings& program_bindings)
 #endif
 
     m_program_bindings.push_back(std::static_pointer_cast<ProgramBindingsBase>(static_cast<ProgramBindingsBase&>(program_bindings).GetBasePtr()));
-}
-
-void ResourceManager::RemoveProgramBindings(ProgramBindings&)
-{
-    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_program_bindings_mutex);
 }
 
 uint32_t ResourceManager::CreateDescriptorHeap(const DescriptorHeap::Settings& settings)
@@ -249,7 +247,7 @@ void ResourceManager::ForEachDescriptorHeap(const std::function<void(DescriptorH
     META_FUNCTION_TASK();
     for (uint32_t heap_type_idx = 0; heap_type_idx < static_cast<uint32_t>(DescriptorHeap::Type::Count); ++heap_type_idx)
     {
-        const DescriptorHeap::Type  desc_heaps_type = static_cast<DescriptorHeap::Type>(heap_type_idx);
+        const auto desc_heaps_type = static_cast<DescriptorHeap::Type>(heap_type_idx);
         const Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[heap_type_idx];
         for (const Ptr<DescriptorHeap>& desc_heap_ptr : desc_heaps)
         {

@@ -507,7 +507,7 @@ void Text::FrameResources::UpdateUniformsBuffer(gfx::RenderContext& render_conte
     META_CHECK_ARG_NOT_ZERO_DESCR(content_size, "text uniforms buffer can not be updated when one of content size dimensions is zero");
 
     gfx::Matrix44f scale_text_matrix;
-    cml::matrix_scale_2D(scale_text_matrix, 2.F / content_size.width, 2.F / content_size.height);
+    cml::matrix_scale_2D(scale_text_matrix, 2.F / static_cast<float>(content_size.width), 2.F / static_cast<float>(content_size.height));
 
     gfx::Matrix44f translate_text_matrix;
     cml::matrix_translation_2D(translate_text_matrix, -1.F, 1.F);

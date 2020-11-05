@@ -138,7 +138,7 @@ void RenderPassBase::End(RenderCommandListBase& render_command_list)
     m_is_begun = false;
 }
 
-void RenderPassBase::InitAttachmentStates()
+void RenderPassBase::InitAttachmentStates() const
 {
     META_FUNCTION_TASK();
     Ptr<ResourceBase::Barriers> transition_barriers_ptr;
@@ -152,7 +152,7 @@ void RenderPassBase::InitAttachmentStates()
 void RenderPassBase::SetAttachmentStates(const std::optional<ResourceBase::State>& color_state,
                                          const std::optional<ResourceBase::State>& depth_state,
                                          Ptr<ResourceBase::Barriers>& transition_barriers_ptr,
-                                         RenderCommandListBase& render_command_list)
+                                         RenderCommandListBase& render_command_list) const
 {
     META_FUNCTION_TASK();
     bool attachment_states_changed = false;

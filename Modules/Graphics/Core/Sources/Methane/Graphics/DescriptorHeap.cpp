@@ -84,7 +84,7 @@ Data::Index DescriptorHeap::AddResource(const ResourceBase& resource)
 
     m_resources.push_back(&resource);
 
-    const Data::Index resource_index = static_cast<Data::Index>(m_resources.size() - 1);
+    const auto resource_index = static_cast<Data::Index>(m_resources.size() - 1);
     m_free_ranges.Remove(Range(resource_index, resource_index + 1));
 
     return static_cast<int32_t>(resource_index);

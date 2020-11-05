@@ -53,7 +53,7 @@ public:
 
     // Mouse action handlers
     void OnMousePressed(const Data::Point2i& mouse_screen_pos) noexcept;
-    void OnMouseDragged(const Data::Point2i& mouse_screen_pos) noexcept;
+    void OnMouseDragged(const Data::Point2i& mouse_screen_pos);
 
 protected:
     Vector3f GetNormalizedSphereProjection(const Data::Point2i& mouse_screen_pos, bool is_primary) const noexcept;
@@ -66,8 +66,8 @@ protected:
     inline const Camera& GetViewCamera() const noexcept         { return m_p_view_camera ? *m_p_view_camera : *this; }
 
     void ApplyLookDirection(const Vector3f& look_dir);
-    void RotateInView(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation) noexcept;
-    void RotateInView(const Vector3f& view_axis, float angle_rad) noexcept { RotateInView(view_axis, angle_rad, GetOrientation()); }
+    void RotateInView(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation);
+    void RotateInView(const Vector3f& view_axis, float angle_rad) { RotateInView(view_axis, angle_rad, GetOrientation()); }
 
     inline void SetMousePressedOrientation(const Orientation& orientation) noexcept { m_mouse_pressed_orientation = orientation; }
 

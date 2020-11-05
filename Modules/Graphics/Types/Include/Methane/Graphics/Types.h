@@ -67,7 +67,7 @@ using Frequency = Data::Frequency;
 
 enum class PixelFormat : uint32_t
 {
-    Unknown = 0u,
+    Unknown = 0U,
     RGBA8,
     RGBA8Unorm,
     RGBA8Unorm_sRGB,

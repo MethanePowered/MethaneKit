@@ -60,7 +60,7 @@ void ArcBallCamera::OnMousePressed(const Point2i& mouse_screen_pos) noexcept
     m_mouse_pressed_on_sphere = GetNormalizedSphereProjection(mouse_screen_pos, true);
 }
 
-void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos) noexcept
+void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
 {
     META_FUNCTION_TASK();
 
@@ -135,7 +135,7 @@ void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir)
     META_LOG(GetOrientationString());
 }
 
-void ArcBallCamera::RotateInView(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation) noexcept
+void ArcBallCamera::RotateInView(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation)
 {
     META_FUNCTION_TASK();
     Matrix44f view_rotation_matrix { };

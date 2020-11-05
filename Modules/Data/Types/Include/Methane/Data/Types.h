@@ -34,7 +34,7 @@ namespace Methane::Data
 
 enum class MemoryState : uint32_t
 {
-    Reserved = 0,
+    Reserved = 0U,
     Initialized,
 };
 

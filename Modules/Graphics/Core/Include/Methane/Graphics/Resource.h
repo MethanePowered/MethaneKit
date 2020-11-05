@@ -138,8 +138,8 @@ struct Resource : virtual Object
             bool operator!=(const Count& other) const noexcept { return !operator==(other); }
             bool operator<(const Count& other) const noexcept;
             bool operator>=(const Count& other) const noexcept;
-            operator Index() const noexcept;
-            operator std::string() const noexcept;
+            explicit operator Index() const noexcept;
+            explicit operator std::string() const noexcept;
         };
 
         struct Index
@@ -150,7 +150,7 @@ struct Resource : virtual Object
 
             explicit Index(Data::Index depth_slice  = 0U, Data::Index array_index  = 0U, Data::Index mip_level = 0U) noexcept;
             Index(Data::Index raw_index, const Count& count);
-            Index(const Count& count);
+            explicit Index(const Count& count);
             Data::Index GetRawIndex(const Count& count) const noexcept;
 
             bool operator==(const Index& other) const noexcept;
@@ -159,7 +159,7 @@ struct Resource : virtual Object
             bool operator>=(const Index& count) const noexcept;
             bool operator<(const Count& count) const noexcept;
             bool operator>=(const Count& count) const noexcept;
-            operator std::string() const noexcept;
+            explicit operator std::string() const noexcept;
         };
 
         Index index;

@@ -233,7 +233,7 @@ std::string KeyConverter::ToString() const
            : Modifier::ToString(m_modifiers) + g_keys_separator + key_and_name_it->second;
 };
 
-State::State(std::initializer_list<Key> pressed_keys, Modifier::Mask modifiers_mask) noexcept
+State::State(std::initializer_list<Key> pressed_keys, Modifier::Mask modifiers_mask)
     : m_modifiers_mask(modifiers_mask)
 {
     META_FUNCTION_TASK();

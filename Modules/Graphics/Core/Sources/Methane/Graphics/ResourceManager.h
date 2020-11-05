@@ -50,7 +50,7 @@ public:
         DescriptorHeapSizeByType shader_visible_heap_sizes;
     };
 
-    ResourceManager(ContextBase& context);
+    explicit ResourceManager(ContextBase& context);
     ~ResourceManager() = default;
 
     void Initialize(const Settings& settings);
@@ -61,7 +61,6 @@ public:
     bool IsDeferredHeapAllocation() const { return m_deferred_heap_allocation; }
 
     void AddProgramBindings(ProgramBindings& program_bindings);
-    void RemoveProgramBindings(ProgramBindings&);
 
     uint32_t                    CreateDescriptorHeap(const DescriptorHeap::Settings& settings); // returns index of the created descriptor heap
     const Ptr<DescriptorHeap>&  GetDescriptorHeapPtr(DescriptorHeap::Type type, Data::Index heap_index = 0);

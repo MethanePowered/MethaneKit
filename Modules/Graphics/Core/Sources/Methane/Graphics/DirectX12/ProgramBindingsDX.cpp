@@ -175,12 +175,6 @@ ProgramBindingsDX::ProgramBindingsDX(const ProgramBindingsDX& other_program_bind
     META_FUNCTION_TASK();
 }
 
-ProgramBindingsDX::~ProgramBindingsDX()
-{
-    META_FUNCTION_TASK();
-    static_cast<ProgramBase&>(GetProgram()).GetContext().GetResourceManager().RemoveProgramBindings(*this);
-}
-
 void ProgramBindingsDX::Initialize()
 {
     META_FUNCTION_TASK();

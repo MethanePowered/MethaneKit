@@ -101,7 +101,7 @@ struct Program : virtual Object
         Argument(Argument&& argument) noexcept = default;
 
         bool operator==(const Argument& other) const noexcept;
-        operator std::string() const noexcept;
+        explicit operator std::string() const noexcept;
 
         struct Hash
         {

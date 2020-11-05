@@ -39,7 +39,7 @@ Base implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-ResourceBase::Barrier::Id::Id(Type type, Resource& resource)
+ResourceBase::Barrier::Id::Id(Type type, const Resource& resource)
     : type(type)
     , resource(resource)
 {
@@ -706,7 +706,7 @@ void ResourceBase::FillSubresourceSizes()
 {
     META_FUNCTION_TASK();
     const Data::Size curr_subresource_raw_count = m_sub_resource_count.GetRawCount();
-    const Data::Size prev_subresource_raw_count = static_cast<Data::Size>(m_sub_resource_sizes.size());
+    const auto       prev_subresource_raw_count = static_cast<Data::Size>(m_sub_resource_sizes.size());
     if (curr_subresource_raw_count == prev_subresource_raw_count)
         return;
 

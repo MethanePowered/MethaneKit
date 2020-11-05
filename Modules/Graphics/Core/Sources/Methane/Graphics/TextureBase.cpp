@@ -36,12 +36,13 @@ Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, uint32_
     META_FUNCTION_TASK();
 
     Settings settings;
+    if (dimensions.height == 1)
+        settings.dimension_type = array_length == 1 ? DimensionType::Tex1D : DimensionType::Tex1DArray;
+    else if (dimensions.depth == 1)
+        settings.dimension_type = array_length == 1 ? DimensionType::Tex2D : DimensionType::Tex2DArray;
+    else
+        settings.dimension_type = DimensionType::Tex3D;
     settings.type           = Type::Texture;
-    settings.dimension_type = dimensions.height == 1
-                            ? (array_length == 1 ? DimensionType::Tex1D : DimensionType::Tex1DArray)
-                            : (dimensions.depth == 1
-                                ? (array_length == 1 ? DimensionType::Tex2D : DimensionType::Tex2DArray)
-                                : DimensionType::Tex3D);
     settings.dimensions     = dimensions;
     settings.array_length   = array_length;
     settings.pixel_format   = pixel_format;

@@ -115,8 +115,8 @@ const Matrix44f& Camera::GetViewProjMatrix() const noexcept
 Vector2f Camera::TransformScreenToProj(const Data::Point2i& screen_pos) const noexcept
 {
     META_FUNCTION_TASK();
-    return { 2.F * screen_pos.GetX() / m_screen_size.width  - 1.F,
-           -(2.F * screen_pos.GetY() / m_screen_size.height - 1.F) };
+    return { 2.F * static_cast<float>(screen_pos.GetX()) / m_screen_size.width  - 1.F,
+           -(2.F * static_cast<float>(screen_pos.GetY()) / m_screen_size.height - 1.F) };
 }
 
 Vector3f Camera::TransformScreenToView(const Data::Point2i& screen_pos) const noexcept

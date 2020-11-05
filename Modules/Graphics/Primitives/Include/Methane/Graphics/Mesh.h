@@ -90,7 +90,7 @@ public:
         class IncompatibleException : public std::logic_error
         {
         public:
-            IncompatibleException(VertexField missing_field);
+            explicit IncompatibleException(VertexField missing_field);
 
             VertexField GetMissingField() const noexcept { return m_missing_field; }
 

@@ -598,12 +598,9 @@ const Ptr<gfx::Texture>& Font::GetAtlasTexturePtr(gfx::Context& context)
     if (m_char_by_code.empty())
         return empty_texture_ptr;
 
-    if (!m_atlas_pack_ptr)
-    {
-        // Reserve 20% of pixels for packing space loss and for adding new characters to atlas
-        if (!PackCharsToAtlas(1.2F))
-            return empty_texture_ptr;
-    }
+    // Reserve 20% of pixels for packing space loss and for adding new characters to atlas
+    if (!m_atlas_pack_ptr && !PackCharsToAtlas(1.2F))
+        return empty_texture_ptr;
 
     // Add font as context callback to remove atlas texture when context is released
     context.Connect(*this);

@@ -55,13 +55,13 @@ struct Texture : virtual Resource
 
     struct Settings
     {
-        Type           type                 = Type::Texture;
-        DimensionType  dimension_type       = DimensionType::Tex2D;
-        Usage::Mask    usage_mask           = Usage::Value::Unknown;
-        PixelFormat    pixel_format         = PixelFormat::Unknown;
-        Dimensions     dimensions           = Dimensions();
-        uint32_t       array_length         = 1U;
-        bool           mipmapped            = false;
+        Type           type           = Type::Texture;
+        DimensionType  dimension_type = DimensionType::Tex2D;
+        Usage::Mask    usage_mask     = Usage::Value::Unknown;
+        PixelFormat    pixel_format   = PixelFormat::Unknown;
+        Dimensions     dimensions     = Dimensions();
+        uint32_t       array_length   = 1U;
+        bool           mipmapped      = false;
 
         static Settings Image(const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage::Mask usage);
         static Settings Cube(uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage::Mask usage);

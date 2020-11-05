@@ -62,11 +62,11 @@ protected:
     const RenderContextBase&  GetRenderContext() const  { return m_render_context; }
 
 private:
-    void InitAttachmentStates();
+    void InitAttachmentStates() const;
     void SetAttachmentStates(const std::optional<ResourceBase::State>& color_state,
                              const std::optional<ResourceBase::State>& depth_state,
                              Ptr<ResourceBase::Barriers>& transition_barriers_ptr,
-                             RenderCommandListBase& render_command_list);
+                             RenderCommandListBase& render_command_list) const;
 
     RenderContextBase&          m_render_context;
     Settings                    m_settings;

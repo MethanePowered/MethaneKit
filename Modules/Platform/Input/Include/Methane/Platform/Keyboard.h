@@ -192,7 +192,7 @@ public:
     };
 
     State() noexcept = default;
-    State(std::initializer_list<Key> pressed_keys, Modifier::Mask modifiers_mask = Modifier::Value::None) noexcept;
+    State(std::initializer_list<Key> pressed_keys, Modifier::Mask modifiers_mask = Modifier::Value::None);
     State(const State& other) noexcept;
 
     State& operator=(const State& other) noexcept;
@@ -205,8 +205,8 @@ public:
 
     KeyType SetKey(Key key, KeyState state);
     void    SetModifiersMask(Modifier::Mask mask) noexcept  { m_modifiers_mask = mask; }
-    void    PressKey(Key key) noexcept                      { SetKey(key, KeyState::Pressed); }
-    void    ReleaseKey(Key key) noexcept                    { SetKey(key, KeyState::Released); }
+    void    PressKey(Key key)                               { SetKey(key, KeyState::Pressed); }
+    void    ReleaseKey(Key key)                             { SetKey(key, KeyState::Released); }
 
     Keys             GetPressedKeys() const noexcept;
     const KeyStates& GetKeyStates() const noexcept          { return m_key_states; }

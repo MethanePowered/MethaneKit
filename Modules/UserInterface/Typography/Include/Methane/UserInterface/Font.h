@@ -88,7 +88,7 @@ public:
     class FreeTypeError : public std::runtime_error
     {
     public:
-        FreeTypeError(FT_Error error);
+        explicit FreeTypeError(FT_Error error);
 
         FT_Error GetError() const noexcept { return m_error; }
 
@@ -164,7 +164,7 @@ public:
 
         bool operator<(const Char& other) const noexcept      { return m_rect.size.GetPixelsCount() < other.m_rect.size.GetPixelsCount(); }
         bool operator>(const Char& other) const noexcept      { return m_rect.size.GetPixelsCount() > other.m_rect.size.GetPixelsCount(); }
-        operator bool() const noexcept                        { return m_code != 0U; }
+        explicit operator bool() const noexcept               { return m_code != 0U; }
 
         void     DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_stride) const;
         uint32_t GetGlyphIndex() const;

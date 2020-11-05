@@ -96,8 +96,8 @@ void ActionCamera::OnMouseScrolled(float scroll_delta)
     const KeyboardAction zoom_action = scroll_delta > 0.F
                                      ? KeyboardAction::ZoomIn : KeyboardAction::ZoomOut;
     const float          zoom_factor = scroll_delta > 0.F
-                                     ? 1.F - scroll_delta / m_zoom_steps_count
-                                     : 1.F / (1.F + scroll_delta / m_zoom_steps_count);
+                                     ? 1.F - scroll_delta / static_cast<float>(m_zoom_steps_count)
+                                     : 1.F / (1.F + scroll_delta / static_cast<float>(m_zoom_steps_count));
     
     StopKeyboardAction(zoom_action == KeyboardAction::ZoomIn ? KeyboardAction::ZoomOut : KeyboardAction::ZoomIn, 0.0);
     StartZoomAction(zoom_action, zoom_factor, m_keyboard_action_duration_sec);

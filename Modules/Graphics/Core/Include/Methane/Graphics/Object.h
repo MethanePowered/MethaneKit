@@ -34,7 +34,11 @@ struct Object
 {
     struct Registry
     {
-        class NameConflictException : public std::invalid_argument { public: NameConflictException(const std::string& name); };
+        class NameConflictException : public std::invalid_argument
+        {
+        public:
+            explicit NameConflictException(const std::string& name);
+        };
 
         virtual void        AddGraphicsObject(Object& graphics_object) = 0;
         virtual Ptr<Object> GetGraphicsObject(const std::string& object_name) const noexcept = 0;

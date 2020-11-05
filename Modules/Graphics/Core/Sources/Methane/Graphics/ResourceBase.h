@@ -75,7 +75,7 @@ public:
             const Type      type;
             const Resource& resource;
 
-            Id(Type type, Resource& resource);
+            Id(Type type, const Resource& resource);
 
             bool operator<(const Id& other) const noexcept;
             bool operator==(const Id& other) const noexcept;
@@ -132,7 +132,7 @@ public:
         explicit operator std::string() const noexcept;
 
     protected:
-        Barriers(const Set& barriers);
+        explicit Barriers(const Set& barriers);
 
     private:
         Map  m_barriers_map;
