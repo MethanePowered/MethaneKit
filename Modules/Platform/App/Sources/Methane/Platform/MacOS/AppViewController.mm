@@ -71,7 +71,7 @@ using namespace Methane::Platform;
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_p_app);
-    m_p_app->InitContext({ self }, { static_cast<uint32_t>(m_frame_rect.size.width), static_cast<uint32_t>(m_frame_rect.size.height) });
+    m_p_app->InitContextWithErrorHandling({ self }, { static_cast<uint32_t>(m_frame_rect.size.width), static_cast<uint32_t>(m_frame_rect.size.height) });
 }
 
 - (void)viewDidLoad
@@ -88,8 +88,7 @@ using namespace Methane::Platform;
 
     if (!m_is_initialized)
     {
-        m_is_initialized = true;
-        m_p_app->Init();
+        m_is_initialized = m_p_app->InitWithErrorHandling();
     }
     m_frame_rect = [view frame];
     m_p_app->Resize( { static_cast<uint32_t>(size.width), static_cast<uint32_t>(size.height) }, false );
@@ -103,10 +102,9 @@ using namespace Methane::Platform;
 
     if (!m_is_initialized)
     {
-        m_is_initialized = true;
-        m_p_app->Init();
+        m_is_initialized = m_p_app->InitWithErrorHandling();
     }
-    m_p_app->UpdateAndRender();
+    m_p_app->UpdateAndRenderWithErrorHandling();
 }
 
 // ====== Keyboard event handlers ======

@@ -37,6 +37,34 @@ Base application interface and platform-independent implementation.
 #include <vector>
 #include <cstdlib>
 
+#ifdef _DEBUG
+
+// We do not catch exceptions in Debug build to let them be handled by the Debugger
+#define BEGIN_TRY_CATCH
+#define END_TRY_CATCH(stage_name)
+
+#else // ifdef _DEBUG
+
+// Common exceptions handling logic in Release builds for Init, Update and Render function calls
+#define BEGIN_TRY_CATCH \
+    try \
+    {
+
+#define END_TRY_CATCH(stage_name) \
+    } \
+    catch (std::exception& e) \
+    { \
+        Alert({ Message::Type::Error, stage_name " Error", e.what() }); \
+        return false; \
+    } \
+    catch (...) \
+    { \
+        Alert({ Message::Type::Error, stage_name " Error", "Unknown exception occurred." }); \
+        return false; \
+    }
+
+#endif // ifdef _DEBUG
+
 namespace Methane::Platform
 {
 
@@ -48,7 +76,7 @@ AppBase::AppBase(const AppBase::Settings& settings)
     META_FUNCTION_TASK();
     META_SCOPE_TIMERS_INITIALIZE(Methane::Platform::Logger);
 
-    add_option("-w,--width",  m_settings.width,  "Window width in pixels or as ratio of desktop width", true);
+    add_option("-w,--width", m_settings.width, "Window width in pixels or as ratio of desktop width", true);
     add_option("-x,--height", m_settings.height, "Window height in pixels or as ratio of desktop height", true);
     add_option("-f,--full-screen", m_settings.is_full_screen, "Full-screen mode", true);
 
@@ -69,7 +97,7 @@ int AppBase::Run(const RunArgs& args)
     {
         parse(args.cmd_arg_count, args.cmd_arg_values);
     }
-    catch(const CLI::CallForHelp&)
+    catch (const CLI::CallForHelp&)
     {
         Alert(Message{
             Message::Type::Information,
@@ -77,7 +105,7 @@ int AppBase::Run(const RunArgs& args)
             help()
         }, true);
     }
-    catch(const CLI::ParseError& e)
+    catch (const CLI::ParseError& e)
     {
         Alert(Message{
             Message::Type::Error,
@@ -115,18 +143,18 @@ void AppBase::EndResizing()
     META_CHECK_ARG_TRUE(m_is_resizing);
     m_is_resizing = false;
 }
-    
+
 bool AppBase::Resize(const Data::FrameSize& frame_size, bool is_minimized)
 {
     META_FUNCTION_TASK();
     const bool is_resizing = !is_minimized && m_frame_size != frame_size;
-    
+
     m_is_minimized = is_minimized;
     if (!m_is_minimized)
     {
         m_frame_size = frame_size;
     }
-    
+
     return m_initialized && is_resizing;
 }
 
@@ -148,18 +176,45 @@ void AppBase::ShowAlert(const Message&)
     m_input_state.ReleaseAllKeys();
 }
 
-void AppBase::UpdateAndRender()
+bool AppBase::InitContextWithErrorHandling(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
-    // Do not render if error has occurred and is being displayed in message box
-    if (HasError())
-        return;
 
-    Update();
-    Render();
+    BEGIN_TRY_CATCH
+    InitContext(env, frame_size);
+    END_TRY_CATCH("Render Context Initialization")
+
+    return true;
 }
 
-bool AppBase::HasError() const
+bool AppBase::InitWithErrorHandling()
+{
+    META_FUNCTION_TASK();
+
+    BEGIN_TRY_CATCH
+    Init();
+    END_TRY_CATCH("Application Initialization")
+
+    return true;
+}
+
+bool AppBase::UpdateAndRenderWithErrorHandling()
+{
+    META_FUNCTION_TASK();
+
+    // Do not render if error has occurred and is being displayed in message box
+    if (HasError())
+        return false;
+
+    BEGIN_TRY_CATCH
+    Update();
+    Render();
+    END_TRY_CATCH("Application Rendering")
+
+    return true;
+}
+
+bool AppBase::HasError() const noexcept
 {
     META_FUNCTION_TASK();
     return m_deferred_message_ptr ? m_deferred_message_ptr->type == Message::Type::Error : false;

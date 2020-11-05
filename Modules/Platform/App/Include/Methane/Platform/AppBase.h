@@ -102,8 +102,9 @@ public:
     virtual void ShowParameters() { }
     virtual void Close() = 0;
 
-    void UpdateAndRender();
-    bool HasError() const;
+    bool InitContextWithErrorHandling(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size);
+    bool InitWithErrorHandling();
+    bool UpdateAndRenderWithErrorHandling();
 
     tf::Executor&           GetParallelExecutor() const;
     const Settings&         GetPlatformAppSettings() const noexcept { return m_settings; }
@@ -112,6 +113,7 @@ public:
     bool                    IsMinimized() const noexcept            { return m_is_minimized; }
     bool                    IsResizing() const noexcept             { return m_is_resizing; }
     bool                    HasKeyboardFocus() const noexcept       { return m_has_keyboard_focus; }
+    bool                    HasError() const noexcept;
 
     template<typename FuncType, typename... ArgTypes>
     void ProcessInput(FuncType&& func_ptr, ArgTypes&&... args)

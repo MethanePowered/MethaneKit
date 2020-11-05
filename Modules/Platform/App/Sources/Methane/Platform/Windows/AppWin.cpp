@@ -113,26 +113,12 @@ int AppWin::Run(const RunArgs& args)
         ScheduleAlert();
     }
 
-    bool init_failed = false;
-#ifndef _DEBUG
-    try
+    // Application Initialization
+    bool init_success = InitContextWithErrorHandling(m_env, frame_size);
+    if (init_success)
     {
-#endif
-        InitContext(m_env, frame_size);
-        Init();
-#ifndef _DEBUG
+        init_success = InitWithErrorHandling();
     }
-    catch (std::exception& e)
-    {
-        init_failed = true;
-        Alert({ Message::Type::Error, "Application Initialization Error", e.what() });
-    }
-    catch (...)
-    {
-        init_failed = true;
-        Alert({ Message::Type::Error, "Application Initialization Error", "Unknown exception occurred." });
-    }
-#endif
 
     // Main message loop
     MSG msg{};
@@ -148,25 +134,10 @@ int AppWin::Run(const RunArgs& args)
                 break;
         }
 
-        if (init_failed || !m_is_message_processing)
+        if (!init_success || !m_is_message_processing)
             continue;
 
-#ifndef _DEBUG
-        try
-        {
-#endif
-            UpdateAndRender();
-#ifndef _DEBUG
-        }
-        catch (std::exception& e)
-        {
-            Alert({ Message::Type::Error, "Application Render Error", e.what() });
-        }
-        catch (...)
-        {
-            Alert({ Message::Type::Error, "Application Render Error", "Unknown exception occurred." });
-        }
-#endif
+        UpdateAndRenderWithErrorHandling();
     }
 
     // Return this part of the WM_QUIT message to Windows.
@@ -232,7 +203,7 @@ void AppWin::OnWindowResized(WPARAM w_param, LPARAM l_param)
 
     if (IsResizing())
     {
-        UpdateAndRender();
+        UpdateAndRenderWithErrorHandling();
     }
 }
 
