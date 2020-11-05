@@ -188,14 +188,14 @@ ProgramBindingsBase::~ProgramBindingsBase()
 const Program& ProgramBindingsBase::GetProgram() const
 {
     META_FUNCTION_TASK();
-    assert(!!m_program_ptr);
+    META_CHECK_ARG_NOT_NULL(m_program_ptr);
     return *m_program_ptr;
 }
 
 Program& ProgramBindingsBase::GetProgram()
 {
     META_FUNCTION_TASK();
-    assert(!!m_program_ptr);
+    META_CHECK_ARG_NOT_NULL(m_program_ptr);
     return *m_program_ptr;
 }
 
@@ -209,7 +209,7 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         uint32_t mutable_count = 0;
     };
 
-    assert(!!m_program_ptr);
+    META_CHECK_ARG_NOT_NULL(m_program_ptr);
     const auto& program = static_cast<const ProgramBase&>(GetProgram());
 
     // Count the number of constant and mutable descriptors to be allocated in each descriptor heap
@@ -343,7 +343,7 @@ void ProgramBindingsBase::VerifyAllArgumentsAreBoundToResources() const
 const std::optional<DescriptorHeap::Reservation>& ProgramBindingsBase::GetDescriptorHeapReservationByType(DescriptorHeap::Type heap_type) const
 {
     META_FUNCTION_TASK();
-    assert(heap_type != DescriptorHeap::Type::Undefined);
+    META_CHECK_ARG_NOT_EQUAL(heap_type, DescriptorHeap::Type::Undefined);
     return m_descriptor_heap_reservations_by_type[static_cast<uint32_t>(heap_type)];
 }
 

@@ -45,7 +45,7 @@ public:
     IContextMT& GetContextMT() noexcept;
     RenderContextMT& GetRenderContextMT();
     
-    id<MTLCommandQueue>&  GetNativeCommandQueue() noexcept { return m_mtl_command_queue; }
+    id<MTLCommandQueue>&  GetNativeCommandQueue() { return m_mtl_command_queue; }
 
 private:
     void Reset();

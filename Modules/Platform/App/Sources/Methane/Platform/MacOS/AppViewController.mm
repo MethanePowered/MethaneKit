@@ -29,7 +29,6 @@ MacOS application view controller implementation.
 #include <Methane/Checks.hpp>
 
 #include <string>
-#include <cassert>
 
 using namespace Methane;
 using namespace Methane::Platform;
@@ -99,9 +98,9 @@ using namespace Methane::Platform;
 - (void) drawInView: (nonnull AppViewMT*) view
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_p_app);
     #pragma unused(view)
-    
-    assert(!!m_p_app);
+
     if (!m_is_initialized)
     {
         m_is_initialized = true;
@@ -115,7 +114,7 @@ using namespace Methane::Platform;
 - (void) keyDown:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    assert(!!m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_p_app);
 
     m_p_app->ProcessInput(&Input::IActionController::OnKeyboardChanged, Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), Keyboard::KeyState::Pressed);
 }
@@ -123,7 +122,7 @@ using namespace Methane::Platform;
 - (void) keyUp:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    assert(!!m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_p_app);
 
     m_p_app->ProcessInput(&Input::IActionController::OnKeyboardChanged, Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), Keyboard::KeyState::Released);
 }
@@ -131,7 +130,7 @@ using namespace Methane::Platform;
 - (void) flagsChanged:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    assert(!!m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_p_app);
 
     m_p_app->ProcessInput(&Input::IActionController::OnModifiersChanged, Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetModifiers());
 }
@@ -141,7 +140,7 @@ using namespace Methane::Platform;
 - (void)mouseMoved:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    assert(!!m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_p_app);
 
     NSPoint pos = [event locationInWindow];
     pos.x *= self.view.window.backingScaleFactor;
@@ -152,18 +151,18 @@ using namespace Methane::Platform;
 - (void)mouseDown:(NSEvent *)event
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_p_app);
     #pragma unused(event)
-    
-    assert(!!m_p_app);
+
     m_p_app->ProcessInput(&Input::IActionController::OnMouseButtonChanged, Mouse::Button::Left, Mouse::ButtonState::Pressed);
 }
 
 - (void)mouseUp:(NSEvent *)event
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_p_app);
     #pragma unused(event)
-    
-    assert(!!m_p_app);
+
     m_p_app->ProcessInput(&Input::IActionController::OnMouseButtonChanged, Mouse::Button::Left, Mouse::ButtonState::Released);
 }
 
@@ -176,18 +175,18 @@ using namespace Methane::Platform;
 - (void)rightMouseDown:(NSEvent *)event
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_p_app);
     #pragma unused(event)
-    
-    assert(!!m_p_app);
+
     m_p_app->ProcessInput(&Input::IActionController::OnMouseButtonChanged, Mouse::Button::Right, Mouse::ButtonState::Pressed);
 }
 
 - (void)rightMouseUp:(NSEvent *)event
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_p_app);
     #pragma unused(event)
-    
-    assert(!!m_p_app);
+
     m_p_app->ProcessInput(&Input::IActionController::OnMouseButtonChanged, Mouse::Button::Right, Mouse::ButtonState::Released);
 }
 
@@ -200,15 +199,15 @@ using namespace Methane::Platform;
 - (void)otherMouseDown:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    
-    assert(!!m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_p_app);
+
     m_p_app->ProcessInput(&Input::IActionController::OnMouseButtonChanged, static_cast<Mouse::Button>(static_cast<int>([event buttonNumber])), Mouse::ButtonState::Pressed);
 }
 
 - (void)otherMouseUp:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    assert(!!m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_p_app);
 
     m_p_app->ProcessInput(&Input::IActionController::OnMouseButtonChanged, static_cast<Mouse::Button>(static_cast<int>([event buttonNumber])), Mouse::ButtonState::Released);
 }
@@ -222,26 +221,26 @@ using namespace Methane::Platform;
 - (void)mouseEntered:(NSEvent *)event
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_p_app);
     #pragma unused(event)
-    
-    assert(!!m_p_app);
+
     m_p_app->ProcessInput(&Input::IActionController::OnMouseInWindowChanged, true);
 }
 
 - (void)mouseExited:(NSEvent *)event
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_p_app);
     #pragma unused(event)
-    
-    assert(!!m_p_app);
+
     m_p_app->ProcessInput(&Input::IActionController::OnMouseInWindowChanged, false);
 }
 
 - (void)scrollWheel:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    
-    assert(!!m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_p_app);
+
     Mouse::Scroll scroll{ [event scrollingDeltaX], -[event scrollingDeltaY] };
     if ([event hasPreciseScrollingDeltas])
         scroll *= 0.1F;

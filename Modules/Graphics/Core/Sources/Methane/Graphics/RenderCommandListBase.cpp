@@ -32,8 +32,6 @@ Base implementation of the render command list interface.
 
 #include <Methane/Instrumentation.h>
 
-#include <cassert>
-
 namespace Methane::Graphics
 {
 
@@ -231,7 +229,7 @@ void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex
 RenderPassBase& RenderCommandListBase::GetPass()
 {
     META_FUNCTION_TASK();
-    assert(!!m_render_pass_ptr);
+    META_CHECK_ARG_NOT_NULL(m_render_pass_ptr);
     return static_cast<RenderPassBase&>(*m_render_pass_ptr);
 }
 

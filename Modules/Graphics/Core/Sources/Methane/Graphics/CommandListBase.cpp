@@ -29,8 +29,6 @@ Base implementation of the command list interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <cassert>
-
 // Disable debug groups instrumentation with discontinuous CPU frames in Tracy,
 // because it is not working for parallel render command lists by some reason
 //#define METHANE_DEBUG_GROUP_FRAMES_ENABLED
@@ -314,7 +312,7 @@ void CommandListBase::SetCommandListStateNoLock(State state)
 CommandQueue& CommandListBase::GetCommandQueue()
 {
     META_FUNCTION_TASK();
-    assert(!!m_command_queue_ptr);
+    META_CHECK_ARG_NOT_NULL(m_command_queue_ptr);
     return static_cast<CommandQueueBase&>(*m_command_queue_ptr);
 }
 
@@ -337,10 +335,10 @@ CommandQueueBase& CommandListBase::GetCommandQueueBase() noexcept
     return static_cast<CommandQueueBase&>(CommandListBase::GetCommandQueue());
 }
 
-const CommandQueueBase& CommandListBase::GetCommandQueueBase() const noexcept
+const CommandQueueBase& CommandListBase::GetCommandQueueBase() const
 {
     META_FUNCTION_TASK();
-    assert(!!m_command_queue_ptr);
+    META_CHECK_ARG_NOT_NULL(m_command_queue_ptr);
     return static_cast<const CommandQueueBase&>(*m_command_queue_ptr);
 }
 

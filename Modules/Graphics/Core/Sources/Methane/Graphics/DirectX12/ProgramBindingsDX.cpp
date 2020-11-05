@@ -368,7 +368,7 @@ bool ProgramBindingsDX::ApplyResourceStates(bool apply_constant_resource_states)
 
     for(const ResourceState& resource_state : m_variadic_resource_states)
     {
-        assert(!!resource_state.resource_ptr);
+        META_CHECK_ARG_NOT_NULL(resource_state.resource_ptr);
         resource_states_changed |= resource_state.resource_ptr->SetState(resource_state.state, m_resource_transition_barriers_ptr);
     }
 

@@ -83,12 +83,12 @@ public:
     const ResourceManager&  GetResourceManager() const noexcept  { return m_resource_manager; }
     CommandQueueBase&       GetUploadCommandQueueBase();
     DeviceBase&             GetDeviceBase() noexcept;
-    const DeviceBase&       GetDeviceBase() const noexcept;
+    const DeviceBase&       GetDeviceBase() const;
 
 protected:
     void PerformRequestedAction();
     void SetDevice(DeviceBase& device);
-    Fence& GetUploadFence() const noexcept;
+    Fence& GetUploadFence() const;
 
     // ContextBase interface
     virtual bool UploadResources();

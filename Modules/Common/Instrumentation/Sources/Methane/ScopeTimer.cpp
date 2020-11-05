@@ -22,12 +22,11 @@ Code scope measurement timer with aggregating and averaging of timings.
 ******************************************************************************/
 
 #include <Methane/ScopeTimer.h>
-
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <sstream>
 #include <chrono>
-#include <cassert>
 
 namespace Methane
 {
@@ -71,7 +70,7 @@ void ScopeTimer::Aggregator::LogTimings(ILogger& logger)
     {
         const std::string& scope_name = scope_name_and_id.first;
         const ScopeId      scope_id   = scope_name_and_id.second;
-        assert(scope_id < m_timing_by_scope_id.size());
+        META_CHECK_ARG_LESS(scope_id, m_timing_by_scope_id.size());
 
         const Timing& scope_timing = m_timing_by_scope_id[scope_id];
         const double total_duration_sec = std::chrono::duration_cast<std::chrono::duration<double>>(scope_timing.duration).count();
@@ -106,7 +105,7 @@ void ScopeTimer::Aggregator::AddScopeTiming(const Registration& scope_registrati
     ITT_COUNTER_VALUE(m_counters_by_scope_id[scope_registration.id], std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count());
     TracyPlot(scope_registration.name, std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count());
 
-    assert(scope_registration.id <= m_timing_by_scope_id.size());
+    META_CHECK_ARG_LESS(scope_registration.id, m_timing_by_scope_id.size());
     Timing& scope_timing = m_timing_by_scope_id[scope_registration.id];
     scope_timing.count++;
     scope_timing.duration += duration;

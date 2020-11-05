@@ -27,6 +27,7 @@ Base application interface and platform-independent implementation.
 #include <Methane/Platform/Input/Controller.h>
 #include <Methane/ScopeTimer.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 #include <Methane/Version.h>
 
 #include <CLI/CLI.hpp>
@@ -35,7 +36,6 @@ Base application interface and platform-independent implementation.
 #include <sstream>
 #include <vector>
 #include <cstdlib>
-#include <cassert>
 
 namespace Methane::Platform
 {
@@ -105,14 +105,14 @@ void AppBase::ChangeWindowBounds(const Data::FrameRect& window_bounds)
 void AppBase::StartResizing()
 {
     META_FUNCTION_TASK();
-    assert(!m_is_resizing);
+    META_CHECK_ARG_FALSE(m_is_resizing);
     m_is_resizing = true;
 }
 
 void AppBase::EndResizing()
 {
     META_FUNCTION_TASK();
-    assert(m_is_resizing);
+    META_CHECK_ARG_TRUE(m_is_resizing);
     m_is_resizing = false;
 }
     
@@ -208,7 +208,7 @@ std::string AppBase::GetControlsHelp()
 
     for (const Ptr<Input::Controller>& controller_ptr : GetInputState().GetControllers())
     {
-        assert(!!controller_ptr);
+        META_CHECK_ARG_NOT_NULL(controller_ptr);
         if (!controller_ptr) continue;
 
         const Input::IHelpProvider::HelpLines help_lines = controller_ptr->GetHelp();

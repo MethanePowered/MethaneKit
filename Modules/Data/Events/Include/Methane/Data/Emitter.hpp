@@ -28,7 +28,6 @@ Event emitter base template class implementation.
 #include <Methane/Instrumentation.h>
 
 #include <set>
-#include <cassert>
 
 namespace Methane::Data
 {
@@ -98,7 +97,6 @@ public:
             return;
         }
 
-        assert(*connected_receiver_it);
         if (m_is_emitting)
         {
             // Modification of connected receivers collection is prohibited during emit cycle, so we just clear the reference instead of erasing from collection

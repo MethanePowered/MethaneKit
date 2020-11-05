@@ -27,8 +27,6 @@ Base implementation of the render context interface.
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
-#include <cassert>
-
 namespace Methane::Graphics
 {
 
@@ -113,14 +111,14 @@ Fence& RenderContextBase::GetCurrentFrameFence() const
 {
     META_FUNCTION_TASK();
     const Ptr<Fence>& current_fence_ptr = GetCurrentFrameFencePtr();
-    assert(!!current_fence_ptr);
+    META_CHECK_ARG_NOT_NULL(current_fence_ptr);
     return *current_fence_ptr;
 }
 
 Fence& RenderContextBase::GetRenderFence() const
 {
     META_FUNCTION_TASK();
-    assert(!!m_render_fence_ptr);
+    META_CHECK_ARG_NOT_NULL(m_render_fence_ptr);
     return *m_render_fence_ptr;
 }
 
@@ -178,7 +176,7 @@ void RenderContextBase::SetName(const std::string& name)
     for (uint32_t frame_index = 0; frame_index < m_frame_fences.size(); ++frame_index)
     {
         const Ptr<Fence>& frame_fence_ptr = m_frame_fences[frame_index];
-        assert(!!frame_fence_ptr);
+        META_CHECK_ARG_NOT_NULL(frame_fence_ptr);
         frame_fence_ptr->SetName(name + " Frame " + std::to_string(frame_index) + " Fence");
     }
 

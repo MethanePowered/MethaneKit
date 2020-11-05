@@ -255,10 +255,10 @@ void ScreenQuad::SetTexture(Ptr<Texture> texture_ptr)
     texture_binding_ptr->SetResourceLocations({ { m_texture_ptr } });
 }
 
-const Texture& ScreenQuad::GetTexture() const noexcept
+const Texture& ScreenQuad::GetTexture() const
 {
     META_FUNCTION_TASK();
-    assert(!!m_texture_ptr);
+    META_CHECK_ARG_NOT_NULL(m_texture_ptr);
     return *m_texture_ptr;
 }
 

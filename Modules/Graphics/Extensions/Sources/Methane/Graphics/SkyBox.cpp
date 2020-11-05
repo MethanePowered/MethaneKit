@@ -98,8 +98,8 @@ Ptr<ProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& uniforms_b
 {
     META_FUNCTION_TASK();
 
-    assert(!!m_render_state_ptr);
-    assert(!!m_render_state_ptr->GetSettings().program_ptr);
+    META_CHECK_ARG_NOT_NULL(m_render_state_ptr);
+    META_CHECK_ARG_NOT_NULL(m_render_state_ptr->GetSettings().program_ptr);
     return ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
         { { Shader::Type::Vertex, "g_skybox_uniforms" }, { { uniforms_buffer_ptr            } } },
         { { Shader::Type::Pixel,  "g_skybox_texture"  }, { { m_mesh_buffers.GetTexturePtr() } } },
@@ -123,15 +123,15 @@ void SkyBox::Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindin
     META_FUNCTION_TASK();
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Sky-box rendering");
     
-    assert(!!buffer_bindings.uniforms_buffer_ptr);
-    assert(buffer_bindings.uniforms_buffer_ptr->GetDataSize() >= sizeof(Uniforms));
+    META_CHECK_ARG_NOT_NULL(buffer_bindings.uniforms_buffer_ptr);
+    META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), sizeof(Uniforms));
     buffer_bindings.uniforms_buffer_ptr->SetData(m_mesh_buffers.GetFinalPassUniformsSubresources());
 
     cmd_list.Reset(m_render_state_ptr, s_debug_group.get());
     cmd_list.SetViewState(view_state);
     
-    assert(!buffer_bindings.program_bindings_per_instance.empty());
-    assert(!!buffer_bindings.program_bindings_per_instance[0]);
+    META_CHECK_ARG_NOT_EMPTY(buffer_bindings.program_bindings_per_instance);
+    META_CHECK_ARG_NOT_NULL(buffer_bindings.program_bindings_per_instance[0]);
     m_mesh_buffers.Draw(cmd_list, *buffer_bindings.program_bindings_per_instance[0]);
 }
 

@@ -27,8 +27,7 @@ Vulkan implementation of the render command list interface.
 #include "ContextVK.h"
 
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -62,8 +61,7 @@ void ParallelRenderCommandListVK::Reset(const Ptr<RenderState>& render_state_ptr
 void ParallelRenderCommandListVK::Commit()
 {
     META_FUNCTION_TASK();
-    
-    assert(!IsCommitted());
+    META_CHECK_ARG_FALSE(IsCommitted());
     ParallelRenderCommandListBase::Commit();
 }
 

@@ -28,8 +28,6 @@ Interactive action-camera for rotating, moving and zooming with mouse and keyboa
 
 #include <cml/mathlib/mathlib.h>
 
-#include <cassert>
-
 namespace Methane::Graphics
 {
 

@@ -27,8 +27,6 @@ Abstract mesh class
 
 #include <cml/mathlib/mathlib.h>
 
-#include <cassert>
-
 namespace Methane::Graphics
 {
 

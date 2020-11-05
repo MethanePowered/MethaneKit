@@ -25,10 +25,10 @@ and deferred releasing of GPU resource.
 #include "ResourceManager.h"
 #include "ContextBase.h"
 
-#include <Methane/Instrumentation.h>
 #include <Methane/Data/Math.hpp>
+#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
-#include <cassert>
 #include <taskflow/taskflow.hpp>
 
 namespace Methane::Graphics
@@ -80,7 +80,7 @@ void ResourceManager::CompleteInitialization()
     {
         for (const Ptr<DescriptorHeap>& desc_heap_ptr : desc_heaps)
         {
-            assert(!!desc_heap_ptr);
+            META_CHECK_ARG_NOT_NULL(desc_heap_ptr);
             desc_heap_ptr->Allocate();
         }
     }
@@ -98,7 +98,7 @@ void ResourceManager::CompleteInitialization()
         {
             META_FUNCTION_TASK();
             Ptr<ProgramBindings> program_bindings_ptr = program_bindings_wptr.lock();
-            assert(!!program_bindings_ptr);
+            META_CHECK_ARG_NOT_NULL(program_bindings_ptr);
             static_cast<ProgramBindingsBase&>(*program_bindings_ptr).CompleteInitialization();
         },
         Data::GetParallelChunkSizeAsInt(m_program_bindings.size(), 3)
@@ -140,9 +140,8 @@ void ResourceManager::AddProgramBindings(ProgramBindings& program_bindings)
         [&program_bindings](const WeakPtr<ProgramBindings>& program_bindings_ptr)
         { return !program_bindings_ptr.expired() && program_bindings_ptr.lock().get() == std::addressof(program_bindings); }
     );
-    assert(program_bindings_it == m_program_bindings.end());
-    if (program_bindings_it != m_program_bindings.end())
-        return;
+    META_CHECK_ARG_DESCR("program_bindings", program_bindings_it != m_program_bindings.end(),
+                         "program bindings instance was already added to resource manager");
 #endif
 
     m_program_bindings.push_back(std::static_pointer_cast<ProgramBindingsBase>(static_cast<ProgramBindingsBase&>(program_bindings).GetBasePtr()));
@@ -208,7 +207,7 @@ const Ptr<DescriptorHeap>&  ResourceManager::GetDefaultShaderVisibleDescriptorHe
     auto descriptor_heaps_it = std::find_if(descriptor_heaps.begin(), descriptor_heaps.end(),
         [](const Ptr<DescriptorHeap>& descriptor_heap_ptr)
         {
-            assert(descriptor_heap_ptr);
+            META_CHECK_ARG_NOT_NULL(descriptor_heap_ptr);
             return descriptor_heap_ptr && descriptor_heap_ptr->GetSettings().shader_visible;
         });
 

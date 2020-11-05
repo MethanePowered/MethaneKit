@@ -28,8 +28,6 @@ Base implementation of the context interface.
 #include <Methane/Graphics/BlitCommandList.h>
 #include <Methane/Instrumentation.h>
 
-#include <cassert>
-
 namespace Methane::Graphics
 {
 
@@ -96,7 +94,7 @@ void ContextBase::WaitForGpu(WaitFor wait_for)
     if (wait_for == WaitFor::ResourcesUploaded)
     {
         META_SCOPE_TIMER("ContextBase::WaitForGpu::ResourcesUploaded");
-        assert(!!m_upload_fence_ptr);
+        META_CHECK_ARG_NOT_NULL(m_upload_fence_ptr);
         OnGpuWaitStart(wait_for);
         m_upload_fence_ptr->FlushOnCpu();
         OnGpuWaitComplete(wait_for);
@@ -241,7 +239,7 @@ CommandListSet& ContextBase::GetUploadCommandListSet()
 Device& ContextBase::GetDevice()
 {
     META_FUNCTION_TASK();
-    assert(!!m_device_ptr);
+    META_CHECK_ARG_NOT_NULL(m_device_ptr);
     return *m_device_ptr;
 }
     
@@ -257,10 +255,10 @@ DeviceBase& ContextBase::GetDeviceBase() noexcept
     return static_cast<DeviceBase&>(GetDevice());
 }
 
-const DeviceBase& ContextBase::GetDeviceBase() const noexcept
+const DeviceBase& ContextBase::GetDeviceBase() const
 {
     META_FUNCTION_TASK();
-    assert(!!m_device_ptr);
+    META_CHECK_ARG_NOT_NULL(m_device_ptr);
     return static_cast<const DeviceBase&>(*m_device_ptr);
 }
 
@@ -314,9 +312,9 @@ void ContextBase::SetDevice(DeviceBase& device)
     m_device_ptr = device.GetDevicePtr();
 }
 
-Fence& ContextBase::GetUploadFence() const noexcept
+Fence& ContextBase::GetUploadFence() const
 {
-    assert(m_upload_fence_ptr);
+    META_CHECK_ARG_NOT_NULL(m_upload_fence_ptr);
     return *m_upload_fence_ptr;
 }
 

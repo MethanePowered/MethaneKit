@@ -299,7 +299,7 @@ State::Property::Mask State::GetDiff(const State& other) const noexcept
     return properties_diff_mask;
 }
 
-KeyType State::SetKey(Key key, KeyState state) noexcept
+KeyType State::SetKey(Key key, KeyState state)
 {
     META_FUNCTION_TASK();
     if (key == Key::Unknown)
@@ -314,11 +314,8 @@ KeyType State::SetKey(Key key, KeyState state) noexcept
     else
     {
         const size_t key_index = static_cast<size_t>(key);
-        assert(key_index < m_key_states.size());
-        if (key_index < m_key_states.size())
-        {
-            m_key_states[key_index] = state;
-        }
+        META_CHECK_ARG_LESS(key_index, m_key_states.size());
+        m_key_states[key_index] = state;
         return KeyType::Modifier;
     }
 }

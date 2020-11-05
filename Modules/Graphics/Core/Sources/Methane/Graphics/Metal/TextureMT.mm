@@ -31,7 +31,6 @@ Metal implementation of the texture interface.
 #include <Methane/Checks.hpp>
 
 #include <algorithm>
-#include <cassert>
 
 namespace Methane::Graphics
 {

@@ -28,8 +28,6 @@ Base implementation of the program interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Utils.h>
 
-#include <cassert>
-
 namespace Methane::Graphics
 {
 

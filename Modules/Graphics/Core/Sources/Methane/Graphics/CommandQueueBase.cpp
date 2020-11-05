@@ -26,8 +26,6 @@ Base implementation of the command queue interface.
 
 #include <Methane/Instrumentation.h>
 
-#include <cassert>
-
 namespace Methane::Graphics
 {
 
@@ -52,10 +50,10 @@ void CommandQueueBase::Execute(CommandListSet& command_lists, const CommandList:
     static_cast<CommandListSetBase&>(command_lists).Execute(frame_index, completed_callback);
 }
 
-Tracy::GpuContext& CommandQueueBase::GetTracyContext() noexcept
+Tracy::GpuContext& CommandQueueBase::GetTracyContext()
 {
     META_FUNCTION_TASK();
-    assert(m_tracy_gpu_context_ptr);
+    META_CHECK_ARG_NOT_NULL(m_tracy_gpu_context_ptr);
     return *m_tracy_gpu_context_ptr;
 }
 

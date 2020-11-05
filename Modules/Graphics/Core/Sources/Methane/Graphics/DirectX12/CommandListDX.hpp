@@ -41,8 +41,6 @@ DirectX 12 base template implementation of the command list interface.
 #include <pix.h>
 #include <nowide/convert.hpp>
 
-#include <cassert>
-
 namespace Methane::Graphics
 {
 
@@ -64,7 +62,7 @@ public:
         META_FUNCTION_TASK();
 
         const wrl::ComPtr<ID3D12Device>& cp_device = GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice();
-        assert(!!cp_device);
+        META_CHECK_ARG_NOT_NULL(cp_device);
 
         ThrowIfFailed(cp_device->CreateCommandAllocator(command_list_type, IID_PPV_ARGS(&m_cp_command_allocator)), cp_device.Get());
         ThrowIfFailed(cp_device->CreateCommandList(0, command_list_type, m_cp_command_allocator.Get(), nullptr, IID_PPV_ARGS(&m_cp_command_list)), cp_device.Get());
@@ -134,7 +132,7 @@ public:
 
         META_LOG("Command list \"" + GetName() + "\" set resource barriers:\n" + static_cast<std::string>(resource_barriers));
 
-        assert(m_cp_command_list);
+        META_CHECK_ARG_NOT_NULL(m_cp_command_list);
         const std::vector<D3D12_RESOURCE_BARRIER>& dx_resource_barriers = static_cast<const ResourceDX::BarriersDX&>(resource_barriers).GetNativeResourceBarriers();
         m_cp_command_list->ResourceBarrier(static_cast<UINT>(dx_resource_barriers.size()), dx_resource_barriers.data());
     }
@@ -194,10 +192,10 @@ public:
     {
         META_FUNCTION_TASK();
 
-        assert(m_cp_command_list);
+        META_CHECK_ARG_NOT_NULL(m_cp_command_list);
         m_cp_command_list->SetName(nowide::widen(name).c_str());
 
-        assert(m_cp_command_allocator);
+        META_CHECK_ARG_NOT_NULL(m_cp_command_allocator);
         m_cp_command_allocator->SetName(nowide::widen(name + " allocator").c_str());
 
         CommandListBaseT::SetName(name);
@@ -209,7 +207,7 @@ public:
     CommandQueueDX&             GetCommandQueueDX() override                             { return static_cast<CommandQueueDX&>(GetCommandQueueBase()); }
     ID3D12GraphicsCommandList&  GetNativeCommandList() const override
     {
-        assert(!!m_cp_command_list);
+        META_CHECK_ARG_NOT_NULL(m_cp_command_list);
         return *m_cp_command_list.Get();
     }
     ID3D12GraphicsCommandList4* GetNativeCommandList4() const override { return m_cp_command_list_4.Get(); }
@@ -220,13 +218,13 @@ protected:
 
     ID3D12CommandAllocator& GetNativeCommandAllocatorRef()
     {
-        assert(!!m_cp_command_allocator);
+        META_CHECK_ARG_NOT_NULL(m_cp_command_allocator);
         return *m_cp_command_allocator.Get();
     }
 
     ID3D12GraphicsCommandList& GetNativeCommandListRef()
     {
-        assert(!!m_cp_command_list);
+        META_CHECK_ARG_NOT_NULL(m_cp_command_list);
         return *m_cp_command_list.Get();
     }
 

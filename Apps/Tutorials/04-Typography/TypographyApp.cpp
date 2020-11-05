@@ -286,7 +286,7 @@ void TypographyApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
     gui::UnitPoint badge_margins(g_margin_size_in_dots, g_margin_size_in_dots, gui::Units::Dots);
     for(const Ptr<gui::Badge>& badge_atlas_ptr : m_font_atlas_badges)
     {
-        assert(badge_atlas_ptr);
+        META_CHECK_ARG_NOT_NULL(badge_atlas_ptr);
         const gui::UnitSize atlas_size = GetUIContext().ConvertToDots(gui::UnitSize(static_cast<const gfx::FrameSize&>(badge_atlas_ptr->GetTexture().GetSettings().dimensions), gui::Units::Pixels));
         badge_atlas_ptr->FrameResize(gui::UnitSize(frame_size, gui::Units::Pixels), atlas_size, badge_margins);
         badge_margins += gui::UnitPoint(atlas_size.width + static_cast<int32_t>(g_margin_size_in_dots), 0U, gui::Units::Dots);

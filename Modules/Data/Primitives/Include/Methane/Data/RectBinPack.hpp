@@ -26,8 +26,6 @@ Rectangle bin packing algorithm implementation.
 #include <Methane/Memory.hpp>
 #include <Methane/Instrumentation.h>
 
-#include <cassert>
-
 namespace Methane::Data
 {
 
@@ -56,8 +54,10 @@ public:
         if (!m_root_bin.TryPack(rect, m_rect_margins))
             return false;
 
-        assert(rect.GetLeft() >= 0 && static_cast<uint32_t>(rect.GetRight()) <= m_root_bin.GetRect().size.width);
-        assert(rect.GetTop() >= 0  && static_cast<uint32_t>(rect.GetBottom()) <= m_root_bin.GetRect().size.height);
+        META_CHECK_ARG_GREATER_OR_EQUAL(rect.GetLeft(), 0);
+        META_CHECK_ARG_GREATER_OR_EQUAL(rect.GetTop(), 0);
+        META_CHECK_ARG_LESS(rect.GetRight(), m_root_bin.GetRect().size.width + 1);
+        META_CHECK_ARG_LESS(rect.GetBottom(), m_root_bin.GetRect().size.height + 1);
         return true;
     }
 

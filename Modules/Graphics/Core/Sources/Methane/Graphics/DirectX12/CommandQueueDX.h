@@ -63,7 +63,7 @@ public:
     void CompleteExecution(const std::optional<Data::Index>& frame_index = { });
 
     IContextDX&             GetContextDX() noexcept;
-    ID3D12CommandQueue&     GetNativeCommandQueue() noexcept;
+    ID3D12CommandQueue&     GetNativeCommandQueue();
     TimestampQueryBuffer*   GetTimestampQueryBuffer() noexcept { return m_timestamp_query_buffer_ptr.get(); }
 
 private:

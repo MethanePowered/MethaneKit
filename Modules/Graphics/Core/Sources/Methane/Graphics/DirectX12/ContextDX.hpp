@@ -30,12 +30,12 @@ DirectX 12 base template implementation of the context interface.
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <wrl.h>
 #include <d3d12.h>
 
 #include <array>
-#include <cassert>
 
 namespace Methane::Graphics
 {
@@ -83,7 +83,7 @@ public:
     ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) override
     {
         META_FUNCTION_TASK();
-        assert(static_cast<size_t>(type) < m_query_heaps.size());
+        META_CHECK_ARG_LESS(static_cast<size_t>(type), m_query_heaps.size());
         wrl::ComPtr<ID3D12QueryHeap>& cp_query_heap = m_query_heaps[type];
         if (!cp_query_heap)
         {
@@ -93,7 +93,7 @@ public:
             ThrowIfFailed(GetDeviceDX().GetNativeDevice()->CreateQueryHeap(&query_heap_desc, IID_PPV_ARGS(&cp_query_heap)),
                           GetDeviceDX().GetNativeDevice().Get());
         }
-        assert(cp_query_heap);
+        META_CHECK_ARG_NOT_NULL(cp_query_heap);
         return *cp_query_heap.Get();
     }
 

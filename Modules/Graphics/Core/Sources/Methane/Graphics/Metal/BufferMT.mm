@@ -32,8 +32,6 @@ Metal implementation of the buffer interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <cassert>
-
 namespace Methane::Graphics
 {
 

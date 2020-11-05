@@ -203,7 +203,7 @@ public:
     operator std::string() const                            { return ToString(); }
     operator bool() const noexcept;
 
-    KeyType SetKey(Key key, KeyState state) noexcept;
+    KeyType SetKey(Key key, KeyState state);
     void    SetModifiersMask(Modifier::Mask mask) noexcept  { m_modifiers_mask = mask; }
     void    PressKey(Key key) noexcept                      { SetKey(key, KeyState::Pressed); }
     void    ReleaseKey(Key key) noexcept                    { SetKey(key, KeyState::Released); }

@@ -30,8 +30,6 @@ GPU data query buffer base implementation.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <cassert>
-
 namespace Methane::Graphics
 {
 

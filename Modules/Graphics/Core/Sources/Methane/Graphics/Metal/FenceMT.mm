@@ -105,7 +105,7 @@ void FenceMT::WaitOnGpu(CommandQueue& wait_on_command_queue)
     [mtl_command_buffer commit];
 }
 
-void FenceMT::SetName(const std::string& name) noexcept
+void FenceMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
     if (ObjectBase::GetName() == name)

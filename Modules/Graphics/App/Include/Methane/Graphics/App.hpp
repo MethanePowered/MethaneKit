@@ -49,7 +49,6 @@ Base frame class provides frame buffer management with resize handling.
 #include <sstream>
 #include <memory>
 #include <thread>
-#include <cassert>
 
 namespace Methane::Graphics
 {
@@ -120,14 +119,14 @@ public:
     {
         META_FUNCTION_TASK();
         const Ptrs<Device>& devices = System::Get().UpdateGpuDevices();
-        assert(!devices.empty());
+        META_CHECK_ARG_NOT_EMPTY(devices);
 
         Ptr<Device> device_ptr = m_settings.default_device_index < 0
                       ? System::Get().GetSoftwareGpuDevice()
                       : (static_cast<size_t>(m_settings.default_device_index) < devices.size()
                            ? devices[m_settings.default_device_index]
                            : devices.front());
-        assert(device_ptr);
+        META_CHECK_ARG_NOT_NULL(device_ptr);
         
         // Create render context of the current window size
         m_initial_context_settings.frame_size = frame_size;
@@ -150,7 +149,7 @@ public:
             SetAnimationsEnabled(false);
         }
 
-        assert(m_context_ptr);
+        META_CHECK_ARG_NOT_NULL(m_context_ptr);
         const RenderContext::Settings& context_settings = m_context_ptr->GetSettings();
 
         // Create depth texture for FB rendering
@@ -252,7 +251,7 @@ public:
         m_depth_texture_ptr.reset();
 
         // Resize render context
-        assert(m_context_ptr);
+        META_CHECK_ARG_NOT_NULL(m_context_ptr);
         m_context_ptr->Resize(frame_size);
 
         // Restore depth texture with new size
@@ -388,7 +387,7 @@ protected:
             return;
         }
 
-        assert(m_context_ptr);
+        META_CHECK_ARG_NOT_NULL(m_context_ptr);
         if (!m_context_ptr)
             return;
 
@@ -453,7 +452,7 @@ protected:
     {
         META_FUNCTION_TASK();
         const uint32_t frame_index = m_context_ptr->GetFrameBufferIndex();
-        assert(frame_index < m_frames.size());
+        META_CHECK_ARG_LESS(frame_index, m_frames.size());
         return m_frames[frame_index];
     }
 

@@ -32,7 +32,6 @@ DirectX 12 implementation of the buffer interface.
 #include <Methane/Checks.hpp>
 
 #include <d3dx12.h>
-#include <cassert>
 
 namespace Methane::Graphics
 {

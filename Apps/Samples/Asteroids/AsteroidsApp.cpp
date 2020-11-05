@@ -29,7 +29,6 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 #include <Methane/Data/TimeAnimation.h>
 #include <Methane/Instrumentation.h>
 
-#include <cassert>
 #include <memory>
 #include <thread>
 #include <array>
@@ -323,13 +322,13 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     // Update frame buffer and depth textures in initial & final render passes
     for (AsteroidsFrame& frame : GetFrames())
     {
-        assert(!!frame.initial_screen_pass_ptr);
+        META_CHECK_ARG_NOT_NULL(frame.initial_screen_pass_ptr);
         gfx::RenderPass::Settings initial_pass_settings         = frame.initial_screen_pass_ptr->GetSettings();
         initial_pass_settings.color_attachments[0].texture_ptr = frame.screen_texture_ptr;
         initial_pass_settings.depth_attachment.texture_ptr     = GetDepthTexturePtr();
         frame.initial_screen_pass_ptr->Update(initial_pass_settings);
         
-        assert(!!frame.final_screen_pass_ptr);
+        META_CHECK_ARG_NOT_NULL(frame.final_screen_pass_ptr);
         gfx::RenderPass::Settings final_pass_settings           = frame.final_screen_pass_ptr->GetSettings();
         final_pass_settings.color_attachments[0].texture_ptr = frame.screen_texture_ptr;
         final_pass_settings.depth_attachment.texture_ptr     = GetDepthTexturePtr();
@@ -470,7 +469,7 @@ void AsteroidsApp::SetParallelRenderingEnabled(bool is_parallel_rendering_enable
 AsteroidsArray& AsteroidsApp::GetAsteroidsArray() const
 {
     META_FUNCTION_TASK();
-    assert(!!m_asteroids_array_ptr);
+    META_CHECK_ARG_NOT_NULL(m_asteroids_array_ptr);
     return *m_asteroids_array_ptr;
 }
 

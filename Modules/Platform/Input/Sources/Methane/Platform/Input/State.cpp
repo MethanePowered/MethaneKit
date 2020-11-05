@@ -23,8 +23,7 @@ limitations under the License.
 
 #include <Methane/Platform/Input/State.h>
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Platform::Input
 {

@@ -26,8 +26,6 @@ Base implementation of the render state interface.
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
-#include <cassert>
-
 namespace Methane::Graphics
 {
 
@@ -215,7 +213,7 @@ void RenderStateBase::Reset(const Settings& settings)
 Program& RenderStateBase::GetProgram()
 {
     META_FUNCTION_TASK();
-    assert(!!m_settings.program_ptr);
+    META_CHECK_ARG_NOT_NULL(m_settings.program_ptr);
     return *m_settings.program_ptr;
 }
 

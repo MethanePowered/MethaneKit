@@ -80,7 +80,7 @@ void FenceVK::WaitOnGpu(CommandQueue& wait_on_command_queue)
     // TODO: wait on GPU for native fence object
 }
 
-void FenceVK::SetName(const std::string& name) noexcept
+void FenceVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
     if (ObjectBase::GetName() == name)

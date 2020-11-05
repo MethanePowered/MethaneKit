@@ -23,6 +23,7 @@ Arc-Ball camera unit tests
 
 #include <Methane/Graphics/ArcBallCamera.h>
 #include <Methane/Data/Types.h>
+#include <Methane/Checks.hpp>
 
 #include <catch2/catch.hpp>
 #include <cml/mathlib/mathlib.h>

@@ -100,7 +100,7 @@ public:
     void ClearOpenDebugGroups();
 
     CommandQueueBase&               GetCommandQueueBase() noexcept;
-    const CommandQueueBase&         GetCommandQueueBase() const noexcept;
+    const CommandQueueBase&         GetCommandQueueBase() const;
     const Ptr<ProgramBindingsBase>& GetProgramBindings() const noexcept  { return GetCommandState().program_bindings_ptr; }
     Ptr<CommandListBase>            GetCommandListPtr()                  { return std::static_pointer_cast<CommandListBase>(GetBasePtr()); }
 
@@ -182,7 +182,7 @@ public:
     Data::Index                  GetExecutingOnFrameIndex() const noexcept  { return m_executing_on_frame_index; }
     const CommandListBase&       GetCommandListBase(Data::Index index) const;
     CommandQueueBase&            GetCommandQueueBase() noexcept             { return m_base_refs.back().get().GetCommandQueueBase(); }
-    const CommandQueueBase&      GetCommandQueueBase() const noexcept       { return m_base_refs.back().get().GetCommandQueueBase(); }
+    const CommandQueueBase&      GetCommandQueueBase() const       { return m_base_refs.back().get().GetCommandQueueBase(); }
 
 private:
     Refs<CommandList>      m_refs;

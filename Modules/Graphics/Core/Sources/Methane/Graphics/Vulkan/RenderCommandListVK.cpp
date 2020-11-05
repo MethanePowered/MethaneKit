@@ -30,8 +30,7 @@ Vulkan implementation of the render command list interface.
 #include "BufferVK.h"
 
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -122,7 +121,7 @@ void RenderCommandListVK::Draw(Primitive primitive, uint32_t vertex_count, uint3
 void RenderCommandListVK::Commit()
 {
     META_FUNCTION_TASK();
-    assert(!IsCommitted());
+    META_CHECK_ARG_FALSE(IsCommitted());
     RenderCommandListBase::Commit();
 }
 

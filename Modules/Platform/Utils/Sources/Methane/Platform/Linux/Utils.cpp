@@ -25,7 +25,6 @@ MacOS platform utility functions.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <cassert>
 #include <stdexcept>
 
 namespace Methane::Platform

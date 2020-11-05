@@ -47,7 +47,7 @@ public:
     void WaitOnGpu(CommandQueue& wait_on_command_queue) override;
 
     // Object override
-    void SetName(const std::string& name) noexcept override;
+    void SetName(const std::string& name) override;
 
 private:
     CommandQueueDX& GetCommandQueueDX();

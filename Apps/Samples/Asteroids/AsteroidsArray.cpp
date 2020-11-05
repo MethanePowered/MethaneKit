@@ -98,7 +98,7 @@ uint32_t AsteroidsArray::UberMesh::GetSubsetSubdivision(uint32_t subset_index) c
     META_CHECK_ARG_LESS(subset_index, GetSubsetCount());
 
     const uint32_t subdivision_index = subset_index / m_instance_count;
-    assert(subdivision_index < m_subdivisions_count);
+    META_CHECK_ARG_LESS(subdivision_index, m_subdivisions_count);
 
     return subdivision_index;
 }
@@ -281,7 +281,7 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, Settings settings, C
     for (uint32_t subset_index = 0; subset_index < m_content_state_ptr->mesh_subset_texture_indices.size(); ++subset_index)
     {
         const uint32_t subset_texture_index = m_content_state_ptr->mesh_subset_texture_indices[subset_index];
-        assert(subset_texture_index < m_unique_textures.size());
+        META_CHECK_ARG_LESS(subset_texture_index, m_unique_textures.size());
         SetSubsetTexture(m_unique_textures[subset_texture_index], subset_index);
     }
     
@@ -408,14 +408,14 @@ void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, gfx::MeshBufferBindi
     META_SCOPE_TIMER("AsteroidsArray::Draw");
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Asteroids rendering");
 
-    assert(buffer_bindings.uniforms_buffer_ptr);
-    assert(buffer_bindings.uniforms_buffer_ptr->GetDataSize() >= GetUniformsBufferSize());
+    META_CHECK_ARG_NOT_NULL(buffer_bindings.uniforms_buffer_ptr);
+    META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), GetUniformsBufferSize());
     buffer_bindings.uniforms_buffer_ptr->SetData(GetFinalPassUniformsSubresources());
 
     cmd_list.Reset(m_render_state_ptr, s_debug_group.get());
     cmd_list.SetViewState(view_state);
 
-    assert(buffer_bindings.program_bindings_per_instance.size() == m_settings.instance_count);
+    META_CHECK_ARG_EQUAL(buffer_bindings.program_bindings_per_instance.size(), m_settings.instance_count);
     BaseBuffers::Draw(cmd_list, buffer_bindings.program_bindings_per_instance,
                       gfx::ProgramBindings::ApplyBehavior::ConstantOnce);
 }
@@ -426,14 +426,14 @@ void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_l
     META_SCOPE_TIMER("AsteroidsArray::DrawParallel");
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Parallel Asteroids rendering");
 
-    assert(buffer_bindings.uniforms_buffer_ptr);
-    assert(buffer_bindings.uniforms_buffer_ptr->GetDataSize() >= GetUniformsBufferSize());
+    META_CHECK_ARG_NOT_NULL(buffer_bindings.uniforms_buffer_ptr);
+    META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), GetUniformsBufferSize());
     buffer_bindings.uniforms_buffer_ptr->SetData(GetFinalPassUniformsSubresources());
 
     parallel_cmd_list.Reset(m_render_state_ptr, s_debug_group.get());
     parallel_cmd_list.SetViewState(view_state);
 
-    assert(buffer_bindings.program_bindings_per_instance.size() == m_settings.instance_count);
+    META_CHECK_ARG_EQUAL(buffer_bindings.program_bindings_per_instance.size(), m_settings.instance_count);
     BaseBuffers::DrawParallel(parallel_cmd_list, buffer_bindings.program_bindings_per_instance,
                               gfx::ProgramBindings::ApplyBehavior::ConstantOnce);
 }
@@ -453,8 +453,7 @@ void AsteroidsArray::SetMinMeshLodScreenSize(float mesh_lod_min_screen_size)
 uint32_t AsteroidsArray::GetSubsetByInstanceIndex(uint32_t instance_index) const
 {
     META_FUNCTION_TASK();
-
-    assert(instance_index < m_mesh_subset_by_instance_index.size());
+    META_CHECK_ARG_LESS(instance_index, m_mesh_subset_by_instance_index.size());
     return m_mesh_subset_by_instance_index[instance_index];
 }
 

@@ -31,7 +31,6 @@ DirectX 12 implementation of the parallel render command list interface.
 #include <Methane/Instrumentation.h>
 
 #include <d3dx12.h>
-#include <cassert>
 
 namespace Methane::Graphics
 {
@@ -146,7 +145,7 @@ ParallelRenderCommandListDX::D3D12CommandLists ParallelRenderCommandListDX::GetN
 
     for (const Ptr<RenderCommandList>& command_list_ptr : parallel_command_lists)
     {
-        assert(!!command_list_ptr);
+        META_CHECK_ARG_NOT_NULL(command_list_ptr);
         RenderCommandListDX& dx_command_list = static_cast<RenderCommandListDX&>(*command_list_ptr);
         dx_command_lists.push_back(&dx_command_list.GetNativeCommandList());
     }

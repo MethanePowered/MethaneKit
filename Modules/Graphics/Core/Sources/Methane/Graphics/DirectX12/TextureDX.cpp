@@ -223,7 +223,7 @@ void ImageTextureDX::SetName(const std::string& name)
     META_FUNCTION_TASK();
     TextureBase::SetName(name);
 
-    assert(m_cp_upload_resource);
+    META_CHECK_ARG_NOT_NULL(m_cp_upload_resource);
     m_cp_upload_resource->SetName(nowide::widen(name + " Upload Resource").c_str());
 }
 

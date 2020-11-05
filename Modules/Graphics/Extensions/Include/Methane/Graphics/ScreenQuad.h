@@ -69,7 +69,7 @@ public:
 
     const Settings& GetSettings() const noexcept { return m_settings; }
     FrameRect       GetScreenRectInDots() const noexcept { return m_settings.screen_rect / m_context.GetContentScalingFactor(); }
-    const Texture&  GetTexture() const noexcept;
+    const Texture&  GetTexture() const;
 
     void Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_debug_group = nullptr) const;
 

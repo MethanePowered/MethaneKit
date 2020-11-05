@@ -71,7 +71,7 @@ static wrl::ComPtr<ID3D12CommandQueue> CreateNativeCommandQueue(const DeviceDX& 
 {
     META_FUNCTION_TASK();
     const wrl::ComPtr<ID3D12Device>& cp_device = device.GetNativeDevice();
-    assert(!!cp_device);
+    META_CHECK_ARG_NOT_NULL(cp_device);
 
     D3D12_COMMAND_QUEUE_DESC queue_desc{};
     queue_desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
@@ -167,10 +167,10 @@ IContextDX& CommandQueueDX::GetContextDX() noexcept
     return static_cast<IContextDX&>(GetContext());
 }
 
-ID3D12CommandQueue& CommandQueueDX::GetNativeCommandQueue() noexcept
+ID3D12CommandQueue& CommandQueueDX::GetNativeCommandQueue()
 {
     META_FUNCTION_TASK();
-    assert(!!m_cp_command_queue);
+    META_CHECK_ARG_NOT_NULL(m_cp_command_queue);
     return *m_cp_command_queue.Get();
 }
 
@@ -204,7 +204,7 @@ void CommandQueueDX::WaitForExecution() noexcept
                     command_lists_ptr = m_executing_command_lists.front();
                 }
 
-                assert(command_lists_ptr);
+                META_CHECK_ARG_NOT_NULL(command_lists_ptr);
                 if (!command_lists_ptr)
                     continue;
 

@@ -23,8 +23,7 @@ A pool of input controllers for user actions handling in separate application co
 
 #include <Methane/Platform/Input/ControllersPool.h>
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Platform::Input
 {
@@ -38,7 +37,7 @@ void ControllersPool::OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonSt
 
     for (const Ptr<Controller>& controller_ptr : *this)
     {
-        assert(!!controller_ptr);
+        META_CHECK_ARG_NOT_NULL(controller_ptr);
         if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
         
@@ -55,7 +54,7 @@ void ControllersPool::OnMousePositionChanged(const Mouse::Position& mouse_positi
 
     for (const Ptr<Controller>& controller_ptr : *this)
     {
-        assert(!!controller_ptr);
+        META_CHECK_ARG_NOT_NULL(controller_ptr);
         if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
 
@@ -73,7 +72,7 @@ void ControllersPool::OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_del
 
     for (const Ptr<Controller>& controller_ptr : *this)
     {
-        assert(!!controller_ptr);
+        META_CHECK_ARG_NOT_NULL(controller_ptr);
         if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
 
@@ -90,7 +89,7 @@ void ControllersPool::OnMouseInWindowChanged(bool is_mouse_in_window, const Mous
 
     for (const Ptr<Controller>& controller_ptr : *this)
     {
-        assert(!!controller_ptr);
+        META_CHECK_ARG_NOT_NULL(controller_ptr);
         if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
 
@@ -107,7 +106,7 @@ void ControllersPool::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState ke
 
     for (const Ptr<Controller>& controller_ptr : *this)
     {
-        assert(!!controller_ptr);
+        META_CHECK_ARG_NOT_NULL(controller_ptr);
         if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
         
@@ -124,7 +123,7 @@ void ControllersPool::OnModifiersChanged(Keyboard::Modifier::Mask modifiers, con
 
     for (const Ptr<Controller>& controller_ptr : *this)
     {
-        assert(!!controller_ptr);
+        META_CHECK_ARG_NOT_NULL(controller_ptr);
         if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
         
@@ -139,7 +138,7 @@ IHelpProvider::HelpLines ControllersPool::GetHelp() const
     HelpLines all_help_lines;
     for (const Ptr<Controller>& controller_ptr : *this)
     {
-        assert(!!controller_ptr);
+        META_CHECK_ARG_NOT_NULL(controller_ptr);
         if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
 

@@ -42,7 +42,6 @@ Mesh buffers with texture extension structure.
 
 #include <memory>
 #include <string>
-#include <cassert>
 
 namespace Methane::Graphics
 {
@@ -141,8 +140,8 @@ public:
 
             const uint32_t instance_index = first_instance_index + static_cast<uint32_t>(std::distance(instance_program_bindings_begin, instance_program_bindings_it));
             const uint32_t subset_index = GetSubsetByInstanceIndex(instance_index);
-            assert(subset_index < m_mesh_subsets.size());
 
+            META_CHECK_ARG_LESS(subset_index, m_mesh_subsets.size());
             const Mesh::Subset& mesh_subset = m_mesh_subsets[subset_index];
 
             cmd_list.SetProgramBindings(*program_bindings_ptr, bindings_apply_behavior);
@@ -171,7 +170,7 @@ public:
                 const uint32_t end_instance_index   = std::min(begin_instance_index + instances_count_per_command_list,
                                                                static_cast<uint32_t>(instance_program_bindings.size()));
 
-                assert(!!render_command_list_ptr);
+                META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
                 Draw(*render_command_list_ptr,
                      instance_program_bindings.begin() + begin_instance_index,
                      instance_program_bindings.begin() + end_instance_index,
@@ -226,21 +225,21 @@ protected:
 
     virtual Data::Index GetSubsetByInstanceIndex(Data::Index instance_index) const { return instance_index; }
 
-    const BufferSet& GetVertexBuffers() const noexcept
+    const BufferSet& GetVertexBuffers() const
     {
-        assert(!!m_vertex_ptr);
+        META_CHECK_ARG_NOT_NULL(m_vertex_ptr);
         return *m_vertex_ptr;
     }
 
-    BufferSet& GetVertexBuffers() noexcept
+    BufferSet& GetVertexBuffers()
     {
-        assert(!!m_vertex_ptr);
+        META_CHECK_ARG_NOT_NULL(m_vertex_ptr);
         return *m_vertex_ptr;
     }
 
     Buffer& GetIndexBuffer()
     {
-        assert(!!m_index_ptr);
+        META_CHECK_ARG_NOT_NULL(m_index_ptr);
         return *m_index_ptr;
     }
     
