@@ -85,7 +85,7 @@ struct Shader
     static Ptr<Shader> CreatePixel(Context& context, const Settings& settings)  { return Create(Type::Pixel, context, settings); }
 
     // Auxiliary functions
-    static std::string GetTypeName(Type shader_type) noexcept;
+    static std::string GetTypeName(Type shader_type);
     static std::string ConvertMacroDefinitionsToString(const MacroDefinitions& macro_definitions, const std::string& splitter = ", ") noexcept;
 
     // Shader interface

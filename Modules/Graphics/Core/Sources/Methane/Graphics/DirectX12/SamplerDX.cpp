@@ -28,18 +28,16 @@ DirectX 12 implementation of the sampler interface.
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/Color.hpp>
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
 
-static D3D12_FILTER ConvertFilterToDX(const SamplerBase::Filter& filter) noexcept
+static D3D12_FILTER ConvertFilterToDX(const Sampler::Filter& filter)
 {
     META_FUNCTION_TASK();
-
-    using FilterMinMag = SamplerBase::Filter::MinMag;
-    using FilterMip = SamplerBase::Filter::Mip;
+    using FilterMinMag = Sampler::Filter::MinMag;
+    using FilterMip = Sampler::Filter::Mip;
     
     switch (filter.min)
     {
@@ -54,8 +52,10 @@ static D3D12_FILTER ConvertFilterToDX(const SamplerBase::Filter& filter) noexcep
             case FilterMip::NotMipmapped:
             case FilterMip::Nearest:      return D3D12_FILTER_MIN_MAG_MIP_POINT;
             case FilterMip::Linear:       return D3D12_FILTER_MIN_MAG_POINT_MIP_LINEAR;
+            default:                      META_UNEXPECTED_ENUM_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_MAG_MIP_POINT);
             }
         } break;
+
         case FilterMinMag::Linear:
         {
             switch (filter.mip)
@@ -63,8 +63,11 @@ static D3D12_FILTER ConvertFilterToDX(const SamplerBase::Filter& filter) noexcep
             case FilterMip::NotMipmapped:
             case FilterMip::Nearest:      return D3D12_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT;
             case FilterMip::Linear:       return D3D12_FILTER_MIN_POINT_MAG_MIP_LINEAR;
+            default:                      META_UNEXPECTED_ENUM_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT);
             }
         } break;
+
+        default: META_UNEXPECTED_ENUM_ARG_RETURN(filter.mag, D3D12_FILTER_MIN_MAG_MIP_POINT);
         }
     } break;
 
@@ -79,8 +82,10 @@ static D3D12_FILTER ConvertFilterToDX(const SamplerBase::Filter& filter) noexcep
             case FilterMip::NotMipmapped:
             case FilterMip::Nearest:      return D3D12_FILTER_MIN_LINEAR_MAG_MIP_POINT;
             case FilterMip::Linear:       return D3D12_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
+            default:                      META_UNEXPECTED_ENUM_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_LINEAR_MAG_MIP_POINT);
             }
         } break;
+
         case FilterMinMag::Linear:
         {
             switch (filter.mip)
@@ -88,12 +93,17 @@ static D3D12_FILTER ConvertFilterToDX(const SamplerBase::Filter& filter) noexcep
             case FilterMip::NotMipmapped:
             case FilterMip::Nearest:      return D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
             case FilterMip::Linear:       return D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+            default:                      META_UNEXPECTED_ENUM_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT);
             }
         } break;
+
+        default: META_UNEXPECTED_ENUM_ARG_RETURN(filter.mag, D3D12_FILTER_MIN_MAG_MIP_POINT);
         }
     } break;
+
+    default:
+        META_UNEXPECTED_ENUM_ARG_RETURN(filter.min, D3D12_FILTER_MIN_MAG_MIP_POINT);
     }
-    return D3D12_FILTER_MIN_MAG_MIP_POINT;
 
     // TODO: unsupported filtering types
     // D3D12_FILTER_ANISOTROPIC
@@ -126,11 +136,10 @@ static D3D12_FILTER ConvertFilterToDX(const SamplerBase::Filter& filter) noexcep
     // D3D12_FILTER_MAXIMUM_ANISOTROPIC
 }
 
-static D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDX(SamplerBase::Address::Mode address_mode) noexcept
+static D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDX(Sampler::Address::Mode address_mode)
 {
     META_FUNCTION_TASK();
-
-    using AddressMode = SamplerBase::Address::Mode;
+    using AddressMode = Sampler::Address::Mode;
     
     switch(address_mode)
     {
@@ -139,11 +148,8 @@ static D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDX(SamplerBase::Address::M
     case AddressMode::ClampToBorderColor:   return D3D12_TEXTURE_ADDRESS_MODE_BORDER;
     case AddressMode::Repeat:               return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
     case AddressMode::RepeatMirror:         return D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
+    default: META_UNEXPECTED_ENUM_ARG_RETURN(address_mode, D3D12_TEXTURE_ADDRESS_MODE_WRAP);
     }
-    return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-
-    // TODO: unsupported filtering types
-    // D3D12_TEXTURE_ADDRESS_MODE_MIRROR_ONCE
 }
 
 static void SetColor(const Color4f& in_color, FLOAT* p_out_color) noexcept
@@ -156,19 +162,18 @@ static void SetColor(const Color4f& in_color, FLOAT* p_out_color) noexcept
     }
 }
 
-static void ConvertBorderColorToDXColor(SamplerBase::BorderColor border_color, FLOAT* p_out_color) noexcept
+static void ConvertBorderColorToDXColor(Sampler::BorderColor border_color, FLOAT* p_out_color)
 {
     META_FUNCTION_TASK();
-    assert(!!p_out_color);
-
-    using BorderColor = SamplerBase::BorderColor;
+    META_CHECK_ARG_NOT_NULL(p_out_color);
+    using BorderColor = Sampler::BorderColor;
     
     switch (border_color)
     {
     case BorderColor::TransparentBlack: SetColor({ 0.F, 0.F, 0.F, 0.F }, p_out_color); break;
     case BorderColor::OpaqueBlack:      SetColor({ 0.F, 0.F, 0.F, 1.F }, p_out_color); break;
     case BorderColor::OpaqueWhite:      SetColor({ 1.F, 1.F, 1.F, 1.F }, p_out_color); break;
-    default:                            SetColor({ 1.F, 0.F, 0.F, 0.F }, p_out_color);
+    default:                            META_UNEXPECTED_ENUM_ARG(border_color);
     }
 }
 
@@ -182,7 +187,6 @@ SamplerDX::SamplerDX(ContextBase& context, const Settings& settings, const Descr
     : SamplerBase(context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();
-
     InitializeDefaultDescriptors();
 
     D3D12_SAMPLER_DESC dx_sampler_desc{};

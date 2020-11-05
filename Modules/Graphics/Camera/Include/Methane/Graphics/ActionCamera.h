@@ -112,8 +112,8 @@ public:
     void OnKeyReleased(KeyboardAction keyboard_action);
     void DoKeyboardAction(KeyboardAction keyboard_action) noexcept;
 
-    static std::string GetActionName(MouseAction mouse_action) noexcept;
-    static std::string GetActionName(KeyboardAction keyboard_action) noexcept;
+    static std::string GetActionName(MouseAction mouse_action);
+    static std::string GetActionName(KeyboardAction keyboard_action);
 
 protected:
     using KeyboardActionAnimations  = std::map<KeyboardAction, WeakPtr<Data::Animation>>;

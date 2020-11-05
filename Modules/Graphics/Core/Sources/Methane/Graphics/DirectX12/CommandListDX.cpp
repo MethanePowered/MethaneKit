@@ -70,20 +70,21 @@ CommandListSetDX::CommandListSetDX(const Refs<CommandList>& command_list_refs)
         switch (command_list.GetType())
         {
         case CommandList::Type::Blit:
-        {
             m_native_command_lists.emplace_back(&static_cast<BlitCommandListDX&>(command_list).GetNativeCommandList());
-        } break;
+            break;
 
         case CommandList::Type::Render:
-        {
             m_native_command_lists.emplace_back(&static_cast<RenderCommandListDX&>(command_list).GetNativeCommandList());
-        } break;
+            break;
 
         case CommandList::Type::ParallelRender:
         {
             const NativeCommandLists native_command_lists = static_cast<ParallelRenderCommandListDX&>(command_list).GetNativeCommandLists();
             m_native_command_lists.insert(m_native_command_lists.end(), native_command_lists.begin(), native_command_lists.end());
         } break;
+
+        default:
+            META_UNEXPECTED_ENUM_ARG(command_list.GetType());
         }
 
         fence_name_ss << " \"" << command_list.GetName() << "\"";

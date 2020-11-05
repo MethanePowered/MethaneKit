@@ -25,13 +25,12 @@ Base implementation of the shader interface.
 #include "ProgramBase.h"
 
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
 
-std::string Shader::GetTypeName(Type shader_type) noexcept
+std::string Shader::GetTypeName(Type shader_type)
 {
     META_FUNCTION_TASK();
     switch (shader_type)
@@ -39,9 +38,8 @@ std::string Shader::GetTypeName(Type shader_type) noexcept
     case Type::Vertex:    return "Vertex";
     case Type::Pixel:     return "Pixel";
     case Type::All:       return "All";
-    default:              assert(0);
+    default:              META_UNEXPECTED_ENUM_ARG_RETURN(shader_type, "Unknown");
     }
-    return "Unknown";
 }
 
 std::string Shader::ConvertMacroDefinitionsToString(const MacroDefinitions& macro_definitions, const std::string& splitter) noexcept

@@ -22,9 +22,9 @@ Camera helper implementation allowing to generate view and projection matrices.
 ******************************************************************************/
 
 #include <Methane/Graphics/Camera.h>
-
 #include <Methane/Graphics/TypeConverters.hpp>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <cml/mathlib/mathlib.h>
 #include <sstream>
@@ -62,7 +62,7 @@ void Camera::GetViewMatrix(Matrix44f& out_view, const Orientation& orientation) 
     cml::matrix_look_at(out_view, orientation.eye, orientation.aim, orientation.up, m_axis_orientation);
 }
 
-void Camera::GetProjMatrix(Matrix44f& out_proj) const noexcept
+void Camera::GetProjMatrix(Matrix44f& out_proj) const
 {
     META_FUNCTION_TASK();
     switch (m_projection)
@@ -70,9 +70,13 @@ void Camera::GetProjMatrix(Matrix44f& out_proj) const noexcept
     case Projection::Perspective:
         cml::matrix_perspective_yfov(out_proj, GetFovAngleY(), m_aspect_ratio, m_parameters.near_depth, m_parameters.far_depth, m_axis_orientation, cml::ZClip::z_clip_zero);
         break;
+
     case Projection::Orthogonal:
         cml::matrix_orthographic(out_proj, m_screen_size.width, m_screen_size.height, m_parameters.near_depth, m_parameters.far_depth, m_axis_orientation, cml::ZClip::z_clip_zero);
         break;
+
+    default:
+        META_UNEXPECTED_ENUM_ARG(m_projection);
     }
 }
 
@@ -87,7 +91,7 @@ const Matrix44f& Camera::GetViewMatrix() const noexcept
     return m_current_view_matrix;
 }
 
-const Matrix44f& Camera::GetProjMatrix() const noexcept
+const Matrix44f& Camera::GetProjMatrix() const
 {
     META_FUNCTION_TASK();
     if (!m_is_current_proj_matrix_dirty)

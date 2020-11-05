@@ -230,9 +230,9 @@ void ImageTextureDX::SetName(const std::string& name)
 ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() const
 {
     const Settings& settings = GetSettings();
-    assert(settings.dimensions.depth  > 0);
-    assert(settings.dimensions.width  > 0);
-    assert(settings.dimensions.height > 0);
+    META_CHECK_ARG_GREATER_OR_EQUAL(settings.dimensions.depth, 1);
+    META_CHECK_ARG_GREATER_OR_EQUAL(settings.dimensions.width, 1);
+    META_CHECK_ARG_GREATER_OR_EQUAL(settings.dimensions.height, 1);
 
     D3D12_RESOURCE_DESC tex_desc{};
     D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
@@ -321,6 +321,9 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
                                                    ? D3D12_SRV_DIMENSION_TEXTURECUBE
                                                    : D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
         break;
+
+    default:
+        META_UNEXPECTED_ENUM_ARG(settings.dimension_type);
     }
 
     srv_desc.Format                  = tex_desc.Format;

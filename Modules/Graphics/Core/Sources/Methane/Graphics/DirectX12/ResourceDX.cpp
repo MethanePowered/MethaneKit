@@ -31,7 +31,6 @@ DirectX 12 implementation of the resource interface.
 #include <Methane/Checks.hpp>
 
 #include <nowide/convert.hpp>
-#include <cassert>
 
 namespace Methane::Graphics
 {
@@ -109,7 +108,7 @@ void ResourceDX::SetName(const std::string& name)
 ID3D12Resource& ResourceDX::GetNativeResourceRef() const
 {
     META_FUNCTION_TASK();
-    assert(!!m_cp_resource);
+    META_CHECK_ARG_NOT_NULL(m_cp_resource);
     return *m_cp_resource.Get();
 }
 
@@ -125,7 +124,7 @@ D3D12_GPU_DESCRIPTOR_HANDLE ResourceDX::GetNativeGpuDescriptorHandle(const Descr
     return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeGpuDescriptorHandle(desc.index);
 }
 
-D3D12_RESOURCE_STATES ResourceDX::GetNativeResourceState(State resource_state) noexcept
+D3D12_RESOURCE_STATES ResourceDX::GetNativeResourceState(State resource_state)
 {
     META_FUNCTION_TASK();
     switch (resource_state)
@@ -148,12 +147,11 @@ D3D12_RESOURCE_STATES ResourceDX::GetNativeResourceState(State resource_state) n
     case State::GenericRead:               return D3D12_RESOURCE_STATE_GENERIC_READ;
     case State::Present:                   return D3D12_RESOURCE_STATE_PRESENT;
     case State::Predication:               return D3D12_RESOURCE_STATE_PREDICATION;
-    default:                               assert(0);
+    default:                               META_UNEXPECTED_ENUM_ARG_RETURN(resource_state, D3D12_RESOURCE_STATE_COMMON);
     }
-    return D3D12_RESOURCE_STATE_COMMON;
 }
 
-D3D12_RESOURCE_BARRIER ResourceDX::GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change) noexcept
+D3D12_RESOURCE_BARRIER ResourceDX::GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
     switch (id.type)
@@ -164,10 +162,10 @@ D3D12_RESOURCE_BARRIER ResourceDX::GetNativeResourceBarrier(const Barrier::Id& i
             GetNativeResourceState(state_change.before),
             GetNativeResourceState(state_change.after)
         );
+
     default:
-        assert(0);
+        META_UNEXPECTED_ENUM_ARG_RETURN(id.type, D3D12_RESOURCE_BARRIER());
     }
-    return D3D12_RESOURCE_BARRIER();
 }
 
 IContextDX& ResourceDX::GetContextDX() noexcept
@@ -207,7 +205,7 @@ void ResourceDX::InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource
 void ResourceDX::InitializeFrameBufferResource(uint32_t frame_buffer_index)
 {
     META_FUNCTION_TASK();
-    assert(!m_cp_resource);
+    META_CHECK_ARG_DESCR(m_cp_resource, !m_cp_resource, "committed resource is already initialized");
 
     ThrowIfFailed(
         static_cast<RenderContextDX&>(GetContextDX()).GetNativeSwapChain()->GetBuffer(

@@ -25,11 +25,10 @@ Arc-ball camera rotation with mouse handling.
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Point.hpp>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <cml/mathlib/mathlib.h>
-
 #include <cmath>
-#include <cassert>
 
 namespace Methane::Graphics
 {
@@ -124,13 +123,14 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
     return cml::normalize(Vector3f(screen_vector.AsVector(), inside_sphere ? z_sign * std::sqrt(Square(sphere_radius) - screen_vector.length_squared()) : 0.F));
 }
 
-void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir) noexcept
+void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir)
 {
     META_FUNCTION_TASK();
     switch (m_pivot)
     {
     case Pivot::Aim: SetOrientationEye(GetOrientation().aim - look_dir); break;
     case Pivot::Eye: SetOrientationAim(GetOrientation().eye + look_dir); break;
+    default:         META_UNEXPECTED_ENUM_ARG(m_pivot);
     }
     META_LOG(GetOrientationString());
 }

@@ -114,8 +114,8 @@ public:
         case Type::Vulkan:    return tracy::GpuContextType::Vulkan;
         case Type::Metal:     return tracy::GpuContextType::Invalid;
         case Type::Undefined: return tracy::GpuContextType::Invalid;
+        default:              META_UNEXPECTED_ENUM_ARG_RETURN(type, tracy::GpuContextType::Invalid);
         }
-        return tracy::GpuContextType::Invalid;
     }
 
     explicit GpuContext(const Settings& settings)

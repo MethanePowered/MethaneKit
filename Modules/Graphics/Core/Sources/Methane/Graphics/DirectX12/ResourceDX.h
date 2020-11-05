@@ -88,9 +88,9 @@ public:
     D3D12_GPU_DESCRIPTOR_HANDLE         GetNativeGpuDescriptorHandle(Usage::Value usage) const noexcept     { return GetNativeGpuDescriptorHandle(GetDescriptorByUsage(usage)); }
     D3D12_GPU_DESCRIPTOR_HANDLE         GetNativeGpuDescriptorHandle(const Descriptor& desc) const noexcept;
 
-    static D3D12_RESOURCE_STATES        GetNativeResourceState(State resource_state) noexcept;
-    static D3D12_RESOURCE_BARRIER       GetNativeResourceBarrier(const Barrier& resource_barrier) noexcept  { return GetNativeResourceBarrier(resource_barrier.id, resource_barrier.state_change); }
-    static D3D12_RESOURCE_BARRIER       GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change) noexcept;
+    static D3D12_RESOURCE_STATES        GetNativeResourceState(State resource_state);
+    static D3D12_RESOURCE_BARRIER       GetNativeResourceBarrier(const Barrier& resource_barrier)  { return GetNativeResourceBarrier(resource_barrier.id, resource_barrier.state_change); }
+    static D3D12_RESOURCE_BARRIER       GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change);
 
 protected:
     IContextDX& GetContextDX() noexcept;

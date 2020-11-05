@@ -38,7 +38,7 @@ Base implementation of the command list interface.
 namespace Methane::Graphics
 {
 
-std::string CommandListBase::GetTypeName(Type type) noexcept
+std::string CommandListBase::GetTypeName(Type type)
 {
     META_FUNCTION_TASK();
     switch (type)
@@ -46,11 +46,11 @@ std::string CommandListBase::GetTypeName(Type type) noexcept
     case CommandList::Type::Blit:           return "Blit";
     case CommandList::Type::Render:         return "Render";
     case CommandList::Type::ParallelRender: return "ParallelRender";
+    default:                                META_UNEXPECTED_ENUM_ARG_RETURN(type, "Undefined");
     }
-    return "Undefined";
 }
 
-std::string CommandListBase::GetStateName(State state) noexcept
+std::string CommandListBase::GetStateName(State state)
 {
     META_FUNCTION_TASK();
     switch (state)
@@ -59,8 +59,8 @@ std::string CommandListBase::GetStateName(State state) noexcept
     case State::Encoding:  return "Encoding";
     case State::Committed: return "Committed";
     case State::Executing: return "Executing";
+    default:               META_UNEXPECTED_ENUM_ARG_RETURN(state, "Undefined");
     }
-    return "Undefined";
 }
 
 CommandListBase::DebugGroupBase::DebugGroupBase(const std::string& name)
@@ -71,7 +71,6 @@ CommandListBase::DebugGroupBase::DebugGroupBase(const std::string& name)
 
 void CommandListBase::DebugGroupBase::SetName(const std::string&)
 {
-    META_FUNCTION_TASK();
     META_FUNCTION_NOT_IMPLEMENTED_DESCR("Debug Group can not be renamed");
 }
 
@@ -384,7 +383,7 @@ void CommandListSetBase::Execute(Data::Index frame_index, const CommandList::Com
     }
 }
 
-void CommandListSetBase::Complete() const noexcept
+void CommandListSetBase::Complete() const
 {
     META_FUNCTION_TASK();
     for (const Ref<CommandListBase>& command_list_ref : m_base_refs)
@@ -393,16 +392,7 @@ void CommandListSetBase::Complete() const noexcept
         if (command_list.GetState() != CommandListBase::State::Executing)
             continue;
 
-        try
-        {
-            command_list.Complete(m_executing_on_frame_index);
-        }
-        catch(const std::exception& ex)
-        {
-            META_UNUSED(ex);
-            META_LOG(std::string("Failed to complete command list execution, exception occurred: ") + ex.what());
-            assert(false);
-        }
+        command_list.Complete(m_executing_on_frame_index);
     }
 }
 

@@ -38,7 +38,6 @@ DirectX 12 implementation of the render state interface.
 #include <d3dx12.h>
 #include <D3Dcompiler.h>
 #include <nowide/convert.hpp>
-#include <cassert>
 
 namespace Methane::Graphics
 {
@@ -63,9 +62,8 @@ static D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(RenderState::Rasterizer:
     {
     case RasterizerFillMode::Solid:     return D3D12_FILL_MODE_SOLID;
     case RasterizerFillMode::Wireframe: return D3D12_FILL_MODE_WIREFRAME;
-    default:                            assert(0);
+    default:                            META_UNEXPECTED_ENUM_ARG_RETURN(fill_mode, D3D12_FILL_MODE_SOLID);
     }
-    return D3D12_FILL_MODE_SOLID;
 }
 
 static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(RenderState::Rasterizer::CullMode cull_mode)
@@ -78,9 +76,8 @@ static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(RenderState::Rasterizer:
     case RasterizerCullMode::None:      return D3D12_CULL_MODE_NONE;
     case RasterizerCullMode::Front:     return D3D12_CULL_MODE_FRONT;
     case RasterizerCullMode::Back:      return D3D12_CULL_MODE_BACK;
-    default:                            assert(0);
+    default:                            META_UNEXPECTED_ENUM_ARG_RETURN(cull_mode, D3D12_CULL_MODE_NONE);
     }
-    return D3D12_CULL_MODE_NONE;
 }
 
 static UINT8 ConvertRenderTargetWriteMaskToD3D12(RenderState::Blending::ColorChannel::Mask rt_write_mask)
@@ -112,9 +109,8 @@ static D3D12_BLEND_OP ConvertBlendingOperationToD3D12(RenderState::Blending::Ope
     case BlendOp::ReverseSubtract:  return D3D12_BLEND_OP_REV_SUBTRACT;
     case BlendOp::Minimum:          return D3D12_BLEND_OP_MIN;
     case BlendOp::Maximum:          return D3D12_BLEND_OP_MAX;
-    default:                        assert(0);
+    default:                        META_UNEXPECTED_ENUM_ARG_RETURN(blend_operation, D3D12_BLEND_OP_ADD);
     }
-    return D3D12_BLEND_OP_ADD;
 }
 
 static D3D12_BLEND ConvertBlendingFactorToD3D12(RenderState::Blending::Factor blend_factor)
@@ -143,9 +139,8 @@ static D3D12_BLEND ConvertBlendingFactorToD3D12(RenderState::Blending::Factor bl
     case BlendFactor::OneMinusSource1Color:     return D3D12_BLEND_INV_SRC1_COLOR;
     case BlendFactor::Source1Alpha:             return D3D12_BLEND_SRC1_ALPHA;
     case BlendFactor::OneMinusSource1Alpha:     return D3D12_BLEND_INV_SRC1_ALPHA;
-    default:                                    assert(0);
+    default:                                    META_UNEXPECTED_ENUM_ARG_RETURN(blend_factor, D3D12_BLEND_ZERO);
     }
-    return D3D12_BLEND_ZERO;
 }
 
 static D3D12_STENCIL_OP ConvertStencilOperationToD3D12(RenderState::Stencil::Operation operation)
@@ -163,9 +158,8 @@ static D3D12_STENCIL_OP ConvertStencilOperationToD3D12(RenderState::Stencil::Ope
     case StencilOperation::DecrementClamp:  return D3D12_STENCIL_OP_DECR_SAT;
     case StencilOperation::IncrementWrap:   return D3D12_STENCIL_OP_INCR;
     case StencilOperation::DecrementWrap:   return D3D12_STENCIL_OP_DECR;
-    default:                                assert(0);
+    default:                                META_UNEXPECTED_ENUM_ARG_RETURN(operation, D3D12_STENCIL_OP_KEEP);
     }
-    return D3D12_STENCIL_OP_KEEP;
 }
 
 static D3D12_DEPTH_STENCILOP_DESC ConvertStencilFaceOperationsToD3D12(const RenderState::Stencil::FaceOperations& stencil_face_op)
@@ -326,7 +320,7 @@ void RenderStateDX::Reset(const Settings& settings)
     }
 
     // Set blending factor
-    assert(settings.blending_color.size() <= 4);
+    META_CHECK_ARG_LESS(settings.blending_color.size(), 5);
     for (uint32_t component_index = 0; component_index < static_cast<uint32_t>(settings.blending_color.size()); ++component_index)
     {
         m_blend_factor[component_index] = settings.blending_color[component_index];

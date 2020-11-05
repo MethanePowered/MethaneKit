@@ -27,26 +27,24 @@ Graphics context controller for switching parameters in runtime.
 #include <Methane/Graphics/Device.h>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
-
-using namespace Methane::Platform;
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
 
 AppContextController::AppContextController(RenderContext& context, const ActionByKeyboardState& action_by_keyboard_state)
     : Controller("GRAPHICS SETTINGS")
-    , Keyboard::ActionControllerBase<AppContextAction>(action_by_keyboard_state, {})
+    , Platform::Keyboard::ActionControllerBase<AppContextAction>(action_by_keyboard_state, {})
     , m_context(context)
 {
     META_FUNCTION_TASK();
 }
 
-void AppContextController::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state, const Keyboard::StateChange& state_change)
+void AppContextController::OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state,
+                                             const Platform::Keyboard::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    Keyboard::ActionControllerBase<AppContextAction>::OnKeyboardChanged(key, key_state, state_change);
+    Platform::Keyboard::ActionControllerBase<AppContextAction>::OnKeyboardChanged(key, key_state, state_change);
 }
 
 void AppContextController::OnKeyboardStateAction(AppContextAction action)
@@ -54,28 +52,28 @@ void AppContextController::OnKeyboardStateAction(AppContextAction action)
     META_FUNCTION_TASK();
     switch (action)
     {
-        case AppContextAction::SwitchVSync:
-            m_context.SetVSyncEnabled(!m_context.GetSettings().vsync_enabled);
-            break;
+    case AppContextAction::SwitchVSync:
+        m_context.SetVSyncEnabled(!m_context.GetSettings().vsync_enabled);
+        break;
 
-        case AppContextAction::AddFrameBufferToSwapChain:
-            m_context.SetFrameBuffersCount(m_context.GetSettings().frame_buffers_count + 1);
-            break;
+    case AppContextAction::AddFrameBufferToSwapChain:
+        m_context.SetFrameBuffersCount(m_context.GetSettings().frame_buffers_count + 1);
+        break;
 
-        case AppContextAction::RemoveFrameBufferFromSwapChain:
-            m_context.SetFrameBuffersCount(m_context.GetSettings().frame_buffers_count - 1);
-            break;
+    case AppContextAction::RemoveFrameBufferFromSwapChain:
+        m_context.SetFrameBuffersCount(m_context.GetSettings().frame_buffers_count - 1);
+        break;
 
-        case AppContextAction::SwitchDevice:
+    case AppContextAction::SwitchDevice:
+    {
+        const Ptr<Device> next_device_ptr = System::Get().GetNextGpuDevice(m_context.GetDevice());
+        if (next_device_ptr)
         {
-            const Ptr<Device> next_device_ptr = System::Get().GetNextGpuDevice(m_context.GetDevice());
-            if (next_device_ptr)
-            {
-                m_context.Reset(*next_device_ptr);
-            }
-        } break;
+            m_context.Reset(*next_device_ptr);
+        }
+    } break;
 
-        default: return;
+    default: META_UNEXPECTED_ENUM_ARG(action);
     }
 }
 
@@ -89,19 +87,14 @@ std::string AppContextController::GetKeyboardActionName(AppContextAction action)
         case AppContextAction::SwitchDevice:                    return "switch device used for rendering";
         case AppContextAction::AddFrameBufferToSwapChain:       return "add frame buffer to swap-chain";
         case AppContextAction::RemoveFrameBufferFromSwapChain:  return "remove frame buffer from swap-chain";
-        default: assert(0);                                     return "";
+        default:                                                META_UNEXPECTED_ENUM_ARG_RETURN(action, "");
     }
 }
 
-Input::IHelpProvider::HelpLines AppContextController::GetHelp() const
+Platform::Input::IHelpProvider::HelpLines AppContextController::GetHelp() const
 {
     META_FUNCTION_TASK();
-    HelpLines help_lines = GetKeyboardHelp();
-
-    // Add description of system graphics devices
-    // help_lines.push_back({ "\n" + System::Get().ToString(), "" });
-
-    return help_lines;
+    return GetKeyboardHelp();
 }
 
 } // namespace Methane::Graphics

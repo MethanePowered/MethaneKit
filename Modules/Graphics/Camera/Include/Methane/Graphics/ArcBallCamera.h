@@ -65,7 +65,7 @@ protected:
     inline const Camera* GetExternalViewCamera() const noexcept { return m_p_view_camera; }
     inline const Camera& GetViewCamera() const noexcept         { return m_p_view_camera ? *m_p_view_camera : *this; }
 
-    void ApplyLookDirection(const Vector3f& look_dir) noexcept;
+    void ApplyLookDirection(const Vector3f& look_dir);
     void RotateInView(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation) noexcept;
     void RotateInView(const Vector3f& view_axis, float angle_rad) noexcept { RotateInView(view_axis, angle_rad, GetOrientation()); }
 

@@ -75,8 +75,8 @@ struct Resource : virtual Object
         using Values = std::array<Value, 5>;
         static constexpr const Values values{ ShaderRead, ShaderWrite, RenderTarget, ReadBack, Addressable };
 
-        static std::string ToString(Usage::Value usage) noexcept;
-        static std::string ToString(Usage::Mask usage_mask) noexcept;
+        static std::string ToString(Usage::Value usage);
+        static std::string ToString(Usage::Mask usage_mask);
 
         Usage() = delete;
     };
@@ -175,7 +175,7 @@ struct Resource : virtual Object
     using SubResources = std::vector<SubResource>;
 
     // Auxiliary functions
-    static std::string GetTypeName(Type type) noexcept;
+    static std::string GetTypeName(Type type);
 
     // Resource interface
     virtual void                      SetData(const SubResources& sub_resources) = 0;

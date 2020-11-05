@@ -38,7 +38,6 @@ DirectX 12 implementation of the shader interface.
 
 #include <nowide/convert.hpp>
 #include <sstream>
-#include <cassert>
 
 namespace Methane::Graphics
 {
@@ -56,10 +55,9 @@ static Resource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_typ
     }
 }
 
-static std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type) noexcept
+static std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type)
 {
     META_FUNCTION_TASK();
-
     switch (input_type)
     {
     case D3D_SIT_CBUFFER:                       return "CBuffer";
@@ -74,15 +72,13 @@ static std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type) noex
     case D3D_SIT_UAV_APPEND_STRUCTURED:         return "UAV Append Structured";
     case D3D_SIT_UAV_CONSUME_STRUCTURED:        return "UAV Consume Structured";
     case D3D_SIT_UAV_RWSTRUCTURED_WITH_COUNTER: return "UAV RW Structured with Counter";
-    default:                                    assert(0);
+    default:                                    META_UNEXPECTED_ENUM_ARG_RETURN(input_type, "Unknown");
     }
-    return "Unknown";
 }
 
-static std::string GetSRVDimensionName(D3D_SRV_DIMENSION srv_dimension) noexcept
+static std::string GetSRVDimensionName(D3D_SRV_DIMENSION srv_dimension)
 {
     META_FUNCTION_TASK();
-
     switch (srv_dimension)
     {
     case D3D_SRV_DIMENSION_UNKNOWN:             return "Unknown";
@@ -97,15 +93,13 @@ static std::string GetSRVDimensionName(D3D_SRV_DIMENSION srv_dimension) noexcept
     case D3D_SRV_DIMENSION_TEXTURECUBE:         return "Texture Cube";
     case D3D_SRV_DIMENSION_TEXTURECUBEARRAY:    return "Texture Cube Array";
     case D3D_SRV_DIMENSION_BUFFEREX:            return "Buffer EX";
-    default:                                    assert(0);
+    default:                                    META_UNEXPECTED_ENUM_ARG_RETURN(srv_dimension, "Unknown");
     }
-    return "Unknown";
 }
 
-static std::string GetReturnTypeName(D3D_RESOURCE_RETURN_TYPE return_type) noexcept
+static std::string GetReturnTypeName(D3D_RESOURCE_RETURN_TYPE return_type)
 {
     META_FUNCTION_TASK();
-
     switch (return_type)
     {
     case D3D_RETURN_TYPE_UNORM:         return "UNorm";
@@ -116,14 +110,13 @@ static std::string GetReturnTypeName(D3D_RESOURCE_RETURN_TYPE return_type) noexc
     case D3D_RETURN_TYPE_MIXED:         return "Mixed";
     case D3D_RETURN_TYPE_DOUBLE:        return "Double";
     case D3D_RETURN_TYPE_CONTINUED:     return "Continued";
+    default: META_UNEXPECTED_ENUM_ARG_RETURN(return_type, "Undefined");
     }
-    return "Undefined";
 }
 
-static std::string GetValueTypeName(D3D_NAME value_type) noexcept
+static std::string GetValueTypeName(D3D_NAME value_type)
 {
     META_FUNCTION_TASK();
-
     switch (value_type)
     {
     case D3D_NAME_UNDEFINED:                        return "Undefined";
@@ -151,38 +144,33 @@ static std::string GetValueTypeName(D3D_NAME value_type) noexcept
     case D3D_NAME_DEPTH_LESS_EQUAL:                 return "Depth Less Equal";
     case D3D_NAME_STENCIL_REF:                      return "Stencil Ref";
     case D3D_NAME_INNER_COVERAGE:                   return "Inner Coverage";
-    default:                                        assert(0);
+    default:                                        META_UNEXPECTED_ENUM_ARG_RETURN(value_type, "Unknown");
     }
-    return "Unknown";
 }
 
-static std::string GetComponentTypeName(D3D_REGISTER_COMPONENT_TYPE component_type) noexcept
+static std::string GetComponentTypeName(D3D_REGISTER_COMPONENT_TYPE component_type)
 {
     META_FUNCTION_TASK();
-
     switch (component_type)
     {
     case D3D_REGISTER_COMPONENT_UNKNOWN:    return "Unknown";
     case D3D_REGISTER_COMPONENT_UINT32:     return "UInt32";
     case D3D_REGISTER_COMPONENT_SINT32:     return "SInt32";
     case D3D_REGISTER_COMPONENT_FLOAT32:    return "Float32";
-    default:                                assert(0);
+    default:                                META_UNEXPECTED_ENUM_ARG_RETURN(component_type, "Unknown");
     }
-    return "Unknown";
 }
 
 using StepType = ProgramBase::InputBufferLayout::StepType;
-static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepType step_type) noexcept
+static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepType step_type)
 {
     META_FUNCTION_TASK();
-
     switch (step_type)
     {
     case StepType::PerVertex:     return D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
     case StepType::PerInstance:   return D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
-    default:                      assert(0);
+    default:                      META_UNEXPECTED_ENUM_ARG_RETURN(step_type, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA);
     }
-    return D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
 }
 
 Ptr<Shader> Shader::Create(Type type, Context& context, const Settings& settings)
@@ -234,14 +222,14 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
         m_byte_code_chunk_ptr = std::make_unique<Data::Chunk>(settings.data_provider.GetData(compiled_func_name + ".obj"));
     }
 
-    assert(!!m_byte_code_chunk_ptr);
+    META_CHECK_ARG_NOT_NULL(m_byte_code_chunk_ptr);
     ThrowIfFailed(D3DReflect(m_byte_code_chunk_ptr->p_data, m_byte_code_chunk_ptr->size, IID_PPV_ARGS(&m_cp_reflection)));
 }
 
 ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const
 {
     META_FUNCTION_TASK();
-    assert(!!m_cp_reflection);
+    META_CHECK_ARG_NOT_NULL(m_cp_reflection);
 
     ShaderBase::ArgumentBindings argument_bindings;
 
@@ -311,7 +299,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
 std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(const ProgramDX& program) const
 {
     META_FUNCTION_TASK();
-    assert(!!m_cp_reflection);
+    META_CHECK_ARG_NOT_NULL(m_cp_reflection);
 
     D3D12_SHADER_DESC shader_desc{};
     m_cp_reflection->GetDesc(&shader_desc);

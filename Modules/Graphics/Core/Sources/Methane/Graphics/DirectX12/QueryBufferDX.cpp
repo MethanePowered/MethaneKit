@@ -33,6 +33,7 @@ DirectX 12 GPU query results buffer.
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/Windows/Primitives.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <wrl.h>
 #include <d3d12.h>
@@ -51,23 +52,22 @@ static D3D12_QUERY_TYPE GetQueryTypeDx(QueryBuffer::Type query_buffer_type)
     //D3D12_QUERY_TYPE_OCCLUSION
     //D3D12_QUERY_TYPE_BINARY_OCCLUSION
     //D3D12_QUERY_TYPE_PIPELINE_STATISTICS
-    default: assert(0);
+    default: META_UNEXPECTED_ENUM_ARG_RETURN(query_buffer_type, D3D12_QUERY_TYPE_TIMESTAMP);
     }
-    return D3D12_QUERY_TYPE_TIMESTAMP;
 }
 
 static D3D12_QUERY_HEAP_TYPE GetQueryHeapTypeDx(QueryBuffer::Type query_buffer_type)
 {
     META_FUNCTION_TASK();
-    switch(query_buffer_type)
+    switch (query_buffer_type)
     {
     case QueryBuffer::Type::Timestamp: return D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
     //D3D12_QUERY_HEAP_TYPE_COPY_QUEUE_TIMESTAMP
     //D3D12_QUERY_HEAP_TYPE_OCCLUSION
     //D3D12_QUERY_HEAP_TYPE_PIPELINE_STATISTICS
-    default: assert(0);
+    default:
+        META_UNEXPECTED_ENUM_ARG_RETURN(query_buffer_type, D3D12_QUERY_HEAP_TYPE_TIMESTAMP);
     }
-    return D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
 }
 
 QueryBufferDX::QueryDX::QueryDX(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range)

@@ -29,9 +29,10 @@ DirectX 12 implementation of the command queue interface.
 #include "ParallelRenderCommandListDX.h"
 #include "QueryBufferDX.h"
 
-#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/Windows/Primitives.h>
+#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <nowide/convert.hpp>
 #include <stdexcept>
@@ -62,9 +63,8 @@ static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandList::Type comman
         return D3D12_COMMAND_LIST_TYPE_DIRECT;
 
     default:
-        assert(0);
+        META_UNEXPECTED_ENUM_ARG_RETURN(command_list_type, D3D12_COMMAND_LIST_TYPE_DIRECT);
     }
-    return D3D12_COMMAND_LIST_TYPE_DIRECT;
 }
 
 static wrl::ComPtr<ID3D12CommandQueue> CreateNativeCommandQueue(const DeviceDX& device, D3D12_COMMAND_LIST_TYPE command_list_type)
@@ -106,7 +106,16 @@ CommandQueueDX::CommandQueueDX(ContextBase& context, CommandList::Type command_l
 CommandQueueDX::~CommandQueueDX()
 {
     META_FUNCTION_TASK();
-    CompleteExecution();
+    try
+    {
+        CompleteExecution();
+    }
+    catch(const std::exception& ex)
+    {
+        META_UNUSED(ex);
+        META_LOG(std::string("Failed to complete command list execution, exception occurred: ") + ex.what());
+        assert(false);
+    }
     m_execution_waiting = false;
     m_execution_waiting_condition_var.notify_one();
     m_execution_waiting_thread.join();
@@ -196,6 +205,9 @@ void CommandQueueDX::WaitForExecution() noexcept
                 }
 
                 assert(command_lists_ptr);
+                if (!command_lists_ptr)
+                    continue;
+
                 command_lists_ptr->GetExecutionCompletedFenceDX().WaitOnCpu();
 
                 std::unique_lock<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);

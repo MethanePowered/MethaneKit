@@ -34,7 +34,6 @@ DirectX 12 implementation of the program bindings interface.
 #include <Methane/Checks.hpp>
 
 #include <d3dx12.h>
-#include <cassert>
 
 namespace Methane::Graphics
 {
@@ -50,7 +49,7 @@ ProgramBindingsDX::ArgumentBindingDX::ArgumentBindingDX(const ContextBase& conte
     , m_settings_dx(std::move(settings))
 {
     META_FUNCTION_TASK();
-    assert(!m_p_descriptor_heap_reservation);
+    META_CHECK_ARG("m_p_descriptor_heap_reservation", !m_p_descriptor_heap_reservation);
 }
 
 ProgramBindingsDX::ArgumentBindingDX::ArgumentBindingDX(const ArgumentBindingDX& other)
@@ -62,8 +61,11 @@ ProgramBindingsDX::ArgumentBindingDX::ArgumentBindingDX(const ArgumentBindingDX&
     , m_resource_locations_dx(other.m_resource_locations_dx)
 {
     META_FUNCTION_TASK();
-    assert(!m_p_descriptor_heap_reservation || m_p_descriptor_heap_reservation->heap.get().IsShaderVisible());
-    assert(!m_p_descriptor_heap_reservation || m_p_descriptor_heap_reservation->heap.get().GetSettings().type == m_descriptor_range.heap_type);
+    if (m_p_descriptor_heap_reservation)
+    {
+        META_CHECK_ARG_TRUE(m_p_descriptor_heap_reservation->heap.get().IsShaderVisible());
+        META_CHECK_ARG_EQUAL(m_p_descriptor_heap_reservation->heap.get().GetSettings().type, m_descriptor_range.heap_type);
+    }
 }
 
 void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::Locations& resource_locations)
@@ -92,7 +94,7 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
                                                       ? p_dx_descriptor_heap->GetNativeDescriptorHeapType()
                                                       : D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     const wrl::ComPtr<ID3D12Device>& cp_native_device = static_cast<const IContextDX&>(GetContext()).GetDeviceDX().GetNativeDevice();
-    assert(!!cp_native_device);
+    META_CHECK_ARG_NOT_NULL(cp_native_device);
 
     uint32_t resource_index = 0;
     m_resource_locations_dx.clear();
@@ -148,7 +150,6 @@ void ProgramBindingsDX::ArgumentBindingDX::SetDescriptorHeapReservation(const De
 Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument)
 {
     META_FUNCTION_TASK();
-
     std::shared_ptr<ProgramBindingsDX> dx_program_bindings_ptr = std::make_shared<ProgramBindingsDX>(program_ptr, resource_locations_by_argument);
     dx_program_bindings_ptr->Initialize(); // NOTE: Initialize is called externally (not from constructor) to enable using shared_from_this from its code
     return dx_program_bindings_ptr;
@@ -157,7 +158,6 @@ Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, co
 Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
 {
     META_FUNCTION_TASK();
-
     std::shared_ptr<ProgramBindingsDX> dx_program_bindings_ptr = std::make_shared<ProgramBindingsDX>(static_cast<const ProgramBindingsDX&>(other_program_bindings), replace_resource_locations_by_argument);
     dx_program_bindings_ptr->Initialize(); // NOTE: Initialize is called externally (not from constructor) to enable using shared_from_this from its code
     return dx_program_bindings_ptr;
@@ -248,10 +248,9 @@ void ProgramBindingsDX::Apply(ICommandListDX& command_list_dx, ProgramBindingsBa
 void ProgramBindingsDX::ForEachArgumentBinding(const ArgumentBindingFunc& argument_binding_function) const
 {
     META_FUNCTION_TASK();
-
     for (auto& binding_by_argument : GetArgumentBindings())
     {
-        assert(!!binding_by_argument.second);
+        META_CHECK_ARG_NOT_NULL(binding_by_argument.second);
 
         ArgumentBindingDX&                        argument_binding   = static_cast<ArgumentBindingDX&>(*binding_by_argument.second);
         const ArgumentBindingDX::DescriptorRange& descriptor_range   = argument_binding.GetDescriptorRange();
@@ -273,7 +272,6 @@ void ProgramBindingsDX::ForEachArgumentBinding(const ArgumentBindingFunc& argume
 void ProgramBindingsDX::AddRootParameterBinding(const Program::ArgumentDesc& argument_desc, RootParameterBinding root_parameter_binding)
 {
     META_FUNCTION_TASK();
-
     if (argument_desc.IsConstant())
     {
         m_constant_root_parameter_bindings.emplace_back(std::move(root_parameter_binding));
@@ -287,7 +285,6 @@ void ProgramBindingsDX::AddRootParameterBinding(const Program::ArgumentDesc& arg
 void ProgramBindingsDX::AddResourceState(const Program::ArgumentDesc& argument_desc, ResourceState resource_state)
 {
     META_FUNCTION_TASK();
-
     if (argument_desc.IsConstant())
     {
         m_constant_resource_states.emplace_back(std::move(resource_state));
@@ -301,7 +298,6 @@ void ProgramBindingsDX::AddResourceState(const Program::ArgumentDesc& argument_d
 void ProgramBindingsDX::UpdateRootParameterBindings()
 {
     META_FUNCTION_TASK();
-
     using DXBindingType     = ArgumentBindingDX::Type;
     using DXDescriptorRange = ArgumentBindingDX::DescriptorRange;
 
@@ -365,7 +361,7 @@ bool ProgramBindingsDX::ApplyResourceStates(bool apply_constant_resource_states)
     {
         for(const ResourceState& resource_state : m_constant_resource_states)
         {
-            assert(!!resource_state.resource_ptr);
+            META_CHECK_ARG_NOT_NULL(resource_state.resource_ptr);
             resource_states_changed |= resource_state.resource_ptr->SetState(resource_state.state, m_resource_transition_barriers_ptr);
         }
     }
@@ -382,7 +378,6 @@ bool ProgramBindingsDX::ApplyResourceStates(bool apply_constant_resource_states)
 void ProgramBindingsDX::ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const
 {
     META_FUNCTION_TASK();
-
     const ArgumentBindingDX::Type binding_type = root_parameter_binding.argument_binding.GetSettingsDX().type;
 
     switch (binding_type)
@@ -398,6 +393,9 @@ void ProgramBindingsDX::ApplyRootParameterBinding(const RootParameterBinding& ro
     case ArgumentBindingDX::Type::ShaderResourceView:
         d3d12_command_list.SetComputeRootShaderResourceView(root_parameter_binding.root_parameter_index, root_parameter_binding.gpu_virtual_address);
         break;
+
+    default:
+        META_UNEXPECTED_ENUM_ARG(binding_type);
     }
 }
 

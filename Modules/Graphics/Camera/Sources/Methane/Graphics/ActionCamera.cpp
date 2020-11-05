@@ -24,6 +24,7 @@ Interactive action-camera for rotating, moving and zooming with mouse and keyboa
 #include <Methane/Graphics/ActionCamera.h>
 #include <Methane/Data/TimeAnimation.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <cml/mathlib/mathlib.h>
 
@@ -63,7 +64,7 @@ void ActionCamera::OnMousePressed(const Data::Point2i& mouse_screen_pos, MouseAc
         break;
 
     default:
-        break;
+        return;
     }
 }
 
@@ -80,7 +81,8 @@ void ActionCamera::OnMouseDragged(const Data::Point2i& mouse_screen_pos) noexcep
         Move(GetViewCamera().TransformScreenToWorld(mouse_screen_pos) - m_mouse_pressed_in_world);
         break;
 
-    default: return;
+    default:
+        return;
     }
 }
 
@@ -153,7 +155,8 @@ void ActionCamera::DoKeyboardAction(KeyboardAction keyboard_action) noexcept
             SetPivot(GetPivot() == Pivot::Aim ? Pivot::Eye : Pivot::Aim);
             break;
         
-        default: return;
+        default:
+            return;
     }
 }
 
@@ -190,9 +193,7 @@ void ActionCamera::StartRotateAction(KeyboardAction rotate_action, const Vector3
             duration_sec));
     
     const auto emplace_result = m_keyboard_action_animations.emplace(rotate_action, m_animations.back());
-    assert(emplace_result.second);
-    if (!emplace_result.second) // fixes unused variable warning in release build
-        return;
+    META_CHECK_ARG_TRUE(emplace_result.second);
 }
 
 void ActionCamera::StartMoveAction(KeyboardAction move_action, const Vector3f& move_direction_in_view, double duration_sec)
@@ -212,9 +213,7 @@ void ActionCamera::StartMoveAction(KeyboardAction move_action, const Vector3f& m
     );
     
     const auto emplace_result = m_keyboard_action_animations.emplace(move_action, m_animations.back());
-    assert(emplace_result.second);
-    if (!emplace_result.second) // fixes unused variable warning in release build
-        return;
+    META_CHECK_ARG_TRUE(emplace_result.second);
 }
 
 void ActionCamera::StartZoomAction(KeyboardAction zoom_action, float zoom_factor_per_second, double duration_sec)
@@ -233,9 +232,7 @@ void ActionCamera::StartZoomAction(KeyboardAction zoom_action, float zoom_factor
     );
     
     const auto emplace_result = m_keyboard_action_animations.emplace(zoom_action, m_animations.back());
-    assert(emplace_result.second);
-    if (!emplace_result.second) // fixes unused variable warning in release build
-        return;
+    META_CHECK_ARG_TRUE(emplace_result.second);
 }
 
 bool ActionCamera::StartKeyboardAction(KeyboardAction keyboard_action, double duration_sec)
@@ -281,7 +278,7 @@ bool ActionCamera::StopKeyboardAction(KeyboardAction keyboard_action, double dur
     }
 }
 
-std::string ActionCamera::GetActionName(MouseAction mouse_action) noexcept
+std::string ActionCamera::GetActionName(MouseAction mouse_action)
 {
     META_FUNCTION_TASK();
     switch (mouse_action)
@@ -290,11 +287,11 @@ std::string ActionCamera::GetActionName(MouseAction mouse_action) noexcept
     case MouseAction::Zoom:     return "zoom";
     case MouseAction::Move:     return "move";
     case MouseAction::None:     return "none";
-    default: assert(0);         return "";
+    default:                    META_UNEXPECTED_ENUM_ARG_RETURN(mouse_action, "");
     }
 }
 
-std::string ActionCamera::GetActionName(KeyboardAction keyboard_action) noexcept
+std::string ActionCamera::GetActionName(KeyboardAction keyboard_action)
 {
     META_FUNCTION_TASK();
     switch (keyboard_action)
@@ -324,7 +321,7 @@ std::string ActionCamera::GetActionName(KeyboardAction keyboard_action) noexcept
     case KeyboardAction::ChangePivot:   return "change pivot";
 
     case KeyboardAction::None:          return "none";
-    default: assert(0);                 return "";
+    default:                            META_UNEXPECTED_ENUM_ARG_RETURN(keyboard_action, "");
     }
 }
 

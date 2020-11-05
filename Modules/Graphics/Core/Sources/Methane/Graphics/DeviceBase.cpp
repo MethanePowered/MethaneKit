@@ -24,14 +24,14 @@ Base implementation of the device interface.
 #include "DeviceBase.h"
 
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <sstream>
-#include <cassert>
 
 namespace Methane::Graphics
 {
 
-std::string Device::Feature::ToString(Value feature) noexcept
+std::string Device::Feature::ToString(Value feature)
 {
     META_FUNCTION_TASK();
     switch(feature)
@@ -40,11 +40,11 @@ std::string Device::Feature::ToString(Value feature) noexcept
     case Value::All:                        return "All";
     case Value::BasicRendering:             return "Basic Rendering";
     case Value::TextureAndSamplerArrays:    return "Texture and Sampler Arrays";
+    default:                                META_UNEXPECTED_ENUM_ARG_RETURN(feature, "");
     }
-    return "";
 }
 
-std::string Device::Feature::ToString(Mask features) noexcept
+std::string Device::Feature::ToString(Mask features)
 {
     META_FUNCTION_TASK();
     std::stringstream ss;
@@ -71,12 +71,10 @@ DeviceBase::DeviceBase(const std::string& adapter_name, bool is_software_adapter
     META_FUNCTION_TASK();
 }
 
-std::string DeviceBase::ToString() const noexcept
+std::string DeviceBase::ToString() const
 {
     META_FUNCTION_TASK();
-    std::stringstream ss;
-    ss << "GPU \"" << GetAdapterName() << "\"";
-    return ss.str();
+    return fmt::format("GPU \"{}\"", GetAdapterName());
 }
 
 void DeviceBase::OnRemovalRequested()
@@ -139,15 +137,14 @@ Ptr<Device> SystemBase::GetSoftwareGpuDevice() const
     return sw_device_it != m_devices.end() ? *sw_device_it : Ptr<Device>();
 }
 
-std::string SystemBase::ToString() const noexcept
+std::string SystemBase::ToString() const
 {
     META_FUNCTION_TASK();
     std::stringstream ss;
     ss << "Available graphics devices:" << std::endl;
     for(const Ptr<Device>& device_ptr : m_devices)
     {
-        assert(device_ptr);
-        if (!device_ptr) continue;
+        META_CHECK_ARG_NOT_NULL(device_ptr);
         ss << "  - " << device_ptr->ToString() << ";" << std::endl;
     }
     return ss.str();

@@ -35,16 +35,14 @@ DirectX 12 implementation of the program interface.
 #include <D3Dcompiler.h>
 
 #include <nowide/convert.hpp>
-#include <cassert>
 #include <iomanip>
 
 namespace Methane::Graphics
 {
 
-static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_SHADER_INPUT_TYPE input_type) noexcept
+static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_SHADER_INPUT_TYPE input_type)
 {
     META_FUNCTION_TASK();
-
     switch (input_type)
     {
     case D3D_SIT_CBUFFER:
@@ -68,9 +66,8 @@ static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_S
         return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
 
     default:
-        assert(0);
+        META_UNEXPECTED_ENUM_ARG_RETURN(input_type, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
     }
-    return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 }
 
 static DescriptorHeap::Type GetDescriptorHeapTypeByRangeType(D3D12_DESCRIPTOR_RANGE_TYPE range_type) noexcept
@@ -82,7 +79,7 @@ static DescriptorHeap::Type GetDescriptorHeapTypeByRangeType(D3D12_DESCRIPTOR_RA
         return DescriptorHeap::Type::ShaderResources;
 }
 
-static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_type) noexcept
+static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_type)
 {
     META_FUNCTION_TASK();
     switch (shader_type)
@@ -90,9 +87,8 @@ static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_typ
     case Shader::Type::All:    return D3D12_SHADER_VISIBILITY_ALL;
     case Shader::Type::Vertex: return D3D12_SHADER_VISIBILITY_VERTEX;
     case Shader::Type::Pixel:  return D3D12_SHADER_VISIBILITY_PIXEL;
-    default:                   assert(0);
+    default:                   META_UNEXPECTED_ENUM_ARG_RETURN(shader_type, D3D12_SHADER_VISIBILITY_ALL);
     }
-    return D3D12_SHADER_VISIBILITY_ALL;
 };
 
 Ptr<Program> Program::Create(Context& context, const Settings& settings)
@@ -106,7 +102,6 @@ ProgramDX::ProgramDX(ContextBase& context, const Settings& settings)
     , m_dx_input_layout(GetVertexShaderDX().GetNativeProgramInputLayout(*this))
 {
     META_FUNCTION_TASK();
-
     InitArgumentBindings(settings.argument_descriptions);
     InitRootSignature();
 }
@@ -114,10 +109,9 @@ ProgramDX::ProgramDX(ContextBase& context, const Settings& settings)
 void ProgramDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-
     ObjectBase::SetName(name);
 
-    assert(!!m_cp_root_signature);
+    META_CHECK_ARG_NOT_NULL(m_cp_root_signature);
     m_cp_root_signature->SetName(nowide::widen(name).c_str());
 }
 
@@ -143,7 +137,8 @@ void ProgramDX::InitRootSignature()
     std::map<DescriptorHeap::Type, DescriptorOffsets> descriptor_offset_by_heap_type;
     for (auto& argument_and_binding : binding_by_argument)
     {
-        assert(!!argument_and_binding.second);
+        META_CHECK_ARG_NOT_NULL(argument_and_binding.second);
+
         const Argument&                    shader_argument = argument_and_binding.first;
         ArgumentBindingDX&                argument_binding = static_cast<ArgumentBindingDX&>(*argument_and_binding.second);
         const ArgumentBindingDX::SettingsDX& bind_settings = argument_binding.GetSettingsDX();
@@ -183,6 +178,9 @@ void ProgramDX::InitRootSignature()
         case ArgumentBindingDX::Type::ShaderResourceView:
             root_parameters.back().InitAsShaderResourceView(bind_settings.point, bind_settings.space, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_STATIC, shader_visibility);
             break;
+
+        default:
+            META_UNEXPECTED_ENUM_ARG(bind_settings.type);
         }
     }
 

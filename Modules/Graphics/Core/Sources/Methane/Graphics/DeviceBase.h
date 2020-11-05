@@ -43,7 +43,7 @@ public:
     const std::string&  GetAdapterName() const noexcept override                               { return m_adapter_name; }
     bool                IsSoftwareAdapter() const noexcept override                            { return m_is_software_adapter; }
     Feature::Mask       GetSupportedFeatures() const noexcept override                         { return m_supported_features; }
-    std::string         ToString() const noexcept override;
+    std::string         ToString() const override;
 
     Ptr<DeviceBase>     GetDevicePtr() { return std::static_pointer_cast<DeviceBase>(GetBasePtr()); }
 
@@ -66,7 +66,7 @@ public:
     Device::Feature::Mask GetGpuSupportedFeatures() const override  { return m_supported_features; }
     Ptr<Device>           GetNextGpuDevice(const Device& device) const override;
     Ptr<Device>           GetSoftwareGpuDevice() const override;
-    std::string           ToString() const noexcept override;
+    std::string           ToString() const override;
 
 protected:
     void SetGpuSupportedFeatures(Device::Feature::Mask supported_features) { m_supported_features = supported_features; }

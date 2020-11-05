@@ -63,8 +63,8 @@ struct Device
         using Values = std::array<Value, 2>;
         static constexpr const Values values{ BasicRendering, TextureAndSamplerArrays };
         
-        static std::string ToString(Value feature) noexcept;
-        static std::string ToString(Mask features) noexcept;
+        static std::string ToString(Value feature);
+        static std::string ToString(Mask features);
 
         Feature()  = delete;
         ~Feature() = delete;
@@ -73,7 +73,7 @@ struct Device
     virtual const std::string& GetAdapterName() const noexcept = 0;
     virtual bool               IsSoftwareAdapter() const noexcept = 0;
     virtual Feature::Mask      GetSupportedFeatures() const noexcept = 0;
-    virtual std::string        ToString() const noexcept = 0;
+    virtual std::string        ToString() const = 0;
 };
 
 struct System
@@ -86,7 +86,7 @@ struct System
     virtual Ptr<Device>           GetNextGpuDevice(const Device& device) const = 0;
     virtual Ptr<Device>           GetSoftwareGpuDevice() const = 0;
     virtual Device::Feature::Mask GetGpuSupportedFeatures() const = 0;
-    virtual std::string           ToString() const noexcept = 0;
+    virtual std::string           ToString() const = 0;
     
     virtual ~System() = default;
 };

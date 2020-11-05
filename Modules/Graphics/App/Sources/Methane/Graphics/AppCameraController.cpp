@@ -23,8 +23,7 @@ Action camera controller with keyboard and mouse interactions handling.
 
 #include <Methane/Graphics/AppCameraController.h>
 #include <Methane/Instrumentation.h>
-
-using namespace Methane::Platform;
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -34,8 +33,8 @@ AppCameraController::AppCameraController(ActionCamera& action_camera, const std:
                                          const ActionByKeyboardState& keyboard_actions_by_state,
                                          const ActionByKeyboardKey&   keyboard_actions_by_key)
     : Controller(camera_name)
-    , Mouse::ActionControllerBase<ActionCamera::MouseAction>(mouse_actions_by_button)
-    , Keyboard::ActionControllerBase<ActionCamera::KeyboardAction>(keyboard_actions_by_state, keyboard_actions_by_key)
+    , Platform::Mouse::ActionControllerBase<ActionCamera::MouseAction>(mouse_actions_by_button)
+    , Platform::Keyboard::ActionControllerBase<ActionCamera::KeyboardAction>(keyboard_actions_by_state, keyboard_actions_by_key)
     , m_action_camera(action_camera)
 {
     META_FUNCTION_TASK();
@@ -49,6 +48,7 @@ void AppCameraController::OnMouseButtonChanged(Platform::Mouse::Button button, P
     {
     case Platform::Mouse::ButtonState::Pressed:  m_action_camera.OnMousePressed(state_change.current.GetPosition(), action); break;
     case Platform::Mouse::ButtonState::Released: m_action_camera.OnMouseReleased(state_change.current.GetPosition()); break;
+    default: META_UNEXPECTED_ENUM_ARG(button_state);
     }
 }
 
@@ -72,7 +72,7 @@ void AppCameraController::OnMouseScrollChanged(const Platform::Mouse::Scroll& mo
 void AppCameraController::OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Platform::Keyboard::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    Keyboard::ActionControllerBase<ActionCamera::KeyboardAction>::OnKeyboardChanged(key, key_state, state_change);
+    Platform::Keyboard::ActionControllerBase<ActionCamera::KeyboardAction>::OnKeyboardChanged(key, key_state, state_change);
 }
 
 AppCameraController::HelpLines AppCameraController::GetHelp() const
@@ -103,8 +103,9 @@ void AppCameraController::OnKeyboardKeyAction(ActionCamera::KeyboardAction actio
     META_FUNCTION_TASK();
     switch (key_state)
     {
-        case Platform::Keyboard::KeyState::Pressed:  m_action_camera.OnKeyPressed(action); break;
-        case Platform::Keyboard::KeyState::Released: m_action_camera.OnKeyReleased(action); break;
+    case Platform::Keyboard::KeyState::Pressed:  m_action_camera.OnKeyPressed(action); break;
+    case Platform::Keyboard::KeyState::Released: m_action_camera.OnKeyReleased(action); break;
+    default: META_UNEXPECTED_ENUM_ARG(key_state);
     }
 }
 

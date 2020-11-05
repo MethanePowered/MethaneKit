@@ -32,7 +32,6 @@ Base implementation of the resource interface.
 
 #include <fmt/format.h>
 
-#include <cassert>
 #include <sstream>
 #include <utility>
 #include <algorithm>
@@ -144,9 +143,8 @@ std::string ResourceBase::Barrier::GetTypeName(Type type)
     switch(type)
     {
     case Type::Transition: return "Transition";
+    default: META_UNEXPECTED_ENUM_ARG_RETURN(type, "");
     }
-    assert(0);
-    return "";
 }
 
 Ptr<ResourceBase::Barriers> ResourceBase::Barriers::CreateTransition(const Refs<Resource>& resources, State state_before, State state_after)
@@ -252,7 +250,7 @@ Resource::Location::Location(Ptr<Resource> resource_ptr, Data::Size offset)
     META_CHECK_ARG_NOT_NULL_DESCR(m_resource_ptr, "can not create resource location for an empty resource");
 }
 
-std::string Resource::GetTypeName(Type type) noexcept
+std::string Resource::GetTypeName(Type type)
 {
     META_FUNCTION_TASK();
     switch (type)
@@ -260,12 +258,11 @@ std::string Resource::GetTypeName(Type type) noexcept
     case Resource::Type::Buffer:  return "Buffer";
     case Resource::Type::Texture: return "Texture";
     case Resource::Type::Sampler: return "Sampler";
-    default:                      assert(0);
+    default:                      META_UNEXPECTED_ENUM_ARG_RETURN(type, "Unknown");
     }
-    return "Unknown";
 }
 
-std::string Resource::Usage::ToString(Usage::Value usage) noexcept
+std::string Resource::Usage::ToString(Usage::Value usage)
 {
     META_FUNCTION_TASK();
     switch (usage)
@@ -275,12 +272,11 @@ std::string Resource::Usage::ToString(Usage::Value usage) noexcept
     case Resource::Usage::RenderTarget: return "Render Target";
     case Resource::Usage::ReadBack:     return "Read Back";
     case Resource::Usage::Addressable:  return "Addressable";
-    default:                            assert(0);
+    default:                            META_UNEXPECTED_ENUM_ARG_RETURN(usage, "Unknown");
     }
-    return "Unknown";
 }
 
-std::string Resource::Usage::ToString(Usage::Mask usage_mask) noexcept
+std::string Resource::Usage::ToString(Usage::Mask usage_mask)
 {
     META_FUNCTION_TASK();
 
@@ -745,9 +741,8 @@ std::string ResourceBase::GetStateName(State state)
     case State::GenericRead:             return "GenericRead";
     case State::Present:                 return "Present";
     case State::Predication:             return "Predication";
+    default:                             META_UNEXPECTED_ENUM_ARG_RETURN(state, "");
     }
-    assert(0);
-    return "";
 }
 
 } // namespace Methane::Graphics

@@ -72,7 +72,7 @@ public:
     inline Vector3f GetLookDirection() const noexcept                       { return GetLookDirection(m_current_orientation); }
 
     const Matrix44f& GetViewMatrix() const noexcept;
-    const Matrix44f& GetProjMatrix() const noexcept;
+    const Matrix44f& GetProjMatrix() const;
     const Matrix44f& GetViewProjMatrix() const noexcept;
 
     Vector2f TransformScreenToProj(const Data::Point2i& screen_pos) const noexcept;
@@ -94,7 +94,7 @@ protected:
     Matrix44f GetViewMatrix(const Orientation& orientation) const noexcept;
     void GetViewMatrix(Matrix44f& out_view, const Orientation& orientation) const noexcept;
     void GetViewMatrix(Matrix44f& out_view) const noexcept { return GetViewMatrix(out_view, m_current_orientation); }
-    void GetProjMatrix(Matrix44f& out_proj) const noexcept;
+    void GetProjMatrix(Matrix44f& out_proj) const;
 
     Vector3f TransformWorldToView(const Vector3f& world_pos, const Orientation& orientation) const noexcept { return TransformWorldToView(Vector4f(world_pos, 1.F), orientation).subvector(3); }
     Vector3f TransformViewToWorld(const Vector3f& view_pos, const Orientation& orientation) const noexcept  { return TransformViewToWorld(Vector4f(view_pos,  1.F), orientation).subvector(3); }

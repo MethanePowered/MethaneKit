@@ -28,8 +28,6 @@ Base implementation of the buffer interface.
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
-#include <cassert>
-
 namespace Methane::Graphics
 {
 
@@ -55,7 +53,7 @@ uint32_t BufferBase::GetFormattedItemsCount() const noexcept
     return m_settings.item_stride_size > 0U ? GetDataSize(Data::MemoryState::Initialized) / m_settings.item_stride_size : 0U;
 }
 
-std::string Buffer::GetBufferTypeName(Type type) noexcept
+std::string Buffer::GetBufferTypeName(Type type)
 {
     META_FUNCTION_TASK();
     switch (type)
@@ -64,9 +62,8 @@ std::string Buffer::GetBufferTypeName(Type type) noexcept
     case Type::Index:    return "Index";
     case Type::Vertex:   return "Vertex";
     case Type::Constant: return "Constant";
-    default:             assert(0);
+    default:             META_UNEXPECTED_ENUM_ARG_RETURN(type, "Unknown");
     }
-    return "Unknown";
 }
 
 BufferSetBase::BufferSetBase(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)

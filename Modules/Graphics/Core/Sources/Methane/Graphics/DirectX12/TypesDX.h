@@ -44,10 +44,10 @@ public:
         ViewWrite
     };
 
-    static D3D12_COMPARISON_FUNC            CompareFunctionToD3D(Compare compare_func) noexcept;
-    static DXGI_FORMAT                      PixelFormatToDxgi(const PixelFormat& pixel_format) noexcept;
-    static DXGI_FORMAT                      PixelFormatToDxgi(const PixelFormat& pixel_format, ResourceFormatType format_type) noexcept;
-    static DXGI_FORMAT                      ParameterDescToDxgiFormatAndSize(const D3D12_SIGNATURE_PARAMETER_DESC& param_desc, uint32_t& out_element_byte_size) noexcept;
+    static D3D12_COMPARISON_FUNC CompareFunctionToD3D(Compare compare_func);
+    static DXGI_FORMAT PixelFormatToDxgi(const PixelFormat& pixel_format);
+    static DXGI_FORMAT PixelFormatToDxgi(const PixelFormat& pixel_format, ResourceFormatType format_type);
+    static DXGI_FORMAT ParameterDescToDxgiFormatAndSize(const D3D12_SIGNATURE_PARAMETER_DESC& param_desc, uint32_t& out_element_byte_size);
 
 private:
     TypeConverterDX() = default;

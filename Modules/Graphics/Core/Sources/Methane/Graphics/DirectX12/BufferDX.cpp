@@ -142,10 +142,9 @@ BufferSetDX::BufferSetDX(Buffer::Type buffers_type, const Refs<Buffer>& buffer_r
     : BufferSetBase(buffers_type, buffer_refs)
 {
     META_FUNCTION_TASK();
-    switch(buffers_type)
+    if (buffers_type == Buffer::Type::Vertex)
     {
-    case Buffer::Type::Vertex: m_vertex_buffer_views = Graphics::GetNativeVertexBufferViews(GetRefs()); break;
-    default: break;
+        m_vertex_buffer_views = Graphics::GetNativeVertexBufferViews(GetRefs());
     }
 }
 

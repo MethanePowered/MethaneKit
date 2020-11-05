@@ -25,6 +25,7 @@ Asteroids application controller.
 #include "AsteroidsApp.h"
 
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Samples
 {
@@ -76,7 +77,7 @@ void AsteroidsAppController::OnKeyboardStateAction(AsteroidsAppAction action)
         break;
         
     default:
-        assert(0);
+        META_UNEXPECTED_ENUM_ARG(action);
     }
 }
 
@@ -91,9 +92,8 @@ std::string AsteroidsAppController::GetKeyboardActionName(AsteroidsAppAction act
     case AsteroidsAppAction::SwitchMeshLodsColoring:    return "switch mesh LOD coloring";
     case AsteroidsAppAction::IncreaseMeshLodComplexity: return "increase mesh LOD complexity";
     case AsteroidsAppAction::DecreaseMeshLodComplexity: return "decrease mesh LOD complexity";
-    default: assert(0);
+    default:                                            META_UNEXPECTED_ENUM_ARG_RETURN(action, "");
     }
-    return "";
 }
 
 Platform::Input::IHelpProvider::HelpLines AsteroidsAppController::GetHelp() const

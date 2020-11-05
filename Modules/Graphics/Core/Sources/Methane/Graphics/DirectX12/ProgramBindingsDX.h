@@ -89,7 +89,7 @@ public:
         const SettingsDX                   m_settings_dx;
         uint32_t                           m_root_parameter_index = std::numeric_limits<uint32_t>::max();;
         DescriptorRange                    m_descriptor_range;
-        const DescriptorHeap::Reservation* m_p_descriptor_heap_reservation  = nullptr;
+        const DescriptorHeap::Reservation* m_p_descriptor_heap_reservation = nullptr;
         ResourceDX::LocationsDX            m_resource_locations_dx;
     };
     

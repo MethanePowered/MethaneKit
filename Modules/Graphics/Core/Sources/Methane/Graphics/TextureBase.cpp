@@ -26,8 +26,7 @@ Base implementation of the texture interface.
 #include "RenderContextBase.h"
 
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -138,9 +137,9 @@ void TextureBase::ValidateDimensions(DimensionType dimension_type, const Dimensi
     case DimensionType::Tex1D:
     case DimensionType::Tex1DArray:
         META_CHECK_ARG_DESCR(dimensions.width, !mipmapped || !(dimensions.width % 2), "all dimensions of the mip-mapped texture should be a power of 2, but width is not");
-        [[fallthrough]];
+        break;
     default:
-        return;
+        META_UNEXPECTED_ENUM_ARG(dimension_type);
     }
 }
 

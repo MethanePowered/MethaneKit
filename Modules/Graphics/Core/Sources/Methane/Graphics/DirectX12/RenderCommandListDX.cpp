@@ -35,12 +35,11 @@ DirectX 12 implementation of the render command list interface.
 #include <Methane/Graphics/Windows/Primitives.h>
 
 #include <d3dx12.h>
-#include <cassert>
 
 namespace Methane::Graphics
 {
 
-static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primitive primitive) noexcept
+static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primitive primitive)
 {
     META_FUNCTION_TASK();
     switch (primitive)
@@ -50,9 +49,8 @@ static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primiti
     case RenderCommandList::Primitive::LineStrip:      return D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
     case RenderCommandList::Primitive::Triangle:       return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
     case RenderCommandList::Primitive::TriangleStrip:  return D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
-    default:                                           assert(0);
+    default:                                           META_UNEXPECTED_ENUM_ARG_RETURN(primitive, D3D_PRIMITIVE_TOPOLOGY_UNDEFINED);
     }
-    return D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
 }
 
 Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& cmd_queue, RenderPass& render_pass)

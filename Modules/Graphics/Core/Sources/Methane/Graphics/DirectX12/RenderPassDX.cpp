@@ -35,8 +35,6 @@ DirectX 12 implementation of the render pass interface.
 
 #include <d3dx12.h>
 
-#include <cassert>
-
 namespace Methane::Graphics
 {
 
@@ -112,30 +110,28 @@ void RenderPassDX::AccessDesc::InitDepthStencilClearValue(const DepthAttachment&
     beginning.Clear.ClearValue = CD3DX12_CLEAR_VALUE(depth_format, depth_attachment.clear_value, stencil_attachment.clear_value);
 }
 
-D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE RenderPassDX::AccessDesc::GetBeginningAccessTypeByLoadAction(Attachment::LoadAction load_action) noexcept
+D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE RenderPassDX::AccessDesc::GetBeginningAccessTypeByLoadAction(Attachment::LoadAction load_action)
 {
     META_FUNCTION_TASK();
-
     switch (load_action)
     {
     case Attachment::LoadAction::DontCare:  return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD;
     case Attachment::LoadAction::Load:      return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE;
     case Attachment::LoadAction::Clear:     return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR;
+    default:                                META_UNEXPECTED_ENUM_ARG_RETURN(load_action, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS);
     }
-    return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS;
 }
 
-D3D12_RENDER_PASS_ENDING_ACCESS_TYPE RenderPassDX::AccessDesc::GetEndingAccessTypeByStoreAction(Attachment::StoreAction store_action) noexcept
+D3D12_RENDER_PASS_ENDING_ACCESS_TYPE RenderPassDX::AccessDesc::GetEndingAccessTypeByStoreAction(Attachment::StoreAction store_action)
 {
     META_FUNCTION_TASK();
-
     switch (store_action)
     {
     case Attachment::StoreAction::DontCare:  return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD;
     case Attachment::StoreAction::Store:     return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE;
     case Attachment::StoreAction::Resolve:   return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_RESOLVE;
+    default:                                 META_UNEXPECTED_ENUM_ARG_RETURN(store_action, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS);
     }
-    return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS;
 }
 
 RenderPassDX::RTClearInfo::RTClearInfo(const RenderPass::ColorAttachment& color_attach)
@@ -153,7 +149,6 @@ RenderPassDX::DSClearInfo::DSClearInfo(const RenderPass::DepthAttachment& depth_
     , stencil_value(stencil_attach.clear_value)
 {
     META_FUNCTION_TASK();
-
     if (depth_cleared)
     {
         clear_flags = stencil_cleared ? D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL
@@ -165,19 +160,17 @@ RenderPassDX::DSClearInfo::DSClearInfo(const RenderPass::DepthAttachment& depth_
     }
 }
 
-static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(RenderPass::Access::Value access) noexcept
+static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(RenderPass::Access::Value access)
 {
     META_FUNCTION_TASK();
-
     switch (access)
     {
     case RenderPass::Access::ShaderResources: return DescriptorHeap::Type::ShaderResources;
     case RenderPass::Access::Samplers:        return DescriptorHeap::Type::Samplers;
     case RenderPass::Access::RenderTargets:   return DescriptorHeap::Type::RenderTargets;
     case RenderPass::Access::DepthStencil:    return DescriptorHeap::Type::DepthStencil;
-    default:                                  assert(0);
+    default:                                  META_UNEXPECTED_ENUM_ARG_RETURN(access, DescriptorHeap::Type::Undefined);
     }
-    return DescriptorHeap::Type::Undefined;
 }
 
 Ptr<RenderPass> RenderPass::Create(RenderContext& context, const Settings& settings)
@@ -205,8 +198,8 @@ RenderPassDX::RenderPassDX(RenderContextBase& context, const Settings& settings)
 bool RenderPassDX::Update(const Settings& settings)
 {
     META_FUNCTION_TASK();
-
     const bool settings_changed = RenderPassBase::Update(settings);
+
     if (settings_changed)
     {
         m_native_descriptor_heaps.clear();
@@ -375,7 +368,7 @@ void RenderPassDX::End(RenderCommandListBase& command_list)
     if (m_is_native_render_pass_available.has_value() && m_is_native_render_pass_available.value())
     {
         ID3D12GraphicsCommandList4* p_dx_command_list_4 = static_cast<RenderCommandListDX&>(command_list).GetNativeCommandList4();
-        assert(!!p_dx_command_list_4);
+        META_CHECK_ARG_NOT_NULL(p_dx_command_list_4);
         p_dx_command_list_4->EndRenderPass();
     }
 

@@ -136,8 +136,8 @@ protected:
                                    fmt::format("{} command list '{}' encoding is not possible in '{}' state", GetTypeName(), GetName(), GetStateName(m_state)));
     }
 
-    static std::string GetTypeName(Type type) noexcept;
-    static std::string GetStateName(State state) noexcept;
+    static std::string GetTypeName(Type type);
+    static std::string GetStateName(State state);
 
 private:
     using DebugGroupStack  = std::stack<Ptr<DebugGroupBase>>;
@@ -175,7 +175,7 @@ public:
     // CommandListSetBase interface
     virtual void Execute(Data::Index frame_index, const CommandList::CompletedCallback& completed_callback);
     
-    void Complete() const noexcept;
+    void Complete() const;
 
     Ptr<CommandListSetBase>      GetPtr()                                   { return shared_from_this(); }
     const Refs<CommandListBase>& GetBaseRefs() const noexcept               { return m_base_refs; }
