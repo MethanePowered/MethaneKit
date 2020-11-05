@@ -29,8 +29,6 @@ Windows application implementation.
 #include <windowsx.h>
 #include <nowide/convert.hpp>
 
-#include <cassert>
-
 namespace Methane::Platform
 {
 
@@ -47,8 +45,8 @@ static UINT ConvertMessageTypeToFlags(AppBase::Message::Type msg_type)
     case AppBase::Message::Type::Information:   return MB_ICONINFORMATION | MB_OK;
     case AppBase::Message::Type::Warning:       return MB_ICONWARNING | MB_OK;
     case AppBase::Message::Type::Error:         return MB_ICONERROR | MB_OK;
+    default:                                    META_UNEXPECTED_ENUM_ARG_RETURN(msg_type, 0);
     }
-    return 0;
 }
 
 AppWin::AppWin(const AppBase::Settings& settings)
@@ -454,6 +452,8 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
         case WM_MOUSEWHEEL:     return p_app->OnWindowMouseWheelEvent(true, w_param, l_param);
         case WM_MOUSEHWHEEL:    return p_app->OnWindowMouseWheelEvent(false, w_param, l_param);
         case WM_MOUSELEAVE:     return p_app->OnWindowMouseLeave();
+
+        default: break;
         }
 #ifndef _DEBUG
     }
@@ -516,7 +516,7 @@ bool AppWin::SetFullScreen(bool is_full_screen)
     if (!AppBase::SetFullScreen(is_full_screen))
         return false;
 
-    assert(!!m_env.window_handle);
+    META_CHECK_ARG_NOT_NULL(m_env.window_handle);
     
     RECT            window_rect{};
     int32_t         window_style    = WS_OVERLAPPEDWINDOW;

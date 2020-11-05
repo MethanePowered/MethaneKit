@@ -28,6 +28,7 @@ Screen Quad rendering primitive.
 #include <Methane/Graphics/TypeConverters.hpp>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -305,6 +306,9 @@ Shader::MacroDefinitions ScreenQuad::GetPixelShaderMacroDefinitions(TextureMode 
         macro_definitions.emplace_back("RMASK", "r");
         macro_definitions.emplace_back("WMASK", "a");
         break;
+
+    default:
+        META_UNEXPECTED_ENUM_ARG(texture_mode);
     };
 
     return macro_definitions;

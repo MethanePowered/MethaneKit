@@ -26,6 +26,7 @@ Methane text mesh generation helper.
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <stdexcept>
 
@@ -46,14 +47,13 @@ static void ForEachTextCharacterInRange(Font& font, const Font::Chars& text_char
                                         const ProcessFontCharAtPosition& process_char_at_position)
 {
     META_FUNCTION_TASK();
-
-    assert(!char_positions.empty());
+    META_CHECK_ARG_NOT_EMPTY(char_positions);
     const Font::Char* p_prev_text_char = nullptr;
 
     for (size_t char_index = begin_index; char_index < end_index; ++char_index)
     {
         const Font::Char& text_char = text_chars[char_index].get();
-        assert(!!text_char);
+        META_CHECK_ARG_NOT_ZERO(text_char);
 
         TextMesh::CharPosition& char_pos = char_positions.back();
         char_pos.is_whitespace_or_linebreak = text_char.IsLineBreak() || text_char.IsWhiteSpace();
@@ -98,6 +98,9 @@ static void ForEachTextCharacterInRange(Font& font, const Font::Chars& text_char
 
         case CharAction::Stop:
             return;
+
+        default:
+            META_UNEXPECTED_ENUM_ARG(action);
         }
     }
 }
@@ -212,12 +215,12 @@ void TextMesh::EraseTrailingChars(size_t erase_chars_count, bool fixup_whitespac
     const size_t empty_symbols_count    = std::count_if(m_text.begin() + erase_chars_from_index, m_text.end(),
                                             [](char32_t char_code) { return char_code < 255 && (char_code == '\n' || std::isspace(static_cast<int>(char_code))); });
 
-    assert(empty_symbols_count <= erase_chars_count);
-    const size_t erase_symbols_count    = erase_chars_count - empty_symbols_count;
+    META_CHECK_ARG_LESS(empty_symbols_count, erase_chars_count + 1);
+    const size_t erase_symbols_count = erase_chars_count - empty_symbols_count;
 
-    assert(erase_chars_count <= m_char_positions.size());
-    assert(erase_symbols_count * 4 <= m_vertices.size());
-    assert(erase_symbols_count * 6 <= m_indices.size());
+    META_CHECK_ARG_LESS(erase_chars_count, m_char_positions.size() + 1);
+    META_CHECK_ARG_LESS(erase_symbols_count, m_vertices.size() / 4 + 1);
+    META_CHECK_ARG_LESS(erase_symbols_count, m_indices.size()  / 6 + 1);
 
     m_char_positions.erase(m_char_positions.begin() + m_char_positions.size() - erase_chars_count, m_char_positions.end());
     m_vertices.erase(m_vertices.begin() + m_vertices.size() - erase_symbols_count * 4, m_vertices.end());
@@ -229,12 +232,15 @@ void TextMesh::EraseTrailingChars(size_t erase_chars_count, bool fixup_whitespac
         const auto whitespace_it = std::find_if(m_text.rbegin(), m_text.rend(),
             [](char32_t char_code) { return char_code <= 255 && std::isspace(static_cast<int>(char_code)); }
         );
-        m_last_whitespace_index = whitespace_it == m_text.rend()
-                                ? std::string::npos
-                                : std::distance(m_text.begin(), whitespace_it.base()) - 1;
-        assert(m_last_whitespace_index == std::string::npos ||
-               (m_char_positions[m_last_whitespace_index].is_whitespace_or_linebreak &&
-                std::isspace(static_cast<int>(m_text[m_last_whitespace_index]))));
+        if (whitespace_it != m_text.rend())
+        {
+            m_last_whitespace_index = std::distance(m_text.begin(), whitespace_it.base()) - 1;
+            META_CHECK_ARG(m_last_whitespace_index, m_char_positions[m_last_whitespace_index].is_whitespace_or_linebreak);
+        }
+        else
+        {
+            m_last_whitespace_index = std::string::npos;
+        }
     }
 
     if (m_last_line_start_index >= m_text.length())
@@ -242,11 +248,15 @@ void TextMesh::EraseTrailingChars(size_t erase_chars_count, bool fixup_whitespac
         const auto line_start_it = std::find_if(m_char_positions.rbegin(), m_char_positions.rend(),
             [](const CharPosition& char_pos) { return char_pos.is_line_start; }
         );
-        m_last_line_start_index = line_start_it == m_char_positions.rend()
-                                ? std::string::npos
-                                : std::distance(m_char_positions.begin(), line_start_it.base()) - 1;
-        assert(m_last_line_start_index == std::string::npos ||
-               m_char_positions[m_last_line_start_index].is_line_start);
+        if (line_start_it != m_char_positions.rend())
+        {
+            m_last_line_start_index = std::distance(m_char_positions.begin(), line_start_it.base()) - 1;
+            META_CHECK_ARG(m_last_line_start_index, m_char_positions[m_last_line_start_index].is_line_start);
+        }
+        else
+        {
+            m_last_line_start_index = std::string::npos;
+        }
     }
 
     if (update_alignment_and_content_size)
@@ -305,14 +315,14 @@ void TextMesh::AppendChars(std::u32string added_text)
 
             if (font_char.IsWhiteSpace() || font_char.IsLineBreak())
             {
-                assert(m_char_positions[init_text_length + char_index].is_whitespace_or_linebreak);
+                META_CHECK_ARG(char_index, m_char_positions[init_text_length + char_index].is_whitespace_or_linebreak);
                 return CharAction::Continue;
             }
 
             if (char_pos.is_line_start)
             {
                 m_last_line_start_index = init_text_length + char_index;
-                assert(m_char_positions[m_last_line_start_index].is_line_start);
+                META_CHECK_ARG(m_last_line_start_index, m_char_positions[m_last_line_start_index].is_line_start);
             }
 
             m_char_positions.back().start_vertex_index = m_vertices.size();
@@ -335,7 +345,7 @@ void TextMesh::ApplyAlignmentOffset(const size_t aligned_text_length, const size
     if (m_layout.horizontal_alignment == Text::HorizontalAlignment::Left)
         return;
 
-    assert(m_char_positions[line_start_index].is_line_start);
+    META_CHECK_ARG(line_start_index, m_char_positions[line_start_index].is_line_start);
     const size_t  end_char_index                  = m_char_positions.size() - 1;
     const int32_t frame_width                     = static_cast<int32_t>(m_content_size.width);
     int32_t       horizontal_alignment_offset     = 0; // Alignment offset of the recently appended character
@@ -351,7 +361,7 @@ void TextMesh::ApplyAlignmentOffset(const size_t aligned_text_length, const size
             if (char_index < aligned_text_length)
             {
                 // Calculate previously aligned characters adjustment
-                assert(char_position.start_vertex_index < m_vertices.size());
+                META_CHECK_ARG_LESS(char_position.start_vertex_index, m_vertices.size());
                 horizontal_alignment_adjustment = horizontal_alignment_offset - static_cast<int32_t>(m_vertices[char_position.start_vertex_index].position[0]);
             }
         }
@@ -360,7 +370,7 @@ void TextMesh::ApplyAlignmentOffset(const size_t aligned_text_length, const size
             continue;
 
         // Apply line alignment offset to the character quad vertices
-        assert(char_position.start_vertex_index < m_vertices.size());
+        META_CHECK_ARG_LESS(char_position.start_vertex_index, m_vertices.size());
         const int32_t alignment_offset = char_index < aligned_text_length ? horizontal_alignment_adjustment : horizontal_alignment_offset;
         for (size_t vertex_id = 0; vertex_id < 4; ++vertex_id)
         {
@@ -372,7 +382,7 @@ void TextMesh::ApplyAlignmentOffset(const size_t aligned_text_length, const size
 int32_t TextMesh::GetHorizontalLineAlignmentOffset(size_t line_start_index, int32_t frame_width) const
 {
     META_FUNCTION_TASK();
-    assert(m_char_positions[line_start_index].is_line_start);
+    META_CHECK_ARG(line_start_index, m_char_positions[line_start_index].is_line_start);
 
     // Find next line start or end of text
     auto line_end_position_it = std::find_if(m_char_positions.begin() + line_start_index + 1, m_char_positions.end() - 1,

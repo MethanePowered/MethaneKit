@@ -23,10 +23,10 @@ Platform abstraction of mouse events.
 
 #include <Methane/Platform/Mouse.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <map>
 #include <sstream>
-#include <cassert>
 
 namespace Methane::Platform::Mouse
 {
@@ -52,11 +52,7 @@ std::string ButtonConverter::ToString() const
     };
     
     auto button_and_name_it = s_name_by_button.find(m_button);
-    if (button_and_name_it == s_name_by_button.end())
-    {
-        assert(0);
-        return "";
-    }
+    META_CHECK_ARG_DESCR(m_button, button_and_name_it != s_name_by_button.end(), "mouse button name was not found");
 
     return button_and_name_it->second;
 };
@@ -72,8 +68,8 @@ std::string State::Property::ToString(State::Property::Value property_value)
     case Scroll:    return "Scroll";
     case InWindow:  return "InWindow";
     case None:      return "None";
+    default:        META_UNEXPECTED_ENUM_ARG_RETURN(property_value, "Undefined");
     }
-    return "Undefined";
 }
 
 std::string State::Property::ToString(State::Property::Mask properties_mask)

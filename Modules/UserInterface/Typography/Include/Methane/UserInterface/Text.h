@@ -130,9 +130,9 @@ public:
     void Update(const gfx::FrameSize& render_attachment_size);
     void Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group = nullptr);
 
-    static std::string GetWrapName(Wrap wrap) noexcept;
-    static std::string GetHorizontalAlignmentName(HorizontalAlignment alignment) noexcept;
-    static std::string GetVerticalAlignmentName(VerticalAlignment alignment) noexcept;
+    static std::string GetWrapName(Wrap wrap);
+    static std::string GetHorizontalAlignmentName(HorizontalAlignment alignment);
+    static std::string GetVerticalAlignmentName(VerticalAlignment alignment);
 
 protected:
     // IFontCallback interface

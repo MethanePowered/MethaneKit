@@ -125,10 +125,13 @@ inline Camera::Orientation RotateOrientation(const Camera::Orientation& orientat
     {
     case ArcBallCamera::Pivot::Aim:
         return { orientation.aim - look_dir, orientation.aim, up_dir };
+
     case ArcBallCamera::Pivot::Eye:
         return { orientation.eye, orientation.eye + look_dir, up_dir };
+
+    default:
+        META_UNEXPECTED_ENUM_ARG_RETURN(pivot, { });
     }
-    return { };
 }
 
 TEST_CASE("View arc-ball camera rotation around Aim pivot < 90 degrees", "[camera][rotate][aim][view]")

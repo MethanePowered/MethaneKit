@@ -24,8 +24,7 @@ Base user interface application controller
 #include <Methane/UserInterface/AppController.h>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::UserInterface
 {
@@ -58,7 +57,8 @@ void AppController::OnKeyboardStateAction(AppAction action)
             (static_cast<uint32_t>(m_application.GetUserInterfaceAppSettings().heads_up_display_mode) + 1) % IApp::HeadsUpDisplayMode::Count));
         break;
 
-    default: assert(0);
+    default:
+        META_UNEXPECTED_ENUM_ARG(action);
     }
 }
 
@@ -69,15 +69,13 @@ std::string AppController::GetKeyboardActionName(AppAction action) const
     {
     case AppAction::None:                       return "none";
     case AppAction::SwitchHeadsUpDisplayMode:   return "switch heads-up-display mode";
-    default: assert(0);
+    default:                                    META_UNEXPECTED_ENUM_ARG_RETURN(action, "");
     }
-    return "";
 }
 
 Platform::Input::IHelpProvider::HelpLines AppController::GetHelp() const
 {
     META_FUNCTION_TASK();
-
     HelpLines help_lines = Graphics::AppController::GetHelp();
     const HelpLines gui_help_lines = Platform::Keyboard::ActionControllerBase<AppAction>::GetKeyboardHelp();
     help_lines.insert(help_lines.end(), std::make_move_iterator(gui_help_lines.begin()), std::make_move_iterator(gui_help_lines.end()));

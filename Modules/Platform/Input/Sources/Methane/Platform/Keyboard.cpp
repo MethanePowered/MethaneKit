@@ -23,10 +23,10 @@ Platform abstraction of keyboard events.
 
 #include <Methane/Platform/Keyboard.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <map>
 #include <sstream>
-#include <cassert>
 
 namespace Methane::Platform::Keyboard
 {
@@ -86,7 +86,7 @@ Modifier::Value KeyConverter::GetModifierKey() const noexcept
     }
 }
 
-std::string KeyConverter::ToString() const noexcept
+std::string KeyConverter::ToString() const
 {
     META_FUNCTION_TASK();
     static const std::map<Key, std::string> s_name_by_key =
@@ -226,11 +226,7 @@ std::string KeyConverter::ToString() const noexcept
     };
 
     auto key_and_name_it = s_name_by_key.find(m_key);
-    if (key_and_name_it == s_name_by_key.end())
-    {
-        assert(0);
-        return "";
-    }
+    META_CHECK_ARG_DESCR(m_key, key_and_name_it != s_name_by_key.end(), "key name was not found");
 
     return m_modifiers == Modifier::Value::None
            ? key_and_name_it->second
@@ -394,8 +390,8 @@ std::string Modifier::ToString(Value modifier)
 #else
         case Super:     return "Super";
 #endif
+        default:        return "Undefined";
     }
-    return "Undefined";
 }
 
 std::string Modifier::ToString(Modifier::Mask modifiers_mask)
@@ -427,8 +423,9 @@ std::string State::Property::ToString(State::Property::Value property_value)
     case KeyStates: return "KeyStates";
     case Modifiers: return "Modifiers";
     case None:      return "None";
+    default:        META_UNEXPECTED_ENUM_ARG_RETURN(property_value, "Undefined");
     }
-    return "Undefined";
+
 }
 
 std::string State::Property::ToString(State::Property::Mask properties_mask)

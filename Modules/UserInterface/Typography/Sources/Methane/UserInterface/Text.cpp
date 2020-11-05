@@ -653,7 +653,7 @@ FrameRect Text::GetAlignedViewportRect()
         case HorizontalAlignment::Left:   break;
         case HorizontalAlignment::Right:  viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.width - content_size.width)); break;
         case HorizontalAlignment::Center: viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.width - content_size.width) / 2); break;
-        default: META_UNEXPECTED_ENUM_ARG(m_settings.layout.horizontal_alignment);
+        default:                          META_UNEXPECTED_ENUM_ARG(m_settings.layout.horizontal_alignment);
         }
     }
     if (content_size.height != m_frame_rect.size.height)
@@ -663,7 +663,7 @@ FrameRect Text::GetAlignedViewportRect()
         case VerticalAlignment::Top:      break;
         case VerticalAlignment::Bottom:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.height - content_size.height)); break;
         case VerticalAlignment::Center:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.height - content_size.height) / 2); break;
-        default: META_UNEXPECTED_ENUM_ARG(m_settings.layout.vertical_alignment);
+        default:                          META_UNEXPECTED_ENUM_ARG(m_settings.layout.vertical_alignment);
         }
     }
 
@@ -682,7 +682,7 @@ void Text::UpdateViewport(const gfx::FrameSize& render_attachment_size)
     m_is_viewport_dirty = false;
 }
 
-std::string Text::GetWrapName(Wrap wrap) noexcept
+std::string Text::GetWrapName(Wrap wrap)
 {
     META_FUNCTION_TASK();
     switch (wrap)
@@ -690,11 +690,11 @@ std::string Text::GetWrapName(Wrap wrap) noexcept
     case Wrap::None:     return "No Wrap";
     case Wrap::Anywhere: return "Wrap Anywhere";
     case Wrap::Word:     return "Wrap Words";
+    default:             META_UNEXPECTED_ENUM_ARG_RETURN(wrap, "Undefined Wrap");
     }
-    return "Undefined Wrap";
 }
 
-std::string Text::GetHorizontalAlignmentName(HorizontalAlignment alignment) noexcept
+std::string Text::GetHorizontalAlignmentName(HorizontalAlignment alignment)
 {
     META_FUNCTION_TASK();
     switch(alignment)
@@ -702,11 +702,11 @@ std::string Text::GetHorizontalAlignmentName(HorizontalAlignment alignment) noex
     case HorizontalAlignment::Left:   return "Left";
     case HorizontalAlignment::Right:  return "Right";
     case HorizontalAlignment::Center: return "Center";
+    default:                          META_UNEXPECTED_ENUM_ARG_RETURN(alignment, "undefined horizontal alignment");
     }
-    return "Undefined Alignment";
 }
 
-std::string Text::GetVerticalAlignmentName(VerticalAlignment alignment) noexcept
+std::string Text::GetVerticalAlignmentName(VerticalAlignment alignment)
 {
     META_FUNCTION_TASK();
     switch(alignment)
@@ -714,8 +714,8 @@ std::string Text::GetVerticalAlignmentName(VerticalAlignment alignment) noexcept
     case VerticalAlignment::Top:    return "Top";
     case VerticalAlignment::Bottom: return "Bottom";
     case VerticalAlignment::Center: return "Center";
+    default:                        META_UNEXPECTED_ENUM_ARG_RETURN(alignment, "undefined vertical alignment");
     }
-    return "Undefined Alignment";
 }
 
 } // namespace Methane::Graphics

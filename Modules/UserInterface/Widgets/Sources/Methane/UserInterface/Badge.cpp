@@ -137,9 +137,10 @@ UnitRect Badge::GetBadgeRectInFrame(const UnitSize& frame_size, const UnitSize& 
             badge_size,
             frame_size.units
         );
-    }
 
-    return UnitRect();
+    default:
+        META_UNEXPECTED_ENUM_ARG_RETURN(frame_corner, UnitRect());
+    }
 }
 
 } // namespace Methane::UserInterface

@@ -103,11 +103,6 @@ BufferSetVK::BufferSetVK(Buffer::Type buffers_type, const Refs<Buffer>& buffer_r
     : BufferSetBase(buffers_type, buffer_refs)
 {
     META_FUNCTION_TASK();
-    switch(buffers_type)
-    {
-    case Buffer::Type::Vertex: break;
-    default: break;
-    }
 }
 
 } // namespace Methane::Graphics

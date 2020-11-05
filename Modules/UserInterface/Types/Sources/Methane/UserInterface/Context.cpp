@@ -24,6 +24,7 @@ Methane user interface context used by all widgets for rendering.
 #include <Methane/UserInterface/Context.h>
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 namespace Methane::UserInterface
 {
@@ -48,8 +49,8 @@ UnitSize Context::GetFrameSizeInUnits(Units units) const noexcept
     {
     case Units::Pixels: return GetFrameSizeInPixels();
     case Units::Dots:   return GetFrameSizeInDots();
+    default:            return UnitSize();
     }
-    return UnitSize();
 }
 
 UnitPoint Context::ConvertToPixels(const FloatPoint& point) const noexcept
@@ -153,8 +154,8 @@ UnitPoint Context::ConvertToUnits(const FramePoint& point_px, Units units) const
     {
     case Units::Pixels: return UnitPoint(point_px, units);
     case Units::Dots:   return ConvertToDots(point_px);
+    default:            return UnitPoint();
     }
-    return UnitPoint();
 }
 
 UnitSize Context::ConvertToUnits(const FrameSize& size_px, Units units) const noexcept
@@ -164,8 +165,8 @@ UnitSize Context::ConvertToUnits(const FrameSize& size_px, Units units) const no
     {
     case Units::Pixels: return UnitSize(size_px, units);
     case Units::Dots:   return ConvertToDots(size_px);
+    default:            return UnitPoint();
     }
-    return UnitSize();
 }
 
 UnitRect Context::ConvertToUnits(const FrameRect& rect_px, Units units) const noexcept
@@ -175,8 +176,8 @@ UnitRect Context::ConvertToUnits(const FrameRect& rect_px, Units units) const no
     {
     case Units::Pixels: return UnitRect(rect_px, units);
     case Units::Dots:   return ConvertToDots(rect_px);
+    default:            return UnitRect();
     }
-    return UnitRect();
 }
 
 } // namespace Methane::UserInterface

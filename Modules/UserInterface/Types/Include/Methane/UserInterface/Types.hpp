@@ -53,6 +53,7 @@ inline std::string UnitsToString(Units units) noexcept
     {
     case Units::Pixels: return "pixels";
     case Units::Dots:   return "dots";
+    default:            return "";
     }
 }
 

@@ -76,10 +76,8 @@ std::string Mesh::VertexLayout::GetSemanticByVertexField(VertexField vertex_fiel
     case VertexField::Normal:   return "NORMAL";
     case VertexField::TexCoord: return "TEXCOORD";
     case VertexField::Color:    return "COLOR";
-    default:                    assert(0);
+    default:                    META_UNEXPECTED_ENUM_ARG_RETURN(vertex_field, "");
     }
-
-    return "";
 }
 
 Mesh::VertexLayout::IncompatibleException::IncompatibleException(VertexField missing_field)

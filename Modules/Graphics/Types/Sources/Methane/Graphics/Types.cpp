@@ -26,8 +26,7 @@ Methane graphics type functions implementation.
 #include <Methane/Graphics/Volume.hpp>
 
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -75,10 +74,9 @@ Viewport GetFrameViewport(const FrameSize& frame_size)
     };
 }
 
-Data::Size GetPixelSize(PixelFormat pixel_format) noexcept
+Data::Size GetPixelSize(PixelFormat pixel_format)
 {
     META_FUNCTION_TASK();
-
     switch(pixel_format)
     {
     case PixelFormat::RGBA8:
@@ -107,10 +105,8 @@ Data::Size GetPixelSize(PixelFormat pixel_format) noexcept
         return 1;
 
     default:
-        assert(0);
+        META_UNEXPECTED_ENUM_ARG_RETURN(pixel_format, 0);
     }
-
-    return 0;
 }
 
 bool IsSrgbColorSpace(PixelFormat pixel_format) noexcept

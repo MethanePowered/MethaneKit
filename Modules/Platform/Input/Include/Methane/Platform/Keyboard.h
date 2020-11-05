@@ -148,7 +148,7 @@ public:
     Key             GetKey() const noexcept         { return m_key; }
     Modifier::Mask  GetModifiers() const noexcept   { return m_modifiers; }
     Modifier::Value GetModifierKey() const noexcept;
-    std::string     ToString() const noexcept;
+    std::string     ToString() const;
     
     // NOTE: Platform dependent functions: see MacOS, Windows subdirs for implementation
     static Key            GetKeyByNativeCode(const NativeKey& native_key);
