@@ -44,12 +44,12 @@ public:
     explicit ViewStateDX(const Settings& settings);
 
     // ViewState overrides
-    bool Reset(const Settings& settings) override;
-    bool SetViewports(const Viewports& viewports) override;
-    bool SetScissorRects(const ScissorRects& scissor_rects) override;
+    bool Reset(const Settings& settings) final;
+    bool SetViewports(const Viewports& viewports) final;
+    bool SetScissorRects(const ScissorRects& scissor_rects) final;
 
     // ViewStateBase interface
-    void Apply(RenderCommandListBase& command_list) override;
+    void Apply(RenderCommandListBase& command_list) final;
 
 private:
     std::vector<CD3DX12_VIEWPORT> m_dx_viewports;
@@ -62,13 +62,13 @@ public:
     RenderStateDX(RenderContextBase& context, const Settings& settings);
 
     // RenderState interface
-    void Reset(const Settings& settings) override;
+    void Reset(const Settings& settings) final;
 
     // RenderStateBase interface
-    void Apply(RenderCommandListBase& command_list, Group::Mask state_groups) override;
+    void Apply(RenderCommandListBase& command_list, Group::Mask state_groups) final;
 
     // Object interface
-    void SetName(const std::string& name) override;
+    void SetName(const std::string& name) final;
 
     void InitializeNativePipelineState();
     wrl::ComPtr<ID3D12PipelineState>& GetNativePipelineState();
@@ -79,7 +79,7 @@ private:
 
     D3D12_GRAPHICS_PIPELINE_STATE_DESC m_pipeline_state_desc{ };
     wrl::ComPtr<ID3D12PipelineState>   m_cp_pipeline_state;
-    float                              m_blend_factor[4]{ 0.0, 0.0, 0.0, 0.0 };
+    std::array<float, 4>               m_blend_factor{ 0.0, 0.0, 0.0, 0.0 };
 };
 
 } // namespace Methane::Graphics

@@ -83,7 +83,7 @@ void ParallelRenderCommandListDX::ResetWithState(const Ptr<RenderState>& render_
     {
         // Initialize native pipeline state before resetting per-thread command lists
         // to allow parallel reset of all CLs at once with using native pipeline state for each reset
-        RenderStateDX& dx_render_state = static_cast<RenderStateDX&>(*render_state_ptr);
+        auto& dx_render_state = static_cast<RenderStateDX&>(*render_state_ptr);
         dx_render_state.InitializeNativePipelineState();
     }
 
@@ -146,7 +146,7 @@ ParallelRenderCommandListDX::D3D12CommandLists ParallelRenderCommandListDX::GetN
     for (const Ptr<RenderCommandList>& command_list_ptr : parallel_command_lists)
     {
         META_CHECK_ARG_NOT_NULL(command_list_ptr);
-        RenderCommandListDX& dx_command_list = static_cast<RenderCommandListDX&>(*command_list_ptr);
+        const auto& dx_command_list = static_cast<const RenderCommandListDX&>(*command_list_ptr);
         dx_command_lists.push_back(&dx_command_list.GetNativeCommandList());
     }
 

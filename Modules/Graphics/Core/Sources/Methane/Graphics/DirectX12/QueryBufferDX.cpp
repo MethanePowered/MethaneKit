@@ -146,7 +146,7 @@ static Frequency GetGpuFrequency(ID3D12CommandQueue& native_command_queue, ID3D1
     return gpu_frequency;
 }
 
-static std::pair<Timestamp, TimeDelta> GetGpuTimeCalibration(ID3D12CommandQueue& native_command_queue, ID3D12Device& native_device)
+static GpuTimeCalibration GetGpuTimeCalibration(ID3D12CommandQueue& native_command_queue, ID3D12Device& native_device)
 {
     META_FUNCTION_TASK();
     UINT64 gpu_timestamp = 0U;
@@ -155,20 +155,19 @@ static std::pair<Timestamp, TimeDelta> GetGpuTimeCalibration(ID3D12CommandQueue&
     return { gpu_timestamp, static_cast<TimeDelta>(gpu_timestamp - cpu_timestamp) };
 }
 
-static Data::Size GetTimestampResultBufferSize(const Context& context, uint32_t max_timestamps_per_frame)
+static Data::Size GetMaxTimestampsCount(const Context& context, uint32_t max_timestamps_per_frame)
 {
     META_FUNCTION_TASK();
     const uint32_t frames_count = context.GetType() == Context::Type::Render
-                                  ? dynamic_cast<const RenderContext&>(context).GetSettings().frame_buffers_count
-                                  : 1U;
-    return frames_count * max_timestamps_per_frame * sizeof(Timestamp);
+                                ? dynamic_cast<const RenderContext&>(context).GetSettings().frame_buffers_count
+                                : 1U;
+    return frames_count * max_timestamps_per_frame;
 }
 
 TimestampQueryBufferDX::TimestampQueryBufferDX(CommandQueueDX& command_queue, uint32_t max_timestamps_per_frame)
     : QueryBufferDX(command_queue, Type::Timestamp, 1U << 15U,
-                    GetTimestampResultBufferSize(command_queue.GetContext(), max_timestamps_per_frame),
+                    GetMaxTimestampsCount(command_queue.GetContext(), max_timestamps_per_frame) * sizeof(Timestamp),
                     sizeof(Timestamp))
-    , m_max_timestamps_per_frame(max_timestamps_per_frame)
     , m_gpu_frequency(Graphics::GetGpuFrequency(GetCommandQueueDX().GetNativeCommandQueue(), *GetContextDX().GetDeviceDX().GetNativeDevice().Get()))
     , m_gpu_time_calibration(Graphics::GetGpuTimeCalibration(GetCommandQueueDX().GetNativeCommandQueue(), *GetContextDX().GetDeviceDX().GetNativeDevice().Get()))
 {
@@ -211,7 +210,7 @@ Timestamp TimestampQueryBufferDX::TimestampQueryDX::GetGpuTimestamp()
 Timestamp TimestampQueryBufferDX::TimestampQueryDX::GetCpuNanoseconds()
 {
     META_FUNCTION_TASK();
-    TimestampQueryBufferDX& timestamp_query_buffer_dx = GetTimestampQueryBufferDX();
+    const TimestampQueryBufferDX& timestamp_query_buffer_dx = GetTimestampQueryBufferDX();
     const Timestamp gpu_timestamp = TimestampQueryDX::GetGpuTimestamp();
     return Data::ConvertTicksToNanoseconds(gpu_timestamp - timestamp_query_buffer_dx.GetGpuTimeOffset(), timestamp_query_buffer_dx.GetGpuFrequency());
 }

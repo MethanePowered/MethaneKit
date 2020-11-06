@@ -33,9 +33,9 @@ namespace Methane::Graphics
 
 static const std::hash<std::string> g_argument_name_hash;
 
-Program::Argument::Argument(Shader::Type shader_type, std::string argument_name) noexcept
+Program::Argument::Argument(Shader::Type shader_type, const std::string& argument_name) noexcept
     : shader_type(shader_type)
-    , name(std::move(argument_name))
+    , name(argument_name)
     , hash(g_argument_name_hash(name) ^ (static_cast<size_t>(shader_type) << 1))
 {
     META_FUNCTION_TASK();
@@ -54,7 +54,7 @@ Program::Argument::operator std::string() const noexcept
     return fmt::format("{} {}", Shader::GetTypeName(shader_type), name);
 }
 
-Program::ArgumentDesc::ArgumentDesc(Shader::Type shader_type, std::string argument_name, Modifiers::Mask modifiers) noexcept
+Program::ArgumentDesc::ArgumentDesc(Shader::Type shader_type, const std::string& argument_name, Modifiers::Mask modifiers) noexcept
     : Argument(shader_type, argument_name)
     , modifiers(modifiers)
 {

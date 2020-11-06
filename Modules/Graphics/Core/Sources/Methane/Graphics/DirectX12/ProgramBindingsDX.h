@@ -72,6 +72,11 @@ public:
 
         ArgumentBindingDX(const ContextBase& context, const SettingsDX& settings);
         ArgumentBindingDX(const ArgumentBindingDX& other);
+        ArgumentBindingDX(ArgumentBindingDX&&) noexcept = default;
+        ~ArgumentBindingDX() override = default;
+
+        ArgumentBindingDX& operator=(const ArgumentBindingDX&) = delete;
+        ArgumentBindingDX& operator=(ArgumentBindingDX&&) noexcept = default;
 
         // ArgumentBinding interface
         void SetResourceLocations(const Resource::Locations& resource_locations) override;
@@ -102,7 +107,7 @@ public:
     void CompleteInitialization() override;
     void Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const override;
 
-    void Apply(ICommandListDX& command_list_dx, ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior::Mask apply_behavior) const;
+    void Apply(ICommandListDX& command_list_dx, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior::Mask apply_behavior) const;
 
 private:
     struct RootParameterBinding

@@ -39,7 +39,12 @@ class FenceDX final : public FenceBase
 {
 public:
     explicit FenceDX(CommandQueueBase& command_queue);
+    FenceDX(const FenceDX&) = delete;
+    FenceDX(FenceDX&&) noexcept = default;
     ~FenceDX() override;
+
+    FenceDX& operator=(const FenceDX&) = delete;
+    FenceDX& operator=(FenceDX&&) noexcept = default;
 
     // Fence overrides
     void Signal() override;

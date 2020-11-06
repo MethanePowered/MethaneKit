@@ -30,7 +30,7 @@ DirectX 12 implementation of the render context interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <shellscalingapi.h>
+#include <ShellScalingApi.h>
 #include <nowide/convert.hpp>
 
 namespace Methane::Graphics
@@ -81,8 +81,8 @@ static float GetDeviceScaleRatio(DEVICE_SCALE_FACTOR device_scale_factor)
 Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, Device& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
 {
     META_FUNCTION_TASK();
-    DeviceBase& device_base = static_cast<DeviceBase&>(device);
-    Ptr<RenderContextDX> render_context_ptr = std::make_shared<RenderContextDX>(env, device_base, parallel_executor, settings);
+    auto& device_base = static_cast<DeviceBase&>(device);
+    const auto render_context_ptr = std::make_shared<RenderContextDX>(env, device_base, parallel_executor, settings);
     render_context_ptr->Initialize(device_base, true);
     return render_context_ptr;
 }

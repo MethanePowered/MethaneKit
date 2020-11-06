@@ -53,8 +53,8 @@ public:
     // Allows to disable native D3D12 render-pass feature usage,
     // but enabling does not guarantee that it will be used (it depends on OS version and API availability)
     void SetNativeRenderPassUsage(bool use_native_render_pass);
-    void SetNativeDescriptorHeaps(RenderCommandListDX& dx_command_list) const;
-    void SetNativeRenderTargets(RenderCommandListDX& dx_command_list);
+    void SetNativeDescriptorHeaps(const RenderCommandListDX& dx_command_list) const;
+    void SetNativeRenderTargets(const RenderCommandListDX& dx_command_list) const;
 
     const std::vector<ID3D12DescriptorHeap*>&       GetNativeDescriptorHeaps() const;
     const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& GetNativeRenderTargetCPUHandles() const;
@@ -67,8 +67,8 @@ private:
         D3D12_RENDER_PASS_BEGINNING_ACCESS beginning  { };
         D3D12_RENDER_PASS_ENDING_ACCESS    ending     { };
 
-        AccessDesc(const Attachment& attachment);
-        AccessDesc(const ColorAttachment& color_attachment);
+        explicit AccessDesc(const Attachment& attachment);
+        explicit AccessDesc(const ColorAttachment& color_attachment);
         AccessDesc(const DepthAttachment& depth_attachment, const StencilAttachment& stencil_attachment);
         AccessDesc(const StencilAttachment& stencil_attachment, const DepthAttachment& depth_attachment);
 
@@ -80,10 +80,10 @@ private:
 
     struct RTClearInfo
     {
-        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle     { };
-        float                       clear_color[4] { };
+        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle  { };
+        std::array<float, 4>        clear_color { };
 
-        RTClearInfo(const RenderPassBase::ColorAttachment& color_attach);
+        explicit RTClearInfo(const RenderPassBase::ColorAttachment& color_attach);
     };
 
     struct DSClearInfo

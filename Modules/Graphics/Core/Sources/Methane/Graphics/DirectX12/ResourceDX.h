@@ -47,7 +47,7 @@ public:
     public:
         explicit BarriersDX(const Set& barriers);
 
-        bool Add(const Barrier::Id& id, const Barrier::StateChange& state_change) override;
+        bool AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change) override;
 
         const std::vector<D3D12_RESOURCE_BARRIER>& GetNativeResourceBarriers() const { return m_native_resource_barriers; }
 
@@ -60,6 +60,7 @@ public:
     public:
         explicit LocationDX(const Location& location);
         explicit LocationDX(const LocationDX& location);
+        ~LocationDX() = default;
 
         LocationDX& operator=(const LocationDX& other);
 

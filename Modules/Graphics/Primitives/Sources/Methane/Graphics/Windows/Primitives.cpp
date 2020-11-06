@@ -47,7 +47,7 @@ static std::string GetErrorMessage(HRESULT hr, ID3D12Device* device = nullptr)
     return ss.str();
 }
 
-static std::string GetErrorMessage(HRESULT hr, wrl::ComPtr<ID3DBlob>& error_blob)
+static std::string GetErrorMessage(HRESULT hr, const wrl::ComPtr<ID3DBlob>& error_blob)
 {
     META_FUNCTION_TASK();
     std::stringstream ss;

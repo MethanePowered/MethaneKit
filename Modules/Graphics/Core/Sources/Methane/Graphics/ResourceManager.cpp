@@ -228,7 +228,7 @@ ResourceManager::DescriptorHeapSizeByType ResourceManager::GetDescriptorHeapSize
     META_FUNCTION_TASK();
 
     DescriptorHeapSizeByType max_descriptor_heap_sizes = {};
-    ForEachDescriptorHeap([&](DescriptorHeap& descriptor_heap)
+    ForEachDescriptorHeap([&max_descriptor_heap_sizes, for_shader_visible_heaps, get_allocated_size](const DescriptorHeap& descriptor_heap)
     {
         if ( (for_shader_visible_heaps && !descriptor_heap.IsShaderVisible()) ||
             (!for_shader_visible_heaps &&  descriptor_heap.IsShaderVisible()) )

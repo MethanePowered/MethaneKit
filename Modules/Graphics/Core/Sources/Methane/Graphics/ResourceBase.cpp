@@ -100,7 +100,7 @@ ResourceBase::Barrier::Barrier(Id id, StateChange state_change)
     META_FUNCTION_TASK();
 }
 
-ResourceBase::Barrier::Barrier(Type type, Resource& resource, State state_before, State state_after)
+ResourceBase::Barrier::Barrier(Type type, const Resource& resource, State state_before, State state_after)
     : Barrier(Id(type, resource), StateChange(state_before, state_after))
 {
     META_FUNCTION_TASK();
@@ -147,11 +147,11 @@ std::string ResourceBase::Barrier::GetTypeName(Type type)
     }
 }
 
-Ptr<ResourceBase::Barriers> ResourceBase::Barriers::CreateTransition(const Refs<Resource>& resources, State state_before, State state_after)
+Ptr<ResourceBase::Barriers> ResourceBase::Barriers::CreateTransition(const Refs<const Resource>& resources, State state_before, State state_after)
 {
     META_FUNCTION_TASK();
     std::set<Barrier> resource_barriers;
-    for (const Ref<Resource>& resource_ref : resources)
+    for (const Ref<const Resource>& resource_ref : resources)
     {
         resource_barriers.emplace(Barrier{
             ResourceBase::Barrier::Type::Transition,
@@ -187,7 +187,7 @@ ResourceBase::Barriers::Set ResourceBase::Barriers::GetSet() const noexcept
     return barriers;
 }
 
-bool ResourceBase::Barriers::Has(Barrier::Type type, Resource& resource, State before, State after)
+bool ResourceBase::Barriers::Has(Barrier::Type type, const Resource& resource, State before, State after)
 {
     META_FUNCTION_TASK();
     const auto barrier_it = m_barriers_map.find(Barrier::Id(type, resource));
@@ -197,25 +197,25 @@ bool ResourceBase::Barriers::Has(Barrier::Type type, Resource& resource, State b
     return barrier_it->second == Barrier::StateChange(before, after);
 }
 
-bool ResourceBase::Barriers::HasTransition(Resource& resource, State before, State after)
+bool ResourceBase::Barriers::HasTransition(const Resource& resource, State before, State after)
 {
     META_FUNCTION_TASK();
     return Has(Barrier::Type::Transition, resource, before, after);
 }
 
-bool ResourceBase::Barriers::Add(Barrier::Type type, Resource& resource, State before, State after)
+bool ResourceBase::Barriers::Add(Barrier::Type type, const Resource& resource, State before, State after)
 {
     META_FUNCTION_TASK();
-    return Add(Barrier::Id(type, resource), Barrier::StateChange(before, after));
+    return AddStateChange(Barrier::Id(type, resource), Barrier::StateChange(before, after));
 }
 
-bool ResourceBase::Barriers::AddTransition(Resource& resource, State before, State after)
+bool ResourceBase::Barriers::AddTransition(const Resource& resource, State before, State after)
 {
     META_FUNCTION_TASK();
-    return Add(Barrier::Id(Barrier::Type::Transition, resource), Barrier::StateChange(before, after));
+    return AddStateChange(Barrier::Id(Barrier::Type::Transition, resource), Barrier::StateChange(before, after));
 }
 
-bool ResourceBase::Barriers::Add(const Barrier::Id& id, const Barrier::StateChange& state_change)
+bool ResourceBase::Barriers::AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
     const auto emplace_result = m_barriers_map.emplace(id, state_change);
@@ -362,11 +362,11 @@ Data::Size Resource::SubResource::Count::GetRawCount() const noexcept
     return depth * array_size * mip_levels_count;
 }
 
-void Resource::SubResource::Count::operator+=(const Index& index) noexcept
+void Resource::SubResource::Count::operator+=(const Index& other) noexcept
 {
-    depth            = std::max(depth,            index.depth_slice + 1U);
-    array_size       = std::max(array_size,       index.array_index + 1U);
-    mip_levels_count = std::max(mip_levels_count, index.mip_level   + 1U);
+    depth            = std::max(depth,            other.depth_slice + 1U);
+    array_size       = std::max(array_size,       other.array_index + 1U);
+    mip_levels_count = std::max(mip_levels_count, other.mip_level   + 1U);
 }
 
 bool Resource::SubResource::Count::operator==(const Count& other) const noexcept
@@ -453,17 +453,17 @@ bool Resource::SubResource::Index::operator>=(const Index& other) const noexcept
     return !operator<(other);
 }
 
-bool Resource::SubResource::Index::operator<(const Count& count) const noexcept
+bool Resource::SubResource::Index::operator<(const Count& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(depth_slice, array_index, mip_level) <
-           std::tie(count.depth, count.array_size, count.mip_levels_count);
+           std::tie(other.depth, other.array_size, other.mip_levels_count);
 }
 
-bool Resource::SubResource::Index::operator>=(const Count& count) const noexcept
+bool Resource::SubResource::Index::operator>=(const Count& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return !operator<(count);
+    return !operator<(other);
 }
 
 Resource::SubResource::Index::operator std::string() const noexcept

@@ -34,7 +34,7 @@ DirectX 12 implementation of the shader interface.
 #include <Methane/Checks.hpp>
 
 #include <d3dx12.h>
-#include <D3Dcompiler.h>
+#include <d3dcompiler.h>
 
 #include <nowide/convert.hpp>
 #include <sstream>
@@ -251,9 +251,11 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
         const Program::ArgumentDesc argument_desc = argument_desc_it == argument_descriptions.end()
                                                   ? Program::ArgumentDesc(shader_argument)
                                                   : *argument_desc_it;
+        const ProgramBindingsDX::ArgumentBindingDX::Type dx_addressable_binding_type = binding_desc.Type == D3D_SIT_CBUFFER
+                                                  ? ProgramBindingsDX::ArgumentBindingDX::Type::ConstantBufferView
+                                                  : ProgramBindingsDX::ArgumentBindingDX::Type::ShaderResourceView;
         const ProgramBindingsDX::ArgumentBindingDX::Type dx_binding_type = argument_desc.IsAddressable()
-                                                  ? binding_desc.Type == D3D_SIT_CBUFFER ? ProgramBindingsDX::ArgumentBindingDX::Type::ConstantBufferView
-                                                                                         : ProgramBindingsDX::ArgumentBindingDX::Type::ShaderResourceView
+                                                  ? dx_addressable_binding_type
                                                   : ProgramBindingsDX::ArgumentBindingDX::Type::DescriptorTable;
 
         argument_bindings.push_back(std::make_shared<ProgramBindingsDX::ArgumentBindingDX>(
@@ -347,7 +349,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
         element_desc.SemanticIndex            = param_desc.SemanticIndex;
         element_desc.InputSlot                = buffer_index;
         element_desc.InputSlotClass           = GetInputClassificationByLayoutStepType(input_buffer_layout.step_type);
-        element_desc.InstanceDataStepRate     = 0; // FIXME: input_buffer_layout.step_rate;
+        element_desc.InstanceDataStepRate     = 0; // FIXME: use input_buffer_layout.step_rate
         element_desc.Format                   = TypeConverterDX::ParameterDescToDxgiFormatAndSize(param_desc, element_byte_size);
         element_desc.AlignedByteOffset        = buffer_byte_offset;
 

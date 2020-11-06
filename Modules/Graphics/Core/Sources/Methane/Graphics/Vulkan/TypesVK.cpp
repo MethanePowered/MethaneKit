@@ -23,7 +23,3 @@ Methane graphics types converters to Vulkan native types.
 
 #include "TypesVK.h"
 
-namespace Methane::Graphics
-{
-
-} // namespace Methane::Graphics

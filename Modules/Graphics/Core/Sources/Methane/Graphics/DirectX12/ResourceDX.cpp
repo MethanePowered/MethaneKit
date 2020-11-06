@@ -53,10 +53,10 @@ ResourceDX::BarriersDX::BarriersDX(const Set& barriers)
     );
 }
 
-bool ResourceDX::BarriersDX::Add(const Barrier::Id& id, const Barrier::StateChange& state_change)
+bool ResourceDX::BarriersDX::AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    bool changed = ResourceBase::Barriers::Add(id, state_change);
+    bool changed = ResourceBase::Barriers::AddStateChange(id, state_change);
     if (changed)
     {
         m_native_resource_barriers.emplace_back(GetNativeResourceBarrier(id, state_change));

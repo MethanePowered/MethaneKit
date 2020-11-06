@@ -96,7 +96,7 @@ struct Program : virtual Object
         const std::string  name;
         const size_t       hash;
 
-        Argument(Shader::Type shader_type, std::string argument_name) noexcept;
+        Argument(Shader::Type shader_type, const std::string& argument_name) noexcept;
         Argument(const Argument& argument) = default;
         Argument(Argument&& argument) noexcept = default;
 
@@ -115,7 +115,7 @@ struct Program : virtual Object
     {
         const Modifiers::Mask modifiers;
 
-        ArgumentDesc(Shader::Type shader_type, std::string argument_name,
+        ArgumentDesc(Shader::Type shader_type, const std::string& argument_name,
                      Modifiers::Mask modifiers_mask = Modifiers::None) noexcept;
         ArgumentDesc(const Argument& argument,
                      Modifiers::Mask modifiers_mask = Modifiers::None) noexcept;

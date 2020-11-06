@@ -98,7 +98,7 @@ void FenceDX::WaitOnGpu(CommandQueue& wait_on_command_queue)
     FenceBase::WaitOnGpu(wait_on_command_queue);
 
     META_CHECK_ARG_NOT_NULL(m_cp_fence);
-    CommandQueueDX& dx_wait_on_command_queue = static_cast<CommandQueueDX&>(wait_on_command_queue);
+    auto& dx_wait_on_command_queue = static_cast<CommandQueueDX&>(wait_on_command_queue);
     ID3D12CommandQueue& native_wait_on_command_queue = dx_wait_on_command_queue.GetNativeCommandQueue();
     ThrowIfFailed(native_wait_on_command_queue.Wait(m_cp_fence.Get(), GetValue()),
                   dx_wait_on_command_queue.GetContextDX().GetDeviceDX().GetNativeDevice().Get());

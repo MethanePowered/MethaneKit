@@ -26,6 +26,7 @@ DirectX 12 implementation of the program interface.
 #include <Methane/Graphics/ProgramBase.h>
 
 #include "ShaderDX.h"
+#include "ProgramBindingsDX.h"
 
 #include <wrl.h>
 #include <d3d12.h>

@@ -98,7 +98,7 @@ public:
         StateChange state_change;
 
         Barrier(Id id, StateChange state_change);
-        Barrier(Type type, Resource& resource, State state_before, State state_after);
+        Barrier(Type type, const Resource& resource, State state_before, State state_after);
 
         bool operator<(const Barrier& other) const noexcept;
         bool operator==(const Barrier& other) const noexcept;
@@ -115,17 +115,17 @@ public:
         using Map = std::map<Barrier::Id, Barrier::StateChange>;
 
         static Ptr<Barriers> Create(const Set& barriers = {});
-        static Ptr<Barriers> CreateTransition(const Refs<Resource>& resources, State state_before, State state_after);
+        static Ptr<Barriers> CreateTransition(const Refs<const Resource>& resources, State state_before, State state_after);
 
         bool       IsEmpty() const noexcept { return m_barriers_map.empty(); }
         const Map& GetMap() const noexcept  { return m_barriers_map; }
         Set        GetSet() const noexcept;
 
-        bool Has(Barrier::Type type, Resource& resource, State before, State after);
-        bool HasTransition(Resource& resource, State before, State after);
-        bool Add(Barrier::Type type, Resource& resource, State before, State after);
-        bool AddTransition(Resource& resource, State before, State after);
-        virtual bool Add(const Barrier::Id& id, const Barrier::StateChange& state_change);
+        bool Has(Barrier::Type type, const Resource& resource, State before, State after);
+        bool HasTransition(const Resource& resource, State before, State after);
+        bool Add(Barrier::Type type, const Resource& resource, State before, State after);
+        bool AddTransition(const Resource& resource, State before, State after);
+        virtual bool AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change);
 
         virtual ~Barriers() = default;
 
@@ -150,7 +150,7 @@ public:
     const Descriptor&         GetDescriptor(Usage::Value usage) const override;
     void                      SetData(const SubResources& sub_resources) override;
     SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override;
-    const SubResource::Count& GetSubresourceCount() const noexcept override      { return m_sub_resource_count; }
+    const SubResource::Count& GetSubresourceCount() const noexcept final         { return m_sub_resource_count; }
     Data::Size                GetSubResourceDataSize(const SubResource::Index& subresource_index = SubResource::Index()) const override;
     Context&                  GetContext() noexcept override;
 

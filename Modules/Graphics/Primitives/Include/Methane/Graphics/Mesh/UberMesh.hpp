@@ -60,7 +60,7 @@ public:
             std::transform(sub_indices.begin(), sub_indices.end(), std::back_inserter(Mesh::m_indices),
                            [index_offset](const Mesh::Index& index)
                            {
-                               META_CHECK_ARG_LESS(static_cast<Data::Size>(index_offset) + index, std::numeric_limits<Mesh::Index>::max());
+                               META_CHECK_ARG_LESS(index_offset, std::numeric_limits<Mesh::Index>::max() - index);
                                return static_cast<Mesh::Index>(index_offset + index);
                            });
         }

@@ -33,76 +33,104 @@ DirectX 12 implementation of the sampler interface.
 namespace Methane::Graphics
 {
 
+using FilterMinMag = Sampler::Filter::MinMag;
+using FilterMip = Sampler::Filter::Mip;
+
+static D3D12_FILTER ConvertFilterMinNearesetMagNearestToDX(const Sampler::Filter& filter)
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Nearest);
+    META_CHECK_ARG_EQUAL(filter.mag, FilterMinMag::Nearest);
+
+    switch (filter.mip)
+    {
+    case FilterMip::NotMipmapped:
+    case FilterMip::Nearest:      return D3D12_FILTER_MIN_MAG_MIP_POINT;
+    case FilterMip::Linear:       return D3D12_FILTER_MIN_MAG_POINT_MIP_LINEAR;
+    default:                      META_UNEXPECTED_ENUM_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_MAG_MIP_POINT);
+    }
+}
+
+static D3D12_FILTER ConvertFilterMinNearesetMagLinearToDX(const Sampler::Filter& filter)
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Nearest);
+    META_CHECK_ARG_EQUAL(filter.mag, FilterMinMag::Linear);
+
+    switch (filter.mip)
+    {
+    case FilterMip::NotMipmapped:
+    case FilterMip::Nearest:      return D3D12_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT;
+    case FilterMip::Linear:       return D3D12_FILTER_MIN_POINT_MAG_MIP_LINEAR;
+    default:                      META_UNEXPECTED_ENUM_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT);
+    }
+}
+
+static D3D12_FILTER ConvertFilterMinNearesetToDX(const Sampler::Filter& filter)
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Nearest);
+
+    switch(filter.mag)
+    {
+    case FilterMinMag::Nearest: return ConvertFilterMinNearesetMagNearestToDX(filter);
+    case FilterMinMag::Linear:  return ConvertFilterMinNearesetMagLinearToDX(filter);
+    default:                    META_UNEXPECTED_ENUM_ARG_RETURN(filter.mag, D3D12_FILTER_MIN_MAG_MIP_POINT);
+    }
+}
+
+static D3D12_FILTER ConvertFilterMinLinearMagNearestToDX(const Sampler::Filter& filter)
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Linear);
+    META_CHECK_ARG_EQUAL(filter.mag, FilterMinMag::Nearest);
+
+    switch (filter.mip)
+    {
+    case FilterMip::NotMipmapped:
+    case FilterMip::Nearest:      return D3D12_FILTER_MIN_LINEAR_MAG_MIP_POINT;
+    case FilterMip::Linear:       return D3D12_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
+    default:                      META_UNEXPECTED_ENUM_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_LINEAR_MAG_MIP_POINT);
+    }
+}
+
+static D3D12_FILTER ConvertFilterMinLinearMagLinearToDX(const Sampler::Filter& filter)
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Linear);
+    META_CHECK_ARG_EQUAL(filter.mag, FilterMinMag::Linear);
+
+    switch (filter.mip)
+    {
+    case FilterMip::NotMipmapped:
+    case FilterMip::Nearest:      return D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+    case FilterMip::Linear:       return D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    default:                      META_UNEXPECTED_ENUM_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT);
+    }
+}
+
+static D3D12_FILTER ConvertFilterMinLinearToDX(const Sampler::Filter& filter)
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Linear);
+
+    switch (filter.mag)
+    {
+    case FilterMinMag::Nearest: return ConvertFilterMinLinearMagNearestToDX(filter); break;
+    case FilterMinMag::Linear:  return ConvertFilterMinLinearMagLinearToDX(filter); break;
+    default:                    META_UNEXPECTED_ENUM_ARG_RETURN(filter.mag, D3D12_FILTER_MIN_MAG_MIP_POINT);
+    }
+}
+
 static D3D12_FILTER ConvertFilterToDX(const Sampler::Filter& filter)
 {
     META_FUNCTION_TASK();
-    using FilterMinMag = Sampler::Filter::MinMag;
-    using FilterMip = Sampler::Filter::Mip;
-    
+
     switch (filter.min)
     {
-    case FilterMinMag::Nearest:
-    {
-        switch(filter.mag)
-        {
-        case FilterMinMag::Nearest:
-        {
-            switch (filter.mip)
-            {
-            case FilterMip::NotMipmapped:
-            case FilterMip::Nearest:      return D3D12_FILTER_MIN_MAG_MIP_POINT;
-            case FilterMip::Linear:       return D3D12_FILTER_MIN_MAG_POINT_MIP_LINEAR;
-            default:                      META_UNEXPECTED_ENUM_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_MAG_MIP_POINT);
-            }
-        } break;
-
-        case FilterMinMag::Linear:
-        {
-            switch (filter.mip)
-            {
-            case FilterMip::NotMipmapped:
-            case FilterMip::Nearest:      return D3D12_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT;
-            case FilterMip::Linear:       return D3D12_FILTER_MIN_POINT_MAG_MIP_LINEAR;
-            default:                      META_UNEXPECTED_ENUM_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT);
-            }
-        } break;
-
-        default: META_UNEXPECTED_ENUM_ARG_RETURN(filter.mag, D3D12_FILTER_MIN_MAG_MIP_POINT);
-        }
-    } break;
-
-    case FilterMinMag::Linear:
-    {
-        switch (filter.mag)
-        {
-        case FilterMinMag::Nearest:
-        {
-            switch (filter.mip)
-            {
-            case FilterMip::NotMipmapped:
-            case FilterMip::Nearest:      return D3D12_FILTER_MIN_LINEAR_MAG_MIP_POINT;
-            case FilterMip::Linear:       return D3D12_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
-            default:                      META_UNEXPECTED_ENUM_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_LINEAR_MAG_MIP_POINT);
-            }
-        } break;
-
-        case FilterMinMag::Linear:
-        {
-            switch (filter.mip)
-            {
-            case FilterMip::NotMipmapped:
-            case FilterMip::Nearest:      return D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-            case FilterMip::Linear:       return D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-            default:                      META_UNEXPECTED_ENUM_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT);
-            }
-        } break;
-
-        default: META_UNEXPECTED_ENUM_ARG_RETURN(filter.mag, D3D12_FILTER_MIN_MAG_MIP_POINT);
-        }
-    } break;
-
-    default:
-        META_UNEXPECTED_ENUM_ARG_RETURN(filter.min, D3D12_FILTER_MIN_MAG_MIP_POINT);
+    case FilterMinMag::Nearest: return ConvertFilterMinNearesetToDX(filter);
+    case FilterMinMag::Linear:  return ConvertFilterMinLinearToDX(filter);
+    default:                    META_UNEXPECTED_ENUM_ARG_RETURN(filter.min, D3D12_FILTER_MIN_MAG_MIP_POINT);
     }
 
     // TODO: unsupported filtering types
@@ -155,8 +183,7 @@ static D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDX(Sampler::Address::Mode 
 static void SetColor(const Color4f& in_color, FLOAT* p_out_color) noexcept
 {
     META_FUNCTION_TASK();
-
-    for (int i = 0; i < in_color.array_size; ++i)
+    for (int i = 0; i < Color4f::array_size; ++i)
     {
         p_out_color[i] = in_color[i];
     }

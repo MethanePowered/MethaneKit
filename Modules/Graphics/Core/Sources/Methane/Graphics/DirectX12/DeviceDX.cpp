@@ -36,9 +36,7 @@ DirectX 12 implementation of the device interface.
 #include <algorithm>
 #include <cassert>
 
-// NOTE: Adapters change handling breaks many frame capture tools,
-//       like VS or RenderDoc, so it's disabled for now
-//#define ADAPTERS_CHANGE_HANDLING
+
 
 namespace Methane::Graphics
 {

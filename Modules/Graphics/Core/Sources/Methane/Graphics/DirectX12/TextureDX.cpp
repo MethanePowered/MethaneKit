@@ -42,9 +42,8 @@ namespace Methane::Graphics
 static D3D12_SRV_DIMENSION GetSrvDimension(const Dimensions& tex_dimensions) noexcept
 {
     META_FUNCTION_TASK();
-    return tex_dimensions.depth == 1 ? (tex_dimensions.height == 1 ? D3D12_SRV_DIMENSION_TEXTURE1D
-                                                                   : D3D12_SRV_DIMENSION_TEXTURE2D)
-                                     : D3D12_SRV_DIMENSION_TEXTURE3D;
+    const D3D12_SRV_DIMENSION flat_dimension = tex_dimensions.height == 1 ? D3D12_SRV_DIMENSION_TEXTURE1D : D3D12_SRV_DIMENSION_TEXTURE2D;
+    return tex_dimensions.depth == 1 ? flat_dimension : D3D12_SRV_DIMENSION_TEXTURE3D;
 }
 
 static D3D12_DSV_DIMENSION GetDsvDimension(const Dimensions& tex_dimensions)
@@ -125,12 +124,14 @@ void FrameBufferTextureDX::Initialize(uint32_t frame_buffer_index)
     GetContextDX().GetDeviceDX().GetNativeDevice()->CreateRenderTargetView(GetNativeResource(), nullptr, descriptor_handle);
 }
 
-template<>
-void DepthStencilBufferTextureDX::Initialize(const std::optional<DepthStencil>& clear_depth_stencil)
+DepthStencilBufferTextureDX::TextureDX(ContextBase& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
+                                       const std::optional<DepthStencil>& clear_depth_stencil)
+    : TextureBase(render_context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();
 
-    const Settings& settings = GetSettings();
+    InitializeDefaultDescriptors();
+
     CD3DX12_RESOURCE_DESC tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
         TypeConverterDX::PixelFormatToDxgi(settings.pixel_format, TypeConverterDX::ResourceFormatType::ResourceBase),
         settings.dimensions.width, settings.dimensions.height
@@ -170,34 +171,41 @@ void DepthStencilBufferTextureDX::Initialize(const std::optional<DepthStencil>& 
 
         const Descriptor& desc = ResourceBase::GetDescriptorByUsage(usage);
         const DescriptorHeap::Type descriptor_heap_type = desc.heap.GetSettings().type;
+
         switch (descriptor_heap_type)
         {
-        case DescriptorHeap::Type::ShaderResources:
-        {
-            D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
-            srv_desc.Format                  = TypeConverterDX::PixelFormatToDxgi(settings.pixel_format, TypeConverterDX::ResourceFormatType::ViewRead);
-            srv_desc.ViewDimension           = GetSrvDimension(settings.dimensions);
-            srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-            srv_desc.Texture2D.MipLevels     = 1;
-            cp_device->CreateShaderResourceView(GetNativeResource(), &srv_desc, GetNativeCpuDescriptorHandle(desc));
-        }
-            break;
-
-        case DescriptorHeap::Type::DepthStencil:
-        {
-            D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc{};
-            dsv_desc.Format        = view_write_format;
-            dsv_desc.ViewDimension = GetDsvDimension(settings.dimensions);
-            cp_device->CreateDepthStencilView(GetNativeResource(), &dsv_desc, GetNativeCpuDescriptorHandle(desc));
-        }
-            break;
-
+        case DescriptorHeap::Type::ShaderResources: CreateShaderResourceView(settings, cp_device, desc); break;
+        case DescriptorHeap::Type::DepthStencil:    CreateDepthStencilView(settings, view_write_format, cp_device, desc); break;
         default:
             META_UNEXPECTED_ENUM_ARG_DESCR(descriptor_heap_type,
                                            fmt::format("unsupported usage '{}' and descriptor heap type '{}' for Depth-Stencil buffer",
                                                        Usage::ToString(usage), DescriptorHeap::GetTypeName(descriptor_heap_type)));
         }
     }
+}
+
+void DepthStencilBufferTextureDX::CreateShaderResourceView(const Texture::Settings& settings, const wrl::ComPtr <ID3D12Device>& cp_device,
+                                                           const Resource::Descriptor& desc) const
+{
+    META_FUNCTION_TASK();
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
+    srv_desc.Format                  = TypeConverterDX::PixelFormatToDxgi(settings.pixel_format, TypeConverterDX::ResourceFormatType::ViewRead);
+    srv_desc.ViewDimension           = GetSrvDimension(settings.dimensions);
+    srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srv_desc.Texture2D.MipLevels     = 1;
+    cp_device->CreateShaderResourceView(GetNativeResource(), &srv_desc, GetNativeCpuDescriptorHandle(desc));
+}
+
+void DepthStencilBufferTextureDX::CreateDepthStencilView(const Texture::Settings& settings, const DXGI_FORMAT& view_write_format,
+                                                         const wrl::ComPtr<ID3D12Device>& cp_device, const Resource::Descriptor& desc) const
+{
+    META_FUNCTION_TASK();
+
+    D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc{};
+    dsv_desc.Format        = view_write_format;
+    dsv_desc.ViewDimension = GetDsvDimension(settings.dimensions);
+    cp_device->CreateDepthStencilView(GetNativeResource(), &dsv_desc, GetNativeCpuDescriptorHandle(desc));
 }
 
 ImageTextureDX::TextureDX(ContextBase& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg)
@@ -358,7 +366,7 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
         dx_sub_resource.SlicePitch = settings.dimensions.height * dx_sub_resource.RowPitch;
 
         META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(sub_resource.size, dx_sub_resource.SlicePitch,
-                                                 "sub-resource data size is less than computed MIP slice size, possibly due to pixel format mismatch");
+                                              "sub-resource data size is less than computed MIP slice size, possibly due to pixel format mismatch");
     }
 
     // NOTE: scratch_image is the owner of generated mip-levels memory, which should be hold until UpdateSubresources call completes
@@ -368,7 +376,7 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
         GenerateMipLevels(dx_sub_resources, scratch_image);
     }
 
-    BlitCommandListDX& upload_cmd_list = static_cast<BlitCommandListDX&>(GetContext().GetUploadCommandList());
+    auto& upload_cmd_list = static_cast<BlitCommandListDX&>(GetContext().GetUploadCommandList());
     upload_cmd_list.RetainResource(*this);
 
     const ResourceBase::State final_texture_state = GetState() == State::Common ? State::PixelShaderResource : GetState();
@@ -389,7 +397,7 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
     GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
 }
 
-void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_resources, DirectX::ScratchImage& scratch_image)
+void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_resources, DirectX::ScratchImage& scratch_image) const
 {
     META_FUNCTION_TASK();
 
@@ -406,14 +414,14 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
         if (sub_resource_index.mip_level > 0)
             continue;
 
-        D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[sub_resource_raw_index];
+        const D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[sub_resource_raw_index];
         DirectX::Image& base_mip_image = sub_resource_images[sub_resource_raw_index];
         base_mip_image.width           = settings.dimensions.width;
         base_mip_image.height          = settings.dimensions.height;
         base_mip_image.format          = tex_desc.Format;
         base_mip_image.rowPitch        = dx_sub_resource.RowPitch;
         base_mip_image.slicePitch      = dx_sub_resource.SlicePitch;
-        base_mip_image.pixels          = reinterpret_cast<uint8_t*>(const_cast<void*>(dx_sub_resource.pData)); // FIXME: Dirty casting...
+        base_mip_image.pixels          = reinterpret_cast<uint8_t*>(const_cast<void*>(dx_sub_resource.pData));
     }
 
     DirectX::TexMetadata tex_metadata{ };

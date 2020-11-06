@@ -133,7 +133,7 @@ struct Resource : virtual Object
             explicit Count(Data::Size array_size  = 1U, Data::Size depth  = 1U, Data::Size mip_levels_count = 1U);
             Data::Size GetRawCount() const noexcept;
 
-            void operator+=(const Index& index) noexcept;
+            void operator+=(const Index& other) noexcept;
             bool operator==(const Count& other) const noexcept;
             bool operator!=(const Count& other) const noexcept { return !operator==(other); }
             bool operator<(const Count& other) const noexcept;
@@ -156,9 +156,9 @@ struct Resource : virtual Object
             bool operator==(const Index& other) const noexcept;
             bool operator!=(const Index& other) const noexcept { return !operator==(other); }
             bool operator<(const Index& other) const noexcept;
-            bool operator>=(const Index& count) const noexcept;
-            bool operator<(const Count& count) const noexcept;
-            bool operator>=(const Count& count) const noexcept;
+            bool operator>=(const Index& other) const noexcept;
+            bool operator<(const Count& other) const noexcept;
+            bool operator>=(const Count& other) const noexcept;
             explicit operator std::string() const noexcept;
         };
 
