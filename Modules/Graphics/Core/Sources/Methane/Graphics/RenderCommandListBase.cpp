@@ -51,7 +51,7 @@ RenderCommandListBase::RenderCommandListBase(ParallelRenderCommandListBase& para
     META_FUNCTION_TASK();
 }
 
-void RenderCommandListBase::Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
+void RenderCommandListBase::ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 

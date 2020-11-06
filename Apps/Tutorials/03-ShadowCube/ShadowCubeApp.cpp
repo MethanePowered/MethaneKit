@@ -431,7 +431,7 @@ void ShadowCubeApp::RenderScene(const RenderPass &render_pass, ShadowCubeFrame::
     gfx::RenderCommandList& cmd_list = *render_pass_resources.cmd_list_ptr;
 
     // Reset command list with initial rendering state
-    cmd_list.Reset(render_pass.render_state_ptr, render_pass.debug_group_ptr.get());
+    cmd_list.ResetWithState(render_pass.render_state_ptr, render_pass.debug_group_ptr.get());
     cmd_list.SetViewState(*render_pass.view_state_ptr);
 
     // Draw scene with cube and floor

@@ -194,7 +194,7 @@ class HelloTriangleApp final : public GraphicsApp
             return false;
 
         HelloTriangleFrame& frame = GetCurrentFrame();
-        frame.render_cmd_list_ptr->Reset(m_render_state_ptr);
+        frame.render_cmd_list_ptr->ResetWithState(m_render_state_ptr);
         frame.render_cmd_list_ptr->SetViewState(GetViewState());
         frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
         frame.render_cmd_list_ptr->Draw(RenderCommandList::Primitive::Triangle, 3);

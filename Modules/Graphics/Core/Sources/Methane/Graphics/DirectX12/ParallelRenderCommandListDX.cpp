@@ -63,13 +63,13 @@ ParallelRenderCommandListDX::ParallelRenderCommandListDX(CommandQueueBase& cmd_b
     GetPassDX().SetNativeRenderPassUsage(false);
 }
 
-void ParallelRenderCommandListDX::Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
+void ParallelRenderCommandListDX::ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 
     // Render pass is begun in "beginning" command list only,
     // but it will be ended in the "ending" command list on commit of the parallel CL
-    m_beginning_command_list.Reset(Ptr<RenderState>(), p_debug_group); // begins render pass
+    m_beginning_command_list.ResetWithState(Ptr<RenderState>(), p_debug_group); // begins render pass
     m_ending_command_list.ResetNative();                               // only reset native command list
 
     // Instead of closing debug group (from Reset call) on beginning CL commit, we force to close it in ending CL
@@ -87,7 +87,7 @@ void ParallelRenderCommandListDX::Reset(const Ptr<RenderState>& render_state_ptr
         dx_render_state.InitializeNativePipelineState();
     }
 
-    ParallelRenderCommandListBase::Reset(render_state_ptr, p_debug_group);
+    ParallelRenderCommandListBase::ResetWithState(render_state_ptr, p_debug_group);
 }
 
 void ParallelRenderCommandListDX::SetName(const std::string& name)

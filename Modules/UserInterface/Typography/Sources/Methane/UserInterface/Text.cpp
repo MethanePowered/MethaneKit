@@ -350,7 +350,7 @@ void Text::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* 
     if (!frame_resources.IsInitialized())
         return;
 
-    cmd_list.Reset(m_render_state_ptr, p_debug_group);
+    cmd_list.ResetWithState(m_render_state_ptr, p_debug_group);
     cmd_list.SetViewState(*m_view_state_ptr);
     cmd_list.SetProgramBindings(frame_resources.GetProgramBindings());
     cmd_list.SetVertexBuffers(frame_resources.GetVertexBufferSet());

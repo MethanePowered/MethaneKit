@@ -61,7 +61,7 @@ void ParallelRenderCommandListBase::SetValidationEnabled(bool is_validation_enab
     }
 }
 
-void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
+void ParallelRenderCommandListBase::ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     CommandListBase::Reset();
@@ -81,7 +81,7 @@ void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& render_state_p
         META_FUNCTION_TASK();
         const Ptr<RenderCommandList>& render_command_list_ptr = m_parallel_command_lists[command_list_index];
         META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
-        render_command_list_ptr->Reset(render_state_ptr, p_debug_group ? p_debug_group->GetSubGroup(static_cast<Data::Index>(command_list_index)) : nullptr);
+        render_command_list_ptr->ResetWithState(render_state_ptr, p_debug_group ? p_debug_group->GetSubGroup(static_cast<Data::Index>(command_list_index)) : nullptr);
     };
 
 #ifdef _WIN32

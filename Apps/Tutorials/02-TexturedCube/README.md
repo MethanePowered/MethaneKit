@@ -467,7 +467,7 @@ bool TexturedCubeApp::Render()
 
     // Issue commands for cube rendering
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Cube Rendering");
-    frame.render_cmd_list_ptr->Reset(m_render_state_ptr, s_debug_group.get());
+    frame.render_cmd_list_ptr->ResetWithState(m_render_state_ptr, s_debug_group.get());
     frame.render_cmd_list_ptr->SetViewState(GetViewState());
     frame.render_cmd_list_ptr->SetProgramBindings(*frame.program_bindings_ptr);
     frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);

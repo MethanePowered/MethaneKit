@@ -73,12 +73,12 @@ RenderCommandListMT::RenderCommandListMT(ParallelRenderCommandListBase& parallel
     META_FUNCTION_TASK();
 }
 
-void RenderCommandListMT::Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
+void RenderCommandListMT::ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     if (IsCommandEncoderInitialized())
     {
-        RenderCommandListBase::Reset(render_state_ptr, p_debug_group);
+        RenderCommandListBase::ResetWithState(render_state_ptr, p_debug_group);
         return;
     }
 
@@ -100,7 +100,7 @@ void RenderCommandListMT::Reset(const Ptr<RenderState>& render_state_ptr, DebugG
         InitializeCommandEncoder([mtl_cmd_buffer renderCommandEncoderWithDescriptor:mtl_render_pass]);
     }
 
-    RenderCommandListBase::Reset(render_state_ptr, p_debug_group);
+    RenderCommandListBase::ResetWithState(render_state_ptr, p_debug_group);
 }
 
 void RenderCommandListMT::SetVertexBuffers(BufferSet& vertex_buffers)
