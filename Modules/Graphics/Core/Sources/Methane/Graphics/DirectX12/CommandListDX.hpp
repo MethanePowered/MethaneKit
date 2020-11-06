@@ -83,7 +83,7 @@ public:
 
     // CommandList interface
 
-    void PushDebugGroup(CommandList::DebugGroup& debug_group) override
+    void PushDebugGroup(CommandList::DebugGroup& debug_group) final
     {
         META_FUNCTION_TASK();
 
@@ -92,7 +92,7 @@ public:
         PIXBeginEvent(m_cp_command_list.Get(), 0, group_name.c_str());
     }
 
-    void PopDebugGroup() override
+    void PopDebugGroup() final
     {
         META_FUNCTION_TASK();
 
@@ -119,12 +119,12 @@ public:
         }
 
         m_cp_command_list->Close();
-        m_is_committed = true;
+        m_is_native_committed = true;
     }
 
     // CommandListBase interface
 
-    void SetResourceBarriers(const ResourceBase::Barriers& resource_barriers) override
+    void SetResourceBarriers(const ResourceBase::Barriers& resource_barriers) final
     {
         META_FUNCTION_TASK();
         if (resource_barriers.IsEmpty())
@@ -142,10 +142,10 @@ public:
     void Reset(CommandList::DebugGroup* p_debug_group) override
     {
         META_FUNCTION_TASK();
-        if (!m_is_committed)
+        if (!m_is_native_committed)
             return;
 
-        m_is_committed = false;
+        m_is_native_committed = false;
 
         const wrl::ComPtr<ID3D12Device>& cp_device = GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice();
         ThrowIfFailed(m_cp_command_allocator->Reset(), cp_device.Get());
@@ -158,14 +158,14 @@ public:
         CommandListBase::Reset(p_debug_group);
     }
 
-    void SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override
+    void SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) final
     {
         META_FUNCTION_TASK();
         CommandListBase::CommandState& command_state = CommandListBase::GetCommandState();
         if (command_state.program_bindings_ptr.get() == &program_bindings)
             return;
 
-        ProgramBindingsDX& program_bindings_dx = static_cast<ProgramBindingsDX&>(program_bindings);
+        auto& program_bindings_dx = static_cast<ProgramBindingsDX&>(program_bindings);
         program_bindings_dx.Apply(*this, CommandListBase::GetProgramBindings().get(), apply_behavior);
 
         Ptr<ObjectBase> program_bindings_object_ptr = program_bindings_dx.GetBasePtr();
@@ -173,7 +173,7 @@ public:
         CommandListBase::RetainResource(std::move(program_bindings_object_ptr));
     }
 
-    Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const override
+    Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const final
     {
         META_FUNCTION_TASK();
         if (m_begin_timestamp_query_ptr && m_end_timestamp_query_ptr)
@@ -203,18 +203,18 @@ public:
 
     // ICommandListDX interface
 
-    void SetResourceBarriersDX(const ResourceBase::Barriers& resource_barriers) override { SetResourceBarriers(resource_barriers); }
-    CommandQueueDX&             GetCommandQueueDX() override                             { return static_cast<CommandQueueDX&>(GetCommandQueueBase()); }
-    ID3D12GraphicsCommandList&  GetNativeCommandList() const override
+    void SetResourceBarriersDX(const ResourceBase::Barriers& resource_barriers) final { SetResourceBarriers(resource_barriers); }
+    CommandQueueDX&             GetCommandQueueDX() final                             { return static_cast<CommandQueueDX&>(GetCommandQueueBase()); }
+    ID3D12GraphicsCommandList&  GetNativeCommandList() const final
     {
         META_CHECK_ARG_NOT_NULL(m_cp_command_list);
         return *m_cp_command_list.Get();
     }
-    ID3D12GraphicsCommandList4* GetNativeCommandList4() const override { return m_cp_command_list_4.Get(); }
+    ID3D12GraphicsCommandList4* GetNativeCommandList4() const final { return m_cp_command_list_4.Get(); }
 
 protected:
-    bool IsCommitted() const             { return m_is_committed; }
-    void SetCommitted(bool is_committed) { m_is_committed = is_committed; }
+    bool IsNativeCommitted() const             { return m_is_native_committed; }
+    void SetNativeCommitted(bool is_committed) { m_is_native_committed = is_committed; }
 
     ID3D12CommandAllocator& GetNativeCommandAllocatorRef()
     {
@@ -237,7 +237,7 @@ private:
     wrl::ComPtr<ID3D12CommandAllocator>       m_cp_command_allocator;
     wrl::ComPtr<ID3D12GraphicsCommandList>    m_cp_command_list;
     wrl::ComPtr<ID3D12GraphicsCommandList4>   m_cp_command_list_4;    // extended interface for the same command list (may be unavailable on older Windows)
-    bool                                      m_is_committed = false;
+    bool                                      m_is_native_committed = false;
 };
 
 } // namespace Methane::Graphics

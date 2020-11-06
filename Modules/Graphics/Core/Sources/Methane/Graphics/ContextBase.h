@@ -82,7 +82,7 @@ public:
     ResourceManager&        GetResourceManager() noexcept        { return m_resource_manager; }
     const ResourceManager&  GetResourceManager() const noexcept  { return m_resource_manager; }
     CommandQueueBase&       GetUploadCommandQueueBase();
-    DeviceBase&             GetDeviceBase() noexcept;
+    DeviceBase&             GetDeviceBase();
     const DeviceBase&       GetDeviceBase() const;
 
 protected:

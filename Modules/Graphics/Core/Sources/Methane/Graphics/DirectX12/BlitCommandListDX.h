@@ -35,7 +35,7 @@ class BlitCommandListDX final
     , public BlitCommandList
 {
 public:
-    BlitCommandListDX(CommandQueueBase& cmd_buffer);
+    explicit BlitCommandListDX(CommandQueueBase& cmd_buffer);
 };
 
 } // namespace Methane::Graphics

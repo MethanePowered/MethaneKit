@@ -93,11 +93,11 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
     // For secondary screen point the primary result is used
     const bool inside_sphere = ( is_primary && screen_radius <= sphere_radius) ||
                                (!is_primary && std::fabs(m_mouse_pressed_on_sphere[2]) > 0.000001F);
+    const float inside_sphere_sign = inside_sphere ? 1.F : -1.F;
 
     // Reflect coordinates for natural camera movement
     const Point2f mirror_multipliers = m_p_view_camera
-                                     ? Point2f(inside_sphere ? 1.F : -1.F, -1.F ) *
-                                           UnitSign(cml::dot(GetLookDirection(m_mouse_pressed_orientation), m_p_view_camera->GetLookDirection()))
+                                     ? Point2f(inside_sphere_sign, -1.F ) * UnitSign(cml::dot(GetLookDirection(m_mouse_pressed_orientation), m_p_view_camera->GetLookDirection()))
                                      : Point2f(-1.F, 1.F);
     screen_vector.SetX(screen_vector.GetX() * mirror_multipliers.GetX());
     screen_vector.SetY(screen_vector.GetY() * mirror_multipliers.GetY());

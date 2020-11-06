@@ -52,6 +52,12 @@ Ptr<CommandListSet> CommandListSet::Create(const Refs<CommandList>& command_list
     return std::make_shared<CommandListSetDX>(command_list_refs);
 }
 
+inline void AddParallelRenderNativeCommandLists(CommandListSetDX::NativeCommandLists& native_cmd_list, const ParallelRenderCommandListDX& parallel_render_cmd_list)
+{
+    const CommandListSetDX::NativeCommandLists parallel_native_cmd_lists = static_cast<const ParallelRenderCommandListDX&>(parallel_render_cmd_list).GetNativeCommandLists();
+    native_cmd_list.insert(native_cmd_list.end(), parallel_native_cmd_lists.begin(), parallel_native_cmd_lists.end());
+}
+
 CommandListSetDX::CommandListSetDX(const Refs<CommandList>& command_list_refs)
     : CommandListSetBase(command_list_refs)
     , m_execution_completed_fence(GetCommandQueueBase())
@@ -66,22 +72,20 @@ CommandListSetDX::CommandListSetDX(const Refs<CommandList>& command_list_refs)
     m_native_command_lists.reserve(base_command_list_refs.size());
     for(const Ref<CommandListBase>& command_list_ref : base_command_list_refs)
     {
-        CommandListBase& command_list = command_list_ref.get();
+        const CommandListBase& command_list = command_list_ref.get();
         switch (command_list.GetType())
         {
         case CommandList::Type::Blit:
-            m_native_command_lists.emplace_back(&static_cast<BlitCommandListDX&>(command_list).GetNativeCommandList());
+            m_native_command_lists.emplace_back(&static_cast<const BlitCommandListDX&>(command_list).GetNativeCommandList());
             break;
 
         case CommandList::Type::Render:
-            m_native_command_lists.emplace_back(&static_cast<RenderCommandListDX&>(command_list).GetNativeCommandList());
+            m_native_command_lists.emplace_back(&static_cast<const RenderCommandListDX&>(command_list).GetNativeCommandList());
             break;
 
         case CommandList::Type::ParallelRender:
-        {
-            const NativeCommandLists native_command_lists = static_cast<ParallelRenderCommandListDX&>(command_list).GetNativeCommandLists();
-            m_native_command_lists.insert(m_native_command_lists.end(), native_command_lists.begin(), native_command_lists.end());
-        } break;
+            AddParallelRenderNativeCommandLists(m_native_command_lists, static_cast<const ParallelRenderCommandListDX&>(command_list));
+            break;
 
         default:
             META_UNEXPECTED_ENUM_ARG(command_list.GetType());

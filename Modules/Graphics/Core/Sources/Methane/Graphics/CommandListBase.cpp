@@ -329,7 +329,7 @@ void CommandListBase::ResetCommandState()
     m_command_state.retained_resources.clear();
 }
 
-CommandQueueBase& CommandListBase::GetCommandQueueBase() noexcept
+CommandQueueBase& CommandListBase::GetCommandQueueBase()
 {
     META_FUNCTION_TASK();
     return static_cast<CommandQueueBase&>(CommandListBase::GetCommandQueue());

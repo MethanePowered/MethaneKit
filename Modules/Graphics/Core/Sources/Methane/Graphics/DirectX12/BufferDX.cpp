@@ -40,7 +40,7 @@ static std::vector<D3D12_VERTEX_BUFFER_VIEW> GetNativeVertexBufferViews(const Re
     std::transform(buffer_refs.begin(), buffer_refs.end(), std::back_inserter(vertex_buffer_views),
         [](const Ref<Buffer>& buffer_ref)
         {
-           const VertexBufferDX& vertex_buffer = static_cast<const VertexBufferDX&>(buffer_ref.get());
+           const auto& vertex_buffer = static_cast<const VertexBufferDX&>(buffer_ref.get());
            return vertex_buffer.GetNativeView();
         }
     );
@@ -96,8 +96,8 @@ void VertexBufferDX::InitializeView(Data::Size stride)
 {
     META_FUNCTION_TASK();
     m_buffer_view.BufferLocation   = GetNativeGpuAddress();
-    m_buffer_view.SizeInBytes      = static_cast<UINT>(GetDataSize());
-    m_buffer_view.StrideInBytes    = static_cast<UINT>(stride);
+    m_buffer_view.SizeInBytes      = GetDataSize();
+    m_buffer_view.StrideInBytes    = stride;
 }
 
 template<>
@@ -105,7 +105,7 @@ void IndexBufferDX::InitializeView(PixelFormat format)
 {
     META_FUNCTION_TASK();
     m_buffer_view.BufferLocation   = GetNativeGpuAddress();
-    m_buffer_view.SizeInBytes      = static_cast<UINT>(GetDataSize());
+    m_buffer_view.SizeInBytes      = GetDataSize();
     m_buffer_view.Format           = TypeConverterDX::PixelFormatToDxgi(format);
 }
 
@@ -115,7 +115,7 @@ void ConstantBufferDX::InitializeView()
     META_FUNCTION_TASK();
     const Data::Size data_size   = GetDataSize();
     m_buffer_view.BufferLocation = GetNativeGpuAddress();
-    m_buffer_view.SizeInBytes    = static_cast<UINT>(data_size);
+    m_buffer_view.SizeInBytes    = data_size;
 
     // NOTE: Addressable resources are bound to pipeline using GPU Address and byte offset
     const Usage::Mask usage_mask = GetUsageMask();

@@ -69,6 +69,9 @@ public:
 private:
     void WaitForExecution() noexcept;
 
+    const Ptr<CommandListSetDX>& GetNextExecutingCommandListSet() const;
+    void CompleteCommandListSetExecution(CommandListSetDX& executing_command_list_set);
+
     wrl::ComPtr<ID3D12CommandQueue>   m_cp_command_queue;
     std::queue<Ptr<CommandListSetDX>> m_executing_command_lists;
     mutable TracyLockable(std::mutex, m_executing_command_lists_mutex);
@@ -78,6 +81,7 @@ private:
     std::thread                       m_execution_waiting_thread;
     std::exception_ptr                m_execution_waiting_exception_ptr;
     Ptr<TimestampQueryBuffer>         m_timestamp_query_buffer_ptr;
+    std::atomic<bool>                 m_name_changed{ false };
 };
 
 } // namespace Methane::Graphics

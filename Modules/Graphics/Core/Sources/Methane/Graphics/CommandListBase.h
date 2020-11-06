@@ -99,13 +99,13 @@ public:
     void PushOpenDebugGroup(DebugGroup& debug_group);
     void ClearOpenDebugGroups();
 
-    CommandQueueBase&               GetCommandQueueBase() noexcept;
+    CommandQueueBase&               GetCommandQueueBase();
     const CommandQueueBase&         GetCommandQueueBase() const;
     const Ptr<ProgramBindingsBase>& GetProgramBindings() const noexcept  { return GetCommandState().program_bindings_ptr; }
     Ptr<CommandListBase>            GetCommandListPtr()                  { return std::static_pointer_cast<CommandListBase>(GetBasePtr()); }
 
-    inline void RetainResource(const Ptr<ObjectBase>& resource_ptr) { if (resource_ptr) m_command_state.retained_resources.emplace_back(resource_ptr); }
-    inline void RetainResource(ObjectBase& resource)           { m_command_state.retained_resources.emplace_back(resource.GetBasePtr()); }
+    inline void RetainResource(const Ptr<ObjectBase>& resource_ptr)      { if (resource_ptr) m_command_state.retained_resources.emplace_back(resource_ptr); }
+    inline void RetainResource(ObjectBase& resource)                     { m_command_state.retained_resources.emplace_back(resource.GetBasePtr()); }
 
     template<typename T, typename = std::enable_if_t<std::is_base_of_v<ObjectBase, T>>>
     inline void RetainResources(const Ptrs<T>& resource_ptrs)
@@ -181,8 +181,8 @@ public:
     const Refs<CommandListBase>& GetBaseRefs() const noexcept               { return m_base_refs; }
     Data::Index                  GetExecutingOnFrameIndex() const noexcept  { return m_executing_on_frame_index; }
     const CommandListBase&       GetCommandListBase(Data::Index index) const;
-    CommandQueueBase&            GetCommandQueueBase() noexcept             { return m_base_refs.back().get().GetCommandQueueBase(); }
-    const CommandQueueBase&      GetCommandQueueBase() const       { return m_base_refs.back().get().GetCommandQueueBase(); }
+    CommandQueueBase&            GetCommandQueueBase()                      { return m_base_refs.back().get().GetCommandQueueBase(); }
+    const CommandQueueBase&      GetCommandQueueBase() const                { return m_base_refs.back().get().GetCommandQueueBase(); }
 
 private:
     Refs<CommandList>      m_refs;

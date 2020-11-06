@@ -55,7 +55,7 @@ static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandList::Type comman
     switch(command_list_type)
     {
     case CommandList::Type::Blit:
-        // TODO: must be return D3D12_COMMAND_LIST_TYPE_COPY;
+        // TODO: should be D3D12_COMMAND_LIST_TYPE_COPY
         return D3D12_COMMAND_LIST_TYPE_DIRECT;
 
     case CommandList::Type::Render:
@@ -133,19 +133,21 @@ void CommandQueueDX::Execute(CommandListSet& command_lists, const CommandList::C
         std::rethrow_exception(m_execution_waiting_exception_ptr);
     }
 
-    CommandListSetDX& dx_command_lists = static_cast<CommandListSetDX&>(command_lists);
-    {
-        std::lock_guard<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
-        m_executing_command_lists.push(std::static_pointer_cast<CommandListSetDX>(dx_command_lists.GetPtr()));
-        m_execution_waiting_condition_var.notify_one();
-    }
+    auto& dx_command_lists = static_cast<CommandListSetDX&>(command_lists);
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
+    m_executing_command_lists.push(std::static_pointer_cast<CommandListSetDX>(dx_command_lists.GetPtr()));
+    m_execution_waiting_condition_var.notify_one();
 }
 
 void CommandQueueDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
+    if (name == GetName())
+        return;
+
     CommandQueueBase::SetName(name);
     m_cp_command_queue->SetName(nowide::widen(name).c_str());
+    m_name_changed = true;
 }
 
 void CommandQueueDX::CompleteExecution(const std::optional<Data::Index>& frame_index)
@@ -176,7 +178,6 @@ ID3D12CommandQueue& CommandQueueDX::GetNativeCommandQueue()
 
 void CommandQueueDX::WaitForExecution() noexcept
 {
-    std::string command_queue_name;
     try
     {
         do
@@ -186,37 +187,21 @@ void CommandQueueDX::WaitForExecution() noexcept
                 [this] { return !m_execution_waiting || !m_executing_command_lists.empty(); }
             );
 
-            if (command_queue_name != GetName())
+            if (m_name_changed)
             {
-                command_queue_name = GetName();
-                const std::string thread_name = command_queue_name + " Wait for Execution";
+                const std::string thread_name = fmt::format("{} Wait for Execution", GetName());
                 META_THREAD_NAME(thread_name.c_str());
+                m_name_changed = false;
             }
 
             while (!m_executing_command_lists.empty())
             {
-                Ptr<CommandListSetDX> command_lists_ptr;
-                {
-                    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
-                    if (m_executing_command_lists.empty())
-                        break;
+                const Ptr<CommandListSetDX>& command_list_set_ptr = GetNextExecutingCommandListSet();
+                if (!command_list_set_ptr)
+                    break;
 
-                    command_lists_ptr = m_executing_command_lists.front();
-                }
-
-                META_CHECK_ARG_NOT_NULL(command_lists_ptr);
-                if (!command_lists_ptr)
-                    continue;
-
-                command_lists_ptr->GetExecutionCompletedFenceDX().WaitOnCpu();
-
-                std::unique_lock<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
-                command_lists_ptr->Complete();
-                if (!m_executing_command_lists.empty() &&
-                    m_executing_command_lists.front().get() == command_lists_ptr.get())
-                {
-                    m_executing_command_lists.pop();
-                }
+                command_list_set_ptr->GetExecutionCompletedFenceDX().WaitOnCpu();
+                CompleteCommandListSetExecution(*command_list_set_ptr);
             }
         }
         while (m_execution_waiting);
@@ -225,6 +210,33 @@ void CommandQueueDX::WaitForExecution() noexcept
     {
         m_execution_waiting_exception_ptr = std::current_exception();
         m_execution_waiting = false;
+    }
+}
+
+const Ptr<CommandListSetDX>& CommandQueueDX::GetNextExecutingCommandListSet() const
+{
+    META_FUNCTION_TASK();
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
+
+    static const Ptr<CommandListSetDX> s_empty_command_list_set_ptr;
+
+    if (m_executing_command_lists.empty())
+        return s_empty_command_list_set_ptr;
+
+    META_CHECK_ARG_NOT_NULL(m_executing_command_lists.front());
+    return m_executing_command_lists.front();
+}
+
+void CommandQueueDX::CompleteCommandListSetExecution(CommandListSetDX& executing_command_list_set)
+{
+    META_FUNCTION_TASK();
+    std::unique_lock<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
+
+    executing_command_list_set.Complete();
+
+    if (!m_executing_command_lists.empty() && m_executing_command_lists.front().get() == std::addressof(executing_command_list_set))
+    {
+        m_executing_command_lists.pop();
     }
 }
 

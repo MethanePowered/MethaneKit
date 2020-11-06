@@ -80,10 +80,10 @@ RenderCommandListDX::RenderCommandListDX(ParallelRenderCommandListBase& parallel
 void RenderCommandListDX::ResetNative(const Ptr<RenderState>& render_state_ptr)
 {
     META_FUNCTION_TASK();
-    if (!IsCommitted())
+    if (!IsNativeCommitted())
         return;
 
-    SetCommitted(false);
+    SetNativeCommitted(false);
     SetCommandListState(CommandList::State::Encoding);
 
     ID3D12PipelineState* p_dx_initial_state = render_state_ptr ? static_cast<RenderStateDX&>(*render_state_ptr).GetNativePipelineState().Get() : nullptr;

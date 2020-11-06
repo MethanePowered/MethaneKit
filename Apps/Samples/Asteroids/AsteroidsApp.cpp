@@ -102,7 +102,6 @@ AsteroidsApp::AsteroidsApp()
         "Methane Asteroids sample is demonstrating parallel rendering\nof massive asteroids field dynamic simulation.")
     , m_view_camera(GetAnimations(), gfx::ActionCamera::Pivot::Aim)
     , m_light_camera(m_view_camera, GetAnimations(), gfx::ActionCamera::Pivot::Aim)
-    , m_scene_scale(15.F)
     , m_scene_constants(                                // Shader constants:
         {                                               // ================
             gfx::Color4f(1.F, 1.F, 1.F, 1.F),           // - light_color

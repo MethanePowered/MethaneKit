@@ -104,7 +104,7 @@ private:
 
     gfx::ActionCamera                 m_view_camera;
     gfx::ActionCamera                 m_light_camera;
-    const float                       m_scene_scale;
+    const float                       m_scene_scale = 15.F;
     const Constants                   m_scene_constants;
     AsteroidsArray::Settings          m_asteroids_array_settings;
     uint32_t                          m_asteroids_complexity          = 0U;

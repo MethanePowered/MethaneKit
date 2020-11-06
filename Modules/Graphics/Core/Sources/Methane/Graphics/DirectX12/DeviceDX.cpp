@@ -300,7 +300,7 @@ void SystemDX::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATUR
     SystemBase::AddDevice(std::make_shared<DeviceDX>(cp_adapter, feature_level));
 }
 
-void SystemDX::ReportLiveObjects()
+void SystemDX::ReportLiveObjects() const
 {
     META_FUNCTION_TASK();
 #ifdef _DEBUG

@@ -249,7 +249,7 @@ CommandQueueBase& ContextBase::GetUploadCommandQueueBase()
     return static_cast<CommandQueueBase&>(GetUploadCommandQueue());
 }
 
-DeviceBase& ContextBase::GetDeviceBase() noexcept
+DeviceBase& ContextBase::GetDeviceBase()
 {
     META_FUNCTION_TASK();
     return static_cast<DeviceBase&>(GetDevice());

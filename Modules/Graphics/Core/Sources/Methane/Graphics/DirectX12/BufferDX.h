@@ -48,12 +48,9 @@ public:
         const bool is_private_storage  = settings.storage_mode == Buffer::StorageMode::Private;
         const bool is_read_back_buffer = settings.usage_mask & Usage::ReadBack;
 
-        const D3D12_HEAP_TYPE            heap_type = is_read_back_buffer
-                                                   ? D3D12_HEAP_TYPE_READBACK
-                                                   : (is_private_storage ? D3D12_HEAP_TYPE_DEFAULT : D3D12_HEAP_TYPE_UPLOAD);
-        const D3D12_RESOURCE_STATES resource_state = is_read_back_buffer || is_private_storage
-                                                   ? D3D12_RESOURCE_STATE_COPY_DEST
-                                                   : D3D12_RESOURCE_STATE_GENERIC_READ;
+        const D3D12_HEAP_TYPE     normal_heap_type = is_private_storage  ? D3D12_HEAP_TYPE_DEFAULT  : D3D12_HEAP_TYPE_UPLOAD;
+        const D3D12_HEAP_TYPE            heap_type = is_read_back_buffer ? D3D12_HEAP_TYPE_READBACK : normal_heap_type;
+        const D3D12_RESOURCE_STATES resource_state = (is_read_back_buffer || is_private_storage) ? D3D12_RESOURCE_STATE_COPY_DEST : D3D12_RESOURCE_STATE_GENERIC_READ;
         const CD3DX12_RESOURCE_DESC  resource_desc = CD3DX12_RESOURCE_DESC::Buffer(settings.size);
 
         InitializeDefaultDescriptors();
@@ -67,7 +64,7 @@ public:
     }
 
     // Object overrides
-    void SetName(const std::string& name) override
+    void SetName(const std::string& name) final
     {
         META_FUNCTION_TASK();
         BufferBase::SetName(name);
@@ -79,7 +76,7 @@ public:
     }
 
     // Resource overrides
-    void SetData(const SubResources& sub_resources) override
+    void SetData(const SubResources& sub_resources) final
     {
         META_FUNCTION_TASK();
         BufferBase::SetData(sub_resources);
@@ -101,7 +98,6 @@ public:
             );
 
             META_CHECK_ARG_NOT_NULL_DESCR(p_sub_resource_data, "failed to map buffer subresource");
-            const Data::Index target_data_start = sub_resource.data_range ? sub_resource.data_range->GetStart() : 0U;
             stdext::checked_array_iterator<Data::RawPtr> target_data_it(p_sub_resource_data, sub_resource.size);
             std::copy(sub_resource.p_data, sub_resource.p_data + sub_resource.size, target_data_it);
 
@@ -121,7 +117,7 @@ public:
 
         // In case of private GPU storage, copy buffer data from intermediate upload resource to the private GPU resource
 
-        BlitCommandListDX& upload_cmd_list = static_cast<BlitCommandListDX&>(GetContext().GetUploadCommandList());
+        auto& upload_cmd_list = static_cast<BlitCommandListDX&>(GetContext().GetUploadCommandList());
         upload_cmd_list.RetainResource(*this);
 
         const ResourceBase::State final_buffer_state = GetState() == State::Common ? State::PixelShaderResource : GetState();
@@ -140,7 +136,7 @@ public:
         GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
     }
 
-    SubResource GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override
+    SubResource GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) final
     {
         META_FUNCTION_TASK();
         META_CHECK_ARG_DESCR(GetUsageMask(), GetUsageMask() & Usage::ReadBack,

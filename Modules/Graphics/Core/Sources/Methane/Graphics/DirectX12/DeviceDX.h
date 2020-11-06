@@ -43,6 +43,7 @@ public:
     static Device::Feature::Mask GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
 
     DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
+    DeviceDX(const DeviceDX& device) noexcept = default;
     ~DeviceDX() override;
 
     // Object interface
@@ -74,7 +75,7 @@ public:
     const Ptrs<Device>& UpdateGpuDevices(Device::Feature::Mask supported_features) override;
 
     const wrl::ComPtr<IDXGIFactory5>& GetNativeFactory() { return m_cp_factory; }
-    void ReportLiveObjects();
+    void ReportLiveObjects() const;
 
 private:
     void Initialize();
