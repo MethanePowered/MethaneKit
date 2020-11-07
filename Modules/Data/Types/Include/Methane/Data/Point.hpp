@@ -33,7 +33,7 @@ namespace Methane::Data
 {
 
 template<typename T, size_t vector_size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= vector_size && vector_size <= 4>>
-class PointT : public cml::vector<T, cml::fixed<vector_size>>
+class PointT : protected cml::vector<T, cml::fixed<vector_size>>
 {
 public:
     using CoordinateType = T;
