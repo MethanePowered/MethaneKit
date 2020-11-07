@@ -347,7 +347,7 @@ void AppBase::UpdateHelpTextPosition()
     const FrameSize& first_text_size = m_help_columns.first.text_ptr->GetRectInPixels().size;
     m_help_columns.first.panel_ptr->SetRect(UnitRect(
         FramePoint(m_text_margins.GetX(), m_frame_size.height - first_text_size.height - m_text_margins.GetY() * 3),
-        first_text_size + m_text_margins * 2,
+        first_text_size + static_cast<const FramePoint&>(m_text_margins) * 2,
         Units::Pixels
     ));
 
@@ -358,7 +358,7 @@ void AppBase::UpdateHelpTextPosition()
     const UnitRect&  first_panel_rect = m_help_columns.first.panel_ptr->GetRectInPixels();
     m_help_columns.second.panel_ptr->SetRect(UnitRect(
         FramePoint(first_panel_rect.GetRight() + m_text_margins.GetX(), first_panel_rect.GetTop()),
-        second_text_size + m_text_margins * 2,
+        second_text_size + static_cast<const FramePoint&>(m_text_margins) * 2,
         Units::Pixels
     ));
 }
