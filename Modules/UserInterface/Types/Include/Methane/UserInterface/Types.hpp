@@ -43,7 +43,7 @@ using Color3f      = Graphics::Color3f;
 using Color4f      = Graphics::Color4f;
 
 template<typename T>
-using Point2T      = Data::Point<T, 2>;
+using Point2T      = Data::PointT<T, 2>;
 
 enum class Units : uint8_t
 {

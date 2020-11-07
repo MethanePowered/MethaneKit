@@ -44,31 +44,37 @@ public:
     float GetGf() const noexcept { return (*this)[1]; }
     float GetBf() const noexcept { return (*this)[2]; }
 
-    template<typename = std::enable_if_t<vector_size >= 4, void>>
+    template<size_t sz = vector_size, typename = std::enable_if_t<sz >= 4, void>>
     float GetAf() const noexcept { return (*this)[3]; }
 
     float GetNormRf() const noexcept { return GetNormColorComponent(GetRf()); }
     float GetNormGf() const noexcept { return GetNormColorComponent(GetGf()); }
     float GetNormBf() const noexcept { return GetNormColorComponent(GetBf()); }
 
-    template<typename = std::enable_if_t<vector_size >= 4, void>>
+    template<size_t sz = vector_size, typename = std::enable_if_t<sz >= 4, void>>
     float GetNormAf() const noexcept { return GetNormColorComponent(GetAf()); }
 
     uint8_t GetRu() const noexcept { return GetUintColorComponent(GetNormRf()); }
     uint8_t GetGu() const noexcept { return GetUintColorComponent(GetNormGf()); }
     uint8_t GetBu() const noexcept { return GetUintColorComponent(GetNormBf()); }
 
-    template<typename = std::enable_if_t<vector_size >= 4, void>>
+    template<size_t sz = vector_size, typename = std::enable_if_t<sz >= 4, void>>
     uint8_t GetAu() const noexcept { return GetUintColorComponent(GetNormAf()); }
 
     void SetR(float r) { META_CHECK_ARG_RANGE(r, s_float_range.first, s_float_range.second); (*this)[0] = r; }
     void SetG(float g) { META_CHECK_ARG_RANGE(g, s_float_range.first, s_float_range.second); (*this)[1] = g; }
     void SetB(float b) { META_CHECK_ARG_RANGE(b, s_float_range.first, s_float_range.second); (*this)[2] = b; }
 
-    template<typename = std::enable_if_t<vector_size >= 4, void>>
+    template<size_t sz = vector_size, typename = std::enable_if_t<sz >= 4, void>>
     void SetA(float a) { META_CHECK_ARG_RANGE(a, s_float_range.first, s_float_range.second); (*this)[3] = a; }
 
-    operator std::string() const noexcept { return fmt::format("C(r:{:d}, g:{:d}, b:{:d})", GetRu(), GetGu(), GetBu()); }
+    explicit operator std::string() const noexcept
+    {
+        if constexpr (vector_size == 3)
+            return fmt::format("C(r:{:d}, g:{:d}, b:{:d})", GetRu(), GetGu(), GetBu());
+        else
+            return fmt::format("C(r:{:d}, g:{:d}, b:{:d}, a:{:a})", GetRu(), GetGu(), GetBu(), GetAu());
+    }
 
 private:
     inline float GetNormColorComponent(float component) const noexcept
@@ -81,7 +87,7 @@ private:
         return static_cast<uint8_t>(std::round(component * static_cast<float>(s_uint_component_max)));
     }
 
-    static constexpr std::pair<float, float> s_float_range{ 0.f, 1.f };
+    static constexpr std::pair<float, float> s_float_range{ 0.F, 1.F };
     static constexpr uint8_t s_uint_component_max = std::numeric_limits<uint8_t>::max();
 };
 
