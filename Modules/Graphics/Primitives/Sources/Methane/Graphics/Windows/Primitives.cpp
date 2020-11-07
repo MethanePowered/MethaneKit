@@ -71,7 +71,7 @@ RuntimeException::RuntimeException(HRESULT hr, ID3D12Device* device)
     META_LOG(what() + "\n");
 }
 
-RuntimeException::RuntimeException(HRESULT hr, wrl::ComPtr<ID3DBlob>& error_blob)
+RuntimeException::RuntimeException(HRESULT hr, const wrl::ComPtr<ID3DBlob>& error_blob)
     : std::runtime_error(GetErrorMessage(hr, error_blob))
     , m_result(hr)
 {

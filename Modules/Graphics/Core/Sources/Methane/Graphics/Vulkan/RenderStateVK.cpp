@@ -79,7 +79,7 @@ void ViewStateVK::Apply(RenderCommandListBase& command_list)
 {
     META_FUNCTION_TASK();
 
-    RenderCommandListVK& vulkan_command_list = static_cast<RenderCommandListVK&>(command_list);
+    auto& vulkan_command_list = static_cast<RenderCommandListVK&>(command_list);
     META_UNUSED(vulkan_command_list);
 }
 

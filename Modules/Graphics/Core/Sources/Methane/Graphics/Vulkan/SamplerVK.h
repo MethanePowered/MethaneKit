@@ -41,8 +41,6 @@ public:
     
 protected:
     void ResetSamplerState();
-
-    IContextVK& GetContextVK() noexcept;
 };
 
 } // namespace Methane::Graphics

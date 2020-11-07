@@ -36,7 +36,7 @@ class BlitCommandListVK final
     , public BlitCommandList
 {
 public:
-    BlitCommandListVK(CommandQueueBase& command_queue);
+    explicit BlitCommandListVK(CommandQueueBase& command_queue);
 
     // CommandList interface
     void PushDebugGroup(DebugGroup& debug_group) override;

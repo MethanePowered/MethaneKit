@@ -472,11 +472,11 @@ Resource::SubResource::Index::operator std::string() const noexcept
     return fmt::format("index(d:{}, a:{}, m:{})", depth_slice, array_index, mip_level);
 }
 
-ResourceBase::ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& context, DescriptorByUsage descriptor_by_usage)
+ResourceBase::ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
     : m_type(type)
     , m_usage_mask(usage_mask)
     , m_context(context)
-    , m_descriptor_by_usage(std::move(descriptor_by_usage))
+    , m_descriptor_by_usage(descriptor_by_usage)
 {
     META_FUNCTION_TASK();
 

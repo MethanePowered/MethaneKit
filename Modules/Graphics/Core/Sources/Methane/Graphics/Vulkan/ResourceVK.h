@@ -38,7 +38,7 @@ public:
     class BarriersVK : public Barriers
     {
     public:
-        BarriersVK(const Set& barriers) : Barriers(barriers) {}
+        explicit BarriersVK(const Set& barriers) : Barriers(barriers) {}
     };
 
     ResourceVK(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);

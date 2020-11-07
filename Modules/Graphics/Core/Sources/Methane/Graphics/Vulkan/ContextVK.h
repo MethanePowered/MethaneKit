@@ -35,6 +35,8 @@ struct IContextVK
 {
     virtual DeviceVK&       GetDeviceVK() noexcept = 0;
     virtual CommandQueueVK& GetUploadCommandQueueVK() noexcept = 0;
+
+    virtual ~IContextVK() = default;
 };
 
 } // namespace Methane::Graphics

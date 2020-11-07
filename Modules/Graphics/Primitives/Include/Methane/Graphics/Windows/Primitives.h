@@ -39,7 +39,7 @@ class RuntimeException : public std::runtime_error
 {
 public:
     RuntimeException(HRESULT hr, ID3D12Device* device = nullptr);
-    RuntimeException(HRESULT hr, wrl::ComPtr<ID3DBlob>& error_blob);
+    RuntimeException(HRESULT hr, const wrl::ComPtr<ID3DBlob>& error_blob);
 
     HRESULT             GetResult() const noexcept { return m_result; }
     const ID3D12Device* GetDevice() const noexcept { return m_device; }
@@ -64,7 +64,7 @@ inline void ThrowIfFailed(HRESULT hr, ID3D12Device* p_device = nullptr)
         throw RuntimeException(hr, p_device);
 }
 
-inline void ThrowIfFailed(HRESULT hr, wrl::ComPtr<ID3DBlob>& error_blob)
+inline void ThrowIfFailed(HRESULT hr, const wrl::ComPtr<ID3DBlob>& error_blob)
 {
     if (FAILED(hr))
         throw RuntimeException(hr, error_blob);

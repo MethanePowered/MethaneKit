@@ -65,10 +65,4 @@ void SamplerVK::ResetSamplerState()
     META_FUNCTION_TASK();
 }
 
-IContextVK& SamplerVK::GetContextVK() noexcept
-{
-    META_FUNCTION_TASK();
-    return static_cast<IContextVK&>(GetContextBase());
-}
-
 } // namespace Methane::Graphics

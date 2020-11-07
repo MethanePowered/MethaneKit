@@ -138,21 +138,21 @@ public:
         Map  m_barriers_map;
     };
 
-    ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& context, DescriptorByUsage  descriptor_by_usage);
+    ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
     ResourceBase(const ResourceBase&) = delete;
     ResourceBase(ResourceBase&&) = delete;
     ~ResourceBase() override;
 
     // Resource interface
-    Type                      GetResourceType() const noexcept override          { return m_type; }
-    Usage::Mask               GetUsageMask() const noexcept override             { return m_usage_mask; }
-    const DescriptorByUsage&  GetDescriptorByUsage() const noexcept override     { return m_descriptor_by_usage; }
-    const Descriptor&         GetDescriptor(Usage::Value usage) const override;
+    Type                      GetResourceType() const noexcept final             { return m_type; }
+    Usage::Mask               GetUsageMask() const noexcept final                { return m_usage_mask; }
+    const DescriptorByUsage&  GetDescriptorByUsage() const noexcept final        { return m_descriptor_by_usage; }
+    const Descriptor&         GetDescriptor(Usage::Value usage) const final;
     void                      SetData(const SubResources& sub_resources) override;
     SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override;
     const SubResource::Count& GetSubresourceCount() const noexcept final         { return m_sub_resource_count; }
-    Data::Size                GetSubResourceDataSize(const SubResource::Index& subresource_index = SubResource::Index()) const override;
-    Context&                  GetContext() noexcept override;
+    Data::Size                GetSubResourceDataSize(const SubResource::Index& subresource_index = SubResource::Index()) const final;
+    Context&                  GetContext() noexcept final;
 
     void                      InitializeDefaultDescriptors();
     std::string               GetUsageNames() const noexcept                     { return Usage::ToString(m_usage_mask); }

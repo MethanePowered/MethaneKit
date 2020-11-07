@@ -27,7 +27,7 @@ FPS counter calculates frame time duration with moving average window algorithm.
 namespace Methane::Graphics
 {
 
-FpsCounter::FrameTiming::FrameTiming(double total_time_sec, double present_time_sec, double gpu_wait_time_sec)
+FpsCounter::FrameTiming::FrameTiming(double total_time_sec, double present_time_sec, double gpu_wait_time_sec) noexcept
     : m_total_time_sec(total_time_sec)
     , m_present_time_sec(present_time_sec)
     , m_gpu_wait_time_sec(gpu_wait_time_sec)
@@ -35,7 +35,7 @@ FpsCounter::FrameTiming::FrameTiming(double total_time_sec, double present_time_
     META_FUNCTION_TASK();
 }
 
-FpsCounter::FrameTiming& FpsCounter::FrameTiming::operator+=(const FrameTiming& other)
+FpsCounter::FrameTiming& FpsCounter::FrameTiming::operator+=(const FrameTiming& other) noexcept
 {
     META_FUNCTION_TASK();
     m_total_time_sec    += other.m_total_time_sec;
@@ -44,7 +44,7 @@ FpsCounter::FrameTiming& FpsCounter::FrameTiming::operator+=(const FrameTiming& 
     return *this;
 }
 
-FpsCounter::FrameTiming& FpsCounter::FrameTiming::operator-=(const FrameTiming& other)
+FpsCounter::FrameTiming& FpsCounter::FrameTiming::operator-=(const FrameTiming& other) noexcept
 {
     META_FUNCTION_TASK();
     m_total_time_sec    -= other.m_total_time_sec;
@@ -53,7 +53,7 @@ FpsCounter::FrameTiming& FpsCounter::FrameTiming::operator-=(const FrameTiming& 
     return *this;
 }
 
-FpsCounter::FrameTiming FpsCounter::FrameTiming::operator/(double divisor) const
+FpsCounter::FrameTiming FpsCounter::FrameTiming::operator/(double divisor) const noexcept
 {
     META_FUNCTION_TASK();
     return FrameTiming(m_total_time_sec    / divisor,
@@ -61,7 +61,7 @@ FpsCounter::FrameTiming FpsCounter::FrameTiming::operator/(double divisor) const
                        m_gpu_wait_time_sec / divisor);
 }
 
-FpsCounter::FrameTiming FpsCounter::FrameTiming::operator*(double multiplier) const
+FpsCounter::FrameTiming FpsCounter::FrameTiming::operator*(double multiplier) const noexcept
 {
     META_FUNCTION_TASK();
     return FrameTiming(m_total_time_sec    * multiplier,
@@ -69,7 +69,7 @@ FpsCounter::FrameTiming FpsCounter::FrameTiming::operator*(double multiplier) co
                        m_gpu_wait_time_sec * multiplier);
 }
 
-void FpsCounter::Reset(uint32_t averaged_timings_count)
+void FpsCounter::Reset(uint32_t averaged_timings_count) noexcept
 {
     META_FUNCTION_TASK();
     m_averaged_timings_count = averaged_timings_count;
@@ -82,26 +82,8 @@ void FpsCounter::Reset(uint32_t averaged_timings_count)
     m_frame_timer.Reset();
     m_present_timer.Reset();
 }
-    
-void FpsCounter::OnGpuFramePresentWait()
-{
-    META_FUNCTION_TASK();
-    m_present_timer.Reset();
-}
 
-void FpsCounter::OnGpuFramePresented()
-{
-    META_FUNCTION_TASK();
-    m_present_on_gpu_wait_time_sec = m_present_timer.GetElapsedSecondsD();
-}
-
-void FpsCounter::OnCpuFrameReadyToPresent()
-{
-    META_FUNCTION_TASK();
-    m_present_timer.Reset();
-}
-
-void FpsCounter::OnCpuFramePresented()
+void FpsCounter::OnCpuFramePresented() noexcept
 {
     META_FUNCTION_TASK();
     if (m_frame_timings.size() >= m_averaged_timings_count)
@@ -122,12 +104,14 @@ void FpsCounter::OnCpuFramePresented()
 
 FpsCounter::FrameTiming FpsCounter::GetAverageFrameTiming() const noexcept
 {
+    META_FUNCTION_TASK();
     const uint32_t averaged_timings_count = GetAveragedTimingsCount();
     return averaged_timings_count ? m_frame_timings_sum / averaged_timings_count : FrameTiming();
 }
 
 uint32_t FpsCounter::GetFramesPerSecond() const noexcept
 {
+    META_FUNCTION_TASK();
     double average_frame_time_sec = GetAverageFrameTiming().GetTotalTimeSec();
     return average_frame_time_sec ? static_cast<uint32_t>(std::round(1.0 / average_frame_time_sec)) : 0U;
 }
