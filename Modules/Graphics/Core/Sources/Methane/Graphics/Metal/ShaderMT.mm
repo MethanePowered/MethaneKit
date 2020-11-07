@@ -103,7 +103,7 @@ ShaderMT::ShaderMT(Shader::Type shader_type, ContextBase& context, const Setting
     , m_mtl_function([context.GetLibraryMT(settings.entry_function.file_name)->Get() newFunctionWithName: Methane::MacOS::ConvertToNsType<std::string, NSString*>(GetCompiledEntryFunctionName())])
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_function, fmt::format("failed to initialize Metal shader function by name '{}'", GetCompiledEntryFunctionName()));
+    META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_function, "failed to initialize Metal shader function by name '{}'", GetCompiledEntryFunctionName());
 }
 
 ShaderMT::~ShaderMT()

@@ -184,8 +184,8 @@ void CommandListBase::Commit()
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
 
     META_CHECK_ARG_EQUAL_DESCR(m_state, State::Encoding,
-                               fmt::format("{} command list '{}' in {} state can not be committed; only command lists in 'Encoding' state can be committed",
-                                           GetTypeName(), GetName(), GetStateName(m_state)));
+                               "{} command list '{}' in {} state can not be committed; only command lists in 'Encoding' state can be committed",
+                               GetTypeName(), GetName(), GetStateName(m_state));
 
     TRACY_GPU_SCOPE_END(m_tracy_gpu_scope);
     META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" COMMIT on frame " + std::to_string(GetCurrentFrameIndex()));
@@ -226,12 +226,12 @@ void CommandListBase::Execute(uint32_t frame_index, const CompletedCallback& com
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
 
     META_CHECK_ARG_EQUAL_DESCR(m_state, State::Committed,
-                               fmt::format("{} command list '{}' in {} state can not be executed; only command lists in 'Committed' state can be executed",
-                                           GetTypeName(), GetName(), GetStateName(m_state)));
+                               "{} command list '{}' in {} state can not be executed; only command lists in 'Committed' state can be executed",
+                               GetTypeName(), GetName(), GetStateName(m_state));
 
     META_CHECK_ARG_EQUAL_DESCR(frame_index, m_committed_frame_index,
-                               fmt::format("{} command list '{}' committed on frame {} can not be executed on frame {}",
-                                           GetTypeName(), GetName(), m_committed_frame_index, frame_index));
+                               "{} command list '{}' committed on frame {} can not be executed on frame {}",
+                               GetTypeName(), GetName(), m_committed_frame_index, frame_index);
 
     META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" EXECUTE on frame " + std::to_string(frame_index));
 
@@ -254,12 +254,12 @@ void CommandListBase::CompleteInternal(uint32_t frame_index)
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
 
     META_CHECK_ARG_EQUAL_DESCR(m_state, State::Executing,
-                               fmt::format("{} command list '{}' in {} state can not be completed; only command lists in 'Executing' state can be completed",
-                                           GetTypeName(), GetName(), GetStateName(m_state)));
+                               "{} command list '{}' in {} state can not be completed; only command lists in 'Executing' state can be completed",
+                               GetTypeName(), GetName(), GetStateName(m_state));
 
     META_CHECK_ARG_EQUAL_DESCR(frame_index, m_committed_frame_index,
-                               fmt::format("{} command list '{}' committed on frame {} can not be completed on frame {}",
-                                           GetTypeName(), GetName(), m_committed_frame_index, frame_index));
+                               "{} command list '{}' committed on frame {} can not be completed on frame {}",
+                               GetTypeName(), GetName(), m_committed_frame_index, frame_index);
 
     SetCommandListStateNoLock(State::Pending);
     ResetCommandState();

@@ -178,8 +178,8 @@ DepthStencilBufferTextureDX::TextureDX(ContextBase& render_context, const Settin
         case DescriptorHeap::Type::DepthStencil:    CreateDepthStencilView(settings, view_write_format, cp_device, desc); break;
         default:
             META_UNEXPECTED_ENUM_ARG_DESCR(descriptor_heap_type,
-                                           fmt::format("unsupported usage '{}' and descriptor heap type '{}' for Depth-Stencil buffer",
-                                                       Usage::ToString(usage), DescriptorHeap::GetTypeName(descriptor_heap_type)));
+                                           "unsupported usage '{}' and descriptor heap type '{}' for Depth-Stencil buffer",
+                                           Usage::ToString(usage), DescriptorHeap::GetTypeName(descriptor_heap_type));
         }
     }
 }
@@ -194,6 +194,7 @@ void DepthStencilBufferTextureDX::CreateShaderResourceView(const Texture::Settin
     srv_desc.ViewDimension           = GetSrvDimension(settings.dimensions);
     srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
     srv_desc.Texture2D.MipLevels     = 1;
+
     cp_device->CreateShaderResourceView(GetNativeResource(), &srv_desc, GetNativeCpuDescriptorHandle(desc));
 }
 
@@ -205,6 +206,7 @@ void DepthStencilBufferTextureDX::CreateDepthStencilView(const Texture::Settings
     D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc{};
     dsv_desc.Format        = view_write_format;
     dsv_desc.ViewDimension = GetDsvDimension(settings.dimensions);
+
     cp_device->CreateDepthStencilView(GetNativeResource(), &dsv_desc, GetNativeCpuDescriptorHandle(desc));
 }
 
@@ -452,7 +454,8 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
             {
                 const DirectX::Image* p_mip_image = scratch_image.GetImage(mip, item, depth);
                 META_CHECK_ARG_NOT_NULL_DESCR(p_mip_image,
-                    fmt::format("failed to generate mipmap level {} for array item {} in depth {} of texture '{}'", mip, item, depth, GetName()));
+                                              "failed to generate mipmap level {} for array item {} in depth {} of texture '{}'",
+                                              mip, item, depth, GetName());
 
                 const uint32_t dx_sub_resource_index = SubResource::Index(depth, item, mip).GetRawIndex(tex_metadata_subres_count);
                 META_CHECK_ARG_LESS(dx_sub_resource_index, dx_sub_resources.size());

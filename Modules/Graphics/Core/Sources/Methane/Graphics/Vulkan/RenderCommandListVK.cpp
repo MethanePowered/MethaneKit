@@ -102,7 +102,7 @@ void RenderCommandListVK::DrawIndexed(Primitive primitive, Buffer& index_buffer,
 {
     META_FUNCTION_TASK();
     
-    const BufferVK& vulkan_index_buffer = static_cast<const BufferVK&>(index_buffer);
+    const auto& vulkan_index_buffer = static_cast<const BufferVK&>(index_buffer);
     if (index_count == 0)
     {
         index_count = vulkan_index_buffer.GetFormattedItemsCount();

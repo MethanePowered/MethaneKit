@@ -322,7 +322,7 @@ void RenderPassDX::Begin(RenderCommandListBase& command_list)
 
     RenderPassBase::Begin(command_list);
 
-    auto& command_list_dx = static_cast<RenderCommandListDX&>(command_list);
+    const auto& command_list_dx = static_cast<const RenderCommandListDX&>(command_list);
     ID3D12GraphicsCommandList& d3d12_command_list = command_list_dx.GetNativeCommandList();
 
     SetNativeDescriptorHeaps(command_list_dx);

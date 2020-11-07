@@ -521,7 +521,7 @@ const Resource::Descriptor& ResourceBase::GetDescriptor(Usage::Value usage) cons
     META_FUNCTION_TASK();
     auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
     META_CHECK_ARG_DESCR(usage, descriptor_by_usage_it != m_descriptor_by_usage.end(),
-                         fmt::format("resource '{}' does not support '{}' usage", GetName(), Usage::ToString(usage)));
+                         "resource '{}' does not support '{}' usage", GetName(), Usage::ToString(usage));
     return descriptor_by_usage_it->second;
 }
 
@@ -602,7 +602,7 @@ const Resource::Descriptor& ResourceBase::GetDescriptorByUsage(Usage::Value usag
     META_FUNCTION_TASK();
     auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
     META_CHECK_ARG_DESCR(usage, descriptor_by_usage_it != m_descriptor_by_usage.end(),
-                         fmt::format("Resource '{}' does not have descriptor for usage '{}'", GetName(), Usage::ToString(usage)));
+                         "Resource '{}' does not have descriptor for usage '{}'", GetName(), Usage::ToString(usage));
     return descriptor_by_usage_it->second;
 }
 
@@ -662,15 +662,15 @@ void ResourceBase::ValidateSubResource(const SubResource& sub_resource) const
     if (sub_resource.data_range)
     {
         META_CHECK_ARG_EQUAL_DESCR(sub_resource.size, sub_resource.data_range->GetLength(),
-                                   fmt::format("sub-resource {} data size should be equal to the length of data range", sub_resource.index));
+                                   "sub-resource {} data size should be equal to the length of data range", sub_resource.index);
 
         META_CHECK_ARG_LESS_DESCR(sub_resource.size, sub_resource_data_size + 1,
-                                  fmt::format("sub-resource {} data size should be less or equal than full resource size", sub_resource.index));
+                                  "sub-resource {} data size should be less or equal than full resource size", sub_resource.index);
     }
     else
     {
         META_CHECK_ARG_EQUAL_DESCR(sub_resource.size, sub_resource_data_size,
-                             fmt::format("Sub-resource {} data size should be equal to full resource size when data range is not specified", sub_resource.index));
+                                   "Sub-resource {} data size should be equal to full resource size when data range is not specified", sub_resource.index);
     }
 }
 
@@ -681,13 +681,13 @@ void ResourceBase::ValidateSubResource(const SubResource::Index& sub_resource_in
     if (!sub_resource_data_range)
         return;
 
-    META_CHECK_ARG_NAME_DESCR("sub_resource_data_range", !sub_resource_data_range->IsEmpty(), fmt::format("sub-resource {} data range can not be empty", sub_resource_index));
+    META_CHECK_ARG_NAME_DESCR("sub_resource_data_range", !sub_resource_data_range->IsEmpty(), "sub-resource {} data range can not be empty", sub_resource_index);
     const Data::Index sub_resource_raw_index = sub_resource_index.GetRawIndex(m_sub_resource_count);
     META_CHECK_ARG_LESS(sub_resource_raw_index, m_sub_resource_sizes.size());
 
     const Data::Size sub_resource_data_size = m_sub_resource_sizes[sub_resource_raw_index];
     META_UNUSED(sub_resource_data_size);
-    META_CHECK_ARG_LESS_DESCR(sub_resource_data_range->GetEnd(), sub_resource_data_size + 1, fmt::format("sub-resource index {}", sub_resource_index));
+    META_CHECK_ARG_LESS_DESCR(sub_resource_data_range->GetEnd(), sub_resource_data_size + 1, "sub-resource index {}", sub_resource_index);
 }
 
 Data::Size ResourceBase::CalculateSubResourceDataSize(const SubResource::Index& subresource_index) const

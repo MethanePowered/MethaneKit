@@ -133,7 +133,8 @@ protected:
     inline void VerifyEncodingState() const
     {
         META_CHECK_ARG_EQUAL_DESCR(m_state, State::Encoding,
-                                   fmt::format("{} command list '{}' encoding is not possible in '{}' state", GetTypeName(), GetName(), GetStateName(m_state)));
+                                   "{} command list '{}' encoding is not possible in '{}' state",
+                                   GetTypeName(), GetName(), GetStateName(m_state));
     }
 
     static std::string GetTypeName(Type type);

@@ -154,7 +154,7 @@ public:
         META_FUNCTION_TASK();
 
         uint32_t char_index = GetCharIndex(char_code);
-        META_CHECK_ARG_NOT_ZERO_DESCR(char_index, fmt::format("unicode character U+{} does not exist in font face", static_cast<uint32_t>(char_code)));
+        META_CHECK_ARG_NOT_ZERO_DESCR(char_index, "unicode character U+{} does not exist in font face", static_cast<uint32_t>(char_code));
 
         ThrowFreeTypeError(FT_Load_Glyph(m_ft_face, char_index, FT_LOAD_RENDER));
 
@@ -819,7 +819,7 @@ void Font::Char::DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_strid
 uint32_t Font::Char::GetGlyphIndex() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(m_glyph_ptr, fmt::format("no glyph is available for character with code {}", static_cast<uint32_t>(m_code)));
+    META_CHECK_ARG_NOT_NULL_DESCR(m_glyph_ptr, "no glyph is available for character with code {}", static_cast<uint32_t>(m_code));
     return m_glyph_ptr->GetFaceIndex();
 }
 

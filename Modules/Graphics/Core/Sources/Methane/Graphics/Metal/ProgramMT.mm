@@ -73,8 +73,8 @@ ProgramMT::ProgramMT(ContextBase& context, const Settings& settings)
                                                                                            error:&ns_error];
 
     META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_dummy_pipeline_state_for_reflection,
-                                  fmt::format("Failed to create dummy pipeline state for program reflection: {}",
-                                              MacOS::ConvertFromNsType<NSString, std::string>([ns_error localizedDescription])));
+                                  "Failed to create dummy pipeline state for program reflection: {}",
+                                  MacOS::ConvertFromNsType<NSString, std::string>([ns_error localizedDescription]));
 
     if (m_mtl_render_pipeline_reflection)
     {

@@ -334,8 +334,8 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
         const uint32_t buffer_index = GetProgramInputBufferIndexByArgumentSemantic(program, param_desc.SemanticName);
 
         META_CHECK_ARG_LESS_DESCR(buffer_index, input_buffer_layouts.size(),
-                                     fmt::format("Provided description of program input layout has insufficient buffers count {}, while shader requires buffer at index {}",
-                                                 input_buffer_layouts.size(), buffer_index));
+                                  "Provided description of program input layout has insufficient buffers count {}, while shader requires buffer at index {}",
+                                  input_buffer_layouts.size(), buffer_index);
         const ProgramBase::InputBufferLayout& input_buffer_layout = input_buffer_layouts[buffer_index];
 
         if (buffer_index <= input_buffer_byte_offsets.size())

@@ -168,7 +168,7 @@ protected:
         {
             const Index vertex_index = m_indices[index];
             META_CHECK_ARG_LESS_DESCR(vertex_index, m_vertices.size(),
-                                      fmt::format("mesh index buffer value at position {} is greater is out of vertex buffer bounds", index));
+                                      "mesh index buffer value at position {} is greater is out of vertex buffer bounds", index);
         }
     }
 

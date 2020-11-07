@@ -182,7 +182,7 @@ void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_desc
             m_binding_by_argument.erase(binding_by_argument_it);
         }
 
-        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, fmt::format("failed to create resource binding for argument '{}'", argument_name));
+        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "failed to create resource binding for argument '{}'", argument_name);
         m_binding_by_argument.emplace( Argument{ Shader::Type::All, argument_name }, argument_binding_ptr);
     }
 }
@@ -213,7 +213,7 @@ Shader& ProgramBase::GetShaderRef(Shader::Type shader_type)
 {
     META_FUNCTION_TASK();
     const Ptr<Shader>& shader_ptr = GetShader(shader_type);
-    META_CHECK_ARG_DESCR(shader_type, shader_ptr, fmt::format("{} shader was not found in program '{}'", Shader::GetTypeName(shader_type), GetName()));
+    META_CHECK_ARG_DESCR(shader_type, shader_ptr, "{} shader was not found in program '{}'", Shader::GetTypeName(shader_type), GetName());
     return *shader_ptr;
 }
 
@@ -227,7 +227,7 @@ uint32_t ProgramBase::GetInputBufferIndexByArgumentSemantic(const std::string& a
         if (argument_it != input_buffer_layout.argument_semantics.end())
             return static_cast<uint32_t>(buffer_index);
     }
-    META_INVALID_ARG_DESCR(argument_semantic, fmt::format("input argument with semantic name was not found for program '{}'", GetName()));
+    META_INVALID_ARG_DESCR(argument_semantic, "input argument with semantic name was not found for program '{}'", GetName());
 #ifndef METHANE_CHECKS_ENABLED
     return 0;
 #endif

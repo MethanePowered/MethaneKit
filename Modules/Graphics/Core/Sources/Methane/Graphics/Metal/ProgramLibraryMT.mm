@@ -44,9 +44,9 @@ ProgramLibraryMT::ProgramLibraryMT(DeviceMT& metal_device, const std::string& li
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_library,
-                                  fmt::format("Failed to create {} Metal library: {}",
-                                              library_name.empty() ? std::string("default") : library_name,
-                                              MacOS::ConvertFromNsType<NSString, std::string>([m_ns_error localizedDescription])));
+                                  "Failed to create {} Metal library: {}",
+                                  library_name.empty() ? std::string("default") : library_name,
+                                  MacOS::ConvertFromNsType<NSString, std::string>([m_ns_error localizedDescription]));
 }
 
 ProgramLibraryMT::~ProgramLibraryMT()

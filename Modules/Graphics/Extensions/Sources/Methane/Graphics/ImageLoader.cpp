@@ -109,14 +109,14 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
     META_CHECK_ARG_DESCR(image_path, !image_spec.undefined(), "failed to load image specification");
 
     const bool read_success = image_buf.read();
-    META_CHECK_ARG_DESCR(image_path, read_success, fmt::format("failed to read image data from file, error: {}", image_buf.geterror()));
+    META_CHECK_ARG_DESCR(image_path, read_success, "failed to read image data from file, error: {}", image_buf.geterror());
 
     // Convert image pixels data to the target texture format RGBA8 Unorm
     OIIO::ROI image_roi = OIIO::get_roi(image_spec);
     Data::Bytes texture_data(channels_count * image_roi.npixels(), 255);
     const OIIO::TypeDesc texture_format(OIIO::TypeDesc::BASETYPE::UCHAR);
     const decode_success = image_buf.get_pixels(image_roi, texture_format, texture_data.data(), channels_count * sizeof(texture_data[0]));
-    META_CHECK_ARG_DESCR(image_path, decode_success, fmt::format("failed to decode image pixels, error: {}", image_buf.geterror()));
+    META_CHECK_ARG_DESCR(image_path, decode_success, "failed to decode image pixels, error: {}", image_buf.geterror());
 
     return ImageData(Dimensions(static_cast<uint32_t>(image_spec.width), static_cast<uint32_t>(image_spec.height)),
                                 static_cast<uint32_t>(channels_count),

@@ -70,7 +70,7 @@ public:
                                         static_cast<Methane::Data::Size>(res_file.cend() - res_file.cbegin()));
         }
 
-        META_CHECK_ARG_DESCR(path, FileProvider::HasData(path), fmt::format("invalid resource path '{}'", path));
+        META_CHECK_ARG_DESCR(path, FileProvider::HasData(path), "invalid resource path '{}'", path);
         return FileProvider::GetData(path);
     }
 

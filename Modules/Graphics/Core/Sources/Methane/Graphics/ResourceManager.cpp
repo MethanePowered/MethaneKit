@@ -173,7 +173,7 @@ const Ptr<DescriptorHeap>& ResourceManager::GetDescriptorHeapPtr(DescriptorHeap:
     }
 
     Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[static_cast<size_t>(type)];
-    META_CHECK_ARG_LESS_DESCR(heap_index, desc_heaps.size(), fmt::format("descriptor heap of type '{}' index is not valid", DescriptorHeap::GetTypeName(type)));
+    META_CHECK_ARG_LESS_DESCR(heap_index, desc_heaps.size(), "descriptor heap of type '{}' index is not valid", DescriptorHeap::GetTypeName(type));
 
     return desc_heaps[heap_index];
 }
@@ -185,7 +185,7 @@ DescriptorHeap& ResourceManager::GetDescriptorHeap(DescriptorHeap::Type type, Da
                          "can not get reference to 'Undefined' descriptor heap");
 
     const Ptr<DescriptorHeap>& resource_heap_ptr = GetDescriptorHeapPtr(type, heap_index);
-    META_CHECK_ARG_NOT_NULL_DESCR(resource_heap_ptr, fmt::format("descriptor heap of type '{}' at index {} does not exist", DescriptorHeap::GetTypeName(type), heap_index));
+    META_CHECK_ARG_NOT_NULL_DESCR(resource_heap_ptr, "descriptor heap of type '{}' at index {} does not exist", DescriptorHeap::GetTypeName(type), heap_index);
 
     return *resource_heap_ptr;
 }
@@ -218,7 +218,7 @@ DescriptorHeap& ResourceManager::GetDefaultShaderVisibleDescriptorHeap(Descripto
     META_FUNCTION_TASK();
 
     const Ptr<DescriptorHeap>& resource_heap_ptr = GetDefaultShaderVisibleDescriptorHeapPtr(type);
-    META_CHECK_ARG_NOT_NULL_DESCR(resource_heap_ptr, fmt::format("There is no shader visible descriptor heap of type '{}'", DescriptorHeap::GetTypeName(type)));
+    META_CHECK_ARG_NOT_NULL_DESCR(resource_heap_ptr, "There is no shader visible descriptor heap of type '{}'", DescriptorHeap::GetTypeName(type));
 
     return *resource_heap_ptr;
 }
@@ -254,8 +254,8 @@ void ResourceManager::ForEachDescriptorHeap(const std::function<void(DescriptorH
             META_CHECK_ARG_NOT_NULL(desc_heap_ptr);
             const DescriptorHeap::Type heap_type = desc_heap_ptr->GetSettings().type;
             META_CHECK_ARG_EQUAL_DESCR(heap_type, desc_heaps_type,
-                                       fmt::format("wrong type of {} descriptor heap was found in container assuming heaps of {} type",
-                                                   DescriptorHeap::GetTypeName(heap_type), DescriptorHeap::GetTypeName(desc_heaps_type)));
+                                       "wrong type of {} descriptor heap was found in container assuming heaps of {} type",
+                                       DescriptorHeap::GetTypeName(heap_type), DescriptorHeap::GetTypeName(desc_heaps_type));
             process_heap(*desc_heap_ptr);
         }
         META_UNUSED(desc_heaps_type);

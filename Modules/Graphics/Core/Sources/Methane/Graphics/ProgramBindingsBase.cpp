@@ -75,9 +75,9 @@ void ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resour
     for (const Resource::Location& resource_location : resource_locations)
     {
         META_CHECK_ARG_NAME_DESCR("resource_location", resource_location.GetResource().GetResourceType() == bound_resource_type,
-                                  fmt::format("incompatible resource type '{}' is bound to argument '{}' of type '{}'",
-                                              Resource::GetTypeName(resource_location.GetResource().GetResourceType()),
-                                              m_settings.argument.name, Resource::GetTypeName(bound_resource_type)));
+                                  "incompatible resource type '{}' is bound to argument '{}' of type '{}'",
+                                  Resource::GetTypeName(resource_location.GetResource().GetResourceType()),
+                                  m_settings.argument.name, Resource::GetTypeName(bound_resource_type));
 
         const Resource::Usage::Mask resource_usage_mask = resource_location.GetResource().GetUsageMask();
         META_CHECK_ARG_DESCR(resource_usage_mask, static_cast<bool>(resource_usage_mask & Resource::Usage::Addressable) == is_addressable_binding,
@@ -217,7 +217,7 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
     for (const auto& binding_by_argument : program.GetArgumentBindings())
     {
         META_CHECK_ARG_NOT_NULL_DESCR(binding_by_argument.second,
-                                      fmt::format("no resource binding is set for an argument '{}' of shader", binding_by_argument.first.name));
+                                      "no resource binding is set for an argument '{}' of shader", binding_by_argument.first.name);
 
         const auto& argument_binding = static_cast<const ArgumentBindingBase&>(*binding_by_argument.second);
         const auto& binding_settings = argument_binding.GetSettings();
