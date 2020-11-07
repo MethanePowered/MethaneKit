@@ -251,6 +251,7 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/ResourceManager.cpp
     ${SOURCES_DIR}/QueryBuffer.h
     ${SOURCES_DIR}/QueryBuffer.cpp
+    ${SOURCES_DIR}/CoreFormatters.hpp
 )
 
 add_library(${TARGET} STATIC

@@ -23,7 +23,7 @@ Base implementation of the program bindings interface.
 
 #include "ProgramBindingsBase.h"
 #include "ContextBase.h"
-#include "Formatters.hpp"
+#include "CoreFormatters.hpp"
 
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>

@@ -25,6 +25,8 @@ Common Methane primitive data types
 
 #include "Point.hpp"
 
+#include <fmt/format.h>
+
 namespace Methane::Data
 {
 
@@ -163,7 +165,7 @@ struct RectSize
     D GetLongestSide() const noexcept { return std::max(width, height); }
 
     operator std::string() const
-    { return "Sz(" + std::to_string(width) + " x " + std::to_string(height) + ")"; }
+    { return fmt::format("Sz({} x {})", width, height); }
 };
 
 template<typename T, typename D,
@@ -201,7 +203,7 @@ struct Rect
     { origin /= divisor; size /= divisor; return *this; }
 
     operator std::string() const
-    { return std::string("Rt[") + static_cast<std::string>(origin) + " + " + static_cast<std::string>(size) + "]"; }
+    { return fmt::format("Rt[{} + {}]", origin, size); }
 
     T GetLeft() const   { return origin.GetX(); }
     T GetRight() const  { return origin.GetX() + size.width; }

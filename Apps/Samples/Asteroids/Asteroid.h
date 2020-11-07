@@ -84,7 +84,7 @@ public:
         const uint32_t       texture_index;
         const Colors         colors;
         const gfx::Matrix44f scale_translate_matrix;
-        const gfx::Point3f   spin_axis;
+        const gfx::Vector3f  spin_axis;
         const float          scale;
         const float          orbit_speed;
         const float          spin_speed;

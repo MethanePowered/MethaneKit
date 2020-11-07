@@ -45,6 +45,7 @@ Base frame class provides frame buffer management with resize handling.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <fmt/format.h>
 #include <vector>
 #include <sstream>
 #include <memory>
@@ -395,20 +396,14 @@ protected:
         const FpsCounter&              fps_counter           = m_context_ptr->GetFpsCounter();
         const uint32_t                 average_fps           = fps_counter.GetFramesPerSecond();
         const FpsCounter::FrameTiming  average_frame_timing  = fps_counter.GetAverageFrameTiming();
+        const std::string title = fmt::format("{:s}        {:d} FPS, {:.2f} ms, {:.2f}% CPU |  {:d} x {:d}  |  {:d} FB  |  VSync {:s}  |  {:s}  |  F1 - help",
+                                              GetPlatformAppSettings().name,
+                                              average_fps, average_frame_timing.GetTotalTimeMSec(), average_frame_timing.GetCpuTimePercent(),
+                                              context_settings.frame_size.width, context_settings.frame_size.height,
+                                              context_settings.frame_buffers_count, (context_settings.vsync_enabled ? "ON" : "OFF"),
+                                              m_context_ptr->GetDevice().GetAdapterName());
 
-        std::stringstream title_ss;
-        title_ss.precision(2);
-        title_ss << GetPlatformAppSettings().name
-                 << "        "    << average_fps
-                 << " FPS, "      << std::fixed << average_frame_timing.GetTotalTimeMSec()
-                 << " ms, "       << std::fixed << average_frame_timing.GetCpuTimePercent() << "% cpu"
-                 << "  |  "       << context_settings.frame_size.width << " x " << context_settings.frame_size.height
-                 << "  |  "       << std::to_string(context_settings.frame_buffers_count) << " FB"
-                 << "  |  VSync " << (context_settings.vsync_enabled ? "ON" : "OFF")
-                 << "  |  "       << m_context_ptr->GetDevice().GetAdapterName()
-                 << "  |  F1 - help";
-
-        SetWindowTitle(title_ss.str());
+        SetWindowTitle(title);
     }
 
     void CompleteInitialization()
@@ -468,9 +463,7 @@ protected:
     static std::string IndexedName(const std::string& base_name, uint32_t index)
     {
         META_FUNCTION_TASK();
-        std::stringstream ss;
-        ss << base_name << " " << std::to_string(index);
-        return ss.str();
+        return fmt::format("{} {}", base_name, index);
     }
 
     ImageLoader&          GetImageLoader() noexcept             { return m_image_loader; }

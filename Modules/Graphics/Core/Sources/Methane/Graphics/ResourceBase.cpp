@@ -24,7 +24,7 @@ Base implementation of the resource interface.
 #include "ResourceBase.h"
 #include "TextureBase.h"
 #include "ContextBase.h"
-#include "Formatters.hpp"
+#include "CoreFormatters.hpp"
 
 #include <Methane/Graphics/Resource.h>
 #include <Methane/Instrumentation.h>
@@ -128,13 +128,8 @@ bool ResourceBase::Barrier::operator!=(const Barrier& other) const noexcept
 ResourceBase::Barrier::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
-    std::stringstream ss;
-    ss << "Resource \"" << id.resource.GetName()
-       << "\" " << GetTypeName(id.type)
-       << " barrier from " << GetStateName(state_change.before)
-       << " to " << GetStateName(state_change.after)
-       << " state";
-    return ss.str();
+    return fmt::format("Resource '{}' {} barrier from {} to {} state",
+                       id.resource.GetName(), GetTypeName(id.type), GetStateName(state_change.before), GetStateName(state_change.after));
 }
 
 std::string ResourceBase::Barrier::GetTypeName(Type type)
@@ -623,7 +618,7 @@ bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
     if (m_state == state)
         return false;
 
-    META_LOG("Resource \"" + GetName() + "\" state changed from " + GetStateName(m_state) + " to " + GetStateName(state));
+    META_LOG("Resource '{}' state changed from {} to {}", GetName(), GetStateName(m_state), GetStateName(state));
 
     if (m_state != State::Common)
     {

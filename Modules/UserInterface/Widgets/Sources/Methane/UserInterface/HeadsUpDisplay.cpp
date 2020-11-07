@@ -41,8 +41,6 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
-#include <sstream>
-
 namespace Methane::UserInterface
 {
 
@@ -61,16 +59,6 @@ inline uint32_t GetFpsTextHeightInDots(Context& ui_context, Font& major_font, Fo
 inline uint32_t GetTimingTextHeightInDots(Context& ui_context, Font& major_font, Font& minor_font, const UnitSize& text_margins)
 {
     return (GetFpsTextHeightInDots(ui_context, major_font, minor_font, text_margins) - ui_context.ConvertToDots(text_margins).height) / 2U;
-}
-
-template <typename T>
-std::string ToStringWithPrecision(const T value, const int precision)
-{
-    META_FUNCTION_TASK();
-    std::ostringstream ss;
-    ss.precision(precision);
-    ss << std::fixed << value;
-    return ss.str();
 }
 
 HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_data_provider, Settings settings)
@@ -213,15 +201,11 @@ void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
     const gfx::FpsCounter& fps_counter = GetUIContext().GetRenderContext().GetFpsCounter();
     const gfx::RenderContext::Settings& context_settings = GetUIContext().GetRenderContext().GetSettings();
 
-    std::stringstream frame_buffers_ss;
-    frame_buffers_ss << context_settings.frame_size.width << " x " << context_settings.frame_size.height << "    "
-                     << context_settings.frame_buffers_count << " FB";
-
-    m_text_blocks[TextBlock::Fps]->SetText(std::to_string(fps_counter.GetFramesPerSecond()) + " FPS");
-    m_text_blocks[TextBlock::FrameTime]->SetText(ToStringWithPrecision(fps_counter.GetAverageFrameTiming().GetTotalTimeMSec(), 2) + " ms");
-    m_text_blocks[TextBlock::CpuTime]->SetText(ToStringWithPrecision(fps_counter.GetAverageFrameTiming().GetCpuTimePercent(), 2) + "% cpu");
+    m_text_blocks[TextBlock::Fps]->SetText(fmt::format("{:d} FPS", fps_counter.GetFramesPerSecond()));
+    m_text_blocks[TextBlock::FrameTime]->SetText(fmt::format("{:.2f} ms", fps_counter.GetAverageFrameTiming().GetTotalTimeMSec()));
+    m_text_blocks[TextBlock::CpuTime]->SetText(fmt::format("{:.2f}% cpu", fps_counter.GetAverageFrameTiming().GetCpuTimePercent()));
     m_text_blocks[TextBlock::GpuName]->SetText(GetUIContext().GetRenderContext().GetDevice().GetAdapterName());
-    m_text_blocks[TextBlock::FrameBuffers]->SetText(frame_buffers_ss.str());
+    m_text_blocks[TextBlock::FrameBuffers]->SetText(fmt::format("{:d} x {:d}    {:d} FB", context_settings.frame_size.width, context_settings.frame_size.height, context_settings.frame_buffers_count));
     m_text_blocks[TextBlock::VSync]->SetText(context_settings.vsync_enabled ? "VSync ON" : "VSync OFF");
     m_text_blocks[TextBlock::VSync]->SetColor(context_settings.vsync_enabled ? m_settings.on_color : m_settings.off_color);
 

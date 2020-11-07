@@ -67,7 +67,7 @@ CommandListSetDX::CommandListSetDX(const Refs<CommandList>& command_list_refs)
     const Refs<CommandListBase>& base_command_list_refs = GetBaseRefs();
 
     std::stringstream fence_name_ss;
-    fence_name_ss << "Execution completed for command lists:";
+    fence_name_ss << "Execution completed for command lists: ";
 
     m_native_command_lists.reserve(base_command_list_refs.size());
     for(const Ref<CommandListBase>& command_list_ref : base_command_list_refs)
@@ -91,7 +91,7 @@ CommandListSetDX::CommandListSetDX(const Refs<CommandList>& command_list_refs)
             META_UNEXPECTED_ENUM_ARG(command_list.GetType());
         }
 
-        fence_name_ss << " \"" << command_list.GetName() << "\"";
+        fence_name_ss << " `" << command_list.GetName() << "`";
     }
 
     m_execution_completed_fence.SetName(fence_name_ss.str());

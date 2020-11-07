@@ -78,7 +78,7 @@ void RenderContextBase::WaitForGpuFramePresented()
 void RenderContextBase::Resize(const FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
-    META_LOG("RESIZE context \"" + GetName() + "\" from " + static_cast<std::string>(m_settings.frame_size) + " to " + static_cast<std::string>(frame_size));
+    META_LOG("Render context '{}' RESIZE from {} to {}", GetName(), m_settings.frame_size, frame_size);
 
     m_settings.frame_size = frame_size;
 }
@@ -86,7 +86,7 @@ void RenderContextBase::Resize(const FrameSize& frame_size)
 void RenderContextBase::Present()
 {
     META_FUNCTION_TASK();
-    META_LOG("PRESENT frame " + std::to_string(m_frame_buffer_index) + " in context \"" + GetName() + "\"");
+    META_LOG("Render context '{}' PRESENT frame {}", GetName(), m_frame_buffer_index);
 
     m_fps_counter.OnCpuFrameReadyToPresent();
 }
@@ -102,7 +102,7 @@ void RenderContextBase::OnCpuPresentComplete(bool signal_frame_fence)
     }
 
     META_CPU_FRAME_DELIMITER(m_frame_buffer_index, m_frame_index);
-    META_LOG("PRESENT COMPLETE for context \"" + GetName() + "\"");
+    META_LOG("Render context '{}' PRESENT COMPLETE frame {}", GetName(), m_frame_buffer_index);
 
     m_fps_counter.OnCpuFramePresented();
 }
@@ -125,7 +125,7 @@ Fence& RenderContextBase::GetRenderFence() const
 void RenderContextBase::ResetWithSettings(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    META_LOG("RESET context \"" + GetName() + "\" with new settings.");
+    META_LOG("Render context '{}' RESET with new settings", GetName());
 
     WaitForGpu(WaitFor::RenderComplete);
 

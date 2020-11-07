@@ -138,11 +138,11 @@ ITT_DOMAIN_EXTERN();
 
 #include <Methane/Platform/Utils.h>
 
-#define META_LOG(/*const std::string& */message) \
-    Methane::Platform::PrintToDebugOutput(message)
+#define META_LOG(/*const std::string& */message, ...) \
+    Methane::Platform::PrintToDebugOutput(fmt::format(message, ## __VA_ARGS__))
 
 #else // ifdef METHANE_LOGGING_ENABLED
 
-#define META_LOG(/*const std::string& */message)
+#define META_LOG(/*const std::string& */message, ...)
 
 #endif // ifdef METHANE_LOGGING_ENABLED

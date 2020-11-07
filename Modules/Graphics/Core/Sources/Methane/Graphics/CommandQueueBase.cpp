@@ -45,7 +45,7 @@ void CommandQueueBase::Execute(CommandListSet& command_lists, const CommandList:
 {
     META_FUNCTION_TASK();
     const uint32_t frame_index = GetCurrentFrameBufferIndex();
-    META_LOG("Command queue \"" + GetName() + "\" is executing on frame " + std::to_string(frame_index));
+    META_LOG("Command queue '{}' is executing on frame {}", GetName(), frame_index);
 
     static_cast<CommandListSetBase&>(command_lists).Execute(frame_index, completed_callback);
 }

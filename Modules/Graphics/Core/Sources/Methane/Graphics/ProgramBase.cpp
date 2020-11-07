@@ -23,7 +23,7 @@ Base implementation of the program interface.
 
 #include "ProgramBase.h"
 #include "ContextBase.h"
-#include "Formatters.hpp"
+#include "CoreFormatters.hpp"
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Utils.h>

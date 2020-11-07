@@ -39,7 +39,7 @@ FenceBase::FenceBase(CommandQueueBase& command_queue)
 void FenceBase::Signal()
 {
     META_FUNCTION_TASK();
-    META_LOG("GPU SIGNAL fence \"" + GetName() + "\" with value " + std::to_string(m_value + 1));
+    META_LOG("Fence '{}' SIGNAL from GPU with value {}", GetName(), m_value + 1);
 
     m_value++;
 }
@@ -47,7 +47,7 @@ void FenceBase::Signal()
 void FenceBase::WaitOnCpu()
 {
     META_FUNCTION_TASK();
-    META_LOG("CPU WAIT fence \"" + GetName() + "\" with value " + std::to_string(m_value));
+    META_LOG("Fence '{}' WAIT on CPU with value {}", GetName(), m_value);
 }
 
 void FenceBase::WaitOnGpu(CommandQueue& wait_on_command_queue)
@@ -56,7 +56,7 @@ void FenceBase::WaitOnGpu(CommandQueue& wait_on_command_queue)
     META_UNUSED(wait_on_command_queue);
     META_CHECK_ARG_NAME_DESCR("wait_on_command_queue", std::addressof(wait_on_command_queue) != std::addressof(m_command_queue),
                               "fence can not be waited on GPU at the same command queue where it was signalled");
-    META_LOG("GPU WAIT fence \"" + GetName() + "\" on command queue \"" + wait_on_command_queue.GetName() + "\" with value " + std::to_string(m_value));
+    META_LOG("Fence '{}' WAIT on GPU command queue '{}' with value {}", GetName(), wait_on_command_queue.GetName(), m_value);
 }
 
 void FenceBase::FlushOnCpu()

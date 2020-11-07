@@ -30,7 +30,7 @@ DirectX 12 implementation of the command queue interface.
 #include "QueryBufferDX.h"
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Graphics/Windows/Primitives.h>
+#include <Methane/Graphics/Windows/ErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -113,7 +113,7 @@ CommandQueueDX::~CommandQueueDX()
     catch(const std::exception& ex)
     {
         META_UNUSED(ex);
-        META_LOG(std::string("Failed to complete command list execution, exception occurred: ") + ex.what());
+        META_LOG("WARNING: Command queue '{}' has failed to complete command list execution, exception occurred: {}", GetName(), ex.what());
         assert(false);
     }
     m_execution_waiting = false;

@@ -23,7 +23,7 @@ DirectX 12 implementation of the device interface.
 
 #include "DeviceDX.h"
 
-#include <Methane/Graphics/Windows/Primitives.h>
+#include <Methane/Graphics/Windows/ErrorHandling.h>
 #include <Methane/Platform/Windows/Utils.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -116,7 +116,7 @@ const wrl::ComPtr<ID3D12Device>& DeviceDX::GetNativeDevice() const
     else
     {
         assert(0);
-        META_LOG("GPU instrumentation results are unreliable until GPU can not be switched to stable power state. Enabled Windows Developer Mode to unlock it.");
+        META_LOG("WARNING: GPU instrumentation results are unreliable until GPU can not be switched to stable power state. Enabled Windows Developer Mode to unlock it");
     }
 #endif
 

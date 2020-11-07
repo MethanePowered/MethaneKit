@@ -38,7 +38,7 @@ namespace Methane::Platform
 void PrintToDebugOutput(const std::string& msg)
 {
     META_FUNCTION_TASK();
-    OutputDebugStringA((msg + "\n").c_str());
+    OutputDebugStringA(fmt::format("{}\n", msg).c_str());
     TracyMessage(msg.c_str(), msg.size());
 }
 

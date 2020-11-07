@@ -23,6 +23,7 @@ Methane user interface types root header.
 
 #pragma once
 
+#include <Methane/Graphics/Point.hpp>
 #include <Methane/Graphics/Rect.hpp>
 #include <Methane/Graphics/Color.hpp>
 #include <Methane/Checks.hpp>
@@ -40,6 +41,9 @@ using FloatPoint   = Graphics::FloatPoint;
 
 using Color3f      = Graphics::Color3f;
 using Color4f      = Graphics::Color4f;
+
+template<typename T>
+using Point2T      = Data::Point<T, 2>;
 
 enum class Units : uint8_t
 {

@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Formatters.hpp
-Methane graphics object formatters for use with fmt::format(...)
+FILE: Methane/Graphics/CoreFormatters.hpp
+Methane Graphics Core objects formatters for use with fmt::format(...)
 
 ******************************************************************************/
 

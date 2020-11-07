@@ -26,7 +26,7 @@ DirectX 12 implementation of the resource interface.
 #include "RenderContextDX.h"
 #include "DeviceDX.h"
 
-#include <Methane/Graphics/Windows/Primitives.h>
+#include <Methane/Graphics/Windows/ErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 

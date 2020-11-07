@@ -29,7 +29,7 @@ DirectX 12 implementation of the render pass interface.
 
 #include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/Graphics/TextureBase.h>
-#include <Methane/Graphics/Windows/Primitives.h>
+#include <Methane/Graphics/Windows/ErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -78,10 +78,10 @@ RenderPassDX::AccessDesc::AccessDesc(const ColorAttachment& color_attachment)
 
         const DXGI_FORMAT color_format = TypeConverterDX::PixelFormatToDxgi(color_attachment.texture_ptr->GetSettings().pixel_format);
         const std::array<float, 4> clear_color_components{
-            color_attachment.clear_color.GetR(),
-            color_attachment.clear_color.GetG(),
-            color_attachment.clear_color.GetB(),
-            color_attachment.clear_color.GetA()
+            color_attachment.clear_color.GetRf(),
+            color_attachment.clear_color.GetGf(),
+            color_attachment.clear_color.GetBf(),
+            color_attachment.clear_color.GetAf()
         };
         beginning.Clear.ClearValue = CD3DX12_CLEAR_VALUE(color_format, clear_color_components.data());
     }
@@ -136,7 +136,7 @@ D3D12_RENDER_PASS_ENDING_ACCESS_TYPE RenderPassDX::AccessDesc::GetEndingAccessTy
 
 RenderPassDX::RTClearInfo::RTClearInfo(const RenderPass::ColorAttachment& color_attach)
     : cpu_handle(GetRenderTargetTextureCpuDescriptor(color_attach.texture_ptr))
-    , clear_color{ color_attach.clear_color.GetR(), color_attach.clear_color.GetG(), color_attach.clear_color.GetB(), color_attach.clear_color.GetA() }
+    , clear_color{ color_attach.clear_color.GetRf(), color_attach.clear_color.GetGf(), color_attach.clear_color.GetBf(), color_attach.clear_color.GetAf() }
 {
     META_FUNCTION_TASK();
 }

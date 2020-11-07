@@ -25,63 +25,67 @@ Color type based on cml::vector.
 
 #include "Types.h"
 
+#include <Methane/Checks.hpp>
+
+#include <fmt/format.h>
 #include <cstdint>
 
 namespace Methane::Graphics
 {
 
-class Color3f : public Vector3f
+template<size_t vector_size, typename VectorType = std::enable_if_t<3 <= vector_size && vector_size <= 4, cml::vector<float, cml::fixed<vector_size>>>>
+class ColorNf : public VectorType
 {
 public:
-    using Vector3f::Vector3f;
-    using Vector3f::operator=;
+    using VectorType::VectorType;
+    using VectorType::operator=;
 
-    Color3f() = default;
-    Color3f(float r, float g, float b) : Vector3f(r, g, b) { }
+    float GetRf() const noexcept { return (*this)[0]; }
+    float GetGf() const noexcept { return (*this)[1]; }
+    float GetBf() const noexcept { return (*this)[2]; }
 
-    float GetR() const noexcept { return (*this)[0]; }
-    float GetG() const noexcept { return (*this)[1]; }
-    float GetB() const noexcept { return (*this)[2]; }
+    template<typename = std::enable_if_t<vector_size >= 4, void>>
+    float GetAf() const noexcept { return (*this)[3]; }
 
-    void SetR(float r) noexcept { (*this)[0] = r; }
-    void SetG(float g) noexcept { (*this)[1] = g; }
-    void SetB(float b) noexcept { (*this)[2] = b; }
+    float GetNormRf() const noexcept { return GetNormColorComponent(GetRf()); }
+    float GetNormGf() const noexcept { return GetNormColorComponent(GetGf()); }
+    float GetNormBf() const noexcept { return GetNormColorComponent(GetBf()); }
 
-    std::string ToString() const
+    template<typename = std::enable_if_t<vector_size >= 4, void>>
+    float GetNormAf() const noexcept { return GetNormColorComponent(GetAf()); }
+
+    uint8_t GetRu() const noexcept { return GetUintColorComponent(GetNormRf()); }
+    uint8_t GetGu() const noexcept { return GetUintColorComponent(GetNormGf()); }
+    uint8_t GetBu() const noexcept { return GetUintColorComponent(GetNormBf()); }
+
+    template<typename = std::enable_if_t<vector_size >= 4, void>>
+    uint8_t GetAu() const noexcept { return GetUintColorComponent(GetNormAf()); }
+
+    void SetR(float r) { META_CHECK_ARG_RANGE(r, s_float_range.first, s_float_range.second); (*this)[0] = r; }
+    void SetG(float g) { META_CHECK_ARG_RANGE(g, s_float_range.first, s_float_range.second); (*this)[1] = g; }
+    void SetB(float b) { META_CHECK_ARG_RANGE(b, s_float_range.first, s_float_range.second); (*this)[2] = b; }
+
+    template<typename = std::enable_if_t<vector_size >= 4, void>>
+    void SetA(float a) { META_CHECK_ARG_RANGE(a, s_float_range.first, s_float_range.second); (*this)[3] = a; }
+
+    operator std::string() const noexcept { return fmt::format("C(r:{:d}, g:{:d}, b:{:d})", GetRu(), GetGu(), GetBu()); }
+
+private:
+    inline float GetNormColorComponent(float component) const noexcept
     {
-        return "C(R:" + std::to_string(GetR()) +
-               ", G:" + std::to_string(GetG()) +
-               ", B:" + std::to_string(GetB()) + ")";
+        return std::max(s_float_range.first, std::min(s_float_range.second, component));
     }
+
+    inline uint8_t GetUintColorComponent(float component) const noexcept
+    {
+        return static_cast<uint8_t>(std::round(component * static_cast<float>(s_uint_component_max)));
+    }
+
+    static constexpr std::pair<float, float> s_float_range{ 0.f, 1.f };
+    static constexpr uint8_t s_uint_component_max = std::numeric_limits<uint8_t>::max();
 };
 
-class Color4f : public Vector4f
-{
-public:
-    using Vector4f::Vector4f;
-    using Vector4f::operator=;
-
-    Color4f() : Vector4f(0.F, 0.F, 0.F, 0.F) { }
-    Color4f(float r, float g, float b, float a) : Vector4f(r, g, b, a) { }
-    Color4f(Color3f c, float a) : Vector4f(std::move(c), a) { }
-
-    float GetR() const noexcept { return (*this)[0]; }
-    float GetG() const noexcept { return (*this)[1]; }
-    float GetB() const noexcept { return (*this)[2]; }
-    float GetA() const noexcept { return (*this)[3]; }
-
-    void SetR(float r) noexcept { (*this)[0] = r; }
-    void SetG(float g) noexcept { (*this)[1] = g; }
-    void SetB(float b) noexcept { (*this)[2] = b; }
-    void SetA(float a) noexcept { (*this)[3] = a; }
-
-    std::string ToString() const
-    {
-        return "C(R:" + std::to_string(GetR()) +
-               ", G:" + std::to_string(GetG()) +
-               ", B:" + std::to_string(GetB()) +
-               ", A:" + std::to_string(GetA()) + ")";
-    }
-};
+using Color3f = ColorNf<3>;
+using Color4f = ColorNf<4>;
 
 } // namespace Methane::Graphics

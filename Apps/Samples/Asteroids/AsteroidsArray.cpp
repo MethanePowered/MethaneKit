@@ -34,18 +34,18 @@ Random generated asteroids array with uber mesh and textures ready for rendering
 namespace Methane::Samples
 {
 
-static gfx::Point3f GetRandomDirection(std::mt19937& rng)
+static gfx::Vector3f GetRandomDirection(std::mt19937& rng)
 {
     META_FUNCTION_TASK();
 
     std::normal_distribution<float> distribution;
-    gfx::Point3f direction;
+    gfx::Vector3f direction;
     do
     {
         direction = { distribution(rng), distribution(rng), distribution(rng) };
     }
     while (direction.length_squared() <= std::numeric_limits<float>::min());
-    return gfx::Point3f(cml::normalize(direction));
+    return cml::normalize(direction);
 }
 
 AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed)

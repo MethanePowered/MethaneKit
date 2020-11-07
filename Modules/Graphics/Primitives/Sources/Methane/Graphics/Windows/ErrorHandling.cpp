@@ -21,7 +21,7 @@ Windows platform graphics primitives.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/Primitives.h>
+#include <Methane/Graphics/Windows/ErrorHandling.h>
 #include <Methane/Instrumentation.h>
 
 #include <system_error>
@@ -68,7 +68,7 @@ RuntimeException::RuntimeException(HRESULT hr, ID3D12Device* device)
     , m_device(device)
 {
     META_FUNCTION_TASK();
-    META_LOG(what() + "\n");
+    META_LOG("Graphics Runtime Error: {}", what());
 }
 
 RuntimeException::RuntimeException(HRESULT hr, const wrl::ComPtr<ID3DBlob>& error_blob)
@@ -76,7 +76,7 @@ RuntimeException::RuntimeException(HRESULT hr, const wrl::ComPtr<ID3DBlob>& erro
     , m_result(hr)
 {
     META_FUNCTION_TASK();
-    META_LOG(what() + "\n");
+    META_LOG("Graphics Runtime Error: {}", what());
 }
 
 } // namespace Methane::Graphics

@@ -51,7 +51,7 @@ public:
         if (@available(macOS 10.15.4, *))
         {
             [drawable addPresentedHandler:^(id<MTLDrawable> mtl_drawable) {
-                META_LOG("Metal Drawable (" + std::to_string(mtl_drawable.drawableID) + ") was presented at " + std::to_string(mtl_drawable.presentedTime) + " sec.");
+                META_LOG("Metal Drawable ({}) was presented at {} sec.", mtl_drawable.drawableID, mtl_drawable.presentedTime);
                 const Methane::Data::Timestamp presented_timestamp = Methane::Data::ConvertTimeSecondsToNanoseconds(mtl_drawable.presentedTime);
                 TRACY_GPU_SCOPE_COMPLETE(m_present_scope, Methane::Data::TimeRange(presented_timestamp, presented_timestamp));
                 std::lock_guard<std::mutex> lock(scope_set_mutex);

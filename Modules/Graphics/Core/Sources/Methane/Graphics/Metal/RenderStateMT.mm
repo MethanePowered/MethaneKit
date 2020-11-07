@@ -381,10 +381,10 @@ void RenderStateMT::Apply(RenderCommandListBase& command_list, Group::Mask state
     if (state_groups & Group::BlendingColor)
     {
         const Settings& settings = GetSettings();
-        [mtl_cmd_encoder setBlendColorRed:settings.blending_color.GetR()
-                                    green:settings.blending_color.GetG()
-                                     blue:settings.blending_color.GetB()
-                                    alpha:settings.blending_color.GetA()];
+        [mtl_cmd_encoder setBlendColorRed:settings.blending_color.GetRf()
+                                    green:settings.blending_color.GetGf()
+                                     blue:settings.blending_color.GetBf()
+                                    alpha:settings.blending_color.GetAf()];
     }
 }
 

@@ -37,9 +37,9 @@ static std::string GetWaitForName(Context::WaitFor wait_for)
     META_FUNCTION_TASK();
     switch (wait_for)
     {
-    case Context::WaitFor::RenderComplete:      return "WAIT for Render Complete";
-    case Context::WaitFor::FramePresented:      return "WAIT for Frame Present";
-    case Context::WaitFor::ResourcesUploaded:   return "WAIT for Resources Upload";
+    case Context::WaitFor::RenderComplete:      return "Render Complete";
+    case Context::WaitFor::FramePresented:      return "Frame Present";
+    case Context::WaitFor::ResourcesUploaded:   return "Resources Upload";
     default:                                    META_UNEXPECTED_ENUM_ARG_RETURN(wait_for, "");
     }
 }
@@ -67,7 +67,7 @@ void ContextBase::CompleteInitialization()
         return;
 
     m_is_completing_initialization = true;
-    META_LOG("Complete initialization of context \"" + GetName() + "\"");
+    META_LOG("Complete initialization of context '{}'", GetName());
 
     Emit(&IContextCallback::OnContextCompletingInitialization, *this);
 
@@ -89,7 +89,7 @@ void ContextBase::CompleteInitialization()
 void ContextBase::WaitForGpu(WaitFor wait_for)
 {
     META_FUNCTION_TASK();
-    META_LOG(GetWaitForName(wait_for) + " in context \"" + GetName() + "\"");
+    META_LOG("Context '{}' is WAITING for {}", GetName(), GetWaitForName(wait_for));
 
     if (wait_for == WaitFor::ResourcesUploaded)
     {
@@ -104,7 +104,7 @@ void ContextBase::WaitForGpu(WaitFor wait_for)
 void ContextBase::Reset(Device& device)
 {
     META_FUNCTION_TASK();
-    META_LOG("RESET context \"" + GetName() + "\" with device adapter \"" + device.GetAdapterName() + "\".");
+    META_LOG("Context '{}' RESET with device adapter '{}'", GetName(), device.GetAdapterName());
 
     WaitForGpu(WaitFor::RenderComplete);
     Release();
@@ -114,7 +114,7 @@ void ContextBase::Reset(Device& device)
 void ContextBase::Reset()
 {
     META_FUNCTION_TASK();
-    META_LOG("RESET context \"" + GetName() + "\"..");
+    META_LOG("Context '{}' RESET", GetName());
 
     WaitForGpu(WaitFor::RenderComplete);
 
@@ -140,7 +140,7 @@ void ContextBase::OnGpuWaitComplete(WaitFor wait_for)
 void ContextBase::Release()
 {
     META_FUNCTION_TASK();
-    META_LOG("RELEASE context \"" + GetName() + "\"");
+    META_LOG("Context '{}' RELEASE", GetName());
 
     m_device_ptr.reset();
     m_upload_cmd_queue_ptr.reset();
@@ -159,7 +159,7 @@ void ContextBase::Release()
 void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)
 {
     META_FUNCTION_TASK();
-    META_LOG("INITIALIZE context \"" + GetName() + "\"");
+    META_LOG("Context '{}' INITIALIZE", GetName());
 
     m_device_ptr = device.GetDevicePtr();
     m_upload_fence_ptr = Fence::Create(GetUploadCommandQueue());
@@ -288,7 +288,7 @@ bool ContextBase::UploadResources()
     if (upload_cmd_state == CommandList::State::Encoding)
         GetUploadCommandList().Commit();
 
-    META_LOG("UPLOAD resources for context \"" + GetName() + "\"");
+    META_LOG("Context '{}' UPLOAD resources", GetName());
     GetUploadCommandQueue().Execute(GetUploadCommandListSet());
     return true;
 }

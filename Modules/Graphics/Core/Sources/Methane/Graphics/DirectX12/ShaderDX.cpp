@@ -28,7 +28,7 @@ DirectX 12 implementation of the shader interface.
 #include "TypesDX.h"
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Graphics/Windows/Primitives.h>
+#include <Methane/Graphics/Windows/ErrorHandling.h>
 #include <Methane/Data/Provider.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -110,7 +110,7 @@ static std::string GetReturnTypeName(D3D_RESOURCE_RETURN_TYPE return_type)
     case D3D_RETURN_TYPE_MIXED:         return "Mixed";
     case D3D_RETURN_TYPE_DOUBLE:        return "Double";
     case D3D_RETURN_TYPE_CONTINUED:     return "Continued";
-    default: META_UNEXPECTED_ENUM_ARG_RETURN(return_type, "Undefined");
+    default:                            return "Undefined";
     }
 }
 

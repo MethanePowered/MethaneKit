@@ -259,7 +259,7 @@ uint32_t TypeConverterMT::ByteSizeOfVertexFormat(MTLVertexFormat vertex_format)
 MTLClearColor TypeConverterMT::ColorToMetalClearColor(const Color4f& color) noexcept
 {
     META_FUNCTION_TASK();
-    return MTLClearColorMake(color.GetR(), color.GetG(), color.GetB(), color.GetA());
+    return MTLClearColorMake(color.GetRf(), color.GetGf(), color.GetBf(), color.GetAf());
 }
 
 NSRect TypeConverterMT::RectToNS(const FrameRect& rect) noexcept

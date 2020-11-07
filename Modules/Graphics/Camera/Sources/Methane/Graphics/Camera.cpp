@@ -22,12 +22,11 @@ Camera helper implementation allowing to generate view and projection matrices.
 ******************************************************************************/
 
 #include <Methane/Graphics/Camera.h>
-#include <Methane/Graphics/TypeConverters.hpp>
+#include <Methane/Graphics/TypeFormatters.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
 #include <cml/mathlib/mathlib.h>
-#include <sstream>
 
 namespace Methane::Graphics
 {
@@ -156,12 +155,8 @@ float Camera::GetFovAngleY() const noexcept
 
 std::string Camera::GetOrientationString() const
 {
-    std::stringstream ss;
-    ss << "Camera orientation:"
-       << std::endl << "  - eye: " << VectorToString(m_current_orientation.eye)
-       << std::endl << "  - aim: " << VectorToString(m_current_orientation.aim)
-       << std::endl << "  - up:  " << VectorToString(m_current_orientation.up);
-    return ss.str();
+    return fmt::format("Camera orientation:\n  - eye: {}\n  - aim: {}\n  - up:  {}",
+                       m_current_orientation.eye, m_current_orientation.aim, m_current_orientation.up);
 }
 
 } // namespace Methane::Graphics

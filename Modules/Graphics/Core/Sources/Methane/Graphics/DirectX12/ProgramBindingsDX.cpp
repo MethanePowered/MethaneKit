@@ -397,7 +397,7 @@ void ProgramBindingsDX::ApplyRootParameterBinding(const RootParameterBinding& ro
 void ProgramBindingsDX::CopyDescriptorsToGpu()
 {
     META_FUNCTION_TASK();
-    META_LOG(std::string("Copy descriptors to GPU for program \"") + GetProgram().GetName() + "\"");
+    META_LOG("Copy descriptors to GPU for program '{}'", GetProgram().GetName());
 
     const wrl::ComPtr<ID3D12Device>& cp_device = static_cast<const ProgramDX&>(GetProgram()).GetContextDX().GetDeviceDX().GetNativeDevice();
     ForEachArgumentBinding([&cp_device](ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation)
@@ -425,9 +425,8 @@ void ProgramBindingsDX::CopyDescriptorsToGpu()
                                  resource_location_dx.GetResourceDX().GetUsageNames(), dx_descriptor_heap.GetTypeName());
 
             const uint32_t descriptor_index = descriptor_range_start + descriptor_range.offset + resource_index;
-            META_LOG(std::string("  - Resource \"") + resource_location_dx.GetResourceDX().GetName() +
-                     "\" range: [" + std::to_string(descriptor_range.offset) + " - " + std::to_string(descriptor_range.offset + descriptor_range.count) +
-                     "), descriptor: " + std::to_string(descriptor_index));
+            META_LOG("  - Resource '{}' range [{}, {}), descriptor {}", resource_location_dx.GetResourceDX().GetName(),
+                     descriptor_range.offset, descriptor_range.offset + descriptor_range.count, descriptor_index);
 
             cp_device->CopyDescriptorsSimple(1,
                 dx_descriptor_heap.GetNativeCpuDescriptorHandle(descriptor_index),

@@ -25,14 +25,11 @@ till end (exclusively): [start, end)
 
 #pragma once
 
+#include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
 #include <initializer_list>
 #include <algorithm>
-#include <sstream>
-#include <stdexcept>
-
-#include <Methane/Instrumentation.h>
 
 namespace Methane::Data
 {
@@ -94,9 +91,7 @@ public:
     explicit operator std::string() const noexcept
     {
         META_FUNCTION_TASK();
-        std::stringstream ss;
-        ss << "[" << m_start << ", " << m_end << ")";
-        return ss.str();
+        return fmt::format("[{}, {})", m_start, m_end);
     }
 
 private:

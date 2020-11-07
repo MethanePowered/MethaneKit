@@ -49,6 +49,18 @@ struct ScreenQuadVertex
     };
 };
 
+static std::string GetQuadName(const ScreenQuad::Settings& settings, const Shader::MacroDefinitions& macro_definitions)
+{
+    META_FUNCTION_TASK();
+    std::stringstream quad_name_ss;
+    quad_name_ss << "Screen-Quad";
+    if (settings.alpha_blending_enabled)
+        quad_name_ss << " with Alpha-Blending";
+    if (!macro_definitions.empty())
+        quad_name_ss << " " << Shader::ConvertMacroDefinitionsToString(macro_definitions);
+    return quad_name_ss.str();
+}
+
 ScreenQuad::ScreenQuad(RenderContext& context, Settings settings)
     : ScreenQuad(context, nullptr, settings)
 {
@@ -78,15 +90,9 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> texture_ptr, Setting
         program_argument_descriptions.emplace(Shader::Type::Pixel, "g_sampler", Program::Argument::Modifiers::Constant);
     }
 
-    std::stringstream quad_name_ss;
-    quad_name_ss << "Screen-Quad";
-    if (m_settings.alpha_blending_enabled)
-        quad_name_ss << " with Alpha-Blending";
-    if (!ps_macro_definitions.empty())
-        quad_name_ss << " " << Shader::ConvertMacroDefinitionsToString(ps_macro_definitions);
-
-    const std::string s_state_name = quad_name_ss.str() + " Render State";
-    m_render_state_ptr = std::dynamic_pointer_cast<RenderState>(m_context.GetObjectsRegistry().GetGraphicsObject(s_state_name));
+    const std::string quad_name = GetQuadName(m_settings, ps_macro_definitions);
+    const std::string state_name = fmt::format("{} Render State", quad_name);
+    m_render_state_ptr = std::dynamic_pointer_cast<RenderState>(m_context.GetObjectsRegistry().GetGraphicsObject(state_name));
     if (!m_render_state_ptr)
     {
         RenderState::Settings state_settings;
@@ -113,7 +119,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> texture_ptr, Setting
                 context_settings.depth_stencil_format
             }
         );
-        state_settings.program_ptr->SetName(quad_name_ss.str() + " Shading");
+        state_settings.program_ptr->SetName(fmt::format("{} Shading", quad_name));
         state_settings.depth.enabled                                        = false;
         state_settings.depth.write_enabled                                  = false;
         state_settings.rasterizer.is_front_counter_clockwise                = true;
@@ -124,7 +130,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> texture_ptr, Setting
         state_settings.blending.render_targets[0].dest_alpha_blend_factor   = RenderState::Blending::Factor::Zero;
 
         m_render_state_ptr = RenderState::Create(context, state_settings);
-        m_render_state_ptr->SetName(s_state_name);
+        m_render_state_ptr->SetName(state_name);
 
         m_context.GetObjectsRegistry().AddGraphicsObject(*m_render_state_ptr);
     }

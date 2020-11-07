@@ -27,7 +27,7 @@ DirectX 12 fence implementation.
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/Graphics/Windows/Primitives.h>
+#include <Methane/Graphics/Windows/ErrorHandling.h>
 
 #include <nowide/convert.hpp>
 
@@ -82,13 +82,13 @@ void FenceDX::WaitOnCpu()
     META_CHECK_ARG_NOT_NULL(m_event);
     if (m_cp_fence->GetCompletedValue() < GetValue())
     {
-        META_LOG("SLEEP on fence \"" + GetName() + "\" with value " + std::to_string(GetValue()));
+        META_LOG("Fence '{}' SLEEP with value {}", GetName(), GetValue());
 
         ThrowIfFailed(m_cp_fence->SetEventOnCompletion(GetValue(), m_event),
                       GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice().Get());
         WaitForSingleObjectEx(m_event, INFINITE, FALSE);
 
-        META_LOG("AWAKE on fence \"" + GetName() + "\" with value " + std::to_string(GetValue()));
+        META_LOG("Fence '{}' AWAKE with value {}", GetName(), GetValue());
     }
 }
 

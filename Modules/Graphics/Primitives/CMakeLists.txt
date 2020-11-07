@@ -5,7 +5,6 @@ include(MethaneModules)
 get_module_dirs("Methane/Graphics")
 
 set(HEADERS
-    ${INCLUDE_DIR}/Primitives.h
     ${INCLUDE_DIR}/FpsCounter.h
     ${INCLUDE_DIR}/PerlinNoise.h
     ${INCLUDE_DIR}/Mesh.h
@@ -15,7 +14,6 @@ set(HEADERS
     ${INCLUDE_DIR}/Mesh/UberMesh.hpp
     ${INCLUDE_DIR}/Mesh/SphereMesh.hpp
     ${INCLUDE_DIR}/Mesh/IcosahedronMesh.hpp
-    ${INCLUDE_PLATFORM_DIR}/Primitives.h
 )
 
 set(SOURCES
@@ -25,8 +23,11 @@ set(SOURCES
 )
 
 if (WIN32)
+    set(HEADERS ${HEADERS}
+        ${INCLUDE_PLATFORM_DIR}/ErrorHandling.h
+    )
     set(SOURCES ${SOURCES}
-        ${SOURCES_PLATFORM_DIR}/Primitives.cpp
+        ${SOURCES_PLATFORM_DIR}/ErrorHandling.cpp
     )
 endif()
 
