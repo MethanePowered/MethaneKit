@@ -33,171 +33,102 @@ namespace Methane::Data
 {
 
 template<typename T, size_t vector_size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= vector_size && vector_size <= 4>>
-class PointT : protected cml::vector<T, cml::fixed<vector_size>>
+class PointT
 {
 public:
     using CoordinateType = T;
     using VectorType = cml::vector<T, cml::fixed<vector_size>>;
     using PointType = PointT<T, vector_size>;
 
-    using VectorType::VectorType;
-    using VectorType::length;
-    using VectorType::length_squared;
-    using VectorType::normalize;
+    static constexpr size_t dimensions_count = vector_size;
+
+    PointT() = default;
+
+    template<size_t sz = vector_size, typename = std::enable_if_t<sz == 2, void>>
+    PointT(T x, T y) : m_vector(x, y) { }
+
+    template<size_t sz = vector_size, typename = std::enable_if_t<sz == 3, void>>
+    PointT(T x, T y, T z) : m_vector(x, y, z) { }
+
+    template<size_t sz = vector_size, typename = std::enable_if_t<sz == 4, void>>
+    PointT(T x, T y, T z, T w) : m_vector(x, y, z, w) { }
+
+    PointT(std::initializer_list<T> init) : m_vector(init) { }
+
+    explicit PointT(const VectorType& vector) : m_vector(vector) { }
 
     template<typename V>
-    explicit PointT(const PointT<V, vector_size>& other) : VectorType(other.AsVector()) { }
+    explicit PointT(const PointT<V, vector_size>& other) : m_vector(other.AsVector()) { }
 
-    explicit PointT(const VectorType& v) : VectorType(v) { }
+    VectorType& AsVector() noexcept               { return m_vector; }
+    const VectorType& AsVector() const noexcept   { return m_vector; }
 
-    VectorType& AsVector() noexcept               { return *this; }
-    const VectorType& AsVector() const noexcept   { return *this; }
-
-    T GetX() const noexcept { return (*this)[0]; }
-    T GetY() const noexcept { return (*this)[1]; }
+    T GetX() const noexcept { return m_vector[0]; }
+    T GetY() const noexcept { return m_vector[1]; }
 
     template<size_t sz = vector_size, typename = std::enable_if_t<sz >= 3, void>>
-    T GetZ() const noexcept { return (*this)[2]; }
+    T GetZ() const noexcept { return m_vector[2]; }
 
     template<size_t sz = vector_size, typename = std::enable_if_t<sz >= 4, void>>
-    T GetW() const noexcept { return (*this)[3]; }
+    T GetW() const noexcept { return m_vector[3]; }
 
-    void SetX(T x) noexcept { (*this)[0] = x; }
-    void SetY(T y) noexcept { (*this)[1] = y; }
+    void SetX(T x) noexcept { m_vector[0] = x; }
+    void SetY(T y) noexcept { m_vector[1] = y; }
 
     template<size_t sz = vector_size, typename = std::enable_if_t<sz >= 3, void>>
-    void SetZ(T z) noexcept { return (*this)[2] = z; }
+    void SetZ(T z) noexcept { return m_vector[2] = z; }
 
     template<size_t sz = vector_size, typename = std::enable_if_t<sz >= 4, void>>
-    void SetW(T w) noexcept { return (*this)[3] = w; }
+    void SetW(T w) noexcept { return m_vector[3] = w; }
 
-    bool operator==(const PointType& other) const noexcept
-    { return static_cast<const VectorType&>(*this) == static_cast<const VectorType&>(other); }
+    T GetLength() const noexcept { return m_vector.length(); }
+    T GetLengthSquared() const noexcept { return m_vector.length_squared(); }
 
-    bool operator!=(const PointType& other) const noexcept
-    { return static_cast<const VectorType&>(*this) != static_cast<const VectorType&>(other); }
+    PointType& Normalize() noexcept { m_vector.normalize(); return *this; }
 
-    PointType operator+(const PointType& other) const noexcept
-    {
-        if constexpr (vector_size == 2)
-            return PointType(GetX() + other.GetX(), GetY() + other.GetY());
-        else if constexpr (vector_size == 3)
-            return PointType(GetX() + other.GetX(), GetY() + other.GetY(), GetZ() + other.GetZ());
-        else if constexpr (vector_size == 4)
-            return PointType(GetX() + other.GetX(), GetY() + other.GetY(), GetZ() + other.GetZ(), GetW() + other.GetW());
-    }
+    bool operator==(const PointType& other) const noexcept { return m_vector == other.AsVector(); }
+    bool operator!=(const PointType& other) const noexcept { return m_vector != other.AsVector(); }
+    bool operator<(const PointType& other) const noexcept  { return m_vector <  other.AsVector(); }
+    bool operator<=(const PointType& other) const noexcept { return m_vector <= other.AsVector(); }
+    bool operator>(const PointType& other) const noexcept  { return m_vector >  other.AsVector(); }
+    bool operator>=(const PointType& other) const noexcept { return m_vector >= other.AsVector(); }
 
-    PointType operator-(const PointType& other) const noexcept
-    {
-        if constexpr (vector_size == 2)
-            return PointType(GetX() - other.GetX(), GetY() - other.GetY());
-        else if constexpr (vector_size == 3)
-            return PointType(GetX() - other.GetX(), GetY() - other.GetY(), GetZ() - other.GetZ());
-        else if constexpr (vector_size == 4)
-            return PointType(GetX() - other.GetX(), GetY() - other.GetY(), GetZ() - other.GetZ(), GetW() - other.GetW());
-    }
-
-    PointType& operator+=(const PointType& other) noexcept
-    {
-        for(int comp_index = 0; comp_index < static_cast<int>(vector_size); ++comp_index)
-        {
-            (*this)[comp_index] = (*this)[comp_index] + other[comp_index];
-        }
-        return *this;
-    }
-
-    PointType& operator-=(const PointType& other) noexcept
-    {
-        for(int comp_index = 0; comp_index < static_cast<int>(vector_size); ++comp_index)
-        {
-            (*this)[comp_index] = (*this)[comp_index] - other[comp_index];
-        }
-        return *this;
-    }
+    PointType operator+(const PointType& other) const noexcept { return PointType(m_vector + other.AsVector()); }
+    PointType operator-(const PointType& other) const noexcept { return PointType(m_vector - other.AsVector()); }
+    PointType& operator+=(const PointType& other) noexcept     { m_vector += other.AsVector(); return *this; }
+    PointType& operator-=(const PointType& other) noexcept     { m_vector -= other.AsVector(); return *this; }
 
     template<typename M, typename = std::enable_if_t<std::is_arithmetic_v<M>>>
     PointType operator*(M multiplier) const noexcept
-    {
-        if constexpr (vector_size == 2)
-            return PointType(Multiply(GetX(), multiplier), Multiply(GetY(), multiplier));
-        else if constexpr (vector_size == 3)
-            return PointType(Multiply(GetX(), multiplier), Multiply(GetY(), multiplier), Multiply(GetZ(), multiplier));
-        else if constexpr (vector_size == 4)
-            return PointType(Multiply(GetX(), multiplier), Multiply(GetY(), multiplier), Multiply(GetZ(), multiplier), Multiply(GetW(), multiplier));
-    }
+    { return PointType(m_vector * multiplier); }
 
     template<typename M, typename = std::enable_if_t<std::is_arithmetic_v<M>>>
     PointType operator/(M divisor) const noexcept
-    {
-        if constexpr (vector_size == 2)
-            return PointType(Divide(GetX(), divisor), Divide(GetY(), divisor));
-        else if constexpr (vector_size == 3)
-            return PointType(Divide(GetX(), divisor), Divide(GetY(), divisor), Divide(GetZ(), divisor));
-        else if constexpr (vector_size == 4)
-            return PointType(Divide(GetX(), divisor), Divide(GetY(), divisor), Divide(GetZ(), divisor), Divide(GetW(), divisor));
-    }
+    { return PointType(m_vector / divisor); }
 
     template<typename M>
     PointType operator*(const PointT<M, vector_size>& multiplier) const noexcept
-    {
-        if constexpr (vector_size == 2)
-            return PointType(Multiply(GetX(), multiplier.GetX()), Multiply(GetY(), multiplier.GetY()));
-        else if constexpr (vector_size == 3)
-            return PointType(Multiply(GetX(), multiplier.GetX()), Multiply(GetY(), multiplier.GetY()), Multiply(GetZ(), multiplier.GetZ()));
-        else if constexpr (vector_size == 4)
-            return PointType(Multiply(GetX(), multiplier.GetX()), Multiply(GetY(), multiplier.GetY()), Multiply(GetZ(), multiplier.GetZ()), Multiply(GetW(), multiplier.GetZ()));
-    }
+    { return PointType(m_vector * multiplier.AsVector()); }
 
     template<typename M>
     PointType operator/(const PointT<M, vector_size>& divisor) const noexcept
-    {
-        if constexpr (vector_size == 2)
-            return PointType(Divide(GetX(), divisor.GetX()), Divide(GetY(), divisor.GetY()));
-        else if constexpr (vector_size == 3)
-            return PointType(Divide(GetX(), divisor.GetX()), Divide(GetY(), divisor.GetY()), Divide(GetZ(), divisor.GetZ()));
-        else if constexpr (vector_size == 4)
-            return PointType(Divide(GetX(), divisor.GetX()), Divide(GetY(), divisor.GetY()), Divide(GetZ(), divisor.GetZ()), Divide(GetW(), divisor.GetZ()));
-    }
+    { return PointType(m_vector / divisor.AsVector()); }
 
     template<typename M, typename = std::enable_if_t<std::is_arithmetic_v<M>>>
     PointType& operator*=(M multiplier) noexcept
-    {
-        for(int comp_index = 0; comp_index < static_cast<int>(vector_size); ++comp_index)
-        {
-            (*this)[comp_index] = Multiply((*this)[comp_index], multiplier);
-        }
-        return *this;
-    }
+    { m_vector *= multiplier; return *this; }
 
     template<typename M, typename = std::enable_if_t<std::is_arithmetic_v<M>>>
     PointType& operator/=(M divisor) noexcept
-    {
-        for(int comp_index = 0; comp_index < static_cast<int>(vector_size); ++comp_index)
-        {
-            (*this)[comp_index] = Divide((*this)[comp_index], divisor);
-        }
-        return *this;
-    }
+    { m_vector /= divisor; return *this; }
 
     template<typename M>
     PointType& operator*=(const PointT<M, vector_size>& multiplier) noexcept
-    {
-        for(int comp_index = 0; comp_index < static_cast<int>(vector_size); ++comp_index)
-        {
-            (*this)[comp_index] = Multiply((*this)[comp_index], multiplier[comp_index]);
-        }
-        return *this;
-    }
+    { m_vector *= multiplier.AsVector(); return *this; }
 
     template<typename M>
     PointType& operator/=(const PointT<M, vector_size>& divisor) noexcept
-    {
-        for(int comp_index = 0; comp_index < static_cast<int>(vector_size); ++comp_index)
-        {
-            (*this)[comp_index] = Divide((*this)[comp_index], divisor[comp_index]);
-        }
-        return *this;
-    }
+    { m_vector /= divisor.AsVector(); return *this; }
 
     template<typename U>
     explicit operator PointT<U, vector_size>() const noexcept
@@ -210,7 +141,7 @@ public:
             return PointT<U, 4>(static_cast<U>(GetX()), static_cast<U>(GetY()), static_cast<U>(GetZ()), static_cast<U>(GetW()));
     }
 
-    explicit operator VectorType() const noexcept { return *this; }
+    explicit operator VectorType() const noexcept { return m_vector; }
 
     explicit operator std::string() const
     {
@@ -225,6 +156,8 @@ public:
 private:
     template<typename M> T Multiply(T t, M m) const noexcept { return static_cast<T>(static_cast<M>(t) * m); }
     template<typename M> T Divide(T t, M m) const noexcept   { return static_cast<T>(static_cast<M>(t) / m); }
+
+    VectorType m_vector;
 };
 
 template<typename T>

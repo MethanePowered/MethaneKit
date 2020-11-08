@@ -84,9 +84,9 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
     META_FUNCTION_TASK();
     const Data::FloatSize& screen_size = m_p_view_camera ? m_p_view_camera->GetScreenSize() : GetScreenSize();
     const Point2f screen_center(screen_size.width / 2.F, screen_size.height / 2.F);
-    Point2f screen_vector = static_cast<Point2f>(mouse_screen_pos) - screen_center;
+    Point2f       screen_point = static_cast<Point2f>(mouse_screen_pos) - screen_center;
 
-    const float screen_radius = screen_vector.length();
+    const float screen_radius = screen_point.GetLength();
     const float sphere_radius = GetRadiusInPixels(screen_size);
 
     // Primary screen point is used to determine if rotation is done inside sphere (around X and Y axes) or outside (around Z axis)
@@ -99,8 +99,8 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
     const Point2f mirror_multipliers = m_p_view_camera
                                      ? Point2f(inside_sphere_sign, -1.F ) * UnitSign(cml::dot(GetLookDirection(m_mouse_pressed_orientation), m_p_view_camera->GetLookDirection()))
                                      : Point2f(-1.F, 1.F);
-    screen_vector.SetX(screen_vector.GetX() * mirror_multipliers.GetX());
-    screen_vector.SetY(screen_vector.GetY() * mirror_multipliers.GetY());
+    screen_point.SetX(screen_point.GetX() * mirror_multipliers.GetX());
+    screen_point.SetY(screen_point.GetY() * mirror_multipliers.GetY());
 
     // Handle rotation between 90 and 180 degrees when mouse overruns one sphere radius
     float z_sign = 1.F;
@@ -110,17 +110,17 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
         if (radius_mult < 2)
         {
             const float vector_radius = sphere_radius * (radius_mult + 1) - screen_radius;
-            screen_vector = screen_vector.normalize() * vector_radius;
-            z_sign = std::pow(-1.F, static_cast<float>(radius_mult));
+            screen_point = screen_point.Normalize() * vector_radius;
+            z_sign       = std::pow(-1.F, static_cast<float>(radius_mult));
         }
         else
         {
-            screen_vector = Point2f(0.F, 0.F);
-            z_sign = -1.F;
+            screen_point = Point2f(0.F, 0.F);
+            z_sign       = -1.F;
         }
     }
 
-    return cml::normalize(Vector3f(screen_vector.AsVector(), inside_sphere ? z_sign * std::sqrt(Square(sphere_radius) - screen_vector.length_squared()) : 0.F));
+    return cml::normalize(Vector3f(screen_point.AsVector(), inside_sphere ? z_sign * std::sqrt(Square(sphere_radius) - screen_point.GetLengthSquared()) : 0.F));
 }
 
 void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir)
