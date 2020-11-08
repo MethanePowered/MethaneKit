@@ -154,9 +154,6 @@ public:
     }
 
 private:
-    template<typename M> T Multiply(T t, M m) const noexcept { return static_cast<T>(static_cast<M>(t) * m); }
-    template<typename M> T Divide(T t, M m) const noexcept   { return static_cast<T>(static_cast<M>(t) / m); }
-
     VectorType m_vector;
 };
 
