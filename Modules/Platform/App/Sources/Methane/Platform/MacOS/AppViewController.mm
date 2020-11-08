@@ -239,7 +239,7 @@ using namespace Methane::Platform;
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_p_app);
 
-    Mouse::Scroll scroll{ [event scrollingDeltaX], -[event scrollingDeltaY] };
+    Mouse::Scroll scroll([event scrollingDeltaX], -[event scrollingDeltaY]);
     if ([event hasPreciseScrollingDeltas])
         scroll *= 0.1F;
     
