@@ -199,16 +199,8 @@ private:
     if (!__itt_domain_instance && __itt_domain_name)\
         __itt_domain_instance = UNICODE_AGNOSTIC(__itt_domain_create)(__itt_domain_name)
 
-#if defined(_MSC_VER) && _MSC_VER >= 1900 //since VS 2015 magic statics are supported, TODO: check with other compilers
-    #define ITT_MAGIC_STATIC(static_variable)
-#else
-//the 'while' below is to protect code from crash in multi-threaded environment under compiler without magic statics support
-    #define ITT_MAGIC_STATIC(static_variable) while(!(static_variable)) std::this_thread::yield();
-#endif
-
 #define ITT_SCOPE(region, name)\
     static __itt_string_handle* __itt_scope_name = UNICODE_AGNOSTIC(__itt_string_handle_create)(name);\
-    ITT_MAGIC_STATIC(__itt_scope_name);\
     ITT_DOMAIN_INIT();\
     Methane::ITT::Task<region> __itt_scope_item(__itt_domain_instance, __itt_scope_name)
 
@@ -222,7 +214,6 @@ private:
 
 #define ITT_ARG(item_variable, /*const char* */name, /*number or string*/ value) { \
     static __itt_string_handle* __itt_arg_name = UNICODE_AGNOSTIC(__itt_string_handle_create)(name); \
-    ITT_MAGIC_STATIC(__itt_arg_name); \
     item_variable.AddArg(__itt_arg_name, value); \
 }
 
@@ -279,7 +270,6 @@ public:
 //'group' defines virtual process (null means current process), track defines virtual thread
 #define ITT_SCOPE_TRACK(/*const char* */group, /*const char* */ track)\
     static __itt_track* itt_track_name = __itt_track_create(__itt_track_group_create(((group) ? UNICODE_AGNOSTIC(__itt_string_handle_create)(group) : nullptr), __itt_track_group_type_normal), UNICODE_AGNOSTIC(__itt_string_handle_create)(track), __itt_track_type_normal);\
-    ITT_MAGIC_STATIC(itt_track_name);\
     Methane::ITT::ScopeTrack itt_track(itt_track_name);
 
 #define ITT_THREAD_NAME(/*const char* */name) \
