@@ -16,7 +16,7 @@ target_link_libraries(${TARGET}
         MethaneBuildOptions
         MethanePrecompiledHeaders
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
-        Catch
+        Catch2
 )
 
 if (METHANE_RUN_TESTS_DURING_BUILD)
