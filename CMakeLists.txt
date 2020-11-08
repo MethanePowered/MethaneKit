@@ -108,7 +108,7 @@ if (MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>") # use /MT static runtime linking
     string(REPLACE "/W3 " "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
     
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
         # Enable multi-threaded build with MSVC
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
@@ -200,12 +200,12 @@ endif()
 
 if (METHANE_CODE_COVERAGE_ENABLED)
 
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
-        "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR
+        CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
         message(STATUS "Methane code coverage is enabled with Clang compiler")
         target_compile_options(MethaneBuildOptions INTERFACE -fprofile-instr-generate -fcoverage-mapping)
         target_link_options(MethaneBuildOptions INTERFACE -fprofile-instr-generate)
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         message(STATUS "Methane code coverage is enabled with GCC compiler")
         target_compile_options(MethaneBuildOptions INTERFACE -coverage)
         target_link_options(MethaneBuildOptions INTERFACE -coverage)
