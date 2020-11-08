@@ -41,7 +41,8 @@ steps:
       cliSources: $(sonar.Sources)
       cliTests:
       extraProperties: |
-        sonar.branch.name=$(Build.SourceBranchName)
+        ${{ if ne(variables['Build.SourceBranchName'], 'merge') }}: # do not set branch name for pull requests
+          sonar.branch.name=$(Build.SourceBranchName)
         sonar.tests=$(sonar.Tests)
         sonar.cfamily.build-wrapper-output=$(buildDir)\BuildWrapperOutput
         sonar.cfamily.cache.path=$(sonar.CacheDir)
