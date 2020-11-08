@@ -53,8 +53,6 @@ public:
     template<size_t sz = vector_size, typename = std::enable_if_t<sz == 4, void>>
     PointT(T x, T y, T z, T w) : m_vector(x, y, z, w) { }
 
-    PointT(std::initializer_list<T> init) : m_vector(init) { }
-
     explicit PointT(const VectorType& vector) : m_vector(vector) { }
 
     template<typename V>

@@ -187,7 +187,7 @@ public:
 
         FT_Vector kerning_vec{};
         ThrowFreeTypeError(FT_Get_Kerning(m_ft_face, left_glyph_index, right_glyph_index, FT_KERNING_DEFAULT, &kerning_vec));
-        return gfx::FramePoint(kerning_vec.x >> 6, 0);
+        return gfx::FramePoint(static_cast<int>(kerning_vec.x >> 6), 0);
     }
 
     uint32_t GetLineHeight() const noexcept
