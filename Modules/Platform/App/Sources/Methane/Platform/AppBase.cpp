@@ -37,34 +37,6 @@ Base application interface and platform-independent implementation.
 #include <vector>
 #include <cstdlib>
 
-#ifdef _DEBUG
-
-// We do not catch exceptions in Debug build to let them be handled by the Debugger
-#define BEGIN_TRY_CATCH
-#define END_TRY_CATCH(stage_name)
-
-#else // ifdef _DEBUG
-
-// Common exceptions handling logic in Release builds for Init, Update and Render function calls
-#define BEGIN_TRY_CATCH \
-    try \
-    {
-
-#define END_TRY_CATCH(stage_name) \
-    } \
-    catch (std::exception& e) \
-    { \
-        Alert({ Message::Type::Error, stage_name " Error", e.what() }); \
-        return false; \
-    } \
-    catch (...) \
-    { \
-        Alert({ Message::Type::Error, stage_name " Error", "Unknown exception occurred." }); \
-        return false; \
-    }
-
-#endif // ifdef _DEBUG
-
 namespace Methane::Platform
 {
 
@@ -174,44 +146,6 @@ void AppBase::ShowAlert(const Message&)
     // Message box interrupts message loop so that application looses all key release events
     // We assume that user has released all previously pressed keys and simulate these events
     m_input_state.ReleaseAllKeys();
-}
-
-bool AppBase::InitContextWithErrorHandling(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size)
-{
-    META_FUNCTION_TASK();
-
-    BEGIN_TRY_CATCH
-    InitContext(env, frame_size);
-    END_TRY_CATCH("Render Context Initialization")
-
-    return true;
-}
-
-bool AppBase::InitWithErrorHandling()
-{
-    META_FUNCTION_TASK();
-
-    BEGIN_TRY_CATCH
-    Init();
-    END_TRY_CATCH("Application Initialization")
-
-    return true;
-}
-
-bool AppBase::UpdateAndRenderWithErrorHandling()
-{
-    META_FUNCTION_TASK();
-
-    // Do not render if error has occurred and is being displayed in message box
-    if (HasError())
-        return false;
-
-    BEGIN_TRY_CATCH
-    Update();
-    Render();
-    END_TRY_CATCH("Application Rendering")
-
-    return true;
 }
 
 bool AppBase::HasError() const noexcept
@@ -341,6 +275,17 @@ void AppBase::ShowCommandLineHelp()
         "Application Command-Line Help",
         GetCommandLineHelp()
     });
+}
+
+bool AppBase::UpdateAndRender()
+{
+    META_FUNCTION_TASK();
+    if (HasError())
+        return false;
+
+    Update();
+    Render();
+    return true;
 }
 
 } // namespace Methane::Platform

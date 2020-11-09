@@ -102,9 +102,15 @@ public:
     virtual void ShowParameters() { }
     virtual void Close() = 0;
 
-    bool InitContextWithErrorHandling(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size);
-    bool InitWithErrorHandling();
-    bool UpdateAndRenderWithErrorHandling();
+    bool InitContextWithErrorHandling(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size)
+    { return ExecuteWithErrorHandling("Render Context Initialization", *this, &AppBase::InitContext, env, frame_size); }
+
+    bool InitWithErrorHandling()            { return ExecuteWithErrorHandling("Application Initialization", *this, &AppBase::Init); }
+    bool UpdateAndRenderWithErrorHandling() { return ExecuteWithErrorHandling("Application Rendering", *this, &AppBase::UpdateAndRender); }
+
+    template<typename FuncType, typename... ArgTypes>
+    void ProcessInputWithErrorHandling(FuncType&& func_ptr, ArgTypes&&... args)
+    { ExecuteWithErrorHandling("Application Input", m_input_state, std::forward<FuncType>(func_ptr), std::forward<ArgTypes>(args)...); }
 
     tf::Executor&           GetParallelExecutor() const;
     const Settings&         GetPlatformAppSettings() const noexcept { return m_settings; }
@@ -114,28 +120,6 @@ public:
     bool                    IsResizing() const noexcept             { return m_is_resizing; }
     bool                    HasKeyboardFocus() const noexcept       { return m_has_keyboard_focus; }
     bool                    HasError() const noexcept;
-
-    template<typename FuncType, typename... ArgTypes>
-    void ProcessInput(FuncType&& func_ptr, ArgTypes&&... args)
-    {
-        META_FUNCTION_TASK();
-#ifndef _DEBUG
-        try
-        {
-#endif
-            (m_input_state.*std::forward<FuncType>(func_ptr))(std::forward<ArgTypes>(args)...);
-#ifndef _DEBUG
-        }
-        catch (std::exception& e)
-        {
-            Alert({ Message::Type::Error, "Application Input Error", e.what() });
-        }
-        catch (...)
-        {
-            Alert({ Message::Type::Error, "Application Input Error", "Unknown exception occurred." });
-        }
-#endif
-    }
 
 protected:
     // AppBase interface
@@ -151,6 +135,35 @@ protected:
     Ptr<Message> m_deferred_message_ptr;
 
 private:
+    bool UpdateAndRender();
+
+    template<typename ObjectType, typename FuncType, typename... ArgTypes>
+    bool ExecuteWithErrorHandling(const char* stage_name, ObjectType& obj, FuncType&& func_ptr, ArgTypes&&... args)
+    {
+        // We do not catch exceptions in Debug build to let them be handled by the Debugger
+#ifndef _DEBUG
+        try
+        {
+#else
+        META_UNUSED(stage_name);
+#endif
+            (obj.*std::forward<FuncType>(func_ptr))(std::forward<ArgTypes>(args)...);
+#ifndef _DEBUG
+        }
+        catch (std::exception& e)
+        {
+            Alert({ Message::Type::Error, fmt::format("{} Error", stage_name), e.what() });
+            return false;
+        }
+        catch (...)
+        {
+            Alert({ Message::Type::Error, fmt::format("{} Error", stage_name), "Unknown exception occurred." });
+            return false;
+        }
+#endif
+        return true;
+    }
+
     Settings        m_settings;
     Data::FrameRect m_window_bounds;
     Data::FrameSize m_frame_size;

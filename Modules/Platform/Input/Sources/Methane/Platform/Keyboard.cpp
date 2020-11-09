@@ -422,7 +422,6 @@ std::string State::Property::ToString(State::Property::Value property_value)
     case None:      return "None";
     default:        META_UNEXPECTED_ENUM_ARG_RETURN(property_value, "Undefined");
     }
-
 }
 
 std::string State::Property::ToString(State::Property::Mask properties_mask)
