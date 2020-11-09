@@ -31,6 +31,7 @@ Base application interface and platform-independent implementation.
 
 #include <CLI/App.hpp>
 
+#include <fmt/format.h>
 #include <string>
 #include <vector>
 #include <memory>
@@ -139,6 +140,9 @@ private:
 
     template<typename ObjectType, typename FuncType, typename... ArgTypes>
     bool ExecuteWithErrorHandling(const char* stage_name, ObjectType& obj, FuncType&& func_ptr, ArgTypes&&... args)
+#ifdef _DEBUG
+        const
+#endif
     {
         // We do not catch exceptions in Debug build to let them be handled by the Debugger
 #ifndef _DEBUG
